@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.53 1999/05/12 03:34:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.54 1999/06/30 22:52:47 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -90,12 +90,12 @@ static char vcid[] = "$Id: zvec.c,v 1.53 1999/05/12 03:34:35 bsmith Exp bsmith $
 
 EXTERN_C_BEGIN
 
-void vecsetrandom_(PetscRandom *r,Vec *x, int *__ierr )
+void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x, int *__ierr )
 {
   *__ierr = VecSetRandom(*r,*x);
 }
 
-void drawtensorcontour_(Draw *win,int *m,int *n,double *x,double *y,Scalar *V, int *__ierr )
+void PETSC_STDCALL drawtensorcontour_(Draw *win,int *m,int *n,double *x,double *y,Scalar *V, int *__ierr )
 {
   double *xx,*yy;
   if (FORTRANNULLDOUBLE(x)) xx = PETSC_NULL; 
@@ -106,12 +106,12 @@ void drawtensorcontour_(Draw *win,int *m,int *n,double *x,double *y,Scalar *V, i
   *__ierr = DrawTensorContour(*win,*m,*n,xx,yy,V);
 }
 
-void vecsetfromoptions_(Vec *x,int *__ierr)
+void PETSC_STDCALL vecsetfromoptions_(Vec *x,int *__ierr)
 {
   *__ierr = VecSetFromOptions(*x);
 }
 
-void vecsettype_(Vec *x,CHAR type_name,int *__ierr,int len)
+void PETSC_STDCALL vecsettype_(Vec *x,CHAR type_name,int *__ierr,int len)
 {
   char *t;
 
@@ -120,50 +120,50 @@ void vecsettype_(Vec *x,CHAR type_name,int *__ierr,int len)
   FREECHAR(type_name,t);
 }
 
-void vecgetmap_(Vec *x,Map *map, int *__ierr )
+void PETSC_STDCALL vecgetmap_(Vec *x,Map *map, int *__ierr )
 {
   *__ierr = VecGetMap(*x,map);
 }
 
-void mapgetlocalsize_(Map *m,int *n, int *__ierr )
+void PETSC_STDCALL mapgetlocalsize_(Map *m,int *n, int *__ierr )
 {
   *__ierr = MapGetLocalSize(*m,n);
 }
 
-void mapgetsize_(Map *m,int *N, int *__ierr )
+void PETSC_STDCALL mapgetsize_(Map *m,int *N, int *__ierr )
 {
   *__ierr = MapGetSize(*m,N);
 }
 
-void mapgetlocalrange_(Map *m,int *rstart,int *rend, int *__ierr )
+void PETSC_STDCALL mapgetlocalrange_(Map *m,int *rstart,int *rend, int *__ierr )
 {
   *__ierr = MapGetLocalRange(*m,rstart,rend);
 }
 
-void mapgetglobalrange_(Map *m,int **range, int *__ierr )
+void PETSC_STDCALL mapgetglobalrange_(Map *m,int **range, int *__ierr )
 {
   *__ierr = MapGetGlobalRange(*m,range);
 }
 
-void mapdestroy_(Map *m, int *__ierr )
+void PETSC_STDCALL mapdestroy_(Map *m, int *__ierr )
 {
   *__ierr = MapDestroy(*m);
 }
 
-void vecsetvalue_(Vec *v,int *i,Scalar *va,InsertMode *mode)
+void PETSC_STDCALL vecsetvalue_(Vec *v,int *i,Scalar *va,InsertMode *mode)
 {
   /* cannot use VecSetValue() here since that usesCHKERRQ() which has a return in it */
   VecSetValues(*v,1,i,va,*mode);
 }
 
-void vecview_(Vec *x,Viewer *vin, int *__ierr )
+void PETSC_STDCALL vecview_(Vec *x,Viewer *vin, int *__ierr )
 {
   Viewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *__ierr = VecView(*x,v);
 }
 
-void vecgettype_(Vec *vv,CHAR name,int *__ierr,int len)
+void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name,int *__ierr,int len)
 {
   char *tname;
   *__ierr = VecGetType(*vv,&tname);
@@ -178,13 +178,13 @@ void vecgettype_(Vec *vv,CHAR name,int *__ierr,int len)
 
 }
 
-void vecload_(Viewer *viewer,Vec *newvec, int *__ierr )
+void PETSC_STDCALL vecload_(Viewer *viewer,Vec *newvec, int *__ierr )
 { 
   *__ierr = VecLoad(*viewer,newvec);
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
-void vecrestorearray_(Vec *x,Scalar *fa,long *ia,int *__ierr)
+void PETSC_STDCALL vecrestorearray_(Vec *x,Scalar *fa,long *ia,int *__ierr)
 {
   int    m;
   Scalar *lx;
@@ -194,7 +194,7 @@ void vecrestorearray_(Vec *x,Scalar *fa,long *ia,int *__ierr)
   *__ierr = VecRestoreArray(*x,&lx);if (*__ierr) return;
 }
 
-void vecgetarray_(Vec *x,Scalar *fa,long *ia,int *__ierr)
+void PETSC_STDCALL vecgetarray_(Vec *x,Scalar *fa,long *ia,int *__ierr)
 {
   Scalar *lx;
   int    m;
@@ -204,62 +204,62 @@ void vecgetarray_(Vec *x,Scalar *fa,long *ia,int *__ierr)
   *__ierr = PetscScalarAddressToFortran((PetscObject)*x,fa,lx,m,ia);
 }
 
-void vecscatterdestroy_(VecScatter *ctx, int *__ierr )
+void PETSC_STDCALL vecscatterdestroy_(VecScatter *ctx, int *__ierr )
 {
   *__ierr = VecScatterDestroy(*ctx);
 }
 
-void vecdestroy_(Vec *v, int *__ierr )
+void PETSC_STDCALL vecdestroy_(Vec *v, int *__ierr )
 {
   *__ierr = VecDestroy(*v);
 }
 
-void vecscattercreate_(Vec *xin,IS *ix,Vec *yin,IS *iy,VecScatter *newctx, int *__ierr )
+void PETSC_STDCALL vecscattercreate_(Vec *xin,IS *ix,Vec *yin,IS *iy,VecScatter *newctx, int *__ierr )
 {
   *__ierr = VecScatterCreate(*xin,*ix,*yin,*iy,newctx);
 }
 
-void vecscattercopy_(VecScatter *sctx,VecScatter *ctx, int *__ierr )
+void PETSC_STDCALL vecscattercopy_(VecScatter *sctx,VecScatter *ctx, int *__ierr )
 {
   *__ierr = VecScatterCopy(*sctx,ctx);
 }
 
-void mapcreatempi_(MPI_Comm *comm,int *n,int *N,Map *vv, int *__ierr )
+void PETSC_STDCALL mapcreatempi_(MPI_Comm *comm,int *n,int *N,Map *vv, int *__ierr )
 {
   *__ierr = MapCreateMPI((MPI_Comm)PetscToPointerComm( *comm ),*n,*N,vv);
 }
 
-void veccreatempi_(MPI_Comm *comm,int *n,int *N,Vec *vv, int *__ierr )
+void PETSC_STDCALL veccreatempi_(MPI_Comm *comm,int *n,int *N,Vec *vv, int *__ierr )
 {
   *__ierr = VecCreateMPI((MPI_Comm)PetscToPointerComm( *comm ),*n,*N,vv);
 }
 
-void veccreateshared_(MPI_Comm *comm,int *n,int *N,Vec *vv, int *__ierr )
+void PETSC_STDCALL veccreateshared_(MPI_Comm *comm,int *n,int *N,Vec *vv, int *__ierr )
 {
   *__ierr = VecCreateShared((MPI_Comm)PetscToPointerComm( *comm ),*n,*N,vv);
 }
 
-void veccreateseq_(MPI_Comm *comm,int *n,Vec *V, int *__ierr )
+void PETSC_STDCALL veccreateseq_(MPI_Comm *comm,int *n,Vec *V, int *__ierr )
 {
   *__ierr = VecCreateSeq((MPI_Comm)PetscToPointerComm( *comm),*n,V);
 }
 
-void veccreateseqwitharray_(MPI_Comm *comm,int *n,Scalar *s,Vec *V, int *__ierr )
+void PETSC_STDCALL veccreateseqwitharray_(MPI_Comm *comm,int *n,Scalar *s,Vec *V, int *__ierr )
 {
   *__ierr = VecCreateSeqWithArray((MPI_Comm)PetscToPointerComm( *comm),*n,s,V);
 }
 
-void veccreatempiwitharray_(MPI_Comm *comm,int *n,int *N,Scalar *s,Vec *V, int *__ierr )
+void PETSC_STDCALL veccreatempiwitharray_(MPI_Comm *comm,int *n,int *N,Scalar *s,Vec *V, int *__ierr )
 {
   *__ierr = VecCreateMPIWithArray((MPI_Comm)PetscToPointerComm( *comm),*n,*N,s,V);
 }
 
-void veccreate_(MPI_Comm *comm,int *n,int *N,Vec *V, int *__ierr )
+void PETSC_STDCALL veccreate_(MPI_Comm *comm,int *n,int *N,Vec *V, int *__ierr )
 {
   *__ierr = VecCreate((MPI_Comm)PetscToPointerComm( *comm ),*n,*N,V);
 }
 
-void vecduplicate_(Vec *v,Vec *newv, int *__ierr )
+void PETSC_STDCALL vecduplicate_(Vec *v,Vec *newv, int *__ierr )
 {
   *__ierr = VecDuplicate(*v,newv);
 }
@@ -269,7 +269,7 @@ void vecduplicate_(Vec *v,Vec *newv, int *__ierr )
     Fortran provides the array to hold the vector objects, while in C that 
     array is allocated by the VecDuplicateVecs()
 */
-void vecduplicatevecs_(Vec *v,int *m,Vec *newv, int *__ierr )
+void PETSC_STDCALL vecduplicatevecs_(Vec *v,int *m,Vec *newv, int *__ierr )
 {
   Vec *lV;
   int i;
@@ -280,7 +280,7 @@ void vecduplicatevecs_(Vec *v,int *m,Vec *newv, int *__ierr )
   PetscFree(lV); 
 }
 
-void vecdestroyvecs_(Vec *vecs,int *m,int *__ierr )
+void PETSC_STDCALL vecdestroyvecs_(Vec *vecs,int *m,int *__ierr )
 {
   int i;
   for (i=0; i<*m; i++) {
@@ -288,63 +288,63 @@ void vecdestroyvecs_(Vec *vecs,int *m,int *__ierr )
   }
 }
 
-void vecmtdot_(int *nv,Vec *x,Vec *y,Scalar *val, int *__ierr )
+void PETSC_STDCALL vecmtdot_(int *nv,Vec *x,Vec *y,Scalar *val, int *__ierr )
 {
   *__ierr = VecMTDot(*nv,*x,y,val);
 }
 
-void vecmdot_(int *nv,Vec *x,Vec *y,Scalar *val, int *__ierr )
+void PETSC_STDCALL vecmdot_(int *nv,Vec *x,Vec *y,Scalar *val, int *__ierr )
 {
   *__ierr = VecMDot(*nv,*x,y,val);
 }
 
-void vecmaxpy_(int *nv,Scalar *alpha,Vec *x,Vec *y, int *__ierr )
+void PETSC_STDCALL vecmaxpy_(int *nv,Scalar *alpha,Vec *x,Vec *y, int *__ierr )
 {
   *__ierr = VecMAXPY(*nv,alpha,*x,y);
 }
 
-void vecstridenorm_(Vec *x,int *start,NormType *type,double *val, int *__ierr )
+void PETSC_STDCALL vecstridenorm_(Vec *x,int *start,NormType *type,double *val, int *__ierr )
 {
   *__ierr = VecStrideNorm(*x,*start,*type,val);
 }
 
 /* ----------------------------------------------------------------------------------------------*/
-void veccreateghostblockwitharray_(MPI_Comm *comm,int *bs,int *n,int *N,int *nghost,int *ghosts,
+void PETSC_STDCALL veccreateghostblockwitharray_(MPI_Comm *comm,int *bs,int *n,int *N,int *nghost,int *ghosts,
                               Scalar *array,Vec *vv, int *__ierr )
 {
   *__ierr = VecCreateGhostBlockWithArray((MPI_Comm)PetscToPointerComm( *comm) ,*bs,*n,*N,*nghost,
                                     ghosts,array,vv);
 }
 
-void veccreateghostblock_(MPI_Comm *comm,int *bs,int *n,int *N,int *nghost,int *ghosts,Vec *vv, 
+void PETSC_STDCALL veccreateghostblock_(MPI_Comm *comm,int *bs,int *n,int *N,int *nghost,int *ghosts,Vec *vv, 
                           int *__ierr )
 {
   *__ierr = VecCreateGhostBlock((MPI_Comm)PetscToPointerComm( *comm),*bs,*n,*N,*nghost,ghosts,vv);
 }
 
-void veccreateghostwitharray_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,Scalar *array,
+void PETSC_STDCALL veccreateghostwitharray_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,Scalar *array,
                               Vec *vv, int *__ierr )
 {
   *__ierr = VecCreateGhostWithArray((MPI_Comm)PetscToPointerComm( *comm) ,*n,*N,*nghost,
                                     ghosts,array,vv);
 }
 
-void veccreateghost_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,Vec *vv, int *__ierr )
+void PETSC_STDCALL veccreateghost_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,Vec *vv, int *__ierr )
 {
   *__ierr = VecCreateGhost((MPI_Comm)PetscToPointerComm( *comm),*n,*N,*nghost,ghosts,vv);
 }
 
-void vecghostgetlocalform_(Vec *g,Vec *l, int *__ierr )
+void PETSC_STDCALL vecghostgetlocalform_(Vec *g,Vec *l, int *__ierr )
 {
   *__ierr = VecGhostGetLocalForm(*g,l);
 }
 
-void vecghostrestorelocalform_(Vec *g,Vec *l, int *__ierr )
+void PETSC_STDCALL vecghostrestorelocalform_(Vec *g,Vec *l, int *__ierr )
 {
   *__ierr = VecGhostRestoreLocalForm(*g,l);
 }
 
-void vecmax_(Vec *x,int *p,double *val, int *__ierr )
+void PETSC_STDCALL vecmax_(Vec *x,int *p,double *val, int *__ierr )
 {
   if (FORTRANNULLINTEGER(p)) p = PETSC_NULL;
   *__ierr = VecMax(*x,p,val);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zplog.c,v 1.17 1999/04/06 18:13:58 balay Exp bsmith $";
+static char vcid[] = "$Id: zplog.c,v 1.18 1999/05/12 03:34:35 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -33,7 +33,8 @@ static char vcid[] = "$Id: zplog.c,v 1.17 1999/04/06 18:13:58 balay Exp bsmith $
 
 EXTERN_C_BEGIN
 
-void plogdump_(CHAR name, int *__ierr,int len ){
+void PETSC_STDCALL plogdump_(CHAR name PETSC_MIXED_LEN(len), int *__ierr PETSC_END_LEN(len) )
+{
 #if defined(PETSC_USE_LOG)
   char *t1;
   FIXCHAR(name,len,t1);
@@ -41,8 +42,9 @@ void plogdump_(CHAR name, int *__ierr,int len ){
   FREECHAR(name,t1);
 #endif
 }
-void plogeventregister_(int *e,CHAR string,CHAR color,int *__ierr,int len1,
-                        int len2){
+void PETSC_STDCALL plogeventregister_(int *e,CHAR string PETSC_MIXED_LEN(len1),
+               CHAR color PETSC_MIXED_LEN(len2),int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+{
 #if defined(PETSC_USE_LOG)
   char *t1,*t2;
   FIXCHAR(string,len1,t1);
@@ -54,44 +56,46 @@ void plogeventregister_(int *e,CHAR string,CHAR color,int *__ierr,int len1,
 #endif
 }
 
-void plogallbegin_(int *__ierr){
+void PETSC_STDCALL plogallbegin_(int *__ierr){
 #if defined(PETSC_USE_LOG)
   *__ierr = PLogAllBegin();
 #endif
 }
 
-void plogdestroy_(int *__ierr){
+void PETSC_STDCALL plogdestroy_(int *__ierr){
 #if defined(PETSC_USE_LOG)
   *__ierr = PLogDestroy();
 #endif
 }
 
-void plogbegin_(int *__ierr){
+void PETSC_STDCALL plogbegin_(int *__ierr){
 #if defined(PETSC_USE_LOG)
   *__ierr = PLogBegin();
 #endif
 }
 
-void plogeventbegin_(int *e,PetscObject *o1,PetscObject *o2,PetscObject *o3,PetscObject *o4){
+void PETSC_STDCALL plogeventbegin_(int *e,PetscObject *o1,PetscObject *o2,PetscObject *o3,PetscObject *o4){
   PLogEventBegin(*e,*o1,*o2,*o3,*o4);
 }
 
-void plogeventend_(int *e,PetscObject *o1,PetscObject *o2,PetscObject *o3,PetscObject *o4){
+void PETSC_STDCALL plogeventend_(int *e,PetscObject *o1,PetscObject *o2,PetscObject *o3,PetscObject *o4){
   PLogEventEnd(*e,*o1,*o2,*o3,*o4);
 }
 
-void plogflops_(int *f) {
+void PETSC_STDCALL plogflops_(int *f) {
   PLogFlops(*f);
 }
 
-void plogstagepop_(int *__ierr )
+void PETSC_STDCALL plogstagepop_(int *__ierr )
 {
 #if defined(PETSC_USE_LOG)
   *__ierr = PLogStagePop();
 #endif
 }
 
-void plogstageregister_(int *stage,CHAR sname, int *__ierr,int len){
+void PETSC_STDCALL plogstageregister_(int *stage,CHAR sname PETSC_MIXED_LEN(len),
+                                      int *__ierr PETSC_END_LEN(len) )
+{
 #if defined(PETSC_USE_LOG)
   char *t;
   FIXCHAR(sname,len,t);
@@ -99,7 +103,7 @@ void plogstageregister_(int *stage,CHAR sname, int *__ierr,int len){
 #endif
 }
 
-void plogstagepush_(int *stage, int *__ierr ){
+void PETSC_STDCALL plogstagepush_(int *stage, int *__ierr ){
 #if defined(PETSC_USE_LOG)
   *__ierr = PLogStagePush(*stage);
 #endif

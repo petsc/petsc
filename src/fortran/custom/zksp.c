@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.33 1999/05/12 03:34:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.34 1999/10/01 21:23:14 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -48,12 +48,12 @@ static char vcid[] = "$Id: zksp.c,v 1.33 1999/05/12 03:34:35 bsmith Exp bsmith $
 
 EXTERN_C_BEGIN
 
-void kspgetresidualhistory_(KSP *ksp,int *na,int *__ierr)
+void PETSC_STDCALL kspgetresidualhistory_(KSP *ksp,int *na,int *__ierr)
 {
   *__ierr = KSPGetResidualHistory(*ksp, PETSC_NULL, na);
 }
 
-void kspsettype_(KSP *ksp,CHAR type, int *__ierr,int len )
+void PETSC_STDCALL kspsettype_(KSP *ksp,CHAR type PETSC_MIXED_LEN(len), int *__ierr PETSC_END_LEN(len) )
 {
   char *t;
 
@@ -62,7 +62,7 @@ void kspsettype_(KSP *ksp,CHAR type, int *__ierr,int len )
   FREECHAR(type,t);
 }
 
-void kspgettype_(KSP *ksp,CHAR name,int *__ierr,int len)
+void PETSC_STDCALL kspgettype_(KSP *ksp,CHAR name PETSC_MIXED_LEN(len),int *__ierr PETSC_END_LEN(len) )
 {
   char *tname;
 
@@ -77,11 +77,13 @@ void kspgettype_(KSP *ksp,CHAR name,int *__ierr,int len)
 #endif
 }
 
-void kspgetpreconditionerside_(KSP *ksp,PCSide *side, int *__ierr ){
+void PETSC_STDCALL kspgetpreconditionerside_(KSP *ksp,PCSide *side, int *__ierr ){
 *__ierr = KSPGetPreconditionerSide(*ksp,side );
 }
 
-void kspsetoptionsprefix_(KSP *ksp,CHAR prefix, int *__ierr,int len ){
+void PETSC_STDCALL kspsetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len), 
+                                        int *__ierr PETSC_END_LEN(len) )
+{
   char *t;
 
   FIXCHAR(prefix,len,t);
@@ -89,7 +91,9 @@ void kspsetoptionsprefix_(KSP *ksp,CHAR prefix, int *__ierr,int len ){
   FREECHAR(prefix,t);
 }
 
-void kspappendoptionsprefix_(KSP *ksp,CHAR prefix, int *__ierr,int len ){
+void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),
+                                           int *__ierr PETSC_END_LEN(len) )
+{
   char *t;
 
   FIXCHAR(prefix,len,t);
@@ -97,7 +101,7 @@ void kspappendoptionsprefix_(KSP *ksp,CHAR prefix, int *__ierr,int len ){
   FREECHAR(prefix,t);
 }
 
-void kspcreate_(MPI_Comm *comm,KSP *ksp, int *__ierr ){
+void PETSC_STDCALL kspcreate_(MPI_Comm *comm,KSP *ksp, int *__ierr ){
   *__ierr = KSPCreate((MPI_Comm)PetscToPointerComm( *comm ),ksp);
 }
 
@@ -108,7 +112,7 @@ static int ourtest(KSP ksp,int i,double d,void* ctx)
   (*f2)(&ksp,&i,&d,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
-void kspsetconvergencetest_(KSP *ksp,
+void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
       int (*converge)(KSP*,int*,double*,void*,int*),void *cctx, int *__ierr)
 {
   f2 = converge;
@@ -122,24 +126,24 @@ static int ourmonitor(KSP ksp,int i,double d,void* ctx)
   (*f1)(&ksp,&i,&d,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
-void kspsetmonitor_(KSP *ksp,int (*monitor)(KSP*,int*,double*,void*,int*),
+void PETSC_STDCALL kspsetmonitor_(KSP *ksp,int (*monitor)(KSP*,int*,double*,void*,int*),
                     void *mctx, int (*monitordestroy)(void *),int *__ierr )
 {
   f1 = monitor;
   *__ierr = KSPSetMonitor(*ksp,ourmonitor,mctx,0);
 }
 
-void kspgetpc_(KSP *ksp,PC *B, int *__ierr )
+void PETSC_STDCALL kspgetpc_(KSP *ksp,PC *B, int *__ierr )
 {
   *__ierr = KSPGetPC(*ksp,B);
 }
 
-void kspgetsolution_(KSP *ksp,Vec *v, int *__ierr )
+void PETSC_STDCALL kspgetsolution_(KSP *ksp,Vec *v, int *__ierr )
 {
   *__ierr = KSPGetSolution(*ksp,v);
 }
 
-void kspgetrhs_(KSP *ksp,Vec *r, int *__ierr )
+void PETSC_STDCALL kspgetrhs_(KSP *ksp,Vec *r, int *__ierr )
 {
   *__ierr = KSPGetRhs(*ksp,r);
 }
@@ -147,8 +151,10 @@ void kspgetrhs_(KSP *ksp,Vec *r, int *__ierr )
 /*
    Possible bleeds memory but cannot be helped.
 */
-void ksplgmonitorcreate_(CHAR host,CHAR label,int *x,int *y,int *m,
-                       int *n,DrawLG *ctx, int *__ierr,int len1,int len2){
+void PETSC_STDCALL ksplgmonitorcreate_(CHAR host PETSC_MIXED_LEN(len1),
+                    CHAR label PETSC_MIXED_LEN(len2),int *x,int *y,int *m,int *n,DrawLG *ctx,
+                    int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
+{
   char   *t1,*t2;
 
   FIXCHAR(host,len1,t1);
@@ -156,32 +162,33 @@ void ksplgmonitorcreate_(CHAR host,CHAR label,int *x,int *y,int *m,
   *__ierr = KSPLGMonitorCreate(t1,t2,*x,*y,*m,*n,ctx);
 }
 
-void ksplgmonitordestroy_(DrawLG *ctx, int *__ierr )
+void PETSC_STDCALL ksplgmonitordestroy_(DrawLG *ctx, int *__ierr )
 {
   *__ierr = KSPLGMonitorDestroy(*ctx);
 }
 
-void kspdestroy_(KSP *ksp, int *__ierr )
+void PETSC_STDCALL kspdestroy_(KSP *ksp, int *__ierr )
 {
   *__ierr = KSPDestroy(*ksp);
 }
 
-void kspregisterdestroy_(int* __ierr)
+void PETSC_STDCALL kspregisterdestroy_(int* __ierr)
 {
   *__ierr = KSPRegisterDestroy();
 }
 
-void kspbuildsolution_(KSP *ctx,Vec *v,Vec *V, int *__ierr )
+void PETSC_STDCALL kspbuildsolution_(KSP *ctx,Vec *v,Vec *V, int *__ierr )
 {
   *__ierr = KSPBuildSolution(*ctx,*v,V);
 }
 
-void kspbuildresidual_(KSP *ctx,Vec *t,Vec *v,Vec *V, int *__ierr )
+void PETSC_STDCALL kspbuildresidual_(KSP *ctx,Vec *t,Vec *v,Vec *V, int *__ierr )
 {
   *__ierr = KSPBuildResidual(*ctx,*t,*v,V);
 }
 
-void kspgetoptionsprefix_(KSP *ksp, CHAR prefix,int *__ierr,int len)
+void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp, CHAR prefix PETSC_MIXED_LEN(len),
+                    int *__ierr PETSC_END_LEN(len) )
 {
   char *tname;
 

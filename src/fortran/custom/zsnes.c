@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.36 1999/09/27 23:22:14 balay Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.37 1999/10/01 21:23:14 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -73,12 +73,12 @@ static char vcid[] = "$Id: zsnes.c,v 1.36 1999/09/27 23:22:14 balay Exp bsmith $
 
 EXTERN_C_BEGIN
 
-void snessetlinesearchparams_(SNES *snes, double *alpha, double *maxstep, double *steptol,int *__ierr)
+void PETSC_STDCALL snessetlinesearchparams_(SNES *snes, double *alpha, double *maxstep, double *steptol,int *__ierr)
 {
   *__ierr = SNESSetLineSearchParams(*snes,*alpha,*maxstep,*steptol);
 }
 
-void snesgetlinesearchparams_(SNES *snes, double *alpha, double *maxstep, double *steptol,int *__ierr)
+void PETSC_STDCALL snesgetlinesearchparams_(SNES *snes, double *alpha, double *maxstep, double *steptol,int *__ierr)
 {
   if (FORTRANNULLDOUBLE(alpha)) alpha = PETSC_NULL;
   if (FORTRANNULLDOUBLE(maxstep)) maxstep = PETSC_NULL;
@@ -86,7 +86,7 @@ void snesgetlinesearchparams_(SNES *snes, double *alpha, double *maxstep, double
   *__ierr = SNESGetLineSearchParams(*snes,alpha,maxstep,steptol);
 }
 
-void snesgetjacobian_(SNES *snes,Mat *A,Mat *B,void **ctx, int *__ierr )
+void PETSC_STDCALL snesgetjacobian_(SNES *snes,Mat *A,Mat *B,void **ctx, int *__ierr )
 {
   if (FORTRANNULLINTEGER(ctx)) ctx = PETSC_NULL;
   if (FORTRANNULLOBJECT(A))    A = PETSC_NULL;
@@ -94,7 +94,8 @@ void snesgetjacobian_(SNES *snes,Mat *A,Mat *B,void **ctx, int *__ierr )
   *__ierr = SNESGetJacobian(*snes,A,B,ctx);
 }
 
-void matsnesmfsettype_(Mat *mat,CHAR ftype, int *__ierr,int len )
+void PETSC_STDCALL matsnesmfsettype_(Mat *mat,CHAR ftype PETSC_MIXED_LEN(len),
+                                     int *__ierr PETSC_END_LEN(len) )
 {
   char *t;
   FIXCHAR(ftype,len,t);
@@ -102,12 +103,13 @@ void matsnesmfsettype_(Mat *mat,CHAR ftype, int *__ierr,int len )
   FREECHAR(ftype,t);
 }
 
-void snesgetconvergencehistory_(SNES *snes,int *na,int *__ierr)
+void PETSC_STDCALL snesgetconvergencehistory_(SNES *snes,int *na,int *__ierr)
 {
   *__ierr = SNESGetConvergenceHistory(*snes, PETSC_NULL,PETSC_NULL, na);
 }
 
-void snessettype_(SNES *snes,CHAR type, int *__ierr,int len )
+void PETSC_STDCALL snessettype_(SNES *snes,CHAR type PETSC_MIXED_LEN(len),
+                                int *__ierr PETSC_END_LEN(len) )
 {
   char *t;
 
@@ -116,7 +118,8 @@ void snessettype_(SNES *snes,CHAR type, int *__ierr,int len )
   FREECHAR(type,t);
 }
 
-void snesappendoptionsprefix_(SNES *snes,CHAR prefix, int *__ierr,int len )
+void PETSC_STDCALL snesappendoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_LEN(len),
+                                            int *__ierr PETSC_END_LEN(len) )
 {
   char *t;
 
@@ -125,7 +128,7 @@ void snesappendoptionsprefix_(SNES *snes,CHAR prefix, int *__ierr,int len )
   FREECHAR(prefix,t);
 }
 
-void matcreatesnewsmf_(SNES *snes,Vec *x,Mat *J, int *__ierr )
+void PETSC_STDCALL matcreatesnewsmf_(SNES *snes,Vec *x,Mat *J, int *__ierr )
 {
   *__ierr = MatCreateSNESMF(*snes,*x,J);
 }
@@ -138,7 +141,7 @@ static int oursnesmonitor(SNES snes,int i,double d,void*ctx)
   (*f7)(&snes,&i,&d,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
-void snessetmonitor_(SNES *snes,void (*func)(SNES*,int*,double*,void*,int*),
+void PETSC_STDCALL snessetmonitor_(SNES *snes,void (*func)(SNES*,int*,double*,void*,int*),
                     void *mctx, int (*mondestroy)(void *,int *),int *__ierr )
 {
   f7 = func;
@@ -154,7 +157,7 @@ static int oursnestest(SNES snes,double a,double d,double c,SNESConvergedReason*
   return 0;
 }
 
-void snessetconvergencetest_(SNES *snes,
+void PETSC_STDCALL snessetconvergencetest_(SNES *snes,
        void (*func)(SNES*,double*,double*,double*,SNESConvergedReason*,void*,int*),
        void *cctx, int *__ierr )
 {
@@ -162,43 +165,43 @@ void snessetconvergencetest_(SNES *snes,
   *__ierr = SNESSetConvergenceTest(*snes,oursnestest,cctx);
 }
 
-void snesgetsolution_(SNES *snes,Vec *x, int *__ierr )
+void PETSC_STDCALL snesgetsolution_(SNES *snes,Vec *x, int *__ierr )
 {
   *__ierr = SNESGetSolution(*snes,x);
 }
 
-void snesgetsolutionupdate_(SNES *snes,Vec *x, int *__ierr )
+void PETSC_STDCALL snesgetsolutionupdate_(SNES *snes,Vec *x, int *__ierr )
 {
   *__ierr = SNESGetSolutionUpdate(*snes,x);
 }
 
-void snesgetfunction_(SNES *snes,Vec *r, void **ctx,int *__ierr )
+void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r, void **ctx,int *__ierr )
 {
   if (FORTRANNULLINTEGER(ctx)) ctx = PETSC_NULL;
   if (FORTRANNULLINTEGER(r))   r   = PETSC_NULL;
   *__ierr = SNESGetFunction(*snes,r,ctx);
 }
 
-void snesgetminimizationfunction_(SNES *snes,double *r, void **ctx,int *__ierr )
+void PETSC_STDCALL snesgetminimizationfunction_(SNES *snes,double *r, void **ctx,int *__ierr )
 {
   if (FORTRANNULLINTEGER(ctx)) ctx = PETSC_NULL;
   if (FORTRANNULLDOUBLE(r))    r   = PETSC_NULL;
   *__ierr = SNESGetMinimizationFunction(*snes,r,ctx);
 }
 
-void snesgetgradient_(SNES *snes,Vec *r,void **ctx, int *__ierr )
+void PETSC_STDCALL snesgetgradient_(SNES *snes,Vec *r,void **ctx, int *__ierr )
 {
   if (FORTRANNULLINTEGER(ctx)) ctx = PETSC_NULL;
   if (FORTRANNULLINTEGER(r))   r   = PETSC_NULL;
   *__ierr = SNESGetGradient(*snes,r,ctx);
 }
 
-void snesdestroy_(SNES *snes, int *__ierr )
+void PETSC_STDCALL snesdestroy_(SNES *snes, int *__ierr )
 {
   *__ierr = SNESDestroy(*snes);
 }
 
-void snesgetsles_(SNES *snes,SLES *sles, int *__ierr )
+void PETSC_STDCALL snesgetsles_(SNES *snes,SLES *sles, int *__ierr )
 {
   *__ierr = SNESGetSLES(*snes,sles);
 }
@@ -214,7 +217,7 @@ static int oursneshessianfunction(SNES snes,Vec x,Mat* mat,Mat* pmat,
   return 0;
 }
 
-void snessethessian_(SNES *snes,Mat *A,Mat *B,void (*func)(SNES*,Vec*,Mat*,Mat*,int*,void*,int*),
+void PETSC_STDCALL snessethessian_(SNES *snes,Mat *A,Mat *B,void (*func)(SNES*,Vec*,Mat*,Mat*,int*,void*,int*),
                      void *ctx, int *__ierr )
 {
   f6 = func;
@@ -229,7 +232,7 @@ static int oursnesgradientfunction(SNES snes,Vec x,Vec d,void *ctx)
   return 0;
 }
 
-void snessetgradient_(SNES *snes,Vec *r,void (*func)(SNES*,Vec*,Vec*,void*,int*),void *ctx, int *__ierr ){
+void PETSC_STDCALL snessetgradient_(SNES *snes,Vec *r,void (*func)(SNES*,Vec*,Vec*,void*,int*),void *ctx, int *__ierr ){
   f5 = func;
   *__ierr = SNESSetGradient(*snes,*r,oursnesgradientfunction,ctx);
 }
@@ -242,7 +245,7 @@ static int oursnesminfunction(SNES snes,Vec x,double* d,void *ctx)
   return 0;
 }
 
-void snessetminimizationfunction_(SNES *snes,
+void PETSC_STDCALL snessetminimizationfunction_(SNES *snes,
           void (*func)(SNES*,Vec*,double*,void*,int*),void *ctx, int *__ierr ){
   f4 = func;
   *__ierr = SNESSetMinimizationFunction(*snes,oursnesminfunction,ctx);
@@ -257,7 +260,7 @@ static int oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
   (*f2)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
-void snessetfunction_(SNES *snes,Vec *r,void (*func)(SNES*,Vec*,Vec*,void*,int*),
+void PETSC_STDCALL snessetfunction_(SNES *snes,Vec *r,void (*func)(SNES*,Vec*,Vec*,void*,int*),
                       void *ctx, int *__ierr ){
    f2 = func;
    *__ierr = SNESSetFunction(*snes,*r,oursnesfunction,ctx);
@@ -272,14 +275,14 @@ static int ourmatsnesmffunction(SNES snes,Vec x,Vec f,void *ctx)
   (*f11)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
-void matsnesmfsetfunction_(Mat *mat,Vec *r,void (*func)(SNES*,Vec*,Vec*,void*,int*),
+void PETSC_STDCALL matsnesmfsetfunction_(Mat *mat,Vec *r,void (*func)(SNES*,Vec*,Vec*,void*,int*),
                       void *ctx, int *__ierr ){
    f11 = func;
    *__ierr = MatSNESMFSetFunction(*mat,*r,ourmatsnesmffunction,ctx);
 }
 /* ---------------------------------------------------------*/
 
-void snescreate_(MPI_Comm *comm,SNESProblemType *type,SNES *outsnes, int *__ierr ){
+void PETSC_STDCALL snescreate_(MPI_Comm *comm,SNESProblemType *type,SNES *outsnes, int *__ierr ){
 
 *__ierr = SNESCreate((MPI_Comm)PetscToPointerComm( *comm ),*type,outsnes);
 }
@@ -289,12 +292,12 @@ void snescreate_(MPI_Comm *comm,SNESProblemType *type,SNES *outsnes, int *__ierr
      snesdefaultcomputejacobian() and snesdefaultcomputejacobiancolor()
   are special and get mapped directly to their C equivalent.
 */
-void snesdefaultcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,
+void PETSC_STDCALL snesdefaultcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,
                                  void *ctx,int *__ierr)
 {
   *__ierr = SNESDefaultComputeJacobian(*snes,*x,m,p,type,ctx);
 }
-void snesdefaultcomputejacobiancolor_(SNES *snes,Vec *x,Mat *m,Mat *p,
+void PETSC_STDCALL snesdefaultcomputejacobiancolor_(SNES *snes,Vec *x,Mat *m,Mat *p,
                                              MatStructure* type,void *ctx,int *__ierr)
 {
   *__ierr = SNESDefaultComputeJacobianColor(*snes,*x,m,p,type,*(MatFDColoring*)ctx);
@@ -309,12 +312,12 @@ static int oursnesjacobian(SNES snes,Vec x,Mat* m,Mat* p,MatStructure* type,
   return 0;
 }
 
-void snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (*func)(SNES*,Vec*,Mat*,Mat*,
+void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (*func)(SNES*,Vec*,Mat*,Mat*,
             MatStructure*,void*,int*),void *ctx, int *__ierr )
 {
-  if (func == snesdefaultcomputejacobian_) {
+  if ((void*)func == (void*)snesdefaultcomputejacobian_) {
     *__ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobian,ctx);
-  } else if (func == snesdefaultcomputejacobiancolor_) {
+  } else if ((void*)func == (void*)snesdefaultcomputejacobiancolor_) {
     *__ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobianColor,*(MatFDColoring*)ctx);
   } else {
     f3 = func;
@@ -324,12 +327,13 @@ void snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (*func)(SNES*,Vec*,Mat*,Mat*
 
 /* -------------------------------------------------------------*/
 
-void snesregisterdestroy_(int *__ierr)
+void PETSC_STDCALL snesregisterdestroy_(int *__ierr)
 {
   *__ierr = SNESRegisterDestroy();
 }
 
-void snesgettype_(SNES *snes,CHAR name,int *__ierr,int len)
+void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len),
+                                int *__ierr PETSC_END_LEN(len) )
 {
   char *tname;
 
@@ -344,7 +348,8 @@ void snesgettype_(SNES *snes,CHAR name,int *__ierr,int len)
 #endif
 }
 
-void snesgetoptionsprefix_(SNES *snes, CHAR prefix,int *__ierr,int len)
+void PETSC_STDCALL snesgetoptionsprefix_(SNES *snes, CHAR prefix PETSC_MIXED_LEN(len),
+                                         int *__ierr PETSC_END_LEN(len) )
 {
   char *tname;
 

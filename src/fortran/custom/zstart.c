@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.59 1999/05/12 03:34:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.60 1999/09/20 18:55:39 bsmith Exp balay $";
 #endif
 
 /*
@@ -66,7 +66,7 @@ extern int          PetscBeganMPI;
 #endif
 
 EXTERN_C_BEGIN
-extern void mpi_init_(int*);
+extern void PETSC_STDCALL mpi_init_(int*);
 
 /*
      Different Fortran compilers handle command lines in different ways
@@ -160,7 +160,7 @@ EXTERN_C_BEGIN
       Since this is called from Fortran it does not return error codes
       
 */
-void aliceinitialize_(CHAR filename,int *__ierr,int len)
+void PETSC_STDCALL aliceinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *__ierr PETSC_END_LEN(len) )
 {
 #if defined (PARCH_win32)
   short  flg,i;
@@ -266,7 +266,7 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
   *__ierr = 0;
 }
 
-void alicefinalize_(int *__ierr)
+void PETSC_STDCALL alicefinalize_(int *__ierr)
 {
 #if defined(PETSC_HAVE_SUNMATHPRO)
   extern void standard_arithmetic();
@@ -288,9 +288,13 @@ EXTERN_C_BEGIN
       Since this is called from Fortran it does not return error codes
       
 */
-void petscinitialize_(CHAR filename,int *__ierr,int len)
+void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *__ierr PETSC_END_LEN(len) )
 {
+#if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
+  aliceinitialize_(filename,len,__ierr); 
+#else
   aliceinitialize_(filename,__ierr,len); 
+#endif
   if (*__ierr) return;
   
   *__ierr = OptionsCheckInitial_Components(); 
@@ -298,7 +302,7 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
 
 }
 
-void petscfinalize_(int *__ierr)
+void PETSC_STDCALL petscfinalize_(int *__ierr)
 {
 #if defined(PETSC_HAVE_SUNMATHPRO)
   extern void standard_arithmetic();
@@ -308,7 +312,7 @@ void petscfinalize_(int *__ierr)
   *__ierr = PetscFinalize();
 }
 
-void petscsetcommworld_(MPI_Comm *comm,int *__ierr)
+void PETSC_STDCALL petscsetcommworld_(MPI_Comm *comm,int *__ierr)
 {
   *__ierr = PetscSetCommWorld((MPI_Comm)PetscToPointerComm( *comm )  );
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.59 1999/05/12 03:34:35 bsmith Exp balay $";
+static char vcid[] = "$Id: zoptions.c,v 1.60 1999/06/30 23:55:41 balay Exp balay $";
 #endif
 
 /*
@@ -42,7 +42,7 @@ EXTERN_C_BEGIN
 
 /* ---------------------------------------------------------------------*/
 
-void optionsinsertfile_( CHAR file, int *__ierr,int len )
+void PETSC_STDCALL optionsinsertfile_( CHAR file PETSC_MIXED_LEN(len), int *__ierr PETSC_END_LEN(len) )
 {
   char *c1;
 
@@ -51,7 +51,8 @@ void optionsinsertfile_( CHAR file, int *__ierr,int len )
   FREECHAR(file,c1);
 }
 
-void optionssetvalue_(CHAR name,CHAR value,int *__ierr, int len1,int len2)
+void PETSC_STDCALL optionssetvalue_(CHAR name PETSC_MIXED_LEN(len1),CHAR value PETSC_MIXED_LEN(len2),
+                   int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
 {
   char *c1,*c2;
 
@@ -62,16 +63,18 @@ void optionssetvalue_(CHAR name,CHAR value,int *__ierr, int len1,int len2)
   FREECHAR(value,c2);
 }
 
-void optionsclearvalue_(CHAR name,int *__ierr, int len1)
+void PETSC_STDCALL optionsclearvalue_(CHAR name PETSC_MIXED_LEN(len),int *__ierr PETSC_END_LEN(len) )
 {
   char *c1;
 
-  FIXCHAR(name,len1,c1);
+  FIXCHAR(name,len,c1);
   *__ierr = OptionsClearValue(c1);
   FREECHAR(name,c1);
 }
 
-void optionshasname_(CHAR pre,CHAR name,int *flg,int *__ierr,int len1,int len2){
+void PETSC_STDCALL optionshasname_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+                    int *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
+{
   char *c1,*c2;
 
   FIXCHAR(pre,len1,c1);
@@ -81,7 +84,8 @@ void optionshasname_(CHAR pre,CHAR name,int *flg,int *__ierr,int len1,int len2){
   FREECHAR(name,c2);
 }
 
-void optionsgetint_(CHAR pre,CHAR name,int *ivalue,int *flg,int *__ierr,int len1,int len2)
+void PETSC_STDCALL optionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+                    int *ivalue,int *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
 {
   char *c1,*c2;
 
@@ -92,7 +96,8 @@ void optionsgetint_(CHAR pre,CHAR name,int *ivalue,int *flg,int *__ierr,int len1
   FREECHAR(name,c2);
 }
 
-void optionsgetdouble_(CHAR pre,CHAR name,double *dvalue,int *flg,int *__ierr,int len1,int len2)
+void PETSC_STDCALL optionsgetdouble_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+                    double *dvalue,int *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
 {
   char *c1,*c2;
 
@@ -103,7 +108,8 @@ void optionsgetdouble_(CHAR pre,CHAR name,double *dvalue,int *flg,int *__ierr,in
   FREECHAR(name,c2);
 }
 
-void optionsgetdoublearray_(CHAR pre,CHAR name,double *dvalue,int *nmax,int *flg,int *__ierr,int len1,int len2)
+void PETSC_STDCALL optionsgetdoublearray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+                double *dvalue,int *nmax,int *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
 {
   char *c1,*c2;
 
@@ -114,7 +120,8 @@ void optionsgetdoublearray_(CHAR pre,CHAR name,double *dvalue,int *nmax,int *flg
   FREECHAR(name,c2);
 }
 
-void optionsgetintarray_(CHAR pre,CHAR name,int *dvalue,int *nmax,int *flg,int *__ierr,int len1,int len2)
+void PETSC_STDCALL optionsgetintarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+                   int *dvalue,int *nmax,int *flg,int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
 {
   char *c1,*c2;
 
@@ -125,7 +132,9 @@ void optionsgetintarray_(CHAR pre,CHAR name,int *dvalue,int *nmax,int *flg,int *
   FREECHAR(name,c2);
 }
 
-void optionsgetstring_(CHAR pre,CHAR name,CHAR string,int *flg,int *__ierr, int len1, int len2,int len)
+void PETSC_STDCALL optionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+                    CHAR string PETSC_MIXED_LEN(len),int *flg,
+                    int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len) )
 {
   char *c1,*c2,*c3;
   int  len3;
@@ -145,7 +154,7 @@ void optionsgetstring_(CHAR pre,CHAR name,CHAR string,int *flg,int *__ierr, int 
   FREECHAR(name,c2);
 }
 
-void petscgetarchtype_(CHAR str,int *__ierr,int len)
+void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),int *__ierr PETSC_END_LEN(len) )
 {
 #if defined(USES_CPTOFCD)
   char *tstr = _fcdtocp(str); 
@@ -156,7 +165,8 @@ void petscgetarchtype_(CHAR str,int *__ierr,int len)
 #endif
 }
 
-void petscgetprogramname_(CHAR name, int *__ierr,int len_in )
+void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),
+                                        int *__ierr PETSC_END_LEN(len_in) )
 {
   char *tmp;
   int  len;

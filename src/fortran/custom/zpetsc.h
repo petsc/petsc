@@ -60,7 +60,7 @@ Fortran.
      PetscFromPointerComm - From C to Fortran
 
 */
-#if defined(USES_INT_MPI_COMM)
+#if defined(PETSC_HAVE_INT_MPI_COMM)
 #define PetscToPointerComm(a)        (a)
 #define PetscFromPointerComm(a) (int)(a)
 
@@ -69,20 +69,37 @@ Fortran.
 #define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
 
 #elif (PETSC_SIZEOF_VOIDP == 8)
-/*
-    Here we assume that only MPICH uses pointers for 
-  MPI_Comms on 64 bit machines.
-*/
-EXTERN_C_BEGIN
-extern void *MPIR_ToPointer(int);
-extern int   MPIR_FromPointer(void*);
-EXTERN_C_END
-#define PetscToPointerComm(a)    MPIR_ToPointer(*(int *)(&a))
-#define PetscFromPointerComm(a)  MPIR_FromPointer(a)
+#error "Use Either of the following flags in the variable MPI_INCLUDE in base.site file: \
+-DPETSC_HAVE_INT_MPI_COMM, -DPETSC_HAVE_MPI_COMM_F2C"
 
 #else
 #define PetscToPointerComm(a)        (a)
 #define PetscFromPointerComm(a) (int)(a)
+#endif
+
+
+/* --------------------------------------------------------------------*/
+/*
+    This lets us map the str-len argument either, immediately following
+    the char argument (DVF on Win32) or at the end of the argument list
+    (general unix compilers)
+*/
+#if defined(PETSC_USE_FORTRAN_MIXED_STR_ARG)
+#define PETSC_MIXED_LEN(len) ,int len
+#define PETSC_END_LEN(len)
+#else
+#define PETSC_MIXED_LEN(len)
+#define PETSC_END_LEN(len)   ,int len
+#endif
+
+/* --------------------------------------------------------------------*/
+/*
+    DVF (win32) uses STDCALL calling convention by default
+*/
+#if defined (PETSC_USE_FORTRAN_STDCALL)
+#define PETSC_STDCALL __stdcall
+#else
+#define PETSC_STDCALL 
 #endif
 
 /* --------------------------------------------------------------------*/
@@ -103,7 +120,9 @@ EXTERN_C_END
   } else {  \
     while((n > 0) && (b[n-1] == ' ')) n--; \
     b = (char *) PetscMalloc( (n+1)*sizeof(char)); \
-    PetscStrncpy(b,_fcdtocp(a),n); \
+    if (!b) {*__ierr = PETSC_ERR_MEM; return; } \
+    *__ierr = PetscStrncpy(b,_fcdtocp(a),n); \
+    if(*__ierr) return; \
     b[n] = 0; \
   } \
 }
@@ -120,7 +139,9 @@ EXTERN_C_END
     while((n > 0) && (a[n-1] == ' ')) n--; \
     if (a[n] != 0) { \
       b = (char *) PetscMalloc( (n+1)*sizeof(char)); \
-      PetscStrncpy(b,a,n); \
+      if (!b) {*__ierr = PETSC_ERR_MEM; return; } \
+      *__ierr = PetscStrncpy(b,a,n); \
+      if(*__ierr) return; \
       b[n] = 0; \
     } else b = a;\
   } \

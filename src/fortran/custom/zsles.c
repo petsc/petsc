@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsles.c,v 1.18 1999/05/04 20:38:08 balay Exp bsmith $";
+static char vcid[] = "$Id: zsles.c,v 1.19 1999/05/12 03:34:35 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -25,7 +25,8 @@ static char vcid[] = "$Id: zsles.c,v 1.18 1999/05/04 20:38:08 balay Exp bsmith $
 
 EXTERN_C_BEGIN
 
-void slessetoptionsprefix_(SLES *sles,CHAR prefix, int *__ierr,int len )
+void PETSC_STDCALL slessetoptionsprefix_(SLES *sles,CHAR prefix PETSC_MIXED_LEN(len),
+                                         int *__ierr PETSC_END_LEN(len) )
 {
   char *t;
 
@@ -34,7 +35,8 @@ void slessetoptionsprefix_(SLES *sles,CHAR prefix, int *__ierr,int len )
   FREECHAR(prefix,t);
 }
 
-void slesappendoptionsprefix_(SLES *sles,CHAR prefix, int *__ierr,int len )
+void PETSC_STDCALL slesappendoptionsprefix_(SLES *sles,CHAR prefix PETSC_MIXED_LEN(len),
+                                            int *__ierr PETSC_END_LEN(len) )
 {
   char *t;
 
@@ -43,28 +45,29 @@ void slesappendoptionsprefix_(SLES *sles,CHAR prefix, int *__ierr,int len )
   FREECHAR(prefix,t);
 }
 
-void slesgetksp_(SLES *sles,KSP *ksp, int *__ierr )
+void PETSC_STDCALL slesgetksp_(SLES *sles,KSP *ksp, int *__ierr )
 {
   *__ierr = SLESGetKSP(*sles,ksp);
 }
 
-void slesgetpc_(SLES *sles,PC *pc, int *__ierr )
+void PETSC_STDCALL slesgetpc_(SLES *sles,PC *pc, int *__ierr )
 {
   *__ierr = SLESGetPC(*sles,pc);
 }
 
-void slesdestroy_(SLES *sles, int *__ierr )
+void PETSC_STDCALL slesdestroy_(SLES *sles, int *__ierr )
 {
   *__ierr = SLESDestroy(*sles);
 }
 
-void slescreate_(MPI_Comm *comm,SLES *outsles, int *__ierr )
+void PETSC_STDCALL slescreate_(MPI_Comm *comm,SLES *outsles, int *__ierr )
 {
   *__ierr = SLESCreate((MPI_Comm)PetscToPointerComm( *comm ),outsles);
 
 }
 
-void slesgetoptionsprefix_(SLES *sles, CHAR prefix,int *__ierr,int len)
+void PETSC_STDCALL slesgetoptionsprefix_(SLES *sles, CHAR prefix PETSC_MIXED_LEN(len),
+                                         int *__ierr PETSC_END_LEN(len) )
 {
   char *tname;
 
