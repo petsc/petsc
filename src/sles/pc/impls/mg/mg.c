@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.113 2000/09/02 02:48:50 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.114 2000/09/28 21:12:48 bsmith Exp balay $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -417,6 +417,7 @@ int MGSetType(PC pc,MGType form)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   mg = (MG*)pc->data;
 
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   mg[0]->am = form;
   if (form == MGMULTIPLICATIVE) pc->ops->applyrichardson = MGCycleRichardson;
   else pc->ops->applyrichardson = 0;
@@ -453,6 +454,7 @@ int MGSetCycles(PC pc,int n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   mg     = (MG*)pc->data;
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   levels = mg[0]->levels;
 
   for (i=0; i<levels; i++) {  
@@ -550,6 +552,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   mg     = (MG*)pc->data;
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   levels = mg[0]->levels;
 
   for (i=0; i<levels; i++) {  
@@ -591,6 +594,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   mg     = (MG*)pc->data;
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   levels = mg[0]->levels;
 
   for (i=0; i<levels; i++) {  
