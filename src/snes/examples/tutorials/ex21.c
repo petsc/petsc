@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.1 2000/12/01 18:59:43 bsmith Exp bsmith $*/
+/*$Id: ex21.c,v 1.2 2000/12/04 21:14:37 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -30,6 +30,9 @@ static char help[] = "Solves PDE optimization problem\n\n";
        Use the usual centered finite differences.
 
        Note we treat the problem as non-linear though it happens to be linear
+
+       See ex22.c for the same code, but that interlaces the u and the lambda
+
 */
 
 typedef struct {
