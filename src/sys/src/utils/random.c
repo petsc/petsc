@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.11 1996/03/21 00:07:32 curfman Exp balay $";
+static char vcid[] = "$Id: random.c,v 1.12 1996/03/22 17:02:53 balay Exp bsmith $";
 #endif
 
 /*
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: random.c,v 1.11 1996/03/21 00:07:32 curfman Exp balay
 
 #include "petsc.h"
 #include "sys.h"        /*I "sys.h" I*/
-#include "stdlib.h"
+#include <stdlib.h>
 
 /* Private data */
 struct _PetscRandom {
