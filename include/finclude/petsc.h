@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.80 1998/07/10 20:21:16 bsmith Exp balay $;
+!  $Id: petsc.h,v 1.81 1998/07/13 20:00:22 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !  Note that the external functions and common-block variables 
@@ -23,8 +23,8 @@
 !     Fortran Null
 !
       character*(80)   PETSC_NULL_CHARACTER
-      integer          PETSC_NULL_INTEGER
-      double precision PETSC_NULL_DOUBLE
+      PetscInt         PETSC_NULL_INTEGER
+      PetscDouble      PETSC_NULL_DOUBLE
 !
 !      A PETSC_NULL_FUNCTION pointer
 !
