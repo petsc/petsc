@@ -7,6 +7,7 @@ RM               = rm -f
 OMAKE            = make
 RANLIB           = @RANLIB@
 SHELL            = /bin/sh
+SED              = /bin/sed
 #
 PARCH            = @PETSC_ARCH@
 # ######################### C and Fortran compiler ########################
