@@ -22,13 +22,17 @@ class Configure(config.base.Configure):
     '''Make sure we can have mkdir automatically make intermediate directories'''
     self.getExecutable('mkdir', getFullPath = 1)
     if hasattr(self, 'mkdir'):
-      if os.path.exists('.conftest'): os.rmdir('.conftest')
+      confDir = '.conftest'
+      conftmpDir  = os.path.join('.conftest','tmp')
+      if os.path.exists(conftmpDir): os.rmdir(conftmpDir)
+      if os.path.exists(confDir): os.rmdir(confDir)
       try:
-        (output, error, status) = config.base.Configure.executeShellCommand(self.mkdir+' -p .conftest/.tmp', log = self.framework.log)
-        if not status and os.path.isdir('.conftest/.tmp'):
+        (output, error, status) = config.base.Configure.executeShellCommand(self.mkdir+' -p '+conftmpDir, log = self.framework.log)
+        if not status and os.path.isdir(conftmpDir):
           self.mkdir = self.mkdir+' -p'
       except RuntimeError: pass
-      if os.path.exists('.conftest'): os.removedirs('.conftest/.tmp')
+      if os.path.exists(conftmpDir): os.rmdir(conftmpDir)
+      if os.path.exists(confDir): os.rmdir(confDir)
     return
 
   def configurePrograms(self):
