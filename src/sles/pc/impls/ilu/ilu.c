@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.70 1996/07/02 13:56:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.71 1996/08/08 14:42:18 bsmith Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -262,7 +262,8 @@ static int PCSetUp_ILU(PC pc)
     } else if (pc->flag != SAME_NONZERO_PATTERN) { 
       ierr = MatDestroy(ilu->fact); CHKERRQ(ierr);
       if (!ilu->reusereordering) {
-        ISDestroy(ilu->row); ISDestroy(ilu->col);
+        if (ilu->row) {ierr = ISDestroy(ilu->row); CHKERRQ(ierr);}
+        if (ilu->col) {ierr = ISDestroy(ilu->col); CHKERRQ(ierr);}
         ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);
                CHKERRQ(ierr);
         if (ilu->row) PLogObjectParent(pc,ilu->row);

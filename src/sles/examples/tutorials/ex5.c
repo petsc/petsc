@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.60 1996/08/18 19:49:01 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.61 1996/08/20 05:10:04 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
@@ -180,8 +180,13 @@ int main(int argc,char **args)
 
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
-  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-  ierr = PCSetModifySubMatrices(pc,ModifySubmatrices,0); CHKERRA(ierr);
+  /* Set routine for modifying submarices that arise in certain preconditioners
+    (block Jacobi, ASM, and block Gauss-Seidel) */
+  ierr = OptionsHasName(PETSC_NULL,"-modify_submat",&flg); CHKERRA(ierr);
+  if (flg) {
+    ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+    ierr = PCSetModifySubMatrices(pc,ModifySubmatrices,0); CHKERRA(ierr);
+  }
 
   /* 
      Solve linear system.  Here we explicitly call SLESSetUp() for more
