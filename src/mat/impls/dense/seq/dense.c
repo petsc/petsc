@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.23 1995/04/17 19:36:18 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.24 1995/04/22 01:10:12 curfman Exp curfman $";
 #endif
 
 /*
@@ -604,8 +604,6 @@ int MatCreateSequentialDense(MPI_Comm comm,int m,int n,Mat *newmat)
   mat->view      = MatView_Dense;
   mat->data      = (void *) l;
   mat->factor    = 0;
-  mat->col       = 0;
-  mat->row       = 0;
 
   l->m           = m;
   l->n           = n;

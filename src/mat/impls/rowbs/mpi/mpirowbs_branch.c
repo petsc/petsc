@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.9 1995/04/21 14:42:52 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.10 1995/04/21 21:37:27 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -891,8 +891,6 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   mat->destroy	= MatDestroy_MPIRowbs;
   mat->view	= MatView_MPIRowbs;
   mat->factor	= 0;
-  mat->row	= 0;
-  mat->col	= 0;
   mat->comm	= comm;
   mrow->assembled        = 0;
   mrow->fact_clone       = 0;
