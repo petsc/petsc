@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.9 1995/05/31 23:51:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.10 1995/06/08 03:10:02 bsmith Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -44,7 +44,7 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   int         mytid = mbd->mytid;
   MPI_Request *send_waits,*recv_waits;
   int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
-  int         tag = 50, *owner,*starts,count,ierr;
+  int         tag = mat->tag, *owner,*starts,count,ierr;
   InsertMode  addv;
   Scalar      *rvalues,*svalues;
 
@@ -211,7 +211,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   int            i,ierr,N, *rows,*owners = l->rowners,numtids = l->numtids;
   int            *procs,*nprocs,j,found,idx,nsends,*work;
   int            nmax,*svalues,*starts,*owner,nrecvs,mytid = l->mytid;
-  int            *rvalues,tag = 67,count,base,slen,n,*source;
+  int            *rvalues,tag = A->tag,count,base,slen,n,*source;
   int            *lens,imdex,*lrows,*values;
   MPI_Comm       comm = A->comm;
   MPI_Request    *send_waits,*recv_waits;
