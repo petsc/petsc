@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.22 1999/01/27 21:20:20 balay Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.23 1999/02/04 22:31:12 bsmith Exp balay $ */
 /* 
  */
 
@@ -8,23 +8,30 @@
 #include "src/vec/vecimpl.h"
 #include "src/vec/impls/dvecimpl.h"
 
+typedef  struct {
+  int    donotstash;                   /* Flag indicates stash values should be ignored */
+  int    nmax;                         /* Current max-size of the array. */
+  int    oldnmax;                      /* previous max size. Used with new mallocs */
+  int    n;                            /* no of entries currently stashed */
+  int    *idx;                         /* list of indices */
+  Scalar *array;                       /* values corresponding to these indices */
+  } VecStash;
+
 typedef struct {
-    VECHEADER
-    int         N;                         /* length of total vector */
-    int         size,rank;
-    InsertMode  insertmode;
-
-    struct      {int donotstash, nmax, n, *idx; Scalar *array;} stash;
-
-    MPI_Request *send_waits,*recv_waits;  /* for communication during VecAssembly() */
-    int         nsends,nrecvs;
-    Scalar      *svalues,*rvalues;
-    int         rmax;
-
-    int         nghost;                   /* length of local portion including ghost padding */
-
-    Vec         localrep;                 /* local representation of vector */
-    VecScatter  localupdate;              /* scatter to update ghost values */
+  VECHEADER
+  int         N;                         /* length of total vector */
+  int         size,rank;
+  InsertMode  insertmode;
+  VecStash    stash;
+  MPI_Request *send_waits,*recv_waits;  /* for communication during VecAssembly() */
+  int         nsends,nrecvs;
+  Scalar      *svalues,*rvalues;
+  int         rmax;
+  
+  int         nghost;                   /* length of local portion including ghost padding */
+  
+  Vec         localrep;                 /* local representation of vector */
+  VecScatter  localupdate;              /* scatter to update ghost values */
 } Vec_MPI;
 
 extern int VecNorm_Seq(Vec, NormType, double *work );

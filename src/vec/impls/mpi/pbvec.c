@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.116 1999/02/04 22:47:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.117 1999/02/19 19:41:49 bsmith Exp balay $";
 #endif
 
 /*
@@ -198,11 +198,11 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
 
   /* initialize the stash */
   s->stash.donotstash = 0;
-  s->stash.nmax       = 10;
+  s->stash.nmax       = 0;
   s->stash.n          = 0;
-  s->stash.array      = (Scalar *) PetscMalloc(10*(sizeof(Scalar)+sizeof(int)));CHKPTRQ(s->stash.array);
-  s->stash.idx        = (int *) (s->stash.array + 10);
-  PLogObjectMemory(v,10*sizeof(Scalar) + 10 *sizeof(int));
+  s->stash.oldnmax    = 100;
+  s->stash.array      = 0;
+  s->stash.idx        = 0;
 
   if (!v->map) {
     if (!map) {

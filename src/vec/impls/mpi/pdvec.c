@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.104 1999/01/27 19:45:49 bsmith Exp balay $ 
+static char vcid[] = $Id: pdvec.c,v 1.105 1999/01/27 21:20:28 balay Exp balay $ 
 #endif
 
 /*
@@ -419,12 +419,42 @@ int VecView_MPI(Vec xin,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "VecGetSize_MPI"
 int VecGetSize_MPI(Vec xin,int *N)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
 
   PetscFunctionBegin;
   *N = x->N;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecStashExpand_Private"
+static int VecStashExpand_Private(Vec xin)
+{ 
+  Vec_MPI  *x = (Vec_MPI *)xin->data;
+  int    *idx,nmax,oldnmax,newnmax;
+  Scalar *ta;
+
+  PetscFunctionBegin;
+  nmax    = x->stash.nmax;
+  oldnmax = x->stash.oldnmax;
+
+  if (nmax == 0) newnmax = oldnmax;
+  else           newnmax = nmax *2;
+  
+  ta = (Scalar *) PetscMalloc(newnmax*(sizeof(Scalar)+sizeof(int)));CHKPTRQ(ta);
+  PLogObjectMemory(xin,(newnmax - nmax)*(sizeof(Scalar) + sizeof(int)));
+  idx = (int *) (ta + newnmax);
+  PetscMemcpy(ta,x->stash.array,nmax*sizeof(Scalar));
+  PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
+  if (x->stash.array) PetscFree(x->stash.array);
+  x->stash.array   = ta;
+  x->stash.idx     = idx;
+  x->stash.nmax    = newnmax;
+  x->stash.oldnmax = newnmax;
   PetscFunctionReturn(0);
 }
 
@@ -456,19 +486,7 @@ int VecSetValues_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
 #if defined(USE_PETSC_BOPT_g)
         if (ix[i] >= x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->N);
 #endif
-        if (x->stash.n == x->stash.nmax) { /* cache is full */
-          int    *idx, nmax = x->stash.nmax;
-          Scalar *ta;
-          ta = (Scalar *) PetscMalloc((nmax+200)*sizeof(Scalar)+(nmax+200)*sizeof(int));CHKPTRQ(ta);
-          PLogObjectMemory(xin,200*(sizeof(Scalar) + sizeof(int)));
-          idx = (int *) (ta + nmax + 200);
-          PetscMemcpy(ta,x->stash.array,nmax*sizeof(Scalar));
-          PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
-          if (x->stash.array) PetscFree(x->stash.array);
-          x->stash.array = ta;
-          x->stash.idx   = idx;
-          x->stash.nmax += 200;
-        }
+        if (x->stash.n == x->stash.nmax) VecStashExpand_Private(xin);
         x->stash.array[x->stash.n] = y[i];
         x->stash.idx[x->stash.n++] = row;
       }
@@ -482,19 +500,7 @@ int VecSetValues_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
 #if defined(USE_PETSC_BOPT_g)
         if (ix[i] > x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->N);
 #endif
-        if (x->stash.n == x->stash.nmax) { /* cache is full */
-          int    *idx, nmax = x->stash.nmax;
-          Scalar *ta;
-          ta = (Scalar *) PetscMalloc((nmax+200)*sizeof(Scalar)+(nmax+200)*sizeof(int));CHKPTRQ(ta);
-          PLogObjectMemory(xin,200*(sizeof(Scalar) + sizeof(int)));
-          idx = (int *) (ta + nmax + 200);
-          PetscMemcpy(ta,x->stash.array,nmax*sizeof(Scalar));
-          PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
-          if (x->stash.array) PetscFree(x->stash.array);
-          x->stash.array = ta;
-          x->stash.idx   = idx;
-          x->stash.nmax += 200;
-        }
+        if (x->stash.n == x->stash.nmax) VecStashExpand_Private(xin);
         x->stash.array[x->stash.n] = y[i];
         x->stash.idx[x->stash.n++] = row;
       }
@@ -534,19 +540,7 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar y[],Inse
 #if defined(USE_PETSC_BOPT_g)
         if (ix[i] >= x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],x->N);
 #endif
-        if (x->stash.n == x->stash.nmax) { /* cache is full */
-          int    *idx, nmax = x->stash.nmax;
-          Scalar *ta;
-          ta = (Scalar *) PetscMalloc((nmax+200)*sizeof(Scalar)+(nmax+200)*sizeof(int));CHKPTRQ(ta);
-          PLogObjectMemory(xin,200*(sizeof(Scalar) + sizeof(int)));
-          idx = (int *) (ta + nmax + 200);
-          PetscMemcpy(ta,x->stash.array,nmax*sizeof(Scalar));
-          PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
-          if (x->stash.array) PetscFree(x->stash.array);
-          x->stash.array = ta;
-          x->stash.idx   = idx;
-          x->stash.nmax += 200;
-        }
+        if (x->stash.n+bs > x->stash.nmax) VecStashExpand_Private(xin);
         for ( j=0; j<bs; j++ ) {
           x->stash.array[x->stash.n + j] = y[j];
           x->stash.idx[x->stash.n + j]   = row + j;
@@ -566,19 +560,7 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar y[],Inse
 #if defined(USE_PETSC_BOPT_g)
         if (ix[i] > x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],x->N);
 #endif
-        if (x->stash.n == x->stash.nmax) { /* cache is full */
-          int    *idx, nmax = x->stash.nmax;
-          Scalar *ta;
-          ta = (Scalar *) PetscMalloc((nmax+200)*sizeof(Scalar)+(nmax+200)*sizeof(int));CHKPTRQ(ta);
-          PLogObjectMemory(xin,200*(sizeof(Scalar) + sizeof(int)));
-          idx = (int *) (ta + nmax + 200);
-          PetscMemcpy(ta,x->stash.array,nmax*sizeof(Scalar));
-          PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
-          if (x->stash.array) PetscFree(x->stash.array);
-          x->stash.array = ta;
-          x->stash.idx   = idx;
-          x->stash.nmax += 200;
-        }
+        if (x->stash.n > x->stash.nmax) VecStashExpand_Private(xin);
         for ( j=0; j<bs; j++ ) {
           x->stash.array[x->stash.n + j] = y[j];
           x->stash.idx[x->stash.n + j]   = row + j;
@@ -686,9 +668,9 @@ int VecAssemblyBegin_MPI(Vec xin)
   x->stash.nmax = x->stash.n = 0;
   if (x->stash.array){ PetscFree(x->stash.array); x->stash.array = 0;}
 
-  x->svalues    = svalues;       x->rvalues = rvalues;
-  x->nsends     = nsends;         x->nrecvs = nreceives;
-  x->send_waits = send_waits; x->recv_waits = recv_waits;
+  x->svalues    = svalues;     x->rvalues    = rvalues;
+  x->nsends     = nsends;      x->nrecvs     = nreceives;
+  x->send_waits = send_waits;  x->recv_waits = recv_waits;
   x->rmax       = nmax;
   
   PetscFunctionReturn(0);
