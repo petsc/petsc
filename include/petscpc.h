@@ -168,7 +168,7 @@ EXTERN int PCLUSetReuseFill(PC,PetscTruth);
 EXTERN int PCLUSetUseInPlace(PC);
 EXTERN int PCLUSetFill(PC,PetscReal);
 EXTERN int PCLUSetDamping(PC,PetscReal);
-EXTERN int PCILUSetShift(PC,PetscTruth);
+EXTERN int PCLUSetShift(PC,PetscTruth);
 EXTERN int PCLUSetPivoting(PC,PetscReal);
 EXTERN int PCLUSetPivotInBlocks(PC,PetscTruth);
 EXTERN int PCLUSetZeroPivot(PC,PetscReal);
@@ -179,6 +179,7 @@ EXTERN int PCCholeskySetReuseFill(PC,PetscTruth);
 EXTERN int PCCholeskySetUseInPlace(PC);
 EXTERN int PCCholeskySetFill(PC,PetscReal);
 EXTERN int PCCholeskySetDamping(PC,PetscReal);
+EXTERN int PCCholeskySetShift(PC,PetscTruth);
 EXTERN int PCCholeskySetPivotInBlocks(PC,PetscTruth);
 
 EXTERN int PCILUSetMatOrdering(PC,MatOrderingType);
@@ -190,6 +191,7 @@ EXTERN int PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,int);
 EXTERN int PCILUDTSetReuseFill(PC,PetscTruth);
 EXTERN int PCILUSetAllowDiagonalFill(PC);
 EXTERN int PCILUSetDamping(PC,PetscReal);
+EXTERN int PCILUSetShift(PC,PetscTruth);
 EXTERN int PCILUSetPivotInBlocks(PC,PetscTruth);
 EXTERN int PCILUSetZeroPivot(PC,PetscReal);
 
@@ -197,6 +199,7 @@ EXTERN int PCICCSetMatOrdering(PC,MatOrderingType);
 EXTERN int PCICCSetFill(PC,PetscReal);
 EXTERN int PCICCSetLevels(PC,int);
 EXTERN int PCICCSetDamping(PC,PetscReal);
+EXTERN int PCICCSetShift(PC,PetscTruth);
 EXTERN int PCICCSetPivotInBlocks(PC,PetscTruth);
 EXTERN int PCICCSetZeroPivot(PC,PetscReal);
 

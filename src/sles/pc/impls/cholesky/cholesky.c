@@ -78,7 +78,17 @@ static int PCSetFromOptions_Cholesky(PC pc)
   if (flg) {
     ierr = PCCholeskySetMatOrdering(pc,tname);CHKERRQ(ierr);
   }
-  
+  ierr = PetscOptionsName("-pc_cholesky_damping","Damping added to diagonal","PCCholestkySetDamping",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCCholeskySetDamping(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsReal("-pc_cholesky_damping","Damping added to diagonal","PCCholeskySetDamping",lu->info.damping,&lu->info.damping,0);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-pc_cholesky_shift","Manteuffel shift applied to diagonal","PCCholeskySetShift",&flg);CHKERRQ(ierr);
+  if (flg) {
+    printf("doing cholesky shift\n");
+    ierr = PCCholeskySetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -288,6 +298,21 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCCholeskySetShift_Cholesky"
+int PCCholeskySetShift_Cholesky(PC pc,PetscTruth shift)
+{
+  PC_Cholesky *dir;
+  
+  PetscFunctionBegin;
+  dir = (PC_Cholesky*)pc->data;
+  dir->info.lu_shift = shift;
+  if (shift) dir->info.lu_shift_fraction = 0.0;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetUseInPlace_Cholesky"
 int PCCholeskySetUseInPlace_Cholesky(PC pc)
 {
@@ -461,6 +486,41 @@ int PCCholeskySetDamping(PC pc,PetscReal damping)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCCholeskySetShift"
+/*@
+   PCCholeskySetShift - specify whether to use Manteuffel shifting of Cholesky.
+   If an Cholesky factorisation breaks down because of nonpositive pivots,
+   adding sufficient identity to the diagonal will remedy this.
+   Setting this causes a bisection method to find the minimum shift that
+   will lead to a well-defined Cholesky.
+
+   Input parameters:
++  pc - the preconditioner context
+-  shifting - PETSC_TRUE to set shift else PETSC_FALSE
+
+   Options Database Key:
+.  -pc_ilu_shift - Activate PCCholeskySetShift()
+
+   Level: intermediate
+
+.keywords: PC, indefinite, factorization, incomplete, Cholesky
+
+.seealso: PCILUSetShift()
+@*/
+int PCCholeskySetShift(PC pc,PetscTruth shift)
+{
+  int ierr,(*f)(PC,PetscTruth);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetShift_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,shift);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetUseInPlace"
 /*@
@@ -545,6 +605,7 @@ int PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
 .  -pc_cholesky_reuse_fill - Activates PCLUSetReuseFill()
 .  -pc_cholesky_fill <fill> - Sets fill amount
 .  -pc_cholesky_damping <damping> - Sets damping amount
+.  -pc_cholesky_shift - Activates Manteuffel shift
 .  -pc_cholesky_in_place - Activates in-place factorization
 -  -pc_cholesky_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 
@@ -560,7 +621,8 @@ int PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCILU, PCLU, PCICC, PCCholeskySetReuseOrdering(), PCCholeskySetReuseFill(), PCGetFactoredMatrix(),
-           PCCholeskySetFill(), PCCholeskySetDamping(), PCCholeskySetUseInPlace(), PCCholeskySetMatOrdering()
+           PCCholeskySetFill(), PCCholeskySetDamping(), PCCholeskySetShift(),
+	   PCCholeskySetUseInPlace(), PCCholeskySetMatOrdering()
 
 M*/
 
@@ -576,13 +638,15 @@ int PCCreate_Cholesky(PC pc)
   ierr = PetscNew(PC_Cholesky,&dir);CHKERRQ(ierr);
   PetscLogObjectMemory(pc,sizeof(PC_Cholesky));
 
-  dir->fact               = 0;
-  dir->inplace            = 0;
-  dir->info.fill          = 5.0;
-  dir->info.damping       = 0.0;
-  dir->info.pivotinblocks = 1.0;
-  dir->col                = 0;
-  dir->row                = 0;
+  dir->fact                   = 0;
+  dir->inplace                = 0;
+  dir->info.fill              = 5.0;
+  dir->info.damping           = 0.0;
+  dir->info.lu_shift          = PETSC_FALSE;
+  dir->info.lu_shift_fraction = 0.0;
+  dir->info.pivotinblocks     = 1.0;
+  dir->col                    = 0;
+  dir->row                    = 0;
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&dir->ordering);CHKERRQ(ierr);
   dir->reusefill        = PETSC_FALSE;
   dir->reuseordering    = PETSC_FALSE;
@@ -601,6 +665,8 @@ int PCCreate_Cholesky(PC pc)
                     PCCholeskySetFill_Cholesky);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetDamping_C","PCCholeskySetDamping_Cholesky",
                     PCCholeskySetDamping_Cholesky);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetShift_C","PCCholeskySetShift_Cholesky",
+                    PCCholeskySetShift_Cholesky);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetUseInPlace_C","PCCholeskySetUseInPlace_Cholesky",
                     PCCholeskySetUseInPlace_Cholesky);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetMatOrdering_C","PCCholeskySetMatOrdering_Cholesky",
