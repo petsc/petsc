@@ -291,7 +291,7 @@ class Configure(config.base.Configure):
         line = 'AR      = '+self.setcompilers.AR+'\n'
       if line.startswith('AR_FLAGS  '):
         line = 'AR_FLAGS      = '+self.setcompilers.AR_FLAGS+'\n'
-      if line.startswith('LIB_SUFFIX  '):
+      if line.startswith('LIB_SUFFIX '):
         line = 'LIB_SUFFIX = '+self.libraries.suffix+'\n'
       if line.startswith('RANLIB  '):
         line = 'RANLIB = '+self.setcompilers.RANLIB+'\n'
@@ -313,7 +313,7 @@ class Configure(config.base.Configure):
     except RuntimeError, e:
       raise RuntimeError('Error running make on fblaslapack: '+str(e))
     try:
-      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f libfblas.a libflapack.a '+self.framework.argDB['PETSC_ARCH'], timeout=30, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f libfblas.'+self.libraries.suffix+' libflapack.'+self.libraries.suffix+' '+self.framework.argDB['PETSC_ARCH'], timeout=30, log = self.framework.log)[0]
     except RuntimeError, e:
       raise RuntimeError('Error moving fblaslapack libraries: '+str(e))
     try:
