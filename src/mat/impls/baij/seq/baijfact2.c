@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.59 2001/07/12 16:57:11 buschelm Exp buschelm $*/
+/*$Id: baijfact2.c,v 1.60 2001/07/12 23:21:35 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -3033,6 +3033,9 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
       A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_7;
     }
     break; 
+  default:
+    A->ops->solve             = MatSolve_SeqBAIJ_N;
+    break;
   }
   PetscFunctionReturn(0);
 }
