@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.12 2000/03/23 16:45:34 balay Exp balay $ 
+# $Id: base_variables,v 1.13 2000/03/23 17:14:47 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -35,7 +35,7 @@ CXX_F_SLFLAG	   = -L
 CXX_CLINKER	   = g++ -Wl,-bbigtoc
 CXX_FLINKER	   = g++ -Wl,-bbigtoc
 CXX_CCV		   = g++ --version
-CXX_SYS_LIB	   = -lg2c -lcomplex -lisode
+CXX_SYS_LIB	   = -lg2c -lisode
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g
 GCXX_FOPTFLAGS	   = -g
