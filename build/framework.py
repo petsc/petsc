@@ -503,6 +503,21 @@ class Framework(base.Base):
     compiler.run()
     return compiler.outputFiles
 
+  def t_printSIDLBabel(self):
+    '''Print all the SIDL dependencies as plain text'''
+    import build.compile.SIDL
+
+    self.argDB.target = []
+    for v in self.sidlTemplate.getClientTarget('Python').vertices:
+      if hasattr(v, 'getIncludeFlags'):
+        includes = v.getIncludeFlags(None)
+    mod      = build.compile.SIDL.Compiler(self.sourceDB, 'Python', None, 0, self.sidlTemplate.usingSIDL).getCompilerModule('scandalDoc')
+    args     = ['-filename=allsidl.sidl']+['-printer=[ANL.SIDL.PrettyPrinterBabel]']+includes+self.filesets['sidl']
+    self.debugPrint('Running scandalDoc with arguments '+str(args), 3, 'build')
+    compiler = mod.ScandalDoc(args)
+    compiler.run()
+    return compiler.outputFiles
+
   def t_updateBootstrap(self):
     '''Create a bootstrap tarball and copy it to the FTP site'''
     import installerclass
