@@ -1,7 +1,8 @@
-/*$Id: snesmfj.c,v 1.123 2001/06/21 21:18:42 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.124 2001/07/10 15:01:10 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
+#include "src/mat/matimpl.h"
 
 PetscFList      MatSNESMPetscFList              = 0;
 PetscTruth MatSNESMFRegisterAllCalled = PETSC_FALSE;
@@ -13,7 +14,8 @@ PetscTruth MatSNESMFRegisterAllCalled = PETSC_FALSE;
     differencing parameter for finite differene matrix-free formulations. 
 
     Input Parameters:
-+   mat - the "matrix-free" matrix created via MatCreateSNESMF()
++   mat - the "matrix-free" matrix created via MatCreateSNESMF(), or MatCreateMF()
+          or MatSetType(mat,MATMFFD);
 -   ftype - the type requested
 
     Level: advanced
@@ -31,14 +33,12 @@ PetscTruth MatSNESMFRegisterAllCalled = PETSC_FALSE;
 int MatSNESMFSetType(Mat mat,MatSNESMFType ftype)
 {
   int          ierr,(*r)(MatSNESMFCtx);
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   PetscTruth   match;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidCharPointer(ftype);
-
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
 
   /* already set, so just return */
   ierr = PetscTypeCompare((PetscObject)ctx,ftype,&match);CHKERRQ(ierr);
@@ -148,10 +148,9 @@ int MatSNESMFRegisterDestroy(void)
 int MatSNESMFDestroy_Private(Mat mat)
 {
   int          ierr;
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   ierr = VecDestroy(ctx->w);CHKERRQ(ierr);
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
   if (ctx->sp) {ierr = MatNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
@@ -168,11 +167,10 @@ int MatSNESMFDestroy_Private(Mat mat)
 int MatSNESMFView_Private(Mat J,PetscViewer viewer)
 {
   int          ierr;
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
   PetscTruth   isascii;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
      ierr = PetscViewerASCIIPrintf(viewer,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
@@ -200,14 +198,13 @@ int MatSNESMFView_Private(Mat J,PetscViewer viewer)
    MatSNESMFCreate_WP() to properly compute ||U|| only the first time
    in the linear solver rather than every time.
 */
-int MatSNESMFAssemblyEnd_Private(Mat J)
+int MatSNESMFAssemblyEnd_Private(Mat J,MatAssemblyType mt)
 {
   int          ierr;
-  MatSNESMFCtx j;
+  MatSNESMFCtx j = (MatSNESMFCtx)J->data;
 
   PetscFunctionBegin;
   ierr = MatSNESMFResetHHistory(J);CHKERRQ(ierr);
-  ierr = MatShellGetContext(J,(void **)&j);CHKERRQ(ierr);
   if (j->usesnes) {
     ierr = SNESGetSolution(j->snes,&j->current_u);CHKERRQ(ierr);
     if (j->snes->method_class == SNES_NONLINEAR_EQUATIONS) {
@@ -232,7 +229,7 @@ int MatSNESMFAssemblyEnd_Private(Mat J)
 */
 int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
 {
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   SNES         snes;
   Scalar       h,mone = -1.0;
   Vec          w,U,F;
@@ -245,7 +242,6 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
      with particular objects, hence alleviating the more general problem. */
   ierr = PetscLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
 
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   snes = ctx->snes;
   w    = ctx->w;
   U    = ctx->current_u;
@@ -313,13 +309,12 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
 */
 int MatSNESMFGetDiagonal_Private(Mat mat,Vec a)
 {
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   Scalar       h,h1,mone = -1.0,*aa,*ww,v,epsilon = 1.e-8,umin = 1.e-6;
   Vec          w,U,F;
   int          i,ierr,rstart,rend;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   if (!ctx->funci) {
     SETERRQ(1,"Requirers calling MatSNESMFSetFunctioni() first");
   }
@@ -417,7 +412,8 @@ int MatCreateSNESMF(SNES snes,Vec x,Mat *J)
 
   PetscFunctionBegin;
   ierr = MatCreateMF(x,J);CHKERRQ(ierr);
-  ierr = MatShellGetContext(*J,(void **)&mfctx);CHKERRQ(ierr);
+
+  mfctx          = (MatSNESMFCtx)(*J)->data;
   mfctx->snes    = snes;
   mfctx->usesnes = PETSC_TRUE;
   PetscLogObjectParent(snes,*J);
@@ -430,15 +426,140 @@ EXTERN_C_BEGIN
 int MatSNESMFSetBase_FD(Mat J,Vec U)
 {
   int          ierr;
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
 
   PetscFunctionBegin;
   ierr = MatSNESMFResetHHistory(J);CHKERRQ(ierr);
-  ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
   ctx->current_u = U;
   ctx->usesnes   = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetFromOptions"
+/*@
+   MatSNESMFSetFromOptions - Sets the MatSNESMF options from the command line
+   parameter.
+
+   Collective on Mat
+
+   Input Parameters:
+.  mat - the matrix obtained with MatCreateSNESMF()
+
+   Options Database Keys:
++  -snes_mf_type - <default,wp>
+-  -snes_mf_err - square root of estimated relative error in function evaluation
+-  -snes_mf_period - how often h is recomputed, defaults to 1, everytime
+
+   Level: advanced
+
+.keywords: SNES, matrix-free, parameters
+
+.seealso: MatCreateSNESMF(),MatSNESMFSetHHistory(), 
+          MatSNESMFResetHHistory(), MatSNESMFKSPMonitor()
+@*/
+int MatSNESMFSetFromOptions(Mat mat)
+{
+  MatSNESMFCtx mfctx = (MatSNESMFCtx)mat->data;
+  int          ierr;
+  PetscTruth   flg;
+  char         ftype[256];
+
+  PetscFunctionBegin;
+  if (mfctx) {
+    if (!MatSNESMFRegisterAllCalled) {ierr = MatSNESMFRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  
+    ierr = PetscOptionsBegin(mfctx->comm,mfctx->prefix,"Set matrix free computation parameters","MatSNESMF");CHKERRQ(ierr);
+      ierr = PetscOptionsList("-snes_mf_type","Matrix free type","MatSNESMFSetType",MatSNESMPetscFList,mfctx->type_name,ftype,256,&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = MatSNESMFSetType(mat,ftype);CHKERRQ(ierr);
+      }
+
+      ierr = PetscOptionsDouble("-snes_mf_err","set sqrt relative error in function","MatSNESMFSetFunctionError",mfctx->error_rel,&mfctx->error_rel,0);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-snes_mf_period","how often h is recomputed","MatSNESMFSetPeriod",mfctx->recomputeperiod,&mfctx->recomputeperiod,0);CHKERRQ(ierr);
+      if (mfctx->snes) {
+        ierr = PetscOptionsName("-snes_mf_ksp_monitor","Monitor matrix-free parameters","MatSNESMFKSPMonitor",&flg);CHKERRQ(ierr);
+        if (flg) {
+          SLES sles;
+          KSP  ksp;
+          ierr = SNESGetSLES(mfctx->snes,&sles);CHKERRQ(ierr);
+          ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+          ierr = KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);
+        }
+      }
+      if (mfctx->ops->setfromoptions) {
+        ierr = (*mfctx->ops->setfromoptions)(mfctx);CHKERRQ(ierr);
+      }
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreate_MFFD"
+EXTERN_C_BEGIN
+int MatCreate_MFFD(Mat A)
+{
+  PetscFunctionBegin;
+  MPI_Comm     comm;
+  MatSNESMFCtx mfctx;
+  int          n,nloc,ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
+  PetscHeaderCreate(mfctx,_p_MatSNESMFCtx,struct _MFOps,MATSNESMFCTX_COOKIE,0,"SNESMF",comm,MatSNESMFDestroy_Private,MatSNESMFView_Private);
+  PetscLogObjectCreate(mfctx);
+  mfctx->sp              = 0;
+  mfctx->snes            = 0;
+  mfctx->error_rel       = 1.e-8; /* assumes PetscReal precision */
+  mfctx->recomputeperiod = 1;
+  mfctx->count           = 0;
+  mfctx->currenth        = 0.0;
+  mfctx->historyh        = PETSC_NULL;
+  mfctx->ncurrenth       = 0;
+  mfctx->maxcurrenth     = 0;
+  mfctx->type_name       = 0;
+  mfctx->usesnes         = PETSC_FALSE;
+
+  /* 
+     Create the empty data structure to contain compute-h routines.
+     These will be filled in below from the command line options or 
+     a later call with MatSNESMFSetType() or if that is not called 
+     then it will default in the first use of MatSNESMFMult_private()
+  */
+  mfctx->ops->compute        = 0;
+  mfctx->ops->destroy        = 0;
+  mfctx->ops->view           = 0;
+  mfctx->ops->setfromoptions = 0;
+  mfctx->hctx                = 0;
+
+  mfctx->func                = 0;
+  mfctx->funcctx             = 0;
+  mfctx->funcvec             = 0;
+
+  ierr = VecDuplicate(x,&mfctx->w);CHKERRQ(ierr);
+  ierr = VecGetSize(mfctx->w,&n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(mfctx->w,&nloc);CHKERRQ(ierr);
+  ierr = MatCreate(comm,nloc,nloc,n,n,J);CHKERRQ(ierr);
+  (*J)->data = mfctx;
+
+  (*J)->ops->mult           = MatSNESMFMult_Private;
+  (*J)->ops->destroy        = MatSNESMFDestroy_Private;
+  (*J)->ops->view           = MatSNESMFView_Private;
+  (*J)->ops->assemblyend    = MatSNESMFAssemblyEnd_Private;
+  (*J)->ops->getdiagonal    = MatSNESMFGetDiagonal_Private;
+  (*J)->ops->setfromoptions = MatSNESMFSetFromOptions;
+
+  ierr = PetscObjectChangeTypeName((PetscObject)*J,MATMFFD);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*J,"MatSNESMFSetBase_C","MatSNESMFSetBase_FD",MatSNESMFSetBase_FD);CHKERRQ(ierr);
+  PetscLogObjectParent(*J,mfctx->w);
+
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -532,12 +653,18 @@ int MatCreateMF(Vec x,Mat *J)
   ierr = VecDuplicate(x,&mfctx->w);CHKERRQ(ierr);
   ierr = VecGetSize(mfctx->w,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(mfctx->w,&nloc);CHKERRQ(ierr);
-  ierr = MatCreateShell(comm,nloc,nloc,n,n,mfctx,J);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)())MatSNESMFMult_Private);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)())MatSNESMFDestroy_Private);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)())MatSNESMFView_Private);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_ASSEMBLY_END,(void(*)())MatSNESMFAssemblyEnd_Private);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_GET_DIAGONAL,(void(*)())MatSNESMFGetDiagonal_Private);CHKERRQ(ierr);
+  ierr = MatCreate(comm,nloc,nloc,n,n,J);CHKERRQ(ierr);
+  (*J)->data = mfctx;
+
+  (*J)->ops->mult           = MatSNESMFMult_Private;
+  (*J)->ops->destroy        = MatSNESMFDestroy_Private;
+  (*J)->ops->view           = MatSNESMFView_Private;
+  (*J)->ops->assemblyend    = MatSNESMFAssemblyEnd_Private;
+  (*J)->ops->getdiagonal    = MatSNESMFGetDiagonal_Private;
+  (*J)->ops->setfromoptions = MatSNESMFSetFromOptions;
+
+  ierr = PetscObjectChangeTypeName((PetscObject)*J,MATMFFD);CHKERRQ(ierr);
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)*J,"MatSNESMFSetBase_C","MatSNESMFSetBase_FD",MatSNESMFSetBase_FD);CHKERRQ(ierr);
   PetscLogObjectParent(*J,mfctx->w);
 
@@ -545,67 +672,6 @@ int MatCreateMF(Vec x,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFSetFromOptions"
-/*@
-   MatSNESMFSetFromOptions - Sets the MatSNESMF options from the command line
-   parameter.
-
-   Collective on Mat
-
-   Input Parameters:
-.  mat - the matrix obtained with MatCreateSNESMF()
-
-   Options Database Keys:
-+  -snes_mf_type - <default,wp>
--  -snes_mf_err - square root of estimated relative error in function evaluation
--  -snes_mf_period - how often h is recomputed, defaults to 1, everytime
-
-   Level: advanced
-
-.keywords: SNES, matrix-free, parameters
-
-.seealso: MatCreateSNESMF(),MatSNESMFSetHHistory(), 
-          MatSNESMFResetHHistory(), MatSNESMFKSPMonitor()
-@*/
-int MatSNESMFSetFromOptions(Mat mat)
-{
-  MatSNESMFCtx mfctx;
-  int          ierr;
-  PetscTruth   flg;
-  char         ftype[256];
-
-  PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&mfctx);CHKERRQ(ierr);
-  if (mfctx) {
-    if (!MatSNESMFRegisterAllCalled) {ierr = MatSNESMFRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  
-    ierr = PetscOptionsBegin(mfctx->comm,mfctx->prefix,"Set matrix free computation parameters","MatSNESMF");CHKERRQ(ierr);
-      ierr = PetscOptionsList("-snes_mf_type","Matrix free type","MatSNESMFSetType",MatSNESMPetscFList,mfctx->type_name,ftype,256,&flg);CHKERRQ(ierr);
-      if (flg) {
-        ierr = MatSNESMFSetType(mat,ftype);CHKERRQ(ierr);
-      }
-
-      ierr = PetscOptionsDouble("-snes_mf_err","set sqrt relative error in function","MatSNESMFSetFunctionError",mfctx->error_rel,&mfctx->error_rel,0);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-snes_mf_period","how often h is recomputed","MatSNESMFSetPeriod",mfctx->recomputeperiod,&mfctx->recomputeperiod,0);CHKERRQ(ierr);
-      if (mfctx->snes) {
-        ierr = PetscOptionsName("-snes_mf_ksp_monitor","Monitor matrix-free parameters","MatSNESMFKSPMonitor",&flg);CHKERRQ(ierr);
-        if (flg) {
-          SLES sles;
-          KSP  ksp;
-          ierr = SNESGetSLES(mfctx->snes,&sles);CHKERRQ(ierr);
-          ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-          ierr = KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);
-        }
-      }
-      if (mfctx->ops->setfromoptions) {
-        ierr = (*mfctx->ops->setfromoptions)(mfctx);CHKERRQ(ierr);
-      }
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFGetH"
@@ -630,14 +696,11 @@ int MatSNESMFSetFromOptions(Mat mat)
 @*/
 int MatSNESMFGetH(Mat mat,Scalar *h)
 {
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  if (ctx) {
-    *h = ctx->currenth;
-  }
+  *h = ctx->currenth;
   PetscFunctionReturn(0);
 }
 
@@ -662,10 +725,8 @@ int MatSNESMFKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = KSPGetInitialGuessNonzero(ksp,&nonzeroinitialguess);CHKERRQ(ierr);
   ierr = PCGetOperators(pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  if (!ctx) {
-    SETERRQ(1,"Matrix is not a matrix free shell matrix");
-  }
+  ctx  = (MatSNESMFCtx)mat->data;
+
   if (n > 0 || nonzeroinitialguess) {
 #if defined(PETSC_USE_COMPLEX)
     ierr = PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g + %g i\n",n,rnorm,
@@ -708,16 +769,13 @@ int MatSNESMFKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 @*/
 int MatSNESMFSetFunction(Mat mat,Vec v,int (*func)(SNES,Vec,Vec,void *),void *funcctx)
 {
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  if (ctx) {
-    ctx->func    = func;
-    ctx->funcctx = funcctx;
-    ctx->funcvec = v;
-  }
+  ctx->func    = func;
+  ctx->funcctx = funcctx;
+  ctx->funcvec = v;
   PetscFunctionReturn(0);
 }
 
@@ -747,14 +805,11 @@ int MatSNESMFSetFunction(Mat mat,Vec v,int (*func)(SNES,Vec,Vec,void *),void *fu
 @*/
 int MatSNESMFSetFunctioni(Mat mat,int (*funci)(int,Vec,Scalar*,void *))
 {
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  if (ctx) {
-    ctx->funci   = funci;
-  }
+  ctx->funci   = funci;
   PetscFunctionReturn(0);
 }
 
@@ -784,14 +839,11 @@ int MatSNESMFSetFunctioni(Mat mat,int (*funci)(int,Vec,Scalar*,void *))
 @*/
 int MatSNESMFSetFunctioniBase(Mat mat,int (*func)(Vec,void *))
 {
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  if (ctx) {
-    ctx->funcisetbase   = func;
-  }
+  ctx->funcisetbase   = func;
   PetscFunctionReturn(0);
 }
 
@@ -821,14 +873,11 @@ int MatSNESMFSetFunctioniBase(Mat mat,int (*func)(Vec,void *))
 @*/
 int MatSNESMFSetPeriod(Mat mat,int period)
 {
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  if (ctx) {
-    ctx->recomputeperiod = period;
-  }
+  ctx->recomputeperiod = period;
   PetscFunctionReturn(0);
 }
 
@@ -866,14 +915,11 @@ int MatSNESMFSetPeriod(Mat mat,int period)
 @*/
 int MatSNESMFSetFunctionError(Mat mat,PetscReal error)
 {
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  if (ctx) {
-    if (error != PETSC_DEFAULT) ctx->error_rel = error;
-  }
+  if (error != PETSC_DEFAULT) ctx->error_rel = error;
   PetscFunctionReturn(0);
 }
 
@@ -902,17 +948,14 @@ int MatSNESMFSetFunctionError(Mat mat,PetscReal error)
 int MatSNESMFAddNullSpace(Mat J,MatNullSpace nullsp)
 {
   int          ierr;
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
   MPI_Comm     comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
 
-  ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
-  /* no context indicates that it is not the "matrix free" matrix type */
-  if (!ctx) PetscFunctionReturn(0);
   ctx->sp = nullsp;
-  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
+  ierr    = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -946,13 +989,9 @@ int MatSNESMFAddNullSpace(Mat J,MatNullSpace nullsp)
 int MatSNESMFSetHHistory(Mat J,Scalar *history,int nhistory)
 {
   int          ierr;
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
 
   PetscFunctionBegin;
-
-  ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
-  /* no context indicates that it is not the "matrix free" matrix type */
-  if (!ctx) PetscFunctionReturn(0);
   ctx->historyh    = history;
   ctx->maxcurrenth = nhistory;
   ctx->currenth    = 0;
@@ -986,13 +1025,9 @@ int MatSNESMFSetHHistory(Mat J,Scalar *history,int nhistory)
 int MatSNESMFResetHHistory(Mat J)
 {
   int          ierr;
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
 
   PetscFunctionBegin;
-
-  ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
-  /* no context indicates that it is not the "matrix free" matrix type */
-  if (!ctx) PetscFunctionReturn(0);
   ctx->ncurrenth    = 0;
 
   PetscFunctionReturn(0);
