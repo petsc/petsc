@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.328 1999/03/18 15:44:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.329 1999/03/18 22:48:04 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -3789,6 +3789,9 @@ int MatGetMaps_Petsc(Mat mat,Map *rmap,Map *cmap)
    Level: intermediate
 
    Notes: 
+     The block-stash is used for values set with VecSetValuesBlocked() while
+     the stash is used for values set with VecSetValues()
+
      Run with the option -log_info and look for output of the form
      MatAssemblyBegin_MPIXXX:Stash has MM entries, uses nn mallocs.
      to determine the appropriate value, MM, to use for size and 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.172 1999/03/18 15:39:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.173 1999/03/18 15:44:06 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1745,8 +1745,8 @@ int VecGetLocalSize(Vec x,int *size)
 .  x - the vector
 
    Output Parameters:
-+  low - the first local element
--  high - one more than the last local element
++  low - the first local element, pass in PETSC_NULL if not interested
+-  high - one more than the last local element, pass in PETSC_NULL if not interested
 
    Note:
    The high argument is one more than the last element stored locally.
@@ -1762,8 +1762,8 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscValidIntPointer(low);
-  PetscValidIntPointer(high);
+  if (low) PetscValidIntPointer(low);
+  if (high) PetscValidIntPointer(high);
   ierr = (*x->ops->getmap)(x,&map);CHKERRQ(ierr);
   ierr = MapGetLocalRange(map,low,high);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2196,11 +2196,24 @@ int VecSetOperation(Vec vec,VecOperation op, void *f)
 
    Options Database Keys:
 +   -vecstash_initial_size <size> or <size0,size1,...sizep-1>
--   -vecstash_block_initial_size <size> or <size0,size1,...sizep-1>
+-   -vecstash_block_initial_size <bsize> or <bsize0,bsize1,...bsizep-1>
 
    Level: intermediate
 
+   Notes: 
+     The block-stash is used for values set with VecSetValuesBlocked() while
+     the stash is used for values set with VecSetValues()
+
+     Run with the option -log_info and look for output of the form
+     VecAssemblyBegin_MPIXXX:Stash has MM entries, uses nn mallocs.
+     to determine the appropriate value, MM, to use for size and 
+     VecAssemblyBegin_MPIXXX:Block-Stash has BMM entries, uses nn mallocs.
+     to determine the value, BMM to use for bsize
+
 .keywords: vector, stash, assembly
+
+.seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked()
+
 @*/
 int VecSetStashInitialSize(Vec vec,int size, int bsize)
 {
