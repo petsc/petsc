@@ -1,4 +1,4 @@
-/*$Id: xxt.c,v 1.3 2001/04/11 02:42:18 balay Exp balay $*/
+/*$Id: xxt.c,v 1.4 2001/04/11 13:30:44 balay Exp bsmith $*/
 /*************************************xxt.c************************************
 Module Name: xxt
 Module Info:
@@ -84,7 +84,6 @@ static int fn_xxt_handles=0;
 static xxt_ADT fhandles[MAX_FORTRAN_HANDLES+1];
 
 /* prototypes */
-double sqrt(double);
 static void do_xxt_solve(xxt_ADT xxt_handle, REAL *rhs);
 static void check_init(void);
 static void check_handle(xxt_ADT xxt_handle);
