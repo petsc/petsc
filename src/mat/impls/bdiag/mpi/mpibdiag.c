@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.149 1998/12/03 04:00:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.150 1998/12/17 22:10:34 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -907,6 +907,11 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
        0,
        MatGetMaps_Petsc};
 
+#include "pc.h"
+EXTERN_C_BEGIN
+extern int PCSetUp_BJacobi_MPIBDiag(PC);
+EXTERN_C_END
+
 #undef __FUNC__  
 #define __FUNC__ "MatCreateMPIBDiag"
 /*@C
@@ -1086,6 +1091,9 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = MatPrintHelp(B); CHKERRQ(ierr);}
   if (dset) PetscFree(diag);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"PCSetUp_BJacobi_C",
+                                     "PCSetUp_BJacobi_MPIBDiag",
+                                     (void*)PCSetUp_BJacobi_MPIBDiag);CHKERRQ(ierr);
   *A = B;
   PetscFunctionReturn(0);
 }
