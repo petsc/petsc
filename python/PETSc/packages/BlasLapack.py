@@ -16,6 +16,7 @@ class Configure(config.base.Configure):
     self.setcompilers = self.framework.require('config.setCompilers',            self)    
     self.libraries    = self.framework.require('config.libraries',            self)
     self.framework.require('PETSc.packages.Sowing', self)
+    
     return
 
   def __str__(self):
@@ -273,6 +274,9 @@ class Configure(config.base.Configure):
             self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling BLAS/LAPACK\n')
         line = 'FC = '+fc+'\n'
       if line.startswith('  '):
+        self.setcompilers.pushLanguage('F77')
+        #line = 'FOPTFLAGS  = '+self.setcompilers.getCompilerFlags()+'\n'
+        self.setcompilers.popLanguage()
         line = 'FOPTFLAGS  = '+self.framework.argDB['FFLAGS']+'\n'
       if line.startswith('  '):
         line = 'AR      = '+self.setcompilers.AR+'\n'
@@ -405,7 +409,30 @@ class Configure(config.base.Configure):
       self.addSubstitution('LAPACK_LIB', ' '.join(libFlag))
     return
 
+  def configurePIC(self):
+    '''Determine the PIC option for each compiler
+       - There needs to be a test that checks that the functionality is actually working'''
+    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('hpux') and not config.setCompilers.Configure.isGNU(self.framework.argDB['CC']):
+      return
+    languages = ['C']
+    if 'CXX' in self.framework.argDB:
+      languages.append('C++')
+    if 'FC' in self.framework.argDB:
+      languages.append('F77')
+    for language in languages:
+      self.pushLanguage(language)
+      for testFlag in ['-PIC', '-fPIC', '-KPIC']:
+        try:
+          self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
+          self.addCompilerFlag(testFlag)
+          break
+        except RuntimeError:
+          self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
+      self.popLanguage()
+    return
+
   def configure(self):
+    self.executeTest(self.configurePIC)
     self.executeTest(self.configureLibrary)
     self.executeTest(self.configureESSL)
     self.setOutput()

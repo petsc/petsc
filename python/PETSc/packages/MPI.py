@@ -521,6 +521,7 @@ class Configure(config.base.Configure):
         self.addSubstitution('MPI_LIBRARY', '')
     return
 
+
   def configure(self):
     if not self.framework.argDB['with-mpi']:
       return
