@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.43 1997/12/01 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.44 1997/12/12 19:37:06 bsmith Exp balay $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -104,7 +104,7 @@ int PetscSetFPTrap(int flag)
 }
 
 /* ------------------------ SOLARIS --------------------------------------*/
-#elif defined(PARCH_solaris) 
+#elif defined(PARCH_solaris) && defined(HAVE_SUNMATH_H)
 #include <sunmath.h>
 #include <floatingpoint.h>
 #include <siginfo.h>

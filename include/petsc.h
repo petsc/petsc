@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.197 1998/02/23 21:04:57 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.198 1998/03/06 00:21:12 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -296,7 +296,7 @@ extern int  PetscSynchronizedFlush(MPI_Comm);
   the macro "restrict" to indicate that the variable is not aliased 
   to any other argument.
 */
-#if defined(PARCH_solaris) && !defined(__cplusplus)
+#if defined(HAVE_RESTRICT) && !defined(__cplusplus)
 #define restrict _Restrict
 #else
 #define restrict
