@@ -16,7 +16,7 @@ class compilerOptions(config.base.Configure):
       if bopt == '':
         flags.append('-Wall')
         if 'USER' in os.environ and os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','kris','balay','hzhang','petsc']:
-          flags.extend(['-Wshadow', '-Wwrite-strings'])
+          flags.extend(['-Wshadow', '-Wwrite-strings','-std=c89'])
       elif bopt == 'g':
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
