@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: openport.c,v 1.3 1995/03/06 04:41:23 bsmith Exp bsmith $";
 #endif
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
@@ -26,10 +26,13 @@ typedef unsigned long   u_long;
 #include <netdb.h>
 #include <fcntl.h>
 #include <stropts.h>
+#include <sys/utsname.h>
 #include <math.h>
+#include "src/viewer/impls/matlab/matlab.h"
 #include "mex.h"
-#include "matlab.h"
-#define ERROR(a) {fprintf(stderr,"RECEIVE: %s \n",a); return ;}
+
+extern int SOCKConnect_Private(int);
+#define ERROR(a) {fprintf(stderr,"OPENPORT: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
@@ -38,14 +41,14 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
   int t, portnumber;
 
   /* check output parameters */
-  if (nlhs != 1) ERROR("Receive requires one output argument.");
+  if (nlhs != 1) ERROR("Open requires one output argument.");
 
   /* figure out portnumber user wants to use; default to 5005 */
   if (nrhs == 0) portnumber = DEFAULTPORT;  
   else portnumber = (int) *mxGetPr(prhs[0]);
 
   /* open connection */
-  t = get_connection(portnumber); if (t == -1)  ERROR("opening socket");
+  t = SOCKConnect_Private(portnumber); if (t == -1)  ERROR("opening socket");
 
   plhs[0]  = mxCreateFull(1, 1, 0);
  
@@ -63,7 +66,7 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 static int listenport;
 /*-----------------------------------------------------------------*/
 int establish(u_short);
-int get_connection(int portnumber)
+int SOCKConnect_Private(int portnumber)
 {
   struct sockaddr_in isa;
   int                i,t;
@@ -92,9 +95,11 @@ int establish(u_short portnum)
   int                s;
   struct sockaddr_in sa;
   struct hostent     *hp;
+  struct utsname utname;
 
+  /* Note we do not use gethostname since that is not POSIX */
+  uname(&utname); PetscStrncpy(myname,utname.nodename,MAXHOSTNAME);
   bzero(&sa,sizeof(struct sockaddr_in));
-  gethostname(myname,MAXHOSTNAME);
   hp = gethostbyname(myname);
   if ( hp == NULL ) {
      fprintf(stderr,"RECEIVE: error from gethostbyname\n");
@@ -107,14 +112,12 @@ int establish(u_short portnum)
      return(-1);
   }
   while ( bind(s,&sa,sizeof(sa) ) < 0 ) {
-#if !defined(alliant)
      if ( errno != EADDRINUSE ) { 
         close(s);
         fprintf(stderr,"RECEIVE: error from bind\n");
         return(-1);
      }
      close(listenport); 
-#endif
   }
   listen(s,0);
   return(s);
