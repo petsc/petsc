@@ -620,7 +620,7 @@ static int PCHYPRESetType_HYPRE(PC pc,const char name[])
 static int PCSetFromOptions_HYPRE(PC pc)
 {
   int        indx,ierr;
-  const char *type[] = {"pilut","parasails","boomerAMG","euclid"};
+  const char *type[] = {"pilut","parasails","boomeramg","euclid"};
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -683,7 +683,8 @@ int PCHYPRESetType(PC pc,const char name[])
  
    Level: intermediate
 
-   Notes: The many hypre options can ONLY be set via the options database (e.g. the command line
+   Notes: Apart from pc_hypre_type (for which there is PCHYPRESetType()),
+          the many hypre options can ONLY be set via the options database (e.g. the command line
           or with PetscOptionsSetValue(), there are no functions to set them)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
