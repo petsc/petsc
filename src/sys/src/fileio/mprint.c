@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.22 1999/03/09 21:17:26 balay Exp balay $";
+static char vcid[] = "$Id: mprint.c,v 1.23 1999/03/09 21:21:07 balay Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -438,7 +438,7 @@ int PetscErrorPrintfDefault(const char format[],...)
     fprintf(stderr,"See docs/manualpages/index.html for manual pages.\n");
     fprintf(stderr,"--------------------------------------------\
 ---------------------------\n");
-    fprintf(stderr,"%s \n on a %s named %s by %s $s.",pname,arch,hostname,username,date);
+    fprintf(stderr,"%s \n on a %s named %s by %s %s.",pname,arch,hostname,username,date);
 #if !defined (PARCH_win32)
     fprintf(stderr," Libraries linked from %s\n",PETSC_LDIR);
 #endif
