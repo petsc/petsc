@@ -18,7 +18,7 @@ SYSLIB   = -L$(LDIR) -lpetscstencil -lpetscgrid -lpetscmat -lpetscvec \
 LINCLUDE = $(SOURCEH)
 
 runexamples:
-	-$(MPIRUN)  ex1
+	echo "There are no externally runable examples in this directory"
 	
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(SYSLIB)
