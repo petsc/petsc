@@ -73,9 +73,7 @@ class Builder(install.urlMapping.UrlMapping):
         self.debugPrint('  No make module present in '+root, 2, 'install')
         continue
       self.buildDependenceGraph(m)
-      m.setupDependencies()
-    maker.setupDependencies()
-    return
+    return maker.setupDependencies()
 
   def executeOverDependencies(self, proj, target):
     '''Execute a set of targets over the project dependencies'''
@@ -98,9 +96,9 @@ class Builder(install.urlMapping.UrlMapping):
     except ImportError:
       self.debugPrint('  No make module present in '+root, 2, 'install')
       return
+    self.argDB['projectDependenceGraph'] = self.buildDependenceGraph(maker)
     if not ignoreDependencies:
       self.executeOverDependencies(maker.project, ['activate', 'configure'])
-    self.buildDependenceGraph(maker)
     self.debugPrint('Compiling in '+root, 2, 'install')
     root      = maker.getRoot()
     localDict = self.loadLocalDict(root)
