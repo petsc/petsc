@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.46 2000/08/07 22:24:23 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.47 2000/08/08 03:44:16 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -57,7 +57,7 @@ long long counter0,counter1;
 int  ntran[max_nbtran];        /* transition stuff put here to make global */
 REAL dxtran[max_nbtran];
 
-#ifdef PETSC_HAVE_AMS
+#ifdef HAVE_AMS
 AMS_Comm ams;
 AMS_Memory memid;
 int ams_err;
@@ -88,7 +88,7 @@ int main(int argc,char **args)
   int 		ierr;
   PetscTruth    flg;
   MPI_Comm      comm = MPI_COMM_WORLD;
-#ifdef PETSC_HAVE_AMS
+#ifdef HAVE_AMS
   int           fdes;
 #endif  
   ierr = PetscInitialize(&argc,&args,PETSC_NULL,help);CHKERRQ(ierr);
@@ -148,7 +148,7 @@ int main(int argc,char **args)
   user.tsCtx = &tsCtx;
 
     /* AMS Stuff */
-#ifdef PETSC_HAVE_AMS
+#ifdef HAVE_AMS
     /* Create and publish the Communicator */
     ams_err = AMS_Comm_publish("FUN3D",&ams, MPI_TYPE, comm);
     AMS_Check_error(ams_err,&msg);
