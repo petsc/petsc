@@ -1,7 +1,6 @@
 
-
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.7 1995/05/05 03:51:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.8 1995/05/11 17:44:07 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"
@@ -9,20 +8,27 @@ static char vcid[] = "$Id: snesj.c,v 1.7 1995/05/05 03:51:29 bsmith Exp bsmith $
 #include "options.h"
 
 /*@
-   SNESDefaultComputeJacobian - Computes Jacobian using finite 
-       differences. Slow and expensive.
+   SNESDefaultComputeJacobian - Computes the Jacobian using finite 
+   differences. 
 
- Input Parameters:
+   Input Parameters:
 .  x - compute Jacobian at this point
-.  ctx - applications Function context
+.  ctx - application's Function context
 
-  Output Parameters:
+   Output Parameters:
 .  J - Jacobian
 .  B - preconditioner, same as Jacobian
 
-.keywords: finite differences, Jacobian
+   Notes:
+   This routine is slow and expensive, and is not currently optimized
+   to take advantage of sparsity in the problem.  Although
+   SNESDefaultComputeJacobian() is not recommended for general use
+   in large-scale applications, It can be useful in checking the
+   correctness of a user-provided Jacobian.
 
-.seealso: SNESSetJacobian, SNESTestJacobian
+.keywords: SNES, finite differences, Jacobian
+
+.seealso: SNESSetJacobian(), SNESTestJacobian()
 @*/
 int SNESDefaultComputeJacobian(SNES snes, Vec x1,Mat *J,Mat *B,int *flag,
                                void *ctx)
