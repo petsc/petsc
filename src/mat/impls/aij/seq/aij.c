@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.134 1996/01/12 21:36:32 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.135 1996/01/18 16:28:29 bsmith Exp balay $";
 #endif
 
 /*
@@ -9,6 +9,7 @@ static char vcid[] = "$Id: aij.c,v 1.134 1996/01/12 21:36:32 balay Exp bsmith $"
 #include "aij.h"
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
+#include "petsc.h"
 
 extern int MatToSymmetricIJ_SeqAIJ(Mat_SeqAIJ*,int**,int**);
 
@@ -41,14 +42,6 @@ static int MatGetReordering_SeqAIJ(Mat A,MatOrdering type,IS *rperm, IS *cperm)
 
   ierr = MatToSymmetricIJ_SeqAIJ( a, &ia, &ja ); CHKERRQ(ierr);
   ierr = MatGetReordering_IJ(a->n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
-/*  ISView(*rperm, STDOUT_VIEWER_SELF);*/
- 
-  /*ViewerFileOpenASCII(MPI_COMM_SELF,"row_is_orig", &V1);
-  ViewerFileOpenASCII(MPI_COMM_SELF,"col_is_orig", &V2);
-  ISView(*rperm,V1);
-  ISView(*cperm,V2);
-  ViewerDestroy(V1);
-  ViewerDestroy(V2);*/
 
   PetscFree(ia); PetscFree(ja);
   return 0; 
@@ -1168,15 +1161,49 @@ static int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatr
   return 0;
 }
 
-static int MatIncreaseOverlap_SeqAIJ(Mat A, int n, IS *is, int ov)
+static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
 {
-  int i,m,*idx,ierr;
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  int row, i,j,k,l,m,n, *idx,ierr, *table, *nidx, isz, val, start, end, *ai, *aj;
+  
+  m     = a->m;
+  ai    = a->i;
+  aj    = a->j;
+  table = (int *) PetscMalloc(m * sizeof(int));
+  nidx  = (int *) PetscMalloc(m * sizeof(int));
+  
+  if (ov < 0)  SETERRQ(1,"MatIncreaseOverlap_SeqAIJ: illegal overlap value used");
+  for ( i=0; i<is_max; i++ ) {
+    /* Initialise the two local arrays */
+    isz  = 0;
+    PetscMemzero(table,m*sizeof(int));
 
-  for ( i=0; i<n; i++ ) {
-    ierr = ISGetIndices(is[i],&idx); CHKERRQ(ierr);
-    ISGetLocalSize(is[i],&m); 
+    /* Extract the indices, assume there can be duplicate entries */
+    ierr = ISGetIndices(is[i],&idx);  CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is[i],&n);  CHKERRQ(ierr);
+    
+    /* Enter these into the temp arrays i.e mark table[row], enter row into new index */
+    for ( j=0; j<n ; ++j){
+      if(!table[idx[j]]++) { nidx[isz++] = idx[j];}
+    }
+    
+    for ( j=0,k=0 ; j<ov ; ++j){ /* for each overlap*/
+      for ( n=isz ; k<n ; ++k){
+        row   = nidx[k];
+        start = ai[row];
+        end   = ai[row+1];
+        for ( l = start; l<end ; ++l){
+          val = aj[l];
+          if(!table[val]++) { nidx[isz++] = val;}
+        }
+      }
+    }
+    ierr = ISRestoreIndices(is[i],&idx);  CHKERRQ(ierr);
+    ierr = ISDestroy(is[i]); CHKERRQ(ierr);
+    ierr = ISCreateSeq(MPI_COMM_SELF, isz, nidx, (is+i)); CHKERRQ(ierr);
   }
-  SETERRQ(1,"MatIncreaseOverlap_SeqAIJ:Not implemented");
+  PetscFree (table); PetscFree(nidx);
+  return 0;
 }
 
 int MatPrintHelp_SeqAIJ(Mat A)
