@@ -1,4 +1,4 @@
-/*$Id: zf90mat.c,v 1.5 2000/05/05 22:27:06 balay Exp balay $*/
+/*$Id: zf90mat.c,v 1.6 2000/05/24 18:19:37 balay Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
 #include "petscmat.h"
@@ -14,7 +14,7 @@
 #endif
 
 EXTERN_C_BEGIN
-void matgetarrayf90_(Mat *mat,array2d *ptr,int *__ierr)
+void PETSC_STDCALL matgetarrayf90_(Mat *mat,array2d *ptr,int *__ierr)
 {
   Scalar *fa;
   int    m,n;
@@ -22,7 +22,7 @@ void matgetarrayf90_(Mat *mat,array2d *ptr,int *__ierr)
   *__ierr = MatGetLocalSize(*mat,&m,&n); if (*__ierr) return;
   *__ierr = PetscF90Create2dArrayScalar(fa,m,n,ptr);
 }
-void matrestorearrayf90_(Mat *mat,array2d *ptr,int *__ierr)
+void PETSC_STDCALL matrestorearrayf90_(Mat *mat,array2d *ptr,int *__ierr)
 {
   Scalar *fa;
   *__ierr = PetscF90Get2dArrayScalar(ptr,&fa);if (*__ierr) return;

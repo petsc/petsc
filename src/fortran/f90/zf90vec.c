@@ -1,4 +1,4 @@
-/*$Id: zf90vec.c,v 1.9 2000/05/29 07:12:28 balay Exp balay $*/
+/*$Id: zf90vec.c,v 1.10 2000/05/29 07:16:39 balay Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
 #include "petscis.h"
@@ -34,7 +34,7 @@ EXTERN_C_BEGIN
 
 /* --------------------------------------------------------------- */
 
-void isgetindicesf90_(IS *x,array1d *ptr,int *__ierr)
+void PETSC_STDCALL isgetindicesf90_(IS *x,array1d *ptr,int *__ierr)
 {
   int    *fa;
   int    len;
@@ -42,7 +42,7 @@ void isgetindicesf90_(IS *x,array1d *ptr,int *__ierr)
   *__ierr = ISGetLocalSize(*x,&len);   if (*__ierr) return;
   *__ierr = PetscF90Create1dArrayInt(fa,len,ptr);
 }
-void isrestoreindicesf90_(IS *x,array1d *ptr,int *__ierr)
+void PETSC_STDCALL isrestoreindicesf90_(IS *x,array1d *ptr,int *__ierr)
 {
   int    *fa;
   *__ierr = PetscF90Get1dArrayInt(ptr,&fa);if (*__ierr) return;
@@ -50,7 +50,7 @@ void isrestoreindicesf90_(IS *x,array1d *ptr,int *__ierr)
   *__ierr = ISRestoreIndices(*x,&fa);
 }
 
-void isblockgetindicesf90_(IS *x,array1d *ptr,int *__ierr)
+void PETSC_STDCALL isblockgetindicesf90_(IS *x,array1d *ptr,int *__ierr)
 {
   int    *fa;
   int    len;
@@ -58,7 +58,7 @@ void isblockgetindicesf90_(IS *x,array1d *ptr,int *__ierr)
   *__ierr = ISBlockGetSize(*x,&len);        if (*__ierr) return;
   *__ierr = PetscF90Create1dArrayInt(fa,len,ptr);
 }
-void isblockrestoreindicesf90_(IS *x,array1d *ptr,int *__ierr)
+void PETSC_STDCALL isblockrestoreindicesf90_(IS *x,array1d *ptr,int *__ierr)
 {
   int    *fa;
   *__ierr = PetscF90Get1dArrayInt(ptr,&fa);if (*__ierr) return;
@@ -67,7 +67,7 @@ void isblockrestoreindicesf90_(IS *x,array1d *ptr,int *__ierr)
 }
 
 
-void iscoloringgetisf90_(ISColoring *iscoloring,int *n,array1d *ptr,int *__ierr)
+void PETSC_STDCALL iscoloringgetisf90_(ISColoring *iscoloring,int *n,array1d *ptr,int *__ierr)
 {
   IS *lis;
   PetscFortranAddr *newisint;
@@ -81,7 +81,7 @@ void iscoloringgetisf90_(ISColoring *iscoloring,int *n,array1d *ptr,int *__ierr)
   *__ierr = PetscF90Create1dArrayPetscFortranAddr(newisint,*n,ptr);
 }
 
-void iscoloringrestoreisf90__(ISColoring *iscoloring,array1d *ptr,int *__ierr)
+void PETSC_STDCALL iscoloringrestoreisf90__(ISColoring *iscoloring,array1d *ptr,int *__ierr)
 {
   PetscFortranAddr *is;
 
@@ -93,7 +93,7 @@ void iscoloringrestoreisf90__(ISColoring *iscoloring,array1d *ptr,int *__ierr)
 
 /* ---------------------------------------------------------------*/
 
-void vecgetarrayf90_(Vec *x,array1d *ptr,int *__ierr)
+void PETSC_STDCALL vecgetarrayf90_(Vec *x,array1d *ptr,int *__ierr)
 {
   Scalar *fa;
   int    len;
@@ -101,7 +101,7 @@ void vecgetarrayf90_(Vec *x,array1d *ptr,int *__ierr)
   *__ierr = VecGetLocalSize(*x,&len); if (*__ierr) return;
   *__ierr = PetscF90Create1dArrayScalar(fa,len,ptr);
 }
-void vecrestorearrayf90_(Vec *x,array1d *ptr,int *__ierr)
+void PETSC_STDCALL vecrestorearrayf90_(Vec *x,array1d *ptr,int *__ierr)
 {
   Scalar *fa;
   *__ierr = PetscF90Get1dArrayScalar(ptr,&fa);if (*__ierr) return;
@@ -109,7 +109,7 @@ void vecrestorearrayf90_(Vec *x,array1d *ptr,int *__ierr)
   *__ierr = VecRestoreArray(*x,&fa);
 }
 
-void vecduplicatevecsf90_(Vec *v,int *m,array1d *ptr,int *__ierr)
+void PETSC_STDCALL vecduplicatevecsf90_(Vec *v,int *m,array1d *ptr,int *__ierr)
 {
   Vec *lV;
   PetscFortranAddr *newvint;
@@ -124,7 +124,7 @@ void vecduplicatevecsf90_(Vec *v,int *m,array1d *ptr,int *__ierr)
   *__ierr = PetscF90Create1dArrayPetscFortranAddr(newvint,*m,ptr);
 }
 
-void vecdestroyvecsf90_(array1d *ptr,int *m,int *__ierr)
+void PETSC_STDCALL vecdestroyvecsf90_(array1d *ptr,int *m,int *__ierr)
 {
   PetscFortranAddr *vecs;
   int       i;
