@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.83 1996/01/02 20:16:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.84 1996/01/03 00:02:37 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -48,7 +48,8 @@ static int MatCreateMPIRowbs_local(Mat A,int nz,int *nnz)
   BSsprow      *vs;
 
   if (!nnz) {
-    if (nz <= 0) nz = 1;
+    if (nz == PETSC_DEFAULT) nz = 5;
+    if (nz <= 0)             nz = 1;
     nzalloc = 1;
     nnz     = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(nnz);
     for ( i=0; i<m; i++ ) nnz[i] = nz;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.129 1996/01/02 20:15:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.130 1996/01/03 14:55:26 curfman Exp curfman $";
 #endif
 
 /*
@@ -1174,9 +1174,9 @@ int MatPrintHelp_SeqAIJ(Mat A)
   MPI_Comm   comm = A->comm;
 
   if (called) return 0; else called = 1;
-  MPIU_printf(comm,"Specific matrix options for SeqAIJ (and MPIAIJ).\n");
+  MPIU_printf(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");
   MPIU_printf(comm,"  -mat_lu_pivotthreshold <threshold>\n");
-  MPIU_printf(comm,"  -mat_aij_oneindex - internal indices begin at 1 not 0.\n");
+  MPIU_printf(comm,"  -mat_aij_oneindex - internal indices begin at 1 instead of the default 0.\n");
   MPIU_printf(comm,"  -mat_aij_no_inode  - Do not use inodes\n");
   MPIU_printf(comm,"  -mat_aij_inode_limit <limit> - Set inode limit (max limit=5)\n");
 #if defined(HAVE_ESSL)

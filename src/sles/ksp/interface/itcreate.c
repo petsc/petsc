@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.67 1995/11/04 23:25:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.68 1996/01/01 01:01:38 bsmith Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -235,12 +235,12 @@ int KSPGetTypeFromOptions_Private(KSP ctx,KSPType *itmethod)
 .  ksp - Krylov context 
 
    Output Parameters:
-.  itmeth - KSP method (or provide PETSC_NULL)
-.  name - name of KSP method (or provide PETSC_NULL)
+.  itmeth - KSP method (or use PETSC_NULL)
+.  name - name of KSP method (or use PETSC_NULL)
 
 .keywords: KSP, get, method, name
 @*/
-int KSPGetType(KSP ksp,KSPType  *itmeth,char **name )
+int KSPGetType(KSP ksp,KSPType *itmeth,char **name)
 {
   int ierr;
   if (!__KSPList) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}

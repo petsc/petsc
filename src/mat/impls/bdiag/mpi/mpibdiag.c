@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.64 1996/01/01 01:03:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.65 1996/01/02 20:16:38 bsmith Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -728,6 +728,15 @@ static int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
   return 0;
 }
 
+extern int MatPrintHelp_SeqBDiag(Mat);
+static int MatPrintHelp_MPIBDiag(Mat A)
+{
+  Mat_MPIBDiag *a   = (Mat_MPIBDiag*) A->data;
+
+  if (!a->rank) return MatPrintHelp_SeqBDiag(a->A);
+  else return 0;
+}
+
 /* -------------------------------------------------------------------*/
 
 static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
@@ -749,7 +758,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
        0,0,0,
        0,0,0,0,0,
        0,0,0,
-       0,0,MatGetValues_MPIBDiag};
+       0,0,MatGetValues_MPIBDiag,0,
+       MatPrintHelp_MPIBDiag};
 
 /*@C
    MatCreateMPIBDiag - Creates a sparse parallel matrix in MPIBDiag format.
@@ -797,10 +807,24 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
 {
   Mat          mat;
   Mat_MPIBDiag *mbd;
-  int          ierr, i, k, *ldiag, len;
+  int          ierr, i, k, *ldiag, len, dset = 0, nd2;
   Scalar       **ldiagv = 0;
 
   *newmat       = 0;
+  if (nb == PETSC_DEFAULT) nb = 1;
+  if (nd == PETSC_DEFAULT) nd = 0;
+  OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb);
+  OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd);
+  if (nd && diag == PETSC_NULL) {
+    diag = (int *)PetscMalloc(nd * sizeof(int)); CHKPTRQ(diag);
+    nd2 = nd; dset = 1;
+    OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_dvals",diag,&nd2);
+    if (nd2 != nd)
+      SETERRQ(1,"MatCreateSeqBDiag: Incompatible number of diags and diagonal vals");
+  } else if (OptionsHasName(PETSC_NULL,"-mat_bdiag_dvals")) {
+    SETERRQ(1,"MatCreate: Must specify number of diagonals with -mat_bdiag_ndiag");
+  }
+
   if (nb <= 0) SETERRQ(1,"MatCreateMPIBDiag:Blocksize must be positive");
   if ((N%nb)) SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad column number");
   PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIBDIAG,comm);
@@ -900,6 +924,8 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   if (OptionsHasName(PETSC_NULL,"-help")) {
     ierr = MatPrintHelp(mat); CHKERRQ(ierr);
   }
+
+  if (dset) PetscFree(diag);
   *newmat = mat;
   return 0;
 }

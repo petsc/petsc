@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.80 1996/01/02 20:16:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.81 1996/01/03 15:35:50 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1280,7 +1280,7 @@ int MatPrintHelp_SeqBDiag(Mat A)
   MPI_Comm   comm = A->comm;
 
   if (called) return 0; else called = 1;
-  MPIU_printf(comm," Matrix options for MATSEQBDIAG and MATMPIBDIAG formats:\n");
+  MPIU_printf(comm," Options for MATSEQBDIAG and MATMPIBDIAG matrix formats:\n");
   MPIU_printf(comm,"  -mat_bdiag_bsize <block_size>\n");
   MPIU_printf(comm,"  -mat_bdiag_ndiag <number_diags> \n"); 
   MPIU_printf(comm,"  -mat_bdiag_dvals <d1,d2,d3,...> (diagonal numbers)\n"); 
