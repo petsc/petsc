@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.55 1999/03/14 22:37:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.56 1999/03/15 02:10:04 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -525,7 +525,8 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
 
   if (iter > 1) {
     ierr = SNESGetApplicationContext(snes,(void**)&user); CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration = %d with tolerance %g\n",iter,check->tolerance);
+    PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration %d with tolerance %g\n",
+       iter,check->tolerance);
 
     /* Access local array data */
     ierr = VecGetArray(check->last_step,&xa_last); CHKERRQ(ierr);
@@ -536,7 +537,7 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
        If we fail the user-defined check for validity of the candidate iterate,
        then modify the iterate as we like.  (Note that the particular modification 
        below is intended simply to demonstrate how to manipulate this data, not
-       as a meaningful or even appropriate choice.)
+       as a meaningful or appropriate choice.)
     */
     for (i=0; i<ldim; i++) {
       rdiff = PetscAbsScalar((xa[i] - xa_last[i])/xa[i]);
