@@ -1,0 +1,15 @@
+
+  Isaac,
+
+    We've been in contact with Prof. Francis Loth, University of Illinois at 
+Chicago who is using FIDAP in biological modeling; specifically fluid flow
+in arteries. He is typically running with 400,000 degrees of freedom and runs 
+take weeks on PC or workstations. 
+
+   He is interested in working with us on a scalable version of the simulations.
+If at all possible, we'd like to continue to use some version of FIDAP since
+it has served his purpose well so far. Do you folks have a distributed memory
+parallel version of FIDAP or a subset that we might be able to use to get 
+started? We would understand if it was incomplete and not fully developed but
+are interested in getting started immediately in running faster in parallel.
+
