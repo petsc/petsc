@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.97 1996/11/13 15:41:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.98 1996/11/13 15:52:16 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1266,6 +1266,17 @@ $    norm - 2-norm function value (may be estimated)
 $
 $ SNES_UNCONSTRAINED_MINIMIZATION methods:
 $    norm - 2-norm gradient value (may be estimated)
+
+   Options Database Keys:
+$    -snes_monitor        : sets SNESDefaultMonitor()
+$    -snes_xmonitor       : sets line graph monitor,
+$                           uses SNESLGMonitorCreate()
+$    -snes_cancelmonitors : cancels all monitors that have
+$                           been hardwired into a code by 
+$                           calls to SNESSetMonitor(), but
+$                           does not cancel those set via
+$                           the options database.
+
 
    Notes: 
    Several different monitoring routines may be set by calling
