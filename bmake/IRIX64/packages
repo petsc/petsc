@@ -27,15 +27,19 @@ X11_LIB        = -lX11
 #
 # Optional location of BlockSolve (MPI version), if you do not have
 # BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
-# below if it is there.
+# below if it is there. You cannot use Blocksolve with complex
 #
 BS_INCLUDE = -I/u/usi/usilcm/BlockSolve95/include
 BS_LIB     = /u/usi/usilcm/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 # Location of MPI (Message Passing Interface) software
 #
+#  If you are using the MPICH implementation of MPI, you should remove the 
+#  -DUSES_INT_MPI_COMM. This indicates that the MPI_Comm is defined to
+#  be an integer.
+#
 MPI_LIB        = /usr/local/pub/mpich/lib/IRIX64/ch_shmem/libmpi.a 
-MPI_INCLUDE    = -I/usr/local/pub/mpich/include
+MPI_INCLUDE    = -I/usr/local/pub/mpich/include -DUSES_INT_MPI_COMM
 MPIRUN         = /usr/local/pub/mpich/bin/mpirun
 #
 # PCONF - indicates which external packages are available at your site
