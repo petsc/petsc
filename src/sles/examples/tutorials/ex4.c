@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.5 1995/07/29 03:16:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex11.c,v 1.6 1995/08/22 02:05:55 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -22,7 +22,7 @@ int main(int argc,char **args)
   OptionsGetInt(0,"-m",&m);
   OptionsGetInt(0,"-n",&n);
 
-  /* create the matrix for the five point stencil, YET AGAIN */
+  /* Create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
@@ -36,18 +36,21 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
 
+  /* Create and set vectors */
   ierr = VecCreate(MPI_COMM_WORLD,m*n,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecSet(&one,u); CHKERRA(ierr);
   ierr = MatMult(C,u,b); CHKERRA(ierr);
 
+  /* Create SLES context; set operators and options; solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,C,C,ALLMAT_DIFFERENT_NONZERO_PATTERN); 
   CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
 
+  /* Free work space */
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);

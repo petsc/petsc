@@ -12,8 +12,8 @@ OBJSF         =
 LIBBASE       = libpetscsnes
 EXAMPLES_1    = ex2
 RUNEXAMPLES_1 = runex2 runex2_2 runex2_3
-EXAMPLES_2    = ex1
-RUNEXAMPLES_2 = runex1 runex1_2
+EXAMPLES_3    = ex1
+RUNEXAMPLES_3 = runex1 runex1_2
 EXAMPLESC     = ex1.c
 
 FOBJ = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
@@ -35,10 +35,14 @@ ex3: ex3.o chkopts
 	-$(CLINKER) -o ex3 ex3.o $(PETSC_LIB)
 	$(RM) ex3.o
 
-# This is just for some experiments
+# These are just for some experiments
 ex4: $(EX4) chkopts
 	-$(CLINKER) -o ex4 $(EX4) $(PETSC_LIB)
 	$(RM) ex4.o
+
+ex5: ex5.o chkopts
+	-$(CLINKER) -o ex5 ex5.o $(PETSC_LIB)
+	$(RM) ex5.o
 
 runex1:
 	-@$(MPIRUN) ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \

@@ -1,5 +1,9 @@
-/* This file contains information for ex9.c, which demonstrated advanced
-   use of the PETSc/BlockSolve interface. */
+/* 
+   This file contains information for ex9.c, which demonstrates advanced
+   use of the PETSc/BlockSolve interface.  Most PETSc users should not
+   require such capabilities, as the simplified PETSc interface should
+   fulfill most needs. 
+ */
 
 #include<stdio.h>
 #include<math.h>

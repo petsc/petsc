@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.27 1995/08/22 19:36:59 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.28 1995/08/23 17:17:49 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -32,7 +32,7 @@ int main(int argc,char **args)
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   n = 2*numtids;
 
-  /* Generate matrix */
+  /* Create and assemble matrix */
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) { 
     for ( j=2*mytid; j<2*mytid+2; j++ ) {
@@ -64,11 +64,10 @@ int main(int argc,char **args)
   /* Compute right-hand-side */
   ierr = MatMult(C,u,b); CHKERRA(ierr);
 
-  /* Solve linear system */
+  /* Create SLES context; set operators and options; solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
-
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   if (OptionsHasName(0,"-mat_rowbs")) {
     PC pc; KSP ksp; PCMethod pcmethod;
@@ -80,7 +79,6 @@ int main(int argc,char **args)
     }
   }
 #endif
-
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
  
   /* Check error */
@@ -90,7 +88,6 @@ int main(int argc,char **args)
     MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
     MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
-
   ierr = MatView(C,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
   /* Change matrix (keeping same nonzero structure) and solve again */
