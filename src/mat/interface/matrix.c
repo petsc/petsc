@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.317 1999/02/03 04:11:53 curfman Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.318 1999/02/15 21:56:30 balay Exp balay $";
 #endif
 
 /*
@@ -2346,9 +2346,16 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 
   inassm++;
   MatAssemblyEnd_InUse++;
-  PLogEventBegin(MAT_AssemblyEnd,mat,0,0,0);
-  if (mat->ops->assemblyend) {
-    ierr = (*mat->ops->assemblyend)(mat,type); CHKERRQ(ierr);
+  if (MatAssemblyEnd_InUse == 1) { /* Do the logging only the first time through */
+    PLogEventBegin(MAT_AssemblyEnd,mat,0,0,0);
+    if (mat->ops->assemblyend) {
+      ierr = (*mat->ops->assemblyend)(mat,type); CHKERRQ(ierr);
+    }
+    PLogEventEnd(MAT_AssemblyEnd,mat,0,0,0);
+  } else {
+    if (mat->ops->assemblyend) {
+      ierr = (*mat->ops->assemblyend)(mat,type); CHKERRQ(ierr);
+    }
   }
 
   /* Flush assembly is not a true assembly */
@@ -2356,7 +2363,6 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
     mat->assembled  = PETSC_TRUE; mat->num_ass++;
   }
   mat->insertmode = NOT_SET_VALUES;
-  PLogEventEnd(MAT_AssemblyEnd,mat,0,0,0);
   MatAssemblyEnd_InUse--;
 
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
