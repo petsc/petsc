@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.65 1996/01/15 21:13:31 balay Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.66 1996/01/15 21:55:07 balay Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -334,7 +334,7 @@ int PCSetUp(PC pc)
   if (pc->setupcalled > 1) return 0;
   PLogEventBegin(PC_SetUp,pc,0,0,0);
   if (!pc->vec) {SETERRQ(1,"PCSetUp:Vector must be set first");}
-  if (!pc->mat) {SETERRQ(1,"PCSetUp:Matrix must be set be set first");}
+  if (!pc->mat) {SETERRQ(1,"PCSetUp:Matrix must be set first");}
   if (pc->setup) { ierr = (*pc->setup)(pc); CHKERRQ(ierr);}
   pc->setupcalled = 2;
   PLogEventEnd(PC_SetUp,pc,0,0,0);
