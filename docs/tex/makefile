@@ -101,7 +101,6 @@ homepage:
 	-/usr/bin/cp  ../../Machines /home/ftp/pub/petsc
 	-/usr/bin/cp  ../../Changes /home/ftp/pub/petsc
 	-/usr/bin/cp  ../../Troubleshooting /home/ftp/pub/petsc
-	-/usr/bin/cp papers/mpi.ps /home/ftp/pub/petsc/mpidev.ps
 	-/usr/bin/cp petsc.html /mcs/www/petsc
 	-/usr/bin/cp petscwww.gif /mcs/www/petsc
 	-/usr/bin/cp petsc.map /mcs/www/petsc
@@ -110,7 +109,6 @@ homepage:
 	-/usr/bin/cp summaries.html /mcs/www/petsc
 	-/usr/bin/cp ../www.html /mcs/www/petsc
 	-/usr/bin/cp intro.ps /home/ftp/pub/petsc
-	-/usr/bin/cp papers/mpi.html /mcs/www/petsc/mpidev.html
 	-/usr/bin/cp ../../FAQ /home/ftp/pub/petsc
 	-chmod ug+w /home/ftp/pub/petsc/FAQ /mcs/www/petsc/*
 	-chmod ug+w /home/ftp/pub/petsc/Installation /home/ftp/pub/petsc/README
@@ -118,7 +116,7 @@ homepage:
 	-chmod ug+w /home/ftp/pub/petsc/onepager.ps 
 	-chmod ug+w /home/ftp/pub/petsc/intro.ps
 	-chmod ug+w /home/ftp/pub/petsc/Troubleshooting
-	-chmod ug+w /home/ftp/pub/petsc/Changes /home/ftp/pub/petsc/mpidev.ps
+	-chmod ug+w /home/ftp/pub/petsc/Changes
 	-cd ..; tar cf $(HOME)/www.tar www 
 	-cd /mcs/www/petsc/; /bin/rm -rf www; tar xf $(HOME)/www.tar; 
 	-cd /mcs/www/petsc/; chgrp -R pdetools www; chmod -R g+w www
