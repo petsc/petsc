@@ -1,5 +1,5 @@
 !
-!    "$Id: ex13f90.F,v 1.13 1998/07/01 22:29:44 balay Exp balay $";
+!    "$Id: ex13f90.F,v 1.14 1998/07/01 22:34:14 balay Exp curfman $";
 !
 !
 !/*T
@@ -44,10 +44,10 @@
 !   SLES   sles     /* linear solver context */
 !   int    m,n      /* grid dimensions */
 !
-!   Since we cannot store Scalars, and integers in the same context,
-!   we store the integers/pointers in the userdefined context, and
-!   the scalar values are carried out in the common block.
-!   The scalar values in this simplistic example, could easily
+!   Since we cannot store Scalars and integers in the same context,
+!   we store the integers/pointers in the user-defined context, and
+!   the scalar values are carried in the common block.
+!   The scalar values in this simplistic example could easily
 !   be recalculated in each routine, where they are needed.
 !
 !   Scalar hx2,hy2  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
@@ -102,8 +102,8 @@
       call UserInitializeLinearSolver(m,n,userctx,ierr)
       Ntot = m*n
 
-!  Allocate arrays to hold the solution to the linear system.
-!  This is not normally done in PETSc programs, but in this case, 
+!  Allocate arrays to hold the solution to the linear system.  This
+!  approach is not normally done in PETSc programs, but in this case, 
 !  since we are calling these routines from a non-PETSc program, we 
 !  would like to reuse the data structures from another code. So in 
 !  the context of a larger application these would be provided by
@@ -137,9 +137,8 @@
 
 !  Loop over a bunch of timesteps, setting up and solver the linear
 !  system for each time-step.
-!
-!  Note this is somewhat artificial. It is intended to demonstrate how
-!  one may reuse the linear solver stuff in each time-step.
+!  Note that this loop is somewhat artificial. It is intended to
+!  demonstrate how one may reuse the linear solvers in each time-step.
 
       do 100 t=1,tmax
          call UserDoLinearSolver(rho,userctx,userb,userx,ierr)
@@ -160,7 +159,7 @@
  115     format ('m = ',I2,' n = ',I2,' error norm = ',E10.4)
  100  continue
 
-!  We are all finished solving linear systems, so we clean up the
+!  We are finished solving linear systems, so we clean up the
 !  data structures.
 
       DEALLOCATE (userx,userb,solution,rho)
@@ -265,7 +264,6 @@
       Scalar  v
 
 !      Scalar tmpx(*),tmpb(*)
-      
 
       x    = userctx(1)
       b    = userctx(2)
@@ -273,16 +271,13 @@
       sles = userctx(4)
       m    = userctx(5)
       n    = userctx(6)
-      
-      
 
-
-!  This is not the most efficient way of generating the matrix 
-!  but let's not worry about it. We should have separate code for
+!  This is not the most efficient way of generating the matrix,
+!  but let's not worry about it.  We should have separate code for
 !  the four corners, each edge and then the interior. Then we won't
 !  have the slow if-tests inside the loop.
 !
-!  Computes the operator 
+!  Compute the operator 
 !          -div rho grad 
 !  on an m by n grid with zero Dirichlet boundary conditions. The rho
 !  is assumed to be given on the same grid as the finite difference 
