@@ -1,4 +1,4 @@
-# $Id: base,v 1.13 1997/09/17 04:31:45 bsmith Exp balay $ 
+# $Id: base,v 1.14 1998/03/19 02:01:29 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -DPARCH_IRIX
@@ -60,8 +60,15 @@ shared: chkopts_basic
 	-@echo making shared libraries in ${LDIR} ;\
 	cd ${LDIR}; \
 	for LIBNAME in ${SHLIBS} ; \
-	  do ${LD} -elf -no_library_replacement -shared -rdata_shared \
-	  -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX} ; \
+	do \
+	  flag=""; \
+	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	  else \
+	      flag="true"; \
+	  fi; \
+          if [ "$$flag" != "" ]; then \
+	    echo "building $$LIBNAME.${SLSUFFIX}"; \
+	    ${LD} -shared  -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX}  > /dev/null 2>&1; \
+	  fi; \
 	done
-
-

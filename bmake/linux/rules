@@ -1,4 +1,4 @@
-# $Id: base,v 1.22 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: base,v 1.23 1998/03/24 17:06:59 balay Exp balay $ 
 
 PARCH    = linux
 CC       = gcc  -DPARCH_linux -fPIC
@@ -62,5 +62,15 @@ shared: chkopts_basic
 	-@echo making shared libraries in ${LDIR} ;\
 	cd ${LDIR}; \
 	for LIBNAME in ${SHLIBS} ; \
-	  do ${CLINKER} -shared -Wl,-soname,$$LIBNAME.${SLSUFFIX},--whole-archive -o $$LIBNAME.${SLSUFFIX} $$LIBNAME.a ; \
+	do \
+	  flag=""; \
+	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	  else \
+	      flag="true"; \
+	  fi; \
+          if [ "$$flag" != "" ]; then \
+	    echo "building $$LIBNAME.${SLSUFFIX}"; \
+	    ${CLINKER} -shared -Wl,-soname,$$LIBNAME.${SLSUFFIX},--whole-archive -o $$LIBNAME.${SLSUFFIX} $$LIBNAME.a ; \
+	  fi; \
 	done

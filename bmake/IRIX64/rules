@@ -1,4 +1,4 @@
-# $Id: base,v 1.32 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: base,v 1.33 1998/03/24 17:06:59 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
@@ -8,7 +8,7 @@ CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
 #
 CCV      = unknown
 #
-FC       = f90 -64 -cpp -DHAVE_IRIXF90
+FC       = f77 -64 -DHAVE_IRIXF90
 LD       = ld -64
 AR       = ar
 RM       = rm -f
@@ -16,7 +16,7 @@ RANLIB   = true
 OMAKE    = make
 SHELL    = /bin/sh
 CLINKER  = cc  -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85 -rpath ${LDIR}:${DYLIBPATH}
-FLINKER  = f90 -64 ${FOPTFLAGS} -Wl,-woff,84,-woff,85 -rpath ${LDIR}:${DYLIBPATH}
+FLINKER  = f77 -64 ${FOPTFLAGS} -Wl,-woff,84,-woff,85 -rpath ${LDIR}:${DYLIBPATH}
 LD       = ld -64
 
 SYS_LIB  = 
@@ -53,6 +53,16 @@ shared: chkopts_basic
 	-@echo making shared libraries in ${LDIR} ;\
 	cd ${LDIR}; \
 	for LIBNAME in ${SHLIBS} ; \
-	  do ${LD} -elf -no_library_replacement -shared -rdata_shared \
-	  -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX} ; \
+	do \
+	  flag=""; \
+	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	  else \
+	      flag="true"; \
+	  fi; \
+          if [ "$$flag" != "" ]; then \
+	    echo "building $$LIBNAME.${SLSUFFIX}"; \
+	    ${LD} -elf -no_library_replacement -shared -rdata_shared \
+	      -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX} ; \
+	  fi; \
 	done
