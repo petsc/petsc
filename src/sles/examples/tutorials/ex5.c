@@ -15,7 +15,7 @@ extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
 int main(int argc,char **args)
 {
   Mat    C; 
-  Scalar v, one = 1.0, none = -1.0;
+  Scalar v, none = -1.0;
   int    I, J, ldim, ierr, low, high, iglobal;
   int    i, j, m = 3, n = 2, mytid, numtids, its;
   Vec    x, u, b;
