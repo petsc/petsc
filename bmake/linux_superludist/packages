@@ -33,3 +33,9 @@ PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
 SPOOLES_INCLUDE    = -I/sandbox/hzhang/spooles
 SPOOLES_LIB        = /sandbox/hzhang/spooles/spooles.a
 PETSC_HAVE_SPOOLES = -DPETSC_HAVE_SPOOLES
+#
+# DSCPACK
+#
+DSCPACK_INCLUDE    = -I/sandbox/hzhang/DSCPACK1.0/DSC_LIB
+DSCPACK_LIB        = /sandbox/hzhang/DSCPACK1.0/DSC_LIB/dsclibdbl.a
+PETSC_HAVE_DSCPACK = -DPETSC_HAVE_DSCPACK

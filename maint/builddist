@@ -121,7 +121,7 @@ for i in bmake/*/packages ; do
     sed "s/^PETSC_HAVE_SUPERLUDIST/#PETSC_HAVE_SUPERLUDIST/g" | \
     sed "s/^DSCPACK_INCLUDE/#DSCPACK_INCLUDE/g" | \
     sed "s/^DSCPACK_LIB/#DSCPACK_LIB/g" | \
-    sed "s/^PETSC_HAVE_DSCPACK/#PETSC_HAVE_DSCPACK/g" | \
+    sed "s/^PETSC_HAVE_DSCPACKS/#PETSC_HAVE_DSCPACKS/g" | \
     sed "s/^JAVA/#JAVA/g" | sed "s/^JAVAC/#JAVAC/g" | sed "s/^PETSC_HAVE_JAVA/#PETSC_HAVE_JAVA/g" | \
     sed "s/^PCONF/#PCONF/g" > $i.tmp
   /bin/mv -f $i.tmp $i

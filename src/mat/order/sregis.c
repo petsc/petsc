@@ -49,7 +49,7 @@ int MatOrderingRegisterAll(char *path)
   ierr = MatOrderingRegisterDynamic(MATORDERING_RCM,      path,"MatOrdering_RCM"      ,MatOrdering_RCM);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERING_QMD,      path,"MatOrdering_QMD"      ,MatOrdering_QMD);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERING_ROWLENGTH,path,"MatOrdering_RowLength",MatOrdering_RowLength);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_COMPLEX)  && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_DSCPACKS) && !defined(PETSC_USE_COMPLEX)  && !defined(PETSC_USE_SINGLE)
   ierr = MatOrderingRegisterDynamic(MATORDERING_DSC_ND    ,path,"MatOrdering_DSC"     ,MatOrdering_DSC);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERING_DSC_MMD   ,path,"MatOrdering_DSC"     ,MatOrdering_DSC);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERING_DSC_MDF   ,path,"MatOrdering_DSC"     ,MatOrdering_DSC);CHKERRQ(ierr);
