@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.161 1997/07/23 22:33:46 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.162 1997/07/24 23:34:31 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -370,8 +370,8 @@ char *(PLogEventName[]) = {"MatMult         ",
                          " ",
                          " ",
                          "PetscBarrier    ", /* 100 */
-                         " ",
-                         " ",
+                         "MPI_ReduceSync  ",
+                         "MPI_ReduceComp  ",
                          " ",
                          " ",
                          "ECSetUp         ",

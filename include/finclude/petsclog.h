@@ -1,5 +1,5 @@
 C
-C  $Id: petsclog.h,v 1.4 1996/09/27 21:56:34 bsmith Exp bsmith $;
+C  $Id: petsclog.h,v 1.5 1997/01/22 18:46:32 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the Plog package in PETSc
 C
@@ -162,8 +162,13 @@ C
        parameter (TS_Step = 90)
        integer    TS_PseudoComputeTimeStep
        parameter (TS_PseudoComputeTimeStep = 91)
+
        integer    Petsc_Barrier
        parameter (Petsc_Barrier = 100)
+       integer    MPI_ReduceSync
+       parameter (MPI_ReduceSync = 101)
+       integer    MPI_ReduceComp
+       parameter (MPI_ReduceComp = 102)
 
        integer    EC_SetUp
        parameter (EC_SetUp = 105)
