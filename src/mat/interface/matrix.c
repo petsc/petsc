@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.207 1996/11/19 16:30:42 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.208 1996/11/20 22:01:54 curfman Exp curfman $";
 #endif
 
 /*
@@ -1596,7 +1596,9 @@ int MatCompress(Mat mat)
 $    MAT_ROW_ORIENTED
 $    MAT_COLUMN_ORIENTED,
 $    MAT_ROWS_SORTED,
+$    MAT_ROWS_UNSORTED,
 $    MAT_COLUMNS_SORTED,
+$    MAT_COLUMNS_UNSORTED,
 $    MAT_NO_NEW_NONZERO_LOCATIONS, 
 $    MAT_YES_NEW_NONZERO_LOCATIONS, 
 $    MAT_SYMMETRIC,
@@ -1617,12 +1619,12 @@ $    and possibly others.
 
    MAT_NO_NEW_NONZERO_LOCATIONS indicates that any add or insertion 
    that will generate a new entry in the nonzero structure is ignored.
-   What this means is if memory is not allocated for this particular 
-   lot, then the insertion is ignored. For dense matrices, where  
+   Thus, if memory has not alredy been allocated for this particular 
+   data, then the insertion is ignored. For dense matrices, in which
    the entire array is allocated, no entries are ever ignored. 
  
    MAT_IGNORE_OFF_PROCESSOR_ENTRIES indicates entries destined for 
-   other processors are dropped, rather then stashed.
+   other processors are dropped, rather than stashed.
    
 .keywords: matrix, option, row-oriented, column-oriented, sorted, nonzero
 @*/
