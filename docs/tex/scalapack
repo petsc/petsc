@@ -1,0 +1,28 @@
+| 
+|   Maybe it would be useful to have a disclaimer right
+| at the beginning of all PETSc documentation regarding 
+| the 800 pound gorilla. This is because this is a common
+| question naive people ask (and most people are naive).
+| Something like:
+| 
+|   PETSc is not replacement or competitor to Scalapack
+| or Lapack. Rather it is a complementary package that
+| provides the infrastructure and software for the large scale 
+| (possibly parallel) numerical solution of partial
+| differential equations. Scalapack and Lapack are not
+| intended for this class of problems.
+| 
+|   Comments?
+| 
+|   Barry
+| 
+|   I don't like the use of the work "complementary"
+| but I can't think of a better one. I'd like a word
+| that clearly puts PETSc on the higher side.
+| 
+
+I like the idea, but I believe that it is important to note that to PETSc,
+Scalapack and Lapack are like sin or sqrt - routines that can be used in
+special cases, and that PETSc, in addition to providing a higher-level of
+functionality and abstraction, provides transparent access to such
+special-purpose libraries.
