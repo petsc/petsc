@@ -206,11 +206,12 @@ void PETSC_STDCALL mggetsmootherdown_(PC *pc,int *l,SLES *sles,int *ierr)
 void PETSC_STDCALL pcbjacobigetsubsles_(PC *pc,int *n_local,int *first_local,SLES *sles,int *ierr)
 {
   SLES *tsles;
-  int  i;
+  int  i,nloc;
   CHKFORTRANNULLINTEGER(n_local);
   CHKFORTRANNULLINTEGER(first_local);
-  *ierr = PCBJacobiGetSubSLES(*pc,n_local,first_local,&tsles);
-  for (i=0; i<*n_local; i++){
+  *ierr = PCBJacobiGetSubSLES(*pc,&nloc,first_local,&tsles);
+  if (n_local) *n_local = nloc;
+  for (i=0; i<nloc; i++){
     sles[i] = tsles[i];
   }
 }
@@ -319,11 +320,19 @@ void PETSC_STDCALL pcasmsettotalsubdomains_(PC *pc,int *N,IS *is, int *ierr)
   *ierr = PCASMSetTotalSubdomains(*pc,*N,is);
 }
 
-void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,int *n,IS **is, int *ierr)
+void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,int *n,IS *is, int *ierr)
 {
+  int nloc,i;
+  IS  *tis;
   CHKFORTRANNULLOBJECT(is);
   CHKFORTRANNULLINTEGER(n);
-  *ierr = PCASMGetLocalSubdomains(*pc,n,is);
+  *ierr = PCASMGetLocalSubdomains(*pc,&nloc,&tis);
+  if (n) *n = nloc;
+  if (is) {
+    for (i=0; i<nloc; i++){
+      is[i] = tis[i];
+    }
+  }
 }
 
 void mgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, int *ierr)
