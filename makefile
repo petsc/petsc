@@ -350,12 +350,12 @@ chk_concepts_dir: chk_loc
 	@if [ ! -d "${LOC}/docs/manualpages/concepts" ]; then \
 	  echo Making directory ${LOC}/docs/manualpages/concepts for library; ${MKDIR} ${LOC}/docs/manualpages/concepts; fi
 #
-
-allci: 
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} ACTION=ci  alltree 
-
-allco: 
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} ACTION=co  alltree 
+#  makes .lines files for all source code
+# 
+allgcov: 
+	-@${RM} -rf /tmp/gcov
+	-@mkdir /tmp/gcov
+	-${OMAKE} ACTION=gcov PETSC_DIR=${PETSC_DIR} tree
 
 # usage make allrcslabel NEW_RCS_LABEL=v_2_0_28
 allrcslabel: 
