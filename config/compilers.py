@@ -381,7 +381,7 @@ class Configure(config.base.Configure):
     # check that these monster libraries can be used from C
     self.logPrint('Check that Fortran libraries can be used from C', 4, 'compilers')
     oldLibs = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] += ' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+    self.framework.argDB['LIBS'] += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError, e:
@@ -389,7 +389,7 @@ class Configure(config.base.Configure):
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
       # try removing this one
       if '-lcrt2.o' in self.flibs: self.flibs.remove('-lcrt2.o')
-      self.framework.argDB['LIBS'] = oldLibs+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+      self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
       try:
         self.setCompilers.checkCompiler('C')
       except RuntimeError, e:
@@ -405,12 +405,12 @@ class Configure(config.base.Configure):
       self.logPrint('Intel PEPCF90 library exists', 4, 'compilers')
     except RuntimeError, e:
       self.logPrint('Intel PEPCF90 library does not exist', 4, 'compilers')
-      self.framework.argDB['LIBS'] = oldLibs+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+      self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
 
     # check these monster libraries work from C++
     if 'CXX' in self.framework.argDB:
       self.logPrint('Check that Fortran libraries can be used from C++', 4, 'compilers')
-      self.framework.argDB['LIBS'] = oldLibs+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+      self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
       try:
         self.setCompilers.checkCompiler('C++')
         self.logPrint('Fortran libraries can be used from C++', 4, 'compilers')
@@ -418,7 +418,7 @@ class Configure(config.base.Configure):
         self.logPrint(str(e), 4, 'compilers')
         # try removing this one causes grief with gnu g++ and Intel Fortran
         if '-lintrins' in self.flibs: self.flibs.remove('-lintrins')
-        self.framework.argDB['LIBS'] = oldLibs+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+        self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
         try:
           self.setCompilers.checkCompiler('C++')
         except RuntimeError, e:
