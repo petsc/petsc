@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.114 1999/05/12 03:29:01 bsmith Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.115 1999/06/08 22:55:41 balay Exp balay $";
 #endif
 
 /*
@@ -381,6 +381,7 @@ int MatGetDiagonal_MPIDense(Mat A,Vec v)
   for ( i=0; i<len; i++ ) {
     x[i] = aloc->v[radd + i*m + i];
   }
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
