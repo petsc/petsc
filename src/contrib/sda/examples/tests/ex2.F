@@ -1,5 +1,5 @@
 
-/* "$Id: ex2.F,v 1.1 1996/02/05 04:45:59 bsmith Exp bsmith $"; */
+/* "$Id: ex2.F,v 1.1 1996/04/03 20:11:27 balay Exp balay $"; */
 
 
 #include "include/FINCLUDE/petsc.h"
@@ -21,7 +21,7 @@ C   not also work with DA contexts.
       Scalar         value,mone,in(1),out(1)
       Scalar         norm,work
  
-      call PetscInitialize(ierr)
+      call PetscInitialize(PETSC_NULL_CHAR,ierr)
 
       m             = PETSC_DECIDE
       n             = PETSC_DECIDE
