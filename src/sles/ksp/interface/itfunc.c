@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.108 1999/01/04 21:47:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.109 1999/01/13 23:08:06 curfman Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -167,7 +167,7 @@ int KSPSetUp(KSP ksp)
    Output Parameter:
 .  its - number of iterations required
 
-   Level: beginner
+   Level: developer
 
    Options Database:
 +  -ksp_compute_eigenvalues - compute preconditioned operators eigenvalues
@@ -337,7 +337,7 @@ int KSPSolveTrans(KSP ksp, int *its)
    Input Parameter:
 .  ksp - iterative context obtained from KSPCreate()
 
-   Level: beginner
+   Level: developer
 
 .keywords: KSP, destroy
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.144 1999/01/13 23:38:53 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.145 1999/01/13 23:39:27 curfman Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -147,7 +147,7 @@ static int KSPPublish_Petsc(PetscObject object)
    Output Parameter:
 .  ksp - location to put the KSP context
 
-   Level: beginner  
+   Level: developer
 
    Notes:
    The default KSP type is GMRES with a restart of 30, using modified Gram-Schmidt
@@ -422,7 +422,7 @@ extern int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
    Input Parameters:
 .  ksp - the Krylov space context
 
-   Level: beginner
+   Level: developer
 
    Notes:  To see all options, run your program with the -help option;
            or consult the users manual.

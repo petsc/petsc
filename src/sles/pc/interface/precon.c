@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.160 1998/12/21 00:59:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.161 1999/01/13 23:41:17 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: precon.c,v 1.160 1998/12/21 00:59:06 bsmith Exp curfm
    Input Parameter:
 .  pc - the preconditioner context
 
-   Level: beginner
+   Level: developer
 
 .keywords: PC, destroy
 
@@ -72,7 +72,7 @@ static int PCPublish_Petsc(PetscObject object)
    Output Parameter:
 .  pc - location to put the preconditioner context
 
-   Level: beginner
+   Level: developer
 
    Notes:
    The default preconditioner on one processor is PCILU with 0 fill on more 
@@ -137,7 +137,7 @@ static int apply_double_count = 0;
    Output Parameter:
 .  y - output vector
 
-   Level: beginner
+   Level: developer
 
 .keywords: PC, apply
 
@@ -177,7 +177,7 @@ int PCApply(PC pc,Vec x,Vec y)
    Output Parameter:
 .  y - output vector
 
-   Level: intermediate
+   Level: developer
 
    Notes:
    Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
@@ -219,7 +219,7 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
    Output Parameter:
 .  y - output vector
 
-   Level: intermediate
+   Level: developer
 
    Notes:
    Currently, this routine is implemented only for PCICC and PCJACOBI preconditioners.
@@ -261,7 +261,7 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
    Output Parameter:
 .  y - output vector
 
-   Level: beginner
+   Level: developer
 
 .keywords: PC, apply, transpose
 
@@ -305,7 +305,7 @@ $   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
    Output Parameter:
 .  y - output vector
 
-   Level: intermediate
+   Level: developer
 
 .keywords: PC, apply, operator
 
@@ -371,7 +371,7 @@ $   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
    Output Parameter:
 .  y - output vector
 
-   Level: intermediate
+   Level: developer
 
 .keywords: PC, apply, operator, transpose
 
@@ -426,7 +426,7 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
    Output Parameter:
 .  exists - PETSC_TRUE or PETSC_FALSE
 
-   Level: advanced
+   Level: developer
 
 .keywords: PC, apply, Richardson, exists
 
@@ -460,7 +460,7 @@ int PCApplyRichardsonExists(PC pc, PetscTruth *exists)
    Output Parameter:
 .  y - the solution
 
-   Level: advanced
+   Level: developer
 
    Notes: 
    Most preconditioners do not support this function. Use the command
@@ -699,7 +699,7 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
    linear system is solved, and thus is irrelevant when solving just one linear
    system.
 
-   Level: beginner
+   Level: developer
 
    Notes: 
    The flag can be used to eliminate unnecessary work in the preconditioner 
@@ -795,7 +795,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 -  flag - flag indicating information about the preconditioner
           matrix structure.  See PCSetOperators() for details.
 
-   Level: beginner
+   Level: developer
 
 .keywords: PC, get, operators, matrix, linear system
 
@@ -822,7 +822,7 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 +  pc - the preconditioner context
 -  vec - the vector
 
-   Level: beginner
+   Level: developer
 
    Notes:
    The vector must be set so that the preconditioner knows what type
@@ -856,7 +856,7 @@ int PCSetVector(PC pc,Vec vec)
    Output Parameter:
 .  vec - the vector
 
-   Level: beginner
+   Level: developer
 
 .keywords: PC, get, vector
 
@@ -886,7 +886,7 @@ int PCGetVector(PC pc,Vec *vec)
    Output parameters:
 .  mat - the factored matrix
 
-   Level: intermediate
+   Level: advanced
 
 .keywords: PC, get, factored, matrix
 @*/
@@ -1088,7 +1088,7 @@ int PCPostSolve(PC pc,KSP ksp)
 +  PC - the PC context
 -  viewer - optional visualization context
 
-   Level: beginner
+   Level: developer
 
    Note:
    The available visualization contexts include
