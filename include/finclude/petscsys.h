@@ -1,5 +1,5 @@
 C
-C  $Id: sys.h,v 1.3 1996/04/16 03:35:25 balay Exp bsmith $;
+C  $Id: sys.h,v 1.4 1996/04/16 04:58:49 bsmith Exp balay $;
 C
 C  Include file for Fortran use of the System package in PETSc
 C
@@ -19,7 +19,7 @@ C
       integer BINARY_INT, BINARY_DOUBLE,BINARY_SCALAR, BINARY_SHORT,
      *        BINARY_FLOAT,BINARY_CHAR
       parameter (BINARY_INT=0, BINARY_DOUBLE=1,BINARY_SCALAR=1,
-     *           BINARY_SHORT=2,BINARY_FLOAT=3,BINARY_CHAR=4
+     *           BINARY_SHORT=2,BINARY_FLOAT=3,BINARY_CHAR=4)
 
 C
 C     End of Fortran include file for the System  package in PETSc
