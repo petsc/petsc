@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.33 1997/02/22 18:24:55 bsmith Exp balay $ */
+/* $Id: ptime.h,v 1.34 1997/02/26 22:48:54 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -87,23 +87,24 @@
   routine used is defined in petsc/src/sys/src/rs6000_time.h.
 */ 
 #if defined(PARCH_rs6000)
-#include <sys/types.h>
-#include <sys/time.h>
-#if defined(__cplusplus) 
-extern "C" { extern rs6000_time(struct timestruc_t *);}
+struct my_timestruc_t {
+unsigned long tv_sec;/* seconds*/
+long          tv_nsec;/* and nanoseconds*/
+};
+extern "C" { extern rs6000_time(struct my_timestruc_t *);}
 #else 
-extern rs6000_time(struct timestruc_t *);
+extern rs6000_time(struct my_timestruc_t *);
 #endif
 
-#define PetscTime(v)         {static struct  timestruc_t _tp; \
+#define PetscTime(v)         {static struct  my_timestruc_t _tp; \
                              rs6000_time(&_tp); \
                              (v)=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
-#define PetscTimeSubtract(v) {static struct timestruc_t  _tp; \
+#define PetscTimeSubtract(v) {static struct my_timestruc_t  _tp; \
                              rs6000_time(&_tp); \
                              (v)-=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
-#define PetscTimeAdd(v)      {static struct timestruc_t  _tp; \
+#define PetscTimeAdd(v)      {static struct my_timestruc_t  _tp; \
                              rs6000_time(&_tp); \
                              (v)+=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 /*
