@@ -14,10 +14,11 @@ add to it).
 
   MAT
 
-    Added to additional arguments to MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *)
+    Added two additional arguments to MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *)
     where m and n are the local ownership sizes. To get the effect of the old MatCreate()
     use m and n equal to PETSC_DECIDE
     
+   Changed MatSetLocalToGlobalMappingBlocked() to MatSetLocalToGlobalMappingBlock() so that it would be less then 32 characters long.
 
   KSP
 
