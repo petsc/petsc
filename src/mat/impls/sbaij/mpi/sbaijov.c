@@ -125,7 +125,6 @@ static int MatExpandIndices_MPISBAIJ(Mat C,int imax,const IS is_in[],IS is_out[]
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ"
 int MatIncreaseOverlap_MPISBAIJ(Mat C,int is_max,IS is[],int ov)
@@ -148,20 +147,32 @@ int MatIncreaseOverlap_MPISBAIJ(Mat C,int is_max,IS is[],int ov)
   PetscFunctionReturn(0);
 }
 
+/*  All data are packed in the format:
+       data[0]          = is_max, no of is 
+       data[1]          = size of is[0]
+        ...
+       data[is_max]     = size of is[is_max-1]
+       data[is_max + 1] = data(is[0])
+        ...
+       data[is_max+1+sum(size of is[k]), k=0,...,i-1] = data(is[i])
+        ...
+*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ_Once"
 static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
 {
   Mat_MPISBAIJ  *c = (Mat_MPISBAIJ*)C->data;
-  int         **idx,*n,len,*idx_i,*nidx,*nidx_i,isz,col;
-  int         size,rank,Mbs,i,j,k,ierr,nrqs,*outdat,*indat;
-  int         tag1,tag2,flag,proc_id;
+  int         len,*idx_i,*nidx_i,isz,col,*n;
+  int         size,rank,Mbs,i,j,k,ierr,nrqs,*data1,*data2,*data3,*odata1,*odata2;
+  int         *mydata,*mydata_i;
+  int         tag1,tag2,flag,proc_id,**odata2_ptr;
+  char        *t_p,*ot_p;
   MPI_Comm    comm;
   MPI_Request *s_waits1,*s_waits2,r_req;
   MPI_Status  *s_status,r_status;
   PetscBT     *table;
   PetscBT     table_i;
-  PetscBT     *table_tmp;
+  PetscBT     *otable;
 
   PetscFunctionBegin;
 
@@ -170,62 +181,45 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   rank = c->rank;
   Mbs  = c->Mbs;
 
-  /* int prid=0; */
-
-  len  = is_max*sizeof(PetscBT) + (Mbs/PETSC_BITS_PER_BYTE+1)*is_max*sizeof(char) + 1;
-  ierr = PetscMalloc(len,&table);CHKERRQ(ierr);
-  char *t_p;
-  t_p  = (char *)(table + is_max);
-  for (i=0; i<is_max; i++) {
-      table[i] = t_p + (Mbs/PETSC_BITS_PER_BYTE+1)*i;
-  }
-
-  ierr = PetscMalloc(len,&table_tmp);CHKERRQ(ierr);
-  t_p  = (char *)(table_tmp + is_max);
-  for (i=0; i<is_max; i++) {
-      table_tmp[i] = t_p + (Mbs/PETSC_BITS_PER_BYTE+1)*i;
-  }
-
-  /* 1. Send is[] to all other processors */
-  /*--------------------------------------*/
-  /* This processor sends its is[] to all other processors in the format:
-       outdat[0]          = is_max, no of is in this processor
-       outdat[1]          = n[0], size of is[0]
-        ...
-       outdat[is_max]     = n[is_max-1], size of is[is_max-1]
-       outdat[is_max + 1] = data(is[0])
-        ...
-       outdat[is_max+1+sum(n[k]), k=0,...,i-1] = data(is[i])
-        ...
-  */
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
 
-  len  = (is_max+1)*sizeof(int*)+ (is_max)*sizeof(int); 
-  ierr = PetscMalloc(len,&idx);CHKERRQ(ierr);
-  n    = (int*)(idx + is_max);
-  
+  /* create tables for marking indices */
+  len  = is_max*sizeof(PetscBT) + (Mbs/PETSC_BITS_PER_BYTE+1)*is_max*sizeof(char) + 1;
+  ierr = PetscMalloc(2*len,&table);CHKERRQ(ierr);
+  otable = (PetscBT *)(table + len);
+  t_p  = (char *)(table + is_max);
+  ot_p  = (char *)(otable + is_max);
+  for (i=0; i<is_max; i++) {
+    j = (Mbs/PETSC_BITS_PER_BYTE+1)*i;
+    table[i]  = t_p  + j; 
+    otable[i] = ot_p + j; 
+  }
+
+  /* 1. Send is[] in this processor to all other processors */
+  /*--------------------------------------------------------*/
   /* Allocate Memory for outgoing messages */
+  len  = is_max*sizeof(int); 
+  ierr = PetscMalloc(len,&n);CHKERRQ(ierr);
+
   len = 1 + is_max;
   for (i=0; i<is_max; i++) {
-    ierr = ISGetIndices(is[i],&idx[i]);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is[i],&n[i]);CHKERRQ(ierr);
-    len += n[i];
+    len += n[i]; 
   }
-  ierr = PetscMalloc(len*sizeof(int),&outdat);CHKERRQ(ierr);
-  
+  ierr = PetscMalloc(len*sizeof(int),&data1);CHKERRQ(ierr);
+
   /* Form the outgoing messages */
-  outdat[0] = is_max;
-  for (i=0; i<is_max; i++) {
-    outdat[i+1] = n[i];
-  }
+  data1[0] = is_max;
   k = is_max + 1;
-  for (i=0; i<is_max; i++) { /* for is[i] */
-    idx_i = idx[i];
-    for (j=0; j<n[i]; j++){
-      outdat[k] = *(idx_i); 
-      k++; idx_i++;
+  for (i=0; i<is_max; i++) { 
+    data1[1+i] = n[i];
+    ierr = ISGetIndices(is[i],&idx_i);CHKERRQ(ierr);
+    for (j=0; j<data1[i+1]; j++){
+      data1[k++] = idx_i[j]; 
     }
+    ierr = ISRestoreIndices(is[i],&idx_i);CHKERRQ(ierr);
+    ierr = ISDestroy(is[i]);CHKERRQ(ierr); 
   }
   if (k != len) SETERRQ2(1,"Error on forming the outgoing messages: k %d != len %d",k,len);
 
@@ -233,9 +227,9 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   ierr = PetscMalloc(size*sizeof(MPI_Request),&s_waits1);CHKERRQ(ierr);
   
   k = 0;
-  for (proc_id=0; proc_id<size; ++proc_id) { /* send outdat to processor [proc_id] */
+  for (proc_id=0; proc_id<size; ++proc_id) { /* send data1 to processor [proc_id] */
     if (proc_id != rank){
-      ierr = MPI_Isend(outdat,len,MPI_INT,proc_id,tag1,comm,s_waits1+k);CHKERRQ(ierr);
+      ierr = MPI_Isend(data1,len,MPI_INT,proc_id,tag1,comm,s_waits1+k);CHKERRQ(ierr);
       /* printf(" [%d] send %d msg to [%d] \n",rank,len,proc_id); */
       k++;
     }
@@ -243,12 +237,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
 
   /* 2. Do local work on this processor's is[] */
   /*-------------------------------------------*/
-  ierr = MatIncreaseOverlap_MPISBAIJ_Local(C,outdat,&nidx,table);CHKERRQ(ierr);
-
-  for (i=0; i<is_max; i++){
-    ierr = ISRestoreIndices(is[i],idx+i);CHKERRQ(ierr);
-    ierr = ISDestroy(is[i]);CHKERRQ(ierr); 
-  }
+  ierr = MatIncreaseOverlap_MPISBAIJ_Local(C,data1,&data2,table);CHKERRQ(ierr);
 
   /* 3. Receive other's is[] and process. Then send back */
   /*----------------------------------------------------*/
@@ -257,14 +246,10 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   ierr = PetscMalloc(size*sizeof(MPI_Status),&s_status);CHKERRQ(ierr);
   ierr = MPI_Waitall(nrqs,s_waits1,s_status);CHKERRQ(ierr);
 
-  /* save n[i] */
-  for (i=0; i<is_max; i++){
-    n[i] = outdat[1+i];
-  }
-  ierr = PetscFree(outdat);CHKERRQ(ierr);
+  ierr = PetscFree(data1);CHKERRQ(ierr);  /* keep - move after merge !!! */
   ierr = PetscMalloc(size*sizeof(MPI_Request),&s_waits2);CHKERRQ(ierr);
-  int **outdat_ptr;
-  ierr = PetscMalloc(size*sizeof(int**),&outdat_ptr);
+  
+  ierr = PetscMalloc(size*sizeof(int**),&odata2_ptr);
   k = 0;
   do {
     /* Receive messages */
@@ -272,23 +257,23 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
     if (flag){
       ierr = MPI_Get_count(&r_status,MPI_INT,&len);
       proc_id = r_status.MPI_SOURCE;
-      ierr = PetscMalloc(len*sizeof(int),&indat);CHKERRQ(ierr);
-      ierr = MPI_Irecv(indat,len,MPI_INT,proc_id,r_status.MPI_TAG,comm,&r_req);
+      ierr = PetscMalloc(len*sizeof(int),&odata1);CHKERRQ(ierr);
+      ierr = MPI_Irecv(odata1,len,MPI_INT,proc_id,r_status.MPI_TAG,comm,&r_req);
       /* printf(" [%d] recv %d msg from [%d]\n",rank,len,proc_id); */
 
       /*  Process messages */
-      ierr = MatIncreaseOverlap_MPISBAIJ_Local(C,indat,&outdat_ptr[k],table_tmp);CHKERRQ(ierr);
-      outdat = outdat_ptr[k];
-      len = 1 + outdat[0];
-      for (i=0; i<outdat[0]; i++){
-        len += outdat[1 + i];
+      ierr = MatIncreaseOverlap_MPISBAIJ_Local(C,odata1,&odata2_ptr[k],otable);CHKERRQ(ierr);
+      odata2 = odata2_ptr[k];
+      len = 1 + odata2[0];
+      for (i=0; i<odata2[0]; i++){
+        len += odata2[1 + i];
       }
 
       /* Send messages back */
       /* printf(" [%d] send %d msg back to [%d] \n",rank,len,proc_id); */
-      ierr = MPI_Isend(outdat,len,MPI_INT,proc_id,tag2,comm,&s_waits2[k]);CHKERRQ(ierr);
+      ierr = MPI_Isend(odata2,len,MPI_INT,proc_id,tag2,comm,&s_waits2[k]);CHKERRQ(ierr);
 
-      ierr = PetscFree(indat);CHKERRQ(ierr);
+      ierr = PetscFree(odata1);CHKERRQ(ierr);
       k++;
     }
   } while (k < nrqs);
@@ -297,21 +282,20 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   /*--------------------------------------------------------*/
   ierr = MPI_Waitall(nrqs,s_waits2,s_status);CHKERRQ(ierr);
   for (k=0; k<nrqs; k++){
-    ierr = PetscFree(outdat_ptr[k]);CHKERRQ(ierr); 
+    ierr = PetscFree(odata2_ptr[k]);CHKERRQ(ierr); 
   }
-  ierr = PetscFree(outdat_ptr);CHKERRQ(ierr);
+  ierr = PetscFree(odata2_ptr);CHKERRQ(ierr);
 
   /* allocate memory for merged data */
-  int *mydata,*mydata_i;
   ierr = PetscMalloc((1+is_max*(Mbs+1))*sizeof(int),&mydata);CHKERRQ(ierr); 
 
-  /* copy nidx into mydata */
+  /* copy data2 into mydata */
   k = is_max + 1;
   for (i=0; i<is_max; i++){
-    mydata[1+i] = nidx[1+i]; /* size of is[i] before merge */
+    mydata[1+i] = data2[1+i]; /* size of is[i] before merge */
     mydata_i = mydata + 1 + is_max + Mbs*i;
-    for (j=0; j<nidx[1+i]; j++){
-      mydata_i[j] = nidx[k++];
+    for (j=0; j<data2[1+i]; j++){
+      mydata_i[j] = data2[k++];
     }
   }
 
@@ -322,29 +306,29 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
     if (flag){
       ierr = MPI_Get_count(&r_status,MPI_INT,&len);
       proc_id = r_status.MPI_SOURCE;
-      ierr = ierr = PetscMalloc(len*sizeof(int),&indat);CHKERRQ(ierr);
-      ierr = MPI_Irecv(indat,len,MPI_INT,proc_id,r_status.MPI_TAG,comm,&r_req);
+      ierr = ierr = PetscMalloc(len*sizeof(int),&data3);CHKERRQ(ierr);
+      ierr = MPI_Irecv(data3,len,MPI_INT,proc_id,r_status.MPI_TAG,comm,&r_req);
       /* printf(" [%d] recv %d msg from [%d]\n",rank,len,proc_id); */
 
-      /*  merge indat into mydata */
-      nidx_i   = indat + 1 + is_max;
+      /*  merge data3 into mydata */
+      nidx_i   = data3 + 1 + is_max;
       for (i=0; i<is_max; i++){
         table_i  = table[i];
         mydata_i = mydata + 1 + is_max + Mbs*i;
-        isz = mydata[1+i]; /* size of is[i] from nidx */
+        isz = mydata[1+i]; /* size of is[i] from data2 */
         
-        for (j=0; j<indat[1+i]; j++){
+        for (j=0; j<data3[1+i]; j++){
           col = nidx_i[j];
           if (!PetscBTLookupSet(table_i,col)) {mydata_i[isz++] = col;}
         }
         mydata[1+i] = isz;
         if (i < is_max - 1){
-          nidx_i += indat[1+i]; /* ptr to is[i+1] array from indat */
+          nidx_i += data3[1+i]; /* ptr to is[i+1] array from data3 */
         }
       } /* for (i=0; i<is_max; i++) */
 
       k++;
-      ierr = PetscFree(indat);CHKERRQ(ierr);
+      ierr = PetscFree(data3);CHKERRQ(ierr);
     }
   } while (k < nrqs);
 
@@ -356,13 +340,12 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   }
 
   ierr = PetscFree(mydata);CHKERRQ(ierr);
-  ierr = PetscFree(nidx);CHKERRQ(ierr); 
-  ierr = PetscFree(idx);CHKERRQ(ierr);
+  ierr = PetscFree(data2);CHKERRQ(ierr); 
+  ierr = PetscFree(n);CHKERRQ(ierr);
   ierr = PetscFree(s_waits1);CHKERRQ(ierr);
   ierr = PetscFree(s_waits2);CHKERRQ(ierr);
   ierr = PetscFree(s_status);CHKERRQ(ierr);
   ierr = PetscFree(table);CHKERRQ(ierr);
-  ierr = PetscFree(table_tmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -405,8 +388,6 @@ static int MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int *data,int **data_new,Pets
   garray = c->garray;
   rstart = c->rstart;
   is_max = data[0];
-
-  /* int rank=c->rank,prid=0; */ /* for debugging */
 
   ierr = PetscBTCreate(Mbs,table0);CHKERRQ(ierr);
   
