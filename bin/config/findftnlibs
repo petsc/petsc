@@ -1,0 +1,98 @@
+#! /bin/sh
+#
+# Find the libraries needed in Fortran by running both the C and Fortran 
+# compilers, using the -v option to extract the commands.  This works
+# for many but not all machines
+#
+# Create the sample programs
+trap  '/bin/rm -f t1$$.c t1$$.f t1$$c t1$$u t1$$f t1$$.o t1$$ t1$$c1 t1$$f1 ' 0 2 3 10
+cat > t1$$.f <<EOF
+      program main
+      end
+EOF
+cat > t1$$.c <<EOF
+      int main() { return 0; }
+EOF
+if test -z "$CC" ; then 
+    echo "Set CC to contain C compiler"
+    CC=cc
+fi
+if test -z "$FC" ; then
+    echo "Set FC to contain Fortran compiler"
+    FC=f77
+fi
+# Compile and link with the -v option; extract library options
+# Some compilers will generate multiple refs.  We may need to 
+# know about that, but for now, we depend on finding unique differences
+# We split on , as well as blank because some systems (AIX4) use exec 
+# notation with , separating args.
+# We can't split on , and blank, since for some systems (Solaris), the
+# comma is important in some options.
+# Rather, we try to identify
+# , separated: ... /bin/ld(ld,options,moreoptions)
+# blank separated: ... bin/ld option option ...
+$CC -o t1$$ -v t1$$.c 2>&1 | grep '/ld' > t1$$c1
+# 
+# Try to detect , separated form
+if grep 'ld,' t1$$c1 >/dev/null 2>&1 ; then
+    cat t1$$c1 | tr ',' '\012' | \
+        sed -n -e '/^-l/p' -e '/^-L/p' | \
+	sed -e 's/^P,/-P,/g' | sort | uniq > t1$$c
+else
+    cat t1$$c1 | tr ' ' '\012' | \
+        sed -n -e '/^-l/p' -e '/^-L/p' | \
+	sed -e 's/^P,/-P,/g' | sort | uniq > t1$$c
+fi
+$FC -o t1$$ -v t1$$.f 2>&1 | grep '/ld' > t1$$f1
+if grep 'ld,' t1$$f1 >/dev/null 2>&1 ; then
+    cat t1$$f1 | tr ',' '\012' | \
+        sed -n -e '/^-l/p' -e '/^-L/p' -e '/^P,/p' | \
+	sed -e 's/^P,/-P,/g' | sort | uniq > t1$$f
+else
+    cat t1$$f1 | tr ' ' '\012' | \
+        sed -n -e '/^-l/p' -e '/^-L/p' -e '/^P,/p' | \
+	sed -e 's/^P,/-P,/g' | sort | uniq > t1$$f
+fi
+#
+# Now, remove common libraries/search paths
+cat t1$$c t1$$f | sort | uniq -u > t1$$u
+#
+# Finally, since the ORDER is important, we extract those lines from
+# the original t1$$f file
+#echo 'u'
+#cat t1$$u
+#echo 'f'
+#cat t1$$f
+#echo 'c'
+#cat t1$$c
+#set -x
+#echo 'results'
+foundany=0
+#
+# One last complication:  Directory search paths need to precede the library
+# names.  Since -L preceeds -l, this will usually happen.  P, causes trouble,
+# so we convert P, to -P, above, 
+for line in `cat t1$$f` ; do
+    #line=`echo $line | sed -e 's/-/\\\\-/'`
+    pureline=`echo $line | sed -e 's/-/./'`
+#    if grep "'""$line\$""'" t1$$u 2>&1 >/dev/null ; then
+    if grep "$pureline\$" t1$$u 2>&1 >/dev/null ; then
+        # Special case: P,dirpath needs to be expanded
+	matchnum=`expr "$line" : '-P,'`
+	if [ "$matchnum" -eq 3 ] ; then
+	    newline=`echo $line | sed -e 's/^-P,/-L/g' -e 's/:/ -L/g'`
+	    line=$newline
+        fi
+        echo "$line"
+        foundany=1
+    fi
+done
+#
+if test $foundany = 0 ; then
+    echo 'u'
+    cat t1$$u
+    echo 'f'
+    cat t1$$f
+    echo 'c'
+    cat t1$$c
+fi
