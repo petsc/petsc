@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.142 1996/02/01 17:29:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.143 1996/02/01 18:53:05 curfman Exp balay $";
 #endif
 
 /*
@@ -10,6 +10,7 @@ static char vcid[] = "$Id: aij.c,v 1.142 1996/02/01 17:29:14 bsmith Exp curfman 
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
 #include "petsc.h"
+#include "inline/bitarray.h"
 
 extern int MatToSymmetricIJ_SeqAIJ(Mat_SeqAIJ*,int**,int**);
 
@@ -1151,49 +1152,52 @@ static int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatr
 static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        shift, row, i,j,k,l,m,n, *idx,ierr, *table, *nidx, isz, val;
+  int        shift, row, i,j,k,l,m,n, *idx,ierr, *nidx, isz, val;
   int        start, end, *ai, *aj;
-  
+  char       *table;
   shift = a->indexshift;
   m     = a->m;
   ai    = a->i;
   aj    = a->j+shift;
 
-  table = (int *) PetscMalloc(2*m*sizeof(int)); CHKPTRQ(table); nidx = table + m;
-  
   if (ov < 0)  SETERRQ(1,"MatIncreaseOverlap_SeqAIJ: illegal overlap value used");
+
+  table = (char *) PetscMalloc((m/BITSPERBYTE +1)*sizeof(char)); CHKPTRQ(table); 
+  nidx  = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(nidx); 
+
   for ( i=0; i<is_max; i++ ) {
     /* Initialise the two local arrays */
     isz  = 0;
-    PetscMemzero(table,m*sizeof(int));
-
-    /* Extract the indices, assume there can be duplicate entries */
+    PetscMemzero(table,(m/BITSPERBYTE +1)*sizeof(char));
+                 
+                /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);  CHKERRQ(ierr);
     ierr = ISGetLocalSize(is[i],&n);  CHKERRQ(ierr);
     
     /* Enter these into the temp arrays i.e mark table[row], enter row into new index */
     for ( j=0; j<n ; ++j){
-      if(!table[idx[j]]++) { nidx[isz++] = idx[j];}
+      if(!BT_LOOKUP(table, idx[j])) { nidx[isz++] = idx[j];}
     }
+    ierr = ISRestoreIndices(is[i],&idx);  CHKERRQ(ierr);
+    ierr = ISDestroy(is[i]); CHKERRQ(ierr);
     
     k = 0;
     for ( j=0; j<ov; j++){ /* for each overlap*/
       n = isz;
-      for ( ; k<n ; k++){ /* do only those rows in nidx[k] not yet done */
+      for ( ; k<n ; k++){ /* do only those rows in nidx[k], which are not done yet */
         row   = nidx[k];
         start = ai[row];
         end   = ai[row+1];
         for ( l = start; l<end ; l++){
           val = aj[l] + shift;
-          if (!table[val]++) {nidx[isz++] = val;}
+          if (!BT_LOOKUP(table,val)) {nidx[isz++] = val;}
         }
       }
     }
-    ierr = ISRestoreIndices(is[i],&idx);  CHKERRQ(ierr);
-    ierr = ISDestroy(is[i]); CHKERRQ(ierr);
     ierr = ISCreateSeq(MPI_COMM_SELF, isz, nidx, (is+i)); CHKERRQ(ierr);
   }
   PetscFree(table);
+  PetscFree(nidx);
   return 0;
 }
 
