@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.37 2000/10/31 15:29:45 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.38 2000/10/31 16:06:00 hzhang Exp hzhang $*/
 /*
     Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -831,230 +831,284 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------*/
-/*
-      Version for when blocks are 6 by 6
-*/
+/* Version for when blocks are 6 by 6 */
 #undef __FUNC__  
 #define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_6"
 int MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat A,Mat *B)
 {
-  Mat          C = *B;
-  Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
-  IS           isrow = b->row,isicol = b->icol;
-  int          *r,*ic,ierr,i,j,n = a->mbs,*bi = b->i,*bj = b->j;
-  int          *ajtmpold,*ajtmp,nz,row;
-  int          *diag_offset = b->diag,idx,*ai=a->i,*aj=a->j,*pj;
-  MatScalar    *pv,*v,*rtmp,*pc,*w,*x;
-  MatScalar    p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
-  MatScalar    p5,p6,p7,p8,p9,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16;
-  MatScalar    x17,x18,x19,x20,x21,x22,x23,x24,x25,p10,p11,p12,p13,p14;
-  MatScalar    p15,p16,p17,p18,p19,p20,p21,p22,p23,p24,p25,m10,m11,m12;
-  MatScalar    m13,m14,m15,m16,m17,m18,m19,m20,m21,m22,m23,m24,m25;
-  MatScalar    p26,p27,p28,p29,p30,p31,p32,p33,p34,p35,p36;
-  MatScalar    x26,x27,x28,x29,x30,x31,x32,x33,x34,x35,x36;
-  MatScalar    m26,m27,m28,m29,m30,m31,m32,m33,m34,m35,m36;
-  MatScalar    *ba = b->a,*aa = a->a;
+  Mat                C = *B;
+  Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
+  IS                 perm = b->row;
+  int                *perm_ptr,ierr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  int                *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
+  MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
+  MatScalar          *u,*d,*w,*wp;
 
   PetscFunctionBegin;
-  ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
-  ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  rtmp  = (MatScalar*)PetscMalloc(36*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
+  /* initialization */
+  w  = (MatScalar*)PetscMalloc(36*mbs*sizeof(MatScalar));CHKPTRQ(w);
+  ierr = PetscMemzero(w,36*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
+  il = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(il);
+  jl = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(jl);
+  for (i=0; i<mbs; i++) {
+    jl[i] = mbs; il[0] = 0;
+  }
+  dk    = (MatScalar*)PetscMalloc(36*sizeof(MatScalar));CHKPTRQ(dk);
+  uik   = (MatScalar*)PetscMalloc(36*sizeof(MatScalar));CHKPTRQ(uik);     
+  ierr  = ISGetIndices(perm,&perm_ptr);CHKERRQ(ierr);
 
-  for (i=0; i<n; i++) {
-    nz    = bi[i+1] - bi[i];
-    ajtmp = bj + bi[i];
-    for  (j=0; j<nz; j++) {
-      x = rtmp+36*ajtmp[j]; 
-      x[0] = x[1] = x[2] = x[3] = x[4] = x[5] = x[6] = x[7] = x[8] = x[9] = 0.0;
-      x[10] = x[11] = x[12] = x[13] = x[14] = x[15] = x[16] = x[17] = 0.0;
-      x[18] = x[19] = x[20] = x[21] = x[22] = x[23] = x[24] = x[25] = 0.0 ;
-      x[26] = x[27] = x[28] = x[29] = x[30] = x[31] = x[32] = x[33] = 0.0 ;
-      x[34] = x[35] = 0.0 ;
-    }
-    /* load in initial (unfactored row) */
-    idx      = r[i];
-    nz       = ai[idx+1] - ai[idx];
-    ajtmpold = aj + ai[idx];
-    v        = aa + 36*ai[idx];
-    for (j=0; j<nz; j++) {
-      x    = rtmp+36*ic[ajtmpold[j]];
-      x[0] =  v[0];  x[1] =  v[1];  x[2] =  v[2];  x[3] =  v[3];
-      x[4] =  v[4];  x[5] =  v[5];  x[6] =  v[6];  x[7] =  v[7]; 
-      x[8] =  v[8];  x[9] =  v[9];  x[10] = v[10]; x[11] = v[11]; 
-      x[12] = v[12]; x[13] = v[13]; x[14] = v[14]; x[15] = v[15]; 
-      x[16] = v[16]; x[17] = v[17]; x[18] = v[18]; x[19] = v[19]; 
-      x[20] = v[20]; x[21] = v[21]; x[22] = v[22]; x[23] = v[23]; 
-      x[24] = v[24]; x[25] = v[25]; x[26] = v[26]; x[27] = v[27]; 
-      x[28] = v[28]; x[29] = v[29]; x[30] = v[30]; x[31] = v[31]; 
-      x[32] = v[32]; x[33] = v[33]; x[34] = v[34]; x[35] = v[35]; 
-      v    += 36;
-    }
-    row = *ajtmp++;
-    while (row < i) {
-      pc  =  rtmp + 36*row;
-      p1  = pc[0];  p2  = pc[1];  p3  = pc[2];  p4  = pc[3];
-      p5  = pc[4];  p6  = pc[5];  p7  = pc[6];  p8  = pc[7];
-      p9  = pc[8];  p10 = pc[9];  p11 = pc[10]; p12 = pc[11]; 
-      p13 = pc[12]; p14 = pc[13]; p15 = pc[14]; p16 = pc[15]; 
-      p17 = pc[16]; p18 = pc[17]; p19 = pc[18]; p20 = pc[19];
-      p21 = pc[20]; p22 = pc[21]; p23 = pc[22]; p24 = pc[23];
-      p25 = pc[24]; p26 = pc[25]; p27 = pc[26]; p28 = pc[27];
-      p29 = pc[28]; p30 = pc[29]; p31 = pc[30]; p32 = pc[31];
-      p33 = pc[32]; p34 = pc[33]; p35 = pc[34]; p36 = pc[35];
-      if (p1  != 0.0 || p2  != 0.0 || p3  != 0.0 || p4  != 0.0 || 
-          p5  != 0.0 || p6  != 0.0 || p7  != 0.0 || p8  != 0.0 ||
-          p9  != 0.0 || p10 != 0.0 || p11 != 0.0 || p12 != 0.0 || 
-          p13 != 0.0 || p14 != 0.0 || p15 != 0.0 || p16 != 0.0 ||
-          p17 != 0.0 || p18 != 0.0 || p19 != 0.0 || p20 != 0.0 ||
-          p21 != 0.0 || p22 != 0.0 || p23 != 0.0 || p24 != 0.0 ||
-          p25 != 0.0 || p26 != 0.0 || p27 != 0.0 || p28 != 0.0 ||
-          p29 != 0.0 || p30 != 0.0 || p31 != 0.0 || p32 != 0.0 ||
-          p33 != 0.0 || p34 != 0.0 || p35 != 0.0 || p36 != 0.0) { 
-        pv = ba + 36*diag_offset[row];
-        pj = bj + diag_offset[row] + 1;
-	x1  = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
-	x5  = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];
-	x9  = pv[8];  x10 = pv[9];  x11 = pv[10]; x12 = pv[11]; 
-	x13 = pv[12]; x14 = pv[13]; x15 = pv[14]; x16 = pv[15]; 
-	x17 = pv[16]; x18 = pv[17]; x19 = pv[18]; x20 = pv[19];
-	x21 = pv[20]; x22 = pv[21]; x23 = pv[22]; x24 = pv[23];
-	x25 = pv[24]; x26 = pv[25]; x27 = pv[26]; x28 = pv[27];
-	x29 = pv[28]; x30 = pv[29]; x31 = pv[30]; x32 = pv[31];
-	x33 = pv[32]; x34 = pv[33]; x35 = pv[34]; x36 = pv[35];
-        pc[0]  = m1  = p1*x1  + p7*x2   + p13*x3  + p19*x4  + p25*x5  + p31*x6;
-        pc[1]  = m2  = p2*x1  + p8*x2   + p14*x3  + p20*x4  + p26*x5  + p32*x6;
-        pc[2]  = m3  = p3*x1  + p9*x2   + p15*x3  + p21*x4  + p27*x5  + p33*x6;
-        pc[3]  = m4  = p4*x1  + p10*x2  + p16*x3  + p22*x4  + p28*x5  + p34*x6;
-        pc[4]  = m5  = p5*x1  + p11*x2  + p17*x3  + p23*x4  + p29*x5  + p35*x6;
-        pc[5]  = m6  = p6*x1  + p12*x2  + p18*x3  + p24*x4  + p30*x5  + p36*x6;
+  /* check permutation */
+  if (!a->permute){
+    ai = a->i; aj = a->j; aa = a->a;
+  } else {
+    ai = a->inew; aj = a->jnew; 
+    aa = (MatScalar*)PetscMalloc(36*ai[mbs]*sizeof(MatScalar));CHKPTRQ(aa); 
+    ierr = PetscMemcpy(aa,a->a,36*ai[mbs]*sizeof(MatScalar));CHKERRQ(ierr);
+    a2anew  = (int*)PetscMalloc(ai[mbs]*sizeof(int));CHKPTRQ(a2anew); 
+    ierr= PetscMemcpy(a2anew,a->a2anew,(ai[mbs])*sizeof(int));CHKERRQ(ierr);
 
-        pc[6]  = m7  = p1*x7  + p7*x8   + p13*x9  + p19*x10 + p25*x11 + p31*x12;
-        pc[7]  = m8  = p2*x7  + p8*x8   + p14*x9  + p20*x10 + p26*x11 + p32*x12;
-        pc[8]  = m9  = p3*x7  + p9*x8   + p15*x9  + p21*x10 + p27*x11 + p33*x12;
-        pc[9]  = m10 = p4*x7  + p10*x8  + p16*x9  + p22*x10 + p28*x11 + p34*x12;
-        pc[10] = m11 = p5*x7  + p11*x8  + p17*x9  + p23*x10 + p29*x11 + p35*x12;
-        pc[11] = m12 = p6*x7  + p12*x8  + p18*x9  + p24*x10 + p30*x11 + p36*x12;
-
-        pc[12] = m13 = p1*x13 + p7*x14  + p13*x15 + p19*x16 + p25*x17 + p31*x18;
-        pc[13] = m14 = p2*x13 + p8*x14  + p14*x15 + p20*x16 + p26*x17 + p32*x18;
-        pc[14] = m15 = p3*x13 + p9*x14  + p15*x15 + p21*x16 + p27*x17 + p33*x18;
-        pc[15] = m16 = p4*x13 + p10*x14 + p16*x15 + p22*x16 + p28*x17 + p34*x18;
-        pc[16] = m17 = p5*x13 + p11*x14 + p17*x15 + p23*x16 + p29*x17 + p35*x18;
-        pc[17] = m18 = p6*x13 + p12*x14 + p18*x15 + p24*x16 + p30*x17 + p36*x18;
-
-        pc[18] = m19 = p1*x19 + p7*x20  + p13*x21 + p19*x22 + p25*x23 + p31*x24;
-        pc[19] = m20 = p2*x19 + p8*x20  + p14*x21 + p20*x22 + p26*x23 + p32*x24;
-        pc[20] = m21 = p3*x19 + p9*x20  + p15*x21 + p21*x22 + p27*x23 + p33*x24;
-        pc[21] = m22 = p4*x19 + p10*x20 + p16*x21 + p22*x22 + p28*x23 + p34*x24;
-        pc[22] = m23 = p5*x19 + p11*x20 + p17*x21 + p23*x22 + p29*x23 + p35*x24;
-        pc[23] = m24 = p6*x19 + p12*x20 + p18*x21 + p24*x22 + p30*x23 + p36*x24;
-
-        pc[24] = m25 = p1*x25 + p7*x26  + p13*x27 + p19*x28 + p25*x29 + p31*x30;
-        pc[25] = m26 = p2*x25 + p8*x26  + p14*x27 + p20*x28 + p26*x29 + p32*x30;
-        pc[26] = m27 = p3*x25 + p9*x26  + p15*x27 + p21*x28 + p27*x29 + p33*x30;
-        pc[27] = m28 = p4*x25 + p10*x26 + p16*x27 + p22*x28 + p28*x29 + p34*x30;
-        pc[28] = m29 = p5*x25 + p11*x26 + p17*x27 + p23*x28 + p29*x29 + p35*x30;
-        pc[29] = m30 = p6*x25 + p12*x26 + p18*x27 + p24*x28 + p30*x29 + p36*x30;
-
-        pc[30] = m31 = p1*x31 + p7*x32  + p13*x33 + p19*x34 + p25*x35 + p31*x36;
-        pc[31] = m32 = p2*x31 + p8*x32  + p14*x33 + p20*x34 + p26*x35 + p32*x36;
-        pc[32] = m33 = p3*x31 + p9*x32  + p15*x33 + p21*x34 + p27*x35 + p33*x36;
-        pc[33] = m34 = p4*x31 + p10*x32 + p16*x33 + p22*x34 + p28*x35 + p34*x36;
-        pc[34] = m35 = p5*x31 + p11*x32 + p17*x33 + p23*x34 + p29*x35 + p35*x36;
-        pc[35] = m36 = p6*x31 + p12*x32 + p18*x33 + p24*x34 + p30*x35 + p36*x36;
-
-        nz = bi[row+1] - diag_offset[row] - 1;
-        pv += 36;
-        for (j=0; j<nz; j++) {
-	  x1  = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
-	  x5  = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];
-	  x9  = pv[8];  x10 = pv[9];  x11 = pv[10]; x12 = pv[11]; 
-	  x13 = pv[12]; x14 = pv[13]; x15 = pv[14]; x16 = pv[15]; 
-	  x17 = pv[16]; x18 = pv[17]; x19 = pv[18]; x20 = pv[19];
-	  x21 = pv[20]; x22 = pv[21]; x23 = pv[22]; x24 = pv[23];
-	  x25 = pv[24]; x26 = pv[25]; x27 = pv[26]; x28 = pv[27];
-	  x29 = pv[28]; x30 = pv[29]; x31 = pv[30]; x32 = pv[31];
-	  x33 = pv[32]; x34 = pv[33]; x35 = pv[34]; x36 = pv[35];
-	  x    = rtmp + 36*pj[j];
-          x[0]  -= m1*x1  + m7*x2   + m13*x3  + m19*x4  + m25*x5  + m31*x6;
-          x[1]  -= m2*x1  + m8*x2   + m14*x3  + m20*x4  + m26*x5  + m32*x6;
-          x[2]  -= m3*x1  + m9*x2   + m15*x3  + m21*x4  + m27*x5  + m33*x6;
-          x[3]  -= m4*x1  + m10*x2  + m16*x3  + m22*x4  + m28*x5  + m34*x6;
-          x[4]  -= m5*x1  + m11*x2  + m17*x3  + m23*x4  + m29*x5  + m35*x6;
-          x[5]  -= m6*x1  + m12*x2  + m18*x3  + m24*x4  + m30*x5  + m36*x6;
-
-	  x[6]  -= m1*x7  + m7*x8   + m13*x9  + m19*x10 + m25*x11 + m31*x12;
-	  x[7]  -= m2*x7  + m8*x8   + m14*x9  + m20*x10 + m26*x11 + m32*x12;
-	  x[8]  -= m3*x7  + m9*x8   + m15*x9  + m21*x10 + m27*x11 + m33*x12;
-	  x[9]  -= m4*x7  + m10*x8  + m16*x9  + m22*x10 + m28*x11 + m34*x12;
-	  x[10] -= m5*x7  + m11*x8  + m17*x9  + m23*x10 + m29*x11 + m35*x12;
-	  x[11] -= m6*x7  + m12*x8  + m18*x9  + m24*x10 + m30*x11 + m36*x12;
-
-	  x[12] -= m1*x13 + m7*x14  + m13*x15 + m19*x16 + m25*x17 + m31*x18;
-	  x[13] -= m2*x13 + m8*x14  + m14*x15 + m20*x16 + m26*x17 + m32*x18;
-	  x[14] -= m3*x13 + m9*x14  + m15*x15 + m21*x16 + m27*x17 + m33*x18;
-	  x[15] -= m4*x13 + m10*x14 + m16*x15 + m22*x16 + m28*x17 + m34*x18;
-	  x[16] -= m5*x13 + m11*x14 + m17*x15 + m23*x16 + m29*x17 + m35*x18;
-	  x[17] -= m6*x13 + m12*x14 + m18*x15 + m24*x16 + m30*x17 + m36*x18;
-
-	  x[18] -= m1*x19 + m7*x20  + m13*x21 + m19*x22 + m25*x23 + m31*x24;
-	  x[19] -= m2*x19 + m8*x20  + m14*x21 + m20*x22 + m26*x23 + m32*x24;
-	  x[20] -= m3*x19 + m9*x20  + m15*x21 + m21*x22 + m27*x23 + m33*x24;
-	  x[21] -= m4*x19 + m10*x20 + m16*x21 + m22*x22 + m28*x23 + m34*x24;
-	  x[22] -= m5*x19 + m11*x20 + m17*x21 + m23*x22 + m29*x23 + m35*x24;
-	  x[23] -= m6*x19 + m12*x20 + m18*x21 + m24*x22 + m30*x23 + m36*x24;
-
-	  x[24] -= m1*x25 + m7*x26  + m13*x27 + m19*x28 + m25*x29 + m31*x30;
-	  x[25] -= m2*x25 + m8*x26  + m14*x27 + m20*x28 + m26*x29 + m32*x30;
-	  x[26] -= m3*x25 + m9*x26  + m15*x27 + m21*x28 + m27*x29 + m33*x30;
-	  x[27] -= m4*x25 + m10*x26 + m16*x27 + m22*x28 + m28*x29 + m34*x30;
-	  x[28] -= m5*x25 + m11*x26 + m17*x27 + m23*x28 + m29*x29 + m35*x30;
-	  x[29] -= m6*x25 + m12*x26 + m18*x27 + m24*x28 + m30*x29 + m36*x30;
-
-	  x[30] -= m1*x31 + m7*x32  + m13*x33 + m19*x34 + m25*x35 + m31*x36;
-	  x[31] -= m2*x31 + m8*x32  + m14*x33 + m20*x34 + m26*x35 + m32*x36;
-	  x[32] -= m3*x31 + m9*x32  + m15*x33 + m21*x34 + m27*x35 + m33*x36;
-	  x[33] -= m4*x31 + m10*x32 + m16*x33 + m22*x34 + m28*x35 + m34*x36;
-	  x[34] -= m5*x31 + m11*x32 + m17*x33 + m23*x34 + m29*x35 + m35*x36;
-	  x[35] -= m6*x31 + m12*x32 + m18*x33 + m24*x34 + m30*x35 + m36*x36;
-
-          pv   += 36;
+    for (i=0; i<mbs; i++){
+      jmin = ai[i]; jmax = ai[i+1];
+      for (j=jmin; j<jmax; j++){
+        while (a2anew[j] != j){  
+          k = a2anew[j]; a2anew[j] = a2anew[k]; a2anew[k] = k;  
+          for (k1=0; k1<36; k1++){
+            dk[k1]       = aa[k*36+k1]; 
+            aa[k*36+k1] = aa[j*36+k1]; 
+            aa[j*36+k1] = dk[k1];   
+          }
         }
-        PLogFlops(432*nz+396);
+        /* transform columnoriented blocks that lie in the lower triangle to roworiented blocks */
+        if (i > aj[j]){ 
+          /* printf("change orientation, row: %d, col: %d\n",i,aj[j]); */
+          ap = aa + j*36;                     /* ptr to the beginning of j-th block of aa */
+          for (k=0; k<36; k++) dk[k] = ap[k]; /* dk <- j-th block of aa */
+          for (k=0; k<6; k++){               /* j-th block of aa <- dk^T */
+            for (k1=0; k1<6; k1++) *ap++ = dk[k + 6*k1];         
+          }
+        }
+      }
+    }
+    ierr = PetscFree(a2anew);CHKERRA(ierr); 
+  }
+  
+  /* for each row k */
+  for (k = 0; k<mbs; k++){
+
+    /*initialize k-th row with elements nonzero in row perm(k) of A */
+    jmin = ai[perm_ptr[k]]; jmax = ai[perm_ptr[k]+1];
+    if (jmin < jmax) {
+      ap = aa + jmin*36;
+      for (j = jmin; j < jmax; j++){
+        vj = perm_ptr[aj[j]];         /* block col. index */  
+        wp = w + vj*36;
+        for (i=0; i<36; i++) *wp++ = *ap++;        
       } 
-      row = *ajtmp++;
+    } 
+
+    /* modify k-th row by adding in those rows i with U(i,k) != 0 */
+    ierr = PetscMemcpy(dk,w+k*36,36*sizeof(MatScalar));CHKERRQ(ierr); 
+    i = jl[k]; /* first row to be added to k_th row  */  
+
+    while (i < mbs){
+      nexti = jl[i]; /* next row to be added to k_th row */
+
+      /* compute multiplier */
+      ili = il[i];  /* index of first nonzero element in U(i,k:bms-1) */
+
+      /* uik = -inv(Di)*U_bar(i,k) */
+      d = ba + i*36;
+      u    = ba + ili*36;
+
+      uik[0] = -(d[0]*u[0] + d[6]*u[1] + d[12]*u[2] + d[18]*u[3] + d[24]*u[4] + d[30]*u[5]);
+      uik[1] = -(d[1]*u[0] + d[7]*u[1] + d[13]*u[2] + d[19]*u[3] + d[25]*u[4] + d[31]*u[5]);
+      uik[2] = -(d[2]*u[0] + d[8]*u[1] + d[14]*u[2] + d[20]*u[3] + d[26]*u[4] + d[32]*u[5]);
+      uik[3] = -(d[3]*u[0] + d[9]*u[1] + d[15]*u[2] + d[21]*u[3] + d[27]*u[4] + d[33]*u[5]);
+      uik[4] = -(d[4]*u[0]+ d[10]*u[1] + d[16]*u[2] + d[22]*u[3] + d[28]*u[4] + d[34]*u[5]);
+      uik[5] = -(d[5]*u[0]+ d[11]*u[1] + d[17]*u[2] + d[23]*u[3] + d[29]*u[4] + d[35]*u[5]);
+
+      uik[6] = -(d[0]*u[6] + d[6]*u[7] + d[12]*u[8] + d[18]*u[9] + d[24]*u[10] + d[30]*u[11]);
+      uik[7] = -(d[1]*u[6] + d[7]*u[7] + d[13]*u[8] + d[19]*u[9] + d[25]*u[10] + d[31]*u[11]);
+      uik[8] = -(d[2]*u[6] + d[8]*u[7] + d[14]*u[8] + d[20]*u[9] + d[26]*u[10] + d[32]*u[11]);
+      uik[9] = -(d[3]*u[6] + d[9]*u[7] + d[15]*u[8] + d[21]*u[9] + d[27]*u[10] + d[33]*u[11]);
+      uik[10]= -(d[4]*u[6]+ d[10]*u[7] + d[16]*u[8] + d[22]*u[9] + d[28]*u[10] + d[34]*u[11]);
+      uik[11]= -(d[5]*u[6]+ d[11]*u[7] + d[17]*u[8] + d[23]*u[9] + d[29]*u[10] + d[35]*u[11]);
+
+      uik[12] = -(d[0]*u[12] + d[6]*u[13] + d[12]*u[14] + d[18]*u[15] + d[24]*u[16] + d[30]*u[17]);
+      uik[13] = -(d[1]*u[12] + d[7]*u[13] + d[13]*u[14] + d[19]*u[15] + d[25]*u[16] + d[31]*u[17]);
+      uik[14] = -(d[2]*u[12] + d[8]*u[13] + d[14]*u[14] + d[20]*u[15] + d[26]*u[16] + d[32]*u[17]);
+      uik[15] = -(d[3]*u[12] + d[9]*u[13] + d[15]*u[14] + d[21]*u[15] + d[27]*u[16] + d[33]*u[17]);
+      uik[16] = -(d[4]*u[12]+ d[10]*u[13] + d[16]*u[14] + d[22]*u[15] + d[28]*u[16] + d[34]*u[17]);
+      uik[17] = -(d[5]*u[12]+ d[11]*u[13] + d[17]*u[14] + d[23]*u[15] + d[29]*u[16] + d[35]*u[17]);
+
+      uik[18] = -(d[0]*u[18] + d[6]*u[19] + d[12]*u[20] + d[18]*u[21] + d[24]*u[22] + d[30]*u[23]);
+      uik[19] = -(d[1]*u[18] + d[7]*u[19] + d[13]*u[20] + d[19]*u[21] + d[25]*u[22] + d[31]*u[23]);
+      uik[20] = -(d[2]*u[18] + d[8]*u[19] + d[14]*u[20] + d[20]*u[21] + d[26]*u[22] + d[32]*u[23]);
+      uik[21] = -(d[3]*u[18] + d[9]*u[19] + d[15]*u[20] + d[21]*u[21] + d[27]*u[22] + d[33]*u[23]);
+      uik[22] = -(d[4]*u[18]+ d[10]*u[19] + d[16]*u[20] + d[22]*u[21] + d[28]*u[22] + d[34]*u[23]);
+      uik[23] = -(d[5]*u[18]+ d[11]*u[19] + d[17]*u[20] + d[23]*u[21] + d[29]*u[22] + d[35]*u[23]);
+
+      uik[24] = -(d[0]*u[24] + d[6]*u[25] + d[12]*u[26] + d[18]*u[27] + d[24]*u[28] + d[30]*u[29]);
+      uik[25] = -(d[1]*u[24] + d[7]*u[25] + d[13]*u[26] + d[19]*u[27] + d[25]*u[28] + d[31]*u[29]);
+      uik[26] = -(d[2]*u[24] + d[8]*u[25] + d[14]*u[26] + d[20]*u[27] + d[26]*u[28] + d[32]*u[29]);
+      uik[27] = -(d[3]*u[24] + d[9]*u[25] + d[15]*u[26] + d[21]*u[27] + d[27]*u[28] + d[33]*u[29]);
+      uik[28] = -(d[4]*u[24]+ d[10]*u[25] + d[16]*u[26] + d[22]*u[27] + d[28]*u[28] + d[34]*u[29]);
+      uik[29] = -(d[5]*u[24]+ d[11]*u[25] + d[17]*u[26] + d[23]*u[27] + d[29]*u[28] + d[35]*u[29]);
+
+      uik[30] = -(d[0]*u[30] + d[6]*u[31] + d[12]*u[32] + d[18]*u[33] + d[24]*u[34] + d[30]*u[35]);
+      uik[31] = -(d[1]*u[30] + d[7]*u[31] + d[13]*u[32] + d[19]*u[33] + d[25]*u[34] + d[31]*u[35]);
+      uik[32] = -(d[2]*u[30] + d[8]*u[31] + d[14]*u[32] + d[20]*u[33] + d[26]*u[34] + d[32]*u[35]);
+      uik[33] = -(d[3]*u[30] + d[9]*u[31] + d[15]*u[32] + d[21]*u[33] + d[27]*u[34] + d[33]*u[35]);
+      uik[34] = -(d[4]*u[30]+ d[10]*u[31] + d[16]*u[32] + d[22]*u[33] + d[28]*u[34] + d[34]*u[35]);
+      uik[35] = -(d[5]*u[30]+ d[11]*u[31] + d[17]*u[32] + d[23]*u[33] + d[29]*u[34] + d[35]*u[35]);
+
+      /* update D(k) += -U(i,k)^T * U_bar(i,k) */  
+      dk[0] +=  uik[0]*u[0] + uik[1]*u[1] + uik[2]*u[2] + uik[3]*u[3] + uik[4]*u[4] + uik[5]*u[5];
+      dk[1] +=  uik[6]*u[0] + uik[7]*u[1] + uik[8]*u[2] + uik[9]*u[3]+ uik[10]*u[4]+ uik[11]*u[5];
+      dk[2] += uik[12]*u[0]+ uik[13]*u[1]+ uik[14]*u[2]+ uik[15]*u[3]+ uik[16]*u[4]+ uik[17]*u[5];
+      dk[3] += uik[18]*u[0]+ uik[19]*u[1]+ uik[20]*u[2]+ uik[21]*u[3]+ uik[22]*u[4]+ uik[23]*u[5];
+      dk[4] += uik[24]*u[0]+ uik[25]*u[1]+ uik[26]*u[2]+ uik[27]*u[3]+ uik[28]*u[4]+ uik[29]*u[5];
+      dk[5] += uik[30]*u[0]+ uik[31]*u[1]+ uik[32]*u[2]+ uik[33]*u[3]+ uik[34]*u[4]+ uik[35]*u[5];
+
+      dk[6] +=  uik[0]*u[6] + uik[1]*u[7] + uik[2]*u[8] + uik[3]*u[9] + uik[4]*u[10] + uik[5]*u[11];
+      dk[7] +=  uik[6]*u[6] + uik[7]*u[7] + uik[8]*u[8] + uik[9]*u[9]+ uik[10]*u[10]+ uik[11]*u[11];
+      dk[8] += uik[12]*u[6]+ uik[13]*u[7]+ uik[14]*u[8]+ uik[15]*u[9]+ uik[16]*u[10]+ uik[17]*u[11];
+      dk[9] += uik[18]*u[6]+ uik[19]*u[7]+ uik[20]*u[8]+ uik[21]*u[9]+ uik[22]*u[10]+ uik[23]*u[11];
+      dk[10]+= uik[24]*u[6]+ uik[25]*u[7]+ uik[26]*u[8]+ uik[27]*u[9]+ uik[28]*u[10]+ uik[29]*u[11];
+      dk[11]+= uik[30]*u[6]+ uik[31]*u[7]+ uik[32]*u[8]+ uik[33]*u[9]+ uik[34]*u[10]+ uik[35]*u[11];
+
+      dk[12]+=  uik[0]*u[12] + uik[1]*u[13] + uik[2]*u[14] + uik[3]*u[15] + uik[4]*u[16] + uik[5]*u[17];
+      dk[13]+=  uik[6]*u[12] + uik[7]*u[13] + uik[8]*u[14] + uik[9]*u[15]+ uik[10]*u[16]+ uik[11]*u[17];
+      dk[14]+= uik[12]*u[12]+ uik[13]*u[13]+ uik[14]*u[14]+ uik[15]*u[15]+ uik[16]*u[16]+ uik[17]*u[17];
+      dk[15]+= uik[18]*u[12]+ uik[19]*u[13]+ uik[20]*u[14]+ uik[21]*u[15]+ uik[22]*u[16]+ uik[23]*u[17];
+      dk[16]+= uik[24]*u[12]+ uik[25]*u[13]+ uik[26]*u[14]+ uik[27]*u[15]+ uik[28]*u[16]+ uik[29]*u[17];
+      dk[17]+= uik[30]*u[12]+ uik[31]*u[13]+ uik[32]*u[14]+ uik[33]*u[15]+ uik[34]*u[16]+ uik[35]*u[17];
+
+      dk[18]+=  uik[0]*u[18] + uik[1]*u[19] + uik[2]*u[20] + uik[3]*u[21] + uik[4]*u[22] + uik[5]*u[23];
+      dk[19]+=  uik[6]*u[18] + uik[7]*u[19] + uik[8]*u[20] + uik[9]*u[21]+ uik[10]*u[22]+ uik[11]*u[23];
+      dk[20]+= uik[12]*u[18]+ uik[13]*u[19]+ uik[14]*u[20]+ uik[15]*u[21]+ uik[16]*u[22]+ uik[17]*u[23];
+      dk[21]+= uik[18]*u[18]+ uik[19]*u[19]+ uik[20]*u[20]+ uik[21]*u[21]+ uik[22]*u[22]+ uik[23]*u[23];
+      dk[22]+= uik[24]*u[18]+ uik[25]*u[19]+ uik[26]*u[20]+ uik[27]*u[21]+ uik[28]*u[22]+ uik[29]*u[23];
+      dk[23]+= uik[30]*u[18]+ uik[31]*u[19]+ uik[32]*u[20]+ uik[33]*u[21]+ uik[34]*u[22]+ uik[35]*u[23];
+
+      dk[24]+=  uik[0]*u[24] + uik[1]*u[25] + uik[2]*u[26] + uik[3]*u[27] + uik[4]*u[28] + uik[5]*u[29];
+      dk[25]+=  uik[6]*u[24] + uik[7]*u[25] + uik[8]*u[26] + uik[9]*u[27]+ uik[10]*u[28]+ uik[11]*u[29];
+      dk[26]+= uik[12]*u[24]+ uik[13]*u[25]+ uik[14]*u[26]+ uik[15]*u[27]+ uik[16]*u[28]+ uik[17]*u[29];
+      dk[27]+= uik[18]*u[24]+ uik[19]*u[25]+ uik[20]*u[26]+ uik[21]*u[27]+ uik[22]*u[28]+ uik[23]*u[29];
+      dk[28]+= uik[24]*u[24]+ uik[25]*u[25]+ uik[26]*u[26]+ uik[27]*u[27]+ uik[28]*u[28]+ uik[29]*u[29];
+      dk[29]+= uik[30]*u[24]+ uik[31]*u[25]+ uik[32]*u[26]+ uik[33]*u[27]+ uik[34]*u[28]+ uik[35]*u[29];
+
+      dk[30]+=  uik[0]*u[30] + uik[1]*u[31] + uik[2]*u[32] + uik[3]*u[33] + uik[4]*u[34] + uik[5]*u[35];
+      dk[31]+=  uik[6]*u[30] + uik[7]*u[31] + uik[8]*u[32] + uik[9]*u[33]+ uik[10]*u[34]+ uik[11]*u[35];
+      dk[32]+= uik[12]*u[30]+ uik[13]*u[31]+ uik[14]*u[32]+ uik[15]*u[33]+ uik[16]*u[34]+ uik[17]*u[35];
+      dk[33]+= uik[18]*u[30]+ uik[19]*u[31]+ uik[20]*u[32]+ uik[21]*u[33]+ uik[22]*u[34]+ uik[23]*u[35];
+      dk[34]+= uik[24]*u[30]+ uik[25]*u[31]+ uik[26]*u[32]+ uik[27]*u[33]+ uik[28]*u[34]+ uik[29]*u[35];
+      dk[35]+= uik[30]*u[30]+ uik[31]*u[31]+ uik[32]*u[32]+ uik[33]*u[33]+ uik[34]*u[34]+ uik[35]*u[35];
+ 
+      /* update -U(i,k) */
+      ierr = PetscMemcpy(ba+ili*36,uik,36*sizeof(MatScalar));CHKERRQ(ierr); 
+
+      /* add multiple of row i to k-th row ... */
+      jmin = ili + 1; jmax = bi[i+1];
+      if (jmin < jmax){
+        for (j=jmin; j<jmax; j++) {
+          /* w += -U(i,k)^T * U_bar(i,j) */
+          wp = w + bj[j]*36;
+          u = ba + j*36;
+          wp[0] +=  uik[0]*u[0] + uik[1]*u[1] + uik[2]*u[2] + uik[3]*u[3] + uik[4]*u[4] + uik[5]*u[5];
+          wp[1] +=  uik[6]*u[0] + uik[7]*u[1] + uik[8]*u[2] + uik[9]*u[3]+ uik[10]*u[4]+ uik[11]*u[5];
+          wp[2] += uik[12]*u[0]+ uik[13]*u[1]+ uik[14]*u[2]+ uik[15]*u[3]+ uik[16]*u[4]+ uik[17]*u[5];
+          wp[3] += uik[18]*u[0]+ uik[19]*u[1]+ uik[20]*u[2]+ uik[21]*u[3]+ uik[22]*u[4]+ uik[23]*u[5];
+          wp[4] += uik[24]*u[0]+ uik[25]*u[1]+ uik[26]*u[2]+ uik[27]*u[3]+ uik[28]*u[4]+ uik[29]*u[5];
+          wp[5] += uik[30]*u[0]+ uik[31]*u[1]+ uik[32]*u[2]+ uik[33]*u[3]+ uik[34]*u[4]+ uik[35]*u[5];
+
+          wp[6] +=  uik[0]*u[6] + uik[1]*u[7] + uik[2]*u[8] + uik[3]*u[9] + uik[4]*u[10] + uik[5]*u[11];
+          wp[7] +=  uik[6]*u[6] + uik[7]*u[7] + uik[8]*u[8] + uik[9]*u[9]+ uik[10]*u[10]+ uik[11]*u[11];
+          wp[8] += uik[12]*u[6]+ uik[13]*u[7]+ uik[14]*u[8]+ uik[15]*u[9]+ uik[16]*u[10]+ uik[17]*u[11];
+          wp[9] += uik[18]*u[6]+ uik[19]*u[7]+ uik[20]*u[8]+ uik[21]*u[9]+ uik[22]*u[10]+ uik[23]*u[11];
+          wp[10]+= uik[24]*u[6]+ uik[25]*u[7]+ uik[26]*u[8]+ uik[27]*u[9]+ uik[28]*u[10]+ uik[29]*u[11];
+          wp[11]+= uik[30]*u[6]+ uik[31]*u[7]+ uik[32]*u[8]+ uik[33]*u[9]+ uik[34]*u[10]+ uik[35]*u[11];
+
+          wp[12]+=  uik[0]*u[12] + uik[1]*u[13] + uik[2]*u[14] + uik[3]*u[15] + uik[4]*u[16] + uik[5]*u[17];
+          wp[13]+=  uik[6]*u[12] + uik[7]*u[13] + uik[8]*u[14] + uik[9]*u[15]+ uik[10]*u[16]+ uik[11]*u[17];
+          wp[14]+= uik[12]*u[12]+ uik[13]*u[13]+ uik[14]*u[14]+ uik[15]*u[15]+ uik[16]*u[16]+ uik[17]*u[17];
+          wp[15]+= uik[18]*u[12]+ uik[19]*u[13]+ uik[20]*u[14]+ uik[21]*u[15]+ uik[22]*u[16]+ uik[23]*u[17];
+          wp[16]+= uik[24]*u[12]+ uik[25]*u[13]+ uik[26]*u[14]+ uik[27]*u[15]+ uik[28]*u[16]+ uik[29]*u[17];
+          wp[17]+= uik[30]*u[12]+ uik[31]*u[13]+ uik[32]*u[14]+ uik[33]*u[15]+ uik[34]*u[16]+ uik[35]*u[17];
+
+          wp[18]+=  uik[0]*u[18] + uik[1]*u[19] + uik[2]*u[20] + uik[3]*u[21] + uik[4]*u[22] + uik[5]*u[23];
+          wp[19]+=  uik[6]*u[18] + uik[7]*u[19] + uik[8]*u[20] + uik[9]*u[21]+ uik[10]*u[22]+ uik[11]*u[23];
+          wp[20]+= uik[12]*u[18]+ uik[13]*u[19]+ uik[14]*u[20]+ uik[15]*u[21]+ uik[16]*u[22]+ uik[17]*u[23];
+          wp[21]+= uik[18]*u[18]+ uik[19]*u[19]+ uik[20]*u[20]+ uik[21]*u[21]+ uik[22]*u[22]+ uik[23]*u[23];
+          wp[22]+= uik[24]*u[18]+ uik[25]*u[19]+ uik[26]*u[20]+ uik[27]*u[21]+ uik[28]*u[22]+ uik[29]*u[23];
+          wp[23]+= uik[30]*u[18]+ uik[31]*u[19]+ uik[32]*u[20]+ uik[33]*u[21]+ uik[34]*u[22]+ uik[35]*u[23];
+
+          wp[24]+=  uik[0]*u[24] + uik[1]*u[25] + uik[2]*u[26] + uik[3]*u[27] + uik[4]*u[28] + uik[5]*u[29];
+          wp[25]+=  uik[6]*u[24] + uik[7]*u[25] + uik[8]*u[26] + uik[9]*u[27]+ uik[10]*u[28]+ uik[11]*u[29];
+          wp[26]+= uik[12]*u[24]+ uik[13]*u[25]+ uik[14]*u[26]+ uik[15]*u[27]+ uik[16]*u[28]+ uik[17]*u[29];
+          wp[27]+= uik[18]*u[24]+ uik[19]*u[25]+ uik[20]*u[26]+ uik[21]*u[27]+ uik[22]*u[28]+ uik[23]*u[29];
+          wp[28]+= uik[24]*u[24]+ uik[25]*u[25]+ uik[26]*u[26]+ uik[27]*u[27]+ uik[28]*u[28]+ uik[29]*u[29];
+          wp[29]+= uik[30]*u[24]+ uik[31]*u[25]+ uik[32]*u[26]+ uik[33]*u[27]+ uik[34]*u[28]+ uik[35]*u[29];
+
+          wp[30]+=  uik[0]*u[30] + uik[1]*u[31] + uik[2]*u[32] + uik[3]*u[33] + uik[4]*u[34] + uik[5]*u[35];
+          wp[31]+=  uik[6]*u[30] + uik[7]*u[31] + uik[8]*u[32] + uik[9]*u[33]+ uik[10]*u[34]+ uik[11]*u[35];
+          wp[32]+= uik[12]*u[30]+ uik[13]*u[31]+ uik[14]*u[32]+ uik[15]*u[33]+ uik[16]*u[34]+ uik[17]*u[35];
+          wp[33]+= uik[18]*u[30]+ uik[19]*u[31]+ uik[20]*u[32]+ uik[21]*u[33]+ uik[22]*u[34]+ uik[23]*u[35];
+          wp[34]+= uik[24]*u[30]+ uik[25]*u[31]+ uik[26]*u[32]+ uik[27]*u[33]+ uik[28]*u[34]+ uik[29]*u[35];
+          wp[35]+= uik[30]*u[30]+ uik[31]*u[31]+ uik[32]*u[32]+ uik[33]*u[33]+ uik[34]*u[34]+ uik[35]*u[35];
+        }
+      
+        /* ... add i to row list for next nonzero entry */
+        il[i] = jmin;             /* update il(i) in column k+1, ... mbs-1 */
+        j     = bj[jmin];
+        jl[i] = jl[j]; jl[j] = i; /* update jl */
+      }      
+      i = nexti;      
     }
-    /* finished row so stick it into b->a */
-    pv = ba + 36*bi[i];
-    pj = bj + bi[i];
-    nz = bi[i+1] - bi[i];
-    for (j=0; j<nz; j++) {
-      x      = rtmp+36*pj[j];
-      pv[0]  = x[0];  pv[1]  = x[1];  pv[2]  = x[2];  pv[3]  = x[3];
-      pv[4]  = x[4];  pv[5]  = x[5];  pv[6]  = x[6];  pv[7]  = x[7]; 
-      pv[8]  = x[8];  pv[9]  = x[9];  pv[10] = x[10]; pv[11] = x[11]; 
-      pv[12] = x[12]; pv[13] = x[13]; pv[14] = x[14]; pv[15] = x[15]; 
-      pv[16] = x[16]; pv[17] = x[17]; pv[18] = x[18]; pv[19] = x[19]; 
-      pv[20] = x[20]; pv[21] = x[21]; pv[22] = x[22]; pv[23] = x[23]; 
-      pv[24] = x[24]; pv[25] = x[25]; pv[26] = x[26]; pv[27] = x[27]; 
-      pv[28] = x[28]; pv[29] = x[29]; pv[30] = x[30]; pv[31] = x[31]; 
-      pv[32] = x[32]; pv[33] = x[33]; pv[34] = x[34]; pv[35] = x[35]; 
-      pv   += 36;
-    }
+
+    /* save nonzero entries in k-th row of U ... */
+
     /* invert diagonal block */
-    w = ba + 36*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_6(w);CHKERRQ(ierr);
+    d = ba+k*36;
+    ierr = PetscMemcpy(d,dk,36*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_6(d);CHKERRQ(ierr);
+    
+    jmin = bi[k]; jmax = bi[k+1];
+    if (jmin < jmax) {
+      for (j=jmin; j<jmax; j++){
+         vj = bj[j];           /* block col. index of U */
+         u   = ba + j*36;
+         wp = w + vj*36;        
+         for (k1=0; k1<36; k1++){
+           *u++        = *wp; 
+           *wp++ = 0.0;
+         }
+      } 
+      
+      /* ... add k to row list for first nonzero entry in k-th row */
+      il[k] = jmin;
+      i     = bj[jmin];
+      jl[k] = jl[i]; jl[i] = k;
+    }    
+  } 
+
+  ierr = PetscFree(w);CHKERRQ(ierr);
+  ierr = PetscFree(il);CHKERRQ(ierr);
+  ierr = PetscFree(jl);CHKERRQ(ierr); 
+  ierr = PetscFree(dk);CHKERRQ(ierr);
+  ierr = PetscFree(uik);CHKERRQ(ierr);
+  if (a->permute){
+    ierr = PetscFree(aa);CHKERRQ(ierr);
   }
 
-  ierr = PetscFree(rtmp);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  C->factor = FACTOR_LU;
+  ierr = ISRestoreIndices(perm,&perm_ptr);CHKERRQ(ierr);
+  C->factor    = FACTOR_CHOLESKY;
   C->assembled = PETSC_TRUE;
+  C->preallocated = PETSC_TRUE;  
   PLogFlops(1.3333*216*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
+
 /*
       Version for when blocks are 6 by 6 Using natural ordering
 */
