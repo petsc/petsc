@@ -26,6 +26,7 @@ PETSc names that should be changed.
  - SY -> Petsc? or PetscMem* ->? SYMem*
         
  - SYGetwd ->? SYGetWD (will be more consistant but ugly? satish)
+              prob SYGetWorkingDirectory() to be consistant with SYGetHomeDirectory()
    SYIsort ->  SYISort etc...  Or SYIntSort
 
 
