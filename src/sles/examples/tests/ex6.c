@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.29 1996/03/01 20:44:42 balay Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.30 1996/03/02 01:52:33 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -36,7 +36,7 @@ int main(int argc,char **args)
 
   /* Read matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
   ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
@@ -48,9 +48,9 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,x); CHKERRA(ierr);
 
   /* Solve system */
-  PLogEventRegister(&e1,"SLES_Create    ", "black");
-  PLogEventRegister(&e2,"Sles SetOper   ", "green");
-  PLogEventRegister(&e3,"SLES_Options   ", "orange");
+  PLogEventRegister(&e1,"*SLESCreate    ", "red");
+  PLogEventRegister(&e2,"*SLESSetOperato", "green");
+  PLogEventRegister(&e3,"*SLESSetFromOpt", "orange");
   PetscBarrier(A);
   
   PLogStagePush(1);

@@ -1,6 +1,6 @@
 petsc/docs/www/www.cit
 petsc/docs/www/petsc.cit
-petsc/bmake/sun4.local
+petsc/bmake/sun4_local
 petsc/src/ts
 petsc/include/ts
 petsc/src/contrib/RCS
