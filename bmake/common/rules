@@ -213,7 +213,7 @@ getmpirun:
 #
 #
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .pdf
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .eps .pdf
 
 #
 #
@@ -231,6 +231,8 @@ getmpirun:
 
 .fig.pdf:
 	fig2dev -L pdf $< $*.pdf
+.eps.pdf:
+	ps2pdf $< $*.pdf
 
 .c.o .cpp.o .cc.o .C.o .ad.o: 
 	@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
