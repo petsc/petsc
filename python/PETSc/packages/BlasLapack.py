@@ -60,12 +60,10 @@ class Configure(config.base.Configure):
       blasLibrary = self.blasLibrary
     if separateBlas is None:
       separateBlas = self.separateBlas
-    otherLibs = ''
+    otherLibs = []
     if foundBlas:
       if separateBlas:
-        otherLibs += ' '.join(map(self.libraries.getLibArgument, blasLibrary))
-    if 'FC' in self.framework.argDB:
-      otherLibs += ' '+self.compilers.flibs
+        otherLibs = blasLibrary
     return otherLibs
 
   def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routine = 'ddot'):

@@ -11,11 +11,13 @@ class Configure(PETSc.package.Package):
     self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
     self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/tmp/hypre.tar.gz']
+    self.deps         = [self.mpi,self.blasLapack]
+    self.functions    = ['HYPRE_IJMatrixCreate']
+    self.includes     = ['HYPRE.h']
     return
 
 
   def generateLibList(self,dir):
-    dir = os.path.join(dir,'lib')
     libs = ['DistributedMatrix',
             'DistributedMatrixPilutSolver',
             'Euclid',
@@ -44,32 +46,7 @@ class Configure(PETSc.package.Package):
     self.framework.popLanguage()    
     return alllibs
           
-  def generateGuesses(self):
-    if self.framework.argDB['download-'+self.package] == 1:
-      dir = os.path.join(self.Install(),self.framework.argDB['PETSC_ARCH'])
-      yield('Download '+self.PACKAGE,self.generateLibList(dir) ,os.path.join(dir,'include'))
-      raise RuntimeError('Downloaded hypre could not be used. Please check install in '+dir+'\n')
-    if 'with-'+self.package+'-dir' in self.framework.argDB:     
-      dir = os.path.abspath(self.framework.argDB['with-'+self.package+'-dir'])
-      yield('User specified '+self.PACKAGE+' root directory', self.generateLibList(dir),alllibs,os.path.join(dir,'include'))
-    if self.framework.argDB['download-hypre'] == 2:
-      dir = os.path.join(self.Install(),self.framework.argDB['PETSC_ARCH'])
-      yield('Download '+self.PACKAGE,self.generateLibList(dir) ,os.path.join(dir,'include'))
-      raise RuntimeError('Downloaded hypre could not be used. Please check install in '+dir+'\n')
-    raise RuntimeError('You must specifiy a path for '+self.name+' with --with-'+self.package+'-dir=<directory>')
         
-  def checkLib(self,lib,func):
-    '''We need the BLAS/Lapack libraries here plus (possibly) Fortran, and may need the MPI libraries'''
-    oldLibs   = self.framework.argDB['LIBS']
-    otherLibs = self.mpi.lib+self.blasLapack.lib
-    self.framework.log.write('Otherlibs in test for '+self.name+' '+str(otherLibs)+'\n')
-    found = self.libraries.check(lib,func, otherLibs = otherLibs)
-    self.framework.argDB['LIBS']=oldLibs
-    if found:
-      self.framework.log.write('Found function '+func+' in '+str(lib)+'\n')
-    return found
-
-
   def Install(self):
     self.framework.log.write('Downloading hypre\n')
     try:
@@ -167,17 +144,25 @@ class Configure(PETSc.package.Package):
     self.framework.log.write('Checking for a functional '+self.name+'\n')
     foundLibrary = 0
     foundHeader  = 0
+
+    # get any libraries and includes we depend on
+    libs         = []
+    incls        = []
+    for l in self.deps:
+      if hasattr(l,'dlib'):    libs  += l.dlib
+      if hasattr(l,'include'): incls += l.include
+      
     for location, lib,incl in self.generateGuesses():
       if not isinstance(lib, list): lib = [lib]
       if not isinstance(incl, list): incl = [incl]
       self.framework.log.write('Checking for library '+location+': '+str(lib)+'\n')
-      if self.executeTest(self.checkLib, [lib, 'HYPRE_IJMatrixCreate']):
+      if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs}):      
         self.lib = lib
         self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
-        if self.executeTest(self.checkInclude, [incl, 'HYPRE.h']):
+        if (not self.includes) or self.executeTest(self.libraries.checkInclude, [incl, self.includes],{'otherIncludes' : incls}):
           self.include = incl
           self.found   = 1
-          self.dlib    = self.lib+self.mpi.dlib+self.blasLapack.dlib
+          self.dlib    = self.lib+libs
           self.framework.packages.append(self)
           break
     if not self.found:

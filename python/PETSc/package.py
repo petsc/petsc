@@ -1,7 +1,9 @@
+from __future__ import generators
 import config.base
 import os
 import re
 import sys
+
 
 class Package(config.base.Configure):
   def __init__(self, framework):
@@ -40,19 +42,30 @@ class Package(config.base.Configure):
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     if self.download:
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Download and install '+self.name))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' include files'))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<dir,or list of libraries>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' libraries or a list of libraries'))    
     return
 
-  def checkInclude(self,incl,hfile,otherIncludes = None):
-    '''Checks if a particular include file can be found along particular include paths'''
-    if hasattr(self,'mpi'):    incl.extend(self.mpi.include)
-    if otherIncludes:          incl.extend(otherIncludes)
-    oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in incl])
-    found = self.checkPreprocess('#include <' +hfile+ '>\n')
-    self.framework.argDB['CPPFLAGS'] = oldFlags
-    if found:
-      self.framework.log.write('Found header file ' +hfile+ ' in '+str(incl)+'\n')
-    return found
+  def generateGuesses(self):
+    if self.download and self.framework.argDB['download-'+self.package] == 1:
+      dir = os.path.join(self.Install(),self.framework.argDB['PETSC_ARCH'])
+      yield('Download '+self.PACKAGE,self.generateLibList(os.path.join(dir,'lib')) ,os.path.join(dir,'include'))
+      raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
+    if 'with-'+self.package+'-dir' in self.framework.argDB:     
+      dir = os.path.abspath(self.framework.argDB['with-'+self.package+'-dir'])
+      yield('User specified '+self.PACKAGE+' root directory',self.generateLibList(os.path.join(dir,'lib')),os.path.join(dir,'include'))
+    if 'with-'+self.package+'-include' in self.framework.argDB and 'with-'+self.package+'-lib' in self.framework.argDB:
+      dir1 = os.path.abspath(self.framework.argDB['with-'+self.package+'-lib'])
+      if os.path.isdir(dir1): libs = self.generateLibList(dir1)
+      else: libs = dir1
+      if not isinstance(libs, list): libs = [libs]
+      dir2 = os.path.abspath(self.framework.argDB['with-'+self.package+'-include'])      
+      yield('User specified '+self.PACKAGE+' root directory',libs,dir2)
+    if self.download and self.framework.argDB['download-'+self.package] == 2:
+      dir = os.path.join(self.Install(),self.framework.argDB['PETSC_ARCH'])
+      yield('Download '+self.PACKAGE,self.generateLibList(os.path.join(dir,'lib')) ,os.path.join(dir,'include'))
+      raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
+    raise RuntimeError('You must specifiy a path for '+self.name+' with --with-'+self.package+'-dir=<directory>')
 
   def downLoad(self):
     '''Downloads a package; using bk or ftp; opens it in the with-external-packages-dir directory'''
