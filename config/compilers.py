@@ -55,7 +55,7 @@ class Configure(config.base.Configure):
 
     # this is SO WRONG
     import os
-    if os.environ['VENDOR'] == 'apple': self.framework.argDB['LD'] = 'ld'
+    if os.environ.has_key('VENDOR') and os.environ['VENDOR'] == 'apple': self.framework.argDB['LD'] = 'ld'
 
     if self.framework.argDB.has_key('with-cc'):
       compilers = self.framework.argDB['with-cc']
