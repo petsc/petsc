@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.1 1996/04/18 03:13:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.2 1996/04/18 14:25:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -31,12 +31,14 @@ extern int          PetscBeganMPI;
 #define iargc_                        IARGC
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
+#define petscinitializefortran_       PETSCINITIALIZEFORTRAN
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscfinalize_                petscfinalize
 #define petscsetcommonblock_          petscsetcommonblock
 #define petscsetfortranbasepointers_  petscsetfortranbasepointers
 #define petscinitialize_              petscinitialize
 #define mpi_init_                     mpi_init
+#define petscinitializefortran_       petscinitializefortran
 /*
     HP-UX does not have Fortran underscore but iargc and getarg 
   do have underscores????
@@ -125,13 +127,26 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   return 0;   
 }
 
+void PetscInitializeFortran()
+{
+  s1 = MPIR_FromPointer(STDOUT_VIEWER_SELF);
+  s2 = MPIR_FromPointer(STDERR_VIEWER_SELF);
+  s3 = MPIR_FromPointer(STDOUT_VIEWER_WORLD);
+  petscsetcommonblock_(&s1,&s2,&s3);
+}
+  
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
+void petscinitializefortran_()
+{
+  PetscInitializeFortran();
+}
+
 extern int PetscInitializedCalled;
 
-void petscinitialize_(char *filename,int *err,int len)
+void petscinitialize_(CHAR filename,int *err,int len)
 {
   int  flag,argc = 0,s1,s2,s3;
   char **args = 0,*t1;
@@ -146,10 +161,7 @@ void petscinitialize_(char *filename,int *err,int len)
     if (*err) {fprintf(stderr,"PetscInitialize:");return;}
     PetscBeganMPI = 1;
   }
-  s1 = MPIR_FromPointer(STDOUT_VIEWER_SELF);
-  s2 = MPIR_FromPointer(STDERR_VIEWER_SELF);
-  s3 = MPIR_FromPointer(STDOUT_VIEWER_WORLD);
-  petscsetcommonblock_(&s1,&s2,&s3);
+  PetscInitializeFortran();
 #if defined(PETSC_COMPLEX)
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
   MPI_Type_commit(&MPIU_COMPLEX);
@@ -178,29 +190,23 @@ void petscfinalize_(int *ierr){
   *ierr = PetscFinalize();
 }
 
-#if defined(__cplusplus)
-}
-#endif
-
 #if defined(USES_CPTOFCD)
-
 void petscsetfortranbasepointers_(void *fnull,_fcd fcnull)
 {
   PETSC_NULL_Fortran       = fnull;
   PETSC_NULL_CHAR_Fortran  = _fcdtocp(fcnull);
 }
-
 #else
-
 void petscsetfortranbasepointers_(void *fnull,char *fcnull)
 {
   PETSC_NULL_Fortran       = fnull;
   PETSC_NULL_CHAR_Fortran  = fcnull;
 }
-
 #endif 
 
-
+#if defined(__cplusplus)
+}
+#endif
 
 
 
