@@ -212,31 +212,37 @@ class Options(config.base.Configure):
     version = 'Unknown'
     try:
       if language == 'C':
-        if re.match(r'alphaev[0-9]', self.framework.host_cpu) and compiler == 'cc':
-          flags = '-V'
-        elif re.match(r'mips', self.framework.host_cpu) and compiler == 'cc':
-          flags = '-version'
+        if compiler.endswith('xlc') or compiler.endswith('mpcc'):
+          flags = "lslpp -L vac.C | grep vac.C | awk '{print $2}'"
+        elif re.match(r'alphaev[0-9]', self.framework.host_cpu) and compiler.endswith('cc'):
+          flags = compiler+' -V'
+        elif re.match(r'mips', self.framework.host_cpu) and compiler.endswith('cc'):
+          flags = compiler+' -version'
         else:
-          flags = '--version'
+          flags = compiler+' --version'
       elif language == 'Cxx':
-        if re.match(r'alphaev[0-9]', self.framework.host_cpu) and compiler == 'cxx':
-          flags = '-V'
-        elif re.match(r'mips', self.framework.host_cpu) and compiler == 'cc':
-          flags = '-version'
+        if compiler.endswith('xlC') or compiler.endswith('mpCC'):
+          flags = "lslpp -L vacpp.cmp.core  | grep vacpp.cmp.core  | awk '{print $2}'"
+        elif re.match(r'alphaev[0-9]', self.framework.host_cpu) and compiler.endswith('cxx'):
+          flags = compiler+' -V'
+        elif re.match(r'mips', self.framework.host_cpu) and compiler.endswith('cc'):
+          flags = compiler+' -version'
         else:
-          flags = '--version'
+          flags = compiler+' --version'
       elif language in ['Fortran', 'F77']:
-        if re.match(r'alphaev[0-9]', self.framework.host_cpu) and compiler == 'fort':
-          flags = '-version'
-        elif re.match(r'i[3-9]86', self.framework.host_cpu) and compiler == 'f90':
-          flags = '-V'
-        elif re.match(r'i[3-9]86', self.framework.host_cpu) and compiler == 'pgf90':
-          flags = '-V'
-        elif re.match(r'mips', self.framework.host_cpu) and compiler == 'f90':
-          flags = '-version'
+        if compiler.endswith('xlf') or compiler.endswith('xlf90'):
+          flags = "lslpp -L xlfcmp | grep xlfcmp | awk '{print $2}'"
+        elif re.match(r'alphaev[0-9]', self.framework.host_cpu) and compiler.endswith('fort'):
+          flags = compiler+' -version'
+        elif re.match(r'i[3-9]86', self.framework.host_cpu) and compiler.endswith('f90'):
+          flags = compiler+' -V'
+        elif re.match(r'i[3-9]86', self.framework.host_cpu) and compiler.endswith('pgf90'):
+          flags = compiler+' -V'
+        elif re.match(r'mips', self.framework.host_cpu) and compiler.endswith('f90'):
+          flags = compiler+' -version'
         else:
-          flags = '--version'
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' '+flags, log = self.framework.log)
+          flags = compiler+' --version'
+      (output, error, status) = config.base.Configure.executeShellCommand(flags, log = self.framework.log)
       if not status:
         if compiler.find('win32fe'):
           version = '\\n'.join(output.split('\n')[0:2])
