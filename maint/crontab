@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.145 2000/03/22 19:49:22 balay Exp balay $ 
+# $Id: crontab,v 1.146 2000/03/22 19:50:28 balay Exp bsmith $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -41,6 +41,7 @@
 #
 15 2 * * * /home/bsmith/petsc/maint/buildlinks /sandbox/petsc/petsc > /dev/null
 30 4 * * * /usr/ucb/rsh denali /home/bsmith/petsc/maint/buildlinks /sandbox/petsc/petsc
+30 4 * * * /usr/ucb/rsh chiba /home/bsmith/petsc/maint/buildlinks /sandbox/petsc/petsc
 # 
 #
 # Copy over www access log files for the past 24 hours
