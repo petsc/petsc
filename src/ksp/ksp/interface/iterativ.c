@@ -346,8 +346,8 @@ int KSPSkipConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,vo
 -  dummy - unused convergence context 
 
    Returns:
-+   1 - if the iteration has converged;
-.  -1 - if residual norm exceeds divergence threshold;
++   positive - if the iteration has converged;
+.   negative - if residual norm exceeds divergence threshold;
 -   0 - otherwise.
 
    Notes:
@@ -363,6 +363,9 @@ $      rnorm > dtol * rnorm_0,
 -     rnorm_0 = initial residual norm
 
    Use KSPSetTolerances() to alter the defaults for rtol, atol, dtol.
+
+   The precise values of reason are macros such as KSP_CONVERGED_RTOL, which
+   are defined in petscksp.h.
 
    Level: intermediate
 
