@@ -4,6 +4,7 @@ import BSTemplates.sidl
 import fileset
 
 import os
+import pwd
 import sys
 import argtest
 import commands
@@ -32,10 +33,7 @@ class PetscMake(bs.BS):
     
     #  get tmp directory; needs to be different for each user
     if not bs.argDB.has_key('TMPDIR') or bs.argDB['TMPDIR'] == '/tmp':
-      try:
-        bs.argDB['TMPDIR'] = os.path.join('/tmp', os.getlogin())
-      except OSError, e:
-        bs.argDB['TMPDIR'] = os.path.join('/tmp', os.getpid())
+      bs.argDB['TMPDIR'] = os.path.join('/tmp', pwd.getpwuid(os.getuid())[0])
     if not os.path.exists(bs.argDB['TMPDIR']):
       try:
         os.makedirs(bs.argDB['TMPDIR'])
