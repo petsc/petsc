@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.104 1997/12/01 01:52:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.105 1997/12/12 14:28:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -288,15 +288,13 @@ int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   if (mode & SCATTER_REVERSE ){
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[first + i*step] = xv[fslots[i]];}
-    }
-    else {
+    } else {
       for ( i=0; i<n; i++ ) {yv[first + i*step] += xv[fslots[i]];}
     }
   } else {
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[first + i*step];}
-    }
-    else {
+    } else {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[first + i*step];}
     }
   }
