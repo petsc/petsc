@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.154 1996/03/19 21:25:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.155 1996/03/23 18:33:52 bsmith Exp balay $";
 #endif
 
 /*
@@ -87,6 +87,10 @@ int MatGetReordering(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
    The user can only examine the values extracted with MatGetRow();
    the values cannot be altered.  To change the matrix entries, one
    must use MatSetValues().
+
+   Caution:
+   Do not try to chnage the contents of the output arrays (cols and vals).
+   In some cases, this may corrupt the matrix.
 
 .keywords: matrix, row, get, extract
 
