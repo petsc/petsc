@@ -22,6 +22,8 @@
 #define HAVE_STDLIB_H
 #define HAVE_SYS_TIME_H
 #define HAVE_SYS_UTSNAME_H
+#define HAVE_GETCWD
+
 
 #define PETSC_HAVE_FORTRAN_UNDERSCORE 
 
