@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 2000/01/11 20:58:54 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.5 2000/02/22 14:53:46 bsmith Exp bsmith $ 
 
 #
 #requirespackage  '-DPETSC_HAVE_MATLAB'
@@ -9,7 +9,8 @@
 # in compiling these files and you are using the gcc compiler then try 
 # removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 #
-ALL: matlabcodes
+lib: matlabcodes
+libfast: matlabcodes
 matlabcodes: receive openport closeport launch readinvecs
 
 CFLAGS    =

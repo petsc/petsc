@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: newbuildtest,v 1.1 2000/02/19 17:07:02 bsmith Exp bsmith $ 
+# $Id: buildtest,v 1.175 2000/02/20 21:47:40 bsmith Exp bsmith $ 
 # 
 # Compiles and tests PETSc in our nightly builds.
 #
@@ -13,11 +13,6 @@ rsh $MACH -n "cd $TMP/maint;touch build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BO
 
 rsh $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH $BOPT `date` ' >> maint/build_$ARCH.$BOPT.$MACH.log"
 rsh $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all >>& maint/build_$ARCH.$BOPT.$MACH.log"
-
-if ($?MATLAB) then
-  rsh $MACH -n "cd $TMP;echo 'Build matlabcodes on $MACH $ARCH $BOPT `date` ' >> maint/build_$ARCH.$BOPT.$MACH.log"
-  rsh $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT matlabcodes >>& maint/build_$ARCH.$BOPT.$MACH.log"
-endif
 
 rsh $MACH -n "cd $TMP;echo '****************************************************' >> maint/build_$ARCH.$BOPT.$MACH.log"
 rsh $MACH -n "cd $TMP;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/build_$ARCH.$BOPT.$MACH.log"

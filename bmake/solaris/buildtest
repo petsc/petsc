@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.1 2000/02/19 16:46:20 bsmith Exp bsmith $ 
+# $Id: buildtest,v 1.2 2000/02/22 14:36:59 bsmith Exp bsmith $ 
 #
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
@@ -8,7 +8,6 @@ set MACH=fire
 set ARCH=solaris
 set TEST=testexamples_
 set NICE=''
-set MATLAB=matlab
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
