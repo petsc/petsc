@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex20.c,v 1.1 1999/05/18 19:36:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex20.c,v 1.2 1999/06/14 20:47:29 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -28,7 +28,7 @@ int main(int argc,char **args)
 {
   Mat         C; 
   int         i, m = 5, rank, size, N, start, end, M, its, flg;
-  Scalar      val, zero = 0.0, one = 1.0, none = -1.0,Ke[16],r[4];
+  Scalar      zero = 0.0,Ke[16];
   double      h;
   int         ierr, idx[4];
   Vec         u, b;
