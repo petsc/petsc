@@ -503,10 +503,9 @@ int PetscErrorPrintfDefault(const char format[],...)
 ------------------------------\n");
     fprintf(fd,"%s\n",version);
     fprintf(fd,"%s\n",PETSC_AUTHOR_INFO);
-    fprintf(fd,"See docs/copyright.html for copyright information.\n");
-    fprintf(fd,"See docs/changes.html for recent updates.\n");
+    fprintf(fd,"See docs/changes/index.html for recent updates.\n");
     fprintf(fd,"See docs/troubleshooting.html for hints about trouble shooting.\n");
-    fprintf(fd,"See docs/manualpages/index.html for manual pages.\n");
+    fprintf(fd,"See docs/index.html for manual pages.\n");
     fprintf(fd,"--------------------------------------------\
 ---------------------------\n");
     fprintf(fd,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
