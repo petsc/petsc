@@ -1,41 +1,29 @@
 !
-!    "$Id: ex1f90.F,v 1.2 2000/08/23 18:38:41 balay Exp $"
+!    "$Id: ex1f90.F,v 1.1 2000/09/06 12:30:18 bsmith Exp bsmith $"
 !
-      module junk
-      type abc
-      integer a
-      double precision,pointer :: b(:)
-      integer c
-      end type
-      end module
-
       program main 
-      use junk
+      use esmf
+      integer ierr
 
-      type (abc) x
+      type (esmfgridunstructuredquads),pointer :: grid(:)
+      type (esmfgridstructuredrectangular),pointer :: rgrid(:)
+      double precision coors(2,2)
 
-      ALLOCATE(x%b(5))
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr);
 
-      x%a = 1
-      x%b(1) = 11.0
-      x%c = 111
 
-      call c_routine(x)
+      grid => ESMFGridCreate(PETSC_COMM_WORLD,'gridfile')
+      ierr = ESMFGridView(grid)
+      ierr = ESMFGridDestroy(grid)
 
-      write (6,100) x%a, x%b(1), x%c
- 100  format("From Fortran Main:",i3," ",1pe8.2," ",i3)
+      coors(1,1) = 0.0
+      coors(1,2) = 0.0
+      coors(2,1) = 1.0
+      coors(2,2) = 1.0
+
+      rgrid => ESMFGridCreate(PETSC_COMM_WORLD,4,4,coors,1,1)
+      ierr = ESMFGridView(rgrid)
+      ierr = ESMFGridDestroy(rgrid)
+      call PetscFinalize();
       end program
-
-
-      subroutine fortran_routine(x)
-      use junk
-
-      type (abc) x
-
-      write (6,110) x%a, x%b(1), x%c
- 110  format("From Fortran routine called by C:",i3," ",1pe8.2," ",i3)
-      x%a = 3
-      x%b(1) = 33.0
-      x%c = 333
-      end
 
