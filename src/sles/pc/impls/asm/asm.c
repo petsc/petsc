@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.48 1997/02/04 19:10:15 curfman Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.49 1997/02/06 15:07:51 curfman Exp balay $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -47,6 +47,7 @@ static int PCView_ASM(PetscObject obj,Viewer viewer)
     else if (jac->type == PC_ASM_RESTRICT) cstring = "full restriction (PC_ASM_RESTRICT)";
     else if (jac->type == PC_ASM_INTERPOLATE) cstring = "full interpolation (PC_ASM_INTERPOLATE)";
     else if (jac->type == PC_ASM_BASIC) cstring = "full restriction and interpolation (PC_ASM_BASIC)";
+    else cstring = "Unknown ASM type";
     PetscFPrintf(pc->comm,fd,"    Additive Schwarz: type - %s\n",cstring);
     MPI_Comm_rank(pc->comm,&rank);
     if (jac->sles) {ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
