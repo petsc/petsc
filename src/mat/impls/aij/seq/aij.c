@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.266 1998/05/13 18:06:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.267 1998/05/15 03:14:02 bsmith Exp balay $";
 #endif
 
 /*
@@ -525,7 +525,7 @@ int MatView_SeqAIJ_Draw_Zoom(Draw draw,void *Aa)
       y_l = m - i - 1.0; y_r = y_l + 1.0;
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         x_l = a->j[j] + shift; x_r = x_l + 1.0;
-        color = DRAW_BASIC_COLORS + scale*PetscAbsScalar(a->a[count]);
+        color = DRAW_BASIC_COLORS + (int)(scale*PetscAbsScalar(a->a[count]));
         ierr  = DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);CHKERRQ(ierr);
         count++;
       } 
