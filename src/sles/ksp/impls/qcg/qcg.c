@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.20 1996/03/10 22:59:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.21 1996/03/19 21:24:13 bsmith Exp curfman $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -40,10 +40,10 @@ $  3 if convergence is reached along a truncated step.
 
   Notes:
   Currently we allow symmetric preconditioning with the following scaling matrices:
-      PCNONE:  D = Identity matrix
-      PCSCALE: D = diag [d_1, d_2, ...., d_n], where d_i = sqrt(H[i,i])
-      PCICC:   D = L^T, implemented with forward and backward solves.
-               Here L is an incomplete Cholesky factor of H.
+      PCNONE:   D = Identity matrix
+      PCJACOBI: D = diag [d_1, d_2, ...., d_n], where d_i = sqrt(H[i,i])
+      PCICC:    D = L^T, implemented with forward and backward solves.
+                Here L is an incomplete Cholesky factor of H.
 
  We should perhaps rewrite using PCApplyBAorAB().
  */
