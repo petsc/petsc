@@ -225,6 +225,7 @@ extern int    gettimeofday(struct timeval *,struct timezone *);
 /* The following are suspicious. Not sure if they really exist */
 extern int    readlink(const char *, char *, int);
 extern int    getdomainname(char *,int);
+#define htons __htons
 }
 
 #else
