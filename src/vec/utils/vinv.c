@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 
 #include "vec.h"   /*I "vec.h" I*/
 #include "vecimpl.h"

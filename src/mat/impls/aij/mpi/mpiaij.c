@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 
 #include "mpiaij.h"
 #include "vec/vecimpl.h"

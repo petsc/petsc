@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 
 #include "ptscimpl.h"
 #include "inline/dot.h"

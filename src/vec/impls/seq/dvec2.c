@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 
 
 /*
@@ -11,23 +14,62 @@
 #include "inline/setval.h"
 #include "inline/copy.h"
 #include "inline/axpy.h"
-
 #include <math.h>
 #include "vecimpl.h"             
-#include "dvecimpl.h"             
+#include "dvecimpl.h"   
+#include "draw.h"          
+
+static int VeiDVrange(Vec xin, int *low,int *high )
+{
+  DvVector *x = (DvVector *) xin->data;
+  *low = 0; *high = x->n;
+  return 0;
+}
+#include "viewer.h"
 
 static int VeiDVview(PetscObject obj,Viewer ptr)
 {
-  Vec      xin = (Vec) obj;
-  DvVector *x = (DvVector *)xin->data;
-  int i, n = x->n;
-  for (i=0; i<n; i++ ) {
+  Vec         xin = (Vec) obj;
+  DvVector    *x = (DvVector *)xin->data;
+  PetscObject vobj = (PetscObject) ptr;
+  int         i, n = x->n, ierr;
+
+  if (!vobj) {
+    for (i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
-    printf("%g + %gi\n",real(x->array[i]),imag(x->array[i]));
+      printf("%g + %gi\n",real(x->array[i]),imag(x->array[i]));
 #else
-    printf("%g\n",x->array[i]);
+      printf("%g\n",x->array[i]);
 #endif
+    }
   }
+#if !defined(PETSC_COMPLEX)
+  else if (vobj->cookie == LG_COOKIE){
+    DrawLGCtx lg = (DrawLGCtx) ptr;
+    DrawCtx   win;
+    double    *xx;
+    DrawLGGetDrawCtx(lg,&win);
+    DrawLGReset(lg);
+    xx = (double *) MALLOC( n*sizeof(double) ); CHKPTR(xx);
+    for ( i=0; i<n; i++ ) {
+      xx[i] = (double) i;
+    }
+    DrawLGAddPoints(lg,n,&xx,&x->array);
+    FREE(xx);
+    DrawLG(lg);
+    DrawSyncFlush(win);
+  }
+  else if (vobj->cookie == DRAW_COOKIE) {
+    DrawCtx   win = (DrawCtx) ptr;
+    DrawLGCtx lg;
+    ierr = DrawLGCreate(win,1,&lg); CHKERR(ierr);
+    ierr = VecView(xin,(Viewer) lg); CHKERR(ierr);
+    DrawLGDestroy(lg);
+  }
+  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
+    return ViewerMatlabPutArray(ptr,x->n,1,x->array); 
+  }
+#endif
   return 0;
 }
 static int VeiDVmdot(int nv,Vec xin,Vec *y, Scalar *z )
@@ -66,19 +108,6 @@ static int VeiDVmax(Vec xin,int* idx,double * z )
   return 0;
 }
 
-static int VeiDVswap(  Vec xin, Vec yin )
-{
-  DvVector *x = (DvVector *)xin->data, *y = (DvVector *)yin->data;
-  register int n = x->n, i;
-  register Scalar t;
-  Scalar   *yy = y->array, *xx = x->array;
-  for (i=0; i<n; i++) {
-    t    = xx[i];
-    xx[i] = yy[i];
-    yy[i] = t;
-  }
-  return 0;
-}
 
 static int VeiDVset(Scalar* alpha,Vec xin )
 {
@@ -153,25 +182,28 @@ static int VeiDVpdiv(Vec xin,Vec yin,Vec win )
 }
 
 #include "inline/spops.h"
-static int VeiDVinsertvalues(Vec xin, int ni, int *ix, Scalar* y )
+static int VeiDVinsertvalues(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 {
-  DvVector       *x = (DvVector *)xin->data;
-  Scalar *xx = x->array;
-  int    i;
-  for ( i=0; i<ni; i++ ) {
-    xx[ix[i]] = y[i];
-  }
-  return 0;
-}
+  DvVector *x = (DvVector *)xin->data;
+  Scalar   *xx = x->array;
+  int      i;
 
-static int VeiDVaddvalues(Vec xin,int ni,int *ix,Scalar *y )
-{
-  DvVector       *x = (DvVector *)xin->data;
-  Scalar *xx = x->array;
-  int    i;
-  for ( i=0; i<ni; i++ ) {
-    xx[ix[i]] += y[i];
+  if (m == InsertValues) {
+    for ( i=0; i<ni; i++ ) {
+#if defined(PETSC_DEBUG)
+      if (ix[i] < 0 || ix[i] >= x->n) SETERR(1,"Index out of range");
+#endif
+      xx[ix[i]] = y[i];
+    }
   }
+  else {
+    for ( i=0; i<ni; i++ ) {
+#if defined(PETSC_DEBUG)
+      if (ix[i] < 0 || ix[i] >= x->n) SETERR(1,"Index out of range");
+#endif
+      xx[ix[i]] += y[i];
+    }  
+  }  
   return 0;
 }
 

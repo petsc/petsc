@@ -1,3 +1,7 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
+
 /*
    Defines the BLAS based vector operations
 */

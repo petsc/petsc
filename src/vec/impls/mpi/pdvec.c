@@ -1,3 +1,14 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
+
+static int VeiPrange(Vec v,int *low,int* high) 
+{
+  DvPVector *x = (DvPVector *) v->data;
+  *low  = x->ownership[x->mytid];
+  *high = x->ownership[x->mytid+1];
+  return 0;
+}
 
 static int VeiPDestroyVector(PetscObject obj )
 {
@@ -10,23 +21,117 @@ static int VeiPDestroyVector(PetscObject obj )
 
 static int VeiDVPview( PetscObject obj, Viewer ptr )
 {
-  Vec xin = (Vec) obj;
-  DvPVector *x = (DvPVector *) xin->data;
-  int i,j,mytid;
+  Vec         xin = (Vec) obj;
+  DvPVector   *x = (DvPVector *) xin->data;
+  int         i,mytid,numtid,ierr;
+  MPI_Status  status;
+  PetscObject vobj = (PetscObject) ptr;
 
   MPI_Comm_rank(x->comm,&mytid); 
 
-  MPE_Seq_begin(x->comm,1);
-    printf("Processor [%d] \n",mytid);
+  if (!ptr) {
+    MPE_Seq_begin(x->comm,1);
+      printf("Processor [%d] \n",mytid);
+      for ( i=0; i<x->n; i++ ) {
+#if defined(PETSC_COMPLEX)
+        printf("%g + %g i\n",real(x->array[i]),imag(x->array[i]));
+#else
+        printf("%g \n",x->array[i]);
+#endif
+      }
+      fflush(stdout);
+    MPE_Seq_end(x->comm,1);
+  }
+  else if (vobj->cookie == DRAW_COOKIE) {
+    DrawCtx win = (DrawCtx) ptr;
+    int     start,end;
+    double  coors[4],ymin,ymax,xmin,xmax,tmp;
+
+    MPI_Comm_size(x->comm,&numtid); 
+
+    xmin = 1.e20; xmax = -1.e20;
     for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
-      printf("%g + %g i\n",real(x->array[i]),imag(x->array[i]));
+      if (real(x->array[i]) < xmin) xmin = real(x->array[i]);
+      else if (real(x->array[i]) > xmax) xmax = real(x->array[i]);
 #else
-      printf("%g \n",x->array[i]);
+      if (x->array[i] < xmin) xmin = x->array[i];
+      else if (x->array[i] > xmax) xmax = x->array[i];
 #endif
     }
-    fflush(stdout);
-  MPE_Seq_end(x->comm,1);
+    MPI_Reduce(&xmin,&ymin,1,MPI_DOUBLE,MPI_MIN,0,x->comm);
+    MPI_Reduce(&xmax,&ymax,1,MPI_DOUBLE,MPI_MAX,0,x->comm);
+    MPI_Comm_rank(x->comm,&mytid);
+    if (!mytid) {
+      DrawAxisCtx axis;
+      DrawClear(win); DrawFlush(win);
+      ierr = DrawAxisCreate(win,&axis); CHKERR(ierr);
+      ierr = DrawAxisSetLimits(axis,0.0,(double) x->N,ymin,ymax); CHKERR(ierr);
+      ierr = DrawAxis(axis); CHKERR(ierr);
+      DrawAxisDestroy(axis);
+      DrawGetCoordinates(win,coors,coors+1,coors+2,coors+3);
+    }
+    MPI_Bcast(coors,4,MPI_DOUBLE,0,x->comm);
+    if (mytid) DrawSetCoordinates(win,coors[0],coors[1],coors[2],coors[3]);
+    /* draw local part of vector */
+    VecGetOwnershipRange(xin,&start,&end);
+    if (mytid < numtid-1) { /*send value to right */
+      MPI_Send(&x->array[x->n-1],1,MPI_DOUBLE,mytid+1,58,x->comm);
+    }
+    for ( i=1; i<x->n; i++ ) {
+#if !defined(PETSC_COMPLEX)
+      DrawLine(win,(double)(i-1+start),x->array[i-1],(double)(i+start),
+                   x->array[i],DRAW_RED,DRAW_RED);
+#else
+      DrawLine(win,(double)(i-1+start),real(x->array[i-1]),(double)(i+start),
+                   real(x->array[i]),DRAW_RED,DRAW_RED);
+#endif
+    }
+    if (mytid) { /* receive value from right */
+      MPI_Recv(&tmp,1,MPI_DOUBLE,mytid-1,58,x->comm,&status);
+#if !defined(PETSC_COMPLEX)
+      DrawLine(win,(double)start-1,tmp,(double)start,x->array[0],
+                   DRAW_RED,DRAW_RED);
+#else
+      DrawLine(win,(double)start-1,tmp,(double)start,real(x->array[0]),
+                    DRAW_RED,DRAW_RED);
+#endif
+    }
+    DrawSyncFlush(win);
+  }
+  else if (vobj->cookie == LG_COOKIE){
+    DrawLGCtx lg = (DrawLGCtx) ptr;
+    DrawCtx   win;
+    double    *xx,*yy;
+    int       N = x->N,*lens;
+    MPI_Comm_rank(x->comm,&mytid);
+    MPI_Comm_size(x->comm,&numtid);
+    if (!mytid) {
+      DrawLGReset(lg);
+      xx = (double *) MALLOC( 2*N*sizeof(double) ); CHKPTR(xx);
+      for ( i=0; i<N; i++ ) {xx[i] = (double) i;}
+      yy = xx + N;
+      lens = (int *) MALLOC(numtid*sizeof(int)); CHKPTR(lens);
+      for (i=0; i<numtid; i++ ) {
+        lens[i] = x->ownership[i+1] - x->ownership[i];
+      }
+      /* The next line is wrong for complex, one should stride out the 
+         real part of x->array and Gatherv that */
+      MPI_Gatherv(x->array,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,
+                  0,x->comm);
+      FREE(lens);
+      DrawLGAddPoints(lg,N,&xx,&yy);
+      FREE(xx);
+      DrawLG(lg);
+    }
+    else {
+      /* The next line is wrong for complex, one should stride out the 
+         real part of x->array and Gatherv that */
+      MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,x->comm);
+    }
+    DrawLGGetDrawCtx(lg,&win);
+    DrawSyncFlush(win);
+  }
   return 0;
 }
 
@@ -106,7 +211,7 @@ static int VeiDVPBeginAssembly(Vec xin)
 {
   DvPVector   *x = (DvPVector *)xin->data;
   int         mytid = x->mytid, *owners = x->ownership, numtids = x->numtids;
-  int         *nprocs,i,j,n,idx,*procs,nsends,nreceives,nmax,*work;
+  int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
   int         *owner,*starts,count,tag = 22;
   InsertMode  addv;
   Scalar      *rvalues,*svalues;
@@ -204,16 +309,16 @@ static int VeiDVPEndAssembly(Vec vec)
 {
   DvPVector   *x = (DvPVector *)vec->data;
   MPI_Status  *send_status,recv_status;
-  int         index,idx,base,nrecvs = x->nrecvs, count = nrecvs, i, n;
+  int         imdex,base,nrecvs = x->nrecvs, count = nrecvs, i, n;
   Scalar      *values;
 
   base = x->ownership[x->mytid];
 
   /*  wait on receives */
   while (count) {
-    MPI_Waitany(nrecvs,x->recv_waits,&index,&recv_status);
+    MPI_Waitany(nrecvs,x->recv_waits,&imdex,&recv_status);
     /* unpack receives into our local space */
-    values = x->rvalues + 2*index*x->rmax;
+    values = x->rvalues + 2*imdex*x->rmax;
     MPI_Get_count(&recv_status,MPI_SCALAR,&n);
     n = n/2;
     if (x->insertmode == AddValues) {
