@@ -7,11 +7,13 @@ echo "by running make allmanpages"
 echo "and the users manual (and intro) in .ps and .html"
 echo "Deleted TAGS, TAGS_MAKEFILES, and TAGS_NO_EXAMPLES?"
 #
-pushd /home/bsmith/petsc; make ACTION=clean tree; popd
+cd /home/bsmith/petsc
+make ACTION=clean tree
 #
 /bin/rm -f ~/petsc.tar
 #
-tar cFFXf /home/bsmith/petsc/maint/xclude ~/petsc.tar -C ~ /home/bsmith/petsc
+cd /home/bsmith
+tar cFFXf /home/bsmith/petsc/maint/xclude ~/petsc.tar petsc
 #
 cd /mcs/tmp
 tar xf ~/petsc.tar
@@ -19,6 +21,7 @@ chmod -R u+w petsc
 /bin/rm -f ~/petsc.tar
 tar cf ~/petsc.tar petsc
 /bin/rm -r -f /mcs/tmp/petsc
+
 #
 #  To test locally and build petsc.solid
 #
