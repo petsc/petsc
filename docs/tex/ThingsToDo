@@ -43,7 +43,7 @@ Additional Capabilities that PETSc Needs:
    X Fix documentation for matrices in manual (also AIJ man pages).  
      Fix help info for matrices. MatPrintHelp().
 
-   - Fix MPIRowbs format so that one can INSERT_VALUES with nonsymmetric matrix.
+   X Fix MPIRowbs format so that one can INSERT_VALUES with nonsymmetric matrix.
 
    X Make MatGetSubMatrices() for Seq and MPI AIJ.
 
