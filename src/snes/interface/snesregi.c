@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesregi.c,v 1.23 1998/04/13 17:55:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesregi.c,v 1.24 1998/04/20 19:38:06 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
@@ -10,7 +10,7 @@ extern int SNESCreate_UM_LS(SNES);
 extern int SNESCreate_Test(SNES);
 
 /*M
-   SNESRegister - Adds the method to the nonlinear solver package.
+   SNESRegister - Adds a method to the nonlinear solver package.
 
    Synopsis:
    SNESRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(SNES))

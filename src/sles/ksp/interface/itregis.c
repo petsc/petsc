@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itregis.c,v 1.28 1998/04/13 17:28:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: itregis.c,v 1.29 1998/04/20 19:37:53 curfman Exp curfman $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -18,7 +18,7 @@ extern int KSPCreate_CR(KSP);
 extern int KSPCreate_QCG(KSP);
 
 /*M
-   KSPRegister - Adds the method to the Krylov subspace solver package.
+   KSPRegister - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
    KSPRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(KSP))

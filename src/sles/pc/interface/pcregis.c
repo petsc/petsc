@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcregis.c,v 1.40 1998/04/13 17:32:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcregis.c,v 1.41 1998/04/20 19:37:41 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -21,7 +21,7 @@ extern int PCCreate_SLES(PC);
 extern int PCCreate_Composite(PC);
 
 /*M
-   PCRegister - Adds the method to the preconditioner package.
+   PCRegister - Adds a method to the preconditioner package.
 
    Synopsis:
    PCRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(PC))
