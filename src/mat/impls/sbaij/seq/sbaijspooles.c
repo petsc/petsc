@@ -10,26 +10,26 @@
 
 /* 
   input:
-   A -- original matrix in SEQSBAIJ format
-   F -- symbolic factor of A 
+   F:                 numeric factor
   output:
-   F -- numeric factor of A
-   nneg, nzero, npos: inertia of A
+   nneg, nzero, npos: matrix inertia 
 */
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInertia_SeqSBAIJ_Spooles"
-int MatGetInertia_SeqSBAIJ_Spooles(Mat A,Mat *F,int *nneg,int *nzero,int *npos)
+int MatGetInertia_SeqSBAIJ_Spooles(Mat F,int *nneg,int *nzero,int *npos)
 { 
-  Mat_Spooles          *lu= (Mat_Spooles*)(*F)->spptr;
-  int                  ierr;
+  Mat_Spooles          *lu = (Mat_Spooles*)F->spptr; 
+  int                  ierr,neg,zero,pos;
 
   PetscFunctionBegin;
-  lu->options.inertiaflag  = PETSC_TRUE;
-  ierr   = MatCholeskyFactorNumeric(A,F);
-  *nneg  = lu->inertia.nneg;
-  if(nzero) *nzero = lu->inertia.nzero;
-  if(npos)  *npos  = lu->inertia.npos;
+  if (!F->assembled) 
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Numeric factor mat is not assembled"); 
+  
+  FrontMtx_inertia(lu->frontmtx, &neg, &zero, &pos) ;
+  if(nneg)  *nneg  = neg;
+  if(nzero) *nzero = zero;
+  if(npos)  *npos  = pos;
   
   PetscFunctionReturn(0);
 }
@@ -54,6 +54,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
   lu->options.symflag       = SPOOLES_SYMMETRIC;
   lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
+  lu->options.useQR         = PETSC_FALSE;
 
   PetscFunctionReturn(0); 
 }

@@ -32,6 +32,7 @@ int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
   lu->options.symflag      = SPOOLES_SYMMETRIC;
   lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
   lu->flg                  = DIFFERENT_NONZERO_PATTERN;
+  lu->options.useQR        = PETSC_FALSE;
 
   PetscFunctionReturn(0); 
 }

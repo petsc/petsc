@@ -67,7 +67,7 @@ int MatQRFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 int MatUseSpooles_SeqAIJ(Mat A)
 {
   int          ierr;
-  PetscTruth   useQR;
+  PetscTruth   useQR=PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(A->prefix,"-mat_aij_spooles_qr",&useQR);CHKERRQ(ierr);

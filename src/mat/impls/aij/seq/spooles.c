@@ -327,10 +327,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     }
   }
   ChvManager_free(chvmanager) ;
-  if ( lu->options.symflag == SPOOLES_SYMMETRIC && lu->options.inertiaflag) {
-    FrontMtx_inertia(lu->frontmtx, &lu->inertia.nneg, &lu->inertia.nzero, &lu->inertia.npos) ;
-  }
-  
+
   if ( lu->options.msglvl > 0 ) {
     fprintf(lu->options.msgFile, "\n\n factor matrix") ;
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile) ;

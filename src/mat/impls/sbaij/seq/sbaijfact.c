@@ -9,25 +9,24 @@
 #if !defined(PETSC_USE_COMPLEX)
 /* 
   input:
-   A -- original matrix in SEQSBAIJ format
-   F -- symbolic or numeric factor of A 
+   F -- numeric factor 
   output:
-   F -- numeric factor of A if F is input as symbolic factor of A
-   nneg, nzero, npos: inertia of A
+   nneg, nzero, npos: matrix inertia 
 */
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInertia_SeqSBAIJ"
-int MatGetInertia_SeqSBAIJ(Mat A,Mat *F,int *nneig,int *nzero,int *npos)
+int MatGetInertia_SeqSBAIJ(Mat F,int *nneig,int *nzero,int *npos)
 { 
   PetscScalar  *dd;
   Mat_SeqSBAIJ *fact_ptr;
-  int          m=A->m,i;
+  int          m = F->m,i;
 
   PetscFunctionBegin;
-  if (! (*F)->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for symfactor yet, use numfactor F");
-
-  fact_ptr = (Mat_SeqSBAIJ*)(*F)->data;
+  if (!F->assembled) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Numeric factor mat is not assembled");
+  }
+  fact_ptr = (Mat_SeqSBAIJ*)F->data;
   dd       = fact_ptr->a;
   *nneig = 0;
   for (i=0; i<m; i++){

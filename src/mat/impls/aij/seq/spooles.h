@@ -13,14 +13,10 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 typedef struct {
-  int             nneg,npos,nzero;
-} Spooles_inertia;
-
-typedef struct {
   int             msglvl,pivotingflag,symflag,seed,FrontMtxInfo,typeflag;
   int             ordering,maxdomainsize,maxzeros,maxsize,
                   patchAndGoFlag,storeids,storevalues;
-  PetscTruth      inertiaflag,useQR;
+  PetscTruth      useQR;
   double          tau,toosmall,fudge;
   FILE            *msgFile ;
 } Spooles_options;
@@ -37,7 +33,6 @@ typedef struct {
   double          cpus[20] ;
   int             *oldToNew,stats[20];
   Spooles_options options;
-  Spooles_inertia inertia;
   Graph           *graph;
 
   /* Followings are used for MPI Spooles */
@@ -62,5 +57,5 @@ EXTERN int MatDestroy_MPIAIJ_Spooles(Mat);
 EXTERN int MatSolve_MPIAIJ_Spooles(Mat,Vec,Vec);
 EXTERN int MatFactorNumeric_MPIAIJ_Spooles(Mat,Mat*); 
 
-EXTERN int MatGetInertia_SeqSBAIJ_Spooles(Mat,Mat*,int*,int*,int*);
+EXTERN int MatGetInertia_SeqSBAIJ_Spooles(Mat,int*,int*,int*);
 #endif
