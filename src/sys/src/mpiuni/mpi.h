@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.54 1997/08/22 15:16:51 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.55 1997/10/28 14:25:11 bsmith Exp bsmith $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -63,6 +63,7 @@ typedef int   (MPI_Delete_function)( MPI_Comm, int, void *, void * );
 extern int    MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
 extern int    MPI_Comm_free(MPI_Comm*);
 extern int    MPI_Initialized(int *);
+extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 
 /* Routines */
 #define MPI_Send( buf, count, datatype, dest, tag, comm)  \
@@ -435,7 +436,6 @@ extern int    MPI_Initialized(int *);
      MPIUNI_TMP = (void *) (group), \
      MPI_SUCCESS )
 #define MPI_Comm_split(comm, color, key, newcomm) MPI_SUCCESS
-#define MPI_Comm_dup(comm, newcomm) *(newcomm) = comm, MPI_SUCCESS
 #define MPI_Comm_test_inter(comm, flag) (*(flag)=1,MPI_SUCCESS)
 #define MPI_Comm_remote_size(comm, size) (*(size)=1,MPI_SUCCESS)
 #define MPI_Comm_remote_group(comm, group) MPI_SUCCESS

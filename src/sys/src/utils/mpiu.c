@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.75 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.76 1997/10/27 00:44:59 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -666,8 +666,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
     MPI_Attr_put(*comm_out,Petsc_Tag_keyval, tagvalp);
-  }
-  else {
+  } else {
     *comm_out = comm_in;
   }
 
