@@ -9,8 +9,6 @@
 #include "petsc.h"  
 PETSC_EXTERN_CXX_BEGIN
 
-EXTERN int PetscCommDuplicate_Private(MPI_Comm,MPI_Comm*,int*);
-EXTERN int PetscCommDestroy_Private(MPI_Comm*);
 
 EXTERN int PetscRegisterCookie(int *);
 

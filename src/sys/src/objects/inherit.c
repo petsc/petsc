@@ -45,7 +45,7 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,const char class
   h->bops->queryfunction    = PetscObjectQueryFunction_Petsc;
   h->bops->querylanguage    = PetscObjectQueryLanguage_Petsc;
   h->bops->composelanguage  = PetscObjectComposeLanguage_Petsc;
-  ierr = PetscCommDuplicate_Private(comm,&h->comm,&h->tag);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(comm,&h->comm,&h->tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -64,7 +64,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
     SETERRQ(1,"PETSc object destroyed before its AMS publication was destroyed");
   }
 
-  ierr = PetscCommDestroy_Private(&h->comm);CHKERRQ(ierr);
+  ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
   ierr = PetscFree(h->bops);CHKERRQ(ierr);
   ierr = PetscFree(h->ops);CHKERRQ(ierr);
   ierr = PetscOListDestroy(&h->olist);CHKERRQ(ierr);

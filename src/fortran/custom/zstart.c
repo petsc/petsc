@@ -300,9 +300,9 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   /*
        Initialize PETSC_COMM_SELF as a MPI_Comm with the PETSc attribute.
   */
-  *ierr = PetscCommDuplicate_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
+  *ierr = PetscCommDuplicate(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
   if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_SELF");return;}
-  *ierr = PetscCommDuplicate_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
+  *ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
   if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_WORLD");return;}
   *ierr = PetscInitialize_DynamicLibraries(); 
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Initializing dynamic libraries");return;}
