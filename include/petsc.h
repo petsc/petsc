@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.176 1997/09/09 15:19:39 curfman Exp bsmith $ */
+/* $Id: petsc.h,v 1.177 1997/09/11 20:42:38 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -48,7 +48,7 @@
 /* #define NEED_UTYPE_TYPEDEFS */
 #endif
 
-#if defined(PARCH_IRIX) || defined(PARCH_IRIX64)
+#if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)
 /* For some reason, we don't use readlink in grpath.c for IRIX */
 #undef HAVE_READLINK
 /* gettimeofday required sys/resource.h and C++ prototype for gettimeof
