@@ -2256,11 +2256,11 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion"
 int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
-  int             n=a->mbs,*ai=a->i,*aj=a->j;
-  int             ierr,*diag = a->diag;
-  MatScalar       *aa=a->a;
-  PetscScalar     *x,*b;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data;
+  unsigned short *ai=(unsigned short *)a->i,*aj=(unsigned short *)a->j;
+  int            ierr,n=a->mbs,*diag = a->diag;
+  MatScalar      *aa=a->a;
+  PetscScalar    *x,*b;
 
   PetscFunctionBegin;
   SSE_SCOPE_BEGIN;
@@ -2275,9 +2275,9 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
   ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr); 
   {
     /* x will first be computed in single precision then promoted inplace to double */
-    MatScalar     *v,*t=(MatScalar *)x;
-    int           jdx,idt,idx,nz,*vi,i,ai16;
-
+    MatScalar      *v,*t=(MatScalar *)x;
+    int            nz,i,ai16;
+    unsigned short *vi,jdx,idx,idt;
     /* Forward solve the lower triangular factor. */
 
     /* First block is the identity. */
@@ -3053,9 +3053,14 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
 int MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
-  int i,*aj=a->j,nz=a->nz;
-  for (i=0;i<nz;i++) {
-    aj[i]=  aj[i]/4;
+  int i,*AI=a->i,*AJ=a->j,nz=a->nz,m=a->mbs;
+  unsigned short *ai=(unsigned short *)AI, *aj=(unsigned short *)AJ;
+  while (m>=0) {
+    AI[m] = (int)ai[m];
+    m--;
+  }
+  while (nz--) {
+    AJ[i] = ((int)aj[i])/4;
   }
   PetscFunctionReturn(0);
 }
@@ -3095,9 +3100,14 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
       if (sse_enabled_local) {
 #  if defined(PETSC_HAVE_SSE)
         /* Scale the column indices for easier indexing in MatSolve. */
-        int i,*aj=a->j,nz=a->nz;
+        int i,*AI=a->i,*AJ=a->j,nz=a->nz,m=a->mbs;
+        unsigned short *aj=(unsigned short *)AJ,*ai=(unsigned short *)AI;
+        for (i=0;i<=m;i++) { /* Don't forget the size of aj stored in ai[m]. */
+          ai[i] = (unsigned short)AI[i];
+        }
         for (i=0;i<nz;i++) {
-          aj[i] *= 4;
+          /* We might want to not perform this scaling to avoid overflowing unsigned short */
+          aj[i] = ((unsigned short)AJ[i])*4;
         }
         inA->ops->setunfactored   = MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE;
         inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
