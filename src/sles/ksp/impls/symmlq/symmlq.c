@@ -31,7 +31,7 @@ int KSPSetUp_SYMMLQ(KSP ksp)
 #define __FUNCT__ "KSPSolve_SYMMLQ"
 int  KSPSolve_SYMMLQ(KSP ksp,int *its)
 {
-  int          ierr,i,maxit;
+  int          ierr,i;
   PetscScalar  alpha,malpha,beta,mbeta,ibeta,betaold,beta1,ceta,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
   PetscScalar  c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,ms,rho0,rho1,rho2,rho3;
   PetscScalar  mone = -1.0,zero = 0.0,dp = 0.0;
@@ -46,7 +46,6 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
-  maxit   = ksp->max_it;
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
   R       = ksp->work[0];
@@ -101,7 +100,8 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   KSPMonitor(ksp,0,np);            /* call any registered monitor routines */
   ksp->rnorm = np;  
 
-  for (i=0; i<maxit; i++){
+  i = 0;
+  do {
     ksp->its = i+1;
 
     /*    Update    */
@@ -177,7 +177,8 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
      KSPMonitor(ksp,i+1,np);
      ierr = (*ksp->converged)(ksp,i+1,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
      if (ksp->reason) break;
-  }
+     i++;
+  } while (i<ksp->max_it);
 
   /* move to the CG point: xc_(k+1) */
   if (c == 0.0){
@@ -187,7 +188,7 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   }
   ierr = VecAXPY(&ceta_bar,Wbar,X);CHKERRQ(ierr); /* x <- x + ceta_bar*w_bar */
 
-  if (i == maxit) {
+  if (i == ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
   *its = ksp->its;

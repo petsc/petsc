@@ -10,7 +10,7 @@
 #include "src/vec/vecimpl.h"                     /*I "petscvec.h" I*/
 
 /* Logging support */
-int VEC_SCATTER_COOKIE;
+int VEC_SCATTER_COOKIE = 0;
 
 /*
      Checks if any indices are less than zero and generates an error

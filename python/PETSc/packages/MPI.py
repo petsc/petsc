@@ -6,6 +6,7 @@ import os
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
+    self.foundMPI       = 0
     self.headerPrefix   = ''
     self.substPrefix    = ''
     self.argDB          = framework.argDB
@@ -19,13 +20,25 @@ class Configure(config.base.Configure):
     self.libraries.libraries.append(('dl', 'dlopen'))
     return
 
+  def __str__(self):
+    if self.foundMPI:
+      desc = ['MPI:']	
+      desc.append('  Type: '+self.name)
+      desc.append('  Version: '+self.version)
+      desc.append('  Includes: '+str(self.include))
+      desc.append('  Library: '+str(self.lib))
+      return '\n'.join(desc)+'\n'
+    else:
+      return ''
   def configureHelp(self, help):
     import nargs
+    help.addArgument('MPI', '-with-mpi',                nargs.ArgBool(None, 1, 'Activate MPI'))
     help.addArgument('MPI', '-with-mpi-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the MPI installation'))
     help.addArgument('MPI', '-with-mpi-include=<dir>',  nargs.ArgDir(None, None, 'The directory containing mpi.h'))
     help.addArgument('MPI', '-with-mpi-lib=<lib>',      nargs.Arg(None, None, 'The MPI library or list of libraries'))
     help.addArgument('MPI', '-with-mpirun=<prog>',      nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-shared',         nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
+    help.addArgument('MPI', '-with-mpi-compilers',      nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     return
 
   def executeShellCommand(self, command):
@@ -87,10 +100,28 @@ class Configure(config.base.Configure):
 
   def checkWorkingLink(self):
     '''Checking that we can link an MPI executable'''
-    if self.checkMPILink('#include <mpi.h>\n', 'MPI_Comm comm = MPI_COMM_WORLD;\nint size;\n\nMPI_Comm_size(comm, &size);\n'):
-      return 1
-    self.framework.log.write('MPI cannot link, which indicates a mismatch between the header ('+os.path.join(self.include[0], 'mpi.h')+') and library ('+str(self.lib)+').\n')
-    return 0
+    if not self.checkMPILink('#include <mpi.h>\n', 'MPI_Comm comm = MPI_COMM_WORLD;\nint size;\n\nMPI_Comm_size(comm, &size);\n'):
+      self.framework.log.write('MPI cannot link, which indicates a problem with the MPI installation\n')
+      return 0
+
+    self.pushLanguage('C++')
+    self.sourceExtension = '.C'
+    if not self.checkMPILink('#include <mpi.h>\n', 'MPI_Comm comm = MPI_COMM_WORLD;\nint size;\n\nMPI_Comm_size(comm, &size);\n'):
+      self.framework.log.write('MPI cannot link C++ but can link C, which indicates a problem with the MPI installation\n')
+      self.popLanguage()
+      return 0
+    self.popLanguage()
+
+    if 'FC' in self.framework.argDB:
+      self.pushLanguage('F77')
+      self.sourceExtension = '.F'
+      if not self.checkMPILink('', '          integer comm,size\n          call MPI_Comm_size(comm, size)\n'):
+        self.framework.log.write('MPI cannot link Fortran, but can link C, which indicates a problem with the MPI installation\nRun with -with-fc=0 if you do not wish to use Fortran')
+        self.popLanguage()
+        return 0
+      self.popLanguage()
+    return 1
+
 
   def checkSharedLibrary(self):
     '''Check that the libraries for MPI are shared libraries'''
@@ -240,6 +271,8 @@ int checkInit(void) {
     return
 
   def generateGuesses(self):
+    # May not need to list anything
+    yield ('Default compiler locations', [''], [[]])
     # Try specified library and include
     if 'with-mpi-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-mpi-lib']
@@ -249,25 +282,18 @@ int checkInit(void) {
       else:
         includes = self.includeGuesses(map(lambda inc: os.path.dirname(os.path.dirname(inc)), libs))
       yield ('User specified library and includes', [libs], includes)
+      raise RuntimeError('You set a value for --with-mpi-lib, but '+self.framework.argDB['with-mpi-lib']+' cannot be used\n')
     # Try specified installation root
     if 'with-mpi-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-mpi-dir']
       yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
-    # Try compiler defaults
-    yield ('Default compiler locations', self.libraryGuesses(), [['']])
+      raise RuntimeError('You set a value for --with-mpi-dir, but '+self.framework.argDB['with-mpi-dir']+' cannot be used\n')
     # Try SUSE location
     dir = os.path.abspath(os.path.join('/opt', 'mpich'))
     yield ('Default SUSE location', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
     # Try /usr/local
     dir = os.path.abspath(os.path.join('/usr', 'local'))
     yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
-
-    # try location of mpicc in path
-    if self.getExecutable('mpicc', getFullPath = 1):
-      dir = os.path.dirname(os.path.dirname(self.mpicc))
-      yield ('Location of mpicc', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
-      if not 'with-mpirun' in self.framework.argDB:
-        self.framework.argDB['with-mpirun'] = os.path.join(dir, 'bin', 'mpirun')
 
     # Try PETSc location
     PETSC_DIR  = None
@@ -298,7 +324,6 @@ int checkInit(void) {
 
   def configureLibrary(self):
     '''Find all working MPI libraries and then choose one'''
-    self.foundMPI = 0
     functionalMPI = []
     nonsharedMPI  = []
     for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
@@ -310,12 +335,12 @@ int checkInit(void) {
         if self.checkLib(libraries):
           self.lib = libraries
           break
-      if not self.lib: continue
+      if self.lib is None: continue
       for includeDir in includeGuesses:
         if self.checkInclude(includeDir):
           self.include = includeDir
           break
-      if not self.include: continue
+      if self.include is None: continue
       if not self.executeTest(self.checkWorkingLink): continue
       version = self.executeTest(self.configureVersion)
       if self.framework.argDB['with-mpi-shared']:
@@ -324,10 +349,12 @@ int checkInit(void) {
           continue
       self.foundMPI = 1
       functionalMPI.append((name, self.lib, self.include, version))
+      if not self.framework.argDB['with-alternatives']:
+        break
     # User chooses one or take first (sort by version)
     if self.foundMPI:
-      name, self.lib, self.include, version = functionalMPI[0]
-      self.framework.log.write('Choose MPI '+version+' in '+name+'\n')
+      self.name, self.lib, self.include, self.version = functionalMPI[0]
+      self.framework.log.write('Choose MPI '+self.version+' in '+self.name+'\n')
     elif len(nonsharedMPI):
       raise RuntimeError('Could not locate any MPI with shared libraries')
     else:
@@ -386,12 +413,16 @@ int checkInit(void) {
       else:
         self.addSubstitution('MPI_INCLUDE',     '')
         self.addSubstitution('MPI_INCLUDE_DIR', '')
-      self.addSubstitution('MPI_LIB',     ' '.join(map(self.libraries.getLibArgument, self.lib)))
-      self.addSubstitution('MPI_LIBRARY', self.lib)
+      if self.lib:
+        self.addSubstitution('MPI_LIB',     ' '.join(map(self.libraries.getLibArgument, self.lib)))
+        self.addSubstitution('MPI_LIBRARY', self.lib)
+      else:
+        self.addSubstitution('MPI_LIB',     '')
+        self.addSubstitution('MPI_LIBRARY', '')
     return
 
   def configure(self):
-    if 'with-mpi' in self.framework.argDB and not self.framework.argDB['with-mpi']:
+    if not self.framework.argDB['with-mpi']:
       return
     self.executeTest(self.configureLibrary)
     if self.foundMPI:

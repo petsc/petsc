@@ -182,6 +182,9 @@ package:
 tree: ${ACTION}
 	-@if [ "${DIRS}" != "" ]; then \
 	  for dir in ${DIRS} foo ; do \
+            if [ "$$dir" = "fortran" -a "${C_FLINKER}foo" = "foo" ]; then \
+              continue;\
+            fi;\
             if [ -d $$dir ]; then \
 	      r=`egrep requirespackage $$dir/makefile`; \
               if [ "$$?" = 0 ]; then \
@@ -394,44 +397,6 @@ fortranstubs:
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo
 
-.F.o .F90.o:
-	-@if [ "${PETSC_HAVE_ADIFOR}" != "" ]; then \
-	   egrep "Process adifor" $< > /dev/null ; \
-              if [ "$$?" = 0 ]; then \
-                r=`grep "Process adifor" $< | sed -e "s?![ ]*Process adifor: \([a-zA-Z0-9]\)[ ]*?\1?g"`;\
-                echo Running adifor on function $${r};\
-                ${RM} $*.tmp $*.tmp.f $*.ad.F silly.cmp ;\
-                echo "#include \"$<\"" > $*.ad.F;\
-                ${FC} -E ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $< | grep -v '^ *#' > $*.tmp ; \
-                ${PETSC_DIR}/bin/adprocess.py $*.tmp $${r}; \
-                echo $*.tmp.f > silly.cmp; \
-                echo ${ADIFOR_FC} AD_TOP=$${r}; \
-	        ${ADIFOR_FC} AD_TOP=$${r} ; \
-                sed -e 's/^C/\!/g' -e 's/^     \*/     \&/g' g_$*.tmp.f | ${PETSC_DIR}/bin/adiforfix.py >> $*.ad.F;\
-	        ${ADIFOR_FC} AD_TOP=$${r} AD_SCALAR_GRADIENTS=true AD_PMAX=1 AD_PREFIX=m ; \
-                sed -e 's/^C/\!/g' -e 's/^     \*/     \&/g' m_$*.tmp.f | ${PETSC_DIR}/bin/adiforfix.py >> $*.ad.F;\
-	        echo ${FC} -o $*.o -c ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $*.ad.F ;\
-	        ${FC} -o $*.o -c ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $*.ad.F ;\
-              else \
-                echo ${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $< ; \
-                ${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $< ; \
-              fi; \
-        else \
-          echo ${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $< ; \
-          ${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $< ; \
-        fi
-.F.a: 
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $<
-	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
-	-${RM} $*.o
-
-.f.o .f90.o: 
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $<
-.f.a: 
-	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $<
-	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
-	-${RM} $*.o
-
 #
 #  These rules are for compiling the test examples.
 #
@@ -532,7 +497,7 @@ shared_linux:
 shared_solaris:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
-	${LD} -G -h ${LIBNAME}.${SLSUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}; \
+	${LD}  -G -h ${LIBNAME}.${SLSUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX} ${SYS_LIB} ${PETSC_EXTERNAL_LIB_BASIC}; \
 	${RM} -f *
 
 # Actions taken by libtool to rebuild an out-of-date shared library
@@ -599,6 +564,7 @@ chk_manualpage_dir:
 manualpages_buildcite: chk_manualpage_dir
 	@-if [ "${MANSEC}" != "" ] ; then \
 	  DOCTEXT_PATH=${PETSC_DIR}/docs/tex/doctext; \
+	  TEXTFILTER_PATH=${PETSC_DIR}/docs/tex/doctext; \
           ${DOCTEXT} -html -indexdir ../${MANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
 		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCEC} ${SOURCEH};  fi 

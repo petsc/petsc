@@ -2,8 +2,8 @@
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 /* Logging support */
-int TS_COOKIE;
-int TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
+int TS_COOKIE = 0;
+int TS_Step = 0, TS_PseudoComputeTimeStep = 0, TS_FunctionEval = 0, TS_JacobianEval = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetTypeFromOptions"

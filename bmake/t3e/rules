@@ -12,6 +12,8 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 #########
 shared_arch:
 
+include ${PETSC_DIR}/bmake/common/rules.fortran.cpp
+
 oshared:
 
 #  For Cray C90 etc add the additional flag

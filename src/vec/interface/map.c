@@ -6,7 +6,7 @@
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
 /* Logging support */
-int MAP_COOKIE;
+int MAP_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapSetTypeFromOptions_Private"

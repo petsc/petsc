@@ -95,6 +95,7 @@ void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_L
   FREECHAR(name,c1);
 }
 
+#if defined(PETSC_HAVE_MATLAB)
 void PETSC_STDCALL petscviewermatlabopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewerFileType *type,
                            PetscViewer *binv,int *ierr PETSC_END_LEN(len))
 {
@@ -103,6 +104,7 @@ void PETSC_STDCALL petscviewermatlabopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_L
   *ierr = PetscViewerMatlabOpen((MPI_Comm)PetscToPointerComm(*comm),c1,*type,binv);
   FREECHAR(name,c1);
 }
+#endif
 
 void PETSC_STDCALL petscviewerasciiopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewer *lab,
                                     int *ierr PETSC_END_LEN(len))

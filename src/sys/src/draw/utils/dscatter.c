@@ -7,7 +7,7 @@
 
 #include "petsc.h"         /*I "petsc.h" I*/
 
-int DRAWSP_COOKIE;
+int DRAWSP_COOKIE = 0;
 
 struct _p_DrawSP {
   PETSCHEADER(int) 

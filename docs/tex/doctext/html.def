@@ -10,6 +10,12 @@
 # HTML 3.2 specifies <PRE> instead of <LISTING>
 #
 # Doc2lt single line entry
+end_par          %n<P>%n
+linebreak        <BR>
+blank	         \ 
+s_verbatim       <PRE>%n
+e_verbatim       </PRE>%n
+#
 key        %n%p<CODE>%1</CODE>
 synopsis   %n<PRE>%1</PRE>
 definition %n<B>%1</B>%n

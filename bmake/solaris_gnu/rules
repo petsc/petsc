@@ -7,6 +7,8 @@ libf: ${OBJSF}
 #############
 shared_arch: shared_solaris
 
+include ${PETSC_DIR}/bmake/common/rules.fortran.cpp
+
 #
 #  Generates a shared library from any .a library; not just the PETSc ones
 #  This is to allow any user to generate his or her own shared library

@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 import os
 import sys
+import urllib
+import urlparse
+# Fix parsing for nonstandard schemes
+urlparse.uses_netloc.extend(['bk', 'ssh'])
 
 class Patch (object):
   def __init__(self, clArgs = None, argDB = None):
@@ -35,9 +39,12 @@ class Patch (object):
     self.help.addArgument('Actions', 'makeMasterPatch', nargs.ArgBool(None, 1, 'Construct the master patch for Petsc'))
     self.help.addArgument('Actions', 'integratePatch',  nargs.ArgBool(None, 1, 'Integrate changes into the Petsc development repository'))
     self.help.addArgument('Actions', 'updateWeb',       nargs.ArgBool(None, 1, 'Update the patches web page'))
-    patchDir = os.path.join('/mcs', 'ftp', 'pub', 'petsc', 'patches')
-    if not os.path.isdir(patchDir): patchDir = None
-    self.help.addArgument('Variables', 'patchDir=<dir>', nargs.ArgDir(None, patchDir, 'The directory containing both the patch and master patch files'))
+    patchUrl = os.path.join('/mcs', 'ftp', 'pub', 'petsc', 'patches')
+    if not os.path.isdir(patchUrl):
+      patchUrl = urlparse.urlunparse(('ssh', 'petsc@harley.mcs.anl.gov', patchUrl, '', '', ''))
+    else:
+      patchUrl = urlparse.urlunparse(('file', '', patchUrl, '', '', ''))
+    self.help.addArgument('Variables', 'patchUrl=<dir>', nargs.Arg(None, patchUrl, 'The directory containing both the patch and master patch files'))
     # Variables necessary when some actions are excluded
     self.help.addArgument('Variables for missing actions', 'version=<num>',         nargs.Arg(None, None, 'The version number being patched (defined in updateVersion), e.g. 2.1.0', isTemporary = 1))
     self.help.addArgument('Variables for missing actions', 'patchNum=<num>',        nargs.ArgInt(None, None, 'The patch number (defined in updateVersion), e.g. 1', min = 1, isTemporary = 1))
@@ -145,6 +152,7 @@ class Patch (object):
     import re
 
     # Create any remaining change set
+    # FIX: Use bk sfiles to find out if any files are locked
     self.executeShellCommand('bk citool')
     # Get the change sets to be pushed
     changeSets = []
@@ -183,31 +191,64 @@ class Patch (object):
       command += ' -r'+str(self.prevChangeSet(changeSets[0]))+','+str(changeSets[-1])
     self.patch = self.executeShellCommand(command)
 
-    patchName = os.path.join(self.argDB['patchDir'], 'petsc_patch-'+self.argDB['version']+'.'+str(self.argDB['patchNum']))
-    patchFile = file(patchName, 'w')
-    patchFile.write(self.patch)
-    patchFile.write("\n")
-    patchFile.close()
-    os.chmod(patchName, 0644)
+    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(self.argDB['patchUrl'])
+    path      = os.path.join(path, 'petsc_patch-'+self.argDB['version']+'.'+str(self.argDB['patchNum']))
+    patchName = urlparse.urlunparse((scheme, location, path, parameters, query, fragment))
+    if scheme == 'file':
+      patchFile = file(path, 'w')
+      patchFile.write(self.patch)
+      patchFile.write('\n')
+      patchFile.close()
+      os.chmod(patchName, 0664)
+    elif scheme == 'ssh':
+      tmpName   = os.path.join('/tmp', os.tmpnam())
+      patchFile = file(tmpName, 'w')
+      patchFile.write(self.patch)
+      patchFile.write('\n')
+      patchFile.close()
+      output    = self.executeShellCommand('scp '+tmpName+' '+location+':'+path)
+      os.remove(tmpName)
+      output    = self.executeShellCommand('ssh '+location+' chmod 664 '+path)
+    else:
+      raise RuntimeError('Cannot handle patch URL: '+self.argDB['patchUrl'])
     self.writeLogLine('Made patch '+patchName)
     return
 
   def makeMasterPatch(self):
     '''Recreate the master patch from all patch files present'''
     if not self.argDB['makeMasterPatch']: return
-    masterName = os.path.join(self.argDB['patchDir'], 'petsc_patch_all-'+self.argDB['version'])
-    if os.path.exists(masterName): os.remove(masterName)
-    masterFile = file(masterName, 'w')
-    for num in range(self.argDB['patchNum']+1):
-      try:
-        patchFile = file(os.path.join(self.argDB['patchDir'], 'petsc_patch-'+self.argDB['version']+'.'+str(num)))
-        patch     = patchFile.read()
-        patchFile.close()
-        masterFile.write(patch)
-      except IOError:
-        pass
-    masterFile.close()
-    os.chmod(masterName, 0664)
+    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(self.argDB['patchUrl'])
+    basePath   = path
+    path       = os.path.join(path, 'petsc_patch_all-'+self.argDB['version'])
+    masterName = urlparse.urlunparse((scheme, location, path, parameters, query, fragment))
+    if scheme == 'file':
+      if os.path.exists(masterName): os.remove(masterName)
+      masterFile = file(masterName, 'w')
+      for num in range(self.argDB['patchNum']+1):
+        try:
+          patchFile = file(os.path.join(basePath, 'petsc_patch-'+self.argDB['version']+'.'+str(num)))
+          patch     = patchFile.read()
+          patchFile.close()
+          masterFile.write(patch)
+        except IOError:
+          pass
+      masterFile.close()
+      os.chmod(masterName, 0664)
+    elif scheme == 'ssh':
+      tmpName    = os.path.join('/tmp', os.tmpnam())
+      masterFile = file(tmpName, 'w')
+      for num in range(self.argDB['patchNum']+1):
+        try:
+          output = self.executeShellCommand('ssh '+location+' cat '+os.path.join(basePath, 'petsc_patch-'+self.argDB['version']+'.'+str(num)))
+          masterFile.write(output)
+        except RuntimeError:
+          pass
+      masterFile.close()
+      output = self.executeShellCommand('scp '+tmpName+' '+location+':'+path)
+      os.remove(tmpName)
+      output = self.executeShellCommand('ssh '+location+' chmod 664 '+path)
+    else:
+      raise RuntimeError('Cannot handle patch URL: '+self.argDB['patchUrl'])
     self.writeLogLine('Made master patch '+masterName)
     return
 

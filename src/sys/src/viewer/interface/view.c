@@ -2,7 +2,7 @@
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
-int PETSC_VIEWER_COOKIE;
+int PETSC_VIEWER_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy" 

@@ -26,7 +26,7 @@ static int KSPSetUp_CGS(KSP ksp)
 #define __FUNCT__ "KSPSolve_CGS"
 static int  KSPSolve_CGS(KSP ksp,int *its)
 {
-  int          i,maxit,ierr;
+  int          i,ierr;
   PetscScalar  rho,rhoold,a,s,b,tmp,one = 1.0; 
   Vec          X,B,V,P,R,RP,T,Q,U,AUQ;
   PetscReal    dp = 0.0;
@@ -36,7 +36,6 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
-  maxit   = ksp->max_it;
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
   R       = ksp->work[0];
@@ -92,7 +91,8 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   ierr = VecCopy(R,P);CHKERRQ(ierr);
   ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,P,V,T);CHKERRQ(ierr);
 
-  for (i=0; i<maxit; i++) {
+  i = 0;
+  do {
 
     ierr = VecDot(V,RP,&s);CHKERRQ(ierr);           /* s <- (v,rp)          */
     a = rhoold / s;                                  /* a <- rho / s         */
@@ -124,8 +124,9 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
     ierr = VecWAXPY(&b,Q,U,P);CHKERRQ(ierr);        /* p <- u + b(q + b p)  */
     ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,P,V,Q);CHKERRQ(ierr);      /* v <- K p    */
     rhoold = rho;
-  }
-  if (i == maxit) {
+    i++;
+  } while (i<ksp->max_it);
+  if (i == ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
   *its = ksp->its;

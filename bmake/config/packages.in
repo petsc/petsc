@@ -39,11 +39,12 @@ BLOCKSOLVE_LIB     = @BLOCKSOLVE_LIB@
 #
 # Location of Matlab
 #
-MATLAB_MEX               = @MATLAB_MEX@
-MATLAB_CC                = @MATLAB_CC@
-MATLAB_COMMAND           = @MATLAB_COMMAND@
-MATLAB_INCLUDE    = -I@MATLAB_DIR@/extern/include
-MATLAB_LIB        = ${CLINKER_SLFLAG}@MATLAB_DIR@/extern/lib/@MATLAB_ARCH@ -L@MATLAB_DIR@/extern/lib/@MATLAB_ARCH@  -leng -lmx -lmat -lut @MATLAB_DL@
+MATLAB_MEX        = @MATLAB_MEX@
+MATLAB_CC         = @MATLAB_CC@
+MATLAB_COMMAND    = @MATLAB_COMMAND@
+MATLAB_INCLUDE    = @MATLAB_INCLUDE@
+MATLAB_LIB        = @MATLAB_LIB@
+
 
 #
 #

@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 /* Logging support */
-int DA_COOKIE;
+int DA_COOKIE = 0;
 int DAEvents[DA_MAX_EVENTS];
 
 #undef __FUNCT__  

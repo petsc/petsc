@@ -52,8 +52,7 @@ make bib2html
 # create fortran stubdocs and cleanup
 cd $PETSC_DIR
 make allfortranstubs
-make alldoc allhtml LOC=${PETSC_DIR}
-${PETSC_DIR}/maint/update-docs.py ${PETSC_DIR}
+make alldoc LOC=${PETSC_DIR}
 make ACTION=clean tree
 # now tar up the PETSc tree
 cd /sandbox/petsc

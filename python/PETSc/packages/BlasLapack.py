@@ -16,6 +16,19 @@ class Configure(config.base.Configure):
     self.libraries    = self.framework.require('config.libraries',     self)
     return
 
+  def __str__(self):
+    dirs    = []
+    libFlag = []
+    for lib in self.lapackLibrary+self.blasLibrary:
+      if lib is None: continue
+      dir = os.path.dirname(lib)
+      if not dir in dirs:
+        dirs.append(dir)
+      else:
+        lib = os.path.basename(lib)
+      libFlag.append(self.libraries.getLibArgument(lib))
+    return 'BLAS/LAPACK: '+' '.join(dirs)+' '+' '.join(libFlag)+'\n'
+
   def configureHelp(self, help):
     import nargs
     help.addArgument('BLAS/LAPACK', '-with-blas-lapack-dir=<lib>', nargs.ArgDir(None, None, 'Indicate the directory containing BLAS and LAPACK libraries'))
@@ -64,17 +77,23 @@ class Configure(config.base.Configure):
     # Try specified BLASLAPACK library
     if 'with-blas-lapack' in self.framework.argDB:
       yield ('User specified BLAS/LAPACK library', None, self.framework.argDB['with-blas-lapack'])
+      raise RuntimeError('You set a value for --with-blas-lapack, but '+self.framework.argDB['with-blas-lapack']+' cannot be used\n')
     # Try specified BLAS and LAPACK libraries
     if 'with-blas' in self.framework.argDB and 'with-lapack' in self.framework.argDB:
       yield ('User specified BLAS and LAPACK libraries', self.framework.argDB['with-blas'], self.framework.argDB['with-lapack'])
+      raise RuntimeError('You set a value for --with-blas and --with-lapack, but '+self.framework.argDB['with-blas']+' and '+self.framework.argDB['-with-lapack']+' cannot be used\n')
     # Try specified installation root
     if 'with-blas-lapack-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-blas-lapack-dir']
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'))
+      raise RuntimeError('You set a value for --with-blas-lapack-dir, but '+self.framework.argDB['with-blas-lapack-dir']+' cannot be used\n')
     # Try compiler defaults
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a')
     # Try MacOSX location
     yield ('MacOSX BLAS/LAPACK library', None, os.path.join('/System', 'Library', 'Frameworks', 'vecLib.framework', 'vecLib'))
+    # Sun locations
+    yield ('Sun BLAS/LAPACK library', None, ['libsunperf.a','libsunmath.a'])
+    yield ('Sun BLAS/LAPACK library', None, ['libsunperf.a','libF77.a','libM77.a','libsunmath.a'])
     # Try PETSc location
     PETSC_DIR  = None
     PETSC_ARCH = None
@@ -107,6 +126,8 @@ class Configure(config.base.Configure):
       if foundLapack: self.foundLapack = 1
       if foundBlas and foundLapack:
         functionalBlasLapack.append((name, blasLibrary, lapackLibrary))
+        if not self.framework.argDB['with-alternatives']:
+          break
     # User chooses one or take first (sort by version)
     if self.foundBlas and self.foundLapack:
       name, self.blasLibrary, self.lapackLibrary = functionalBlasLapack[0]
@@ -114,9 +135,9 @@ class Configure(config.base.Configure):
       if not isinstance(self.lapackLibrary, list): self.lapackLibrary = [self.lapackLibrary]
     else:
       if not self.foundBlas:
-        raise RuntimeError('Could not find a functional BLAS\n')
+        raise RuntimeError('Could not find a functional BLAS. Run with --with-blas=<lib> to indicate location of BLAS\n')
       if not self.foundLapack:
-        raise RuntimeError('Could not find a functional LAPACK\n')
+        raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack=<lib> to indicate location of LAPACK\n')
     return
 
   def unique(self, l):

@@ -2,6 +2,7 @@ import config.base
 
 import commands
 import os
+import os.path
 import re
 
 class Configure(config.base.Configure):
@@ -22,7 +23,7 @@ class Configure(config.base.Configure):
                  'gettimeofday', 'getrusage', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
                  'uname','_snprintf']
-    libraries = [('dl', 'dlopen')]
+    libraries = [('dl', 'dlopen'),(['socket','nsl'],'socket')]
     self.compilers   = self.framework.require('config.compilers', self)
     self.types       = self.framework.require('config.types',     self)
     self.headers     = self.framework.require('config.headers',   self)
@@ -62,6 +63,56 @@ class Configure(config.base.Configure):
     self.blocksolve.headerPrefix  = self.headerPrefix
     self.netcdf.headerPrefix      = self.headerPrefix
     return
+
+  #  this sucks, I have to call this after constructor, but by then configure is essentially done
+  #  Matt needs to rearrange things so this can be called before the configure of compilers but still have
+  #  argDB and log file
+  #
+  #  Other issues: it tries to get the patch and apply everytime configure is called. Only safe way
+  #  but still seems like overkill. 
+  def updatepatches(self):
+    if not os.path.isdir('BitKeeper_test') and self.framework.argDB.has_key('disable-update'): return
+    self.framework.getExecutable('patch')
+    if not hasattr(self.framework, 'patch'):
+      self.framework.log.write('Cannot find patch program.\nContinuing configure without patches.\n')
+      return
+    # on solaris and alpha make sure patch is gnupatch?
+
+    # Get PETSc current version number
+    if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
+      raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
+    fd  = open(os.path.join(self.dir, 'include', 'petscversion.h'))
+    pv = fd.read()
+    fd.close()
+    try:
+      majorversion    = re.compile(' PETSC_VERSION_MAJOR[ ]*([0-9]*)').search(pv).group(1)
+      minorversion    = re.compile(' PETSC_VERSION_MINOR[ ]*([0-9]*)').search(pv).group(1)
+      subminorversion = re.compile(' PETSC_VERSION_SUBMINOR[ ]*([0-9]*)').search(pv).group(1)
+    except:
+      raise RuntimeError('Unable to find version information from include/petscversion.h')
+    version=str(majorversion)+'.'+str(minorversion)+'.'+str(subminorversion)
+    
+    self.framework.log.write('Downloading latest patches for version '+version+'\n')
+    patchfile1 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/petsc_patch_all-'+version
+    patchfile2 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/buildsystem_patch_all-'+version
+    import urllib
+    try:
+      urllib.urlretrieve(patchfile1, 'patches1')
+      urllib.urlretrieve(patchfile2, 'patches2')
+    except:
+      self.framework.log.write('Unable to download patches. Perhaps you are off the network?\nContinuing configure without patches.\n')
+      return
+    import commands
+    (status1,output1) = commands.getstatusoutput('echo patch -Np1 < patches1')
+    (status2,output2) = commands.getstatusoutput('cd python/BuildSystem; echo patch -Np1 < ../../patches2')
+    os.unlink('patches1')
+    os.unlink('patches2')
+    if status1 or output1.find('error') >= 0 or status2 or output2.find('error') >= 0:
+      self.framework.log.write('Error applying patches. Continuing configure anyways.\n')
+      self.framework.log.write(output1+'\n')
+      self.framework.log.write(output2+'\n')
+      return
+    return 
 
   def configureHelp(self, help):
     import nargs
@@ -111,7 +162,7 @@ class Configure(config.base.Configure):
     self.dir = self.framework.argDB['PETSC_DIR']
     # Check for version
     if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
-      raise RuntimeError('Invalid PETSc directory '+str(self.dir))
+      raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
     self.addSubstitution('DIR', self.dir)
     self.addDefine('DIR', self.dir)
     return
@@ -271,38 +322,50 @@ class Configure(config.base.Configure):
 
   def configureFortranCPP(self):
     '''Determine if Fortran handles CPP properly'''
-    # IBM xlF chokes on this
-    if not self.checkFortranCompilerOption('-DPTesting'):
-      if self.framework.argDB['CC'] == 'gcc': traditional = '-traditional-cpp'
-      else:                         traditional = ''
-      self.framework.addSubstitution('F_to_o_TARGET', """
-.F.f:
-	-${RM} __$*.f __$*.c
-	-${CP} $*.F __$*.c
-	-${CC} ${FCPPFLAGS} -E  """+traditional+""" __$*.c | grep -v '^ *#' > __$*.f
-	-${RM} __$*.c
-
-.F.o:
-	-${RM} __$*.f __$*.c
-	-${CP} $*.F __$*.c
-	-${CC} ${FCPPFLAGS} -E  """+traditional+""" __$*.c | grep -v '^ *#' > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
-	-${RM} __$*.f __$*.c
- 
-.F.a:
-	-${RM} __$*.f __$*.c
-	-${CP} $*.F __$*.c
-	-${CC} ${FCPPFLAGS} -E """+traditional+""" __$*.c | grep -v '^ *#' > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} __$*.f __$*.c""")
+    if 'FC' in self.framework.argDB:
+      # IBM xlF chokes on this
+      if not self.checkFortranCompilerOption('-DPTesting'):
+        if self.compilers.isGCC:
+          traditional = 'TRADITIONAL_CPP = -traditional-cpp\n'
+        else:
+          traditional = 'TRADITIONAL_CPP = \n'
+        self.framework.addSubstitution('F_to_o_TARGET', traditional+'include ${PETSC_DIR}/bmake/common/rules.fortran.nocpp')
+      else:
+        self.framework.addSubstitution('F_to_o_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.fortran.cpp')
+    else:
+      self.framework.addSubstitution('F_to_o_TARGET', '')
     return
 
   def configureFortranStubs(self):
     '''Determine whether the Fortran stubs exist or not'''
     stubDir = os.path.join(self.framework.argDB['PETSC_DIR'], 'src', 'fortran', 'auto')
     if not os.path.exists(os.path.join(stubDir, 'makefile.src')):
-      print '  WARNING: Fortran stubs have not been generated in '+stubDir
+      self.framework.log.write('WARNING: Fortran stubs have not been generated in '+stubDir+'\n')
+      self.framework.getExecutable('bfort', getFullPath = 1)
+      if hasattr(self.framework, 'bfort'):
+        self.framework.log.write('           Running '+self.framework.bfort+' to generate Fortran stubs\n')
+        (status,output) = commands.getstatusoutput('export PETSC_ARCH=linux;make allfortranstubs')
+        # filter out the normal messages, user has to cope with error messages
+        cnt = 0
+        for i in output.split('\n'):
+          if not (i.startswith('fortranstubs in:') or i.startswith('Fixing pointers') or i.find('ACTION=') >= 0):
+            if not cnt:
+              self.framework.log.write('*******Error generating Fortran stubs****\n')
+            cnt = cnt + 1
+            self.framework.log.write(i+'\n')
+        if not cnt:
+          self.framework.log.write('           Completed generating Fortran stubs\n')
+        else:
+          self.framework.log.write('*******End of error messages from generating Fortran stubs****\n')
+      else:
+        self.framework.log.write('           See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how\n')
+        self.framework.log.write('           to obtain bfort to generate the Fortran stubs or make sure\n')
+        self.framework.log.write('           bfort is in your path\n')
+        self.framework.log.write('WARNING: Turning off Fortran interfaces for PETSc')
+        del self.framework.argDB['FC']
+        self.compilers.addSubstitution('FC', '')
+    else:
+      self.framework.log.write('Fortran stubs do exist in '+stubDir+'\n')
     return
 
   def configureDynamicLibraries(self):
@@ -453,7 +516,12 @@ libf: ${OBJSF}
     if not self.functions.haveFunction('getpwuid'):
       self.addDefine('MISSING_GETPWUID', 1)
     if not self.functions.haveFunction('socket'):
-      self.addDefine('MISSING_SOCKETS', 1)
+      # solaris requires these two libraries for socket()
+      if self.libraries.haveLib('socket') and self.libraries.haveLib('nsl'):
+        self.addDefine('HAVE_SOCKET', 1)
+        self.framework.argDB['LIBS'] += ' -lsocket -lnsl'
+      else:
+        self.addDefine('MISSING_SOCKETS', 1)
     return
 
   def configureMissingSignals(self):
@@ -667,6 +735,13 @@ acfindx:
       self.addDefine('USE_KBYTES_FOR_SIZE', 1)
     return
 
+  def configureSolaris(self):
+    '''Solaris specific stuff'''
+    if self.archBase.startswith('solaris'):
+      if os.path.isdir(os.path.join('/usr','ucblib')):
+        self.framework.argDB['LIBS'] += ' ${CLINKER_SLFLAG}/usr/ucblib'
+    return
+
   def configureLinux(self):
     '''Linux specific stuff'''
     if self.archBase == 'linux':
@@ -678,7 +753,6 @@ acfindx:
     if self.archBase.startswith('darwin'):
       self.missingPrototypesC.append('int getdomainname(char *, size_t);')
       self.missingPrototypesExternC.append('int getdomainname(char *, size_t);')
-      self.framework.addSubstitution('RANLIB', 'ranlib -s -c')
     return
 
   def configureWin32NonCygwin(self):
@@ -707,8 +781,6 @@ acfindx:
         return
       else:
         raise RuntimeError('********** Error: Unable to locate a functional MPI. Please consult configure.log. **********')
-    print '********** Warning: Using uniprocessor MPI (mpiuni) from Petsc **********'
-    print '**********    Use --with-mpi-* options to specify a full MPI   **********'
     self.framework.addDefine('HAVE_MPI', 1)
     self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/src/sys/src/mpiuni')
     self.framework.addSubstitution('MPI_LIB',     '${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a')
@@ -743,9 +815,62 @@ acfindx:
     self.framework.addSubstitution('CC_SHARED_OPT', '')
     return
 
+  def configureETags(self):
+    '''Determine if etags files exist and try to create otherwise'''
+    if not os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'TAGS')):
+      self.framework.log.write('WARNING: ETags files have not been created\n')
+      self.framework.getExecutable('etags', getFullPath = 1)
+      if hasattr(self.framework, 'etags'):
+        self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
+        (status,output) = commands.getstatusoutput('export PETSC_ARCH=linux;make PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags')
+        # filter out the normal messages
+        cnt = 0
+        for i in output.split('\n'):
+          if not (i.startswith('etags_') or i.find('TAGS') >= 0):
+            if not cnt:
+              self.framework.log.write('*******Error generating etags files****\n')
+            cnt = cnt + 1
+            self.framework.log.write(i+'\n')
+        if not cnt:
+          self.framework.log.write('           Completed generating etags files\n')
+        else:
+          self.framework.log.write('*******End of error messages from generating etags files****\n')
+      else:
+        self.framework.log.write('           The etags command is not in your path, cannot build etags files\n')
+    else:
+      self.framework.log.write('Found etags file \n')
+    return
+
+  def configureDocs(self):
+    '''Determine if the docs are built, if not, warn the user'''
+    if not os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'include','petscvec.h.html')):
+      self.framework.log.write('WARNING: document files have not been created\n')
+      self.framework.getExecutable('doctext', getFullPath = 1)
+      self.framework.getExecutable('mapnames', getFullPath = 1)
+      self.framework.getExecutable('c2html', getFullPath = 1)
+      self.framework.getExecutable('pdflatex', getFullPath = 1)
+      if hasattr(self.framework, 'doctext') and hasattr(self.framework, 'mapnames') and hasattr(self.framework, 'c2html') and hasattr(self.framework, 'pdflatex'):
+        self.framework.log.write('           You can run "make alldoc LOC=${PETSC_DIR}" to generate all the documentation\n')
+        self.framework.log.write('           WARNING!!! This will take several HOURS to run\n')
+      else:
+        self.framework.log.write('           You are missing')
+        if not hasattr(self.framework, 'doctext'): self.framework.log.write(' doctext')
+        if not hasattr(self.framework, 'mapnames'):self.framework.log.write(' mapnames')
+        if not hasattr(self.framework, 'c2html'):  self.framework.log.write(' c2html')
+        if not hasattr(self.framework, 'pdflatex'):self.framework.log.write(' pdflatex')
+        self.framework.log.write('\n')
+        self.framework.log.write('           from your PATH. See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how\n')
+        self.framework.log.write('           install them and compile the documentation\n')
+        self.framework.log.write('      Or view the docs on line at http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs\n')
+    else:
+      self.framework.log.write('Document files found\n')
+    return
+
+ 
   def configure(self):
-    self.executeTest(self.checkRequirements)
     self.executeTest(self.configureDirectories)
+    self.updatepatches()
+    self.executeTest(self.checkRequirements)
     self.executeTest(self.configureArchitecture)
     self.framework.header = 'bmake/'+self.arch+'/petscconf.h'
     self.framework.addSubstitutionFile('bmake/config/packages.in',   'bmake/'+self.arch+'/packages')
@@ -755,9 +880,12 @@ acfindx:
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureCompilerFlags)
     if 'FC' in self.framework.argDB:
-      self.executeTest(self.configureFortranPIC)
-      self.executeTest(self.configureFortranCPP)
       self.executeTest(self.configureFortranStubs)
+    if 'FC' in self.framework.argDB:
+      self.executeTest(self.configureFortranPIC)
+    else:
+      self.framework.addSubstitution('FC_SHARED_OPT', '')
+    self.executeTest(self.configureFortranCPP)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)
@@ -772,6 +900,7 @@ acfindx:
     self.executeTest(self.configureLibrarySuffix)
     self.executeTest(self.configureAlpha)
     self.executeTest(self.configureIRIX)
+    self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureMacOSX)
     self.executeTest(self.configureWin32NonCygwin)
@@ -779,4 +908,6 @@ acfindx:
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMachineInfo)
     self.executeTest(self.configureMisc)
+    self.executeTest(self.configureETags)
+    self.executeTest(self.configureDocs)
     return

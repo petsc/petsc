@@ -341,7 +341,7 @@ testex19: ex19.PETSc
 	if [ "${PETSC_HAVE_X11}" != "" ]; then havex="1"; else havex="0"; fi;\
         D2=`grep "#define PETSC_HAVE_X11 1" ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h`; \
 	if [ "$${D2}" != "" ]; then havex="1"; fi;\
-	if [ $${havex} == "1" ]; then \
+	if [ $${havex} = "1" ]; then \
            ${MPIRUN} -np 1 ex19 -dmmg_nlevels 4 -snes_xmonitor  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "Graphics example src/snes/examples/tutorials/ex19 run successfully on 1 processor"; \

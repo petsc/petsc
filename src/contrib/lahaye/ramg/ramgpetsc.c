@@ -457,6 +457,8 @@ int RamgGetParam(Mat A,struct RAMG_PARAM *ramg_param)
     (*ramg_param).IOUT    = 1;
   }
   (*ramg_param).IPRINT    = 10606;
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_iswtch",&(*ramg_param).ISWTCH,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_iout",&(*ramg_param).IOUT,PETSC_NULL);CHKERRQ(ierr);
   /*....Class 3 RAMG parameters....*/
   (*ramg_param).LEVELX    = 0;
   (*ramg_param).IFIRST    = 10; 
@@ -464,30 +466,32 @@ int RamgGetParam(Mat A,struct RAMG_PARAM *ramg_param)
           to equal on assure that in the PCApply routine AMG only performs 
           one cycle......*/ 
   (*ramg_param).NCYC      = 1031; 
-  (*ramg_param).MADAPT    = 0;
-  (*ramg_param).NRD       = 1234;
-  (*ramg_param).NSOLCO    = 2; 
-  (*ramg_param).NRU       = 1256; 
-  (*ramg_param).EPS       = 1e-12; 
-  /*....Class 4 RAMG parameters....*/
-  (*ramg_param).NWT       = 2; 
-  (*ramg_param).NTR       = 0; 
-  (*ramg_param).ECG1      = 0.0;  
-  (*ramg_param).ECG2      = 0.25; 
-  (*ramg_param).EWT2      = 0.35;  
-
-  /*..Overwrite default values by values specified at runtime..*/
-  /*....Class 2 RAMG parameters....*/ 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_iswtch",&(*ramg_param).ISWTCH,PETSC_NULL);CHKERRQ(ierr);
-
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_iout",&(*ramg_param).IOUT,PETSC_NULL);CHKERRQ(ierr);
-
   ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_cycles",&cycles,&flg);CHKERRQ(ierr);
   if (flg) {
     double scale = pow(10.0,((double)(1 + (int)(log10(1.e-12+(double)cycles)))));
     (*ramg_param).NCYC = (int)(103*scale + cycles);
     PetscLogInfo(0,"RAMG using %d for cycles (number after 103 is number of cycles)",(*ramg_param).NCYC);
   }  
+  (*ramg_param).MADAPT    = 0;
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_madapt",&(*ramg_param).MADAPT,0);CHKERRQ(ierr);
+  (*ramg_param).NRD       = 1234;
+  (*ramg_param).NSOLCO    = 2; 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_nsolc",&(*ramg_param).NSOLCO,0);CHKERRQ(ierr);
+  (*ramg_param).NRU       = 1256; 
+  (*ramg_param).EPS       = 1e-12; 
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-pc_ramg_eps",&(*ramg_param).EPS,0);CHKERRQ(ierr);
+  /*....Class 4 RAMG parameters....*/
+  (*ramg_param).NWT       = 2; 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_nwt",&(*ramg_param).NWT,0);CHKERRQ(ierr);
+  (*ramg_param).NTR       = 0; 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_ntr",&(*ramg_param).NTR,0);CHKERRQ(ierr);
+  (*ramg_param).ECG1      = 0.0;  
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-pc_ramg_ecg1",&(*ramg_param).ECG1,0);CHKERRQ(ierr);
+  (*ramg_param).ECG2      = 0.25; 
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-pc_ramg_ecg2",&(*ramg_param).ECG2,0);CHKERRQ(ierr);
+  (*ramg_param).EWT2      = 0.35;  
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-pc_ramg_ewt2",&(*ramg_param).EWT2,0);CHKERRQ(ierr);
+
   PetscFunctionReturn(0); 
 }
 
