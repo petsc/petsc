@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.70 1997/10/20 17:39:31 curfman Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.71 1998/03/20 13:43:23 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -794,11 +794,11 @@ int InitialGuess(SNES snes,Euler *app,Vec X)
 int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler **newapp)
 {
   Euler  *app;
-  AO     ao;           /* application ordering context */
-  int    ni1;          /* x-direction grid dimension */
-  int    nj1;	      /* y-direction grid dimension */
-  int    nk1;	      /* z-direction grid dimension */
-  int    Nx, Ny, Nz;   /* number of processors in each direction */
+  AO     ao;         /* application ordering context */
+  int    ni1;        /* x-direction grid dimension */
+  int    nj1;	     /* y-direction grid dimension */
+  int    nk1;	     /* z-direction grid dimension */
+  int    Nx, Ny, Nz; /* number of processors in each direction */
   int    Nlocal, ierr, flg, llen, llenb, fort_comm, problem = 1, ndof, ndof_e;
   char   *mmname, lim[64];
   Scalar order1;
