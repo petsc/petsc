@@ -10,9 +10,10 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
  -----------------------------------------------------------------------
 
-  X Fix include files for *.f programs (e.g., snes/examples/tests/ex10.f)
+  -  add test to PetscCommDup_Private() to verify that all processors are using the
+     same tag.
 
-  - fix mark adams code
+  X Fix include files for *.f programs (e.g., snes/examples/tests/ex10.f)
 
   * Use a USES_INT_MPI_COMM for Cray T3d and IRIX64 that use "native"
     MPI. Still needs testing.
