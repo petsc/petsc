@@ -148,7 +148,7 @@ class UsingPython(UsingCompiler):
   def __init__(self, usingSIDL):
     UsingCompiler.__init__(self, usingSIDL)
     bs.argDB.setType('PYTHON_INCLUDE', nargs.ArgDir(1,'The directory containing Python.h'))
-    #TODO: bs.argDB.setType('PYTHON_LIB',     argtest.LibraryTester())
+    #TODO: bs.argDB.setType('PYTHON_LIB', nargs.ArgLibrary(1, 'The library containing PyInitialize()'))
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
     try:
@@ -272,8 +272,8 @@ class UsingJava (UsingCompiler):
   '''This class handles all interaction specific to the Java language'''
   def __init__(self, usingSIDL):
     UsingCompiler.__init__(self, usingSIDL)
-    bs.argDB.setTester('JAVA_INCLUDE', argtest.DirectoryTester())
-    bs.argDB.setTester('JAVA_RUNTIME_LIB', argtest.DirectoryTester())
+    bs.argDB.setType('JAVA_INCLUDE', nargs.ArgDir(1, 'The directory containing jni.h'))
+    #TODO: bs.argDB.setType('JAVA_RUNTIME_LIB', nargs.ArgLibrary(1, 'The library containing holders for Java builtin types'))
     self.setupIncludeDirectories()
 
   def setupIncludeDirectories(self):
