@@ -6,9 +6,10 @@
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/utils/freespace.h"
 
-int MatSeqAIJPtAP(Mat,Mat,Mat*);
-int MatSeqAIJPtAPSymbolic(Mat,Mat,Mat*);
-int MatSeqAIJPtAPNumeric(Mat,Mat,Mat);
+EXTERN int MatSeqAIJPtAP(Mat,Mat,Mat*);
+EXTERN int MatSeqAIJPtAPSymbolic(Mat,Mat,Mat*);
+EXTERN int MatSeqAIJPtAPNumeric(Mat,Mat,Mat);
+EXTERN int RegisterMatMatMultRoutines_Private(Mat);
 
 static int MATSeqAIJ_PtAP         = 0;
 static int MATSeqAIJ_PtAPSymbolic = 0;
