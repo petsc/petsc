@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.76 1997/04/10 00:00:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.77 1997/04/10 13:17:41 bsmith Exp balay $";
 #endif
 
 /*
@@ -10,6 +10,25 @@ static char vcid[] = "$Id: pbvec.c,v 1.76 1997/04/10 00:00:22 bsmith Exp bsmith 
 #include "petsc.h"
 #include <math.h>
 #include "pvecimpl.h"   /*I  "vec.h"   I*/
+
+
+#undef __FUNC__  
+#define __FUNC__ "VecDot_MPI"
+int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
+{
+  Scalar    sum, work;
+  VecDot_Seq(  xin, yin, &work );
+/*
+   This is a ugly hack. But to do it right is kind of silly.
+*/
+#if defined(PETSC_COMPLEX)
+  MPI_Allreduce( &work, &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm );
+#else
+  MPI_Allreduce( &work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+#endif
+  *z = sum;
+  return 0;
+}
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetOption_MPI" /* ADIC Ignore */
