@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.72 2001/05/31 22:27:23 balay Exp bsmith $*/
+/*$Id: reg.c,v 1.73 2001/06/04 15:08:29 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -542,7 +542,9 @@ int PetscFListGet(PetscFList list,char ***array,int *n)
 +  comm   - the communicator (usually MPI_COMM_WORLD)
 .  fd     - file to print to, usually stdout
 .  prefix - prefix to prepend to name (optional)
-.  name   - option string
+.  name   - option string (for example, "-ksp_type")
+.  text - short description of the object (for example, "Krylov solvers")
+.  man - name of manual page that discusses the object (for example, "KSPCreate")
 -  list   - list of types
 
    Level: developer

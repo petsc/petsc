@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.27 2001/03/23 23:20:42 balay Exp bsmith $*/
+/*$Id: aoptions.c,v 1.28 2001/06/21 21:15:39 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -37,14 +37,14 @@ struct _p_OptionsAMS {
 
 typedef struct {
 #if defined(PETSC_HAVE_AMS)
-  AMS_Memory amem;
+  AMS_Memory      amem;
   PetscOptionsAMS next;
 #endif
-  char       *prefix,*mprefix;  /* publish mprefix, not prefix cause the AMS will change it BUT we need to free it*/
-  char       *title;
-  MPI_Comm   comm;
-  PetscTruth printhelp;
-  PetscTruth changedmethod;
+  char            *prefix,*mprefix;  /* publish mprefix, not prefix cause the AMS will change it BUT we need to free it*/
+  char            *title;
+  MPI_Comm        comm;
+  PetscTruth      printhelp;
+  PetscTruth      changedmethod;
 } PetscOptionsPublishObject;
 static PetscOptionsPublishObject amspub;
 int PetscOptionsPublishCount;
