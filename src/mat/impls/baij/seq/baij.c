@@ -159,9 +159,6 @@ EXTERN int MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat,int,const int[],int,const i
 #else
 #define MatSetValuesBlocked_SeqBAIJ_MatScalar MatSetValuesBlocked_SeqBAIJ
 #endif
-#if defined(PETSC_HAVE_DSCPACK)
-EXTERN int MatUseDSCPACK_MPIBAIJ(Mat);
-#endif
 
 #define CHUNKSIZE  10
 
@@ -539,8 +536,6 @@ static int MatView_SeqBAIJ_Binary(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern int MatMPIBAIJFactorInfo_DSCPACK(Mat,PetscViewer);
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqBAIJ_ASCII"
 static int MatView_SeqBAIJ_ASCII(Mat A,PetscViewer viewer)
@@ -559,9 +554,6 @@ static int MatView_SeqBAIJ_ASCII(Mat A,PetscViewer viewer)
     ierr = MatView(aij,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(aij);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
-#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-     ierr = MatMPIBAIJFactorInfo_DSCPACK(A,viewer);CHKERRQ(ierr);
-#endif
      PetscFunctionReturn(0); 
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
@@ -970,9 +962,6 @@ int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   int        m = A->m,*ip,N,*ailen = a->ilen;
   int        mbs = a->mbs,bs2 = a->bs2,rmax = 0,ierr;
   MatScalar  *aa = a->a,*ap;
-#if defined(PETSC_HAVE_DSCPACK)
-  PetscTruth   flag;
-#endif
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -1013,11 +1002,6 @@ int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   PetscLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Most nonzeros blocks in any row is %d\n",rmax);
   a->reallocs          = 0;
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
-
-#if defined(PETSC_HAVE_DSCPACK)
-  ierr = PetscOptionsHasName(A->prefix,"-mat_baij_dscpack",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseDSCPACK_MPIBAIJ(A);CHKERRQ(ierr); }
-#endif
 
   PetscFunctionReturn(0);
 }
@@ -1877,9 +1861,6 @@ int MatLoad_SeqBAIJ(PetscViewer viewer,MatType type,Mat *A)
   int          *masked,nmask,tmp,bs2,ishift;
   PetscScalar  *aa;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
-#if defined(PETSC_HAVE_DSCPACK)
-  PetscTruth   flag;
-#endif
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -1943,8 +1924,9 @@ int MatLoad_SeqBAIJ(PetscViewer viewer,MatType type,Mat *A)
   }
 
   /* create our matrix */
-  ierr = MatCreateSeqBAIJ(comm,bs,M+extra_rows,N+extra_rows,0,browlengths,A);CHKERRQ(ierr);
-  B = *A;
+  ierr = MatCreate(comm,M+extra_rows,N+extra_rows,&B);
+  ierr = MatSetType(B,type);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
   a = (Mat_SeqBAIJ*)B->data;
 
   /* set matrix "i" values */
@@ -2005,14 +1987,11 @@ int MatLoad_SeqBAIJ(PetscViewer viewer,MatType type,Mat *A)
   ierr = PetscFree(jj);CHKERRQ(ierr);
   ierr = PetscFree(mask);CHKERRQ(ierr);
 
-  B->assembled = PETSC_TRUE;
-
-#if defined(PETSC_HAVE_DSCPACK)
-  ierr = PetscOptionsHasName(B->prefix,"-mat_baij_dscpack",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseDSCPACK_MPIBAIJ(B);CHKERRQ(ierr); }
-#endif
-  
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatView_Private(B);CHKERRQ(ierr);
+
+  *A = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

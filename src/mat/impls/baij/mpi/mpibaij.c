@@ -968,7 +968,6 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatUseDSCPACK_MPIBAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_MPIBAIJ"
 int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
@@ -980,9 +979,6 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscTruth  r1,r2,r3;
   MatScalar   *val;
   InsertMode  addv = mat->insertmode;
-#if defined(PETSC_HAVE_DSCPACK)
-  PetscTruth   flag;
-#endif
 
   PetscFunctionBegin;
   if (!baij->donotstash) {
@@ -1068,14 +1064,8 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);
     baij->rowvalues = 0;
   }
-#if defined(PETSC_HAVE_DSCPACK)
-  ierr = PetscOptionsHasName(mat->prefix,"-mat_baij_dscpack",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseDSCPACK_MPIBAIJ(mat);CHKERRQ(ierr); }
-#endif
   PetscFunctionReturn(0);
 }
-
-extern int MatMPIBAIJFactorInfo_DSCPACK(Mat,PetscViewer);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIBAIJ_ASCIIorDraworSocket"
@@ -1111,9 +1101,6 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  block size is %d\n",bs);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
-#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-      ierr = MatMPIBAIJFactorInfo_DSCPACK(mat,viewer);CHKERRQ(ierr);
-#endif
       PetscFunctionReturn(0);
     }
   }
@@ -2435,9 +2422,6 @@ int MatLoad_MPIBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   int          tag = ((PetscObject)viewer)->tag,bs=1,Mbs,mbs,extra_rows;
   int          *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
   int          dcount,kmax,k,nzcount,tmp;
-#if defined(PETSC_HAVE_DSCPACK)
-  PetscTruth   flag;
-#endif
  
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -2583,8 +2567,11 @@ int MatLoad_MPIBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   }
 
   /* create our matrix */
-  ierr = MatCreateMPIBAIJ(comm,bs,m,m,M+extra_rows,N+extra_rows,0,dlens,0,odlens,newmat);CHKERRQ(ierr);
-  A = *newmat;
+  ierr = MatCreate(comm,m,m,M+extra_rows,N+extra_rows,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,type);CHKERRQ(ierr)
+  ierr = MatMPIBAIJSetPreallocation(A,bs,0,dlens,0,odlens);CHKERRQ(ierr);
+
+  /* Why doesn't this called using ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr); */
   MatSetOption(A,MAT_COLUMNS_SORTED); 
   
   if (!rank) {
@@ -2649,10 +2636,8 @@ int MatLoad_MPIBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   ierr = PetscFree(mask);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_DSCPACK)
-  ierr = PetscOptionsHasName(A->prefix,"-mat_baij_dscpack",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseDSCPACK_MPIBAIJ(A);CHKERRQ(ierr); }
-#endif
+
+  *newmat = A;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
