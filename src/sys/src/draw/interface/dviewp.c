@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dviewp.c,v 1.6 1996/08/08 14:44:45 bsmith Exp balay $";
+static char vcid[] = "$Id: dviewp.c,v 1.7 1996/12/16 18:26:41 balay Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -25,7 +25,7 @@ int DrawSetViewPort(Draw draw,double xl,double yl,double xr,double yr)
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (draw->type == DRAW_NULLWINDOW) return 0;
   if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl)
-    SETERRQ(1,"DrawSetViewPort: Bad values"); 
+    SETERRQ(1,"Bad values"); 
   draw->port_xl = xl; draw->port_yl = yl;
   draw->port_xr = xr; draw->port_yr = yr;
   if (draw->ops.setviewport) return (*draw->ops.setviewport)(draw,xl,yl,xr,yr);
