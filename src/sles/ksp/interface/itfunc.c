@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.53 1996/04/12 15:58:19 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.54 1996/04/12 15:59:11 curfman Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -464,7 +464,9 @@ int KSPGetPC(KSP ksp, PC *B)
    Input Parameters:
 .  ksp - iterative context obtained from KSPCreate()
 .  monitor - pointer to int function
-.  mctx    - context for private data for the monitor routine (may be null)
+.  mctx    - [optional] context for private data for the
+             monitor routine (use PETSC_NULL if no context
+             is desired)
 
    Calling sequence of monitor:
 .  monitor (KSP ksp, int it, double rnorm, void *mctx)
