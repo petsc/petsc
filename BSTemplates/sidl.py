@@ -82,8 +82,19 @@ class Defaults:
     else:
       raise RuntimeError('Inalid type for sources: '+type(sources))
 
+  def getServerRootDir(self, lang, package):
+    path = self.serverBaseDir
+    if len(self.serverLanguages) > 1:
+      path += '-'+string.lower(lang)
+    if package:
+      path += '-'+package
+    return path
+
   def getPackages(self):
     return map(lambda file: os.path.splitext(os.path.split(file)[1])[0], self.sources)
+
+  def getClientRootDir(self, lang):
+    return os.path.abspath(string.lower(lang))
 
   def getRepositoryTargets(self):
     action = babel.CompileSIDLRepository()
@@ -92,18 +103,16 @@ class Defaults:
     return [target.Target(None, [babel.TagAllSIDL(), action])]
 
   def getServerSIDLTargets(self):
-    if len(self.serverLanguages) > 1:
-      root = self.serverBaseDir+'-'+self.serverLanguages[0]
-    else:
-      root = self.serverBaseDir
-    serverSourceRoots = fileset.FileSet(map(lambda package, dirname = root: dirname+'-'+package, self.getPackages()))
-    for rootDir in serverSourceRoots:
-      if not os.path.isdir(rootDir): os.makedirs(rootDir)
     targets           = []
     for lang in self.serverLanguages:
+      serverSourceRoots = fileset.FileSet(map(lambda package, lang=lang, self=self: self.getServerRootDir(lang, package), self.getPackages()))
+      for rootDir in serverSourceRoots:
+        if not os.path.isdir(rootDir):
+          os.makedirs(rootDir)
+
       action = babel.CompileSIDLServer(fileset.ExtensionFileSet(serverSourceRoots, ['.h', '.c', '.hh', '.cc']))
       action.language  = lang
-      action.outputDir = root
+      action.outputDir = self.getServerRootDir(lang, '')
       action.repositoryDirs.append(self.repositoryDir)
       action.repositoryDirs.extend(self.repositoryDirs)
 
@@ -121,10 +130,10 @@ class Defaults:
   def getClientSIDLTargets(self):
     targets = []
     for lang in self.clientLanguages:
-      root   = os.path.abspath(string.lower(lang))
-      action = babel.CompileSIDLClient(fileset.ExtensionFileSet(root, ['.h', '.c', '.cc', '.hh']))
+      rootDir = self.getClientRootDir(lang)
+      action  = babel.CompileSIDLClient(fileset.ExtensionFileSet(rootDir, ['.h', '.c', '.cc', '.hh']))
       action.language  = lang
-      action.outputDir = root
+      action.outputDir = rootDir
       action.repositoryDirs.append(self.repositoryDir)
       action.repositoryDirs.extend(self.repositoryDirs)
       targets.append(target.Target(None, [babel.TagAllSIDL(), action]))
@@ -160,13 +169,10 @@ class CompileDefaults (Defaults):
   def getServerCompileTargets(self):
     targets = []
     for lang in self.serverLanguages:
-      stubDir = os.path.abspath(string.lower(lang))
+      stubDir = self.getClientRootDir(lang)
       for package in self.getPackages():
-        if len(self.serverLanguages) > 1:
-          rootDir = self.serverBaseDir+'-'+string.lower(lang)+'-'+package
-        else:
-          rootDir = self.serverBaseDir+'-'+package
-        library = self.getServerLibrary(lang, package)
+        rootDir   = self.getServerRootDir(lang, package)
+        library   = self.getServerLibrary(lang, package)
         libraries = fileset.FileSet(children = [self.getClientLibrary(lang), self.babelLib])
 
         # For IOR source
@@ -200,7 +206,7 @@ class CompileDefaults (Defaults):
   def getClientCompileTargets(self):
     targets = []
     for lang in self.clientLanguages:
-      sourceDir = os.path.abspath(string.lower(lang))
+      sourceDir = self.getClientRootDir(lang)
       library   = self.getClientLibrary(lang)
 
       if lang in ['Python', 'F77', 'C']:
@@ -245,13 +251,7 @@ class CompileDefaults (Defaults):
     library   = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
     libraries = fileset.FileSet(children = [self.babelLib])
     package   = self.getPackages()[0]
-    if len(self.serverLanguages) > 1:
-      rootDir = self.serverBaseDir+'-'+self.serverLanguages[0]+'-'+package
-    else:
-      rootDir = self.serverBaseDir+'-'+package
-##    for lang in self.serverLanguages:
-##      for package in self.getPackages():
-##        libraries.extend(self.getServerLibrary(lang, package))
+    rootDir   = self.getServerRootDir(self.serverLanguages[0], package)
 
     action = compile.CompileCxx(library)
     action.includeDirs.append(self.babelIncludeDir)
