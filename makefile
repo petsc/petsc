@@ -311,7 +311,7 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	-${OMAKE} ACTION=getexlist tree_basic LOC=${LOC}
 	-${OMAKE} ACTION=exampleconcepts tree_basic LOC=${LOC}
 	-maint/helpindex.py ${PETSC_DIR} ${LOC}
-	-grep -h PolymorphicFunction include/*.h | grep -v '#define ' | sed "s?PetscPolymorphicFunction(??g" | cut -f1 -d"{" > tmppoly
+	-grep -h PolymorphicSubroutine include/*.h | grep -v '#define ' | sed "s?PetscPolymorphicSubroutine(??g" | cut -f1 -d"{" > tmppoly
 	-maint/processpoly.py ${PETSC_DIR} ${LOC}
 
 # Builds .html versions of the source

@@ -87,9 +87,9 @@ typedef int PetscInt;
    optional arguments for a simplier user interface.
 */
 #if defined(__cplusplus)
-#define PetscPolymorphicFunction(A,B,C) inline PetscErrorCode A B {return A C;}
+#define PetscPolymorphicSubroutine(A,B,C) inline PetscErrorCode A B {return A C;}
 #else
-#define PetscPolymorphicFunction(A,B,C)
+#define PetscPolymorphicSubroutine(A,B,C)
 #endif
 
 /*
@@ -809,7 +809,7 @@ EXTERN PetscErrorCode PetscSleep(int);
     Initialization of PETSc
 */
 EXTERN PetscErrorCode  PetscInitialize(int*,char***,const char[],const char[]);
-PetscPolymorphicFunction(PetscInitialize,(int *argc,char ***args),(argc,args,PETSC_NULL,PETSC_NULL))
+PetscPolymorphicSubroutine(PetscInitialize,(int *argc,char ***args),(argc,args,PETSC_NULL,PETSC_NULL))
 EXTERN PetscErrorCode  PetscInitializeNoArguments(void);
 EXTERN PetscErrorCode  PetscInitialized(PetscTruth *);
 EXTERN PetscErrorCode  PetscFinalized(PetscTruth *);
@@ -983,11 +983,11 @@ EXTERN PetscErrorCode PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **
 EXTERN PetscErrorCode PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm,PetscInt,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm,PetscMPIInt);
-PetscPolymorphicFunction(PetscSequentialPhaseBegin,(MPI_Comm comm),(comm,1))
-PetscPolymorphicFunction(PetscSequentialPhaseBegin,(void),(PETSC_COMM_WORLD,1))
+PetscPolymorphicSubroutine(PetscSequentialPhaseBegin,(MPI_Comm comm),(comm,1))
+PetscPolymorphicSubroutine(PetscSequentialPhaseBegin,(void),(PETSC_COMM_WORLD,1))
 EXTERN PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm,PetscMPIInt);
-PetscPolymorphicFunction(PetscSequentialPhaseEnd,(MPI_Comm comm),(comm,1))
-PetscPolymorphicFunction(PetscSequentialPhaseEnd,(void),(PETSC_COMM_WORLD,1))
+PetscPolymorphicSubroutine(PetscSequentialPhaseEnd,(MPI_Comm comm),(comm,1))
+PetscPolymorphicSubroutine(PetscSequentialPhaseEnd,(void),(PETSC_COMM_WORLD,1))
 EXTERN PetscErrorCode PetscBarrier(PetscObject);
 EXTERN PetscErrorCode PetscMPIDump(FILE*);
 
