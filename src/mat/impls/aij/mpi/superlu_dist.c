@@ -9,11 +9,15 @@
 #include "stdlib.h"
 #endif
 
-#if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE)
 
-EXTERN_C_BEGIN
+EXTERN_C_BEGIN 
+#if defined(PETSC_USE_COMPLEX)
+#include "superlu_zdefs.h"
+#else
 #include "superlu_ddefs.h"
-EXTERN_C_END
+#endif
+EXTERN_C_END 
 
 typedef struct {
   int                     nprow,npcol;
@@ -30,6 +34,7 @@ extern int MatDestroy_SeqAIJ(Mat);
 
 #if !defined(PETSC_HAVE_SUPERLU)
 /* SuperLU function: Convert a row compressed storage into a column compressed storage. */
+#if !defined(PETSC_USE_COMPLEX)
 #undef __FUNCT__  
 #define __FUNCT__ "dCompRow_to_CompCol"
 void dCompRow_to_CompCol(int m, int n, int nnz,
@@ -67,8 +72,49 @@ void dCompRow_to_CompCol(int m, int n, int nnz,
     SUPERLU_FREE(marker);
 }
 #else
+void zCompRow_to_CompCol(int m, int n, int nnz,
+                    doublecomplex *a, int *colind, int *rowptr,
+                    doublecomplex **at, int **rowind, int **colptr)
+{   
+    register int i, j, col, relpos;
+    int *marker;
+    
+    /* Allocate storage for another copy of the matrix. */
+    *at = (doublecomplex *) doublecomplexMalloc(nnz);
+    *rowind = (int *) intMalloc(nnz);
+    *colptr = (int *) intMalloc(n+1);
+    marker = (int *) intCalloc(n);
+ 
+    /* Get counts of each column of A, and set up column pointers */
+    for (i = 0; i < m; ++i)
+        for (j = rowptr[i]; j < rowptr[i+1]; ++j) ++marker[colind[j]];
+    (*colptr)[0] = 0;
+    for (j = 0; j < n; ++j) {
+        (*colptr)[j+1] = (*colptr)[j] + marker[j];
+        marker[j] = (*colptr)[j];
+    }
+    
+    /* Transfer the matrix into the compressed column storage. */
+    for (i = 0; i < m; ++i) {
+        for (j = rowptr[i]; j < rowptr[i+1]; ++j) {
+            col = colind[j];
+            relpos = marker[col];
+            (*rowind)[relpos] = i;
+            (*at)[relpos] = a[j];
+            ++marker[col];
+        }
+    }
+
+    SUPERLU_FREE(marker);
+}
+#endif
+#else
 EXTERN_C_BEGIN
-extern void dCompRow_to_CompCol(int,int,int,double*,int*,int*,double**,int_t**,int_t**);
+#if defined(PETSC_USE_COMPLEX)
+extern void zCompRow_to_CompCol(int,int,int,doublecomplex*,int*,int*,doublecomplex**,int**,int**); 
+#else
+extern void dCompRow_to_CompCol(int,int,int,double*,       int*,int*,double**,int_t**,int_t**);
+#endif
 EXTERN_C_END
 #endif /* PETSC_HAVE_SUPERLU*/
 
@@ -82,7 +128,11 @@ int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
     
   PetscFunctionBegin;
   /* Deallocate SuperLU_DIST storage */
+#if defined(PETSC_USE_COMPLEX)
+  Destroy_CompCol_Matrix(&lu->A_sup);
+#else
   Destroy_CompCol_Matrix_dist(&lu->A_sup);
+#endif
   Destroy_LU(A->N, &lu->grid, &lu->LUstruct);
   ScalePermstructFree(&lu->ScalePermstruct);
   LUstructFree(&lu->LUstruct);
@@ -111,7 +161,10 @@ int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   int                     m=A->M, N=A->N; 
   superlu_options_t       options=lu->options;
   SuperLUStat_t           stat;
-  double                  berr[1],*bptr;  
+  double                  berr[1];
+
+  PetscScalar             *bptr;  
+
   int                     info, nrhs=1;
   Vec                     x_seq;
   IS                      iden;
@@ -140,8 +193,13 @@ int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
     ierr = MPI_Barrier(A->comm);CHKERRQ(ierr); /* to be removed */
     ierr = PetscGetTime(&time0);CHKERRQ(ierr);  /* to be removed */
   }
-  pdgssvx_ABglobal(&options, &lu->A_sup, &lu->ScalePermstruct, bptr, m, nrhs, 
+#if defined(PETSC_USE_COMPLEX)
+  pzgssvx_ABglobal(&options, &lu->A_sup, &lu->ScalePermstruct,(doublecomplex*)bptr, m, nrhs, 
                    &lu->grid, &lu->LUstruct, berr, &stat, &info);
+#else
+  pdgssvx_ABglobal(&options, &lu->A_sup, &lu->ScalePermstruct,bptr, m, nrhs, 
+                   &lu->grid, &lu->LUstruct, berr, &stat, &info);
+#endif 
   if (lu->StatPrint) {
     ierr = PetscGetTime(&time);CHKERRQ(ierr);  /* to be removed */
      PStatPrint(&stat, &lu->grid);     /* Print the statistics. */
@@ -179,9 +237,13 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)(*F)->spptr;
   int                     M=A->M,N=A->N,info,ierr,size=fac->size,i;
   SuperLUStat_t           stat;
-  double                  *berr=0, *bptr=0;
+  double                  *berr=0;
+#if defined(PETSC_USE_COMPLEX)
+  doublecomplex           *a,*bptr=0;
+#else
+  double                  *a,*bptr=0;
+#endif
   int_t                   *asub, *xa;
-  double                  *a; 
   SuperMatrix             A_sup;
   IS                      isrow;
   PetscLogDouble          time0[2],time[2],time_min[2],time_max[2]; 
@@ -204,20 +266,25 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
     aa =  (Mat_SeqAIJ*)A->data;
   }
 
-  /* Allocate storage for compressed column representation. */
+  /* Allocate storage, then convert Petsc NR matrix to SuperLU_DIST NC */
+#if defined(PETSC_USE_COMPLEX)
+  zallocateA_dist(N, aa->nz, &a, &asub, &xa);
+  zCompRow_to_CompCol(M,N,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,&a,&asub, &xa);
+#else
   dallocateA_dist(N, aa->nz, &a, &asub, &xa);
-  
-  /* Convert Petsc NR matrix storage to SuperLU_DIST NC storage */
   dCompRow_to_CompCol(M,N,aa->nz,aa->a,aa->j,aa->i,&a, &asub, &xa);
-
+#endif
   if (lu->StatPrint) {
     ierr = PetscGetTime(&time[0]);CHKERRQ(ierr);  
     time0[0] = time[0] - time0[0];
   }
 
   /* Create compressed column matrix A_sup. */
+#if defined(PETSC_USE_COMPLEX)
+  zCreate_CompCol_Matrix(&A_sup, M, N, aa->nz, a, asub, xa, NC, Z, GE);
+#else
   dCreate_CompCol_Matrix_dist(&A_sup, M, N, aa->nz, a, asub, xa, NC, D, GE);  
-
+#endif
   /* Factor the matrix. */
   PStatInit(&stat);                /* Initialize the statistics variables. */
 
@@ -225,8 +292,13 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
     ierr = MPI_Barrier(A->comm);CHKERRQ(ierr);
     ierr = PetscGetTime(&time0[1]);CHKERRQ(ierr);  
   }
+#if defined(PETSC_USE_COMPLEX)
+  pzgssvx_ABglobal(&lu->options, &A_sup, &lu->ScalePermstruct, bptr, M, 0, 
+                   &lu->grid, &lu->LUstruct, berr, &stat, &info);
+#else
   pdgssvx_ABglobal(&lu->options, &A_sup, &lu->ScalePermstruct, bptr, M, 0, 
-                   &lu->grid, &lu->LUstruct, berr, &stat, &info);  
+                   &lu->grid, &lu->LUstruct, berr, &stat, &info);
+#endif 
   if (lu->StatPrint) {
     ierr = PetscGetTime(&time[1]);CHKERRQ(ierr);  /* to be removed */
     time0[1] = time[1] - time0[1];

@@ -7,9 +7,13 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 
-#if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
 EXTERN_C_BEGIN
+#if defined(PETSC_USE_COMPLEX)
+#include "zsp_defs.h"
+#else
 #include "dsp_defs.h"
+#endif  
 #include "util.h"
 EXTERN_C_END
 
@@ -62,7 +66,11 @@ int MatCreateNull_SeqAIJ_SuperLU(Mat A,Mat *nullMat)
   int                 numRows = A->m,numCols = A->n;
   SCformat            *Lstore;
   int                 numNullCols,size;
+#if defined(PETSC_USE_COMPLEX)
+  doublecomplex       *nullVals,*workVals;
+#else
   PetscScalar         *nullVals,*workVals;
+#endif
   int                 row,newRow,col,newCol,block,b,ierr;
 
   PetscFunctionBegin;
@@ -78,7 +86,11 @@ int MatCreateNull_SeqAIJ_SuperLU(Mat A,Mat *nullMat)
     ierr = MatAssemblyEnd(*nullMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+#if defined(PETSC_USE_COMPLEX)
+  nullVals = (doublecomplex*)((Mat_SeqDense*)(*nullMat)->data)->v;
+#else
   nullVals = ((Mat_SeqDense*)(*nullMat)->data)->v;
+#endif
   /* Copy in the columns */
   Lstore = (SCformat*)lu->L.Store;
   for(block = 0; block <= Lstore->nsuper; block++) {
@@ -88,7 +100,11 @@ int MatCreateNull_SeqAIJ_SuperLU(Mat A,Mat *nullMat)
       newCol = Lstore->rowind[col];
       if (newCol >= numRows) {
         for(b = 0; b < size; b++)
+#if defined(PETSC_USE_COMPLEX)
+          nullVals[(newCol-numRows)*numRows+newRow+b] = ((doublecomplex*)Lstore->nzval)[Lstore->nzval_colptr[newRow+b]+col];
+#else
           nullVals[(newCol-numRows)*numRows+newRow+b] = ((double*)Lstore->nzval)[Lstore->nzval_colptr[newRow+b]+col];
+#endif
       }
     }
   }
@@ -100,7 +116,11 @@ int MatCreateNull_SeqAIJ_SuperLU(Mat A,Mat *nullMat)
   }
   /* Backward solve the upper triangle A x = b */
   for(b = 0; b < numNullCols; b++) {
+#if defined(PETSC_USE_COMPLEX)
+    sp_ztrsv("L","T","U",&lu->L,&lu->U,&nullVals[b*numRows],&ierr);
+#else
     sp_dtrsv("L","T","U",&lu->L,&lu->U,&nullVals[b*numRows],&ierr);
+#endif
     if (ierr < 0)
       SETERRQ1(PETSC_ERR_ARG_WRONG,"The argument %d was invalid",-ierr);
   }
@@ -125,13 +145,18 @@ int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
   ierr = VecGetArray(x,&array);CHKERRQ(ierr);
   /* Create the Rhs */
   lu->B.Stype        = DN;
-  lu->B.Dtype        = _D;
   lu->B.Mtype        = GE;
   lu->B.nrow         = m;
   lu->B.ncol         = 1;
   ((DNformat*)lu->B.Store)->lda   = m;
   ((DNformat*)lu->B.Store)->nzval = array;
+#if defined(PETSC_USE_COMPLEX)
+  lu->B.Dtype        = _Z;
+  zgstrs("T",&lu->L,&lu->U,lu->perm_r,lu->perm_c,&lu->B,&ierr);
+#else
+  lu->B.Dtype        = _D;
   dgstrs("T",&lu->L,&lu->U,lu->perm_r,lu->perm_c,&lu->B,&ierr);
+#endif
   if (ierr < 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"The diagonal element of row %d was invalid",-ierr);
   ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -156,7 +181,11 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
   
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numerical factorization */
     lu->A.Stype   = NC;
+#if defined(PETSC_USE_COMPLEX)
+    lu->A.Dtype   = _Z;
+#else
     lu->A.Dtype   = _D;
+#endif
     lu->A.Mtype   = GE;
     lu->A.nrow    = A->n;
     lu->A.ncol    = A->m;
@@ -198,7 +227,11 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
   ierr = PetscMalloc(A->n*sizeof(int),&etree);CHKERRQ(ierr);
   sp_preorder("N",&lu->A,lu->perm_c,etree,&lu->AC);
   /* Factor the matrix */
+#if defined(PETSC_USE_COMPLEX)
+  zgstrf("N",&lu->AC,lu->pivot_threshold,0.0,lu->relax,lu->panel_size,etree,PETSC_NULL,0,lu->perm_r,lu->perm_c,&lu->L,&lu->U,&ierr);
+#else
   dgstrf("N",&lu->AC,lu->pivot_threshold,0.0,lu->relax,lu->panel_size,etree,PETSC_NULL,0,lu->perm_r,lu->perm_c,&lu->L,&lu->U,&ierr);
+#endif
   if (ierr < 0) {
     SETERRQ1(PETSC_ERR_ARG_WRONG,"The diagonal element of row %d was invalid",-ierr);
   } else if (ierr > 0) {
@@ -310,5 +343,3 @@ int MatUseSuperLU_SeqAIJ(Mat A)
 }
 
 #endif
-
-
