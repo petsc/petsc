@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.30 1995/09/07 21:45:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.31 1995/09/21 20:11:42 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -17,13 +17,14 @@ extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
 
 int main(int argc,char **args)
 {
-  Mat    C; 
-  Scalar v, none = -1.0;
-  int    I, J, ldim, ierr, low, high, iglobal;
-  int    i, j, m = 3, n = 2, mytid, numtids, its;
-  Vec    x, u, b;
-  SLES   sles;
-  double norm;
+  Mat     C; 
+  MatType mat_type;
+  Scalar  v, none = -1.0;
+  int     I, J, ldim, ierr, low, high, iglobal;
+  int     i, j, m = 3, n = 2, mytid, numtids, its;
+  Vec     x, u, b;
+  SLES    sles;
+  double  norm;
 
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
@@ -70,7 +71,8 @@ int main(int argc,char **args)
   ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
-  if (OptionsHasName(0,"-mat_rowbs")) {
+  ierr = MatGetType(C,&mat_type); CHKERRA(ierr);
+  if (mat_type == MATMPIROWBS) {
     PC pc; KSP ksp; PCMethod pcmethod;
     ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
