@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.16 2000/08/25 20:54:30 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.17 2000/08/28 16:36:39 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -392,7 +392,6 @@ static int MatView_SeqSBAIJ_Binary(Mat A,Viewer viewer)
   FILE        *file;
 
   PetscFunctionBegin;
-  PetscPrintf(PETSC_COMM_WORLD,"MatView_Binary is called\n");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   col_lens = (int*)PetscMalloc((4+a->m)*sizeof(int));CHKPTRQ(col_lens);
   col_lens[0] = MAT_COOKIE;
