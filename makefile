@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.180 1997/08/19 15:46:31 bsmith Exp balay $ 
+# $Id: makefile,v 1.181 1997/08/19 18:41:15 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -51,6 +51,7 @@ all: chkpetsc_dir
 testexamples: chkopts
 	-@echo "Beginning to compile and run test examples"
 	-@echo On `date` on `hostname`
+	-@echo Machine characteristics: `uname -a`
 	-@echo "Using compiler: $(CC) $(COPTFLAGS)"
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
