@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.41 1999/02/01 03:41:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.42 1999/03/17 23:24:50 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -156,6 +156,7 @@ int TSPrintHelp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (ts->prefix) prefix = ts->prefix;
+  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
   (*PetscHelpPrintf)(ts->comm,"TS options --------------------------------------------------\n");
   ierr = FListPrintTypes(ts->comm,stdout,ts->prefix,"ts_type",TSList);CHKERRQ(ierr);
   (*PetscHelpPrintf)(ts->comm," %sts_monitor: use default TS monitor\n",prefix);

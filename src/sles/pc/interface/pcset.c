@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.81 1999/03/16 01:02:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.82 1999/03/31 18:42:13 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -158,6 +158,7 @@ int PCPrintHelp(PC pc)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscStrcpy(p,"-");
   if (pc->prefix) PetscStrcat(p,pc->prefix);
+  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0); CHKERRQ(ierr);}
   (*PetscHelpPrintf)(pc->comm,"PC options --------------------------------------------------\n");
   ierr = FListPrintTypes(pc->comm,stdout,pc->prefix,"pc_type",PCList);CHKERRQ(ierr);
   (*PetscHelpPrintf)(pc->comm,"Run program with -help %spc_type <method> for help on ",p);

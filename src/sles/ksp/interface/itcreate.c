@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.157 1999/04/01 20:55:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.158 1999/04/02 04:17:09 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -366,6 +366,7 @@ int KSPPrintHelp(KSP ksp)
   PetscStrcpy(p,"-");
   if (ksp->prefix)  PetscStrcat(p,ksp->prefix);
 
+  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
   (*PetscHelpPrintf)(ksp->comm,"KSP options -------------------------------------------------\n");
   ierr = FListPrintTypes(ksp->comm,stdout,ksp->prefix,"ksp_type",KSPList);CHKERRQ(ierr);
   (*PetscHelpPrintf)(ksp->comm," %sksp_rtol <tol>: relative tolerance, defaults to %g\n",

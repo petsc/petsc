@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.178 1999/03/19 21:22:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.179 1999/04/02 04:18:29 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -2336,6 +2336,7 @@ int SNESPrintHelp(SNES snes)
 
   kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
 
+  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
   (*PetscHelpPrintf)(snes->comm,"SNES options ------------------------------------------------\n");
   ierr = FListPrintTypes(snes->comm,stdout,snes->prefix,"snes_type",SNESList);CHKERRQ(ierr);
   (*PetscHelpPrintf)(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",p);

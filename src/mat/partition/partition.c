@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.23 1999/04/01 23:26:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.24 1999/04/02 04:16:42 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -45,6 +45,7 @@ EXTERN_C_END
 #include "sys.h"
 
 FList MatPartitioningList = 0;
+int   MatPartitioingRegisterAllCalled = 0;
 
 /*MC
    MatPartitioningRegister - Adds a new sparse matrix partitioning to the 
@@ -378,6 +379,7 @@ int MatPartitioningPrintHelp(MatPartitioning  part)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
 
+  if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
   (*PetscHelpPrintf)(part->comm,"MatPartitioning options ----------------------------------------------\n");
   ierr = FListPrintTypes(part->comm,stdout,part->prefix,"mat_partioning_type",MatPartitioningList);CHKERRQ(ierr);
 
@@ -427,6 +429,7 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
   }
 
   /* Get the function pointers for the method requested */
+  if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
   ierr =  FListFind(part->comm, MatPartitioningList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
 
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown partitioning type %s",type);}
