@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.25 2001/04/05 18:41:57 buschelm Exp buschelm $ */
+/* $Id: ilu.h,v 1.26 2001/04/06 04:17:23 buschelm Exp buschelm $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -103,6 +103,9 @@ EXTERN int  Kernel_A_gets_inverse_A_3(MatScalar *);
 }
 #else
 EXTERN int  Kernel_A_gets_inverse_A_4(MatScalar *);
+# if defined(PETSC_HAVE_SSE)
+EXTERN int  Kernel_A_gets_inverse_A_4_SSE(MatScalar *);
+# endif
 #endif
 
 EXTERN int  Kernel_A_gets_inverse_A_5(MatScalar *);

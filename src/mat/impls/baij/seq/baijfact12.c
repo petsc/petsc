@@ -1,4 +1,4 @@
-/*$Id: baijfact12.c,v 1.13 2001/04/13 18:42:37 buschelm Exp buschelm $*/
+/*$Id: baijfact12.c,v 1.14 2001/06/20 22:38:47 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -146,8 +146,6 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
 #if defined(PETSC_HAVE_SSE)
 
 #include PETSC_HAVE_SSE
-EXTERN int Kernel_A_gets_inverse_A_4_SSE(float*);
-
 
 /* SSE Version for when blocks are 4 by 4 Using natural ordering */
 #undef __FUNCT__  
