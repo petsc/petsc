@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.91 1997/12/01 01:52:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.92 1997/12/12 19:36:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -267,34 +267,40 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
          a parallel vector created with VecCreateGhost().
 
     Input Parameter:
-.    g - the global vector
+.    g - the global vector. Vector must be obtained with either VecCreateGhost(),
+         VecCreateGhostWithArray() or VecCreateSeq().
 
     Output Parameter:
 .    l - the local (ghosted) representation
 
      Notes:
-       This routine does not actually update the ghost values, it allow returns a 
+       This routine does not actually update the ghost values, it returns a 
      sequential vector that includes the locations for the ghost values and their
-     current values.
+     current values. The returned vector and the original vector passed in share
+     the same array that contains the actual vector data.
 
        One should call VecGhostRestoreLocalRepresentation() or VecDestroy() once one is
      finished using the object.
 
 .keywords:  ghost points, local representation
 
-.seealso: VecCreateGhost(), VecGhostRestoreLocalRepresentation(),VecCreateGhostWithArray()
+.seealso: VecCreateGhost(), VecGhostRestoreLocalRepresentation(), VecCreateGhostWithArray()
 
 @*/
 int VecGhostGetLocalRepresentation(Vec g,Vec *l)
 {
-  Vec_MPI *v;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(g,VEC_COOKIE);
 
-  v  = (Vec_MPI *) g->data;
-  if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG ,1,"Vector is not ghosted");
-  *l = v->localrep;
+  if (g->type == VECMPI) {
+    Vec_MPI *v  = (Vec_MPI *) g->data;
+    if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG ,1,"Vector is not ghosted");
+    *l = v->localrep;
+  } else if (g->type == VECSEQ) {
+    *l = g;
+  } else {
+    SETERRQ(1,1,"Vector type does not have local representation");
+  }
   PetscObjectReference((PetscObject)*l);
   PetscFunctionReturn(0);
 }
