@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.8 1995/10/12 04:14:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.9 1996/03/19 21:24:49 bsmith Exp curfman $";
 #endif
 
 /* 
-   Demonstrates some features of the options directory.
+   Demonstrates PETSc error handlers.
  */
 
 #include "petsc.h"
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
 {
   int ierr;
   PetscInitialize(&argc,&argv,(char *)0,0);
-  fprintf(stdout,"Demonstrates Petsc Error Handlers\n");
+  fprintf(stdout,"Demonstrates PETSc Error Handlers\n");
   fprintf(stdout,"The error below is a contrived error to test the code\n");
   ierr = CreateError(5); CHKERRA(ierr);
   PetscFinalize();
