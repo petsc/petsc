@@ -14,7 +14,7 @@ esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm comm, int n, int N)
   ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);
 }
 
-esi::petsc::IndexSpace<int>::IndexSpace(esi::IndexSpace<int> &sourceIndexSpace)
+esi::petsc::IndexSpace<int>::IndexSpace(::esi::IndexSpace<int> &sourceIndexSpace)
 {
   int      ierr,n,N;
   MPI_Comm *comm;
@@ -22,7 +22,7 @@ esi::petsc::IndexSpace<int>::IndexSpace(esi::IndexSpace<int> &sourceIndexSpace)
   ierr = sourceIndexSpace.getRunTimeModel("MPI",static_cast<void *>(comm));
   ierr = sourceIndexSpace.getGlobalSize(N);
   {
-    esi::IndexSpace<int> *amap;
+    ::esi::IndexSpace<int> *amap;
 
     ierr = sourceIndexSpace.getInterface("esi::IndexSpace",static_cast<void *>(amap));
     ierr = amap->getLocalSize(n);
@@ -47,22 +47,22 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
 }
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */
-esi::ErrorCode esi::petsc::IndexSpace<int>::getInterface(const char* name, void *& iface)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getInterface(const char* name, void *& iface)
 {
   PetscTruth flg;
   if (PetscStrcmp(name,"esi::Object",&flg),flg){
-    iface = (void *) (esi::Object *) this;
+    iface = (void *) (::esi::Object *) this;
   } else if (PetscStrcmp(name,"esi::IndexSpace",&flg),flg){
-    iface = (void *) (esi::IndexSpace<int> *) this;
+    iface = (void *) (::esi::IndexSpace<int> *) this;
   } else if (PetscStrcmp(name,"esi::petsc::IndexSpace",&flg),flg){
-    iface = (void *) (esi::petsc::IndexSpace<int> *) this;
+    iface = (void *) (::esi::petsc::IndexSpace<int> *) this;
   } else {
     iface = 0;
   }
   return 0;
 }
 
-esi::ErrorCode esi::petsc::IndexSpace<int>::getInterfacesSupported(esi::Argv * list)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getInterfacesSupported(::esi::Argv * list)
 {
   list->appendArg("esi::Object");
   list->appendArg("esi::IndexSpace");
@@ -72,22 +72,22 @@ esi::ErrorCode esi::petsc::IndexSpace<int>::getInterfacesSupported(esi::Argv * l
 
 
 /* -------------- esi::IndexSpace methods --------------------------------------------*/
-esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalSize(int &globalSize)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalSize(int &globalSize)
 {
   return PetscMapGetSize(this->map,&globalSize);
 }
 
-esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalSize(int &localSize)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalSize(int &localSize)
 {
   return PetscMapGetLocalSize(this->map,&localSize);
 }
 
-esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalPartitionOffset(int &localoffset)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalPartitionOffset(int &localoffset)
 { 
   return PetscMapGetLocalRange(this->map,&localoffset,PETSC_IGNORE);
 }
 
-esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionOffsets(int *globaloffsets)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionOffsets(int *globaloffsets)
 { 
   int ierr,*iglobaloffsets;
   int size;   
@@ -98,7 +98,7 @@ esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionOffsets(int *globa
   return ierr;
 }
 
-esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionSizes(int *globalsizes)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionSizes(int *globalsizes)
 { 
   int ierr,i,n,*globalranges;
 
@@ -114,7 +114,7 @@ esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionSizes(int *globals
   /* -------------------------------------------------------------------------*/
 namespace esi{namespace petsc{
 
-template<class Ordinal> class IndexSpaceFactory : public virtual esi::IndexSpaceFactory<Ordinal>
+template<class Ordinal> class IndexSpaceFactory : public virtual ::esi::IndexSpaceFactory<Ordinal>
 {
   public:
 
@@ -130,7 +130,7 @@ template<class Ordinal> class IndexSpaceFactory : public virtual esi::IndexSpace
 #endif
 
     // Construct a IndexSpace
-    virtual esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,esi::IndexSpace<Ordinal>*&v)
+    virtual ::esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,::esi::IndexSpace<Ordinal>*&v)
     {
       PetscTruth ismpi;
       int ierr = PetscStrcmp(name,"MPI",&ismpi);CHKERRQ(ierr);

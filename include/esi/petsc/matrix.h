@@ -73,7 +73,7 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
     virtual esi::ErrorCode getRowAllocatedLength(Ordinal row, int& result) {;};
     virtual esi::ErrorCode setAllValues(Scalar) {;};
     virtual esi::ErrorCode allocateRowsSameLength(Ordinal) {;};
-    virtual esi::ErrorCode copyOutRow(Ordinal, Scalar *,int *,int,int&) {;};
+    virtual esi::ErrorCode copyOutRow(Ordinal, Scalar *,int *,int,int&) ;
     virtual esi::ErrorCode copyOutRowIndices(Ordinal, int *,int,int&) {;};
     virtual esi::ErrorCode copyOutRowCoefficients(Ordinal, Scalar *,int,int&) {;};
 
@@ -81,7 +81,31 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
     Mat                        mat;
     esi::IndexSpace<Ordinal> *rmap,*cmap;
 };
-}}
+}
+
+  /* -------------------------------------------------------------------------*/
+
+template<class Scalar,class Ordinal> class OperatorFactory 
+#if defined(PETSC_HAVE_CCA)
+           :  public virtual gov::cca::Port, public virtual gov::cca::Component
+#endif
+{
+  public:
+
+    // Destructor.
+  virtual ~OperatorFactory(void){};
+
+    // Interface for gov::cca::Component
+#if defined(PETSC_HAVE_CCA)
+    virtual void setServices(gov::cca::Services *) = 0;
+#endif
+
+    // Construct a Operator
+    virtual esi::ErrorCode getOperator(esi::IndexSpace<Ordinal>&,esi::IndexSpace<Ordinal>&,esi::Operator<Scalar,Ordinal>*&v) = 0; 
+};
+
+}
+
 
 #endif
 

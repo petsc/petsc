@@ -86,6 +86,7 @@ template<class Ordinal> class IndexSpaceFactory
 };
 }
 
+extern int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace<int>*&v);
 #endif
 
 

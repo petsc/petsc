@@ -111,7 +111,7 @@ int main(int argc,char **argv)
 
 
   ierr = VecCopy(x,w);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
   v = norm-2.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecCopy  %g\n",v);CHKERRQ(ierr);
 

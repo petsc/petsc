@@ -174,6 +174,9 @@ int MatSetFromOptions(Mat B)
       ierr = MatSetType(B,MATMPIAIJ);CHKERRQ(ierr);
     }
   }
+#if defined(PETSC_HAVE_ESI) && defined(__cplusplus) && !defined(PETSC_USE_COMPLEX)
+  ierr = MatESISetFromOptions(B);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
