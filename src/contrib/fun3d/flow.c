@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.36 2000/05/05 22:20:00 balay Exp bsmith $";*/
+/* "$Id: flow.c,v 1.37 2000/07/02 15:11:27 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -723,28 +723,28 @@ int GetLocalOrdering(GRID *grid)
   }
   ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
   while (remEdges > 0) {
-   readEdges = PetscMin(remEdges,nedgeLocEst); 
-   if (!rank) {
-     ierr = PetscBinaryRead(fdes,tmp,readEdges,PETSC_INT);CHKERRQ(ierr);
-     ierr = PetscBinarySeek(fdes,(nedge-readEdges)*BINARY_INT_SIZE,BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
-     ierr = PetscBinaryRead(fdes,tmp+readEdges,readEdges,PETSC_INT);CHKERRQ(ierr);
-     ierr = PetscBinarySeek(fdes,-nedge*BINARY_INT_SIZE,BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
-   }
-   ierr = MPI_Bcast(tmp,2*readEdges,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-   for (j = 0; j < readEdges; j++) {
-     node1 = tmp[j]-1;
-     node2 = tmp[j+readEdges]-1;
-     if ((v2p[node1] == rank) || (v2p[node2] == rank)) {
-       grid->eptr[k] = a2l[node1];
-       grid->eptr[k+nedgeLoc] = a2l[node2];
-       edge_bit[k] = i;
-       eperm[k] = k;
-       k++;
-     }
-     i++;
-   }
-   remEdges = remEdges - readEdges; 
-   ierr = MPI_Barrier(PETSC_COMM_WORLD);
+    readEdges = PetscMin(remEdges,nedgeLocEst); 
+    if (!rank) {
+      ierr = PetscBinaryRead(fdes,tmp,readEdges,PETSC_INT);CHKERRQ(ierr);
+      ierr = PetscBinarySeek(fdes,(nedge-readEdges)*BINARY_INT_SIZE,BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+      ierr = PetscBinaryRead(fdes,tmp+readEdges,readEdges,PETSC_INT);CHKERRQ(ierr);
+      ierr = PetscBinarySeek(fdes,-nedge*BINARY_INT_SIZE,BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+    }
+    ierr = MPI_Bcast(tmp,2*readEdges,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    for (j = 0; j < readEdges; j++) {
+      node1 = tmp[j]-1;
+      node2 = tmp[j+readEdges]-1;
+      if ((v2p[node1] == rank) || (v2p[node2] == rank)) {
+        grid->eptr[k] = a2l[node1];
+        grid->eptr[k+nedgeLoc] = a2l[node2];
+        edge_bit[k] = i;
+        eperm[k] = k;
+        k++;
+      }
+      i++;
+    }
+    remEdges = remEdges - readEdges; 
+    ierr = MPI_Barrier(PETSC_COMM_WORLD);
   }
   if (!rank) {ierr = PetscBinarySeek(fdes,currentPos+2*nedge*BINARY_INT_SIZE,BINARY_SEEK_SET,&newPos);CHKERRQ(ierr);}
   ierr = PetscGetTime(&time_fin);CHKERRQ(ierr);
