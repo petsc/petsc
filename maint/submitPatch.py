@@ -87,7 +87,7 @@ class Patch (object):
       command += ' -r1.'+str(min(self.changeSets)-1)+',1.'+str(max(self.changeSets))
     self.patch = self.executeShellCommand(command)
 
-    patchName = os.path.join(self.patchDir, 'petsc_patch-2.1.2.'+str(self.patchNum))
+    patchName = os.path.join(self.patchDir, 'petsc_patch-2.1.3.'+str(self.patchNum))
     patchFile = file(patchName, 'w')
     patchFile.write(self.patch)
     patchFile.close()
@@ -95,12 +95,12 @@ class Patch (object):
 
   def makeMasterPatch(self):
     '''Recreate the master patch from all patch files present'''
-    masterName = os.path.join(self.patchDir, 'petsc_patch_all-2.1.2')
+    masterName = os.path.join(self.patchDir, 'petsc_patch_all-2.1.3')
     if os.path.exists(masterName): os.remove(masterName)
     masterFile = file(masterName, 'w')
     for num in range(self.patchNum+1):
       try:
-        patchFile = file(os.path.join(self.patchDir, 'petsc_patch-2.1.2.'+str(num)))
+        patchFile = file(os.path.join(self.patchDir, 'petsc_patch-2.1.3.'+str(num)))
         patch     = patchFile.read()
         patchFile.close()
         masterFile.write(patch)
