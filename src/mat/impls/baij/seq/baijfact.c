@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.15 1996/04/15 02:47:56 bsmith Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.16 1996/04/15 23:00:33 balay Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -1143,10 +1143,10 @@ static int MatSolveAdd_SeqBAIJ_Private(Mat A,Vec bb,Vec yy,Vec xx)
 int MatSolve_SeqBAIJ(Mat A,Vec bb, Vec xx)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr,bs2=a->bs2;
+  int         ierr;
 
   ierr = MatSolveAdd_SeqBAIJ_Private(A,bb,PETSC_NULL,xx); CHKERRQ(ierr);
-  PLogFlops(2*bs2*(a->nz) - a->n);
+  PLogFlops(2*(a->bs2)*(a->nz) - a->n);
   return 0;
 }
 
@@ -1155,10 +1155,10 @@ int MatSolve_SeqBAIJ(Mat A,Vec bb, Vec xx)
 int MatSolveAdd_SeqBAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr,bs2=a->bs2;
+  int         ierr;
 
   ierr = MatSolveAdd_SeqBAIJ_Private(A,bb,yy,xx); CHKERRQ(ierr);
-  PLogFlops(2*bs2*(a->nz));
+  PLogFlops(2*(a->bs2)*(a->nz));
   return 0;
 }
 

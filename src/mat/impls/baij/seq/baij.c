@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.37 1996/04/15 15:10:14 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.38 1996/04/15 16:21:01 balay Exp balay $";
 #endif
 
 /*
@@ -686,20 +686,20 @@ static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
 static int MatMult_SeqBAIJ(Mat A,Vec xx, Vec yy)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr,bs2=a->bs2;
+  int         ierr;
 
   ierr = MatMultAdd_SeqBAIJ_Private(A,xx,PETSC_NULL,yy); CHKERRQ(ierr);
-  PLogFlops(2*bs2*(a->nz)-a->m);
+  PLogFlops(2*(a->bs2)*(a->nz)-a->m);
   return 0;
 }
 
 static int MatMultAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr,bs2=a->bs2;
+  int         ierr;
 
   ierr = MatMultAdd_SeqBAIJ_Private(A,xx,yy,zz); CHKERRQ(ierr);
-  PLogFlops(2*bs2*(a->nz));
+  PLogFlops(2*(a->bs2)*(a->nz));
   return 0;
 }
 
@@ -829,20 +829,20 @@ static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
 static int MatMultTrans_SeqBAIJ(Mat A,Vec xx, Vec yy)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr,bs2=a->bs2;
+  int         ierr;
 
   ierr = MatMultTransAdd_SeqBAIJ_Private(A,xx,PETSC_NULL,yy); CHKERRQ(ierr);
-  PLogFlops(2*bs2*(a->nz)-a->n);
+  PLogFlops(2*(a->bs2)*(a->nz)-a->n);
   return 0;
 }
 
 static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr,bs2=a->bs2;
+  int         ierr;
 
   ierr = MatMultTransAdd_SeqBAIJ_Private(A,xx,yy,zz); CHKERRQ(ierr);
-  PLogFlops(2*bs2*(a->nz));
+  PLogFlops(2*(a->bs2)*(a->nz));
   return 0;
 }
 
