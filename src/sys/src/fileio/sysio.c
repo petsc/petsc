@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.44 1998/11/04 17:22:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.45 1998/12/03 03:58:15 bsmith Exp balay $";
 #endif
 
 /* 
@@ -465,7 +465,7 @@ int PetscBinaryClose(int fd)
 @*/
 int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence)
 {
-  int iwhence;
+  int iwhence=0;
 
   PetscFunctionBegin;
   if (whence == BINARY_SEEK_SET) {
