@@ -1,4 +1,4 @@
-/* $Id: f90_win32.h,v 1.2 2000/07/11 19:35:28 balay Exp balay $ */
+/* $Id: f90_win32.h,v 1.3 2000/07/11 21:00:32 balay Exp balay $ */
 
 #if !defined (__F90_WIN32_H)
 #define __F90_WIN32_H
@@ -30,8 +30,8 @@ typedef struct {
 
 #define f90_header() \
 void*          addr;    /* Pointer to the data */ \
-int            sd;      /* sizeof(DataType) in bits */  \
-int            sum_d;   /* -sumof(lower*mult) */ \
+long           sd;      /* sizeof(DataType) in bits */  \
+long           sum_d;   /* -sumof(lower*mult) */ \
 int            id;      /* integer id representing the datatype */ \
 int            ndim;    /* No of dimensions */
 
