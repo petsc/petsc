@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.4 2000/07/10 17:52:21 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.5 2000/07/10 19:37:53 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -76,6 +76,10 @@ int DAMGDestroy(DAMG *ctx)
     if (ctx[i]->b)  {ierr = VecDestroy(ctx[i]->b);CHKERRQ(ierr);}
     if (ctx[i]->r)  {ierr = VecDestroy(ctx[i]->r);CHKERRQ(ierr);}
     if (ctx[i]->J)  {ierr = MatDestroy(ctx[i]->J);CHKERRQ(ierr);}
+    if (ctx[i]->B)  {ierr = MatDestroy(ctx[i]->B);CHKERRQ(ierr);}
+    if (ctx[i]->Rscale)  {ierr = VecDestroy(ctx[i]->Rscale);CHKERRQ(ierr);}
+    if (ctx[i]->localX)  {ierr = VecDestroy(ctx[i]->localX);CHKERRQ(ierr);}
+    if (ctx[i]->localF)  {ierr = VecDestroy(ctx[i]->localF);CHKERRQ(ierr);}
     ierr = PetscFree(ctx[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(ctx);CHKERRQ(ierr);
@@ -143,9 +147,6 @@ int DAMGSetCoarseDA(DAMG *ctx,DA da)
     }
   }
 
-
-
-
   PetscFunctionReturn(0);
 }
 
@@ -166,7 +167,7 @@ int DAMGSetCoarseDA(DAMG *ctx,DA da)
 .seealso DAMGCreate(), DAMGDestroy, DAMGSetCoarseDA()
 
 @*/
-int DAMGSetSLES(DAMG *ctx,SLES sles,int (*func)(DA,Mat))
+int DAMGSetSLES(DAMG *ctx,SLES sles,int (*func)(void*,DA,Mat),void*user)
 {
   int        ierr,i,j,nlevels = ctx[0]->nlevels,flag,m,n,p,Nt,dim;
   MPI_Comm   comm;
@@ -181,15 +182,12 @@ int DAMGSetSLES(DAMG *ctx,SLES sles,int (*func)(DA,Mat))
     SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,0,"Different communicators in the DAMG and the SLES");
   }
 
-
-
   /* Create work vectors and matrix for each level */
   for (i=0; i<nlevels; i++) {
     ierr = DACreateGlobalVector(ctx[i]->da,&ctx[i]->x);CHKERRA(ierr);
     ierr = VecDuplicate(ctx[i]->x,&ctx[i]->b);CHKERRA(ierr);
     ierr = VecDuplicate(ctx[i]->x,&ctx[i]->r);CHKERRA(ierr);
     ierr = DAGetColoring(ctx[i]->da,PETSC_NULL,&ctx[i]->J);CHKERRQ(ierr);
-    
   }
 
   /* Create interpolation/restriction between levels */
@@ -254,7 +252,7 @@ int DAMGSetSLES(DAMG *ctx,SLES sles,int (*func)(DA,Mat))
   /* set matrix for each level */
   if (func) {
     for (i=0; i<nlevels; i++) {
-      ierr = (*func)(ctx[i]->da,ctx[i]->J);CHKERRQ(ierr);
+      ierr = (*func)(user,ctx[i]->da,ctx[i]->J);CHKERRQ(ierr);
     }
   }
 
@@ -307,17 +305,5 @@ int DAMGView(DAMG *ctx,Viewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 

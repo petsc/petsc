@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.79 2000/05/05 22:26:47 balay Exp bsmith $*/
+/*$Id: zmat.c,v 1.80 2000/07/11 03:03:18 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -99,6 +99,8 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL matcreatempiadj(MPI_Comm *comm,int *m,int *n,int *i,int *j,int *values,Mat *A,int *ierr)
 {
   Mat_MPIAdj *adj;
+
+  if (FORTRANNULLINTEGER(values)) values = PETSC_NULL;
   *ierr = MatCreateMPIAdj((MPI_Comm)PetscToPointerComm(*comm),*m,*n,i,j,values,A);
   adj = (Mat_MPIAdj*)(*A)->data;
   adj->freeaij = PETSC_FALSE;
