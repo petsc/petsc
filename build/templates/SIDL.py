@@ -6,18 +6,19 @@ Any template should have a getTarget() call which provides a BuildGraph.
 import base
 import build.buildGraph
 import build.compile.SIDL
+import project
 
-class ServerRootMap (object):
+class ServerRootMap (project.ProjectPath):
   '''This class maps SIDL files to the server root directory they would generate'''
-  def __init__(self, project, language, usingSIDL):
-    self.project   = project
+  def __init__(self, projectUrl, language, usingSIDL):
+    project.ProjectPath.__init__(self, '', projectUrl)
     self.language  = language
     self.usingSIDL = usingSIDL
     return
 
   def __call__(self, f):
     import os
-    return os.path.join(self.project.getRoot(), self.usingSIDL.getServerRootDir(self.language, os.path.splitext(os.path.basename(f))[0]))
+    return os.path.join(self.projectRoot, self.usingSIDL.getServerRootDir(self.language, os.path.splitext(os.path.basename(f))[0]))
 
 class Template(base.Base):
   '''This template constructs BuildGraphs capable of compiling SIDL into server and client source'''
@@ -55,7 +56,7 @@ class Template(base.Base):
 
     target = build.buildGraph.BuildGraph()
     for lang in self.usingSIDL.serverLanguages:
-      rootFunc   = ServerRootMap(self.project, lang, self.usingSIDL)
+      rootFunc   = ServerRootMap(self.project.getUrl(), lang, self.usingSIDL)
       lastVertex = None
       vertex     = build.bk.Tag(rootFunc = rootFunc, inputTag = ['sidl', 'old sidl'])
       target.addEdges(lastVertex, outputs = [vertex])

@@ -231,11 +231,6 @@ class Framework(base.Base):
     '''Recompile the SIDL for this project'''
     return self.executeGraph(self.sidlTemplate.getTarget(), input = self.filesets['sidl'])
 
-  def getCompileInput(self):
-    if 'checkpoint' in self.argDB:
-      return None
-    return self.filesets['sidl']
-
   def getCompileGraph(self):
     if 'checkpoint' in self.argDB:
       input        = {}
@@ -273,10 +268,36 @@ class Framework(base.Base):
   def t_sidlCheckpoint(self):
     '''Recompile the SIDL for this project'''
     import build.buildGraph
+    import sys
 
-    (compileGraph, input) = self.getCompileGraph()
-    endVertex             = build.buildGraph.BuildGraph.getLeaves(self.sidlTemplate.getTarget())[0]
-    return self.executeGraph(compileGraph, input = self.filesets['sidl'], checkpoint = endVertex)
+    # Add project dependency compile graphs
+    # TODO: Remove all "forward" edges in dependenceGraph (edges which connect further down to already reachable nodes)
+    depGraphs = []
+    for v in self.dependenceGraph.outEdges[self.project]:
+      try:
+        maker = self.getMakeModule(v.getRoot()).PetscMake(sys.argv[1:], self.argDB)
+        maker.setupProject()
+        maker.setupBuild()
+        depGraphs.append(maker.executeTarget('sidlCheckpoint'))
+      except ImportError:
+        self.debugPrint('No make module present in '+v.getRoot(), 2, 'build')
+
+    sidlGraph    = self.sidlTemplate.getTarget()
+    articGraph   = build.buildGraph.BuildGraph([build.transform.Transform()])
+    compileGraph = self.compileTemplate.getTarget()
+    startVertex  = build.buildGraph.BuildGraph.getRoots(sidlGraph)[0]
+    input        = {startVertex: self.filesets['sidl']}
+    endVertex    = build.buildGraph.BuildGraph.getRoots(articGraph)[0]
+    compileGraph.prependGraph(articGraph)
+    compileGraph.prependGraph(sidlGraph)
+
+    output = self.executeGraph(compileGraph, start = startVertex, input = input, end = endVertex)
+    compileGraph.removeSubgraph(sidlGraph)
+    for g in depGraphs:
+      compileGraph.prependGraph(g)
+    self.builder.currentVertex = None
+    self.argDB['checkpoint']   = cPickle.dumps(self.builder)
+    return compileGraph
 
   def t_compile(self):
     '''Recompile the entire source for this project'''
@@ -406,22 +427,22 @@ class Framework(base.Base):
     '''Hook for user operations after project activation, but before build'''
     return
 
-  def executeGraph(self, graph, input = None, checkpoint = None):
+  def executeGraph(self, graph, start = None, input = None, end = None):
     '''Execute a BuildGraph'''
     output = None
     if self.argDB['displayTarget']:
       graph.display()
     else:
       self.builder.buildGraph = graph
-      for vertex in self.builder.execute(input = input):
+      for vertex in self.builder.execute(start = start, input = input):
         output = vertex.output
-        if checkpoint == vertex:
-          self.argDB['checkpoint'] = cPickle.dumps(self.builder)
+        if end == vertex:
           break
     return output
 
   def executeTarget(self, target):
     '''Execute the target and return the output'''
+    self.debugPrint('Executing target '+target, 4, 'build')
     output = None
     if self.targets.has_key(target):
       self.executeGraph(self.targets[target])

@@ -64,6 +64,11 @@ class BuildGraph(object):
     map(lambda v: apply(self.addEdges, (v,)+graph.getEdges(v)), graph.vertices)
     return
 
+  def removeSubgraph(self, graph):
+    '''Remove the vertices and edges of a subgraph, and all the edges connected to it'''
+    map(self.removeVertex, graph.vertices)
+    return
+
   def printIndent(self, indent):
     import sys
     for i in range(indent): sys.stdout.write('  ')
