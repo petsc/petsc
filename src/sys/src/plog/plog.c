@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.49 1995/11/20 04:46:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.50 1995/11/22 17:06:15 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -119,7 +119,7 @@ static int     nobjects = 0, nevents = 0, objectsspace = CHUNCK;
 static int     ObjectsDestroyed = 0, eventsspace = CHUNCK;
 static double  ObjectsType[20][4];
 
-static int     EventsStage = 0; /* which log sessions are we putting in. */
+static int     EventsStage = 0;    /* which log sessions are we using */
 static int     EventsStageMax = 0; /* highest event log used */ 
 static int     EventsStagePushed = 0;
 static int     EventsStageStack[100];
@@ -129,12 +129,32 @@ static int     EventsStageStack[100];
 static double  EventsType[10][100][3];
 
 /*@
-     PLogPushStage - You can log up to 10 stages of your code using PLogBegin() or
-                    -log_summary. One switches  stages with this command.
+   PLogPushStage - Users can log up to 10 stages within a code by using
+   PLogBegin() or -log_summary.  PLogPushStage() enables users to switch
+   to a new stage. 
 
-  Input Parameters:
-.   stage - stage to log on, 0 to 9
+   Input Parameters:
+.  stage - stage on which to log (0 <= stage <= 9)
 
+   Example of Usage:
+   If the option -log_sumary is used to run the program containing the 
+   following code, then 3 sets of summary data will be printed during
+   PetscFinalize().
+$
+$     PetscInitialize(int *argc,char ***args,0,0,0);
+$     [stage 0 of code]   
+$     for (i=0; i<ntimes; i++) {
+$        PLogPushStage(1);
+$        [stage 1 of code]
+$        PLogPushStage(2);
+$        [stage 2 of code]
+$     }
+$     PetscFinalize();
+$
+
+.keywords: log, push, stage
+
+.seealso: PLogPopStage()
 @*/
 int PLogPushStage(int stage)
 {
@@ -146,6 +166,30 @@ int PLogPushStage(int stage)
   return 0;
 }
 
+/*@
+   PLogPopStage - Users can log up to 10 stages within a code by using
+   PLogBegin() or -log_summary.  PLogPopStage() enable users to switch
+   from the current stage to the previous one.
+
+   Example of Usage:
+   If the option -log_sumary is used to run the program containing the 
+   following code, then 2 sets of summary data will be printed during
+   PetscFinalize().
+$
+$     PetscInitialize(int *argc,char ***args,0,0,0);
+$     [stage 0 of code]   
+$     PLogPushStage(1);
+$     [stage 1 of code]
+$     [some code (stage 1)]
+$     PLogPopStage();
+$     [more stage 0 of code]   
+$     PetscFinalize();
+$
+
+.keywords: log, pop, stage
+
+.seealso: PLogPushStage()
+@*/
 int PLogPopStage()
 {
   if (EventsStagePushed < 1) return 0;
@@ -423,7 +467,7 @@ int PLogBegin()
 
 /*@C
    PLogDump - Dumps logs of objects to a file. This file is intended to 
-   be read by petsc/bin/petscsim; it is not user friendly.
+   be read by petsc/bin/petscview; it is not user friendly.
 
    Input Parameter:
 .  name - an optional file name
@@ -672,7 +716,7 @@ $  -log_summary : Prints summary of log information (for code
    Notes:
    More extensive examination of the log information can be done with 
    PLogDump(), which is activated by the option -log or -log_all, in 
-   combination with petsc/bin/petscsim.
+   combination with petsc/bin/petscview.
    
 .keywords: log, dump, print
 
@@ -737,6 +781,7 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   MPIU_fprintf(comm,fd,"                             Min       Max      \
   Min       Max\n");
   for ( j=0; j<=EventsStageMax; j++ ) {
+    if (EventsStageMax) MPIU_fprintf(comm,fd,"Event Stage %d:\n\n",j);
     for ( i=0; i<100; i++ ) {  
       if (EventsType[j][i][TIME]) {
         wdou = EventsType[j][i][FLOPS]/EventsType[j][i][TIME];
