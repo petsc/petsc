@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.25 1995/09/30 19:30:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.26 1995/10/01 21:53:18 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -106,7 +106,7 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
   else if (!PetscStrcmp(name,"stdout")) v->fd = stdout;
   else {
     v->fd        = fopen(name,"w"); 
-    if (!v->fd) SETERRQ(1,"ViewerFileOpen:cannot open file");
+    if (!v->fd) SETERRQ(1,"ViewerFileOpenASCII:Cannot open file");
   }
   v->format        = FILE_FORMAT_DEFAULT;
   v->outputname    = 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.62 1995/10/01 21:51:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.63 1995/10/02 20:21:27 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -30,7 +30,7 @@ $    ViewerFileOpenASCII() - output to a specified file
 
 .keywords: KSP, view
 
-.seealso: PCView(), ViewerFileOpenASCII)
+.seealso: PCView(), ViewerFileOpenASCII()
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {
