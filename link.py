@@ -58,12 +58,15 @@ class LinkSharedLibrary (action.Action):
     self.executeShellCommand(command)
     command = self.linker+' '+self.linkerFlags+' -o '+sharedLibrary+' *.o'
     for lib in self.extraLibraries.getFiles():
-      (dir, file) = os.path.split(lib)
-      (base, ext) = os.path.splitext(file)
-      if dir:
-        command += ' -L'+dir+' -Wl,-rpath,'+dir+' -l'+base[3:]
+      if lib[0] == '-':
+        command += ' '+lib
       else:
-        command += ' -l'+base[3:]
+        (dir, file) = os.path.split(lib)
+        (base, ext) = os.path.splitext(file)
+        if dir:
+          command += ' -L'+dir+' -Wl,-rpath,'+dir+' -l'+base[3:]
+        else:
+          command += ' -l'+base[3:]
     self.executeShellCommand(command)
     os.chdir(oldDir)
     self.cleanupDir(linkDir, remove = 1)
