@@ -470,7 +470,7 @@ FTP log files:
 
 
 To determine who is on the PETSc users mailing list send
-   to majordom@mcs.anl.gov "who petsc-users"
+   to majordomo@mcs.anl.gov "who petsc-users"
 
 To unsubscribe a person from petsc-users use
    unsubscribe petsc-users name
