@@ -2,6 +2,7 @@ Undergrad Candidate: Chad R. Carroll, Lake Forest College(Math/CS Major), Sophom
 Alternate candidates: Brad Friedman, UIUC, (CSE Major)
                       Folasona T. Olorunsola, Howard University, (CS Major), Sophomore
 Supervisor: Satish Balay
+Funding: DOE2K (Barry)
 
 Extending PETSc visualization capabilities to Windows NT/95
  
@@ -10,7 +11,7 @@ the parallel solution of partial differential equations. Components of
 PETSc (the Portable Extensible Toolkit for Scientific Computation)
 include: numerical computation routines, visualization routines, and
 profiling and control routines (including visualization of the
-parallel computational process (http://www.mcs.anl.gov/petsc/).
+parallel computational process (http://www.mcs.anl.gov/petsc).
 
 Currently PETSc objects like matrices, distributed arrays, can be
 visualized on most Unix machines using Xlib functionality. This
