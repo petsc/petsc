@@ -9,8 +9,7 @@ class Installer(install.urlMapping.UrlMapping):
     import install.retrieval
 
     install.urlMapping.UrlMapping.__init__(self, clArgs, argDB, stamp)
-    if debugWriter:
-      self.argDB['debugWriter'] = debugWriter:
+    if debugWriter: self.argDB['debugWriter'] = debugWriter
     self.retriever = install.retrieval.Retriever(stamp)
     self.builder   = install.build.Builder(stamp)
     self.force     = self.argDB['forceInstall']
