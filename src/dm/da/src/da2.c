@@ -904,7 +904,7 @@ int DARefine(DA da,MPI_Comm comm,DA *daref)
 }
 
 /*@C
-     DASetRefinementFactor() - Set the ratios that the DA grid is refined
+     DASetRefinementFactor - Set the ratios that the DA grid is refined
 
     Collective on DA
 
@@ -935,7 +935,7 @@ int DASetRefinementFactor(DA da, int refine_x, int refine_y,int refine_z)
 }
 
 /*@C
-     DAGetRefinementFactor() - Gets the ratios that the DA grid is refined
+     DAGetRefinementFactor - Gets the ratios that the DA grid is refined
 
     Not Collective
 
