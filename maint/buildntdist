@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.7 1997/11/19 22:14:41 bsmith Exp balay $ 
+# $Id: buildntdist,v 1.8 1998/03/19 20:00:59 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -46,6 +46,7 @@ if ($#argv == 1) then
 endif
 
 tar cf ~/petscnt$version.tar petsc$version
+cd ~/
 /bin/rm -r -f /mcs/tmp/petscnt
 
 gzip ~/petscnt$version.tar
