@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.2 1995/04/04 19:51:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.3 1995/04/13 14:42:42 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve a two variable system\n";
@@ -29,8 +29,8 @@ int main( int argc, char **argv )
 
   ierr = SNESCreate(&snes); CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,0);
   ierr = SNESSetFromOptions(snes); CHKERR(ierr);
+  ierr = SNESSetMonitor(snes,Monitor,0);
 
   /* Set various routines */
   SNESSetSolution( snes, x,FormInitialGuess,0 );
