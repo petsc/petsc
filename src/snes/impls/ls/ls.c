@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.152 2000/04/09 04:38:37 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.153 2000/04/12 04:25:33 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -139,9 +139,12 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   }
   if (X != snes->vec_sol) {
     ierr = VecCopy(X,snes->vec_sol);CHKERRQ(ierr);
-    snes->vec_sol_always  = snes->vec_sol;
-    snes->vec_func_always = snes->vec_func;
   }
+  if (F != snes->vec_func) {
+    ierr = VecCopy(F,snes->vec_func);CHKERRQ(ierr);
+  }
+  snes->vec_sol_always  = snes->vec_sol;
+  snes->vec_func_always = snes->vec_func;
   if (i == maxits) {
     PLogInfo(snes,"SNESSolve_EQ_LS: Maximum number of iterations has been reached: %d\n",maxits);
     i--;

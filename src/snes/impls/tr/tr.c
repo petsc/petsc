@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.114 2000/04/09 04:38:40 bsmith Exp bsmith $*/
+/*$Id: tr.c,v 1.115 2000/04/12 04:25:34 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
 
@@ -159,7 +159,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
       snes->norm = fnorm;
       ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
       TMP = F; F = G; snes->vec_func_always = F; G = TMP;
-      TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
+      TMP = X; X = Y; snes->vec_sol_always  = X; Y = TMP;
       ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);		/* xnorm = || X || */
       SNESLogConvHistory(snes,fnorm,lits);
       SNESMonitor(snes,i+1,fnorm);
@@ -174,12 +174,15 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
       break;
     }
   }
+  /* Verify solution is in corect location */
   if (X != snes->vec_sol) {
-    /* Verify solution is in corect location */
     ierr = VecCopy(X,snes->vec_sol);CHKERRQ(ierr);
-    snes->vec_sol_always  = snes->vec_sol;
-    snes->vec_func_always = snes->vec_func; 
   }
+  if (F != snes->vec_func) {
+    ierr = VecCopy(F,snes->vec_func);CHKERRQ(ierr);
+  }
+  snes->vec_sol_always  = snes->vec_sol;
+  snes->vec_func_always = snes->vec_func; 
   if (i == maxits) {
     PLogInfo(snes,"SNESSolve_EQ_TR: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
