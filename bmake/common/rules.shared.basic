@@ -20,6 +20,8 @@ shared_aix6:
 shared_darwin6: 
 shared_darwin7: 
 
+shared_cygwin:
+
 shared_linux_intel:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
