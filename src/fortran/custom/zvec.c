@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.3 1995/10/26 22:01:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.4 1995/11/23 04:23:13 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -42,32 +42,21 @@ void vecload_(Viewer bview,Vec *newvec, int *__ierr )
   copy the array make sure you fix vec/examples/ex21.F and 
   snes/examples/ex12.F 
 */
-void vecrestorearray_(Vec x,Scalar *a,int *__ierr)
+void vecrestorearray_(Vec x,int *a,int *__ierr)
 {
   Vec    xin = (Vec)MPIR_ToPointer( *(int*)(x) );
-  Scalar *lx;
-  int    n,i;
+  Scalar *lx = PetscDoubleAddressFromFortran(*a);
 
-  *__ierr = VecGetArray(xin,&lx); if (*__ierr) return;
-  *__ierr = VecGetLocalSize(xin,&n); if (*__ierr) return;
-  for ( i=0; i<n; i++ ) {
-    lx[i] = a[i];
-  }
   *__ierr = VecRestoreArray(xin,&lx);
 }
 
-void vecgetarray_(Vec x,Scalar *a,int *__ierr)
+void vecgetarray_(Vec x,int *a,int *__ierr)
 {
   Vec    xin = (Vec)MPIR_ToPointer( *(int*)(x) );
   Scalar *lx;
-  int    n,i;
 
   *__ierr = VecGetArray(xin,&lx); if (*__ierr) return;
-  *__ierr = VecGetLocalSize(xin,&n); if (*__ierr) return;
-  for ( i=0; i<n; i++ ) {
-    a[i] = lx[i];
-  }
-  *__ierr = VecRestoreArray(xin,&lx);
+  *a      = PetscDoubleAddressToFortran(lx);
 }
    
 

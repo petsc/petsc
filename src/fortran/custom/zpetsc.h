@@ -1,9 +1,11 @@
 
 /* This file contains information for the use of PETSc Fortran interface stubs */
 
-       int   PetscDoubleAddressToFortran(void*);
-       int   PetscIntAddressToFortran(void*);
-extern void *PetscNull_Fortran;
+       int     PetscDoubleAddressToFortran(double*);
+       double *PetscDoubleAddressFromFortran(int);
+       int     PetscIntAddressToFortran(int*);
+       int    *PetscIntAddressFromFortran(int); 
+extern void   *PetscNull_Fortran;
 
 #ifdef HAVE_64BITS
 extern void *MPIR_ToPointer(int);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.6 1995/11/23 13:47:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: zoptions.c,v 1.7 1995/11/24 20:17:44 curfman Exp bsmith $";
 #endif
 
 /*
@@ -306,28 +306,42 @@ int  optionsgetstring_(char *pre,char *name,char *string,
        This is code for translating PETSc memory addresses to integer offsets 
     for Fortran.
 */
-static int  PetscInt, PetscDouble;
-       void *PetscNull_Fortran;
+static int    PetscInt,PetscDouble;
+       void   *PetscNull_Fortran;
+static double *PetscDoubleAddress;
+static int    *PetscIntAddress;
 
-int PetscIntAddressToFortran(void *addr)
+int PetscIntAddressToFortran(int *addr)
 {
-  return 1 + (((int)addr) - PetscInt)/sizeof(int);
+  return (((int)addr) - PetscInt)/sizeof(int);
 }
 
-
-int PetscDoubleAddressToFortran(void *addr)
+int *PetscIntAddressFromFortran(int addr)
 {
-  return 1 + (((int)addr) - PetscDouble)/sizeof(double);
+  return PetscIntAddress + addr;
 }
+
+int PetscDoubleAddressToFortran(double *addr)
+{
+  return (((int)addr) - PetscDouble)/sizeof(double);
+}
+
+double *PetscDoubleAddressFromFortran(int addr)
+{
+  return PetscDoubleAddress + addr;
+}
+
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 void petscsetfortranbasepointers_(int *PetscIntIn,double *PetscDoubleIn, void *fnull)
 {
-  PetscInt          = (int) PetscIntIn;
-  PetscDouble       = (int) PetscDoubleIn;
-  PetscNull_Fortran = fnull;
+  PetscInt           = (int) PetscIntIn;
+  PetscIntAddress    = PetscIntIn;
+  PetscDouble        = (int) PetscDoubleIn;
+  PetscDoubleAddress = PetscDoubleIn;
+  PetscNull_Fortran  = fnull;
 }
 #if defined(__cplusplus)
 }
