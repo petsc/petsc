@@ -24,6 +24,7 @@ int KSPDefaultFreeWork(KSP ksp)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->work)  {
     ierr = VecDestroyVecs(ksp->work,ksp->nwork);CHKERRQ(ierr);
+    ksp->work = PETSC_NULL;
   }
   PetscFunctionReturn(0);
 }
