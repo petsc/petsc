@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.88 1997/10/28 14:25:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.89 1997/11/03 04:49:58 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -60,15 +60,14 @@ int DAView_2d(PetscObject dain,Viewer viewer)
     }
     ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = DrawPause(draw);CHKERRQ(ierr);
-    ierr = MPI_Barrier(da->comm);CHKERRQ(ierr);
 
     /* draw my box */
     ymin = da->ys; ymax = da->ye - 1; xmin = da->xs/da->w; 
     xmax =(da->xe-1)/da->w;
-    DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_RED);
-    DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_RED);
-    DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_RED);
-    DrawLine(draw,xmax,ymin,xmax,ymax,DRAW_RED);
+    ierr = DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_RED);CHKERRQ(ierr);
+    ierr = DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_RED);CHKERRQ(ierr);
+    ierr = DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_RED);CHKERRQ(ierr);
+    ierr = DrawLine(draw,xmax,ymin,xmax,ymax,DRAW_RED);CHKERRQ(ierr);
 
     /* put in numbers */
     base = (da->base)/da->w;
@@ -81,7 +80,6 @@ int DAView_2d(PetscObject dain,Viewer viewer)
 
     ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = DrawPause(draw);CHKERRQ(ierr);
-    ierr = MPI_Barrier(da->comm);CHKERRQ(ierr);
     /* overlay ghost numbers, useful for error checking */
     /* put in numbers */
 
@@ -91,13 +89,13 @@ int DAView_2d(PetscObject dain,Viewer viewer)
       for ( x=xmin; x<xmax; x++ ) {
         if ((base % da->w) == 0) {
           sprintf(node,"%d",idx[base]/da->w);
-          DrawString(draw,x/da->w,y,DRAW_BLUE,node);
+          ierr = DrawString(draw,x/da->w,y,DRAW_BLUE,node);CHKERRQ(ierr);
         }
         base++;
       }
     }        
-    DrawSynchronizedFlush(draw);
-    DrawPause(draw);
+    ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = DrawPause(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
