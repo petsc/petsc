@@ -3,6 +3,8 @@
  */
 #include "user.h"
 
+#undef __FUNC__
+#define __FUNC__ "JulianneMonitor"
 /* 
    JulianneMonitor - Routine that is called at the conclusion
    of each successful step of the nonlinear solver.  The user
@@ -49,17 +51,6 @@ int JulianneMonitor(SNES snes,int its,double fnorm,void *dummy)
   }
 
   if (its) {
-    /* Check for stagnation */
-    /*
-    if ((app->fnorm_last - fnorm)/fnorm < .01) {
-       app->fstagnate++;
-       if (app->fstagnate > 20) PetscPrintf(app->comm,"JulianneMonitor; Stagnation detected");
-       ierr = SNESDestroy(snes); CHKERRQ(ierr);
-       ierr = UserDestroyEuler(app); CHKERRQ(ierr);
-       PetscFinalize(); exit(0);
-    }
-    */
-
     /* Compute new CFL number */
     if (app->cfl_advance) {
       if (fnorm/app->fnorm0 <= app->f_reduction) {
@@ -123,6 +114,8 @@ int JulianneMonitor(SNES snes,int its,double fnorm,void *dummy)
   }
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "MonitorDumpGeneral"
 /* --------------------------------------------------------------- */
 /* 
    MonitorDumpGeneral - Dumps solution fields for later use in viewers.
@@ -167,6 +160,8 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
   fclose(fp);
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "MonitorDumpGeneralJulianne"
 /* --------------------------------------------------------------- */
 /* 
    MonitorDumpGeneralJulianne - Dumps solution fields for later use in viewers;
@@ -202,8 +197,9 @@ int MonitorDumpGeneralJulianne(Euler *app)
 }
 /* --------------------------------------------------------------------------- */
 
-
 extern int DFVecFormUniVec_MPIRegular_Private(DFVec,Vec*);
+#undef __FUNC__
+#define __FUNC__ "MonitorDumpVRML"
 /* 
    MonitorDumpVRML - Outputs fields for use in VRML viewers.  The default
    output is the pressure field.  In addition, the residual field can be
@@ -353,6 +349,8 @@ int MonitorDumpVRML(SNES snes,Vec X,Vec F,Euler *app)
 
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "DumpField"
 /* --------------------------------------------------------------- */
 /*
     DumpField - Dumps a field to VRML viewer.  Since the VRML routines are
@@ -423,6 +421,8 @@ int DumpField(Euler *app,Draw Win,Scalar *field)
 
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "ComputeNodalResiduals"
 /* ----------------------------------------------------------------------------- */
 /*
    ComputeNodalResiduals - Computes nodal residuals (sum of absolute value of
@@ -455,6 +455,8 @@ int ComputeNodalResiduals(Euler *app,Vec X,Vec Xsum)
   ierr = VecRestoreArray(Xsum,&xasum); CHKERRQ(ierr);
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "TECPLOTMonitor"
 /* ------------------------------------------------------------------------------ */
 /* 
    TECPLOTMonitor - Monitoring routine for nonlinear solver.
@@ -496,12 +498,60 @@ int TECPLOTMonitor(SNES snes,Vec X,Euler *app)
 }
 /* ------------------------------------------------------------------------------ */
 #include "src/snes/snesimpl.h"
-int EulerConvergenceTest(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
+#undef __FUNC__
+#define __FUNC__ "JulianneConvergenceTest"
+/*
+   JulianneConvergenceTest - We define a convergence test for the Euler code
+   that stops only for the following:
+      - the function norm satisfies the specified relative decrease
+      - stagnation has been detected
+      - we're encountering NaNs
+
+   This is a simplistic test that we use only because we need to
+   compare timings for various methods, and we need a single stopping
+   criterion so that a fair comparison is possible.
+
+ */
+int JulianneConvergenceTest(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
 {
+  Euler  *app = (Euler *)dummy;
+  int    i, last_k, iter = snes->iter, fstagnate = 0;
+  Scalar *favg = app->favg, *farray = app->farray, ratio;
+  Scalar register tmp;
   if (fnorm <= snes->ttol) {
     PLogInfo(snes,
-    "SNES:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
-    return 4;
+    "JulianneConvergenceTest:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
+    return 1;
+  }
+  /* Note that NaN != NaN */
+  if (fnorm != fnorm) {
+    PLogInfo(snes,"JulianneConvergenceTest:Function norm is NaN: %g\n",fnorm);
+    return 2;
+  }
+  if (iter >= 6) {
+    /* Computer average fnorm over the past 6 iterations */
+    last_k = 5;
+    tmp = 0.0;
+    for (i=iter-last_k; i<iter+1; i++) {
+      tmp += farray[i];
+      printf("   iter = %d, i=%d, farray = %g, tmp=%g \n",iter,i,farray[i],tmp);
+    }
+    favg[iter] = tmp/(last_k+1);
+    printf("   iter = %d, f_avg = %g \n",iter,favg[iter]);
+
+    /* Test for stagnation over the past 10 iterations */
+    if (iter >= 16) {
+      last_k = 10;
+      for (i=iter-last_k; i<iter; i++) {
+        ratio=PetscAbsScalar(favg[i] - favg[iter])/favg[iter];
+        if (ratio < app->fstagnate_ratio) fstagnate++;
+        printf("iter = %d, i=%d, ratio = %g, fstg_ratio=%g, fstagnate = %d\n",iter,i,ratio,app->fstagnate_ratio,fstagnate);
+      }
+      if (fstagnate == last_k) {
+        PLogInfo(snes,"JulianneConvergenceTest: Stagnation at fnorm = %g\n",fnorm);
+        return 3;
+      }
+    }
   }
   return 0;
 }
