@@ -442,7 +442,7 @@ int PetscViewerMathematicaLoadGraphics(PetscViewer viewer, GraphicsType type)
 .keywords PetscViewer, Mathematica, name
 .seealso PetscViewerMathematicaSetName(), PetscViewerMathematicaClearName()
 @*/
-int PetscViewerMathematicaGetName(PetscViewer viewer, char **name)
+int PetscViewerMathematicaGetName(PetscViewer viewer, const char **name)
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 
