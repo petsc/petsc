@@ -462,6 +462,9 @@ int MatApplyPtAP_SeqAIJ_Numeric(Mat A,Mat P,Mat C) {
       aa++;
     }
 
+    /* Sort the j index array for quick sparse axpy. */
+    ierr = PetscSortInt(apnzj,apj);CHKERRQ(ierr);
+
     /* Compute P^T*A*P using outer product (P^T)[:,j]*(A*P)[j,:]. */
     pnzi = pi[i+1] - pi[i];
     for (j=0;j<pnzi;j++) {
