@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.20 1997/10/10 04:03:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.21 1997/10/10 20:56:30 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -186,6 +186,37 @@ int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
 
   matfd->freq = freq;
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatFDColoringGetFrequency"
+/*@
+   MatFDColoringGetFrequency - Gets the frequency for computing new Jacobian
+   matrices. 
+
+   Input Parameters:
+.  coloring - the coloring context
+
+   Output Parameters:
+.  freq - frequency (default is 1)
+
+   Notes:
+   Using a modified Newton strategy, where the Jacobian remains fixed for several
+   iterations, can be cost effective in terms of overall nonlinear solution 
+   efficiency.  This parameter indicates that a new Jacobian will be computed every
+   <freq> nonlinear iterations.  
+
+   Options Database Keys:
+$  -mat_fd_coloring_freq <freq> 
+
+.keywords: Mat, finite differences, coloring, get, frequency
+@*/
+int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
+{
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
+
+  *freq = matfd->freq;
   return 0;
 }
 

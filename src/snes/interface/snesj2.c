@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj2.c,v 1.8 1997/08/13 22:26:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesj2.c,v 1.9 1997/09/25 22:40:16 curfman Exp curfman $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -14,7 +14,9 @@ static char vcid[] = "$Id: snesj2.c,v 1.8 1997/08/13 22:26:08 bsmith Exp curfman
     Input Parameters:
 .   snes - nonlinear solver object
 .   x1 - location at which to evaluate Jacobian
-.   ctx - MatFDColoring contex
+.   ctx - coloring context, where
+$      ctx must have type MatFDColoring, 
+$      as created via MatFDColoringCreate()
 
     Output Parameters:
 .   J - Jacobian matrix (not altered in this routine)
