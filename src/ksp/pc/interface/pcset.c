@@ -76,21 +76,21 @@ PetscErrorCode PCSetType(PC pc,const PCType type)
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   if (pc->data) {ierr = PetscFree(pc->data);CHKERRQ(ierr);}
 
-  pc->ops->destroy             = (PetscErrorCode (*)(PC)) 0;
-  pc->ops->view                = (PetscErrorCode (*)(PC,PetscViewer)) 0;
-  pc->ops->apply               = (PetscErrorCode (*)(PC,Vec,Vec)) 0;
   pc->ops->setup               = (PetscErrorCode (*)(PC)) 0;
+  pc->ops->apply               = (PetscErrorCode (*)(PC,Vec,Vec)) 0;
   pc->ops->applyrichardson     = (PetscErrorCode (*)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int)) 0;
   pc->ops->applyBA             = (PetscErrorCode (*)(PC,int,Vec,Vec,Vec)) 0;
-  pc->ops->setfromoptions      = (PetscErrorCode (*)(PC)) 0;
   pc->ops->applytranspose      = (PetscErrorCode (*)(PC,Vec,Vec)) 0;
   pc->ops->applyBAtranspose    = (PetscErrorCode (*)(PC,int,Vec,Vec,Vec)) 0;
+  pc->ops->setfromoptions      = (PetscErrorCode (*)(PC)) 0;
   pc->ops->presolve            = (PetscErrorCode (*)(PC,KSP,Vec,Vec)) 0;
   pc->ops->postsolve           = (PetscErrorCode (*)(PC,KSP,Vec,Vec)) 0;
   pc->ops->getfactoredmatrix   = (PetscErrorCode (*)(PC,Mat*)) 0;
   pc->ops->applysymmetricleft  = (PetscErrorCode (*)(PC,Vec,Vec)) 0;
   pc->ops->applysymmetricright = (PetscErrorCode (*)(PC,Vec,Vec)) 0;
   pc->ops->setuponblocks       = (PetscErrorCode (*)(PC)) 0;
+  pc->ops->destroy             = (PetscErrorCode (*)(PC)) 0;
+  pc->ops->view                = (PetscErrorCode (*)(PC,PetscViewer)) 0;
   pc->modifysubmatrices        = (PetscErrorCode (*)(PC,int,const IS[],const IS[],Mat[],void*)) 0;
 
   /* Call the PCCreateXXX routine for this particular preconditioner */
