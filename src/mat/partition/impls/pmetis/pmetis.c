@@ -1,4 +1,4 @@
-/*$Id: pmetis.c,v 1.29 2000/01/11 21:01:25 bsmith Exp bsmith $*/
+/*$Id: pmetis.c,v 1.30 2000/01/30 03:41:04 bsmith Exp bsmith $*/
  
 #include "src/mat/impls/csr/mpi/mpicsr.h"    /*I "mat.h" I*/
 
@@ -68,7 +68,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   locals = (int*)PetscMalloc((adj->m+1)*sizeof(int));CHKPTRQ(locals);
 
   if (PLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
-  PARKMETIS(vtxdist,xadj,0,adjncy,adj->values,locals,(int*)parmetis,part->comm);
+  PARKMETIS(vtxdist,xadj,part->vertex_weights,adjncy,adj->values,locals,(int*)parmetis,part->comm);
   if (PLogPrintInfo) {parmetis->printout = itmp;}
 
   ierr = ISCreateGeneral(part->comm,adj->m,locals,partitioning);CHKERRQ(ierr);

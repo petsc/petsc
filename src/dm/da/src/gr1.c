@@ -1,4 +1,4 @@
-/*$Id: gr1.c,v 1.16 1999/10/24 14:04:04 bsmith Exp bsmith $*/
+/*$Id: gr1.c,v 1.17 2000/01/11 21:03:19 bsmith Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate1d()
@@ -7,8 +7,24 @@
 #include "da.h"      /*I  "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DACreateUniformCoordinates"
-int DACreateUniformCoordinates(DA da,double xmin,double xmax,double ymin,double ymax,double zmin,double zmax)
+#define __FUNC__ "DASetUniformCoordinates"
+/*@
+    DASetUniformCoordinates - Sets a DA coordinates to be a uniform grid
+
+  Collective on DA
+
+  Input Parameters:
++  da - the distributed array object
+.  xmin,xmax - extremes in teh x direction
+.  xmin,xmax - extremes in the y direction
+-  xmin,xmax - extremes in the z direction
+
+  Level: beginner
+
+.seealso: DASetCoordinates(), DAGetCoordinates(), DACreate1d(), DACreate2d(), DACreate3d()
+
+@*/
+int DASetUniformCoordinates(DA da,double xmin,double xmax,double ymin,double ymax,double zmin,double zmax)
 {
   int            i,j,ierr,M,N,P,istart,isize,jstart,jsize,dim,cnt;
   double         hx,hy;
@@ -33,6 +49,7 @@ int DACreateUniformCoordinates(DA da,double xmin,double xmax,double ymin,double 
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 2) {
     ierr = VecCreateMPI(PETSC_COMM_WORLD,2*isize*jsize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(xcoor,2);CHKERRQ(ierr);
     if (periodic == DA_XPERIODIC || periodic == DA_XYPERIODIC) hx = (xmax-xmin)/(M);
     else                                                       hx = (xmax-xmin)/(M-1);
     if (periodic == DA_YPERIODIC || periodic == DA_XYPERIODIC) hy = (ymax-ymin)/(N);
@@ -89,7 +106,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
   /* get coordinates of nodes */
   ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   if (!xcoor) {
-    ierr = DACreateUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
+    ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
     ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   }
   ierr = VecGetArray(xcoor,&xg);CHKERRQ(ierr);

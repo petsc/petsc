@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.103 1999/11/24 21:53:41 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.104 2000/01/11 21:00:30 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -143,17 +143,22 @@ struct _p_Mat {
     Object for partitioning graphs
 */
 
-struct _p_MatPartitioning {
-  PETSCHEADER(int)
-  Mat         adj;
+typedef struct _MatPartitioningOps *MatPartitioningOps;
+struct _MatPartitioningOps {
   int         (*apply)(MatPartitioning,IS*);
   int         (*setfromoptions)(MatPartitioning);
   int         (*printhelp)(MatPartitioning);
+  int         (*destroy)(MatPartitioning);
+  int         (*view)(MatPartitioning,Viewer);
+};
+
+struct _p_MatPartitioning {
+  PETSCHEADER(struct _MatPartitioningOps)
+  Mat         adj;
+  int         *vertex_weights;
   int         n;                                 /* number of partitions */
   void        *data;
   int         setupcalled;
-  int         (*destroy)(MatPartitioning);
-  int         (*view)(MatPartitioning,Viewer);
 };
 
 /*
