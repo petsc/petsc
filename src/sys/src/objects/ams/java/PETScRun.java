@@ -1,4 +1,4 @@
-/*$Id: PETScRun.java,v 1.11 2001/01/31 22:41:54 bsmith Exp bsmith $*/
+/*$Id: PETScRun.java,v 1.12 2001/02/07 22:17:50 bsmith Exp bsmith $*/
 /*
      Compiles and runs a PETSc program
 */
@@ -29,6 +29,7 @@ public class PETScRun extends JApplet implements Pageable, Printable
   JCheckBox tbopt;
   JCheckBox snoop;
 
+    JComboBox    server;
     JComboBox    arch;
     JComboBox    dir;
     JComboBox    example;
@@ -36,7 +37,6 @@ public class PETScRun extends JApplet implements Pageable, Printable
 
   JTextArea   opanel,epanel;
 
-  boolean isviewsource = false;
     Container japplet;
 
   public void init() {
@@ -88,53 +88,53 @@ public class PETScRun extends JApplet implements Pageable, Printable
     grid.add(options);
 
 
-      arch = new JComboBox();
-      Enumeration keys = systems[MAXNP].keys();
-      while (keys.hasMoreElements()) {
-        arch.addItem((String)keys.nextElement());
-      }
-      arch.addItemListener(new ItemListener() {
-                            public void itemStateChanged(ItemEvent e) {
-                              if (e.getStateChange() == ItemEvent.SELECTED) {
-                                JComboBox choice = (JComboBox) e.getItemSelectable();
-                                setnp(np,(String)choice.getSelectedItem());}}
-			      }); 
-      tpanel.add(arch);
+    arch = new JComboBox();
+    Enumeration keys = systems[MAXNP].keys();
+    while (keys.hasMoreElements()) {
+      arch.addItem((String)keys.nextElement());
+    }
+    arch.addItemListener(new ItemListener() {
+                          public void itemStateChanged(ItemEvent e) {
+                            if (e.getStateChange() == ItemEvent.SELECTED) {
+                              JComboBox choice = (JComboBox) e.getItemSelectable();
+                              setnp(np,(String)choice.getSelectedItem());}}
+	                    }); 
+    tpanel.add(arch);
         
-      dir = new JComboBox();
-      String pexampled = this.getParameter("EXAMPLEDIRECTORY");
-      if (pexampled == null) {
-        keys = systems[EXAMPLES].keys();
-        while (keys.hasMoreElements()) {
-          dir.addItem((String)keys.nextElement());
-        }
-        dir.addItemListener(new ItemListener() {
-                            public void itemStateChanged(ItemEvent e) {
-                              if (e.getStateChange() == ItemEvent.SELECTED) {
-                                JComboBox choice = (JComboBox) e.getItemSelectable();
-                                setexamples(example,(String)choice.getSelectedItem());
-			      }
+    dir = new JComboBox();
+    String pexampled = this.getParameter("EXAMPLEDIRECTORY");
+    if (pexampled == null) {
+      keys = systems[EXAMPLES].keys();
+      while (keys.hasMoreElements()) {
+        dir.addItem((String)keys.nextElement());
+      }
+      dir.addItemListener(new ItemListener() {
+                          public void itemStateChanged(ItemEvent e) {
+                            if (e.getStateChange() == ItemEvent.SELECTED) {
+                              JComboBox choice = (JComboBox) e.getItemSelectable();
+                              setexamples(example,(String)choice.getSelectedItem());
                             }
-	                  });
-      } else { /* .html file indicates which example to run */
-        dir.addItem((String)pexampled);
-      }
-      tpanel.add(dir);
+                          }
+	                });
+    } else { /* .html file indicates which example to run */
+      dir.addItem((String)pexampled);
+    }
+    tpanel.add(dir);
 
-      String phelp = this.getParameter("HELP"); /* .html file indicates help message */
-      if (phelp != null) {
-        this.help.setText(phelp);
-      }
+    String phelp = this.getParameter("HELP"); /* .html file indicates help message */
+    if (phelp != null) {
+      this.help.setText(phelp);
+    }
 
-      np = new JComboBox();
-      setnp(np,(String)systems[MAXNP].keys().nextElement());
-      tpanel.add(np);
+    np = new JComboBox();
+    setnp(np,(String)systems[MAXNP].keys().nextElement());
+    tpanel.add(np);
 
-      example = new JComboBox();
-      String pexample = this.getParameter("EXAMPLE");
-      if (pexample == null) {
-        setexamples(example,(String)systems[EXAMPLES].keys().nextElement());
-        example.addItemListener(new ItemListener() {
+    example = new JComboBox();
+    String pexample = this.getParameter("EXAMPLE");
+    if (pexample == null) {
+      setexamples(example,(String)systems[EXAMPLES].keys().nextElement());
+      example.addItemListener(new ItemListener() {
                             public void itemStateChanged(ItemEvent e) {
                               if (e.getStateChange() == ItemEvent.SELECTED) {
                                 JComboBox choice = (JComboBox) e.getItemSelectable();
@@ -146,53 +146,63 @@ public class PETScRun extends JApplet implements Pageable, Printable
                               }
 			    }
 	                  });
-      } else {  /* .html file indicates which example to run */
-        example.addItem((String)pexample);
+    } else {  /* .html file indicates which example to run */
+      example.addItem((String)pexample);
+    }
+    tpanel.add(example);
+
+
+    JButton mbutton = new JButton("Compile");
+    tpanel.add(mbutton);
+    mbutton.addActionListener(new ActionListener(){
+      public void actionPerformed(ActionEvent e) { 
+        runprogram("make");
       }
-      tpanel.add(example);
+    }); 
 
+    JButton tbutton = new JButton("Test");
+    tpanel.add(tbutton);
+    tbutton.addActionListener(new ActionListener(){
+      public void actionPerformed(ActionEvent e) { 
+        runprogram("maketest");
+      }
+    }); 
 
-      JButton mbutton = new JButton("Compile");
-      tpanel.add(mbutton);
-      mbutton.addActionListener(new ActionListener(){
-        public void actionPerformed(ActionEvent e) { 
-          runprogram("make");
-        }
-      }); 
+    JButton rbutton = new JButton("Run");
+    tpanel.add(rbutton);
+    rbutton.addActionListener(new ActionListener(){
+      public void actionPerformed(ActionEvent e) { 
+        runprogram("mpirun");
+      }
+    }); 
 
-      JButton tbutton = new JButton("Test");
-      tpanel.add(tbutton);
-      tbutton.addActionListener(new ActionListener(){
-        public void actionPerformed(ActionEvent e) { 
-          runprogram("maketest");
-        }
-      }); 
+    /*
+          Opens new window that displays the source 
+    */
+    JButton sbutton = new JButton("View source");
+    tpanel.add(sbutton);
+    sbutton.addActionListener(new ActionListener(){
+      public void actionPerformed(ActionEvent e) { 
+        String ex = (String)example.getSelectedItem();
+        URL    urlb = applet.getDocumentBase();
 
-      JButton rbutton = new JButton("Run");
-      tpanel.add(rbutton);
-      rbutton.addActionListener(new ActionListener(){
-        public void actionPerformed(ActionEvent e) { 
-          runprogram("mpirun");
-        }
-      }); 
+        try {
+          String s = null;
+          if (ex.endsWith("f90") || ex.endsWith("f")) s = "_F";
+          else s = "_c";
+          final URL url = new URL(""+urlb+"../"+dir.getSelectedItem()+"/"+ex+s+".html");  
+          System.out.println("showing"+url);
+          appletcontext.showDocument(url,"Source");
+        } catch (MalformedURLException oops) { System.out.println("bad:showing"+urlb);;} 
+      }
+    }); 
 
-      JButton sbutton = new JButton("View source");
-      tpanel.add(sbutton);
-      sbutton.addActionListener(new ActionListener(){
-        public void actionPerformed(ActionEvent e) { 
-          isviewsource = true;
-          runprogram("makehtml");
-        }
-      }); 
-
-      toptions = new JCheckBox("Set options graphically");
-      tpanel.add(toptions);
-
-      snoop = new JCheckBox("Snoop on program");
-      tpanel.add(snoop);
-
-      tbopt = new JCheckBox("Compile debug version");
-      tpanel.add(tbopt);
+    toptions = new JCheckBox("Set options graphically");
+    tpanel.add(toptions);
+    snoop = new JCheckBox("Snoop on program");
+    tpanel.add(snoop);
+    tbopt = new JCheckBox("Compile debug version");
+    tpanel.add(tbopt);
 
 
     epanel = new JTextArea(4,60);
@@ -352,21 +362,6 @@ public class PETScRun extends JApplet implements Pageable, Printable
       job.print();
     } catch (java.awt.print.PrinterException e) {System.out.println("problem printing");}
     */
-
-    if (isviewsource) {
-      String ex = (String)example.getSelectedItem();
-      URL    urlb = applet.getDocumentBase();
-  
-      try {
-        String s = null;
-        if (ex.endsWith("f90") || ex.endsWith("f")) s = "_F";
-        else s = "_c";
-        final URL url = new URL(""+urlb+"../"+dir.getSelectedItem()+"/"+ex+s+".html");  
-        System.out.println("showing"+url);
-        appletcontext.showDocument(url,"Source");
-      } catch (MalformedURLException oops) { System.out.println("bad:showing"+urlb);;} 
-    }
-    isviewsource = false;
   }
 
   PageFormat        format;
