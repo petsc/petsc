@@ -362,8 +362,12 @@ class ArgLibrary(Arg):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     import os
     # Should check whether it is a well-formed path and an archive or shared object
-    if self.mustExist and not os.path.isfile(value):
-      raise TypeError('Invalid library: '+str(value)+' for key '+str(self.key))
+    if self.mustExist:
+      if not isinstance(value, list):
+        value = [value]
+      for lib in value:
+        if not os.path.isfile(lib):
+          raise TypeError('Invalid library: '+str(lib)+' for key '+str(self.key))
     self.value = value
     return
 
