@@ -1831,9 +1831,6 @@ int MatPrintHelp_SeqAIJ(Mat A)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_no_inode: Do not use inodes\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_inode_limit <limit>: Set inode limit (max limit=5)\n");CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_matlab: Use Matlab engine sparse LU factorization and solve.\n");CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -2367,75 +2364,6 @@ int MatRetrieveValues(Mat mat)
   PetscFunctionReturn(0);
 }
 
-/*
-   This allows SeqAIJ matrices to be passed to the matlab engine
-*/
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-#include "engine.h"   /* Matlab include file */
-#include "mex.h"      /* Matlab include file */
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatMatlabEnginePut_SeqAIJ"
-int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
-{
-  int         ierr;
-  Mat         B = (Mat)obj;
-  mxArray     *mat; 
-  Mat_SeqAIJ  *aij = (Mat_SeqAIJ*)B->data;
-
-  PetscFunctionBegin;
-  mat  = mxCreateSparse(B->n,B->m,aij->nz,mxREAL);
-  ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
-  /* Matlab stores by column, not row so we pass in the transpose of the matrix */
-  ierr = PetscMemcpy(mxGetIr(mat),aij->j,aij->nz*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemcpy(mxGetJc(mat),aij->i,(B->m+1)*sizeof(int));CHKERRQ(ierr);
-
-  /* Matlab indices start at 0 for sparse (what a surprise) */
-  
-  ierr = PetscObjectName(obj);CHKERRQ(ierr);
-  engPutVariable((Engine *)mengine,obj->name,mat);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatMatlabEngineGet_SeqAIJ"
-int MatMatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
-{
-  int        ierr,ii;
-  Mat        mat = (Mat)obj;
-  Mat_SeqAIJ *aij = (Mat_SeqAIJ*)mat->data;
-  mxArray    *mmat; 
-
-  PetscFunctionBegin;
-  ierr = PetscFree(aij->a);CHKERRQ(ierr);
-
-  mmat = engGetVariable((Engine *)mengine,obj->name);
-
-  aij->nz           = (mxGetJc(mmat))[mat->m];
-  ierr              = PetscMalloc(((size_t) aij->nz)*(sizeof(int)+sizeof(PetscScalar))+(mat->m+1)*sizeof(int),&aij->a);CHKERRQ(ierr);
-  aij->j            = (int*)(aij->a + aij->nz);
-  aij->i            = aij->j + aij->nz;
-  aij->singlemalloc = PETSC_TRUE;
-  aij->freedata     = PETSC_TRUE;
-
-  ierr = PetscMemcpy(aij->a,mxGetPr(mmat),aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
-  /* Matlab stores by column, not row so we pass in the transpose of the matrix */
-  ierr = PetscMemcpy(aij->j,mxGetIr(mmat),aij->nz*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemcpy(aij->i,mxGetJc(mmat),(mat->m+1)*sizeof(int));CHKERRQ(ierr);
-
-  for (ii=0; ii<mat->m; ii++) {
-    aij->ilen[ii] = aij->imax[ii] = aij->i[ii+1] - aij->i[ii];
-  }
-
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-#endif
 
 /* --------------------------------------------------------------------------------*/
 #undef __FUNCT__  
@@ -2726,10 +2654,6 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJGetInodeSizes_C",
                                      "MatSeqAIJGetInodeSizes_SeqAIJ",
                                       MatSeqAIJGetInodeSizes_SeqAIJ);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatMatlabEnginePut_SeqAIJ",MatMatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEngineGet_C","MatMatlabEngineGet_SeqAIJ",MatMatlabEngineGet_SeqAIJ);CHKERRQ(ierr);
-#endif
   ierr = RegisterApplyPtAPRoutines_Private(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

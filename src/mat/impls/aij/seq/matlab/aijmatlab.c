@@ -17,6 +17,70 @@ typedef struct {
   int (*MatDestroy)(Mat);
 } Mat_Matlab;
 
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatlabEnginePut_Matlab"
+int MatMatlabEnginePut_Matlab(PetscObject obj,void *mengine)
+{
+  int         ierr;
+  Mat         B = (Mat)obj;
+  mxArray     *mat; 
+  Mat_SeqAIJ  *aij = (Mat_SeqAIJ*)B->data;
+
+  PetscFunctionBegin;
+  mat  = mxCreateSparse(B->n,B->m,aij->nz,mxREAL);
+  ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
+  /* Matlab stores by column, not row so we pass in the transpose of the matrix */
+  ierr = PetscMemcpy(mxGetIr(mat),aij->j,aij->nz*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(mxGetJc(mat),aij->i,(B->m+1)*sizeof(int));CHKERRQ(ierr);
+
+  /* Matlab indices start at 0 for sparse (what a surprise) */
+  
+  ierr = PetscObjectName(obj);CHKERRQ(ierr);
+  engPutVariable((Engine *)mengine,obj->name,mat);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatlabEngineGet_Matlab"
+int MatMatlabEngineGet_Matlab(PetscObject obj,void *mengine)
+{
+  int        ierr,ii;
+  Mat        mat = (Mat)obj;
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ*)mat->data;
+  mxArray    *mmat; 
+
+  PetscFunctionBegin;
+  ierr = PetscFree(aij->a);CHKERRQ(ierr);
+
+  mmat = engGetVariable((Engine *)mengine,obj->name);
+
+  aij->nz           = (mxGetJc(mmat))[mat->m];
+  ierr              = PetscMalloc(((size_t) aij->nz)*(sizeof(int)+sizeof(PetscScalar))+(mat->m+1)*sizeof(int),&aij->a);CHKERRQ(ierr);
+  aij->j            = (int*)(aij->a + aij->nz);
+  aij->i            = aij->j + aij->nz;
+  aij->singlemalloc = PETSC_TRUE;
+  aij->freedata     = PETSC_TRUE;
+
+  ierr = PetscMemcpy(aij->a,mxGetPr(mmat),aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
+  /* Matlab stores by column, not row so we pass in the transpose of the matrix */
+  ierr = PetscMemcpy(aij->j,mxGetIr(mmat),aij->nz*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(aij->i,mxGetJc(mmat),(mat->m+1)*sizeof(int));CHKERRQ(ierr);
+
+  for (ii=0; ii<mat->m; ii++) {
+    aij->ilen[ii] = aij->imax[ii] = aij->i[ii+1] - aij->i[ii];
+  }
+
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Matlab_SeqAIJ"
@@ -241,7 +305,6 @@ int MatView_Matlab(Mat A,PetscViewer viewer) {
   }
   PetscFunctionReturn(0);
 }
-
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_Matlab"
 int MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,Mat *newmat) {
@@ -284,6 +347,10 @@ int MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,Mat *newmat) {
                                            "MatConvert_SeqAIJ_Matlab",MatConvert_SeqAIJ_Matlab);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_matlab_seqaij_C",
                                            "MatConvert_Matlab_SeqAIJ",MatConvert_Matlab_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C",
+                                           "MatMatlabEnginePut_Matlab",MatMatlabEnginePut_Matlab);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEngineGet_C",
+                                           "MatMatlabEngineGet_Matlab",MatMatlabEngineGet_Matlab);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMATLAB);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
