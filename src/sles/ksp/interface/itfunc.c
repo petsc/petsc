@@ -1050,6 +1050,9 @@ int KSPGetMonitorContext(KSP ksp,void **ctx)
 
    Level: advanced
 
+   Notes: The array is NOT freed by PETSc so the user needs to keep track of 
+           it and destroy once the KSP object is destroyed.
+
 .keywords: KSP, set, residual, history, norm
 
 .seealso: KSPGetResidualHistory()
@@ -1093,7 +1096,7 @@ int KSPSetResidualHistory(KSP ksp,PetscReal *a,int na,PetscTruth reset)
    Level: advanced
 
    Notes:
-     Can only call after a KSPSetResidualHistory() otherwise returns 0.
+     Can only be called after a KSPSetResidualHistory() otherwise a and na are set to zero
 
      The Fortran version of this routine has a calling sequence
 $   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
