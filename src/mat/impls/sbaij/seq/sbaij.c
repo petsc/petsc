@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.3 2000/07/05 20:51:55 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.4 2000/07/10 21:57:16 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1555,6 +1555,7 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
     switch (bs) {
     case 1:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqSBAIJ_1;  
+      /* B->ops->choleskyfactornumeric = MatCholeskyNumeric_SeqSBAIJ_1; */
       B->ops->solve           = MatSolve_SeqSBAIJ_1;
       B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_1;
       B->ops->mult            = MatMult_SeqSBAIJ_1;
