@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.11 2001/08/07 03:04:16 balay Exp balay $*/
+/*$Id: ex23.c,v 1.12 2001/08/10 16:59:37 balay Exp bsmith $*/
 
 static char help[] = "Solves PDE problem from ex22.c\n\n";
 
@@ -121,7 +121,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
 int FormFunctionLocali(DALocalInfo *info,MatStencil *pt,PetscScalar *u,PetscScalar *fu,void* dummy)
 {
-  int     ierr,i,N = info->mx;
+  int          i,N = info->mx;
   PetscScalar  d,h;
 
   PetscFunctionBegin;
