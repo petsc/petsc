@@ -1,4 +1,4 @@
-/* $Id: tsimpl.h,v 1.16 1998/04/03 23:16:41 bsmith Exp curfman $ */
+/* $Id: tsimpl.h,v 1.17 1998/07/27 03:53:32 curfman Exp curfman $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -75,4 +75,6 @@ struct _p_TS {
 };
 
 extern int TSMonitor(TS,int,double,Vec);
+extern int TSComputeRHSBoundaryConditions(TS,double,Vec); 
+
 #endif
