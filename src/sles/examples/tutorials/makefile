@@ -6,7 +6,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/sles/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
-                   ex12.c ex13.c ex15.c ex16.c ex17.c ex22.c ex23.c ex25.c ex26.c
+                   ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex26.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F
 MANSEC           = SLES
 
@@ -493,7 +493,7 @@ TESTEXAMPLES_BLOCKSOLVE   = ex5.PETSc runex5_3 runex5_4 ex5.rm
 TESTEXAMPLES_8             = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_10            = ex11f.PETSc runex11f ex11f.rm
 TESTEXAMPLES_12            = ex13f90.PETSc runex13f90 ex13f90.rm
-TESTEXAMPLES_13            = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm
+TESTEXAMPLES_13            = ex3.PETSc ex3.rm ex14f.PETSc ex14f.rm
 TESTEXAMPLES_MATLAB_ENGINE = ex10.PETSc runex10_12  ex10.rm
 TESTEXAMPLES_17            = ex10.PETSc runex10_11 ex10.rm
 TESTEXAMPLES_18            = ex2.PETSc runex2_6 ex2.rm ex26.PETSc runex26 ex26.rm
