@@ -637,7 +637,7 @@ int PCCreate_LU(PC pc)
   dir->fact               = 0;
   dir->inplace            = 0;
   dir->info.fill          = 5.0;
-  dir->info.dtcol         = 0.0; /* default to no pivoting; this is only thing PETSc LU supports */
+  dir->info.dtcol         = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
   dir->info.damping       = 0.0;
   dir->info.damp          = 0.0;
   dir->info.zeropivot     = 1.e-12;

@@ -242,8 +242,6 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
     ierr = PetscOptionsInt("-mat_aij_spooles_symflag","symmetryflag: \n\
            0: SPOOLES_SYMMETRIC, 2: SPOOLES_NONSYMMETRIC","None",lu->symflag,&lu->symflag,PETSC_NULL);CHKERRQ(ierr);
   */
-    ierr = PetscOptionsInt("-mat_aij_spooles_pivotingflag","pivotingflag: \n\
-           0: SPOOLES_NO_PIVOTING, 1: SPOOLES_PIVOTING","None",lu->pivotingflag,&lu->pivotingflag,PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsReal("-mat_aij_spooles_tau","tau (used for pivoting; \n\
            all entries in L and U have magnitude no more than tau)","None",lu->tau,&lu->tau,PETSC_NULL);CHKERRQ(ierr);
@@ -294,13 +292,12 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
     ierr = PetscOptionsInt("-mat_aij_spooles_maxsize","maxsize","None",lu->maxsize,&lu->maxsize,PETSC_NULL);CHKERRQ(ierr);
 
   PetscOptionsEnd();
-  /*
-  lu->pivotingflag = SPOOLES_NO_PIVOTING; 
+
   if (info && info->dtcol > 0.0) {
-    lu->pivotingflag = SPOOLES_PIVOTING;
-    if ( lu->msglvl > 0 ) fprintf(lu->msgFile, "\n pivoting is used\n") ;
+    lu->pivotingflag = SPOOLES_PIVOTING; 
+  } else {  
+    lu->pivotingflag = SPOOLES_NO_PIVOTING; 
   }
-  */
 
   /* copy A to Spooles' InpMtx object */
   lu->nz=mat->nz;
@@ -420,7 +417,7 @@ int MatSeqAIJFactorInfo_Spooles(Mat A,PetscViewer viewer)
   switch (lu->symflag) {
   case 0: s = "SPOOLES_SYMMETRIC"; break;
   case 2: s = "SPOOLES_NONSYMMETRIC"; break; }
-  ierr = PetscViewerASCIIPrintf(viewer,"  symflag:       %s \n",s);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  symmetryflag:  %s \n",s);CHKERRQ(ierr);
 
   switch (lu->pivotingflag) {
   case 0: s = "SPOOLES_NO_PIVOTING"; break;
