@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.265 1997/10/21 00:22:40 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.266 1997/10/22 15:07:53 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -9,8 +9,6 @@ static char vcid[] = "$Id: matrix.c,v 1.265 1997/10/21 00:22:40 curfman Exp bsmi
 #include "src/mat/matimpl.h"        /*I "mat.h" I*/
 #include "src/vec/vecimpl.h"  
 #include "pinclude/pviewer.h"
-
-       
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetRow"
@@ -2016,7 +2014,7 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 #define __FUNC__ "MatView_Private"
 /*
     Processes command line options to determine if/how a matrix
-  is to be viewed.
+  is to be viewed. Called by MatAssemblyEnd() and MatLoad().
 */
 int MatView_Private(Mat mat)
 {
@@ -2715,6 +2713,7 @@ $  -help, -h
 int MatPrintHelp(Mat mat)
 {
   static int called = 0;
+  int        ierr;
   MPI_Comm   comm;
 
   PetscFunctionBegin;
@@ -2730,7 +2729,9 @@ int MatPrintHelp(Mat mat)
     PetscPrintf(comm,"      -display <name>: set alternate display\n");
     called = 1;
   }
-  if (mat->ops.printhelp) (*mat->ops.printhelp)(mat);
+  if (mat->ops.printhelp) {
+    ierr = (*mat->ops.printhelp)(mat); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -3085,22 +3086,22 @@ M*/
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrix"
 /*@
-     MatGetSubmatrix - Gets a single submatrix on the same number of processors
+     MatGetSubMatrix - Gets a single submatrix on the same number of processors
                        as the original matrix.
 
    Input Parameters:
 .   mat - the original matrix
 .   isrow - rows this processor should obtain
 .   iscol - columns for all processors you wish kept
-.    call - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+.    cll - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameters:
 .   newmat - the new submatrix, of the same type as the old
 
 .seealso: MatGetSubMatrices()
 
- */
-int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall call,Mat *newmat)
+@*/
+int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall cll,Mat *newmat)
 {
   int     ierr, size;
   Mat     *local;
@@ -3109,7 +3110,7 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall call,Mat *newm
   MPI_Comm_size(mat->comm,&size);
 
   /* if original matrix is on just one processor then use submatrix generated */
-  if (size == 1 && call == MAT_REUSE_MATRIX) {
+  if (size == 1 && cll == MAT_REUSE_MATRIX) {
     ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else if (size == 1) {
@@ -3120,7 +3121,7 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall call,Mat *newm
   }
 
   if (!mat->ops.getsubmatrix) SETERRQ(PETSC_ERR_SUP,0,"Not currently implemented");
-  ierr = (*mat->ops.getsubmatrix)(mat,isrow,iscol,call,newmat);CHKERRQ(ierr);
+  ierr = (*mat->ops.getsubmatrix)(mat,isrow,iscol,cll,newmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
