@@ -8,6 +8,7 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - Change tutorials examples on web page to use MatSetValuesLocal()
 
        - Document which routines are not currently supported
           - Done for PCILUSetUseDropTOlerance().
