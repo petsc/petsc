@@ -429,6 +429,7 @@ M*/
 
    Level: developer
 M*/
+#if defined(PETSC_USE_COMPLEX)
 #define PetscObjectSetScalarComposedData(obj,id,data)                 \
 0; {int ierr_;                                                        \
   if ((obj)->scalar_idmax < globalmaxstate) {                         \
@@ -437,6 +438,10 @@ M*/
   (obj)->scalarcomposeddata[id] = data;                               \
   (obj)->scalarcomposedstate[id] = (obj)->state;                      \
 }
+#else
+#define PetscObjectSetScalarComposedData(obj,id,data) \
+        PetscObjectSetRealComposedData(obj,id,data)
+#endif
 /*MC
    PetscObjectGetScalarComposedData - retrieve scalar data attached to an object
 
@@ -462,6 +467,7 @@ M*/
 
    Level: developer
 M*/
+#if defined(PETSC_USE_COMPLEX)
 #define PetscObjectGetScalarComposedData(obj,id,data,flag)           \
 0; {                                                                 \
   if ((int)((obj)->scalarcomposedstate)) {                           \
@@ -473,6 +479,10 @@ M*/
     }                                                                \
   } else flag = PETSC_FALSE;                                         \
 }
+#else
+#define PetscObjectGetScalarComposedData(obj,id,data,flag)	     \
+        PetscObjectGetRealComposedData(obj,id,data,flag)
+#endif
 
 PETSC_EXTERN_CXX_END
 #endif /* _PETSCHEAD_H */
