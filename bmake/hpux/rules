@@ -1,4 +1,4 @@
-# $Id: base,v 1.41 1998/06/12 17:39:39 balay Exp balay $ 
+# $Id: base,v 1.42 1998/06/19 21:06:04 balay Exp balay $ 
 
 PARCH    = hpux
 #
@@ -45,7 +45,7 @@ FLINKER  = fort77 ${FOPTFLAGS}
 # For HPUX 9.* use the following instead
 #SYS_LIB  =  -lV3 -lU77 
 #
-SYS_LIB  =  -lV3 -lU77 -ail -lcnx_syscall
+SYS_LIB  =  -lV3 -lU77 -lail -lcnx_syscall
 
 
 
