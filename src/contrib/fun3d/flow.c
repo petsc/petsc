@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.44 2000/08/02 03:54:26 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.45 2000/08/02 19:03:09 bsmith Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -57,7 +57,7 @@ long long counter0,counter1;
 int  ntran[max_nbtran];        /* transition stuff put here to make global */
 REAL dxtran[max_nbtran];
 
-#ifdef PETSC_HAVE_AMS_no
+#ifdef PETSC_HAVE_AMS
 AMS_Comm ams;
 AMS_Memory memid;
 int ams_err;
@@ -85,15 +85,18 @@ int main(int argc,char **args)
   SNES          snes;                  /* nonlinear solver context */
   Mat           Jpc;                   /* Jacobian and Preconditioner matrices */
   Scalar        *qnode;
-  int 		ierr,ileast;
+  int 		ierr;
   PetscTruth    flg;
-  
+  MPI_Comm      comm = PETSC_COMM_WORLD;
+#ifdef PETSC_HAVE_AMS
+  int           fdes;
+#endif  
   ierr = PetscInitialize(&argc,&args,PETSC_NULL,help);CHKERRQ(ierr);
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   
   /*======================================================================*/
@@ -120,7 +123,7 @@ int main(int argc,char **args)
 #if defined(_OPENMP)
   ierr = OptionsGetInt(PETSC_NULL,"-max_threads",&max_threads,&flg);CHKERRQ(ierr);
   omp_set_num_threads(max_threads);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Using %d threads for each MPI process\n",max_threads);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Using %d threads for each MPI process\n",max_threads);CHKERRQ(ierr);
 #endif
  
   f_pntr.jvisc   = c_info->ivisc;
@@ -145,9 +148,9 @@ int main(int argc,char **args)
   user.tsCtx = &tsCtx;
 
     /* AMS Stuff */
-#ifdef PETSC_HAVE_AMS_no
+#ifdef PETSC_HAVE_AMS
     /* Create and publish the Communicator */
-    ams_err = AMS_Comm_publish("FUN3D",&ams,MPI_TYPE);
+    ams_err = AMS_Comm_publish("FUN3D",&ams, MPI_TYPE, comm);
     AMS_Check_error(ams_err,&msg);
   
     /* Create a Memory */
@@ -173,7 +176,6 @@ int main(int argc,char **args)
     AMS_Check_error(ams_err,&msg);
 
     /* Add cell dimensions field */
-    
     cell_dims[0] = user.grid->ncell;
     cell_dims[1] = 3;
 
@@ -205,13 +207,22 @@ int main(int argc,char **args)
     AMS_Check_error(ams_err,&msg);
 
     /* Add cells field */
-    ams_err =  AMS_Memory_add_field(memid,"cells",user.grid->nntet,4*user.grid->ncellLoc,
-                          AMS_INT,AMS_READ,AMS_DISTRIBUTED,AMS_REDUCT_UNDEF); 
+    /* First read the cells*/
+    if (!rank) {
+     ierr = PetscBinaryOpen("cells.msh",BINARY_RDONLY,&fdes);CHKERRQ(ierr);
+    }
+     ICALLOC(user.grid->ncell,&user.grid->c2n);
+     ierr = PetscSynchronizedBinaryRead(comm,fdes,user.grid->c2n,user.grid->ncell,PETSC_INT);CHKERRQ(ierr);
+    if (!rank) {
+     ierr = PetscBinaryClose(fdes);
+    }
+    ams_err =  AMS_Memory_add_field(memid,"cells",user.grid->nntet,4*user.grid->ncell,
+                          AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF); 
     AMS_Check_error(ams_err,&msg);
 
     /* Set Field Dimensions */
-    c_start_ind[0] = rstart;   /* Starting index in the first dimension */
-    c_end_ind[0] = rstart+user.grid->ncellLoc-1;  /* Ending index in the first dimension */
+    c_start_ind[0] = 0;   /* Starting index in the first dimension */
+    c_end_ind[0] = user.grid->ncell-1;  /* Ending index in the first dimension */
 
     c_start_ind[1] = 0;   /* Starting index in the second dimension */
     c_end_ind[1] = 3;    /* Ending index in the second dimension */
@@ -253,7 +264,7 @@ int main(int argc,char **args)
 
     /* Create nonlinear solver */
     ierr = SetPetscDS(&f_pntr,&tsCtx);CHKERRQ(ierr);
-    ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
+    ierr = SNESCreate(comm,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
     ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
  
     /* Set various routines and options */
@@ -327,7 +338,7 @@ int main(int argc,char **args)
     }
   PreLoadEnd();
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Time taken in gradient calculation %g sec.\n",grad_time);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Time taken in gradient calculation %g sec.\n",grad_time);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;
