@@ -12,12 +12,11 @@
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 #define PETSC_EXTERN_CXX_BEGIN extern "C" {
-#define PETSC_EXTERN_CXX_END extern }
+#define PETSC_EXTERN_CXX_END  }
 #else
 #define PETSC_EXTERN_CXX_BEGIN
 #define PETSC_EXTERN_CXX_END
 #endif
-PETSC_EXTERN_CXX_BEGIN
 /* ========================================================================== */
 /* 
    Current PETSc version number and release date
@@ -52,6 +51,13 @@ PETSC_EXTERN_CXX_BEGIN
     Defines the interface to MPI allowing the use of all MPI functions.
 */
 #include "mpi.h"
+
+
+/*
+    Declare extern C stuff after incuding external header files
+*/
+
+PETSC_EXTERN_CXX_BEGIN
 
 /*
     EXTERN indicates a PETSc function defined elsewhere
@@ -885,6 +891,7 @@ M*/
 #endif
 
 /*  For arrays that contain filenames or paths */
+
 
 #if defined(PETSC_HAVE_LIMITS_H)
 #include <limits.h>
