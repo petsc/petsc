@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.266 2000/03/24 17:40:46 balay Exp balay $ */
+/* $Id: petsc.h,v 1.267 2000/03/24 17:43:00 balay Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -151,10 +151,9 @@ extern MPI_Op PetscSum_Op;
 #endif
 
 /*
-    Each PETSc object class has it's own cookie (internal integer in the 
+  Each PETSc object class has it's own cookie (internal integer in the 
   data structure used for error checking). These are all defined by an offset 
-  from the lowest one, PETSC_COOKIE. If you increase these you must 
-  increase the field sizes in petsc/src/sys/src/plog/plog.c
+  from the lowest one, PETSC_COOKIE.
 */
 #define PETSC_COOKIE                    1211211
 #define PETSC_MAX_COOKIES               60
