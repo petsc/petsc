@@ -209,7 +209,7 @@ getmpirun:
 #
 #
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .r .rm .so .html .ad .m .tex .mtex .make .sidl
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .pdf
 
 #
 #
@@ -224,6 +224,9 @@ getmpirun:
 
 .tex.mtex:
 	PYTHONPATH=${PETSC_DIR}/maint;export PYTHONPATH;cat $< | ${PETSC_DIR}/maint/mapnameslatex.py > $*.mtex
+
+.fig.pdf:
+	fig2dev -L pdf $< $*.pdf
 
 .c.o .cpp.o .cc.o .C.o .ad.o: 
 	@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
