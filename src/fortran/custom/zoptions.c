@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.18 1996/03/05 04:44:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.19 1996/03/20 03:28:36 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: zoptions.c,v 1.18 1996/03/05 04:44:51 bsmith Exp bsmi
 extern int          PetscBeganMPI;
 
 #ifdef HAVE_FORTRAN_CAPS
-#define petscarchgettype_             PETSCARCHGETTYPE
+#define petscgetarchtype_             PETSCGETARCHTYPE
 #define optionsgetintarray_           OPTIONSGETINTARRAY
 #define optionssetvalue_              OPTIONSSETVALUE
 #define optionshasname_               OPTIONSHASNAME
@@ -40,7 +40,7 @@ extern int          PetscBeganMPI;
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define petscarchgettype_             petscarchgettype
+#define petscgetarchtype_             petscgetarchtype
 #define optionssetvalue_              optionssetvalue
 #define optionshasname_               optionshasname
 #define optionsgetint_                optionsgetint
