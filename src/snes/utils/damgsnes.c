@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.17 2001/04/19 19:16:00 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.18 2001/04/19 19:49:55 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -503,13 +503,16 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   ierr = DAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
 
   /* allocate space for derivative objects.  */
-  ierr = PetscGetStructArray2d(gxs*dof,gys,gxm*dof,gym,deriv_type_size,(void ***)&ad_x,&ad_xstart); CHKERRQ(ierr);
+  ierr = PetscGetStructArray2d(gxs*dof,gys,gxm*dof,gym,deriv_type_size,(void ***)&ad_x,&ad_xstart);CHKERRQ(ierr);
+  my_AD_SetValArray(ad_xstart,gxm*gym*dof,(&x[gys][gxs]));
+
+  /*
   for(j=gys;j<gys+gym;j++) {
     for(i=dof*gxs;i<dof*(gxs+gxm);i++) {
       DERIV_val(ad_x[j][i]) = x[j][i];
     }
-  }
-  ierr = PetscGetStructArray2d(xs*dof,ys,xm*dof,ym,deriv_type_size,(void ***)&ad_f,&ad_fstart); CHKERRQ(ierr);
+    }*/
+  ierr = PetscGetStructArray2d(xs*dof,ys,xm*dof,ym,deriv_type_size,(void ***)&ad_f,&ad_fstart);CHKERRQ(ierr);
 
 
   ad_AD_ResetIndep();
@@ -531,7 +534,7 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
 
   /* stick the values into the matrix */
   ierr = MatADSetColoring_MPIAIJ(*B,dmmg->iscoloring);CHKERRQ(ierr);
-  ierr = MatADSetValues_MPIAIJ(*B,(Scalar**)&ad_f[ys][xs],ad_GRAD_MAX);CHKERRQ(ierr);
+  ierr = MatADSetValues_MPIAIJ(*B,(Scalar**)ad_fstart,ad_GRAD_MAX);CHKERRQ(ierr);
 
   /* Assemble true Jacobian; if it is different */
   ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
