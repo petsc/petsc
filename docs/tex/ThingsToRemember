@@ -229,6 +229,7 @@ machine: mcurie.nersc.gov
 login:   bsmith,balay
 passwd:  petsc-password
 module add petsc.2.1.0
+totalview mpirun -a -np 1 ./base
 
 scheduler : qsub, which is actually a link to cqsub (mpirun also works)
 help : consult@nersc.gov
