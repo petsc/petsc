@@ -1,4 +1,4 @@
-/*$Id: getcolv.c,v 1.12 2000/04/30 21:44:00 bsmith Exp bsmith $*/
+/*$Id: getcolv.c,v 1.13 2000/04/30 21:56:04 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
 
@@ -26,7 +26,7 @@
 int MatGetColumnVector(Mat A,Vec yy,int col)
 {
   Scalar   *y,*v,zero = 0.0;
-  int      ierr,i,j,nz,*idx,N,Mv,Rs,Re,rs,re,size,mlocal;
+  int      ierr,i,j,nz,*idx,N,Rs,Re,rs,re,size,mlocal;
   MPI_Comm comm;
   
   PetscFunctionBegin;

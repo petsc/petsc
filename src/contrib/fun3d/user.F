@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.20 2000/05/01 05:59:25 kaushik Exp kaushik $
+c  $Id: user.F,v 1.21 2000/05/03 00:13:43 kaushik Exp bsmith $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -1441,7 +1441,7 @@ c=============================================================================
       integer f2ntv(nvfacet,4)
       integer f2ntf(nffacet,4)
       integer i,n,node1,node2,node3,inode      
-      integer flops,ierr
+      integer flops
       Scalar  xmean,ymean,zmean,xnorm,ynorm,znorm,
      &        rlen,area,dot,size,
      &        X1,Y1,Z1,X2,Y2,Z2,X3,Y3,Z3,p1,p2,p3,
@@ -1507,7 +1507,7 @@ c=============================================================================
 #define eptr(i,j) evec(i,j)
 #endif
 #if defined(_OPENMP)
-       integer my_thread_id,omp_get_thread_num
+       integer my_thread_id,omp_get_thread_num,ierr
 #undef res(a,b)
 #define res(a,b) resd(a,b)
        call PetscMemzero(resd,8*4*nnodes,ierr)

@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.18 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.19 2000/01/11 21:01:03 bsmith Exp bsmith $*/
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
 To test the parallel matrix assembly, this example intentionally lays out\n\
@@ -97,23 +97,23 @@ int main(int argc,char **args)
     for (i=0; i<ncsub; i++) csub[i] = 2*(ncsub-i) + mystart;
     ierr = MatGetValues(C,nrsub,rsub,ncsub,csub,vals);CHKERRA(ierr);
     ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-    ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRA(ierr);
-    printf("processor number %d: start=%d, end=%d, mystart=%d, myend=%d\n",
-            rank,start,end,mystart,myend);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"processor number %d: start=%d, end=%d, mystart=%d, myend=%d\n",
+            rank,start,end,mystart,myend);CHKERRQ(ierr);
     for (i=0; i<nrsub; i++) {
       for (j=0; j<ncsub; j++) {
 #if defined(PETSC_USE_COMPLEX)
-         if (PetscImaginaryPart(vals[i*ncsub+j]) != 0.0)
-           printf("  C[%d, %d] = %g + %g i\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]),
-                                       PetscImaginaryPart(vals[i*ncsub+j]));
-         else
-           printf("  C[%d, %d] = %g\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]));
+	if (PetscImaginaryPart(vals[i*ncsub+j]) != 0.0) {
+           ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%d, %d] = %g + %g i\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]),
+                                       PetscImaginaryPart(vals[i*ncsub+j]));CHKERRQ(ierr);
+	} else {
+           ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%d, %d] = %g\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]));CHKERRQ(ierr);
+        }
 #else
-         printf("  C[%d, %d] = %g\n",rsub[i],csub[j],vals[i*ncsub+j]);
+         ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%d, %d] = %g\n",rsub[i],csub[j],vals[i*ncsub+j]);CHKERRQ(ierr);
 #endif
       }
     }
-    ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRA(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
     ierr = PetscFree(rsub);CHKERRA(ierr);
     ierr = PetscFree(csub);CHKERRA(ierr);
     ierr = PetscFree(vals);CHKERRA(ierr);
