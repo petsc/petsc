@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.25 2000/07/20 22:44:09 balay Exp bsmith $";
+! "$Id: ex5f90.F,v 1.26 2000/07/21 02:47:28 bsmith Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -41,8 +41,11 @@
 !  The uniprocessor version of this code is snes/examples/tutorials/ex4f.F
 !
 !  --------------------------------------------------------------------------
+!  The following define must be used before including any PETSc include files
+!  into a module or interface. This is because they can't handle declarations
+!  in them
+!
 #define PETSC_AVOID_DECLARATIONS
-#define PETSC_AVOID_MPIF_H
 
       module f90module
       type userctx
@@ -58,7 +61,6 @@
       end type userctx
       end module f90module
 #undef PETSC_AVOID_DECLARATIONS
-#undef PETSC_AVOID_MPIF_H
 
       program main
       use f90module
