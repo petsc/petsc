@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.34 1996/01/09 03:12:53 curfman Exp curfman $";
+static char vcid[] = "$Id: cg.c,v 1.35 1996/01/09 14:32:21 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -106,11 +106,11 @@ int  KSPSolve_CG(KSP itP,int *its)
      ierr = VecAXPY(&a,P,X); CHKERRQ(ierr);        /*     x <- x + ap     */
      ma = -a; VecAXPY(&ma,Z,R);                    /*     r <- r - az     */
      if (pres) {
-       ierr = MatMult(Amat,R,Z); CHKERRQ(ierr);    /*     z <- Br         */
-       ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- z'*z       */
+       ierr = PCApply(itP->B,R,Z); CHKERRQ(ierr);    /*     z <- Br         */
+       ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- z'*z       */
      }
      else {
-       ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- r'*r       */
+       ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- r'*r       */
      }
      if (history && hist_len > i + 1) history[i+1] = dp;
      MONITOR(itP,dp,i+1);
