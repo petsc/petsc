@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.27 1999/01/31 16:08:24 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.28 1999/02/03 04:30:59 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -12,7 +12,7 @@ OBJSC    = icc.o
 OBJSF    =
 LIBBASE  = libpetscsles
 DIRS     = 
-MANSEC   = 4
+MANSEC   = PC
 LOCDIR   = src/sles/pc/impls/icc/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

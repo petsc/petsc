@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.12 1998/06/15 16:07:50 balay Exp bsmith $ 
+# $Id: makefile,v 1.13 1999/02/03 04:31:41 bsmith Exp balay $ 
 
 ALL: lib
 
-MANSEC   = t
+MANSEC   = TS
 LOCDIR   = src/ts/impls/explicit/
 DIRS     = euler
 

@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.304 1999/02/03 00:28:05 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.305 1999/02/03 00:31:47 bsmith Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -6517,7 +6517,7 @@ makefiles, they are also easily used.
    OBJSF    = degree.o  fnroot.o genqmd.o qmdqt.o rcm.o fn1wd.o gen1wd.o \
               genrcm.o qmdrch.o rootls.o fndsep.o gennd.o qmdmrg.o qmdupd.o
    LIBBASE  = libpetscmat
-   MANSEC   = 2
+   MANSEC   = Mat
 
    include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 \end{verbatim}
@@ -6533,7 +6533,7 @@ to {\tt SOURCEF} and {\tt SOURCEC}, respectively, except they use the
 suffix {\tt .o} rather than {\tt .c} or {\tt .f}. 
 
 The variable {\tt MANSEC} indicates that any manual pages generated
-from this source should be included in the second section. 
+from this source should be included in the {\tt Mat} section. 
 
 \section{Limitations}
 
