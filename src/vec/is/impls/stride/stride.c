@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.96 2000/09/22 20:42:54 bsmith Exp bsmith $*/
+/*$Id: stride.c,v 1.97 2000/09/25 03:36:49 bsmith Exp bsmith $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
@@ -117,7 +117,8 @@ int ISStrideGetInfo(IS is,int *first,int *step)
 
    Level: intermediate
 
-.keywords: IS, index set, stride, get, information
+   Concepts: index sets^is it stride
+   Concepts: IS^is it stride
 
 .seealso: ISCreateStride(), ISGetSize()
 @*/
