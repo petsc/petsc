@@ -14,7 +14,7 @@ EXAMPLES  = ex1 ex2 ex3 ex4 ex8
 REXAMPLES = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
             runex2 runex2_2 runex2_3 runex2_4 runex2_5\
             runex3 runex3_2 runex3_3\
-            runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex8 runex8_2
+            runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex5 runex8 runex8_2
 CEXAMPLES = ex1 ex2 ex3 ex4 ex8 ex9 ex10 ex11
 EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex8.c ex9.c ex10.c ex11.c
 LINCLUDE  = $(SOURCEH)
@@ -169,6 +169,11 @@ runex4_5:
            if (diff output/ex4_5.out ex4_5.tmp) then true; \
            else echo "Possible problem with ex4_5, diffs above"; fi; \
            $(RM) -f ex4_5.tmp
+runex5:
+	-@$(MPIRUN) -np 2 ex5 -ksp_smonitor > ex5_1.tmp 2>&1; \
+           if (diff output/ex5_1.out ex5_1.tmp) then true; \
+           else echo "Possible problem with ex5_1, diffs above"; fi; \
+           $(RM) -f ex5_1.tmp
 runex8:
 	-@$(MPIRUN) ex8 -ksp_smonitor > ex8_1.tmp 2>&1; \
            if (diff output/ex8_1.out ex8_1.tmp) then true; \

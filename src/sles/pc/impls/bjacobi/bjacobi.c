@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.34 1995/07/26 19:37:21 curfman Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.35 1995/07/26 19:37:51 curfman Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -104,7 +104,7 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   int          ierr;
   VALIDHEADER(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI) return 0;
-  if (!pc->setupcalled) {SETERRQ(1,
+  if (!pc->setupcalled) SETERRQ(1,
     "PCBJacobiGetSubSLES: SLESSetUp must be called before this routine");
   jac = (PC_BJacobi *) pc->data;
   *n_local = jac->n_local;

@@ -1,19 +1,19 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.26 1995/07/23 18:25:33 curfman Exp $";
+static char vcid[] = "$Id: ex5.c,v 1.1 1995/07/25 21:42:39 curfman Exp curfman $";
 #endif
 
 static char help[] = 
 "This example illustrates use of the block Jacobi preconditioner for solving\n\
-a linear system in parallel with SLES. To test the parallel matrix assembly,\n\
-the matrix is intentionally distributed across the processors differently\n\
-from the way it is assembled.\n\n";
+a linear system in parallel with SLES.  The code indicates the procedure for\n\
+using different linear solvers on the individual blocks.\n\n";
 
 #include "sles.h"
 #include <stdio.h>
 
 int main(int argc,char **args)
 {
-  int       i, j, I, J, ierr, m = 3, n = 2, mytid, numtids, its, nlocal, first;
+  int       i, j, I, J, ierr, m = 3, n = 2;
+  int       mytid, numtids, its, nlocal, first;
   Scalar    v, zero = 0.0, one = 1.0, none = -1.0;
   Vec       x, u, b;
   Mat       A; 
@@ -22,13 +22,15 @@ int main(int argc,char **args)
   KSP       subksp;
   double    norm;
   PCMethod  pcmethod;
+
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
   OptionsGetInt(0,"-m",&m);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);  n = 2*numtids;
 
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
+  ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,
+         0,0,0,0,&A); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) {   /* assemble matrix for the five point stencil */
     for ( j=2*mytid; j<2*mytid+2; j++ ) {
       v = -1.0;  I = j + n*i;
@@ -42,32 +44,41 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  ierr = VecCreate(MPI_COMM_WORLD,m*n,&u); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
-  ierr = VecSet(&one,u); CHKERRA(ierr);ierr = VecSet(&zero,x); CHKERRA(ierr);
+  ierr = VecSet(&one,u); CHKERRA(ierr);
+  ierr = VecSet(&zero,x); CHKERRA(ierr);
   ierr = MatMult(A,u,b); CHKERRA(ierr);
 
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,ALLMAT_DIFFERENT_NONZERO_PATTERN);
   CHKERRA(ierr);
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-  ierr = PCSetMethod(pc,PCBJACOBI);
+  ierr = PCSetMethod(pc,PCBJACOBI); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
   /* Set local solvers for Block Jacobi method.  Currently only 1 block 
-     per processor is supported */
+     per processor is supported.  This code is intended as a simple
+     illustration of setting different linear solvers for the individual 
+     blocks.  These choices are obviously not recommended for solving this
+     particular problem. */
   ierr = PCGetMethodFromContext(pc,&pcmethod); CHKERRA(ierr);
   if (pcmethod == PCBJACOBI) {
-    ierr = PCBJacobiGetSubSLES(pc,&nlocal,&first,&subsles);
+    /* Note that SLESSetUp() MUST be called before PCBJacobiGetSubSLES(). */
+    ierr = SLESSetUp(sles,x,b); CHKERRA(ierr);
+    ierr = PCBJacobiGetSubSLES(pc,&nlocal,&first,&subsles); CHKERRA(ierr);
     ierr = SLESGetPC(subsles[0],&subpc); CHKERRA(ierr);
     ierr = SLESGetKSP(subsles[0],&subksp); CHKERRA(ierr);
+    ierr = KSPSetMethod(subksp,KSPCG); CHKERRA(ierr);
     if (mytid == 0) {
       ierr = PCSetMethod(subpc,PCILU); CHKERRA(ierr);
-      ierr = KSPSetMethod(subksp,KSPCG); CHKERRA(ierr);
+      ierr = KSPSetTolerances(subksp,1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,
+             PETSC_DEFAULT); CHKERRA(ierr);
     } else {
       ierr = PCSetMethod(subpc,PCJACOBI); CHKERRA(ierr);
-      ierr = KSPSetMethod(subksp,KSPBCGS); CHKERRA(ierr);
+      ierr = KSPSetTolerances(subksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
+             PETSC_DEFAULT); CHKERRA(ierr);
     }
   }
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
