@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.369 2000/05/16 22:03:54 bsmith Exp balay $*/
+/*$Id: matrix.c,v 1.370 2000/05/23 17:41:30 balay Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -2748,6 +2748,12 @@ int MatCompress(Mat mat)
 
    MAT_IGNORE_ZERO_ENTRIES - when using ADD_VALUES for AIJ matrices this will stop
    zero values from creating a zero location in the matrix
+
+   MAT_USE_INODES - indicates using inode version of the code - works with AIJ and 
+   ROWBS matrix types
+
+   MAT_DO_NOT_USE_INODES - indicates not using inode version of the code - works
+   with AIJ and ROWBS matrix types
 
    Level: intermediate
 

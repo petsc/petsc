@@ -1,5 +1,5 @@
 !
-!  $Id: petscmat.h,v 1.63 2000/05/24 21:01:07 balay Exp balay $;
+!  $Id: petscmat.h,v 1.64 2000/05/24 21:05:11 balay Exp balay $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -85,7 +85,6 @@
       integer MAT_NEW_NONZERO_ALLOCATION_ERR,MAT_USE_HASH_TABLE
       integer MAT_KEEP_ZEROED_ROWS,MAT_IGNORE_ZERO_ENTRIES
       integer MAT_USE_INODES,MAT_DO_NOT_USE_INODES
-      integer MAT_BSCOLOR_SINGLE
 
       parameter (MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2)
       parameter (MAT_ROWS_SORTED=4,MAT_COLUMNS_SORTED=8)
@@ -103,7 +102,6 @@
       parameter (MAT_KEEP_ZEROED_ROWS=79)
       parameter (MAT_IGNORE_ZERO_ENTRIES=80)
       parameter (MAT_USE_INODES=81,MAT_DO_NOT_USE_INODES=82)
-      parameter (MAT_BSCOLOR_SINGLE=83)
 !
 !  MatDuplicateOption
 !
