@@ -1,5 +1,5 @@
 !
-!  "$Id: fmaxpy.F,v 1.3 1998/03/25 17:13:17 balay Exp balay $";
+!  "$Id: fmaxpy.F,v 1.4 1998/04/15 18:03:35 balay Exp balay $";
 !
 !    Fortran kernel for the MAXPY() vector routine
 !
@@ -8,7 +8,8 @@
       implicit none
 #include "include/finclude/petsc.h"
 
-      Scalar  a1, a2, a3, a4, x(*), y1(*), y2(*), y3(*), y4(*)
+      Scalar  a1, a2, a3, a4
+      Scalar  x(*), y1(*), y2(*), y3(*), y4(*)
       integer n
 
       integer i
