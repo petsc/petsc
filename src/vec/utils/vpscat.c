@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.148 2000/11/30 22:01:36 bsmith Exp kaushik $*/
+/*$Id: vpscat.c,v 1.149 2000/12/01 18:41:19 kaushik Exp kaushik $*/
 /*
     Defines parallel vector scatters.
 */
@@ -150,8 +150,9 @@ int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
   ierr = PetscMemcpy(out_to->indices,in_to->indices,ny*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemcpy(out_to->starts,in_to->starts,(out_to->n+1)*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemcpy(out_to->procs,in_to->procs,(out_to->n)*sizeof(int));CHKERRQ(ierr);
-  out_to->sstatus   = (MPI_Status*)PetscMalloc((PetscMax(in_to->n,in_from->n)+1)*sizeof(MPI_Status));CHKPTRQ(out_to->sstatus);
-  PLogObjectMemory(out,(PetscMax(in_to->n,in_from->n)+1)*sizeof(MPI_Status));
+  out_to->sstatus   = (MPI_Status*)PetscMalloc(2*(PetscMax(in_to->n,in_from->n)+1)*sizeof(MPI_Status));CHKPTRQ(out_to->sstatus);
+  out_to->rstatus = out_to->rstatus + PetscMax(in_to->n,in_from->n) + 1;
+  PLogObjectMemory(out,2*(PetscMax(in_to->n,in_from->n) + 1)*sizeof(MPI_Status));
   out->todata      = (void*)out_to;
   out_to->local.n  = in_to->local.n;
   out_to->local.nonmatching_computed = PETSC_FALSE;
@@ -501,8 +502,10 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   ierr = PetscMemcpy(out_to->indices,in_to->indices,ny*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemcpy(out_to->starts,in_to->starts,(out_to->n+1)*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemcpy(out_to->procs,in_to->procs,(out_to->n)*sizeof(int));CHKERRQ(ierr);
-  out_to->sstatus   = (MPI_Status*)PetscMalloc((PetscMax(in_to->n,in_from->n)+1)*sizeof(MPI_Status));CHKPTRQ(out_to->sstatus);
-  PLogObjectMemory(out,(PetscMax(in_to->n,in_from->n)+1)*sizeof(MPI_Status));
+  out_to->sstatus   = (MPI_Status*)PetscMalloc(2*(PetscMax(in_to->n,in_from->n)+1)*sizeof(MPI_Status));CHKPTRQ(out_to->sstatus);
+  out_to->rstatus   =  out_to->sstatus + PetscMax(in_to->n,in_from->n) + 1;
+     
+  PLogObjectMemory(out,2*(PetscMax(in_to->n,in_from->n)+1)*sizeof(MPI_Status));
   out->todata       = (void*)out_to;
   out_to->local.n   = in_to->local.n;
   out_to->local.nonmatching_computed = PETSC_FALSE;
@@ -1234,7 +1237,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   Scalar                 *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             rstatus,*sstatus;
+  MPI_Status             *rstatus,*sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
@@ -1250,6 +1253,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
     gen_to   = (VecScatter_MPI_General*)ctx->todata;
     gen_from = (VecScatter_MPI_General*)ctx->fromdata;
     rwaits   = gen_from->requests;
+    rstatus  = gen_to->rstatus;
     swaits   = gen_to->requests;
     sstatus  = gen_to->sstatus;
   }
@@ -1262,7 +1266,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   /*  wait on receives */
   count = nrecvs;
   if (ctx->packtogether) { /* receive all messages, then unpack all, when -vecscatter_packtogether used */
-    ierr     = MPI_Waitall(nrecvs,rwaits,&rstatus);CHKERRQ(ierr);
+    ierr     = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);
     n        = rstarts[count];
     val      = rvalues;
     lindices = indices;
@@ -1298,7 +1302,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
     }  else {SETERRQ(1,"Wrong insert option");}
   } else { /* unpack each message as it arrives, default version */
     while (count) {
-      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);CHKERRQ(ierr);
+      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus[0]);CHKERRQ(ierr);
       /* unpack receives into our local space */
       val      = rvalues + 4*rstarts[imdex];
       lindices = indices + rstarts[imdex];
@@ -1933,8 +1937,9 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   to->indices   = (int*)(to->requests + nrecvs); 
   to->starts    = (int*)(to->indices + slen);
   to->procs     = (int*)(to->starts + nrecvs + 1);
-  to->sstatus   = (MPI_Status*)PetscMalloc((1+PetscMax(nrecvs,nsends))*sizeof(MPI_Status));CHKPTRQ(to->sstatus);
-  PLogObjectMemory(ctx,(1+PetscMax(nrecvs,nsends))*sizeof(MPI_Status));
+  to->sstatus   = (MPI_Status*)PetscMalloc(2*(PetscMax(nrecvs,nsends)+1)*sizeof(MPI_Status));CHKPTRQ(to->sstatus);
+  to->rstatus   = to->sstatus + PetscMax(nrecvs,nsends) + 1;
+  PLogObjectMemory(ctx,2*(PetscMax(nrecvs,nsends)+1)*sizeof(MPI_Status));
   ctx->todata   = (void*)to;
   to->starts[0] = 0;
 
@@ -2243,8 +2248,9 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   to->indices  = (int*)(to->requests + nsends); 
   to->starts   = (int*)(to->indices + ny);
   to->procs    = (int*)(to->starts + nsends + 1);
-  to->sstatus  = (MPI_Status*)PetscMalloc((1+PetscMax(nsends,nrecvs))*sizeof(MPI_Status));CHKPTRQ(to->sstatus);
-  PLogObjectMemory(ctx,(1+PetscMax(nsends,nrecvs))*sizeof(MPI_Status));
+  to->sstatus  = (MPI_Status*)PetscMalloc((PetscMax(nsends,nrecvs) + 1)*sizeof(MPI_Status));CHKPTRQ(to->sstatus);
+  to->rstatus  = to->sstatus + PetscMax(nsends,nrecvs) + 1;
+  PLogObjectMemory(ctx,2*(PetscMax(nsends,nrecvs) + 1)*sizeof(MPI_Status));
   ctx->todata  = (void*)to;
 
   /* move data into send scatter context */
