@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.43 1996/04/30 23:04:41 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.44 1996/05/02 15:42:40 balay Exp balay $";
 #endif
 
 /*
@@ -1054,7 +1054,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetSubMatrix_SeqBAIJ,0,
        MatConvertSameType_SeqBAIJ,0,0,
        MatILUFactor_SeqBAIJ,0,0,
-       0,MatIncreaseOverlap_SeqBAIJ,
+       MatGetSubMatrices_SeqBAIJ,MatIncreaseOverlap_SeqBAIJ,
        MatGetValues_SeqBAIJ,0,
        0,MatScale_SeqBAIJ,
        0};
