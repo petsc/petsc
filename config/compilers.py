@@ -47,6 +47,9 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-f90-source=<file>', nargs.Arg(None, None, 'Specify the C source for the F90 interface'))
     help.addArgument('Compilers', '-with-ld=<prog>',         nargs.Arg(None, None, 'Specify the linker'))
 
+    help.addArgument('Compilers', '-with-gnu-compilers',             nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
+    help.addArgument('Compilers', '-with-vendor-compilers=<vendor>', nargs.Arg(None, '', 'Try to use vendor compilers (no argument means all vendors)'))
+
     help.addArgument('Compilers', '-CPP=<prog>',        nargs.Arg(None, None, 'Specify the C preprocessor'))
     help.addArgument('Compilers', '-CPPFLAGS=<string>', nargs.Arg(None, '',   'Specify the C preprocessor options'))
     help.addArgument('Compilers', '-CXXPP=<prog>',      nargs.Arg(None, None, 'Specify the C++ preprocessor'))
@@ -85,7 +88,21 @@ class Configure(config.base.Configure):
     elif self.framework.argDB.has_key('CC'):
       compilers = self.framework.argDB['CC']
     else:
-      compilers = ['gcc', 'cc', 'xlC', 'xlc', 'pgcc']
+      compilers = []
+      if self.framework.argDB['with-gnu-compilers']:
+        compilers.append('gcc')
+      vendor = self.framework.argDB['with-vendor-compilers']
+      if not vendor == '0':
+        if not vendor:
+          compilers.append('cc')
+        if vendor == 'kai' or not vendor:
+          compilers.append('kcc')
+        if vendor == 'ibm' or not vendor:
+          compilers.extend(['xlC', 'xlc'])
+        if vendor == 'intel' or not vendor:
+          compilers.append('icc')
+        if vendor == 'portland' or not vendor:
+          compilers.append('pgcc')
     if not isinstance(compilers, list): compilers = [compilers]
     if self.getExecutables(compilers, resultName = 'CC'):
       self.framework.argDB['CC'] = self.CC
@@ -153,7 +170,21 @@ class Configure(config.base.Configure):
     elif self.framework.argDB.has_key('CXX'):
       compilers = self.framework.argDB['CXX']
     else:
-      compilers = ['g++', 'c++', 'CC', 'xlC', 'pgCC', 'cxx', 'cc++', 'cl']
+      compilers = []
+      if self.framework.argDB['with-gnu-compilers']:
+        compilers.append('g++')
+      vendor = self.framework.argDB['with-vendor-compilers']
+      if not vendor == '0':
+        if not vendor:
+          compilers.extend(['c++', 'CC', 'cxx', 'cc++'])
+        if vendor == 'ibm' or not vendor:
+          compilers.append('xlC')
+        if vendor == 'intel' or not vendor:
+          compilers.append('icc')
+        if vendor == 'microsoft' or not vendor:
+          compilers.append('cl')
+        if vendor == 'portland' or not vendor:
+          compilers.append('pgCC')
     if not isinstance(compilers, list): compilers = [compilers]
     if self.getExecutables(compilers, resultName = 'CXX'):
       self.framework.argDB['CXX'] = self.CXX
@@ -209,7 +240,19 @@ class Configure(config.base.Configure):
     elif self.framework.argDB.has_key('FC'):
       compilers = self.framework.argDB['FC']
     else:
-      compilers = ['g77', 'f77', 'pgf77']
+      compilers = []
+      if self.framework.argDB['with-gnu-compilers']:
+        compilers.append('g77')
+      vendor = self.framework.argDB['with-vendor-compilers']
+      if not vendor == '0':
+        if not vendor:
+          compilers.append('f77')
+        if vendor == 'ibm' or not vendor:
+          compilers.extend('xlf')
+        if vendor == 'intel' or not vendor:
+          compilers.append('icf')
+        if vendor == 'portland' or not vendor:
+          compilers.append('pgf77')
     if not isinstance(compilers, list): compilers = [compilers]
     if self.getExecutables(compilers, resultName = 'FC'):
       self.framework.argDB['FC'] = self.FC
