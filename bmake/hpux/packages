@@ -8,7 +8,7 @@
 # FCLIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes).
 #
-FC_LIB         = /usr/lib/libf.a /usr/lib/libf.sl
+FC_LIB         = /usr/lib/libf.a /usr/lib/libf.sl /usr/lib/libU77.a
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
@@ -33,7 +33,7 @@ MPIRUN         = /usr/local/mpi/bin/mpirun
 # below if it is there.
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a -lpetscmat
 #
 
 #
