@@ -1,5 +1,5 @@
 !
-!      "$Id: ex12.F,v 1.24 1998/03/24 16:45:52 balay Exp balay $";
+!      "$Id: ex12.F,v 1.25 1998/03/30 22:03:38 balay Exp balay $";
 !
        implicit none
 
@@ -17,7 +17,7 @@
 !
 
       integer          ierr, its, flg, set
-      Scalar           time, norm,none
+      Scalar           norm,none
       Vec              x, b, u
       Mat              A
       SLES             sles
@@ -25,6 +25,7 @@
       Viewer           fd
       MatInfo          info(MAT_INFO_SIZE)
       MatType          mtype
+      PLogDouble       time1,time2
 
       none = -1.0
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -65,9 +66,9 @@
       call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,         &
      &                      ierr)
       call SLESSetFromOptions(sles,ierr)
-      time = PetscGetTime()
+      call PetscGetTime(time1,ierr)
       call SLESSolve(sles,b,x,its,ierr)
-      time = PetscGetTime()-time
+      call PetscGetTime(time2,ierr)
 
 ! Show result
       call MatMult(A,x,u,ierr)
@@ -75,7 +76,7 @@
       call VecNorm(u,NORM_2,norm,ierr)
       print*, 'Number of iterations = ',its
       print*, 'Residual norm = ',norm
-      print*, 'Time for solve = ',time
+      print*, 'Time for solve = ',time2-time1
 
 ! Cleanup
       call SLESDestroy(sles,ierr)

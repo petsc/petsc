@@ -33,3 +33,5 @@ add to it).
 
   changed the memory allocation techniques in MatILUFactorSymbolic() and MatLUFactorSymbolic()
   to improve performance using a technique suggested by David Hysom
+
+  Changed the prototypes of PetscGetTime(),PetscGetCPUTime(),PetscGetFlops()        

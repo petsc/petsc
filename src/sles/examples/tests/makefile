@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.147 1998/03/24 16:44:13 balay Exp balay $ 
+# $Id: makefile,v 1.148 1998/04/01 00:14:21 balay Exp balay $ 
 
 ALL: ex1
 
@@ -306,6 +306,8 @@ runex11:
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   ${RM} -f ex11_1.tmp
+runex12:
+	-@${MPIRUN} -np 3  ex12 -f ${PETSC_DIR}/src/mat/examples/matbinary.ex
 runex13:
 	-@${MPIRUN} -np 2  ex13 -ksp_smonitor > ex13_1.tmp 2>&1; \
 	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
