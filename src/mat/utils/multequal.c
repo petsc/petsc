@@ -28,6 +28,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth
   PetscRandom    rctx;
   PetscReal      r1,r2,tol=1.e-10;
   PetscInt       am,an,bm,bn,k;
+  PetscScalar    none = -1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1); 
@@ -51,12 +52,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth
     ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
     ierr = MatMult(A,x,s1);CHKERRQ(ierr);
     ierr = MatMult(B,x,s2);CHKERRQ(ierr);
-    ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
-    ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
-    r1 -= r2;
-    if (r1<-tol || r1>tol) {
+    ierr = VecNorm(s2,NORM_INFINITY,&r2);CHKERRQ(ierr);
+    if (r2 < tol){
+      ierr = VecNorm(s1,NORM_INFINITY,&r1);CHKERRQ(ierr);
+    } else {
+      ierr = VecAXPY(&none,s1,s2);CHKERRQ(ierr);
+      ierr = VecNorm(s2,NORM_INFINITY,&r1);CHKERRQ(ierr);
+      r1 /= r2;
+    }
+    if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: %d-th MatMult() %g\n",k,r1);
+      ierr = PetscLogInfo((0,"Error: %D-th MatMult() %g\n",k,r1));CHKERRQ(ierr);
       break;
     } 
   }
@@ -93,6 +99,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTr
   PetscRandom    rctx;
   PetscReal      r1,r2,tol=1.e-10;
   PetscInt       am,an,bm,bn,k;
+  PetscScalar    none = -1.0;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
@@ -116,12 +123,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTr
     ierr = VecSetRandom(rctx,y);CHKERRQ(ierr);
     ierr = MatMultAdd(A,x,y,s1);CHKERRQ(ierr);
     ierr = MatMultAdd(B,x,y,s2);CHKERRQ(ierr);
-    ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
-    ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
-    r1 -= r2;
-    if (r1<-tol || r1>tol) {
+    ierr = VecNorm(s2,NORM_INFINITY,&r2);CHKERRQ(ierr);
+    if (r2 < tol){
+      ierr = VecNorm(s1,NORM_INFINITY,&r1);CHKERRQ(ierr);
+    } else {
+      ierr = VecAXPY(&none,s1,s2);CHKERRQ(ierr);
+      ierr = VecNorm(s2,NORM_INFINITY,&r1);CHKERRQ(ierr);
+      r1 /= r2;
+    }
+    if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: %d-th MatMultAdd() %g\n",k,r1);
+      ierr = PetscLogInfo((0,"Error: %d-th MatMultAdd() %g\n",k,r1));CHKERRQ(ierr);
       break;
     }
   }
@@ -159,6 +171,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeEqual(Mat A,Mat B,PetscInt n,P
   PetscRandom    rctx;
   PetscReal      r1,r2,tol=1.e-10;
   PetscInt       am,an,bm,bn,k;
+  PetscScalar    none = -1.0;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
@@ -180,12 +193,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeEqual(Mat A,Mat B,PetscInt n,P
     ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
     ierr = MatMultTranspose(A,x,s1);CHKERRQ(ierr);
     ierr = MatMultTranspose(B,x,s2);CHKERRQ(ierr);
-    ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
-    ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
-    r1 -= r2;
-    if (r1<-tol || r1>tol) {
+    ierr = VecNorm(s2,NORM_INFINITY,&r2);CHKERRQ(ierr);
+    if (r2 < tol){
+      ierr = VecNorm(s1,NORM_INFINITY,&r1);CHKERRQ(ierr);
+    } else {
+      ierr = VecAXPY(&none,s1,s2);CHKERRQ(ierr);
+      ierr = VecNorm(s2,NORM_INFINITY,&r1);CHKERRQ(ierr);
+      r1 /= r2;
+    }
+    if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: %d-th MatMultTranspose() %g\n",k,r1);
+      ierr = PetscLogInfo((0,"Error: %d-th MatMultTranspose() %g\n",k,r1));CHKERRQ(ierr);
       break;
     } 
   }
@@ -222,6 +240,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAddEqual(Mat A,Mat B,PetscInt 
   PetscRandom    rctx;
   PetscReal      r1,r2,tol=1.e-10;
   PetscInt       am,an,bm,bn,k;
+  PetscScalar    none = -1.0;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
@@ -245,12 +264,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAddEqual(Mat A,Mat B,PetscInt 
     ierr = VecSetRandom(rctx,y);CHKERRQ(ierr);
     ierr = MatMultTransposeAdd(A,x,y,s1);CHKERRQ(ierr);
     ierr = MatMultTransposeAdd(B,x,y,s2);CHKERRQ(ierr);
-    ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
-    ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
-    r1 -= r2;
-    if (r1<-tol || r1>tol) {
+    ierr = VecNorm(s2,NORM_INFINITY,&r2);CHKERRQ(ierr);
+    if (r2 < tol){
+      ierr = VecNorm(s1,NORM_INFINITY,&r1);CHKERRQ(ierr);
+    } else {
+      ierr = VecAXPY(&none,s1,s2);CHKERRQ(ierr);
+      ierr = VecNorm(s2,NORM_INFINITY,&r1);CHKERRQ(ierr);
+      r1 /= r2;
+    }
+    if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: %d-th MatMultTransposeAdd() %g\n",k,r1);
+      ierr = PetscLogInfo((0,"Error: %d-th MatMultTransposeAdd() %g\n",k,r1));CHKERRQ(ierr);
       break;
     }
   }
