@@ -19,7 +19,7 @@ RUNEXAMPLES_2 = runex15
 EXAMPLES_3    = ex19 ex21
 RUNEXAMPLES_3 = runex19 runex21
 EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 ex20 
-RUNEXAMPLES_4 = runex1	runex2 runex6 runex7 runex8 runex20_2
+RUNEXAMPLES_4 = runex1	runex2 runex6 runex7 runex8 runex20
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex20.c ex22.c
 EXAMPLESF     = ex19.F ex21.F
