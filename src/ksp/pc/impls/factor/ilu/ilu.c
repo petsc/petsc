@@ -624,15 +624,15 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     ierr = PetscOptionsName("-pc_iludt_reuse_fill","Reuse fill from previous ILUdt","PCILUDTSetReuseFill",&ilu->reusefill);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_ilu_reuse_ordering","Reuse previous reordering","PCILUSetReuseOrdering",&ilu->reuseordering);CHKERRQ(ierr);
 
-    ierr = PetscOptionsName("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",ilu->info.shiftnz,&ilu->info.shiftnz,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",ilu->info.shiftnz,&ilu->info.shiftnz,0);CHKERRQ(ierr);
     
-    ierr = PetscOptionsName("-pc_factor_shiftpd","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscOptionsInt("-pc_factor_shiftpd","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",(PetscInt)ilu->info.shiftpd,&itmp,&flg); CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",(PetscInt)ilu->info.shiftpd,&itmp,&flg); CHKERRQ(ierr);
       if (flg && !itmp) {
 	ierr = PCFactorSetShiftPd(pc,PETSC_FALSE);CHKERRQ(ierr);
       } else {

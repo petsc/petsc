@@ -308,12 +308,12 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
     if (flg) {
       ierr = PCICCSetMatOrdering(pc,tname);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",icc->info.shiftnz,&icc->info.shiftnz,0);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_factor_shiftpd","Manteuffel shift applied to diagonal","PCICCSetShift",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",icc->info.shiftnz,&icc->info.shiftnz,0);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCICCSetShift",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr);
     } else {

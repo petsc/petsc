@@ -446,13 +446,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
     PetscInt *aai = a->i,*ddiag = a->diag;
     sctx.shift_top = 0;
     for (i=0; i<n; i++) {
-      d = PetscRealPart((a->a)[ddiag[i]]); 
-      /* calculate amt of shift needed for this row */
-      if (d<=0) {
-        row_shift = 0; 
-      } else {
-        row_shift = -2*PetscAbsScalar((a->a)[ddiag[i]]);
-      }
+      /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
+      d = (a->a)[ddiag[i]];
+      row_shift = -PetscAbsScalar(d) - PetscRealPart(d);
       v  = a->a+aai[i];
       nz = aai[i+1] - aai[i];
       for (j=0; j<nz; j++) 
