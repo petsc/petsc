@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.44 1996/04/09 23:07:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.45 1996/04/10 04:28:25 bsmith Exp curfman $";
 #endif
 
 /*
@@ -72,31 +72,44 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 
 /*ARGSUSED*/
 /*@C
-   KSPDefaultMonitor - Default code to print the residual norm at each 
-   iteration of the iterative solvers.
+   KSPDefaultMonitor - Print the residual norm at each iteration of an
+   iterative solver.
 
    Input Parameters:
 .  ksp   - iterative context
 .  n     - iteration number
-.  rnorm - 2-norm residual value (may be estimated).  
+.  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
 .  dummy - unused monitor context 
 
 .keywords: KSP, default, monitor, residual
 
-.seealso: KSPSetMonitor(), KSPLGMonitorCreate()
+.seealso: KSPSetMonitor(), KSPTrueMonitor(), KSPLGMonitorCreate()
 @*/
 int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
   PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm); return 0;
 }
 
-/* 
-   KSPTrueMonitor - Monitors the actual (unscaled) residual.  The
-   default residual monitor for PCICC with BlockSolve prints the scaled 
-   residual.
+/*@
+   KSPTrueMonitor - Prints the true residual as well as the preconditioned
+   residual at each iteration of an iterative solver.
 
-   Question: Should this routine really be here? 
- */
+   Input Parameters:
+.  ksp   - iterative context
+.  n     - iteration number
+.  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
+.  dummy - unused monitor context 
+
+   Options Database Key:
+$   -ksp_truemonitor
+
+   Notes:
+   When using right preconditioning, these values are equivalent.
+
+.keywords: KSP, default, monitor, residual
+
+.seealso: KSPSetMonitor(), KSPDefaultMonitor(), KSPLGMonitorCreate()
+@*/
 int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
   int          ierr;

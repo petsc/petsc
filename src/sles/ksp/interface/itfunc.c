@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.52 1996/04/10 04:28:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.53 1996/04/12 15:58:19 curfman Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -469,13 +469,11 @@ int KSPGetPC(KSP ksp, PC *B)
    Calling sequence of monitor:
 .  monitor (KSP ksp, int it, double rnorm, void *mctx)
 
-   Input Parameters of monitor:
+   Input parameters of monitor:
 .  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
-.  mctx  - optional monitoring context, as set by KSPSetMonitor()
-
-   Output Parameter of monitor:
 .  rnorm - (estimated) 2-norm of (preconditioned) residual
+.  mctx  - optional monitoring context, as set by KSPSetMonitor()
 
    Options Database Keys:
 $    -ksp_monitor      : sets KSPDefaultMonitor()

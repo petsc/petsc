@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xmon.c,v 1.16 1996/03/23 18:32:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.17 1996/04/04 22:02:51 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: xmon.c,v 1.16 1996/03/23 18:32:49 bsmith Exp bsmith $
 
 /*@C
    KSPLGMonitorCreate - Creates a line graph context for use with 
-   KSP to monitor convergence of residual norms.
+   KSP to monitor convergence of preconditioned residual norms.
 
    Input Parameters:
 .  host - the X display to open, or null for the local machine
@@ -22,12 +22,15 @@ static char vcid[] = "$Id: xmon.c,v 1.16 1996/03/23 18:32:49 bsmith Exp bsmith $
    Output Parameter:
 .  draw - the drawing context
 
-   Notes: use KSPLGMonitorDestroy() to destroy this line graph,
-          not DrawLGDestroy().
+   Options Database Key:
+$    -ksp_xmonitor : automatically sets line graph monitor
+
+   Notes: 
+   Use KSPLGMonitorDestroy() to destroy this line graph, not DrawLGDestroy().
 
 .keywords: KSP, monitor, line graph, residual, create
 
-.seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
+.seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPLGTrueMonitorCreate()
 @*/
 int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
                        int n, DrawLG *draw)
@@ -64,7 +67,7 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
 
 .keywords: KSP, monitor, line graph, destroy
 
-.seealso: KSPLGMonitorCreate(), KSPSetMonitor(), KSPDefaultMonitor()
+.seealso: KSPLGMonitorCreate(), KSPLGTrueMonitorDestroy(), KSPSetMonitor()
 @*/
 int KSPLGMonitorDestroy(DrawLG drawlg)
 {
@@ -75,10 +78,10 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
   return 0;
 }
 
-
 /*@C
    KSPLGTrueMonitorCreate - Creates a line graph context for use with 
-   KSP to monitor convergence of residual norms.
+   KSP to monitor convergence of true residual norms (as opposed to
+   preconditioned residual norms).
 
    Input Parameters:
 .  host - the X display to open, or null for the local machine
@@ -90,10 +93,14 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
    Output Parameter:
 .  draw - the drawing context
 
-   Notes: use KSPLGMonitorDestroy() to destroy this line graph,
-          not DrawLGDestroy().
+   Options Database Key:
+$    -ksp_xtruemonitor : automatically sets true line graph monitor
 
-.keywords: KSP, monitor, line graph, residual, create
+   Notes: 
+   Use KSPLGTrueMonitorDestroy() to destroy this line graph, not
+   DrawLGDestroy().
+
+.keywords: KSP, monitor, line graph, residual, create, true
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
@@ -143,14 +150,14 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
  
 /*@C
    KSPLGTrueMonitorDestroy - Destroys a line graph context that was created 
-   with KSPLGMonitorCreate().
+   with KSPLGTrueMonitorCreate().
 
    Input Parameter:
 .  draw - the drawing context
 
-.keywords: KSP, monitor, line graph, destroy
+.keywords: KSP, monitor, line graph, destroy, true
 
-.seealso: KSPLGMonitorCreate(), KSPSetMonitor(), KSPDefaultMonitor()
+.seealso: KSPLGTrueMonitorCreate(), KSPSetMonitor()
 @*/
 int KSPLGTrueMonitorDestroy(DrawLG drawlg)
 {
