@@ -3315,6 +3315,7 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
           }
           inA->ops->setunfactored   = MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj;
           inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj;
+          PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering, ushort j index factor BS=4\n");
         } else {
         /* Scale the column indices for easier indexing in MatSolve. */
 /*            for (i=0;i<nz;i++) { */
@@ -3322,8 +3323,8 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
 /*            } */
           inA->ops->setunfactored   = MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE;
           inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
+          PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering, int j index factor BS=4\n");
         }
-        PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n");
 #  else
       /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
         SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
@@ -3428,7 +3429,7 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
             PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE, in-place, ushort j index, natural ordering solve BS=4\n");
           } else {
             A->ops->solve         = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion;
-            PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE, in-place, natural ordering solve BS=4\n");
+            PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE, in-place, int j index, natural ordering solve BS=4\n");
           }
 #  else
           /* This should never be reached, unless there is a bug in PetscSSEIsEnabled(). */
