@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.30 1996/07/24 17:23:01 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.31 1996/09/01 14:09:16 bsmith Exp balay $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -228,17 +228,66 @@ typedef char*   MPI_Errhandler;
 #define MPI_Test_cancelled(status, flag)  \
                      (*(flag)=0, MPI_SUCCESS)
 #define MPI_Send_init( buf, count,  datatype, dest, tag, comm, request) \
-    MPI_SUCCESS
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (dest), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (request), \
+                     MPI_SUCCESS)
 #define MPI_Bsend_init( buf, count,  datatype, dest, tag, comm, request) \
-    MPI_SUCCESS
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (dest), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (request), \
+                     MPI_SUCCESS)
 #define MPI_Ssend_init( buf, count,  datatype, dest, tag, comm, request) \
-    MPI_SUCCESS
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (dest), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (request), \
+                     MPI_SUCCESS)
+#define MPI_Bsend_init( buf, count,  datatype, dest, tag, comm, request) \
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (dest), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (request), \
+                     MPI_SUCCESS)
 #define MPI_Rsend_init( buf, count,  datatype, dest, tag, comm, request) \
-    MPI_SUCCESS
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (dest), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (request), \
+                     MPI_SUCCESS)
 #define MPI_Recv_init( buf, count,  datatype, source, tag, comm, request) \
-    MPI_SUCCESS
-#define MPI_Start(request) MPI_SUCCESS
-#define MPI_Startall(count, array_of_requests) MPI_SUCCESS
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (source), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (request), \
+                     MPI_SUCCESS)
+#define MPI_Start(request) \
+                     (MPIUNI_TMP = (void *) (request), \
+                     MPI_SUCCESS)
+#define MPI_Startall(count, array_of_requests) \
+                     (MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (array_of_requests), \
+                     MPI_SUCCESS)
 /* Need to determine sizeof "sendtype" */
 #define MPI_Sendrecv(sendbuf, sendcount,  sendtype, \
 		 dest, sendtag, recvbuf, recvcount, \
