@@ -470,12 +470,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return
 
   def outputBanner(self):
-    import time
+    import time, sys
     self.log.write(('='*80)+'\n')
     self.log.write(('='*80)+'\n')
     self.log.write('Starting Configure Run at '+time.ctime(time.time())+'\n')
     self.log.write('Configure Options: '+str(self.clArgs)+'\n')
     self.log.write('Working directory: '+os.getcwd()+'\n')
+    self.log.write('Python version:\n' + sys.version+'\n')
     self.log.write(('='*80)+'\n')
     return
 
