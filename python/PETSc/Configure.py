@@ -271,15 +271,18 @@ class Configure(config.base.Configure):
 
   def configureFortranCPP(self):
     '''Determine if Fortran handles CPP properly'''
-    # IBM xlF chokes on this
-    if not self.checkFortranCompilerOption('-DPTesting'):
-      if self.compilers.isGCC:
-        traditional = 'TRADITIONAL_CPP = -traditional-cpp\n'
+    if 'FC' in self.framework.argDB:
+      # IBM xlF chokes on this
+      if not self.checkFortranCompilerOption('-DPTesting'):
+        if self.compilers.isGCC:
+          traditional = 'TRADITIONAL_CPP = -traditional-cpp\n'
+        else:
+          traditional = 'TRADITIONAL_CPP = \n'
+        self.framework.addSubstitution('F_to_o_TARGET', traditional+'include ${PETSC_DIR}/bmake/common/rules.fortran.nocpp')
       else:
-        traditional = 'TRADITIONAL_CPP = \n'
-      self.framework.addSubstitution('F_to_o_TARGET', traditional+'include ${PETSC_DIR}/bmake/common/rules.fortran.nocpp')
+        self.framework.addSubstitution('F_to_o_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.fortran.cpp')
     else:
-      self.framework.addSubstitution('F_to_o_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.fortran.cpp')
+      self.framework.addSubstitution('F_to_o_TARGET', '')
     return
 
   def configureFortranStubs(self):
@@ -815,7 +818,7 @@ acfindx:
       self.executeTest(self.configureFortranStubs)
     if 'FC' in self.framework.argDB:
       self.executeTest(self.configureFortranPIC)
-      self.executeTest(self.configureFortranCPP)
+    self.executeTest(self.configureFortranCPP)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)
