@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.31 1997/06/05 12:52:51 bsmith Exp balay $";
+static char vcid[] = "$Id: jacobi.c,v 1.32 1997/07/09 20:52:32 balay Exp balay $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -34,7 +34,7 @@ static int PCSetUp_Jacobi(PC pc)
     diagsqrt = jac->diagsqrt;
   }
   ierr = MatGetDiagonal(pc->pmat,diag); CHKERRQ(ierr);
-  ierr = MatGetDiagonal(pc->pmat,diagsqrt); CHKERRQ(ierr);
+  ierr = VecCopy(diag,diagsqrt); CHKERRQ(ierr);
   ierr = VecReciprocal(diag); CHKERRQ(ierr);
   ierr = VecGetLocalSize(diagsqrt,&n); CHKERRQ(ierr);
   ierr = VecGetArray(diagsqrt,&x); CHKERRQ(ierr);
