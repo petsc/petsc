@@ -3027,7 +3027,7 @@ PetscErrorCode MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
 PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat) 
 {
   PetscErrorCode    ierr; 
-  Mat               B_seq,B_mpi;
+  Mat               B_mpi;
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)seqmat->data;
   PetscMPIInt       size,rank;
   int               M=seqmat->m,N=seqmat->n,i,*owners,*ai=a->i,*aj=a->j;
