@@ -58,7 +58,7 @@ class LinkSharedLibrary (action.Action):
       (dir, file) = os.path.split(lib)
       (base, ext) = os.path.splitext(file)
       if dir:
-        command += ' -L'+dir+' -l'+base[3:]
+        command += ' -L'+dir+' -Wl,-rpath,'+dir+' -l'+base[3:]
       else:
         command += ' -l'+base[3:]
     self.executeShellCommand(command)
