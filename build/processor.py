@@ -270,6 +270,15 @@ class Linker(Processor):
 
   def getLinkerFlags(self, source):
     '''Return a list of the linker specific flags. The default is gives the extraLibraries as arguments.'''
+
+    # this is crap; configure needs to figure out if -rpath is needed; what were you thinking Matt?
+    import commands
+    output = commands.getoutput(self.processor+' -Wl,-rpath')
+    if output.find('unknown flag'):
+      userpath = 0
+    else:
+      userpath = 1
+
     flags = []
     for lib in self.extraLibrariesIter():
       # Options and object files are passed verbatim
@@ -285,7 +294,10 @@ class Linker(Processor):
           flags.append(lib)
         else:
           if dir:
-            flags.extend(['-L'+dir, '-Wl,-rpath,'+dir])
+            if userpath:
+              flags.extend(['-L'+dir, '-Wl,-rpath,'+dir])
+            else:
+              flags.add('-L'+dir)
           flags.append('-l'+base[3:])
     return flags
 
