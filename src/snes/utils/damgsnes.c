@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.18 2001/04/19 19:49:55 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.19 2001/04/19 19:57:09 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -516,13 +516,18 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
 
 
   ad_AD_ResetIndep();
+  my_AD_SetIndepArrayColored(ad_xstart,gxm*gym*dof,colors);
+  ad_AD_IncrementTotalGradSize(dmmg->iscoloring->n);
+  ad_AD_SetIndepDone();
+
+  /*
   for(j=gys;j<gys+gym;j++) {
     derivptr = &(ad_x[j][dof*gxs]);
     colorptr = &(colors[j*gxm*dof]);
     ad_AD_SetIndepArrayColored(derivptr,dof*gxm,&colors[(j-gys)*gxm*dof]);
   }
   ad_AD_IncrementTotalGradSize(dmmg->iscoloring->n);
-  ad_AD_SetIndepDone();
+  ad_AD_SetIndepDone();*/
 
   /* 
      Compute entries for the locally owned part of the Jacobian.
