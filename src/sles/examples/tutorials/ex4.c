@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.21 1996/07/08 22:20:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex11.c,v 1.22 1996/08/18 19:26:40 curfman Exp curfman $";
 #endif
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
@@ -29,12 +29,13 @@ T*/
 
 int main(int argc,char **args)
 {
-  Mat        C, B;
-  int        i, j, m = 15, n = 17, its, I, J, ierr, Istart, Iend, flg;
-  Scalar     v,  one = 1.0, scale = 0.0;
-  Vec        u, b, x, tmp;
-  SLES       sles;
-  PetscRandom rctx;
+  SLES        sles;      /* linear solver context */
+  Mat         C, B;      /* linear system matrix, preconditioning matrix */
+  PetscRandom rctx;      /* random number generator context */
+  Vec         x, b, u;   /* approx solution, RHS, exact solution */
+  Vec         tmp;       /* work vector */
+  Scalar      v,  one = 1.0, scale = 0.0;
+  int         i, j, m = 15, n = 17, its, I, J, ierr, Istart, Iend, flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);

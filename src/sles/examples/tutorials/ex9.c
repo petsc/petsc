@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.13 1996/08/14 02:10:09 curfman Exp curfman $";
+static char vcid[] = "$Id: ex19.c,v 1.14 1996/08/17 17:12:34 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -8,11 +8,13 @@ solution of linear systems, while reusing matrix, vector, and solver data\n\
 structures throughout the process.  Note the various stages of event logging.\n\n";
 
 /*T
-   Concepts: SLES, solving linear equations
+   Concepts: SLES, repeatedly solving linear equations, multiple profiling stages
    Routines: SLESCreate(), SLESSetOperators(), SLESSetFromOptions()
-   Routines: SLESSolve(), SLESView()
+   Routines: SLESSolve(), SLESView(), SLESGetKSP(), SLESAppendOptionsPrefix()
    Routines: PLogEventRegister(), PLogEventBegin(), PLogEventEnd()
-   Routines: PLogStageRegister(), PLogStagePush(), PLogStagePop()
+   Routines: PLogStageRegister(), PLogStagePush(), PLogStagePop(), PLogFlops()
+   Routines: MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS)
+   Routines: KSPSetInitialGuessNonzero(), KSPSetMonitor()
    Multiprocessor code
 T*/
 
@@ -66,9 +68,9 @@ int main(int argc,char **args)
   CHECK_ERROR = 0;
   PLogEventRegister(&CHECK_ERROR,"Check Error     ","Red:");
 
-  /* ---------------------- Stage 0: ---------------------------- */
-  /*                    Preliminary Setup                         */
-  /* ------------------------------------------------------------ */
+  /* - - - - - - - - - - - - Stage 0: - - - - - - - - - - - - - -
+                        Preliminary Setup
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PLogStagePush(0);
 
@@ -91,7 +93,7 @@ int main(int argc,char **args)
 
   /*
      Create first linear solver context.
-     Set runtime options (e.g., -_pc_type <type>).
+     Set runtime options (e.g., -pc_type <type>).
      Note that the first linear system uses the default option
      names, while the second linear systme uses a different
      options prefix.
@@ -100,14 +102,14 @@ int main(int argc,char **args)
   ierr = SLESSetFromOptions(sles1); CHKERRA(ierr);
 
   /* 
-     Set user-defined monitoring routine for first linear system
+     Set user-defined monitoring routine for first linear system.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-my_ksp_monitor",&flg); CHKERRA(ierr);
   ierr = SLESGetKSP(sles1,&ksp1); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-my_ksp_monitor",&flg); CHKERRA(ierr);
   if (flg) {ierr = KSPSetMonitor(ksp1,MyKSPMonitor,PETSC_NULL); CHKERRA(ierr);}
 
   /*
-     Create data structures for second linear system
+     Create data structures for second linear system.
   */
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C2); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C2,&Istart2,&Iend2); CHKERRA(ierr);
@@ -120,13 +122,16 @@ int main(int argc,char **args)
   ierr = SLESCreate(MPI_COMM_WORLD,&sles2); CHKERRA(ierr);
 
   /* 
-     Set different options prefix for second linear system
+     Set different options prefix for second linear system.
      Set runtime options (e.g., -s2_pc_type <type>)
   */
   ierr = SLESAppendOptionsPrefix(sles2,"s2_"); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles2); CHKERRA(ierr);
 
-  /* Set exact solution vector */
+  /* 
+     Assemble exact solution vector in parallel.  Note that each
+     processor needs to set only its local part of the vector.
+  */
   ierr = VecGetLocalSize(u,&ldim); CHKERRA(ierr);
   ierr = VecGetOwnershipRange(u,&low,&high); CHKERRA(ierr);
   for (i=0; i<ldim; i++) {
@@ -136,21 +141,47 @@ int main(int argc,char **args)
   }
   ierr = VecAssemblyBegin(u); CHKERRA(ierr);
   ierr = VecAssemblyEnd(u); CHKERRA(ierr);
+
+  /* 
+     Log the number of flops for computing vector entries
+  */
   PLogFlops(2*ldim);
+
+  /*
+     End curent logging stage
+  */
   PLogStagePop();
 
-  /* ---------------- Linear solver loop  ---------------------- */
+  /* -------------------------------------------------------------- 
+                        Linear solver loop:
+      Solve 2 different linear systems several times in succession 
+     -------------------------------------------------------------- */
 
-  /* Solve 2 different linear systems several times in succession */
   for (t=0; t<ntimes; t++) {
 
-    /* ---------------------- Stage 1: ---------------------------- */
-    /*           Assemble and solve first linear system             */
-    /* ------------------------------------------------------------ */
+    /* - - - - - - - - - - - - Stage 1: - - - - - - - - - - - - - -
+                 Assemble and solve first linear system            
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    /* Assemble first matrix */
+    /*
+       Begin logging stage #1
+    */
     PLogStagePush(1);
+
+    /* 
+       Initialize all matrix entries to zero.  MatZeroEntries() retains
+       the nonzero structure of the matrix for sparse formats.
+    */
     ierr = MatZeroEntries(C1); CHKERRA(ierr);
+
+    /* 
+       Set matrix entries in parallel.  Also, log the number of flops
+       for computing matrix entries.
+        - Each processor needs to insert only elements that it owns
+          locally (but any non-local elements will be sent to the
+          appropriate processor during matrix assembly). 
+        - Always specify global row and columns of matrix entries.
+    */
     for ( I=Istart; I<Iend; I++ ) { 
       v = -1.0; i = I/n; j = I - i*n;  
       if ( i>0 )   {J = I - n; MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);}
@@ -164,39 +195,100 @@ int main(int argc,char **args)
       if ( i>0 )   {J = I - n; MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);}
     }
     PLogFlops(2*(Istart-Iend));
+
+    /* 
+       Assemble matrix, using the 2-step process:
+         MatAssemblyBegin(), MatAssemblyEnd()
+       Computations can be done while messages are in transition,
+       by placing code between these two statements.
+    */
     ierr = MatAssemblyBegin(C1,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
     ierr = MatAssemblyEnd(C1,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
-    /* Indicate same nonzero structure of successive linear system matrices */
+    /* 
+       Indicate same nonzero structure of successive linear system matrices
+    */
     ierr = MatSetOption(C1,MAT_NO_NEW_NONZERO_LOCATIONS); CHKERRA(ierr);
 
-    /* Compute right-hand-side */
+    /* 
+       Compute right-hand-side vector
+    */
     ierr = MatMult(C1,u,b1); CHKERRA(ierr);
 
-    /* Indicate same nonzero structure of successive preconditioner
-       matrices by setting SAME_NONZERO_PATTERN below */
+    /* 
+       Set operators. Here the matrix that defines the linear system
+       also serves as the preconditioning matrix.
+        - The flag SAME_NONZERO_PATTERN indicates that the
+          preconditioning matrix has identical nonzero structure
+          as during the last linear solve (although the values of
+          the entries have changed). Thus, we can save some
+          work in setting up the preconditioner (e.g., no need to
+          redo symbolic factorization for ILU/ICC preconditioners).
+        - If the nonzero structure of the matrix is different during
+          the second linear solve, then the flag DIFFERENT_NONZERO_PATTERN
+          must be used instead.  If you are unsure whether the
+          matrix structure has changed or not, use the flag
+          DIFFERENT_NONZERO_PATTERN.
+        - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
+          believes your assertion and does not check the structure
+          of the matrix.  If you erroneously claim that the structure
+          is the same when it actually is not, the new preconditioner
+          will not function correctly.  Thus, use this optimization
+          feature with caution!
+    */
     ierr = SLESSetOperators(sles1,C1,C1,SAME_NONZERO_PATTERN); CHKERRA(ierr);
 
-    /* Use the previous solution of linear system #1 as the initial guess
-       for the next solve of linear system #1 */
+    /* 
+       Use the previous solution of linear system #1 as the initial
+       guess for the next solve of linear system #1.  The user MUST
+       call KSPSetInitialGuessNonzero() in indicate use of an initial
+       guess vector; otherwise, an initial guess of zero is used.
+    */
     if (t>0) {
       ierr = KSPSetInitialGuessNonzero(ksp1); CHKERRA(ierr);
     }
 
-    /* Solve first linear system */
+    /* 
+       Solve the first linear system.  Here we explicitly call
+       SLESSetUp() for more detailed performance monitoring of
+       certain preconditioners, such as ICC and ILU.  This call
+       is optional, ase SLESSetUp() will automatically be called
+       within SLESSolve() if it hasn't been called already.
+    */
     ierr = SLESSetUp(sles1,b1,x1); CHKERRA(ierr);
     ierr = SLESSolve(sles1,b1,x1,&its); CHKERRA(ierr);
+
+    /*
+       Check error of solution to first linear system
+    */
     ierr = CheckError(u,x1,b1,its,CHECK_ERROR); CHKERRA(ierr); 
 
-    /* ---------------------- Stage 2: ---------------------------- */
-    /*           Assemble and solve second linear system            */
-    /* ------------------------------------------------------------ */
+    /* - - - - - - - - - - - - Stage 2: - - - - - - - - - - - - - -
+                 Assemble and solve second linear system            
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+    /*
+       Conclude logging stage # 1; begin logging stage #2
+    */
     PLogStagePop();
     PLogStagePush(2);
 
-    /* Assemble second matrix */
+    /*
+       Initialize all matrix entries to zero
+    */
     ierr = MatZeroEntries(C2); CHKERRA(ierr);
+
+   /* 
+      Assemble matrix in parallel. Also, log the number of flops
+      for computing matrix entries.
+       - To illustrate the features of parallel matrix assembly, we
+         intentionally set the values differently from the way in
+         which the matrix is distributed across the processors.  Each
+         entry that is not owned locally will be sent to the appropriate
+         processor during MatAssemblyBegin() and MatAssemblyEnd().
+       - For best efficiency the user should strive to set as many
+         entries locally as possible.
+    */
     for ( i=0; i<m; i++ ) { 
       for ( j=2*rank; j<2*rank+2; j++ ) {
         v = -1.0;  I = j + n*i;
@@ -211,28 +303,52 @@ int main(int argc,char **args)
       v = -1.0*(t+0.5); i = I/n;
       if ( i>0 )   {J = I - n; MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);}
     }
-    PLogFlops(2*(Istart-Iend));
     ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
     ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY); CHKERRA(ierr); 
+    PLogFlops(2*(Istart-Iend));
 
-    /* Indicate same nonzero structure of successive linear system matrices */
+    /* 
+       Indicate same nonzero structure of successive linear system matrices
+    */
     ierr = MatSetOption(C2,MAT_NO_NEW_NONZERO_LOCATIONS); CHKERRA(ierr);
 
-    /* Compute right-hand-side */
+    /*
+       Compute right-hand-side vector 
+    */
     ierr = MatMult(C2,u,b2); CHKERRA(ierr);
 
-    /* Indicate same nonzero structure of successive preconditioner
-       matrices by setting SAME_NONZERO_PATTERN below */
+    /*
+       Set operators. Here the matrix that defines the linear system
+       also serves as the preconditioning matrix.  Indicate same nonzero
+       structure of successive preconditioner matrices by setting flag
+       SAME_NONZERO_PATTERN.
+    */
     ierr = SLESSetOperators(sles2,C2,C2,SAME_NONZERO_PATTERN); CHKERRA(ierr);
 
-    /* Solve second linear system */
+    /* 
+       Solve the second linear system
+    */
     ierr = SLESSetUp(sles2,b2,x2); CHKERRA(ierr);
     ierr = SLESSolve(sles2,b2,x2,&its); CHKERRA(ierr);
+
+    /*
+       Check error of solution to first linear system
+    */
     ierr = CheckError(u,x2,b2,its,CHECK_ERROR); CHKERRA(ierr); 
+
+    /* 
+       Conclude logging stage #2
+    */
     PLogStagePop();
   }
+  /* -------------------------------------------------------------- 
+                       End of linear solver loop
+     -------------------------------------------------------------- */
 
-  /* Free work space */
+  /* 
+     Free work space.  All PETSc objects should be destroyed when they
+     are no longer needed.
+  */
   ierr = SLESDestroy(sles1); CHKERRA(ierr); ierr = SLESDestroy(sles2); CHKERRA(ierr);
   ierr = VecDestroy(x1); CHKERRA(ierr);     ierr = VecDestroy(x2); CHKERRA(ierr);
   ierr = VecDestroy(b1); CHKERRA(ierr);     ierr = VecDestroy(b2); CHKERRA(ierr);
