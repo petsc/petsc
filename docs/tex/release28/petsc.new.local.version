@@ -1,12 +1,13 @@
 
-To: leaf, gunter, dstevens, canfield, taylor, jichen, freitag, diachin, plassman, roh, pwu, hovland, adams, kaushik, michalakes, murillo, knepley, jovanovi, keyes, zhang, baxter, jcheng, norris, oberman, loth, yuwu, heroux, lehoucq, xli, singer ,declat, grignon, benson, abate,nordborg,fischer,richard,more
+To: mcs@mcs.anl.gov
 cc: petsc-developers
 Subject: new local PETSc installation
 
 
 We have installed a new local version of PETSc (version 2.0.28) in
-/home/petsc/petsc-2.0.28.  Please see the docs/changes/index.htm file for 
-new features and changes in the software.
+/home/petsc/petsc-2.0.28.  A list of new features and changes in PETSc
+is available via
+     http://www.mcs.anl.gov/petsc/docs/changes
 
 Please try using the new code when you have a chance.  Please only
 revert to one of the previous versions in case of emergency.  Be sure

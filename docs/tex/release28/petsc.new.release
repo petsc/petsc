@@ -9,11 +9,8 @@ PETSc Users,
 
 We have just released a new version of PETSc (2.0.28) with a variety
 of extensions, enhancements, and bug fixes to the software.  A list of new
-features and changes in PETSc is provided in the "docs/changes/index.html" file
-available at
-     http://www.mcs.anl.gov/petsc/docs/changes/index.htm
-or
-     http://www.mcs.anl.gov/petsc/
+features and changes in PETSc is available via
+     http://www.mcs.anl.gov/petsc/docs/changes
 Also, before installing a new version of PETSc, please see the list
 of patches at
      http://www.mcs.anl.gov/petsc/petsc-patches.html
