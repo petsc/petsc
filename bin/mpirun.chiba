@@ -12,7 +12,6 @@ clear_bogus_head="no"
 shared="no"
 nolocal=""
 showtimes="yes"
-keepoutput="no"
 #
 # Process arguments
 while [ $# -gt 0 ] ; do
@@ -33,9 +32,6 @@ while [ $# -gt 0 ] ; do
     ;;
     -showtimesoff)
     showtimes="no"
-    ;;
-    -keepoutput)
-    keepoutput="yes"
     ;;
     -myrinet)
     USE_MYRINET=yes
@@ -326,10 +322,19 @@ fi
 
 rm -rf $rundir/$programbase $rundir/parseargs.py $rundir/urlget.py
 rm -rf $rundir/*/$programbase $rundir/*/parseargs.py $rundir/*/urlget.py $rundir/*/PI*
+#
 # decide if we should make an output directoyr (was there output?)
-if [ $keepoutput = "yes" ] ; then
+#
+if [ "`ls $rundir/*`" != "" ] ; then
   cp -rf $rundir ./output.$$ 
+  cd output.$$
+  mv */*.[0-9]* .
+  if [ "`ls ./ccn[0-9]*`" = "" ] ; then
+    rm -rf ccn[0-9]*
+  fi
+  cd
 fi
+
 
 if [ "$keeptmpfiles" != "yes" ] ; then
     rm -rf .mpirun$$* 
