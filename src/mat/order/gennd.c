@@ -4,13 +4,13 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKrevrse" 
-PetscErrorCode SPARSEPACKrevrse(int *n,int *perm)
+PetscErrorCode SPARSEPACKrevrse(PetscInt *n,PetscInt *perm)
 {
     /* System generated locals */
-    int i__1;
+    PetscInt i__1;
 
     /* Local variables */
-    int swap,i,m,in;
+    PetscInt swap,i,m,in;
 
     PetscFunctionBegin;
     /* Parameter adjustments */
@@ -55,15 +55,15 @@ PetscErrorCode SPARSEPACKrevrse(int *n,int *perm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKgennd" 
-PetscErrorCode SPARSEPACKgennd(int *neqns,int *xadj,int *adjncy,int *mask,int *perm,int *xls,int *ls)
+PetscErrorCode SPARSEPACKgennd(PetscInt *neqns,PetscInt *xadj,PetscInt *adjncy,PetscInt *mask,PetscInt *perm,PetscInt *xls,PetscInt *ls)
 {
     /* System generated locals */
-    int i__1;
+    PetscInt i__1;
 
     /* Local variables */
-    int nsep,root,i;
-    EXTERN PetscErrorCode SPARSEPACKfndsep(int*,int *,int *,int *,int *,int *,int *,int *);
-    int num;
+    PetscInt nsep,root,i;
+    EXTERN PetscErrorCode SPARSEPACKfndsep(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
+    PetscInt num;
 
     PetscFunctionBegin;
     /* Parameter adjustments */

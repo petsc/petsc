@@ -34,16 +34,16 @@
 /*****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKgenrcm" 
-PetscErrorCode SPARSEPACKgenrcm(int *neqns,int *xadj,int *adjncy,int *perm,int *mask,int *xls)
+PetscErrorCode SPARSEPACKgenrcm(PetscInt *neqns,PetscInt *xadj,PetscInt *adjncy,PetscInt *perm,PetscInt *mask,PetscInt *xls)
 {
     /* System generated locals */
-    int i__1;
+    PetscInt i__1;
 
     /* Local variables */
-    int nlvl,root,i,ccsize;
-    EXTERN PetscErrorCode SPARSEPACKfnroot(int*,int *,int *,int *,int *,int *,int *),
-               SPARSEPACKrcm(int*,int *,int *,int *,int *,int *,int *);
-    int num;
+    PetscInt nlvl,root,i,ccsize;
+    EXTERN PetscErrorCode SPARSEPACKfnroot(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *),
+               SPARSEPACKrcm(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
+    PetscInt num;
 
     PetscFunctionBegin;
     /* Parameter adjustments */

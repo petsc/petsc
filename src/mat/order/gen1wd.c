@@ -2,6 +2,9 @@
 
 #include "petsc.h"
 
+EXTERN PetscErrorCode SPARSEPACKfn1wd(PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode SPARSEPACKrevrse(PetscInt*,PetscInt*),SPARSEPACKrootls(PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+
 /*****************************************************************/
 /***********     GEN1WD ..... GENERAL ONE-WAY DISSECTION  ********/
 /*****************************************************************/
@@ -28,21 +31,16 @@
 /****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKgen1wd" 
-PetscErrorCode SPARSEPACKgen1wd(int *neqns, int *xadj, int *adjncy, 
-	int *mask, int *nblks, int *xblk, int *perm, int *
-	xls, int *ls)
+PetscErrorCode SPARSEPACKgen1wd(PetscInt *neqns, PetscInt *xadj, PetscInt *adjncy, 
+	                        PetscInt *mask, PetscInt *nblks, PetscInt *xblk, PetscInt *perm, PetscInt *xls, PetscInt *ls)
 {
     /* System generated locals */
-    int i__1, i__2, i__3;
+    PetscInt i__1, i__2, i__3;
 
     /* Local variables */
-    int node, nsep, lnum, nlvl, root;
-    EXTERN PetscErrorCode SPARSEPACKfn1wd(int*, int *, int *, 
-	    int *, int *, int *, int *, int *, int *);
-    int i, j, k, ccsize;
-    EXTERN PetscErrorCode SPARSEPACKrevrse(int*, int *), SPARSEPACKrootls(
-	    int *, int *, int *, int *, int *, int *, int *);
-    int num;
+    PetscInt node, nsep, lnum, nlvl, root;
+    PetscInt i, j, k, ccsize;
+    PetscInt num;
 
     PetscFunctionBegin;
     /* Parameter adjustments */

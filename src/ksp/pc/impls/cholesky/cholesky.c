@@ -9,7 +9,7 @@
 typedef struct {
   Mat             fact;             /* factored matrix */
   PetscReal       actualfill;       /* actual fill in factor */
-  int             inplace;          /* flag indicating in-place factorization */
+  PetscTruth      inplace;          /* flag indicating in-place factorization */
   IS              row,col;          /* index sets used for reordering */
   MatOrderingType ordering;         /* matrix ordering */
   PetscTruth      reuseordering;    /* reuses previous reordering computed */
@@ -49,11 +49,11 @@ EXTERN_C_END
 #define __FUNCT__ "PCSetFromOptions_Cholesky"
 static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
 {
-  PC_Cholesky *lu = (PC_Cholesky*)pc->data;
+  PC_Cholesky    *lu = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth  flg;
-  char        tname[256];
-  PetscFList  ordlist;
+  PetscTruth     flg;
+  char           tname[256];
+  PetscFList     ordlist;
   
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
@@ -85,7 +85,6 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
   ierr = PetscOptionsReal("-pc_cholesky_damping","Damping added to diagonal","PCCholeskySetDamping",lu->info.damping,&lu->info.damping,0);CHKERRQ(ierr);
   ierr = PetscOptionsName("-pc_cholesky_shift","Manteuffel shift applied to diagonal","PCCholeskySetShift",&flg);CHKERRQ(ierr);
   if (flg) {
-    printf("doing cholesky shift\n");
     ierr = PCCholeskySetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
 
@@ -97,9 +96,9 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
 #define __FUNCT__ "PCView_Cholesky"
 static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
 {
-  PC_Cholesky *lu = (PC_Cholesky*)pc->data;
+  PC_Cholesky    *lu = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth  iascii,isstring;
+  PetscTruth     iascii,isstring;
   
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -144,8 +143,8 @@ static PetscErrorCode PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
 static PetscErrorCode PCSetUp_Cholesky(PC pc)
 {
   PetscErrorCode ierr;
-  PetscTruth flg;
-  PC_Cholesky      *dir = (PC_Cholesky*)pc->data;
+  PetscTruth     flg;
+  PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
 
   PetscFunctionBegin;
   if (dir->reusefill && pc->setupcalled) dir->info.fill = dir->actualfill;
@@ -224,7 +223,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
 #define __FUNCT__ "PCDestroy_Cholesky"
 static PetscErrorCode PCDestroy_Cholesky(PC pc)
 {
-  PC_Cholesky *dir = (PC_Cholesky*)pc->data;
+  PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -240,7 +239,7 @@ static PetscErrorCode PCDestroy_Cholesky(PC pc)
 #define __FUNCT__ "PCApply_Cholesky"
 static PetscErrorCode PCApply_Cholesky(PC pc,Vec x,Vec y)
 {
-  PC_Cholesky *dir = (PC_Cholesky*)pc->data;
+  PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -253,7 +252,7 @@ static PetscErrorCode PCApply_Cholesky(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplyTranspose_Cholesky"
 static PetscErrorCode PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 {
-  PC_Cholesky *dir = (PC_Cholesky*)pc->data;
+  PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -320,7 +319,7 @@ PetscErrorCode PCCholeskySetUseInPlace_Cholesky(PC pc)
 
   PetscFunctionBegin;
   dir = (PC_Cholesky*)pc->data;
-  dir->inplace = 1;
+  dir->inplace = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -330,7 +329,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCholeskySetMatOrdering_Cholesky"
 PetscErrorCode PCCholeskySetMatOrdering_Cholesky(PC pc,MatOrderingType ordering)
 {
-  PC_Cholesky *dir = (PC_Cholesky*)pc->data;
+  PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -632,7 +631,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PCCreate_Cholesky(PC pc)
 {
   PetscErrorCode ierr;
-  PC_Cholesky *dir;
+  PC_Cholesky    *dir;
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_Cholesky,&dir);CHKERRQ(ierr);
@@ -640,6 +639,7 @@ PetscErrorCode PCCreate_Cholesky(PC pc)
 
   dir->fact                   = 0;
   dir->inplace                = 0;
+  ierr = MatFactorInfoInitialize(&dir->info);CHKERRQ(ierr);
   dir->info.fill              = 5.0;
   dir->info.damping           = 0.0;
   dir->info.shift             = PETSC_FALSE;

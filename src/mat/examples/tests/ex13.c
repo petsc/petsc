@@ -7,10 +7,11 @@ static char help[] = "Tests copying and ordering uniprocessor row-based sparse m
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat     C,A;
-  int     i,j,m = 5,n = 5,I,J,ierr;
-  PetscScalar  v;
-  IS      perm,iperm;
+  Mat            C,A;
+  PetscInt       i,j,m = 5,n = 5,I,J;
+  PetscErrorCode ierr;
+  PetscScalar    v;
+  IS             perm,iperm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

@@ -22,14 +22,14 @@
 /*****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKrootls"
-PetscErrorCode SPARSEPACKrootls(int *root, int *xadj, int *adjncy, 
-	int *mask, int *nlvl, int *xls, int *ls)
+PetscErrorCode SPARSEPACKrootls(PetscInt *root, PetscInt *xadj, PetscInt *adjncy, 
+	PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls)
 {
     /* System generated locals */
-    int i__1, i__2;
+    PetscInt i__1, i__2;
 
     /* Local variables */
-    int node, i, j, jstop, jstrt, lbegin, ccsize, lvlend, lvsize, 
+    PetscInt node, i, j, jstop, jstrt, lbegin, ccsize, lvlend, lvsize, 
 	    nbr;
 
 /*       INITIALIZATION ...*/

@@ -10,14 +10,16 @@ them using the PETSc sparse format. Input parameters are:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         A;
-  Vec         b;
-  char        filein[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN];
-  int         i,j,m,n,nnz,ierr,rank,size,start,end,*col,*row,*brow,length;
-  PetscScalar *val,*bval;
-  FILE*       file;
-  PetscViewer view;
-  PetscTruth  opt;
+  Mat            A;
+  Vec            b;
+  char           filein[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN];
+  PetscInt       i,j,m,n,nnz,start,end,*col,*row,*brow,length;
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank;
+  PetscScalar    *val,*bval;
+  FILE*          file;
+  PetscViewer    view;
+  PetscTruth     opt;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

@@ -26,14 +26,13 @@
 /*****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKdegree" 
-PetscErrorCode SPARSEPACKdegree(int *root, int *xadj,int *adjncy,int *mask,int *deg,int *ccsize,int *ls)
+PetscErrorCode SPARSEPACKdegree(PetscInt *root, PetscInt *xadj,PetscInt *adjncy,PetscInt *mask,PetscInt *deg,PetscInt *ccsize,PetscInt *ls)
 {
     /* System generated locals */
-    int i__1,i__2;
+    PetscInt i__1,i__2;
 
     /* Local variables */
-    int ideg,node,i,j,jstop,jstrt,lbegin,lvlend,lvsize,
-	    nbr;
+    PetscInt ideg,node,i,j,jstop,jstrt,lbegin,lvlend,lvsize,nbr;
 /*       INITIALIZATION ...*/
 /*       THE ARRAY XADJ IS USED AS A TEMPORARY MARKER TO*/
 /*       INDICATE WHICH NODES HAVE BEEN CONSIDERED SO FAR.*/
@@ -61,7 +60,7 @@ L100:
     for (i = lbegin; i <= i__1; ++i) {
 	node = ls[i];
 	jstrt = -xadj[node];
-	jstop = (i__2 = xadj[node + 1], (int)PetscAbsInt(i__2)) - 1;
+	jstop = (i__2 = xadj[node + 1], (PetscInt)PetscAbsInt(i__2)) - 1;
 	ideg = 0;
 	if (jstop < jstrt) {
 	    goto L300;

@@ -1134,17 +1134,21 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   {
     PetscInt *icol_i;
     
-    len     = (1+ismax)*sizeof(PetscInt*)+ ismax*C->N*sizeof(PetscInt);
+    len     = (1+ismax)*sizeof(PetscInt*)+ (1+ismax*C->N)*sizeof(PetscInt);
     ierr    = PetscMalloc(len,&cmap);CHKERRQ(ierr);
     cmap[0] = (PetscInt*)(cmap + ismax);
+    CHKMEMQ;
     ierr    = PetscMemzero(cmap[0],(1+ismax*C->N)*sizeof(PetscInt));CHKERRQ(ierr);
+    CHKMEMQ;
     for (i=1; i<ismax; i++) { cmap[i] = cmap[i-1] + C->N; }
+    CHKMEMQ;
     for (i=0; i<ismax; i++) {
       jmax   = ncol[i];
       icol_i = icol[i];
       cmap_i = cmap[i];
       for (j=0; j<jmax; j++) { 
         cmap_i[icol_i[j]] = j+1; 
+    CHKMEMQ;
       }
     }
   }

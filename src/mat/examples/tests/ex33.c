@@ -8,12 +8,13 @@ static char help[] = "Writes a matrix using the PETSc sparse format. Input argum
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         A;
-  Vec         b;
-  char        fileout[PETSC_MAX_PATH_LEN];
-  int         i,j,m = 6,n = 6,N = 36,ierr,I,J;
-  PetscScalar val,v;
-  PetscViewer view;
+  Mat            A;
+  Vec            b;
+  char           fileout[PETSC_MAX_PATH_LEN];
+  PetscInt       i,j,m = 6,n = 6,N = 36,I,J;
+  PetscErrorCode ierr;
+  PetscScalar    val,v;
+  PetscViewer    view;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

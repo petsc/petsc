@@ -842,7 +842,8 @@ EXTERN PetscErrorCode MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 
    Level: developer
 
-.seealso: MatLUFactorSymbolic(), MatILUFactorSymbolic(), MatCholeskyFactorSymbolic(), MatICCFactorSymbolic(), MatICCFactor()
+.seealso: MatLUFactorSymbolic(), MatILUFactorSymbolic(), MatCholeskyFactorSymbolic(), MatICCFactorSymbolic(), MatICCFactor(), 
+          MatFactorInfoInitialize()
 
 S*/
 typedef struct {
@@ -860,6 +861,7 @@ typedef struct {
   PetscReal     zeropivot;      /* pivot is called zero if less than this */
 } MatFactorInfo;
 
+EXTERN PetscErrorCode MatFactorInfoInitialize(MatFactorInfo*);
 EXTERN PetscErrorCode MatCholeskyFactor(Mat,IS,MatFactorInfo*);
 EXTERN PetscErrorCode MatCholeskyFactorSymbolic(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatCholeskyFactorNumeric(Mat,Mat*);

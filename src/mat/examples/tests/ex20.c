@@ -7,10 +7,12 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat          C,A; 
-  int          i,j,m = 5,n = 4,I,J,ierr,rank,size;
-  PetscScalar  v;
-  char         mtype[256];
+  Mat               C,A; 
+  PetscInt          i,j,m = 5,n = 4,I,J;
+  PetscErrorCode    ierr;
+  PetscMPIInt       rank,size;
+  PetscScalar       v;
+  char              mtype[256];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

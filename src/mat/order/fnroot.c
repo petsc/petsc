@@ -2,6 +2,8 @@
 
 #include "petsc.h"
 
+EXTERN PetscErrorCode SPARSEPACKrootls(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+
 /*****************************************************************/
 /********     FNROOT ..... FIND PSEUDO-PERIPHERAL NODE    ********/
 /*****************************************************************/
@@ -30,17 +32,14 @@
 /****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKfnroot" 
-PetscErrorCode SPARSEPACKfnroot(int *root, int *xadj, int *adjncy, 
-	int *mask, int *nlvl, int *xls, int *ls)
+PetscErrorCode SPARSEPACKfnroot(PetscInt *root, PetscInt *xadj, PetscInt *adjncy,  
+                                PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls)
 {
     /* System generated locals */
-    int i__1, i__2;
+    PetscInt i__1, i__2;
 
     /* Local variables */
-    int ndeg, node, j, k, nabor, kstop, jstrt, kstrt, mindeg, 
-	    ccsize, nunlvl;
-    EXTERN PetscErrorCode SPARSEPACKrootls(int*, int *, int *, 
-	    int *, int *, int *, int *);
+    PetscInt ndeg, node, j, k, nabor, kstop, jstrt, kstrt, mindeg, ccsize, nunlvl;
 /*       DETERMINE THE LEVEL STRUCTURE ROOTED AT ROOT. */
 
     PetscFunctionBegin;
