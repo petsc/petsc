@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.70 1996/12/02 23:11:50 curfman Exp $";
+static char vcid[] = "$Id: ex14.c,v 1.1 1996/12/09 05:08:27 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with a user-defined\n\
@@ -196,7 +196,8 @@ int main( int argc, char **argv )
 
   ierr = FormInitialGuess(&user,X); CHKERRA(ierr);
   ierr = ComputeFunction(&user,X,F); CHKERRA(ierr);   /* Compute F(X)    */
-  ierr = VecNorm(F,NORM_2,&fnorm); CHKERRA(ierr);         /* fnorm = || F || */
+  ierr = VecNorm(F,NORM_2,&fnorm); CHKERRA(ierr);     /* fnorm = || F || */
+  ttol = fnorm*rtol;
   if (!no_output) PetscPrintf(comm,"Initial function norm = %g\n",fnorm);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -253,7 +254,6 @@ int main( int argc, char **argv )
     /*
        Test for convergence
      */
-    if (i == 0) ttol = fnorm*rtol;
     if (fnorm <= ttol) {
       if (!no_output) PetscPrintf(comm,
          "Converged due to function norm %g < %g (relative tolerance)\n",fnorm,ttol);
