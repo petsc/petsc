@@ -5,15 +5,14 @@
 #define __MG_PACKAGE
 #include "sles.h"
 
-#define Multiplicative 0
-#define Additive       1
-#define FullMultigrid  2
-#define Kaskade        3
+/*  Possible Multigrid Variants */
+typedef enum { MG_Multiplicative, MG_Additive, MG_FullMultigrid,
+               MG_Kaskade } MGMETHOD;
 
 #define MG_V_CYCLE     1
 #define MG_W_CYCLE     2
 
-extern int MGSetMethod(PC,int);
+extern int MGSetMethod(PC,MGMETHOD);
 extern int MGCheck(PC);
 extern int MGSetLevels(PC,int);
 

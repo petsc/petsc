@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.27 1995/04/27 20:16:54 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.28 1995/04/28 06:43:07 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -178,7 +178,8 @@ int KSPRegisterDestroy()
   return 0;
 }
 
-/*@C
+
+/*
    KSPGetMethodFromOptions - Sets the selected KSP method from the options
    database.
 
@@ -193,11 +194,7 @@ int KSPRegisterDestroy()
 
    Options Database Key:
 $  -ksp_method  itmethod
-
-.keywords: KSP, options, database, get, method
-
-.seealso: KSPGetMethodName()
-@*/
+*/
 int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod)
 {
   char sbuf[50];
@@ -220,8 +217,6 @@ int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod)
 .  name - name of KSP method
 
 .keywords: KSP, get, method, name
-
-.seealso: KSPGetMethodFromOptions()
 @*/
 int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
 {
