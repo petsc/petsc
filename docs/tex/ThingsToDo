@@ -23,8 +23,6 @@ Additional Capabilities that PETSc Needs:
     this means the bmake files must insure that -DPETSC_COMPLEX is 
     properly set.
 
-  - Fix bfort so that it correctly deals with PetscRandom. 
-
   - Note fixes needed for ICASE SP (poseidon) in petsc/src/sys/src/mtr.c
     and petsc/src/viewer/impls/matlab/send.c
 
@@ -39,7 +37,6 @@ Additional Capabilities that PETSc Needs:
   - Fix GMRESCycle() so that test for "happy breakdown" is actually
     used.  See petsc-maint message #282 from David.
 
-  - Fix Machines file info for IRIX64.
   X Debugger info? fixed. 
 
   X Fortran doesn't read aliases from .petscrc
