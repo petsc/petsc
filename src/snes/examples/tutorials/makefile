@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.55 1999/03/25 22:39:38 balay Exp balay $ 
+# $Id: makefile,v 1.56 1999/04/01 17:11:23 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -165,7 +165,7 @@ runex4_2:
 	   else echo "Possible problem with ex4_2, diffs above"; fi; \
 	   ${RM} -f ex4_2.tmp
 runex4_3:
-	-@${MPIRUN} -np 1 ex4 -snes_smonitor -mat_coloring sl -nox -snes_fd_coloring -mx 8 -my 11 \
+	-@${MPIRUN} -np 1 ex4 -snes_smonitor -mat_coloring_type sl -nox -snes_fd_coloring -mx 8 -my 11 \
                 > ex4_3.tmp 2>&1;\
 	   if (diff output/ex4_3.out ex4_3.tmp) then true; \
 	   else echo "Possible problem with ex4_3, diffs above"; fi; \
