@@ -69,15 +69,15 @@ class Configure(PETSc.package.Package):
               self.command = os.path.join(matlab,'bin','matlab')
               self.include = [os.path.join(matlab,'extern','include')]
               if matlab_arch == 'mac':
-                matlab_dl = ' -L'+os.path.join(matlab,'sys','os','mac')+' -ldl'
+                matlab_dl = [' -L'+os.path.join(matlab,'sys','os','mac'),' -ldl']
               else:
-                matlab_dl = ''
+                matlab_dl = ['']
               # Matlab libraries require libstdc++-libc6.1-2.so.3 which they provide in the sys/os directory
               if matlab_arch == 'glnx86':
                 matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
               else:
                 matlab_sys = ''
-              self.lib = ['${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys,'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-L'+os.path.join(matlab,'bin',matlab_arch),'-leng','-lmx','-lmat','-lut'+matlab_dl]
+              self.lib = [self.setCompilers.CSharedLinkerFlag+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys,'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-L'+os.path.join(matlab,'bin',matlab_arch),'-leng','-lmx','-lmat','-lut'] + matlab_dl
               self.framework.packages.append(self)
               self.addMakeMacro('MATLAB_MEX',self.mex)
               self.addMakeMacro('MATLAB_CC',self.cc)

@@ -134,9 +134,10 @@ struct _p_Vec {
      Common header shared by array based vectors, 
    currently Vec_Seq and Vec_MPI
 */
-#define VECHEADER                         \
-  PetscScalar *array;                          \
-  PetscScalar *array_allocated;            
+#define VECHEADER                          \
+  PetscScalar *array;                      \
+  PetscScalar *array_allocated;                        /* if the array was allocated by PETSc this is its pointer */  \
+  PetscScalar *unplacedarray;                           /* if one called VecPlaceArray(), this is where it stashed the original */
 
 /* Default obtain and release vectors; can be used by any implementation */
 EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);

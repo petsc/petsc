@@ -164,10 +164,10 @@ class Configure(PETSc.package.Package):
   def alternateConfigureLibrary(self):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.framework.addDefine('HAVE_MPI', 1)
-    self.include = ['-I${PETSC_DIR}/include/mpiuni']
+    self.include = [os.path.join(self.arch.dir,'include','mpiuni')]
     if 'STDCALL' in self.compilers.defines:
       self.include.append(' -DMPIUNI_USE_STDCALL')
-    self.lib = ['-L${PETSC_DIR}/lib/${PETSC_ARCH}','-lmpiuni']
+    self.lib = [os.path.join(self.arch.dir,'lib',self.arch.arch,'libmpiuni')]
     self.mpirun = '${PETSC_DIR}/bin/mpirun.uni'
     self.addMakeMacro('MPIRUN','${PETSC_DIR}/bin/mpirun.uni')
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
@@ -341,13 +341,16 @@ class Configure(PETSc.package.Package):
         fd.close()
       except:
         self.framework.logPrint('Unable to output configure arguments into '+configArgsFilename)
-      if not os.path.isfile(os.path.join(os.getenv('HOME'),'.mpd.conf')):
-        fd = open(os.path.join(os.getenv('HOME'),'.mpd.conf'),'w')
-        fd.write('secretword=mr45-j9z\n')
-        fd.close()
-        os.chmod(os.path.join(os.getenv('HOME'),'.mpd.conf'),S_IRWXU)
+      if self.argDB['download-mpich-pm'] == 'mpd':
+        if not os.path.isfile(os.path.join(os.getenv('HOME'),'.mpd.conf')):
+          fd = open(os.path.join(os.getenv('HOME'),'.mpd.conf'),'w')
+          fd.write('secretword=mr45-j9z\n')
+          fd.close()
+          os.chmod(os.path.join(os.getenv('HOME'),'.mpd.conf'),S_IRWXU)
+
         # start up MPICH's demon
         output  = config.base.Configure.executeShellCommand('cd '+installDir+'; bin/mpdboot', timeout=25, log = self.framework.log)[0]
+        self.framework.logPrint('Output from trying to start up MPICH mpd demon needed for mpirun: '+output)
       self.framework.actions.addArgument('MPI', 'Install', 'Installed MPICH into '+installDir)
     return self.getDir()
 

@@ -3,6 +3,8 @@
 #include "petscsys.h"
 #include "petscmatlab.h"
 
+void *PETSCNULLPOINTERADDRESS = PETSC_NULL;
+
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscpopsignalhandler_     PETSCPOPSIGNALHANDLER
 #define petscgetcputime_           PETSCGETCPUTIME

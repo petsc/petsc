@@ -24,9 +24,9 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCMAT_DLLEXPORT MatMatlabEnginePut_Matlab(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
-  Mat         B = (Mat)obj;
-  mxArray     *mat; 
-  Mat_SeqAIJ  *aij = (Mat_SeqAIJ*)B->data;
+  Mat            B = (Mat)obj;
+  mxArray        *mat; 
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)B->data;
 
   PetscFunctionBegin;
   mat  = mxCreateSparse(B->n,B->m,aij->nz,mxREAL);
@@ -83,7 +83,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Matlab_SeqAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Matlab_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Matlab_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
@@ -119,7 +119,7 @@ PetscErrorCode MatDestroy_Matlab(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatConvert_Matlab_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
+  ierr = MatConvert_Matlab_SeqAIJ(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -151,10 +151,10 @@ PetscErrorCode MatSolve_Matlab(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatLUFactorNumeric_Matlab"
 PetscErrorCode MatLUFactorNumeric_Matlab(Mat A,MatFactorInfo *info,Mat *F)
 {
-  Mat_SeqAIJ      *f = (Mat_SeqAIJ*)(*F)->data;
+  Mat_SeqAIJ     *f = (Mat_SeqAIJ*)(*F)->data;
   PetscErrorCode ierr;
-  size_t          len;
-  char            *_A,*name;
+  size_t         len;
+  char           *_A,*name;
 
   PetscFunctionBegin;
   ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(A->comm),(PetscObject)A);CHKERRQ(ierr);
@@ -174,7 +174,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat A,MatFactorInfo *info,Mat *F)
 PetscErrorCode MatLUFactorSymbolic_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   PetscErrorCode ierr;
-  Mat_SeqAIJ *f;
+  Mat_SeqAIJ     *f;
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
@@ -185,8 +185,6 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Ma
   (*F)->ops->solve           = MatSolve_Matlab;
   (*F)->ops->lufactornumeric = MatLUFactorNumeric_Matlab;
   (*F)->factor               = FACTOR_LU;
-  f                          = (Mat_SeqAIJ*)(*F)->data;
-  f->lu_dtcol = info->dtcol;
   PetscFunctionReturn(0);
 }
 
@@ -219,8 +217,8 @@ PetscErrorCode MatSolve_Matlab_QR(Mat A,Vec b,Vec x)
 PetscErrorCode MatLUFactorNumeric_Matlab_QR(Mat A,MatFactorInfo *info,Mat *F)
 {
   PetscErrorCode ierr;
-  size_t          len;
-  char            *_A,*name;
+  size_t         len;
+  char           *_A,*name;
 
   PetscFunctionBegin;
   ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(A->comm),(PetscObject)A);CHKERRQ(ierr);
@@ -260,8 +258,8 @@ PetscErrorCode MatLUFactorSymbolic_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info
 PetscErrorCode MatILUDTFactor_Matlab(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *F)
 {
   PetscErrorCode ierr;
-  size_t     len;
-  char       *_A,*name;
+  size_t         len;
+  char           *_A,*name;
 
   PetscFunctionBegin;
   if (info->dt == PETSC_DEFAULT)      info->dt      = .005;
@@ -300,7 +298,8 @@ PetscErrorCode MatFactorInfo_Matlab(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_Matlab"
-PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer) {
+PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer) 
+{
   PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
@@ -320,9 +319,10 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_Matlab"
-PetscErrorCode MatDuplicate_Matlab(Mat A, MatDuplicateOption op, Mat *M) {
+PetscErrorCode MatDuplicate_Matlab(Mat A, MatDuplicateOption op, Mat *M) 
+{
   PetscErrorCode ierr;
-  Mat_Matlab *lu=(Mat_Matlab*)A->spptr;
+  Mat_Matlab     *lu=(Mat_Matlab*)A->spptr;
 
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
@@ -333,7 +333,7 @@ PetscErrorCode MatDuplicate_Matlab(Mat A, MatDuplicateOption op, Mat *M) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_Matlab"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_Matlab(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert to MATMATLAB */
   /* from MATSEQAIJ, so we will ignore 'MatType type'. */
