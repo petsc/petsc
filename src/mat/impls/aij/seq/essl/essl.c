@@ -98,7 +98,6 @@ int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Essl"
 int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)(*F)->data; 
   Mat_SeqAIJ      *aa = (Mat_SeqAIJ*)(A)->data;
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)(*F)->spptr;
   int             i,ierr,one = 1;
@@ -129,8 +128,8 @@ int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat             B;
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*b;
-  int             ierr,*ridx,*cidx,i,len;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  int             ierr,len;
   Mat_SeqAIJ_Essl *essl;
   PetscReal       f = 1.0;
 
@@ -203,7 +202,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_SeqAIJ_Essl"
 int MatCreate_SeqAIJ_Essl(Mat A) {
   int             ierr;
-  Mat_SeqAIJ_Essl *essl;
 
   PetscFunctionBegin;
   ierr = MatSetType(A,MATSEQAIJ);
