@@ -225,6 +225,11 @@ class Configure(config.base.Configure):
         raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack=<lib> to indicate location of LAPACK.\n Or --with-c-blas-lapack or --with-f-blas-lapack to have one automatically downloaded and installed\n')
     return
 
+  def configureESSL(self):
+    if self.libraries.check(self.lapackLibrary, 'iessl'):
+      self.addDefine('HAVE_ESSL',1)
+    return
+
   def unique(self, l):
     m = []
     for i in l:
@@ -267,6 +272,7 @@ class Configure(config.base.Configure):
 
   def configure(self):
     self.executeTest(self.configureLibrary)
+    self.executeTest(self.configureESSL)
     self.setOutput()
     return
 

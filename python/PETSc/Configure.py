@@ -182,7 +182,7 @@ class Configure(config.base.Configure):
       - Find dlfcn.h and libdl
     Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
-    if not self.framework.archBase.startswith('darwin') or  (self.usingMPIUni and not self.framework.argDB.has_key('FC')):
+    if not self.framework.archBase.startswith('aix') or self.framework.archBase.startswith('darwin') or  (self.usingMPIUni and not self.framework.argDB.has_key('FC')):
       useDynamic = self.framework.argDB['enable-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
       self.addDefine('USE_DYNAMIC_LIBRARIES', useDynamic)
       if useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
