@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: f90_IRIX.c,v 1.1 1998/03/12 18:01:55 balay Exp balay $";
+static char vcid[] = "$Id: f90_IRIX.c,v 1.2 1998/03/12 19:14:23 balay Exp balay $";
 #endif
 
 /*
@@ -58,7 +58,7 @@ int PetscF90Get1dArrayScalar(array1d *ptr,void **array)
 */ 
 int PetscF90Destroy1dArrayScalar(array1d *ptr)
 {
-  ptr->addr  = (void *)0xffffffff;
+  ptr->addr  = (void *);
   return 0;
 }
 /* --------------------------------------------------------*/
@@ -112,7 +112,7 @@ int PetscF90Get2dArrayScalar(array2d *ptr,void **array)
 */ 
 int PetscF90Destroy2dArrayScalar(array2d *ptr)
 {
-  ptr->addr  = (void *)0xffffffff;
+  ptr->addr  = (void *)0;
   return 0;
 }
 /* -----------------------------------------------------------------*/
@@ -163,7 +163,7 @@ int PetscF90Get1dArrayInt(array1d *ptr,void **array)
 */ 
 int PetscF90Destroy1dArrayInt(array1d *ptr)
 {
-  ptr->addr  = (void *)0xffffffff;
+  ptr->addr  = (void *)0;
   return 0;
 }
 
