@@ -8,61 +8,23 @@ add to it).
 
   VEC
 
-     After a call to VecCreate() you MUST either call VecSetType() or VecSetFromOptions()
-     on the vector before using it for any purpose. The VecCreatexxx() routines do not need
-     to have calls to VecSetType() or VecSetFromOptions() after them.
+     
 
-     All VecGetArray() must now be matched with a VecRestoreArray()   
-
-     Vectors are now dynamically loaded; types can be set at run-time via VecSetType()
-
-     Indices that are negative passed into VecSetValues...() are now ignored (rather than 
-     generating an error). This allows easily keeping homogeneous Dirichlet boundary nodes out of the
-     vectors and matrices for unstructured grid problems; just indicate those node numbers with 
-     negative numbers.
-
-     Added VecDotBegin(), VecDotEnd(), VecNormBegin(), VecNormEnd()
+     
 
   MAT
 
-    Fixed bugs in MatReorderForNonzeroDiagonal() and made it more
-    robust.   
-
-    Fixed bugs in factorization for AIJ matrices with variable size
-    inodes
-
-    MatGetSubMatrixCall replaced with MatReuse   
-
-    Changed the calling sequence of MatILUFactor() and MatILUFactorSymbolic() to increase
-    flexibility of adding new ILU options
-
-     Indices that are negative passed into MatSetValues...() are now ignored (rather than 
-     generating an error). This allows easily keeping homogeneous Dirichlet boundary nodes out of the
-     vectors and matrices for unstructured grid problems; just indicate those node numbers with 
-     negative numbers.
+    
 
   KSP
 
-    The option -ksp_bsmonitor is not longer needed, use -ksp_truemonitor for the same 
-    affect.
     
-    added an additional argument to KSPSetResidualHistory() see manual page. Suggested
-    by PETSc user Maria Murillo.
-
-    Added -ksp_vecmonitor and KSPVecViewMonitor() to allow graphically monitoring the 
-    solution
     
   PC
 
-  Added option -pc_ilu_diagonal_fill PCILUSetAllowDiagonalFill() see manual page;
-  helps for ILU(k) on matrices with missing diagonal entries.
+  
 
-  Removed support for block Gauss-Seidel from the distribution -pc_type bgs    
-
-  Eisenstat now uses diagonal scaling preconditioning by default and the options
-  PCEisenstatUseDiagonalScaling() and -pc_eisenstat_diagonal_scaling have been
-  replaced with PCEisenstatNoDiagonalScaling() and -pc_eisenstat_no_diagonal_scaling
-
+ 
   AO
 
     
@@ -72,91 +34,40 @@ add to it).
     
   Draw
 
-    DrawCreate() creates a generic draw object whose type can be set at run time
-    with DrawSetType()
+    
 
-    VIEWER_DRAWX_.... replaced with VIEWER_DRAW_....
-
-    The arguments of ViewerDrawGetDraw have been changed
+    
 
   General
 
-    Added OptionsGetLogical()
+    
 
-    Remove the gvec directory from the distribution. If you are using this
- please let us and know and we can provide it or provide alternative code
-to do what you need.
+   
 
-    Moved all the compiler/optimization information for each PETSC_ARCH
-    from the various base.g, base.O_c++ etc files all into the single file
-    base. Now configuration for your system should require only editing
-    ${PETSC_ARCH}/base and ${PETSC_ARCH}/base.site
+   
+    
 
-    The PETSC_ARCH rs6000 is now for IBM rs6000 workstations running MPICH or LAM
-    while rs6000_sp is for IBM SPs.
-
-    We now included PETSC_ARCH of solaris_gnu, rs6000_gnu for those systems
-    when using the gnu compilers
-
-    Thanks to the generosity of the FreeBSD organization we are now supporting
-    freebsd again
-
-    Added optional filename to -log_info <filename> option. PETSc will open
-  a seperate file, called filename.rank for each processor and print the 
-  output there.
-
-    Added PetscTypeCompare(), see the manual page
+   
 
 
-   Routines with the suffix withcoloring have been changed to the suffix color
-   to get around 31 character limit in names.
+   
 
   Viewer
 
-    Changed the names associated with the Matlab viewer to Socket viewer; this 
-    reflects our plan to support additional graphics engines to PETSc
+    
 
-    Changed ViewerFileOpenASCII() to ViewerASCIIOpen()
-
-    Changed ViewerDrawOpenX() to ViewerDrawOpen()
-
-    Changed ViewerFileOpenBinary() to ViewerBinaryOpen()
-
-    Changed ViewerDrawOpenX() to ViewerDrawOpen()
-
-    Changed ViewerType from an enum to a char *
-
-    Added ViewerASCIIPushTab(), ViewerASCIIPopTab() and 
-      ViewerASCIIPrintf(). These allow multi-level display of solver
-      information (tabing the text further for each inner solver).
-      Thanks to Victor Eijkhout and Matt Knepley for pushing this 
+   
 
   SNES 
 
-    SNESSetConvergenceHistory() takes an additional argumement, see manual page
+    
 
-    Changed SNESDefaultMatrixFreeMatCreate() to MatSNESFDMFCreate()
-    Added 
-      MatSNESFDMFSetHHistory(Mat,Scalar *,int);
-      MatSNESFDMFResetHHistory(Mat,Scalar *,int);
-      MatSNESFDMFSetParameters(Mat,double,double);
-      MatSNESFDMFGetH(Mat,Scalar *);
-      MatSNESFDMFKSPMonitor(KSP,int,double,void *); and the 
-      option -snes_mf_ksp_monitr
-    Added support for an alternative way to compute h using the Walker-Pernice
-      strategy accessible via -snes_mf_type wp
-
-    Added -snes_vecmonitor and SNESVecViewMonitor() to allow graphically monitoring the 
-    solution
+    
 
   DA
 
-    DAGetInfo() has a new final argument, the stencil type. See the manual page, to 
-    change your current code to work you only need add an extra PETSC_NULL as a final argument.
+    
 
   TS
 
-   Removed     TSSetRHSJacobianDefault - you can now call 
-        TSSetRHSJacobian(... TSDefaultJacobianColor,....) directly from Fortran
-
-   Changed TSDefaultJacobianSlow() to TSDefaultJacobian()
+   
