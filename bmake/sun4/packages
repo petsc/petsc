@@ -15,10 +15,8 @@ FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
 #
-BLAS_LIB       =  /home/bsmith/lapack/blas_sun4_double.a \
-                  /home/bsmith/lapack/blas_sun4_complex.a
-LAPACK_LIB     =  /home/bsmith/lapack/lapack_sun4_double.a \
-                  /home/bsmith/lapack/lapack_sun4_complex.a
+BLAS_LIB       =  /usr/local/lapack/lib/blas.a
+LAPACK_LIB     =  /usr/local/lapack/lib/lapack.a
 #
 # Location of X-windows software
 #
