@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.1 1998/04/09 21:17:51 balay Exp balay $ */
+/* $Id: petscconf.h,v 1.2 1998/04/09 21:58:37 balay Exp bsmith $ */
 
 /*
     Defines the configuration for this machine
@@ -25,6 +25,7 @@
 #define HAVE_BROKEN_REQUEST_FREE 
 #define NEEDS_GETTIMEOFDAY_PROTO
 #define USES_TEMPLATED_COMPLEX
+#define HAVE_DOUBLE_ALIGN
 
 #define HAVE_FORTRAN_UNDERSCORE 
 #define HAVE_FORTRAN_UNDERSCORE_UNDERSCORE

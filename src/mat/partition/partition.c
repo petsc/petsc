@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.11 1998/04/03 23:15:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.12 1998/04/13 17:41:25 bsmith Exp bsmith $";
 #endif
  
 
@@ -146,7 +146,8 @@ int PartitioningGetType(Partitioning partitioning,PartitioningType *meth,char **
 .  matp - the matrix partitioning object
 
    Output Parameters:
-.   partitioning - the partitioning
+.   partitioning - the partitioning. For each local node this tells the processor
+                   number that that node is assigned to.
 
    Collective on Mat
 

@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.17 1997/09/11 20:33:21 bsmith Exp balay $ 
+# $Id: makefile,v 1.18 1998/03/24 17:06:54 balay Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
+CFLAGS   = ${CPPFLAGS} ${FCONF} ${CONF} -D__SDIR__='"${LOCDIR}"'
 FFLAGS   = 
 SOURCEC  = zoptions.c zksp.c zpc.c zsnes.c zsys.c zmat.c zvec.c zsles.c \
            zdraw.c zda.c zviewer.c zis.c zplog.c zstart.c zstartf.c zts.c \

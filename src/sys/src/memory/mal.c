@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mal.c,v 1.31 1998/04/15 20:58:33 bsmith Exp balay $";
+static char vcid[] = "$Id: mal.c,v 1.32 1998/04/15 21:37:09 balay Exp bsmith $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
@@ -48,8 +48,8 @@ void *PetscMallocAlign(int mem)
       ptr     += shift;
       ptr[-1]  = shift + SHIFT_COOKIE ;
     }
+    return (void *) ptr;
   }
-  return (void *) ptr;
 #endif
 }
 

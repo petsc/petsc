@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.38 1997/10/13 18:07:37 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.39 1998/03/20 22:54:24 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -52,6 +52,5 @@ extern int   DAGetAO(DA,AO*);
 
 #include "mat.h"
 extern int   DAGetColoring(DA,ISColoring *,Mat *);
-extern int   DAGetColoring3dBox(DA,ISColoring *,Mat *);
 
 #endif
