@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.248 1998/09/24 13:35:18 bsmith Exp balay $ 
+# $Id: makefile,v 1.249 1998/09/30 19:30:07 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -215,7 +215,7 @@ TAGS_DOC_FILES      = docs/tex/manual/routin.tex docs/tex/manual/manual.tex \
                       docs/tex/manual/manual_tex.tex docs/tex/manual/intro.tex \
                       docs/tex/manual/part1.tex docs/tex/manual/developer.tex docs/tex/manual/part2.tex
 TAGS_SRC_FILES      = src/sys/src/*/*.c src/*/*.[c,h] src/*/interface/*.[c,h] src/*/src/*.[c,h] \
-                      src/*/utils/*.[c,h] \
+                      src/*/utils/*.[c,h] src/snes/mf/*.[c,h] \
                       src/*/impls/*.[c,h] src/*/impls/*/*.[c,h] src/*/impls/*/*/*.[c,h] \
                       src/snes/interface/noise/*.[c,F,h] src/gvec/impls/*/*/*/*/*.[c,h] \
 		      src/contrib/*/*.[c,h] \
