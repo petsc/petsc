@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.10 2001/01/23 20:57:12 balay Exp bsmith $*/
+/*$Id: ex19.c,v 1.11 2001/03/15 21:03:31 bsmith Exp bsmith $*/
 
 static char help[] = "Solves nonlinear driven cavity with multigrid.\n\
   \n\
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   DMMG     *dmmg;               /* multilevel grid structure */
   AppCtx   user;                /* user-defined work context */
   int      mx,my,its;
-  int      ierr,nlevels = 2;
+  int      ierr;
   MPI_Comm comm;
   SNES     snes;
   DA       da;
@@ -98,77 +98,77 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
 
-  mx = 4; 
-  my = 4; 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRQ(ierr);
-
-  /* 
-     Problem parameters (velocity of lid, prandtl, and grashof numbers)
-  */
-  user.lidvelocity = 1.0/(mx*my);
-  user.prandtl     = 1.0;
-  user.grashof     = 1.0;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-lidvelocity",&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-prandtl",&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
 
   PreLoadBegin(PETSC_TRUE,"SetUp");
-  ierr = DMMGCreate(comm,nlevels,&user,&dmmg);CHKERRQ(ierr);
-
-  /*
-     Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
-     for principal unknowns (x) and governing residuals (f)
-  */
-  ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-
-  ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),2,"Omega");CHKERRQ(ierr);
-  ierr = DASetFieldName(DMMGGetDA(dmmg),3,"temperature");CHKERRQ(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Create user context, set problem data, create vector data structures.
-    Also, compute the initial guess.
-    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
- /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create nonlinear solver context
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  ierr = DMMGSetSNES(dmmg,FormFunction,0);
-  ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",
-                     user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
+    ierr = DMMGCreate(comm,2,&user,&dmmg);CHKERRQ(ierr);
 
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Solve the nonlinear system
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
+    /*
+      Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
+      for principal unknowns (x) and governing residuals (f)
+    */
+    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
+    ierr = DADestroy(da);CHKERRQ(ierr);
+
+    ierr = DAGetInfo(DMMGGetDA(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                     PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+    /* 
+     Problem parameters (velocity of lid, prandtl, and grashof numbers)
+    */
+    user.lidvelocity = 1.0/(mx*my);
+    user.prandtl     = 1.0;
+    user.grashof     = 1.0;
+    ierr = PetscOptionsGetDouble(PETSC_NULL,"-lidvelocity",&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetDouble(PETSC_NULL,"-prandtl",&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetDouble(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
+
+    ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDA(dmmg),2,"Omega");CHKERRQ(ierr);
+    ierr = DASetFieldName(DMMGGetDA(dmmg),3,"temperature");CHKERRQ(ierr);
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       Create user context, set problem data, create vector data structures.
+       Also, compute the initial guess.
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       Create nonlinear solver context
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+    ierr = DMMGSetSNES(dmmg,FormFunction,0);
+    ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",
+		       user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
+
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       Solve the nonlinear system
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+    ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
 
   PreLoadStage("Solve");
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
+    ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
 
-  snes = DMMGGetSNES(dmmg);
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Number of Newton iterations = %d\n", its);CHKERRQ(ierr);
+    snes = DMMGGetSNES(dmmg);
+    ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Number of Newton iterations = %d\n", its);CHKERRQ(ierr);
 
-  /*
-     Visualize solution
-  */
+    /*
+      Visualize solution
+    */
 
-  if (user.draw_contours) {
-    ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-  }
+    if (user.draw_contours) {
+      ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+    }
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Free work space.  All PETSc objects should be destroyed when they
-     are no longer needed.
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       Free work space.  All PETSc objects should be destroyed when they
+       are no longer needed.
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+    ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
 
   ierr = PetscFinalize();CHKERRQ(ierr);
