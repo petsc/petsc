@@ -17,6 +17,7 @@ EXTERN PetscErrorCode  PetscSortInt(PetscInt,PetscInt[]);
 EXTERN PetscErrorCode  PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);
 EXTERN PetscErrorCode  PetscSortStrWithPermutation(PetscInt,const char*[],PetscInt[]);
 EXTERN PetscErrorCode  PetscSortIntWithArray(PetscInt,PetscInt[],PetscInt[]);
+EXTERN PetscErrorCode  PetscSortIntWithScalarArray(PetscInt,PetscInt[],PetscScalar[]);
 EXTERN PetscErrorCode  PetscSortReal(PetscInt,PetscReal[]);
 EXTERN PetscErrorCode  PetscSortRealWithPermutation(PetscInt,const PetscReal[],PetscInt[]);
 

@@ -1549,7 +1549,13 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   /* check for zero rows. If found a large number of nonzero rows, use CompressedRow functions */
   if (!a->compressedrow.checked && a->compressedrow.use){ /* fshift=!samestructure? NO. */
     ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,ratio);CHKERRQ(ierr);
-  } 
+  } else if (a->compressedrow.checked && a->compressedrow.use){ 
+    /* mat structure likely has been changed. Do not use compressed row format until a better
+       flag on changing mat structure is introduced */
+    ierr = PetscFree(a->compressedrow.i);CHKERRQ(ierr); 
+    a->compressedrow.use    = PETSC_FALSE;
+    a->compressedrow.rindex = PETSC_NULL;
+  }
   PetscFunctionReturn(0);
 }
 

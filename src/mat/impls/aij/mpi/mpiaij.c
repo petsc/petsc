@@ -393,8 +393,8 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     ierr = MatSetUpMultiply_MPIAIJ(mat);CHKERRQ(ierr);
   }
   
-  b->inode.use         = PETSC_FALSE;
-  b->compressedrow.use = PETSC_TRUE;
+  b->inode.use             = PETSC_FALSE;
+  b->compressedrow.use     = PETSC_TRUE; 
   ierr = MatAssemblyBegin(aij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->B,mode);CHKERRQ(ierr);
 
@@ -3774,6 +3774,7 @@ PetscErrorCode MatCreate_MPIAIJ(Mat B)
   ierr            = PetscMemzero(b,sizeof(Mat_MPIAIJ));CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;
+  B->bs           = 1;
   B->assembled    = PETSC_FALSE;
   B->mapping      = 0;
 

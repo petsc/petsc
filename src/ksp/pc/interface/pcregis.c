@@ -20,6 +20,9 @@ EXTERN PetscErrorCode PCCreate_Redundant(PC);
 EXTERN PetscErrorCode PCCreate_NN(PC);
 EXTERN PetscErrorCode PCCreate_Cholesky(PC);
 EXTERN PetscErrorCode PCCreate_FieldSplit(PC);
+#if defined(PETSC_HAVE_ML) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+EXTERN PetscErrorCode PCCreate_ML(PC);
+#endif
 #if defined(PETSC_HAVE_SPAI) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN PetscErrorCode PCCreate_SPAI(PC);
 #endif
