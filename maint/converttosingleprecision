@@ -1,0 +1,184 @@
+#! /usr/local/tcl/bin/tclsh 
+#
+#   For a source file, takes a list of function names
+# and replaces then with functionname_Single
+#
+#  The list of functionames is the first argument to
+# the routine. The source code to change is the second
+# argument.
+#
+##################################################
+####           deletespace()                 #####    
+####      copied from examplesindex.tcl      #####
+##################################################
+
+proc deletespace { name } { 
+    upvar $name buf 
+    #Delete spaces from the list buf
+    
+    set n [ llength $buf ]
+    set i 0
+    set new {}
+    while { $i < $n } {
+        set temp [ join [ lindex $buf $i ] " " ]
+        set temp  [string trim $temp ]
+        lappend new $temp
+        set i [ expr $i + 1 ]
+        
+    }
+    set buf $new
+    return 0
+}
+
+##################################################
+####         removeillegal()                 #####    
+##################################################
+
+proc removeillegal { name } { 
+    upvar $name buf 
+    
+    foreach data  $buf {
+        set flag 0
+        # Check for null
+        if { $data  == {}  } { 
+            set flag 1
+        }
+
+        # check for known illegal charecters such as a space, etc ( no -,_,{,},{,})
+        if { [regexp {[" "|!|@|#|$|%|^|&|*|(|)|+|=|\\|\||~|\`|,|<|>|\.|;|:]} $data] == 1 } {
+            set flag 1
+            set mesg "**** ignoring token:  $data"
+            puts stderr $mesg
+        }
+        if { $flag == 0 } {
+            set temp [string trim $data ]
+            lappend new $temp
+        }
+    }
+    set buf $new
+    return 0
+}
+##################################################
+####          updatesource()                 #####    
+##################################################
+
+proc updatesource { token sourcebuff } { 
+    upvar $sourcebuff buf
+    global suffix
+    
+    set startflag 1
+    set endflag 1
+    set tokenlen [ string length $token]
+
+    # Search for the token in the buffer
+    set start [string first $token $buf]
+    set end   [expr $start + $tokenlen ]
+    
+    # Token not found in the file
+    if { $start == -1 } {
+        return 0
+    }
+
+    # Check the char before the start char to see if it is valid char [' ',',',\t,\n]
+    if { $start != 0 } {
+        set startchar [ string range $buf [expr $start - 1 ] [expr $start - 1 ]  ]
+
+        if { [ regexp {[" "|\n|\t|,|\"]} $startchar ] != 1 } {
+            set startflag 0
+        }
+    }
+
+    # Check the char after the end char to see if it is valid char [' ',',',\t,\n,'(']
+    if { $end !=  [ string length $buf] } {
+        set endchar [ string range $buf $end $end ]
+        if { [ regexp {[" "|\n|\t|,|(|\"]} $endchar ] != 1 } {
+            set endflag 0
+        }
+    }
+    
+    set mesg " $startchar $endchar $startflag $endflag - $token"
+    puts $mesg
+
+    if { $startflag == 1 && $endflag == 1 } {
+        set part1 [string range $buf 0 [expr $start - 1 ] ]
+        set part2 $token$suffix
+        set part3 [string range $buf $end end ]
+
+        # Find more tokens in the rest of the buffer
+        # using recurssion
+        updatesource $token part3
+        set buf $part1$part2$part3
+    } else {
+        set part1 [string range $buf 0 [expr $start ] ]
+        set part3 [string range $buf [expr $start + 1 ] end ]
+
+        # Find more tokens in the rest of the buffer
+        # using recurssion
+        updatesource $token part3
+        set buf $part1$part3
+    }
+
+   return 0
+}
+    
+ 
+
+##################################################
+####                main()                   #####    
+##################################################
+
+proc main {tokenfilename sourcefilename} {
+    global suffix
+    set suffix _Single
+    #
+    # Open the token file and read in the tokens
+    #
+    set tokenfileid [ open $tokenfilename r ]
+    set tokenfilebuff [ read $tokenfileid ]
+    close $tokenfileid
+
+    #
+    # Now assuming each token is in a different line
+    # get a list of tokens from the buffer
+    #
+    set tokens [ split $tokenfilebuff "\n" ]
+    
+    #
+    # Now process the tokens and take away any additional
+    # spaces arround it
+    #
+    deletespace tokens
+    #
+    # Remove illegal tokens from the list for eg: a null token, 
+    # a token with space in it.
+    # 
+    removeillegal tokens
+
+    # 
+    # Now open the source file where the tokens need to be replaced
+    #
+    set sourcefileid [ open $sourcefilename r ]
+    set sourcefilebuff [ read $sourcefileid ]
+    close $sourcefileid
+
+    foreach token $tokens {
+        updatesource $token sourcefilebuff
+    }
+
+    #
+    # Write back the modified buffer to a new file */
+    #
+    set ext [file extension $sourcefilename]
+    set root [ file root $sourcefilename]
+    set sourcefilename  $root$suffix$ext
+    set sourcefileid [ open $sourcefilename w ]
+    puts $sourcefileid $sourcefilebuff
+    close $sourcefileid
+    
+    return 0
+}
+
+set tokenfilename  [lindex $argv 0]
+set sourcefilename [lindex $argv 1]
+
+main $tokenfilename $sourcefilename
