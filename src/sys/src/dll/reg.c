@@ -194,7 +194,7 @@ int PetscFinalize_DynamicLibraries(void)
 
 /* ------------------------------------------------------------------------------*/
 struct _PetscFList {
-  void        (*routine)();       /* the routine */
+  void        (*routine)(void);   /* the routine */
   char        *path;              /* path of link library containing routine */
   char        *name;              /* string to identify routine */
   char        *rname;             /* routine name in dynamic library */
@@ -236,7 +236,7 @@ static PetscFList   dlallhead = 0;
 .seealso: PetscFListDestroy(), SNESRegisterDynamic(), KSPRegisterDynamic(),
           PCRegisterDynamic(), TSRegisterDynamic(), PetscFList
 @*/
-int PetscFListAdd(PetscFList *fl,const char name[],const char rname[],void (*fnc)())
+int PetscFListAdd(PetscFList *fl,const char name[],const char rname[],void (*fnc)(void))
 {
   PetscFList entry,ne;
   int        ierr;
@@ -387,7 +387,7 @@ int PetscFListDestroyAll(void)
 
 .seealso: PetscFListAddDynamic(), PetscFList
 @*/
-int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],void (**r)())
+int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],void (**r)(void))
 {
   PetscFList   entry = fl;
   int          ierr;

@@ -135,7 +135,7 @@ int MatSNESMFRegister(char *sname,char *path,char *name,int (*function)(MatSNESM
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatSNESMPetscFList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatSNESMPetscFList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -825,7 +825,7 @@ int MatSNESMFSetFunctioni(Mat mat,int (*funci)(int,Vec,PetscScalar*,void *))
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSNESMFSetFunctioni_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSNESMFSetFunctioni_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,funci);CHKERRQ(ierr);
   }
@@ -863,7 +863,7 @@ int MatSNESMFSetFunctioniBase(Mat mat,int (*func)(Vec,void *))
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSNESMFSetFunctioniBase_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSNESMFSetFunctioniBase_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,func);CHKERRQ(ierr);
   }
@@ -1070,7 +1070,7 @@ int MatSNESMFSetBase(Mat J,Vec U)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_COOKIE);
   PetscValidHeaderSpecific(U,VEC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)J,"MatSNESMFSetBase_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)J,"MatSNESMFSetBase_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(J,U);CHKERRQ(ierr);
   }

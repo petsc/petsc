@@ -273,9 +273,9 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nloc);CHKERRQ(ierr);
   ierr = MatCreateShell(comm,nloc,n,n,n,mfctx,J);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)())SNESMatrixFreeMult2_Private);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)())SNESMatrixFreeDestroy2_Private);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)())SNESMatrixFreeView2_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)(void))SNESMatrixFreeMult2_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)(void))SNESMatrixFreeDestroy2_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)(void))SNESMatrixFreeView2_Private);CHKERRQ(ierr);
 
   PetscLogObjectParent(*J,mfctx->w);
   PetscLogObjectParent(snes,*J);

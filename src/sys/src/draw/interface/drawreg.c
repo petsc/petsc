@@ -134,7 +134,7 @@ int PetscDrawSetType(PetscDraw draw,PetscDrawType type)
   /* Get the function pointers for the graphics method requested */
   if (!PetscDrawList) SETERRQ(1,"No draw implementations ierr");
 
-  ierr =  PetscFListFind(draw->comm,PetscDrawList,type,(void (**)()) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(draw->comm,PetscDrawList,type,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(1,"Unknown PetscDraw type given: %s",type);
 
@@ -241,7 +241,7 @@ int PetscDrawRegister(char *sname,char *path,char *name,int (*function)(PetscDra
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PetscDrawList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PetscDrawList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

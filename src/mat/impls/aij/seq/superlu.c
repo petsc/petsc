@@ -166,7 +166,7 @@ extern int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Ma
   ierr            = PetscNew(Mat_SeqAIJ_SuperLU,&lu);CHKERRQ(ierr);
   b->spptr        = (void*)lu;
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatCreateNull","MatCreateNull_SeqAIJ_SuperLU",
-                                    (void*)MatCreateNull_SeqAIJ_SuperLU);CHKERRQ(ierr);
+                                    (void(*)(void))MatCreateNull_SeqAIJ_SuperLU);CHKERRQ(ierr);
 
   /* Allocate the work arrays required by SuperLU (notice sizes are for the transpose) */
   ierr = PetscMalloc(A->n*sizeof(int),&lu->perm_r);CHKERRQ(ierr);

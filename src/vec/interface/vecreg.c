@@ -51,7 +51,7 @@ int VecSetType(Vec vec, VecType method)
   if (!VecRegisterAllCalled) {
     ierr = VecRegisterAll(PETSC_NULL);                                                                    CHKERRQ(ierr);
   }
-  ierr = PetscFListFind(vec->comm, VecList, method,(void (**)()) &r);                                     CHKERRQ(ierr);
+  ierr = PetscFListFind(vec->comm, VecList, method,(void (**)(void)) &r);                                 CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_WRONG, "Unknown vector type: %s", method);
 
   if (vec->ops->destroy != PETSC_NULL) {
@@ -146,7 +146,7 @@ int VecSetSerializeType(Vec vec, VecSerializeType method)
   if (!VecSerializeRegisterAllCalled) {
     ierr = VecSerializeRegisterAll(PETSC_NULL);                                                           CHKERRQ(ierr);
   }
-  ierr = PetscFListFind(vec->comm, VecSerializeList, method, (void (**)()) &r);                           CHKERRQ(ierr);
+  ierr = PetscFListFind(vec->comm, VecSerializeList, method, (void (**)(void)) &r);                       CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_WRONG, "Unknown vector serialization type: %s", method);
 
   ierr = PetscObjectChangeSerializeName((PetscObject) vec, method);                                       CHKERRQ(ierr);
@@ -207,7 +207,7 @@ int VecRegister(const char sname[], const char path[], const char name[], int (*
   ierr = PetscStrcpy(fullname, path);                                                                     CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, ":");                                                                      CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, name);                                                                     CHKERRQ(ierr);
-  ierr = PetscFListAdd(&VecList, sname, fullname, (void (*)()) function);                                 CHKERRQ(ierr);
+  ierr = PetscFListAdd(&VecList, sname, fullname, (void (*)(void)) function);                                 CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -265,7 +265,7 @@ int VecSerializeRegister(const char sname[], const char path[], const char name[
   ierr = PetscStrcpy(fullname, path);                                                                     CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, ":");                                                                      CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, name);                                                                     CHKERRQ(ierr);
-  ierr = PetscFListAdd(&VecSerializeList, sname, fullname, (void (*)()) function);                        CHKERRQ(ierr);
+  ierr = PetscFListAdd(&VecSerializeList, sname, fullname, (void (*)(void)) function);                        CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

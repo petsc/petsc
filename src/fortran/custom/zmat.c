@@ -515,7 +515,7 @@ static int ourmult(Mat mat,Vec x,Vec y)
 void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,int (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,int*),int *ierr)
 {
   if (*op == MATOP_MULT) {
-    *ierr = MatShellSetOperation(*mat,*op,(void(*)())ourmult);
+    *ierr = MatShellSetOperation(*mat,*op,(void(*)(void))ourmult);
     ((PetscObject)*mat)->fortran_func_pointers[0] = (void(*)())f;
   } else {
     PetscError(__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,1,0,

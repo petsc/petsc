@@ -420,7 +420,7 @@ int MatDAADSetDA(Mat A,DA da)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
   PetscValidHeader(da);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetDA_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetDA_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,da);CHKERRQ(ierr);
   }
@@ -450,7 +450,7 @@ int MatDAADSetSNES(Mat A,SNES snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
   PetscValidHeader(snes);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetSNES_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetSNES_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,snes);CHKERRQ(ierr);
   }
@@ -479,7 +479,7 @@ int MatDAADSetCtx(Mat A,void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetCtx_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetCtx_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,ctx);CHKERRQ(ierr);
   }

@@ -85,8 +85,8 @@ int main(int Argc,char **Args)
   for (i=0; i<levels-1; i++) {
     ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0);CHKERRQ(ierr);
     ierr = MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],(void *)0,&mat[i]);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(mat[i],MATOP_MULT,(void(*)())restrct);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANSPOSE_ADD,(void(*)())interpolate);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(mat[i],MATOP_MULT,(void(*)(void))restrct);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANSPOSE_ADD,(void(*)(void))interpolate);CHKERRQ(ierr);
     ierr = MGSetInterpolate(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
     ierr = MGSetRestriction(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
     ierr = MGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ int main(int Argc,char **Args)
 
   /* create matrix multiply for finest level */
   ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],(void *)0,&fmat);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(fmat,MATOP_MULT,(void(*)())amult);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(fmat,MATOP_MULT,(void(*)(void))amult);CHKERRQ(ierr);
   ierr = SLESSetOperators(slesmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   ierr = CalculateSolution(N[0],&solution);CHKERRQ(ierr);

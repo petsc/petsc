@@ -301,13 +301,13 @@ EXTERN int PetscCommGetNewTag(MPI_Comm,int *);
 EXTERN int PetscObjectView(PetscObject,PetscViewer);
 EXTERN int PetscObjectCompose(PetscObject,const char[],PetscObject);
 EXTERN int PetscObjectQuery(PetscObject,const char[],PetscObject *);
-EXTERN int PetscObjectComposeFunction(PetscObject,const char[],const char[],void (*)());
+EXTERN int PetscObjectComposeFunction(PetscObject,const char[],const char[],void (*)(void));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,0)
 #else
-#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,(void (*)())(d))
+#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,(void (*)(void))(d))
 #endif
-EXTERN int PetscObjectQueryFunction(PetscObject,const char[],void (**)());
+EXTERN int PetscObjectQueryFunction(PetscObject,const char[],void (**)(void));
 EXTERN int PetscObjectSetOptionsPrefix(PetscObject,const char[]);
 EXTERN int PetscObjectAppendOptionsPrefix(PetscObject,const char[]);
 EXTERN int PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
@@ -345,14 +345,14 @@ EXTERN int PetscOListDuplicate(PetscOList,PetscOList *);
     Dynamic library lists. Lists of names of routines in dynamic 
   link libraries that will be loaded as needed.
 */
-EXTERN int PetscFListAdd(PetscFList*,const char[],const char[],void (*)());
+EXTERN int PetscFListAdd(PetscFList*,const char[],const char[],void (*)(void));
 EXTERN int PetscFListDestroy(PetscFList*);
-EXTERN int PetscFListFind(MPI_Comm,PetscFList,const char[],void (**)());
+EXTERN int PetscFListFind(MPI_Comm,PetscFList,const char[],void (**)(void));
 EXTERN int PetscFListPrintTypes(MPI_Comm,FILE*,const char[],const char[],char *,char *,PetscFList);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define    PetscFListAddDynamic(a,b,p,c) PetscFListAdd(a,b,p,0)
 #else
-#define    PetscFListAddDynamic(a,b,p,c) PetscFListAdd(a,b,p,(void (*)())c)
+#define    PetscFListAddDynamic(a,b,p,c) PetscFListAdd(a,b,p,(void (*)(void))c)
 #endif
 EXTERN int PetscFListDuplicate(PetscFList,PetscFList *);
 EXTERN int PetscFListView(PetscFList,PetscViewer);
