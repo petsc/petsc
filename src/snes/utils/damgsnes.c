@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.44 2001/06/21 21:18:57 bsmith Exp curfman $*/
+/*$Id: damgsnes.c,v 1.45 2001/06/26 20:24:08 curfman Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -24,6 +24,7 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
 
   /* compute Jacobian on finest grid */
   ierr = (*DMMGGetFine(dmmg)->computejacobian)(snes,X,J,B,flag,DMMGGetFine(dmmg));CHKERRQ(ierr);
+  ierr = MatSNESMFSetBase(DMMGGetFine(dmmg)->J,X);CHKERRQ(ierr);
 
   /* create coarser grid Jacobians for preconditioner if multigrid is the preconditioner */
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
