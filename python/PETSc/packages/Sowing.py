@@ -117,7 +117,7 @@ class Configure(config.base.Configure):
     if 'FC' in self.framework.argDB:
       self.framework.log.write('           Running '+self.bfort+' to generate fortran stubs\n')
       try:
-        (output, error, status) = config.base.Configure.executeShellCommand('generatefortranstubs.py '+self.bfort, timeout = 15*60.0, log = self.framework.log)
+        (output, error, status) = config.base.Configure.executeShellCommand(os.path.join('maint','generatefortranstubs.py') + ' ' +self.bfort, timeout = 15*60.0, log = self.framework.log)
         self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs ')
       except RuntimeError, e:
         raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
