@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.227 2000/01/11 20:59:43 bsmith Exp kaushik $*/
+/*$Id: plog.c,v 1.228 2000/02/23 21:53:33 kaushik Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -162,7 +162,7 @@ PetscTruth PLogEventFlags[] = {PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC
                         PETSC_FALSE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,  /* 25 -49 */
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE,
-                        PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
+                        PETSC_FALSE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE, /* 50 - 74 */
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE,PETSC_TRUE,
@@ -287,7 +287,7 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "VecReduceArith. ",
                          "VecReduceCommun.",
                          "VecScatterBarrie",
-                         "VecDot          ",
+                         "VecScatterCommun",
                          "VecNorm         ",
                          "VecMax          ",
                          "VecMin          ",
@@ -336,7 +336,7 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "SNESHessianEval ",
                          "VecReduceBarrier",
                          "VecReduceComOnly",
-                         " ",
+                         "VecDot           ",
                          "TSStep          ",
                          "TSPseudoCmptTStp",
                          "TSFunctionEval  ",
@@ -1644,6 +1644,12 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
                     mp,lpmp,rp,ptotts,ptotff,mpg,lpg,rpg,ptotts_stime,ptotff_sflops,mps,lps,rps,flopr/1.e6);CHKERRQ(ierr);
       }
     }
+    /* print effective bandwidth in vector scatters */
+    if (EventsType[j][VEC_ScatterBarrier][COUNT]) {
+      ierr = MPI_Allreduce(&EventsType[j][i][MESSAGES],&mp,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsType[j][i][LENGTHS],&lp,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+    }
+
   }
 
   ierr = PetscFPrintf(comm,fd,

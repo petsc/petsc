@@ -1,5 +1,5 @@
 !
-!  $Id: petsclog.h,v 1.14 1999/11/24 21:56:02 bsmith Exp bsmith $;
+!  $Id: petsclog.h,v 1.15 2000/01/11 21:04:11 bsmith Exp bsmith $;
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
@@ -88,8 +88,8 @@
        parameter (VEC_ReduceCommunication = 38)
        integer    VEC_ScatterBarrier
        parameter (VEC_ScatterBarrier = 39)
-       integer    VEC_Dot
-       parameter (VEC_Dot = 40)
+       integer    VEC_ScatterCommunication
+       parameter (VEC_ScatterCommunication = 40)
        integer    VEC_Norm
        parameter (VEC_Norm = 41)
        integer    VEC_Max
@@ -182,6 +182,8 @@
        parameter (SNES_GradientEval = 85)
        integer    SNES_HessianEval
        parameter (SNES_HessianEval = 86)
+       integer    VEC_Dot
+       parameter (VEC_Dot = 89)
        integer    TS_Step
        parameter (TS_Step = 90)
        integer    TS_PseudoComputeTimeStep
