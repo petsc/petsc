@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.282 1999/02/17 19:29:50 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.283 1999/02/17 21:37:02 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -849,7 +849,7 @@ extern int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
-    ierr = ViewerGetFormat(viewer,&format);
+    ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
       int     flg;
