@@ -124,7 +124,7 @@ proc updatesource { token sourcebuff } {
  
 
 ##################################################
-####                main()                   #####    
+####            processfile()                #####    
 ##################################################
 
 proc processfile {tokenfilename sourcefilename} {

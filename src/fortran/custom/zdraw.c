@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zdraw.c,v 1.9 1997/04/04 19:10:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zdraw.c,v 1.10 1997/05/07 19:51:55 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -16,8 +16,8 @@ static char vcid[] = "$Id: zdraw.c,v 1.9 1997/04/04 19:10:23 bsmith Exp bsmith $
 #define drawlggetaxis_       DRAWLGGETAXIS
 #define drawlggetdraw_       DRAWLGGETDRAW
 #define drawopenx_           DRAWOPENX
-#define drawtext_            DRAWTEXT
-#define drawtextvertical_    DRAWTEXTVERTICAL
+#define drawstring_          DRAWSTRING
+#define drawstringvertical_  DRAWSTRINGVERTICAL
 #define drawdestroy_         DRAWDESTROY
 #define viewerdrawgetdraw_   VIEWERDRAWGETDRAW
 #define viewerdrawgetdrawlg_ VIEWERDRAWGETDRAWLG
@@ -31,8 +31,8 @@ static char vcid[] = "$Id: zdraw.c,v 1.9 1997/04/04 19:10:23 bsmith Exp bsmith $
 #define drawlggetaxis_       drawlggetaxis
 #define drawlggetdraw_       drawlggetdraw
 #define drawopenx_           drawopenx
-#define drawtext_            drawtext
-#define drawtextvertical_    drawtextvertical
+#define drawstring_          drawstring
+#define drawstringvertical_  drawstringvertical
 #define drawdestroy_         drawdestroy
 #define viewerdrawgetdraw_   viewerdrawgetdraw
 #define viewerdrawgetdrawlg_ viewerdrawgetdrawlg
@@ -69,18 +69,18 @@ void viewerdrawgetdrawlg_(Viewer v,DrawLG *drawlg, int *__ierr )
   *(int*) drawlg = PetscFromPointer(d);
 }
 
-void drawtext_(Draw ctx,double* xl,double* yl,int* cl,CHAR text,
+void drawstring_(Draw ctx,double* xl,double* yl,int* cl,CHAR text,
                int *__ierr, int len){
   char *t;
   FIXCHAR(text,len,t);
-  *__ierr = DrawText((Draw)PetscToPointer( *(int*)(ctx) ),*xl,*yl,*cl,t);
+  *__ierr = DrawString((Draw)PetscToPointer( *(int*)(ctx) ),*xl,*yl,*cl,t);
   FREECHAR(text,t);
 }
-void drawtextvertical_(Draw ctx,double *xl,double *yl,int *cl,CHAR text, 
+void drawstringvertical_(Draw ctx,double *xl,double *yl,int *cl,CHAR text, 
                        int *__ierr,int len ){
   char *t;
   FIXCHAR(text,len,t);
-  *__ierr = DrawTextVertical(
+  *__ierr = DrawStringVertical(
 	(Draw)PetscToPointer( *(int*)(ctx) ),*xl,*yl,*cl,t);
   FREECHAR(text,t);
 }
