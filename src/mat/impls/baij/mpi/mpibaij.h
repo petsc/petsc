@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.3 1996/08/08 14:43:40 bsmith Exp bsmith $ */
+/* $Id: mpibaij.h,v 1.4 1996/11/19 16:31:35 bsmith Exp balay $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 
@@ -43,6 +43,10 @@ typedef struct {
   int           *rowindices;       /* column indices for row */
   Scalar        *rowvalues;        /* nonzero values in row */
   PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
+
+  /* Some variables to make MatSetValues and others more efficient */
+  int           rstart_bs, rend_bs; 
+  int           cstart_bs, cend_bs;
 } Mat_MPIBAIJ;
 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.38 1996/12/01 17:55:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.39 1996/12/02 21:31:19 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -68,10 +68,10 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   Scalar      value;
-  int         ierr,i,j, rstart = baij->rstart, rend = baij->rend;
-  int         cstart = baij->cstart, cend = baij->cend,row,col;
-  int         roworiented = baij->roworiented,rstart_orig,rend_orig;
-  int         cstart_orig,cend_orig,bs=baij->bs;
+  int         ierr,i,j,row,col;
+  int         roworiented = baij->roworiented,rstart_orig=baij->rstart_bs ;
+  int         rend_orig=baij->rend_bs,cstart_orig=baij->cstart_bs;
+  int         cend_orig=baij->cend_bs,bs=baij->bs;
 
 #if defined(PETSC_BOPT_g)
   if (baij->insertmode != NOT_SET_VALUES && baij->insertmode != addv) {
@@ -79,10 +79,6 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   }
 #endif
   baij->insertmode = addv;
-  rstart_orig      = rstart*bs;
-  rend_orig        = rend*bs;
-  cstart_orig      = cstart*bs;
-  cend_orig        = cend*bs;
   for ( i=0; i<m; i++ ) {
 #if defined(PETSC_BOPT_g)
     if (im[i] < 0) SETERRQ(1,"MatSetValues_MPIBAIJ:Negative row");
@@ -1257,15 +1253,20 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   for ( i=2; i<=b->size; i++ ) {
     b->rowners[i] += b->rowners[i-1];
   }
-  b->rstart = b->rowners[b->rank]; 
-  b->rend   = b->rowners[b->rank+1]; 
+  b->rstart    = b->rowners[b->rank]; 
+  b->rend      = b->rowners[b->rank+1]; 
+  b->rstart_bs = b->rstart * bs;
+  b->rend_bs   = b->rend * bs;
+
   MPI_Allgather(&nbs,1,MPI_INT,b->cowners+1,1,MPI_INT,comm);
   b->cowners[0] = 0;
   for ( i=2; i<=b->size; i++ ) {
     b->cowners[i] += b->cowners[i-1];
   }
-  b->cstart = b->cowners[b->rank]; 
-  b->cend   = b->cowners[b->rank+1]; 
+  b->cstart    = b->cowners[b->rank]; 
+  b->cend      = b->cowners[b->rank+1]; 
+  b->cstart_bs = b->cstart * bs;
+  b->cend_bs   = b->cend * bs;
   
   if (d_nz == PETSC_DEFAULT) d_nz = 5;
   ierr = MatCreateSeqBAIJ(MPI_COMM_SELF,bs,m,n,d_nz,d_nnz,&b->A); CHKERRQ(ierr);
