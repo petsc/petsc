@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.36 1996/07/08 22:23:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.37 1996/09/30 14:38:48 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -123,13 +123,13 @@ int main(int argc,char **argv)
   PetscPrintf(MPI_COMM_WORLD,"number of unsuccessful steps = %d\n\n",nfails);
 
   /* Free data structures */
-  ierr = DADestroy(user.da); CHKERRA(ierr);
   ierr = VecDestroy(user.s); CHKERRA(ierr);
   ierr = VecDestroy(user.localX); CHKERRA(ierr);
   ierr = VecDestroy(user.localS); CHKERRA(ierr);
   ierr = VecDestroy(user.y); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(g); CHKERRA(ierr);
+  ierr = DADestroy(user.da); CHKERRA(ierr);
   ierr = MatDestroy(H); CHKERRA(ierr);
   ierr = SNESDestroy(snes); CHKERRA(ierr);
 
