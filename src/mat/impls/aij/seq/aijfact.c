@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.128 1999/12/16 03:08:20 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.129 1999/12/16 03:13:25 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -310,7 +310,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
 #else
 #undef __FUNC__  
 #define __FUNC__ "MatILUDTFactor_SeqAIJ"
-int MatILUDTFactor_SeqAIJ(Mat A,double dt,int maxnz,IS isrow,IS iscol,Mat *fact)
+int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
 {
   PetscFunctionBegin;
   SETERRQ(1,1,"You must install Saad's ILUDT to use this");
