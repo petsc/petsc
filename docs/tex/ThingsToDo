@@ -16,8 +16,6 @@ Current applications using PETSc (3) - pointers
         to dinesh's work and ACTI?  This would
         go into http://www.nersc.gov/ACTS/gallery.html
 
-  - Add VecGetValues()/VecGetValue() ??? Alec likes to have these.
-
   - Reorganize codemanagement.html to deemphasis the preaching and add section
     on how to use the debuggers.
 
