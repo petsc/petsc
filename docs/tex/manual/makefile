@@ -131,3 +131,18 @@ routines.ps: routines.dvi
 
 latex2htmlmanual.html:
 	latex2html.new -split 0 -no_navigation -no_subdir manual.tex
+
+developers.dvi: developers.tex
+# First build the manual
+	latex developers
+	bibtex developers
+	latex developers
+	latex developers
+	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg *.ilg *.ind \
+                    *.idx
+
+developers.ps: 
+	dvips developers
+	mv developers.ps ../../developers.ps
+	-@chmod g+w ../../developers.ps
+
