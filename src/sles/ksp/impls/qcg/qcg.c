@@ -1,6 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.9 1995/11/01 19:09:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.10 1995/11/01 23:15:40 bsmith Exp bsmith $";
 #endif
+/*
+         Code to run conjugate gradient method subject to a constraint
+   on the solution norm. This is used in Trust Region methods.
+*/
 
 #include <stdio.h>
 #include <math.h>
@@ -51,8 +55,7 @@ int KSPSolve_QCG(KSP itP,int *its)
   MatStructure pflag;
   Mat          Amat, Pmat;
   Vec          W, WA, R, P, ASP, BS, X, B;
-  Scalar       zero = 0.0, negone = -1.0, scal, nstep, btx, xtax;
-  Scalar       beta, rntrn, step;
+  Scalar       zero = 0.0, negone = -1.0, scal, nstep, btx, xtax,beta, rntrn, step;
   double       dzero = 0.0, bsnrm, ptasp, q1, q2, wtasp, bstp, rtr;
   double       xnorm, step1, step2, rnrm, p5 = 0.5, *history;
   int          i, cerr, hist_len, maxit, ierr;
@@ -158,12 +161,10 @@ int KSPSolve_QCG(KSP itP,int *its)
        pcgP->ltsnrm = pcgP->delta;    /* convergence in direction of */
        pcgP->info = 1;	        /* negative curvature */
        if (i == 0) {
-         PLogInfo((PetscObject)itP,
-           "negative curvature:  delta=%g\n", pcgP->delta );
+         PLogInfo((PetscObject)itP,"negative curvature:  delta=%g\n", pcgP->delta );
        } else {
          PLogInfo((PetscObject)itP,
-           "negative curvature:  step1=%g, step2=%g, delta=%g\n",
-                    step1, step2, pcgP->delta );
+           "negative curvature:  step1=%g, step2=%g, delta=%g\n",step1, step2, pcgP->delta );
        }
          
     } else {
@@ -222,13 +223,11 @@ int KSPSolve_QCG(KSP itP,int *its)
          if (cerr) {                 /* convergence for */
            pcgP->info = 3;          /* truncated step */
 #if defined(PETSC_COMPLEX)               
-           PLogInfo((PetscObject)itP,
-             "truncated step:  step=%g, rnrm=%g, delta=%g\n", 
+           PLogInfo((PetscObject)itP,"truncated step:  step=%g, rnrm=%g, delta=%g\n", 
               real(step), rnrm, pcgP->delta );
 #else
            PLogInfo((PetscObject)itP,
-             "truncated step:  step=%g, rnrm=%g, delta=%g\n", 
-              step, rnrm, pcgP->delta );
+               "truncated step:  step=%g, rnrm=%g, delta=%g\n", step, rnrm, pcgP->delta );
 #endif
          }
       }
@@ -286,10 +285,9 @@ static int KSPDestroy_QCG(PetscObject obj)
 
 int KSPCreate_QCG(KSP itP)
 {
-  KSP_QCG *cgP;
-  cgP = (KSP_QCG*) PetscMalloc(sizeof(KSP_QCG));  CHKPTRQ(cgP);
+  KSP_QCG *cgP = (KSP_QCG*) PetscMalloc(sizeof(KSP_QCG));  CHKPTRQ(cgP);
   PLogObjectMemory(itP,sizeof(KSP_QCG));
-  itP->data = (void *) cgP;
+  itP->data                 = (void *) cgP;
   itP->type                 = KSPQCG;
   itP->right_pre            = 0;
   itP->calc_res             = 1;
@@ -321,22 +319,19 @@ int KSPCreate_QCG(KSP itP)
    C code is translated from the Fortran version of the MINPACK-2 Project,
    Argonne National Laboratory, Brett M. Averick and Richard G. Carter.
 */
-#if !defined(NLSQR)
-#define NLSQR(a)        ( (a)*(a) )
-#endif
-static int QuadraticRoots_Private(Vec s,Vec p,double *delta,
-                                  double *step1,double *step2)
+static int QuadraticRoots_Private(Vec s,Vec p,double *delta,double *step1,double *step2)
 { 
 #if defined(PETSC_COMPLEX)
   SETERRQ(1,"QuadraticRoots_Private:not done for complex numbers");
 #else
-  double zero = 0.0, dsq, ptp, pts, rad, sts;
+  double zero = 0.0, dsq, ptp, pts, rad, sts,tmp;
   int    ierr;
+
   ierr = VecDot(p,s,&pts); CHKERRQ(ierr);
   ierr = VecDot(p,p,&ptp); CHKERRQ(ierr);
   ierr = VecDot(s,s,&sts); CHKERRQ(ierr);
-  dsq = NLSQR(*delta);
-  rad = sqrt(NLSQR(pts) - ptp*(sts - dsq));
+  dsq  = (*delta)*(*delta);
+  rad  = sqrt((pts*pts) - ptp*(sts - dsq));
   if (pts > zero) {
     *step2 = -(pts + rad)/ptp;
     *step1 = (sts - dsq)/(ptp * *step2);
