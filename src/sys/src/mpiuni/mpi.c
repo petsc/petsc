@@ -292,6 +292,23 @@ void MPIUNI_STDCALL MPI_ALLREDUCE(void *sendbuf,void *recvbuf,int *count,int *da
   *ierr = MPI_SUCCESS;
 } 
 
+void MPIUNI_STDCALL mpi_barrier(MPI_Comm *comm,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+void MPIUNI_STDCALL mpi_barrier_(MPI_Comm *comm,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+void MPIUNI_STDCALL mpi_barrier__(MPI_Comm *comm,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+void MPIUNI_STDCALL MPI_BARRIER(MPI_Comm *comm,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
 #if defined(__cplusplus)
 }
 #endif
