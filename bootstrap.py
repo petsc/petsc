@@ -15,7 +15,6 @@ from string   import *
 import commands
 import re
 import sys
-import distutils.sysconfig
 
 #=========================Handles getting files =================================================
 def extension(filename):
@@ -266,22 +265,15 @@ def checkpython():
         return 0
     return 1
 
-def getpythoninclude():
-    return distutils.sysconfig.get_python_inc()
-
-
-def getpythonlib():
-    lib = distutils.sysconfig.get_config_var('LIBPL')+"/"+distutils.sysconfig.get_config_var('LDLIBRARY')
-    lib = split(lib,'.so')[0]+'.so'
-    return lib
 
 def getjavainclude():
-    return "[/home/petsc/software/j2sdk1.4.0-linux/include/linux/,/home/petsc/software/j2sdk1.4.0-linux/include/]"
-
+#    return "[/home/petsc/software/j2sdk1.4.0-linux/include/linux/,/home/petsc/software/j2sdk1.4.0-linux/include/]"
+     return ''
 
 def getjavalib():
-    return "/home/petsc/software/j2sdk1.4.0-linux/jre/lib/i386/client/libjvm.so"
-
+#    return "/home/petsc/software/j2sdk1.4.0-linux/jre/lib/i386/client/libjvm.so"
+     return ''
+ 
 #==================================================================================
 def main():
     if checkcxxcompiler() == 0: return
@@ -317,8 +309,6 @@ def main():
     except:
       pass
 
-    PYTHON_INCLUDE = getpythoninclude()
-    PYTHON_LIB = getpythonlib()
     JAVA_INCLUDE = getjavainclude()
     JAVA_LIB = getjavalib()
     
@@ -341,7 +331,7 @@ def main():
         return
     
     print "Initializing the database in the build system"
-    (status,output) = commands.getstatusoutput("cd "+srcdir+"/bs;make.py -debugLevel=0 -debugSections=[] -restart=0 -SIDLRUNTIME_DIR="+srcdir+"/SIDLRuntimeANL -PYTHON_INCLUDE="+PYTHON_INCLUDE+" -PYTHON_LIB="+PYTHON_LIB+" -JAVA_INCLUDE="+JAVA_INCLUDE+" -JAVA_RUNTIME_LIB="+JAVA_LIB+" -installh="+installdir+"/include -installlib="+installdir+"/lib -installexamples="+installdir+"/examples printTargets")
+    (status,output) = commands.getstatusoutput("cd "+srcdir+"/bs;make.py -debugLevel=0 -debugSections=[] -restart=0 -SIDLRUNTIME_DIR="+srcdir+"/SIDLRuntimeANL -JAVA_INCLUDE="+JAVA_INCLUDE+" -JAVA_RUNTIME_LIB="+JAVA_LIB+" -installh="+installdir+"/include -installlib="+installdir+"/lib -installexamples="+installdir+"/examples printTargets")
     logfile.write(output)
     if not status == 0:
         print "Failed to initialize build system database"
