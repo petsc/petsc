@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.176 1998/03/31 21:29:58 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.177 1998/04/01 20:54:55 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -718,7 +718,7 @@ extern int PetscSetUseTrMalloc_Private(int);
 #define __FUNC__ "OptionsCheckInitial_Private"
 int OptionsCheckInitial_Private(void)
 {
-  char     string[64],mname[256];
+  char     string[64];
   MPI_Comm comm = PETSC_COMM_WORLD;
   int      flg1,flg2,flg3,flg4,ierr,*nodes,flag,i,rank;
 
@@ -863,87 +863,90 @@ int OptionsCheckInitial_Private(void)
   if (!flg1) { PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0); }
 #if defined(USE_PETSC_LOG)
   {
-    mname[0] = 0;
-    ierr = OptionsGetString(PETSC_NULL,"-log_history",mname,256, &flg1);CHKERRQ(ierr);
-    if(flg1) {
-      if (mname[0]) {
-        ierr = PLogOpenHistoryFile(mname,&petsc_history); CHKERRQ(ierr);
-      } else {
-        ierr = PLogOpenHistoryFile(0,&petsc_history); CHKERRQ(ierr);
+    char mname[256];
+    {
+      mname[0] = 0;
+      ierr = OptionsGetString(PETSC_NULL,"-log_history",mname,256, &flg1);CHKERRQ(ierr);
+      if(flg1) {
+        if (mname[0]) {
+          ierr = PLogOpenHistoryFile(mname,&petsc_history); CHKERRQ(ierr);
+        } else {
+          ierr = PLogOpenHistoryFile(0,&petsc_history); CHKERRQ(ierr);
+        }
       }
     }
-  }
-  ierr = OptionsHasName(PETSC_NULL,"-log_info", &flg1); CHKERRQ(ierr);
-  if (flg1) { 
-    PLogInfoAllow(PETSC_TRUE); 
-    ierr = OptionsGetString(PETSC_NULL,"-log_info_exclude",mname,256, &flg1);CHKERRQ(ierr);
-    if (flg1) {
-      if (PetscStrstr(mname,"vec")) {
-        PLogInfoDeactivateClass(VEC_COOKIE);
-      }
-      if (PetscStrstr(mname,"mat")) {
-        PLogInfoDeactivateClass(MAT_COOKIE);
-      }
-      if (PetscStrstr(mname,"sles")) {
-        PLogInfoDeactivateClass(SLES_COOKIE);
-      }
-      if (PetscStrstr(mname,"snes")) {
-        PLogInfoDeactivateClass(SNES_COOKIE);
+    ierr = OptionsHasName(PETSC_NULL,"-log_info", &flg1); CHKERRQ(ierr);
+    if (flg1) { 
+      PLogInfoAllow(PETSC_TRUE); 
+      ierr = OptionsGetString(PETSC_NULL,"-log_info_exclude",mname,256, &flg1);CHKERRQ(ierr);
+      if (flg1) {
+        if (PetscStrstr(mname,"vec")) {
+          PLogInfoDeactivateClass(VEC_COOKIE);
+        }
+        if (PetscStrstr(mname,"mat")) {
+          PLogInfoDeactivateClass(MAT_COOKIE);
+        }
+        if (PetscStrstr(mname,"sles")) {
+          PLogInfoDeactivateClass(SLES_COOKIE);
+        }
+        if (PetscStrstr(mname,"snes")) {
+          PLogInfoDeactivateClass(SNES_COOKIE);
+        }
       }
     }
-  }
 #if defined (HAVE_MPE)
-  ierr = OptionsHasName(PETSC_NULL,"-log_mpe", &flg1); CHKERRQ(ierr);
-  if (flg1) PLogMPEBegin();
+    ierr = OptionsHasName(PETSC_NULL,"-log_mpe", &flg1); CHKERRQ(ierr);
+    if (flg1) PLogMPEBegin();
 #endif
-  ierr = OptionsHasName(PETSC_NULL,"-log_all", &flg1); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-log", &flg2); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3); CHKERRQ(ierr);
-  if (flg1)              {  ierr = PLogAllBegin();  CHKERRQ(ierr); }
-  else if (flg2 || flg3) {  ierr = PLogBegin();  CHKERRQ(ierr);}
-  if (flg3) {
-    ierr = OptionsGetString(PETSC_NULL,"-log_summary_exclude",mname,256, &flg1);CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-log_all", &flg1); CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-log", &flg2); CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3); CHKERRQ(ierr);
+    if (flg1)              {  ierr = PLogAllBegin();  CHKERRQ(ierr); }
+    else if (flg2 || flg3) {  ierr = PLogBegin();  CHKERRQ(ierr);}
+    if (flg3) {
+      ierr = OptionsGetString(PETSC_NULL,"-log_summary_exclude",mname,256, &flg1);CHKERRQ(ierr);
+      if (flg1) {
+        if (PetscStrstr(mname,"vec")) {
+          PLogEventDeactivateClass(VEC_COOKIE);
+        }
+        if (PetscStrstr(mname,"mat")) {
+          PLogEventDeactivateClass(MAT_COOKIE);
+        }
+        if (PetscStrstr(mname,"sles")) {
+          PLogEventDeactivateClass(SLES_COOKIE);
+        }
+        if (PetscStrstr(mname,"snes")) {
+          PLogEventDeactivateClass(SNES_COOKIE);
+        }
+      }
+    }
+    
+    ierr = OptionsHasName(PETSC_NULL,"-log_sync",&flg1);CHKERRQ(ierr);
     if (flg1) {
-      if (PetscStrstr(mname,"vec")) {
-        PLogEventDeactivateClass(VEC_COOKIE);
-      }
-      if (PetscStrstr(mname,"mat")) {
-        PLogEventDeactivateClass(MAT_COOKIE);
-      }
-      if (PetscStrstr(mname,"sles")) {
-        PLogEventDeactivateClass(SLES_COOKIE);
-      }
-      if (PetscStrstr(mname,"snes")) {
-        PLogEventDeactivateClass(SNES_COOKIE);
-      }
+      PLogEventActivate(VEC_ScatterBarrier);
+      PLogEventActivate(VEC_NormBarrier);
+      PLogEventActivate(VEC_NormComm);
+      PLogEventActivate(VEC_DotBarrier);
+      PLogEventActivate(VEC_DotComm);
+      PLogEventActivate(VEC_MDotBarrier);
+      PLogEventActivate(VEC_MDotComm);
     }
-  }
-
-  ierr = OptionsHasName(PETSC_NULL,"-log_sync",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    PLogEventActivate(VEC_ScatterBarrier);
-    PLogEventActivate(VEC_NormBarrier);
-    PLogEventActivate(VEC_NormComm);
-    PLogEventActivate(VEC_DotBarrier);
-    PLogEventActivate(VEC_DotComm);
-    PLogEventActivate(VEC_MDotBarrier);
-    PLogEventActivate(VEC_MDotComm);
-  }
-  ierr = OptionsGetString(PETSC_NULL,"-log_trace",mname,250,&flg1); CHKERRQ(ierr);
-  if (flg1) { 
-    char fname[256];
-    FILE *file;
-    if (mname[0]) {
-      sprintf(fname,"%s.%d",mname,rank);
-      ierr = PetscFixFilename(fname);CHKERRQ(ierr);
-      file = fopen(fname,"w"); 
-      if (!file) {
-        SETERRQ(PETSC_ERR_FILE_OPEN,0,"Unable to open trace file");
+    ierr = OptionsGetString(PETSC_NULL,"-log_trace",mname,250,&flg1); CHKERRQ(ierr);
+    if (flg1) { 
+      char fname[256];
+      FILE *file;
+      if (mname[0]) {
+        sprintf(fname,"%s.%d",mname,rank);
+        ierr = PetscFixFilename(fname);CHKERRQ(ierr);
+        file = fopen(fname,"w"); 
+        if (!file) {
+          SETERRQ(PETSC_ERR_FILE_OPEN,0,"Unable to open trace file");
+        }
+      } else {
+        file = stdout;
       }
-    } else {
-      file = stdout;
+      ierr = PLogTraceBegin(file); CHKERRQ(ierr);
     }
-    ierr = PLogTraceBegin(file); CHKERRQ(ierr);
   }
 #endif
 #if defined(USE_PETSC_STACK)
