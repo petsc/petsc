@@ -128,7 +128,8 @@ Debugging on the Cray t3d:  use totalview:
 
 ---------------
 NCSA Convex Exemplar account
-Machine: lena.ncsa.uiuc.edu
+Machine: billi.ncsa.uiuc.edu
+Machine: lena.ncsa.uiuc.edu (old)
 userid: barrys,balay
 password: petsc-password
 Account (whatever that means?) ryc
