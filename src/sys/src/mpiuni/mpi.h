@@ -429,7 +429,8 @@ extern int  MPI_Attr_get(int, int, void*, int *);
 #define MPI_Initialized(flag) (*(flag)=1,MPI_SUCCESS)
 #define MPI_Pcontrol(level) MPI_SUCCESS
 #define MPI_Abort(comm, errorcode) \
-                        (MPID_TMP = (void *) (comm), \
+                      (printf("[0] Aborting program!\n"), \
+                        MPID_TMP = (void *) (comm), \
                         MPID_TMP = (void *) (errorcode), abort())
 /*#define MPI_NULL_COPY_FN(oldcomm, keyval, extra_state, \
                         attr_in, attr_out, flag ) 
