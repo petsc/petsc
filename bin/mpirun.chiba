@@ -7,11 +7,12 @@ USE_MYRINET=${USE_MYRINET-no}
 infiles=""
 outfiles=""
 verbose="no"
-keep_output="no"
+keeptmpfiles="no"
 clear_bogus_head="no"
 shared="no"
 nolocal=""
 showtimes="yes"
+keepoutput="no"
 #
 # Process arguments
 while [ $# -gt 0 ] ; do
@@ -32,6 +33,9 @@ while [ $# -gt 0 ] ; do
     ;;
     -showtimesoff)
     showtimes="no"
+    ;;
+    -keepoutput
+    keepoutput="yes"
     ;;
     -myrinet)
     USE_MYRINET=yes
@@ -66,15 +70,15 @@ while [ $# -gt 0 ] ; do
     -echo)
     set -x
     ;;
-    -keepoutput)
-    keep_output="yes"
+    -keeptmpfiles)
+    keeptmpfiles="yes"
     ;;
     -v)
     verbose="yes"
     ;;
     -u|-usage|-help)
-    echo "$0       [-np n] [-myrinet] [-normal] [-maxtime min] "
-    echo "         [-infile file] [-outfile file] prog [ progs args ]"
+    echo "$0       [-np n] [-myrinet] [-normal] [-maxtime min] [-keepoutput] [-keeptmpfiles] "
+    echo "         [-showtimesoff] [-shared] [-infile file] [-outfile file] prog [ progs args ]"
     echo "Multiple -infile and -outfile args may be used."
     echo "The environment variable USE_MYRINET, if set to yes, has"
     echo "the same effect as -myrinet."
@@ -323,10 +327,11 @@ fi
 rm -rf $rundir/$programbase $rundir/parseargs.py $rundir/urlget.py
 rm -rf $rundir/*/$programbase $rundir/*/parseargs.py $rundir/*/urlget.py $rundir/*/PI*
 # decide if we should make an output directoyr (was there output?)
-cp -rf $rundir ./output.$$ 
+if [ $keepoutput = "yes" ] ; then
+  cp -rf $rundir ./output.$$ 
+fi
 
-
-if [ "$keep_output" != "yes" ] ; then
+if [ "$keeptmpfiles" != "yes" ] ; then
     rm -rf .mpirun$$* 
     rm -f .pbsnodefile*
     rm -rf $rundir
