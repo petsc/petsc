@@ -2,6 +2,7 @@
 #include "src/fortran/custom/zpetsc.h"
 #include "petscksp.h"
 #include "petscda.h"
+#include "petscdmmg.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dmmgcreate_              DMMGCREATE

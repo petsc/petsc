@@ -63,6 +63,7 @@ T*/
 */
 #include "petscsnes.h"
 #include "petscda.h"
+#include "petscdmmg.h"
 
 /* 
    User-defined routines and data structures

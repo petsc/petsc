@@ -42,6 +42,7 @@ T*/
 #include "petscsnes.h"
 #include "petscda.h"
 #include "petscmg.h"
+#include "petscdmmg.h"
 
 /* User-defined application context */
 

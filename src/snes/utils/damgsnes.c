@@ -1,7 +1,7 @@
  
-#include "petscda.h"      /*I      "petscda.h"     I*/
+#include "petscda.h"      /*I      "petscda.h"    I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
-
+#include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
 
 /*
       period of -1 indicates update only on zeroth iteration of SNES

@@ -43,6 +43,7 @@ T*/
 #include "petscsnes.h"
 #include "petscda.h"
 #include "petscmg.h"
+#include "petscdmmg.h"
 
 #ifdef HAVE_DA_HDF
 PetscInt DAVecHDFOutput(DA,Vec,char*);
