@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.84 1996/08/26 20:54:02 curfman Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.85 1996/08/26 21:13:45 curfman Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -82,7 +82,7 @@ static int PCSetFromOptions_BGS(PC pc)
 
 /*@
    PCBGSSetSymmetric - Sets the BGS preconditioner to use symmetric, 
-   backward, or forward relaxation. By default forward relaxation is used.
+   backward, or forward relaxation. By default, forward relaxation is used.
 
    Input Parameters:
 .  pc - the preconditioner context

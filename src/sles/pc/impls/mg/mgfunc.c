@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mgfunc.c,v 1.13 1995/12/12 22:48:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.14 1996/08/08 14:42:12 bsmith Exp curfman $";
 #endif
 
 #include "src/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
@@ -207,7 +207,7 @@ int MGSetCyclesOnLevel(PC pc,int l,int c)
 }
 
 /*@
-   MGSetRhs - Sets the vector space to be used to store the right-hand-side
+   MGSetRhs - Sets the vector space to be used to store the right-hand side
    on a particular level.  The user should free this space at the conclusion 
    of multigrid use. 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.101 1996/08/23 22:57:18 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.102 1996/09/24 21:42:50 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -305,7 +305,7 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
 }
 
 /*@
-   PCApplyRichardsonExists - Determines if a particular preconditioner has a 
+   PCApplyRichardsonExists - Determines whether a particular preconditioner has a 
    built-in fast application of Richardson's method.
 
    Input Parameter:
@@ -614,7 +614,7 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 }
 
 /*@
-   PCSetVector - Set a vector associated with the preconditioner.
+   PCSetVector - Sets a vector associated with the preconditioner.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -637,7 +637,7 @@ int PCSetVector(PC pc,Vec vec)
 /*@C 
    PCGetFactoredMatrix - Gets the factored matrix from the
    preconditioner context.  This routine is valid only for the LU, 
-   Incomplete LU, Cholesky and Incomplete Cholesky methods.
+   incomplete LU, Cholesky, and incomplete Cholesky methods.
 
    Input Parameters:
 .  pc - the preconditioner context

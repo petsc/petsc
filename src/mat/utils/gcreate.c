@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.96 1996/08/08 14:44:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.97 1996/08/12 03:42:04 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -140,7 +140,7 @@ int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 }
 
 /*@C
-   MatCreate - Creates a matrix, where the type is determined
+   MatCreate - Creates a matrix where the type is determined
    from the options database. Generates a parallel MPI matrix if the
    communicator has more than one processor.  The default matrix type is
    AIJ, using the routines MatCreateSeqAIJ() and MatCreateMPIAIJ(). 

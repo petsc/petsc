@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.37 1996/08/26 22:14:05 curfman Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.38 1996/09/24 21:50:18 curfman Exp curfman $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -271,7 +271,7 @@ int PCCreate_ASM(PC pc)
 
 /*@
     PCASMSetLocalSubdomains - Sets the local subdomains (for this processor
-    only) for the additive Schwarz preconditioner.  Note: Either all or no
+    only) for the additive Schwarz preconditioner.  Either all or no
     processors in the PC communicator must call this routine.
 
     Input Parameters:
@@ -302,7 +302,7 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 
 /*@
     PCASMSetTotalSubdomains - Sets the subdomains for all processor for the 
-    additive Schwarz preconditioner.  Note: Either all or no processors in the
+    additive Schwarz preconditioner.  Either all or no processors in the
     PC communicator must call this routine, with the same index sets.
 
     Input Parameters:
@@ -350,7 +350,7 @@ set specific index sets\n they cannot be set globally yet.");
 
 /*@
     PCASMSetOverlap - Sets the overlap between a pair of subdomains for the
-    additive Schwarz preconditioner.  Note: Either all or no processors in the
+    additive Schwarz preconditioner.  Either all or no processors in the
     PC communicator must call this routine. 
 
     Input Parameters:

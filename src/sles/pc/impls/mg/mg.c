@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.52 1996/08/08 14:42:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.53 1996/08/23 13:41:01 bsmith Exp curfman $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -443,7 +443,7 @@ int MGSetLevels(PC pc,int levels)
 }
 
 /*@
-   MGSetType - Determines the form of multigrid to use, either 
+   MGSetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
 
    Input Parameters:
