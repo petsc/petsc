@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.20 1998/12/17 22:08:41 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.21 1999/01/12 23:13:27 bsmith Exp balay $ */
 /* 
  */
 
@@ -28,8 +28,8 @@ typedef struct {
 } Vec_MPI;
 
 extern int VecNorm_Seq(Vec, NormType, double *work );
-extern int VecMDot_MPI(int, Vec, Vec *, Scalar *);
-extern int VecMTDot_MPI(int, Vec, Vec *, Scalar *);
+extern int VecMDot_MPI(int, Vec,const Vec[], Scalar *);
+extern int VecMTDot_MPI(int, Vec,const Vec[], Scalar *);
 extern int VecNorm_MPI(Vec,NormType, double *);
 extern int VecMax_MPI(Vec, int *, double *);
 extern int VecMin_MPI(Vec, int *, double *);
@@ -42,12 +42,12 @@ extern int VecView_MPI_Draw_LG(Vec ,Viewer);
 extern int VecView_MPI_Socket(Vec , Viewer);
 extern int VecView_MPI(Vec,Viewer);
 extern int VecGetSize_MPI(Vec,int *);
-extern int VecSetValues_MPI(Vec, int, int *, Scalar*,InsertMode);
-extern int VecSetValuesBlocked_MPI(Vec, int, int *, Scalar*,InsertMode);
+extern int VecSetValues_MPI(Vec, int, const int [], const Scalar[],InsertMode);
+extern int VecSetValuesBlocked_MPI(Vec, int, const int [], const Scalar[],InsertMode);
 extern int VecAssemblyBegin_MPI(Vec);
 extern int VecAssemblyEnd_MPI(Vec);
 
-extern int VecCreate_MPI_Private(Vec,int,int,int,Scalar *,Map);
+extern int VecCreate_MPI_Private(Vec,int,int,int,const Scalar[],Map);
 
 #endif
 

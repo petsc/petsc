@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmap.c,v 1.4 1998/12/03 16:18:08 curfman Exp bsmith $";
+static char vcid[] = "$Id: pmap.c,v 1.5 1998/12/17 22:08:41 bsmith Exp balay $";
 #endif
 
 /*
@@ -39,7 +39,7 @@ int MapGetLocalRange_MPI(Map m,int *rstart,int *rend)
 
 #undef __FUNC__  
 #define __FUNC__ "MapGetGlobalRange_MPI"
-int MapGetGlobalRange_MPI(Map m,int **range)
+int MapGetGlobalRange_MPI(Map m,int *range[])
 {
   PetscFunctionBegin;
   *range = m->range;

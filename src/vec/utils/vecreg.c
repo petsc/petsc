@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecreg.c,v 1.4 1998/12/23 22:50:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecreg.c,v 1.5 1999/01/12 23:13:10 bsmith Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"  /*I "vec.h" I*/
@@ -29,7 +29,7 @@ extern int VecRegisterAllCalled;
 
 .seealso:  VecRegisterDestroy()
 @*/
-int VecRegisterAll(char *path)
+int VecRegisterAll(const char path[])
 {
   int ierr;
 

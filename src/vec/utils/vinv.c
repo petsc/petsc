@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.42 1998/07/22 14:37:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.43 1998/07/23 21:18:33 bsmith Exp balay $";
 #endif
 /*
      Some useful vector utility functions.
@@ -322,14 +322,14 @@ int VecSum(Vec v,Scalar *sum)
 
    Input Parameters:
 +  v - the vector 
--  sum - the shift
+-  shift - the shift
 
    Output Parameter:
 .  v - the shifted vector 
 
 .keywords: vector, shift
 @*/
-int VecShift(Scalar *shift,Vec v)
+int VecShift(const Scalar *shift,Vec v)
 {
   int    i,n,ierr;
   Scalar *x,lsum = *shift;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.146 1999/01/25 19:23:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.147 1999/01/25 20:07:09 bsmith Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -243,7 +243,7 @@ int VecView_Seq(Vec xin,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetValues_Seq"
-int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
+int VecSetValues_Seq(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode m)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   Scalar   *xx = x->array;
@@ -272,7 +272,7 @@ int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetValuesBlocked_Seq"
-int VecSetValuesBlocked_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
+int VecSetValuesBlocked_Seq(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode m)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   Scalar   *xx = x->array;
@@ -407,7 +407,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
 */
 #undef __FUNC__  
 #define __FUNC__ "VecCreate_Seq_Private"
-static int VecCreate_Seq_Private(Vec v,Scalar *array)
+static int VecCreate_Seq_Private(Vec v,const Scalar array[])
 {
   Vec_Seq *s;
   int     ierr;
@@ -420,7 +420,7 @@ static int VecCreate_Seq_Private(Vec v,Scalar *array)
   s->n               = PetscMax(v->n,v->N);
   v->n               = PetscMax(v->n,v->N);; 
   v->N               = PetscMax(v->n,v->N);; 
-  s->array           = array;
+  s->array           = (double *)array;
   s->array_allocated = 0;
   if (!v->map) {
     ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map); CHKERRQ(ierr);
@@ -462,7 +462,7 @@ static int VecCreate_Seq_Private(Vec v,Scalar *array)
 .seealso: VecCreateMPIWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), 
           VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
 @*/
-int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
+int VecCreateSeqWithArray(MPI_Comm comm,int n,const Scalar array[],Vec *V)
 {
   int  ierr;
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.160 1999/01/14 00:11:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.161 1999/01/25 20:25:35 bsmith Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -293,7 +293,7 @@ $      x[i] = alpha * x[i], for i=1,...,n.
 
 .keywords: vector, scale
 @*/
-int VecScale(Scalar *alpha,Vec x)
+int VecScale(const Scalar *alpha,Vec x)
 {
   int ierr;
 
@@ -365,7 +365,7 @@ $     x[i] = alpha, for i=1,...,n,
 
 .keywords: vector, set
 @*/
-int VecSet(Scalar *alpha,Vec x) 
+int VecSet(const Scalar *alpha,Vec x) 
 {
   int ierr;
 
@@ -434,7 +434,7 @@ int VecSetRandom(PetscRandom rctx,Vec x)
 
 .seealso: VecAYPX(), VecMAXPY(), VecWAXPY()
 @*/
-int VecAXPY(Scalar *alpha,Vec x,Vec y)
+int VecAXPY(const Scalar *alpha,Vec x,Vec y)
 {
   int ierr;
 
@@ -466,7 +466,7 @@ int VecAXPY(Scalar *alpha,Vec x,Vec y)
 
 .seealso: VecAYPX(), VecMAXPY(), VecWAXPY(), VecAXPY()
 @*/
-int VecAXPBY(Scalar *alpha,Scalar *beta,Vec x,Vec y)
+int VecAXPBY(const Scalar *alpha,const Scalar *beta,Vec x,Vec y)
 {
   int ierr;
 
@@ -499,7 +499,7 @@ int VecAXPBY(Scalar *alpha,Scalar *beta,Vec x,Vec y)
 
 .seealso: VecAXPY(), VecWAXPY()
 @*/
-int VecAYPX(Scalar *alpha,Vec x,Vec y)
+int VecAYPX(const Scalar *alpha,Vec x,Vec y)
 {
   int ierr;
 
@@ -557,7 +557,7 @@ int VecSwap(Vec x,Vec y)
 
 .seealso: VecAXPY(), VecAYPX()
 @*/
-int VecWAXPY(Scalar *alpha,Vec x,Vec y,Vec w)
+int VecWAXPY(const Scalar *alpha,Vec x,Vec y,Vec w)
 {
   int ierr;
 
@@ -730,7 +730,7 @@ int VecDestroy(Vec v)
 
 .seealso:  VecDestroyVecs(), VecDuplicate(), VecCreate(), VecDuplicateVecsF90()
 @*/
-int VecDuplicateVecs(Vec v,int m,Vec **V)  
+int VecDuplicateVecs(Vec v,int m,Vec *V[])  
 {
   int ierr;
 
@@ -761,7 +761,7 @@ int VecDuplicateVecs(Vec v,int m,Vec **V)
 
 .seealso: VecDuplicateVecs(), VecDestroyVecsF90()
 @*/
-int VecDestroyVecs(Vec *vv,int m)
+int VecDestroyVecs(const Vec vv[],int m)
 {
   int ierr;
 
@@ -810,7 +810,7 @@ int VecDestroyVecs(Vec *vv,int m)
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesLocal(),
            VecSetValue(), VecSetValuesBlocked()
 @*/
-int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
+int VecSetValues(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora) 
 {
   int ierr;
 
@@ -863,7 +863,7 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(),
            VecSetValues()
 @*/
-int VecSetValuesBlocked(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
+int VecSetValuesBlocked(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora) 
 {
   int ierr;
 
@@ -1006,7 +1006,7 @@ int VecSetLocalToGlobalMappingBlocked(Vec x, ISLocalToGlobalMapping mapping)
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetLocalToGlobalMapping(),
            VecSetValuesBlockedLocal()
 @*/
-int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
+int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora) 
 {
   int ierr,lixp[128],*lix = lixp;
 
@@ -1067,7 +1067,7 @@ int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesBlocked(), 
            VecSetLocalToGlobalMapping(), VecSetLocalToGlobalMappingBlocked()
 @*/
-int VecSetValuesBlockedLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
+int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora) 
 {
   int ierr,lixp[128],*lix = lixp;
 
@@ -1212,7 +1212,7 @@ $      val = (x,y) = y^H x,
 
 .seealso: VecMDot(), VecTDot()
 @*/
-int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
+int VecMTDot(int nv,Vec x,const Vec y[],Scalar *val)
 {
   int ierr;
 
@@ -1255,7 +1255,7 @@ $     val = (x,y) = y^T x,
 
 .seealso: VecMTDot(), VecDot()
 @*/
-int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
+int VecMDot(int nv,Vec x,const Vec y[],Scalar *val)
 {
   int ierr;
 
@@ -1290,7 +1290,7 @@ int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
 
 .seealso: VecAXPY(), VecWAXPY(), VecAYPX()
 @*/
-int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
+int  VecMAXPY(int nv,const Scalar *alpha,Vec x,Vec *y)
 {
   int ierr;
 
@@ -1345,7 +1345,7 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
 .seealso: VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray()
 @*/
-int VecGetArray(Vec x,Scalar **a)
+int VecGetArray(Vec x,Scalar *a[])
 {
   int ierr;
 
@@ -1380,7 +1380,7 @@ int VecGetArray(Vec x,Scalar **a)
 
 .seealso: VecGetArray(), VecRestoreArrays()
 @*/
-int VecGetArrays(Vec *x,int n,Scalar ***a)
+int VecGetArrays(const Vec x[],int n,Scalar **a[])
 {
   int    i,ierr;
   Scalar **q;
@@ -1417,7 +1417,7 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
 
 .seealso: VecGetArrays(), VecRestoreArray()
 @*/
-int VecRestoreArrays(Vec *x,int n,Scalar ***a)
+int VecRestoreArrays(const Vec x[],int n,Scalar **a[])
 {
   int    i,ierr;
   Scalar **q = *a;
@@ -1469,7 +1469,7 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
 .seealso: VecGetArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray()
 @*/
-int VecRestoreArray(Vec x,Scalar **a)
+int VecRestoreArray(Vec x,Scalar *a[])
 {
   int ierr;
 
@@ -1694,7 +1694,7 @@ int VecSetOption(Vec x,VecOption op)
 #define __FUNC__ "VecDuplicateVecs_Default"
 /* Default routines for obtaining and releasing; */
 /* may be used by any implementation */
-int VecDuplicateVecs_Default(Vec w,int m,Vec **V )
+int VecDuplicateVecs_Default(Vec w,int m,Vec *V[] )
 {
   int  i,ierr;
 
@@ -1709,7 +1709,7 @@ int VecDuplicateVecs_Default(Vec w,int m,Vec **V )
 
 #undef __FUNC__  
 #define __FUNC__ "VecDestroyVecs_Default"
-int VecDestroyVecs_Default( Vec *v, int m )
+int VecDestroyVecs_Default(const Vec v[], int m )
 {
   int i,ierr;
 
@@ -1717,7 +1717,7 @@ int VecDestroyVecs_Default( Vec *v, int m )
   PetscValidPointer(v);
   if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"m must be > 0: m = %d",m);
   for (i=0; i<m; i++) {ierr = VecDestroy(v[i]); CHKERRQ(ierr);}
-  PetscFree( v );
+  PetscFree( (Vec*)v );
   PetscFunctionReturn(0);
 }
 
@@ -1744,7 +1744,7 @@ int VecDestroyVecs_Default( Vec *v, int m )
 
 .keywords: vec, place, array
 @*/
-int VecPlaceArray(Vec vec,Scalar *array)
+int VecPlaceArray(Vec vec,const Scalar array[])
 {
   int ierr;
 

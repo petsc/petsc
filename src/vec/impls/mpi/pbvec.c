@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.113 1998/12/17 22:08:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.114 1999/01/12 23:13:27 bsmith Exp balay $";
 #endif
 
 /*
@@ -154,7 +154,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
     VecCreateMPIWithArray(), VecCreate_Shared() (i.e. VecCreateShared()), VecCreateGhost(),
     VecDuplicate_MPI(), VecCreateGhostWithArray(), VecDuplicate_MPI(), and VecDuplicate_Shared()
 */
-int VecCreate_MPI_Private(Vec v,int nghost,int size,int rank,Scalar *array,Map map)
+int VecCreate_MPI_Private(Vec v,int nghost,int size,int rank,const Scalar array[],Map map)
 {
   Vec_MPI *s;
   int     ierr;
@@ -177,7 +177,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,int size,int rank,Scalar *array,Map m
   v->type_name   = (char *) PetscMalloc((1+PetscStrlen(VEC_MPI))*sizeof(char));CHKPTRQ(v->type_name);
   PetscStrcpy(v->type_name,VEC_MPI);
   if (array) {
-    s->array           = array;
+    s->array           = (Scalar *)array;
     s->array_allocated = 0;
   } else {
     s->array           = (Scalar *) PetscMalloc((v->n+nghost+1)*sizeof(Scalar));CHKPTRQ(s->array);
@@ -269,7 +269,7 @@ EXTERN_C_END
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 
 @*/ 
-int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
+int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const Scalar array[],Vec *vv)
 {
   int sum, work = n, size, rank,ierr;
 
@@ -486,10 +486,12 @@ int VecGhostUpdateEnd(Vec g, InsertMode insertmode,ScatterMode scattermode)
           VecCreateGhost(), VecCreateMPIWithArray()
 
 @*/ 
-int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Scalar *array,Vec *vv)
+int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],
+                            const Scalar array[],Vec *vv)
 {
   int     sum, work = n, size, rank, ierr;
   Vec_MPI *w;
+  Scalar  *larray;
 
   PetscFunctionBegin;
   *vv = 0;
@@ -509,10 +511,10 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Sca
   ierr = VecCreate_MPI_Private(*vv,nghost,size,rank,array,PETSC_NULL); CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
   /* Create local representation */
-  ierr = VecGetArray(*vv,&array); CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,n+nghost,array,&w->localrep); CHKERRQ(ierr);
+  ierr = VecGetArray(*vv,&larray); CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,n+nghost,larray,&w->localrep); CHKERRQ(ierr);
   PLogObjectParent(*vv,w->localrep);
-  ierr = VecRestoreArray(*vv,&array); CHKERRQ(ierr);
+  ierr = VecRestoreArray(*vv,&larray); CHKERRQ(ierr);
 
   /*
        Create scatter context for scattering (updating) ghost values 
@@ -557,7 +559,7 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Sca
           VecCreateGhostWithArray(), VecCreateMPIWithArray()
 
 @*/ 
-int VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Vec *vv)
+int VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],Vec *vv)
 {
   int ierr;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.54 1999/01/04 21:47:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.55 1999/01/12 23:13:10 bsmith Exp balay $";
 #endif
 
 #include "sys.h"
@@ -102,7 +102,8 @@ M*/
 
 #undef __FUNC__  
 #define __FUNC__ "VecRegister_Private"
-int VecRegister_Private(char *sname,char *path,char *name,int (*function)(Vec))
+int VecRegister_Private(const char sname[],const char path[],const char name[],
+                        int (*function)(Vec))
 {
   int  ierr;
   char fullname[256];

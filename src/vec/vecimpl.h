@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.51 1998/07/23 22:45:57 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.52 1998/10/09 19:19:14 bsmith Exp balay $ */
 
 /* 
    This private file should not be included in users' code.
@@ -29,40 +29,40 @@ struct _p_Map {
 
 typedef struct _VecOps *VecOps;
 struct _VecOps {
-  int  (*duplicate)(Vec,Vec*),           /* get single vector */
-       (*duplicatevecs)(Vec,int,Vec**),  /* get array of vectors */
-       (*destroyvecs)(Vec*,int),         /* free array of vectors */
-       (*dot)(Vec,Vec,Scalar*),          /* z = x^H * y */
-       (*mdot)(int,Vec,Vec*,Scalar*),    /* z[j] = x dot y[j] */
-       (*norm)(Vec,NormType,double*),    /* z = sqrt(x^H * x) */
-       (*tdot)(Vec,Vec,Scalar*),         /* x'*y */
-       (*mtdot)(int,Vec,Vec*,Scalar*),   /* z[j] = x dot y[j] */
-       (*scale)(Scalar*,Vec),            /* x = alpha * x   */
-       (*copy)(Vec,Vec),                 /* y = x */
-       (*set)(Scalar*,Vec),              /* y = alpha  */
-       (*swap)(Vec,Vec),                 /* exchange x and y */
-       (*axpy)(Scalar*,Vec,Vec),         /* y = y + alpha * x */
-       (*axpby)(Scalar*,Scalar*,Vec,Vec),/* y = y + alpha * x + beta * y*/
-       (*maxpy)(int,Scalar*,Vec,Vec*),   /* y = y + alpha[j] x[j] */
-       (*aypx)(Scalar*,Vec,Vec),         /* y = x + alpha * y */
-       (*waxpy)(Scalar*,Vec,Vec,Vec),    /* w = y + alpha * x */
-       (*pointwisemult)(Vec,Vec,Vec),    /* w = x .* y */
-       (*pointwisedivide)(Vec,Vec,Vec),  /* w = x ./ y */
-       (*setvalues)(Vec,int,int*,Scalar*,InsertMode),
-       (*assemblybegin)(Vec),            /* start global assembly */
-       (*assemblyend)(Vec),              /* end global assembly */
-       (*getarray)(Vec,Scalar**),        /* get data array */
+  int  (*duplicate)(Vec,Vec*),               /* get single vector */
+       (*duplicatevecs)(Vec,int,Vec**),      /* get array of vectors */
+       (*destroyvecs)(const Vec[],int),      /* free array of vectors */
+       (*dot)(Vec,Vec,Scalar*),              /* z = x^H * y */
+       (*mdot)(int,Vec,const Vec[],Scalar*), /* z[j] = x dot y[j] */
+       (*norm)(Vec,NormType,double*),        /* z = sqrt(x^H * x) */
+       (*tdot)(Vec,Vec,Scalar*),             /* x'*y */
+       (*mtdot)(int,Vec,const Vec[],Scalar*),/* z[j] = x dot y[j] */
+       (*scale)(const Scalar*,Vec),          /* x = alpha * x   */
+       (*copy)(Vec,Vec),                     /* y = x */
+       (*set)(const Scalar*,Vec),            /* y = alpha  */
+       (*swap)(Vec,Vec),                     /* exchange x and y */
+       (*axpy)(const Scalar*,Vec,Vec),       /* y = y + alpha * x */
+       (*axpby)(const Scalar*,const Scalar*,Vec,Vec), /* y = y + alpha * x + beta * y*/
+       (*maxpy)(int,const Scalar*,Vec,Vec*), /* y = y + alpha[j] x[j] */
+       (*aypx)(const Scalar*,Vec,Vec),       /* y = x + alpha * y */
+       (*waxpy)(const Scalar*,Vec,Vec,Vec),  /* w = y + alpha * x */
+       (*pointwisemult)(Vec,Vec,Vec),        /* w = x .* y */
+       (*pointwisedivide)(Vec,Vec,Vec),      /* w = x ./ y */
+       (*setvalues)(Vec,int,const int[],const Scalar[],InsertMode),
+       (*assemblybegin)(Vec),                /* start global assembly */
+       (*assemblyend)(Vec),                  /* end global assembly */
+       (*getarray)(Vec,Scalar**),            /* get data array */
        (*getsize)(Vec,int*),(*getlocalsize)(Vec,int*),
        (*getownershiprange)(Vec,int*,int*),
-       (*restorearray)(Vec,Scalar**),    /* restore data array */
-       (*max)(Vec,int*,double*),         /* z = max(x); idx=index of max(x) */
-       (*min)(Vec,int*,double*),         /* z = min(x); idx=index of min(x) */
-       (*setrandom)(PetscRandom,Vec),    /* set y[j] = random numbers */
+       (*restorearray)(Vec,Scalar**),        /* restore data array */
+       (*max)(Vec,int*,double*),             /* z = max(x); idx=index of max(x) */
+       (*min)(Vec,int*,double*),             /* z = min(x); idx=index of min(x) */
+       (*setrandom)(PetscRandom,Vec),        /* set y[j] = random numbers */
        (*setoption)(Vec,VecOption),
-       (*setvaluesblocked)(Vec,int,int*,Scalar*,InsertMode),
+       (*setvaluesblocked)(Vec,int,const int[],const Scalar[],InsertMode),
        (*destroy)(Vec),
        (*view)(Vec,Viewer),
-       (*placearray)(Vec,Scalar*),        /* place data array */
+       (*placearray)(Vec,const Scalar*),     /* place data array */
        (*getmap)(Vec,Map*);
 };
 
@@ -87,8 +87,8 @@ struct _p_Vec {
   Scalar *array_allocated;            
 
 /* Default obtain and release vectors; can be used by any implementation */
-extern int     VecDuplicateVecs_Default(Vec, int, Vec **);
-extern int     VecDestroyVecs_Default(Vec *,int);
+extern int     VecDuplicateVecs_Default(Vec, int, Vec *[]);
+extern int     VecDestroyVecs_Default(const Vec [],int);
 
 /* --------------------------------------------------------------------*/
 /*                                                                     */

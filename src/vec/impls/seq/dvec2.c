@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.55 1998/10/08 16:09:38 bsmith Exp bsmith $"
+static char vcid[] =  "$Id: dvec2.c,v 1.56 1998/12/03 03:56:57 bsmith Exp balay $"
 #endif
 
 /* 
@@ -14,7 +14,7 @@ static char vcid[] =  "$Id: dvec2.c,v 1.55 1998/10/08 16:09:38 bsmith Exp bsmith
 #undef __FUNC__  
 #define __FUNC__ "VecMDot_Seq"
 #if defined(USE_FORTRAN_KERNEL_MDOT)
-int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
+int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
   register int i,nv_rem;
@@ -84,7 +84,7 @@ int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
 }
 
 #else
-int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar * restrict z )
+int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar * restrict z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
   register int n = xv->n,i,j,nv_rem,j_rem;
@@ -108,7 +108,7 @@ int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar * restrict z )
 
   i      = nv;
   nv_rem = nv&0x3;
-  yy     = yin;
+  yy     = (Vec *)yin;
   j    = n;
   x    = xv->array;
 
@@ -283,7 +283,7 @@ int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar * restrict z )
 /* ----------------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "VecMTDot_Seq"
-int VecMTDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
+int VecMTDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
   register int n = xv->n,i,j,nv_rem,j_rem;
@@ -308,7 +308,7 @@ int VecMTDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
 
   i      = nv;
   nv_rem = nv&0x3;
-  yy     = yin;
+  yy     = (Vec*)yin;
   j    = n;
   x    = xv->array;
 
@@ -544,7 +544,7 @@ int VecMin_Seq(Vec xin,int* idx,double * z )
 
 #undef __FUNC__  
 #define __FUNC__ "VecSet_Seq"
-int VecSet_Seq(Scalar* alpha,Vec xin)
+int VecSet_Seq(const Scalar* alpha,Vec xin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
   register int n = x->n;
@@ -600,7 +600,7 @@ int VecSetRandom_Seq(PetscRandom r,Vec xin)
 
 #undef __FUNC__  
 #define __FUNC__ "VecMAXPY_Seq"
-int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
+int VecMAXPY_Seq(int nv,const Scalar *alpha, Vec xin, Vec *y)
 {
   Vec_Seq      *xdata = (Vec_Seq *) xin->data;
   int          n = xdata->n;
@@ -660,7 +660,7 @@ int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
 
 #undef __FUNC__  
 #define __FUNC__ "VecAYPX_Seq"
-int VecAYPX_Seq(Scalar *alpha, Vec xin, Vec yin )
+int VecAYPX_Seq(const Scalar *alpha, Vec xin, Vec yin )
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
   register int i,n = x->n;
@@ -682,7 +682,7 @@ int VecAYPX_Seq(Scalar *alpha, Vec xin, Vec yin )
 
 #undef __FUNC__  
 #define __FUNC__ "VecWAXPY_Seq"
-int VecWAXPY_Seq(Scalar* alpha,Vec xin,Vec yin,Vec win )
+int VecWAXPY_Seq(const Scalar* alpha,Vec xin,Vec yin,Vec win )
 {
   Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
   Vec_Seq      *y = (Vec_Seq *)yin->data;
@@ -738,7 +738,7 @@ int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win )
 
 #undef __FUNC__  
 #define __FUNC__ "VecGetArray_Seq"
-int VecGetArray_Seq(Vec vin,Scalar **a)
+int VecGetArray_Seq(Vec vin,Scalar *a[])
 {
   Vec_Seq *v = (Vec_Seq *)vin->data;
 
@@ -763,7 +763,7 @@ int VecGetArray_Seq(Vec vin,Scalar **a)
 
 #undef __FUNC__  
 #define __FUNC__ "VecRestoreArray_Seq"
-int VecRestoreArray_Seq(Vec vin,Scalar **a)
+int VecRestoreArray_Seq(Vec vin,Scalar *a[])
 {
   PetscFunctionBegin;
 
@@ -785,12 +785,12 @@ int VecRestoreArray_Seq(Vec vin,Scalar **a)
 
 #undef __FUNC__  
 #define __FUNC__ "VecPlaceArray_Seq"
-int VecPlaceArray_Seq(Vec vin,Scalar *a)
+int VecPlaceArray_Seq(Vec vin,const Scalar *a)
 {
   Vec_Seq *v = (Vec_Seq *)vin->data;
 
   PetscFunctionBegin;
-  v->array = a;
+  v->array = (Scalar *)a;
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: map.c,v 1.1 1998/05/19 02:21:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: map.c,v 1.2 1998/05/24 20:18:39 bsmith Exp balay $";
 #endif
 /*
      Provides the interface functions for all map operations.
@@ -109,7 +109,7 @@ int MapGetLocalRange(Map m,int *rstart,int *rend)
 
 .keywords: 
 @*/
-int MapGetGlobalRange(Map m,int **range)
+int MapGetGlobalRange(Map m,int *range[])
 {
   int ierr;
 

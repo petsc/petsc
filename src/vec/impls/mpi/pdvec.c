@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.103 1999/01/12 23:13:27 bsmith Exp bsmith $ 
+static char vcid[] = $Id: pdvec.c,v 1.104 1999/01/27 19:45:49 bsmith Exp balay $ 
 #endif
 
 /*
@@ -430,7 +430,7 @@ int VecGetSize_MPI(Vec xin,int *N)
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetValues_MPI"
-int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
+int VecSetValues_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
   int      rank = x->rank, *owners = xin->map->range, start = owners[rank];
@@ -505,7 +505,7 @@ int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetValuesBlocked_MPI"
-int VecSetValuesBlocked_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
+int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
   int      rank = x->rank, *owners = xin->map->range, start = owners[rank];

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.55 1998/10/09 19:19:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.56 1999/01/12 23:13:10 bsmith Exp balay $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -45,11 +45,11 @@ int DrawScalePopup(Draw popup,double min,double max)
    Collective on Draw and Vec
 
    Input Parameters:
-+   win - the window to draw in
-.   m,n - the global number of mesh points in the x and y directions
-.   x,y - the locations of the global mesh points (optional, use PETSC_NULL
-          to indicate uniform spacing on [0,1])
--   V - the vector
++   win   - the window to draw in
+.   m,n   - the global number of mesh points in the x and y directions
+.   xi,yi - the locations of the global mesh points (optional, use PETSC_NULL
+            to indicate uniform spacing on [0,1])
+-   V     - the vector
 
    Options Database Keys:
 +  -draw_x_private_colormap - Indicates use of private colormap
@@ -61,7 +61,7 @@ int DrawScalePopup(Draw popup,double min,double max)
 
 .keywords: Draw, tensor, contour, vector
 @*/
-int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
+int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],Vec V)
 {
   int           N, rank, ierr;
   Vec           W;
@@ -69,6 +69,7 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
   VecScatter    ctx;
   PetscObject   vobj = (PetscObject) win;
   Draw          popup;
+  double        *x,*y;
 #if !defined(USE_PETSC_COMPLEX)
   int           xin=1,yin=1,i,pause,showgrid;
   double        h, min, *v,max, scale = 1.0;
@@ -114,19 +115,23 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
     ierr = OptionsHasName(PETSC_NULL,"-draw_contour_grid",&showgrid);CHKERRQ(ierr);
 
     /* fill up x and y coordinates */
-    if (!x) {
+    if (!xi) {
       xin = 0; 
       x = (double *) PetscMalloc( m*sizeof(double) ); CHKPTRQ(x);
       h = 1.0/(m-1);
       x[0] = 0.0;
       for ( i=1; i<m; i++ ) x[i] = x[i-1] + h;
+    } else {
+      x = (double *) xi;
     }
-    if (!y) {
+    if (!yi) {
       yin = 0; 
       y = (double *) PetscMalloc( n*sizeof(double) ); CHKPTRQ(y);
       h = 1.0/(n-1);
       y[0] = 0.0;
       for ( i=1; i<n; i++ ) y[i] = y[i-1] + h;
+    } else {
+      y = (double *)yi;
     }
 
     /* Draw the contour plot */

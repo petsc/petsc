@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pvec2.c,v 1.34 1998/07/13 18:42:30 balay Exp bsmith $"
+static char vcid[] = "$Id: pvec2.c,v 1.35 1998/12/03 03:57:00 bsmith Exp balay $"
 #endif
 
 /*
@@ -39,7 +39,7 @@ int Ethernet_Allreduce(double *in,double *out,int n,MPI_Datatype type,MPI_Op op,
 
 #undef __FUNC__  
 #define __FUNC__ "VecMDot_MPI"
-int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
+int VecMDot_MPI( int nv, Vec xin,const Vec y[], Scalar *z )
 {
   Scalar awork[128],*work = awork;
   int    ierr;
@@ -66,7 +66,7 @@ int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 
 #undef __FUNC__  
 #define __FUNC__ "VecMTDot_MPI"
-int VecMTDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
+int VecMTDot_MPI( int nv, Vec xin,const Vec y[], Scalar *z )
 {
   Scalar awork[128],*work = awork;
   int    ierr;
