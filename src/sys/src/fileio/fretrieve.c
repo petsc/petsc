@@ -420,7 +420,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm comm,const char *libna
 
     ierr = PetscStrncmp(buf,"Error",5,&flg1);CHKERRQ(ierr);
     ierr = PetscStrncmp(buf,"Traceback",9,&flg2);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_POPEN)
     ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
+#endif
     if (flg1 || flg2) {
       *found = PETSC_FALSE;
     } else {
