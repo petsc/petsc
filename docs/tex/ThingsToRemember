@@ -522,3 +522,11 @@ Number of Newton iterations = 4
 I have setup ur achilles account for dialup access.
 Login name is  bsmith  and password is ZuPiHif
 Any questions, call x-5425 or email.
+
+----------------------------------------------------------------------
+emacs tags-query-replace example:
+\$(\([^\)]*\))
+${\1}
+replaces all $(something) with ${something}
+
+----------------------------------------------------------------------
