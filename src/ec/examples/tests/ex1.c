@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.1 1997/01/08 23:11:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.2 1997/08/27 19:08:26 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -36,10 +36,6 @@ int main(int argc,char **args)
   PetscTruth set;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-
-#if defined(PETSC_COMPLEX)
-  SETERRA(1,0,"This example does not work with complex numbers");
-#else
 
   /* 
      Determine files from which we read the matrix
@@ -92,7 +88,6 @@ int main(int argc,char **args)
   ierr = ECDestroy(ec); CHKERRA(ierr); 
 
   PetscFinalize();
-#endif
   return 0;
 }
 
