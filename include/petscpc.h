@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.38 1995/11/19 00:51:30 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.39 1995/12/03 02:42:03 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -9,10 +9,17 @@
 #include "mat.h"
 
 typedef enum { PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG,
-               PCEISENSTAT, PCILU, PCICC, PCASM } PCMethod;
+               PCEISENSTAT, PCILU, PCICC, PCASM, PCBGS } PCMethod;
 
 typedef struct _PC* PC;
 #define PC_COOKIE    PETSC_COOKIE+9
+
+typedef struct _PCNullSpace* PCNullSpace;
+#define PCNULLSPACE_COOKIE    PETSC_COOKIE+17
+
+extern int    PCNullSpaceCreate(MPI_Comm,int,int,Vec *,PCNullSpace*);
+extern int    PCNullSpaceDestroy(PCNullSpace);
+extern int    PCNullSpaceRemove(PCNullSpace,Vec);
 
 extern int    PCCreate(MPI_Comm,PC*);
 extern int    PCSetMethod(PC,PCMethod);

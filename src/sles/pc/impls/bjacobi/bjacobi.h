@@ -1,9 +1,9 @@
-/* $Id: bjacobi.h,v 1.12 1995/11/19 00:23:46 bsmith Exp bsmith $ */
+/* $Id: bjacobi.h,v 1.13 1995/12/03 02:41:53 bsmith Exp bsmith $ */
 
 #if !defined(__BJACOBI_H)
 #define __BJACOBI_H
 /*
-    Private data for Block Jacobi preconditioner.
+    Private data for block Jacobi and block Gauss-Seidel preconditioner.
 */
 #include "sles.h"
 
@@ -17,6 +17,7 @@ typedef struct {
   int  same_local_solves;   /* flag indicating whether all local solvers are same */
   int  *l_lens,*g_lens;     /* lens of each block */
   int  *l_true,*g_true;     /* select block from true matrix or preconditioner matrix */
+  int  gs;                  /* flag indicating we are using Gauss-Seidel */
 } PC_BJacobi;
 
 #endif
