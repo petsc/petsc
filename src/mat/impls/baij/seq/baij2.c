@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.16 1997/07/29 14:10:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.17 1997/08/22 15:14:29 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/seq/baij.h"
@@ -13,7 +13,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int         row, i,j,k,l,m,n, *idx,ierr, *nidx, isz, val, ival;
   int         start, end, *ai, *aj,bs,*nidx2;
-  char        *table;
+  BT          table;
 
   m     = a->mbs;
   ai    = a->i;
@@ -22,14 +22,14 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
 
   if (ov < 0)  SETERRQ(1,0,"Negative overlap specified");
 
-  table = (char *) PetscMalloc((m/BITSPERBYTE +1)*sizeof(char)); CHKPTRQ(table); 
+  ierr  = BTCreate(m,table); CHKERRQ(ierr);
   nidx  = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(nidx); 
   nidx2 = (int *)PetscMalloc((a->m+1)*sizeof(int)); CHKPTRQ(nidx2);
 
   for ( i=0; i<is_max; i++ ) {
     /* Initialise the two local arrays */
     isz  = 0;
-    PetscMemzero(table,(m/BITSPERBYTE +1)*sizeof(char));
+    BTMemzero(m,table);
                  
     /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);  CHKERRQ(ierr);
@@ -39,7 +39,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
     for ( j=0; j<n ; ++j){
       ival = idx[j]/bs; /* convert the indices into block indices */
       if (ival>m) SETERRQ(1,0,"index greater than mat-dim");
-      if(!BT_LOOKUP(table, ival)) { nidx[isz++] = ival;}
+      if(!BTLookupSet(table, ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is[i],&idx);  CHKERRQ(ierr);
     ierr = ISDestroy(is[i]); CHKERRQ(ierr);
@@ -53,7 +53,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
         end   = ai[row+1];
         for ( l = start; l<end ; l++){
           val = aj[l];
-          if (!BT_LOOKUP(table,val)) {nidx[isz++] = val;}
+          if (!BTLookupSet(table,val)) {nidx[isz++] = val;}
         }
       }
     }
@@ -64,7 +64,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF, isz*bs, nidx2, (is+i)); CHKERRQ(ierr);
   }
-  PetscFree(table);
+  BTDestroy(table);
   PetscFree(nidx);
   PetscFree(nidx2);
   return 0;
