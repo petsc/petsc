@@ -119,6 +119,8 @@ struct _p_Vec {
   PetscTruth             array_gotten;
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscTruth             petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
+  PetscReal              normcurrent;  /* contains the current 2 norm of the vector, if normvalid is true */
+  PetscTruth             normvalid;    /* flag indicating that normcurrent is correct */ 
   void                   *esivec;      /* ESI wrapper of vector */
 };
 

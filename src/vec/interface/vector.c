@@ -381,9 +381,13 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidType(x);
-  ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
-  ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
+  if (type == NORM_2 && x->normvalid) {
+    *val = x->normcurrent;
+  } else {
+    ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
+    ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
+    ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
+  }
   /*
      The next block is for incremental debugging
   */
@@ -393,6 +397,10 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
     if (flag != MPI_UNEQUAL) {
       ierr = PetscCompareDouble(*val);CHKERRQ(ierr);
     }
+  }
+  if (type == NORM_2) {
+    x->normcurrent = *val;
+    x->normvalid   = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -600,6 +608,8 @@ int VecCopy(Vec x,Vec y)
   ierr = PetscLogEventBegin(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->copy)(x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
+  y->normvalid   = x->normvalid;
+  y->normcurrent = x->normcurrent;
   PetscFunctionReturn(0);
 }
 
@@ -639,6 +649,7 @@ int VecSet(const PetscScalar *alpha,Vec x)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidScalarPointer(alpha);
   PetscValidType(x);
+  x->normvalid = PETSC_FALSE;
 
   ierr = PetscLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->set)(alpha,x);CHKERRQ(ierr);
@@ -684,6 +695,7 @@ int VecSetRandom(PetscRandom rctx,Vec x)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   if (rctx) PetscValidHeaderSpecific(rctx,PETSC_RANDOM_COOKIE);
   PetscValidType(x);
+  x->normvalid = PETSC_FALSE;
 
   if (!rctx) {
     MPI_Comm    comm;
@@ -737,6 +749,7 @@ int VecAXPY(const PetscScalar *alpha,Vec x,Vec y)
   PetscCheckSameComm(x,y);
   if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  y->normvalid = PETSC_FALSE;
 
   ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->axpy)(alpha,x,y);CHKERRQ(ierr);
@@ -780,6 +793,7 @@ int VecAXPBY(const PetscScalar *alpha,const PetscScalar *beta,Vec x,Vec y)
   PetscCheckSameComm(x,y);
   if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  y->normvalid = PETSC_FALSE;
 
   ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->axpby)(alpha,beta,x,y);CHKERRQ(ierr);
@@ -822,6 +836,7 @@ int VecAYPX(const PetscScalar *alpha,Vec x,Vec y)
   PetscCheckSameComm(x,y);
   if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  y->normvalid = PETSC_FALSE;
 
   ierr = PetscLogEventBegin(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
   ierr =  (*x->ops->aypx)(alpha,x,y);CHKERRQ(ierr);
@@ -861,6 +876,15 @@ int VecSwap(Vec x,Vec y)
   ierr = PetscLogEventBegin(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->swap)(x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
+  { 
+    PetscTruth normvalid   = x->normvalid;
+    PetscReal  normcurrent = x->normcurrent;
+ 
+    x->normvalid   = y->normvalid;
+    x->normcurrent = y->normcurrent;
+    y->normvalid   = normvalid;
+    y->normcurrent = normcurrent;
+  }
   PetscFunctionReturn(0);
 }
 
