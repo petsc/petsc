@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.202 1999/01/04 21:48:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.203 1999/03/17 23:21:46 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -74,9 +74,12 @@ int PetscGetProgramName(char name[],int len)
 #define __FUNC__ "PetscSetProgramName"
 int PetscSetProgramName(const char name[])
 { 
+  char *sname=0;
   PetscFunctionBegin;
   options->namegiven = 1;
-  PetscStrncpy(options->programname,name,256);
+  /* Now strip away the path, if absulute path is specified */
+  sname = PetscStrrchr(name,'/');
+  PetscStrncpy(options->programname,sname,256);
   PetscFunctionReturn(0);
 }
 
