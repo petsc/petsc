@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.7 1997/10/13 19:11:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.8 1997/10/13 21:16:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -79,7 +79,7 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
 }
 
 /*
-  TSPSolve_PVode is the routine that we provide to PVode that applies the 
+  TSPSolve_PVode -  routine that we provide to PVode that applies the 
   preconditioner.
       
    ---------------------------------------------------------------------
@@ -103,14 +103,16 @@ static int TSPSolve_PVode(integer N, real tn, N_Vector y,
   ierr = VecPlaceArray(rr,&N_VIth(r,0)); CHKERRQ(ierr);
   ierr = VecPlaceArray(xx,&N_VIth(z,0)); CHKERRQ(ierr);
 
-  /* solve the Px=r and put the result in xx */
+  /* 
+      Solve the Px=r and put the result in xx 
+  */
   ierr = PCApply(pc,rr,xx); CHKERRQ(ierr);
 
   return 0;
 }
 
 /*
-  TSPSolve_PVode is the routine that we provide to PVode that applies the 
+    TSPSolve_PVode - routine that we provide to PVode that applies the 
   right hand side.
       
    ---------------------------------------------------------------------
@@ -120,55 +122,24 @@ static int TSPSolve_PVode(integer N, real tn, N_Vector y,
 static void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
 {
   TS        ts = (TS) ctx;
-  Vec       tmpx, tmpy;
-  int       i, low, high, locsize, loc, ierr;
-  Scalar    tmp, *Funp;
+  TS_PVode *cvode = (TS_PVode*) ts->data;
+  Vec       tmpx = cvode->w1, tmpy = cvode->w2;
+  int       ierr;
 
-  /* get the local size of y */
-  locsize = N_VLOCLENGTH(y);
-  
-  /* create petsc vector tmpx */
-  ierr = VecCreateMPI(MPI_COMM_WORLD, locsize, N, &tmpx); CHKERRA(ierr);
-
-  /* copy the N_vector y to tmpx */
-  ierr = VecGetOwnershipRange(tmpx,&low,&high); CHKERRA(ierr);
-  for( i=0; i<locsize; i++) {
-    tmp = Ith(y,i+1);
-    loc = low+i;
-    ierr = VecSetValues(tmpx,1,&loc,&tmp,INSERT_VALUES); 
-    CHKERRA(ierr);
-  }
-  ierr = VecAssemblyBegin(tmpx); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(tmpx); CHKERRA(ierr);
-
-  /* get the local size of ydot */
-  locsize = N_VLOCLENGTH(ydot);
-
-  /* create petsc vector tmpy */
-  ierr = VecCreateMPI(MPI_COMM_WORLD, locsize, N, &tmpy); CHKERRA(ierr);
+  /*
+      Make the PETSc work vectors tmpx and tmpy point to the arrays in the PVODE vectors 
+  */
+  ierr = VecPlaceArray(tmpx,&N_VIth(y,0)); CHKERRA(ierr);
+  ierr = VecPlaceArray(tmpy,&N_VIth(ydot,0)); CHKERRA(ierr);
 
   /* now compute the right hand side function */
   ierr = TSComputeRHSFunction(ts,t,tmpx,tmpy); CHKERRA(ierr);
-
-  /* copy tmpy to the N_vector y */
-  ierr = VecGetArray(tmpy, &Funp); CHKERRA(ierr);
-
-  for (i=0; i<locsize; i++) {
-    loc=i;
-    Ith(ydot,i+1)=Funp[loc];
-  }
-
-  /* free the spaces */
-  ierr = VecRestoreArray(tmpy,&Funp); CHKERRA(ierr);
-  ierr = VecDestroy(tmpx); CHKERRA(ierr);
-  ierr = VecDestroy(tmpy); CHKERRA(ierr);
-
 }
 
 /*
-  This function calls PVode to integrate the ODE.
+  TSStep_PVode_Nonlinear - Calls PVode to integrate the ODE.
 
-----------------------------------------------------------------------
+   ----------------------------------------------------------------------
 */
 #undef __FUNC__  
 #define __FUNC__ "TSStep_PVode_Nonlinear"
@@ -181,24 +152,20 @@ static void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
 */
 static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
 {
+  TS_PVode  *cvode = (TS_PVode*) ts->data;
   Vec       sol = ts->vec_sol;
-  int       ierr,i,j,max_steps = ts->max_steps;
-  TS_PVode *cvode = (TS_PVode*) ts->data;
-  int       flag, locsize, low, high, loc;
+  int       ierr,i,max_steps = ts->max_steps,flag;
   double    t, tout;
-  Scalar    tmp;
 
   /* initialize the number of steps */
   *steps = -ts->steps;
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
+  ierr   = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
 
   /* call CVSpgmr to use GMRES as the linear solver. */
   
   /* setup the ode integrator with the given preconditioner */
   CVSpgmr(cvode->mem, LEFT, MODIFIED_GS, 0, 0.0, TSPrecond_PVode,TSPSolve_PVode, ts);
 
-
-  /* call PVode to solve the system */
   tout = ts->max_time;
   for ( i=0; i<max_steps; i++) {
     if (ts->ptime > ts->max_time) break;
@@ -208,21 +175,11 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
     ts->time_step = t - ts->ptime;
     ts->ptime     = t;
 
-    /* get the number of equations */
-    ierr = VecGetLocalSize(cvode->update, &locsize); CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(cvode->update,&low,&high); CHKERRQ(ierr);
-
-    /* copy the solution from cvode->y to cvode->update */
-    for( j=0; j<locsize; j++) {
-      tmp = Ith(cvode->y,j+1);
-      loc = low+j;
-      ierr = VecSetValues(cvode->update,1,&loc,&tmp,INSERT_VALUES); CHKERRQ(ierr);
-    }
-
-    ierr = VecAssemblyBegin(cvode->update); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(cvode->update); CHKERRQ(ierr);
-
-    /* copy vector cvode->update to sol */ 
+    /*
+       copy the solution from cvode->y to cvode->update and sol 
+    */
+    ierr = VecPlaceArray(cvode->w1,&N_VIth(cvode->y,0)); CHKERRQ(ierr);
+    ierr = VecCopy(cvode->w1,cvode->update); CHKERRQ(ierr);
     ierr = VecCopy(cvode->update, sol); CHKERRQ(ierr);
     
     ts->steps++;
@@ -234,7 +191,7 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
   ts->nonlinear_its = cvode->iopt[NNI];
   ts->linear_its    = 0;
 
-  /* count on the number of steps and the time reached by CVODE */
+  /* count the number of steps and the time reached by CVODE */
   *steps += ts->steps;
   *time  = t;
 
@@ -250,12 +207,12 @@ static int TSDestroy_PVode(PetscObject obj )
   TS_PVode *cvode = (TS_PVode*) ts->data;
   int       ierr;
 
-  ierr = PCDestroy(cvode->pc); CHKERRQ(ierr);
-  ierr = VecDestroy(cvode->update); CHKERRQ(ierr);
-  if (cvode->func) {ierr = VecDestroy(cvode->func);CHKERRQ(ierr);}
-  if (cvode->rhs)  {ierr = VecDestroy(cvode->rhs);CHKERRQ(ierr);}
-  if (cvode->w1)   {ierr = VecDestroy(cvode->w1);CHKERRQ(ierr);}
-  if (cvode->w2)   {ierr = VecDestroy(cvode->w2);CHKERRQ(ierr);}
+  if (cvode->pc)     {ierr = PCDestroy(cvode->pc); CHKERRQ(ierr);}
+  if (cvode->update) {ierr = VecDestroy(cvode->update); CHKERRQ(ierr);}
+  if (cvode->func)   {ierr = VecDestroy(cvode->func);CHKERRQ(ierr);}
+  if (cvode->rhs)    {ierr = VecDestroy(cvode->rhs);CHKERRQ(ierr);}
+  if (cvode->w1)     {ierr = VecDestroy(cvode->w1);CHKERRQ(ierr);}
+  if (cvode->w2)     {ierr = VecDestroy(cvode->w2);CHKERRQ(ierr);}
   PetscFree(cvode);
   return 0;
 }
@@ -266,15 +223,14 @@ static int TSDestroy_PVode(PetscObject obj )
 #define __FUNC__ "TSSetUp_PVode_Nonlinear"
 static int TSSetUp_PVode_Nonlinear(TS ts)
 {
-  TS_PVode *cvode = (TS_PVode*) ts->data;
-  int       ierr, M, locsize;
+  TS_PVode    *cvode = (TS_PVode*) ts->data;
+  int         ierr, M, locsize;
 
   machEnvType machEnv;
 
   /* get the vector size */
   ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
   ierr = VecGetLocalSize(ts->vec_sol,&locsize); CHKERRQ(ierr);
-
 
   /* allocate the memory for machEnv */
   machEnv = PVInitMPI(ts->comm,locsize,M); 
@@ -287,20 +243,12 @@ static int TSSetUp_PVode_Nonlinear(TS ts)
   cvode->abstol = 1e-6;
   cvode->reltol = 1e-6;
 
-  /* allocate memory for PVode */
-  cvode->mem = CVodeMalloc(M,TSFunction_PVode,ts->ptime,cvode->y,
- 			          cvode->cvode_method,
-                                  NEWTON,SS,&cvode->reltol,
-                                  &cvode->abstol,ts,NULL,FALSE,cvode->iopt,
-                                  cvode->ropt,machEnv);
-  if (cvode->mem == NULL) {
-    SETERRQ(1,0,"PVodeMalloc failed. \n");
-    return 1;
-  }
 
   /* initializing vector update and func */
   ierr = VecDuplicate(ts->vec_sol,&cvode->update); CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cvode->func); CHKERRQ(ierr);  
+  PLogObjectParent(ts,cvode->update);
+  PLogObjectParent(ts,cvode->func);
 
   /* 
       Create work vectors for the TSPSolve_PVode() routine. Note these are
@@ -311,6 +259,13 @@ static int TSSetUp_PVode_Nonlinear(TS ts)
   ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
   PLogObjectParent(ts,cvode->w1);
   PLogObjectParent(ts,cvode->w2);
+
+  /* allocate memory for PVode */
+  cvode->mem = CVodeMalloc(M,TSFunction_PVode,ts->ptime,cvode->y,
+ 			          cvode->cvode_method,
+                                  NEWTON,SS,&cvode->reltol,
+                                  &cvode->abstol,ts,NULL,FALSE,cvode->iopt,
+                                  cvode->ropt,machEnv); CHKPTRQ(cvode->mem);
   return 0;
 }
 
@@ -405,13 +360,12 @@ int TSCreate_PVode(TS ts )
   ts->printhelp       = TSPrintHelp_PVode;
   ts->view            = TSView_PVode;
 
-  if (ts->problem_type == TS_LINEAR) {
+  if (ts->problem_type != TS_NONLINEAR) {
     SETERRQ(1,0,"Only support for nonlinear problems");
-  } else if (ts->problem_type == TS_NONLINEAR) {
-    ts->setup           = TSSetUp_PVode_Nonlinear;  
-    ts->step            = TSStep_PVode_Nonlinear;
-    ts->setfromoptions  = TSSetFromOptions_PVode_Nonlinear;
-  } else SETERRQ(1,0,"No such problem");
+  }
+  ts->setup           = TSSetUp_PVode_Nonlinear;  
+  ts->step            = TSStep_PVode_Nonlinear;
+  ts->setfromoptions  = TSSetFromOptions_PVode_Nonlinear;
 
   cvode    = PetscNew(TS_PVode); CHKPTRQ(cvode);
   PetscMemzero(cvode,sizeof(TS_PVode));
@@ -445,37 +399,6 @@ int TSPVodeSetMethod(TS ts, TSPVodeMethod method)
 }
 
 /*--------------------------------------------------------------------*/
-
-#undef __FUNC__
-#define __FUNC__ "TSPVodePCSetType"
-/*@
-     TSPVodeSetPCType - This function sets the preconditioner type for TS
-                        when using PVODE.
-
-  Input parameters:
-.   ts - the time-step context
-.   type - the preconditioner type, for example, PCBJACOBI
-
-.seealso: TSPVodeGetPC()
-
-@*/
-int TSPVodeSetPCType(TS ts, PCType type)
-{
-  TS_PVode *cvode = (TS_PVode*) ts->data;
-  int      ierr;
-  MPI_Comm comm = ts->comm;
-
-  if (ts->type != TS_PVODE) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"TS must be of PVode type to set the PC type");
-
-  /* Create a PETSc preconditioner context */
-  ierr = PCCreate(comm,&cvode->pc); CHKERRQ(ierr);
-  ierr = PCSetType(cvode->pc,type); CHKERRQ(ierr);
-  ierr = PCSetFromOptions(cvode->pc); CHKERRQ(ierr);
-
-  return 0;
-}
-
-/*--------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "TSPVodeGetPC"
 /*
@@ -487,127 +410,20 @@ int TSPVodeSetPCType(TS ts, PCType type)
    Output Parameter:
 .    pc - the preconditioner context
 
-.seealso: TSPVodeSetPCType()
+.seealso: 
 */
 int TSPVodeGetPC(TS ts, PC *pc)
 { 
+  int      ierr;
   TS_PVode *cvode = (TS_PVode*) ts->data;
 
-  if (ts->type != TS_PVODE) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"TS must be of PVode type to extract the PC");
+  if (ts->type != TS_PVODE) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"TS must be of PVode type to extract the PC");
+  }
+  if (!cvode->pc) {
+    ierr = PCCreate(ts->comm,&cvode->pc); CHKERRQ(ierr);
+  }
   *pc = cvode->pc;
-
-  return 0;
-}
-
-/*
-=====================================================================================
-*/
-
-
-/*--------------------------------------------------------------------*/
-/* 
-This function computes the RHS Jacobian by FD.
-*/
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetRHSJacobian"
-int TSPVodeSetRHSJacobian(TS ts,double t,Vec y,Mat* A,Mat* B,MatStructure *flag,void *ctx)
-{
-  int           ierr;
-  SNES          snes = (SNES) ctx;
-  Mat           J = *A;
-  MatFDColoring fdcoloring;
-  ISColoring    iscoloring;
-
-  if (snes->jacobian->assembled) {
-    /* set the jacobian structure */
-    ierr = MatZeroEntries(J); CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatCopy(snes->jacobian,J); CHKERRQ(ierr);
-  }
-  else {
-    /* compute the jacobian by the user provid function */
-    ierr = (*snes->computejacobian)(snes,y,&J,&J,flag,snes->funP); CHKERRQ(ierr);
-  }
-  ierr = MatGetColoring(J,COLORING_NATURAL,&iscoloring); CHKERRQ(ierr);
-  ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); CHKERRQ(ierr);
-  ierr = MatFDColoringSetFromOptions(fdcoloring); CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianWithColoring,
-         fdcoloring);CHKERRQ(ierr);
-
-  /* Compute the jacobian */
-  ierr = SNESDefaultComputeJacobianWithColoring
-         (snes,y,&J,&J,flag,
-         fdcoloring);CHKERRQ(ierr);
-  /*
-  This line causes error message, don't know why.
-  ierr = ISColoringDestroy(iscoloring); CHKERRQ(ierr);
-  */
-
-  *flag = SAME_NONZERO_PATTERN;
-
-  return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/*
-This function reads in the RHS function from SNES setting 
-*/
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetRHSFunction"
-int TSPVodeSetRHSFunction(TS ts, double t, Vec in, Vec out, void *ctx)
-{
-  int ierr;
-  SNES          snes = (SNES) ctx;
-  ierr = (*snes->computefunction)(snes, in, out, snes->funP);
-  CHKERRQ(ierr);
-
-  return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/*
-This function computes the RHS Jacobian.
-*/  
-#undef __FUNC__
-#define __FUNC__ "TSComputeRHSJacobianForPVODE"
-int TSComputeRHSJacobianForPVODE(TS ts, double t, Vec y, Mat* A,
-  Mat* B, MatStructure *flag, void *ctx)
-{ 
-  int ierr;
- 
-  /* compute the Jacobian */
-  ierr = (*ts->rhsjacobian)(ts,t,y,A,B,flag,ctx);
-  CHKERRQ(ierr);
-
-  return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/*  
-This function computes the RHS Function.
-*/
-#undef __FUNC__
-#define __FUNC__ "TSComputeRHSFunctionForPVODE"
-int TSComputeRHSFunctionForPVODE(TS ts, double t, Vec x, Vec y, void* ctr)
-{ 
-  int ierr;
-
-  /* compute the RHS function */
-  ierr = (*ts->rhsfunction)(ts,t,x,y,ctr);
-  
-  return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/*
-Extract the user data pointer
-*/
-#undef __FUNC__ 
-#define __FUNC__ "TSPVodeGetUserData"
-int TSPVodeGetUserData(TS ts, void *funP)
-{
-  funP = ts->funP;
 
   return 0;
 }
