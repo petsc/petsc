@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.108 1998/07/16 15:43:32 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.109 1998/11/24 23:33:52 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -32,7 +32,7 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format ==  VIEWER_FORMAT_ASCII_INFO) {
       int nsend_max,nrecv_max,lensend_max,lenrecv_max,alldata;
-      int i,itmp;
+      int itmp;
 
       ierr = MPI_Reduce(&to->n,&nsend_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
       ierr = MPI_Reduce(&from->n,&nrecv_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
