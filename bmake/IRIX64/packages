@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.35 1998/09/02 22:49:10 balay Exp bsmith $ 
+# $Id: base.site,v 1.36 1998/09/04 03:42:40 bsmith Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -22,7 +22,8 @@ FC_LIB         =  -lfortran -lftn -lfastm
 # mp in them) version of the SGI BLAS.
 #
 BLAS_LIB       = -lblas ${FC_LIB}
-LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX64.a
+LAPACK_LIB     = -lcomplib.sgimath
+#LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX64.a
 #
 # Location of X-windows software
 #
