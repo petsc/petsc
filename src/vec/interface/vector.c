@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.159 1999/01/14 00:10:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.160 1999/01/14 00:11:31 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -800,6 +800,11 @@ int VecDestroyVecs(Vec *vv,int m)
 
    VecSetValues() uses 0-based indices in Fortran as well as in C.
 
+   Negative indices may be passed in ix, these rows are 
+   simply ignored. This allows easily inserting element load matrices
+   with homogeneous Dirchlet boundary conditions that you don't want represented
+   in the vector.
+
 .keywords: vector, set, values
 
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesLocal(),
@@ -847,6 +852,11 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
    MUST be called after all calls to VecSetValuesBlocked() have been completed.
 
    VecSetValuesBlocked() uses 0-based indices in Fortran as well as in C.
+
+   Negative indices may be passed in ix, these rows are 
+   simply ignored. This allows easily inserting element load matrices
+   with homogeneous Dirchlet boundary conditions that you don't want represented
+   in the vector.
 
 .keywords: vector, set, values
 

@@ -16,6 +16,11 @@ add to it).
 
      Vectors are now dynamically loaded; types can be set at run-time via VecSetType()
 
+     Indices that are negative passed into VecSetValues...() are now ignored (rather than 
+     generating an error). This allows easily keeping homogeneous Dirichlet boundary nodes out of the
+     vectors and matrices for unstructured grid problems; just indicate those node numbers with 
+     negative numbers.
+
   MAT
 
     Fixed bugs in MatReorderForNonzeroDiagonal() and made it more
@@ -28,6 +33,11 @@ add to it).
 
     Changed the calling sequence of MatILUFactor() and MatILUFactorSymbolic() to increase
     flexibility of adding new ILU options
+
+     Indices that are negative passed into MatSetValues...() are now ignored (rather than 
+     generating an error). This allows easily keeping homogeneous Dirichlet boundary nodes out of the
+     vectors and matrices for unstructured grid problems; just indicate those node numbers with 
+     negative numbers.
 
   KSP
 
