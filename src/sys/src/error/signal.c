@@ -207,7 +207,9 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
     signal(SIGILL,  0);
     signal(SIGFPE,  0);
     signal(SIGSEGV, 0);
+#if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGUSR1, 0);
+#endif
 #if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGSYS,  0);
 #endif
