@@ -3,10 +3,10 @@ PETSC_DIR = ../../..
 ALL: lib
 
 CFLAGS   = $(PETSC_INCLUDE) -I.. $(PCONF) $(CONF) -D__DIR__='"mat/interface/"'
-SOURCEC  = matrix.c 
+SOURCEC  = matrix.c mhas.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = matrix.o 
+OBJSC    = matrix.o mhas.o
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = 2
