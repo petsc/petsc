@@ -642,7 +642,6 @@ int MatGetValues_SeqDense(Mat A,int m,const int indexm[],int n,const int indexn[
 
 #include "petscsys.h"
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqDense"
 int MatLoad_SeqDense(PetscViewer viewer,MatType type,Mat *A)
@@ -714,7 +713,6 @@ int MatLoad_SeqDense(PetscViewer viewer,MatType type,Mat *A)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #include "petscsys.h"
 

@@ -1755,7 +1755,6 @@ int MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIRowbs"
 int MatLoad_MPIRowbs(PetscViewer viewer,MatType type,Mat *newmat)
@@ -1920,7 +1919,6 @@ int MatLoad_MPIRowbs(PetscViewer viewer,MatType type,Mat *newmat)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* 
     Special destroy and view routines for factored matrices 

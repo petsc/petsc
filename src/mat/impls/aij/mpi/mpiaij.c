@@ -1878,7 +1878,6 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 
 #include "petscsys.h"
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIAIJ"
 int MatLoad_MPIAIJ(PetscViewer viewer,MatType type,Mat *newmat)
@@ -2064,7 +2063,6 @@ int MatLoad_MPIAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   *newmat = A;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_MPIAIJ"
