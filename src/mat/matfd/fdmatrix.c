@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.22 1997/10/12 21:39:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.23 1997/10/12 23:24:25 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -232,7 +233,7 @@ int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 
 .keywords: Mat, Jacobian, finite differences, set, function
 @*/
-int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void *,Vec,Vec,void *),void *fctx)
+int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 {
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
 
@@ -451,7 +452,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   double        epsilon = coloring->error_rel, umin = coloring->umin; 
   MPI_Comm      comm = coloring->comm;
   Vec           w1,w2,w3;
-  int           (*f)(void *,Vec,Vec,void *) = coloring->f;
+  int           (*f)(void *,Vec,Vec,void *) = ( int (*)(void *,Vec,Vec,void *))coloring->f;
   void          *fctx = coloring->fctx;
 
   PetscValidHeaderSpecific(J,MAT_COOKIE);
@@ -512,6 +513,120 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
        Evaluate function at x1 + dx (here dx is a vector of perturbations)
     */
     ierr = (*f)(sctx,w3,w2,fctx); CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,w1,w2); CHKERRQ(ierr);
+    /* Communicate scale to all processors */
+#if !defined(PETSC_COMPLEX)
+    MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);
+#else
+    MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);
+#endif
+    /*
+       Loop over rows of vector, putting results into Jacobian matrix
+    */
+    VecGetArray(w2,&y);
+    for (l=0; l<coloring->nrows[k]; l++) {
+      row    = coloring->rows[k][l];
+      col    = coloring->columnsforrow[k][l];
+      y[row] *= scale[col];
+      srow   = row + start;
+      ierr   = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    VecRestoreArray(w2,&y);
+  }
+  ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  return 0;
+}
+
+#include "ts.h"
+
+#undef __FUNC__  
+#define __FUNC__ "MatFDColoringApplyTS"
+/*@
+    MatFDColoringApplyTS - Given a matrix for which a MatFDColoring context 
+    has been created, computes the Jacobian for a function via finite differences.
+
+    Input Parameters:
+.   mat - location to store Jacobian
+.   coloring - coloring context created with MatFDColoringCreate()
+.   x1 - location at which Jacobian is to be computed
+.   sctx - optional context required by function (actually a SNES context)
+
+   Options Database Keys:
+$  -mat_fd_coloring_freq <freq> 
+
+.seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView()
+
+.keywords: coloring, Jacobian, finite differences
+@*/
+int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructure *flag,void *sctx)
+{
+  int           k,fg,ierr,N,start,end,l,row,col,srow;
+  Scalar        dx, mone = -1.0,*y,*scale = coloring->scale,*xx,*wscale = coloring->wscale;
+  double        epsilon = coloring->error_rel, umin = coloring->umin; 
+  MPI_Comm      comm = coloring->comm;
+  Vec           w1,w2,w3;
+  int           (*f)(void *,double,Vec,Vec,void *) = ( int (*)(void *,double,Vec,Vec,void *))coloring->f;
+  void          *fctx = coloring->fctx;
+
+  PetscValidHeaderSpecific(J,MAT_COOKIE);
+  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE);
+  PetscValidHeaderSpecific(x1,VEC_COOKIE);
+
+
+  if (!coloring->w1) {
+    ierr = VecDuplicate(x1,&coloring->w1); CHKERRQ(ierr);
+    PLogObjectParent(coloring,coloring->w1);
+    ierr = VecDuplicate(x1,&coloring->w2); CHKERRQ(ierr);
+    PLogObjectParent(coloring,coloring->w2);
+    ierr = VecDuplicate(x1,&coloring->w3); CHKERRQ(ierr);
+    PLogObjectParent(coloring,coloring->w3);
+  }
+  w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
+
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&fg); CHKERRQ(ierr);
+  if (fg) {
+    PLogInfo(coloring,"MatFDColoringApplyTS: Not calling MatZeroEntries()\n");
+  } else {
+    ierr = MatZeroEntries(J); CHKERRQ(ierr);
+  }
+
+  ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
+  ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
+  ierr = VecGetArray(x1,&xx); CHKERRQ(ierr);
+  ierr = (*f)(sctx,t,x1,w1,fctx); CHKERRQ(ierr);
+
+  PetscMemzero(wscale,N*sizeof(Scalar));
+  /*
+      Loop over each color
+  */
+
+  for (k=0; k<coloring->ncolors; k++) { 
+    ierr = VecCopy(x1,w3); CHKERRQ(ierr);
+    /*
+       Loop over each column associated with color adding the 
+       perturbation to the vector w3.
+    */
+    for (l=0; l<coloring->ncolumns[k]; l++) {
+      col = coloring->columns[k][l];    /* column of the matrix we are probing for */
+      dx  = xx[col-start];
+      if (dx == 0.0) dx = 1.0;
+#if !defined(PETSC_COMPLEX)
+      if (dx < umin && dx >= 0.0)      dx = umin;
+      else if (dx < 0.0 && dx > -umin) dx = -umin;
+#else
+      if (abs(dx) < umin && real(dx) >= 0.0)     dx = umin;
+      else if (real(dx) < 0.0 && abs(dx) < umin) dx = -umin;
+#endif
+      dx          *= epsilon;
+      wscale[col] = 1.0/dx;
+      VecSetValues(w3,1,&col,&dx,ADD_VALUES); 
+    } 
+    VecRestoreArray(x1,&xx);
+    /*
+       Evaluate function at x1 + dx (here dx is a vector of perturbations)
+    */
+    ierr = (*f)(sctx,t,w3,w2,fctx); CHKERRQ(ierr);
     ierr = VecAXPY(&mone,w1,w2); CHKERRQ(ierr);
     /* Communicate scale to all processors */
 #if !defined(PETSC_COMPLEX)
