@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.4 1995/06/07 16:36:33 bsmith Exp $ */
+/* $Id: dvec2.c,v 1.11 1995/06/07 17:27:28 bsmith Exp bsmith $ */
 
 /*
      These are routines shared by sequential vectors and BLAS sequential 
@@ -62,7 +62,7 @@ static int VecMax_Seq(Vec xin,int* idx,double * z )
   Scalar    *xx = x->array;
   for (i=0; i<n; i++) {
 #if defined(PETSC_COMPLEX)
-    IF ((tmp = real(*xx++)) > max) { j = i; max = tmp;}
+    if ((tmp = real(*xx++)) > max) { j = i; max = tmp;}
 #else
     if ((tmp = *xx++) > max) { j = i; max = tmp; } 
 #endif
