@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
+/*$Id: comm.c,v 1.2 2001/04/10 19:37:38 bsmith Exp balay $*/
 /***********************************comm.c*************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -1087,8 +1087,10 @@ grop_hc_vvl(REAL *vals, REAL *work, int *segs, int *oprs, int dim)
     {error_msg_fatal("grop_hc() :: vals=%d, work=%d, oprs=%d",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
+#if defined(not_used)
   if ((oprs[0] == NON_UNIFORM)&&(n<2))
     {error_msg_fatal("grop_hc() :: non_uniform and n=0,1?");}    
+#endif
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
