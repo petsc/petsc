@@ -69,11 +69,11 @@ runex1:
 	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type euler -linear_constant_matrix  
 	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type euler -linear_variable_matrix 
 	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type euler  -nonlinear_jacobian 
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type always -linear_no_matrix -pc_type none  -ksp_rtol 1.e-8
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type always -nonlinear_no_jacobian -pc_type none
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type always -linear_constant_matrix  -pc_type lu 
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type always -linear_variable_matrix 
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type always -nonlinear_jacobian 
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_no_matrix -pc_type none  -ksp_rtol 1.e-8
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_no_jacobian -pc_type none
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_constant_matrix  -pc_type lu 
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_variable_matrix 
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_jacobian 
 
 runex1f:
 	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type euler  -linear_no_matrix
@@ -81,11 +81,11 @@ runex1f:
 	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type euler -linear_constant_matrix  
 	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type euler -linear_variable_matrix 
 	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type euler -nonlinear_jacobian 
-	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type always -linear_no_matrix -pc_type none
-	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type always -nonlinear_no_jacobian -pc_type none
-	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type always -linear_constant_matrix  -pc_type lu 
-	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type always -linear_variable_matrix 
-	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type always -nonlinear_jacobian 
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_no_matrix -pc_type none
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_no_jacobian -pc_type none
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_constant_matrix  -pc_type lu 
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_variable_matrix 
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_jacobian 
 
 TESTEXAMPLES_1  = ex1.PETSc  runex1  ex1.rm 
 TESTEXAMPLES_2  = 

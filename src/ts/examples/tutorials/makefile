@@ -48,13 +48,13 @@ ex7: ex7.o  chkopts
 	${RM} ex7.o
 #---------------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ./ex1 -ksp_gmres_cgs_refinement_type always  > ex1_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always  > ex1_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 
 runex1f:
-	-@${MPIRUN} -np 1 ./ex1f -ksp_gmres_cgs_refinement_type always > ex1f_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always > ex1f_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp
