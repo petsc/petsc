@@ -70,7 +70,8 @@ class Configure(config.base.Configure):
     '''Returns true if the compiler is a GNU compiler'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
-      if output.find('www.gnu.org') >= 0 or output.find('developer.apple.com') >= 0 or output.find('bugzilla.redhat.com') >= 0:
+      output = output + error
+      if output.find('www.gnu.org') >= 0 or output.find('developer.apple.com') >= 0 or output.find('bugzilla.redhat.com') >= 0 or output.find('gcc.gnu.org'):
         return 1
     except RuntimeError:
       pass
@@ -134,7 +135,8 @@ class Configure(config.base.Configure):
         if vendor == 'portland' or not vendor:
           yield 'pgcc'
         if vendor == 'solaris' or not vendor:
-          yield 'cc'
+          if not Configure.isGNU('cc'):
+            yield 'cc'
       if self.framework.argDB['with-gnu-compilers']:
         yield 'gcc'
     return
@@ -249,7 +251,7 @@ class Configure(config.base.Configure):
           yield 'cl'
         if vendor == 'portland' or not vendor:
           yield 'pgCC'
-        if vendor == 'solaris' or not vendor:
+        if vendor == 'solaris':
           yield 'CC'
       if self.framework.argDB['with-gnu-compilers']:
         yield 'g++'
@@ -371,9 +373,8 @@ class Configure(config.base.Configure):
         if vendor == 'solaris' or not vendor:
           yield 'f95'
           yield 'f90'
-          yield 'f77'
-        if not vendor:
-          yield 'f77'
+          if not Configure.isGNU('f77'):
+            yield 'f77'
       if self.framework.argDB['with-gnu-compilers']:
         yield 'g77'
     return
