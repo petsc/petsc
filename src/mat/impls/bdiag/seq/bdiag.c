@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.23 1995/06/14 15:24:11 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.24 1995/06/17 19:03:17 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -664,7 +664,9 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
         }
       }
       fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
-    } else if (format == FILE_FORMAT_IMPL) {
+    } 
+    else if (format == FILE_FORMAT_IMPL) {
+#if !defined(PETSC_COMPLEX)
       if (nb == 1) { /* diagonal format */
         for (i=0; i< mat->nd; i++) {
           dv   = mat->diagv[i];
@@ -674,8 +676,9 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
           if (diag > 0) {  /* lower triangle */
             len = nr - diag;
             for (j=0; j<len; j++)
-              if (dv[j]) fprintf(fd,"A[ %d , %d ] = %e\n", j+diag, j, dv[j]);
-          } else {         /* upper triangle, including main diagonal */
+               if (dv[j]) fprintf(fd,"A[ %d , %d ] = %e\n", j+diag, j, dv[j]);
+          }
+          else {         /* upper triangle, including main diagonal */
             len = nr + diag;
             for (j=0; j<len; j++)
               if (dv[j]) fprintf(fd,"A[ %d , %d ] = %e\n", j, j-diag, dv[j]);
@@ -715,6 +718,7 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
           }
         }
       }
+#endif
     } else {
       for (i=0; i<mat->m; i++) { /* the usual row format */
         fprintf(fd,"row %d:",i);
