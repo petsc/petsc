@@ -11,24 +11,17 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
   --------------------------------
 
-   - Have all preconditioners (including LU) support null space, see 
-     tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
+ (Barry)  - Have all preconditioners (including LU) support null space, see 
+            tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
 
-   - Make configure fully functional in PETSc 2.0
+ (Bill)   - Make configure fully functional in PETSc 2.0
 
    - Fix table of vector operations in html version of users manual.
 
    - Fix documentation for matrices in manual (also AIJ man pages).  
-     Fix help info for matrices.
-
-   - Allow mpirowbs matrix to insert values even when not symmetric.
-
-   * Design better ILU/ICC interface for mpirowbs format (so that PC 
-     selection is correct and symmetric matrix can use ILU). Cannot do.
+     Fix help info for matrices. MatPrintHelp().
 
    - Fix MPIRowbs format so that one can INSERT_VALUES with nonsymmetric matrix.
-
-   - Implement MatDisAssemble() for all parallel matrix types.
 
    - Make MatGetSubMatrices() for Seq and MPI AIJ.
 
@@ -36,11 +29,11 @@ Additional Capabilities that PETSc Needs:
 
    - Do overlapping additive Schwarz for Seq and MPI AIJ.
 
-   - Complex versions of the Krylov subspace solvers
+ (Lois)   - Complex versions of the Krylov subspace solvers
 
-   - Complex version work from Fortran
+ (Lois)   - Complex version work from Fortran
 
-   * Test PETSc with LAM.
+   X Test PETSc with LAM.
     
    X don't require user to set diagonal entries in mpirowbs, that is insane.
 
@@ -67,29 +60,31 @@ Additional Capabilities that PETSc Needs:
    To do sometime soon:
   ----------------------
 
-   - Make VecScatterCopy_  for the different types of scatters and use 
+ (Barry)   - Make VecScatterCopy_  for the different types of scatters and use 
      a uniform naming scheme.
 
    - MatExpand() and VecExpand() talk to Paul about how this is done in SUMMA.
 
    - Make PLogFlops() also log loads and stores.
 
-   - Implement nested factorization preconditioner?
 
-   - Add matrix reduction plus ILU preconditioner. 
-
-   - Add functionality to bjacobi to support block Gauss-Seidel including 
-     support for coloring in parallel.
-
-   * Check why block Jacobi with ILU on blocks is not faster per iteration than 
-     ILU global is for SeqAIJ matrices. See file docs/tex/pictures/bjacobi_8_ilu_0
+ (Satish)   - Add functionality to bjacobi to support block Gauss-Seidel including 
+              support for coloring in parallel.
 
    - Develop basic PETSc benchmark suite
 
-   - Redue parts of inline for basic operations and improved performance.
+   - Develop additional test problems:
+      - Develop utilities to create common matrices and vectors (for testing
+        SLES, to serve as templates, and to fulfill basic needs).  
+        See  /home/gropp/tools.n/solvers/examples/formsol.c and
+        /home/gropp/tools.n/fd/* for ideas.
+      - Convert more MINPACK-2 example problems to the PETSc coding style
+      - Consider CUTE test suite
+
+   - Redo parts of inline for basic operations and improved performance.
      Associated with MISF.
 
-   * Parallel dense matrix implementation.
+ (Lois)   * Parallel dense matrix implementation.
 
    - Block compressed row storage format implementation.
 
@@ -100,17 +95,13 @@ Additional Capabilities that PETSc Needs:
      (requested by Xiao Chuan Cai; this is supposedly much faster than
      our current code).
 
-   - Develop more thorough test program suite.
-
-   - Make special MatLUFactorNumeric_SeqAIJ() for identity permutation?
-
    * Improve history (-log_history) logging.
 
    X In-place ILU(0) for AIJ (Done), Row matrix formats (not done, should we?)
 
    * Upgrade tohtml and doc2tex
 
-   * More nonlinear solvers, including those for unconstrained minimization
+   X More nonlinear solvers, including those for unconstrained minimization
 
    X Make PETSc work using include/mpiuni.h (i.e. no MPI needed)
 
@@ -137,45 +128,28 @@ Additional Capabilities that PETSc Needs:
 
    - Finite difference approximations of derivatives using coloring
 
-   - ADIFOR interface
+   - Implement nested factorization preconditioner?
 
-   - make the back issues of PETSc mailing list available from the 
-     PETSc homepage. As well as subscribing to the group.
+   - Add matrix reduction plus ILU preconditioner. 
 
    - stride with multicomponent chunks in index sets, also two dimensional
      and three dimensional chunks
 
-   * Automatic collection of information about the solution process
-
    * Develop code to rebalance matrices (and vectors) for better 
      load balance during matrix vector multiplies.
 
+   - Interface to ScaLAPACK and BLACS
+
+   X Automatic collection of information about the solution process
+
    X Fortran interface
 
+   X 1d wave equation, heat equation, etc examples with seperate graphics 
+      for each processor.
+ 
+   X Develop TK interfaces for options and monitoring 
 
-----------------------------------------------------------------------
-
-Possible projects for students:
-
-
- - Use ADIFOR with ACTI codes.  Help incorporate ADIFOR interface into PETSc.  
-
- - Develop additional test problems:
-    - Develop utilities to create common matrices and vectors (for testing
-      SLES, to serve as templates, and to fulfill basic needs).  
-      See  /home/gropp/tools.n/solvers/examples/formsol.c and
-      /home/gropp/tools.n/fd/* for ideas.
-    - Convert more MINPACK-2 example problems to the PETSc coding style
-    - Consider CUTE test suite
-
- - Interface to ScaLAPACK and BLACS
-
- X 1d wave equation, heat equation, etc examples with seperate graphics 
-   for each processor.
-
- X Develop TK interfaces for options and monitoring 
-
- X Develop 1 and 3D distributed array code
+   X Develop 1 and 3D distributed array code
 
 
 

@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.45 1995/12/23 04:45:26 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.46 1995/12/23 19:28:17 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -49,7 +49,8 @@ struct _MatOps {
             (*getsubmatrices)(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **),
             (*increaseoverlap)(Mat,int,IS *,int),
             (*getvalues)(Mat,int,int*,int,int*,Scalar*),
-            (*copy)(Mat,Mat);
+            (*copy)(Mat,Mat),
+            (*printhelp)(Mat);
 };
 
 #define FACTOR_LU       1

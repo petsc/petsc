@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.84 1995/12/31 03:44:57 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.85 1996/01/01 01:05:46 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -34,6 +34,8 @@ extern int MatShellSetDestroy(Mat,int (*)(void*));
 extern int MatShellSetMultTrans(Mat,int (*)(void*,Vec,Vec));
 extern int MatShellSetMultTransAdd(Mat,int (*)(void*,Vec,Vec,Vec));
   
+extern int MatPrintHelp(Mat);
+
 /* ------------------------------------------------------------*/
 extern int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
 typedef enum {FLUSH_ASSEMBLY=1,FINAL_ASSEMBLY=0} MatAssemblyType;
