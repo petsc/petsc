@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.75 2000/03/25 03:40:00 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.76 2000/03/28 13:55:58 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -35,6 +35,7 @@ TESTEXAMPLES_8   =
 TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm clean
 TESTEXAMPLES_12  = ex13f90.PETSc runex13f90 ex13f90.rm clean
 TESTEXAMPLES_13  = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm clean
+TESTEXAMPLES_15  = ex10.PETSc runex10_12  ex10.rm clean
 TESTEXAMPLES_17   =ex10.PETSc runex10_11 ex10.rm
 BUILDEXAMPLES_1  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
 		   ex5.PETSc ex5.rm ex9.PETSc ex9.rm \
@@ -359,6 +360,11 @@ runex10_11:
 	   if (diff output/ex10_11.out ex10_11.tmp) then true; \
 	   else echo "Possible problem with ex10_11, diffs above"; fi; \
 	   ${RM} -f ex10_11.tmp
+runex10_12:
+	-@${MPIRUN} -np 1 ex10 -options_left_off -mat_aij_matlab -pc_type lu -f0 ~petsc/matrices/arco1 > ex10_12.tmp 2>&1;\
+	   if (diff output/ex10_12.out ex10_12.tmp) then true; \
+	   else echo "Possible problem with ex10_12, diffs above"; fi; \
+	   ${RM} -f ex10_12.tmp
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_irorthog > ex11_1.tmp 2>&1; \
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \
