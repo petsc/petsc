@@ -44,19 +44,18 @@ def rhl9():
     return 0
 
 def fixWin32Flinker(filename):
-    '''Change CXX_FLINKER back to f90 for win32 (from cl)'''
+    '''Change CXX_FLINKER back to C_FLINKER for win32 (from cl or icl)'''
     import fileinput
     import re
 
     reglink    = re.compile('CXX_FLINKER ')
-    regwin32fe = re.compile('win32fe',re.I)
-    regcl      = re.compile('cl',re.I)
+    regwin32fe = re.compile(r"""\b(win32fe\s+(cl|icl))""",re.I)
 
     for line in fileinput.input(filename,inplace=1):
       fl = reglink.search(line)
       fw = regwin32fe.search(line)
       if fl and fw:
-        line = regcl.sub('f90',line)
+        line = 'CXX_FLINKER        = ${C_FLINKER}\n'
       print line,
     return
 
