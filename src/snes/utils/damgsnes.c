@@ -1,5 +1,5 @@
 
-/*$Id: damgsnes.c,v 1.3 2000/07/15 03:19:48 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.4 2000/07/17 03:51:36 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -62,7 +62,7 @@ int DAMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *p
 #define __FUNC__ /*<a name="DAMGSolveSNES"></a>*/"DAMGSolveSNES"
 int DAMGSolveSNES(DAMG *damg,int level)
 {
-  int  ierr,i,nlevels = damg[0]->nlevels,its;
+  int  ierr,nlevels = damg[0]->nlevels,its;
 
   PetscFunctionBegin;
   damg[0]->nlevels = level+1;
@@ -70,6 +70,8 @@ int DAMGSolveSNES(DAMG *damg,int level)
   damg[0]->nlevels = nlevels;
   PetscFunctionReturn(0);
 }
+
+EXTERN int DAMGSetUpLevel(DAMG*,SLES,int);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="DAMGSetSNES"></a>*/"DAMGSetSNES"
@@ -89,9 +91,8 @@ int DAMGSolveSNES(DAMG *damg,int level)
 @*/
 int DAMGSetSNES(DAMG *damg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
-  int        ierr,i,j,nlevels = damg[0]->nlevels,flag;
-  MPI_Comm   comm;
-  PetscTruth flg,usefd;
+  int        ierr,i,nlevels = damg[0]->nlevels;
+  PetscTruth usefd;
   SLES       sles;
 
   PetscFunctionBegin;
@@ -133,6 +134,11 @@ int DAMGSetSNES(DAMG *damg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   for (i=1; i<nlevels; i++) {
     ierr = DAGetInterpolationScale(damg[i-1]->da,damg[i]->da,damg[i]->R,&damg[i]->Rscale);CHKERRQ(ierr);
   }
+
+  for (i=0; i<nlevels-1; i++) {
+    ierr = SNESSetOptionsPrefix(damg[i]->snes,"damg_");CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
