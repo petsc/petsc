@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.59 1995/10/12 13:43:13 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.60 1995/10/13 02:05:21 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -888,10 +888,7 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
     if (!a->user_alloc) { /* Free the actual diagonals */
       for (i=0; i<a->nd; i++) PETSCFREE( a->diagv[i] );
     }
-    if (a->pivot) {
-      for (i=0; i<a->nd; i++) PETSCFREE( a->pivot[i] );
-      PETSCFREE(a->pivot);
-    }
+    if (a->pivot) PETSCFREE(a->pivot);
     PETSCFREE(a->diagv); PETSCFREE(a->diag);
     PETSCFREE(a->colloc); PETSCFREE(a->dvalue);
     PETSCFREE(a);
@@ -936,10 +933,10 @@ int MatView_SeqBDiag(PetscObject obj,Viewer ptr)
       ierr = MatGetRow(A,i,&nz,&col,0); CHKERRQ(ierr);
       for ( j=0; j<nz; j++ ) {
         xl = col[j]; xr = xl + 1.0;
-        DrawRectangle(draw,xl,yl,xr,yr,DRAW_BLACK,DRAW_BLACK,DRAW_BLACK,
-                      DRAW_BLACK);
+        ierr = DrawRectangle(draw,xl,yl,xr,yr,DRAW_BLACK,DRAW_BLACK,
+                      DRAW_BLACK,DRAW_BLACK); CHKERRQ(ierr);
       }
-    ierr = MatRestoreRow(A,i,&nz,&col,0); CHKERRQ(ierr);
+      ierr = MatRestoreRow(A,i,&nz,&col,0); CHKERRQ(ierr);
     }
     return 0;
   }
@@ -1067,10 +1064,7 @@ static int MatDestroy_SeqBDiag(PetscObject obj)
   if (!a->user_alloc) { /* Free the actual diagonals */
     for (i=0; i<a->nd; i++) PETSCFREE( a->diagv[i] );
   }
-  if (a->pivot) {
-    for (i=0; i<a->nd; i++) PETSCFREE( a->pivot[i] );
-    PETSCFREE(a->pivot);
-  }
+  if (a->pivot) PETSCFREE(a->pivot);
   PETSCFREE(a->diagv); PETSCFREE(a->diag);
   PETSCFREE(a->colloc); PETSCFREE(a->dvalue);
   PETSCFREE(a);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.18 1995/10/13 13:01:50 curfman Exp curfman $";
+static char vcid[] = "$Id: bdfact.c,v 1.19 1995/10/13 18:37:56 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -11,8 +11,8 @@ static char vcid[] = "$Id: bdfact.c,v 1.18 1995/10/13 13:01:50 curfman Exp curfm
    BlockMatMult_Private - Computes C -= A*B, where
        A is nrow X nrow,
        B and C are nrow X ncol,
-       All matrices are dense, stored by columns, with nrow the number of
-           allocated rows for each matrix.
+       All matrices are dense, stored by columns, where nrow is the 
+           number of allocated rows for each matrix.
  */
 
 #define BMatMult(nrow,ncol,A,B,C) BlockMatMult_Private(nrow,ncol,A,B,C)
@@ -72,7 +72,7 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
   Mat          C = *B;
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data;
   int          info, k, d, d2, dgk, elim_row, elim_col, nb = a->nb, knb, knb2, nb2;
-  int          dnum,  nd = a->nd, mblock = a->mblock, nblock = a->nblock, one=1, j;
+  int          dnum,  nd = a->nd, mblock = a->mblock, nblock = a->nblock;
   int          *diag = a->diag, n = a->n, m = a->m, mainbd = a->mainbd, *dgptr;
   Scalar       **dv = a->diagv, *dd = dv[mainbd], mult;
 
@@ -115,6 +115,10 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
     PETSCFREE(dgptr);
   } 
   else {
+    /* Note: The case nb>1 is not yet finished */
+    if (a->nd != 1 || a->diag[0] !=0) SETERRQ(1,
+      "MatLUFactorNumeric_SeqBDiag:Case nb>1 is not finished");
+
     if (!a->pivot) {
       /* Comment: We have chosen to hide column permutation in the pivots,
                   rather than put it in the Mat->col slot. */
@@ -127,19 +131,15 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
     for ( k=0; k<nd; k++ ) dgptr[diag[k]+mblock] = k+1;
     for ( k=0; k<mblock; k++ ) { /* k = block pivot_row */
       knb = k*nb; knb2 = knb*nb;
-      LAgetrf_(&nb,&nb,&dd[knb2],&nb,&(a->pivot[knb]),&info);
-/*      LAgetf2_(&nb,&nb,&dd[knb2],&nb,&(a->pivot[knb]),&info); */
+  /*  LAgetrf_(&nb,&nb,&(dd[knb2]),&nb,&(a->pivot[knb]),&info); */
+      LAgetf2_(&nb,&nb,&(dd[knb2]),&nb,&(a->pivot[knb]),&info);
       if (info) SETERRQ(1,"MatLUFactorNumeric_SeqBDiag:Bad subblock LU factorization");
       for ( d=mainbd-1; d>=0; d-- ) {
         elim_row = k + diag[d];
         if (elim_row < mblock) { /* sweep down */
-    /*    if (dv[d][k] != 0) test if entire block is zero? */
-    /*      LAgetrs_("N",&nb,&nb,&dd[knb2],&nb,&(a->pivot[knb]),
-                     &(dv[d][knb2]),&nb,&info); */
-           for (j=0; j<nb; j++) {
-              LAgetrs_("N",&nb,&one,&dd[knb2],&nb,&(a->pivot[knb]),
-                       &(dv[d][knb2+j*nb]),&nb,&info);
-            }
+          /* dv[d][knb2]: test if entire block is zero? */
+            LAgetrs_("N",&nb,&nb,&dd[knb2],&nb,&(a->pivot[knb]),
+                     &(dv[d][knb2]),&nb,&info);
             if (info) SETERRQ(1,"MatLUFactorNumeric_SeqBDiag:Bad subblock triangular solve");
             for ( d2=d+1; d2<nd; d2++ ) {
               elim_col = elim_row - diag[d2];
@@ -148,21 +148,13 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
                 if (dgk > 0) SETERRQ(1,
                    "MatLUFactorNumeric_SeqBDiag:Bad elimination column");
                 if ((dnum = dgptr[dgk+mblock])) {
-                  if (diag[d2] > 0) {
-                     for (j=0; j<nb; j++) BMatMult(nb,1,&(dv[d][knb2]),
-                            &(dv[dnum-1][knb2+j*nb]),&(dv[d2][elim_col*nb2+j*nb]));
-                  } else {
-                     for (j=0; j<nb; j++) BMatMult(nb,1,&(dv[d][knb2]),
-                            &(dv[dnum-1][knb2+j*nb]),&(dv[d2][elim_row*nb2+j*nb]));
-                  }
-/*                  if (diag[d2] > 0) BMatMult(nb,nb,&(dv[d][knb2]),
+                  if (diag[d2] > 0) BMatMult(nb,nb,&(dv[d][knb2]),
                             &(dv[dnum-1][knb2]),&(dv[d2][elim_col*nb2]));
                   else              BMatMult(nb,nb,&(dv[d][knb2]),
-                            &(dv[dnum-1][knb2]),&(dv[d2][elim_row*nb2])); */
+                            &(dv[dnum-1][knb2]),&(dv[d2][elim_row*nb2]));
                 }
               }
             }
-     /*   }  */
         }
       }
     }
@@ -208,9 +200,9 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
   Scalar       *x, *y, *dd = a->diagv[mainbd], sum, **dv = a->diagv;
 
   if (A->factor != FACTOR_LU) SETERRQ(1,"MatSolve_SeqBDiag:Not for unfactored matrix.");
+
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
-
   if (nb == 1) {
     /* forward solve the lower triangular part */
     for (i=0; i<m; i++) {
@@ -232,6 +224,9 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
     }
     PLogFlops(2*a->nz - a->n);
   } else {
+    /* Note:  The case nb>1 is not yet finished */
+    if (a->nd != 1 || a->diag[0] !=0) SETERRQ(1,
+      "MatSolve_SeqBDiag:Triangular solves only for main diag");
     PetscMemcpy(y,x,m*sizeof(Scalar));
 
     /* forward solve the lower triangular part */
@@ -253,7 +248,7 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
         if (col < nblock) BMatMult(nb,1,&(dv[d][inb2]),
                                    &(y[col*nb]),&(y[inb]));
       }
-      LAgetrs_("N",&nb,&one,&dd[inb2],&nb,&(a->pivot[inb]),
+      LAgetrs_("N",&nb,&one,&(dd[inb2]),&nb,&(a->pivot[inb]),
                &(y[inb]),&nb,&info);
       if (info) SETERRQ(1,"MatSolve_SeqBDiag:Bad subblock triangular solve");
     }
