@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.190 1996/08/19 22:49:35 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.191 1996/08/22 19:52:39 curfman Exp bsmith $";
 #endif
 
 /*
@@ -35,10 +36,6 @@ $      ORDER_QMD - Quotient Minimum Degree
 $    -mat_order natural, -mat_order nd, -mat_order 1wd, 
 $    -mat_order rcm, -mat_order qmd
 
-   Notes:
-   If the column permutations and row permutations are the same, 
-   then MatGetReordering() returns 0 in cperm.
-
    The user can define additional orderings; see MatReorderingRegister().
 
 .keywords: matrix, set, ordering, factorization, direct, ILU, LU,
@@ -60,6 +57,46 @@ int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
   ierr = MatGetReorderingTypeFromOptions(0,&type); CHKERRQ(ierr);
   ierr = (*mat->ops.getreordering)(mat,type,rperm,cperm); CHKERRQ(ierr);
   PLogEventEnd(MAT_GetReordering,mat,0,0,0);
+  return 0;
+}
+
+/*@C
+   MatGetColoring - Gets a coloring for a matrix.
+
+   Input Parameters:
+.  mat - the matrix
+.  type - type of coloring, one of the following:
+$      COLORING_NATURAL - 1 color per row
+$      COLORING_SL
+$      COLORING_LD
+$      COLORING_IF
+
+   Output Parameters:
+.  nc - number of colors
+.  is - index sets for each color
+
+   Options Database Keys:
+   To specify the ordering through the options database, use one of
+   the following 
+$    -mat_color natural, -mat_color sl, -mat_color ld
+$    -mat_color if
+
+.keywords: matrix, set, coloring
+
+.seealso:  MatGetReordering()
+@*/
+int MatGetColoring(Mat mat,MatColoring type,int *nc,IS **is)
+{
+  int         ierr;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (!mat->assembled) SETERRQ(1,"MatGetReordering:Not for unassembled matrix");
+  if (mat->factor) SETERRQ(1,"MatGetReordering:Not for factored matrix"); 
+
+  if (!mat->ops.getcoloring) {*is = 0; return 0;}
+  PLogEventBegin(MAT_GetColoring,mat,0,0,0);
+  ierr = MatGetColoringTypeFromOptions(0,&type); CHKERRQ(ierr);
+  ierr = (*mat->ops.getcoloring)(mat,type,nc,is); CHKERRQ(ierr);
+  PLogEventEnd(MAT_GetColoring,mat,0,0,0);
   return 0;
 }
 
