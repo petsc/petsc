@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.158 1996/03/26 23:12:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.159 1996/03/31 02:44:15 bsmith Exp curfman $";
 #endif
 
 /*
@@ -1117,6 +1117,8 @@ int MatEqual(Mat mat1,Mat mat2,PetscTruth *flg)
 .  r - the right scaling vector
 
 .keywords: matrix, scale
+
+.seealso: MatDiagonalShift()
 @*/
 int MatDiagonalScale(Mat mat,Vec l,Vec r)
 {
