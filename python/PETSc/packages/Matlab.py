@@ -81,7 +81,10 @@ class Configure(config.base.Configure):
               matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
             else:
               matlab_sys = ''
-            self.addSubstitution('MATLAB_LIB',self.setCompilers.slpath+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
+            if self.framework.slpath:
+              self.addSubstitution('MATLAB_LIB',self.framework.slpath+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
+            else:
+              self.addSubstitution('MATLAB_LIB','-L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)              
             return
       except RuntimeError:
         self.framework.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')
