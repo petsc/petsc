@@ -139,9 +139,11 @@ class Configure(config.base.Configure):
   def libraryGuesses(self, root = None):
     '''Return standard library name guesses for a given installation root'''
     if root:
+      yield [os.path.join(root, 'lib', 'shared', 'libfmpich.a'),os.path.join(root,'lib','shared','libmpich.a')]
       yield [os.path.join(root, 'lib', 'shared', 'libmpich.a')]
       yield [os.path.join(root, 'lib', 'shared', 'libmpi.a')]
       yield [os.path.join(root, 'lib', 'shared', 'libmpich.a'), os.path.join(root, 'lib', 'shared', 'libpmpich.a')]
+      yield [os.path.join(root, 'lib', 'libfmpich.a'), os.path.join(root,'lib','libmpich.a')]
       yield [os.path.join(root, 'lib', 'libmpich.a')]
       # LAM
       libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'liblamf77mpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
@@ -159,6 +161,7 @@ class Configure(config.base.Configure):
       yield [os.path.join(root, 'SDK','lib','mpich.lib'),'ws2_32.lib']
     else:
       yield ['']
+      yeild ['fmpich','mpich']
       yield ['mpich']
       yield ['mpi','mpi++']
       yield ['mpi']      
