@@ -1,4 +1,4 @@
-/*$Id: snesut.c,v 1.55 2000/04/12 04:25:27 bsmith Exp balay $*/
+/*$Id: snesut.c,v 1.56 2000/05/05 22:18:12 balay Exp balay $*/
 
 #include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
 
@@ -363,17 +363,16 @@ int SNES_KSP_EW_Converged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReas
   SNES                snes = (SNES)ctx;
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
   int                 ierr;
-  KSPConvergedReason  convinfo;
 
   PetscFunctionBegin;
   if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"No Eisenstat-Walker context set");
   if (n == 0) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);CHKERRQ(ierr);}
-  ierr = KSPDefaultConverged(ksp,n,rnorm,&convinfo,ctx);CHKERRQ(ierr);
+  ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
   kctx->lresid_last = rnorm;
-  if (convinfo) {
+  if (*reason) {
     PLogInfo(snes,"SNES_KSP_EW_Converged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
   }
-  PetscFunctionReturn(convinfo);
+  PetscFunctionReturn(0);
 }
 
 
