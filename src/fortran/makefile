@@ -1,18 +1,17 @@
-IPETSCDIR = ../../..
+PETSC_DIR = ../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I..  \
-          -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"vec/src/"'
-SOURCEC  = vector.c 
+CFLAGS   =  $(PETSC_DIR) -I..  \
+          $(CONF) -D__DIR__='"fortran/"'
+SOURCEC  = 
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = vector.o 
+OBJSC    = 
 OBJSF    =
-WSOURCE = vectorf.c
-WOBJS    = vectorf.o
-LIBBASE  = libpetscvec
+LIBBASE  = libpetscfortran
 MANSEC   = 1
+DIRS     = custom
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
