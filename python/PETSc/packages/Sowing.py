@@ -100,7 +100,10 @@ class Configure(config.base.Configure):
         self.bfort    = self.framework.bfort
         self.doctext  = self.framework.doctext
         self.mapnames = self.framework.mapnames
-        self.mapnames = self.framework.bib2html        
+        if hasattr(self.framework,'bib2html'):
+          self.bib2html = self.framework.bib2html
+        else:
+          self.bib2html = 'NotFound'
       else:
         self.downLoadSowing()
         

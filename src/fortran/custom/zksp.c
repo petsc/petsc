@@ -3,7 +3,7 @@
 #include "src/fortran/custom/zpetsc.h"
 #include "petscksp.h"
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS\
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define kspsetnullspace_           KSPSETNULLSPACE
 #define kspgetnullspace_           KSPGETNULLSPACE
 #define kspgetresidualnorm_        KSPGETRESIDUALNORM
