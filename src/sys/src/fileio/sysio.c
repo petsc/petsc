@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.37 1998/04/13 17:30:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: sysio.c,v 1.38 1998/04/27 19:48:45 curfman Exp balay $";
 #endif
 
 /* 
@@ -217,16 +217,26 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
    Not Collective
 
    Input Parameters:
-+  fd   - the file
-.  p    - the buffer
-.  n    - the number of items to write
--  type - the type of items to read (PETSC_INT or PETSC_SCALAR)
++  fd     - the file
+.  p      - the buffer
+.  n      - the number of items to write
+.  type   - the type of items to read (PETSC_INT or PETSC_SCALAR)
+-  istemp - 0 if buffer data should be preserved, 1 otherwise.
 
    Notes: 
    PetscBinaryWrite() uses byte swapping to work on all machines.
    Integers are stored on the file as 32 long, regardless of whether
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
+
+   The Buffer 'p' should be read-write buffer, and not static data.
+   This way, PetscBinaryWrite uses the buffer for in-place byte-swapping.
+   
+   This routine restores the original contents of the buffer, after 
+   it is written to the file. This is done by byte-swapping in-place 
+   the second time. If the flag 'istemp' is set to 1, the second
+   byte-swapping operation is not done, thus saving some computation,
+   but the buffer corrupted is corrupted.
 
 .keywords: binary, output, write
 
