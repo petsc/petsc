@@ -10,3 +10,7 @@ PETSc names that should be changed.
      - unique to PETSc so no chance of conflicts with external software,
        but longer
 
+ - VecValidVector ->? VecValid
+   MatValidMatrix ->? MatValid
+
+ - PCBSIterSetBlockSolve -> move into pc? (Right now the man page is in mat)
