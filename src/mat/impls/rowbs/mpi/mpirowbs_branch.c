@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.99 1996/03/12 21:47:07 balay Exp balay $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.100 1996/03/13 01:19:55 balay Exp balay $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -899,8 +899,7 @@ static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
     int sum;
     for ( i=0 ; i<nrqs ; i++) {
       j = pa[i];
-      if (w3[j] != sbuf1[j][0]) {SETERRQ(1,"MatAssemblyEnd_MPIRowbs_: Blew it! H
-eader[1] mismatch!\n"); }
+      if (w3[j] != sbuf1[j][0]) {SETERRQ(1,"MatAssemblyEnd_MPIRowbs_: Blew it! Header[1] mismatch!\n"); }
     }
     
     for ( i=0 ; i<nrqs ; i++) {
@@ -922,7 +921,21 @@ eader[1] mismatch!\n"); }
     MPI_Isend(sbuf1[j], w1[j], MPI_INT, j, tag, comm, s_waits1+i);
   }
   /* Process local*/
-
+  {
+    int    *rbuf1_i,n_row,ct1,k;
+    
+    rbuf1_i = sbuf1[rank];
+    n_row   = rbuf1_i[0];
+    ct1     = 2*n_row+1;
+    /* Optimise this later */
+    for ( j=1; j<=n_row; j++ ) {
+      col = rbuf1_i[2*j-1];
+      for ( k=0; k<rbuf1_i[2*i]; k++,ct1++ ) {
+          row = rbuf1_i[ct1] - rstart;
+          MatSetValues_MPIRowbs_local(mat,1,&row,1,&col,&val,ADD_VALUES);          
+      }
+    }
+  }
   /* Receive messages*/
   r_status = (MPI_Status *) PetscMalloc( (nrqr+1)*sizeof(MPI_Status) );
   CHKPTRQ(r_status);
@@ -998,7 +1011,7 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
     PetscFree(send_status);
   }
   PetscFree(a->send_waits); PetscFree(a->svalues);
-  /* ierr = MatAssemblyEnd_MPIRowbs_MakeSymmetric(mat); CHKERRQ(ierr); */
+  ierr = MatAssemblyEnd_MPIRowbs_MakeSymmetric(mat); CHKERRQ(ierr); 
 
   a->insertmode = NOT_SET_VALUES;
   ierr = MatAssemblyBegin_MPIRowbs_local(mat,mode); CHKERRQ(ierr);
