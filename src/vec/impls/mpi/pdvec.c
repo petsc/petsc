@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.96 1998/05/19 01:49:32 curfman Exp balay $ */
+/* $Id: pdvec.c,v 1.97 1998/05/19 15:33:44 balay Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -13,11 +13,9 @@
 #define __FUNC__ "VecGetOwnershipRange_MPI"
 int VecGetOwnershipRange_MPI(Vec v,int *low,int* high) 
 {
-  Vec_MPI *x = (Vec_MPI *) v->data;
-
   PetscFunctionBegin;
-  *low  = x->ownership[x->rank];
-  *high = x->ownership[x->rank+1];
+  *low  = v->map->rstart;
+  *high = v->map->rend;
   PetscFunctionReturn(0);
 }
 
@@ -29,6 +27,8 @@ int VecDestroy_MPI(Vec v)
   int     ierr;
 
   PetscFunctionBegin;
+  if (--v->refct > 0) PetscFunctionReturn(0);
+
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)v,"Length=%d",x->N);
 #endif  
@@ -43,6 +43,7 @@ int VecDestroy_MPI(Vec v)
     ierr = VecScatterDestroy(x->localupdate);CHKERRQ(ierr);
   }
   PetscFree(v->data);
+  ierr = MapDestroy(v->map);
   PLogObjectDestroy(v);
   PetscHeaderDestroy(v);
   PetscFunctionReturn(0);
@@ -277,10 +278,10 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
     yy   = xx + N;
     lens = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(lens);
     for (i=0; i<size; i++ ) {
-      lens[i] = x->ownership[i+1] - x->ownership[i];
+      lens[i] = xin->map->range[i+1] - xin->map->range[i];
     }
 #if !defined(USE_PETSC_COMPLEX)
-    ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,yy,lens,xin->map->range,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
 #else
     {
       double *xr;
@@ -288,7 +289,7 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
       for ( i=0; i<x->n; i++ ) {
         xr[i] = real(x->array[i]);
       }
-      ierr = MPI_Gatherv(xr,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
+      ierr = MPI_Gatherv(xr,x->n,MPI_DOUBLE,yy,lens,xin->map->range,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
       PetscFree(xr);
     }
 #endif
@@ -417,9 +418,9 @@ int VecView_MPI_Matlab(Vec xin, Viewer viewer )
     xx = (double *) PetscMalloc( (N+1)*sizeof(double) ); CHKPTRQ(xx);
     lens = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(lens);
     for (i=0; i<size; i++ ) {
-      lens[i] = x->ownership[i+1] - x->ownership[i];
+      lens[i] = xin->map->range[i+1] - xin->map->range[i];
     }
-    ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,xx,lens,x->ownership,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,xx,lens,xin->map->range,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
     PetscFree(lens);
     ierr = ViewerMatlabPutScalar_Private(viewer,N,1,xx);CHKERRQ(ierr);
     PetscFree(xx);
@@ -469,7 +470,7 @@ int VecGetSize_MPI(Vec xin,int *N)
 int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
-  int      rank = x->rank, *owners = x->ownership, start = owners[rank];
+  int      rank = x->rank, *owners = xin->map->range, start = owners[rank];
   int      end = owners[rank+1], i, row;
   Scalar   *xx = x->array;
 
@@ -545,7 +546,7 @@ int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
 int VecSetValuesBlocked_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
-  int      rank = x->rank, *owners = x->ownership, start = owners[rank];
+  int      rank = x->rank, *owners = xin->map->range, start = owners[rank];
   int      end = owners[rank+1], i, row,bs = xin->bs,j;
   Scalar   *xx = x->array;
 
@@ -637,7 +638,7 @@ to make sure we never malloc an empty one.
 int VecAssemblyBegin_MPI(Vec xin)
 {
   Vec_MPI    *x = (Vec_MPI *)xin->data;
-  int         rank = x->rank, *owners = x->ownership, size = x->size;
+  int         rank = x->rank, *owners = xin->map->range, size = x->size;
   int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
   int         *owner,*starts,count,tag = xin->tag,ierr;
   InsertMode  addv;
@@ -746,7 +747,7 @@ int VecAssemblyEnd_MPI(Vec vec)
     PetscFunctionReturn(0);
   }
 
-  base = x->ownership[x->rank];
+  base = vec->map->range[x->rank];
 
   /*  wait on receives */
   while (count) {
