@@ -1,17 +1,13 @@
-# $Id: makefile,v 1.10 1998/04/23 23:50:25 balay Exp balay $ 
+# $Id: makefile,v 1.11 1998/06/12 21:55:27 balay Exp balay $ 
 
 ALL: ex1
 
 CFLAGS    =
-SOURCEC   = 
-SOURCEF   =
-WSOURCEC  = 
-SOURCEH   =
-OBJSC     =
-WOBJS     = 
-OBJSF     =
-LIBBASE   = libpetscsles
+FFLAGS    =
+CPPFLAGS  =
+FPPFLAGS  =
 LOCDIR    = src/contrib/ysmp/
+
 EXAMPLES  = ex1
 EXAMPLESC = ex1.c
 LINCLUDE  = ${SOURCEH}

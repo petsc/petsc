@@ -1,14 +1,7 @@
 
 
 CPPFLAGS = ${BS_INCLUDE}
-SOURCEC  =
-SOURCEF  =
-SOURCEH  = 
-OBJSC    =
-OBJSF    =
-LIBBASE  = libpetscvec
-DIRS     = sda
-LOCDIR   = src/contrib/reuse
+LOCDIR   = src/contrib/reusememory/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
