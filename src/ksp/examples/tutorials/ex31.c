@@ -320,9 +320,4 @@ PetscErrorCode ComputeCorrector(DMMG dmmg, Vec uOld, Vec u)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "dummy"
-PetscErrorCode dummy(SNES snes, Vec x, void *ctx) {
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
+
