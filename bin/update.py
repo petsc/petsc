@@ -60,13 +60,17 @@ def updatePatches():
   version=str(majorversion)+'.'+str(minorversion)+'.'+str(subminorversion)
     
   patches1   = 'patches1'
+  patchfile1 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/petsc_patch_all-'+version
   for i in range(1,len(sys.argv)):
     if sys.argv[i].startswith('--patch1='):
       patches1 = sys.argv[i][9:]
+      if patches1.startswith('ftp://'):
+        patchfile1 = patches1
+        patches1   = 'patches1'
   if patches1 == 'patches1':
-    sys.stdout.write('Downloading latest patches for PETSc version '+version+'\n')
-    log.write('Downloading latest patches for PETSc version '+version+'\n')    
-    patchfile1 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/petsc_patch_all-'+version
+    sys.stdout.write('Downloading patches '+patchfile1+' for PETSc version '+version+'\n')
+    log.write('Downloading patches '+patchfile1+' for PETSc version '+version+'\n')    
+
     patches1   = 'patches1'
     import urllib
     try:
@@ -77,13 +81,16 @@ def updatePatches():
     log.write('Using '+patches1+' for PETSc patches\n')
 
   patches2   = 'patches2'
+  patchfile2 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/buildsystem_patch_all-'+version
   for i in range(1,len(sys.argv)):
     if sys.argv[i].startswith('--patch2='):
       patches2 = sys.argv[i][9:]
+      if patches2.startswith('ftp://'):
+        patchfile2 = patches2
+        patches2   = 'patches2'
   if patches2 == 'patches2':
-    sys.stdout.write('Downloading latest patches for PETSc version '+version+' BuildSystem\n')
-    log.write('Downloading latest patches for PETSc version '+version+' BuildSystem\n')    
-    patchfile2 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/buildsystem_patch_all-'+version
+    sys.stdout.write('Downloading patches '+patchfile2+' for PETSc version '+version+' BuildSystem\n')
+    log.write('Downloading patches '+patchfile2+' for PETSc version '+version+' BuildSystem\n')    
     import urllib
     try:
       urllib.urlretrieve(patchfile2, patches2)
