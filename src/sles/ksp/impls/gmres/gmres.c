@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.116 1999/01/31 16:08:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.117 1999/02/03 04:31:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -507,7 +507,7 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
 static int GMRESGetNewVectors( KSP ksp,int it )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
-  int       nwork = gmres->nwork_alloc,k, nalloc;
+  int       nwork = gmres->nwork_alloc,k, nalloc,ierr;
 
   PetscFunctionBegin;
   nalloc = gmres->delta_allocate;
@@ -519,7 +519,7 @@ static int GMRESGetNewVectors( KSP ksp,int it )
   if (nalloc == 0) PetscFunctionReturn(0);
 
   gmres->vv_allocated += nalloc;
-  VecDuplicateVecs(ksp->vec_rhs, nalloc,&gmres->user_work[nwork] );
+  ierr = VecDuplicateVecs(ksp->vec_rhs, nalloc,&gmres->user_work[nwork] );CHKERRQ(ierr);
   PLogObjectParents(ksp,nalloc,gmres->user_work[nwork]);CHKPTRQ(gmres->user_work[nwork]);
   gmres->mwork_alloc[nwork] = nalloc;
   for (k=0; k<nalloc; k++) {
@@ -620,8 +620,6 @@ int KSPSetFromOptions_GMRES(KSP ksp)
   if (flg) { ierr = KSPGMRESPrestartSet(ksp,prestart);CHKERRQ(ierr); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp, KSPGMRESIROrthogonalization);CHKERRQ(ierr);}
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_dgksorthog",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp, KSPGMRESDGKSOrthogonalization);CHKERRQ(ierr);}
 
   PetscFunctionReturn(0);
 }
