@@ -16,7 +16,7 @@
 30 23 * * * /home/bsmith/petsc/maint/buildtest 3
 30 23 * * * /home/bsmith/petsc/maint/buildtest 4
 30 23 * * * /home/bsmith/petsc/maint/buildtest 5
-#30 23 * * * /home/bsmith/petsc/maint/buildtest 6
+30 23 * * * /home/bsmith/petsc/maint/buildtest 6
 30 23 * * * /home/bsmith/petsc/maint/buildtest 8
 30 23 * * * /home/bsmith/petsc/maint/buildtest 9
 #
