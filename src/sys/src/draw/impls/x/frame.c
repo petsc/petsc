@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: frame.c,v 1.18 1999/01/31 16:05:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: frame.c,v 1.19 1999/05/12 03:26:40 bsmith Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: frame.c,v 1.18 1999/01/31 16:05:02 bsmith Exp bsmith 
 
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
-extern int   XiGetColor( Draw_X *, char *, int );
+extern PixVal XiGetColor( Draw_X *, char *, int );
 
 /* 50% grey stipple pattern */
 static Pixmap grey50 = (Pixmap)0;         
