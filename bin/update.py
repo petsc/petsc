@@ -72,8 +72,8 @@ def updatePatches():
     import urllib
     try:
       urllib.urlretrieve(patchfile1, patches1)
-    except:
-      raise RuntimeError('Unable to download patches. Perhaps you are off the network?\n')
+    except Exception, e:
+      raise RuntimeError('Unable to download patches. Perhaps you are off the network?\n  '+str(e))
   else:
     log.write('Using '+patches1+' for PETSc patches\n')
 
