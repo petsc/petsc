@@ -463,7 +463,6 @@ int PetscViewerGetFilename(PetscViewer viewer,char **name)
   if (f) {
     ierr = (*f)(viewer,name);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -547,7 +546,6 @@ int PetscViewerSetFilename_ASCII(PetscViewer viewer,const char name[])
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)viewer,"File: %s",name);
 #endif
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -267,7 +267,6 @@ int PetscViewerSetFileType(PetscViewer viewer,PetscViewerFileType type)
   if (f) {
     ierr = (*f)(viewer,type);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -349,7 +348,6 @@ int PetscViewerBinaryLoadInfo(PetscViewer viewer)
     ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
-
 }
 
 /*
@@ -360,11 +358,11 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscViewerSetFilename_Binary" 
 int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
 {
-  int                   rank,ierr,len;
-  PetscViewer_Binary    *vbinary = (PetscViewer_Binary*)viewer->data;
-  const char            *fname;
-  char                  bname[PETSC_MAX_PATH_LEN],*gz;
-  PetscTruth            found;
+  int                 rank,ierr,len;
+  PetscViewer_Binary  *vbinary = (PetscViewer_Binary*)viewer->data;
+  const char          *fname;
+  char                bname[PETSC_MAX_PATH_LEN],*gz;
+  PetscTruth          found;
   PetscViewerFileType type = vbinary->btype;
 
   PetscFunctionBegin;
