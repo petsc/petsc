@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.20 1998/12/21 01:00:55 bsmith Exp balay $";
+static char vcid[] = "$Id: baijfact2.c,v 1.21 1998/12/21 19:37:51 balay Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -685,19 +685,31 @@ int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
    except that the data structure of Mat_SeqAIJ is slightly different.
    Not a good example of code reuse.
 */
+extern int MatMissingDiag_SeqBAIJ(Mat);
+
 #undef __FUNC__  
 #define __FUNC__ "MatILUFactorSymbolic_SeqBAIJ"
-int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat *fact)
+int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fact)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data, *b;
   IS          isicol;
   int         *r,*ic, ierr, prow, n = a->mbs, *ai = a->i, *aj = a->j;
   int         *ainew,*ajnew, jmax,*fill, *xi, nz, *im,*ajfill,*flev;
   int         *dloc, idx, row,m,fm, nzf, nzi,len,  realloc = 0;
-  int         incrlev,nnz,i,bs = a->bs,bs2 = a->bs2;
+  int         incrlev,nnz,i,bs = a->bs,bs2 = a->bs2, levels, diagonal_fill;
   PetscTruth  col_identity, row_identity;
+  double      f;
 
   PetscFunctionBegin;
+  if (info) {
+    f             = info->fill;
+    levels        = info->levels;
+    diagonal_fill = info->diagonal_fill;
+  } else {
+    f             = 1.0;
+    levels        = 0;
+    diagonal_fill = 0;
+  }
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
 
   /* special case that simply copies fill pattern */
@@ -712,6 +724,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat
     if (!b->diag) {
       ierr = MatMarkDiag_SeqBAIJ(*fact); CHKERRQ(ierr);
     }
+    ierr = MatMissingDiag_SeqBAIJ(*fact); CHKERRQ(ierr);
     b->row        = isrow;
     b->col        = iscol;
     b->icol       = isicol;
@@ -751,11 +764,13 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat
   dloc = (int *) PetscMalloc( (n+1)*sizeof(int)); CHKPTRQ(dloc);
   dloc[0]  = 0;
   for ( prow=0; prow<n; prow++ ) {
-    /* first copy previous fill into linked list */
-    nzf     = nz  = ai[r[prow]+1] - ai[r[prow]];
+
+    /* copy prow into linked list */
+    nzf        = nz  = ai[r[prow]+1] - ai[r[prow]];
     if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,1,"Empty row in matrix");
-    xi      = aj + ai[r[prow]];
-    fill[n] = n;
+    xi         = aj + ai[r[prow]];
+    fill[n]    = n;
+    fill[prow] = -1; /* marker for diagonal entry */
     while (nz--) {
       fm  = n;
       idx = ic[*xi++];
@@ -767,17 +782,25 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat
       fill[idx] = fm;
       im[idx]   = 0;
     }
+
+    /* make sure diagonal entry is included */
+    if (diagonal_fill && fill[prow] == -1) {
+      fm = n;
+      while (fill[fm] < prow) fm = fill[fm];
+      fill[prow] = fill[fm];  /* insert diagonal into linked list */
+      fill[fm]   = prow;
+      im[prow]   = 0;
+      nzf++;
+    }
+
     nzi = 0;
     row = fill[n];
     while ( row < prow ) {
       incrlev = im[row] + 1;
       nz      = dloc[row];
-      xi      = ajnew  + ainew[row] + nz;
+      xi      = ajnew  + ainew[row] + nz + 1;
       flev    = ajfill + ainew[row] + nz + 1;
       nnz     = ainew[row+1] - ainew[row] - nz - 1;
-      if (*xi++ != row) {
-        SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot: try running with -pc_ilu_nonzeros_along_diagonal");
-      }
       fm      = row;
       while (nnz-- > 0) {
         idx = *xi++;
@@ -834,6 +857,11 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat
       *xi++   = fm;
       *flev++ = im[fm];
       fm      = fill[fm];
+    }
+    /* make sure row has diagonal entry */
+    if (ajnew[ainew[prow]+dloc[prow]] != prow) {
+      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,1,"Row %d has missing diagonal in factored matrix\n\
+    try running with -pc_ilu_nonzeros_along_diagonal or -pc_ilu_diagonal_fill",prow);
     }
   }
   PetscFree(ajfill); 

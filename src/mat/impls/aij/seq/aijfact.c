@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.111 1998/11/30 22:40:16 balay Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.112 1999/01/22 20:01:19 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -669,7 +669,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,1,"Empty row in matrix");
     xi      = aj + ai[r[prow]] + shift;
     fill[n]    = n;
-    fill[prow] = -1;
+    fill[prow] = -1; /* marker to indicate if diagonal exists */
     while (nz--) {
       fm  = n;
       idx = ic[*xi++ + shift];
@@ -683,18 +683,13 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     }
 
     /* make sure diagonal entry is included */
-    if (diagonal_fill) {
+    if (diagonal_fill && fill[prow] == -1) {
       fm = n;
-      do {
-        m = fm;
-        fm = fill[m];
-      } while (fm < prow);
-      if (fm != prow) { /* the diagonal is missing */
-        fill[m]    = prow;
-        fill[prow] = fm;
-        im[prow]   = 0;
-        nzf++;
-      }
+      while (fill[fm] < prow) fm = fill[fm];
+      fill[prow] = fill[fm]; /* insert diagonal into linked list */
+      fill[fm]   = prow;
+      im[prow]   = 0;
+      nzf++;
     }
 
     nzi = 0;
