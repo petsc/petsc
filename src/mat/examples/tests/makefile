@@ -16,10 +16,10 @@ REXAMPLES= runex1  runex3  runex5 runex6  runex8 runex9\
            runex10 runex11 runex14 runex15 runex16 runex19\
            runex20 runex21 runex22
 CEXAMPLES= ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14\
-           ex15 ex16 ex17 ex18 ex19 ex20 ex21 ex22 ex23 ex24
+           ex15 ex16 ex17 ex18 ex19 ex20 ex21 ex22 ex23 ex24 ex25
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
            ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c\
-           ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c
+           ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c
 LINCLUDE = $(SOURCEH)
 
 ex1: ex1.o  chkopts
@@ -117,6 +117,18 @@ ex23: ex23.o chkopts
 ex24: ex24.o chkopts
 	-$(CLINKER) -o ex24 ex24.o $(PETSC_LIB)
 	$(RM) ex24.o
+
+ex25: ex25.o chkopts
+	-$(CLINKER) -o ex25 ex25.o $(PETSC_LIB)
+	$(RM) ex25.o
+
+ex26: ex26.o chkopts
+	-$(CLINKER) -o ex26 ex26.o $(PETSC_LIB)
+	$(RM) ex26.o
+
+ex27: ex27.o chkopts
+	-$(CLINKER) -o ex27 ex27.o $(PETSC_LIB)
+	$(RM) ex27.o
 
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
