@@ -13,7 +13,7 @@ BLASLAPACK_LIB = -Lc:/software/fblaslapack/win32_gnu -lflapack -lfblas
 # Location of MPI (Message Passing Interface) software  
 # MPICH from ANL http://www.mcs.anl.gov/~ashton/mpich.nt
 #
-MPI_HOME       = c:/progra~1/argonn~1/mpichn~1.3/sdk.gcc
+MPI_HOME       = c:/progra~1/mpich/sdk.gcc
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPI_LIB        = -L${MPI_HOME}/lib -lmpich
 MPIRUN         = mpirun -localonly
