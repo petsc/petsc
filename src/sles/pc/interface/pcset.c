@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.50 1997/01/06 20:23:25 balay Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.51 1997/02/03 05:57:05 bsmith Exp curfman $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -80,11 +80,18 @@ int PCSetType(PC ctx,PCType type)
 
    Input Parameters:
 .  name - either a predefined name such as PCJACOBI, or PCNEW
+          to indicate a new user-defined preconditioner
 .  sname -  corresponding string for name
 .  create - routine to create method context
 
    Output Parameter:
 .  oname - type associated with this new preconditioner
+
+   Notes:
+   Multiple user-defined preconditioners can be added by calling
+   PCRegister() with the input parameter "name" set to be PCNEW; 
+   each call will return a unique preconditioner type in the output
+   parameter "oname".
 
 .keywords: PC, register
 

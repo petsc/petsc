@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: tsreg.c,v 1.15 1997/01/06 20:28:06 balay Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.16 1997/02/03 06:00:34 bsmith Exp curfman $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -64,18 +64,25 @@ int TSSetType(TS ts,TSType method)
 #undef __FUNC__  
 #define __FUNC__ "TSRegister"
 /*@C
-   TSRegister - Adds the method to the nonlinear solver package, given 
-   a function pointer and a nonlinear solver name of the type TSType.
+   TSRegister - Adds the method to the timestepping package, given 
+   a function pointer and a solver name of the type TSType.
 
    Input Parameters:
-.  name - for instance TS_BEULER, or TS_NEW for a new method
-.  sname - corfunPonding string for name
+.  name - either a predefined name such as TS_BEULER, or TS_NEW
+          to indicate a new user-defined solver
+.  sname - corresponding string for name
 .  create - routine to create method context
 
    Output Parameter:
-.   oname - type associated with this new method
+.  oname - type associated with this new method
 
-.keywords: TS, nonlinear, register
+   Notes:
+   Multiple user-defined timestepping solvers can be added by calling
+   TSRegister() with the input parameter "name" set to be TS_NEW; 
+   each call will return a unique solver type in the output
+   parameter "oname".
+
+.keywords: TS, timestepper, register
 
 .seealso: TSRegisterAll(), TSRegisterDestroy()
 @*/
@@ -98,7 +105,7 @@ int TSRegister(TSType name,TSType *oname, char *sname, int (*create)(TS))
    TSRegisterDestroy - Frees the list of timesteppers that were
    registered by TSRegister().
 
-.keywords: TS, nonlinear, register, destroy
+.keywords: TS, timestepper, register, destroy
 
 .seealso: TSRegisterAll(), TSRegisterAll()
 @*/
@@ -118,13 +125,13 @@ int TSRegisterDestroy()
    TSGetType - Gets the TS method type and name (as a string).
 
    Input Parameter:
-.  ts - nonlinear solver context
+.  ts - timestepper solver context
 
    Output Parameter:
 .  method - TS method (or use PETSC_NULL)
 .  name - name of TS method (or use PETSC_NULL)
 
-.keywords: TS, nonlinear, get, method, name
+.keywords: TS, timestepper, get, method, name
 @*/
 int TSGetType(TS ts, TSType *method,char **name)
 {

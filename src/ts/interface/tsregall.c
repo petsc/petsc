@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tsregall.c,v 1.4 1997/01/06 20:28:06 balay Exp bsmith $";
+static char vcid[] = "$Id: tsregall.c,v 1.5 1997/02/03 06:00:34 bsmith Exp curfman $";
 #endif
 
 #include "src/ts/tsimpl.h"     /*I  "ts.h"  I*/
@@ -15,9 +15,8 @@ extern int TSCreate_Pseudo(TS);
   package. 
 
   Adding new methods:
-  To add a new method to the registry
-$     Copy this routine and modify it to incorporate
-$     a call to TSRegister() for the new method.  
+  To add a new method to the registry copy this routine and modify
+  it to incorporate a call to TSRegister() for the new method.  
 
   Restricting the choices:
   To prevent all of the methods from being registered and thus 

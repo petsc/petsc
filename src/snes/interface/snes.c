@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.113 1997/01/22 01:39:53 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.114 1997/02/03 06:01:31 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1619,12 +1619,19 @@ int SNESSetType(SNES snes,SNESType method)
    a function pointer and a nonlinear solver name of the type SNESType.
 
    Input Parameters:
-.  name - for instance SNES_EQ_LS, SNES_EQ_TR, or SNES_NEW to indicate a new solver
+.  name - either a predefined name such as SNES_EQ_LS, or SNES_NEW
+          to indicate a new user-defined solver
 .  sname - corresponding string for name
 .  create - routine to create method context
 
    Output Parameter:
-.   oname - type associated with this new solver
+.  oname - type associated with this new solver
+
+   Notes:
+   Multiple user-defined nonlinear solvers can be added by calling
+   SNESRegister() with the input parameter "name" set to be SNES_NEW; 
+   each call will return a unique solver type in the output
+   parameter "oname".
 
 .keywords: SNES, nonlinear, register
 

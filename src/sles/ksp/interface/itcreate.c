@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.94 1997/01/06 20:22:18 balay Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.95 1997/02/03 05:55:56 bsmith Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -200,12 +200,19 @@ int KSPSetType(KSP ksp,KSPType itmethod)
    an iterative name (KSPType) and a function pointer.
 
    Input Parameters:
-.  name   - for instance KSPCG, KSPGMRES, ... or KSPNEW for a new method
+.  name   - either a predefined name such as KSPCG, or KSPNEW
+            to indicate a new user-defined iterative method
 .  sname  - corresponding string for name
 .  create - routine to create method context
 
    Output Parameter:
 .  oname - type for new method
+
+   Notes:
+   Multiple user-defined iterative methods can be added by calling
+   KSPRegister() with the input parameter "name" set to be KSPNEW; 
+   each call will return a unique iterative method type in the output
+   parameter "oname".
 
 .keywords: KSP, register
 

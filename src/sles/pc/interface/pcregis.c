@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.30 1997/01/27 18:15:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.31 1997/02/03 05:57:05 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -24,9 +24,8 @@ extern int PCCreate_BGS(PC);
   PCRegisterAll - Registers all of the preconditioners in the PC package.
 
   Adding new methods:
-  To add a new method to the registry
-$     Copy this routine and modify it to incorporate
-$     a call to PCRegister() for the new method.  
+  To add new methods to the registry, copy this routine and modify
+  it to incorporate a call to PCRegister() for each new method.  
 
   Restricting the choices:
   To prevent all of the methods from being registered and thus 
@@ -34,7 +33,10 @@ $     a call to PCRegister() for the new method.
   those methods you desire.  Make sure that the replacement routine 
   is linked before libpetscsles.a.
 
-  Notes: You currently must register ILU (and in parallel bjacobi).
+  Notes: 
+  Currently the default preconditioners PCILU (and in parallel PCBJACOBI)
+  must be registered.
+
 .keywords: PC, register, all
 
 .seealso: PCRegister(), PCRegisterDestroy()

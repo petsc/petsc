@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.15 1997/01/06 20:29:45 balay Exp bsmith $";
+static char vcid[] = "$Id: snesregi.c,v 1.16 1997/02/03 06:01:31 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
@@ -16,9 +16,8 @@ extern int SNESCreate_Test(SNES);
   package. 
 
   Adding new methods:
-  To add a new method to the registry
-$     Copy this routine and modify it to incorporate
-$     a call to SNESRegister() for the new method.  
+  To add a new method to the registry, copy this routine and modify
+  it to incorporate a call to SNESRegister() for the new method.  
 
   Restricting the choices:
   To prevent all of the methods from being registered and thus 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itregis.c,v 1.17 1997/01/27 18:15:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itregis.c,v 1.18 1997/02/03 05:55:56 bsmith Exp curfman $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -24,9 +24,8 @@ extern int KSPCreate_QCG(KSP);
   KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
 
   Adding new methods:
-  To add a new method to the registry
-$     Copy this routine and modify it to incorporate
-$     a call to KSPRegister() for the new method.  
+  To add a new method to the registry, copy this routine and modify
+  it to incorporate a call to KSPRegister() for the new method.  
 
   Restricting the choices:
   To prevent all of the methods from being registered and thus 
@@ -34,7 +33,9 @@ $     a call to KSPRegister() for the new method.
   those methods you desire.  Make sure that the replacement routine 
   is linked before libpetscksp.a.
 
-  Notes: You currently must register GMRES.
+  Notes:
+  Currently the default iterative method, KSPGMRES, must be
+  registered.
 
 .keywords: KSP, register, all
 
