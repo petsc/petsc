@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.124 1999/03/01 04:49:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.125 1999/03/14 17:17:00 curfman Exp curfman $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -686,6 +686,64 @@ int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,
 }
 EXTERN_C_END
 /* -------------------------------------------------------------------------- */
+#undef __FUNC__  
+#define __FUNC__ "SNESSetLineSearchCheck"
+/*@C
+   SNESSetLineSearchCheck - Sets a routine to check the step computed by the 
+   line search routine in the Newton-based method SNES_EQ_LS.
+
+   Input Parameters:
++  snes - nonlinear context obtained from SNESCreate()
+.  func - pointer to int function
+-  checkctx - optional user-defined context for use by step checking routine 
+
+   Collective on SNES
+
+   Calling sequence of func:
+.vb
+   func (SNES snes, void *lsctx, Vec x, int *flag)
+.ve
+
+    Input parameters for func:
++   snes - nonlinear context
+.   checkctx - optional user-defined context for use by step checking routine 
+-   x - current iterate
+
+    Output parameters for func:
++   x - current iterate (possibly modified)
+-   flag - flag indicating whether x has been modified (either
+           PETSC_TRUE of PETSC_FALSE)
+
+    Level: advanced
+
+.keywords: SNES, nonlinear, set, line search check, step check, routine
+
+.seealso: SNESSetLineSearch()
+@*/
+int SNESSetLineSearchCheck(SNES snes,int (*func)(SNES,void*,Vec,int*),void *checkctx)
+{
+  int ierr, (*f)(SNES,int (*)(SNES,void*,Vec,int*),void*);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESSetLineSearchCheck_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(snes,func,checkctx);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+/* -------------------------------------------------------------------------- */
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "SNESSetLineSearchCheck_LS"
+int SNESSetLineSearchCheck_LS(SNES snes,int (*func)(SNES,void*,Vec,int*),void *checkctx)
+{
+  PetscFunctionBegin;
+  ((SNES_LS *)(snes->data))->CheckStep = func;
+  ((SNES_LS *)(snes->data))->checkP = checkctx;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+/* -------------------------------------------------------------------------- */
 /*
    SNESPrintHelp_EQ_LS - Prints all options for the SNES_EQ_LS method.
 
@@ -828,9 +886,14 @@ int SNESCreate_EQ_LS(SNES snes)
   neP->maxstep		= 1.e8;
   neP->steptol		= 1.e-12;
   neP->LineSearch       = SNESCubicLineSearch;
+  neP->lsP              = PETSC_NULL;
+  neP->CheckStep        = PETSC_NULL;
+  neP->checkP           = PETSC_NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESSetLineSearch_C","SNESSetLineSearch_LS",
                     (void*)SNESSetLineSearch_LS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESSetLineSearchCheck_C","SNESSetLineSearchCheck_LS",
+                    (void*)SNESSetLineSearchCheck_LS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

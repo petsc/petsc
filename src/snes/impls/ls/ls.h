@@ -1,4 +1,4 @@
-/* $Id: ls.h,v 1.7 1999/03/01 02:36:41 curfman Exp curfman $ */
+/* $Id: ls.h,v 1.8 1999/03/14 17:17:13 curfman Exp curfman $ */
 
 /* 
    Private context for a Newton line search method for solving
@@ -11,13 +11,13 @@
 
 typedef struct {
   int    (*LineSearch)(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
-  void   *lsP;                  /* user-defined line-search context */
+  void   *lsP;                              /* user-defined line-search context (optional) */
   /* --------------- Parameters used by line search method ----------------- */
-  double alpha;			/* used to determine sufficient reduction */
-  double maxstep;               /* maximum step size */
-  double steptol;               /* step convergence tolerance */
-  int    (*CheckStep)(SNES,Vec,int*,void*); /* step-checking routine (optional) */
-  void   *checkP;               /* user-defined step-checking context */
+  double alpha;		                    /* used to determine sufficient reduction */
+  double maxstep;                           /* maximum step size */
+  double steptol;                           /* step convergence tolerance */
+  int    (*CheckStep)(SNES,void*,Vec,int*); /* step-checking routine (optional) */
+  void   *checkP;                           /* user-defined step-checking context (optional) */
 } SNES_LS;
 
 #endif
