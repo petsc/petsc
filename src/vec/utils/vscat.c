@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.110 1998/03/14 04:14:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.111 1998/03/20 22:46:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -57,9 +57,15 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
 #else
         ierr = MPI_Reduce(xv, xvt, size, MPIU_SCALAR, MPI_SUM, 0, ctx->comm);CHKERRQ(ierr);
 #endif
-	for ( i=0; i<size; i++ ) {
-	  xvt[i] += xvt2[i];
-	}
+        if (addv == MAX_VALUES) {
+          for ( i=0; i<size; i++ ) {
+	    xvt[i] = PetscMax(xvt[i],xvt2[i]);
+	  }
+        } else if (addv == ADD_VALUES) {
+          for ( i=0; i<size; i++ ) {
+	    xvt[i] += xvt2[i];
+	  }
+        } else {SETERRQ(1,1,"Wrong insert option");}
         ierr = MPI_Scatterv(xvt,scat->count,yy->ownership,MPIU_SCALAR,yv,yy->n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
       } else {
         ierr = MPI_Gatherv(yv, yy->n, MPIU_SCALAR, 0,  0, 0, MPIU_SCALAR, 0, ctx->comm);CHKERRQ(ierr);
@@ -87,9 +93,15 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
         PLogObjectMemory(ctx,size*sizeof(Scalar));
       }
       ierr = MPI_Allgatherv(xv,xx->n,MPIU_SCALAR,yvt,scat->count,xx->ownership,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
-      for ( i=0; i<size; i++ ) {
-	yv[i] += yvt[i];
-      }
+      if (addv == MAX_VALUES) {
+        for ( i=0; i<size; i++ ) {
+          yv[i] = PetscMax(yv[i],yvt[i]);
+	}
+      } else if (addv == ADD_VALUES){
+        for ( i=0; i<size; i++ ) {
+	  yv[i] += yvt[i];
+        }
+      } else {SETERRQ(1,1,"Wrong insert option");}
     }
   }
   PetscFunctionReturn(0);
@@ -126,9 +138,15 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
         PLogObjectMemory(ctx,xx->n*sizeof(Scalar));
       }
       ierr = MPI_Scatterv(xv,scat->count,yy->ownership,MPIU_SCALAR,yvt,yy->n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
-      for ( i=0; i<yy->n; i++ ) {
-        yv[i] += yvt[i];
-      }
+      if (addv == MAX_VALUES) {
+        for ( i=0; i<yy->n; i++ ) {
+          yv[i] = PetscMax(yv[i],yvt[i]);
+	}
+      } else  if (addv == ADD_VALUES) {
+        for ( i=0; i<yy->n; i++ ) {
+	  yv[i] += yvt[i];
+        }
+      } else {SETERRQ(1,1,"Wrong insert option");}
     }
   /* ---------  Forward scatter; gather all values onto processor 0 */
   } else { 
@@ -150,9 +168,15 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
       }
       ierr = MPI_Gatherv(xv,xx->n,MPIU_SCALAR,yvt,scat->count,xx->ownership,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
       if (rank == 0) {
-        for ( i=0; i<size; i++ ) {
-          yv[i] += yvt[i];
-        }
+        if (addv == MAX_VALUES) {
+          for ( i=0; i<size; i++ ) {
+            yv[i] = PetscMax(yv[i],yvt[i]);
+          }
+        } else if (addv == ADD_VALUES) {
+          for ( i=0; i<size; i++ ) {
+	    yv[i] += yvt[i];
+          }
+        }  else {SETERRQ(1,1,"Wrong insert option");}
       }
     }
   }
@@ -234,9 +258,11 @@ int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
 
   if (addv == INSERT_VALUES) {
     for ( i=0; i<n; i++ ) {yv[tslots[i]] = xv[fslots[i]];}
-  } else {
+  } else if (addv == ADD_VALUES) {
     for ( i=0; i<n; i++ ) {yv[tslots[i]] += xv[fslots[i]];}
-  }
+  } else  if (addv == MAX_VALUES) {
+    for ( i=0; i<n; i++ ) {yv[tslots[i]] = PetscMax(yv[tslots[i]],xv[fslots[i]]);}
+  } else {SETERRQ(1,1,"Wrong insert option");}
   PetscFunctionReturn(0);
 }
 
@@ -259,16 +285,20 @@ int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
     xv += first;
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[i];}
-    } else {
+    } else  if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[i];}
-    }
+    } else  if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[i]);}
+    } else {SETERRQ(1,1,"Wrong insert option");}
   } else {
     yv += first;
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[i] = xv[fslots[i]];}
-    } else {
+    } else  if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[i] += xv[fslots[i]];}
-    }
+    } else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[i] = PetscMax(yv[i],xv[fslots[i]]);}
+    } else {SETERRQ(1,1,"Wrong insert option");}
   }
   PetscFunctionReturn(0);
 }
@@ -291,15 +321,19 @@ int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   if (mode & SCATTER_REVERSE ){
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[first + i*step];}
-    } else {
+    } else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[first + i*step];}
-    }
+    } else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[first + i*step]);}
+    } else {SETERRQ(1,1,"Wrong insert option");}
   } else {
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[first + i*step] = xv[fslots[i]];}
-    } else {
+    } else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[first + i*step] += xv[fslots[i]];}
-    }
+    } else if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[first + i*step] = PetscMax(yv[first + i*step],xv[fslots[i]]);}
+    } else {SETERRQ(1,1,"Wrong insert option");}
   }
   PetscFunctionReturn(0);
 }
@@ -323,17 +357,21 @@ int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
     yv += first;
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[i] = xv[fslots[i]];}
-    } else {
+    } else  if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[i] += xv[fslots[i]];}
-    }
+    } else  if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[i] = PetscMax(yv[i],xv[fslots[i]]);}
+    } else {SETERRQ(1,1,"Wrong insert option");}
   } else {
     xv += first;
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[i];}
-    } else {
+    } else  if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[i];}
-    }
-  }
+    } else  if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[i]);}
+    } else {SETERRQ(1,1,"Wrong insert option");}
+  } 
   PetscFunctionReturn(0);
 }
 
@@ -355,15 +393,19 @@ int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   if (mode & SCATTER_REVERSE ){
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[first + i*step] = xv[fslots[i]];}
-    } else {
+    } else  if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[first + i*step] += xv[fslots[i]];}
-    }
+    } else  if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[first + i*step] = PetscMax(yv[first + i*step],xv[fslots[i]]);}
+    } else {SETERRQ(1,1,"Wrong insert option");}
   } else {
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[first + i*step];}
-    } else {
+    } else  if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[first + i*step];}
-    }
+    } else  if (addv == MAX_VALUES) {
+      for ( i=0; i<n; i++ ) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[first + i*step]);}
+    } else {SETERRQ(1,1,"Wrong insert option");}
   }
   PetscFunctionReturn(0);
 }
@@ -393,12 +435,12 @@ int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   if (addv == INSERT_VALUES) {
     if (to_step == 1 && from_step == 1) {
       PetscMemcpy(yv+to_first,xv+from_first,n*sizeof(Scalar));
-    } else {
+    } else  {
       for ( i=0; i<n; i++ ) {
         yv[to_first + i*to_step] = xv[from_first+i*from_step];
       }
     }
-  } else {
+  } else if (addv == ADD_VALUES) {
     if (to_step == 1 && from_step == 1) {
       yv += to_first; xv += from_first;
       for ( i=0; i<n; i++ ) {
@@ -409,7 +451,18 @@ int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
         yv[to_first + i*to_step] += xv[from_first+i*from_step];
       }
     }
-  }
+  } else if (addv == MAX_VALUES) {
+    if (to_step == 1 && from_step == 1) {
+      yv += to_first; xv += from_first;
+      for ( i=0; i<n; i++ ) {
+        yv[i] = PetscMax(yv[i],xv[i]);
+      }
+    } else {
+      for ( i=0; i<n; i++ ) {
+        yv[to_first + i*to_step] = PetscMax(yv[to_first + i*to_step],xv[from_first+i*from_step]);
+      }
+    }
+  } else {SETERRQ(1,1,"Wrong insert option");}
   PetscFunctionReturn(0);
 }
 
