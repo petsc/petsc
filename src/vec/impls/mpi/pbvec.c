@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.75 1997/04/09 17:28:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.76 1997/04/10 00:00:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -10,83 +10,6 @@ static char vcid[] = "$Id: pbvec.c,v 1.75 1997/04/09 17:28:05 bsmith Exp bsmith 
 #include "petsc.h"
 #include <math.h>
 #include "pvecimpl.h"   /*I  "vec.h"   I*/
-
-#undef __FUNC__  
-#define __FUNC__ "VecDot_MPI"
-void AZ_gdot_vec(MPI_Comm , int, double*, double*);
-int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
-{
-  Scalar    work;
-  VecDot_Seq(  xin, yin, z );
-  AZ_gdot_vec(xin->comm,1,z,&work);
-  return 0;
-}
-
-
-void AZ_gdot_vec(MPI_Comm comm, int N, double *dots, double *dots2)
-{
-  /* local variables */
-  
-  int	partner;	  /* processor I exchange with */
-  int	mask;		  /* bit pattern identifying partner */
-  int	hbit;		  /* largest nonzero bit in nprocs */
-  int	nprocs_small;	  /* largest power of 2 <= nprocs */
-  int	i;		  /* loop counter */
-  int	node, nprocs;
-  int	tag = 1;
-  MPI_Request request;	  /* Message handle */
-  MPI_Status  status;
-  /*
-  node	 = PetscGlobalRank;
-  nprocs = PetscGlobalSize;
-  */
-  MPI_Comm_size(comm,&nprocs);
-  MPI_Comm_rank(comm,&node);
-  
-  for (hbit = 0; (nprocs >> hbit) != 1; hbit++);
-  
-  nprocs_small = 1 << hbit;
-  if (nprocs_small *2 == nprocs) {
-    nprocs_small <<= 1;
-    hbit++;
-  }
-  
-  partner  = node ^ nprocs_small;
-  if (node+nprocs_small < nprocs) {
-    MPI_Irecv(dots2,N,MPIU_SCALAR,partner,tag,comm,&request);
-  }
-  else if (node & nprocs_small) {
-    MPI_Send((void *) dots,N,MPIU_SCALAR,partner,1,comm);
-  }
-  if (node+nprocs_small < nprocs) {
-    MPI_Wait(&request,&status);
-    for (i = 0; i < N; i++) dots[i] += dots2[i];
-  }
-  /* Now do a binary exchange on nprocs_small nodes. */
-    
-  if (!(node & nprocs_small)) { 
-    for (mask = nprocs_small>>1; mask; mask >>= 1) {
-      partner = node ^ mask;
-      MPI_Irecv((void *) dots2,N,MPIU_SCALAR,partner,1,comm,&request);
-      MPI_Send((void *) dots,N,MPIU_SCALAR,partner,1,comm);
-      MPI_Wait(&request,&status);
-      for (i = 0; i < N; i++) dots[i] += dots2[i];
-    }
-  }
-  
-  /* Finally, send message from lower half to upper half. */
-  
-  partner = node ^ nprocs_small;
-  if (node & nprocs_small) {
-    MPI_Irecv((void *) dots,N,MPIU_SCALAR,partner,1,comm,&request);
-  }
-  else if (node+nprocs_small < nprocs ) {
-    MPI_Send((void *) dots,N,MPIU_SCALAR,partner,1,comm);
-  }
-  if (node & nprocs_small) {
-    MPI_Wait(&request,&status);
-  }
-}
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetOption_MPI" /* ADIC Ignore */
