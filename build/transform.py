@@ -25,6 +25,7 @@ class Transform(base.Base):
     import copy
     newSet = copy.copy(set)
     del newSet[:]
+    del newSet.children[:]
     newSet.append(f)
     return self.output.children.append(newSet)
 
