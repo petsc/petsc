@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.192 1997/01/23 23:30:45 curfman Exp bsmith $ 
+% $Id: part2.tex,v 1.193 1997/02/03 06:04:28 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2110,10 +2110,11 @@ factorization. These options may be set in the database with
    -pc_ilu_use_drop_tolerance <dt>,<dtcount>
    -pc_ilu_reuse_fill
    -pc_ilu_in_place
+   -pc_ilu_nonzeros_along_diagonal
 \end{verbatim}
 \findex{-pc_ilu_levels} \findex{-pc_ilu_reuse_reordering}
 \findex{-pc_ilu_use_drop_tolerance} \findex{-pc_ilu_reuse_fill}
-\findex{-pc_ilu_in_place}
+\findex{-pc_ilu_in_place} \findex{-pc_ilu_nonzeros_along_diagonal}
 
 See Section~\ref{sec:symbolfactor} for information on preallocation
 of memory for anticipated fill during factorization.
@@ -2257,7 +2258,7 @@ sets the SSOR relaxation coefficient, {\tt omega}, as discussed above.
 
 \subsection{LU Factorization}
 
-The LU preconditioner provides two options.  The first, given by
+The LU preconditioner provides several options.  The first, given by
 the \sindex{direct solver}
 command \findex{PCLUSetUseInPlace()} \findex{inplace solvers}
 \begin{verbatim}
@@ -2288,6 +2289,15 @@ one of the following:  {\tt -mat\_order natural, -mat\_order nd,
 -mat\_order 1wd, -mat\_order rcm, -mat\_order qmd}.
 In addition, see 
 \break {\tt MatGetReordering()}, discussed in Section~\ref{sec:matfactor}.
+
+The sparse LU factorization provided in PETSc does not perform pivoting for 
+numerical stability (since they are designed to preserve nonzero 
+structure), thus occasionally a LU factorization will fail with a zero 
+pivot when, in fact, the matrix is non-singular. The option
+{\tt -pc\_lu\_nonzeros\_along\_diagonal} \findex{-pc_lu_nonzeros_along_diagonal}
+will often help eliminate the zero pivot, by preprocessing the the 
+column ordering to remove small values from the diagonal.
+
 
 In addition, Section~\ref{sec:symbolfactor} provides information on
 preallocation of memory for anticipated fill during factorization.  
@@ -3651,7 +3661,8 @@ this approach was not needed and could easily lead to confusion.
 We do not currently support sparse matrix factorization with pivoting
 for numerical stability. This is because trying to both reduce fill
 and do pivoting can become quite complicated. Instead, we provide a 
-poor stepchild substitute. After one has obtained a reordering, one
+poor stepchild substitute. After one has obtained a reordering, with
+{\tt MatGetRordering(Mat A,MatOrdering type,IS *row,IS *col)} one
 may call
 \begin{verbatim}
    ierr = MatReorderForNonzeroDiagonal(Mat A,double tol,IS row, IS col);
@@ -3661,6 +3672,10 @@ the diagonal are smaller than {\tt tol} in a absolute value. If small
 values are detected and corrected for, a nonsymmetric
 permutation of the rows and columns will result. This is not guaranteed to work, 
 but may help if one was simply unlucky in the original ordering.
+\findex{MatReorderForNonzeroDiagonal} When using the SLES solver interface
+the options {\tt -pc\_ilu\_nonzeros\_along\_diagonal} \findex{-pc_ilu_nonzeros_along_diagonal}
+and \findex{-pc_lu_nonzeros_along_diagonal}
+{\tt -pc\_ilu\_nonzeros\_along\_diagonal} may be used.
 
 Once a matrix has been factored, it is natural to solve linear systems.
 The following four routines enable this process: \findex{MatSolve()} 
