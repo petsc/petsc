@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.48 1998/04/27 19:16:16 bsmith Exp balay $ 
+# $Id: makefile,v 1.49 1998/06/13 05:13:29 balay Exp balay $ 
 
 ALL: ex1
 
@@ -30,7 +30,7 @@ TESTEXAMPLES_6   =
 TESTEXAMPLES_7   = ex5.PETSc runex5_3 runex5_4 ex5.rm clean
 TESTEXAMPLES_8   = 
 TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm clean
-
+TESTEXAMPLES_12  = ex13f90.PETSc runex13f90 ex13f90.rm clean
 BUILDEXAMPLES_1  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
 		   ex5.PETSc ex5.rm ex9.PETSc ex9.rm \
 		   ex13.PETSc ex13.rm ex14.PETSc ex14.rm \
@@ -49,7 +49,7 @@ BUILDEXAMPLES_10 = ex11f.PETSc ex11f.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
                   ex13.c ex14.c ex15.c ex16.c
-EXAMPLESF       = ex1f.F ex2f.F ex6f.F ex11f.F ex13f.F ex14f.F
+EXAMPLESF       = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -129,9 +129,9 @@ ex13: ex13.o  chkopts
 	-${CLINKER} -o ex13 ex13.o  ${PETSC_LIB}
 	${RM} ex13.o
 
-ex13f: ex13f.o  chkopts
-	-${FLINKER} -o ex13f ex13f.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
-	${RM} ex13f.o
+ex13f90: ex13f90.o  chkopts
+	-${FLINKER} -o ex13f90 ex13f90.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	${RM} ex13f90.o
 
 ex14: ex14.o  chkopts
 	-${CLINKER} -o ex14 ex14.o  ${PETSC_LIB}
@@ -305,6 +305,11 @@ runex13:
 	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Possible problem with ex13_1, diffs above"; fi; \
 	   ${RM} -f ex13_1.tmp
+runex13f90:
+	-@${MPIRUN} -np 1 ex13f90 -m 19 -n 20 > ex13f90_1.tmp 2>&1; \
+	   if (diff output/ex13f90_1.out ex13f90_1.tmp) then true; \
+	   else echo "Possible problem with ex13f90_1, diffs above"; fi; \
+	   ${RM} -f ex13f90_1.tmp
 
 runex14:
 	-@${MPIRUN} -np 1 ex14 -no_output > ex14_1.tmp 2>&1; \

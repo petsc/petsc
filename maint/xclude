@@ -172,7 +172,6 @@ petsc/src/vec/RCS
 petsc/src/viewer/RCS
 petsc/src/draw/examples/RCS/
 petsc/src/draw/examples/tutorials/RCS/
-petsc/src/sles/examples/tutorials/ex13f.F
 petsc/src/draw/examples/tests/RCS/
 petsc/src/draw/impls/RCS/
 petsc/src/draw/src/RCS/

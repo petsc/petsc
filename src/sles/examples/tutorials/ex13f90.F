@@ -1,8 +1,8 @@
 !
-!    "$Id: ex13f.F,v 1.10 1998/06/18 23:15:38 balay Exp balay $";
+!    "$Id: ex13f.F,v 1.11 1998/07/01 21:07:18 balay Exp balay $";
 !
 !
-!/*
+!/*T
 !   Concepts: SLES^Solving a system of linear equations (basic sequential example)
 !   Concepts: SLES^Laplacian, 2d
 !   Concepts: Laplacian, 2d
@@ -11,7 +11,7 @@
 !   Routines: KSPSetTolerances(); PCSetType();
 !   Routines: VecGetArray(); VecPlaceArray();
 !   Processors: 1
-!*/
+!T*/
 ! -----------------------------------------------------------------------
 
       program main
@@ -54,16 +54,6 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  Variables:
-!     sles     - linear solver context
-!     ksp      - Krylov subspace method context
-!     pc       - preconditioner context
-!     x, b, u  - approx solution, right-hand-side, exact solution vectors
-!     A        - matrix that defines linear system
-!     its      - iterations for convergence
-!     norm     - norm of error in solution
-
 
       Scalar  hx, hy, x, y
       PetscFortranAddr userctx(6)
@@ -132,10 +122,10 @@
          do 10 i=1,m
             rho(i,j)      = x
             solution(i,j) = sin(2.*PETSC_PI*x)*sin(2.*PETSC_PI*y)
-            userb(i,j)    = -2*PETSC_PI*cos(2*PETSC_PI*x)*              &
-     &                sin(2*PETSC_PI*y) +                               &
-     &                8*PETSC_PI*PETSC_PI*x*                            &
-     &                sin(2*PETSC_PI*x)*sin(2*PETSC_PI*y)
+            userb(i,j)    = -2.*PETSC_PI*cos(2.*PETSC_PI*x)*              &
+     &                sin(2.*PETSC_PI*y) +                                &
+     &                8*PETSC_PI*PETSC_PI*x*                              &
+     &                sin(2.*PETSC_PI*x)*sin(2.*PETSC_PI*y)
            x = x + hx
  10      continue
          y = y + hy
@@ -158,11 +148,12 @@
          do 90 j=1,n
             do 80 i=1,m
                enorm = enorm +                                          &
-     &             solution(i,j)-userx(i,j)*(solution(i,j)-userx(i,j))
+     &             (solution(i,j)-userx(i,j))*(solution(i,j)-userx(i,j))
  80         continue
  90      continue
-         enorm = enorm * PetscReal(hx*hy);
-         write(6,*) 'm, n, error norm =',m,n,enorm
+         enorm = enorm * PetscReal(hx*hy)
+         write(6,115) m,n,enorm
+ 115     format ('m = ',I2,' n = ',I2,' error norm = ',E10.4)
  100  continue
 !  We are all finished solving linear systems, so we clean up the
 !  data structures.
@@ -312,7 +303,7 @@
                v = -0.5*(rho(II+1) + rho(JJ+1))*hx2
                call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
             endif
-            v = 2*rho(II+1)*(hx2+hy2);
+            v = 2*rho(II+1)*(hx2+hy2)
             call MatSetValues(A,1,II,1,II,v,INSERT_VALUES,ierr)
             II = II+1
  100     continue
