@@ -66,10 +66,10 @@ class Configure(config.base.Configure):
     printf("getrusage() does not work\\n");
     return 0;
   }
-  if (f1 > .95 && f1 < 1.05) {
+  if (f1 > .90 && f1 < 1.1) {
     printf("uses 1024 size chunks in getrusage()\\n");
     return 1;
-  } else if (f2 > .95 && f2 < 1.05) {
+  } else if (f2 > .9 && f2 < 1.1) {
     printf("uses getpagesize() chunks in getrusage()\\n");
     return 2;
   }
