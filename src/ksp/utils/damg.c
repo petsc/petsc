@@ -32,12 +32,12 @@
 .seealso DMMGDestroy(), DMMGSetUser(), DMMGGetUser()
 
 @*/
-PetscErrorCode DMMGCreate(MPI_Comm comm,int nlevels,void *user,DMMG **dmmg)
+PetscErrorCode DMMGCreate(MPI_Comm comm,PetscInt nlevels,void *user,DMMG **dmmg)
 {
   PetscErrorCode ierr;
-  int i;
-  DMMG       *p;
-  PetscTruth galerkin;
+  PetscInt       i;
+  DMMG           *p;
+  PetscTruth     galerkin;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(0,"-dmmg_nlevels",&nlevels,PETSC_IGNORE);CHKERRQ(ierr);
@@ -77,7 +77,7 @@ PetscErrorCode DMMGCreate(MPI_Comm comm,int nlevels,void *user,DMMG **dmmg)
 @*/
 PetscErrorCode DMMGSetUseGalerkinCoarse(DMMG* dmmg)
 {
-  int  i,nlevels = dmmg[0]->nlevels;
+  PetscInt  i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
@@ -106,7 +106,7 @@ PetscErrorCode DMMGSetUseGalerkinCoarse(DMMG* dmmg)
 PetscErrorCode DMMGDestroy(DMMG *dmmg)
 {
   PetscErrorCode ierr;
-  int i,nlevels = dmmg[0]->nlevels;
+  PetscInt       i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
@@ -155,7 +155,7 @@ PetscErrorCode DMMGDestroy(DMMG *dmmg)
 PetscErrorCode DMMGSetDM(DMMG *dmmg,DM dm)
 {
   PetscErrorCode ierr;
-  int i,nlevels = dmmg[0]->nlevels;
+  PetscInt       i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
@@ -188,7 +188,7 @@ PetscErrorCode DMMGSetDM(DMMG *dmmg,DM dm)
 PetscErrorCode DMMGSetUp(DMMG *dmmg)
 {
   PetscErrorCode ierr;
-  int i,nlevels = dmmg[0]->nlevels;
+  PetscInt       i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
 
@@ -233,8 +233,8 @@ PetscErrorCode DMMGSetUp(DMMG *dmmg)
 PetscErrorCode DMMGSolve(DMMG *dmmg)
 {
   PetscErrorCode ierr;
-  int        i,nlevels = dmmg[0]->nlevels;
-  PetscTruth gridseq,vecmonitor,flg;
+  PetscInt       i,nlevels = dmmg[0]->nlevels;
+  PetscTruth     gridseq,vecmonitor,flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(0,"-dmmg_grid_sequence",&gridseq);CHKERRQ(ierr);
@@ -282,7 +282,7 @@ PetscErrorCode DMMGSolve(DMMG *dmmg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolveKSP"
-PetscErrorCode DMMGSolveKSP(DMMG *dmmg,int level)
+PetscErrorCode DMMGSolveKSP(DMMG *dmmg,PetscInt level)
 {
   PetscErrorCode ierr;
 
@@ -301,15 +301,15 @@ PetscErrorCode DMMGSolveKSP(DMMG *dmmg,int level)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetUpLevel"
-PetscErrorCode DMMGSetUpLevel(DMMG *dmmg,KSP ksp,int nlevels)
+PetscErrorCode DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nlevels)
 {
   PetscErrorCode ierr;
-  int i;
-  PC          pc;
-  PetscTruth  ismg,monitor,ismf,isshell,ismffd;
-  KSP        lksp; /* solver internal to the multigrid preconditioner */
-  MPI_Comm    *comms,comm;
-  PetscViewer ascii;
+  PetscInt       i;
+  PC             pc;
+  PetscTruth     ismg,monitor,ismf,isshell,ismffd;
+  KSP            lksp; /* solver internal to the multigrid preconditioner */
+  MPI_Comm       *comms,comm;
+  PetscViewer    ascii;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
@@ -398,15 +398,14 @@ PetscErrorCode DMMGSetUpLevel(DMMG *dmmg,KSP ksp,int nlevels)
 PetscErrorCode DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorCode (*func)(DMMG,Mat))
 {
   PetscErrorCode ierr;
-  int size,i,nlevels = dmmg[0]->nlevels;
-  PetscTruth galerkin;
+  PetscInt       i,nlevels = dmmg[0]->nlevels;
+  PetscTruth     galerkin;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
   galerkin = dmmg[0]->galerkin;  
 
   if (galerkin) {
-    ierr = MPI_Comm_size(dmmg[nlevels-1]->comm,&size);CHKERRQ(ierr);
     ierr = DMGetMatrix(dmmg[nlevels-1]->dm,MATAIJ,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
     ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->B);CHKERRQ(ierr);
     for (i=nlevels-2; i>-1; i--) {
@@ -419,7 +418,6 @@ PetscErrorCode DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorC
     for (i=0; i<nlevels; i++) {
 
       if (!dmmg[i]->B && !galerkin) {
-        ierr = MPI_Comm_size(dmmg[i]->comm,&size);CHKERRQ(ierr);
         ierr = DMGetMatrix(dmmg[i]->dm,MATAIJ,&dmmg[i]->B);CHKERRQ(ierr);
       } 
       if (!dmmg[i]->J) {
@@ -468,7 +466,7 @@ PetscErrorCode DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorC
 PetscErrorCode DMMGView(DMMG *dmmg,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  int i,nlevels = dmmg[0]->nlevels,flag;
+  PetscInt       i,nlevels = dmmg[0]->nlevels,flag;
   MPI_Comm       comm;
   PetscTruth     iascii,isbinary;
 
