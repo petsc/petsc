@@ -1,14 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: file.c,v 1.27 1995/12/31 17:17:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: grpath.c,v 1.1 1996/01/30 18:34:25 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
 */
-#include "file.h"
+#include "files.h"
 
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024
-#endif
 
 /*@C
    SYGetRealPath - Get the path without symbolic links etc. and in absolute

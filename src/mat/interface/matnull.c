@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcnull.c,v 1.2 1995/12/21 18:30:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcnull.c,v 1.3 1995/12/21 20:37:09 bsmith Exp bsmith $";
 #endif
 /*
     Routines to project vectors out of null spaces.
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: pcnull.c,v 1.2 1995/12/21 18:30:54 bsmith Exp bsmith 
 #include "sys.h"
 
 
-/*@
+/*@C
   PCNullSpaceCreate - Creates a data-structure used to project vectors 
        out of null spaces.
 

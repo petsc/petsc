@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.23 1996/01/23 00:20:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.24 1996/01/26 04:35:31 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -27,7 +27,7 @@ static int SNESSolve_UMLS(SNES snes,int *outits)
   Vec          G, X, RHS, S, W;
   SLES         sles;
   KSP          ksp;
-  MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
+  MatStructure flg = DIFFERENT_NONZERO_PATTERN;
 
   history	= snes->conv_hist;      /* convergence history */
   history_len	= snes->conv_hist_len;  /* convergence history length */

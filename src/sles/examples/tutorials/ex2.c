@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.36 1996/01/12 22:08:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.37 1996/01/23 00:20:56 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.  To test the\n\
@@ -45,7 +45,7 @@ int main(int argc,char **args)
 
   /* Create SLES context; set operators and options; solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN);
+  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);
   CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);

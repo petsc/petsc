@@ -1,10 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: file.c,v 1.27 1995/12/31 17:17:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: fdate.c,v 1.1 1996/01/30 18:27:25 bsmith Exp bsmith $";
 #endif
-/*
-      Code for opening and closing files.
-*/
-#include "file.h"
+
+#include "files.h"
 
 char *SYGetDate()
 {

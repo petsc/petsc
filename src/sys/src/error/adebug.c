@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.34 1995/11/20 17:16:34 balay Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.35 1996/01/23 00:18:09 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -267,14 +267,14 @@ $     SETERRQ(number,message)
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
    currently available PETSc error handlers are
-$    PetscDefaultErrorHandler()
+$    PetscTraceBackErrorHandler()
 $    PetscAttachDebuggerErrorHandler()
 $    PetscAbortErrorHandler()
    or you may write your own.
 
 .keywords: attach, debugger, error, handler
 
-.seealso:  PetscPushErrorHandler(), PetscDefaultErrorHandler(), 
+.seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
            PetscAbortErrorHandler()
 @*/
 int PetscAttachDebuggerErrorHandler(int line,char* dir,char* file,int num,char* mess,

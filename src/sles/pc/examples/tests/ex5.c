@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.38 1996/01/26 01:41:46 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.39 1996/01/26 02:21:42 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -81,7 +81,7 @@ int main(int Argc, char **Args)
 
   ierr = MGGetCoarseSolve(pcmg,&csles); CHKERRA(ierr);
   ierr = SLESSetOperators(csles,cmat,cmat,
-         ALLMAT_DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+         DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESGetPC(csles,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCLU); CHKERRA(ierr);
   ierr = SLESGetKSP(csles,&ksp); CHKERRA(ierr);
@@ -107,7 +107,7 @@ int main(int Argc, char **Args)
 
     /* this is a dummy! */
     ierr = SLESSetOperators(sles[i],mat[i],mat[i],
-           ALLMAT_DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+           DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
     ierr = PCShellSetApplyRichardson(pc,gauss_seidel,(void *)0); CHKERRA(ierr);
     if (use_jacobi) {
       ierr = PCShellSetApplyRichardson(pc,jacobi,(void *)0); CHKERRA(ierr);
@@ -139,7 +139,7 @@ int main(int Argc, char **Args)
   /* create matrix multiply for finest level */
   ierr = MatCreateShell(MPI_COMM_WORLD,N[0],N[0],(void *)0,&fmat);CHKERRA(ierr);
   ierr = MatShellSetMult(fmat,amult); CHKERRA(ierr);
-  ierr = SLESSetOperators(slesmg,fmat,fmat,ALLMAT_DIFFERENT_NONZERO_PATTERN); 
+  ierr = SLESSetOperators(slesmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN); 
   CHKERRA(ierr);
 
   ierr = CalculateSolution(N[0],&solution); CHKERRA(ierr);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.44 1996/01/16 22:25:31 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.45 1996/01/31 20:08:09 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -39,9 +39,10 @@ int  TrMallocUsed = 0;
 
 int PetscSetUseTrMalloc_Private()
 {
+  int ierr;
   PetscLow  = (void *) 0xEEEEEEEE;
   PetscHigh = (void *) 0x0;
-  PetscSetMalloc(TrMalloc,TrFree);
+  ierr = PetscSetMalloc(TrMalloc,TrFree); CHKERRQ(ierr);
   TrMallocUsed = 1;
   return 0;
 }
@@ -322,11 +323,11 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 
 .seealso: TrDump()
  @*/
-int TrSpace( int *space, int *fr, int *maxs )
+int TrSpace( double *space, double *fr, double *maxs )
 {
-  if (space) *space = allocated;
-  if (fr)    *fr    = frags;
-  if (maxs)  *maxs  = (int)TRMaxMem;
+  if (space) *space = (double) allocated;
+  if (fr)    *fr    = (double) frags;
+  if (maxs)  *maxs  = (double) TRMaxMem;
   return 0;
 }
 
@@ -447,24 +448,6 @@ int TrSummary(FILE* fp )
 }	
 #endif
 
-/*@
-   TrGetMaximumAllocated - If TrMalloc is used, returns the maximum amount 
-   of space allocated.
-
-   Output Parameter:
-.  max - the maximum amount of space (in bytes).
-
-.keywords: memory, maximum, allocation, tracing, space, statistics
-
-.seealso: TrSummary(), TrDump()
-@*/
-int TrGetMaximumAllocated(double *max)
-{
-  if (TrMallocUsed)   *max = (double) TRMaxMem;
-  else                *max = 0.0;
-  return 0;
-}
-
 /*
     TrDebugLevel - Set the level of debugging for the space management 
                    routines.
@@ -564,8 +547,9 @@ int TrSortBlocks()
 /* Takes sorted input and dumps as an aggregate */
 int TrDumpGrouped(FILE *fp )
 {
-  TRSPACE *head, *cur;
-  int     nblocks, nbytes;
+  TRSPACE       *head, *cur;
+  int           nblocks;
+  unsigned long nbytes;
 
   if (fp == 0) fp = stderr;
 
@@ -581,7 +565,7 @@ int TrDumpGrouped(FILE *fp )
 	nbytes += cur->size;
 	cur    = cur->next;
     }
-    fprintf( fp, "File %13s line %5d: %d bytes in %d allocation%c\n", 
+    fprintf( fp, "File %13s line %5d: %ld bytes in %d allocation%c\n", 
 	     head->fname, head->lineno, nbytes, nblocks,(nblocks > 1) ? 's' : ' ');
     head = cur;
   }

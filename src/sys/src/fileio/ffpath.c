@@ -1,11 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: file.c,v 1.27 1995/12/31 17:17:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: ffpath.c,v 1.1 1996/01/30 18:32:25 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
 */
-#include "file.h"
+#include "files.h"
 
+extern int SYiTestFile(char *,char,uid_t,gid_t);
 
 /*@C
    SYGetFileFromPath - Finds a file from a name and a path string.  A 
@@ -33,13 +34,13 @@ static char vcid[] = "$Id: file.c,v 1.27 1995/12/31 17:17:34 curfman Exp bsmith 
 @*/
 int SYGetFileFromPath(char *path,char *defname,char *name,char *fname, char mode)
 {
-  char   *p, *cdir, trial[MAX_FILE_NAME],*senv, *env;
+  char   *p, *cdir, trial[MAXPATHLEN],*senv, *env;
   int    ln;
   uid_t  uid;
   gid_t  gid;
 
   /* Setup default */
-  SYGetFullPath(defname,fname,MAX_FILE_NAME);
+  SYGetFullPath(defname,fname,MAXPATHLEN);
 
   /* Get the (effective) user and group of the caller */
   uid = geteuid();
@@ -75,7 +76,7 @@ int SYGetFileFromPath(char *path,char *defname,char *name,char *fname, char mode
 
       if (SYiTestFile( trial, mode, uid, gid )) {
         /* need SYGetFullPath rather then copy in case path has . in it */
-	SYGetFullPath( trial,  fname, MAX_FILE_NAME );
+	SYGetFullPath( trial,  fname, MAXPATHLEN );
 	PetscFree( senv );
 	return 1;
       }

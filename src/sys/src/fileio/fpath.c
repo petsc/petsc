@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: file.c,v 1.27 1995/12/31 17:17:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: fpath.c,v 1.1 1996/01/30 18:29:10 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
 */
-#include "file.h"
+#include "files.h"
 
 #if defined(HAVE_PWD_H)
 /*@C
@@ -38,7 +38,7 @@ int SYGetFullPath( char *path, char *fullpath, int flen )
 
   /* Remove the various "special" forms (~username/ and ~/) */
   if (fullpath[0] == '~') {
-    char tmppath[MAX_FILE_NAME];
+    char tmppath[MAXPATHLEN];
     if (fullpath[1] == '/') {
 	pwde = getpwuid( geteuid() );
 	if (!pwde) return 0;
@@ -68,7 +68,7 @@ int SYGetFullPath( char *path, char *fullpath, int flen )
   }
   /* Remove the automounter part of the path */
   if (PetscStrncmp( fullpath, "/tmp_mnt/", 9 ) == 0) {
-    char tmppath[MAX_FILE_NAME];
+    char tmppath[MAXPATHLEN];
     PetscStrcpy( tmppath, fullpath + 8 );
     PetscStrcpy( fullpath, tmppath );
   }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.5 1996/01/23 01:11:13 curfman Exp balay $";
+static char vcid[] = "$Id: random.c,v 1.6 1996/02/01 16:33:33 balay Exp bsmith $";
 #endif
 
 /*
@@ -42,7 +42,7 @@ extern double drand48();
 extern void   srand48();
 #endif
 
-/*@
+/*@C
    SYRandomCreate - Creates a context for generating random numbers and
    initializes the random-number generator.
 
@@ -85,7 +85,7 @@ int SYRandomCreate(MPI_Comm comm,SYRandomType type,SYRandom *r)
   return 0;
 }
 
-/*@
+/*@C
    SYRandomDestroy - Destroys a context that has been formed by 
    SYRandomCreate().
 

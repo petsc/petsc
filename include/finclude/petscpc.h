@@ -16,13 +16,10 @@ C
 C
 C  Flags for PCSetOperators()
 C
-      integer ALLMAT_DIFFERENT_NONZERO_PATTERN,MAT_SAME_NONZERO_PATTERN, 
-     *        PMAT_SAME_NONZERO_PATTERN,ALLMAT_SAME_NONZERO_PATTERN
+      integer SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN
 
-      parameter (ALLMAT_DIFFERENT_NONZERO_PATTERN = 0,
-     *           MAT_SAME_NONZERO_PATTERN = 1,
-     *           PMAT_SAME_NONZERO_PATTERN = 2,
-     *           ALLMAT_SAME_NONZERO_PATTERN = 3)
+      parameter (SAME_NONZERO_PATTERN = 0,
+     *           DIFFERENT_NONZERO_PATTERN = 1)
 C
 C  End of Fortran include file for the PC package in PETSc
 

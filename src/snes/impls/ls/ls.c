@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.58 1996/01/23 18:31:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.59 1996/01/26 04:35:20 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -28,7 +28,7 @@ int SNESSolve_LS(SNES snes,int *outits)
 {
   SNES_LS      *neP = (SNES_LS *) snes->data;
   int          maxits, i, history_len, ierr, lits, lsfail;
-  MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
+  MatStructure flg = DIFFERENT_NONZERO_PATTERN;
   double       fnorm, gnorm, xnorm, ynorm, *history;
   Vec          Y, X, F, G, W, TMP;
 

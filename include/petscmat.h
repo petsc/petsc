@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.87 1996/01/23 00:21:00 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.88 1996/01/24 05:47:39 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -136,6 +136,9 @@ typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_EISENSTAT=32,SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128
               } MatSORType;
 extern int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
+
+typedef enum { MAT_GET_DIAGONAL=17 } MatOperation;
+extern int MatHasOperation(Mat,MatOperation,PetscTruth*);
 
 /*  Not currently supported! 
 #define MAT_SCATTER_COOKIE PETSC_COOKIE+15

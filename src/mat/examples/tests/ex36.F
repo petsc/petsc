@@ -1,5 +1,5 @@
 
-C      "$Id: ex36.F,v 1.6 1995/12/21 18:32:43 bsmith Exp curfman $";
+C      "$Id: ex36.F,v 1.7 1996/01/30 12:28:17 curfman Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/mat.h"
@@ -17,7 +17,7 @@ C  location.)
 C
       Mat              A
       integer          ia, n, m, err
-      double precision aa(1)
+      Scalar           aa(1)
 
       call PetscInitialize(err)
       n = 5
@@ -49,7 +49,7 @@ C -----------------------------------------------------------------
 
       subroutine FillUpMatrix(m,n,X)
       integer          m,n,i,j
-      double precision X(m,n)
+      Scalar           X(m,n)
 
       do 10, j=1,n
         do 20, i=1,m

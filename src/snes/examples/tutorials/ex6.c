@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.33 1996/01/24 17:53:18 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.34 1996/01/29 21:46:50 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -142,7 +142,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,
   ierr = MatAssemblyEnd(*prejac,FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
-  *flag = ALLMAT_SAME_NONZERO_PATTERN;
+  *flag = SAME_NONZERO_PATTERN;
   return 0;
 }/* --------------------  User-defined preconditioner  -------------------- */
 /* This routine demonstrates the use of a user-provided preconditioner and

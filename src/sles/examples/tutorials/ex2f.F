@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.10 1995/12/21 18:33:14 bsmith Exp bsmith $";
+C    "$Id: ex7.F,v 1.11 1996/01/12 22:08:38 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -11,11 +11,11 @@ C  This example demonstrates basic use of the SLES Fortran interface.
 C
       integer          i, j, II, JJ, ierr, m, n
       integer          rank, size, its, Istart, Iend,flg
-      double precision v, zero, one, none
+      Scalar           v, zero, one, none
+      Scalar           norm
       Vec              x, u, b
       Mat              A 
       SLES             sles
-      double precision norm
 
       zero = 0.0
       one  = 1.0
@@ -23,8 +23,8 @@ C
       call PetscInitialize(ierr)
       m = 3
       n = 3
-      call OptionsGetInt(PETSC_NULL,'-m',m,flg,ierr)
-      call OptionsGetInt(PETSC_NULL,'-n',n,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHAR,'-m',m,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHAR,'-n',n,flg,ierr)
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
 
@@ -68,7 +68,7 @@ C Create vectors for exact solution, approx solution, and RHS
 
 C Create SLES context and set operators
       call SLESCreate(MPI_COMM_WORLD,sles,ierr)
-      call SLESSetOperators(sles,A,A,ALLMAT_DIFFERENT_NONZERO_PATTERN,
+      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
      *                      ierr)
 C Set options
       call SLESSetFromOptions(sles,ierr)

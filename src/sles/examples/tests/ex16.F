@@ -1,5 +1,5 @@
 
-C      "$Id: ex16.F,v 1.3 1996/01/24 00:52:00 balay Exp curfman $";
+C      "$Id: ex16.F,v 1.4 1996/01/30 12:32:43 curfman Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -23,7 +23,7 @@ C                          use the file petsc/src/mat/examples/mat.ex.binary
 C
 
       integer          ierr, its, flg
-      double precision time, norm,none, five
+      Scalar           time, norm,none, five
       Vec              x, b, u
       Mat              A
       SLES             sles1, sles2
@@ -36,7 +36,7 @@ C
       call PetscInitialize(ierr)
 
 C Read in matrix and RHS
-      call OptionsGetString(PETSC_NULL,'-f',f,flg,ierr)
+      call OptionsGetString(PETSC_NULL_CHAR,'-f',f,flg,ierr)
       call ViewerFileOpenBinary(MPI_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f
@@ -44,6 +44,10 @@ C Read in matrix and RHS
       endif
 
       call MatLoad(fd,MATSEQAIJ,A,ierr)
+      if (ierr .ne. 0) then
+        print*, 'Unable to load matrix '
+        SETERRA(1,' ')
+      endif
 
       call VecLoad(fd,b,ierr)
       call ViewerDestroy(fd,ierr)
@@ -54,9 +58,9 @@ C Set up solution
 
 C Solve system-1
       call SLESCreate(MPI_COMM_WORLD,sles1,ierr)
-      call SLESSetOptionsPrefix(sles1,"a", ierr)
-      call SLESAppendOptionsPrefix(sles1,"_", ierr)
-      call SLESSetOperators(sles1,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN,
+      call SLESSetOptionsPrefix(sles1,'a', ierr)
+      call SLESAppendOptionsPrefix(sles1,'_', ierr)
+      call SLESSetOperators(sles1,A,A,DIFFERENT_NONZERO_PATTERN,
      &                      ierr)
       call SLESSetFromOptions(sles1,ierr)
       time = PetscGetTime()
@@ -77,9 +81,9 @@ C Create system 2 by striping off some rows of the matrix
 
 C Solve system-2
       call SLESCreate(MPI_COMM_WORLD,sles2,ierr)
-      call SLESSetOptionsPrefix(sles2,"b", ierr)
-      call SLESAppendOptionsPrefix(sles2,"_", ierr)
-      call SLESSetOperators(sles2,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN,
+      call SLESSetOptionsPrefix(sles2,'b', ierr)
+      call SLESAppendOptionsPrefix(sles2,'_', ierr)
+      call SLESSetOperators(sles2,A,A,DIFFERENT_NONZERO_PATTERN,
      &                      ierr)
       call SLESSetFromOptions(sles2,ierr)
       time = PetscGetTime()

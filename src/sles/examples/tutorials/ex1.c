@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.39 1996/01/23 00:20:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.40 1996/01/26 04:34:54 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
@@ -42,7 +42,7 @@ int main(int argc,char **args)
 
   /* Create SLES context; set operators and options; solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
   ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRA(ierr);

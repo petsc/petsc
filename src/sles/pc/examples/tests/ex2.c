@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.34 1996/01/01 01:02:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.35 1996/01/03 14:42:13 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
@@ -51,8 +51,7 @@ int main(int argc,char **args)
   ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
   ierr = PCSetFromOptions(pc); CHKERRA(ierr);
-  ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);
-         CHKERRA(ierr);
+  ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = PCSetVector(pc,u);   CHKERRA(ierr);
   ierr = PCSetUp(pc); CHKERRA(ierr);
 
@@ -62,8 +61,7 @@ int main(int argc,char **args)
   ierr = KSPSetFromOptions(ksp); CHKERRA(ierr);
   ierr = KSPSetSolution(ksp,u); CHKERRA(ierr);
   ierr = KSPSetRhs(ksp,b); CHKERRA(ierr);
-  ierr = PCSetOperators(pc,mat,mat,ALLMAT_DIFFERENT_NONZERO_PATTERN);
-         CHKERRA(ierr);
+  ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = KSPSetBinv(ksp,pc); CHKERRA(ierr);
   ierr = KSPSetUp(ksp); CHKERRA(ierr);
 

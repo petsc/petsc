@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sysio.c,v 1.8 1995/12/13 15:02:55 curfman Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.9 1996/01/30 04:51:07 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -103,32 +103,60 @@ void SYByteSwapScalar(Scalar *buff,int n)
 int SYRead(int fd,void *p,int n,SYIOType type)
 {
 
-  int  maxblock, wsize, err;
+  int  maxblock, wsize, err, m = n;
   char *pp = (char *) p;
-#if defined(HAVE_SWAPPED_BYTES)
-  int  ntmp = n; 
+#if defined(HAVE_SWAPPED_BYTES) || defined(HAVE_64BIT_INT)
   void *ptmp = p; 
 #endif
 
   maxblock = 65536;
-  if (type == SYINT)         n *= sizeof(int);
-  else if (type == SYSCALAR) n *= sizeof(Scalar);
-  else if (type == SYSHORT)  n *= sizeof(short);
+#if defined(HAVE_64BIT_INT)
+  if (type == SYINT){
+    /* 
+       integers on the Cray T#d are 64 bits so we read the 
+       32 bits from the file and then extend them into 
+       ints
+    */
+    m   *= sizeof(short);
+    pp   = (char *) PetscMalloc(m); CHKPTRQ(pp);
+    ptmp = (void*) pp;
+  }
+#else
+  if (type == SYINT)         m *= sizeof(int);
+#endif
+  else if (type == SYSCALAR) m *= sizeof(Scalar);
+  else if (type == SYSHORT)  m *= sizeof(short);
   else SETERRQ(1,"SYRead:Unknown type");
   
-  while (n) {
-    wsize = (n < maxblock) ? n : maxblock;
+  while (m) {
+    wsize = (m < maxblock) ? m : maxblock;
     err = read( fd, pp, wsize );
     if (err < 0 && errno == EINTR) continue;
     if (err == 0 && wsize > 0) return 1;
     if (err < 0) SETERRQ(1,"SYRead:Error reading from file");
-    n  -= err;
+    m  -= err;
     pp += err;
   }
 #if defined(HAVE_SWAPPED_BYTES)
-  if (type == SYINT) SYByteSwapInt((int*)ptmp,ntmp);
-  else if (type == SYSCALAR) SYByteSwapScalar((Scalar*)ptmp,ntmp);
-  else if (type == SYSHORT) SYByteSwapShort((short*)ptmp,ntmp);
+  if (type == SYINT) SYByteSwapInt((int*)ptmp,n);
+  else if (type == SYSCALAR) SYByteSwapScalar((Scalar*)ptmp,n);
+  else if (type == SYSHORT) SYByteSwapShort((short*)ptmp,n);
+#endif
+
+#if defined(HAVE_64BIT_INT)
+  if (type == SYINT){
+    /* 
+       integers on the Cray T#d are 64 bits so we read the 
+       32 bits from the file and then extend them into 
+       ints
+    */
+    int   *p_int = (int *) p,i;
+    short *p_short = (short *)ptmp;
+    for ( i=0; i<n; i++ ) {
+      p_int[i] = (int) p_short[i];
+    }
+    PetscFree(ptmp);
+  }
 #endif
 
   return 0;
@@ -154,41 +182,64 @@ int SYRead(int fd,void *p,int n,SYIOType type)
 @*/
 int SYWrite(int fd,void *p,int n,SYIOType type,int istemp)
 {
-  int  err, maxblock, wsize;
+  int  err, maxblock, wsize,m = n;
   char *pp = (char *) p;
-#if defined(HAVE_SWAPPED_BYTES)
-  int  ntmp  = n; 
+#if defined(HAVE_SWAPPED_BYTES) || defined(HAVE_64BIT_INT)
   void *ptmp = p; 
 #endif
 
   maxblock = 65536;
-  /* Write the data in blocks of 65536 (some systems don't like large writes;*/
 
 #if defined(HAVE_SWAPPED_BYTES)
-  if (type == SYINT) SYByteSwapInt((int*)ptmp,ntmp);
-  else if (type == SYSCALAR) SYByteSwapScalar((Scalar*)ptmp,ntmp);
-  else if (type == SYSHORT) SYByteSwapShort((short*)ptmp,ntmp);
+  if (type == SYINT) SYByteSwapInt((int*)ptmp,n);
+  else if (type == SYSCALAR) SYByteSwapScalar((Scalar*)ptmp,n);
+  else if (type == SYSHORT) SYByteSwapShort((short*)ptmp,n);
 #endif
 
-  if (type == SYINT)         n *= sizeof(int);
-  else if (type == SYSCALAR) n *= sizeof(Scalar);
-  else if (type == SYSHORT)  n *= sizeof(short);
+#if defined(HAVE_64BIT_INT)
+  if (type == SYINT){
+    /* 
+       integers on the Cray T#d are 64 bits so we copy the big
+      integers into a short array and write those out.
+    */
+    int   *p_int = (int *) p,i;
+    short *p_short;
+    m       *= sizeof(short);
+    pp      = (char *) PetscMalloc(m); CHKPTRQ(pp);
+    ptmp    = (void*) pp;
+    p_short = (short *) pp;
+
+    for ( i=0; i<n; i++ ) {
+      p_short[i] = (short) p_int[i];
+    }
+  }
+#else
+  if (type == SYINT)         m *= sizeof(int);
+#endif
+  else if (type == SYSCALAR) m *= sizeof(Scalar);
+  else if (type == SYSHORT)  m *= sizeof(short);
   else SETERRQ(1,"SYWrite:Unknown type");
 
-  while (n) {
-    wsize = (n < maxblock) ? n : maxblock;
+  while (m) {
+    wsize = (m < maxblock) ? m : maxblock;
     err = write( fd, pp, wsize );
     if (err < 0 && errno == EINTR) continue;
     if (err != wsize) SETERRQ(n,"SYWrite:Error writing to file.");
-    n  -= wsize;
+    m -= wsize;
     pp += wsize;
   }
 
 #if defined(HAVE_SWAPPED_BYTES)
   if (!istemp) {
-    if (type == SYINT) SYByteSwapInt((int*)ptmp,ntmp);
-    else if (type == SYSCALAR) SYByteSwapScalar((Scalar*)ptmp,ntmp);
-    else if (type == SYSHORT) SYByteSwapShort((short*)ptmp,ntmp);
+    if (type == SYSCALAR) SYByteSwapScalar((Scalar*)ptmp,n);
+    else if (type == SYSHORT) SYByteSwapShort((short*)ptmp,n);
+    else if (type == SYINT) SYByteSwapInt((int*)ptmp,n);
+  }
+#endif
+
+#if defined(HAVE_64BIT_INT)
+  if (type == SYINT){
+    PetscFree(ptmp);
   }
 #endif
 

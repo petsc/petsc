@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex15.c,v 1.3 1996/01/12 22:08:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex15.c,v 1.4 1996/01/23 00:20:56 curfman Exp bsmith $";
 #endif
 
 static char help[] = "SLES on an operator with a null space.\n\n";
@@ -54,7 +54,7 @@ int main(int argc,char **args)
 
   /* Create SLES context; set operators and options; solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
 
   /* Insure that preconditioner has same null space as matrix */
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.31 1996/01/03 14:42:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.32 1996/01/12 22:06:44 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
@@ -52,8 +52,7 @@ int main(int argc,char **args)
   ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
   ierr = PCSetFromOptions(pc); CHKERRA(ierr);
-  ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);
-         CHKERRA(ierr);
+  ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = PCSetVector(pc,u);   CHKERRA(ierr);
   ierr = PCSetUp(pc); CHKERRA(ierr);
 
@@ -63,7 +62,7 @@ int main(int argc,char **args)
   ierr = KSPSetFromOptions(ksp); CHKERRA(ierr);
   ierr = KSPSetSolution(ksp,u); CHKERRA(ierr);
   ierr = KSPSetRhs(ksp,b); CHKERRA(ierr);
-  ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = KSPSetBinv(ksp,pc); CHKERRA(ierr);
   ierr = KSPSetUp(ksp); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.51 1996/01/12 22:08:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.52 1996/01/23 00:20:56 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -60,7 +60,7 @@ int main(int argc,char **args)
   
   /* Solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,mat,mat,MAT_SAME_NONZERO_PATTERN); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,mat,mat,SAME_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
   ierr = KSPGMRESSetRestart(ksp,2*m); CHKERRA(ierr);
   ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,

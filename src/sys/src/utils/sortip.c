@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sortip.c,v 1.8 1996/01/30 04:45:52 bsmith Exp balay $";
+static char vcid[] = "$Id: sortip.c,v 1.9 1996/02/01 15:18:20 balay Exp bsmith $";
 #endif
 
 /*
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: sortip.c,v 1.8 1996/01/30 04:45:52 bsmith Exp balay $
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
-int SYiIqsortPerm(int *v,int *vdx,int right)
+static int SYiIqsortPerm(int *v,int *vdx,int right)
 {
   int          tmp;
   register int i, vl, last;

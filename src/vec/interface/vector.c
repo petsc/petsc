@@ -1,6 +1,7 @@
 
+
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.65 1996/01/22 03:05:39 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.66 1996/01/26 21:34:52 curfman Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.

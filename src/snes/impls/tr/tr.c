@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.41 1996/01/23 18:30:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.42 1996/01/26 04:35:25 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -58,7 +58,7 @@ static int SNESSolve_TR(SNES snes,int *its)
   SNES_TR      *neP = (SNES_TR *) snes->data;
   Vec          X, F, Y, G, TMP, Ytmp;
   int          maxits, i, history_len, ierr, lits;
-  MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
+  MatStructure flg = DIFFERENT_NONZERO_PATTERN;
   double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm,*history, ynorm;
   Scalar       mone = -1.0,cnorm;
   KSP          ksp;

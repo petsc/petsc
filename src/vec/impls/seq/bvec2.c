@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.59 1996/01/23 01:10:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.60 1996/01/26 04:32:24 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -192,11 +192,14 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 
 static int VecDestroy_Seq(PetscObject obj )
 {
-  Vec      v = (Vec ) obj;
+  Vec      v  = (Vec ) obj;
+  Vec_Seq *vs = (Vec_Seq*) v->data;
+
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Length=%d",((Vec_Seq *)v->data)->n);
 #endif
-  PetscFree(v->data);
+  PetscFree(vs->array);
+  PetscFree(vs);
   PLogObjectDestroy(v);
   PetscHeaderDestroy(v); 
   return 0;
@@ -236,23 +239,23 @@ static struct _VeOps DvOps = {VecDuplicate_Seq,
 @*/
 int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
 {
-  int      size = sizeof(Vec_Seq)+n*sizeof(Scalar),flag;
   Vec      v;
   Vec_Seq *s;
+  int     flag;
 
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
   if (flag == MPI_UNEQUAL) SETERRQ(1,"VecCreateSeq:Must call with MPI_COMM_SELF");
   PetscHeaderCreate(v,_Vec,VEC_COOKIE,VECSEQ,comm);
   PLogObjectCreate(v);
-  PLogObjectMemory(v,sizeof(struct _Vec)+size);
+  PLogObjectMemory(v,sizeof(struct _Vec)+n*sizeof(Scalar));
   v->destroy     = VecDestroy_Seq;
   v->view        = VecView_Seq;
-  s              = (Vec_Seq *) PetscMalloc(size); CHKPTRQ(s);
+  s              = (Vec_Seq *) PetscMalloc(sizeof(Vec_Seq)); CHKPTRQ(s);
   PetscMemcpy(&v->ops,&DvOps,sizeof(DvOps));
   v->data        = (void *) s;
   s->n           = n;
-  s->array       = (Scalar *)(s + 1);
+  s->array       = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));
   *V = v; return 0;
 }
 

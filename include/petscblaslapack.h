@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.13 1995/10/12 23:22:46 curfman Exp bsmith $ */
+/* $Id: plapack.h,v 1.14 1996/01/26 04:35:51 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -80,16 +80,6 @@ Cray T3D.  Yet another reason to hate ...
                                         (f),(g),(h),(i))
 #define LAtrmv_  STRMV
 #define LAtrsl_  STRSL
-#elif defined(PARCH_cray)
-#define LAormqr_ SORMQR
-#define LAtrtrs_ STRTRS
-#define LApotrf_ SPOTRF
-#define LApotrs_ SPOTRS
-#define LAgemv_  SGEMV
-#define LAgetrs_ SGETRS
-#define LAgemv_  SGEMV
-#define LAtrmv_  STRMV
-#define LAtrsl_  STRSL
 #elif defined(HAVE_FORTRAN_CAPS)
 #define LAormqr_ DORMQR
 #define LAtrtrs_ DTRTRS
@@ -121,7 +111,7 @@ Cray T3D.  Yet another reason to hate ...
 
 #else
 
-#if defined(PARCH_cray) || defined(PARCH_t3d)
+#if defined(PARCH_t3d)
 #define LAgeqrf_ CGEQRF
 #define BLdot_   CDOTC
 #define BLnrm2_  SCNRM2
@@ -177,15 +167,6 @@ Cray T3D.  Yet another reason to hate ...
                                         (f),(g),(h),(i))
 #define LAtrmv_  CTRMV
 #define LAtrsl_  CTRSL
-#elif defined(PARCH_cray)
-#define LAormqr_ CORMQR
-#define LAtrtrs_ CTRTRS
-#define LApotrf_ CPOTRF
-#define LApotrs_ CPOTRS
-#define LAgetrs_ CGETRS
-#define LAgemv_  CGEMV
-#define LAtrmv_  CTRMV
-#define LAtrsl_  CTRSL
 #elif defined(HAVE_FORTRAN_CAPS)
 #define LAtrtrs_ ZTRTRS
 #define LApotrf_ ZPOTRF
@@ -234,11 +215,21 @@ extern void   LAgetf2_(int*,int*,Scalar*,int*,int*,int*);
 extern void   LAgeqrf_(int*,int*,Scalar*,int*,Scalar*,Scalar*,int*,int*);
 
 #if defined(PARCH_t3d)
+
+#if defined(PETSC_COMPLEX)
 extern void   CPOTRF(_fcd,int*,Scalar*,int*,int*);
 extern void   CGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
                         Scalar*,Scalar*,int*);
 extern void   CPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
 extern void   CGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
+#else
+extern void   SPOTRF(_fcd,int*,Scalar*,int*,int*);
+extern void   SGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
+                        Scalar*,Scalar*,int*);
+extern void   SPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
+extern void   SGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
+#endif
+
 #else
 extern void   LAormqr_(char*,char*,int*,int*,int*,Scalar*,int*,Scalar*,Scalar*,
                        int*,Scalar*,int*,int*);

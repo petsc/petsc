@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.67 1996/01/26 14:20:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.68 1996/01/30 19:30:27 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -96,6 +96,8 @@ static int PLogCloseHistoryFile(FILE **fd)
   return 0; 
 }
 
+int PetscInitializedCalled = 0;
+
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI. 
    PetscInitialize calls MPI_Init() if that has yet to be called,
@@ -124,7 +126,6 @@ $       call PetscInitialize(ierr)
 int PetscInitialize(int *argc,char ***args,char *file,char *env,char *help)
 {
   int        ierr,flag,flg;
-  static int PetscInitializedCalled = 0;
 
   if (PetscInitializedCalled) return 0;
   PetscInitializedCalled = 1;
@@ -164,6 +165,7 @@ $  -optionsleft : Prints unused options that remain in
 $     the database
 $  -no_signal_handler : Turns off the signal handler
 $  -trdump : Calls TrDump()
+$  -trinfo : prints total memory usage
 $  -log_all : Prints extensive log information (for
 $      code compiled with PETSC_LOG)
 $  -log : Prints basic log information (for code 
@@ -229,11 +231,22 @@ int PetscFinalize()
     petsc_history = 0;
   }
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-trinfo",&flg2); CHKERRQ(ierr);
   if (flg1) {
     OptionsDestroy_Private();
     NRDestroyAll();
     MPIU_Seq_begin(MPI_COMM_WORLD,1);
       ierr = TrDump(stderr); CHKERRQ(ierr);
+    MPIU_Seq_end(MPI_COMM_WORLD,1);
+  }
+  else if (flg2) {
+    double maxm;
+    OptionsDestroy_Private();
+    NRDestroyAll();
+    ierr = TrSpace(PETSC_NULL,PETSC_NULL,&maxm); CHKERRQ(ierr);
+    MPIU_Seq_begin(MPI_COMM_WORLD,1);
+      fprintf(stdout,"[%d] Maximum memory used %g\n",rank,maxm);
+      fflush(stdout);
     MPIU_Seq_end(MPI_COMM_WORLD,1);
   }
   else {
@@ -282,18 +295,18 @@ int OptionsCheckInitial_Private()
 #if defined(PETSC_BOPT_g)
   ierr = OptionsHasName(PETSC_NULL,"-notrmalloc", &flg1); CHKERRQ(ierr);
   if (!flg1) {
-    PetscSetUseTrMalloc_Private();
+    ierr = PetscSetUseTrMalloc_Private(); CHKERRQ(ierr);
   }
 #else
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc",&flg2); CHKERRQ(ierr);
   if (flg1 || flg2) {
-    PetscSetUseTrMalloc_Private();
+    ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
   }
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-malloc_debug",&flg1); CHKERRQ(ierr);
   if (flg1) {
-    TrDebugLevel(1);
+    ierr = TrDebugLevel(1);CHKERRQ(ierr);
 #if defined(PARCH_sun4) && defined(PETSC_BOPT_g)
     malloc_debug(2);
 #endif
@@ -305,8 +318,9 @@ int OptionsCheckInitial_Private()
     MPIU_printf(comm,"--------------------------------------------\
 ------------------------------\n");
     MPIU_printf(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
-    MPIU_printf(comm,"Satish Balay,Bill Gropp,Lois Curfman McInnes,Barry Smith.\
- Bugs: petsc-maint@mcs.anl.gov\n");
+    MPIU_printf(comm,"Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.\n");
+    MPIU_printf(comm,"Bug reports, questions: petsc-maint@mcs.anl.gov\n");
+    MPIU_printf(comm,"Web page: http://www.mcs.anl.gov/petsc/petsc.html\n");
     MPIU_printf(comm,"See petsc/COPYRIGHT for copyright information,\
  petsc/Changes for recent updates.\n");
     MPIU_printf(comm,"--------------------------------------------\
@@ -314,11 +328,15 @@ int OptionsCheckInitial_Private()
   }
   ierr = OptionsHasName(PETSC_NULL,"-fp_trap",&flg1); CHKERRQ(ierr);
   if (flg1) {
-    PetscSetFPTrap(FP_TRAP_ALWAYS);
+    ierr = PetscSetFPTrap(FP_TRAP_ALWAYS); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-on_error_abort",&flg1); CHKERRQ(ierr);
   if (flg1) {
     PetscPushErrorHandler(PetscAbortErrorHandler,0);
+  } 
+  ierr = OptionsHasName(PETSC_NULL,"-on_error_stop",&flg1); CHKERRQ(ierr);
+  if (flg1) {
+    PetscPushErrorHandler(PetscStopErrorHandler,0);
   }
   ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64, 
                           &flg1); CHKERRQ(ierr);
@@ -485,6 +503,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
 {
   int  ierr;
   char pfile[128];
+
   if (!options) {
     options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTRQ(options);
     PetscMemzero(options->used,MAXOPTIONS*sizeof(int));

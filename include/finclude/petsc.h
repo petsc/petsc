@@ -23,17 +23,27 @@ C
 C
 C     Fortran Null
 C
-      integer  PETSC_NULL
+      integer        PETSC_NULL
+      character*(80) PETSC_NULL_CHAR
 
       common   /petscfortran/  PETSC_NULL,
-     *         STDOUT_VIEWER_SELF,STDERR_VIEWER_SELF,STDOUT_VIEWER_WORLD
+     *         STDOUT_VIEWER_SELF,STDERR_VIEWER_SELF,
+     *          STDOUT_VIEWER_WORLD,PETSC_NULL_CHAR
 C
 C     Macro for templateing between real and complex
 C
 #if defined(PETSC_COMPLEX)
+#if defined(PARCH_t3d)
+#define complex
+#else
 #define Scalar  double complex
+#endif
+#else
+#if defined(PARCH_t3d)
+#define Scalar  real
 #else
 #define Scalar  double precision
+#endif
 #endif
 C
 C     Macros for error checking
@@ -48,10 +58,14 @@ C
 C
 C     Prototypes for functions which return a value.
 C
-      external PetscGetTime
-      double precision PetscGetTime
-      external PetscGetFlops
-      double precision PetscGetFlops
+      external PetscGetTime, PetscGetFlops
+
+#if defined(PARCH_t3d)
+      real PetscGetTime, PetscGetFlops
+#else
+      double precision PetscGetTime, PetscGetFlops
+#endif
+
 C     
 C     End of base Fortran include file for the PETSc package
 

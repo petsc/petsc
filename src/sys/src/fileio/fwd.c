@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: file.c,v 1.27 1995/12/31 17:17:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: fwd.c,v 1.1 1996/01/30 18:33:39 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
 */
-#include "file.h"
+#include "files.h"
 
 /*@C
    SYGetwd - Get the current working directory.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.47 1996/01/23 00:20:56 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.48 1996/01/27 17:34:26 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
@@ -66,7 +66,7 @@ int main(int argc,char **args)
 
   /* Create SLES context; set operators and options; solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,C,C,SAME_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   {
@@ -114,7 +114,7 @@ int main(int argc,char **args)
 
   /* Compute another right-hand-side; then solve */
   ierr = MatMult(C,u,b); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,C,C,SAME_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
 
   /* Check error */

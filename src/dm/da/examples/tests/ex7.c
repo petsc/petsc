@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.1 1996/01/25 04:15:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.2 1996/01/26 04:35:42 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Tests 1d DALocalToLocal().\n\n";
+static char help[] = "Tests DALocalToLocal().\n\n";
 
 #include "petsc.h"
 #include "da.h"
@@ -13,17 +13,17 @@ static char help[] = "Tests 1d DALocalToLocal().\n\n";
 
 int main(int argc,char **argv)
 {
-  int            rank, M = 8, ierr, dof=1, stencil_width=1,flg = 0,i,start,end, P = 5;
-  int            flg2,flg3,N = 6, m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE;
+  int            rank,M=8,ierr,dof=1,stencil_width=1,flg=0,i,start,end,P=5;
+  int            flg2,flg3,N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE;
   DAPeriodicType periodic;
   DAStencilType  stencil_type;
   DA             da;
   Vec            local,global,local_copy;
   Scalar         value,mone = -1.0;
   double         norm,work;
-  Viewer   viewer;
-  char     filename[64];
-  FILE     *file;
+  Viewer         viewer;
+  char           filename[64];
+  FILE           *file;
 
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);

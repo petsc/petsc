@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.50 1996/01/21 04:55:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.51 1996/01/26 04:34:52 bsmith Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -359,17 +359,11 @@ int SLESGetPC(SLES sles,PC *pc)
    Notes: 
    The flag can be used to eliminate unnecessary work in the repeated
    solution of linear systems of the same size.  The available options are
-$    MAT_SAME_NONZERO_PATTERN - 
-$       Amat has the same nonzero structure 
-$       during successive linear solves
-$    PMAT_SAME_NONZERO_PATTERN -
+$    SAME_NONZERO_PATTERN - 
 $       Pmat has the same nonzero structure 
 $       during successive linear solves
-$    ALLMAT_SAME_NONZERO_PATTERN -
-$       Both Amat and Pmat have the same nonzero
-$       structure during successive linear solves
-$    ALLMAT_DIFFERENT_NONZERO_PATTERN -
-$       Neither Amat nor Pmat has same nonzero structure
+$    DIFFERENT_NONZERO_PATTERN -
+$       Pmat has a different nonzero structure
 
 .keywords: SLES, set, operators, matrix, preconditioner, linear system
 

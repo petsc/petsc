@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.92 1996/01/24 15:40:36 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.93 1996/01/26 04:35:46 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -46,8 +46,7 @@ extern int  (*PetscFree)(void *,int,char*);
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,char*));
 
 extern int  TrDump(FILE *);
-extern int  TrGetMaximumAllocated(double*);
-extern int  TrSpace( int *, int *);
+extern int  TrSpace( double *, double *,double *);
 
 extern void  PetscMemcpy(void *,void *,int);
 extern void  PetscMemzero(void *,int);
@@ -135,7 +134,8 @@ extern int PetscObjectGetName(PetscObject,char**);
 extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **));
 #define PetscObjectChild(a) (((PetscObject) (a))->child)
 
-extern int PetscDefaultErrorHandler(int,char*,char*,int,char*,void*);
+extern int PetscTraceBackErrorHandler(int,char*,char*,int,char*,void*);
+extern int PetscStopErrorHandler(int,char*,char*,int,char*,void*);
 extern int PetscAbortErrorHandler(int,char*,char*,int,char*,void* );
 extern int PetscAttachDebuggerErrorHandler(int,char*,char*,int,char*,void*); 
 extern int PetscError(int,char*,char*,int,char*);

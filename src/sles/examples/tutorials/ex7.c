@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.16 1996/01/12 22:08:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.17 1996/01/23 00:20:56 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for solving\n\
@@ -52,7 +52,7 @@ int main(int argc,char **args)
 
   /* Create SLES context and set operators */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,A,A,ALLMAT_DIFFERENT_NONZERO_PATTERN);
+  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);
          CHKERRA(ierr);
 
   /* Set default preconditioner */

@@ -1,5 +1,5 @@
 
-C    "$Id: ex5.F,v 1.9 1995/12/21 18:33:32 bsmith Exp bsmith $";
+C    "$Id: ex5.F,v 1.10 1996/01/12 22:09:01 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/draw.h"
@@ -11,7 +11,7 @@ C
       DrawLG            lg
       DrawAxis          axis
       integer           n,i, ierr, x, y, width, height,flg
-      double precision  xd,yd
+      Scalar            xd,yd
 
       n      = 20
       x      = 0
@@ -21,12 +21,12 @@ C
 
       call PetscInitialize(ierr)
 
-      call OptionsGetInt(PETSC_NULL,'-width',width,flg,ierr) 
-      call OptionsGetInt(PETSC_NULL,'-height',height,flg,ierr)
-      call OptionsGetInt(PETSC_NULL,'-n',n,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHAR,'-width',width,flg,ierr) 
+      call OptionsGetInt(PETSC_NULL_CHAR,'-height',height,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHAR,'-n',n,flg,ierr)
 
-      call DrawOpenX(MPI_COMM_SELF,PETSC_NULL,PETSC_NULL,x,y,
-     &               width,height,draw,ierr)
+      call DrawOpenX(MPI_COMM_SELF,PETSC_NULL_CHAR,PETSC_NULL_CHAR,
+     &               x,y,width,height,draw,ierr)
 
       call DrawLGCreate(draw,1,lg,ierr)
       call DrawLGGetAxis(lg,axis,ierr)

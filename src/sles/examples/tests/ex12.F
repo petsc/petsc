@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.9 1996/01/12 22:08:38 bsmith Exp balay $";
+C      "$Id: ex12.F,v 1.10 1996/01/15 23:36:33 balay Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -15,7 +15,7 @@ C                          use the file petsc/src/mat/examples/mat.ex.binary
 C
 
       integer          ierr, its, flg
-      double precision time, norm,none
+      Scalar           time, norm,none
       Vec              x, b, u
       Mat              A
       SLES             sles
@@ -27,7 +27,7 @@ C
       call PetscInitialize(ierr)
 
 C Read in matrix and RHS
-      call OptionsGetString(PETSC_NULL,'-f',f,flg,ierr)
+      call OptionsGetString(PETSC_NULL_CHAR,'-f',f,flg,ierr)
       call ViewerFileOpenBinary(MPI_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f
@@ -45,7 +45,7 @@ C Set up solution
 
 C Solve system
       call SLESCreate(MPI_COMM_WORLD,sles,ierr)
-      call SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN,
+      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
      &                      ierr)
       call SLESSetFromOptions(sles,ierr)
       time = PetscGetTime()

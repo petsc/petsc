@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.29 1996/01/23 00:20:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.30 1996/01/26 04:35:29 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -40,7 +40,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
   double       zero = 0.0, *f, two = 2.0, four = 4.0;
   Scalar       one = 1.0;
   Vec          X, G, Y, S, Xtrial;
-  MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
+  MatStructure flg = DIFFERENT_NONZERO_PATTERN;
   SLES         sles;
   KSP          ksp;
   KSP_QCG      *qcgP;

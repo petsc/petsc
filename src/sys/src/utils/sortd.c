@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sortd.c,v 1.2 1996/01/30 04:46:00 bsmith Exp balay $";
+static char vcid[] = "$Id: sortd.c,v 1.3 1996/02/01 15:16:47 balay Exp bsmith $";
 #endif
 
 /*
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: sortd.c,v 1.2 1996/01/30 04:46:00 bsmith Exp balay $"
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
    
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
-int SYiDqsort(double *v,int right)
+static int SYiDqsort(double *v,int right)
 {
   register int    i,last;
   register double vl;

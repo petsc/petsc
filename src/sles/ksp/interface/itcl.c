@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.54 1996/01/12 23:16:28 balay Exp balay $";
+static char vcid[] = "$Id: itcl.c,v 1.55 1996/01/15 21:54:49 balay Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -62,7 +62,8 @@ int KSPSetFromOptions(KSP ctx)
        1) there is no way to free lg at end of KSP
   */
   {
-  int loc[4] = {0,0,300,300},nmax = 4;
+  int loc[4], nmax = 4;
+  loc[0] = 0; loc[1] = 0; loc[2] = 300; loc[4] = 300;
   ierr = OptionsGetIntArray(ctx->prefix,"-ksp_xmonitor",loc,&nmax, &flg); CHKERRQ(ierr);
   if (flg){
     int    rank = 0;
@@ -133,9 +134,9 @@ int KSPPrintHelp(KSP ctx)
                      p,ctx->max_it);
     MPIU_printf(ctx->comm," %sksp_preres: use precond. resid. in converg. test\n",p);
     MPIU_printf(ctx->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
-    MPIU_printf(ctx->comm," %sksp_monitor: at each iteration print residual norm to stdout)\n",p);
+    MPIU_printf(ctx->comm," %sksp_monitor: at each iteration print residual norm to stdout\n",p);
     MPIU_printf(ctx->comm," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
-    MPIU_printf(ctx->comm," %sksp_gmres_restart num: gmres restart, defaults to 10)\n",p);
+    MPIU_printf(ctx->comm," %sksp_gmres_restart num: gmres restart, defaults to 30\n",p);
     MPIU_printf(ctx->comm," %sksp_eigen: calculate eigenvalues during linear solve\n",p);
     MPIU_printf(ctx->comm," %sksp_gmres_unmodifiedgramschmidt\n",p);
   }

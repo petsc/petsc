@@ -1,5 +1,5 @@
 
-C      "$Id: ex36.F,v 1.3 1995/11/24 20:26:33 curfman Exp bsmith $";
+C      "$Id: ex21.F,v 1.7 1995/11/29 22:08:42 curfman Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -7,8 +7,8 @@ C      "$Id: ex36.F,v 1.3 1995/11/24 20:26:33 curfman Exp bsmith $";
 C  This Fortran example illustrates the use of VecSetValues() to set
 C  multiple values at once.  This also demonstrates VecGetArray().
 
-       double precision xwork(6)
-       double precision vxx(1), vyy(1)
+       Scalar           xwork(6)
+       Scalar           vxx(1), vyy(1)
        integer          i, n, ierr, loc(6), ixx, iyy
        Vec              x, y
 

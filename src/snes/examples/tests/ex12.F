@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.25 1996/01/29 21:46:50 curfman Exp bsmith $";
+C    "$Id: ex12.F,v 1.26 1996/02/03 21:26:58 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -20,7 +20,7 @@ C
       SNES             snes
       Mat              J
       Vec              x,r,u,F
-      double precision xp,FF,UU,h
+      Scalar           xp,FF,UU,h
       character*(10)   matrixname
       external         FormJacobian,FormFunction,FormInitialGuess
 
@@ -106,7 +106,7 @@ C --------------------  Evaluate Function F(x) ---------------------
       subroutine FormFunction(snes,x,f,ctx)
       integer          snes, x, f, ctx(*)
       integer          rank, size, i, s, n, ierr, ixx, iff, iF2
-      double precision h, d, vf2(1), vxx(1), vff(1)
+      Scalar           h, d, vf2(1), vxx(1), vff(1)
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
 #include "include/finclude/da.h"
@@ -176,7 +176,7 @@ C --------------------  Form initial approximation -----------------
       integer          ierr
       Vec              x
       SNES             snes
-      double precision five 
+      Scalar           five 
 
       five = 5.d-1
       call VecSet(five,x,ierr)
@@ -193,7 +193,7 @@ C --------------------  Evaluate Jacobian --------------------
 #include "include/finclude/snes.h"
       integer          snes, x, jac(*), B, flag, ctx(*), ii, ixx, istart
       integer          iend, i,j, n, rank, size, end, start, ierr
-      double precision d, A, h, vxx(1)
+      Scalar           d, A, h, vxx(1)
 
 #define xx(ib)  vxx(ixx + (ib))
 
