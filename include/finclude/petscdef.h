@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.13 1999/06/30 22:53:04 bsmith Exp bsmith $;
+!  $Id: petscdef.h,v 1.14 1999/11/05 14:48:35 bsmith Exp bsmith $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
@@ -14,7 +14,8 @@
 !
 #define PetscTruth    integer
 #define PetscDataType integer
-
+#define PetscFPTrap   integer
+!
 !
 ! The real*8,complex*16 notatiton is used so that the 
 ! PETSc double/complex variables are not affected by 

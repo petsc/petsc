@@ -1,4 +1,4 @@
-/*$Id: dvec2.c,v 1.75 1999/10/24 14:01:55 bsmith Exp bsmith $*/
+/*$Id: dvec2.c,v 1.76 1999/11/05 14:44:53 bsmith Exp bsmith $*/
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -16,7 +16,7 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
   register int i,nv_rem;
-  int      n = xv->n;
+  int      n = xin->n;
   Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
   Vec      *yy;
 
@@ -77,7 +77,7 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
     z   += 4;
     i   -= 4;
   }
-  PLogFlops(nv*(2*xv->n-1));
+  PLogFlops(nv*(2*xin->n-1));
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: fp.c,v 1.60 1999/10/24 14:01:21 bsmith Exp bsmith $*/
+/*$Id: fp.c,v 1.61 1999/12/10 04:25:10 bsmith Exp bsmith $*/
 /*
 *	IEEE error handler for all machines. Since each machine has 
 *   enough slight differences we have completely separate codes for each one.
@@ -56,7 +56,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSetFPTrap"
-/*@
+/*@C
    PetscSetFPTrap - Enables traps/exceptions on common floating point errors.
                     This option may not work on certain machines.
 
@@ -215,7 +215,7 @@ void PetscDefaultFPTrap( unsigned exception[],int val[] )
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSetFPTrap" 
-int PetscSetFPTrapPetscFPTrap flag)
+int PetscSetFPTrap(PetscFPTrap flag)
 {
   PetscFunctionBegin;
   if (flag == PETSC_FP_TRAP_ON) {

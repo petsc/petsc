@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.94 1999/10/18 14:52:20 balay Exp balay $ 
+# $Id: makefile,v 1.95 1999/11/10 15:52:41 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cputimef.c cgtypef.c
         dgpausef.c dlinef.c dlinegwf.c dlinewf.c dmousef.c dpausef.c dpointf.c \
         dpointsf.c drawf.c drectf.c dscatterf.c dsclearf.c dsetpausef.c \
         dsflushf.c dtextgsf.c dtextsf.c dtrif.c dviewpf.c eigef.c \
-        eisenf.c fdmatrixf.c flushf.c fpf.c gcookief.c getcolvf.c gmpref.c \
+        eisenf.c fdmatrixf.c flushf.c gcookief.c getcolvf.c gmpref.c \
         gmres2f.c drawvf.c \
         histsf.c iluf.c indexf.c inheritf.c isdifff.c \
         isltogf.c itclf.c itcreatef.c itfuncf.c itresf.c lgf.c \
@@ -31,7 +31,7 @@ OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cputimef.o cgtypef.o \
         dgpausef.o dlinef.o dlinegwf.o dlinewf.o dmousef.o dpausef.o dpointf.o \
         dpointsf.o drawf.o drectf.o dscatterf.o dsclearf.o dsetpausef.o \
         dsflushf.o dtextgsf.o dtextsf.o dtrif.o dviewpf.o eigef.o \
-        eisenf.o fdmatrixf.o flushf.o fpf.o gcookief.o getcolvf.o gmpref.o \
+        eisenf.o fdmatrixf.o flushf.o gcookief.o getcolvf.o gmpref.o \
         gmres2f.o drawvf.o \
         histsf.o iluf.o indexf.o inheritf.o isdifff.o \
         isltogf.o itclf.o itcreatef.o itfuncf.o itresf.o lgf.o \
