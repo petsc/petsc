@@ -1,6 +1,7 @@
 
-# We build the entire manual as well as the intro part at the same time.
-manual.dvi: manual.tex part1.tex routines.red
+# Build the entire manual as well as the intro part
+manual.dvi: intro.tex manual.tex part1.tex routines.red
+# First build the manual
 	latex manual
 	bibtex manual
 	latex manual
@@ -14,9 +15,8 @@ manual.dvi: manual.tex part1.tex routines.red
 	latex manual
 	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg *.ilg *.ind \
                     *.idx findex.tex sindex.tex
-# Now make the intro part, changing the figure numbers
-	cat manual.aux | sed 's/fig:2}{{1.2}/fig:2}{{2}/g' \
-	     | sed 's/fig:1}{{1.1}/fig:1}{{1}/g' > intro.aux
+# Now make the intro part ... note that this depends on latexing the manual
+	cp manual.aux intro.aux
 	latex intro
 	-@chmod g+w intro.dvi intro.aux intro.log
 
