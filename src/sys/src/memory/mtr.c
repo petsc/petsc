@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.112 1998/06/01 03:29:44 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.113 1998/08/26 18:30:33 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -332,7 +332,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
       (*PetscErrorPrintf)("PetscTrFreeDefault called from %s() line %d in %s%s\n",function,line,dir,file);
       (*PetscErrorPrintf)("Block [id=%d(%lx)] at address %p was already freed\n", 
               head->id, head->size, a + sizeof(TrSPACE) );
-      if (head->lineno > 0) {
+      if (head->lineno > 0 && head->lineno < 5000 /* sanity check */) {
 	(*PetscErrorPrintf)("Block freed in %s() line %d in %s%s\n", head->functionname,
                  head->lineno,head->dirname,head->filename);	
       } else {
