@@ -91,3 +91,5 @@ routines.ps: routines.dvi
 	dvips routines.dvi
 	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg 
 
+latex2htmlmanual.html:
+	latex2html.new -split 0 -no_navigation -no_subdir manual.tex
