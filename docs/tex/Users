@@ -6,7 +6,6 @@ See petsc.applications for summary of remote users.
 Local Users:
 
 leaf - Gary Leaf, needs sda (simplified distributed arrays) - also students?
-xie - SERS student working with Gary (spring, 1996)
 dstevens - Deb Stevens, needs Fortran interface to SLES
 canfield - Tom Canfield, needs parallel, symmetric linear solvers
 taylor (taylor@nile.eecs.nwu.edu) - Valerie Taylor, working with Tom Canfield
@@ -15,16 +14,14 @@ meena  (meena@nile.eecs.nwu.edu) - student working with Valerie
 maa (maayj@eden.eecs.nwu.edu) - Yann Maa, needs nonlinear solvers
 freitag - Lori, needs makefile and system infrastructure
 diachin - Darin, working with Lori, makefiles and system stuff in C++
-herzog - Jim Herzog, working with Lori
-dheath - Dan Heath, working with Lori
 plassman - ILU, BlockSolve
 bischof, roh, pwu - Chris Bischof, Lucas Roh, Po-Ting Wu - ADIFOR/ADIC interface to PETSc
 zwu - Zhijun Wu - working with Jorge, may use SNES to write new nonlinear solvers?
 kwong - Man Kwong, writing preprocessor
 
 /* local users with SP accounts only */
-madams@iris-2.ce.Berkeley.EDU - Mark Adams - UC Berkley grad student
-kaushik@cs.odu.edu - Dinesh Kaushik - ODU grad student
+adams - Mark Adams - UC Berkley grad student
+kaushik - Dinesh Kaushik - ODU grad student
 
 
 
