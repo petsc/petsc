@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.9 1995/07/06 22:09:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.10 1995/07/07 13:38:34 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -484,7 +484,7 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   }
 
   MPIU_fprintf(comm,fd,
-    "\n------------------------------------------------------------------\
+    "\n-----------------------------------------------------------------\
 -------------\n"); 
 
   /* loop over operations looking for interesting ones */
