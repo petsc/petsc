@@ -1,4 +1,4 @@
-/*$Id: essl.c,v 1.40 2000/05/09 03:57:05 bsmith Exp bsmith $*/
+/*$Id: essl.c,v 1.41 2000/05/10 16:40:36 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver
@@ -94,12 +94,13 @@ int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="MatLUFactorSymbolic_SeqAIJ_Essl"></a>*/"MatLUFactorSymbolic_SeqAIJ_Essl"
-int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,PetscReal f,Mat *F)
+int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatLUInfo,Mat *F)
 {
   Mat             B;
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*b;
   int             ierr,*ridx,*cidx,i,len;
   Mat_SeqAIJ_Essl *essl;
+  PetscReal       f = 1.0;
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,0,"matrix must be square"); 
@@ -114,6 +115,7 @@ int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,PetscReal f,Mat *F)
   b->spptr                = (void*)essl;
 
   /* allocate the work arrays required by ESSL */
+  if (info) f = info->fill;
   essl->nz   = a->nz;
   essl->lna  = (int)a->nz*f;
   essl->naux = 100 + 10*a->m;
@@ -135,6 +137,7 @@ int MatUseEssl_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Essl;
+  PLogInfo(0,"Using Matlab for SeqAIJ LU factorization and solves");
   PetscFunctionReturn(0);
 }
 

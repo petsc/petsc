@@ -1,4 +1,4 @@
-/*$Id: aijmatlab.c,v 1.3 2000/05/11 04:06:23 bsmith Exp bsmith $*/
+/*$Id: aijmatlab.c,v 1.4 2000/05/12 04:40:57 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface for the Matlab engine sparse solver
@@ -28,7 +28,7 @@ int MatSolve_SeqAIJ_Matlab(Mat A,Vec b,Vec x)
   ierr = PetscObjectGetName((PetscObject)x,&_x);CHKERRQ(ierr);
   ierr = PetscMatlabEnginePut(MATLAB_ENGINE_(A->comm),(PetscObject)b);CHKERRQ(ierr);
   ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(A->comm),"%s = u%s\\(l%s\\(p%s*%s));",_x,_A,_A,_A,_b);CHKERRQ(ierr);
-  ierr = PetscMatlabEnginePrintOutput(MATLAB_ENGINE_(A->comm),stdout);CHKERRQ(ierr); 
+  /* ierr = PetscMatlabEnginePrintOutput(MATLAB_ENGINE_(A->comm),stdout);CHKERRQ(ierr);  */
   ierr = PetscMatlabEngineGet(MATLAB_ENGINE_(A->comm),(PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -45,7 +45,7 @@ int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
   PetscFunctionBegin;
   ierr = PetscMatlabEnginePut(MATLAB_ENGINE_(A->comm),(PetscObject)A);CHKERRQ(ierr);
   _A   = A->name;
-  ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(A->comm),"[l_%s,u_%s,p_%s] = lu(%s');",_A,_A,_A,_A);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(A->comm),"[l_%s,u_%s,p_%s] = lu(%s',%g);",_A,_A,_A,_A,f->lu_dtcol);CHKERRQ(ierr);
 
   ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
   name = (char*)PetscMalloc((len+2)*sizeof(char));CHKPTRQ(name);
@@ -57,9 +57,9 @@ int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="MatLUFactorSymbolic_SeqAIJ_Matlab"></a>*/"MatLUFactorSymbolic_SeqAIJ_Matlab"
-int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,PetscReal f,Mat *F)
+int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*f;
   int             ierr;
 
   PetscFunctionBegin;
@@ -68,6 +68,37 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,PetscReal f,Mat *F)
   (*F)->ops->solve           = MatSolve_SeqAIJ_Matlab;
   (*F)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Matlab;
   (*F)->factor               = FACTOR_LU;
+  f                          = (Mat_SeqAIJ*)(*F)->data;
+  if (info) f->lu_dtcol = info->dtcol;
+  else      f->lu_dtcol = 0.0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatILUDTFactor_SeqAIJ_Matlab"></a>*/"MatILUDTFactor_SeqAIJ_Matlab"
+int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *F)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
+  int        ierr,len;
+  char       *_A,*name;
+
+  PetscFunctionBegin;
+  if (info->dt == PETSC_DEFAULT)      info->dt      = .005;
+  if (info->dtcol == PETSC_DEFAULT)   info->dtcol   = .01;
+  if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,0,"matrix must be square"); 
+  ierr                       = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PETSC_NULL,F);CHKERRQ(ierr);
+  (*F)->ops->solve           = MatSolve_SeqAIJ_Matlab;
+  (*F)->factor               = FACTOR_LU;
+  ierr = PetscMatlabEnginePut(MATLAB_ENGINE_(A->comm),(PetscObject)A);CHKERRQ(ierr);
+  _A   = A->name;
+  ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(A->comm),"info_%s = struct('droptol',%g,'thresh',%g);",_A,info->dt,info->dtcol);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(A->comm),"[l_%s,u_%s,p_%s] = luinc(%s',info_%s);",_A,_A,_A,_A,_A);CHKERRQ(ierr);
+
+  ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
+  name = (char*)PetscMalloc((len+2)*sizeof(char));CHKPTRQ(name);
+  sprintf(name,"_%s",_A);
+  ierr = PetscObjectSetName((PetscObject)*F,name);CHKERRQ(ierr);
+  ierr = PetscFree(name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -77,6 +108,7 @@ int MatUseMatlab_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Matlab;
+  A->ops->iludtfactor      = MatILUDTFactor_SeqAIJ_Matlab;
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.147 2000/05/04 14:04:25 balay Exp balay $*/
+/*$Id: ilu.c,v 1.148 2000/05/05 22:17:14 balay Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -63,7 +63,7 @@ int PCILUSetReuseOrdering_ILU(PC pc,PetscTruth flag)
 
   PetscFunctionBegin;
   ilu                = (PC_ILU*)pc->data;
-  ilu->reuseordering = (int)flag;
+  ilu->reuseordering = flag;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -106,7 +106,7 @@ int PCILUSetUseInPlace_ILU(PC pc)
 
   PetscFunctionBegin;
   dir          = (PC_ILU*)pc->data;
-  dir->inplace = 1;
+  dir->inplace = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -689,9 +689,9 @@ int PCCreate_ILU(PC pc)
   ilu->info.fill          = 1.0; 
   ilu->col                = 0;
   ilu->row                = 0;
-  ilu->inplace            = 0;
+  ilu->inplace            = PETSC_FALSE;
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&ilu->ordering);CHKERRQ(ierr);
-  ilu->reuseordering      = 0;
+  ilu->reuseordering      = PETSC_FALSE;
   ilu->usedt              = PETSC_FALSE;
   ilu->info.dt            = PETSC_DEFAULT;
   ilu->info.dtcount       = PETSC_DEFAULT;
