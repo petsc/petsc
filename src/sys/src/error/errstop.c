@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -36,7 +37,7 @@ $     SETERRQ(n,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
            PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-PetscErrorCode PetscStopErrorHandler(int line,const char *fun,const char *file,const char *dir,int n,int p,const char *mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscStopErrorHandler(int line,const char *fun,const char *file,const char *dir,int n,int p,const char *mess,void *ctx)
 {
   PetscTruth     flg1,flg2;
   PetscLogDouble mem,rss;

@@ -1,7 +1,6 @@
 
 #include "petscvec.h"    /*I "petscvec.h" I*/
 
-#if defined(PETSC_HAVE_MATLAB)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN
@@ -53,7 +52,6 @@ PetscErrorCode VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-#endif
 
 
 

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
@@ -70,7 +71,7 @@ EXTERN_C_END
    Concepts: signal handler^default
 
 @*/
-PetscErrorCode PetscDefaultSignalHandler(int sig,void *ptr)
+PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
 {
   PetscErrorCode ierr;
   const char  *SIGNAME[64];
@@ -189,7 +190,7 @@ PetscErrorCode PetscDefaultSignalHandler(int sig,void *ptr)
 .seealso: PetscPopSignalHandler(), PetscDefaultSignalHandler()
 
 @*/
-PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void* ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void* ctx)
 {
   struct  SH *newsh;
   PetscErrorCode ierr;
@@ -331,7 +332,7 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void*
 .seealso: PetscPushSignalHandler()
 
 @*/
-PetscErrorCode PetscPopSignalHandler(void)
+PetscErrorCode PETSC_DLLEXPORT PetscPopSignalHandler(void)
 {
   struct SH *tmp;
 

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -20,7 +21,7 @@
    
 .seealso: PetscDataType, PetscDataTypeGetName()
 @*/
-PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
+PetscErrorCode PETSC_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
 {
   PetscFunctionBegin;
   if (ptype == PETSC_INT) {
@@ -81,7 +82,7 @@ typedef enum {PETSC_INT_SIZE = sizeof(PetscInt),PETSC_DOUBLE_SIZE = sizeof(doubl
    
 .seealso: PetscDataType, PetscDataTypeGetName(), PetscDataTypeToMPIDataType()
 @*/
-PetscErrorCode PetscDataTypeGetSize(PetscDataType ptype,PetscInt *size)
+PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetSize(PetscDataType ptype,PetscInt *size)
 {
   PetscFunctionBegin;
   if (ptype == PETSC_INT) {
@@ -125,7 +126,7 @@ PetscErrorCode PetscDataTypeGetSize(PetscDataType ptype,PetscInt *size)
    
 .seealso: PetscDataType, PetscDataTypeGetSize(), PetscDataTypeToMPIDataType()
 @*/
-PetscErrorCode PetscDataTypeGetName(PetscDataType ptype,const char *name[])
+PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetName(PetscDataType ptype,const char *name[])
 {
   PetscFunctionBegin;
   if (ptype == PETSC_INT) {

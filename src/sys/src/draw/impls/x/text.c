@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 /*
    This file contains simple code to manage access to fonts, insuring that

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 
@@ -58,7 +59,7 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[],Pet
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
  @*/
-PetscErrorCode PetscSortIntWithPermutation(PetscInt n,const PetscInt i[],PetscInt idx[])
+PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithPermutation(PetscInt n,const PetscInt i[],PetscInt idx[])
 {
   PetscErrorCode ierr;
   PetscInt j,k,tmp,ik;
@@ -131,7 +132,7 @@ static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[],P
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
  @*/
-PetscErrorCode PetscSortRealWithPermutation(PetscInt n,const PetscReal i[],PetscInt idx[])
+PetscErrorCode PETSC_DLLEXPORT PetscSortRealWithPermutation(PetscInt n,const PetscReal i[],PetscInt idx[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp;
@@ -206,7 +207,7 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char* v[],PetscI
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
  @*/
-PetscErrorCode PetscSortStrWithPermutation(PetscInt n,const char* i[],PetscInt idx[])
+PetscErrorCode PETSC_DLLEXPORT PetscSortStrWithPermutation(PetscInt n,const char* i[],PetscInt idx[])
 {
   PetscErrorCode ierr;
   PetscInt        j,k,tmp;

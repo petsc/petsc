@@ -85,8 +85,8 @@ typedef struct {
 
 #define  PETSCFREEDHEADER -1
 
-EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscCookie,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
-EXTERN PetscErrorCode PetscHeaderDestroy_Private(PetscObject);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject,PetscCookie,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject);
 
 typedef PetscErrorCode (*PetscObjectFunction)(PetscObject); /* force cast in next macro to NEVER use extern "C" style */
 typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer); 
@@ -283,19 +283,20 @@ struct _p_PetscObject {
   PETSCHEADER(int);
 };
 
-EXTERN PetscErrorCode PetscObjectPublishBaseBegin(PetscObject);
-EXTERN PetscErrorCode PetscObjectPublishBaseEnd(PetscObject);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectPublishBaseBegin(PetscObject);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectPublishBaseEnd(PetscObject);
 
-EXTERN PetscErrorCode PetscObjectStateIncrease(PetscObject);
-EXTERN PetscErrorCode PetscObjectStateQuery(PetscObject,PetscInt*);
-EXTERN PetscErrorCode PetscObjectComposedDataRegister(PetscInt*);
-EXTERN PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject);
-EXTERN PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject);
-EXTERN PetscErrorCode PetscObjectComposedDataIncreaseReal(PetscObject);
-EXTERN PetscErrorCode PetscObjectComposedDataIncreaseRealstar(PetscObject);
-EXTERN PetscErrorCode PetscObjectComposedDataIncreaseScalar(PetscObject);
-EXTERN PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject);
-EXTERN PetscInt globalcurrentstate,globalmaxstate;
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectStateIncrease(PetscObject);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectStateQuery(PetscObject,PetscInt*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataRegister(PetscInt*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseInt(PetscObject);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseIntstar(PetscObject);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseReal(PetscObject);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseRealstar(PetscObject);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseScalar(PetscObject);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseScalarstar(PetscObject);
+EXTERN PetscInt       PETSC_DLLEXPORT globalcurrentstate;
+EXTERN PetscInt       PETSC_DLLEXPORT globalmaxstate;
 /*MC
    PetscObjectComposedDataSetInt - attach integer data to a PetscObject
 

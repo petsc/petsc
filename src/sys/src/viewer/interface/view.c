@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -18,7 +19,7 @@ PetscCookie PETSC_VIEWER_COOKIE = 0;
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen()
 
 @*/
-PetscErrorCode PetscViewerDestroy(PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerDestroy(PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -65,7 +66,7 @@ PetscErrorCode PetscViewerDestroy(PetscViewer viewer)
 .seealso: PetscViewerCreate(), PetscViewerSetType()
 
 @*/
-PetscErrorCode PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);

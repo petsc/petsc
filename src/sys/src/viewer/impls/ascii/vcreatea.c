@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"  /*I     "petsc.h"   I*/
 
@@ -30,7 +31,7 @@ $      XXXView(XXX object,PETSC_VIEWER_STDOUT_(comm));
           PETSC_VIEWER_STDOUT_SELF
 
 @*/
-PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm comm)
+PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_STDOUT_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
@@ -82,7 +83,7 @@ $      XXXView(XXX object,PETSC_VIEWER_STDERR_(comm));
 .seealso: PETSC_VIEWER_DRAW_, PetscViewerASCIIOpen(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDOUT_WORLD,
           PETSC_VIEWER_STDOUT_SELF, PETSC_VIEWER_STDERR_WORLD, PETSC_VIEWER_STDERR_SELF
 @*/
-PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm comm)
+PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_STDERR_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
@@ -149,7 +150,7 @@ PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm comm)
           PetscViewerASCIIGetPointer(), PetscViewerSetFormat(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDERR_,
           PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF, 
 @*/
-PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
 {
   PetscErrorCode ierr;
 

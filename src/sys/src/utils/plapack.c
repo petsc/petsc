@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"
 #ifdef PETSC_HAVE_PLAPACK
@@ -21,7 +22,7 @@ EXTERN_C_END
 .keywords: Petsc, initialize, package, PLAPACK
 .seealso: PetscInitializePackage(), PetscInitialize()
 @*/
-PetscErrorCode PetscPLAPACKInitializePackage(char *path) 
+PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(char *path) 
 {
 #ifdef PETSC_HAVE_PLAPACK
   MPI_Comm comm;
@@ -52,7 +53,7 @@ PetscErrorCode PetscPLAPACKInitializePackage(char *path)
 .keywords: Petsc, destroy, package, PLAPACK
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode PetscPLAPACKFinalizePackage(void) 
+PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKFinalizePackage(void) 
 {
 #ifdef PETSC_HAVE_PLAPACK
   PetscErrorCode ierr;

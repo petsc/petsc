@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -22,7 +23,7 @@
 
 .seealso: PetscDrawSetPause(), PetscDrawGetPause()
 @*/
-PetscErrorCode PetscDrawPause(PetscDraw draw)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawPause(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -26,7 +27,7 @@
 
 .seealso: PetscDrawSetPause(), PetscDrawPause()
 @*/
-PetscErrorCode PetscDrawGetPause(PetscDraw draw,int *lpause)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawGetPause(PetscDraw draw,int *lpause)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
    This file contains routines for sorting doubles.  Values are sorted in place.
    These are provided because the general sort routines incur a great deal
@@ -56,7 +57,7 @@ static PetscErrorCode PetsciDqsort(PetscReal *v,PetscInt right)
 
 .seealso: PetscSortInt(), PetscSortRealWithPermutation()
 @*/
-PetscErrorCode PetscSortReal(PetscInt n,PetscReal v[])
+PetscErrorCode PETSC_DLLEXPORT PetscSortReal(PetscInt n,PetscReal v[])
 {
   PetscInt  j,k;
   PetscReal tmp,vk;

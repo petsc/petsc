@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -10,7 +11,7 @@ extern FILE *petsc_history;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFormatConvert"
-PetscErrorCode PetscFormatConvert(const char *format,char *newformat)
+PetscErrorCode PETSC_DLLEXPORT PetscFormatConvert(const char *format,char *newformat)
 {
   PetscInt i = 0,j = 0;
 
@@ -49,7 +50,7 @@ PetscErrorCode PetscFormatConvert(const char *format,char *newformat)
 /* 
    No error handling because may be called by error handler
 */
-PetscErrorCode PetscVSNPrintf(char *str,size_t len,const char *format,va_list Argp)
+PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *format,va_list Argp)
 {
   /* no malloc since may be called by error handler */
   char     newformat[8*1024];
@@ -68,7 +69,7 @@ PetscErrorCode PetscVSNPrintf(char *str,size_t len,const char *format,va_list Ar
 /* 
    No error handling because may be called by error handler
 */
-PetscErrorCode PetscVFPrintf(FILE *fd,const char *format,va_list Argp)
+PetscErrorCode PETSC_DLLEXPORT PetscVFPrintf(FILE *fd,const char *format,va_list Argp)
 {
   /* no malloc since may be called by error handler */
   char     newformat[8*1024];
@@ -115,7 +116,7 @@ FILE        *queuefile  = PETSC_NULL;
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
           PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
 @*/
-PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
+PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -179,7 +180,7 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
-PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
+PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -234,7 +235,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format
 .seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf()
 @*/
-PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm)
+PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag,i,j,n;
@@ -309,7 +310,7 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm)
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf(), PetscSynchronizedFlush()
 @*/
-PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
+PetscErrorCode PETSC_DLLEXPORT PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -356,7 +357,7 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/
-PetscErrorCode PetscPrintf(MPI_Comm comm,const char format[],...)
+PetscErrorCode PETSC_DLLEXPORT PetscPrintf(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -407,7 +408,7 @@ PetscErrorCode PetscPrintf(MPI_Comm comm,const char format[],...)
 /* ---------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscHelpPrintfDefault" 
-PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
+PetscErrorCode PETSC_DLLEXPORT PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -440,7 +441,7 @@ static PetscTruth PetscErrorPrintfInitializeCalled = PETSC_FALSE;
    Initializes arch, hostname, username,date so that system calls do NOT need
    to be made during the error handler.
 */
-PetscErrorCode PetscErrorPrintfInitialize()
+PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
 {
   PetscErrorCode ierr;
 
@@ -457,7 +458,7 @@ PetscErrorCode PetscErrorPrintfInitialize()
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorPrintfDefault" 
-PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
+PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
 {
   va_list            Argp;
   static  PetscTruth PetscErrorPrintfCalled    = PETSC_FALSE;
@@ -557,7 +558,7 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
-PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,size_t len,char string[])
+PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,size_t len,char string[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;

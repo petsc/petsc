@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
@@ -29,7 +30,7 @@
 .seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutReal(), PetscViewerSocketPutScalar(),
       PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF
 @*/
-PetscErrorCode PetscViewerSocketPutScalar(PetscViewer viewer,PetscInt m,PetscInt n,PetscScalar *array)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketPutScalar(PetscViewer viewer,PetscInt m,PetscInt n,PetscScalar *array)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
   PetscErrorCode     ierr;
@@ -83,7 +84,7 @@ PetscErrorCode PetscViewerSocketPutScalar(PetscViewer viewer,PetscInt m,PetscInt
 .seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutInt(), PetscViewerSocketPutReal(),
           PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF
 @*/
-PetscErrorCode PetscViewerSocketPutReal(PetscViewer viewer,PetscInt m,PetscInt n,PetscReal *array)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketPutReal(PetscViewer viewer,PetscInt m,PetscInt n,PetscReal *array)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
   PetscErrorCode     ierr;
@@ -131,7 +132,7 @@ PetscErrorCode PetscViewerSocketPutReal(PetscViewer viewer,PetscInt m,PetscInt n
 .seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutScalar(), PetscViewerSocketPutReal(),
        PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF
 @*/
-PetscErrorCode PetscViewerSocketPutInt(PetscViewer viewer,PetscInt m,PetscInt *array)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketPutInt(PetscViewer viewer,PetscInt m,PetscInt *array)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
   PetscErrorCode     ierr;

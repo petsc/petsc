@@ -626,7 +626,7 @@ PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[],int *width,int
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawCreate_X" 
-PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate_X(PetscDraw draw)
 {
   PetscDraw_X    *Xwin;
   PetscErrorCode ierr;

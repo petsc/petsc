@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
     This file contains routines for interfacing to random number generators.
     This provides more than just an interface to some system random number
@@ -15,7 +16,7 @@
 #include "petscsys.h"        /*I "petscsys.h" I*/
 #include <stdlib.h>
 
-PetscCookie PETSC_RANDOM_COOKIE = 0;
+PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE = 0;
 
 /* Private data */
 struct _p_PetscRandom {
@@ -42,7 +43,7 @@ struct _p_PetscRandom {
 
 .seealso: PetscRandomGetValue(), PetscRandomCreate(), VecSetRandom()
 @*/
-PetscErrorCode PetscRandomDestroy(PetscRandom r)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomDestroy(PetscRandom r)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -78,7 +79,7 @@ PetscErrorCode PetscRandomDestroy(PetscRandom r)
 
 .seealso: PetscRandomCreate()
 @*/
-PetscErrorCode PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
@@ -148,7 +149,7 @@ EXTERN_C_END
 
 .seealso: PetscRandomGetValue(), PetscRandomSetInterval(), PetscRandomDestroy(), VecSetRandom()
 @*/
-PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom    rr;
   PetscErrorCode ierr;
@@ -202,7 +203,7 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom 
 
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
 @*/
-PetscErrorCode PetscRandomGetValue(PetscRandom r,PetscScalar *val)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
@@ -234,7 +235,7 @@ PetscErrorCode PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 
-PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom    rr;
   PetscErrorCode ierr;
@@ -260,7 +261,7 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom 
 #define RAND_WRAP() (rand()/(double)((unsigned int)RAND_MAX+1))
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue"
-PetscErrorCode PetscRandomGetValue(PetscRandom r,PetscScalar *val)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
@@ -292,7 +293,7 @@ extern double drand48();
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 
-PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom    rr;
   char           arch[10];
@@ -310,7 +311,7 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue"
-PetscErrorCode PetscRandomGetValue(PetscRandom r,PetscScalar *val)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
    This file contains a simple routine for generating a 2-d axis.
 */
@@ -53,7 +54,7 @@ static PetscErrorCode PetscRint(PetscReal x,PetscReal *result)
    Level: advanced
 
 @*/
-PetscErrorCode PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 {
   PetscDrawAxis  ad;
   PetscObject    obj = (PetscObject)draw;
@@ -100,7 +101,7 @@ PetscErrorCode PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
     Level: advanced
 
 @*/
-PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis axis)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisDestroy(PetscDrawAxis axis)
 {
   PetscErrorCode ierr;
 
@@ -132,7 +133,7 @@ PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis axis)
     Level: advanced
 
 @*/
-PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -155,7 +156,7 @@ PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
     Level: advanced
 
 @*/
-PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const char xlabel[],const char ylabel[])
+PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const char xlabel[],const char ylabel[])
 {
   PetscErrorCode ierr;
 
@@ -188,7 +189,7 @@ PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const 
 .seealso:  PetscDrawAxisSetLimits()
 
 @*/
-PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscTruth hold)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscTruth hold)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -213,7 +214,7 @@ PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscTruth hold)
 .seealso:  PetscDrawAxisSetHoldLimits()
 
 @*/
-PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -243,7 +244,7 @@ PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRea
     effects may be generated.  These routines are part of the Axis
     structure (axis).
 @*/
-PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisDraw(PetscDrawAxis axis)
 {
   int            i,ntick,numx,numy,ac = axis->ac,tc = axis->tc,cc = axis->cc,rank;
   size_t         len;

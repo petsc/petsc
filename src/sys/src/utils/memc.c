@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 /*
     We define the memory operations here. The reason we just do not use 
@@ -63,7 +64,7 @@
 .seealso: PetscMemmove()
 
 @*/
-PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
+PetscErrorCode PETSC_DLLEXPORT PetscMemcpy(void *a,const void *b,size_t n)
 {
   unsigned long al = (unsigned long) a,bl = (unsigned long) b;
   unsigned long nl = (unsigned long) n;
@@ -131,7 +132,7 @@ PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 .seealso: PetscMemmove(), PetscMemcpy()
 
 @*/
-PetscErrorCode PetscBitMemcpy(void *a,PetscInt ai,const void *b,PetscInt bi,PetscInt bs,PetscDataType dtype)
+PetscErrorCode PETSC_DLLEXPORT PetscBitMemcpy(void *a,PetscInt ai,const void *b,PetscInt bi,PetscInt bs,PetscDataType dtype)
 {
   char           *aa = (char *)a,*bb = (char *)b;
   PetscInt       dsize;
@@ -177,7 +178,7 @@ PetscErrorCode PetscBitMemcpy(void *a,PetscInt ai,const void *b,PetscInt bi,Pets
 
 .seealso: PetscMemcpy()
 @*/
-PetscErrorCode PetscMemzero(void *a,size_t n)
+PetscErrorCode PETSC_DLLEXPORT PetscMemzero(void *a,size_t n)
 {
   PetscFunctionBegin;
   if (n > 0) {
@@ -227,7 +228,7 @@ PetscErrorCode PetscMemzero(void *a,size_t n)
    Note: 
    This routine is anologous to memcmp()
 @*/
-PetscErrorCode PetscMemcmp(const void *str1,const void *str2,size_t len,PetscTruth *e)
+PetscErrorCode PETSC_DLLEXPORT PetscMemcmp(const void *str1,const void *str2,size_t len,PetscTruth *e)
 {
   int r;
 
@@ -266,7 +267,7 @@ PetscErrorCode PetscMemcmp(const void *str1,const void *str2,size_t len,PetscTru
 
 .seealso: PetscMemcpy()
 @*/
-PetscErrorCode PetscMemmove(void *a,void *b,size_t n)
+PetscErrorCode PETSC_DLLEXPORT PetscMemmove(void *a,void *b,size_t n)
 {
   PetscFunctionBegin;
   if (n > 0 && !a) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy to null pointer");

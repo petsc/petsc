@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"
 #include "petscdraw.h"
@@ -18,7 +19,7 @@
 .keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PetscInitializePackage(char *path)
+PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *path)
 {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
@@ -77,7 +78,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PetscDLLibraryRegister(char *path)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister(char *path)
 {
   PetscErrorCode ierr;
 

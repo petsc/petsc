@@ -1,13 +1,13 @@
 
 ALL: lib
 
-CFLAGS   = ${MATLAB_INCLUDE} ${PNETCDF_INCLUDE}
+CFLAGS   = ${PNETCDF_INCLUDE}
 FFLAGS   =
-SOURCEC  = vinv.c gcreatev.c vscat.c vpscat.c cmesh.c vecio.c \
+SOURCEC  = vinv.c vscat.c vpscat.c cmesh.c vecio.c \
            comb.c vecstash.c vecmpitoseq.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = vinv.o gcreatev.o vscat.o vpscat.o cmesh.o vecio.o \
+OBJSC    = vinv.o vscat.o vpscat.o cmesh.o vecio.o \
            comb.o vecstash.o vecmpitoseq.o
 OBJSF    =
 LIBBASE  = libpetscvec

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
       Code that allows one to set the error handlers
 */
@@ -60,7 +61,7 @@ $     SETERRQ(number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler()
  @*/
-PetscErrorCode PetscEmacsClientErrorHandler(int line,const char *fun,const char* file,const char *dir,int n,int p,const char *mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(int line,const char *fun,const char* file,const char *dir,int n,int p,const char *mess,void *ctx)
 {
   PetscErrorCode ierr;
   char        command[PETSC_MAX_PATH_LEN];
@@ -112,7 +113,7 @@ $    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess
 .seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
 
 @*/
-PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(int,const char *,const char*,const char*,int,int,const char*,void*),void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(int,const char *,const char*,const char*,int,int,const char*,void*),void *ctx)
 {
   EH  neweh;
   PetscErrorCode ierr;
@@ -141,7 +142,7 @@ PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(int,const char *,
 
 .seealso: PetscPushErrorHandler()
 @*/
-PetscErrorCode PetscPopErrorHandler(void)
+PetscErrorCode PETSC_DLLEXPORT PetscPopErrorHandler(void)
 {
   EH  tmp;
   PetscErrorCode ierr;
@@ -215,7 +216,7 @@ static const char *PetscErrorStrings[] = {
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-PetscErrorCode PetscErrorMessage(int errnum,const char *text[],char **specific)
+PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int errnum,const char *text[],char **specific)
 {
   PetscFunctionBegin;
   if (text && errnum >= PETSC_ERR_MEM && errnum <= PETSC_ERR_MEM_MALLOC_0) {
@@ -261,7 +262,7 @@ $     SETERRQ(n,mess)
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 @*/
-PetscErrorCode PetscError(int line,const char *func,const char* file,const char *dir,int n,int p,const char *mess,...)
+PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* file,const char *dir,int n,int p,const char *mess,...)
 {
   va_list     Argp;
   PetscErrorCode ierr;
@@ -320,7 +321,7 @@ PetscErrorCode PetscError(int line,const char *func,const char* file,const char 
 
 .seealso: PetscRealView() 
 @*/
-PetscErrorCode PetscIntView(PetscInt N,PetscInt idx[],PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/20,p = N % 20;
@@ -403,7 +404,7 @@ PetscErrorCode PetscIntView(PetscInt N,PetscInt idx[],PetscViewer viewer)
 
 .seealso: PetscIntView() 
 @*/
-PetscErrorCode PetscRealView(PetscInt N,PetscReal idx[],PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,PetscReal idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/5,p = N % 5;
@@ -487,7 +488,7 @@ PetscErrorCode PetscRealView(PetscInt N,PetscReal idx[],PetscViewer viewer)
 
 .seealso: PetscIntView(), PetscRealView()
 @*/
-PetscErrorCode PetscScalarView(PetscInt N,PetscScalar idx[],PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,PetscScalar idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/3,p = N % 3;

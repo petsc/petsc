@@ -1,3 +1,4 @@
+#define PETSC_DLL
 #define HERE do { PetscErrorCode ierr, rank; ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank); ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] LINE %d (%s)\n", rank, __LINE__, __FUNCTION__);CHKERRQ(ierr); } while (0)
 
 #define CE do { CHKERRQ(ierr); } while (0)
@@ -35,7 +36,7 @@ PetscErrorCode PetscViewerDestroy_HDF4(PetscViewer v)
 EXTERN_C_BEGIN 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFileType_HDF4" 
-PetscErrorCode PetscViewerSetFileType_HDF4(PetscViewer viewer, PetscViewerFileType type)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFileType_HDF4(PetscViewer viewer, PetscViewerFileType type)
 {
  PetscViewer_HDF4 *vhdf4 = (PetscViewer_HDF4 *)viewer->data;
  
@@ -49,7 +50,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFilename_HDF4" 
-PetscErrorCode PetscViewerSetFilename_HDF4(PetscViewer viewer,const char name[])
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_HDF4(PetscViewer viewer,const char name[])
 {
  PetscErrorCode        ierr;
  int                   rank;
@@ -88,7 +89,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_HDF4" 
-PetscErrorCode PetscViewerCreate_HDF4(PetscViewer v)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_HDF4(PetscViewer v)
 {  
  PetscErrorCode   ierr;
  PetscViewer_HDF4 *vhdf4;
@@ -114,7 +115,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerHDF4Open" 
-PetscErrorCode PetscViewerHDF4Open(MPI_Comm comm, const char *name, PetscViewerFileType type, PetscViewer *hdf4v)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF4Open(MPI_Comm comm, const char *name, PetscViewerFileType type, PetscViewer *hdf4v)
 {
  PetscErrorCode ierr;
  
@@ -129,7 +130,7 @@ PetscErrorCode PetscViewerHDF4Open(MPI_Comm comm, const char *name, PetscViewerF
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerHDF4WriteSDS" 
-PetscErrorCode PetscViewerHDF4WriteSDS(PetscViewer viewer, float *xf, int d, int *dims,int bs)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF4WriteSDS(PetscViewer viewer, float *xf, int d, int *dims,int bs)
 {
  int                   i;
  PetscViewer_HDF4      *vhdf4 = (PetscViewer_HDF4*)viewer->data;

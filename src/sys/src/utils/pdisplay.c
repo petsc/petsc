@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"        
 #include "petscsys.h"             /*I    "petscsys.h"   I*/
@@ -37,7 +38,7 @@
     put it in a universal location like a .chsrc file
 
 @*/
-PetscErrorCode PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],size_t len,PetscTruth *flag)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],size_t len,PetscTruth *flag)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -88,7 +89,7 @@ static char PetscDisplay[256];
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetDisplay" 
-PetscErrorCode PetscSetDisplay(void)
+PetscErrorCode PETSC_DLLEXPORT PetscSetDisplay(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
@@ -135,7 +136,7 @@ PetscErrorCode PetscSetDisplay(void)
 .   display - the display string
 
 */
-PetscErrorCode PetscGetDisplay(char display[],size_t n)
+PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char display[],size_t n)
 {
   PetscErrorCode ierr;
 

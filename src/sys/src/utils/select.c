@@ -1,3 +1,4 @@
+#define PETSC_DLL
 #include "petsc.h"              /*I  "petsc.h"  I*/
 #include "petscsys.h"           /*I  "petscsys.h"  I*/
 
@@ -33,7 +34,7 @@
    Concepts: menu
 
 @*/
-PetscErrorCode PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choices,int *choice)
+PetscErrorCode PETSC_DLLEXPORT PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choices,int *choice)
 {
   PetscMPIInt    rank;
   int            i,rows = n + 2;

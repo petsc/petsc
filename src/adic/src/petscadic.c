@@ -17,7 +17,7 @@ extern int ad_PetscADICFunctionApplyGradient(PetscADICFunction,double *,double *
    PetscADICFunctionSetFunction - Creates a data structure to manage the evaluate
                              of a PETSc function and its derivative.
 */
-int PetscADICFunctionSetFunction(PetscADICFunction ctx,int (*Function)(Vec,Vec),
+int PETSC_DLLEXPORT PetscADICFunctionSetFunction(PetscADICFunction ctx,int (*Function)(Vec,Vec),
                             int (*FunctionInitialize)(void **))
 {
   (ctx)->Function           = Function;
@@ -30,7 +30,7 @@ int PetscADICFunctionSetFunction(PetscADICFunction ctx,int (*Function)(Vec,Vec),
    PetscADICFunctionCreate - Creates a data structure to manage the evaluate
                              of a PETSc function and its derivative.
 */
-int PetscADICFunctionCreate(Vec in,Vec out,int (*ad_Function)(Vec,Vec),
+int PETSC_DLLEXPORT PetscADICFunctionCreate(Vec in,Vec out,int (*ad_Function)(Vec,Vec),
                             int (*ad_FunctionInitialize)(void **),PetscADICFunction*ctx)
 {
   int ierr;
@@ -56,7 +56,7 @@ int PetscADICFunctionCreate(Vec in,Vec out,int (*ad_Function)(Vec,Vec),
 /*
     PetscADICFunctionEvaluateGradient - Evaluates a given PETSc function and its derivative
 */
-int PetscADICFunctionEvaluateGradient(PetscADICFunction ctx,Vec in,Vec out,Mat grad)
+int PETSC_DLLEXPORT PetscADICFunctionEvaluateGradient(PetscADICFunction ctx,Vec in,Vec out,Mat grad)
 {
   int    ierr,flg;
   Scalar *inx,*outx,*gradarray;
@@ -155,7 +155,7 @@ int DefaultComputeJacobian(int (*Function)(Vec,Vec),Vec x1,Mat J)
 /*
     PetscADICFunctionEvaluateGradientFD - Evaluates a given PETSc function's derivative
 */
-int PetscADICFunctionEvaluateGradientFD(PetscADICFunction ctx,Vec in,Vec out,Mat grad)
+int PETSC_DLLEXPORT PetscADICFunctionEvaluateGradientFD(PetscADICFunction ctx,Vec in,Vec out,Mat grad)
 {
   int    ierr;
 
@@ -198,7 +198,7 @@ int PetscADICFunctionApplyGradient(Mat mat,Vec in,Vec grad)
 /*
     PetscADICFunctionApplyReset - Applys a given PETSc function and its derivative
 */
-int PetscADICFunctionApplyGradientReset(Mat mat,Vec in)
+int PETSC_DLLEXPORT PetscADICFunctionApplyGradientReset(Mat mat,Vec in)
 {
   int               ierr;
   Scalar            *inx;
@@ -219,7 +219,7 @@ int PetscADICFunctionApplyGradientReset(Mat mat,Vec in)
 /*
     PetscADICFunctionApplyInitialize - Applys a given PETSc function and its derivative
 */
-int PetscADICFunctionApplyGradientInitialize(PetscADICFunction ctx,Vec in,Mat *mat)
+int PETSC_DLLEXPORT PetscADICFunctionApplyGradientInitialize(PetscADICFunction ctx,Vec in,Mat *mat)
 {
   int    n,nloc,ierr;
   Scalar *inx;
@@ -244,7 +244,7 @@ int PetscADICFunctionApplyGradientInitialize(PetscADICFunction ctx,Vec in,Mat *m
 /*
     PetscADICFunctionInitialize - Initializes the data structure for PetscADICFunction.
 */
-int PetscADICFunctionIntialize(PetscADICFunction ctx)
+int PETSC_DLLEXPORT PetscADICFunctionIntialize(PetscADICFunction ctx)
 {
   int    ierr;
 

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -26,7 +27,7 @@
    Concepts: object type
 
 @*/
-PetscErrorCode PetscObjectGetType(PetscObject obj,int *type)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectGetType(PetscObject obj,int *type)
 {
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");

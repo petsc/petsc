@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petscdraw.h"     /*I "petscdraw.h"  I*/
 
@@ -21,7 +22,7 @@
 
 .seealso:  
 @*/
-PetscErrorCode PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,void *),void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,void *),void *ctx)
 {
   PetscErrorCode ierr;
   int             dpause;

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include "src/sys/src/plog/ptime.h"
@@ -11,6 +12,8 @@ extern char           tracespace[128];
 extern PetscLogDouble tracetime;
 
 /*----------------------------------------------- Creation Functions -------------------------------------------------*/
+/* Note: these functions do not have prototypes in a public directory, so they are considered "internal" and not exported. */
+
 #undef __FUNCT__  
 #define __FUNCT__ "EventRegLogCreate"
 /*@C

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
       Code for manipulating files.
 */
@@ -45,7 +46,7 @@
    Concepts: working directory
 
 @*/
-PetscErrorCode PetscGetWorkingDirectory(char path[],size_t len)
+PetscErrorCode PETSC_DLLEXPORT PetscGetWorkingDirectory(char path[],size_t len)
 {
 #if defined(PETSC_HAVE_GETCWD)
   PetscFunctionBegin;

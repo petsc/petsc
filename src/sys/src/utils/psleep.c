@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"                 /*I   "petsc.h"    I*/
 #if defined (PETSC_HAVE_UNISTD_H)
@@ -31,7 +32,7 @@
    Concepts: waiting
 
 @*/
-PetscErrorCode PetscSleep(int s)
+PetscErrorCode PETSC_DLLEXPORT PetscSleep(int s)
 {
   PetscFunctionBegin;
   if (s < 0) getc(stdin);

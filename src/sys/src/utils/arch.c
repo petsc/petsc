@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "petscsys.h"           /*I  "petscsys.h"  I*/
@@ -23,7 +24,7 @@
      Concepts: architecture
 
 @*/
-PetscErrorCode PetscGetArchType(char str[],size_t slen)
+PetscErrorCode PETSC_DLLEXPORT PetscGetArchType(char str[],size_t slen)
 {
   PetscErrorCode ierr;
 
