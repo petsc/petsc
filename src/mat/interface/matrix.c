@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.331 1999/03/31 18:40:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.332 1999/04/19 22:11:43 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2378,7 +2378,7 @@ static int MatAssemblyEnd_InUse = 0;
 
 .keywords: matrix, assembly, assemble, begin
 
-.seealso: MatAssemblyEnd(), MatSetValues()
+.seealso: MatAssemblyEnd(), MatSetValues(), MatAssembled()
 @*/
 int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 {
@@ -2401,6 +2401,35 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "MatAssembed"
+/*@
+   MatAssembled - Indicates if a matrix has been assembled and is ready for
+     use; for example, in matrix-vector product.
+
+   Collective on Mat
+
+   Input Parameter:
+.  mat - the matrix 
+
+   Output Parameter:
+.  assembled - PETSC_TRUE or PETSC_FALSE
+
+   Level: advanced
+
+.keywords: matrix, assembly, assemble, begin
+
+.seealso: MatAssemblyEnd(), MatSetValues(), MatAssemblyBegin()
+@*/
+int MatAssembled(Mat mat,PetscTruth *assembled)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  *assembled = mat->assembled;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_Private"
@@ -2487,7 +2516,7 @@ int MatView_Private(Mat mat)
 
 .keywords: matrix, assembly, assemble, end
 
-.seealso: MatAssemblyBegin(), MatSetValues(), DrawOpenX(), MatView()
+.seealso: MatAssemblyBegin(), MatSetValues(), DrawOpenX(), MatView(), MatAssembled()
 @*/
 int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
