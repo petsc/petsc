@@ -1,12 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.9 1995/05/12 21:16:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.10 1995/06/08 03:09:50 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
 #include "src/pc/pcimpl.h"
 #include "mpirowbs.h"
-#include "BSsparse.h"
 #include "BSprivate.h"
 
 extern int MatCreateShellMPIRowbs(MPI_Comm,int,int,int,int*,Mat*);

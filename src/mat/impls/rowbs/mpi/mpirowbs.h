@@ -1,9 +1,9 @@
-/* $Id: mpirowbs.h,v 1.10 1995/06/07 17:33:34 bsmith Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.11 1995/06/08 03:09:50 bsmith Exp curfman $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
 #include <math.h>
-#include "bsinterf.h"
+#include "BSsparse.h"
 
 #if !defined(__MPIROW_BS_H)
 #define __MPIROW_BS_H
@@ -61,6 +61,8 @@ typedef struct {
   void BSiperm_dvec();
   void BSfor_solve1();
   void BSback_solve1();
+
+#define CHKERRBS(a) CHKERRN(a)
 
 #endif
 #endif
