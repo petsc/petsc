@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.26 1996/10/07 15:31:51 curfman Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.27 1997/01/12 04:31:37 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -8,46 +8,67 @@ static char vcid[] = "$Id: zsys.c,v 1.26 1996/10/07 15:31:51 curfman Exp bsmith 
 #include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
-#define petscattachdebugger_  PETSCATTACHDEBUGGER
-#define petscobjectsetname_   PETSCOBJECTSETNAME
-#define petscobjectdestroy_   PETSCOBJECTDESTROY
-#define petscobjectgetcomm_   PETSCOBJECTGETCOMM
-#define petscobjectgetname_   PETSCOBJECTGETNAME
-#define petscgettime_         PETSCGETTIME
-#define petscgetflops_        PETSCGETFLOPS
-#define petscerror_           PETSCERROR
-#define petscrandomcreate_    PETSCRANDOMCREATE
-#define petscrandomdestroy_   PETSCRANDOMDESTROY
-#define petscrandomgetvalue_  PETSCRANDOMGETVALUE
-#define vecsetrandom_         VECSETRANDOM
-#define petsctrvalid_         PETSCTRVALID
-#define petscdoubleview_      PETSCDOUBLEVIEW
-#define petscintview_         PETSCINTVIEW
+#define petscattachdebugger_       PETSCATTACHDEBUGGER
+#define petscobjectsetname_        PETSCOBJECTSETNAME
+#define petscobjectdestroy_        PETSCOBJECTDESTROY
+#define petscobjectgetcomm_        PETSCOBJECTGETCOMM
+#define petscobjectgetname_        PETSCOBJECTGETNAME
+#define petscgettime_              PETSCGETTIME
+#define petscgetflops_             PETSCGETFLOPS
+#define petscerror_                PETSCERROR
+#define petscrandomcreate_         PETSCRANDOMCREATE
+#define petscrandomdestroy_        PETSCRANDOMDESTROY
+#define petscrandomgetvalue_       PETSCRANDOMGETVALUE
+#define vecsetrandom_              VECSETRANDOM
+#define petsctrvalid_              PETSCTRVALID
+#define petscdoubleview_           PETSCDOUBLEVIEW
+#define petscintview_              PETSCINTVIEW
 #define petscsequentialphasebegin_ PETSCSEQUENTIALPHASEBEGIN
-#define petscsequentialphaseend_ PETSCSEQUENTIALPHASEEND
+#define petscsequentialphaseend_   PETSCSEQUENTIALPHASEEND
+#define petsctrlog_                PETSCTRLOG
+#define petscmemcpy_               PETSCMEMCPY
+#define petsctrdump_               PETSCTRDUMP
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define petscattachdebugger_  petscattachdebugger
-#define petscobjectsetname_   petscobjectsetname
-#define petscobjectdestroy_   petscobjectdestroy
-#define petscobjectgetcomm_   petscobjectgetcomm
-#define petscobjectgetname_   petscobjectgetname
-#define petscgettime_         petscgettime  
-#define petscgetflops_        petscgetflops 
-#define petscerror_           petscerror
-#define petscrandomcreate_    petscrandomcreate
-#define petscrandomdestroy_   petscrandomdestroy
-#define petscrandomgetvalue_  petscrandomgetvalue
-#define vecsetrandom_         vecsetrandom
-#define petsctrvalid_         petsctrvalid
-#define petscdoubleview_      petscdoubleview
-#define petscintview_         petscintview
+#define petsctrlog_                petsctrlog
+#define petscattachdebugger_       petscattachdebugger
+#define petscobjectsetname_        petscobjectsetname
+#define petscobjectdestroy_        petscobjectdestroy
+#define petscobjectgetcomm_        petscobjectgetcomm
+#define petscobjectgetname_        petscobjectgetname
+#define petscgettime_              petscgettime  
+#define petscgetflops_             petscgetflops 
+#define petscerror_                petscerror
+#define petscrandomcreate_         petscrandomcreate
+#define petscrandomdestroy_        petscrandomdestroy
+#define petscrandomgetvalue_       petscrandomgetvalue
+#define vecsetrandom_              vecsetrandom
+#define petsctrvalid_              petsctrvalid
+#define petscdoubleview_           petscdoubleview
+#define petscintview_              petscintview
 #define petscsequentialphasebegin_ petscsequentialphasebegin
-#define petscsequentialphaseend_ petscsequentialphaseend
+#define petscsequentialphaseend_   petscsequentialphaseend
+#define petscmemcpy_               petscmemcpy
+#define petsctrdump_               petsctrdump
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void petsctrdump_(int *__ierr)
+{
+  *__ierr = PetscTrDump(stdout);
+}
+
+void petscmemcpy_(int *out,int *in,int *length)
+{
+  PetscMemcpy(out,in,*length);
+}
+
+void petsctrlog_(int *__ierr)
+{
+  *__ierr = PetscTrLog();
+}
 
 void petsctrvalid_(int *__ierr)
 {
