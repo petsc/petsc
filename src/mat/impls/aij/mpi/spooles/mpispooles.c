@@ -646,7 +646,8 @@ int MatDuplicate_MPIAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
   This matrix type is only supported for double precision real.
 
   This matrix inherits from MATMPIAIJ.  As a result, MatMPIAIJSetPreallocation is 
-  supported for this matrix type.
+  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
+  the MATMPIAIJ type without data copy.
 
   Consult Spooles documentation for more information about the options database keys below.
 

@@ -225,7 +225,8 @@ int MatDuplicate_Essl(Mat A, MatDuplicateOption op, Mat *M) {
   This matrix type is only supported for double precision real.
 
   This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
-  supported for this matrix type.
+  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
+  the MATSEQAIJ type without data copy.
 
   Options Database Keys:
 . -mat_type essl - sets the matrix type to essl during a call to MatSetFromOptions()

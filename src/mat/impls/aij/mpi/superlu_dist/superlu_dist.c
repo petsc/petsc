@@ -674,7 +674,9 @@ int MatDuplicate_SuperLU_DIST(Mat A, MatDuplicateOption op, Mat *M) {
   and from MATMPIAIJ otherwise.  As a result, for single process communicators, 
   MatSeqAIJSetPreallocation is supported, and similarly MatMPISBAIJSetPreallocation is supported 
   for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.
+  the above preallocation routines for simplicity.  One can also call MatConvert for an inplace
+  conversion to or from the MATSEQAIJ or MATMPIAIJ type (depending on the communicator size)
+  without data copy.
 
   Options Database Keys:
 + -mat_type superlu_dist

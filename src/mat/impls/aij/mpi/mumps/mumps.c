@@ -662,7 +662,9 @@ int MatDuplicate_AIJMUMPS(Mat A, MatDuplicateOption op, Mat *M) {
   Otherwise, this matrix type inherits from MATMPIAIJ.  Hence for single process communicators,
   MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
   for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.
+  the above preallocation routines for simplicity.  One can also call MatConvert for an inplace
+  conversion to or from the MATSEQAIJ or MATMPIAIJ type (depending on the communicator size)
+  without data copy.
 
   Options Database Keys:
 + -mat_type aijmumps
@@ -820,7 +822,9 @@ int MatDuplicate_SBAIJMUMPS(Mat A, MatDuplicateOption op, Mat *M) {
   Otherwise, this matrix type inherits from MATMPISBAIJ.  Hence for single process communicators,
   MatSeqSBAIJSetPreallocation is supported, and similarly MatMPISBAIJSetPreallocation is supported 
   for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.
+  the above preallocation routines for simplicity.  One can also call MatConvert for an inplace
+  conversion to or from the MATSEQSBAIJ or MATMPISBAIJ type (depending on the communicator size)
+  without data copy.
 
   Options Database Keys:
 + -mat_type aijmumps
