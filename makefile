@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.181 1997/08/19 18:41:15 balay Exp bsmith $ 
+# $Id: makefile,v 1.182 1997/08/19 19:22:21 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -221,7 +221,7 @@ noise: chkpetsc_dir
 
 petscblas: chkpetsc_dir
 	-$(RM) -f $(PDIR)/libpetscblas.*
-	-@echo "Beginning to compile CBLAS and CLAPACK"
+	-@echo "Beginning to compile C version of BLAS and LAPACK"
 	-@echo On `date` on `hostname`
 	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
 	-@echo "------------------------------------------"
@@ -240,7 +240,7 @@ petscblas: chkpetsc_dir
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=libfast tree
 	$(RANLIB) $(PDIR)/libpetscblas.a
 	-@chmod g+w  $(PDIR)/*.a
-	-@echo "Completed compiling CBLAS and CLAPACK"
+	-@echo "Completed compiling C version of BLAS and LAPACK"
 	-@echo "========================================="
 
 
