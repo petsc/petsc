@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.51 1997/02/07 15:41:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.52 1997/02/11 18:45:18 curfman Exp curfman $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -41,7 +41,7 @@ static int PCView_ASM(PetscObject obj,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscFPrintf(pc->comm,fd,"    Additive Schwarz: number of blocks = %d\n", jac->n);
+    PetscFPrintf(pc->comm,fd,"    Additive Schwarz: number of blocks = %d, overlap = %d\n",jac->n,jac->overlap);
     if (jac->type == PC_ASM_NONE) cstring = "limited restriction and interpolation (PC_ASM_NONE)";
     else if (jac->type == PC_ASM_RESTRICT) cstring = "full restriction (PC_ASM_RESTRICT)";
     else if (jac->type == PC_ASM_INTERPOLATE) cstring = "full interpolation (PC_ASM_INTERPOLATE)";
@@ -266,7 +266,7 @@ static int PCPrintHelp_ASM(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCASM preconditioner:\n");
   PetscPrintf(pc->comm," %spc_asm_blocks <blks>: total subdomain blocks\n",p);
-  PetscPrintf(pc->comm, " %spc_asm_overlap <ovl>: amount of overlap between subdomains\n",p); 
+  PetscPrintf(pc->comm, " %spc_asm_overlap <ovl>: amount of overlap between subdomains, defaults to 1\n",p); 
   PetscPrintf(pc->comm, " %spc_asm_type <basic,restrict,interpolate,none>: type of restriction/interpolation\n",p); 
   PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
