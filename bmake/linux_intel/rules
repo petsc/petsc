@@ -6,11 +6,9 @@ libf: ${OBJSF}
 
 #############
 
-shared:
-
-# with 5.0.1   Build 010730D0 version of intel compilers, shared libraries created
-# are broken with BOPT=O, so disabling shared libraries completely
-shared_does_not_work: chkopts_basic
+# with 5.0.1 Build 010730D0 version of intel compilers, shared libraries created
+# are broken with BOPT=O && using -KPIC flag
+shared: chkopts_basic
 	-@echo making shared libraries in ${INSTALL_LIB_DIR} ;\
 	cd ${INSTALL_LIB_DIR}; \
 	${RM} -rf tmp; \
