@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.46 1996/02/08 01:34:47 curfman Exp bsmith $ */
+/* $Id: plog.h,v 1.47 1996/02/13 23:30:59 bsmith Exp balay $ */
 
 /*
     Defines high level logging in PETSc.
@@ -47,6 +47,7 @@
 #define MAT_GetSubMatrices                      32
 #define MAT_GetValues                           33
 #define MAT_IncreaseOverlap                     34
+#define MAT_GetRow                              35
 
 #define VEC_Dot                                 40
 #define VEC_Norm                                41
