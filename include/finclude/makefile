@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.19 1997/09/08 17:54:17 balay Exp balay $ 
+# $Id: makefile,v 1.20 1998/03/19 02:17:08 balay Exp balay $ 
 
 CFLAGS    = 
 SOURCEC   =
@@ -10,7 +10,7 @@ OBJSF     =
 LIBBASE   = libpetscvec
 DIRS      = 
 MANSEC    = 7
-LOCDIR    = include/FINCLUDE/
+LOCDIR    = include/finclude/
 NOADIC    = true
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
