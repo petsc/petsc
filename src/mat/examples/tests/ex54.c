@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex54.c,v 1.1 1996/07/09 19:06:14 balay Exp bsmith $";
+static char vcid[] = "$Id: ex54.c,v 1.1 1996/12/10 13:58:04 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -89,7 +89,9 @@ int main(int argc,char **args)
 
   for (i=0; i<nd; ++i) { 
     ierr = ISEqual(is1[i],is2[i],(PetscTruth*)&flg); CHKERRA(ierr);
-    PetscPrintf(MPI_COMM_SELF,"i=%d, flg =%d\n",i,flg);
+
+    if (flg == 0) PetscPrintf(MPI_COMM_SELF,"i=%d, flg=%d :bs=%d m=%d ov=%d nd=%d np=%d\n",
+                              i,flg,bs,m,ov,nd,size);
   }
 
   for (i=0; i<nd; ++i) { 

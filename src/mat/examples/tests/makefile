@@ -518,8 +518,8 @@ runex48:
 	else echo "Possible problem with ex48_1, diffs above"; fi; \
 	$(RM) -f ex48_1.tmp
 
-MATSIZE        = 11
-OVERLAP        = 1 3
+MATSIZE        = 11 13
+OVERLAP        = 1 3 
 NODOMAINS      = 7
 runex51:
 	-@touch ex51_1.tmp;\
@@ -554,13 +554,8 @@ runex54:
 	        for nd in $(NODOMAINS); do \
 		  for np in $(NPROCS); do \
 		    $(MPIRUN) -np $$np ex54 -mat_block_size $$bs -ov $$ov \
-                       -mat_size $$matsize -nd $$nd > ex54_1.tmp 2>&1; \
-	  	    grep -v "flg =1" ex54_1.tmp > ex54_12.tmp; \
-	 	    if (diff output/ex54_1.out ex54_12.tmp ) then true; \
-		      else echo "Possible problem with ex54_1, diffs above"; \
-	  	      echo np $$np bs $$bs matsize $$matsize ov $$ov nd $$nd; fi; \
-		    $(RM) -f ex54_1.tmp ex54_12.tmp;\
-		  done;\
+                       -mat_size $$matsize -nd $$nd ;\
+		  done; \
 		done;\
 	      done;\
 	    done;\
