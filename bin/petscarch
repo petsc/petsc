@@ -1,7 +1,12 @@
 #! /bin/csh -f
 #
-#  Returns the PETSC_ARCH of the machine
+#   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
 #
+#   You can place the command
+#       "setenv PETSC_ARCH `$PETSC_DIR/bin/petscarch`"
+#   in a .cshrc file if using the csh or tcsh shell.  Thus, if you have several 
+#   machines of different types that share the same filesystem, then when 
+#   you log into any of them, the PETSC_ARCH will always be set correctly.
 # 
 if (-e /bin/uname) then
     set LARCH = `/bin/uname -s`
