@@ -67,7 +67,7 @@ class Configure(config.base.Configure):
     help.addOption('PETSc', '-enable-stack', 'Activate manual stack tracing code in PETSc', nargs.ArgBool)
     help.addOption('PETSc', '-enable-dynamic', 'Build dynamic libraries for PETSc', nargs.ArgBool)
     help.addOption('PETSc', '-enable-fortran-kernels', 'Use Fortran for linear algebra kernels', nargs.ArgBool)
-    help.addOption('PETSc', 'optionsModule', 'The Python module used to determine compiler options and versions')
+    help.addOption('PETSc', 'optionsModule=<module name>', 'The Python module used to determine compiler options and versions')
     help.addOption('PETSc', 'C_VERSION', 'The version of the C compiler')
     help.addOption('PETSc', 'CFLAGS_g', 'Flags for the C compiler with BOPT=g')
     help.addOption('PETSc', 'CFLAGS_O', 'Flags for the C compiler with BOPT=O')
@@ -270,6 +270,16 @@ class Configure(config.base.Configure):
     self.addSubstitution('FLINKER_SLFLAG', flag)
     return
 
+  def configureLibtool(self):
+    self.framework.addSubstitution('LT_CC', '${PETSC_LIBTOOL} ${LIBTOOL} --mode=compile')
+    if self.framework.argDB['with-libtool']:
+      self.framework.addSubstitution('LIBTOOL', '${SHELL} ${top_builddir}/libtool')
+      self.framework.addSubstitution('SHARED_TARGET', 'shared_libtool')
+    else:
+      self.framework.addSubstitution('LIBTOOL', '')
+      self.framework.addSubstitution('SHARED_TARGET', 'shared_'+self.archBase)
+    return
+
   def configureDebuggers(self):
     '''Find a default debugger and determine its arguments'''
     # We use the framework in order to remove the PETSC_ namespace
@@ -345,10 +355,6 @@ class Configure(config.base.Configure):
     self.framework.addSubstitution('AR_FLAGS', 'cr')
     self.framework.getExecutable('ranlib')
     self.framework.addSubstitution('SET_MAKE', '')
-    if self.framework.argDB['with-libtool']:
-      self.framework.addSubstitution('LIBTOOL', '${SHELL} ${top_builddir}/libtool')
-    else:
-      self.framework.addSubstitution('LIBTOOL', '')
     self.framework.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
@@ -467,7 +473,6 @@ class Configure(config.base.Configure):
   def configureMisc(self):
     '''Fix up all the things that we currently need to run'''
     # We use the framework in order to remove the PETSC_ namespace
-    self.framework.addSubstitution('LT_CC', '${PETSC_LIBTOOL} ${LIBTOOL} --mode=compile')
     self.framework.addSubstitution('CC_SHARED_OPT', '')
     return
 
@@ -485,6 +490,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureFortranPIC)
     self.executeTest(self.configureFortranStubs)
     self.executeTest(self.configureDynamicLibraries)
+    self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)
     self.executeTest(self.configurePrograms)
     self.executeTest(self.configureMissingPrototypes)
