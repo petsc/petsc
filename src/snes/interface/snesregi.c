@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.2 1995/04/05 20:34:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesregi.c,v 1.3 1995/04/13 14:42:33 bsmith Exp curfman $";
 #endif
 
 #include "snesimpl.h"
@@ -19,8 +19,8 @@ extern int SNESCreate_TR(SNES);
   Adding new methods:
   To add a new method to the registry
 $   1.  Copy this routine and modify it to incorporate
-$       a call to NLRegister() for the new method.  
-$   2.  Modify the file "TOOLSDIR/include/snes.h"
+$       a call to SNESRegister() for the new method.  
+$   2.  Modify the file "PETSCDIR/include/snes.h"
 $       by appending the method's identifier as an
 $       enumerator of the SNESMETHOD enumeration.
 $       As long as the enumerator is appended to
@@ -34,7 +34,11 @@ $       routine requires recompilation.
   To prevent all of the methods from being registered and thus 
   save memory, copy this routine and modify it to register only 
   those methods you desire.  Make sure that the replacement routine 
-  is linked before libsnes.a .
+  is linked before petsclibsnes.a .
+
+.keywords: SNES, nonlinear, register, all
+
+.seealso: SNESRegister(), SNESRegisterDestroy()
 @*/
 int SNESRegisterAll()
 {
