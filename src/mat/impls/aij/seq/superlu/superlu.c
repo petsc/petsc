@@ -139,7 +139,9 @@ int MatCreateNull_SuperLU(Mat A,Mat *nullMat)
   numNullCols = numCols - numRows;
   if (numNullCols < 0) SETERRQ(PETSC_ERR_ARG_WRONG,"Function only applies to underdetermined problems");
   /* Create the null matrix */
-  ierr = MatCreateSeqDense(A->comm,numRows,numNullCols,PETSC_NULL,nullMat);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,numRows,numNullCols,numRows,numNullCols,nullMat);CHKERRQ(ierr);
+  ierr = MatSetType(*nullMat,MATSEQDENSE);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(*nullMat,PETSC_NULL);CHKERRQ(ierr);
   if (numNullCols == 0) {
     ierr = MatAssemblyBegin(*nullMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*nullMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

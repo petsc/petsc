@@ -52,11 +52,13 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   ierr = PetscMalloc((m+1)*sizeof(int),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
+  ierr = MatCreate(comm,m,m,M,M,mat);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = MatCreateSeqDense(comm,M,M,PETSC_NULL,mat);CHKERRQ(ierr);
+    ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(*mat,PETSC_NULL);CHKERRQ(ierr);
   } else {
-    /*    ierr = MatCreateMPIDense(comm,m,M,M,M,PETSC_NULL,mat);CHKERRQ(ierr); */
-    ierr = MatCreateMPIAIJ(comm,m,m,M,M,0,0,0,0,mat);CHKERRQ(ierr);
+    ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*mat,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   }
   
   ierr = PCGetOperators(ksp->B,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -133,18 +135,19 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
   PetscScalar  *vals;
 
   PetscFunctionBegin;
-  ierr =  KSPComputeExplicitOperator(ksp,&BA);CHKERRQ(ierr);
+  ierr = KSPComputeExplicitOperator(ksp,&BA);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr     = MatGetSize(BA,&n,&n);CHKERRQ(ierr);
   if (size > 1) { /* assemble matrix on first processor */
     if (!rank) {
-      ierr = MatCreateMPIDense(ksp->comm,n,n,n,n,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreate(ksp->comm,n,n,n,n,&A);CHKERRQ(ierr);
+    } else {
+      ierr = MatCreate(ksp->comm,0,n,n,n,&A);CHKERRQ(ierr);
     }
-    else {
-      ierr = MatCreateMPIDense(ksp->comm,0,n,n,n,PETSC_NULL,&A);CHKERRQ(ierr);
-    }
+    ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
+    ierr = MatMPIDenseSetPreallocation(A,PETSC_NULL);
     PetscLogObjectParent(BA,A);
 
     ierr = MatGetOwnershipRange(BA,&row,&dummy);CHKERRQ(ierr);

@@ -141,7 +141,9 @@ static int MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
     newmat = *B;
   } else {
     /* Create and fill new matrix */
-    ierr = MatCreateMPIDense(A->comm,nrows,cs,PETSC_DECIDE,ncols,PETSC_NULL,&newmat);CHKERRQ(ierr);
+    ierr = MatCreate(A->comm,nrows,cs,PETSC_DECIDE,ncols,&newmat);CHKERRQ(ierr);
+    ierr = MatSetType(newmat,A->type_name);CHKERRQ(ierr);
+    ierr = MatMPIDenseSetPreallocation(newmat,PETSC_NULL);CHKERRQ(ierr);
   }
 
   /* Now extract the data pointers and do the copy, column at a time */
@@ -550,10 +552,12 @@ static int MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     PetscScalar  *vals;
 
     if (!rank) {
-      ierr = MatCreateMPIDense(mat->comm,M,N,M,N,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreate(mat->comm,M,N,M,N,&A);CHKERRQ(ierr);
     } else {
-      ierr = MatCreateMPIDense(mat->comm,0,0,M,N,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreate(mat->comm,0,0,M,N,&A);CHKERRQ(ierr);
     }
+    ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
+    ierr = MatMPIDenseSetPreallocation(A,PETSC_NULL);
     PetscLogObjectParent(mat,A);
 
     /* Copy the matrix ... This isn't the most efficient means,
@@ -834,7 +838,9 @@ int MatTranspose_MPIDense(Mat A,Mat *matout)
   if (!matout && M != N) {
     SETERRQ(PETSC_ERR_SUP,"Supports square matrix only in-place");
   }
-  ierr = MatCreateMPIDense(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
 
   m = a->A->m; n = a->A->n; v = Aloc->v;
   ierr = PetscMalloc(n*sizeof(int),&rwork);CHKERRQ(ierr);
@@ -1252,7 +1258,9 @@ int MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M,int N,Mat *newmat)
     rowners[i] += rowners[i-1];
   }
 
-  ierr = MatCreateMPIDense(comm,m,PETSC_DECIDE,M,N,PETSC_NULL,newmat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,m,PETSC_DECIDE,M,N,newmat);CHKERRQ(ierr);
+  ierr = MatSetType(*newmat,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(*newmat,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetArray(*newmat,&array);CHKERRQ(ierr);
 
   if (!rank) {
@@ -1413,7 +1421,9 @@ int MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newmat)
   for (i=0; i<m; i++) {
     ourlens[i] -= offlens[i];
   }
-  ierr = MatCreateMPIDense(comm,m,PETSC_DECIDE,M,N,PETSC_NULL,newmat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,m,PETSC_DECIDE,M,N,newmat);CHKERRQ(ierr);
+  ierr = MatSetType(*newmat,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(*newmat,PETSC_NULL);CHKERRQ(ierr);
   A = *newmat;
   for (i=0; i<m; i++) {
     ourlens[i] += offlens[i];

@@ -1607,10 +1607,13 @@ int PCComputeExplicitOperator(PC pc,Mat *mat)
   ierr = PetscMalloc((m+1)*sizeof(int),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
+  ierr = MatCreate(comm,m,m,M,M,mat);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = MatCreateSeqDense(comm,M,M,PETSC_NULL,mat);CHKERRQ(ierr);
+    ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(*mat,PETSC_NULL);CHKERRQ(ierr);
   } else {
-    ierr = MatCreateMPIAIJ(comm,m,m,M,M,0,0,0,0,mat);CHKERRQ(ierr);
+    ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*mat,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   }
 
   for (i=0; i<M; i++) {
