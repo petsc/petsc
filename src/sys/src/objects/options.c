@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.127 1997/04/02 21:00:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.128 1997/04/02 21:22:09 curfman Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -311,25 +311,23 @@ $       call PetscInitialize(file,ierr)
 
    Options Database Keys:
 $  -start_in_debugger [noxterm,dbx,xdb,...]
-$  -debugger_nodes node1,node2,...
-$  -debugger_pause sleeptime (in seconds)
-$  -trdebug
-$  -trmalloc
-$  -trmalloc_off
-$  -trmalloc_log
-$  -no_signal_handler : Turns off the signal handler
-$  -fp_trap : Stops on floating point exceptions
+$  -debugger_nodes [node1,node2,...] : Nodes to start in debugger
+$  -debugger_pause [sleeptime] (in seconds) : Pause debugger
+$  -trmalloc : Use PETSc error-checking malloc
+$  -trmalloc_off : Don't use error-checking malloc
+$  -no_signal_handler : Do not trap error signals
+$  -fp_trap : Stop on floating point exceptions
 $      Note: On the IBM RS6000 this slows code by
 $            at least a factor of 10.
 
    Options Database Keys for Profiling:
    See the 'Profiling' chapter of the users manual for
    details.
-$  -log_trace [filename]: prints traces of all PETSc calls
+$  -log_trace [filename] : Print traces of all PETSc calls
 $      to the screen (useful to determine where a program
 $      hangs without running in the debugger).  See
 $      PLogTraceBegin().
-$  -log_info : prints verbose information to the screen.
+$  -log_info : Print verbose information to the screen.
 
 .keywords: initialize, options, database, startup
 
@@ -775,7 +773,7 @@ int OptionsCheckInitial_Private()
     PetscPrintf(comm," -start_in_debugger [dbx,xxgdb,ups,noxterm]\n");
     PetscPrintf(comm,"       start all processes in the debugger\n");
     PetscPrintf(comm," -debugger_nodes [n1,n2,..] Nodes to start in debugger\n");
-    PetscPrintf(comm," -debugger_pause m (in seconds) delay to get attached\n");
+    PetscPrintf(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n");
     PetscPrintf(comm," -display display: Location where graphics and debuggers are displayed\n");
     PetscPrintf(comm," -no_signal_handler: do not trap error signals\n");
     PetscPrintf(comm," -fp_trap: stop on floating point exceptions\n");
