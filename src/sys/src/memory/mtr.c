@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.126 1999/05/12 03:27:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.127 1999/05/17 20:06:16 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -137,6 +137,8 @@ EXTERN_C_END
    
    Output Effect:
    Error messages are written to stdout.  
+
+   Level: advanced
 
    Notes:
     You should generally use CHKMEMQ or CHKMEMA as a short cut for calling this 

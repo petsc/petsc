@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.287 1999/05/03 14:35:36 balay Exp balay $ 
+# $Id: makefile,v 1.288 1999/05/10 16:28:49 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -19,9 +19,15 @@ all       : info chkpetsc_dir deletelibs build_c build_fortran shared
 #
 info:
 	-@echo "=========================================="
+	-@echo " "
 	-@echo "See docs/troubleshooting.html and docs/bugreporting.html"
 	-@echo "for help with installation problems. Please send EVERYTHING"
 	-@echo "printed out below when reporting problems"
+	-@echo " "
+	-@echo "To subscribe to the PETSc users mailing list, send mail to "
+	-@echo "majordomo@mcs.anl.gov with the message: "
+	-@echo "subscribe petsc-users"
+	-@echo " "
 	-@echo "=========================================="
 	-@echo On `date` on `hostname`
 	-@echo Machine characteristics: `uname -a`
@@ -137,6 +143,9 @@ testfortran_uni: info chkopts
 	   ACTION=testexamples_9  tree 
 	-@echo "Completed compiling and running uniprocessor fortran test examples"
 	-@echo "========================================="
+matlabcodes:
+	-@echo "BEGINNING TO COMPILE MATLAB INTERFACE"
+	-@cd src/sys/src/viewer/impls/socket/matlab; ${OMAKE} BOPT=g matlabcodes  PETSC_ARCH=${PETSC_ARCH}
 
 # Ranlib on the libraries
 ranlib:
