@@ -174,6 +174,56 @@ class UsingCompiler:
     self.extraLibraries = SIDLPackageDict(usingSIDL)
     self.libDir         = os.path.abspath('lib')
 
+  def getClientLibrary(self, project, lang):
+    '''Client libraries following the naming scheme: lib<project>-<lang>-client.a'''
+    return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-client.a')])
+
+  def getServerLibrary(self, project, lang, package):
+    '''Server libraries following the naming scheme: lib<project>-<lang>-<package>-server.a'''
+    return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.a')])
+
+  def getClientCompileTarget(self, project):
+    sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())
+    compiler  = self.getCompiler(self.getClientLibrary(project, self.getLanguage()))
+    compiler.defines.extend(self.getDefines())
+    compiler.includeDirs.append(sourceDir)
+    compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
+    return [self.getTagger(sourceDir), compiler]
+
+  def getClientLinkTarget(self, project, doLibraryCheck = 1):
+    libraries = fileset.FileSet([])
+    libraries.extend(self.usingSIDL.extraLibraries[self.getLanguage()])
+    libraries.extend(self.extraLibraries[self.getLanguage()])
+    linker    = link.LinkSharedLibrary(extraLibraries = libraries)
+    linker.doLibraryCheck = doLibraryCheck
+    return [link.TagLibrary(), linker]
+
+  def getServerLinkTarget(self, project, package, doLibraryCheck = 1):
+    libraries = fileset.FileSet([])
+    libraries.extend(self.usingSIDL.extraLibraries[package])
+    libraries.extend(self.getClientLibrary(project, self.getLanguage()))
+    libraries.extend(self.extraLibraries[package])
+    linker    = link.LinkSharedLibrary(extraLibraries = libraries)
+    linker.doLibraryCheck = doLibraryCheck
+    return [link.TagLibrary(), linker]
+
+  def getExecutableCompileTarget(self, sources, executable):
+    baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
+    library  = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
+    compiler = self.getCompiler(library)
+    compiler.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
+    compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compiler.includeDirs.extend(self.includeDirs['executable'])
+    return [compile.TagC(), compiler]
+
+  def getExecutableLinkTarget(self, project):
+    libraries = fileset.FileSet()
+    libraries.extend(self.getClientLibrary(project, self.getLanguage()))
+    libraries.extend(self.extraLibraries['executable'])
+    libraries.extend(self.usingSIDL.extraLibraries['executable'])
+    return [link.TagLibrary(), link.LinkSharedLibrary(extraLibraries = libraries)]
+
 class UsingC (UsingCompiler):
   '''This class handles all interaction specific to the C language'''
   def __init__(self, usingSIDL):
@@ -190,30 +240,11 @@ class UsingC (UsingCompiler):
   def getDefines(self):
     return ['PIC']
 
-  def getClientLibrary(self, project, lang):
-    '''Client libraries following the naming scheme: lib<project>-<lang>-client.a'''
-    return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-client.a')])
+  def getTagger(self, rootDir):
+    return compile.TagC(root = rootDir)
 
-  def getServerLibrary(self, project, lang, package):
-    '''Server libraries following the naming scheme: lib<project>-<lang>-<package>-server.a'''
-    return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.a')])
-
-  def getClientCompileTarget(self, project):
-    sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())
-    compiler  = compile.CompileC(self.getClientLibrary(project, self.getLanguage()))
-    compiler.defines.extend(self.getDefines())
-    compiler.includeDirs.append(sourceDir)
-    compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
-    compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
-    return [compile.TagC(root = sourceDir), compiler]
-
-  def getClientLinkTarget(self, project, doLibraryCheck = 1):
-    libraries = fileset.FileSet([])
-    libraries.extend(self.usingSIDL.extraLibraries[self.getLanguage()])
-    libraries.extend(self.extraLibraries[self.getLanguage()])
-    linker    = link.LinkSharedLibrary(extraLibraries = libraries)
-    linker.doLibraryCheck = doLibraryCheck
-    return [link.TagLibrary(), linker]
+  def getCompiler(self, library):
+    return compile.CompileC(library)
 
   def getServerCompileTarget(self, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
@@ -230,38 +261,10 @@ class UsingC (UsingCompiler):
     compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
     return [compile.TagC(root = rootDir), compiler]
 
-  def getServerLinkTarget(self, project, package, doLibraryCheck = 1):
-    libraries = fileset.FileSet([])
-    libraries.extend(self.usingSIDL.extraLibraries[package])
-    libraries.extend(self.getClientLibrary(project, self.getLanguage()))
-    libraries.extend(self.extraLibraries[package])
-    linker    = link.LinkSharedLibrary(extraLibraries = libraries)
-    linker.doLibraryCheck = doLibraryCheck
-    return [link.TagLibrary(), linker]
-
-  def getExecutableCompileTarget(self, sources, executable):
-    baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
-    library  = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
-    compileC = compile.CompileC(library)
-    compileC.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
-    compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
-    compileC.includeDirs.extend(self.includeDirs['executable'])
-    return [compile.TagC(), compileC]
-
-  def getExecutableLinkTarget(self, project):
-    libraries = fileset.FileSet()
-    libraries.extend(self.getClientLibrary(project, self.getLanguage()))
-    libraries.extend(self.extraLibraries['executable'])
-    libraries.extend(self.usingSIDL.extraLibraries['executable'])
-    return [link.TagLibrary(), link.LinkSharedLibrary(extraLibraries = libraries)]
-
-class UsingCxx:
+class UsingCxx (UsingCompiler):
   '''This class handles all interaction specific to the C++ language'''
   def __init__(self, usingSIDL):
-    self.usingSIDL      = usingSIDL
-    self.includeDirs    = SIDLPackageDict(usingSIDL)
-    self.extraLibraries = SIDLPackageDict(usingSIDL)
-    self.libDir         = os.path.abspath('lib')
+    UsingCompiler.__init__(self, usingSIDL)
 
   def getLanguage(self):
     '''The language name'''
@@ -274,30 +277,11 @@ class UsingCxx:
   def getDefines(self):
     return ['PIC']
 
-  def getClientLibrary(self, project, lang):
-    '''Client libraries following the naming scheme: lib<project>-<lang>-client.a'''
-    return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-client.a')])
+  def getTagger(self, rootDir):
+    return compile.TagCxx(root = rootDir)
 
-  def getServerLibrary(self, project, lang, package):
-    '''Server libraries following the naming scheme: lib<project>-<lang>-<package>-server.a'''
-    return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.a')])
-
-  def getClientCompileTarget(self, project):
-    sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())
-    compiler  = compile.CompileCxx(self.getClientLibrary(project, self.getLanguage()))
-    compiler.defines.extend(self.getDefines())
-    compiler.includeDirs.append(sourceDir)
-    compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
-    compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
-    return [compile.TagCxx(root = sourceDir), compiler]
-
-  def getClientLinkTarget(self, project, doLibraryCheck = 1):
-    libraries = fileset.FileSet([])
-    libraries.extend(self.usingSIDL.extraLibraries[self.getLanguage()])
-    libraries.extend(self.extraLibraries[self.getLanguage()])
-    linker    = link.LinkSharedLibrary(extraLibraries = libraries)
-    linker.doLibraryCheck = doLibraryCheck
-    return [link.TagLibrary(), linker]
+  def getCompiler(self, library):
+    return compile.CompileCxx(library)
 
   def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
@@ -318,40 +302,12 @@ class UsingCxx:
     compileCxx.includeDirs.extend(self.includeDirs[self.getLanguage()])
     return [compile.TagC(root = rootDir), compileC, compile.TagCxx(root = rootDir), compileCxx]
 
-  def getServerLinkTarget(self, project, package, doLibraryCheck = 1):
-    libraries = fileset.FileSet([])
-    libraries.extend(self.usingSIDL.extraLibraries[package])
-    libraries.extend(self.getClientLibrary(project, self.getLanguage()))
-    libraries.extend(self.extraLibraries[package])
-    linker    = link.LinkSharedLibrary(extraLibraries = libraries)
-    linker.doLibraryCheck = doLibraryCheck
-    return [link.TagLibrary(), linker]
-
-  def getExecutableCompileTarget(self, sources, executable):
-    baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
-    library  = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
-    compileCxx = compile.CompileCxx(library)
-    compileCxx.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
-    compileCxx.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
-    compileCxx.includeDirs.extend(self.includeDirs['executable'])
-    return [compile.TagCxx(), compileCxx]
-
-  def getExecutableLinkTarget(self, project):
-    libraries = fileset.FileSet()
-    libraries.extend(self.getClientLibrary(project, self.getLanguage()))
-    libraries.extend(self.extraLibraries['executable'])
-    libraries.extend(self.usingSIDL.extraLibraries['executable'])
-    return [link.TagLibrary(), link.LinkSharedLibrary(extraLibraries = libraries)]
-
-class UsingPython:
+class UsingPython(UsingCompiler):
   '''This class handles all interaction specific to the Python language'''
   def __init__(self, usingSIDL):
+    UsingCompiler.__init__(self, usingSIDL)
     bs.argDB.setTester('PYTHON_INCLUDE', argtest.DirectoryTester())
     #TODO: bs.argDB.setTester('PYTHON_LIB',     argtest.LibraryTester())
-    self.usingSIDL      = usingSIDL
-    self.includeDirs    = SIDLPackageDict(usingSIDL)
-    self.extraLibraries = SIDLPackageDict(usingSIDL)
-    self.libDir         = os.path.abspath('lib')
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
 
@@ -379,30 +335,11 @@ class UsingPython:
   def getDefines(self):
     return ['PIC']
 
-  def getClientLibrary(self, project, lang):
-    '''Client libraries following the naming scheme: lib<project>-<lang>-client.a'''
-    return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-client.a')])
+  def getTagger(self, rootDir):
+    return compile.TagC(root = rootDir)
 
-  def getServerLibrary(self, project, lang, package):
-    '''Server libraries following the naming scheme: lib<project>-<lang>-<package>-server.a'''
-    return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.a')])
-
-  def getClientCompileTarget(self, project):
-    sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())
-    compiler  = compile.CompilePythonC()
-    compiler.defines.extend(self.getDefines())
-    compiler.includeDirs.append(sourceDir)
-    compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
-    compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
-    return [compile.TagC(root = sourceDir), compiler]
-
-  def getClientLinkTarget(self, project, doLibraryCheck = 1):
-    libraries = fileset.FileSet([])
-    libraries.extend(self.usingSIDL.extraLibraries[self.getLanguage()])
-    libraries.extend(self.extraLibraries[self.getLanguage()])
-    linker    = link.LinkSharedLibrary(extraLibraries = libraries)
-    linker.doLibraryCheck = doLibraryCheck
-    return [link.TagLibrary(), linker]
+  def getCompiler(self, library):
+    return compile.CompilePythonC()
 
   def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
@@ -419,22 +356,16 @@ class UsingPython:
     compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
     return [compile.TagC(root = rootDir), compiler]
 
-  def getServerLinkTarget(self, project, package, doLibraryCheck = 1):
-    libraries = fileset.FileSet([])
-    libraries.extend(self.usingSIDL.extraLibraries[package])
-    libraries.extend(self.getClientLibrary(project, self.getLanguage()))
-    libraries.extend(self.extraLibraries[package])
-    linker    = link.LinkSharedLibrary(extraLibraries = libraries)
-    linker.doLibraryCheck = doLibraryCheck
-    return [link.TagLibrary(), linker]
+  def getExecutableCompileTarget(self, sources, executable):
+    raise RuntimeError('No excutable compilation in '+self.getLanguage())
 
-class UsingF77:
+  def getExecutableLinkTarget(self, project):
+    raise RuntimeError('No executable link in '+self.getLanguage())
+
+class UsingF77 (UsingCompiler):
   '''This class handles all interaction specific to the Fortran 77 language'''
   def __init__(self, usingSIDL):
-    self.usingSIDL      = usingSIDL
-    self.includeDirs    = SIDLPackageDict(usingSIDL)
-    self.extraLibraries = SIDLPackageDict(usingSIDL)
-    self.libDir         = os.path.abspath('lib')
+    UsingCompiler.__init__(self, usingSIDL)
 
   def getLanguage(self):
     '''The language name'''
@@ -447,30 +378,11 @@ class UsingF77:
   def getDefines(self):
     return ['PIC']
 
-  def getClientLibrary(self, project, lang):
-    '''Client libraries following the naming scheme: lib<project>-<lang>-client.a'''
-    return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-client.a')])
+  def getTagger(self, rootDir):
+    return compile.TagC(root = rootDir)
 
-  def getServerLibrary(self, project, lang, package):
-    '''Server libraries following the naming scheme: lib<project>-<lang>-<package>-server.a'''
-    return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.a')])
-
-  def getClientCompileTarget(self, project):
-    sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())
-    compiler  = compile.CompileC(self.getClientLibrary(project, self.getLanguage()))
-    compiler.defines.extend(self.getDefines())
-    compiler.includeDirs.append(sourceDir)
-    compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
-    compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
-    return [compile.TagC(root = sourceDir), compiler]
-
-  def getClientLinkTarget(self, project, doLibraryCheck = 1):
-    libraries = fileset.FileSet([])
-    libraries.extend(self.usingSIDL.extraLibraries[self.getLanguage()])
-    libraries.extend(self.extraLibraries[self.getLanguage()])
-    linker    = link.LinkSharedLibrary(extraLibraries = libraries)
-    linker.doLibraryCheck = doLibraryCheck
-    return [link.TagLibrary(), linker]
+  def getCompiler(self, library):
+    return compile.CompileC()
 
   def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
@@ -491,15 +403,6 @@ class UsingF77:
     compileF77.includeDirs.extend(self.includeDirs[self.getLanguage()])
     return [compile.TagC(root = rootDir), compileC, compile.TagF77(root = rootDir), compileF77]
 
-  def getServerLinkTarget(self, project, package, doLibraryCheck = 1):
-    libraries = fileset.FileSet([])
-    libraries.extend(self.usingSIDL.extraLibraries[package])
-    libraries.extend(self.getClientLibrary(project, self.getLanguage()))
-    libraries.extend(self.extraLibraries[package])
-    linker    = link.LinkSharedLibrary(extraLibraries = libraries)
-    linker.doLibraryCheck = doLibraryCheck
-    return [link.TagLibrary(), linker]
-
   def getExecutableCompileTarget(self, sources, executable):
     baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
     library  = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
@@ -509,22 +412,12 @@ class UsingF77:
     compileC.includeDirs.extend(self.includeDirs['executable'])
     return [compile.TagC(), compileC, compile.TagF77(), compile.CompileF77(library)]
 
-  def getExecutableLinkTarget(self, project):
-    libraries = fileset.FileSet()
-    libraries.extend(self.getClientLibrary(project, self.getLanguage()))
-    libraries.extend(self.extraLibraries['executable'])
-    libraries.extend(self.usingSIDL.extraLibraries['executable'])
-    return [link.TagLibrary(), link.LinkSharedLibrary(extraLibraries = libraries)]
-
-class UsingJava:
+class UsingJava (UsingCompiler):
   '''This class handles all interaction specific to the Java language'''
   def __init__(self, usingSIDL):
+    UsingCompiler.__init__(self, usingSIDL)
     bs.argDB.setTester('JAVA_INCLUDE', argtest.DirectoryTester())
     bs.argDB.setTester('JAVA_RUNTIME_LIB', argtest.DirectoryTester())
-    self.usingSIDL      = usingSIDL
-    self.includeDirs    = SIDLPackageDict(usingSIDL)
-    self.extraLibraries = SIDLPackageDict(usingSIDL)
-    self.libDir         = os.path.abspath('lib')
     self.setupIncludeDirectories()
 
   def setupIncludeDirectories(self):
@@ -560,6 +453,9 @@ class UsingJava:
       libraryName = 'lib'+project+'-'+lang.lower()+'-client.jar'
     return fileset.FileSet([os.path.join(self.libDir, libraryName)])
 
+  def getServerLibrary(self, project, lang, isJNI = 0):
+    raise RuntimeError('No server for '+self.getLanguage())
+
   def getClientCompileTarget(self, project):
     sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())
     compileC    = compile.CompileC(self.getClientLibrary(project, self.getLanguage(), 1))
@@ -572,13 +468,8 @@ class UsingJava:
     compileJava.archiverRoot = sourceDir
     return [compile.TagC(root = sourceDir), compile.TagJava(root = sourceDir), compileC, compileJava]
 
-  def getClientLinkTarget(self, project, doLibraryCheck = 1):
-    libraries = fileset.FileSet([])
-    libraries.extend(self.usingSIDL.extraLibraries[self.getLanguage()])
-    libraries.extend(self.extraLibraries[self.getLanguage()])
-    linker    = link.LinkSharedLibrary(extraLibraries = libraries)
-    linker.doLibraryCheck = doLibraryCheck
-    return [link.TagLibrary(), linker]
+  def getServerCompileTarget(self, package):
+    raise RuntimeError('No server for '+self.getLanguage())
 
   def getExecutableCompileTarget(self, sources, executable):
     baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
@@ -587,13 +478,6 @@ class UsingJava:
     compileJava.includeDirs.extend(self.getSIDLRuntimeLibraries())
     compileJava.archiverRoot = os.path.dirname(sources[0])
     return [compile.TagJava(), compileJava]
-
-  def getExecutableLinkTarget(self, project):
-    libraries = fileset.FileSet()
-    libraries.extend(self.getClientLibrary(project, self.getLanguage()))
-    libraries.extend(self.extraLibraries['executable'])
-    libraries.extend(self.usingSIDL.extraLibraries['executable'])
-    return [link.TagLibrary(), link.LinkSharedLibrary(extraLibraries = libraries)]
 
 class Defaults:
   implRE     = re.compile(r'^(.*)_Impl$')
