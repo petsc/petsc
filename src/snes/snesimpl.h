@@ -24,6 +24,7 @@ struct _p_SNES {
 
   int   (*computefunction)(SNES,Vec,Vec,void*); /* function routine */
   Vec   vec_func,vec_func_always;               /* pointer to function */
+  Vec   afine;                                  /* If non-null solve F(x) = afine */
   void  *funP;                                  /* user-defined function context */
 
   int   (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);

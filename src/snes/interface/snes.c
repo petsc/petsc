@@ -661,7 +661,6 @@ int SNESCreate(MPI_Comm comm,SNES *outsnes)
   PetscFunctionReturn(0);
 }
 
-/* --------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetFunction"
 /*@C
@@ -708,6 +707,43 @@ int SNESSetFunction(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),void *ctx)
   PetscFunctionReturn(0);
 }
 
+/* --------------------------------------------------------------- */
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetRhs"
+/*@C
+   SNESSetRhs - Sets the vector for solving F(x) = rhs. If rhs is not set
+   it assumes a zero right hand side.
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  rhs - the right hand side vector or PETSC_NULL for a zero right hand side
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, function, right hand side
+
+.seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction()
+@*/
+int SNESSetRhs(SNES snes,Vec rhs)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  if (rhs) {
+    PetscValidHeaderSpecific(rhs,VEC_COOKIE,2);
+    PetscCheckSameComm(snes,1,rhs,2);
+    ierr = PetscObjectReference((PetscObject)rhs);CHKERRQ(ierr);
+  }
+  if (snes->afine) {
+    ierr = VecDestroy(snes->afine);CHKERRQ(ierr);
+  }
+  snes->afine = rhs;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "SNESComputeFunction"
 /*@
@@ -749,6 +785,10 @@ int SNESComputeFunction(SNES snes,Vec x,Vec y)
   PetscStackPush("SNES user function");
   ierr = (*snes->computefunction)(snes,x,y,snes->funP);CHKERRQ(ierr);
   PetscStackPop;
+  if (snes->afine) {
+    PetscScalar mone = -1.0;
+    ierr = VecAXPY(&mone,snes->afine,y);CHKERRQ(ierr);
+  }
   snes->nfuncs++;
   ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1045,6 +1085,7 @@ int SNESDestroy(SNES snes)
   if (snes->kspconvctx) {ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);}
   if (snes->jacobian) {ierr = MatDestroy(snes->jacobian);CHKERRQ(ierr);}
   if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
+  if (snes->afine) {ierr = VecDestroy(snes->afine);CHKERRQ(ierr);}
   ierr = KSPDestroy(snes->ksp);CHKERRQ(ierr);
   if (snes->vwork) {ierr = VecDestroyVecs(snes->vwork,snes->nvwork);CHKERRQ(ierr);}
   for (i=0; i<snes->numbermonitors; i++) {
@@ -1703,7 +1744,7 @@ static const char *convergedreasons[] = {"appears to located a local minimum ins
 
 .keywords: SNES, nonlinear, solve
 
-.seealso: SNESCreate(), SNESDestroy()
+.seealso: SNESCreate(), SNESDestroy(), SNESSetFunction(), SNESSetJacobian(), SNESSetRhs()
 @*/
 int SNESSolve(SNES snes,Vec x)
 {
@@ -2097,7 +2138,7 @@ int SNESTestLocalMin(SNES snes)
     for (j=-10; j<11; j++) {
       value = PetscSign(j)*exp(PetscAbs(j)-10.0);
       ierr  = VecSetValue(uh,i,value,ADD_VALUES);CHKERRQ(ierr);
-      ierr  = (*snes->computefunction)(snes,uh,fh,snes->funP);CHKERRQ(ierr);
+      ierr  = SNESComputeFunction(snes,uh,fh);CHKERRQ(ierr);
       ierr  = VecNorm(fh,NORM_2,&norm);CHKERRQ(ierr);
       ierr  = PetscPrintf(PETSC_COMM_WORLD,"       j norm %d %18.16e\n",j,norm);CHKERRQ(ierr);
       value = -value;
