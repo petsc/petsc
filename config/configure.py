@@ -50,6 +50,9 @@ def petsc_configure(configure_options):
   except RuntimeError, e:
     msg = '******* Unable to configure with given options ******* (see configure.log for full details):\n'+str(e)+'\n******************************************************\n'
     se = ''
+  except TypeError, e:
+    msg = '******* Error in command line argument to configure.py ***********\n'+str(e)+'\n******************************************************\n'
+    se = ''
   except Exception, e:
     msg = '******* CONFIGURATION CRASH **** Please send configure.log to petsc-maint@mcs.anl.gov\n'
     se  = str(e)

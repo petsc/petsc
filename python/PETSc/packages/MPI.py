@@ -185,6 +185,8 @@ class Configure(config.base.Configure):
     return
 
   def generateGuesses(self):
+    if 'with-mpi-lib' in self.framework.argDB and 'with-mpi-dir' in self.framework.argDB:
+      raise RuntimeError('You cannot give BOTH MPI library with --with-mpi-lib=<lib> and search directory with --with-mpi-dir=<dir>')
     if self.framework.argDB['with-mpich']:
       (name, lib, include) = self.downLoadMPICH()
       yield (name, lib, include)
