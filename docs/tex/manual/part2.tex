@@ -1178,28 +1178,29 @@ the manual pages for further information about available matrix formats.
 To insert or add entries to a matrix, one can call a variant of \trl{
 MatSetValues}, either \findex{MatSetValues()}
 \begin{tabbing}
-  MatSetValues(Mat A,int m,int im[],int n,int in[],PetscScalar *values,INSERT\_VALUES);
+  MatSetValues(Mat A,int m,const int idxm[],int n,const int idxn[],const PetscScalar values[],INSERT\_VALUES);
 \end{tabbing}
 or 
 \begin{tabbing}
-  MatSetValues(Mat A,int m,int im[],int n,int in[],PetscScalar *values,ADD\_VALUES);
+  MatSetValues(Mat A,int m,const int idxm[],int n,const int idxn[],const PetscScalar values[],ADD\_VALUES);
 \end{tabbing}
 This routine inserts or adds a logically dense subblock of dimension
 \trl{m*n} into the 
-matrix. The integer indices \trl{im} and \trl{in}, respectively, indicate the 
+matrix. The integer indices \trl{idxm} and \trl{idxn}, respectively, indicate the 
 global row and column numbers to be inserted.  MatSetValues() uses the 
 standard C convention, where the row and column matrix indices begin with 
 zero {\em regardless of the storage format employed}.   The array 
 \trl{values} is logically two-dimensional, containing the values that are 
-to be inserted.   
-By default the values are given in row major order, which is the opposite 
-of the Fortran convention. To allow the insertion of values in column 
-major order, one can call the command \findex{MatSetOption()}
+to be inserted. By default the values are given in row major order, which is the
+opposite of the Fortran convention, meaning that the value to be put in row
+\trl{idxm[i]} and column \trl{idxn[j]} is located in \trl{values[i*n+j]}. To
+allow the insertion of values in column major order, one can call the command
+\findex{MatSetOption()}
 \begin{tabbing}
   MatSetOption(Mat A,MAT\_COLUMN\_ORIENTED);
 \end{tabbing}
-{\bf Warning}: Several of the sparse implementations do {\em not} currently support
-the column-oriented option.
+{\bf Warning}: Several of the sparse implementations do {\em not} currently
+support the column-oriented option.
 
 This notation should not be a mystery to anyone. For example, 
 to insert one matrix into another when using Matlab, one uses the command 
@@ -1271,7 +1272,7 @@ If one wishes to repeatedly assemble matrices that retain the same
 nonzero pattern (such as within a nonlinear or time-dependent
 problem), the option
 \begin{tabbing}
-  MatSetOption(Mat mat,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
+  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
 \end{tabbing}
 should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
@@ -1810,7 +1811,7 @@ matrix associated with known boundary conditions, by rows of the
 identity matrix (or some scaling of it). This action can be done with 
 the command \findex{MatZeroRows()}
 \begin{tabbing}
-  MatZeroRows(Mat A,IS rows,PetscScalar *diag\_value);
+  MatZeroRows(Mat A,IS rows,const PetscScalar diag\_value[]);
 \end{tabbing}
 For sparse matrices this removes the data structures for certain rows 
 of the matrix. If the pointer \trl{diag_value} is \trl{PETSC_NULL}, it 
@@ -1962,10 +1963,9 @@ PETSc does not currently provide tools that completely manage the migration and
 node renumbering, since it will be dependent on the particular data structure you 
 use to store the grid information and the type of grid information that you need
 for your application. We do plan to include more support for this in the future,
-but designing the appropriate user interface and providing a scalable implementation
-that can be used for a wide variety of different grids requires a great deal of time.
-
-
+but designing the appropriate general user interface and providing a scalable
+implementation that can be used for a wide variety of different grids requires a
+great deal of time.
 
  
 
