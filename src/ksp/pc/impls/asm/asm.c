@@ -15,7 +15,7 @@ typedef struct {
   PetscInt   n,n_local,n_local_true;
   PetscTruth is_flg;              /* flg set to 1 if the IS created in pcsetup */
   PetscInt   overlap;             /* overlap requested by user */
-  KSP       *ksp;               /* linear solvers for each block */
+  KSP        *ksp;               /* linear solvers for each block */
   VecScatter *scat;               /* mapping to subregion */
   Vec        *x,*y;
   IS         *is;                 /* index set that defines each subdomain */
@@ -64,14 +64,14 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
       ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] number of local blocks = %D\n",rank,jac->n_local);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] number of local blocks = %D\n",rank,jac->n_local_true);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      for (i=0; i<jac->n_local; i++) {
+      for (i=0; i<jac->n_local_true; i++) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] local block number %D\n",rank,i);CHKERRQ(ierr);
         ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
         ierr = KSPView(jac->ksp[i],sviewer);CHKERRQ(ierr);
         ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
-        if (i != jac->n_local-1) {
+        if (i != jac->n_local_true-1) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
         }
       }
@@ -251,7 +251,7 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
   if (!(osm->type & PC_ASM_RESTRICT)) {
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
-    for (i=0; i<n_local; i++) {
+    for (i=0; i<n_local_true; i++) {
       ierr = VecSet(&zero,osm->x[i]);CHKERRQ(ierr);
     }
   }
@@ -301,7 +301,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   if (!(osm->type & PC_ASM_INTERPOLATE)) {
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
-    for (i=0; i<n_local; i++) {
+    for (i=0; i<n_local_true; i++) {
       ierr = VecSet(&zero,osm->x[i]);CHKERRQ(ierr);
     }
   }
