@@ -291,7 +291,7 @@ PetscErrorCode UpdateSolution(DMMG *dmmg, AppCtx *user, PetscInt *nits)
     if (!q) PetscPrintf(PETSC_COMM_WORLD,"Computing Variable Viscosity Solution\n");
 
     /* continuation method on viscosity cutoff */
-    for (param->continuation = 0.0; param->continuation<=1.0;) { 
+    for (param->continuation=0.0; ; param->continuation+=cont_incr) { 
       if (!q) PetscPrintf(PETSC_COMM_WORLD," Continuation parameter = %g\n", param->continuation);
 
       /* solve the non-linear system */
@@ -300,17 +300,17 @@ PetscErrorCode UpdateSolution(DMMG *dmmg, AppCtx *user, PetscInt *nits)
       ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
       *nits += its;
       if (!q) PetscPrintf(PETSC_COMM_WORLD," Newton iterations: %D, Cumulative: %D\n", its, *nits);
-      if (param->stop_solve || param->continuation==1.0) goto done;
+      if (param->stop_solve) goto done;
 
       if (reason<0) {
 	/* NOT converged */
-	cont_incr = cont_incr/2.0;
-	param->continuation -= cont_incr;
-	if (cont_incr<0.01) goto done;
+	cont_incr = -fabs(cont_incr)/2.0;
+	if (fabs(cont_incr)<0.01) goto done;
 
       } else {
 	/* converged */
 	ierr = VecCopy(DMMGGetx(dmmg),user->Xguess);CHKERRQ(ierr);
+	if (param->continuation >= 1.0) goto done;
 	if (its<=3) {
 	  cont_incr = 0.30001;
 	} else if (its<=8) {
@@ -318,7 +318,9 @@ PetscErrorCode UpdateSolution(DMMG *dmmg, AppCtx *user, PetscInt *nits)
 	} else {
 	  cont_incr = 0.10001;
 	}
-	param->continuation = PetscMin(param->continuation+cont_incr,1.0);
+	if (param->continuation+cont_incr > 1.0) {
+	  cont_incr = 1.0 - param->continuation;
+	}
       } /* endif reason<0 */
     }
   }
