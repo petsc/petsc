@@ -19,7 +19,7 @@ class Hooks(ihooks.Hooks):
     if not self.lookingForProjects:
       self.lookingForProjects = 1
       if self.argDB.has_key('installedprojects'):
-        self.projects = reduce(lambda l, proj: l+proj.getPythonPath(), self.argDB['installedprojects'], [])
+        self.projects = reduce(lambda l, proj: l+proj.getPath('Python'), self.argDB['installedprojects'], [])
       self.lookingForProjects = 0
     return self.projects
 

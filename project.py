@@ -13,8 +13,8 @@ class Project:
     self.webdirectory = 'petsc@terra.mcs.anl.gov://mcs/www-unix/sidl/'
     self.web          = web
     # Updated variables
-    self.pythonPath = []
-    self.packages   = []
+    self.paths        = {}
+    self.packages     = []
     return
 
   def __str__(self):
@@ -64,18 +64,22 @@ class Project:
     '''Return the root directory of the local installation'''
     return self.root
 
-  def appendPythonPath(self, dir):
-    '''Append a directory to the list of paths which must be given to Python for this project to function'''
+  def appendPath(self, lang, dir):
+    '''Append a directory to the list of paths which must be given to this language in order for this project to function'''
     import os
 
+    if not lang in self.paths:
+      self.paths[lang] = []
     d = os.path.abspath(dir)
-    if os.path.exists(d) and not d in self.pythonPath:
-      self.pythonPath.append(d)
-    return self.pythonPath
+    if os.path.exists(d) and not d in self.paths[lang]:
+      self.paths[lang].append(d)
+    return self.paths[lang]
 
-  def getPythonPath(self):
-    '''Return the list of paths which must be given to Python for this project to function'''
-    return self.pythonPath
+  def getPath(self, lang):
+    '''Return the list of paths which must be given to this language in order for this project to function'''
+    if lang in self.paths:
+      return self.paths[lang]
+    return []
 
   def appendPackages(self, packages):
     '''Appends package names'''
