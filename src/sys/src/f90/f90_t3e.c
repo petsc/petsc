@@ -1,4 +1,4 @@
-/*$Id: f90_t3e.c,v 1.7 2000/09/07 03:20:07 balay Exp balay $*/
+/*$Id: f90_t3e.c,v 1.8 2000/09/22 18:38:47 balay Exp balay $*/
 
 /*-------------------------------------------------------------*/
 
@@ -17,8 +17,8 @@ int F90GetID(PetscDataType type,int *id)
 #endif
   } else if (type == PETSC_LONG) {
     *id = F90_INT_ID;
-  } else if (type == PETSC_CHAR) {
-    *id = F90_CHAR_ID;
+    /*  } else if (type == PETSC_CHAR) {
+    *id = F90_CHAR_ID; */
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown PETSc datatype");
   }
