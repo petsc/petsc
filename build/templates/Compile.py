@@ -20,6 +20,8 @@ class Template(base.Base):
     self.defines         = []
     self.includeDirs     = []
     self.extraLibraries  = []
+    self.serverLanguages = build.compile.SIDL.SIDLLanguageList()
+    self.clientLanguages = build.compile.SIDL.SIDLLanguageList()
     return
 
   def __getattr__(self, name):
@@ -27,6 +29,24 @@ class Template(base.Base):
     if name.startswith('using'):
       return self.getUsing(name)
     raise AttributeError('No attribute '+name)
+
+  def addServer(self, lang):
+    '''Designate that a server for lang should be built'''
+    if lang in self.argDB['installedLanguages']:
+      if not lang in self.serverLanguages and not lang in self.usingSIDL.serverLanguages:
+        self.serverLanguages.append(lang)
+    else:
+      self.debugPrint('Language '+lang+' not installed', 2, 'compile')
+    return
+
+  def addClient(self, lang):
+    '''Designate that a client for lang should be built'''
+    if lang in self.argDB['installedLanguages']:
+      if not lang in self.clientLanguages and not lang in self.usingSIDL.clientLanguages:
+        self.clientLanguages.append(lang)
+    else:
+      self.debugPrint('Language '+lang+' not installed', 2, 'compile')
+    return
 
   def getUsing(self, name):
     '''Create a using<lang> object from build.templates and name it _using<lang>'''
@@ -73,7 +93,7 @@ class Template(base.Base):
     '''Return a BuildGraph which will compile the servers specified
        - This is a linear array since all source is independent'''
     target = build.buildGraph.BuildGraph()
-    for lang in self.usingSIDL.serverLanguages:
+    for lang in self.usingSIDL.serverLanguages+self.serverLanguages:
       for package in self.packages:
         if (isStatic and not package in self.usingSIDL.staticPackages) or (not isStatic and package in self.usingSIDL.staticPackages): continue
         using = getattr(self, 'using'+lang.capitalize())
@@ -85,7 +105,7 @@ class Template(base.Base):
     '''Return a BuildGraph which will compile the clients specified
        - This is a linear array since all source is independent'''
     target = build.buildGraph.BuildGraph()
-    for lang in self.usingSIDL.clientLanguages:
+    for lang in self.usingSIDL.clientLanguages+self.clientLanguages:
       using = getattr(self, 'using'+lang.capitalize())
       graph = self.setupExtraOptions(lang, using.getClientCompileTarget())
       target.appendGraph(graph)
