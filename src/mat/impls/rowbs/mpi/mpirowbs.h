@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.38 1998/10/19 22:18:01 bsmith Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.39 1999/01/27 19:47:31 bsmith Exp balay $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(USE_PETSC_COMPLEX) && \
     !defined(__MPIROWBS_H)
@@ -31,7 +31,6 @@ typedef struct {
 
   /*  The following variables are used in matrix assembly */
 
-  Stash       stash;              /* stash for non-local elements */
   MPI_Request *send_waits;        /* array of send requests */
   MPI_Request *recv_waits;        /* array of receive requests */
   int         nsends, nrecvs;     /* numbers of sends and receives */

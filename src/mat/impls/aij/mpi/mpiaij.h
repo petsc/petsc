@@ -1,4 +1,4 @@
-/* $Id: mpiaij.h,v 1.14 1999/01/08 16:45:26 balay Exp balay $ */
+/* $Id: mpiaij.h,v 1.15 1999/01/08 21:33:53 balay Exp balay $ */
 
 #if !defined(__MPIAIJ_H)
 #define __MPIAIJ_H
@@ -19,7 +19,6 @@ typedef struct {
 
   /* The following variables are used for matrix assembly */
 
-  Stash         stash;                  /* stash for non-local elements */
   int           donotstash;             /* 1 if off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */

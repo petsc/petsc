@@ -1,14 +1,14 @@
-# $Id: makefile,v 1.38 1998/06/15 15:49:27 balay Exp balay $
+# $Id: makefile,v 1.39 1999/02/02 21:27:20 balay Exp balay $
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = convert.c stash.c axpy.c zerodiag.c matio.c matioall.c \
+SOURCEC  = convert.c matstash.c axpy.c zerodiag.c matio.c matioall.c \
            conaij.c conbdiag.c getcolv.c gcreate.c
 SOURCEF  =
 SOURCEH  =
-OBJSC    = convert.o stash.o axpy.o zerodiag.o matio.o matioall.o \
+OBJSC    = convert.o matstash.o axpy.o zerodiag.o matio.o matioall.o \
            conaij.o conbdiag.o getcolv.o gcreate.o
 OBJSF    =
 LIBBASE  = libpetscmat
