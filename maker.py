@@ -6,6 +6,7 @@ import nargs
 import commands
 import os
 import string
+import sys
 import pwd
 
 class ChecksumError (RuntimeError):
@@ -32,6 +33,11 @@ class Maker (logging.Logger):
     self.setupTmpDir()
     self.cleanupDir(self.tmpDir)
     return
+
+  def getRoot(self):
+    if hasattr(sys.modules[self.__module__], '__file__'):
+      return os.path.abspath(os.path.dirname(sys.modules[self.__module__].__file__))
+    return os.getcwd()
 
   def checkTmpDir(self, mainTmp):
     if not os.path.exists(mainTmp):
