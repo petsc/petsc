@@ -66,18 +66,10 @@ extern int   PetscStrtok(const char[],const char[],char **);
    The Fortran versions of the PetscStrxxx() and PetscMemxxx() routines also now 
 have the error flag as the final argument.
    
-
-   
-    
-
-   
-
-
+   Added CHKMEMQ and CHKMEMA macros to help track down memory corruption.
    
 
   Viewer
-
-    
 
    
 
