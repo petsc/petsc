@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.27 1998/06/07 19:26:39 curfman Exp curfman $ 
+# $Id: makefile,v 1.28 1998/06/09 00:04:31 curfman Exp curfman $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -151,14 +151,14 @@ ex1_alpha: chkopts ${OBJSC} ${OBJSF} ${SOURCEH}
 # Explicitly form Jacobian via default Julianne FD
 runex1_1:
 	-@${MPIRUN} ex1 -optionsleft > log.m6c.3d.me.lva.p1 2>&1; \
-	   if (diff output/order2/3d/log.m6c.3d.me.lva.p1 log.m6c.3d.me.lva.p1) then true; \
+	   if (diff output/order2/log.m6c.3d.me.lva.p1 log.m6c.3d.me.lva.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm0_p1.m f_m6c_3d_me_lva_p1.m
 
 # Same as runex1_1 except with 1st order discretization, no limiters
 runex1_1b:
 	-@${MPIRUN} ex1 -optionsleft -order 1 -limiter none > log.m6c.3d.me.lnone.p1 2>&1; \
-	   if (diff output/order1/3d/log.m6c.3d.me.lnone.p1 log.m6c.3d.me.lnone.p1) then true; \
+	   if (diff output/order1/log.m6c.3d.me.lnone.p1 log.m6c.3d.me.lnone.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm0_p1.m f_m6c_3d_me_lnone_p1.m
 
@@ -168,7 +168,7 @@ runex1_1b:
 runex1_2:
 	-@${MPIRUN}  ex1 -optionsleft \
 	   -matrix_free -cfl_advance > log.m6c.3d.mf.lva.p1 2>&1; \
-	   if (diff output/order2/3d/log.m6c.3d.mf.lva.p1 log.m6c.3d.mf.lva.p1) then true; \
+	   if (diff output/order2/log.m6c.3d.mf.lva.p1 log.m6c.3d.mf.lva.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm0_p1.m f_m6c_3d_mf_lva_p1.m
 
@@ -176,9 +176,16 @@ runex1_2:
 runex1_2b:
 	-@${MPIRUN}  ex1 -optionsleft -order 1 -limiter none \
 	   -matrix_free -cfl_advance > log.m6c.3d.mf.lnone.p1 2>&1; \
-	   if (diff output/order1/3d/log.m6c.3d.mf.lnone.p1 log.m6c.3d.mf.lnone.p1) then true; \
+	   if (diff output/order1/log.m6c.3d.mf.lnone.p1 log.m6c.3d.mf.lnone.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm0_p1.m f_m6c_3d_mf_lnone_p1.m
+
+# Same as runex1_2 except with 1st order discretization, no limiters, no wake Jacobian contributions
+runex1_2d_1c:
+	-@${MPIRUN} ex1 -optionsleft -order 1 -limiter none -jac_no_wake > log.m6c.3d.me.lnone.nowake.p1 2>&1; \
+	   if (diff output/order1/log.m6c.3d.me.lnone.p1 log.m6c.3d.me.lnone.nowake.p1) then true; \
+	   else echo "Output differences as above"; fi; \
+	   mv f_m6c_cc1_asm0_p1.m f_m6c_3d_me_lnone_nowake_p1.m
 
 # Matrix-free multiplication, advancing CFL
 # Explicitly form preconditioning Jacobian via default Julianne FD
@@ -186,7 +193,7 @@ runex1_2b:
 runex1_3:
 	-@${MPIRUN}  ex1 -optionsleft \
 	   -jac_wake -matrix_free -cfl_advance > log.m6c.3d.mf.lva.jwake.p1 2>&1; \
-	   if (diff output/order2/3d/log.m6c.3d.mf.lva.jwake.p1 log.m6c.3d.mf.lva.jwake.p1) then true; \
+	   if (diff output/order2/log.m6c.3d.mf.lva.jwake.p1 log.m6c.3d.mf.lva.jwake.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm0_p1.m f_m6c_3d_mf_lva_jwake_p1.m
 
@@ -198,7 +205,7 @@ runex1_4:
 	-@${MPIRUN} -np 8 ex1 -optionsleft \
 	   -pc_type asm -pc_asm_type restrict -pc_asm_overlap 2 \
 	   -matrix_free -cfl_advance > log.m6c.3d.mf.lva.asm2.p8 2>&1; \
-	   if (diff output/order2/3d/log.m6c.3d.mf.lva.asm2.p8 log.m6c.3d.mf.lva.asm2.p8) then true; \
+	   if (diff output/order2/log.m6c.3d.mf.lva.asm2.p8 log.m6c.3d.mf.lva.asm2.p8) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm2_p8.m f_m6c_3d_mf_lva_asm2_p8.m
 
@@ -213,7 +220,7 @@ runtest_1a:
 	-@${MPIRUN} ex1 -problem 1 -optionsleft \
 	   -order 1.5 -order_rtol 1.e-3 -limiter none -bc_imperm 0 \
 	   -matrix_free -cfl_advance > log.m6c.3d.mf.lnone.p1  2>&1; \
-	   if (diff output/order1-2/3d/log.m6c.3d.mf.lnone.p1 log.m6c.3d.mf.lnone.p1) then true; \
+	   if (diff output/order1-2/log.m6c.3d.mf.lnone.p1 log.m6c.3d.mf.lnone.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm0_p1.m f_m6c_3d_mf_lnone_p1.m
 
@@ -222,7 +229,7 @@ runtest_1b:
 	   -order 1.5 -order_rtol 1.e-3 -limiter none -bc_imperm 0 \
 	   -pc_type asm -pc_asm_type restrict -pc_asm_overlap 2 \
 	   -matrix_free -cfl_advance > log.m6c.3d.mf.lnone.asm2.p2  2>&1; \
-	   if (diff output/order1-2/3d/log.m6c.3d.mf.lnone.asm2.p2 log.m6c.3d.mf.lnone.asm2.p2) then true; \
+	   if (diff output/order1-2/log.m6c.3d.mf.lnone.asm2.p2 log.m6c.3d.mf.lnone.asm2.p2) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm2_p2.m f_m6c_3d_mf_lnone_asm2_p2.m
 
@@ -231,7 +238,7 @@ runtest_2a:
 	-@${MPIRUN} ex1 -problem 2 -optionsleft \
 	   -order 1.5 -order_rtol 1.e-3 -limiter none -bc_imperm 0 \
 	   -matrix_free -cfl_advance > log.m6f.3d.mf.lnone.p1 2>&1; \
-	   if (diff output/order1-2/3d/log.m6f.3d.mf.lnone.p1 log.m6f.3d.mf.lnone.p1) then true; \
+	   if (diff output/order1-2/log.m6f.3d.mf.lnone.p1 log.m6f.3d.mf.lnone.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6f_cc1_asm0_p1.m f_m6f_3d_mf_lnone_p1.m
 
@@ -240,7 +247,7 @@ runtest_2b:
 	   -order 1.5 -order_rtol 1.e-3 -limiter none -bc_imperm 0 \
 	   -pc_type asm -pc_asm_type restrict -pc_asm_overlap 2 \
 	   -matrix_free -cfl_advance > log.m6f.3d.mf.lnone.asm2.p16 2>&1; \
-	   if (diff output/order1-2/3d/log.m6f.3d.mf.lnone.asm2.p16 log.m6f.3d.mf.lnone.asm2.p16) then true; \
+	   if (diff output/order1-2/log.m6f.3d.mf.lnone.asm2.p16 log.m6f.3d.mf.lnone.asm2.p16) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6f_cc1_asm2_p16.m f_m6f_3d_mf_lnone_asm2_p16.m
 
@@ -250,7 +257,7 @@ runtest_3:
 	   -order 1.5 -order_rtol 1.e-7 -limiter none -bc_imperm 0 \
 	   -pc_type asm -pc_asm_type restrict -pc_asm_overlap 2 \
 	   -matrix_free -cfl_advance > log.m6n.3d.mf.asm2.p16 2>&1; \
-	   if (diff output/order1-2/3d/log.m6n.3d.mf.lnone.asm2.p16 log.m6n.3d.mf.lnone.asm2.p16) then true; \
+	   if (diff output/order1-2/log.m6n.3d.mf.lnone.asm2.p16 log.m6n.3d.mf.lnone.asm2.p16) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6n_cc1_asm2_p16.m f_m6n_3d_mf_lnone_asm2_p16.m
 
@@ -261,16 +268,23 @@ runtest_3:
 # Explicitly form Jacobian via default Julianne FD
 runex1_2d_1:
 	-@${MPIRUN} ex1 -dim2 -optionsleft > log.m6c.2d.me.lva.p1 2>&1; \
-	   if (diff output/order2/2d/log.m6c.2d.me.lva.p1 log.m6c.2d.me.lva.p1) then true; \
+	   if (diff output/order2/log.m6c.2d.me.lva.p1 log.m6c.2d.me.lva.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm0_p1.m f_m6c_2d_me_lva_p1.m
 
 # Same as runex1_2d_1 except with 1st order discretization, no limiters
 runex1_2d_1b:
 	-@${MPIRUN} ex1 -dim2 -optionsleft -order 1 -limiter none > log.m6c.2d.me.lnone.p1 2>&1; \
-	   if (diff output/order1/2d/log.m6c.2d.me.lnone.p1 log.m6c.2d.me.lnone.p1) then true; \
+	   if (diff output/order1/log.m6c.2d.me.lnone.p1 log.m6c.2d.me.lnone.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm0_p1.m f_m6c_2d_me_lnone_p1.m
+
+# Same as runex1_2d_1 except with 1st order discretization, no limiters, no wake Jacobian contributions
+runex1_2d_1c:
+	-@${MPIRUN} ex1 -dim2 -optionsleft -order 1 -limiter none -jac_no_wake > log.m6c.2d.me.lnone.nowake.p1 2>&1; \
+	   if (diff output/order1/log.m6c.2d.me.lnone.p1 log.m6c.2d.me.lnone.nowake.p1) then true; \
+	   else echo "Output differences as above"; fi; \
+	   mv f_m6c_cc1_asm0_p1.m f_m6c_2d_me_lnone_nowake_p1.m
 
 # Matrix-free multiplication, advancing CFL
 # Explicitly form preconditioning Jacobian via default Julianne FD
@@ -278,7 +292,7 @@ runex1_2d_1b:
 runex1_2d_2:
 	-@${MPIRUN} ex1 -dim2 -optionsleft \
 	   -matrix_free -cfl_advance > log.m6c.2d.mf.lva.p1 2>&1; \
-	   if (diff output/order2/2d/log.m6c.2d.mf.lva.p1 log.m6c.2d.mf.lva.p1) then true; \
+	   if (diff output/order2/log.m6c.2d.mf.lva.p1 log.m6c.2d.mf.lva.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm0_p1.m f_m6c_2d_mf_lva_p1.m
 
@@ -286,7 +300,7 @@ runex1_2d_2:
 runex1_2d_2b:
 	-@${MPIRUN} ex1 -dim2 -optionsleft -order 1 -limiter none \
 	   -matrix_free -cfl_advance > log.m6c.2d.mf.lnone.p1 2>&1; \
-	   if (diff output/order1/2d/log.m6c.2d.mf.lnone.p1 log.m6c.2d.mf.lnone.p1) then true; \
+	   if (diff output/order1/log.m6c.2d.mf.lnone.p1 log.m6c.2d.mf.lnone.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm0_p1.m f_m6c_2d_mf_lnone_p1.m
 
