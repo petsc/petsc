@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.172 1999/02/27 04:48:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.173 1999/02/28 23:22:08 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -356,7 +356,7 @@ int SNESGetApplicationContext( SNES snes,  void **usrP )
 #define __FUNC__ "SNESGetIterationNumber"
 /*@
    SNESGetIterationNumber - Gets the number of nonlinear iterations completed
-       at this time.
+   at this time.
 
    Not Collective
 
@@ -367,16 +367,18 @@ int SNESGetApplicationContext( SNES snes,  void **usrP )
 .  iter - iteration number
 
    Notes:
-     For example, during the computation of iteration 2 this would return 1.
+   For example, during the computation of iteration 2 this would return 1.
 
-     This is useful for using lagged Jacobians (where one does not recompute the 
-    Jacobian at each SNES iteration). For example the code
-$    ierr = SNESGetIterationNumber(snes,&it);
-$    if (!(it % 2)) {
-$      compute Jacobian
-$    }
-     can be used in your ComputeJacobian() function to cause the Jacobian to be
-     recomputed every second SNES iteration
+   This is useful for using lagged Jacobians (where one does not recompute the 
+   Jacobian at each SNES iteration). For example, the code
+.vb
+      ierr = SNESGetIterationNumber(snes,&it);
+      if (!(it % 2)) {
+        [compute Jacobian here]
+      }
+.ve
+   can be used in your ComputeJacobian() function to cause the Jacobian to be
+   recomputed every second SNES iteration.
 
    Level: intermediate
 
@@ -414,7 +416,7 @@ int SNESGetIterationNumber(SNES snes,int* iter)
 
 .keywords: SNES, nonlinear, get, function, norm
 
-.seealso: SNESSetFunction()
+.seealso: SNESGetFunction()
 @*/
 int SNESGetFunctionNorm(SNES snes,Scalar *fnorm)
 {
@@ -1737,7 +1739,7 @@ int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,double,double,double,void*
 
 .keywords: SNES, set, convergence, history
 
-.seealso: SNESGetConvergencHistory()
+.seealso: SNESGetConvergenceHistory()
 
 @*/
 int SNESSetConvergenceHistory(SNES snes, double *a, int *its,int na,PetscTruth reset)

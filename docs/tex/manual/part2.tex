@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.311 1999/03/10 17:21:18 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.312 1999/03/11 16:25:05 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3378,13 +3378,15 @@ An alternative line search routine can be set with the command
 \findex{SNESSetLineSearch()}
 \begin{verbatim}
    ierr = SNESSetLineSearch(SNES snes,
-          int (*ls)(SNES,Vec,Vec,Vec,Vec,double,double*,double*));
+          int (*ls)(SNES,Vec,Vec,Vec,Vec,double,double*,double*),void *lsctx);
 \end{verbatim}
 Other line search methods provided by PETSc are 
-{\tt SNESNoLineSearch()} \findex{SNESNoLineSearch()}
-and {\tt SNESQuadraticLineSearch()}, \findex{SNESNoLineSearch()}
+{\tt SNESQuadraticLineSearch()}, 
+{\tt SNESNoLineSearch()}, and {\tt SNESNoLineSearchNoNorms()},
+\findex{SNESNoLineSearch()} \findex{SNESNoLineSearchNoNorms()}
+\findex{SNESQuadraticLineSearch()}
 which can be set with the option
-{\tt -snes\_eq\_ls [basic,quadratic,cubic]}. \findex{-snes_eq_ls}
+{\tt -snes\_eq\_ls [cubic,quadratic,basic,basicnonorms]}. \findex{-snes_eq_ls}
 The line search routines involve several parameters, which are set
 to defaults that are reasonable for many applications.  The user
 can override the defaults by using the options
@@ -3398,7 +3400,7 @@ The default line search algorithm is taken from Mor\'{e} and Thuente
 \cite{more:92}.  Again, the user can set a variety of parameters to
 control the line search; one should run a SNES program with the option {\tt -help}
 for details.  Users may write their own customized line search codes
-by modeling them after one of the defaults provided by PETSc.
+by modeling them after one of the defaults provided.
 
 \subsection{Trust Region Methods}\sindex{trust region}
 

@@ -1,4 +1,4 @@
-/* $Id: ls.h,v 1.8 1999/03/14 17:17:13 curfman Exp curfman $ */
+/* $Id: ls.h,v 1.9 1999/03/14 17:54:36 curfman Exp curfman $ */
 
 /* 
    Private context for a Newton line search method for solving
@@ -16,7 +16,7 @@ typedef struct {
   double alpha;		                    /* used to determine sufficient reduction */
   double maxstep;                           /* maximum step size */
   double steptol;                           /* step convergence tolerance */
-  int    (*CheckStep)(SNES,void*,Vec,int*); /* step-checking routine (optional) */
+  int    (*CheckStep)(SNES,void*,Vec,PetscTruth*); /* step-checking routine (optional) */
   void   *checkP;                           /* user-defined step-checking context (optional) */
 } SNES_LS;
 
