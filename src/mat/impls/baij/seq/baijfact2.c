@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.15 1998/10/13 15:26:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact2.c,v 1.16 1998/10/28 16:06:02 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -62,7 +62,7 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
-  PLogFlops(2*(a->bs2)*(a->nz) - a->n);
+  PLogFlops(2*(a->bs2)*(a->nz) - a->bs*a->n);
   PetscFunctionReturn(0);
 }
 
@@ -162,7 +162,7 @@ int MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
-  PLogFlops(2*49*(a->nz) - a->n);
+  PLogFlops(2*49*(a->nz) - 7*a->n);
   PetscFunctionReturn(0);
 }
 
@@ -248,7 +248,7 @@ int MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
-  PLogFlops(2*25*(a->nz) - a->n);
+  PLogFlops(2*25*(a->nz) - 5*a->n);
   PetscFunctionReturn(0);
 }
 
@@ -324,7 +324,7 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
-  PLogFlops(2*16*(a->nz) - a->n);
+  PLogFlops(2*16*(a->nz) - 4*a->n);
   PetscFunctionReturn(0);
 }
 
@@ -414,7 +414,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PLogFlops(2*16*(a->nz) - a->n);
+  PLogFlops(2*16*(a->nz) - 4*a->n);
   PetscFunctionReturn(0);
 }
 
@@ -484,7 +484,7 @@ int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PLogFlops(2*25*(a->nz) - a->n);
+  PLogFlops(2*25*(a->nz) - 5*a->n);
   PetscFunctionReturn(0);
 }
 
@@ -553,7 +553,7 @@ int MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PLogFlops(2*9*(a->nz) - a->n);
+  PLogFlops(2*9*(a->nz) - 3*a->n);
   PetscFunctionReturn(0);
 }
 
@@ -618,7 +618,7 @@ int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PLogFlops(2*4*(a->nz) - a->n);
+  PLogFlops(2*4*(a->nz) - 2*a->n);
   PetscFunctionReturn(0);
 }
 
