@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.115 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: da1.c,v 1.116 2000/05/10 16:43:30 bsmith Exp bsmith $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -29,7 +29,7 @@ int DAView_1d(DA da,Viewer viewer)
   if (isascii) {
     ierr = ViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
                  da->m,da->w,da->s);CHKERRQ(ierr);
-    ierr = ViewerASCIISynchronizedPrintf(viewer,"X range: %d %d\n",da->xs,da->xe);CHKERRQ(ierr);
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"X range of indices: %d %d\n",da->xs,da->xe);CHKERRQ(ierr);
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     Draw       draw;
@@ -110,7 +110,8 @@ EXTERN int DAPublish_Petsc(PetscObject);
 .  inra - the resulting distributed array object
 
    Options Database Key:
-.  -da_view - Calls DAView() at the conclusion of DACreate1d()
++  -da_view - Calls DAView() at the conclusion of DACreate1d()
+-  -da_noao - do not compute natural to PETSc ordering object
 
    Level: beginner
 
@@ -220,7 +221,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
     
   /* Create Local to Global Vector Scatter Context */
   /* local to global inserts non-ghost point region into global */
-  VecGetOwnershipRange(global,&start,&end);
+  ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x,start,1,&to);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x,xs-Xs,1,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
@@ -320,13 +321,16 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   /* 
      Build the natural ordering to PETSc ordering mappings.
   */
-  {
+  ierr = OptionsHasName(PETSC_NULL,"-da_noao",&flg1);CHKERRQ(ierr);
+  if (!flg1) {
     IS is;
     
     ierr = ISCreateStride(comm,da->xe-da->xs,da->base,1,&is);CHKERRQ(ierr);
     ierr = AOCreateBasicIS(is,is,&da->ao);CHKERRQ(ierr);
     PLogObjectParent(da,da->ao);
     ierr = ISDestroy(is);CHKERRQ(ierr);
+  } else {
+    da->ao = PETSC_NULL;
   }
 
   /*
@@ -348,13 +352,13 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   for (i=0; i<gdim; i++) da->gtog1[i] = i;
 
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAView(da,VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+  if (flg1) {ierr = DAView(da,VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-da_view_draw",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,VIEWER_DRAW_(da->comm));CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = DAPrintHelp(da);CHKERRQ(ierr);}
   *inra = da;
-  PetscPublishAll(da);  
+  ierr = PetscPublishAll(da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"AMSSetFieldBlock_C",
          "AMSSetFieldBlock_DA",AMSSetFieldBlock_DA);CHKERRQ(ierr);

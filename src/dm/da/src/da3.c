@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.117 2000/05/26 20:32:42 bsmith Exp bsmith $*/
+/*$Id: da3.c,v 1.118 2000/05/27 15:11:45 bsmith Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -29,16 +29,26 @@ int DAView_3d(DA da,Viewer viewer)
   if (isascii) {
     ierr = ViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %d N %d P %d m %d n %d p %d w %d s %d\n",
                rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);CHKERRQ(ierr);
-    ierr = ViewerASCIISynchronizedPrintf(viewer,"X range: %d %d, Y range: %d %d, Z range: %d %d\n",
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"X range of indices: %d %d, Y range of indices: %d %d, Z range of indices: %d %d\n",
                da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+    if (da->coordinates) {
+      int    last;
+      double *coors;
+      ierr = VecGetArray(da->coordinates,&coors);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(da->coordinates,&last);CHKERRQ(ierr);
+      last = last - 3;
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"Lower left corner %g %g %g : Upper right %g %g %g\n",
+               coors[0],coors[1],coors[2],coors[last],coors[last+1],coors[last+2]);CHKERRQ(ierr);
+      ierr = VecRestoreArray(da->coordinates,&coors);CHKERRQ(ierr);
+    }
+#endif
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     Draw       draw;
     double     ymin = -1.0,ymax = (double)da->N;
-    double     xmin = -1.0,xmax = (double)((da->M+2)*da->P),x,y;
-    int        k,plane;
-    double     ycoord,xcoord;
-    int        base,*idx;
+    double     xmin = -1.0,xmax = (double)((da->M+2)*da->P),x,y,ycoord,xcoord;
+    int        k,plane,base,*idx;
     char       node[10];
     PetscTruth isnull;
 
@@ -170,7 +180,8 @@ EXTERN int DAPublish_Petsc(PetscObject);
 .  inra - the resulting distributed array object
 
    Options Database Key:
-.  -da_view - Calls DAView() at the conclusion of DACreate3d()
++  -da_view - Calls DAView() at the conclusion of DACreate3d()
+-  -da_noao - do not compute natural to PETSc ordering object
 
    Level: beginner
 
@@ -214,6 +225,9 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
 
   if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node: %d",dof);
   if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative: %d",s);
+  if (M < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have M positive");
+  if (N < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have N positive");
+  if (P < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have P positive");
 
   PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   da->bops->publish = DAPublish_Petsc;
@@ -308,7 +322,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   if (N < n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in y direction is too fine! %d %d",N,n);
   if (P < p) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in z direction is too fine! %d %d",P,p);
 
-  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2);CHKERRQ(ierr);
   /* 
      Determine locally owned region 
@@ -319,8 +332,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     xs = 0;
     for (i=0; i<(rank%m); i++) { xs += lx[i];}
     if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
-  } else if (flg1) { /* Block Comm type Distribution */
-    SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
   } else if (flg2) { 
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
   } else { /* Normal PETSc distribution */
@@ -338,8 +349,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);      
     ys = 0;
     for (i=0; i<(rank % (m*n))/m; i++) { ys += ly[i];}
-  } else if (flg1) { /* Block Comm type Distribution */
-    SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
   } else if (flg2) { 
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
   } else { /* Normal PETSc distribution */
@@ -357,8 +366,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     if (z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil! %d %d",z,s);      
     zs = 0;
     for (i=0; i<(rank/(m*n)); i++) { zs += lz[i];}
-  } else if (flg1) { /* Block Comm type Distribution */
-    SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
   } else if (flg2) { 
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
   } else { /* Normal PETSc distribution */
@@ -1723,7 +1730,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   /* 
      Build the natural ordering to PETSc ordering mappings.
   */
-  {
+  ierr = OptionsHasName(PETSC_NULL,"-da_noao",&flg1);CHKERRQ(ierr);
+  if (!flg1) {
     IS  ispetsc,isnatural;
     int *lidx,lict = 0;
     int Nlocal = (da->xe-da->xs)*(da->ye-da->ys)*(da->ze-da->zs);
@@ -1745,7 +1753,10 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     PLogObjectParent(da,da->ao);
     ierr = ISDestroy(ispetsc);CHKERRQ(ierr);
     ierr = ISDestroy(isnatural);CHKERRQ(ierr);
+  } else {
+    da->ao = PETSC_NULL;
   }
+
   if (!flx) {
     flx  = (int*)PetscMalloc(m*sizeof(int));CHKPTRQ(flx);
     ierr = PetscMemcpy(flx,lx,m*sizeof(int));CHKERRQ(ierr);
@@ -1802,12 +1813,12 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   ierr = PetscFree(bases);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAView(da,VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+  if (flg1) {ierr = DAView(da,VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-da_view_draw",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,VIEWER_DRAW_(da->comm));CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = DAPrintHelp(da);CHKERRQ(ierr);}
-  PetscPublishAll(da);
+  ierr = PetscPublishAll(da);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_AMS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"AMSSetFieldBlock_C",

@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.14 2000/06/27 17:43:05 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.15 2000/06/28 16:40:17 bsmith Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -98,10 +98,13 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
   int      m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,*dnz,*onz;
   int      row,col,i_start_ghost,j_start_ghost,cols[4],mx,m_c,my,nc,ratio;
   int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
+  int      size_c,size_f,rank_f,col_shift,col_scale;
   Scalar   v[4],x,y;
   Mat      mat;
 
   PetscFunctionBegin;
+
+
   ierr = DAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   ratio = (mx-1)/(Mx-1);
@@ -116,7 +119,23 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
   ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
-  ierr = MatPreallocateInitialize(dac->comm,m_f*n_f,m_c*n_c,dnz,onz);CHKERRQ(ierr);
+  /*
+     Used for handling a coarse DA that lives on 1/4 the processors of the fine DA.
+     The coarse vector is then duplicated 4 times (each time it lives on 1/4 of the 
+     processors). It's effective length is hence 4 times its normal length, this is
+     why the col_scale is multiplied by the interpolation matrix column sizes.
+     sol_shift allows each set of 1/4 processors do its own interpolation using ITS
+     copy of the coarse vector. A bit of a hack but you do better.
+
+     In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
+  */
+  ierr = MPI_Comm_size(dac->comm,&size_c);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(daf->comm,&size_f);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(daf->comm,&rank_f);CHKERRQ(ierr);
+  col_scale = size_f/size_c;
+  col_shift = Mx*My*(rank_f/size_c);
+
+  ierr = MatPreallocateInitialize(daf->comm,m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -133,23 +152,23 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
       nc = 0;
       /* one left and below; or we are right on it */
       col        = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
-      cols[nc++] = idx_c[col]/dof; 
+      cols[nc++] = col_shift + idx_c[col]/dof; 
       /* one right and below */
       if (i_c*ratio != i) { 
-        cols[nc++] = idx_c[col+dof]/dof;
+        cols[nc++] = col_shift + idx_c[col+dof]/dof;
       }
       /* one left and above */
       if (j_c*ratio != j) { 
-        cols[nc++] = idx_c[col+m_ghost_c*dof]/dof;
+        cols[nc++] = col_shift + idx_c[col+m_ghost_c*dof]/dof;
       }
       /* one right and above */
       if (j_c*ratio != j && i_c*ratio != i) { 
-        cols[nc++] = idx_c[col+(m_ghost_c+1)*dof]/dof;
+        cols[nc++] = col_shift + idx_c[col+(m_ghost_c+1)*dof]/dof;
       }
       ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
     }
   }
-  ierr = MatCreateMPIAIJ(dac->comm,m_f*n_f,m_c*n_c,mx*my,Mx*My,0,dnz,0,onz,&mat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(daf->comm,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My,0,dnz,0,onz,&mat);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
 
@@ -172,22 +191,24 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
       /* printf("i j %d %d %g %g\n",i,j,x,y); */
       nc = 0;
       /* one left and below; or we are right on it */
+      if (j_c < j_start_ghost_c) SETERRQ(1,1,"Processor's coarse DA must lie over fine DA");
+      if (i_c < i_start_ghost_c) SETERRQ(1,1,"Processor's coarse DA must lie over fine DA");
       col      = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
-      cols[nc] = idx_c[col]/dof; 
+      cols[nc] = col_shift + idx_c[col]/dof; 
       v[nc++]  = x*y - x - y + 1.0;
       /* one right and below */
       if (i_c*ratio != i) { 
-        cols[nc] = idx_c[col+dof]/dof;
+        cols[nc] = col_shift + idx_c[col+dof]/dof;
         v[nc++]  = -x*y + x;
       }
       /* one left and above */
       if (j_c*ratio != j) { 
-        cols[nc] = idx_c[col+m_ghost_c*dof]/dof;
+        cols[nc] = col_shift + idx_c[col+m_ghost_c*dof]/dof;
         v[nc++]  = -x*y + y;
       }
       /* one right and above */
       if (j_c*ratio != j && i_c*ratio != i) { 
-        cols[nc] = idx_c[col+(m_ghost_c+1)*dof]/dof;
+        cols[nc] = col_shift + idx_c[col+(m_ghost_c+1)*dof]/dof;
         v[nc++]  = x*y;
       }
       ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
@@ -387,14 +408,13 @@ int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dac,DA_COOKIE);
   PetscValidHeaderSpecific(daf,DA_COOKIE);
-  PetscCheckSameComm(dac,daf);
 
   ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
   if (dimc != dimf) SETERRQ2(1,1,"Dimensions of DA do not match %d %d",dimc,dimf);CHKERRQ(ierr);
-  if (mc != mf) SETERRQ2(1,1,"Processor dimensions of DA in X %d %d do not match",mc,mf);CHKERRQ(ierr);
-  if (nc != nf) SETERRQ2(1,1,"Processor dimensions of DA in Y %d %d do not match",nc,nf);CHKERRQ(ierr);
-  if (pc != pf) SETERRQ2(1,1,"Processor dimensions of DA in Z %d %d do not match",pc,pf);CHKERRQ(ierr);
+  /* if (mc != mf) SETERRQ2(1,1,"Processor dimensions of DA in X %d %d do not match",mc,mf);CHKERRQ(ierr);
+     if (nc != nf) SETERRQ2(1,1,"Processor dimensions of DA in Y %d %d do not match",nc,nf);CHKERRQ(ierr);
+     if (pc != pf) SETERRQ2(1,1,"Processor dimensions of DA in Z %d %d do not match",pc,pf);CHKERRQ(ierr); */
   if (dofc != doff) SETERRQ2(1,1,"DOF of DA do not match %d %d",dofc,doff);CHKERRQ(ierr);
   if (sc != sf) SETERRQ2(1,1,"Stencil width of DA do not match %d %d",sc,sf);CHKERRQ(ierr);
   if (wrapc != wrapf) SETERRQ(1,1,"Periodic type different in two DAs");CHKERRQ(ierr);

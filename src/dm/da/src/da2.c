@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.144 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: da2.c,v 1.145 2000/05/10 16:43:30 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -30,7 +30,7 @@ int DAView_2d(DA da,Viewer viewer)
   if (isascii) {
     ierr = ViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",rank,da->M,
                              da->N,da->m,da->n,da->w,da->s);CHKERRQ(ierr);
-    ierr = ViewerASCIISynchronizedPrintf(viewer,"X range: %d %d, Y range: %d %d\n",da->xs,da->xe,da->ys,da->ye);CHKERRQ(ierr);
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"X range of indices: %d %d, Y range of indices: %d %d\n",da->xs,da->xe,da->ys,da->ye);CHKERRQ(ierr);
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     Draw       draw;
@@ -184,7 +184,7 @@ int DAPublish_Petsc(PetscObject obj)
 /*
    This allows the DA vectors to properly tell Matlab their dimensions
 */
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN
@@ -205,9 +205,9 @@ int VecMatlabEnginePut_DA2d(PetscObject obj,void *engine)
 
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  mat  = mxCreateDoubleMatrix(m,n,(mxComplexity)0);
+  mat  = mxCreateDoubleMatrix(m,n,mxREAL);
 #else
-  mat  = mxCreateDoubleMatrix(m,n,(mxComplexity)1);
+  mat  = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
 #endif
   ierr = PetscMemcpy(mxGetPr(mat),array,n*m*sizeof(Scalar));CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
@@ -248,7 +248,8 @@ EXTERN_C_END
 .  inra - the resulting distributed array object
 
    Options Database Key:
-.  -da_view - Calls DAView() at the conclusion of DACreate2d()
++  -da_view - Calls DAView() at the conclusion of DACreate2d()
+-  -da_noao - do not compute natural to PETSc ordering object
 
    Level: beginner
 
@@ -288,6 +289,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node: %d",dof);
   if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative: %d",s);
+  if (M < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have M positive");
+  if (N < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have N positive");
 
   PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   PLogObjectCreate(da);
@@ -334,7 +337,6 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
      set to true.  That would create a NEW communicator that we would
      need to use for operations on this distributed array 
   */
-  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2);CHKERRQ(ierr);
 
   /* 
@@ -354,11 +356,6 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     if (left != M) {
       SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Sum of lx across processors not equal to M: %d %d",left,M);
     }
-  } else if (flg1) {  /* Block Comm type Distribution */
-    xs = (rank%m)*M/m;
-    x  = (rank%m + 1)*M/m - xs;
-    if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
-    SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
   } else if (flg2) { 
     x = (M + rank%m)/m;
     if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
@@ -393,11 +390,6 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     if (left != N) {
       SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Sum of ly across processors not equal to N: %d %d",left,N);
     }
-  } else if (flg1) {  /* Block Comm type Distribution */
-    ys = (rank/m)*N/n;
-    y  = (rank/m + 1)*N/n - ys;
-    if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);      
-    SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
   } else if (flg2) { 
     y = (N + rank/m)/n;
     if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);
@@ -931,7 +923,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   /* 
      Build the natural ordering to PETSc ordering mappings.
   */
-  {
+  ierr = OptionsHasName(PETSC_NULL,"-da_noao",&flg1);CHKERRQ(ierr);
+  if (!flg1) {
     IS  ispetsc,isnatural;
     int *lidx,lict = 0,Nlocal = (da->xe-da->xs)*(da->ye-da->ys);
 
@@ -947,11 +940,15 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     ierr = ISCreateGeneral(comm,Nlocal,lidx,&isnatural);CHKERRQ(ierr);
     ierr = PetscFree(lidx);CHKERRQ(ierr);
 
+
     ierr = AOCreateBasicIS(isnatural,ispetsc,&da->ao);CHKERRQ(ierr);
     PLogObjectParent(da,da->ao);
     ierr = ISDestroy(ispetsc);CHKERRQ(ierr);
     ierr = ISDestroy(isnatural);CHKERRQ(ierr);
+  } else {
+    da->ao = PETSC_NULL;
   }
+
   if (!flx) {
     flx  = (int*)PetscMalloc(m*sizeof(int));CHKPTRQ(flx);
     ierr = PetscMemcpy(flx,lx,m*sizeof(int));CHKERRQ(ierr);
@@ -1002,13 +999,13 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = PetscFree(bases);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAView(da,VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+  if (flg1) {ierr = DAView(da,VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-da_view_draw",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,VIEWER_DRAW_(da->comm));CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = DAPrintHelp(da);CHKERRQ(ierr);}
 
-  PetscPublishAll(da);  
+  ierr = PetscPublishAll(da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"AMSSetFieldBlock_C",
          "AMSSetFieldBlock_DA",AMSSetFieldBlock_DA);CHKERRQ(ierr);
@@ -1018,7 +1015,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
   if (dof == 1) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)local,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
   }
@@ -1107,5 +1104,58 @@ int DARefine(DA da,DA *daref)
            da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
   }
   *daref = da2;
+  PetscFunctionReturn(0);
+}
+
+/*
+      M is number of grid points 
+      m is number of processors
+
+*/
+#undef __FUNC__  
+#define __FUNC__ /*<a name="DASplitComm2d"></a>*/"DASplitComm2d"
+int DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
+{
+  int ierr,m,n,csize,size,rank,x,y,xstart,ystart;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+
+  csize = 4*size;
+  do {
+    if (csize % 4) SETERRQ4(1,1,"Cannot split communicator of size %d tried %d %d %d",size,csize,x,y);
+    csize   = csize/4;
+  
+    m = (int)(0.5 + sqrt(((double)M)*((double)csize)/((double)N)));
+    if (!m) m = 1;
+    while (m > 0) {
+      n = csize/m;
+      if (m*n == csize) break;
+      m--;
+    }
+    if (M > N && m < n) {int _m = m; m = n; n = _m;}
+
+    x = M/m + ((M % m) > ((csize-1) % m));
+    y = (N + (csize-1)/m)/n;
+  } while ((x < 4 || y < 4) && csize > 1);
+  if (size != csize) {
+    MPI_Group entire_group,sub_group;
+    int       i,*groupies;
+
+    ierr     = MPI_Comm_group(comm,&entire_group);CHKERRQ(ierr);
+    groupies = (int*)PetscMalloc(csize*sizeof(int));CHKPTRQ(groupies);
+    for (i=0; i<csize; i++) {
+      groupies[i] = (rank/csize)*csize + i;
+    }
+    ierr     = MPI_Group_incl(entire_group,csize,groupies,&sub_group);CHKERRQ(ierr);
+    ierr     = PetscFree(groupies);CHKERRQ(ierr);
+    ierr     = MPI_Comm_create(comm,sub_group,outcomm);CHKERRQ(ierr);
+    ierr     = MPI_Group_free(&entire_group);CHKERRQ(ierr);
+    ierr     = MPI_Group_free(&sub_group);CHKERRQ(ierr);
+    PLogInfo(0,"Creating redundant coarse problems of size %d\n",csize);
+  } else {
+    *outcomm = comm;
+  }
   PetscFunctionReturn(0);
 }
