@@ -16,43 +16,45 @@ typedef struct {
 
   /* information used for Pseudo-timestepping */
 
-  int    (*dt)(TS,double*,void*);
-  void   *dtctx;
-  double initial_fnorm,fnorm;  /* original and current norm of F(u) */
+  int    (*dt)(TS,double*,void*);              /* compute next timestep, and related context */
+  void   *dtctx;              
+  int    (*verify)(TS,Vec,void*,double*,int*); /* verify previous timestep and related context */
+  void   *verifyctx;     
 
-} TS_PosIndep;
+  double initial_fnorm,fnorm;                  /* original and current norm of F(u) */
+} TS_Pseudo;
 
 /* ------------------------------------------------------------------------------*/
 /*@C
-    TSPseudoDefaultPosIndTimeStep - Default code to compute 
-      pseudo timestepping. Use with TSPseudoSetPosIndTimeStep().
+    TSPseudoDefaultTimeStep - Default code to compute 
+      pseudo timestepping. Use with TSPseudoSetTimeStep().
 
   Input Parameters:
 .   ts - the time step context
-.   dtctx - 
+.   dtctx - unused timestep context
 
   Output Parameter:
 .   newdt - the time step to use for the next step
 
 @*/
-int TSPseudoDefaultPosIndTimeStep(TS ts,double* newdt,void* dtctx)
+int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
 {
-  TS_PosIndep *posindep = (TS_PosIndep*) ts->data;
-  int         ierr;
+  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  int       ierr;
 
-  ierr = TSComputeRHSFunction(ts,ts->ptime,ts->vec_sol,posindep->func);CHKERRQ(ierr);  
-  ierr = VecNorm(posindep->func,NORM_2,&posindep->fnorm); CHKERRQ(ierr); 
-  if (posindep->initial_fnorm == 0.0) {
+  ierr = TSComputeRHSFunction(ts,ts->ptime,ts->vec_sol,pseudo->func);CHKERRQ(ierr);  
+  ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm); CHKERRQ(ierr); 
+  if (pseudo->initial_fnorm == 0.0) {
     /* first time through so compute initial function norm */
-    posindep->initial_fnorm = posindep->fnorm;
+    pseudo->initial_fnorm = pseudo->fnorm;
   }
-  if (posindep->fnorm == 0.0) *newdt = 1.e12*1.1*ts->time_step; 
-  else *newdt = 1.1*ts->time_step*posindep->initial_fnorm/posindep->fnorm;
+  if (pseudo->fnorm == 0.0) *newdt = 1.e12*1.1*ts->time_step; 
+  else                      *newdt = 1.1*ts->time_step*pseudo->initial_fnorm/pseudo->fnorm;
   return 0;
 }
 
 /*@
-    TSPseudoSetPosIndTimeStep - Sets the user routine to be
+    TSPseudoSetTimeStep - Sets the user routine to be
         called at each pseudo-time-step to update the time-step.
 
   Input Parameters:
@@ -61,35 +63,129 @@ int TSPseudoDefaultPosIndTimeStep(TS ts,double* newdt,void* dtctx)
 .  ctx - [optional] context required by function
 
 @*/
-int TSPseudoSetPosIndTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
+int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
 {
-  TS_PosIndep *posindep;
+  TS_Pseudo *pseudo;
 
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->type != TS_PSEUDO_POSIND) return 0;
-  posindep          = (TS_PosIndep*) ts->data;
-  posindep->dt      = dt;
-  posindep->dtctx   = ctx;
+  if (ts->type != TS_PSEUDO) return 0;
+
+  pseudo          = (TS_Pseudo*) ts->data;
+  pseudo->dt      = dt;
+  pseudo->dtctx   = ctx;
   return 0;
 }
 
-/*
-    
-*/
-static int TSStep_PosIndep(TS ts,int *steps,double *time)
+/*@
+      TSPseudoComputeTimeStep - Computes the next timestep for a currently running
+             pseudo-timestepping.
+
+    Input Parameter:
+.      ts - time step context
+
+    Output Parameter:
+.     dt - newly computed time-step
+@*/
+int TSPseudoComputeTimeStep(TS ts,double *dt)
 {
-  Vec         sol = ts->vec_sol;
-  int         ierr,i,max_steps = ts->max_steps,its;
-  TS_PosIndep *posindep = (TS_PosIndep*) ts->data;
+  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  int       ierr;
+
+  PLogEventBegin(TS_PseudoComputeTimeStep,ts,0,0,0);
+  ierr = (*pseudo->dt)(ts,dt, pseudo->dtctx); CHKERRQ(ierr);
+  PLogEventEnd(TS_PseudoComputeTimeStep,ts,0,0,0);
+  return 0;
+}
+
+
+/* ------------------------------------------------------------------------------*/
+/*@C
+    TSPseudoDefaultVerifyTimeStep - Default code to verify last timestep.
+
+  Input Parameters:
+.   ts - the time step context
+.   dtctx - unused timestep context
+
+  Output Parameter:
+.   newdt - the time step to use for the next step
+
+@*/
+int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void* dtctx,double* newdt,int *flag)
+{
+  *flag = 1;
+  return 0;
+}
+
+/*@
+    TSPseudoSetVerifyTimeStep - Sets the user routine to verify quality of last time step.
+
+  Input Parameters:
+.  ts - time step context
+.  dt - function to verify
+.  ctx - [optional] context required by function
+
+@*/
+int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* ctx)
+{
+  TS_Pseudo *pseudo;
+
+  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  if (ts->type != TS_PSEUDO) return 0;
+
+  pseudo              = (TS_Pseudo*) ts->data;
+  pseudo->verify      = dt;
+  pseudo->verifyctx   = ctx;
+  return 0;
+}
+
+/*@
+      TSPseudoVerifyTimeStep - Verifies that the last time step was ok.
+
+    Input Parameter:
+.      ts - time step context
+.      update - latest solution
+
+    Output Parameter:
+.     dt - newly computed time-step (if it had to shrink)
+.     flag - indicates if current timestep was ok
+
+@*/
+int TSPseudoVerifyTimeStep(TS ts,Vec update,double *dt,int *flag)
+{
+  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  int       ierr;
+
+  if (!pseudo->verify) {*flag = 1; return 0;}
+
+  ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag ); CHKERRQ(ierr);
+
+  return 0;
+}
+
+/* --------------------------------------------------------------------------------*/
+
+static int TSStep_Pseudo(TS ts,int *steps,double *time)
+{
+  Vec       sol = ts->vec_sol;
+  int       ierr,i,max_steps = ts->max_steps,its,ok;
+  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  double    current_time_step;
   
   *steps = -ts->steps;
 
-  ierr = VecCopy(sol,posindep->update); CHKERRQ(ierr);
+  ierr = VecCopy(sol,pseudo->update); CHKERRQ(ierr);
   for ( i=0; i<max_steps && ts->ptime < ts->max_time; i++ ) {
-    ierr = (*posindep->dt)(ts,&ts->time_step, posindep->dtctx); CHKERRQ(ierr);
-    ts->ptime += ts->time_step;
-    ierr = SNESSolve(ts->snes,posindep->update,&its); CHKERRQ(ierr);
-    ierr = VecCopy(posindep->update,sol); CHKERRQ(ierr);
+    ierr = TSPseudoComputeTimeStep(ts,&ts->time_step); CHKERRQ(ierr);
+    current_time_step = ts->time_step;
+    while (1) {
+      ts->ptime  += current_time_step;
+      ierr = SNESSolve(ts->snes,pseudo->update,&its); CHKERRQ(ierr);
+      ierr = TSPseudoVerifyTimeStep(ts,pseudo->update,&ts->time_step,&ok); CHKERRQ(ierr);
+      if (ok) break;
+      ts->ptime        -= current_time_step;
+      current_time_step = ts->time_step;
+    }
+    ierr = VecCopy(pseudo->update,sol); CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
   }
@@ -100,17 +196,17 @@ static int TSStep_PosIndep(TS ts,int *steps,double *time)
 }
 
 /*------------------------------------------------------------*/
-static int TSDestroy_PosIndep(PetscObject obj )
+static int TSDestroy_Pseudo(PetscObject obj )
 {
-  TS          ts = (TS) obj;
-  TS_PosIndep *posindep = (TS_PosIndep*) ts->data;
-  int         ierr;
+  TS        ts = (TS) obj;
+  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  int       ierr;
 
-  ierr = VecDestroy(posindep->update); CHKERRQ(ierr);
-  if (posindep->func) {ierr = VecDestroy(posindep->func);CHKERRQ(ierr);}
-  if (posindep->rhs) {ierr = VecDestroy(posindep->rhs);CHKERRQ(ierr);}
-  if (ts->Ashell) {ierr = MatDestroy(ts->A); CHKERRQ(ierr);}
-  PetscFree(posindep);
+  ierr = VecDestroy(pseudo->update); CHKERRQ(ierr);
+  if (pseudo->func) {ierr = VecDestroy(pseudo->func);CHKERRQ(ierr);}
+  if (pseudo->rhs)  {ierr = VecDestroy(pseudo->rhs);CHKERRQ(ierr);}
+  if (ts->Ashell)   {ierr = MatDestroy(ts->A); CHKERRQ(ierr);}
+  PetscFree(pseudo);
   return 0;
 }
 
@@ -120,7 +216,7 @@ static int TSDestroy_PosIndep(PetscObject obj )
     This matrix shell multiply where user provided Shell matrix
 */
 
-int TSPosIndepMatMult(Mat mat,Vec x,Vec y)
+int TSPseudoMatMult(Mat mat,Vec x,Vec y)
 {
   TS     ts;
   Scalar mdt,mone = -1.0;
@@ -141,7 +237,7 @@ int TSPosIndepMatMult(Mat mat,Vec x,Vec y)
 
               (U^{n+1} - U^{n})/dt - F(U^{n+1})
 */
-int TSPosIndepFunction(SNES snes,Vec x,Vec y,void *ctx)
+int TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
 {
   TS     ts = (TS) ctx;
   Scalar mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
@@ -149,7 +245,7 @@ int TSPosIndepFunction(SNES snes,Vec x,Vec y,void *ctx)
 
   /* apply user provided function */
   ierr = TSComputeRHSFunction(ts,ts->ptime,x,y); CHKERRQ(ierr);
-  /* (u^{n+1) - u^{n})/dt - F(u^{n+1}) */
+  /* compute (u^{n+1) - u^{n})/dt - F(u^{n+1}) */
   ierr = VecGetArray(ts->vec_sol,&un); CHKERRQ(ierr);
   ierr = VecGetArray(x,&unp1); CHKERRQ(ierr);
   ierr = VecGetArray(y,&Funp1); CHKERRQ(ierr);
@@ -169,7 +265,7 @@ int TSPosIndepFunction(SNES snes,Vec x,Vec y,void *ctx)
 
              J = I/dt - J_{F}   where J_{F} is the given Jacobian of F.
 */
-int TSPosIndepJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   TS      ts = (TS) ctx;
   int     ierr;
@@ -197,36 +293,34 @@ int TSPosIndepJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *c
 }
 
 
-static int TSSetUp_PosIndep(TS ts)
+static int TSSetUp_Pseudo(TS ts)
 {
-  TS_PosIndep *posindep = (TS_PosIndep*) ts->data;
+  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
   int         ierr, M, m;
 
-  ierr = VecDuplicate(ts->vec_sol,&posindep->update); CHKERRQ(ierr);  
-  ierr = VecDuplicate(ts->vec_sol,&posindep->func); CHKERRQ(ierr);  
-  ierr = SNESSetFunction(ts->snes,posindep->func,TSPosIndepFunction,ts);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&pseudo->update); CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&pseudo->func); CHKERRQ(ierr);  
+  ierr = SNESSetFunction(ts->snes,pseudo->func,TSPseudoFunction,ts);CHKERRQ(ierr);
   if (ts->Ashell) { /* construct new shell matrix */
     ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MAT_MULT,(void*)TSPosIndepMatMult);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void*)TSPseudoMatMult);CHKERRQ(ierr);
   }
-  ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSPosIndepJacobian,ts);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSPseudoJacobian,ts);CHKERRQ(ierr);
   return 0;
 }
 /*------------------------------------------------------------*/
 
 int TSPseudoDefaultMonitor(TS ts, int step, double time,Vec v, void *ctx)
 {
-  TS_PosIndep *posindep = (TS_PosIndep*) ts->data;
+  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
 
-  PetscPrintf(ts->comm,"TS %d dt %g time %g fnorm %g\n",step,ts->time_step,time,
-              posindep->fnorm);
+  PetscPrintf(ts->comm,"TS %d dt %g time %g fnorm %g\n",step,ts->time_step,time,pseudo->fnorm);
   return 0;
 }
 
-
-static int TSSetFromOptions_PosIndep(TS ts)
+static int TSSetFromOptions_Pseudo(TS ts)
 {
   int ierr,flg;
 
@@ -239,47 +333,49 @@ static int TSSetFromOptions_PosIndep(TS ts)
   return 0;
 }
 
-static int TSPrintHelp_PosIndep(TS ts)
+static int TSPrintHelp_Pseudo(TS ts)
 {
 
   return 0;
 }
 
-static int TSView_PosIndep(PetscObject obj,Viewer viewer)
+static int TSView_Pseudo(PetscObject obj,Viewer viewer)
 {
   return 0;
 }
 
 /* ------------------------------------------------------------ */
-int TSCreate_PosIndep(TS ts )
+int TSCreate_Pseudo(TS ts )
 {
-  TS_PosIndep *posindep;
-  int         ierr;
-  MatType     mtype;
+  TS_Pseudo *pseudo;
+  int       ierr;
+  MatType   mtype;
 
-  ts->type 	      = TS_PSEUDO_POSIND;
-  ts->destroy         = TSDestroy_PosIndep;
-  ts->printhelp       = TSPrintHelp_PosIndep;
-  ts->view            = TSView_PosIndep;
+  ts->type 	      = TS_PSEUDO;
+  ts->destroy         = TSDestroy_Pseudo;
+  ts->printhelp       = TSPrintHelp_Pseudo;
+  ts->view            = TSView_Pseudo;
 
   if (ts->problem_type == TS_LINEAR) {
-    SETERRQ(1,"TSCreate_PosIndep:Only for nonlinear problems");
+    SETERRQ(1,"TSCreate_Pseudo:Only for nonlinear problems");
   }
   if (!ts->A) {
-    SETERRQ(1,"TSCreate_PosIndep:Must set Jacobian");
+    SETERRQ(1,"TSCreate_Pseudo:Must set Jacobian");
   }
   ierr = MatGetType(ts->A,&mtype,PETSC_NULL);
   if (mtype == MATSHELL) {
     ts->Ashell = ts->A;
   }
-  ts->setup           = TSSetUp_PosIndep;  
-  ts->step            = TSStep_PosIndep;
-  ts->setfromoptions  = TSSetFromOptions_PosIndep;
+  ts->setup           = TSSetUp_Pseudo;  
+  ts->step            = TSStep_Pseudo;
+  ts->setfromoptions  = TSSetFromOptions_Pseudo;
+
+  /* create the required nonlinear solver context */
   ierr = SNESCreate(ts->comm,SNES_NONLINEAR_EQUATIONS,&ts->snes);CHKERRQ(ierr);
 
-  posindep   = PetscNew(TS_PosIndep); CHKPTRQ(posindep);
-  PetscMemzero(posindep,sizeof(TS_PosIndep));
-  ts->data = (void *) posindep;
+  pseudo   = PetscNew(TS_Pseudo); CHKPTRQ(pseudo);
+  PetscMemzero(pseudo,sizeof(TS_Pseudo));
+  ts->data = (void *) pseudo;
 
   return 0;
 }

@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.1 1996/09/26 03:11:57 bsmith Exp bsmith $";
+C "$Id: ex1f.F,v 1.2 1996/09/27 02:43:36 bsmith Exp bsmith $";
 C
 C       Formatted test for TS routines.
 C
@@ -14,6 +14,7 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
 #include "FINCLUDE/sys.h"
+#include "FINCLUDE/pc.h"
 #include "FINCLUDE/sles.h"
 #include "FINCLUDE/snes.h"
 #include "FINCLUDE/ts.h"
@@ -25,7 +26,7 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       parameter (linear_no_matrix = 0,linear_no_time = 1,linear = 2,
      &           nonlinear_no_jacobian = 3,nonlinear = 4)
 
-      integer         ierr,  time_steps, steps, flg, size, m,problem
+      integer         ierr,  time_steps, steps, flg, size, problem
       Vec             local, global
       Double          dt,ftime
       TS              ts
@@ -153,7 +154,7 @@ C
 C         The user provides the RHS as a Shell matrix.
 C    
         call MatCreateShell(PETSC_COMM_WORLD,m,M,M,M,PETSC_NULL,A,ierr)
-        call MatShellSetOperation(A,MAT_MULT,RHSMatrixFree,ierr)
+        call MatShellSetOperation(A,MATOP_MULT,RHSMatrixFree,ierr)
         call TSSetRHSMatrix(ts,A,A,PETSC_NULL,PETSC_NULL,ierr) 
       else if (problem .eq. linear_no_time) then
 C    
@@ -242,6 +243,7 @@ C  -------------------------------------------------------------------
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
 #include "FINCLUDE/sys.h"
+#include "FINCLUDE/pc.h"
 #include "FINCLUDE/sles.h"
 #include "FINCLUDE/snes.h"
 #include "FINCLUDE/ts.h"
@@ -291,6 +293,7 @@ C
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
 #include "FINCLUDE/sys.h"
+#include "FINCLUDE/pc.h"
 #include "FINCLUDE/sles.h"
 #include "FINCLUDE/snes.h"
 #include "FINCLUDE/ts.h"
@@ -341,6 +344,7 @@ C ------------------------------------------------------------------------------
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
 #include "FINCLUDE/sys.h"
+#include "FINCLUDE/pc.h"
 #include "FINCLUDE/sles.h"
 #include "FINCLUDE/snes.h"
 #include "FINCLUDE/ts.h"
@@ -394,6 +398,7 @@ C  -----------------------------------------------------------------------
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
 #include "FINCLUDE/sys.h"
+#include "FINCLUDE/pc.h"
 #include "FINCLUDE/sles.h"
 #include "FINCLUDE/snes.h"
 #include "FINCLUDE/ts.h"
@@ -414,6 +419,7 @@ C -------------------------------------------------------------------------
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
 #include "FINCLUDE/sys.h"
+#include "FINCLUDE/pc.h"
 #include "FINCLUDE/sles.h"
 #include "FINCLUDE/snes.h"
 #include "FINCLUDE/ts.h"
@@ -421,8 +427,7 @@ C -------------------------------------------------------------------------
       TS      ts
       Double  t
       Vec     globalin, globalout
-      integer ctx,ierr
-      DA      da
+      integer ctx
       Vec     local
       integer ierr,i,localsize,cdx,ldx 
       Scalar  copyptr(1), localptr(1),sc
@@ -549,6 +554,7 @@ C ------------------------------------------------------------------------------
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/da.h"
 #include "FINCLUDE/sys.h"
+#include "FINCLUDE/pc.h"
 #include "FINCLUDE/sles.h"
 #include "FINCLUDE/snes.h"
 #include "FINCLUDE/ts.h"

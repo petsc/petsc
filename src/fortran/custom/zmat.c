@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.26 1996/08/22 16:23:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: zmat.c,v 1.27 1996/08/22 22:44:03 curfman Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -25,7 +25,6 @@ static char vcid[] = "$Id: zmat.c,v 1.26 1996/08/22 16:23:12 bsmith Exp curfman 
 #define matcreateseqdense_               MATCREATESEQDENSE
 #define matcreatempidense_               MATCREATEMPIDENSE
 #define matconvert_                      MATCONVERT
-#define matreorderingregister_           MATREORDERINGREGISTER
 #define matload_                         MATLOAD
 #define mattranspose_                    MATTRANSPOSE
 #define matgetarray_                     MATGETARRAY
@@ -51,7 +50,6 @@ static char vcid[] = "$Id: zmat.c,v 1.26 1996/08/22 16:23:12 bsmith Exp curfman 
 #define matcreateseqdense_               matcreateseqdense
 #define matcreatempidense_               matcreatempidense
 #define matconvert_                      matconvert
-#define matreorderingregister_           matreorderingregister
 #define matload_                         matload
 #define mattranspose_                    mattranspose
 #define matgetarray_                     matgetarray
@@ -66,7 +64,7 @@ extern "C" {
 void matgetinfo_(Mat mat,MatInfoType *flag,double *finfo,int *__ierr ){
   MatInfo info;
   *__ierr = MatGetInfo(
-	    (Mat)MPIR_ToPointer( *(int*)(mat) ),*flag,&info);
+	    (Mat)PetscToPointer( *(int*)(mat) ),*flag,&info);
   finfo[0]  = info.rows_global;
   finfo[1]  = info.columns_global;
   finfo[2]  = info.rows_local;
@@ -102,20 +100,20 @@ void matgettypefromoptions_(MPI_Comm comm,CHAR prefix,MatType *type,
   char *t;
   FIXCHAR(prefix,len,t);
   *__ierr = MatGetTypeFromOptions(
-	(MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),t,type,set);
+	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),t,type,set);
   FREECHAR(prefix,t);
 }
 
 void matgetarray_(Mat mat,Scalar *fa,int *ia, int *__ierr)
 {
   Scalar *mm;
-  *__ierr = MatGetArray((Mat)MPIR_ToPointer( *(int*)(mat) ),&mm);
+  *__ierr = MatGetArray((Mat)PetscToPointer( *(int*)(mat) ),&mm);
   *ia = PetscScalarAddressToFortran(fa,mm);
 }
 
 void matrestorearray_(Mat mat,Scalar *fa,int *ia,int *__ierr)
 {
-  Mat    min = (Mat)MPIR_ToPointer( *(int*)(mat) );
+  Mat    min = (Mat)PetscToPointer( *(int*)(mat) );
   Scalar *lx = PetscScalarAddressFromFortran(fa,*ia);
 
   *__ierr = MatRestoreArray(min,&lx);
@@ -125,59 +123,39 @@ void mattranspose_(Mat mat,Mat *B, int *__ierr )
 {
   Mat mm;
   if (FORTRANNULL(B)) B = PETSC_NULL;
-  *__ierr = MatTranspose((Mat)MPIR_ToPointer( *(int*)(mat) ),&mm);
-  *(int*) B = MPIR_FromPointer(mm);
+  *__ierr = MatTranspose((Mat)PetscToPointer( *(int*)(mat) ),&mm);
+  *(int*) B = PetscFromPointer(mm);
 }
 
 void matload_(Viewer viewer,MatType *outtype,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  *__ierr = MatLoad((Viewer)MPIR_ToPointer( *(int*)(viewer) ),*outtype,&mm);
-  *(int*) newmat = MPIR_FromPointer(mm);
+  *__ierr = MatLoad((Viewer)PetscToPointer( *(int*)(viewer) ),*outtype,&mm);
+  *(int*) newmat = PetscFromPointer(mm);
 }
-
-static void (*f5)(int*,int*,int*,int*,int*,int*);
-static int ourorder(int* a,int* b,int* c,int *d, int* e)
-{
-  int ierr;
-  (*f5)(a,b,c,d,e,&ierr); CHKERRQ(ierr);
-  return 0;
-}
-
-void matreorderingregister_(MatReordering *name,CHAR sname,PetscTruth *sym,
-  int *shift,void (*order)(int*,int*,int*,int*,int*,int*),int *__ierr,int len)
-{
-  char *t;
-  
-  FIXCHAR(sname,len,t);
-  f5 = order;
-  *__ierr = MatReorderingRegister(name,t,*sym,*shift,ourorder);
-  FREECHAR(sname,t);
-}			       
-
 
 void matconvert_(Mat mat,MatType *newtype,Mat *M, int *__ierr )
 {
   Mat mm;
-  *__ierr = MatConvert((Mat)MPIR_ToPointer( *(int*)(mat) ),*newtype,&mm);
-  *(int*) M = MPIR_FromPointer(mm);
+  *__ierr = MatConvert((Mat)PetscToPointer( *(int*)(mat) ),*newtype,&mm);
+  *(int*) M = PetscFromPointer(mm);
 }
 
 void matcreateseqdense_(MPI_Comm comm,int *m,int *n,Scalar *data,Mat *newmat,int *__ierr )
 {
   Mat mm;
   if (FORTRANNULL(data)) data = PETSC_NULL;
-  *__ierr = MatCreateSeqDense((MPI_Comm)MPIR_ToPointer_Comm(*(int*)(comm)),
+  *__ierr = MatCreateSeqDense((MPI_Comm)PetscToPointerComm(*(int*)(comm)),
                               *m,*n,data,&mm);
-  *(int*) newmat = MPIR_FromPointer(mm);
+  *(int*) newmat = PetscFromPointer(mm);
 }
 
 void matcreatempidense_(MPI_Comm comm,int *m,int *n,int *M,int *N,Scalar *data,Mat *newmat, int *__ierr ){
   Mat mm;
   if (FORTRANNULL(data)) data = PETSC_NULL;
 *__ierr = MatCreateMPIDense(
-	(MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*m,*n,*M,*N,data,&mm);
-  *(int*) newmat = MPIR_FromPointer(mm);
+	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*m,*n,*M,*N,data,&mm);
+  *(int*) newmat = PetscFromPointer(mm);
 }
 
 /* Fortran ignores diagv */
@@ -185,9 +163,9 @@ void matcreatempibdiag_(MPI_Comm comm,int *m,int *M,int *N,int *nd,int *bs,
                         int *diag,Scalar **diagv,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  *__ierr = MatCreateMPIBDiag((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),
+  *__ierr = MatCreateMPIBDiag((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),
                               *m,*M,*N,*nd,*bs,diag,PETSC_NULL,&mm);
-  *(int*) newmat = MPIR_FromPointer(mm);
+  *(int*) newmat = PetscFromPointer(mm);
 }
 
 /* Fortran ignores diagv */
@@ -196,9 +174,9 @@ void matcreateseqbdiag_(MPI_Comm comm,int *m,int *n,int *nd,int *bs,
 {
   Mat mm;
   *__ierr = MatCreateSeqBDiag(
-    (MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*m,*n,*nd,*bs,diag,
+    (MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*m,*n,*nd,*bs,diag,
     PETSC_NULL,&mm);
-  *(int*) newmat = MPIR_FromPointer(mm);
+  *(int*) newmat = PetscFromPointer(mm);
 }
 
 /*  Fortran cannot pass in procinfo, hence ignored */
@@ -207,18 +185,18 @@ void matcreatempirowbs_(MPI_Comm comm,int *m,int *M,int *nz,int *nnz,
 {
   Mat mm;
   if (FORTRANNULL(nnz)) nnz = PETSC_NULL;
-  *__ierr = MatCreateMPIRowbs((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),
+  *__ierr = MatCreateMPIRowbs((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),
                                *m,*M,*nz,nnz,PETSC_NULL,&mm);
-  *(int*) newmat = MPIR_FromPointer(mm);
+  *(int*) newmat = PetscFromPointer(mm);
 }
 
 void matgetreordering_(Mat mat,MatReordering *type,IS *rperm,IS *cperm, 
                        int *__ierr )
 {
   IS i1,i2;
-  *__ierr = MatGetReordering((Mat)MPIR_ToPointer(*(int*)(mat)),*type,&i1,&i2);
-  *(int*) rperm = MPIR_FromPointer(i1);
-  *(int*) cperm = MPIR_FromPointer(i2);
+  *__ierr = MatGetReordering((Mat)PetscToPointer(*(int*)(mat)),*type,&i1,&i2);
+  *(int*) rperm = PetscFromPointer(i1);
+  *(int*) cperm = PetscFromPointer(i2);
 }
 
 void matreorderingregisterdestroy_(int *__ierr)
@@ -230,9 +208,9 @@ void matreorderingregisterdestroy_(int *__ierr)
 void matcreateshell_(MPI_Comm comm,int *m,int *n,int *M,int *N,void *ctx,Mat *mat, int *__ierr )
 {
   Mat mm;
-  *__ierr = MatCreateShell((MPI_Comm)MPIR_ToPointer_Comm(*(int*)(comm)),
+  *__ierr = MatCreateShell((MPI_Comm)PetscToPointerComm(*(int*)(comm)),
                            *m,*n,*M,*N,ctx,&mm);
-  *(int*) mat = MPIR_FromPointer(mm);
+  *(int*) mat = PetscFromPointer(mm);
 }
 
 void matgettype_(Mat mm,MatType *type,CHAR name,int *__ierr,int len)
@@ -240,22 +218,22 @@ void matgettype_(Mat mm,MatType *type,CHAR name,int *__ierr,int len)
   char *tname;
 
   if (FORTRANNULL(type)) type = PETSC_NULL;
-  *__ierr = MatGetType((Mat)MPIR_ToPointer(*(int*)mm),type,&tname);
+  *__ierr = MatGetType((Mat)PetscToPointer(*(int*)mm),type,&tname);
 #if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-  if (t != PETSC_NULL_CHAR_Fortran) PetscStrncpy(t,tname,len1);
+  if (t != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(t,tname,len1);
   }
 #else
-  if (name != PETSC_NULL_CHAR_Fortran) PetscStrncpy(name,tname,len);
+  if (name != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(name,tname,len);
 #endif
 }
 
 void matcreate_(MPI_Comm comm,int *m,int *n,Mat *V, int *__ierr )
 {
   Mat mm;
-  *__ierr = MatCreate((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm)),*m,*n,&mm);
-  *(int*) V = MPIR_FromPointer(mm);
+  *__ierr = MatCreate((MPI_Comm)PetscToPointerComm( *(int*)(comm)),*m,*n,&mm);
+  *(int*) V = PetscFromPointer(mm);
 }
 
 void matcreateseqaij_(MPI_Comm comm,int *m,int *n,int *nz,
@@ -263,15 +241,15 @@ void matcreateseqaij_(MPI_Comm comm,int *m,int *n,int *nz,
 {
   Mat mm;
   if (FORTRANNULL(nnz)) nnz = PETSC_NULL;
-  *__ierr = MatCreateSeqAIJ((MPI_Comm)MPIR_ToPointer_Comm(*(int*)(comm)),
+  *__ierr = MatCreateSeqAIJ((MPI_Comm)PetscToPointerComm(*(int*)(comm)),
                             *m,*n,*nz,nnz,&mm);
-  *(int*) newmat = MPIR_FromPointer(mm);
+  *(int*) newmat = PetscFromPointer(mm);
 }
 
 void matdestroy_(Mat mat, int *__ierr )
 {
-  *__ierr = MatDestroy((Mat)MPIR_ToPointer( *(int*)(mat) ));
-   MPIR_RmPointer(*(int*)(mat)); 
+  *__ierr = MatDestroy((Mat)PetscToPointer( *(int*)(mat) ));
+   PetscRmPointer(*(int*)(mat)); 
 }
 
 void matreorderingregisterall_(int *__ierr)
@@ -285,30 +263,30 @@ void matcreatempiaij_(MPI_Comm comm,int *m,int *n,int *M,int *N,
   Mat mm;
   if (FORTRANNULL(d_nnz)) d_nnz = PETSC_NULL;
   if (FORTRANNULL(o_nnz)) o_nnz = PETSC_NULL;
-  *__ierr = MatCreateMPIAIJ((MPI_Comm)MPIR_ToPointer_Comm(*(int*)(comm)),
+  *__ierr = MatCreateMPIAIJ((MPI_Comm)PetscToPointerComm(*(int*)(comm)),
       *m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,&mm);
-  *(int*)newmat = MPIR_FromPointer(mm);
+  *(int*)newmat = PetscFromPointer(mm);
 }
 
-static void (*theirmult)(int *,int *,int *,int*);
+static int (*theirmult)(int *,int *,int *,int*);
 
   /* call Fortran multiply function */
 static int ourmult(Mat mat, Vec x, Vec y)
 {
   int ierr,s1,s2,s3;
-  s1 = MPIR_FromPointer(mat);
-  s2 = MPIR_FromPointer(x);
-  s3 = MPIR_FromPointer(y);
+  s1 = PetscFromPointer(mat);
+  s2 = PetscFromPointer(x);
+  s3 = PetscFromPointer(y);
   (*theirmult)(&s1,&s2,&s3,&ierr);
   return ierr;
 }
 
-void matshellsetoperation_(Mat mat,MatOperation *op,void*f, int *__ierr )
+void matshellsetoperation_(Mat mat,MatOperation *op,int (*f)(int*,int*,int*,int*), int *__ierr )
 {
-  if (*op == MAT_MULT) {
-    *__ierr = MatShellSetOperation((Mat)MPIR_ToPointer(*(int*)(mat)),*op,
+  if (*op == MATOP_MULT) {
+    *__ierr = MatShellSetOperation((Mat)PetscToPointer(*(int*)(mat)),*op,
                                    (void*) ourmult);
-    theirmult = (void (*)(int *,int *,int *,int*)) f;
+    theirmult = f;
   } else {
     PetscError(__LINE__,__DIR__,__FILE__,1,"Cannot set that matrix operation");
     *__ierr = 0;
