@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.38 1999/03/19 21:18:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.39 1999/04/19 22:11:24 bsmith Exp balay $";
 #endif
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
@@ -25,28 +25,28 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   /* create two vectors */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,size*n,&x); CHKERRA(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,size*n,&x);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,n*rank,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&is2); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,n,n*rank,1,&is1);CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&is2);CHKERRA(ierr);
 
   /* each processor inserts the entire vector */
   /* this is redundant but tests assembly */
   for ( i=0; i<n; i++ ) {
     value = (Scalar) (i + 10*rank);
-    ierr = VecSetValues(y,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);
+    ierr = VecSetValues(y,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }
-  ierr = VecAssemblyBegin(y); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(y); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(y);CHKERRA(ierr);
+  ierr = VecAssemblyEnd(y);CHKERRA(ierr);
 
-  ierr = VecScatterCreate(y,is2,x,is1,&ctx); CHKERRA(ierr);
+  ierr = VecScatterCreate(y,is2,x,is1,&ctx);CHKERRA(ierr);
   ierr = VecScatterBegin(y,x,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
-  ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_FORWARD,ctx); CHKERRA(ierr);
-  ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
+  ierr = VecScatterDestroy(ctx);CHKERRA(ierr);
   
-  ierr = VecView(x,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(y);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.10 1998/12/03 04:02:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.11 1999/03/19 21:22:11 bsmith Exp balay $";
 #endif
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
@@ -59,13 +59,13 @@ int main(int argc,char **args)
      The next two lines are for testing only; these allow the user to
      decide the grid size at runtime.
   */
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
 
   /*
      Create the empty sparse matrix and linear solver data structures
   */
-  ierr = UserInitializeLinearSolver(m,n,&userctx); CHKERRA(ierr);
+  ierr = UserInitializeLinearSolver(m,n,&userctx);CHKERRA(ierr);
   N    = m*n;
 
   /*
@@ -76,14 +76,14 @@ int main(int argc,char **args)
      the context of a larger application these would be provided by
      other (non-PETSc) parts of the application code.
   */
-  userx    = (Scalar *) PetscMalloc(N*sizeof(Scalar)); CHKPTRA(userx);
-  userb    = (Scalar *) PetscMalloc(N*sizeof(Scalar)); CHKPTRA(userb);
-  solution = (Scalar *) PetscMalloc(N*sizeof(Scalar)); CHKPTRA(solution);
+  userx    = (Scalar *) PetscMalloc(N*sizeof(Scalar));CHKPTRA(userx);
+  userb    = (Scalar *) PetscMalloc(N*sizeof(Scalar));CHKPTRA(userb);
+  solution = (Scalar *) PetscMalloc(N*sizeof(Scalar));CHKPTRA(solution);
 
   /* 
       Allocate an array to hold the coefficients in the elliptic operator
   */
-  rho = (Scalar *) PetscMalloc(N*sizeof(Scalar)); CHKERRA(ierr);
+  rho = (Scalar *) PetscMalloc(N*sizeof(Scalar));CHKERRA(ierr);
 
   /*
      Fill up the array rho[] with the function rho(x,y) = x; fill the
@@ -114,7 +114,7 @@ int main(int argc,char **args)
      one may reuse the linear solver stuff in each time-step.
   */
   for ( t=0; t<tmax; t++ ) {
-    ierr =  UserDoLinearSolver(rho,&userctx,userb,userx); CHKERRA(ierr);
+    ierr =  UserDoLinearSolver(rho,&userctx,userb,userx);CHKERRA(ierr);
 
     /*
         Compute error: Note that this could (and usually should) all be done
@@ -138,7 +138,7 @@ int main(int argc,char **args)
   PetscFree(solution);
   PetscFree(userx);
   PetscFree(userb);
-  ierr = UserFinalizeLinearSolver(&userctx); CHKERRA(ierr);
+  ierr = UserFinalizeLinearSolver(&userctx);CHKERRA(ierr);
   PetscFinalize();
 
   return 0;
@@ -166,21 +166,21 @@ int UserInitializeLinearSolver(int m, int n,UserCtx *userctx)
   /* 
      Create the sparse matrix. Preallocate 5 nonzeros per row.
   */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,0,&userctx->A); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,0,&userctx->A);CHKERRQ(ierr);
 
   /* 
      Create vectors. Here we create vectors with no memory allocated.
      This way, we can use the data structures already in the program
      by using VecPlaceArray() subroutine at a later stage.
   */
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,N,PETSC_NULL,&userctx->b); CHKERRQ(ierr);
-  ierr = VecDuplicate(userctx->b,&userctx->x); CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,N,PETSC_NULL,&userctx->b);CHKERRQ(ierr);
+  ierr = VecDuplicate(userctx->b,&userctx->x);CHKERRQ(ierr);
 
   /* 
      Create linear solver context. This will be used repeatedly for all 
      the linear solves needed.
   */
-  ierr = SLESCreate(PETSC_COMM_SELF,&userctx->sles); CHKERRQ(ierr);
+  ierr = SLESCreate(PETSC_COMM_SELF,&userctx->sles);CHKERRQ(ierr);
 
   return 0;
 }
@@ -245,8 +245,8 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
   /* 
      Assemble matrix
   */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
@@ -254,14 +254,14 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
      will have the same nonzero pattern here, we indicate this so the
      linear solvers can take advantage of this.
   */
-  ierr = SLESSetOperators(userctx->sles,A,A,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
+  ierr = SLESSetOperators(userctx->sles,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* 
      Set linear solver defaults for this problem (optional).
      - Here we set it to use direct LU factorization for the solution
   */
-  ierr = SLESGetPC(userctx->sles,&pc); CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCLU); CHKERRQ(ierr);
+  ierr = SLESGetPC(userctx->sles,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
 
   /* 
      Set runtime options, e.g.,
@@ -273,7 +273,7 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
      Run the program with the option -help to see all the possible
      linear solver options.
   */
-  ierr = SLESSetFromOptions(userctx->sles); CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(userctx->sles);CHKERRQ(ierr);
 
   /*
      This allows the PETSc linear solvers to compute the solution 
@@ -284,14 +284,14 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
      write their entire application using PETSc vectors rather than 
      arrays.
   */
-  ierr = VecPlaceArray(userctx->x,userx); CHKERRQ(ierr);
-  ierr = VecPlaceArray(userctx->b,userb); CHKERRQ(ierr);
+  ierr = VecPlaceArray(userctx->x,userx);CHKERRQ(ierr);
+  ierr = VecPlaceArray(userctx->b,userb);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(userctx->sles,userctx->b,userctx->x,&its); CHKERRQ(ierr);
+  ierr = SLESSolve(userctx->sles,userctx->b,userctx->x,&its);CHKERRQ(ierr);
 
   /*
     Put back the PETSc array that belongs in the vector xuserctx->x
@@ -311,9 +311,9 @@ int UserFinalizeLinearSolver(UserCtx *userctx)
      we free the work space.  All PETSc objects should be destroyed when
      they are no longer needed.
   */
-  ierr = SLESDestroy(userctx->sles); CHKERRQ(ierr);
-  ierr = VecDestroy(userctx->x); CHKERRQ(ierr);
-  ierr = VecDestroy(userctx->b); CHKERRQ(ierr);  
-  ierr = MatDestroy(userctx->A); CHKERRQ(ierr);
+  ierr = SLESDestroy(userctx->sles);CHKERRQ(ierr);
+  ierr = VecDestroy(userctx->x);CHKERRQ(ierr);
+  ierr = VecDestroy(userctx->b);CHKERRQ(ierr);  
+  ierr = MatDestroy(userctx->A);CHKERRQ(ierr);
   return 0;
 }

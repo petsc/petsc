@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.114 1999/04/19 22:14:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.115 1999/04/21 18:17:17 bsmith Exp balay $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -55,21 +55,21 @@ static int PCSetFromOptions_LU(PC pc)
   double fill;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(pc->prefix,"-pc_lu_in_place",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_lu_in_place",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCLUSetUseInPlace(pc); CHKERRQ(ierr);
+    ierr = PCLUSetUseInPlace(pc);CHKERRQ(ierr);
   }
-  ierr = OptionsGetDouble(pc->prefix,"-pc_lu_fill",&fill,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(pc->prefix,"-pc_lu_fill",&fill,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCLUSetFill(pc,fill); CHKERRQ(ierr);
+    ierr = PCLUSetFill(pc,fill);CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(pc->prefix,"-pc_lu_reuse_fill",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_lu_reuse_fill",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCLUSetReuseFill(pc,PETSC_TRUE); CHKERRQ(ierr);
+    ierr = PCLUSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(pc->prefix,"-pc_lu_reuse_ordering",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_lu_reuse_ordering",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCLUSetReuseOrdering(pc,PETSC_TRUE); CHKERRQ(ierr);
+    ierr = PCLUSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -112,7 +112,7 @@ static int PCView_LU(PC pc,Viewer viewer)
     else             {ierr = ViewerASCIIPrintf(viewer,"  LU: out-of-place factorization\n");CHKERRQ(ierr);}
     ierr = ViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",lu->ordering);CHKERRQ(ierr);
     if (lu->fact) {
-      ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info); CHKERRQ(ierr);
+      ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = ViewerASCIIPrintf(viewer,"    LU nonzeros %g\n",info.nz_used);CHKERRQ(ierr);
     }
     if (lu->reusefill)    {ierr = ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
@@ -149,15 +149,15 @@ static int PCSetUp_LU(PC pc)
 
   if (dir->inplace) {
     if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
-    if (dir->col) {ierr = ISDestroy(dir->col); CHKERRQ(ierr);}
-    ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
+    if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
+    ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
     if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
-    ierr = MatLUFactor(pc->pmat,dir->row,dir->col,dir->fill); CHKERRQ(ierr);
+    ierr = MatLUFactor(pc->pmat,dir->row,dir->col,dir->fill);CHKERRQ(ierr);
     dir->fact = pc->pmat;
   } else {
     MatInfo info;
     if (!pc->setupcalled) {
-      ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
+      ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
       ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
         double tol = 1.e-10;
@@ -165,15 +165,15 @@ static int PCSetUp_LU(PC pc)
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
       }
       if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
-      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact); CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
       PLogObjectParent(pc,dir->fact);
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!dir->reuseorering) {
         if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
-        if (dir->col) {ierr = ISDestroy(dir->col); CHKERRQ(ierr);}
-        ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
+        if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
+        ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
         ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
         if (flg) {
           double tol = 1.e-10;
@@ -182,13 +182,13 @@ static int PCSetUp_LU(PC pc)
         }
         if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
       }
-      ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
-      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact); CHKERRQ(ierr);
+      ierr = MatDestroy(dir->fact);CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
       PLogObjectParent(pc,dir->fact);
     }
-    ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERRQ(ierr);
+    ierr = MatLUFactorNumeric(pc->pmat,&dir->fact);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -201,9 +201,9 @@ static int PCDestroy_LU(PC pc)
   int   ierr;
 
   PetscFunctionBegin;
-  if (!dir->inplace && dir->fact) {ierr = MatDestroy(dir->fact); CHKERRQ(ierr);}
-  if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row); CHKERRQ(ierr);}
-  if (dir->col) {ierr = ISDestroy(dir->col); CHKERRQ(ierr);}
+  if (!dir->inplace && dir->fact) {ierr = MatDestroy(dir->fact);CHKERRQ(ierr);}
+  if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
+  if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
   PetscFree(dir); 
   PetscFunctionReturn(0);
 }
@@ -216,8 +216,8 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
   int   ierr;
 
   PetscFunctionBegin;
-  if (dir->inplace) {ierr = MatSolve(pc->pmat,x,y); CHKERRQ(ierr);}
-  else              {ierr = MatSolve(dir->fact,x,y); CHKERRQ(ierr);}
+  if (dir->inplace) {ierr = MatSolve(pc->pmat,x,y);CHKERRQ(ierr);}
+  else              {ierr = MatSolve(dir->fact,x,y);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -229,8 +229,8 @@ static int PCApplyTrans_LU(PC pc,Vec x,Vec y)
   int   ierr;
 
   PetscFunctionBegin;
-  if (dir->inplace) {ierr = MatSolveTrans(pc->pmat,x,y); CHKERRQ(ierr);}
-  else              {ierr = MatSolveTrans(dir->fact,x,y); CHKERRQ(ierr);}
+  if (dir->inplace) {ierr = MatSolveTrans(pc->pmat,x,y);CHKERRQ(ierr);}
+  else              {ierr = MatSolveTrans(dir->fact,x,y);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -471,7 +471,7 @@ EXTERN_C_BEGIN
 int PCCreate_LU(PC pc)
 {
   int   ierr;
-  PC_LU *dir     = PetscNew(PC_LU); CHKPTRQ(dir);
+  PC_LU *dir     = PetscNew(PC_LU);CHKPTRQ(dir);
 
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_LU));

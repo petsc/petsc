@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.16 1999/04/19 22:10:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: comb.c,v 1.17 1999/05/03 01:14:32 bsmith Exp balay $";
 #endif
 
 /*
@@ -58,7 +58,7 @@ some of each.
 int VecSplitReductionCreate(MPI_Comm comm,VecSplitReduction **sr)
 {
   PetscFunctionBegin;
-  (*sr)              = PetscNew(VecSplitReduction); CHKPTRQ((*sr));
+  (*sr)              = PetscNew(VecSplitReduction);CHKPTRQ((*sr));
   (*sr)->numopsbegin = 0;
   (*sr)->numopsend   = 0;
   (*sr)->state       = STATE_BEGIN;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.21 1999/03/17 23:23:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.22 1999/04/19 22:13:09 bsmith Exp balay $";
 #endif
 
 /*
@@ -18,8 +18,8 @@ extern int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
   char        *outputname;
   MPI_Comm    comm = A->comm;
 
-  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  ierr = ViewerGetOutputname(viewer,&outputname); CHKERRQ(ierr);
+  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
+  ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_INFO) {
     PetscFunctionReturn(0);
@@ -43,7 +43,7 @@ int MatView_MPIAdj(Mat A,Viewer viewer)
   ViewerType  vtype;
   int         ierr;
 
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)){
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
   } else {
@@ -63,10 +63,10 @@ int MatDestroy_MPIAdj(Mat mat)
   if (--mat->refct > 0) PetscFunctionReturn(0);
 
   if (mat->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(mat->mapping);CHKERRQ(ierr);
   }
   if (mat->bmapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping);CHKERRQ(ierr);
   }
   if (mat->rmap) {
     ierr = MapDestroy(mat->rmap);CHKERRQ(ierr);
@@ -116,7 +116,7 @@ int MatMarkDiag_MPIAdj(Mat A)
   Mat_MPIAdj *a = (Mat_MPIAdj *) A->data; 
   int        i,j, *diag, m = a->m;
 
-  diag = (int *) PetscMalloc( (m+1)*sizeof(int)); CHKPTRQ(diag);
+  diag = (int *) PetscMalloc( (m+1)*sizeof(int));CHKPTRQ(diag);
   PLogObjectMemory(A,(m+1)*sizeof(int));
   for ( i=0; i<a->m; i++ ) {
     for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
@@ -340,11 +340,11 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
   *A                  = 0;
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIADJ,"Mat",comm,MatDestroy,MatView);
   PLogObjectCreate(B);
-  B->data             = (void *) (b = PetscNew(Mat_MPIAdj)); CHKPTRQ(b);
-  PetscMemzero(b,sizeof(Mat_MPIAdj));
-  PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));
-  B->ops->destroy          = MatDestroy_MPIAdj;
-  B->ops->view             = MatView_MPIAdj;
+  B->data             = (void *) (b = PetscNew(Mat_MPIAdj));CHKPTRQ(b);
+  ierr                = PetscMemzero(b,sizeof(Mat_MPIAdj));CHKERRQ(ierr);
+  ierr                = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  B->ops->destroy     = MatDestroy_MPIAdj;
+  B->ops->view        = MatView_MPIAdj;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
   B->mapping          = 0;
@@ -360,7 +360,7 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
   /* we don't know the "local columns" so just use the row information :-( */
   ierr = MapCreateMPI(comm,m,B->M,&B->cmap);CHKERRQ(ierr);
 
-  b->rowners = (int *) PetscMalloc((size+1)*sizeof(int)); CHKPTRQ(b->rowners);
+  b->rowners = (int *) PetscMalloc((size+1)*sizeof(int));CHKPTRQ(b->rowners);
   PLogObjectMemory(B,(size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAdj));
   ierr = MPI_Allgather(&m,1,MPI_INT,b->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   b->rowners[0] = 0;
@@ -379,8 +379,8 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
 
   *A = B;
 
-  ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
-  if (flg) {ierr = MatPrintHelp(B); CHKERRQ(ierr); }
+  ierr = OptionsHasName(PETSC_NULL,"-help", &flg);CHKERRQ(ierr);
+  if (flg) {ierr = MatPrintHelp(B);CHKERRQ(ierr); }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

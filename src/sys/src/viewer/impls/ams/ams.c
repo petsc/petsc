@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.18 1999/04/19 22:08:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ams.c,v 1.19 1999/04/21 20:42:31 bsmith Exp balay $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -29,7 +29,7 @@ int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
 
   ierr = OptionsHasName(PETSC_NULL,"-viewer_ams_printf",&flag);CHKERRQ(ierr);
   if (!flag) {
-    ierr = AMS_Set_output_file("/dev/null"); CHKERRQ(ierr);
+    ierr = AMS_Set_output_file("/dev/null");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -57,7 +57,7 @@ int ViewerAMSSetCommName(Viewer v,const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)v,"ViewerAMSSetCommName_C",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)v,"ViewerAMSSetCommName_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(v,name);CHKERRQ(ierr);
   }
@@ -93,7 +93,7 @@ int ViewerAMSGetAMSComm(Viewer v,AMS_Comm *ams_comm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)v,"ViewerAMSGetAMSComm_C",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)v,"ViewerAMSGetAMSComm_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(v,ams_comm);CHKERRQ(ierr);
   }
@@ -111,7 +111,7 @@ int ViewerInitializeAMSWorld_Private(void)
 
   PetscFunctionBegin;
   if (VIEWER_AMS_WORLD_PRIVATE) PetscFunctionReturn(0);
-  ierr = ViewerAMSOpen(PETSC_COMM_WORLD,"PETSc",&VIEWER_AMS_WORLD_PRIVATE); CHKERRQ(ierr);
+  ierr = ViewerAMSOpen(PETSC_COMM_WORLD,"PETSc",&VIEWER_AMS_WORLD_PRIVATE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -199,7 +199,7 @@ int VIEWER_AMS_Destroy(MPI_Comm comm)
   }
   ierr = MPI_Attr_get( comm, Petsc_Viewer_Ams_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
   if (flag) { 
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_delete(comm,Petsc_Viewer_Ams_keyval);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);

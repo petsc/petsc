@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: util2.c,v 1.8 1998/10/19 22:19:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: util2.c,v 1.9 1999/03/07 17:29:08 bsmith Exp balay $";
 #endif
 
 /*
@@ -66,24 +66,24 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
   double   dx_min = 1.e-16, dx_par = 1.e-1;
   MPI_Comm comm;
 
-  ierr = VecDuplicate(xx1,&jj1); CHKERRQ(ierr);
-  ierr = VecDuplicate(xx1,&jj2); CHKERRQ(ierr);
-  ierr = VecDuplicate(xx1,&xx2); CHKERRQ(ierr);
+  ierr = VecDuplicate(xx1,&jj1);CHKERRQ(ierr);
+  ierr = VecDuplicate(xx1,&jj2);CHKERRQ(ierr);
+  ierr = VecDuplicate(xx1,&xx2);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)xx1,&comm);CHKERRQ(ierr);
   ierr = MatZeroEntries(*J);CHKERRQ(ierr);
 
-  ierr = VecGetSize(xx1,&N); CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(xx1,&start,&end); CHKERRQ(ierr);
+  ierr = VecGetSize(xx1,&N);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(xx1,&start,&end);CHKERRQ(ierr);
   VecGetArray(xx1,&xx);
-  ierr = TSComputeRHSFunction(ts,ts->ptime,xx1,jj1); CHKERRQ(ierr);
+  ierr = TSComputeRHSFunction(ts,ts->ptime,xx1,jj1);CHKERRQ(ierr);
 
   /* Compute Jacobian approximation, 1 column at a time.
       xx1 = current iterate, jj1 = F(xx1)
       xx2 = perturbed iterate, jj2 = F(xx2)
    */
   for ( i=0; i<N; i++ ) {
-    ierr = VecCopy(xx1,xx2); CHKERRQ(ierr);
+    ierr = VecCopy(xx1,xx2);CHKERRQ(ierr);
     if ( i>= start && i<end) {
       dx = xx[i-start];
 #if !defined(USE_PETSC_COMPLEX)
@@ -100,8 +100,8 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
     else {
       wscale = 0.0;
     }
-    ierr = TSComputeRHSFunction(ts,t,xx2,jj2); CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,jj1,jj2); CHKERRQ(ierr);
+    ierr = TSComputeRHSFunction(ts,t,xx2,jj2);CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,jj1,jj2);CHKERRQ(ierr);
     /* Communicate scale to all processors */
 #if !defined(USE_PETSC_COMPLEX)
     MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);
@@ -112,18 +112,18 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
     VecNorm(jj2,NORM_INFINITY,&amax); amax *= 1.e-14;
     for ( j=start; j<end; j++ ) {
       if (PetscAbsScalar(y[j-start]) > amax) {
-        ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     VecRestoreArray(jj2,&y);
   }
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *flag =  DIFFERENT_NONZERO_PATTERN;
 
-  ierr = VecDestroy(jj1); CHKERRQ(ierr);
-  ierr = VecDestroy(jj2); CHKERRQ(ierr);
-  ierr = VecDestroy(xx2); CHKERRQ(ierr);
+  ierr = VecDestroy(jj1);CHKERRQ(ierr);
+  ierr = VecDestroy(jj2);CHKERRQ(ierr);
+  ierr = VecDestroy(xx2);CHKERRQ(ierr);
 
   return 0;
 }

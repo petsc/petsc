@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregispetsc.c,v 1.1 1999/02/01 22:50:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregispetsc.c,v 1.2 1999/02/03 04:29:01 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -24,8 +24,8 @@ int DLLibraryRegister_Petsc(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = DrawRegisterAll(path); CHKERRQ(ierr);
-  ierr = ViewerRegisterAll(path); CHKERRQ(ierr);
+  ierr = DrawRegisterAll(path);CHKERRQ(ierr);
+  ierr = ViewerRegisterAll(path);CHKERRQ(ierr);
   return 0;
 }
 

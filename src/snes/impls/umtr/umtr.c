@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.81 1999/03/17 23:24:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.82 1999/04/19 22:15:45 bsmith Exp balay $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -56,21 +56,21 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   f		= &(snes->fc);		/* function to minimize */
   gnorm		= &(snes->norm);	/* gradient norm */
 
-  ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);              /* xnorm = || X || */
+  ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);              /* xnorm = || X || */
   PetscAMSTakeAccess(snes);
   snes->iter = 0;
   PetscAMSGrantAccess(snes);
-  ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr); /* f(X) */
-  ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);  /* G(X) <- gradient */
+  ierr = SNESComputeMinimizationFunction(snes,X,f);CHKERRQ(ierr); /* f(X) */
+  ierr = SNESComputeGradient(snes,X,G);CHKERRQ(ierr);  /* G(X) <- gradient */
   PetscAMSTakeAccess(snes);
-  ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);               /* gnorm = || G || */
+  ierr = VecNorm(G,NORM_2,gnorm);CHKERRQ(ierr);               /* gnorm = || G || */
   PetscAMSGrantAccess(snes);
   SNESLogConvHistory(snes,*gnorm,0);
   SNESMonitor(snes,0,*gnorm);
 
-  ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
-  ierr = KSPSetType(ksp,KSPQCG); CHKERRQ(ierr);
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetType(ksp,KSPQCG);CHKERRQ(ierr);
   PLogInfo(snes,"SNESSolve_UM_TR: setting KSPType = KSPQCG\n");
   qcgP = (KSP_QCG *) ksp->data;
 
@@ -102,17 +102,17 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     do {
       /* Minimize the quadratic to compute the step s */
       qcgP->delta = delta;
-      ierr = SLESSolve(snes->sles,G,S,&qits); CHKERRQ(ierr);
+      ierr = SLESSolve(snes->sles,G,S,&qits);CHKERRQ(ierr);
       snes->linear_its += PetscAbsInt(qits);
       if (qits < 0) SETERRQ(PETSC_ERR_PLIB,0,"Failure in SLESSolve");
       if (qcgP->info == 3) newton = 1;	            /* truncated Newton step */
       PLogInfo(snes,"SNESSolve_UM_TR: %d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
                i, qcgP->ltsnrm, delta, qcgP->quadratic, qits );
 
-      ierr = VecWAXPY(&one,X,S,Xtrial); CHKERRQ(ierr); /* Xtrial <- X + S */
-      ierr = VecNorm(Xtrial,NORM_2,&xnorm); CHKERRQ(ierr);
+      ierr = VecWAXPY(&one,X,S,Xtrial);CHKERRQ(ierr); /* Xtrial <- X + S */
+      ierr = VecNorm(Xtrial,NORM_2,&xnorm);CHKERRQ(ierr);
                            		               /* ftrial = f(Xtrial) */
-      ierr = SNESComputeMinimizationFunction(snes,Xtrial,&ftrial); CHKERRQ(ierr);
+      ierr = SNESComputeMinimizationFunction(snes,Xtrial,&ftrial);CHKERRQ(ierr);
 
       /* Compute the function reduction and the step size */
       neP->actred = *f - ftrial;
@@ -157,12 +157,12 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     /* Question:  If (!neP->success && break), then last step was rejected, 
        but convergence was detected.  Should this update really happen? */
     *f = ftrial;
-    ierr = VecCopy(Xtrial,X); CHKERRQ(ierr);
+    ierr = VecCopy(Xtrial,X);CHKERRQ(ierr);
     snes->vec_sol_always = X;
     /* Note:  At last iteration, the gradient evaluation is unnecessary */
-    ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);
+    ierr = SNESComputeGradient(snes,X,G);CHKERRQ(ierr);
     PetscAMSTakeAccess(snes);
-    ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);
+    ierr = VecNorm(G,NORM_2,gnorm);CHKERRQ(ierr);
     PetscAMSGrantAccess(snes);
     snes->vec_func_always = G;
 
@@ -171,7 +171,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   }
   /* Verify solution is in corect location */
   if (X != snes->vec_sol) {
-    ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
+    ierr = VecCopy(X,snes->vec_sol);CHKERRQ(ierr);
     snes->vec_sol_always = snes->vec_sol;
     snes->vec_func_always = snes->vec_func; 
   }
@@ -205,7 +205,7 @@ static int SNESDestroy_UM_TR(SNES snes )
 
   PetscFunctionBegin;
   if (snes->nwork) {
-    ierr = VecDestroyVecs(snes->work,snes->nwork); CHKERRQ(ierr);
+    ierr = VecDestroyVecs(snes->work,snes->nwork);CHKERRQ(ierr);
   }
   PetscFree(snes->data);
   PetscFunctionReturn(0);
@@ -307,17 +307,17 @@ static int SNESSetFromOptions_UM_TR(SNES snes)
   int       ierr, flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta1",&tmp,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta1",&tmp,&flg);CHKERRQ(ierr);
   if (flg) {ctx->eta1 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta2",&tmp,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta2",&tmp,&flg);CHKERRQ(ierr);
   if (flg) {ctx->eta2 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta3",&tmp,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta3",&tmp,&flg);CHKERRQ(ierr);
   if (flg) {ctx->eta3 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta4",&tmp,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta4",&tmp,&flg);CHKERRQ(ierr);
   if (flg) {ctx->eta4 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_delta0",&tmp,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_delta0",&tmp,&flg);CHKERRQ(ierr);
   if (flg) {ctx->delta0 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_factor1",&tmp,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_factor1",&tmp,&flg);CHKERRQ(ierr);
   if (flg) {ctx->factor1 = tmp;}
 
   PetscFunctionReturn(0);
@@ -354,7 +354,7 @@ static int SNESView_UM_TR(SNES snes,Viewer viewer)
   ViewerType vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"  eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",tr->eta1,tr->eta2,tr->eta3,tr->eta4);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);CHKERRQ(ierr);
@@ -388,7 +388,7 @@ int SNESCreate_UM_TR(SNES snes)
 
   snes->nwork           = 0;
 
-  neP			= PetscNew(SNES_UMTR); CHKPTRQ(neP);
+  neP			= PetscNew(SNES_UMTR);CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_UM_TR));
   snes->data	        = (void *) neP;
   neP->delta0		= 1.0e-6;
@@ -405,9 +405,9 @@ int SNESCreate_UM_TR(SNES snes)
  
   /* Set default preconditioner to be Jacobi, to override SLES default. */
   /* This implementation currently requires a symmetric preconditioner. */
-  ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCJACOBI); CHKERRQ(ierr);
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

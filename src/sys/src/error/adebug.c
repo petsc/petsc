@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.87 1999/04/19 22:09:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.88 1999/04/21 20:43:10 bsmith Exp balay $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -259,7 +259,7 @@ int PetscAttachDebugger(void)
     }
   } else {   /* I am the child, continue with user code */
     sleeptime = 10; /* default to sleep waiting for debugger */
-    ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,&flg); CHKERRQ(ierr);
+    ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,&flg);CHKERRQ(ierr);
     if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PARCH_hpux)
     /*
@@ -428,7 +428,7 @@ int PetscStopForDebugger(void)
   fflush(stdout);
 
   sleeptime = 25; /* default to sleep waiting for debugger */
-  ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,&flg);CHKERRQ(ierr);
   if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PARCH_hpux)
   /*

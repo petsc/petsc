@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ffpath.c,v 1.20 1999/03/17 23:21:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ffpath.c,v 1.21 1999/04/21 20:43:17 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -75,14 +75,14 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
 
   if (path) {
     /* Check to see if the path is a valid regular FILE */
-    ierr = PetscTestFile( path, mode,&flag); CHKERRQ(ierr);
+    ierr = PetscTestFile( path, mode,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = PetscStrcpy( fname, path );CHKERRQ(ierr);
       PetscFunctionReturn(1);
     }
     
     /* Make a local copy of path and mangle it */
-    senv = env = (char *)PetscMalloc( PetscStrlen(path) + 1 ); CHKPTRQ(senv);
+    senv = env = (char *)PetscMalloc( PetscStrlen(path) + 1 );CHKPTRQ(senv);
     ierr = PetscStrcpy( env, path );CHKERRQ(ierr);
     while (env) {
       /* Find next directory in env */
@@ -101,10 +101,10 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
 	
       ierr = PetscStrcpy( trial + ln, name );;CHKERRQ(ierr);
 
-      ierr = PetscTestFile( path, mode,&flag); CHKERRQ(ierr);
+      ierr = PetscTestFile( path, mode,&flag);CHKERRQ(ierr);
       if (flag) {
         /* need PetscGetFullPath rather then copy in case path has . in it */
-	ierr = PetscGetFullPath( trial,  fname, MAXPATHLEN );;CHKERRQ(ierr);
+	ierr = PetscGetFullPath( trial,  fname, MAXPATHLEN );CHKERRQ(ierr);
 	PetscFree( senv );
         PetscFunctionReturn(1);
       }
@@ -112,7 +112,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
     PetscFree( senv );
   }
 
-  ierr = PetscTestFile( path, mode,&flag); CHKERRQ(ierr);
+  ierr = PetscTestFile( path, mode,&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(1);
 #endif
   PetscFunctionReturn(0);

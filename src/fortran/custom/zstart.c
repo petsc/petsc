@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.56 1999/04/16 21:47:38 balay Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.57 1999/04/19 22:17:49 bsmith Exp balay $";
 #endif
 
 /*
@@ -121,13 +121,13 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   (*argv)[0] = (char*) (*argv + *argc + 1);
 
   if (!rank) {
-    PetscMemzero((*argv)[0],(*argc)*warg*sizeof(char));
+    ierr = PetscMemzero((*argv)[0],(*argc)*warg*sizeof(char));CHKERRQ(ierr);
     for ( i=0; i<*argc; i++ ) {
       (*argv)[i+1] = (*argv)[i] + warg;
 #if defined(HAVE_PXFGETARG)
       {char *tmp = (*argv)[i]; 
        int  ierr,ilen;
-       PXFGETARG(&i, _cptofcd(tmp,warg),&ilen,&ierr); CHKERRQ(ierr);
+       PXFGETARG(&i, _cptofcd(tmp,warg),&ilen,&ierr);CHKERRQ(ierr);
        tmp[ilen] = 0;
       } 
 #elif defined (PARCH_win32)
@@ -170,11 +170,11 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
 #else
   int i;
 #endif
-  int  j,flag,argc = 0,dummy_tag;
+  int  j,flag,argc = 0,dummy_tag,ierr;
   char **args = 0,*t1, name[256];
 
   *__ierr = 1;
-  PetscMemzero(name,256);
+  ierr = PetscMemzero(name,256); if (ierr) return;
   if (PetscInitializedCalled) {*__ierr = 0; return;}
   
   *__ierr = OptionsCreate(); 

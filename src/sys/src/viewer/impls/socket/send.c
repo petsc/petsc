@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.92 1999/04/19 22:08:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.93 1999/04/21 20:42:14 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -122,7 +122,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
 {
   struct sockaddr_in sa;
   struct hostent     *hp;
-  int                s = 0,flag = 1;
+  int                s = 0,flag = 1,ierr;
   
   PetscFunctionBegin;
   if ( (hp=gethostbyname(hostname)) == NULL ) {
@@ -130,8 +130,9 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
     fprintf(stderr,"hostname tried %s\n",hostname);
     SETERRQ(PETSC_ERR_LIB,0,"system error open connection");
   }
-  PetscMemzero(&sa,sizeof(sa));
-  PetscMemcpy(&sa.sin_addr,hp->h_addr,hp->h_length);
+  ierr = PetscMemzero(&sa,sizeof(sa));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&sa.sin_addr,hp->h_addr,hp->h_length);CHKERRQ(ierr);
+
   sa.sin_family = hp->h_addrtype;
   sa.sin_port = htons((u_short) portnum);
   while (flag) {
@@ -255,7 +256,7 @@ int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
 
   PetscFunctionBegin;
    if (port <= 0) {
-    ierr = OptionsGetInt(PETSC_NULL,"-viewer_socket_port",&port,&flag); CHKERRQ(ierr);
+    ierr = OptionsGetInt(PETSC_NULL,"-viewer_socket_port",&port,&flag);CHKERRQ(ierr);
     if (!flag) {
       char portn[16];
       ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflag);CHKERRQ(ierr);
@@ -269,7 +270,7 @@ int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
   if (!machine) {
     ierr = OptionsGetString(PETSC_NULL,"-viewer_socket_machine",mach,128,&flag);CHKERRQ(ierr);
     if (!flag) {
-      ierr = PetscGetHostName(mach,256); CHKERRQ(ierr);
+      ierr = PetscGetHostName(mach,256);CHKERRQ(ierr);
     }
   } else {
     ierr = PetscStrncpy(mach,machine,256);CHKERRQ(ierr);
@@ -293,7 +294,7 @@ int ViewerInitializeSocketWorld_Private(void)
 
   PetscFunctionBegin;
   if (VIEWER_SOCKET_WORLD_PRIVATE) PetscFunctionReturn(0);
-  ierr = ViewerSocketOpen(PETSC_COMM_WORLD,0,0,&VIEWER_SOCKET_WORLD_PRIVATE); CHKERRQ(ierr);
+  ierr = ViewerSocketOpen(PETSC_COMM_WORLD,0,0,&VIEWER_SOCKET_WORLD_PRIVATE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -305,15 +306,15 @@ int ViewerDestroySocket_Private(void)
 
   PetscFunctionBegin;
   if (VIEWER_SOCKET_WORLD_PRIVATE) {
-    ierr = ViewerDestroy(VIEWER_SOCKET_WORLD_PRIVATE); CHKERRQ(ierr);
+    ierr = ViewerDestroy(VIEWER_SOCKET_WORLD_PRIVATE);CHKERRQ(ierr);
   }
   /*
       Free any viewers created with the VIEWER_DRAW_(MPI_Comm comm) trick.
   */
-  ierr = VIEWER_SOCKET_Destroy(PETSC_COMM_WORLD); CHKERRQ(ierr);
-  ierr = VIEWER_SOCKET_Destroy(PETSC_COMM_SELF); CHKERRQ(ierr);
-  ierr = VIEWER_SOCKET_Destroy(MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = VIEWER_SOCKET_Destroy(MPI_COMM_SELF); CHKERRQ(ierr);
+  ierr = VIEWER_SOCKET_Destroy(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = VIEWER_SOCKET_Destroy(PETSC_COMM_SELF);CHKERRQ(ierr);
+  ierr = VIEWER_SOCKET_Destroy(MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = VIEWER_SOCKET_Destroy(MPI_COMM_SELF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------------*/
@@ -381,7 +382,7 @@ int VIEWER_SOCKET_Destroy(MPI_Comm comm)
   }
   ierr = MPI_Attr_get( comm, Petsc_Viewer_Socket_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
   if (flag) { 
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_delete(comm,Petsc_Viewer_Socket_keyval);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);

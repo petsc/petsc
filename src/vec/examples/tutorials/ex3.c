@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.36 1999/03/19 19:46:51 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.37 1999/03/19 21:26:30 balay Exp balay $";
 #endif
 
 static char help[] = "Displays a vector visually.\n\n";
@@ -38,15 +38,15 @@ int main(int argc,char **argv)
      or sequential) is determined at runtime.  Also, the parallel
      partitioning of the vector is determined by PETSc at runtime.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
-  ierr = VecSetFromOptions(x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRA(ierr);
+  ierr = VecSetFromOptions(x);CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel vectors are partitioned by
      contiguous chunks of rows across the processors.  Determine
      which vector are locally owned. 
   */
-  ierr = VecGetOwnershipRange(x,&istart,&iend); CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(x,&istart,&iend);CHKERRA(ierr);
 
   /* 
      Set the vector elements.
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
    */
   for ( i=istart; i<iend; i++ ) { 
     v = (double) i;
-    ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
+    ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
   }
 
   /* 
@@ -64,8 +64,8 @@ int main(int argc,char **argv)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = VecAssemblyBegin(x); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(x); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(x);CHKERRA(ierr);
+  ierr = VecAssemblyEnd(x);CHKERRA(ierr);
 
   /*
      Open an X-window viewer.  Note that we specify the same communicator
@@ -77,19 +77,19 @@ int main(int argc,char **argv)
 
   */
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,PETSC_NULL,0,0,300,300,
-                         &viewer); CHKERRA(ierr);
+                         &viewer);CHKERRA(ierr);
   ierr = ViewerPushFormat(viewer,VIEWER_FORMAT_DRAW_LG,"Line graph Plot");CHKERRA(ierr);
   /*
      View the vector
   */
-  ierr = VecView(x,viewer); CHKERRA(ierr);
+  ierr = VecView(x,viewer);CHKERRA(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
-  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = ViewerDestroy(viewer);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

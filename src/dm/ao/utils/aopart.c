@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aopart.c,v 1.6 1999/03/11 16:23:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aopart.c,v 1.7 1999/03/17 23:25:08 bsmith Exp balay $";
 #endif
 
 #include "ao.h"       /*I  "ao.h"  I*/
@@ -39,7 +39,7 @@ int AODataKeyPartition(AOData aodata,char *key)
   ierr = MatPartitioningSetAdjacency(part,adj);CHKERRA(ierr);
   ierr = MatPartitioningSetFromOptions(part);CHKERRA(ierr);
   ierr = MatPartitioningApply(part,&is);CHKERRA(ierr);
-  ierr = MatPartitioningDestroy(part); CHKERRA(ierr);
+  ierr = MatPartitioningDestroy(part);CHKERRA(ierr);
   ierr = MatDestroy(adj);CHKERRQ(ierr);
   ierr = ISPartitioningToNumbering(is,&isg);CHKERRA(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);

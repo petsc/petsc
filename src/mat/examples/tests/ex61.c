@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex61.c,v 1.2 1998/05/29 20:37:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex61.c,v 1.3 1999/03/19 21:19:59 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests MatSeq(B)AIJSetColumnIndices()";
@@ -33,25 +33,25 @@ int main(int argc,char **args)
   }
 
   i = 0; j = 0; v = 1.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
   i = 0; j = 2; v = 3.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
 
   i = 1; j = 0; v = 1.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
   i = 1; j = 1; v = 2.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
   i = 1; j = 2; v = 3.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
 
   i = 2; j = 2; v = 3.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

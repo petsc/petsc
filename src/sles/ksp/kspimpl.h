@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.39 1999/02/27 03:24:20 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.40 1999/04/21 18:17:50 bsmith Exp balay $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -90,8 +90,7 @@ struct _p_KSP {
 #define KSPMonitor(ksp,it,rnorm) \
         { int _ierr,_i,_im = ksp->numbermonitors; \
           for ( _i=0; _i<_im; _i++ ) {\
-            _ierr = (*ksp->monitor[_i])(ksp,it,rnorm,ksp->monitorcontext[_i]); \
-            CHKERRQ(_ierr); \
+            _ierr = (*ksp->monitor[_i])(ksp,it,rnorm,ksp->monitorcontext[_i]);CHKERRQ(_ierr); \
 	  } \
 	}
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.5 1998/12/03 04:06:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.6 1999/03/19 21:23:59 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests AOData loading\n\n";
@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   */
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"dataoutput",BINARY_RDONLY,&binary);CHKERRA(ierr);
   ierr = AODataLoadBasic(binary,&aodata);CHKERRA(ierr);
-  ierr = ViewerDestroy(binary); CHKERRA(ierr);
+  ierr = ViewerDestroy(binary);CHKERRA(ierr);
 
   /*
         Access part of the data 
@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   PetscSynchronizedFlush(PETSC_COMM_WORLD);
   ierr = AODataSegmentRestore(aodata,"key1","seg1",4,indices,(void **)&intv);CHKERRQ(ierr);
  
-  ierr = AODataDestroy(aodata); CHKERRA(ierr);
+  ierr = AODataDestroy(aodata);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

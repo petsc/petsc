@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.83 1999/04/21 18:17:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.84 1999/05/04 18:24:07 balay Exp balay $";
 #endif
 
 /*
@@ -56,19 +56,19 @@ static int PCSetFromOptions_SOR(PC pc)
   double omega;
 
   PetscFunctionBegin;
-  ierr = OptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PCSORSetOmega(pc,omega);CHKERRQ(ierr);} 
-  ierr = OptionsGetInt(pc->prefix,"-pc_sor_its",&its,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(pc->prefix,"-pc_sor_its",&its,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PCSORSetIterations(pc,its);CHKERRQ(ierr);}
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_symmetric",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_symmetric",&flg);CHKERRQ(ierr);
   if (flg) {ierr = PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);CHKERRQ(ierr);}
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_backward",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_backward",&flg);CHKERRQ(ierr);
   if (flg) {ierr = PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);CHKERRQ(ierr);}
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_symmetric",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_symmetric",&flg);CHKERRQ(ierr);
   if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);CHKERRQ(ierr);}
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_backward",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_backward",&flg);CHKERRQ(ierr);
   if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);CHKERRQ(ierr);}
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_forward",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_forward",&flg);CHKERRQ(ierr);
   if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -102,7 +102,7 @@ static int PCView_SOR(PC pc,Viewer viewer)
   ViewerType vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     if (sym & SOR_ZERO_INITIAL_GUESS) {ierr = ViewerASCIIPrintf(viewer,"  SOR:  zero initial guess\n");CHKERRQ(ierr);}
     if (sym == SOR_APPLY_UPPER)              sortype = "apply_upper";
@@ -295,7 +295,7 @@ EXTERN_C_BEGIN
 int PCCreate_SOR(PC pc)
 {
   int    ierr;
-  PC_SOR *jac   = PetscNew(PC_SOR); CHKPTRQ(jac);
+  PC_SOR *jac   = PetscNew(PC_SOR);CHKPTRQ(jac);
 
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_SOR));

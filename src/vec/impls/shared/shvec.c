@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.24 1999/04/19 22:11:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.25 1999/04/22 20:21:45 bsmith Exp balay $";
 #endif
 
 /*
@@ -63,7 +63,7 @@ int VecCreate_Shared(Vec vv)
   vv->ops->duplicate = VecDuplicate_Shared;
   PetscFree(vv->type_name);
   vv->type_name   = (char *) PetscMalloc((1+PetscStrlen(VEC_SHARED))*sizeof(char));CHKPTRQ(vv->type_name);
-  PetscStrcpy(vv->type_name,VEC_SHARED);
+  ierr = PetscStrcpy(vv->type_name,VEC_SHARED);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -165,11 +165,11 @@ int PetscSharedInitialize(MPI_Comm comm)
 
   if (!flag) {
     /* This communicator does not yet have a shared memory areana */
-    arena    = (usptr_t**) PetscMalloc( sizeof(usptr_t*) ); CHKPTRQ(arena);
+    arena    = (usptr_t**) PetscMalloc( sizeof(usptr_t*) );CHKPTRQ(arena);
 
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      PetscStrcpy(filename,"/tmp/PETScArenaXXXXXX");
+      ierr = PetscStrcpy(filename,"/tmp/PETScArenaXXXXXX");CHKERRQ(ierr);
       mktemp(filename);
       len      = PetscStrlen(filename);
     } 
@@ -281,7 +281,7 @@ int VecCreateShared(MPI_Comm comm, int n, int N, Vec *v)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = VecCreate(comm,n,N,v); CHKERRQ(ierr);
+  ierr = VecCreate(comm,n,N,v);CHKERRQ(ierr);
   ierr = VecSetType(*v,"PETSc#VecShared");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

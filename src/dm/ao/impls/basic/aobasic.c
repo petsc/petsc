@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.42 1999/03/17 23:25:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.43 1999/04/19 22:16:59 bsmith Exp balay $";
 #endif
 
 /*
@@ -62,7 +62,7 @@ int AOView_Basic(AO ao,Viewer viewer)
     viewer = VIEWER_STDOUT_SELF; 
   }
 
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
     ierr = ViewerASCIIPrintf(viewer,"Number of elements in ordering %d\n",aodebug->N);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"   App.   PETSc\n");CHKERRQ(ierr);
@@ -146,15 +146,15 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   aodebug            = PetscNew(AO_Basic);
   PLogObjectMemory(ao,sizeof(struct _p_AO) + sizeof(AO_Basic));
 
-  PetscMemcpy(ao->ops,&myops,sizeof(myops));
+  ierr             = PetscMemcpy(ao->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ao->ops->destroy = AODestroy_Basic;
   ao->ops->view    = AOView_Basic;
-  ao->data    = (void *)aodebug;
+  ao->data         = (void *)aodebug;
 
   /* transmit all lengths to all processors */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  lens = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(lens);
+  lens = (int *) PetscMalloc( 2*size*sizeof(int) );CHKPTRQ(lens);
   disp = lens + size;
   ierr = MPI_Allgather(&napp,1,MPI_INT,lens,1,MPI_INT,comm);CHKERRQ(ierr);
   N =  0;
@@ -178,17 +178,17 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   }
 
   /* get all indices on all processors */
-  allpetsc = (int *) PetscMalloc( 2*N*sizeof(int) ); CHKPTRQ(allpetsc);
+  allpetsc = (int *) PetscMalloc( 2*N*sizeof(int) );CHKPTRQ(allpetsc);
   allapp   = allpetsc + N;
   ierr = MPI_Allgatherv(petsc,napp,MPI_INT,allpetsc,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
   ierr = MPI_Allgatherv(myapp,napp,MPI_INT,allapp,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
   PetscFree(lens);
 
   /* generate a list of application and PETSc node numbers */
-  aodebug->app = (int *) PetscMalloc(2*N*sizeof(int));CHKPTRQ(aodebug->app);
+  aodebug->app   = (int *) PetscMalloc(2*N*sizeof(int));CHKPTRQ(aodebug->app);
   PLogObjectMemory(ao,2*N*sizeof(int));
   aodebug->petsc = aodebug->app + N;
-  PetscMemzero(aodebug->app,2*N*sizeof(int));
+  ierr           = PetscMemzero(aodebug->app,2*N*sizeof(int));CHKERRQ(ierr);
   for ( i=0; i<N; i++ ) {
     ip = allpetsc[i]; ia = allapp[i];
     /* check there are no duplicates */
@@ -205,8 +205,8 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
     aodebug->petsc[i]--;
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-ao_view",&flg1); CHKERRQ(ierr);
-  if (flg1) {ierr = AOView(ao,VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
+  ierr = OptionsHasName(PETSC_NULL,"-ao_view",&flg1);CHKERRQ(ierr);
+  if (flg1) {ierr = AOView(ao,VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
 
   *aoout = ao; PetscFunctionReturn(0);
 }
@@ -242,19 +242,19 @@ int AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
-  ierr = ISGetSize(isapp,&napp); CHKERRQ(ierr);
+  ierr = ISGetSize(isapp,&napp);CHKERRQ(ierr);
   if (ispetsc) {
-    ierr = ISGetSize(ispetsc,&npetsc); CHKERRQ(ierr);
+    ierr = ISGetSize(ispetsc,&npetsc);CHKERRQ(ierr);
     if (napp != npetsc) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local IS lengths must match");
-    ierr = ISGetIndices(ispetsc,&mypetsc); CHKERRQ(ierr);
+    ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
   }
-  ierr = ISGetIndices(isapp,&myapp); CHKERRQ(ierr);
+  ierr = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);
 
-  ierr = AOCreateBasic(comm,napp,myapp,mypetsc,aoout); CHKERRQ(ierr);
+  ierr = AOCreateBasic(comm,napp,myapp,mypetsc,aoout);CHKERRQ(ierr);
 
-  ierr = ISRestoreIndices(isapp,&myapp); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isapp,&myapp);CHKERRQ(ierr);
   if (ispetsc) {
-    ierr = ISRestoreIndices(ispetsc,&mypetsc); CHKERRQ(ierr);
+    ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

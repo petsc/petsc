@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmdense.c,v 1.18 1999/02/08 16:37:05 bsmith Exp balay $";
+static char vcid[] = "$Id: mmdense.c,v 1.19 1999/02/08 21:39:11 balay Exp balay $";
 #endif
 
 /*
@@ -19,27 +19,27 @@ int MatSetUpMultiply_MPIDense(Mat mat)
 
   PetscFunctionBegin;
   /* Create local vector that is used to scatter into */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,mdn->N,&mdn->lvec); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,mdn->N,&mdn->lvec);CHKERRQ(ierr);
 
   /* Create temporary index set for building scatter gather */
-  ierr = ISCreateStride(PETSC_COMM_SELF,mdn->N,0,1,&tofrom); CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,mdn->N,0,1,&tofrom);CHKERRQ(ierr);
 
   /* Create temporary global vector to generate scatter context */
   /* n    = mdn->cowners[mdn->rank+1] - mdn->cowners[mdn->rank]; */
 
   /* the partitioning of this vector is not right! you don't really know
      what it is; this will only work for default (PETSC_DECIDE) matrix layouts*/
-  ierr = VecCreateMPI(mat->comm,PETSC_DECIDE,mdn->N,&gvec); CHKERRQ(ierr);
+  ierr = VecCreateMPI(mat->comm,PETSC_DECIDE,mdn->N,&gvec);CHKERRQ(ierr);
 
   /* Generate the scatter context */
-  ierr = VecScatterCreate(gvec,tofrom,mdn->lvec,tofrom,&mdn->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterCreate(gvec,tofrom,mdn->lvec,tofrom,&mdn->Mvctx);CHKERRQ(ierr);
   PLogObjectParent(mat,mdn->Mvctx);
   PLogObjectParent(mat,mdn->lvec);
   PLogObjectParent(mat,tofrom);
   PLogObjectParent(mat,gvec);
 
-  ierr = ISDestroy(tofrom); CHKERRQ(ierr);
-  ierr = VecDestroy(gvec); CHKERRQ(ierr);
+  ierr = ISDestroy(tofrom);CHKERRQ(ierr);
+  ierr = VecDestroy(gvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -103,7 +103,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   m      = c->M;
   
   /* Get some new tags to keep the communication clean */
-  ierr = PetscObjectGetNewTag((PetscObject)C,&tag1); CHKERRQ(ierr);
+  ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
 
     /* Check if the col indices are sorted */
   for ( i=0; i<ismax; i++ ) {
@@ -114,17 +114,17 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   }
 
   len    =  2*ismax*(sizeof(int *)+sizeof(int)) + (m+1)*sizeof(int);
-  irow   = (int **)PetscMalloc(len); CHKPTRQ(irow);
+  irow   = (int **)PetscMalloc(len);CHKPTRQ(irow);
   icol   = irow + ismax;
   nrow   = (int *) (icol + ismax);
   ncol   = nrow + ismax;
   rtable = ncol + ismax;
 
   for ( i=0; i<ismax; i++ ) { 
-    ierr = ISGetIndices(isrow[i],&irow[i]);  CHKERRQ(ierr);
-    ierr = ISGetIndices(iscol[i],&icol[i]);  CHKERRQ(ierr);
-    ierr = ISGetSize(isrow[i],&nrow[i]);  CHKERRQ(ierr);
-    ierr = ISGetSize(iscol[i],&ncol[i]);  CHKERRQ(ierr);
+    ierr = ISGetIndices(isrow[i],&irow[i]);CHKERRQ(ierr);
+    ierr = ISGetIndices(iscol[i],&icol[i]);CHKERRQ(ierr);
+    ierr = ISGetSize(isrow[i],&nrow[i]);CHKERRQ(ierr);
+    ierr = ISGetSize(iscol[i],&ncol[i]);CHKERRQ(ierr);
   }
 
   /* Create hash table for the mapping :row -> proc*/
@@ -141,9 +141,9 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   w2     = w1 + size;      /* if w2[i] marked, then a message to proc i*/
   w3     = w2 + size;      /* no of IS that needs to be sent to proc i */
   w4     = w3 + size;      /* temp work space used in determining w1, w2, w3 */
-  PetscMemzero(w1,size*3*sizeof(int)); /* initialize work vector*/
+  ierr = PetscMemzero(w1,size*3*sizeof(int));CHKERRQ(ierr); /* initialize work vector*/
   for ( i=0; i<ismax; i++ ) { 
-    PetscMemzero(w4,size*sizeof(int)); /* initialize work vector*/
+    ierr   = PetscMemzero(w4,size*sizeof(int));CHKERRQ(ierr); /* initialize work vector*/
     jmax   = nrow[i];
     irow_i = irow[i];
     for ( j=0; j<jmax; j++ ) {
@@ -177,7 +177,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   /* Do a global reduction to determine how many messages to expect*/
   {
     int *rw1, *rw2;
-    rw1   = (int *)PetscMalloc(2*size*sizeof(int)); CHKPTRQ(rw1);
+    rw1   = (int *)PetscMalloc(2*size*sizeof(int));CHKPTRQ(rw1);
     rw2   = rw1+size;
     ierr  = MPI_Allreduce(w1, rw1, size, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
     bsz   = rw1[rank];
@@ -188,7 +188,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
 
   /* Allocate memory for recv buffers . Prob none if nrqr = 0 ???? */ 
   len      = (nrqr+1)*sizeof(int*) + nrqr*bsz*sizeof(int);
-  rbuf1    = (int**) PetscMalloc(len);  CHKPTRQ(rbuf1);
+  rbuf1    = (int**) PetscMalloc(len);CHKPTRQ(rbuf1);
   rbuf1[0] = (int *) (rbuf1 + nrqr);
   for ( i=1; i<nrqr; ++i ) rbuf1[i] = rbuf1[i-1] + bsz;
   
@@ -199,13 +199,13 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   }
 
   /* Allocate Memory for outgoing messages */
-  len      = 2*size*sizeof(int*) + 2*msz*sizeof(int) + size*sizeof(int);
-  sbuf1    = (int **)PetscMalloc(len); CHKPTRQ(sbuf1);
-  ptr      = sbuf1 + size;   /* Pointers to the data in outgoing buffers */
-  PetscMemzero(sbuf1,2*size*sizeof(int*));
+  len   = 2*size*sizeof(int*) + 2*msz*sizeof(int) + size*sizeof(int);
+  sbuf1 = (int **)PetscMalloc(len);CHKPTRQ(sbuf1);
+  ptr   = sbuf1 + size;   /* Pointers to the data in outgoing buffers */
+  ierr  = PetscMemzero(sbuf1,2*size*sizeof(int*));CHKERRQ(ierr);
   /* allocate memory for outgoing data + buf to receive the first reply */
-  tmp      = (int *) (ptr + size);
-  ctr      = tmp + 2*msz;
+  tmp   = (int *) (ptr + size);
+  ctr   = tmp + 2*msz;
 
   {
     int *iptr = tmp,ict = 0;
@@ -222,13 +222,13 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   for ( i=0; i<nrqs; i++ ) {
     j           = pa[i];
     sbuf1[j][0] = 0;
-    PetscMemzero(sbuf1[j]+1, 2*w3[j]*sizeof(int));
+    ierr        = PetscMemzero(sbuf1[j]+1, 2*w3[j]*sizeof(int));CHKERRQ(ierr);
     ptr[j]      = sbuf1[j] + 2*w3[j] + 1;
   }
   
   /* Parse the isrow and copy data into outbuf */
   for ( i=0; i<ismax; i++ ) {
-    PetscMemzero(ctr,size*sizeof(int));
+    ierr = PetscMemzero(ctr,size*sizeof(int));CHKERRQ(ierr);
     irow_i = irow[i];
     jmax   = nrow[i];
     for ( j=0; j<jmax; j++ ) {  /* parse the indices of each IS */
@@ -264,7 +264,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   for ( i=0; i<nrqs; i++ ) {
     j        = pa[i];
     count    = (w1[j] - (2*sbuf1[j][0] + 1))*N;
-    rbuf2[i] = (Scalar *)PetscMalloc((count+1)*sizeof(Scalar)); CHKPTRQ(rbuf2[i]);
+    rbuf2[i] = (Scalar *)PetscMalloc((count+1)*sizeof(Scalar));CHKPTRQ(rbuf2[i]);
     ierr     = MPI_Irecv( rbuf2[i], count, MPIU_SCALAR, j, tag1, comm, r_waits2+i);CHKERRQ(ierr);
   }
 
@@ -299,7 +299,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
         }
       }
       /* Now send off the data */
-      ierr = MPI_Isend(sbuf2[index],(end-start)*N,MPIU_SCALAR,s_proc,tag1,comm,s_waits2+i); CHKERRQ(ierr);
+      ierr = MPI_Isend(sbuf2[index],(end-start)*N,MPIU_SCALAR,s_proc,tag1,comm,s_waits2+i);CHKERRQ(ierr);
     }
   }
   /* End Send-Recv of IS + row_numbers */
@@ -315,7 +315,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
       if ((mat->m != nrow[i]) || (mat->n != ncol[i])) {
         SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong size");
       }
-      PetscMemzero(mat->v,mat->m*mat->n*sizeof(Scalar));
+      ierr = PetscMemzero(mat->v,mat->m*mat->n*sizeof(Scalar));CHKERRQ(ierr);
       submats[i]->factor = C->factor;
     }
   } else {
@@ -354,9 +354,9 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   /* Create row map. This maps c->row to submat->row for each submat*/
   /* this is a very expensive operation wrt memory usage */
   len     = (1+ismax)*sizeof(int *) + ismax*c->M*sizeof(int);
-  rmap    = (int **)PetscMalloc(len); CHKPTRQ(rmap);
+  rmap    = (int **)PetscMalloc(len);CHKPTRQ(rmap);
   rmap[0] = (int *)(rmap + ismax);
-  PetscMemzero(rmap[0],ismax*c->M*sizeof(int));
+  ierr    = PetscMemzero(rmap[0],ismax*c->M*sizeof(int));CHKERRQ(ierr);
   for ( i=1; i<ismax; i++ ) { rmap[i] = rmap[i-1] + c->M;}
   for ( i=0; i<ismax; i++ ) {
     rmap_i = rmap[i];
@@ -404,13 +404,13 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   /* End Send-Recv of row_values */
   PetscFree(r_status2); PetscFree(r_waits2);
   s_status2 = (MPI_Status *) PetscMalloc((nrqr+1)*sizeof(MPI_Status));CHKPTRQ(s_status1);
-  ierr      = MPI_Waitall(nrqr,s_waits2,s_status2); CHKERRQ(ierr);
+  ierr      = MPI_Waitall(nrqr,s_waits2,s_status2);CHKERRQ(ierr);
   PetscFree(s_status2); PetscFree(s_waits2);
 
   /* Restore the indices */
   for ( i=0; i<ismax; i++ ) {
-    ierr = ISRestoreIndices(isrow[i], irow+i); CHKERRQ(ierr);
-    ierr = ISRestoreIndices(iscol[i], icol+i); CHKERRQ(ierr);
+    ierr = ISRestoreIndices(isrow[i], irow+i);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(iscol[i], icol+i);CHKERRQ(ierr);
   }
 
   /* Destroy allocated memory */
@@ -433,11 +433,11 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   PetscFree(sbuf2);
   PetscFree(rmap);
 
-  ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag1); CHKERRQ(ierr);
+  ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
 
   for ( i=0; i<ismax; i++ ) {
-    ierr = MatAssemblyBegin(submats[i], MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(submats[i], MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(submats[i], MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(submats[i], MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

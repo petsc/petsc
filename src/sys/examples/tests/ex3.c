@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.11 1997/10/19 03:24:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.12 1999/03/19 21:17:16 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests catching of floating point exceptions.\n\n";
@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   PetscPrintf(PETSC_COMM_SELF,"This is a contrived example to test floating pointing\n");
   PetscPrintf(PETSC_COMM_SELF,"It is not a true error.\n");
   PetscPrintf(PETSC_COMM_SELF,"Run with -fp_trap to catch the floating point error\n");
-  ierr = CreateError(0.0); CHKERRA(ierr);
+  ierr = CreateError(0.0);CHKERRA(ierr);
   return 0;
 }
  

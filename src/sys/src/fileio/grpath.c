@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: grpath.c,v 1.23 1999/04/21 20:43:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: grpath.c,v 1.24 1999/04/22 20:23:49 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -88,7 +88,7 @@ int PetscGetRealPath(char path[], char rpath[])
   ierr = PetscStrcpy( rpath, path );CHKERRQ(ierr);
   N = PetscStrlen(rpath);
   while (N) {
-    ierr = PetscStrncpy(tmp1,rpath,N); CHKERRQ(ierr);
+    ierr = PetscStrncpy(tmp1,rpath,N);CHKERRQ(ierr);
     tmp1[N] = 0;
     n = readlink(tmp1,tmp3,MAXPATHLEN);
     if (n > 0) {
@@ -96,7 +96,8 @@ int PetscGetRealPath(char path[], char rpath[])
       if (tmp3[0] != '/') {
         tmp2 = PetscStrchr(tmp1,'/');
         m = PetscStrlen(tmp1) - PetscStrlen(tmp2);
-        ierr = PetscStrncpy(tmp4,tmp1,m); CHKERRQ(ierr);tmp4[m] = 0;
+        ierr = PetscStrncpy(tmp4,tmp1,m);CHKERRQ(ierr);
+        tmp4[m] = 0;
         ierr = PetscStrncat(tmp4,"/",MAXPATHLEN - PetscStrlen(tmp4));CHKERRQ(ierr);
         ierr = PetscStrncat(tmp4,tmp3,MAXPATHLEN - PetscStrlen(tmp4));CHKERRQ(ierr);
         ierr = PetscGetRealPath(tmp4,rpath);CHKERRQ(ierr);
@@ -113,7 +114,7 @@ int PetscGetRealPath(char path[], char rpath[])
     if (tmp2) N = PetscStrlen(tmp1) - PetscStrlen(tmp2);
     else N = PetscStrlen(tmp1);
   }
-  PetscStrncpy(rpath,path,MAXPATHLEN);CHKERRQ(ierr);
+  ierr = PetscStrncpy(rpath,path,MAXPATHLEN);CHKERRQ(ierr);
 #endif
   /* remove garbage some automounters put at the beginning of the path */
   if (PetscStrncmp( "/tmp_mnt/", rpath, 9 ) == 0) {

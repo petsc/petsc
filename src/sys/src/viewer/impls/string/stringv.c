@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.29 1999/03/17 23:21:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.30 1999/04/21 20:42:30 bsmith Exp balay $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
@@ -137,10 +137,11 @@ EXTERN_C_END
 int ViewerStringSetString(Viewer v,char string[],int len)
 {
   Viewer_String *vstr = (Viewer_String *) v->data;
+  int           ierr;
 
   PetscFunctionBegin;
   if (!PetscTypeCompare(v->type_name,"string")) PetscFunctionReturn(0);
-  PetscMemzero(string,len*sizeof(char));
+  ierr = PetscMemzero(string,len*sizeof(char));CHKERRQ(ierr);
   vstr->string      = string;
   vstr->head        = string;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewreg.c,v 1.8 1999/03/31 04:11:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewreg.c,v 1.9 1999/04/21 20:42:36 bsmith Exp balay $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -76,7 +76,7 @@ int ViewerSetType(Viewer viewer,ViewerType type)
 
   if (viewer->data) {
     /* destroy the old private Viewer context */
-    ierr = (*viewer->ops->destroy)(viewer); CHKERRQ(ierr);
+    ierr = (*viewer->ops->destroy)(viewer);CHKERRQ(ierr);
     if (viewer->type_name) PetscFree(viewer->type_name);
     viewer->data      = 0;
     viewer->type_name = 0;
@@ -89,7 +89,7 @@ int ViewerSetType(Viewer viewer,ViewerType type)
   if (!r) SETERRQ1(1,1,"Unknown Viewer type given: %s",type);
 
   viewer->data        = 0;
-  ierr = (*r)(viewer); CHKERRQ(ierr);
+  ierr = (*r)(viewer);CHKERRQ(ierr);
 
   if (!viewer->type_name) {
     viewer->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(viewer->type_name);
@@ -170,7 +170,7 @@ int ViewerRegister_Private(char *sname,char *path,char *name,int (*function)(Vie
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname,path); CHKERRQ(ierr);
+  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
   ierr = PetscStrcat(fullname,":");CHKERRQ(ierr);
   ierr = PetscStrcat(fullname,name);CHKERRQ(ierr);
   ierr = FListAdd_Private(&ViewerList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
@@ -209,12 +209,12 @@ int ViewerSetFromOptions(Viewer viewer)
   if (!ViewerList) SETERRQ(1,1,"No viewer implementations registered");
   ierr = OptionsGetString(viewer->prefix,"-viewer_type",vtype,256,&flg);
   if (flg) {
-    ierr = ViewerSetType(viewer,vtype); CHKERRQ(ierr);
+    ierr = ViewerSetType(viewer,vtype);CHKERRQ(ierr);
   }
 
   /* type has not been set? */
   if (!viewer->type_name) {
-    ierr = ViewerSetType(viewer,ASCII_VIEWER); CHKERRQ(ierr);
+    ierr = ViewerSetType(viewer,ASCII_VIEWER);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

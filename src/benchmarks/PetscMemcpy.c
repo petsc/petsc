@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: PetscMemcpy.c,v 1.11 1998/11/20 15:31:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: PetscMemcpy.c,v 1.12 1999/03/19 21:24:35 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -22,10 +22,10 @@ int main( int argc, char **argv)
     B[i] = i%61897;
   }
   /* To take care of paging effects */
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  ierr = PetscGetTime(&x); CHKERRA(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
+  ierr = PetscGetTime(&x);CHKERRA(ierr);
 
-  ierr = PetscGetTime(&x); CHKERRA(ierr);
+  ierr = PetscGetTime(&x);CHKERRA(ierr);
   /*
   PetscMemcpy(A,B,sizeof(Scalar)*8000000);
   PetscMemcpy(A,B,sizeof(Scalar)*8000000);
@@ -44,18 +44,18 @@ int main( int argc, char **argv)
     }
   }}
 
-  ierr = PetscGetTime(&y); CHKERRA(ierr);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  PetscMemcpy(A,B,sizeof(Scalar)*0);
-  ierr = PetscGetTime(&z); CHKERRA(ierr);
+  ierr = PetscGetTime(&y);CHKERRA(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
+  ierr = PetscMemcpy(A,B,sizeof(Scalar)*0);CHKERRA(ierr);
+  ierr = PetscGetTime(&z);CHKERRA(ierr);
 
   fprintf(stderr,"%s : \n","PetscMemcpy");
   fprintf(stderr,"    %-11s : %e MB/s\n","Bandwidth",10.0*8*8/(y-x));

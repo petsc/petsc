@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.35 1999/04/23 19:23:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.36 1999/04/23 19:29:19 bsmith Exp balay $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -89,11 +89,11 @@ int ISInvertPermutation_Block(IS is, IS *isout)
   int      i,ierr, *ii,n = sub->n,*idx = sub->idx;
 
   PetscFunctionBegin;
-  ii = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(ii);
+  ii = (int *) PetscMalloc( (n+1)*sizeof(int) );CHKPTRQ(ii);
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
-  ierr = ISCreateBlock(PETSC_COMM_SELF,sub->bs,n,ii,isout); CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,sub->bs,n,ii,isout);CHKERRQ(ierr);
   ISSetPermutation(*isout);
   PetscFree(ii);
   PetscFunctionReturn(0);
@@ -109,9 +109,9 @@ int ISView_Block(IS is, Viewer viewer)
   ViewerType  vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     if (is->isperm) {
       fprintf(fd,"Block Index set is permutation\n");
     }
@@ -136,7 +136,7 @@ int ISSort_Block(IS is)
 
   PetscFunctionBegin;
   if (sub->sorted) PetscFunctionReturn(0);
-  ierr = PetscSortInt(sub->n, sub->idx); CHKERRQ(ierr);
+  ierr = PetscSortInt(sub->n, sub->idx);CHKERRQ(ierr);
   sub->sorted = 1;
   PetscFunctionReturn(0);
 }
@@ -237,7 +237,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
   *is = 0;
   PetscHeaderCreate(Nindex, _p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,"IS",comm,ISDestroy,ISView); 
   PLogObjectCreate(Nindex);
-  sub            = PetscNew(IS_Block); CHKPTRQ(sub);
+  sub            = PetscNew(IS_Block);CHKPTRQ(sub);
   PLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(int)+sizeof(struct _p_IS));
   sub->idx       = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ(sub->idx);
   sub->n         = n;

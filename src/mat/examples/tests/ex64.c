@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex64.c,v 1.3 1998/12/03 04:01:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex64.c,v 1.4 1999/03/19 21:19:59 bsmith Exp balay $";
 #endif
 
 static char help[] = "Saves 4by4 block matrix.\n\n";
@@ -50,7 +50,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatView(A,fd);CHKERRA(ierr);
-  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRA(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_WORLD,12,&x);CHKERRA(ierr);
   ierr = VecSet(&one,x);CHKERRA(ierr);

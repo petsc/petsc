@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.28 1999/04/04 00:11:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.29 1999/04/19 22:13:11 bsmith Exp balay $";
 #endif
  
 #include "petsc.h"
@@ -21,7 +21,7 @@ static int MatPartitioningApply_Current(MatPartitioning part, IS *partitioning)
   }
   ierr = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
 
-  ierr = MatGetLocalSize(part->adj,&m,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatGetLocalSize(part->adj,&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(part->comm,m,rank,0,partitioning);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -92,7 +92,8 @@ int MatPartitioningRegister_Private(char *sname,char *path,char *name,int (*func
   char fullname[256];
 
   PetscFunctionBegin;
-  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
+  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
   ierr = FListAdd_Private(&MatPartitioningList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -338,7 +339,7 @@ int MatPartitioningView(MatPartitioning  part,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = MatPartitioningGetType(part,&name); CHKERRQ(ierr);
+    ierr = MatPartitioningGetType(part,&name);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"MatPartitioning Object: %s\n",name);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
@@ -437,7 +438,7 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
 
   if (part->type_name) PetscFree(part->type_name);
   part->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(part->type_name);
-  PetscStrcpy(part->type_name,type);
+  ierr = PetscStrcpy(part->type_name,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -470,7 +471,7 @@ int MatPartitioningSetFromOptions(MatPartitioning part)
 
   ierr = OptionsGetString(part->prefix,"-mat_partitioning_type",method,256,&flag);
   if (flag) {
-    ierr = MatPartitioningSetType(part,method); CHKERRQ(ierr);
+    ierr = MatPartitioningSetType(part,method);CHKERRQ(ierr);
   }
   /*
     Set the type if it was never set.
@@ -483,7 +484,7 @@ int MatPartitioningSetFromOptions(MatPartitioning part)
     ierr = (*part->setfromoptions)(part);CHKERRQ(ierr);
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flag); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = MatPartitioningPrintHelp(part);CHKERRQ(ierr);
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.71 1999/03/01 04:55:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.72 1999/04/19 22:14:51 bsmith Exp balay $";
 #endif
 /*
     This is a first attempt at a Chebychev routine, it is not 
@@ -56,7 +56,7 @@ int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,emax,emin);CHKERRQ(ierr);
   }
@@ -77,7 +77,7 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
 
   PetscFunctionBegin;
   ksp->its = 0;
-  ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   maxit    = ksp->max_it;
   pres     = ksp->use_pres;
   cerr     = 1;
@@ -105,14 +105,14 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   c[k]   = mu;
 
   if (!ksp->guess_zero) {
-    ierr = MatMult(Amat,x,r); CHKERRQ(ierr);     /*  r = b - Ax     */
-    ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
+    ierr = MatMult(Amat,x,r);CHKERRQ(ierr);     /*  r = b - Ax     */
+    ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
   } else {
-    ierr = VecCopy(b,r); CHKERRQ(ierr);
+    ierr = VecCopy(b,r);CHKERRQ(ierr);
   }
                   
-  ierr = PCApply(ksp->B,r,p[k]); CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + x */
-  ierr = VecAYPX(&scale,x,p[k]); CHKERRQ(ierr);
+  ierr = PCApply(ksp->B,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + x */
+  ierr = VecAYPX(&scale,x,p[k]);CHKERRQ(ierr);
 
   for ( i=0; i<maxit; i++) {
     PetscAMSTakeAccess(ksp);
@@ -127,8 +127,8 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
 
     /* calculate residual norm if requested */
     if (ksp->calc_res) {
-      if (!pres) {ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr);}
-      else {ierr = VecNorm(p[kp1],NORM_2,&rnorm); CHKERRQ(ierr);}
+      if (!pres) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
+      else {ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);}
       PetscAMSTakeAccess(ksp);
       ksp->rnorm                              = rnorm;
       PetscAMSGrantAccess(ksp);
@@ -141,9 +141,9 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
 
     /* y^{k+1} = omega( y^{k} - y^{k-1} + Gamma*r^{k}) + y^{k-1} */
     tmp  = omega*Gamma*scale;
-    ierr = VecScale(&tmp,p[kp1]); CHKERRQ(ierr);
+    ierr = VecScale(&tmp,p[kp1]);CHKERRQ(ierr);
     tmp  = 1.0-omega; VecAXPY(&tmp,p[km1],p[kp1]);
-    ierr = VecAXPY(&omega,p[k],p[kp1]); CHKERRQ(ierr);
+    ierr = VecAXPY(&omega,p[k],p[kp1]);CHKERRQ(ierr);
 
     ktmp = km1;
     km1  = k;
@@ -151,12 +151,12 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
     kp1  = ktmp;
   }
   if (!cerr && ksp->calc_res) {
-    ierr = MatMult(Amat,p[k],r); CHKERRQ(ierr);       /*  r = b - Ap[k]    */
-    ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
-    if (!pres) {ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr);}
+    ierr = MatMult(Amat,p[k],r);CHKERRQ(ierr);       /*  r = b - Ap[k]    */
+    ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
+    if (!pres) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
     else {
-      ierr = PCApply(ksp->B,r,p[kp1]); CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
-      ierr = VecNorm(p[kp1],NORM_2,&rnorm); CHKERRQ(ierr);
+      ierr = PCApply(ksp->B,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
+      ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
     }
     PetscAMSTakeAccess(ksp);
     ksp->rnorm                              = rnorm;
@@ -169,7 +169,7 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   /* make sure solution is in vector x */
   ksp->vec_sol = x;
   if (k != 0) {
-    ierr = VecCopy(p[k],x); CHKERRQ(ierr);
+    ierr = VecCopy(p[k],x);CHKERRQ(ierr);
   }
   if (cerr <= 0) *its = -(i+1);
   else           *its = i+1;
@@ -185,7 +185,7 @@ int KSPView_Chebychev(KSP ksp,Viewer viewer)
   ViewerType    vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"  Chebychev: eigenvalue estimates:  min = %g, max = %g\n",cheb->emin,cheb->emax);CHKERRQ(ierr);
   } else {
@@ -222,7 +222,7 @@ int KSPCreate_Chebychev(KSP ksp)
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",
                                     "KSPChebychevSetEigenvalues_Chebychev",
-                                    (void*)KSPChebychevSetEigenvalues_Chebychev); CHKERRQ(ierr);
+                                    (void*)KSPChebychevSetEigenvalues_Chebychev);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

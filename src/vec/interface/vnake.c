@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vnake.c,v 1.7 1999/04/14 18:15:08 balay Exp bsmith $";
+static char vcid[] = "$Id: vnake.c,v 1.8 1999/04/19 22:11:10 bsmith Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
@@ -37,6 +37,7 @@ static char vcid[] = "$Id: vnake.c,v 1.7 1999/04/14 18:15:08 balay Exp bsmith $"
 int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
 {
   Vec     v;
+  int     ierr;
 
   PetscFunctionBegin;
   *V             = 0;
@@ -45,7 +46,7 @@ int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
   PLogObjectCreate(v);
   PLogObjectMemory(v,sizeof(struct _p_Vec));
 
-  PetscMemzero(v->ops,sizeof(struct _VecOps));
+  ierr = PetscMemzero(v->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
   v->n               = n; 
   v->N               = N;
   v->map             = 0;
@@ -90,7 +91,7 @@ int VecSetFromOptions(Vec vec)
   if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = OptionsGetString(vec->prefix,"-vec_type",vtype,256,&flg);
   if (flg) {
-    ierr = VecSetType(vec,vtype); CHKERRQ(ierr);
+    ierr = VecSetType(vec,vtype);CHKERRQ(ierr);
   }
 
   /* type has not been set? */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.23 1998/12/03 04:03:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.24 1999/03/19 21:16:22 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates us of color map\n";
@@ -19,9 +19,9 @@ int main(int argc,char **argv)
   for ( i=0; i<256; i++) {
     ierr = DrawLine(draw,0.0,((double)i)/256.,1.0,((double)i)/256.,i);
   }
-  ierr = DrawFlush(draw); CHKERRA(ierr);
+  ierr = DrawFlush(draw);CHKERRA(ierr);
   PetscSleep(2);
-  ierr = DrawDestroy(draw); CHKERRA(ierr);
+  ierr = DrawDestroy(draw);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

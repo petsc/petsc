@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: richscale.c,v 1.12 1999/01/31 16:08:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: richscale.c,v 1.13 1999/02/01 14:43:09 curfman Exp balay $";
 #endif
 
 #include "src/sles/ksp/kspimpl.h"         /*I "ksp.h" I*/
@@ -28,7 +28,7 @@ int KSPRichardsonSetScale(KSP ksp,double scale)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,scale);CHKERRQ(ierr);
   }

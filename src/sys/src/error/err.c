@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.98 1999/03/29 22:30:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.99 1999/04/19 22:09:27 bsmith Exp balay $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -58,7 +58,7 @@ $    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess
 @*/
 int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,void*),void *ctx )
 {
-  EH neweh = (EH) PetscMalloc(sizeof(struct _EH)); CHKPTRQ(neweh);
+  EH neweh = (EH) PetscMalloc(sizeof(struct _EH));CHKPTRQ(neweh);
 
   PetscFunctionBegin;
   if (eh) {neweh->previous = eh;} 
@@ -181,9 +181,9 @@ int PetscIntView(int N,int idx[],Viewer viewer)
   }
   PetscValidHeader(viewer);
   PetscValidIntPointer(idx);
-  ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
 
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
@@ -262,9 +262,9 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
   PetscValidHeader(viewer);
   PetscValidScalarPointer(idx);
-  ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
 
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
 
@@ -345,9 +345,9 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
   PetscValidHeader(viewer);
   PetscValidScalarPointer(idx);
-  ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
 
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {

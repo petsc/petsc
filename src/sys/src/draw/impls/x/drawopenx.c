@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawopenx.c,v 1.4 1999/02/26 04:40:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawopenx.c,v 1.5 1999/03/17 23:21:22 bsmith Exp balay $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -64,7 +64,7 @@ int DrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,
 
   PetscFunctionBegin;
   ierr = DrawCreate(comm,display,title,x,y,w,h,inctx);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-nox",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = DrawSetType(*inctx,DRAW_NULL);CHKERRQ(ierr);
   } else {

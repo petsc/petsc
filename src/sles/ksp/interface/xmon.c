@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.38 1999/03/01 04:55:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.39 1999/04/19 22:14:29 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -42,8 +42,8 @@ int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n, DrawLG *d
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = DrawOpenX(PETSC_COMM_SELF,host,label,x,y,m,n,&win); CHKERRQ(ierr);
-  ierr = DrawLGCreate(win,1,draw); CHKERRQ(ierr);
+  ierr = DrawOpenX(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = DrawLGCreate(win,1,draw);CHKERRQ(ierr);
   PLogObjectParent(*draw,win);
   PetscFunctionReturn(0);
 }
@@ -137,8 +137,8 @@ int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) { *draw = 0; PetscFunctionReturn(0);}
 
-  ierr = DrawOpenX(PETSC_COMM_SELF,host,label,x,y,m,n,&win); CHKERRQ(ierr);
-  ierr = DrawLGCreate(win,2,draw); CHKERRQ(ierr);
+  ierr = DrawOpenX(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = DrawLGCreate(win,2,draw);CHKERRQ(ierr);
   PLogObjectParent(*draw,win);
   PetscFunctionReturn(0);
 }
@@ -160,9 +160,9 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
     if (rnorm > 0.0) y[0] = log10(rnorm); else y[0] = -15.0;
   }
 
-  ierr = VecDuplicate(ksp->vec_rhs,&work); CHKERRQ(ierr);
-  ierr = KSPBuildResidual(ksp,0,work,&resid); CHKERRQ(ierr);
-  ierr = VecNorm(resid,NORM_2,&scnorm); CHKERRQ(ierr);
+  ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
+  ierr = VecNorm(resid,NORM_2,&scnorm);CHKERRQ(ierr);
   ierr = VecDestroy(work);CHKERRQ(ierr);
 
   if (!rank) {

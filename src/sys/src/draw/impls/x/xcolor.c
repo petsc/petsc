@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.47 1999/03/01 21:18:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.48 1999/03/02 15:44:29 bsmith Exp balay $";
 #endif
 
 
@@ -151,7 +151,7 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
   }
 
   cmap_base = 0;
-  PetscMemzero(cmap_pixvalues_used,256*sizeof(long int));
+  ierr = PetscMemzero(cmap_pixvalues_used,256*sizeof(long int));CHKERRQ(ierr);
 
   /* set the basic colors into the color map */
   for (i=0; i<DRAW_BASIC_COLORS; i++) {
@@ -257,7 +257,7 @@ int DrawSetColormap_X(Draw_X* XiWin,Colormap colormap)
     ierr = DrawSetUpColormap_X(XiWin->disp,XiWin->screen,XiWin->vis,colormap);CHKERRQ(ierr);
   }
   XiWin->cmap = gColormap;
-  PetscMemcpy(XiWin->cmapping,gCmapping,256*sizeof(PixVal));
+  ierr = PetscMemcpy(XiWin->cmapping,gCmapping,256*sizeof(PixVal));CHKERRQ(ierr);
   XiWin->background = XiWin->cmapping[DRAW_WHITE];
   XiWin->foreground = XiWin->cmapping[DRAW_BLACK];
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.4 1998/12/03 04:06:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.5 1999/03/19 21:23:59 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests AODataRemap \n\n";
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   /*
        Put one segment in the key
   */
-  ierr = AODataKeyAdd(aodata,"key1",PETSC_DECIDE,nglobal); CHKERRA(ierr);
+  ierr = AODataKeyAdd(aodata,"key1",PETSC_DECIDE,nglobal);CHKERRA(ierr);
 
   /* allocate space for the keys each processor will provide */
   keys = (int *) PetscMalloc( n*sizeof(int) );CHKPTRA(keys);
@@ -74,7 +74,7 @@ int main(int argc,char **argv)
   ierr = AODataKeyRemap(aodata,"key1",ao);CHKERRA(ierr);
   ierr = AODestroy(ao);CHKERRA(ierr);
   ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = AODataDestroy(aodata); CHKERRA(ierr);
+  ierr = AODataDestroy(aodata);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

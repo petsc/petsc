@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.65 1999/04/14 16:22:50 bsmith Exp bsmith $"
+static char vcid[] =  "$Id: dvec2.c,v 1.66 1999/04/19 22:11:15 bsmith Exp balay $"
 #endif
 
 /* 
@@ -549,10 +549,11 @@ int VecSet_Seq(const Scalar* alpha,Vec xin)
   Vec_Seq      *x = (Vec_Seq *)xin->data;
   register int n = x->n;
   Scalar       *xx = x->array, oalpha = *alpha;
+  int          ierr;
 
   PetscFunctionBegin;
   if (oalpha == 0.0) {
-    PetscMemzero(xx,n*sizeof(Scalar));
+    ierr = PetscMemzero(xx,n*sizeof(Scalar));CHKERRQ(ierr);
   }
   else {
     SET(xx,n,oalpha);
@@ -570,7 +571,7 @@ int VecSetRandom_Seq(PetscRandom r,Vec xin)
   Scalar       *xx = x->array;
 
   PetscFunctionBegin;
-  for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]); CHKERRQ(ierr);}
+  for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -688,6 +689,7 @@ int VecWAXPY_Seq(const Scalar* alpha,Vec xin,Vec yin,Vec win )
   Vec_Seq      *y = (Vec_Seq *)yin->data;
   register int i, n = x->n;
   Scalar       *xx = x->array, *yy = y->array, *ww = w->array, oalpha = *alpha;
+  int          ierr;
 
   PetscFunctionBegin;
   if (oalpha == 1.0) {
@@ -698,7 +700,7 @@ int VecWAXPY_Seq(const Scalar* alpha,Vec xin,Vec yin,Vec win )
     PLogFlops(n);
     for (i=0; i<n; i++) ww[i] = yy[i] - xx[i];
   } else if (oalpha == 0.0) {
-    PetscMemcpy(ww,yy,n*sizeof(Scalar));
+    ierr = PetscMemcpy(ww,yy,n*sizeof(Scalar));CHKERRQ(ierr);
   } else {
     for (i=0; i<n; i++) ww[i] = yy[i] + oalpha * xx[i];
     PLogFlops(2*n);

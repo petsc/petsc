@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.11 1999/01/06 16:00:43 balay Exp bsmith $ */
+/* $Id: ilu.h,v 1.12 1999/03/16 22:22:20 bsmith Exp balay $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -64,8 +64,8 @@ EXTERN_C_END
 */
 #define Kernel_A_gets_inverse_A(bs,A,pivots,W)\
 { \
-  ierr = LINPACKdgefa((A),(bs),(pivots)); CHKERRQ(ierr); \
-  ierr = LINPACKdgedi((A),(bs),(pivots),(W)); CHKERRQ(ierr); \
+  ierr = LINPACKdgefa((A),(bs),(pivots));CHKERRQ(ierr); \
+  ierr = LINPACKdgedi((A),(bs),(pivots),(W));CHKERRQ(ierr); \
 }
 
 /* -----------------------------------------------------------------------*/
@@ -84,7 +84,8 @@ EXTERN_C_END
 #define Kernel_A_gets_A_times_B(bs,A,B,W) \
 { \
   Scalar _one = 1.0, _zero = 0.0; \
-  PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar)); \
+  int    ierr; \
+  ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(ierr); \
   BLgemm_("N","N",&(bs),&(bs),&(bs),&_one,(W),&(bs),(B),&(bs),&_zero,(A),&(bs));\
 }
 
@@ -190,7 +191,8 @@ EXTERN_C_END
 */
 #define Kernel_A_gets_A_times_B(bs,A,B,W) \
 { \
-  PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar)); \
+  int ierr; \
+  ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(ierr); \
   msgemmi_(&bs,A,B,W); \
 }
 

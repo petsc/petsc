@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zts.c,v 1.15 1999/03/02 19:43:43 bsmith Exp balay $";
+static char vcid[] = "$Id: zts.c,v 1.16 1999/04/05 18:16:45 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -65,7 +65,7 @@ static int (*f2)(TS*,double*,Vec*,Vec*,void*,int*);
 static int ourtsfunction(TS ts,double d,Vec x,Vec f,void *ctx)
 {
   int ierr = 0;
-  (*f2)(&ts,&d,&x,&f,ctx,&ierr); CHKERRQ(ierr);
+  (*f2)(&ts,&d,&x,&f,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -81,7 +81,7 @@ static int (*f3)(TS*,double*,Mat*,Mat*,MatStructure*,void*,int*);
 static int ourtsmatrix(TS ts,double d,Mat* m,Mat* p,MatStructure* type,void*ctx)
 {
   int ierr = 0;
-  (*f3)(&ts,&d,m,p,type,ctx,&ierr); CHKERRQ(ierr);
+  (*f3)(&ts,&d,m,p,type,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -101,7 +101,7 @@ static void (*f4)(TS*,double*,Vec*,Mat*,Mat*,MatStructure*,void*,int*);
 static int ourtsjacobian(TS ts,double d,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
 {
   int ierr = 0;
-  (*f4)(&ts,&d,&x,m,p,type,ctx,&ierr); CHKERRQ(ierr);
+  (*f4)(&ts,&d,&x,m,p,type,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -148,10 +148,10 @@ void tsgettype_(TS *ts,CHAR name,int *__ierr,int len)
 #if defined(USES_CPTOFCD)
   {
     char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-    PetscStrncpy(t,tname,len1);
+    *__ierr = PetscStrncpy(t,tname,len1);
   }
 #else
-  PetscStrncpy(name,tname,len);
+  *__ierr = PetscStrncpy(name,tname,len);
 #endif
 }
 
@@ -172,7 +172,7 @@ static int (*f7)(TS*,int*,double*,Vec*,void*,int*);
 static int ourtsmonitor(TS ts,int i,double d,Vec v,void*ctx)
 {
   int              ierr = 0;
-  (*f7)(&ts,&i,&d,&v,ctx,&ierr); CHKERRQ(ierr);
+  (*f7)(&ts,&i,&d,&v,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 void tssetmonitor_(TS *ts,int (*func)(TS*,int*,double*,Vec*,void*,int*),
@@ -189,10 +189,10 @@ void tsgetoptionsprefix_(TS *ts, CHAR prefix,int *__ierr,int len)
 #if defined(USES_CPTOFCD)
   {
     char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
-    PetscStrncpy(t,tname,len1);
+    *__ierr = PetscStrncpy(t,tname,len1);
   }
 #else
-  PetscStrncpy(prefix,tname,len);
+  *__ierr = PetscStrncpy(prefix,tname,len);
 #endif
 }
 

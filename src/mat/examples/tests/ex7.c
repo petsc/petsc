@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.6 1999/03/19 21:19:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.7 1999/04/16 16:07:27 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests matrix factorization.  Note that most users should\n\
@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Create the matrix for the five point stencil, YET AGAIN */
-  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<n; j++ ) {
       v = -1.0;  I = j + n*i;
@@ -34,46 +34,46 @@ int main(int argc,char **args)
       v = 4.0; MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);
     }
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatGetOrdering(C,MATORDERING_RCM,&perm,&iperm); CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  ierr = ISView(perm,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatGetOrdering(C,MATORDERING_RCM,&perm,&iperm);CHKERRA(ierr);
+  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = ISView(perm,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
-  ierr = MatLUFactorSymbolic(C,perm,iperm,1.0,&LU); CHKERRA(ierr);
-  ierr = MatLUFactorNumeric(C,&LU); CHKERRA(ierr);
-  ierr = MatView(LU,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = MatLUFactorSymbolic(C,perm,iperm,1.0,&LU);CHKERRA(ierr);
+  ierr = MatLUFactorNumeric(C,&LU);CHKERRA(ierr);
+  ierr = MatView(LU,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u); CHKERRA(ierr);
-  ierr = VecSet(&one,u); CHKERRA(ierr);
-  ierr = VecDuplicate(u,&x); CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u);CHKERRA(ierr);
+  ierr = VecSet(&one,u);CHKERRA(ierr);
+  ierr = VecDuplicate(u,&x);CHKERRA(ierr);
+  ierr = VecDuplicate(u,&b);CHKERRA(ierr);
 
-  ierr = MatMult(C,u,b); CHKERRA(ierr);
-  ierr = MatSolve(LU,b,x); CHKERRA(ierr);
+  ierr = MatMult(C,u,b);CHKERRA(ierr);
+  ierr = MatSolve(LU,b,x);CHKERRA(ierr);
 
-  ierr = VecView(b,VIEWER_STDOUT_SELF); CHKERRA(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+  ierr = VecView(b,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = VecView(x,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
-  ierr = VecAXPY(&mone,u,x); CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecAXPY(&mone,u,x);CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
   if (norm > 1.e-12) 
     PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);
   else 
     PetscPrintf(PETSC_COMM_SELF,"Norm of error < 1.e-12\n");
 
-  ierr = MatGetInfo(C,MAT_LOCAL,&info); CHKERRA(ierr);
+  ierr = MatGetInfo(C,MAT_LOCAL,&info);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_SELF,"original matrix nonzeros = %d\n",(int)info.nz_used);
-  ierr = MatGetInfo(LU,MAT_LOCAL,&info); CHKERRA(ierr);
+  ierr = MatGetInfo(LU,MAT_LOCAL,&info);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_SELF,"factored matrix nonzeros = %d\n",(int)info.nz_used);
 
-  ierr = VecDestroy(u); CHKERRA(ierr);
-  ierr = VecDestroy(b); CHKERRA(ierr);
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = ISDestroy(perm); CHKERRA(ierr);
-  ierr = ISDestroy(iperm); CHKERRA(ierr);
-  ierr = MatDestroy(C); CHKERRA(ierr);
-  ierr = MatDestroy(LU); CHKERRA(ierr);
+  ierr = VecDestroy(u);CHKERRA(ierr);
+  ierr = VecDestroy(b);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = ISDestroy(perm);CHKERRA(ierr);
+  ierr = ISDestroy(iperm);CHKERRA(ierr);
+  ierr = MatDestroy(C);CHKERRA(ierr);
+  ierr = MatDestroy(LU);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

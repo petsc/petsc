@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.81 1999/04/19 22:10:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.82 1999/04/23 19:29:25 bsmith Exp balay $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -48,19 +48,19 @@ int ISInvertPermutation_Stride(IS is, IS *perm)
 
   PetscFunctionBegin;
   if (is->isidentity) {
-    ierr = ISCreateStride(PETSC_COMM_SELF,isstride->n,0,1,perm); CHKERRQ(ierr);
-    ierr = ISSetPermutation(*perm); CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,isstride->n,0,1,perm);CHKERRQ(ierr);
+    ierr = ISSetPermutation(*perm);CHKERRQ(ierr);
   } else {
     int *ii,*indices,i,n = isstride->n;
-    ierr = ISGetIndices(is,&indices); CHKERRQ(ierr);
-    ii = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(ii);
+    ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
+    ii = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(ii);
     for ( i=0; i<n; i++ ) {
       ii[indices[i]] = i;
     }
-    ierr = ISRestoreIndices(is,&indices); CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,perm); CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,perm);CHKERRQ(ierr);
     PetscFree(ii);
-    ierr = ISSetPermutation(*perm); CHKERRQ(ierr);
+    ierr = ISSetPermutation(*perm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -159,7 +159,7 @@ int ISGetIndices_Stride(IS in,int **idx)
   int       i;
 
   PetscFunctionBegin;
-  *idx = (int *) PetscMalloc((sub->n+1)*sizeof(int)); CHKPTRQ(idx);
+  *idx = (int *) PetscMalloc((sub->n+1)*sizeof(int));CHKPTRQ(idx);
   (*idx)[0] = sub->first;
   for ( i=1; i<sub->n; i++ ) (*idx)[i] = (*idx)[i-1] + sub->step;
   PetscFunctionReturn(0);
@@ -194,11 +194,11 @@ int ISView_Stride(IS is, Viewer viewer)
   ViewerType  vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
     ierr = MPI_Comm_rank(is->comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     if (size == 1) {
       if (is->isperm) {
         ierr = PetscSynchronizedFPrintf(is->comm,fd,"Index set is permutation\n");CHKERRQ(ierr);
@@ -301,7 +301,7 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   PetscHeaderCreate(Nindex, _p_IS,struct _ISOps,IS_COOKIE,IS_STRIDE,"IS",comm,ISDestroy,ISView); 
   PLogObjectCreate(Nindex);
   PLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _p_IS));
-  sub            = PetscNew(IS_Stride); CHKPTRQ(sub);
+  sub            = PetscNew(IS_Stride);CHKPTRQ(sub);
   sub->n         = n;
   sub->first     = first;
   sub->step      = step;
@@ -313,9 +313,9 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   Nindex->data    = (void *) sub;
   ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   Nindex->isperm  = 0;
-  ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm)); CHKERRQ(ierr);
+    ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm));CHKERRQ(ierr);
   }
   *is = Nindex; 
   PetscFunctionReturn(0);

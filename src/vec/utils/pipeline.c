@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pipeline.c,v 1.11 1999/04/02 22:02:40 balay Exp bsmith $";
+static char vcid[] = "$Id: pipeline.c,v 1.12 1999/04/19 22:10:59 bsmith Exp balay $";
 #endif
 
 /*
@@ -545,8 +545,8 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
     int p,e;
 
     /* allocate connectivity matrix */
-    conn = (int *) PetscMalloc(size*size*sizeof(int)); CHKPTRQ(conn);
-    colr = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(colr);
+    conn = (int *) PetscMalloc(size*size*sizeof(int));CHKPTRQ(conn);
+    colr = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(colr);
     PetscMemzero(conn,size*size*sizeof(int));
 
     /* fill in local row of connectivity matrix */

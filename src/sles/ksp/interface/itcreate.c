@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.160 1999/04/19 22:14:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.161 1999/04/21 18:17:51 bsmith Exp balay $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -46,7 +46,7 @@ int KSPView(KSP ksp,Viewer viewer)
   ViewerType  vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = KSPGetType(ksp,&method);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"KSP Object:\n");CHKERRQ(ierr);
@@ -262,11 +262,11 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 
   if (ksp->setupcalled) {
     /* destroy the old private KSP context */
-    ierr = (*ksp->ops->destroy)(ksp); CHKERRQ(ierr);
+    ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
     ksp->data = 0;
   }
   /* Get the function pointers for the iterative method requested */
-  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
   ierr =  FListFind(ksp->comm, KSPList, itmethod,(int (**)(void *)) &r );CHKERRQ(ierr);
 
@@ -275,11 +275,11 @@ int KSPSetType(KSP ksp,KSPType itmethod)
   if (ksp->data) PetscFree(ksp->data);
   ksp->data        = 0;
   ksp->setupcalled = 0;
-  ierr = (*r)(ksp); CHKERRQ(ierr);
+  ierr = (*r)(ksp);CHKERRQ(ierr);
 
   if (ksp->type_name) PetscFree(ksp->type_name);
   ksp->type_name = (char *) PetscMalloc((PetscStrlen(itmethod)+1)*sizeof(char));CHKPTRQ(ksp->type_name);
-  PetscStrcpy(ksp->type_name,itmethod);
+  ierr = PetscStrcpy(ksp->type_name,itmethod);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -363,10 +363,10 @@ int KSPPrintHelp(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  PetscStrcpy(p,"-");
+  ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
   if (ksp->prefix)  PetscStrcat(p,ksp->prefix);
 
-  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = (*PetscHelpPrintf)(ksp->comm,"KSP options -------------------------------------------------\n");CHKERRQ(ierr);
   ierr = FListPrintTypes(ksp->comm,stdout,ksp->prefix,"ksp_type",KSPList);CHKERRQ(ierr);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ksp->comm," %sksp_rtol <tol>: relative tolerance, defaults to %g\n",
@@ -439,7 +439,7 @@ int KSPSetTypeFromOptions(KSP ksp)
 
   ierr = OptionsGetString(ksp->prefix,"-ksp_type",method,256,&flg);
   if (flg) {
-    ierr = KSPSetType(ksp,method); CHKERRQ(ierr);
+    ierr = KSPSetType(ksp,method);CHKERRQ(ierr);
   }
   /*
     Set the type if it was never set.
@@ -498,12 +498,12 @@ int KSPSetFromOptions(KSP ksp)
   ierr = KSPSetTypeFromOptions(ksp);CHKERRQ(ierr);
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
 
-  ierr = OptionsGetInt(ksp->prefix,"-ksp_max_it",&ksp->max_it, &flg); CHKERRQ(ierr);
-  ierr = OptionsGetDouble(ksp->prefix,"-ksp_rtol",&ksp->rtol, &flg); CHKERRQ(ierr);
-  ierr = OptionsGetDouble(ksp->prefix,"-ksp_atol",&ksp->atol, &flg); CHKERRQ(ierr);
-  ierr = OptionsGetDouble(ksp->prefix,"-ksp_divtol",&ksp->divtol, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(ksp->prefix,"-ksp_max_it",&ksp->max_it, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ksp->prefix,"-ksp_rtol",&ksp->rtol, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ksp->prefix,"-ksp_atol",&ksp->atol, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ksp->prefix,"-ksp_divtol",&ksp->divtol, &flg);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(ksp->prefix,"-ksp_avoid_norms", &flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_avoid_norms", &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = KSPSetAvoidNorms(ksp);CHKERRQ(ierr);
   }
@@ -512,47 +512,47 @@ int KSPSetFromOptions(KSP ksp)
   /*
     Cancels all monitors hardwired into code before call to KSPSetFromOptions()
     */
-  ierr = OptionsHasName(ksp->prefix,"-ksp_cancelmonitors",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_cancelmonitors",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = KSPClearMonitor(ksp); CHKERRQ(ierr);
+    ierr = KSPClearMonitor(ksp);CHKERRQ(ierr);
   }
   /*
     Prints preconditioned residual norm at each iteration
     */
-  ierr = OptionsHasName(ksp->prefix,"-ksp_monitor",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_monitor",&flg);CHKERRQ(ierr);
   if (flg) {
     int rank = 0;
     ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,0,0); CHKERRQ(ierr);
+      ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,0,0);CHKERRQ(ierr);
     }
   }
   /*
     Plots the vector solution 
     */
-  ierr = OptionsHasName(ksp->prefix,"-ksp_vecmonitor",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_vecmonitor",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = KSPSetMonitor(ksp,KSPVecViewMonitor,0,0); CHKERRQ(ierr);
+    ierr = KSPSetMonitor(ksp,KSPVecViewMonitor,0,0);CHKERRQ(ierr);
   }
   /*
     Prints preconditioned and true residual norm at each iteration
     */
-  ierr = OptionsHasName(ksp->prefix,"-ksp_truemonitor",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_truemonitor",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = KSPSetMonitor(ksp,KSPTrueMonitor,0,0); CHKERRQ(ierr);
+    ierr = KSPSetMonitor(ksp,KSPTrueMonitor,0,0);CHKERRQ(ierr);
   }
   /*
     Prints extreme eigenvalue estimates at each iteration
     */
-  ierr = OptionsHasName(ksp->prefix,"-ksp_singmonitor",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_singmonitor",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = KSPSetComputeSingularValues(ksp); CHKERRQ(ierr);
+    ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr);
     ierr = KSPSetMonitor(ksp,KSPSingularValueMonitor,0,0);CHKERRQ(ierr); 
   }
   /*
     Prints preconditioned residual norm with fewer digits
     */
-  ierr = OptionsHasName(ksp->prefix,"-ksp_smonitor",&flg); CHKERRQ(ierr); 
+  ierr = OptionsHasName(ksp->prefix,"-ksp_smonitor",&flg);CHKERRQ(ierr); 
   if (flg) {
     int rank = 0;
     ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
@@ -564,13 +564,13 @@ int KSPSetFromOptions(KSP ksp)
     Graphically plots preconditioned residual norm
     */
   nmax = 4;
-  ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xmonitor",loc,&nmax,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
     int    rank = 0;
     DrawLG lg;
     ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = KSPLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); CHKERRQ(ierr);
+      ierr = KSPLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
       PLogObjectParent(ksp,(PetscObject) lg);
       ierr = KSPSetMonitor(ksp,KSPLGMonitor,lg,(int (*)(void*))KSPLGMonitorDestroy);CHKERRQ(ierr);
     }
@@ -591,16 +591,16 @@ int KSPSetFromOptions(KSP ksp)
     } 
   }
   /* -----------------------------------------------------------------------*/
-  ierr = OptionsHasName(ksp->prefix,"-ksp_preres",&flg); CHKERRQ(ierr);
-  if (flg) { ierr = KSPSetUsePreconditionedResidual(ksp); CHKERRQ(ierr);}
-  ierr = OptionsHasName(ksp->prefix,"-ksp_left_pc",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_preres",&flg);CHKERRQ(ierr);
+  if (flg) { ierr = KSPSetUsePreconditionedResidual(ksp);CHKERRQ(ierr);}
+  ierr = OptionsHasName(ksp->prefix,"-ksp_left_pc",&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPSetPreconditionerSide(ksp,PC_LEFT);CHKERRQ(ierr); }
-  ierr = OptionsHasName(ksp->prefix,"-ksp_right_pc",&flg); CHKERRQ(ierr);
-  if (flg) { ierr = KSPSetPreconditionerSide(ksp,PC_RIGHT); CHKERRQ(ierr);}
-  ierr = OptionsHasName(ksp->prefix,"-ksp_symmetric_pc",&flg); CHKERRQ(ierr);
-  if (flg) { ierr = KSPSetPreconditionerSide(ksp,PC_SYMMETRIC); CHKERRQ(ierr);}
+  ierr = OptionsHasName(ksp->prefix,"-ksp_right_pc",&flg);CHKERRQ(ierr);
+  if (flg) { ierr = KSPSetPreconditionerSide(ksp,PC_RIGHT);CHKERRQ(ierr);}
+  ierr = OptionsHasName(ksp->prefix,"-ksp_symmetric_pc",&flg);CHKERRQ(ierr);
+  if (flg) { ierr = KSPSetPreconditionerSide(ksp,PC_SYMMETRIC);CHKERRQ(ierr);}
 
-  ierr = OptionsHasName(ksp->prefix,"-ksp_compute_singularvalues",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_compute_singularvalues",&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr); }
@@ -608,11 +608,11 @@ int KSPSetFromOptions(KSP ksp)
   if (flg) { ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr); }
 
   for ( i=0; i<numberofsetfromoptions; i++ ) {
-    ierr = (*othersetfromoptions[i])(ksp); CHKERRQ(ierr);
+    ierr = (*othersetfromoptions[i])(ksp);CHKERRQ(ierr);
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
-  if (flg) { ierr = KSPPrintHelp(ksp); CHKERRQ(ierr);  }
+  ierr = OptionsHasName(PETSC_NULL,"-help", &flg);CHKERRQ(ierr);
+  if (flg) { ierr = KSPPrintHelp(ksp);CHKERRQ(ierr);  }
 
   if (ksp->ops->setfromoptions) {
     ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
@@ -670,7 +670,8 @@ int KSPRegister_Private(char *sname,char *path,char *name,int (*function)(KSP))
   char fullname[256];
 
   PetscFunctionBegin;
-  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
+  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
   ierr = FListAdd_Private(&KSPList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

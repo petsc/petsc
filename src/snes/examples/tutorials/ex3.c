@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.61 1999/04/16 16:10:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.62 1999/04/21 18:18:36 bsmith Exp balay $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -102,14 +102,14 @@ int main( int argc, char **argv )
   PetscInitialize( &argc, &argv,(char *)0,help );
   MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&N,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&N,&flg);CHKERRA(ierr);
   ctx.h = 1.0/(N-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -124,11 +124,11 @@ int main( int argc, char **argv )
      Extract global and local vectors from DA; then duplicate for remaining
      vectors that are the same types
   */
-  ierr = DACreateGlobalVector(ctx.da,&x); CHKERRA(ierr);
-  ierr = DACreateLocalVector(ctx.da,&ctx.xlocal); CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = VecDuplicate(x,&F); CHKERRA(ierr); ctx.F = F;
-  ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
+  ierr = DACreateGlobalVector(ctx.da,&x);CHKERRA(ierr);
+  ierr = DACreateLocalVector(ctx.da,&ctx.xlocal);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
+  ierr = VecDuplicate(x,&F);CHKERRA(ierr); ctx.F = F;
+  ierr = VecDuplicate(x,&U);CHKERRA(ierr); 
 
   /* 
      Set function evaluation routine and vector.  Whenever the nonlinear
@@ -154,7 +154,7 @@ int main( int argc, char **argv )
         context that provides application-specific data for the
         Jacobian evaluation routine.
   */
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,&ctx); CHKERRA(ierr);
+  ierr = SNESSetJacobian(snes,J,J,FormJacobian,&ctx);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -163,8 +163,8 @@ int main( int argc, char **argv )
   /* 
      Set an optional user-defined monitoring routine
   */
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer); CHKERRA(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,&monP,0); CHKERRA(ierr); 
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
+  ierr = SNESSetMonitor(snes,Monitor,&monP,0);CHKERRA(ierr); 
 
   /*
      Set names for some vectors to facilitate monitoring (optional)
@@ -176,19 +176,19 @@ int main( int argc, char **argv )
      Set SNES/SLES/KSP/PC runtime options, e.g.,
          -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
   */
-  ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
 
   /* 
      Set an optional user-defined routine to check the validity of candidate 
      iterates that are determined by line search methods
   */
-  ierr = OptionsHasName(PETSC_NULL,"-check_iterates",&step_check); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-check_iterates",&step_check);CHKERRA(ierr);
   if (step_check) {
     PetscPrintf(PETSC_COMM_WORLD,"Activating step checking routine\n");
-    ierr = SNESSetLineSearchCheck(snes,StepCheck,&checkP); CHKERRA(ierr); 
-    ierr = VecDuplicate(x,&(checkP.last_step)); CHKERRA(ierr); 
+    ierr = SNESSetLineSearchCheck(snes,StepCheck,&checkP);CHKERRA(ierr); 
+    ierr = VecDuplicate(x,&(checkP.last_step));CHKERRA(ierr); 
     checkP.tolerance = 1.0;
-    ierr = OptionsGetDouble(PETSC_NULL,"-check_tol",&checkP.tolerance,&flg); CHKERRA(ierr);
+    ierr = OptionsGetDouble(PETSC_NULL,"-check_tol",&checkP.tolerance,&flg);CHKERRA(ierr);
   }
 
 
@@ -197,7 +197,7 @@ int main( int argc, char **argv )
      to demonstrate this routine; this information is also printed with
      the option -snes_view
   */
-  ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf); CHKERRA(ierr);
+  ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%d, maxf=%d\n",
      atol,rtol,stol,maxit,maxf);
 
@@ -210,13 +210,13 @@ int main( int argc, char **argv )
      Get local grid boundaries (for 1-dimensional DA):
        xs, xm - starting grid index, width of local grid (no ghost points)
   */
-  ierr = DAGetCorners(ctx.da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetCorners(ctx.da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data
   */
-  ierr = VecGetArray(F,&FF); CHKERRA(ierr);
-  ierr = VecGetArray(U,&UU); CHKERRA(ierr);
+  ierr = VecGetArray(F,&FF);CHKERRA(ierr);
+  ierr = VecGetArray(U,&UU);CHKERRA(ierr);
 
   /*
      Compute local vector entries
@@ -231,8 +231,8 @@ int main( int argc, char **argv )
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(F,&FF); CHKERRA(ierr);
-  ierr = VecRestoreArray(U,&UU); CHKERRA(ierr);
+  ierr = VecRestoreArray(F,&FF);CHKERRA(ierr);
+  ierr = VecRestoreArray(U,&UU);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -244,8 +244,8 @@ int main( int argc, char **argv )
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(x); CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
+  ierr = FormInitialGuess(x);CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n\n", its );
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -255,8 +255,8 @@ int main( int argc, char **argv )
   /* 
      Check the error
   */
-  ierr = VecAXPY(&none,U,x); CHKERRA(ierr);
-  ierr  = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecAXPY(&none,U,x);CHKERRA(ierr);
+  ierr  = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
   if (norm > 1.e-12) 
     PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
@@ -266,16 +266,16 @@ int main( int argc, char **argv )
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = ViewerDestroy(monP.viewer);  CHKERRA(ierr);
-  if (step_check) {ierr = VecDestroy(checkP.last_step); CHKERRA(ierr);}
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(ctx.xlocal); CHKERRA(ierr);
-  ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = VecDestroy(U); CHKERRA(ierr);
-  ierr = VecDestroy(F); CHKERRA(ierr);
-  ierr = MatDestroy(J); CHKERRA(ierr);
-  ierr = SNESDestroy(snes); CHKERRA(ierr);
-  ierr = DADestroy(ctx.da); CHKERRA(ierr);
+  ierr = ViewerDestroy(monP.viewer); CHKERRA(ierr);
+  if (step_check) {ierr = VecDestroy(checkP.last_step);CHKERRA(ierr);}
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(ctx.xlocal);CHKERRA(ierr);
+  ierr = VecDestroy(r);CHKERRA(ierr);
+  ierr = VecDestroy(U);CHKERRA(ierr);
+  ierr = VecDestroy(F);CHKERRA(ierr);
+  ierr = MatDestroy(J);CHKERRA(ierr);
+  ierr = SNESDestroy(snes);CHKERRA(ierr);
+  ierr = DADestroy(ctx.da);CHKERRA(ierr);
   PetscFinalize();
 
   return 0;
@@ -293,7 +293,7 @@ int FormInitialGuess(Vec x)
 {
    int    ierr;
    Scalar pfive = .50;
-   ierr = VecSet(&pfive,x); CHKERRQ(ierr);
+   ierr = VecSet(&pfive,x);CHKERRQ(ierr);
    return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -328,8 +328,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
      By placing code between these two statements, computations can
      be done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,x,INSERT_VALUES,xlocal);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data.
@@ -340,19 +340,19 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
        - The vector xlocal includes ghost point; the vectors x and f do
          NOT include ghost points.
   */
-  ierr = VecGetArray(xlocal,&xx); CHKERRQ(ierr);
-  ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
-  ierr = VecGetArray(user->F,&FF); CHKERRQ(ierr);
+  ierr = VecGetArray(xlocal,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
+  ierr = VecGetArray(user->F,&FF);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries (for 1-dimensional DA):
        xs, xm  - starting grid index, width of local grid (no ghost points)
        gxs, gxm - starting grid index, width of local grid (including ghost points)
   */
-  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,PETSC_NULL,PETSC_NULL,&gxm,PETSC_NULL,
-         PETSC_NULL); CHKERRQ(ierr);
-  ierr = VecGetSize(f,&N); CHKERRQ(ierr);
+         PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetSize(f,&N);CHKERRQ(ierr);
 
   /*
      Set function values for boundary points; define local interior grid point range:
@@ -385,9 +385,9 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(xlocal,&xx); CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->F,&FF); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xlocal,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->F,&FF);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -415,13 +415,13 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
 
   /*
     Get range of locally owned matrix
   */
-  ierr = MatGetOwnershipRange(*jac,&start,&end); CHKERRQ(ierr);
-  ierr = MatGetSize(*jac,&M,&N); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(*jac,&start,&end);CHKERRQ(ierr);
+  ierr = MatGetSize(*jac,&M,&N);CHKERRQ(ierr);
 
   /*
      Determine starting and ending local indices for interior grid points.
@@ -430,14 +430,14 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
 
   if (start == 0) {  /* left boundary */
     i = 0; A[0] = 1.0; 
-    ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
     istart = 1;
   } else {
     istart = start;
   }
   if (end == M) { /* right boundary */
     i = N-1; A[0] = 1.0; 
-    ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
     iend = N-1;
   } else {
     iend = end;
@@ -452,7 +452,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   for ( i=istart; i<iend; i++ ) {
     j[0] = i - 1; j[1] = i; j[2] = i + 1; 
     A[0] = A[2] = d; A[1] = -2.0*d + 2.0*xx[i-start];
-    ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /* 
@@ -464,9 +464,9 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
      Also, restore vector.
   */
 
-  ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   *flag = SAME_NONZERO_PATTERN;
   return 0;
@@ -496,8 +496,8 @@ int Monitor(SNES snes,int its,double fnorm,void *ctx)
   Vec        x;
 
   PetscPrintf(PETSC_COMM_WORLD,"iter = %d, SNES Function norm %g\n",its,fnorm);
-  ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
-  ierr = VecView(x,monP->viewer); CHKERRQ(ierr);
+  ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
+  ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -527,17 +527,17 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
   double         rdiff;
 
   *flag = PETSC_FALSE;
-  ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
 
   if (iter > 1) {
-    ierr = SNESGetApplicationContext(snes,(void**)&user); CHKERRQ(ierr);
+    ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration %d with tolerance %g\n",
        iter,check->tolerance);
 
     /* Access local array data */
-    ierr = VecGetArray(check->last_step,&xa_last); CHKERRQ(ierr);
-    ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
-    ierr = VecGetLocalSize(x,&ldim); CHKERRQ(ierr);
+    ierr = VecGetArray(check->last_step,&xa_last);CHKERRQ(ierr);
+    ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(x,&ldim);CHKERRQ(ierr);
 
     /* 
        If we fail the user-defined check for validity of the candidate iterate,
@@ -555,10 +555,10 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
                     i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));
       }
     }
-    ierr = VecRestoreArray(check->last_step,&xa_last); CHKERRQ(ierr);
-    ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
+    ierr = VecRestoreArray(check->last_step,&xa_last);CHKERRQ(ierr);
+    ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   }
-  ierr = VecCopy(x,check->last_step); CHKERRQ(ierr);
+  ierr = VecCopy(x,check->last_step);CHKERRQ(ierr);
 
   return 0;
 }

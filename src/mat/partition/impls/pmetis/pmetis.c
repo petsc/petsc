@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.17 1999/04/01 21:35:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.18 1999/04/19 22:13:11 bsmith Exp balay $";
 #endif
  
 #include "petsc.h"
@@ -54,7 +54,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part, IS *partitioning)
   PARKMETIS(vtxdist,xadj,0,adjncy,0,locals,(int*)parmetis,part->comm);
   if (PLogPrintInfo) {parmetis->printout = itmp;}
 
-  ierr = ISCreateGeneral(part->comm,adj->m,locals,partitioning); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(part->comm,adj->m,locals,partitioning);CHKERRQ(ierr);
   PetscFree(locals);
 
   PetscFunctionReturn(0);
@@ -74,7 +74,7 @@ int MatPartitioningView_Parmetis(MatPartitioning part,Viewer viewer)
   ierr = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     if (parmetis->parallel == 2) {
       ierr = PetscFPrintf(part->comm,fd,"  Using parallel coarse grid partitioner\n");CHKERRQ(ierr);
     } else {

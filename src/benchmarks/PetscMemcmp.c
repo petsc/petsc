@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: PetscMemcmp.c,v 1.9 1998/03/31 23:33:57 balay Exp bsmith $";
+static char vcid[] = "$Id: PetscMemcmp.c,v 1.10 1999/03/19 21:24:35 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -20,9 +20,9 @@ int main( int argc, char **argv)
   }
   /* To take care of paging effects */
   PetscMemcmp(A,B,sizeof(Scalar)*0);
-  ierr = PetscGetTime(&x); CHKERRA(ierr);
+  ierr = PetscGetTime(&x);CHKERRA(ierr);
 
-  ierr = PetscGetTime(&x); CHKERRA(ierr);
+  ierr = PetscGetTime(&x);CHKERRA(ierr);
   PetscMemcmp(A,B,sizeof(Scalar)*10000);
   PetscMemcmp(A,B,sizeof(Scalar)*10000);
   PetscMemcmp(A,B,sizeof(Scalar)*10000);
@@ -33,7 +33,7 @@ int main( int argc, char **argv)
   PetscMemcmp(A,B,sizeof(Scalar)*10000);
   PetscMemcmp(A,B,sizeof(Scalar)*10000);
   PetscMemcmp(A,B,sizeof(Scalar)*10000);
-  ierr = PetscGetTime(&y); CHKERRA(ierr);
+  ierr = PetscGetTime(&y);CHKERRA(ierr);
   PetscMemcmp(A,B,sizeof(Scalar)*0);
   PetscMemcmp(A,B,sizeof(Scalar)*0);
   PetscMemcmp(A,B,sizeof(Scalar)*0);
@@ -44,7 +44,7 @@ int main( int argc, char **argv)
   PetscMemcmp(A,B,sizeof(Scalar)*0);
   PetscMemcmp(A,B,sizeof(Scalar)*0);
   PetscMemcmp(A,B,sizeof(Scalar)*0);
-  ierr = PetscGetTime(&z); CHKERRA(ierr);
+  ierr = PetscGetTime(&z);CHKERRA(ierr);
 
   fprintf(stderr,"%s : \n","PetscMemcmp");
   fprintf(stderr,"    %-11s : %e sec\n","Latency",(z-y)/10.0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: redundant.c,v 1.6 1999/04/19 22:14:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: redundant.c,v 1.7 1999/04/21 18:17:36 bsmith Exp balay $";
 #endif
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
@@ -25,11 +25,11 @@ static int PCView_Redundant(PC pc,Viewer viewer)
   ViewerType    vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: Actual PC follows\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PCView(red->pc,viewer); CHKERRQ(ierr);
+    ierr = PCView(red->pc,viewer);CHKERRQ(ierr);
     ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
@@ -243,16 +243,16 @@ int PCCreate_Redundant(PC pc)
   char         *prefix;
 
   PetscFunctionBegin;
-  red = PetscNew(PC_Redundant); CHKPTRQ(red);
+  red = PetscNew(PC_Redundant);CHKPTRQ(red);
   PLogObjectMemory(pc,sizeof(PC_Redundant));
-  PetscMemzero(red,sizeof(PC_Redundant)); 
+  ierr = PetscMemzero(red,sizeof(PC_Redundant));CHKERRQ(ierr);
   red->useparallelmat   = PETSC_TRUE;
 
   /* create the sequential PC that each processor has copy of */
   ierr = PCCreate(PETSC_COMM_SELF,&red->pc);CHKERRQ(ierr);
-  ierr = PCGetOptionsPrefix(pc,&prefix); CHKERRQ(ierr);
-  ierr = PCSetOptionsPrefix(red->pc,prefix); CHKERRQ(ierr);
-  ierr = PCAppendOptionsPrefix(red->pc,"redundant_"); CHKERRQ(ierr);
+  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+  ierr = PCSetOptionsPrefix(red->pc,prefix);CHKERRQ(ierr);
+  ierr = PCAppendOptionsPrefix(red->pc,"redundant_");CHKERRQ(ierr);
 
   pc->ops->apply             = PCApply_Redundant;
   pc->ops->applytrans        = 0;

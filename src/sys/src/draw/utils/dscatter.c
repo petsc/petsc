@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dscatter.c,v 1.22 1999/03/17 23:21:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dscatter.c,v 1.23 1999/04/19 22:09:24 bsmith Exp balay $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -50,7 +50,7 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
 
   PetscFunctionBegin;
   if (vobj->cookie == DRAW_COOKIE && PetscTypeCompare(vobj->type,DRAW_NULL)) {
-    ierr = DrawOpenNull(vobj->comm,(Draw*)outctx); CHKERRQ(ierr);
+    ierr = DrawOpenNull(vobj->comm,(Draw*)outctx);CHKERRQ(ierr);
     (*outctx)->win = win;
     PetscFunctionReturn(0);
   }
@@ -69,7 +69,7 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
   sp->y       = sp->x + dim*CHUNCKSIZE;
   sp->len     = dim*CHUNCKSIZE;
   sp->loc     = 0;
-  ierr = DrawAxisCreate(win,&sp->axis); CHKERRQ(ierr);
+  ierr = DrawAxisCreate(win,&sp->axis);CHKERRQ(ierr);
   PLogObjectParent(sp,sp->axis);
   *outctx = sp;
   PetscFunctionReturn(0);
@@ -99,7 +99,7 @@ int DrawSPSetDimension(DrawSP sp,int dim)
 
   PetscFree(sp->x);
   sp->dim     = dim;
-  sp->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double)); CHKPTRQ(sp->x);
+  sp->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double));CHKPTRQ(sp->x);
   PLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(double));
   sp->y       = sp->x + dim*CHUNCKSIZE;
   sp->len     = dim*CHUNCKSIZE;
@@ -191,7 +191,7 @@ int DrawSPDestroy(DrawSP sp)
 @*/
 int DrawSPAddPoint(DrawSP sp,double *x,double *y)
 {
-  int i;
+  int i,ierr;
 
   PetscFunctionBegin;
   if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
@@ -202,8 +202,8 @@ int DrawSPAddPoint(DrawSP sp,double *x,double *y)
     tmpx = (double *) PetscMalloc((2*sp->len+2*sp->dim*CHUNCKSIZE)*sizeof(double));CHKPTRQ(tmpx);
     PLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(double));
     tmpy = tmpx + sp->len + sp->dim*CHUNCKSIZE;
-    PetscMemcpy(tmpx,sp->x,sp->len*sizeof(double));
-    PetscMemcpy(tmpy,sp->y,sp->len*sizeof(double));
+    ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(double));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(double));CHKERRQ(ierr);
     PetscFree(sp->x);
     sp->x = tmpx; sp->y = tmpy;
     sp->len += sp->dim*CHUNCKSIZE;
@@ -243,7 +243,7 @@ int DrawSPAddPoint(DrawSP sp,double *x,double *y)
 @*/
 int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
 {
-  int    i, j, k;
+  int    i, j, k,ierr;
   double *x,*y;
 
   PetscFunctionBegin;
@@ -256,8 +256,8 @@ int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
     tmpx = (double *) PetscMalloc((2*sp->len+2*sp->dim*chunk)*sizeof(double));CHKPTRQ(tmpx);
     PLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(double));
     tmpy = tmpx + sp->len + sp->dim*chunk;
-    PetscMemcpy(tmpx,sp->x,sp->len*sizeof(double));
-    PetscMemcpy(tmpy,sp->y,sp->len*sizeof(double));
+    ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(double));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(double));CHKERRQ(ierr);
     PetscFree(sp->x);
     sp->x   = tmpx; sp->y = tmpy;
     sp->len += sp->dim*CHUNCKSIZE;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.2 1999/02/03 04:29:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.3 1999/03/19 21:16:22 bsmith Exp balay $";
 #endif
 
 static char help[] = "Makes a simple histogram\n";
@@ -31,21 +31,21 @@ int main(int argc,char **argv)
     xlabel = (char *)0; toplabel = (char *)0;
   }
   ierr = DrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
-  ierr = DrawHistCreate(draw,bins,&hist); CHKERRA(ierr);
-  ierr = DrawHistGetAxis(hist,&axis); CHKERRA(ierr);
-  ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE); CHKERRA(ierr);
-  ierr = DrawAxisSetLabels(axis,toplabel,xlabel,ylabel); CHKERRA(ierr);
+  ierr = DrawHistCreate(draw,bins,&hist);CHKERRA(ierr);
+  ierr = DrawHistGetAxis(hist,&axis);CHKERRA(ierr);
+  ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE);CHKERRA(ierr);
+  ierr = DrawAxisSetLabels(axis,toplabel,xlabel,ylabel);CHKERRA(ierr);
 
   for ( i=0; i<n ; i++ ) {
     xd = (double)( i - 5 );
-    ierr = DrawHistAddValue(hist,xd*xd); CHKERRA(ierr);
+    ierr = DrawHistAddValue(hist,xd*xd);CHKERRA(ierr);
   }
   ierr = DrawHistSetColor(hist,color);CHKERRA(ierr);
-  ierr = DrawHistDraw(hist); CHKERRA(ierr);
-  ierr = DrawFlush(draw); CHKERRA(ierr);
+  ierr = DrawHistDraw(hist);CHKERRA(ierr);
+  ierr = DrawFlush(draw);CHKERRA(ierr);
 
-  ierr = DrawHistDestroy(hist); CHKERRA(ierr);
-  ierr = DrawDestroy(draw); CHKERRA(ierr);
+  ierr = DrawHistDestroy(hist);CHKERRA(ierr);
+  ierr = DrawDestroy(draw);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.50 1999/03/19 21:22:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.51 1999/04/16 16:10:21 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -60,79 +60,79 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
     SETERRQ(1,0,"Incompatible number of processors:  Nx * Ny != size");
 
   /* Set up user-defined work space */
   user.param = 5.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg); CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg);CHKERRA(ierr);
   user.ndim = mx * my; user.mx = mx; user.my = my;
   user.hx = one/(mx+1); user.hy = one/(my+1);
 
   /* Set up distributed array and vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,user.mx,
-         user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
-  ierr = DACreateGlobalVector(user.da,&x); CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.da,&user.localX); CHKERRA(ierr);
-  ierr = VecDuplicate(x,&user.s); CHKERRA(ierr);
-  ierr = VecDuplicate(user.localX,&user.localS); CHKERRA(ierr);
-  ierr = VecDuplicate(x,&g); CHKERRA(ierr);
-  ierr = VecDuplicate(g,&user.y); CHKERRA(ierr);
+         user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
+  ierr = DACreateGlobalVector(user.da,&x);CHKERRA(ierr);
+  ierr = DACreateLocalVector(user.da,&user.localX);CHKERRA(ierr);
+  ierr = VecDuplicate(x,&user.s);CHKERRA(ierr);
+  ierr = VecDuplicate(user.localX,&user.localS);CHKERRA(ierr);
+  ierr = VecDuplicate(x,&g);CHKERRA(ierr);
+  ierr = VecDuplicate(g,&user.y);CHKERRA(ierr);
 
   /* Create nonlinear solver */
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_UNCONSTRAINED_MINIMIZATION,&snes);CHKERRA(ierr);
-  ierr = SNESSetType(snes,method); CHKERRA(ierr);
+  ierr = SNESSetType(snes,method);CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,
-         (void *)&user); CHKERRA(ierr);
-  ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user); CHKERRA(ierr);
+         (void *)&user);CHKERRA(ierr);
+  ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user);CHKERRA(ierr);
 
   /* Either explicitly form Hessian matrix approx or use matrix-free version */
-  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&flg);CHKERRA(ierr);
   if (flg) {
-    ierr = VecGetLocalSize(x,&ldim); CHKERRA(ierr);
+    ierr = VecGetLocalSize(x,&ldim);CHKERRA(ierr);
     ierr = MatCreateShell(PETSC_COMM_WORLD,ldim,user.ndim,user.ndim,user.ndim,
-           (void*)&user,&H); CHKERRA(ierr);
-    ierr = MatShellSetOperation(H,MATOP_MULT,(void*)HessianProductMat); CHKERRA(ierr);
-    ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); CHKERRA(ierr);
+           (void*)&user,&H);CHKERRA(ierr);
+    ierr = MatShellSetOperation(H,MATOP_MULT,(void*)HessianProductMat);CHKERRA(ierr);
+    ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user);CHKERRA(ierr);
 
     /* Set null preconditioner.  Alternatively, set user-provided 
        preconditioner or explicitly form preconditioning matrix */
-    ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
-    ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
+    ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
+    ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
+    ierr = PCSetType(pc,PCNONE);CHKERRA(ierr);
   } else {
-    ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,user.ndim,user.ndim,&H); CHKERRA(ierr);
-    ierr = MatSetOption(H,MAT_SYMMETRIC); CHKERRA(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-defaultH",&flg); CHKERRA(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,user.ndim,user.ndim,&H);CHKERRA(ierr);
+    ierr = MatSetOption(H,MAT_SYMMETRIC);CHKERRA(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-defaultH",&flg);CHKERRA(ierr);
     if (flg) ierr = SNESSetHessian(snes,H,H,SNESDefaultComputeHessian,(void *)&user);
-    else     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user); CHKERRA(ierr);
+    else     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user);CHKERRA(ierr);
   }
 
   /* Set options; then solve minimization problem */
-  ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = FormInitialGuess(&user,x); CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
-  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
-  ierr = SNESView(snes,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
+  ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
+  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRA(ierr);
+  ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d, ",its);
   PetscPrintf(PETSC_COMM_WORLD,"number of unsuccessful steps = %d\n\n",nfails);
 
   /* Free data structures */
-  ierr = VecDestroy(user.s); CHKERRA(ierr);
-  ierr = VecDestroy(user.localX); CHKERRA(ierr);
-  ierr = VecDestroy(user.localS); CHKERRA(ierr);
-  ierr = VecDestroy(user.y); CHKERRA(ierr);
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(g); CHKERRA(ierr);
-  ierr = MatDestroy(H); CHKERRA(ierr); 
-  ierr = SNESDestroy(snes); CHKERRA(ierr); 
-  ierr = DADestroy(user.da); CHKERRA(ierr);
+  ierr = VecDestroy(user.s);CHKERRA(ierr);
+  ierr = VecDestroy(user.localX);CHKERRA(ierr);
+  ierr = VecDestroy(user.localS);CHKERRA(ierr);
+  ierr = VecDestroy(user.y);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(g);CHKERRA(ierr);
+  ierr = MatDestroy(H);CHKERRA(ierr); 
+  ierr = SNESDestroy(snes);CHKERRA(ierr); 
+  ierr = DADestroy(user.da);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;
@@ -172,38 +172,38 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
   int      i, j, ierr, ndim, xs, ys,  xm, ym, rstart, rend, ldim, iglob;
   Scalar   *y, zero = 0.0, one = 1.0;
 
-  ierr = MatZeroEntries(*H); CHKERRQ(ierr);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
+  ierr = MatZeroEntries(*H);CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
 
   ndim = user->ndim;
-  ierr = VecSet(&zero,user->s); CHKERRQ(ierr);
+  ierr = VecSet(&zero,user->s);CHKERRQ(ierr);
   user->xvec = X; /* Set location of vector */
-  ierr = VecGetOwnershipRange(user->y,&rstart,&rend); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(user->y,&ldim); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(user->y,&rstart,&rend);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(user->y,&ldim);CHKERRQ(ierr);
 
   for (j=0; j<ndim; j++) {   /* loop over columns */
 
-    ierr = VecSetValues(user->s,1,&j,&one,INSERT_VALUES); CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(user->s); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(user->s); CHKERRQ(ierr);
+    ierr = VecSetValues(user->s,1,&j,&one,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(user->s);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(user->s);CHKERRQ(ierr);
 
-    ierr = HessianProduct(ptr,user->s,user->y); CHKERRQ(ierr);
+    ierr = HessianProduct(ptr,user->s,user->y);CHKERRQ(ierr);
 
-    ierr = VecSetValues(user->s,1,&j,&zero,INSERT_VALUES); CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(user->s); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(user->s); CHKERRQ(ierr);
+    ierr = VecSetValues(user->s,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(user->s);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(user->s);CHKERRQ(ierr);
 
-    ierr = VecGetArray(user->y,&y); CHKERRQ(ierr);
+    ierr = VecGetArray(user->y,&y);CHKERRQ(ierr);
     for (i=0; i<ldim; i++) {
       if (y[i] != zero) {
         iglob = i+rstart;
-        ierr = MatSetValues(*H,1,&iglob,1,&j,&y[i],ADD_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(*H,1,&iglob,1,&j,&y[i],ADD_VALUES);CHKERRQ(ierr);
       }
     }
-    ierr = VecRestoreArray(user->y,&y); CHKERRQ(ierr);
+    ierr = VecRestoreArray(user->y,&y);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*H,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*H,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   return 0;
 }
@@ -239,9 +239,9 @@ int FormInitialGuess(AppCtx *user,Vec X)
   int    xs, ys, xm, ym, Xm, Ym, Xs, Ys, xe, ye;
 
   /* Get local vector (including ghost points) */
-  ierr = VecGetArray(user->localX,&x); CHKERRQ(ierr);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
+  ierr = VecGetArray(user->localX,&x);CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
 
   xe = xs+xm;
   ye = ys+ym;
@@ -256,10 +256,10 @@ int FormInitialGuess(AppCtx *user,Vec X)
 #endif
     }
   }
-  ierr = VecRestoreArray(user->localX,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->localX,&x);CHKERRQ(ierr);
 
   /* Insert values into global vector */
-  ierr = DALocalToGlobal(user->da,user->localX,INSERT_VALUES,X); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(user->da,user->localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
 }
 /* ---------- Evaluate function f(x) and/or gradient g(x) ----------- */
@@ -279,12 +279,12 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   cdiv3 = user->param/three;
 
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
   xe = xs+xm;
   ye = ys+ym;
   if (xs == 0)  xsm = xs-1;
@@ -297,7 +297,7 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   else          yep = ye;
 
   if (fg & GradientEval) {
-    ierr = VecSet(&szero,gvec); CHKERRQ(ierr);
+    ierr = VecSet(&szero,gvec);CHKERRQ(ierr);
   }
 
   /* Compute function and gradient over the lower triangular elements */
@@ -319,15 +319,15 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       if (fg & GradientEval) {
         if (i != -1 && j != -1) {
           ind = ltog[k]; val = - dvdx/hx - dvdy/hy - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
         if (i != nx-1 && j != -1) {
           ind = ltog[k+1]; val =  dvdx/hx - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
         if (i != -1 && j != ny-1) {
           ind = ltog[k+Xm]; val = dvdy/hy - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
       }
     }
@@ -351,20 +351,20 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       } if (fg & GradientEval) {
         if (i != nx && j != 0) {
           ind = ltog[k-Xm]; val = - dvdy/hy - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
         if (i != 0 && j != ny) {
           ind = ltog[k-1]; val =  - dvdx/hx - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
         if (i != nx && j != ny) {
           ind = ltog[k]; val =  dvdx/hx + dvdy/hy - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
       }
     }
   }
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   area = p5*hx*hy;
   if (fg & FunctionEval) {   /* Scale the function */
 #if !defined(USE_PETSC_COMPLEX)
@@ -374,9 +374,9 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 #endif
     MPI_Allreduce((void*)&floc,(void*)f,1,MPI_DOUBLE,MPI_SUM,PETSC_COMM_WORLD);
   } if (fg & GradientEval) { /* Scale the gradient */
-    ierr = VecAssemblyBegin(gvec); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(gvec); CHKERRQ(ierr);
-    ierr = VecScale((Scalar*)&area,gvec); CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(gvec);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(gvec);CHKERRQ(ierr);
+    ierr = VecScale((Scalar*)&area,gvec);CHKERRQ(ierr);
   }
   return 0;
 }
@@ -415,15 +415,15 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
   hyhy = one/(hy*hy);
 
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(user->da,user->xvec,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,user->xvec,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(user->da,svec,INSERT_VALUES,localS); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,svec,INSERT_VALUES,localS); CHKERRQ(ierr);
-  ierr = VecGetArray(localS,&s); CHKERRQ(ierr);
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(user->da,user->xvec,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(user->da,user->xvec,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(user->da,svec,INSERT_VALUES,localS);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(user->da,svec,INSERT_VALUES,localS);CHKERRQ(ierr);
+  ierr = VecGetArray(localS,&s);CHKERRQ(ierr);
+  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
   xe = xs+xm;
   ye = ys+ym;
   if (xs == 0)  xsm = xs-1;
@@ -435,7 +435,7 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
   if (ye == ny) yep = ye+1;
   else          yep = ye;
 
-  ierr = VecSet(&szero,y); CHKERRQ(ierr);
+  ierr = VecSet(&szero,y);CHKERRQ(ierr);
 
   /* Compute f''(x)*s over the lower triangular elements */
   for (j=ysm; j<ye; j++) {  /*  for (j=-1; j<ny; j++) */
@@ -448,16 +448,16 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
       if (i != nx-1 && j != -1) {
         vr = s[k+1];
         ind = ltog[k+1]; val = hxhx*(vr-v);
-        ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+        ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
       }
       if (i != -1 && j != ny-1) {
         vt = s[k+Xm];
         ind = ltog[k+Xm]; val = hyhy*(vt-v);
-        ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+        ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
       }
       if (i != -1 && j != -1) {
         ind = ltog[k]; val = hxhx*(v-vr) + hyhy*(v-vt);
-        ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+        ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
   }
@@ -473,27 +473,27 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
       if (i != nx && j != 0) {
         vb = s[k-Xm];
         ind = ltog[k-Xm]; val = hyhy*(vb-v);
-        ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+        ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
       }
       if (i != 0 && j != ny) {
         vl = s[k-1];
         ind = ltog[k-1]; val = hxhx*(vl-v);
-        ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+        ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
       }
       if (i != nx && j != ny) {
         ind = ltog[k]; val = hxhx*(v-vl) + hyhy*(v-vb);
-        ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+        ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
   }
-  ierr = VecAssemblyBegin(y); CHKERRQ(ierr);
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(localS,&x); CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(y); CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(localS,&x);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
 
   /* Scale result by area */
   area = p5*hx*hy;
-  ierr = VecScale(&area,y); CHKERRQ(ierr);
+  ierr = VecScale(&area,y);CHKERRQ(ierr);
   return 0;
 }
 

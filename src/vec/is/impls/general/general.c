@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.80 1999/04/23 19:29:31 bsmith Exp balay $";
+static char vcid[] = "$Id: general.c,v 1.81 1999/04/29 20:28:38 balay Exp balay $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -92,11 +92,11 @@ int ISInvertPermutation_General(IS is, IS *isout)
   int        i,ierr, *ii,n = sub->n,*idx = sub->idx;
 
   PetscFunctionBegin;
-  ii = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(ii);
+  ii = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(ii);
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,isout); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,isout);CHKERRQ(ierr);
   ISSetPermutation(*isout);
   PetscFree(ii);
   PetscFunctionReturn(0);
@@ -112,16 +112,16 @@ int ISView_General(IS is, Viewer viewer)
   ViewerType  vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     MPI_Comm comm;
     int      rank,size;
 
-    ierr = PetscObjectGetComm((PetscObject)viewer,&comm); CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     if (size > 1) {
       if (is->isperm) {
         ierr = PetscSynchronizedFPrintf(comm,fd,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
@@ -155,7 +155,7 @@ int ISSort_General(IS is)
 
   PetscFunctionBegin;
   if (sub->sorted) PetscFunctionReturn(0);
-  ierr = PetscSortInt(sub->n, sub->idx); CHKERRQ(ierr);
+  ierr = PetscSortInt(sub->n, sub->idx);CHKERRQ(ierr);
   sub->sorted = 1;
   PetscFunctionReturn(0);
 }
@@ -224,7 +224,7 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
   *is = 0;
   PetscHeaderCreate(Nindex, _p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView); 
   PLogObjectCreate(Nindex);
-  sub            = PetscNew(IS_General); CHKPTRQ(sub);
+  sub            = PetscNew(IS_General);CHKPTRQ(sub);
   PLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(int)+sizeof(struct _p_IS));
   sub->idx       = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ(sub->idx);
   sub->n         = n;
@@ -244,9 +244,9 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
   ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   Nindex->isperm     = 0;
   Nindex->isidentity = 0;
-  ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm)); CHKERRQ(ierr);
+    ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm));CHKERRQ(ierr);
   }
   *is = Nindex; PetscFunctionReturn(0);
 }

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fretrieve.c,v 1.9 1999/04/19 22:09:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fretrieve.c,v 1.10 1999/04/21 20:43:17 bsmith Exp balay $";
 #endif
 /*
       Code for opening and closing files.
@@ -95,7 +95,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
   if (!iflag) {
     char       filename[256];
     /* This communicator does not yet have a shared tmp attribute */
-    tagvalp    = (int *) PetscMalloc( sizeof(int) ); CHKPTRQ(tagvalp);
+    tagvalp    = (int *) PetscMalloc( sizeof(int) );CHKPTRQ(tagvalp);
     ierr       = MPI_Attr_put(comm,Petsc_Tmp_keyval, tagvalp);CHKERRQ(ierr);
 
     ierr = OptionsGetenv(comm,"PETSC_TMP",filename,238,&flag);CHKERRQ(ierr);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.26 1999/01/31 16:03:37 bsmith Exp curfman $";
+static char vcid[] = "$Id: isltog.c,v 1.27 1999/02/01 21:43:29 curfman Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -64,7 +64,7 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
 
-  ierr = PetscObjectGetComm((PetscObject)is,&comm); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
   ierr = ISGetSize(is,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreate(comm,n,indices,mapping);CHKERRQ(ierr);
@@ -97,6 +97,8 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 @*/
 int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalToGlobalMapping *mapping)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidIntPointer(indices);
   PetscValidPointer(mapping);
@@ -108,7 +110,7 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
 
   (*mapping)->n       = n;
   (*mapping)->indices = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ((*mapping)->indices);
-  PetscMemcpy((*mapping)->indices,indices,n*sizeof(int));
+  ierr = PetscMemcpy((*mapping)->indices,indices,n*sizeof(int));CHKERRQ(ierr);
 
   /*
       Do not create the global to local mapping. This is only created if 
@@ -180,15 +182,15 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidPointer(newis);
 
-  ierr   = ISGetSize(is,&n); CHKERRQ(ierr);
-  ierr   = ISGetIndices(is,&idxin); CHKERRQ(ierr);
+  ierr   = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr   = ISGetIndices(is,&idxin);CHKERRQ(ierr);
   idxmap = mapping->indices;
   
   idxout = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ(idxout);
   for ( i=0; i<n; i++ ) {
     idxout[i] = idxmap[idxin[i]];
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idxout,newis); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idxout,newis);CHKERRQ(ierr);
   PetscFree(idxout);
   PetscFunctionReturn(0);
 }
@@ -311,7 +313,7 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping, ISGlobalToLocalM
 
   PetscFunctionBegin;
   if (!mapping->globals) {
-    ierr = ISGlobalToLocalMappingSetUp_Private(mapping); CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingSetUp_Private(mapping);CHKERRQ(ierr);
   }
   globals = mapping->globals;
   start   = mapping->globalstart;

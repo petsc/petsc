@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tfqmr.c,v 1.43 1999/02/12 19:54:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.44 1999/03/01 04:56:04 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -23,7 +23,7 @@ static int KSPSetUp_TFQMR(KSP ksp)
   if (ksp->pc_side == PC_SYMMETRIC){
     SETERRQ(2,0,"no symmetric preconditioning for KSPTFQMR");
   }
-  ierr = KSPDefaultGetWork( ksp,  10 ); CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork( ksp,  10 );CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -53,10 +53,10 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   AUQ      = V;
 
   /* Compute initial preconditioned residual */
-  ierr = KSPResidual(ksp,X,V,T, R, BINVF, B ); CHKERRQ(ierr);
+  ierr = KSPResidual(ksp,X,V,T, R, BINVF, B );CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
+  ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   PetscAMSTakeAccess(ksp);
   ksp->rnorm  = dp;
   ksp->its    = 0;
@@ -65,7 +65,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   KSPMonitor(ksp,0,dp);
 
   /* Make the initial Rp == R */
-  ierr = VecCopy(R,RP); CHKERRQ(ierr);
+  ierr = VecCopy(R,RP);CHKERRQ(ierr);
 
   /* Set the initial conditions */
   etaold = 0.0;
@@ -73,23 +73,23 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   tau    = dp;
   dpold  = dp;
 
-  ierr = VecDot(R,RP,&rhoold); CHKERRQ(ierr);       /* rhoold = (r,rp)     */
-  ierr = VecCopy(R,U); CHKERRQ(ierr);
-  ierr = VecCopy(R,P); CHKERRQ(ierr);
-  ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,P,V,T); CHKERRQ(ierr);
-  ierr = VecSet(&zero,D); CHKERRQ(ierr);
+  ierr = VecDot(R,RP,&rhoold);CHKERRQ(ierr);       /* rhoold = (r,rp)     */
+  ierr = VecCopy(R,U);CHKERRQ(ierr);
+  ierr = VecCopy(R,P);CHKERRQ(ierr);
+  ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,P,V,T);CHKERRQ(ierr);
+  ierr = VecSet(&zero,D);CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
     PetscAMSTakeAccess(ksp);
     ksp->its++;
     PetscAMSGrantAccess(ksp);
-    ierr = VecDot(V,RP,&s); CHKERRQ(ierr);          /* s <- (v,rp)          */
+    ierr = VecDot(V,RP,&s);CHKERRQ(ierr);          /* s <- (v,rp)          */
     a = rhoold / s;                                 /* a <- rho / s         */
-    tmp = -a; VecWAXPY(&tmp,V,U,Q); CHKERRQ(ierr);  /* q <- u - a v         */
-    ierr = VecWAXPY(&one,U,Q,T); CHKERRQ(ierr);     /* t <- u + q           */
-    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,T,AUQ,T1); CHKERRQ(ierr);
-    ierr = VecAXPY(&tmp,AUQ,R); CHKERRQ(ierr);      /* r <- r - a K (u + q) */
-    ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
+    tmp = -a; VecWAXPY(&tmp,V,U,Q);CHKERRQ(ierr);  /* q <- u - a v         */
+    ierr = VecWAXPY(&one,U,Q,T);CHKERRQ(ierr);     /* t <- u + q           */
+    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,T,AUQ,T1);CHKERRQ(ierr);
+    ierr = VecAXPY(&tmp,AUQ,R);CHKERRQ(ierr);      /* r <- r - a K (u + q) */
+    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     for (m=0; m<2; m++) {
       if (m == 0) {
         w = sqrt(dp*dpold);
@@ -102,11 +102,11 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
       eta = cm * cm * a;
       cf  = psiold * psiold * etaold / a;
       if (m == 0) {
-        ierr = VecAYPX(&cf,U,D); CHKERRQ(ierr);
+        ierr = VecAYPX(&cf,U,D);CHKERRQ(ierr);
       } else {
-	ierr = VecAYPX(&cf,Q,D); CHKERRQ(ierr);
+	ierr = VecAYPX(&cf,Q,D);CHKERRQ(ierr);
       }
-      ierr = VecAXPY(&eta,D,X); CHKERRQ(ierr);
+      ierr = VecAXPY(&eta,D,X);CHKERRQ(ierr);
 
       dpest = sqrt(m + 1.0) * tau;
       PetscAMSTakeAccess(ksp);
@@ -121,19 +121,19 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
     }
     if (conv) break;
 
-    ierr = VecDot(R,RP,&rho); CHKERRQ(ierr);        /* rho <- (r,rp)       */
+    ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);        /* rho <- (r,rp)       */
     b = rho / rhoold;                               /* b <- rho / rhoold   */
-    ierr = VecWAXPY(&b,Q,R,U); CHKERRQ(ierr);       /* u <- r + b q        */
-    ierr = VecAXPY(&b,P,Q); CHKERRQ(ierr);
-    ierr = VecWAXPY(&b,Q,U,P); CHKERRQ(ierr);       /* p <- u + b(q + b p) */
-    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,P,V,Q); CHKERRQ(ierr); /* v <- K p  */
+    ierr = VecWAXPY(&b,Q,R,U);CHKERRQ(ierr);       /* u <- r + b q        */
+    ierr = VecAXPY(&b,P,Q);CHKERRQ(ierr);
+    ierr = VecWAXPY(&b,Q,U,P);CHKERRQ(ierr);       /* p <- u + b(q + b p) */
+    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,P,V,Q);CHKERRQ(ierr); /* v <- K p  */
 
     rhoold = rho;
     dpold  = dp;
   }
   if (i == maxit) i--;
 
-  ierr = KSPUnwindPreconditioner(ksp,X,T); CHKERRQ(ierr);
+  ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1);
   else          *its = i + 1;
   PetscFunctionReturn(0);

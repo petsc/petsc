@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isdiff.c,v 1.8 1998/08/03 14:57:41 balay Exp curfman $";
+static char vcid[] = "$Id: isdiff.c,v 1.9 1999/02/01 21:44:56 curfman Exp balay $";
 #endif
 
 #include "is.h"                    /*I "is.h"  I*/
@@ -43,8 +43,8 @@ int ISDifference(IS is1,IS is2, IS *isout)
   PetscValidHeaderSpecific(is2,IS_COOKIE);
   PetscValidPointer(isout);
 
-  ierr = ISGetIndices(is1,&i1); CHKERRQ(ierr);
-  ierr = ISGetSize(is1,&n1); CHKERRQ(ierr);
+  ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
+  ierr = ISGetSize(is1,&n1);CHKERRQ(ierr);
 
   /* Create a bit mask array to contain required values */
   if (n1) {
@@ -58,21 +58,21 @@ int ISDifference(IS is1,IS is2, IS *isout)
   } else {
     imin = imax = 0;
   }
-  ierr = BTCreate(imax-imin,mask); CHKERRQ(ierr);
+  ierr = BTCreate(imax-imin,mask);CHKERRQ(ierr);
   /* Put the values from is1 */
   for ( i=0; i<n1; i++ ) {
     if (i1[i] < 0) continue;
     BTSet(mask,i1[i] - imin);
   }
-  ierr = ISRestoreIndices(is1,&i1); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is1,&i1);CHKERRQ(ierr);
   /* Remove the values from is2 */
-  ierr = ISGetIndices(is2,&i2); CHKERRQ(ierr);
-  ierr = ISGetSize(is2,&n2); CHKERRQ(ierr);
+  ierr = ISGetIndices(is2,&i2);CHKERRQ(ierr);
+  ierr = ISGetSize(is2,&n2);CHKERRQ(ierr);
   for ( i=0; i<n2; i++ ) {
     if (i2[i] < imin || i2[i] > imax) continue;
     BTClear(mask,i2[i] - imin);
   }
-  ierr = ISRestoreIndices(is2,&i2); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is2,&i2);CHKERRQ(ierr);
   
   /* Count the number in the difference */
   nout = 0;
@@ -86,7 +86,7 @@ int ISDifference(IS is1,IS is2, IS *isout)
   for ( i=0; i<imax-imin+1; i++ ) {
     if (BTLookup(mask,i)) iout[nout++] = i + imin;
   }
-  ierr = PetscObjectGetComm((PetscObject)is1,&comm); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,nout,iout,isout);CHKERRQ(ierr);
   PetscFree(iout);
 
@@ -130,10 +130,10 @@ int ISSum(IS is1,IS is2, IS *isout)
   PetscValidHeaderSpecific(is2,IS_COOKIE);
   PetscValidPointer(isout);
 
-  ierr = ISGetIndices(is1,&i1); CHKERRQ(ierr);
-  ierr = ISGetSize(is1,&n1); CHKERRQ(ierr);
-  ierr = ISGetIndices(is2,&i2); CHKERRQ(ierr);
-  ierr = ISGetSize(is2,&n2); CHKERRQ(ierr);
+  ierr = ISGetIndices(is1,&i1);CHKERRQ(ierr);
+  ierr = ISGetSize(is1,&n1);CHKERRQ(ierr);
+  ierr = ISGetIndices(is2,&i2);CHKERRQ(ierr);
+  ierr = ISGetSize(is2,&n2);CHKERRQ(ierr);
 
   /* Create a bit mask array to contain required values */
   if (n1 || n2) {
@@ -154,7 +154,7 @@ int ISSum(IS is1,IS is2, IS *isout)
   }
   iout = (int *) PetscMalloc((n1+n2+1)*sizeof(int));CHKPTRQ(iout);
   nout = 0;
-  ierr = BTCreate(imax-imin,mask); CHKERRQ(ierr);
+  ierr = BTCreate(imax-imin,mask);CHKERRQ(ierr);
   /* Put the values from is1 */
   for ( i=0; i<n1; i++ ) {
     if (i1[i] < 0) continue;
@@ -162,7 +162,7 @@ int ISSum(IS is1,IS is2, IS *isout)
       iout[nout++] = i1[i];
     }
   }
-  ierr = ISRestoreIndices(is1,&i1); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is1,&i1);CHKERRQ(ierr);
   /* Put the values from is2 */
   for ( i=0; i<n2; i++ ) {
     if (i2[i] < 0) continue;
@@ -170,10 +170,10 @@ int ISSum(IS is1,IS is2, IS *isout)
       iout[nout++] = i2[i];
     }
   }
-  ierr = ISRestoreIndices(is2,&i2); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is2,&i2);CHKERRQ(ierr);
 
   /* create the new IS containing the sum */
-  ierr = PetscObjectGetComm((PetscObject)is1,&comm); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,nout,iout,isout);CHKERRQ(ierr);
   PetscFree(iout);
 

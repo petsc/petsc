@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.117 1999/04/19 22:13:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.118 1999/05/04 16:24:19 bsmith Exp balay $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -58,8 +58,8 @@ int SLESView(SLES sles,Viewer viewer)
 
   ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-  ierr = KSPView(ksp,viewer); CHKERRQ(ierr);
-  ierr = PCView(pc,viewer); CHKERRQ(ierr);
+  ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
+  ierr = PCView(pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -127,9 +127,9 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)sles, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)sles, prefix);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(sles->ksp,prefix);CHKERRQ(ierr);
-  ierr = PCSetOptionsPrefix(sles->pc,prefix); CHKERRQ(ierr);
+  ierr = PCSetOptionsPrefix(sles->pc,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -166,9 +166,9 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = PetscObjectAppendOptionsPrefix((PetscObject)sles, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)sles, prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(sles->ksp,prefix);CHKERRQ(ierr);
-  ierr = PCAppendOptionsPrefix(sles->pc,prefix); CHKERRQ(ierr);
+  ierr = PCAppendOptionsPrefix(sles->pc,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -206,7 +206,7 @@ int SLESGetOptionsPrefix(SLES sles,char **prefix)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)sles, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)sles, prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }
 
@@ -234,8 +234,8 @@ int SLESSetTypesFromOptions(SLES sles)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = KSPSetTypeFromOptions(sles->ksp); CHKERRQ(ierr);
-  ierr = PCSetTypeFromOptions(sles->pc); CHKERRQ(ierr);
+  ierr = KSPSetTypeFromOptions(sles->ksp);CHKERRQ(ierr);
+  ierr = PCSetTypeFromOptions(sles->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -263,9 +263,9 @@ int SLESSetFromOptions(SLES sles)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = KSPSetPC(sles->ksp,sles->pc);  CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(sles->ksp); CHKERRQ(ierr);
-  ierr = PCSetFromOptions(sles->pc); CHKERRQ(ierr);
+  ierr = KSPSetPC(sles->ksp,sles->pc);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(sles->ksp);CHKERRQ(ierr);
+  ierr = PCSetFromOptions(sles->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -298,8 +298,8 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   PetscHeaderCreate(sles,_p_SLES,int,SLES_COOKIE,0,"SLES",comm,SLESDestroy,SLESView);
   PLogObjectCreate(sles);
   sles->bops->publish = SLESPublish_Petsc;
-  ierr = KSPCreate(comm,&sles->ksp); CHKERRQ(ierr);
-  ierr = PCCreate(comm,&sles->pc); CHKERRQ(ierr);
+  ierr = KSPCreate(comm,&sles->ksp);CHKERRQ(ierr);
+  ierr = PCCreate(comm,&sles->pc);CHKERRQ(ierr);
   PLogObjectParent(sles,sles->ksp);
   PLogObjectParent(sles,sles->pc);
   sles->setupcalled = 0;
@@ -334,8 +334,8 @@ int SLESDestroy(SLES sles)
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   if (--sles->refct > 0) PetscFunctionReturn(0);
 
-  ierr = KSPDestroy(sles->ksp); CHKERRQ(ierr);
-  ierr = PCDestroy(sles->pc); CHKERRQ(ierr);
+  ierr = KSPDestroy(sles->ksp);CHKERRQ(ierr);
+  ierr = PCDestroy(sles->pc);CHKERRQ(ierr);
   if (sles->diagonal) {ierr = VecDestroy(sles->diagonal);CHKERRQ(ierr);}
   PLogObjectDestroy(sles);
   PetscHeaderDestroy(sles);
@@ -380,14 +380,14 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   PetscValidHeaderSpecific(b,VEC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   ksp = sles->ksp; pc = sles->pc;
-  ierr = KSPSetRhs(ksp,b); CHKERRQ(ierr);
-  ierr = KSPSetSolution(ksp,x); CHKERRQ(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
   if (!sles->setupcalled) {
     PLogEventBegin(SLES_SetUp,sles,b,x,0);
-    ierr = KSPSetPC(ksp,pc); CHKERRQ(ierr);
-    ierr = PCSetVector(pc,b); CHKERRQ(ierr);
-    ierr = KSPSetUp(sles->ksp); CHKERRQ(ierr);
-    ierr = PCSetUp(sles->pc); CHKERRQ(ierr);
+    ierr = KSPSetPC(ksp,pc);CHKERRQ(ierr);
+    ierr = PCSetVector(pc,b);CHKERRQ(ierr);
+    ierr = KSPSetUp(sles->ksp);CHKERRQ(ierr);
+    ierr = PCSetUp(sles->pc);CHKERRQ(ierr);
     sles->setupcalled = 1;
 
     /* scale the matrix if requested */
@@ -477,24 +477,24 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
   ierr = KSPSetPC(ksp,pc);CHKERRQ(ierr);
   if (!sles->setupcalled) {
-    ierr = SLESSetUp(sles,b,x); CHKERRQ(ierr);
+    ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
   }
-  ierr = PCSetUpOnBlocks(pc); CHKERRQ(ierr);
+  ierr = PCSetUpOnBlocks(pc);CHKERRQ(ierr);
   if (!slesdoublecount) {PLogEventBegin(SLES_Solve,sles,b,x,0);} slesdoublecount++;
   /* diagonal scale RHS if called for */
   if (sles->dscale) {
     ierr = VecPointwiseMult(sles->diagonal,b,b);CHKERRQ(ierr);
   }
-  ierr = PCPreSolve(pc,ksp); CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,its); CHKERRQ(ierr);
-  ierr = PCPostSolve(pc,ksp); CHKERRQ(ierr);
+  ierr = PCPreSolve(pc,ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,its);CHKERRQ(ierr);
+  ierr = PCPostSolve(pc,ksp);CHKERRQ(ierr);
   /* diagonal scale solution if called for */
   if (sles->dscale) {
     ierr = VecPointwiseMult(sles->diagonal,x,x);CHKERRQ(ierr);
   }
   if (slesdoublecount == 1) {PLogEventEnd(SLES_Solve,sles,b,x,0);} slesdoublecount--;
-  ierr = OptionsHasName(sles->prefix,"-sles_view", &flg); CHKERRQ(ierr); 
-  if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRQ(ierr); }
+  ierr = OptionsHasName(sles->prefix,"-sles_view", &flg);CHKERRQ(ierr); 
+  if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -571,14 +571,14 @@ int SLESSolveTrans(SLES sles,Vec b,Vec x,int *its)
   ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
   ierr = KSPSetPC(ksp,pc);CHKERRQ(ierr);
   if (!sles->setupcalled) {
-    ierr = SLESSetUp(sles,b,x); CHKERRQ(ierr);
+    ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
   }
-  ierr = PCSetUpOnBlocks(pc); CHKERRQ(ierr);
+  ierr = PCSetUpOnBlocks(pc);CHKERRQ(ierr);
   if (!slesdoublecount) {PLogEventBegin(SLES_Solve,sles,b,x,0);} slesdoublecount++;
-  ierr = KSPSolveTrans(ksp,its); CHKERRQ(ierr);
+  ierr = KSPSolveTrans(ksp,its);CHKERRQ(ierr);
   if (slesdoublecount == 1) {PLogEventEnd(SLES_Solve,sles,b,x,0);} slesdoublecount--;
-  ierr = OptionsHasName(sles->prefix,"-sles_view", &flg); CHKERRQ(ierr); 
-  if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRQ(ierr); }
+  ierr = OptionsHasName(sles->prefix,"-sles_view", &flg);CHKERRQ(ierr); 
+  if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -741,8 +741,8 @@ int SLESSetUpOnBlocks(SLES sles)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
-  ierr = PCSetUpOnBlocks(pc); CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PCSetUpOnBlocks(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

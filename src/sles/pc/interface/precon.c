@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.171 1999/04/19 22:13:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.172 1999/04/21 18:17:09 bsmith Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -155,11 +155,11 @@ int PCApply(PC pc,Vec x,Vec y)
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
 
   if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc); CHKERRQ(ierr);
+    ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
   if (!apply_double_count) {PLogEventBegin(PC_Apply,pc,x,y,0);}apply_double_count++;
-  ierr = (*pc->ops->apply)(pc,x,y); CHKERRQ(ierr);
+  ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
   if (apply_double_count == 1) {PLogEventEnd(PC_Apply,pc,x,y,0);}apply_double_count--;
   PetscFunctionReturn(0);
 }
@@ -197,11 +197,11 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_COOKIE);
 
   if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc); CHKERRQ(ierr);
+    ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
   if (!apply_double_count) {PLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);}apply_double_count++;
-  ierr = (*pc->ops->applysymmetricleft)(pc,x,y); CHKERRQ(ierr);
+  ierr = (*pc->ops->applysymmetricleft)(pc,x,y);CHKERRQ(ierr);
   if (apply_double_count == 1) {PLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);}apply_double_count--;
   PetscFunctionReturn(0);
 }
@@ -239,11 +239,11 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_COOKIE);
 
   if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc); CHKERRQ(ierr);
+    ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
   if (!apply_double_count) {PLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);}apply_double_count++;
-  ierr = (*pc->ops->applysymmetricright)(pc,x,y); CHKERRQ(ierr);
+  ierr = (*pc->ops->applysymmetricright)(pc,x,y);CHKERRQ(ierr);
   if (apply_double_count == 1){PLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);}apply_double_count--;
   PetscFunctionReturn(0);
 }
@@ -280,11 +280,11 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
   if (!pc->ops->applytrans) SETERRQ(PETSC_ERR_SUP,0,"");
 
   if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc); CHKERRQ(ierr);
+    ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
   if (!apply_double_count) {PLogEventBegin(PC_Apply,pc,x,y,0);}apply_double_count++;
-  ierr = (*pc->ops->applytrans)(pc,x,y); CHKERRQ(ierr);
+  ierr = (*pc->ops->applytrans)(pc,x,y);CHKERRQ(ierr);
   if (apply_double_count == 1) {PLogEventEnd(PC_Apply,pc,x,y,0);}apply_double_count--;
   PetscFunctionReturn(0);
 }
@@ -327,24 +327,24 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
   }
 
   if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc); CHKERRQ(ierr);
+    ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
   if (pc->ops->applyBA) {
-    ierr = (*pc->ops->applyBA)(pc,side,x,y,work); CHKERRQ(ierr);
+    ierr = (*pc->ops->applyBA)(pc,side,x,y,work);CHKERRQ(ierr);
   } else if (side == PC_RIGHT) {
-    ierr = PCApply(pc,x,work); CHKERRQ(ierr);
-    ierr = MatMult(pc->mat,work,y); CHKERRQ(ierr);
+    ierr = PCApply(pc,x,work);CHKERRQ(ierr);
+    ierr = MatMult(pc->mat,work,y);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else if (side == PC_LEFT) {
-    ierr = MatMult(pc->mat,x,work); CHKERRQ(ierr);
-    ierr = PCApply(pc,work,y); CHKERRQ(ierr);
+    ierr = MatMult(pc->mat,x,work);CHKERRQ(ierr);
+    ierr = PCApply(pc,work,y);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else if (side == PC_SYMMETRIC) {
     /* There's an extra copy here; maybe should provide 2 work vectors instead? */
-    ierr = PCApplySymmetricRight(pc,x,work); CHKERRQ(ierr);
-    ierr = MatMult(pc->mat,work,y); CHKERRQ(ierr);
-    ierr = VecCopy(y,work); CHKERRQ(ierr);
+    ierr = PCApplySymmetricRight(pc,x,work);CHKERRQ(ierr);
+    ierr = MatMult(pc->mat,work,y);CHKERRQ(ierr);
+    ierr = VecCopy(y,work);CHKERRQ(ierr);
     ierr = PCApplySymmetricLeft(pc,work,y);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -397,15 +397,15 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
   }
 
   if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc); CHKERRQ(ierr);
+    ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
   if (side == PC_RIGHT) {
-    ierr = MatMultTrans(pc->mat,x,work); CHKERRQ(ierr);
-    ierr = PCApplyTrans(pc,work,y); CHKERRQ(ierr);
+    ierr = MatMultTrans(pc->mat,x,work);CHKERRQ(ierr);
+    ierr = PCApplyTrans(pc,work,y);CHKERRQ(ierr);
   } else if (side == PC_LEFT) {
-    ierr = PCApplyTrans(pc,x,work); CHKERRQ(ierr);
-    ierr = MatMultTrans(pc->mat,work,y); CHKERRQ(ierr);
+    ierr = PCApplyTrans(pc,x,work);CHKERRQ(ierr);
+    ierr = MatMultTrans(pc->mat,work,y);CHKERRQ(ierr);
   }
   /* add support for PC_SYMMETRIC */
   PetscFunctionReturn(0); /* actually will never get here */
@@ -483,7 +483,7 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
   if (!pc->ops->applyrichardson) SETERRQ(PETSC_ERR_SUP,0,"");
 
   if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc); CHKERRQ(ierr);
+    ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
   ierr = (*pc->ops->applyrichardson)(pc,x,y,w,its);CHKERRQ(ierr);
@@ -542,7 +542,7 @@ int PCSetUp(PC pc)
     }
   }
   if (pc->ops->setup) {
-    ierr = (*pc->ops->setup)(pc); CHKERRQ(ierr);
+    ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
   }
   pc->setupcalled = 2;
   PLogEventEnd(PC_SetUp,pc,0,0,0);
@@ -575,7 +575,7 @@ int PCSetUpOnBlocks(PC pc)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!pc->ops->setuponblocks) PetscFunctionReturn(0);
   PLogEventBegin(PC_SetUpOnBlocks,pc,0,0,0);
-  ierr = (*pc->ops->setuponblocks)(pc); CHKERRQ(ierr);
+  ierr = (*pc->ops->setuponblocks)(pc);CHKERRQ(ierr);
   PLogEventEnd(PC_SetUpOnBlocks,pc,0,0,0);
   PetscFunctionReturn(0);
 }
@@ -676,7 +676,7 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
   PetscFunctionBegin;
   if (!pc->modifysubmatrices) PetscFunctionReturn(0);
   PLogEventBegin(PC_ModifySubMatrices,pc,0,0,0);
-  ierr = (*pc->modifysubmatrices)(pc,nsub,row,col,submat,ctx); CHKERRQ(ierr);
+  ierr = (*pc->modifysubmatrices)(pc,nsub,row,col,submat,ctx);CHKERRQ(ierr);
   PLogEventEnd(PC_ModifySubMatrices,pc,0,0,0);
   PetscFunctionReturn(0);
 }
@@ -751,19 +751,19 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   /*
       BlockSolve95 cannot use default BJacobi preconditioning
   */
-  ierr = MatGetType(Amat,&type,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatGetType(Amat,&type,PETSC_NULL);CHKERRQ(ierr);
   if (type == MATMPIROWBS) {
     if (PetscTypeCompare(pc->type_name,PCBJACOBI)) {
-      ierr = PCSetType(pc,PCILU); CHKERRQ(ierr);
+      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
       PLogInfo(pc,"PCSetOperators:Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n");
     }
   }
   /*
       Shell matrix (probably) cannot support a preconditioner
   */
-  ierr = MatGetType(Pmat,&type,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatGetType(Pmat,&type,PETSC_NULL);CHKERRQ(ierr);
   if (type == MATSHELL && PetscStrcmp(pc->type_name,PCSHELL) && PetscStrcmp(pc->type_name,PCMG)) {
-    ierr = PCSetType(pc,PCNONE); CHKERRQ(ierr);
+    ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
     PLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
     preconditioners (unless defined by the user)\n");
   }
@@ -1041,8 +1041,8 @@ int PCPreSolve(PC pc,KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
 
-  ierr = KSPGetSolution(ksp,&x); CHKERRQ(ierr);
-  ierr = KSPGetRhs(ksp,&rhs); CHKERRQ(ierr);
+  ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
+  ierr = KSPGetRhs(ksp,&rhs);CHKERRQ(ierr);
   /*
       Scale the system and have the matrices use the scaled form
     only if the two matrices are actually the same (and hence
@@ -1097,8 +1097,8 @@ int PCPostSolve(PC pc,KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = KSPGetSolution(ksp,&x); CHKERRQ(ierr);
-  ierr = KSPGetRhs(ksp,&rhs); CHKERRQ(ierr);
+  ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
+  ierr = KSPGetRhs(ksp,&rhs);CHKERRQ(ierr);
   if (pc->ops->postsolve) {
     ierr =  (*pc->ops->postsolve)(pc,ksp,x,rhs);CHKERRQ(ierr);
   }
@@ -1158,7 +1158,7 @@ int PCView(PC pc,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerGetFormat(viewer,&fmt); CHKERRQ(ierr);
+    ierr = ViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"PC Object:\n");CHKERRQ(ierr);
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",cstr);CHKERRQ(ierr);
@@ -1173,7 +1173,7 @@ int PCView(PC pc,Viewer viewer)
       if (pc->pmat == pc->mat) {
         ierr = ViewerASCIIPrintf(viewer,"  linear system matrix = precond matrix:\n");CHKERRQ(ierr);
         ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
+        ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);
         ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       } else {
         ierr = PetscObjectExists((PetscObject)pc->pmat,&mat_exists);CHKERRQ(ierr);
@@ -1183,8 +1183,8 @@ int PCView(PC pc,Viewer viewer)
           ierr = ViewerASCIIPrintf(viewer,"  linear system matrix:\n");CHKERRQ(ierr);
         }
         ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
-        if (mat_exists) {ierr = MatView(pc->pmat,viewer); CHKERRQ(ierr);}
+        ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);
+        if (mat_exists) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
         ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
       ierr = ViewerPopFormat(viewer);CHKERRQ(ierr);
@@ -1245,7 +1245,8 @@ int PCRegister_Private(char *sname,char *path,char *name,int (*function)(PC))
   char fullname[256];
 
   PetscFunctionBegin;
-  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
+  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
   ierr = FListAdd_Private(&PCList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.49 1999/03/18 01:56:34 balay Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.50 1999/03/18 15:31:46 bsmith Exp balay $";
 #endif
 /*
      Some useful vector utility functions.
@@ -552,18 +552,18 @@ int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
   int    n1,n2,ierr,flg1;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(vec1,&n1); CHKERRQ(ierr);
-  ierr = VecGetSize(vec2,&n2); CHKERRQ(ierr);
+  ierr = VecGetSize(vec1,&n1);CHKERRQ(ierr);
+  ierr = VecGetSize(vec2,&n2);CHKERRQ(ierr);
   if (n1 != n2) {
     flg1 = PETSC_FALSE;
   } else {
-    ierr = VecGetArray(vec1,&v1); CHKERRQ(ierr);
-    ierr = VecGetArray(vec2,&v2); CHKERRQ(ierr);
+    ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr);
+    ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr);
 
     if (PetscMemcmp(v1,v2,n1*sizeof(Scalar))) flg1 = PETSC_FALSE;
     else  flg1 = PETSC_TRUE;
-    ierr = VecRestoreArray(vec1,&v1); CHKERRQ(ierr);
-    ierr = VecRestoreArray(vec2,&v2); CHKERRQ(ierr);
+    ierr = VecRestoreArray(vec1,&v1);CHKERRQ(ierr);
+    ierr = VecRestoreArray(vec2,&v2);CHKERRQ(ierr);
   }
 
   /* combine results from all processors */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pdisplay.c,v 1.6 1999/03/17 23:21:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pdisplay.c,v 1.7 1999/04/19 22:10:01 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"        
@@ -41,7 +41,7 @@ int OptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,PetscTruth *
   char *str;
    
   PetscFunctionBegin;
-  PetscMemzero(env,len*sizeof(char));
+  ierr = PetscMemzero(env,len*sizeof(char));CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
@@ -80,7 +80,7 @@ int PetscSetDisplay(void)
   if (!rank) {
     str = getenv("DISPLAY");
     if (!str || (str[0] == ':' && size > 1)) {
-      ierr = PetscGetHostName(PetscDisplay,124); CHKERRQ(ierr);
+      ierr = PetscGetHostName(PetscDisplay,124);CHKERRQ(ierr);
       ierr = PetscStrcat(PetscDisplay,":0.0");CHKERRQ(ierr);
     } else {
       ierr = PetscStrncpy(PetscDisplay,str,128);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: strgen.c,v 1.3 1999/01/31 16:03:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: strgen.c,v 1.4 1999/03/17 23:22:11 bsmith Exp balay $";
 #endif
 
 #include "src/vec/is/impls/general/general.h" /*I  "is.h"  I*/
@@ -48,13 +48,13 @@ int ISStrideToGeneral(IS inis)
   PetscTruth stride;
 
   PetscFunctionBegin;
-  ierr = ISStride(inis,&stride); CHKERRQ(ierr);
+  ierr = ISStride(inis,&stride);CHKERRQ(ierr);
   if (!stride) SETERRQ(1,1,"Can only convert stride index sets");
 
-  sub        = PetscNew(IS_General); CHKPTRQ(sub);
+  sub        = PetscNew(IS_General);CHKPTRQ(sub);
   PLogObjectMemory(inis,sizeof(IS_General));
   
-  ierr   = ISGetIndices(inis,&sub->idx); CHKERRQ(ierr);
+  ierr   = ISGetIndices(inis,&sub->idx);CHKERRQ(ierr);
   /* Note: we never restore the indices, since we need to keep the copy generated */
   ierr   = ISGetSize(inis,&sub->n);CHKERRQ(ierr);
 
@@ -67,10 +67,10 @@ int ISStrideToGeneral(IS inis)
   inis->type         = IS_GENERAL;
   inis->data         = (void *) sub;
   inis->isperm       = 0;
-  PetscMemcpy(inis->ops,&myops,sizeof(myops));
-  ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg); CHKERRQ(ierr);
+  ierr = PetscMemcpy(inis->ops,&myops,sizeof(myops));CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ISView(inis,VIEWER_STDOUT_(inis->comm)); CHKERRQ(ierr);
+    ierr = ISView(inis,VIEWER_STDOUT_(inis->comm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

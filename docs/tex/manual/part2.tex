@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.323 1999/04/16 16:12:46 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.324 1999/04/21 18:19:43 bsmith Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -5369,7 +5369,7 @@ PETSc application programmers can access the wall clock time directly
 with the command \sindex{wall clock time}
 \begin{verbatim}
   PLogDouble time;
- ierr = PetscGetTime(&time); CHKERRA(ierr);
+ ierr = PetscGetTime(&time);CHKERRA(ierr);
 \end{verbatim}
 \findex{PetscGetTime()} \sindex{time}
 In addition, as discussed in Section~\ref{sec:profileuser},
@@ -6068,17 +6068,17 @@ one should set it by calling
 The user should check the return codes for all PETSc routines (and
 possibly user-defined routines as well) with 
 \begin{verbatim}
-   ierr = PetscRoutine(...); CHKERRQ(int ierr);
+   ierr = PetscRoutine(...);CHKERRQ(int ierr);
 \end{verbatim}
 Likewise, all memory allocations should be checked with 
 \begin{verbatim}
-   ptr = (double *) PetscMalloc(n*sizeof(double)); CHKPTRQ(void *ptr);
+   ptr = (double *) PetscMalloc(n*sizeof(double));CHKPTRQ(void *ptr);
 \end{verbatim}
 If this procedure is followed throughout all of the user's libraries 
 and codes, any error will by default generate a clean traceback of 
 the location \findex{SETERRA()} \findex{CHKPTRA()} \findex{CHKERRA()}
 of the error.  In any main programs, however, the variants
-{\tt SETERRA(), CHKERRA()}, and {\tt CHKPTRA()} should be used instead 
+{\tt SETERRA(),CHKERRA()}, and {\tt CHKPTRA()} should be used instead 
 to cause all processes of program to abort when an error has been detected. 
 Use of the abort variant of the error checking commands is critical
 in the main program, since they ensure that {\tt MPI\_Abort()} is called 

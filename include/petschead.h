@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.70 1998/11/20 15:31:26 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.71 1998/12/17 22:13:20 bsmith Exp balay $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -102,19 +102,19 @@ extern int PetscHeaderDestroy_Private(PetscObject);
 */ 
 #define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie)                          \
   { int _ierr;                                                                              \
-    h       = PetscNew(struct tp);CHKPTRQ((h));                                             \
-    PetscMemzero(h,sizeof(struct tp));                                                      \
+    h         = PetscNew(struct tp);CHKPTRQ((h));                                           \
+    _ierr     = PetscMemzero(h,sizeof(struct tp));CHKERRQ(_ierr);                           \
     (h)->bops = PetscNew(PetscOps);CHKPTRQ(((h)->bops));                                    \
-    PetscMemzero((h)->bops,sizeof(sizeof(PetscOps)));                                       \
+    _ierr     = PetscMemzero((h)->bops,sizeof(sizeof(PetscOps)));CHKERRQ(_ierr);            \
     (h)->ops  = PetscNew(pops);CHKPTRQ(((h)->ops));                                         \
     _ierr = PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,                 \
                                        (int (*)(PetscObject))des,                           \
-                                       (int (*)(PetscObject,Viewer))vie); CHKERRQ(_ierr);   \
+                                       (int (*)(PetscObject,Viewer))vie);CHKERRQ(_ierr);   \
   }
 
 #define PetscHeaderDestroy(h)                                             \
   { int _ierr;                                                            \
-    _ierr = PetscHeaderDestroy_Private((PetscObject) (h)); CHKERRQ(_ierr);\
+    _ierr = PetscHeaderDestroy_Private((PetscObject) (h));CHKERRQ(_ierr);\
   }                 
 
 /* ---------------------------------------------------------------------------------------*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vcreatea.c,v 1.7 1999/03/31 03:54:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vcreatea.c,v 1.8 1999/03/31 03:58:09 bsmith Exp balay $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -109,10 +109,10 @@ int VIEWER_STDOUT_Destroy(MPI_Comm comm)
   if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
     PetscFunctionReturn(0);
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Stdout_keyval, (void **)&viewer, &flag ); CHKERRQ(ierr);
+  ierr = MPI_Attr_get( comm, Petsc_Viewer_Stdout_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
   if (flag) { 
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
-    ierr = MPI_Attr_delete(comm,Petsc_Viewer_Stdout_keyval); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = MPI_Attr_delete(comm,Petsc_Viewer_Stdout_keyval);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
@@ -180,7 +180,7 @@ int VIEWER_STDERR_Destroy(MPI_Comm comm)
   }
   ierr = MPI_Attr_get( comm, Petsc_Viewer_Stderr_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
   if (flag) { 
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_delete(comm,Petsc_Viewer_Stderr_keyval);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);

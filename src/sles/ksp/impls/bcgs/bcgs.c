@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.56 1999/02/26 21:32:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.57 1999/03/01 04:55:45 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -50,11 +50,11 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   BINVF   = ksp->work[6];
 
   /* Compute initial preconditioned residual */
-  ierr = KSPResidual(ksp,X,V,T,R,BINVF,B); CHKERRQ(ierr);
+  ierr = KSPResidual(ksp,X,V,T,R,BINVF,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
   if (!ksp->avoidnorms) {
-    ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
+    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   }
   PetscAMSTakeAccess(ksp);
   ksp->its   = 0;
@@ -65,35 +65,35 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
 
   /* Make the initial Rp == R */
-  ierr = VecCopy(R,RP); CHKERRQ(ierr);
+  ierr = VecCopy(R,RP);CHKERRQ(ierr);
 
   rhoold   = 1.0;
   alpha    = 1.0;
   omegaold = 1.0;
-  ierr = VecSet(&zero,P); CHKERRQ(ierr);
-  ierr = VecSet(&zero,V); CHKERRQ(ierr);
+  ierr = VecSet(&zero,P);CHKERRQ(ierr);
+  ierr = VecSet(&zero,V);CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
 
-    ierr = VecDot(R,RP,&rho); CHKERRQ(ierr);       /*   rho <- (r,rp)      */
+    ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);       /*   rho <- (r,rp)      */
     if (rho == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Breakdown, rho = r . rp = 0");}
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
-    ierr = VecAYPX(&beta,R,P); CHKERRQ(ierr);      /*   p <- r + p beta    */
+    ierr = VecAYPX(&beta,R,P);CHKERRQ(ierr);      /*   p <- r + p beta    */
     ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,
-                         P,V,T); CHKERRQ(ierr);    /*   v <- K p           */
-    ierr = VecDot(V,RP,&d1); CHKERRQ(ierr);
+                         P,V,T);CHKERRQ(ierr);    /*   v <- K p           */
+    ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     alpha = rho / d1; tmp = -alpha;                /*   a <- rho / (v,rp)  */
-    ierr = VecWAXPY(&tmp,V,R,S); CHKERRQ(ierr);    /*   s <- r - a v       */
-    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,S,T,R); CHKERRQ(ierr);/*   t <- K s    */
-    ierr = VecDot(S,T,&d1); CHKERRQ(ierr);
-    ierr = VecDot(T,T,&d2); CHKERRQ(ierr);
+    ierr = VecWAXPY(&tmp,V,R,S);CHKERRQ(ierr);    /*   s <- r - a v       */
+    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,S,T,R);CHKERRQ(ierr);/*   t <- K s    */
+    ierr = VecDot(S,T,&d1);CHKERRQ(ierr);
+    ierr = VecDot(T,T,&d2);CHKERRQ(ierr);
     if (d2 == 0.0) {
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
 	 may be our solution.  Give it a try? */
-      ierr = VecDot(S,S,&d1); CHKERRQ(ierr);
+      ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
       if (d1 != 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Breakdown, da = s . s = 0");}
-      ierr = VecAXPY(&alpha,P,X); CHKERRQ(ierr);   /*   x <- x + a p       */
+      ierr = VecAXPY(&alpha,P,X);CHKERRQ(ierr);   /*   x <- x + a p       */
       PetscAMSTakeAccess(ksp);
       ksp->its++;
       ksp->rnorm = 0.0;
@@ -103,12 +103,12 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
       break;
     }
     omega = d1 / d2;                               /*   w <- (t's) / (t't) */
-    ierr = VecAXPY(&alpha,P,X); CHKERRQ(ierr);     /*   x <- x + a p       */
-    ierr = VecAXPY(&omega,S,X); CHKERRQ(ierr);     /*   x <- x + w s       */
+    ierr = VecAXPY(&alpha,P,X);CHKERRQ(ierr);     /*   x <- x + a p       */
+    ierr = VecAXPY(&omega,S,X);CHKERRQ(ierr);     /*   x <- x + w s       */
     tmp = -omega; 
-    ierr = VecWAXPY(&tmp,T,S,R); CHKERRQ(ierr);    /*   r <- s - w t       */
+    ierr = VecWAXPY(&tmp,T,S,R);CHKERRQ(ierr);    /*   r <- s - w t       */
     if (!ksp->avoidnorms) {
-      ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
+      ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     }
 
     rhoold   = rho;
@@ -125,7 +125,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   }
   if (i == maxit) i--;
 
-  ierr = KSPUnwindPreconditioner(ksp,X,T); CHKERRQ(ierr);
+  ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1);
   else           *its = i + 1;
   PetscFunctionReturn(0);

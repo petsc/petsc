@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.8 1999/03/29 22:40:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: wp.c,v 1.9 1999/04/19 22:15:35 bsmith Exp balay $";
 #endif
 /*
   Implements an alternative approach for computing the differencing parameter
@@ -68,8 +68,8 @@ static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
     */
 
     PLogEventBegin(VEC_Norm,a,0,0,0);
-    ierr = VecNorm_Seq(U,NORM_2,&normU); CHKERRQ(ierr);
-    ierr = VecNorm_Seq(a,NORM_2,&norma); CHKERRQ(ierr);
+    ierr = VecNorm_Seq(U,NORM_2,&normU);CHKERRQ(ierr);
+    ierr = VecNorm_Seq(a,NORM_2,&norma);CHKERRQ(ierr);
     ovalues[0] = normU*normU;
     ovalues[1] = norma*norma;
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,comm);
@@ -84,10 +84,10 @@ static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
     PLogEventEnd(VEC_Norm,a,0,0,0);
     hctx->normUfact = normUfact = sqrt(1.0+normU);
   } else if (hctx->computenormU || !ctx->ncurrenth) {
-    ierr = VecNorm(U,NORM_2,&normU); CHKERRQ(ierr);
+    ierr = VecNorm(U,NORM_2,&normU);CHKERRQ(ierr);
     hctx->normUfact = normUfact = sqrt(1.0+normU);
   } else if (hctx->computenorma) {
-    ierr = VecNorm(a,NORM_2,&norma); CHKERRQ(ierr);
+    ierr = VecNorm(a,NORM_2,&norma);CHKERRQ(ierr);
   }
 
   *h = ctx->error_rel*normUfact/norma;
@@ -115,10 +115,10 @@ static int MatSNESMFView_WP(MatSNESMFCtx ctx,Viewer viewer)
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
+  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    if (hctx->computenorma){ierr = PetscFPrintf(ctx->comm,fd,"    Computes normA\n");  CHKERRQ(ierr);}
+    if (hctx->computenorma){ierr = PetscFPrintf(ctx->comm,fd,"    Computes normA\n");CHKERRQ(ierr);}
     else                   {ierr =  PetscFPrintf(ctx->comm,fd,"    Does not compute normA\n");CHKERRQ(ierr);}
     if (hctx->computenormU){ierr =  PetscFPrintf(ctx->comm,fd,"    Computes normU\n");CHKERRQ(ierr);}  
     else                   {ierr =  PetscFPrintf(ctx->comm,fd,"    Does not compute normU\n");CHKERRQ(ierr);}  
@@ -144,7 +144,7 @@ static int MatSNESMFPrintHelp_WP(MatSNESMFCtx ctx)
   int           ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p); CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p);CHKERRQ(ierr);
   if (!p) p = "";
   ierr = (*PetscHelpPrintf)(ctx->comm,"   -%ssnes_mf_compute_norma <true or false>\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ctx->comm,"   -%ssnes_mf_compute_normu <true or false>\n",p);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ static int MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
   char       *p;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p); CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p);CHKERRQ(ierr);
   ierr = OptionsGetLogical(p,"-snes_mf_compute_norma",&set,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = MatSNESMFWPSetComputeNormA(ctx->mat,set);CHKERRQ(ierr);

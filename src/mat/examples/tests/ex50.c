@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex50.c,v 1.11 1999/03/19 21:19:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex50.c,v 1.12 1999/04/16 16:07:27 bsmith Exp balay $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII format and writes\n\
@@ -25,9 +25,9 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read in matrix and RHS */
-  ierr = OptionsGetString(PETSC_NULL,"-fin",filein,255,&flg); CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-fin",filein,255,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Must indicate file for reading");
-  ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,255,&flg); CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,255,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Must indicate file for writing");
 
   ierr = PetscFixFilename(filein,finname);CHKERRA(ierr);
@@ -36,9 +36,9 @@ int main(int argc,char **args)
   }
   fscanf(file,"%d\n",&n);
 
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&A); CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b); CHKERRA(ierr);
-  ierr = VecSetFromOptions(b); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&A);CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRA(ierr);
+  ierr = VecSetFromOptions(b);CHKERRA(ierr);
 
   for ( row=0; row<n; row++ ) {
     fscanf(file,"row %d:",&rowin);
@@ -47,24 +47,24 @@ int main(int argc,char **args)
       MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);
     }  
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = VecGetArray(b,&array); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = VecGetArray(b,&array);CHKERRA(ierr);
   for ( row=0; row<n; row++ ) {
     fscanf(file," ii= %d %le",&col,array+row);
   }
-  ierr = VecRestoreArray(b,&array); CHKERRA(ierr);
+  ierr = VecRestoreArray(b,&array);CHKERRA(ierr);
 
   fclose(file);
 
   PetscPrintf(PETSC_COMM_SELF,"Reading matrix complete.\n");
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
-  ierr = MatView(A,view); CHKERRA(ierr);
-  ierr = VecView(b,view); CHKERRA(ierr);
-  ierr = ViewerDestroy(view); CHKERRA(ierr);
+  ierr = MatView(A,view);CHKERRA(ierr);
+  ierr = VecView(b,view);CHKERRA(ierr);
+  ierr = ViewerDestroy(view);CHKERRA(ierr);
 
-  ierr = VecDestroy(b); CHKERRA(ierr);
-  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = VecDestroy(b);CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

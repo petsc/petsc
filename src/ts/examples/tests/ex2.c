@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.16 1999/03/28 23:06:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.17 1999/04/16 16:10:54 bsmith Exp balay $";
 #endif
 /*
        Formatted test for TS routines.
@@ -49,46 +49,46 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);CHKERRA(ierr);
     
   /* set initial conditions */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,3,&global); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,3,&global);CHKERRA(ierr);
   ierr = VecSetFromOptions(global);CHKERRA(ierr);
-  ierr = Initial(global,NULL); CHKERRA(ierr);
+  ierr = Initial(global,NULL);CHKERRA(ierr);
  
   /* make timestep context */
-  ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts); CHKERRA(ierr);
-  ierr = TSSetMonitor(ts,Monitor,NULL); CHKERRA(ierr);
+  ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts);CHKERRA(ierr);
+  ierr = TSSetMonitor(ts,Monitor,NULL);CHKERRA(ierr);
 
   dt = 0.1;
 
   /*
     The user provides the RHS and Jacobian
   */
-  ierr = TSSetRHSFunction(ts,RHSFunction,NULL); CHKERRA(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,3,3,&A); CHKERRA(ierr);
-  ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,NULL); CHKERRA(ierr);
-  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL); CHKERRA(ierr);  
+  ierr = TSSetRHSFunction(ts,RHSFunction,NULL);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,3,3,&A);CHKERRA(ierr);
+  ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,NULL);CHKERRA(ierr);
+  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL);CHKERRA(ierr);  
  
   ierr = TSSetFromOptions(ts);CHKERRA(ierr);
 
-  ierr = TSSetInitialTimeStep(ts,0.0,dt); CHKERRA(ierr);
-  ierr = TSSetDuration(ts,time_steps,1); CHKERRA(ierr);
-  ierr = TSSetSolution(ts,global); CHKERRA(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRA(ierr);
+  ierr = TSSetDuration(ts,time_steps,1);CHKERRA(ierr);
+  ierr = TSSetSolution(ts,global);CHKERRA(ierr);
 
 
-  ierr = TSSetUp(ts); CHKERRA(ierr);
-  ierr = TSStep(ts,&steps,&ftime); CHKERRA(ierr);
+  ierr = TSSetUp(ts);CHKERRA(ierr);
+  ierr = TSStep(ts,&steps,&ftime);CHKERRA(ierr);
 
-  ierr = ViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer); CHKERRA(ierr);
-  ierr = TSView(ts,viewer); CHKERRA(ierr);
+  ierr = ViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRA(ierr);
+  ierr = TSView(ts,viewer);CHKERRA(ierr);
 
-  ierr = ViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer); CHKERRA(ierr);
+  ierr = ViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRA(ierr);
 
   PetscPrintf(PETSC_COMM_WORLD,"%d Procs, %s Preconditioner, %s\n",
                 size,tsinfo,pcinfo);
 
   /* free the memories */
-  ierr = TSDestroy(ts); CHKERRA(ierr);
-  ierr = VecDestroy(global); CHKERRA(ierr);
-  if (A) {ierr= MatDestroy(A); CHKERRA(ierr);}
+  ierr = TSDestroy(ts);CHKERRA(ierr);
+  ierr = VecDestroy(global);CHKERRA(ierr);
+  if (A) {ierr= MatDestroy(A);CHKERRA(ierr);}
 
   PetscFinalize();
   return 0;
@@ -104,18 +104,18 @@ int Initial(Vec global, void *ctx)
   int    i,mybase,myend,ierr,locsize;
 
   /* determine starting point of each processor */
-  ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(global,&locsize); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(global,&mybase,&myend);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(global,&locsize);CHKERRQ(ierr);
 
   /* Initialize the array */
-  ierr = VecGetArray(global,&localptr); CHKERRQ(ierr);
+  ierr = VecGetArray(global,&localptr);CHKERRQ(ierr);
   for (i=0; i<locsize; i++) {
     localptr[i] = 1.0;
   }
   
   if (mybase == 0) localptr[0]=1.0;
 
-  ierr = VecRestoreArray(global,&localptr); CHKERRQ(ierr);
+  ierr = VecRestoreArray(global,&localptr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -131,23 +131,23 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   Scalar   *tmp;
 
   /* Get the size of the vector */
-  ierr = VecGetSize(global, &n); CHKERRQ(ierr);
+  ierr = VecGetSize(global, &n);CHKERRQ(ierr);
 
   /* Set the index sets */
   idx=(int *) PetscMalloc(n*sizeof(int));
   for(i=0; i<n; i++) idx[i]=i;
  
   /* Create local sequential vectors */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&tmp_vec); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&tmp_vec);CHKERRQ(ierr);
 
   /* Create scatter context */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&from); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&to); CHKERRQ(ierr);
-  ierr = VecScatterCreate(global,from,tmp_vec,to,&scatter); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&from);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&to);CHKERRQ(ierr);
+  ierr = VecScatterCreate(global,from,tmp_vec,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRA(ierr);
   ierr = VecScatterEnd(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRA(ierr);
 
-  ierr = VecGetArray(tmp_vec,&tmp); CHKERRQ(ierr);
+  ierr = VecGetArray(tmp_vec,&tmp);CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
     time,PetscReal(tmp[0]),PetscReal(tmp[1]),PetscReal(tmp[2]));
   PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
@@ -170,30 +170,30 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
   Vec tmp_in, tmp_out;
 
   /* Get the length of parallel vector */
-  ierr = VecGetSize(globalin, &n); CHKERRQ(ierr);
+  ierr = VecGetSize(globalin, &n);CHKERRQ(ierr);
 
   /* Set the index sets */
   idx=(int *) PetscMalloc(n*sizeof(int));
   for(i=0; i<n; i++) idx[i]=i;
   
   /* Create local sequential vectors */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&tmp_in); CHKERRQ(ierr);
-  ierr = VecDuplicate(tmp_in, &tmp_out); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&tmp_in);CHKERRQ(ierr);
+  ierr = VecDuplicate(tmp_in, &tmp_out);CHKERRQ(ierr);
 
   /* Create scatter context */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&from); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&to); CHKERRQ(ierr);
-  ierr = VecScatterCreate(globalin,from,tmp_in,to,&scatter); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&from);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&to);CHKERRQ(ierr);
+  ierr = VecScatterCreate(globalin,from,tmp_in,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);
-  CHKERRA(ierr);
+ CHKERRA(ierr);
   ierr = VecScatterEnd(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);
-  CHKERRA(ierr);
+ CHKERRA(ierr);
 
   /*Extract income array */ 
-  ierr = VecGetArray(tmp_in,&inptr); CHKERRQ(ierr);
+  ierr = VecGetArray(tmp_in,&inptr);CHKERRQ(ierr);
 
   /* Extract outcome array*/
-  ierr = VecGetArray(tmp_out,&outptr); CHKERRQ(ierr);
+  ierr = VecGetArray(tmp_out,&outptr);CHKERRQ(ierr);
 
   outptr[0] = 2*inptr[0]+inptr[1];
   outptr[1] = inptr[0]+2*inptr[1]+inptr[2];
@@ -202,16 +202,16 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
   ierr = VecRestoreArray(globalin,&inptr);
   ierr = VecRestoreArray(tmp_out,&outptr);
 
-  ierr = VecScatterCreate(tmp_out,from,globalout,to,&scatter); CHKERRQ(ierr);
+  ierr = VecScatterCreate(tmp_out,from,globalout,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);
-  CHKERRA(ierr);
+ CHKERRA(ierr);
   ierr = VecScatterEnd(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);
-  CHKERRA(ierr);
+ CHKERRA(ierr);
 
   /* Destroy idx aand scatter */
-  ierr = ISDestroy(from); CHKERRQ(ierr);
-  ierr = ISDestroy(to); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter); CHKERRQ(ierr);
+  ierr = ISDestroy(from);CHKERRQ(ierr);
+  ierr = ISDestroy(to);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
   PetscFree(idx);
   return 0;
 }
@@ -227,24 +227,24 @@ int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB, MatStructure *str,void *ct
   *str = SAME_NONZERO_PATTERN;
 
   idx[0]=0; idx[1]=1; idx[2]=2;
-  ierr = VecGetArray(x,&tmp); CHKERRQ(ierr);
+  ierr = VecGetArray(x,&tmp);CHKERRQ(ierr);
 
   i = 0;
   v[0] = 2.0; v[1] = 1.0; v[2] = 0.0; 
-  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES); CHKERRQ(ierr);
+  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
 
   i = 1;
   v[0] = 1.0; v[1] = 2.0; v[2] = 1.0; 
-  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES); CHKERRQ(ierr);
+  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
  
   i = 2;
   v[0]= 0.0; v[1] = 1.0; v[2] = 2.0;
-  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES); CHKERRQ(ierr);
+  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(x,&tmp); CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&tmp);CHKERRQ(ierr);
 
   return 0;
 }

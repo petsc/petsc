@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.1 1999/04/02 00:11:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.2 1999/04/16 16:07:54 bsmith Exp balay $";
 #endif
 
 #include "mat.h"
@@ -25,7 +25,7 @@ int DLLibraryRegister(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = MatPartitioningRegisterAll(path); CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterAll(path);CHKERRQ(ierr);
   return 0;
 }
 EXTERN_C_END

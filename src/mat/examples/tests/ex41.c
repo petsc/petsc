@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex41.c,v 1.8 1998/12/03 04:01:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex41.c,v 1.9 1999/03/19 21:19:59 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests MatIncreaseOverlap() - the parallel case. This example\n\
@@ -29,41 +29,41 @@ int main(int argc,char **args)
 #else
   
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);  
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,&flg); CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,&flg);CHKERRA(ierr);
 
   /* Read matrix and RHS */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
-  ierr = MatLoad(fd,MATMPIAIJ,&A); CHKERRA(ierr);
-  ierr = ViewerDestroy(fd); CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = MatLoad(fd,MATMPIAIJ,&A);CHKERRA(ierr);
+  ierr = ViewerDestroy(fd);CHKERRA(ierr);
 
   /* Read the matrix again as a seq matrix */
-  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
-  ierr = MatLoad(fd,MATSEQAIJ,&B); CHKERRA(ierr);
-  ierr = ViewerDestroy(fd); CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = MatLoad(fd,MATSEQAIJ,&B);CHKERRA(ierr);
+  ierr = ViewerDestroy(fd);CHKERRA(ierr);
   
   /* Create the Random no generator */
-  ierr = MatGetSize(A,&m, &n); CHKERRA(ierr);  
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRA(ierr);
+  ierr = MatGetSize(A,&m, &n);CHKERRA(ierr);  
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRA(ierr);
   
   /* Create the IS corresponding to subdomains */
-  is1    = (IS *) PetscMalloc( nd*sizeof(IS **) ); CHKPTRA(is1);
-  is2    = (IS *) PetscMalloc( nd*sizeof(IS **) ); CHKPTRA(is2);
-  idx    = (int*) PetscMalloc( m *sizeof(int )  ); CHKPTRA(idx);
+  is1    = (IS *) PetscMalloc( nd*sizeof(IS **) );CHKPTRA(is1);
+  is2    = (IS *) PetscMalloc( nd*sizeof(IS **) );CHKPTRA(is2);
+  idx    = (int*) PetscMalloc( m *sizeof(int )  );CHKPTRA(idx);
 
   /* Create the random Index Sets */
   for (i=0; i<nd; i++) {
     for (j=0; j<rank; j++) {
-    ierr   = PetscRandomGetValue(r, &rand); CHKERRA(ierr);
-    }   ierr   = PetscRandomGetValue(r, &rand); CHKERRA(ierr);
+    ierr   = PetscRandomGetValue(r, &rand);CHKERRA(ierr);
+    }   ierr   = PetscRandomGetValue(r, &rand);CHKERRA(ierr);
     size   = (int)(rand*m);
     for (j=0; j<size; j++) {
-      ierr   = PetscRandomGetValue(r, &rand); CHKERRA(ierr);
+      ierr   = PetscRandomGetValue(r, &rand);CHKERRA(ierr);
       idx[j] = (int)(rand*m);
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,size,idx,is1+i); CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,size,idx,is2+i); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,size,idx,is1+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,size,idx,is2+i);CHKERRQ(ierr);
   }
   
   MatIncreaseOverlap(A, nd, is1, ov);

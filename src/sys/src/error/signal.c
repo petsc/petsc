@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.57 1999/03/17 23:21:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.58 1999/04/21 20:43:10 bsmith Exp balay $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -203,7 +203,7 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
 #endif
     SignalSet = 0;
   }
-  newsh = (struct SH*) PetscMalloc(sizeof(struct SH)); CHKPTRQ(newsh);
+  newsh = (struct SH*) PetscMalloc(sizeof(struct SH));CHKPTRQ(newsh);
   if (sh) {newsh->previous = sh;} 
   else {newsh->previous = 0;}
   newsh->handler = routine;

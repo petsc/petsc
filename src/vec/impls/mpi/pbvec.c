@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.131 1999/03/19 01:05:36 balay Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.132 1999/04/19 22:11:18 bsmith Exp balay $";
 #endif
 
 /*
@@ -54,7 +54,7 @@ int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
   int       ierr;
 
   PetscFunctionBegin;
-  ierr = VecDot_Seq(  xin, yin, &work ); CHKERRQ(ierr);
+  ierr = VecDot_Seq(  xin, yin, &work );CHKERRQ(ierr);
 /*
    This is a ugly hack. But to do it right is kind of silly.
 */
@@ -166,31 +166,31 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(v->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(v->comm,&rank); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
 
   v->bops->publish   = VecPublish_MPI;
   PLogObjectMemory(v, sizeof(Vec_MPI) + (v->n+nghost+1)*sizeof(Scalar));
-  s              = (Vec_MPI *) PetscMalloc(sizeof(Vec_MPI)); CHKPTRQ(s);
-  PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));
-  v->data        = (void *) s;
-  s->n           = v->n;
-  s->nghost      = nghost;
-  s->N           = v->N;
-  v->mapping     = 0;
-  v->bmapping    = 0;
-  v->bs          = -1;
-  s->size        = size;
-  s->rank        = rank;
-  s->browners    = 0;
-  v->type_name   = (char *) PetscMalloc((1+PetscStrlen(VEC_MPI))*sizeof(char));CHKPTRQ(v->type_name);
-  PetscStrcpy(v->type_name,VEC_MPI);
+  s            = (Vec_MPI *) PetscMalloc(sizeof(Vec_MPI));CHKPTRQ(s);
+  ierr         = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
+  v->data      = (void *) s;
+  s->n         = v->n;
+  s->nghost    = nghost;
+  s->N         = v->N;
+  v->mapping   = 0;
+  v->bmapping  = 0;
+  v->bs        = -1;
+  s->size      = size;
+  s->rank      = rank;
+  s->browners  = 0;
+  v->type_name = (char *) PetscMalloc((1+PetscStrlen(VEC_MPI))*sizeof(char));CHKPTRQ(v->type_name);
+  ierr = PetscStrcpy(v->type_name,VEC_MPI);CHKERRQ(ierr);
   if (array) {
     s->array           = (Scalar *)array;
     s->array_allocated = 0;
   } else {
     s->array           = (Scalar *) PetscMalloc((v->n+nghost+1)*sizeof(Scalar));CHKPTRQ(s->array);
     s->array_allocated = s->array;
-    PetscMemzero(s->array,v->n*sizeof(Scalar));
+    ierr               = PetscMemzero(s->array,v->n*sizeof(Scalar));CHKERRQ(ierr);
   }
 
   /* By default parallel vectors do not have local representation */
@@ -202,13 +202,13 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
   /* create the stashes. The block-size for bstash is set later when 
      VecSetValuesBlocked is called.
   */
-  ierr = VecStashCreate_Private(v->comm,1,&v->stash); CHKERRQ(ierr);
-  ierr = VecStashCreate_Private(v->comm,1,&v->bstash); CHKERRQ(ierr); 
+  ierr = VecStashCreate_Private(v->comm,1,&v->stash);CHKERRQ(ierr);
+  ierr = VecStashCreate_Private(v->comm,1,&v->bstash);CHKERRQ(ierr); 
   s->donotstash  = 0;
                                                         
   if (!v->map) {
     if (!map) {
-      ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map); CHKERRQ(ierr);
+      ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
     } else {
       v->map = map;
       ierr = PetscObjectReference((PetscObject)map);CHKERRQ(ierr);
@@ -528,13 +528,13 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   /* Create global representation */
   ierr = VecCreate(comm,n,N,vv);CHKERRQ(ierr);
-  ierr = VecCreate_MPI_Private(*vv,nghost,array,PETSC_NULL); CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*vv,nghost,array,PETSC_NULL);CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
   /* Create local representation */
-  ierr = VecGetArray(*vv,&larray); CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,n+nghost,larray,&w->localrep); CHKERRQ(ierr);
+  ierr = VecGetArray(*vv,&larray);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,n+nghost,larray,&w->localrep);CHKERRQ(ierr);
   PLogObjectParent(*vv,w->localrep);
-  ierr = VecRestoreArray(*vv,&larray); CHKERRQ(ierr);
+  ierr = VecRestoreArray(*vv,&larray);CHKERRQ(ierr);
 
   /*
        Create scatter context for scattering (updating) ghost values 
@@ -543,11 +543,11 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
     IS from, to;
   
     ierr = ISCreateGeneral(PETSC_COMM_SELF,nghost,ghosts,&from);CHKERRQ(ierr);   
-    ierr = ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to); CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to);CHKERRQ(ierr);
     ierr = VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
     PLogObjectParent(*vv,w->localupdate);
-    ierr = ISDestroy(to); CHKERRQ(ierr);
-    ierr = ISDestroy(from); CHKERRQ(ierr);
+    ierr = ISDestroy(to);CHKERRQ(ierr);
+    ierr = ISDestroy(from);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -586,7 +586,7 @@ int VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],Vec *
   int ierr;
 
   PetscFunctionBegin;
-  ierr = VecCreateGhostWithArray(comm,n,N,nghost,ghosts,0,vv); CHKERRQ(ierr);
+  ierr = VecCreateGhostWithArray(comm,n,N,nghost,ghosts,0,vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -608,9 +608,9 @@ int VecDuplicate_MPI( Vec win, Vec *v)
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
-    ierr = VecGetArray(*v,&array); CHKERRQ(ierr);
+    ierr = VecGetArray(*v,&array);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,w->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
-    ierr = VecRestoreArray(*v,&array); CHKERRQ(ierr);
+    ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
     PLogObjectParent(*v,vw->localrep);
     vw->localupdate = w->localupdate;
     PetscObjectReference((PetscObject)vw->localupdate);

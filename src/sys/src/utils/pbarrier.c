@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbarrier.c,v 1.3 1998/05/24 20:07:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbarrier.c,v 1.4 1999/03/17 23:21:54 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"              /*I "petsc.h" I*/
@@ -30,7 +30,7 @@ int PetscBarrier(PetscObject A)
   PetscValidHeader(A); 
   PLogEventBegin(Petsc_Barrier,A,0,0,0); 
   ierr = PetscObjectGetComm(A,&comm);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm); CHKERRQ(ierr);
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
   PLogEventEnd(Petsc_Barrier,A,0,0,0); 
   PetscFunctionReturn(0);
 }

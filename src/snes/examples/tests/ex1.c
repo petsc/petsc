@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.65 1999/03/19 21:23:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.66 1999/04/16 16:10:23 bsmith Exp balay $";
 #endif
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
@@ -94,9 +94,9 @@ int main( int argc, char **argv )
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,0,"Lambda is out of range");
   }
@@ -106,15 +106,15 @@ int main( int argc, char **argv )
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);CHKERRA(ierr);
   ierr = VecSetFromOptions(x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r); CHKERRA(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
 
   /* 
      Set function evaluation routine and vector.  Whenever the nonlinear
@@ -124,7 +124,7 @@ int main( int argc, char **argv )
         context that provides application-specific data for the
         function evaluation routine.
   */
-  ierr = SNESSetFunction(snes,r,FormFunction,(void *)&user); CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,(void *)&user);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -135,16 +135,16 @@ int main( int argc, char **argv )
      for the Jacobian.  See the users manual for a discussion of better 
      techniques for preallocating matrix memory.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
   if (!matrix_free) {
-    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J); CHKERRA(ierr);
+    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRA(ierr);
   }
 
   /*
      This option will cause the Jacobian to be computed via finite differences
     efficiently using a coloring of the columns of the matrix.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-snes_fd_coloring",&fd_coloring); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-snes_fd_coloring",&fd_coloring);CHKERRA(ierr);
   if (fd_coloring) {
     ISColoring   iscoloring;
     MatStructure str;
@@ -154,26 +154,26 @@ int main( int argc, char **argv )
       because clearly if we had a routine to compute the Jacobian we won't need
       to use finite differences.
     */
-    ierr = FormJacobian(snes,x,&J,&J,&str,&user); CHKERRA(ierr);
+    ierr = FormJacobian(snes,x,&J,&J,&str,&user);CHKERRA(ierr);
 
     /*
        Color the matrix, i.e. determine groups of columns that share no common 
       rows. These columns in the Jacobian can all be computed simulataneously.
     */
-    ierr = MatGetColoring(J,MATCOLORING_NATURAL,&iscoloring); CHKERRA(ierr);
+    ierr = MatGetColoring(J,MATCOLORING_NATURAL,&iscoloring);CHKERRA(ierr);
     /*
        Create the data structure that SNESDefaultComputeJacobianColor() uses
        to compute the actual Jacobians via finite differences.
     */
-    ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); CHKERRA(ierr);
+    ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRA(ierr);
     ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void))FormFunction,&user);CHKERRA(ierr);
-    ierr = MatFDColoringSetFromOptions(fdcoloring); CHKERRA(ierr);
+    ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRA(ierr);
     /*
         Tell SNES to use the routine SNESDefaultComputeJacobianColor()
       to compute Jacobians.
     */
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRA(ierr);  
-    ierr = ISColoringDestroy(iscoloring); CHKERRA(ierr);
+    ierr = ISColoringDestroy(iscoloring);CHKERRA(ierr);
   }
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -191,7 +191,7 @@ int main( int argc, char **argv )
                              products within Newton-Krylov method
   */
   else if (!matrix_free) {
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user); CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRA(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -201,7 +201,7 @@ int main( int argc, char **argv )
   /*
      Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
   */
-  ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
 
   /*
      Set array that saves the function norms.  This array is intended
@@ -219,8 +219,8 @@ int main( int argc, char **argv )
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(&user,x); CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr); 
+  ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr); 
   PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
   /*
@@ -228,14 +228,14 @@ int main( int argc, char **argv )
   */
   ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
   ierr = VecGetArray(x,&array);CHKERRQ(ierr);
-  ierr = DrawTensorContour(draw,user.mx,user.my,0,0,array); CHKERRA(ierr);
+  ierr = DrawTensorContour(draw,user.mx,user.my,0,0,array);CHKERRA(ierr);
   ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
 
   /* 
      Print the convergence history.  This is intended just to demonstrate
      use of the data attained via SNESSetConvergenceHistory().  
   */
-  ierr = OptionsHasName(PETSC_NULL,"-print_history",&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-print_history",&flg);CHKERRA(ierr);
   if (flg) for (i=0; i<its; i++)
     PetscPrintf(PETSC_COMM_WORLD,"iteration %d: Linear iterations %d Function norm = %g\n",i,hist_its[i],history[i]);
 
@@ -245,15 +245,15 @@ int main( int argc, char **argv )
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (!matrix_free) {
-    ierr = MatDestroy(J); CHKERRA(ierr);
+    ierr = MatDestroy(J);CHKERRA(ierr);
   }
   if (fd_coloring) {
-    ierr = MatFDColoringDestroy(fdcoloring); CHKERRA(ierr);
+    ierr = MatFDColoringDestroy(fdcoloring);CHKERRA(ierr);
   }
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = DrawDestroy(draw); CHKERRA(ierr);
-  ierr = SNESDestroy(snes); CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(r);CHKERRA(ierr);
+  ierr = DrawDestroy(draw);CHKERRA(ierr);
+  ierr = SNESDestroy(snes);CHKERRA(ierr);
   PetscFinalize();
 
   return 0;
@@ -291,7 +291,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   temp1 = lambda/(lambda + 1.0);
   for (j=0; j<my; j++) {
     temp = (double)(PetscMin(j,my-j-1))*hy;
@@ -308,7 +308,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -344,8 +344,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f); CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   /*
      Compute function 
@@ -371,8 +371,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   return 0; 
 }
 /* ------------------------------------------------------------------- */
@@ -411,7 +411,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
   /* 
      Compute entries of the Jacobian
@@ -420,7 +420,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
     for (i=0; i<mx; i++) {
       row = i + j*mx;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        ierr = MatSetValues(jac,1,&row,1,&row,&one,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(jac,1,&row,1,&row,&one,INSERT_VALUES);CHKERRQ(ierr);
         continue;
       }
       v[0] = -hxdhy; col[0] = row - mx;
@@ -428,20 +428,20 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = row;
       v[3] = -hydhx; col[3] = row + 1;
       v[4] = -hxdhy; col[4] = row + mx;
-      ierr = MatSetValues(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
   /* 
      Assemble matrix
   */
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /*
      Set flag to indicate that the Jacobian matrix retains an identical

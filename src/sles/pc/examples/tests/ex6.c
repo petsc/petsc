@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.5 1999/03/19 21:21:17 bsmith Exp balay $";
 #endif
 
 static char help[] = "Creates a matrix using 9 pt stensil, and uses it to \n\
@@ -38,37 +38,37 @@ int main(int argc,char **args)
   IS          *is1, *is2;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
 /*  OptionsGetInt(PETSC_NULL,"-ol",&ol,&flg);*/
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */
   x1= (m+1)/2;
   x2= x1;
-  ierr = OptionsGetInt(PETSC_NULL,"-x1",&x1,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-x2",&x2,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-x1",&x1,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-x2",&x2,&flg);CHKERRA(ierr);
   /* create stiffness matrix */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,PETSC_NULL,&C); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,PETSC_NULL,&C);CHKERRA(ierr);
 
   /* forms the element stiffness for the Laplacian */
-  ierr = FormElementStiffness(h*h,Ke); CHKERRA(ierr);
+  ierr = FormElementStiffness(h*h,Ke);CHKERRA(ierr);
   for ( i=0; i<M; i++ ) {
      /* location of lower left corner of element */
      x = h*(i % m); y = h*(i/m); 
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + ( i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-     ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES); CHKERRA(ierr);
+     ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRA(ierr);
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
 
   for (ol=0; ol<m+2; ++ol) {
 
-    ierr = PCASMCreateSubdomains2D( m+1, m+1 , x1, x2, 1, 0 , &Nsub1, &is1); CHKERRA(ierr);
-    ierr = MatIncreaseOverlap(C, Nsub1, is1, ol);                    CHKERRA(ierr);
-    ierr = PCASMCreateSubdomains2D( m+1, m+1,x1, x2, 1, ol, &Nsub2, &is2); CHKERRA(ierr);
+    ierr = PCASMCreateSubdomains2D( m+1, m+1 , x1, x2, 1, 0 , &Nsub1, &is1);CHKERRA(ierr);
+    ierr = MatIncreaseOverlap(C, Nsub1, is1, ol);                   CHKERRA(ierr);
+    ierr = PCASMCreateSubdomains2D( m+1, m+1,x1, x2, 1, ol, &Nsub2, &is2);CHKERRA(ierr);
     
     PetscPrintf(PETSC_COMM_SELF,"flg == 1 => both index sets are same\n");
     if( Nsub1 != Nsub2){
@@ -84,10 +84,10 @@ int main(int argc,char **args)
     for (i=0; i<Nsub2; ++i) ISDestroy(is2[i]);     
   
 
-    ierr = PetscFree(is1); CHKERRA(ierr);
-    ierr = PetscFree(is2); CHKERRA(ierr);
+    ierr = PetscFree(is1);CHKERRA(ierr);
+    ierr = PetscFree(is2);CHKERRA(ierr);
   }
-    ierr = MatDestroy(C);  CHKERRA(ierr);  
+    ierr = MatDestroy(C); CHKERRA(ierr);  
     PetscFinalize();
 return 0;
 }

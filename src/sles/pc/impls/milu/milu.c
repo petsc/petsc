@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: milu.c,v 1.9 1999/04/19 22:17:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: milu.c,v 1.10 1999/04/21 18:19:12 bsmith Exp balay $";
 #endif
 
 /*
@@ -46,7 +46,7 @@ int PCmILUSetLevels(PC pc,int levels)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PCILUSetLevels(base_pc,levels); CHKERRQ(ierr);
+  ierr = PCILUSetLevels(base_pc,levels);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -59,7 +59,7 @@ int PCmILUSetBaseType(PC pc,PCType type)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PCSetType(base_pc,type); CHKERRQ(ierr);
+  ierr = PCSetType(base_pc,type);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -80,14 +80,14 @@ static int PCSetup_mILU(PC pc)
   int lsize,first,last,ierr;
 
   PetscFunctionBegin;
-  ierr = MatGetOwnershipRange(omat,&first,&last); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(omat,&first,&last);CHKERRQ(ierr);
   lsize = last-first;
-  mprop = (double *) PetscMalloc((lsize+1)*sizeof(double)); CHKPTRQ(mprop);
+  mprop = (double *) PetscMalloc((lsize+1)*sizeof(double));CHKPTRQ(mprop);
   {
     int irow;
     for (irow=first; irow<last; irow++) {
       int icol,ncols,*cols; Scalar *vals; double mp=0.;
-      ierr = MatGetRow(omat,irow,&ncols,&cols,&vals); CHKERRQ(ierr);
+      ierr = MatGetRow(omat,irow,&ncols,&cols,&vals);CHKERRQ(ierr);
       for (icol=0; icol<ncols; icol++) {
 	if (cols[icol]==irow) {
 	  mp += PetscAbsScalar(vals[icol]);
@@ -95,30 +95,30 @@ static int PCSetup_mILU(PC pc)
 	  mp -= PetscAbsScalar(vals[icol]);
 	}
       }
-      ierr = MatRestoreRow(omat,irow,&ncols,&cols,&vals); CHKERRQ(ierr);
+      ierr = MatRestoreRow(omat,irow,&ncols,&cols,&vals);CHKERRQ(ierr);
       mprop[irow-first] = -PetscMin(0,mp);
     }
   }
-  ierr = MatConvert(omat,MATSAME,&pmat); CHKERRQ(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,lsize,&diag); CHKERRQ(ierr);
-  ierr = MatGetDiagonal(omat,diag); CHKERRQ(ierr);
-  ierr = VecGetArray(diag,&dia); CHKERRQ(ierr);
-  ierr = PCSetOperators(base_pc,pc->mat,pmat,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
-  ierr = PCSetVector(base_pc,pc->vec); CHKERRQ(ierr);
+  ierr = MatConvert(omat,MATSAME,&pmat);CHKERRQ(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,lsize,&diag);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(omat,diag);CHKERRQ(ierr);
+  ierr = VecGetArray(diag,&dia);CHKERRQ(ierr);
+  ierr = PCSetOperators(base_pc,pc->mat,pmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = PCSetVector(base_pc,pc->vec);CHKERRQ(ierr);
 
 #define ATTEMPTS 5
   {
     Mat lu; Vec piv;
     Scalar *elt;
     int bd,t,try1 = 0;
-    ierr = VecDuplicate(diag,&piv); CHKERRQ(ierr);
+    ierr = VecDuplicate(diag,&piv);CHKERRQ(ierr);
     do {
-      ierr = PCSetUp(base_pc); CHKERRQ(ierr);
+      ierr = PCSetUp(base_pc);CHKERRQ(ierr);
       ierr = PCGetFactoredMatrix(base_pc,&lu);
-      ierr = MatGetDiagonal(lu,piv); CHKERRA(ierr);
-      ierr = VecGetArray(piv,&elt); CHKERRA(ierr);
+      ierr = MatGetDiagonal(lu,piv);CHKERRA(ierr);
+      ierr = VecGetArray(piv,&elt);CHKERRA(ierr);
       bd = 0; for (t=0; t<lsize; t++) if (PetscReal(elt[t]) < 0.0) bd++;
-      ierr = VecRestoreArray(piv,&elt); CHKERRA(ierr);
+      ierr = VecRestoreArray(piv,&elt);CHKERRA(ierr);
       if (bd>0) {
 	/*printf("negative pivots %d\n",bd);*/
 	try1++;
@@ -127,16 +127,16 @@ static int PCSetup_mILU(PC pc)
 	  int row  = first+t;
 	  ierr = MatSetValues(pmat,1,&row,1,&row,&v,INSERT_VALUES);CHKERRQ(ierr);
 	}
-	ierr = MatAssemblyBegin(pmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-	ierr = MatAssemblyEnd(pmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+	ierr = MatAssemblyBegin(pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyEnd(pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = PCSetOperators(base_pc,pc->mat,pmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       } /*else printf("mILU factorisation succeeded on %d\n",try1);*/
     } while (bd>0);
-    ierr = VecDestroy(piv); CHKERRQ(ierr);
+    ierr = VecDestroy(piv);CHKERRQ(ierr);
   }
   
-  ierr = VecRestoreArray(diag,&dia); CHKERRQ(ierr);
-  ierr = VecDestroy(diag); CHKERRQ(ierr);
+  ierr = VecRestoreArray(diag,&dia);CHKERRQ(ierr);
+  ierr = VecDestroy(diag);CHKERRQ(ierr);
   PetscFree(mprop);
 
   PetscFunctionReturn(0);
@@ -150,7 +150,7 @@ static int PCApply_mILU(PC pc,Vec x,Vec y)
   int ierr;
   
   PetscFunctionBegin;
-  ierr = PCApply(base_pc,x,y); CHKERRQ(ierr);
+  ierr = PCApply(base_pc,x,y);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -164,7 +164,7 @@ static int PCDestroy_mILU(PC pc)
   
   PetscFunctionBegin;
   ierr = MatDestroy(base_pc->pmat);CHKERRQ(ierr);
-  ierr = PCDestroy(base_pc); CHKERRQ(ierr);
+  ierr = PCDestroy(base_pc);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -186,7 +186,7 @@ static int PCView_mILU(PC pc,Viewer viewer)
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
-  ierr = PCView(base_pc,viewer); CHKERRQ(ierr);
+  ierr = PCView(base_pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -207,8 +207,8 @@ int PCCreate_mILU(PC pc)
   pc->ops->setup            = PCSetup_mILU;
   pc->ops->view             = PCView_mILU;
 
-  ierr = PCCreate(pc->comm,&base_pc); CHKERRQ(ierr);
-  ierr = PCSetType(base_pc,PCILU); CHKERRQ(ierr);
+  ierr = PCCreate(pc->comm,&base_pc);CHKERRQ(ierr);
+  ierr = PCSetType(base_pc,PCILU);CHKERRQ(ierr);
   pc->data = (void *) base_pc;
 
   PetscFunctionReturn(0);

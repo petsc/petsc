@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.116 1999/02/03 17:22:42 balay Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.117 1999/03/11 16:18:58 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -35,21 +35,21 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
   
-  ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
-  ierr = ISGetIndices(isrow,&r); CHKERRQ(ierr);
-  ierr = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr = ISInvertPermutation(iscol,&isicol);CHKERRQ(ierr);
+  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* get new row pointers */
-  ainew    = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(ainew);
+  ainew    = (int *) PetscMalloc( (n+1)*sizeof(int) );CHKPTRQ(ainew);
   ainew[0] = -shift;
   /* don't know how many column pointers are needed so estimate */
   jmax  = (int) (f*ai[n]+(!shift));
-  ajnew = (int *) PetscMalloc( (jmax)*sizeof(int) ); CHKPTRQ(ajnew);
+  ajnew = (int *) PetscMalloc( (jmax)*sizeof(int) );CHKPTRQ(ajnew);
   /* fill is a linked list of nonzeros in active row */
-  fill = (int *) PetscMalloc( (2*n+1)*sizeof(int)); CHKPTRQ(fill);
+  fill = (int *) PetscMalloc( (2*n+1)*sizeof(int));CHKPTRQ(fill);
   im   = fill + n + 1;
   /* idnew is location of diagonal in factor */
-  idnew    = (int *) PetscMalloc( (n+1)*sizeof(int)); CHKPTRQ(idnew);
+  idnew    = (int *) PetscMalloc( (n+1)*sizeof(int));CHKPTRQ(idnew);
   idnew[0] = -shift;
 
   for ( i=0; i<n; i++ ) {
@@ -105,7 +105,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 
       /* allocate a longer ajnew */
       ajtmp = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(ajtmp);
-      PetscMemcpy(ajtmp,ajnew,(ainew[i]+shift)*sizeof(int));
+      ierr  = PetscMemcpy(ajtmp,ajnew,(ainew[i]+shift)*sizeof(int));CHKERRQ(ierr);
       PetscFree(ajnew);
       ajnew = ajtmp;
       realloc++; /* count how many times we realloc */
@@ -132,13 +132,13 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
     PLogInfo(A,"MatLUFactorSymbolic_SeqAIJ: Empty matrix\n");
   }
 
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
 
   PetscFree(fill);
 
   /* put together the new matrix */
-  ierr = MatCreateSeqAIJ(A->comm,n,n,0,PETSC_NULL,B); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(A->comm,n,n,0,PETSC_NULL,B);CHKERRQ(ierr);
   PLogObjectParent(*B,isicol); 
   b = (Mat_SeqAIJ *) (*B)->data;
   PetscFree(b->imax);
@@ -193,15 +193,15 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 
   PetscFunctionBegin;
 
-  ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
-  ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
-  rtmp  = (Scalar *) PetscMalloc( (n+1)*sizeof(Scalar) ); CHKPTRQ(rtmp);
-  PetscMemzero(rtmp,(n+1)*sizeof(Scalar));
+  ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+  rtmp  = (Scalar *) PetscMalloc( (n+1)*sizeof(Scalar) );CHKPTRQ(rtmp);
+  ierr  = PetscMemzero(rtmp,(n+1)*sizeof(Scalar));CHKERRQ(ierr);
   rtmps = rtmp + shift; ics = ic + shift;
 
   /* precalculate row sums */
   if (preserve_row_sums) {
-    rowsums = (Scalar *) PetscMalloc( n*sizeof(Scalar) ); CHKPTRQ(rowsums);
+    rowsums = (Scalar *) PetscMalloc( n*sizeof(Scalar) );CHKPTRQ(rowsums);
     for ( i=0; i<n; i++ ) {
       nz  = a->i[r[i]+1] - a->i[r[i]];
       v   = a->a + a->i[r[i]] + shift;
@@ -280,10 +280,10 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 
   if (preserve_row_sums) PetscFree(rowsums); 
   PetscFree(rtmp);
-  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
-  ierr = Mat_AIJ_CheckInode(C); CHKERRQ(ierr);
+  ierr = Mat_AIJ_CheckInode(C);CHKERRQ(ierr);
   C->assembled = PETSC_TRUE;
   PLogFlops(b->n);
   PetscFunctionReturn(0);
@@ -300,8 +300,8 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   MatOps         Aops;
 
   PetscFunctionBegin;
-  ierr = MatLUFactorSymbolic(A,row,col,f,&C); CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(A,&C); CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(A,row,col,f,&C);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(A,&C);CHKERRQ(ierr);
 
   /* free all the data structures from mat */
   PetscFree(mat->a); 
@@ -324,7 +324,7 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   */
   Abops = A->bops;
   Aops  = A->ops;
-  PetscMemcpy(A,C,sizeof(struct _p_Mat));
+  ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
   mat = (Mat_SeqAIJ *) A->data;
   PLogObjectParent(A,mat->icol); 
   
@@ -350,7 +350,7 @@ int MatSolve_SeqAIJ(Mat A,Vec bb, Vec xx)
   if (!n) PetscFunctionReturn(0);
 
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -378,10 +378,10 @@ int MatSolve_SeqAIJ(Mat A,Vec bb, Vec xx)
     x[*c--] = tmp[i] = sum*aa[a->diag[i]+shift];
   }
 
-  ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
-  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->n);
   PetscFunctionReturn(0);
 }
@@ -406,8 +406,8 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb, Vec xx)
      PetscFunctionReturn(0);
   }
 
-  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
 #if defined(USE_FORTRAN_KERNEL_SOLVEAIJ)
   fortransolveaij_(&n,x,ai,aj,adiag,aa,b);
@@ -436,8 +436,8 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb, Vec xx)
   }
 #endif
   PLogFlops(2*a->nz - a->n);
-  ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -452,14 +452,14 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb, Vec yy, Vec xx)
   Scalar     *x,*b,*tmp, *aa = a->a, sum, *v;
 
   PetscFunctionBegin;
-  if (yy != xx) {ierr = VecCopy(yy,xx); CHKERRQ(ierr);}
+  if (yy != xx) {ierr = VecCopy(yy,xx);CHKERRQ(ierr);}
 
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
-  ierr = ISGetIndices(isrow,&rout); CHKERRQ(ierr); r = rout;
-  ierr = ISGetIndices(iscol,&cout); CHKERRQ(ierr); c = cout + (n-1);
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout + (n-1);
 
   /* forward solve the lower triangular */
   tmp[0] = b[*r++];
@@ -483,8 +483,8 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb, Vec yy, Vec xx)
     x[*c--] += tmp[i];
   }
 
-  ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PLogFlops(2*a->nz);
@@ -507,8 +507,8 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
-  ierr = ISGetIndices(isrow,&rout); CHKERRQ(ierr); r = rout;
-  ierr = ISGetIndices(iscol,&cout); CHKERRQ(ierr); c = cout;
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
 
   /* copy the b into temp work space according to permutation */
   for ( i=0; i<n; i++ ) tmp[i] = b[c[i]]; 
@@ -537,8 +537,8 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
   /* copy tmp into x according to permutation */
   for ( i=0; i<n; i++ ) x[r[i]] = tmp[i];
 
-  ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
 
@@ -563,8 +563,8 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp = a->solve_work;
 
-  ierr = ISGetIndices(isrow,&rout); CHKERRQ(ierr); r = rout;
-  ierr = ISGetIndices(iscol,&cout); CHKERRQ(ierr); c = cout;
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
 
   /* copy the b into temp work space according to permutation */
   for ( i=0; i<n; i++ ) tmp[i] = b[c[i]]; 
@@ -593,8 +593,8 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
   /* copy tmp into x according to permutation */
   for ( i=0; i<n; i++ ) x[r[i]] += tmp[i]; 
 
-  ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
 
@@ -627,18 +627,18 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     levels        = 0;
     diagonal_fill = 0;
   }
-  ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
+  ierr = ISInvertPermutation(iscol,&isicol);CHKERRQ(ierr);
 
   /* special case that simply copies fill pattern */
   ISIdentity(isrow,&row_identity); ISIdentity(iscol,&col_identity);
   if (levels == 0 && row_identity && col_identity) {
-    ierr = MatDuplicate_SeqAIJ(A,MAT_DO_NOT_COPY_VALUES,fact); CHKERRQ(ierr);
+    ierr = MatDuplicate_SeqAIJ(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
     (*fact)->factor = FACTOR_LU;
     b               = (Mat_SeqAIJ *) (*fact)->data;
     if (!b->diag) {
-      ierr = MatMarkDiag_SeqAIJ(*fact); CHKERRQ(ierr);
+      ierr = MatMarkDiag_SeqAIJ(*fact);CHKERRQ(ierr);
     }
-    ierr = MatMissingDiag_SeqAIJ(*fact); CHKERRQ(ierr);
+    ierr = MatMissingDiag_SeqAIJ(*fact);CHKERRQ(ierr);
     b->row              = isrow;
     b->col              = iscol;
     b->icol             = isicol;
@@ -647,23 +647,23 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     PetscFunctionReturn(0);
   }
 
-  ierr = ISGetIndices(isrow,&r); CHKERRQ(ierr);
-  ierr = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* get new row pointers */
-  ainew = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(ainew);
+  ainew = (int *) PetscMalloc( (n+1)*sizeof(int) );CHKPTRQ(ainew);
   ainew[0] = -shift;
   /* don't know how many column pointers are needed so estimate */
   jmax = (int) (f*(ai[n]+!shift));
-  ajnew = (int *) PetscMalloc( (jmax)*sizeof(int) ); CHKPTRQ(ajnew);
+  ajnew = (int *) PetscMalloc( (jmax)*sizeof(int) );CHKPTRQ(ajnew);
   /* ajfill is level of fill for each fill entry */
-  ajfill = (int *) PetscMalloc( (jmax)*sizeof(int) ); CHKPTRQ(ajfill);
+  ajfill = (int *) PetscMalloc( (jmax)*sizeof(int) );CHKPTRQ(ajfill);
   /* fill is a linked list of nonzeros in active row */
-  fill = (int *) PetscMalloc( (n+1)*sizeof(int)); CHKPTRQ(fill);
+  fill = (int *) PetscMalloc( (n+1)*sizeof(int));CHKPTRQ(fill);
   /* im is level for each filled value */
-  im = (int *) PetscMalloc( (n+1)*sizeof(int)); CHKPTRQ(im);
+  im = (int *) PetscMalloc( (n+1)*sizeof(int));CHKPTRQ(im);
   /* dloc is location of diagonal in factor */
-  dloc = (int *) PetscMalloc( (n+1)*sizeof(int)); CHKPTRQ(dloc);
+  dloc = (int *) PetscMalloc( (n+1)*sizeof(int));CHKPTRQ(dloc);
   dloc[0]  = 0;
   for ( prow=0; prow<n; prow++ ) {
 
@@ -742,12 +742,12 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
       jmax += maxadd;
 
       /* allocate a longer ajnew and ajfill */
-      xi = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(xi);
-      PetscMemcpy(xi,ajnew,(ainew[prow]+shift)*sizeof(int));
+      xi     = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(xi);
+      ierr   = PetscMemcpy(xi,ajnew,(ainew[prow]+shift)*sizeof(int));CHKERRQ(ierr);
       PetscFree(ajnew);
-      ajnew = xi;
-      xi = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(xi);
-      PetscMemcpy(xi,ajfill,(ainew[prow]+shift)*sizeof(int));
+      ajnew  = xi;
+      xi     = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(xi);
+      ierr   = PetscMemcpy(xi,ajfill,(ainew[prow]+shift)*sizeof(int));CHKERRQ(ierr);
       PetscFree(ajfill);
       ajfill = xi;
       realloc++; /* count how many times we realloc */
@@ -768,8 +768,8 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     }
   }
   PetscFree(ajfill); 
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   PetscFree(fill); PetscFree(im);
 
   {
@@ -785,7 +785,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
   }
 
   /* put together the new matrix */
-  ierr = MatCreateSeqAIJ(A->comm,n,n,0,PETSC_NULL,fact); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(A->comm,n,n,0,PETSC_NULL,fact);CHKERRQ(ierr);
   PLogObjectParent(*fact,isicol);
   b = (Mat_SeqAIJ *) (*fact)->data;
   PetscFree(b->imax);
@@ -793,7 +793,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
   len = (ainew[n] + shift)*sizeof(Scalar);
   /* the next line frees the default space generated by the Create() */
   PetscFree(b->a); PetscFree(b->ilen);
-  b->a          = (Scalar *) PetscMalloc( len+1 ); CHKPTRQ(b->a);
+  b->a          = (Scalar *) PetscMalloc( len+1 );CHKPTRQ(b->a);
   b->j          = ajnew;
   b->i          = ainew;
   for ( i=0; i<n; i++ ) dloc[i] += ainew[i];
@@ -803,7 +803,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
   b->row        = isrow;
   b->col        = iscol;
   b->icol       = isicol;
-  b->solve_work = (Scalar *) PetscMalloc( (n+1)*sizeof(Scalar)); CHKPTRQ(b->solve_work);
+  b->solve_work = (Scalar *) PetscMalloc( (n+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate dloc, solve_work, new a, new j */
   PLogObjectMemory(*fact,(ainew[n]+shift-n) * (sizeof(int)+sizeof(Scalar)));

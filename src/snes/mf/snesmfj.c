@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.84 1999/04/05 00:11:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.85 1999/04/19 22:15:35 bsmith Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -36,7 +36,7 @@ int MatSNESMFSetType(Mat mat,char *ftype)
   MatSNESMFCtx ctx;
   
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
 
   /* already set, so just return */
   if (PetscTypeCompare(ctx->type_name,ftype)) PetscFunctionReturn(0);
@@ -47,13 +47,13 @@ int MatSNESMFSetType(Mat mat,char *ftype)
   }
 
   /* Get the function pointers for the requrested method */
-  if (!MatSNESMFRegisterAllCalled) {ierr = MatSNESMFRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  if (!MatSNESMFRegisterAllCalled) {ierr = MatSNESMFRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
   ierr =  FListFind(ctx->comm, MatSNESMFList, ftype,(int (**)(void *)) &r );CHKERRQ(ierr);
 
   if (!r) SETERRQ(1,1,"Unknown MatSNESMF type given");
 
-  ierr = (*r)(ctx); CHKERRQ(ierr);
+  ierr = (*r)(ctx);CHKERRQ(ierr);
   ierr = PetscStrncpy(ctx->type_name,ftype,256);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -105,7 +105,8 @@ int MatSNESMFRegister_Private(char *sname,char *path,char *name,int (*function)(
   char fullname[256];
 
   PetscFunctionBegin;
-  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
+  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
   ierr = FListAdd_Private(&MatSNESMFList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -148,7 +149,7 @@ int MatSNESMFDestroy_Private(Mat mat)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  ierr = VecDestroy(ctx->w); CHKERRQ(ierr);
+  ierr = VecDestroy(ctx->w);CHKERRQ(ierr);
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
   if (ctx->sp) {ierr = PCNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
   PetscFree(ctx->ops);
@@ -172,13 +173,13 @@ int MatSNESMFView_Private(Mat J,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
-  ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+  ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
+  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
      ierr = PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
      ierr = PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
-     ierr = PetscFPrintf(ctx->comm,fd,"    Using %s compute h routine\n",ctx->type_name);  CHKERRQ(ierr);
+     ierr = PetscFPrintf(ctx->comm,fd,"    Using %s compute h routine\n",ctx->type_name);CHKERRQ(ierr);
      if (ctx->ops->view) {
        ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
      }
@@ -233,24 +234,24 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
      with particular objects, hence alleviating the more general problem. */
   PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
 
-  ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   snes = ctx->snes;
   w    = ctx->w;
 
-  ierr = SNESGetSolution(snes,&U); CHKERRQ(ierr);
+  ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     eval_fct = SNESComputeFunction;
-    ierr = SNESGetFunction(snes,&F); CHKERRQ(ierr);
+    ierr = SNESGetFunction(snes,&F);CHKERRQ(ierr);
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     eval_fct = SNESComputeGradient;
-    ierr = SNESGetGradient(snes,&F); CHKERRQ(ierr);
+    ierr = SNESGetGradient(snes,&F);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid method class");
 
   if (!ctx->ops->compute) {
     ierr = MatSNESMFSetType(mat,"default");CHKERRQ(ierr);
     ierr = MatSNESMFSetFromOptions(mat);CHKERRQ(ierr);
   }
-  ierr = (*ctx->ops->compute)(ctx,U,a,&h); CHKERRQ(ierr);
+  ierr = (*ctx->ops->compute)(ctx,U,a,&h);CHKERRQ(ierr);
 
   /* keep a record of the current differencing parameter h */  
   ctx->currenth = h;
@@ -266,13 +267,13 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
   }
 
   /* Evaluate function at F(u + ha) */
-  ierr = VecWAXPY(&h,a,U,w); CHKERRQ(ierr);
-  ierr = eval_fct(snes,w,y); CHKERRQ(ierr);
+  ierr = VecWAXPY(&h,a,U,w);CHKERRQ(ierr);
+  ierr = eval_fct(snes,w,y);CHKERRQ(ierr);
 
-  ierr = VecAXPY(&mone,F,y); CHKERRQ(ierr);
+  ierr = VecAXPY(&mone,F,y);CHKERRQ(ierr);
   h = 1.0/h;
-  ierr = VecScale(&h,y); CHKERRQ(ierr);
-  if (ctx->sp) {ierr = PCNullSpaceRemove(ctx->sp,y); CHKERRQ(ierr);}
+  ierr = VecScale(&h,y);CHKERRQ(ierr);
+  if (ctx->sp) {ierr = PCNullSpaceRemove(ctx->sp,y);CHKERRQ(ierr);}
 
   PLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);
   PetscFunctionReturn(0);
@@ -338,7 +339,7 @@ int MatCreateSNESMF(SNES snes,Vec x, Mat *J)
   int            n, nloc, ierr;
 
   PetscFunctionBegin;
-  mfctx = (MatSNESMFCtx) PetscMalloc(sizeof(struct _p_MatSNESMFCtx)); CHKPTRQ(mfctx);
+  mfctx = (MatSNESMFCtx) PetscMalloc(sizeof(struct _p_MatSNESMFCtx));CHKPTRQ(mfctx);
   PLogObjectMemory(snes,sizeof(MatSNESMFCtx));
   mfctx->comm         = snes->comm;
   mfctx->sp           = 0;
@@ -355,7 +356,7 @@ int MatCreateSNESMF(SNES snes,Vec x, Mat *J)
      a later call with MatSNESMFSetType() or if that is not called 
      then it will default in the first use of MatSNESMFMult_private()
   */
-  mfctx->ops                 = (MFOps *)PetscMalloc(sizeof(MFOps)); CHKPTRQ(mfctx->ops); 
+  mfctx->ops                 = (MFOps *)PetscMalloc(sizeof(MFOps));CHKPTRQ(mfctx->ops); 
   mfctx->ops->compute        = 0;
   mfctx->ops->destroy        = 0;
   mfctx->ops->view           = 0;
@@ -363,14 +364,14 @@ int MatCreateSNESMF(SNES snes,Vec x, Mat *J)
   mfctx->ops->setfromoptions = 0;
   mfctx->hctx                = 0;
 
-  ierr = VecDuplicate(x,&mfctx->w); CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)x,&comm); CHKERRQ(ierr);
-  ierr = VecGetSize(x,&n); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&nloc); CHKERRQ(ierr);
-  ierr = MatCreateShell(comm,nloc,nloc,n,n,mfctx,J); CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&mfctx->w);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
+  ierr = VecGetSize(x,&n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x,&nloc);CHKERRQ(ierr);
+  ierr = MatCreateShell(comm,nloc,nloc,n,n,mfctx,J);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_MULT,(void*)MatSNESMFMult_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void *)MatSNESMFDestroy_Private);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MATOP_VIEW,(void *)MatSNESMFView_Private); CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_VIEW,(void *)MatSNESMFView_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_ASSEMBLY_END,(void *)MatSNESMFAssemblyEnd_Private);CHKERRQ(ierr);
   PLogObjectParent(*J,mfctx->w);
   PLogObjectParent(snes,*J);
@@ -410,7 +411,7 @@ int MatSNESMFSetFromOptions(Mat mat)
   char           ftype[256],p[64];
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&mfctx); CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,(void **)&mfctx);CHKERRQ(ierr);
   if (mfctx) {
     /* allow user to set the type */
     ierr = OptionsGetString(mfctx->snes->prefix,"-snes_mf_type",ftype,256,&flg);CHKERRQ(ierr);
@@ -423,7 +424,7 @@ int MatSNESMFSetFromOptions(Mat mat)
       ierr = (*mfctx->ops->setfromoptions)(mfctx);CHKERRQ(ierr);
     }
 
-    ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
     ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
     if (mfctx->snes->prefix) {ierr = PetscStrcat(p,mfctx->snes->prefix);CHKERRQ(ierr);}
     if (flg) {
@@ -463,7 +464,7 @@ int MatSNESMFGetH(Mat mat,Scalar *h)
   int            ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   if (ctx) {
     *h = ctx->currenth;
   }
@@ -487,18 +488,18 @@ int MatSNESMFKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
   PetscTruth     nonzeroinitialguess;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)ksp,&comm); CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
-  ierr = KSPGetInitialGuessNonzero(ksp,&nonzeroinitialguess); CHKERRQ(ierr);
-  ierr = PCGetOperators(pc,&mat,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
-  ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = KSPGetInitialGuessNonzero(ksp,&nonzeroinitialguess);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   if (!ctx) {
     SETERRQ(1,1,"Matrix is not a matrix free shell matrix");
   }
   if (n > 0 || nonzeroinitialguess) {
 #if defined(USE_PETSC_COMPLEX)
     ierr = PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g + %g i\n",n,rnorm,
-                PetscReal(ctx->currenth),PetscImaginary(ctx->currenth)); CHKERRQ(ierr);
+                PetscReal(ctx->currenth),PetscImaginary(ctx->currenth));CHKERRQ(ierr);
 #else
     ierr = PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g \n",n,rnorm,ctx->currenth);CHKERRQ(ierr); 
 #endif
@@ -546,7 +547,7 @@ int MatSNESMFSetFunctionError(Mat mat,double error)
   int            ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   if (ctx) {
     if (error != PETSC_DEFAULT) ctx->error_rel = error;
   }
@@ -588,10 +589,10 @@ int MatSNESMFAddNullSpace(Mat J,int has_cnst,int n,Vec *vecs)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
 
-  ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
+  ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
   /* no context indicates that it is not the "matrix free" matrix type */
   if (!ctx) PetscFunctionReturn(0);
-  ierr = PCNullSpaceCreate(comm,has_cnst,n,vecs,&ctx->sp); CHKERRQ(ierr);
+  ierr = PCNullSpaceCreate(comm,has_cnst,n,vecs,&ctx->sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -629,7 +630,7 @@ int MatSNESMFSetHHistory(Mat J,Scalar *history,int nhistory)
 
   PetscFunctionBegin;
 
-  ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
+  ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
   /* no context indicates that it is not the "matrix free" matrix type */
   if (!ctx) PetscFunctionReturn(0);
   ctx->historyh    = history;
@@ -669,7 +670,7 @@ int MatSNESMFResetHHistory(Mat J)
 
   PetscFunctionBegin;
 
-  ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
+  ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
   /* no context indicates that it is not the "matrix free" matrix type */
   if (!ctx) PetscFunctionReturn(0);
   ctx->ncurrenth    = 0;

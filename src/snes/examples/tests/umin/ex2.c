@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.46 1999/03/19 21:22:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.47 1999/04/16 16:10:21 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -70,12 +70,12 @@ int main(int argc,char **argv)
 
   /* Set up user-defined work space */
   user.problem = 1;
-  ierr = OptionsGetInt(PETSC_NULL,"-p",&user.problem,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-p",&user.problem,&flg);CHKERRA(ierr);
   user.param = 5.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
   if (user.problem != 1 && user.problem != 2) SETERRA(1,0,"Invalid problem number");
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg);CHKERRA(ierr);
   user.ndim = mx * my; user.mx = mx; user.my = my;
   user.hx = one/(mx+1); user.hy = one/(my+1);
   if (user.problem == 2) {
@@ -85,21 +85,21 @@ int main(int argc,char **argv)
   }
 
   /* Allocate vectors */
-  ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,user.ndim,&user.y); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,user.ndim,&user.y);CHKERRA(ierr);
   ierr = VecSetFromOptions(user.y);CHKERRA(ierr);
-  ierr = VecDuplicate(user.y,&user.s); CHKERRA(ierr);
-  ierr = VecDuplicate(user.y,&g); CHKERRA(ierr);
-  ierr = VecDuplicate(user.y,&x); CHKERRA(ierr);
-  ierr = VecGetLocalSize(x,&ldim); CHKERRA(ierr);
+  ierr = VecDuplicate(user.y,&user.s);CHKERRA(ierr);
+  ierr = VecDuplicate(user.y,&g);CHKERRA(ierr);
+  ierr = VecDuplicate(user.y,&x);CHKERRA(ierr);
+  ierr = VecGetLocalSize(x,&ldim);CHKERRA(ierr);
 
   /* Create nonlinear solver */
   ierr = SNESCreate(PETSC_COMM_SELF,SNES_UNCONSTRAINED_MINIMIZATION,&snes);CHKERRA(ierr);
-  ierr = SNESSetType(snes,method); CHKERRA(ierr);
+  ierr = SNESSetType(snes,method);CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,
-         (void *)&user); CHKERRA(ierr);
-  ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user); CHKERRA(ierr);
+         (void *)&user);CHKERRA(ierr);
+  ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user);CHKERRA(ierr);
 
   /* Form Hessian matrix approx, using one of three methods:
       (default)   : explicitly form Hessian approximation
@@ -107,51 +107,51 @@ int main(int argc,char **argv)
       -my_snes_mf : employ user-defined matrix-free code (since we just happen to
                     have a routine for matrix-vector products in this example) 
    */
-  ierr = OptionsHasName(PETSC_NULL,"-my_snes_mf",&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-my_snes_mf",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = MatCreateShell(PETSC_COMM_SELF,ldim,user.ndim,user.ndim,user.ndim,
-           (void*)&user,&H); CHKERRA(ierr);
+           (void*)&user,&H);CHKERRA(ierr);
     if (user.problem == 1) {
       ierr = MatShellSetOperation(H,MATOP_MULT,(void *)HessianProductMat1);
-      CHKERRA(ierr);
+     CHKERRA(ierr);
     } else if (user.problem == 2) {
       ierr = MatShellSetOperation(H,MATOP_MULT,(void*)HessianProductMat2);
-      CHKERRA(ierr);
+     CHKERRA(ierr);
     }
-    ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); CHKERRA(ierr);
+    ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user);CHKERRA(ierr);
 
     /* Set null preconditioner.  Alternatively, set user-provided 
        preconditioner or explicitly form preconditioning matrix */
-    ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
-    ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
+    ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
+    ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
+    ierr = PCSetType(pc,PCNONE);CHKERRA(ierr);
   } else {
-    ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,user.ndim,user.ndim,&H); CHKERRA(ierr);
-    ierr = MatSetOption(H,MAT_SYMMETRIC); CHKERRA(ierr);
-    ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user); CHKERRA(ierr);
+    ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,user.ndim,user.ndim,&H);CHKERRA(ierr);
+    ierr = MatSetOption(H,MAT_SYMMETRIC);CHKERRA(ierr);
+    ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user);CHKERRA(ierr);
   }
 
   /* Set options; then solve minimization problem */
-  ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
   if (user.problem == 1) {
-    ierr = FormInitialGuess1(&user,x); CHKERRA(ierr);
+    ierr = FormInitialGuess1(&user,x);CHKERRA(ierr);
   } else if (user.problem == 2) {
-    ierr = FormInitialGuess2(&user,x); CHKERRA(ierr);
+    ierr = FormInitialGuess2(&user,x);CHKERRA(ierr);
   }
-  ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
-  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
-  ierr = SNESView(snes,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
+  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRA(ierr);
+  ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);
   PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
 
   /* Free data structures */
   if (user.work) PetscFree(user.work); 
-  ierr = VecDestroy(user.s); CHKERRA(ierr);
-  ierr = VecDestroy(user.y); CHKERRA(ierr);
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(g); CHKERRA(ierr);
-  ierr = MatDestroy(H); CHKERRA(ierr);
-  ierr = SNESDestroy(snes); CHKERRA(ierr);
+  ierr = VecDestroy(user.s);CHKERRA(ierr);
+  ierr = VecDestroy(user.y);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(g);CHKERRA(ierr);
+  ierr = MatDestroy(H);CHKERRA(ierr);
+  ierr = SNESDestroy(snes);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;
@@ -168,11 +168,9 @@ int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
   int ierr;
 
   if (user->problem == 1) {
-    ierr = EvalFunctionGradient1(snes,x,f,NULL,FunctionEval,user); 
-    CHKERRQ(ierr);
+    ierr = EvalFunctionGradient1(snes,x,f,NULL,FunctionEval,user);CHKERRQ(ierr);
   } else if (user->problem == 2) {
-    ierr = EvalFunctionGradient2(snes,x,f,NULL,FunctionEval,user); 
-    CHKERRQ(ierr);
+    ierr = EvalFunctionGradient2(snes,x,f,NULL,FunctionEval,user);CHKERRQ(ierr);
   } else SETERRQ(1,0,"FormMinimizationFunction: Invalid problem number.");
   return 0;
 }
@@ -188,11 +186,9 @@ int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
   int ierr;
 
   if (user->problem == 1) {
-    ierr = EvalFunctionGradient1(snes,x,NULL,g,GradientEval,user); 
-    CHKERRQ(ierr);
+    ierr = EvalFunctionGradient1(snes,x,NULL,g,GradientEval,user);CHKERRQ(ierr);
   } else if (user->problem == 2) {
-    ierr = EvalFunctionGradient2(snes,x,NULL,g,GradientEval,user); 
-    CHKERRQ(ierr);
+    ierr = EvalFunctionGradient2(snes,x,NULL,g,GradientEval,user);CHKERRQ(ierr);
   } else SETERRQ(1,0,"FormGradient: Invalid problem number.");
   return 0;
 }
@@ -209,36 +205,36 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void *ptr)
   Scalar     *y, zero = 0.0, one = 1.0;
 
   ndim = user->ndim;
-  ierr = VecSet(&zero,user->s); CHKERRQ(ierr);
+  ierr = VecSet(&zero,user->s);CHKERRQ(ierr);
   user->xvec = X; /* Set location of vector */
 
-  ierr = MatZeroEntries(*H); CHKERRQ(ierr);
+  ierr = MatZeroEntries(*H);CHKERRQ(ierr);
   for (j=0; j<ndim; j++) {   /* loop over columns */
 
-    ierr = VecSetValues(user->s,1,&j,&one,INSERT_VALUES); CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(user->s); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(user->s); CHKERRQ(ierr);
+    ierr = VecSetValues(user->s,1,&j,&one,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(user->s);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(user->s);CHKERRQ(ierr);
 
     if (user->problem == 1) {
-      ierr = HessianProduct1(ptr,user->s,user->y); CHKERRQ(ierr);
+      ierr = HessianProduct1(ptr,user->s,user->y);CHKERRQ(ierr);
     } else if (user->problem == 2) {
-      ierr = HessianProduct2(ptr,user->s,user->y); CHKERRQ(ierr);
+      ierr = HessianProduct2(ptr,user->s,user->y);CHKERRQ(ierr);
     }
 
-    ierr = VecSetValues(user->s,1,&j,&zero,INSERT_VALUES); CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(user->s); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(user->s); CHKERRQ(ierr);
+    ierr = VecSetValues(user->s,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(user->s);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(user->s);CHKERRQ(ierr);
 
-    ierr = VecGetArray(user->y,&y); CHKERRQ(ierr);
+    ierr = VecGetArray(user->y,&y);CHKERRQ(ierr);
     for (i=0; i<ndim; i++) {
       if (y[i] != zero) {
-        ierr = MatSetValues(*H,1,&i,1,&j,&y[i],ADD_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(*H,1,&i,1,&j,&y[i],ADD_VALUES);CHKERRQ(ierr);
       }
     }
-    ierr = VecRestoreArray(user->y,&y); CHKERRQ(ierr);
+    ierr = VecRestoreArray(user->y,&y);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*H,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*H,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   return 0;
 }
@@ -272,7 +268,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
   Scalar hx = user->hx, hy = user->hy, temp;
   Scalar *x;
 
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   for (j=0; j<ny; j++) {
     temp = PetscMin(j+1,ny-j)*hy;
     for (i=0; i<nx; i++) {
@@ -284,7 +280,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 #endif
     }
   }
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   return 0;
 }
 /* ---------- Evaluate function f(x) and/or gradient g(x) ----------- */
@@ -300,10 +296,10 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   Scalar val, v, *x;
 
   cdiv3 = user->param/three;
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
   if (fg & GradientEval) {
-    ierr = VecSet(&zero,gvec); CHKERRQ(ierr);
+    ierr = VecSet(&zero,gvec);CHKERRQ(ierr);
   }
 
   /* Compute function and gradient over the lower triangular elements */
@@ -325,15 +321,15 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       if (fg & GradientEval) {
         if (i != -1 && j != -1) {
           ind = k; val = - dvdx/hx - dvdy/hy - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
         if (i != nx-1 && j != -1) {
           ind = k+1; val =  dvdx/hx - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
         if (i != -1 && j != ny-1) {
           ind = k+nx; val = dvdy/hy - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
       }
     }
@@ -357,20 +353,20 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       } if (fg & GradientEval) {
         if (i != nx && j != 0) {
           ind = k-nx; val = - dvdy/hy - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
         if (i != 0 && j != ny) {
           ind = k-1; val =  - dvdx/hx - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
         if (i != nx && j != ny) {
           ind = k; val =  dvdx/hx + dvdy/hy - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
       }
     }
   }
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   area = p5*hx*hy;
   if (fg & FunctionEval) {   /* Scale the function */
 #if !defined(USE_PETSC_COMPLEX)
@@ -379,9 +375,9 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
     *f = PetscReal(area*(p5*fquad+flin));
 #endif
   } if (fg & GradientEval) { /* Scale the gradient */
-    ierr = VecAssemblyBegin(gvec); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(gvec); CHKERRQ(ierr);
-    ierr = VecScale((Scalar*)&area,gvec); CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(gvec);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(gvec);CHKERRQ(ierr);
+    ierr = VecScale((Scalar*)&area,gvec);CHKERRQ(ierr);
   }
   return 0;
 }
@@ -418,9 +414,9 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
   hxhx = one/(hx*hx);
   hyhy = one/(hy*hy);
 
-  ierr = VecGetArray(user->xvec,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(svec,&s); CHKERRQ(ierr);
-  ierr = VecSet(&szero,y); CHKERRQ(ierr);
+  ierr = VecGetArray(user->xvec,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(svec,&s);CHKERRQ(ierr);
+  ierr = VecSet(&szero,y);CHKERRQ(ierr);
 
   /* Compute f''(x)*s over the lower triangular elements */
   for (j=-1; j<ny; j++) {
@@ -433,16 +429,16 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
        if (i != nx-1 && j != -1) {
          vr = s[k+1];
          ind = k+1; val = hxhx*(vr-v);
-         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
        }
        if (i != -1 && j != ny-1) {
          vt = s[k+nx];
          ind = k+nx; val = hyhy*(vt-v);
-         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
        }
        if (i != -1 && j != -1) {
          ind = k; val = hxhx*(v-vr) + hyhy*(v-vt);
-         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
        }
      }
    }
@@ -458,27 +454,27 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
        if (i != nx && j != 0) {
          vb = s[k-nx];
          ind = k-nx; val = hyhy*(vb-v);
-         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
        }
        if (i != 0 && j != ny) {
          vl = s[k-1];
          ind = k-1; val = hxhx*(vl-v);
-         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
        }
        if (i != nx && j != ny) {
          ind = k; val = hxhx*(v-vl) + hyhy*(v-vb);
-         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
        }
     }
   }
-  ierr = VecRestoreArray(svec,&s); CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->xvec,&x); CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(y); CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(y); CHKERRQ(ierr);
+  ierr = VecRestoreArray(svec,&s);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->xvec,&x);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
 
   /* Scale result by area */
   area = p5*hx*hy;
-  ierr = VecScale(&area,y); CHKERRQ(ierr);
+  ierr = VecScale(&area,y);CHKERRQ(ierr);
   return 0;
 }
 
@@ -503,8 +499,8 @@ int FormInitialGuess2(AppCtx *user,Vec X)
   right  = &user->work[2*nx+ny+6];
 
   /* Compute the boundary values once only */
-  ierr = BoundaryValues(user); CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+  ierr = BoundaryValues(user);CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   for (j=0; j<ny; j++) {
     alphaj = (j+1)*hy;
     for (i=0; i<nx; i++) {
@@ -515,7 +511,7 @@ int FormInitialGuess2(AppCtx *user,Vec X)
       x[k] = (yline+xline)*p5;
     }
   }
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   return 0;
 }
 
@@ -537,12 +533,12 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   left   = &user->work[2*nx+4];
   right  = &user->work[2*nx+ny+6];
 
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   if (fg & FunctionEval) {
     *f = 0.0;
   }
   if (fg & GradientEval) {
-    ierr = VecSet(&zero,gvec); CHKERRQ(ierr);
+    ierr = VecSet(&zero,gvec);CHKERRQ(ierr);
   }
 
   /* Compute function and gradient over the lower triangular elements */
@@ -580,15 +576,15 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       if (fg & GradientEval) {
         if (i>-1 && j>-1) {
           ind = k; val = -(dvdx/hx+dvdy/hy)/fl;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
         if (i<nx-1 && j>-1) {
           ind = k+1; val = (dvdx/hx)/fl;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
         if (i>-1 && j<ny-1) {
           ind = k+nx; val = (dvdy/hy)/fl;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
       }
     }
@@ -628,20 +624,20 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       } if (fg & GradientEval) {
         if (i<nx && j>0) {
           ind = k-nx; val = -(dvdy/hy)/fu;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
         if (i>0 && j<ny) {
           ind = k-1; val = -(dvdx/hx)/fu;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
         if (i<nx && j<ny) {
           ind = k; val = (dvdx/hx+dvdy/hy)/fu;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
         }
       }
     }
   }
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   area = p5*hx*hy;
   if (fg & FunctionEval) {   /* Scale the function */
 #if !defined(USE_PETSC_COMPLEX)
@@ -650,9 +646,9 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
     *f *= PetscReal(area);
 #endif
   } if (fg & GradientEval) { /* Scale the gradient */
-    ierr = VecAssemblyBegin(gvec); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(gvec); CHKERRQ(ierr);
-    ierr = VecScale(&area,gvec); CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(gvec);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(gvec);CHKERRQ(ierr);
+    ierr = VecScale(&area,gvec);CHKERRQ(ierr);
   }
   return 0;
 }
@@ -693,9 +689,9 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
   left   = &user->work[2*nx+4];
   right  = &user->work[2*nx+ny+6];
 
-  ierr = VecGetArray(user->xvec,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(svec,&s); CHKERRQ(ierr);
-  ierr = VecSet(&zero,y); CHKERRQ(ierr);
+  ierr = VecGetArray(user->xvec,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(svec,&s);CHKERRQ(ierr);
+  ierr = VecSet(&zero,y);CHKERRQ(ierr);
 
   /* Compute f''(x)*s over the lower triangular elements */
   for (j=-1; j<ny; j++) {
@@ -739,17 +735,17 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
        if (i != -1 && j != -1) {
          ind = k;
          val = (dvdx*dzdx+dvdy*dzdy)*(dvdxhx+dvdyhy)/fl3 - (dzdxhx+dzdyhy)/fl;
-         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
        }
        if (i != nx-1 && j != -1) {
          ind = k+1;
          val = dzdxhx/fl - (dvdx*dzdx+dvdy*dzdy)*dvdxhx/fl3;
-         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
        }
        if (i != -1 && j != ny-1) {
          ind = k+nx;
          val = dzdyhy/fl - (dvdx*dzdx+dvdy*dzdy)*dvdyhy/fl3;
-         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
        }
      }
    }
@@ -796,28 +792,28 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
        if (i != nx && j != ny) {
          ind = k;
          val = (dzdxhx+dzdyhy)/fu - (dvdx*dzdx+dvdy*dzdy)*(dvdxhx+dvdyhy)/fu3;
-         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
        }
        if (i != 0 && j != ny) {
          ind = k-1;
          val = (dvdx*dzdx+dvdy*dzdy)*dvdxhx/fu3 - dzdxhx/fu;
-         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
        }
        if (i != nx && j != 0) {
          ind = k-nx;
          val = (dvdx*dzdx+dvdy*dzdy)*dvdyhy/fu3 - dzdyhy/fu;
-         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES);CHKERRQ(ierr);
        }
     }
   }
-  ierr = VecRestoreArray(svec,&s); CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->xvec,&x); CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(y); CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(y); CHKERRQ(ierr);
+  ierr = VecRestoreArray(svec,&s);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->xvec,&x);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
 
   /* Scale result by area */
   area = p5*hx*hy;
-  ierr = VecScale(&area,y); CHKERRQ(ierr);
+  ierr = VecScale(&area,y);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */

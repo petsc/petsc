@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.56 1999/04/04 22:41:18 bsmith Exp balay $";
+static char vcid[] = "$Id: zoptions.c,v 1.57 1999/04/06 18:13:50 balay Exp balay $";
 #endif
 
 /*
@@ -268,7 +268,7 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
 
     /* shift work by that number of bytes */
     work = (Scalar *) (((char *) work) + shift);
-    PetscMemcpy(work,addr,N*sizeof(Scalar));
+    ierr = PetscMemcpy(work,addr,N*sizeof(Scalar));CHKERRQ(ierr);
 
     /* store in the first location in addr how much you shift it */
     ((int *)addr)[0] = shift;
@@ -321,8 +321,8 @@ int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,S
     tlx   = base + addr;
 
     shift = *(int *)*lx;
-    PetscMemcpy(*lx,tlx,N*sizeof(Scalar));
-    tlx  = (Scalar *) (((char *)tlx) - shift);
+    ierr  = PetscMemcpy(*lx,tlx,N*sizeof(Scalar));CHKERRQ(ierr);
+    tlx   = (Scalar *) (((char *)tlx) - shift);
     PetscFree(tlx);
     ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose(obj,"GetArrayPtr",0);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.3 1999/03/19 21:17:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.4 1999/03/28 19:37:54 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests timing PetscSortInt().\n\n";
@@ -16,11 +16,11 @@ int main(int argc,char **argv)
   Scalar      value;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flag); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flag);CHKERRA(ierr);
   
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand); CHKERRA(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
 
-  values = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRA(values);
+  values = (int *) PetscMalloc( n*sizeof(int) );CHKPTRA(values);
   for ( i=0; i<n; i++ ) {
     PetscRandomGetValue(rand,&value);
     values[i] = (int) (n*PetscReal(value) + 2.0);
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
 
   PLogEventRegister(&event,"Sort",PETSC_NULL);
   PLogEventBegin(event,0,0,0,0);
-  values = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRA(values);
+  values = (int *) PetscMalloc( n*sizeof(int) );CHKPTRA(values);
   for ( i=0; i<n; i++ ) {
     PetscRandomGetValue(rand,&value);
     values[i] = (int) (n*PetscReal(value) + 2.0);

@@ -30,13 +30,13 @@ int TSComputeRHSFunction(TS ts,double t,Vec x, Vec y)
   if (ts->rhsmatrix) { /* assemble matrix for this timestep */
     MatStructure flg;
     PetscStackPush("TS user right-hand-side matrix function");
-    ierr = (*ts->rhsmatrix)(ts,t,&ts->A,&ts->B,&flg,ts->jacP); CHKERRQ(ierr);
+    ierr = (*ts->rhsmatrix)(ts,t,&ts->A,&ts->B,&flg,ts->jacP);CHKERRQ(ierr);
     PetscStackPop;
   }
-  ierr = MatMult(ts->A,x,y); CHKERRQ(ierr);
+  ierr = MatMult(ts->A,x,y);CHKERRQ(ierr);
 
   /* apply user-provided boundary conditions (only needed if these are time dependent) */
-  ierr = TSComputeRHSBoundaryConditions(ts,t,y); CHKERRQ(ierr);
+  ierr = TSComputeRHSBoundaryConditions(ts,t,y);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -311,7 +311,7 @@ int TSView(TS ts,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"TS Object:\n");CHKERRQ(ierr);
     ierr = TSGetType(ts,(TSType *)&method);CHKERRQ(ierr);
@@ -648,7 +648,7 @@ int TSSetUp(TS ts)
   if (!ts->type_name) {
     ierr = TSSetType(ts,TS_EULER);CHKERRQ(ierr);
   }
-  ierr = (*ts->setup)(ts); CHKERRQ(ierr);
+  ierr = (*ts->setup)(ts);CHKERRQ(ierr);
   ts->setupcalled = 1;
   PetscFunctionReturn(0);
 }
@@ -678,9 +678,9 @@ int TSDestroy(TS ts)
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (--ts->refct > 0) PetscFunctionReturn(0);
 
-  if (ts->sles) {ierr = SLESDestroy(ts->sles); CHKERRQ(ierr);}
-  if (ts->snes) {ierr = SNESDestroy(ts->snes); CHKERRQ(ierr);}
-  ierr = (*(ts)->destroy)(ts); CHKERRQ(ierr);
+  if (ts->sles) {ierr = SLESDestroy(ts->sles);CHKERRQ(ierr);}
+  if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
+  ierr = (*(ts)->destroy)(ts);CHKERRQ(ierr);
   PLogObjectDestroy((PetscObject)ts);
   PetscHeaderDestroy((PetscObject)ts);
   PetscFunctionReturn(0);
@@ -926,13 +926,13 @@ int TSStep(TS ts,int *steps,double *time)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (!ts->setupcalled) {ierr = TSSetUp(ts); CHKERRQ(ierr);}
+  if (!ts->setupcalled) {ierr = TSSetUp(ts);CHKERRQ(ierr);}
   PLogEventBegin(TS_Step,ts,0,0,0);
-  ierr = (*(ts)->step)(ts,steps,time); CHKERRQ(ierr);
+  ierr = (*(ts)->step)(ts,steps,time);CHKERRQ(ierr);
   PLogEventEnd(TS_Step,ts,0,0,0);
-  ierr = OptionsHasName(PETSC_NULL,"-ts_view",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-ts_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = TSView(ts,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+    ierr = TSView(ts,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -990,9 +990,9 @@ int TSLGMonitorCreate(char *host,char *label,int x,int y,int m,
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = DrawOpenX(PETSC_COMM_SELF,host,label,x,y,m,n,&win); CHKERRQ(ierr);
-  ierr = DrawLGCreate(win,1,draw); CHKERRQ(ierr);
-  ierr = DrawLGIndicateDataPoints(*draw); CHKERRQ(ierr);
+  ierr = DrawOpenX(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = DrawLGCreate(win,1,draw);CHKERRQ(ierr);
+  ierr = DrawLGIndicateDataPoints(*draw);CHKERRQ(ierr);
 
   PLogObjectParent(*draw,win);
   PetscFunctionReturn(0);
@@ -1134,13 +1134,13 @@ int TSSetOptionsPrefix(TS ts, char *prefix)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) ts, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) ts, prefix);CHKERRQ(ierr);
   switch(ts->problem_type) {
     case TS_NONLINEAR:
-      ierr = SNESSetOptionsPrefix(ts->snes, prefix);              CHKERRQ(ierr);
+      ierr = SNESSetOptionsPrefix(ts->snes, prefix);CHKERRQ(ierr);
       break;
     case TS_LINEAR:
-      ierr = SLESSetOptionsPrefix(ts->sles, prefix);              CHKERRQ(ierr);
+      ierr = SLESSetOptionsPrefix(ts->sles, prefix);CHKERRQ(ierr);
       break;
   }
   PetscFunctionReturn(0);
@@ -1179,13 +1179,13 @@ int TSAppendOptionsPrefix(TS ts, char *prefix)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE);
-  ierr = PetscObjectAppendOptionsPrefix((PetscObject) ts, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject) ts, prefix);CHKERRQ(ierr);
   switch(ts->problem_type) {
     case TS_NONLINEAR:
-      ierr = SNESAppendOptionsPrefix(ts->snes, prefix);              CHKERRQ(ierr);
+      ierr = SNESAppendOptionsPrefix(ts->snes, prefix);CHKERRQ(ierr);
       break;
     case TS_LINEAR:
-      ierr = SLESAppendOptionsPrefix(ts->sles, prefix);              CHKERRQ(ierr);
+      ierr = SLESAppendOptionsPrefix(ts->sles, prefix);CHKERRQ(ierr);
       break;
   }
   PetscFunctionReturn(0);
@@ -1222,7 +1222,7 @@ int TSGetOptionsPrefix(TS ts, char **prefix)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE);
-  ierr = PetscObjectGetOptionsPrefix((PetscObject) ts, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) ts, prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1342,9 +1342,11 @@ M*/
 int TSRegister_Private(char *sname,char *path,char *name,int (*function)(TS))
 {
   char fullname[256];
+  int  ierr;
 
   PetscFunctionBegin;
-  PetscStrcpy(fullname,path); PetscStrcat(fullname,":"); PetscStrcat(fullname,name);
+  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
+  PetscStrcat(fullname,":"); PetscStrcat(fullname,name);
   FListAdd_Private(&TSList,sname,fullname,        (int (*)(void*))function);
   PetscFunctionReturn(0);
 }

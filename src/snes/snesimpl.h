@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.46 1999/03/01 04:49:27 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.47 1999/04/21 18:18:14 bsmith Exp balay $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -133,8 +133,7 @@ typedef struct {
 #define SNESMonitor(snes,it,rnorm) \
         { int _ierr,_i,_im = snes->numbermonitors; \
           for ( _i=0; _i<_im; _i++ ) {\
-            _ierr = (*snes->monitor[_i])(snes,it,rnorm,snes->monitorcontext[_i]); \
-            CHKERRQ(_ierr); \
+            _ierr = (*snes->monitor[_i])(snes,it,rnorm,snes->monitorcontext[_i]);CHKERRQ(_ierr); \
 	  } \
 	}
 

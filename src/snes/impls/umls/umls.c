@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.79 1999/03/17 23:24:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.80 1999/04/19 22:15:46 bsmith Exp balay $";
 #endif
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
@@ -43,18 +43,18 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   PetscAMSTakeAccess(snes);
   snes->iter = 0;
   PetscAMSGrantAccess(snes);
-  ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr); /* f(X) */
-  ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);     /* G(X) <- gradient */
+  ierr = SNESComputeMinimizationFunction(snes,X,f);CHKERRQ(ierr); /* f(X) */
+  ierr = SNESComputeGradient(snes,X,G);CHKERRQ(ierr);     /* G(X) <- gradient */
 
   PetscAMSTakeAccess(snes);
-  ierr = VecNorm(G,NORM_2,gnorm);   CHKERRQ(ierr);         /* gnorm = || G || */
+  ierr = VecNorm(G,NORM_2,gnorm);CHKERRQ(ierr);         /* gnorm = || G || */
   PetscAMSGrantAccess(snes);
   SNESLogConvHistory(snes,*gnorm,0);
   SNESMonitor(snes,0,*gnorm);
 
-  ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
-  ierr = VecGetSize(X,&global_dim); CHKERRQ(ierr);
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = VecGetSize(X,&global_dim);CHKERRQ(ierr);
   kspmaxit = neP->max_kspiter_factor * ((int) sqrt((double) global_dim));
   ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,kspmaxit);CHKERRQ(ierr);
 
@@ -64,12 +64,12 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
     PetscAMSGrantAccess(snes);
     neP->gamma = neP->gamma_factor*(*gnorm);
     success = 0;
-    ierr = VecCopy(G,RHS); CHKERRQ(ierr);
-    ierr = VecScale(&neg_one,RHS); CHKERRQ(ierr);
+    ierr = VecCopy(G,RHS);CHKERRQ(ierr);
+    ierr = VecScale(&neg_one,RHS);CHKERRQ(ierr);
     ierr = SNESComputeHessian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     while (!success) {
-      ierr = SLESSolve(snes->sles,RHS,S,&iters); CHKERRQ(ierr);
+      ierr = SLESSolve(snes->sles,RHS,S,&iters);CHKERRQ(ierr);
       snes->linear_its += PetscAbsInt(iters);
       if ((iters < 0) || (iters >= kspmaxit)) { /* Modify diagonal of Hessian */
         neP->gamma_factor *= two; 
@@ -81,19 +81,19 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
         PLogInfo(snes,"SNESSolve_UM_LS:  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g\n",
                  neP->gamma_factor,PetscReal(neP->gamma));
 #endif
-        ierr = MatShift(&neP->gamma,snes->jacobian); CHKERRQ(ierr);
+        ierr = MatShift(&neP->gamma,snes->jacobian);CHKERRQ(ierr);
         if ((snes->jacobian_pre != snes->jacobian) && (flg != SAME_PRECONDITIONER)){
-          ierr = MatShift(&neP->gamma,snes->jacobian_pre); CHKERRQ(ierr);
+          ierr = MatShift(&neP->gamma,snes->jacobian_pre);CHKERRQ(ierr);
         }
         /* We currently assume that all diagonal elements were allocated in
          original matrix, so that nonzero pattern is same ... should fix this */
         ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,
-               SAME_NONZERO_PATTERN); CHKERRQ(ierr);
+               SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       } else {
         success = 1;
       }
     }   
-    ierr = VecNorm(S,NORM_2,&snorm); CHKERRQ(ierr);
+    ierr = VecNorm(S,NORM_2,&snorm);CHKERRQ(ierr);
 
     /* Line search */
     ierr = (*neP->LineSearch)(snes,X,G,S,W,f,&(neP->step),&tnorm,&(neP->line));
@@ -113,7 +113,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   }
   /* Verify solution is in correct location */
   if (X != snes->vec_sol) {
-    ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
+    ierr = VecCopy(X,snes->vec_sol);CHKERRQ(ierr);
     snes->vec_sol_always = snes->vec_sol;
     snes->vec_func_always = snes->vec_func;
   }
@@ -147,7 +147,7 @@ static int SNESDestroy_UM_LS(SNES snes )
 
   PetscFunctionBegin;
   if (snes->nwork) {
-    ierr =  VecDestroyVecs(snes->work,snes->nwork); CHKERRQ(ierr);
+    ierr =  VecDestroyVecs(snes->work,snes->nwork);CHKERRQ(ierr);
   }
   PetscFree(snes->data);
   PetscFunctionReturn(0);
@@ -162,19 +162,19 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
   int       itmp,ierr,flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gamma_factor",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gamma_factor",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->gamma_factor = tmp;}
-  ierr = OptionsGetInt(snes->prefix,"-snes_um_ls_maxfev",&itmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(snes->prefix,"-snes_um_ls_maxfev",&itmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->maxfev = itmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_ftol",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_ftol",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->ftol = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gtol",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gtol",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->gtol = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_rtol",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_rtol",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->rtol = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_stepmin",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_stepmin",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->stepmin = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_stepmax",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_stepmax",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->stepmax = tmp;}
   PetscFunctionReturn(0);
 }
@@ -209,7 +209,7 @@ static int SNESView_UM_LS(SNES snes,Viewer viewer)
   ViewerType vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"  gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
                       ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);CHKERRQ(ierr);
@@ -393,9 +393,9 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
   /* Check that search direction is a descent direction */
 #if defined(USE_PETSC_COMPLEX)
-  ierr = VecDot(G,S,&cdginit); CHKERRQ(ierr); dginit = PetscReal(cdginit);
+  ierr = VecDot(G,S,&cdginit);CHKERRQ(ierr); dginit = PetscReal(cdginit);
 #else
-  ierr = VecDot(G,S,&dginit); CHKERRQ(ierr);  /* dginit = G^T S */
+  ierr = VecDot(G,S,&dginit);CHKERRQ(ierr);  /* dginit = G^T S */
 #endif
   if (dginit >= zero) {
     PLogInfo(snes,"SNESMoreLineSearch:Search direction not a descent direction\n");
@@ -410,7 +410,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   dgtest  = neP->ftol * dginit;
   width   = neP->stepmax - neP->stepmin;
   width1  = width * two;
-  ierr = VecCopy(X,W); CHKERRQ(ierr);
+  ierr = VecCopy(X,W);CHKERRQ(ierr);
   /* Variable dictionary:  
      stx, fx, dgx - the step, function, and derivative at the best step
      sty, fy, dgy - the step, function, and derivative at the other endpoint 
@@ -448,17 +448,17 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
 #if defined(USE_PETSC_COMPLEX)
     cstep = *step;
-    ierr = VecWAXPY(&cstep,S,W,X); CHKERRQ(ierr);
+    ierr = VecWAXPY(&cstep,S,W,X);CHKERRQ(ierr);
 #else
-    ierr = VecWAXPY(step,S,W,X); CHKERRQ(ierr); 	/* X = W + step*S */
+    ierr = VecWAXPY(step,S,W,X);CHKERRQ(ierr); 	/* X = W + step*S */
 #endif
-    ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr);
+    ierr = SNESComputeMinimizationFunction(snes,X,f);CHKERRQ(ierr);
     neP->nfev++;
-    ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);
+    ierr = SNESComputeGradient(snes,X,G);CHKERRQ(ierr);
 #if defined(USE_PETSC_COMPLEX)
-    ierr = VecDot(G,S,&cdg); CHKERRQ(ierr); dg = PetscReal(cdg);
+    ierr = VecDot(G,S,&cdg);CHKERRQ(ierr); dg = PetscReal(cdg);
 #else
-    ierr = VecDot(G,S,&dg); CHKERRQ(ierr);	        /* dg = G^T S */
+    ierr = VecDot(G,S,&dg);CHKERRQ(ierr);	        /* dg = G^T S */
 #endif
     ftest1 = finit + *step * dgtest;
   
@@ -518,7 +518,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
       dgy = dgym + dgtest; 
     } else {
       /* Update the interval of uncertainty and compute the new step */
-      ierr = SNESStep(snes,&stx,&fx,&dgx,&sty,&fy,&dgy,step,f,&dg); CHKERRQ(ierr);
+      ierr = SNESStep(snes,&stx,&fx,&dgx,&sty,&fy,&dgy,step,f,&dg);CHKERRQ(ierr);
     }
 
    /* Force a sufficient decrease in the interval of uncertainty */
@@ -531,7 +531,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
   /* Finish computations */
   PLogInfo(snes,"SNESMoreLineSearch:%d function evals in line search, step = %10.4f\n",neP->nfev,neP->step);
-  ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);
+  ierr = VecNorm(G,NORM_2,gnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -573,7 +573,7 @@ int SNESCreate_UM_LS(SNES snes)
   snes->setfromoptions    = SNESSetFromOptions_UM_LS;
   snes->nwork             = 0;
 
-  neP			  = PetscNew(SNES_UMLS); CHKPTRQ(neP);
+  neP			  = PetscNew(SNES_UMLS);CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_UM_LS));
   snes->data	          = (void *) neP;
   neP->LineSearch	  = SNESMoreLineSearch; 
@@ -592,9 +592,9 @@ int SNESCreate_UM_LS(SNES snes)
   neP->maxfev		  = 30;
 
   /* Set default preconditioner to be Jacobi, to override SLES default. */
-  ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCJACOBI); CHKERRQ(ierr);
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchGetDampingParameter_C",
                                     "SNESLineSearchGetDampingParameter_UMLS",

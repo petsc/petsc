@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: olist.c,v 1.8 1999/02/26 04:00:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: olist.c,v 1.9 1999/04/21 20:43:25 bsmith Exp balay $";
 #endif
 
 /*
@@ -36,7 +36,7 @@ int OListAdd(OList *fl,const char name[],PetscObject obj )
     nlist = *fl; prev = 0;
     while (nlist) {
       if (!PetscStrcmp(name,nlist->name)) {  /* found it already in the list */
-        ierr = PetscObjectDereference(nlist->obj); CHKERRQ(ierr);
+        ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
         if (prev) prev->next = nlist->next;
         else if (nlist->next) {
           *fl = nlist->next;
@@ -55,7 +55,7 @@ int OListAdd(OList *fl,const char name[],PetscObject obj )
   nlist = *fl;
   while (nlist) {
     if (!PetscStrcmp(name,nlist->name)) {  /* found it in the list */
-      ierr = PetscObjectDereference(nlist->obj); CHKERRQ(ierr);
+      ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
       ierr = PetscObjectReference(obj);CHKERRQ(ierr);
       nlist->obj = obj;
       PetscFunctionReturn(0);
@@ -194,7 +194,7 @@ int OListDuplicate(OList fl, OList *nl)
 
   PetscFunctionBegin;
   while (fl) {
-    ierr = OListAdd(nl,fl->name,fl->obj); CHKERRQ(ierr);
+    ierr = OListAdd(nl,fl->name,fl->obj);CHKERRQ(ierr);
     fl = fl->next;
   }
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.67 1999/04/16 16:11:54 bsmith Exp balay $";
+static char vcid[] = "$Id: zmat.c,v 1.68 1999/05/03 19:08:50 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -102,7 +102,7 @@ void matgetcoloring_(Mat *mat,CHAR type,ISColoring *iscoloring,int *__ierr,int l
 
 void matsetvalue_(Mat *mat,int *i,int *j,Scalar *va,InsertMode *mode)
 {
-  /* cannot use MatSetValue() here since that uses CHKERRQ() which has a return in it */
+  /* cannot use MatSetValue() here since that usesCHKERRQ() which has a return in it */
   MatSetValues(*mat,1,i,1,j,va,*mode);
 }
 
@@ -139,8 +139,8 @@ void matgetrow_(Mat *mat,int *row,int *ncols,int *cols,Scalar *vals,int *ierr)
   *ierr = MatGetRow(*mat,*row,ncols,oocols,oovals); 
   if (*ierr) return;
 
-  if (oocols) PetscMemcpy(cols,my_ocols,(*ncols)*sizeof(int));
-  if (oovals) PetscMemcpy(vals,my_ovals,(*ncols)*sizeof(Scalar));
+  if (oocols) { *ierr = PetscMemcpy(cols,my_ocols,(*ncols)*sizeof(int)); if (*ierr) return;}
+  if (oovals) { *ierr = PetscMemcpy(vals,my_ovals,(*ncols)*sizeof(Scalar)); if (*ierr) return; }
   matgetrowactive = 1;
 }
 
@@ -298,11 +298,15 @@ void matgettype_(Mat *mm,MatType *type,CHAR name,int *__ierr,int len)
   *__ierr = MatGetType(*mm,type,&tname);
 #if defined(USES_CPTOFCD)
   {
-  char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-  if (t != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(t,tname,len1);
+    char *t = _fcdtocp(name); int len1 = _fcdlen(name);
+    if (t != PETSC_NULL_CHARACTER_Fortran) {
+      *__ierr = PetscStrncpy(t,tname,len1);if (*__ierr) return;
+    }
   }
 #else
-  if (name != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(name,tname,len);
+  if (name != PETSC_NULL_CHARACTER_Fortran) {
+    *__ierr = PetscStrncpy(name,tname,len);if (*__ierr) return;
+  }
 #endif
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.16 1998/12/07 17:41:47 balay Exp bsmith $";
+static char vcid[] = "$Id: stack.c,v 1.17 1999/01/04 03:24:56 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
@@ -63,6 +63,7 @@ int PetscStackDepublish(void)
   
 int PetscStackCreate(int stacksize)
 {
+  int ierr;
 
   PetscStack *petscstack_in;
   if (stacksize <=0 ) return 0;
@@ -77,10 +78,10 @@ int PetscStackCreate(int stacksize)
   petscstack_in->directory=(char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->directory);
   petscstack_in->file     =(char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->file);
 
-  PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));
-  PetscMemzero(petscstack_in->line,stacksize*sizeof(int));
-  PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));
-  PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));
+  ierr = PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));CHKERRQ(ierr);
+  ierr = PetscMemzero(petscstack_in->line,stacksize*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));CHKERRQ(ierr);
+  ierr = PetscMemzero(petscstack_in->function,stacksize*sizeof(char*));CHKERRQ(ierr);
 
   petscstack = petscstack_in;
 

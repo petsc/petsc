@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sp1wd.c,v 1.25 1997/12/01 01:54:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sp1wd.c,v 1.27 1999/05/04 18:26:13 balay Exp balay $";
 #endif
 
 #include "mat.h"
@@ -17,21 +17,21 @@ int MatOrdering_1WD( Mat mat, MatOrderingType type, IS *row, IS *col)
   PetscTruth done;
 
   PetscFunctionBegin;
-  ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done); CHKERRQ(ierr);
+  ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,0,"Cannot get rows for matrix");
 
-  mask = (int *)PetscMalloc( (5*nrow+1) * sizeof(int) );     CHKPTRQ(mask);
+  mask = (int *)PetscMalloc( (5*nrow+1) * sizeof(int) );CHKPTRQ(mask);
   xls  = mask + nrow;
   ls   = xls + nrow + 1;
   xblk = ls + nrow;
   perm = xblk + nrow;
   SPARSEPACKgen1wd( &nrow, ia, ja, mask, &nblks, xblk, perm, xls, ls );
-  ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done); CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
 
   for (i=0; i<nrow; i++) perm[i]--;
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,row); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,col); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,row);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,col);CHKERRQ(ierr);
   PetscFree(mask);
 
   PetscFunctionReturn(0);

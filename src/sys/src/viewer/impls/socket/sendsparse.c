@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sendsparse.c,v 1.23 1999/01/12 23:17:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sendsparse.c,v 1.24 1999/01/31 16:04:29 bsmith Exp balay $";
 #endif
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
@@ -37,19 +37,19 @@ int ViewerSocketPutSparse_Private(Viewer vw,int m,int n,int nnz,Scalar *v,int *r
   int           ierr,t = vmatlab->port,type = SPARSEREAL,value;
 
   PetscFunctionBegin;
-  ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0); CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,&m,1,PETSC_INT,0); CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,&n,1,PETSC_INT,0); CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,&nnz,1,PETSC_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&m,1,PETSC_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&n,1,PETSC_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&nnz,1,PETSC_INT,0);CHKERRQ(ierr);
 #if !defined(USE_PETSC_COMPLEX)
   value = 0;
 #else
   value = 1;
 #endif
-  ierr = PetscBinaryWrite(t,&value,1,PETSC_INT,0); CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,v,nnz,PETSC_DOUBLE,0); CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,r,m+1,PETSC_INT,0); CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,c,nnz,PETSC_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&value,1,PETSC_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,v,nnz,PETSC_DOUBLE,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,r,m+1,PETSC_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,c,nnz,PETSC_INT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

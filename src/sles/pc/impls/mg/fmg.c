@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fmg.c,v 1.11 1997/10/19 03:24:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fmg.c,v 1.12 1999/01/31 16:08:17 bsmith Exp balay $";
 #endif
 /*
      Full multigrid using either additive or multiplicative V or W cycle
@@ -31,17 +31,17 @@ int MGFCycle_Private(MG *mg)
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
   for ( i=l-1; i>0; i-- ){
-    ierr = MatMult(mg[i]->restrct, mg[i]->b, mg[i-1]->b ); CHKERRQ(ierr);
+    ierr = MatMult(mg[i]->restrct, mg[i]->b, mg[i-1]->b );CHKERRQ(ierr);
   }
   
   /* work our way up through the levels */
-  ierr = VecSet(&zero, mg[0]->x );  CHKERRQ(ierr);
+  ierr = VecSet(&zero, mg[0]->x );CHKERRQ(ierr);
   for ( i=0; i<l-1; i++ ) {
-    ierr = MGMCycle_Private(&mg[i]);  CHKERRQ(ierr);
-    ierr = VecSet(&zero, mg[i+1]->x ); CHKERRQ(ierr); 
+    ierr = MGMCycle_Private(&mg[i]);CHKERRQ(ierr);
+    ierr = VecSet(&zero, mg[i+1]->x );CHKERRQ(ierr); 
     ierr = MatMultTransAdd(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x,mg[i+1]->x);CHKERRQ(ierr); 
   }
-  ierr = MGMCycle_Private(&mg[l-1]);  CHKERRQ(ierr);
+  ierr = MGMCycle_Private(&mg[l-1]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -64,17 +64,17 @@ int MGKCycle_Private(MG *mg)
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
   for ( i=l-1; i>0; i-- ){
-    ierr = MatMult(mg[i]->restrct,mg[i]->b, mg[i-1]->b); CHKERRQ(ierr); 
+    ierr = MatMult(mg[i]->restrct,mg[i]->b, mg[i-1]->b);CHKERRQ(ierr); 
   }
   
   /* work our way up through the levels */
   ierr = VecSet(&zero, mg[0]->x ); 
   for ( i=0; i<l-1; i++ ) {
-    ierr = SLESSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x,&its); CHKERRQ(ierr);
-    ierr = VecSet(&zero, mg[i+1]->x );  CHKERRQ(ierr);
+    ierr = SLESSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x,&its);CHKERRQ(ierr);
+    ierr = VecSet(&zero, mg[i+1]->x );CHKERRQ(ierr);
     ierr = MatMultTransAdd(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x,mg[i+1]->x);CHKERRQ(ierr);
   }
-  ierr = SLESSolve(mg[l-1]->smoothd,mg[l-1]->b,mg[l-1]->x,&its); CHKERRQ(ierr);
+  ierr = SLESSolve(mg[l-1]->smoothd,mg[l-1]->b,mg[l-1]->x,&its);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.24 1999/01/31 16:11:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.25 1999/03/17 23:25:01 bsmith Exp balay $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -68,7 +68,7 @@ int AODestroy(AO ao)
   if (!ao) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ao,AO_COOKIE);
   if (--ao->refct > 0) PetscFunctionReturn(0);
-  ierr = (*ao->ops->destroy)(ao); CHKERRQ(ierr);
+  ierr = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -115,10 +115,10 @@ int AOPetscToApplicationIS(AO ao,IS is)
     ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
   }
 
-  ierr = ISGetSize(is,&n); CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&ia); CHKERRQ(ierr);
-  ierr = (*ao->ops->petsctoapplication)(ao,n,ia); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is,&ia); CHKERRQ(ierr);
+  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&ia);CHKERRQ(ierr);
+  ierr = (*ao->ops->petsctoapplication)(ao,n,ia);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -162,10 +162,10 @@ int AOApplicationToPetscIS(AO ao,IS is)
     ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
   }
 
-  ierr = ISGetSize(is,&n); CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&ia); CHKERRQ(ierr);
-  ierr = (*ao->ops->applicationtopetsc)(ao,n,ia); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is,&ia); CHKERRQ(ierr);
+  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&ia);CHKERRQ(ierr);
+  ierr = (*ao->ops->applicationtopetsc)(ao,n,ia);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -235,7 +235,7 @@ int AOApplicationToPetsc(AO ao,int n,int *ia)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
-  ierr = (*ao->ops->applicationtopetsc)(ao,n,ia); CHKERRQ(ierr);
+  ierr = (*ao->ops->applicationtopetsc)(ao,n,ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

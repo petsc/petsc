@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dagtol.c,v 1.18 1999/03/19 21:24:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dagtol.c,v 1.19 1999/04/16 16:11:15 bsmith Exp balay $";
 #endif
  
 /*
@@ -45,7 +45,7 @@ int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
   PetscValidHeaderSpecific(da,DA_COOKIE);
   PetscValidHeaderSpecific(l,VEC_COOKIE);
   PetscValidHeaderSpecific(g,VEC_COOKIE);
-  ierr = VecScatterBegin(g,l,mode,SCATTER_FORWARD,da->gtol); CHKERRQ(ierr);
+  ierr = VecScatterBegin(g,l,mode,SCATTER_FORWARD,da->gtol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -86,7 +86,7 @@ int DAGlobalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
   PetscValidHeaderSpecific(da,DA_COOKIE);
   PetscValidHeaderSpecific(l,VEC_COOKIE);
   PetscValidHeaderSpecific(g,VEC_COOKIE);
-  ierr = VecScatterEnd(g,l,mode,SCATTER_FORWARD,da->gtol); CHKERRQ(ierr);
+  ierr = VecScatterEnd(g,l,mode,SCATTER_FORWARD,da->gtol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -175,7 +175,7 @@ int DAGlobalToNaturalBegin(DA da,Vec g, InsertMode mode,Vec l)
     /* create the scatter context */
     ierr = DAGlobalToNatural_Create(da);CHKERRQ(ierr);
   }
-  ierr = VecScatterBegin(g,l,mode,SCATTER_FORWARD,da->gton); CHKERRQ(ierr);
+  ierr = VecScatterBegin(g,l,mode,SCATTER_FORWARD,da->gton);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -216,7 +216,7 @@ int DAGlobalToNaturalEnd(DA da,Vec g, InsertMode mode,Vec l)
   PetscValidHeaderSpecific(da,DA_COOKIE);
   PetscValidHeaderSpecific(l,VEC_COOKIE);
   PetscValidHeaderSpecific(g,VEC_COOKIE);
-  ierr = VecScatterEnd(g,l,mode,SCATTER_FORWARD,da->gton); CHKERRQ(ierr);
+  ierr = VecScatterEnd(g,l,mode,SCATTER_FORWARD,da->gton);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -262,7 +262,7 @@ int DANaturalToGlobalBegin(DA da,Vec g, InsertMode mode,Vec l)
     /* create the scatter context */
     ierr = DAGlobalToNatural_Create(da);CHKERRQ(ierr);
   }
-  ierr = VecScatterBegin(g,l,mode,SCATTER_REVERSE,da->gton); CHKERRQ(ierr);
+  ierr = VecScatterBegin(g,l,mode,SCATTER_REVERSE,da->gton);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -303,7 +303,7 @@ int DANaturalToGlobalEnd(DA da,Vec g, InsertMode mode,Vec l)
   PetscValidHeaderSpecific(da,DA_COOKIE);
   PetscValidHeaderSpecific(l,VEC_COOKIE);
   PetscValidHeaderSpecific(g,VEC_COOKIE);
-  ierr = VecScatterEnd(g,l,mode,SCATTER_REVERSE,da->gton); CHKERRQ(ierr);
+  ierr = VecScatterEnd(g,l,mode,SCATTER_REVERSE,da->gton);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

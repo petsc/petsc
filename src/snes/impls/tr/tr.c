@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.96 1999/03/17 23:24:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.97 1999/04/19 22:15:42 bsmith Exp balay $";
 #endif
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
@@ -22,7 +22,7 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   PetscFunctionBegin;
   if (snes->ksp_ewconv) {
     if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Eisenstat-Walker onvergence context not created");
-    if (n == 0) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp); CHKERRQ(ierr);}
+    if (n == 0) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);CHKERRQ(ierr);}
     kctx->lresid_last = rnorm;
   }
   convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
@@ -32,8 +32,8 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   }
 
   /* Determine norm of solution */
-  ierr = KSPBuildSolution(ksp,0,&x); CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm); CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp,0,&x);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   if (norm >= neP->delta) {
     PLogInfo(snes,"SNES_TR_KSPConverged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
     PLogInfo(snes,"SNES_TR_KSPConverged_Private: Ending linear iteration early, delta=%g, length=%g\n",
@@ -76,10 +76,10 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   G		= snes->work[1];
   Ytmp          = snes->work[2];
 
-  ierr       = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);         /* xnorm = || X || */  
+  ierr       = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);         /* xnorm = || X || */  
 
-  ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);          /* F(X) */
-  ierr = VecNorm(F, NORM_2,&fnorm ); CHKERRQ(ierr);             /* fnorm <- || F || */
+  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);          /* F(X) */
+  ierr = VecNorm(F, NORM_2,&fnorm );CHKERRQ(ierr);             /* fnorm <- || F || */
   PetscAMSTakeAccess(snes);
   snes->norm = fnorm;
   snes->iter = 0;
@@ -95,8 +95,8 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   snes->ttol = fnorm*snes->rtol;
 
   /* Set the stopping criteria to use the More' trick. */
-  ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,(void *)snes);CHKERRQ(ierr);
  
   for ( i=0; i<maxits; i++ ) {
@@ -104,13 +104,13 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
 
     /* Solve J Y = F, where J is Jacobian matrix */
-    ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERRQ(ierr);
+    ierr = SLESSolve(snes->sles,F,Ytmp,&lits);CHKERRQ(ierr);
     snes->linear_its += PetscAbsInt(lits);
     PLogInfo(snes,"SNESSolve_EQ_TR: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
-    ierr = VecNorm(Ytmp,NORM_2,&norm); CHKERRQ(ierr);
+    ierr = VecNorm(Ytmp,NORM_2,&norm);CHKERRQ(ierr);
     norm1 = norm;
     while(1) {
-      ierr = VecCopy(Ytmp,Y); CHKERRQ(ierr);
+      ierr = VecCopy(Ytmp,Y);CHKERRQ(ierr);
       norm = norm1;
 
       /* Scale Y if need be and predict new value of F norm */
@@ -119,7 +119,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
         gpnorm = (1.0 - norm)*fnorm;
         cnorm = norm;
         PLogInfo(snes,"SNESSolve_EQ_TR: Scaling direction by %g\n",norm );
-        ierr = VecScale(&cnorm,Y); CHKERRQ(ierr);
+        ierr = VecScale(&cnorm,Y);CHKERRQ(ierr);
         norm = gpnorm;
         ynorm = delta;
       } else {
@@ -127,10 +127,10 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
         PLogInfo(snes,"SNESSolve_EQ_TR: Direction is in Trust Region\n" );
         ynorm = norm;
       }
-      ierr = VecAYPX(&mone,X,Y); CHKERRQ(ierr);            /* Y <- X - Y */
-      ierr = VecCopy(X,snes->vec_sol_update_always); CHKERRQ(ierr);
-      ierr = SNESComputeFunction(snes,Y,G); CHKERRQ(ierr); /*  F(X) */
-      ierr = VecNorm(G,NORM_2,&gnorm); CHKERRQ(ierr);      /* gnorm <- || g || */
+      ierr = VecAYPX(&mone,X,Y);CHKERRQ(ierr);            /* Y <- X - Y */
+      ierr = VecCopy(X,snes->vec_sol_update_always);CHKERRQ(ierr);
+      ierr = SNESComputeFunction(snes,Y,G);CHKERRQ(ierr); /*  F(X) */
+      ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);      /* gnorm <- || g || */
       if (fnorm == gpnorm) rho = 0.0;
       else rho = (fnorm*fnorm - gnorm*gnorm)/(fnorm*fnorm - gpnorm*gpnorm); 
 
@@ -174,7 +174,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   }
   if (X != snes->vec_sol) {
     /* Verify solution is in corect location */
-    ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
+    ierr = VecCopy(X,snes->vec_sol);CHKERRQ(ierr);
     snes->vec_sol_always  = snes->vec_sol;
     snes->vec_func_always = snes->vec_func; 
   }
@@ -194,7 +194,7 @@ static int SNESSetUp_EQ_TR(SNES snes)
 
   PetscFunctionBegin;
   snes->nwork = 4;
-  ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work ); CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work );CHKERRQ(ierr);
   PLogObjectParents(snes,snes->nwork,snes->work);
   snes->vec_sol_update_always = snes->work[3];
   PetscFunctionReturn(0);
@@ -208,7 +208,7 @@ static int SNESDestroy_EQ_TR(SNES snes )
 
   PetscFunctionBegin;
   if (snes->nwork) {
-    ierr = VecDestroyVecs(snes->work,snes->nwork); CHKERRQ(ierr);
+    ierr = VecDestroyVecs(snes->work,snes->nwork);CHKERRQ(ierr);
   }
   PetscFree(snes->data);
   PetscFunctionReturn(0);
@@ -224,19 +224,19 @@ static int SNESSetFromOptions_EQ_TR(SNES snes)
   int     ierr,flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_mu",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_mu",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->mu = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_eta",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_eta",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->eta = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_sigma",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_sigma",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->sigma = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta0",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta0",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->delta0 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta1",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta1",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->delta1 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta2",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta2",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->delta2 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta3",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta3",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {ctx->delta3 = tmp;}
   PetscFunctionReturn(0);
 }
@@ -270,7 +270,7 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
   ViewerType vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"  mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",tr->delta0,tr->delta1,tr->delta2,tr->delta3);CHKERRQ(ierr);
@@ -378,7 +378,7 @@ int SNESCreate_EQ_TR(SNES snes )
   snes->view            = SNESView_EQ_TR;
   snes->nwork           = 0;
   
-  neP			= PetscNew(SNES_TR); CHKPTRQ(neP);
+  neP			= PetscNew(SNES_TR);CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_TR));
   snes->data	        = (void *) neP;
   neP->mu		= 0.25;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsles.c,v 1.16 1999/04/05 18:20:15 balay Exp balay $";
+static char vcid[] = "$Id: zsles.c,v 1.17 1999/04/06 18:14:02 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -72,10 +72,10 @@ void slesgetoptionsprefix_(SLES *sles, CHAR prefix,int *__ierr,int len)
 #if defined(USES_CPTOFCD)
   {
     char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
-    PetscStrncpy(t,tname,len1);
+    *__ierr = PetscStrncpy(t,tname,len1);
   }
 #else
-  PetscStrncpy(prefix,tname,len);
+  *__ierr = PetscStrncpy(prefix,tname,len);
 #endif
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.14 1999/03/19 21:22:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.15 1999/04/19 22:15:12 bsmith Exp balay $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
@@ -117,15 +117,15 @@ int main( int argc, char **argv )
   PetscInitialize( &argc, &argv,(char *)0,help );
   comm = PETSC_COMM_WORLD;
   MPI_Comm_rank(comm,&user.rank);
-  ierr = OptionsHasName(PETSC_NULL,"-no_output",&no_output); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-no_output",&no_output);CHKERRA(ierr);
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,0,"Lambda is out of range");
   }
@@ -135,7 +135,7 @@ int main( int argc, char **argv )
      Create linear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESCreate(comm,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(comm,&sles);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
@@ -146,22 +146,22 @@ int main( int argc, char **argv )
   */
   ierr = MPI_Comm_size(comm,&size);CHKERRA(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
     SETERRA(1,0,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
-                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
+                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
 
   /*
      Extract global and local vectors from DA; then duplicate for remaining
      vectors that are the same types
   */
-  ierr = DACreateGlobalVector(user.da,&X); CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.da,&user.localX); CHKERRA(ierr);
-  ierr = VecDuplicate(X,&F); CHKERRA(ierr);
-  ierr = VecDuplicate(X,&Y); CHKERRA(ierr);
-  ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(user.da,&X);CHKERRA(ierr);
+  ierr = DACreateLocalVector(user.da,&user.localX);CHKERRA(ierr);
+  ierr = VecDuplicate(X,&F);CHKERRA(ierr);
+  ierr = VecDuplicate(X,&Y);CHKERRA(ierr);
+  ierr = VecDuplicate(user.localX,&user.localF);CHKERRA(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -180,10 +180,10 @@ int main( int argc, char **argv )
      for preallocating matrix memory.
   */
   if (size == 1) {
-    ierr = MatCreateSeqAIJ(comm,N,N,5,PETSC_NULL,&J); CHKERRA(ierr);
+    ierr = MatCreateSeqAIJ(comm,N,N,5,PETSC_NULL,&J);CHKERRA(ierr);
   } else {
-    ierr = VecGetLocalSize(X,&m); CHKERRA(ierr);
-    ierr = MatCreateMPIAIJ(comm,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J); CHKERRA(ierr);
+    ierr = VecGetLocalSize(X,&m);CHKERRA(ierr);
+    ierr = MatCreateMPIAIJ(comm,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRA(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -193,15 +193,15 @@ int main( int argc, char **argv )
   /*
      Set runtime options (e.g., -ksp_monitor -ksp_rtol <rtol> -ksp_type <type>)
   */
-  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = FormInitialGuess(&user,X); CHKERRA(ierr);
-  ierr = ComputeFunction(&user,X,F); CHKERRA(ierr);   /* Compute F(X)    */
-  ierr = VecNorm(F,NORM_2,&fnorm); CHKERRA(ierr);     /* fnorm = || F || */
+  ierr = FormInitialGuess(&user,X);CHKERRA(ierr);
+  ierr = ComputeFunction(&user,X,F);CHKERRA(ierr);   /* Compute F(X)    */
+  ierr = VecNorm(F,NORM_2,&fnorm);CHKERRA(ierr);     /* fnorm = || F || */
   ttol = fnorm*rtol;
   if (!no_output) PetscPrintf(comm,"Initial function norm = %g\n",fnorm);
 
@@ -227,7 +227,7 @@ int main( int argc, char **argv )
         Compute the Jacobian matrix.  See the comments in this routine for
         important information about setting the flag mat_flag.
      */
-    ierr = ComputeJacobian(&user,X,J,&mat_flag); CHKERRA(ierr);
+    ierr = ComputeJacobian(&user,X,J,&mat_flag);CHKERRA(ierr);
 
     /* 
         Solve J Y = F, where J is the Jacobian matrix.
@@ -236,24 +236,24 @@ int main( int argc, char **argv )
             matrix.
           - Then solve the Newton system.
      */
-    ierr = SLESSetOperators(sles,J,J,mat_flag); CHKERRA(ierr);
-    ierr = SLESSolve(sles,F,Y,&lin_its); CHKERRA(ierr);
+    ierr = SLESSetOperators(sles,J,J,mat_flag);CHKERRA(ierr);
+    ierr = SLESSolve(sles,F,Y,&lin_its);CHKERRA(ierr);
 
     /* 
        Compute updated iterate
      */
-    ierr = VecNorm(Y,NORM_2,&ynorm); CHKERRA(ierr);       /* ynorm = || Y || */
-    ierr = VecAYPX(&mone,X,Y); CHKERRA(ierr);             /* Y <- X - Y      */
-    ierr = VecCopy(Y,X); CHKERRA(ierr);                   /* X <- Y          */
-    ierr = VecNorm(X,NORM_2,&xnorm); CHKERRA(ierr);       /* xnorm = || X || */
+    ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRA(ierr);       /* ynorm = || Y || */
+    ierr = VecAYPX(&mone,X,Y);CHKERRA(ierr);             /* Y <- X - Y      */
+    ierr = VecCopy(Y,X);CHKERRA(ierr);                   /* X <- Y          */
+    ierr = VecNorm(X,NORM_2,&xnorm);CHKERRA(ierr);       /* xnorm = || X || */
     if (!no_output) PetscPrintf(comm,"   linear solve iterations = %d, xnorm=%g, ynorm=%g\n",
                                 lin_its,xnorm,ynorm);
 
     /* 
        Evaluate new nonlinear function
      */
-    ierr = ComputeFunction(&user,X,F); CHKERRA(ierr);     /* Compute F(X)    */
-    ierr = VecNorm(F,NORM_2,&fnorm); CHKERRA(ierr);       /* fnorm = || F || */
+    ierr = ComputeFunction(&user,X,F);CHKERRA(ierr);     /* Compute F(X)    */
+    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRA(ierr);       /* fnorm = || F || */
     if (!no_output) PetscPrintf(comm,"Iteration %d, function norm = %g\n",i+1,fnorm);
 
     /*
@@ -282,10 +282,10 @@ int main( int argc, char **argv )
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatDestroy(J); CHKERRA(ierr);           ierr = VecDestroy(Y); CHKERRA(ierr);
-  ierr = VecDestroy(user.localX); CHKERRA(ierr); ierr = VecDestroy(X); CHKERRA(ierr);
-  ierr = VecDestroy(user.localF); CHKERRA(ierr); ierr = VecDestroy(F); CHKERRA(ierr);      
-  ierr = SLESDestroy(sles); CHKERRA(ierr);  ierr = DADestroy(user.da); CHKERRA(ierr);
+  ierr = MatDestroy(J);CHKERRA(ierr);           ierr = VecDestroy(Y);CHKERRA(ierr);
+  ierr = VecDestroy(user.localX);CHKERRA(ierr); ierr = VecDestroy(X);CHKERRA(ierr);
+  ierr = VecDestroy(user.localF);CHKERRA(ierr); ierr = VecDestroy(F);CHKERRA(ierr);      
+  ierr = SLESDestroy(sles);CHKERRA(ierr);  ierr = DADestroy(user.da);CHKERRA(ierr);
   PetscFinalize();
 
   return 0;
@@ -321,7 +321,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries (for 2-dimensional DA):
@@ -330,8 +330,8 @@ int FormInitialGuess(AppCtx *user,Vec X)
        gxs, gys - starting grid indices (including ghost points)
        gxm, gym - widths of local grid (including ghost points)
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -351,12 +351,12 @@ int FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
 
   /*
      Insert values into global vector
   */
-  ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
 } 
 /* ------------------------------------------------------------------- */
@@ -389,20 +389,20 @@ int ComputeFunction(AppCtx *user,Vec X,Vec F)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data
   */
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(localF,&f); CHKERRQ(ierr);
+  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(localF,&f);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
@@ -425,13 +425,13 @@ int ComputeFunction(AppCtx *user,Vec X,Vec F)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(localF,&f); CHKERRQ(ierr);
+  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(localF,&f);CHKERRQ(ierr);
 
   /*
      Insert values into global vector
   */
-  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   PLogFlops(11*ym*xm);
   return 0; 
 } 
@@ -474,24 +474,24 @@ int ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Get the global node numbers for all local nodes, including ghost points
   */
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
 
   /* 
      Compute entries for the locally owned part of the Jacobian.
@@ -512,7 +512,7 @@ int ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
       grow = ltog[row];
       /* boundary points */
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        ierr = MatSetValues(jac,1,&grow,1,&grow,&one,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(jac,1,&grow,1,&grow,&one,INSERT_VALUES);CHKERRQ(ierr);
         continue;
       }
       /* interior grid points */
@@ -521,7 +521,7 @@ int ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
       v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = grow;
       v[3] = -hydhx; col[3] = ltog[row + 1];
       v[4] = -hxdhy; col[4] = ltog[row + gxm];
-      ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -531,9 +531,9 @@ int ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /*
      Set flag to indicate that the Jacobian matrix retains an identical

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dviewp.c,v 1.24 1999/03/17 23:21:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dviewp.c,v 1.25 1999/04/19 22:08:51 bsmith Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -76,10 +76,10 @@ int DrawSplitViewPort(Draw draw)
   yl = (rank/n)*h;
   yr = yl + h;
 
-  ierr = DrawLine(draw,xl,yl,xl,yr,DRAW_BLACK); CHKERRQ(ierr);
-  ierr = DrawLine(draw,xl,yr,xr,yr,DRAW_BLACK); CHKERRQ(ierr);
-  ierr = DrawLine(draw,xr,yr,xr,yl,DRAW_BLACK); CHKERRQ(ierr);
-  ierr = DrawLine(draw,xr,yl,xl,yl,DRAW_BLACK); CHKERRQ(ierr);
+  ierr = DrawLine(draw,xl,yl,xl,yr,DRAW_BLACK);CHKERRQ(ierr);
+  ierr = DrawLine(draw,xl,yr,xr,yr,DRAW_BLACK);CHKERRQ(ierr);
+  ierr = DrawLine(draw,xr,yr,xr,yl,DRAW_BLACK);CHKERRQ(ierr);
+  ierr = DrawLine(draw,xr,yl,xl,yl,DRAW_BLACK);CHKERRQ(ierr);
   ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
   draw->port_xl = xl;

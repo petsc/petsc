@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex58.c,v 1.3 1998/12/03 04:01:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex58.c,v 1.4 1999/03/19 21:19:59 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n\n";
@@ -18,19 +18,19 @@ int main(int argc,char **argv)
   char       *eq[2];
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,0); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
+  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,0);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
   n = m;
 
   /* ------- Assemble matrix, test MatValid() --------- */
 
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,0,0,0,0,&A);CHKERRA(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,&rend); CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRA(ierr);
   if (rstart == 0) {
     cols[0] = 0;
     cols[1] = 1;
     v[0]    = 2.0; v[1] = -1.0;
-    ierr = MatSetValues(A,1,&rstart,2,cols,v,INSERT_VALUES); CHKERRA(ierr);
+    ierr = MatSetValues(A,1,&rstart,2,cols,v,INSERT_VALUES);CHKERRA(ierr);
     rstart++;
   }
   if (rend == m) {
@@ -38,19 +38,19 @@ int main(int argc,char **argv)
     cols[0] = rend-1;
     cols[1] = rend;
     v[0]    = -1.0; v[1] = 2.0;
-    ierr = MatSetValues(A,1,&rend,2,cols,v,INSERT_VALUES); CHKERRA(ierr);
+    ierr = MatSetValues(A,1,&rend,2,cols,v,INSERT_VALUES);CHKERRA(ierr);
   }
   v[0] = -1.0; v[1] = 2.0; v[2] = -1.0;
   for ( i=rstart; i<rend; i++ ) { 
     cols[0] = i-1;
     cols[1] = i;
     cols[2] = i+1;
-    ierr = MatSetValues(A,1,&i,3,cols,v,INSERT_VALUES); CHKERRA(ierr);
+    ierr = MatSetValues(A,1,&i,3,cols,v,INSERT_VALUES);CHKERRA(ierr);
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
-  ierr = MatTranspose(A,&B); CHKERRA(ierr);
+  ierr = MatTranspose(A,&B);CHKERRA(ierr);
 
   ierr = MatEqual(A,B,&equal);
 
@@ -59,8 +59,8 @@ int main(int argc,char **argv)
   PetscPrintf(PETSC_COMM_WORLD,"Matrices are %s\n",eq[equal]);
 
   /* Free data structures */  
-  ierr = MatDestroy(A); CHKERRA(ierr);
-  ierr = MatDestroy(B); CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = MatDestroy(B);CHKERRA(ierr);
 
 
   PetscFinalize();

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.64 1999/04/19 22:08:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.65 1999/04/21 20:42:28 bsmith Exp balay $";
 #endif
 
 #include "sys.h"
@@ -201,7 +201,7 @@ int ViewerBinaryLoadInfo(Viewer viewer)
   ierr = OptionsHasName(PETSC_NULL,"-load_ignore_info",&flg);CHKERRQ(ierr);
   if (flg) PetscFunctionReturn(0);
 
-  ierr = ViewerBinaryGetInfoPointer(viewer,&file); CHKERRQ(ierr);
+  ierr = ViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (!file) PetscFunctionReturn(0);
 
   /* read rows of the file adding them to options database */
@@ -232,7 +232,7 @@ int ViewerBinaryLoadInfo(Viewer viewer)
       while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
         len--; final[len] = 0;
       }
-      ierr = OptionsSetValue(first,second); CHKERRQ(ierr);
+      ierr = OptionsSetValue(first,second);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -318,9 +318,9 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
     }
     
     ierr = PetscStrcat(infoname,".info");CHKERRQ(ierr);
-    ierr = PetscFixFilename(infoname,iname); CHKERRQ(ierr);
+    ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
     if (type == BINARY_RDONLY) {
-      ierr = PetscFileRetrieve(viewer->comm,iname,infoname,256,&found); CHKERRQ(ierr);
+      ierr = PetscFileRetrieve(viewer->comm,iname,infoname,256,&found);CHKERRQ(ierr);
       if (found) {
         vbinary->fdes_info = fopen(infoname,"r");
         if (vbinary->fdes_info) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj2.c,v 1.17 1999/02/01 03:14:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesj2.c,v 1.18 1999/03/07 17:29:23 bsmith Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -44,7 +44,7 @@ int SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,
 
   PetscFunctionBegin;
   ierr = MatFDColoringGetFrequency(color,&freq);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(snes,&it); CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
   if ((freq > 1) && ((it % freq) != 1)) {
     PLogInfo(color,"SNESDefaultComputeJacobianColor:Skipping Jacobian, it %d, freq %d\n",it,freq);
@@ -58,7 +58,7 @@ int SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,
 
   PLogEventBegin(SNES_FunctionEval,snes,x1,0,0);
   PetscStackPush("SNES user function");
-  ierr = MatFDColoringApply(*B,color,x1,flag,snes); CHKERRQ(ierr);
+  ierr = MatFDColoringApply(*B,color,x1,flag,snes);CHKERRQ(ierr);
   PetscStackPop;
   snes->nfuncs++;
   PLogEventEnd(SNES_FunctionEval,snes,x1,0,0);

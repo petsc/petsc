@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zdraw.c,v 1.26 1999/01/31 16:12:02 bsmith Exp balay $";
+static char vcid[] = "$Id: zdraw.c,v 1.27 1999/04/06 18:13:32 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -147,7 +147,7 @@ void drawgettitle_(Draw *draw,CHAR title, int *__ierr,int len )
     len3 = len - 1;
 #endif
   *__ierr = DrawGetTitle(*draw,&t);
-  PetscStrncpy(c3,t,len3);
+  *__ierr = PetscStrncpy(c3,t,len3);
 }
 
 void drawsettitle_(Draw *draw,CHAR title, int *__ierr,int len )

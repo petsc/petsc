@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.9 1999/03/19 21:24:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr1.c,v 1.10 1999/04/19 22:17:13 bsmith Exp balay $";
 #endif
 
 /* 
@@ -76,15 +76,15 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
 
   PetscFunctionBegin;
   ierr = ViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
-  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+  ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*) &da);CHKERRQ(ierr);
   if (!da) SETERRQ(1,1,"Vector not generated from a DA");
 
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,&step,0,&periodic,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
-  ierr = VecGetArray(xin,&array); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(xin,&n); CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&array);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(xin,&n);CHKERRQ(ierr);
   n    = n/step;
 
   /* get coordinates of nodes */
@@ -135,14 +135,14 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
     ierr = MPI_Reduce(&min,&ymin,1,MPI_DOUBLE,MPI_MIN,0,comm);CHKERRQ(ierr);
     ierr = MPI_Reduce(&max,&ymax,1,MPI_DOUBLE,MPI_MAX,0,comm);CHKERRQ(ierr);
 
-    ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
-    ierr = ViewerDrawGetDrawAxis(v,j,&axis); CHKERRQ(ierr);
+    ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
+    ierr = ViewerDrawGetDrawAxis(v,j,&axis);CHKERRQ(ierr);
     PLogObjectParent(draw,axis);
     if (!rank) {
       char *title;
 
-      ierr = DrawAxisSetLimits(axis,xmin,xmax,ymin,ymax); CHKERRQ(ierr);
-      ierr = DrawAxisDraw(axis); CHKERRQ(ierr);
+      ierr = DrawAxisSetLimits(axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
+      ierr = DrawAxisDraw(axis);CHKERRQ(ierr);
       ierr = DrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);CHKERRQ(ierr);
       ierr = DAGetFieldName(da,j,&title);CHKERRQ(ierr);
       ierr = DrawSetTitle(draw,title);CHKERRQ(ierr);
@@ -193,11 +193,11 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
     }
     PetscObjectRestoreNewTag((PetscObject)xin,&tag2);CHKERRQ(ierr);
     PetscObjectRestoreNewTag((PetscObject)xin,&tag1);CHKERRQ(ierr);
-    ierr = DrawSynchronizedFlush(draw); CHKERRQ(ierr);
-    ierr = DrawPause(draw); CHKERRQ(ierr);
+    ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = DrawPause(draw);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(xcoor,&xg);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xin,&array); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

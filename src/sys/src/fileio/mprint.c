@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.30 1999/04/19 22:09:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.31 1999/04/20 14:58:49 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -80,7 +80,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
   } else { /* other processors add to local queue */
     int         len;
     va_list     Argp;
-    PrintfQueue next = PetscNew(struct _PrintfQueue); CHKPTRQ(next);
+    PrintfQueue next = PetscNew(struct _PrintfQueue);CHKPTRQ(next);
     if (queue) {queue->next = next; queue = next;}
     else       {queuebase   = queue = next;}
     queuelength++;
@@ -155,7 +155,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
   } else { /* other processors add to local queue */
     int         len;
     va_list     Argp;
-    PrintfQueue next = PetscNew(struct _PrintfQueue); CHKPTRQ(next);
+    PrintfQueue next = PetscNew(struct _PrintfQueue);CHKPTRQ(next);
     if (queue) {queue->next = next; queue = next;}
     else       {queuebase   = queue = next;}
     queuelength++;

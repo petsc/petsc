@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.129 1999/04/19 22:09:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.130 1999/04/20 20:47:22 bsmith Exp balay $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -356,7 +356,7 @@ static int DrawPause_X(Draw draw)
     int        rank;
     ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = DrawGetMouseButton(draw,&button,0,0,0,0); CHKERRQ(ierr);
+      ierr = DrawGetMouseButton(draw,&button,0,0,0,0);CHKERRQ(ierr);
       if (button == BUTTON_CENTER) draw->pause = 0;
     }
     ierr = MPI_Bcast(&draw->pause,1,MPI_INT,0,draw->comm);CHKERRQ(ierr);
@@ -405,7 +405,7 @@ static int DrawResizeWindow_X(Draw draw,int w,int h)
   PetscFunctionBegin;
   XResizeWindow(win->disp,win->win,w,h);
   XGetGeometry(win->disp,win->win,&root,&x,&y,&ww,&hh,&border,&depth);
-  ierr = DrawCheckResizedWindow(draw); CHKERRQ(ierr);
+  ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -477,7 +477,7 @@ int DrawDestroy_X(Draw ctx)
   int    ierr;
 
   PetscFunctionBegin;
-  if (ctx->popup) {ierr = DrawDestroy(ctx->popup); CHKERRQ(ierr);}
+  if (ctx->popup) {ierr = DrawDestroy(ctx->popup);CHKERRQ(ierr);}
   PetscFree(win->font);
   PetscFree(win);
   PetscFunctionReturn(0);
@@ -521,7 +521,7 @@ int DrawCreate_X(Draw ctx)
 
   PetscFunctionBegin;
 
-  ierr = OptionsHasName(PETSC_NULL,"-nox",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = DrawSetType(ctx,DRAW_NULL);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -543,7 +543,7 @@ int DrawCreate_X(Draw ctx)
       Initialize the display size
   */
   if (xmax == 0) {
-    ierr = DrawXGetDisplaySize_Private(ctx->display,&xmax,&ymax); CHKERRQ(ierr);
+    ierr = DrawXGetDisplaySize_Private(ctx->display,&xmax,&ymax);CHKERRQ(ierr);
   }
 
   if (ctx->x == PETSC_DECIDE || ctx->y == PETSC_DECIDE) {
@@ -587,7 +587,7 @@ int DrawCreate_X(Draw ctx)
     ybottom    = 0;
   }
 
-  PetscMemcpy(ctx->ops,&DvOps,sizeof(DvOps));
+  ierr = PetscMemcpy(ctx->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   ctx->ops->destroy = DrawDestroy_X;
   ctx->ops->view    = 0;
   ctx->pause   = 0;
@@ -601,7 +601,7 @@ int DrawCreate_X(Draw ctx)
   ierr = OptionsGetInt(PETSC_NULL,"-draw_pause",&ctx->pause,&flg);CHKERRQ(ierr);
 
   /* actually create and open the window */
-  Xwin         = (Draw_X *) PetscMalloc( sizeof(Draw_X) ); CHKPTRQ(Xwin);
+  Xwin         = (Draw_X *) PetscMalloc( sizeof(Draw_X) );CHKPTRQ(Xwin);
   PLogObjectMemory(ctx,sizeof(Draw_X)+sizeof(struct _p_Draw));
   ierr = PetscMemzero(Xwin,sizeof(Draw_X));CHKERRQ(ierr);
   ierr = MPI_Comm_size(ctx->comm,&size);CHKERRQ(ierr);
@@ -610,12 +610,12 @@ int DrawCreate_X(Draw ctx)
   if (rank == 0) {
     if (x < 0 || y < 0)   SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative corner of window");
     if (w <= 0 || h <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative window width or height");
-    ierr = XiQuickWindow(Xwin,ctx->display,ctx->title,x,y,w,h); CHKERRQ(ierr);
+    ierr = XiQuickWindow(Xwin,ctx->display,ctx->title,x,y,w,h);CHKERRQ(ierr);
     ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,ctx->comm);CHKERRQ(ierr);
   } else {
     unsigned long win;
     ierr = MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,ctx->comm);CHKERRQ(ierr);
-    ierr = XiQuickWindowFromWindow( Xwin,ctx->display, win); CHKERRQ(ierr);
+    ierr = XiQuickWindowFromWindow( Xwin,ctx->display, win);CHKERRQ(ierr);
   }
 
   Xwin->x      = x;
@@ -636,7 +636,7 @@ int DrawCreate_X(Draw ctx)
 
   ierr = OptionsHasName(PETSC_NULL,"-draw_double_buffer",&flg);CHKERRQ(ierr);
   if (flg) {
-     ierr = DrawSetDoubleBuffer(ctx); CHKERRQ(ierr);
+     ierr = DrawSetDoubleBuffer(ctx);CHKERRQ(ierr);
   } 
 
   PetscFunctionReturn(0);

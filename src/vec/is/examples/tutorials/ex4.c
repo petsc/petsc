@@ -1,5 +1,5 @@
 
-/*      "$Id: ex4.c,v 1.3 1998/01/19 19:07:22 balay Exp bsmith $"; */
+/*      "$Id: ex4.c,v 1.4 1999/03/19 21:17:34 bsmith Exp balay $"; */
 
 static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 
@@ -28,13 +28,13 @@ int main(int argc,char **argv)
       Create a local to global mapping. Each processor independently
      creates a mapping  
   */
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,n,indices,&mapping); CHKERRA(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,n,indices,&mapping);CHKERRA(ierr);
 
   /*
      Map a set of local indices to their global values 
   */
-  ierr = ISLocalToGlobalMappingApply(mapping,m,input,output); CHKERRA(ierr);
-  ierr = PetscIntView(m,output,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+  ierr = ISLocalToGlobalMappingApply(mapping,m,input,output);CHKERRA(ierr);
+  ierr = PetscIntView(m,output,VIEWER_STDOUT_SELF);CHKERRA(ierr);
   
   /*
      Map some global indices to local, retaining the ones without a local index by -1
@@ -43,20 +43,20 @@ int main(int argc,char **argv)
     inglobals[i] = i;
   }
   ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,13,inglobals,PETSC_NULL,outlocals);
-         CHKERRA(ierr);
-  ierr = PetscIntView(13,outlocals,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+        CHKERRA(ierr);
+  ierr = PetscIntView(13,outlocals,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /*
      Map some global indices to local, dropping the ones without a local index.
   */
   ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_DROP,13,inglobals,&m,outlocals);
-         CHKERRA(ierr);
-  ierr = PetscIntView(m,outlocals,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+        CHKERRA(ierr);
+  ierr = PetscIntView(m,outlocals,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /*
      Free the space used by the local to global mapping
   */
-  ierr = ISLocalToGlobalMappingDestroy(mapping); CHKERRA(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(mapping);CHKERRA(ierr);
 
 
   PetscFinalize();

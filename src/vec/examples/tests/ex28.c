@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex28.c,v 1.6 1999/03/31 18:40:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex28.c,v 1.7 1999/05/04 18:45:13 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd()\n\n";
@@ -20,12 +20,12 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* create vector */
-  ierr = VecCreate(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x);CHKERRA(ierr);
   ierr = VecSetFromOptions(x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&y); CHKERRA(ierr);
+  ierr = VecDuplicate(x,&y);CHKERRA(ierr);
 
-  ierr = VecSet(&one,x); CHKERRA(ierr);
-  ierr = VecSet(&two,y); CHKERRA(ierr);
+  ierr = VecSet(&one,x);CHKERRA(ierr);
+  ierr = VecSet(&two,y);CHKERRA(ierr);
 
   /*
         Test mixing dot products and norms that require sums
@@ -118,15 +118,15 @@ int main(int argc,char **argv)
     PetscPrintf(PETSC_COMM_WORLD,"Error 1 and 2 norms: result[0] %g result[1] %g\n",result[0],result[1]);
   }
 
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(y); CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(y);CHKERRA(ierr);
 
   /*
        Tests computing a large number of operations that require 
     allocating a larger data structure internally
   */
   for (i=0; i<40; i++) {
-    ierr  = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,vecs+i); CHKERRA(ierr);
+    ierr  = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,vecs+i);CHKERRA(ierr);
     ierr  = VecSetFromOptions(vecs[i]);CHKERRA(ierr);
     value = (double) i;
     ierr  = VecSet(&value,vecs[i]);CHKERRA(ierr);

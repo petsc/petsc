@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.85 1999/04/19 22:13:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.86 1999/04/21 18:17:09 bsmith Exp balay $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -69,7 +69,7 @@ int PCSetType(PC ctx,PCType type)
   ctx->setupcalled = 0;
 
   /* Get the function pointers for the method requested */
-  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0); CHKERRQ(ierr);}
+  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
   ierr =  FListFind(ctx->comm, PCList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
   if (!r) SETERRQ1(1,1,"Unable to find requested PC type %s",type);
   if (ctx->data) PetscFree(ctx->data);
@@ -95,7 +95,7 @@ int PCSetType(PC ctx,PCType type)
 
   if (ctx->type_name) PetscFree(ctx->type_name);
   ctx->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(ctx->type_name);
-  PetscStrcpy(ctx->type_name,type);
+  ierr = PetscStrcpy(ctx->type_name,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -155,9 +155,9 @@ int PCPrintHelp(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  PetscStrcpy(p,"-");
+  ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
   if (pc->prefix) PetscStrcat(p,pc->prefix);
-  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0); CHKERRQ(ierr);}
+  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
   ierr = (*PetscHelpPrintf)(pc->comm,"PC options --------------------------------------------------\n");CHKERRQ(ierr);
   ierr = FListPrintTypes(pc->comm,stdout,pc->prefix,"pc_type",PCList);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm,"Run program with -help %spc_type <method> for help on ",p);CHKERRQ(ierr);
@@ -195,7 +195,7 @@ int PCGetType(PC pc,PCType *meth)
   int ierr;
 
   PetscFunctionBegin;
-  if (!PCList) {ierr = PCRegisterAll(0); CHKERRQ(ierr);}
+  if (!PCList) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
   if (meth)  *meth = (PCType) pc->type_name;
   PetscFunctionReturn(0);
 }
@@ -227,7 +227,7 @@ int PCSetTypeFromOptions(PC pc)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   ierr = OptionsGetString(pc->prefix,"-pc_type",method,256,&flg);
   if (flg) {
-    ierr = PCSetType(pc,method); CHKERRQ(ierr);
+    ierr = PCSetType(pc,method);CHKERRQ(ierr);
   }
   if (!pc->type_name) {
     int size;
@@ -273,7 +273,7 @@ int PCSetFromOptions(PC pc)
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); 
   if (flg){
-    ierr = PCPrintHelp(pc); CHKERRQ(ierr);
+    ierr = PCPrintHelp(pc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

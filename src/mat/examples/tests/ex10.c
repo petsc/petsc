@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.6 1999/04/16 16:07:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.7 1999/04/19 22:13:14 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests repeated use of assembly for matrices.\n\n";
@@ -21,7 +21,7 @@ int main(int argc,char **args)
   n = 2*size;
 
   /* create the matrix for the five point stencil, YET AGAIN*/
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
   for ( i=0; i<m; i++ ) { 
     for ( j=2*rank; j<2*rank+2; j++ ) {
       v = -1.0;  I = j + n*i;
@@ -32,8 +32,8 @@ int main(int argc,char **args)
       v = 4.0; MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);
     }
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   for ( i=0; i<m; i++ ) {
     for ( j=2*rank; j<2*rank+2; j++ ) {
       v = 1.0;  I = j + n*i;
@@ -44,12 +44,12 @@ int main(int argc,char **args)
       v = -4.0; MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);
     }
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
-  ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-  ierr = MatDestroy(C); CHKERRA(ierr);
+  ierr = MatDestroy(C);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

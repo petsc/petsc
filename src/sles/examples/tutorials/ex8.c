@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.31 1999/03/19 21:22:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.32 1999/04/16 16:09:25 bsmith Exp balay $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -63,12 +63,12 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-overlap",&overlap,&flg); CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-user_set_subdomains",&user_subdomains); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-overlap",&overlap,&flg);CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-user_set_subdomains",&user_subdomains);CHKERRA(ierr);
 
   /* -------------------------------------------------------------------
          Compute the matrix and right-hand-side vector that define
@@ -78,8 +78,8 @@ int main(int argc,char **args)
   /* 
      Assemble the matrix for the five point stencil, YET AGAIN 
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A); CHKERRA(ierr);
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
     if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
@@ -88,23 +88,23 @@ int main(int argc,char **args)
     if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
     v = 4.0; MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   /* 
      Create and set vectors 
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&b); CHKERRA(ierr);
-  ierr = VecSetFromOptions(b); CHKERRA(ierr);
-  ierr = VecDuplicate(b,&u); CHKERRA(ierr);
-  ierr = VecDuplicate(b,&x); CHKERRA(ierr);
-  ierr = VecSet(&one,u); CHKERRA(ierr);
-  ierr = MatMult(A,u,b); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&b);CHKERRA(ierr);
+  ierr = VecSetFromOptions(b);CHKERRA(ierr);
+  ierr = VecDuplicate(b,&u);CHKERRA(ierr);
+  ierr = VecDuplicate(b,&x);CHKERRA(ierr);
+  ierr = VecSet(&one,u);CHKERRA(ierr);
+  ierr = MatMult(A,u,b);CHKERRA(ierr);
 
   /* 
      Create linear solver context 
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
@@ -115,8 +115,8 @@ int main(int argc,char **args)
   /* 
      Set the default preconditioner for this program to be ASM
   */
-  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-  ierr = PCSetType(pc,PCASM); CHKERRA(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
+  ierr = PCSetType(pc,PCASM);CHKERRA(ierr);
 
   /* -------------------------------------------------------------------
                   Define the problem decomposition
@@ -150,12 +150,12 @@ int main(int argc,char **args)
   */
 
   if (!user_subdomains) { /* basic version */
-    ierr = PCASMSetOverlap(pc,overlap); CHKERRA(ierr);
+    ierr = PCASMSetOverlap(pc,overlap);CHKERRA(ierr);
   } else { /* advanced version */
     if (size != 1) SETERRA(1,0,
       "PCASMCreateSubdomains() is currently a uniprocessor routine only!");
-    ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is); CHKERRA(ierr);
-    ierr = PCASMSetLocalSubdomains(pc,Nsub,is); CHKERRA(ierr);
+    ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is);CHKERRA(ierr);
+    ierr = PCASMSetLocalSubdomains(pc,Nsub,is);CHKERRA(ierr);
   }
 
   /* -------------------------------------------------------------------
@@ -186,7 +186,7 @@ int main(int argc,char **args)
        equivalent to the ASM method with zero overlap).
   */
 
-  ierr = OptionsHasName(PETSC_NULL,"-user_set_subdomain_solvers",&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-user_set_subdomain_solvers",&flg);CHKERRA(ierr);
   if (flg) {
     SLES *subsles;       /* array of SLES contexts for local subblocks */
     int  nlocal, first;  /* number of local subblocks, first local subblock */
@@ -198,7 +198,7 @@ int main(int argc,char **args)
     /* 
        Set runtime options
     */
-    ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+    ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
 
     /* 
        Flag an error if PCTYPE is changed from the runtime options
@@ -213,37 +213,37 @@ int main(int argc,char **args)
 
        Note: SLESSetUp() MUST be called before PCASMGetSubSLES().
     */
-    ierr = SLESSetUp(sles,x,b); CHKERRA(ierr);
+    ierr = SLESSetUp(sles,x,b);CHKERRA(ierr);
 
     /*
        Extract the array of SLES contexts for the local blocks
     */
-    ierr = PCASMGetSubSLES(pc,&nlocal,&first,&subsles); CHKERRA(ierr);
+    ierr = PCASMGetSubSLES(pc,&nlocal,&first,&subsles);CHKERRA(ierr);
 
     /*
        Loop over the local blocks, setting various SLES options
        for each block.  
     */
     for (i=0; i<nlocal; i++) {
-      ierr = SLESGetPC(subsles[i],&subpc); CHKERRA(ierr);
-      ierr = SLESGetKSP(subsles[i],&subksp); CHKERRA(ierr);
-      ierr = PCSetType(subpc,PCILU); CHKERRA(ierr);
-      ierr = KSPSetType(subksp,KSPGMRES); CHKERRA(ierr);
+      ierr = SLESGetPC(subsles[i],&subpc);CHKERRA(ierr);
+      ierr = SLESGetKSP(subsles[i],&subksp);CHKERRA(ierr);
+      ierr = PCSetType(subpc,PCILU);CHKERRA(ierr);
+      ierr = KSPSetType(subksp,KSPGMRES);CHKERRA(ierr);
       ierr = KSPSetTolerances(subksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
-             PETSC_DEFAULT); CHKERRA(ierr);
+             PETSC_DEFAULT);CHKERRA(ierr);
     }
   } else {
     /* 
        Set runtime options
     */
-    ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+    ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
   }
 
   /* -------------------------------------------------------------------
                       Solve the linear system
      ------------------------------------------------------------------- */
 
-  ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
+  ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
@@ -256,11 +256,11 @@ int main(int argc,char **args)
     }
     PetscFree(is);
   }
-  ierr = SLESDestroy(sles); CHKERRA(ierr);
-  ierr = VecDestroy(u); CHKERRA(ierr);
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(b); CHKERRA(ierr);
-  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRA(ierr);
+  ierr = VecDestroy(u);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(b);CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

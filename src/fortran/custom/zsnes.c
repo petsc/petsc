@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.29 1999/04/06 18:04:42 balay Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.30 1999/04/21 18:19:20 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -104,7 +104,7 @@ static int oursnesmonitor(SNES snes,int i,double d,void*ctx)
 {
   int              ierr = 0;
 
-  (*f7)(&snes,&i,&d,ctx,&ierr); CHKERRQ(ierr);
+  (*f7)(&snes,&i,&d,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 void snessetmonitor_(SNES *snes,int (*func)(SNES*,int*,double*,void*,int*),
@@ -119,7 +119,7 @@ static int oursnestest(SNES snes,double a,double d,double c,void*ctx)
 {
   int              ierr = 0;
 
-  (*f8)(&snes,&a,&d,&c,ctx,&ierr); CHKERRQ(ierr);
+  (*f8)(&snes,&a,&d,&c,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -167,7 +167,7 @@ static int oursneshessianfunction(SNES snes,Vec x,Mat* mat,Mat* pmat,
 {
   int              ierr = 0;
 
-  (*f6)(&snes,&x,mat,pmat,(int*)st,ctx,&ierr); CHKERRQ(ierr);
+  (*f6)(&snes,&x,mat,pmat,(int*)st,ctx,&ierr);CHKERRQ(ierr);
 
   return 0;
 }
@@ -183,7 +183,7 @@ static int (*f5)(SNES*,Vec*,Vec *,void*,int*);
 static int oursnesgradientfunction(SNES snes,Vec x,Vec d,void *ctx)
 {
   int ierr = 0;
-  (*f5)(&snes,&x,&d,ctx,&ierr); CHKERRQ(ierr);
+  (*f5)(&snes,&x,&d,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -196,7 +196,7 @@ static int (*f4)(SNES*,Vec*,double*,void*,int*);
 static int oursnesminfunction(SNES snes,Vec x,double* d,void *ctx)
 {
   int ierr = 0;
-  (*f4)(&snes,&x,d,ctx,&ierr); CHKERRQ(ierr);
+  (*f4)(&snes,&x,d,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -210,7 +210,7 @@ static int (*f2)(SNES*,Vec*,Vec*,void*,int*);
 static int oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   int ierr = 0;
-  (*f2)(&snes,&x,&f,ctx,&ierr); CHKERRQ(ierr);
+  (*f2)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 void snessetfunction_(SNES *snes,Vec *r,int (*func)(SNES*,Vec*,Vec*,void*,int*),
@@ -246,7 +246,7 @@ static int oursnesjacobian(SNES snes,Vec x,Mat* m,Mat* p,MatStructure* type,
                           void*ctx)
 {
   int              ierr = 0;
-  (*f3)(&snes,&x,m,p,type,ctx,&ierr); CHKERRQ(ierr);
+  (*f3)(&snes,&x,m,p,type,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -278,10 +278,10 @@ void snesgettype_(SNES *snes,CHAR name,int *__ierr,int len)
 #if defined(USES_CPTOFCD)
   {
     char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-    PetscStrncpy(t,tname,len1);
+    *__ierr = PetscStrncpy(t,tname,len1);if (*__ierr) return;
   }
 #else
-  PetscStrncpy(name,tname,len);
+  *__ierr = PetscStrncpy(name,tname,len);if (*__ierr) return;
 #endif
 }
 
@@ -293,10 +293,10 @@ void snesgetoptionsprefix_(SNES *snes, CHAR prefix,int *__ierr,int len)
 #if defined(USES_CPTOFCD)
   {
     char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
-    PetscStrncpy(t,tname,len1);
+    *__ierr = PetscStrncpy(t,tname,len1);if (*__ierr) return;
   }
 #else
-  PetscStrncpy(prefix,tname,len);
+  *__ierr = PetscStrncpy(prefix,tname,len);if (*__ierr) return;
 #endif
 }
 

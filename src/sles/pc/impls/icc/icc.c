@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: icc.c,v 1.59 1999/04/19 22:14:16 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.60 1999/04/21 18:17:31 bsmith Exp balay $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -18,16 +18,16 @@ static int PCSetup_ICC(PC pc)
 
   PetscFunctionBegin;
   /* Currently no orderings are supported!
-  ierr = MatGetOrdering(pc->pmat,icc->ordering,&perm,&perm); CHKERRQ(ierr); */
+  ierr = MatGetOrdering(pc->pmat,icc->ordering,&perm,&perm);CHKERRQ(ierr); */
   perm = 0;
 
   if (!pc->setupcalled) {
     ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,icc->levels,&icc->fact);CHKERRQ(ierr);
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
-    ierr = MatDestroy(icc->fact); CHKERRQ(ierr);
+    ierr = MatDestroy(icc->fact);CHKERRQ(ierr);
     ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,icc->levels,&icc->fact);CHKERRQ(ierr);
   }
-  ierr = MatCholeskyFactorNumeric(pc->pmat,&icc->fact); CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric(pc->pmat,&icc->fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -51,7 +51,7 @@ static int PCApply_ICC(PC pc,Vec x,Vec y)
   int    ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolve(icc->fact,x,y); CHKERRQ(ierr);
+  ierr = MatSolve(icc->fact,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }
 
@@ -117,7 +117,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PCCreate_ICC"
 int PCCreate_ICC(PC pc)
 {
-  PC_ICC      *icc = PetscNew(PC_ICC); CHKPTRQ(icc);
+  PC_ICC      *icc = PetscNew(PC_ICC);CHKPTRQ(icc);
 
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_ICC));

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.24 1998/12/17 21:56:44 balay Exp bsmith $";
+static char vcid[] = "$Id: cputime.c,v 1.25 1999/03/17 23:21:53 bsmith Exp balay $";
 #endif
 
 /*
@@ -89,9 +89,9 @@ int PetscGetCPUTime(PLogDouble *t)
     ...
     PLogDouble t1, t2;
  
-    ierr = PetscGetCPUTime(&t1); CHKERRA(ierr);
+    ierr = PetscGetCPUTime(&t1);CHKERRA(ierr);
     ... code to time ...
-    ierr = PetscGetCPUTime(&t2); CHKERRA(ierr);
+    ierr = PetscGetCPUTime(&t2);CHKERRA(ierr);
     printf( "Code took %f CPU seconds\n", t2-t1);
 .ve
 

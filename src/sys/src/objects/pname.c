@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.23 1999/03/31 03:08:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pname.c,v 1.24 1999/04/21 20:43:25 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -30,7 +30,7 @@ int PetscObjectSetName(PetscObject obj,const char name[])
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null object");
   len = PetscStrlen(name);
-  obj->name = (char *)PetscMalloc(sizeof(char)*(len+1)); CHKPTRQ(obj->name);
+  obj->name = (char *)PetscMalloc(sizeof(char)*(len+1));CHKPTRQ(obj->name);
   ierr = PetscStrcpy(obj->name,name);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

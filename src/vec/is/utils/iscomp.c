@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscomp.c,v 1.16 1998/04/27 17:14:05 curfman Exp curfman $";
+static char vcid[] = "$Id: iscomp.c,v 1.17 1999/02/01 21:43:50 curfman Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -37,27 +37,27 @@ int ISEqual(IS is1, IS is2, PetscTruth *flg)
   PetscValidHeaderSpecific(is2,IS_COOKIE);
   PetscValidPointer(flg);
   
-  ierr = ISGetSize(is1, &sz1); CHKERRQ(ierr);
-  ierr = ISGetSize(is2, &sz2); CHKERRQ(ierr);
+  ierr = ISGetSize(is1, &sz1);CHKERRQ(ierr);
+  ierr = ISGetSize(is2, &sz2);CHKERRQ(ierr);
   if( sz1 != sz2) { *flg = PETSC_FALSE; PetscFunctionReturn(0);}
   
-  ierr = ISGetIndices(is1, &ptr1); CHKERRQ(ierr);
-  ierr = ISGetIndices(is2, &ptr2); CHKERRQ(ierr);
+  ierr = ISGetIndices(is1, &ptr1);CHKERRQ(ierr);
+  ierr = ISGetIndices(is2, &ptr2);CHKERRQ(ierr);
   
   sz   = sz1*sizeof(int);
   a1   = (int *) PetscMalloc((sz1+1)* sizeof(int));
   a2   = (int *) PetscMalloc((sz2+1)* sizeof(int));
 
-  PetscMemcpy(a1, ptr1, sz);
-  PetscMemcpy(a2, ptr2, sz);
+  ierr = PetscMemcpy(a1, ptr1, sz);CHKERRQ(ierr);
+  ierr = PetscMemcpy(a2, ptr2, sz);CHKERRQ(ierr);
 
-  ierr = PetscSortInt(sz1,a1); CHKERRQ(ierr);
-  ierr = PetscSortInt(sz2,a2); CHKERRQ(ierr);
+  ierr = PetscSortInt(sz1,a1);CHKERRQ(ierr);
+  ierr = PetscSortInt(sz2,a2);CHKERRQ(ierr);
   if(!PetscMemcmp(a1, a2, sz)) {*flg = PETSC_TRUE;}
   else {*flg = PETSC_FALSE;}
 
-  ierr = ISRestoreIndices(is1, &ptr1); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is2, &ptr2); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is1, &ptr1);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is2, &ptr2);CHKERRQ(ierr);
   
   PetscFree(a1);
   PetscFree(a2);

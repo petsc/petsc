@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: hists.c,v 1.11 1999/03/17 23:21:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: hists.c,v 1.12 1999/04/19 22:09:24 bsmith Exp balay $";
 #endif
 
 /*
@@ -58,7 +58,7 @@ int DrawHistCreate(Draw win, int bins, DrawHist *hist)
 
   PetscFunctionBegin;
   if (vobj->cookie == DRAW_COOKIE && PetscTypeCompare(vobj->type_name,DRAW_NULL)) {
-    ierr = DrawOpenNull(vobj->comm, (Draw *) hist); CHKERRQ(ierr);
+    ierr = DrawOpenNull(vobj->comm, (Draw *) hist);CHKERRQ(ierr);
     (*hist)->win = win;
    PetscFunctionReturn(0);
   }
@@ -72,12 +72,12 @@ int DrawHistCreate(Draw win, int bins, DrawHist *hist)
   h->ymin      = 0.;
   h->ymax      = 1.;
   h->numBins   = bins;
-  h->bins      = (double *)    PetscMalloc(bins*sizeof(double));    CHKPTRQ(h->bins);
+  h->bins      = (double *)    PetscMalloc(bins*sizeof(double));CHKPTRQ(h->bins);
   h->numValues = 0;
   h->maxValues = CHUNKSIZE;
-  h->values    = (double *) PetscMalloc(h->maxValues * sizeof(double)); CHKPTRQ(h->values);
+  h->values    = (double *) PetscMalloc(h->maxValues * sizeof(double));CHKPTRQ(h->values);
   PLogObjectMemory(h, bins*sizeof(double) + h->maxValues*sizeof(double));
-  ierr = DrawAxisCreate(win, &h->axis); CHKERRQ(ierr);
+  ierr = DrawAxisCreate(win, &h->axis);CHKERRQ(ierr);
   PLogObjectParent(h, h->axis);
   *hist = h;
   PetscFunctionReturn(0);
@@ -111,8 +111,8 @@ int DrawHistSetNumberBins(DrawHist hist, int bins)
   PetscValidHeaderSpecific(hist, DRAW_COOKIE);
   if (hist->numBins == bins) PetscFunctionReturn(0);
 
-  ierr          = PetscFree(hist->bins); CHKERRQ(ierr);
-  hist->bins    = (double *) PetscMalloc(bins*sizeof(double)); CHKPTRQ(hist->bins);
+  ierr          = PetscFree(hist->bins);CHKERRQ(ierr);
+  hist->bins    = (double *) PetscMalloc(bins*sizeof(double));CHKPTRQ(hist->bins);
   PLogObjectMemory(hist, (bins - hist->numBins) * sizeof(double));
   hist->numBins = bins;
   PetscFunctionReturn(0);
@@ -176,13 +176,13 @@ int DrawHistDestroy(DrawHist hist)
 
   if (--hist->refct > 0) PetscFunctionReturn(0);
   if (hist && hist->cookie == DRAW_COOKIE && PetscTypeCompare(hist->type_name,DRAW_NULL)) {
-    ierr = PetscObjectDestroy((PetscObject) hist); CHKERRQ(ierr);
+    ierr = PetscObjectDestroy((PetscObject) hist);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
-  ierr = DrawAxisDestroy(hist->axis); CHKERRQ(ierr);
-  ierr = PetscFree(hist->bins);       CHKERRQ(ierr);
-  ierr = PetscFree(hist->values);     CHKERRQ(ierr);
+  ierr = DrawAxisDestroy(hist->axis);CHKERRQ(ierr);
+  ierr = PetscFree(hist->bins);CHKERRQ(ierr);
+  ierr = PetscFree(hist->values);CHKERRQ(ierr);
   PLogObjectDestroy(hist);
   PetscHeaderDestroy(hist);
   PetscFunctionReturn(0);
@@ -220,8 +220,8 @@ int DrawHistAddValue(DrawHist hist, double value)
 
     tmp = (double *) PetscMalloc((hist->maxValues + CHUNKSIZE) * sizeof(double));CHKPTRQ(tmp);
     PLogObjectMemory(hist, CHUNKSIZE * sizeof(double));
-    PetscMemcpy(tmp, hist->values, hist->maxValues * sizeof(double));
-    ierr = PetscFree(hist->values); CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmp, hist->values, hist->maxValues * sizeof(double));CHKERRQ(ierr);
+    ierr = PetscFree(hist->values);CHKERRQ(ierr);
     hist->values     = tmp;
     hist->maxValues += CHUNKSIZE;
   }
@@ -308,8 +308,8 @@ int DrawHistDraw(DrawHist hist)
     maxHeight = PetscMax(maxHeight, bins[i]);
   }
   if (maxHeight > ymax) ymax = hist->ymax = maxHeight;
-  ierr = DrawAxisSetLimits(hist->axis, xmin, xmax, ymin, ymax); CHKERRQ(ierr);
-  ierr = DrawAxisDraw(hist->axis);                              CHKERRQ(ierr);
+  ierr = DrawAxisSetLimits(hist->axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
+  ierr = DrawAxisDraw(hist->axis);CHKERRQ(ierr);
   /* Draw bins */
   for (i = 0; i < numBins; i++) {
     binLeft   = xmin + binSize*i;
@@ -317,7 +317,7 @@ int DrawHistDraw(DrawHist hist)
     ierr = DrawRectangle(win,binLeft,ymin,binRight,bins[i],bcolor,bcolor,bcolor,bcolor);CHKERRQ(ierr);
     if (color == DRAW_ROTATE && bins[i]) bcolor++; if (bcolor > 31) bcolor = 2;
     ierr = DrawLine(win,binLeft,ymin,binLeft,bins[i],DRAW_BLACK);CHKERRQ(ierr);
-    ierr = DrawLine(win,binRight,ymin,binRight,bins[i],DRAW_BLACK); CHKERRQ(ierr);
+    ierr = DrawLine(win,binRight,ymin,binRight,bins[i],DRAW_BLACK);CHKERRQ(ierr);
     ierr = DrawLine(win,binLeft,bins[i],binRight,bins[i],DRAW_BLACK);CHKERRQ(ierr);
   }
   DrawFlush(win);

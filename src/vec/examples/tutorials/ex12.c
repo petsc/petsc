@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.4 1999/01/12 23:13:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.5 1999/03/19 21:18:23 bsmith Exp balay $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -30,25 +30,25 @@ int main(int argc,char **argv)
   Scalar   one = 1.0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
 
   /* 
       Create multi-component vector with 2 components
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&v); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&v);CHKERRA(ierr);
   ierr = VecSetFromOptions(v);CHKERRA(ierr);
   ierr = VecSetBlockSize(v,2);CHKERRA(ierr);
 
   /* 
       Create single-component vector
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n/2,&s); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n/2,&s);CHKERRA(ierr);
   ierr = VecSetFromOptions(s);CHKERRA(ierr);
 
   /*
      Set the vectors to entries to a constant value.
   */
-  ierr = VecSet(&one,v); CHKERRA(ierr);
+  ierr = VecSet(&one,v);CHKERRA(ierr);
 
   /*
      Get the first component from the multi-component vector to the single vector
@@ -68,8 +68,8 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(v); CHKERRA(ierr);
-  ierr = VecDestroy(s); CHKERRA(ierr);
+  ierr = VecDestroy(v);CHKERRA(ierr);
+  ierr = VecDestroy(s);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

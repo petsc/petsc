@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ctable.c,v 1.5 1999/02/05 23:32:12 balay Exp balay $";
+static char vcid[] = "$Id: ctable.c,v 1.6 1999/02/17 21:37:18 balay Exp balay $";
 #endif
 /* Contributed by - Mark Adams */
 
@@ -21,10 +21,9 @@ int TableCreate(const int n,Table *rta)
   PetscFunctionBegin;
   ta            = (Table)PetscMalloc(sizeof(Table_struct));CHKPTRQ(ta);
   ta->tablesize = (3*n)/2 + 17;
-  ta->keytable  = (int*)PetscMalloc(sizeof(int)*ta->tablesize); CHKPTRQ(ta->keytable);
+  ta->keytable  = (int*)PetscMalloc(sizeof(int)*ta->tablesize);CHKPTRQ(ta->keytable);
   ierr          = PetscMemzero(ta->keytable,sizeof(int)*ta->tablesize);CHKERRQ(ierr);
-  ta->table     = (int*)PetscMalloc(sizeof(int)*ta->tablesize);
-  CHKPTRQ(ta->table);
+  ta->table     = (int*)PetscMalloc(sizeof(int)*ta->tablesize);CHKPTRQ(ta->table);
   ta->head      = 0;
   ta->count     = 0;
   
@@ -47,8 +46,8 @@ int TableCreateCopy(const Table intable,Table *rta)
   PetscFunctionBegin;
   ta            = (Table)PetscMalloc(sizeof(Table_struct));CHKPTRQ(ta);
   ta->tablesize = intable->tablesize;
-  ta->keytable  = (int*)PetscMalloc(sizeof(int)*ta->tablesize); CHKPTRQ(ta->keytable);
-  ta->table     = (int*)PetscMalloc(sizeof(int)*ta->tablesize); CHKPTRQ(ta->table);
+  ta->keytable  = (int*)PetscMalloc(sizeof(int)*ta->tablesize);CHKPTRQ(ta->keytable);
+  ta->table     = (int*)PetscMalloc(sizeof(int)*ta->tablesize);CHKPTRQ(ta->table);
   for( i = 0 ; i < ta->tablesize ; i++ ){
     ta->keytable[i] = intable->keytable[i]; 
     ta->table[i]    = intable->table[i];
@@ -130,19 +129,19 @@ int TableAdd(Table ta, const int key, const int data)
     
     /* alloc new (bigger) table */
     ta->tablesize = 2*tsize; 
-    ta->table     = (int*)PetscMalloc(sizeof(int)*ta->tablesize); CHKPTRQ(ta->table);
-    ta->keytable  = (int*)PetscMalloc(sizeof(int)*ta->tablesize); CHKPTRQ(ta->keytable);
-    PetscMemzero(ta->keytable,sizeof(int)*ta->tablesize);
+    ta->table     = (int*)PetscMalloc(sizeof(int)*ta->tablesize);CHKPTRQ(ta->table);
+    ta->keytable  = (int*)PetscMalloc(sizeof(int)*ta->tablesize);CHKPTRQ(ta->keytable);
+    ierr          = PetscMemzero(ta->keytable,sizeof(int)*ta->tablesize);CHKERRQ(ierr);
     ta->count     = 0;
     ta->head      = 0; 
     
-    ierr = TableAdd(ta,key,data); CHKERRQ(ierr); 
+    ierr = TableAdd(ta,key,data);CHKERRQ(ierr); 
     /* rehash */
     for ( ii = 0; ii < tsize; ii++ ) {
       newk = oldkt[ii];
       if (newk) {
 	ndata = oldtab[ii];
-	ierr  = TableAdd(ta,newk,ndata); CHKERRQ(ierr); 
+	ierr  = TableAdd(ta,newk,ndata);CHKERRQ(ierr); 
       }
     }
     if (ta->count != tcount + 1) SETERRQ(1,1,"Table error");
@@ -161,12 +160,13 @@ int TableAdd(Table ta, const int key, const int data)
  */
 int TableRemoveAll(Table ta)
 { 
-  ta->head = 0;
+  int ierr;
 
   PetscFunctionBegin;
+  ta->head = 0;
   if (ta->count) { 
     ta->count = 0;
-    PetscMemzero(ta->keytable,ta->tablesize*sizeof(int)); 
+    ierr = PetscMemzero(ta->keytable,ta->tablesize*sizeof(int));CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

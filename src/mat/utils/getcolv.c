@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: getcolv.c,v 1.5 1999/01/04 21:51:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: getcolv.c,v 1.6 1999/03/17 23:23:38 bsmith Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -35,10 +35,10 @@ int MatGetColumnVector(Mat A, Vec yy, int col)
   PetscValidHeaderSpecific(yy,VEC_COOKIE); 
 
   if (col < 0)  SETERRQ1(1,1,"Requested negative column: %d",col);
-  ierr = MatGetSize(A,&M,&N); CHKERRQ(ierr);
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   if (col >= N)  SETERRQ2(1,1,"Requested column %d larger than number columns in matrix %d",col,N);
 
-  ierr = VecGetSize(yy,&Mv); CHKERRQ(ierr);
+  ierr = VecGetSize(yy,&Mv);CHKERRQ(ierr);
   if (M != Mv) SETERRQ2(1,1,"Matrix does not have same number of columns %d as vector %d",M,Mv);
 
   ierr = MatGetOwnershipRange(A,&Rs,&Re);CHKERRQ(ierr);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: beuler.c,v 1.35 1998/10/19 22:19:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.36 1998/12/03 04:04:01 bsmith Exp balay $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -31,24 +31,24 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
   
   PetscFunctionBegin;
   *steps = -ts->steps;
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
+  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   /* set initial guess to be previous solution */
-  ierr = VecCopy(sol,update); CHKERRQ(ierr);
+  ierr = VecCopy(sol,update);CHKERRQ(ierr);
 
   for ( i=0; i<max_steps; i++ ) {
-    ierr = VecCopy(sol,rhs); CHKERRQ(ierr);
-    ierr = VecScale(&mdt,rhs); CHKERRQ(ierr);
+    ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
+    ierr = VecScale(&mdt,rhs);CHKERRQ(ierr);
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
-    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs); CHKERRQ(ierr);
+    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
-    ierr = SLESSolve(ts->sles,rhs,update,&its); CHKERRQ(ierr);
+    ierr = SLESSolve(ts->sles,rhs,update,&its);CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
-    ierr = VecCopy(update,sol); CHKERRQ(ierr);
+    ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
   }
 
   *steps += ts->steps;
@@ -73,13 +73,13 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   /* set initial guess to be previous solution */
-  ierr = VecCopy(sol,update); CHKERRQ(ierr);
+  ierr = VecCopy(sol,update);CHKERRQ(ierr);
 
   for ( i=0; i<max_steps; i++ ) {
-    ierr = VecCopy(sol,rhs); CHKERRQ(ierr);
-    ierr = VecScale(&mdt,rhs); CHKERRQ(ierr);
+    ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
+    ierr = VecScale(&mdt,rhs);CHKERRQ(ierr);
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
-    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs); CHKERRQ(ierr);
+    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
@@ -88,19 +88,19 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
     */
     ierr = (*ts->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
     if (!ts->Ashell) {
-      ierr = MatScale(&mone,ts->A); CHKERRQ(ierr);
-      ierr = MatShift(&mdt,ts->A); CHKERRQ(ierr);
+      ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
+      ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
     }
     if (ts->B != ts->A && ts->Ashell != ts->B && str != SAME_PRECONDITIONER) {
-      ierr = MatScale(&mone,ts->B); CHKERRQ(ierr);
-      ierr = MatShift(&mdt,ts->B); CHKERRQ(ierr);
+      ierr = MatScale(&mone,ts->B);CHKERRQ(ierr);
+      ierr = MatShift(&mdt,ts->B);CHKERRQ(ierr);
     }
-    ierr = SLESSetOperators(ts->sles,ts->A,ts->B,str); CHKERRQ(ierr);
-    ierr = SLESSolve(ts->sles,rhs,update,&its); CHKERRQ(ierr);
+    ierr = SLESSetOperators(ts->sles,ts->A,ts->B,str);CHKERRQ(ierr);
+    ierr = SLESSolve(ts->sles,rhs,update,&its);CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
-    ierr = VecCopy(update,sol); CHKERRQ(ierr);
+    ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
   }
 
   *steps += ts->steps;
@@ -120,16 +120,16 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
   
   PetscFunctionBegin;
   *steps = -ts->steps;
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
+  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   for ( i=0; i<max_steps; i++ ) {
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
-    ierr = VecCopy(sol,beuler->update); CHKERRQ(ierr);
-    ierr = SNESSolve(ts->snes,beuler->update,&its); CHKERRQ(ierr);
-    ierr = SNESGetNumberLinearIterations(ts->snes,&lits); CHKERRQ(ierr);
+    ierr = VecCopy(sol,beuler->update);CHKERRQ(ierr);
+    ierr = SNESSolve(ts->snes,beuler->update,&its);CHKERRQ(ierr);
+    ierr = SNESGetNumberLinearIterations(ts->snes,&lits);CHKERRQ(ierr);
     ts->nonlinear_its += PetscAbsInt(its); ts->linear_its += lits;
-    ierr = VecCopy(beuler->update,sol); CHKERRQ(ierr);
+    ierr = VecCopy(beuler->update,sol);CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
   }
@@ -148,10 +148,10 @@ static int TSDestroy_BEuler(TS ts )
   int       ierr;
 
   PetscFunctionBegin;
-  if (beuler->update) {ierr = VecDestroy(beuler->update); CHKERRQ(ierr);}
+  if (beuler->update) {ierr = VecDestroy(beuler->update);CHKERRQ(ierr);}
   if (beuler->func) {ierr = VecDestroy(beuler->func);CHKERRQ(ierr);}
   if (beuler->rhs) {ierr = VecDestroy(beuler->rhs);CHKERRQ(ierr);}
-  if (ts->Ashell) {ierr = MatDestroy(ts->A); CHKERRQ(ierr);}
+  if (ts->Ashell) {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
   PetscFree(beuler);
   PetscFunctionReturn(0);
 }
@@ -175,9 +175,9 @@ int TSBEulerMatMult(Mat mat,Vec x,Vec y)
   mdt = 1.0/ts->time_step;
 
   /* apply user provided function */
-  ierr = MatMult(ts->Ashell,x,y); CHKERRQ(ierr);
+  ierr = MatMult(ts->Ashell,x,y);CHKERRQ(ierr);
   /* shift and scale by 1/dt - F */
-  ierr = VecAXPBY(&mdt,&mone,x,y); CHKERRQ(ierr);
+  ierr = VecAXPBY(&mdt,&mone,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -196,12 +196,12 @@ int TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
 
   PetscFunctionBegin;
   /* apply user-provided function */
-  ierr = TSComputeRHSFunction(ts,ts->ptime,x,y); CHKERRQ(ierr);
+  ierr = TSComputeRHSFunction(ts,ts->ptime,x,y);CHKERRQ(ierr);
   /* (u^{n+1} - U^{n})/dt - F(u^{n+1}) */
-  ierr = VecGetArray(ts->vec_sol,&un); CHKERRQ(ierr);
-  ierr = VecGetArray(x,&unp1); CHKERRQ(ierr);
-  ierr = VecGetArray(y,&Funp1); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&n); CHKERRQ(ierr);
+  ierr = VecGetArray(ts->vec_sol,&un);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&unp1);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&Funp1);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
 
   for ( i=0; i<n; i++ ) {
     Funp1[i] = mdt*(unp1[i] - un[i]) - Funp1[i];
@@ -233,15 +233,15 @@ int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
   }
 
   /* shift and scale Jacobian, if not matrix-free */
-  ierr = MatGetType(*AA,&mtype,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatGetType(*AA,&mtype,PETSC_NULL);CHKERRQ(ierr);
   if (mtype != MATSHELL) {
-    ierr = MatScale(&mone,*AA); CHKERRQ(ierr);
-    ierr = MatShift(&mdt,*AA); CHKERRQ(ierr);
+    ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
   }
-  ierr = MatGetType(*BB,&mtype,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatGetType(*BB,&mtype,PETSC_NULL);CHKERRQ(ierr);
   if (*BB != *AA && *str != SAME_PRECONDITIONER && mtype != MATSHELL) {
-    ierr = MatScale(&mone,*BB); CHKERRQ(ierr);
-    ierr = MatShift(&mdt,*BB); CHKERRQ(ierr);
+    ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -257,23 +257,23 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
   Scalar    mdt = 1.0/ts->time_step, mone = -1.0;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&beuler->update); CHKERRQ(ierr);  
-  ierr = VecDuplicate(ts->vec_sol,&beuler->rhs); CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&beuler->rhs);CHKERRQ(ierr);  
     
   /* build linear system to be solved */
   if (!ts->Ashell) {
-    ierr = MatScale(&mone,ts->A); CHKERRQ(ierr);
-    ierr = MatShift(&mdt,ts->A); CHKERRQ(ierr);
+    ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
   } else {
     /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSBEulerMatMult); CHKERRQ(ierr);
+    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
+    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSBEulerMatMult);CHKERRQ(ierr);
   }
   if (ts->A != ts->B && ts->Ashell != ts->B) {
-    ierr = MatScale(&mone,ts->B); CHKERRQ(ierr);
-    ierr = MatShift(&mdt,ts->B); CHKERRQ(ierr);
+    ierr = MatScale(&mone,ts->B);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,ts->B);CHKERRQ(ierr);
   }
   ierr = SLESSetOperators(ts->sles,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -287,13 +287,13 @@ static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
   int       ierr, M, m;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&beuler->update); CHKERRQ(ierr);  
-  ierr = VecDuplicate(ts->vec_sol,&beuler->rhs); CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&beuler->rhs);CHKERRQ(ierr);  
   if (ts->Ashell) { /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSBEulerMatMult); CHKERRQ(ierr);
+    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
+    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSBEulerMatMult);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -306,14 +306,14 @@ static int TSSetUp_BEuler_Nonlinear(TS ts)
   int       ierr, M, m;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&beuler->update); CHKERRQ(ierr);  
-  ierr = VecDuplicate(ts->vec_sol,&beuler->func); CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&beuler->func);CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,beuler->func,TSBEulerFunction,ts);CHKERRQ(ierr);
   if (ts->Ashell) { /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSBEulerMatMult); CHKERRQ(ierr);
+    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
+    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSBEulerMatMult);CHKERRQ(ierr);
   }
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSBEulerJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -327,7 +327,7 @@ static int TSSetFromOptions_BEuler_Linear(TS ts)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = SLESSetFromOptions(ts->sles); CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(ts->sles);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -339,7 +339,7 @@ static int TSSetFromOptions_BEuler_Nonlinear(TS ts)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = SNESSetFromOptions(ts->snes); CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -395,9 +395,9 @@ int TSCreate_BEuler(TS ts )
       ts->step   = TSStep_BEuler_Linear_Variable_Matrix;
     }
     ts->setfromoptions  = TSSetFromOptions_BEuler_Linear;
-    ierr = SLESCreate(ts->comm,&ts->sles); CHKERRQ(ierr);
-    ierr = SLESGetKSP(ts->sles,&ksp); CHKERRQ(ierr);
-    ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);
+    ierr = SLESCreate(ts->comm,&ts->sles);CHKERRQ(ierr);
+    ierr = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
     if (!ts->A) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must set Jacobian for nonlinear problem");
@@ -412,9 +412,9 @@ int TSCreate_BEuler(TS ts )
     ierr = SNESCreate(ts->comm,SNES_NONLINEAR_EQUATIONS,&ts->snes);CHKERRQ(ierr);
   } else SETERRQ( PETSC_ERR_ARG_OUTOFRANGE,0,"No such problem");
 
-  beuler   = PetscNew(TS_BEuler); CHKPTRQ(beuler);
+  beuler   = PetscNew(TS_BEuler);CHKPTRQ(beuler);
   PLogObjectMemory(ts,sizeof(TS_BEuler));
-  PetscMemzero(beuler,sizeof(TS_BEuler));
+  ierr     = PetscMemzero(beuler,sizeof(TS_BEuler));CHKERRQ(ierr);
   ts->data = (void *) beuler;
 
   PetscFunctionReturn(0);

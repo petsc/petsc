@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fpath.c,v 1.23 1999/03/17 23:21:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fpath.c,v 1.24 1999/04/21 20:43:17 bsmith Exp balay $";
 #endif
 /*
       Code for opening and closing files.
@@ -67,7 +67,7 @@ int PetscGetFullPath( const char path[], char fullpath[], int flen )
   PetscFunctionBegin;
   if (path[0] == '/') {
     if (PetscStrncmp("/tmp_mnt/",path,9) == 0) {ierr = PetscStrncpy(fullpath, path + 8, flen);CHKERRQ(ierr);}
-    else {ierr = PetscStrncpy( fullpath, path, flen); CHKERRQ(ierr);}
+    else {ierr = PetscStrncpy( fullpath, path, flen);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
   ierr = PetscGetWorkingDirectory( fullpath, flen );CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.21 1999/01/12 23:13:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.22 1999/03/19 21:18:23 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
@@ -38,7 +38,7 @@ int main(int argc,char **args)
 
   PetscInitializeFortran();  
 
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&vec); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&vec);CHKERRA(ierr);
   ierr = VecSetFromOptions(vec);CHKERRA(ierr);
 
   /* 
@@ -46,12 +46,12 @@ int main(int argc,char **args)
      translation of the MPI_Comm from C so that it can be properly 
      interpreted from Fortran.
   */
-  ierr = MPICCommToFortranComm(PETSC_COMM_WORLD,&fcomm); CHKERRA(ierr);
+  ierr = MPICCommToFortranComm(PETSC_COMM_WORLD,&fcomm);CHKERRA(ierr);
 
   ex7f_(&vec,&fcomm);
 
-  ierr = VecView(vec,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  ierr = VecDestroy(vec); CHKERRA(ierr);
+  ierr = VecView(vec,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecDestroy(vec);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }
@@ -73,7 +73,7 @@ int ex7c_(Vec *fvec, int *fcomm)
   /*
     Some PETSc/MPI operations on Vec/Communicator objects 
   */
-  ierr = VecGetSize(*fvec,&size); CHKERRA(ierr);
+  ierr = VecGetSize(*fvec,&size);CHKERRA(ierr);
   MPI_Barrier(comm);
   
   return 0;

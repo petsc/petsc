@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.6 1998/12/03 04:06:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.7 1999/03/19 21:23:59 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests application ordering\n\n";
@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
   /* create the orderings */
-  ispetsc = (int *) PetscMalloc( 2*n*sizeof(int) ); CHKPTRA(ispetsc);
+  ispetsc = (int *) PetscMalloc( 2*n*sizeof(int) );CHKPTRA(ispetsc);
   isapp   = ispetsc + n;
 
   MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
@@ -33,12 +33,12 @@ int main(int argc,char **argv)
   }
 
   /* create the application ordering */
-  ierr = AOCreateBasic(PETSC_COMM_WORLD,n,isapp,ispetsc,&ao); CHKERRA(ierr);
+  ierr = AOCreateBasic(PETSC_COMM_WORLD,n,isapp,ispetsc,&ao);CHKERRA(ierr);
 
-  ierr = AOView(ao,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = AOView(ao,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* check the mapping */
-  ierr = AOPetscToApplication(ao,n,ispetsc); CHKERRA(ierr);
+  ierr = AOPetscToApplication(ao,n,ispetsc);CHKERRA(ierr);
   for ( i=0; i<n; i++ ) {
     if (ispetsc[i] != isapp[i]) {
       fprintf(stdout,"[%d] Problem with mapping %d to %d\n",rank,i,ispetsc[i]);
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
 
   PetscFree(ispetsc);
 
-  ierr = AODestroy(ao); CHKERRA(ierr);
+  ierr = AODestroy(ao);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

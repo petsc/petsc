@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.55 1999/04/19 22:14:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.56 1999/04/21 18:17:18 bsmith Exp balay $";
 #endif
 
 /*
@@ -29,7 +29,7 @@ static int PCSetUp_Shell(PC pc)
   PetscFunctionBegin;
   shell = (PC_Shell *) pc->data;
   if (shell->setup) {
-    ierr  = (*shell->setup)(shell->ctx); CHKERRQ(ierr);
+    ierr  = (*shell->setup)(shell->ctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -44,7 +44,7 @@ static int PCApply_Shell(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   shell = (PC_Shell *) pc->data;
   if (!shell->apply) SETERRQ(1,1,"No apply() routine provided to Shell PC");
-  ierr  = (*shell->apply)(shell->ctx,x,y); CHKERRQ(ierr);
+  ierr  = (*shell->apply)(shell->ctx,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -58,7 +58,7 @@ static int PCApplyTrans_Shell(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   shell = (PC_Shell *) pc->data;
   if (!shell->applytrans) SETERRQ(1,1,"No applytrans() routine provided to Shell PC");
-  ierr  = (*shell->applytrans)(shell->ctx,x,y); CHKERRQ(ierr);
+  ierr  = (*shell->applytrans)(shell->ctx,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -95,7 +95,7 @@ static int PCView_Shell(PC pc,Viewer viewer)
   ViewerType vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {  
     if (jac->name) {ierr = ViewerASCIIPrintf(viewer,"  Shell: %s\n", jac->name);CHKERRQ(ierr);}
     else           {ierr = ViewerASCIIPrintf(viewer,"  Shell: no name\n");CHKERRQ(ierr);}
@@ -450,7 +450,7 @@ int PCCreate_Shell(PC pc)
 
   PetscFunctionBegin;
   pc->ops->destroy    = PCDestroy_Shell;
-  shell               = PetscNew(PC_Shell); CHKPTRQ(shell);
+  shell               = PetscNew(PC_Shell);CHKPTRQ(shell);
   PLogObjectMemory(pc,sizeof(PC_Shell));
 
   pc->data         = (void *) shell;

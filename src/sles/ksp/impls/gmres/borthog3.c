@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog3.c,v 1.12 1998/12/03 03:57:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog3.c,v 1.13 1999/01/31 16:08:49 bsmith Exp balay $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -31,7 +31,7 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
   /* Don't allocate small arrays */
   if (it < 100) lhh = shh;
   else {
-    lhh = (Scalar *)PetscMalloc((it+1) * sizeof(Scalar)); CHKPTRQ(lhh);
+    lhh = (Scalar *)PetscMalloc((it+1) * sizeof(Scalar));CHKPTRQ(lhh);
   }
   
   /* update Hessenberg matrix and do unmodified Gram-Schmidt */

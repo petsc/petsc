@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.36 1999/03/01 04:58:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.37 1999/03/17 23:25:31 bsmith Exp balay $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -59,7 +59,7 @@ int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
   /*
      We do not provide a getcoloring function in the DA operations because 
@@ -98,7 +98,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap,0); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap,0);CHKERRQ(ierr);
   if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,0,"Currently no support for periodic");
 
   nc     = w;
@@ -112,18 +112,18 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
     PetscFunctionReturn(0);
   }
 
-  values  = (Scalar *) PetscMalloc( col*col*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
-  PetscMemzero(values,col*col*nc*nc*sizeof(Scalar));
-  rows    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(rows);
-  cols    = (int *) PetscMalloc( col*col*nc*nc*sizeof(int) ); CHKPTRQ(cols);
+  values  = (Scalar *) PetscMalloc( col*col*nc*nc*sizeof(Scalar) );CHKPTRQ(values);
+  ierr    = PetscMemzero(values,col*col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
+  rows    = (int *) PetscMalloc( nc*sizeof(int) );CHKPTRQ(rows);
+  cols    = (int *) PetscMalloc( col*col*nc*nc*sizeof(int) );CHKPTRQ(cols);
 
-  ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0); CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)da,&comm); CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
 
   /* create the coloring */
-  colors = (int *) PetscMalloc( nc*nx*ny*sizeof(int) ); CHKPTRQ(colors);
+  colors = (int *) PetscMalloc( nc*nx*ny*sizeof(int) );CHKPTRQ(colors);
   ii = 0;
   for ( j=ys; j<ys+ny; j++ ) {
     for ( i=xs; i<xs+nx; i++ ) {
@@ -132,14 +132,14 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
       }
     }
   }
-  ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring); CHKERRQ(ierr);
+  ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring);CHKERRQ(ierr);
   PetscFree(colors);
 
   /* create empty Jacobian matrix */
   ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,col*col*nc,0,0,0,J);CHKERRQ(ierr);  
 
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*J,ltog); CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
 
   /*
       For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -166,14 +166,14 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
         }
         rows[k]      = k + nc*(slot);
       }
-      ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   PetscFree(values); 
   PetscFree(rows);
   PetscFree(cols);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -197,22 +197,22 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,0); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,0);CHKERRQ(ierr);
   if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,0,"Currently no support for periodic");
   col    = 2*s + 1;
 
-  values  = (Scalar *) PetscMalloc( col*col*col*nc*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
-  PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(Scalar));
-  rows    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(rows);
-  cols    = (int *) PetscMalloc( col*col*col*nc*sizeof(int) ); CHKPTRQ(cols);
+  values  = (Scalar *) PetscMalloc( col*col*col*nc*nc*nc*sizeof(Scalar) );CHKPTRQ(values);
+  ierr    = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
+  rows    = (int *) PetscMalloc( nc*sizeof(int) );CHKPTRQ(rows);
+  cols    = (int *) PetscMalloc( col*col*col*nc*sizeof(int) );CHKPTRQ(cols);
 
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz); CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)da,&comm); CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
 
   /* create the coloring */
-  colors = (int *) PetscMalloc( nc*nx*ny*nz*sizeof(int) ); CHKPTRQ(colors);
+  colors = (int *) PetscMalloc( nc*nx*ny*nz*sizeof(int) );CHKPTRQ(colors);
   ii = 0;
   for ( k=zs; k<zs+nz; k++ ) {
     for ( j=ys; j<ys+ny; j++ ) {
@@ -223,15 +223,14 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
       }
     }
   }
-  ierr = ISColoringCreate(comm,nc*nx*ny*nz,colors,coloring); CHKERRQ(ierr);
+  ierr = ISColoringCreate(comm,nc*nx*ny*nz,colors,coloring);CHKERRQ(ierr);
   PetscFree(colors);
 
   /* create empty Jacobian matrix */
-  ierr = MatCreateMPIAIJ(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,col*col*col*nc,0,0,0,J);
-         CHKERRQ(ierr);  
+  ierr = MatCreateMPIAIJ(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,col*col*col*nc,0,0,0,J);CHKERRQ(ierr);  
 
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*J,ltog); CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
 
   /*
       For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -261,15 +260,15 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
           }
           rows[l]      = l + nc*(slot);
         }
-        ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
   PetscFree(values); 
   PetscFree(rows);
   PetscFree(cols);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -307,21 +306,21 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
          |                                                     |
           -----------------------------------------------------
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,0,0); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,0,0);CHKERRQ(ierr);
 
   nc     = w;
-  values = (Scalar *) PetscMalloc( 9*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
-  PetscMemzero(values,9*nc*nc*sizeof(Scalar));
-  cols    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(cols);
-  indices = (int *) PetscMalloc( 9*nc*nc*sizeof(int) ); CHKPTRQ(cols);
+  values = (Scalar *) PetscMalloc( 9*nc*nc*sizeof(Scalar) );CHKPTRQ(values);
+  ierr   = PetscMemzero(values,9*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
+  cols    = (int *) PetscMalloc( nc*sizeof(int) );CHKPTRQ(cols);
+  indices = (int *) PetscMalloc( 9*nc*nc*sizeof(int) );CHKPTRQ(cols);
 
-  ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0); CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)da,&comm); CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
 
   /* create the coloring */
-  colors = (int *) PetscMalloc( nc*nx*ny*sizeof(int) ); CHKPTRQ(colors);
+  colors = (int *) PetscMalloc( nc*nx*ny*sizeof(int) );CHKPTRQ(colors);
   i1 = 0;
   for ( j=ys; j<ys+ny; j++ ) {
     for ( i=xs; i<xs+nx; i++ ) {
@@ -334,14 +333,14 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
       }
     }
   }
-  ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring); CHKERRQ(ierr);
+  ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring);CHKERRQ(ierr);
   PetscFree(colors);
 
   /* create empty Jacobian matrix */
   ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,9*nc,0,0,0,J);CHKERRQ(ierr);  
 
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*J,ltog); CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
 
   /*
       For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -365,7 +364,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
         indices[3*nc+k] = k + nc*(slot + gnx + 1);
         cols[k]         = k + nc*(slot);
       }
-      ierr = MatSetValuesLocal(*J,nc,cols,4*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,nc,cols,4*nc,indices,values,INSERT_VALUES);CHKERRQ(ierr);
     }
     /* upper left corner */
     if (ys + ny == n) {
@@ -378,7 +377,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
         indices[3*nc+k] = k + nc*(slot + 1);
         cols[k]         = k + nc*(slot);
       }
-      ierr = MatSetValuesLocal(*J,nc,cols,4*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,nc,cols,4*nc,indices,values,INSERT_VALUES);CHKERRQ(ierr);
     }
     for ( j=ys1; j<ys1+ny1; j++ ) {
       slot = xs - gxs + gnx*(j - gys);
@@ -391,7 +390,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
         indices[5*nc+k] = k + nc*(slot + gnx + 1);
         cols[k]         = k + nc*(slot);
       }
-      ierr = MatSetValuesLocal(*J,nc,cols,6*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);  
+      ierr = MatSetValuesLocal(*J,nc,cols,6*nc,indices,values,INSERT_VALUES);CHKERRQ(ierr);  
     }
   }      
 
@@ -411,7 +410,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
         indices[3*nc+k] = k + nc*(slot + gnx);
         cols[k]         = k + nc*(slot);
       }
-      ierr = MatSetValuesLocal(*J,nc,cols,4*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,nc,cols,4*nc,indices,values,INSERT_VALUES);CHKERRQ(ierr);
     }
     /* upper right corner */
     if (ys + ny == n) {
@@ -424,7 +423,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
         indices[3*nc+k] = k + nc*(slot);
         cols[k]         = k + nc*(slot);
       }
-      ierr = MatSetValuesLocal(*J,nc,cols,4*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,nc,cols,4*nc,indices,values,INSERT_VALUES);CHKERRQ(ierr);
     }
     for ( j=ys1; j<ys1+ny1; j++ ) {
       slot = xs + (nx - 1) - gxs + gnx*(j - gys);
@@ -437,7 +436,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
         indices[5*nc+k] = k + nc*(slot + gnx);
         cols[k]         = k + nc*(slot);
       }
-      ierr = MatSetValuesLocal(*J,nc,cols,6*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);   
+      ierr = MatSetValuesLocal(*J,nc,cols,6*nc,indices,values,INSERT_VALUES);CHKERRQ(ierr);   
     }
   }   
 
@@ -456,7 +455,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
         indices[5*nc+k] = k + nc*(slot + gnx + 1);
         cols[k]         = k + nc*(slot);
       }
-      ierr = MatSetValuesLocal(*J,nc,cols,6*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,nc,cols,6*nc,indices,values,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -475,7 +474,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
         indices[5*nc+k] = k + nc*(slot  + 1);
         cols[k]         = k + nc*(slot);
       }
-      ierr = MatSetValuesLocal(*J,nc,cols,6*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,nc,cols,6*nc,indices,values,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -501,14 +500,14 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
         indices[8*nc+k] = k + nc*(slot + gnx + 1);
         cols[k]         = k + nc*(slot);
     }
-      ierr = MatSetValuesLocal(*J,nc,cols,9*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,nc,cols,9*nc,indices,values,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   PetscFree(values); 
   PetscFree(cols);
   PetscFree(indices);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -532,7 +531,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,&wrap,0); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,&wrap,0);CHKERRQ(ierr);
   col    = 2*s + 1;
 
   if (wrap && (m % col)) {
@@ -541,32 +540,32 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
   }
 
 
-  values  = (Scalar *) PetscMalloc( col*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
-  PetscMemzero(values,col*nc*nc*sizeof(Scalar));
-  rows    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(rows);
-  cols    = (int *) PetscMalloc( col*nc*sizeof(int) ); CHKPTRQ(cols);
+  values  = (Scalar *) PetscMalloc( col*nc*nc*sizeof(Scalar) );CHKPTRQ(values);
+  ierr    = PetscMemzero(values,col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
+  rows    = (int *) PetscMalloc( nc*sizeof(int) );CHKPTRQ(rows);
+  cols    = (int *) PetscMalloc( col*nc*sizeof(int) );CHKPTRQ(cols);
 
-  ierr = DAGetCorners(da,&xs,0,0,&nx,0,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,0,0,&gnx,0,0); CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)da,&comm); CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
 
   /* create the coloring */
-  colors = (int *) PetscMalloc( nc*nx*sizeof(int) ); CHKPTRQ(colors);
+  colors = (int *) PetscMalloc( nc*nx*sizeof(int) );CHKPTRQ(colors);
   i1 = 0;
   for ( i=xs; i<xs+nx; i++ ) {
     for ( l=0; l<nc; l++ ) {
       colors[i1++] = l + nc*(i % col);
     }
   }
-  ierr = ISColoringCreate(comm,nc*nx,colors,coloring); CHKERRQ(ierr);
+  ierr = ISColoringCreate(comm,nc*nx,colors,coloring);CHKERRQ(ierr);
   PetscFree(colors);
 
   /* create empty Jacobian matrix */
   ierr = MatCreateMPIAIJ(comm,nc*nx,nc*nx,PETSC_DECIDE,PETSC_DECIDE,col*nc,0,0,0,J);CHKERRQ(ierr);
 
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*J,ltog); CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
 
   /*
       For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -585,13 +584,13 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
       }
       rows[l]      = l + nc*(slot);
     }
-    ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFree(values); 
   PetscFree(rows);
   PetscFree(cols);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.86 1999/04/19 22:14:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.87 1999/04/20 15:05:39 bsmith Exp balay $";
 #endif
 
 /*
@@ -74,7 +74,7 @@ int KSPSetUp_CG(KSP ksp)
   }
 
   /* get work vectors needed by CG */
-  ierr = KSPDefaultGetWork( ksp, 3 ); CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork( ksp, 3 );CHKERRQ(ierr);
 
   /*
      If user requested computations of eigenvalues then allocate work
@@ -130,29 +130,29 @@ int  KSPSolve_CG(KSP ksp,int *its)
   P       = ksp->work[2];
 
 #if !defined(USE_PETSC_COMPLEX)
-#define VecXDot(x,y,a) {ierr = VecDot(x,y,a); CHKERRQ(ierr)}
+#define VecXDot(x,y,a) {ierr = VecDot(x,y,a);CHKERRQ(ierr)}
 #else
 #define VecXDot(x,y,a) \
-  {if (cg->type == KSP_CG_HERMITIAN) {ierr = VecDot(x,y,a); CHKERRQ(ierr)} \
-   else                              {ierr = VecTDot(x,y,a); CHKERRQ(ierr)}}
+  {if (cg->type == KSP_CG_HERMITIAN) {ierr = VecDot(x,y,a);CHKERRQ(ierr)} \
+   else                              {ierr = VecTDot(x,y,a);CHKERRQ(ierr)}}
 #endif
 
   if (eigs) {e = cg->e; d = cg->d; e[0] = 0.0; b = 0.0; }
-  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
-    ierr = MatMult(Amat,X,R); CHKERRQ(ierr);         /*   r <- b - Ax       */
-    ierr = VecAYPX(&mone,B,R); CHKERRQ(ierr);
+    ierr = MatMult(Amat,X,R);CHKERRQ(ierr);         /*   r <- b - Ax       */
+    ierr = VecAYPX(&mone,B,R);CHKERRQ(ierr);
   } else { 
-    ierr = VecCopy(B,R); CHKERRQ(ierr);              /*     r <- b (x is 0) */
+    ierr = VecCopy(B,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
-  ierr = PCApply(ksp->B,R,Z); CHKERRQ(ierr);         /*     z <- Br         */
+  ierr = PCApply(ksp->B,R,Z);CHKERRQ(ierr);         /*     z <- Br         */
   if (!ksp->avoidnorms) {
     if (pres) {
-        ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr); /*    dp <- z'*z       */
+        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- z'*z       */
     } else {
-        ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*    dp <- r'*r       */
+        ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- r'*r       */
     }
   }
   cerr = (*ksp->converged)(ksp,0,dp,ksp->cnvP);      /* test for convergence */
@@ -166,7 +166,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
      VecXDot(Z,R,&beta);                           /*     beta <- r'z     */
      if (i == 0) {
        if (beta == 0.0) break;
-       ierr = VecCopy(Z,P); CHKERRQ(ierr);         /*     p <- z          */
+       ierr = VecCopy(Z,P);CHKERRQ(ierr);         /*     p <- z          */
      } else {
          b = beta/betaold;
 #if !defined(USE_PETSC_COMPLEX)
@@ -175,32 +175,32 @@ int  KSPSolve_CG(KSP ksp,int *its)
          if (eigs) {
            e[i] = sqrt(PetscAbsScalar(b))/a;  
          }
-         ierr = VecAYPX(&b,Z,P); CHKERRQ(ierr);    /*     p <- z + b* p   */
+         ierr = VecAYPX(&b,Z,P);CHKERRQ(ierr);    /*     p <- z + b* p   */
      }
      betaold = beta;
-     ierr = MatMult(Amat,P,Z); CHKERRQ(ierr);      /*     z <- Kp         */
+     ierr = MatMult(Amat,P,Z);CHKERRQ(ierr);      /*     z <- Kp         */
      VecXDot(P,Z,&dpi);                            /*     dpi <- z'p      */
      a = beta/dpi;                                 /*     a = beta/p'z    */
      if (eigs) {
        d[i] = sqrt(PetscAbsScalar(b))*e[i] + 1.0/a;
      }
-     ierr = VecAXPY(&a,P,X); CHKERRQ(ierr);          /*     x <- x + ap     */
+     ierr = VecAXPY(&a,P,X);CHKERRQ(ierr);          /*     x <- x + ap     */
      ma = -a; VecAXPY(&ma,Z,R);                      /*     r <- r - az     */
      if (pres) {
-       ierr = PCApply(ksp->B,R,Z); CHKERRQ(ierr);    /*     z <- Br         */
+       ierr = PCApply(ksp->B,R,Z);CHKERRQ(ierr);    /*     z <- Br         */
        if (!ksp->avoidnorms) {
-         ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- z'*z       */
+         ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);/*    dp <- z'*z       */
        }
      }
      else if (!ksp->avoidnorms) {
-       ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- r'*r       */
+       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
      }
      ksp->rnorm = dp;
      KSPLogResidualHistory(ksp,dp);
      KSPMonitor(ksp,i+1,dp);
      cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
      if (cerr) break;
-     if (!pres) {ierr = PCApply(ksp->B,R,Z); CHKERRQ(ierr);} /* z <- Br  */
+     if (!pres) {ierr = PCApply(ksp->B,R,Z);CHKERRQ(ierr);} /* z <- Br  */
   }
   if (i == maxit) {i--; ksp->its--;}
   if (cerr <= 0) *its = -(i+1);
@@ -250,7 +250,7 @@ int KSPView_CG(KSP ksp,Viewer viewer)
   ViewerType  vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     if (cg->type == KSP_CG_HERMITIAN) {
       ierr = ViewerASCIIPrintf(viewer,"  CG: variant for complex, Hermitian system\n");CHKERRQ(ierr);
@@ -341,10 +341,10 @@ EXTERN_C_BEGIN
 int KSPCreate_CG(KSP ksp)
 {
   int    ierr;
-  KSP_CG *cg = (KSP_CG*) PetscMalloc(sizeof(KSP_CG));  CHKPTRQ(cg);
+  KSP_CG *cg = (KSP_CG*) PetscMalloc(sizeof(KSP_CG));CHKPTRQ(cg);
 
   PetscFunctionBegin;
-  PetscMemzero(cg,sizeof(KSP_CG));
+  ierr = PetscMemzero(cg,sizeof(KSP_CG));CHKERRQ(ierr);
   PLogObjectMemory(ksp,sizeof(KSP_CG));
 #if !defined(USE_PETSC_COMPLEX)
   cg->type                       = KSP_CG_SYMMETRIC;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.49 1999/02/09 22:51:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.50 1999/03/01 04:55:59 bsmith Exp balay $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -36,16 +36,16 @@ static int KSPSetUp_LSQR(KSP ksp)
   /* Get work vectors */
   lsqr->nwork_m = nw = 2;
   if (lsqr->vwork_m) {
-    ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m); CHKERRQ(ierr);
+    ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
   }
-  ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&lsqr->vwork_m); CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&lsqr->vwork_m);CHKERRQ(ierr);
   PLogObjectParents(ksp,nw,lsqr->vwork_m);
 
   lsqr->nwork_n = nw = 3;
   if (lsqr->vwork_n) {
-    ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n); CHKERRQ(ierr);
+    ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n);CHKERRQ(ierr);
   }
-  ierr = VecDuplicateVecs(ksp->vec_sol,nw,&lsqr->vwork_n); CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ksp->vec_sol,nw,&lsqr->vwork_n);CHKERRQ(ierr);
   PLogObjectParents(ksp,nw,lsqr->vwork_n);
 
   PetscFunctionReturn(0);
@@ -64,7 +64,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   KSP_LSQR     *lsqr = (KSP_LSQR *) ksp->data;
 
   PetscFunctionBegin;
-  ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   maxit    = ksp->max_it;
 
   /* vectors of length m, where system size is mxn */
@@ -81,18 +81,18 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   /* BINVF    = lsqr->work[5];*/
 
   /* Compute initial preconditioned residual */
-  /* ierr = KSPResidual(ksp,X,V,U, W,BINVF,B); CHKERRQ(ierr); */
+  /* ierr = KSPResidual(ksp,X,V,U, W,BINVF,B);CHKERRQ(ierr); */
 
   /* Compute initial residual, temporarily use work vector u */
   if (!ksp->guess_zero) {
-    ierr = MatMult(Amat,X,U); CHKERRQ(ierr);       /*   u <- b - Ax     */
-    ierr = VecAYPX(&mone,B,U); CHKERRQ(ierr);
+    ierr = MatMult(Amat,X,U);CHKERRQ(ierr);       /*   u <- b - Ax     */
+    ierr = VecAYPX(&mone,B,U);CHKERRQ(ierr);
   } else { 
-    ierr = VecCopy(B,U); CHKERRQ(ierr);            /*   u <- b (x is 0) */
+    ierr = VecCopy(B,U);CHKERRQ(ierr);            /*   u <- b (x is 0) */
   }
 
   /* Test for nothing to do */
-  ierr = VecNorm(U,NORM_2,&rnorm); CHKERRQ(ierr);
+  ierr = VecNorm(U,NORM_2,&rnorm);CHKERRQ(ierr);
   PetscAMSTakeAccess(ksp);
   ksp->its   = 0;
   ksp->rnorm = rnorm;
@@ -101,29 +101,29 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   KSPLogResidualHistory(ksp,rnorm);
   KSPMonitor(ksp,0,rnorm);
 
-  ierr = VecCopy(B,U); CHKERRQ(ierr);
-  ierr = VecNorm(U,NORM_2,&beta); CHKERRQ(ierr);
-  tmp = 1.0/beta; ierr = VecScale(&tmp,U); CHKERRQ(ierr);
-  ierr = MatMultTrans(Amat,U,V); CHKERRQ(ierr);
-  ierr = VecNorm(V,NORM_2,&alpha); CHKERRQ(ierr);
-  tmp = 1.0/alpha; ierr = VecScale(&tmp,V); CHKERRQ(ierr);
+  ierr = VecCopy(B,U);CHKERRQ(ierr);
+  ierr = VecNorm(U,NORM_2,&beta);CHKERRQ(ierr);
+  tmp = 1.0/beta; ierr = VecScale(&tmp,U);CHKERRQ(ierr);
+  ierr = MatMultTrans(Amat,U,V);CHKERRQ(ierr);
+  ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
+  tmp = 1.0/alpha; ierr = VecScale(&tmp,V);CHKERRQ(ierr);
 
-  ierr = VecCopy(V,W); CHKERRQ(ierr);
-  ierr = VecSet(&zero,X); CHKERRQ(ierr);
+  ierr = VecCopy(V,W);CHKERRQ(ierr);
+  ierr = VecSet(&zero,X);CHKERRQ(ierr);
 
   phibar = beta;
   rhobar = alpha;
   for (i=0; i<maxit; i++) {
 
-    ierr = MatMult(Amat,V,U1); CHKERRQ(ierr);
-    tmp  = -alpha; ierr = VecAXPY(&tmp,U,U1); CHKERRQ(ierr);
-    ierr = VecNorm(U1,NORM_2,&beta); CHKERRQ(ierr);
-    tmp  = 1.0/beta; ierr = VecScale(&tmp,U1); CHKERRQ(ierr);
+    ierr = MatMult(Amat,V,U1);CHKERRQ(ierr);
+    tmp  = -alpha; ierr = VecAXPY(&tmp,U,U1);CHKERRQ(ierr);
+    ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
+    tmp  = 1.0/beta; ierr = VecScale(&tmp,U1);CHKERRQ(ierr);
 
-    ierr = MatMultTrans(Amat,U1,V1); CHKERRQ(ierr);
-    tmp  = -beta; ierr = VecAXPY(&tmp,V,V1); CHKERRQ(ierr);
-    ierr = VecNorm(V1,NORM_2,&alpha); CHKERRQ(ierr);
-    tmp  = 1.0 / alpha; ierr = VecScale(&tmp,V1); CHKERRQ(ierr);
+    ierr = MatMultTrans(Amat,U1,V1);CHKERRQ(ierr);
+    tmp  = -beta; ierr = VecAXPY(&tmp,V,V1);CHKERRQ(ierr);
+    ierr = VecNorm(V1,NORM_2,&alpha);CHKERRQ(ierr);
+    tmp  = 1.0 / alpha; ierr = VecScale(&tmp,V1);CHKERRQ(ierr);
 
     rho    = PetscSqrtScalar(rhobar*rhobar + beta*beta);
     c      = rhobar / rho;
@@ -134,9 +134,9 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
     phibar = s * phibar;
 
     tmp  = phi/rho; 
-    ierr = VecAXPY(&tmp,W,X); CHKERRQ(ierr);  /*    x <- x + (phi/rho) w   */
+    ierr = VecAXPY(&tmp,W,X);CHKERRQ(ierr);  /*    x <- x + (phi/rho) w   */
     tmp  = -theta/rho; 
-    ierr = VecAYPX(&tmp,V1,W); CHKERRQ(ierr); /*    w <- v - (theta/rho) w */
+    ierr = VecAYPX(&tmp,V1,W);CHKERRQ(ierr); /*    w <- v - (theta/rho) w */
 
 #if defined(USE_PETSC_COMPLEX)
     rnorm = PetscReal(phibar);
@@ -157,7 +157,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   }
   if (i == maxit) i--;
 
-  /* ierr = KSPUnwindPreconditioner(ksp,X,W); CHKERRQ(ierr); */
+  /* ierr = KSPUnwindPreconditioner(ksp,X,W);CHKERRQ(ierr); */
 
   if (cerr <= 0) *its = -(i+1);
   else          *its = i + 1;
@@ -175,10 +175,10 @@ int KSPDestroy_LSQR(KSP ksp)
 
   /* Free work vectors */
   if (lsqr->vwork_n) {
-    ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n); CHKERRQ(ierr);
+    ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n);CHKERRQ(ierr);
   }
   if (lsqr->vwork_m) {
-    ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m); CHKERRQ(ierr);
+    ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
   }
   PetscFree(lsqr); 
   PetscFunctionReturn(0);
@@ -190,10 +190,11 @@ EXTERN_C_BEGIN
 int KSPCreate_LSQR(KSP ksp)
 {
   KSP_LSQR *lsqr;
+  int      ierr;
 
   PetscFunctionBegin;
-  lsqr = (KSP_LSQR*) PetscMalloc(sizeof(KSP_LSQR)); CHKPTRQ(lsqr);
-  PetscMemzero(lsqr,sizeof(KSP_LSQR));
+  lsqr = (KSP_LSQR*) PetscMalloc(sizeof(KSP_LSQR));CHKPTRQ(lsqr);
+  ierr = PetscMemzero(lsqr,sizeof(KSP_LSQR));CHKERRQ(ierr);
   PLogObjectMemory(ksp,sizeof(KSP_LSQR));
   ksp->data                      = (void *) lsqr;
   ksp->pc_side                   = PC_LEFT;

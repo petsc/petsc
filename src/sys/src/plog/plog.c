@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.213 1999/04/19 22:10:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.214 1999/04/20 15:01:44 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -66,7 +66,7 @@ int PLogInfoAllow(PetscTruth flag,char *filename)
   PLogPrintInfo     = (int) flag;
   PLogPrintInfoNull = (int) flag;
   if (flag && filename) {
-    ierr = PetscFixFilename(filename,fname); CHKERRQ(ierr);
+    ierr = PetscFixFilename(filename,fname);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     sprintf(tname,".%d",rank);
     ierr = PetscStrcat(fname,tname);CHKERRQ(ierr);
@@ -472,7 +472,7 @@ int PLogStageRegister(int stage, const char sname[])
   PetscFunctionBegin;
   if (stage < 0 || stage > 10) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stages must be >= 0 and < 10: Instead %d",stage);
   n    = PetscStrlen(sname);
-  str  = (char *) PetscMalloc((n+1)*sizeof(char)); CHKPTRQ(str);
+  str  = (char *) PetscMalloc((n+1)*sizeof(char));CHKPTRQ(str);
   ierr = PetscStrcpy(str,sname);CHKERRQ(ierr);
   EventsStageName[stage] = str;
   PetscFunctionReturn(0);
@@ -623,13 +623,15 @@ int (*_PLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject) = 0;
 #define __FUNC__ "PLogDefaultPHC"
 int PLogDefaultPHC(PetscObject obj)
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (nevents >= eventsspace) {
     Events *tmp;
     PLogDouble end,start;
     PetscTime(start);
     tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
-    PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
+    ierr = PetscMemcpy(tmp,events,eventsspace*sizeof(Events));CHKERRQ(ierr);
     free(events);
     events = tmp; eventsspace += CHUNCK;
     PetscTime(end); BaseTime += (end - start);
@@ -639,7 +641,7 @@ int PLogDefaultPHC(PetscObject obj)
     PLogDouble end,start;
     PetscTime(start);
     tmp = (Objects *) malloc((objectsspace+CHUNCK)*sizeof(Objects));CHKPTRQ(tmp);
-    PetscMemcpy(tmp,objects,objectsspace*sizeof(Objects));
+    ierr = PetscMemcpy(tmp,objects,objectsspace*sizeof(Objects));CHKERRQ(ierr);
     free(objects);
     objects = tmp; objectsspace += CHUNCK;
     PetscTime(end); BaseTime += (end - start);
@@ -655,8 +657,8 @@ int PLogDefaultPHC(PetscObject obj)
   events[nevents++].event = CREATE;
   objects[nobjects].parent= -1;
   objects[nobjects].obj   = obj;
-  PetscMemzero(objects[nobjects].string,64*sizeof(char));
-  PetscMemzero(objects[nobjects].name,16*sizeof(char));
+  ierr = PetscMemzero(objects[nobjects].string,64*sizeof(char));CHKERRQ(ierr);
+  ierr = PetscMemzero(objects[nobjects].name,16*sizeof(char));CHKERRQ(ierr);
   obj->id = nobjects++;
   ObjectsType[EventsStage][obj->cookie - PETSC_COOKIE-1][0]++;
   PetscFunctionReturn(0);
@@ -678,7 +680,7 @@ int PLogDefaultPHD(PetscObject obj)
     PLogDouble end,start;
     PetscTime(start);
     tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
-    PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
+    ierr = PetscMemcpy(tmp,events,eventsspace*sizeof(Events));CHKERRQ(ierr);
     free(events);
     events = tmp; eventsspace += CHUNCK;
     PetscTime(end); BaseTime += (end - start);
@@ -693,7 +695,7 @@ int PLogDefaultPHD(PetscObject obj)
   PetscTrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
   events[nevents++].id3     = -1;
   if (obj->parent) {
-    ierr = PetscObjectExists(obj->parent,&exists); CHKERRQ(ierr);
+    ierr = PetscObjectExists(obj->parent,&exists);CHKERRQ(ierr);
     if (exists) {
       objects[obj->id].parent   = obj->parent->id;
     } else {
@@ -728,14 +730,15 @@ int PLogDefaultPHD(PetscObject obj)
 int PLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   PLogDouble ltime;
+  int        ierr;
 
   PetscFunctionBegin;
   if (nevents >= eventsspace) {
     Events *tmp;
     PLogDouble end,start;
     PetscTime(start);
-    tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
-    PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
+    tmp  = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
+    ierr = PetscMemcpy(tmp,events,eventsspace*sizeof(Events));CHKERRQ(ierr);
     free(events);
     events = tmp; eventsspace += CHUNCK;
     PetscTime(end); BaseTime += (end - start);
@@ -766,14 +769,15 @@ int PLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject 
 int PLogDefaultPLEAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   PLogDouble ltime;
+  int        ierr;
 
   PetscFunctionBegin;
   if (nevents >= eventsspace) {
     Events *tmp;
     PLogDouble end,start;
     PetscTime(start);
-    tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
-    PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
+    tmp  = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
+    ierr = PetscMemcpy(tmp,events,eventsspace*sizeof(Events));CHKERRQ(ierr);
     free(events);
     events = tmp; eventsspace += CHUNCK;
     PetscTime(end); BaseTime += (end - start);
@@ -964,7 +968,7 @@ int PLogAllBegin(void)
   events   = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
   _PLogPHC = PLogDefaultPHC;
   _PLogPHD = PLogDefaultPHD;
-  ierr     = PLogSet(PLogDefaultPLBAll,PLogDefaultPLEAll); CHKERRQ(ierr);
+  ierr     = PLogSet(PLogDefaultPLBAll,PLogDefaultPLEAll);CHKERRQ(ierr);
   /* all processors sync here for more consistent logging */
   ierr     = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscTime(BaseTime);
@@ -997,11 +1001,11 @@ int PLogDestroy(void)
   PetscFunctionBegin;
   if (objects) {free(objects); objects = 0;}
   if (events)  {free(events); events = 0;}
-  ierr    = PLogSet(0,0); CHKERRQ(ierr);
+  ierr    = PLogSet(0,0);CHKERRQ(ierr);
 
   /* Resetting phase */
-  PetscMemzero(EventsType,sizeof(EventsType));
-  PetscMemzero(ObjectsType,sizeof(ObjectsType));
+  ierr = PetscMemzero(EventsType,sizeof(EventsType));CHKERRQ(ierr);
+  ierr = PetscMemzero(ObjectsType,sizeof(ObjectsType));CHKERRQ(ierr);
   _TotalFlops      = 0.0;
   nobjects         = 0;
   nevents          = 0;
@@ -1051,7 +1055,7 @@ int PLogBegin(void)
   events   = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
   _PLogPHC = PLogDefaultPHC;
   _PLogPHD = PLogDefaultPHD;
-  ierr     = PLogSet(PLogDefaultPLB,PLogDefaultPLE); CHKERRQ(ierr);
+  ierr     = PLogSet(PLogDefaultPLB,PLogDefaultPLE);CHKERRQ(ierr);
   /* all processors sync here for more consistent logging */
   ierr     = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscTime(BaseTime);
@@ -1090,7 +1094,7 @@ int PLogTraceBegin(FILE *file)
   int ierr;
 
   PetscFunctionBegin;
-  ierr      = PLogSet(PLogDefaultPLBTrace,PLogDefaultPLETrace); CHKERRQ(ierr);
+  ierr      = PLogSet(PLogDefaultPLBTrace,PLogDefaultPLETrace);CHKERRQ(ierr);
   tracefile = file;
   PetscFunctionReturn(0);
 }
@@ -1548,7 +1552,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   ierr = PetscFPrintf(comm,fd,"      %%R - percent reductions in this phase\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"   Total Mflop/s: 10e-6 * (sum of flops over all processors)/(max time over all processors)\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,
-    "------------------------------------------------------------------------------------------------------------------------\n"); CHKERRQ(ierr);
+    "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
 
 #if defined(USE_PETSC_BOPT_g)
   ierr = PetscFPrintf(comm,fd,"\n\n");CHKERRQ(ierr);
@@ -1649,7 +1653,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   }
 
   ierr = PetscFPrintf(comm,fd,
-    "------------------------------------------------------------------------------------------------------------------------\n"); CHKERRQ(ierr);
+    "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"\n");CHKERRQ(ierr); 
   ierr = PetscFPrintf(comm,fd,"Memory usage is given in bytes:\n\n");CHKERRQ(ierr);
 

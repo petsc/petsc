@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.57 1999/03/17 23:23:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.58 1999/04/19 22:13:43 bsmith Exp balay $";
 #endif
 
 /* 
@@ -168,16 +168,16 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   *newmat  = 0;
 
   if (!MatLoadersSet) {
-    ierr = MatLoadRegisterAll(); CHKERRQ(ierr);
+    ierr = MatLoadRegisterAll();CHKERRQ(ierr);
   }
 
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscStrcmp(vtype,BINARY_VIEWER)){
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Invalid viewer; open viewer with ViewerBinaryOpen()");
   }
 
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
+  ierr = MatGetTypeFromOptions(comm,0,&type,&set);CHKERRQ(ierr);
   if (!set) type = outtype;
 
   PLogEventBegin(MAT_Load,viewer,0,0,0);
@@ -186,10 +186,10 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
     SETERRQ(PETSC_ERR_ARG_WRONG,1,"Invalid matrix type, or matrix load not registered");
   }
 
-  ierr = (*MatLoaders[outtype])(viewer,type,newmat); CHKERRQ(ierr);
+  ierr = (*MatLoaders[outtype])(viewer,type,newmat);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
-  if (flg) {ierr = MatLoadPrintHelp_Private(*newmat); CHKERRQ(ierr); }
+  ierr = OptionsHasName(PETSC_NULL,"-help", &flg);CHKERRQ(ierr);
+  if (flg) {ierr = MatLoadPrintHelp_Private(*newmat);CHKERRQ(ierr); }
   PLogEventEnd(MAT_Load,viewer,0,0,0);
   PetscFunctionReturn(0);
 }

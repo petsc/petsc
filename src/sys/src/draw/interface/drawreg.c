@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.9 1999/03/17 23:21:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawreg.c,v 1.10 1999/04/21 20:42:40 bsmith Exp balay $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
@@ -102,7 +102,7 @@ int DrawSetType(Draw draw,DrawType type)
 
   if (draw->data) {
     /* destroy the old private Draw context */
-    ierr = (*draw->ops->destroy)(draw); CHKERRQ(ierr);
+    ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
     draw->data      = 0;
   }
   if (draw->type_name) {
@@ -118,7 +118,7 @@ int DrawSetType(Draw draw,DrawType type)
   if (!r) SETERRQ1(1,1,"Unknown Draw type given: %s",type);
 
   draw->data        = 0;
-  ierr = (*r)(draw); CHKERRQ(ierr);
+  ierr = (*r)(draw);CHKERRQ(ierr);
 
   if (!draw->type_name) {
     draw->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(draw->type_name);
@@ -262,19 +262,19 @@ int DrawSetFromOptions(Draw draw)
   if (!DrawList) SETERRQ(1,1,"No draw implementations registered");
   ierr = OptionsGetString(draw->prefix,"-draw_type",vtype,256,&flg);
   if (flg) {
-    ierr = DrawSetType(draw,vtype); CHKERRQ(ierr);
+    ierr = DrawSetType(draw,vtype);CHKERRQ(ierr);
   }
 
   /* type has not been set? */
   if (!draw->type_name) {
 #if defined(HAVE_X11)
-    ierr = DrawSetType(draw,DRAW_X); CHKERRQ(ierr);
+    ierr = DrawSetType(draw,DRAW_X);CHKERRQ(ierr);
 #else
     ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
     if (!flg) {
       (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
     }
-    ierr = DrawSetType(draw,DRAW_NULL); CHKERRQ(ierr);
+    ierr = DrawSetType(draw,DRAW_NULL);CHKERRQ(ierr);
 #endif
   }
 

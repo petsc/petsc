@@ -1,5 +1,5 @@
 
-/*      "$Id: ex3.c,v 1.7 1997/04/10 00:00:03 bsmith Exp bsmith $"; */
+/*      "$Id: ex3.c,v 1.8 1999/03/19 21:17:34 bsmith Exp balay $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
@@ -32,49 +32,49 @@ int main(int argc,char **argv)
     Note each processor is generating its own index set 
     (in this case they are all identical)
   */
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,&set); CHKERRA(ierr);
-  ierr = ISView(set,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,&set);CHKERRA(ierr);
+  ierr = ISView(set,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /*
     Extract indices from set.
   */
-  ierr = ISGetSize(set,&issize); CHKERRA(ierr);
-  ierr = ISGetIndices(set,&indices); CHKERRA(ierr);
+  ierr = ISGetSize(set,&issize);CHKERRA(ierr);
+  ierr = ISGetIndices(set,&indices);CHKERRA(ierr);
   printf("Printing indices directly\n");
   for (i=0; i<issize; i++) {
     printf("%d\n",indices[i]);
   }
-  ierr = ISRestoreIndices(set,&indices); CHKERRA(ierr);
+  ierr = ISRestoreIndices(set,&indices);CHKERRA(ierr);
 
   /*
     Extract the block indices. This returns one index per block.
   */
-  ierr = ISBlockGetIndices(set,&indices); CHKERRA(ierr);
+  ierr = ISBlockGetIndices(set,&indices);CHKERRA(ierr);
   printf("Printing block indices directly\n");
   for (i=0; i<n; i++) {
     printf("%d\n",indices[i]);
   }
-  ierr = ISBlockRestoreIndices(set,&indices); CHKERRA(ierr);
+  ierr = ISBlockRestoreIndices(set,&indices);CHKERRA(ierr);
 
   /*
     Check if this is really a block index set
   */
-  ierr = ISBlock(set,&isblock); CHKERRA(ierr);
+  ierr = ISBlock(set,&isblock);CHKERRA(ierr);
   if (isblock != PETSC_TRUE) SETERRA(1,0,"Index set is not blocked!");
 
   /*
     Determine the block size of the index set
   */
-  ierr = ISBlockGetBlockSize(set,&bs); CHKERRA(ierr);
+  ierr = ISBlockGetBlockSize(set,&bs);CHKERRA(ierr);
   if (bs != 3) SETERRA(1,0,"Block size is not 3!");
 
   /*
     Get the number of blocks
   */
-  ierr = ISBlockGetSize(set,&n); CHKERRA(ierr);
+  ierr = ISBlockGetSize(set,&n);CHKERRA(ierr);
   if (n != 4) SETERRA(1,0,"Number of blocks not 4!");
 
-  ierr = ISDestroy(set); CHKERRA(ierr);
+  ierr = ISDestroy(set);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

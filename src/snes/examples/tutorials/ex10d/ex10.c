@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.5 1999/04/18 17:12:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.6 1999/04/20 15:07:25 bsmith Exp balay $";
 #endif
 
 /* 
@@ -138,14 +138,14 @@ int main( int argc, char **argv )
   */
   user.Nvglobal = 16;      /*Global # of vertices  */
   user.Neglobal = 18;      /*Global # of elements  */
-  ierr = OptionsGetInt(PETSC_NULL,"-vert",&user.Nvglobal,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-elem",&user.Neglobal,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-vert",&user.Nvglobal,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-elem",&user.Neglobal,&flg);CHKERRA(ierr);
   user.non_lin_param = 0.06;
   ierr = OptionsGetDouble(PETSC_NULL,"-nl_par",&user.non_lin_param,&flg); 
-  CHKERRA(ierr);
+ CHKERRA(ierr);
   user.lin_param = -1.0;
   ierr = OptionsGetDouble(PETSC_NULL,"-lin_par",&user.lin_param,&flg); 
-  CHKERRA(ierr);
+ CHKERRA(ierr);
   user.Nvlocal = 0;
   user.Nelocal = 0;
 
@@ -226,7 +226,7 @@ int main( int argc, char **argv )
   /* 
     Create the AO object 
   */
-  AOCreateBasic(MPI_COMM_WORLD,user.Nvlocal,user.gloInd,pordering,&ao); CHKERRA(ierr);
+  AOCreateBasic(MPI_COMM_WORLD,user.Nvlocal,user.gloInd,pordering,&ao);CHKERRA(ierr);
   PetscFree(pordering);
  
   /* 
@@ -259,8 +259,8 @@ int main( int argc, char **argv )
   /* 
     Now map the vlocal and neighbor lists to the PETSc ordering 
   */
-  ierr = AOApplicationToPetsc(ao,user.Nvlocal,user.locInd); CHKERRA(ierr);
-  ierr = AOApplicationToPetsc(ao,Nvneighborstotal,tmp); CHKERRA(ierr);
+  ierr = AOApplicationToPetsc(ao,user.Nvlocal,user.locInd);CHKERRA(ierr);
+  ierr = AOApplicationToPetsc(ao,Nvneighborstotal,tmp);CHKERRA(ierr);
  
   fprintf(fptr1,"After AOApplicationToPetsc, local indices are : \n");
   for (i=0; i < user.Nvlocal; i++) {
@@ -298,10 +298,10 @@ int main( int argc, char **argv )
     number of processors. Importantly, it allows us to use NO SEARCHING
     in setting up the data structures.
   */
-  vertices = (int *) PetscMalloc(user.Nvglobal*sizeof(int));CHKPTRA(vertices);
+  vertices     = (int *) PetscMalloc(user.Nvglobal*sizeof(int));CHKPTRA(vertices);
   verticesmask = (int *) PetscMalloc(user.Nvglobal*sizeof(int));CHKPTRA(verticesmask);
-  PetscMemzero(verticesmask,user.Nvglobal*sizeof(int));
-  nvertices = 0;
+  ierr         = PetscMemzero(verticesmask,user.Nvglobal*sizeof(int));CHKERRA(ierr);
+  nvertices    = 0;
  
   /* 
     First load "owned vertices" into list 
@@ -356,19 +356,19 @@ int main( int argc, char **argv )
   /* 
     Create vector data structures 
   */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,user.Nvlocal,N,&x); CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,bs*nvertices,&user.localX); CHKERRA(ierr);
-  ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,user.Nvlocal,N,&x);CHKERRA(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,bs*nvertices,&user.localX);CHKERRA(ierr);
+  ierr = VecDuplicate(user.localX,&user.localF);CHKERRA(ierr);
 
   /*
     Create the scatter between the global representation and the 
     local representation
   */
-  ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal); CHKERRA(ierr);
+  ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal);CHKERRA(ierr);
   svertices = (int *) PetscMalloc(nvertices*sizeof(int));CHKPTRA(svertices);
   for ( i=0; i<nvertices; i++ ) svertices[i] = bs*vertices[i];
-  ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,&isglobal); CHKERRA(ierr);
+  ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,&isglobal);CHKERRA(ierr);
   PetscFree(svertices);
   ierr = VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter);CHKERRA(ierr);
 
@@ -377,13 +377,13 @@ int main( int argc, char **argv )
      preallocation of memory for the matrix. In real application code with big matrices,
      preallocation should always be done to expedite the matrix creation. 
   */
-  ierr = MatCreate(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&Jac); CHKERRA(ierr);
+  ierr = MatCreate(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&Jac);CHKERRA(ierr);
 
   /* 
     The following routine allows us to set the matrix values in local ordering 
   */
   ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,vertices,&isl2g);
-  CHKERRA(ierr);
+ CHKERRA(ierr);
   ierr = MatSetLocalToGlobalMapping(Jac,isl2g);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -391,21 +391,21 @@ int main( int argc, char **argv )
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = SNESSetType(snes,method); CHKERRA(ierr);
+  ierr = SNESSetType(snes,method);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set routines for function and Jacobian evaluation
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   ierr = FormInitialGuess(&user,x); CHKERRA(ierr);
-   ierr = SNESSetFunction(snes,r,FormFunction,(void *)&user); CHKERRA(ierr);
+   ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
+   ierr = SNESSetFunction(snes,r,FormFunction,(void *)&user);CHKERRA(ierr);
    ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void *)&user);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -417,22 +417,22 @@ int main( int argc, char **argv )
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-   ierr = FormInitialGuess(&user,x); CHKERRA(ierr);
+   ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
 
    /* 
      Print the initial guess 
    */
-   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
+   ierr = VecGetArray(x,&xx);CHKERRA(ierr);
    for (inode = 0; inode < user.Nvlocal; inode++)
     fprintf(fptr1, "Initial Solution at node %d is %f \n",inode,xx[inode]);
-   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
+   ierr = VecRestoreArray(x,&xx);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Now solve the nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
-  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);  CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
+  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Print the output : solution vector and other information
@@ -440,10 +440,10 @@ int main( int argc, char **argv )
      processor's rank.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
+  ierr = VecGetArray(x,&xx);CHKERRA(ierr);
   for (inode = 0; inode < user.Nvlocal; inode++)
    fprintf(fptr1, "Solution at node %d is %f \n",inode,xx[inode]);
-  ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xx);CHKERRA(ierr);
   fclose(fptr1);
   PetscPrintf(MPI_COMM_WORLD,"number of Newton iterations = %d, ",its);
   PetscPrintf(MPI_COMM_WORLD,"number of unsuccessful steps = %d\n",nfails);
@@ -453,12 +453,12 @@ int main( int argc, char **argv )
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecDestroy(x); CHKERRA(ierr);  
-  ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = VecDestroy(user.localX); CHKERRA(ierr);  
-  ierr = VecDestroy(user.localF); CHKERRA(ierr);
-  ierr = MatDestroy(Jac); CHKERRA(ierr);  ierr = SNESDestroy(snes); CHKERRA(ierr);
-  /*ierr = DrawDestroy(draw); CHKERRA(ierr);*/
+  ierr = VecDestroy(x);CHKERRA(ierr);  
+  ierr = VecDestroy(r);CHKERRA(ierr);
+  ierr = VecDestroy(user.localX);CHKERRA(ierr);  
+  ierr = VecDestroy(user.localF);CHKERRA(ierr);
+  ierr = MatDestroy(Jac);CHKERRA(ierr);  ierr = SNESDestroy(snes);CHKERRA(ierr);
+  /*ierr = DrawDestroy(draw);CHKERRA(ierr);*/
   PetscFinalize();
 
   return 0;
@@ -502,7 +502,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -514,7 +514,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   return 0;
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
@@ -569,8 +569,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f); CHKERRQ(ierr);
+  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   /* 
     Now compute the f(x). As mentioned earlier, the computed Laplacian is just an 
@@ -588,9 +588,9 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
-  /*ierr = VecView(F,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);*/
+  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  /*ierr = VecView(F,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
   return 0; 
 }
@@ -650,7 +650,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
 
   for (i=0; i < Nvlocal; i++) {
     col[0] = i;
@@ -665,8 +665,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
     feature we must call the routine MatSetLocalToGlobalMapping() after the 
     matrix has been created. 
   */
-    ierr = MatSetValuesLocal(jac,1,&i,1+user->itot[i],col,value,INSERT_VALUES); 
-    CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(jac,1,&i,1+user->itot[i],col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /* 
@@ -675,9 +674,9 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
      Between these two calls, the pointer to vector data has been restored to
      demonstrate the use of overlapping communicationn with computation.
   */
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /*
      Set flag to indicate that the Jacobian matrix retains an identical
@@ -702,7 +701,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR); CHKERRQ(ierr);
+  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
   /* MatView(jac,VIEWER_STDOUT_SELF); */
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.17 1999/03/11 16:23:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.18 1999/03/19 21:24:03 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -144,21 +144,21 @@ int main(int argc,char **args)
   PLogEventRegister(&MOVE_VERTEX_EVENT,      "Move vertices","yellow");
 
   PLogEventBegin(READ_EVENT,0,0,0,0);
-  ierr = DataRead(&gdata); CHKERRA(ierr);
+  ierr = DataRead(&gdata);CHKERRA(ierr);
   PLogEventEnd(READ_EVENT,0,0,0,0);
   PLogEventBegin(PARTITION_ELEMENT_EVENT,0,0,0,0);
-  ierr = DataPartitionElements(&gdata); CHKERRA(ierr);
+  ierr = DataPartitionElements(&gdata);CHKERRA(ierr);
   PLogEventEnd(PARTITION_ELEMENT_EVENT,0,0,0,0);
   PLogEventBegin(MOVE_ELEMENT_EVENT,0,0,0,0);
-  ierr = DataMoveElements(&gdata); CHKERRA(ierr);
+  ierr = DataMoveElements(&gdata);CHKERRA(ierr);
   PLogEventEnd(MOVE_ELEMENT_EVENT,0,0,0,0);
   PLogEventBegin(PARTITION_VERTEX_EVENT,0,0,0,0);
-  ierr = DataPartitionVertices(&gdata); CHKERRA(ierr);
+  ierr = DataPartitionVertices(&gdata);CHKERRA(ierr);
   PLogEventEnd(PARTITION_VERTEX_EVENT,0,0,0,0);
   PLogEventBegin(MOVE_VERTEX_EVENT,0,0,0,0);
   ierr = DataMoveVertices(&gdata);CHKERRA(ierr);
   PLogEventEnd(MOVE_VERTEX_EVENT,0,0,0,0);
-  ierr = DataDestroy(&gdata); CHKERRA(ierr);
+  ierr = DataDestroy(&gdata);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;
@@ -432,10 +432,10 @@ int DataPartitionElements(GridData *gdata)
       Create the partioning object
   */
   ierr = MatPartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRQ(ierr);
-  ierr = MatPartitioningSetAdjacency(part,Adj); CHKERRQ(ierr);
+  ierr = MatPartitioningSetAdjacency(part,Adj);CHKERRQ(ierr);
   ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
   ierr = MatPartitioningApply(part,&isnewproc);CHKERRQ(ierr);
-  ierr = MatPartitioningDestroy(part); CHKERRQ(ierr);
+  ierr = MatPartitioningDestroy(part);CHKERRQ(ierr);
 
   /*
        isnewproc - indicates for each local element the new processor it is assigned to
@@ -447,7 +447,7 @@ int DataPartitionElements(GridData *gdata)
   /*
       Free the adjacency graph data structures
   */
-  ierr = MatDestroy(Adj); CHKERRQ(ierr);
+  ierr = MatDestroy(Adj);CHKERRQ(ierr);
 
 
   PetscFunctionReturn(0);
@@ -745,7 +745,7 @@ int DataMoveVertices(GridData *gdata)
   */
   gdata->vert = (double *) PetscMalloc(2*gdata->nlocal*sizeof(double));
   ierr = VecGetArray(vert,&avert);CHKERRQ(ierr);
-  PetscMemcpy(gdata->vert,avert,2*gdata->nlocal*sizeof(double));
+  ierr = PetscMemcpy(gdata->vert,avert,2*gdata->nlocal*sizeof(double));CHKERRQ(ierr);
   ierr = VecRestoreArray(vert,&avert);CHKERRQ(ierr);
   gdata->mlocal_vert = gdata->nlocal;
   ierr = VecDestroy(vert);CHKERRQ(ierr);

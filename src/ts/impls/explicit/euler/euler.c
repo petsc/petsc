@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: euler.c,v 1.14 1998/10/19 22:19:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: euler.c,v 1.15 1998/12/03 04:03:59 bsmith Exp balay $";
 #endif
 /*
        Code for Timestepping with explicit Euler.
@@ -18,7 +18,7 @@ static int TSSetUp_Euler(TS ts)
   int      ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&euler->update); CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&euler->update);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -33,14 +33,14 @@ static int TSStep_Euler(TS ts,int *steps,double *time)
   
   PetscFunctionBegin;
   *steps = -ts->steps;
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
+  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   for ( i=0; i<max_steps; i++ ) {
     ts->ptime += ts->time_step;
-    ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update); CHKERRQ(ierr);
-    ierr = VecAXPY(&dt,update,sol); CHKERRQ(ierr);
+    ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update);CHKERRQ(ierr);
+    ierr = VecAXPY(&dt,update,sol);CHKERRQ(ierr);
     ts->steps++;
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
     if (ts->ptime > ts->max_time) break;
   }
 
@@ -102,7 +102,7 @@ int TSCreate_Euler(TS ts )
   ts->setfromoptions  = TSSetFromOptions_Euler;
   ts->view            = TSView_Euler;
 
-  euler    = PetscNew(TS_Euler); CHKPTRQ(euler);
+  euler    = PetscNew(TS_Euler);CHKPTRQ(euler);
   PLogObjectMemory(ts,sizeof(TS_Euler));
   ts->data = (void *) euler;
 

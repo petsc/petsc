@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eige.c,v 1.15 1999/01/31 21:21:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: eige.c,v 1.16 1999/04/19 22:14:29 bsmith Exp balay $";
 #endif
 
 #include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -46,43 +46,43 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  ierr = VecDuplicate(ksp->vec_sol,&in); CHKERRQ(ierr);
-  ierr = VecDuplicate(ksp->vec_sol,&out); CHKERRQ(ierr);
-  ierr = VecGetSize(in,&M); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(in,&m); CHKERRQ(ierr);
+  ierr = VecDuplicate(ksp->vec_sol,&in);CHKERRQ(ierr);
+  ierr = VecDuplicate(ksp->vec_sol,&out);CHKERRQ(ierr);
+  ierr = VecGetSize(in,&M);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(in,&start,&end);
-  rows = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(rows);
+  rows = (int *) PetscMalloc( (m+1)*sizeof(int) );CHKPTRQ(rows);
   for ( i=0; i<m; i++ ) {rows[i] = start + i;}
 
   if (size == 1) {
-    ierr = MatCreateSeqDense(comm,M,M,PETSC_NULL,mat); CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(comm,M,M,PETSC_NULL,mat);CHKERRQ(ierr);
   } else {
-    /*    ierr = MatCreateMPIDense(comm,m,M,M,M,PETSC_NULL,mat); CHKERRQ(ierr); */
-    ierr = MatCreateMPIAIJ(comm,m,m,M,M,0,0,0,0,mat); CHKERRQ(ierr);
+    /*    ierr = MatCreateMPIDense(comm,m,M,M,M,PETSC_NULL,mat);CHKERRQ(ierr); */
+    ierr = MatCreateMPIAIJ(comm,m,m,M,M,0,0,0,0,mat);CHKERRQ(ierr);
   }
   
-  ierr = PCGetOperators(ksp->B,&A,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->B,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   for ( i=0; i<M; i++ ) {
 
-    ierr = VecSet(&zero,in); CHKERRQ(ierr);
-    ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES); CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(in); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(in); CHKERRQ(ierr);
+    ierr = VecSet(&zero,in);CHKERRQ(ierr);
+    ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
 
-    ierr = MatMult(A,in,out); CHKERRQ(ierr);
-    ierr = PCApply(ksp->B,out,in); CHKERRQ(ierr);
+    ierr = MatMult(A,in,out);CHKERRQ(ierr);
+    ierr = PCApply(ksp->B,out,in);CHKERRQ(ierr);
     
-    ierr = VecGetArray(in,&array); CHKERRQ(ierr);
-    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES); CHKERRQ(ierr); 
-    ierr = VecRestoreArray(in,&array); CHKERRQ(ierr);
+    ierr = VecGetArray(in,&array);CHKERRQ(ierr);
+    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr); 
+    ierr = VecRestoreArray(in,&array);CHKERRQ(ierr);
 
   }
   PetscFree(rows);
-  ierr = VecDestroy(in); CHKERRQ(ierr);
-  ierr = VecDestroy(out); CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = VecDestroy(in);CHKERRQ(ierr);
+  ierr = VecDestroy(out);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -131,34 +131,34 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
   Scalar       *vals;
 
   PetscFunctionBegin;
-  ierr =  KSPComputeExplicitOperator(ksp,&BA); CHKERRQ(ierr);
+  ierr =  KSPComputeExplicitOperator(ksp,&BA);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr     = MatGetSize(BA,&n,&n); CHKERRQ(ierr);
+  ierr     = MatGetSize(BA,&n,&n);CHKERRQ(ierr);
   if (size > 1) { /* assemble matrix on first processor */
     if (!rank) {
-      ierr = MatCreateMPIDense(ksp->comm,n,n,n,n,PETSC_NULL,&A); CHKERRQ(ierr);
+      ierr = MatCreateMPIDense(ksp->comm,n,n,n,n,PETSC_NULL,&A);CHKERRQ(ierr);
     }
     else {
-      ierr = MatCreateMPIDense(ksp->comm,0,n,n,n,PETSC_NULL,&A); CHKERRQ(ierr);
+      ierr = MatCreateMPIDense(ksp->comm,0,n,n,n,PETSC_NULL,&A);CHKERRQ(ierr);
     }
     PLogObjectParent(BA,A);
 
-    ierr = MatGetOwnershipRange(BA,&row,&dummy); CHKERRQ(ierr);
-    ierr = MatGetLocalSize(BA,&m,&dummy); CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(BA,&row,&dummy);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(BA,&m,&dummy);CHKERRQ(ierr);
     for ( i=0; i<m; i++ ) {
-      ierr = MatGetRow(BA,row,&nz,&cols,&vals); CHKERRQ(ierr);
-      ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERT_VALUES); CHKERRQ(ierr);
-      ierr = MatRestoreRow(BA,row,&nz,&cols,&vals); CHKERRQ(ierr);
+      ierr = MatGetRow(BA,row,&nz,&cols,&vals);CHKERRQ(ierr);
+      ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(BA,row,&nz,&cols,&vals);CHKERRQ(ierr);
       row++;
     } 
 
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatGetArray(A,&array); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatGetArray(A,&array);CHKERRQ(ierr);
   } else {
-    ierr = MatGetArray(BA,&array); CHKERRQ(ierr);
+    ierr = MatGetArray(BA,&array);CHKERRQ(ierr);
   }
 
 #if defined(HAVE_ESSL)
@@ -173,25 +173,25 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
 #else
     clen = 2*n;
 #endif
-    cwork    = (Scalar *) PetscMalloc( clen*sizeof(Scalar) ); CHKPTRQ(cwork);
+    cwork    = (Scalar *) PetscMalloc( clen*sizeof(Scalar) );CHKPTRQ(cwork);
     idummy   = n;
     lwork    = 5*n;
-    work     = (double *) PetscMalloc( lwork*sizeof(double) ); CHKPTRQ(work);
-    realpart = (double *) PetscMalloc( n*sizeof(double) ); CHKPTRQ(realpart);
+    work     = (double *) PetscMalloc( lwork*sizeof(double) );CHKPTRQ(work);
+    realpart = (double *) PetscMalloc( n*sizeof(double) );CHKPTRQ(realpart);
     zero     = 0;
     LAgeev_(&zero,array,&n,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
     PetscFree(work);
 
     /* For now we stick with the convention of storing the real and imaginary
        components of evalues separately.  But is this what we really want? */
-    perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
+    perm = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(perm);
 
 #if !defined(USE_PETSC_COMPLEX)
     for ( i=0; i<n; i++ ) {
       realpart[i] = cwork[2*i];
       perm[i]     = i;
     }
-    ierr = PetscSortDoubleWithPermutation(n,realpart,perm); CHKERRQ(ierr);
+    ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
       r[i] = cwork[2*perm[i]];
       c[i] = cwork[2*perm[i]+1];
@@ -201,7 +201,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
       realpart[i] = PetscReal(cwork[i]);
       perm[i]     = i;
     }
-    ierr = PetscSortDoubleWithPermutation(n,realpart,perm); CHKERRQ(ierr);
+    ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
       r[i] = PetscReal(cwork[perm[i]]);
       c[i] = PetscImaginary(cwork[perm[i]]);
@@ -217,15 +217,15 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
 
     idummy   = n;
     lwork    = 5*n;
-    realpart = (double *) PetscMalloc( 2*n*sizeof(double) ); CHKPTRQ(realpart);
+    realpart = (double *) PetscMalloc( 2*n*sizeof(double) );CHKPTRQ(realpart);
     imagpart = realpart + n;
-    work     = (double *) PetscMalloc( 5*n*sizeof(double) ); CHKPTRQ(work);
+    work     = (double *) PetscMalloc( 5*n*sizeof(double) );CHKPTRQ(work);
     LAgeev_("N","N",&n,array,&n,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
     if (ierr) SETERRQ1(PETSC_ERR_LIB,0,"Error in LAPACK routine %d",ierr);
     PetscFree(work);
-    perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
+    perm = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(perm);
     for ( i=0; i<n; i++ ) { perm[i] = i;}
-    ierr = PetscSortDoubleWithPermutation(n,realpart,perm); CHKERRQ(ierr);
+    ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
       r[i] = realpart[perm[i]];
       c[i] = imagpart[perm[i]];
@@ -241,17 +241,17 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
 
     idummy   = n;
     lwork    = 5*n;
-    work     = (Scalar *) PetscMalloc( 5*n*sizeof(Scalar) ); CHKPTRQ(work);
-    rwork    = (double *) PetscMalloc( 2*n*sizeof(double) ); CHKPTRQ(rwork);
-    eigs     = (Scalar *) PetscMalloc( n*sizeof(Scalar) ); CHKPTRQ(eigs);
+    work     = (Scalar *) PetscMalloc( 5*n*sizeof(Scalar) );CHKPTRQ(work);
+    rwork    = (double *) PetscMalloc( 2*n*sizeof(double) );CHKPTRQ(rwork);
+    eigs     = (Scalar *) PetscMalloc( n*sizeof(Scalar) );CHKPTRQ(eigs);
     LAgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&ierr);
     if (ierr) SETERRQ1(PETSC_ERR_LIB,0,"Error in LAPACK routine %d",ierr);
     PetscFree(work);
     PetscFree(rwork);
-    perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
+    perm = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(perm);
     for ( i=0; i<n; i++ ) { perm[i] = i;}
     for ( i=0; i<n; i++ ) { r[i]    = PetscReal(eigs[i]);}
-    ierr = PetscSortDoubleWithPermutation(n,r,perm); CHKERRQ(ierr);
+    ierr = PetscSortDoubleWithPermutation(n,r,perm);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
       r[i] = PetscReal(eigs[perm[i]]);
       c[i] = PetscImaginary(eigs[perm[i]]);
@@ -261,11 +261,11 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
   }
 #endif  
   if (size > 1) {
-    ierr = MatRestoreArray(A,&array); CHKERRQ(ierr);
-    ierr = MatDestroy(A); CHKERRQ(ierr);
+    ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
+    ierr = MatDestroy(A);CHKERRQ(ierr);
   } else {
-    ierr = MatRestoreArray(BA,&array); CHKERRQ(ierr);
+    ierr = MatRestoreArray(BA,&array);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(BA); CHKERRQ(ierr);
+  ierr = MatDestroy(BA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

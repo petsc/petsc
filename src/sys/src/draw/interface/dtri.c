@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.28 1999/03/17 23:21:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtri.c,v 1.29 1999/04/19 22:08:51 bsmith Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -60,7 +60,7 @@ int DrawScalePopup(Draw popup,double min,double max)
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  ierr = DrawCheckResizedWindow(popup); CHKERRQ(ierr);
+  ierr = DrawCheckResizedWindow(popup);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) popup,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
@@ -145,7 +145,7 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],S
   ZoomCtx       ctx;
 
   PetscFunctionBegin;
-  ierr = DrawIsNull(win,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+  ierr = DrawIsNull(win,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)win,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(1,1,"May only be used with single processor Draw");
@@ -155,8 +155,8 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],S
   }
 
   /* create scale window */
-  ierr = DrawGetPopup(win,&popup); CHKERRQ(ierr);
-  ierr = DrawCheckResizedWindow(win); CHKERRQ(ierr);
+  ierr = DrawGetPopup(win,&popup);CHKERRQ(ierr);
+  ierr = DrawCheckResizedWindow(win);CHKERRQ(ierr);
 
   ctx.v   = v;
   ctx.m   = m;
@@ -169,14 +169,14 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],S
   if (ctx.max - ctx.min < 1.e-7) {ctx.min -= 5.e-8; ctx.max += 5.e-8;}
 
   /* Draw the scale window */
-  ierr = DrawScalePopup(popup,ctx.min,ctx.max); CHKERRQ(ierr);
+  ierr = DrawScalePopup(popup,ctx.min,ctx.max);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-draw_contour_grid",&ctx.showgrid);CHKERRQ(ierr);
 
   /* fill up x and y coordinates */
   if (!xi) {
     xin      = 0; 
-    ctx.x    = (double *) PetscMalloc( ctx.m*sizeof(double) ); CHKPTRQ(ctx.x);
+    ctx.x    = (double *) PetscMalloc( ctx.m*sizeof(double) );CHKPTRQ(ctx.x);
     h        = 1.0/(ctx.m-1);
     ctx.x[0] = 0.0;
     for ( i=1; i<ctx.m; i++ ) ctx.x[i] = ctx.x[i-1] + h;
@@ -185,7 +185,7 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],S
   }
   if (!yi) {
     yin      = 0; 
-    ctx.y    = (double *) PetscMalloc( ctx.n*sizeof(double) ); CHKPTRQ(ctx.y);
+    ctx.y    = (double *) PetscMalloc( ctx.n*sizeof(double) );CHKPTRQ(ctx.y);
     h        = 1.0/(ctx.n-1);
     ctx.y[0] = 0.0;
     for ( i=1; i<ctx.n; i++ ) ctx.y[i] = ctx.y[i-1] + h;
@@ -253,8 +253,8 @@ int DrawTensorContourPatch(Draw win,int m,int n,double *x,double *y,double max,
       x3 = x2;    y3 = y[j+1];c3 = (int) (DRAW_BASIC_COLORS + scale*PetscReal(v[i+j*m+1+m]-min));
       x4 = x1;    y4 = y3;    c4 = (int) (DRAW_BASIC_COLORS + scale*PetscReal(v[i+j*m+m]-min));
 #endif
-      ierr = DrawTriangle(win,x1,y_1,x2,y2,x3,y3,c1,c2,c3); CHKERRQ(ierr);
-      ierr = DrawTriangle(win,x1,y_1,x3,y3,x4,y4,c1,c3,c4); CHKERRQ(ierr);
+      ierr = DrawTriangle(win,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
+      ierr = DrawTriangle(win,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
     }
   }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.58 1999/03/17 23:23:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.59 1999/04/21 18:17:13 bsmith Exp balay $";
 #endif
 
 /*  -------------------------------------------------------------------- 
@@ -94,7 +94,7 @@ static int PCSetUp_Jacobi(PC pc)
        For most preconditioners the code would begin here something like
 
   if (pc->setupcalled == 0) { allocate space the first time this is ever called
-    ierr = VecDuplicate(pc->vec,&jac->diag); CHKERRQ(ierr);
+    ierr = VecDuplicate(pc->vec,&jac->diag);CHKERRQ(ierr);
     PLogObjectParent(pc,jac->diag);
   }
 
@@ -115,22 +115,22 @@ static int PCSetUp_Jacobi(PC pc)
   diagsqrt = jac->diagsqrt;
 
   if (diag) {
-    ierr = MatGetDiagonal(pc->pmat,diag); CHKERRQ(ierr);
-    ierr = VecReciprocal(diag); CHKERRQ(ierr);
-    ierr = VecGetLocalSize(diag,&n); CHKERRQ(ierr);
-    ierr = VecGetArray(diag,&x); CHKERRQ(ierr);
+    ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
+    ierr = VecReciprocal(diag);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(diag,&n);CHKERRQ(ierr);
+    ierr = VecGetArray(diag,&x);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
       if (x[i] == 0.0) {
         x[i]     = 1.0;
         zeroflag = 1;
       }
     }
-    ierr = VecRestoreArray(diag,&x); CHKERRQ(ierr);
+    ierr = VecRestoreArray(diag,&x);CHKERRQ(ierr);
   }
   if (diagsqrt) {
-    ierr = MatGetDiagonal(pc->pmat,diagsqrt); CHKERRQ(ierr);
-    ierr = VecGetLocalSize(diagsqrt,&n); CHKERRQ(ierr);
-    ierr = VecGetArray(diagsqrt,&x); CHKERRQ(ierr);
+    ierr = MatGetDiagonal(pc->pmat,diagsqrt);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(diagsqrt,&n);CHKERRQ(ierr);
+    ierr = VecGetArray(diagsqrt,&x);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
       if (x[i] != 0.0) x[i] = 1.0/sqrt(PetscAbsScalar(x[i]));
       else {
@@ -138,7 +138,7 @@ static int PCSetUp_Jacobi(PC pc)
         zeroflag = 1;
       }
     }
-    ierr = VecRestoreArray(diagsqrt,&x); CHKERRQ(ierr);
+    ierr = VecRestoreArray(diagsqrt,&x);CHKERRQ(ierr);
   }
   if (zeroflag) {
     PLogInfo(pc,"PCSetUp_Jacobi:Zero detected in diagonal of matrix, using 1 at those locations\n");
@@ -164,9 +164,9 @@ static int PCSetUp_Jacobi_Symmetric(PC pc)
 
   PetscFunctionBegin;
 
-  ierr = VecDuplicate(pc->vec,&jac->diagsqrt); CHKERRQ(ierr);
+  ierr = VecDuplicate(pc->vec,&jac->diagsqrt);CHKERRQ(ierr);
   PLogObjectParent(pc,jac->diagsqrt);
-  ierr = PCSetUp_Jacobi(pc); CHKERRQ(ierr);
+  ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -187,9 +187,9 @@ static int PCSetUp_Jacobi_NonSymmetric(PC pc)
 
   PetscFunctionBegin;
 
-  ierr = VecDuplicate(pc->vec,&jac->diag); CHKERRQ(ierr);
+  ierr = VecDuplicate(pc->vec,&jac->diag);CHKERRQ(ierr);
   PLogObjectParent(pc,jac->diag);
-  ierr = PCSetUp_Jacobi(pc); CHKERRQ(ierr);
+  ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -216,7 +216,7 @@ static int PCApply_Jacobi(PC pc,Vec x,Vec y)
   if (!jac->diag) {
     ierr = PCSetUp_Jacobi_NonSymmetric(pc);CHKERRQ(ierr);
   }
-  ierr = VecPointwiseMult(x,jac->diag,y); CHKERRQ(ierr);
+  ierr = VecPointwiseMult(x,jac->diag,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -298,7 +298,7 @@ int PCCreate_Jacobi(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  jac       = PetscNew(PC_Jacobi); CHKPTRQ(jac);
+  jac       = PetscNew(PC_Jacobi);CHKPTRQ(jac);
   pc->data  = (void *) jac;
 
   /*

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5s.c,v 1.6 1999/03/07 17:29:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5s.c,v 1.7 1999/03/19 21:23:07 bsmith Exp balay $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -124,9 +124,9 @@ int main( int argc, char **argv )
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,0,"Lambda is out of range");
   }
@@ -136,7 +136,7 @@ int main( int argc, char **argv )
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -149,7 +149,7 @@ int main( int argc, char **argv )
     parallelism rather than MPI.
   */
   ierr = VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);
-  ierr = VecDuplicate(x,&r); CHKERRA(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-use_fortran_function",&flg);CHKERRA(ierr);
   if (flg) {
@@ -161,7 +161,7 @@ int main( int argc, char **argv )
   /* 
      Set function evaluation routine and vector
   */
-  ierr = SNESSetFunction(snes,r,fnc,&user); CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,fnc,&user);CHKERRA(ierr);
 
   /*
        Currently when using VecCreateShared() and using loop level parallelism
@@ -224,15 +224,15 @@ int main( int argc, char **argv )
        Create the data structure that SNESDefaultComputeJacobianColor() uses
        to compute the actual Jacobians via finite differences.
   */
-  ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); CHKERRA(ierr);
+  ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRA(ierr);
   ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void))fnc,&user);CHKERRA(ierr);
-  ierr = MatFDColoringSetFromOptions(fdcoloring); CHKERRA(ierr);
+  ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRA(ierr);
   /*
         Tell SNES to use the routine SNESDefaultComputeJacobianColor()
       to compute Jacobians.
   */
   ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRA(ierr);  
-  ierr = ISColoringDestroy(iscoloring); CHKERRA(ierr);
+  ierr = ISColoringDestroy(iscoloring);CHKERRA(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -242,7 +242,7 @@ int main( int argc, char **argv )
   /*
      Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
   */
-  ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -253,17 +253,17 @@ int main( int argc, char **argv )
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(&user,x); CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr); 
+  ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr); 
   PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(r); CHKERRA(ierr);      
-  ierr = SNESDestroy(snes); CHKERRA(ierr); 
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(r);CHKERRA(ierr);      
+  ierr = SNESDestroy(snes);CHKERRA(ierr); 
   PetscFinalize();
 
   return 0;
@@ -315,7 +315,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -338,7 +338,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
   PetscBarrier((PetscObject)X);
   return 0;
@@ -387,8 +387,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f); CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   /*
       The next line tells the SGI compiler that x and f contain no overlapping 
@@ -418,8 +418,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
 
   PLogFlops(11*(mx-2)*(my-2))
   PetscBarrier((PetscObject)X);

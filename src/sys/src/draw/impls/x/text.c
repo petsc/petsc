@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: text.c,v 1.27 1998/03/24 21:00:11 balay Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.28 1999/01/31 16:05:02 bsmith Exp balay $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -32,7 +32,7 @@ int XiFontFixed( Draw_X *XBWin,int w, int h,XiFont **outfont )
 
   PetscFunctionBegin;
   if (!curfont) { XiInitFonts( XBWin );}
-  font = (XiFont*) PetscMalloc(sizeof(XiFont)); CHKPTRQ(font);
+  font = (XiFont*) PetscMalloc(sizeof(XiFont));CHKPTRQ(font);
   XiMatchFontSize( font, w, h );
   XiLoadFont( XBWin, font );
   curfont = font;

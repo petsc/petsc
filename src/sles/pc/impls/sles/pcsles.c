@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.17 1999/04/19 22:14:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.18 1999/04/21 18:17:34 bsmith Exp balay $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -82,7 +82,7 @@ static int PCView_SLES(PC pc,Viewer viewer)
   ViewerType    vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     if (jac->use_true_matrix) {
       ierr = ViewerASCIIPrintf(viewer,"Using true matrix (not preconditioner matrix) on inner solve\n");CHKERRQ(ierr);
@@ -93,7 +93,7 @@ static int PCView_SLES(PC pc,Viewer viewer)
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
   ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = SLESView(jac->sles,viewer); CHKERRQ(ierr);
+  ierr = SLESView(jac->sles,viewer);CHKERRQ(ierr);
   ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
@@ -111,9 +111,9 @@ static int PCSetFromOptions_SLES(PC pc)
   int        ierr,flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(pc->prefix,"-pc_sles_true",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_sles_true",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCSLESSetUseTrue(pc); CHKERRQ(ierr);
+    ierr = PCSLESSetUseTrue(pc);CHKERRQ(ierr);
   }
   ierr = SLESSetFromOptions(jac->sles);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -230,7 +230,7 @@ int PCCreate_SLES(PC pc)
 {
   int       rank,size,ierr;
   char      *prefix;
-  PC_SLES   *jac = PetscNew(PC_SLES); CHKPTRQ(jac);
+  PC_SLES   *jac = PetscNew(PC_SLES);CHKPTRQ(jac);
 
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_SLES));
@@ -247,9 +247,9 @@ int PCCreate_SLES(PC pc)
   pc->data               = (void *) jac;
   ierr                   = SLESCreate(pc->comm,&jac->sles);CHKERRQ(ierr);
 
-  ierr = PCGetOptionsPrefix(pc,&prefix); CHKERRQ(ierr);
-  ierr = SLESSetOptionsPrefix(jac->sles,prefix); CHKERRQ(ierr);
-  ierr = SLESAppendOptionsPrefix(jac->sles,"sles_"); CHKERRQ(ierr);
+  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+  ierr = SLESSetOptionsPrefix(jac->sles,prefix);CHKERRQ(ierr);
+  ierr = SLESAppendOptionsPrefix(jac->sles,"sles_");CHKERRQ(ierr);
   jac->use_true_matrix = PETSC_FALSE;
   jac->its             = 0;
 

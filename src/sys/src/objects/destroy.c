@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: destroy.c,v 1.41 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: destroy.c,v 1.42 1999/03/17 23:21:46 bsmith Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -30,7 +30,7 @@ int PetscObjectDestroy(PetscObject obj)
   PetscValidHeader(obj);
 
   if (obj->bops->destroy) {
-    ierr = (*obj->bops->destroy)(obj); CHKERRQ(ierr);
+    ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,0,"This PETSc object does not have a generic destroy routine");
   }
@@ -62,7 +62,7 @@ int PetscObjectView(PetscObject obj,Viewer viewer)
   PetscValidHeader(obj);
 
   if (obj->bops->view) {
-    ierr = (*obj->bops->view)(obj,viewer); CHKERRQ(ierr);
+    ierr = (*obj->bops->view)(obj,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,0,"This PETSc object does not have a generic viewer routine");
   }

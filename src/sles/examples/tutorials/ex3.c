@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.13 1999/03/19 21:22:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.14 1999/04/16 16:09:25 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -55,7 +55,7 @@ int main(int argc,char **args)
   int     ierr, idx[4], count, *rows, i, m = 5, start, end, its, flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
   N = (m+1)*(m+1);
   M = m*m;
   h = 1.0/m;
@@ -70,7 +70,7 @@ int main(int argc,char **args)
   /* 
      Create stiffness matrix
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&A);CHKERRA(ierr);
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank); 
 
@@ -84,22 +84,22 @@ int main(int argc,char **args)
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + ( i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-     ierr = MatSetValues(A,4,idx,4,idx,Ke,ADD_VALUES); CHKERRA(ierr);
+     ierr = MatSetValues(A,4,idx,4,idx,Ke,ADD_VALUES);CHKERRA(ierr);
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   /*
      Create right-hand-side and solution vectors
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&u); CHKERRA(ierr); 
-  ierr = VecSetFromOptions(u); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&u);CHKERRA(ierr); 
+  ierr = VecSetFromOptions(u);CHKERRA(ierr);
   PetscObjectSetName((PetscObject)u,"Approx. Solution");
-  ierr = VecDuplicate(u,&b); CHKERRA(ierr);
+  ierr = VecDuplicate(u,&b);CHKERRA(ierr);
   PetscObjectSetName((PetscObject)b,"Right hand side");
-  ierr = VecDuplicate(b,&ustar); CHKERRA(ierr);
-  ierr = VecSet(&zero,u); CHKERRA(ierr);
-  ierr = VecSet(&zero,b); CHKERRA(ierr);
+  ierr = VecDuplicate(b,&ustar);CHKERRA(ierr);
+  ierr = VecSet(&zero,u);CHKERRA(ierr);
+  ierr = VecSet(&zero,b);CHKERRA(ierr);
 
   /* 
      Assemble right-hand-side vector
@@ -110,16 +110,16 @@ int main(int argc,char **args)
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + ( i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-     ierr = FormElementRhs(x,y,h*h,r); CHKERRA(ierr);
-     ierr = VecSetValues(b,4,idx,r,ADD_VALUES); CHKERRA(ierr);
+     ierr = FormElementRhs(x,y,h*h,r);CHKERRA(ierr);
+     ierr = VecSetValues(b,4,idx,r,ADD_VALUES);CHKERRA(ierr);
   }
-  ierr = VecAssemblyBegin(b); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(b); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(b);CHKERRA(ierr);
+  ierr = VecAssemblyEnd(b);CHKERRA(ierr);
 
   /* 
      Modify matrix and right-hand-side for Dirichlet boundary conditions
   */
-  rows = (int *) PetscMalloc( 4*m*sizeof(int) ); CHKPTRQ(rows);
+  rows = (int *) PetscMalloc( 4*m*sizeof(int) );CHKPTRQ(rows);
   for ( i=0; i<m+1; i++ ) {
     rows[i] = i; /* bottom */
     rows[3*m - 1 +i] = m*(m+1) + i; /* top */
@@ -132,53 +132,53 @@ int main(int argc,char **args)
   for ( i=2*m+1; i<m*(m+1); i+= m+1 ) {
     rows[count++] = i;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,4*m,rows,&is); CHKERRA(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,4*m,rows,&is);CHKERRA(ierr);
   for ( i=0; i<4*m; i++ ) {
      x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
      val = y;
-     ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES); CHKERRA(ierr);
-     ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES); CHKERRA(ierr);
+     ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRA(ierr);
+     ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRA(ierr);
   }    
   PetscFree(rows);
-  ierr = VecAssemblyBegin(u);  CHKERRA(ierr);
-  ierr = VecAssemblyEnd(u); CHKERRA(ierr);
-  ierr = VecAssemblyBegin(b); CHKERRA(ierr); 
-  ierr = VecAssemblyEnd(b); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(u); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(u);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(b);CHKERRA(ierr); 
+  ierr = VecAssemblyEnd(b);CHKERRA(ierr);
 
-  ierr = MatZeroRows(A,is,&one); CHKERRA(ierr);
-  ierr = ISDestroy(is); CHKERRA(ierr);
+  ierr = MatZeroRows(A,is,&one);CHKERRA(ierr);
+  ierr = ISDestroy(is);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
-  ierr = KSPSetInitialGuessNonzero(ksp); CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
+  ierr = KSPSetInitialGuessNonzero(ksp);CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(sles,b,u,&its); CHKERRA(ierr);
+  ierr = SLESSolve(sles,b,u,&its);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* Check error */
-  ierr = VecGetOwnershipRange(ustar,&start,&end); CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(ustar,&start,&end);CHKERRA(ierr);
   for ( i=start; i<end; i++ ) {
      x = h*(i % (m+1)); y = h*(i/(m+1)); 
      val = y;
-     ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES); CHKERRA(ierr);
+     ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRA(ierr);
   }
-  ierr = VecAssemblyBegin(ustar); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(ustar); CHKERRA(ierr);
-  ierr = VecAXPY(&none,ustar,u); CHKERRA(ierr);
-  ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(ustar);CHKERRA(ierr);
+  ierr = VecAssemblyEnd(ustar);CHKERRA(ierr);
+  ierr = VecAXPY(&none,ustar,u);CHKERRA(ierr);
+  ierr = VecNorm(u,NORM_2,&norm);CHKERRA(ierr);
   if (norm*h > 1.e-12) 
     PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %d\n",norm*h,its);
   else
@@ -188,9 +188,9 @@ int main(int argc,char **args)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = SLESDestroy(sles); CHKERRA(ierr); ierr = VecDestroy(u); CHKERRA(ierr);
-  ierr = VecDestroy(ustar); CHKERRA(ierr); ierr = VecDestroy(b); CHKERRA(ierr);
-  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRA(ierr); ierr = VecDestroy(u);CHKERRA(ierr);
+  ierr = VecDestroy(ustar);CHKERRA(ierr); ierr = VecDestroy(b);CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRA(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmpiaij.c,v 1.18 1999/02/17 21:37:40 balay Exp bsmith $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.19 1999/04/19 20:30:26 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -34,11 +34,11 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   c->rstart        = aij->rstart;
 
   c->ncolors       = nis;
-  c->ncolumns      = (int *) PetscMalloc( nis*sizeof(int) );   CHKPTRQ(c->ncolumns);
-  c->columns       = (int **) PetscMalloc( nis*sizeof(int *)); CHKPTRQ(c->columns); 
-  c->nrows         = (int *) PetscMalloc( nis*sizeof(int) );   CHKPTRQ(c->nrows);
-  c->rows          = (int **) PetscMalloc( nis*sizeof(int *)); CHKPTRQ(c->rows);
-  c->columnsforrow = (int **) PetscMalloc( nis*sizeof(int *)); CHKPTRQ(c->columnsforrow);
+  c->ncolumns      = (int *) PetscMalloc( nis*sizeof(int) );CHKPTRQ(c->ncolumns);
+  c->columns       = (int **) PetscMalloc( nis*sizeof(int *));CHKPTRQ(c->columns); 
+  c->nrows         = (int *) PetscMalloc( nis*sizeof(int) );CHKPTRQ(c->nrows);
+  c->rows          = (int **) PetscMalloc( nis*sizeof(int *));CHKPTRQ(c->rows);
+  c->columnsforrow = (int **) PetscMalloc( nis*sizeof(int *));CHKPTRQ(c->columnsforrow);
   PLogObjectMemory(c,5*nis*sizeof(int));
 
   /* Allow access to data structures of local part of matrix */
@@ -49,14 +49,14 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
       Calls the _SeqAIJ() version of these routines to make sure it does not 
      get the reduced (by inodes) version of I and J
   */
-  ierr = MatGetColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done); CHKERRQ(ierr); 
-  ierr = MatGetColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done); CHKERRQ(ierr); 
+  ierr = MatGetColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
+  ierr = MatGetColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
 
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr); 
-  ncolsonproc = (int *) PetscMalloc( 2*size*sizeof(int *) ); CHKPTRQ(ncolsonproc);
+  ncolsonproc = (int *) PetscMalloc( 2*size*sizeof(int *) );CHKPTRQ(ncolsonproc);
   disp        = ncolsonproc + size;
 
-  rowhit        = (int *) PetscMalloc( (M+1)*sizeof(int) ); CHKPTRQ(rowhit);
+  rowhit        = (int *) PetscMalloc( (M+1)*sizeof(int) );CHKPTRQ(rowhit);
   columnsforrow = (int *) PetscMalloc( (M+1)*sizeof(int) );CHKPTRQ(columnsforrow);
 
   /*
@@ -65,14 +65,14 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   ierr = OptionsHasName(0,"-matfdcoloring_slow",&flg);
 
   for ( i=0; i<nis; i++ ) {
-    ierr = ISGetSize(isa[i],&n); CHKERRQ(ierr);
-    ierr = ISGetIndices(isa[i],&is); CHKERRQ(ierr);
+    ierr = ISGetSize(isa[i],&n);CHKERRQ(ierr);
+    ierr = ISGetIndices(isa[i],&is);CHKERRQ(ierr);
     c->ncolumns[i] = n;
     c->ncolumns[i] = n;
     if (n) {
-      c->columns[i]  = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(c->columns[i]);
+      c->columns[i]  = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(c->columns[i]);
       PLogObjectMemory(c,n*sizeof(int));
-      PetscMemcpy(c->columns[i],is,n*sizeof(int)); 
+      ierr = PetscMemcpy(c->columns[i],is,n*sizeof(int));CHKERRQ(ierr);
     } else {
       c->columns[i]  = 0;
     }
@@ -88,7 +88,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     }
     
     /* Get complete list of columns for color on each processor */
-    cols = (int *) PetscMalloc( nctot*sizeof(int) ); CHKPTRQ(cols);
+    cols = (int *) PetscMalloc( nctot*sizeof(int) );CHKPTRQ(cols);
     ierr = MPI_Allgatherv(is,n,MPI_INT,cols,ncolsonproc,disp,MPI_INT,mat->comm);CHKERRQ(ierr);
 
 /*
@@ -102,7 +102,7 @@ for ( j=0; j<nctot; j++ ) {
     */
     if (flg) {/*-----------------------------------------------------------------------------*/
       /* crude, slow version */
-      PetscMemzero(rowhit,M*sizeof(int));
+      ierr = PetscMemzero(rowhit,M*sizeof(int));CHKERRQ(ierr);
       /* loop over columns*/
       for ( j=0; j<nctot; j++ ) {
         col  = cols[j];
@@ -112,7 +112,7 @@ for ( j=0; j<nctot; j++ ) {
           m    = A_ci[col-cstart+1] - A_ci[col-cstart];
         } else {
 #if defined (USE_CTABLE)
-          ierr = TableFind(aij->colmap,col+1,&colb); CHKERRQ(ierr)
+          ierr = TableFind(aij->colmap,col+1,&colb);CHKERRQ(ierr)
 	  colb --;
 #else
           colb = aij->colmap[col] - 1;
@@ -141,8 +141,8 @@ for ( j=0; j<M; j++ ) printf("rhow hit %d %d\n",j,rowhit[j]);
         if (rowhit[j]) nrows++;
       }
       c->nrows[i]         = nrows;
-      c->rows[i]          = (int *) PetscMalloc((nrows+1)*sizeof(int)); CHKPTRQ(c->rows[i]);
-      c->columnsforrow[i] = (int *) PetscMalloc((nrows+1)*sizeof(int)); CHKPTRQ(c->columnsforrow[i]);
+      c->rows[i]          = (int *) PetscMalloc((nrows+1)*sizeof(int));CHKPTRQ(c->rows[i]);
+      c->columnsforrow[i] = (int *) PetscMalloc((nrows+1)*sizeof(int));CHKPTRQ(c->columnsforrow[i]);
       PLogObjectMemory(c,2*(nrows+1)*sizeof(int));
       nrows = 0;
       for ( j=0; j<M; j++ ) {
@@ -166,7 +166,7 @@ for ( j=0; j<M; j++ ) printf("rhow hit %d %d\n",j,rowhit[j]);
           m    = A_ci[col-cstart+1] - A_ci[col-cstart];
         } else {
 #if defined (USE_CTABLE)
-	  ierr = TableFind(aij->colmap,col+1,&colb); CHKERRQ(ierr);
+	  ierr = TableFind(aij->colmap,col+1,&colb);CHKERRQ(ierr);
           colb --;
 #else
           colb = aij->colmap[col] - 1;
@@ -219,10 +219,10 @@ for ( j=0; j<M; j++ ) printf("rhow hit %d %d\n",j,rowhit[j]);
   PetscFree(rowhit);
   PetscFree(columnsforrow);
   PetscFree(ncolsonproc);
-  ierr = MatRestoreColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done); CHKERRQ(ierr); 
-  ierr = MatRestoreColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done); CHKERRQ(ierr); 
+  ierr = MatRestoreColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
+  ierr = MatRestoreColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
 
-  c->scale  = (Scalar *) PetscMalloc( 2*mat->N*sizeof(Scalar) ); CHKPTRQ(c->scale);
+  c->scale  = (Scalar *) PetscMalloc( 2*mat->N*sizeof(Scalar) );CHKPTRQ(c->scale);
   PLogObjectMemory(c,2*mat->N*sizeof(Scalar));
   c->wscale = c->scale + mat->N;
   PetscFunctionReturn(0);

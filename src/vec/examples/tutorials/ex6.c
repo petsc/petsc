@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.17 1999/03/19 21:18:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.18 1999/04/21 18:16:01 bsmith Exp balay $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
@@ -27,22 +27,22 @@ int main(int argc,char **args)
   /* ---------------------------------------------------------------------- */
 
   /* Allocate array and set values */
-  array = (Scalar *) PetscMalloc( m*sizeof(Scalar) ); CHKPTRA(array);
+  array = (Scalar *) PetscMalloc( m*sizeof(Scalar) );CHKPTRA(array);
   for (i=0; i<m; i++) {
     array[i] = i*10.0;
   }
 
   /* Open viewer for binary output */
   ierr = ViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",BINARY_CREATE,&view_out);
-         CHKERRA(ierr);
-  ierr = ViewerBinaryGetDescriptor(view_out,&fd); CHKERRA(ierr);
+        CHKERRA(ierr);
+  ierr = ViewerBinaryGetDescriptor(view_out,&fd);CHKERRA(ierr);
 
   /* Write binary output */
-  ierr = PetscBinaryWrite(fd,&m,1,PETSC_INT,0); CHKERRA(ierr);
-  ierr = PetscBinaryWrite(fd,array,m,PETSC_SCALAR,0); CHKERRA(ierr);
+  ierr = PetscBinaryWrite(fd,&m,1,PETSC_INT,0);CHKERRA(ierr);
+  ierr = PetscBinaryWrite(fd,array,m,PETSC_SCALAR,0);CHKERRA(ierr);
 
   /* Destroy the output viewer and work array */
-  ierr = ViewerDestroy(view_out); CHKERRA(ierr);
+  ierr = ViewerDestroy(view_out);CHKERRA(ierr);
   PetscFree(array);
 
   /* ---------------------------------------------------------------------- */
@@ -51,28 +51,28 @@ int main(int argc,char **args)
 
   /* Open input binary viewer */
   ierr = ViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",BINARY_RDONLY,&view_in); 
-         CHKERRA(ierr);
-  ierr = ViewerBinaryGetDescriptor(view_in,&fd); CHKERRA(ierr);
+        CHKERRA(ierr);
+  ierr = ViewerBinaryGetDescriptor(view_in,&fd);CHKERRA(ierr);
 
   /* Create vector and get pointer to data space */
-  ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,m,&vec); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,m,&vec);CHKERRA(ierr);
   ierr = VecSetFromOptions(vec);CHKERRA(ierr);
-  ierr = VecGetArray(vec,&avec); CHKERRA(ierr);
+  ierr = VecGetArray(vec,&avec);CHKERRA(ierr);
 
   /* Read data into vector */
-  ierr = PetscBinaryRead(fd,&size,1,PETSC_INT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,&size,1,PETSC_INT);CHKERRQ(ierr);
   if (size <=0) SETERRA(1,0,"Error: Must have array length > 0");
 
   printf("reading data in binary from input.dat, size =%d ...\n",size); 
-  ierr = PetscBinaryRead(fd,avec,size,PETSC_SCALAR); CHKERRA(ierr);
+  ierr = PetscBinaryRead(fd,avec,size,PETSC_SCALAR);CHKERRA(ierr);
 
   /* View vector */
-  ierr = VecRestoreArray(vec,&avec); CHKERRA(ierr);
-  ierr = VecView(vec,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+  ierr = VecRestoreArray(vec,&avec);CHKERRA(ierr);
+  ierr = VecView(vec,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /* Free data structures */
-  ierr = VecDestroy(vec); CHKERRA(ierr);
-  ierr = ViewerDestroy(view_in); CHKERRA(ierr);
+  ierr = VecDestroy(vec);CHKERRA(ierr);
+  ierr = ViewerDestroy(view_in);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

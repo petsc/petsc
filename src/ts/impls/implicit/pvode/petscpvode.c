@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.38 1999/04/19 22:16:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.39 1999/04/22 20:22:21 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -38,14 +38,14 @@ int TSPrecond_PVode(integer N, real tn, N_Vector y,
   
   PetscFunctionBegin;
   /* This allows use to construct preconditioners in-place if we like */
-  ierr = MatSetUnfactored(Jac); CHKERRQ(ierr);
+  ierr = MatSetUnfactored(Jac);CHKERRQ(ierr);
 
   /*
        jok - TRUE means reuse current Jacobian
                   else recompute Jacobian
   */
   if (jok) {
-    ierr     = MatCopy(cvode->pmat,Jac,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
+    ierr     = MatCopy(cvode->pmat,Jac,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     str      = SAME_NONZERO_PATTERN;
     *jcurPtr = FALSE;
   } else {
@@ -57,18 +57,18 @@ int TSPrecond_PVode(integer N, real tn, N_Vector y,
 
     /* copy the Jacobian matrix */
     if (!cvode->pmat) {
-      ierr = MatDuplicate(Jac,MAT_COPY_VALUES,&cvode->pmat); CHKERRQ(ierr);
+      ierr = MatDuplicate(Jac,MAT_COPY_VALUES,&cvode->pmat);CHKERRQ(ierr);
       PLogObjectParent(ts,cvode->pmat); 
     }
-    ierr = MatCopy(Jac, cvode->pmat,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
+    ierr = MatCopy(Jac, cvode->pmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
     *jcurPtr = TRUE;
   }
 
   /* construct I-gamma*Jac  */
   gm   = -_gamma;
-  ierr = MatScale(&gm,Jac); CHKERRQ(ierr);
-  ierr = MatShift(&one,Jac); CHKERRQ(ierr);
+  ierr = MatScale(&gm,Jac);CHKERRQ(ierr);
+  ierr = MatShift(&one,Jac);CHKERRQ(ierr);
   
   ierr = PCSetOperators(pc,Jac,Jac,str);CHKERRQ(ierr);
 
@@ -99,13 +99,13 @@ int TSPSolve_PVode(integer N, real tn, N_Vector y,
   /*
       Make the PETSc work vectors rr and xx point to the arrays in the PVODE vectors 
   */
-  ierr = VecPlaceArray(rr,&N_VIth(r,0)); CHKERRQ(ierr);
-  ierr = VecPlaceArray(xx,&N_VIth(z,0)); CHKERRQ(ierr);
+  ierr = VecPlaceArray(rr,&N_VIth(r,0));CHKERRQ(ierr);
+  ierr = VecPlaceArray(xx,&N_VIth(z,0));CHKERRQ(ierr);
 
   /* 
       Solve the Px=r and put the result in xx 
   */
-  ierr = PCApply(pc,rr,xx); CHKERRQ(ierr);
+  ierr = PCApply(pc,rr,xx);CHKERRQ(ierr);
   ts->linear_its++;
 
   PetscFunctionReturn(0);
@@ -130,11 +130,11 @@ void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
   /*
       Make the PETSc work vectors tmpx and tmpy point to the arrays in the PVODE vectors 
   */
-  ierr = VecPlaceArray(tmpx,&N_VIth(y,0)); CHKERRA(ierr);
-  ierr = VecPlaceArray(tmpy,&N_VIth(ydot,0)); CHKERRA(ierr);
+  ierr = VecPlaceArray(tmpx,&N_VIth(y,0));CHKERRA(ierr);
+  ierr = VecPlaceArray(tmpy,&N_VIth(ydot,0));CHKERRA(ierr);
 
   /* now compute the right hand side function */
-  ierr = TSComputeRHSFunction(ts,t,tmpx,tmpy); CHKERRA(ierr);
+  ierr = TSComputeRHSFunction(ts,t,tmpx,tmpy);CHKERRA(ierr);
 }
 
 /*
@@ -161,7 +161,7 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
   PetscFunctionBegin;
   /* initialize the number of steps */
   *steps = -ts->steps;
-  ierr   = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
+  ierr   = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   /* call CVSpgmr to use GMRES as the linear solver. */
   
@@ -171,16 +171,16 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
   tout = ts->max_time;
   for ( i=0; i<max_steps; i++) {
     if (ts->ptime >= tout) break;
-    ierr = VecGetArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
+    ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
     flag = CVode(cvode->mem, tout, cvode->y, &t, ONE_STEP);
-    ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
+    ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
     if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,0,"PVODE failed");	
 
     if (t > tout && cvode->exact_final_time) { 
       /* interpolate to final requested time */
-      ierr = VecGetArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
+      ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
       flag = CVodeDky(cvode->mem,tout,0,cvode->y);
-      ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
+      ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
       if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,0,"PVODE interpolation to final time failed");	
       t = tout;
     }
@@ -191,12 +191,12 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
     /*
        copy the solution from cvode->y to cvode->update and sol 
     */
-    ierr = VecPlaceArray(cvode->w1,&N_VIth(cvode->y,0)); CHKERRQ(ierr);
-    ierr = VecCopy(cvode->w1,cvode->update); CHKERRQ(ierr);
-    ierr = VecCopy(cvode->update, sol); CHKERRQ(ierr);
+    ierr = VecPlaceArray(cvode->w1,&N_VIth(cvode->y,0));CHKERRQ(ierr);
+    ierr = VecCopy(cvode->w1,cvode->update);CHKERRQ(ierr);
+    ierr = VecCopy(cvode->update, sol);CHKERRQ(ierr);
     
     ts->steps++;
-    ierr = TSMonitor(ts,ts->steps,t,sol); CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr);
   }
 
   ts->nonlinear_its = cvode->iopt[NNI];
@@ -219,8 +219,8 @@ int TSDestroy_PVode(TS ts )
 
   PetscFunctionBegin;
   if (cvode->pmat)   {ierr = MatDestroy(cvode->pmat);CHKERRQ(ierr);}
-  if (cvode->pc)     {ierr = PCDestroy(cvode->pc); CHKERRQ(ierr);}
-  if (cvode->update) {ierr = VecDestroy(cvode->update); CHKERRQ(ierr);}
+  if (cvode->pc)     {ierr = PCDestroy(cvode->pc);CHKERRQ(ierr);}
+  if (cvode->update) {ierr = VecDestroy(cvode->update);CHKERRQ(ierr);}
   if (cvode->func)   {ierr = VecDestroy(cvode->func);CHKERRQ(ierr);}
   if (cvode->rhs)    {ierr = VecDestroy(cvode->rhs);CHKERRQ(ierr);}
   if (cvode->w1)     {ierr = VecDestroy(cvode->w1);CHKERRQ(ierr);}
@@ -244,20 +244,20 @@ int TSSetUp_PVode_Nonlinear(TS ts)
 
   PetscFunctionBegin;
   /* get the vector size */
-  ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(ts->vec_sol,&locsize); CHKERRQ(ierr);
+  ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
 
   /* allocate the memory for machEnv */
   machEnv = PVInitMPI(ts->comm,locsize,M); 
 
   /* allocate the memory for N_Vec y */
   cvode->y         = N_VNew(M,machEnv); 
-  ierr = VecGetArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
-  ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
+  ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
+  ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
 
   /* initializing vector update and func */
-  ierr = VecDuplicate(ts->vec_sol,&cvode->update); CHKERRQ(ierr);  
-  ierr = VecDuplicate(ts->vec_sol,&cvode->func); CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&cvode->update);CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&cvode->func);CHKERRQ(ierr);  
   PLogObjectParent(ts,cvode->update);
   PLogObjectParent(ts,cvode->func);
 
@@ -271,16 +271,16 @@ int TSSetUp_PVode_Nonlinear(TS ts)
   PLogObjectParent(ts,cvode->w1);
   PLogObjectParent(ts,cvode->w2);
 
-  ierr = PCSetVector(cvode->pc,ts->vec_sol);   CHKERRQ(ierr);
+  ierr = PCSetVector(cvode->pc,ts->vec_sol);CHKERRQ(ierr);
 
   /* allocate memory for PVode */
-  ierr = VecGetArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
+  ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
   cvode->mem = CVodeMalloc(M,TSFunction_PVode,ts->ptime,cvode->y,
  			          cvode->cvode_type,
                                   NEWTON,SS,&cvode->reltol,
                                   &cvode->abstol,ts,NULL,FALSE,cvode->iopt,
-                                  cvode->ropt,machEnv); CHKPTRQ(cvode->mem);
-  ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data); CHKERRQ(ierr);
+                                  cvode->ropt,machEnv);CHKPTRQ(cvode->mem);
+  ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -302,9 +302,9 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
   ierr = OptionsGetString(PETSC_NULL,"-ts_pvode_type",method,127,&flag);CHKERRQ(ierr);
   if (flag) {
     if (PetscStrcmp(method,"bdf") == 0) {
-      ierr = TSPVodeSetType(ts, PVODE_BDF); CHKERRQ(ierr);
+      ierr = TSPVodeSetType(ts, PVODE_BDF);CHKERRQ(ierr);
     } else if (PetscStrcmp(method,"adams") == 0) {
-      ierr = TSPVodeSetType(ts, PVODE_ADAMS); CHKERRQ(ierr);
+      ierr = TSPVodeSetType(ts, PVODE_ADAMS);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown PVode type.\n");
     }
@@ -312,9 +312,9 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
   ierr = OptionsGetString(PETSC_NULL,"-ts_pvode_gramschmidt_type",method,127,&flag);CHKERRQ(ierr);
   if (flag) {
     if (PetscStrcmp(method,"modified") == 0) {
-      ierr = TSPVodeSetGramSchmidtType(ts, PVODE_MODIFIED_GS); CHKERRQ(ierr);
+      ierr = TSPVodeSetGramSchmidtType(ts, PVODE_MODIFIED_GS);CHKERRQ(ierr);
     } else if (PetscStrcmp(method,"unmodified") == 0) {
-      ierr = TSPVodeSetGramSchmidtType(ts, PVODE_UNMODIFIED_GS); CHKERRQ(ierr);
+      ierr = TSPVodeSetGramSchmidtType(ts, PVODE_UNMODIFIED_GS);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown PVode Gram-Schmidt orthogonalization type \n");
     }
@@ -334,7 +334,7 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
     ierr = TSPVodeSetExactFinalTime(ts,PETSC_FALSE);CHKERRQ(ierr);
   }
 
-  ierr = PCSetFromOptions(cvode->pc); CHKERRQ(ierr);
+  ierr = PCSetFromOptions(cvode->pc);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -355,9 +355,9 @@ int TSPrintHelp_PVode(TS ts,char *p)
   ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_type <bdf,adams>: integration approach\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_atol aabs: absolute tolerance of ODE solution\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_rtol rel: relative tolerance of ODE solution\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_gramschmidt_type <unmodified,modified>\n"); CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_gramschmidt_type <unmodified,modified>\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_gmres_restart <restart_size> (also max. GMRES its)\n");CHKERRQ(ierr);; 
-  ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_linear_tolerance <tol>\n"); CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_linear_tolerance <tol>\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_not_exact_final_time\n");CHKERRQ(ierr); 
 
   ierr = PCPrintHelp(cvode->pc);CHKERRQ(ierr);
@@ -381,7 +381,7 @@ int TSView_PVode(TS ts,Viewer viewer)
   if (cvode->cvode_type == PVODE_ADAMS) {type = "Adams";}
   else                                  {type = "BDF: backward differentiation formula";}
 
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"PVode integrater does not use SNES!\n");CHKERRQ(ierr); 
     ierr = ViewerASCIIPrintf(viewer,"PVode integrater type %s\n",type);CHKERRQ(ierr);
@@ -398,9 +398,9 @@ int TSView_PVode(TS ts,Viewer viewer)
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");
   }
-  ierr = ViewerASCIIPushTab(viewer); CHKERRQ(ierr);
-  ierr = PCView(cvode->pc,viewer); CHKERRQ(ierr);
-  ierr = ViewerASCIIPopTab(viewer); CHKERRQ(ierr);
+  ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = PCView(cvode->pc,viewer);CHKERRQ(ierr);
+  ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -827,9 +827,9 @@ int TSCreate_PVode(TS ts )
   ts->step            = TSStep_PVode_Nonlinear;
   ts->setfromoptions  = TSSetFromOptions_PVode_Nonlinear;
 
-  cvode    = PetscNew(TS_PVode); CHKPTRQ(cvode);
-  PetscMemzero(cvode,sizeof(TS_PVode));
-  ierr     = PCCreate(ts->comm, &cvode->pc); CHKERRQ(ierr);
+  cvode = PetscNew(TS_PVode);CHKPTRQ(cvode);
+  ierr  = PetscMemzero(cvode,sizeof(TS_PVode));CHKERRQ(ierr);
+  ierr  = PCCreate(ts->comm, &cvode->pc);CHKERRQ(ierr);
   PLogObjectParent(ts,cvode->pc);
   ts->data          = (void *) cvode;
   cvode->cvode_type = BDF;

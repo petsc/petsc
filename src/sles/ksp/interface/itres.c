@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itres.c,v 1.38 1999/01/31 16:08:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: itres.c,v 1.39 1999/01/31 21:26:12 curfman Exp balay $";
 #endif
 
 #include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -42,10 +42,10 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);
   if (ksp->pc_side == PC_RIGHT) {
-    if (vbinvf) {ierr = VecCopy(vb,vbinvf); CHKERRQ(ierr);}
+    if (vbinvf) {ierr = VecCopy(vb,vbinvf);CHKERRQ(ierr);}
     vbinvf = vb;
   } else if (ksp->pc_side == PC_LEFT) {
-    ierr = PCApply(ksp->B,vb,vbinvf); CHKERRQ(ierr);
+    ierr = PCApply(ksp->B,vb,vbinvf);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,0,"Only right and left preconditioning are currently supported");
   }
@@ -55,17 +55,17 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
     if (ksp->pc_side == PC_RIGHT) {
       /* we want a * binv * b * x, or just a * x for the first step */
       /* a*x into temp */
-      ierr = MatMult(Amat,vsoln,vt1); CHKERRQ(ierr);
+      ierr = MatMult(Amat,vsoln,vt1);CHKERRQ(ierr);
     } else {
       /* else we do binv * a * x */
-      ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,vsoln,vt1,vt2); CHKERRQ(ierr);
+      ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,vsoln,vt1,vt2);CHKERRQ(ierr);
     }
     /* This is an extra copy for the right-inverse case */
-    ierr = VecCopy(vbinvf,vres); CHKERRQ(ierr);
-    ierr = VecAXPY(&one,vt1,vres); CHKERRQ(ierr);
+    ierr = VecCopy(vbinvf,vres);CHKERRQ(ierr);
+    ierr = VecAXPY(&one,vt1,vres);CHKERRQ(ierr);
           /* inv(b)(f - a*x) into dest */
   } else {
-    ierr = VecCopy(vbinvf,vres); CHKERRQ(ierr);
+    ierr = VecCopy(vbinvf,vres);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -103,11 +103,11 @@ int KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->pc_side == PC_RIGHT) {
-    ierr = PCApply(ksp->B,vsoln,vt1); CHKERRQ(ierr);
-    ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
+    ierr = PCApply(ksp->B,vsoln,vt1);CHKERRQ(ierr);
+    ierr = VecCopy(vt1,vsoln);CHKERRQ(ierr);
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    ierr = PCApplySymmetricRight(ksp->B,vsoln,vt1); CHKERRQ(ierr);
-    ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
+    ierr = PCApplySymmetricRight(ksp->B,vsoln,vt1);CHKERRQ(ierr);
+    ierr = VecCopy(vt1,vsoln);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

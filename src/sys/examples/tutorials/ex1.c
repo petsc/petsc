@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.7 1998/04/16 02:56:54 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.8 1999/05/04 18:53:07 balay Exp balay $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -26,14 +26,14 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help); CHKERRA(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRA(ierr);
 
   /* 
      The following MPI calls return the number of processes
      being used and the rank of this process in the group.
    */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRA(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   /* 
      Here we would like to print only one message that represents
@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   /*
     Here a barrier is used to separate the two program states.
   */
-  ierr = MPI_Barrier(PETSC_COMM_WORLD); CHKERRA(ierr);
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRA(ierr);
 
   /*
     Here we simply use PetscPrintf() with the communicator PETSC_COMM_SELF,
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
     appear in any particular order.
   */
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Jumbled Hello World\n",rank); CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Jumbled Hello World\n",rank);CHKERRA(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -64,6 +64,6 @@ int main(int argc,char **argv)
          options are chosen (e.g., -log_summary).  See PetscFinalize()
      manpage for more information.
   */
-  ierr = PetscFinalize(); CHKERRA(ierr);
+  ierr = PetscFinalize();CHKERRA(ierr);
   return 0;
 }

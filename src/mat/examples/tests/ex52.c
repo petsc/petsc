@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex52.c,v 1.3 1997/09/22 15:23:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ex52.c,v 1.4 1999/03/19 21:19:59 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -20,17 +20,17 @@ int main(int argc,char **args)
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   /* Test MatSetValues() and MatGetValues() */
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,&flg);CHKERRA(ierr);
 
   M    = m*bs*size;
-  ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,M,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&A); CHKERRA(ierr);
+  ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,M,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&A);CHKERRA(ierr);
 
-  ierr = MatGetOwnershipRange(A,&start,&end); CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&start,&end);CHKERRA(ierr);
   
   for ( row=start; row<end; row++ ) {
     for ( col=start; col<end; col++,data+=1 ) {
-      ierr = MatSetValues(A,1,&row,1,&col,&data,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&row,1,&col,&data,INSERT_VALUES);CHKERRA(ierr);
     }
   }
   MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
@@ -40,12 +40,12 @@ int main(int argc,char **args)
   data = 5.0;
   row = (M+start-1)%M;
   for ( col=0; col<M; col++ ) {
-    ierr = MatSetValues(A,1,&row,1,&col,&data,ADD_VALUES); CHKERRA(ierr);
+    ierr = MatSetValues(A,1,&row,1,&col,&data,ADD_VALUES);CHKERRA(ierr);
   } 
   MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
 
-  ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = MatDestroy(A);
   

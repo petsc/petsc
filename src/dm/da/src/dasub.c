@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dasub.c,v 1.21 1999/03/17 23:25:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dasub.c,v 1.22 1999/04/19 22:17:13 bsmith Exp balay $";
 #endif
  
 /*
@@ -42,7 +42,7 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   flag = 0; 
-  ierr = DAGetCorners(da,&xs,&xm,&ys,&ym,&zs,&zm); CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,&xm,&ys,&ym,&zs,&zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(da->comm,&size);CHKERRQ(ierr);
   if (dir == DA_Z) {
     if (da->dim < 3) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"DA_Z invalid for DA dim < 3");
@@ -57,7 +57,7 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
     if (gp >= xs && gp < xs+xm) flag = 1;
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid direction");
 
-  owners = (int *)PetscMalloc(2*size*sizeof(int)); CHKPTRQ(owners);
+  owners = (int *)PetscMalloc(2*size*sizeof(int));CHKPTRQ(owners);
   ranks = owners + size;
   ierr = MPI_Allgather(&flag,1,MPI_INT,owners,1,MPI_INT,da->comm);CHKERRQ(ierr);
   ict = 0;

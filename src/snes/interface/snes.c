@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.183 1999/04/19 22:15:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.184 1999/04/21 18:18:16 bsmith Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -51,7 +51,7 @@ int SNESView(SNES snes,Viewer viewer)
   if (viewer) {PetscValidHeader(viewer);}
   else { viewer = VIEWER_STDOUT_SELF; }
 
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"SNES Object:\n");CHKERRQ(ierr);
     ierr = SNESGetType(snes,&method);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ int SNESView(SNES snes,Viewer viewer)
   }
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
   ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = SLESView(sles,viewer); CHKERRQ(ierr);
+  ierr = SLESView(sles,viewer);CHKERRQ(ierr);
   ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -151,16 +151,16 @@ int SNESSetTypeFromOptions(SNES snes)
   if (snes->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to SNESSetUp()");
   ierr = OptionsGetString(snes->prefix,"-snes_type",method,256,&flg);
   if (flg) {
-    ierr = SNESSetType(snes,(SNESType) method); CHKERRQ(ierr);
+    ierr = SNESSetType(snes,(SNESType) method);CHKERRQ(ierr);
   }
   /*
       If SNES type has not yet been set, set it now
   */
   if (!snes->type_name) {
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-      ierr = SNESSetType(snes,SNES_EQ_LS); CHKERRQ(ierr);
+      ierr = SNESSetType(snes,SNES_EQ_LS);CHKERRQ(ierr);
     } else {
-      ierr = SNESSetType(snes,SNES_UM_TR); CHKERRQ(ierr);
+      ierr = SNESSetType(snes,SNES_UM_TR);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -234,49 +234,49 @@ int SNESSetFromOptions(SNES snes)
   ierr = SNESSetTypeFromOptions(snes);CHKERRQ(ierr);
 
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
-  ierr = OptionsGetDouble(snes->prefix,"-snes_stol",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_stol",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,tmp,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_atol",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_atol",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetTolerances(snes,tmp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_rtol",&tmp, &flg);  CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_rtol",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetTolerances(snes,PETSC_DEFAULT,tmp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
-  ierr = OptionsGetInt(snes->prefix,"-snes_max_it",&snes->max_its, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(snes->prefix,"-snes_max_it",&snes->max_its, &flg);CHKERRQ(ierr);
   ierr = OptionsGetInt(snes->prefix,"-snes_max_funcs",&snes->max_funcs, &flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_trtol",&tmp, &flg); CHKERRQ(ierr);
-  if (flg) { ierr = SNESSetTrustRegionTolerance(snes,tmp); CHKERRQ(ierr); }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp, &flg); CHKERRQ(ierr);
-  if (flg) { ierr = SNESSetMinimizationFunctionTolerance(snes,tmp);  CHKERRQ(ierr);}
-  ierr = OptionsHasName(snes->prefix,"-snes_ksp_ew_conv", &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_trtol",&tmp, &flg);CHKERRQ(ierr);
+  if (flg) { ierr = SNESSetTrustRegionTolerance(snes,tmp);CHKERRQ(ierr); }
+  ierr = OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp, &flg);CHKERRQ(ierr);
+  if (flg) { ierr = SNESSetMinimizationFunctionTolerance(snes,tmp);CHKERRQ(ierr);}
+  ierr = OptionsHasName(snes->prefix,"-snes_ksp_ew_conv", &flg);CHKERRQ(ierr);
   if (flg) { snes->ksp_ewconv = 1; }
-  ierr = OptionsGetInt(snes->prefix,"-snes_ksp_ew_version",&version,&flg); CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtol0",&rtol_0,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(snes->prefix,"-snes_ksp_ew_version",&version,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtol0",&rtol_0,&flg);CHKERRQ(ierr);
   ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtolmax",&rtol_max,&flg);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_gamma",&gamma2,&flg); CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha",&alpha,&flg); CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha2",&alpha2,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_gamma",&gamma2,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha",&alpha,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha2",&alpha2,&flg);CHKERRQ(ierr);
   ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_threshold",&threshold,&flg);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(snes->prefix,"-snes_no_convergence_test",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(snes->prefix,"-snes_no_convergence_test",&flg);CHKERRQ(ierr);
   if (flg) {snes->converged = 0;}
 
   ierr = SNES_KSP_SetParametersEW(snes,version,rtol_0,rtol_max,gamma2,alpha,
-                                  alpha2,threshold); CHKERRQ(ierr);
-  ierr = OptionsHasName(snes->prefix,"-snes_cancelmonitors",&flg); CHKERRQ(ierr);
+                                  alpha2,threshold);CHKERRQ(ierr);
+  ierr = OptionsHasName(snes->prefix,"-snes_cancelmonitors",&flg);CHKERRQ(ierr);
   if (flg) {ierr = SNESClearMonitor(snes);CHKERRQ(ierr);}
-  ierr = OptionsHasName(snes->prefix,"-snes_monitor",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(snes->prefix,"-snes_monitor",&flg);CHKERRQ(ierr);
   if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultMonitor,0,0);CHKERRQ(ierr);}
-  ierr = OptionsHasName(snes->prefix,"-snes_smonitor",&flg); CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,0,0);  CHKERRQ(ierr);}
-  ierr = OptionsHasName(snes->prefix,"-snes_vecmonitor",&flg); CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitor,0,0);  CHKERRQ(ierr);}
-  ierr = OptionsHasName(snes->prefix,"-snes_vecmonitor_update",&flg); CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitorUpdate,0,0);  CHKERRQ(ierr);}
+  ierr = OptionsHasName(snes->prefix,"-snes_smonitor",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,0,0);CHKERRQ(ierr);}
+  ierr = OptionsHasName(snes->prefix,"-snes_vecmonitor",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitor,0,0);CHKERRQ(ierr);}
+  ierr = OptionsHasName(snes->prefix,"-snes_vecmonitor_update",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitorUpdate,0,0);CHKERRQ(ierr);}
   ierr = OptionsGetIntArray(snes->prefix,"-snes_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
     int    rank = 0;
@@ -284,40 +284,40 @@ int SNESSetFromOptions(SNES snes)
     MPI_Initialized(&rank);
     if (rank) {ierr = MPI_Comm_rank(snes->comm,&rank);CHKERRQ(ierr);}
     if (!rank) {
-      ierr = SNESLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); CHKERRQ(ierr);
-      ierr = SNESSetMonitor(snes,SNESLGMonitor,lg,( int (*)(void *))SNESLGMonitorDestroy); CHKERRQ(ierr);  
+      ierr = SNESLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
+      ierr = SNESSetMonitor(snes,SNESLGMonitor,lg,( int (*)(void *))SNESLGMonitorDestroy);CHKERRQ(ierr);  
       PLogObjectParent(snes,lg);
     }
   }
 
-  ierr = OptionsHasName(snes->prefix,"-snes_fd", &flg);  CHKERRQ(ierr);
+  ierr = OptionsHasName(snes->prefix,"-snes_fd", &flg);CHKERRQ(ierr);
   if (flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,
-                 SNESDefaultComputeJacobian,snes->funP); CHKERRQ(ierr);
+                 SNESDefaultComputeJacobian,snes->funP);CHKERRQ(ierr);
     PLogInfo(snes,"SNESSetFromOptions: Setting default finite difference Jacobian matrix\n");
   } else if (flg && snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     ierr = SNESSetHessian(snes,snes->jacobian,snes->jacobian_pre,
-                 SNESDefaultComputeHessian,snes->funP); CHKERRQ(ierr);
+                 SNESDefaultComputeHessian,snes->funP);CHKERRQ(ierr);
     PLogInfo(snes,"SNESSetFromOptions: Setting default finite difference Hessian matrix\n");
   }
 
   for ( i=0; i<numberofsetfromoptions; i++ ) {
-    ierr = (*othersetfromoptions[i])(snes); CHKERRQ(ierr);
+    ierr = (*othersetfromoptions[i])(snes);CHKERRQ(ierr);
   }
 
-  ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
 
   /* set the special KSP monitor for matrix-free application */
-  ierr = OptionsHasName(snes->prefix,"-snes_mf_ksp_monitor",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(snes->prefix,"-snes_mf_ksp_monitor",&flg);CHKERRQ(ierr);
   if (flg) {
     KSP ksp;
     ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
     ierr = KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
-  if (flg) { ierr = SNESPrintHelp(snes); CHKERRQ(ierr);} 
+  ierr = OptionsHasName(PETSC_NULL,"-help", &flg);CHKERRQ(ierr);
+  if (flg) { ierr = SNESPrintHelp(snes);CHKERRQ(ierr);} 
 
   if (snes->setfromoptions) {
     ierr = (*snes->setfromoptions)(snes);CHKERRQ(ierr);
@@ -695,7 +695,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->conv_hist_reset   = PETSC_TRUE;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
-  kctx = PetscNew(SNES_KSP_EW_ConvCtx); CHKPTRQ(kctx);
+  kctx = PetscNew(SNES_KSP_EW_ConvCtx);CHKPTRQ(kctx);
   PLogObjectMemory(snes,sizeof(SNES_KSP_EW_ConvCtx));
   snes->kspconvctx  = (void*)kctx;
   kctx->version     = 2;
@@ -710,7 +710,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   kctx->lresid_last = 0;
   kctx->norm_last   = 0;
 
-  ierr = SLESCreate(comm,&snes->sles); CHKERRQ(ierr);
+  ierr = SLESCreate(comm,&snes->sles);CHKERRQ(ierr);
   PLogObjectParent(snes,snes->sles)
 
   *outsnes = snes;
@@ -809,7 +809,7 @@ int SNESComputeFunction(SNES snes,Vec x, Vec y)
   }
   PLogEventBegin(SNES_FunctionEval,snes,x,y,0);
   PetscStackPush("SNES user function");
-  ierr = (*snes->computefunction)(snes,x,y,snes->funP); CHKERRQ(ierr);
+  ierr = (*snes->computefunction)(snes,x,y,snes->funP);CHKERRQ(ierr);
   PetscStackPop;
   snes->nfuncs++;
   PLogEventEnd(SNES_FunctionEval,snes,x,y,0);
@@ -903,7 +903,7 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
   }
   PLogEventBegin(SNES_MinimizationFunctionEval,snes,x,y,0);
   PetscStackPush("SNES user minimzation function");
-  ierr = (*snes->computeumfunction)(snes,x,y,snes->umfunP); CHKERRQ(ierr);
+  ierr = (*snes->computeumfunction)(snes,x,y,snes->umfunP);CHKERRQ(ierr);
   PetscStackPop;
   snes->nfuncs++;
   PLogEventEnd(SNES_MinimizationFunctionEval,snes,x,y,0);
@@ -998,7 +998,7 @@ int SNESComputeGradient(SNES snes,Vec x, Vec y)
   }
   PLogEventBegin(SNES_GradientEval,snes,x,y,0);
   PetscStackPush("SNES user gradient function");
-  ierr = (*snes->computefunction)(snes,x,y,snes->funP); CHKERRQ(ierr);
+  ierr = (*snes->computefunction)(snes,x,y,snes->funP);CHKERRQ(ierr);
   PetscStackPop;
   PLogEventEnd(SNES_GradientEval,snes,x,y,0);
   PetscFunctionReturn(0);
@@ -1054,7 +1054,7 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
   PLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);
   *flg = DIFFERENT_NONZERO_PATTERN;
   PetscStackPush("SNES user Jacobian function");
-  ierr = (*snes->computejacobian)(snes,X,A,B,flg,snes->jacP); CHKERRQ(ierr);
+  ierr = (*snes->computejacobian)(snes,X,A,B,flg,snes->jacP);CHKERRQ(ierr);
   PetscStackPop;
   PLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);
   /* make sure user returned a correct Jacobian and preconditioner */
@@ -1114,7 +1114,7 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
   PLogEventBegin(SNES_HessianEval,snes,x,*A,*B);
   *flag = DIFFERENT_NONZERO_PATTERN;
   PetscStackPush("SNES user Hessian function");
-  ierr = (*snes->computejacobian)(snes,x,A,B,flag,snes->jacP); CHKERRQ(ierr);
+  ierr = (*snes->computejacobian)(snes,x,A,B,flag,snes->jacP);CHKERRQ(ierr);
   PetscStackPop;
   PLogEventEnd(SNES_HessianEval,snes,x,*A,*B);
   /* make sure user returned a correct Jacobian and preconditioner */
@@ -1339,7 +1339,7 @@ int SNESSetUp(SNES snes,Vec x)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   snes->vec_sol = snes->vec_sol_always = x;
 
-  ierr = OptionsHasName(snes->prefix,"-snes_mf_operator", &flg);  CHKERRQ(ierr); 
+  ierr = OptionsHasName(snes->prefix,"-snes_mf_operator", &flg);CHKERRQ(ierr); 
   /*
       This version replaces the user provided Jacobian matrix with a
       matrix-free version but still employs the user-provided preconditioner matrix
@@ -1360,7 +1360,7 @@ int SNESSetUp(SNES snes,Vec x)
     }
     ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);  CHKERRQ(ierr); 
+  ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);CHKERRQ(ierr); 
   /*
       This version replaces both the user-provided Jacobian and the user-
       provided preconditioner matrix with the default matrix free version.
@@ -1371,10 +1371,10 @@ int SNESSetUp(SNES snes,Vec x)
     PLogObjectParent(snes,J);
     snes->mfshell = J;
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-      ierr = SNESSetJacobian(snes,J,J,0,snes->funP); CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,J,J,0,snes->funP);CHKERRQ(ierr);
       PLogInfo(snes,"SNESSetUp: Setting default matrix-free Jacobian routines\n");
     } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-      ierr = SNESSetHessian(snes,J,J,0,snes->funP); CHKERRQ(ierr);
+      ierr = SNESSetHessian(snes,J,J,0,snes->funP);CHKERRQ(ierr);
       PLogInfo(snes,"SNESSetUp: Setting default matrix-free Hessian routines\n");
     } else {
       SETERRQ(PETSC_ERR_SUP,0,"Method class doesn't support matrix-free option");
@@ -1392,9 +1392,9 @@ int SNESSetUp(SNES snes,Vec x)
     /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
     if (snes->ksp_ewconv && PetscStrcmp(snes->type_name,SNES_EQ_TR)) {
       SLES sles; KSP ksp;
-      ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
-      ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
-      ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,(void *)snes); CHKERRQ(ierr);
+      ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+      ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,(void *)snes);CHKERRQ(ierr);
     }
   } else if ((snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)) {
     if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetGradient() first");
@@ -1406,7 +1406,7 @@ int SNESSetUp(SNES snes,Vec x)
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method class");
   }
-  if (snes->setup) {ierr = (*snes->setup)(snes); CHKERRQ(ierr);}
+  if (snes->setup) {ierr = (*snes->setup)(snes);CHKERRQ(ierr);}
   snes->setupcalled = 1;
   PetscFunctionReturn(0);
 }
@@ -1436,10 +1436,10 @@ int SNESDestroy(SNES snes)
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (--snes->refct > 0) PetscFunctionReturn(0);
 
-  if (snes->destroy) {ierr = (*(snes)->destroy)(snes); CHKERRQ(ierr);}
+  if (snes->destroy) {ierr = (*(snes)->destroy)(snes);CHKERRQ(ierr);}
   if (snes->kspconvctx) PetscFree(snes->kspconvctx);
   if (snes->mfshell) {ierr = MatDestroy(snes->mfshell);CHKERRQ(ierr);}
-  ierr = SLESDestroy(snes->sles); CHKERRQ(ierr);
+  ierr = SLESDestroy(snes->sles);CHKERRQ(ierr);
   if (snes->vwork) {ierr = VecDestroyVecs(snes->vwork,snes->nvwork);CHKERRQ(ierr);}
   for (i=0; i<snes->numbermonitors; i++ ) {
     if (snes->monitordestroy[i]) {
@@ -1907,15 +1907,15 @@ int SNESSolve(SNES snes,Vec x,int *its)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidIntPointer(its);
-  if (!snes->setupcalled) {ierr = SNESSetUp(snes,x); CHKERRQ(ierr);}
+  if (!snes->setupcalled) {ierr = SNESSetUp(snes,x);CHKERRQ(ierr);}
   else {snes->vec_sol = snes->vec_sol_always = x;}
   if (snes->conv_hist_reset == PETSC_TRUE) snes->conv_hist_len = 0;
   PLogEventBegin(SNES_Solve,snes,0,0,0);
   snes->nfuncs = 0; snes->linear_its = 0; snes->nfailures = 0;
-  ierr = (*(snes)->solve)(snes,its); CHKERRQ(ierr);
+  ierr = (*(snes)->solve)(snes,its);CHKERRQ(ierr);
   PLogEventEnd(SNES_Solve,snes,0,0,0);
-  ierr = OptionsHasName(PETSC_NULL,"-snes_view", &flg); CHKERRQ(ierr);
-  if (flg) { ierr = SNESView(snes,VIEWER_STDOUT_WORLD); CHKERRQ(ierr); }
+  ierr = OptionsHasName(PETSC_NULL,"-snes_view", &flg);CHKERRQ(ierr);
+  if (flg) { ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -1978,7 +1978,7 @@ int SNESSetType(SNES snes,SNESType method)
   }
 
   /* Get the function pointers for the iterative method requested */
-  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
   ierr =  FListFind(snes->comm, SNESList, method,(int (**)(void *)) &r );CHKERRQ(ierr);
 
@@ -1986,11 +1986,11 @@ int SNESSetType(SNES snes,SNESType method)
 
   if (snes->data) PetscFree(snes->data);
   snes->data = 0;
-  ierr = (*r)(snes); CHKERRQ(ierr);
+  ierr = (*r)(snes);CHKERRQ(ierr);
 
   if (snes->type_name) PetscFree(snes->type_name);
   snes->type_name = (char *) PetscMalloc((PetscStrlen(method)+1)*sizeof(char));CHKPTRQ(snes->type_name);
-  PetscStrcpy(snes->type_name,method);
+  ierr = PetscStrcpy(snes->type_name,method);CHKERRQ(ierr);
   snes->set_method_called = 1;
 
   PetscFunctionReturn(0); 
@@ -2241,7 +2241,7 @@ int SNESSetOptionsPrefix(SNES snes,char *prefix)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)snes, prefix);CHKERRQ(ierr);
   ierr = SLESSetOptionsPrefix(snes->sles,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2274,7 +2274,7 @@ int SNESAppendOptionsPrefix(SNES snes,char *prefix)
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  ierr = PetscObjectAppendOptionsPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)snes, prefix);CHKERRQ(ierr);
   ierr = SLESAppendOptionsPrefix(snes->sles,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2308,7 +2308,7 @@ int SNESGetOptionsPrefix(SNES snes,char **prefix)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)snes, prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2341,12 +2341,12 @@ int SNESPrintHelp(SNES snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
-  PetscStrcpy(p,"-");
+  ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
   if (snes->prefix) PetscStrcat(p, snes->prefix);
 
   kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
 
-  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = (*PetscHelpPrintf)(snes->comm,"SNES options ------------------------------------------------\n");CHKERRQ(ierr);
   ierr = FListPrintTypes(snes->comm,stdout,snes->prefix,"snes_type",SNESList);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",p);CHKERRQ(ierr);
@@ -2451,7 +2451,8 @@ int SNESRegister_Private(char *sname,char *path,char *name,int (*function)(SNES)
   int  ierr;
 
   PetscFunctionBegin;
-  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
+  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
   ierr = FListAdd_Private(&SNESList,sname,fullname, (int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

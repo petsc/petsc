@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact.c,v 1.70 1999/03/17 23:23:13 bsmith Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.71 1999/03/17 23:35:25 balay Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -28,20 +28,20 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
-  ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
+  ierr = ISInvertPermutation(iscol,&isicol);CHKERRQ(ierr);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
 
   /* get new row pointers */
-  ainew = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(ainew);
+  ainew = (int *) PetscMalloc( (n+1)*sizeof(int) );CHKPTRQ(ainew);
   ainew[0] = 0;
   /* don't know how many column pointers are needed so estimate */
   jmax = (int) (f*ai[n] + 1);
-  ajnew = (int *) PetscMalloc( (jmax)*sizeof(int) ); CHKPTRQ(ajnew);
+  ajnew = (int *) PetscMalloc( (jmax)*sizeof(int) );CHKPTRQ(ajnew);
   /* fill is a linked list of nonzeros in active row */
-  fill = (int *) PetscMalloc( (2*n+1)*sizeof(int)); CHKPTRQ(fill);
+  fill = (int *) PetscMalloc( (2*n+1)*sizeof(int));CHKPTRQ(fill);
   im = fill + n + 1;
   /* idnew is location of diagonal in factor */
-  idnew = (int *) PetscMalloc( (n+1)*sizeof(int)); CHKPTRQ(idnew);
+  idnew = (int *) PetscMalloc( (n+1)*sizeof(int));CHKPTRQ(idnew);
   idnew[0] = 0;
 
   for ( i=0; i<n; i++ ) {
@@ -97,7 +97,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 
       /* allocate a longer ajnew */
       ajtmp = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(ajtmp);
-      PetscMemcpy(ajtmp,ajnew,ainew[i]*sizeof(int));
+      ierr  = PetscMemcpy(ajtmp,ajnew,ainew[i]*sizeof(int));CHKERRQ(ierr);
       PetscFree(ajnew);
       ajnew = ajtmp;
       realloc++; /* count how many times we realloc */
@@ -125,13 +125,13 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
      PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:Empty matrix.\n");
   }
 
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
 
   PetscFree(fill);
 
   /* put together the new matrix */
-  ierr = MatCreateSeqBAIJ(A->comm,bs,bs*n,bs*n,0,PETSC_NULL,B); CHKERRQ(ierr);
+  ierr = MatCreateSeqBAIJ(A->comm,bs,bs*n,bs*n,0,PETSC_NULL,B);CHKERRQ(ierr);
   PLogObjectParent(*B,isicol); 
   b = (Mat_SeqBAIJ *) (*B)->data;
   PetscFree(b->imax);
@@ -182,10 +182,10 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   MatScalar          *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
-  ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
-  ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
-  rtmp  = (MatScalar *) PetscMalloc(bs2*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
-  PetscMemzero(rtmp,bs2*(n+1)*sizeof(MatScalar));
+  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+  rtmp = (MatScalar *) PetscMalloc(bs2*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
+  ierr = PetscMemzero(rtmp,bs2*(n+1)*sizeof(MatScalar));CHKERRQ(ierr);
   /* generate work space needed by dense LU factorization */
   v_work     = (MatScalar *) PetscMalloc(bs*sizeof(int) + (bs+bs2)*sizeof(MatScalar));CHKPTRQ(v_work);
   multiplier = v_work + bs;
@@ -198,14 +198,14 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];
     for  ( j=0; j<nz; j++ ) {
-      PetscMemzero(rtmp+bs2*ajtmp[j],bs2*sizeof(MatScalar));
+      ierr = PetscMemzero(rtmp+bs2*ajtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
     /* load in initial (unfactored row) */
     nz       = ai[r[i]+1] - ai[r[i]];
     ajtmpold = aj + ai[r[i]];
     v        = aa + bs2*ai[r[i]];
     for ( j=0; j<nz; j++ ) {
-      PetscMemcpy(rtmp+bs2*ic[ajtmpold[j]],v+bs2*j,bs2*sizeof(MatScalar)); 
+      ierr = PetscMemcpy(rtmp+bs2*ic[ajtmpold[j]],v+bs2*j,bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
     row = *ajtmp++;
     while (row < i) {
@@ -230,7 +230,7 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
     pj = bj + bi[i];
     nz = bi[i+1] - bi[i];
     for ( j=0; j<nz; j++ ) {
-      PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar)); 
+      ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
     diag = diag_offset[i] - bi[i];
     /* invert diagonal block */
@@ -239,8 +239,8 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   }
 
   PetscFree(rtmp); PetscFree(v_work);
-  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*bs*bs2*b->mbs); /* from inverting diagonal blocks */
@@ -276,8 +276,8 @@ int MatLUFactorNumeric_SeqBAIJ_7(Mat A,Mat *B)
   MatScalar          *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
-  ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
-  ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   rtmp  = (MatScalar *) PetscMalloc(49*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
 
   for ( i=0; i<n; i++ ) {
@@ -515,12 +515,12 @@ int MatLUFactorNumeric_SeqBAIJ_7(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 49*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_7(w); CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_7(w);CHKERRQ(ierr);
   }
 
   PetscFree(rtmp);
-  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*343*b->mbs); /* from inverting diagonal blocks */
@@ -791,7 +791,7 @@ int MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 49*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_7(w); CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_7(w);CHKERRQ(ierr);
   }
 
   PetscFree(rtmp);
@@ -828,8 +828,8 @@ int MatLUFactorNumeric_SeqBAIJ_6(Mat A,Mat *B)
   MatScalar          *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
-  ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
-  ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   rtmp  = (MatScalar *) PetscMalloc(36*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
 
   for ( i=0; i<n; i++ ) {
@@ -1015,12 +1015,12 @@ int MatLUFactorNumeric_SeqBAIJ_6(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 36*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_6(w); CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_6(w);CHKERRQ(ierr);
   }
 
   PetscFree(rtmp);
-  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*216*b->mbs); /* from inverting diagonal blocks */
@@ -1235,7 +1235,7 @@ int MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 36*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_6(w); CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_6(w);CHKERRQ(ierr);
   }
 
   PetscFree(rtmp);
@@ -1269,8 +1269,8 @@ int MatLUFactorNumeric_SeqBAIJ_5(Mat A,Mat *B)
   MatScalar          *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
-  ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
-  ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   rtmp  = (MatScalar *) PetscMalloc(25*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
 
   for ( i=0; i<n; i++ ) {
@@ -1412,12 +1412,12 @@ int MatLUFactorNumeric_SeqBAIJ_5(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 25*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_5(w); CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_5(w);CHKERRQ(ierr);
   }
 
   PetscFree(rtmp);
-  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*125*b->mbs); /* from inverting diagonal blocks */
@@ -1583,7 +1583,7 @@ int MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 25*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_5(w); CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_5(w);CHKERRQ(ierr);
   }
 
   PetscFree(rtmp);
@@ -1616,8 +1616,8 @@ int MatLUFactorNumeric_SeqBAIJ_4(Mat A,Mat *B)
   MatScalar          *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
-  ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
-  ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   rtmp  = (MatScalar *) PetscMalloc(16*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
 
   for ( i=0; i<n; i++ ) {
@@ -1726,12 +1726,12 @@ int MatLUFactorNumeric_SeqBAIJ_4(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_4(w); CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
   }
 
   PetscFree(rtmp);
-  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*64*b->mbs); /* from inverting diagonal blocks */
@@ -1865,7 +1865,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_4(w); CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
   }
 
   PetscFree(rtmp);
@@ -1897,8 +1897,8 @@ int MatLUFactorNumeric_SeqBAIJ_3(Mat A,Mat *B)
   MatScalar          *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
-  ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
-  ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   rtmp  = (MatScalar *) PetscMalloc(9*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
 
   for ( i=0; i<n; i++ ) {
@@ -1976,12 +1976,12 @@ int MatLUFactorNumeric_SeqBAIJ_3(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 9*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_3(w); CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_3(w);CHKERRQ(ierr);
   }
 
   PetscFree(rtmp);
-  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*27*b->mbs); /* from inverting diagonal blocks */
@@ -2083,7 +2083,7 @@ int MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 9*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_3(w); CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_3(w);CHKERRQ(ierr);
   }
 
   PetscFree(rtmp);
@@ -2113,8 +2113,8 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
   MatScalar          *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
-  ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
-  ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   rtmp  = (MatScalar *) PetscMalloc(4*(n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
 
   for ( i=0; i<n; i++ ) {
@@ -2171,13 +2171,13 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 4*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_2(w); CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_2(w);CHKERRQ(ierr);
     /*Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work);*/
   }
 
   PetscFree(rtmp);
-  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*8*b->mbs); /* from inverting diagonal blocks */
@@ -2257,7 +2257,7 @@ int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 4*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_2(w); CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_2(w);CHKERRQ(ierr);
     /*Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work);*/
   }
 
@@ -2287,8 +2287,8 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
   MatScalar          *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
-  ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
-  ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   rtmp  = (MatScalar *) PetscMalloc((n+1)*sizeof(MatScalar));CHKPTRQ(rtmp);
 
   for ( i=0; i<n; i++ ) {
@@ -2330,8 +2330,8 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
   }
 
   PetscFree(rtmp);
-  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(b->n);
@@ -2350,8 +2350,8 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
   MatOps   Aops;
 
   PetscFunctionBegin;
-  ierr = MatLUFactorSymbolic(A,row,col,f,&C); CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(A,&C); CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(A,row,col,f,&C);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(A,&C);CHKERRQ(ierr);
 
   /* free all the data structures from mat */
   PetscFree(mat->a); 
@@ -2372,10 +2372,10 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
     A pointers for the bops and ops but copy everything 
     else from C.
   */
-  Abops    = A->bops;
-  Aops     = A->ops;
-  PetscMemcpy(A,C,sizeof(struct _p_Mat));
-  mat = (Mat_SeqBAIJ *) A->data;
+  Abops = A->bops;
+  Aops  = A->ops;
+  ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
+  mat   = (Mat_SeqBAIJ *) A->data;
   PLogObjectParent(A,mat->icol); 
 
   A->bops  = Abops;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.5 1999/03/19 21:18:23 bsmith Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.6 1999/04/01 17:09:07 balay Exp balay $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   Scalar   value;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
 
   /* 
      Create a vector, specifying only its global dimension.
@@ -53,14 +53,14 @@ int main(int argc,char **argv)
      particular type of vector to be formed.
 
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRA(ierr);
   ierr = VecSetFromOptions(x);CHKERRA(ierr);
 
   /*
      Duplicate some work vector (of the same format and
      partitioning as the initial vector).
   */
-  ierr = VecDuplicate(x,&y); CHKERRA(ierr);
+  ierr = VecDuplicate(x,&y);CHKERRA(ierr);
 
   PetscObjectPublish((PetscObject) x);CHKERRA(ierr);
 
@@ -71,9 +71,9 @@ int main(int argc,char **argv)
     */
     value = 1;
     row   = i % n;
-    ierr = VecSetValues(x,1,&row,&value,ADD_VALUES); CHKERRA(ierr);
-    ierr = VecAssemblyBegin(x); CHKERRA(ierr);
-    ierr = VecAssemblyEnd(x); CHKERRA(ierr);
+    ierr = VecSetValues(x,1,&row,&value,ADD_VALUES);CHKERRA(ierr);
+    ierr = VecAssemblyBegin(x);CHKERRA(ierr);
+    ierr = VecAssemblyEnd(x);CHKERRA(ierr);
 
 
     ierr = PetscSleep(5);
@@ -84,8 +84,8 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(y); CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(y);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

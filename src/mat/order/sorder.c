@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.58 1999/04/16 16:06:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.59 1999/04/19 22:12:35 bsmith Exp balay $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -46,15 +46,15 @@ int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
         BlockSolve Format doesn't really require the Ordering, but PETSc wants
        to provide it to everyone.
     */
-    ierr = MatGetOwnershipRange(mat,&start,&end); CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,irow); CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,icol); CHKERRQ(ierr);
-    ierr = ISSetIdentity(*irow); CHKERRQ(ierr);
-    ierr = ISSetIdentity(*icol); CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(mat,&start,&end);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,irow);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,icol);CHKERRQ(ierr);
+    ierr = ISSetIdentity(*irow);CHKERRQ(ierr);
+    ierr = ISSetIdentity(*icol);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
     
-  ierr = PetscObjectGetComm((PetscObject)mat,&comm); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   if (size > 1) {
@@ -67,17 +67,17 @@ int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
   /*
     We actually create general index sets because this avoids mallocs to
     to obtain the indices in the MatSolve() routines.
-    ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,irow); CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,icol); CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,irow);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,icol);CHKERRQ(ierr);
   */
-  ii = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(ii);
+  ii = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(ii);
   for ( i=0; i<n; i++ ) ii[i] = i;
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,irow); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,icol); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,irow);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,icol);CHKERRQ(ierr);
   PetscFree(ii);
 
-  ierr = ISSetIdentity(*irow); CHKERRQ(ierr);
-  ierr = ISSetIdentity(*icol); CHKERRQ(ierr);
+  ierr = ISSetIdentity(*irow);CHKERRQ(ierr);
+  ierr = ISSetIdentity(*icol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -96,21 +96,21 @@ int MatOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
   PetscTruth done;
 
   PetscFunctionBegin;
-  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done); CHKERRQ(ierr);
+  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,0,"Cannot get rows for matrix");
 
-  lens  = (int *) PetscMalloc( 2*n*sizeof(int) ); CHKPTRQ(lens);
+  lens  = (int *) PetscMalloc( 2*n*sizeof(int) );CHKPTRQ(lens);
   permr = lens + n;
   for ( i=0; i<n; i++ ) { 
     lens[i]  = ia[i+1] - ia[i];
     permr[i] = i;
   }
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done); CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done);CHKERRQ(ierr);
 
-  ierr = PetscSortIntWithPermutation(n, lens, permr); CHKERRQ(ierr);
+  ierr = PetscSortIntWithPermutation(n, lens, permr);CHKERRQ(ierr);
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,irow); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,icol); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,irow);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,icol);CHKERRQ(ierr);
   PetscFree(lens);
   PetscFunctionReturn(0);
 }
@@ -162,7 +162,8 @@ int MatOrderingRegister_Private(char *sname,char *path,char *name,int (*function
   char fullname[256];
 
   PetscFunctionBegin;
-  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
+  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
   ierr = FListAdd_Private(&MatOrderingList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -252,12 +253,12 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   }
 
   if (mat->M == 0) {
-    ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,cperm); CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,rperm); CHKERRQ(ierr);
-    ierr = ISSetIdentity(*cperm); CHKERRQ(ierr);
-    ierr = ISSetIdentity(*rperm); CHKERRQ(ierr);
-    ierr = ISSetPermutation(*rperm); CHKERRQ(ierr);
-    ierr = ISSetPermutation(*cperm); CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,cperm);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,rperm);CHKERRQ(ierr);
+    ierr = ISSetIdentity(*cperm);CHKERRQ(ierr);
+    ierr = ISSetIdentity(*rperm);CHKERRQ(ierr);
+    ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
+    ierr = ISSetPermutation(*cperm);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -275,36 +276,36 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   ierr =  FListFind(mat->comm, MatOrderingList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown or unregistered type: %s",type);}
 
-  ierr = (*r)(mat,type,rperm,cperm); CHKERRQ(ierr);
-  ierr = ISSetPermutation(*rperm); CHKERRQ(ierr);
-  ierr = ISSetPermutation(*cperm); CHKERRQ(ierr);
+  ierr = (*r)(mat,type,rperm,cperm);CHKERRQ(ierr);
+  ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
+  ierr = ISSetPermutation(*cperm);CHKERRQ(ierr);
 
   /*
       Adjust for inode (reduced matrix ordering) only if row permutation
     is smaller then matrix size
   */
-  ierr = MatGetLocalSize(mat,&mmat,&nmat); CHKERRQ(ierr);
-  ierr = ISGetSize(*rperm,&mis); CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&mmat,&nmat);CHKERRQ(ierr);
+  ierr = ISGetSize(*rperm,&mis);CHKERRQ(ierr);
   if (mmat > mis) {  
-    ierr = MatAdjustForInodes(mat,rperm,cperm); CHKERRQ(ierr);
+    ierr = MatAdjustForInodes(mat,rperm,cperm);CHKERRQ(ierr);
   }
 
   PLogEventEnd(MAT_GetOrdering,mat,0,0,0);
 
-  ierr = OptionsHasName(0,"-mat_view_ordering_draw",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(0,"-mat_view_ordering_draw",&flg);CHKERRQ(ierr);
   if (flg) {
     Mat tmat;
-    ierr = OptionsHasName(0,"-mat_view_contour",&flg); CHKERRQ(ierr);
+    ierr = OptionsHasName(0,"-mat_view_contour",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = ViewerPushFormat(VIEWER_DRAW_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
     }
-    ierr = MatPermute(mat,*rperm,*cperm,&tmat); CHKERRQ(ierr);
-    ierr = MatView(tmat,VIEWER_DRAW_(mat->comm)); CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_DRAW_(mat->comm)); CHKERRQ(ierr);
+    ierr = MatPermute(mat,*rperm,*cperm,&tmat);CHKERRQ(ierr);
+    ierr = MatView(tmat,VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     if (flg) {
       ierr = ViewerPopFormat(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     }
-    ierr = MatDestroy(tmat);  CHKERRQ(ierr);
+    ierr = MatDestroy(tmat);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

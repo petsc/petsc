@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbaij.c,v 1.21 1999/01/31 16:07:13 bsmith Exp balay $";
+static char vcid[] = "$Id: mmbaij.c,v 1.22 1999/02/17 21:37:32 balay Exp balay $";
 #endif
 
 
@@ -33,33 +33,33 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   for ( i=0; i<B->mbs; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
       int data,gid1 = aj[B->i[i]+j] + 1;
-      ierr = TableFind(gid1_lid1,gid1,&data) ; CHKERRQ(ierr);
+      ierr = TableFind(gid1_lid1,gid1,&data) ;CHKERRQ(ierr);
       if (!data) {
         /* one based table */ 
-        ierr = TableAdd(gid1_lid1,gid1,++ec); CHKERRQ(ierr); 
+        ierr = TableAdd(gid1_lid1,gid1,++ec);CHKERRQ(ierr); 
       }
     }
   } 
   /* form array of columns we need */
-  garray = (int *)PetscMalloc((ec+1)*sizeof(int)); CHKPTRQ(garray);
-  tmp    = (int *)PetscMalloc((ec*bs+1)*sizeof(int)); CHKPTRQ(tmp);
-  ierr   = TableGetHeadPosition(gid1_lid1,&tpos); CHKERRQ(ierr); 
+  garray = (int *)PetscMalloc((ec+1)*sizeof(int));CHKPTRQ(garray);
+  tmp    = (int *)PetscMalloc((ec*bs+1)*sizeof(int));CHKPTRQ(tmp);
+  ierr   = TableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
   while (tpos) {  
-    ierr = TableGetNext(gid1_lid1,&tpos,&gid,&lid); CHKERRQ(ierr); 
+    ierr = TableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr); 
     gid--; lid--;
     garray[lid] = gid; 
   }
-  ierr = PetscSortInt(ec,garray); CHKERRQ(ierr);
+  ierr = PetscSortInt(ec,garray);CHKERRQ(ierr);
   /* qsort( garray, ec, sizeof(int), intcomparcarc ); */
   TableRemoveAll(gid1_lid1);
   for ( i=0; i<ec; i++ ) {
-    ierr = TableAdd(gid1_lid1,garray[i]+1,i+1); CHKERRQ(ierr); 
+    ierr = TableAdd(gid1_lid1,garray[i]+1,i+1);CHKERRQ(ierr); 
   }
   /* compact out the extra columns in B */
   for ( i=0; i<B->mbs; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
       int gid1 = aj[B->i[i] + j] + 1;
-      ierr = TableFind(gid1_lid1,gid1,&lid); CHKERRQ(ierr);
+      ierr = TableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
       lid --;
       aj[B->i[i]+j] = lid;
     }
@@ -71,8 +71,8 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
 #else
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in baij->B */
-  indices = (int *) PetscMalloc( (Nbs+1)*sizeof(int) ); CHKPTRQ(indices);
-  PetscMemzero(indices,Nbs*sizeof(int));
+  indices = (int *) PetscMalloc( (Nbs+1)*sizeof(int) );CHKPTRQ(indices);
+  ierr = PetscMemzero(indices,Nbs*sizeof(int));CHKERRQ(ierr);
   for ( i=0; i<B->mbs; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
       if (!indices[aj[B->i[i] + j]]) ec++; 
@@ -81,8 +81,8 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   }
 
   /* form array of columns we need */
-  garray = (int *) PetscMalloc( (ec+1)*sizeof(int) ); CHKPTRQ(garray);
-  tmp    = (int *) PetscMalloc( (ec*bs+1)*sizeof(int) ); CHKPTRQ(tmp)
+  garray = (int *) PetscMalloc( (ec+1)*sizeof(int) );CHKPTRQ(garray);
+  tmp    = (int *) PetscMalloc( (ec*bs+1)*sizeof(int) );CHKPTRQ(tmp)
   ec = 0;
   for ( i=0; i<Nbs; i++ ) {
     if (indices[i]) {
@@ -110,11 +110,11 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
     for ( j=0; j<bs; j++,col++) tmp[col] = garray[i]*bs+j;
   }
   /* create local vector that is used to scatter into */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&baij->lvec); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&baij->lvec);CHKERRQ(ierr);
 
   /* create two temporary index sets for building scatter-gather */
 
-  /* ierr = ISCreateGeneral(PETSC_COMM_SELF,ec*bs,tmp,&from); CHKERRQ(ierr); */
+  /* ierr = ISCreateGeneral(PETSC_COMM_SELF,ec*bs,tmp,&from);CHKERRQ(ierr); */
   for ( i=0,col=0; i<ec; i++ ) {
     garray[i] = bs*garray[i];
   }
@@ -123,7 +123,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
     garray[i] = garray[i]/bs;
   }
 
-  stmp = (int *) PetscMalloc( (ec+1)*sizeof(int) ); CHKPTRQ(stmp);
+  stmp = (int *) PetscMalloc( (ec+1)*sizeof(int) );CHKPTRQ(stmp);
   for ( i=0; i<ec; i++ ) { stmp[i] = bs*i; } 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
   PetscFree(stmp);
@@ -132,7 +132,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   /* this is inefficient, but otherwise we must do either 
      1) save garray until the first actual scatter when the vector is known or
      2) have another way of generating a scatter context without a vector.*/
-  ierr = VecCreateMPI(mat->comm,baij->n,baij->N,&gvec); CHKERRQ(ierr);
+  ierr = VecCreateMPI(mat->comm,baij->n,baij->N,&gvec);CHKERRQ(ierr);
 
   /* gnerate the scatter context */
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
@@ -151,8 +151,8 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   PLogObjectParent(mat,to);
   baij->garray = garray;
   PLogObjectMemory(mat,(ec+1)*sizeof(int));
-  ierr = ISDestroy(from); CHKERRQ(ierr);
-  ierr = ISDestroy(to); CHKERRQ(ierr);
+  ierr = ISDestroy(from);CHKERRQ(ierr);
+  ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = VecDestroy(gvec);
   PetscFree(tmp);
   PetscFunctionReturn(0);
@@ -182,8 +182,8 @@ int DisAssemble_MPIBAIJ(Mat A)
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(baij->lvec,&ec); /* needed for PLogObjectMemory below */
-  ierr = VecDestroy(baij->lvec); CHKERRQ(ierr); baij->lvec = 0;
-  ierr = VecScatterDestroy(baij->Mvctx); CHKERRQ(ierr); baij->Mvctx = 0;
+  ierr = VecDestroy(baij->lvec);CHKERRQ(ierr); baij->lvec = 0;
+  ierr = VecScatterDestroy(baij->Mvctx);CHKERRQ(ierr); baij->Mvctx = 0;
   if (baij->colmap) {
 #if defined (USE_CTABLE)
     TableDelete(baij->colmap); baij->colmap = 0;
@@ -194,18 +194,18 @@ int DisAssemble_MPIBAIJ(Mat A)
   }
 
   /* make sure that B is assembled so we can access its values */
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* invent new B and copy stuff over */
-  nz = (int *) PetscMalloc( mbs*sizeof(int) ); CHKPTRQ(nz);
+  nz = (int *) PetscMalloc( mbs*sizeof(int) );CHKPTRQ(nz);
   for ( i=0; i<mbs; i++ ) {
     nz[i] = Bbaij->i[i+1]-Bbaij->i[i];
   }
-  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,baij->bs,m,n,0,nz,&Bnew); CHKERRQ(ierr);
+  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,baij->bs,m,n,0,nz,&Bnew);CHKERRQ(ierr);
   PetscFree(nz);
   
-  rvals = (int *) PetscMalloc(bs*sizeof(int)); CHKPTRQ(rvals);
+  rvals = (int *) PetscMalloc(bs*sizeof(int));CHKPTRQ(rvals);
   for ( i=0; i<mbs; i++ ) {
     rvals[0] = bs*i;
     for ( j=1; j<bs; j++ ) { rvals[j] = rvals[j-1] + 1; }
@@ -220,7 +220,7 @@ int DisAssemble_MPIBAIJ(Mat A)
   PetscFree(baij->garray); baij->garray = 0;
   PetscFree(rvals);
   PLogObjectMemory(A,-ec*sizeof(int));
-  ierr = MatDestroy(B); CHKERRQ(ierr);
+  ierr = MatDestroy(B);CHKERRQ(ierr);
   PLogObjectParent(A,Bnew);
   baij->B = Bnew;
   A->was_assembled = PETSC_FALSE;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.9 1999/03/19 21:20:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.10 1999/04/16 16:07:53 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -54,9 +54,9 @@ int main(int argc,char **args)
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg); CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Must indicate binary file with the -f0 option");
-  ierr = OptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg); CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRA(ierr);
   if (!flg) {loops = 1;} /* don't bother with second system */
 
   /* -----------------------------------------------------------
@@ -89,19 +89,19 @@ int main(int argc,char **args)
        reading from this file.
     */
     ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[i],BINARY_RDONLY,&fd);
-           CHKERRA(ierr);
+          CHKERRA(ierr);
 
     /* 
        Determine matrix format to be used (specified at runtime).
        See the manpage for MatLoad() for available formats.
     */
-    ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
+    ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,&set);CHKERRQ(ierr);
 
     /*
        Load the matrix; then destroy the viewer.
     */
-    ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);
-    ierr = ViewerDestroy(fd); CHKERRA(ierr);
+    ierr = MatLoad(fd,mtype,&A);CHKERRA(ierr);
+    ierr = ViewerDestroy(fd);CHKERRA(ierr);
 
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
@@ -117,7 +117,7 @@ int main(int argc,char **args)
     sprintf(stagename[2*i+1],"SLESSetUp %d",i);
     PLogStageRegister(2*i+1,stagename[2*i+1]);
 
-    ierr = MatGetOrdering(A,rtype,&isrow,&iscol); CHKERRQ(ierr);
+    ierr = MatGetOrdering(A,rtype,&isrow,&iscol);CHKERRQ(ierr);
 
     /*
        Conclude profiling this stage
@@ -133,9 +133,9 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
     */
-    ierr = MatDestroy(A); CHKERRA(ierr);
-    ierr = ISDestroy(isrow);  CHKERRA(ierr);
-    ierr = ISDestroy(iscol);  CHKERRA(ierr);
+    ierr = MatDestroy(A);CHKERRA(ierr);
+    ierr = ISDestroy(isrow); CHKERRA(ierr);
+    ierr = ISDestroy(iscol); CHKERRA(ierr);
   }
   /* -----------------------------------------------------------
                       End of reordering loop

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.67 1999/03/17 23:22:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.68 1999/03/31 18:41:23 bsmith Exp balay $";
 #endif
 
 /*
@@ -86,10 +86,10 @@ int MatDestroy_Shell(Mat mat)
   if (--mat->refct > 0) PetscFunctionReturn(0);
 
   if (mat->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(mat->mapping);CHKERRQ(ierr);
   }
   if (mat->bmapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping);CHKERRQ(ierr);
   }
   if (mat->rmap) {
     ierr = MapDestroy(mat->rmap);CHKERRQ(ierr);
@@ -254,15 +254,15 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
   PetscFunctionBegin;
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSHELL,"Mat",comm,MatDestroy,MatView);
   PLogObjectCreate(B);
-  B->factor    = 0;
-  B->assembled = PETSC_TRUE;
-  PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));
-  B->ops->destroy   = MatDestroy_Shell;
+  B->factor       = 0;
+  B->assembled    = PETSC_TRUE;
+  ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  B->ops->destroy = MatDestroy_Shell;
 
-  b          = PetscNew(Mat_Shell); CHKPTRQ(b);
+  b       = PetscNew(Mat_Shell);CHKPTRQ(b);
   PLogObjectMemory(B,sizeof(struct _p_Mat)+sizeof(Mat_Shell));
-  PetscMemzero(b,sizeof(Mat_Shell));
-  B->data   = (void *) b;
+  ierr    = PetscMemzero(b,sizeof(Mat_Shell));CHKERRQ(ierr);
+  B->data = (void *) b;
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
     SETERRQ(1,1,"Must give local row and column count for matrix");

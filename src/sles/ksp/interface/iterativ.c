@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.83 1999/03/07 17:28:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.84 1999/04/19 22:14:29 bsmith Exp balay $";
 #endif
 
 /*
@@ -25,7 +25,7 @@ int KSPDefaultFreeWork( KSP ksp )
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->work)  {
-    ierr = VecDestroyVecs(ksp->work,ksp->nwork); CHKERRQ(ierr);
+    ierr = VecDestroyVecs(ksp->work,ksp->nwork);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -127,7 +127,7 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
   if (!ksp->calc_sings) {
     ierr = PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
   } else {
-    ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin); CHKERRQ(ierr);
+    ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
     c = emax/emin;
     ierr = PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e %% max %g min %g max/min %g\n",n,rnorm,emax,emin,c);CHKERRQ(ierr);
   }
@@ -201,7 +201,7 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm); CHKERRQ(ierr);
+  ierr = PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -245,8 +245,8 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
   Mat          A, B;
   
   PetscFunctionBegin;
-  ierr = VecDuplicate(ksp->vec_rhs,&work); CHKERRQ(ierr);
-  ierr = KSPBuildResidual(ksp,0,work,&resid); CHKERRQ(ierr);
+  ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
 
   /*
      Unscale the residual if the matrix is, for example, a BlockSolve matrix
@@ -261,7 +261,7 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
     ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
     ierr = VecDestroy(work);CHKERRQ(ierr);
   }
-  ierr = PetscPrintf(ksp->comm,"%d KSP preconditioned resid norm %14.12e true resid norm %14.12e\n",n,rnorm,scnorm); CHKERRQ(ierr);
+  ierr = PetscPrintf(ksp->comm,"%d KSP preconditioned resid norm %14.12e true resid norm %14.12e\n",n,rnorm,scnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -400,26 +400,26 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {
     if (ksp->B) {
-      if (v) {ierr = PCApply(ksp->B,ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
+      if (v) {ierr = PCApply(ksp->B,ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
       else {SETERRQ(PETSC_ERR_SUP,0,"Not working with right preconditioner");}
     }
     else        {
-      if (v) {ierr = VecCopy(ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
+      if (v) {ierr = VecCopy(ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
       else { *V = ksp->vec_sol;}
     }
   }
   else if (ksp->pc_side == PC_SYMMETRIC) {
     if (ksp->B) {
-      if (v) {ierr = PCApplySymmetricRight(ksp->B,ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
+      if (v) {ierr = PCApplySymmetricRight(ksp->B,ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
       else {SETERRQ(PETSC_ERR_SUP,0,"Not working with symmetric preconditioner");}
     }
     else        {
-      if (v) {ierr = VecCopy(ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
+      if (v) {ierr = VecCopy(ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
       else { *V = ksp->vec_sol;}
     }
   }
   else {
-    if (v) {ierr = VecCopy(ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
+    if (v) {ierr = VecCopy(ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
     else { *V = ksp->vec_sol; }
   }
   PetscFunctionReturn(0);
@@ -454,9 +454,9 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 
   PetscFunctionBegin;
   PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);
-  ierr = KSPBuildSolution(ksp,t,&T); CHKERRQ(ierr);
-  ierr = MatMult(Amat, t, v ); CHKERRQ(ierr);
-  ierr = VecAYPX(&mone, ksp->vec_rhs, v ); CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp,t,&T);CHKERRQ(ierr);
+  ierr = MatMult(Amat, t, v );CHKERRQ(ierr);
+  ierr = VecAYPX(&mone, ksp->vec_rhs, v );CHKERRQ(ierr);
   *V = v; PetscFunctionReturn(0);
 }
 
@@ -479,7 +479,7 @@ int  KSPDefaultGetWork( KSP ksp, int nw )
   PetscFunctionBegin;
   if (ksp->work) {ierr = KSPDefaultFreeWork( ksp );CHKERRQ(ierr);}
   ksp->nwork = nw;
-  ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&ksp->work); CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&ksp->work);CHKERRQ(ierr);
   PLogObjectParents(ksp,nw,ksp->work);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dacorn.c,v 1.23 1999/04/05 00:15:24 bsmith Exp balay $";
+static char vcid[] = "$Id: dacorn.c,v 1.24 1999/04/05 18:04:40 balay Exp balay $";
 #endif
  
 /*
@@ -94,6 +94,8 @@ int DAGetCoordinates(DA da,Vec *c)
 @*/
 int DASetFieldName(DA da,int nf,const char name[])
 {
+  int ierr;
+
   PetscFunctionBegin;
  
   PetscValidHeaderSpecific(da,DA_COOKIE);
@@ -101,7 +103,7 @@ int DASetFieldName(DA da,int nf,const char name[])
   if (da->fieldname[nf]) PetscFree(da->fieldname[nf]);
   
   da->fieldname[nf] = (char *) PetscMalloc((1+PetscStrlen(name))*sizeof(char));CHKPTRQ(da->fieldname[nf]);
-  PetscStrcpy(da->fieldname[nf],name);
+  ierr = PetscStrcpy(da->fieldname[nf],name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vmpicr.c,v 1.2 1999/01/12 23:13:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: vmpicr.c,v 1.3 1999/05/04 18:27:32 balay Exp balay $";
 #endif
 
 /*
@@ -40,7 +40,7 @@ int VecCreateMPI(MPI_Comm comm, int n, int N, Vec *v)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = VecCreate(comm,n,N,v); CHKERRQ(ierr);
+  ierr = VecCreate(comm,n,N,v);CHKERRQ(ierr);
   ierr = VecSetType(*v,"PETSc#VecMPI");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

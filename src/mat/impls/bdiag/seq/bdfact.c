@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdfact.c,v 1.50 1998/10/19 22:18:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.51 1999/01/27 19:47:36 bsmith Exp balay $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -19,17 +19,17 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *
   PetscFunctionBegin;
   if (a->m != a->n) SETERRQ(PETSC_ERR_SUP,0,"Matrix must be square");
   if (isrow) {
-    ierr = ISIdentity(isrow,&idn); CHKERRQ(ierr);
+    ierr = ISIdentity(isrow,&idn);CHKERRQ(ierr);
     if (!idn) SETERRQ(PETSC_ERR_SUP,0,"Only identity row permutation supported");
   }
   if (iscol) {
-    ierr = ISIdentity(iscol,&idn); CHKERRQ(ierr);
+    ierr = ISIdentity(iscol,&idn);CHKERRQ(ierr);
     if (!idn) SETERRQ(PETSC_ERR_SUP,0,"Only identity column permutation supported");
   }
   if (info && info->levels != 0) {
     SETERRQ(PETSC_ERR_SUP,0,"Only ILU(0) is supported");
   }
-  ierr = MatConvert(A,MATSAME,B); CHKERRQ(ierr);
+  ierr = MatConvert(A,MATSAME,B);CHKERRQ(ierr);
 
   /* Must set to zero for repeated calls with different nonzero structure */
   (*B)->factor = 0;
@@ -49,11 +49,11 @@ int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info)
      directly use the input matrix for numeric factorization. */
   if (a->m != a->n) SETERRQ(PETSC_ERR_SUP,0,"Matrix must be square");
   if (isrow) {
-    ierr = ISIdentity(isrow,&idn); CHKERRQ(ierr);
+    ierr = ISIdentity(isrow,&idn);CHKERRQ(ierr);
     if (!idn) SETERRQ(PETSC_ERR_SUP,0,"Only identity row permutation supported");
   }
   if (iscol) {
-    ierr = ISIdentity(iscol,&idn); CHKERRQ(ierr);
+    ierr = ISIdentity(iscol,&idn);CHKERRQ(ierr);
     if (!idn) SETERRQ(PETSC_ERR_SUP,0,"Only identity column permutation supported");
   }
   if (info && info->levels != 0) SETERRQ(PETSC_ERR_SUP,0,"Only ILU(0) is supported");
@@ -83,19 +83,22 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
     for (i=0; i<a->nd; i++) {
       len = a->bdlen[i] * bs2 * sizeof(Scalar);
       d   = diag[i];
-      if (d > 0) PetscMemcpy(dv[i]+bs2*d,a1->diagv[i]+bs2*d,len);
-      else       PetscMemcpy(dv[i],a1->diagv[i],len);
+      if (d > 0) {
+        ierr = PetscMemcpy(dv[i]+bs2*d,a1->diagv[i]+bs2*d,len);CHKERRQ(ierr);
+      } else {
+        ierr = PetscMemcpy(dv[i],a1->diagv[i],len);CHKERRQ(ierr);
+      }
     }
   }
 
   if (!a->pivot) {
-    a->pivot = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(a->pivot);
+    a->pivot = (int *) PetscMalloc((m+1)*sizeof(int));CHKPTRQ(a->pivot);
     PLogObjectMemory(C,m*sizeof(int));
   }
-  v_work = (Scalar *) PetscMalloc((bs2+bs+1)*sizeof(Scalar));CHKPTRQ(v_work);
+  v_work     = (Scalar *) PetscMalloc((bs2+bs+1)*sizeof(Scalar));CHKPTRQ(v_work);
   multiplier = v_work + bs;
-  dgptr = (int *) PetscMalloc((mblock+nblock+1)*sizeof(int)); CHKPTRQ(dgptr);
-  PetscMemzero(dgptr,(mblock+nblock)*sizeof(int));
+  dgptr      = (int *) PetscMalloc((mblock+nblock+1)*sizeof(int));CHKPTRQ(dgptr);
+  ierr       = PetscMemzero(dgptr,(mblock+nblock)*sizeof(int));CHKERRQ(ierr);
   for ( k=0; k<nd; k++ ) dgptr[diag[k]+mblock] = k+1;
   for ( k=0; k<mblock; k++ ) { /* k = block pivot_row */
     knb = k*bs; knb2 = knb*bs;
@@ -130,7 +133,7 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
 {
   Mat          C = *B;
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data, *a1 = (Mat_SeqBDiag *) A->data;
-  int          k, d, d2, dgk, elim_row, elim_col, dnum, nd = a->nd, i, len;
+  int          k, d, d2, dgk, elim_row, elim_col, dnum, nd = a->nd, i, len,ierr;
   int          *diag = a->diag, n = a->n, m = a->m, mainbd = a->mainbd, *dgptr;
   Scalar       **dv = a->diagv, *dd = dv[mainbd], mult;
 
@@ -143,13 +146,16 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
     for (i=0; i<nd; i++) {
       len = a->bdlen[i] * sizeof(Scalar);
       d   = diag[i];
-      if (d > 0) PetscMemcpy(dv[i]+d,a1->diagv[i]+d,len);
-      else       PetscMemcpy(dv[i],a1->diagv[i],len);
+      if (d > 0) {
+        ierr = PetscMemcpy(dv[i]+d,a1->diagv[i]+d,len);CHKERRQ(ierr);
+      } else {
+        ierr = PetscMemcpy(dv[i],a1->diagv[i],len);CHKERRQ(ierr);
+      }
     }
   }
 
-  dgptr = (int *) PetscMalloc((m+n+1)*sizeof(int)); CHKPTRQ(dgptr);
-  PetscMemzero(dgptr,(m+n)*sizeof(int));
+  dgptr = (int *) PetscMalloc((m+n+1)*sizeof(int));CHKPTRQ(dgptr);
+  ierr  = PetscMemzero(dgptr,(m+n)*sizeof(int));CHKERRQ(ierr);
   for ( k=0; k<nd; k++ ) dgptr[diag[k]+m] = k+1;
   for ( k=0; k<m; k++ ) { /* k = pivot_row */
     dd[k] = 1.0/dd[k];
@@ -229,7 +235,7 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  PetscMemcpy(y,x,m*sizeof(Scalar));
+  ierr = PetscMemcpy(y,x,m*sizeof(Scalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
   if (mainbd != 0) {
@@ -288,7 +294,7 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  PetscMemcpy(y,x,m*sizeof(Scalar));
+  ierr = PetscMemcpy(y,x,m*sizeof(Scalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
   if (mainbd != 0) {
@@ -349,7 +355,7 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  PetscMemcpy(y,x,m*sizeof(Scalar));
+  ierr = PetscMemcpy(y,x,m*sizeof(Scalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
   if (mainbd != 0) {
@@ -413,7 +419,7 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  PetscMemcpy(y,x,m*sizeof(Scalar));
+  ierr = PetscMemcpy(y,x,m*sizeof(Scalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
   if (mainbd != 0) {
@@ -487,7 +493,7 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (bs > 25) SETERRQ(PETSC_ERR_SUP,0,"Blocks must be smaller then 25");
-  PetscMemcpy(y,x,m*sizeof(Scalar));
+  ierr = PetscMemcpy(y,x,m*sizeof(Scalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
   if (mainbd != 0) {
@@ -512,7 +518,7 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
       }
     }
     Kernel_w_gets_A_times_v(bs,y+inb,dd+inb2,work);  
-    PetscMemcpy(y+inb,work,bs*sizeof(Scalar));
+    ierr = PetscMemcpy(y+inb,work,bs*sizeof(Scalar));CHKERRQ(ierr);
     inb -= bs; inb2 -= bs2;
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);

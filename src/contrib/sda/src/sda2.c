@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sda2.c,v 1.11 1998/03/20 22:53:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sda2.c,v 1.12 1998/12/17 22:13:03 bsmith Exp balay $";
 #endif
 /*
     Simplified interface to PETSC DA (distributed array) object. 
@@ -46,28 +46,28 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
 
-  *sda = PetscNew(struct _SDA); CHKPTRQ(*sda);
+  *sda = PetscNew(struct _SDA);CHKPTRQ(*sda);
   ierr = DACreate1d(comm,wrap,M,w,s,lc,&da);CHKERRQ(ierr);
   (*sda)->da = da;
 
   /* set up two dummy work vectors for the vector scatter */
-  ierr = DACreateLocalVector(da,&(*sda)->gvec); CHKERRQ(ierr);
-  ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec); CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,&(*sda)->gvec);CHKERRQ(ierr);
+  ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec);CHKERRQ(ierr);
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
-  ierr = VecGetArray((*sda)->gvec,&array); CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->gvec,&array); CHKERRQ(ierr);
+  ierr = VecGetArray((*sda)->gvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->gvec,&array);CHKERRQ(ierr);
   PetscFree(array);
-  ierr = VecGetArray((*sda)->lvec,&array); CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->lvec,&array); CHKERRQ(ierr);
+  ierr = VecGetArray((*sda)->lvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->lvec,&array);CHKERRQ(ierr);
   PetscFree(array);
 
   /* free scatters in DA never needed by user */
-  ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat1); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat2); CHKERRQ(ierr);
+  ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scat1);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scat2);CHKERRQ(ierr);
 
-  ierr = DAGetGlobalIndices(da,&ntmp,&idx); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(da,&ntmp,&idx);CHKERRQ(ierr);
   PetscFree(idx);
 
   PetscFunctionReturn(0);
@@ -113,32 +113,32 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
 
-  *sda = PetscNew(struct _SDA); CHKPTRQ(*sda);
+  *sda = PetscNew(struct _SDA);CHKPTRQ(*sda);
   ierr = DACreate2d(comm,wrap,stencil_type,M,N,m,n,w,s,lx,ly,&da);CHKERRQ(ierr);
   (*sda)->da = da;
 
   /* set up two dummy work vectors for the vector scatter */
-  ierr = DACreateLocalVector(da,&(*sda)->gvec); CHKERRQ(ierr);
-  ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec); CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,&(*sda)->gvec);CHKERRQ(ierr);
+  ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec);CHKERRQ(ierr);
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
-  ierr = VecGetArray((*sda)->gvec,&array); CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->gvec,&array); CHKERRQ(ierr);
+  ierr = VecGetArray((*sda)->gvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->gvec,&array);CHKERRQ(ierr);
   PetscFree(array);
-  ierr = VecGetArray((*sda)->lvec,&array); CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->lvec,&array); CHKERRQ(ierr);
+  ierr = VecGetArray((*sda)->lvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->lvec,&array);CHKERRQ(ierr);
   PetscFree(array);
 
   /* free global vector never needed by user */
-  ierr = DACreateGlobalVector(da,&vec); CHKERRQ(ierr);
-  ierr = VecDestroy(vec); CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,&vec);CHKERRQ(ierr);
+  ierr = VecDestroy(vec);CHKERRQ(ierr);
 
   /* free scatters in DA never needed by user */
-  ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat1); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat2); CHKERRQ(ierr);
+  ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scat1);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scat2);CHKERRQ(ierr);
 
-  ierr = DAGetGlobalIndices(da,&ntmp,&idx); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(da,&ntmp,&idx);CHKERRQ(ierr);
   PetscFree(idx);
 
   PetscFunctionReturn(0);
@@ -184,32 +184,32 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
 
-  *sda = PetscNew(struct _SDA); CHKPTRQ(*sda);
+  *sda = PetscNew(struct _SDA);CHKPTRQ(*sda);
   ierr = DACreate3d(comm,wrap,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
   (*sda)->da = da;
 
   /* set up two dummy work vectors for the vector scatter */
-  ierr = DACreateLocalVector(da,&(*sda)->gvec); CHKERRQ(ierr);
-  ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec); CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,&(*sda)->gvec);CHKERRQ(ierr);
+  ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec);CHKERRQ(ierr);
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
-  ierr = VecGetArray((*sda)->gvec,&array); CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->gvec,&array); CHKERRQ(ierr);
+  ierr = VecGetArray((*sda)->gvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->gvec,&array);CHKERRQ(ierr);
   PetscFree(array);
-  ierr = VecGetArray((*sda)->lvec,&array); CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->lvec,&array); CHKERRQ(ierr);
+  ierr = VecGetArray((*sda)->lvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->lvec,&array);CHKERRQ(ierr);
   PetscFree(array);
 
   /* free global vector never needed by user */
-  ierr = DACreateGlobalVector(da,&vec); CHKERRQ(ierr);
-  ierr = VecDestroy(vec); CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,&vec);CHKERRQ(ierr);
+  ierr = VecDestroy(vec);CHKERRQ(ierr);
 
   /* free scatters in DA never needed by user */
-  ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat1); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat2); CHKERRQ(ierr);
+  ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scat1);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scat2);CHKERRQ(ierr);
 
-  ierr = DAGetGlobalIndices(da,&ntmp,&idx); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(da,&ntmp,&idx);CHKERRQ(ierr);
   PetscFree(idx);
 
   PetscFunctionReturn(0);
@@ -262,7 +262,7 @@ int SDALocalToLocalBegin(SDA sda,Scalar *g, InsertMode mode,Scalar *l)
   PetscFunctionBegin;
   ierr = VecPlaceArray(gvec,g);
   ierr = VecPlaceArray(lvec,l);
-  ierr = DALocalToLocalBegin(da,gvec,mode,lvec); CHKERRQ(ierr);
+  ierr = DALocalToLocalBegin(da,gvec,mode,lvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -292,7 +292,7 @@ int SDALocalToLocalEnd(SDA sda,Scalar *g, InsertMode mode,Scalar *l)
   PetscFunctionBegin;
   ierr = VecPlaceArray(gvec,g);
   ierr = VecPlaceArray(lvec,l);
-  ierr = DALocalToLocalEnd(da,gvec,mode,lvec); CHKERRQ(ierr);
+  ierr = DALocalToLocalEnd(da,gvec,mode,lvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
  

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbdiag.c,v 1.28 1997/07/09 20:54:42 balay Exp bsmith $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.29 1997/10/19 03:25:52 bsmith Exp balay $";
 #endif
 
 /*
@@ -21,8 +21,8 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
 
   /* We make an array as long as the number of columns */
   /* mark those columns that are in mbd->A */
-  indices = (int *) PetscMalloc( (N+1)*sizeof(int) ); CHKPTRQ(indices);
-  PetscMemzero(indices,N*sizeof(int));
+  indices = (int *) PetscMalloc( (N+1)*sizeof(int) );CHKPTRQ(indices);
+  ierr    = PetscMemzero(indices,N*sizeof(int));CHKERRQ(ierr);
 
   if (bs == 1) {
     for (d=0; d<lmbd->nd; d++) {
@@ -57,7 +57,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   }
 
   /* form array of columns we need */
-  garray = (int *) PetscMalloc( (ec+1)*sizeof(int) ); CHKPTRQ(garray);
+  garray = (int *) PetscMalloc( (ec+1)*sizeof(int) );CHKPTRQ(garray);
   ec = 0;
   for ( i=0; i<N; i++ ) {
     if (indices[i]) garray[ec++] = i;
@@ -65,10 +65,10 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   PetscFree(indices);
 
   /* create local vector that is used to scatter into */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&mbd->lvec); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&mbd->lvec);CHKERRQ(ierr);
 
   /* create temporary index set for building scatter-gather */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,ec,garray,&tofrom); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ec,garray,&tofrom);CHKERRQ(ierr);
   PetscFree(garray);
 
   /* create temporary global vector to generate scatter context */
@@ -78,7 +78,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   /*
      This is not correct for a rectangular matrix mbd->m? 
   */
-  ierr = VecCreateMPI(mat->comm,mbd->m,mbd->N,&gvec); CHKERRQ(ierr);
+  ierr = VecCreateMPI(mat->comm,mbd->m,mbd->N,&gvec);CHKERRQ(ierr);
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,tofrom,mbd->lvec,tofrom,&mbd->Mvctx);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   PLogObjectParent(mat,tofrom);
   PLogObjectParent(mat,gvec);
 
-  ierr = ISDestroy(tofrom); CHKERRQ(ierr);
-  ierr = VecDestroy(gvec); CHKERRQ(ierr);
+  ierr = ISDestroy(tofrom);CHKERRQ(ierr);
+  ierr = VecDestroy(gvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

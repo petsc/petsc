@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.8 1998/12/03 03:57:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.9 1999/03/19 21:18:23 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
@@ -38,9 +38,9 @@ int main(int argc,char **argv)
         PETSc could determine the vector's distribution if we specify
         just the global size.
   */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,&x); CHKERRA(ierr);
-  ierr = VecGetSize(x,&N); CHKERRA(ierr);
-  ierr = VecSet(&one,x); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,&x);CHKERRA(ierr);
+  ierr = VecGetSize(x,&N);CHKERRA(ierr);
+  ierr = VecSet(&one,x);CHKERRA(ierr);
 
   /*
      Set the local to global ordering for the vector. Each processor 
@@ -50,8 +50,8 @@ int main(int argc,char **argv)
      have one ghost point on each end of the blocks owned by each processor. 
   */
 
-  ierr = VecGetSize(x,&M); CHKERRA(ierr);
-  ierr = VecGetOwnershipRange(x,&rstart,&rend); CHKERRA(ierr);
+  ierr = VecGetSize(x,&M);CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRA(ierr);
   ng   = rend - rstart + 2;
   gindices = (int*) PetscMalloc(ng*sizeof(int));CHKPTRA(gindices);
   gindices[0] = rstart - 1; 
@@ -63,9 +63,9 @@ int main(int argc,char **argv)
   if (gindices[ng-1] == M)  gindices[ng-1] = 0;
   {
     ISLocalToGlobalMapping ltog;
-    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,&ltog); CHKERRQ(ierr);
-    ierr = VecSetLocalToGlobalMapping(x,ltog); CHKERRA(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(ltog); CHKERRA(ierr);
+    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,&ltog);CHKERRQ(ierr);
+    ierr = VecSetLocalToGlobalMapping(x,ltog);CHKERRA(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRA(ierr);
   }
   PetscFree(gindices);
 
@@ -80,7 +80,7 @@ int main(int argc,char **argv)
         contributions will be added together.
   */
   for ( i=0; i<ng; i++ ) {
-    ierr = VecSetValuesLocal(x,1,&i,&one,ADD_VALUES); CHKERRA(ierr);  
+    ierr = VecSetValuesLocal(x,1,&i,&one,ADD_VALUES);CHKERRA(ierr);  
   }
 
   /* 
@@ -89,14 +89,14 @@ int main(int argc,char **argv)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = VecAssemblyBegin(x); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(x); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(x);CHKERRA(ierr);
+  ierr = VecAssemblyEnd(x);CHKERRA(ierr);
 
   /*
       View the vector; then destroy it.
   */
-  ierr = VecView(x,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

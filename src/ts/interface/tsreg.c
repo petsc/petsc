@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.44 1999/04/16 16:10:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.45 1999/04/19 22:16:17 bsmith Exp balay $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -54,13 +54,13 @@ int TSSetType(TS ts,TSType method)
   if (PetscTypeCompare(ts->type_name,method)) PetscFunctionReturn(0);
 
   /* Get the function pointers for the method requested */
-  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr =  FListFind(ts->comm, TSList, method, (int (**)(void *)) &r );CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method: %s",method);}
 
-  if (ts->sles) {ierr = SLESDestroy(ts->sles); CHKERRQ(ierr);}
-  if (ts->snes) {ierr = SNESDestroy(ts->snes); CHKERRQ(ierr);}
-  if (ts->destroy) {ierr = (*(ts)->destroy)(ts); CHKERRQ(ierr);}
+  if (ts->sles) {ierr = SLESDestroy(ts->sles);CHKERRQ(ierr);}
+  if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
+  if (ts->destroy) {ierr = (*(ts)->destroy)(ts);CHKERRQ(ierr);}
   ts->sles = 0;
   ts->snes = 0;
 
@@ -68,7 +68,7 @@ int TSSetType(TS ts,TSType method)
 
   if (ts->type_name) PetscFree(ts->type_name);
   ts->type_name = (char *) PetscMalloc((PetscStrlen(method)+1)*sizeof(char));CHKPTRQ(ts->type_name);
-  PetscStrcpy(ts->type_name,method);
+  ierr = PetscStrcpy(ts->type_name,method);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -122,7 +122,7 @@ int TSGetType(TS ts, TSType *type)
   int ierr;
 
   PetscFunctionBegin;
-  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   *type = ts->type_name;
   PetscFunctionReturn(0);
 }
@@ -155,7 +155,7 @@ int TSPrintHelp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (ts->prefix) prefix = ts->prefix;
-  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = (*PetscHelpPrintf)(ts->comm,"TS options --------------------------------------------------\n");CHKERRQ(ierr);
   ierr = FListPrintTypes(ts->comm,stdout,ts->prefix,"ts_type",TSList);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ts->comm," %sts_monitor: use default TS monitor\n",prefix);CHKERRQ(ierr);
@@ -197,7 +197,7 @@ int TSSetTypeFromOptions(TS ts)
   if (ts->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to TSSetUp()");
   ierr = OptionsGetString(ts->prefix,"-ts_type",(char *) type,256,&flg);
   if (flg) {
-    ierr = TSSetType(ts,type); CHKERRQ(ierr);
+    ierr = TSSetType(ts,type);CHKERRQ(ierr);
   }
   if (!ts->type_name) {
     ierr = TSSetType(ts,TS_EULER);CHKERRQ(ierr);
@@ -240,23 +240,23 @@ int TSSetFromOptions(TS ts)
 
   ierr = OptionsGetInt(ts->prefix,"-ts_max_steps",&ts->max_steps,&flg);CHKERRQ(ierr);
   ierr = OptionsGetDouble(ts->prefix,"-ts_max_time",&ts->max_time,&flg);CHKERRQ(ierr);
-  ierr = OptionsHasName(ts->prefix,"-ts_monitor",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ts->prefix,"-ts_monitor",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = TSSetMonitor(ts,TSDefaultMonitor,0);CHKERRQ(ierr);
   }
   nmax = 4;
-  ierr = OptionsGetIntArray(ts->prefix,"-ts_xmonitor",loc,&nmax,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(ts->prefix,"-ts_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
     int    rank = 0;
     DrawLG lg;
     ierr = MPI_Comm_rank(ts->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = TSLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); CHKERRQ(ierr);
+      ierr = TSLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
       PLogObjectParent(ts,(PetscObject) lg);
       ierr = TSSetMonitor(ts,TSLGMonitor,(void *)lg);CHKERRQ(ierr);
     }
   }
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (flg)  {ierr = TSPrintHelp(ts);CHKERRQ(ierr);}
   if (!ts->setfromoptions) PetscFunctionReturn(0);
   ierr = (*ts->setfromoptions)(ts);CHKERRQ(ierr);

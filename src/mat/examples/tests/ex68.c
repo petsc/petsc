@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex68.c,v 1.5 1999/03/19 21:19:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex68.c,v 1.6 1999/04/16 16:07:27 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal().\n\n";
@@ -20,24 +20,24 @@ int main(int argc,char **argv)
 
   /* ------- Assemble matrix, --------- */
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,4,4,0,0,&mat); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,4,4,0,0,&mat);CHKERRA(ierr);
 
   /* set anti-diagonal of matrix */
   v = 1.0;
   i = 0; j = 3;
-  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
   v = 2.0;
   i = 1; j = 2;
-  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
   v = 3.0;
   i = 2; j = 1;
-  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
   v = 4.0;
   i = 3; j = 0;
-  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
 
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   printf("Original matrix\n");
   ierr = ViewerSetFormat(VIEWER_STDOUT_SELF,VIEWER_FORMAT_ASCII_DENSE,0);CHKERRA(ierr);
@@ -60,8 +60,8 @@ int main(int argc,char **argv)
   ierr = ISView(iscol,VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = MatDestroy(B);CHKERRA(ierr);
 
-  ierr = ISDestroy(isrow); CHKERRA(ierr);
-  ierr = ISDestroy(iscol); CHKERRA(ierr);
+  ierr = ISDestroy(isrow);CHKERRA(ierr);
+  ierr = ISDestroy(iscol);CHKERRA(ierr);
 
   ierr = MatGetOrdering(mat,MATORDERING_ND,&isrow,&iscol);CHKERRA(ierr);
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
@@ -83,8 +83,8 @@ int main(int argc,char **argv)
   printf("ND + NonzeroDiagonal() column permutation\n"); 
   ierr = ISView(iscol,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
-  ierr = ISDestroy(isrow); CHKERRA(ierr);
-  ierr = ISDestroy(iscol); CHKERRA(ierr);
+  ierr = ISDestroy(isrow);CHKERRA(ierr);
+  ierr = ISDestroy(iscol);CHKERRA(ierr);
 
   ierr = MatGetOrdering(mat,MATORDERING_RCM,&isrow,&iscol);CHKERRA(ierr);
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
@@ -111,9 +111,9 @@ int main(int argc,char **argv)
   ierr = MatView(mat,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /* Free data structures */  
-  ierr = ISDestroy(isrow); CHKERRA(ierr);
-  ierr = ISDestroy(iscol); CHKERRA(ierr);
-  ierr = MatDestroy(mat); CHKERRA(ierr);
+  ierr = ISDestroy(isrow);CHKERRA(ierr);
+  ierr = ISDestroy(iscol);CHKERRA(ierr);
+  ierr = MatDestroy(mat);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

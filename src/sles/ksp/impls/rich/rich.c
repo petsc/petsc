@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.74 1999/03/01 04:55:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.75 1999/04/19 22:14:53 bsmith Exp balay $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -36,14 +36,14 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
 
   ksp->its = 0;
 
-  ierr    = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  ierr    = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   x       = ksp->vec_sol;
   b       = ksp->vec_rhs;
   r       = ksp->work[0];
   maxit   = ksp->max_it;
 
   /* if user has provided fast Richardson code use that */
-  ierr = PCApplyRichardsonExists(ksp->B,&exists); CHKERRQ(ierr);
+  ierr = PCApplyRichardsonExists(ksp->B,&exists);CHKERRQ(ierr);
   if (exists && !ksp->numbermonitors) {
     *its = maxit;
     ierr = PCApplyRichardson(ksp->B,b,x,r,maxit);CHKERRQ(ierr);
@@ -55,10 +55,10 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   pres    = ksp->use_pres;
 
   if (!ksp->guess_zero) {                          /*   r <- b - A x     */
-    ierr = MatMult(Amat,x,r); CHKERRQ(ierr);
-    ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
+    ierr = MatMult(Amat,x,r);CHKERRQ(ierr);
+    ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
   } else {
-    ierr = VecCopy(b,r); CHKERRQ(ierr);
+    ierr = VecCopy(b,r);CHKERRQ(ierr);
   }
 
   for ( i=0; i<maxit; i++ ) {
@@ -66,13 +66,13 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
      ksp->its++;
      PetscAMSGrantAccess(ksp);
 
-     ierr = PCApply(ksp->B,r,z); CHKERRQ(ierr);    /*   z <- B r          */
+     ierr = PCApply(ksp->B,r,z);CHKERRQ(ierr);    /*   z <- B r          */
      if (ksp->calc_res) {
        if (!ksp->avoidnorms) {
          if (!pres) {
-           ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- r'*r     */
+           ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
          } else {
-           ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- z'*z     */
+           ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
          }
        }
        PetscAMSTakeAccess(ksp);
@@ -84,17 +84,17 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
        if (cerr) {brokeout = 1; break;}
      }
    
-     ierr = VecAXPY(&scale,z,x); CHKERRQ(ierr);    /*   x  <- x + scale z */
-     ierr = MatMult(Amat,x,r); CHKERRQ(ierr);      /*   r  <- b - Ax      */
-     ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
+     ierr = VecAXPY(&scale,z,x);CHKERRQ(ierr);    /*   x  <- x + scale z */
+     ierr = MatMult(Amat,x,r);CHKERRQ(ierr);      /*   r  <- b - Ax      */
+     ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
   }
   if (ksp->calc_res && !brokeout) {
     if (!ksp->avoidnorms) {
       if (!pres) {
-        ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- r'*r     */
+        ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- r'*r     */
       } else {
-        ierr = PCApply(ksp->B,r,z); CHKERRQ(ierr);   /*   z <- B r          */
-        ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- z'*z     */
+        ierr = PCApply(ksp->B,r,z);CHKERRQ(ierr);   /*   z <- B r          */
+        ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- z'*z     */
       }
     }
     PetscAMSTakeAccess(ksp);
@@ -118,7 +118,7 @@ extern int KSPView_Richardson(KSP ksp,Viewer viewer)
   ViewerType     vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"  Richardson: damping factor=%g\n",richardsonP->scale);CHKERRQ(ierr);
   } else {
@@ -149,7 +149,7 @@ int KSPSetFromOptions_Richardson(KSP ksp)
   PetscFunctionBegin;
 
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_richardson_scale",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPRichardsonSetScale(ksp,tmp); CHKERRQ(ierr); }
+  if (flg) { ierr = KSPRichardsonSetScale(ksp,tmp);CHKERRQ(ierr); }
 
   PetscFunctionReturn(0);
 }
@@ -174,7 +174,7 @@ EXTERN_C_BEGIN
 int KSPCreate_Richardson(KSP ksp)
 {
   int            ierr;
-  KSP_Richardson *richardsonP = PetscNew(KSP_Richardson); CHKPTRQ(richardsonP);
+  KSP_Richardson *richardsonP = PetscNew(KSP_Richardson);CHKPTRQ(richardsonP);
 
   PetscFunctionBegin;
   PLogObjectMemory(ksp,sizeof(KSP_Richardson));

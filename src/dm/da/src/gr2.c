@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.20 1999/04/13 21:20:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.21 1999/04/19 22:17:13 bsmith Exp balay $";
 #endif
 
 /* 
@@ -57,13 +57,13 @@ int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
       id = i+j*m+1+m;x3 = x2;      y3  = PetscReal(xy[2*id+1]);c3 = (int)(DRAW_BASIC_COLORS+s*(PetscReal(v[k+step*id])-min));
       id = i+j*m+m;  x4 = x1;      y4  = y3;        c4 = (int)(DRAW_BASIC_COLORS+s*(PetscReal(v[k+step*id])-min));
 #endif
-      ierr = DrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3); CHKERRQ(ierr);
-      ierr = DrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4); CHKERRQ(ierr);
+      ierr = DrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
+      ierr = DrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
       if (zctx->showgrid) {
-        ierr = DrawLine(draw,x1,y_1,x2,y2,DRAW_BLACK); CHKERRQ(ierr);
-        ierr = DrawLine(draw,x2,y2,x3,y3,DRAW_BLACK); CHKERRQ(ierr);
-        ierr = DrawLine(draw,x3,y3,x4,y4,DRAW_BLACK); CHKERRQ(ierr);
-        ierr = DrawLine(draw,x4,y4,x1,y_1,DRAW_BLACK); CHKERRQ(ierr);
+        ierr = DrawLine(draw,x1,y_1,x2,y2,DRAW_BLACK);CHKERRQ(ierr);
+        ierr = DrawLine(draw,x2,y2,x3,y3,DRAW_BLACK);CHKERRQ(ierr);
+        ierr = DrawLine(draw,x3,y3,x4,y4,DRAW_BLACK);CHKERRQ(ierr);
+        ierr = DrawLine(draw,x4,y4,x1,y_1,DRAW_BLACK);CHKERRQ(ierr);
       }
     }
   }
@@ -88,7 +88,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+  ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*) &da);CHKERRQ(ierr);
   if (!da) SETERRQ(1,1,"Vector not generated from a DA");
@@ -126,7 +126,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
       /* remove association between xlocal and da, because below we compose in the opposite
          direction and if we left this connect we'd get a loop, so the objects could 
          never be destroyed */
-      ierr = PetscObjectCompose((PetscObject)xlocal,"DA",0); CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject)xlocal,"DA",0);CHKERRQ(ierr);
     }
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject)xlocal);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)xlocal);CHKERRQ(ierr);
@@ -143,7 +143,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   */
   ierr = DAGlobalToLocalBegin(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = VecGetArray(xlocal,&zctx.v); CHKERRQ(ierr);
+  ierr = VecGetArray(xlocal,&zctx.v);CHKERRQ(ierr);
 
 
   /* get coordinates of nodes */
@@ -199,7 +199,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   for ( zctx.k=0; zctx.k<zctx.step; zctx.k++ ) {
     ierr = ViewerDrawGetDraw(viewer,zctx.k,&draw);CHKERRQ(ierr);
     ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
-    ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
+    ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
 
     /*
         Determine the min and max coordinate in plot 
@@ -222,15 +222,15 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
     ierr = DrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
     PLogInfo(da,"VecView_MPI_Draw_DA2d:DA 2d contour plot min %g max %g\n",zctx.min,zctx.max);
 
-    ierr = DrawGetPopup(draw,&popup); CHKERRQ(ierr);
-    ierr = DrawScalePopup(popup,zctx.min,zctx.max); CHKERRQ(ierr);
+    ierr = DrawGetPopup(draw,&popup);CHKERRQ(ierr);
+    ierr = DrawScalePopup(popup,zctx.min,zctx.max);CHKERRQ(ierr);
 
     zctx.scale = (245.0 - DRAW_BASIC_COLORS)/(zctx.max - zctx.min);
 
     ierr = DrawZoom(draw,VecView_MPI_Draw_DA2d_Zoom,&zctx);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(xcoorl,&zctx.xy);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xlocal,&zctx.v); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xlocal,&zctx.v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

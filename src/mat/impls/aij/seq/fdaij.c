@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdaij.c,v 1.18 1998/10/19 22:17:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdaij.c,v 1.19 1999/02/28 20:04:47 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -30,40 +30,40 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   c->rstart        = 0;
 
   c->ncolors       = nis;
-  c->ncolumns      = (int *) PetscMalloc( nis*sizeof(int) );   CHKPTRQ(c->ncolumns);
-  c->columns       = (int **) PetscMalloc( nis*sizeof(int *)); CHKPTRQ(c->columns); 
-  c->nrows         = (int *) PetscMalloc( nis*sizeof(int) );   CHKPTRQ(c->nrows);
-  c->rows          = (int **) PetscMalloc( nis*sizeof(int *)); CHKPTRQ(c->rows);
-  c->columnsforrow = (int **) PetscMalloc( nis*sizeof(int *)); CHKPTRQ(c->columnsforrow);
+  c->ncolumns      = (int *) PetscMalloc( nis*sizeof(int) );CHKPTRQ(c->ncolumns);
+  c->columns       = (int **) PetscMalloc( nis*sizeof(int *));CHKPTRQ(c->columns); 
+  c->nrows         = (int *) PetscMalloc( nis*sizeof(int) );CHKPTRQ(c->nrows);
+  c->rows          = (int **) PetscMalloc( nis*sizeof(int *));CHKPTRQ(c->rows);
+  c->columnsforrow = (int **) PetscMalloc( nis*sizeof(int *));CHKPTRQ(c->columnsforrow);
 
   /*
       Calls the _SeqAIJ() version of these routines to make sure it does not 
      get the reduced (by inodes) version of I and J
   */
-  ierr = MatGetColumnIJ_SeqAIJ(mat,0,PETSC_FALSE,&ncols,&ci,&cj,&done); CHKERRQ(ierr);
+  ierr = MatGetColumnIJ_SeqAIJ(mat,0,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
 
   /*
      Temporary option to allow for debugging/testing
   */
   ierr = OptionsHasName(0,"-matfdcoloring_slow",&flg);
 
-  rowhit        = (int *) PetscMalloc( (N+1)*sizeof(int) ); CHKPTRQ(rowhit);
-  columnsforrow = (int *) PetscMalloc( (N+1)*sizeof(int) ); CHKPTRQ(columnsforrow);
+  rowhit        = (int *) PetscMalloc( (N+1)*sizeof(int) );CHKPTRQ(rowhit);
+  columnsforrow = (int *) PetscMalloc( (N+1)*sizeof(int) );CHKPTRQ(columnsforrow);
 
   for ( i=0; i<nis; i++ ) {
-    ierr = ISGetSize(isa[i],&n); CHKERRQ(ierr);
-    ierr = ISGetIndices(isa[i],&is); CHKERRQ(ierr);
+    ierr = ISGetSize(isa[i],&n);CHKERRQ(ierr);
+    ierr = ISGetIndices(isa[i],&is);CHKERRQ(ierr);
     c->ncolumns[i] = n;
     if (n) {
-      c->columns[i]  = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(c->columns[i]);
-      PetscMemcpy(c->columns[i],is,n*sizeof(int)); 
+      c->columns[i]  = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(c->columns[i]);
+      ierr = PetscMemcpy(c->columns[i],is,n*sizeof(int));CHKERRQ(ierr);
     } else {
       c->columns[i]  = 0;
     }
 
     if (flg) { /* ------------------------------------------------------------------------------*/
       /* crude version requires O(N*N) work */
-      PetscMemzero(rowhit,N*sizeof(int));
+      ierr = PetscMemzero(rowhit,N*sizeof(int));CHKERRQ(ierr);
       /* loop over columns*/
       for ( j=0; j<n; j++ ) {
         col  = is[j];
@@ -80,8 +80,8 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
         if (rowhit[j]) nrows++;
       }
       c->nrows[i]         = nrows;
-      c->rows[i]          = (int *) PetscMalloc(nrows*sizeof(int)); CHKPTRQ(c->rows[i]);
-      c->columnsforrow[i] = (int *) PetscMalloc(nrows*sizeof(int)); CHKPTRQ(c->columnsforrow[i]);
+      c->rows[i]          = (int *) PetscMalloc(nrows*sizeof(int));CHKPTRQ(c->rows[i]);
+      c->columnsforrow[i] = (int *) PetscMalloc(nrows*sizeof(int));CHKPTRQ(c->columnsforrow[i]);
       nrows = 0;
       for ( j=0; j<N; j++ ) {
         if (rowhit[j]) {
@@ -136,14 +136,14 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
         fm                           = rowhit[fm];
       } while (fm < N);
     } /* ---------------------------------------------------------------------------------------*/
-    ierr = ISRestoreIndices(isa[i],&is); CHKERRQ(ierr);  
+    ierr = ISRestoreIndices(isa[i],&is);CHKERRQ(ierr);  
   }
-  ierr = MatRestoreColumnIJ_SeqAIJ(mat,0,PETSC_FALSE,&ncols,&ci,&cj,&done); CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ_SeqAIJ(mat,0,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
 
   PetscFree(rowhit);
   PetscFree(columnsforrow);
 
-  c->scale  = (Scalar *) PetscMalloc( 2*N*sizeof(Scalar) ); CHKPTRQ(c->scale);
+  c->scale  = (Scalar *) PetscMalloc( 2*N*sizeof(Scalar) );CHKPTRQ(c->scale);
   c->wscale = c->scale + N;
 
   PetscFunctionReturn(0);
@@ -159,23 +159,23 @@ int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscolo
 
   PetscFunctionBegin;
   /* construct the index sets from the coloring array */
-  sizes = (int *) PetscMalloc( ncolors*sizeof(int) ); CHKPTRQ(sizes);
-  PetscMemzero(sizes,ncolors*sizeof(int));
+  sizes = (int *) PetscMalloc( ncolors*sizeof(int) );CHKPTRQ(sizes);
+  ierr = PetscMemzero(sizes,ncolors*sizeof(int));CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     sizes[coloring[i]-1]++;
   }
-  ii    = (int **) PetscMalloc( ncolors*sizeof(int*) ); CHKPTRQ(ii);
-  ii[0] = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(ii[0]);
+  ii    = (int **) PetscMalloc( ncolors*sizeof(int*) );CHKPTRQ(ii);
+  ii[0] = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(ii[0]);
   for ( i=1; i<ncolors; i++ ) {
     ii[i] = ii[i-1] + sizes[i-1];
   }
-  PetscMemzero(sizes,ncolors*sizeof(int));
+  ierr = PetscMemzero(sizes,ncolors*sizeof(int));CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     ii[coloring[i]-1][sizes[coloring[i]-1]++] = i;
   }
-  is  = (IS *) PetscMalloc( ncolors*sizeof(IS) ); CHKPTRQ(is);
+  is  = (IS *) PetscMalloc( ncolors*sizeof(IS) );CHKPTRQ(is);
   for ( i=0; i<ncolors; i++ ) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,sizes[i],ii[i],is+i); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,sizes[i],ii[i],is+i);CHKERRQ(ierr);
   }
 
   *iscoloring         = (ISColoring) PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
@@ -200,7 +200,7 @@ int MatColoringPatch_SeqAIJ_Inode(Mat mat,int ncolors,int *coloring,ISColoring *
   int        *colorused,i,*newcolor;
 
   PetscFunctionBegin;
-  newcolor = (int *) PetscMalloc((n+1)*sizeof(int)); CHKPTRQ(newcolor);
+  newcolor = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ(newcolor);
 
   /* loop over inodes, marking a color for each column*/
   row = 0;
@@ -211,8 +211,8 @@ int MatColoringPatch_SeqAIJ_Inode(Mat mat,int ncolors,int *coloring,ISColoring *
   }
 
   /* eliminate unneeded colors */
-  colorused = (int *) PetscMalloc( 5*ncolors*sizeof(int) ); CHKPTRQ(colorused);
-  PetscMemzero(colorused,5*ncolors*sizeof(int));
+  colorused = (int *) PetscMalloc( 5*ncolors*sizeof(int) );CHKPTRQ(colorused);
+  ierr      = PetscMemzero(colorused,5*ncolors*sizeof(int));CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     colorused[newcolor[i]-1] = 1;
   }
@@ -226,7 +226,7 @@ int MatColoringPatch_SeqAIJ_Inode(Mat mat,int ncolors,int *coloring,ISColoring *
   }
   PetscFree(colorused);
 
-  ierr = MatColoringPatch_SeqAIJ(mat,ncolors,newcolor,iscoloring); CHKERRQ(ierr);
+  ierr = MatColoringPatch_SeqAIJ(mat,ncolors,newcolor,iscoloring);CHKERRQ(ierr);
   PetscFree(newcolor);
 
   PetscFunctionReturn(0);

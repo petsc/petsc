@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcnull.c,v 1.22 1999/03/16 00:52:11 balay Exp bsmith $";
+static char vcid[] = "$Id: pcnull.c,v 1.23 1999/04/16 16:08:03 bsmith Exp balay $";
 #endif
 /*
     Routines to project vectors out of null spaces.
@@ -100,16 +100,16 @@ int PCNullSpaceRemove(PCNullSpace sp,Vec vec)
 
   PetscFunctionBegin;
   if (sp->has_cnst) {
-    ierr = VecSum(vec,&sum); CHKERRQ(ierr);
-    ierr = VecGetSize(vec,&N); CHKERRQ(ierr);
+    ierr = VecSum(vec,&sum);CHKERRQ(ierr);
+    ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
     sum  = sum/(-1.0*N);
-    ierr = VecShift(&sum,vec); CHKERRQ(ierr);
+    ierr = VecShift(&sum,vec);CHKERRQ(ierr);
   }
 
   for ( j=0; j<n; j++ ) {
     ierr = VecDot(vec,sp->vecs[j],&sum);CHKERRQ(ierr);
     sum  = -sum;
-    ierr = VecAYPX(&sum,sp->vecs[j],vec); CHKERRQ(ierr);
+    ierr = VecAYPX(&sum,sp->vecs[j],vec);CHKERRQ(ierr);
   }
   
   PetscFunctionReturn(0);

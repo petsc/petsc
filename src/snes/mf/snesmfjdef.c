@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfjdef.c,v 1.14 1999/05/03 01:20:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfjdef.c,v 1.1 1999/05/03 01:28:27 bsmith Exp balay $";
 #endif
 /*
   Implements the default PETSc approach for computing the h 
@@ -82,12 +82,12 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
      and manually call MPI for the collective phase.
 
   */
-  ierr = VecDotBegin(U,a,&dot); CHKERRQ(ierr);
-  ierr = VecNormBegin(a,NORM_1,&sum); CHKERRQ(ierr);
-  ierr = VecNormBegin(a,NORM_2,&norm); CHKERRQ(ierr);
-  ierr = VecDotEnd(U,a,&dot); CHKERRQ(ierr);
-  ierr = VecNormEnd(a,NORM_1,&sum); CHKERRQ(ierr);
-  ierr = VecNormEnd(a,NORM_2,&norm); CHKERRQ(ierr);
+  ierr = VecDotBegin(U,a,&dot);CHKERRQ(ierr);
+  ierr = VecNormBegin(a,NORM_1,&sum);CHKERRQ(ierr);
+  ierr = VecNormBegin(a,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = VecDotEnd(U,a,&dot);CHKERRQ(ierr);
+  ierr = VecNormEnd(a,NORM_1,&sum);CHKERRQ(ierr);
+  ierr = VecNormEnd(a,NORM_2,&norm);CHKERRQ(ierr);
 
   /* 
      Safeguard for step sizes that are "too small"
@@ -124,8 +124,8 @@ static int MatSNESMFView_Default(MatSNESMFCtx ctx,Viewer viewer)
   int              ierr;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
+  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   
   /*
      Currently this only handles the ascii file viewers, others
@@ -133,7 +133,7 @@ static int MatSNESMFView_Default(MatSNESMFCtx ctx,Viewer viewer)
      make less sense
   */
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = PetscFPrintf(ctx->comm,fd,"    umin=%g (minimum iterate parameter)\n",hctx->umin); CHKERRQ(ierr); 
+    ierr = PetscFPrintf(ctx->comm,fd,"    umin=%g (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr); 
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }    
@@ -157,7 +157,7 @@ static int MatSNESMFPrintHelp_Default(MatSNESMFCtx ctx)
   int              ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p); CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p);CHKERRQ(ierr);
   if (!p) p = "";
   ierr = (*PetscHelpPrintf)(ctx->comm,"   -%ssnes_mf_umin <umin> see users manual (default %g)\n",p,hctx->umin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -180,7 +180,7 @@ static int MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
   double             umin;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p); CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p);CHKERRQ(ierr);
   ierr = OptionsGetDouble(p,"-snes_mf_umin",&umin,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = MatSNESMFDefaultSetUmin(ctx->mat,umin);CHKERRQ(ierr);
@@ -258,7 +258,7 @@ int MatSNESMFDefaultSetUmin(Mat A,double umin)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFDefaultSetUmin_C",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFDefaultSetUmin_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,umin);CHKERRQ(ierr);
   }

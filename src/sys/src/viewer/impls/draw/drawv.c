@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.35 1999/03/31 04:07:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.36 1999/04/21 20:42:32 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -14,9 +14,9 @@ int ViewerDestroy_Draw(Viewer v)
 
   PetscFunctionBegin;
   for (i=0; i<VIEWER_DRAW_MAX; i++) {
-    if (vdraw->drawaxis[i]) {ierr = DrawAxisDestroy(vdraw->drawaxis[i]); CHKERRQ(ierr);}
-    if (vdraw->drawlg[i])   {ierr = DrawLGDestroy(vdraw->drawlg[i]); CHKERRQ(ierr);}
-    if (vdraw->draw[i])     {ierr = DrawDestroy(vdraw->draw[i]); CHKERRQ(ierr);}
+    if (vdraw->drawaxis[i]) {ierr = DrawAxisDestroy(vdraw->drawaxis[i]);CHKERRQ(ierr);}
+    if (vdraw->drawlg[i])   {ierr = DrawLGDestroy(vdraw->drawlg[i]);CHKERRQ(ierr);}
+    if (vdraw->draw[i])     {ierr = DrawDestroy(vdraw->draw[i]);CHKERRQ(ierr);}
   }
   PetscFree(vdraw);
   PetscFunctionReturn(0);
@@ -311,7 +311,7 @@ int ViewerDrawClear(Viewer viewer)
   if (PetscTypeCompare(viewer->type_name,DRAW_VIEWER)) PetscFunctionReturn(0);
   vdraw = (Viewer_Draw *) viewer->data;
   for (i=0; i<VIEWER_DRAW_MAX; i++) {
-    if (vdraw->draw[i]) {ierr = DrawClear(vdraw->draw[i]); CHKERRQ(ierr);}
+    if (vdraw->draw[i]) {ierr = DrawClear(vdraw->draw[i]);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -336,7 +336,7 @@ int ViewerInitializeDrawSelf_Private(void)
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
   ierr = OptionsGetIntArray(PETSC_NULL,"-draw_self_geometry",xywh,&size,&flg);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
-                         &VIEWER_DRAW_SELF_PRIVATE); CHKERRQ(ierr);
+                         &VIEWER_DRAW_SELF_PRIVATE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -351,7 +351,7 @@ int ViewerInitializeDrawWorld_Private_0(void)
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
   ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
-                         &VIEWER_DRAW_WORLD_PRIVATE_0); CHKERRQ(ierr);
+                         &VIEWER_DRAW_WORLD_PRIVATE_0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -366,7 +366,7 @@ int ViewerInitializeDrawWorld_Private_1(void)
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
   ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
-                         &VIEWER_DRAW_WORLD_PRIVATE_1); CHKERRQ(ierr);
+                         &VIEWER_DRAW_WORLD_PRIVATE_1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -381,7 +381,7 @@ int ViewerInitializeDrawWorld_Private_2(void)
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
   ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
-                         &VIEWER_DRAW_WORLD_PRIVATE_2); CHKERRQ(ierr);
+                         &VIEWER_DRAW_WORLD_PRIVATE_2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -393,24 +393,24 @@ int ViewerDestroyDraw_Private(void)
 
   PetscFunctionBegin;
   if (VIEWER_DRAW_WORLD_PRIVATE_0) {
-    ierr = ViewerDestroy(VIEWER_DRAW_WORLD_PRIVATE_0); CHKERRQ(ierr);
+    ierr = ViewerDestroy(VIEWER_DRAW_WORLD_PRIVATE_0);CHKERRQ(ierr);
   }
   if (VIEWER_DRAW_WORLD_PRIVATE_1) {
-    ierr = ViewerDestroy(VIEWER_DRAW_WORLD_PRIVATE_1); CHKERRQ(ierr);
+    ierr = ViewerDestroy(VIEWER_DRAW_WORLD_PRIVATE_1);CHKERRQ(ierr);
   }
   if (VIEWER_DRAW_WORLD_PRIVATE_2) {
-    ierr = ViewerDestroy(VIEWER_DRAW_WORLD_PRIVATE_2); CHKERRQ(ierr);
+    ierr = ViewerDestroy(VIEWER_DRAW_WORLD_PRIVATE_2);CHKERRQ(ierr);
   }
   if (VIEWER_DRAW_SELF_PRIVATE) {
-    ierr = ViewerDestroy(VIEWER_DRAW_SELF_PRIVATE); CHKERRQ(ierr);
+    ierr = ViewerDestroy(VIEWER_DRAW_SELF_PRIVATE);CHKERRQ(ierr);
   }
   /*
       Free any viewers created with the VIEWER_DRAW_(MPI_Comm comm) trick.
   */
-  ierr = VIEWER_DRAW_Destroy(PETSC_COMM_WORLD); CHKERRQ(ierr);
-  ierr = VIEWER_DRAW_Destroy(PETSC_COMM_SELF); CHKERRQ(ierr);
-  ierr = VIEWER_DRAW_Destroy(MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = VIEWER_DRAW_Destroy(MPI_COMM_SELF); CHKERRQ(ierr);
+  ierr = VIEWER_DRAW_Destroy(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = VIEWER_DRAW_Destroy(PETSC_COMM_SELF);CHKERRQ(ierr);
+  ierr = VIEWER_DRAW_Destroy(MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = VIEWER_DRAW_Destroy(MPI_COMM_SELF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -476,7 +476,7 @@ int VIEWER_DRAW_Destroy(MPI_Comm comm)
   }
   ierr = MPI_Attr_get( comm, Petsc_Viewer_Draw_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
   if (flag) { 
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_delete(comm,Petsc_Viewer_Draw_keyval);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);

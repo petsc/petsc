@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pvec2.c,v 1.36 1999/01/27 21:20:37 balay Exp bsmith $"
+static char vcid[] = "$Id: pvec2.c,v 1.37 1999/04/19 22:11:18 bsmith Exp balay $"
 #endif
 
 /*
@@ -46,9 +46,9 @@ int VecMDot_MPI( int nv, Vec xin,const Vec y[], Scalar *z )
 
   PetscFunctionBegin;
   if (nv > 128) {
-    work = (Scalar *) PetscMalloc(nv * sizeof(Scalar)); CHKPTRQ(work);
+    work = (Scalar *) PetscMalloc(nv * sizeof(Scalar));CHKPTRQ(work);
   }
-  ierr = VecMDot_Seq(  nv, xin, y, work ); CHKERRQ(ierr);
+  ierr = VecMDot_Seq(  nv, xin, y, work );CHKERRQ(ierr);
   PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
 #if defined(USE_PETSC_COMPLEX)
   ierr = MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
@@ -73,9 +73,9 @@ int VecMTDot_MPI( int nv, Vec xin,const Vec y[], Scalar *z )
 
   PetscFunctionBegin;
   if (nv > 128) {
-    work = (Scalar *) PetscMalloc(nv * sizeof(Scalar)); CHKPTRQ(work);
+    work = (Scalar *) PetscMalloc(nv * sizeof(Scalar));CHKPTRQ(work);
   }
-  ierr = VecMTDot_Seq(  nv, xin, y, work ); CHKERRQ(ierr);
+  ierr = VecMTDot_Seq(  nv, xin, y, work );CHKERRQ(ierr);
   PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
 #if defined(USE_PETSC_COMPLEX)
   ierr = MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
@@ -179,7 +179,7 @@ int VecMax_MPI( Vec xin, int *idx, double *z )
 
   PetscFunctionBegin;
   /* Find the local max */
-  ierr = VecMax_Seq( xin, idx, &work ); CHKERRQ(ierr);
+  ierr = VecMax_Seq( xin, idx, &work );CHKERRQ(ierr);
 
   /* Find the global max */
   if (!idx) {
@@ -202,7 +202,7 @@ int VecMin_MPI( Vec xin, int *idx, double *z )
 
   PetscFunctionBegin;
   /* Find the local Min */
-  ierr = VecMin_Seq( xin, idx, &work ); CHKERRQ(ierr);
+  ierr = VecMin_Seq( xin, idx, &work );CHKERRQ(ierr);
 
   /* Find the global Min */
   if (!idx) {

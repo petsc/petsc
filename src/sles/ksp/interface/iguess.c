@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iguess.c,v 1.24 1998/10/09 19:19:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.25 1999/01/31 16:08:34 bsmith Exp balay $";
 #endif
 
 #include "src/sles/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -26,10 +26,10 @@ int KSPGuessCreate(KSP ksp,int  maxl,void **ITG )
   *ITG = 0;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  itg  = (KSPIGUESS* ) PetscMalloc(sizeof(KSPIGUESS)); CHKPTRQ(itg);
+  itg  = (KSPIGUESS* ) PetscMalloc(sizeof(KSPIGUESS));CHKPTRQ(itg);
   itg->curl = 0;
   itg->maxl = maxl;
-  itg->alpha = (Scalar *)PetscMalloc( maxl * sizeof(Scalar) );  CHKPTRQ(itg->alpha);
+  itg->alpha = (Scalar *)PetscMalloc( maxl * sizeof(Scalar) );CHKPTRQ(itg->alpha);
   PLogObjectMemory(ksp,sizeof(KSPIGUESS) + maxl*sizeof(Scalar));
   ierr = VecDuplicateVecs(ksp->vec_rhs,maxl,&itg->xtilde);CHKERRQ(ierr);
   PLogObjectParents(ksp,maxl,itg->xtilde);

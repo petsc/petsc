@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ij.c,v 1.29 1999/03/11 16:18:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: ij.c,v 1.30 1999/03/16 21:47:20 curfman Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -35,13 +35,13 @@ static char vcid[] = "$Id: ij.c,v 1.29 1999/03/11 16:18:58 bsmith Exp curfman $"
 int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin, int shiftout,
                             int **iia, int **jja )
 {
-  int *work,*ia,*ja,*j,i, nz, row, col;
+  int *work,*ia,*ja,*j,i, nz, row, col,ierr;
 
   PetscFunctionBegin;
   /* allocate space for row pointers */
-  *iia = ia = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(ia);
-  PetscMemzero(ia,(m+1)*sizeof(int));
-  work = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(work);
+  *iia = ia = (int *) PetscMalloc( (m+1)*sizeof(int) );CHKPTRQ(ia);
+  ierr = PetscMemzero(ia,(m+1)*sizeof(int));CHKERRQ(ierr);
+  work = (int *) PetscMalloc( (m+1)*sizeof(int) );CHKPTRQ(work);
 
   /* determine the number of columns in each row */
   ia[0] = shiftout;
@@ -65,7 +65,7 @@ int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin, int shiftout,
 
   /* allocate space for column pointers */
   nz = ia[m] + (!shiftin);
-  *jja = ja = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(ja);
+  *jja = ja = (int *) PetscMalloc( nz*sizeof(int) );CHKPTRQ(ja);
 
   /* loop over lower triangular part putting into ja */ 
   for (row = 0; row < m; row++) {

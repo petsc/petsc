@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.51 1999/03/17 23:21:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.52 1999/04/19 22:09:39 bsmith Exp balay $";
 #endif
 
 /* 
@@ -181,7 +181,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     } else {
       /* read them in as shorts, later stretch into ints */
       m   *= sizeof(short);
-      pp   = (char *) PetscMalloc(m); CHKPTRQ(pp);
+      pp   = (char *) PetscMalloc(m);CHKPTRQ(pp);
       ptmp = (void*) pp;
     }
   }
@@ -199,7 +199,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     if (longintfile) {
        /* read in twice as many ints and later discard every other one */
        m    *= 2*sizeof(int);
-       pp   =  (char *) PetscMalloc(m); CHKPTRQ(pp);
+       pp   =  (char *) PetscMalloc(m);CHKPTRQ(pp);
        ptmp =  (void*) pp;
     } else {
        m *= sizeof(int);
@@ -324,7 +324,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
     int   *p_int = (int *) p,i;
     short *p_short;
     m       *= sizeof(short);
-    pp      = (char *) PetscMalloc(m); CHKPTRQ(pp);
+    pp      = (char *) PetscMalloc(m);CHKPTRQ(pp);
     ptmp    = (void*) pp;
     p_short = (short *) pp;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zpc.c,v 1.24 1999/04/05 18:22:51 balay Exp balay $";
+static char vcid[] = "$Id: zpc.c,v 1.25 1999/04/06 18:13:54 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -62,7 +62,7 @@ static void (*f1)(void *,Vec*,Vec*,int*);
 static int ourshellapply(void *ctx,Vec x,Vec y)
 {
   int              ierr = 0;
-  (*f1)(ctx,&x,&y,&ierr); CHKERRQ(ierr);
+  (*f1)(ctx,&x,&y,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -78,7 +78,7 @@ static int ourshellsetup(void *ctx)
 {
   int              ierr = 0;
 
-  (*f9)(ctx,&ierr); CHKERRQ(ierr);
+  (*f9)(ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -94,7 +94,7 @@ static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,int m)
 {
   int              ierr = 0;
 
-  (*f2)(ctx,&x,&y,&w,&m,&ierr); CHKERRQ(ierr);
+  (*f2)(ctx,&x,&y,&w,&m,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -198,10 +198,10 @@ void pcgettype_(PC *pc,CHAR name,int *__ierr,int len)
 #if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-  PetscStrncpy(t,tname,len1);
+  *__ierr = PetscStrncpy(t,tname,len1); if (*__ierr) return;
   }
 #else
-  PetscStrncpy(name,tname,len);
+  *__ierr = PetscStrncpy(name,tname,len);if (*__ierr) return;
 #endif
 }
 
@@ -213,10 +213,10 @@ void pcgetoptionsprefix_(PC *pc, CHAR prefix,int *__ierr,int len)
 #if defined(USES_CPTOFCD)
   {
     char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
-    PetscStrncpy(t,tname,len1);
+    *__ierr = PetscStrncpy(t,tname,len1);if (*__ierr) return;
   }
 #else
-  PetscStrncpy(prefix,tname,len);
+  *__ierr = PetscStrncpy(prefix,tname,len);if (*__ierr) return;
 #endif
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.58 1999/03/19 21:17:45 bsmith Exp balay $";
+static char vcid[] = "$Id: gcreatev.c,v 1.59 1999/03/23 20:07:55 balay Exp balay $";
 #endif
 
 #include "sys.h"
@@ -121,7 +121,8 @@ int VecRegister_Private(const char sname[],const char path[],const char name[],
   char fullname[256];
 
   PetscFunctionBegin;
-  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
+  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
   ierr = FListAdd_Private(&VecList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -163,7 +164,7 @@ int VecSetType(Vec vec,VecType type_name)
   if (PetscTypeCompare(vec->type_name,type_name)) PetscFunctionReturn(0);
 
   /* Get the function pointers for the vector requested */
-  if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
   ierr =  FListFind(vec->comm, VecList, type_name,(int (**)(void *)) &r );CHKERRQ(ierr);
 
@@ -173,11 +174,11 @@ int VecSetType(Vec vec,VecType type_name)
     ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
   }
   if (vec->type_name) { PetscFree(vec->type_name); vec->type_name = 0; }
-  ierr = (*r)(vec); CHKERRQ(ierr);
+  ierr = (*r)(vec);CHKERRQ(ierr);
 
   if (!(vec)->type_name) {
     (vec)->type_name = (char *) PetscMalloc((PetscStrlen(type_name)+1)*sizeof(char));CHKPTRQ((vec)->type_name);
-    PetscStrcpy((vec)->type_name,type_name);
+    ierr = PetscStrcpy((vec)->type_name,type_name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex55.c,v 1.6 1998/12/03 04:01:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex55.c,v 1.7 1999/03/19 21:19:59 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
@@ -19,7 +19,7 @@ int main(int argc,char **args)
   Viewer  fd;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   if (size > 1) ntypes = 5;
 
@@ -32,29 +32,29 @@ int main(int argc,char **args)
   /*
      Load the matrix and vector; then destroy the viewer.
   */
-  ierr = MatLoad(fd,MATMPIAIJ,&C); CHKERRA(ierr);
-  ierr = VecLoad(fd,&v); CHKERRA(ierr);
-  ierr = ViewerDestroy(fd); CHKERRA(ierr);
+  ierr = MatLoad(fd,MATMPIAIJ,&C);CHKERRA(ierr);
+  ierr = VecLoad(fd,&v);CHKERRA(ierr);
+  ierr = ViewerDestroy(fd);CHKERRA(ierr);
 
   
   for ( i=0; i<ntypes; i++ ) {
-    ierr = MatConvert(C,type[i],&A); CHKERRA(ierr);
+    ierr = MatConvert(C,type[i],&A);CHKERRA(ierr);
     for ( j=0; j<ntypes; j++ ) {
-      ierr = MatConvert(A,type[i],&B); CHKERRA(ierr);
-      ierr = MatDestroy(B);  CHKERRA(ierr);
+      ierr = MatConvert(A,type[i],&B);CHKERRA(ierr);
+      ierr = MatDestroy(B); CHKERRA(ierr);
     }
-    ierr = MatDestroy(A);  CHKERRA(ierr);
+    ierr = MatDestroy(A); CHKERRA(ierr);
   }
 
   if (size == 1) {
     ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"testmat",BINARY_CREATE,&fd);CHKERRA(ierr);
-    ierr = MatView(C,fd); CHKERRA(ierr);
-    ierr = VecView(v,fd); CHKERRA(ierr);
-    ierr = ViewerDestroy(fd); CHKERRA(ierr);
+    ierr = MatView(C,fd);CHKERRA(ierr);
+    ierr = VecView(v,fd);CHKERRA(ierr);
+    ierr = ViewerDestroy(fd);CHKERRA(ierr);
   }
 
-  ierr = MatDestroy(C); CHKERRA(ierr);
-  ierr = VecDestroy(v); CHKERRA(ierr);
+  ierr = MatDestroy(C);CHKERRA(ierr);
+  ierr = VecDestroy(v);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

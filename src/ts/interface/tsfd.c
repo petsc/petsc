@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsfd.c,v 1.10 1999/02/01 03:43:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: tsfd.c,v 1.11 1999/03/07 17:28:51 bsmith Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -45,10 +45,10 @@ int TSDefaultComputeJacobianColor(TS ts,double t,Vec x1,Mat *J,Mat *B,MatStructu
   /*
        If we are not using SNES we have no way to know the current iteration.
   */
-  ierr = TSGetSNES(ts,&snes); CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (snes) {
     ierr = MatFDColoringGetFrequency(color,&freq);CHKERRQ(ierr);
-    ierr = SNESGetIterationNumber(snes,&it); CHKERRQ(ierr);
+    ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
     if ((freq > 1) && ((it % freq) != 1)) {
       PLogInfo(color,"TSDefaultComputeJacobianColor:Skipping Jacobian, it %d, freq %d\n",it,freq);
@@ -59,7 +59,7 @@ int TSDefaultComputeJacobianColor(TS ts,double t,Vec x1,Mat *J,Mat *B,MatStructu
       *flag = SAME_NONZERO_PATTERN;
     }
   }
-  ierr = MatFDColoringApplyTS(*B,color,t,x1,flag,ts); CHKERRQ(ierr);
+  ierr = MatFDColoringApplyTS(*B,color,t,x1,flag,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -98,23 +98,23 @@ int TSDefaultComputeJacobian(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(xx1,&jj1); CHKERRQ(ierr);
-  ierr = VecDuplicate(xx1,&jj2); CHKERRQ(ierr);
-  ierr = VecDuplicate(xx1,&xx2); CHKERRQ(ierr);
+  ierr = VecDuplicate(xx1,&jj1);CHKERRQ(ierr);
+  ierr = VecDuplicate(xx1,&jj2);CHKERRQ(ierr);
+  ierr = VecDuplicate(xx1,&xx2);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)xx1,&comm);CHKERRQ(ierr);
   ierr = MatZeroEntries(*J);CHKERRQ(ierr);
 
-  ierr = VecGetSize(xx1,&N); CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(xx1,&start,&end); CHKERRQ(ierr);
-  ierr = TSComputeRHSFunction(ts,ts->ptime,xx1,jj1); CHKERRQ(ierr);
+  ierr = VecGetSize(xx1,&N);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(xx1,&start,&end);CHKERRQ(ierr);
+  ierr = TSComputeRHSFunction(ts,ts->ptime,xx1,jj1);CHKERRQ(ierr);
 
   /* Compute Jacobian approximation, 1 column at a time.
       xx1 = current iterate, jj1 = F(xx1)
       xx2 = perturbed iterate, jj2 = F(xx2)
    */
   for ( i=0; i<N; i++ ) {
-    ierr = VecCopy(xx1,xx2); CHKERRQ(ierr);
+    ierr = VecCopy(xx1,xx2);CHKERRQ(ierr);
     if ( i>= start && i<end) {
       ierr =  VecGetArray(xx1,&xx);CHKERRQ(ierr);
       dx   = xx[i-start];
@@ -132,8 +132,8 @@ int TSDefaultComputeJacobian(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *
     } else {
       wscale = 0.0;
     }
-    ierr = TSComputeRHSFunction(ts,t,xx2,jj2); CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,jj1,jj2); CHKERRQ(ierr);
+    ierr = TSComputeRHSFunction(ts,t,xx2,jj2);CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,jj1,jj2);CHKERRQ(ierr);
     /* Communicate scale to all processors */
 #if !defined(USE_PETSC_COMPLEX)
     ierr = MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
@@ -144,18 +144,18 @@ int TSDefaultComputeJacobian(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *
     ierr = VecGetArray(jj2,&y);CHKERRQ(ierr);
     for ( j=start; j<end; j++ ) {
       if (PetscAbsScalar(y[j-start]) > amax) {
-        ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = VecRestoreArray(jj2,&y);
   }
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *flag =  DIFFERENT_NONZERO_PATTERN;
 
-  ierr = VecDestroy(jj1); CHKERRQ(ierr);
-  ierr = VecDestroy(jj2); CHKERRQ(ierr);
-  ierr = VecDestroy(xx2); CHKERRQ(ierr);
+  ierr = VecDestroy(jj1);CHKERRQ(ierr);
+  ierr = VecDestroy(jj2);CHKERRQ(ierr);
+  ierr = VecDestroy(xx2);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

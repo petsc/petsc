@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bicg.c,v 1.7 1999/02/09 22:53:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bicg.c,v 1.8 1999/03/01 04:56:08 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -25,7 +25,7 @@ int KSPSetUp_BiCG(KSP ksp)
   }
 
   /* get work vectors from user code */
-  ierr = KSPDefaultGetWork( ksp, 6 ); CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork( ksp, 6 );CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -53,21 +53,21 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
   Zr       = ksp->work[4];
   Pr       = ksp->work[5];
 
-  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   if (!ksp->guess_zero) {
-    ierr = MatMult(Amat,X,Rr); CHKERRQ(ierr);      /*   r <- b - Ax       */
-    ierr = VecAYPX(&mone,B,Rr); CHKERRQ(ierr);
+    ierr = MatMult(Amat,X,Rr);CHKERRQ(ierr);      /*   r <- b - Ax       */
+    ierr = VecAYPX(&mone,B,Rr);CHKERRQ(ierr);
   } else { 
-    ierr = VecCopy(B,Rr); CHKERRQ(ierr);           /*     r <- b (x is 0) */
+    ierr = VecCopy(B,Rr);CHKERRQ(ierr);           /*     r <- b (x is 0) */
   }
-  ierr = VecCopy(Rr,Rl); CHKERRQ(ierr);
-  ierr = PCApply(ksp->B,Rr,Zr); CHKERRQ(ierr);     /*     z <- Br         */
-  ierr = PCApplyTrans(ksp->B,Rl,Zl); CHKERRQ(ierr);
+  ierr = VecCopy(Rr,Rl);CHKERRQ(ierr);
+  ierr = PCApply(ksp->B,Rr,Zr);CHKERRQ(ierr);     /*     z <- Br         */
+  ierr = PCApplyTrans(ksp->B,Rl,Zl);CHKERRQ(ierr);
   if (pres) {
-      ierr = VecNorm(Zr,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- z'*z       */
+      ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
   } else {
-      ierr = VecNorm(Rr,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- r'*r       */
+      ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
   }
   cerr = (*ksp->converged)(ksp,0,dp,ksp->cnvP);
   if (cerr) {*its =  0; PetscFunctionReturn(0);}
@@ -82,27 +82,27 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
      VecDot(Zr,Rl,&beta);                         /*     beta <- r'z     */
      if (i == 0) {
        if (beta == 0.0) break;
-       ierr = VecCopy(Zr,Pr); CHKERRQ(ierr);       /*     p <- z          */
-       ierr = VecCopy(Zl,Pl); CHKERRQ(ierr);
+       ierr = VecCopy(Zr,Pr);CHKERRQ(ierr);       /*     p <- z          */
+       ierr = VecCopy(Zl,Pl);CHKERRQ(ierr);
      } else {
          b = beta/betaold;
-         ierr = VecAYPX(&b,Zr,Pr); CHKERRQ(ierr);  /*     p <- z + b* p   */
-         ierr = VecAYPX(&b,Zl,Pl); CHKERRQ(ierr);
+         ierr = VecAYPX(&b,Zr,Pr);CHKERRQ(ierr);  /*     p <- z + b* p   */
+         ierr = VecAYPX(&b,Zl,Pl);CHKERRQ(ierr);
      }
      betaold = beta;
-     ierr = MatMult(Amat,Pr,Zr); CHKERRQ(ierr);    /*     z <- Kp         */
-     ierr = MatMultTrans(Amat,Pl,Zl); CHKERRQ(ierr);
+     ierr = MatMult(Amat,Pr,Zr);CHKERRQ(ierr);    /*     z <- Kp         */
+     ierr = MatMultTrans(Amat,Pl,Zl);CHKERRQ(ierr);
      VecDot(Pl,Zr,&dpi);                          /*     dpi <- z'p      */
      a = beta/dpi;                                 /*     a = beta/p'z    */
-     ierr = VecAXPY(&a,Pr,X); CHKERRQ(ierr);       /*     x <- x + ap     */
+     ierr = VecAXPY(&a,Pr,X);CHKERRQ(ierr);       /*     x <- x + ap     */
      ma = -a; VecAXPY(&ma,Zr,Rr);                  /*     r <- r - az     */
      VecAXPY(&ma,Zl,Rl);
      if (pres) {
-       ierr = PCApply(ksp->B,Rr,Zr); CHKERRQ(ierr);  /*     z <- Br         */
-       ierr = PCApplyTrans(ksp->B,Rl,Zl); CHKERRQ(ierr);
-       ierr = VecNorm(Zr,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- z'*z       */
+       ierr = PCApply(ksp->B,Rr,Zr);CHKERRQ(ierr);  /*     z <- Br         */
+       ierr = PCApplyTrans(ksp->B,Rl,Zl);CHKERRQ(ierr);
+       ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
      } else {
-       ierr = VecNorm(Rr,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- r'*r       */
+       ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
      }
      PetscAMSTakeAccess(ksp);
      ksp->its   = i+1;
@@ -113,8 +113,8 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
      cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
      if (cerr) break;
      if (!pres) {
-       ierr = PCApply(ksp->B,Rr,Zr); CHKERRQ(ierr);  /* z <- Br  */
-       ierr = PCApplyTrans(ksp->B,Rl,Zl); CHKERRQ(ierr);
+       ierr = PCApply(ksp->B,Rr,Zr);CHKERRQ(ierr);  /* z <- Br  */
+       ierr = PCApplyTrans(ksp->B,Rl,Zl);CHKERRQ(ierr);
      }
   }
   if (i == maxit) {i--; ksp->its--;}

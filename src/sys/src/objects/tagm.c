@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tagm.c,v 1.9 1999/04/16 16:03:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tagm.c,v 1.10 1999/04/19 22:09:48 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites
@@ -235,7 +235,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
     /* This communicator is not yet known to this system, so we duplicate it and set its value */
     ierr       = MPI_Comm_dup( comm_in, comm_out );CHKERRQ(ierr);
     ierr       = MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );CHKERRQ(ierr);
-    tagvalp    = (int *) PetscMalloc( 2*sizeof(int) ); CHKPTRQ(tagvalp);
+    tagvalp    = (int *) PetscMalloc( 2*sizeof(int) );CHKPTRQ(tagvalp);
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
     ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval, tagvalp);CHKERRQ(ierr);

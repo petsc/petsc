@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.3 1999/03/19 21:23:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.4 1999/04/16 16:10:57 bsmith Exp balay $";
 #endif
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
@@ -111,8 +111,8 @@ int main(int argc,char **argv)
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
 
   m    = 60;
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-debug",&appctx.debug); CHKERRA(ierr);    
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRA(ierr);    
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);
   appctx.norm_2   = 0.0;
@@ -126,47 +126,47 @@ int main(int argc,char **argv)
   /* 
      Create vector data structures for approximate and exact solutions
   */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&u); CHKERRA(ierr);
-  ierr = VecDuplicate(u,&appctx.solution); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&u);CHKERRA(ierr);
+  ierr = VecDuplicate(u,&appctx.solution);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up displays to show graphs of the solution and error 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"",80,380,400,160,&appctx.viewer1); CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(appctx.viewer1,0,&draw); CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);   
-  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"",80,0,400,160,&appctx.viewer2); CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(appctx.viewer2,0,&draw); CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);   
+  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"",80,380,400,160,&appctx.viewer1);CHKERRA(ierr);
+  ierr = ViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRA(ierr);
+  ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);   
+  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"",80,0,400,160,&appctx.viewer2);CHKERRA(ierr);
+  ierr = ViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRA(ierr);
+  ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);   
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSCreate(PETSC_COMM_SELF,TS_LINEAR,&ts); CHKERRA(ierr);
+  ierr = TSCreate(PETSC_COMM_SELF,TS_LINEAR,&ts);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetMonitor(ts,Monitor,&appctx); CHKERRA(ierr);
+  ierr = TSSetMonitor(ts,Monitor,&appctx);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
      Create matrix data structure; set matrix evaluation routine.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m,m,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m,m,&A);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-time_dependent_rhs",&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-time_dependent_rhs",&flg);CHKERRA(ierr);
   if (flg) {
     /*
        For linear problems with a time-dependent f(u,t) in the equation 
        u_t = f(u,t), the user provides the discretized right-hand-side
        as a time-dependent matrix.
     */
-    ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx); CHKERRA(ierr);
+    ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx);CHKERRA(ierr);
   } else {
     /*
        For linear problems with a time-independent f(u) in the equation 
@@ -175,14 +175,14 @@ int main(int argc,char **argv)
        routine.
     */
     MatStructure A_structure;
-    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);  CHKERRA(ierr);
-    ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx); CHKERRA(ierr);
+    ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx);CHKERRA(ierr);
   }
 
   /* Treat the problem as having time-dependent boundary conditions */
-  ierr = OptionsHasName(PETSC_NULL,"-time_dependent_bc",&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-time_dependent_bc",&flg);CHKERRA(ierr);
   if (flg) {
-    ierr = TSSetRHSBoundaryConditions(ts,MyBCRoutine,&appctx); CHKERRA(ierr);
+    ierr = TSSetRHSBoundaryConditions(ts,MyBCRoutine,&appctx);CHKERRA(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -190,8 +190,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   dt = appctx.h*appctx.h/2.0;
-  ierr = TSSetInitialTimeStep(ts,0.0,dt); CHKERRA(ierr);
-  ierr = TSSetSolution(ts,u); CHKERRA(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRA(ierr);
+  ierr = TSSetSolution(ts,u);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize timestepping solver:  
@@ -203,7 +203,7 @@ int main(int argc,char **argv)
      to override the defaults set by TSSetDuration().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetDuration(ts,time_steps_max,time_total_max); CHKERRA(ierr);
+  ierr = TSSetDuration(ts,time_steps_max,time_total_max);CHKERRA(ierr);
   ierr = TSSetFromOptions(ts);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -213,12 +213,12 @@ int main(int argc,char **argv)
   /*
      Evaluate initial conditions
   */
-  ierr = InitialConditions(u,&appctx); CHKERRA(ierr);
+  ierr = InitialConditions(u,&appctx);CHKERRA(ierr);
 
   /*
      Run the timestepping solver
   */
-  ierr = TSStep(ts,&steps,&ftime); CHKERRA(ierr);
+  ierr = TSStep(ts,&steps,&ftime);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      View timestepping solver info
@@ -226,19 +226,19 @@ int main(int argc,char **argv)
 
   PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",
               appctx.norm_2/steps,appctx.norm_max/steps);
-  ierr = TSView(ts,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+  ierr = TSView(ts,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSDestroy(ts); CHKERRA(ierr);
-  ierr = MatDestroy(A); CHKERRA(ierr);
-  ierr = VecDestroy(u); CHKERRA(ierr);
-  ierr = ViewerDestroy(appctx.viewer1); CHKERRA(ierr);
-  ierr = ViewerDestroy(appctx.viewer2); CHKERRA(ierr);
-  ierr = VecDestroy(appctx.solution); CHKERRA(ierr);
+  ierr = TSDestroy(ts);CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = VecDestroy(u);CHKERRA(ierr);
+  ierr = ViewerDestroy(appctx.viewer1);CHKERRA(ierr);
+  ierr = ViewerDestroy(appctx.viewer2);CHKERRA(ierr);
+  ierr = VecDestroy(appctx.solution);CHKERRA(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -276,7 +276,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
     - Note that the Fortran interface to VecGetArray() differs from the
       C version.  See the users manual for details.
   */
-  ierr = VecGetArray(u,&u_localptr); CHKERRQ(ierr);
+  ierr = VecGetArray(u,&u_localptr);CHKERRQ(ierr);
 
   /* 
      We initialize the solution array by simply writing the solution
@@ -290,14 +290,14 @@ int InitialConditions(Vec u,AppCtx *appctx)
   /* 
      Restore vector
   */
-  ierr = VecRestoreArray(u,&u_localptr); CHKERRQ(ierr);
+  ierr = VecRestoreArray(u,&u_localptr);CHKERRQ(ierr);
 
   /* 
      Print debugging information if desired
   */
   if (appctx->debug) {
      printf("initial guess vector\n");
-     ierr = VecView(u,VIEWER_STDOUT_SELF); CHKERRQ(ierr);
+     ierr = VecView(u,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   return 0;
@@ -324,7 +324,7 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
   /*
      Get a pointer to vector data.
   */
-  ierr = VecGetArray(solution,&s_localptr); CHKERRQ(ierr);
+  ierr = VecGetArray(solution,&s_localptr);CHKERRQ(ierr);
 
   /* 
      Simply write the solution directly into the array locations.
@@ -339,7 +339,7 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
   /* 
      Restore vector
   */
-  ierr = VecRestoreArray(solution,&s_localptr); CHKERRQ(ierr);
+  ierr = VecRestoreArray(solution,&s_localptr);CHKERRQ(ierr);
   return 0;
 }
 /* --------------------------------------------------------------------- */
@@ -371,30 +371,30 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   /* 
      View a graph of the current iterate
   */
-  ierr = VecView(u,appctx->viewer2); CHKERRQ(ierr);
+  ierr = VecView(u,appctx->viewer2);CHKERRQ(ierr);
 
   /* 
      Compute the exact solution
   */
-  ierr = ExactSolution(time,appctx->solution,appctx); CHKERRQ(ierr);
+  ierr = ExactSolution(time,appctx->solution,appctx);CHKERRQ(ierr);
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
      printf("Computed solution vector\n");
-     ierr = VecView(u,VIEWER_STDOUT_SELF); CHKERRQ(ierr);
+     ierr = VecView(u,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
      printf("Exact solution vector\n");
-     ierr = VecView(appctx->solution,VIEWER_STDOUT_SELF); CHKERRQ(ierr);
+     ierr = VecView(appctx->solution,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   /*
      Compute the 2-norm and max-norm of the error
   */
-  ierr = VecAXPY(&mone,u,appctx->solution); CHKERRQ(ierr);
-  ierr = VecNorm(appctx->solution,NORM_2,&norm_2); CHKERRQ(ierr);
+  ierr = VecAXPY(&mone,u,appctx->solution);CHKERRQ(ierr);
+  ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
   norm_2 = sqrt(appctx->h)*norm_2;
-  ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max); CHKERRQ(ierr);
+  ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   printf("Timestep %d: time = %g, 2-norm error = %g, max norm error = %g\n",
          step,time,norm_2,norm_max);
@@ -404,14 +404,14 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   /* 
      View a graph of the error
   */
-  ierr = VecView(appctx->solution,appctx->viewer1); CHKERRQ(ierr);
+  ierr = VecView(appctx->solution,appctx->viewer1);CHKERRQ(ierr);
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
      printf("Error vector\n");
-     ierr = VecView(appctx->solution,VIEWER_STDOUT_SELF); CHKERRQ(ierr);
+     ierr = VecView(appctx->solution,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   return 0;
@@ -456,12 +456,12 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 
   mstart = 0;
   v[0] = 1.0;
-  ierr = MatSetValues(A,1,&mstart,1,&mstart,v,INSERT_VALUES); CHKERRQ(ierr);
+  ierr = MatSetValues(A,1,&mstart,1,&mstart,v,INSERT_VALUES);CHKERRQ(ierr);
   mstart++;
 
   mend--;
   v[0] = 1.0;
-  ierr = MatSetValues(A,1,&mend,1,&mend,v,INSERT_VALUES); CHKERRQ(ierr);
+  ierr = MatSetValues(A,1,&mend,1,&mend,v,INSERT_VALUES);CHKERRQ(ierr);
 
   /*
      Set matrix rows corresponding to interior data.  We construct the 
@@ -470,7 +470,7 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
   v[0] = sone; v[1] = stwo; v[2] = sone;  
   for ( i=mstart; i<mend; i++ ) {
     idx[0] = i-1; idx[1] = i; idx[2] = i+1;
-    ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -482,8 +482,8 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /*
      Set flag to indicate that the Jacobian matrix retains an identical
@@ -508,7 +508,7 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
      Set and option to indicate that we will never add a new nonzero location 
      to the matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR); CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
 
   return 0;
 }
@@ -528,10 +528,10 @@ int MyBCRoutine(TS ts,double t,Vec f,void *ctx)
   int    ierr, m = appctx->m;
   Scalar *fa;
 
-  ierr = VecGetArray(f,&fa); CHKERRQ(ierr);
+  ierr = VecGetArray(f,&fa);CHKERRQ(ierr);
   fa[0] = 0.0;
   fa[m-1] = 0.0;
-  ierr = VecRestoreArray(f,&fa); CHKERRQ(ierr);
+  ierr = VecRestoreArray(f,&fa);CHKERRQ(ierr);
   printf("t=%g\n",t);
   
   return 0;

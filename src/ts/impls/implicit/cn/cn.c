@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cn.c,v 1.11 1998/10/19 22:19:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cn.c,v 1.12 1998/12/03 04:04:02 bsmith Exp balay $";
 #endif
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
@@ -42,17 +42,17 @@ int TSComputeRHSFunctionEuler(TS ts,double t,Vec x, Vec y)
   if (ts->rhsmatrix) { /* assemble matrix for this timestep */
     MatStructure flg;
     PetscStackPush("TS user right-hand-side matrix function");
-    ierr = (*ts->rhsmatrix)(ts,t,&ts->A,&ts->B,&flg,ts->jacP); CHKERRQ(ierr);
+    ierr = (*ts->rhsmatrix)(ts,t,&ts->A,&ts->B,&flg,ts->jacP);CHKERRQ(ierr);
     PetscStackPop;
   }
-  ierr = MatMult(ts->A,x,y); CHKERRQ(ierr);
+  ierr = MatMult(ts->A,x,y);CHKERRQ(ierr);
   /* shift: y = y -2*x */
-  ierr = VecAXPY(&neg_two,x,y); CHKERRQ(ierr);
+  ierr = VecAXPY(&neg_two,x,y);CHKERRQ(ierr);
   /* scale: y = y -2*x */
-  ierr = VecScale(&neg_mdt,y); CHKERRQ(ierr);
+  ierr = VecScale(&neg_mdt,y);CHKERRQ(ierr);
 
   /* apply user-provided boundary conditions (only needed if these are time dependent) */
-  ierr = TSComputeRHSBoundaryConditions(ts,t,y); CHKERRQ(ierr);
+  ierr = TSComputeRHSBoundaryConditions(ts,t,y);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -73,29 +73,29 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
   
   PetscFunctionBegin;
   *steps = -ts->steps;
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
+  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   /* set initial guess to be previous solution */
-  ierr = VecCopy(sol,update); CHKERRQ(ierr);
+  ierr = VecCopy(sol,update);CHKERRQ(ierr);
 
   for ( i=0; i<max_steps; i++ ) {
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
 
     /* phase 1 - explicit step */
-    ierr = TSComputeRHSFunctionEuler(ts,ts->ptime,sol,update); CHKERRQ(ierr);
-    ierr = VecAXPBY(&dt,&two,update,sol); CHKERRQ(ierr);
+    ierr = TSComputeRHSFunctionEuler(ts,ts->ptime,sol,update);CHKERRQ(ierr);
+    ierr = VecAXPBY(&dt,&two,update,sol);CHKERRQ(ierr);
 
     /* phase 2 - implicit step */
-    ierr = VecCopy(sol,rhs); CHKERRQ(ierr);
+    ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
-    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs); CHKERRQ(ierr);
+    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 
-    ierr = SLESSolve(ts->sles,rhs,update,&its); CHKERRQ(ierr);
+    ierr = SLESSolve(ts->sles,rhs,update,&its);CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
-    ierr = VecCopy(update,sol); CHKERRQ(ierr);
+    ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
   }
 
   *steps += ts->steps;
@@ -120,7 +120,7 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *time)
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   /* set initial guess to be previous solution */
-  ierr = VecCopy(sol,update); CHKERRQ(ierr);
+  ierr = VecCopy(sol,update);CHKERRQ(ierr);
 
   for ( i=0; i<max_steps; i++ ) {
     ts->ptime += ts->time_step;
@@ -130,30 +130,30 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *time)
     */
     ierr = (*ts->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
     if (!ts->Ashell) {
-      ierr = MatScale(&neg_dt,ts->A); CHKERRQ(ierr);
-      ierr = MatShift(&two,ts->A); CHKERRQ(ierr);
+      ierr = MatScale(&neg_dt,ts->A);CHKERRQ(ierr);
+      ierr = MatShift(&two,ts->A);CHKERRQ(ierr);
     }
     if (ts->B != ts->A && ts->Ashell != ts->B && str != SAME_PRECONDITIONER) {
-      ierr = MatScale(&neg_dt,ts->B); CHKERRQ(ierr);
-      ierr = MatShift(&two,ts->B); CHKERRQ(ierr);
+      ierr = MatScale(&neg_dt,ts->B);CHKERRQ(ierr);
+      ierr = MatShift(&two,ts->B);CHKERRQ(ierr);
     }
 
     /* phase 1 - explicit step */
-    ierr = TSComputeRHSFunctionEuler(ts,ts->ptime,sol,update); CHKERRQ(ierr);
-    ierr = VecAXPBY(&dt,&two,update,sol); CHKERRQ(ierr);
+    ierr = TSComputeRHSFunctionEuler(ts,ts->ptime,sol,update);CHKERRQ(ierr);
+    ierr = VecAXPBY(&dt,&two,update,sol);CHKERRQ(ierr);
 
     /* phase 2 - implicit step */
-    ierr = VecCopy(sol,rhs); CHKERRQ(ierr);
+    ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
 
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
-    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs); CHKERRQ(ierr);
+    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 
-    ierr = SLESSetOperators(ts->sles,ts->A,ts->B,str); CHKERRQ(ierr);
-    ierr = SLESSolve(ts->sles,rhs,update,&its); CHKERRQ(ierr);
+    ierr = SLESSetOperators(ts->sles,ts->A,ts->B,str);CHKERRQ(ierr);
+    ierr = SLESSolve(ts->sles,rhs,update,&its);CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
-    ierr = VecCopy(update,sol); CHKERRQ(ierr);
+    ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
   }
 
   *steps += ts->steps;
@@ -173,16 +173,16 @@ static int TSStep_CN_Nonlinear(TS ts,int *steps,double *time)
   
   PetscFunctionBegin;
   *steps = -ts->steps;
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
+  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   for ( i=0; i<max_steps; i++ ) {
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
-    ierr = VecCopy(sol,cn->update); CHKERRQ(ierr);
-    ierr = SNESSolve(ts->snes,cn->update,&its); CHKERRQ(ierr);
-    ierr = SNESGetNumberLinearIterations(ts->snes,&lits); CHKERRQ(ierr);
+    ierr = VecCopy(sol,cn->update);CHKERRQ(ierr);
+    ierr = SNESSolve(ts->snes,cn->update,&its);CHKERRQ(ierr);
+    ierr = SNESGetNumberLinearIterations(ts->snes,&lits);CHKERRQ(ierr);
     ts->nonlinear_its += PetscAbsInt(its); ts->linear_its += lits;
-    ierr = VecCopy(cn->update,sol); CHKERRQ(ierr);
+    ierr = VecCopy(cn->update,sol);CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
   }
@@ -201,10 +201,10 @@ static int TSDestroy_CN(TS ts )
   int       ierr;
 
   PetscFunctionBegin;
-  if (cn->update) {ierr = VecDestroy(cn->update); CHKERRQ(ierr);}
+  if (cn->update) {ierr = VecDestroy(cn->update);CHKERRQ(ierr);}
   if (cn->func) {ierr = VecDestroy(cn->func);CHKERRQ(ierr);}
   if (cn->rhs) {ierr = VecDestroy(cn->rhs);CHKERRQ(ierr);}
-  if (ts->Ashell) {ierr = MatDestroy(ts->A); CHKERRQ(ierr);}
+  if (ts->Ashell) {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
   PetscFree(cn);
   PetscFunctionReturn(0);
 }
@@ -228,9 +228,9 @@ int TSCnMatMult(Mat mat,Vec x,Vec y)
   neg_dt = -1.0*ts->time_step;
 
   /* apply user-provided function */
-  ierr = MatMult(ts->Ashell,x,y); CHKERRQ(ierr);
+  ierr = MatMult(ts->Ashell,x,y);CHKERRQ(ierr);
   /* shift and scale by 2 - dt*F */
-  ierr = VecAXPBY(&two,&neg_dt,x,y); CHKERRQ(ierr);
+  ierr = VecAXPBY(&two,&neg_dt,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -249,12 +249,12 @@ int TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
 
   PetscFunctionBegin;
   /* apply user provided function */
-  ierr = TSComputeRHSFunction(ts,ts->ptime,x,y); CHKERRQ(ierr);
+  ierr = TSComputeRHSFunction(ts,ts->ptime,x,y);CHKERRQ(ierr);
   /* (u^{n+1} - U^{n})/dt - F(u^{n+1}) */
-  ierr = VecGetArray(ts->vec_sol,&un); CHKERRQ(ierr);
-  ierr = VecGetArray(x,&unp1); CHKERRQ(ierr);
-  ierr = VecGetArray(y,&Funp1); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&n); CHKERRQ(ierr);
+  ierr = VecGetArray(ts->vec_sol,&un);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&unp1);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&Funp1);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
 
   for ( i=0; i<n; i++ ) {
     Funp1[i] = mdt*(unp1[i] - un[i]) - Funp1[i];
@@ -286,15 +286,15 @@ int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
   }
 
   /* shift and scale Jacobian, if not matrix-free */
-  ierr = MatGetType(*AA,&mtype,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatGetType(*AA,&mtype,PETSC_NULL);CHKERRQ(ierr);
   if (mtype != MATSHELL) {
-    ierr = MatScale(&mone,*AA); CHKERRQ(ierr);
-    ierr = MatShift(&mdt,*AA); CHKERRQ(ierr);
+    ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
   }
-  ierr = MatGetType(*BB,&mtype,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatGetType(*BB,&mtype,PETSC_NULL);CHKERRQ(ierr);
   if (*BB != *AA && *str != SAME_PRECONDITIONER && mtype != MATSHELL) {
-    ierr = MatScale(&mone,*BB); CHKERRQ(ierr);
-    ierr = MatShift(&mdt,*BB); CHKERRQ(ierr);
+    ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -310,23 +310,23 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
   Scalar  two = 2.0, neg_dt = -1.0*ts->time_step;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&cn->update); CHKERRQ(ierr);  
-  ierr = VecDuplicate(ts->vec_sol,&cn->rhs); CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&cn->rhs);CHKERRQ(ierr);  
     
   /* build linear system to be solved */
   if (!ts->Ashell) {
-    ierr = MatScale(&neg_dt,ts->A); CHKERRQ(ierr);
-    ierr = MatShift(&two,ts->A); CHKERRQ(ierr);
+    ierr = MatScale(&neg_dt,ts->A);CHKERRQ(ierr);
+    ierr = MatShift(&two,ts->A);CHKERRQ(ierr);
   } else {
     /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSCnMatMult); CHKERRQ(ierr);
+    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
+    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSCnMatMult);CHKERRQ(ierr);
   }
   if (ts->A != ts->B && ts->Ashell != ts->B) {
-    ierr = MatScale(&neg_dt,ts->B); CHKERRQ(ierr);
-    ierr = MatShift(&two,ts->B); CHKERRQ(ierr);
+    ierr = MatScale(&neg_dt,ts->B);CHKERRQ(ierr);
+    ierr = MatShift(&two,ts->B);CHKERRQ(ierr);
   }
   ierr = SLESSetOperators(ts->sles,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -340,13 +340,13 @@ static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
   int       ierr, M, m;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&cn->update); CHKERRQ(ierr);  
-  ierr = VecDuplicate(ts->vec_sol,&cn->rhs); CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&cn->rhs);CHKERRQ(ierr);  
   if (ts->Ashell) { /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSCnMatMult); CHKERRQ(ierr);
+    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
+    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSCnMatMult);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -359,14 +359,14 @@ static int TSSetUp_CN_Nonlinear(TS ts)
   int       ierr, M, m;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&cn->update); CHKERRQ(ierr);  
-  ierr = VecDuplicate(ts->vec_sol,&cn->func); CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&cn->func);CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,cn->func,TSCnFunction,ts);CHKERRQ(ierr);
   if (ts->Ashell) { /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSCnMatMult); CHKERRQ(ierr);
+    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
+    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSCnMatMult);CHKERRQ(ierr);
   }
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSCnJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -380,7 +380,7 @@ static int TSSetFromOptions_CN_Linear(TS ts)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = SLESSetFromOptions(ts->sles); CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(ts->sles);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -392,7 +392,7 @@ static int TSSetFromOptions_CN_Nonlinear(TS ts)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = SNESSetFromOptions(ts->snes); CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -449,9 +449,9 @@ int TSCreate_CN(TS ts )
       ts->step   = TSStep_CN_Linear_Variable_Matrix;
     }
     ts->setfromoptions  = TSSetFromOptions_CN_Linear;
-    ierr = SLESCreate(ts->comm,&ts->sles); CHKERRQ(ierr);
-    ierr = SLESGetKSP(ts->sles,&ksp); CHKERRQ(ierr);
-    ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);
+    ierr = SLESCreate(ts->comm,&ts->sles);CHKERRQ(ierr);
+    ierr = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
     if (!ts->A) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must set Jacobian for nonlinear problem");
@@ -466,9 +466,9 @@ int TSCreate_CN(TS ts )
     ierr = SNESCreate(ts->comm,SNES_NONLINEAR_EQUATIONS,&ts->snes);CHKERRQ(ierr);
   } else SETERRQ( PETSC_ERR_ARG_OUTOFRANGE,0,"No such problem");
 
-  cn   = PetscNew(TS_CN); CHKPTRQ(cn);
+  cn       = PetscNew(TS_CN);CHKPTRQ(cn);
   PLogObjectMemory(ts,sizeof(TS_CN));
-  PetscMemzero(cn,sizeof(TS_CN));
+  ierr     = PetscMemzero(cn,sizeof(TS_CN));CHKERRQ(ierr);
   ts->data = (void *) cn;
 
   PetscFunctionReturn(0);

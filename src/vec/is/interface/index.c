@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.63 1999/03/17 23:22:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.64 1999/04/23 15:22:43 bsmith Exp balay $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -352,7 +352,7 @@ int ISSort(IS is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
-  ierr = (*is->ops->sortindices)(is); CHKERRQ(ierr);
+  ierr = (*is->ops->sortindices)(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -413,7 +413,7 @@ int ISDuplicate(IS is, IS *newIS)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_COOKIE);
   PetscValidPointer(newIS);
-  ierr = (*is->ops->duplicate)(is, newIS); CHKERRQ(ierr);
+  ierr = (*is->ops->duplicate)(is, newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

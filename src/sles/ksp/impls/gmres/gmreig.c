@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmreig.c,v 1.10 1998/12/03 03:57:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmreig.c,v 1.11 1999/01/31 16:08:49 bsmith Exp balay $";
 #endif
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"
@@ -22,7 +22,7 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
     PetscFunctionReturn(0);
   }
   /* copy R matrix to work space */
-  PetscMemcpy(R,gmres->hh_origin,N*N*sizeof(Scalar));
+  ierr = PetscMemcpy(R,gmres->hh_origin,N*N*sizeof(Scalar));CHKERRQ(ierr);
 
   /* zero below diagonal garbage */
   for ( i=0; i<n; i++ ) {
@@ -72,28 +72,28 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
     PetscFunctionReturn(0);
   }
   /* copy R matrix to work space */
-  PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));
+  ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));CHKERRQ(ierr);
 
   /* compute eigenvalues */
 
   /* for ESSL version need really cwork of length N (complex), 2N
      (real); already at least 5N of space has been allocated */
 
-  work     = (double *) PetscMalloc( lwork*sizeof(double) ); CHKPTRQ(work);
+  work     = (double *) PetscMalloc( lwork*sizeof(double) );CHKPTRQ(work);
   zero     = 0;
   LAgeev_(&zero,R,&N,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
   PetscFree(work);
 
   /* For now we stick with the convention of storing the real and imaginary
      components of evalues separately.  But is this what we really want? */
-  perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
+  perm = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(perm);
 
 #if !defined(USE_PETSC_COMPLEX)
   for ( i=0; i<n; i++ ) {
     realpart[i] = cwork[2*i];
     perm[i]     = i;
   }
-  ierr = PetscSortDoubleWithPermutation(n,realpart,perm); CHKERRQ(ierr);
+  ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     r[i] = cwork[2*perm[i]];
     c[i] = cwork[2*perm[i]+1];
@@ -103,7 +103,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
     realpart[i] = PetscReal(cwork[i]);
     perm[i]     = i;
   }
-  ierr = PetscSortDoubleWithPermutation(n,realpart,perm); CHKERRQ(ierr);
+  ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     r[i] = PetscReal(cwork[perm[i]]);
     c[i] = PetscImaginary(cwork[perm[i]]);
@@ -134,14 +134,14 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
   }
 
   /* copy R matrix to work space */
-  PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));
+  ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));CHKERRQ(ierr);
 
   /* compute eigenvalues */
   LAgeev_("N","N",&n,R,&N,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
   if (ierr) SETERRQ(PETSC_ERR_LIB,0,"Error in LAPACK routine");
-  perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
+  perm = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(perm);
   for ( i=0; i<n; i++ ) { perm[i] = i;}
-  ierr = PetscSortDoubleWithPermutation(n,realpart,perm); CHKERRQ(ierr);
+  ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     r[i] = realpart[perm[i]];
     c[i] = imagpart[perm[i]];
@@ -170,15 +170,15 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
     PetscFunctionReturn(0);
   }
   /* copy R matrix to work space */
-  PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));
+  ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));CHKERRQ(ierr);
 
   /* compute eigenvalues */
   LAgeev_("N","N",&n,R,&N,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&ierr);
   if (ierr) SETERRQ(PETSC_ERR_LIB,0,"Error in LAPACK routine");
-  perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
+  perm = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(perm);
   for ( i=0; i<n; i++ ) { perm[i] = i;}
   for ( i=0; i<n; i++ ) { r[i]    = PetscReal(eigs[i]);}
-  ierr = PetscSortDoubleWithPermutation(n,r,perm); CHKERRQ(ierr);
+  ierr = PetscSortDoubleWithPermutation(n,r,perm);CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     r[i] = PetscReal(eigs[perm[i]]);
     c[i] = PetscImaginary(eigs[perm[i]]);

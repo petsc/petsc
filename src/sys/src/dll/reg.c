@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.34 1999/04/19 22:09:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.35 1999/04/21 20:43:16 bsmith Exp balay $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -58,7 +58,7 @@ int PetscInitialize_DynamicLibraries(void)
   }
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetsc"); CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetsc");CHKERRQ(ierr);
   ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
@@ -66,42 +66,42 @@ int PetscInitialize_DynamicLibraries(void)
 
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscvec"); CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetscvec");CHKERRQ(ierr);
   ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscmat"); CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetscmat");CHKERRQ(ierr);
   ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscdm"); CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetscdm");CHKERRQ(ierr);
   ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscsles"); CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetscsles");CHKERRQ(ierr);
   ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscsnes"); CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetscsnes");CHKERRQ(ierr);
   ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscts"); CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetscts");CHKERRQ(ierr);
   ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
@@ -205,7 +205,7 @@ int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(
 
   if (!*fl) {
     entry          = (FList) PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
-    entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 ); CHKPTRQ(entry->name);
+    entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 );CHKPTRQ(entry->name);
     ierr = PetscStrcpy( entry->name, name );CHKERRQ(ierr);
     ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
@@ -240,7 +240,7 @@ int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(
     }
     /* create new entry and add to end of list */
     entry          = (FList) PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
-    entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 ); CHKPTRQ(entry->name);
+    entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 );CHKPTRQ(entry->name);
     ierr = PetscStrcpy( entry->name, name );CHKERRQ(ierr);
     ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
@@ -357,7 +357,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
   */
 #if defined(USE_DYNAMIC_LIBRARIES)
   if (path) {
-    ierr = DLLibraryAppend(comm,&DLLibrariesLoaded,path); CHKERRQ(ierr);
+    ierr = DLLibraryAppend(comm,&DLLibrariesLoaded,path);CHKERRQ(ierr);
   }
 #endif
 
@@ -397,7 +397,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
   ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
   if (path) PetscFree(path);
   if (*r) {
-    ierr = FListAdd(&fl,name,name,r); CHKERRQ(ierr);
+    ierr = FListAdd(&fl,name,name,r);CHKERRQ(ierr);
     PetscFree(function);
     PetscFunctionReturn(0);
   }
@@ -517,7 +517,7 @@ int FListDuplicate(FList fl, FList *nl)
     } else {
       ierr = PetscStrcpy(path,fl->name);CHKERRQ(ierr);
     }       
-    ierr = FListAdd(nl,path,fl->rname,fl->routine); CHKERRQ(ierr);
+    ierr = FListAdd(nl,path,fl->rname,fl->routine);CHKERRQ(ierr);
     fl = fl->next;
   }
   PetscFunctionReturn(0);

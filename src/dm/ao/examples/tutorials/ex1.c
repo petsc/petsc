@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.4 1998/12/03 04:06:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.5 1999/03/19 21:24:03 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -52,8 +52,8 @@ int main( int argc, char **argv )
   ierr = OptionsGetString(0,"-f",filename,256,&flag);CHKERRA(ierr);
   if (!flag) SETERRA(1,1,"Unable to open database, must run with: ex1 -f filename");
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,filename,BINARY_RDONLY,&binary);CHKERRA(ierr);
-  ierr = AODataLoadBasic(binary,&aodata); CHKERRA(ierr);
-  ierr = ViewerDestroy(binary); CHKERRQ(ierr);
+  ierr = AODataLoadBasic(binary,&aodata);CHKERRA(ierr);
+  ierr = ViewerDestroy(binary);CHKERRQ(ierr);
 
   ierr = OptionsHasName(0,"-d",&flag);CHKERRA(ierr);
   if (!flag) {
@@ -75,7 +75,7 @@ int main( int argc, char **argv )
       if (!keyexists) {
         ierr = AODataKeyAdd(aodata,string,1,1);CHKERRA(ierr);
       }
-      PetscStrcpy(keyname,string);
+      ierr = PetscStrcpy(keyname,string);CHKERRQ(ierr);
       printf("Enter segmentname: value (or return to end) ");
       gets(string);
       while (string[0] != 0) {
@@ -122,8 +122,8 @@ int main( int argc, char **argv )
   if (edited) {
     PetscStrcat(filename,".new");
     ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,filename,BINARY_CREATE,&binary);CHKERRA(ierr);
-    ierr = AODataView(aodata,binary); CHKERRA(ierr);
-    ierr = ViewerDestroy(binary); CHKERRQ(ierr);
+    ierr = AODataView(aodata,binary);CHKERRA(ierr);
+    ierr = ViewerDestroy(binary);CHKERRQ(ierr);
   }
 
   ierr = AODataDestroy(aodata);CHKERRA(ierr);

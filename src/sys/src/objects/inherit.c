@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.47 1999/02/26 04:16:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.48 1999/03/17 23:21:46 bsmith Exp balay $";
 #endif
 /*
      Provides utility routines for manipulating any type of PETSc object.
@@ -63,7 +63,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
   PetscFree(h->bops);
   PetscFree(h->ops);
   ierr = OListDestroy(&h->olist);CHKERRQ(ierr);
-  ierr = FListDestroy(h->qlist); CHKERRQ(ierr);
+  ierr = FListDestroy(h->qlist);CHKERRQ(ierr);
   if (h->type_name) PetscFree(h->type_name);
   if (h->name) PetscFree(h->name);
   h->cookie = PETSCFREEDHEADER;
@@ -151,7 +151,7 @@ int PetscObjectDereference(PetscObject obj)
   PetscFunctionBegin;
   PetscValidHeader(obj);
   if (obj->bops->destroy) {
-    ierr = (*obj->bops->destroy)(obj); CHKERRQ(ierr);
+    ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
   } else if (--obj->refct == 0) {
     SETERRQ(PETSC_ERR_SUP,0,"This PETSc object does not have a generic destroy routine");
   }
@@ -186,7 +186,7 @@ int PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
       SETERRQ(1,1,"An object cannot be composed with an object that was compose with it");
     }
   }
-  ierr = OListAdd(&obj->olist,name,ptr); CHKERRQ(ierr);
+  ierr = OListAdd(&obj->olist,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -197,7 +197,7 @@ int PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObject *ptr)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = OListFind(obj->olist,name,ptr); CHKERRQ(ierr);
+  ierr = OListFind(obj->olist,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.60 1999/04/04 20:09:02 bsmith Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.61 1999/04/06 18:14:13 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -229,10 +229,10 @@ void petscobjectgetname(PetscObject *obj, CHAR name, int *__ierr, int len)
   {
   char *t = _fcdtocp(name);
   int  len1 = _fcdlen(name);
-  PetscStrncpy(t,tmp,len1);
+  *__ierr = PetscStrncpy(t,tmp,len1);if (*__ierr) return;
   }
 #else
-  PetscStrncpy(name,tmp,len);
+  *__ierr = PetscStrncpy(name,tmp,len);if (*__ierr) return;
 #endif
 }
 

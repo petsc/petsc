@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.42 1998/03/06 00:14:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.43 1999/03/19 21:21:17 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
@@ -27,53 +27,53 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Create and initialize vectors */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b); CHKERRA(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&ustar); CHKERRA(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u); CHKERRA(ierr);
-  ierr = VecSet(&one,ustar); CHKERRA(ierr);
-  ierr = VecSet(&zero,u); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&ustar);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRA(ierr);
+  ierr = VecSet(&one,ustar);CHKERRA(ierr);
+  ierr = VecSet(&zero,u);CHKERRA(ierr);
 
   /* Create and assemble matrix */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat);CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr = MatSetValues(mat,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
+    ierr = MatSetValues(mat,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
   }
   i = n - 1; col[0] = n - 2; col[1] = n - 1;
-  ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);
+  ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES);CHKERRA(ierr);
   i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
-  ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   /* Compute right-hand-side vector */
-  ierr = MatMult(mat,ustar,b); CHKERRA(ierr);
+  ierr = MatMult(mat,ustar,b);CHKERRA(ierr);
 
   /* Create PC context and set up data structures */
-  ierr = PCCreate(PETSC_COMM_WORLD,&pc); CHKERRA(ierr);
-  ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
-  ierr = PCSetFromOptions(pc); CHKERRA(ierr);
+  ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRA(ierr);
+  ierr = PCSetType(pc,PCNONE);CHKERRA(ierr);
+  ierr = PCSetFromOptions(pc);CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = PCSetVector(pc,u);   CHKERRA(ierr);
-  ierr = PCSetUp(pc); CHKERRA(ierr);
+  ierr = PCSetVector(pc,u);  CHKERRA(ierr);
+  ierr = PCSetUp(pc);CHKERRA(ierr);
 
   /* Create KSP context and set up data structures */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp); CHKERRA(ierr);
-  ierr = KSPSetType(ksp,KSPRICHARDSON); CHKERRA(ierr);
-  ierr = KSPSetFromOptions(ksp); CHKERRA(ierr);
-  ierr = KSPSetSolution(ksp,u); CHKERRA(ierr);
-  ierr = KSPSetRhs(ksp,b); CHKERRA(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRA(ierr);
+  ierr = KSPSetType(ksp,KSPRICHARDSON);CHKERRA(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRA(ierr);
+  ierr = KSPSetSolution(ksp,u);CHKERRA(ierr);
+  ierr = KSPSetRhs(ksp,b);CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = KSPSetPC(ksp,pc); CHKERRA(ierr);
-  ierr = KSPSetUp(ksp); CHKERRA(ierr);
+  ierr = KSPSetPC(ksp,pc);CHKERRA(ierr);
+  ierr = KSPSetUp(ksp);CHKERRA(ierr);
 
   /* Solve the problem */
-  ierr = KSPGetType(ksp,&kspname); CHKERRA(ierr);
-  ierr = PCGetType(pc,&pcname); CHKERRA(ierr);
+  ierr = KSPGetType(ksp,&kspname);CHKERRA(ierr);
+  ierr = PCGetType(pc,&pcname);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
-  ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
-  ierr = VecAXPY(&mone,ustar,u); CHKERRA(ierr);
+  ierr = KSPSolve(ksp,&its);CHKERRA(ierr);
+  ierr = VecAXPY(&mone,ustar,u);CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm);
   if (norm < 1.e-11) {
     fprintf(stdout,"Number of iterations %d 2 norm error < 1.e-11\n",its);
@@ -83,12 +83,12 @@ int main(int argc,char **args)
   }
 
   /* Free data structures */
-  ierr = KSPDestroy(ksp); CHKERRA(ierr);
-  ierr = VecDestroy(u); CHKERRA(ierr);
-  ierr = VecDestroy(ustar); CHKERRA(ierr);
-  ierr = VecDestroy(b); CHKERRA(ierr);
-  ierr = MatDestroy(mat); CHKERRA(ierr);
-  ierr = PCDestroy(pc); CHKERRA(ierr);
+  ierr = KSPDestroy(ksp);CHKERRA(ierr);
+  ierr = VecDestroy(u);CHKERRA(ierr);
+  ierr = VecDestroy(ustar);CHKERRA(ierr);
+  ierr = VecDestroy(b);CHKERRA(ierr);
+  ierr = MatDestroy(mat);CHKERRA(ierr);
+  ierr = PCDestroy(pc);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

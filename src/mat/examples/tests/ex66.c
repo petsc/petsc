@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex66.c,v 1.4 1998/12/03 04:01:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex66.c,v 1.5 1999/03/19 21:19:59 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -21,11 +21,11 @@ int main(int argc,char **args)
   /* Read matrix and RHS */
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"rect",BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,PETSC_NULL,&type,PETSC_NULL);CHKERRA(ierr);
-  ierr = MatLoad(fd,MATSEQAIJ,&A); CHKERRA(ierr);
-  ierr = ViewerDestroy(fd); CHKERRA(ierr);
+  ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
+  ierr = ViewerDestroy(fd);CHKERRA(ierr);
 
   /* Free data structures */
-  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

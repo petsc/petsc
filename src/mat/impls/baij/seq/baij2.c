@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.40 1999/03/17 23:23:13 bsmith Exp balay $";
+static char vcid[] = "$Id: baij2.c,v 1.41 1999/03/22 21:44:49 balay Exp balay $";
 #endif
 
 #include "sys.h"
@@ -26,9 +26,9 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
 
   if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative overlap specified");
 
-  ierr  = BTCreate(m,table); CHKERRQ(ierr);
-  nidx  = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(nidx); 
-  nidx2 = (int *)PetscMalloc((a->m+1)*sizeof(int)); CHKPTRQ(nidx2);
+  ierr  = BTCreate(m,table);CHKERRQ(ierr);
+  nidx  = (int *) PetscMalloc((m+1)*sizeof(int));CHKPTRQ(nidx); 
+  nidx2 = (int *)PetscMalloc((a->m+1)*sizeof(int));CHKPTRQ(nidx2);
 
   for ( i=0; i<is_max; i++ ) {
     /* Initialise the two local arrays */
@@ -36,8 +36,8 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
     BTMemzero(m,table);
                  
     /* Extract the indices, assume there can be duplicate entries */
-    ierr = ISGetIndices(is[i],&idx);  CHKERRQ(ierr);
-    ierr = ISGetSize(is[i],&n);  CHKERRQ(ierr);
+    ierr = ISGetIndices(is[i],&idx);CHKERRQ(ierr);
+    ierr = ISGetSize(is[i],&n);CHKERRQ(ierr);
 
     /* Enter these into the temp arrays i.e mark table[row], enter row into new index */
     for ( j=0; j<n ; ++j){
@@ -45,8 +45,8 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
       if (ival>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"index greater than mat-dim");
       if(!BTLookupSet(table, ival)) { nidx[isz++] = ival;}
     }
-    ierr = ISRestoreIndices(is[i],&idx);  CHKERRQ(ierr);
-    ierr = ISDestroy(is[i]); CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
+    ierr = ISDestroy(is[i]);CHKERRQ(ierr);
     
     k = 0;
     for ( j=0; j<ov; j++){ /* for each overlap*/
@@ -66,7 +66,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
       for (k=0; k<bs; k++ )
         nidx2[j*bs+k] = nidx[j]*bs+k;
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, isz*bs, nidx2, (is+i)); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, isz*bs, nidx2, (is+i));CHKERRQ(ierr);
   }
   BTDestroy(table);
   PetscFree(nidx);
@@ -90,15 +90,15 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
   ierr = ISSorted(iscol,(PetscTruth*)&i);
   if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"IS is not sorted");
 
-  ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
-  ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
-  ierr = ISGetSize(isrow,&nrows); CHKERRQ(ierr);
-  ierr = ISGetSize(iscol,&ncols); CHKERRQ(ierr);
+  ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
+  ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
+  ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
+  ierr = ISGetSize(iscol,&ncols);CHKERRQ(ierr);
 
-  smap  = (int *) PetscMalloc((1+oldcols)*sizeof(int)); CHKPTRQ(smap);
+  smap  = (int *) PetscMalloc((1+oldcols)*sizeof(int));CHKPTRQ(smap);
   ssmap = smap;
-  lens  = (int *) PetscMalloc((1+nrows)*sizeof(int)); CHKPTRQ(lens);
-  PetscMemzero(smap,oldcols*sizeof(int));
+  lens  = (int *) PetscMalloc((1+nrows)*sizeof(int));CHKPTRQ(lens);
+  ierr  = PetscMemzero(smap,oldcols*sizeof(int));CHKERRQ(ierr);
   for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
   /* determine lens of each row */
   for (i=0; i<nrows; i++) {
@@ -119,7 +119,7 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
     if (PetscMemcmp(c->ilen,lens, c->mbs *sizeof(int))) {
       SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong no of nonzeros");
     }
-    PetscMemzero(c->ilen,c->mbs*sizeof(int));
+    ierr = PetscMemzero(c->ilen,c->mbs*sizeof(int));CHKERRQ(ierr);
     C = *B;
   } else {  
     ierr = MatCreateSeqBAIJ(A->comm,bs,nrows*bs,ncols*bs,0,lens,&C);CHKERRQ(ierr);
@@ -136,19 +136,20 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
     for ( k=kstart; k<kend; k++ ) {
       if ((tcol=ssmap[a->j[k]])) {
         *mat_j++ = tcol - 1;
-        PetscMemcpy(mat_a,a->a+k*bs2,bs2*sizeof(MatScalar)); mat_a+=bs2;
+        ierr     = PetscMemcpy(mat_a,a->a+k*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+        mat_a   += bs2;
         (*mat_ilen)++;
       }
     }
   }
     
   /* Free work space */
-  ierr = ISRestoreIndices(iscol,&icol); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
   PetscFree(smap); PetscFree(lens);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
-  ierr = ISRestoreIndices(isrow,&irow); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
   *B = C;
   PetscFunctionReturn(0);
 }
@@ -162,37 +163,37 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B
   int         *vary,*iary,*irow,*icol,nrows,ncols,i,ierr,bs=a->bs,count;
 
   PetscFunctionBegin;
-  ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
-  ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
-  ierr = ISGetSize(isrow,&nrows); CHKERRQ(ierr);
-  ierr = ISGetSize(iscol,&ncols); CHKERRQ(ierr);
+  ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
+  ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
+  ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
+  ierr = ISGetSize(iscol,&ncols);CHKERRQ(ierr);
   
   /* Verify if the indices corespond to each element in a block 
    and form the IS with compressed IS */
-  vary = (int *) PetscMalloc(2*(a->mbs+1)*sizeof(int)); CHKPTRQ(vary);
+  vary = (int *) PetscMalloc(2*(a->mbs+1)*sizeof(int));CHKPTRQ(vary);
   iary = vary + a->mbs;
-  PetscMemzero(vary,(a->mbs)*sizeof(int));
+  ierr = PetscMemzero(vary,(a->mbs)*sizeof(int));CHKERRQ(ierr);
   for ( i=0; i<nrows; i++) vary[irow[i]/bs]++;
   count = 0;
   for (i=0; i<a->mbs; i++) {
     if (vary[i]!=0 && vary[i]!=bs) SETERRA(1,0,"Index set does not match blocks");
     if (vary[i]==bs) iary[count++] = i;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, count, iary,&is1); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, count, iary,&is1);CHKERRQ(ierr);
   
-  PetscMemzero(vary,(a->mbs)*sizeof(int));
+  ierr = PetscMemzero(vary,(a->mbs)*sizeof(int));CHKERRQ(ierr);
   for ( i=0; i<ncols; i++) vary[icol[i]/bs]++;
   count = 0;
   for (i=0; i<a->mbs; i++) {
     if (vary[i]!=0 && vary[i]!=bs) SETERRA(1,0,"MatGetSubmatrices_SeqBAIJ:");
     if (vary[i]==bs) iary[count++] = i;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, count, iary,&is2); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&irow); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscol,&icol); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, count, iary,&is2);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
   PetscFree(vary);
 
-  ierr = MatGetSubMatrix_SeqBAIJ_Private(A,is1,is2,cs,scall,B); CHKERRQ(ierr);
+  ierr = MatGetSubMatrix_SeqBAIJ_Private(A,is1,is2,cs,scall,B);CHKERRQ(ierr);
   ISDestroy(is1);
   ISDestroy(is2);
   PetscFunctionReturn(0);
@@ -206,7 +207,7 @@ int MatGetSubMatrices_SeqBAIJ(Mat A,int n, IS *irow,IS *icol,MatReuse scall,Mat 
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    *B = (Mat *) PetscMalloc( (n+1)*sizeof(Mat) ); CHKPTRQ(*B);
+    *B = (Mat *) PetscMalloc( (n+1)*sizeof(Mat) );CHKPTRQ(*B);
   }
 
   for ( i=0; i<n; i++ ) {
@@ -860,7 +861,7 @@ int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   int            ncols,k;
 
   PetscFunctionBegin;
-  if ( xx != yy) { ierr = VecCopy(yy,zz); CHKERRQ(ierr); }
+  if ( xx != yy) { ierr = VecCopy(yy,zz);CHKERRQ(ierr); }
 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
@@ -910,7 +911,7 @@ int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&xg);CHKERRQ(ierr); x = xg;
   ierr = VecGetArray(zz,&zg);CHKERRQ(ierr); z = zg;
-  PetscMemzero(z,N*sizeof(Scalar));
+  ierr = PetscMemzero(z,N*sizeof(Scalar));CHKERRQ(ierr);
 
   idx   = a->j;
   v     = a->a;
@@ -1000,7 +1001,7 @@ int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
       for ( i=0; i<mbs; i++ ) {
         n     = ii[1] - ii[0]; ii++;
         ncols = n*bs;
-        PetscMemzero(work,ncols*sizeof(Scalar));
+        ierr  = PetscMemzero(work,ncols*sizeof(Scalar));CHKERRQ(ierr);
         Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,work);
         /* LAgemv_("T",&bs,&ncols,&_DOne,v,&bs,x,&_One,&_DOne,work,&_One); */
         v += n*bs2;
@@ -1014,8 +1015,8 @@ int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
       }
     }
   }
-  ierr = VecRestoreArray(xx,&xg); CHKERRQ(ierr);
-  ierr = VecRestoreArray(zz,&zg); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&xg);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&zg);CHKERRQ(ierr);
   PLogFlops(2*a->nz*a->bs2 - a->n);
   PetscFunctionReturn(0);
 }
@@ -1036,8 +1037,10 @@ int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecGetArray(xx,&xg);CHKERRQ(ierr); x = xg;
   ierr = VecGetArray(zz,&zg);CHKERRQ(ierr); z = zg;
 
-  if ( yy != zz ) { ierr = VecCopy(yy,zz); CHKERRQ(ierr); }
-  else PetscMemzero(z,N*sizeof(Scalar));
+  if ( yy != zz ) { ierr = VecCopy(yy,zz);CHKERRQ(ierr); }
+  else {
+    ierr = PetscMemzero(z,N*sizeof(Scalar));CHKERRQ(ierr);
+  }
 
   idx   = a->j;
   v     = a->a;
@@ -1127,7 +1130,7 @@ int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       for ( i=0; i<mbs; i++ ) {
         n     = ii[1] - ii[0]; ii++;
         ncols = n*bs;
-        PetscMemzero(work,ncols*sizeof(Scalar));
+        ierr  = PetscMemzero(work,ncols*sizeof(Scalar));CHKERRQ(ierr);
         Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,work);
         /* LAgemv_("T",&bs,&ncols,&_DOne,v,&bs,x,&_One,&_DOne,work,&_One); */
         v += n*bs2;
@@ -1141,8 +1144,8 @@ int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       }
     }
   }
-  ierr = VecRestoreArray(xx,&xg); CHKERRQ(ierr);
-  ierr = VecRestoreArray(zz,&zg); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&xg);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&zg);CHKERRQ(ierr);
   PLogFlops(2*a->nz*a->bs2);
   PetscFunctionReturn(0);
 }
@@ -1287,7 +1290,7 @@ int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
   mbs = a->mbs;
   bs2 = a->bs2;
   if (ll) {
-    ierr = VecGetArray(ll,&l); CHKERRQ(ierr);
+    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
     ierr = VecGetLocalSize(ll,&lm);CHKERRQ(ierr);
     if (lm != m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Left scaling vector wrong length");
     for ( i=0; i<mbs; i++ ) { /* for each block row */
@@ -1303,7 +1306,7 @@ int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
   }
   
   if (rr) {
-    ierr = VecGetArray(rr,&r); CHKERRQ(ierr);
+    ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
     ierr = VecGetLocalSize(rr,&rn);CHKERRQ(ierr);
     if (rn != n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Right scaling vector wrong length");
     for ( i=0; i<mbs; i++ ) { /* for each block row */
@@ -1360,8 +1363,9 @@ int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 int MatZeroEntries_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data; 
+  int         ierr;
 
   PetscFunctionBegin;
-  PetscMemzero(a->a,a->bs2*a->i[a->mbs]*sizeof(MatScalar));
+  ierr = PetscMemzero(a->a,a->bs2*a->i[a->mbs]*sizeof(MatScalar));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mgfunc.c,v 1.29 1999/01/31 16:08:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.30 1999/04/08 17:53:48 bsmith Exp balay $";
 #endif
 
 #include "src/sles/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
@@ -32,8 +32,8 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
   Scalar mone = -1.0;
 
   PetscFunctionBegin;
-  ierr = MatMult(mat,x,r); CHKERRQ(ierr);
-  ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
+  ierr = MatMult(mat,x,r);CHKERRQ(ierr);
+  ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -216,12 +216,12 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
      Thus we check if a different one has already been allocated, 
      if not we allocate it.
   */
-  ierr = PCGetOptionsPrefix(pc,&prefix); CHKERRQ(ierr);
+  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
   if (mg[l]->smoothu == mg[l]->smoothd) {
-    ierr = SLESCreate(pc->comm,&mg[l]->smoothu); CHKERRQ(ierr);
-    ierr = SLESSetOptionsPrefix( mg[l]->smoothu,prefix); CHKERRQ(ierr);
-    ierr = SLESAppendOptionsPrefix(mg[l]->smoothd,"mg_levels_"); CHKERRQ(ierr);
+    ierr = SLESCreate(pc->comm,&mg[l]->smoothu);CHKERRQ(ierr);
+    ierr = SLESSetOptionsPrefix( mg[l]->smoothu,prefix);CHKERRQ(ierr);
+    ierr = SLESAppendOptionsPrefix(mg[l]->smoothd,"mg_levels_");CHKERRQ(ierr);
     PLogObjectParent(pc,mg[l]->smoothu);
   }
   *sles = mg[l]->smoothu;

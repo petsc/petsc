@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.3 1999/03/19 21:17:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.4 1999/03/28 19:35:36 bsmith Exp balay $";
 #endif
 
 static char help[] = "Prints loadable objects from dynamic library.\n\n";
@@ -28,7 +28,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help); CHKERRA(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRA(ierr);
 
   ierr = OptionsGetString(PETSC_NULL,"-library",filename,256,&flag);CHKERRA(ierr);
   if (!flag) {
@@ -45,6 +45,6 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Version:%s\n",string);CHKERRA(ierr);
 #endif
 
-  ierr = PetscFinalize(); CHKERRA(ierr);
+  ierr = PetscFinalize();CHKERRA(ierr);
   return 0;
 }

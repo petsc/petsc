@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: posindep.c,v 1.32 1999/03/17 23:24:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.33 1999/04/19 22:16:38 bsmith Exp balay $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -58,7 +58,7 @@ int TSPseudoComputeTimeStep(TS ts,double *dt)
 
   PetscFunctionBegin;
   PLogEventBegin(TS_PseudoComputeTimeStep,ts,0,0,0);
-  ierr = (*pseudo->dt)(ts,dt,pseudo->dtctx); CHKERRQ(ierr);
+  ierr = (*pseudo->dt)(ts,dt,pseudo->dtctx);CHKERRQ(ierr);
   PLogEventEnd(TS_PseudoComputeTimeStep,ts,0,0,0);
   PetscFunctionReturn(0);
 }
@@ -132,7 +132,7 @@ int TSPseudoVerifyTimeStep(TS ts,Vec update,double *dt,int *flag)
   PetscFunctionBegin;
   if (!pseudo->verify) {*flag = 1; PetscFunctionReturn(0);}
 
-  ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag ); CHKERRQ(ierr);
+  ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag );CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -151,21 +151,21 @@ static int TSStep_Pseudo(TS ts,int *steps,double *time)
   PetscFunctionBegin;
   *steps = -ts->steps;
 
-  ierr = VecCopy(sol,pseudo->update); CHKERRQ(ierr);
+  ierr = VecCopy(sol,pseudo->update);CHKERRQ(ierr);
   for ( i=0; i<max_steps && ts->ptime < ts->max_time; i++ ) {
-    ierr = TSPseudoComputeTimeStep(ts,&ts->time_step); CHKERRQ(ierr);
+    ierr = TSPseudoComputeTimeStep(ts,&ts->time_step);CHKERRQ(ierr);
     current_time_step = ts->time_step;
     while (1) {
       ts->ptime  += current_time_step;
-      ierr = SNESSolve(ts->snes,pseudo->update,&its); CHKERRQ(ierr);
-      ierr = SNESGetNumberLinearIterations(ts->snes,&lits); CHKERRQ(ierr);
+      ierr = SNESSolve(ts->snes,pseudo->update,&its);CHKERRQ(ierr);
+      ierr = SNESGetNumberLinearIterations(ts->snes,&lits);CHKERRQ(ierr);
       ts->nonlinear_its += PetscAbsInt(its); ts->linear_its += lits;
-      ierr = TSPseudoVerifyTimeStep(ts,pseudo->update,&ts->time_step,&ok); CHKERRQ(ierr);
+      ierr = TSPseudoVerifyTimeStep(ts,pseudo->update,&ts->time_step,&ok);CHKERRQ(ierr);
       if (ok) break;
       ts->ptime        -= current_time_step;
       current_time_step = ts->time_step;
     }
-    ierr = VecCopy(pseudo->update,sol); CHKERRQ(ierr);
+    ierr = VecCopy(pseudo->update,sol);CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
   }
@@ -184,10 +184,10 @@ static int TSDestroy_Pseudo(TS ts )
   int       ierr;
 
   PetscFunctionBegin;
-  if (pseudo->update) {ierr = VecDestroy(pseudo->update); CHKERRQ(ierr);}
+  if (pseudo->update) {ierr = VecDestroy(pseudo->update);CHKERRQ(ierr);}
   if (pseudo->func) {ierr = VecDestroy(pseudo->func);CHKERRQ(ierr);}
   if (pseudo->rhs)  {ierr = VecDestroy(pseudo->rhs);CHKERRQ(ierr);}
-  if (ts->Ashell)   {ierr = MatDestroy(ts->A); CHKERRQ(ierr);}
+  if (ts->Ashell)   {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
   PetscFree(pseudo);
   PetscFunctionReturn(0);
 }
@@ -211,9 +211,9 @@ int TSPseudoMatMult(Mat mat,Vec x,Vec y)
   mdt = 1.0/ts->time_step;
 
   /* apply user provided function */
-  ierr = MatMult(ts->Ashell,x,y); CHKERRQ(ierr);
+  ierr = MatMult(ts->Ashell,x,y);CHKERRQ(ierr);
   /* shift and scale by 1/dt - F */
-  ierr = VecAXPBY(&mdt,&mone,x,y); CHKERRQ(ierr);
+  ierr = VecAXPBY(&mdt,&mone,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -232,12 +232,12 @@ int TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
 
   PetscFunctionBegin;
   /* apply user provided function */
-  ierr = TSComputeRHSFunction(ts,ts->ptime,x,y); CHKERRQ(ierr);
+  ierr = TSComputeRHSFunction(ts,ts->ptime,x,y);CHKERRQ(ierr);
   /* compute (u^{n+1) - u^{n})/dt - F(u^{n+1}) */
-  ierr = VecGetArray(ts->vec_sol,&un); CHKERRQ(ierr);
-  ierr = VecGetArray(x,&unp1); CHKERRQ(ierr);
-  ierr = VecGetArray(y,&Funp1); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&n); CHKERRQ(ierr);
+  ierr = VecGetArray(ts->vec_sol,&un);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&unp1);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&Funp1);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     Funp1[i] = mdt*(unp1[i] - un[i]) - Funp1[i];
   }
@@ -271,13 +271,13 @@ int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
   /* shift and scale Jacobian, if not a shell matrix */
   ierr = MatGetType(*AA,&mtype,PETSC_NULL);
   if (mtype != MATSHELL) {
-    ierr = MatScale(&mone,*AA); CHKERRQ(ierr);
-    ierr = MatShift(&mdt,*AA); CHKERRQ(ierr);
+    ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
   }
   ierr = MatGetType(*BB,&mtype,PETSC_NULL);
   if (*BB != *AA && *str != SAME_PRECONDITIONER && mtype != MATSHELL) {
-    ierr = MatScale(&mone,*BB); CHKERRQ(ierr);
-    ierr = MatShift(&mdt,*BB); CHKERRQ(ierr);
+    ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -292,13 +292,13 @@ static int TSSetUp_Pseudo(TS ts)
   int       ierr, M, m;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&pseudo->update); CHKERRQ(ierr);  
-  ierr = VecDuplicate(ts->vec_sol,&pseudo->func); CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&pseudo->update);CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&pseudo->func);CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,pseudo->func,TSPseudoFunction,ts);CHKERRQ(ierr);
   if (ts->Ashell) { /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
+    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
+    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
     ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void*)TSPseudoMatMult);CHKERRQ(ierr);
   }
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSPseudoJacobian,ts);CHKERRQ(ierr);
@@ -326,19 +326,19 @@ static int TSSetFromOptions_Pseudo(TS ts)
   double inc;
 
   PetscFunctionBegin;
-  ierr = SNESSetFromOptions(ts->snes); CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(ts->prefix,"-ts_monitor",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ts->prefix,"-ts_monitor",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = TSSetMonitor(ts,TSPseudoDefaultMonitor,0); CHKERRQ(ierr);
+    ierr = TSSetMonitor(ts,TSPseudoDefaultMonitor,0);CHKERRQ(ierr);
   }
-  ierr = OptionsGetDouble(ts->prefix,"-ts_pseudo_increment",&inc,&flg);  CHKERRQ(ierr);
+  ierr = OptionsGetDouble(ts->prefix,"-ts_pseudo_increment",&inc,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = TSPseudoSetTimeStepIncrement(ts,inc);  CHKERRQ(ierr);
+    ierr = TSPseudoSetTimeStepIncrement(ts,inc);CHKERRQ(ierr);
   }
   ierr = OptionsHasName(ts->prefix,"-ts_pseudo_increment_dt_from_initial_dt",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = TSPseudoIncrementDtFromInitialDt(ts); CHKERRQ(ierr);
+    ierr = TSPseudoIncrementDtFromInitialDt(ts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -354,7 +354,7 @@ static int TSPrintHelp_Pseudo(TS ts,char *p)
   ierr = (*PetscHelpPrintf)(ts->comm," %sts_pseudo_increment <value> : default 1.1\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ts->comm," %sts_pseudo_increment_dt_from_initial_dt : use initial_dt *\n",p);CHKERRQ(ierr); 
   ierr = (*PetscHelpPrintf)(ts->comm,"     initial fnorm/current fnorm to determine new timestep\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ts->comm,"     default is current_dt * previous fnorm/current fnorm\n"); CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm,"     default is current_dt * previous fnorm/current fnorm\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -623,10 +623,10 @@ int TSCreate_Pseudo(TS ts )
   /* create the required nonlinear solver context */
   ierr = SNESCreate(ts->comm,SNES_NONLINEAR_EQUATIONS,&ts->snes);CHKERRQ(ierr);
 
-  pseudo   = PetscNew(TS_Pseudo); CHKPTRQ(pseudo);
+  pseudo   = PetscNew(TS_Pseudo);CHKPTRQ(pseudo);
   PLogObjectMemory(ts,sizeof(TS_Pseudo));
 
-  PetscMemzero(pseudo,sizeof(TS_Pseudo));
+  ierr     = PetscMemzero(pseudo,sizeof(TS_Pseudo));CHKERRQ(ierr);
   ts->data = (void *) pseudo;
 
   pseudo->dt_increment                 = 1.1;
@@ -677,7 +677,7 @@ int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
 
   PetscFunctionBegin;
   ierr = TSComputeRHSFunction(ts,ts->ptime,ts->vec_sol,pseudo->func);CHKERRQ(ierr);  
-  ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm); CHKERRQ(ierr); 
+  ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm);CHKERRQ(ierr); 
   if (pseudo->initial_fnorm == 0.0) {
     /* first time through so compute initial function norm */
     pseudo->initial_fnorm = pseudo->fnorm;

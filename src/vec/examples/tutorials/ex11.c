@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.4 1999/01/12 23:13:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.5 1999/03/19 21:18:23 bsmith Exp balay $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   Scalar   one = 1.0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
 
   /* 
      Create a vector, specifying only its global dimension.
@@ -51,35 +51,35 @@ int main(int argc,char **argv)
      particular type of vector to be formed.
 
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRA(ierr);
   ierr = VecSetFromOptions(x);CHKERRA(ierr);
 
   /*
      Set the vectors to entries to a constant value.
   */
-  ierr = VecSet(&one,x); CHKERRA(ierr);
+  ierr = VecSet(&one,x);CHKERRA(ierr);
 
-  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"Norm of entire vector %g\n",norm);
 
   ierr = VecSetBlockSize(x,2);CHKERRA(ierr);
-  ierr = VecStrideNorm(x,0,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecStrideNorm(x,0,NORM_2,&norm);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",norm);
 
-  ierr = VecStrideNorm(x,1,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecStrideNorm(x,1,NORM_2,&norm);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",norm);
 
-  ierr = VecStrideNorm(x,1,NORM_1,&norm); CHKERRA(ierr);
+  ierr = VecStrideNorm(x,1,NORM_1,&norm);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",norm);
 
-  ierr = VecStrideNorm(x,1,NORM_INFINITY,&norm); CHKERRA(ierr);
+  ierr = VecStrideNorm(x,1,NORM_INFINITY,&norm);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",norm);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

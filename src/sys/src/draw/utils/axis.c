@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.54 1999/04/21 20:43:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.55 1999/05/04 18:12:58 balay Exp balay $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -64,7 +64,7 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
 
   PetscFunctionBegin;
   if (vobj->cookie == DRAW_COOKIE && PetscTypeCompare(vobj->type_name,DRAW_NULL)) {
-    ierr = DrawOpenNull(vobj->comm,(Draw*)ctx); CHKERRQ(ierr);
+    ierr = DrawOpenNull(vobj->comm,(Draw*)ctx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_COOKIE,0,"DrawAxis",vobj->comm,DrawAxisDestroy,0);

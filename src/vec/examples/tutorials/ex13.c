@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.3 1998/10/09 19:19:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.4 1999/03/19 21:18:23 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests PetscObjectPublish().\n\n";
@@ -38,14 +38,14 @@ int main(int argc,char **argv)
         local size PETSc will choose a reasonable partition trying 
         to put nearly an equal number of elements on each processor.
   */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+4,PETSC_DECIDE,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+4,PETSC_DECIDE,&x);CHKERRA(ierr);
   ierr = PetscObjectPublish((PetscObject)x);CHKERRA(ierr);
-  ierr = VecGetLocalSize(x,&n); CHKERRA(ierr);
-  ierr = VecSet(&one,x); CHKERRA(ierr);
+  ierr = VecGetLocalSize(x,&n);CHKERRA(ierr);
+  ierr = VecSet(&one,x);CHKERRA(ierr);
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,rank+4,&xlocal); CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,rank+4,&xlocal);CHKERRA(ierr);
   ierr = PetscObjectPublish((PetscObject)xlocal);CHKERRA(ierr);
-  ierr = VecSet(&one,xlocal); CHKERRA(ierr);
+  ierr = VecSet(&one,xlocal);CHKERRA(ierr);
 
   while (1) {
 
@@ -69,8 +69,8 @@ int main(int argc,char **argv)
   /*
         Destroy the vectors
   */
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(xlocal); CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(xlocal);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

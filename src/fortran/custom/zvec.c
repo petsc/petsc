@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.50 1999/03/07 17:30:21 bsmith Exp balay $";
+static char vcid[] = "$Id: zvec.c,v 1.51 1999/03/23 21:54:19 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -148,7 +148,7 @@ void mapdestroy_(Map *m, int *__ierr )
 
 void vecsetvalue_(Vec *v,int *i,Scalar *va,InsertMode *mode)
 {
-  /* cannot use VecSetValue() here since that uses CHKERRQ() which has a return in it */
+  /* cannot use VecSetValue() here since that usesCHKERRQ() which has a return in it */
   VecSetValues(*v,1,i,va,*mode);
 }
 
@@ -166,10 +166,10 @@ void vecgettype_(Vec *vv,CHAR name,int *__ierr,int len)
 #if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-  PetscStrncpy(t,tname,len1);
+  *__ierr = PetscStrncpy(t,tname,len1);
   }
 #else
-  PetscStrncpy(name,tname,len);
+  *__ierr = PetscStrncpy(name,tname,len);
 #endif
 
 }

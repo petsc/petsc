@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.87 1999/03/17 23:21:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.88 1999/04/19 22:10:01 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"        
@@ -113,7 +113,7 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
   addr_local_comm  = (MPI_Comm *) PetscMalloc(sizeof(MPI_Comm));CHKPTRQ(addr_local_comm);
   *addr_local_comm = local_comm;
   ierr = MPI_Attr_put( comm, Petsc_Seq_keyval, (void *) addr_local_comm );CHKERRQ(ierr);
-  ierr = PetscSequentialPhaseBegin_Private(local_comm,ng); CHKERRQ(ierr);
+  ierr = PetscSequentialPhaseBegin_Private(local_comm,ng);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -151,7 +151,7 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
   if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
   local_comm = *addr_local_comm;
 
-  ierr = PetscSequentialPhaseEnd_Private(local_comm,ng); CHKERRQ(ierr);
+  ierr = PetscSequentialPhaseEnd_Private(local_comm,ng);CHKERRQ(ierr);
 
   PetscFree(addr_local_comm); 
   ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);

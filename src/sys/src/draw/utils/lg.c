@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.58 1999/03/25 17:24:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.59 1999/04/19 22:09:24 bsmith Exp balay $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -52,7 +52,7 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
 
   PetscFunctionBegin;
   if (vobj->cookie == DRAW_COOKIE && PetscTypeCompare(vobj->type_name,DRAW_NULL)) {
-    ierr = DrawOpenNull(vobj->comm,(Draw*)outctx); CHKERRQ(ierr);
+    ierr = DrawOpenNull(vobj->comm,(Draw*)outctx);CHKERRQ(ierr);
     (*outctx)->win = win;
     PetscFunctionReturn(0);
   }
@@ -72,7 +72,7 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
   lg->len     = dim*CHUNCKSIZE;
   lg->loc     = 0;
   lg->use_dots= 0;
-  ierr = DrawAxisCreate(win,&lg->axis); CHKERRQ(ierr);
+  ierr = DrawAxisCreate(win,&lg->axis);CHKERRQ(ierr);
   PLogObjectParent(lg,lg->axis);
   *outctx = lg;
   PetscFunctionReturn(0);
@@ -195,7 +195,7 @@ int DrawLGDestroy(DrawLG lg)
 @*/
 int DrawLGAddPoint(DrawLG lg,double *x,double *y)
 {
-  int i;
+  int i,ierr;
 
   PetscFunctionBegin;
   if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
@@ -206,8 +206,8 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
     tmpx = (double *) PetscMalloc((2*lg->len+2*lg->dim*CHUNCKSIZE)*sizeof(double));CHKPTRQ(tmpx);
     PLogObjectMemory(lg,2*lg->dim*CHUNCKSIZE*sizeof(double));
     tmpy = tmpx + lg->len + lg->dim*CHUNCKSIZE;
-    PetscMemcpy(tmpx,lg->x,lg->len*sizeof(double));
-    PetscMemcpy(tmpy,lg->y,lg->len*sizeof(double));
+    ierr = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(double));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(double));CHKERRQ(ierr);
     PetscFree(lg->x);
     lg->x = tmpx; lg->y = tmpy;
     lg->len += lg->dim*CHUNCKSIZE;
@@ -270,7 +270,7 @@ int DrawLGIndicateDataPoints(DrawLG lg)
 @*/
 int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
 {
-  int    i, j, k;
+  int    i, j, k,ierr;
   double *x,*y;
 
   PetscFunctionBegin;
@@ -283,8 +283,8 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
     tmpx = (double *) PetscMalloc((2*lg->len+2*lg->dim*chunk)*sizeof(double));CHKPTRQ(tmpx);
     PLogObjectMemory(lg,2*lg->dim*chunk*sizeof(double));
     tmpy = tmpx + lg->len + lg->dim*chunk;
-    PetscMemcpy(tmpx,lg->x,lg->len*sizeof(double));
-    PetscMemcpy(tmpy,lg->y,lg->len*sizeof(double));
+    ierr = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(double));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(double));CHKERRQ(ierr);
     PetscFree(lg->x);
     lg->x    = tmpx; lg->y = tmpy;
     lg->len += lg->dim*chunk;

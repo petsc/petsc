@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.35 1999/03/17 23:23:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.36 1999/04/16 16:07:07 bsmith Exp balay $";
 #endif
  
 /*
@@ -21,8 +21,8 @@ int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int 
   int *work;
 
   PetscFunctionBegin;
-  work = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(work);  
-  *seq = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(*seq);
+  work = (int *) PetscMalloc( m*sizeof(int) );CHKPTRQ(work);  
+  *seq = (int *) PetscMalloc( m*sizeof(int) );CHKPTRQ(*seq);
 
   MINPACKdegr(&m,cja,cia,rja,ria,*seq,work);
 
@@ -67,14 +67,14 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,0,"Ordering requires IJ");
 
-  ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq); CHKERRQ(ierr);
+  ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-  list = (int*) PetscMalloc( 5*n*sizeof(int) ); CHKPTRQ(list);
+  list = (int*) PetscMalloc( 5*n*sizeof(int) );CHKPTRQ(list);
   work = list + n;
 
   MINPACKslo(&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
-  coloring = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(coloring);
+  coloring = (int *) PetscMalloc(n*sizeof(int));CHKPTRQ(coloring);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
   PetscFree(list);
@@ -82,7 +82,7 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
-  ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring); CHKERRQ(ierr);
+  ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring);CHKERRQ(ierr);
   PetscFree(coloring);
   PetscFunctionReturn(0);
 }
@@ -106,15 +106,15 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,0,"Ordering requires IJ");
 
-  ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq); CHKERRQ(ierr);
+  ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-  list = (int*) PetscMalloc( 5*n*sizeof(int) ); CHKPTRQ(list);
+  list = (int*) PetscMalloc( 5*n*sizeof(int) );CHKPTRQ(list);
   work = list + n;
 
   n1   = n - 1;
   none = -1;
   MINPACKnumsrt(&n,&n1,seq,&none,list,work+2*n,work+n);
-  coloring = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(coloring);
+  coloring = (int *) PetscMalloc(n*sizeof(int));CHKPTRQ(coloring);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
   PetscFree(list);
@@ -123,7 +123,7 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
-  ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring); CHKERRQ(ierr);
+  ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring);CHKERRQ(ierr);
   PetscFree(coloring);
   PetscFunctionReturn(0);
 }
@@ -147,14 +147,14 @@ int MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,0,"Ordering requires IJ");
 
-  ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq); CHKERRQ(ierr);
+  ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-  list = (int*) PetscMalloc( 5*n*sizeof(int) ); CHKPTRQ(list);
+  list = (int*) PetscMalloc( 5*n*sizeof(int) );CHKPTRQ(list);
   work = list + n;
 
   MINPACKido(&n,&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
-  coloring = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(coloring);
+  coloring = (int *) PetscMalloc(n*sizeof(int));CHKPTRQ(coloring);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
   PetscFree(list);
@@ -163,7 +163,7 @@ int MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
-  ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring); CHKERRQ(ierr);
+  ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring);CHKERRQ(ierr);
 
   PetscFree(coloring);
   PetscFunctionReturn(0);
@@ -183,21 +183,21 @@ int MatColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(mat,&N,&N); CHKERRQ(ierr);
-  is  = (IS *) PetscMalloc( N*sizeof(IS*) ); CHKPTRQ(is); 
+  ierr = MatGetSize(mat,&N,&N);CHKERRQ(ierr);
+  is  = (IS *) PetscMalloc( N*sizeof(IS*) );CHKPTRQ(is); 
   *iscoloring       = (ISColoring) PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
   (*iscoloring)->n  = N;
   (*iscoloring)->is = is;
   
-  ierr = MatGetOwnershipRange(mat,&start,&end); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(mat,&start,&end);CHKERRQ(ierr);
   for ( i=0; i<start; i++ ) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,PETSC_NULL,is+i); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,PETSC_NULL,is+i);CHKERRQ(ierr);
   }
   for ( i=start; i<end; i++ ) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,1,&i,is+i); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,1,&i,is+i);CHKERRQ(ierr);
   }
   for ( i=end; i<N; i++ ) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,PETSC_NULL,is+i); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,PETSC_NULL,is+i);CHKERRQ(ierr);
   }
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = PetscCommDuplicate_Private(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
@@ -258,7 +258,8 @@ int MatColoringRegister_Private(char *sname,char *path,char *name,int (*function
   char fullname[256];
 
   PetscFunctionBegin;
-  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
+  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
   ierr = FListAdd_Private(&MatColoringList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -348,7 +349,7 @@ int MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
   PLogEventBegin(MAT_GetColoring,mat,0,0,0);
   ierr =  FListFind(mat->comm, MatColoringList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown or unregistered type: %s",type);}
-  ierr = (*r)(mat,type,iscoloring); CHKERRQ(ierr);
+  ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
   PLogEventEnd(MAT_GetColoring,mat,0,0,0);
 
   PLogInfo((PetscObject)mat,"MatGetColoring:Number of colors %d\n",(*iscoloring)->n);

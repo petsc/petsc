@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.3 1998/12/03 04:02:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.4 1999/03/19 21:22:03 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -48,7 +48,7 @@ int main(int argc,char **args)
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg); CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Must indicate binary file with the -f0 option");
 
 
@@ -61,10 +61,10 @@ int main(int argc,char **args)
   /*
        Load the matrix and vector; then destroy the viewer.
   */
-  ierr = MatLoad(fd,MATSEQBAIJ,&A); CHKERRA(ierr);
+  ierr = MatLoad(fd,MATSEQBAIJ,&A);CHKERRA(ierr);
   ierr = MatConvert(A,MATSAME,&B);CHKERRQ(ierr);
-  ierr = VecLoad(fd,&b); CHKERRA(ierr);
-  ierr = ViewerDestroy(fd); CHKERRA(ierr);
+  ierr = VecLoad(fd,&b);CHKERRA(ierr);
+  ierr = ViewerDestroy(fd);CHKERRA(ierr);
 
   /* 
        If the loaded matrix is larger than the vector (due to being padded 
@@ -76,31 +76,31 @@ int main(int argc,char **args)
       Scalar *bold;
 
       /* Create a new vector b by padding the old one */
-      ierr = MatGetLocalSize(A,&m,&n); CHKERRA(ierr);
+      ierr = MatGetLocalSize(A,&m,&n);CHKERRA(ierr);
       ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&tmp);
-      ierr = VecGetOwnershipRange(b,&start,&end); CHKERRA(ierr);
-      ierr = VecGetLocalSize(b,&mvec); CHKERRA(ierr);
-      ierr = VecGetArray(b,&bold); CHKERRA(ierr);
+      ierr = VecGetOwnershipRange(b,&start,&end);CHKERRA(ierr);
+      ierr = VecGetLocalSize(b,&mvec);CHKERRA(ierr);
+      ierr = VecGetArray(b,&bold);CHKERRA(ierr);
       for (j=0; j<mvec; j++ ) {
         index = start+j;
-        ierr  = VecSetValues(tmp,1,&index,bold+j,INSERT_VALUES); CHKERRA(ierr);
+        ierr  = VecSetValues(tmp,1,&index,bold+j,INSERT_VALUES);CHKERRA(ierr);
       }
-      ierr = VecRestoreArray(b,&bold); CHKERRA(ierr);
-      ierr = VecDestroy(b); CHKERRA(ierr);
-      ierr = VecAssemblyBegin(tmp); CHKERRA(ierr);
-      ierr = VecAssemblyEnd(tmp); CHKERRA(ierr);
+      ierr = VecRestoreArray(b,&bold);CHKERRA(ierr);
+      ierr = VecDestroy(b);CHKERRA(ierr);
+      ierr = VecAssemblyBegin(tmp);CHKERRA(ierr);
+      ierr = VecAssemblyEnd(tmp);CHKERRA(ierr);
       b = tmp;
     }
-  ierr = VecDuplicate(b,&x); CHKERRA(ierr);
-  ierr = VecDuplicate(b,&u); CHKERRA(ierr);
-  ierr = VecSet(&zero,x); CHKERRA(ierr);
+  ierr = VecDuplicate(b,&x);CHKERRA(ierr);
+  ierr = VecDuplicate(b,&u);CHKERRA(ierr);
+  ierr = VecSet(&zero,x);CHKERRA(ierr);
 
   /*
       Create linear solver; set operators; set runtime options.
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,A,B,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,B,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
 
   /* 
        Here we explicitly call SLESSetUp() and SLESSetUpOnBlocks() to
@@ -108,10 +108,10 @@ int main(int argc,char **args)
        These calls are optional, since both will be called within
        SLESSolve() if they haven't been called already.
   */
-  ierr = SLESSetUp(sles,b,x); CHKERRA(ierr);
-  ierr = SLESSetUpOnBlocks(sles); CHKERRA(ierr);
+  ierr = SLESSetUp(sles,b,x);CHKERRA(ierr);
+  ierr = SLESSetUpOnBlocks(sles);CHKERRA(ierr);
 
-  ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
+  ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
 
   /*
             Check error, print output, free data structures.
@@ -122,8 +122,8 @@ int main(int argc,char **args)
      Check error
   */
   ierr = MatMult(A,x,u);
-  ierr = VecAXPY(&none,b,u); CHKERRA(ierr);
-  ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecAXPY(&none,b,u);CHKERRA(ierr);
+  ierr = VecNorm(u,NORM_2,&norm);CHKERRA(ierr);
 
   PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);
   if (norm < 1.e-10) {
@@ -136,11 +136,11 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = MatDestroy(A); CHKERRA(ierr); 
-  ierr = MatDestroy(B); CHKERRA(ierr); 
-  ierr = VecDestroy(b); CHKERRA(ierr);
-  ierr = VecDestroy(u); CHKERRA(ierr); ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = SLESDestroy(sles); CHKERRA(ierr); 
+  ierr = MatDestroy(A);CHKERRA(ierr); 
+  ierr = MatDestroy(B);CHKERRA(ierr); 
+  ierr = VecDestroy(b);CHKERRA(ierr);
+  ierr = VecDestroy(u);CHKERRA(ierr); ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRA(ierr); 
 
 
   PetscFinalize();

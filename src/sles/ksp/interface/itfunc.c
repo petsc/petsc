@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.123 1999/04/19 22:14:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.124 1999/04/21 18:17:51 bsmith Exp balay $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -205,11 +205,11 @@ int KSPSolve(KSP ksp, int *its)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PetscValidIntPointer(its);
 
-  if (!ksp->setupcalled){ ierr = KSPSetUp(ksp); CHKERRQ(ierr);}
+  if (!ksp->setupcalled){ ierr = KSPSetUp(ksp);CHKERRQ(ierr);}
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   /* reset the residual history list if requested */
   if (ksp->res_hist_reset == PETSC_TRUE) ksp->res_hist_len = 0;
-  ierr = (*ksp->ops->solve)(ksp,its); CHKERRQ(ierr);
+  ierr = (*ksp->ops->solve)(ksp,its);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
 
@@ -218,9 +218,9 @@ int KSPSolve(KSP ksp, int *its)
   if (flag1 || flag2) {
     int    n = *its, i, neig;
     double *r,*c;
-    r = (double *) PetscMalloc( 2*n*sizeof(double) ); CHKPTRQ(r);
+    r = (double *) PetscMalloc( 2*n*sizeof(double) );CHKPTRQ(r);
     c = r + n;
-    ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig); CHKERRQ(ierr);
+    ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig);CHKERRQ(ierr);
     if (flag1) {
       ierr = PetscPrintf(ksp->comm,"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
       for ( i=0; i<neig; i++ ) {
@@ -235,27 +235,27 @@ int KSPSolve(KSP ksp, int *its)
 
       ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",
                              PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);CHKERRQ(ierr);
-      ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
-      ierr = DrawSPCreate(draw,1,&drawsp); CHKERRQ(ierr);
+      ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+      ierr = DrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
       for ( i=0; i<neig; i++ ) {
-        ierr = DrawSPAddPoint(drawsp,r+i,c+i); CHKERRQ(ierr);
+        ierr = DrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
-      ierr = DrawSPDraw(drawsp); CHKERRQ(ierr);
-      ierr = DrawSPDestroy(drawsp); CHKERRQ(ierr);
-      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+      ierr = DrawSPDraw(drawsp);CHKERRQ(ierr);
+      ierr = DrawSPDestroy(drawsp);CHKERRQ(ierr);
+      ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     }
     PetscFree(r);
   }
 
-  ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1); CHKERRQ(ierr);
-  ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2); CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1);CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2);CHKERRQ(ierr);
   if (flag1 || flag2) {
     int    n, i;
     double *r,*c;
-    ierr = VecGetSize(ksp->vec_sol,&n); CHKERRQ(ierr);
-    r = (double *) PetscMalloc( 2*n*sizeof(double) ); CHKPTRQ(r);
+    ierr = VecGetSize(ksp->vec_sol,&n);CHKERRQ(ierr);
+    r = (double *) PetscMalloc( 2*n*sizeof(double) );CHKPTRQ(r);
     c = r + n;
-    ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c); CHKERRQ(ierr); 
+    ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr); 
     if (flag1) {
       ierr = PetscPrintf(ksp->comm,"Explicitly computed eigenvalues\n");CHKERRQ(ierr);
       for ( i=0; i<n; i++ ) {
@@ -268,16 +268,15 @@ int KSPSolve(KSP ksp, int *its)
       Draw      draw;
       DrawSP    drawsp;
 
-      ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,300,300,&viewer); 
-             CHKERRQ(ierr);
-      ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
-      ierr = DrawSPCreate(draw,1,&drawsp); CHKERRQ(ierr);
+      ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,300,300,&viewer);CHKERRQ(ierr);
+      ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+      ierr = DrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
       for ( i=0; i<n; i++ ) {
-        ierr = DrawSPAddPoint(drawsp,r+i,c+i); CHKERRQ(ierr);
+        ierr = DrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
-      ierr = DrawSPDraw(drawsp); CHKERRQ(ierr);
-      ierr = DrawSPDestroy(drawsp); CHKERRQ(ierr);
-      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+      ierr = DrawSPDraw(drawsp);CHKERRQ(ierr);
+      ierr = DrawSPDestroy(drawsp);CHKERRQ(ierr);
+      ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     }
     PetscFree(r);
   }
@@ -322,10 +321,10 @@ int KSPSolveTrans(KSP ksp, int *its)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PetscValidIntPointer(its);
 
-  if (!ksp->setupcalled){ ierr = KSPSetUp(ksp); CHKERRQ(ierr);}
-  if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol); CHKERRQ(ierr);}
+  if (!ksp->setupcalled){ ierr = KSPSetUp(ksp);CHKERRQ(ierr);}
+  if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   if (!ksp->ops->solvetrans) SETERRQ(1,1,"No transpose solver for this Krylov method");
-  ierr = (*ksp->ops->solvetrans)(ksp,its); CHKERRQ(ierr);
+  ierr = (*ksp->ops->solvetrans)(ksp,its);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -353,7 +352,7 @@ int KSPDestroy(KSP ksp)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (--ksp->refct > 0) PetscFunctionReturn(0);
   if (ksp->ops->destroy) {
-    ierr = (*ksp->ops->destroy)(ksp); CHKERRQ(ierr);
+    ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
   }
   for (i=0; i<ksp->numbermonitors; i++ ) {
     if (ksp->monitordestroy[i]) {
@@ -1238,15 +1237,15 @@ int KSPBuildResidual(KSP ksp, Vec t, Vec v, Vec *V)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (!w) {
-    ierr = VecDuplicate(ksp->vec_rhs,&w); CHKERRQ(ierr);
+    ierr = VecDuplicate(ksp->vec_rhs,&w);CHKERRQ(ierr);
     PLogObjectParent((PetscObject)ksp,w);
   }
   if (!tt) {
-    ierr = VecDuplicate(ksp->vec_rhs,&tt); CHKERRQ(ierr); flag = 1;
+    ierr = VecDuplicate(ksp->vec_rhs,&tt);CHKERRQ(ierr); flag = 1;
     PLogObjectParent((PetscObject)ksp,tt);
   }
-  ierr = (*ksp->ops->buildresidual)(ksp,tt,w,V); CHKERRQ(ierr);
-  if (flag) {ierr = VecDestroy(tt); CHKERRQ(ierr);}
+  ierr = (*ksp->ops->buildresidual)(ksp,tt,w,V);CHKERRQ(ierr);
+  if (flag) {ierr = VecDestroy(tt);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

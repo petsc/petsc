@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.13 1999/03/19 21:18:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.14 1999/04/21 18:16:01 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
@@ -37,8 +37,8 @@ int main(int argc,char **argv)
   Vec        lx,gx,gxs;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 2) SETERRA(1,1,"Must run example with two processors\n");
 
   /*
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
      the local vector (lx) and the global vector (gx) share the same 
      array for storing vector values.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-allocate",&flag); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-allocate",&flag);CHKERRA(ierr);
   if (flag) {
     tarray = (Scalar *) PetscMalloc( (nlocal+nghost)*sizeof(Scalar));CHKPTRA(tarray);
     ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRA(ierr);
@@ -84,13 +84,13 @@ int main(int argc,char **argv)
   /*
       Test VecDuplicate()
   */
-  ierr = VecDuplicate(gxs,&gx); CHKERRA(ierr);
-  ierr = VecDestroy(gxs); CHKERRA(ierr);
+  ierr = VecDuplicate(gxs,&gx);CHKERRA(ierr);
+  ierr = VecDestroy(gxs);CHKERRA(ierr);
 
   /*
      Access the local representation
   */
-  ierr = VecGhostGetLocalForm(gx,&lx); CHKERRA(ierr);
+  ierr = VecGhostGetLocalForm(gx,&lx);CHKERRA(ierr);
 
   /*
      Set the values from 0 to 12 into the "global" vector 
@@ -98,13 +98,13 @@ int main(int argc,char **argv)
   ierr = VecGetOwnershipRange(gx,&rstart,&rend);CHKERRA(ierr);
   for ( i=rstart; i<rend; i++ ) {
     value = (Scalar) i;
-    ierr  = VecSetValues(gx,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);
+    ierr  = VecSetValues(gx,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }
-  ierr = VecAssemblyBegin(gx); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(gx); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(gx);CHKERRA(ierr);
+  ierr = VecAssemblyEnd(gx);CHKERRA(ierr);
 
-  ierr = VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD); CHKERRA(ierr);
-  ierr = VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD); CHKERRA(ierr);
+  ierr = VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD);CHKERRA(ierr);
+  ierr = VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD);CHKERRA(ierr);
 
   /*
      Print out each vector, including the ghost padding region. 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.15 1998/12/03 04:06:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.16 1999/03/19 21:24:17 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests DALocalToLocal().\n\n";
@@ -26,74 +26,74 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,&flg);  CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,&flg);  CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-periodic",(int*)&periodic,&flg);  CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-stencil_type",(int*)&stencil_type,&flg);  CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,&flg); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,&flg); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-periodic",(int*)&periodic,&flg); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-stencil_type",(int*)&stencil_type,&flg); CHKERRA(ierr); 
 
-  ierr = OptionsHasName(PETSC_NULL,"-2d",&flg2); CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-3d",&flg3); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-2d",&flg2);CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-3d",&flg3);CHKERRA(ierr);
   if (flg2) {
     ierr = DACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,m,n,dof,stencil_width,
                       PETSC_NULL,PETSC_NULL,&da);
-    CHKERRA(ierr);
+   CHKERRA(ierr);
   } else if (flg3) {
     ierr = DACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,
                       PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);
-    CHKERRA(ierr);
+   CHKERRA(ierr);
   }
   else {
     ierr = DACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_NULL,&da);CHKERRA(ierr);
   }
 
-  ierr = DACreateGlobalVector(da,&global); CHKERRA(ierr);
-  ierr = DACreateLocalVector(da,&local); CHKERRA(ierr);
-  ierr = VecDuplicate(local,&local_copy); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(da,&global);CHKERRA(ierr);
+  ierr = DACreateLocalVector(da,&local);CHKERRA(ierr);
+  ierr = VecDuplicate(local,&local_copy);CHKERRA(ierr);
 
   
   /* zero out vectors so that ghostpoints are zero */
   value = 0;
-  ierr = VecSet(&value,local); CHKERRA(ierr);
-  ierr = VecSet(&value,local_copy); CHKERRA(ierr);
+  ierr = VecSet(&value,local);CHKERRA(ierr);
+  ierr = VecSet(&value,local_copy);CHKERRA(ierr);
 
-  ierr = VecGetOwnershipRange(global,&start,&end); CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(global,&start,&end);CHKERRA(ierr);
   for ( i=start; i<end; i++ ) {
     value = i + 1;
     VecSetValues(global,1,&i,&value,INSERT_VALUES); 
   }
-  ierr = VecAssemblyBegin(global); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(global); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(global);CHKERRA(ierr);
+  ierr = VecAssemblyEnd(global);CHKERRA(ierr);
 
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRA(ierr);
+  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
 
 
-  ierr = DALocalToLocalBegin(da,local,INSERT_VALUES,local_copy); CHKERRA(ierr);
-  ierr = DALocalToLocalEnd(da,local,INSERT_VALUES,local_copy); CHKERRA(ierr);
+  ierr = DALocalToLocalBegin(da,local,INSERT_VALUES,local_copy);CHKERRA(ierr);
+  ierr = DALocalToLocalEnd(da,local,INSERT_VALUES,local_copy);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-save",&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-save",&flg);CHKERRA(ierr);
   if (flg) {
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     sprintf(filename,"local.%d",rank);
     ierr = ViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer);CHKERRA(ierr);
-    ierr = ViewerASCIIGetPointer(viewer,&file); CHKERRA(ierr);
-    ierr = VecView(local,viewer); CHKERRA(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRA(ierr);
+    ierr = VecView(local,viewer);CHKERRA(ierr);
     fprintf(file,"Vector with correct ghost points\n");
-    ierr = VecView(local_copy,viewer); CHKERRA(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRA(ierr);
+    ierr = VecView(local_copy,viewer);CHKERRA(ierr);
+    ierr = ViewerDestroy(viewer);CHKERRA(ierr);
   }
 
-  ierr = VecAXPY(&mone,local,local_copy); CHKERRA(ierr);
-  ierr = VecNorm(local_copy,NORM_MAX,&work); CHKERRA(ierr);
+  ierr = VecAXPY(&mone,local,local_copy);CHKERRA(ierr);
+  ierr = VecNorm(local_copy,NORM_MAX,&work);CHKERRA(ierr);
   MPI_Allreduce( &work, &norm,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD );
   PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);
    
-  ierr = VecDestroy(local_copy); CHKERRA(ierr);
-  ierr = VecDestroy(local); CHKERRA(ierr);
-  ierr = VecDestroy(global); CHKERRA(ierr);
-  ierr = DADestroy(da); CHKERRA(ierr);
+  ierr = VecDestroy(local_copy);CHKERRA(ierr);
+  ierr = VecDestroy(local);CHKERRA(ierr);
+  ierr = VecDestroy(global);CHKERRA(ierr);
+  ierr = DADestroy(da);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

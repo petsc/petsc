@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmpre.c,v 1.18 1999/01/31 16:08:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmpre.c,v 1.19 1999/01/31 21:30:45 curfman Exp balay $";
 #endif
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
@@ -30,7 +30,7 @@ int KSPGMRESSetPreAllocateVectors(KSP ksp)
   int ierr, (*f)(KSP);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp);CHKERRQ(ierr);
   }
@@ -63,7 +63,7 @@ int KSPGMRESPrestartSet(KSP ksp,int pre)
   int ierr, (*f)(KSP,int);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESPrestartSet_C",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESPrestartSet_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,pre);CHKERRQ(ierr);
   }

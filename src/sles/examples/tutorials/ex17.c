@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.3 1999/03/19 21:22:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.4 1999/04/16 16:09:25 bsmith Exp balay $";
 #endif
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
@@ -43,8 +43,8 @@ int main(int argc,char **args)
   Scalar      neg_one = -1.0, *ua;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"system size: m=%d, n=%d\n",m,n);
   if (m < n) SETERRA(1,0,"Supports m >= n only!");
 
@@ -63,19 +63,19 @@ int main(int argc,char **args)
         and VecCreate() are used with the same communicator. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&u); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&u);CHKERRA(ierr);
   ierr = VecSetFromOptions(u);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&x); CHKERRA(ierr); 
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&b); CHKERRA(ierr);
+  ierr = VecDuplicate(u,&x);CHKERRA(ierr); 
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&b);CHKERRA(ierr);
   ierr = VecSetFromOptions(b);CHKERRA(ierr);
 
   /* 
      Set exact solution with random components.
   */
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
-  ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
-  ierr = VecAssemblyBegin(u); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(u); CHKERRA(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRA(ierr);
+  ierr = VecSetRandom(rctx,u);CHKERRA(ierr);
+  ierr = VecAssemblyBegin(u);CHKERRA(ierr);
+  ierr = VecAssemblyEnd(u);CHKERRA(ierr);
 
   /* 
      Create parallel matrix, specifying only its global dimensions.
@@ -83,14 +83,14 @@ int main(int argc,char **args)
      runtime. Also, the parallel partitioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&A);CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned. 
   */
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend); CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
 
   /* 
      Set matrix elements in parallel.
@@ -99,14 +99,14 @@ int main(int argc,char **args)
         appropriate processor during matrix assembly). 
       - Always specify global rows and columns of matrix entries.
    */
-  ierr = VecGetArray(u,&ua); CHKERRA(ierr);
-  cols = (int *)PetscMalloc(n*sizeof(int)); CHKPTRA(cols);
+  ierr = VecGetArray(u,&ua);CHKERRA(ierr);
+  cols = (int *)PetscMalloc(n*sizeof(int));CHKPTRA(cols);
   for ( i=0; i<n; i++ ) { 
     cols[i] = i;
   }
   for ( I=Istart; I<Iend; I++ ) { 
-    ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
-    ierr = MatSetValues(A,1,&I,n,cols,ua,INSERT_VALUES); CHKERRA(ierr);
+    ierr = VecSetRandom(rctx,u);CHKERRA(ierr);
+    ierr = MatSetValues(A,1,&I,n,cols,ua,INSERT_VALUES);CHKERRA(ierr);
   }
 
   /* 
@@ -115,19 +115,19 @@ int main(int argc,char **args)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   /*
       Compute right-hand-side vector.
   */
-  ierr = MatMult(A,u,b); CHKERRA(ierr);
+  ierr = MatMult(A,u,b);CHKERRA(ierr);
 
   /*
      View the exact solution vector if desired
   */
-  ierr = OptionsHasName(PETSC_NULL,"-view_exact_sol",&flg); CHKERRA(ierr);
-  if (flg) {ierr = VecView(u,VIEWER_STDOUT_WORLD); CHKERRA(ierr);}
+  ierr = OptionsHasName(PETSC_NULL,"-view_exact_sol",&flg);CHKERRA(ierr);
+  if (flg) {ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRA(ierr);}
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                 Create the linear solver and set various options
@@ -136,13 +136,13 @@ int main(int argc,char **args)
   /* 
      Create linear solver context
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
 
   /* 
     Set runtime options, e.g.,
@@ -151,13 +151,13 @@ int main(int argc,char **args)
     SLESSetFromOptions() is called _after_ any other customization
     routines.
   */
-  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
+  ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up
@@ -166,8 +166,8 @@ int main(int argc,char **args)
   /* 
      Check the error
   */
-  ierr = VecAXPY(&neg_one,u,x); CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecAXPY(&neg_one,u,x);CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
 
   /*
      Print convergence information.  PetscPrintf() produces a single 
@@ -182,10 +182,10 @@ int main(int argc,char **args)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = SLESDestroy(sles); CHKERRA(ierr);
-  ierr = VecDestroy(u); CHKERRA(ierr);  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(b); CHKERRA(ierr);  ierr = MatDestroy(A); CHKERRA(ierr);
-  ierr = PetscRandomDestroy(rctx); CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRA(ierr);
+  ierr = VecDestroy(u);CHKERRA(ierr);  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(b);CHKERRA(ierr);  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = PetscRandomDestroy(rctx);CHKERRA(ierr);
   PetscFree(cols);
 
   /*

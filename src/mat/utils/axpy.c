@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.37 1999/01/04 21:51:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: axpy.c,v 1.38 1999/03/07 15:15:59 curfman Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -41,29 +41,29 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
   if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_ERR_ARG_SIZ,0,"Non conforming matrix add: %d %d %d %d",m1,m2,n1,n2);
 
   if (X->ops->axpy) {
-    ierr = (*X->ops->axpy)(a,X,Y); CHKERRQ(ierr);
+    ierr = (*X->ops->axpy)(a,X,Y);CHKERRQ(ierr);
   } else {
-    ierr = MatGetOwnershipRange(X,&start,&end); CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
     if (*a == 1.0) {
       for (i = start; i < end; i++) {
-        ierr = MatGetRow(X, i, &ncols, &row, &vals);                 CHKERRQ(ierr);
-        ierr = MatSetValues(Y, 1, &i, ncols, row, vals, ADD_VALUES); CHKERRQ(ierr);
-        ierr = MatRestoreRow(X, i, &ncols, &row, &vals);             CHKERRQ(ierr);
+        ierr = MatGetRow(X, i, &ncols, &row, &vals);CHKERRQ(ierr);
+        ierr = MatSetValues(Y, 1, &i, ncols, row, vals, ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatRestoreRow(X, i, &ncols, &row, &vals);CHKERRQ(ierr);
       }
     } else {
-      vals = (Scalar *) PetscMalloc( (n1+1)*sizeof(Scalar) ); CHKPTRQ(vals);
+      vals = (Scalar *) PetscMalloc( (n1+1)*sizeof(Scalar) );CHKPTRQ(vals);
       for ( i=start; i<end; i++ ) {
-        ierr = MatGetRow(X,i,&ncols,&row,&val); CHKERRQ(ierr);
+        ierr = MatGetRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
         for ( j=0; j<ncols; j++ ) {
           vals[j] = (*a)*val[j];
         }
-        ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES); CHKERRQ(ierr);
-        ierr = MatRestoreRow(X,i,&ncols,&row,&val); CHKERRQ(ierr);
+        ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatRestoreRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
       }
       PetscFree(vals);
     }
-    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -93,14 +93,14 @@ int MatShift(Scalar *a,Mat Y)
   PetscValidHeaderSpecific(Y,MAT_COOKIE);
   PetscValidScalarPointer(a);
   if (Y->ops->shift) {
-    ierr = (*Y->ops->shift)(a,Y); CHKERRQ(ierr);
+    ierr = (*Y->ops->shift)(a,Y);CHKERRQ(ierr);
   } else {
-    ierr = MatGetOwnershipRange(Y,&start,&end); CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
     for ( i=start; i<end; i++ ) {
-      ierr = MatSetValues(Y,1,&i,1,&i,a,ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(Y,1,&i,1,&i,a,ADD_VALUES);CHKERRQ(ierr);
     }
-    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -134,23 +134,23 @@ int MatDiagonalShift(Mat Y,Vec D)
   PetscValidHeaderSpecific(Y,MAT_COOKIE);
   PetscValidHeaderSpecific(D,VEC_COOKIE);
   if (Y->ops->shift) {
-    ierr = (*Y->ops->diagonalshift)(D,Y); CHKERRQ(ierr);
+    ierr = (*Y->ops->diagonalshift)(D,Y);CHKERRQ(ierr);
   } else {
     int    vstart,vend;
     Scalar *v;
-    ierr = VecGetOwnershipRange(D,&vstart,&vend); CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(Y,&start,&end); CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(D,&vstart,&vend);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
     if (vstart != start || vend != end) {
       SETERRQ4(PETSC_ERR_ARG_SIZ,0,"Vector ownership range not compatible with matrix: %d %d vec %d %d mat",vstart,vend,start,end);
     }
 
-    ierr = VecGetArray(D,&v); CHKERRQ(ierr);
+    ierr = VecGetArray(D,&v);CHKERRQ(ierr);
     for ( i=start; i<end; i++ ) {
-      ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,ADD_VALUES);CHKERRQ(ierr);
     }
-    ierr = VecRestoreArray(D,&v); CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -191,7 +191,7 @@ int MatAYPX(Scalar *a,Mat X,Mat Y)
   MatGetSize(X, &mY, &nY);
   if (mX != mY || nX != nY) SETERRQ4(PETSC_ERR_ARG_SIZ,0,"Non conforming matrices: %d %d first %d %d second",mX,mY,nX,nY);
 
-  ierr = MatScale(a, Y);      CHKERRQ(ierr);
-  ierr = MatAXPY(&one, X, Y); CHKERRQ(ierr);
+  ierr = MatScale(a, Y);CHKERRQ(ierr);
+  ierr = MatAXPY(&one, X, Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.30 1998/12/03 03:57:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.31 1999/03/19 21:18:23 bsmith Exp balay $";
 #endif
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
@@ -40,9 +40,9 @@ int main(int argc,char **argv)
         local size PETSc will choose a reasonable partition trying 
         to put nearly an equal number of elements on each processor.
   */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,&x); CHKERRA(ierr);
-  ierr = VecGetSize(x,&N); CHKERRA(ierr);
-  ierr = VecSet(&one,x); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,&x);CHKERRA(ierr);
+  ierr = VecGetSize(x,&N);CHKERRA(ierr);
+  ierr = VecSet(&one,x);CHKERRA(ierr);
 
   /*
      Set the vector elements.
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
         contributions will be added together.
   */
   for ( i=0; i<N-rank; i++ ) {
-    ierr = VecSetValues(x,1,&i,&one,ADD_VALUES); CHKERRA(ierr);  
+    ierr = VecSetValues(x,1,&i,&one,ADD_VALUES);CHKERRA(ierr);  
   }
 
   /* 
@@ -64,14 +64,14 @@ int main(int argc,char **argv)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = VecAssemblyBegin(x); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(x); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(x);CHKERRA(ierr);
+  ierr = VecAssemblyEnd(x);CHKERRA(ierr);
 
   /*
       View the vector; then destroy it.
   */
-  ierr = VecView(x,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

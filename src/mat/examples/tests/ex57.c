@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex57.c,v 1.9 1999/01/31 16:07:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex57.c,v 1.10 1999/03/19 21:19:59 bsmith Exp balay $";
 #endif
 
 static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another\
@@ -28,33 +28,33 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
 
-  ierr = OptionsGetString(PETSC_NULL,"-fin",fin,127,&flg); CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-fin",fin,127,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Must indicate binary file with the -fin option");
   ierr = ViewerBinaryOpen(PETSC_COMM_SELF,fin,BINARY_RDONLY,&fdin);CHKERRA(ierr);
 
-  ierr = OptionsGetString(PETSC_NULL,"-fout",fout,127,&flg); CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-fout",fout,127,&flg);CHKERRA(ierr);
   if (!flg) PetscPrintf(PETSC_COMM_WORLD,"Writing submatrix to file : %s\n",fout);
   ierr = ViewerBinaryOpen(PETSC_COMM_SELF,fout,BINARY_CREATE,&fdout);CHKERRA(ierr);
 
-  ierr = MatLoad(fdin,mtype,&A); CHKERRA(ierr);
-  ierr = ViewerDestroy(fdin); CHKERRA(ierr);
+  ierr = MatLoad(fdin,mtype,&A);CHKERRA(ierr);
+  ierr = ViewerDestroy(fdin);CHKERRA(ierr);
   
-  ierr = MatGetSize(A,&size,&size);  CHKERRA(ierr);
+  ierr = MatGetSize(A,&size,&size); CHKERRA(ierr);
   size /= 2;
-  ierr = OptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-size", &size,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-start",&start,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-size", &size,&flg);CHKERRA(ierr);
   
-  ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&isrow); CHKERRA(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&iscol); CHKERRA(ierr);
-  ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&B); CHKERRA(ierr);
-  ierr = MatView(B[0],fdout); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&isrow);CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&iscol);CHKERRA(ierr);
+  ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&B);CHKERRA(ierr);
+  ierr = MatView(B[0],fdout);CHKERRA(ierr);
 
-  ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,size,&b); CHKERRA(ierr);
-  ierr = VecSetFromOptions(b); CHKERRA(ierr);
-  ierr = MatView(B[0],fdout); CHKERRA(ierr);
-  ierr = ViewerDestroy(fdout); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,size,&b);CHKERRA(ierr);
+  ierr = VecSetFromOptions(b);CHKERRA(ierr);
+  ierr = MatView(B[0],fdout);CHKERRA(ierr);
+  ierr = ViewerDestroy(fdout);CHKERRA(ierr);
 
-  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(B[0]);CHKERRA(ierr);
   ierr = VecDestroy(b);CHKERRA(ierr);
   PetscFree(B);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.3 1998/10/19 22:16:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.4 1999/01/27 19:45:41 bsmith Exp balay $";
 #endif
 
 #include "vec.h"
@@ -26,7 +26,7 @@ int DLLibraryRegister(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = VecRegisterAll(path); CHKERRQ(ierr);
+  ierr = VecRegisterAll(path);CHKERRQ(ierr);
   return 0;
 }
 EXTERN_C_END

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex47.c,v 1.7 1998/12/03 04:01:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex47.c,v 1.8 1999/03/19 21:19:59 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -30,53 +30,53 @@ int main(int argc,char **args)
   SETERRA(1,0,"This example does not work with complex numbers");
 #else
   
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
 
   /* Load the matrix as AIJ format */
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&va);CHKERRA(ierr);
-  ierr = MatLoad(va,MATSEQAIJ,&A); CHKERRA(ierr);
-  ierr = ViewerDestroy(va); CHKERRA(ierr);
+  ierr = MatLoad(va,MATSEQAIJ,&A);CHKERRA(ierr);
+  ierr = ViewerDestroy(va);CHKERRA(ierr);
 
   /* Load the matrix as BAIJ format */
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&vb);CHKERRA(ierr);
-  ierr = MatLoad(vb,MATSEQBAIJ,&B); CHKERRA(ierr);
-  ierr = ViewerDestroy(vb); CHKERRA(ierr);
+  ierr = MatLoad(vb,MATSEQBAIJ,&B);CHKERRA(ierr);
+  ierr = ViewerDestroy(vb);CHKERRA(ierr);
 
   /* Load the matrix as BAIJ format */
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&vc);CHKERRA(ierr);
-  ierr = MatLoad(vc,MATSEQBAIJ,&C); CHKERRA(ierr);
-  ierr = ViewerDestroy(vc); CHKERRA(ierr);
+  ierr = MatLoad(vc,MATSEQBAIJ,&C);CHKERRA(ierr);
+  ierr = ViewerDestroy(vc);CHKERRA(ierr);
 
-  ierr = MatGetSize(A,&m,&n); CHKERRA(ierr);
-  ierr = MatGetSize(B,&m2,&n2); CHKERRA(ierr);
+  ierr = MatGetSize(A,&m,&n);CHKERRA(ierr);
+  ierr = MatGetSize(B,&m2,&n2);CHKERRA(ierr);
   if (m!=m2) SETERRA(1,0,"Matrices are of different sixe. Cannot run this example");
  
   /* Test MatEqual() */
-  ierr = MatEqual(B,C,&tflg); CHKERRQ(ierr);
+  ierr = MatEqual(B,C,&tflg);CHKERRQ(ierr);
   if (!tflg) SETERRA(1,0,"MatEqual() failed");
 
   /* Test MatGetDiagonal() */
-   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x); CHKERRA(ierr);
-   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&y); CHKERRA(ierr);
+   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRA(ierr);
+   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&y);CHKERRA(ierr);
 
-  ierr = MatGetDiagonal(A,x); CHKERRA(ierr);
-  ierr = MatGetDiagonal(B,y); CHKERRA(ierr);
+  ierr = MatGetDiagonal(A,x);CHKERRA(ierr);
+  ierr = MatGetDiagonal(B,y);CHKERRA(ierr);
   
-  ierr = VecEqual(x,y,&tflg); CHKERRA(ierr);
+  ierr = VecEqual(x,y,&tflg);CHKERRA(ierr);
   if (!tflg)  SETERRA(1,0,"MatGetDiagonal() failed");
 
   /* Test MatDiagonalScale() */
   
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRA(ierr);
-  ierr = VecSetRandom(r,x); CHKERRA(ierr);
-  ierr = VecSetRandom(r,y); CHKERRA(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRA(ierr);
+  ierr = VecSetRandom(r,x);CHKERRA(ierr);
+  ierr = VecSetRandom(r,y);CHKERRA(ierr);
 
-  ierr = MatDiagonalScale(A,x,y); CHKERRA(ierr);
-  ierr = MatDiagonalScale(B,x,y); CHKERRA(ierr);
-  ierr = MatMult(A,x,y); CHKERRA(ierr);
-  ierr = VecNorm(y,NORM_2,&norm1); CHKERRA(ierr);
-  ierr = MatMult(B,x,y); CHKERRA(ierr);
-  ierr = VecNorm(y,NORM_2,&norm2); CHKERRA(ierr);
+  ierr = MatDiagonalScale(A,x,y);CHKERRA(ierr);
+  ierr = MatDiagonalScale(B,x,y);CHKERRA(ierr);
+  ierr = MatMult(A,x,y);CHKERRA(ierr);
+  ierr = VecNorm(y,NORM_2,&norm1);CHKERRA(ierr);
+  ierr = MatMult(B,x,y);CHKERRA(ierr);
+  ierr = VecNorm(y,NORM_2,&norm2);CHKERRA(ierr);
   rnorm = ((norm1-norm2)*100)/norm1;
   if (rnorm<-0.1 || rnorm>0.01) { 
     PetscPrintf(PETSC_COMM_SELF,"Norm1=%e Norm2=%e\n",norm1,norm2);  
@@ -87,8 +87,8 @@ int main(int argc,char **args)
   for ( ct=0; ct<100; ct++ ) {
     ierr = PetscRandomGetValue(r,&rval);
     row  = (int)(rval*m);
-    ierr = MatGetRow(A,row,&ncols1,&cols1,&vals1); CHKERRA(ierr);
-    ierr = MatGetRow(B,row,&ncols2,&cols2,&vals2); CHKERRA(ierr);
+    ierr = MatGetRow(A,row,&ncols1,&cols1,&vals1);CHKERRA(ierr);
+    ierr = MatGetRow(B,row,&ncols2,&cols2,&vals2);CHKERRA(ierr);
     
     for ( i=0,j=0; i<ncols1 && j<ncols2; i++ ) {
       while (cols2[j] != cols1[i]) j++;
@@ -96,8 +96,8 @@ int main(int argc,char **args)
     }
     if (i<ncols1) SETERRA(1,0, "MatGetRow() failed - cols incorrect");
     
-    ierr = MatRestoreRow(A,row,&ncols1,&cols1,&vals1); CHKERRA(ierr);
-    ierr = MatRestoreRow(B,row,&ncols2,&cols2,&vals2); CHKERRA(ierr);
+    ierr = MatRestoreRow(A,row,&ncols1,&cols1,&vals1);CHKERRA(ierr);
+    ierr = MatRestoreRow(B,row,&ncols2,&cols2,&vals2);CHKERRA(ierr);
   }
     
   MatDestroy(A);

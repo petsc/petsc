@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.44 1999/03/24 04:30:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.45 1999/04/19 22:13:48 bsmith Exp balay $";
 #endif
 
 /*
@@ -23,29 +23,29 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
   DrawButton  button;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
-  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
-  ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
+  ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+  ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+  ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
 
   xr  = fd->N; yr = fd->M; h = yr/10.0; w = xr/10.0; 
   xr += w;    yr += h;  xl = -w;     yl = -h;
-  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
 
   /* loop over colors  */
   for (i=0; i<fd->ncolors; i++ ) {
     for ( j=0; j<fd->nrows[i]; j++ ) {
       y = fd->M - fd->rows[i][j] - fd->rstart;
       x = fd->columnsforrow[i][j];
-      ierr = DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1); CHKERRQ(ierr);
+      ierr = DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);CHKERRQ(ierr);
     }
   }
-  ierr = DrawSynchronizedFlush(draw); CHKERRQ(ierr); 
-  ierr = DrawGetPause(draw,&pause); CHKERRQ(ierr);
+  ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr); 
+  ierr = DrawGetPause(draw,&pause);CHKERRQ(ierr);
   if (pause >= 0) { PetscSleep(pause); PetscFunctionReturn(0);}
-  ierr = DrawCheckResizedWindow(draw); CHKERRQ(ierr);
-  ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);  CHKERRQ(ierr);
+  ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
+  ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
   while (button != BUTTON_RIGHT) {
-    ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
+    ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
     if (button == BUTTON_LEFT) scale = .5;
     else if (button == BUTTON_CENTER) scale = 2.;
     xl = scale*(xl + w - xc) + xc - w*scale;
@@ -53,17 +53,17 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
     yl = scale*(yl + h - yc) + yc - h*scale;
     yr = scale*(yr - h - yc) + yc + h*scale;
     w *= scale; h *= scale;
-    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
     /* loop over colors  */
     for (i=0; i<fd->ncolors; i++ ) {
       for ( j=0; j<fd->nrows[i]; j++ ) {
         y = fd->M - fd->rows[i][j] - fd->rstart;
         x = fd->columnsforrow[i][j];
-        ierr = DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1); CHKERRQ(ierr);
+        ierr = DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);CHKERRQ(ierr);
       }
     }
-    ierr = DrawCheckResizedWindow(draw); CHKERRQ(ierr);
-    ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);  CHKERRQ(ierr);
+    ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
+    ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -105,9 +105,9 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
   if (viewer) {PetscValidHeader(viewer);} 
   else {viewer = VIEWER_STDOUT_SELF;}
 
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,DRAW_VIEWER)) { 
-    ierr = MatFDColoringView_Draw(c,viewer); CHKERRQ(ierr);
+    ierr = MatFDColoringView_Draw(c,viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"MatFDColoring Object:\n");CHKERRQ(ierr);
@@ -115,7 +115,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"  Umin=%g\n",c->umin);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  Number of colors=%d\n",c->ncolors);CHKERRQ(ierr);
 
-    ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
+    ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format != VIEWER_FORMAT_ASCII_INFO) {
       for ( i=0; i<c->ncolors; i++ ) {
         ierr = ViewerASCIIPrintf(viewer,"  Information for color %d\n",i);CHKERRQ(ierr);
@@ -320,12 +320,12 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
 
   ierr = OptionsGetDouble(matfd->prefix,"-mat_fd_coloring_err",&error,&flag);CHKERRQ(ierr);
   ierr = OptionsGetDouble(matfd->prefix,"-mat_fd_coloring_umin",&umin,&flag);CHKERRQ(ierr);
-  ierr = MatFDColoringSetParameters(matfd,error,umin); CHKERRQ(ierr);
+  ierr = MatFDColoringSetParameters(matfd,error,umin);CHKERRQ(ierr);
   ierr = OptionsGetInt(matfd->prefix,"-mat_fd_coloring_freq",&freq,&flag);CHKERRQ(ierr);
   ierr = MatFDColoringSetFrequency(matfd,freq);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flag); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr = MatFDColoringPrintHelp(matfd); CHKERRQ(ierr);
+    ierr = MatFDColoringPrintHelp(matfd);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -366,20 +366,20 @@ int MatFDColoringView_Private(MatFDColoring fd)
   int ierr,flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatFDColoringView(fd,VIEWER_STDOUT_(fd->comm)); CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_info",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_info",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = ViewerPushFormat(VIEWER_STDOUT_(fd->comm),VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatFDColoringView(fd,VIEWER_STDOUT_(fd->comm)); CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
     ierr = ViewerPopFormat(VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatFDColoringView(fd,VIEWER_DRAW_(fd->comm)); CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_DRAW_(fd->comm)); CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,VIEWER_DRAW_(fd->comm));CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_DRAW_(fd->comm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -415,7 +415,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   int           ierr,M,N;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(mat,&M,&N); CHKERRQ(ierr);
+  ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
   if (M != N) SETERRQ(PETSC_ERR_SUP,0,"Only for square matrices");
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
@@ -424,7 +424,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   PLogObjectCreate(c);
 
   if (mat->ops->fdcoloringcreate) {
-    ierr = (*mat->ops->fdcoloringcreate)(mat,iscoloring,c); CHKERRQ(ierr);
+    ierr = (*mat->ops->fdcoloringcreate)(mat,iscoloring,c);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,0,"Code not yet written for this matrix type");
   }
@@ -433,7 +433,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   c->umin      = 1.e-6;
   c->freq      = 1;
 
-  ierr = MatFDColoringView_Private(c); CHKERRQ(ierr);
+  ierr = MatFDColoringView_Private(c);CHKERRQ(ierr);
 
   *color = c;
 
@@ -475,9 +475,9 @@ int MatFDColoringDestroy(MatFDColoring c)
   PetscFree(c->columnsforrow);
   PetscFree(c->scale);
   if (c->w1) {
-    ierr = VecDestroy(c->w1); CHKERRQ(ierr);
-    ierr = VecDestroy(c->w2); CHKERRQ(ierr);
-    ierr = VecDestroy(c->w3); CHKERRQ(ierr);
+    ierr = VecDestroy(c->w1);CHKERRQ(ierr);
+    ierr = VecDestroy(c->w2);CHKERRQ(ierr);
+    ierr = VecDestroy(c->w3);CHKERRQ(ierr);
   }
   PLogObjectDestroy(c);
   PetscHeaderDestroy(c);
@@ -526,34 +526,34 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 
 
   if (!coloring->w1) {
-    ierr = VecDuplicate(x1,&coloring->w1); CHKERRQ(ierr);
+    ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
     PLogObjectParent(coloring,coloring->w1);
-    ierr = VecDuplicate(x1,&coloring->w2); CHKERRQ(ierr);
+    ierr = VecDuplicate(x1,&coloring->w2);CHKERRQ(ierr);
     PLogObjectParent(coloring,coloring->w2);
-    ierr = VecDuplicate(x1,&coloring->w3); CHKERRQ(ierr);
+    ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
     PLogObjectParent(coloring,coloring->w3);
   }
   w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&fg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&fg);CHKERRQ(ierr);
   if (fg) {
     PLogInfo(coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n");
   } else {
-    ierr = MatZeroEntries(J); CHKERRQ(ierr);
+    ierr = MatZeroEntries(J);CHKERRQ(ierr);
   }
 
-  ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
-  ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
-  ierr = (*f)(sctx,x1,w1,fctx); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
+  ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
+  ierr = (*f)(sctx,x1,w1,fctx);CHKERRQ(ierr);
 
-  PetscMemzero(wscale,N*sizeof(Scalar));
+  ierr = PetscMemzero(wscale,N*sizeof(Scalar));CHKERRQ(ierr);
   /*
       Loop over each color
   */
 
-  ierr = VecGetArray(x1,&xx); CHKERRQ(ierr);
+  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
   for (k=0; k<coloring->ncolors; k++) { 
-    ierr = VecCopy(x1,w3); CHKERRQ(ierr);
+    ierr = VecCopy(x1,w3);CHKERRQ(ierr);
     /*
        Loop over each column associated with color adding the 
        perturbation to the vector w3.
@@ -577,8 +577,8 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     /*
        Evaluate function at x1 + dx (here dx is a vector of perturbations)
     */
-    ierr = (*f)(sctx,w3,w2,fctx); CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,w1,w2); CHKERRQ(ierr);
+    ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
     /* Communicate scale to all processors */
 #if !defined(USE_PETSC_COMPLEX)
     ierr = MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
@@ -596,11 +596,11 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       srow   = row + start;
       ierr   = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
     }
-    ierr = VecRestoreArray(w2,&y); CHKERRQ(ierr);
+    ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   }
   ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
-  ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -645,34 +645,34 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
   PetscValidHeaderSpecific(x1,VEC_COOKIE);
 
   if (!coloring->w1) {
-    ierr = VecDuplicate(x1,&coloring->w1); CHKERRQ(ierr);
+    ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
     PLogObjectParent(coloring,coloring->w1);
-    ierr = VecDuplicate(x1,&coloring->w2); CHKERRQ(ierr);
+    ierr = VecDuplicate(x1,&coloring->w2);CHKERRQ(ierr);
     PLogObjectParent(coloring,coloring->w2);
-    ierr = VecDuplicate(x1,&coloring->w3); CHKERRQ(ierr);
+    ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
     PLogObjectParent(coloring,coloring->w3);
   }
   w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
-  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&fg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&fg);CHKERRQ(ierr);
   if (fg) {
     PLogInfo(coloring,"MatFDColoringApplyTS: Not calling MatZeroEntries()\n");
   } else {
-    ierr = MatZeroEntries(J); CHKERRQ(ierr);
+    ierr = MatZeroEntries(J);CHKERRQ(ierr);
   }
 
-  ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
-  ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
-  ierr = (*f)(sctx,t,x1,w1,fctx); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
+  ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
+  ierr = (*f)(sctx,t,x1,w1,fctx);CHKERRQ(ierr);
 
-  PetscMemzero(wscale,N*sizeof(Scalar));
+  ierr = PetscMemzero(wscale,N*sizeof(Scalar));CHKERRQ(ierr);
   /*
       Loop over each color
   */
 
-  ierr = VecGetArray(x1,&xx); CHKERRQ(ierr);
+  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
   for (k=0; k<coloring->ncolors; k++) { 
-    ierr = VecCopy(x1,w3); CHKERRQ(ierr);
+    ierr = VecCopy(x1,w3);CHKERRQ(ierr);
     /*
        Loop over each column associated with color adding the 
        perturbation to the vector w3.
@@ -690,13 +690,13 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
 #endif
       dx          *= epsilon;
       wscale[col] = 1.0/dx;
-      ierr = VecSetValues(w3,1,&col,&dx,ADD_VALUES); CHKERRQ(ierr);
+      ierr = VecSetValues(w3,1,&col,&dx,ADD_VALUES);CHKERRQ(ierr);
     } 
     /*
        Evaluate function at x1 + dx (here dx is a vector of perturbations)
     */
-    ierr = (*f)(sctx,t,w3,w2,fctx); CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,w1,w2); CHKERRQ(ierr);
+    ierr = (*f)(sctx,t,w3,w2,fctx);CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
     /* Communicate scale to all processors */
 #if !defined(USE_PETSC_COMPLEX)
     ierr = MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
@@ -706,7 +706,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
     /*
        Loop over rows of vector, putting results into Jacobian matrix
     */
-    ierr = VecGetArray(w2,&y); CHKERRQ(ierr);
+    ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
     for (l=0; l<coloring->nrows[k]; l++) {
       row    = coloring->rows[k][l];
       col    = coloring->columnsforrow[k][l];
@@ -714,11 +714,11 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
       srow   = row + start;
       ierr   = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
     }
-    ierr = VecRestoreArray(w2,&y); CHKERRQ(ierr);
+    ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   }
-  ierr  = VecRestoreArray(x1,&xx); CHKERRQ(ierr);
-  ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
+  ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

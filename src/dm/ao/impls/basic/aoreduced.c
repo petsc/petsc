@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aoreduced.c,v 1.11 1998/12/03 04:06:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aoreduced.c,v 1.12 1999/01/31 16:11:14 bsmith Exp balay $";
 #endif
 
 #include "src/dm/ao/aoimpl.h"     /*I   "ao.h"  I*/
@@ -25,12 +25,12 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
      Copy the found values into a contiguous location, keeping them in the 
      order of the requested keys
   */
-  ierr  = PetscDataTypeGetSize(segment->datatype,&dsize); CHKERRQ(ierr);
+  ierr  = PetscDataTypeGetSize(segment->datatype,&dsize);CHKERRQ(ierr);
   bs    = segment->bs;
   odata = (char *) PetscMalloc((n+1)*bs*dsize);CHKPTRQ(odata);
   idata = (char *) segment->data;
   for ( i=0; i<n; i++ ) {
-    PetscMemcpy(odata + i*bs*dsize,idata + keys[i]*bs*dsize,bs*dsize);
+    ierr = PetscMemcpy(odata + i*bs*dsize,idata + keys[i]*bs*dsize,bs*dsize);CHKERRQ(ierr);
   }
 
   found = (int *) odata;
@@ -48,7 +48,7 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
   } else {
     imin = imax = 0;
   }
-  ierr = BTCreate(imax-imin,mask); CHKERRQ(ierr);
+  ierr = BTCreate(imax-imin,mask);CHKERRQ(ierr);
   /* Put the values into the mask and count them */
   count = 0;
   for ( i=0; i<n; i++ ) {

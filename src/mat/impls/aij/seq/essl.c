@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: essl.c,v 1.29 1998/09/28 18:33:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.30 1998/12/03 03:59:57 bsmith Exp balay $";
 #endif
 
 /* 
@@ -55,7 +55,7 @@ extern int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(b,&m);CHKERRQ(ierr);
-  ierr = VecCopy(b,x); CHKERRQ(ierr);
+  ierr = VecCopy(b,x);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   dgss(&zero, &a->n, essl->a, essl->ia, essl->ja,&essl->lna,xx,essl->aux,&essl->naux);
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
@@ -73,13 +73,13 @@ extern int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
 
   PetscFunctionBegin;
   if (a->m != a->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"matrix must be square"); 
-  ierr          = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PETSC_NULL,F); CHKERRQ(ierr);
+  ierr          = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PETSC_NULL,F);CHKERRQ(ierr);
   B             = *F;
   B->ops->solve   = MatSolve_SeqAIJ_Essl;
   B->ops->destroy = MatDestroy_SeqAIJ_Essl;
   B->factor     = FACTOR_LU;
   b             = (Mat_SeqAIJ*) B->data;
-  essl          = PetscNew(Mat_SeqAIJ_Essl); CHKPTRQ(essl);
+  essl          = PetscNew(Mat_SeqAIJ_Essl);CHKPTRQ(essl);
   b->spptr      = (void*) essl;
 
   /* allocate the work arrays required by ESSL */
@@ -90,7 +90,7 @@ extern int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
   /* since malloc is slow on IBM we try a single malloc */
   len        = essl->lna*(2*sizeof(int)+sizeof(Scalar)) + 
                essl->naux*sizeof(Scalar);
-  essl->a    = (Scalar*) PetscMalloc(len); CHKPTRQ(essl->a);
+  essl->a    = (Scalar*) PetscMalloc(len);CHKPTRQ(essl->a);
   essl->aux  = essl->a + essl->lna;
   essl->ia   = (int*) (essl->aux + essl->naux);
   essl->ja   = essl->ia + essl->lna;
@@ -114,10 +114,10 @@ extern int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
     for ( i=0; i<aa->m+1; i++ ) essl->ia[i] = aa->i[i] + 1;
     for ( i=0; i<aa->nz; i++ ) essl->ja[i]  = aa->j[i] + 1;
   } else {
-    PetscMemcpy(essl->ia,aa->i,(aa->m+1)*sizeof(int));
-    PetscMemcpy(essl->ja,aa->j,(aa->nz)*sizeof(int));
+    ierr = PetscMemcpy(essl->ia,aa->i,(aa->m+1)*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMemcpy(essl->ja,aa->j,(aa->nz)*sizeof(int));CHKERRQ(ierr);
   }
-  PetscMemcpy(essl->a,aa->a,(aa->nz)*sizeof(Scalar));
+  ierr = PetscMemcpy(essl->a,aa->a,(aa->nz)*sizeof(Scalar));CHKERRQ(ierr);
   
   /* set Essl options */
   essl->iparm[0] = 1; 

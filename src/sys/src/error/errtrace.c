@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: errtrace.c,v 1.4 1999/03/17 23:21:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: errtrace.c,v 1.5 1999/04/19 22:09:27 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -55,15 +55,15 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   too large an object or bleeding by not properly\n",rank);
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   destroying unneeded objects.\n", rank);
-    ierr = PetscTrSpace(&mem, PETSC_NULL, PETSC_NULL); CHKERRQ(ierr);
-    ierr = PetscGetResidentSetSize(&rss); CHKERRQ(ierr);
+    ierr = PetscTrSpace(&mem, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
     OptionsHasName(PETSC_NULL, "-trdump", &flg1);
     OptionsHasName(PETSC_NULL, "-trmalloc_log", &flg2);
     if (flg2) {
       ierr = PetscTrLogDump(stderr);CHKERRQ(ierr);
     } else if (flg1) {
       (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
-      ierr = PetscTrDump(stderr);  CHKERRQ(ierr);
+      ierr = PetscTrDump(stderr);CHKERRQ(ierr);
     } else {
       (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
       (*PetscErrorPrintf)("[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n", rank);

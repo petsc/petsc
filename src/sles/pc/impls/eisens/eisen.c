@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.90 1999/04/19 22:14:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.91 1999/04/21 18:17:28 bsmith Exp balay $";
 #endif
 
 /*
@@ -42,7 +42,7 @@ static int PCApply_Eisenstat(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (eis->usediag)  {ierr = VecPointwiseMult(x,eis->diag,y);CHKERRQ(ierr);}
-  else               {ierr = VecCopy(x,y);  CHKERRQ(ierr);}
+  else               {ierr = VecCopy(x,y);CHKERRQ(ierr);}
   PetscFunctionReturn(0); 
 }
 
@@ -62,12 +62,12 @@ static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x, Vec b)
   pc->mat   = eis->shell;
 
   if (!eis->b) {
-    ierr = VecDuplicate(b,&eis->b); CHKERRQ(ierr);
+    ierr = VecDuplicate(b,&eis->b);CHKERRQ(ierr);
     PLogObjectParent(pc,eis->b);
   }
   
   /* save true b, other option is to swap pointers */
-  ierr = VecCopy(b,eis->b); CHKERRQ(ierr);
+  ierr = VecCopy(b,eis->b);CHKERRQ(ierr);
 
   /* if nonzero initial guess, modify x */
   ierr = KSPGetInitialGuessNonzero(ksp,&nonzero);CHKERRQ(ierr);
@@ -77,7 +77,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x, Vec b)
 
   /* modify b by (L + D)^{-1} */
   ierr =   MatRelax(eis->A,b,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
-                                        SOR_FORWARD_SWEEP),0.0,1,b); CHKERRQ(ierr);  
+                                        SOR_FORWARD_SWEEP),0.0,1,b);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -90,7 +90,7 @@ static int PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 
   PetscFunctionBegin;
   ierr =   MatRelax(eis->A,x,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
-                                 SOR_BACKWARD_SWEEP),0.0,1,x); CHKERRQ(ierr);
+                                 SOR_BACKWARD_SWEEP),0.0,1,x);CHKERRQ(ierr);
   pc->mat = eis->A;
   /* get back true b */
   VecCopy(eis->b,b);
@@ -120,13 +120,13 @@ static int PCSetFromOptions_Eisenstat(PC pc)
   int     ierr,flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetDouble(pc->prefix,"-pc_eisenstat_omega",&omega,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(pc->prefix,"-pc_eisenstat_omega",&omega,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCEisenstatSetOmega(pc,omega); CHKERRQ(ierr);
+    ierr = PCEisenstatSetOmega(pc,omega);CHKERRQ(ierr);
   }
   ierr = OptionsHasName(pc->prefix,"-pc_eisenstat_no_diagonal_scaling",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCEisenstatNoDiagonalScaling(pc); CHKERRQ(ierr);
+    ierr = PCEisenstatNoDiagonalScaling(pc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -153,7 +153,7 @@ static int PCView_Eisenstat(PC pc,Viewer viewer)
   ViewerType    vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"  Eisenstat: omega = %g\n",eis->omega);CHKERRQ(ierr);
   } else {
@@ -172,21 +172,21 @@ static int PCSetUp_Eisenstat(PC pc)
 
   PetscFunctionBegin;
   if (pc->setupcalled == 0) {
-    ierr = MatGetSize(pc->mat,&M,&N); CHKERRA(ierr);
-    ierr = MatGetLocalSize(pc->mat,&m,&n); CHKERRA(ierr);
-    ierr = MatCreateShell(pc->comm,m,N,M,N,(void*)pc,&eis->shell); CHKERRQ(ierr);
+    ierr = MatGetSize(pc->mat,&M,&N);CHKERRA(ierr);
+    ierr = MatGetLocalSize(pc->mat,&m,&n);CHKERRA(ierr);
+    ierr = MatCreateShell(pc->comm,m,N,M,N,(void*)pc,&eis->shell);CHKERRQ(ierr);
     PLogObjectParent(pc,eis->shell);
     ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void*)PCMult_Eisenstat);CHKERRQ(ierr);
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (pc->setupcalled == 0) {
-    ierr = VecDuplicate(pc->vec,&diag); CHKERRQ(ierr);
+    ierr = VecDuplicate(pc->vec,&diag);CHKERRQ(ierr);
     PLogObjectParent(pc,diag);
   } else {
     diag = eis->diag;
   }
-  ierr = MatGetDiagonal(pc->pmat,diag); CHKERRQ(ierr);
-  /* ierr = VecReciprocal(diag); CHKERRQ(ierr);  wrong, as pointed out by Isaac */
+  ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
+  /* ierr = VecReciprocal(diag);CHKERRQ(ierr);  wrong, as pointed out by Isaac */
   eis->diag = diag;
   PetscFunctionReturn(0);
 }
@@ -259,7 +259,7 @@ int PCEisenstatSetOmega(PC pc,double omega)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCEisenstatSetOmega_C",(void **)&f); CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCEisenstatSetOmega_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,omega);CHKERRQ(ierr);
   }
@@ -308,7 +308,7 @@ EXTERN_C_BEGIN
 int PCCreate_Eisenstat(PC pc)
 {
   int          ierr;
-  PC_Eisenstat *eis = PetscNew(PC_Eisenstat); CHKPTRQ(eis);
+  PC_Eisenstat *eis = PetscNew(PC_Eisenstat);CHKPTRQ(eis);
 
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_Eisenstat));

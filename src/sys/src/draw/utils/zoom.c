@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoom.c,v 1.5 1998/12/03 04:03:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoom.c,v 1.6 1999/03/17 23:21:24 bsmith Exp balay $";
 #endif
 
 #include "draw.h"     /*I "draw.h"  I*/
@@ -30,19 +30,19 @@ int DrawZoom(Draw draw,int (*func)(Draw,void *),void *ctx)
   PetscTruth isnull;
 
   PetscFunctionBegin;
-  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr);
+  ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
 
   ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
-  ierr = (*func)(draw,ctx);  CHKERRQ(ierr);
+  ierr = (*func)(draw,ctx);CHKERRQ(ierr);
   ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
   DrawGetPause(draw,&pause);
   if (pause >= 0) { PetscSleep(pause); PetscFunctionReturn(0);}
 
-  ierr = DrawCheckResizedWindow(draw); CHKERRQ(ierr);
-  ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0); CHKERRQ(ierr); 
-  ierr = DrawGetCoordinates(draw,&xl,&yl,&xr,&yr); CHKERRQ(ierr);
+  ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
+  ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr); 
+  ierr = DrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
   w    = xr - xl; xmin = xl; ymin = yl; xmax = xr; ymax = yr;
   h    = yr - yl;
 
@@ -56,14 +56,14 @@ int DrawZoom(Draw draw,int (*func)(Draw,void *),void *ctx)
     yl = scale*(yl + h - yc) + yc - h*scale;
     yr = scale*(yr - h - yc) + yc + h*scale;
     w *= scale; h *= scale;
-    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
 
-    ierr = (*func)(draw,ctx);  CHKERRQ(ierr);
-    ierr = DrawCheckResizedWindow(draw); CHKERRQ(ierr);
-    ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);  CHKERRQ(ierr);
+    ierr = (*func)(draw,ctx);CHKERRQ(ierr);
+    ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
+    ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
   }
 
-  ierr = DrawSetCoordinates(draw,xmin,ymin,xmax,ymax); CHKERRQ(ierr);
+  ierr = DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

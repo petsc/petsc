@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.156 1999/03/18 15:34:47 bsmith Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.157 1999/03/19 01:05:31 balay Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -82,11 +82,11 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
   char     *outputname;
 
   PetscFunctionBegin;
-  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
 
   ierr = ViewerGetFormat(viewer,&format);
   if (format == VIEWER_FORMAT_ASCII_MATLAB) {
-    ierr = ViewerGetOutputname(viewer,&outputname); CHKERRQ(ierr);
+    ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
     fprintf(fd,"%s = [\n",outputname);
     for (i=0; i<n; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
@@ -143,11 +143,11 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
   DrawLG   lg;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDrawLG(v,0,&lg); CHKERRQ(ierr);
-  ierr = DrawLGGetDraw(lg,&win); CHKERRQ(ierr);
+  ierr = ViewerDrawGetDrawLG(v,0,&lg);CHKERRQ(ierr);
+  ierr = DrawLGGetDraw(lg,&win);CHKERRQ(ierr);
   ierr = DrawCheckResizedWindow(win);CHKERRQ(ierr);
-  ierr = DrawLGReset(lg); CHKERRQ(ierr);
-  xx = (double *) PetscMalloc( (n+1)*sizeof(double) ); CHKPTRQ(xx);
+  ierr = DrawLGReset(lg);CHKERRQ(ierr);
+  xx = (double *) PetscMalloc( (n+1)*sizeof(double) );CHKPTRQ(xx);
   for ( i=0; i<n; i++ ) {
     xx[i] = (double) i;
   }
@@ -156,7 +156,7 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
 #else 
   {
     double *yy;
-    yy = (double *) PetscMalloc( (n+1)*sizeof(double) ); CHKPTRQ(yy);    
+    yy = (double *) PetscMalloc( (n+1)*sizeof(double) );CHKPTRQ(yy);    
     for ( i=0; i<n; i++ ) {
       yy[i] = PetscReal(x->array[i]);
     }
@@ -181,16 +181,16 @@ static int VecView_Seq_Draw(Vec xin,Viewer v)
   int        format;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDraw(v,0,&draw); CHKERRQ(ierr);
-  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+  ierr = ViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
+  ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   
-  ierr = ViewerGetFormat(v,&format); CHKERRQ(ierr);
+  ierr = ViewerGetFormat(v,&format);CHKERRQ(ierr);
   /*
      Currently it only supports drawing to a line graph */
   if (format != VIEWER_FORMAT_DRAW_LG) {
     ViewerPushFormat(v,VIEWER_FORMAT_DRAW_LG,PETSC_NULL);
   } 
-  ierr = VecView_Seq_Draw_LG(xin,v); CHKERRQ(ierr);
+  ierr = VecView_Seq_Draw_LG(xin,v);CHKERRQ(ierr);
   if (format != VIEWER_FORMAT_DRAW_LG) {
     ViewerPopFormat(v);
   } 
@@ -207,10 +207,10 @@ static int VecView_Seq_Binary(Vec xin,Viewer viewer)
   FILE     *file;
 
   PetscFunctionBegin;
-  ierr  = ViewerBinaryGetDescriptor(viewer,&fdes); CHKERRQ(ierr);
+  ierr  = ViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
   /* Write vector header */
   ierr = PetscBinaryWrite(fdes,&xin->cookie,1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(fdes,&n,1,PETSC_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fdes,&n,1,PETSC_INT,0);CHKERRQ(ierr);
 
   /* Write vector contents */
   ierr = PetscBinaryWrite(fdes,x->array,n,PETSC_SCALAR,0);CHKERRQ(ierr);
@@ -232,7 +232,7 @@ int VecView_Seq(Vec xin,Viewer viewer)
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,DRAW_VIEWER)){ 
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,ASCII_VIEWER)){
@@ -425,8 +425,8 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
   int     ierr;
 
   PetscFunctionBegin;
-  PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));
-  s                  = (Vec_Seq *) PetscMalloc(sizeof(Vec_Seq)); CHKPTRQ(s);
+  ierr = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
+  s                  = (Vec_Seq *) PetscMalloc(sizeof(Vec_Seq));CHKPTRQ(s);
   v->data            = (void *) s;
   v->bops->publish   = VecPublish_Seq;
   s->n               = PetscMax(v->n,v->N);
@@ -436,10 +436,10 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
   s->array           = (Scalar *)array;
   s->array_allocated = 0;
   if (!v->map) {
-    ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map); CHKERRQ(ierr);
+    ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
   }
   v->type_name       = (char *) PetscMalloc((1+PetscStrlen(VEC_SEQ))*sizeof(char));CHKPTRQ(v->type_name);
-  PetscStrcpy(v->type_name,VEC_SEQ);
+  ierr = PetscStrcpy(v->type_name,VEC_SEQ);CHKERRQ(ierr);
   PetscPublishAll(v);
   PetscFunctionReturn(0);
 }
@@ -498,7 +498,7 @@ int VecCreate_Seq(Vec V)
 
   PetscFunctionBegin;
   array              = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(array);
-  PetscMemzero(array,n*sizeof(Scalar));
+  ierr               = PetscMemzero(array,n*sizeof(Scalar));CHKERRQ(ierr);
   ierr               = VecCreate_Seq_Private(V,array);CHKERRQ(ierr);
   s                  = (Vec_Seq *) V->data;
   s->array_allocated = array;
@@ -524,7 +524,7 @@ int VecDuplicate_Seq(Vec win,Vec *V)
   Vec_Seq *w = (Vec_Seq *)win->data;
 
   PetscFunctionBegin;
-  ierr = VecCreateSeq(win->comm,w->n,V); CHKERRQ(ierr);
+  ierr = VecCreateSeq(win->comm,w->n,V);CHKERRQ(ierr);
   if (win->mapping) {
     (*V)->mapping = win->mapping;
     PetscObjectReference((PetscObject)win->mapping);

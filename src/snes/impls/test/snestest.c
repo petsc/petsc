@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snestest.c,v 1.42 1998/10/19 22:19:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.43 1999/04/19 22:15:44 bsmith Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -39,28 +39,28 @@ int SNESSolve_Test(SNES snes,int *its)
   }
 
   for ( i=0; i<3; i++ ) {
-    if (i == 1) {ierr = VecSet(&mone,x); CHKERRQ(ierr);}
-    else if (i == 2) {ierr = VecSet(&one,x); CHKERRQ(ierr);}
+    if (i == 1) {ierr = VecSet(&mone,x);CHKERRQ(ierr);}
+    else if (i == 2) {ierr = VecSet(&one,x);CHKERRQ(ierr);}
  
     /* compute both versions of Jacobian */
     ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
-    if (i == 0) {ierr = MatConvert(A,MATSAME,&B); CHKERRQ(ierr);}
+    if (i == 0) {ierr = MatConvert(A,MATSAME,&B);CHKERRQ(ierr);}
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);CHKERRQ(ierr);
     if (neP->complete_print) {
       ierr = PetscPrintf(snes->comm,"Finite difference Jacobian\n");CHKERRQ(ierr);
-      ierr = MatView(B,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+      ierr = MatView(B,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     /* compare */
-    ierr = MatAXPY(&mone,A,B); CHKERRQ(ierr);
-    ierr = MatNorm(B,NORM_FROBENIUS,&norm); CHKERRQ(ierr);
-    ierr = MatNorm(A,NORM_FROBENIUS,&gnorm); CHKERRQ(ierr);
+    ierr = MatAXPY(&mone,A,B);CHKERRQ(ierr);
+    ierr = MatNorm(B,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+    ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
     if (neP->complete_print) {
       ierr = PetscPrintf(snes->comm,"Hand-coded Jacobian\n");CHKERRQ(ierr);
-      ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+      ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     ierr = PetscPrintf(snes->comm,"Norm of matrix ratio %g difference %g\n",norm/gnorm,norm);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(B); CHKERRQ(ierr);
+  ierr = MatDestroy(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------ */
@@ -92,7 +92,7 @@ static int SNESSetFromOptions_Test(SNES snes)
   int       ierr,flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(PETSC_NULL,"-snes_test_display",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-snes_test_display",&flg);CHKERRQ(ierr);
   if (flg) {
     ls->complete_print = 1;
   }
@@ -118,7 +118,7 @@ int SNESCreate_Test(SNES  snes )
   snes->printhelp       = SNESPrintHelp_Test;
   snes->setfromoptions  = SNESSetFromOptions_Test;
 
-  neP			= PetscNew(SNES_Test);   CHKPTRQ(neP);
+  neP			= PetscNew(SNES_Test);CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_Test));
   snes->data    	= (void *) neP;
   neP->complete_print   = 0;

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.29 1999/04/06 17:47:43 balay Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.30 1999/04/21 18:19:20 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -65,15 +65,15 @@ void kspsettype_(KSP *ksp,CHAR itmethod, int *__ierr,int len )
 void kspgettype_(KSP *ksp,CHAR name,int *__ierr,int len)
 {
   char *tname;
-
+  int  ierr;
   *__ierr = KSPGetType(*ksp,&tname);
 #if defined(USES_CPTOFCD)
   {
     char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-    PetscStrncpy(t,tname,len1);
+    *__ierr = PetscStrncpy(t,tname,len1); if (*__ierr) return;
   }
 #else
-  PetscStrncpy(name,tname,len);
+  *__ierr = PetscStrncpy(name,tname,len); if (*__ierr) return;
 #endif
 }
 
@@ -105,7 +105,7 @@ static int (*f2)(KSP*,int*,double*,void*,int*);
 static int ourtest(KSP ksp,int i,double d,void* ctx)
 {
   int ierr = 0;
-  (*f2)(&ksp,&i,&d,ctx,&ierr); CHKERRQ(ierr);
+  (*f2)(&ksp,&i,&d,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 void kspsetconvergencetest_(KSP *ksp,
@@ -119,7 +119,7 @@ static int (*f1)(KSP*,int*,double*,void*,int*);
 static int ourmonitor(KSP ksp,int i,double d,void* ctx)
 {
   int ierr = 0;
-  (*f1)(&ksp,&i,&d,ctx,&ierr); CHKERRQ(ierr);
+  (*f1)(&ksp,&i,&d,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 void kspsetmonitor_(KSP *ksp,int (*monitor)(KSP*,int*,double*,void*,int*),
@@ -189,10 +189,10 @@ void kspgetoptionsprefix_(KSP *ksp, CHAR prefix,int *__ierr,int len)
 #if defined(USES_CPTOFCD)
   {
     char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
-    PetscStrncpy(t,tname,len1);
+    *__ierr = PetscStrncpy(t,tname,len1); if (*__ierr) return;
   }
 #else
-  PetscStrncpy(prefix,tname,len);
+  *__ierr = PetscStrncpy(prefix,tname,len); if (*__ierr) return;
 #endif
 }
 EXTERN_C_END

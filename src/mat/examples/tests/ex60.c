@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex60.c,v 1.2 1998/03/06 00:15:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex60.c,v 1.3 1999/03/19 21:19:59 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests MatGetColumnVector()";
@@ -24,7 +24,7 @@ int main(int argc,char **args)
 
   /* create the matrix for the five point stencil, YET AGAIN*/
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-         m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C); CHKERRA(ierr);
+         m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C);CHKERRA(ierr);
   for ( i=0; i<m; i++ ) { 
     for ( j=2*rank; j<2*rank+2; j++ ) {
       v = -1.0;  I = j + n*i;
@@ -32,21 +32,21 @@ int main(int argc,char **args)
       if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
       if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
       if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
+      v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&yy);CHKERRA(ierr);
 
-  ierr = MatGetColumnVector(C,yy,col); CHKERRA(ierr);
+  ierr = MatGetColumnVector(C,yy,col);CHKERRA(ierr);
 
-  ierr = VecView(yy,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = VecView(yy,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-  ierr = VecDestroy(yy); CHKERRA(ierr);
-  ierr = MatDestroy(C); CHKERRA(ierr);
+  ierr = VecDestroy(yy);CHKERRA(ierr);
+  ierr = MatDestroy(C);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

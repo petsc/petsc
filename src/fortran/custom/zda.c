@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.28 1999/04/05 00:16:12 bsmith Exp balay $";
+static char vcid[] = "$Id: zda.c,v 1.29 1999/04/05 18:06:29 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -57,10 +57,10 @@ void dagetfieldname(DA *da,int *nf,CHAR name,int *__ierr,int len)
 #if defined(USES_CPTOFCD)
   {
     char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-    PetscStrncpy(t,tname,len1);
+    *__ierr = PetscStrncpy(t,tname,len1);
   }
 #else
-  PetscStrncpy(name,tname,len);
+  *__ierr = PetscStrncpy(name,tname,len);
 #endif
 }
 

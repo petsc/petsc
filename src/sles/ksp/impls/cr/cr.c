@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cr.c,v 1.45 1999/02/09 22:48:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.46 1999/03/01 04:55:43 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -16,7 +16,7 @@ static int KSPSetUp_CR(KSP ksp)
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {SETERRQ(2,0,"no right preconditioning for KSPCR");}
   else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(2,0,"no symmetric preconditioning for KSPCR");}
-  ierr = KSPDefaultGetWork( ksp, 9  ); CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork( ksp, 9  );CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -48,23 +48,23 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   Sm1     = ksp->work[7];
   S       = ksp->work[8];
 
-  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   bbotold = 1.0; /* a hack */
   if (!ksp->guess_zero) {
-    ierr = MatMult(Amat,X,R); CHKERRQ(ierr);    /*   r <- b - Ax       */
-    ierr = VecAYPX(&mone,B,R); CHKERRQ(ierr);
+    ierr = MatMult(Amat,X,R);CHKERRQ(ierr);    /*   r <- b - Ax       */
+    ierr = VecAYPX(&mone,B,R);CHKERRQ(ierr);
   } else { 
-    ierr = VecCopy(B,R); CHKERRQ(ierr);         /*    r <- b (x is 0)  */
+    ierr = VecCopy(B,R);CHKERRQ(ierr);         /*    r <- b (x is 0)  */
   }
-  ierr = VecSet(&zero,Pm1); CHKERRQ(ierr);      /*    pm1 <- 0         */
-  ierr = VecSet(&zero,Sm1); CHKERRQ(ierr);      /*    sm1 <- 0         */
-  ierr = VecSet(&zero,Qm1); CHKERRQ(ierr);      /*    Qm1 <- 0         */
-  ierr = PCApply(ksp->B,R,P); CHKERRQ(ierr);    /*     p <- Br         */
+  ierr = VecSet(&zero,Pm1);CHKERRQ(ierr);      /*    pm1 <- 0         */
+  ierr = VecSet(&zero,Sm1);CHKERRQ(ierr);      /*    sm1 <- 0         */
+  ierr = VecSet(&zero,Qm1);CHKERRQ(ierr);      /*    Qm1 <- 0         */
+  ierr = PCApply(ksp->B,R,P);CHKERRQ(ierr);    /*     p <- Br         */
   if (!ksp->avoidnorms) {
     if (pres) {
-      ierr = VecNorm(P,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- z'*z       */
+      ierr = VecNorm(P,NORM_2,&dp);CHKERRQ(ierr);/*    dp <- z'*z       */
     } else {
-      ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- r'*r       */
+      ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);/*    dp <- r'*r       */
     }
   }
   PetscAMSTakeAccess(ksp);
@@ -74,19 +74,19 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
   KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);
-  ierr = MatMult(Amat,P,Q); CHKERRQ(ierr);      /*    q <- A p          */
+  ierr = MatMult(Amat,P,Q);CHKERRQ(ierr);      /*    q <- A p          */
 
   for ( i=0; i<maxit; i++) {
 
-    ierr   = PCApply(ksp->B,Q,S); CHKERRQ(ierr);  /*     s <- Bq          */
-    ierr   = VecDot(R,S,&btop); CHKERRQ(ierr);    /*                      */
-    ierr   = VecDot(Q,S,&bbot); CHKERRQ(ierr);    /*     lambda =         */
+    ierr   = PCApply(ksp->B,Q,S);CHKERRQ(ierr);  /*     s <- Bq          */
+    ierr   = VecDot(R,S,&btop);CHKERRQ(ierr);    /*                      */
+    ierr   = VecDot(Q,S,&bbot);CHKERRQ(ierr);    /*     lambda =         */
     lambda = btop/bbot;
-    ierr   = VecAXPY(&lambda,P,X); CHKERRQ(ierr); /*   x <- x + lambda p  */
+    ierr   = VecAXPY(&lambda,P,X);CHKERRQ(ierr); /*   x <- x + lambda p  */
     tmp    = -lambda; 
-    ierr   = VecAXPY(&tmp,Q,R); CHKERRQ(ierr);     /*   r <- r - lambda q  */
+    ierr   = VecAXPY(&tmp,Q,R);CHKERRQ(ierr);     /*   r <- r - lambda q  */
     if (!ksp->avoidnorms) {
-      ierr   = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*   dp <- r'*r         */
+      ierr   = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr); /*   dp <- r'*r         */
     } else { dp = 0.0; }
     PetscAMSTakeAccess(ksp);
     ksp->its++;
@@ -96,21 +96,21 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     KSPMonitor(ksp,i+1,dp);
     cerr   = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
     if (cerr) break;
-    ierr   = MatMult(Amat,S,T); CHKERRQ(ierr);    /*   T <-   As          */
-    ierr   = VecDot(T,S,&btop); CHKERRQ(ierr);
+    ierr   = MatMult(Amat,S,T);CHKERRQ(ierr);    /*   T <-   As          */
+    ierr   = VecDot(T,S,&btop);CHKERRQ(ierr);
     alpha0 = btop/bbot;
-    ierr   = VecDot(T,Sm1,&btop); CHKERRQ(ierr);       
+    ierr   = VecDot(T,Sm1,&btop);CHKERRQ(ierr);       
     alpha1 = btop/bbotold; 
 
-    tmp = -alpha0; ierr = VecWAXPY(&tmp,P,S,Pp1); CHKERRQ(ierr);
-    tmp = -alpha1; ierr = VecAXPY(&tmp,Pm1,Pp1); CHKERRQ(ierr);
+    tmp = -alpha0; ierr = VecWAXPY(&tmp,P,S,Pp1);CHKERRQ(ierr);
+    tmp = -alpha1; ierr = VecAXPY(&tmp,Pm1,Pp1);CHKERRQ(ierr);
     /* MM(Pp1,Qp1); use 3 term recurrence relation instead */
-    tmp = -alpha0; ierr = VecAXPY(&tmp,Q,Qp1); CHKERRQ(ierr);
-    tmp = -alpha1; ierr = VecAXPY(&tmp,Qm1,Qp1); CHKERRQ(ierr);
+    tmp = -alpha0; ierr = VecAXPY(&tmp,Q,Qp1);CHKERRQ(ierr);
+    tmp = -alpha1; ierr = VecAXPY(&tmp,Qm1,Qp1);CHKERRQ(ierr);
     /* scale the search direction !! Not mentioned in any reference */
-    ierr = VecNorm(Pp1,NORM_2,&dp); CHKERRQ(ierr);
-    tmp  = 1.0/dp; ierr = VecScale(&tmp,Pp1); CHKERRQ(ierr);
-    ierr = VecScale(&tmp,Qp1); CHKERRQ(ierr);
+    ierr = VecNorm(Pp1,NORM_2,&dp);CHKERRQ(ierr);
+    tmp  = 1.0/dp; ierr = VecScale(&tmp,Pp1);CHKERRQ(ierr);
+    ierr = VecScale(&tmp,Qp1);CHKERRQ(ierr);
     /* rotate work vectors */
     Tmp = Sm1; Sm1 = S; S = Tmp;
     Tmp = Pm1; Pm1 = P; P = Pp1; Pp1 = Tmp;

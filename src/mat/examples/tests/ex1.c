@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.9 1999/01/12 23:15:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.10 1999/03/19 21:19:59 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\n";
@@ -21,80 +21,80 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*) 0,help);
 
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&y); CHKERRA(ierr); 
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&y);CHKERRA(ierr); 
   ierr = VecSetFromOptions(y);CHKERRA(ierr);
   ierr = VecDuplicate(y,&x);CHKERRA(ierr);
-  ierr = VecSet(&value,x); CHKERRA(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b); CHKERRA(ierr);
+  ierr = VecSet(&value,x);CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRA(ierr);
   ierr = VecSetFromOptions(b);CHKERRA(ierr);
 
-  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&type,&set); CHKERRQ(ierr);
+  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&type,&set);CHKERRQ(ierr);
   if (type == MATMPIDENSE) {
     ierr = MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,
-           PETSC_NULL,&mat); CHKERRA(ierr);
+           PETSC_NULL,&mat);CHKERRA(ierr);
   } else {
-    ierr = MatCreateSeqDense(PETSC_COMM_WORLD,m,n,PETSC_NULL,&mat); CHKERRA(ierr);
+    ierr = MatCreateSeqDense(PETSC_COMM_WORLD,m,n,PETSC_NULL,&mat);CHKERRA(ierr);
   }
 
-  ierr = MatGetOwnershipRange(mat,&rstart,&rend); CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRA(ierr);
   for (i=rstart; i<rend; i++ ) {
     value = (double) i+1;
-    ierr = MatSetValues(mat,1,&i,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);
+    ierr = MatSetValues(mat,1,&i,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
-  ierr = MatGetInfo(mat,MAT_LOCAL,&info); CHKERRA(ierr);
+  ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %d, allocated nonzeros = %d\n",
     (int)info.nz_used,(int)info.nz_allocated); 
 
   if (type != MATMPIDENSE) {
     /* Cholesky factorization is not yet in place for this matrix format */
-    ierr = MatMult(mat,x,b); CHKERRA(ierr);
-    ierr = MatConvert(mat,MATSAME,&fact); CHKERRA(ierr);
-    ierr = MatCholeskyFactor(fact,0,1.0); CHKERRA(ierr);
-    ierr = MatSolve(fact,b,y); CHKERRA(ierr);
-    ierr = MatDestroy(fact); CHKERRA(ierr);
-    value = -1.0; ierr = VecAXPY(&value,x,y); CHKERRA(ierr);
-    ierr = VecNorm(y,NORM_2,&norm); CHKERRA(ierr);
+    ierr = MatMult(mat,x,b);CHKERRA(ierr);
+    ierr = MatConvert(mat,MATSAME,&fact);CHKERRA(ierr);
+    ierr = MatCholeskyFactor(fact,0,1.0);CHKERRA(ierr);
+    ierr = MatSolve(fact,b,y);CHKERRA(ierr);
+    ierr = MatDestroy(fact);CHKERRA(ierr);
+    value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRA(ierr);
+    ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
     if (norm > 1.e-12) 
       PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky %g\n",norm);
     else 
       PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky < 1.e-12\n");
 
-    ierr = MatCholeskyFactorSymbolic(mat,0,1.0,&fact); CHKERRA(ierr);
-    ierr = MatCholeskyFactorNumeric(mat,&fact); CHKERRA(ierr);
-    ierr = MatSolve(fact,b,y); CHKERRA(ierr);
-    value = -1.0; ierr = VecAXPY(&value,x,y); CHKERRA(ierr);
-    ierr = VecNorm(y,NORM_2,&norm); CHKERRA(ierr);
+    ierr = MatCholeskyFactorSymbolic(mat,0,1.0,&fact);CHKERRA(ierr);
+    ierr = MatCholeskyFactorNumeric(mat,&fact);CHKERRA(ierr);
+    ierr = MatSolve(fact,b,y);CHKERRA(ierr);
+    value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRA(ierr);
+    ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
     if (norm > 1.e-12) 
       PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky %g\n",norm);
     else 
       PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky < 1.e-12\n");
-    ierr = MatDestroy(fact); CHKERRA(ierr);
+    ierr = MatDestroy(fact);CHKERRA(ierr);
   }
 
   i = m-1; value = 1.0;
-  ierr = MatSetValues(mat,1,&i,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatMult(mat,x,b); CHKERRA(ierr);
-  ierr = MatConvert(mat,MATSAME,&fact); CHKERRA(ierr);
-  ierr = MatLUFactor(fact,0,0,1.0); CHKERRA(ierr);
-  ierr = MatSolve(fact,b,y); CHKERRA(ierr);
-  value = -1.0; ierr = VecAXPY(&value,x,y); CHKERRA(ierr);
-  ierr = VecNorm(y,NORM_2,&norm); CHKERRA(ierr);
+  ierr = MatSetValues(mat,1,&i,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatMult(mat,x,b);CHKERRA(ierr);
+  ierr = MatConvert(mat,MATSAME,&fact);CHKERRA(ierr);
+  ierr = MatLUFactor(fact,0,0,1.0);CHKERRA(ierr);
+  ierr = MatSolve(fact,b,y);CHKERRA(ierr);
+  value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRA(ierr);
+  ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
   if (norm > 1.e-12) 
     PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU %g\n",norm);
   else 
     PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU < 1.e-12\n");
   ierr = MatDestroy(fact);CHKERRA(ierr);
 
-  ierr = MatLUFactorSymbolic(mat,0,0,1.0,&fact); CHKERRA(ierr);
-  ierr = MatLUFactorNumeric(mat,&fact); CHKERRA(ierr);
-  ierr = MatSolve(fact,b,y); CHKERRA(ierr);
-  value = -1.0; ierr = VecAXPY(&value,x,y); CHKERRA(ierr);
-  ierr = VecNorm(y,NORM_2,&norm); CHKERRA(ierr);
+  ierr = MatLUFactorSymbolic(mat,0,0,1.0,&fact);CHKERRA(ierr);
+  ierr = MatLUFactorNumeric(mat,&fact);CHKERRA(ierr);
+  ierr = MatSolve(fact,b,y);CHKERRA(ierr);
+  value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRA(ierr);
+  ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
   if (norm > 1.e-12) 
     PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU %g\n",norm);
   else 
@@ -102,9 +102,9 @@ int main(int argc,char **argv)
 
   ierr = MatDestroy(fact);CHKERRA(ierr);
   ierr = MatDestroy(mat);CHKERRA(ierr);
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(b); CHKERRA(ierr);
-  ierr = VecDestroy(y); CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(b);CHKERRA(ierr);
+  ierr = VecDestroy(y);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;
