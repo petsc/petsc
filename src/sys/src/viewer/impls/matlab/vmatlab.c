@@ -162,8 +162,7 @@ PetscErrorCode PetscViewerSetFilename_Matlab(PetscViewer viewer,const char name[
   if (!vmatlab->rank){
     if (type == PETSC_FILE_RDONLY){
       vmatlab->ep = matOpen(name,"r");
-    }
-    if (type == PETSC_FILE_CREATE || type == PETSC_FILE_WRONLY) {
+    } else if (type == PETSC_FILE_CREATE || type == PETSC_FILE_WRONLY) {
       vmatlab->ep = matOpen(name,"w");
     } else {
       SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
