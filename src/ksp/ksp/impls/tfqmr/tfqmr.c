@@ -132,17 +132,17 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 }
 
 /*MC
-     KSPRTFQMR - A transpose free QMR (quasi minimal residual), Freund, 1993
+     KSPRTFQMR - A transpose free QMR (quasi minimal residual), 
 
    Options Database Keys:
 .   see KSPSolve()
 
    Level: beginner
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPTCQMR
+   Notes: Reference, Freund, 1993
 
+.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPTCQMR
 M*/
-
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_TFQMR"

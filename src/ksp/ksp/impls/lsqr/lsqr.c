@@ -173,16 +173,15 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 }
 
 /*MC
-     KSPLSQR - This implements LSQR (Paige and Saunders, ACM Transactions on
-              Mathematical Software, Vol 8, pp 43-71, 1982).
+     KSPLSQR - This implements LSQR
 
    Options Database Keys:
 .   see KSPSolve()
 
    Level: beginner
 
-   Notes:  This algorithm DOES NOT use a preconditioner. It ignores
-       any preconditioner arguments specified.
+   Notes:  This algorithm DOES NOT use a preconditioner. It ignores any preconditioner arguments specified.
+           Reference: Paige and Saunders, ACM Transactions on Mathematical Software, Vol 8, pp 43-71, 1982
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
 

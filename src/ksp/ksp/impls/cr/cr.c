@@ -117,7 +117,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
 
 
 /*MC
-     KSPCR -     This code implements the (preconditioned) conjugate residuals method
+     KSPCR - This code implements the (preconditioned) conjugate residuals method
 
    Options Database Keys:
 .   see KSPSolve()
@@ -126,10 +126,8 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
 
    Notes: The operator and the preconditioner must be symmetric for this method
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
-
+.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
 M*/
-
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CR"

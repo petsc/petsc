@@ -128,19 +128,17 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
 }
 
 /*MC
-     KSPBCGS -     Implements the BiCGStab (Stabilized version of BiConjugate
-         Gradient Squared) method.  Reference: van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
-
+     KSPBCGS - Implements the BiCGStab (Stabilized version of BiConjugate Gradient Squared) method.
 
    Options Database Keys:
 .   see KSPSolve()
 
    Level: beginner
 
+   Notes: Reference: van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
+
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG
-
 M*/
-
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_BCGS"

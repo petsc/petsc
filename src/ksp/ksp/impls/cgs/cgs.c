@@ -132,18 +132,17 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 }
 
 /*MC
-     KSPCGS -     This code implements the CGS (Conjugate Gradient Squared) method. 
-                  Reference: Sonneveld, 1989.
+     KSPCGS - This code implements the CGS (Conjugate Gradient Squared) method. 
 
    Options Database Keys:
 .   see KSPSolve()
 
    Level: beginner
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS
+   Notes: Reference: Sonneveld, 1989.
 
+.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS
 M*/
-
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CGS"
