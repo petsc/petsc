@@ -13,9 +13,6 @@ PETSc configure
 Vectors
    Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input
 
-PC/KSP
-   Add manual pages for all the KSP types and for the PC types that are missing
-
 Error handling
    Add troubleshooting entries and error messages with web address for common errors.
 

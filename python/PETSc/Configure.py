@@ -71,6 +71,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ar',                    nargs.Arg(None, 'ar',   'Specify the archiver'))
     help.addArgument('PETSc', 'AR_FLAGS',                    nargs.Arg(None, 'cr',   'Specify the archiver flags'))
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
+    help.addArgument('PETSc', '-with-scroll-output',         nargs.ArgBool(None, 0, 'Scroll configure output instead of keeping it on one line'))
     return
 
   def defineAutoconfMacros(self):
