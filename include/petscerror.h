@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.43 2000/02/02 21:21:25 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.44 2000/02/14 17:01:30 bsmith Exp curfman $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -15,7 +15,7 @@
    Defines the directory where the compiled source is located; used
    in printing error messages. Each makefile has an entry 
    LOCDIR	  =  thedirectory
-   and bmake/common includes in CCPPFLAGS -D__SDIR__='"${LOCDIR}"'
+   and bmake/common_variables includes in CCPPFLAGS -D__SDIR__='"${LOCDIR}"'
    which is a flag passed to the C/C++ compilers.
 */
 #if !defined(__SDIR__)
