@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.313 1999/03/17 23:22:51 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.314 1999/03/23 15:34:56 balay Exp bsmith $";
 #endif
 
 /*
@@ -2044,8 +2044,7 @@ int MatStoreValues(Mat mat)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatStoreValues_C",(void **)&f); 
-         CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatStoreValues_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat);CHKERRQ(ierr);
   } else {
@@ -2102,8 +2101,7 @@ int MatRetrieveValues(Mat mat)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatRetrieveValues_C",(void **)&f); 
-         CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatRetrieveValues_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat);CHKERRQ(ierr);
   } else {
