@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: checknightly,v 1.29 1998/02/10 16:34:10 balay Exp balay $ 
+# $Id: checknightly,v 1.30 1998/03/12 17:27:36 balay Exp balay $ 
 
 #
 # Crontab job that checks if the nightly runs have finished by 7:30 am,
@@ -16,7 +16,7 @@ proc CheckNightlyBuilds { } {
         return 0
     }
     
-    set machines {snake violet snowy maverick quad maple ptera yukon tri63 homer lava}
+    set machines {snake violet snowy maverick quad maple ptera yukon tri63 homer lava flight}
     foreach machine $machines {
         if { [ string first $machine $files ] < 0 } { #file dos'nt exist
             set mesg "No build on: $machine"
@@ -41,27 +41,27 @@ proc CheckNightlyBuilds { } {
     set day(Sat) Fri
     set today [exec date +%a ]
     
-    set files {build_linux.log}
-    foreach file $files {
-        if { [file exists $file ] == 0 } {
-            set mesg "$file: File does not exist"
-            puts $tmpfileid  $mesg
-            continue
-        }
-        set fileid [ open $file r ]
-        if { [gets $fileid line ]< 0 } {
-        set mesg "$file: File does not exist"
-            puts $tmpfileid $mesg
-            close $fileid
-            continue
-        }
-        close $fileid
-        if { [ string first $today $line] < 0  && [ string first $day($today) $line ] < 0 } {
-            set mesg "**out of date logfile: $file **"
-        puts $tmpfileid $mesg
-            puts $tmpfileid $line
-        }
-    }
+#     set files {build_linux.log}
+#     foreach file $files {
+#         if { [file exists $file ] == 0 } {
+#             set mesg "$file: File does not exist"
+#             puts $tmpfileid  $mesg
+#             continue
+#         }
+#         set fileid [ open $file r ]
+#         if { [gets $fileid line ]< 0 } {
+#         set mesg "$file: File does not exist"
+#             puts $tmpfileid $mesg
+#             close $fileid
+#             continue
+#         }
+#         close $fileid
+#         if { [ string first $today $line] < 0  && [ string first $day($today) $line ] < 0 } {
+#             set mesg "**out of date logfile: $file **"
+#         puts $tmpfileid $mesg
+#             puts $tmpfileid $line
+#         }
+#    }
 }
 
 proc CheckFortranAutoMakefile { } {
