@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.61 2001/05/01 18:36:56 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.62 2001/05/02 17:36:38 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -363,6 +363,9 @@
       Scalar      lx_v(0:1),lf_v(0:1)
       PetscOffset lx_i,lf_i 
       Vec         localX,localF
+      DALocalInfo info(DA_LOCAL_INFO_SIZE)
+
+      call DAGetLocalInfo(da,info,ierr)
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
@@ -385,7 +388,7 @@
 
 !  Compute function over the locally owned part of the grid
 
-      call FormFunctionLocal(lx_v(lx_i),lf_v(lf_i),ierr)
+      call FormFunctionLocal(info,lx_v(lx_i),lf_v(lf_i),ierr)
 
 !  Restore vectors
 
@@ -419,20 +422,29 @@
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
-      subroutine FormFunctionLocal(x,f,ierr)
+      subroutine FormFunctionLocal(info,x,f,ierr)
 
       implicit none
 
 #include "ex5f.h"
 
 !  Input/output variables:
-      Scalar   x(gxs:gxe,gys:gye),f(xs:xe,ys:ye)
-      integer  ierr
+      DALocalInfo info(DA_LOCAL_INFO_SIZE)
+      Scalar x(gxs:gxe,gys:gye)
+      Scalar f(xs:xe,ys:ye)
+      integer     ierr
 
 !  Local variables:
       Scalar   two,one,hx,hy,hxdhy,hydhx,sc
       Scalar   u,uxx,uyy
-      integer  i,j
+      integer  i,j,xs,xe,ys,ye,mx,my
+
+      xs     = info(DA_LOCAL_INFO_XS)+1
+      xe     = xs+info(DA_LOCAL_INFO_XM)-1
+      ys     = info(DA_LOCAL_INFO_YS)+1
+      ye     = ys+info(DA_LOCAL_INFO_YM)-1
+      mx     = info(DA_LOCAL_INFO_MX)
+      my     = info(DA_LOCAL_INFO_MY)
 
       one    = 1.0
       two    = 2.0
