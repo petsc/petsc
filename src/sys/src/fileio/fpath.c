@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fpath.c,v 1.16 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: fpath.c,v 1.17 1998/05/08 16:12:44 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
 */
 #include "petsc.h"
 #include "sys.h"
-#include "pinclude/ptime.h"
 #if defined(HAVE_PWD_H)
 #include <pwd.h>
 #endif
@@ -32,7 +31,6 @@ static char vcid[] = "$Id: fpath.c,v 1.16 1998/04/27 19:48:45 curfman Exp bsmith
 #include <windows.h>
 #endif
 #include <fcntl.h>
-#include <time.h>  
 #if defined(HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif

@@ -1,12 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rpath.c,v 1.13 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: rpath.c,v 1.14 1998/05/08 16:12:44 bsmith Exp bsmith $";
 #endif
-/*
-      Code for manipulating files.
-*/
+
 #include "petsc.h"
 #include "sys.h"
-#include "pinclude/ptime.h"
 #if defined(HAVE_PWD_H)
 #include <pwd.h>
 #endif
@@ -31,17 +28,10 @@ static char vcid[] = "$Id: rpath.c,v 1.13 1998/04/27 19:48:45 curfman Exp bsmith
 #if defined (PARCH_nt_gnu)
 #include <windows.h>
 #endif
-#include <fcntl.h>
-#include <time.h>  
 #if defined(HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #include "pinclude/petscfix.h"
-
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024
-#endif
-
 
 #undef __FUNC__  
 #define __FUNC__ "PetscGetRelativePath"

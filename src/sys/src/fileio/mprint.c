@@ -1,7 +1,5 @@
-
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.14 1998/05/14 03:23:27 curfman Exp curfman $";
+static char vcid[] = "$Id: mprint.c,v 1.15 1998/05/17 15:30:27 curfman Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -458,3 +456,4 @@ int PetscErrorPrintfDefault(char *format,...)
   va_end( Argp );
   return 0;
 }
+

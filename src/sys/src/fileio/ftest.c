@@ -1,12 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ftest.c,v 1.14 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: ftest.c,v 1.15 1998/05/08 16:12:44 bsmith Exp bsmith $";
 #endif
-/*
-      Code for manipulating files.
-*/
+
 #include "petsc.h"
 #include "sys.h"
-#include "pinclude/ptime.h"
 #if defined(HAVE_PWD_H)
 #include <pwd.h>
 #endif
@@ -31,16 +28,10 @@ static char vcid[] = "$Id: ftest.c,v 1.14 1998/04/27 19:48:45 curfman Exp bsmith
 #if defined (PARCH_nt_gnu)
 #include <windows.h>
 #endif
-#include <fcntl.h>
-#include <time.h>  
 #if defined(HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #include "pinclude/petscfix.h"
-
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024
-#endif
 
 #undef __FUNC__  
 #define __FUNC__ "PetscTestFile"
@@ -53,6 +44,7 @@ static char vcid[] = "$Id: ftest.c,v 1.14 1998/04/27 19:48:45 curfman Exp bsmith
 
   Output Parameter:
   flag - PETSC_TRUE if file exists with given mode, PETSC_FALSE otherwise.
+
 +*/
 #if defined (PARCH_nt)
 int PetscTestFile( char *fname, char mode,PetscTruth *flag)
@@ -89,10 +81,12 @@ int PetscTestFile( char *fname, char mode,PetscTruth *flag)
 
   /* At least the file exists ... */
   stmode = statbuf.st_mode;
-  /* Except for systems that have this broken stat macros (rare), this
+  /*
+     Except for systems that have this broken stat macros (rare), this
      is the correct way to check for a (not) regular file */
   if (!S_ISREG(stmode)) PetscFunctionReturn(0);
-/* Test for accessible. */
+
+  /* Test for accessible. */
   if (statbuf.st_uid == uid) {
     rbit = S_IRUSR;
     wbit = S_IWUSR;

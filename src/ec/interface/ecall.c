@@ -1,6 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ecall.c,v 1.4 1997/07/09 21:37:43 balay Exp bsmith $";
+static char vcid[] = "$Id: ecall.c,v 1.5 1998/04/27 16:09:37 bsmith Exp bsmith $";
 #endif
+
+/*
+     Do not use dynamic libraries for the EC yet. This is because will require
+   an explicit library load during the PetscInitialize() call.
+*/
+#undef USE_DYNAMIC_LIBRARIES
 
 #include "petsc.h"
 #include "src/ec/ecimpl.h"          /*I   "ec.h"   I*/
@@ -35,10 +41,10 @@ $       routine requires recompilation.
 
 .seealso: ECRegister(), ECRegisterDestroy()
 @*/
-int ECRegisterAll(void)
+int ECRegisterAll(char *path)
 {
   PetscFunctionBegin;
-  ECRegister(EC_LAPACK         , "lapack",       ECCreate_Lapack);
+  ECRegister(EC_LAPACK         ,path, "ECCreate_Lapack",       ECCreate_Lapack);
   PetscFunctionReturn(0);
 }
 

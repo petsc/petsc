@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.185 1998/05/03 17:47:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.186 1998/05/05 03:38:25 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -395,19 +395,19 @@ int PETSC_DUMMY,PETSC_DUMMY_SIZE;
     Log counters in this file only 
 */
 static PLogDouble  BaseTime;
-static Events  *events = 0;
-static Objects *objects = 0;
+static Events      *events = 0;
+static Objects     *objects = 0;
 
-static int     nobjects = 0, nevents = 0, objectsspace = CHUNCK;
-static int     ObjectsDestroyed = 0, eventsspace = CHUNCK;
+static int         nobjects = 0, nevents = 0, objectsspace = CHUNCK;
+static int         ObjectsDestroyed = 0, eventsspace = CHUNCK;
 /* make sure the 50 below is larger then any cookie - PETSC_COOKIE */
 static PLogDouble  ObjectsType[10][50][4];
 
-static int     EventsStage = 0;    /* which log sessions are we using */
-static int     EventsStageMax = 0; /* highest event log used */ 
-static int     EventsStagePushed = 0;
-static int     EventsStageStack[100];
-static char    *(EventsStageName[]) = {0,0,0,0,0,0,0,0,0,0};
+static int         EventsStage = 0;    /* which log sessions are we using */
+static int         EventsStageMax = 0; /* highest event log used */ 
+static int         EventsStagePushed = 0;
+static int         EventsStageStack[100];
+static char        *(EventsStageName[]) = {0,0,0,0,0,0,0,0,0,0};
 static PLogDouble  EventsStageFlops[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 static PLogDouble  EventsStageTime[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 static PLogDouble  EventsStageMessageCounts[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};

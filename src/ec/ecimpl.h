@@ -1,4 +1,4 @@
-/* $Id: ecimpl.h,v 1.3 1997/05/23 18:40:12 balay Exp curfman $ */
+/* $Id: ecimpl.h,v 1.4 1997/09/12 00:06:30 curfman Exp bsmith $ */
 
 #ifndef _ECIMPL
 #define _ECIMPL
@@ -14,7 +14,7 @@
    Defines the EC data structure.
 */
 struct _p_EC {
-  PETSCHEADER
+  PETSCHEADER(int)
 
   ECProblemType     problemtype;       /* generalized or plain eigenvalue problem */
   ECSpectrumPortion spectrumportion;   /* largest, smallest, etc. */
@@ -39,6 +39,8 @@ struct _p_EC {
   int  (*solveeigenvectors)(EC);   
   int  (*setfromoptions)(EC);
   int  (*printhelp)(EC,char*);
+  int  (*destroy)(EC);
+  int  (*view)(EC,Viewer);
   void *data;
 
   /* ----------------Default work-area management -------------------- */

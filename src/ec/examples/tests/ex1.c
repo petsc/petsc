@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.3 1997/09/10 01:39:35 curfman Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.4 1997/09/22 15:24:53 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -23,7 +23,6 @@ T*/
      is.h     - index sets            viewer.h - viewers 
 */
 #include "ec.h"
-#include <stdio.h>
 
 int main(int argc,char **args)
 {
@@ -70,8 +69,8 @@ int main(int argc,char **args)
        Create eigenvalue computer; set operators; set runtime options.
   */
   ierr = ECCreate(PETSC_COMM_WORLD,EC_EIGENVALUE,&ec); CHKERRA(ierr);
-  ierr = ECSetOperators(ec,A,PETSC_NULL); CHKERRA(ierr);
   ierr = ECSetFromOptions(ec); CHKERRA(ierr);
+  ierr = ECSetOperators(ec,A,PETSC_NULL); CHKERRA(ierr);
 
   /* 
        Here we explicitly call ECSetUp(); if you do not call it,

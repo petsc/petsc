@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ec.c,v 1.13 1998/04/27 16:56:26 curfman Exp bsmith $";
+static char vcid[] = "$Id: ec.c,v 1.14 1998/05/18 19:35:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -9,6 +9,11 @@ static char vcid[] = "$Id: ec.c,v 1.13 1998/04/27 16:56:26 curfman Exp bsmith $"
 #include "src/ec/ecimpl.h"        /*I "ec.h" I*/
 #include "pinclude/pviewer.h"
 
+int ECRegisterAllCalled = 0;
+/*
+   Contains the list of registered KSP routines
+*/
+DLList ECList = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "ECDestroy" 
@@ -29,7 +34,7 @@ int ECDestroy(EC ec)
   int ierr = 0;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
-  if (ec->ops->destroy) {ierr =  (*ec->ops->destroy)(ec);CHKERRQ(ierr);}
+  if (ec->destroy) {ierr =  (*ec->destroy)(ec);CHKERRQ(ierr);}
   PLogObjectDestroy(ec);
   PetscHeaderDestroy(ec);
   PetscFunctionReturn(0);
@@ -73,12 +78,11 @@ int ECView(EC ec,Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(ec->comm,fd,"EC Object:\n");
-    ECGetType(ec,PETSC_NULL,&method);
+    ECGetType(ec,&method);
     PetscFPrintf(ec->comm,fd,"  method: %s\n",method);
-    if (ec->view) (*ec->ops->view)(ec,viewer);
+    if (ec->view) (*ec->view)(ec,viewer);
   } else if (vtype == STRING_VIEWER) {
-    ECType type;
-    ECGetType(ec,&type,&method);
+    ECGetType(ec,&method);
     ierr = ViewerStringSPrintf(viewer," %-7.7s",method); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -173,6 +177,11 @@ int ECSetUp(EC ec)
   PetscValidHeaderSpecific(ec,EC_COOKIE);
 
   if (ec->setupcalled > 0) PetscFunctionReturn(0);
+
+  if (!ec->type_name){
+    ierr = ECSetType(ec,EC_LAPACK);CHKERRQ(ierr);
+  }
+
   PLogEventBegin(EC_SetUp,ec,0,0,0); 
   if (!ec->A) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Matrix must be set first");}
   if (ec->setup) { ierr = (*ec->setup)(ec); CHKERRQ(ierr);}
@@ -205,8 +214,8 @@ int ECSetEigenvectorsRequired(EC ec)
   PetscFunctionReturn(0);
 }
 
-#include "src/sys/nreg.h"
-static NRList *__ECList = 0;
+/* ---------------------------------------------------------------------------------*/
+
 #undef __FUNC__  
 #define __FUNC__ "ECCreate"
 /*@C
@@ -230,11 +239,11 @@ int ECCreate(MPI_Comm comm,ECProblemType pt,EC *ec)
 
   PetscFunctionBegin;
   *ec = 0;
-  PetscHeaderCreate(ctx,_p_EC,int,EC_COOKIE,EC_LAPACK,comm,ECDestroy,ECView);
+  PetscHeaderCreate(ctx,_p_EC,int,EC_COOKIE,-1,comm,ECDestroy,ECView);
   PLogObjectCreate(ctx);
   *ec                = ctx;
   ctx->view          = 0;
-  ctx->type          = (ECType) -1;
+  ctx->type          = -1;
   ctx->problemtype   = pt;
   ctx->solve         = 0;
   ctx->setup         = 0;
@@ -251,8 +260,6 @@ int ECCreate(MPI_Comm comm,ECProblemType pt,EC *ec)
   ctx->cnvP          = 0;
 
   ctx->setupcalled   = 0;
-  /* this violates our rule about separating abstract from implementations */
-  ierr = ECSetType(*ec,EC_LAPACK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -280,10 +287,19 @@ int ECCreate(MPI_Comm comm,ECProblemType pt,EC *ec)
 int ECSetFromOptions(EC ec)
 {
   int  ierr,flag;
-  char spectrum[128];
+  char spectrum[128],method[128];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
+
+  if (!ECRegisterAllCalled) {ierr = ECRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  ierr = OptionsGetString(ec->prefix,"-ec_type",method,256,&flag);
+  if (flag) {
+    ierr = ECSetType(ec,method); CHKERRQ(ierr);
+  }
+  if (!ec->type_name){
+    ierr = ECSetType(ec,EC_LAPACK);CHKERRQ(ierr);
+  }
 
   ierr = OptionsGetString(ec->prefix,"-ec_spectrum_portion",spectrum,128,&flag);CHKERRQ(ierr);
   if (flag) {
@@ -347,7 +363,7 @@ int ECPrintHelp(EC ec)
   if (ec->prefix) PetscStrcat(p,ec->prefix);
 
   (*PetscHelpPrintf)(ec->comm,"EC options --------------------------------------------------\n");
-  ierr = NRPrintTypes(ec->comm,stdout,ec->prefix,"ex_type",__ECList);CHKERRQ(ierr);
+  ierr = DLRegisterPrintTypes(ec->comm,stdout,ec->prefix,"ec_type",ECList);CHKERRQ(ierr);
   (*PetscHelpPrintf)(ec->comm,"  %sec_view: print information on solvers used for eigenvalues\n",p);
   (*PetscHelpPrintf)(ec->comm,"  %sec_view_eigenvalues: print eigenvalues to screen\n",p);
   (*PetscHelpPrintf)(ec->comm,"  %sec_view_eigenvalues_draw: plot eigenvalues to screen\n",p);
@@ -545,7 +561,7 @@ int ECSolveEigenvectors(EC ec)
 
    Input Parameter:
 +  ctx      - the eigenvalue computation context
--  itmethod - a known method
+-  method - a known method
 
    Options Database Command:
 .  -ec_type <type> - Specified EC method; use -help for a list of available methods
@@ -557,9 +573,9 @@ int ECSolveEigenvectors(EC ec)
    Normally, it is best to use the ECSetFromOptions() command and
    then set the EC type from the options database rather than by using
    this routine.  Using the options database provides the user with
-   maximum flexibility in evaluating the many different Krylov methods.
+   maximum flexibility in evaluating the many different computation methods.
    The ECSetType() routine is provided for those situations where it
-   is necessary to set the iterative solver independently of the command
+   is necessary to set the method independently of the command
    line or options database.  This might be the case, for example, when
    the choice of iterative solver changes during the execution of the
    program, and the user's application is taking responsibility for
@@ -570,62 +586,92 @@ int ECSolveEigenvectors(EC ec)
 
 .seealso: ECCreate(), ECSetFromOptions()
 @*/
-int ECSetType(EC ec,ECType itmethod)
+int ECSetType(EC ec,ECType method)
 {
   int ierr,(*r)(EC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ec,EC_COOKIE);
-  if (ec->type == (int) itmethod) PetscFunctionReturn(0);
+
+  if (!PetscStrcmp(ec->type_name,method)) PetscFunctionReturn(0);
 
   if (ec->setupcalled) {
     /* destroy the old private EC context */
-    ierr = (*(ec)->ops->destroy)(ec); CHKERRQ(ierr);
+    ierr = (*(ec)->destroy)(ec); CHKERRQ(ierr);
     ec->data = 0;
   }
-  /* Get the function pointers for the approach requested */
-  if (!__ECList) {ierr = ECRegisterAll(); CHKERRQ(ierr);}
-  r =  (int (*)(EC))NRFindRoutine( __ECList, (int)itmethod, (char *)0 );
-  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method");}
+  /* Get the function pointers for the iterative method requested */
+  if (!ECRegisterAllCalled) {ierr = ECRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+
+  ierr =  DLRegisterFind(ec->comm, ECList, method,(int (**)(void *)) &r );CHKERRQ(ierr);
+
+  if (!r) SETERRQ(1,1,"Unknown EC type given");
+
   if (ec->data) PetscFree(ec->data);
-  ec->data = 0;
-  ierr = (*r)(ec);CHKERRQ(ierr);
+  ec->data        = 0;
+  ec->setupcalled = 0;
+  ierr = (*r)(ec); CHKERRQ(ierr);
+
+  if (ec->type_name) PetscFree(ec->type_name);
+  ec->type_name = (char *) PetscMalloc((PetscStrlen(method)+1)*sizeof(char));CHKPTRQ(ec->type_name);
+  PetscStrcpy(ec->type_name,method);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ECRegister" 
-/*@C
-   ECRegister - Adds the iterative method to the EC package,  given
-   an iterative name (ECType) and a function pointer.
+/*MC
+   ECRegister - Adds a method to the Krylov subspace solver package.
+
+   Synopsis:
+   ECRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(EC))
 
    Not Collective
 
    Input Parameters:
-+  name   - for instance ECCG, ECGMRES, ...
-.  sname  - corresponding string for name
--  create - routine to create method context
++  name_solver - name of a new user-defined solver
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
 
    Notes:
-   ECRegister() has NOT yet been updated to use the new dynamic linking
-   registration approach, though eventually it will be.
+   ECRegister() may be called multiple times to add several user-defined solvers.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   ECRegister("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MySolverCreate",MySolverCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     ECSetType(ec,"my_solver")
+   or at runtime via the option
+$     -ec_type my_solver
 
 .keywords: EC, register
 
-.seealso: ECRegisterAll(), ECRegisterDestroy(), ECDestroy(), ECCreate()
-@*/
-int  ECRegister(ECType name, char *sname, int  (*create)(EC))
+.seealso: ECRegisterAll(), ECRegisterDestroy()
+M*/
+
+#undef __FUNC__  
+#define __FUNC__ "ECRegister_Private"
+int ECRegister_Private(char *sname,char *path,char *name,int (*function)(EC))
 {
   int ierr;
-  int (*dummy)(void *) = (int (*)(void *)) create;
+  char fullname[256];
+
   PetscFunctionBegin;
-  if (!__ECList) {ierr = NRCreate(&__ECList); CHKERRQ(ierr);}
-  ierr = NRRegister( __ECList, (int) name, sname, dummy );CHKERRQ(ierr);
+  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = DLRegister_Private(&ECList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+
+
+
 #undef __FUNC__  
-#define __FUNC__ "ECRegisterDestroy" 
+#define __FUNC__ "ECRegisterDestroy"
 /*@C
    ECRegisterDestroy - Frees the list of EC methods that were
    registered by ECRegister().
@@ -638,19 +684,21 @@ int  ECRegister(ECType name, char *sname, int  (*create)(EC))
 @*/
 int ECRegisterDestroy(void)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  if (__ECList) {
-    NRDestroy( __ECList );
-    __ECList = 0;
+  if (ECList) {
+    ierr = DLRegisterDestroy( ECList );CHKERRQ(ierr);
+    ECList = 0;
   }
+  ECRegisterAllCalled = 0;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ECGetType" 
+#define __FUNC__ "ECGetType"
 /*@C
-   ECGetType - Gets the EC type and method name (as a string) from 
-   the method type.
+   ECGetType - Gets the EC type as a string from the EC object.
 
    Not Collective
 
@@ -658,20 +706,13 @@ int ECRegisterDestroy(void)
 .  ec - Krylov context 
 
    Output Parameters:
-+  itmeth - EC method (or use PETSC_NULL)
--  name - name of EC method (or use PETSC_NULL)
+.  name - name of EC method 
 
-.keywords: EC, get, type, name
+.keywords: EC, get, method, name
 @*/
-int ECGetType(EC ec,ECType *type,char **name)
+int ECGetType(EC ec,ECType *type)
 {
-  int ierr;
   PetscFunctionBegin;
-  if (!__ECList) {ierr = ECRegisterAll(); CHKERRQ(ierr);}
-  if (type) *type = (ECType) ec->type;
-  if (name)  *name = NRFindName( __ECList, (int) ec->type);
+  *type = ec->type_name;
   PetscFunctionReturn(0);
 }
-
-
-
