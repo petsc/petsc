@@ -23,7 +23,7 @@ LAPACK_LIB     = -lessl /usr/local/lapack/lib/lapack.a
 #
 MPI_LIB        = /usr/local/mpi/lib/rs6000/ch_p4/libmpe.a /usr/local/mpi/lib/rs6000/ch_p4/libmpi.a 
 MPI_INCLUDE    = -I/usr/local/mpi/include
-MPIRUN         = /usr/local/mpi/bin/mpirun.ch_p4 -machinefile /usr/local/mpi/util/machines/machines.rs6000.2
+MPIRUN         = /usr/local/mpi//lib/rs6000/ch_p4/mpirun -machinefile /usr/local/mpi/util/machines/machines.rs6000.2
 #
 # Location of X-windows software
 #
