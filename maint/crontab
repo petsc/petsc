@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.114 1998/03/29 22:20:24 bsmith Exp balay $ 
+# $Id: crontab,v 1.115 1998/03/30 22:18:00 balay Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -44,6 +44,9 @@
 # Rebuild the fortran stubs - before the nightly builds are started.
 #
 01 22 * * * /usr/ucb/rsh eagle "cd /home/bsmith/petsc; make allfortranstubs > /dev/null"
+#
+# rebuild Single Precision CSN code in src/mat/impls/csn/seq
+10 22 * * * /usr/ucb/rsh eagle "cd /home/bsmith/petsc/src/mat/impls/csn/seq; make single_precision > /dev/null"
 #
 # Stash away a copy of petsc.tar.gz every tuesday
 #
