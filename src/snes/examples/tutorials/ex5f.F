@@ -1,13 +1,13 @@
 ! "$Id: ex5f.F,v 1.80 2001/08/24 16:23:36 bsmith Exp $";
 !
-!  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
-!
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
 !  domain, using distributed arrays (DAs) to partition the parallel grid.
 !  The command line options include:
 !    -par <param>, where <param> indicates the nonlinearity of the problem
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
+!
+!  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
 !/*T
 !  Concepts: SNES^parallel Bratu example

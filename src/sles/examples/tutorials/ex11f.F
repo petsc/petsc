@@ -1,13 +1,13 @@
 !
 !    "$Id: ex11f.F,v 1.31 2001/08/07 03:04:00 balay Exp $";
 !
+!  Description: Solves a complex linear system in parallel with SLES (Fortran code).
+!
 !/*T
 !  Concepts: SLES^solving a Helmholtz equation
 !  Concepts: complex numbers
 !  Processors: n
 !T*/
-!
-!  Description: Solves a complex linear system in parallel with SLES (Fortran code).
 !
 !  The model problem:
 !     Solve Helmholtz equation on the unit square: (0,1) x (0,1)

@@ -1,12 +1,12 @@
 !
 ! "$Id: ex1f.F,v 1.33 2001/08/07 03:04:16 balay Exp $";
 !
+!  Description: Uses the Newton method to solve a two-variable system.
+!
 !/*T
 !  Concepts: SNES^basic uniprocessor example
 !  Processors: 1
 !T*/
-!
-!  Description: Uses the Newton method to solve a two-variable system.
 !
 ! -----------------------------------------------------------------------
 

@@ -1,14 +1,14 @@
 !
 !      "$Id: ex2f.F,v 1.19 2001/01/15 21:44:33 bsmith Exp $";
 !
+!    Description: Creates an index set based on a stride. Views that index set
+!    and then destroys it.
+!
 !/*T
 !    Concepts: index sets^manipulating a stride index set;
 !    Concepts: index sets^accessing indices from Fortran
 !T*/
 !    
-!    Comment: Creates an index set based on a stride. Views that index set
-!    and then destroys it.
-!
 !  Include petscis.h so we can use PETSc IS objects.
 !
       program main

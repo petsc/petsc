@@ -7,7 +7,7 @@ static char help[] = "Demonstrates creating a blocked index set.\n\n";
     Concepts: index sets^creating a block index set;
     Concepts: IS^creating a block index set;
 
-    Comment:  Creates an index set based on blocks of integers. Views that index set
+    Description:  Creates an index set based on blocks of integers. Views that index set
     and then destroys it.
 T*/
 

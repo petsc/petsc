@@ -6,9 +6,10 @@ static char help[] = "Creating a general index set.\n\n";
     Concepts: index sets^manipulating a general index set;
     Concepts: index sets^creating general;
     Concepts: IS^creating a general index set;
+
+    Description: Creates an index set based on a set of integers. Views that index set
+    and then destroys it.
     
-    Comment: Creates an index set based on a set of integers. Views that index set
-  and then destroys it.
 T*/
  
 /*
