@@ -116,16 +116,16 @@ class Configure(config.base.Configure):
   def configureFortranCommandline(self):
     '''Check for the mechanism to retrieve command line arguments in Fortran'''
     self.pushLanguage('C')
-    if self.functions.check('ipxfargvc_'):
+    if self.functions.check('ipxfargvc_', libraries = self.compilers.flibs):
       self.addDefine('HAVE_PXFGETARG_NEW')
-    elif self.functions.check('f90_unix_MP_iargc'):
+    elif self.functions.check('f90_unix_MP_iargc', libraries = self.compilers.flibs):
       self.addDefine('HAVE_NAGF90')
-    elif self.functions.check('PXFGETARG'):
+    elif self.functions.check('PXFGETARG', libraries = self.compilers.flibs):
       self.addDefine('HAVE_PXFGETARG')
-    elif self.functions.check('GETARG16'): 
+    elif self.functions.check('GETARG@16', libraries = self.compilers.flibs): 
       self.addDefine('USE_NARGS')
       self.addDefine('HAVE_IARG_COUNT_PROGNAME')
-    self.popLanguage('C')
+    self.popLanguage()
     return
 
   def configureDynamicLibraries(self):
@@ -535,7 +535,7 @@ class Configure(config.base.Configure):
     self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h')
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureFortranCPP)
-    self.executeTest(configureFortranCommandline)
+    self.executeTest(self.configureFortranCommandline)
     self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configurePIC)
