@@ -1,4 +1,4 @@
-/*$Id: baijfact12.c,v 1.5 2001/04/05 16:57:52 buschelm Exp buschelm $*/
+/*$Id: baijfact12.c,v 1.6 2001/04/05 18:27:42 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -286,7 +286,11 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
+#ifdef PETSC_HAVE_ICL_SSE
+    ierr = Kernel_A_gets_inverse_A_4SSE(w);CHKERRQ(ierr);
+#else
     ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
+#endif
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
