@@ -11,7 +11,7 @@ We have just released a new version of PETSc (2.0.21) with a variety
 of extensions and enhancements to the software.  A list of new
 features and changes in PETSc is provided in the "Changes" file
 available at
-     http://www.mcs.anl.gov/petsc/petsc/changes.html
+     http://www.mcs.anl.gov/petsc/docs/changes.html
 or
      http://www.mcs.anl.gov/petsc/petsc.html
 Also, before installing a new version of PETSc, please see the list
@@ -21,15 +21,16 @@ to determine whether any are required for your machine(s) of interest.
 
 Highlights of new features added since the last public release of
 PETSc (version 2.0.17) include:
- - XXX
- - XXX
+ - Support for efficient computation of Jacobians via finite differences 
+   in parallel
+ - Much higher floating point performance for complex numbers
+ - Even more error checking :-)
 
-[Mention new tutorial stuff? Searchable web index?]
 
 The new release is available for UNIX machines via:
     ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.gz
-Users of Windows NT/95 (only!) should instead retrieve the zip file:
-    ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.zip
+Users of Windows 95/NT (only!) should instead retrieve:
+    ftp://info.mcs.anl.gov/pub/petsc/petsc.exe
 All of these are also available via the PETSc home page:
     http://www.mcs.anl.gov/petsc/petsc.html
  
