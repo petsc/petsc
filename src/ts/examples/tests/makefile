@@ -17,7 +17,7 @@ TESTEXAMPLES_4  =
 BUILDEXAMPLES_1 = ex1.PETSc   ex1.rm
 BUILDEXAMPLES_3 = ex1f.PETSc  ex1f.rm
 
-EXAMPLESC       = ex1.c   ex2.c
+EXAMPLESC       = ex1.c   
 EXAMPLESF       = ex1f.F
 #
 #
