@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.21 1998/03/30 22:22:05 balay Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.22 1998/08/05 13:10:31 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -179,7 +179,6 @@ void kspregisterdestroy_(int* __ierr)
 
 void kspbuildsolution_(KSP *ctx,Vec *v,Vec *V, int *__ierr )
 {
-  Vec vv;
   *__ierr = KSPBuildSolution(*ctx,*v,V);
 }
 
