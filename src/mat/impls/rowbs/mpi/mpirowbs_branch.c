@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.13 1995/05/02 18:00:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.14 1995/05/02 21:18:20 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -492,7 +492,7 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
   }
   FREE(mrow->send_waits); FREE(mrow->svalues);
 
-  mrow->insertmode = NotSetValues;
+  mrow->insertmode = NOTSETVALUES;
   ierr = MatAssemblyBegin_MPIRowbs_local(mat,mode); CHKERR(ierr);
   ierr = MatAssemblyEnd_MPIRowbs_local(mat,mode); CHKERR(ierr);
 
