@@ -8,6 +8,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - Decide how to handle searches for WWW stuff (edit docs/www/www.html to
+    either fix or remove link to searching for basic distribution).
+
   - Change tutorials examples on web page to use MatSetValuesLocal()
 
        - Document which routines are not currently supported
