@@ -2845,19 +2845,19 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
   ierr = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   
-  c    = (Mat_SeqAIJ*)C->data;
+  c = (Mat_SeqAIJ*)C->data;
 
-  C->factor         = A->factor;
+  C->factor           = A->factor;
+  C->lupivotthreshold = A->lupivotthreshold;
+
   c->row            = 0;
   c->col            = 0;
   c->icol           = 0;
-  c->keepzeroedrows = a->keepzeroedrows;
+  c->reallocs       = 0;
+  c->lu_shift       = PETSC_FALSE;
+
   C->assembled      = PETSC_TRUE;
-
-  C->M          = A->m;
-  C->N          = A->n;
-  C->bs         = A->bs;
-
+ 
   ierr = PetscMalloc((m+1)*sizeof(PetscInt),&c->imax);CHKERRQ(ierr);
   ierr = PetscMalloc((m+1)*sizeof(PetscInt),&c->ilen);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
@@ -2882,16 +2882,10 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   }
 
   PetscLogObjectMemory(C,len+2*(m+1)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_SeqAIJ));  
-  c->sorted      = a->sorted;
-  c->roworiented = a->roworiented;
-  c->nonew       = a->nonew;
-  c->ilu_preserve_row_sums = a->ilu_preserve_row_sums;
-  c->saved_values = 0;
-  c->idiag        = 0;
-  c->ssor         = 0;
+  c->sorted            = a->sorted;
   c->ignorezeroentries = a->ignorezeroentries;
-  c->freedata     = PETSC_TRUE;
-
+  c->roworiented       = a->roworiented;
+  c->nonew             = a->nonew;
   if (a->diag) {
     ierr = PetscMalloc((m+1)*sizeof(PetscInt),&c->diag);CHKERRQ(ierr);
     PetscLogObjectMemory(C,(m+1)*sizeof(PetscInt));
@@ -2899,6 +2893,7 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
       c->diag[i] = a->diag[i];
     }
   } else c->diag        = 0;
+  c->solve_work         = 0;
   c->inode.use          = a->inode.use;
   c->inode.limit        = a->inode.limit;
   c->inode.max_limit    = a->inode.max_limit;
@@ -2910,11 +2905,30 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     c->inode.size       = 0;
     c->inode.node_count = 0;
   }
+  c->saved_values          = 0;
+  c->idiag                 = 0;
+  c->ilu_preserve_row_sums = a->ilu_preserve_row_sums;
+  c->ssor                  = 0;
+  c->keepzeroedrows        = a->keepzeroedrows;
+  c->freedata              = PETSC_TRUE;
+  c->xtoy                  = 0;
+  c->XtoY                  = 0;
+
   c->nz                 = a->nz;
   c->maxnz              = a->maxnz;
-  c->solve_work         = 0;
   C->preallocated       = PETSC_TRUE;
 
+  c->compressedrow.use     = a->compressedrow.use;
+  c->compressedrow.nrows   = a->compressedrow.nrows;
+  c->compressedrow.checked = a->compressedrow.checked;
+  if ( a->compressedrow.checked && a->compressedrow.use){
+    i = a->compressedrow.nrows;
+    ierr = PetscMalloc((2*i+1)*sizeof(PetscInt),&c->compressedrow.i);CHKERRQ(ierr);
+    c->compressedrow.rindex = c->compressedrow.i + i + 1;
+    ierr = PetscMemcpy(c->compressedrow.i,a->compressedrow.i,(i+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(c->compressedrow.rindex,a->compressedrow.rindex,i*sizeof(PetscInt));CHKERRQ(ierr); 
+  } 
+  
   *B = C;
   ierr = PetscFListDuplicate(A->qlist,&C->qlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
