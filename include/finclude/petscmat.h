@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.25 1996/09/24 15:27:39 curfman Exp bsmith $;
+C  $Id: mat.h,v 1.26 1996/09/27 21:56:34 bsmith Exp balay $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -12,8 +12,8 @@ C
 #define MatInfoType         integer
 #define MatGetSubMatrixCall integer
 #define MatOperation        integer
+#define MatColoring         integer
 #define MatInfo             Double
-#define MatStructure        integer
 
 C
 C  Matrix types
@@ -86,6 +86,7 @@ C
      *          MAT_INFO_MALLOCS=11,MAT_INFO_FILL_RATIO_GIVEN=12,
      *          MAT_INFO_FILL_RATIO_NEEDED=13,MAT_FACTOR_MALLOCS=14)
 
+
 C
 C  MatSubMatrixCall
 C
@@ -102,7 +103,7 @@ C
       parameter( ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
      *           ORDER_RCM=3,ORDER_QMD=4,ORDER_ROWLENGTH=5,
      *           ORDER_FLOW=6,
-     *           ORDER_APPLICATION_1=6,ORDER_APPLICATION_2=7)
+     *           ORDER_APPLICATION_1=7,ORDER_APPLICATION_2=8)
 C
 C  Options for SOR and SSOR
 C
@@ -117,6 +118,15 @@ C
      *          SOR_ZERO_INITIAL_GUESS=16,SOR_EISENSTAT=32,
      *          SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128)
 
+C
+C MAtColoring
+C
+      integer COLORING_NATURAL, COLORING_SL, COLORING_LD, COLORING_IF,
+     *        COLORING_APPLICATION_1,COLORING_APPLICATION_2
+
+      parameter (COLORING_NATURAL=0, COLORING_SL=1, COLORING_LD=2,
+     *          COLORING_IF=3, COLORING_APPLICATION_1=4,
+     *          COLORING_APPLICATION_2=5)
 C
 C  MatOperation
 C
