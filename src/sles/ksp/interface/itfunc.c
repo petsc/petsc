@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.10 1995/04/07 01:32:44 curfman Exp $";
+static char vcid[] = "$Id: itfunc.c,v 1.10 1995/04/07 02:43:48 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -52,7 +52,7 @@ int KSPSolve(KSP itP, int *its)
    KSPDestroy - Destroys KSP context created with KSPCreate().
 
    Input Parameter:
-.  itP   - iterative context obtained from KSPCreate
+.  itP   - iterative context obtained from KSPCreate()
 @*/
 int KSPDestroy(KSP itP)
 {
@@ -65,7 +65,10 @@ int KSPDestroy(KSP itP)
 
    Input Parameters:
 .  itP  - iterative context obtained from KSPCreate()
-.  maxits - maximum iterations to use
+.  maxits - maximum number of iterations to use
+
+   Options Database Key:
+$  -kspmax_it  maxits
 @*/
 int KSPSetIterations(KSP itP, int maxits)
 {
@@ -141,6 +144,9 @@ int KSPGetMethodFromContext( KSP itP, KSPMETHOD *method )
    Input Parameters:
 .  itP - Iterative context obtained from KSPCreate()
 .  tol - tolerance
+
+   Options Database Key:
+$  -ksprtol  tol
 @*/
 int KSPSetRelativeTolerance(KSP itP, double tol)
 {
@@ -156,6 +162,9 @@ int KSPSetRelativeTolerance(KSP itP, double tol)
    Input Parameters:
 .  itP - Iterative context obtained from KSPCreate()
 .  tol - tolerance
+
+   Options Database Key:
+$  -kspdivtol  tol
 @*/
 int KSPSetDivergenceTolerance(KSP itP, double tol)
 {
@@ -174,6 +183,9 @@ int KSPSetDivergenceTolerance(KSP itP, double tol)
    Input Parameters:
 .  itP - iterative context obtained from KSPCreate()
 .  tol - tolerance
+
+   Options Database Key:
+$  -kspatol  tol
 @*/
 int KSPSetAbsoluteTolerance(KSP itP, double tol) 
 {
@@ -225,6 +237,9 @@ int KSPSetDoNotCalculateResidual(KSP itP)
    Currently only CG, CHEBYCHEV, and RICHARDSON use this with left
    preconditioning.  All other methods always used the preconditioned
    residual.  With right preconditioning this flag is ignored.
+
+   Options Database Key:
+$  -ksppreres
 @*/
 int KSPSetUsePreconditionedResidual(KSP itP)
 {
@@ -249,11 +264,17 @@ int KSPSetInitialGuessNonzero(KSP itP)
 
 /*@
    KSPSetCalculateEigenvalues - Sets a flag so that the the method will
-   calculate the extreme eigenvalues via a Lanczo or Arnoldi process
+   calculate the extreme eigenvalues via a Lanczos or Arnoldi process
    as it solves the linear system.
 
    Input Parameters:
 .  itP - iterative context obtained from KSPCreate()
+
+   Options Database Key:
+$  -kspeigen
+
+   Note:
+   Currently this option is not valid for all iterative methods.
 @*/
 int KSPSetCalculateEigenvalues(KSP itP)
 {
@@ -360,7 +381,6 @@ int KSPGetBinv(KSP itP, PC *B)
   *B = (itP)->B; return 0;
 }
 
-
 /*@
    KSPSetMonitor - Sets the function to be used at every
    iteration of the iterative solution. 
@@ -386,6 +406,10 @@ int KSPGetBinv(KSP itP, PC *B)
    residual if KSPSetUsePreconditionedResidual() was called, use 
    KSPDefaultMonitor() as the monitor routine, with a null monitoring 
    context.
+  
+   Options Database Key:
+$  -kspmonitor   : key for setting KSPDefaultMonitor()
+$  -kspxmonitor  : key for setting KSPLGDefaultMonitor()
 @*/
 int KSPSetMonitor(KSP itP, int (*monitor)(KSP,int,double,void*), void *mctx)
 {
