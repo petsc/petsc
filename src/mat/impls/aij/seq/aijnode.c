@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.90 1998/10/09 19:22:05 bsmith Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.91 1998/11/06 23:07:39 balay Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1218,43 +1218,23 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   rtmp2  = rtmp1 + n;  rtmps2 = rtmp2 + shift; 
   rtmp3  = rtmp2 + n;  rtmps3 = rtmp3 + shift; 
   
-  node_max = a->inode.node_count; /* has to be same for both a,b */
+  node_max = a->inode.node_count; 
   ns       = a->inode.size ;
-  if (!ns){                      /* If mat_order!=natural, create inode info */
-    nsa     = a->inode.size;
-    ns      = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(ns);
-    tmp_vec = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(tmp_vec);
-    b->inode.size          = ns;
-    b->inode.node_count    = node_max;
-    b->inode.limit         = a->inode.limit;
-    b->inode.max_limit     = a->inode.max_limit;
-    C->ops->mult            = MatMult_SeqAIJ_Inode;
-    C->ops->multadd         = MatMultAdd_SeqAIJ_Inode;
-    C->ops->solve           = MatSolve_SeqAIJ_Inode;
-    C->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
-    C->ops->getrowij        = MatGetRowIJ_SeqAIJ_Inode;
-    C->ops->restorerowij    = MatRestoreRowIJ_SeqAIJ_Inode;
-    C->ops->getcolumnij     = MatGetColumnIJ_SeqAIJ_Inode;
-    C->ops->restorerowij    = MatRestoreRowIJ_SeqAIJ_Inode;
-    for (i = 0, row = 0; i< node_max; ++i){
-      nsz = nsa[i];
-      for( j = 0; j < nsz; ++j, ++row)
-        tmp_vec[row] = i;
-    }
-    for ( i = 0, row = 0; i < node_max ; ++i){
-      ns[i] = nsa[tmp_vec[r[row]]];
-      row  += ns[i];
-    }
-    PetscFree(tmp_vec);
+  if (!ns){                   
+    SETERRQ(1,1,"Matrix without inode information");
   }
 
-  /* If max inode size >3, split it into two inodes.*/
+  /* If max inode size > 3, split it into two inodes.*/
+  /* also map the inode sizes according to the reordering */
   tmp_vec       = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(tmp_vec);
-  for (i=0, j=0; i< node_max; ++i, ++j){
+  for (i=0, j=0; i<node_max; ++i, ++j){
     if (ns[i]>3) {
-      tmp_vec[j] = ns[i]/2;++j; /* Assuming ns[i] < =5  */
-      tmp_vec[j] = ns[i] -tmp_vec[j-1];
-    } else tmp_vec[j] = ns[i];
+      tmp_vec[j] = ns[i]/2; /* Assuming ns[i] < =5  */
+      ++j; 
+      tmp_vec[j] = ns[i] - tmp_vec[j-1];
+    } else {
+      tmp_vec[j] = ns[i];
+    }
   }
 
   /* Now use the new inode info created*/
@@ -1339,7 +1319,8 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
           pv   = ba + bd[prow];
           pj   = nbj + bd[prow];
           mul1 = *pc1 * *pv;
-          mul2 = *pc2 * *pv; ++pv;
+          mul2 = *pc2 * *pv;
+          ++pv;
           *pc1 = mul1;
           *pc2 = mul2;
           
@@ -1359,7 +1340,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       pc2 = rtmp2 + prow;
       if (*pc2 != 0.0){
         pj   = nbj + bd[prow];
-        if(*pc1 ==0.0) {SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");}
+        if (*pc1 ==0.0) {SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");}
         mul2 = (*pc2)/(*pc1); /* since diag is not yet inverted.*/
         *pc2 = mul2;
         nz   = bi[prow+1] - bd[prow] - 1;
@@ -1384,6 +1365,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         pc2[j] = rtmps2[idx];
       }
       break;
+
     case 3:
       for  ( j=0; j<nz; j++ ) {
         idx         = bjtmp[j];
@@ -1391,6 +1373,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         rtmps2[idx] = 0.0;
         rtmps3[idx] = 0.0;
       }
+      /* copy the nonzeros for the 3 rows from sparse representation to dense in rtmp*[] */
       idx   = r[row];
       nz    = ai[idx+1] - ai[idx];
       ajtmp = aj + ai[idx];
@@ -1403,23 +1386,26 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         rtmp2[idx] = v2[j];
         rtmp3[idx] = v3[j];
       }
+      /* loop over all pivot row blocks above this row block */
       prow = *bjtmp++ + shift;
       while (prow < row) {
         pc1 = rtmp1 + prow;
         pc2 = rtmp2 + prow;
         pc3 = rtmp3 + prow;
         if (*pc1 != 0.0 || *pc2 != 0.0 || *pc3 !=0.0 ){
-          pv   = ba + bd[prow];
+          pv   = ba  + bd[prow];
           pj   = nbj + bd[prow];
           mul1 = *pc1 * *pv;
           mul2 = *pc2 * *pv; 
-          mul3 = *pc3 * *pv; ++pv;
+          mul3 = *pc3 * *pv;
+          ++pv;
           *pc1 = mul1;
           *pc2 = mul2;
           *pc3 = mul3;
           
           nz   = bi[prow+1] - bd[prow] - 1;
           PLogFlops(3*2*nz);
+          /* update this row based on pivot row */
           for (j=0; j<nz; j++) {
             tmp = pv[j];
             idx = pj[j];
@@ -1430,13 +1416,13 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         }
         prow = *bjtmp++ + shift;
       }
-      /* Now take care of the odd elements*/
+      /* Now take care of diagonal block in this set of rows */
       pc1 = rtmp1 + prow;
       pc2 = rtmp2 + prow;
       pc3 = rtmp3 + prow;
       if (*pc2 != 0.0 || *pc3 != 0.0){
         pj   = nbj + bd[prow];
-        if(*pc1 ==0.0) {SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");}
+        if (*pc1 == 0.0) {SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");}
         mul2 = (*pc2)/(*pc1);
         mul3 = (*pc3)/(*pc1);
         *pc2 = mul2;
@@ -1455,7 +1441,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       pc3 = rtmp3 + prow;
       if (*pc3 != 0.0){
         pj   = nbj + bd[prow];
-        if(*pc2 ==0.0) {SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");}
+        if (*pc2 == 0.0) {SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");}
         mul3 = (*pc3)/(*pc2);
         *pc3 = mul3;
         nz   = bi[prow+1] - bd[prow] - 1;
@@ -1471,12 +1457,13 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       pc1 = ba + bi[row];
       pc2 = ba + bi[row+1];
       pc3 = ba + bi[row+2];
-      if (rtmp1[row] == 0.0 || rtmp2[row+1] == 0.0 || rtmp3[row+2]==0.0) {
+      if (rtmp1[row] == 0.0 || rtmp2[row+1] == 0.0 || rtmp3[row+2] == 0.0) {
         SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
       }
       rtmp1[row]   = 1.0/rtmp1[row];
       rtmp2[row+1] = 1.0/rtmp2[row+1];
       rtmp3[row+2] = 1.0/rtmp3[row+2];
+      /* copy row entries from dense representation to sparse */
       for ( j=0; j<nz; j++ ) {
         idx    = pj[j];
         pc1[j] = rtmps1[idx];
@@ -1484,6 +1471,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         pc3[j] = rtmps3[idx];
       }
       break;
+
     default:
       SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported \n");
     }
@@ -1496,6 +1484,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
   C->factor      = FACTOR_LU;
   C->assembled   = PETSC_TRUE;
+  ierr = Mat_AIJ_CheckInode(C); CHKERRQ(ierr);
   PLogFlops(b->n);
   PetscFunctionReturn(0);
 }
