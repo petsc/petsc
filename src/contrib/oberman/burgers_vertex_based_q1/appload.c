@@ -8,9 +8,9 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtCreate"
-int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
+PetscErrorCode AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
 {
-  int         ierr;
+  PetscErrorCode         ierr;
   PetscTruth  flag;
   PetscViewer binary;
   char        filename[PETSC_MAX_PATH_LEN];
@@ -53,21 +53,22 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
      AppCtxSetLocal - Sets the local numbering data structures for the grid.
 
 */
-int AppCtxSetLocal(AppCtx *appctx)
+PetscErrorCode AppCtxSetLocal(AppCtx *appctx)
 {
   AOData                 ao     = appctx->aodata;
   AppGrid                *grid = &appctx->grid;
 
-  int                    ierr,rank;
+  PetscErrorCode                    ierr;
+  PetscMPIInt rank;
 
-  int                    *cell_vertex;
+  PetscInt                    *cell_vertex;
   double                 *vertex_coords;
-  int                    cell_n,vertex_n,*cell_neighbors;
-  int  *vertex_indices;
+  PetscInt                    cell_n,vertex_n,*cell_neighbors;
+  PetscInt  *vertex_indices;
   IS                     iscell,isvertex,vertex_boundary;
 
   IS  isvertex_global_blocked,isvertex_boundary_blocked;
-  int i,vertex_size,vertex_boundary_size,*vertex_blocked,*vertex_boundary_blocked;
+  PetscInt i,vertex_size,vertex_boundary_size,*vertex_blocked,*vertex_boundary_blocked;
 
   MPI_Comm_rank(appctx->comm,&rank);
 
@@ -146,9 +147,9 @@ int AppCtxSetLocal(AppCtx *appctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtGraphics"
-int AppCtxGraphics(AppCtx *appctx)
+PetscErrorCode AppCtxGraphics(AppCtx *appctx)
 {
-  int    ierr;
+  PetscErrorCode    ierr;
   double maxs[2],mins[2],xmin,xmax,ymin,ymax,hx,hy;
 
   /*---------------------------------------------------------------------
@@ -192,9 +193,9 @@ int AppCtxGraphics(AppCtx *appctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtDestroy"
-int AppCtxDestroy(AppCtx *appctx)
+PetscErrorCode AppCtxDestroy(AppCtx *appctx)
 {
-  int        ierr;
+  PetscErrorCode        ierr;
   AOData     ao = appctx->aodata;
   AppGrid    *grid = &appctx->grid;
 

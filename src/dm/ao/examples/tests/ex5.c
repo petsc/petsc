@@ -7,9 +7,11 @@ static char help[] = "Tests AODataRemap(). \n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         n,nglobal,bs = 1,*keys,*data,ierr,rank,size,i,start,*news;
-  AOData      aodata;
-  AO          ao;
+  PetscInt       n,nglobal,bs = 1,*keys,*data,i,start,*news;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  AOData         aodata;
+  AO             ao;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

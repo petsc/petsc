@@ -125,7 +125,6 @@ int main(int argc,char **argv)
   Parameter      param;       /* physical parameters (one total) */
   PetscInt       i,m,n,mx,my;
   DA             da;
-  PetscTruth     flg;
   PetscReal      dt_ratio;
   PetscInt       dfill[16] = {1,0,1,0,
                               0,1,0,1,

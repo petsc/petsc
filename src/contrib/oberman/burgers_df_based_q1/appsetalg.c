@@ -5,17 +5,18 @@
          Sets up the non-linear system associated with the PDE and solves it
 */
 
-extern int FormInitialGuess(AppCtx*);
-extern int SetBoundaryConditions(Vec,AppCtx *,Vec);
-extern int SetJacobian(Vec,AppCtx *,Mat*);
+extern PetscErrorCode FormInitialGuess(AppCtx*);
+extern PetscErrorCode SetBoundaryConditions(Vec,AppCtx *,Vec);
+extern PetscErrorCode SetJacobian(Vec,AppCtx *,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtSolve"
-int AppCtxSolve(AppCtx* appctx)
+PetscErrorCode AppCtxSolve(AppCtx* appctx)
 {
-  AppAlgebra             *algebra = &appctx->algebra;
-  SNES                   snes;
-  PetscErrorCode ierr,its;
+  AppAlgebra     *algebra = &appctx->algebra;
+  SNES           snes;
+  PetscErrorCode ierr;
+  PetscInt       its;
  
   PetscFunctionBegin;
 
@@ -58,7 +59,7 @@ int AppCtxSolve(AppCtx* appctx)
 
   if(0){VecView(algebra->g,PETSC_VIEWER_STDOUT_SELF);}
 
-  printf("the number of its, %d\n",its);
+  printf("the number of its, %d\n",(int)its);
 
   ierr = SNESDestroy(snes);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
@@ -70,7 +71,7 @@ int AppCtxSolve(AppCtx* appctx)
 The following functions set the reference element, and the local element for the quadrature.  
 Set reference element is called only once, at initialization, while set reference element 
 must be called over each element.  */
-int AppCtxSetReferenceElement(AppCtx* appctx){
+PetscErrorCode AppCtxSetReferenceElement(AppCtx* appctx){
 
   AppElement *phi = &appctx->element;
   double psi,psi_m,psi_p,psi_pp,psi_mp,psi_pm,psi_mm;
@@ -108,9 +109,9 @@ PetscFunctionReturn(0);
 /*-------------------------------------------------------------*/ 
 /* B) called by 3) and 4) */
 
-int SetLocalElement(AppElement *phi,double *coords)
+PetscErrorCode SetLocalElement(AppElement *phi,double *coords)
 {
-  int i,j,k;
+  PetscInt i,j,k;
   double Dh[4][2][2],Dhinv[4][2][2];
   double *dx = phi->dx,*dy = phi->dy;
   double *detDh = phi->detDh;
@@ -173,7 +174,7 @@ PetscFunctionReturn(0);
 */
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtCreateVector"
-int AppCtxCreateVector(AppCtx* appctx)
+PetscErrorCode AppCtxCreateVector(AppCtx* appctx)
 {
   /* Want everything here to be DF driven, not vertex driven 
 
@@ -240,7 +241,7 @@ DO LATER
 */
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtCreateMatrix"
-int AppCtxCreateMatrix(AppCtx* appctx)
+PetscErrorCode AppCtxCreateMatrix(AppCtx* appctx)
 {
 /********* Collect context informatrion ***********/
   AppAlgebra             *algebra = &appctx->algebra;
@@ -267,7 +268,7 @@ PetscErrorCode ierr;
 
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtSetRhs"
-int AppCtxSetRhs(AppCtx* appctx)
+PetscErrorCode AppCtxSetRhs(AppCtx* appctx)
 {
   /********* Collect context informatrion ***********/
   AppGrid    *grid = &appctx->grid;
@@ -275,7 +276,7 @@ int AppCtxSetRhs(AppCtx* appctx)
   AppElement *phi = &appctx->element;
 
   PetscErrorCode ierr,i;
-  int *df_ptr;
+  PetscInt *df_ptr;
   double *coords_ptr;
   double  values[8];
 
@@ -305,8 +306,8 @@ ierr);
   PetscFunctionReturn(0);
 }     
 
-int ComputeRHS(DFP f,DFP g,AppElement *phi,double *integrals){
-  int i,j;
+PetscErrorCode ComputeRHS(DFP f,DFP g,AppElement *phi,double *integrals){
+  PetscInt i,j;
   /* need to go over each element,then each variable */
  for(i = 0; i < 4; i++){ /* loop over basis functions */
    integrals[2*i] = 0.0;
@@ -327,7 +328,7 @@ PetscFunctionReturn(0);
 
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtSetMatrix"
-int AppCtxSetMatrix(AppCtx* appctx)
+PetscErrorCode AppCtxSetMatrix(AppCtx* appctx)
 {
 /********* Collect contex informatrion ***********/
   AppAlgebra *algebra = &appctx->algebra;
@@ -336,8 +337,8 @@ int AppCtxSetMatrix(AppCtx* appctx)
   AppEquations *equations = &appctx->equations;
 
 /****** Internal Variables ***********/
-  int i,ierr;
-  int *df_ptr;
+  PetscInt i,*df_ptr;
+  PetscErrorCode ierr;
   double *coords_ptr;
   double values[8*8];
 
@@ -381,8 +382,8 @@ integral over (ref element) of
 this is evaluated by quadrature:
 = sum over gauss points, above evaluated at gauss pts
 */
-int ComputeMatrix(AppElement *phi,double *result){
-   int i,j,k;
+PetscErrorCode ComputeMatrix(AppElement *phi,double *result){
+   PetscInt i,j,k;
 
   /* Stiffness Terms */
   /* Now Integral.  term is <DphiDhinv[i],DphiDhinv[j]>*abs(detDh) */
@@ -427,7 +428,7 @@ FormStationaryFunction - Evaluates the nonlinear function, F(x),
 */
 #undef __FUNCT__
 #define __FUNCT__ "FormStationaryFunction"
-int FormStationaryFunction(SNES snes,Vec x,Vec f,void *dappctx)
+PetscErrorCode FormStationaryFunction(SNES snes,Vec x,Vec f,void *dappctx)
 {
 /********* Collect context informatrion ***********/
   AppCtx *appctx = (AppCtx *)dappctx;
@@ -472,7 +473,7 @@ to see if they need to be recomputed */
 #define __FUNCT__ "SetNonlinearFunction"
 /* input vector is g, output is f.  Loop over elements, getting coords of each vertex and 
 computing load vertex by vertex.  Set the values into f.  */
-int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
+PetscErrorCode SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
 {
 /********* Collect context informatrion ***********/
   AppElement *phi = &appctx->element;
@@ -484,7 +485,7 @@ int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
   double *coords_ptr;
   double cell_values[8],*uvvals;
   PetscErrorCode ierr,i,j;
-  int *df_ptr;
+  PetscInt *df_ptr;
 
   /* Scatter the input values from the global vector g, to those on this processor */
   ierr = VecScatterBegin(g,algebra->f_local,INSERT_VALUES,SCATTER_FORWARD,algebra->dfgtol);CHKERRQ(ierr);
@@ -518,9 +519,9 @@ int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
 #undef __FUNCT__
 #define __FUNCT__ "ComputeNonlinear"
 /* input is x,output the nonlinear part into f for a particular element */
-int ComputeNonlinear(AppElement *phi,double *uvvals,double *result)
+PetscErrorCode ComputeNonlinear(AppElement *phi,double *uvvals,double *result)
 {
-  int i,j,k,ii ;
+  PetscInt i,j,k,ii ;
   double u[4],v[4];
 
   /* copy array into more convenient form */
@@ -560,7 +561,7 @@ Put the result in index k.  Add all possibilities up to get contribution to k, a
 
 #undef __FUNCT__
 #define __FUNCT__ "SetBoundaryConditions"
-int SetBoundaryConditions(Vec g,AppCtx *appctx,Vec f)
+PetscErrorCode SetBoundaryConditions(Vec g,AppCtx *appctx,Vec f)
 {
  /********* Collect context informatrion ***********/
   AppAlgebra *algebra = &appctx->algebra;
@@ -603,7 +604,7 @@ int SetBoundaryConditions(Vec g,AppCtx *appctx,Vec f)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormStationaryJacobian"
-int FormStationaryJacobian(SNES snes,Vec g,Mat *jac,Mat *B,MatStructure *flag,void *dappctx)
+PetscErrorCode FormStationaryJacobian(SNES snes,Vec g,Mat *jac,Mat *B,MatStructure *flag,void *dappctx)
 {
   AppCtx *appctx = (AppCtx *)dappctx;
   AppAlgebra *algebra = &appctx->algebra;
@@ -623,7 +624,7 @@ int FormStationaryJacobian(SNES snes,Vec g,Mat *jac,Mat *B,MatStructure *flag,vo
 /* input is the input vector,output is the jacobian jac */
 #undef __FUNCT__
 #define __FUNCT__ "SetJacobian"
-int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
+PetscErrorCode SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
 {
 /********* Collect context informatrion ***********/
   AppAlgebra *algebra = &appctx->algebra;
@@ -631,8 +632,8 @@ int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
   AppElement *phi = &appctx->element;
   
 /****** Internal Variables ***********/
-  int  i,j,ierr;
-  int  *df_ptr; 
+  PetscInt  i,j,*df_ptr; 
+  PetscErrorCode ierr;
   double *coords_ptr;
   double   *uvvals,cell_values[8];
   double values[8*8];  /* the integral of the combination of phi's */
@@ -682,10 +683,10 @@ int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
 
 /* input is x, output the nonlinear part into f for a particulat element */
 /* Much of the code is dublicated from ComputeMatrix; the integral is different */
-int ComputeJacobian(AppElement *phi,double *uv,double *result)
+PetscErrorCode ComputeJacobian(AppElement *phi,double *uv,double *result)
 {
   /* How can I test this??  */
-  int i,j,k,ii ;
+  PetscInt i,j,k,ii ;
   double u[4],v[4];
   double dxint[4][4][4]; /* This is integral of phi_dx[i]*phi[j]*phi[k] */
   double dyint[4][4][4]; /* This is integral of phi_dy[i]*phi[j]*phi[k] */
@@ -745,7 +746,7 @@ Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-int FormInitialGuess(AppCtx* appctx)
+PetscErrorCode FormInitialGuess(AppCtx* appctx)
 {
     AppAlgebra *algebra = &appctx->algebra;
     PetscErrorCode ierr;

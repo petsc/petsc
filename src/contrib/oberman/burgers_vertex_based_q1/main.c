@@ -8,7 +8,7 @@ static char help[] ="Solves the 2d burgers equation.   u*du/dx + v*du/dy - c(lap
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            ierr;
+  PetscErrorCode            ierr;
   AppCtx         *appctx;
   AppAlgebra     *algebra;
 
@@ -54,10 +54,11 @@ int main(int argc,char **argv)
 */
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtSolve"
-int AppCtxSolve(AppCtx* appctx)
+PetscErrorCode AppCtxSolve(AppCtx* appctx)
 {
   AppAlgebra             *algebra = &appctx->algebra;
-  int                    its,ierr;
+  PetscInt                    its;
+  PetscErrorCode ierr;
   SNES                   snes;
   Mat J;  /* Jacobian */
   Vec f;
@@ -113,14 +114,14 @@ int AppCtxSolve(AppCtx* appctx)
 /* printf("the final solution vector\n"); */
 
 /*  ierr = VecView(g,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);   */
-printf("the number of its, %d\n",its);
+printf("the number of its, %d\n",(int)its);
 
   ierr = SNESDestroy(snes);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-int FormInitialGuess(AppCtx* appctx)
+PetscErrorCode FormInitialGuess(AppCtx* appctx)
 {
 /********* Collect context informatrion ***********/
     AppAlgebra             *algebra = &appctx->algebra;
@@ -139,7 +140,7 @@ int FormInitialGuess(AppCtx* appctx)
 */
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtCreateVector"
-int AppCtxCreateVector(AppCtx* appctx)
+PetscErrorCode AppCtxCreateVector(AppCtx* appctx)
 {
 /********* Collect context informatrion ***********/
   AppGrid                *grid = &appctx->grid;
@@ -148,9 +149,9 @@ int AppCtxCreateVector(AppCtx* appctx)
   /* The local to global mapping */
  ISLocalToGlobalMapping ltog = grid->ltog;
  /* number of vertices on this processor */
-  int   vertex_local_n = grid->vertex_local_n;
+  PetscInt   vertex_local_n = grid->vertex_local_n;
   /* number of vertices including ghosted ones */
- int vertex_n = grid->vertex_n;
+ PetscInt vertex_n = grid->vertex_n;
  /* global number of each vertex on the processor */
  IS  vertex_global = grid->vertex_global;
 /* blocked global number of each vertex on the processor */
@@ -167,7 +168,7 @@ Vec g; /*for solution, and initial guess */
  Vec f_local; /* used for nonlinear function */
  /********** Internal Variables **********/
 PetscErrorCode ierr;
-const int two = 2;
+const PetscInt two = 2;
 
   PetscFunctionBegin;
 
@@ -223,7 +224,7 @@ const int two = 2;
 */
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtCreateMatrix"
-int AppCtxCreateMatrix(AppCtx* appctx)
+PetscErrorCode AppCtxCreateMatrix(AppCtx* appctx)
 {
 /********* Collect context informatrion ***********/
   AppAlgebra             *algebra = &appctx->algebra;
@@ -240,13 +241,13 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   ISLocalToGlobalMapping dltog = grid->dltog;
 
  /* number of vertices on this processor */
-  int   vertex_local_n = grid->vertex_local_n;
+  PetscInt   vertex_local_n = grid->vertex_local_n;
   /* number of cells on this processor */
-  int    cell_n = grid->cell_n;
+  PetscInt    cell_n = grid->cell_n;
   /* neighbours of the cell */
-  int  *cell_neighbors = grid->cell_neighbors;
+  PetscInt  *cell_neighbors = grid->cell_neighbors;
   /* vertices of the cell (in local numbering) */
-  int  *cell_vertex = grid->cell_vertex;
+  PetscInt  *cell_vertex = grid->cell_vertex;
 
  /************* Variables to set ************/
   Mat A;
@@ -254,13 +255,14 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   
  /********** Internal Variables **********/
   PetscReal *sdnz,*sonz;  /* non-zero entries on this processor, non-zero entries off this processor */
-   int *onz,*dnz;
-   int rank; PetscReal srank;  /* copies of the integer variables */
-   const int four = 4;
+   PetscInt *onz,*dnz;
+   PetscMPIInt rank; PetscReal srank;  /* copies of the integer variables */
+   const PetscInt four = 4;
    PetscReal *procs; 
    PetscReal  wght,zero = 0.0;
-   int   ierr,cproc,i,j;
-   int  *cells,*vertices; 
+   PetscInt   cproc,i,j;
+   PetscErrorCode ierr;
+   PetscInt  *cells,*vertices; 
 
    /* We are doing everything blocked, so just use the vectors with one values
  per vertex, same for one degree of freedom per node, then CreateBlocked.  */
@@ -376,7 +378,7 @@ int AppCtxCreateMatrix(AppCtx* appctx)
 */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-int FormFunction(SNES snes,Vec x,Vec f,void *dappctx)
+PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dappctx)
 {
 /********* Collect context informatrion ***********/
  AppCtx *appctx = (AppCtx *)dappctx;
@@ -426,7 +428,7 @@ to see if they need to be recomputed */
 #define __FUNCT__ "SetNonlinearFunction"
 /* input vector is g, output is f.  Loop over elements, getting coords of each vertex and 
 computing load vertex by vertex.  Set the values into f.  */
-int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
+PetscErrorCode SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
 {
 /********* Collect context informatrion ***********/
   AppElement *phi = &appctx->element;
@@ -437,9 +439,9 @@ int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
  /* The geometrical values of the vertices */
   PetscReal     *vertex_coords = grid->vertex_coords;
  /* The array of vertices in the local numbering for each cell */
-  int  *cell_vertex = grid->cell_vertex;
+  PetscInt  *cell_vertex = grid->cell_vertex;
  /* the number of cells on this processor */
-  int  cell_n = grid->cell_n;
+  PetscInt  cell_n = grid->cell_n;
 /* The index set of the vertices on the boundary */
   IS         vertex_boundary = grid->vertex_boundary;
 
@@ -450,8 +452,8 @@ int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
   PetscReal result[8],coors[8];
   PetscReal cell_values[8],*uvvals;
   PetscErrorCode ierr,i,j;
-  int *vertex_ptr;
-  int  nindices,*indices;
+  PetscInt *vertex_ptr;
+  PetscInt  nindices,*indices;
   PetscReal  *bvs,xval,yval;
 
  /*  Loop over local elements, extracting the values from g  and add them into f  */
@@ -549,7 +551,7 @@ PetscFunctionReturn(0);
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-int FormJacobian(SNES snes,Vec g,Mat *jac,Mat *B,MatStructure *flag,void *dappctx)
+PetscErrorCode FormJacobian(SNES snes,Vec g,Mat *jac,Mat *B,MatStructure *flag,void *dappctx)
 {
   AppCtx *appctx = (AppCtx *)dappctx;
   AppAlgebra *algebra = &appctx->algebra;
@@ -576,7 +578,7 @@ ierr= MatCopy(A,*jac,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 /* input is the input vector, output is the jacobian jac */
 #undef __FUNCT__
 #define __FUNCT__ "SetJacobian"
-int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
+PetscErrorCode SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
 {
 /********* Collect context informatrion ***********/
   AppAlgebra *algebra = &appctx->algebra;
@@ -585,13 +587,13 @@ int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
  
 /* neighbours of the cell */
   /* vertices of the cell (in local numbering) */
-  int  *cell_vertex = grid->cell_vertex;
+  PetscInt  *cell_vertex = grid->cell_vertex;
 /* number of vertices on this processor */
  /* number of vertices including ghosted ones */
   /* The geometrical values of the vertices */
   PetscReal     *vertex_coords = grid->vertex_coords;
   /* the number of cells on this processor */
-  int  cell_n = grid->cell_n;
+  PetscInt  cell_n = grid->cell_n;
  
   /* the global to local scatter */
  VecScatter dgtol = algebra->dgtol;
@@ -601,8 +603,9 @@ int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
   IS vertex_boundary_blocked = grid->vertex_boundary_blocked;    
 
 /****** Internal Variables ***********/
-  int  i,j,ierr;
-  int    *vert_ptr; 
+  PetscInt  i,j;
+  PetscErrorCode ierr;
+  PetscInt    *vert_ptr; 
   PetscReal   *uvvals,cell_values[8];
   PetscReal values[4*4*2*2];  /* the integral of the combination of phis */
   PetscReal coors[8]; /* the coordinates of one element */
@@ -655,7 +658,7 @@ int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
 
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtSetRhs"
-int AppCtxSetRhs(AppCtx* appctx)
+PetscErrorCode AppCtxSetRhs(AppCtx* appctx)
 {
 /********* Collect context informatrion ***********/
   AppGrid    *grid = &appctx->grid;
@@ -666,13 +669,13 @@ int AppCtxSetRhs(AppCtx* appctx)
   /* The vector we use */
   Vec        b = algebra->b;
   /* the number of cells on this processor */
-  int  cell_n = grid->cell_n;
+  PetscInt  cell_n = grid->cell_n;
   /* The array of vertices in the local numbering for each cell */
-  int        *cell_vertex = grid->cell_vertex;
+  PetscInt        *cell_vertex = grid->cell_vertex;
   /* The geometrical values of the vertices */
   PetscReal     *vertex_coords = grid->vertex_coords;
  /* The number of vertices per cell (4 in the case of billinear) */
-  int NVs = grid->NVs;
+  PetscInt NVs = grid->NVs;
   /* extract the rhs functions */
 /* DFP f = equations->f; */
 /* DFP g = equations->g; */
@@ -681,7 +684,8 @@ int AppCtxSetRhs(AppCtx* appctx)
   /* Room to hold the coordinates of a single cell, plus the RHS generated from a single cell.  */
   PetscReal coors[4*2]; /* quad cell */
   PetscReal values[4*2]; /* number of elements * number of variables */  
-  PetscErrorCode ierr,i,*vertices, j;
+  PetscErrorCode ierr;
+  PetscInt i,*vertices, j;
 
   /* set flag for element computation */
   phi->dorhs = 1;
@@ -717,7 +721,7 @@ int AppCtxSetRhs(AppCtx* appctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtSetMatrix"
-int AppCtxSetMatrix(AppCtx* appctx)
+PetscErrorCode AppCtxSetMatrix(AppCtx* appctx)
 {
 /********* Collect contex informatrion ***********/
 
@@ -735,11 +739,11 @@ int AppCtxSetMatrix(AppCtx* appctx)
   /* The number of degrees of freedom at each Vertex */
 
   /* The number of vertices per cell (4 in the case of billinear) */
-  int NVs = grid->NVs;
+  PetscInt NVs = grid->NVs;
  /* the number of cells on this processor */
-  int  cell_n = grid->cell_n;
+  PetscInt  cell_n = grid->cell_n;
  /* The array of vertices in the local numbering for each cell */
-  int        *cell_vertex = grid->cell_vertex;
+  PetscInt        *cell_vertex = grid->cell_vertex;
   /* The geometrical values of the vertices */
   PetscReal     *vertex_coords = grid->vertex_coords;
   /* The number of vertices on this processor */
@@ -751,8 +755,9 @@ int AppCtxSetMatrix(AppCtx* appctx)
   Mat        A = algebra->A;
 
 /****** Internal Variables ***********/
-  int i,j,ierr;
-  int  *vert_ptr;
+  PetscInt i,j;
+  PetscErrorCode ierr;
+  PetscInt  *vert_ptr;
 
 
   PetscReal values[4*4*2*2];  /* the integral of the combination of phis */

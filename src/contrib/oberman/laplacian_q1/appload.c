@@ -75,12 +75,14 @@ The vertices are then divided up among the processors.
 */
 int AppCtxSetLocal(AppCtx *appctx)
 {
-  AOData     ao = appctx->aodata;
-  AppGrid    *grid = &appctx->grid;
-  IS         isvertex;
-  PetscReal  *vertex_coords;
-  int        *vertex_ptr,i,ierr,rank;
-  PetscTruth flag;
+  AOData         ao = appctx->aodata;
+  AppGrid        *grid = &appctx->grid;
+  IS             isvertex;
+  PetscReal      *vertex_coords;
+  PetscInt       *vertex_ptr,i;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

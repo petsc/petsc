@@ -29,9 +29,9 @@ PetscErrorCode AppCtxView(PetscDraw idraw,void *iappctx)
 
   PetscBT                vertex_boundary_flag;
   PetscErrorCode   ierr;
-  PetscInt                    i,rank,c,j,ijp;
+  PetscInt                    i,c,j,ijp;
   PetscInt                    ij;
-
+  PetscMPIInt                 rank;
   PetscDraw                   drawglobal = appctx->view.drawglobal;
   PetscDraw                   drawlocal = appctx->view.drawlocal;
   PetscReal                 xl,yl,xr,yr,xm,ym,xp,yp;
@@ -70,9 +70,9 @@ PetscErrorCode AppCtxView(PetscDraw idraw,void *iappctx)
         xl  = xr;         yl =  yr;
       }
         xp /= ncell; yp /= ncell;
-        sprintf(num,"%d",i);
+        sprintf(num,"%d",(int)i);
         ierr = PetscDrawString(drawlocal,xp,yp,PETSC_DRAW_GREEN,num);CHKERRQ(ierr);
-        sprintf(num,"%d",cell_global[i]);
+        sprintf(num,"%d",(int)cell_global[i]);
         ierr = PetscDrawString(drawglobal,xp,yp,c,num);CHKERRQ(ierr);
     }
 
@@ -98,9 +98,9 @@ PetscErrorCode AppCtxView(PetscDraw idraw,void *iappctx)
       }
 
         xp /= ncell; yp /= ncell;
-        sprintf(num,"%d",i);
+        sprintf(num,"%d",(int)i);
         ierr = PetscDrawString(drawlocal,xp,yp,PETSC_DRAW_GREEN,num);CHKERRQ(ierr);
-        sprintf(num,"%d",cell_global[i]);
+        sprintf(num,"%d",(int)cell_global[i]);
         ierr = PetscDrawString(drawglobal,xp,yp,c,num);CHKERRQ(ierr);
 
   }
@@ -115,9 +115,9 @@ PetscErrorCode AppCtxView(PetscDraw idraw,void *iappctx)
       ierr = PetscDrawPoint(drawglobal,xm,ym,PETSC_DRAW_ORANGE);CHKERRQ(ierr);
       ierr = PetscDrawPoint(drawlocal,xm,ym,PETSC_DRAW_ORANGE);CHKERRQ(ierr);
 
-        sprintf(num,"%d",i);
+        sprintf(num,"%d",(int)i);
         ierr = PetscDrawString(drawlocal,xm,ym,PETSC_DRAW_BLUE,num);CHKERRQ(ierr);
-        sprintf(num,"%d",vertex_global[i]);
+        sprintf(num,"%d",(int)vertex_global[i]);
         ierr = PetscDrawString(drawglobal,xm,ym,PETSC_DRAW_BLUE,num);CHKERRQ(ierr);
     }
 
@@ -154,7 +154,11 @@ PetscErrorCode AppCtxViewMatlab(AppCtx* appctx)
 {
   PetscErrorCode ierr;
   PetscInt    *cell_vertex,rstart,rend;
+#if defined(PETSC_USE_SOCKET_VIEWER)
   PetscViewer viewer = PETSC_VIEWER_SOCKET_WORLD;
+#else
+  PetscViewer viewer = PETSC_VIEWER_BINARY_WORLD;
+#endif
   PetscReal *vertex_coords;
   IS     isvertex;
 

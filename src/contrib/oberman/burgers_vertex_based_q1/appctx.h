@@ -42,19 +42,19 @@
 
 typedef struct {
   /********* Data structures for cells ************/
-  int                    cell_n;          /* number of cells on this process */
+  PetscInt                    cell_n;          /* number of cells on this process */
 
   /* ---- index  for each of the 4 vertices of a given cell in the local (per processor) numbering */
-  int                    *cell_vertex;
+  PetscInt                    *cell_vertex;
 
   IS                     cell_global;
 
   /* neighbors of the cell.  (-1) indicates no neighbor. ordering cycles clockwise */
-  int                    *cell_neighbors;
+  PetscInt                    *cell_neighbors;
 
   /********* Data structures for vertices ************/
-  int                    vertex_n; /* number of distinct vertices on local cells, including ghost vertices*/
-  int                    vertex_local_n; /* number of distinct vertices on local cells, excluding ghost vertices */
+  PetscInt                    vertex_n; /* number of distinct vertices on local cells, including ghost vertices*/
+  PetscInt                    vertex_local_n; /* number of distinct vertices on local cells, excluding ghost vertices */
 
   IS                     vertex_global;
 
@@ -66,7 +66,7 @@ typedef struct {
   IS                     vertex_boundary_blocked; /* for 2 deg of freedom */
   ISLocalToGlobalMapping ltog;
   ISLocalToGlobalMapping dltog;    /* for 2 deg of freedom */
-  int                    NVs;
+  PetscInt                    NVs;
 } AppGrid;
 
 /*
@@ -109,7 +109,7 @@ Values at the gauss points of the bilinear basis functions
 */
 
 typedef struct {
-  int dorhs;     /* flag to see if we are computing rhs */
+  PetscInt dorhs;     /* flag to see if we are computing rhs */
   PetscReal Values[4][4];  /* values of reference element */
   PetscReal DxValues[4][4]; /* for reference element */
   PetscReal DyValues[4][4]; /* for reference element */
@@ -152,14 +152,14 @@ typedef struct {
 } AppCtx;
 
 
-extern int AppCtxView(PetscDraw,void*);
-extern int AppCtxViewSolution(PetscDraw,void*);
-extern int AppCtxCreate(MPI_Comm,AppCtx **);
-extern int AppCtxDestroy(AppCtx *);
-extern int AppCtxSetLocal(AppCtx *);
-extern int AppCtxSolve(AppCtx*);
-extern int AppCtxGraphics(AppCtx *);
-extern int AppCtxViewMatlab(AppCtx*);
+extern PetscErrorCode AppCtxView(PetscDraw,void*);
+extern PetscErrorCode AppCtxViewSolution(PetscDraw,void*);
+extern PetscErrorCode AppCtxCreate(MPI_Comm,AppCtx **);
+extern PetscErrorCode AppCtxDestroy(AppCtx *);
+extern PetscErrorCode AppCtxSetLocal(AppCtx *);
+extern PetscErrorCode AppCtxSolve(AppCtx*);
+extern PetscErrorCode AppCtxGraphics(AppCtx *);
+extern PetscErrorCode AppCtxViewMatlab(AppCtx*);
 
 
  PetscReal pde_f(PetscReal, PetscReal); 
@@ -168,22 +168,22 @@ extern int AppCtxViewMatlab(AppCtx*);
  PetscReal pde_bc2(PetscReal, PetscReal); 
 PetscReal pde_soln(PetscReal, PetscReal);
 
-int AppCtxSetRhs(AppCtx*);
-int AppCtxCreateVector(AppCtx*);
-int AppCtxSetMatrix(AppCtx*);
-int AppCtxCreateMatrix(AppCtx*);
-int FormFunction(SNES, Vec, Vec, void *);
-int FormJacobian(SNES, Vec , Mat *, Mat *, MatStructure *, void *);
-int SetNonlinearFunction(Vec, AppCtx *, Vec);
+PetscErrorCode AppCtxSetRhs(AppCtx*);
+PetscErrorCode AppCtxCreateVector(AppCtx*);
+PetscErrorCode AppCtxSetMatrix(AppCtx*);
+PetscErrorCode AppCtxCreateMatrix(AppCtx*);
+PetscErrorCode FormFunction(SNES, Vec, Vec, void *);
+PetscErrorCode FormJacobian(SNES, Vec , Mat *, Mat *, MatStructure *, void *);
+PetscErrorCode SetNonlinearFunction(Vec, AppCtx *, Vec);
 
-extern int AppCtxSetReferenceElement(AppCtx*);
-extern int AppCtxSetFunctions(AppCtx*);
-extern int SetLocalElement(AppElement *, PetscReal *);
-extern int ComputeRHS( DFP, DFP, AppElement *, PetscReal *);
-extern int ComputeMatrix( AppElement *, PetscReal *);
-extern int ComputeNonlinear(AppElement *, PetscReal *, PetscReal *);
-extern int ComputeJacobian(AppElement *, PetscReal *, PetscReal *);
+extern PetscErrorCode AppCtxSetReferenceElement(AppCtx*);
+extern PetscErrorCode AppCtxSetFunctions(AppCtx*);
+extern PetscErrorCode SetLocalElement(AppElement *, PetscReal *);
+extern PetscErrorCode ComputeRHS( DFP, DFP, AppElement *, PetscReal *);
+extern PetscErrorCode ComputeMatrix( AppElement *, PetscReal *);
+extern PetscErrorCode ComputeNonlinear(AppElement *, PetscReal *, PetscReal *);
+extern PetscErrorCode ComputeJacobian(AppElement *, PetscReal *, PetscReal *);
 
-extern int FormInitialGuess(AppCtx *);
-extern int SetJacobian(Vec,AppCtx *,Mat*);
+extern PetscErrorCode FormInitialGuess(AppCtx *);
+extern PetscErrorCode SetJacobian(Vec,AppCtx *,Mat*);
 #endif

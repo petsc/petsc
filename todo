@@ -57,7 +57,7 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   Cleaner code
   ------------
 
-  (Priority 2) Add more PetscMallocXXX() especially in the VecScatterCreate_.... stuff.
+  (Priority 2) Add more PetscMallocXXX() in MatGetOverlap() and getsubmatrices etc()
 
   (Priority 0) Fix bad macros with inline
 
@@ -71,12 +71,6 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
 
   (Priority 1) add DAVecGatherAll and DAVecGather
 
-  (Priority 1) all Raise RuntimeError() in configure that are intended for users 
-  should have instead self.framework.Box('message','url') that formats the 
-  message with ** around it for users to see easily.
-
-  Do more error checking on user input arguments for nice error messages like if they
-  pass a directory for -with-blas-lapack-dir or the other way around
 
      (Piority 1) Add option to KSP to generate error when convergence fails, rather than continuing with ConvergedReason
      Take out calls to SETERRQ directly in KSP solvers and replace with correct ConvergedReason

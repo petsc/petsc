@@ -17,24 +17,24 @@ int main( int argc, char **argv )
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   /*  Load the grid database*/
-  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx); CHKERRA(ierr);
+  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx); CHKERRQ(ierr);
   algebra = &appctx->algebra; grid = &appctx->grid;
 
   /*      Initialize graphics */
-  ierr = AppCtxGraphics(appctx); CHKERRA(ierr);
+  ierr = AppCtxGraphics(appctx); CHKERRQ(ierr);
 
   /*   Setup the linear system and solve it*/
   ierr = AppCtxSolve(appctx);CHKERRQ(ierr);
 
   /*      Destroy all datastructures  */
-  ierr = AppCtxDestroy(appctx); CHKERRA(ierr);
+  ierr = AppCtxDestroy(appctx); CHKERRQ(ierr);
 
   PetscFinalize();
   PetscFunctionReturn(0);
 }
 
-extern  int FormInitialGuess(AppCtx*);
-extern int  SetBoundaryConditions(Vec, AppCtx*,Vec);
+extern  PetscErrorCode FormInitialGuess(AppCtx*);
+extern PetscErrorCode  SetBoundaryConditions(Vec, AppCtx*,Vec);
 /*
          Sets up the non-linear system associated with the PDE and solves it
 */
@@ -42,13 +42,12 @@ extern int  SetBoundaryConditions(Vec, AppCtx*,Vec);
 #define __FUNC__ "AppCxtSolve"
 int AppCtxSolve(AppCtx* appctx)
 {
-  AppGrid                *grid = &appctx->grid;
   AppAlgebra             *algebra = &appctx->algebra;
-  MPI_Comm               comm = appctx->comm;
-  SLES                   sles;
+  KSP ksp;
   SNES                   snes;
-  int ierr, its;
- int zero = 0;
+  PetscErrorCode ierr;
+  PetscInt its;
+  PetscInt zero = 0;
   PetscFunctionBegin;
 
   /*        Create vector to contain load and various work vectors  */
@@ -65,10 +64,10 @@ int AppCtxSolve(AppCtx* appctx)
   /*      Set the matrix entries   */
   ierr = AppCtxSetMatrix(appctx); CHKERRQ(ierr);
 
-   MatView(algebra->A, VIEWER_STDOUT_SELF);   
+   MatView(algebra->A, PETSC_VIEWER_STDOUT_SELF);   
 
   /*     Create the nonlinear solver context  */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes); CHKERRQ(ierr);
 
   /********* solve the stationary problem with boundary conditions.  ************/
   /*      Set function evaluation rountine and vector */
@@ -92,13 +91,13 @@ int AppCtxSolve(AppCtx* appctx)
    if (appctx->view.matlabgraphics) {AppCtxViewMatlab(appctx);  } 
 
   /*       Solve the non-linear system  */
-  ierr = SNESSolve(snes, algebra->g, &its);CHKERRQ(ierr);
-
+  ierr = SNESSolve(snes, algebra->g);CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   /* First, send solution vector to Matlab */
-  ierr = VecView(appctx->algebra.g,VIEWER_SOCKET_WORLD); CHKERRQ(ierr);
+  ierr = VecView(appctx->algebra.g,PETSC_VIEWER_SOCKET_WORLD); CHKERRQ(ierr);
 
   /* send the done signal */
-ierr = PetscIntView(1, &zero, VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
+ierr = PetscIntView(1, &zero, PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
  /*  VecView(algebra->g, VIEWER_STDOUT_SELF); */
 
   printf("the number of its, %d\n", its);

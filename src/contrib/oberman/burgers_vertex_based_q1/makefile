@@ -10,7 +10,7 @@ CFLAGS    =
 
 ALL: main
 
-LOCDIR     = src/usg/2d/constant_bilinear/
+LOCDIR     = src/contrib/oberman/burgers_vertex_based_q1/
 
 EXAMPLESC      = main.c appview.c appload.c functions.c integrator.c
 EXAMPLESCH     = appctx.h

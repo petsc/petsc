@@ -11,29 +11,31 @@
 
 #undef __FUNC__
 #define __FUNC__ "AppCxtView"
-int AppCtxView(Draw idraw,void *iappctx)
+PetscErrorCode AppCtxView(Draw idraw,void *iappctx)
 {
   AppCtx                 *appctx = (AppCtx *)iappctx;
   AppGrid                *grid = &appctx->grid;
 
-  int                    cell_n,vertex_n,ncell = 4,*verts,nverts;
+  PetscInt                    cell_n,vertex_n,ncell = 4,*verts,nverts;
 
   /*
         These contain the  vertex lists in local numbering
   */ 
-  int                    *cell_vertex;
+  PetscInt                    *cell_vertex;
 
   /* 
         These contain the global numbering for local objects
   */
-  int                    *cell_global,*vertex_global;
+  PetscInt                    *cell_global,*vertex_global;
   
   double                 *vertex_value;
 
   PetscBT                vertex_boundary_flag;
 
-  int                    ierr,i,rank,c,j,ijp;
-  int                    ij;
+  PetscErrorCode ierr;
+  PetscInt              i,c,j,ijp;
+  PetscMPIInt rank;
+  PetscInt                    ij;
 
   Draw                   drawglobal = appctx->view.drawglobal;
   Draw                   drawlocal = appctx->view.drawlocal;
@@ -142,14 +144,19 @@ int AppCtxView(Draw idraw,void *iappctx)
 */
 #undef __FUNC__
 #define __FUNC__ "AppCxtViewMatlab"
-int AppCtxViewMatlab(AppCtx* appctx)
+PetscErrorCode AppCtxViewMatlab(AppCtx* appctx)
 {
-  int    ierr,*cell_vertex,rstart,rend;
-  Viewer viewer = VIEWER_SOCKET_WORLD;
+  PetscErrorCode    ierr;
+  PetscInt *cell_vertex,rstart,rend;
+#if defined(PETSC_USE_SOCKET_VIEWER)
+  Viewer viewer = PETSC_VIEWER_SOCKET_WORLD;
+#else
+  Viewer viewer = PETSC_VIEWER_BINARY_WORLD;
+#endif
   double *vertex_values;
   IS     isvertex;
-int one = 1;
-int i;
+PetscInt one = 1;
+PetscInt i;
   PetscFunctionBegin;
 
   /* now send the cell_coords */

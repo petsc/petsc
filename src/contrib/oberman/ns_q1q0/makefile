@@ -14,7 +14,7 @@ SOURCEF    =
 SOURCEH    = 
 OBJSC      = 
 CLEANFILES = 
-LOCDIR     = src/usg/2d/constant_bilinear/
+LOCDIR     = src/contrib/oberman/ns_q1q0/
 
 main: chkopts main.o appview.o appload.o functions.o integrator.o appcreate.o
 	-$(RM) main

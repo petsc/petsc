@@ -9,10 +9,10 @@ static char help[] = "Demonstrates constructing an application ordering.\n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  int      n = 5,rank,size,getpetsc[] = {0,3,4};
-  int      getapp[] = {2,1,3,4};
-  IS       ispetsc,isapp;
-  AO       ao;
+  PetscInt       n = 5,getpetsc[] = {0,3,4},getapp[] = {2,1,3,4};
+  PetscMPIInt    rank,size;
+  IS             ispetsc,isapp;
+  AO             ao;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

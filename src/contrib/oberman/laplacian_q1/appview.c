@@ -17,14 +17,18 @@
 #define __FUNCT__ "AppCxtViewMatlab"
 int AppCtxViewMatlab(AppCtx* appctx)
 {
-  int    ierr;
-  PetscViewer viewer;
-  FILE   *fp;
+  PetscErrorCode ierr;
+  PetscViewer    viewer;
+  FILE           *fp;
 
   PetscFunctionBegin;
   /* start up the companion Matlab processor to receive the data */
   ierr = PetscStartMatlab(PETSC_COMM_WORLD,PETSC_NULL,"bscript(0)",&fp);CHKERRQ(ierr);
+#if defined(PETSC_USE_SOCKET_VIEWER)
   viewer = PETSC_VIEWER_SOCKET_WORLD;
+#else
+  viewer = PETSC_VIEWER_BINARY_WORLD;
+#endif
   
   /* send the cell_coordinates */
   ierr = PetscRealView(2*4*appctx->grid.cell_n,appctx->grid.cell_coords,viewer);CHKERRQ(ierr);
@@ -43,11 +47,10 @@ int AppCtxViewMatlab(AppCtx* appctx)
 #define __FUNCT__ "AppCxtGraphics"
 int AppCtxGraphics(AppCtx *appctx)
 {
-  int       ierr;
-  PetscReal maxs[2],mins[2],xmin,xmax,ymin,ymax,hx,hy;
+  PetscErrorCode ierr;
+  PetscReal      maxs[2],mins[2],xmin,xmax,ymin,ymax,hx,hy;
 
   PetscFunctionBegin;
-
   /*---------------------------------------------------------------------
      Setup  the graphics windows
        drawglobal - contains a single picture of the entire grid
@@ -96,11 +99,13 @@ int AppCtxGraphics(AppCtx *appctx)
 #define __FUNCT__ "AppCxtViewGrid"
 int AppCtxViewGrid(PetscDraw draw,void *iappctx)
 {
-  AppCtx     *appctx = (AppCtx *)iappctx;  
-  AppGrid    *grid = &appctx->grid;
-  PetscReal  xl,yl,xr,yr,xp,yp,w,h;
-  int        ierr,i,rank,c,j,jnext,*iscell;
-  char       num[5];
+  AppCtx         *appctx = (AppCtx *)iappctx;  
+  AppGrid        *grid = &appctx->grid;
+  PetscReal      xl,yl,xr,yr,xp,yp,w,h;
+  PetscErrorCode ierr;
+  PetscInt       i,c,j,jnext,*iscell;
+  PetscMPIInt    rank;
+  char           num[5];
 
   PetscFunctionBegin;
   /* gets the global numbering of each vertex of each local cell */
@@ -119,10 +124,10 @@ int AppCtxViewGrid(PetscDraw draw,void *iappctx)
       yl   = grid->cell_coords[2*4*i + 2*j + 1];
       /* attach number to each vertex */
       if (draw == appctx->view.drawlocal) {
-        sprintf(num,"%d",grid->cell_vertex[4*i+j]); /* local number of vertex */
+        sprintf(num,"%d",(int)grid->cell_vertex[4*i+j]); /* local number of vertex */
         ierr = PetscDrawString(draw,xl,yl,c+1,num);CHKERRQ(ierr);
       } else {
-        sprintf(num,"%d",grid->global_cell_vertex[4*i+j]); /* global number of vertex */
+        sprintf(num,"%d",(int)grid->global_cell_vertex[4*i+j]); /* global number of vertex */
         ierr = PetscDrawString(draw,xl,yl,PETSC_DRAW_BLACK,num);CHKERRQ(ierr);
       }
       xr   = grid->cell_coords[2*4*i + 2*jnext];
@@ -135,10 +140,10 @@ int AppCtxViewGrid(PetscDraw draw,void *iappctx)
     xp *= 0.25;
     yp *= 0.25;
     if (draw == appctx->view.drawlocal) {  
-      sprintf(num,"%d",i); /* local number of cell */
+      sprintf(num,"%d",(int)i); /* local number of cell */
       ierr = PetscDrawString(draw,xp,yp,c,num);CHKERRQ(ierr);
     } else {
-      sprintf(num,"%d",iscell[i]); /* global number of cell */
+      sprintf(num,"%d",(int)iscell[i]); /* global number of cell */
       ierr = PetscDrawString(draw,xp,yp,PETSC_DRAW_RED,num);CHKERRQ(ierr);
     }
   }
@@ -152,7 +157,7 @@ int AppCtxViewGrid(PetscDraw draw,void *iappctx)
     for (i=0; i<grid->boundary_n; i++) {
       xp = grid->boundary_coords[2*i] - 4.0*w;
       yp = grid->boundary_coords[2*i+1] - 4.0*h;
-      sprintf(num,"%d",i);
+      sprintf(num,"%d",(int)i);
       ierr = PetscDrawString(draw,xp,yp,PETSC_DRAW_BROWN,num);CHKERRQ(ierr);
     }
   }

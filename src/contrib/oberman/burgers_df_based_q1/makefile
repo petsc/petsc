@@ -12,7 +12,7 @@ EXAMPLESCH     = appctx.h
 
 ALL: main
 
-LOCDIR     = src/usg/2d/constant_bilinear/
+LOCDIR     = src/contrib/oberman/burgers_df_based_q1/
 
 main: chkopts main.o appview.o appload.o functions.o appsetalg.o
 	-$(RM) main

@@ -144,30 +144,38 @@ def petsc_configure(configure_options):
   except RuntimeError, e:
     emsg = str(e)
     if not emsg.endswith('\n'): emsg += '\n'
-    msg = '     UNABLE to CONFIGURE with GIVEN OPTIONS    (see configure.log for details):\n' \
+    msg ='*********************************************************************************\n'\
+    +'         UNABLE to CONFIGURE with GIVEN OPTIONS    (see configure.log for details):\n' \
+    +'---------------------------------------------------------------------------------------\n'  \
     +emsg+'*********************************************************************************\n'
     se = ''
   except TypeError, e:
     emsg = str(e)
     if not emsg.endswith('\n'): emsg += '\n'
-    msg = '             ERROR  in COMMAND LINE ARGUMENT to config/configure.py *****\n' \
+    msg ='*********************************************************************************\n'\
+    +'                ERROR in COMMAND LINE ARGUMENT to config/configure.py \n' \
+    +'---------------------------------------------------------------------------------------\n'  \
     +emsg+'*********************************************************************************\n'
     se = ''
   except ImportError, e :
     emsg = str(e)
     if not emsg.endswith('\n'): emsg += '\n'
-    msg = '               UNABLE to FIND MODULE for config/configure.py *******\n' \
+    msg ='*********************************************************************************\n'\
+    +'                     UNABLE to FIND MODULE for config/configure.py \n' \
+    +'---------------------------------------------------------------------------------------\n'  \
     +emsg+'*********************************************************************************\n'
     se = ''
   except SystemExit, e:
     if e.code is None or e.code == 0:
       return
-    msg = '           CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
-    +'\n*********************************************************************************\n'
+    msg ='*********************************************************************************\n'\
+    +'           CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
+    +'*********************************************************************************\n'
     se  = str(e)
   except Exception, e:
-    msg = '           CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
-    +'\n*********************************************************************************\n'
+    msg ='*********************************************************************************\n'\
+    +'          CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
+    +'*********************************************************************************\n'
     se  = str(e)
 
   framework.logClear()

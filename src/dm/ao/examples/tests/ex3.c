@@ -8,11 +8,13 @@ static char help[] = "Tests AOData.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         n = 2,nglobal,bs = 2,*keys,*data,ierr,rank,size,i,start;
-  PetscReal   *gd;
-  AOData      aodata;
-  PetscViewer binary;
-  PetscBT     ld;
+  PetscInt       n = 2,nglobal,bs = 2,*keys,*data,i,start;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  PetscReal      *gd;
+  AOData         aodata;
+  PetscViewer    binary;
+  PetscBT        ld;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

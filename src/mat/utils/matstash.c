@@ -437,19 +437,20 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,PetscInt row,Pet
 PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
 { 
   PetscInt       *owner,*startv,*starti,tag1=stash->tag1,tag2=stash->tag2,bs2;
-  PetscInt       size=stash->size,*nprocs,*nlengths,nsends,nreceives;
+  PetscInt       size=stash->size,nsends;
   PetscErrorCode ierr;
   PetscInt       count,*sindices,**rindices,i,j,idx,lastidx;
   MatScalar      **rvalues,*svalues;
   MPI_Comm       comm = stash->comm;
   MPI_Request    *send_waits,*recv_waits,*recv_waits1,*recv_waits2;
+  PetscMPIInt    *nprocs,*nlengths,nreceives;
 
   PetscFunctionBegin;
 
   bs2   = stash->bs*stash->bs;
   /*  first count number of contributors to each processor */
-  ierr  = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
-  ierr  = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscMalloc(2*size*sizeof(PetscMPIInt),&nprocs);CHKERRQ(ierr);
+  ierr  = PetscMemzero(nprocs,2*size*sizeof(PetscMPIInt));CHKERRQ(ierr);
   ierr  = PetscMalloc((stash->n+1)*sizeof(PetscInt),&owner);CHKERRQ(ierr);
 
   nlengths = nprocs+size;
@@ -578,8 +579,8 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
 PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscInt** cols,MatScalar **vals,PetscInt *flg)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    i;
-  PetscInt       *flg_v,i1,i2,bs2;
+  PetscMPIInt    i,*flg_v,i1,i2;
+  PetscInt       bs2;
   MPI_Status     recv_status;
   PetscTruth     match_found = PETSC_FALSE;
 

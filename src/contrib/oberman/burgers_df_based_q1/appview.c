@@ -8,27 +8,28 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtView"
-int AppCtxView(PetscDraw idraw,void *iappctx)
+PetscErrorCode AppCtxView(PetscDraw idraw,void *iappctx)
 {
   AppCtx                 *appctx = (AppCtx *)iappctx;
   AppGrid                *grid = &appctx->grid;
 
-  int                    cell_n,vertex_n,ncell = 4,*verts,nverts;
+  PetscInt                    cell_n,vertex_n,ncell = 4,*verts,nverts;
 
   /*
         These contain the  vertex lists in local numbering
   */ 
-  int                    *cell_vertex;
+  PetscInt                    *cell_vertex;
 
   /* 
         These contain the global numbering for local objects
   */
-  int                    *cell_global,*vertex_global;
+  PetscInt                    *cell_global,*vertex_global;
   
   double                 *vertex_value;
 
-  int                    ierr,i,rank,c,j;
-  int                    ij;
+  PetscErrorCode                    ierr;
+  PetscMPIInt rank;
+  PetscInt                    ij,i,c,j;
 
   PetscDraw                   drawlocal = appctx->view.drawlocal;
   double                 xl,yl,xr,yr,xm,ym,xp,yp,w,h;
@@ -63,10 +64,10 @@ int AppCtxView(PetscDraw idraw,void *iappctx)
     }
     xp /= ncell; yp /= ncell;
     if (idraw == drawlocal) {
-      sprintf(num,"%d",i);
+      sprintf(num,"%d",(int)i);
       ierr = PetscDrawString(idraw,xp,yp,PETSC_DRAW_GREEN,num);CHKERRQ(ierr);
     } else {
-      sprintf(num,"%d",cell_global[i]);
+      sprintf(num,"%d",(int)cell_global[i]);
       ierr = PetscDrawString(idraw,xp,yp,c,num);CHKERRQ(ierr);
     }
   }
@@ -78,10 +79,10 @@ int AppCtxView(PetscDraw idraw,void *iappctx)
   for (i=0; i<vertex_n; i++) {
     xm = vertex_value[2*i]; ym = vertex_value[2*i + 1];
     if (idraw == drawlocal) {
-      sprintf(num,"%d",i);
+      sprintf(num,"%d",(int)i);
       ierr = PetscDrawString(idraw,xm,ym,PETSC_DRAW_BLUE,num);CHKERRQ(ierr);
     } else {
-      sprintf(num,"%d",vertex_global[i]);
+      sprintf(num,"%d",(int)vertex_global[i]);
       ierr = PetscDrawString(idraw,xm,ym,PETSC_DRAW_BLUE,num);CHKERRQ(ierr);
     }
   }
@@ -93,7 +94,7 @@ int AppCtxView(PetscDraw idraw,void *iappctx)
   if (idraw == drawlocal) {
     for (i=0; i<nverts; i++) {
       xm = vertex_value[2*verts[i]] - 4.*w; ym = vertex_value[2*verts[i] + 1] - 4.*h;
-      sprintf(num,"%d",i);
+      sprintf(num,"%d",(int)i);
       ierr = PetscDrawString(idraw,xm,ym,PETSC_DRAW_BLACK,num);CHKERRQ(ierr);
     }
   }
@@ -107,27 +108,28 @@ int AppCtxView(PetscDraw idraw,void *iappctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtViewSolution"
-int AppCtxViewSolution(PetscDraw idraw,void *iappctx)
+PetscErrorCode AppCtxViewSolution(PetscDraw idraw,void *iappctx)
 {
   AppCtx                 *appctx = (AppCtx *)iappctx;
   AppGrid                *grid = &appctx->grid;
   AppAlgebra             *algebra = &appctx->algebra;
-  int                    cell_n,ncell = 4;
+  PetscInt                    cell_n,ncell = 4;
 
   /*
         These contain the vertex lists in local numbering
   */ 
-  int                    *cell_vertex;
+  PetscInt                    *cell_vertex;
 
   /* 
         These contain the global numbering for local objects
   */
-  int                    *cell_global,*vertex_global;
+  PetscInt                    *cell_global,*vertex_global;
   
   double                 *vertex_value;
 
 
-  int                    ierr,i,c0,c1,c2;
+  PetscErrorCode       ierr;
+  PetscInt i,c0,c1,c2;
 
   PetscDraw                   drawglobal = appctx->view.drawglobal;
   PetscDraw                   drawlocal = appctx->view.drawlocal,popup;
@@ -155,16 +157,16 @@ int AppCtxViewSolution(PetscDraw idraw,void *iappctx)
     x0 = vertex_value[2*cell_vertex[ncell*i]];   y_0 = vertex_value[2*cell_vertex[ncell*i] + 1];
     x1 = vertex_value[2*cell_vertex[ncell*i+1]]; y_1 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
     x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-    c0 = (int)values[cell_vertex[ncell*i]];
-    c1 = (int)values[cell_vertex[ncell*i+1]];
-    c2 = (int)values[cell_vertex[ncell*i+2]];
+    c0 = (PetscInt)values[cell_vertex[ncell*i]];
+    c1 = (PetscInt)values[cell_vertex[ncell*i+1]];
+    c2 = (PetscInt)values[cell_vertex[ncell*i+2]];
     ierr = PetscDrawTriangle(drawglobal,x0,y_0,x1,y_1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
     x0 = vertex_value[2*cell_vertex[ncell*i]];   y_0 = vertex_value[2*cell_vertex[ncell*i] + 1];
     x1 = vertex_value[2*cell_vertex[ncell*i+3]]; y_1 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
     x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-    c0 = (int)values[cell_vertex[ncell*i]];
-    c1 = (int)values[cell_vertex[ncell*i+3]];
-    c2 = (int)values[cell_vertex[ncell*i+2]];
+    c0 = (PetscInt)values[cell_vertex[ncell*i]];
+    c1 = (PetscInt)values[cell_vertex[ncell*i+3]];
+    c2 = (PetscInt)values[cell_vertex[ncell*i+2]];
     ierr = PetscDrawTriangle(drawglobal,x0,y_0,x1,y_1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
   }
 
@@ -190,10 +192,15 @@ int AppCtxViewSolution(PetscDraw idraw,void *iappctx)
 */
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtViewMatlab"
-int AppCtxViewMatlab(AppCtx* appctx)
+PetscErrorCode AppCtxViewMatlab(AppCtx* appctx)
 {
-  int    ierr,*cell_vertex,rstart,rend;
+  PetscInt    *cell_vertex,rstart,rend;
+  PetscErrorCode ierr;
+#if defined(PETSC_USE_SOCKET_VIEWER)
   PetscViewer viewer = PETSC_VIEWER_SOCKET_WORLD;
+#else
+  PetscViewer viewer = PETSC_VIEWER_BINARY_WORLD;
+#endif
   double *vertex_values;
   IS     isvertex;
   PetscFunctionBegin;
@@ -233,9 +240,9 @@ int AppCtxViewMatlab(AppCtx* appctx)
 /*--------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtGraphics"
-int AppCtxGraphics(AppCtx *appctx)
+PetscErrorCode AppCtxGraphics(AppCtx *appctx)
 {
-  int    ierr;
+  PetscErrorCode    ierr;
   double maxs[2],mins[2],xmin,xmax,ymin,ymax,hx,hy;
 
   /*---------------------------------------------------------------------

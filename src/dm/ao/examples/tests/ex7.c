@@ -7,9 +7,11 @@ static char help[] = "Demonstrates constructing an application ordering.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int      n = 5,ierr,rank,size;
-  IS       ispetsc,isapp;
-  AO       ao;
+  PetscInt       n = 5;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  IS             ispetsc,isapp;
+  AO             ao;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

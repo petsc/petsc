@@ -18,7 +18,7 @@
 */
 typedef struct {
   /********* Data structures for cells ************/
-  int cell_n;   /* the number of cells on this processor,*/
+  PetscInt cell_n;   /* the number of cells on this processor,*/
 
   /* ---- coordinates of each of the 4 vertices corresponding to each cell
      cell_coords[0],cell_coords[1] represent x,y of the first cell's first vertice 
@@ -26,11 +26,11 @@ typedef struct {
   PetscReal *cell_coords;
 
   /* ---- index  for each of the 4 vertices of a given cell in the local (per processor) numbering */
-  int *cell_vertex;
+  PetscInt *cell_vertex;
 
   /********* Data structures for vertices ************/
-  int vertex_n;  /* number of distinct vertices on local cells, including ghost vertices*/
-  int vertex_local_n; /* number of distinct vertices on local cells, excluding ghost vertices */
+  PetscInt vertex_n;  /* number of distinct vertices on local cells, including ghost vertices*/
+  PetscInt vertex_local_n; /* number of distinct vertices on local cells, excluding ghost vertices */
  
   /* ---- local to global mapping for vertices, i.e. if you apply ltog to a list of
      vertices in local (per processor) numbering it will return them in global (parallel) numbering */
@@ -38,13 +38,13 @@ typedef struct {
 
   /********* Data structures for the boundary conditions ************/
   IS      vertex_boundary;  /* local indices of vertices on the boundary */
-  int     boundary_n;   /* number of vertices on boundary (including ghost vertices) */
+  PetscInt     boundary_n;   /* number of vertices on boundary (including ghost vertices) */
   PetscReal *boundary_values;  /* work space for the boundary values */
   PetscReal *boundary_coords;  /* the coordinates of the boundary points */
 
   /********* Data structures for graphics ******************** */
   IS     iscell;                   /* cells owned by this processor in global numbering */
-  /* FIX THIS */ int    *global_cell_vertex;      /* vertices for each local cell in global numbering */
+  /* FIX THIS */ PetscInt    *global_cell_vertex;      /* vertices for each local cell in global numbering */
 } AppGrid;
 
 /*------------------------------------------------------------
@@ -120,27 +120,27 @@ typedef struct {
 /*-----------------------------------------------------*/
 /* function declarations */
 
-extern int AppCtxCreate(MPI_Comm,AppCtx **);
-extern int AppCtxDestroy(AppCtx *);
+extern PetscErrorCode AppCtxCreate(MPI_Comm,AppCtx **);
+extern PetscErrorCode AppCtxDestroy(AppCtx *);
 
-extern int AppCtxViewGrid(PetscDraw,void*);
-extern int AppCtxViewMatlab(AppCtx*);
-extern int AppCtxGraphics(AppCtx *appctx);
+extern PetscErrorCode AppCtxViewGrid(PetscDraw,void*);
+extern PetscErrorCode AppCtxViewMatlab(AppCtx*);
+extern PetscErrorCode AppCtxGraphics(AppCtx *appctx);
 
-extern int AppCtxSetLocal(AppCtx *);
-extern int AppCtxSolve(AppCtx*);
+extern PetscErrorCode AppCtxSetLocal(AppCtx *);
+extern PetscErrorCode AppCtxSolve(AppCtx*);
 
-extern int AppCtxCreateRhs(AppCtx*);
-extern int AppCtxCreateMatrix(AppCtx*);
-extern int AppCtxSetMatrix(AppCtx*);
-extern int AppCtxSetRhs(AppCtx*);
-extern int SetBoundaryConditions(AppCtx*);
-extern int SetMatrixBoundaryConditions(AppCtx *appctx);
+extern PetscErrorCode AppCtxCreateRhs(AppCtx*);
+extern PetscErrorCode AppCtxCreateMatrix(AppCtx*);
+extern PetscErrorCode AppCtxSetMatrix(AppCtx*);
+extern PetscErrorCode AppCtxSetRhs(AppCtx*);
+extern PetscErrorCode SetBoundaryConditions(AppCtx*);
+extern PetscErrorCode SetMatrixBoundaryConditions(AppCtx *appctx);
 
-extern int ComputeRHSElement( AppElement *phi );
-extern int ComputeStiffnessElement( AppElement *phi );
+extern PetscErrorCode ComputeRHSElement( AppElement *phi );
+extern PetscErrorCode ComputeStiffnessElement( AppElement *phi );
 
-extern int SetReferenceElement(AppCtx* appctx);
-extern int SetLocalElement(AppElement *phi );
+extern PetscErrorCode SetReferenceElement(AppCtx* appctx);
+extern PetscErrorCode SetLocalElement(AppElement *phi );
 
 #endif

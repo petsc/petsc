@@ -14,7 +14,7 @@ SOURCEF    =
 SOURCEH    = 
 OBJSC      = 
 CLEANFILES = 
-LOCDIR     =/nfs/mcs-homes37/oberman/src/tns_q2q1/
+LOCDIR     = src/contrib/oberman/ns_q2q1/
 
 main: chkopts main.o appload.o appcreate.o appsetref.o integrator.o functions.o appview.o 
 	-$(RM) main

@@ -10,9 +10,9 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtCreate"
-int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
+PetscErrorCode AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
 {
-  int         ierr;
+  PetscErrorCode         ierr;
   PetscTruth  flag;
   PetscViewer binary;
   char        filename[PETSC_MAX_PATH_LEN];
@@ -75,14 +75,15 @@ Main Output of AppCCxSetLocal:
           boundary_df (df associated with boundary)                     
 
 */
-int AppCtxSetLocal(AppCtx *appctx)
+PetscErrorCode AppCtxSetLocal(AppCtx *appctx)
 {
   AOData                 ao     = appctx->aodata;
   AppGrid                *grid = &appctx->grid;
   PetscBT                vertex_boundary_flag;
   ISLocalToGlobalMapping cell_ltog;
-  int                    ierr,rstart,rend,rank,*vertices;
-  int                    i;
+  PetscErrorCode         ierr;
+  PetscInt               rstart,rend,*vertices,i;
+  PetscMPIInt            rank;
 
   MPI_Comm_rank(appctx->comm,&rank);
 
@@ -215,11 +216,11 @@ int AppCtxSetLocal(AppCtx *appctx)
 /*-----------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtDestroy"
-int AppCtxDestroy(AppCtx *appctx)
+PetscErrorCode AppCtxDestroy(AppCtx *appctx)
 {
-  int        ierr;
-  AOData     ao = appctx->aodata;
-  AppGrid    *grid = &appctx->grid;
+  PetscErrorCode ierr;
+  AOData         ao = appctx->aodata;
+  AppGrid        *grid = &appctx->grid;
 
   ierr = AODataSegmentRestoreIS(ao,"vertex","values",PETSC_NULL,(void **)&grid->vertex_value);CHKERRQ(ierr);
   ierr = AODataSegmentRestoreLocalIS(ao,"cell","vertex",PETSC_NULL,(void **)&grid->cell_vertex);CHKERRQ(ierr);

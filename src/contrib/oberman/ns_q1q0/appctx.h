@@ -9,10 +9,10 @@
 #define __APPCTX_H
 
 #include <string.h>
-#include "ao.h"
-#include "math.h"
-#include "sles.h"
-#include "snes.h"
+#include "petscao.h"
+#include "petscmath.h"
+#include "petscksp.h"
+#include "petscsnes.h"
 /*
         cell_n               - number of cells on this processor 
         cell_vertex          - vertices of the cells (in local numbering)
@@ -43,25 +43,25 @@ typedef struct {
 
   /* not needed */
   IS   isboundary_df; /* is for df on boundary */
-  int  *boundary_df; /* the corresponding array  */
+  PetscInt  *boundary_df; /* the corresponding array  */
   IS   isvertex_boundary; /* is for vertices on boundary */
-  int *vertex_boundary;
+  PetscInt *vertex_boundary;
 
   /* is and indices for boundary dfs */
 IS iswall_vdf, isinlet_vdf, isoutlet_vdf, isoutlet_pdf, isinlet_pdf;
-int  *wall_vdf, *inlet_vdf, *outlet_vdf, *outlet_pdf, *inlet_pdf;
+PetscInt  *wall_vdf, *inlet_vdf, *outlet_vdf, *outlet_pdf, *inlet_pdf;
 double *df_coords; /*  x-y  coords for each df in global numbering */
-int inlet_vcount, wall_vcount, outlet_vcount, outlet_pcount, inlet_pcount;
+PetscInt inlet_vcount, wall_vcount, outlet_vcount, outlet_pcount, inlet_pcount;
 double *inlet_coords; /* coords of vertices on the inlet */ 
 double *inlet_values; /* space for the boundary values  */
 double *outlet_values, *outlet_coords;
 double *inlet_pvalues;
   double *cell_coords;   /* coords of the vertices corresponding to each cell */ 
  /* sizes of local df (including ghosted), df on this proc, cells, vertices, ghosted vertices */
-  int df_count, vertex_boundary_count, df_local_count, cell_n, vertex_n, vertex_n_ghosted; 
+  PetscInt df_count, vertex_boundary_count, df_local_count, cell_n, vertex_n, vertex_n_ghosted; 
 
-  int *vertex_df;   /* info on DF associated to vertices */
-  int  *cell_df, *cell_vertex, *cell_cell; /* info on df, vertices, neighbours, indexed by cells */
+  PetscInt *vertex_df;   /* info on DF associated to vertices */
+  PetscInt  *cell_df, *cell_vertex, *cell_cell; /* info on df, vertices, neighbours, indexed by cells */
 
   double                 *vertex_value; /* numerical coords of the vertices */ 
   ISLocalToGlobalMapping ltog, dfltog;  /* ltog associated with vertices, degrees of freedom */
@@ -99,8 +99,8 @@ typedef struct {
 */
 
 typedef struct {
-  Draw       drawlocal;
-  Draw       drawglobal;
+  PetscDraw       drawlocal;
+  PetscDraw       drawglobal;
   PetscTruth matlabgraphics,
              show_grid,
              show_solution;
@@ -121,7 +121,7 @@ Values at the gauss points of the bilinear basis functions
 
 /* Good NS */
 typedef struct {
-  int dorhs;     /* flag to see if we are computing rhs */
+  PetscInt dorhs;     /* flag to see if we are computing rhs */
   double Values[4][4];  /* values of reference element */
   double DxValues[4][4]; /* for reference element */
   double DyValues[4][4]; /* for reference element */
@@ -153,7 +153,7 @@ typedef struct {
   DFP bc2;/* bc for v */
   double eta; /* the viscosity */
   double tweak; /* mess up initial guess */
-int vin_flag, vout_flag, pin_flag, pout_flag; /* flags for the boundary conditions */
+PetscInt vin_flag, vout_flag, pin_flag, pout_flag; /* flags for the boundary conditions */
   double penalty; /* penalty parameter */
 
   /*  int DFs;   Number of Degrees of Freedom in the Problem */
@@ -176,14 +176,14 @@ typedef struct {
 } AppCtx;
 
 
-extern int AppCtxView(Draw,void*);
-extern int AppCtxViewSolution(Draw,void*);
-extern int AppCtxCreate(MPI_Comm,AppCtx **);
-extern int AppCtxDestroy(AppCtx *);
-extern int AppCtxSetLocal(AppCtx *);
-extern int AppCtxSolve(AppCtx*);
-extern int AppCtxGraphics(AppCtx *);
-extern int AppCtxViewMatlab(AppCtx*);
+extern PetscErrorCode AppCtxView(PetscDraw,void*);
+extern PetscErrorCode AppCtxViewSolution(PetscDraw,void*);
+extern PetscErrorCode AppCtxCreate(MPI_Comm,AppCtx **);
+extern PetscErrorCode AppCtxDestroy(AppCtx *);
+extern PetscErrorCode AppCtxSetLocal(AppCtx *);
+extern PetscErrorCode AppCtxSolve(AppCtx*);
+extern PetscErrorCode AppCtxGraphics(AppCtx *);
+extern PetscErrorCode AppCtxViewMatlab(AppCtx*);
 
 
  double f(double, double); 
@@ -194,26 +194,26 @@ extern int AppCtxViewMatlab(AppCtx*);
 
 double soln(double, double);
 
-int AppCtxSetRhs(AppCtx*);
-int AppCtxCreateVector(AppCtx*);
-int AppCtxSetMatrix(AppCtx*);
-int AppCtxCreateMatrix(AppCtx*);
-int FormStationaryFunction(SNES snes, Vec x, Vec f, void *appctx);
-int FormStationaryJacobian(SNES snes, Vec x, Mat *jac, Mat *B, MatStructure *flag, void *dappctx);
-int FormDynamicFunction(SNES snes, Vec x, Vec f, void *appctx);
-int FormDynamicJacobian(SNES snes, Vec x, Mat *jac, Mat *B, MatStructure *flag, void *dappctx);
+PetscErrorCode AppCtxSetRhs(AppCtx*);
+PetscErrorCode AppCtxCreateVector(AppCtx*);
+PetscErrorCode AppCtxSetMatrix(AppCtx*);
+PetscErrorCode AppCtxCreateMatrix(AppCtx*);
+PetscErrorCode FormStationaryFunction(SNES, Vec, Vec, void *);
+PetscErrorCode FormStationaryJacobian(SNES, Vec, Mat*, Mat*, MatStructure*, void*);
+PetscErrorCode FormDynamicFunction(SNES, Vec, Vec, void *appctx);
+PetscErrorCode FormDynamicJacobian(SNES, Vec, Mat*, Mat*, MatStructure*, void*);
 
-int SetNonlinearFunction(Vec x, AppCtx *appctx, Vec f);
-int MonitorFunction(SNES snes, int its, double norm, void *mctx);
-extern int SetCentrElement(AppElement *phi, double coords[8]);  
-extern int ComputePressure( AppElement *phi, double *result);
-extern int AppCtxSetReferenceElement(AppCtx*);
-extern int AppCtxSetFunctions(AppCtx*);
-extern int SetLocalElement(AppElement *phi, double *coords);
-extern int ComputeRHS( DFP f, DFP g, AppElement *phi, double *integrals);
-extern int ComputeMatrix( AppElement *phi, double *result);
-extern int ComputeNonlinear(AppElement *phi, double *uvvals, double *result);
-extern int ComputeJacobian(AppElement *phi, double *uvvals, double *result);
+PetscErrorCode SetNonlinearFunction(Vec, AppCtx *, Vec);
+PetscErrorCode MonitorFunction(SNES, PetscInt, double, void *);
+extern PetscErrorCode SetCentrElement(AppElement *phi, double coords[8]);  
+extern PetscErrorCode ComputePressure( AppElement *phi, double *result);
+extern PetscErrorCode AppCtxSetReferenceElement(AppCtx*);
+extern PetscErrorCode AppCtxSetFunctions(AppCtx*);
+extern PetscErrorCode SetLocalElement(AppElement *phi, double *coords);
+extern PetscErrorCode ComputeRHS(DFP,DFP, AppElement*, double*);
+extern PetscErrorCode ComputeMatrix( AppElement *, double *);
+extern PetscErrorCode ComputeNonlinear(AppElement *phi, double *uvvals, double *result);
+extern PetscErrorCode ComputeJacobian(AppElement *phi, double *uvvals, double *result);
 
 #define NSTEPS 4
 #define DF 2

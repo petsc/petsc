@@ -8,8 +8,10 @@ static char help[] = "Tests application ordering.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         n,ierr,rank,size,*ispetsc,*isapp,start,N,i;
-  AO          ao;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  PetscInt       n,*ispetsc,*isapp,start,N,i;
+  AO             ao;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -38,7 +40,7 @@ int main(int argc,char **argv)
   ierr = AOPetscToApplication(ao,n,ispetsc);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (ispetsc[i] != isapp[i]) {
-      fprintf(stdout,"[%d] Problem with mapping %d to %d\n",rank,i,ispetsc[i]);
+      fprintf(stdout,"[%d] Problem with mapping %d to %d\n",rank,(int)i,(int)ispetsc[i]);
     }
   }
 
