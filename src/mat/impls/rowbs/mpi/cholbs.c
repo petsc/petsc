@@ -14,12 +14,17 @@
 int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
-
+  int ierr;
 #if defined(PETSC_USE_LOG)
   PetscReal flop1 = BSlocal_flops();
 #endif
 
   PetscFunctionBegin;
+
+  if (!mbs->blocksolveassembly) {
+    ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat);CHKERRQ(ierr);
+  }
+    
   /* Do prep work if same nonzero structure as previously factored matrix */
   if (mbs->factor == FACTOR_CHOLESKY) {
     /* Copy the nonzeros */
