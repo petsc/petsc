@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.305 2000/03/25 00:11:04 balay Exp balay $ 
+# $Id: makefile,v 1.306 2000/04/18 00:39:49 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -34,9 +34,9 @@ info:
 	-@echo "-----------------------------------------"
 	-@echo "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}"
 	-@if [ -n "${C_CCV}" -a "${C_CCV}" != "unknown" ] ; then \
-	  echo "C Compiler version:" ; echo `${C_CCV}` ; fi
+	  echo "C Compiler version:" ; ${C_CCV} ; fi
 	-@if [ -n "${CXX_CCV}" -a "${CXX_CCV}" != "unknown" ] ; then \
-	  echo "C++ Compiler version:" ;echo `${CXX_CCV}` ; fi
+	  echo "C++ Compiler version:" ; ${CXX_CCV} ; fi
 	-@echo "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}"
 	-@if [ -n "${C_FCV}" -a "${C_FCV}" != "unknown" ] ; then \
 	  echo "Fortran Compiler version:" ; ${C_FCV} ; fi
@@ -68,9 +68,9 @@ info_h:
 	-@echo  "-----------------------------------------" >> MINFO
 	-@echo  "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS} " >> MINFO
 	-@if [  "${C_CCV}" -a "${C_CCV}" != "unknown" ] ; then \
-	  echo  "C Compiler version:"  >> MINFO ; echo `${C_CCV}` >> MINFO 2>&1; fi
+	  echo  "C Compiler version:"  >> MINFO ; ${C_CCV} >> MINFO 2>&1; fi
 	-@if [  "${CXX_CCV}" -a "${CXX_CCV}" != "unknown" ] ; then \
-	  echo  "C++ Compiler version:"  >> MINFO; echo `${CXX_CCV}` >> MINFO 2>&1 ; fi
+	  echo  "C++ Compiler version:"  >> MINFO; ${CXX_CCV} >> MINFO 2>&1 ; fi
 	-@echo  "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}" >> MINFO
 	-@if [  "${C_FCV}" -a "${C_FCV}" != "unknown" ] ; then \
 	  echo  "Fortran Compiler version:" >> MINFO ; ${C_FCV} >> MINFO 2>&1 ; fi
