@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.63 1996/07/25 23:35:08 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.64 1996/08/08 14:40:48 bsmith Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -185,8 +185,8 @@ int KSPGetPreconditionerSide(KSP ksp, PCSide *side)
 }
 
 /*@
-    KSPGetTolerances - Gets the relative, absolute, divergence, and maximum
-    iteration tolerances used by the default KSP convergence testers. 
+   KSPGetTolerances - Gets the relative, absolute, divergence, and maximum
+   iteration tolerances used by the default KSP convergence tests. 
 
    Input Parameter:
 .  ksp - the Krylov subspace context
@@ -196,6 +196,9 @@ int KSPGetPreconditionerSide(KSP ksp, PCSide *side)
 .  atol - the absolute convergence tolerance
 .  dtol - the divergence tolerance
 .  maxits - maximum number of iterations
+
+   Notes:
+   The user can specify PETSC_NULL for any parameter that is not needed.
 
 .keywords: KSP, get, tolerance, absolute, relative, divergence, convergence,
 .keywords: maximum, iterations

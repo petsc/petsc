@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.81 1996/08/14 00:40:09 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.82 1996/08/19 23:03:01 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1066,21 +1066,25 @@ int SNESDestroy(SNES snes)
 
    Input Parameters:
 .  snes - the SNES context
-.  atol - tolerance
+.  atol - absolute convergence tolerance
+.  rtol - relative convergence tolerance
+.  stol -  convergence tolerance in terms of the norm
+           of the change in the solution between steps
+.  maxit - maximum number of iterations
+.  maxf - maximum number of function evaluations
 
-   Options Database Key: 
-$    -snes_atol <atol> - absolute convergence tolerance
-$    -snes_rtol <rtol> - relative convergence tolerance
-$    -snes_stol <stol> - convergence tolerance in terms of 
-$          the norm of the change in the solution between steps
-$    -snes_max_it <maxit> - maximum number of iterations
-$    -snes_max_funcs <maxf> - maximum number of function evaluations
+   Options Database Keys: 
+$    -snes_atol <atol>
+$    -snes_rtol <rtol>
+$    -snes_stol <stol>
+$    -snes_max_it <maxit>
+$    -snes_max_funcs <maxf>
 
    Notes:
    The default maximum number of iterations is 50.
    The default maximum number of function evaluations is 1000.
 
-.keywords: SNES, nonlinear, set, absolute, convergence, tolerance
+.keywords: SNES, nonlinear, set, convergence, tolerances
 
 .seealso: SNESSetTrustRegionTolerance(), SNESSetMinimizationFunctionTolerance()
 @*/
@@ -1092,6 +1096,36 @@ int SNESSetTolerances(SNES snes,double atol,double rtol,double stol,int maxit,in
   if (stol != PETSC_DEFAULT)  snes->xtol      = stol;
   if (maxit != PETSC_DEFAULT) snes->max_its   = maxit;
   if (maxf != PETSC_DEFAULT)  snes->max_funcs = maxf;
+  return 0;
+}
+
+/*@
+   SNESGetTolerances - Gets various parameters used in convergence tests.
+
+   Input Parameters:
+.  snes - the SNES context
+.  atol - absolute convergence tolerance
+.  rtol - relative convergence tolerance
+.  stol -  convergence tolerance in terms of the norm
+           of the change in the solution between steps
+.  maxit - maximum number of iterations
+.  maxf - maximum number of function evaluations
+
+   Notes:
+   The user can specify PETSC_NULL for any parameter that is not needed.
+
+.keywords: SNES, nonlinear, get, convergence, tolerances
+
+.seealso: SNESSetTolerances()
+@*/
+int SNESGetTolerances(SNES snes,double *atol,double *rtol,double *stol,int *maxit,int *maxf)
+{
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  if (atol)  *atol  = snes->atol;
+  if (rtol)  *rtol  = snes->rtol;
+  if (stol)  *stol  = snes->xtol;
+  if (maxit) *maxit = snes->max_its;
+  if (maxf)  *maxf  = snes->max_funcs;
   return 0;
 }
 
