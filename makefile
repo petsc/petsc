@@ -16,7 +16,7 @@ CONFIGURE_OPTIONS      = $(shell cat $(CONFIGURE_OPTIONS_FILE))
 CONFIGURE_LOG_FILE     = configure_petsc.log
 AUTOMAKE_ADD_FILES     = config/config.guess config/config.sub config/install-sh config/missing config/mkinstalldirs \
                          config/ltconfig config/ltmain.sh
-BMAKE_TEMPLATE_FILES   = bmake/config/packages.in bmake/config/rules.in bmake/config/variables.in bmake/config/petscfix.h.in
+BMAKE_TEMPLATE_FILES   = bmake/config/packages.in bmake/config/rules.in bmake/config/variables.in
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
