@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.94 1996/08/23 22:21:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.95 1996/09/14 03:08:23 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -534,7 +534,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerGetFormat(viewer,&format);
-    if (format == ASCII_FORMAT_INFO || format == ASCII_FORMAT_INFO_DETAILED) {
+    if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       int nline = PetscMin(10,mbd->gnd), k, nk, np;
       PetscFPrintf(mat->comm,fd,"  block size=%d, total number of diagonals=%d\n",
                    dmat->bs,mbd->gnd);
@@ -546,7 +546,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
           PetscFPrintf(mat->comm,fd,"  %d",mbd->gdiag[i+nline*k]);
         PetscFPrintf(mat->comm,fd,"\n");        
       }
-      if (format == ASCII_FORMAT_INFO_DETAILED) {
+      if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
         MatInfo info;
         int rank;
         MPI_Comm_rank(mat->comm,&rank);
@@ -839,7 +839,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
   if (nd == PETSC_DEFAULT) nd = 0;
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg1); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd,&flg1); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag_dvals",&flg2); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag_diags",&flg2); CHKERRQ(ierr);
   if (nd && diag == PETSC_NULL) {
     diag = (int *)PetscMalloc(nd * sizeof(int)); CHKPTRQ(diag);
     nd2 = nd; dset = 1;

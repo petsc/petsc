@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.114 1996/08/22 20:06:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.115 1996/09/14 03:08:18 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -945,7 +945,8 @@ static int MatRelax_SeqBDiag_N(Mat A,Vec bb,double omega,MatSORType flag,
                 sum -= dv[kbase + j*bs + i] * x[(k-diag)*bs + j];
             }
 	  }
-          x[kloc+i] = (1. - omega)*x[kloc+i] + omega*(sum/dval + x[kloc+i]);
+          x[kloc+i] = (1. - omega)*x[kloc+i] + 
+                      omega*(sum + dd[i*(bs+1)+kbase]*x[kloc+i])/dval;
         }
       }
     }
@@ -973,7 +974,8 @@ static int MatRelax_SeqBDiag_N(Mat A,Vec bb,double omega,MatSORType flag,
                 sum -= dv[kbase + j*bs + i] * x[(k-diag)*bs + j];
             }
           }
-          x[kloc+i] = (1. - omega)*x[kloc+i] + omega*(sum/dval + x[kloc+i]);
+          x[kloc+i] = (1. - omega)*x[kloc+i] + 
+                      omega*(sum + dd[i*(bs+1)+kbase]*x[kloc+i])/dval;
         }
       }
     }
@@ -1048,7 +1050,7 @@ static int MatRelax_SeqBDiag_1(Mat A,Vec bb,double omega,MatSORType flag,
           diag = a->diag[d];
           if (i-diag < m) sum -= a->diagv[d][i] * x[i-diag];
         }
-        x[i] = (1. - omega)*x[i] + omega*(sum/dval + x[i]);
+        x[i] = (1. - omega)*x[i] + omega*(sum + dd[i]*x[i])/dval;
       }
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
@@ -1062,7 +1064,7 @@ static int MatRelax_SeqBDiag_1(Mat A,Vec bb,double omega,MatSORType flag,
           diag = a->diag[d];
           if (i-diag < m) sum -= a->diagv[d][i] * x[i-diag];
         }
-        x[i] = (1. - omega)*x[i] + omega*(sum/(shift + dd[i]) + x[i]);
+        x[i] = (1. - omega)*x[i] + omega*(sum + dd[i]*x[i])/(shift + dd[i]);
       }
     }
   }
@@ -1487,7 +1489,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
-  if (format == ASCII_FORMAT_INFO || format == ASCII_FORMAT_INFO_DETAILED) {
+  if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     int nline = PetscMin(10,a->nd), k, nk, np;
     if (a->user_alloc)
       fprintf(fd,"  block size=%d, number of diagonals=%d, user-allocated storage\n",bs,a->nd);
@@ -1502,7 +1504,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
       fprintf(fd,"\n");        
     }
   }
-  else if (format == ASCII_FORMAT_MATLAB) {
+  else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
     fprintf(fd,"%% Size = %d %d \n",nr, a->n);
     fprintf(fd,"%% Nonzeros = %d \n",a->nz);
     fprintf(fd,"zzz = zeros(%d,3);\n",a->nz);
@@ -1522,7 +1524,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
     }
     fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
   } 
-  else if (format == ASCII_FORMAT_IMPL) {
+  else if (format == VIEWER_FORMAT_ASCII_IMPL) {
     if (bs == 1) { /* diagonal format */
       for (i=0; i<a->nd; i++) {
         dv   = a->diagv[i];
@@ -1618,7 +1620,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
       }
     }
   } else {
-    /* the usual row format (ASCII_FORMAT_NONZERO_ONLY) */
+    /* the usual row format (VIEWER_FORMAT_ASCII_NONZERO_ONLY) */
     for (i=0; i<a->m; i++) {
       fprintf(fd,"row %d:",i);
       ierr = MatGetRow(A,i,&nz,&col,&val); CHKERRQ(ierr);
@@ -1786,7 +1788,7 @@ int MatPrintHelp_SeqBDiag(Mat A)
   PetscPrintf(comm," Options for MATSEQBDIAG and MATMPIBDIAG matrix formats:\n");
   PetscPrintf(comm,"  -mat_block_size <block_size>\n");
   PetscPrintf(comm,"  -mat_bdiag_diags <d1,d2,d3,...> (diagonal numbers)\n"); 
-  PetscPrintf(comm,"   (for example) -mat_bdiag_dvals -5,-1,0,1,5\n"); 
+  PetscPrintf(comm,"   (for example) -mat_bdiag_diags -5,-1,0,1,5\n"); 
   return 0;
 }
 
