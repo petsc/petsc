@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.55 1996/04/12 17:43:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.56 1996/04/20 04:18:56 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -612,19 +612,28 @@ int KSPGetConvergenceContext(KSP ksp, void **ctx)
 
 /*@C
    KSPBuildSolution - Builds the approximate solution in a vector provided.
+         NOT COMMONLY NEEDED (see SLESSolve()).
 
    Input Parameter:
 .  ctx - iterative context obtained from KSPCreate()
 
    Output Parameter:
 .  v - optional location to stash solution.  If v is not provided,
-       then a default location is used. This vector should NOT be 
-       destroyed by the user.
-.  V - the solution
+       then a default location is used. 
+.  V - the solution is returned in this vector. This vector should NOT be 
+       destroyed by the user with a VecDestroy().
 
    Notes:
-   Regardless of whether or not v is provided, the solution is 
-   returned in V.
+    This routine must be called after SLESSolve().
+    This routine can be used in one of two ways
+$  KSPBuildSolution(ctx,PETSC_NULL,&V) or
+$  KSPBuildSolution(ctx,v,&v); 
+   In the first case an internal vector is allocated to store the solution
+   (you cannot destroy this vector). In the second case the solution
+   is generated in the vector that you provide. Note that for certain 
+   methods, like KSPCG, the second case requires a copy of the solution,
+   while in the first case the call is essentially free since it simply 
+   returns the vector where the solution already is. 
 
 .keywords: KSP, build, solution
 
@@ -633,6 +642,7 @@ int KSPGetConvergenceContext(KSP ksp, void **ctx)
 int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
 {
   PetscValidHeaderSpecific(ctx,KSP_COOKIE);
+  if (!V) SETERRQ(1,"KSPBuildSolution:User must provide third argument");
   return (*ctx->buildsolution)(ctx,v,V);
 }
 
