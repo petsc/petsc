@@ -1,4 +1,4 @@
-/* $Id: petscis.h,v 1.58 2001/01/15 21:44:24 bsmith Exp bsmith $ */
+/* $Id: petscis.h,v 1.59 2001/01/17 19:43:59 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -10,6 +10,15 @@
 
 #define IS_COOKIE PETSC_COOKIE+2
 
+/*S
+     IS - Abstract PETSc object that indexing.
+
+   Level: beginner
+
+  Concepts: indexing, stride
+
+.seealso:  ISCreateGeneral(), ISCreateBlock(), ISCreateStride(), ISGetIndices(), ISDestroy()
+S*/
 typedef struct _p_IS* IS;
 
 /*
@@ -54,11 +63,14 @@ EXTERN int   ISDuplicate(IS,IS*);
 EXTERN int   ISAllGather(IS,IS*);
 
 /* --------------------------------------------------------------------------*/
+#define IS_LTOGM_COOKIE PETSC_COOKIE+12
 
-/*
-   ISLocalToGlobalMappings are mappings from an arbitrary
-  local ordering from 0 to n-1 to a global PETSc ordering 
-  used by a vector or matrix.
+/*S
+   ISLocalToGlobalMappings - mappings from an arbitrary
+      local ordering from 0 to n-1 to a global PETSc ordering 
+      used by a vector or matrix.
+
+   Level: intermediate
 
    Note: mapping from Local to Global is scalable; but Global
   to Local may not be if the range of global values represented locally
@@ -67,9 +79,9 @@ EXTERN int   ISAllGather(IS,IS*);
    Note: the ISLocalToGlobalMapping is actually a private object; it is included
   here for the MACRO ISLocalToGlobalMappingApply() to allow it to be inlined since
   it is used so often.
-*/
-#define IS_LTOGM_COOKIE PETSC_COOKIE+12
 
+.seealso:  ISLocalToGlobalMappingCreate()
+S*/
 struct _p_ISLocalToGlobalMapping{
   PETSCHEADER(int)
   int n;                  /* number of local indices */
@@ -79,6 +91,18 @@ struct _p_ISLocalToGlobalMapping{
   int *globals;           /* local index for each global index between start and end */
 };
 typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
+
+/*E
+    ISGlobalToLocalMappingType - Indicates if missing global indices are 
+
+   IS_GTOLM_MASK - missing global indices are replaced with -1
+   IS_GTOLM_DROP - missing global indices are dropped
+
+   Level: beginner
+
+.seealso: ISGlobalToLocalMappingApply()
+
+E*/
 typedef enum {IS_GTOLM_MASK,IS_GTOLM_DROP} ISGlobalToLocalMappingType;
 
 EXTERN int ISLocalToGlobalMappingCreate(MPI_Comm,int,const int[],ISLocalToGlobalMapping*);
@@ -103,15 +127,25 @@ EXTERN int ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,int,ISLocalToGloba
 }
 
 /* --------------------------------------------------------------------------*/
+/*S
+     ISColorings - sets of IS's that define a coloring
+              of the underlying indices
 
-/*
-     ISColorings are sets of IS's that define a coloring
-   of the underlying indices
-*/
+   Level: intermediate
+
+    Notes:
+        One should not access the is records below because they may not yet 
+    have been created. One should use ISColoringGetIS() to make sure they are 
+    created when needed.
+
+.seealso:  ISColoringCreate(), ISColoringGetIS(), ISColoringView(), ISColoringGetIS()
+S*/
 struct _p_ISColoring {
-  int      n;
-  IS       *is;
+  int      n;                /* number of colors */
+  IS       *is;              /* for each color indicates columns */
   MPI_Comm comm;
+  int      *colors;          /* for each column indicates color */
+  int      N;                /* number of columns */
 };
 typedef struct _p_ISColoring* ISColoring;
 
