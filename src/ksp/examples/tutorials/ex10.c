@@ -51,7 +51,7 @@ int main(int argc,char **args)
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   PetscScalar    zero = 0.0,none = -1.0;
-  PetscTruth     preload=PETSC_TRUE,diagonalscale,isSymmetric,cknorm=PETSC_FALSE;
+  PetscTruth     preload=PETSC_TRUE,diagonalscale,isSymmetric,cknorm=PETSC_FALSE,Test_MatDuplicate=PETSC_FALSE;
   int            num_numfac;
   PetscScalar    sigma;
 
@@ -118,6 +118,16 @@ int main(int argc,char **args)
       ierr = VecSet(&one,b);CHKERRQ(ierr);
     }
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+
+    /* Test MatDuplicate() */
+    if (Test_MatDuplicate){
+      ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+      ierr = MatEqual(A,B,&flg);CHKERRQ(ierr);
+      if (!flg){
+        PetscPrintf(PETSC_COMM_WORLD,"  A != B \n");CHKERRQ(ierr);
+      } 
+      ierr = MatDestroy(B);CHKERRQ(ierr); 
+    }
 
     /* Add a shift to A */
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-mat_sigma",&sigma,&flg);CHKERRQ(ierr);
