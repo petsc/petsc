@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.65 1999/04/01 22:21:17 balay Exp balay $ 
+# $Id: builddist,v 1.66 1999/04/01 22:23:36 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -29,14 +29,14 @@ make ACTION=clean tree
 #/bin/rm -f ~/petsc
 #
 cd /home/bsmith
-tar cFFXf /home/bsmith/petsc/maint/xclude /mcs/tmp/petsc.tar petsc
+tar cFFXf /home/bsmith/petsc/maint/xclude /sandbox/petsc/tmp/petsc.tar petsc
 #
-cd /mcs/tmp
-tar xf /mcs/tmp/petsc.tar
+cd /sandbox/petsc/tmp
+tar xf /sandbox/petsc/tmp/petsc.tar
 #
 # Before Creating the tarfile, make changes to the bmakefiles/makefiles,
 # create tagfiles etc. permissions etc.
-cd /mcs/tmp/petsc
+cd /sandbox/petsc/tmp/petsc
 
 # Eliminate chmods in the makefile
 /bin/mv makefile makefile.bak
@@ -71,24 +71,24 @@ foreach i (bmake/*/base.site)
 end
 
 # Set the correct file permissions.
-cd /mcs/tmp
+cd /sandbox/petsc/tmp
 chmod -R a-w petsc
 chmod -R u+w petsc
 chmod -R a+r petsc
 find petsc -type d -name "*" -exec chmod a+x {} \;
 
 
-/bin/rm -f /mcs/tmp/petsc.tar
+/bin/rm -f /sandbox/petsc/tmp/petsc.tar
 if ($#argv == 1) then
   mv petsc petsc$version
 endif
 
 
-tar cf /mcs/tmp/petsc$version.tar petsc$version
-/bin/rm -r -f /mcs/tmp/petsc$version
-gzip -f /mcs/tmp/petsc$version.tar
-/bin/cp /mcs/tmp/petsc$version.tar.gz ~/
-/bin/rm -f /mcs/tmp/petsc$version.tar.gz
+tar cf /sandbox/petsc/tmp/petsc$version.tar petsc$version
+/bin/rm -r -f /sandbox/petsc/tmp/petsc$version
+gzip -f /sandbox/petsc/tmp/petsc$version.tar
+/bin/cp /sandbox/petsc/tmp/petsc$version.tar.gz ~/
+/bin/rm -f /sandbox/petsc/tmp/petsc$version.tar.gz
 chmod ug+w ~/petsc$version.tar.gz
 #
 #  To test locally and build petsc.solid

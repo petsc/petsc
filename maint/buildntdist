@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.32 1999/02/03 23:17:26 balay Exp balay $ 
+# $Id: buildntdist,v 1.33 1999/02/04 19:34:40 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -9,33 +9,33 @@ else
   set version=""
 endif
 
-/bin/rm -r -f /mcs/tmp/petscnt
-/bin/rm -f /mcs/tmp/petscnt.tar
+/bin/rm -r -f /sandbox/petsc/tmp/petscnt
+/bin/rm -f /sandbox/petsc/tmp/petscnt.tar
 setenv PETSC_DIR /home/bsmith/petsc
 cd /home/bsmith/petsc
 make ACTION=clean tree
 
 cd /home/bsmith
-tar cFFXf /home/bsmith/petsc/maint/xclude /mcs/tmp/petscnt.tar petsc
+tar cFFXf /home/bsmith/petsc/maint/xclude /sandbox/petsc/tmp/petscnt.tar petsc
 
 #
 #   Gets the C version of BLAS and LAPACK (these are excluded by the 
 #   regular PETSc distribution hence we need to tar them up seperately
 #
 cd /home/bsmith/petsc/src
-tar cFFXf /home/bsmith/petsc/maint/xcludecblas /mcs/tmp/cblas.tar blaslapack
+tar cFFXf /home/bsmith/petsc/maint/xcludecblas /sandbox/petsc/tmp/cblas.tar blaslapack
 
 
-mkdir /mcs/tmp/petscnt
-cd /mcs/tmp/petscnt
-tar xf /mcs/tmp/petscnt.tar
+mkdir /sandbox/petsc/tmp/petscnt
+cd /sandbox/petsc/tmp/petscnt
+tar xf /sandbox/petsc/tmp/petscnt.tar
 
-cd /mcs/tmp/petscnt/petsc/src
-tar xf /mcs/tmp/cblas.tar
+cd /sandbox/petsc/tmp/petscnt/petsc/src
+tar xf /sandbox/petsc/tmp/cblas.tar
 
-cd /mcs/tmp/petscnt/petsc
+cd /sandbox/petsc/tmp/petscnt/petsc
 /bin/rm -rf bin
-find /mcs/tmp/petscnt -type d -name output -exec /bin/rm -rf {} \;
+find /sandbox/petsc/tmp/petscnt -type d -name output -exec /bin/rm -rf {} \;
 /bin/rm -rf bmake/alpha* bmake/sun4* bmake/solaris* bmake/hpux 
 /bin/rm -rf bmake/paragon bmake/rs6000* bmake/freebsd* bmake/linux 
 /bin/rm -rf bmake/nt_gnu bmake/t3d bmake/t3e bmake/IRIX* bmake/i386*
@@ -45,27 +45,27 @@ find /mcs/tmp/petscnt -type d -name output -exec /bin/rm -rf {} \;
 #
 # Build the tag files
 #
-cd /mcs/tmp/petscnt/petsc
+cd /sandbox/petsc/tmp/petscnt/petsc
 make etags etags_examples TAGSDIR=`pwd`
 /bin/cp -f bmake/win32/makefile.dos makefile
 
-cd /mcs/tmp/petscnt
+cd /sandbox/petsc/tmp/petscnt
 chmod -R u+w petsc
-/home/bsmith/petsc/maint/makecpp.tcl /mcs/tmp/petscnt/petsc
+/home/bsmith/petsc/maint/makecpp.tcl /sandbox/petsc/tmp/petscnt/petsc
 
-/bin/rm -f /mcs/tmp/petscnt.tar /mcs/tmp/cblas.tar
+/bin/rm -f /sandbox/petsc/tmp/petscnt.tar /sandbox/petsc/tmp/cblas.tar
 
 
-cd /mcs/tmp/petscnt
+cd /sandbox/petsc/tmp/petscnt
 if ($#argv == 1) then
   mv petsc petsc$version
 endif
 
-tar cf /mcs/tmp/petscnt$version.tar petsc$version
+tar cf /sandbox/petsc/tmp/petscnt$version.tar petsc$version
 cd ~/
-/bin/rm -r -f /mcs/tmp/petscnt
+/bin/rm -r -f /sandbox/petsc/tmp/petscnt
 
-gzip -f /mcs/tmp/petscnt$version.tar
-/bin/cp /mcs/tmp/petscnt$version.tar.gz ~/
+gzip -f /sandbox/petsc/tmp/petscnt$version.tar
+/bin/cp /sandbox/petsc/tmp/petscnt$version.tar.gz ~/
 chmod ug+w ~/petscnt$version.tar.gz 
-/bin/rm -f /mcs/tmp/petscnt$version.tar.gz
+/bin/rm -f /sandbox/petsc/tmp/petscnt$version.tar.gz
