@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.13 1996/10/24 17:27:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: zvec.c,v 1.14 1996/10/24 20:46:12 curfman Exp curfman $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -19,7 +19,6 @@ static char vcid[] = "$Id: zvec.c,v 1.13 1996/10/24 17:27:24 bsmith Exp curfman 
 #define vecload_              VECLOAD
 #define vecgettype_           VECGETTYPE
 #define vecduplicatevecs_     VECDUPLICATEVECS
-#define vecdestroyvecs_       VECDESTROYVECS
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define veccreateseq_         veccreateseq
 #define veccreate_            veccreate
@@ -35,7 +34,6 @@ static char vcid[] = "$Id: zvec.c,v 1.13 1996/10/24 17:27:24 bsmith Exp curfman 
 #define vecload_              vecload
 #define vecgettype_           vecgettype
 #define vecduplicatevecs_     vecduplicatevecs
-#define vecdestroyvecs_       vecddestroyvecs
 #endif
 
 #if defined(__cplusplus)
@@ -95,15 +93,6 @@ void vecdestroy_(Vec v, int *__ierr )
    PetscRmPointer(*(int*)(v)); 
 }
 
-void vecdestroyvecs_(Vec *v,int *m,int *__ierr )
-{
-  int i;
-  for (i=0; i<*m; i++) {
-    *__ierr = VecDestroy((Vec)PetscToPointer( *(int*)(v[i]) ));
-    PetscRmPointer(*(int*)(v[i])); 
-  }
-}
-
 void vecscattercreate_(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx, int *__ierr )
 {
   VecScatter lV;
@@ -149,17 +138,32 @@ void vecduplicate_(Vec v,Vec *newv, int *__ierr )
   *(int*)newv = PetscFromPointer(lV);
 }
 
-void vecduplicatevecs_(Vec v,int *m,int *newv, int *__ierr )
+void vecduplicatevecs_(Vec v,int *m,PetscObject newv1, int *__ierr )
 {
   Vec *lV;
-  int i;
+  int i, *newv;
+
+  /*  newv = (int *)PetscToPointer( *(int*)(newv1) ); */
+  newv = (int *)newv1;
   *__ierr = VecDuplicateVecs((Vec)PetscToPointer( *(int*)(v) ),*m,&lV);
   for (i=0; i<*m; i++) {
-    if (!&newv[i]) {
-      fprintf(stderr,"vecduplicatevecs_: Must allocate array for vectors!");
-      *__ierr = 1; return;
-    }
     newv[i] = PetscFromPointer(lV[i]);
+  }
+  PetscFree(lV); 
+}
+
+void vecdestroyvecs_(PetscObject v1,int *m,int *__ierr )
+{
+  int i, *vecs;
+
+  vecs = (int *)v1;
+  if (*m <= 0) {
+    *__ierr = PetscError(__LINE__,__DIR__,__FILE__,1,"vecdestroyvecs_: m must be > 0!");
+    return;
+  }   
+  for (i=0; i<*m; i++) {
+    *__ierr = VecDestroy((Vec)PetscToPointer(vecs[i]));
+    PetscRmPointer(vecs[i]); 
   }
 }
 
