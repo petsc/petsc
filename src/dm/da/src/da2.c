@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.157 2001/03/09 19:18:14 balay Exp balay $*/
+/*$Id: da2.c,v 1.158 2001/03/09 19:18:41 balay Exp balay $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -629,7 +629,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   for (i=0; i<y; i++) {
     if (n3 >= 0) { /* directly left */
       x_t = lx[n3 % m]*dof;
-      y_t = y;
+      /* y_t = y; */
       s_t = bases[n3] + (i+1)*x_t - s_x;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
@@ -638,7 +638,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
     if (n5 >= 0) { /* directly right */
       x_t = lx[n5 % m]*dof;
-      y_t = y;
+      /* y_t = y; */
       s_t = bases[n5] + (i)*x_t;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
@@ -647,19 +647,19 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   for (i=1; i<=s_y; i++) {
     if (n6 >= 0) { /* left above */
       x_t = lx[n6 % m]*dof;
-      y_t = ly[(n6/m)];
+      /* y_t = ly[(n6/m)]; */
       s_t = bases[n6] + (i)*x_t - s_x;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
     if (n7 >= 0) { /* directly above */
       x_t = x;
-      y_t = ly[(n7/m)];
+      /* y_t = ly[(n7/m)]; */
       s_t = bases[n7] + (i-1)*x_t;
       for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
     }
     if (n8 >= 0) { /* right above */
       x_t = lx[n8 % m]*dof;
-      y_t = ly[(n8/m)];
+      /* y_t = ly[(n8/m)]; */
       s_t = bases[n8] + (i-1)*x_t;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
@@ -706,7 +706,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     for (i=0; i<y; i++) {
       if (n3 >= 0) { /* directly left */
         x_t = lx[n3 % m]*dof;
-        y_t = y;
+        /* y_t = y; */
         s_t = bases[n3] + (i+1)*x_t - s_x;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -715,7 +715,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
       if (n5 >= 0) { /* directly right */
         x_t = lx[n5 % m]*dof;
-        y_t = y;
+        /* y_t = y; */
         s_t = bases[n5] + (i)*x_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -724,19 +724,19 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     for (i=1; i<=s_y; i++) {
       if (n6 >= 0) { /* left above */
         x_t = lx[n6 % m]*dof;
-        y_t = ly[(n6/m)];
+        /* y_t = ly[(n6/m)]; */
         s_t = bases[n6] + (i)*x_t - s_x;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n7 >= 0) { /* directly above */
         x_t = x;
-        y_t = ly[(n7/m)];
+        /* y_t = ly[(n7/m)]; */
         s_t = bases[n7] + (i-1)*x_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n8 >= 0) { /* right above */
         x_t = lx[n8 % m]*dof;
-        y_t = ly[(n8/m)];
+        /* y_t = ly[(n8/m)]; */
         s_t = bases[n8] + (i-1)*x_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -865,7 +865,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   for (i=0; i<y; i++) {
     if (n3 >= 0) { /* directly left */
       x_t = lx[n3 % m]*dof;
-      y_t = y;
+      /* y_t = y; */
       s_t = bases[n3] + (i+1)*x_t - s_x;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
@@ -874,7 +874,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
     if (n5 >= 0) { /* directly right */
       x_t = lx[n5 % m]*dof;
-      y_t = y;
+      /* y_t = y; */
       s_t = bases[n5] + (i)*x_t;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
@@ -883,13 +883,13 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   for (i=1; i<=s_y; i++) {
     if (n6 >= 0) { /* left above */
       x_t = lx[n6 % m]*dof;
-      y_t = ly[(n6/m)];
+      /* y_t = ly[(n6/m)]; */
       s_t = bases[n6] + (i)*x_t - s_x;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
     if (n7 >= 0) { /* directly above */
       x_t = x;
-      y_t = ly[(n7/m)];
+      /* y_t = ly[(n7/m)]; */
       s_t = bases[n7] + (i-1)*x_t;
       for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
     }

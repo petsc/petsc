@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.127 2001/01/19 23:22:22 balay Exp balay $*/
+/*$Id: da3.c,v 1.128 2001/03/09 19:18:44 balay Exp balay $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -840,21 +840,21 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n9 >= 0) { /* left below */
         x_t = lx[n9 % m]*dof;
         y_t = ly[(n9 % (m*n))/m];
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n9] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n10 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n10 % (m*n))/m]; 
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n11 >= 0) { /* right below */
         x_t = lx[n11 % m]*dof;
         y_t = ly[(n11 % (m*n))/m];
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n11] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -864,7 +864,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n12 >= 0) { /* directly left */
         x_t = lx[n12 % m]*dof;
         y_t = y;
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -876,7 +876,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n14 >= 0) { /* directly right */
         x_t = lx[n14 % m]*dof;
         y_t = y;
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n14] + i*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -886,21 +886,21 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n15 >= 0) { /* left above */
         x_t = lx[n15 % m]*dof; 
         y_t = ly[(n15 % (m*n))/m];
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n15] + i*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n16 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n16 % (m*n))/m];
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n17 >= 0) { /* right above */
         x_t = lx[n17 % m]*dof;
         y_t = ly[(n17 % (m*n))/m]; 
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n17] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -913,21 +913,21 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n18 >= 0) { /* left below */
         x_t = lx[n18 % m]*dof;
         y_t = ly[(n18 % (m*n))/m]; 
-        z_t = lz[n18 / (m*n)]; 
+        /* z_t = lz[n18 / (m*n)]; */
         s_t = bases[n18] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n19 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n19 % (m*n))/m]; 
-        z_t = lz[n19 / (m*n)]; 
+        /* z_t = lz[n19 / (m*n)]; */
         s_t = bases[n19] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n20 >= 0) { /* right below */
         x_t = lx[n20 % m]*dof;
         y_t = ly[(n20 % (m*n))/m];
-        z_t = lz[n20 / (m*n)];
+        /* z_t = lz[n20 / (m*n)]; */
         s_t = bases[n20] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -937,7 +937,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n21 >= 0) { /* directly left */
         x_t = lx[n21 % m]*dof;
         y_t = y;
-        z_t = lz[n21 / (m*n)];
+        /* z_t = lz[n21 / (m*n)]; */
         s_t = bases[n21] + (i+1)*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -945,7 +945,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n22 >= 0) { /* middle */
         x_t = x;
         y_t = y;
-        z_t = lz[n22 / (m*n)];
+        /* z_t = lz[n22 / (m*n)]; */
         s_t = bases[n22] + i*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
@@ -953,7 +953,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n23 >= 0) { /* directly right */
         x_t = lx[n23 % m]*dof;
         y_t = y;
-        z_t = lz[n23 / (m*n)];
+        /* z_t = lz[n23 / (m*n)]; */
         s_t = bases[n23] + i*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -963,21 +963,21 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n24 >= 0) { /* left above */
         x_t = lx[n24 % m]*dof;
         y_t = ly[(n24 % (m*n))/m]; 
-        z_t = lz[n24 / (m*n)]; 
+        /* z_t = lz[n24 / (m*n)]; */
         s_t = bases[n24] + i*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n25 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n25 % (m*n))/m];
-        z_t = lz[n25 / (m*n)];
+        /* z_t = lz[n25 / (m*n)]; */
         s_t = bases[n25] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n26 >= 0) { /* right above */
         x_t = lx[n26 % m]*dof;
         y_t = ly[(n26 % (m*n))/m]; 
-        z_t = lz[n26 / (m*n)];
+        /* z_t = lz[n26 / (m*n)]; */
         s_t = bases[n26] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1096,21 +1096,21 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         if (n9 >= 0) { /* left below */
           x_t = lx[n9 % m]*dof;
           y_t = ly[(n9 % (m*n))/m];
-          z_t = z;
+          /* z_t = z; */
           s_t = bases[n9] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n10 >= 0) { /* directly below */
           x_t = x;
           y_t = ly[(n10 % (m*n))/m]; 
-          z_t = z;
+          /* z_t = z; */
           s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n11 >= 0) { /* right below */
           x_t = lx[n11 % m]*dof;
           y_t = ly[(n11 % (m*n))/m];
-          z_t = z;
+          /* z_t = z; */
           s_t = bases[n11] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1120,7 +1120,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         if (n12 >= 0) { /* directly left */
           x_t = lx[n12 % m]*dof;
           y_t = y;
-          z_t = z;
+          /* z_t = z; */
           s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1132,7 +1132,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         if (n14 >= 0) { /* directly right */
           x_t = lx[n14 % m]*dof;
           y_t = y;
-          z_t = z;
+          /* z_t = z; */
           s_t = bases[n14] + i*x_t + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1142,21 +1142,21 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         if (n15 >= 0) { /* left above */
           x_t = lx[n15 % m]*dof; 
           y_t = ly[(n15 % (m*n))/m];
-          z_t = z;
+          /* z_t = z; */
           s_t = bases[n15] + i*x_t - s_x + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n16 >= 0) { /* directly above */
           x_t = x;
           y_t = ly[(n16 % (m*n))/m];
-          z_t = z;
+          /* z_t = z; */
           s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n17 >= 0) { /* right above */
           x_t = lx[n17 % m]*dof;
           y_t = ly[(n17 % (m*n))/m]; 
-          z_t = z;
+          /* z_t = z; */
           s_t = bases[n17] + (i-1)*x_t + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1169,21 +1169,21 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         if (n18 >= 0) { /* left below */
           x_t = lx[n18 % m]*dof;
           y_t = ly[(n18 % (m*n))/m]; 
-          z_t = lz[n18 / (m*n)]; 
+          /* z_t = lz[n18 / (m*n)]; */
           s_t = bases[n18] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n19 >= 0) { /* directly below */
           x_t = x;
           y_t = ly[(n19 % (m*n))/m]; 
-          z_t = lz[n19 / (m*n)]; 
+          /* z_t = lz[n19 / (m*n)]; */
           s_t = bases[n19] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n20 >= 0) { /* right below */
           x_t = lx[n20 % m]*dof;
           y_t = ly[(n20 % (m*n))/m];
-          z_t = lz[n20 / (m*n)];
+          /* z_t = lz[n20 / (m*n)]; */
           s_t = bases[n20] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1193,7 +1193,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         if (n21 >= 0) { /* directly left */
           x_t = lx[n21 % m]*dof;
           y_t = y;
-          z_t = lz[n21 / (m*n)];
+          /* z_t = lz[n21 / (m*n)]; */
           s_t = bases[n21] + (i+1)*x_t - s_x + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1201,7 +1201,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         if (n22 >= 0) { /* middle */
           x_t = x;
           y_t = y;
-          z_t = lz[n22 / (m*n)];
+          /* z_t = lz[n22 / (m*n)]; */
           s_t = bases[n22] + i*x_t + k*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
@@ -1209,7 +1209,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         if (n23 >= 0) { /* directly right */
           x_t = lx[n23 % m]*dof;
           y_t = y;
-          z_t = lz[n23 / (m*n)];
+          /* z_t = lz[n23 / (m*n)]; */
           s_t = bases[n23] + i*x_t + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1219,21 +1219,21 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         if (n24 >= 0) { /* left above */
           x_t = lx[n24 % m]*dof;
           y_t = ly[(n24 % (m*n))/m]; 
-          z_t = lz[n24 / (m*n)]; 
+          /* z_t = lz[n24 / (m*n)]; */
           s_t = bases[n24] + i*x_t - s_x + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n25 >= 0) { /* directly above */
           x_t = x;
           y_t = ly[(n25 % (m*n))/m];
-          z_t = lz[n25 / (m*n)];
+          /* z_t = lz[n25 / (m*n)]; */
           s_t = bases[n25] + (i-1)*x_t + k*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n26 >= 0) { /* right above */
           x_t = lx[n26 % m]*dof;
           y_t = ly[(n26 % (m*n))/m]; 
-          z_t = lz[n26 / (m*n)];
+          /* z_t = lz[n26 / (m*n)]; */
           s_t = bases[n26] + (i-1)*x_t + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1556,21 +1556,21 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n9 >= 0) { /* left below */
         x_t = lx[n9 % m]*dof;
         y_t = ly[(n9 % (m*n))/m];
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n9] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n10 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n10 % (m*n))/m];
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n11 >= 0) { /* right below */
         x_t = lx[n11 % m]*dof;
         y_t = ly[(n11 % (m*n))/m];
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n11] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1580,7 +1580,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n12 >= 0) { /* directly left */
         x_t = lx[n12 % m]*dof;
         y_t = y;
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1592,7 +1592,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n14 >= 0) { /* directly right */
         x_t = lx[n14 % m]*dof;
         y_t = y;
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n14] + i*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1602,21 +1602,21 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n15 >= 0) { /* left above */
         x_t = lx[n15 % m]*dof;
         y_t = ly[(n15 % (m*n))/m];
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n15] + i*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n16 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n16 % (m*n))/m];
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n17 >= 0) { /* right above */
         x_t = lx[n17 % m]*dof;
         y_t = ly[(n17 % (m*n))/m];
-        z_t = z;
+        /* z_t = z; */
         s_t = bases[n17] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1629,21 +1629,21 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n18 >= 0) { /* left below */
         x_t = lx[n18 % m]*dof;
         y_t = ly[(n18 % (m*n))/m];
-        z_t = lz[n18 / (m*n)];
+        /* z_t = lz[n18 / (m*n)]; */
         s_t = bases[n18] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n19 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n19 % (m*n))/m];
-        z_t = lz[n19 / (m*n)];
+        /* z_t = lz[n19 / (m*n)]; */
         s_t = bases[n19] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n20 >= 0) { /* right belodof */
         x_t = lx[n20 % m]*dof;
         y_t = ly[(n20 % (m*n))/m];
-        z_t = lz[n20 / (m*n)];
+        /* z_t = lz[n20 / (m*n)]; */
         s_t = bases[n20] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1653,7 +1653,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n21 >= 0) { /* directly left */
         x_t = lx[n21 % m]*dof;
         y_t = y;
-        z_t = lz[n21 / (m*n)];
+        /* z_t = lz[n21 / (m*n)]; */
         s_t = bases[n21] + (i+1)*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1661,7 +1661,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n22 >= 0) { /* middle */
         x_t = x;
         y_t = y;
-        z_t = lz[n22 / (m*n)];
+        /* z_t = lz[n22 / (m*n)]; */
         s_t = bases[n22] + i*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
@@ -1669,7 +1669,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n23 >= 0) { /* directly right */
         x_t = lx[n23 % m]*dof;
         y_t = y;
-        z_t = lz[n23 / (m*n)];
+        /* z_t = lz[n23 / (m*n)]; */
         s_t = bases[n23] + i*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1679,14 +1679,14 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (n24 >= 0) { /* left above */
         x_t = lx[n24 % m]*dof;
         y_t = ly[(n24 % (m*n))/m];
-        z_t = lz[n24 / (m*n)];
+        /* z_t = lz[n24 / (m*n)]; */
         s_t = bases[n24] + i*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n25 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n25 % (m*n))/m];
-        z_t = lz[n25 / (m*n)];
+        /* z_t = lz[n25 / (m*n)]; */
         s_t = bases[n25] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
