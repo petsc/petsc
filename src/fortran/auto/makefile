@@ -12,7 +12,7 @@ SOURCEC	 = asmf.c axisf.c axpyf.c bjacobif.c cgeigf.c chebyf.c cmeshf.c	 \
 	   dsetpausef.c dsflushf.c dtextgsf.c dtextsf.c dtrif.c dviewpf.c eisenf.c \
 	   fpf.c gcookief.c gmresf.c iluf.c indexf.c iscompf.c itclf.c \
 	   itcreatef.c itfuncf.c itresf.c lgf.c luf.c matrixf.c mgf.c \
-	   mgfuncf.c mhasf.c mtrf.c  pcsetf.c plogf.c preconf.c psleepf.c \
+	   mgfuncf.c mhasf.c mtrf.c  pcsetf.c preconf.c psleepf.c \
 	   randomf.c richf.c shellf.c signalf.c slesf.c snesf.c snesmfjf.c snesutf.c \
 	   sorf.c sortdf.c sortif.c sortipf.c stridef.c trf.c umlsf.c umtrf.c \
 	   vectorf.c vinvf.c vscatf.c zerodiagf.c
@@ -26,7 +26,7 @@ OBJSC	 = asmf.o axisf.o axpyf.o bjacobif.o cgeigf.o chebyf.o cmeshf.o	 \
 	   dsetpausef.o dsflushf.o dtextgsf.o dtextsf.o dtrif.o dviewpf.o eisenf.o \
 	   fpf.o gcookief.o gmresf.o iluf.o indexf.o iscompf.o itclf.o \
 	   itcreatef.o itfuncf.o itresf.o lgf.o luf.o matrixf.o mgf.o \
-	   mgfuncf.o mhasf.o mtrf.o pcsetf.o plogf.o preconf.o psleepf.o \
+	   mgfuncf.o mhasf.o mtrf.o pcsetf.o preconf.o psleepf.o \
 	   randomf.o richf.o shellf.o signalf.o slesf.o snesf.o snesmfjf.o snesutf.o \
 	   sorf.o sortdf.o sortif.o sortipf.o stridef.o trf.o umlsf.o umtrf.o \
 	   vectorf.o vinvf.o vscatf.o zerodiagf.o
