@@ -382,9 +382,7 @@ class Configure(config.base.Configure):
 
   def configureWin32NonCygwin(self):
     '''Win32 non-cygwin specific stuff'''
-    wfe = self.framework.argDB['CC'].split()[0]
-    import os
-    if os.path.splitext(os.path.basename(wfe))[0] == 'win32fe':
+    if self.framework.argDB['CC'].find('win32fe') >= 0:
       self.framework.addDefine('PARCH_win32',1)
       self.addDefine('CANNOT_START_DEBUGGER',1)
       self.addDefine('USE_NT_TIME',1)
