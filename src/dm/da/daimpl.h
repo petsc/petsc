@@ -56,9 +56,6 @@ struct _p_DA {
   int                 dim;                   /* DA dimension (1,2, or 3) */
   DAInterpolationType interptype;
 
-  int                 *gtog1;                /* mapping from global ordering to
-                                                  ordering that would be used for 1
-                                                  proc; intended for internal use only */
   AO                  ao;                    /* application ordering context */
 
   ISLocalToGlobalMapping ltogmap,ltogmapb;   /* local to global mapping for associated vectors */
@@ -129,7 +126,5 @@ EXTERN_C_BEGIN
 EXTERN int VecView_MPI_DA(Vec,PetscViewer);
 EXTERN int VecLoadIntoVector_Binary_DA(PetscViewer,Vec);
 EXTERN_C_END
-
-EXTERN int DAGetGlobalToGlobal1_Private(DA,int**);
 
 #endif

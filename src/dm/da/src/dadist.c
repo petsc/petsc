@@ -6,17 +6,6 @@
 
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
-
-#undef __FUNCT__  
-#define __FUNCT__ "DAGetGlobalToGlobal1_Private"
-int DAGetGlobalToGlobal1_Private(DA da,int **gtog1)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-  *gtog1 = da->gtog1;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "DACreateGlobalVector"
 /*@C

@@ -171,7 +171,6 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   PetscLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 1;
   da->interptype = DA_Q1;
-  da->gtog1      = 0;
   da->refine_x   = refine_x;
   ierr = PetscMalloc(dof*sizeof(char*),&da->fieldname);CHKERRQ(ierr);
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
@@ -352,23 +351,6 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
     da->ao = PETSC_NULL;
   }
 
-  /*
-     Note the following will be removed soon. Since the functionality 
-    is replaced by the above.
-  */
-  /* Construct the mapping from current global ordering to global
-     ordering that would be used if only 1 processor were employed.
-     This mapping is intended only for internal use by discrete
-     function and matrix viewers.
-
-     We don't really need this for 1D distributed arrays, since the
-     ordering is the same regardless.  But for now we form it anyway
-     Maybe we'll change in the near future.
-   */
-  ierr = VecGetSize(global,&gdim);CHKERRQ(ierr);
-  ierr = PetscMalloc(gdim*sizeof(int),&da->gtog1);CHKERRQ(ierr);
-  PetscLogObjectMemory(da,gdim*sizeof(int));
-  for (i=0; i<gdim; i++) da->gtog1[i] = i;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,PETSC_VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}

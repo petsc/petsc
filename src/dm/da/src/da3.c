@@ -269,7 +269,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   PetscLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 3;
   da->interptype = DA_Q1;
-  da->gtog1      = 0;
   da->refine_x   = refine_x;
   da->refine_y   = refine_y;
   da->refine_z   = refine_z;
@@ -1732,6 +1731,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       }
     }
   }
+  ierr = PetscFree(bases);CHKERRQ(ierr);
 
   /* construct the local to local scatter context */
   /* 
@@ -1804,44 +1804,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   da->ly = fly;
   da->lz = flz;
 
-  /*
-     Note the following will be removed soon. Since the functionality 
-    is replaced by the above. */
-
-  /* Construct the mapping from current global ordering to global
-     ordering that would be used if only 1 processor were employed.
-     This mapping is intended only for internal use by discrete
-     function and matrix viewers.
-
-     Note: At this point, x has already been adjusted for multiple
-     degrees of freedom per node.
-   */
-  ldim = x*y*z;
-  ierr = VecGetSize(global,&gdim);CHKERRQ(ierr);
-  ierr = PetscMalloc(gdim*sizeof(int),&da->gtog1);CHKERRQ(ierr);
-  PetscLogObjectMemory(da,gdim*sizeof(int));
-  ierr = PetscMalloc((2*(gdim+ldim))*sizeof(int),&gA);CHKERRQ(ierr);
-  gB        = (int *)(gA + ldim);
-  gAall     = (int *)(gB + ldim);
-  gBall     = (int *)(gAall + gdim);
-  /* Compute local parts of global orderings */
-  ict = 0;
-  for (k=zs; k<ze; k++) {
-    for (j=ys; j<ye; j++) {
-      for (i=xs; i<xe; i++) {
-        /* gA = global number for 1 proc; gB = current global number */
-        gA[ict] = i + j*M*dof + k*M*N*dof;
-        gB[ict] = start + ict;
-        ict++;
-      }
-    }
-  }
-  /* Broadcast the orderings */
-  ierr = MPI_Allgatherv(gA,ldim,MPI_INT,gAall,ldims,bases,MPI_INT,comm);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv(gB,ldim,MPI_INT,gBall,ldims,bases,MPI_INT,comm);CHKERRQ(ierr);
-  for (i=0; i<gdim; i++) da->gtog1[gBall[i]] = gAall[i];
-  ierr = PetscFree(gA);CHKERRQ(ierr);
-  ierr = PetscFree(bases);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,PETSC_VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}

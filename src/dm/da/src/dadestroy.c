@@ -137,7 +137,6 @@ int DADestroy(DA da)
   }
 
   if (da->coordinates) {ierr = VecDestroy(da->coordinates);CHKERRQ(ierr);}
-  if (da->gtog1) {ierr = PetscFree(da->gtog1);CHKERRQ(ierr);}
   PetscHeaderDestroy(da);
   PetscFunctionReturn(0);
 }
