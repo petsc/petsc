@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.235 1997/03/26 01:35:37 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.236 1997/03/31 17:41:31 balay Exp bsmith $";
 #endif
 
 /*
@@ -2674,3 +2674,62 @@ int MatGetType(Mat mat,MatType *type,char **name)
   }
   return 0;
 }
+
+/*MC
+    MatGetArrayF90 - Access a matrix array from Fortran 90.
+
+   Input Parameter:
+.    x - matrix
+
+   Output Parameter:
+.  xx_v - the Fortran90 pointer to the array
+.  ierr - error code
+
+   Synopsis:
+   MatGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+   Usage: 
+    Scalar, pointer xx_v(:)
+    ....
+    MatGetArrayF90(x,xx_v,ierr)
+    a = xx_v(3)
+    MatRestoreArrayF90(x,xx_v,ierr)
+   
+
+   Notes:
+     Currently only supported using the NAG F90 compiler.
+
+.seealso:  MatRestoreArrayF90(), MatGetArray(), MatRestoreArray()
+
+.keywords:  matrix, array, f90
+M*/
+
+/*MC
+    MatRestoreArrayF90 - Return a matrix array from Fortran 90,
+        accessed with MatGetArrayF90().
+
+   Input Parameter:
+.    x - matrix
+
+   Output Parameter:
+.  xx_v - the Fortran90 pointer to the array
+.  ierr - error code
+
+   Synopsis:
+   MatRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+   Usage: 
+    Scalar, pointer xx_v(:)
+    ....
+    MatGetArrayF90(x,xx_v,ierr)
+    a = xx_v(3)
+    MatRestoreArrayF90(x,xx_v,ierr)
+   
+
+   Notes:
+     Currently only supported using the NAG F90 compiler.
+
+.seealso:  MatGetArrayF90(), MatGetArray(), MatRestoreArray()
+
+.keywords:  matrix, array, f90
+M*/

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.105 1997/03/20 18:42:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.106 1997/04/02 22:27:29 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1231,9 +1231,7 @@ int VecDestroyVecs_Default( Vec *v, int m )
   return 0;
 }
 
-
-
-/*M
+/*MC
     VecGetArrayF90 - Access a vector array from Fortran 90.
 
    Input Parameter:
@@ -1262,7 +1260,7 @@ int VecDestroyVecs_Default( Vec *v, int m )
 .keywords:  vector, array, f90
 M*/
 
-/*M
+/*MC
     VecRestoreArrayF90 - Return a vector array from Fortran 90,
         accessed with VecGetArrayF90().
 
