@@ -416,6 +416,7 @@ class Builder(logging.Logger):
         if status: self.logWrite('ret = '+str(status)+'\n')
         if error: self.logWrite('error message = {'+error+'}\n')
         self.logWrite('Source:\n'+str(source)+'\n')
+        self.logWrite('Command:\n'+str(command)+'\n')
         # This is a hack
         if len(filter(lambda l: l.find('warning') < 0, error.split('\n'))):
           raise LinkError(output+error)
