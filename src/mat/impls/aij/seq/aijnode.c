@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.63 1996/12/03 19:36:34 bsmith Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.64 1996/12/03 20:03:22 balay Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1450,7 +1450,7 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        ierr, m = a->m, n = a->n,i,j,*ridx,*cidx,nslim_row = a->inode.node_count;
-  int        row,*permr, *permc, *ns_row =  a->inode.size, *tns, start_val, end_val, indx;
+  int        row,col,*permr, *permc, *ns_row =  a->inode.size, *tns, start_val, end_val, indx;
   int        nslim_col,*ns_col;
   IS         ris = *rperm, cis = *cperm;
 
@@ -1465,7 +1465,7 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
   ierr  = ISGetIndices(cis,&cidx); CHKERRQ(ierr);
 
   /* Form the inode structure for the rows of permuted matric using inv perm*/
-  for ( i=0, tns[0]=0; i<nslim_row; ++i) tns[i+1] = tns[i] + ns_col[i];
+  for ( i=0, tns[0]=0; i<nslim_row; ++i) tns[i+1] = tns[i] + ns_row[i];
 
   /* Construct the permutations for rows*/
   for ( i=0,row = 0; i<nslim_row; ++i){
@@ -1475,16 +1475,15 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
     for ( j=start_val; j<end_val; ++j, ++row) permr[row]= j;
   }
 
-  /* Form the inode structure for the columns of permuted matric using inv perm*/
-  for ( i=0, tns[0]=0; i<nslim_row; ++i) tns[i+1] = tns[i] + ns_row[i];
+  /* Form the inode structure for the columns of permuted matrix using inv perm*/
+  for ( i=0, tns[0]=0; i<nslim_col; ++i) tns[i+1] = tns[i] + ns_col[i];
 
  /*Construct permutations for columns*/
-  for (i=0,row=0; i<nslim_row; ++i){
+  for (i=0,col=0; i<nslim_col; ++i){
     indx      = cidx[i];
     start_val = tns[indx];
     end_val   = tns[indx + 1];
-    for (j = start_val; j<end_val; ++j, ++row)
-      permc[row]= j;
+    for (j = start_val; j<end_val; ++j, ++col) permc[col]= j;
   }
 
   ierr = ISCreateGeneral(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
