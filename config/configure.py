@@ -95,6 +95,19 @@ def petsc_configure(configure_options):
       if name.find('=') == -1: sys.argv[l] += '=0'
       elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
   
+  # if language is C then should not be checking C++
+  for j in sys.argv:
+    if j == '--with-language=c':
+      foundcxx = 0
+      for l in range(0,len(sys.argv)-1):
+        name = sys.argv[l]
+        if name.startswith('--with-cxx'):
+          sys.argv[l] = '--with-cxx=0'
+          foundcxx = 1
+          break
+      if not foundcxx:
+        sys.argv.append('--with-cxx=0')
+
   # Disable threads on RHL9
   if rhl9():
     sys.argv.append('--useThreads=0')
