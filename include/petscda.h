@@ -481,7 +481,7 @@ struct _p_DMMG {
   VecScatter     inject;                /* inject from this level to the next coarsest */
   PetscTruth     monitor,monitorall;
   PetscInt       presmooth,postsmooth,coarsesmooth;
-  PetscReal      rtol,atol,rrtol;       /* convergence tolerance */   
+  PetscReal      rtol,abstol,rrtol;       /* convergence tolerance */   
   
 };
 

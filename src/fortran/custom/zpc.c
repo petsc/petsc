@@ -85,11 +85,11 @@ static void (PETSC_STDCALL *f9)(void*,PetscErrorCode*);
 EXTERN_C_END
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-static PetscErrorCode ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol,PetscReal dtol,int m)
+static PetscErrorCode ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,int m)
 {
   PetscErrorCode ierr = 0;
 
-  (*f2)(ctx,&x,&y,&w,&rtol,&atol,&dtol,&m,&ierr);CHKERRQ(ierr);
+  (*f2)(ctx,&x,&y,&w,&rtol,&abstol,&dtol,&m,&ierr);CHKERRQ(ierr);
   return 0;
 }
 

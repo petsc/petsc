@@ -36,8 +36,8 @@ PetscErrorCode MGMCycle_Private(MG *mglevels,PetscTruth *converged)
       ierr = VecNorm(mg->r,NORM_2,&rnorm);CHKERRQ(ierr);
       if (rnorm <= mg->ttol) {
         *converged = PETSC_TRUE;
-        if (rnorm < mg->atol) {
-          PetscLogInfo(0,"Linear solver has converged. Residual norm %g is less than absolute tolerance %g\n",rnorm,mg->atol);
+        if (rnorm < mg->abstol) {
+          PetscLogInfo(0,"Linear solver has converged. Residual norm %g is less than absolute tolerance %g\n",rnorm,mg->abstol);
         } else {
           PetscLogInfo(0,"Linear solver has converged. Residual norm %g is less than relative tolerance times initial residual norm %g\n",rnorm,mg->ttol);
         }
@@ -115,7 +115,7 @@ static PetscErrorCode MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *
     mg[i]->default_smoothu = 1;
     mg[i]->default_smoothd = 1;
     mg[i]->rtol = 0.0;
-    mg[i]->atol = 0.0;
+    mg[i]->abstol = 0.0;
     mg[i]->dtol = 0.0;
     mg[i]->ttol = 0.0;
     mg[i]->eventsetup = 0;
@@ -188,7 +188,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_MG"
-static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
+static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,int its)
 {
   MG         *mg = (MG*)pc->data;
   PetscErrorCode ierr;
@@ -200,16 +200,16 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
   mg[levels-1]->x    = x;
 
   mg[levels-1]->rtol = rtol;
-  mg[levels-1]->atol = atol;
+  mg[levels-1]->abstol = abstol;
   mg[levels-1]->dtol = dtol;
   if (rtol) {
     /* compute initial residual norm for relative convergence test */
     PetscReal rnorm;
     ierr               = (*mg[levels-1]->residual)(mg[levels-1]->A,b,x,w);CHKERRQ(ierr);
     ierr               = VecNorm(w,NORM_2,&rnorm);CHKERRQ(ierr);
-    mg[levels-1]->ttol = PetscMax(rtol*rnorm,atol);
-  } else if (atol) {
-    mg[levels-1]->ttol = atol;
+    mg[levels-1]->ttol = PetscMax(rtol*rnorm,abstol);
+  } else if (abstol) {
+    mg[levels-1]->ttol = abstol;
   } else {
     mg[levels-1]->ttol = 0.0;
   }

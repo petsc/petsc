@@ -74,7 +74,7 @@ PetscErrorCode SNESView(SNES snes,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, maximum function evaluations=%D\n",snes->max_its,snes->max_funcs);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%g, absolute=%g, solution=%g\n",
-                 snes->rtol,snes->atol,snes->xtol);CHKERRQ(ierr);
+                 snes->rtol,snes->abstol,snes->xtol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",snes->linear_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of function evaluations=%D\n",snes->nfuncs);CHKERRQ(ierr);
     if (snes->ksp_ewconv) {
@@ -142,7 +142,7 @@ PetscErrorCode SNESAddOptionsChecker(PetscErrorCode (*snescheck)(SNES))
 +  -snes_type <type> - ls, tr, umls, umtr, test
 .  -snes_stol - convergence tolerance in terms of the norm
                 of the change in the solution between steps
-.  -snes_atol <atol> - absolute tolerance of residual norm
+.  -snes_atol <abstol> - absolute tolerance of residual norm
 .  -snes_rtol <rtol> - relative decrease in tolerance norm from initial
 .  -snes_max_it <max_it> - maximum number of iterations
 .  -snes_max_funcs <max_funcs> - maximum number of function evaluations
@@ -210,7 +210,7 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsName("-snes_view","Print detailed information on solver used","SNESView",0);CHKERRQ(ierr);
 
     ierr = PetscOptionsReal("-snes_stol","Stop if step length less then","SNESSetTolerances",snes->xtol,&snes->xtol,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_atol","Stop if function norm less then","SNESSetTolerances",snes->atol,&snes->atol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_atol","Stop if function norm less then","SNESSetTolerances",snes->abstol,&snes->abstol,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsReal("-snes_rtol","Stop if decrease in function norm less then","SNESSetTolerances",snes->rtol,&snes->rtol,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_it","Maximum iterations","SNESSetTolerances",snes->max_its,&snes->max_its,PETSC_NULL);CHKERRQ(ierr);
@@ -598,7 +598,7 @@ PetscErrorCode SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->norm		  = 0.0;
   snes->rtol		  = 1.e-8;
   snes->ttol              = 0.0;
-  snes->atol		  = 1.e-50;
+  snes->abstol		  = 1.e-50;
   snes->xtol		  = 1.e-8;
   snes->deltatol	  = 1.e-12;
   snes->nfuncs            = 0;
@@ -1092,7 +1092,7 @@ PetscErrorCode SNESDestroy(SNES snes)
 
    Input Parameters:
 +  snes - the SNES context
-.  atol - absolute convergence tolerance
+.  abstol - absolute convergence tolerance
 .  rtol - relative convergence tolerance
 .  stol -  convergence tolerance in terms of the norm
            of the change in the solution between steps
@@ -1100,7 +1100,7 @@ PetscErrorCode SNESDestroy(SNES snes)
 -  maxf - maximum number of function evaluations
 
    Options Database Keys: 
-+    -snes_atol <atol> - Sets atol
++    -snes_atol <abstol> - Sets abstol
 .    -snes_rtol <rtol> - Sets rtol
 .    -snes_stol <stol> - Sets stol
 .    -snes_max_it <maxit> - Sets maxit
@@ -1116,11 +1116,11 @@ PetscErrorCode SNESDestroy(SNES snes)
 
 .seealso: SNESSetTrustRegionTolerance(), SNESSetMinimizationFunctionTolerance()
 @*/
-PetscErrorCode SNESSetTolerances(SNES snes,PetscReal atol,PetscReal rtol,PetscReal stol,PetscInt maxit,PetscInt maxf)
+PetscErrorCode SNESSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,PetscReal stol,PetscInt maxit,PetscInt maxf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  if (atol != PETSC_DEFAULT)  snes->atol      = atol;
+  if (abstol != PETSC_DEFAULT)  snes->abstol      = abstol;
   if (rtol != PETSC_DEFAULT)  snes->rtol      = rtol;
   if (stol != PETSC_DEFAULT)  snes->xtol      = stol;
   if (maxit != PETSC_DEFAULT) snes->max_its   = maxit;
@@ -1137,7 +1137,7 @@ PetscErrorCode SNESSetTolerances(SNES snes,PetscReal atol,PetscReal rtol,PetscRe
 
    Input Parameters:
 +  snes - the SNES context
-.  atol - absolute convergence tolerance
+.  abstol - absolute convergence tolerance
 .  rtol - relative convergence tolerance
 .  stol -  convergence tolerance in terms of the norm
            of the change in the solution between steps
@@ -1153,11 +1153,11 @@ PetscErrorCode SNESSetTolerances(SNES snes,PetscReal atol,PetscReal rtol,PetscRe
 
 .seealso: SNESSetTolerances()
 @*/
-PetscErrorCode SNESGetTolerances(SNES snes,PetscReal *atol,PetscReal *rtol,PetscReal *stol,PetscInt *maxit,PetscInt *maxf)
+PetscErrorCode SNESGetTolerances(SNES snes,PetscReal *abstol,PetscReal *rtol,PetscReal *stol,PetscInt *maxit,PetscInt *maxf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  if (atol)  *atol  = snes->atol;
+  if (abstol)  *abstol  = snes->abstol;
   if (rtol)  *rtol  = snes->rtol;
   if (stol)  *stol  = snes->xtol;
   if (maxit) *maxit = snes->max_its;

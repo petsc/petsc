@@ -279,7 +279,7 @@ PetscErrorCode SNESDefaultSMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void 
 
    Output Parameter:
 .   reason  - one of
-$  SNES_CONVERGED_FNORM_ABS       - (fnorm < atol),
+$  SNES_CONVERGED_FNORM_ABS       - (fnorm < abstol),
 $  SNES_CONVERGED_PNORM_RELATIVE  - (pnorm < xtol*xnorm),
 $  SNES_CONVERGED_FNORM_RELATIVE  - (fnorm < rtol*fnorm0),
 $  SNES_DIVERGED_FUNCTION_COUNT   - (nfct > maxf),
@@ -290,7 +290,7 @@ $  SNES_CONVERGED_ITERATING       - (otherwise),
 +    maxf - maximum number of function evaluations,
             set with SNESSetTolerances()
 .    nfct - number of function evaluations,
-.    atol - absolute function norm tolerance,
+.    abstol - absolute function norm tolerance,
             set with SNESSetTolerances()
 -    rtol - relative function norm tolerance, set with SNESSetTolerances()
 
@@ -309,8 +309,8 @@ PetscErrorCode SNESConverged_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscR
   } else if (fnorm <= snes->ttol) {
     PetscLogInfo(snes,"SNESConverged_LS:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
     *reason = SNES_CONVERGED_FNORM_RELATIVE;
-  } else if (fnorm < snes->atol) {
-    PetscLogInfo(snes,"SNESConverged_LS:Converged due to function norm %g < %g\n",fnorm,snes->atol);
+  } else if (fnorm < snes->abstol) {
+    PetscLogInfo(snes,"SNESConverged_LS:Converged due to function norm %g < %g\n",fnorm,snes->abstol);
     *reason = SNES_CONVERGED_FNORM_ABS;
   } else if (pnorm < snes->xtol*xnorm) {
     PetscLogInfo(snes,"SNESConverged_LS:Converged due to small update length: %g < %g * %g\n",pnorm,snes->xtol,xnorm);

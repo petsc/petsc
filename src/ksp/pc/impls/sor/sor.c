@@ -37,7 +37,7 @@ static PetscErrorCode PCApply_SOR(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_SOR"
-static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,PetscInt its)
+static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its)
 {
   PC_SOR         *jac = (PC_SOR*)pc->data;
   PetscErrorCode ierr;

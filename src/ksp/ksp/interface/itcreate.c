@@ -75,7 +75,7 @@ PetscErrorCode KSPView(KSP ksp,PetscViewer viewer)
     if (ksp->guess_zero) {ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, initial guess is zero\n",ksp->max_it);CHKERRQ(ierr);}
     else                 {ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D\n", ksp->max_it);CHKERRQ(ierr);}
     if (ksp->guess_knoll) {ierr = PetscViewerASCIIPrintf(viewer,"  using preconditioner applied to right hand side for initial guess\n");CHKERRQ(ierr);}
-    ierr = PetscViewerASCIIPrintf(viewer,"  tolerances:  relative=%g, absolute=%g, divergence=%g\n",ksp->rtol,ksp->atol,ksp->divtol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  tolerances:  relative=%g, absolute=%g, divergence=%g\n",ksp->rtol,ksp->abstol,ksp->divtol);CHKERRQ(ierr);
     if (ksp->pc_side == PC_RIGHT)          {ierr = PetscViewerASCIIPrintf(viewer,"  right preconditioning\n");CHKERRQ(ierr);}
     else if (ksp->pc_side == PC_SYMMETRIC) {ierr = PetscViewerASCIIPrintf(viewer,"  symmetric preconditioning\n");CHKERRQ(ierr);}
     else                                   {ierr = PetscViewerASCIIPrintf(viewer,"  left preconditioning\n");CHKERRQ(ierr);}
@@ -291,7 +291,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->max_it        = 10000;
   ksp->pc_side       = PC_LEFT;
   ksp->rtol          = 1.e-5;
-  ksp->atol          = 1.e-50;
+  ksp->abstol          = 1.e-50;
   ksp->divtol        = 1.e4;
 
   ksp->normtype            = KSP_PRECONDITIONED_NORM;
@@ -468,7 +468,7 @@ PetscErrorCode KSPGetType(KSP ksp,KSPType *type)
 +   -ksp_max_it - maximum number of linear iterations
 .   -ksp_rtol rtol - relative tolerance used in default determination of convergence, i.e.
                 if residual norm decreases by this factor than convergence is declared
-.   -ksp_atol atol - absolute tolerance used in default convergence test, i.e. if residual 
+.   -ksp_atol abstol - absolute tolerance used in default convergence test, i.e. if residual 
                 norm is less than this then convergence is declared
 .   -ksp_divtol tol - if residual norm increases by this factor than divergence is declared
 .   -ksp_norm_type - none - skip norms used in convergence tests (useful only when not using 
@@ -523,7 +523,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
 
     ierr = PetscOptionsInt("-ksp_max_it","Maximum number of iterations","KSPSetTolerances",ksp->max_it,&ksp->max_it,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ksp_rtol","Relative decrease in residual norm","KSPSetTolerances",ksp->rtol,&ksp->rtol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ksp_atol","Absolute value of residual norm","KSPSetTolerances",ksp->atol,&ksp->atol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ksp_atol","Absolute value of residual norm","KSPSetTolerances",ksp->abstol,&ksp->abstol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsLogical("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,
                                   &ksp->guess_knoll,PETSC_NULL);CHKERRQ(ierr);

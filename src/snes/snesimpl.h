@@ -71,7 +71,7 @@ struct _p_SNES {
   PetscInt    linear_its;         /* total number of linear solver iterations */
   PetscReal   norm;            /* residual norm of current iterate */
   PetscReal   rtol;            /* relative tolerance */
-  PetscReal   atol;            /* absolute tolerance */
+  PetscReal   abstol;            /* absolute tolerance */
   PetscReal   xtol;            /* relative tolerance in solution */
   PetscReal   deltatol;        /* trust region convergence tolerance */
   PetscTruth  printreason;     /* print reason for convergence/divergence after each solve */

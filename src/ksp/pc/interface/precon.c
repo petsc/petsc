@@ -706,7 +706,7 @@ PetscErrorCode PCApplyRichardsonExists(PC pc,PetscTruth *exists)
 .  x   - the initial guess 
 .  w   - one work vector
 .  rtol - relative decrease in residual norm convergence criteria
-.  atol - absolute residual norm convergence criteria
+.  abstol - absolute residual norm convergence criteria
 .  dtol - divergence residual norm increase criteria
 -  its - the number of iterations to apply.
 
@@ -726,7 +726,7 @@ PetscErrorCode PCApplyRichardsonExists(PC pc,PetscTruth *exists)
 
 .seealso: PCApplyRichardsonExists()
 @*/
-PetscErrorCode PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
+PetscErrorCode PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,int its)
 {
   PetscErrorCode ierr;
 
@@ -741,7 +741,7 @@ PetscErrorCode PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscRea
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  ierr = (*pc->ops->applyrichardson)(pc,x,y,w,rtol,atol,dtol,its);CHKERRQ(ierr);
+  ierr = (*pc->ops->applyrichardson)(pc,x,y,w,rtol,abstol,dtol,its);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -86,7 +86,7 @@ int main(int argc,char **argv)
                                           candidate iterates */
   PetscScalar    xp,*FF,*UU,none = -1.0;
   int            ierr,its,N = 5,i,maxit,maxf,xs,xm;
-  PetscReal      atol,rtol,stol,norm;
+  PetscReal      abstol,rtol,stol,norm;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRQ(ierr);
@@ -186,8 +186,8 @@ int main(int argc,char **argv)
      to demonstrate this routine; this information is also printed with
      the option -snes_view
   */
-  ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%D, maxf=%D\n",atol,rtol,stol,maxit,maxf);CHKERRQ(ierr);
+  ierr = SNESGetTolerances(snes,&abstol,&rtol,&stol,&maxit,&maxf);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%D, maxf=%D\n",abstol,rtol,stol,maxit,maxf);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:

@@ -41,7 +41,7 @@ struct _p_KSP {
   PCSide pc_side;                  /* flag for left, right, or symmetric 
                                       preconditioning */
   PetscReal rtol,                     /* relative tolerance */
-            atol,                     /* absolute tolerance */
+            abstol,                     /* absolute tolerance */
             ttol,                     /* (not set by user)  */
             divtol;                   /* divergence tolerance */
   PetscReal rnorm0;                   /* initial residual norm (used for divergence testing) */

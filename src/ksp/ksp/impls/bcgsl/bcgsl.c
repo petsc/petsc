@@ -59,7 +59,7 @@ static int  KSPSolve_BCGSL(KSP ksp)
   PetscScalar    zero = 0;
   PetscScalar    rho0, rho1;
   PetscReal      kappa0, kappaA, kappa1;
-  PetscReal      ghat, epsilon, atol;
+  PetscReal      ghat, epsilon, abstol;
   PetscReal      zeta, zeta0, rnmax_computed, rnmax_true, nrm0;
   PetscTruth     bUpdateX;
   PetscTruth     bBombed = PETSC_FALSE;
@@ -126,7 +126,7 @@ static int  KSPSolve_BCGSL(KSP ksp)
   ierr = VecCopy(VVR[0], VRT);CHKERRQ(ierr);
   zeta = zeta0;
 
-  ierr = KSPGetTolerances( ksp, &epsilon, &atol, PETSC_NULL, &maxit);CHKERRQ(ierr);
+  ierr = KSPGetTolerances( ksp, &epsilon, &abstol, PETSC_NULL, &maxit);CHKERRQ(ierr);
 
   for ( k=0; k<maxit; k += bcgsl->ell ) {
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
