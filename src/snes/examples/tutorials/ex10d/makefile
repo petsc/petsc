@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 1999/03/24 19:52:19 balay Exp balay $ 
+# $Id: makefile,v 1.4 1999/03/24 20:09:58 balay Exp bsmith $ 
 
 ALL: ex10
 
@@ -6,11 +6,13 @@ CFLAGS		 =
 FFLAGS		 = 
 CPPFLAGS         =
 FPPFLAGS         =
-LOCDIR		 = src/snes/examples/tutorials/ex10
+LOCDIR		 = src/snes/examples/tutorials/ex10/ex10d/
 TESTEXAMPLES_6	 = ex10.PETSc runex10 ex10.rm
 BUILDEXAMPLES_6	 = ex10.PETSc ex10.rm
 DOCS		 = readme
 DIRS		 = 
+EXAMPLESC	 = ex10.c
+EXAMPLESF	 =
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
