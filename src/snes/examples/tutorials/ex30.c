@@ -160,6 +160,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   PetscOptionsSetValue("-file","ex30_output");
   PetscOptionsSetValue("-snes_monitor",PETSC_NULL);
+  PetscOptionsSetValue("-snes_max_it","20");
   PetscOptionsSetValue("-ksp_max_it","1500");
   PetscOptionsSetValue("-ksp_gmres_restart","300");
   PetscOptionsInsert(&argc,&argv,PETSC_NULL);
@@ -261,8 +262,9 @@ PetscErrorCode UpdateSolution(DMMG *dmmg, AppCtx *user, PetscInt *nits)
   KSP                 ksp;
   PC                  pc;
   SNESConvergedReason reason;
-  Parameter          *param = user->param;
-  PetscInt            its, tmpIVisc;
+  Parameter           *param = user->param;
+  PassiveScalar       cont_incr=0.3;
+  PetscInt            its;
   PetscErrorCode      ierr;
   PetscTruth          q = PETSC_FALSE;
 
@@ -275,15 +277,13 @@ PetscErrorCode UpdateSolution(DMMG *dmmg, AppCtx *user, PetscInt *nits)
   *nits=0;
 
   /* Isoviscous solve */
-  if (param->ivisc >= VISC_CONST && !param->stop_solve) {
-    tmpIVisc     = param->ivisc;
+  if (param->ivisc == VISC_CONST && !param->stop_solve) {
     param->ivisc = VISC_CONST;
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
     ierr = VecCopy(DMMGGetx(dmmg),user->Xguess);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
     *nits +=its;
     if (param->stop_solve) goto done;
-    param->ivisc = tmpIVisc; 
   }
 
   /* Olivine diffusion creep */
@@ -291,33 +291,40 @@ PetscErrorCode UpdateSolution(DMMG *dmmg, AppCtx *user, PetscInt *nits)
     if (!q) PetscPrintf(PETSC_COMM_WORLD,"Computing Variable Viscosity Solution\n");
 
     /* continuation method on viscosity cutoff */
-    for (param->continuation = 0.20; param->continuation<=1.0;) { 
+    for (param->continuation = 0.0; param->continuation<=1.0;) { 
       if (!q) PetscPrintf(PETSC_COMM_WORLD," Continuation parameter = %g\n", param->continuation);
 
       /* solve the non-linear system */
       ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
-      ierr = VecCopy(DMMGGetx(dmmg),user->Xguess);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
       ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
       *nits += its;
       if (!q) PetscPrintf(PETSC_COMM_WORLD," Newton iterations: %D, Cumulative: %D\n", its, *nits);
-      if (param->stop_solve || reason<0 || param->continuation==1.0) goto done;
+      if (param->stop_solve || param->continuation==1.0) goto done;
 
-      /* update continuation parameter */
-      if (its<=3) {
-	param->continuation += 0.125;
-      } else if (its<=10) {
-	param->continuation += 0.10;
-      } else if (its<=25) {
-	param->continuation += 0.075;
+      if (reason<0) {
+	/* NOT converged */
+	cont_incr = cont_incr/2.0;
+	param->continuation -= cont_incr;
+	if (cont_incr<0.01) goto done;
+
       } else {
-	param->continuation += 0.05;
-      }
-      param->continuation = PetscMin(param->continuation,1.0);
+	/* converged */
+	ierr = VecCopy(DMMGGetx(dmmg),user->Xguess);CHKERRQ(ierr);
+	if (its<=3) {
+	  cont_incr = 0.30001;
+	} else if (its<=8) {
+	  cont_incr = 0.15001;
+	} else {
+	  cont_incr = 0.10001;
+	}
+	param->continuation = PetscMin(param->continuation+cont_incr,1.0);
+      } /* endif reason<0 */
     }
   }
   done:
   if (param->stop_solve && !q) PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: stopping solve.\n");
+  if (reason<0 && !q) PetscPrintf(PETSC_COMM_WORLD,"FAILED TO CONVERGE: stopping solve.\n");
   PetscFunctionReturn(0);
 }   
 
@@ -1071,7 +1078,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
       PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       Mat file \"%s\"\n",param->filename);
 #else
-      PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       Binary file \"%s\"\n",param->filename);
+      PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       PETSc binary file \"%s\"\n",param->filename);
 #endif
     if ( param->output_ivisc != param->ivisc ) 
       PetscPrintf(PETSC_COMM_WORLD,"                          Output viscosity: -ivisc %D\n",param->output_ivisc);
