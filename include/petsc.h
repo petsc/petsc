@@ -1,11 +1,11 @@
-/* $Id: petsc.h,v 1.74 1995/12/07 20:41:47 balay Exp balay $ */
+/* $Id: petsc.h,v 1.75 1995/12/07 20:51:31 balay Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.10, Released ?."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.10, Released Dec. 14, 1995."
 
 #include <stdio.h>
 #if defined(PARCH_sun4) && !defined(__cplusplus)
