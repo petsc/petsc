@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.200 2000/07/13 22:22:24 balay Exp bsmith $ */
+/* $Id: petscmat.h,v 1.201 2000/08/01 20:58:40 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -273,15 +273,15 @@ typedef struct {
   double     dt;             /* drop tolerance */
   double     dtcol;          /* tolerance for pivoting */
   double     dtcount;        /* maximum nonzeros to be allowed per row */
-  PetscTruth damp;    /* if factorization fails, damp until successful */
   double     damping; /* damping factor - i.e. scaling of identity added to matrix to prevent zero pivots */
+  double     damp;    /* if factorization fails, damp until successful */
 } MatILUInfo;
 
 typedef struct {
   double     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
   double     dtcol;   /* tolerance for pivoting; pivot if off_diagonal*dtcol > diagonal */
-  PetscTruth damp;    /* if factorization fails, damp until successful */
   double     damping; /* damping factor - i.e. scaling of identity added to matrix to prevent zero pivots */
+  double     damp;    /* if factorization fails, damp until successful */
 } MatLUInfo;
 
 EXTERN int MatLUFactor(Mat,IS,IS,MatLUInfo*);
