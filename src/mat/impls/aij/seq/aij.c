@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.128 1996/01/01 01:03:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.129 1996/01/02 20:15:54 bsmith Exp curfman $";
 #endif
 
 /*
@@ -1277,7 +1277,8 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   b->n       = n;
   b->imax    = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(b->imax);
   if (nnz == PETSC_NULL) {
-    if (nz <= 0) nz = 1;
+    if (nz == PETSC_DEFAULT) nz = 10;
+    else if (nz <= 0)        nz = 1;
     for ( i=0; i<m; i++ ) b->imax[i] = nz;
     nz = nz*m;
   }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.104 1996/01/01 01:03:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.105 1996/01/02 20:16:02 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1430,6 +1430,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
 
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,m,n,d_nz,d_nnz,&a->A); CHKERRQ(ierr);
   PLogObjectParent(mat,a->A);
+  if (o_nz == PETSC_DEFAULT) o_nz = 0;
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,m,N,o_nz,o_nnz,&a->B); CHKERRQ(ierr);
   PLogObjectParent(mat,a->B);
 
