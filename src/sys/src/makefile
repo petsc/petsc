@@ -1,9 +1,8 @@
-# $Id: makefile,v 1.68 1998/06/04 22:34:46 balay Exp balay $ 
+# $Id: makefile,v 1.69 1998/06/04 22:35:48 balay Exp balay $ 
 
 ALL: lib 
-CFLAGS	  = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' -DPETSC_BOPT='"${BOPT}"' \
-            -DPETSC_LDIR='"${LDIR}"' -DPETSC_DIR='"${PETSC_DIR}"' -DPETSC_SLSUFFIX='"${SLSUFFIX}"'
-
+CPPFLAGS  = -DPETSC_BOPT='"${BOPT}"' -DPETSC_LDIR='"${LDIR}"' \
+	-DPETSC_DIR='"${PETSC_DIR}"' -DPETSC_SLSUFFIX='"${SLSUFFIX}"'
 SOURCEC	  = 
 SOURCEF	  =
 SOURCEH	  = 
