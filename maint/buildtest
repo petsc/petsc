@@ -9,14 +9,14 @@
 #
 set RSH=rsh
 set RCP=rcp
-set RSYNC_SSH=
+set RSYNCSSH=
 
 source /sandbox/petsc/petsc-test/bmake/$1/buildtest
 set EJOBS=`grep PETSC_HAVE_ /sandbox/petsc/petsc-test/bmake/$1/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
 #echo Testing packages ${EJOBS}
 #
 set RSYNC_DIR=`echo $TMP | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`
-rsync $RSYNC_SSH -C -r --exclude=BitKeeper /sandbox/petsc/petsc-test $MACH:$RSYNC_DIR" >& /dev/null
+rsync $RSYNCSSH -C -r --exclude=BitKeeper /sandbox/petsc/petsc-test ${MACH}:$RSYNC_DIR
 $RSH $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
 $RSH $MACH -n "cd $TMP/maint;rm -f build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH -n "cd $TMP/maint;touch build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
