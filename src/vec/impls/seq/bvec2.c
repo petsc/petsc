@@ -1,7 +1,8 @@
 
 
+
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.18 1995/04/27 21:43:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.19 1995/04/28 05:09:16 curfman Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -37,6 +38,7 @@ static struct _VeOps DvOps = {VecCreate_Blas,
    VecCreateSequential - Creates a standard, array-style vector.
 
    Input Parameter:
+.  comm - the communicator, should be MPI_COMM_SELF
 .  n - the vector length 
 
    Output Parameter:
