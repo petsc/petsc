@@ -2,12 +2,22 @@
 #include "matimpl.h"
 #include "math.h"
 
+#if !defined(__AIJ_H)
+#define __AIJ_H
+
+/*  The i[] and j[] arrays start at 1 not zero to support Fortran 77 */
+/*  In Fortran j[i[k]+p-1] is the pth column in row k */
+ 
+/*
+    singlemalloc indicates that a, i and j where all obtained with 
+  one big malloc 
+*/
 typedef struct {
-  int    m,n,nz,           /* rows and columns */
-         *i,*imax, *ilen,  /* j + i[k]  is start of row k */
-         *j;               /* ilen is actual lenght of row */
-  double *a;     
+  int    sorted, roworiented, nonew, singlemalloc,outofrange,assembled;
+  int    m,n,nz,mem,*diag,       /* rows and columns */
+         *i,*imax, *ilen,        /* j + i[k] - 1  is start of row k */
+         *j;                     /* ilen is actual lenght of row */
+  Scalar *a;     
 } Matiaij;
 
-int MatAIJCreate(); /* (int, int, int); */
-
+#endif
