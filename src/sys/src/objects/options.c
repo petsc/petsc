@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.145 1997/10/09 17:53:42 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.146 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -395,6 +395,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
   if (PetscBeganMPI) {
     int size;
+
     MPI_Comm_size(PETSC_COMM_WORLD,&size);
     PLogInfo(0,"PETSc successfully started: number of processors = %d\n",size);
   }
@@ -473,9 +474,8 @@ int PetscFinalize()
   }
 
 #if defined(USE_PETSC_STACK)
-  ierr = OptionsHasName(PETSC_NULL,"-log_stack", &flg1); CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscStackDestroy(256); CHKERRQ(ierr);
+  if (PetscStackActive) {
+    ierr = PetscStackDestroy(); CHKERRQ(ierr);
   }
 #endif
 
@@ -834,10 +834,14 @@ int OptionsCheckInitial_Private()
   }
 #endif
 #if defined(USE_PETSC_STACK)
+#if defined(USE_PETSC_BOPT_g)
+  ierr = PetscStackCreate(256); CHKERRQ(ierr);
+#else
   ierr = OptionsHasName(PETSC_NULL,"-log_stack", &flg1); CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscStackCreate(256); CHKERRQ(ierr);
   }
+#endif
 #endif
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);

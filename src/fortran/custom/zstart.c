@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.25 1997/09/11 15:55:46 balay Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.26 1997/10/19 03:18:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -182,12 +182,11 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
 #endif
   OptionsSetProgramName(name);
 
-
   MPI_Initialized(&flag);
   if (!flag) {
     mpi_init_(__ierr);
     if (*__ierr) {fprintf(stderr,"PetscInitialize:");return;}
-    PetscBeganMPI = 1;
+    PetscBeganMPI    = 1;
     PETSC_COMM_WORLD = MPI_COMM_WORLD;
   } else if (!PETSC_COMM_WORLD) {
     PETSC_COMM_WORLD = MPI_COMM_WORLD;
@@ -234,10 +233,10 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   PetscInitializeFortran();
 
   if (PetscBeganMPI) {
-    int rank,size;
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    int size;
+
     MPI_Comm_size(PETSC_COMM_WORLD,&size);
-    PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",rank,size);
+    PLogInfo(0,"PETSc successfully started: procs %d\n",size);
   }
 
   *__ierr = 0;
