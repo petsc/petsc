@@ -10,6 +10,7 @@ set SP=/sphome/petsc/petsc
 set CCST=/ccsthome/petsc/petsc
 set PETSC=/home/petsc/petsc
 set LOIS=/home/curfman/petsc
+set BALAY=/home/balay/petsc
 #
 #  load the machine names and versions to test
 #
@@ -25,7 +26,7 @@ if ($day == Sun) then
   set J4=(0      5          6          6             6           8            0          0           7          )
   set J5=(0      10         7          8             8           0            0          0           8          )
   set J6=(0      0          8          0             0           0            0          0           1          )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       /tmp/petsc )
+  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY     )
 endif
 if ($day == Mon) then
   set M =(snake  maverick   cyan       elvis         doc         ptera       maverick    quad        caffeine   )
@@ -38,7 +39,7 @@ if ($day == Mon) then
   set J4=(0      0          6          6             6           6           7           6           5          )
   set J5=(0      0          8          7             7           8           8           7           10         )
   set J6=(0      0          0          8             8           0           0           8           0          )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc  $LOIS       /tmp/petsc  $CCST       /tmp/petsc )
+  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc  $LOIS       /tmp/petsc  $CCST       $BALAY     )
 endif  
 if ($day == Tue) then
   set M =(snake  maverick   cyan       elvis         doc         ptera       maverick    quad        caffeine   )
@@ -51,7 +52,7 @@ if ($day == Tue) then
   set J4=(6      6          5          6             6           6           8           6           6          )
   set J5=(0      7          10         7             7           7           0           7           8          )
   set J6=(0      8          0          8             8           8           0           8           0          )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc  $LOIS       /tmp/petsc  $CCST       /tmp/petsc )
+  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc  $LOIS       /tmp/petsc  $CCST       $BALAY     )
 endif
 if ($day == Wed) then
   set M =(snake  maverick   cyan       elvis         clyde       ptera       maverick    quad        caffeine   )
@@ -64,7 +65,7 @@ if ($day == Wed) then
   set J4=(6      6          7          5             5           6           0           5           6          )
   set J5=(0      8          0          10            10          8           0           10          7          )
   set J6=(0      0          0          0             0           0           0           0           8          )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       /tmp/petsc )
+  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY     )
 endif
 if ($day == Thu) then
   set M =(snake  maverick   cyan       elvis         clyde       ptera       maverick    quad        caffeine   )
@@ -77,7 +78,7 @@ if ($day == Thu) then
   set J4=(6      5          6          6             6           5           5           6           6          )
   set J5=(0      10         8          8             8           10          10          8           7          )
   set J6=(0      0          0          0             0           0           0           0           8          )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       /tmp/petsc )
+  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY     )
 endif  
 if ($day == Fri) then
   set M =(snake  maverick   cyan       elvis         clyde       ptera       maverick    quad        caffeine   )
@@ -90,7 +91,7 @@ if ($day == Fri) then
   set J4=(6      6          5          5             5           5           7           5           6          )
   set J5=(0      8          10         10            10          10          8           10          8          )
   set J6=(0      0          0          0             0           0           0           0           0          )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       /tmp/petsc )
+  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY     )
 endif
 if ($day == Sat) then
   set M =(snake  maverick   cyan       elvis         doc         ptera       maverick    quad        caffeine   )
@@ -103,7 +104,7 @@ if ($day == Sat) then
   set J4=(6      6          6          5             6           6           10          7           5          )
   set J5=(0      7          7          10            7           7           0           8           10         )
   set J6=(0      8          8          0             8           8           0           0           4          )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc  $LOIS       /tmp/petsc  $CCST       /tmp/petsc )
+  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc  $LOIS       /tmp/petsc  $CCST       $BALAY     )
 endif
 #
 #  test for each machine
