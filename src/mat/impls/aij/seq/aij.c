@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.108 1995/11/01 23:17:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.109 1995/11/02 04:25:46 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -15,9 +15,28 @@ extern int MatToSymmetricIJ_SeqAIJ(Mat_SeqAIJ*,int**,int**);
 static int MatGetReordering_SeqAIJ(Mat A,MatOrdering type,IS *rperm, IS *cperm)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        ierr, *ia, *ja;
+  int        ierr, *ia, *ja,n,*idx,i;
 
   if (!a->assembled) SETERRQ(1,"MatGetReordering_SeqAIJ:Not for unassembled matrix");
+
+  /* 
+     this is tacky: In the future when we have written special factorization
+     and solve routines for the identity permutation we should use a 
+     stride index set instead of the general one.
+  */
+  if (type  == ORDER_NATURAL) {
+    n = a->n;
+    idx = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(idx);
+    for ( i=0; i<n; i++ ) idx[i] = i;
+    ierr = ISCreateSeq(MPI_COMM_SELF,n,idx,rperm); CHKERRQ(ierr);
+    ierr = ISCreateSeq(MPI_COMM_SELF,n,idx,cperm); CHKERRQ(ierr);
+    PetscFree(idx);
+    ISSetPermutation(*rperm);
+    ISSetPermutation(*cperm);
+    ISSetIdentity(*rperm);
+    ISSetIdentity(*cperm);
+    return 0;
+  }
 
   ierr = MatToSymmetricIJ_SeqAIJ( a, &ia, &ja ); CHKERRQ(ierr);
   ierr = MatGetReordering_IJ(a->n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
@@ -816,7 +835,7 @@ static int MatNorm_SeqAIJ(Mat A,NormType type,double *norm)
     PetscMemzero(tmp,a->n*sizeof(double));
     *norm = 0.0;
     for ( j=0; j<a->nz; j++ ) {
-        tmp[*jj++ + shift] += PetscAbsScalar(*v++); 
+        tmp[*jj++ + shift] += PetscAbsScalar(*v);  v++;
     }
     for ( j=0; j<a->n; j++ ) {
       if (tmp[j] > *norm) *norm = tmp[j];
@@ -916,12 +935,13 @@ static int MatScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 
 static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat *B)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data,*c;
-  int        nznew, *smap, i, k, kstart, kend, ierr, oldcols = a->n,*lens;
-  int        *irow, *icol, nrows, ncols, *cwork, shift = a->indexshift,*ssmap;
-  int        first,step,*starts,*j_new,*i_new;
-  Scalar     *vwork,*a_new;
-  Mat        C;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ *) A->data,*c;
+  int          nznew, *smap, i, k, kstart, kend, ierr, oldcols = a->n,*lens;
+  register int sum,lensi;
+  int          *irow, *icol, nrows, ncols, *cwork, shift = a->indexshift,*ssmap;
+  int          first,step,*starts,*j_new,*i_new,*aj = a->j, *ai = a->i,ii,*ailen = a->ilen;
+  Scalar       *vwork,*a_new;
+  Mat          C;
 
   if (!a->assembled) SETERRQ(1,"MatGetSubMatrix_SeqAIJ:Not for unassembled matrix");  
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
@@ -934,19 +954,20 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
     starts = lens + ncols;
     /* loop over new rows determining lens and starting points */
     for (i=0; i<nrows; i++) {
-      kstart  = a->i[irow[i]]+shift; 
-      kend    = kstart + a->ilen[irow[i]];
+      kstart  = ai[irow[i]]+shift; 
+      kend    = kstart + ailen[irow[i]];
       for ( k=kstart; k<kend; k++ ) {
-        if (a->j[k] >= first) {
+        if (aj[k] >= first) {
           starts[i] = k;
           break;
 	}
       }
-      lens[i] = 0;
+      sum = 0;
       while (k < kend) {
-        if (a->j[k++] >= first+ncols) break;
-        lens[i]++;
+        if (aj[k++] >= first+ncols) break;
+        sum++;
       }
+      lens[i] = sum;
     }
     /* create submatrix */
     if (scall == MAT_REUSE_MATRIX) {
@@ -967,13 +988,15 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
     i_new    = c->i;
     i_new[0] = -shift;
     for (i=0; i<nrows; i++) {
-      for ( k=0; k<lens[i]; k++ ) {
-        *j_new++ = a->j[k+starts[i]] - first;
+      ii    = starts[i];
+      lensi = lens[i];
+      for ( k=0; k<lensi; k++ ) {
+        *j_new++ = aj[ii+k] - first;
       }
-      PetscMemcpy(a_new,a->a + starts[i],lens[i]*sizeof(Scalar));
-      a_new      += lens[i];
-      i_new[i+1]  = i_new[i] + lens[i];
-      c->ilen[i]  = lens[i];
+      PetscMemcpy(a_new,a->a + starts[i],lensi*sizeof(Scalar));
+      a_new      += lensi;
+      i_new[i+1]  = i_new[i] + lensi;
+      c->ilen[i]  = lensi;
     }
     PetscFree(lens);
   }
@@ -998,7 +1021,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
       }
     }
     /* Create and fill new matrix */
-    if (MatValidMatrix(*B)) {
+    if (scall == MAT_REUSE_MATRIX) {
       int n_cols,n_rows;
       ierr = MatGetSize(*B,&n_rows,&n_cols); CHKERRQ(ierr);
       if (n_rows != nrows || n_cols != ncols) SETERRQ(1,"MatGetSubMatrix_SeqAIJ:");
