@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.74 1998/11/12 03:37:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.75 1998/12/03 04:05:28 bsmith Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -213,7 +213,7 @@ int MatSNESFDMFMult_Private(Mat mat,Vec a,Vec y)
   SNES           snes;
   Scalar         h, mone = -1.0;
   Vec            w,U,F;
-  int            ierr, (*eval_fct)(SNES,Vec,Vec);
+  int            ierr, (*eval_fct)(SNES,Vec,Vec)=0;
 
   PetscFunctionBegin;
   /* We log matrix-free matrix-vector products separately, so that we can

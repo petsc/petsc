@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.52 1998/10/05 16:23:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.53 1998/10/09 19:25:42 bsmith Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -46,7 +46,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
   double   amax, epsilon = 1.e-8; /* assumes double precision */
   double   dx_min = 1.e-16, dx_par = 1.e-1;
   MPI_Comm comm;
-  int      (*eval_fct)(SNES,Vec,Vec);
+  int      (*eval_fct)(SNES,Vec,Vec)=0;
 
   PetscFunctionBegin;
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) eval_fct = SNESComputeFunction;
