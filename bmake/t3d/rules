@@ -41,3 +41,4 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) -f $*.o $*.f
+shared:

@@ -117,7 +117,7 @@ foreach job ($*)
   endif
 
   rsh $mach -n "cd $hme ; echo 'Build on $mach $bopt `date` ' > maint/build_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme ;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt all >>& maint/build_$arch.$bopt.$mach.log"
+  rsh $mach -n "cd $hme ;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt all shared >>& maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ; echo '****************************************************' >> maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt fortran >>& maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme; chmod -R g+w lib" >& /dev/null

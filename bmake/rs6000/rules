@@ -71,3 +71,4 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 	-$(AR) cr $(LIBNAME) $*.o
 	-$(RM) $*.o	$*.f
 
+shared:
