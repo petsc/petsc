@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
       if not self.getLinker() == self.getCompiler(): desc.append('  C Linker:           '+self.getLinker())
 #     desc.append('  C Linker Flags:     '+self.linkerFlags)
       self.popLanguage()
-    if 'CXX' in self.framework.argDB and self.framework.argDB['CXX']:
+    if 'CXX' in self.framework.argDB:
       self.pushLanguage('Cxx')
       desc.append('  C++ Compiler:       '+self.getCompiler())
 #     desc.append('  C++ Compiler Flags: '+self.compilerFlags)
@@ -142,9 +142,10 @@ class Configure(config.base.Configure):
         if os.path.basename(self.framework.argDB['CC']) == 'mpicc':
           self.framework.log.write(' MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
         self.popLanguage()
-        self.framework.argDB['CC'] = None
-    if 'CC' in self.framework.argDB and not self.framework.argDB['CC'] is None:
+        del self.framework.argDB['CC']
+    if 'CC' in self.framework.argDB:
       self.addArgumentSubstitution('CC', 'CC')
+      self.addArgumentSubstitution('CFLAGS', 'CFLAGS')
       self.isGCC = Configure.isGNU(self.framework.argDB['CC'])
     else:
       raise RuntimeError('Could not locate a functional C compiler')
@@ -175,26 +176,15 @@ class Configure(config.base.Configure):
         import os
 
         self.popLanguage()
-        self.framework.argDB['CPP'] = None
-    if 'CPP' in self.framework.argDB and not self.framework.argDB['CPP'] is None:
+        del self.framework.argDB['CPP']
+    if 'CPP' in self.framework.argDB:
       self.addArgumentSubstitution('CPP', 'CPP')
       self.addArgumentSubstitution('CPPFLAGS', 'CPPFLAGS')
     return
 
-  def checkCFlags(self):
-    '''Try to turn on debugging if no flags are given'''
-    if not self.framework.argDB['CFLAGS']:
-      self.pushLanguage('C')
-      flag = '-g'
-      if self.checkCompilerFlag(flag):
-        self.framework.argDB['CFLAGS'] = self.framework.argDB['CFLAGS']+' '+flag
-      self.popLanguage()
-    self.addArgumentSubstitution('CFLAGS', 'CFLAGS')
-    return
-
   def checkCRestrict(self):
     '''Check for the C restrict keyword'''
-    if not self.framework.argDB.has_key('CC'): return
+    if not 'CC' in self.framework.argDB: return
     keyword = 'unsupported'
     self.pushLanguage('C')
     # Try the official restrict keyword, then gcc's __restrict__, then
@@ -216,7 +206,7 @@ class Configure(config.base.Configure):
 
   def checkCFormatting(self):
     '''Activate format string checking if using the GNU compilers'''
-    if not self.framework.argDB.has_key('CC'): return
+    if not 'CC' in self.framework.argDB: return
     if self.isGCC:
       self.addDefine('PRINTF_FORMAT_CHECK(A,B)', '__attribute__((format (printf, A, B)))')
     return
@@ -278,25 +268,31 @@ class Configure(config.base.Configure):
   def checkCxxCompiler(self):
     '''Locate a functional Cxx compiler'''
     for compiler in self.generateCxxCompilerGuesses():
-      try:
-        if self.getExecutable(compiler, resultName = 'CXX'):
-          self.framework.argDB['CXX'] = self.CXX
-          self.checkCompiler('Cxx')
-          break
-      except RuntimeError, e:
-        import os
+      # Determine an acceptable extensions for the C++ compiler
+      for ext in ['.cc', '.cpp', '.C']:
+        self.framework.cxxExt = ext
+        try:
+          if self.getExecutable(compiler, resultName = 'CXX'):
+            self.framework.argDB['CXX'] = self.CXX
+            self.checkCompiler('Cxx')
+            break
+        except RuntimeError, e:
+          import os
 
-        if os.path.basename(self.framework.argDB['CXX']) in ['mpicxx', 'mpiCC']:
-          self.framework.log.write('  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
-        self.popLanguage()
-        self.framework.argDB['CXX'] = None
-    if 'CXX' in self.framework.argDB and not self.framework.argDB['CXX'] is None:
+          if os.path.basename(self.framework.argDB['CXX']) in ['mpicxx', 'mpiCC']:
+            self.framework.log.write('  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
+          self.popLanguage()
+          self.framework.cxxExt = None
+          del self.framework.argDB['CXX']
+      if 'CXX' in self.framework.argDB:
+        break
+    if 'CXX' in self.framework.argDB:
       self.addArgumentSubstitution('CXX', 'CXX')
+      self.addArgumentSubstitution('CXXFLAGS', 'CXXFLAGS')
       self.isGCXX = Configure.isGNU(self.framework.argDB['CXX'])
     else:
       self.addSubstitution('CXX', '')
       self.isGCXX = 0
-      self.framework.argDB['CXX'] = None
     return
 
   def generateCxxPreprocessorGuesses(self):
@@ -311,7 +307,7 @@ class Configure(config.base.Configure):
 
   def checkCxxPreprocessor(self):
     '''Locate a functional Cxx preprocessor'''
-    if not self.framework.argDB['CXX']:
+    if not 'CXX' in self.framework.argDB:
       self.addSubstitution('CXXCPP', '')
       return
     for compiler in self.generateCxxPreprocessorGuesses():
@@ -334,25 +330,21 @@ class Configure(config.base.Configure):
       self.addArgumentSubstitution('CXXCPP', 'CXXCPP')
     return
 
-  def checkCxxFlags(self):
-    '''Try to turn on debugging if no flags are given'''
-    if not self.framework.argDB['CXX']:
-      self.addSubstitution('CXXFLAGS', '')
-      return
-    if not self.framework.argDB['CXXFLAGS']:
-      self.pushLanguage('C++')
-      flag = '-g'
-      if self.checkCompilerFlag(flag):
-        self.framework.argDB['CXXFLAGS'] = self.framework.argDB['CXXFLAGS']+' '+flag
-      self.popLanguage()
-    self.addArgumentSubstitution('CXXFLAGS', 'CXXFLAGS')
+  def checkCxxOptionalExtensions(self):
+    '''Check whether the C++ compiler (IBM xlC, OSF5) need special flag for .c files which contain C++'''
+    self.pushLanguage('C++')
+    self.sourceExtension = '.c'
+    for flag in ['', '-+', '-x cxx -tlocal']:
+      try:
+        self.addCompilerFlag(flag, body = 'class somename { int i; };')
+        break
+      except RuntimeError:
+        pass
+    self.popLanguage()
     return
 
   def checkCxxNamespace(self):
     '''Checks that C++ compiler supports namespaces, and if it does defines HAVE_CXX_NAMESPACE'''
-    if not self.framework.argDB['CXX']:
-      return
-    if not self.framework.argDB.has_key('CXX'): return
     self.pushLanguage('C++')
     if self.checkCompile('namespace petsc {int dummy;}'):
       self.addDefine('HAVE_CXX_NAMESPACE', 1)
@@ -422,28 +414,23 @@ class Configure(config.base.Configure):
         self.framework.argDB['FC'] = None
     if 'FC' in self.framework.argDB and not self.framework.argDB['FC'] is None:
       self.addArgumentSubstitution('FC', 'FC')
+      self.addArgumentSubstitution('FFLAGS', 'FFLAGS')
     else:
       self.addSubstitution('FC', '')
     return
 
-  def checkFortranFlags(self):
-    '''Try to turn on debugging if no flags are given'''
-    if not self.framework.argDB['FFLAGS']:
-      self.pushLanguage('F77')
-      flag = '-g'
-      if self.checkCompilerFlag(flag):
-        self.framework.argDB['FFLAGS'] = self.framework.argDB['FFLAGS']+' '+flag
-      # see if compiler (ifc) bitches about real*8, if so try using -w90 -w to eliminate bitch
+  def checkFortranTypeSizes(self):
+    '''Check whether real*8 is supported and suggest flags which will allow support'''
+    self.pushLanguage('F77')
+    # Check whether the compiler (ifc) bitches about real*8, if so try using -w90 -w to eliminate bitch
+    (output, error, returnCode) = self.outputCompile('', '      real*8 variable', 1)
+    if output.find('Type size specifiers are an extension to standard Fortran 95') >= 0:
+      oldFlags = self.framework.argDB['FFLAGS']
+      self.framework.argDB['FFLAGS'] += ' -w90 -w'
       (output, error, returnCode) = self.outputCompile('', '      real*8 variable', 1)
-      if output.find('Type size specifiers are an extension to standard Fortran 95') >= 0:
-        flag = self.framework.argDB['FFLAGS']
-        self.framework.argDB['FFLAGS'] += ' -w90 -w'
-        (output, error, returnCode) = self.outputCompile('', '      real*8 variable', 1)
-        if returnCode or output.find('Type size specifiers are an extension to standard Fortran 95') >= 0:
-          self.framework.argDB['FFLAGS'] = flag          
-      self.popLanguage()
-
-    self.addArgumentSubstitution('FFLAGS', 'FFLAGS')
+      if returnCode or output.find('Type size specifiers are an extension to standard Fortran 95') >= 0:
+        self.framework.argDB['FFLAGS'] = oldFlags
+    self.popLanguage()
     return
 
   def mangleFortranFunction(self, name):
@@ -713,7 +700,7 @@ class Configure(config.base.Configure):
         raise RuntimeError('Fortran libraries cannot be used with C compiler')
 
     # check these monster libraries work from C++
-    if self.framework.argDB['CXX']:
+    if 'CXX' in self.framework.argDB:
       self.framework.argDB['LIBS'] += oldLibs+self.flibs
       try:
         self.checkCompiler('C++')
@@ -758,23 +745,23 @@ class Configure(config.base.Configure):
   def configure(self):
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
-    self.executeTest(self.checkCFlags)
     self.executeTest(self.checkCRestrict)
     self.executeTest(self.checkCFormatting)
 
-    self.executeTest(self.checkCxxCompiler)
-    self.executeTest(self.checkCxxFlags)
-    self.executeTest(self.checkCxxNamespace)
-
     self.executeTest(self.checkSharedLinkerPaths)
+    self.executeTest(self.checkLinkerFlags)
+    self.executeTest(self.checkSharedLinkerFlag)
+
+    self.executeTest(self.checkCxxCompiler)
+    if 'CXX' in self.framework.argDB:
+      self.executeTest(self.checkCxxNamespace)
+      self.executeTest(self.checkCxxOptionalExtensions)
+
     self.executeTest(self.checkFortranCompiler)
     if 'FC' in self.framework.argDB:
-      self.executeTest(self.checkFortranFlags)
+      self.executeTest(self.checkFortranTypeSizes)
       self.executeTest(self.checkFortranNameMangling)
       self.executeTest(self.checkFortranPreprocessor)
     self.executeTest(self.checkFortranLibraries)
     self.executeTest(self.checkFortran90Interface)
-
-    self.executeTest(self.checkLinkerFlags)
-    self.executeTest(self.checkSharedLinkerFlag)
     return
