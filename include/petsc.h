@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.211 1998/04/23 14:39:10 curfman Exp bsmith $ */
+/* $Id: petsc.h,v 1.212 1998/04/26 23:03:25 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -45,10 +45,10 @@
 /*
     This shouuld be in petscmath.h?
 */
-#if defined(HAVE_64BITS) && !defined(USE_POINTER_CONVERSION)
-#define PetscFortranAddr   long
-#else
+#if defined(USE_POINTER_CONVERSION)
 #define PetscFortranAddr   int
+#else
+#define PetscFortranAddr   long
 #endif
 
 extern MPI_Comm PETSC_COMM_WORLD;
