@@ -1,6 +1,6 @@
-# $Id: base_variables,v 1.1 1999/02/08 23:44:31 balay Exp balay $ 
+# $Id: base_variables,v 1.2 1999/02/08 23:45:21 balay Exp balay $ 
 
-# $Id: base_variables,v 1.1 1999/02/08 23:44:31 balay Exp balay $ 
+# $Id: base_variables,v 1.2 1999/02/08 23:45:21 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -12,7 +12,7 @@ SHELL            = /bin/sh
 # ######################### C and Fortran compiler ########################
 #
 C_CC             = cc -Aa +z -Ae
-C_FC             = f90 ${COPTFLAGS} 
+C_FC             = f90 +z ${COPTFLAGS} 
 C_CLINKER        = cc
 C_FLINKER        = f90 ${FOPTFLAGS} 
 C_CCV            = unknown
@@ -28,7 +28,7 @@ O_FOPTFLAGS      = -O
 # ########################## C++ compiler ##################################
 #
 CXX_CC           = CC -Aa +z -ext +eh 
-CXX_FC           = f90
+CXX_FC           = f90 +z
 CXX_CLINKER      = CC ${COPTFLAGS} 
 CXX_FLINKER      = f90 ${FOPTFLAGS} 
 CXX_CCV          = unknown
