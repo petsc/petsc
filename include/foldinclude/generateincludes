@@ -3,8 +3,14 @@
 #  Generates the include files in petsc/include/finclude from those in
 #  petsc/include/FINCLUDE
 #
+#
+#  
 cd $PETSC_DIR/include/FINCLUDE
 rm -f ../finclude/*.h
 foreach i (*.h) 
-  grep -v "define" $i > ../finclude/$i
+  grep -v "define" $i | grep -v "else" | grep -v "endif" | grep -v "real " | grep -v "include" > ../finclude/$i
 end
+cd $PETSC_DIR/include/finclude
+echo "C   You will have to adjust this line for your site" >> petsc.h
+echo "      include '/usr/local/mpi/include/mpif.h'" >> petsc.h
+chmod g+w *.h

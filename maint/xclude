@@ -1,8 +1,8 @@
 petsc/docs/www/www.cit
 petsc/docs/www/petsc.cit
 petsc/bmake/sun4_local
-petsc/src/ts
-petsc/include/ts
+petsc/include/finclude/generateincludes
+petsc/include/finclude/RCS
 petsc/src/contrib/RCS
 petsc/src/contrib/sda/
 petsc/src/contrib/ysmp
