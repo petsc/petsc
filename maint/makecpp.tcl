@@ -1,6 +1,6 @@
 #! /usr/local/tcl/bin/tclsh
 #!/gnuwin32/b18/tcl/bin/tclsh76.exe
-# $Id: makecpp.tcl,v 1.5 1997/11/13 20:48:18 balay Exp balay $ 
+# $Id: makecpp.tcl,v 1.6 1998/03/19 02:28:15 balay Exp balay $ 
 
 
 proc movefilesin { dir } {
@@ -59,7 +59,7 @@ proc updatemakefile { makefile } {
         #
         # Change / to \ 
         #
-#       regsub -all "/" $databuff "\\" databuff
+        # regsub -all "/" $databuff "\\" databuff
         #
         # Strip out the LINKER option -o ex* from the makefiles
         #
@@ -75,6 +75,11 @@ proc updatemakefile { makefile } {
         # PETSC_ARCH -> nt
         #
         regsub -all {\$\{PETSC_ARCH\}} $databuff "nt" databuff         
+
+        #
+        # All ${VAR} to $(VAR)
+        #
+        regsub -all {\$\{([^\}]*)\}} $databuff \$(\\1) databuff         
 
         set fileid [ open $makefile w ]
         puts $fileid $databuff
@@ -102,4 +107,4 @@ if { $argc == 1 } {
 puts "**** make cpp in $PETSC_HOME ************"
 movefilesin $PETSC_HOME
 #movefilesin c:/work/petsc/xyz
-copy $PETSC_HOME/bmake/nt/makefile.dos $PETSC_HOME/makefile
+#copy $PETSC_HOME/bmake/nt/makefile.dos $PETSC_HOME/makefile
