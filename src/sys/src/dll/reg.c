@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.16 1998/05/14 01:43:05 curfman Exp curfman $";
+static char vcid[] = "$Id: reg.c,v 1.17 1998/05/15 17:20:46 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -121,17 +121,17 @@ int PetscFinalize_DynamicLibraries(void)
 #endif
 
 /* ------------------------------------------------------------------------------*/
-struct FuncList_struct {
-  int                    (*routine)(void *); /* the routine */
-  char                   *path;              /* path of link library containing routine */
-  char                   *name;              /* string to identify routine */
-  char                   *rname;             /* routine name in dynamic library */
-  struct FuncList_struct *next;              /* next pointer */
+typedef struct _FuncList *FuncList;
+struct _FuncList {
+  int      (*routine)(void *); /* the routine */
+  char     *path;              /* path of link library containing routine */
+  char     *name;              /* string to identify routine */
+  char     *rname;             /* routine name in dynamic library */
+  FuncList next;               /* next pointer */
 };
-typedef struct FuncList_struct FuncList;
 
 struct _DLList {
-    FuncList *head, *tail;   /* head and tail of this DLList */
+    FuncList head, tail;   /* head and tail of this DLList */
     char     *regname;       /* registration type name */
     DLList   next;           /* next DLList */
 };
@@ -197,12 +197,12 @@ int DLRegisterCreate(DLList *fl )
 #define __FUNC__ "DLRegister_Private"
 int DLRegister_Private( DLList *fl, char *name, char *rname,int (*fnc)(void *))
 {
-  FuncList *entry;
+  FuncList entry;
   int      ierr;
   char     *fpath,*fname;
 
   PetscFunctionBegin;
-  entry          = (FuncList*) PetscMalloc(sizeof(FuncList));CHKPTRQ(entry);
+  entry          = (FuncList) PetscMalloc(sizeof(struct _FuncList));CHKPTRQ(entry);
   entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 ); CHKPTRQ(entry->name);
   PetscStrcpy( entry->name, name );
 
@@ -236,7 +236,7 @@ int DLRegister_Private( DLList *fl, char *name, char *rname,int (*fnc)(void *))
 */
 int DLRegisterDestroy(DLList fl)
 {
-  FuncList *entry, *next;
+  FuncList entry, next;
   DLList   tmp = dlallhead;
 
   PetscFunctionBegin;
@@ -310,7 +310,7 @@ int DLRegisterDestroyAll(void)
 */
 int DLRegisterFind(MPI_Comm comm,DLList fl,char *name, int (**r)(void *))
 {
-  FuncList *entry = fl->head;
+  FuncList entry = fl->head;
   char     *function, *path;
   int      ierr;
   
@@ -394,7 +394,7 @@ int DLRegisterFind(MPI_Comm comm,DLList fl,char *name, int (**r)(void *))
 */
 int DLRegisterPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,DLList list)
 {
-  FuncList *entry;
+  FuncList entry;
   int      count = 0;
   char     p[64];
 
