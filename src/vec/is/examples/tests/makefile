@@ -28,7 +28,7 @@ ex1: ex1.o chkopts
 	$(RM) -f ex1.o
 
 ex1f: ex1f.o chkopts
-	-$(CLINKER) -o ex1f ex1f.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
+	-$(FLINKER) -o ex1f ex1f.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
 	$(RM) -f ex1f.o
 
 ex2: ex2.o chkopts
@@ -36,7 +36,7 @@ ex2: ex2.o chkopts
 	$(RM) -f ex2.o
 
 ex2f: ex2f.o chkopts
-	-$(CLINKER) -o ex2f ex2f.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
+	-$(FLINKER) -o ex2f ex2f.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
 	$(RM) -f ex2f.o
 
 runex1:
