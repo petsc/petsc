@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.102 2001/05/15 03:22:08 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.103 2001/05/18 19:31:27 bsmith Exp bsmith $ 
 
 # This directory contains SNES example programs for solving systems of
 # nonlinear equations.  Examples of unconstrained minimization problems
@@ -340,7 +340,7 @@ TESTEXAMPLES_2	 = ex5.PETSc runex5_8 runex5_9 \
 		   runex5_10 ex5.rm 
 TESTEXAMPLES_3	 = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_6   = 
-TESTEXAMPLES_8	 = ex5f.PETSc runex5f runex5f_2 runex5f_3 ex5f.rm
+TESTEXAMPLES_8	 = ex5f.PETSc runex5f runex5f_3 ex5f.rm
 TESTEXAMPLES_9	 = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
 		   runex3 ex3.rm ex6.PETSc runex6 runex6_2 ex6.rm \
@@ -351,5 +351,6 @@ TESTEXAMPLES_12	 = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 ex5f90.rm
 TESTEXAMPLES_13  = 
 TESTEXAMPLES_14  = ex5.PETSc runex5_11 runex5_12 ex5.rm
 TESTEXAMPLES_15  = 
+TESTEXAMPLES_19  = ex5f.PETSc runex5f_2 ex5f.rm
 
 include ${PETSC_DIR}/bmake/common_test

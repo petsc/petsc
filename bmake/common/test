@@ -1,4 +1,4 @@
-# $Id: common_test,v 1.2 2000/08/17 04:28:55 bsmith Exp bsmith $ 
+# $Id: common_test,v 1.3 2001/02/12 19:29:36 bsmith Exp bsmith $ 
 #
 #
 #
@@ -19,9 +19,10 @@
 #   14 - requires Matlab - src/dm/da/examples/tests
 #   15 - AMS (Alice Memory Snooper) tests - src/snes/examples/tutuorials
 #   16 - Requires ParMetis
-#   17 - requires PYTHON (uses urlget.py) and popen()
+#   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
 #   18 - requires SPAI
-#
+#   19 - requires ADIFOR
+
 testexamples_1: ${TESTEXAMPLES_1} clean
 testexamples_2: ${TESTEXAMPLES_2} clean
 testexamples_3: ${TESTEXAMPLES_3} clean
@@ -40,6 +41,7 @@ testexamples_15: ${TESTEXAMPLES_15} clean
 testexamples_16: ${TESTEXAMPLES_16} clean
 testexamples_17: ${TESTEXAMPLES_17} clean
 testexamples_18: ${TESTEXAMPLES_18} clean
+testexamples_19: ${TESTEXAMPLES_19} clean
 
 buildexamples_1: 
 	-@${OMAKE} testexamples_1 TESTEXAMPLES_1=`echo ${TESTEXAMPLES_1} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
@@ -71,6 +73,14 @@ buildexamples_14:
 	-@${OMAKE} testexamples_14 TESTEXAMPLES_14=`echo ${TESTEXAMPLES_14} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_15:
 	-@${OMAKE} testexamples_15 TESTEXAMPLES_15=`echo ${TESTEXAMPLES_15} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_16:
+	-@${OMAKE} testexamples_16 TESTEXAMPLES_16=`echo ${TESTEXAMPLES_16} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_17:
+	-@${OMAKE} testexamples_17 TESTEXAMPLES_17=`echo ${TESTEXAMPLES_17} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_18:
+	-@${OMAKE} testexamples_18 TESTEXAMPLES_18=`echo ${TESTEXAMPLES_18} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_19:
+	-@${OMAKE} testexamples_19 TESTEXAMPLES_19=`echo ${TESTEXAMPLES_19} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 
 
 
