@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.299 1999/02/17 17:21:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.300 1999/03/02 19:39:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -657,7 +657,7 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   } 
   PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Matrix size: %d X %d; storage space: %d unneeded, %d used\n",
            m,a->n,fshift,a->nz);
-  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues is %d\n",
+  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues() is %d\n",
            a->reallocs);
   PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Most nonzeros in any row is %d\n",rmax);
   a->reallocs          = 0;
