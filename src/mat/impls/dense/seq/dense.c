@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.138 1998/03/12 23:18:15 bsmith Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.139 1998/03/16 18:40:12 balay Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -727,9 +727,8 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqDense"
-int MatView_SeqDense(PetscObject obj,Viewer viewer)
+int MatView_SeqDense(Mat A,Viewer viewer)
 {
-  Mat          A = (Mat) obj;
   Mat_SeqDense *a = (Mat_SeqDense*) A->data;
   ViewerType   vtype;
   int          ierr;
@@ -749,15 +748,14 @@ int MatView_SeqDense(PetscObject obj,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_SeqDense"
-int MatDestroy_SeqDense(PetscObject obj)
+int MatDestroy_SeqDense(Mat mat)
 {
-  Mat          mat = (Mat) obj;
   Mat_SeqDense *l = (Mat_SeqDense *) mat->data;
   int          ierr;
 
   PetscFunctionBegin;
 #if defined(USE_PETSC_LOG)
-  PLogObjectState(obj,"Rows %d Cols %d",l->m,l->n);
+  PLogObjectState((PetscObject)mat,"Rows %d Cols %d",l->m,l->n);
 #endif
   if (l->pivots) PetscFree(l->pivots);
   if (!l->user_alloc) PetscFree(l->v);
@@ -1217,10 +1215,10 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
   b             = (Mat_SeqDense *) PetscMalloc(sizeof(Mat_SeqDense)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqDense));
   PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
-  B->destroy    = MatDestroy_SeqDense;
-  B->view       = MatView_SeqDense;
-  B->factor     = 0;
-  B->mapping    = 0;
+  B->ops->destroy    = MatDestroy_SeqDense;
+  B->ops->view       = MatView_SeqDense;
+  B->factor          = 0;
+  B->mapping         = 0;
   PLogObjectMemory(B,sizeof(struct _p_Mat));
   B->data       = (void *) b;
 

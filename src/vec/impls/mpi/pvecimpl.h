@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.16 1997/11/23 16:49:07 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.17 1997/12/12 19:36:34 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -34,14 +34,14 @@ extern int VecNorm_MPI(Vec,NormType, double *);
 extern int VecMax_MPI(Vec, int *, double *);
 extern int VecMin_MPI(Vec, int *, double *);
 extern int VecGetOwnershipRange_MPI(Vec,int *,int*); 
-extern int VecDestroy_MPI(PetscObject);
+extern int VecDestroy_MPI(Vec);
 extern int VecView_MPI_File(Vec, Viewer);
 extern int VecView_MPI_Files(Vec, Viewer);
 extern int VecView_MPI_Binary(Vec , Viewer);
 extern int VecView_MPI_Draw_LG(Vec ,Viewer);
 extern int VecView_MPI_Draw(Vec , Viewer);
 extern int VecView_MPI_Matlab(Vec , Viewer);
-extern int VecView_MPI(PetscObject,Viewer);
+extern int VecView_MPI(Vec,Viewer);
 extern int VecGetSize_MPI(Vec,int *);
 extern int VecSetValues_MPI(Vec, int, int *, Scalar*,InsertMode);
 extern int VecSetValuesBlocked_MPI(Vec, int, int *, Scalar*,InsertMode);

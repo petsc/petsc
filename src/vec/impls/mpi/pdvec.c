@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.87 1998/03/12 23:15:32 bsmith Exp balay $ */
+/* $Id: pdvec.c,v 1.88 1998/03/16 18:38:12 balay Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -23,15 +23,14 @@ int VecGetOwnershipRange_MPI(Vec v,int *low,int* high)
 
 #undef __FUNC__  
 #define __FUNC__ "VecDestroy_MPI"
-int VecDestroy_MPI(PetscObject obj )
+int VecDestroy_MPI(Vec v)
 {
-  Vec     v = (Vec ) obj;
   Vec_MPI *x = (Vec_MPI *) v->data;
   int     ierr;
 
   PetscFunctionBegin;
 #if defined(USE_PETSC_LOG)
-  PLogObjectState(obj,"Length=%d",x->N);
+  PLogObjectState((PetscObject)v,"Length=%d",x->N);
 #endif  
   if (x->stash.array) PetscFree(x->stash.array);
   if (x->array_allocated) PetscFree(x->array_allocated);
@@ -404,9 +403,8 @@ int VecView_MPI_Matlab(Vec xin, Viewer viewer )
 
 #undef __FUNC__  
 #define __FUNC__ "VecView_MPI"
-int VecView_MPI(PetscObject obj,Viewer viewer)
+int VecView_MPI(Vec xin,Viewer viewer)
 {
-  Vec         xin = (Vec) obj;
   ViewerType  vtype;
   int         ierr;
 

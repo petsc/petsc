@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.94 1998/03/12 23:15:32 bsmith Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.95 1998/03/12 23:20:51 balay Exp bsmith $";
 #endif
 
 /*
@@ -125,8 +125,8 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
   s              = (Vec_MPI *) PetscMalloc(mem); CHKPTRQ(s);
   PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));
   v->data        = (void *) s;
-  v->destroy     = VecDestroy_MPI;
-  v->view        = VecView_MPI;
+  v->ops->destroy= VecDestroy_MPI;
+  v->ops->view   = VecView_MPI;
   s->n           = n;
   s->nghost      = nghost;
   s->N           = N;
@@ -551,8 +551,7 @@ int VecDuplicate_MPI( Vec win, Vec *v)
   /* New vector should inherit stashing property of parent */
   vw->stash.donotstash = w->stash.donotstash;
   
-  (*v)->childcopy    = win->childcopy;
-  (*v)->childdestroy = win->childdestroy;
+  ierr = OListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
   if (win->mapping) {
     (*v)->mapping = win->mapping;
     PetscObjectReference((PetscObject)win->mapping);
@@ -562,9 +561,7 @@ int VecDuplicate_MPI( Vec win, Vec *v)
     PetscObjectReference((PetscObject)win->bmapping);
   }
   (*v)->bs = win->bs;
-  if (win->child) {
-    ierr = (*win->childcopy)(win->child,&(*v)->child);CHKERRQ(ierr);
-  }
+
   PetscFunctionReturn(0);
 }
 
