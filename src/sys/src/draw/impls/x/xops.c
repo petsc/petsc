@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.65 1996/11/07 15:10:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.66 1996/11/08 20:38:21 curfman Exp balay $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -22,6 +22,8 @@ static char vcid[] = "$Id: xops.c,v 1.65 1996/11/07 15:10:27 bsmith Exp curfman 
                                        ((win)->port_yr - (win)->port_yl))/\
                                        ((win)->coor_yr - (win)->coor_yl))))
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawLine_X"
 int DrawLine_X(Draw Win, double xl, double yl, double xr, double yr,int cl)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -34,6 +36,8 @@ int DrawLine_X(Draw Win, double xl, double yl, double xr, double yr,int cl)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawPoint_X"
 static int DrawPoint_X(Draw Win,double x,double  y,int c)
 {
   int     xx,yy;
@@ -45,6 +49,8 @@ static int DrawPoint_X(Draw Win,double x,double  y,int c)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawRectangle_X"
 static int DrawRectangle_X(Draw Win, double xl, double yl, double xr, double yr,
                            int c1, int c2,int c3,int c4)
 {
@@ -61,6 +67,8 @@ static int DrawRectangle_X(Draw Win, double xl, double yl, double xr, double yr,
 
 extern int XiDrawInterpolatedTriangle(Draw_X*,int,int,int,int,int,int,int,int,int);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawTriangle_X"
 static int DrawTriangle_X(Draw Win, double X1, double Y1, double X2, 
                           double Y2,double X3,double Y3, int c1, int c2,int c3)
 {
@@ -91,6 +99,8 @@ static int DrawTriangle_X(Draw Win, double X1, double Y1, double X2,
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawText_X"
 static int DrawText_X(Draw Win,double x,double  y,int c,char *chrs )
 {
   int     xx,yy;
@@ -105,6 +115,8 @@ static int DrawText_X(Draw Win,double x,double  y,int c,char *chrs )
 
 int XiFontFixed( Draw_X*,int, int,XiFont **);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawTextSetSize_X"
 static int DrawTextSetSize_X(Draw Win,double x,double  y)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -116,6 +128,8 @@ static int DrawTextSetSize_X(Draw Win,double x,double  y)
   return XiFontFixed( XiWin,w, h, &XiWin->font);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawTextGetSize_X"
 int DrawTextGetSize_X(Draw Win,double *x,double  *y)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -127,6 +141,8 @@ int DrawTextGetSize_X(Draw Win,double *x,double  *y)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawTextVertical_X"
 int DrawTextVertical_X(Draw Win,double x,double  y,int c,char *chrs )
 {
   int     xx,yy,n = PetscStrlen(chrs),i;
@@ -147,6 +163,8 @@ int DrawTextVertical_X(Draw Win,double x,double  y,int c,char *chrs )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawFlush_X"
 static int DrawFlush_X(Draw Win )
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -154,6 +172,8 @@ static int DrawFlush_X(Draw Win )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSyncFlush_X"
 static int DrawSyncFlush_X(Draw Win )
 {
   int     rank;
@@ -174,6 +194,8 @@ static int DrawSyncFlush_X(Draw Win )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSetViewport_X"
 static int DrawSetViewport_X(Draw Win,double xl,double yl,double xr,double yr)
 {
   Draw_X*    XiWin = (Draw_X*) Win->data;
@@ -185,6 +207,8 @@ static int DrawSetViewport_X(Draw Win,double xl,double yl,double xr,double yr)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawClear_X"
 static int DrawClear_X(Draw Win)
 {
   Draw_X*  XiWin = (Draw_X*) Win->data;
@@ -199,6 +223,8 @@ static int DrawClear_X(Draw Win)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSyncClear_X"
 static int DrawSyncClear_X(Draw Win)
 {
   int     rank;
@@ -214,6 +240,8 @@ static int DrawSyncClear_X(Draw Win)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSetDoubleBuffer_X"
 static int DrawSetDoubleBuffer_X(Draw Win)
 {
   Draw_X*  win = (Draw_X*) Win->data;
@@ -230,6 +258,8 @@ static int DrawSetDoubleBuffer_X(Draw Win)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawGetMouseButton_X"
 static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
                                 double *y_user,double *x_phys,double *y_phys)
 {
@@ -262,6 +292,8 @@ static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawPause_X"
 static int DrawPause_X(Draw draw)
 {
   int ierr;
@@ -279,6 +311,8 @@ static int DrawPause_X(Draw draw)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawCreatePopUp_X"
 static int DrawCreatePopUp_X(Draw draw,Draw *popup)
 {
   int     ierr;
@@ -290,6 +324,8 @@ static int DrawCreatePopUp_X(Draw draw,Draw *popup)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSetTitle_X"
 static int DrawSetTitle_X(Draw draw,char *title)
 {
   Draw_X        *win = (Draw_X *) draw->data;
@@ -302,6 +338,8 @@ static int DrawSetTitle_X(Draw draw,char *title)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawCheckResizedWindow_X"
 static int DrawCheckResizedWindow_X(Draw draw)
 {
   Draw_X       *win = (Draw_X *) draw->data;
@@ -351,6 +389,8 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
                                  DrawSetTitle_X,
                                  DrawCheckResizedWindow_X };
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawDestroy_X"
 int DrawDestroy_X(PetscObject obj)
 {
   Draw   ctx = (Draw) obj;
@@ -369,6 +409,8 @@ int DrawDestroy_X(PetscObject obj)
 extern int XiQuickWindow(Draw_X*,char*,char*,int,int,int,int,int);
 extern int XiQuickWindowFromWindow(Draw_X*,char*,Window,int);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawXGetDisplaySize_Private"
 int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
 {
   Display *display;
@@ -382,6 +424,8 @@ int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawOpenX"
 /*@C
    DrawOpenX - Opens an X-window for use with the Draw routines.
 
@@ -541,6 +585,8 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
 #else
 
 #include "draw.h"
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawOpenX"
 int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* ctx)
 {
   int rank,flag;
@@ -556,6 +602,8 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
 #endif
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerDrawOpenX"
 /*@C
    ViewerDrawOpenX - Opens an X window for use as a viewer. If you want to 
    do graphics in this window, you must call ViewerDrawGetDraw() and
@@ -627,6 +675,8 @@ int ViewerDrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,
 Viewer VIEWER_DRAWX_SELF_PRIVATE = 0, VIEWER_DRAWX_WORLD_PRIVATE_0 = 0,
        VIEWER_DRAWX_WORLD_PRIVATE_1 = 0, VIEWER_DRAWX_WORLD_PRIVATE_2 = 0;
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerInitializeDrawXSelf_Private"
 int ViewerInitializeDrawXSelf_Private()
 {
   int ierr,xywh[4],size = 4,flg;
@@ -640,6 +690,8 @@ int ViewerInitializeDrawXSelf_Private()
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerInitializeDrawXWorld_Private_0"
 int ViewerInitializeDrawXWorld_Private_0()
 {
   int ierr,xywh[4],size = 4,flg;
@@ -653,6 +705,8 @@ int ViewerInitializeDrawXWorld_Private_0()
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerInitializeDrawXWorld_Private_1"
 int ViewerInitializeDrawXWorld_Private_1()
 {
   int ierr,xywh[4],size = 4,flg;
@@ -666,6 +720,8 @@ int ViewerInitializeDrawXWorld_Private_1()
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerInitializeDrawXWorld_Private_2"
 int ViewerInitializeDrawXWorld_Private_2()
 {
   int ierr,xywh[4],size = 4,flg;
@@ -679,6 +735,8 @@ int ViewerInitializeDrawXWorld_Private_2()
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerDestroyDrawX_Private"
 int ViewerDestroyDrawX_Private()
 {
   int ierr;
