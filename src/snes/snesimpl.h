@@ -1,7 +1,8 @@
-/* $Id: snesimpl.h,v 1.32 1996/01/23 05:19:28 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.33 1996/03/23 18:33:59 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
+#include "draw.h"
 #include "snes.h"
 
 /*
@@ -92,6 +93,8 @@ struct _SNES {
   Mat      mfshell;           /* MatShell for matrix-free from command line */
 
   double   ttol;              /* used by default convergence test routine */
+
+  DrawLG   xmonitor;     /* Where -snes_xmonitor context is stashed */
 };
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
