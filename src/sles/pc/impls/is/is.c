@@ -1,4 +1,4 @@
-/*$Id: is.c,v 1.4 2001/01/16 18:19:15 balay Exp bsmith $*/
+/*$Id: is.c,v 1.5 2001/02/19 18:32:06 bsmith Exp balay $*/
 #include "src/sles/pc/impls/is/is.h"
 
 /* -------------------------------------------------------------------------- */
@@ -370,7 +370,7 @@ int PCISScatterArrayNToVecB (Scalar *array_N, Vec v_B, InsertMode imode, Scatter
   }
 
   ierr = ISRestoreIndices(pcis->is_B_local,&index);CHKERRQ(ierr);
-  ierr = VecRestoreArray(v_B,&array_B);
+  ierr = VecRestoreArray(v_B,&array_B);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.208 2001/02/05 17:15:19 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.209 2001/02/22 23:02:10 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -549,6 +549,10 @@ int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
       ierr = VecDuplicate(x,&work2);CHKERRQ(ierr);
       ierr = PCDiagonalScaleRight(pc,x,work2);CHKERRQ(ierr);
       ierr = (*pc->ops->applyBA)(pc,side,work2,y,work);CHKERRQ(ierr);
+      /* Remove null space from preconditioned vector y */
+      if (pc->nullsp) {
+        ierr = MatNullSpaceRemove(pc->nullsp,y,PETSC_NULL);CHKERRQ(ierr);
+      }
       ierr = PCDiagonalScaleLeft(pc,y,y);CHKERRQ(ierr);
       ierr = VecDestroy(work2);CHKERRQ(ierr);
     } else if (side == PC_RIGHT) {
@@ -567,6 +571,10 @@ int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
   } else {
     if (pc->ops->applyBA) {
       ierr = (*pc->ops->applyBA)(pc,side,x,y,work);CHKERRQ(ierr);
+      /* Remove null space from preconditioned vector y */
+      if (pc->nullsp) {
+        ierr = MatNullSpaceRemove(pc->nullsp,y,PETSC_NULL);CHKERRQ(ierr);
+      }
     } else if (side == PC_RIGHT) {
       ierr = PCApply(pc,x,work);CHKERRQ(ierr);
       ierr = MatMult(pc->mat,work,y);CHKERRQ(ierr);

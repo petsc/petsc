@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.7 2001/01/19 23:21:22 balay Exp balay $*/
+/*$Id: nn.c,v 1.8 2001/03/09 19:26:41 balay Exp balay $*/
 
 #include "src/sles/pc/impls/is/nn/nn.h"
 
@@ -385,7 +385,7 @@ int PCNNCreateCoarseMatrix (PC pc)
     if (flg) {
       PetscViewer viewer;
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"coarse.m",&viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);
+      ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
       ierr = MatView(pcnn->coarse_mat,viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
