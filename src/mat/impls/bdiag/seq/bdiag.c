@@ -532,13 +532,26 @@ $     diag = i/bs - j/bs  (integer division)
 @*/
 int MatSeqBDiagSetPreallocation(Mat B,int nd,int bs,int *diag,PetscScalar **diagv)
 {
+  int ierr,(*f)(Mat,int,int,int*,PetscScalar**);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqBDiagSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(B,nd,bs,diag,diagv);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqBDiagSetPreallocation_SeqBDiag"
+int MatSeqBDiagSetPreallocation_SeqBDiag(Mat B,int nd,int bs,int *diag,PetscScalar **diagv)
+{
   Mat_SeqBDiag *b;
   int          i,nda,sizetot,ierr, nd2 = 128,idiag[128];
   PetscTruth   flg1;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)B,MATSEQBDIAG,&flg1);CHKERRQ(ierr);
-  if (!flg1) PetscFunctionReturn(0);
 
   B->preallocated = PETSC_TRUE;
   if (bs == PETSC_DEFAULT) bs = 1;
@@ -651,6 +664,7 @@ int MatSeqBDiagSetPreallocation(Mat B,int nd,int bs,int *diag,PetscScalar **diag
   B->info.nz_unneeded = (double)b->maxnz;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDuplicate_SeqBDiag"
@@ -794,6 +808,10 @@ int MatCreate_SeqBDiag(Mat B)
   b->pivot  = 0;
 
   b->roworiented = PETSC_TRUE;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqBDiagSetPreallocation_C",
+                                    "MatSeqBDiagSetPreallocation_SeqBDiag",
+                                     MatSeqBDiagSetPreallocation_SeqBDiag);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -2583,14 +2583,27 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz,Mat *A)
 @*/
 int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
 {
+  int ierr,(*f)(Mat,int,int*);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(B,nz,nnz);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqAIJSetPreallocation_SeqAIJ"
+int MatSeqAIJSetPreallocation_SeqAIJ(Mat B,int nz,int *nnz)
+{
   Mat_SeqAIJ *b;
   size_t     len = 0;
   PetscTruth flg2,skipallocation = PETSC_FALSE;
   int        i,ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)B,MATSEQAIJ,&flg2);CHKERRQ(ierr);
-  if (!flg2) PetscFunctionReturn(0);
   
   if (nz == SKIP_ALLOCATION) {
     skipallocation = PETSC_TRUE;
@@ -2647,6 +2660,7 @@ int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
   B->info.nz_unneeded  = (double)b->maxnz;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 EXTERN int RegisterApplyPtAPRoutines_Private(Mat);
 
@@ -2742,6 +2756,9 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsSymmetric_C",
                                      "MatIsSymmetric_SeqAIJ",
                                       MatIsSymmetric_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetPreallocation_C",
+                                     "MatSeqAIJSetPreallocation_SeqAIJ",
+                                      MatSeqAIJSetPreallocation_SeqAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatMatlabEnginePut_SeqAIJ",MatMatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEngineGet_C","MatMatlabEngineGet_SeqAIJ",MatMatlabEngineGet_SeqAIJ);CHKERRQ(ierr);

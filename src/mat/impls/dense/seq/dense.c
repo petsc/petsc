@@ -1531,13 +1531,26 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,PetscScalar *data,Mat *A)
 @*/
 int MatSeqDenseSetPreallocation(Mat B,PetscScalar *data)
 {
+  int ierr,(*f)(Mat,PetscScalar*);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqDenseSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(B,data);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqDensePreallocation_SeqDense"
+int MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
+{
   Mat_SeqDense *b;
   int          ierr;
   PetscTruth   flg2;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)B,MATSEQDENSE,&flg2);CHKERRQ(ierr);
-  if (!flg2) PetscFunctionReturn(0);
   B->preallocated = PETSC_TRUE;
   b               = (Mat_SeqDense*)B->data;
   if (!data) {
@@ -1551,6 +1564,7 @@ int MatSeqDenseSetPreallocation(Mat B,PetscScalar *data)
   }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqDenseSetLDA"
@@ -1612,6 +1626,9 @@ int MatCreate_SeqDense(Mat B)
   b->v            = 0;
   b->lda          = B->m;
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqDenseSetPreallocation_C",
+                                    "MatSeqDenseSetPreallocation_SeqDense",
+                                     MatSeqDenseSetPreallocation_SeqDense);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

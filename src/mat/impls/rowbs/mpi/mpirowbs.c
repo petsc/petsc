@@ -1539,6 +1539,20 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
 
 /* ------------------------------------------------------------------- */
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatMPIRowbsSetPreallocation_MPIRowbs"
+int MatMPIRowbsSetPreallocation_MPIRowbs(Mat mat,int nz,int *nnz)
+{
+  PetscTruth ismpirowbs;
+  int        ierr;
+
+  PetscFunctionBegin;
+  mat->preallocated = PETSC_TRUE;
+  ierr = MatCreateMPIRowbs_local(mat,nz,nnz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -1660,6 +1674,9 @@ int MatCreate_MPIRowbs(Mat A)
   bsmap->vglobal2proc	         = (void *)bsoff;
   bsmap->fglobal2proc	         = BSglob2proc;
   bsmap->free_g2p                = (void(*)(void*)) BSfree_off_map;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIRowbsSetPreallocation_C",
+                                    "MatMPIRowbsSetPreallocation_MPIRowbs",
+                                     MatMPIRowbsSetPreallocation_MPIRowbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1681,18 +1698,15 @@ EXTERN_C_END
 @ */
 int MatMPIRowbsSetPreallocation(Mat mat,int nz,int *nnz)
 {
-  PetscTruth ismpirowbs;
-  int        ierr;
+  int ierr,(*f)(Mat,int,int*);
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)mat,MATMPIROWBS,&ismpirowbs);
-  if (!ismpirowbs) SETERRQ(PETSC_ERR_ARG_WRONG,"For MATMPIROWBS matrix type");
-  mat->preallocated = PETSC_TRUE;
-  ierr = MatCreateMPIRowbs_local(mat,nz,nnz);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatMPIRowbsSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat,nz,nnz);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
-
-
 
 /* --------------- extra BlockSolve-specific routines -------------- */
 #undef __FUNCT__  

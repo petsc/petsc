@@ -1442,100 +1442,9 @@ int MatRetrieveValues_SeqSBAIJ(Mat mat)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatCreate_SeqSBAIJ"
-int MatCreate_SeqSBAIJ(Mat B)
-{
-  Mat_SeqSBAIJ *b;
-  int          ierr,size;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
-  B->m = B->M = PetscMax(B->m,B->M);
-  B->n = B->N = PetscMax(B->n,B->N);
-
-  ierr    = PetscNew(Mat_SeqSBAIJ,&b);CHKERRQ(ierr);
-  B->data = (void*)b;
-  ierr    = PetscMemzero(b,sizeof(Mat_SeqSBAIJ));CHKERRQ(ierr);
-  ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->ops->destroy     = MatDestroy_SeqSBAIJ;
-  B->ops->view        = MatView_SeqSBAIJ;
-  B->factor           = 0;
-  B->lupivotthreshold = 1.0;
-  B->mapping          = 0;
-  b->row              = 0;
-  b->icol             = 0;
-  b->reallocs         = 0;
-  b->saved_values     = 0;
-  
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
-
-  b->sorted           = PETSC_FALSE;
-  b->roworiented      = PETSC_TRUE;
-  b->nonew            = 0;
-  b->diag             = 0;
-  b->solve_work       = 0;
-  b->mult_work        = 0;
-  B->spptr            = 0;
-  b->keepzeroedrows   = PETSC_FALSE;
-  b->xtoy             = 0;
-  b->XtoY             = 0;
-  
-  b->inew             = 0;
-  b->jnew             = 0;
-  b->anew             = 0;
-  b->a2anew           = 0;
-  b->permute          = PETSC_FALSE;
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
-                                     "MatStoreValues_SeqSBAIJ",
-                                     (void*)MatStoreValues_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
-                                     "MatRetrieveValues_SeqSBAIJ",
-                                     (void*)MatRetrieveValues_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqSBAIJSetColumnIndices_C",
-                                     "MatSeqSBAIJSetColumnIndices_SeqSBAIJ",
-                                     (void*)MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSeqSBAIJSetPreallocation"
-/*@C
-   MatSeqSBAIJSetPreallocation - Creates a sparse symmetric matrix in block AIJ (block
-   compressed row) format.  For good matrix assembly performance the
-   user should preallocate the matrix storage by setting the parameter nz
-   (or the array nnz).  By setting these parameters accurately, performance
-   during matrix assembly can be increased by more than a factor of 50.
-
-   Collective on Mat
-
-   Input Parameters:
-+  A - the symmetric matrix 
-.  bs - size of block
-.  nz - number of block nonzeros per block row (same for all rows)
--  nnz - array containing the number of block nonzeros in the upper triangular plus
-         diagonal portion of each block (possibly different for each block row) or PETSC_NULL
-
-   Options Database Keys:
-.   -mat_no_unroll - uses code that does not unroll the loops in the 
-                     block calculations (much slower)
-.    -mat_block_size - size of the blocks to use
-
-   Level: intermediate
-
-   Notes:
-   Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
-   allocation.  For additional details, see the users manual chapter on
-   matrices.
-
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPISBAIJ()
-@*/
-int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
+#undef __FUNCT__
+#define __FUNCT__ "MatSeqSBAIJSetPreallocation_SeqSBAIJ"
+int MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,int bs,int nz,int *nnz)
 {
   Mat_SeqSBAIJ *b = (Mat_SeqSBAIJ*)B->data;
   int          i,len,ierr,mbs,bs2;
@@ -1666,7 +1575,115 @@ int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
   b->permute          = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreate_SeqSBAIJ"
+int MatCreate_SeqSBAIJ(Mat B)
+{
+  Mat_SeqSBAIJ *b;
+  int          ierr,size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
+  B->m = B->M = PetscMax(B->m,B->M);
+  B->n = B->N = PetscMax(B->n,B->N);
+
+  ierr    = PetscNew(Mat_SeqSBAIJ,&b);CHKERRQ(ierr);
+  B->data = (void*)b;
+  ierr    = PetscMemzero(b,sizeof(Mat_SeqSBAIJ));CHKERRQ(ierr);
+  ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  B->ops->destroy     = MatDestroy_SeqSBAIJ;
+  B->ops->view        = MatView_SeqSBAIJ;
+  B->factor           = 0;
+  B->lupivotthreshold = 1.0;
+  B->mapping          = 0;
+  b->row              = 0;
+  b->icol             = 0;
+  b->reallocs         = 0;
+  b->saved_values     = 0;
+  
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
+
+  b->sorted           = PETSC_FALSE;
+  b->roworiented      = PETSC_TRUE;
+  b->nonew            = 0;
+  b->diag             = 0;
+  b->solve_work       = 0;
+  b->mult_work        = 0;
+  B->spptr            = 0;
+  b->keepzeroedrows   = PETSC_FALSE;
+  b->xtoy             = 0;
+  b->XtoY             = 0;
+  
+  b->inew             = 0;
+  b->jnew             = 0;
+  b->anew             = 0;
+  b->a2anew           = 0;
+  b->permute          = PETSC_FALSE;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
+                                     "MatStoreValues_SeqSBAIJ",
+                                     MatStoreValues_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
+                                     "MatRetrieveValues_SeqSBAIJ",
+                                     (void*)MatRetrieveValues_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqSBAIJSetColumnIndices_C",
+                                     "MatSeqSBAIJSetColumnIndices_SeqSBAIJ",
+                                     MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqSBAIJSetPreallocation_C",
+                                     "MatSeqSBAIJSetPreallocation_SeqSBAIJ",
+                                     MatSeqSBAIJSetPreallocation_SeqSBAIJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqSBAIJSetPreallocation"
+/*@C
+   MatSeqSBAIJSetPreallocation - Creates a sparse symmetric matrix in block AIJ (block
+   compressed row) format.  For good matrix assembly performance the
+   user should preallocate the matrix storage by setting the parameter nz
+   (or the array nnz).  By setting these parameters accurately, performance
+   during matrix assembly can be increased by more than a factor of 50.
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the symmetric matrix 
+.  bs - size of block
+.  nz - number of block nonzeros per block row (same for all rows)
+-  nnz - array containing the number of block nonzeros in the upper triangular plus
+         diagonal portion of each block (possibly different for each block row) or PETSC_NULL
+
+   Options Database Keys:
+.   -mat_no_unroll - uses code that does not unroll the loops in the 
+                     block calculations (much slower)
+.    -mat_block_size - size of the blocks to use
+
+   Level: intermediate
+
+   Notes:
+   Specify the preallocated storage with either nz or nnz (not both).
+   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
+   allocation.  For additional details, see the users manual chapter on
+   matrices.
+
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPISBAIJ()
+@*/
+int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz) {
+  int ierr,(*f)(Mat,int,int,int *);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqSBAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(B,bs,nz,nnz);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqSBAIJ"

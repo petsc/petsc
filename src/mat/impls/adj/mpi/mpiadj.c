@@ -298,6 +298,47 @@ static struct _MatOps MatOps_Values = {0,
        MatView_MPIAdj,
        MatGetPetscMaps_Petsc};
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatMPIAdjSetPreallocation_MPIAdj"
+int MatMPIAdjSetPreallocation_MPIAdj(Mat B,int *i,int *j,int *values)
+{
+  Mat_MPIAdj *b = (Mat_MPIAdj *)B->data;
+  int        ierr;
+#if defined(PETSC_USE_BOPT_g)
+  int        ii;
+#endif
+
+  PetscFunctionBegin;
+  B->preallocated = PETSC_TRUE;
+#if defined(PETSC_USE_BOPT_g)
+  if (i[0] != 0) SETERRQ1(1,"First i[] index must be zero, instead it is %d\n",i[0]);
+  for (ii=1; ii<B->m; ii++) {
+    if (i[ii] < 0 || i[ii] < i[ii-1]) {
+      SETERRQ4(1,"i[%d]=%d index is out of range: i[%d]=%d",ii,i[ii],ii-1,i[ii-1]);
+    }
+  }
+  for (ii=0; ii<i[B->m]; ii++) {
+    if (j[ii] < 0 || j[ii] >= B->N) {
+      SETERRQ2(1,"Column index %d out of range %d\n",ii,j[ii]);
+    }
+  } 
+#endif
+
+  b->j      = j;
+  b->i      = i;
+  b->values = values;
+
+  b->nz               = i[B->m];
+  b->diag             = 0;
+  b->symmetric        = PETSC_FALSE;
+  b->freeaij          = PETSC_TRUE;
+
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -338,48 +379,40 @@ int MatCreate_MPIAdj(Mat B)
   }
   b->rstart = b->rowners[rank]; 
   b->rend   = b->rowners[rank+1]; 
-
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAdjSetPreallocation_C",
+                                    "MatMPIAdjSetPreallocation_MPIAdj",
+                                     MatMPIAdjSetPreallocation_MPIAdj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAdjSetPreallocation"
+/*@C
+   MatMPIAdjSetPreallocation - Sets the array used for storing the matrix elements
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  A - the matrix
+.  i - the indices into j for the start of each row
+.  j - the column indices for each row (sorted for each row).
+       The indices in i and j start with zero (NOT with one).
+-  values - [optional] edge weights
+
+   Level: intermediate
+
+.seealso: MatCreate(), MatCreateMPIAdj(), MatSetValues()
+@*/
 int MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
 {
-  Mat_MPIAdj *b = (Mat_MPIAdj *)B->data;
-  int        ierr;
-#if defined(PETSC_USE_BOPT_g)
-  int        ii;
-#endif
+  int ierr,(*f)(Mat,int*,int*,int*);
 
   PetscFunctionBegin;
-  B->preallocated = PETSC_TRUE;
-#if defined(PETSC_USE_BOPT_g)
-  if (i[0] != 0) SETERRQ1(1,"First i[] index must be zero, instead it is %d\n",i[0]);
-  for (ii=1; ii<B->m; ii++) {
-    if (i[ii] < 0 || i[ii] < i[ii-1]) {
-      SETERRQ4(1,"i[%d]=%d index is out of range: i[%d]=%d",ii,i[ii],ii-1,i[ii-1]);
-    }
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIAdjSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(B,i,j,values);CHKERRQ(ierr);
   }
-  for (ii=0; ii<i[B->m]; ii++) {
-    if (j[ii] < 0 || j[ii] >= B->N) {
-      SETERRQ2(1,"Column index %d out of range %d\n",ii,j[ii]);
-    }
-  } 
-#endif
-
-  b->j      = j;
-  b->i      = i;
-  b->values = values;
-
-  b->nz               = i[B->m];
-  b->diag             = 0;
-  b->symmetric        = PETSC_FALSE;
-  b->freeaij          = PETSC_TRUE;
-
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

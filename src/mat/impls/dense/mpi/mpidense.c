@@ -942,6 +942,27 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        MatGetPetscMaps_Petsc};
 
 EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatMPIDenseSetPreallocation_MPIDense"
+int MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
+{
+  Mat_MPIDense *a;
+  int          ierr;
+  PetscTruth   flg2;
+
+  PetscFunctionBegin;
+  mat->preallocated = PETSC_TRUE;
+  /* Note:  For now, when data is specified above, this assumes the user correctly
+   allocates the local dense storage space.  We should add error checking. */
+
+  a    = (Mat_MPIDense*)mat->data;
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,mat->m,mat->N,data,&a->A);CHKERRQ(ierr);
+  PetscLogObjectParent(mat,a->A);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIDense"
 int MatCreate_MPIDense(Mat mat)
@@ -999,6 +1020,9 @@ int MatCreate_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetDiagonalBlock_C",
                                      "MatGetDiagonalBlock_MPIDense",
                                      MatGetDiagonalBlock_MPIDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMPIDenseSetPreallocation_C",
+                                     "MatMPIDenseSetPreallocation_MPIDense",
+                                     MatMPIDenseSetPreallocation_MPIDense);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1031,20 +1055,13 @@ EXTERN_C_END
 @*/
 int MatMPIDenseSetPreallocation(Mat mat,PetscScalar *data)
 {
-  Mat_MPIDense *a;
-  int          ierr;
-  PetscTruth   flg2;
+  int ierr,(*f)(Mat,PetscScalar *);
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)mat,MATMPIDENSE,&flg2);CHKERRQ(ierr);
-  if (!flg2) PetscFunctionReturn(0);
-  mat->preallocated = PETSC_TRUE;
-  /* Note:  For now, when data is specified above, this assumes the user correctly
-   allocates the local dense storage space.  We should add error checking. */
-
-  a    = (Mat_MPIDense*)mat->data;
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,mat->m,mat->N,data,&a->A);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,a->A);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat,data);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

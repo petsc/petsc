@@ -1731,6 +1731,42 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJ"
+int MatMPIAIJSetPreallocation_MPIAIJ(Mat B,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+{
+  Mat_MPIAIJ   *b;
+  int          ierr,i;
+  PetscTruth   flg2;
+
+  PetscFunctionBegin;
+  B->preallocated = PETSC_TRUE;
+  if (d_nz == PETSC_DEFAULT || d_nz == PETSC_DECIDE) d_nz = 5;
+  if (o_nz == PETSC_DEFAULT || o_nz == PETSC_DECIDE) o_nz = 2;
+  if (d_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %d",d_nz);
+  if (o_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %d",o_nz);
+  if (d_nnz) {
+    for (i=0; i<B->m; i++) {
+      if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %d value %d",i,d_nnz[i]);
+    }
+  }
+  if (o_nnz) {
+    for (i=0; i<B->m; i++) {
+      if (o_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than 0: local row %d value %d",i,o_nnz[i]);
+    }
+  }
+  b = (Mat_MPIAIJ*)B->data;
+
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,B->m,B->n,d_nz,d_nnz,&b->A);CHKERRQ(ierr);
+  PetscLogObjectParent(B,b->A);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,B->m,B->N,o_nz,o_nnz,&b->B);CHKERRQ(ierr);
+  PetscLogObjectParent(B,b->B);
+
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIAIJ"
 int MatCreate_MPIAIJ(Mat B)
 {
@@ -1807,6 +1843,9 @@ int MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsSymmetric_C",
 				     "MatIsSymmetric_MPIAIJ",
 				     MatIsSymmetric_MPIAIJ); CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAIJSetPreallocation_C",
+				     "MatMPIAIJSetPreallocation_MPIAIJ",
+				     MatMPIAIJSetPreallocation_MPIAIJ); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -2341,35 +2380,13 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
 @*/
 int MatMPIAIJSetPreallocation(Mat B,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
 {
-  Mat_MPIAIJ   *b;
-  int          ierr,i;
-  PetscTruth   flg2;
+  int ierr,(*f)(Mat,int,int*,int,int*);
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)B,MATMPIAIJ,&flg2);CHKERRQ(ierr);
-  if (!flg2) PetscFunctionReturn(0);
-  B->preallocated = PETSC_TRUE;
-  if (d_nz == PETSC_DEFAULT || d_nz == PETSC_DECIDE) d_nz = 5;
-  if (o_nz == PETSC_DEFAULT || o_nz == PETSC_DECIDE) o_nz = 2;
-  if (d_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %d",d_nz);
-  if (o_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %d",o_nz);
-  if (d_nnz) {
-    for (i=0; i<B->m; i++) {
-      if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %d value %d",i,d_nnz[i]);
-    }
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(B,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
   }
-  if (o_nnz) {
-    for (i=0; i<B->m; i++) {
-      if (o_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than 0: local row %d value %d",i,o_nnz[i]);
-    }
-  }
-  b = (Mat_MPIAIJ*)B->data;
-
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,B->m,B->n,d_nz,d_nnz,&b->A);CHKERRQ(ierr);
-  PetscLogObjectParent(B,b->A);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,B->m,B->N,o_nz,o_nnz,&b->B);CHKERRQ(ierr);
-  PetscLogObjectParent(B,b->B);
-
   PetscFunctionReturn(0);
 }
 

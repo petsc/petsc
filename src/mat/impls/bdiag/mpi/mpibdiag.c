@@ -811,94 +811,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatCreate_MPIBDiag"
-int MatCreate_MPIBDiag(Mat B)
-{
-  Mat_MPIBDiag *b;
-  int          ierr;
-
-  PetscFunctionBegin;
-  ierr            = PetscNew(Mat_MPIBDiag,&b);CHKERRQ(ierr);
-  B->data         = (void*)b;
-  ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->factor       = 0;
-  B->mapping      = 0;
-
-  B->insertmode = NOT_SET_VALUES;
-  ierr = MPI_Comm_rank(B->comm,&b->rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(B->comm,&b->size);CHKERRQ(ierr);
-
-  /* build local table of row ownerships */
-  ierr = PetscMalloc((b->size+2)*sizeof(int),&b->rowners);CHKERRQ(ierr);
-
-  /* build cache for off array entries formed */
-  ierr = MatStashCreate_Private(B->comm,1,&B->stash);CHKERRQ(ierr);
-  b->donotstash = PETSC_FALSE;
-
-  /* stuff used for matrix-vector multiply */
-  b->lvec        = 0;
-  b->Mvctx       = 0;
-
-  /* used for MatSetValues() input */
-  b->roworiented = PETSC_TRUE;
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetDiagonalBlock_C",
-                                     "MatGetDiagonalBlock_MPIBDiag",
-                                      MatGetDiagonalBlock_MPIBDiag);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatMPIBDiagSetPreallocation"
-/*@C
-   MatMPIBDiagSetPreallocation - 
-
-   Collective on Mat
-
-   Input Parameters:
-+  A - the matrix 
-.  nd - number of block diagonals (global) (optional)
-.  bs - each element of a diagonal is an bs x bs dense matrix
-.  diag - optional array of block diagonal numbers (length nd).
-   For a matrix element A[i,j], where i=row and j=column, the
-   diagonal number is
-$     diag = i/bs - j/bs  (integer division)
-   Set diag=PETSC_NULL on input for PETSc to dynamically allocate memory as 
-   needed (expensive).
--  diagv  - pointer to actual diagonals (in same order as diag array), 
-   if allocated by user. Otherwise, set diagv=PETSC_NULL on input for PETSc
-   to control memory allocation.
-
-
-   Options Database Keys:
-.  -mat_block_size <bs> - Sets blocksize
-.  -mat_bdiag_diags <s1,s2,s3,...> - Sets diagonal numbers
-
-   Notes:
-   If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
-   than it must be used on all processors that share the object for that argument.
-
-   The parallel matrix is partitioned across the processors by rows, where
-   each local rectangular matrix is stored in the uniprocessor block 
-   diagonal format.  See the users manual for further details.
-
-   The user MUST specify either the local or global numbers of rows
-   (possibly both).
-
-   The case bs=1 (conventional diagonal storage) is implemented as
-   a special case.
-
-   Fortran Notes:
-   Fortran programmers cannot set diagv; this variable is ignored.
-
-   Level: intermediate
-
-.keywords: matrix, block, diagonal, parallel, sparse
-
-.seealso: MatCreate(), MatCreateSeqBDiag(), MatSetValues()
-@*/
-int MatMPIBDiagSetPreallocation(Mat B,int nd,int bs,int *diag,PetscScalar **diagv)
+#define __FUNCT__ "MatMPIBDiagSetPreallocation_MPIBDiag"
+int MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,int nd,int bs,int *diag,PetscScalar **diagv)
 {
   Mat_MPIBDiag *b;
   int          ierr,i,k,*ldiag,len,nd2;
@@ -906,8 +820,6 @@ int MatMPIBDiagSetPreallocation(Mat B,int nd,int bs,int *diag,PetscScalar **diag
   PetscTruth   flg2;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)B,MATMPIBDIAG,&flg2);CHKERRQ(ierr);
-  if (!flg2) PetscFunctionReturn(0);
   B->preallocated = PETSC_TRUE;
   if (bs == PETSC_DEFAULT) bs = 1;
   if (nd == PETSC_DEFAULT) nd = 0;
@@ -996,6 +908,111 @@ int MatMPIBDiagSetPreallocation(Mat B,int nd,int bs,int *diag,PetscScalar **diag
   ierr = PetscFree(ldiag);CHKERRQ(ierr);
   if (ldiagv) {ierr = PetscFree(ldiagv);CHKERRQ(ierr);}
 
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreate_MPIBDiag"
+int MatCreate_MPIBDiag(Mat B)
+{
+  Mat_MPIBDiag *b;
+  int          ierr;
+
+  PetscFunctionBegin;
+  ierr            = PetscNew(Mat_MPIBDiag,&b);CHKERRQ(ierr);
+  B->data         = (void*)b;
+  ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  B->factor       = 0;
+  B->mapping      = 0;
+
+  B->insertmode = NOT_SET_VALUES;
+  ierr = MPI_Comm_rank(B->comm,&b->rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(B->comm,&b->size);CHKERRQ(ierr);
+
+  /* build local table of row ownerships */
+  ierr = PetscMalloc((b->size+2)*sizeof(int),&b->rowners);CHKERRQ(ierr);
+
+  /* build cache for off array entries formed */
+  ierr = MatStashCreate_Private(B->comm,1,&B->stash);CHKERRQ(ierr);
+  b->donotstash = PETSC_FALSE;
+
+  /* stuff used for matrix-vector multiply */
+  b->lvec        = 0;
+  b->Mvctx       = 0;
+
+  /* used for MatSetValues() input */
+  b->roworiented = PETSC_TRUE;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetDiagonalBlock_C",
+                                     "MatGetDiagonalBlock_MPIBDiag",
+                                      MatGetDiagonalBlock_MPIBDiag);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIBDiagSetPreallocation_C",
+                                     "MatMPIBDiagSetPreallocation_MPIBDiag",
+                                      MatMPIBDiagSetPreallocation_MPIBDiag);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMPIBDiagSetPreallocation"
+/*@C
+   MatMPIBDiagSetPreallocation - 
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the matrix 
+.  nd - number of block diagonals (global) (optional)
+.  bs - each element of a diagonal is an bs x bs dense matrix
+.  diag - optional array of block diagonal numbers (length nd).
+   For a matrix element A[i,j], where i=row and j=column, the
+   diagonal number is
+$     diag = i/bs - j/bs  (integer division)
+   Set diag=PETSC_NULL on input for PETSc to dynamically allocate memory as 
+   needed (expensive).
+-  diagv  - pointer to actual diagonals (in same order as diag array), 
+   if allocated by user. Otherwise, set diagv=PETSC_NULL on input for PETSc
+   to control memory allocation.
+
+
+   Options Database Keys:
+.  -mat_block_size <bs> - Sets blocksize
+.  -mat_bdiag_diags <s1,s2,s3,...> - Sets diagonal numbers
+
+   Notes:
+   If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
+   than it must be used on all processors that share the object for that argument.
+
+   The parallel matrix is partitioned across the processors by rows, where
+   each local rectangular matrix is stored in the uniprocessor block 
+   diagonal format.  See the users manual for further details.
+
+   The user MUST specify either the local or global numbers of rows
+   (possibly both).
+
+   The case bs=1 (conventional diagonal storage) is implemented as
+   a special case.
+
+   Fortran Notes:
+   Fortran programmers cannot set diagv; this variable is ignored.
+
+   Level: intermediate
+
+.keywords: matrix, block, diagonal, parallel, sparse
+
+.seealso: MatCreate(), MatCreateSeqBDiag(), MatSetValues()
+@*/
+int MatMPIBDiagSetPreallocation(Mat B,int nd,int bs,int *diag,PetscScalar **diagv)
+{
+  int ierr,(*f)(Mat,int,int,int*,PetscScalar**);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIBDiagSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(B,nd,bs,diag,diagv);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

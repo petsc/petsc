@@ -1573,6 +1573,84 @@ int MatGetDiagonalBlock_MPISBAIJ(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBAIJ"
+int MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+{
+  Mat_MPISBAIJ *b;
+  int          ierr,i,mbs,Mbs;
+  PetscTruth   flg2;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetInt(B->prefix,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+
+  if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive");
+  if (d_nz == PETSC_DECIDE || d_nz == PETSC_DEFAULT) d_nz = 3;
+  if (o_nz == PETSC_DECIDE || o_nz == PETSC_DEFAULT) o_nz = 1;
+  if (d_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %d",d_nz);
+  if (o_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %d",o_nz);
+  if (d_nnz) {
+    for (i=0; i<B->m/bs; i++) {
+      if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than -1: local row %d value %d",i,d_nnz[i]);
+    }
+  }
+  if (o_nnz) {
+    for (i=0; i<B->m/bs; i++) {
+      if (o_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than -1: local row %d value %d",i,o_nnz[i]);
+    }
+  }
+  B->preallocated = PETSC_TRUE;
+  ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->m,&B->M);CHKERRQ(ierr);
+  ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->n,&B->N);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
+
+  b   = (Mat_MPISBAIJ*)B->data;
+  mbs = B->m/bs;
+  Mbs = B->M/bs;
+  if (mbs*bs != B->m) {
+    SETERRQ2(PETSC_ERR_ARG_SIZ,"No of local rows %d must be divisible by blocksize %d",B->m,bs);
+  }
+
+  b->bs  = bs;
+  b->bs2 = bs*bs;
+  b->mbs = mbs;
+  b->nbs = mbs; 
+  b->Mbs = Mbs;
+  b->Nbs = Mbs; 
+
+  ierr = MPI_Allgather(&b->mbs,1,MPI_INT,b->rowners+1,1,MPI_INT,B->comm);CHKERRQ(ierr);
+  b->rowners[0]    = 0;
+  for (i=2; i<=b->size; i++) {
+    b->rowners[i] += b->rowners[i-1];
+  }
+  b->rstart    = b->rowners[b->rank]; 
+  b->rend      = b->rowners[b->rank+1]; 
+  b->cstart    = b->rstart; 
+  b->cend      = b->rend;   
+  for (i=0; i<=b->size; i++) {
+    b->rowners_bs[i] = b->rowners[i]*bs;
+  }
+  b->rstart_bs = b-> rstart*bs;
+  b->rend_bs   = b->rend*bs;
+  
+  b->cstart_bs = b->cstart*bs;
+  b->cend_bs   = b->cend*bs;
+  
+
+  ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,bs,B->m,B->m,d_nz,d_nnz,&b->A);CHKERRQ(ierr);
+  PetscLogObjectParent(B,b->A);
+  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,B->m,B->M,o_nz,o_nnz,&b->B);CHKERRQ(ierr);
+  PetscLogObjectParent(B,b->B);
+
+  /* build cache for off array entries formed */
+  ierr = MatStashCreate_Private(B->comm,bs,&B->bstash);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPISBAIJ"
 int MatCreate_MPISBAIJ(Mat B)
@@ -1662,6 +1740,9 @@ int MatCreate_MPISBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetDiagonalBlock_C",
                                      "MatGetDiagonalBlock_MPISBAIJ",
                                      MatGetDiagonalBlock_MPISBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPISBAIJSetPreallocation_C",
+                                     "MatMPISBAIJSetPreallocation_MPISBAIJ",
+                                     MatMPISBAIJSetPreallocation_MPISBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1745,81 +1826,15 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateMPIBAIJ()
 @*/
-
 int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
 {
-  Mat_MPISBAIJ *b;
-  int          ierr,i,mbs,Mbs;
-  PetscTruth   flg2;
+  int ierr,(*f)(Mat,int,int,int*,int,int*);
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)B,MATMPISBAIJ,&flg2);CHKERRQ(ierr);
-  if (!flg2) PetscFunctionReturn(0);
-
-  ierr = PetscOptionsGetInt(B->prefix,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
-
-  if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive");
-  if (d_nz == PETSC_DECIDE || d_nz == PETSC_DEFAULT) d_nz = 3;
-  if (o_nz == PETSC_DECIDE || o_nz == PETSC_DEFAULT) o_nz = 1;
-  if (d_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %d",d_nz);
-  if (o_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %d",o_nz);
-  if (d_nnz) {
-    for (i=0; i<B->m/bs; i++) {
-      if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than -1: local row %d value %d",i,d_nnz[i]);
-    }
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(B,bs,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
   }
-  if (o_nnz) {
-    for (i=0; i<B->m/bs; i++) {
-      if (o_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than -1: local row %d value %d",i,o_nnz[i]);
-    }
-  }
-  B->preallocated = PETSC_TRUE;
-  ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->m,&B->M);CHKERRQ(ierr);
-  ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->n,&B->N);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
-
-  b   = (Mat_MPISBAIJ*)B->data;
-  mbs = B->m/bs;
-  Mbs = B->M/bs;
-  if (mbs*bs != B->m) {
-    SETERRQ2(PETSC_ERR_ARG_SIZ,"No of local rows %d must be divisible by blocksize %d",B->m,bs);
-  }
-
-  b->bs  = bs;
-  b->bs2 = bs*bs;
-  b->mbs = mbs;
-  b->nbs = mbs; 
-  b->Mbs = Mbs;
-  b->Nbs = Mbs; 
-
-  ierr = MPI_Allgather(&b->mbs,1,MPI_INT,b->rowners+1,1,MPI_INT,B->comm);CHKERRQ(ierr);
-  b->rowners[0]    = 0;
-  for (i=2; i<=b->size; i++) {
-    b->rowners[i] += b->rowners[i-1];
-  }
-  b->rstart    = b->rowners[b->rank]; 
-  b->rend      = b->rowners[b->rank+1]; 
-  b->cstart    = b->rstart; 
-  b->cend      = b->rend;   
-  for (i=0; i<=b->size; i++) {
-    b->rowners_bs[i] = b->rowners[i]*bs;
-  }
-  b->rstart_bs = b-> rstart*bs;
-  b->rend_bs   = b->rend*bs;
-  
-  b->cstart_bs = b->cstart*bs;
-  b->cend_bs   = b->cend*bs;
-  
-
-  ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,bs,B->m,B->m,d_nz,d_nnz,&b->A);CHKERRQ(ierr);
-  PetscLogObjectParent(B,b->A);
-  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,B->m,B->M,o_nz,o_nnz,&b->B);CHKERRQ(ierr);
-  PetscLogObjectParent(B,b->B);
-
-  /* build cache for off array entries formed */
-  ierr = MatStashCreate_Private(B->comm,bs,&B->bstash);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
