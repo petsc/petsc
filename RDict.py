@@ -49,7 +49,8 @@
         Creates a dictionary in the current directory with a parent, and inserts
         the key-value pair. If "parent" is "None", no parent is assigned.
 '''
-import project # This is necessary for us to create Project objects on load
+import project          # This is necessary for us to create Project objects on load
+import build.buildGraph # This is necessary for us to create BuildGraph objects on load
 import nargs
 
 import cPickle
@@ -522,7 +523,7 @@ if __name__ ==  '__main__':
   import sys
   try:
     if len(sys.argv) < 2:
-      print 'RDict.py [server | client | clear]'
+      print 'RDict.py [server | client | clear | insert | remove]'
     else:
       action = sys.argv[1]
       parent = None
@@ -541,6 +542,9 @@ if __name__ ==  '__main__':
       elif action == 'insert':
         rdict = RDict(parentDirectory = parent)
         rdict[sys.argv[3]] = sys.argv[4]
+      elif action == 'remove':
+        rdict = RDict(parentDirectory = parent)
+        del rdict[sys.argv[3]]
       else:
         sys.exit('Unknown action: '+action)
   except Exception, e:
