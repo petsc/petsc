@@ -92,11 +92,12 @@ int DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
 #define __FUNCT__ "DAGetColoring2d_MPIAIJ" 
 int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  int                    ierr,xs,ys,nx,ny,*colors,i,j,ii,gxs,gys,gnx,gny;           
+  int                    ierr,xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny;           
   int                    m,n,M,N,dim,s,k,nc,col,size;
   MPI_Comm               comm;
   DAPeriodicType         wrap;
   DAStencilType          st;
+  ISColoringValue        *colors;
 
   PetscFunctionBegin;
   /*     
@@ -126,7 +127,7 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
     }
     if (ctype == IS_COLORING_LOCAL) {
       if (!da->localcoloring) {
-	ierr = PetscMalloc(nc*nx*ny*sizeof(int),&colors);CHKERRQ(ierr);
+	ierr = PetscMalloc(nc*nx*ny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
 	ii = 0;
 	for (j=ys; j<ys+ny; j++) {
 	  for (i=xs; i<xs+nx; i++) {
@@ -140,7 +141,7 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
       *coloring = da->localcoloring;
     } else if (ctype == IS_COLORING_GHOSTED) {
       if (!da->ghostedcoloring) {
-	ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
+	ierr = PetscMalloc(nc*gnx*gny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
 	ii = 0;
 	for (j=gys; j<gys+gny; j++) {
 	  for (i=gxs; i<gxs+gnx; i++) {
@@ -166,11 +167,12 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 #define __FUNCT__ "DAGetColoring3d_MPIAIJ" 
 int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  int                    ierr,xs,ys,nx,ny,*colors,i,j,gxs,gys,gnx,gny;           
+  int                    ierr,xs,ys,nx,ny,i,j,gxs,gys,gnx,gny;           
   int                    m,n,p,dim,s,k,nc,col,size,zs,gzs,ii,l,nz,gnz,M,N,P;
   MPI_Comm               comm;
   DAPeriodicType         wrap;
   DAStencilType          st;
+  ISColoringValue        *colors;
 
   PetscFunctionBegin;
   /*     
@@ -201,7 +203,7 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
   /* create the coloring */
   if (ctype == IS_COLORING_LOCAL) {
     if (!da->localcoloring) {
-      ierr = PetscMalloc(nc*nx*ny*nz*sizeof(int),&colors);CHKERRQ(ierr);
+      ierr = PetscMalloc(nc*nx*ny*nz*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;
       for (k=zs; k<zs+nz; k++) {
         for (j=ys; j<ys+ny; j++) {
@@ -217,7 +219,7 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
     if (!da->ghostedcoloring) {
-      ierr = PetscMalloc(nc*gnx*gny*gnz*sizeof(int),&colors);CHKERRQ(ierr);
+      ierr = PetscMalloc(nc*gnx*gny*gnz*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;
       for (k=gzs; k<gzs+gnz; k++) {
         for (j=gys; j<gys+gny; j++) {
@@ -244,10 +246,11 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 #define __FUNCT__ "DAGetColoring1d_MPIAIJ" 
 int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  int                    ierr,xs,nx,*colors,i,i1,gxs,gnx,l;           
+  int                    ierr,xs,nx,i,i1,gxs,gnx,l;           
   int                    m,M,dim,s,nc,col,size;
   MPI_Comm               comm;
   DAPeriodicType         wrap;
+  ISColoringValue        *colors;
 
   PetscFunctionBegin;
   /*     
@@ -271,7 +274,7 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
   /* create the coloring */
   if (ctype == IS_COLORING_LOCAL) {
     if (!da->localcoloring) {
-      ierr = PetscMalloc(nc*nx*sizeof(int),&colors);CHKERRQ(ierr);
+      ierr = PetscMalloc(nc*nx*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       i1 = 0;
       for (i=xs; i<xs+nx; i++) {
         for (l=0; l<nc; l++) {
@@ -283,7 +286,7 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
     if (!da->ghostedcoloring) {
-      ierr = PetscMalloc(nc*gnx*sizeof(int),&colors);CHKERRQ(ierr);
+      ierr = PetscMalloc(nc*gnx*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       i1 = 0;
       for (i=gxs; i<gxs+gnx; i++) {
         for (l=0; l<nc; l++) {
@@ -304,10 +307,11 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 #define __FUNCT__ "DAGetColoring2d_5pt_MPIAIJ" 
 int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  int            ierr,xs,ys,nx,ny,*colors,i,j,ii,gxs,gys,gnx,gny;           
+  int            ierr,xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny;           
   int            m,n,dim,s,k,nc;
   MPI_Comm       comm;
   DAPeriodicType wrap;
+  ISColoringValue        *colors;
 
   PetscFunctionBegin;
   /*     
@@ -332,7 +336,7 @@ int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
   /* create the coloring */
   if (ctype == IS_COLORING_LOCAL) {
     if (!da->localcoloring) {
-      ierr = PetscMalloc(nc*nx*ny*sizeof(int),&colors);CHKERRQ(ierr);
+      ierr = PetscMalloc(nc*nx*ny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;
       for (j=ys; j<ys+ny; j++) {
 	for (i=xs; i<xs+nx; i++) {
@@ -346,7 +350,7 @@ int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
     if (!da->ghostedcoloring) {
-      ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
+      ierr = PetscMalloc(nc*gnx*gny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;
       for (j=gys; j<gys+gny; j++) {
 	for (i=gxs; i<gxs+gnx; i++) {

@@ -1400,8 +1400,6 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
   ierr = VecGetArray(vu,&ustart);CHKERRQ(ierr);
   ierr = DAGetColoring(da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
 
-  /*  PetscADSetValArray(((DERIV_TYPE*)ad_ustart),gtdof,ustart);
-      PetscADSetIndepArrayColored(ad_ustart,gtdof,iscoloring->colors); */
   PetscADSetValueAndColor(ad_ustart,gtdof,iscoloring->colors,ustart);
 
   ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
@@ -1560,12 +1558,13 @@ int DAComputeJacobian1(DA da,Vec vu,Mat J,void *w)
 */
 int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
 {
-  int         i,ierr,Nc,*color,N;
-  DALocalInfo info;
-  PetscScalar *u,*g_u,*g_f,*f,*p_u;
-  ISColoring  iscoloring;
-  void        (*lf)(int *,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*) = 
-              (void (*)(int *,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*))*da->adifor_lf;
+  int             i,ierr,Nc,N;
+  ISColoringValue *color;
+  DALocalInfo     info;
+  PetscScalar     *u,*g_u,*g_f,*f,*p_u;
+  ISColoring      iscoloring;
+  void            (*lf)(int *,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*) = 
+                  (void (*)(int *,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*))*da->adifor_lf;
 
   PetscFunctionBegin;
   ierr = DAGetColoring(da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);

@@ -770,7 +770,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
-EXTERN int MatColoringPatch_SeqAIJ_Inode(Mat,int,int,int *,ISColoring *);
+EXTERN int MatColoringPatch_SeqAIJ_Inode(Mat,int,int,ISColoringValue *,ISColoring *);
 
 /*
     samestructure indicates that the matrix has not changed its nonzero structure so we 

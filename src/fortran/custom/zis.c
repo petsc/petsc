@@ -206,10 +206,22 @@ void PETSC_STDCALL isdestroy_(IS *is,int *ierr)
 
 void PETSC_STDCALL iscoloringcreate_(MPI_Comm *comm,int *n,int *colors,ISColoring *iscoloring,int *ierr)
 {
-  int *color;
+  ISColoringValue *color;
+  int             i;
+
   /* copies the colors[] array since that is kept by the ISColoring that is created */
-  *ierr = PetscMalloc((*n+1)*sizeof(int),&color);if (*ierr) return;
-  *ierr = PetscMemcpy(color,colors,(*n)*sizeof(int));if (*ierr) return;
+  *ierr = PetscMalloc((*n+1)*sizeof(ISColoringValue),&color);if (*ierr) return;
+  for (i=0; i<(*n); i++) {
+    if (colors[i] > IS_COLORING_MAX) {
+      *ierr = PetscError(__LINE__,"ISColoringCreate_Fortran",__FILE__,__SDIR__,1,1,"Color too large");
+      return;
+    }
+    if (colors[i] < 0) {
+      *ierr = PetscError(__LINE__,"ISColoringCreate_Fortran",__FILE__,__SDIR__,1,1,"Color cannot be negative");
+      return;
+    }
+    color[i] = (ISColoringValue)colors[i];
+  }
   *ierr = ISColoringCreate((MPI_Comm)PetscToPointerComm(*comm),*n,color,iscoloring);
 }
 

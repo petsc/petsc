@@ -3016,8 +3016,9 @@ int MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
     ierr        = ISColoringReference(coloring);CHKERRQ(ierr);
     a->coloring = coloring;
   } else if (coloring->ctype == IS_COLORING_GHOSTED) {
-    int        *colors,i,*larray;
-    ISColoring ocoloring;
+    int             i,*larray;
+    ISColoring      ocoloring;
+    ISColoringValue *colors;
 
     /* set coloring for diagonal portion */
     ierr = PetscMalloc((A->n+1)*sizeof(int),&larray);CHKERRQ(ierr);
@@ -3025,7 +3026,7 @@ int MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
       larray[i] = i;
     }
     ierr = ISGlobalToLocalMappingApply(A->mapping,IS_GTOLM_MASK,A->n,larray,PETSC_NULL,larray);CHKERRQ(ierr);
-    ierr = PetscMalloc((A->n+1)*sizeof(int),&colors);CHKERRQ(ierr);
+    ierr = PetscMalloc((A->n+1)*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
     for (i=0; i<A->n; i++) {
       colors[i] = coloring->colors[larray[i]];
     }
@@ -3045,9 +3046,10 @@ EXTERN_C_END
 #define __FUNCT__ "MatSetValuesAdic_SeqAIJ"
 int MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
 {
-  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;  
-  int         m = A->m,*ii = a->i,*jj = a->j,nz,i,*color,j,nlen;
-  PetscScalar *v = a->a,*values = ((PetscScalar*)advalues)+1;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;  
+  int             m = A->m,*ii = a->i,*jj = a->j,nz,i,j,nlen;
+  PetscScalar     *v = a->a,*values = ((PetscScalar*)advalues)+1;
+  ISColoringValue *color;
 
   PetscFunctionBegin;
   if (!a->coloring) SETERRQ(1,"Coloring not set for matrix");
@@ -3081,9 +3083,10 @@ int MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
 #define __FUNCT__ "MatSetValuesAdifor_SeqAIJ"
 int MatSetValuesAdifor_SeqAIJ(Mat A,int nl,void *advalues)
 {
-  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;  
-  int          m = A->m,*ii = a->i,*jj = a->j,nz,i,*color,j;
-  PetscScalar  *v = a->a,*values = (PetscScalar *)advalues;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;  
+  int             m = A->m,*ii = a->i,*jj = a->j,nz,i,j;
+  PetscScalar     *v = a->a,*values = (PetscScalar *)advalues;
+  ISColoringValue *color;
 
   PetscFunctionBegin;
   if (!a->coloring) SETERRQ(1,"Coloring not set for matrix");
