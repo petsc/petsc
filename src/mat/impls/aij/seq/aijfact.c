@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.133 1999/12/16 23:25:12 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.134 1999/12/16 23:31:37 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -92,9 +92,6 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   lfill   = info->dtcount/2;
   jmax    = info->fill*a->nz;
   permtol = info->dtcol;
-
-  ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
-  ierr = ISInvertPermutation(isrow,&isirow); CHKERRQ(ierr);
 
 
   /* ------------------------------------------------------------
@@ -234,6 +231,8 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
 
   /*-- due to the pivoting, we need to reorder iscol to correctly --*/
   /*-- permute the right-hand-side and solution vectors           --*/
+  ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
+  ierr = ISInvertPermutation(isrow,&isirow); CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);          CHKERRQ(ierr);
   for(i=0; i<n; i++) {
     ordcol[i] = ic[iperm[i]-1];  
