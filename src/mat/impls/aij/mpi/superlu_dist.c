@@ -167,38 +167,6 @@ int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMPIAIJFactorInfo_SuperLu"
-int MatMPIAIJFactorInfo_SuperLu(Mat A,PetscViewer viewer)
-{
-  Mat_MPIAIJ              *fac = (Mat_MPIAIJ*)(A)->data;
-  Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)fac->spptr;
-  superlu_options_t       options = lu->options;
-  int                     ierr;
-  char                    *colperm;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(viewer,"SuperLU run parameters:\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Equilibrate matrix %s \n",(options.Equil != NO) ? "true": "false");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Replace tiny pivots %s \n",(options.ReplaceTinyPivot != NO) ? "true": "false");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Use iterative refinement %s \n",(options.IterRefine == DOUBLE) ? "true": "false");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Processors in row %d col %d partition \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Row permutation %s \n",(options.RowPerm == NOROWPERM) ? "NATURAL": "LargeDiag");CHKERRQ(ierr);
-  if (options.ColPerm == NATURAL) {
-    colperm = "NATURAL";
-  } else if (options.ColPerm == MMD_AT_PLUS_A) {
-    colperm = "MMD_AT_PLUS_A";
-  } else if (options.ColPerm == MMD_ATA) {
-    colperm = "MMD_ATA";
-  } else if (options.ColPerm == COLAMD) {
-    colperm = "COLAMD";
-  } else {
-    SETERRQ(1,"Unknown column permutation");
-  }
-  ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation %s \n",colperm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__   
 #define __FUNCT__ "MatLUFactorNumeric_MPIAIJ_SuperLU_DIST"
 int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
@@ -418,6 +386,41 @@ int MatUseSuperLU_DIST_MPIAIJ(Mat A)
   PetscFunctionBegin;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST;
   A->ops->lufactornumeric  = MatLUFactorNumeric_MPIAIJ_SuperLU_DIST;
+  PetscFunctionReturn(0);
+}
+
+int MatMPIAIJFactorInfo_SuperLu(Mat A,PetscViewer viewer)
+{
+  Mat_MPIAIJ              *fac = (Mat_MPIAIJ*)(A)->data;
+  Mat_MPIAIJ_SuperLU_DIST *lu;
+  superlu_options_t       options;
+  int                     ierr;
+  char                    *colperm;
+
+  PetscFunctionBegin;
+  /* check if matrix is superlu_dist type */
+  if (A->ops->solve != MatSolve_MPIAIJ_SuperLU_DIST) PetscFunctionReturn(0);
+
+  lu      = (Mat_MPIAIJ_SuperLU_DIST*)fac->spptr;
+  options = lu->options;
+  ierr = PetscViewerASCIIPrintf(viewer,"SuperLU_DIST run parameters:\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Equilibrate matrix %s \n",(options.Equil != NO) ? "true": "false");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Replace tiny pivots %s \n",(options.ReplaceTinyPivot != NO) ? "true": "false");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Use iterative refinement %s \n",(options.IterRefine == DOUBLE) ? "true": "false");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Processors in row %d col partition %d \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Row permutation %s \n",(options.RowPerm == NOROWPERM) ? "NATURAL": "LargeDiag");CHKERRQ(ierr);
+  if (options.ColPerm == NATURAL) {
+    colperm = "NATURAL";
+  } else if (options.ColPerm == MMD_AT_PLUS_A) {
+    colperm = "MMD_AT_PLUS_A";
+  } else if (options.ColPerm == MMD_ATA) {
+    colperm = "MMD_ATA";
+  } else if (options.ColPerm == COLAMD) {
+    colperm = "COLAMD";
+  } else {
+    SETERRQ(1,"Unknown column permutation");
+  }
+  ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation %s \n",colperm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
