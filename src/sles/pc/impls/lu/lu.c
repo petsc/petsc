@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.143 2001/03/23 23:23:07 balay Exp bsmith $*/
+/*$Id: lu.c,v 1.144 2001/04/10 19:36:09 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -54,7 +54,8 @@ static int PCSetFromOptions_LU(PC pc)
   int        ierr;
   PetscTruth flg;
   char       tname[256];
-  PetscFList      ordlist;
+  PetscFList ordlist;
+  double     tol;
 
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
@@ -85,7 +86,7 @@ static int PCSetFromOptions_LU(PC pc)
     if (flg) {
       ierr = PCLUSetMatOrdering(pc,tname);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsDouble("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,0,0);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,&tol,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsDouble("-pc_lu_column_pivoting","Column pivoting tolerance (not used)","PCLUSetColumnPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -571,7 +572,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCreate_LU"
 int PCCreate_LU(PC pc)
 {
-  int   ierr;
+  int   ierr,size;
   PC_LU *dir;
 
   PetscFunctionBegin;
@@ -586,7 +587,12 @@ int PCCreate_LU(PC pc)
   dir->info.damp        = 0.0;
   dir->col              = 0;
   dir->row              = 0;
-  ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrallocpy(MATORDERING_NATURAL,&dir->ordering);CHKERRQ(ierr);
+  }
   dir->reusefill        = PETSC_FALSE;
   dir->reuseordering    = PETSC_FALSE;
   pc->data              = (void*)dir;
