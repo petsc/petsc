@@ -1,3 +1,5 @@
+/* $Id: ilu.h,v 1.4 1995/11/19 00:24:20 bsmith Exp $ */
+
 /*
       Data structure used for Multigrid preconditioner.
 */
