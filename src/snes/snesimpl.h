@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.13 1995/06/13 02:24:39 curfman Exp curfman $ */
+/* $Id: snesimpl.h,v 1.14 1995/06/14 20:41:38 curfman Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -9,6 +9,7 @@
 /*
    Nonlinear solver context
  */
+
 struct _SNES {
   PETSCHEADER
   char *prefix;
@@ -21,7 +22,7 @@ struct _SNES {
   Vec   vec_sol_update_always;      /* Pointer to solution update */
   void  *gusP;
 
-  int   (*ComputeFunction)(SNES,Vec,Vec,void *);
+  int   (*ComputeFunction)(SNES,Vec,Vec,void*);
   Vec   vec_func,vec_func_always;   /* Pointer to function or gradient */
   void  *funP;
   int   rsign;                      /* sign (+/-)  of residual */
@@ -73,6 +74,18 @@ struct _SNES {
 				  gradient norm (NLM) at each iteration */
   int      conv_hist_len;      /* Amount of convergence history space */
   int      nfailures;          /* Number of unsuccessful step attempts */
+
+  /* ---------------------------- SUMS Stuff ---------------------------- */
+  /* unconstrained minimization stuff ... For now we share everything else
+     with the nonlinear equations code.  We should find a better way to deal 
+     with this; the naming conventions are confusing.   Perhaps use unions? */
+
+  int      (*ComputeUMFunction)(SNES,Vec,Scalar*,void*);
+  Scalar   fc;
+  void     *umfunP;
+  SNESType method_class;
+  double   deltatol;          /* trust region convergence tolerance */
+  double   fmin;              /* minimum tolerance for function value */
 };
 
 #if !defined(MAX)
