@@ -9,7 +9,7 @@ SOURCEF   =
 SOURCEH   =
 OBJSC     = filev.o
 OBJSF     =
-MANSEC    = x
+MANSEC    = 7
 LIBBASE   = libpetscsys
 DIRS      = 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.30 1995/08/16 21:50:39 curfman Exp curfman $";
+static char vcid[] = "$Id: aijfact.c,v 1.31 1995/08/23 17:14:15 curfman Exp curfman $";
 #endif
 
 
@@ -110,8 +110,10 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
     "Info:MatLUFactorSymbolic_AIJ:Reallocs %d Fill ratio:given %g needed %g\n",
                              realloc,f,((double)ainew[n])/((double)ai[i]));
 
-  ISRestoreIndices(isrow,&r); ISRestoreIndices(isicol,&ic);
-  ISDestroy(isicol); PETSCFREE(fill);
+  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr = ISDestroy(isicol); CHKERRQ(ierr);
+  PETSCFREE(fill);
 
   /* put together the new matrix */
   ierr = MatCreateSequentialAIJ(mat->comm,n, n, 0, 0, fact); CHKERRQ(ierr);
@@ -213,10 +215,6 @@ int MatLUFactor_AIJ(Mat matin,IS row,IS col,double f)
   if (mat->diag) PETSCFREE(mat->diag);
   if (mat->ilen) PETSCFREE(mat->ilen);
   if (mat->imax) PETSCFREE(mat->imax);
-  if (mat->row && mat->col && mat->row != mat->col) {
-    ISDestroy(mat->row);
-  }
-  if (mat->col) ISDestroy(mat->col);
   PETSCFREE(mat);
 
   PETSCMEMCPY(matin,fact,sizeof(struct _Mat));
@@ -263,6 +261,8 @@ int MatSolve_AIJ(Mat mat,Vec bb, Vec xx)
     x[*c--] = tmp[i] = sum*aa[aij->diag[i]-1];
   }
 
+  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
   PLogFlops(2*aij->nz - aij->n);
   return 0;
 }
@@ -307,7 +307,10 @@ int MatSolveAdd_AIJ(Mat mat,Vec bb, Vec yy, Vec xx)
     x[*c--] += tmp[i];
   }
 
+  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
   PLogFlops(2*aij->nz);
+
   return 0;
 }
 /* -------------------------------------------------------------------*/
@@ -328,7 +331,6 @@ int MatSolveTrans_AIJ(Mat mat,Vec bb, Vec xx)
   /* invert the permutations */
   ierr = ISInvertPermutation(isrow,&invisrow); CHKERRQ(ierr);
   ierr = ISInvertPermutation(iscol,&inviscol); CHKERRQ(ierr);
-
 
   ierr = ISGetIndices(invisrow,&r); CHKERRQ(ierr);
   ierr = ISGetIndices(inviscol,&c); CHKERRQ(ierr);
@@ -360,7 +362,10 @@ int MatSolveTrans_AIJ(Mat mat,Vec bb, Vec xx)
   /* copy tmp into x according to permutation */
   for ( i=0; i<n; i++ ) x[r[i]] = tmp[i];
 
-  ISDestroy(invisrow); ISDestroy(inviscol);
+  ierr = ISRestoreIndices(invisrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(inviscol,&c); CHKERRQ(ierr);
+  ierr = ISDestroy(invisrow); CHKERRQ(ierr);
+  ierr = ISDestroy(inviscol); CHKERRQ(ierr);
 
   PLogFlops(2*aij->nz-aij->n);
   return 0;
@@ -385,8 +390,6 @@ int MatSolveTransAdd_AIJ(Mat mat,Vec bb, Vec zz,Vec xx)
   /* invert the permutations */
   ierr = ISInvertPermutation(isrow,&invisrow); CHKERRQ(ierr);
   ierr = ISInvertPermutation(iscol,&inviscol); CHKERRQ(ierr);
-
-
   ierr = ISGetIndices(invisrow,&r); CHKERRQ(ierr);
   ierr = ISGetIndices(inviscol,&c); CHKERRQ(ierr);
 
@@ -417,7 +420,10 @@ int MatSolveTransAdd_AIJ(Mat mat,Vec bb, Vec zz,Vec xx)
   /* copy tmp into x according to permutation */
   for ( i=0; i<n; i++ ) x[r[i]] += tmp[i];
 
-  ISDestroy(invisrow); ISDestroy(inviscol);
+  ierr = ISRestoreIndices(invisrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(inviscol,&c); CHKERRQ(ierr);
+  ierr = ISDestroy(invisrow); CHKERRQ(ierr);
+  ierr = ISDestroy(inviscol); CHKERRQ(ierr);
 
   PLogFlops(2*aij->nz);
   return 0;
@@ -441,7 +447,8 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
     "MatILUFactorSymbolic_AIJ:Matrix must have column permutation");
 
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
-  ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
+  ierr = ISGetIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
 
   /* get new row pointers */
   ainew = (int *) PETSCMALLOC( (n+1)*sizeof(int) ); CHKPTRQ(ainew);
@@ -542,7 +549,10 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
     }
   }
   PETSCFREE(ajfill); 
-  ISDestroy(isicol); PETSCFREE(fill); PETSCFREE(im);
+  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr = ISDestroy(isicol); CHKERRQ(ierr);
+  PETSCFREE(fill); PETSCFREE(im);
 
   PLogInfo((PetscObject)mat,
     "Info:MatILUFactorSymbolic_AIJ:Realloc %d Fill ratio:given %g needed %g\n",

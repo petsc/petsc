@@ -10,7 +10,7 @@ SOURCEF   =
 SOURCEH   = matlab.h
 OBJSC     = senddense.o send.o  sendsparse.o
 OBJSF     =
-MANSEC    = x
+MANSEC    = 7
 LIBBASE   = libpetscsys
 DIRS      = 
 
