@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.33 1998/12/03 04:06:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.34 1999/03/19 21:24:17 bsmith Exp balay $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -77,6 +77,7 @@ int main(int argc,char **argv)
 
   if (!testorder) { /* turn off printing when testing ordering mappings */
     PetscPrintf (PETSC_COMM_WORLD,"\nGlobal Vectors:\n");
+    ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_NATIVE,0); CHKERRA(ierr);
     ierr = VecView(global,VIEWER_STDOUT_WORLD); CHKERRA(ierr); 
     PetscPrintf (PETSC_COMM_WORLD,"\n\n");
   }
