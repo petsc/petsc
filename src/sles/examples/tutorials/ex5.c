@@ -54,7 +54,7 @@ int main(int argc,char **args)
   ierr = VecGetOwnershipRange(x,&low,&high); CHKERRA(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
-    v = one*i + 100*mytid;
+    v = (Scalar)(i + 100*mytid);
     ierr = VecSetValues(u,1,&iglobal,&v,INSERTVALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(u); CHKERRA(ierr);
