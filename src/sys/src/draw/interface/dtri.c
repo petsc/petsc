@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.24 1999/01/31 16:04:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtri.c,v 1.25 1999/03/07 17:25:17 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -104,14 +104,13 @@ int DrawScalePopup(Draw popup,double min,double max)
 @*/
 int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],Scalar *v)
 {
-  int           N = m*n, rank, ierr;
+  int           N = m*n, ierr;
   PetscTruth    isnull;
   Draw          popup;
   MPI_Comm      comm;
   double        *x,*y;
   int           xin=1,yin=1,i,showgrid,size;
-  double        h, min, max, scale = 1.0;
-  double        xl = 0.0, yl = 0.0, xr = 1.0, yr = .1;
+  double        h, min, max;
 
   PetscFunctionBegin;
   ierr = DrawIsNull(win,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
