@@ -4,6 +4,8 @@
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
 
+#define PARCH_sun4 
+
 #define HAVE_STROPTS_H 
 #define HAVE_SEARCH_H 
 #define HAVE_PWD_H 

@@ -4,6 +4,8 @@
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
 
+#define PARCH_freebsd
+
 #define HAVE_PWD_H 
 #define HAVE_STDLIB_H 
 #define HAVE_STRING_H 

@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.3 1998/04/13 16:20:43 bsmith Exp balay $ */
+/* $Id: petscconf.h,v 1.4 1998/04/16 15:51:13 balay Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -6,6 +6,8 @@
 
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
+
+#define PARCH_nt_gnu
 
 #define HAVE_SEARCH_H 
 #define HAVE_PWD_H 

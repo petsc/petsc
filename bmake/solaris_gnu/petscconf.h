@@ -4,6 +4,8 @@
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
 
+#define PARCH_solaris 
+
 #define HAVE_FORTRAN_UNDERSCORE 
 #define HAVE_SYS_WAIT_H 
 #define HAVE_VPRINTF

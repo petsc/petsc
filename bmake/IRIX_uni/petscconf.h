@@ -6,6 +6,8 @@
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
  
+#define PARCH_IRIX
+
 #define HAVE_PWD_H 
 #define HAVE_STRING_H 
 #define HAVE_STROPTS_H
