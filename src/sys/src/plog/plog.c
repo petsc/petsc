@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.186 1998/05/05 03:38:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.187 1998/05/18 20:21:32 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1253,7 +1253,7 @@ int PLogEventActivate(int event)
 /*@C
    PLogPrintSummary - Prints a summary of the logging.
 
-   Collective over PETSC_COMM_WORLD
+   Collective over MPI_Comm
 
    Input Parameter:
 +  file - an optional file name
