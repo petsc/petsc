@@ -4,6 +4,7 @@
 #
 chmod u+w /home/bsmith/petsc/maint/nightlylogs/alllogs
 \rm -f /home/bsmith/petsc/maint/nightlylogs/alllogs
+cat /home/bsmith/petsc/maint/nightlylogs/buildconfig_* > /home/bsmith/petsc/maint/nightlylogs/alllogs
 cat /home/bsmith/petsc/maint/nightlylogs/build_* > /home/bsmith/petsc/maint/nightlylogs/alllogs
 cat /home/bsmith/petsc/maint/nightlylogs/freebsd* >> /home/bsmith/petsc/maint/nightlylogs/alllogs
 cat /home/bsmith/petsc/maint/nightlylogs/petscbegin.log >> /home/bsmith/petsc/maint/nightlylogs/alllogs
