@@ -181,73 +181,155 @@ proc deletelinefeed { name } {
 ##################################################
 # Initialise some global datastructures
 # change dir to PETSC_DIR
-cd /home/bsmith/petsc
+proc main { }  {
+    global  Concepts Routines Processors Comment
+    set PETSC_DIR /home/bsmith/petsc
+    cd $PETSC_DIR
+    
+    # All the tutorial files containg formated comments
+    set files [ glob src/*/examples/{,tutorials}/{*.f,*.F,*.c} ]
 
-# All the tutorial files containg formated comments
-set files [ glob src/*/examples/{,tutorials}/{*.f,*.F,*.c} ]
-
-# Initailise the data structures
-foreach filename $files {
-    set Concepts($filename)   {}
-    set Routines($filename)   {}
-    set Processors($filename) {}
-    set Comment($filename)    ""
-}
-# scan each file and capture the formated comments
-foreach filename $files {  scanfile $filename  }
-
-# For each data entry, eliminate the white spaces in fornt/at the end
-foreach filename $files {  
-    deletespace Concepts($filename) 
-    deletespace Routines($filename) 
-    deletespace Processors($filename)
-    deletelinefeed Comment($filename)
-}
-
-
-# Print out the data collected in various tables for ms-access
-cd /home/bsmith/petsc/docs/tex/access
-set table1 [ open table1.txt  w ]
-puts $table1 "Key;Dir;Name;Source;Processors;comments"
-foreach filename $files {
-    set tempdir [ file dirname $filename ]
-    set tempfile [ file tail $filename ]
-    set tempext [ file extension $filename ]
-    set mesg "$filename;$tempdir;$tempfile;$tempext;$Processors($filename);$Comment($filename)"
-    puts  $table1 $mesg
-}
-close $table1
-
-
-set table2 [ open table2.txt w ]
-puts $table2 "Name of the File;Concepts"
-
-foreach filename $files {
-    set n [ llength $Concepts($filename)  ]
-    set i 0
-    while { $i < $n } {
-        set temp [ join [ lindex $Concepts($filename) $i ] " " ]
-        set mesg "$filename;$temp"
-        puts  $table2 $mesg
-        set i [ expr $i + 1 ]
+    # Initailise the data structures
+    set concepts {}
+    set routines {}
+    foreach filename $files {
+        set Concepts($filename)   {}
+        set Routines($filename)   {}
+        set Processors($filename) {}
+        set Comment($filename)    ""
     }
-}
-close $table2
-
-set table3 [ open table3.txt w ]
-puts $table3 "Name of the File;Routines"
-
-foreach filename $files {
-    set n [ llength $Routines($filename)  ]
-    set i 0
-    while { $i < $n } {
-        set temp [ join [ lindex $Routines($filename) $i ] " " ]
-        set mesg "$filename;$temp"
-        puts  $table3 $mesg
-        set i [ expr $i + 1 ]
+    # scan each file and capture the formated comments
+    foreach filename $files {  scanfile $filename  }
+    
+    # For each data entry, eliminate the white spaces in fornt/at the end
+    foreach filename $files {  
+        deletespace Concepts($filename) 
+        deletespace Routines($filename) 
+        deletespace Processors($filename)
+        deletelinefeed Comment($filename)
     }
+
+    # Do the grouping by Concepts and Routines
+    foreach filename $files {
+        foreach concept $Concepts($filename) {
+            lappend ConceptsFile($concept) $filename
+            # add to the concepts list
+            if { [lsearch -exact $concepts $concept] == -1 } {
+                lappend concepts $concept
+            }
+        }
+        foreach routine $Routines($filename) {
+            lappend RoutinesFile($routine) $filename
+            # add to the routines list
+            if { [lsearch -exact $routines $routine] == -1 } {
+                lappend routines $routine
+            }
+        }
+    }
+    set routines [ lsort $routines ]
+    set concepts [ lsort $concepts ]
+
+    # Modify the filename and make it hypertext 
+    # Just a temporary test.. Must take it away....
+    foreach filename $files {
+        set tmp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $filename ]
+        set html($filename) $tmp
+    }
+    
+    # Print out the data collected in various tables for ms-access
+    cd $PETSC_DIR/docs/tex/access
+    set table1 [ open table1.txt  w ]
+    puts $table1 "Key;Dir;Name;Source;Processors;comments"
+    foreach filename $files {
+        set tempdir [ file dirname $filename ]
+        set tempfile [ file tail $filename ]
+        set tempext [ file extension $filename ]
+        set temphtml $html($filename)
+        set mesg "$filename;$temphtml;$tempdir;$tempfile;$tempext;$Processors($filename);$Comment($filename)"
+        puts  $table1 $mesg
+    }
+    close $table1
+    
+    
+    set table2 [ open table2.txt w ]
+    puts $table2 "Name of the File;Concepts"
+    
+    foreach filename $files {
+        set n [ llength $Concepts($filename)  ]
+        set temphtml $html($filename) 
+        set i 0
+        while { $i < $n } {
+            set temp [ join [ lindex $Concepts($filename) $i ] " " ]
+            set mesg "$temphtml;$temp"
+            puts  $table2 $mesg
+            set i [ expr $i + 1 ]
+        }
+    }
+    close $table2
+    
+    set table3 [ open table3.txt w ]
+    puts $table3 "Name of the File;Routines"
+    
+    foreach filename $files {
+        set n [ llength $Routines($filename)  ]
+        set temphtml $html($filename) 
+        set i 0
+        while { $i < $n } {
+            set temp [ join [ lindex $Routines($filename) $i ] " " ]
+            set mesg "$temphtml;$temp"
+            puts  $table3 $mesg
+            set i [ expr $i + 1 ]
+        }
+    }
+    close $table3
+
+    set table4 [ open table4.html w ]
+
+    # Put some  HTML Header 
+    puts $table4 {<HTML>
+
+<TITLE>Table4</TITLE>
+
+<BODY>}
+puts $table4 {<TABLE BORDER=0 CELLSPACING=0 CELLPADDING=0 >
+<TR HEIGHT=32 >
+<TD WIDTH=4 ><BR></TD><TD WIDTH=620 ><B><I><FONT SIZE=6 FACE="Times New Roman" COLOR=#000080>Table4</FONT></B></I></TD></TR>
+</TABLE> }
+
+puts $table4 {<TD WIDTH=4 ><BR></TD><TD WIDTH=788 ><B><I><FONT SIZE=5 FACE="Times New Roman" COLOR=#000080>Concepts</FONT></B></I></TD><TD WIDTH=632 ><B><I><FONT SIZE=5 FACE="Times New Roman" COLOR=#000080>Key</FONT></B></I></TD></TR></TABLE>}
+
+
+    foreach concept  $concepts {
+        set n [ llength $ConceptsFile($concept)  ]
+        puts -nonewline $table4 {<TABLE BORDER=0 CELLSPACING=0 CELLPADDING=0 >
+<TR HEIGHT=18 >
+<TD WIDTH=4 ><BR></TD><TD WIDTH=620 ><I><FONT SIZE=5 FACE="Times New Roman" COLOR=#000080>}
+puts -nonewline $table4 $concept
+puts $table4 {</FONT></I></TD></TR>
+</TABLE>}
+
+        set i 0
+        while { $i < $n } {
+            set temp [ join [ lindex $ConceptsFile($concept) $i ] " " ]
+            set temp $html($temp)
+            puts -nonewline $table4 {<TABLE BORDER=0 CELLSPACING=0 CELLPADDING=0 >
+<TR HEIGHT=14 >
+<TD WIDTH=192 ><BR></TD><TD WIDTH=432 ><FONT SIZE=4 FACE="Arial" COLOR=#000000>}
+ puts -nonewline $table4 $temp
+ puts  $table4 {</FONT></TD></TR>
+</TABLE>}
+
+            set i [ expr $i + 1 ]
+        }
+    }
+    close $table4
+
+    return 0
 }
-close $table3
+
+
+
 
 #################################################
-
+# the stuppid main function is called here    
+main
