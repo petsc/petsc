@@ -73,8 +73,8 @@ extern "C" {
         pz[_i] = a*pa[_i] + b*pb[_i] + c*pc[_i];\
     }\
 }
-void ad_grad_daxpy_init();
-void ad_grad_daxpy_final();
+void ad_grad_daxpy_init(void);
+void ad_grad_daxpy_final(void);
 #define ad_grad_daxpy_free(pz) ad_adic_deriv_free(pz)
 void ad_grad_daxpy_0(double** ppz);
 

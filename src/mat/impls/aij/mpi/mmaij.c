@@ -11,13 +11,16 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ         *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ         *B = (Mat_SeqAIJ*)(aij->B->data);  
-  int                N = mat->N,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
+  int                i,j,*aj = B->j,ierr,ec = 0,*garray;
   IS                 from,to;
   Vec                gvec;
 #if defined (PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
   PetscTablePosition tpos;
   int                gid,lid; 
+#else
+  int                N = mat->N,*indices;
+
 #endif
 
   PetscFunctionBegin;

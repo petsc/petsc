@@ -173,14 +173,16 @@ int MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
 {
   Mat_MPISBAIJ       *baij = (Mat_MPISBAIJ*)mat->data;
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(baij->B->data);  
-  int                Nbs = baij->Nbs,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
+  int                i,j,*aj = B->j,ierr,ec = 0,*garray;
   int                bs = baij->bs,*stmp;
   IS                 from,to;
   Vec                gvec;
 #if defined (PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
   PetscTablePosition tpos;
-  int                gid,lid; 
+  int                gid,lid;
+#else
+  int                Nbs = baij->Nbs,*indices;
 #endif  
 
   PetscFunctionBegin;

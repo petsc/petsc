@@ -2,6 +2,8 @@
 /* Routines to be used by MatIncreaseOverlap() for BAIJ and SBAIJ matrices */
 #include "petscis.h" 
 #include "petscbt.h"
+#include "src/sys/ctable.h"
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISCompressIndicesGeneral"

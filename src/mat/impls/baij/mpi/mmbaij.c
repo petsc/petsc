@@ -13,7 +13,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
 {
   Mat_MPIBAIJ        *baij = (Mat_MPIBAIJ*)mat->data;
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(baij->B->data);  
-  int                Nbs = baij->Nbs,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
+  int                i,j,*aj = B->j,ierr,ec = 0,*garray;
   int                bs = baij->bs,*stmp;
   IS                 from,to;
   Vec                gvec;
@@ -21,6 +21,8 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   PetscTable         gid1_lid1;
   PetscTablePosition tpos;
   int                gid,lid; 
+#else
+  int                Nbs = baij->Nbs,*indices;
 #endif  
 
   PetscFunctionBegin;
