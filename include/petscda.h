@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.36 1997/10/10 22:00:27 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.37 1997/10/12 23:27:14 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -43,6 +43,8 @@ extern int   DAGetProcessorSubset(DA,DADirection,int,MPI_Comm*);
 extern int   DARefine(DA,DA*);
 
 extern int   DAGetGlobalIndices(DA,int*,int**);
+extern int   DAGetISLocalToGlobalMapping(DA,ISLocalToGlobalMapping*);
+
 extern int   DAGetScatter(DA,VecScatter*,VecScatter*,VecScatter*);
 
 extern int   DAGetAO(DA,AO*);
