@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.5 1998/05/05 19:58:15 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.6 1998/06/01 03:28:26 bsmith Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -18,7 +18,7 @@
 #define HAVE_UNAME 
 #define HAVE_SYS_TIME_H
 
-#define HAVE_FORTRAN_UNDERSCORE_UNDERSCOR
+#define HAVE_FORTRAN_UNDERSCORE_UNDERSCORE
 #define HAVE_FORTRAN_UNDERSCORE
 
 #define HAVE_READLINK
