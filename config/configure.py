@@ -8,7 +8,7 @@ if not hasattr(sys, 'version_info'):
   raise RuntimeError('You must have Python version 2.2 or higher to run configure')
 
 def getarch():
-  if sys.argv[0].startswith('configure'): return ''
+  if os.path.basename(sys.argv[0]).startswith('configure'): return ''
   else: return os.path.basename(sys.argv[0])[:-3]
 
 def petsc_configure(configure_options):

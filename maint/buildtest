@@ -13,27 +13,27 @@ set APPEND='>>&'
 set maintdir=`dirname $0`
 set dir=`dirname $maintdir`
 set TEST='testexamples_'
-if (${#argv} >= 1 && -f $maintdir/buildtests/$1) then
+if (${#argv} >= 1 && -f ${maintdir}/buildtests/${1}) then
   set ARCH=$1
   set RSH='ssh -1'
   set CONFIGURE='no'
   set DASHN='-n'
   source $maintdir/buildtests/$1
   set CONFIGURE_FILE=$ARCH
-  set CONFIGURE_ARGS=${argv[2-]}
+  set CONFIGURE_ARGS=${#argv[2-]}
   set PETSC_ARCH_NAME=''
   echo "Performing buildtest on " $MACH " with arch " $ARCH " at " $TMP
   rsync -z -e "$RSH" -C -r --exclude=BitKeeper --delete $dir/* ${MACH}:$TMP
   # should delete all previously build libraries
 else
   # run in-place
-  set TMP=$dir
+  set TMP=${dir}
   set RSH='eval'
   set MACH=''
   set DASHN=''
   set CONFIGURE='yes'
   set CONFIGURE_FILE='configure'
-  set CONFIGURE_ARGS=${argv}
+  set CONFIGURE_ARGS=${#argv}
   setenv PETSC_DIR $dir
   set ARCH=`$dir/bin/configarch`
   set PETSC_ARCH_NAME=-PETSC_ARCH=$ARCH
