@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.75 1996/04/05 16:55:32 balay Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.76 1996/04/06 15:16:14 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -180,11 +180,8 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg); CHKERRQ(ierr);
     return MatCreateSeqBAIJ(comm,bs,m,n,PETSC_DEFAULT,PETSC_NULL,V);
     break;
-  default:
-    return MatCreateSeqAIJ(comm,m,n,PETSC_DEFAULT,PETSC_NULL,V); 
-    break;
   }
-  return 0;
+  return MatCreateSeqAIJ(comm,m,n,PETSC_DEFAULT,PETSC_NULL,V); 
 }
 
 #include "matimpl.h"
