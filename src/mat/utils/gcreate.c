@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.67 1996/01/12 22:08:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.68 1996/01/24 05:46:49 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -177,7 +177,7 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 .  type - the matrix type (or use PETSC_NULL)
 .  name - name of matrix type (or use PETSC_NULL)
 
-.keywords: matrix, get, name
+.keywords: matrix, get, type, name
 @*/
 int MatGetType(Mat mat,MatType *type,char **name)
 {
