@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.20 1995/07/30 03:53:49 curfman Exp curfman $ */
+/* $Id: snesimpl.h,v 1.21 1995/07/30 15:21:03 curfman Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -87,9 +87,14 @@ struct _SNES {
   double   deltatol;          /* trust region convergence tolerance */
   double   fmin;              /* minimum tolerance for function value */
   int      set_method_called; /* flag indicating set_method has been called */
+/*
+   These are REALLY ugly and don't belon here, but since they must 
+  be destroyed at the end we have to put them somewhere.
+*/
   int      ksp_ewconv;        /* flag indicating Eisenstat-Walker KSP 
                                  convergence test */
   void     *kspconvctx;
+  Mat      mfshell;           /* MatShell for Matrix free from command line*/
 };
 
 typedef struct {
