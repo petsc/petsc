@@ -34,10 +34,10 @@ ia values for processor 1
 ja values for processor 1
 0 0 1 
 New processor assignment for each element
-[0] Number of indices in (stride) set 2
+[0] Number of indices in set 2
 [0] 0 0
 [0] 1 1
-[1] Number of indices in (stride) set 2
+[1] Number of indices in set 2
 [1] 0 0
 [1] 1 1
 Old vertex numbering in new element ordering

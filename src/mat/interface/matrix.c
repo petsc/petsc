@@ -2932,7 +2932,7 @@ int MatScale(PetscScalar *a,Mat mat)
 
    Input Parameters:
 +  mat - the matrix
--  type - the type of norm, NORM_1, NORM_2, NORM_FROBENIUS, NORM_INFINITY
+-  type - the type of norm, NORM_1, NORM_FROBENIUS, NORM_INFINITY
 
    Output Parameters:
 .  nrm - the resulting norm 
