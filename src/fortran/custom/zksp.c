@@ -1,9 +1,10 @@
-/*$Id: zksp.c,v 1.46 2000/05/05 22:26:47 balay Exp bsmith $*/
+/*$Id: zksp.c,v 1.47 2000/09/21 18:45:32 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscksp.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define kspgetresidualnorm_        KSPGETRESIDUALNORM
 #define kspgetconvergedreason_     KSPGETCONVERGEDREASON
 #define kspfgmressetmodifypc_      KSPFGMRESSETMODIFYPC
 #define kspfgmresmodifypcsles_     KSPFGMRESMODIFYPCSLES
@@ -67,9 +68,15 @@
 #define kspbuildsolution_          kspbuildsolution
 #define kspgetoptionsprefix_       kspgetoptionsprefix
 #define kspview_                   kspview
+#define kspgetresidualnorm_        kspgetresidualnorm
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL kspgetresidualnorm_(KSP *ksp,PetscReal *rnorm,int *ierr)
+{
+  *ierr = KSPGetResidualNorm(*ksp,rnorm);
+}
 
 void PETSC_STDCALL kspgetconvergedreason_(KSP *ksp,KSPConvergedReason *reason,int *ierr)
 {
