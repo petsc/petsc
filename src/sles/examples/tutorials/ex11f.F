@@ -1,8 +1,8 @@
 
-C    "$Id: ex11f.F,v 1.4 1996/09/25 20:47:03 curfman Exp curfman $";
+C    "$Id: ex11f.F,v 1.5 1996/09/26 03:22:12 curfman Exp curfman $";
 C
 C/*T
-C  Concepts: SLES (solving a Helmholtz equation)
+C  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
 C  Concepts: Complex numbers
 C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
 C  Routines: SLESSolve(); PetscRandomCreate(); PetscRandomGetValue();

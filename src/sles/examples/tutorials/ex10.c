@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.11 1996/08/28 18:42:04 curfman Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.12 1996/09/26 02:55:04 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -15,8 +15,8 @@ users manual for a discussion of preloading.  Input parameters include\n\
   -f1 <input_file> : second file to load (larger system)\n\n";
 
 /*T
-   Concepts: SLES (solving linear equations)
-   Concepts: Plog (profiling multiple stages of code)
+   Concepts: SLES^Solving a linear system - loading a binary matrix and vector;
+   Concepts: PLog^Profiling multiple stages of code;
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSolve(); SLESSetUp(); SLESSetUpOnBlocks(); SLESView();
    Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops();

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.65 1996/08/27 18:29:07 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.66 1996/08/30 19:17:44 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -14,7 +14,8 @@ The command line options include:\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
 /*T
-   Concepts: SNES (solving nonlinear equations); DA (using distributed arrays)
+   Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
+   Concepts: DA^Using distributed arrays;
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
    Routines: SNESSolve(); SNESSetFromOptions();
    Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();

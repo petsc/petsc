@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.1 1996/08/27 14:32:24 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.2 1996/08/30 23:03:16 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 
 /*T
-   Concepts: SNES (solving nonlinear equations)
+   Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example);
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); SNESGetSLES();
    Routines: SNESSolve(); SNESSetFromOptions(); 
    Routines: SLESGetPC(); SLESGetKSP(); KSPSetTolerances(); PCSetType();

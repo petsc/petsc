@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.54 1996/08/20 16:34:24 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.55 1996/08/30 19:33:23 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
 This example employs a user-defined monitoring routine.\n\n";
 
 /*T
-   Concepts: SNES (solving nonlinear equations)
-   Concepts: SNES - setting a user-defined monitoring routine
+   Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
+   Concepts: SNES^Setting a user-defined monitoring routine
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); SNESSolve();
    Routines: SNESGetTolerances(); SNESSetFromOptions(); SNESSetMonitor();
    Routines: SNESGetSolution(); ViewerDrawOpenX(); PetscObjectSetName();

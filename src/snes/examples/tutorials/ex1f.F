@@ -1,8 +1,8 @@
 
-C "$Id: ex1f.F,v 1.4 1996/08/29 15:56:17 curfman Exp curfman $";
+C "$Id: ex1f.F,v 1.5 1996/09/25 20:58:02 curfman Exp curfman $";
 C
 C/*T
-C  Concepts: SNES (solving nonlinear equations)
+C  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
 C  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); 
 C  Routines: SNESSolve(); SNESSetFromOptions(); SNESGetSLES();
 C  Routines: SLESGetPC(); SLESGetKSP(); KSPSetTolerances(); PCSetType();

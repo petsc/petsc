@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.8 1996/09/02 13:47:30 bsmith Exp curfman $";
+C "$Id: ex5f.F,v 1.9 1996/09/25 20:50:27 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -13,7 +13,8 @@ C    -Nx <npx>, where <npx> = number of processors in the x-direction
 C    -Ny <npy>, where <npy> = number of processors in the y-direction
 C
 C/*T
-C  Concepts: SNES (solving nonlinear equations); DA (using distributed arrays)
+C  Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
+C  Concepts: DA^Using distributed arrays;
 C  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
 C  Routines: SNESSolve(); SNESSetFromOptions();
 C  Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();

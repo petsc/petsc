@@ -1,18 +1,17 @@
 
-/*      "$Id: ex3.c,v 1.3 1996/08/22 14:35:26 balay Exp balay $"; */
+/*      "$Id: ex3.c,v 1.4 1996/08/22 20:14:50 balay Exp curfman $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
 /*T
-    Concepts: Index set; indices; blocks 
+    Concepts: Index sets^Manipulating a block index set;
     Routines: ISCreateBlock(); ISDestroy(); ISView()
     Routines: ISGetIndices(); ISRestoreIndices(); ISBlockGetSize()
     Routines: ISBlockGetBlockSize(); ISBlockGetIndices(); ISBlockRestoreIndices()
     Routines: ISBlock()
 
     Comment:  Creates an index set based on blocks of integers. Views that index set
-  and then destroys it.
-
+    and then destroys it.
 T*/
 
 #include "is.h"

@@ -56,4 +56,16 @@ ex6: ex6.o  chkopts
 	-$(CLINKER) -o ex6 ex6.o  $(PETSC_LIB)
 	$(RM) -f ex6.o
 
+ex7: ex7.o  chkopts
+	-$(CLINKER) -o ex7 ex7.o  $(PETSC_LIB)
+	$(RM) -f ex7.o
+
+ex8: ex8.o  chkopts
+	-$(CLINKER) -o ex8 ex8.o  $(PETSC_LIB)
+	$(RM) -f ex8.o
+
+ex9: ex9.o  chkopts
+	-$(CLINKER) -o ex9 ex9.o  $(PETSC_LIB)
+	$(RM) -f ex9.o
+
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

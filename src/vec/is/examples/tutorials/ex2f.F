@@ -1,12 +1,15 @@
 
-C      "$Id: ex2f.F,v 1.2 1996/08/17 14:35:33 bsmith Exp bsmith $";
+C      "$Id: ex2f.F,v 1.3 1996/09/12 16:24:50 bsmith Exp curfman $";
 C
-C    Concepts: Index set, indices, stride, accessing PETSc array from Fortran
+C/*T
+C    Concepts: Index sets^Manipulating a stride index set;
+C    Concepts: Index sets^Accessing indices from Fortran
 C    Routines: ISCreateStride(), ISDestroy(), ISView()
 C    Routines: ISGetIndices(), ISRestoreIndices()
+CT*/
 C    
-C     Creates an index set based on a stride. Views that index set
-C  and then destroys it.
+C    Comment: Creates an index set based on a stride. Views that index set
+C    and then destroys it.
 C
 C
 C  Always include petsc.h

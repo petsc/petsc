@@ -1,14 +1,14 @@
 
-C  "$Id: ex1f.F,v 1.3 1996/08/17 14:46:33 curfman Exp bsmith $";
+C  "$Id: ex1f.F,v 1.4 1996/09/12 16:24:50 bsmith Exp curfman $";
 C
-C
-C    Concepts: Index set, indices
+C/*T
+C    Concepts: Index sets^Manipulating a general index set;
 C    Routines: ISCreateGeneral(), ISDestroy(), ISView(), ISGetSize()
 C    Routines: ISGetIndices(), ISRestoreIndices()
+CT*/
 C    
-C     Creates an index set based on a set of integers. Views that index set
-C  and then destroys it.
-C
+C    Comment: Creates an index set based on a set of integers. Views that index set
+C    and then destroys it.
 C
 C  Always include petsc.h
 C  include is.h so we can work with PETSc IS objects 

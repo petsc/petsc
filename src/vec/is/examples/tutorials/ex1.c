@@ -1,12 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.3 1996/08/22 14:35:12 balay Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.4 1996/08/22 20:13:58 balay Exp curfman $";
 #endif
 
 static char help[] = "Demonstrates creating a general index set.\n\n";
 
 /*T
-
-    Concepts: Index set; indices
+    Concepts: Index sets^Manipulating a general index set;
     Routines: ISCreateGeneral(); ISDestroy(); ISView()
     Routines: ISGetIndices(); ISRestoreIndices()
     

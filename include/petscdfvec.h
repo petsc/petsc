@@ -1,5 +1,5 @@
 
-/* $Id: dfvec.h,v 1.16 1996/04/17 04:09:21 curfman Exp curfman $ */
+/* $Id: dfvec.h,v 1.17 1996/04/17 23:01:59 curfman Exp curfman $ */
 
 /* This file declares some utility routines for manipulating discrete functions,
    or vectors that are associated with grids, possibly with multiple degrees of
@@ -28,7 +28,8 @@ extern int DFVecGetDFShell(Vec,DF*);
 extern int DFVecGetComponentVectors(DFVec,int*,DFVec**);
 extern int DFVecAssembleFullVector(Vec*,DFVec);
 extern int DFVecView(DFVec,Viewer);
-extern int DFVecDrawContours(DFVec,int,int);
+extern int DFVecDrawTensorContoursX(DFVec,int,int);
+extern int DFVecDrawTensorSurfaceContoursVRML(DFVec);
 extern int DFVecRefineVector(DFVec,DFVec*);
 extern int DFVecCopy(DFVec,DFVec);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.1 1996/08/28 19:59:55 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.2 1996/09/26 02:54:05 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -10,7 +10,8 @@ differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
 /*T
-   Concepts: SLES (solving linear equations)
+   Concepts: SLES^Solving a system of linear equations (basic parallel example);
+   Concepts: Matrices^Inserting matrix elements by blocks
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSolve(); SLESGetKSP(); SLESGetPC();
    Routines: KSPSetTolerances(); PCSetType();
