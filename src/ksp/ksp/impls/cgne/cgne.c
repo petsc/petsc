@@ -1,43 +1,6 @@
 /*$Id: cgne.c,v 1.117 2001/08/07 03:03:50 balay Exp $*/
 
 /*
-    This file implements the conjugate gradient method in PETSc as part of
-    KSP. You can use this as a starting point for implementing your own 
-    Krylov method that is not provided with PETSc.
-
-    The following basic routines are required for each Krylov method.
-        KSPCreate_XXX()          - Creates the Krylov context
-        KSPSetFromOptions_XXX()  - Sets runtime options
-        KSPSolve_XXX()           - Runs the Krylov method
-        KSPDestroy_XXX()         - Destroys the Krylov context, freeing all 
-                                   memory it needed
-    Here the "_XXX" denotes a particular implementation, in this case 
-    we use _CGNE (e.g. KSPCreate_CGNE, KSPDestroy_CGNE). These routines are 
-    are actually called vai the common user interface routines
-    KSPSetType(), KSPSetFromOptions(), KSPSolve(), and KSPDestroy() so the
-    application code interface remains identical for all preconditioners.
-
-    Other basic routines for the KSP objects include
-        KSPSetUp_XXX()
-        KSPView_XXX()             - Prints details of solver being used.
-
-    Detailed notes:                         
-    By default, this code implements the CG (Conjugate Gradient) method,
-    which is valid for real symmetric (and complex Hermitian) positive
-    definite matrices. Note that for the complex Hermitian case, the
-    VecDot() arguments within the code MUST remain in the order given
-    for correct computation of inner products.
-
-    Reference: Hestenes and Steifel, 1952.
-
-    By switching to the indefinite vector inner product, VecTDot(), the
-    same code is used for the complex symmetric case as well.  The user
-    must call KSPCGSetType(ksp,KSP_CG_SYMMETRIC) or use the option 
-    -ksp_cg_symmetric to invoke this variant for the complex case.
-    Note, however, that the complex symmetric code is NOT valid for
-    all such matrices ... and thus we don't recommend using this method.
-*/
-/*
        cgctx.h defines the simple data structured used to store information
     related to the type of matrix (e.g. complex symmetric) being solved and
     data used during the optional Lanczo process used to compute eigenvalues
@@ -46,22 +9,6 @@
 EXTERN int KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
 EXTERN int KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,int *);
 
-/*MC
-   KSPCGNE  - KSPCGNE  = "cgne" - the KSP type for Conjugate Gradients
-   on the normal equations. This solves A^tA x = A^t f, with B^tB as
-   preconditioner, where B is the specified preconditioner.
-
-   Options Database Keys:
-. -ksp_type cgne - sets the KSP type to "cgne" during a call to 
-    KSPSetFromOptions() or KSPSetFromOptions()
-
-   Level: beginner
-
-   Notes: eigenvalue computation routines will return information about the
-   spectrum of A^tA, rather than A.
-
-.seealso: KSPSetType
-M*/
 
 /*
      KSPSetUp_CGNE - Sets up the workspace needed by the CGNE method. 
@@ -331,7 +278,7 @@ int KSPSetFromOptions_CGNE(KSP ksp)
   ierr = PetscOptionsHead("KSP CGNE options");CHKERRQ(ierr);
     ierr = PetscOptionsLogicalGroupBegin("-ksp_cgne_Hermitian","Matrix is Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_HERMITIAN);CHKERRQ(ierr); }
-    ierr = PetscOptionsLogicalGroupEnd("-ksp_cg_symmetric","Matrix is complex symmetric, not Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsLogicalGroupEnd("-ksp_cgne_symmetric","Matrix is complex symmetric, not Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_SYMMETRIC);CHKERRQ(ierr); }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 #endif
@@ -365,6 +312,25 @@ EXTERN_C_END
 
     It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
 */
+
+/*MC
+     KSPCGNE - Applies the preconditioned conjugate gradient method to the normal equations
+          without explicitly forming A^t*A
+
+   Options Database Keys:
++   -ksp_cgne_Hermitian - (for complex matrices only) indicates the matrix is Hermitian
+-   -ksp_cgne_symmetric - (for complex matrices only) indicates the matrix is symmetric
+
+   Level: beginner
+
+   Notes: eigenvalue computation routines will return information about the
+   spectrum of A^tA, rather than A.
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
+           KSPCGSetType()
+
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CGNE"

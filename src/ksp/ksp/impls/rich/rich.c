@@ -164,6 +164,23 @@ int KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 }
 EXTERN_C_END
 
+/*MC
+     KSPRICHARDSON - The preconditioned Richardson iterative method
+
+   Options Database Keys:
+.   -ksp_richardson_scale - damping factor on the correction (defaults to 1.0)
+
+   Level: beginner
+
+   Notes: x^{n+1} = x^{n} + scale*B(b - A x^{n})
+
+          This method often (usually) will not converge unless scale is very small
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
+           KSPRichardsonSetScale()
+
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_Richardson"

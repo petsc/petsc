@@ -687,6 +687,32 @@ int KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
   PetscFunctionReturn(0);
 }
 
+/*MC
+     KSPGMRES - Implements the Generalized Minimal Residual method.  
+                (Saad and Schultz, 1986) with restart
+
+
+   Options Database Keys:
++   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
+.   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
+.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of 
+                             vectors are allocated as needed)
+.   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
+.   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
+.   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the 
+                                   stability of the classical Gram-Schmidt  orthogonalization.
+-   -ksp_gmres_krylov_monitor - plot the Krylov space generated
+
+   Level: beginner
+
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
+           KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization()
+           KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
+           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESKrylovMonitor()
+
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_GMRES"

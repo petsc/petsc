@@ -213,6 +213,23 @@ int KSPView_Chebychev(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*MC
+     KSPCHEBYCHEV - The preconditioned Chebychev iterative method
+
+   Options Database Keys:
+.   -ksp_chebychev_eigenvalues <emin,emax> - set approximations to the smallest and largest eigenvalues
+                  of the preconditioned operator. If these are accurate you will get much faster convergence.
+
+   Level: beginner
+
+   Notes: The Chebychev method requires both the matrix and preconditioner to 
+          be symmetric positive (semi) definite
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
+           KSPChebychevSetEigenvalues()
+
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_Chebychev"
