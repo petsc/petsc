@@ -1,5 +1,5 @@
 CC       = cc -T cray-t3d -DPARCH_t3d -h jump
-FC       = /mpp/bin/cf77 -C cray-t3d -h jump
+FC       = cf77 -C cray-t3d
 AR       = ar
 RM       = rm
 RANLIB   = true
@@ -28,16 +28,17 @@ libf:
 	for i in $(OBJSF); do $(OMAKE) libmember LIBMEMBER=$$i ; done
 
 libmember:    $(LIBNAME)($(LIBMEMBER))
+	@-true
 
 #######
 
 .F.o:
-	/lib/cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
+	cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
 	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(RM) -f $*.f
 
 .F.a: 
-	/lib/cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
+	cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
 	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) -f $*.o $*.f
