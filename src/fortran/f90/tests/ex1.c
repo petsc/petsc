@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.2 2000/08/23 18:38:37 balay Exp balay $*/
+/*$Id: ex1.c,v 1.3 2000/08/23 18:42:50 balay Exp balay $*/
 
 #include <stdio.h>
 #include "src/fortran/f90/zf90.h"
@@ -26,8 +26,9 @@ void c_routine_(abc *x)
   double *data = (double*)x->b.addr;
 
   printf("From C: %d %5.2e %d\n",x->a,data[0],x->c);
-
+  fflush(stdout);
   x->a = 2;
+
   data[0] = 22.0;
   x->c = 222;
   fortran_routine_(x); 
