@@ -64,18 +64,19 @@ def rmfile(filename):
 def main():
     arg_len = len(argv)
 
-    if arg_len < 2:
+    if arg_len < 3:
         print 'Error Insufficient arguments.'
-        print 'Usage:', argv[0], 'LOC'
-    LOC = argv[1]
+        print 'Usage:', argv[0], 'PETSC_DIR LOC'
+    PETSC_DIR = argv[1]
+    LOC = argv[2]    
 
     cleanfiles = 0
-    if arg_len == 3:
-        if argv[2] == 'clean' :
+    if arg_len == 4:
+        if argv[3] == 'clean' :
           cleanfiles = 1
     
     baseurl = 'http://www-unix.mcs.anl.gov/petsc/petsc-2/documentation'
-    baseurl = LOC + '/docs/website/documentation/'
+    baseurl = PETSC_DIR + '/docs/website/documentation/'
     htmlfiles = [
         'bugreporting.html',
         'codemanagement.html',
