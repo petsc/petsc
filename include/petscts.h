@@ -1,7 +1,7 @@
-/* $Id: ts.h,v 1.6 1996/04/20 04:22:06 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.7 1996/09/30 20:03:08 bsmith Exp curfman $ */
 /*
-    User interface for the time-stepping package. This is package
-  is for use in solving time dependent PDES.
+   User interface for the timestepping package. This is package
+   is for use in solving time-dependent PDEs.
 */
 #if !defined(__TS_PACKAGE)
 #define __TS_PACKAGE

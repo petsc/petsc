@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.66 1996/08/30 19:17:44 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.67 1996/09/28 14:10:16 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -57,7 +57,9 @@ T*/
 #include <stdio.h>
 
 /* 
-   User-defined application context
+   User-defined application context - contains data needed by the 
+   application-provided call-back routines, FormJacobian() and
+   FormFunction().
 */
 typedef struct {
    double      param;          /* test problem parameter */

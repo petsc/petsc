@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.2 1996/08/30 23:03:16 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.3 1996/09/28 14:11:08 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
@@ -67,7 +67,7 @@ int main( int argc, char **argv )
   ierr = MatCreate(MPI_COMM_SELF,2,2,&J); CHKERRA(ierr);
 
   /* 
-     Set function evaluation routine and vector
+     Set function evaluation routine and vector.
   */
   ierr = SNESSetFunction(snes,r,FormFunction,PETSC_NULL); CHKERRA(ierr);
 
