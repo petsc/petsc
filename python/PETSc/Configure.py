@@ -473,6 +473,9 @@ class Configure(config.base.Configure):
         jobs.append('2')
       if 'FC' in self.framework.argDB:
         jobs.append('3')
+    if not os.path.isdir(os.path.abspath(self.bmakeDir)):
+      os.path.mkdir(os.path.abspath(self.bmakeDir))
+      
     jobsFile  = file(os.path.abspath(os.path.join(self.bmakeDir, 'jobs')), 'w')
     jobsFile.write(' '.join(jobs)+'\n')
     jobsFile.close()

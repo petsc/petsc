@@ -839,6 +839,19 @@ push:
 	-@cd ${PETSC_DIR}/python/BuildSystem; bk push
 
 
+#
+#   Updates your PETSc version to the latest set of patches
+#
+update:
+	-@if [ -d ${PETSC_DIR}/BitKeeper ]; then \
+          echo "Using BK to update source code" ; \
+          ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} pull ;\
+        else \
+          echo "Using patch to update source code" ;  \
+	  ${PETSC_DIR}/bin/update.py;\
+        fi
+
+
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/rules
 

@@ -197,11 +197,6 @@ deletelibs: chkopts_basic
 allclean: deletelibs
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=clean tree
 
-#
-#   Updates your PETSc version to the latest set of patches
-#
-update:
-	-@bin/petscupdate
 
 #
 # Check if PETSC_DIR variable specified is valid
