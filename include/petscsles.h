@@ -1,4 +1,4 @@
-/* $Id: sles.h,v 1.15 1995/07/25 16:23:20 curfman Exp bsmith $ */
+/* $Id: sles.h,v 1.16 1996/01/01 01:05:46 bsmith Exp balay $ */
 
 #if !defined(__SLES_PACKAGE)
 #define __SLES_PACKAGE
@@ -23,5 +23,6 @@ extern int SLESSetOptionsPrefix(SLES,char*);
 extern int SLESSetUp(SLES,Vec,Vec);
 
 extern int PCBJacobiGetSubSLES(PC,int*,int*,SLES**);
+extern int PCBGSGetSubSLES(PC,int*,int*,SLES**);
 
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.57 1996/01/01 01:02:42 bsmith Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.58 1996/01/02 14:51:14 balay Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -58,6 +58,54 @@ static int PCSetFromOptions_BJacobi(PC pc)
   return 0;
 }
 
+static int PCSetFromOptions_BGS(PC pc)
+{
+  int        blocks;
+
+  if (OptionsGetInt(pc->prefix,"-pc_bgs_blocks",&blocks)) {
+    PCBGSSetTotalBlocks(pc,blocks,PETSC_NULL,PETSC_NULL);
+  }
+  if (OptionsHasName(pc->prefix,"-pc_bgs_truelocal")) {
+    PCBGSSetUseTrueLocal(pc);
+  }
+  if (OptionsHasName(pc->prefix,"-pc_bgs_backward")) {
+    PCGSSetSymmetric(pc,SOR_BACKWARD_SWEEP);
+  }
+  if (OptionsHasName(pc->prefix,"-pc_bgs_symmetric")) {
+    PCBGSSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);
+  }
+  return 0;
+}
+
+
+/*@
+   PCBGSSetSymmetric - Sets the BGS preconditioner to use symmetric, 
+   backward, or forward relaxation. By default forward relaxation is used.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  flag - one of the following:
+$    BGS_FORWARD_SWEEP
+$    BGS_BACKWARD_SWEEP
+$    BGS_SYMMETRIC_SWEEP
+
+   Options Database Keys:
+$  -pc_sor_symmetric
+$  -pc_sor_backward
+
+
+.keywords: PC, BGS, gauss-seidel, set, relaxation, sweep, forward, backward, symmetric
+.seealso: PCSetOperators(), PCBGSSetTotalBlocks() PCBGSSetUseTrueLocal()
+@*/
+int PCBGSSetSymmetric(PC pc, PCBGSType flag)
+{
+  PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  if (pc->type != PCSOR) return 0;
+  jac->gstype = flag;
+  return 0;
+}
+
 /*@
    PCBJacobiSetUseTrueLocal - Sets a flag to indicate that the block 
    problem is associated with the linear system matrix instead of the
@@ -78,7 +126,7 @@ $  -pc_bjacobi_truelocal
 
 .keywords:  block, Jacobi, set, true, local, flag
 
-.seealso: PCSetOperators(), PCBJacobiSetBlocks()
+.seealso: PCSetOperators(), PCBJacobiSetLocalBlocks()
 @*/
 int PCBJacobiSetUseTrueLocal(PC pc)
 {
@@ -88,6 +136,33 @@ int PCBJacobiSetUseTrueLocal(PC pc)
   jac = (PC_BJacobi *) pc->data;
   jac->use_true_local = 1;
   return 0;
+}
+
+/*@
+   PCBGSSetUseTrueLocal - Sets a flag to indicate that the block 
+   problem is associated with the linear system matrix instead of the
+   default (where it is associated with the preconditioning matrix).
+   That is, if the local system is solved iteratively then it iterates
+   on the block from the matrix using the block from the preconditioner
+   as the preconditioner for the local block.
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Options Database Key:
+$  -pc_bgs_truelocal
+
+   Note:
+   For the common case in which the preconditioning and linear 
+   system matrices are identical, this routine is unnecessary.
+
+.keywords:  block, BGS, gauss-seidel, set, true, local, flag
+
+.seealso: PCSetOperators(), PCBGSSetBlocks()
+@*/
+int PCBGSSetUseTrueLocal(PC pc)
+{
+  return PCBJacobiSetUseTrueLocal(pc);
 }
 
 /*@C
@@ -126,7 +201,33 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
                                  used only for PCView_BJacobi */
   return 0;
 }
-  
+
+/*@C
+   PCBGSGetSubSLES - Gets the local SLES contexts for all blocks on
+   this processor.
+   
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameters:
+.  n_local - the number of blocks on this processor
+.  first_local - the global number of the first block on this processor
+.  sles - the array of SLES contexts
+
+   Note:  
+   Currently for some matrix implementations only 1 block per processor is supported.
+   
+   You must call SLESSetUp() before calling PCBGSGetSubSLES().
+
+.keywords:  block, BGS, gauss-seidel, get, sub, SLES, context
+
+.seealso: PCBJacobiGetSubSLES()
+@*/
+int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
+{  
+  return PCBGSGetSubSLES(pc, n_local, first_local, sles);
+}
+
 static int PCPrintHelp_BJacobi(PC pc)
 {
   char *p;
@@ -141,18 +242,36 @@ static int PCPrintHelp_BJacobi(PC pc)
   return 0;
 }
 
+static int PCPrintHelp_BGS(PC pc)
+{
+  char *p;
+  if (pc->prefix) p = pc->prefix; else p = "-";
+  MPIU_printf(pc->comm," Options for PCBGS preconditioner:\n");
+  MPIU_printf(pc->comm," %spc_bgs_blocks blks: blocks in preconditioner\n",p);
+  MPIU_printf(pc->comm, " %spc_bgs_truelocal: use blocks from the local linear\
+ system matrix \n      instead of the preconditioning matrix\n",p);
+  MPIU_printf(pc->comm," %ssub : prefix to control options for individual blocks.\
+ Add before the \n      usual KSP and PC option names (i.e., -sub_ksp_type\
+ <meth>)\n",p);
+  return 0;
+}
+
 static int PCView_BJacobi(PetscObject obj,Viewer viewer)
 {
   PC               pc = (PC)obj;
   FILE             *fd;
   PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
   int              rank, ierr;
-
+  char             *c,*bgs = "Block Gauss-Seiedel", *bj ="Block Jacobi";
+  
+if(jac->gs) c = bgs;
+  else c = bj;
+  
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
   if (jac->use_true_local) 
     MPIU_fprintf(pc->comm,fd,
-       "    Block Jacobi: using true local matrix, number of blocks = %d\n",jac->n);
-  MPIU_fprintf(pc->comm,fd,"    Block Jacobi: number of blocks = %d\n",jac->n);
+       "    %s: using true local matrix, number of blocks = %d\n", c, jac->n);
+  MPIU_fprintf(pc->comm,fd,"    %s: number of blocks = %d\n", c, jac->n);
   MPI_Comm_rank(pc->comm,&rank);
   if (jac->same_local_solves) {
     MPIU_fprintf(pc->comm,fd,
@@ -210,9 +329,11 @@ int PCCreate_BGS(PC pc)
   int        ierr;
   PC_BJacobi *jac;
 
-  ierr    = PCCreate_BJacobi(pc); CHKERRQ(ierr);
-  jac     = (PC_BJacobi*) pc->data;
-  jac->gs = PETSC_TRUE;
+  ierr          = PCCreate_BJacobi(pc); CHKERRQ(ierr);
+  jac           = (PC_BJacobi*) pc->data;
+  jac->gs       = PETSC_TRUE;
+  pc->setfrom   = PCSetFromOptions_BGS;
+  pc->printhelp = PCPrintHelp_BGS;
   return 0;
 }
   
@@ -264,7 +385,33 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
   }
   return 0;
 }
+  
+/*@
+   PCBGSSetTotalBlocks - Sets the global number of blocks for the block
+   Gauss-Seidel preconditioner.
 
+   Input Parameters:
+.  pc - the preconditioner context
+.  blocks - the number of blocks
+.  lens - [optional] integer array containing the size of each block
+.  true - [optional] integer array whose entries are USE_PRECONDITIONER_MATRIX
+.          or USE_TRUE_MATRIX can only be provided if lens is provided.
+
+   Options Database Key:
+$  -pc_bgs_blocks blocks
+
+   Notes:  
+   Currently only a limited number of blocking configurations are supported.
+   All processors sharing the PC must call this routine with the same data.
+
+.keywords:  set, number, BGS, gauss-seidel, global, total, blocks
+
+.seealso: PCBGSSetUseTrueLocal(), PCBGSSetLocalBlocks()
+@*/
+int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
+{
+  return PCBJacobiSetTotalBlocks(pc, blocks, lens, true1);
+}
 /*@
    PCBJacobiSetLocalBlocks - Sets the local number of blocks for the block
    Jacobi preconditioner.
@@ -311,4 +458,25 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
 }
 
 
+/*@
+   PCBGDSetLocalBlocks - Sets the local number of blocks for the block
+   Jacobi preconditioner.
 
+   Input Parameters:
+.  pc - the preconditioner context
+.  blocks - the number of blocks
+.  lens - [optional] integer array containing size of each block
+.  true - [optiona] integer array whose entries are USE_PRECONDITIONER_MATRIX
+.          or USE_TRUE_MATRIX can only be provided if lens is provided.
+
+   Note:  
+   Currently only a limited number of blocking configurations are supported.
+
+.keywords: PC, set, number, BGS, gauss-seidel, local, blocks
+
+.seealso: PCBGSSetUseTrueLocal(), PCBGSSetTotalBlocks()
+@*/
+int PCBGSSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
+{
+  return PCBJacobiSetLocalBlocks(pc, blocks, lens, true1);
+}

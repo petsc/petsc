@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.41 1995/12/21 18:34:37 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.42 1996/01/01 01:05:46 bsmith Exp balay $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -63,6 +63,11 @@ extern int PCBGSSetSymmetric(PC, PCBGSType);
 extern int PCBJacobiSetUseTrueLocal(PC);
 extern int PCBJacobiSetTotalBlocks(PC, int, int*,int*);
 extern int PCBJacobiSetLocalBlocks(PC, int, int*,int*);
+
+extern int PCBGSSetUseTrueLocal(PC);
+extern int PCBGSSetTotalBlocks(PC, int, int*,int*);
+extern int PCBGSSetLocalBlocks(PC, int, int*,int*);
+extern int PCBGSSetSymmetric(PC, PCBGSType);
 
 extern int PCBSIterSetBlockSolve(PC);
 extern int PCBSIterSetFromOptions(PC);
