@@ -469,7 +469,7 @@ static int PCSetFromOptions_HYPRE_ParaSails(PC pc)
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
   int        indx,ierr;
   PetscTruth flag;
-  const char *symtlist[] = {"nonsymmetric","SPD","nonsymmetric,SPD"},buff[32];
+  const char *symtlist[] = {"nonsymmetric","SPD","nonsymmetric,SPD"};
 
   PetscFunctionBegin;
   jac->nlevels     = 1;
