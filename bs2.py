@@ -31,6 +31,9 @@ class FileGroup (Maker):
     for item in group.getFiles():
       self.append(item)
 
+  def remove(self, item):
+    self.data.remove(item)
+
   def getFiles(self):
     funcData = []
     if (self.func):
@@ -41,15 +44,24 @@ class FileGroup (Maker):
     return self.data+funcData+childData
 
 class TreeFileGroup (FileGroup):
-  def __init__(self, root, fileTest):
-    FileGroup.__init__(self, func=self.walkTree)
-    self.root     = root
-    self.fileTest = fileTest
+  def __init__(self, root = '.', fileTest = None):
+    FileGroup.__init__(self, func = self.walkTree)
+    self.root       = root
+    if (fileTest):
+      self.fileTest = fileTest
+    else:
+      self.fileTest = self.defaultTest
 
   def walkTree(self, fileGroup):
     files = []
     os.path.walk(self.root, self.fileTest, files)
     return files
+
+  def defaultTest(self, defaultFiles, directory, fileList):
+    if (os.path.basename(directory) == 'SCCS'): return
+    for file in fileList:
+      if (os.path.isdir(os.path.join(directory, file))): continue
+      defaultFiles.append(os.path.join(directory, file))
 
 class ExtensionFileGroup (TreeFileGroup):
   def __init__(self, root, ext):
@@ -99,9 +111,14 @@ class FileCompare (Transform):
     if echo > 1: print 'FileCompare: Comparing '+str(self.targets.getFiles())+' to '+str(self.sources.getFiles())
     self.products = FileGroup()
     files = self.targets.getFiles()
-    for target in files:
-      if (not os.path.exists(target)): return self.sources
-      self.singleTargetExecute(target)
+    if (not files):
+      self.products = self.sources
+    else:
+      for target in files:
+        if (not os.path.exists(target)):
+          self.products = self.sources
+          break
+        self.singleTargetExecute(target)
     return self.products
 
 class OlderThan (FileCompare):
@@ -157,17 +174,18 @@ class NewerThanLibraryObject (FileCompare):
       return 0
 
 class Action (Transform):
-  def __init__(self, program, sources = FileGroup(), flags = '', allAtOnce = 0):
+  def __init__(self, program, sources = FileGroup(), flags = '', filter = lambda file: 1, allAtOnce = 0):
     Transform.__init__(self, sources)
     self.program   = program
     self.flags     = flags
+    self.filter    = filter
     self.allAtOnce = allAtOnce
 
   def doFunction(self):
-    files = self.sources.getFiles()
+    files = filter(self.filter, self.sources.getFiles())
     if echo: print 'Applying '+str(self.program)+' to '+str(files)
     if (self.allAtOnce):
-      self.program(self.sources)
+      self.program(FileGroup(files))
     else:
       map(self.program, files)
 
@@ -178,13 +196,14 @@ class Action (Transform):
       files   = self.sources.getFiles()
       if (not files): return ''
       for file in files:
-        command += ' '+file
+        if (self.filter(file)): command += ' '+file
       return self.executeShellCommand(command)
     else:
       output = ''
       for file in self.sources.getFiles():
-        command = commandBase+' '+file
-        output += self.executeShellCommand(command)
+        if (self.filter(file)):
+          command = commandBase+' '+file
+          output += self.executeShellCommand(command)
       return output
 
   def execute(self):
@@ -211,14 +230,45 @@ class ArchiveObjects (Action):
     if not os.path.exists(dir): os.makedirs(dir)
     return Action.execute(self)
 
+class BKEditFiles (Action):
+  def __init__(self, sources = TreeFileGroup(), flags = '', filter = lambda file: 1):
+    Action.__init__(self, 'bk', sources, 'edit '+flags, filter, 1)
+
+class BKCloseFiles (Action):
+  def __init__(self, sources = TreeFileGroup(), flags = '', filter = lambda file: 1):
+    Action.__init__(self, 'bk', sources, flags, filter, 1)
+
+  def execute(self):
+    oldFlags   = self.flags
+    oldSources = self.sources
+    root       = self.sources.root
+    # Add files which were just generated
+    sources    = FileGroup(string.split(self.executeShellCommand('bk sfiles -ax '+root)))
+    self.sources = sources
+    self.flags = 'add '+oldFlags
+    Action.execute(self)
+    # Remove files with no changes
+    sources    = FileGroup(string.split(self.executeShellCommand('bk sfiles -lg '+root)))
+    self.sources = sources
+    map(self.sources.remove, string.split(self.executeShellCommand('bk sfiles -cg '+root)))
+    self.flags = 'unedit '+oldFlags
+    Action.execute(self)
+    self.flags = 'co -q '+oldFlags
+    Action.execute(self)
+    # Checkin files with harmless deltas
+    #self.flags = 'fooci -u -f -y\'Babel generation\' '+oldFlags
+    #Action.execute(self)
+    # Cleanup
+    self.flags = oldFlags
+    return oldSources
+
 class CompileFiles (Action):
   def __init__(self, library, sources, filter, compiler, compilerFlags, archiver, archiverFlags, allAtOnce = 0):
-    Action.__init__(self, self.fullCompile, sources, '', allAtOnce)
+    Action.__init__(self, self.fullCompile, sources, '', filter, allAtOnce)
     if (library):
       self.library     = library.getFiles()[0]
     else:
       self.library     = None
-    self.filter        = filter
     self.compiler      = compiler
     self.compilerFlags = compilerFlags
     self.archiver      = archiver
@@ -266,12 +316,12 @@ class CompileFiles (Action):
       if (not files): return
       sources = ''
       for file in files:
-        if (self.filter(file)): sources += ' '+file
+        sources += ' '+file
+      if (not sources): return
       self.compile(sources)
     else:
-      if (self.filter(source)):
-        object = self.compile(source)
-        self.archive(object)
+      object = self.compile(source)
+      self.archive(object)
 
   def execute(self):
     if (self.library):
@@ -313,8 +363,7 @@ class CompileSIDLFiles (CompileFiles):
   def sidlFilter(self, source):
     (dir, file) = os.path.split(source)
     (base, ext) = os.path.splitext(file)
-    if (ext == ".sidl"):
-      return 1
+    if (ext == ".sidl"):      return 1
     else:
       return 0
 
