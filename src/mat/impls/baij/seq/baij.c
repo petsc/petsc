@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.189 1999/11/10 03:19:27 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.190 1999/11/19 20:35:39 bsmith Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -940,7 +940,12 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
   /* initialize copy IS valurs to rows, and sort them */
   for (i=0; i<is_n; i++) { rows[i] = is_idx[i]; }
   ierr = PetscSortInt(is_n,rows);CHKERRQ(ierr);
-  ierr = MatZeroRows_SeqBAIJ_Check_Blocks(rows,is_n,bs,sizes,&bs_max);CHKERRQ(ierr);
+  if (baij->keepzeroedrows) {
+    for ( i=0; i<is_n; i++ ) { sizes[i] = 1; }
+    bs_max = is_n;
+  } else {
+    ierr = MatZeroRows_SeqBAIJ_Check_Blocks(rows,is_n,bs,sizes,&bs_max);CHKERRQ(ierr);
+  }
   ierr = ISRestoreIndices(is,&is_idx);CHKERRQ(ierr);
 
   for ( i=0,j=0; i<bs_max; j+=sizes[i],i++ ) {
@@ -948,7 +953,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
     if (row < 0 || row > baij->m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"row %d out of range",row);
     count = (baij->i[row/bs +1] - baij->i[row/bs])*bs;
     aa    = baij->a + baij->i[row/bs]*bs2 + (row%bs);
-    if (sizes[i] == bs) {
+    if (sizes[i] == bs && !baij->keepzeroedrows) {
       if (diag) {
         if (baij->ilen[row/bs] > 0) {
           baij->ilen[row/bs] = 1;
