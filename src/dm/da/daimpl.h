@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.23 1998/12/17 22:12:48 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.24 1999/03/01 04:58:24 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -41,6 +41,7 @@ struct _p_DA {
   char                   **fieldname;   /* names of individual components in vectors */
 
   int                    *lx,*ly,*lz;   /* number of nodes in each partition block along 3 axis */
+  Vec                    natural;       /* global vector for storing items in natural order */
 };
 
 /*
