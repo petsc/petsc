@@ -34,11 +34,14 @@ e_arg      </B>
 s_defn     -
 e_defn     %n<br>%n
 # 
-s_doctext_verbatim 
-e_doctext_verbatim <br>%n
+# These control the beginning/ending $ actions
+s_doctext_verbatim %n<pre>%n
+e_doctext_verbatim  %n</pre>%n
+#
 s_caption  <CENTER><B>
 e_caption  </B></CENTER>
 picture    <A IMG="%1"></A>
+# If the location variable is changed, then maint/exampleindex.tcl MUST be changed accordingly!
 location   <P><B>Location: </B>%1
 # Only do the actual title
 # Without a title, the page will be broken.
