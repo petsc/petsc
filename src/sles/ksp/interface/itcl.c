@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: itcl.c,v 1.12 1995/03/06 04:18:10 bsmith Exp curfman $";
 #endif
 /*
     Command line interface for KSP
@@ -20,7 +20,8 @@ static char vcid[] = "$Id: $";
   Input Parameters:
 .  ctx - the Krylov space context
    
-   See also: KSPPrintHelp()
+  Note:
+  See KSPPrintHelp() for a list of avaliable KSP options.
 @*/
 int KSPSetFromOptions(KSP ctx)
 {
@@ -65,15 +66,17 @@ int KSPSetFromOptions(KSP ctx)
   if (OptionsGetInt(0,ctx->prefix,"-kspgmres_restart",&restart)) {
     KSPGMRESSetRestart(ctx,restart);
   }
+  if (OptionsHasName(0,0,"-kspeigen")) {
+    KSPSetCalculateEigenvalues(ctx);
+  }
   return 0;
 }
   
 /*@ 
     KSPPrintHelp - Prints all the  options for the KSP component.
 
-  Input Parameters:
+   Input Parameters:
 .  ctx - the KSP context
-
 @*/
 int KSPPrintHelp(KSP ctx)
 {
@@ -88,19 +91,20 @@ int KSPPrintHelp(KSP ctx)
     VALIDHEADER(ctx,KSP_COOKIE);
     fprintf(stderr,"KSP Options -------------------------------------\n");
     KSPPrintMethods(p,"kspmethod");
-    fprintf(stderr," %sksprtol (relative tolerance: defaults to %g)\n",
+    fprintf(stderr," %sksprtol tol (relative tolerance: defaults to %g)\n",
                      p,ctx->rtol);
-    fprintf(stderr," %skspatol (absolute tolerance: defaults to %g)\n",
+    fprintf(stderr," %skspatol tol (absolute tolerance: defaults to %g)\n",
                      p,ctx->atol);
-    fprintf(stderr," %skspdivtol (divergence tolerance: defaults to %g)\n",
+    fprintf(stderr," %skspdivtol tol (divergence tolerance: defaults to %g)\n",
                      p,ctx->divtol);
-    fprintf(stderr," %skspmax_it (maximum iterations: defaults to %d)\n",
+    fprintf(stderr," %skspmax_it maxit (maximum iterations: defaults to %d)\n",
                      p,ctx->max_it);
     fprintf(stderr," %sksppreres (use precond. resid. in converg. test\n",p);
-    fprintf(stderr," %skspmonitor: use residual convergence monitor\n",p);
-    fprintf(stderr," %skspxmonitor [x,y,w,h]: use X graphics residual\
- convergence monitor\n",p);
-    fprintf(stderr," %skspgmres_restart (gmres restart defaults to 10\n",p);
+    fprintf(stderr," %skspmonitor (use residual convergence monitor)\n",p);
+    fprintf(stderr," %skspxmonitor [x,y,w,h] (use X graphics residual\
+ convergence monitor)\n",p);
+    fprintf(stderr," %skspgmres_restart maxk (gmres restart defaults to 10)\n",p);
+    fprintf(stderr," %skspeigen (calculate eigenvalues during linear solve)\n",p);
   }
   return 1;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.17 1995/03/27 22:56:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.18 1995/03/30 21:17:22 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -167,8 +167,13 @@ int KSPRegisterDestroy()
 . ctx - the KSP context
 
   Output parameter:
-. kspmethod -  Iterative method type
-. returns 1 if method found else 0.
+. itmethod - iterative method type
+
+  Returns:
+  Returns 1 if the method is found; returns 0 otherwise.
+
+  Options Database Key:
+$ -kspmethod  itmethod
 @*/
 int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod )
 {
@@ -202,6 +207,9 @@ int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
 
   Input Parameters:
 .   name - the  options name (usually -kspmethod) 
+
+  Note:
+  See also KSPPrintHelp().
 @*/
 int KSPPrintMethods(char* prefix,char *name)
 {
@@ -216,8 +224,3 @@ int KSPPrintMethods(char* prefix,char *name)
   fprintf(stderr,"\n");
   return 1;
 }
-
-
-
-
-
