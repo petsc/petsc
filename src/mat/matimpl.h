@@ -18,7 +18,7 @@ struct _MatOps {
             (*info)(Mat,int,int*,int*,int*),(*equal)(Mat,Mat),
             (*copy)(Mat,Mat*),
             (*getdiag)(Mat,Vec),(*scale)(Mat,Vec,Vec),(*norm)(Mat,int,double*),
-            (*bassembly)(Mat),(*eassembly)(Mat),(*compress)(Mat),
+            (*bassembly)(Mat,int),(*eassembly)(Mat,int),(*compress)(Mat),
             (*insopt)(Mat,int),(*zeroentries)(Mat),
             (*zerorow)(Mat,IS,Scalar *),
             (*order)(Mat,int,IS*,IS*),
