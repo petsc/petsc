@@ -34,6 +34,8 @@ int MatLUFactorSymbolic_MPIAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   lu->flg                  = DIFFERENT_NONZERO_PATTERN;
   lu->options.useQR        = PETSC_FALSE;
 
+  ierr = MPI_Comm_dup(A->comm,&(lu->comm_spooles));CHKERRQ(ierr);
+
   if (info->dtcol == 0.0) {
     lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
   }

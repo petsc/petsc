@@ -36,6 +36,7 @@ typedef struct {
   Graph           *graph;
 
   /* Followings are used for MPI Spooles */
+  MPI_Comm        comm_spooles;          /* communicator to be passed to spooles */
   IV              *ownersIV,*ownedColumnsIV,*vtxmapIV;
   SolveMap        *solvemap ;
   DenseMtx        *mtxY, *mtxX;
