@@ -409,14 +409,14 @@ runex10_19:
 	done; 
 	-@if (${DIFF} ex10_19aij.tmp ex10_19sbaij.tmp) then true; \
 	   else echo "Possible problem with ex10_19, diffs above"; fi; \
-	${RM} -f ex10_19aij.tmp ex10_19sbaij.tmp
+	${RM} -f ex10_19aij.tmp ex10_19sbaij.tmps
 
 runex10_20:
-	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -pc_ilu_damping 0.1 > ex10_20.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -pc_factor_shiftnonzero 0.1 > ex10_20.tmp 2>&1; \
 	   if (${DIFF} output/ex10_20shiftnz.out ex10_20.tmp) then true; \
 	   else echo "Possible problem with ex10_20shiftnz, diffs above"; fi; \
 	   ${RM} -f ex10_20.tmp
-	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -pc_ilu_shift > ex10_20.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -pc_factor_shiftpd > ex10_20.tmp 2>&1; \
 	   if (${DIFF} output/ex10_20shiftpd.out ex10_20.tmp) then true; \
 	   else echo "Possible problem with ex10_20shiftpd, diffs above"; fi; \
 	   ${RM} -f ex10_20.tmp

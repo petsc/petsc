@@ -63,9 +63,9 @@ PetscErrorCode PCILUSetDamping_ILU(PC pc,PetscReal damping)
   PetscFunctionBegin;
   dir = (PC_ILU*)pc->data;
   if (damping == (PetscReal) PETSC_DECIDE) {
-    dir->info.damping = 1.e-12;
+    dir->info.shiftnz = 1.e-12;
   } else {
-    dir->info.damping = damping;
+    dir->info.shiftnz = damping;
   }
   PetscFunctionReturn(0);
 }
@@ -80,7 +80,7 @@ PetscErrorCode PCILUSetShift_ILU(PC pc,PetscTruth shift)
 
   PetscFunctionBegin;
   dir = (PC_ILU*)pc->data;
-  dir->info.shift = shift;
+  dir->info.shiftpd = shift;
   if (shift) dir->info.shift_fraction = 0.0;
   PetscFunctionReturn(0);
 }
@@ -736,11 +736,11 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     if (flg) {
       ierr = PCFactorSetShiftNonzero((PetscReal) PETSC_DECIDE,&ilu->info);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",ilu->info.damping,&ilu->info.damping,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",ilu->info.shiftnz,&ilu->info.shiftnz,0);CHKERRQ(ierr);
     
-    ierr = PetscOptionsName("-pc_ilu_shift","Manteuffel shift applied to diagonal","PCILUSetShift",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_shiftpd","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscOptionsInt("-pc_ilu_shift","Manteuffel shift applied to diagonal","PCILUSetShift",(PetscInt)ilu->info.shift,&itmp,&flg); CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-pc_factor_shiftpd","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",(PetscInt)ilu->info.shiftpd,&itmp,&flg); CHKERRQ(ierr);
       if (flg && !itmp) {
 	ierr = PCILUSetShift(pc,PETSC_FALSE);CHKERRQ(ierr);
       } else {
@@ -801,7 +801,7 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  ILU: max fill ratio allocated %g\n",ilu->info.fill);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  ILU: tolerance for zero pivot %g\n",ilu->info.zeropivot);CHKERRQ(ierr);
-    if (ilu->info.shift) {ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using Manteuffel shift\n");CHKERRQ(ierr);}
+    if (ilu->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using Manteuffel shift\n");CHKERRQ(ierr);}
     if (ilu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"       in-place factorization\n");CHKERRQ(ierr);}
     else              {ierr = PetscViewerASCIIPrintf(viewer,"       out-of-place factorization\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"       matrix ordering: %s\n",ilu->ordering);CHKERRQ(ierr);
@@ -1017,8 +1017,8 @@ PetscErrorCode PCCreate_ILU(PC pc)
   ilu->info.dt                 = PETSC_DEFAULT;
   ilu->info.dtcount            = PETSC_DEFAULT;
   ilu->info.dtcol              = PETSC_DEFAULT;
-  ilu->info.damping            = 0.0;
-  ilu->info.shift              = PETSC_FALSE;
+  ilu->info.shiftnz            = 0.0;
+  ilu->info.shiftpd            = PETSC_FALSE;
   ilu->info.shift_fraction     = 0.0;
   ilu->info.zeropivot          = 1.e-12;
   ilu->info.pivotinblocks      = 1.0;

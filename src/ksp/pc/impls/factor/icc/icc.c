@@ -30,9 +30,9 @@ PetscErrorCode PCICCSetDamping_ICC(PC pc,PetscReal damping)
   PetscFunctionBegin;
   dir = (PC_ICC*)pc->data;
   if (damping == (PetscReal) PETSC_DECIDE) {
-    dir->info.damping = 1.e-12;
+    dir->info.shiftnz = 1.e-12;
   } else {
-    dir->info.damping = damping;
+    dir->info.shiftnz = damping;
   }
   PetscFunctionReturn(0);
 }
@@ -47,7 +47,7 @@ PetscErrorCode PCICCSetShift_ICC(PC pc,PetscTruth shift)
 
   PetscFunctionBegin;
   dir = (PC_ICC*)pc->data;
-  dir->info.shift = shift;
+  dir->info.shiftpd = shift;
   if (shift) dir->info.shift_fraction = 0.0;
   PetscFunctionReturn(0);
 }
@@ -415,12 +415,12 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
     if (flg) {
       ierr = PCICCSetMatOrdering(pc,tname);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-pc_icc_damping","Damping added to diagonal","PCICCSetDamping",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCICCSetDamping(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = PCFactorSetShiftNonzero((PetscReal) PETSC_DECIDE,&icc->info);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_icc_damping","Damping added to diagonal","PCICCSetDamping",icc->info.damping,&icc->info.damping,0);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_icc_shift","Manteuffel shift applied to diagonal","PCICCSetShift",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",icc->info.shiftnz,&icc->info.shiftnz,0);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_shiftpd","Manteuffel shift applied to diagonal","PCICCSetShift",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCICCSetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
     } else {
@@ -450,7 +450,7 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %D levels of fill\n",(PetscInt)icc->info.levels);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  ICC: max fill ratio allocated %g\n",icc->info.fill);CHKERRQ(ierr);
-    if (icc->info.shift) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using Manteuffel shift\n");CHKERRQ(ierr);}
+    if (icc->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using Manteuffel shift\n");CHKERRQ(ierr);}
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," lvls=%D",(PetscInt)icc->info.levels);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
@@ -513,8 +513,8 @@ PetscErrorCode PCCreate_ICC(PC pc)
   icc->implctx            = 0;
 
   icc->info.dtcol              = PETSC_DEFAULT;
-  icc->info.damping            = 0.0;
-  icc->info.shift              = PETSC_TRUE;
+  icc->info.shiftnz            = 0.0;
+  icc->info.shiftpd            = PETSC_TRUE;
   icc->info.shift_fraction     = 0.0;
   icc->info.zeropivot          = 1.e-12;
   pc->data	               = (void*)icc;

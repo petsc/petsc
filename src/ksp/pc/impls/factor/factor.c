@@ -11,7 +11,7 @@
    
    Input Parameters:
 +  shift - amount of shift
--  info - 
+-  info - options for factorization
 
    Options Database Key:
 .  -pc_factor_shiftnonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
@@ -29,9 +29,43 @@ PetscErrorCode PCFactorSetShiftNonzero(PetscReal shift,MatFactorInfo *info)
 {
   PetscFunctionBegin;
   if (shift == (PetscReal) PETSC_DECIDE) {
-    info->damping = 1.e-12;
+    info->shiftnz = 1.e-12;
   } else {
-    info->damping = shift;
+    info->shiftnz = shift;
   } 
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorSetShiftPd"
+/*@
+   PCFactorSetShiftPd - specify whether to use Manteuffel shifting.
+   If a matrix factorisation breaks down because of nonpositive pivots,
+   adding sufficient identity to the diagonal will remedy this.
+   Setting this causes a bisection method to find the minimum shift that
+   will lead to a well-defined matrix factor.
+
+   Collective on PC
+
+   Input parameters:
++  shifting - PETSC_TRUE to set shift else PETSC_FALSE
+-  info - options for factorization
+
+   Options Database Key:
+.  -pc_factor_shift [1/0] - Activate/Deactivate PCFactorSetShiftPd(); the value
+   is optional with 1 being the default
+
+   Level: intermediate
+
+.keywords: PC, indefinite, factorization
+
+.seealso: PCFactorSetShiftNonzero()
+@*/
+PetscErrorCode PCFactorSetShiftPd(PetscTruth shifting,MatFactorInfo *info)
+{
+  PetscFunctionBegin;
+  info->shiftpd = shifting;
+  PetscFunctionReturn(0);
+}
+
+
