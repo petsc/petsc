@@ -49,7 +49,7 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 # Location of BlockSolve (MPI version)
 #
 BLOCKSOLVE_INCLUDE    = -I/home/petsc/soft/solaris-9/BlockSolve95/include
-BLOCKSOLVE_LIB        = -L/home/petsc/soft/solaris-9/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+BLOCKSOLVE_LIB        =  ${CLINKER_SLFLAG}/home/petsc/soft/solaris-9/BlockSolve95/lib/libO/${PETSC_ARCH} -L/home/petsc/soft/solaris-9/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
 # Matlab location
