@@ -1,4 +1,4 @@
-/* $Id: win32draw.c,v 1.3 2000/08/03 19:10:40 balay Exp balay $ */
+/* $Id: win32draw.c,v 1.4 2000/08/03 19:28:52 balay Exp balay $ */
 #include "petsc.h"
 #include "src/sys/src/draw/drawimpl.h"
 #include "win32draw.h"
@@ -127,7 +127,7 @@ static int DrawGetMouseButton_Win32(Draw draw, DrawButton *button,double *x_user
 {
   Draw_Win32 *windraw = (Draw_Win32*)draw->data;
   WindowNode  current;
-  MouseNode   node;
+  MouseNode   node=0;
   
   PetscFunctionBegin;
   /* Make sure no other code is using the linked list at this moment */
@@ -153,15 +153,17 @@ static int DrawGetMouseButton_Win32(Draw draw, DrawButton *button,double *x_user
   *button = current->MouseListHead->Button;
   *x_user = current->MouseListHead->user.x;
   *y_user = current->MouseListHead->user.y;
-  *x_phys = current->MouseListHead->phys.x;
-  *y_phys = current->MouseListHead->phys.y;
+  /* optional arguments */
+  if (x_phys) *x_phys = current->MouseListHead->phys.x;
+  if (y_phys) *y_phys = current->MouseListHead->phys.y;
   /* remove set of information from sub linked-list, delete the node */
   current->MouseListHead = current->MouseListHead->mnext;
   if (current->MouseListHead == NULL) {
     ResetEvent(current->event);
     current->MouseListTail = NULL;
   }
-  PetscFree(node);
+  if (node) PetscFree(node);
+
   /* Release mutex so that  other code can use
      the linked list now that we are done with it */
   ReleaseMutex(g_hWindowListMutex);
