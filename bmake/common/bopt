@@ -1,1 +1,3 @@
+PETSC_LANGUAGE = C
+PETSC_SCALAR   = l
 
