@@ -13,7 +13,6 @@ int main(int argc,char **args)
   Vec         b;
   char        fileout[128];
   int         i,j,m = 6,n = 6,N = 36,ierr,I,J;
-  PetscTruth  flg;
   PetscScalar val,v;
   PetscViewer view;
 
