@@ -321,7 +321,7 @@ int checkInit(void) {
     elif len(nonsharedMPI):
       raise RuntimeError('Could not locate any MPI with shared libraries')
     else:
-      raise RuntimeError('Could not locate any functional MPI')
+      raise RuntimeError('Could not locate any functional MPI\n Rerun config/configure.py with --with-mpi=0 to install without MPI\n or -with-mpi-dir=directory to use a MPICH installation\n or -with-mpi-include=directory -with-mpi-lib=library (or list of libraries) -with-mpirun=mpiruncommand for other MPIs')
     return
 
   def configureTypes(self):

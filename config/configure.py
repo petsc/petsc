@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
+import commands
 
 if not hasattr(sys, 'version_info'):
   raise RuntimeError('You must have Python version 2.2 or higher to run configure')
@@ -12,13 +13,16 @@ def petsc_configure(configure_options):
     pythonDir = os.path.abspath(os.path.join('python'))
     if not os.path.exists(pythonDir):
       raise RuntimeError('Run configure from $PETSC_DIR, not '+os.path.abspath('.'))
+
+  if not os.path.isdir('python/BuildSystem'):
+    print '''Could not locate BuildSystem in $PETSC_DIR/python.
+    Downloading it using "bk clone bk://sidl.bkbits.net/BuildSystem $PETSC_DIR/python/BuildSystem"'''
+    (status,output) = commands.getstatusoutput('bk clone bk://sidl.bkbits.net/BuildSystem python/BuildSystem')
+
   sys.path.insert(0, os.path.join(pythonDir, 'BuildSystem'))
   sys.path.insert(0, pythonDir)
-  try:
-    import config.framework
-  except ImportError:
-    sys.exit('''Could not locate BuildSystem in $PETSC_DIR/python.
-    You can download this package using "bk clone bk://sidl.bkbits.net/BuildSystem $PETSC_DIR/python/BuildSystem"''')
+  import config.framework
+
   framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options, loadArgDB = 0)
   framework.argDB['CPPFLAGS'] = ''
   framework.argDB['LIBS'] = ''
