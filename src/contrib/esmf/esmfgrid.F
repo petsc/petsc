@@ -1,7 +1,7 @@
 !
-!    "$Id: esmfgrid.F,v 1.1 2000/09/06 12:27:09 bsmith Exp bsmith $"
+!    "$Id: esmfgrid.F,v 1.2 2000/09/07 15:03:53 bsmith Exp bsmith $"
 !
-      module esmf
+      module esmfg
 #include "finclude/petsc.h"
 #include "finclude/petscda.h"
 
@@ -9,9 +9,9 @@
 
       type esmfgrid
         character*(64) typename 
-        integer        dimension
         MPI_Comm       comm
         integer        refcount
+        integer        dimension
       end type esmfgrid
 
 !--------------------------------------------------------------
@@ -197,7 +197,7 @@
         deallocate(grid)
       end function ESMFGridDestroyUQ
 
-      end module
+      end module esmfg
 
 
 
