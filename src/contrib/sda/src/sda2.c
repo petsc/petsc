@@ -38,7 +38,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 @*/
 int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA *sda)
 {
-  int           ierr,ntmp;
+  int           ierr;
   DA            da;
   char          **args;
   int           argc = 0;
@@ -97,7 +97,7 @@ $           the x and y coordinates, or PETSC_NULL
 int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                 int M,int N,int m,int n,int w,int s,int *lx,int *ly,SDA *sda)
 {
-  int           ierr,ntmp;
+  int           ierr;
   DA            da;
   Vec           vec;
   char          **args;
@@ -161,7 +161,7 @@ $           the x, y, and z coordinates, or PETSC_NUL
 int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
                 int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,SDA *sda)
 {
-  int           ierr,ntmp;
+  int           ierr;
   DA            da;
   Vec           vec;
   char          **args;
