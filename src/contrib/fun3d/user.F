@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.15 2000/01/23 19:55:00 kaushik Exp kaushik $
+c  $Id: user.F,v 1.16 2000/01/23 21:09:23 kaushik Exp bsmith $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -6,25 +6,6 @@ c---------------------------------------------------------------
 c
 c
 c 2-D Navier Stokes on Unstructured Grids
-c
-c================================ SCLOCK ====================================
-c
-c  SCLOCK get the CPU time
-c
-c============================================================================
-#undef __FUNC__
-#define __FUNC__ "SCLOCK"
-      subroutine SCLOCK(time)
-      implicit none
-#include "include/finclude/petscdef.h"
-      Scalar time
-
-c      time = second(time)
-      time = 1.0d0
-
-      return
-      end
-
 
 c============================== FORLINK ==============================72
 c

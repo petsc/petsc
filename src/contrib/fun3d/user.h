@@ -1,4 +1,4 @@
-/*$Id: user.h,v 1.6 2000/01/21 23:55:30 kaushik Exp bsmith $*/
+/*$Id: user.h,v 1.7 2000/01/22 18:57:58 bsmith Exp bsmith $*/
 #include "petsc.h" 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE)|| defined(HAVE_FORTRAN_UNDERSCORE)
 #       define f77name(ucase,lcase,lcbar) lcbar
@@ -38,7 +38,6 @@
 #define f77SUMGS    f77name(SUMGS,sumgs,sumgs_)
 #define f77GETAREA  f77name(GETAREA,getarea,getarea_)
 #define f77INFOTRN  f77name(INFOTRN,infotrn,infotrn_)
-#define f77SCLOCK   f77name(SCLOCK,sclock,sclock_)
 #define f77GETRES   f77name(GETRES,getres,getres_)
 #define f77L2NORM   f77name(L2NORM,l2norm,l2norm_)
 #define f77FORCE    f77name(FORCE,force,force_)
