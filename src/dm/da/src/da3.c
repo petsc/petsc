@@ -202,7 +202,7 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
-  PetscInt       xs,xe,ys,ye,zs,ze,x,y,z,Xs,Xe,Ys,Ye,Zs,Ze,start,end,pm;
+  PetscInt       xs = 0,xe,ys = 0,ye,zs = 0,ze,x = 0,y = 0,z = 0,Xs,Xe,Ys,Ye,Zs,Ze,start,end,pm;
   PetscInt       left,up,down,bottom,top,i,j,k,*idx,nn,*flx = 0,*fly = 0,*flz = 0;
   PetscInt       n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
   PetscInt       n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;

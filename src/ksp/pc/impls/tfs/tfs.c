@@ -4,9 +4,7 @@
 
 #include "src/ksp/pc/pcimpl.h"   /*I "petscpc.h" I*/
 #include "src/mat/impls/aij/mpi/mpiaij.h"
-
-#include "src/ksp/pc/impls/tfs/xxt.h"
-#include "src/ksp/pc/impls/tfs/xyt.h"
+#include "src/ksp/pc/impls/tfs/tfs.h"
 
 typedef struct {
   xxt_ADT  xxt;

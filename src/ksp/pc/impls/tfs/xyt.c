@@ -22,22 +22,7 @@ Last Modification: 3.20.01
 NOTES ON USAGE: 
 
 **************************************xyt.c***********************************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <float.h>
-#include <math.h>
-
-#include "petsc.h"
-
-#include "const.h"
-#include "types.h"
-#include "comm.h"
-#include "error.h"
-#include "ivec.h"
-#include "queue.h"
-#include "gs.h"
-#include "xyt.h"
+#include "src/ksp/pc/impls/tfs/tfs.h"
 
 #define LEFT  -1
 #define RIGHT  1

@@ -19,17 +19,7 @@ File Description:
 -----------------
 
 ***********************************ivec.c*************************************/
-#include "petsc.h"
-#include <float.h>
-#include <limits.h>
-
-
-#include "const.h"
-#include "types.h"
-#include "ivec.h"
-#include "error.h"
-#include "comm.h"
-
+#include "src/ksp/pc/impls/tfs/tfs.h"
 
 /* sorting args ivec.c ivec.c ... */
 #define   SORT_OPT	6     

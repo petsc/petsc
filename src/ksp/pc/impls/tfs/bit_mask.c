@@ -19,11 +19,7 @@ File Description:
 -----------------
 
 *********************************bit_mask.c***********************************/
-#include "petsc.h"
-#include "const.h"
-#include "bit_mask.h"
-#include "error.h"
-
+#include "src/ksp/pc/impls/tfs/tfs.h"
 
 
 /********************************bit_mask.c************************************

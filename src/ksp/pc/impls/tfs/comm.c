@@ -19,13 +19,7 @@ File Description:
 -----------------
 
 ***********************************comm.c*************************************/
-#include "petsc.h"
-
-#include "const.h"
-#include "types.h"
-#include "error.h"
-#include "ivec.h"
-#include "comm.h"
+#include "src/ksp/pc/impls/tfs/tfs.h"
 
 
 /* global program control variables - explicitly exported */
