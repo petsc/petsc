@@ -10,6 +10,9 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Perhaps include a PETSC_MIN_FP_VALUE for use with Tolerances
+    for KSP, SNES etc and support also for OptionGetDouble()
+
   - Split files into many files with one routine per file. Try to 
     reduce the amount of irrelevent stuff that is linked into the 
     executable.
