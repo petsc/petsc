@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.251 1998/12/03 03:53:44 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.252 1998/12/04 23:22:05 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -333,7 +333,7 @@ allmanualpages: deletemanualpages
 	-cd src/fortran/custom; ${OMAKE} manualpages_buildcite
 	-cd src/fortran/custom; ${OMAKE} manualpages
 	-${OMAKE} ACTION=manualpages tree
-	-maint/wwwman ${PETSC_DIR}
+	-maint/wwwindex.py ${PETSC_DIR}
 	-maint/examplesindex.tcl
 	-maint/htmlkeywords.tcl
 	-@chmod g+w docs/manualpages/man*/*
