@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.62 1997/06/05 12:53:15 bsmith Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.63 1997/07/09 20:53:07 balay Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -493,7 +493,7 @@ int PCASMSetOverlap(PC pc, int ovl)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCASMSetOverlap" /* ADIC Ignore */
+#define __FUNC__ "PCASMSetType" /* ADIC Ignore */
 /*@
     PCASMSetType - Sets the type of restriction and interpolation used
     for local problems in the additive Schwarz method.
