@@ -64,6 +64,17 @@ PetscErrorCode MatDestroy_SeqCSRPERM(Mat A)
 
   csrperm = (Mat_SeqCSRPERM *) A->spptr;
 
+  /* We are going to convert A back into a SEQAIJ matrix, since we are 
+   * eventually going to use MatDestroy_SeqAIJ() to destroy everything 
+   * that is not specific to CSRPERM.
+   * In preparation for this, reset the operations pointers in A to 
+   * their SeqAIJ versions. */
+  A->ops->assemblyend = csrperm->AssemblyEnd_SeqAIJ;
+    /* I suppose I don't actually need to point A->ops->assemblyend back 
+     * to the right thing, but I do it anyway for completeness. */
+  A->ops->destroy = csrperm->MatDestroy_SeqAIJ;
+  A->ops->duplicate = csrperm->MatDuplicate_SeqAIJ;
+
   /* Free everything in the Mat_SeqCSRPERM data structure. */
   if(csrperm->CleanUpCSRPERM) {
     ierr = PetscFree(csrperm->xgroup);CHKERRQ(ierr);
@@ -74,13 +85,8 @@ PetscErrorCode MatDestroy_SeqCSRPERM(Mat A)
   /* Free the Mat_SeqCSRPERM struct itself. */
   ierr = PetscFree(csrperm);CHKERRQ(ierr);
 
-  /* Now convert A back into a SEQAIJ matrix and use MatDestroy_SeqAIJ() 
+  /* Change the type of A back to SEQAIJ and use MatDestroy_SeqAIJ() 
    * to destroy everything that remains. */
-  A->ops->assemblyend = csrperm->AssemblyEnd_SeqAIJ;
-    /* I suppose I don't actually need to point A->ops->assemblyend back 
-     * to the right thing, but I do it anyway for completeness. */
-  A->ops->destroy = csrperm->MatDestroy_SeqAIJ;
-  A->ops->duplicate = csrperm->MatDuplicate_SeqAIJ;
   ierr = PetscObjectChangeTypeName( (PetscObject)A, MATSEQAIJ);CHKERRQ(ierr);
   /* Note that I don't call MatSetType().  I believe this is because that 
    * is only to be called when *building* a matrix.  I could be wrong, but 
@@ -435,7 +441,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,MatType typ
 
   /* If A has already been assembled, compute the permutation. */
   if(A->assembled == PETSC_TRUE) {
-    ierr = SeqCSRPERM_create_permvec(B);
+    ierr = SeqCSRPERM_create_perm(B);
   }
 }
 EXTERN_C_END
