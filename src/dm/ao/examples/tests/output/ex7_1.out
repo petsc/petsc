@@ -1,15 +1,15 @@
 Number of elements in ordering 10
-   App.   PETSc
-0   0    0
-1   5    2
-2   1    4
-3   6    6
-4   2    8
-5   7    1
-6   3    3
-7   8    5
-8   4    7
-9   9    9
+PETSc->App  App->PETSc
+  0    0      0    0
+  1    5      1    2
+  2    1      2    4
+  3    6      3    6
+  4    2      4    8
+  5    7      5    1
+  6    3      6    3
+  7    8      7    5
+  8    4      8    7
+  9    9      9    9
 [0] Number of indices in (stride) set 5
 [0] 0 0
 [0] 1 2
