@@ -1,10 +1,46 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.20 1995/09/30 19:26:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.21 1995/10/01 21:51:07 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets 
 */
 #include "isimpl.h"      /*I "is.h" I*/
+
+/*@
+   ISIsIdentity - Returns 1 if the index set is a identity;
+                     0 if not; -1 on error.
+
+   Input Parmeters:
+.  is - the index set
+
+.keywords: IS, index set, identity
+
+.seealso: ISSetIdentity()
+@*/
+int ISIsIdentity(IS is)
+{
+  if (!is) SETERRQ(-1,"ISIsIdentity:Null IS");
+  if (is->cookie != IS_COOKIE) SETERRQ(-1,"ISIsIdentity:Bad IS");
+  return is->isidentity;
+}
+
+/*@
+   ISSetIdentity - Informs the index set that it is an identity.
+
+   Input Parmeters:
+.  is - the index set
+
+.keywords: IS, index set, identity
+
+.seealso: ISIsIdentity()
+@*/
+int ISSetIdentity(IS is)
+{
+  PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
+  is->isidentity = 1;
+  return 0;
+}
+
 
 /*@
    ISIsPermutation - Returns 1 if the index set is a permutation;
@@ -19,7 +55,8 @@ static char vcid[] = "$Id: index.c,v 1.20 1995/09/30 19:26:10 bsmith Exp bsmith 
 @*/
 int ISIsPermutation(IS is)
 {
-  PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
+  if (!is) SETERRQ(-1,"ISIsPermutation:Null IS");
+  if (is->cookie != IS_COOKIE) SETERRQ(-1,"ISIsPermutation:Bad IS");
   return is->isperm;
 }
 

@@ -2,7 +2,7 @@ PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I..  -I../..\
+CFLAGS   =  $(PETSC_INCLUDE) -I..  -I../.. $(PCONF)\
            $(CONF) -D__DIR__='"pc/impls/mg/"'
 SOURCEC  = mg.c fmg.c smg.c mgfunc.c 
 SOURCEF  =

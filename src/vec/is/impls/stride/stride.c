@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.31 1995/10/06 22:23:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: stride.c,v 1.32 1995/10/11 17:52:27 curfman Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -150,4 +150,6 @@ int ISCreateStrideSeq(MPI_Comm comm,int n,int first,int step,IS *is)
   *is = Nindex; 
   return 0;
 }
+
+
 

@@ -2,7 +2,7 @@ PETSC_DIR = ../../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I$(PETSC_DIR) \
+CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I$(PETSC_DIR) $(PCONF) \
            $(CONF) -D__DIR__='"is/impls/seq/general/"'
 SOURCEC  = general.c 
 SOURCEF  =

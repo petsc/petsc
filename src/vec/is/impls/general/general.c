@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.34 1995/09/30 19:26:17 bsmith Exp curfman $";
+static char vcid[] = "$Id: general.c,v 1.35 1995/10/11 17:52:25 curfman Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -38,6 +38,7 @@ static int ISInvertPermutation_General(IS is, IS *isout)
 {
   IS_General *sub = (IS_General *)is->data;
   int        i,ierr, *ii,n = sub->n,*idx = sub->idx;
+
   ii = (int *) PETSCMALLOC( n*sizeof(int) ); CHKPTRQ(ii);
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
@@ -192,3 +193,7 @@ int ISAddStrideSeq(IS *is,int n,int first,int step)
   *is = Newis; 
   return 0;
 }
+
+
+
+

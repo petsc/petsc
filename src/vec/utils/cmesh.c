@@ -25,7 +25,7 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
   Scalar        scale;
   Vec           W;
   IS            from,to;
-  VecScatterCtx ctx;
+  VecScatter    ctx;
   PetscObject   vobj = (PetscObject) win;
 
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
@@ -45,11 +45,11 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
     ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&to); CHKERRQ(ierr);
   }
   PLogObjectParent(win,W);PLogObjectParent(win,from);PLogObjectParent(win,to);
-  ierr = VecScatterCtxCreate(V,from,W,to,&ctx); CHKERRQ(ierr);
+  ierr = VecScatterCreate(V,from,W,to,&ctx); CHKERRQ(ierr);
   PLogObjectParent(win,ctx);
   ierr = VecScatterBegin(V,W,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRQ(ierr);
   ierr = VecScatterEnd(V,W,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRQ(ierr);
-  ISDestroy(from); ISDestroy(to); VecScatterCtxDestroy(ctx);
+  ISDestroy(from); ISDestroy(to); VecScatterDestroy(ctx);
 
   if (rank == 0) {
 #if !defined(PETSC_COMPLEX)

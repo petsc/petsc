@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.98 1995/10/17 14:30:08 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.99 1995/10/18 03:16:22 curfman Exp bsmith $";
 #endif
 
 /*
@@ -849,7 +849,7 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
   if (newtype == mat->type || newtype == MATSAME) {
     if (mat->ops.copyprivate) {
       PLogEventBegin(MAT_Convert,mat,0,0,0); 
-      ierr = (*mat->ops.copyprivate)(mat,M); CHKERRQ(ierr);
+      ierr = (*mat->ops.copyprivate)(mat,M,COPY_VALUES); CHKERRQ(ierr);
       PLogEventEnd(MAT_Convert,mat,0,0,0); 
       return 0;
     }
@@ -1019,18 +1019,23 @@ $  -pause <sec> : Set number of seconds to pause after display
 @*/
 int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
-  int ierr;
+  int        ierr;
+  static int inassm = 0;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  inassm++;
   PLogEventBegin(MAT_AssemblyEnd,mat,0,0,0);
   if (mat->ops.assemblyend) {ierr = (*mat->ops.assemblyend)(mat,type); CHKERRQ(ierr);}
   PLogEventEnd(MAT_AssemblyEnd,mat,0,0,0);
-  if (OptionsHasName(0,"-mat_draw")) {
-    DrawCtx win;
-    ierr = DrawOpenX(mat->comm,0,0,0,0,300,300,&win); CHKERRA(ierr);
-    ierr = MatView(mat,(Viewer)win); CHKERRA(ierr);
-    ierr = DrawSyncFlush(win); CHKERRA(ierr);
-    ierr = DrawDestroy(win); CHKERRA(ierr);
+  if (inassm == 1) {
+    if (OptionsHasName(0,"-mat_draw")) {
+      DrawCtx win;
+      ierr = DrawOpenX(mat->comm,0,0,0,0,300,300,&win); CHKERRA(ierr);
+      ierr = MatView(mat,(Viewer)win); CHKERRA(ierr);
+      ierr = DrawSyncFlush(win); CHKERRA(ierr);
+      ierr = DrawDestroy(win); CHKERRA(ierr);
+    }
   }
+  inassm--;
   return 0;
 }
 

@@ -2,7 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../impls -I..\
+CFLAGS   =  $(PETSC_INCLUDE) -I../impls -I.. $(PCONF)\
            -I$(PETSC_DIR)/src/draw $(COPT) $(CONF) -D__DIR__='"vec/utils/"'
 SOURCEC  = vinv.c gcreatev.c vscat.c vpscat.c cmesh.c vecio.c
 SOURCEF  =

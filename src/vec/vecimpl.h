@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.15 1995/09/30 19:26:24 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.16 1995/10/12 03:45:39 bsmith Exp bsmith $ */
 /* 
    This should not be included in users code.
 */
@@ -51,36 +51,36 @@ struct _Vec {
 
 typedef struct {
   int n,*slots;                /* number of components and their locations */
-} VecScatterGeneral;
+} VecScatter_General;
 
 typedef struct {
   int n,first,step;           
-} VecScatterStride;
+} VecScatter_Stride;
 
 /*
    This is the parallel scatter
 */
 typedef struct { 
-  int               n;         /* number of processors to send/receive */
-  int               nbelow;    /* number with lower process id */
-  int               nself;     /* number sending to self */
-  int               *starts;   /* The starting point in indices and values for each proc*/ 
-  int               *indices;  /* List of all components sent or received */
-  int               *procs;    /* Processors we are communicating with in scatter */
-  MPI_Request       *requests;
-  Scalar            *values;   /* buffer for all sends or receives */
+  int                n;         /* number of processors to send/receive */
+  int                nbelow;    /* number with lower process id */
+  int                nself;     /* number sending to self */
+  int                *starts;   /* The starting point in indices and values for each proc*/ 
+  int                *indices;  /* List of all components sent or received */
+  int                *procs;    /* Processors we are communicating with in scatter */
+  MPI_Request        *requests;
+  Scalar             *values;   /* buffer for all sends or receives */
                                /* note that we pack/unpack ourself,do not use MPI packing */
-  VecScatterGeneral local;     /* any part that happens to be local */
-} VecScatterMPI;
+  VecScatter_General local;     /* any part that happens to be local */
+} VecScatter_MPI;
 
-struct _VecScatterCtx {
+struct _VecScatter {
   PETSCHEADER
   int     inuse;               /* prevents corruption from mixing two scatters */
-  int     (*scatterbegin)(Vec,Vec,InsertMode,int,VecScatterCtx);
-  int     (*scatterend)(Vec,Vec,InsertMode,int,VecScatterCtx);
-  int     (*pipelinebegin)(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx);
-  int     (*pipelineend)(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx);
-  int     (*copy)(VecScatterCtx,VecScatterCtx);
+  int     (*scatterbegin)(Vec,Vec,InsertMode,int,VecScatter);
+  int     (*scatterend)(Vec,Vec,InsertMode,int,VecScatter);
+  int     (*pipelinebegin)(Vec,Vec,InsertMode,PipelineMode,VecScatter);
+  int     (*pipelineend)(Vec,Vec,InsertMode,PipelineMode,VecScatter);
+  int     (*copy)(VecScatter,VecScatter);
   void    *fromdata,*todata;
 };
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.29 1995/10/11 17:52:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.30 1995/10/12 04:13:20 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   Scalar        one = 1.0, two = 2.0;
   Vec           x,y;
   IS            is1,is2;
-  VecScatterCtx ctx = 0;
+  VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   OptionsGetInt(0,"-n",&n);
@@ -33,17 +33,15 @@ int main(int argc,char **argv)
 
   ierr = VecSet(&one,x); CHKERRA(ierr);
   ierr = VecSet(&two,y); CHKERRA(ierr);
-  ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_ALL,ctx);
-  CHKERRA(ierr);
+  ierr = VecScatterCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
+  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_ALL,ctx);CHKERRA(ierr);
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
   
   ierr = VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);
 
-  ierr = VecScatterBegin(y,x,INSERT_VALUES,SCATTER_ALL,ctx);
-  CHKERRA(ierr);
+  ierr = VecScatterBegin(y,x,INSERT_VALUES,SCATTER_ALL,ctx);CHKERRA(ierr);
   ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
-  ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
+  ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
 
   MPIU_printf(MPI_COMM_SELF,"-------\n");
   ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRA(ierr);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.38 1995/10/12 04:13:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.39 1995/10/19 22:15:56 curfman Exp bsmith $";
 #endif
 
 /*
@@ -19,14 +19,14 @@ static char vcid[] = "$Id: vscat.c,v 1.38 1995/10/12 04:13:05 bsmith Exp curfman
 /*
     Sequential general to general scatter 
 */
-static int SGtoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
+static int SGtoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
 {
-  VecScatterGeneral *gen_to = (VecScatterGeneral *) ctx->todata;
-  VecScatterGeneral *gen_from = (VecScatterGeneral *) ctx->fromdata;
-  int               i, n = gen_from->n, *fslots = gen_from->slots;
-  int               *tslots = gen_to->slots;
-  Vec_Seq          *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
-  Scalar            *xv = xx->array, *yv = yy->array;
+  VecScatter_General *gen_to = (VecScatter_General *) ctx->todata;
+  VecScatter_General *gen_from = (VecScatter_General *) ctx->fromdata;
+  int                i, n = gen_from->n, *fslots = gen_from->slots;
+  int                *tslots = gen_to->slots;
+  Vec_Seq            *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
+  Scalar             *xv = xx->array, *yv = yy->array;
   
   if (addv == INSERT_VALUES) {
     for ( i=0; i<n; i++ ) {yv[tslots[i]] = xv[fslots[i]];}
@@ -36,14 +36,14 @@ static int SGtoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
   }
   return 0;
 }
-static int SGtoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
+static int SGtoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
 {
-  VecScatterStride  *gen_to = (VecScatterStride *) ctx->todata;
-  VecScatterGeneral *gen_from = (VecScatterGeneral *) ctx->fromdata;
-  int               i, n = gen_from->n, *fslots = gen_from->slots;
-  int               first = gen_to->first,step = gen_to->step;
-  Vec_Seq          *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
-  Scalar            *xv = xx->array, *yv = yy->array;
+  VecScatter_Stride  *gen_to = (VecScatter_Stride *) ctx->todata;
+  VecScatter_General *gen_from = (VecScatter_General *) ctx->fromdata;
+  int                i, n = gen_from->n, *fslots = gen_from->slots;
+  int                first = gen_to->first,step = gen_to->step;
+  Vec_Seq            *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
+  Scalar             *xv = xx->array, *yv = yy->array;
   
   if (addv == INSERT_VALUES) {
     for ( i=0; i<n; i++ ) {yv[first + i*step] = xv[fslots[i]];}
@@ -54,14 +54,14 @@ static int SGtoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
   return 0;
 }
 
-static int SStoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
+static int SStoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
 {
-  VecScatterStride  *gen_from = (VecScatterStride *) ctx->fromdata;
-  VecScatterGeneral *gen_to = (VecScatterGeneral *) ctx->todata;
-  int               i, n = gen_from->n, *fslots = gen_to->slots;
-  int               first = gen_from->first,step = gen_from->step;
-  Vec_Seq          *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
-  Scalar            *xv = xx->array, *yv = yy->array;
+  VecScatter_Stride  *gen_from = (VecScatter_Stride *) ctx->fromdata;
+  VecScatter_General *gen_to = (VecScatter_General *) ctx->todata;
+  int                i, n = gen_from->n, *fslots = gen_to->slots;
+  int                first = gen_from->first,step = gen_from->step;
+  Vec_Seq            *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
+  Scalar             *xv = xx->array, *yv = yy->array;
   
   if (addv == INSERT_VALUES) {
     for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[first + i*step];}
@@ -72,14 +72,14 @@ static int SStoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
   return 0;
 }
 
-static int SStoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
+static int SStoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
 {
-  VecScatterStride  *gen_to = (VecScatterStride *) ctx->todata;
-  VecScatterStride  *gen_from = (VecScatterStride *) ctx->fromdata;
-  int               i, n = gen_from->n, to_first = gen_to->first,to_step = gen_to->step;
-  int               from_first = gen_from->first,from_step = gen_from->step;
-  Vec_Seq          *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
-  Scalar            *xv = xx->array, *yv = yy->array;
+  VecScatter_Stride  *gen_to = (VecScatter_Stride *) ctx->todata;
+  VecScatter_Stride  *gen_from = (VecScatter_Stride *) ctx->fromdata;
+  int                i, n = gen_from->n, to_first = gen_to->first,to_step = gen_to->step;
+  int                from_first = gen_from->first,from_step = gen_from->step;
+  Vec_Seq            *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
+  Scalar             *xv = xx->array, *yv = yy->array;
   
   if (addv == INSERT_VALUES) {
     if (to_step == 1 && from_step == 1) {
@@ -108,20 +108,20 @@ static int SStoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
 }
 static int SGtoSGDestroy(PetscObject obj)
 {
-  VecScatterCtx ctx = (VecScatterCtx) obj;
+  VecScatter ctx = (VecScatter) obj;
   PETSCFREE(ctx->todata); PETSCFREE(ctx->fromdata); 
   PLogObjectDestroy(ctx);
   PETSCHEADERDESTROY(ctx);
   return 0;
 }
 
-int PtoSScatterCtxCreate(int,int *,int,int *,Vec,VecScatterCtx);
-int StoPScatterCtxCreate(int,int *,int,int *,Vec,VecScatterCtx);
+int PtoSScatterCtxCreate(int,int *,int,int *,Vec,VecScatter);
+int StoPScatterCtxCreate(int,int *,int,int *,Vec,VecScatter);
 /* --------------------------------------------------------------*/
 /*@C
-   VecScatterCtxCreate - Creates a vector scatter context. This routine
+   VecScatterCreate - Creates a vector scatter context. This routine
    should be called when you need to create a vector scatter context. 
-   You cannot use a VecScatterCtx in two or more simultaneous scatters. 
+   You cannot use a VecScatter in two or more simultaneous scatters. 
 
    Input Parameters:
 .  xin - the vector to scatter from
@@ -136,35 +136,35 @@ int StoPScatterCtxCreate(int,int *,int,int *,Vec,VecScatterCtx);
 
 .seealso: VecScatterDestroy()
 @*/
-int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
+int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
-  VecScatterCtx ctx;
-  int           len,size; 
-  MPI_Comm      comm = xin->comm;
+  VecScatter ctx;
+  int        len,size; 
+  MPI_Comm   comm = xin->comm;
 
   /* next 2 lines insure that we use parallel comm if it exists */
   MPI_Comm_size(yin->comm,&size);
   if (size > 1) comm = yin->comm; 
 
   /* generate the Scatter context */
-  PETSCHEADERCREATE(ctx,_VecScatterCtx,VEC_SCATTER_COOKIE,0,comm);
+  PETSCHEADERCREATE(ctx,_VecScatter,VEC_SCATTER_COOKIE,0,comm);
   PLogObjectCreate(ctx);
-  PLogObjectMemory(ctx,sizeof(struct _VecScatterCtx));
+  PLogObjectMemory(ctx,sizeof(struct _VecScatter));
 
   if (xin->type == VECSEQ && yin->type == VECSEQ) {
 
     if (ix->type == IS_SEQ && iy->type == IS_SEQ){
-      int               nx,ny,*idx,*idy;
-      VecScatterGeneral *to,*from;
+      int                nx,ny,*idx,*idy;
+      VecScatter_General *to,*from;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetLocalSize(iy,&ny); ISGetIndices(iy,&idy);
-      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
-      len = sizeof(VecScatterGeneral) + nx*sizeof(int);
-      to = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(to)
+      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      len = sizeof(VecScatter_General) + nx*sizeof(int);
+      to = (VecScatter_General *) PETSCMALLOC(len); CHKPTRQ(to)
       PLogObjectMemory(ctx,len);
       to->slots = (int *) (to + 1); to->n = nx; 
       PetscMemcpy(to->slots,idy,nx*sizeof(int));
-      from = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(from);
+      from = (VecScatter_General *) PETSCMALLOC(len); CHKPTRQ(from);
       from->slots = (int *) (from + 1); from->n = nx; 
       PetscMemcpy(from->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
@@ -175,15 +175,15 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       return 0;
     }
     else if (ix->type == IS_STRIDE_SEQ &&  iy->type == IS_STRIDE_SEQ){
-      int               nx,ny,to_first,to_step,from_first,from_step;
-      VecScatterStride  *from,*to;
+      int                nx,ny,to_first,to_step,from_first,from_step;
+      VecScatter_Stride  *from,*to;
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
-      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
-      to = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride)); CHKPTRQ(to);
+      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      to = (VecScatter_Stride *) PETSCMALLOC(sizeof(VecScatter_Stride)); CHKPTRQ(to);
       to->n = nx; to->first = to_first; to->step = to_step;
-      from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));CHKPTRQ(from);
-      PLogObjectMemory(ctx,2*sizeof(VecScatterStride));
+      from = (VecScatter_Stride *) PETSCMALLOC(sizeof(VecScatter_Stride));CHKPTRQ(from);
+      PLogObjectMemory(ctx,2*sizeof(VecScatter_Stride));
       from->n = nx; from->first = from_first; from->step = from_step;
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
       ctx->scatterbegin = SStoSS; ctx->destroy = SGtoSGDestroy;
@@ -193,17 +193,17 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       return 0;
     }
     else if (ix->type == IS_SEQ && iy->type == IS_STRIDE_SEQ){
-      int               nx,ny,*idx,first,step;
-      VecScatterGeneral *from;
-      VecScatterStride  *to;
+      int                nx,ny,*idx,first,step;
+      VecScatter_General *from;
+      VecScatter_Stride  *to;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&first,&step);
-      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
-      to = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride)); CHKPTRQ(to);
+      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      to = (VecScatter_Stride *) PETSCMALLOC(sizeof(VecScatter_Stride)); CHKPTRQ(to);
       to->n = nx; to->first = first; to->step = step;
-      len = sizeof(VecScatterGeneral) + nx*sizeof(int);
-      from = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(from);
-      PLogObjectMemory(ctx,len + sizeof(VecScatterStride));
+      len = sizeof(VecScatter_General) + nx*sizeof(int);
+      from = (VecScatter_General *) PETSCMALLOC(len); CHKPTRQ(from);
+      PLogObjectMemory(ctx,len + sizeof(VecScatter_Stride));
       from->slots = (int *) (from + 1); from->n = nx; 
       PetscMemcpy(from->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
@@ -214,17 +214,17 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       return 0;
     }
     else if (ix->type == IS_STRIDE_SEQ && iy->type == IS_SEQ){
-      int               nx,ny,*idx,first,step;
-      VecScatterGeneral *to;
-      VecScatterStride  *from;
+      int                nx,ny,*idx,first,step;
+      VecScatter_General *to;
+      VecScatter_Stride  *from;
       ISGetLocalSize(ix,&nx); ISGetIndices(iy,&idx);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(ix,&first,&step);
-      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
-      from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));CHKPTRQ(from);
+      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      from = (VecScatter_Stride *) PETSCMALLOC(sizeof(VecScatter_Stride));CHKPTRQ(from);
       from->n = nx; from->first = first; from->step = step;
-      len = sizeof(VecScatterGeneral) + nx*sizeof(int);
-      to = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(to);
-      PLogObjectMemory(ctx,len + sizeof(VecScatterStride));
+      len = sizeof(VecScatter_General) + nx*sizeof(int);
+      to = (VecScatter_General *) PETSCMALLOC(len); CHKPTRQ(to);
+      PLogObjectMemory(ctx,len + sizeof(VecScatter_Stride));
       to->slots = (int *) (to + 1); to->n = nx; 
       PetscMemcpy(to->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
@@ -235,27 +235,27 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       return 0;
     }
     else {
-      SETERRQ(1,"VecScatterCtxCreate:Cannot generate such Scatter Context yet");
+      SETERRQ(1,"VecScatterCreate:Cannot generate such Scatter Context yet");
     }
   }
   if (xin->type == VECMPI && yin->type == VECSEQ) {
     /* special case extracting (subset of) local portion */ 
     if (ix->type == IS_STRIDE_SEQ && iy->type == IS_STRIDE_SEQ){
-      Vec_MPI         *x = (Vec_MPI *)xin->data;
-      int               nx,ny,to_first,to_step,from_first,from_step,islocal,cando;
-      int               start = x->ownership[x->rank], end = x->ownership[x->rank+1];
-      VecScatterStride  *from,*to;
+      Vec_MPI            *x = (Vec_MPI *)xin->data;
+      int                nx,ny,to_first,to_step,from_first,from_step,islocal,cando;
+      int                start = x->ownership[x->rank], end = x->ownership[x->rank+1];
+      VecScatter_Stride  *from,*to;
 
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
-      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
       if (ix->min >= start && ix->max < end ) islocal = 1; else islocal = 0;
       MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,MPI_LAND,xin->comm);
       if (cando) {
-        to = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride)); CHKPTRQ(to);
+        to = (VecScatter_Stride *) PETSCMALLOC(sizeof(VecScatter_Stride)); CHKPTRQ(to);
         to->n = nx; to->first = to_first; to->step = to_step;
-        from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));CHKPTRQ(from);
-        PLogObjectMemory(ctx,2*sizeof(VecScatterStride));
+        from = (VecScatter_Stride *) PETSCMALLOC(sizeof(VecScatter_Stride));CHKPTRQ(from);
+        PLogObjectMemory(ctx,2*sizeof(VecScatter_Stride));
         from->n = nx; from->first = from_first-start; from->step = from_step;
         ctx->todata = (void *) to; ctx->fromdata = (void *) from;
         ctx->scatterbegin = SStoSS; ctx->destroy = SGtoSGDestroy;
@@ -269,7 +269,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       int ierr,nx,ny,*idx,*idy;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetLocalSize(iy,&ny); ISGetIndices(iy,&idy);
-      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
       ierr = PtoSScatterCtxCreate(nx,idx,ny,idy,xin,ctx); CHKERRQ(ierr);
       ISRestoreIndices(ix,&idx); ISRestoreIndices(iy,&idy);
       *newctx = ctx;
@@ -279,21 +279,21 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
   if (xin->type == VECSEQ && yin->type == VECMPI) {
     /* special case local copy portion */ 
     if (ix->type == IS_STRIDE_SEQ && iy->type == IS_STRIDE_SEQ){
-      Vec_MPI         *y = (Vec_MPI *)yin->data;
-      int               nx,ny,to_first,to_step,from_step, start = y->ownership[y->rank];
-      int               end = y->ownership[y->rank+1],islocal,cando,from_first;
-      VecScatterStride  *from,*to;
+      Vec_MPI            *y = (Vec_MPI *)yin->data;
+      int                nx,ny,to_first,to_step,from_step, start = y->ownership[y->rank];
+      int                end = y->ownership[y->rank+1],islocal,cando,from_first;
+      VecScatter_Stride  *from,*to;
 
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
-      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
       if (iy->min >= start && iy->max < end ) islocal = 1; else islocal = 0;
       MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,MPI_LAND,yin->comm);
       if (cando) {
-        to = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride)); CHKPTRQ(to);
+        to = (VecScatter_Stride *) PETSCMALLOC(sizeof(VecScatter_Stride)); CHKPTRQ(to);
         to->n = nx; to->first = to_first-start; to->step = to_step;
-        from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));CHKPTRQ(from);
-        PLogObjectMemory(ctx,2*sizeof(VecScatterStride));
+        from = (VecScatter_Stride *) PETSCMALLOC(sizeof(VecScatter_Stride));CHKPTRQ(from);
+        PLogObjectMemory(ctx,2*sizeof(VecScatter_Stride));
         from->n = nx; from->first = from_first; from->step = from_step;
         ctx->todata = (void *) to; ctx->fromdata = (void *) from;
         ctx->scatterbegin = SStoSS; ctx->destroy = SGtoSGDestroy;
@@ -307,14 +307,14 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       int ierr,nx,ny,*idx,*idy;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetLocalSize(iy,&ny); ISGetIndices(iy,&idy);
-      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
       ierr = StoPScatterCtxCreate(nx,idx,ny,idy,yin,ctx); CHKERRQ(ierr);
       ISRestoreIndices(ix,&idx); ISRestoreIndices(iy,&idy);
       *newctx = ctx;
       return 0;
     }
   }
-  SETERRQ(1,"VecScatterCtxCreate:Cannot generate such Scatter Context yet");
+  SETERRQ(1,"VecScatterCreate:Cannot generate such Scatter Context yet");
 }
 
 /* ------------------------------------------------------------------*/
@@ -336,7 +336,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
 .  mode - the scattering mode, usually SCATTER_ALL.  The available modes are:
 $    SCATTER_ALL, SCATTER_UP, SCATTER_DOWN, 
 $    SCATTER_REVERSE, SCATTER_ALL_REVERSE
-.  inctx - scatter context generated by VecScatterCtxCreate()
+.  inctx - scatter context generated by VecScatterCreate()
 
    Output Parameter:
 .  y - vector to scatter to 
@@ -346,10 +346,9 @@ $    SCATTER_REVERSE, SCATTER_ALL_REVERSE
 
 .keywords: vector, scatter, gather, begin
 
-.seealso: VecScatterCtxCreate(), VecScatterEnd()
+.seealso: VecScatterCreate(), VecScatterEnd()
 @*/
-int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode, 
-                                                   VecScatterCtx inctx)
+int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
 {
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(inctx,VEC_SCATTER_COOKIE);
@@ -370,7 +369,7 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,
 .  mode - the scattering mode, usually SCATTER_ALL.  The available modes are:
 $    SCATTER_ALL, SCATTER_UP, SCATTER_DOWN, 
 $    SCATTER_REVERSE, SCATTER_ALL_REVERSE
-.  ctx - scatter context generated by VecScatterCtxCreate()
+.  ctx - scatter context generated by VecScatterCreate()
 
    Output Parameters:
 .  y - vector to scatter to 
@@ -380,10 +379,9 @@ $    SCATTER_REVERSE, SCATTER_ALL_REVERSE
 
 .keywords: vector, scatter, gather, end
 
-.seealso: VecScatterBegin(), VecScatterCtxCreate()
+.seealso: VecScatterBegin(), VecScatterCreate()
 @*/
-int VecScatterEnd(Vec x,Vec y,InsertMode addv, 
-                  ScatterMode mode, VecScatterCtx ctx)
+int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
 {
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(ctx,VEC_SCATTER_COOKIE);
@@ -393,23 +391,23 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,
 }
 
 /*@C
-   VecScatterCtxDestroy - Destroys a scatter context created by 
-   VecScatterCtxCreate().
+   VecScatterDestroy - Destroys a scatter context created by 
+   VecScatterCreate().
 
    Input Parameter:
 .  ctx - the scatter context
 
 .keywords: vector, scatter, context, destroy
 
-.seealso: VecScatterCtxCreate()
+.seealso: VecScatterCreate()
 @*/
-int VecScatterCtxDestroy( VecScatterCtx ctx )
+int VecScatterDestroy( VecScatter ctx )
 {
   return (*ctx->destroy)((PetscObject)ctx);
 }
 
 /*@C
-   VecScatterCtxCopy - Makes a copy of a scatter context.
+   VecScatterCopy - Makes a copy of a scatter context.
 
    Input Parameter:
 .  sctx - the scatter context
@@ -419,15 +417,15 @@ int VecScatterCtxDestroy( VecScatterCtx ctx )
 
 .keywords: vector, scatter, copy, context
 
-.seealso: VecScatterCtxCreate()
+.seealso: VecScatterCreate()
 @*/
-int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
+int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
 {
-  if (!sctx->copy) SETERRQ(1,"VecScatterCtxCopy: cannot copy this type");
+  if (!sctx->copy) SETERRQ(1,"VecScatterCopy: cannot copy this type");
   /* generate the Scatter context */
-  PETSCHEADERCREATE(*ctx,_VecScatterCtx,VEC_SCATTER_COOKIE,0,sctx->comm);
+  PETSCHEADERCREATE(*ctx,_VecScatter,VEC_SCATTER_COOKIE,0,sctx->comm);
   PLogObjectCreate(*ctx);
-  PLogObjectMemory(*ctx,sizeof(struct _VecScatterCtx));
+  PLogObjectMemory(*ctx,sizeof(struct _VecScatter));
   return (*sctx->copy)(sctx,*ctx);
 }
 
@@ -442,7 +440,7 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
 .  inctx - is used to coordinate communication
 .  addv - either ADD_VALUES or INSERT_VALUES, depending whether values are
           added or set
-.  inctx - scatter context generated by VecScatterCtxCreate()
+.  inctx - scatter context generated by VecScatterCreate()
 .  mode - pipelining mode, either PIPELINE_UP or PIPELINE_DOWN
 
    Output Parameter:
@@ -455,9 +453,9 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
 
 .keywords: vector, pipeline, begin
 
-.seealso: VecPipelineEnd(), VecScatterCtxCreate()
+.seealso: VecPipelineEnd(), VecScatterCreate()
 @*/
-int VecPipelineBegin(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatterCtx inctx)
+int VecPipelineBegin(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatter inctx)
 {
   int size;
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
@@ -479,7 +477,7 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatterCtx
 .  inctx - is used to coordinate communication
 .  addv - either ADD_VALUES or INSERT_VALUES, depending whether values are
           added or set
-.  ctx - scatter context generated by VecScatterCtxCreate()
+.  ctx - scatter context generated by VecScatterCreate()
 .  mode - pipelining mode, either PIPELINE_UP or PIPELINE_DOWN
 
    Output Parameters:
@@ -492,9 +490,9 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatterCtx
 
 .keywords: vector, pipeline, end
 
-.seealso: VecPipelineBegin(), VecScatterCtxCreate()
+.seealso: VecPipelineBegin(), VecScatterCreate()
 @*/
-int VecPipelineEnd(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatterCtx ctx)
+int VecPipelineEnd(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatter ctx)
 {
   int size;
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);

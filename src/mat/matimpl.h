@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.29 1995/10/06 22:24:20 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.30 1995/10/11 15:19:24 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -35,7 +35,7 @@ struct _MatOps {
             (*convert)(Mat,MatType,Mat *),
             (*getsubmatrix)(Mat,IS,IS,Mat*),
             (*getsubmatrixinplace)(Mat,IS,IS),
-            (*copyprivate)(Mat,Mat *),
+            (*copyprivate)(Mat,Mat *,int),
             (*forwardsolve)(Mat,Vec,Vec),(*backwardsolve)(Mat,Vec,Vec),
             (*ilufactor)(Mat,IS,IS,double,int),
             (*incompletecholeskyfactor)(Mat,IS,double),
@@ -52,6 +52,11 @@ struct _Mat {
   int              factor;   /* 0, FACTOR_LU or FACTOR_CHOLESKY */
   double           lupivotthreshold;
 };
+
+/* final argument for MatCopyPrivate_XXX() */
+#define DO_NOT_COPY_VALUES 0
+#define COPY_VALUES        1
+
 
 /* Since most (all?) of the parallel matrix assemblies use this stashing,
    we move it to a common place. Perhaps it ultimately belongs elsewhere. */

@@ -1,7 +1,7 @@
 ALL: lib 
 PETSC_DIR = ../../../..
 
-CFLAGS   =  $(CONF) $(PETSC_INCLUDE) -I../..  \
+CFLAGS   =  $(CONF) $(PETSC_INCLUDE) -I../.. $(PCONF) \
            -D__DIR__='"ksp/impls/rich/"'
 SOURCEC  = rich.c
 SOURCEF  =

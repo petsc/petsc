@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex13.c,v 1.27 1995/10/12 04:13:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex13.c,v 1.28 1995/10/19 22:16:36 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.  In\n\
@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   Scalar        value;
   Vec           x,y;
   IS            is1,is2;
-  VecScatterCtx ctx = 0;
+  VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
@@ -41,10 +41,10 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(x); CHKERRA(ierr);
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);
 
-  ierr = VecScatterCtxCreate(x,is2,y,is1,&ctx); CHKERRA(ierr);
+  ierr = VecScatterCreate(x,is2,y,is1,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
-  ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
+  ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
   
   ierr = VecView(y,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 

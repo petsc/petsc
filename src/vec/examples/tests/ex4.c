@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.28 1995/10/12 04:13:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.29 1995/10/19 22:16:36 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a parallel vector into seqential vectors.\n\n";
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   Scalar        one = 1.0, two = 2.0;
   Vec           x,y;
   IS            is1,is2;
-  VecScatterCtx ctx = 0;
+  VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   OptionsGetInt(0,"-n",&n);
@@ -33,11 +33,10 @@ int main(int argc,char **argv)
 
   ierr = VecSet(&one,x); CHKERRA(ierr);
   ierr = VecSet(&two,y); CHKERRA(ierr);
-  ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_ALL,ctx);
-  CHKERRA(ierr);
+  ierr = VecScatterCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
+  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_ALL,ctx);CHKERRA(ierr);
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
-  ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
+  ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
   
   if (!rank) {VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
 

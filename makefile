@@ -5,7 +5,7 @@
 
 PETSC_DIR = .
 
-CFLAGS   =  -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF)
+CFLAGS   =  -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF) $(PCONF)
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = Changes Machines Readme maint/addlinks maint/buildtest \

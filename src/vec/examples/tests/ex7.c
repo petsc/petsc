@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.26 1995/10/11 17:52:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.27 1995/10/12 04:13:20 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates a scatter with a stride and general index set.\n\n";
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   Scalar        two = 2.0, vals[6] = {10,11,12,13,14,15};
   Vec           x,y;
   IS            is1,is2;
-  VecScatterCtx ctx = 0;
+  VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
 
@@ -33,11 +33,10 @@ int main(int argc,char **argv)
   ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_SELF,"----\n");
   ierr = VecSet(&two,y);CHKERRA(ierr);
-  ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_ALL,ctx);
-  CHKERRA(ierr);
+  ierr = VecScatterCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
+  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_ALL,ctx);CHKERRA(ierr);
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
-  ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
+  ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
   
   ierr = VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.1 1995/10/19 22:14:22 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.2 1995/10/20 02:59:57 curfman Exp bsmith $";
 #endif
 
 #include "mpidense.h"
@@ -370,7 +370,7 @@ static int MatDestroy_MPIDense(PetscObject obj)
   PETSCFREE(aij->rowners); 
   ierr = MatDestroy(aij->A); CHKERRQ(ierr);
   if (aij->lvec)   VecDestroy(aij->lvec);
-  if (aij->Mvctx)  VecScatterCtxDestroy(aij->Mvctx);
+  if (aij->Mvctx)  VecScatterDestroy(aij->Mvctx);
   PETSCFREE(aij); 
   PLogObjectDestroy(mat);
   PETSCHEADERDESTROY(mat);
@@ -559,7 +559,7 @@ static int MatRestoreRow_MPIDense(Mat mat,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
-static int MatCopyPrivate_MPIDense(Mat,Mat *);
+static int MatCopyPrivate_MPIDense(Mat,Mat *,int);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_MPIDense,
@@ -665,7 +665,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Mat *newmat)
   return 0;
 }
 
-static int MatCopyPrivate_MPIDense(Mat matin,Mat *newmat)
+static int MatCopyPrivate_MPIDense(Mat matin,Mat *newmat,int cpvalues)
 {
   Mat        mat;
   Mat_MPIDense *a,*oldmat = (Mat_MPIDense *) matin->data;
@@ -700,7 +700,7 @@ static int MatCopyPrivate_MPIDense(Mat matin,Mat *newmat)
   
   ierr =  VecDuplicate(oldmat->lvec,&a->lvec); CHKERRQ(ierr);
   PLogObjectParent(mat,a->lvec);
-  ierr =  VecScatterCtxCopy(oldmat->Mvctx,&a->Mvctx); CHKERRQ(ierr);
+  ierr =  VecScatterCopy(oldmat->Mvctx,&a->Mvctx); CHKERRQ(ierr);
   PLogObjectParent(mat,a->Mvctx);
   ierr =  MatConvert(oldmat->A,MATSAME,&a->A); CHKERRQ(ierr);
   PLogObjectParent(mat,a->A);

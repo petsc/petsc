@@ -1,7 +1,7 @@
 PETSC_DIR = ../../../..
 ALL: lib 
 
-CFLAGS   = $(PETSC_INCLUDE) $(CONF)  \
+CFLAGS   = $(PETSC_INCLUDE) $(CONF) $(PCONF) \
            -I../../ -D__DIR__='"ksp/impls/bcgs/"'
 SOURCEC  = bcgs.c
 SOURCEF  =

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.13 1995/10/12 04:13:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex17.c,v 1.14 1995/10/19 22:16:36 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   Scalar        value,zero = 0.0;
   Vec           x,y;
   IS            is1,is2;
-  VecScatterCtx ctx = 0;
+  VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
@@ -44,10 +44,10 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(y); CHKERRA(ierr);
   ierr = VecView(y,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
-  ierr = VecScatterCtxCreate(y,is2,x,is1,&ctx); CHKERRA(ierr);
+  ierr = VecScatterCreate(y,is2,x,is1,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(y,x,ADD_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
   ierr = VecScatterEnd(y,x,ADD_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
-  ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
+  ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
   
   if (!rank) 
     {printf("----\n"); ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
