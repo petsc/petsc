@@ -11,6 +11,8 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
   --------------------------------
 
+   - Allow column and row oriented input for MatSetValues() for all matrix types.
+
    - Make configure fully functional in PETSc 2.0
 
    - Fix table of vector operations in html version of users manual.
@@ -59,6 +61,9 @@ Additional Capabilities that PETSc Needs:
 
    To do sometime soon:
   ----------------------
+
+   - MatExpand() and VecExpand() talk to Paul about how this is done 
+     in SUMMA.
 
    - Have all preconditioners (including LU) support null space, see 
      tools.n/solvers/nullsp.c
