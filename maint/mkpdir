@@ -1,9 +1,11 @@
 #! /bin/sh
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: mkpdir,v 1.3 1997/09/10 19:44:22 balay Exp balay $ 
 
 mkdir $1
-chmod g+ws $1
+chmod g+w $1
+chmod g+s $1
 chgrp pdetools $1
 mkdir $1/RCS
-chmod g+ws $1/RCS
+chmod g+w $1/RCS
+chmod g+s $1/RCS
 chgrp pdetools $1/RCS
