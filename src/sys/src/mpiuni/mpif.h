@@ -1,6 +1,6 @@
-#ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.60 1995/12/12 22:55:20 curfman Exp $";
-#endif
+
+c     static char vcid[] = "$Id: mpif.h,v 1.4 1995/12/18 16:40:29 balay Exp balay $";
+
 
 C     Trying to provide as little support for fortran code in petsc as needed
 
