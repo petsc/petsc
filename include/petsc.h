@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.250 1999/10/01 21:23:20 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.251 1999/10/04 18:55:42 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -152,12 +152,12 @@ extern int PetscSleep(int);
 extern int  AliceInitialize(int*,char***,const char[],const char[]);
 extern int  AliceInitializeNoArguments(void);
 extern int  AliceFinalize(void);
-extern void AliceInitializeFortran(void);
+extern void PETSC_STDCALL AliceInitializeFortran(void);
 
 extern int  PetscInitialize(int*,char***,char[],const char[]);
 extern int  PetscInitializeNoArguments(void);
 extern int  PetscFinalize(void);
-extern void PetscInitializeFortran(void);
+extern void PETSC_STDCALL PetscInitializeFortran(void);
 
 /*
     Functions that can act on any PETSc object.
