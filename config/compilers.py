@@ -534,7 +534,7 @@ class Configure(config.base.Configure):
     '''Determine if Fortran handles preprocessing properly'''
     self.pushLanguage('F77')
     # Does Fortran compiler need special flag for using CPP
-    for flag in ['', '-cpp', '-xpp=cpp', '-F', '-Cpp', '-fpp:-m']:
+    for flag in ['', '-cpp', '-xpp=cpp', '-F', '-Cpp', '-fpp:-m', '-fpp']:
       try:
         flagsArg = self.getCompilerFlagsArg()
         oldFlags = self.framework.argDB[flagsArg]
