@@ -1,6 +1,6 @@
 #! /usr/local/tcl/bin/tclsh
 #!/gnuwin32/b18/tcl/bin/tclsh76.exe
-# $Id: makecpp.tcl,v 1.4 1997/11/13 17:44:45 balay Exp balay $ 
+# $Id: makecpp.tcl,v 1.5 1997/11/13 20:48:18 balay Exp balay $ 
 
 
 proc movefilesin { dir } {
@@ -45,7 +45,7 @@ proc updatemakefile { makefile } {
         #
         regsub  -all  "\ninclude" $databuff  "\n!include" databuff
         #
-        # Change -D__SDIR__='"$(LOCDIR)"' to /D__SDIR__="\"$(LOCDIR)\""
+        # Change -D__SDIR__='"${LOCDIR}"' to /D__SDIR__="\"${LOCDIR}\""
         #
         regsub -all  "\\\-D" $databuff "/D" databuff
         regsub -all "\'\""  $databuff "\"\\\"" databuff
@@ -69,12 +69,12 @@ proc updatemakefile { makefile } {
         # *.ilk etc to the list
         #
         regsub -all { \-f} $databuff "" databuff       
-        regsub -all {\(RM\)} $databuff "(RM) *.pdb *.ilk" databuff 
+        regsub -all {\{RM\}} $databuff "{RM} *.pdb *.ilk" databuff 
 
         # 
         # PETSC_ARCH -> nt
         #
-        regsub -all {\$\(PETSC_ARCH\)} $databuff "nt" databuff         
+        regsub -all {\$\{PETSC_ARCH\}} $databuff "nt" databuff         
 
         set fileid [ open $makefile w ]
         puts $fileid $databuff
