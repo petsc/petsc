@@ -10,7 +10,9 @@ Meta priorities:
 Documentation:
  - put vec/examples/tests/ex13.c in tutorials section; add other vecscatter
    examples to tutorials 
- - add mention of useful error function labels for error handling, memory tracing, etc.
+ - add mention of useful debugging stuff in an easy-to-find place rather than
+   being spread out here and there (e.g., error function labels for error handling,
+   memory tracing, etc.)
 
 Current applications using PETSc (3) - pointers
         to dinesh's work and ACTI?  This would
