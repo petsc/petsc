@@ -1,0 +1,14 @@
+#! /bin/csh
+#
+# Builds PETSc shadow directory.  This is used in conjunction with addlinks.
+#
+
+set petscdir=/home/bsmith/petsc
+cd $petscdir
+/bin/rm -f $petscdir/maint/links.log
+set shadowdir=/home/curfman/petsc
+echo "petscdir = " $petscdir
+
+find . \( -name RCS -prune -o -name docs \) -o -type d \
+       -exec $petscdir/maint/addlinks $shadowdir \{\} \
+       >& $petscdir/maint/links.log \;

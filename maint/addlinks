@@ -1,0 +1,35 @@
+#! /bin/csh
+#
+# Add the individual links for the PETSc shadow directory.  This script
+# should be called from buildlinks.
+#
+
+set shadowdir=$1
+set barrysdir=$2
+set barrysdir=`echo $barrysdir | sed s%.%/home/bsmith/petsc%`
+set shadowdir=`echo $barrysdir | sed s%/home/bsmith/petsc%$shadowdir%`
+
+if (! -e $shadowdir) then
+  echo "mkdir $shadowdir"
+  mkdir $shadowdir
+endif
+
+set allfiles=$barrysdir/*
+foreach file ($allfiles)
+  set short=`echo $file | sed s%$barrysdir/%$shadowdir/%` 
+  if (! -e $short && -f $file ) then
+    set omit=0
+    foreach bad ("\.a" "\.o" "PI" "\.ln" "l\.outa" "mputil.mp_" "core"\
+                 "\.map" "\.log" "gmon\.out" "trashz" "\.tmp" "\.b" "\~"\
+                 "f\.c" "\#")
+      set dummy=`echo $file | grep $bad` 
+      if ($dummy == $file) then
+        echo "rejecting $file due to" $bad
+        set omit=1
+      endif
+    end
+    if ($omit) continue
+    echo "ln -s $file $short"
+    ln -s $file $short
+  endif
+end
