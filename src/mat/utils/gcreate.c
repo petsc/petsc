@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.89 1996/06/18 20:51:28 balay Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.90 1996/06/20 02:09:57 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -122,7 +122,9 @@ int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 /*@C
    MatCreate - Creates a matrix, where the type is determined
    from the options database. Generates a parallel MPI matrix if the
-   communicator has more than one processor.
+   communicator has more than one processor.  The default matrix type is
+   AIJ, using the routines MatCreateSeqAIJ() and MatCreateMPIAIJ(). 
+
 
    Input Parameters:
 .  m - number of global rows
@@ -136,12 +138,13 @@ int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
    These options use MatCreateSeqXXX or MatCreateMPIXXX,
    depending on the communicator, comm.
 $    -mat_aij      : AIJ type
+$    -mat_baij     : block AIJ type
 $    -mat_dense    : dense type
 $    -mat_bdiag    : block diagonal type
 
    More Options Database Keys:
-$    -mat_seqaij   : AIJ type, uses MatCreateSeqAIJ
-$    -mat_mpiaij   : AIJ type, uses MatCreateMPIAIJ
+$    -mat_seqaij   : AIJ type, uses MatCreateSeqAIJ()
+$    -mat_mpiaij   : AIJ type, uses MatCreateMPIAIJ()
 $    -mat_seqbdiag : block diagonal type, uses 
 $                    MatCreateSeqBDiag()
 $    -mat_mpibdiag : block diagonal type, uses 
@@ -150,10 +153,11 @@ $    -mat_mpirowbs : rowbs type, uses MatCreateMPIRowbs()
 $    -mat_seqdense : dense type, uses MatCreateSeqDense()
 $    -mat_mpidense : dense type, uses MatCreateMPIDense()
 $    -mat_seqbaij  : block AIJ type, uses MatCreateSeqBAIJ()
+$    -mat_mpibaij  : block AIJ type, uses MatCreateMPIBAIJ()
 
-   Notes:
-   The default matrix type is AIJ, using MatCreateSeqAIJ() and
-   MatCreateMPIAIJ(). 
+   Even More Options Database Keys:
+   See the manpages for particular formats (e.g., MatCreateSeqAIJ())
+   for additional format-specific options.
 
 .keywords: matrix, create
 
