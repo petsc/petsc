@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.51 1996/01/01 22:33:15 curfman Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.52 1996/01/04 15:57:31 curfman Exp bsmith $";
 #endif
 
 /*
@@ -245,6 +245,12 @@ static int SStoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
   Vec_Seq            *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar             *xv = xx->array, *yv = yy->array;
   
+  /* if reverse then flip the start and stride */
+  if (mode & SCATTER_REVERSE ){
+    from_first = gen_to->first; to_first = gen_from->first;
+    from_step  = gen_to->step;  to_step  = gen_from->step;
+  }
+
   if (addv == INSERT_VALUES) {
     if (to_step == 1 && from_step == 1) {
       PetscMemcpy(yv+to_first,xv+from_first,n*sizeof(Scalar));
