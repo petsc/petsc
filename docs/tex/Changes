@@ -62,6 +62,9 @@ add to it).
 
   General
 
+   The final argument to OptionsHasName() and OptionsGetXXX() is a PetscTruth * instead
+   of an int*
+
    PETSc functions and objects that began with Table now begin with PetscTable
 
    Changed these routines to return an error code.
