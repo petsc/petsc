@@ -546,36 +546,47 @@ class Framework(base.Base):
       print 'Invalid target: '+str(target)
     return output
 
-  def main(self, target = None):
-    '''Execute the build operation'''
-    try:
-      if target is None:
-        target = self.argDB.target[:]
+  def expandTargets(target):
+    '''Return a copy of targets, after expansion of special targets'''
+    if target is None:
+      target = self.argDB.target[:]
+    else:
+      if not isinstance(target, list):
+        target = [target]
       else:
         target = target[:]
-      if not isinstance(target, list): target = [target]
+    if 'default' in target:
+      idx = target.index('default')
+      target[idx:idx] = self.executeTarget('default')
+      target.remove('default')
+    return target
 
-      if self.argDB['help']:
-        self.executeTarget('printTargets')
-        return
-      if 'default' in target:
-        idx = target.index('default')
-        target[idx:idx] = self.executeTarget('default')
-        target.remove('default')
-      self.setupProject()
-      if 'activate' in target:
-        self.executeTarget('activate')
-        target.remove('activate')
-        if not len(target): return
-      self.setupDependencies()
-      self.setupSourceDB(self.project)
-      if 'configure' in target:
-        self.executeTarget('configure')
-        target.remove('configure')
-        if not len(target): return
-      self.setupBuild()
-      self.stampBuild()
-      map(self.executeTarget, target)
+  def mainBuild(self, target = None):
+    '''Execute the build operation'''
+    if self.argDB['help']:
+      self.executeTarget('printTargets')
+      return
+    target = self.expandTargets(target)
+    self.setupProject()
+    if 'activate' in target:
+      self.executeTarget('activate')
+      target.remove('activate')
+      if not len(target): return
+    self.setupDependencies()
+    self.setupSourceDB(self.project)
+    if 'configure' in target:
+      self.executeTarget('configure')
+      target.remove('configure')
+      if not len(target): return
+    self.setupBuild()
+    self.stampBuild()
+    map(self.executeTarget, target)
+    return
+
+  def main(self, target = None):
+    '''Execute the build operation and handle any exceptions'''
+    try:
+      return mainBuild(target)
     except Exception, e:
       print str(e)
       if not self.argDB['noStackTrace']:
@@ -583,4 +594,3 @@ class Framework(base.Base):
         import sys
         self.debugPrint(str(traceback.print_tb(sys.exc_info()[2])), 1, 'build')
         print traceback.print_tb(sys.exc_info()[2])
-    return
