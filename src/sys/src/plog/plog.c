@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.184 1998/04/27 18:21:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.185 1998/05/03 17:47:14 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -828,7 +828,7 @@ int PLogObjectState(PetscObject obj,char *format,...)
   PetscFunctionBegin;
   if (!objects) PetscFunctionReturn(0);
   va_start( Argp, format );
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VPRINTF_CHAR)
   vsprintf(objects[obj->id].string,format,(char *)Argp);
 #else
   vsprintf(objects[obj->id].string,format,Argp);
