@@ -15,8 +15,8 @@ blocks for the implementation of large-scale application codes on parallel
 (and serial) computers.  PETSc 2.0 uses the MPI standard for all
 message-passing communication.
 
-PETSc includes an expanding suite of parallel linear and nonlinear
-equation solvers and unconstrained minimization modules that may be
+PETSc includes an expanding suite of parallel linear, nonlinear
+equation solvers and time integrators that may be
 used in application codes written in Fortran, C, and C++.  PETSc
 provides many of the mechanisms needed within parallel application
 codes, such as parallel matrix and vector assembly routines. The library is
@@ -39,10 +39,9 @@ them'' yourself.
 tasks a package such as Matlab is often the best tool; PETSc is not
 intended for the classes of problems for which effective Matlab code
 can be written.
-\item PETSc is not, cannot, and should not be used to attempt to provide
-a ``{\bf parallel linear solver}'' in an otherwise sequential code. This is 
-fruitless exercise which the PETSc team does not condone or support. Certainly
-all parts of a previously sequential code need not be parallelized but the 
+\item PETSc should not be used to attempt to provide
+a ``{\bf parallel linear solver}'' in an otherwise sequential code.
+Certainly all parts of a previously sequential code need not be parallelized but the 
 matrix generation portion must be to expect any kind of reasonable performance.
 Do not expect to generate your matrix sequentially and then ``use PETSc'' to solve
 the linear system in parallel.

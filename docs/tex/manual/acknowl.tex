@@ -17,20 +17,20 @@ functionality, and documentation for PETSc 2.0.
 Some of the source code and utilities in PETSc (or software used by PETSc)
 have been written by 
 \begin{itemize}
-  \item Mark Adams, 1996-98 (scalability features of MPIBAIJ matrices),
-  \item Allison Baker, Summer 1999 (the flexible GMRES code)
+  \item Mark Adams, (scalability features of MPIBAIJ matrices),
+  \item Allison Baker, (the flexible GMRES code)
   \item Tony Caola, (the SPARSEKIT2 ilutp() interface).
   \item Chad Carroll, (Win32 graphics).
-  \item Cameron Cooper, Fall 1995 (portions of the VecScatter routines), 
-  \item Victor Eijkhout, Summer 1998 (KSP type BICG, VecPipeline() and VecXXXBegin()/End() routines), 
-  \item Paulo Goldfeld, Summer 2000 (balancing Neumann-Neumann preconditioner)
-  \item Matt Hille, Summer 1995,
-  \item Matthew Knepley, Summer 1997 (too much to mention),
-  \item Domenico Lahaye, 2000 (the interface to John Ruge and Klaus Stueben's AMG),
-  \item Peter Mell, Summer 1995 (portions of the DA routines),
+  \item Cameron Cooper, (portions of the VecScatter routines), 
+  \item Victor Eijkhout, (KSP type BICG, VecPipeline() and VecXXXBegin()/End() routines), 
+  \item Paulo Goldfeld, (balancing Neumann-Neumann preconditioner)
+  \item Matt Hille, 
+  \item Matthew Knepley, (too much to mention),
+  \item Domenico Lahaye, (the interface to John Ruge and Klaus Stueben's AMG),
+  \item Peter Mell, (portions of the DA routines),
   \item Todd Munson, (the LUSOL (sparse solver in MINOS) interface)
-  \item Wing-Lok Wan, Summer 1995 (the ILU portion of BlockSolve95),
-  \item Liyang Xu, Summer 1997 (the interface to PVODE)
+  \item Wing-Lok Wan, (the ILU portion of BlockSolve95),
+  \item Liyang Xu, (the interface to PVODE)
 \end{itemize}
 
 \vspace{.3in}
@@ -45,7 +45,8 @@ PETSc uses routines from
                        evaluations; converted to C using {\tt f2c}),
   \item SPARSPAK     (matrix reordering routines, converted to C using {\tt f2c}),
   \item SPARSEKIT2 (written by Yousef Saad) (iludtp(), converted to C using {\tt f2c}). These routines 
-                     are copyrighted by Saad under the GNU copyright, see \url{${PETSC_DIR}/src/mat/impls/aij/seq/gnu}.
+                     are copyrighted by Saad under the GNU copyright, see \url{${PETSC_DIR}/src/mat/impls/aij/seq/gnu}),
+  \item libtfs (the efficient, parallel direct solver developed by Henry Tufo and Paul Fischer).
 \end{itemize}
 
 
