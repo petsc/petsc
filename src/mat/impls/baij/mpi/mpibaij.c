@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.202 2000/09/13 03:10:54 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.203 2000/09/28 21:11:32 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -35,6 +35,35 @@ EXTERN int MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat,int,int*,int,int*,MatSca
 #define MatSetValues_MPIBAIJ_HT_MatScalar          MatSetValues_MPIBAIJ_HT
 #define MatSetValuesBlocked_MPIBAIJ_HT_MatScalar   MatSetValuesBlocked_MPIBAIJ_HT
 #endif
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatGetRowMax_MPIBAIJ"
+int MatGetRowMax_MPIBAIJ(Mat A,Vec v)
+{
+  Mat_MPIBAIJ  *a = (Mat_MPIBAIJ*)A->data;
+  int          ierr,i;
+  PetscReal    *va,*vb;
+  Vec          vtmp;
+
+  PetscFunctionBegin;
+  
+  ierr = MatGetRowMax(a->A,v);CHKERRQ(ierr); 
+  ierr = VecGetArry(v,&va);CHKERRQ(ierr);
+
+  ierr = VecCreateSeq(PETSC_COMM_SELF,a->m,&vtmp);CHKERRA(ierr);
+  ierr = MatGetRowMax(a->B,vtmp);CHKERRQ(ierr);
+  ierr = VecGetArry(vtmp,&vb);CHKERRQ(ierr);
+
+  for (i=0; i<a->m; i++){
+    if (va[i] < vb[i]) va[i] = vb[i];
+  }
+
+  ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(vtmp,&vb);CHKERRQ(ierr); 
+  ierr = VecDestroy(vtmp);CHKERRA(ierr);
+  
+  PetscFunctionReturn(0);
+}
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -1320,29 +1349,6 @@ int MatScale_MPIBAIJ(Scalar *aa,Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSize_MPIBAIJ"
-int MatGetSize_MPIBAIJ(Mat matin,int *m,int *n)
-{
-  Mat_MPIBAIJ *mat = (Mat_MPIBAIJ*)matin->data;
-
-  PetscFunctionBegin;
-  if (m) *m = mat->M; 
-  if (n) *n = mat->N;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetLocalSize_MPIBAIJ"
-int MatGetLocalSize_MPIBAIJ(Mat matin,int *m,int *n)
-{
-  Mat_MPIBAIJ *mat = (Mat_MPIBAIJ*)matin->data;
-
-  PetscFunctionBegin;
-  *m = mat->m; *n = mat->n;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatGetOwnershipRange_MPIBAIJ"
 int MatGetOwnershipRange_MPIBAIJ(Mat matin,int *m,int *n)
 {
@@ -1924,8 +1930,6 @@ static struct _MatOps MatOps_Values = {
   0,
   0,
   0,
-  MatGetSize_MPIBAIJ,
-  MatGetLocalSize_MPIBAIJ,
   MatGetOwnershipRange_MPIBAIJ,
   0,
   0,
@@ -1959,7 +1963,14 @@ static struct _MatOps MatOps_Values = {
   0,
   MatDestroy_MPIBAIJ,
   MatView_MPIBAIJ,
-  MatGetMaps_Petsc};
+  MatGetMaps_Petsc,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  MatGetRowMax_MPIBAIJ};
 
 
 EXTERN_C_BEGIN
