@@ -44,7 +44,6 @@ typedef struct {
     int    bc_test;              /* flag: 1: test boundary condition scatters */
     int    no_output;            /* flag: 1: no runtime output (use when timing code) */
     int    use_vecsetvalues;     /* flag: 1: use of VecSetValues() */
-    int    reorder;              /* flag: 1: reorder variables for application code */
     int    post_process;         /* flag: 1: do post-processing */
     int    pvar;                 /* flag: 1: compute lift/drag data */
     int    iter;                 /* nonlinear iteration number */
@@ -164,8 +163,7 @@ typedef struct {
 
 
   /* ------------------- Fortran work arrays ------------------- */
-    Scalar *dr, *dru, *drv, *drw, *de, *dt;  /* residual */
-    Scalar *r, *ru, *rv, *rw, *e;            /* solution */
+    Scalar *dt;                              /* timestepping */
     Scalar *p;                               /* pressure */
     Scalar *r_bc, *ru_bc, *rv_bc;            /* boundary conditions */
     Scalar *rw_bc, *e_bc, *p_bc;
@@ -267,7 +265,7 @@ typedef struct {
 #endif
 
 /* Basic routines */
-int UserCreateEuler(MPI_Comm,int,int,Euler**);
+int UserCreateEuler(MPI_Comm,int,Euler**);
 int UserDestroyEuler(Euler*);
 int InitialGuess(SNES,Euler*,Vec);
 int ComputeFunction(SNES,Vec,Vec,void*);
@@ -278,14 +276,13 @@ int UserMatrixFreeMatDestroy(Mat);
 int UserSetMatrixFreeParameters(SNES,double,double);
 int UserSetGridParameters(Euler*);
 int UserSetGrid(Euler*);
-int BoundaryConditionsExplicit(Euler*,Vec);
 int BoundaryConditionsImplicit(Euler*,Vec);
 int BCScatterSetUp(Euler*);
 
 /* Utility routines */
-int UnpackWork(Euler*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Vec,Vec);
+int UnpackWork(Euler*,Scalar*,Vec,Vec);
 int UnpackWorkComponent(Euler*,Scalar*,Vec);
-int PackWork(Euler*,Vec,Vec,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar**);
+int PackWork(Euler*,Vec,Vec,Scalar**);
 int PackWorkComponent(Euler*,Vec,Vec,Scalar*,Scalar**);
 int MatViewDFVec_MPIAIJ(Mat,DFVec,Viewer);
 int MatViewDFVec_MPIBAIJ(Mat,DFVec,Viewer);
@@ -295,9 +292,7 @@ int GridTest(Euler*);
 int CheckSolution(Euler*,Vec);
 int MonitorEuler(SNES,int,double,void*);
 int ConvergenceTestEuler(SNES,double,double,double,void*);
-int TECPLOTMonitor(SNES,Vec,Euler*);
 int MonitorDumpGeneral(SNES,Vec,Euler*);
-int MonitorDumpGeneralJulianne(Euler*);
 int MonitorDumpVRML(SNES,Vec,Vec,Euler*);
 int ComputeNodalResiduals(Euler*,Vec,Vec);
 int DumpField(Euler*,Draw,Scalar*);
@@ -308,9 +303,9 @@ void MonitorDumpIter(int);
 extern int readmesh_(int*,int*,int*,int*,Scalar*,Scalar*,Scalar*);
 extern int mdump_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int printvec_(double*,int*,FILE*);
-extern int printjul_(double*,double*,double*,double*,double*,double*,int*);
-extern int printgjul_(double*,double*,double*,double*,double*,double*,int*);
-extern int printbjul_(double*,double*,double*,double*,double*,double*,int*);
+extern int printjul_(double*,double*,int*);
+extern int printgjul_(double*,double*,int*);
+extern int printbjul_(double*,double*,int*);
 
 extern int jmonitor_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
@@ -368,7 +363,7 @@ extern int resid_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,int*);
+                      Scalar*,Scalar*);
 extern int rbuild_direct_(Scalar*,ScaleType*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
