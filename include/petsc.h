@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.81 1996/01/08 20:53:51 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.82 1996/01/08 20:54:02 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -122,6 +122,9 @@ extern int PetscObjectExists(PetscObject,int*);
 extern int PetscObjectGetComm(PetscObject,MPI_Comm *comm);
 extern int PetscObjectGetCookie(PetscObject,int *cookie);
 extern int PetscObjectGetType(PetscObject,int *type);
+extern int PetscObjectSetPrefix(PetscObject,char*);
+extern int PetscObjectAppendPrefix(PetscObject,char*);
+extern int PetscObjectGetPrefix(PetscObject,char**);
 extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
 extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **));
