@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.41 2000/07/12 16:02:24 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.42 2000/07/31 20:12:54 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -685,7 +685,7 @@ int GetLocalOrdering(GRID *grid)
   int	     *tmp,*tmp1,*tmp2;
   Scalar     time_ini,time_fin;
   Scalar     *ftmp,*ftmp1;
-  char       part_name[256];
+  char       part_name[256],mesh_file[256];
   AO         ao;
   FILE       *fptr,*fptr1;
   PetscTruth flg;
@@ -695,7 +695,11 @@ int GetLocalOrdering(GRID *grid)
   /* Read the integer grid parameters */ 
   ICALLOC(grid_param,&tmp);
   if (!rank) {
-   ierr = PetscBinaryOpen("testgrid/uns3d.msh",BINARY_RDONLY,&fdes);CHKERRQ(ierr);
+   path_name = "."
+   OptionsGetString(PETSC_NULL,"-path",path_name,256,flg)
+   ierr = PetscStrcpy(mesh_file,path_name);
+   ierr = PetscStrcat(mesh_file,"/uns3d.msh);
+   ierr = PetscBinaryOpen(mesh_file,BINARY_RDONLY,&fdes);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp,grid_param,PETSC_INT);CHKERRQ(ierr);
   grid->ncell   = tmp[0];
@@ -740,9 +744,22 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
 
   if (!rank) {
-    sprintf(part_name,"testgrid/part_vec.part.%d",size);
+    char part_file[256];
+    ierr = PestcStrcpy(part_name,path_name);
+    sprintf(part_file,"/part_vec.part.%d",size);
+    ierr = OptionsHasName(0,"-use_kmetis",&flg);CHKERRQ(ierr);
+    if (flg) {
+      part_file = "\0";
+      sprintf(part_file,"/kmetis/part_vec.part.%d",size);
+    }
+    ierr = OptionsHasName(0,"-use_pmetis",&flg);CHKERRQ(ierr);
+    if (flg) {
+      part_file = "\0";
+      sprintf(part_file,"/pmetis/part_vec.part.%d",size);
+    }
+    ierr = PetscStrcat(part_name,part_file);
     fptr = fopen(part_name,"r");
-    if (!fptr) SETERRQ1(1,1,"Cannot open file testgrid/part_vec.%d",size);
+    if (!fptr) SETERRQ1(1,1,"Cannot open file %s\n",part_file);
     for (inode = 0; inode < nnodes; inode++) {
       fscanf(fptr,"%d\n",&node1); 
       v2p[inode] = node1;
