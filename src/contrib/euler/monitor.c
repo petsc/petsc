@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.46 1997/10/16 22:00:14 curfman Exp keyes $";
+static char vcid[] = "$Id: monitor.c,v 1.47 1997/10/16 22:10:55 keyes Exp curfman $";
 #endif
 
 /*
@@ -86,12 +86,12 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
           sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","n",app->cfl_snes_it,overlap,app->size);
         }
         else if (app->problem == 5) {
-          sprintf(filename,"f_duct%_asm%d_p%d.m","c",overlap,app->size);
-          sprintf(outstring,"zsnes_duct_asm%d_p%d = [\n",overlap,app->size);
+          sprintf(filename,"f_duct%s_asm%d_p%d.m","c",overlap,app->size);
+          sprintf(outstring,"zsnes_ductc_asm%d_p%d = [\n",overlap,app->size);
         } 
         else if (app->problem == 6) {
-          sprintf(filename,"f_duct%_asm%d_p%d.m","f",overlap,app->size);
-          sprintf(outstring,"zsnes_duct_asm%d_p%d = [\n",overlap,app->size);
+          sprintf(filename,"f_duct%s_asm%d_p%d.m","f",overlap,app->size);
+          sprintf(outstring,"zsnes_ductf_asm%d_p%d = [\n",overlap,app->size);
         } 
         else SETERRQ(1,0,"No support for this problem number");
         app->fp = fopen(filename,"w"); 
@@ -401,7 +401,14 @@ int VisualizeEuler_Matlab(int iter,Euler *app,Scalar *x)
       fprintf(fp2,"\n");
     }
     fprintf(fp2,"];\n\n");
-
+    fprintf(fp2,"velocity_v = [\n");
+    for (j=jstart; j<jend; j++) {
+      for (i=istart; i<iend; i++) {
+        fprintf(fp2,"%8.4f ",0.25 * (rv(i,j) + rv(i+1,j) + rv(i,j+1) + rv(i+1,j+1)));
+      }
+      fprintf(fp2,"\n");
+    }
+    fprintf(fp2,"];\n\n");
     fprintf(fp2,"mach = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {

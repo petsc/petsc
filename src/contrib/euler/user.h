@@ -1,4 +1,4 @@
-/* $Id: user.h,v 1.31 1997/10/16 05:14:52 curfman Exp curfman $ */
+/* $Id: user.h,v 1.32 1997/10/16 19:01:03 curfman Exp curfman $ */
 
 /* Include file for 3D Euler application code */
 
@@ -216,7 +216,6 @@ typedef struct {
 
     /* duct problem */
     Scalar bump;                              /* flow parameter - max bump height */
-    Vec    Xvis;
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
@@ -301,7 +300,7 @@ int GetWingCommunicator(Euler*,int*,int*);
 int BoundaryConditionsImplicit(Euler*,Vec);
 int BoundaryConditionsExplicit(Euler*,Vec);
 int BCScatterSetUp(Euler*);
-int FixJacobianEdges(Euler*,Mat);
+int FixJacobian(Euler*,Mat);
 
 /* Utility routines */
 int UnpackWork(Euler*,DA,Scalar*,Vec,Vec);

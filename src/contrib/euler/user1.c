@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.64 1997/10/16 22:11:09 keyes Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.65 1997/10/17 02:33:10 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -422,6 +422,8 @@ int main(int argc,char **argv)
     its = -1;
     if (app->mmtype == MMFP) {
       ierr = VisualizeFP_Matlab(its,app,xa); CHKERRQ(ierr);
+    } else if (app->mmtype == MMEULER) {
+      ierr = VisualizeEuler_Matlab(its,app,xa); CHKERRQ(ierr);
     } else SETERRQ(1,0,"Option not supported yet");
     ierr = VecRestoreArray(app->X,&xa); CHKERRQ(ierr);
   }
@@ -464,7 +466,6 @@ int UserDestroyEuler(Euler *app)
   if (app->matrix_free) {ierr = MatDestroy(app->Jmf); CHKERRQ(ierr);}
   if (app->Fvrml) {ierr = VecDestroy(app->Fvrml); CHKERRQ(ierr);}
   ierr = VecDestroy(app->X); CHKERRQ(ierr);
-  ierr = VecDestroy(app->Xvis); CHKERRQ(ierr);
   ierr = VecDestroy(app->Xbc); CHKERRQ(ierr);
   ierr = VecDestroy(app->F); CHKERRQ(ierr);
   ierr = VecDestroy(app->localX); CHKERRQ(ierr);
@@ -1107,7 +1108,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = DAGetDistributedVector(app->da,&app->X); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->Xbc); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->F); CHKERRQ(ierr);
-  ierr = VecDuplicate(app->X,&app->Xvis); CHKERRQ(ierr);
   ierr = DAGetLocalVector(app->da,&app->localX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localDX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localXBC); CHKERRQ(ierr);
