@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aodebug.c,v 1.6 1996/08/08 14:47:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodebug.c,v 1.7 1996/10/03 19:50:24 bsmith Exp balay $";
 #endif
 
 /*
@@ -81,7 +81,7 @@ static int AOApplicationToPetsc_Debug(AO ao,int n,int *ia)
 static struct _AOOps myops = {AOPetscToApplication_Debug,
                               AOApplicationToPetsc_Debug};
 
-/*@
+/*@C
    AOCreateDebug - Creates a basic application ordering.
 
    Input Parameters:
@@ -162,7 +162,7 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   *aoout = ao; return 0;
 }
 
-/*@
+/*@C
    AOCreateDebugIS - Creates a basic application ordering.
 
    Input Parameters:

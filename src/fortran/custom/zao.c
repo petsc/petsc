@@ -1,40 +1,18 @@
-/* aodebug.c */
-/* Fortran interface file */
-
-/*
- * This file was generated automatically by bfort from the C source
- * file.  
- */
-
-#ifdef HAVE_64BITS
-#if defined(__cplusplus)
-extern "C" { 
-#endif 
-extern void *PetscToPointer(int);
-extern int PetscFromPointer(void *);
-extern void PetscRmPointer(int);
-#if defined(__cplusplus)
-} 
-#endif 
-
-#else
-
-#define PetscToPointer(a) (a)
-#define PetscFromPointer(a) (int)(a)
-#define PetscRmPointer(a)
+#ifndef lint
+static char vcid[] = "$Id: zsys.c,v 1.22 1996/09/14 03:34:18 curfman Exp bsmith $";
 #endif
+
+#include "src/fortran/custom/zpetsc.h"
+#include "ao.h"
+
 
 #ifdef HAVE_FORTRAN_CAPS
 #define aocreatedebug_ AOCREATEDEBUG
-#elif !defined(HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define aocreatedebug_ aocreatedebug
-#endif
-#ifdef HAVE_FORTRAN_CAPS
 #define aocreatedebugis_ AOCREATEDEBUGIS
-#elif !defined(HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define aocreatedebug_ aocreatedebug
 #define aocreatedebugis_ aocreatedebugis
 #endif
-
 
 /* Definitions of Fortran Wrapper routines */
 #if defined(__cplusplus)

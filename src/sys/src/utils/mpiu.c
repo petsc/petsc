@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.58 1996/09/17 14:48:57 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.59 1996/10/03 18:52:14 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -165,7 +165,7 @@ int PetscGetDisplay(char *display,int n)
 */
 static int MPIU_Seq_keyval = MPI_KEYVAL_INVALID;
 
-/*@
+/*@C
    PetscSequentialPhaseBegin - Begins a sequential section of code.  
 
    Input Parameters:
@@ -224,7 +224,7 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
   return 0;
 }
 
-/*@
+/*@C
    PetscSequentialPhaseEnd - Ends a sequential section of code.
 
    Input Parameters:
