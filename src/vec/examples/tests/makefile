@@ -16,7 +16,7 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex2 runex3 runex4 runex5 runex6 runex7 \
                 runex17 runex20 runex20_2
 EXAMPLES_2    = ex15
 RUNEXAMPLES_2 = runex15
-EXAMPLES_3    = ex19
+EXAMPLES_3    = ex19 ex21
 RUNEXAMPLES_3 = runex19 runex21
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
                 ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex20.c
