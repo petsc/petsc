@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.27 1995/09/11 18:47:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.28 1995/09/21 20:09:58 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -24,8 +24,7 @@ int main(int argc,char **args)
   char      *kspname, *pcname;
   double    norm;
 
-  PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&args,0,0,help);
 
   /* Create and initialize vectors */
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&b); CHKERRA(ierr);
@@ -76,7 +75,7 @@ int main(int argc,char **args)
   KSPGetMethodName(kspmethod,&kspname);
   PCGetMethodFromContext(pc,&pcmethod);
   PCGetMethodName(pcmethod,&pcname);
-  printf("Running %s with %s preconditioning\n",kspname,pcname);
+  MPIU_printf(MPI_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
   ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
   ierr = VecAXPY(&mone,ustar,u); CHKERRA(ierr);
   ierr = VecNorm(u,&norm);

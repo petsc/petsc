@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.40 1995/09/05 18:17:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.41 1995/09/11 18:45:45 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -15,9 +16,7 @@ static char vcid[] = "$Id: pbvec.c,v 1.40 1995/09/05 18:17:34 curfman Exp bsmith
 /*
    This file contains routines for Parallel vector operations.
    Basically, these are just the local routine EXCEPT for the
-   Dot products and norms.  Note that they use the processor 
-   subset to allow the vectors to be distributed across any 
-   subset of the processors.
+   Dot products and norms.
  */
 
 static int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
@@ -73,7 +72,7 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int numtids,
   PLogObjectCreate(v);
   PLogObjectMemory(v,size + sizeof(struct _Vec) + (n+1)*sizeof(Scalar));
   s              = (Vec_MPI *) PETSCMALLOC(size); CHKPTRQ(s);
-  v->ops         = &DvOps;
+  PetscMemcpy(&v->ops,&DvOps,sizeof(DvOps));
   v->data        = (void *) s;
   v->destroy     = VecDestroy_MPI;
   v->view        = VecView_MPI;
@@ -85,7 +84,7 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int numtids,
   s->ownership   = (int *) (s + 1);
   s->insertmode  = NOTSETVALUES;
   if (owners) {
-    PETSCMEMCPY(s->ownership,owners,(numtids+1)*sizeof(int));
+    PetscMemcpy(s->ownership,owners,(numtids+1)*sizeof(int));
   }
   else {
     MPI_Allgather(&n,1,MPI_INT,s->ownership+1,1,MPI_INT,comm);
@@ -95,9 +94,9 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int numtids,
     }
   }
   s->stash.nmax = 10; s->stash.n = 0;
-  s->stash.array = (Scalar *) PETSCMALLOC( 10*sizeof(Scalar) + 10 *sizeof(int) );
-  PLogObjectMemory(v,10*sizeof(Scalar) + 10 *sizeof(int));
+  s->stash.array = (Scalar *) PETSCMALLOC( 10*sizeof(Scalar) + 10*sizeof(int) );
   CHKPTRQ(s->stash.array);
+  PLogObjectMemory(v,10*sizeof(Scalar) + 10 *sizeof(int));
   s->stash.idx = (int *) (s->stash.array + 10);
   *vv = v;
   return 0;
@@ -124,8 +123,7 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int numtids,
 @*/ 
 int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 {
-  int       sum, work = n; 
-  int       numtids,mytid;
+  int sum, work = n, numtids, mytid;
   *vv = 0;
 
   MPI_Comm_size(comm,&numtids);
@@ -143,8 +141,7 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 static int VecDuplicate_MPI( Vec win, Vec *v)
 {
   Vec_MPI *w = (Vec_MPI *)win->data;
-  return VecCreateMPIBase(win->comm,w->n,w->N,w->numtids,w->mytid,
-                              w->ownership,v);
+  return VecCreateMPIBase(win->comm,w->n,w->N,w->numtids,w->mytid,w->ownership,v);
 }
 
 

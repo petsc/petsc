@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.20 1995/09/11 18:47:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.21 1995/09/21 20:09:58 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -18,8 +18,7 @@ int main(int argc,char **args)
   int       ierr, n = 5, i, col[3];
   Scalar    value[3], zero = 0.0;
 
-  PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&args,0,0,help);
 
   /* Create vectors */
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&b); CHKERRA(ierr);

@@ -1,12 +1,9 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.33 1995/08/17 03:00:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.34 1995/08/24 22:27:16 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "petsc.h"
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 /* rs6000 needs _XOPEN_SOURCE to use tsearch */
 #if defined(PARCH_rs6000) && !defined(_XOPEN_SOURCE)
 #define _XOPEN_SOURCE
@@ -213,8 +210,8 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
   head->size     = nsize;
   head->id       = TRid;
   head->lineno   = lineno;
-  if ((l = strlen( fname )) > TR_FNAME_LEN-1 ) fname += (l - (TR_FNAME_LEN-1));
-  strncpy( head->fname, fname, (TR_FNAME_LEN-1) );
+  if ((l = PetscStrlen( fname )) > TR_FNAME_LEN-1 ) fname += (l - (TR_FNAME_LEN-1));
+  PetscStrncpy( head->fname, fname, (TR_FNAME_LEN-1) );
   head->fname[TR_FNAME_LEN-1]= 0;
   head->cookie   = COOKIE_VALUE;
   nend           = (unsigned long *)(inew + nsize);
@@ -226,10 +223,6 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
     TRMaxMemId = TRid;
   }
   frags     ++;
-  /* dirty the page up */
-#if !defined(PETSC_INSIGHT)
-  PETSCMEMSET(inew,111,a*sizeof(char));
-#endif
   return (void *)inew;
 }
 
@@ -301,7 +294,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
      allocated location */
   if (line > 0 && line < 5000) {
     head->lineno = line;
-    strncpy( head->fname, file, (TR_FNAME_LEN-1) );
+    PetscStrncpy( head->fname, file, (TR_FNAME_LEN-1) );
   }
   else {
     head->lineno = - head->lineno;

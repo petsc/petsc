@@ -1,14 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.25 1995/08/24 22:27:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.26 1995/09/04 17:24:00 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
 #include <signal.h> 
 #include <stdio.h>
 #include <unistd.h>
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -39,9 +36,9 @@ int PetscSetDebugger(char *debugger, int xterm,char *display)
   Xterm    = xterm;
   if (Display) {PETSCFREE(Display); Display = 0;}
   if (display) {
-    int len = strlen(display)+1;
+    int len = PetscStrlen(display)+1;
     Display = (char *) PETSCMALLOC(len*sizeof(char)); if (!Display) return 1;
-    strcpy(Display,display);
+    PetscStrcpy(Display,display);
   }
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.10 1995/09/03 22:32:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.11 1995/09/21 20:12:58 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -18,7 +18,6 @@ problems from the MINPACK-2 test suite.  The command line options are:\n\
 #if !defined(PETSC_COMPLEX)
 
 #include "snes.h"
-#include <string.h>
 #include <math.h>
 
 /* User-defined application context */
@@ -68,8 +67,7 @@ int main(int argc,char **argv)
   SLES       sles;
   PC         pc;
 
-  PetscInitialize(&argc,&argv,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  PetscInitialize(&argc,&argv,0,0,help);
 
   /* Set up user-defined work space */
   user.problem = 1;
@@ -142,8 +140,8 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
   ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
-  printf("number of Newton iterations = %d, ",its);
-  printf("number of unsuccessful steps = %d\n\n",nfails);
+  MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d, ",its);
+  MPIU_printf(MPI_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
 
   /* Free data structures */
   if (user.work) PETSCFREE(user.work); 
@@ -244,7 +242,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
   ierr = SNESGetMethodFromContext(snes,&method); CHKERRQ(ierr);
   if (method == SNES_UM_NLS) {
     SNESGetLineSearchDampingParameter(snes,&gamma1);
-    printf("  gamma1 = %g\n",gamma1);
+    MPIU_printf(MPI_COMM_SELF,"  gamma1 = %g\n",gamma1);
     for (i=0; i<ndim; i++) {
       ierr = MatSetValues(*H,1,&i,1,&i,(Scalar*)&gamma1,ADD_VALUES); CHKERRQ(ierr);
     ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);

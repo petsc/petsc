@@ -1,32 +1,28 @@
-/* $Id: dvec2.c,v 1.14 1995/08/24 22:26:14 bsmith Exp bsmith $ */
-
-/*
-     These are routines shared by sequential vectors and BLAS sequential 
-   vectors.
-*/
+/* $Id: dvec2.c,v 1.15 1995/09/04 17:23:23 bsmith Exp bsmith $ */
 
 #include "inline/dot.h"
 #include "inline/vmult.h"
 #include "inline/setval.h"
 #include "inline/copy.h"
 #include "inline/axpy.h"
-#include <math.h>
 #include "vecimpl.h"             
 #include "dvecimpl.h"   
 #include "draw.h"          
 #include "pinclude/pviewer.h"
 
-
 static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data;
-  register int n = x->n;
+  register int n = x->n, i;
   Scalar   sum,*xx = x->array, *yy;
-  int      i;
+
   /* This could be unrolled to reuse x[j] values */
   for (i=0; i<nv; i++) {
     sum = 0.0;
     yy = ((Vec_Seq *)(y[i]->data))->array;
+#if defined(PARCH_rs6000) 
+#pragma disjoint (*xx,*yy)
+#endif
     DOT(sum,xx,yy,n);
     z[i] = sum;
   }
@@ -36,10 +32,11 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
 
 static int VecAMax_Seq(Vec xin,int* idx,double * z )
 {
-  Vec_Seq          *x = (Vec_Seq *) xin->data;
-  register int i, j=0, n = x->n;
+  Vec_Seq         *x = (Vec_Seq *) xin->data;
+  register int    i, j=0, n = x->n;
   register double max = 0.0, tmp;
-  Scalar   *xx = x->array;
+  Scalar          *xx = x->array;
+
   for (i=0; i<n; i++) {
 #if defined(PETSC_COMPLEX)
     if ((tmp = abs(*xx++)) > max) max = tmp;
@@ -55,10 +52,11 @@ static int VecAMax_Seq(Vec xin,int* idx,double * z )
 
 static int VecMax_Seq(Vec xin,int* idx,double * z )
 {
-  Vec_Seq          *x = (Vec_Seq *) xin->data;
-  register int i, j=0, n = x->n;
+  Vec_Seq         *x = (Vec_Seq *) xin->data;
+  register int    i, j=0, n = x->n;
   register double max = -1.e40, tmp;
-  Scalar    *xx = x->array;
+  Scalar          *xx = x->array;
+
   for (i=0; i<n; i++) {
 #if defined(PETSC_COMPLEX)
     if ((tmp = real(*xx++)) > max) { j = i; max = tmp;}
@@ -73,12 +71,12 @@ static int VecMax_Seq(Vec xin,int* idx,double * z )
 
 static int VecMin_Seq(Vec xin,int* idx,double * z )
 {
-  Vec_Seq          *x = (Vec_Seq *) xin->data;
-  register int i, j=0, n = x->n;
+  Vec_Seq         *x = (Vec_Seq *) xin->data;
+  register int    i, j=0, n = x->n;
   register double min = 1.e40, tmp;
-  Scalar   *xx = x->array;
-  for ( i=0; i<n; i++ ) {
+  Scalar          *xx = x->array;
 
+  for ( i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
     if ((tmp = real(*xx++)) < min) { j = i; min = tmp;}
 #else
@@ -93,22 +91,27 @@ static int VecMin_Seq(Vec xin,int* idx,double * z )
 
 static int VecSet_Seq(Scalar* alpha,Vec xin )
 {
-  Vec_Seq  *x = (Vec_Seq *)xin->data;
+  Vec_Seq      *x = (Vec_Seq *)xin->data;
   register int n = x->n;
-  Scalar   *xx = x->array;
+  Scalar       *xx = x->array;
+
   SET(xx,n,*alpha);
   return 0;
 }
 
 static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec yin, Vec *x )
 {
-  Vec_Seq *y = (Vec_Seq *) yin->data;
+  Vec_Seq      *y = (Vec_Seq *) yin->data;
   register int n = y->n;
-  Scalar *yy = y->array, *xx;
-  int      j;
+  Scalar       *yy = y->array, *xx;
+  int          j;
+
   PLogFlops(nv*2*n);
   for (j=0; j<nv; j++) {
     xx = ((Vec_Seq *)(x[j]->data))->array;
+#if defined(PARCH_rs6000) 
+#pragma disjoint (*xx,*yy)
+#endif
     if (alpha[j] == -1.0) {
       YMX(yy,xx,n);
     }
@@ -124,9 +127,10 @@ static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec yin, Vec *x )
 
 static int VecAYPX_Seq(Scalar *alpha, Vec xin, Vec yin )
 {
-  Vec_Seq *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
+  Vec_Seq      *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
   register int n = x->n;
-  Scalar   *xx = x->array, *yy = y->array;
+  Scalar       *xx = x->array, *yy = y->array;
+
   PLogFlops(2*n);
   AYPX(yy,*alpha,xx,n);
   return 0;
@@ -134,10 +138,11 @@ static int VecAYPX_Seq(Scalar *alpha, Vec xin, Vec yin )
 
 static int VecWAXPY_Seq(Scalar* alpha,Vec xin,Vec yin,Vec win )
 {
-  Vec_Seq *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
-  Vec_Seq *y = (Vec_Seq *)yin->data;
+  Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
+  Vec_Seq      *y = (Vec_Seq *)yin->data;
   register int i, n = x->n;
-  Scalar   *xx = x->array, *yy = y->array, *ww = w->array;
+  Scalar       *xx = x->array, *yy = y->array, *ww = w->array;
+
   if (*alpha == 1.0) {
     PLogFlops(n);
     /* could call BLAS axpy after call to memcopy, but may be slower */
@@ -156,10 +161,11 @@ static int VecWAXPY_Seq(Scalar* alpha,Vec xin,Vec yin,Vec win )
 
 static int VecPMult_Seq( Vec xin, Vec yin, Vec win )
 {
-  Vec_Seq *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
-  Vec_Seq *y = (Vec_Seq *)yin->data;
+  Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
+  Vec_Seq      *y = (Vec_Seq *)yin->data;
   register int n = x->n, i;
-  Scalar   *xx = x->array, *yy = y->array, *ww = w->array;
+  Scalar       *xx = x->array, *yy = y->array, *ww = w->array;
+
   PLogFlops(n);
   for (i=0; i<n; i++) ww[i] = xx[i] * yy[i];
   return 0;
@@ -167,10 +173,11 @@ static int VecPMult_Seq( Vec xin, Vec yin, Vec win )
 
 static int VecPDiv_Seq(Vec xin,Vec yin,Vec win )
 {
-  Vec_Seq *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
-  Vec_Seq *y = (Vec_Seq *)yin->data;
+  Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
+  Vec_Seq      *y = (Vec_Seq *)yin->data;
   register int n = x->n, i;
-  Scalar   *xx = x->array, *yy = y->array, *ww = w->array;
+  Scalar       *xx = x->array, *yy = y->array, *ww = w->array;
+
   PLogFlops(n);
   for (i=0; i<n; i++) ww[i] = xx[i] / yy[i];
   return 0;

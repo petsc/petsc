@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.57 1995/09/06 03:06:53 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.58 1995/09/21 20:13:13 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -6,11 +6,10 @@
 #define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.8 Released ?, 1995."
 
 #include <stdio.h>
-#if defined(PARCH_sun4)
-int fprintf(FILE*,char*,...);
-int printf(char*,...);
-int fflush(FILE*);
-int fclose(FILE*);
+#if defined(PARCH_sun4) && !defined(__cplusplus)
+extern int fprintf(FILE*,const char*,...);
+extern int printf(const char*,...);
+extern int fflush(FILE *);
 #endif
 
 /* MPI interface */
@@ -21,7 +20,6 @@ int fclose(FILE*);
 /* work around for bug in alpha g++ compiler */
 #if defined(PARCH_alpha) 
 #define hypot(a,b) (double) sqrt((a)*(a)+(b)*(b)) 
-/* extern double hypot(double,double); */
 #endif
 #include <complex.h>
 #define PETSCREAL(a) real(a)
@@ -35,15 +33,26 @@ extern void *(*PetscMalloc)(unsigned int,int,char*);
 extern int  (*PetscFree)(void *,int,char*);
 #define PETSCMALLOC(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
 #define PETSCFREE(a)         (*PetscFree)(a,__LINE__,__FILE__)
-extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),
-                           int (*)(void *,int,char*));
+extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,char*));
 extern int  TrDump(FILE *);
 extern int  TrGetMaximumAllocated(double*);
 
 #define PETSCNEW(A)         (A*) PETSCMALLOC(sizeof(A))
-#define PETSCMEMCPY(a,b,n)   memcpy((char*)(a),(char*)(b),n)
-#define PETSCMEMSET(a,b,n)   memset((char*)(a),(int)(b),n)
-#include <memory.h>
+
+extern void  PetscMemcpy(void *,void *,int);
+extern void  PetscZero(void *,int);
+extern int   PetscStrlen(char *);
+extern int   PetscStrcmp(char *,char *);
+extern int   PetscStrncmp(char *,char *,int );
+extern void  PetscStrcpy(char *,char *);
+extern void  PetscStrcat(char *,char *);
+extern void  PetscStrncat(char *,char *,int);
+extern void  PetscStrncpy(char *,char *,int);
+extern char* PetscStrchr(char *,char);
+extern char* PetscStrrchr(char *,char);
+extern char* PetscStrstr(char*,char*);
+extern char* PetscStrtok(char*,char*);
+extern char* PetscStrrtok(char*,char*);
 
 #define PETSCMIN(a,b)      ( ((a)<(b)) ? (a) : (b) )
 #define PETSCMAX(a,b)      ( ((a)<(b)) ? (b) : (a) )
@@ -57,27 +66,25 @@ extern int  TrGetMaximumAllocated(double*);
 /*
        Unable to malloc error and no supported function
 */
-#define PETSC_ERR_MEM 55   /* unalbe to allocate requested memory */
+#define PETSC_ERR_MEM 55   /* unable to allocate requested memory */
 #define PETSC_ERR_SUP 56   /* no support yet for this operation */
 #define PETSC_ERR_ARG 57   /* bad input argument */
 #define PETSC_ERR_OBJ 58   /* null or corrupt PETSc object */
 
 #if defined(PETSC_DEBUG)
 #define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
-#define SETERRA(n,s)    \
-                {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,s,n);\
-                 MPI_Abort(MPI_COMM_WORLD,_ierr);}
+#define SETERRA(n,s)     {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,s,n);\
+                          MPI_Abort(MPI_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)       {if (n) SETERRQ(n,(char *)0);}
-#define CHKERRA(n)      {if (n) SETERRA(n,(char *)0);}
+#define CHKERRA(n)       {if (n) SETERRA(n,(char *)0);}
 #define CHKPTRQ(p)       if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
 #define CHKPTRA(p)       if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
 #else
 #define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
-#define SETERRA(n,s)    \
-                {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,s,n);\
-                 MPI_Abort(MPI_COMM_WORLD,_ierr);}
+#define SETERRA(n,s)     {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,s,n);\
+                          MPI_Abort(MPI_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)       {if (n) SETERRQ(n,(char *)0);}
-#define CHKERRA(n)      {if (n) SETERRA(n,(char *)0);}
+#define CHKERRA(n)       {if (n) SETERRA(n,(char *)0);}
 #define CHKPTRQ(p)       if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
 #define CHKPTRA(p)       if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
 #endif
@@ -92,7 +99,7 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #include "viewer.h"
 #include "options.h"
 
-extern int PetscInitialize(int*,char***,char*,char*);
+extern int PetscInitialize(int*,char***,char*,char*,char*);
 extern int PetscFinalize();
 
 extern int PetscObjectDestroy(PetscObject);
@@ -105,8 +112,7 @@ extern int PetscDefaultErrorHandler(int,char*,char*,char*,int,void*);
 extern int PetscAbortErrorHandler(int,char*,char*,char*,int,void* );
 extern int PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,void*); 
 extern int PetscError(int,char*,char*,char*,int);
-extern int PetscPushErrorHandler(int 
-                         (*handler)(int,char*,char*,char*,int,void*),void* );
+extern int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,void*),void*);
 extern int PetscPopErrorHandler();
 
 extern int PetscSetDebugger(char *,int,char *);

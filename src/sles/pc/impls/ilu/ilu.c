@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.37 1995/09/12 14:09:52 curfman Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.38 1995/09/12 18:04:02 curfman Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -8,11 +8,6 @@ static char vcid[] = "$Id: ilu.c,v 1.37 1995/09/12 14:09:52 curfman Exp curfman 
 #include "ilu.h"
 #include "matimpl.h"
 #include "pinclude/pviewer.h"
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
-
-
 
 /*@
    PCILUSetLevels - Sets the number of levels of fill to use.

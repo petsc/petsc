@@ -1,8 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.27 1995/09/11 18:45:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.28 1995/09/21 03:48:28 bsmith Exp bsmith $";
 #endif
 /*
-       General indices as a list of integers
+       Index sets of evenly space integers, defined by a 
+    start, stride and length.
 */
 #include "isimpl.h"             /*I   "is.h"   I*/
 #include "pinclude/pviewer.h"
@@ -48,7 +49,7 @@ static int ISDestroy_Stride(PetscObject obj)
 static int ISGetIndices_Stride(IS in,int **idx)
 {
   IS_Stride *sub = (IS_Stride *) in->data;
-  int          i;
+  int       i;
 
   if (sub->n) {
     *idx = (int *) PETSCMALLOC(sub->n*sizeof(int)); CHKPTRQ(idx);
@@ -71,34 +72,34 @@ static int ISGetSize_Stride(IS is,int *size)
   *size = sub->n; return 0;
 }
 
-
-
 static int ISView_Stride(PetscObject obj, Viewer viewer)
 {
-  IS            is = (IS) obj;
-  IS_Stride *sub = (IS_Stride *)is->data;
-  int           i,n = sub->n,ierr;
-  PetscObject   vobj = (PetscObject) viewer;
-  FILE          *fd;
+  IS          is = (IS) obj;
+  IS_Stride   *sub = (IS_Stride *)is->data;
+  int         i,n = sub->n,ierr;
+  PetscObject vobj = (PetscObject) viewer;
+  FILE        *fd;
 
   if (!viewer) {
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
-  if (vobj->cookie == VIEWER_COOKIE && ((vobj->type == ASCII_FILE_VIEWER) ||
-                                       (vobj->type == ASCII_FILES_VIEWER))){
-    ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
-    if (is->isperm) {
-      fprintf(fd,"Index set is permutation\n");
-    }
-    fprintf(fd,"Number of indices in set %d\n",n);
-    for ( i=0; i<n; i++ ) {
-      fprintf(fd,"%d %d\n",i,sub->first + i*sub->step);
+  if (vobj->cookie == VIEWER_COOKIE) {
+    if ((vobj->type == ASCII_FILE_VIEWER) || (vobj->type == ASCII_FILES_VIEWER)){
+      ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+      if (is->isperm) {
+        fprintf(fd,"Index set is permutation\n");
+      }
+      fprintf(fd,"Number of indices in set %d\n",n);
+      for ( i=0; i<n; i++ ) {
+        fprintf(fd,"%d %d\n",i,sub->first + i*sub->step);
+      }
     }
   }
   return 0;
 }
   
-static struct _ISOps myops = { ISGetSize_Stride,ISGetSize_Stride,
+static struct _ISOps myops = { ISGetSize_Stride,
+                               ISGetSize_Stride,
                                ISGetIndices_Stride,
                                ISRestoreIndices_Stride,0};
 /*@C
@@ -120,13 +121,12 @@ static struct _ISOps myops = { ISGetSize_Stride,ISGetSize_Stride,
 @*/
 int ISCreateStrideSeq(MPI_Comm comm,int n,int first,int step,IS *is)
 {
-  int          min, max;
-  IS           Nindex;
+  int       min, max;
+  IS        Nindex;
   IS_Stride *sub;
 
   *is = 0;
- 
-  if (n < 0) SETERRQ(1,"ISCreateStrideSeq: Number of indices < 0");
+   if (n < 0) SETERRQ(1,"ISCreateStrideSeq: Number of indices < 0");
   if (step == 0) SETERRQ(1,"ISCreateStrideSeq: Step must be nonzero");
 
   PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISSTRIDESEQ,comm); 
@@ -142,10 +142,11 @@ int ISCreateStrideSeq(MPI_Comm comm,int n,int first,int step,IS *is)
   Nindex->min     = min;
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
-  Nindex->ops     = &myops;
+  PetscMemcpy(&Nindex->ops,&myops,sizeof(myops));
   Nindex->destroy = ISDestroy_Stride;
   Nindex->view    = ISView_Stride;
   Nindex->isperm  = 0;
-  *is = Nindex; return 0;
+  *is = Nindex; 
+  return 0;
 }
 

@@ -60,13 +60,12 @@ int StashValues_Private(Stash *stash,int row,int n, int *idxn,
       if ( stash->n == stash->nmax ) {
         /* allocate a larger stash */
         n_array = (Scalar *) PETSCMALLOC( (stash->nmax + CHUNCKSIZE)*(
-                                     2*sizeof(int) + sizeof(Scalar)));
-        CHKPTRQ(n_array);
+                                     2*sizeof(int)+sizeof(Scalar)));CHKPTRQ(n_array);
         n_idx = (int *) (n_array + stash->nmax + CHUNCKSIZE);
         n_idy = (int *) (n_idx + stash->nmax + CHUNCKSIZE);
-        PETSCMEMCPY(n_array,stash->array,stash->nmax*sizeof(Scalar));
-        PETSCMEMCPY(n_idx,stash->idx,stash->nmax*sizeof(int));
-        PETSCMEMCPY(n_idy,stash->idy,stash->nmax*sizeof(int));
+        PetscMemcpy(n_array,stash->array,stash->nmax*sizeof(Scalar));
+        PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(int));
+        PetscMemcpy(n_idy,stash->idy,stash->nmax*sizeof(int));
         if (stash->array) PETSCFREE(stash->array);
         stash->array = n_array; stash->idx = n_idx; stash->idy = n_idy;
         stash->nmax += CHUNCKSIZE;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.23 1995/09/11 18:47:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.24 1995/09/21 20:09:58 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -24,8 +24,7 @@ int main(int argc,char **args)
   PCMethod  pcmethod;
   char      *kspname, *pcname;
 
-  PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(0,"-n",&n);
 
   /* Create and initialize vectors */
@@ -67,8 +66,7 @@ int main(int argc,char **args)
   ierr = KSPSetFromOptions(ksp); CHKERRA(ierr);
   ierr = KSPSetSolution(ksp,u); CHKERRA(ierr);
   ierr = KSPSetRhs(ksp,b); CHKERRA(ierr);
-  ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);
-  CHKERRA(ierr);
+  ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = KSPSetBinv(ksp,pc); CHKERRA(ierr);
   ierr = KSPSetUp(ksp); CHKERRA(ierr);
 
@@ -77,7 +75,7 @@ int main(int argc,char **args)
   ierr = KSPGetMethodName(kspmethod,&kspname); CHKERRA(ierr);
   ierr = PCGetMethodFromContext(pc,&pcmethod); CHKERRA(ierr);
   ierr = PCGetMethodName(pcmethod,&pcname); CHKERRA(ierr);
-  printf("Running %s with %s preconditioning\n",kspname,pcname);
+  MPIU_printf(MPI_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
   ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
   fprintf(stdout,"Number of iterations %d\n",its);
 

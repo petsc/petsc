@@ -1,10 +1,9 @@
-/* $Id: options.h,v 1.9 1995/06/07 16:32:14 bsmith Exp bsmith $ */
+/* $Id: options.h,v 1.10 1995/07/03 17:25:29 bsmith Exp bsmith $ */
 
 #if !defined(__OPTIONS_PACKAGE)
 #define __OPTIONS_PACKAGE
 #include "petsc.h"
 
-#include <stdio.h>
 int OptionsPrint(FILE *);
 
 /* returns -1 on error, 0 on not found and 1 on found */

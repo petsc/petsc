@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.31 1995/09/21 20:11:42 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.32 1995/09/23 00:05:10 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -20,14 +20,13 @@ int main(int argc,char **args)
   Mat     C; 
   MatType mat_type;
   Scalar  v, none = -1.0;
-  int     I, J, ldim, ierr, low, high, iglobal;
+  int     I, J, ldim, ierr, low, high, iglobal, Istart,Iend;
   int     i, j, m = 3, n = 2, mytid, numtids, its;
   Vec     x, u, b;
   SLES    sles;
   double  norm;
 
-  PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(0,"-m",&m);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
@@ -36,15 +35,14 @@ int main(int argc,char **args)
   /* Create and assemble matrix */
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
   ierr = MatSetOption(C,SYMMETRIC_MATRIX); CHKERRA(ierr);
-  for ( i=0; i<m; i++ ) { 
-    for ( j=2*mytid; j<2*mytid+2; j++ ) {
-      v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
-    }
+  ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
+  for ( I=Istart; I<Iend; I++ ) { 
+    v = -1.0; i = I/n; j = I - i*n;  
+    if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+    if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+    if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+    if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+    v = 4.0; MatSetValues(C,1,&I,1,&I,&v,ADD_VALUES);
   }
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.5 1995/08/30 01:27:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.6 1995/09/21 20:13:09 bsmith Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -25,8 +25,7 @@ int main(int argc,char **argv)
   double    h,k;
   int       localsize, j, i, mybase, myend;
  
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
 
   OptionsGetInt(0,"-M",&M);
   OptionsGetInt(0,"-time",&time_steps);

@@ -1,11 +1,24 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.44 1995/09/21 20:37:10 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.45 1995/09/22 23:05:38 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
 #include "mat.h"       /*I "mat.h"  I*/
 
+/*@
+    MatGetFormatFromOptions - Determines from the options database what 
+            matrix format the users wants to use.
+
+  Input Parameters:
+.  comm - the MPI communicator to share matrix
+
+  Output Parameters:
+.  type - the type of matrix desired, for example MATSEQAIJ
+.  set - flag indicating whether user set matrix format option.
+
+.seealso: MatCreate()
+ @*/
 int MatGetFormatFromOptions(MPI_Comm comm,MatType *type,int *set)
 {
   int numtid;
@@ -110,18 +123,13 @@ $  -mat_seqdense : dense type, uses MatCreateSeqDense()
           MatCreateSeqRow(), MatCreateMPIRow(), 
           MatCreateSeqBDiag(),MatCreateMPIBDiag(),
           MatCreateSeqDense(), MatCreateMPIRowbs(), MatConvert()
+          MatGetFormatFromOptions()
  @*/
 int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 {
   MatType type;
   int     set,ierr;
 
-  if (OptionsHasName(0,"-help")) {
-    MPIU_printf(comm,"MatCreate() options: -mat_seqaij, -mat_aij, -mat_mpiaij\n");
-    MPIU_printf(comm,"            -mat_row, -mat_seqrow, -mat_mpirow\n");
-    MPIU_printf(comm,"            -mat_mpirowbs, -mat_seqdense\n");
-    MPIU_printf(comm,"            -mat_bdiag, -mat_seqbdiag,-mat_mpibdiag\n"); 
-  }
   ierr = MatGetFormatFromOptions(comm,&type,&set); CHKERRQ(ierr);
 
   if (type == MATSEQDENSE) {
@@ -143,8 +151,9 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
       OptionsGetIntArray(0,"-mat_bdiag_dvals",d,&ndiag2);
       if (ndiag2 != ndiag)
         SETERRQ(1,"MatCreate: Incompatible number of diags and diagonal vals");
-    } else if (OptionsHasName(0,"-mat_bdiag_dvals"))
+    } else if (OptionsHasName(0,"-mat_bdiag_dvals")) {
       SETERRQ(1,"MatCreate: Must specify number of diagonals with -mat_bdiag_ndiag");
+    }
     if (type == MATMPIBDIAG) {
       ierr = MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,ndiag,nb,d,0,V); CHKERRQ(ierr);
     } else {
@@ -184,9 +193,9 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 @*/
 int MatGetName(Mat mat,char **name)
 {
-  /* Note:  Be sure that this list corresponds to the enum in mat.h */
   int  itype = (int)mat->type;
   char *matname[9];
+  /* Note:  Be sure that this list corresponds to the enum in mat.h */
   matname[0] = "MATSEQDENSE";
   matname[1] = "MATSEQAIJ";
   matname[2] = "MATMPIAIJ";
@@ -196,7 +205,7 @@ int MatGetName(Mat mat,char **name)
   matname[6] = "MATMPIROWBS";
   matname[7] = "MATSEQBDIAG";
   matname[8] = "MATMPIBDIAG";
-  if (itype < 0 || itype > 8) *name = "unknown matrix type";
+  if (itype < 0 || itype > 8) *name = "Unknown matrix type";
   else                        *name = matname[itype];
   return 0;
 }

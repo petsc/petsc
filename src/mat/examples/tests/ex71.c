@@ -16,8 +16,7 @@ int main(int argc,char **args)
   Grid    grid;
   Viewer  viewer;
 
-  PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(0,"-m",&m);
   OptionsGetInt(0,"-n",&n);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.18 1995/09/12 03:25:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.19 1995/09/21 20:10:26 bsmith Exp bsmith $";
 #endif
 
 
@@ -14,20 +14,20 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   Mat_SeqAIJ *B = (Mat_SeqAIJ *) (aij->B->data);  
-  int        N = aij->N,i,j,*indices,*aj = B->j;
-  int        ierr,ec = 0,*garray;
+  int        N = aij->N,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
+  int        shift = B->indexshift;
   IS         from,to;
   Vec        gvec;
-  int        shift = B->indexshift;
 
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in aij->B */
   indices = (int *) PETSCMALLOC( N*sizeof(int) ); CHKPTRQ(indices);
-  PETSCMEMSET(indices,0,N*sizeof(int));
+  PetscZero(indices,N*sizeof(int));
   for ( i=0; i<B->m; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
-     if (!indices[aj[B->i[i] +shift + j] + shift]) ec++; 
-     indices[aj[B->i[i] + shift + j] + shift] = 1;}
+      if (!indices[aj[B->i[i] +shift + j] + shift]) ec++; 
+      indices[aj[B->i[i] + shift + j] + shift] = 1;
+    }
   }
 
   /* form array of columns we need */
@@ -94,9 +94,8 @@ int DisAssemble_MPIAIJ(Mat A)
   Mat        B = aij->B,Bnew;
   Mat_SeqAIJ *Baij = (Mat_SeqAIJ*)B->data;
   int        ierr,i,j,m=Baij->m,n = aij->N,col,ct = 0,*garray = aij->garray;
-  int        *nz,ec;
+  int        *nz,ec,shift = Baij->indexshift;
   Scalar     v;
-  int        shift = Baij->indexshift;
 
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(aij->lvec,&ec); /* needed for PLogObjectMemory below */

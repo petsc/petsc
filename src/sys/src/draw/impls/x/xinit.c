@@ -1,17 +1,15 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.10 1995/06/23 12:41:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.11 1995/07/17 20:42:05 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_X11)
 #include "ximpl.h"
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 
 extern int  XiUniformHues(DrawCtx_X *,int);
 extern int  Xi_wait_map( DrawCtx_X*);
 extern int XiInitColors(DrawCtx_X*,Colormap,int);
 extern int XiFontFixed(DrawCtx_X*,int,int,XiFont** );
+
 /* 
    This file contains routines to open an X window display and window
    This consists of a number of routines that set the various
@@ -58,8 +56,7 @@ int XiSetVisual(DrawCtx_X* XiWin,int q_default_visual,Colormap cmap,int nc )
 	XiWin->depth  = 8;
     }
     else if (XMatchVisualInfo( XiWin->disp, XiWin->screen,
-			 DefaultDepth(XiWin->disp,XiWin->screen), PseudoColor,
-			 &vinfo)) {
+			 DefaultDepth(XiWin->disp,XiWin->screen),PseudoColor,&vinfo)){
 	XiWin->vis    = vinfo.visual;
 	XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
     }
@@ -113,7 +110,7 @@ int XiDisplayWindow( DrawCtx_X* XiWin, char *label, int x, int y,
   wavail              = DisplayWidth(  XiWin->disp, XiWin->screen );
   havail              = DisplayHeight( XiWin->disp, XiWin->screen );
   if (w <= 0 || h <= 0) return 2;
-  if (w > wavail) w   = wavail;
+  if (w > wavail) w    = wavail;
   if (h > havail)  h   = havail;
 
   /* changed the next line from xtools version */
@@ -126,7 +123,7 @@ int XiDisplayWindow( DrawCtx_X* XiWin, char *label, int x, int y,
   /* We need XCreateWindow since we may need an visual other than
    the default one */
   XGetWindowAttributes( XiWin->disp, RootWindow(XiWin->disp,XiWin->screen),
-                      &in_window_attributes );
+                        &in_window_attributes );
   window_attributes.background_pixmap = None;
   window_attributes.background_pixel  = backgnd_pixel;
   /* No border for now */
@@ -266,7 +263,7 @@ int XiSetWindowLabel(DrawCtx_X* Xiwin, char *label )
 {
   XTextProperty prop;
   XGetWMName(Xiwin->disp,Xiwin->win,&prop);
-  prop.value = (unsigned char *)label; prop.nitems = (long) strlen(label);
+  prop.value = (unsigned char *)label; prop.nitems = (long) PetscStrlen(label);
   XSetWMName(Xiwin->disp,Xiwin->win,&prop);
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.24 1995/09/11 18:45:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.25 1995/09/21 20:08:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -20,8 +20,7 @@ int main(int argc,char **argv)
   IS            is1,is2;
   VecScatterCtx ctx = 0;
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   OptionsGetInt(0,"-n",&n);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
 

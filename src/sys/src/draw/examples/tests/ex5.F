@@ -1,4 +1,6 @@
 
+C    "$Id: ex5.c,v 1.7 1995/09/21 20:11:42 bsmith Exp bsmith $";
+
 #include "include/finclude/petsc.h"
 #include "include/finclude/draw.h"
 

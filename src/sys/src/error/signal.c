@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.18 1995/09/04 17:24:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.19 1995/09/21 20:09:13 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -8,9 +8,6 @@ static char vcid[] = "$Id: signal.c,v 1.18 1995/09/04 17:24:00 bsmith Exp bsmith
 #include "petsc.h"             /*I   "petsc.h"   I*/
 #include "sys.h"
 #include <signal.h>
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 #include "pinclude/petscfix.h"     
 
 struct SH {
@@ -69,10 +66,10 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
   if (sig >= 0 && sig <= 20) 
     sprintf( buf, "Caught signal %s\n", SIGNAME[sig] );
   else
-    strcpy( buf, "Caught signal\n" );
-  strcat(buf,"PETSC ERROR: Try option -start_in_debugger or ");
-  strcat(buf,"-on_error_attach_debugger ");
-  strcat(buf,"to\nPETSC ERROR: determine where problem occurs");
+    PetscStrcpy( buf, "Caught signal\n" );
+  PetscStrcat(buf,"PETSC ERROR: Try option -start_in_debugger or ");
+  PetscStrcat(buf,"-on_error_attach_debugger ");
+  PetscStrcat(buf,"to\nPETSC ERROR: determine where problem occurs");
   ierr =  PetscError(0,0,"Unknown",buf,1);
   MPI_Abort(MPI_COMM_WORLD,ierr);
   return 0;

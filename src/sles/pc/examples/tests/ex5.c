@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.25 1995/09/11 18:47:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.26 1995/09/21 20:09:58 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -49,13 +49,12 @@ int main(int Argc, char **Args)
   KSP         ksp,kspmg;
   PC          pcmg,pc;
 
-  PetscInitialize(&Argc,&Args,0,0);
+  PetscInitialize(&Argc,&Args,0,0,help);
 
   OptionsGetInt(0,"-x",&x_mesh);  
   OptionsGetInt(0,"-l",&levels);  
   OptionsGetInt(0,"-c",&cycles);  
   OptionsGetInt(0,"-smooths",&smooths);  
-  if (OptionsHasName(0,"-help")) {fprintf(stdout,"%s",help);}
   if (OptionsHasName(0,"-a")) {am = MGADDITIVE;}
   if (OptionsHasName(0,"-f")) {am = MGFULL;}
   if (OptionsHasName(0,"-j")) {use_jacobi = 1;}
@@ -146,12 +145,12 @@ int main(int Argc, char **Args)
      
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]); CHKERRA(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e); CHKERRA(ierr);
-  printf("l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);
+  MPIU_printf(MPI_COMM_SELF,"l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);
 
   ierr = SLESSolve(slesmg,B[levels-1],X[levels-1],&its); CHKERRA(ierr);
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]); CHKERRA(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e); CHKERRA(ierr);
-  printf("its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);
+  MPIU_printf(MPI_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);
 
   PETSCFREE(N);
   ierr = VecDestroy(solution); CHKERRA(ierr);

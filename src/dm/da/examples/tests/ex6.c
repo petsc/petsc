@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.7 1995/09/06 03:06:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.8 1995/09/21 20:13:09 bsmith Exp bsmith $";
 #endif
       
 /* Peter Mell created this file on 7/25/95 */
@@ -26,8 +26,7 @@ int main(int argc,char **argv)
   DAPeriodicType wrap = DA_XYPERIODIC;
   DAStencilType  stencil_type = DA_STENCIL_BOX;
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,400,300,&win); CHKERRA(ierr);
   
   OptionsGetInt(0,"-M",&M);
@@ -59,16 +58,16 @@ int main(int argc,char **argv)
 
   if (M*N*P<40)
   {
-    if (mytid == 0) printf ("\nGlobal Vectors:\n");
+    MPIU_printf(MPI_COMM_WORLD,"\nGlobal Vectors:\n");
     ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
-    if (mytid == 0) printf ("\n\n");
+    MPIU_printf(MPI_COMM_WORLD,"\n\n");
   }
 
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
   if (M*N*P<40) {
-    printf("\nView Local Array - Processor [%d]\n",mytid);
+    MPIU_printf(MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",mytid);
     ierr = VecView(local,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
   }
   ierr = DAView(da,(Viewer) win); CHKERRA(ierr);

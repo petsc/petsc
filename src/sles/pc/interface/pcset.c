@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.23 1995/08/22 16:30:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.24 1995/08/23 14:50:46 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -152,12 +152,12 @@ int PCPrintMethods_Private(char *prefix,char *name)
   FuncList *entry;
   if (!__PCList) {PCRegisterAll();}
   entry = __PCList->head;
-  printf(" %s%s (one of)",prefix,name);
+  MPIU_printf(MPI_COMM_WORLD," %s%s (one of)",prefix,name);
   while (entry) {
-    printf(" %s",entry->name);
+    MPIU_printf(MPI_COMM_WORLD," %s",entry->name);
     entry = entry->next;
   }
-  printf("\n");
+  MPIU_printf(MPI_COMM_WORLD,"\n");
   return 0;
 }
 

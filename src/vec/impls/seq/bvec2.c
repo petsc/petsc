@@ -1,6 +1,5 @@
-
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.48 1995/09/11 18:45:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.49 1995/09/21 20:08:10 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -21,9 +20,9 @@ static char vcid[] = "$Id: bvec2.c,v 1.48 1995/09/11 18:45:43 bsmith Exp bsmith 
 static int VecNorm_Seq(Vec xin,double* z )
 {
   Vec_Seq * x = (Vec_Seq *) xin->data;
-  int  one = 1;
+  int     one = 1;
 /*
-   This is because the Fortran Norm is very slow! 
+   This is because the Fortran BLAS 1 Norm is very slow! 
 */
 #if defined(PARCH_sun4) && !defined(PETSC_COMPLEX)
   *z = BLdot_( &x->n, x->array, &one, x->array, &one );
@@ -71,8 +70,8 @@ static int VecView_Seq_LG(Vec xin,DrawLGCtx lg)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   int      i, n = x->n;
-  DrawCtx   win;
-  double    *xx;
+  DrawCtx  win;
+  double   *xx;
   DrawLGGetDrawCtx(lg,&win);
   DrawLGReset(lg);
   xx = (double *) PETSCMALLOC( (n+1)*sizeof(double) ); CHKPTRQ(xx);
@@ -88,7 +87,7 @@ static int VecView_Seq_LG(Vec xin,DrawLGCtx lg)
 
 static int VecView_Seq_DrawCtx(Vec xin,DrawCtx win)
 {
-  int      ierr;
+  int       ierr;
   DrawLGCtx lg;
   ierr = DrawLGCreate(win,1,&lg); CHKERRQ(ierr);
   PLogObjectParent(win,lg);
@@ -105,11 +104,11 @@ static int VecView_Seq_Binary(Vec xin,Viewer ptr)
 
   ierr  = ViewerFileGetDescriptor_Private(ptr,&fdes); CHKERRQ(ierr);
   /* Write vector header */
-  ierr = SYWrite(fdes,(char *)&xin->cookie,sizeof(int),SYINT,0);CHKERRQ(ierr);
-  ierr = SYWrite(fdes,(char *)&n,sizeof(int),SYINT,0); CHKERRQ(ierr);
+  ierr = SYWrite(fdes,&xin->cookie,1,SYINT,0);CHKERRQ(ierr);
+  ierr = SYWrite(fdes,&n,1,SYINT,0); CHKERRQ(ierr);
 
   /* Write vector contents */
-  ierr = SYWrite(fdes,(char *)x->array,n*sizeof(Scalar),SYSCALAR,0);
+  ierr = SYWrite(fdes,x->array,n,SYSCALAR,0);
   CHKERRQ(ierr);
   return 0;
 }
@@ -121,7 +120,7 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
   Vec_Seq    *x = (Vec_Seq *)xin->data;
   PetscObject vobj = (PetscObject) ptr;
 
-  if (!ptr) { /* so that viewers may be used from debuggers */
+  if (!ptr) { 
     ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
   }
 
@@ -160,19 +159,13 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 
   if (m == INSERT_VALUES) {
     for ( i=0; i<ni; i++ ) {
-#if defined(PETSC_DEBUG)
-      if (ix[i] < 0 || ix[i] >= x->n) 
-        SETERRQ(1,"VecSetValues_Seq: Index is out of range");
-#endif
+      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"VecSetValues_Seq: Out of range");
       xx[ix[i]] = y[i];
     }
   }
   else {
     for ( i=0; i<ni; i++ ) {
-#if defined(PETSC_DEBUG)
-      if (ix[i] < 0 || ix[i] >= x->n)
-        SETERRQ(1,"VecSetValues_Seq: Index is out of range");
-#endif
+      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"VecSetValues_Seq: Out of range");
       xx[ix[i]] += y[i];
     }  
   }  
@@ -229,15 +222,14 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
   Vec_Seq *s;
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
-  if (flag == MPI_UNEQUAL) 
-    SETERRQ(1,"VecCreateSeq: Must call with MPI_COMM_SELF");
+  if (flag == MPI_UNEQUAL) SETERRQ(1,"VecCreateSeq: Must call with MPI_COMM_SELF");
   PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,VECSEQ,comm);
   PLogObjectCreate(v);
   PLogObjectMemory(v,sizeof(struct _Vec)+size);
   v->destroy     = VecDestroy_Seq;
   v->view        = VecView_Seq;
   s              = (Vec_Seq *) PETSCMALLOC(size); CHKPTRQ(s);
-  v->ops         = &DvOps;
+  PetscMemcpy(&v->ops,&DvOps,sizeof(DvOps));
   v->data        = (void *) s;
   s->n           = n;
   s->array       = (Scalar *)(s + 1);

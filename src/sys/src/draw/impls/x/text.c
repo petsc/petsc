@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: text.c,v 1.10 1995/07/17 20:42:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.11 1995/07/28 04:23:24 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -9,9 +9,6 @@ static char vcid[] = "$Id: text.c,v 1.10 1995/07/17 20:42:05 bsmith Exp bsmith $
  */
 
 #include "ximpl.h"
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 
 int XiInitFonts(DrawCtx_X *);
 int XiMatchFontSize(XiFont*,int,int);

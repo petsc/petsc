@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.12 1995/09/10 20:48:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.13 1995/09/21 20:07:58 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -54,15 +54,14 @@ int VecLoad(Viewer bview,Vec *newvec)
 
   if (!mytid) {
     /* Read vector header. */
-    ierr = SYRead(fd,(char *)&type,sizeof(int),SYINT); CHKERRQ(ierr);
-    if ((VecType)type != VEC_COOKIE)
-           SETERRQ(1,"VecLoadBinary: Trying to read a non-vector object");
-    ierr = SYRead(fd,(char *)&rows,sizeof(int),SYINT); CHKERRQ(ierr);
+    ierr = SYRead(fd,&type,1,SYINT); CHKERRQ(ierr);
+    if ((VecType)type != VEC_COOKIE) SETERRQ(1,"VecLoadBinary: Non-vector object");
+    ierr = SYRead(fd,&rows,1,SYINT); CHKERRQ(ierr);
     MPI_Bcast(&rows,1,MPI_INT,0,comm);
     ierr = VecCreate(comm,rows,&vec); CHKERRQ(ierr);
     v = (Vec_MPI*) vec->data;
     ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
-    ierr = SYRead(fd,(char *)avec,v->n*sizeof(Scalar),SYSCALAR);CHKERRQ(ierr);
+    ierr = SYRead(fd,avec,v->n,SYSCALAR);CHKERRQ(ierr);
     ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
 
     if (numtid > 1) {
@@ -75,11 +74,11 @@ int VecLoad(Viewer bview,Vec *newvec)
       avec = (Scalar *) PETSCMALLOC( n*sizeof(Scalar) ); CHKPTRQ(avec);
       requests = (MPI_Request *) PETSCMALLOC((numtid-1)*sizeof(MPI_Request)); 
       CHKPTRQ(requests);
-      statuses = (MPI_Status *) PETSCMALLOC((numtid-1)*sizeof(MPI_Status)); 
+      statuses = (MPI_Status *) PETSCMALLOC((numtid-1)*sizeof(MPI_Status));
       CHKPTRQ(statuses);
       for ( i=1; i<numtid; i++ ) {
         n = v->ownership[i+1]-v->ownership[i];
-        ierr = SYRead(fd,(char *)avec,n*sizeof(Scalar),SYSCALAR);
+        ierr = SYRead(fd,avec,n,SYSCALAR);
         CHKERRQ(ierr);
         MPI_Isend(avec,n,MPIU_SCALAR,i,vec->tag,vec->comm,requests+i-1);
       }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.18 1995/09/11 18:45:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.19 1995/09/21 03:48:21 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -23,6 +23,7 @@ int ISIsPermutation(IS is)
   if (is->cookie != IS_COOKIE) {SETERRQ(-1,"ISIsPermutation: Not indexset");}
   return is->isperm;
 }
+
 /*@
    ISSetPermutation - Informs the index set that it is a permutation.
 
@@ -52,6 +53,7 @@ int ISSetPermutation(IS is)
 @*/
 int ISDestroy(IS is)
 {
+  if (!is) return 0;
   PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
   return (*is->destroy)((PetscObject) is);
 }
@@ -72,7 +74,7 @@ int ISInvertPermutation(IS is,IS *isout)
 {
   PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
   if (!is->isperm) SETERRQ(1,"ISInvertPermutation: not permutation");
-  return (*is->ops->invertpermutation)(is,isout);
+  return (*is->ops.invertpermutation)(is,isout);
 }
 
 /*@
@@ -91,7 +93,7 @@ int ISInvertPermutation(IS is,IS *isout)
 int ISGetSize(IS is,int *size)
 {
   PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
-  return (*is->ops->getsize)(is,size);
+  return (*is->ops.getsize)(is,size);
 }
 /*@
    ISGetLocalSize - Returns local length of an index set.
@@ -109,7 +111,7 @@ int ISGetSize(IS is,int *size)
 int ISGetLocalSize(IS is,int *size)
 {
   PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
-  return (*is->ops->getlocalsize)(is,size);
+  return (*is->ops.getlocalsize)(is,size);
 }
 
 /*@C
@@ -134,7 +136,7 @@ int ISGetLocalSize(IS is,int *size)
 int ISGetIndices(IS is,int **ptr)
 {
   PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
-  return (*is->ops->getindices)(is,ptr);
+  return (*is->ops.getindices)(is,ptr);
 } 
 
 /*@C
@@ -152,7 +154,7 @@ int ISGetIndices(IS is,int **ptr)
 int ISRestoreIndices(IS is,int **ptr)
 {
   PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
-  if (is->ops->restoreindices) return (*is->ops->restoreindices)(is,ptr);
+  if (is->ops.restoreindices) return (*is->ops.restoreindices)(is,ptr);
   else return 0;
 }
 

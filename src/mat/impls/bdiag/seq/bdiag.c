@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.52 1995/09/21 20:10:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.53 1995/09/21 21:06:40 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -741,7 +741,7 @@ static int MatNorm_SeqBDiag(Mat matin,MatNormType type,double *norm)
   }
   else if (type == NORM_1) { /* max column norm */
     tmp = (double *) PETSCMALLOC( mat->n*sizeof(double) ); CHKPTRQ(tmp);
-    PETSCMEMSET(tmp,0,mat->n*sizeof(double));
+    PetscZero(tmp,mat->n*sizeof(double));
     *norm = 0.0;
     if (nb == 1) {
       for (d=0; d<nd; d++) {
@@ -808,7 +808,7 @@ static int MatNorm_SeqBDiag(Mat matin,MatNormType type,double *norm)
   }
   else if (type == NORM_INFINITY) { /* max row norm */
     tmp = (double *) PETSCMALLOC( mat->m*sizeof(double) ); CHKPTRQ(tmp);
-    PETSCMEMSET(tmp,0,mat->m*sizeof(double));
+    PetscZero(tmp,mat->m*sizeof(double));
     *norm = 0.0;
     if (nb == 1) {
       for (d=0; d<nd; d++) {
@@ -929,7 +929,7 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
     PETSCFREE(mbd->colloc);
     PETSCFREE(mbd->dvalue);
     PETSCFREE(mbd);
-    PETSCMEMCPY(A,tmat,sizeof(struct _Mat)); 
+    PetscMemcpy(A,tmat,sizeof(struct _Mat)); 
     PETSCHEADERDESTROY(tmat);
   }
   return 0;
@@ -1178,7 +1178,7 @@ static int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
     if (rows[i] < 0 || rows[i] > m) 
       SETERRQ(1,"MatZeroRows_SeqBDiag:row out of range");
     ierr = MatGetRow(A,rows[i],&nz,&col,&val); CHKERRQ(ierr);
-    PETSCMEMSET(val,0,nz*sizeof(Scalar));
+    PetscZero(val,nz*sizeof(Scalar));
     ierr = MatSetValues(A,1,&rows[i],nz,col,val,INSERT_VALUES); CHKERRQ(ierr);
     ierr = MatRestoreRow(A,rows[i],&nz,&col,&val); CHKERRQ(ierr);
   }
@@ -1222,9 +1222,8 @@ static int MatGetSubMatrix_SeqBDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
   smap  = (int *) PETSCMALLOC(oldcols*sizeof(int)); CHKPTRQ(smap);
   cwork = (int *) PETSCMALLOC(newc*sizeof(int)); CHKPTRQ(cwork);
   vwork = (Scalar *) PETSCMALLOC(newc*sizeof(Scalar)); CHKPTRQ(vwork);
-  PETSCMEMSET((char*)smap,0,oldcols*sizeof(int));
+  PetscZero((char*)smap,oldcols*sizeof(int));
   for ( i=0; i<newc; i++ ) smap[icol[i]] = i+1;
-/*  for ( i=0; i<oldcols; i++) printf("smap[%d] = %d\n",i,smap[i]); */
 
   /* Determine diagonals; then create submatrix */
   nb = mat->nb; /* Default block size remains the same */
@@ -1338,7 +1337,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   PETSCHEADERCREATE(bmat,_Mat,MAT_COOKIE,MATSEQBDIAG,comm);
   PLogObjectCreate(bmat);
   bmat->data    = (void *) (mat = PETSCNEW(Mat_SeqBDiag)); CHKPTRQ(mat);
-  PETSCMEMCPY(&bmat->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(&bmat->ops,&MatOps,sizeof(struct _MatOps));
   bmat->destroy = MatDestroy_SeqBDiag;
   bmat->view    = MatView_SeqBDiag;
   bmat->factor  = 0;
@@ -1407,7 +1406,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
     for (i=0; i<nd; i++) {
       mat->diagv[i] = (Scalar*)PETSCMALLOC(nb*nb*mat->bdlen[i]*sizeof(Scalar));
       CHKPTRQ(mat->diagv[i]);
-      PETSCMEMSET(mat->diagv[i],0,nb*nb*mat->bdlen[i]*sizeof(Scalar));
+      PetscZero(mat->diagv[i],nb*nb*mat->bdlen[i]*sizeof(Scalar));
     }
     mat->nonew = 0;
   } else { /* diagonals are set on input; don't allow dynamic allocation */
@@ -1437,7 +1436,7 @@ static int MatCopyPrivate_SeqBDiag(Mat matin,Mat *matout)
   newmat = (Mat_SeqBDiag *) mat->data;
   for (i=0; i<oldmat->nd; i++) {
     len = oldmat->bdlen[i] * oldmat->nb * oldmat->nb * sizeof(Scalar);
-    PETSCMEMCPY(newmat->diagv[i],oldmat->diagv[i],len);
+    PetscMemcpy(newmat->diagv[i],oldmat->diagv[i],len);
   }
   ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);

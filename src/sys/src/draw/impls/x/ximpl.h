@@ -1,14 +1,13 @@
 
-#if !defined(_XIMPL) && defined(HAVE_X11)
-#define _XIMPL
+#if !defined(_XIMPL_H) && defined(HAVE_X11)
+#define _XIMPL_H
 #include "drawimpl.h"
 
-#include <sys/types.h>  /* rs6000 likes */
+#include <sys/types.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
 typedef unsigned long PixVal;
-
 
 typedef struct {
     GC       set;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.32 1995/09/11 18:50:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.33 1995/09/21 20:12:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -27,8 +27,7 @@ int main( int argc, char **argv )
   Scalar       h,xp = 0.0,v;
   MonitorCtx   monP;               /* monitoring context */
 
-  PetscInitialize( &argc, &argv, 0,0 );
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize( &argc, &argv, 0,0,help );
   OptionsGetInt(0,"-n",&n);
   h = 1.0/(n-1);
 
@@ -67,7 +66,7 @@ int main( int argc, char **argv )
   ierr = SNESSetUp(snes); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its); CHKERRA(ierr);
   ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
-  printf( "number of Newton iterations = %d\n\n", its );
+  MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its );
 
   /* Free data structures */
   ierr = VecDestroy(x); CHKERRA(ierr);

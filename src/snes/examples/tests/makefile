@@ -2,7 +2,7 @@ PETSC_DIR = ../../..
 ALL: ex1
 
 CFLAGS        =  $(CONF) $(PETSC_INCLUDE)
-FFLAGS        =  $(BASEOPTF)
+FFLAGS        =  
 SOURCEC       = 
 SOURCEF       =
 SOURCEH       =

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.31 1995/08/31 00:33:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.32 1995/09/21 20:11:42 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "This example solves a tridiagonal linear system with SLES.\n\n";
@@ -15,8 +15,7 @@ int main(int argc,char **args)
   int     ierr, i, n = 10, col[3], its;
   Scalar  none = -1.0, one = 1.0, value[3];
   double  norm;
-  PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(0,"-n",&n);
 
   /* Create vectors */

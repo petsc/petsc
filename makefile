@@ -166,6 +166,9 @@ allmanpages: deletemanpages deletewwwpages deletelatexpages
 	-make ACTION=latexpages tree
 	-maint/wwwman
 
+alllatexpages: deletelatexpages
+	-make ACTION=latexpages tree
+
 # Builds Fortran stub files
 allfortranstubs:
 	-@$(RM) $(PETSC_DIR)/fortran/auto/*.c

@@ -16,8 +16,11 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
                 runex8 runex8_2
 EXAMPLES_2    = ex10 ex11 ex6
 RUNEXAMPLES_2 = runex11
+EXAMPLES_3    = ex7
+RUNEXAMPLES_3 = runex7
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c\
                 ex6.c
+EXAMPLESF     = ex6.F
 
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
@@ -44,7 +47,7 @@ ex6: ex6.o  chkopts
 	$(RM) ex6.o
 
 ex7: ex7.o  chkopts
-	-$(CLINKER) -o ex7 ex7.o  $(PETSC_LIB)
+	-$(CLINKER) -o ex7 ex7.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex7.o
 
 ex8: ex8.o  chkopts
@@ -178,6 +181,12 @@ runex5:
            if (diff output/ex5_1.out ex5_1.tmp) then true; \
            else echo "Possible problem with ex5_1, diffs above"; fi; \
            $(RM) -f ex5_1.tmp
+runex7:
+	-@$(MPIRUN) -np 2 ex -ksp_smonitor > ex7_1.tmp 2>&1; \
+           if (diff output/ex7_1.out ex7_1.tmp) then true; \
+           else echo "Possible problem with ex7_1, diffs above"; fi; \
+           $(RM) -f ex7_1.tmp
+
 runex8:
 	-@$(MPIRUN) ex8 -ksp_smonitor > ex8_1.tmp 2>&1; \
            if (diff output/ex8_1.out ex8_1.tmp) then true; \

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.27 1995/08/31 00:33:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.28 1995/09/21 20:11:42 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -16,8 +16,7 @@ int main(int argc,char **args)
   Scalar    v, zero = 0.0, one = 1.0, none = -1.0;
   Vec       x, u, b;                       Mat       A; 
   SLES      sles;                          double    norm;
-  PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(0,"-m",&m);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);  n = 2*numtids;

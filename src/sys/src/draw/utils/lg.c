@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.21 1995/08/22 16:32:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.22 1995/08/24 22:30:18 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -121,8 +121,8 @@ int DrawLGAddPoint(DrawLGCtx lg,double *x,double *y)
     tmpx = (double *) PETSCMALLOC((2*lg->len+2*lg->dim*CHUNCKSIZE)*sizeof(double));
     CHKPTRQ(tmpx);
     tmpy = tmpx + lg->len + lg->dim*CHUNCKSIZE;
-    PETSCMEMCPY(tmpx,lg->x,lg->len*sizeof(double));
-    PETSCMEMCPY(tmpy,lg->y,lg->len*sizeof(double));
+    PetscMemcpy(tmpx,lg->x,lg->len*sizeof(double));
+    PetscMemcpy(tmpy,lg->y,lg->len*sizeof(double));
     PETSCFREE(lg->x);
     lg->x = tmpx; lg->y = tmpy;
     lg->len += lg->dim*CHUNCKSIZE;
@@ -175,8 +175,8 @@ int DrawLGAddPoints(DrawLGCtx lg,int n,double **xx,double **yy)
     tmpx = (double *) PETSCMALLOC((2*lg->len+2*lg->dim*chunk)*sizeof(double));
     CHKPTRQ(tmpx);
     tmpy = tmpx + lg->len + lg->dim*chunk;
-    PETSCMEMCPY(tmpx,lg->x,lg->len*sizeof(double));
-    PETSCMEMCPY(tmpy,lg->y,lg->len*sizeof(double));
+    PetscMemcpy(tmpx,lg->x,lg->len*sizeof(double));
+    PetscMemcpy(tmpy,lg->y,lg->len*sizeof(double));
     PETSCFREE(lg->x);
     lg->x = tmpx; lg->y = tmpy;
     lg->len += lg->dim*CHUNCKSIZE;

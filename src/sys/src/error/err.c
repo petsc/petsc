@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.28 1995/09/04 17:24:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.29 1995/09/06 03:04:50 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"           /*I "petsc.h" I*/
 #include <stdio.h>           /*I <stdio.h> I*/
@@ -214,16 +214,16 @@ int IntView(int N,int* idx,Viewer viewer)
   int j,i,n = N/20, p = N % 20;
 
   for ( i=0; i<n; i++ ) {
-    printf("%d:",20*i);
+    MPIU_printf(MPI_COMM_SELF,"%d:",20*i);
     for ( j=0; j<20; j++ ) {
-       printf(" %d",idx[i*20+j]);
+       MPIU_printf(MPI_COMM_SELF," %d",idx[i*20+j]);
     }
-    printf("\n");
+    MPIU_printf(MPI_COMM_SELF,"\n");
   }
   if (p) {
-    printf("%d:",20*n);
-    for ( i=0; i<p; i++ ) { printf(" %d",idx[20*n+i]);}
-    printf("\n");
+    MPIU_printf(MPI_COMM_SELF,"%d:",20*n);
+    for ( i=0; i<p; i++ ) { MPIU_printf(MPI_COMM_SELF," %d",idx[20*n+i]);}
+    MPIU_printf(MPI_COMM_SELF,"\n");
   }
   return 0;
 }
@@ -232,16 +232,16 @@ int DoubleView(int N,double* idx,Viewer viewer)
   int j,i,n = N/5, p = N % 5;
 
   for ( i=0; i<n; i++ ) {
-    printf("%d:",5*i);
+    MPIU_printf(MPI_COMM_SELF,"%d:",5*i);
     for ( j=0; j<5; j++ ) {
-       printf(" %6.4e",idx[i*5+j]);
+       MPIU_printf(MPI_COMM_SELF," %6.4e",idx[i*5+j]);
     }
-    printf("\n");
+    MPIU_printf(MPI_COMM_SELF,"\n");
   }
   if (p) {
-    printf("%d:",5*n);
-    for ( i=0; i<p; i++ ) { printf(" %6.4e",idx[5*n+i]);}
-    printf("\n");
+    MPIU_printf(MPI_COMM_SELF,"%d:",5*n);
+    for ( i=0; i<p; i++ ) { MPIU_printf(MPI_COMM_SELF," %6.4e",idx[5*n+i]);}
+    MPIU_printf(MPI_COMM_SELF,"\n");
   }
   return 0;
 }

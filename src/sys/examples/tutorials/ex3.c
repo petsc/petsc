@@ -16,8 +16,7 @@ codes.  Note that the code must be compiled with the flag -DPETSC_LOG\n\
 int main(int argc,char **argv)
 {
   int i, imax=10000, icount;
-  PetscInitialize(&argc,&argv,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,help);
+  PetscInitialize(&argc,&argv,0,0,help);
 
   PLogEventRegister(USER_EVENT,"User event      ");
   PLogEventBegin(USER_EVENT,0,0,0,0);

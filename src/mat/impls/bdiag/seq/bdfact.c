@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.5 1995/08/24 22:28:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.6 1995/09/12 03:25:38 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -54,7 +54,7 @@ int MatSolve_SeqBDiag(Mat matin,Vec xx,Vec yy)
   if (mat->nd != 1 || mat->diag[0] !=0) SETERRQ(1,
     "MatSolve_SeqBDiag: Currently supports triangular solves only for main diag");
   VecGetArray(xx,&x); VecGetArray(yy,&y);
-  PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
+  PetscMemcpy(y,x,mat->m*sizeof(Scalar));
   if (matin->factor == FACTOR_LU) {
     submat = mat->diagv[0];
     for (i=0; i<mat->bdlen[0]; i++) {
@@ -77,7 +77,7 @@ int MatSolveTrans_SeqBDiag(Mat matin,Vec xx,Vec yy)
   if (mat->nd != 1 || mat->diag[0] !=0) SETERRQ(1,
     "MatSolveTrans_SeqBDiag: Currently supports triangular solves only for main diag");
   VecGetArray(xx,&x); VecGetArray(yy,&y);
-  PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
+  PetscMemcpy(y,x,mat->m*sizeof(Scalar));
   if (matin->factor == FACTOR_LU) {
     submat = mat->diagv[0];
     for (i=0; i<mat->bdlen[0]; i++) {
@@ -106,7 +106,7 @@ int MatSolveAdd_SeqBDiag(Mat matin,Vec xx,Vec zz,Vec yy)
     PLogObjectParent(matin,tmp);
     ierr = VecCopy(yy,tmp); CHKERRQ(ierr);
   } 
-  PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
+  PetscMemcpy(y,x,mat->m*sizeof(Scalar));
   if (matin->factor == FACTOR_LU) {
     submat = mat->diagv[0];
     for (i=0; i<mat->bdlen[0]; i++) {
@@ -135,7 +135,7 @@ int MatSolveTransAdd_SeqBDiag(Mat matin,Vec xx,Vec zz,Vec yy)
     PLogObjectParent(matin,tmp);
     ierr = VecCopy(yy,tmp); CHKERRQ(ierr);
   } 
-  PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
+  PetscMemcpy(y,x,mat->m*sizeof(Scalar));
   if (matin->factor == FACTOR_LU) {
     submat = mat->diagv[0];
     for (i=0; i<mat->bdlen[0]; i++) {

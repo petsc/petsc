@@ -29,15 +29,15 @@ extern void   *malloc(long unsigned int );
 #include <search.h>
 extern char   *tsearch(char *,char **, int (*)(void*,void*));
 extern void   twalk(char *,void (*)(void*,VISIT,int));
-extern int    abort();
 extern int    atoi(char*);
-extern int    exit(int);
 extern void   perror(const char *);
 extern double atof(const char *);
 extern void    free(void *);
 extern void   *malloc(long unsigned int );
 #include <sys/time.h>
 extern int    gettimeofday(struct timeval *,struct timezone *);
+extern int    abort();
+extern int    exit(int);
 };
 
 #else
@@ -47,14 +47,15 @@ extern int     gethostname(char *,int);
 extern int     getdomainname(char *,int);
 extern char   *realpath(char *,char *);
 extern char   *getenv( char *);
-extern int    vfprintf(FILE*,char*,...);
-extern int    vsprintf(char*,char*,...);
-extern void   perror(char *);
 extern int    atoi(char*);
 extern double atof(const char*);
 #include <search.h>
 extern char   *tsearch(char *,char **, int (*)(void*,void*));
 extern void   twalk(char *,void (*)(void*,VISIT,int));
+extern int    fclose(FILE *);
+extern void   perror(const char *);
+extern int    vfprintf (FILE *, const char *, char * );
+extern int    vsprintf (char *, const char *, char * );
 #endif
 #endif
 

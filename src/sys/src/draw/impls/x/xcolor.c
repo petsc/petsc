@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.11 1995/06/23 12:41:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.12 1995/07/28 04:23:24 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -355,7 +355,6 @@ int XiFindColor( DrawCtx_X *XiWin, char *name, PixVal *pixval )
     st  = XAllocColor( XiWin->disp, XiWin->cmap, &colordef );
     if (st)  *pixval = colordef.pixel;
   }
-  else    printf( "did not find color %s\n", name );
   return st;
 }
 

@@ -1,13 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.15 1995/07/10 04:50:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.16 1995/08/24 22:27:16 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include <stdio.h>
 #include <stdarg.h>
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -112,14 +109,14 @@ int MPIU_Set_display(MPI_Comm comm,char *display,int n)
     if (!str || str[0] == ':') {
       string = (char *) PETSCMALLOC( 256*sizeof(char) ); CHKPTRQ(string);
       MPI_Get_processor_name(string,&len);
-      strncpy(display,string,n-4); PETSCFREE(string);
-      strcat(display,":0.0");
+      PetscStrncpy(display,string,n-4); PETSCFREE(string);
+      PetscStrcat(display,":0.0");
     }
     else {
-      len = strlen(str);
-      strncpy(display,str,n);
+      len = PetscStrlen(str);
+      PetscStrncpy(display,str,n);
     }
-    len = strlen(display);
+    len = PetscStrlen(display);
     MPI_Bcast(&len,1,MPI_INT,0,comm);
     MPI_Bcast(display,len,MPI_CHAR,0,comm);
   }

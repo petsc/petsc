@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.15 1995/08/07 18:51:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.16 1995/09/04 17:23:42 bsmith Exp bsmith $";
 #endif
 /*                       
 
@@ -93,18 +93,18 @@ int KSPCGDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
   int ierr;
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (!itP->calc_eigs) {
-    printf("%d %14.12e \n",n,rnorm);
+    MPIU_printf(itP->comm,"%d %14.12e \n",n,rnorm);
   }
   else {
     cgP = (KSP_CG *) itP->MethodPrivate;
     ierr = KSPCGGetEigenvalues(itP,n,&cgP->emax,&cgP->emin); CHKERRQ(ierr);
 #if defined(PETSC_COMPLEX)
     c = real(cgP->emax)/real(cgP->emin);
-    printf("%d %14.12e %% %g %g %g \n",n,rnorm,real(cgP->emax),
-                                       real(cgP->emin),c);
+    MPIU_printf(itP->comm,"%d %14.12e %% %g %g %g \n",n,rnorm,real(cgP->emax),
+                                                                 real(cgP->emin),c);
 #else
     c = cgP->emax/cgP->emin;
-    printf("%d %14.12e %% %g %g %g \n",n,rnorm,cgP->emax,cgP->emin,c);
+    MPIU_printf(itP->comm,"%d %14.12e %% %g %g %g \n",n,rnorm,cgP->emax,cgP->emin,c);
 #endif
   }
   return 0;

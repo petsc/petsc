@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.13 1995/07/17 03:53:25 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.14 1995/08/07 21:57:35 bsmith Exp bsmith $ */
 /* 
    This should not be included in users code.
 */
@@ -41,7 +41,7 @@ struct _VeOps {
 
 struct _Vec {
   PETSCHEADER
-  struct _VeOps *ops;
+  struct _VeOps ops;
   void          *data;
 };
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.13 1995/07/26 01:07:46 curfman Exp curfman $";
+static char vcid[] = "$Id: tcqmr.c,v 1.14 1995/08/14 17:05:45 curfman Exp bsmith $";
 #endif
 
 /*
@@ -105,7 +105,7 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
       deltmp = -sl*eptmp - cl*alpha;
     }
 #if defined(PETSC_COMPLEX)
-    if (abs(Gamma) > abs(deltmp)) {
+    if (fabs(Gamma) > abs(deltmp)) {
 #else    
     if (fabs(Gamma) > fabs(deltmp)) {
 #endif

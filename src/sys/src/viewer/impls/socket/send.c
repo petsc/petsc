@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.21 1995/08/24 22:30:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.22 1995/08/28 21:56:22 bsmith Exp bsmith $";
 #endif
 /* 
  
@@ -150,8 +150,8 @@ int SOCKCall_Private(char *hostname,int portnum)
     perror("SEND: error gethostbyname: ");   
     SETERRQ(1,"call_socket: system error open connection");
   }
-  PETSCMEMSET(&sa,0,sizeof(sa));
-  PETSCMEMCPY(&sa.sin_addr,hp->h_addr,hp->h_length);
+  PetscZero(&sa,sizeof(sa));
+  PetscMemcpy(&sa.sin_addr,hp->h_addr,hp->h_length);
   sa.sin_family = hp->h_addrtype;
   sa.sin_port = htons((u_short) portnum);
   while (flag) {

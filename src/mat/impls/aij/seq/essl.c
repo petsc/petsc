@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: essl.c,v 1.1 1995/09/20 01:56:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.2 1995/09/21 20:10:16 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -24,38 +24,33 @@ typedef struct {
    double oparm[5];
    Scalar *aux;
    int    naux;
-} Mat_SeqAIJ_EsslLU;
+} Mat_SeqAIJ_Essl;
 
 
 extern int MatDestroy_SeqAIJ(PetscObject);
 
-static int MatGetReordering_SeqAIJ_EsslLU(Mat mat,MatOrdering type,
+static int MatGetReordering_SeqAIJ_Essl(Mat mat,MatOrdering type,
                                                IS *rperm,IS *cperm)
 {
-  *perm = *cperm = 0;
+  *rperm = *cperm = 0;
   return 0;
 }
 
-static int MatDestroy_SeqAIJ_EsslLU(PetscObject obj)
+static int MatDestroy_SeqAIJ_Essl(PetscObject obj)
 {
   Mat               A = (Mat) obj;
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*) A->data;
-  Mat_SeqAIJ_EsslLU *essl = (Mat_SeqAIJ_EsslLU*) a->spptr;
+  Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*) a->spptr;
 
-  /* free the EsslLU datastructures */
+  /* free the Essl datastructures */
   PETSCFREE(essl->a);
-  PETSCFREE(essl->ia);
-  PETSCFREE(essl->ja);
-  PETSCFREE(essl->aux);
-  PETSCFREE(essl);
-
   return MatDestroy_SeqAIJ(obj);
 }
 
-static int MatSolve_SeqAIJ_EsslLU(Mat A,Vec b,Vec x)
+static int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*) A->data;
-  Mat_SeqAIJ_EsslLU *essl = (Mat_SeqAIJ_EsslLU*) a->spptr;
+  Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*) a->spptr;
   Scalar             *xx;
   int                ierr,m, zero = 0;
 
@@ -69,44 +64,47 @@ static int MatSolve_SeqAIJ_EsslLU(Mat A,Vec b,Vec x)
   return 0;
 }
 
-static int MatLUFactorSymbolic_SeqAIJ_EsslLU(Mat A,IS r,IS c,double f,Mat *F)
+static int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
 {
   Mat                B;
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*) A->data, *b;
-  int                ierr, *ridx, *cidx,i;
-  Mat_SeqAIJ_EsslLU *essl;
+  int                ierr, *ridx, *cidx,i, len;
+  Mat_SeqAIJ_Essl *essl;
 
   if (a->m != a->n) 
-    SETERRQ(1,"MatLUFactorSymbolic_SeqAIJ_EsslLU: matrix ust be square"); 
+    SETERRQ(1,"MatLUFactorSymbolic_SeqAIJ_Essl: matrix ust be square"); 
   ierr          = MatCreateSeqAIJ(A->comm,a->m,a->n,0,0,F); CHKERRQ(ierr);
   B             = *F;
-  B->ops.solve  = MatSolve_SeqAIJ_EsslLU;
-  B->destroy    = MatDestroy_SeqAIJ_EsslLU;
+  B->ops.solve  = MatSolve_SeqAIJ_Essl;
+  B->destroy    = MatDestroy_SeqAIJ_Essl;
   B->factor     = FACTOR_LU;
   b             = (Mat_SeqAIJ*) B->data;
-  essl          = PETSCNEW(Mat_SeqAIJ_EsslLU); CHKPTRQ(essl);
+  essl          = PETSCNEW(Mat_SeqAIJ_Essl); CHKPTRQ(essl);
   b->spptr      = (void*) essl;
 
 
   /* allocate the work arrays required by ESSL */
   essl->nz   = a->nz;
-  essl->lna  = a->nz*sqrt((double)(a->nz));
-  essl->ia   = (int*) PETSCMALLOC(essl->lna*sizeof(int)); CHKPTRQ(essl->ia);
-  essl->ja   = (int*) PETSCMALLOC(essl->lna*sizeof(int)); CHKPTRQ(essl->ja);
-  essl->a    = (Scalar*) PETSCMALLOC(essl->lna*sizeof(Scalar)); 
-               CHKPTRQ(essl->a);
+  essl->lna  = (int) a->nz*f;
   essl->naux = 100 + 10*a->m;
-  essl->aux  = (Scalar*) PETSCMALLOC(essl->naux*sizeof(Scalar)); 
-               CHKPTRQ(essl->aux);
 
+  /* since malloc is slow on IBM we try a single malloc */
+  len        = essl->lna*(2*sizeof(int)+sizeof(Scalar)) + 
+               essl->naux*sizeof(Scalar);
+  essl->a    = (Scalar*) PETSCMALLOC(len); CHKPTRQ(essl->a);
+  essl->aux  = essl->a + essl->lna;
+  essl->ia   = (int*) (essl->aux + essl->naux);
+  essl->ja   = essl->ia + essl->lna;
+
+  PLogObjectMemory(B,len+sizeof(Mat_SeqAIJ_Essl));
   return 0;
 }
 
-static int MatLUFactorNumeric_SeqAIJ_EsslLU(Mat A,Mat *F)
+static int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*) (*F)->data;
   Mat_SeqAIJ        *aa = (Mat_SeqAIJ*) (A)->data;
-  Mat_SeqAIJ_EsslLU *essl = (Mat_SeqAIJ_EsslLU *) a->spptr;
+  Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl *) a->spptr;
   int               i,ierr, one = 1;
 
   /* copy matrix data into silly ESSL data structure */
@@ -115,13 +113,18 @@ static int MatLUFactorNumeric_SeqAIJ_EsslLU(Mat A,Mat *F)
     for ( i=0; i<aa->nz; i++ ) essl->ja[i]  = aa->j[i] + 1;
   }
   else {
-    PETSCMEMCPY(essl->ia,aa->i,(aa->m+1)*sizeof(int));
-    PETSCMEMCPY(essl->ja,aa->j,(aa->nz)*sizeof(int));
+    PetscMemcpy(essl->ia,aa->i,(aa->m+1)*sizeof(int));
+    PetscMemcpy(essl->ja,aa->j,(aa->nz)*sizeof(int));
   }
-  PETSCMEMCPY(essl->a,aa->a,(aa->nz)*sizeof(Scalar));
+  PetscMemcpy(essl->a,aa->a,(aa->nz)*sizeof(Scalar));
   
   /* set Essl options */
-  essl->iparm[0] = 0; /* use defaults */
+  essl->iparm[0] = 1; 
+  essl->iparm[1] = 5;
+  essl->iparm[2] = 1;
+  essl->iparm[3] = 0;
+  essl->rparm[0] = 1.e-12;
+  essl->rparm[1] = A->lupivotthreshold;
 
   dgsf(&one,&aa->m,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,
                essl->rparm,essl->oparm,essl->aux,&essl->naux);
@@ -129,21 +132,21 @@ static int MatLUFactorNumeric_SeqAIJ_EsslLU(Mat A,Mat *F)
   return 0;
 }
 
-int MatUseEsslLU_SeqAIJ(Mat A)
+int MatUseEssl_SeqAIJ(Mat A)
 {
   PETSCVALIDHEADERSPECIFIC(A,MAT_COOKIE);  
   if (A->type != MATSEQAIJ) return 0;
 
-  A->ops.lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_EsslLU;
-  A->ops.lufactornumeric  = MatLUFactorNumeric_SeqAIJ_EsslLU;
-  A->ops.lugetreordering  = MatGetReordering_SeqAIJ_EsslLU;
+  A->ops.lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Essl;
+  A->ops.lufactornumeric  = MatLUFactorNumeric_SeqAIJ_Essl;
+  A->ops.getreordering    = MatGetReordering_SeqAIJ_Essl;
 
   return 0;
 }
 
 #else
 
-int MatUseEsslLU_SeqAIJ(Mat A)
+int MatUseEssl_SeqAIJ(Mat A)
 {
   return 0;
 }

@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.32 1995/09/11 18:45:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.33 1995/09/21 03:48:25 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -36,7 +37,7 @@ static int ISGetSize_General(IS is,int *size)
 static int ISInvertPermutation_General(IS is, IS *isout)
 {
   IS_General *sub = (IS_General *)is->data;
-  int           i,ierr, *ii,n = sub->n,*idx = sub->idx;
+  int        i,ierr, *ii,n = sub->n,*idx = sub->idx;
   ii = (int *) PETSCMALLOC( n*sizeof(int) ); CHKPTRQ(ii);
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
@@ -58,21 +59,23 @@ static int ISView_General(PetscObject obj, Viewer viewer)
   if (!viewer) {
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
-  if (vobj->cookie == VIEWER_COOKIE && ((vobj->type == ASCII_FILE_VIEWER) ||
-                                       (vobj->type == ASCII_FILES_VIEWER))) {
-    ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
-    if (is->isperm) {
-      fprintf(fd,"Index set is permutation\n");
-    }
-    fprintf(fd,"Number of indices in set %d\n",n);
-    for ( i=0; i<n; i++ ) {
-      fprintf(fd,"%d %d\n",i,idx[i]);
+  if (vobj->cookie == VIEWER_COOKIE) {
+    if ((vobj->type == ASCII_FILE_VIEWER) || (vobj->type == ASCII_FILES_VIEWER)) {
+      ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+      if (is->isperm) {
+        fprintf(fd,"Index set is permutation\n");
+      }
+      fprintf(fd,"Number of indices in set %d\n",n);
+      for ( i=0; i<n; i++ ) {
+        fprintf(fd,"%d %d\n",i,idx[i]);
+      }
     }
   }
   return 0;
 }
   
-static struct _ISOps myops = { ISGetSize_General,ISGetSize_General,
+static struct _ISOps myops = { ISGetSize_General,
+                               ISGetSize_General,
                                ISGetIndices_General,0,
                                ISInvertPermutation_General};
 /*@C
@@ -113,12 +116,12 @@ int ISCreateSeq(MPI_Comm comm,int n,int *idx,IS *is)
     if (idx[i] < min) min = idx[i];
     if (idx[i] > max) max = idx[i];
   }
-  PETSCMEMCPY(sub->idx,idx,n*sizeof(int));
+  PetscMemcpy(sub->idx,idx,n*sizeof(int));
   sub->sorted     = sorted;
   Nindex->min     = min;
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
-  Nindex->ops     = &myops;
+  PetscMemcpy(&Nindex->ops,&myops,sizeof(myops));
   Nindex->destroy = ISDestroy_General;
   Nindex->view    = ISView_General;
   Nindex->isperm  = 0;
@@ -127,7 +130,7 @@ int ISCreateSeq(MPI_Comm comm,int n,int *idx,IS *is)
 
 /*@C
    ISAddStrideSeq - Adds additional entries to a sequential 
-                           index set by a stride.
+                    index set by a stride.
 
    Input Parameters:
 .  n - the length of the new piece of the index set
@@ -157,14 +160,13 @@ int ISAddStrideSeq(IS *is,int n,int first,int step)
     N = 0;
   }
 
-
   size = sizeof(IS_General) + n*sizeof(int) + N*sizeof(int);
   sub            = (IS_General *) PETSCMALLOC(size); CHKPTRQ(sub);
   PLogObjectMemory(Newis,size + sizeof(struct _IS));
   sub->idx = idx = (int *) (sub+1);
   sub->sorted    = 1;
 
-  PETSCMEMCPY(sub->idx,old,N*sizeof(int));
+  PetscMemcpy(sub->idx,old,N*sizeof(int));
   if (*is) {
     PLogObjectParent(Newis,*is);ISRestoreIndices(*is,&old); ISDestroy(*is);
   }
@@ -183,11 +185,10 @@ int ISAddStrideSeq(IS *is,int n,int first,int step)
   Newis->min     = min;
   Newis->max     = max;
   Newis->data    = (void *) sub;
-  Newis->ops     = &myops;
+  PetscMemcpy(&Newis->ops,&myops,sizeof(myops));
   Newis->destroy = ISDestroy_General;
   Newis->view    = ISView_General;
   Newis->isperm  = 0;
-
   *is = Newis; 
   return 0;
 }

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.39 1995/08/30 20:20:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.40 1995/09/04 17:24:00 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -12,9 +12,6 @@ static char vcid[] = "$Id: options.c,v 1.39 1995/08/30 20:20:17 bsmith Exp bsmit
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include <stdio.h>
 #include <math.h>
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 #include "sys.h"
 #include "sysio.h"
 #include "sys/nreg.h"
@@ -66,24 +63,25 @@ MPI_Datatype  MPIU_COMPLEX;
 .  file - [optional] PETSc database file, defaults to ~username/.petscrc
 .  env  - [optional] PETSc database environmental variable, defaults to 
           PETSC_OPTIONS
+.  help - [optional] Help message to print.
 
    Notes:
    If for some reason you must call MPI_Init() separately, call
    it before PetscInitialize().
 
-   In FORTRAN this routine takes one integer argument!
+   In FORTRAN this routine takes only an ierr argument.
 
 .keywords: initialize, options, database, startup
 
 .seealso: PetscFinalize()
 @*/
-int PetscInitialize(int *argc,char ***args,char *file,char *env)
+int PetscInitialize(int *argc,char ***args,char *file,char *env,char *help)
 {
   int    ierr,flag;
   static int PetscInitializedCalled = 0;
 
   if (PetscInitializedCalled) SETERRQ(1," PetscInitialize: CANNOT call twice");
-  PetscInitializedCalled = 0;
+  PetscInitializedCalled = 1;
 
   MPI_Initialized(&flag);
   if (!flag) {
@@ -102,6 +100,9 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env)
     MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
     MPI_Comm_size(MPI_COMM_WORLD,&numtid);
     PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",mytid,numtid);
+  }
+  if (help && OptionsHasName(0,"-help")) {
+    MPIU_printf(MPI_COMM_WORLD,help);
   }
   return 0;
 }
@@ -256,13 +257,13 @@ int OptionsCheckInitial_Private()
   if (OptionsGetString(0,"-on_error_attach_debugger",string,64)) {
     char *debugger = 0, *display = 0;
     int  xterm     = 1, sfree = 0;
-    if (strstr(string,"noxterm")) xterm = 0;
+    if (PetscStrstr(string,"noxterm")) xterm = 0;
 #if defined(PARCH_hpux)
-    if (strstr(string,"xdb"))     debugger = "xdb";
+    if (PetscStrstr(string,"xdb"))     debugger = "xdb";
 #else
-    if (strstr(string,"dbx"))     debugger = "dbx";
+    if (PetscStrstr(string,"dbx"))     debugger = "dbx";
 #endif
-    if (strstr(string,"xxgdb"))   debugger = "xxgdb";
+    if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
     if (OptionsGetString(0,"-display",string,64)){
       display = string;
     }
@@ -295,13 +296,13 @@ int OptionsCheckInitial_Private()
         MPI_Recv(&dummy,1,MPI_INT,i,109,MPI_COMM_WORLD,&status);
       }
     }
-    if (strstr(string,"noxterm")) xterm = 0;
+    if (PetscStrstr(string,"noxterm")) xterm = 0;
 #if defined(PARCH_hpux)
-    if (strstr(string,"xdb"))     debugger = "xdb";
+    if (PetscStrstr(string,"xdb"))     debugger = "xdb";
 #else
-    if (strstr(string,"dbx"))     debugger = "dbx";
+    if (PetscStrstr(string,"dbx"))     debugger = "dbx";
 #endif
-    if (strstr(string,"xxgdb"))   debugger = "xxgdb";
+    if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
     if (OptionsGetString(0,"-display",string,64)){
       display = string;
     }
@@ -389,18 +390,18 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
   char pfile[128];
   if (!options) {
     options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTRQ(options);
-    PETSCMEMSET(options->used,0,MAXOPTIONS*sizeof(int));
+    PetscZero(options->used,MAXOPTIONS*sizeof(int));
   }
   if (!env) env = "PETSC_OPTIONS";
   if (!file) {
     if ((ierr = SYGetHomeDirectory(120,pfile))) return ierr;
-    strcat(pfile,"/.petscrc");
+    PetscStrcat(pfile,"/.petscrc");
     file = pfile;
   }
 
   if (*argc) {
     options->namegiven = 1;
-    strncpy(options->programname,**args,256);
+    PetscStrncpy(options->programname,**args,256);
   }
   else {options->namegiven = 0;}
   options->N = 0;
@@ -419,21 +420,21 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
         if (string[0] == '#') continue;
         if (string[0] == '!') continue;
         if (string[0] == '%') continue;
-        first = strtok(string," ");
-        second = strtok(0," ");
+        first = PetscStrtok(string," ");
+        second = PetscStrtok(0," ");
         if (first && first[0] == '-') {
           if (second) {final = second;} else {final = first;}
-          len = strlen(final);
+          len = PetscStrlen(final);
           while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
             len--; final[len] = 0;
           }
           OptionsSetValue(first,second);
         }
         else if (first && !strcmp(first,"alias")) {
-          third = strtok(0," ");
+          third = PetscStrtok(0," ");
           if (!third)
             SETERRQ(1,"OptionsCreate_Private: Error in options file on alias");
-          len = strlen(third); third[len-1] = 0;
+          len = PetscStrlen(third); third[len-1] = 0;
           ierr = OptionsSetAlias_Private(second,third); CHKERRQ(ierr);
         }
       }
@@ -443,17 +444,17 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
   /* insert environmental options */
   {
     char *eoptions = (char *) getenv(env);
-    char *second, *first = strtok(eoptions," ");
+    char *second, *first = PetscStrtok(eoptions," ");
     while (first) {
-      if (first[0] != '-') {first = strtok(0," "); continue;}
-      second = strtok(0," ");
+      if (first[0] != '-') {first = PetscStrtok(0," "); continue;}
+      second = PetscStrtok(0," ");
       if ((!second) || ((second[0] == '-') && (second[1] > '9'))) {
         OptionsSetValue(first,(char *)0);
         first = second;
       }
       else {
         OptionsSetValue(first,second);
-        first = strtok(0," ");
+        first = PetscStrtok(0," ");
       }
     }
   }
@@ -572,11 +573,11 @@ int OptionsSetValue(char *name,char *value)
   for ( i=0; i<N; i++ ) {
     if (strcmp(names[i],name) == 0) {
       if (options->values[i]) free(options->values[i]);
-      len = strlen(value);
+      len = PetscStrlen(value);
       if (len) {
         options->values[i] = (char *) malloc( len ); 
         CHKPTRQ(options->values[i]);
-        strcpy(options->values[i],value);
+        PetscStrcpy(options->values[i],value);
       }
       else { options->values[i] = 0;}
       return 0;
@@ -598,13 +599,13 @@ int OptionsSetValue(char *name,char *value)
     options->values[i] = options->values[i-1];
   }
   /* insert new name and value */
-  len = (strlen(name)+1)*sizeof(char);
+  len = (PetscStrlen(name)+1)*sizeof(char);
   names[n] = (char *) malloc( len ); CHKPTRQ(names[n]);
-  strcpy(names[n],name);
+  PetscStrcpy(names[n],name);
   if (value) {
-    len = (strlen(value)+1)*sizeof(char);
+    len = (PetscStrlen(value)+1)*sizeof(char);
     options->values[n] = (char *) malloc( len ); CHKPTRQ(options->values[n]);
-    strcpy(options->values[n],value);
+    PetscStrcpy(options->values[n],value);
   }
   else {options->values[n] = 0;}
   options->N++;
@@ -618,12 +619,12 @@ int OptionsSetAlias_Private(char *newname,char *oldname)
   if (n >= MAXALIASES) {
     SETERRQ(1,"OptionsSetAlias_Private: Too many option aliases defined");
   }
-  len = (strlen(newname)+1)*sizeof(char);
+  len = (PetscStrlen(newname)+1)*sizeof(char);
   options->aliases1[n] = (char *) malloc( len ); CHKPTRQ(options->aliases1[n]);
-  strcpy(options->aliases1[n],newname);
-  len = (strlen(oldname)+1)*sizeof(char);
+  PetscStrcpy(options->aliases1[n],newname);
+  len = (PetscStrlen(oldname)+1)*sizeof(char);
   options->aliases2[n] = (char *) malloc( len );CHKPTRQ(options->aliases2[n]);
-  strcpy(options->aliases2[n],oldname);
+  PetscStrcpy(options->aliases2[n],oldname);
   options->Naliases++;
   return 0;
 }
@@ -637,9 +638,9 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value)
 
   /* append prefix to name; second check is for pre passed from Fortran */
   if (pre && *pre != '\000' && *pre != ' ') {
-    strcpy(tmp,pre); strcat(tmp,name+1);
+    PetscStrcpy(tmp,pre); PetscStrcat(tmp,name+1);
   }
-  else strcpy(tmp,name);
+  else PetscStrcpy(tmp,name);
 
   /* slow search */
   for ( i=0; i<N; i++ ) {
@@ -750,11 +751,11 @@ int OptionsGetDoubleArray(char* pre,char *name,
   char *value;
   int  n = 0;
   if (!OptionsFindPair_Private(pre,name,&value)) {*nmax = 0; return 0;}
-  value = strtok(value,",");
+  value = PetscStrtok(value,",");
   while (n < *nmax) {
     if (!value) break;
     *dvalue++ = atof(value);
-    value = strtok(0,",");
+    value = PetscStrtok(0,",");
     n++;
   }
   *nmax = n;
@@ -786,11 +787,11 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax)
   char *value;
   int  n = 0;
   if (!OptionsFindPair_Private(pre,name,&value)) {*nmax = 0; return 0;}
-  value = strtok(value,",");
+  value = PetscStrtok(value,",");
   while (n < *nmax) {
     if (!value) break;
     *dvalue++ = atoi(value);
-    value = strtok(0,",");
+    value = PetscStrtok(0,",");
     n++;
   }
   *nmax = n;
@@ -820,8 +821,8 @@ int OptionsGetString(char *pre,char *name,char *string,int len)
 {
   char *value;
   if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
-  if (value) strncpy(string,value,len);
-  else PETSCMEMSET(string,0,len);
+  if (value) PetscStrncpy(string,value,len);
+  else PetscZero(string,len);
   return 1; 
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex15.c,v 1.16 1995/09/11 18:45:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.17 1995/09/21 20:08:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "This example displays a vector visually.\n\n";
@@ -20,8 +20,7 @@ int main(int argc,char **argv)
   DrawCtx       win;
   DrawLGCtx     lg;
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   OptionsGetInt(0,"-n",&n);
 
   /* create vector */

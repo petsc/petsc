@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.32 1995/09/21 20:10:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.33 1995/09/21 21:06:46 curfman Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -59,7 +59,7 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
-  PETSCMEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  PetscZero(nprocs,2*numtids*sizeof(int)); procs = nprocs + numtids;
   owner = (int *) PETSCMALLOC( (mbd->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
   for ( i=0; i<mbd->stash.n; i++ ) {
     idx = mbd->stash.idx[i];
@@ -226,7 +226,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
-  PETSCMEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  PetscZero(nprocs,2*numtids*sizeof(int)); procs = nprocs + numtids;
   owner = (int *) PETSCMALLOC((N+1)*sizeof(int)); CHKPTRQ(owner); /* see note*/
   for ( i=0; i<N; i++ ) {
     idx = rows[i];
@@ -617,7 +617,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIBDIAG,comm);
   PLogObjectCreate(mat);
   mat->data	= (void *) (mbd = PETSCNEW(Mat_MPIBDiag)); CHKPTRQ(mbd);
-  PETSCMEMCPY(&mat->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
   mat->destroy	= MatDestroy_MPIBDiag;
   mat->view	= MatView_MPIBDiag;
   mat->factor	= 0;
@@ -658,10 +658,6 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   mbd->brstart = (mbd->rstart)/nb;
   mbd->brend   = (mbd->rend)/nb;
 
-/*  printf("[%d] m=%d, n=%d, M=%d, N=%d, ",
-    mbd->mytid, mbd->m, mbd->n, mbd->M, mbd->N ); 
-  printf("[%d] rstart=%d, rend=%d, brstart=%d, brend=%d\n", mbd->mytid,
-           mbd->rstart,mbd->rend,mbd->brstart, mbd->brend); */
 
   /* Determine local diagonals; for now, assume global rows = global cols */
   /* These are sorted in MatCreateSeqBDiag */
@@ -708,9 +704,6 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   for (i=0; i<k; i++) {
     if (ldiag[i] + mbd->brstart == 0) mlocal->mainbd = i; 
   }
-/*   for (i=0; i<nd; i++)
-    printf("[%d] i=%d, diag[i]=%d, ldiag[i]=%d, mainbd=%d\n", 
-         mbd->mytid,i,diag[i],ldiag[i],mlocal->mainbd); */
  
   PLogObjectParent(mat,mbd->A);
   PETSCFREE(ldiag); if (ldiagv) PETSCFREE(ldiagv);

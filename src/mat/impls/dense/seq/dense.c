@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.58 1995/09/12 03:25:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.59 1995/09/21 20:10:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -89,7 +89,7 @@ static int MatSolve_SeqDense(Mat matin,Vec xx,Vec yy)
   int    one = 1, info;
   Scalar *x, *y;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
-  PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
+  PetscMemcpy(y,x,mat->m*sizeof(Scalar));
   if (matin->factor == FACTOR_LU) {
     LAgetrs_( "N", &mat->m, &one, mat->v, &mat->m, mat->pivots,
               y, &mat->m, &info );
@@ -108,7 +108,7 @@ static int MatSolveTrans_SeqDense(Mat matin,Vec xx,Vec yy)
   int    one = 1, info;
   Scalar *x, *y;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
-  PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
+  PetscMemcpy(y,x,mat->m*sizeof(Scalar));
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
     LAgetrs_( "T", &mat->m, &one, mat->v, &mat->m, mat->pivots,
@@ -133,7 +133,7 @@ static int MatSolveAdd_SeqDense(Mat matin,Vec xx,Vec zz,Vec yy)
     PLogObjectParent(matin,tmp);
     ierr = VecCopy(yy,tmp); CHKERRQ(ierr);
   } 
-  PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
+  PetscMemcpy(y,x,mat->m*sizeof(Scalar));
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
     LAgetrs_( "N", &mat->m, &one, mat->v, &mat->m, mat->pivots,
@@ -160,7 +160,7 @@ static int MatSolveTransAdd_SeqDense(Mat matin,Vec xx,Vec zz, Vec yy)
     PLogObjectParent(matin,tmp);
     ierr = VecCopy(yy,tmp); CHKERRQ(ierr);
   } 
-  PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
+  PetscMemcpy(y,x,mat->m*sizeof(Scalar));
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
     LAgetrs_( "T", &mat->m, &one, mat->v, &mat->m, mat->pivots,
@@ -255,7 +255,7 @@ static int MatMultAdd_SeqDense(Mat matin,Vec xx,Vec zz,Vec yy)
   Scalar *v = mat->v, *x, *y, *z;
   int    _One=1; Scalar _DOne=1.0;
   VecGetArray(xx,&x); VecGetArray(yy,&y); VecGetArray(zz,&z);
-  if (zz != yy) PETSCMEMCPY(y,z,mat->m*sizeof(Scalar));
+  if (zz != yy) PetscMemcpy(y,z,mat->m*sizeof(Scalar));
   LAgemv_( "N", &(mat->m), &(mat->n), &_DOne, v, &(mat->m), 
          x, &_One, &_DOne, y, &_One );
   return 0;
@@ -268,7 +268,7 @@ static int MatMultTransAdd_SeqDense(Mat matin,Vec xx,Vec zz,Vec yy)
   Scalar _DOne=1.0;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   VecGetArray(zz,&z);
-  if (zz != yy) PETSCMEMCPY(y,z,mat->m*sizeof(Scalar));
+  if (zz != yy) PetscMemcpy(y,z,mat->m*sizeof(Scalar));
   LAgemv_( "T", &(mat->m), &(mat->n), &_DOne, v, &(mat->m), 
          x, &_One, &_DOne, y, &_One );
   return 0;
@@ -352,7 +352,7 @@ static int MatCopyPrivate_SeqDense(Mat matin,Mat *newmat)
   ierr = MatCreateSeqDense(matin->comm,mat->m,mat->n,&newi);
   CHKERRQ(ierr);
   l = (Mat_SeqDense *) newi->data;
-  PETSCMEMCPY(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
+  PetscMemcpy(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
   *newmat = newi;
   return 0;
 }
@@ -565,7 +565,7 @@ static int MatSetOption_SeqDense(Mat aijin,MatOption op)
 static int MatZeroEntries_SeqDense(Mat A)
 {
   Mat_SeqDense *l = (Mat_SeqDense *) A->data;
-  PETSCMEMSET(l->v,0,l->m*l->n*sizeof(Scalar));
+  PetscZero(l->v,l->m*l->n*sizeof(Scalar));
   return 0;
 }
 
@@ -633,7 +633,7 @@ static int MatGetSubMatrix_SeqDense(Mat matin,IS isrow,IS iscol,Mat *submat)
   smap = (int *) PETSCMALLOC(oldcols*sizeof(int)); CHKPTRQ(smap);
   cwork = (int *) PETSCMALLOC(ncols*sizeof(int)); CHKPTRQ(cwork);
   vwork = (Scalar *) PETSCMALLOC(ncols*sizeof(Scalar)); CHKPTRQ(vwork);
-  PETSCMEMSET((char*)smap,0,oldcols*sizeof(int));
+  PetscZero((char*)smap,oldcols*sizeof(int));
   for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
 
   /* Create and fill new matrix */
@@ -709,7 +709,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Mat *newmat)
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATSEQDENSE,comm);
   PLogObjectCreate(mat);
   l              = (Mat_SeqDense *) PETSCMALLOC(size); CHKPTRQ(l);
-  PETSCMEMCPY(&mat->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
   mat->destroy   = MatDestroy_SeqDense;
   mat->view      = MatView_SeqDense;
   mat->data      = (void *) l;
@@ -722,7 +722,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Mat *newmat)
   l->pivots      = 0;
   l->roworiented = 1;
 
-  PETSCMEMSET(l->v,0,m*n*sizeof(Scalar));
+  PetscZero(l->v,m*n*sizeof(Scalar));
   *newmat = mat;
   return 0;
 }

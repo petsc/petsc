@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.14 1995/08/30 01:27:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.15 1995/09/21 20:13:09 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "This example tests various DA routines.\n\n";
@@ -19,8 +19,7 @@ int main(int argc,char **argv)
   Vec      local, global;
   Scalar   value;
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,300,300,&win); CHKERRA(ierr);
 
   OptionsGetInt(0,"-M",&M);

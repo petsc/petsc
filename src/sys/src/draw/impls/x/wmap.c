@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: wmap.c,v 1.6 1995/06/23 12:41:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: wmap.c,v 1.7 1995/07/17 20:42:05 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -37,7 +37,6 @@ int Xi_wait_map( DrawCtx_X *XiWin)
         XiWin->h  = h;
         break;
       case DestroyNotify:
-        /* printf( "in destroy notify\n" ); */
         return 1;
       case Expose:
         return 0;

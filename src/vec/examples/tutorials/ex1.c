@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.22 1995/08/17 14:11:05 curfman Exp $";
+static char vcid[] = "$Id: ex1.c,v 1.21 1995/08/17 21:33:33 curfman Exp bsmith $";
 #endif
 
 static char help[] = "This example tests various vector routines\n\n";
@@ -18,8 +18,7 @@ int main(int argc,char **argv)
   double   norm,v;
   Vec      x,y,w,*z;
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   OptionsGetInt(0,"-n",&n);
 
   /* create a vector */

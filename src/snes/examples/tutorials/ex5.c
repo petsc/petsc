@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.27 1995/09/13 16:36:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.28 1995/09/21 20:12:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -62,8 +62,7 @@ int main( int argc, char **argv )
   Mat           J;
   DAStencilType stencil = DA_STENCIL_BOX;
 
-  PetscInitialize( &argc, &argv, 0,0 );
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize( &argc, &argv, 0,0,help );
   if (OptionsHasName(0,"-star")) stencil = DA_STENCIL_STAR;
 
   user.mx = 4; user.my = 4; user.param = 6.0;
@@ -221,8 +220,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   Mat     jac = *J;
   int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
   int     nloc, *ltog, grow;
-  Scalar  two = 2.0, one = 1.0, lambda, v[5];
-  double  hx, hy, hxdhy, hydhx;
+  Scalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx;
   Scalar  sc, *x;
   Vec     localX = user->localX;
 

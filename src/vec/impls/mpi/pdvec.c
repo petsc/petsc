@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.25 1995/09/07 04:24:43 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.26 1995/09/21 20:08:12 bsmith Exp bsmith $ */
 
 #include "pinclude/pviewer.h"
 #include "sysio.h"
@@ -114,11 +114,9 @@ static int VecView_MPI_Files(Vec xin, Viewer ptr )
 static int VecView_MPI_Binary(Vec xin, Viewer ptr )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         mytid,ierr;
+  int         mytid,ierr,len, work = x->n,n,j,numtids, fdes;
   MPI_Status  status;
-  int         len, work = x->n,n,j,numtids;
   Scalar      *values;
-  int         fdes;
 
   ierr = ViewerFileGetDescriptor_Private(ptr,&fdes); CHKERRQ(ierr);
 
@@ -128,9 +126,9 @@ static int VecView_MPI_Binary(Vec xin, Viewer ptr )
   MPI_Comm_size(xin->comm,&numtids);
 
   if (!mytid) {
-    ierr = SYWrite(fdes,(char *)&xin->cookie,sizeof(int),SYINT,0); CHKERRQ(ierr);
-    ierr = SYWrite(fdes,(char *)&x->N,sizeof(int),SYINT,0); CHKERRQ(ierr);
-    ierr = SYWrite(fdes,(char *)x->array,x->n*sizeof(Scalar),SYSCALAR,0); 
+    ierr = SYWrite(fdes,&xin->cookie,1,SYINT,0); CHKERRQ(ierr);
+    ierr = SYWrite(fdes,&x->N,1,SYINT,0); CHKERRQ(ierr);
+    ierr = SYWrite(fdes,x->array,x->n,SYSCALAR,0); 
     CHKERRQ(ierr);
 
     values = (Scalar *) PETSCMALLOC( len*sizeof(Scalar) ); CHKPTRQ(values);
@@ -138,7 +136,7 @@ static int VecView_MPI_Binary(Vec xin, Viewer ptr )
     for ( j=1; j<numtids; j++ ) {
       MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
       MPI_Get_count(&status,MPIU_SCALAR,&n);          
-      ierr = SYWrite(fdes,(char *)values,n*sizeof(Scalar),SYSCALAR,0); 
+      ierr = SYWrite(fdes,values,n,SYSCALAR,0); 
     }
     PETSCFREE(values);
   }
@@ -152,9 +150,8 @@ static int VecView_MPI_Binary(Vec xin, Viewer ptr )
 static int VecView_MPI_DrawCtx(Vec xin, DrawCtx win )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,mytid,numtid,ierr;
+  int         i,mytid,numtid,ierr,start,end;
   MPI_Status  status;
-  int         start,end;
   double      coors[4],ymin,ymax,xmin,xmax,tmp;
 
   MPI_Comm_size(xin->comm,&numtid); 
@@ -215,10 +212,9 @@ static int VecView_MPI_DrawCtx(Vec xin, DrawCtx win )
 static int VecView_MPI_LG(Vec xin, DrawLGCtx lg )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,mytid,numtid;
+  int         i,mytid,numtid, N = x->N,*lens;
   DrawCtx     win;
   double      *xx,*yy;
-  int         N = x->N,*lens;
 
   MPI_Comm_rank(xin->comm,&mytid);
   MPI_Comm_size(xin->comm,&numtid);
@@ -300,22 +296,19 @@ static int VecGetSize_MPI(Vec xin,int *N)
       Uses a slow search to determine if item is already cached. 
    Could keep cache list sorted at all times.
 */
-static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
-                                   InsertMode addv )
+static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
   int        mytid = x->mytid, *owners = x->ownership, start = owners[mytid];
   int        end = owners[mytid+1], i, j, alreadycached;
   Scalar     *xx = x->array;
 
-#if defined(PETSC_DEBUG)
   if (x->insertmode == INSERT_VALUES && addv == ADD_VALUES) { SETERRQ(1,
    "VecSetValues_MPI: You have already inserted values; you cannot now add");
   }
   else if (x->insertmode == ADD_VALUES && addv == INSERT_VALUES) { SETERRQ(1,
    "VecSetValues_MPI: You have already added values; you cannot now insert");
   }
-#endif
   x->insertmode = addv;
 
   for ( i=0; i<ni; i++ ) {
@@ -324,16 +317,13 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
       else                      xx[ix[i]-start] += y[i];
     }
     else {
-#if defined(PETSC_DEBUG)
-      if (ix[i] < 0 || ix[i] > x->N) 
-        SETERRQ(1,"VecSetValues_MPI: Index out of range");
-#endif
+      if (ix[i] < 0 || ix[i] > x->N) SETERRQ(1,"VecSetValues_MPI:Out of range");
       /* check if this index has already been cached */
       alreadycached = 0;
       for ( j=0; j<x->stash.n; j++ ) {
         if (x->stash.idx[j] == ix[i]) {
           if (addv == INSERT_VALUES) x->stash.array[j] = y[i];
-          else                      x->stash.array[j] += y[i];
+          else                       x->stash.array[j] += y[i];
           alreadycached = 1; 
           break;
         }
@@ -346,8 +336,8 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
                                      (nmax+10)*sizeof(int) ); CHKPTRQ(array);
           PLogObjectMemory(xin,10*(sizeof(Scalar) + sizeof(int)));
           idx = (int *) (array + nmax + 10);
-          PETSCMEMCPY(array,x->stash.array,nmax*sizeof(Scalar));
-          PETSCMEMCPY(idx,x->stash.idx,nmax*sizeof(int));
+          PetscMemcpy(array,x->stash.array,nmax*sizeof(Scalar));
+          PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
           if (x->stash.array) PETSCFREE(x->stash.array);
           x->stash.array = array; x->stash.idx = idx;
           x->stash.nmax += 10;
@@ -376,16 +366,15 @@ static int VecAssemblyBegin_MPI(Vec xin)
   MPI_Request *send_waits,*recv_waits;
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
-  MPI_Allreduce((void *) &x->insertmode,(void *) &addv,1,MPI_INT,
-                MPI_BOR,comm);
+  MPI_Allreduce((void *) &x->insertmode,(void *) &addv,1,MPI_INT,MPI_BOR,comm);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { SETERRQ(1,
-  "VecAssemblyBegin_MPI: Some processors inserted values while others added");
+    "VecAssemblyBegin_MPI: Some processors inserted values while others added");
   }
   x->insertmode = addv; /* in case this processor had no cache */
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
-  PETSCMEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  PetscZero(nprocs,2*numtids*sizeof(int)); procs = nprocs + numtids;
   owner = (int *) PETSCMALLOC( (x->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
   for ( i=0; i<x->stash.n; i++ ) {
     idx = x->stash.idx[i];
@@ -427,8 +416,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  svalues = (Scalar *) PETSCMALLOC( 2*(x->stash.n+1)*sizeof(Scalar) );
-  CHKPTRQ(svalues);
+  svalues = (Scalar *) PETSCMALLOC(2*(x->stash.n+1)*sizeof(Scalar));CHKPTRQ(svalues);
   send_waits = (MPI_Request *) PETSCMALLOC( (nsends+1)*sizeof(MPI_Request));
   CHKPTRQ(send_waits);
   starts = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(starts);
@@ -464,7 +452,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
 
 static int VecAssemblyEnd_MPI(Vec vec)
 {
-  Vec_MPI   *x = (Vec_MPI *)vec->data;
+  Vec_MPI     *x = (Vec_MPI *)vec->data;
   MPI_Status  *send_status,recv_status;
   int         imdex,base,nrecvs = x->nrecvs, count = nrecvs, i, n;
   Scalar      *values;
@@ -489,7 +477,7 @@ static int VecAssemblyEnd_MPI(Vec vec)
       }
     }
     else { SETERRQ(1,
- "VecAssemblyEnd_MPI: Insert mode is not set correctly; corrupted vector");
+      "VecAssemblyEnd_MPI: Insert mode is not set correctly; corrupted vector");
     }
     count--;
   }

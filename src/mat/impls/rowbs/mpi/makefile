@@ -3,7 +3,7 @@ PETSC_DIR = ../../../../..
 ALL: lib
 
 CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I../seq \
-           $(BS_INCLUDE) $(CONF)
+           $(BS_INCLUDE) $(CONF) -D__DIR__='"mat/impls/rowbs/mpi/"'
 SOURCEC  = mpirowbs.c cholbs.c
 SOURCEF  =
 SOURCEH  = mpirowbs.h

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.7 1995/08/31 21:50:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.8 1995/09/21 20:11:42 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -17,8 +17,7 @@ int main(int argc,char **args)
   Vec     u,b,x;
   SLES    sles;
 
-  PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,help);
+  PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(0,"-m",&m);
   OptionsGetInt(0,"-n",&n);
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.34 1995/09/11 18:45:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.35 1995/09/21 20:07:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -84,7 +84,7 @@ static int SStoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
   
   if (addv == INSERT_VALUES) {
     if (to_step == 1 && from_step == 1) {
-      PETSCMEMCPY(yv+to_first,xv+from_first,n*sizeof(Scalar));
+      PetscMemcpy(yv+to_first,xv+from_first,n*sizeof(Scalar));
     }
     else {
       for ( i=0; i<n; i++ ) {
@@ -165,10 +165,10 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       to = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(to)
       PLogObjectMemory(ctx,len);
       to->slots = (int *) (to + 1); to->n = nx; 
-      PETSCMEMCPY(to->slots,idy,nx*sizeof(int));
+      PetscMemcpy(to->slots,idy,nx*sizeof(int));
       from = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(from);
       from->slots = (int *) (from + 1); from->n = nx; 
-      PETSCMEMCPY(from->slots,idx,nx*sizeof(int));
+      PetscMemcpy(from->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
       ctx->scatterbegin = SGtoSG; ctx->destroy = SGtoSGDestroy;
       ctx->scatterend = 0; ctx->copy = 0;
@@ -208,7 +208,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       from = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(from);
       PLogObjectMemory(ctx,len + sizeof(VecScatterStride));
       from->slots = (int *) (from + 1); from->n = nx; 
-      PETSCMEMCPY(from->slots,idx,nx*sizeof(int));
+      PetscMemcpy(from->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
       ctx->scatterbegin = SGtoSS; ctx->destroy = SGtoSGDestroy;
       ctx->scatterend = 0; ctx->pipelinebegin = 0;
@@ -230,7 +230,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       to = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(to);
       PLogObjectMemory(ctx,len + sizeof(VecScatterStride));
       to->slots = (int *) (to + 1); to->n = nx; 
-      PETSCMEMCPY(to->slots,idx,nx*sizeof(int));
+      PetscMemcpy(to->slots,idx,nx*sizeof(int));
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
       ctx->scatterbegin = SStoSG; ctx->destroy = SGtoSGDestroy;
       ctx->scatterend = 0; ctx->pipelinebegin = 0; 

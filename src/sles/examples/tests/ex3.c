@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.30 1995/09/11 18:49:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.31 1995/09/21 20:11:42 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -39,8 +39,7 @@ int main(int argc,char **args)
   KSP         ksp;
   IS          is;
 
-  PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(0,"-m",&m);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.48 1995/09/21 20:08:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.49 1995/09/28 19:24:52 bsmith Exp bsmith $";
 #endif
 
 #include "vecimpl.h"    /*I "vec.h" I*/
@@ -379,7 +379,6 @@ int VecPDiv(Vec x,Vec y,Vec w)
 {
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(w,VEC_COOKIE);
-  CHKSAME(x,y); CHKSAME(y,w);
   return (*x->ops.pdiv)(x,y,w);
 }
 /*@C

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.8 1995/08/30 01:27:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.9 1995/09/21 20:13:09 bsmith Exp bsmith $";
 #endif
   
 static char help[] = 
@@ -23,8 +23,7 @@ int main(int argc,char **argv)
   Scalar         value;
   DAStencilType  st = DA_STENCIL_BOX;
  
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,400,400,&win);
   CHKERRA(ierr);
  

@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.4 1995/07/07 17:16:34 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.5 1995/08/07 22:00:38 bsmith Exp bsmith $ */
 
 #if !defined(_DRAWIMPL_H)
 #define _DRAWIMPL_H
@@ -25,7 +25,7 @@ struct _DrawOps {
 
 struct _DrawCtx {
   PETSCHEADER
-  struct _DrawOps *ops;
+  struct _DrawOps ops;
   int             pause;       /* sleep time after a sync flush */
   double          port_xl,port_yl,port_xr,port_yr;
   double          coor_xl,coor_yl,coor_xr,coor_yr;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spnd.c,v 1.8 1995/06/08 03:20:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spnd.c,v 1.9 1995/08/15 20:28:10 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -20,7 +20,7 @@ gennd( &nrow, ia, ja, mask, perm, xls, ls );
 PETSCFREE( mask ); PETSCFREE( xls ); PETSCFREE( ls );
 
 for (i=0; i<nrow; i++) perm[i]--;
-PETSCMEMCPY(permc,perm,nrow*sizeof(int));
+PetscMemcpy(permc,perm,nrow*sizeof(int));
 return 0;
 }
 

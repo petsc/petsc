@@ -1,13 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.42 1995/09/06 14:07:43 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.43 1995/09/06 14:31:59 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
 #include "ls.h"
 #include "pinclude/pviewer.h"
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
 
 /*
      Implements a line search variant of Newton's Method 

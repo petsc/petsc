@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.7 1995/08/22 19:29:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.8 1995/09/11 18:45:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "This example tests various IS routines\n\n";
@@ -15,8 +15,7 @@ int main(int argc,char **argv)
   int      n = 5, ierr,indices[5],mytid;
   IS       is;
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
 
   /* create an index set */

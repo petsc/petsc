@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.9 1995/09/21 20:11:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.10 1995/09/22 22:39:22 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -7,19 +7,14 @@ static char vcid[] = "$Id: matio.c,v 1.9 1995/09/21 20:11:31 bsmith Exp bsmith $
  */
 
 #include "petsc.h"
-#include <unistd.h>
 #include "vec/vecimpl.h"
+#include "../matimpl.h"
 #include "sysio.h"
 #include "pinclude/pviewer.h"
-#include "matimpl.h"
-#include "row.h"
 
 extern int MatLoad_MPIRowbs(Viewer,MatType,Mat *);
 extern int MatLoad_SeqAIJ(Viewer,MatType,Mat *);
-
-
-/* -------------------------------------------------------------------- */
-
+extern int MatLoad_MPIAIJ(Viewer,MatType,Mat *);
 
 /* @
    MatLoad - Loads a matrix that has been stored in binary format
@@ -63,6 +58,9 @@ int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
 
   if (type == MATSEQAIJ) {
     ierr = MatLoad_SeqAIJ(bview,type,newmat); CHKERRQ(ierr);
+  }
+  else if (type == MATMPIAIJ) {
+    ierr = MatLoad_MPIAIJ(bview,type,newmat); CHKERRQ(ierr);
   }
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   else if (type == MATMPIROWBS) {

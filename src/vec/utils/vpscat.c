@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.27 1995/09/11 18:45:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.28 1995/09/21 20:07:58 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -330,15 +330,15 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   out_to->indices  = (int *) (out_to->requests + out_to->n); 
   out_to->starts   = (int *) (out_to->indices + ny);
   out_to->procs    = (int *) (out_to->starts + out_to->n + 1);
-  PETSCMEMCPY(out_to->indices,in_to->indices,ny*sizeof(int));
-  PETSCMEMCPY(out_to->starts,in_to->starts,(out_to->n+1)*sizeof(int));
-  PETSCMEMCPY(out_to->procs,in_to->procs,(out_to->n)*sizeof(int));
+  PetscMemcpy(out_to->indices,in_to->indices,ny*sizeof(int));
+  PetscMemcpy(out_to->starts,in_to->starts,(out_to->n+1)*sizeof(int));
+  PetscMemcpy(out_to->procs,in_to->procs,(out_to->n)*sizeof(int));
   out->todata      = (void *) out_to;
   out_to->local.n  = in_to->local.n;
   if (in_to->local.n) {
     out_to->local.slots = (int *) PETSCMALLOC(in_to->local.n*sizeof(int));
     CHKPTRQ(out_to->local.slots);
-    PETSCMEMCPY(out_to->local.slots,in_to->local.slots,
+    PetscMemcpy(out_to->local.slots,in_to->local.slots,
                                               in_to->local.n*sizeof(int));
     PLogObjectMemory(out,in_to->local.n*sizeof(int));
   }
@@ -361,16 +361,16 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   out_from->indices  = (int *) (out_from->requests + out_from->n); 
   out_from->starts   = (int *) (out_from->indices + ny);
   out_from->procs    = (int *) (out_from->starts + out_from->n + 1);
-  PETSCMEMCPY(out_from->indices,in_from->indices,ny*sizeof(int));
-  PETSCMEMCPY(out_from->starts,in_from->starts,(out_from->n+1)*sizeof(int));
-  PETSCMEMCPY(out_from->procs,in_from->procs,(out_from->n)*sizeof(int));
+  PetscMemcpy(out_from->indices,in_from->indices,ny*sizeof(int));
+  PetscMemcpy(out_from->starts,in_from->starts,(out_from->n+1)*sizeof(int));
+  PetscMemcpy(out_from->procs,in_from->procs,(out_from->n)*sizeof(int));
   out->fromdata      = (void *) out_from;
   out_from->local.n  = in_from->local.n;
   if (in_from->local.n) {
     out_from->local.slots = (int *) PETSCMALLOC(in_from->local.n*sizeof(int));
     PLogObjectMemory(out,in_from->local.n*sizeof(int));
     CHKPTRQ(out_from->local.slots);
-    PETSCMEMCPY(out_from->local.slots,in_from->local.slots,
+    PetscMemcpy(out_from->local.slots,in_from->local.slots,
                                               in_from->local.n*sizeof(int));
   }
   else {out_from->local.slots = 0;}
@@ -547,7 +547,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
-  PETSCMEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  PetscZero(nprocs,2*numtids*sizeof(int)); procs = nprocs + numtids;
   owner = (int *) PETSCMALLOC((nx+1)*sizeof(int)); CHKPTRQ(owner);
   for ( i=0; i<nx; i++ ) {
     idx = inidx[i];
@@ -762,7 +762,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
-  PETSCMEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  PetscZero(nprocs,2*numtids*sizeof(int)); procs = nprocs + numtids;
   owner = (int *) PETSCMALLOC((nx+1)*sizeof(int)); CHKPTRQ(owner); /* see note*/
   for ( i=0; i<nx; i++ ) {
     idx = inidy[i];

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sprcm.c,v 1.8 1995/06/08 03:20:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sprcm.c,v 1.9 1995/08/15 20:28:10 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -21,6 +21,6 @@ than nrow, I have made it 2nrow to be safe.
   PETSCFREE( mask );
   PETSCFREE( xls );
   for (i=0; i<nrow; i++) perm[i]--;
-  PETSCMEMCPY(permc,perm,nrow*sizeof(int));
+  PetscMemcpy(permc,perm,nrow*sizeof(int));
   return 0;
 }

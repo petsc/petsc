@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.2 1995/09/21 20:11:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.3 1995/09/22 15:15:30 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -25,8 +25,7 @@ int main(int argc,char **args)
   char       file[128]; 
   Viewer     fd;
 
-  PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&args,0,0,help);
 
 /*   Read in matrix and RHS   */
   OptionsGetString(0,"-f",file,127);
@@ -38,7 +37,7 @@ int main(int argc,char **args)
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
 
-  printf("Reading matrix completes.\n");
+  MPIU_printf(MPI_COMM_SELF,"Reading matrix completes.\n");
 /*
  MatView(A,STDOUT_VIEWER_WORLD); 
  VecView(b,STDOUT_VIEWER_WORLD);

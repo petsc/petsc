@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.6 1995/08/31 20:55:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.7 1995/09/21 20:11:42 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -13,7 +13,7 @@ using different linear solvers on the individual blocks.\n\n";
 int main(int argc,char **args)
 {
   int       i, j, I, J, ierr, m = 3, n = 2;
-  int       mytid, numtids, its, nlocal, first;
+  int       mytid, numtids, its, nlocal, first, Istart, Iend;
   Scalar    v, zero = 0.0, one = 1.0, none = -1.0;
   Vec       x, u, b;
   Mat       A; 
@@ -23,24 +23,22 @@ int main(int argc,char **args)
   double    norm;
   PCMethod  pcmethod;
 
-  PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(0,"-m",&m);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);  n = 2*numtids;
 
   /* Create and assemble matrix */
   ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,
-         0,0,0,0,&A); CHKERRA(ierr);
-  for ( i=0; i<m; i++ ) {   /* assemble matrix for the five point stencil */
-    for ( j=2*mytid; j<2*mytid+2; j++ ) {
-      v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-      v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
-    }
+                         0,0,0,0,&A); CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend); CHKERRA(ierr);
+  for ( I=Istart; I<Iend; I++ ) { 
+    v = -1.0; i = I/n; j = I - i*n;  
+    if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);}
+    if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);}
+    if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);}
+    if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);}
+    v = 4.0; MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES);
   }
   ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.32 1995/08/24 22:27:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.33 1995/09/06 03:05:09 bsmith Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -7,9 +7,7 @@ static char vcid[] = "$Id: mg.c,v 1.32 1995/08/24 22:27:47 bsmith Exp bsmith $";
 */
 #include "mgimpl.h"
 #include "pinclude/pviewer.h"
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
+
 /*
        MGMCycle_Private - Given an MG structure created with MGCreate() runs 
                   one multiplicative cycle down through the levels and
@@ -57,7 +55,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 
   for ( i=0; i<levels; i++ ) {
     mg[i]         = (MG) PETSCMALLOC( sizeof(struct _MG) ); CHKPTRQ(mg[i]);
-    PETSCMEMSET(mg[i],0,sizeof(MG));
+    PetscZero(mg[i],sizeof(MG));
     mg[i]->level  = levels - i - 1;
     mg[i]->cycles = 1;
     if ( i==levels-1) {

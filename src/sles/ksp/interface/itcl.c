@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.34 1995/08/15 20:26:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.35 1995/09/04 17:23:33 bsmith Exp bsmith $";
 #endif
 /*
     Command line interface for KSP
@@ -111,23 +111,23 @@ int KSPPrintHelp(KSP ctx)
     if (ctx->prefix) p = ctx->prefix;
     else             p = "-";
     PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
-    printf("KSP Options -------------------------------------\n");
+    MPIU_printf(ctx->comm,"KSP Options -------------------------------------\n");
     KSPPrintMethods_Private(p,"ksp_method");
-    printf(" %sksp_rtol tol: relative tolerance, defaults to %g\n",
+    MPIU_printf(ctx->comm," %sksp_rtol tol: relative tolerance, defaults to %g\n",
                      p,ctx->rtol);
-    printf(" %sksp_atol tol: absolute tolerance, defaults to %g\n",
+    MPIU_printf(ctx->comm," %sksp_atol tol: absolute tolerance, defaults to %g\n",
                      p,ctx->atol);
-    printf(" %sksp_divtol tol: divergence tolerance, defaults to %g\n",
+    MPIU_printf(ctx->comm," %sksp_divtol tol: divergence tolerance, defaults to %g\n",
                      p,ctx->divtol);
-    printf(" %sksp_max_it maxit: maximum iterations, defaults to %d\n",
+    MPIU_printf(ctx->comm," %sksp_max_it maxit: maximum iterations, defaults to %d\n",
                      p,ctx->max_it);
-    printf(" %sksp_preres: use precond. resid. in converg. test\n",p);
-    printf(" %sksp_right_pc: use right preconditioner instead of left",p);
-    printf(" %sksp_monitor: use residual convergence monitor)\n",p);
-    printf(" %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
-    printf(" %sksp_gmres_restart num: gmres restart, defaults to 10)\n",p);
-    printf(" %sksp_eigen: calculate eigenvalues during linear solve\n",p);
-    printf(" %sksp_gmres_unmodifiedgramschmidt\n",p);
+    MPIU_printf(ctx->comm," %sksp_preres: use precond. resid. in converg. test\n",p);
+    MPIU_printf(ctx->comm," %sksp_right_pc: use right preconditioner instead of left",p);
+    MPIU_printf(ctx->comm," %sksp_monitor: use residual convergence monitor)\n",p);
+    MPIU_printf(ctx->comm," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
+    MPIU_printf(ctx->comm," %sksp_gmres_restart num: gmres restart, defaults to 10)\n",p);
+    MPIU_printf(ctx->comm," %sksp_eigen: calculate eigenvalues during linear solve\n",p);
+    MPIU_printf(ctx->comm," %sksp_gmres_unmodifiedgramschmidt\n",p);
   }
   return 1;
 }

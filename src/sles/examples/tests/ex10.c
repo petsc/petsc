@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.34 1995/09/12 03:26:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.35 1995/09/21 20:11:42 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -34,8 +34,7 @@ int main(int argc,char **args)
   KSP     ksp;
   double  norm;
 
-  PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,help);
+  PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(0,"-m",&m);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
@@ -106,7 +105,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
 
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
-  printf("m = %d, N=%d\n", m, N );
+  MPIU_printf(MPI_COMM_SELF,"m = %d, N=%d\n", m, N );
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,80,0,&mat); CHKERRQ(ierr); 
 
   /* Form stiffness for element */
@@ -185,7 +184,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
 
   /* Display matrix information and nonzero structure */
   ierr = MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRQ(ierr);
-  printf("matrix nonzeros = %d, allocated nonzeros = %d\n",nz,nzalloc);
+  MPIU_printf(MPI_COMM_SELF,"matrix nonzeros = %d, allocated nonzeros = %d\n",nz,nzalloc);
   return 0;
 }
 /* -------------------------------------------------------------------- */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spqmd.c,v 1.8 1995/06/08 03:20:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.9 1995/08/15 20:28:10 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -27,7 +27,7 @@ int MatOrderQMD( int *Nrow, int *ia, int *ja, int *perm,int *permc )
   PETSCFREE( nbrhd ); PETSCFREE( qsize );
   PETSCFREE( qlink ); PETSCFREE(iperm);
   for (i=0; i<nrow; i++) perm[i]--;
-  PETSCMEMCPY(permc,perm,nrow*sizeof(int));
+  PetscMemcpy(permc,perm,nrow*sizeof(int));
   return 0;
 }
 

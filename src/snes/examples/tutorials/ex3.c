@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.13 1995/08/31 00:33:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.14 1995/09/21 20:12:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -32,8 +32,7 @@ int main( int argc, char **argv )
   Scalar         xp, *FF, *UU;
   int            ierr, its, N = 5, i, start, end, n;
 
-  PetscInitialize( &argc, &argv, 0,0 );
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize( &argc, &argv, 0,0,help );
   OptionsGetInt(0,"-n",&N);
   ctx.h = 1.0/(N-1);
 

@@ -1,7 +1,7 @@
 /* Peter Mell Modified this file   8/95 */
 
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.2 1995/09/12 01:15:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.3 1995/09/21 20:12:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -60,8 +60,7 @@ int main( int argc, char **argv )
   Mat           J;
   DAStencilType stencil = DA_STENCIL_BOX;
 
-  PetscInitialize( &argc, &argv, 0,0 );
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+  PetscInitialize( &argc, &argv, 0,0,help );
   if (OptionsHasName(0,"-star")) stencil = DA_STENCIL_STAR;
 
   user.mx    = 4; 

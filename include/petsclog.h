@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.16 1995/09/02 04:02:04 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.17 1995/09/13 01:44:45 bsmith Exp bsmith $ */
 
 /*
     Defines high level logging in Petsc.
@@ -9,7 +9,7 @@
 #include "petsc.h"  
 
 /*
-  If you add it here, make sure you add to petsc/bin/petscsim.cfg
+  If you add it here, make sure you add to petsc/bin/petscview.cfg
   and src/sys/src/plog.c!!
 */
 #define MAT_Mult                                0
@@ -207,18 +207,18 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 
 .keywords: log, event, end
 M*/
-#define PLogEventEnd(e,o1,o2,o3,o4) \
-          { if (_PLE) (*_PLE)(e,_tacky,(PetscObject)o1,(PetscObject)o2,\
-                             (PetscObject)o3,(PetscObject)o4);} _tacky--;}
-#define PLogObjectParent(p,c) {PETSCVALIDHEADER((PetscObject)c); \
-                               PETSCVALIDHEADER((PetscObject)p);\
-                               ((PetscObject)(c))->parent = (PetscObject) p;}
-#define PLogObjectParents(p,n,d) {int _i; for ( _i=0; _i<n; _i++ ) \
-          PLogObjectParent(p,(d)[_i]);}
-#define PLogObjectCreate(h) {if (_PHC) (*_PHC)((PetscObject)h);}
-#define PLogObjectDestroy(h) {if (_PHD) (*_PHD)((PetscObject)h);}
-#define PLogObjectMemory(p,m) {PETSCVALIDHEADER((PetscObject)p);\
-                               ((PetscObject)(p))->mem += (m);}
+#define PLogEventEnd(e,o1,o2,o3,o4) {if (_PLE) (*_PLE)(e,_tacky,(PetscObject)o1,\
+                                    (PetscObject)o2,(PetscObject)o3,(PetscObject)o4);}\
+                                    _tacky--;}
+#define PLogObjectParent(p,c)       {PETSCVALIDHEADER((PetscObject)c); \
+                                     PETSCVALIDHEADER((PetscObject)p);\
+                                     ((PetscObject)(c))->parent = (PetscObject) p;}
+#define PLogObjectParents(p,n,d)    {int _i; for ( _i=0; _i<n; _i++ ) \
+                                    PLogObjectParent(p,(d)[_i]);}
+#define PLogObjectCreate(h)         {if (_PHC) (*_PHC)((PetscObject)h);}
+#define PLogObjectDestroy(h)        {if (_PHD) (*_PHD)((PetscObject)h);}
+#define PLogObjectMemory(p,m)       {PETSCVALIDHEADER((PetscObject)p);\
+                                    ((PetscObject)(p))->mem += (m);}
 extern int PLogObjectState(PetscObject,char *,...);
 extern int PLogInfo(PetscObject,char*,...);
 extern int PLogDestroy();

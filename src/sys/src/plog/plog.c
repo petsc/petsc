@@ -1,12 +1,11 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.35 1995/09/04 17:24:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.36 1995/09/21 20:09:13 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include <stdio.h>
 #include <stdarg.h>
-#include <string.h>
 #include <sys/types.h>
 #include "pinclude/petscfix.h"
 #include "ptime.h"
@@ -129,7 +128,7 @@ int phc(PetscObject obj)
     Events *tmp;
     tmp = (Events *) PETSCMALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
     CHKPTRQ(tmp);
-    PETSCMEMCPY(tmp,events,eventsspace*sizeof(Events));
+    PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
     PETSCFREE(events);
     events = tmp; eventsspace += CHUNCK;
   }
@@ -137,7 +136,7 @@ int phc(PetscObject obj)
     Objects *tmp;
     tmp = (Objects *) PETSCMALLOC( (objectsspace+CHUNCK)*sizeof(Objects) );
     CHKPTRQ(tmp);
-    PETSCMEMCPY(tmp,objects,objectsspace*sizeof(Objects));
+    PetscMemcpy(tmp,objects,objectsspace*sizeof(Objects));
     PETSCFREE(objects);
     objects = tmp; objectsspace += CHUNCK;
   }
@@ -150,8 +149,8 @@ int phc(PetscObject obj)
   events[nevents++].event = CREATE;
   objects[nobjects].parent= -1;
   objects[nobjects].obj   = obj;
-  PETSCMEMSET(objects[nobjects].string,0,64*sizeof(char));
-  PETSCMEMSET(objects[nobjects].name,0,16*sizeof(char));
+  PetscZero(objects[nobjects].string,64*sizeof(char));
+  PetscZero(objects[nobjects].name,16*sizeof(char));
   obj->id = nobjects++;
   ObjectsType[obj->cookie - PETSC_COOKIE-1][0]++;
   return 0;
@@ -166,7 +165,7 @@ int phd(PetscObject obj)
     Events *tmp;
     tmp = (Events *) PETSCMALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
     CHKPTRQ(tmp);
-    PETSCMEMCPY(tmp,events,eventsspace*sizeof(Events));
+    PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
     PETSCFREE(events);
     events = tmp; eventsspace += CHUNCK;
   }
@@ -179,7 +178,7 @@ int phd(PetscObject obj)
   events[nevents++].id3     = -1;
   if (obj->parent) {objects[obj->id].parent   = obj->parent->id;}
   else {objects[obj->id].parent   = -1;}
-  if (obj->name) { strncpy(objects[obj->id].name,obj->name,16);}
+  if (obj->name) { PetscStrncpy(objects[obj->id].name,obj->name,16);}
   objects[obj->id].obj      = 0;
   objects[obj->id].mem      = obj->mem;
   ObjectsType[obj->cookie - PETSC_COOKIE-1][1]++;
@@ -209,7 +208,7 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
     Events *tmp;
     tmp = (Events *) PETSCMALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
     CHKPTRQ(tmp);
-    PETSCMEMCPY(tmp,events,eventsspace*sizeof(Events));
+    PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
     PETSCFREE(events);
     events = tmp; eventsspace += CHUNCK;
   }
@@ -238,7 +237,7 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
     Events *tmp;
     tmp = (Events *) PETSCMALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
     CHKPTRQ(tmp);
-    PETSCMEMCPY(tmp,events,eventsspace*sizeof(Events));
+    PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
     PETSCFREE(events);
     events = tmp; eventsspace += CHUNCK;
   }
@@ -333,7 +332,7 @@ int PLogAllBegin()
    following code, then 2 sets of summary data will be printed (one during 
    PLogPrint and one during PetscFinalize, which in turn calls PLogPrint).
 $
-$     PetscInitialize(int argc,char **args,0,0);
+$     PetscInitialize(int argc,char **args,0,0,0);
 $     [section 1 of code]
 $     PLogPrint(MPI_COMM_WORLD,stdout);
 $     PLogDestroy();
@@ -354,8 +353,8 @@ int PLogDestroy()
   _PHD             = 0;
 
   /* Resetting phase */
-  PETSCMEMSET(EventsType,0,sizeof(EventsType));
-  PETSCMEMSET(ObjectsType,0,sizeof(ObjectsType));
+  PetscZero(EventsType,sizeof(EventsType));
+  PetscZero(ObjectsType,sizeof(ObjectsType));
   _TotalFlops      = 0;
   nobjects         = 0;
   nevents          = 0;
