@@ -60,12 +60,14 @@ chkpetsc_dir:
 
 # 1. Checks that user has set BOPT variable
 # 2. Check if the $(LDIR) exists
-# 3. Check if the shared libs are out of date
-chkopts: 
+chkopts_basic: 
 	@if [ Holder = Holder$(BOPT) ] ; then \
 	  echo "You must set the variable BOPT=[g,O,Opg,O_c++,O_complex,...]" ; false; fi
 	@if [ ! -d $(LDIR) ]; then \
 	  echo Libraries not built for this BOPT: $(BOPT); false ; fi
+
+# 3. Check if the shared libs are out of date
+chkopts: chkopts_basic
 	@for LIBNAME in  $(SHLIBS) ; do  \
 	if [ -f $(LDIR)/$$LIBNAME.a ];	then \
 	if [ -f $(LDIR)/$$LIBNAME.$(SLSUFFIX) ]; then \
@@ -73,7 +75,7 @@ chkopts:
 	if [ "$$flag" != "" ]; then \
 	echo "shared libs in $(LDIR) out of date" ;\
 	echo "rerun: $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) shared" ;\
-	break; \
+	false; \
 	fi ;\
 	fi ;\
 	fi ;\
@@ -278,8 +280,8 @@ SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
 	libpetscsnes libpetscsys libpetscts libpetscvec
 
 
-deleteshared: chkopts
-	$(RM) $(LDIR)/*.so*  $(LDIR)/*.sl $(LDIR)/so_locations
+deleteshared: chkopts_basic
+	$(RM) $(LDIR)/*.$(SLSUFFIX) $(LDIR)/so_locations
 
 
 noshared:
