@@ -163,8 +163,8 @@ int FormFunction(TS ts,PetscReal time,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = DAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,F,(void**)&f);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
@@ -192,8 +192,8 @@ int FormFunction(TS ts,PetscReal time,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = DAVecRestoreArray(da,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,F,(void**)&f);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops(11*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
@@ -218,7 +218,7 @@ int FormInitialSolution(DA da,Vec U)
   /*
      Get pointers to vector data
   */
-  ierr = DAVecGetArray(da,U,(void**)&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
@@ -244,7 +244,7 @@ int FormInitialSolution(DA da,Vec U)
   /*
      Restore vectors
   */
-  ierr = DAVecRestoreArray(da,U,(void**)&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 

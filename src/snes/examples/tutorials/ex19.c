@@ -219,7 +219,7 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DAVecGetArray(da,X,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,X,&x);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -237,7 +237,7 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(da,X,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   return 0;
 } 
 int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)

@@ -260,7 +260,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DAVecGetArray(user->da,X,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da,X,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries (for 2-dimensional DA):
@@ -280,7 +280,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(user->da,X,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da,X,&x);CHKERRQ(ierr);
 
   /* 
      Check to see if we can import an initial guess from disk
@@ -414,7 +414,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   /*
      Get pointer to vector data
   */
-  ierr = DAVecGetArray(user->da,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da,localX,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
@@ -466,7 +466,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
     ierr = MatSetValues(jac,1,&row,5,col,v,ADD_VALUES); CHKERRQ(ierr);
   }
   
-  ierr = DAVecRestoreArray(user->da,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da,localX,&x);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
 
   /* 

@@ -228,7 +228,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DAVecGetArray(user->da,X,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da,X,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries (for 3-dimensional DA):
@@ -259,7 +259,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(user->da,X,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 /* ------------------------------------------------------------------- */
@@ -310,8 +310,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = DAVecGetArray(user->da,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da,F,(void**)&f);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da,localX,&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da,F,&f);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
@@ -346,8 +346,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = DAVecRestoreArray(user->da,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(user->da,F,(void**)&f);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da,localX,&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da,F,&f);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops(11*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
@@ -406,7 +406,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   /*
      Get pointer to vector data
   */
-  ierr = DAVecGetArray(user->da,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da,localX,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
@@ -446,7 +446,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       }
     }
   }
-  ierr = DAVecRestoreArray(user->da,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da,localX,&x);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
 
   /* 

@@ -280,7 +280,7 @@ int Initialize(DMMG *dmmg)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DAVecGetArray(da,((AppCtx*)dmmg[param->mglevels-1]->user)->Xold,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,((AppCtx*)dmmg[param->mglevels-1]->user)->Xold,&x);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -298,7 +298,7 @@ int Initialize(DMMG *dmmg)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(da,((AppCtx*)dmmg[param->mglevels-1]->user)->Xold,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,((AppCtx*)dmmg[param->mglevels-1]->user)->Xold,&x);CHKERRQ(ierr);
   /* Restrict Xold to coarser levels */
   for (mglevel=param->mglevels-1; mglevel>0; mglevel--) {
     ierr = MatRestrict(dmmg[mglevel]->R, ((AppCtx*)dmmg[mglevel]->user)->Xold, ((AppCtx*)dmmg[mglevel-1]->user)->Xold);CHKERRQ(ierr);
@@ -369,7 +369,7 @@ int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
   dhx = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);
   hx = 1.0/dhx;                   hy = 1.0/dhy;
   hxhy = hx*hy;
-  ierr = DAVecGetArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,user->Xold,&xold);CHKERRQ(ierr);
   dtinv = hxhy/(tsCtx->cfl*tsCtx->dt);
   /* 
      use_parab = PETSC_TRUE for parabolic equations; all the four equations have temporal term.
@@ -386,7 +386,7 @@ int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
       f[j][i].temp  += dtinv*(x[j][i].temp-xold[j][i].temp);
     }
   }
-  ierr = DAVecRestoreArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,user->Xold,&xold);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

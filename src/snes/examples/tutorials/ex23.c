@@ -101,8 +101,8 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,FU,(void**)&fu);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,FU,&fu);CHKERRQ(ierr);
   d    = N-1.0;
   h    = 1.0/d;
 
@@ -112,8 +112,8 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     else               fu[i]   = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h) + h*u[i]*u[i];
   } 
 
-  ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,FU,(void**)&fu);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,FU,&fu);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&vu);CHKERRQ(ierr);
   PetscLogFlops(9*N);
   PetscFunctionReturn(0);

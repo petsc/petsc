@@ -115,10 +115,10 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
   ierr = DAGetCorners(user->da1,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetInfo(user->da1,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da1,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da1,vfu,(void**)&fu);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da1,vlambda,(void**)&lambda);CHKERRQ(ierr);
-  ierr = DAVecGetArray(user->da1,vflambda,(void**)&flambda);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da1,vu,&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da1,vfu,&fu);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da1,vlambda,&lambda);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da1,vflambda,&flambda);CHKERRQ(ierr);
   d    = (N-1.0);
   h    = 1.0/d;
 
@@ -143,10 +143,10 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     else               fu[i]   = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h);
   } 
 
-  ierr = DAVecRestoreArray(user->da1,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(user->da1,vfu,(void**)&fu);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(user->da1,vlambda,(void**)&lambda);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(user->da1,vflambda,(void**)&flambda);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da1,vu,&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da1,vfu,&fu);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da1,vlambda,&lambda);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da1,vflambda,&flambda);CHKERRQ(ierr);
 
   ierr = VecPackGather(user->packer,FU,fw,vfu,vflambda);CHKERRQ(ierr);
   ierr = VecPackRestoreLocalVectors(user->packer,&w,&vu,&vlambda);CHKERRQ(ierr);

@@ -204,8 +204,8 @@ int main(int argc,char **argv)
   /*
      Get pointers to vector data
   */
-  ierr = DAVecGetArray(ctx.da,F,(void**)&FF);CHKERRQ(ierr);
-  ierr = DAVecGetArray(ctx.da,U,(void**)&UU);CHKERRQ(ierr);
+  ierr = DAVecGetArray(ctx.da,F,&FF);CHKERRQ(ierr);
+  ierr = DAVecGetArray(ctx.da,U,&UU);CHKERRQ(ierr);
 
   /*
      Compute local vector entries
@@ -220,8 +220,8 @@ int main(int argc,char **argv)
   /*
      Restore vectors
   */
-  ierr = DAVecRestoreArray(ctx.da,F,(void**)&FF);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(ctx.da,U,(void**)&UU);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(ctx.da,F,&FF);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(ctx.da,U,&UU);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -326,9 +326,9 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
          NOT include ghost points.
        - Using DAVecGetArray() allows accessing the values using global ordering
   */
-  ierr = DAVecGetArray(da,xlocal,(void**)&xx);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,f,(void**)&ff);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,user->F,(void**)&FF);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,xlocal,&xx);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,f,&ff);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,user->F,&FF);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries (for 1-dimensional DA):
@@ -363,9 +363,9 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   /*
      Restore vectors
   */
-  ierr = DAVecRestoreArray(da,xlocal,(void**)&xx);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,f,(void**)&ff);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,user->F,(void**)&FF);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,xlocal,&xx);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,f,&ff);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,user->F,&FF);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -396,7 +396,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   /*
      Get pointer to vector data
   */
-  ierr = DAVecGetArray(da,x,(void**)&xx);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,x,&xx);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /*
@@ -443,7 +443,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   */
 
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,x,(void**)&xx);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,x,&xx);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   *flag = SAME_NONZERO_PATTERN;
@@ -517,8 +517,8 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
        iter,check->tolerance);CHKERRQ(ierr);
 
     /* Access local array data */
-    ierr = DAVecGetArray(da,check->last_step,(void**)&xa_last);CHKERRQ(ierr);
-    ierr = DAVecGetArray(da,x,(void**)&xa);CHKERRQ(ierr);
+    ierr = DAVecGetArray(da,check->last_step,&xa_last);CHKERRQ(ierr);
+    ierr = DAVecGetArray(da,x,&xa);CHKERRQ(ierr);
     ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
     /* 
@@ -537,8 +537,8 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
                     i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));CHKERRQ(ierr);
       }
     }
-    ierr = DAVecRestoreArray(da,check->last_step,(void**)&xa_last);CHKERRQ(ierr);
-    ierr = DAVecRestoreArray(da,x,(void**)&xa);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(da,check->last_step,&xa_last);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(da,x,&xa);CHKERRQ(ierr);
   }
   ierr = VecCopy(x,check->last_step);CHKERRQ(ierr);
 

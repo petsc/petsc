@@ -256,7 +256,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DAVecGetArray(user->da,X,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(user->da,X,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries (for 2-dimensional DA):
@@ -285,7 +285,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(user->da,X,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(user->da,X,&x);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 } 

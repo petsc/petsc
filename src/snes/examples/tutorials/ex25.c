@@ -114,8 +114,8 @@ int FormFunction(SNES snes,Vec T,Vec F,void* ptr)
   ierr = DAGlobalToLocalBegin((DA)dmmg->dm,T,INSERT_VALUES,localT);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd((DA)dmmg->dm,T,INSERT_VALUES,localT);CHKERRQ(ierr);
   ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,localT,(void**)&t);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)dmmg->dm,localT,&t);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)dmmg->dm,F,&f);CHKERRQ(ierr);
 
   /* Evaluate function */
   for (j=ys; j<ys+ym; j++) {
@@ -147,8 +147,8 @@ int FormFunction(SNES snes,Vec T,Vec F,void* ptr)
 
     }
   }
-  ierr = DAVecRestoreArray((DA)dmmg->dm,localT,(void**)&t);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,localT,&t);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,F,&f);CHKERRQ(ierr);
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 

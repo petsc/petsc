@@ -2907,7 +2907,7 @@ int VecStashView(Vec v,PetscViewer viewer)
 
 .seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
           VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
-          VecGetarray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+          VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
 int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,PetscScalar **a[])
 {
@@ -2955,7 +2955,7 @@ int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,PetscScalar **a[])
 
 .seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
           VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
-          VecGetarray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+          VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
 int VecRestoreArray2d(Vec x,int m,int n,int mstart,int nstart,PetscScalar **a[])
 {
@@ -2996,8 +2996,8 @@ int VecRestoreArray2d(Vec x,int m,int n,int mstart,int nstart,PetscScalar **a[])
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
 .seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
-          VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
-          VecGetarray2d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+          VecRestoreArray2d(), DAVecGetArray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecGetArray2d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
 int VecGetArray1d(Vec x,int m,int mstart,PetscScalar *a[])
 {
@@ -3041,7 +3041,7 @@ int VecGetArray1d(Vec x,int m,int mstart,PetscScalar *a[])
 
 .seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
           VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
-          VecGetarray1d(), VecRestoreArray2d(), VecGetArray4d(), VecRestoreArray4d()
+          VecGetArray1d(), VecRestoreArray2d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
 int VecRestoreArray1d(Vec x,int m,int mstart,PetscScalar *a[])
 {
@@ -3120,7 +3120,7 @@ int VecConjugate(Vec x)
 
 .seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
           VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
-          VecGetarray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+          VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
 int VecGetArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,PetscScalar ***a[])
 {
@@ -3176,7 +3176,7 @@ int VecGetArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,Petsc
 
 .seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
           VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
-          VecGetarray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d(), VecGet
+          VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d(), VecGet
 @*/
 int VecRestoreArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,PetscScalar ***a[])
 {

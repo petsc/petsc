@@ -138,7 +138,7 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
 
   /* Get ghost points */
   ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,X,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)dmmg->dm,X,&x);CHKERRQ(ierr);
 
   /* Compute initial guess */
   for (k=zs; k<zs+zm; k++) {
@@ -148,7 +148,7 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
       }
     }
   }
-  ierr = DAVecRestoreArray((DA)dmmg->dm,X,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
@@ -178,8 +178,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
   ierr = DAGlobalToLocalBegin((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)dmmg->dm,localX,&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)dmmg->dm,F,&f);CHKERRQ(ierr);
 
   /* Evaluate function */
   for (k=zs; k<zs+zm; k++) {
@@ -460,8 +460,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
       }
     }
   }
-  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,F,&f);CHKERRQ(ierr);
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops((22 + 4*POWFLOP)*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -495,7 +495,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
   ierr = DAGlobalToLocalBegin((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)dmmg->dm,localX,&x);CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */
   for (k=zs; k<zs+zm; k++) {
@@ -1422,7 +1422,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
     }
   }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
 

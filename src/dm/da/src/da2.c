@@ -1227,13 +1227,13 @@ int DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
   PetscFunctionBegin;
 
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vfu,&fu);CHKERRQ(ierr);
 
   ierr = (*da->lf)(&info,u,fu,w);CHKERRQ(ierr);
 
-  ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vfu,&fu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1306,7 +1306,7 @@ int DAFormFunctioni1(DA da,int i,Vec vu,PetscScalar *vfu,void *w)
   PetscFunctionBegin;
 
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vu,&u);CHKERRQ(ierr);
 
   /* figure out stencil value from i */
   stencil.c = i % info.dof;
@@ -1316,7 +1316,7 @@ int DAFormFunctioni1(DA da,int i,Vec vu,PetscScalar *vfu,void *w)
 
   ierr = (*da->lfi)(&info,&stencil,u,vfu,w);CHKERRQ(ierr);
 
-  ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

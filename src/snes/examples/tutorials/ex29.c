@@ -379,7 +379,7 @@ int Gnuplot(DA da, Vec X, double time)
   ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);
   CHKERRQ(ierr);
 
-  ierr = DAVecGetArray(da,X,(void**)&x);
+  ierr = DAVecGetArray(da,X,&x);
   CHKERRQ(ierr);
 
   xints = xs; xinte = xs+xm; yints = ys; yinte = ys+ym;
@@ -396,7 +396,7 @@ int Gnuplot(DA da, Vec X, double time)
     CHKERRQ(ierr);
   }
 
-  ierr = DAVecRestoreArray(da,X,(void**)&x);
+  ierr = DAVecRestoreArray(da,X,&x);
   CHKERRQ(ierr);
 
   fclose(f);
@@ -458,8 +458,8 @@ int Initialize(DMMG *dmmg)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DAVecGetArray(da,dmmg[param->mglevels-1]->x,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,localX,(void**)&localx);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,dmmg[param->mglevels-1]->x,&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,localX,&localx);CHKERRQ(ierr);
 
   /*
      Compute initial solution over the locally owned part of the grid
@@ -506,9 +506,9 @@ int Initialize(DMMG *dmmg)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(da,dmmg[param->mglevels-1]->x,(void**)&x);
+  ierr = DAVecRestoreArray(da,dmmg[param->mglevels-1]->x,&x);
   CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,localX,(void**)&localx);
+  ierr = DAVecRestoreArray(da,localX,&localx);
   CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&localX);
   CHKERRQ(ierr);
@@ -539,7 +539,7 @@ int ComputeMaxima(DA da, Vec X, PetscReal t)
 
   xints = xs; xinte = xs+xm; yints = ys; yinte = ys+ym;
 
-  ierr = DAVecGetArray(da, X, (void**)&x);
+  ierr = DAVecGetArray(da, X, &x);
   CHKERRQ(ierr);
 
   for (j=yints; j<yinte; j++) {
@@ -551,7 +551,7 @@ int ComputeMaxima(DA da, Vec X, PetscReal t)
     }
   }
 
-  ierr = DAVecRestoreArray(da,X,(void**)&x);
+  ierr = DAVecRestoreArray(da,X,&x);
   CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)da, &comm);
@@ -875,14 +875,14 @@ int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
 
   dtinv = hxhy/(tsCtx->dt);
 
-  ierr  = DAVecGetArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+  ierr  = DAVecGetArray(da,user->Xold,&xold);CHKERRQ(ierr);
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
       f[j][i].U += dtinv*(x[j][i].U-xold[j][i].U);
       f[j][i].F += dtinv*(x[j][i].F-xold[j][i].F);
     }
   }
-  ierr = DAVecRestoreArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,user->Xold,&xold);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -913,8 +913,8 @@ int AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
 
   dtinv = hxhy/(tsCtx->dt);
 
-  ierr  = DAVecGetArray(da,user->Xoldold,(void**)&xoldold);CHKERRQ(ierr);
-  ierr  = DAVecGetArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+  ierr  = DAVecGetArray(da,user->Xoldold,&xoldold);CHKERRQ(ierr);
+  ierr  = DAVecGetArray(da,user->Xold,&xold);CHKERRQ(ierr);
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
       f[j][i].U += dtinv * (onep5 * x[j][i].U - two * xold[j][i].U +
@@ -923,8 +923,8 @@ int AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
                             p5 * xoldold[j][i].F);
     }
   }
-  ierr = DAVecRestoreArray(da,user->Xoldold,(void**)&xoldold);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,user->Xoldold,&xoldold);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,user->Xold,&xold);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1031,7 +1031,7 @@ int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f
       Byp = Bym = p5*By;
 #endif
 
-      ierr  = DAVecGetArray(info->da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+      ierr  = DAVecGetArray(info->da,user->Xold,&xold);CHKERRQ(ierr);
       dtinv = hxhy/(tsCtx->dt);
       switch(c) {
 
@@ -1069,7 +1069,7 @@ int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f
           *f += dtinv*(x[j][i].F-xold[j][i].F);
           break;
       }
-      ierr = DAVecRestoreArray(info->da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+      ierr = DAVecRestoreArray(info->da,user->Xold,&xold);CHKERRQ(ierr);
 
 
   /*

@@ -27,7 +27,7 @@
 
 .seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecRestoreArray()
 @*/
-int DAVecGetArray(DA da,Vec vec,void **array)
+int DAVecGetArray(DA da,Vec vec,void *array)
 {
   int ierr,xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
@@ -81,7 +81,7 @@ int DAVecGetArray(DA da,Vec vec,void **array)
 
 .seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecGetArray()
 @*/
-int DAVecRestoreArray(DA da,Vec vec,void **array)
+int DAVecRestoreArray(DA da,Vec vec,void *array)
 {
   int ierr,xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 

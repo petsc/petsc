@@ -271,10 +271,10 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     ierr = MatMultTranspose(appctx->J,vglambda,vflambda);CHKERRQ(ierr); 
   }
 
-  ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vlambda,(void**)&lambda);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vflambda,(void**)&flambda);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vfu,&fu);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vlambda,&lambda);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vflambda,&flambda);CHKERRQ(ierr);
 
   /* L_w */
   if (xs == 0) { /* only first processor computes this */
@@ -301,10 +301,10 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     else               flambda[i]   +=    h2*u[i];
   } 
 
-  ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,vlambda,(void**)&lambda);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,vflambda,(void**)&flambda);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vfu,&fu);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vlambda,&lambda);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vflambda,&flambda);CHKERRQ(ierr);
 
   ierr = VecPackRestoreLocalVectors(packer,&w,&vu,&vlambda);CHKERRQ(ierr);
   ierr = VecPackRestoreAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
