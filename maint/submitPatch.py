@@ -2,38 +2,113 @@
 import os
 import sys
 
+class Help:
+  def __init__(self, argDB):
+    '''Creates a dictionary "sections" whose keys are section names, and values are a tuple of (ordinal, nameList)'''
+    self.argDB    = argDB
+    self.sections = {}
+    self.title    = 'Help'
+    return
+
+  #def setTitle(self, title): self.__title = title
+  #def getTitle(self, title): return self.__title
+  #def delTitle(self, title): del self.__title
+  #title = property(title, getTitle, setTitle, delTitle, 'Title of the Help Menu')
+
+  def getArgName(self, name):
+    #varName = name.split('=')[0]
+    #while varName[0] == '-': varName = varName[1:]
+    return name.split('=')[0].strip('-')
+
+  def addOption(self, section, name, type):
+    if section in self.sections:
+      if name in self.sections[section][1]:
+        raise RuntimeError('Duplicate configure option '+name+' in section '+section)
+    else:
+      self.sections[section] = (len(self.sections), [])
+    self.sections[section][1].append(name)
+    self.argDB.setType(self.getArgName(name), type, forceLocal = 1)
+    return
+
+  def printBanner(self):
+    import sys
+
+    print self.title
+    for i in range(len(self.title)): sys.stdout.write('-')
+    print
+    return
+
+  def getTextSizes(self):
+    '''Returns the maximum name and description lengths'''
+    nameLen = 1
+    descLen = 1
+    for section in self.sections:
+      nameLen = max([nameLen, max(map(len, self.sections[section][1]))+1])
+      descLen = max([descLen, max(map(lambda a: len(self.argDB.getType(self.getArgName(a)).help), self.sections[section][1]))+1])
+    return (nameLen, descLen)
+
+  def output(self):
+    self.printBanner()
+    (nameLen, descLen) = self.getTextSizes()
+    format    = '  -%-'+str(nameLen)+'s: %s'
+    formatDef = '  -%-'+str(nameLen)+'s: %-'+str(descLen)+'s  current: %s'
+    items = self.sections.items()
+    items.sort(lambda a, b: a[1][0].__cmp__(b[1][0]))
+    for item in items:
+      print item[0]+':'
+      for name in item[1][1]:
+        argName = self.getArgName(name)
+        type    = self.argDB.getType(argName)
+        if argName in self.argDB:
+          print formatDef % (name, type.help, str(self.argDB[argName]))
+        else:
+          print format % (name, type.help)
+    return
+
 class Patch (object):
   def __init__(self, clArgs = None, argDB = None):
-    self.argDB    = self.setupArgDB(clArgs, argDB)
-    self.root     = os.getcwd()
-    self.logFile  = sys.stdout
+    self.argDB      = self.setupArgDB(clArgs, argDB)
+    self.root       = os.getcwd()
+    self.logFile    = sys.stdout
+    self.help       = Help(self.argDB)
+    self.help.title = 'Patch Submission Help'
     self.checkPetscRoot(self.root)
+    self.setupArguments(self.clArgs)
     return
 
   def setupArgDB(self, clArgs, initDB):
-    import RDict
+    self.clArgs = clArgs
+    if initDB is None:
+      import RDict
+      argDB = RDict.RDict()
+    else:
+      argDB = initDB
+    return argDB
+
+  def setupArguments(self, clArgs = None):
     import nargs
 
-    argDB = RDict.RDict()
+    self.help.addOption('Main', 'help', nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
+    self.help.addOption('Main', 'h',    nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
     # Actions
-    argDB.setType('updateVersion',   nargs.ArgBool(None, 1, 'Update petscversion.h'))
-    argDB.setType('pushChange',      nargs.ArgBool(None, 1, 'Push changes'))
-    argDB.setType('makePatch',       nargs.ArgBool(None, 1, 'Construct the patch for Petsc'))
-    argDB.setType('makeMasterPatch', nargs.ArgBool(None, 1, 'Construct the master patch for Petsc'))
-    argDB.setType('integratePatch',  nargs.ArgBool(None, 1, 'Integrate changes into the Petsc development repository'))
-    argDB.setType('updateWeb',       nargs.ArgBool(None, 1, 'Update the patches web page'))
+    self.help.addOption('Main', 'updateVersion',   nargs.ArgBool(None, 1, 'Update petscversion.h'))
+    self.help.addOption('Main', 'pushChange',      nargs.ArgBool(None, 1, 'Push changes'))
+    self.help.addOption('Main', 'makePatch',       nargs.ArgBool(None, 1, 'Construct the patch for Petsc'))
+    self.help.addOption('Main', 'makeMasterPatch', nargs.ArgBool(None, 1, 'Construct the master patch for Petsc'))
+    self.help.addOption('Main', 'integratePatch',  nargs.ArgBool(None, 1, 'Integrate changes into the Petsc development repository'))
+    self.help.addOption('Main', 'updateWeb',       nargs.ArgBool(None, 1, 'Update the patches web page'))
     # Variables
     patchDir = os.path.join('/mcs', 'ftp', 'pub', 'petsc', 'patches')
     if not os.path.isdir(patchDir): patchDir = None
-    argDB.setType('patchDir',        nargs.ArgDir(None, patchDir, 'The directory containing both the patch and master patch files'))
+    self.help.addOption('Main', 'patchDir=<dir>', nargs.ArgDir(None, patchDir, 'The directory containing both the patch and master patch files'))
     # Variables necessary when some actions are excluded
-    argDB.setType('version',         nargs.Arg(None, None, 'The version number being patched, e.g. 2.1.0', isTemporary = 1))
-    argDB.setType('patchNum',        nargs.ArgInt(None, None, 'The patch number, e.g. 1', min = 1, isTemporary = 1))
-    argDB.setType('changeSets',      nargs.Arg(None, None, 'The ChangeSets which were pushed, e.g. 1.1052', isTemporary = 1))
-    argDB.setType('dryRun',          nargs.ArgBool(None, 0, 'Log all actions which would be taken, but do not actually do anything', isTemporary = 1))
+    self.help.addOption('Main', 'version=<num>',         nargs.Arg(None, None, 'The version number being patched, e.g. 2.1.0', isTemporary = 1))
+    self.help.addOption('Main', 'patchNum=<num>',        nargs.ArgInt(None, None, 'The patch number, e.g. 1', min = 1, isTemporary = 1))
+    self.help.addOption('Main', 'changeSets=[<num>...]', nargs.Arg(None, None, 'The ChangeSets which were pushed, e.g. 1.1052', isTemporary = 1))
+    self.help.addOption('Main', 'dryRun',                nargs.ArgBool(None, 0, 'Log all actions which would be taken, but do not actually do anything', isTemporary = 1))
 
-    argDB.insertArgs(clArgs)
-    return argDB
+    self.argDB.insertArgs(clArgs)
+    return
 
   def writeLogLine(self, message):
     '''Writes the message to the log along with the current time'''
@@ -126,7 +201,7 @@ class Patch (object):
       output.writelines(lines)
       output.close()
     # Check in the new petscversion.h
-    self.executeShellCommand('bk ci -u -y"Cranked up patch level" '+filename)
+    #self.executeShellCommand('bk ci -u -y"Cranked up patch level" '+filename)
     self.writeLogLine('Changed version to '+version+'.'+str(patchNum))
     return
 
@@ -145,6 +220,7 @@ class Patch (object):
       m = setRE.match(line)
       if m:
         changeSets.append(m.group('changeSet'))
+    if not len(changSets): raise RuntimeError('No change sets to be submitted')
     changeSets.sort()
     output = self.executeShellCommand('bk push')
     self.writeLogLine('Pushed change sets '+str(changeSets))
@@ -227,16 +303,20 @@ class Patch (object):
     return
 
   def submit(self):
+    if self.argDB['help'] or self.argDB['h']:
+      self.help.output()
+      return 0
     self.setVersion()
     self.pushChange()
     self.makePatch()
     self.makeMasterPatch()
     self.integratePatch()
     self.updateWeb()
-    return
+    return 1
 
 if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('python'))
+  sys.path.insert(0, os.path.abspath(os.path.join('python', 'BuildSystem')))
   try:
     Patch(sys.argv[1:]).submit()
   except Exception, e:
