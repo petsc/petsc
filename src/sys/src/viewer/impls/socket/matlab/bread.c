@@ -12,7 +12,7 @@
   link to the PETSc libraries.
 */
 #include <errno.h>
-#if defined(PETSC_HAVE_UNISTD_H)
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 

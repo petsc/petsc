@@ -14,15 +14,15 @@ typedef unsigned long   u_long;
 #endif
 
 #include <errno.h>
-#if defined(PETSC_HAVE_STDLIB_H)
+#if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include <sys/types.h>
 #include <ctype.h>
-#if defined(PETSC_HAVE_ENDIAN_H)
+#if defined(HAVE_MACHINE_ENDIAN_H)
 #include <machine/endian.h>
 #endif
-#if defined(PETSC_HAVE_UNISTD_H)
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 #if !defined(PARCH_win32)
@@ -31,10 +31,10 @@ typedef unsigned long   u_long;
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
-#if defined(PETSC_HAVE_STROPTS_H)
+#if defined(HAVE_STROPTS_H)
 #include <stropts.h>
 #endif
-#if defined (PETSC_HAVE_IO_H)
+#if defined (HAVE_IO_H)
 #include <io.h>
 #endif
 

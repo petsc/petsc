@@ -9,7 +9,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#if defined(PETSC_HAVE_UNISTD_H)
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 #if defined (PARCH_win32)

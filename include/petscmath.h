@@ -25,8 +25,6 @@
 
 #if defined (PETSC_HAVE_STD_COMPLEX)
 #include <complex>
-#elif defined(PETSC_HAVE_NONSTANDARD_COMPLEX_H)
-#include PETSC_HAVE_NONSTANDARD_COMPLEX_H
 #else
 #include <complex.h>
 #endif

@@ -11,10 +11,10 @@
 #include <stdarg.h>
 #include <sys/types.h>
 #include "petscsys.h"
-#if defined(PETSC_HAVE_STDLIB_H)
+#if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
+#if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
 #include "petscfix.h"
@@ -927,7 +927,7 @@ int PetscLogObjectState(PetscObject obj,const char format[],...)
   PetscFunctionBegin;
   if (!objects) PetscFunctionReturn(0);
   va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(HAVE_VPRINTF_CHAR)
   vsprintf(objects[obj->id].string,format,(char *)Argp);
 #else
   vsprintf(objects[obj->id].string,format,Argp);

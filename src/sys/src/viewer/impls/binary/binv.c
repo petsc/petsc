@@ -3,10 +3,10 @@
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
 #include <fcntl.h>
-#if defined(PETSC_HAVE_UNISTD_H)
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined (PETSC_HAVE_IO_H)
+#if defined (HAVE_IO_H)
 #include <io.h>
 #endif
 

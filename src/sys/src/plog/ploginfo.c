@@ -7,10 +7,10 @@
 #include <stdarg.h>
 #include <sys/types.h>
 #include "petscsys.h"
-#if defined(PETSC_HAVE_STDLIB_H)
+#if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
+#if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
 #include "petscfix.h"
@@ -77,7 +77,7 @@ int PetscLogInfo(void *vobj,const char message[],...)
   va_start(Argp,message);
   sprintf(string,"[%d]",urank); 
   ierr = PetscStrlen(string,&len);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(HAVE_VPRINTF_CHAR)
   vsprintf(string+len,message,(char *)Argp);
 #else
   vsprintf(string+len,message,Argp);
@@ -85,7 +85,7 @@ int PetscLogInfo(void *vobj,const char message[],...)
   fprintf(PetscLogInfoFile,"%s",string);
   fflush(PetscLogInfoFile);
   if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(HAVE_VPRINTF_CHAR)
     vfprintf(petsc_history,message,(char *)Argp);
 #else
     vfprintf(petsc_history,message,Argp);

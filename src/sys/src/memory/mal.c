@@ -3,10 +3,10 @@
     Code that allows a user to dictate what malloc() PETSc uses.
 */
 #include "petsc.h"             /*I   "petsc.h"   I*/
-#if defined(PETSC_HAVE_STDLIB_H)
+#if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
+#if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
 #include "petscfix.h"
@@ -37,7 +37,7 @@ int PetscMallocAlign(int mem,int line,char *func,char *file,char *dir,void** res
 {
 #if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
   *result = malloc(mem);
-#elif defined(PETSC_HAVE_MEMALIGN)
+#elif defined(HAVE_MEMALIGN)
   *result = memalign(PETSC_MEMALIGN,mem);
 #else
   {
@@ -67,7 +67,7 @@ int PetscFreeAlign(void *ptr,int line,char *func,char *file,char *dir)
 {
   int ierr = 0;
 
-#if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(PETSC_HAVE_MEMALIGN))
+#if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(HAVE_MEMALIGN))
   int shift;
   /*
        Previous int tells us how many ints the pointer has been shifted from

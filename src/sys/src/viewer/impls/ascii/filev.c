@@ -334,7 +334,7 @@ int PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
     while (tab--) fprintf(fd,"  ");
 
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(HAVE_VPRINTF_CHAR)
     vfprintf(fd,format,(char*)Argp);
 #else
     vfprintf(fd,format,Argp);
@@ -343,7 +343,7 @@ int PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
     if (petsc_history) {
       tab = ascii->tab;
       while (tab--) fprintf(fd,"  ");
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(HAVE_VPRINTF_CHAR)
       vfprintf(petsc_history,format,(char *)Argp);
 #else
       vfprintf(petsc_history,format,Argp);
@@ -361,7 +361,7 @@ int PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(HAVE_VPRINTF_CHAR)
     vsprintf(next->string,format,(char *)Argp);
 #else
     vsprintf(next->string,format,Argp);
@@ -636,7 +636,7 @@ int PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],..
     while (tab--) fprintf(fp,"  ");
 
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(HAVE_VPRINTF_CHAR)
     vfprintf(fp,format,(char*)Argp);
 #else
     vfprintf(fp,format,Argp);
@@ -644,7 +644,7 @@ int PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],..
     fflush(fp);
     queuefile = fp;
     if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(HAVE_VPRINTF_CHAR)
       vfprintf(petsc_history,format,(char *)Argp);
 #else
       vfprintf(petsc_history,format,Argp);
@@ -665,7 +665,7 @@ int PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],..
     string = next->string;
     while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(HAVE_VPRINTF_CHAR)
     vsprintf(string,format,(char *)Argp);
 #else
     vsprintf(string,format,Argp);

@@ -1,229 +1,26 @@
-/* ../bmake/config/petscfix.h.in.  Generated automatically from configure.in by autoheader.  */
+/*$Id: petscfix.h,v 1.100 2000/01/11 20:57:57 bsmith Exp $*/
 
-/* Define if on AIX 3.
-   System headers sometimes define this.
-   We just want to avoid a redefinition error message.  */
-#ifndef _ALL_SOURCE
-#undef _ALL_SOURCE
+/*
+    This fixes various things in system files that are incomplete, for 
+  instance many systems don't properly prototype all system functions.
+  It is not intended to DUPLICATE anything in the system include files;
+  if the compiler reports a conflict between a prototye in a system file
+  and this file then the prototype in this file should be removed.
+
+    This is included by files in src/sys/src
+*/
+
+#if !defined(_PETSCFIX_H)
+#define _PETSCFIX_H
+
+#include "petsc.h"
+
+@PETSCFIX_ENTRY@
+
+#if defined(__cplusplus)
+@PETSCFIX_CPP_ENTRY@
+extern "C" {
+  @PETSCFIX_EXTERN_C_ENTRY@
+}
 #endif
-
-/* Define to empty if the keyword does not work.  */
-#undef const
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-#undef gid_t
-
-/* Define if you don't have vprintf but do have _doprnt.  */
-#undef HAVE_DOPRNT
-
-/* Define if you have <sys/wait.h> that is POSIX.1 compatible.  */
-#undef HAVE_SYS_WAIT_H
-
-/* Define if you have the vprintf function.  */
-#undef HAVE_VPRINTF
-
-/* Define if on MINIX.  */
-#undef _MINIX
-
-/* Define if the system does not provide POSIX.1 features except
-   with this defined.  */
-#undef _POSIX_1_SOURCE
-
-/* Define if you need to in order for stat and other things to work.  */
-#undef _POSIX_SOURCE
-
-/* Define as the return type of signal handlers (int or void).  */
-#undef RETSIGTYPE
-
-/* Define to `unsigned' if <sys/types.h> doesn't define.  */
-#undef size_t
-
-/* Define if the `S_IS*' macros in <sys/stat.h> do not work properly.  */
-#undef STAT_MACROS_BROKEN
-
-/* Define if you have the ANSI C header files.  */
-#undef STDC_HEADERS
-
-/* Define if you can safely include both <sys/time.h> and <time.h>.  */
-#undef TIME_WITH_SYS_TIME
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-#undef uid_t
-
-/* Define if your processor stores words with the most significant
-   byte first (like Motorola and SPARC, unlike Intel and VAX).  */
-#undef WORDS_BIGENDIAN
-
-/* Define if Fortran external names are all caps */
-#undef HAVE_FORTRAN_CAPS
-
-/* Define if Fortran external names have one trailing underscore */
-#undef HAVE_FORTRAN_UNDERSCORE
-
-/* Define if Fortran external names have two trailing underscores */
-#undef HAVE_FORTRAN_UNDERSCORE_UNDERSCORE
-
-/* Define if Fortran external names have no trailing underscore */
-#undef HAVE_FORTRAN_NOUNDERSCORE
-
-/* The number of bytes in a int.  */
-#undef SIZEOF_INT
-
-/* The number of bytes in a void *.  */
-#undef SIZEOF_VOID_P
-
-/* Define if you have the drand48 function.  */
-#undef HAVE_DRAND48
-
-/* Define if you have the fp_disable function.  */
-#undef HAVE_FP_DISABLE
-
-/* Define if you have the fp_enable function.  */
-#undef HAVE_FP_ENABLE
-
-/* Define if you have the fp_sh_trap_info function.  */
-#undef HAVE_FP_SH_TRAP_INFO
-
-/* Define if you have the fp_trap function.  */
-#undef HAVE_FP_TRAP
-
-/* Define if you have the fpsetmask function.  */
-#undef HAVE_FPSETMASK
-
-/* Define if you have the getcwd function.  */
-#undef HAVE_GETCWD
-
-/* Define if you have the gethostname function.  */
-#undef HAVE_GETHOSTNAME
-
-/* Define if you have the gettimeofday function.  */
-#undef HAVE_GETTIMEOFDAY
-
-/* Define if you have the getwd function.  */
-#undef HAVE_GETWD
-
-/* Define if you have the ieee_flags function.  */
-#undef HAVE_IEEE_FLAGS
-
-/* Define if you have the ieee_handler function.  */
-#undef HAVE_IEEE_HANDLER
-
-/* Define if you have the memmove function.  */
-#undef HAVE_MEMMOVE
-
-/* Define if you have the rand function.  */
-#undef HAVE_RAND
-
-/* Define if you have the readlink function.  */
-#undef HAVE_READLINK
-
-/* Define if you have the realpath function.  */
-#undef HAVE_REALPATH
-
-/* Define if you have the sigaction function.  */
-#undef HAVE_SIGACTION
-
-/* Define if you have the signal function.  */
-#undef HAVE_SIGNAL
-
-/* Define if you have the sigset function.  */
-#undef HAVE_SIGSET
-
-/* Define if you have the socket function.  */
-#undef HAVE_SOCKET
-
-/* Define if you have the standard_arithmetic function.  */
-#undef HAVE_STANDARD_ARITHMETIC
-
-/* Define if you have the strstr function.  */
-#undef HAVE_STRSTR
-
-/* Define if you have the sysinfo function.  */
-#undef HAVE_SYSINFO
-
-/* Define if you have the uname function.  */
-#undef HAVE_UNAME
-
-/* Define if you have the <fcntl.h> header file.  */
-#undef HAVE_FCNTL_H
-
-/* Define if you have the <floatingpoint.h> header file.  */
-#undef HAVE_FLOATINGPOINT_H
-
-/* Define if you have the <fptrap.h> header file.  */
-#undef HAVE_FPTRAP_H
-
-/* Define if you have the <fpxcp.h> header file.  */
-#undef HAVE_FPXCP_H
-
-/* Define if you have the <ieeefp.h> header file.  */
-#undef HAVE_IEEEFP_H
-
-/* Define if you have the <io.h> header file.  */
-#undef HAVE_IO_H
-
-/* Define if you have the <limits.h> header file.  */
-#undef HAVE_LIMITS_H
-
-/* Define if you have the <malloc.h> header file.  */
-#undef HAVE_MALLOC_H
-
-/* Define if you have the <pwd.h> header file.  */
-#undef HAVE_PWD_H
-
-/* Define if you have the <search.h> header file.  */
-#undef HAVE_SEARCH_H
-
-/* Define if you have the <sigfpe.h> header file.  */
-#undef HAVE_SIGFPE_H
-
-/* Define if you have the <stdlib.h> header file.  */
-#undef HAVE_STDLIB_H
-
-/* Define if you have the <string.h> header file.  */
-#undef HAVE_STRING_H
-
-/* Define if you have the <strings.h> header file.  */
-#undef HAVE_STRINGS_H
-
-/* Define if you have the <stropts.h> header file.  */
-#undef HAVE_STROPTS_H
-
-/* Define if you have the <sunmath.h> header file.  */
-#undef HAVE_SUNMATH_H
-
-/* Define if you have the <sys/procfs.h> header file.  */
-#undef HAVE_SYS_PROCFS_H
-
-/* Define if you have the <sys/resource.h> header file.  */
-#undef HAVE_SYS_RESOURCE_H
-
-/* Define if you have the <sys/systeminfo.h> header file.  */
-#undef HAVE_SYS_SYSTEMINFO_H
-
-/* Define if you have the <sys/time.h> header file.  */
-#undef HAVE_SYS_TIME_H
-
-/* Define if you have the <unistd.h> header file.  */
-#undef HAVE_UNISTD_H
-
-/* Define if you have the fpe library (-lfpe).  */
-#undef HAVE_LIBFPE
-
-/* Define if you have the m library (-lm).  */
-#undef HAVE_LIBM
-
-/* Define if you have the mpi library (-lmpi).  */
-#undef HAVE_LIBMPI
-
-/* Define if you have the nsl library (-lnsl).  */
-#undef HAVE_LIBNSL
-
-/* Define if you have the socket library (-lsocket).  */
-#undef HAVE_LIBSOCKET
-
-/* Define if you have the sun library (-lsun).  */
-#undef HAVE_LIBSUN
-
-/* Define if you have the sunmath library (-lsunmath).  */
-#undef HAVE_LIBSUNMATH
+#endif
