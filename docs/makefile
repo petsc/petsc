@@ -3,7 +3,8 @@ PETSC_DIR = ../
 CFLAGS   = $(OPT) -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF) $(PCONF)
 SOURCEC  =
 SOURCEF  =
-SOURCEH  = tex/manual.tex www.html tex/part1.tex tex/intro.tex
+SOURCEH  = tex/manual.tex www.html tex/part1.tex tex/part2.tex tex/intro.tex \
+           tex/manual_tex.tex
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
