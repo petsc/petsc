@@ -212,7 +212,6 @@ M*/
 #define PetscLLCreate(idx_start,lnk_max,nlnk,lnk,bt) \
   (PetscMalloc(nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt) || (lnk[idx_start] = lnk_max,0))
 
-
 /*
   Add a index set into a sorted linked list
   Input Parameters:
@@ -240,15 +239,90 @@ M*/
         _location = _lnkdata;\
         _lnkdata  = lnk[_location];\
       } while (_entry > _lnkdata);\
-      /* insertion location is found, add entry into lnk if it is new */\
-      if (_entry <  _lnkdata){/* new entry */\
-        lnk[_location] = _entry;\
-        lnk[_entry]    = _lnkdata;\
-        nlnk++;\
-      }\
+      /* insertion location is found, add entry into lnk */\
+      lnk[_location] = _entry;\
+      lnk[_entry]    = _lnkdata;\
+      nlnk++;\
     }\
   }\
 }
+
+/*
+  Add a SORTED index set into a sorted linked list
+  Input Parameters:
+    nidx      - number of input indices
+    indices   - sorted interger array 
+    idx_start - starting index of the list
+    lnk       - linked list(an integer array) that is created
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+  output Parameters:
+    nlnk      - number of newly added indices
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+    bt        - updated PetscBT (bitarray) 
+*/
+#define PetscLLAddSorted(nidx,indices,idx_start,nlnk,lnk,bt) 0;\
+{\
+  int _k,_entry,_location,_lnkdata;\
+  nlnk = 0;\
+  _lnkdata  = idx_start;\
+  for (_k=0; _k<nidx; _k++){\
+    _entry = indices[_k];\
+    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+      /* search for insertion location */\
+      do {\
+        _location = _lnkdata;\
+        _lnkdata  = lnk[_location];\
+      } while (_entry > _lnkdata);\
+      /* insertion location is found, add entry into lnk */\
+      lnk[_location] = _entry;\
+      lnk[_entry]    = _lnkdata;\
+      nlnk++;\
+      _lnkdata = _entry; /* next search starts from here */\
+    }\
+  }\
+}
+
+/*
+  Add a SORTED index set into a sorted linked list used for LUFactorSymbolic()
+  Same as PetscLLAddSorted() with an additional operation:
+       count the number of input indices that are no larger than 'diag'
+  Input Parameters:
+    nidx      - number of input indices
+    indices   - sorted interger array 
+    idx_start - starting index of the list
+    lnk       - linked list(an integer array) that is created
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+    diag      - index of the active row in LUFactorSymbolic
+  output Parameters:
+    nlnk      - number of newly added indices
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+    bt        - updated PetscBT (bitarray) 
+    nzbd      - number of input indices that are no larger than 'diag'
+*/
+#define PetscLLAddSortedLU(nidx,indices,idx_start,nlnk,lnk,bt,diag,nzbd) 0;\
+{\
+  int _k,_entry,_location,_lnkdata;\
+  nlnk     = 0;\
+  _lnkdata = idx_start;\
+  nzbd     = 0;\
+  for (_k=0; _k<nidx; _k++){\
+    _entry = indices[_k];\
+    if (_entry <= diag) nzbd++;\
+    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+      /* search for insertion location */\
+      do {\
+        _location = _lnkdata;\
+        _lnkdata  = lnk[_location];\
+      } while (_entry > _lnkdata);\
+      /* insertion location is found, add entry into lnk */\
+      lnk[_location] = _entry;\
+      lnk[_entry]    = _lnkdata;\
+      nlnk++;\
+      _lnkdata = _entry; /* next search starts from here */\
+    }\
+  }\
+}
+
 /*
   Copy data on the list into an array, then initialize the list 
   Input Parameters:
@@ -259,7 +333,7 @@ M*/
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
   output Parameters:
     indices   - array that contains the copied data
-    lnk       -llinked list that is cleaned and initialize
+    lnk       - linked list that is cleaned and initialize
     bt        - PetscBT (bitarray) with all bits set to false
 */
 #define PetscLLClean(idx_start,lnk_max,nlnk,lnk,indices,bt) 0;\
@@ -325,18 +399,61 @@ M*/
         _location = _lnkdata;\
         _lnkdata  = lnk[_location];\
       } while (_entry > _lnkdata);\
-      /* insertion location is found, add entry into lnk if it is new */\
-      if (_entry <  _lnkdata){/* new entry */\
-        lnk[_location] = _entry;\
-        lnk[_entry]    = _lnkdata;\
-        nlnk++;\
-        lnk_lvl[_entry] = _incrlev;\
-      }\
+      /* insertion location is found, add entry into lnk */\
+      lnk[_location] = _entry;\
+      lnk[_entry]    = _lnkdata;\
+      nlnk++;\
+      lnk_lvl[_entry] = _incrlev;\
     } else { /* existing entry: update lnk_lvl */\
       if (lnk_lvl[_entry] > _incrlev) lnk_lvl[_entry] = _incrlev;\
     }\
   }\
 }
+
+/*
+  Add a SORTED index set into a sorted linked list
+  Input Parameters:
+    nidx      - number of input indices
+    indices   - sorted interger array used for storing column indices
+    level     - level of fill, e.g., ICC(level)
+    indices_lvl - level of indices 
+    idx_start - starting index of the list
+    lnk       - linked list(an integer array) that is created
+    lnk_lvl   - levels of lnk
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+  output Parameters:
+    nlnk      - number of newly added indices
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+    lnk_lvl   - levels of lnk
+    bt        - updated PetscBT (bitarray) 
+*/
+#define PetscIncompleteLLAddSorted(nidx,indices,level,indices_lvl,idx_start,nlnk,lnk,lnk_lvl,bt) 0;\
+{\
+  int _k,_entry,_location,_lnkdata,_incrlev;\
+  nlnk = 0;\
+  _lnkdata = idx_start;\
+  for (_k=0; _k<nidx; _k++){\
+    _incrlev = indices_lvl[_k] + 1;\
+    if (_incrlev > level) {_k++; continue;} \
+    _entry = indices[_k];\
+    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+      /* search for insertion location */\
+      do {\
+        _location = _lnkdata;\
+        _lnkdata  = lnk[_location];\
+      } while (_entry > _lnkdata);\
+      /* insertion location is found, add entry into lnk */\
+      lnk[_location] = _entry;\
+      lnk[_entry]    = _lnkdata;\
+      lnk_lvl[_entry] = _incrlev;\
+      nlnk++;\
+      _lnkdata = _entry; /* next search starts from here */\
+    } else { /* existing entry: update lnk_lvl */\
+      if (lnk_lvl[_entry] > _incrlev) lnk_lvl[_entry] = _incrlev;\
+    }\
+  }\
+}
+
 /*
   Copy data on the list into an array, then initialize the list 
   Input Parameters:
