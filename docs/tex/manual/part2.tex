@@ -310,7 +310,6 @@ calls to the \trl{VecxxxEnd()} are performed in the same order as the calls to t
 will generate an error,
 informing you of this. There are two additional routines VecTDotBegin() and 
 VecTDotEnd(). \findex{VecTDotBegin()} \findex{VecTDotEnd()}
-These routines where suggested by Victor Eijkhout.
 
 Note: these routines use only MPI 1 functionality; so they do not allow you to overlap 
 computation and communication (assuming no threads are spawned within a MPI process). 
@@ -444,12 +443,9 @@ required for local computation. \sindex{ghost points} \sindex{global representat
 PETSc provides routines to help map indices from a local numbering scheme to 
 the PETSc global numbering scheme. This is done via the following routines
 \begin{tabbing}
-  ISLocal\=ToGlobalMappingCreate(int N,int* globalnum,\\
-                               \>        ISLocalToGlobalMapping* ctx);\\
-  ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,\\
-                              \>        int *out);\\
-  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,\\
-                               \>         IS* isout);\\
+  ISLocalToGlobalMappingCreate(int N,int* globalnum,ISLocalToGlobalMapping* ctx);\\
+  ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,int *out);\\
+  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,IS* isout);\\
   ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
 \end{tabbing}
 \findex{ISLocalToGlobalMappingCreate()} \findex{ISLocalToGlobalMappingApply()}
@@ -1037,16 +1033,16 @@ on the local work vectors, and then scatters back into the global solution
 vector. In the simplest case this may be written as
 \begin{tabbing}
    Function: (Input Vec globalin, Output Vec globalout)\\
-
-  VecScatterBegin(Vec globalin,Vec localin,InsertMode INSERT\_VALUES,\\
-                          ScatterMode SCATTER\_FORWARD,VecScatter scatter);\\
+\\
+  VecScatterBegin(\=Vec globalin,Vec localin,InsertMode INSERT\_VALUES,\\
+                 \>         ScatterMode SCATTER\_FORWARD,VecScatter scatter);\\
   VecScatterEnd(Vec globalin,Vec localin,InsertMode INSERT\_VALUES,\\
-                        ScatterMode SCATTER\_FORWARD,VecScatter scatter);\\
+                 \>       ScatterMode SCATTER\_FORWARD,VecScatter scatter);\\
   \trl{/*} For example, do local calculations from localin to localout \trl{*/} \\
   VecScatterBegin(Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
-                          ScatterMode SCATTER\_REVERSE,VecScatter scatter);\\
+                 \>         ScatterMode SCATTER\_REVERSE,VecScatter scatter);\\
   VecScatterEnd(Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
-                        ScatterMode SCATTER\_REVERSE,VecScatter scatter);
+                 \>       ScatterMode SCATTER\_REVERSE,VecScatter scatter);
 \end{tabbing}
 
 % -------------------------------------------------------------------------------
@@ -1101,10 +1097,10 @@ are accessed in \trl{g} using the global numbering.
 A common usage of a ghosted vector is given by
 \findex{VecGhostUpdateBegin()} \findex{VecGhostUpdateEnd()}
 \begin{tabbing}
-  VecGhostUpdateBegin(Vec globalin,InsertMode INSERT\_VALUES,\\
-                                   ScatterMode SCATTER\_FORWARD);\\
+  VecGhostUpdateBegin\=(Vec globalin,InsertMode INSERT\_VALUES,\\
+                      \>             ScatterMode SCATTER\_FORWARD);\\
   VecGhostUpdateEnd(Vec globalin,InsertMode INSERT\_VALUES,\\
-                                 ScatterMode SCATTER\_FORWARD);\\
+                      \>           ScatterMode SCATTER\_FORWARD);\\
   VecGhostGetLocalForm(Vec globalin,Vec *localin);\\
   VecGhostGetLocalForm(Vec globalout,Vec *localout);\\
    \trl{/*}\\
@@ -1113,9 +1109,9 @@ A common usage of a ghosted vector is given by
   VecGhostRestoreLocalForm(Vec globalin,Vec *localin);\\
   VecGhostRestoreLocalForm(Vec globalout,Vec *localout);\\
   VecGhostUpdateBegin(Vec globalout,InsertMode ADD\_VALUES,\\
-                                    ScatterMode SCATTER\_REVERSE);\\
+                        \>            ScatterMode SCATTER\_REVERSE);\\
   VecGhostUpdateEnd(Vec globalout,InsertMode ADD\_VALUES,\\
-                                  ScatterMode SCATTER\_REVERSE);
+                        \>          ScatterMode SCATTER\_REVERSE);
 \end{tabbing}
       
 The routines \trl{VecGhostUpdateBegin/End()} are equivalent to the routines \trl{VecScatterBegin/End()}
@@ -1178,11 +1174,13 @@ the manual pages for further information about available matrix formats.
 To insert or add entries to a matrix, one can call a variant of \trl{
 MatSetValues}, either \findex{MatSetValues()}
 \begin{tabbing}
-  MatSetValues(Mat A,int m,const int idxm[],int n,const int idxn[],const PetscScalar values[],INSERT\_VALUES);
+  MatSetValues(\=Mat A,int m,const int idxm[],int n,const int idxn[],const PetscScalar values[],\\
+            \>INSERT\_VALUES);
 \end{tabbing}
 or 
 \begin{tabbing}
-  MatSetValues(Mat A,int m,const int idxm[],int n,const int idxn[],const PetscScalar values[],ADD\_VALUES);
+  MatSetValues(\=Mat A,int m,const int idxm[],int n,const int idxn[],const PetscScalar values[],\\
+            \>ADD\_VALUES);
 \end{tabbing}
 This routine inserts or adds a logically dense subblock of dimension
 \trl{m*n} into the 
@@ -1433,8 +1431,8 @@ expensive.
 Parallel sparse matrices with the AIJ 
 format can be created with the command \findex{MatCreateMPIAIJ()}
 \begin{tabbing}
-  MatCreateMPIAIJ(MPI\_Comm comm,int m,int n,int M,int N,int d\_nz,\\
-                          int *d\_nnz, int o\_nz,int *o\_nnz,Mat *A);
+  MatCreateMPIAIJ\=(MPI\_Comm comm,int m,int n,int M,int N,int d\_nz,\\
+                 \>         int *d\_nnz, int o\_nz,int *o\_nnz,Mat *A);
 \end{tabbing}
 \trl{A} is the newly created matrix, while the arguments \trl{m}, 
 \trl{M}, and \trl{N}, indicate the number of local rows and
@@ -1723,8 +1721,8 @@ must write a routine with the calling sequence
 and then associate it with the matrix, \trl{mat}, by using the 
 command \findex{MatShellSetOperation()}
 \begin{tabbing}
-  MatShellSetOperation(Mat mat,MatOperation MATOP\_MULT,\\
-                               (void(*)(void)) int (*UserMult)(Mat,Vec,Vec));
+  MatShellSetOperation\=(Mat mat,MatOperation MATOP\_MULT,\\
+                      \>         (void(*)(void)) int (*UserMult)(Mat,Vec,Vec));
 \end{tabbing}
 Here \trl{MATOP_MULT} is the name of the operation for matrix-vector
 multiplication. Within each user-defined routine (such as
@@ -1891,8 +1889,8 @@ One first creates a parallel matrix that contains the connectivity information a
 grid (or other graph-type object) that is to be partitioned. This is done with the 
 command
 \begin{tabbing}
- MatCreateMPIAdj(MPI\_Comm comm,int mlocal,int n,const int ia[],const int ja[],\\
-                         int *weights,Mat *Adj);
+ MatCreateMPIAdj(\=MPI\_Comm comm,int mlocal,int n,const int ia[],const int ja[],\\
+                 \>        int *weights,Mat *Adj);
 \end{tabbing}
 The argument \trl{mlocal} indicates the number of rows of the graph being provided
 by the given process, \trl{n} is the total number of columns; equal to the 
@@ -2349,8 +2347,8 @@ the options must be specified. \findex{-ksp_xmonitor}
 Application programmers can also provide their own routines to perform 
 the monitoring by using the command \findex{KSPSetMonitor()}
 \begin{tabbing}
-  KSPSetMonitor(KSP ksp,int (*mon)(KSP ksp,int it,double rnorm,void *ctx),\\
-                        void *ctx,int (*mondestroy)(void *));
+  KSPSetMonitor(\=KSP ksp,int (*mon)(KSP ksp,int it,double rnorm,void *ctx),\\
+                \>        void *ctx,int (*mondestroy)(void *));
 \end{tabbing}
 The final routine argument, \trl{ctx}, is an optional context for private
 data for the user-defined monitoring routine, \trl{mon}.  Other
@@ -2690,15 +2688,15 @@ SOR_BACKWARD_SWEEP} or \trl{SOR_SYMMETRIC_SWEEP}, the default
 being \trl{SOR_FORWARD_SWEEP}. Setting the type to be \trl{
 SOR_SYMMETRIC_SWEEP} produces the SSOR method.  In addition, 
 each process can locally and independently perform the specified 
-variant of SOR with the types \trl{SOR_LOCAL_FORWARD_SWEEP, 
-SOR_LOCAL_BACKWARD_SWEEP}, and \trl{SOR_LOCAL_SYMMETRIC_SWEEP}.
+variant of SOR with the types \trl{SOR_LOCAL_FORWARD_SWEEP}, 
+\trl{SOR_LOCAL_BACKWARD_SWEEP}, and \trl{SOR_LOCAL_SYMMETRIC_SWEEP}.
 These \findex{SOR_FORWARD_SWEEP} \findex{SOR_BACKWARD_SWEEP}
 variants \findex{SOR_SYMMETRIC_SWEEP} \findex{SOR_LOCAL_FORWARD_SWEEP}
 can \findex{SOR_LOCAL_BACKWARD_SWEEP} \findex{SOR_LOCAL_SYMMETRIC_SWEEP}
 also be set with the options \trl{-pc_sor_omega <omega>}, 
-\trl{-pc_sor_its <its>}, \trl{-pc_sor_lits <lits>},
-\trl{-pc_sor_backward}, \trl{-pc_sor_symmetric}, 
-\break \trl{-pc_sor_local_forward}, \trl{-pc_sor_local_backward}, and 
+\trl{-pc_sor_its <its>},  \trl{-pc_sor_lits <lits>},
+\trl{-pc_sor_backward},  \trl{-pc_sor_symmetric}, 
+\trl{-pc_sor_local_forward},  \trl{-pc_sor_local_backward}, and 
 \trl{-pc_sor_local_symmetric}.
 \findex{-pc_sor_omega} \findex{-pc_sor_its}
 \findex{-pc_sor_backward} \findex{-pc_sor_symmetric}
@@ -2838,7 +2836,7 @@ define the subdomains.
 The object PCASMType is one of \trl{PC_ASM_BASIC},
 \trl{PC_ASM_INTERPOLATE}, \trl{PC_ASM_RESTRICT}, \trl{PC_ASM_NONE}
 and may also be set with the options database 
-\trl{-pc_asm_type} \trl{[basic,interpolate,restrict,none]}.
+\trl{-pc_asm_type} \trl{[basic}, \trl{interpolate}, \trl{restrict}, \trl{none]}.
 \findex{-pc_asm_type} \findex{PCASMSetType()} \findex{PC_ASM_BASIC} 
 \findex{PC_ASM_RESTRICT} \findex{PC_ASM_INTERPOLATE} \findex{PC_ASM_NONE}
 The type \trl{PC_ASM_BASIC} (or \trl{-pc_asm_type} \trl{basic}) corresponds to the
@@ -3169,8 +3167,7 @@ First, one must know what the null space is and store it using an orthonormal ba
 in an array of PETSc Vecs. (The constant functions can be handled seperately, since
 they are such a common case). Create a MatNullSpace object with the command
 \begin{tabbing}
-MatNullSpaceCreate\=(MPI\_Comm,PetscTruth hasconstants,int dim,Vec *basis,\\
-                  \>MatNullSpace *nsp);
+MatNullSpaceCreate(MPI\_Comm,PetscTruth hasconstants,int dim,Vec *basis,MatNullSpace *nsp);
 \end{tabbing}
 Here \trl{dim} is the number of vectors in \trl{basis} and \trl{hasconstants} indicates
 if the null space contains the constant functions. (If the null space contains the constant
@@ -3224,7 +3221,7 @@ inclusion within various source files.
 \begin{table}[H]
 \begin{center}
 \begin{tabular}{lllll}
-{\bf Package}    &{\bf Base Matrix Class}  & {\bf PCType} & {\bf MatType} & {\bf Runtime Options}\\
+{\bf Package}    &{\bf Base Class}  & {\bf PCType} & {\bf MatType} & {\bf Runtime Options}\\
 \hline
 DSCPACK          & baij         & cholesky     &  MATDSCPACK         & \trl{-mat_type dscpack}\\
 MUMPS            & aij          & lu           &  MATAIJMUMPS        & \trl{-mat_type aijmumps}\\
@@ -3505,8 +3502,7 @@ default, this technique employs cubic backtracking \cite{dennis:83}.
 An alternative line search routine can be set with the command
 \findex{SNESSetLineSearch()}
 \begin{tabbing}
-  SNESSetLineSearch(SNES snes,\\
-          int (*ls)(SNES,Vec,Vec,Vec,Vec,double,double*,double*),void *lsctx);
+  SNESSetLineSearch(SNES snes,int (*ls)(SNES,Vec,Vec,Vec,Vec,double,double*,double*),void *lsctx);
 \end{tabbing}
 Other line search methods provided by PETSc are 
 SNESQuadraticLineSearch(), SNESNoLineSearch(), and SNESNoLineSearchNoNorms(),
@@ -3598,9 +3594,9 @@ with the routine
 Users can set their own customized convergence tests in SNES by using
 the command \findex{SNESSetConvergenceTest()}
 \begin{tabbing}
-  SNESSetConvergenceTest(SNES snes,int (*test)(SNES snes,double xnorm,\\
-                         double gnorm,double f,SNESConvergedReason reason,\\
-                         void *cctx),void *cctx);
+  SNESSetConvergenceTest(\=SNES snes,int (*test)(SNES snes,double xnorm,\\
+                         \>double gnorm,double f,SNESConvergedReason reason,\\
+                         \>void *cctx),void *cctx);
 \end{tabbing}
 The final argument of the convergence test routine, \trl{cctx},
 denotes an optional user-defined context for private data.  When
@@ -3620,8 +3616,8 @@ By default the SNES solvers run silently without displaying information
 about the iterations. The user can initiate monitoring with the
 command \findex{SNESSetMonitor()} 
 \begin{tabbing}
-  SNESSetMonitor(SNES snes,int (*mon)(SNES,int its,double norm,void* mctx),\\
-                         void *mctx,int (*monitordestroy)(void *));
+  SNESSetMonitor(\=SNES snes,int (*mon)(SNES,int its,double norm,void* mctx),\\
+                 \>        void *mctx,int (*monitordestroy)(void *));
 \end{tabbing}
 The routine, \trl{mon}, indicates a user-defined monitoring routine,
 where \trl{its} and \trl{mctx} respectively denote the iteration
@@ -3653,8 +3649,8 @@ print the same numbers making cross process testing easier.
 The routines \findex{SNESGetSolution()} \findex{SNESGetFunction}
 \begin{tabbing}
   SNESGetSolution(SNES snes,Vec *x);\\
-  SNESGetFunction(SNES snes,Vec *r,void *ctx,\\
-                          int(**func)(SNES,Vec,Vec,void*));
+  SNESGetFunction(\=SNES snes,Vec *r,void *ctx,\\
+                  \>        int(**func)(SNES,Vec,Vec,void*));
 \end{tabbing}
 return the solution vector and function vector from a SNES context. 
 These routines are useful, for instance, if the convergence test requires 
@@ -3934,7 +3930,7 @@ A code fragment that demonstrates this process is given below.
       This initializes the nonzero structure of the Jacobian. This is artificial\\
       because clearly if we had a routine to compute the Jacobian we wouldn't\\
       need to use finite differences.\\
-   \trl{*/}
+   \trl{*/}\\
    FormJacobian(snes,x,\&J,\&J,\&str,\&user);\\
 
    \trl{/*}\\
@@ -4201,8 +4197,8 @@ variable \trl{fP}.
 (approximate) Jacobian matrix of \trl{F(u,t)} and a function to
 compute it at each Newton iteration. This is done with the command
 \begin{tabbing}
- TSSetRHSJacobian(TS ts,Mat A, Mat B,int (*fjac)(TS,double,Vec,Mat*,Mat*,\\
-                          MatStructure*,void*),void *fP);
+ TSSetRHSJacobian(\=TS ts,Mat A, Mat B,int (*fjac)(TS,double,Vec,Mat*,Mat*,\\
+                  \>        MatStructure*,void*),void *fP);
 \end{tabbing}
 The \findex{TSSetRHSJacobian} arguments for the function \trl{fjac()} are
 the timestep context, the current time, the location where the
@@ -4297,8 +4293,8 @@ variable \trl{fP}.
 \item Provide the (approximate) Jacobian matrix of \trl{F(u,t)} and a 
 function to compute it at each Newton iteration. This is done with the command
 \begin{tabbing}
- TSSetRHSJacobian(TS ts,Mat A, Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,\\
-                          MatStructure*,void*),void *fP);
+ TSSetRHSJacobian(\=TS ts,Mat A, Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,\\
+                  \>        MatStructure*,void*),void *fP);
 \end{tabbing}
 The \findex{TSSetRHSJacobian} arguments for the function \trl{f()} are
 the timestep context, the current time, the location where the
@@ -4410,14 +4406,15 @@ solvers are being used.
 
 For nonlinear problems one replaces the DMMGSetSLES() with 
 \begin{tabbing}
-  DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),\\
-  int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
+  DMMGSetSNES(\=DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),\\
+             \>int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 \end{tabbing}
 or the prefered approach
 \begin{tabbing}
-  DMMGSetSNESLocal(DMMG *dmmg,\\
-  int (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),\\
-  int (*localjacobian)(DALocalInfo *,void *x,Mat J,void *appctx),ad\_function,ad\_mf\_function);
+  DMMGSetSNESLocal(\=DMMG *dmmg,\\
+  \>int (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),\\
+  \>int (*localjacobian)(DALocalInfo *,void *x,Mat J,void *appctx),\\
+  \>ad\_function,ad\_mf\_function);
 \end{tabbing}
 The \trl{ad_function} and \trl{ad_mf_function} are described in the next chapter. \findex{DMMGSetSNES()} \findex{DMMGSetSNESLocal()}
 See examples \trl{src/snes/examples/tutorials/ex18.c} and \trl{ex19.c} for complete details.
@@ -4436,8 +4433,8 @@ int localfunction(DALocalInfo *info,double ***x, double ***f,void *ctx)
 \end{tabbing}
 For a 2d multi-component problem with u, v, and p components one would write
 \begin{tabbing}
-typedef struct \{\\
-  PetscScalar u,v,p;\\
+ty\=pedef struct \{\\
+  \> PetscScalar u,v,p;\\
  \} Field;\\
 ...\\
 int localfunction(DALocalInfo *info,Field **x,Field **f,void *ctx)
@@ -4620,7 +4617,7 @@ interactively in this mode but you can send Matlab commands via
 where \trl{format} has the usual \trl{printf()} format.
 For example,
 \begin{tabbing}
-  PetscMatlabEngineEvaluate(PetscMatlabEngine,''x = %g *y + z;'',avalue);
+  PetscMatlabEngineEvaluate(PetscMatlabEngine,''x = \%g *y + z;'',avalue);
 \end{tabbing}
 The name of each PETSc variable passed to Matlab may be set with
 \begin{tabbing}
@@ -6961,39 +6958,39 @@ line that includes the files defining all of the macro variables.
 Some additional variables that can be used in the makefile are defined
 as follows:
 \begin{itemize}
-\item[\trl{CFLAGS, FFLAGS}] User specified additional options for the C compiler and
+\item[CFLAGS, FFLAGS] User specified additional options for the C compiler and
         fortran compiler.
-\item[\trl{CPPFLAGS, FPPFLAGS}] User specified additional flags for the C preprocessor
+\item[CPPFLAGS, FPPFLAGS] User specified additional flags for the C preprocessor
         and fortran preprocesor.
-\item[\trl{CLINKER, FLINKER}] the C and Fortran linkers. 
-\item[\trl{RM}] the remove command for deleting files.
-\item[\trl{EXAMPLES_1}] examples that will be built with
+\item[CLINKER, FLINKER] the C and Fortran linkers. 
+\item[RM] the remove command for deleting files.
+\item[EXAMPLES\_1] examples that will be built with
              \trl{make BOPT=[g,O] examples} (see Section~\ref{sec_common})
-\item[\trl{RUNEXAMPLES_1}] examples that will be run with
+\item[RUNEXAMPLES\_1] examples that will be run with
              \trl{make} \trl{runexamples} (see Section~\ref{sec_common})
-\item[\trl{EXAMPLESC}] all C examples that will be checked in/out of RCS
+\item[EXAMPLESC] all C examples that will be checked in/out of RCS
              with \trl{make} \trl{ci} and \trl{make} \trl{co} (not generally
              needed by users).
-\item[\trl{EXAMPLESF}] all Fortran examples that will be checked in/out of
+\item[EXAMPLESF] all Fortran examples that will be checked in/out of
              RCS with \trl{make} \trl{ci} and \trl{make} \trl{co} (not generally
              needed by users).
-\item[\trl{PETSC_LIB}] all of the base PETSc libraries.
+\item[PETSC\_LIB] all of the base PETSc libraries.
              \findex{PETSC_LIB}
-\item[\trl{PETSC_FORTRAN_LIB}] the PETSc Fortran interface 
+\item[PETSC\_FORTRAN\_LIB] the PETSc Fortran interface 
              library. \findex{PETSC_FORTRAN_LIB}
 \end{itemize}
 Note that the PETSc example programs are divided into several
 categories, which currently include: 
 \begin{itemize}
-\item[\trl{EXAMPLES_1}] basic C suite used in installation tests\\
-\item[\trl{EXAMPLES_2}] additional C suite including graphics\\
-\item[\trl{EXAMPLES_3}] basic Fortran .F suite\\
-\item[\trl{EXAMPLES_4}] subset of 1 and 2 that runs on only a single process\\
-\item[\trl{EXAMPLES_5}] examples that require complex numbers\\
-\item[\trl{EXAMPLES_6}] C examples that do not work with complex numbers\\
-\item[\trl{EXAMPLES_8}] Fortran .F examples that do not work with complex numbers\\
-\item[\trl{EXAMPLES_9}] uniprocess version of 3\\
-\item[\trl{EXAMPLES_10}] Fortran .F examples that require complex numbers\\
+\item[EXAMPLES\_1] basic C suite used in installation tests\\
+\item[EXAMPLES\_2] additional C suite including graphics\\
+\item[EXAMPLES\_3] basic Fortran .F suite\\
+\item[EXAMPLES\_4] subset of 1 and 2 that runs on only a single process\\
+\item[EXAMPLES\_5] examples that require complex numbers\\
+\item[EXAMPLES\_6] C examples that do not work with complex numbers\\
+\item[EXAMPLES\_8] Fortran .F examples that do not work with complex numbers\\
+\item[EXAMPLES\_9] uniprocess version of 3\\
+\item[EXAMPLES\_10] Fortran .F examples that require complex numbers\\
 \end{itemize}
 
 We next list in Figure \ref{fig_make3} a makefile that maintains a PETSc 

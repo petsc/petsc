@@ -115,8 +115,8 @@ definitive reference for any PETSc function is always the online manualpage.
 
 \medskip \medskip
 
-Within the PETSc distribution, the directory
-\trl{${PETSC_DIR}/docs} contains all documentation.
+Within the PETSc distribution, the directory \trl{${PETSC_DIR}/docs}
+contains all documentation.
 Manual pages for all PETSc functions can be
 accessed on line at
 \begin{tabbing}
@@ -240,7 +240,7 @@ customization. The final argument, \trl{help}, is an optional
 character string that will be printed if the program is run with the
 \trl{-help} option.  In Fortran the initialization command has the form
 \begin{tabbing}
-   call PetscInitialize(character file,integer ierr)
+   call PetscInitialize(character(*) file,integer ierr)
 \end{tabbing} 
 \trl{PetscInitialize()} automatically calls \trl{MPI_Init()} if MPI
 has not been not previously initialized. In certain \findex{MPI_Init()}
