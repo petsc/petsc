@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.99 1998/07/27 16:24:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.100 1998/10/19 22:17:23 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -390,8 +390,9 @@ int PCLUSetFill(PC pc,double fill)
 #define __FUNC__ "PCLUSetUseInPlace"
 /*@
    PCLUSetUseInPlace - Tells the system to do an in-place factorization.
-   For some implementations, for instance, dense matrices, this enables the 
-   solution of much larger problems. 
+   For dense matrices, this enables the solution of much larger problems. 
+   For sparse matrices the factorization cannot be done truly in-place 
+   so this does not save memory.
 
    Collective on PC
 
