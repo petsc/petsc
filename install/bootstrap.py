@@ -166,7 +166,7 @@ class ScrollingWindow:
     self.y  = y+1
     self.h  = h - 2
     self.w  = w - 2
-    self.pwd = pwd
+    self.pwd = pwd+'/'
     self.lines = []
     for i in range(0,self.h):
       self.lines.append('\n')
