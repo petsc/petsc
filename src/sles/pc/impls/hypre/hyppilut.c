@@ -454,7 +454,7 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     
     ierr = PetscOptionsLogical("-pc_hypre_boomeramg_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
     if (jac->printstatistics) {
-      ierr = HYPRE_BoomerAMGSetIOutDat(jac->hsolver,3);CHKERRQ(ierr);
+      ierr = HYPRE_BoomerAMGSetPrintLevel(jac->hsolver,3);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
