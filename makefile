@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.345 2001/04/04 21:10:41 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.346 2001/04/05 19:52:36 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -102,8 +102,8 @@ build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree 
-	${RANLIB} ${LDIR}/*.a
-	-@chmod g+w  ${LDIR}/*.a
+	${RANLIB} ${PETSC_LIB_DIR}/*.a
+	-@chmod g+w  ${PETSC_LIB_DIR}/*.a
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 #
@@ -146,11 +146,11 @@ testfortran_uni: info chkopts
 
 # Ranlib on the libraries
 ranlib:
-	${RANLIB} ${LDIR}/*.a
+	${RANLIB} ${PETSC_LIB_DIR}/*.a
 
 # Deletes PETSc libraries
 deletelibs: chkopts_basic
-	-${RM} -f ${LDIR}/*
+	-${RM} -f ${PETSC_LIB_DIR}/*
 
 
 # ------------------------------------------------------------------
@@ -311,7 +311,7 @@ allrcslabel:
 # they are not currently used.
 #
 alladicignore:
-	-@${RM} ${LDIR}/adicignore
+	-@${RM} ${INSTALL_LIB_DIR}/adicignore
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adicignore  tree 
 
 alladic:
@@ -340,7 +340,7 @@ alladiclib:
 	-@echo "Using PETSc directory: ${PETSC_DIR}"
 	-@echo "Using PETSc arch: ${PETSC_ARCH}"
 	-@echo "========================================="
-	-@${RM} -f  ${LDIR}/*adic.a
+	-@${RM} -f  ${INSTALL_LIB_DIR}/*adic.a
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
 	-@cd src/blaslapack ; \
             ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
@@ -402,8 +402,8 @@ noise: info chklib_dir
 	  egrep -i '(Error|warning|Can)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; ${RM} trashz
-	${RANLIB} ${LDIR}/libpetscsnes.a
-	-@chmod g+w  ${LDIR}/libpetscsnes.a
+	${RANLIB} ${INSTALL_LIB_DIR}/libpetscsnes.a
+	-@chmod g+w  ${INSTALL_LIB_DIR}/libpetscsnes.a
 	-@echo "Completed compiling noise routines"
 	-@echo "========================================="
 
