@@ -579,15 +579,19 @@ int PetscObjectContainerDestroy(PetscObjectContainer obj)
    PetscObjectContainerCreate - Creates a PETSc object that has room to hold
    a single pointer. This allows one to attach any type of data (accessible
    through a pointer) with the PetscObjectCompose() function to a PetscObject.
+   The data item itself is attached by a call to PetscObjectContainerSetPointer.
 
    Collective on MPI_Comm
 
    Input Parameters:
 .  comm - MPI communicator that shares the object
 
+   Output Parameters:
+.  container - the container created
+
    Level: advanced
 
-.seealso: PetscObjectContainerDestroy()
+.seealso: PetscObjectContainerDestroy(), PetscObjectContainerSetPointer(), PetscObjectContainerSetPointer()
 @*/
 int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
 {
