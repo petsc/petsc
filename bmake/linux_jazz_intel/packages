@@ -38,4 +38,31 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 SPOOLES_INCLUDE       = -I${SOFT_HOME}/spooles-2.2
 SPOOLES_LIB           = ${SOFT_HOME}/spooles-2.2/MPI/src/spoolesMPI.a ${SOFT_HOME}/spooles-2.2/spooles.a 
 PETSC_HAVE_SPOOLES    = -DPETSC_HAVE_SPOOLES
+#
+#
+#  Location of hypre
+#
+HYPRE_INCLUDE    = -I/soft/apps/packages/petsc-packages/linux-rh72-intel/hypre-1.6.0/include
+HYPRE_LIB        = -L/soft/apps/packages/petsc-packages/linux-rh72-intel/hypre-1.6.0/lib  -lHYPRE_parcsr_ls -lHYPRE_DistributedMatrix -lHYPRE_parcsr_mv  -lHYPRE_FEI -lHYPRE_seq_mv -lHYPRE_IJ_mv -lkrylov -lHYPRE_DistributedMatrixPilutSolver -lHYPRE_utilities  -lHYPRE_MatrixMatrix -lHYPRE_ParaSails -lHYPRE_Euclid -lHYPRE_parcsr_ls -lHYPRE_DistributedMatrix -lHYPRE_parcsr_mv  -lHYPRE_FEI -lHYPRE_seq_mv -lHYPRE_IJ_mv -lkrylov -lHYPRE_DistributedMatrixPilutSolver -lHYPRE_utilities  -lHYPRE_MatrixMatrix -lHYPRE_ParaSails -lHYPRE_Euclid 
+PETSC_HAVE_HYPRE = -DPETSC_HAVE_HYPRE
+#
+# Location of SPAI;
+#
+#SPAI_INCLUDE    = -I/soft/apps/packages/petsc-packages/linux-rh72-intel/spai_3.0/lib
+#SPAI_LIB        = /soft/apps/packages/petsc-packages/linux-rh72-intel/spai_3.0/lib/libspai.a
+#PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
+#
+# SuperLU
+#
+SUPERLUDIST_INCLUDE    = -I/soft/apps/packages/petsc-packages/linux-rh72-intel/SuperLU_DIST_2.0/SRC
+SUPERLUDIST_LIB        = -L/soft/apps/packages/petsc-packages/linux-rh72-intel/SuperLU_DIST_2.0 -lsuperlu_linux-rh72-intel
+PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
+
+#
+# MUMPS (requires SCALAPACK & BLACS)
+# Note: BLACS has cross links between libraries - so hast to be listed twice.
+#
+MUMPS_INCLUDE    = -I/soft/apps/packages/petsc-packages/linux-rh72-intel/MUMPS_4.2_beta/include
+MUMPS_LIB        = -L/soft/apps/packages/petsc-packages/linux-rh72-intel/MUMPS_4.2_beta/lib -ldmumps -lpord -L/soft/apps/packages/petsc-packages/linux-rh72-intel/SCALAPACK -lscalapack  -L/soft/apps/packages/petsc-packages/linux-rh72-intel/BLACS/LIB -lblacs_MPI-LINUX-0 -lblacsF77init_MPI-LINUX-0 -lblacs_MPI-LINUX-0 -lblacsF77init_MPI-LINUX-0
+PETSC_HAVE_MUMPS = -DPETSC_HAVE_MUMPS 
 
