@@ -185,46 +185,30 @@ int MatDestroy_MPIBAIJ_DSCPACK(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_MPIBAIJ_DSCPACK"
-int MatSolve_MPIBAIJ_DSCPACK(Mat A,Vec b_mpi,Vec x)
+int MatSolve_MPIBAIJ_DSCPACK(Mat A,Vec b,Vec x)
 {
   Mat_MPIBAIJ_DSC   *lu= (Mat_MPIBAIJ_DSC*)A->spptr;
-  int               ierr, size;
+  int               ierr,bs=lu->bs;
   RealNumberType    *solution_vec, *rhs_vec; 
-  PetscScalar       *array;
   Vec               vec_dsc;
   IS                iden;
   VecScatter        scat;
-  int               bs=lu->bs,i;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  
-  printf(" Solve is called ..., bs: %d\n", bs);
+  printf(" Solve is called ..., bs= %d\n", bs);
   /*
   if (lu->rank == -1) {
       PetscPrintf(PETSC_COMM_SELF," lu->rank = -1\n");
       PetscFunctionReturn(0);
   }
   */
-  /* create seq vec_dsc */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,lu->num_local_cols,&vec_dsc);CHKERRQ(ierr);
-
-  if (size == 1 ){
-    ierr = VecGetArray(vec_dsc,&rhs_vec);CHKERRQ(ierr);  
-    ierr = VecGetArray(b_mpi,&array);CHKERRQ(ierr);
-    for (i=0; i<lu->num_local_cols; i++) 
-      rhs_vec[i] = array[lu->local_cols_old_num[i]];
-
-    ierr = VecRestoreArray(b_mpi,&array);CHKERRQ(ierr);
-    ierr = VecRestoreArray(vec_dsc,&rhs_vec);CHKERRQ(ierr); 
-  } else {
-    ierr = ISCreateStride(PETSC_COMM_SELF,lu->num_local_cols,0,1,&iden);CHKERRQ(ierr); /*is_dsc*/
-    
-    /* scatter b_mpi into seq vec_dsc */
-    ierr = VecScatterCreate(b_mpi,lu->my_cols,vec_dsc,iden,&scat);CHKERRQ(ierr);
-    ierr = VecScatterBegin(b_mpi,vec_dsc,INSERT_VALUES,SCATTER_FORWARD,scat);CHKERRQ(ierr);
-    ierr = VecScatterEnd(b_mpi,vec_dsc,INSERT_VALUES,SCATTER_FORWARD,scat);CHKERRQ(ierr);
-  }
+      
+  /* scatter b into seq vec_dsc */
+  ierr = VecCreateSeq(PETSC_COMM_SELF,lu->num_local_cols,&vec_dsc);CHKERRQ(ierr); 
+  ierr = ISCreateStride(PETSC_COMM_SELF,lu->num_local_cols,0,1,&iden);CHKERRQ(ierr); /*is_dsc*/
+  ierr = VecScatterCreate(b,lu->my_cols,vec_dsc,iden,&scat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(b,vec_dsc,INSERT_VALUES,SCATTER_FORWARD,scat);CHKERRQ(ierr);
+  ierr = VecScatterEnd(b,vec_dsc,INSERT_VALUES,SCATTER_FORWARD,scat);CHKERRQ(ierr);
 
   ierr = VecGetArray(vec_dsc,&rhs_vec);CHKERRQ(ierr);    
   DSC_InputRhsLocalVec(lu->My_DSC_Solver, rhs_vec, lu->num_local_cols);
@@ -238,29 +222,24 @@ int MatSolve_MPIBAIJ_DSCPACK(Mat A,Vec b_mpi,Vec x)
 
   /* get the permuted local solution */
   ierr = VecGetArray(vec_dsc,&solution_vec);CHKERRQ(ierr);  
-
   ierr = DSC_GetLocalSolution(lu->My_DSC_Solver,solution_vec, lu->num_local_cols);
+  ierr = VecRestoreArray(vec_dsc,&solution_vec);CHKERRQ(ierr); 
 
-  /* put permuted local solution solution_vec into x_mpi in the original order */
-  ierr = VecSetValues(x,lu->num_local_cols,lu->local_cols_old_num,solution_vec,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vec_dsc,&rhs_vec);CHKERRQ(ierr); 
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  /* put permuted local solution solution_vec into x in the original order */
+  ierr = VecScatterBegin(vec_dsc,x,INSERT_VALUES,SCATTER_REVERSE,scat);CHKERRQ(ierr);
+  ierr = VecScatterEnd(vec_dsc,x,INSERT_VALUES,SCATTER_REVERSE,scat);CHKERRQ(ierr);
 
   /* free spaces */
-  if (size > 1) {
-    ierr = ISDestroy(iden);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(scat);CHKERRQ(ierr);
-  }
-
+  ierr = ISDestroy(iden);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scat);CHKERRQ(ierr);
   ierr = VecDestroy(vec_dsc);CHKERRQ(ierr); 
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__   
-#define __FUNCT__ "MatLUFactorNumeric_MPIBAIJ_DSCPACK"
-int MatLUFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
+#define __FUNCT__ "MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK"
+int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
 {
   Mat_SeqBAIJ       *a_seq;
   Mat_MPIBAIJ_DSC   *lu=(Mat_MPIBAIJ_DSC*)(*F)->spptr; 
@@ -309,8 +288,7 @@ int MatLUFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
     }
 
     ierr = DSC_Order(lu->My_DSC_Solver,lu->order_code,Mbs,a_seq->i,a_seq->j,lu->replication,
-                   &M, 
-                   &lu->num_local_strucs, 
+                   &M,&lu->num_local_strucs, 
                    &lu->num_local_cols, &lu->num_local_nonz,  &lu->global_struc_new_col_num, 
                    &lu->global_struc_new_num, &lu->global_struc_owner, 
                    &lu->local_struc_old_num);
@@ -347,12 +325,11 @@ int MatLUFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
 
     /* convert A to my A_seq */
     if (size > 1) { 
-      int *idx,*i_idx,*tmp;
+      int *idx,*iidx,*tmp;
       IS  my_cols_sorted;
       
       ierr = PetscMalloc(2*lu->num_local_strucs*sizeof(int),&idx);CHKERRQ(ierr);
-      /* ierr = PetscMalloc(lu->num_local_strucs*sizeof(int),&i_idx);CHKERRQ(ierr); */
-      i_idx = idx + lu->num_local_strucs;
+      iidx = idx + lu->num_local_strucs;
       ierr = PetscMalloc(lu->num_local_cols*sizeof(int),&tmp);CHKERRQ(ierr); 
       
       isort2(lu->num_local_strucs, lu->local_struc_old_num, idx);
@@ -363,7 +340,7 @@ int MatLUFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
         }
       }
       for (i=0; i< lu->num_local_strucs; i++) {       
-        i_idx[idx[i]] = i;  /* inverse of idx */
+        iidx[idx[i]] = i;       /* inverse of idx */
       }
 
       ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->num_local_cols,tmp,&my_cols_sorted);CHKERRQ(ierr);     
@@ -378,7 +355,7 @@ int MatLUFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
                        lu->num_local_strucs, lu->num_local_nonz,  
                        lu->global_struc_new_col_num, 
                        lu->local_struc_old_num,
-                       i_idx,
+                       iidx,
                        &my_a_nonz);
 
       ierr = PetscFree(idx);
@@ -401,7 +378,6 @@ int MatLUFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
     SETERRQ1(1,"Error seeting local nonzeroes at processor %d \n", lu->rank);
   }
   
-  /* if( !lu->rank ) printf("scheme_code: %d, factor_type: %d\n",lu->scheme_code, lu->factor_type); */
   ierr = DSC_NFactor(lu->My_DSC_Solver, lu->scheme_code, my_a_nonz, lu->factor_type, lu->LBLASLevel, lu->DBLASLevel);    
   ierr = PetscFree(my_a_nonz);CHKERRQ(ierr);
 
@@ -413,10 +389,10 @@ int MatLUFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
   PetscFunctionReturn(0);
 }
 
-/* Note the Petsc r and c permutations are ignored */
+/* Note the Petsc permutation r is ignored */
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_MPIBAIJ_DSCPACK"
-int MatLUFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+#define __FUNCT__ "MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK"
+int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,PetscReal f,Mat *F)
 {
   Mat_MPIBAIJ_DSC         *lu;   
   int                     ierr,M=A->M,size; 
@@ -434,11 +410,11 @@ int MatLUFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   ierr = MatGetBlockSize(A,&lu->bs);
   ierr = MatCreateMPIBAIJ(A->comm,lu->bs,PETSC_DECIDE,PETSC_DECIDE,M,M,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
     
-  (*F)->spptr                 = (Mat_MPIBAIJ_DSC*)lu;
-  (*F)->ops->lufactornumeric  = MatLUFactorNumeric_MPIBAIJ_DSCPACK;
-  (*F)->ops->solve            = MatSolve_MPIBAIJ_DSCPACK;
-  (*F)->ops->destroy          = MatDestroy_MPIBAIJ_DSCPACK;  
-  (*F)->factor                = FACTOR_LU;  
+  (*F)->spptr                       = (Mat_MPIBAIJ_DSC*)lu;
+  (*F)->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK;
+  (*F)->ops->solve                  = MatSolve_MPIBAIJ_DSCPACK;
+  (*F)->ops->destroy                = MatDestroy_MPIBAIJ_DSCPACK;  
+  (*F)->factor                      = FACTOR_CHOLESKY;  
 
   /* Set the input options */
   lu->order_code  = 1; 
@@ -509,11 +485,9 @@ int MatLUFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
     }
     SETERRQ1(1,"Unknown distributed phase BLAS level %s",buff);
   }
-
   
   PetscOptionsEnd();
   
-
   lu->flg = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0); 
 }
@@ -523,8 +497,8 @@ int MatLUFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 int MatUseDSCPACK_MPIBAIJ(Mat A)
 {
   PetscFunctionBegin;
-  A->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIBAIJ_DSCPACK;
-  A->ops->lufactornumeric  = MatLUFactorNumeric_MPIBAIJ_DSCPACK;
+  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK;
+  A->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK;
   PetscFunctionReturn(0);
 }
 
