@@ -15,7 +15,7 @@ class Options(config.base.Configure):
     if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
         flags.append('-Wall')
-        if 'USER' in os.environ and os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','kris','balay','petsc']:
+        if 'USER' in os.environ and os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','kris','balay','hzhang','petsc']:
           flags.extend(['-Wshadow', '-Wwrite-strings'])
       elif bopt == 'g':
         if self.framework.argDB['with-gcov']:
@@ -87,7 +87,7 @@ class Options(config.base.Configure):
         flags.append('-g3')
       elif bopt in ['O', 'O_complex']:
         if os.environ.has_key('USER'):
-          if os.environ['USER'] in ['barrysmith', 'bsmith', 'knepley', 'buschelm', 'kris', 'petsc', 'balay']:
+          if os.environ['USER'] in ['barrysmith', 'bsmith', 'knepley', 'buschelm', 'kris', 'petsc', 'balay','hzhang']:
             flags.extend(['-Wshadow', '-Wwrite-strings', '-Wno-strict-aliasing'])
           flags.extend(['-O', '-fomit-frame-pointer'])
     # Alpha
