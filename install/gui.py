@@ -121,6 +121,13 @@ class CursesInstallGUI(HTMLParser.HTMLParser):
     logging.dW = bootstrap.ScrollingWindow(stdscr,4,3,y-7,x-6,'')
     install.installer.runinstaller([self.project.url])
 
+  def cursesGetProjects(self,stdscr):
+    '''Display nice message while downloading list of projects'''
+    stdscr.clear()
+    CursesInstall.CenterAddStr(stdscr, 3, 'Downloading list of possible projects')
+    stdscr.refresh()
+    self.GetProjects()
+
 #------------------------------------------------------------------
 
 if __name__ ==  '__main__':
@@ -129,7 +136,7 @@ if __name__ ==  '__main__':
   curses.wrapper(gui.Welcome)
 
   curses.wrapper(gui.InstalledProjects)
-  gui.GetProjects()
+  curses.wrapper(gui.cursesGetProjects)
   curses.wrapper(gui.SelectProject)
   curses.wrapper(gui.cursesRunInstaller)
 
