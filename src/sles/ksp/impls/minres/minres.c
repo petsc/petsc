@@ -1,4 +1,4 @@
-/*$Id: minres.c,v 1.11 2001/01/15 21:47:29 bsmith Exp balay $*/
+/*$Id: minres.c,v 1.12 2001/01/16 18:19:47 balay Exp bsmith $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
@@ -37,18 +37,19 @@ int KSPSetUp_MINRES(KSP ksp)
 int  KSPSolve_MINRES(KSP ksp,int *its)
 {
   int          ierr,i,maxit;
-  Scalar       alpha,malpha,beta,mbeta,ibeta,betaold,eta;
-  Scalar       c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
-  Scalar       rho0,rho1,irho1,rho2,mrho2,rho3,mrho3;
-  Scalar       mone = -1.0,zero = 0.0; 
-  Scalar       dp = 0.0;
+  Scalar       alpha,malpha,beta,mbeta,ibeta,betaold,eta,c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
+  Scalar       rho0,rho1,irho1,rho2,mrho2,rho3,mrho3,mone = -1.0,zero = 0.0,dp = 0.0;
   PetscReal    np;
   Vec          X,B,R,Z,U,V,W,UOLD,VOLD,WOLD,WOOLD;
   Mat          Amat,Pmat;
   MatStructure pflag;
   KSP_MINRES   *minres = (KSP_MINRES*)ksp->data;
+  PetscTruth   diagonalscale;
 
   PetscFunctionBegin;
+  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+
   maxit   = ksp->max_it;
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
@@ -82,7 +83,7 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
 
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
   if (PetscAbsScalar(dp) < minres->haptol) {
-    PetscLogInfo(ksp,"KSPSolve_MINRES:Detected happy breakdown %g tolerance %g\n",dp,minres->haptol);
+    PetscLogInfo(ksp,"KSPSolve_MINRES:Detected happy breakdown %g tolerance %g\n",PetscAbsScalar(dp),minres->haptol);
     dp = PetscAbsScalar(dp); /* tiny number, can't use 0.0, cause divided by below */
     if (dp == 0.0) {
       ksp->reason = KSP_CONVERGED_ATOL;
