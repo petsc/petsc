@@ -68,6 +68,10 @@ have the error flag as the final argument.
    
    Added CHKMEMQ and CHKMEMA macros to help track down memory corruption.
    
+   PetscFree() now always returns an error code that may be checked with CHKERRQ(). 
+   On systems where free() returns a void (and the user has no access to an error
+   condition in free(), PetscFree() returns 0 i.e. no error; on other systems it 
+   returns the error number from free.
 
   Viewer
 
