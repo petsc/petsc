@@ -37,7 +37,7 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	/home/gropp/bin/solaris/tohtml -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
 	       -nonavnames -nobottomnav -mapref ../../manualpages/manualpages.cit
 	/home/gropp/bin/solaris/tohtml -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
-	       -nonavnames -nobottomnav -mapref ../../manualpages/manualpages.cit
+	       -nonavnames -nobottomnav -useimg -mapref ../../manualpages/manualpages.cit
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv manual.html manual_html.html
 	cat manual_html.html \
