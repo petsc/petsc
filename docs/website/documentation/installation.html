@@ -87,11 +87,11 @@ PETSc</strong></a></li>
     -suggest&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><a name="(I got my PETSc from the Bitkeeper site)" href="#I got PETSc from the BitKeeper site:">(I
     got my PETSc from the Bitkeeper site)</a></li>
 
-  <li>bash shell<br>
+  <li>bash shell <br>
 
-    <font color="#FF0000">export PETSC_DIR=`pwd`<br>
+    <font color="#FF0000">export PETSC_DIR=`pwd`</font>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  (note the backquote) <br>
 
-  export PETSC_ARCH=selectedvalue<br>
+  <font color="#FF0000">export PETSC_ARCH=selectedvalue<br> 
 
   </font>csh/tcsh shell<br>
     <font color="#FF0000">setenv PETSC_DIR `pwd`<br>
@@ -102,10 +102,9 @@ PETSc</strong></a></li>
 
   - <a href="#bmake/${PETSC_ARCH}/packages">Manual configuration</a>, edit <font color="#008080">bmake/${PETSC_ARCH}/packages</font> 
 
-  file and specify the location of BLAS, LAPACK and MPI.</li>
+  and specify the location of BLAS, LAPACK and MPI.</li>
 
-  <li><a href="#Optional Packages">Add</a> optional packages to the <font color="#008080"><a href="#bmake/${PETSC_ARCH}/packages">bmake/${PETSC_ARCH}/packages</a>
-    file</font> 
+  <li><a href="#Optional Packages">Add</a> optional packages to the <font color="#008080"><a href="#bmake/${PETSC_ARCH}/packages">bmake/${PETSC_ARCH}/packages</a></font> 
 
           </li>
 
@@ -665,11 +664,6 @@ one can use
 
 to create these files - for the specified PETSC_ARCH</p>
 
-<p>We provide some default configure examples in <font color="#008080">${PETSC_DIR}/config</font>,
-for 
-
-example: on Mac OS X, a sample configure file is <font color="#008080">${PETSC_ARCH}/config/configure_darwin6.6.py</font></p>
-
 <p>Configure is implemented in python and requires python version 2.2 or 
 
 newer.</p>
@@ -677,7 +671,7 @@ newer.</p>
 <p>With configure build, the PETSC_ARCH should be chosen from the suggested 
 
 value by '<font color="#FF0000">bin/petscarch -suggest</font>'. For example, on a linux box, to use 
-configure - 
+configure  
 
 one should use linux-gnu, or linux-gnu-foobar etc.&nbsp;&nbsp;</p>
 
@@ -691,6 +685,11 @@ one should use linux-gnu, or linux-gnu-foobar etc.&nbsp;&nbsp;</p>
   --with-lapack=/usr/lib/liblapack.a</font></li>
 
 </ul>
+
+<p>We provide some default configure examples in <font color="#008080">${PETSC_DIR}/config</font>,
+for 
+
+example: on Mac OS X, a sample configure file is <font color="#008080">${PETSC_ARCH}/config/configure_darwin6.6.py</font></p>
 
         <p>Currently configure cannot handle most of the optional packages so
         after running configure you should manually add them to the <font color="#551A8B"><b><a name="bmake/${PETSC_ARCH}/packages" href="#bmake/${PETSC_ARCH}/packages">bmake/${PETSC_ARCH}/packages</a>
