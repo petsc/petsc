@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.34 1995/04/28 05:14:26 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.35 1995/05/02 17:59:59 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -120,7 +120,7 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
     either case.
 */
 
-static int MatAssemblyBegin_MPIAIJ(Mat mat,int mode)
+static int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   MPI_Comm    comm = mat->comm;
@@ -223,7 +223,7 @@ static int MatAssemblyBegin_MPIAIJ(Mat mat,int mode)
 }
 extern int MatSetUpMultiply_MPIAIJ(Mat);
 
-static int MatAssemblyEnd_MPIAIJ(Mat mat,int mode)
+static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
   int        ierr;
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -629,8 +629,8 @@ extern int MatMarkDiag_AIJ(Mat_AIJ  *);
         b) local smoothing updating outer values each inner iteration
      3) color updating out values betwen colors.
 */
-static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,int flag,double shift,
-                        int its,Vec xx)
+static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
+                           double shift,int its,Vec xx)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
   Mat        AA = mat->A, BB = mat->B;
@@ -946,7 +946,8 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,int flag,double shift,
   return 0;
 } 
 
-static int MatGetInfo_MPIAIJ(Mat matin,int flag,int *nz,int *nzalloc,int *mem)
+static int MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,int *nz,
+                             int *nzalloc,int *mem)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
   Mat        A = mat->A, B = mat->B;
@@ -967,7 +968,7 @@ static int MatGetInfo_MPIAIJ(Mat matin,int flag,int *nz,int *nzalloc,int *mem)
   return 0;
 }
 
-static int MatSetOption_MPIAIJ(Mat aijin,int op)
+static int MatSetOption_MPIAIJ(Mat aijin,MatOption op)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) aijin->data;
 
@@ -1069,7 +1070,7 @@ static int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 }
 
 static int MatCopy_MPIAIJ(Mat,Mat *);
-extern int MatConvert_MPIAIJ(Mat,MATTYPE,Mat *);
+extern int MatConvert_MPIAIJ(Mat,MatType,Mat *);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
