@@ -377,7 +377,7 @@ int UserMonitor(SNES snes,int its,double fnorm,void *dummy)
 
   /* Print residual vector */
   sprintf(filename,"res.%d.out",its);
-  ierr = ViewerFileOpenASCII(MPI_COMM_WORLD,filename,&view1); CHKERRQ(ierr);
+  ierr = ViewerFileOpenASCII(PETSC_COMM_WORLD,filename,&view1); CHKERRQ(ierr);
   ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,&F); CHKERRQ(ierr);
   ierr = DFVecView(F,view1); CHKERRQ(ierr);
@@ -387,7 +387,7 @@ int UserMonitor(SNES snes,int its,double fnorm,void *dummy)
      matrix approximation if this is not a matrix-free variant) */
   if (its) {
     sprintf(filename,"jac.%d.out",its);
-    ierr = ViewerFileOpenASCII(MPI_COMM_WORLD,filename,&view1); CHKERRQ(ierr);
+    ierr = ViewerFileOpenASCII(PETSC_COMM_WORLD,filename,&view1); CHKERRQ(ierr);
     ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
     ierr = SNESGetJacobian(snes,PETSC_NULL,&Jprec,PETSC_NULL); CHKERRQ(ierr);
     ierr = MatView(Jprec,view1); CHKERRQ(ierr);
