@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.179 2000/08/14 17:28:56 bsmith Exp balay $ 
+# $Id: buildtest,v 1.180 2000/08/17 22:23:52 balay Exp balay $ 
 # 
 # Compiles and tests PETSc in our nightly builds.
 #
@@ -23,7 +23,7 @@ rsh $MACH -n "cd $TMP;chmod -R g+w lib" >& /dev/null
 #
 rsh $MACH -n "cd $TMP ;echo 'Build on $MACH $ARCH  $BOPT `date` ' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 foreach j ($JOBS)
-  rsh $MACH -n "cd $TMP; $NICE make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT ACTION=$TEST$j tree | grep -v \"up to date\" >>& maint/examples_$ARCH.$BOPT.$MACH.log"
+  rsh $MACH -n "cd $TMP; $NICE make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT ACTION=$TEST$j tree | grep -v 'up to date' >>& maint/examples_$ARCH.$BOPT.$MACH.log"
   rsh $MACH -n "cd $TMP;echo '******************************************************' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 end
 rsh $MACH -n "cd $TMP ;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/examples_$ARCH.$BOPT.$MACH.log"
