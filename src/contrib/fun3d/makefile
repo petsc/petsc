@@ -1,10 +1,11 @@
-# $Id: makefile,v 1.7 2000/01/15 18:11:03 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.8 2000/01/18 17:13:19 bsmith Exp bsmith $ 
 
 #requiresscalar real
 
 ALL: flow
 
-USERCPPFLAGS     =  -DCFL3D_AXIS -DINTERLACING -DBLOCKING 
+USERCPPFLAGS     =   -DINTERLACING -DBLOCKING 
+#USERCPPFLAGS     =  -DCFL3D_AXIS -DINTERLACING -DBLOCKING 
 CFLAGS	         =
 FFLAGS	         =	 
 #/real_size:64 /integer_size:32

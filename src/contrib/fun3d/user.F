@@ -1,4 +1,4 @@
-!  $Id: user.F,v 1.2 2000/01/13 17:17:46 bsmith Exp bsmith $
+!  $Id: user.F,v 1.3 2000/01/16 15:40:08 bsmith Exp bsmith $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -2112,7 +2112,7 @@ c=====================================================================72
 #define r44(i) rxy(i,7)
 #define eptr(i,j) evec(i,j)
 #endif
-      integer i,n,node1,node2
+      integer i,n,node1,node2,ierr
       Scalar x1,y1,z1,x2,y2,z2,dx,dy,dz,dist,
      &       weight,w2,w11,w22,w33,
      &       r12r11,r13r11,r23r22,rmess
@@ -2129,7 +2129,7 @@ c        r23(i) = 0.0
 c        r33(i) = 0.0
 c        r44(i) = 0.0
 c1000 continue
-      call PetscMemzero(rxy,8*7*nnodes)
+      call PetscMemzero(rxy,8*7*nnodes,ierr)
       
 c
 c Now loop over the edges and accumulate the r's 
@@ -2378,7 +2378,7 @@ c
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo
-      integer n,i,node1,node2
+      integer n,i,node1,node2,ierr
       integer flops
       Scalar dx1,dy1,dz1,dx2,dy2,dz2,
      &       dq1,dq2,dq3,dq4,
@@ -2438,7 +2438,7 @@ c       grady(4,i) = 0.0
 c       gradz(4,i) = 0.0
 c
 c1000  continue
-      call PetscMemzero(grad,12*8*nnodes)
+      call PetscMemzero(grad,12*8*nnodes,ierr)
 c
 c If second order, loop over all the faces accumulate sums
 c
@@ -2797,7 +2797,7 @@ c  TAPE11 -- output: writes restart file
 c  TAPE12 -- output: writes residual and lift for plotting
 c  TAPE13 -- output: writes flowfield for contour plotting
 c
-      OPEN(UNIT= 7,FILE='ginput.faces',
+      OPEN(UNIT= 7,FILE='testgrid/ginput.faces',
      +form='formatted',STATUS='OLD')
  
 c     OPEN(UNIT=9,FILE='framer.bin',
