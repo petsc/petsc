@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.51 1998/10/29 23:20:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.52 1998/10/29 23:22:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -10,7 +10,6 @@ static char vcid[] = "$Id: zoptions.c,v 1.51 1998/10/29 23:20:07 bsmith Exp bsmi
 
 #include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
-#include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
 extern int          PetscBeganMPI;
 

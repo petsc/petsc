@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.47 1998/04/27 14:47:53 curfman Exp balay $";
+static char vcid[] = "$Id: axis.c,v 1.48 1998/11/06 23:08:30 balay Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
 */
 
 #include "petsc.h"              /*I "petsc.h" I*/
-#include <math.h>
 
 struct _p_DrawAxis {
     PETSCHEADER(int)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.8 1998/11/21 15:52:13 balay Exp bsmith $";
+static char vcid[] = "$Id: ams.c,v 1.9 1998/11/30 17:17:47 bsmith Exp bsmith $";
 #endif
 
 #include "src/viewer/viewerimpl.h"
@@ -28,8 +28,6 @@ int ViewerInitializeAMSWorld_Private(void)
   ierr = ViewerAMSOpen(PETSC_COMM_WORLD,"PETSc",&VIEWER_AMS_WORLD_PRIVATE); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-extern int ViewerDestroy_WillBe(Viewer);
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy_AMS"
@@ -81,12 +79,13 @@ int ViewerAMSOpen(MPI_Comm comm,const char name[],Viewer *lab)
   int        ierr,port = -1,flag;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,AMS_VIEWER,comm,ViewerDestroy_WillBe,0);
+  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,comm,ViewerDestroy,0);
   PLogObjectCreate(v);
-  v->ops->destroy     = ViewerDestroy_AMS;
-  v->type_name        = "ams";
-  vams                = PetscNew(Viewer_AMS);CHKPTRQ(vams);
-  v->data             = (void *) vams;
+  v->ops->destroy = ViewerDestroy_AMS;
+  v->type_name    = (char *) PetscMalloc((1+PetscStrlen(AMS_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
+  PetscStrcpy(v->type_name,AMS_VIEWER);
+  vams            = PetscNew(Viewer_AMS);CHKPTRQ(vams);
+  v->data         = (void *) vams;
 
   ierr = OptionsGetInt(PETSC_NULL,"-ams_port",&port,PETSC_NULL);CHKERRQ(ierr);
   ierr = AMS_Comm_publish((char *)name,&vams->ams_comm,MPI_TYPE,comm,&port);CHKERRQ(ierr);

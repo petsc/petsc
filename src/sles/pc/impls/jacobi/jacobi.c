@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.54 1998/07/27 03:14:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.55 1998/10/19 22:17:20 bsmith Exp bsmith $";
 #endif
 
 /*  -------------------------------------------------------------------- 
@@ -53,7 +53,6 @@ static char vcid[] = "$Id: jacobi.c,v 1.54 1998/07/27 03:14:36 bsmith Exp bsmith
 */
 
 #include "src/pc/pcimpl.h"   /*I "pc.h" I*/
-#include <math.h>
 
 /* 
    Private context (data structure) for the Jacobi preconditioner.  

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.45 1998/03/23 21:25:28 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.46 1998/06/11 15:27:29 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -14,7 +14,6 @@ The command line options are:\n\
 
 #include "snes.h"
 #include "da.h"
-#include <math.h>
 
 /* User-defined application context */
    typedef struct {

@@ -1,7 +1,6 @@
-/* $Id: mpiadj.h,v 1.1 1997/09/23 20:11:19 bsmith Exp bsmith $ */
+/* $Id: mpiadj.h,v 1.2 1997/09/26 02:19:39 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
-#include <math.h>
 
 #if !defined(__ADJ_H)
 #define __ADJ_H

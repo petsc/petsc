@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.10 1997/09/22 15:16:05 balay Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.11 1998/07/23 22:46:13 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
@@ -27,7 +27,6 @@ T*/
      sys.h    - system routines       viewer.h - viewers
 */
 #include "vec.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {

@@ -1,14 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.6 1997/07/09 21:01:00 balay Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.7 1998/03/20 22:53:15 bsmith Exp bsmith $";
 #endif
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 
-#include "petsc.h"
 #include "da.h"
 #include "sys.h"
 #include "ao.h"
-#include <math.h>
 
 /*
     Given a DA generates a VecScatter context that will deliver a slice

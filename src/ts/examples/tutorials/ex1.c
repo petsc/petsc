@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.11 1997/09/22 15:18:45 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.12 1998/03/23 21:24:09 bsmith Exp bsmith $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
@@ -35,7 +35,6 @@ static char help[] ="Solves the time dependent Bratu problem using pseudo-timest
     PETSc include files.
 */
 #include "ts.h"
-#include <math.h>
 
 /*
   Create an application context to contain data needed by the 

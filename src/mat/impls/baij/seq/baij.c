@@ -1,18 +1,15 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.146 1998/10/19 22:18:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.147 1998/10/28 16:05:51 bsmith Exp bsmith $";
 #endif
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
   matrix storage format.
 */
-
-#include "pinclude/pviewer.h"
 #include "sys.h"
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
-#include "petsc.h"
 
 #define CHUNKSIZE  10
 
@@ -397,7 +394,7 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  ierr = ViewerFileGetOutputname_Private(viewer,&outputname);CHKERRQ(ierr);
+  ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
   if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     fprintf(fd,"  block size is %d\n",bs);
@@ -462,24 +459,33 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqBAIJ_Draw"
-static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
+#define __FUNC__ "MatView_SeqBAIJ_Draw_Zoom"
+static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
 {
+  Mat          A = (Mat) Aa;
   Mat_SeqBAIJ  *a=(Mat_SeqBAIJ *) A->data;
-  int          row,ierr,i,j,k,l,mbs=a->mbs,pause,color,bs=a->bs,bs2=a->bs2;
+  int          row,ierr,i,j,k,l,mbs=a->mbs,pause,color,bs=a->bs,bs2=a->bs2,rank;
   double       xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r;
   Scalar       *aa;
-  Draw         draw;
   DrawButton   button;
   PetscTruth   isnull;
+  MPI_Comm     comm;
+  Viewer       viewer;
 
-  PetscFunctionBegin;
-  ierr = ViewerDrawGetDraw(viewer,&draw);CHKERRQ(ierr);
-  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+  PetscFunctionBegin; 
+  /*
+      This is nasty. If this is called from an originally parallel matrix
+   then all processes call this, but only the first has the matrix so the
+   rest should return immediately.
+  */
+  ierr = PetscObjectGetComm((PetscObject)draw,&comm);CHKERRQ(ierr);
+  MPI_Comm_rank(comm,&rank);
+  if (rank) PetscFunctionReturn(0);
 
-  xr  = a->n; yr = a->m; h = yr/10.0; w = xr/10.0; 
-  xr += w;    yr += h;  xl = -w;     yl = -h;
-  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*) &viewer);CHKERRQ(ierr); 
+
+  ierr = DrawGetCoordinates(draw,&xl,&yl,&xr,&yr); CHKERRQ(ierr);
+
   /* loop over matrix elements drawing boxes */
   color = DRAW_BLUE;
   for ( i=0,row=0; i<mbs; i++,row+=bs ) {
@@ -524,68 +530,32 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
       }
     } 
   }
+  PetscFunctionReturn(0);
+}
 
-  DrawSynchronizedFlush(draw); 
-  DrawGetPause(draw,&pause);
-  if (pause >= 0) { PetscSleep(pause); PetscFunctionReturn(0);}
+#undef __FUNC__  
+#define __FUNC__ "MatView_SeqBAIJ_Draw"
+static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
+{
+  Mat_SeqBAIJ  *a=(Mat_SeqBAIJ *) A->data;
+  int          row,ierr,i,j,k,l,mbs=a->mbs,pause,color,bs=a->bs,bs2=a->bs2,rank;
+  double       xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r;
+  Scalar       *aa;
+  Draw         draw;
+  DrawButton   button;
+  PetscTruth   isnull;
 
-  /* allow the matrix to zoom or shrink */
-  ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0); 
-  while (button != BUTTON_RIGHT) {
-    DrawSynchronizedClear(draw);
-    if (button == BUTTON_LEFT) scale = .5;
-    else if (button == BUTTON_CENTER) scale = 2.;
-    xl = scale*(xl + w - xc) + xc - w*scale;
-    xr = scale*(xr - w - xc) + xc + w*scale;
-    yl = scale*(yl + h - yc) + yc - h*scale;
-    yr = scale*(yr - h - yc) + yc + h*scale;
-    w *= scale; h *= scale;
-    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
-    color = DRAW_BLUE;
-    for ( i=0,row=0; i<mbs; i++,row+=bs ) {
-      for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
-        y_l = a->m - row - 1.0; y_r = y_l + 1.0;
-        x_l = a->j[j]*bs; x_r = x_l + 1.0;
-        aa = a->a + j*bs2;
-        for ( k=0; k<bs; k++ ) {
-          for ( l=0; l<bs; l++ ) {
-            if (PetscReal(*aa++) >=  0.) continue;
-            DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);
-          }
-        }
-      } 
-    }
-    color = DRAW_CYAN;
-    for ( i=0,row=0; i<mbs; i++,row+=bs ) {
-      for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
-        y_l = a->m - row - 1.0; y_r = y_l + 1.0;
-        x_l = a->j[j]*bs; x_r = x_l + 1.0;
-        aa = a->a + j*bs2;
-        for ( k=0; k<bs; k++ ) {
-          for ( l=0; l<bs; l++ ) {
-          if (PetscReal(*aa++) != 0.) continue;
-          DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);
-          }
-        }
-      } 
-    }
-    
-    color = DRAW_RED;
-    for ( i=0,row=0; i<mbs; i++,row+=bs ) {
-      for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
-        y_l = a->m - row - 1.0; y_r = y_l + 1.0;
-        x_l = a->j[j]*bs; x_r = x_l + 1.0;
-        aa = a->a + j*bs2;
-        for ( k=0; k<bs; k++ ) {
-          for ( l=0; l<bs; l++ ) {
-            if (PetscReal(*aa++) <= 0.) continue;
-            DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);
-          }
-        }
-      } 
-    }
-    ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0); 
-  }
+  PetscFunctionBegin; 
+
+  ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+
+  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
+  xr  = a->n; yr = a->m; h = yr/10.0; w = xr/10.0; 
+  xr += w;    yr += h;  xl = -w;     yl = -h;
+  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+  ierr = DrawZoom(draw,MatView_SeqBAIJ_Draw_Zoom,A); CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -598,13 +568,13 @@ int MatView_SeqBAIJ(Mat A,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == MATLAB_VIEWER) {
+  if (!PetscStrcmp(vtype,MATLAB_VIEWER)) {
     SETERRQ(PETSC_ERR_SUP,0,"Matlab viewer not supported");
-  } else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
+  } else if (!PetscStrcmp(vtype,ASCII_VIEWER)){
     ierr = MatView_SeqBAIJ_ASCII(A,viewer);CHKERRQ(ierr);
-  } else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
     ierr = MatView_SeqBAIJ_Binary(A,viewer);CHKERRQ(ierr);
-  } else if (vtype == DRAW_VIEWER) {
+  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
     ierr = MatView_SeqBAIJ_Draw(A,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: receivesparse.c,v 1.5 1996/12/18 17:06:13 balay Exp bsmith $";
+static char vcid[] = "$Id: receivesparse.c,v 1.6 1998/04/03 21:00:37 bsmith Exp bsmith $";
 #endif
 /*
     Part of the MatlabSockettool Package. Receive a sparse matrix
@@ -10,7 +10,6 @@ static char vcid[] = "$Id: receivesparse.c,v 1.5 1996/12/18 17:06:13 balay Exp b
    Since this is called from Matlab it cannot be compiled with C++.
 */
 #include <stdio.h>
-#include <math.h>
 #include "sys.h"
 #include "mex.h"
 

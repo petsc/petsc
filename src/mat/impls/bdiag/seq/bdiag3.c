@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag3.c,v 1.1 1998/07/22 18:18:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag3.c,v 1.2 1998/07/23 22:48:06 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
 
-#include "pinclude/pviewer.h"
 #include "sys.h"
 #include "src/mat/impls/bdiag/seq/bdiag.h"
 #include "src/vec/vecimpl.h"
@@ -469,7 +468,7 @@ int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
+  ierr = ViewerGetOutputname(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     int nline = PetscMin(10,a->nd), k, nk, np;
@@ -632,7 +631,7 @@ static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
   PetscTruth    isnull;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+  ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
   ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   xr = a->n; yr = a->m; h = yr/10.0; w = xr/10.0;
@@ -666,13 +665,13 @@ int MatView_SeqBDiag(Mat A,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == MATLAB_VIEWER) {
+  if (!PetscStrcmp(vtype,MATLAB_VIEWER)) {
     SETERRQ(PETSC_ERR_SUP,0,"Matlab viewer");
-  } else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
+  } else if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = MatView_SeqBDiag_ASCII(A,viewer);CHKERRQ(ierr);
-  } else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
     ierr = MatView_SeqBDiag_Binary(A,viewer);CHKERRQ(ierr);
-  } else if (vtype == DRAW_VIEWER) {
+  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
     ierr = MatView_SeqBDiag_Draw(A,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

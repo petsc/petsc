@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag2.c,v 1.2 1998/10/09 19:22:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag2.c,v 1.3 1998/10/19 22:18:05 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
 
-#include "pinclude/pviewer.h"
 #include "sys.h"
 #include "src/mat/impls/bdiag/seq/bdiag.h"
 #include "src/vec/vecimpl.h"

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex43.c,v 1.3 1997/09/22 15:23:48 balay Exp bsmith $";
+static char vcid[] = "$Id: ex43.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
@@ -31,7 +31,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"matrix.dat",BINARY_CREATE,&viewer);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",BINARY_CREATE,&viewer);CHKERRA(ierr);
   ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_BINARY_NATIVE,"Dummy"); CHKERRA(ierr);
   ierr = MatView(C,viewer); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);

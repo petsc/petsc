@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.16 1998/06/24 04:00:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.17 1998/07/22 15:49:11 bsmith Exp bsmith $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
 timestepping.  Runtime options include:\n\
@@ -48,7 +48,6 @@ timestepping.  Runtime options include:\n\
 */
 #include "ts.h"
 #include "da.h"
-#include <math.h>
 
 /* 
    User-defined application context - contains data needed by the 
@@ -347,14 +346,14 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
      We use the default X windows viewer
              VIEWER_DRAWX_(appctx->comm)
      that is associated with the current communicator. This saves
-     the effort of calling ViewerDrawOpenX() to create the window.
+     the effort of calling ViewerDrawOpen() to create the window.
      Note that if we wished to plot several items in separate windows we
-     would create each viewer with ViewerDrawOpenX() and store them in
+     would create each viewer with ViewerDrawOpen() and store them in
      the application context, appctx.
 
      Double buffering makes graphics look better.
   */
-  ierr = ViewerDrawGetDraw(VIEWER_DRAWX_(appctx->comm),&draw); CHKERRQ(ierr);
+  ierr = ViewerDrawGetDraw(VIEWER_DRAWX_(appctx->comm),0,&draw); CHKERRQ(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRQ(ierr);
   ierr = VecView(u,VIEWER_DRAWX_(appctx->comm)); CHKERRQ(ierr);
 

@@ -1,13 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: posindep.c,v 1.29 1998/07/20 16:33:37 balay Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.30 1998/10/19 22:19:20 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
 */
-#include <math.h>
 #include "src/ts/tsimpl.h"                /*I   "ts.h"   I*/
-#include "pinclude/pviewer.h"
-
 
 typedef struct {
   Vec  update;      /* work vector where new solution is formed */

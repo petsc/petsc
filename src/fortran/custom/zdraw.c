@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zdraw.c,v 1.22 1998/10/05 20:42:45 balay Exp bsmith $";
+static char vcid[] = "$Id: zdraw.c,v 1.23 1998/10/19 22:15:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -59,18 +59,18 @@ void drawtensorcontour_(Draw *win,int *m,int *n,double *x,double *y,Vec *V, int 
   *__ierr = DrawTensorContour(*win,*m,*n,xx,yy,*V);
 }
 
-void viewerdrawgetdraw_(Viewer *vin,Draw *draw, int *__ierr )
+void viewerdrawgetdraw_(Viewer *vin,int *win,Draw *draw, int *__ierr )
 {
   Viewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
-  *__ierr = ViewerDrawGetDraw(v,draw);
+  *__ierr = ViewerDrawGetDraw(v,*win,draw);
 }
 
-void viewerdrawgetdrawlg_(Viewer *vin,DrawLG *drawlg, int *__ierr )
+void viewerdrawgetdrawlg_(Viewer *vin,int *win,DrawLG *drawlg, int *__ierr )
 {
   Viewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
-  *__ierr = ViewerDrawGetDrawLG(v,drawlg);
+  *__ierr = ViewerDrawGetDrawLG(v,*win,drawlg);
 }
 
 void drawstring_(Draw *ctx,double* xl,double* yl,int* cl,CHAR text,
@@ -106,9 +106,9 @@ void drawopenx_(MPI_Comm *comm,CHAR display,CHAR title,int *x,int *y,
   FREECHAR(title,t2);
 }
 
-void drawlggetaxis_(DrawLG *lg,DrawAxis *axis, int *__ierr )
+void drawlggetaxis_(DrawLG *lg,int *win,DrawAxis *axis, int *__ierr )
 {
-  *__ierr = DrawLGGetAxis(*lg,axis);
+  *__ierr = DrawLGGetAxis(*lg,*win,axis);
 }
 
 void drawlggetdraw_(DrawLG *lg,Draw *win, int *__ierr )

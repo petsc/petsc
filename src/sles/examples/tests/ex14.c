@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.11 1998/04/16 04:02:44 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.12 1998/08/05 17:24:44 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
@@ -66,7 +66,6 @@ T*/
 */
 #include "da.h"
 #include "sles.h"
-#include <math.h>
 
 /* 
    User-defined application context - contains data needed by the 

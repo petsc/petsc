@@ -1,14 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.1 1996/04/03 20:11:24 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.2 1998/03/24 16:42:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests SDALocalToLocal().\n\n";
 
-#include "petsc.h"
 #include "da.h"
 #include "sda.h"
 #include "sys.h"
-#include <math.h>
 
 /*
          For testing purposes this example also creates a 
@@ -100,7 +98,7 @@ int main(int argc,char **argv)
   if (flg) {
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     sprintf(filename,"local.%d",rank);
-    ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,filename,&viewer);CHKERRA(ierr);
+    ierr = ViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer);CHKERRA(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&file); CHKERRA(ierr);
     ierr = VecView(local,viewer); CHKERRA(ierr);
     fprintf(file,"Vector with correct ghost points\n");

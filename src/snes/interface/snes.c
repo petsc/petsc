@@ -1,11 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.161 1998/11/20 15:30:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.162 1998/11/20 22:48:42 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
 #include "src/sys/nreg.h"      
-#include "pinclude/pviewer.h"
-#include <math.h>
 
 int SNESRegisterAllCalled = 0;
 FList SNESList = 0;
@@ -33,11 +31,11 @@ FList SNESList = 0;
          data to the first processor to print. 
 
    The user can open an alternative visualization context with
-   ViewerFileOpenASCII() - output to a specified file.
+   ViewerASCIIOpen() - output to a specified file.
 
 .keywords: SNES, view
 
-.seealso: ViewerFileOpenASCII()
+.seealso: ViewerASCIIOpen()
 @*/
 int SNESView(SNES snes,Viewer viewer)
 {
@@ -54,7 +52,7 @@ int SNESView(SNES snes,Viewer viewer)
   else { viewer = VIEWER_STDOUT_SELF; }
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(snes->comm,fd,"SNES Object:\n");
     SNESGetType(snes,&method);
@@ -85,11 +83,11 @@ int SNESView(SNES snes,Viewer viewer)
           kctx->gamma,kctx->alpha,kctx->alpha2);
       }
     }
-  } else if (vtype == STRING_VIEWER) {
+  } else if (!PetscStrcmp(vtype,STRING_VIEWER)) {
     SNESGetType(snes,&method);
     ViewerStringSPrintf(viewer," %-3.3s",method);
   }
-  SNESGetSLES(snes,&sles);
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
   ierr = SLESView(sles,viewer); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

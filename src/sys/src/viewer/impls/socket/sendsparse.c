@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sendsparse.c,v 1.20 1997/09/26 02:20:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sendsparse.c,v 1.21 1997/10/19 03:29:04 bsmith Exp bsmith $";
 #endif
 
 #include "src/viewer/impls/matlab/matlab.h"
@@ -33,7 +33,8 @@ $     MatView(Mat matrix,Viewer viewer)
 */
 int ViewerMatlabPutSparse_Private(Viewer vw,int m,int n,int nnz,Scalar *v,int *r,int *c)
 {
-  int ierr,t = vw->port,type = SPARSEREAL,value;
+  Viewer_Matlab *vmatlab = (Viewer_Matlab *) vw->data;
+  int           ierr,t = vmatlab->port,type = SPARSEREAL,value;
 
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0); CHKERRQ(ierr);
@@ -51,4 +52,10 @@ int ViewerMatlabPutSparse_Private(Viewer vw,int m,int n,int nnz,Scalar *v,int *r
   ierr = PetscBinaryWrite(t,c,nnz,PETSC_INT,0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+
+
+
+
 

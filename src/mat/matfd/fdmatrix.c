@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.36 1998/08/18 02:19:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.37 1998/10/06 03:23:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -11,7 +11,6 @@ static char vcid[] = "$Id: fdmatrix.c,v 1.36 1998/08/18 02:19:54 curfman Exp bsm
 #include "petsc.h"
 #include "src/mat/matimpl.h"        /*I "mat.h" I*/
 #include "src/vec/vecimpl.h"  
-#include "pinclude/pviewer.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringView_Draw"
@@ -24,7 +23,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
   DrawButton  button;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+  ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
   ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
 
@@ -106,10 +105,10 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
   else {viewer = VIEWER_STDOUT_SELF;}
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == DRAW_VIEWER) { 
+  if (!PetscStrcmp(vtype,DRAW_VIEWER)) { 
     ierr = MatFDColoringView_Draw(c,viewer); CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  } else if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  } else if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(c->comm,fd,"MatFDColoring Object:\n");
     PetscFPrintf(c->comm,fd,"  Error tolerance=%g\n",c->error_rel);

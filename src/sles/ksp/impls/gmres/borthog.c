@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog.c,v 1.44 1998/03/16 18:54:09 bsmith Exp balay $";
+static char vcid[] = "$Id: borthog.c,v 1.45 1998/05/29 22:50:35 balay Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -9,7 +9,6 @@ static char vcid[] = "$Id: borthog.c,v 1.44 1998/03/16 18:54:09 bsmith Exp balay
     given for correct computation of inner products.
 */
 #include "src/ksp/impls/gmres/gmresp.h"
-#include <math.h>
 
 /*
     This is the basic orthogonalization routine using modified Gram-Schmidt.

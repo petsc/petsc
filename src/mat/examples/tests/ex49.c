@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex49.c,v 1.5 1997/10/19 03:26:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex49.c,v 1.6 1998/05/31 04:02:45 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 
-#include <math.h>
 #include "mat.h"
 
 int main(int argc,char **argv)

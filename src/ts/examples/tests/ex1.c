@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.22 1998/03/20 22:51:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.23 1998/10/09 19:24:54 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -13,7 +13,6 @@ static char help[] = "Solves 1D heat equation.\n\n";
 
 #include "da.h"
 #include "sys.h"
-#include <math.h>
 #include "ts.h"
 
 #define PETSC_NEAR(a,b,c) (!(PetscAbsDouble((a)-(b)) > (c)*PetscMax(PetscAbsDouble(a),PetscAbsDouble(b))))
@@ -75,11 +74,11 @@ int main(int argc,char **argv)
 
   /* Set up display to show wave graph */
 
-  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(appctx.viewer1,&draw); CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRA(ierr);
+  ierr = ViewerDrawGetDraw(appctx.viewer1,0,&draw); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);   
-  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2); CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(appctx.viewer2,&draw); CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2); CHKERRA(ierr);
+  ierr = ViewerDrawGetDraw(appctx.viewer2,0,&draw); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);   
 
 

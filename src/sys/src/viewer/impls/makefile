@@ -1,16 +1,8 @@
-# $Id: makefile,v 1.22 1998/06/15 15:54:52 balay Exp bsmith $
+# $Id: makefile,v 1.23 1998/06/16 14:28:30 bsmith Exp bsmith $
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =  
-SOURCEF  =
-SOURCEH  = 
-OBJSC    =  
-OBJSF    =
-LIBBASE  = libpetscvec
-DIRS     = matlab file binary string ams
+DIRS     = matlab ascii binary string ams draw
 LOCDIR   = src/viewer/impls/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

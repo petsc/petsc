@@ -1,5 +1,5 @@
 
-C      "$Id: ex67f.F,v 1.1 1998/10/31 17:41:51 bsmith Exp bsmith $";
+C      "$Id: ex67f.F,v 1.2 1998/11/20 15:29:36 bsmith Exp bsmith $";
 C
 C   This program demonstrates use of MatGetSubMatrices() from Fortran
 C
@@ -16,7 +16,7 @@ C
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call ViewerFileOpenBinary(PETSC_COMM_WORLD,'../matbinary.ex',
+      call ViewerBinaryOpen(PETSC_COMM_WORLD,'../matbinary.ex',
      &                          BINARY_RDONLY, v,ierr)
 
       call MatLoad(v,MATSEQAIJ,A,ierr)

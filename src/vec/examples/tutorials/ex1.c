@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.49 1998/06/11 15:14:18 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.50 1998/06/11 19:55:03 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -23,7 +23,6 @@ T*/
 */
 
 #include "vec.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {

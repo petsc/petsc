@@ -1,12 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cr.c,v 1.41 1998/10/09 19:20:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.42 1998/10/19 22:16:35 bsmith Exp bsmith $";
 #endif
 
 /*                       
            This implements Preconditioned Conjugate Residuals.       
 */
-#include <math.h>
-#include "petsc.h"
 #include "src/ksp/kspimpl.h"
 
 #undef __FUNC__  

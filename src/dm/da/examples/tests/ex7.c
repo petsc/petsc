@@ -1,13 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.13 1998/03/20 22:53:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.14 1998/07/31 20:48:57 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests DALocalToLocal().\n\n";
 
-#include "petsc.h"
 #include "da.h"
 #include "sys.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {
@@ -77,7 +75,7 @@ int main(int argc,char **argv)
   if (flg) {
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     sprintf(filename,"local.%d",rank);
-    ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,filename,&viewer);CHKERRA(ierr);
+    ierr = ViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer);CHKERRA(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&file); CHKERRA(ierr);
     ierr = VecView(local,viewer); CHKERRA(ierr);
     fprintf(file,"Vector with correct ghost points\n");

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.9 1997/09/22 15:18:53 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.10 1998/03/06 00:17:45 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -17,18 +17,18 @@ static char vcid[] = "$Id: ex2.c,v 1.9 1997/09/22 15:18:53 balay Exp bsmith $";
 
 static char help[] = "Solves a nonlinear ODE \n\n";
 
-#include <malloc.h>
 #include "sys.h"
-#include <math.h>
 #include "ts.h"
 #include "pc.h"
 
-int RHSFunction(TS,double,Vec,Vec,void*);
-int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
-int Monitor(TS, int, double, Vec, void *);
-int Initial(Vec, void *);
+extern int RHSFunction(TS,double,Vec,Vec,void*);
+extern int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
+extern int Monitor(TS, int, double, Vec, void *);
+extern int Initial(Vec, void *);
 
-double solx(double),soly(double),solz(double);
+extern double solx(double);
+extern double soly(double);
+extern double solz(double);
 
 int main(int argc,char **argv)
 {

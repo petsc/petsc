@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.28 1997/07/09 20:50:03 balay Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.29 1997/09/22 15:16:48 balay Exp bsmith $";
 #endif
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
@@ -20,7 +20,6 @@ T*/
      sys.h    - system routines       viewer.h - viewers
 */
 #include "vec.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {

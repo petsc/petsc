@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.47 1998/07/28 15:47:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.48 1998/10/19 22:17:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -97,7 +97,7 @@ static int PCView_Shell(PC pc,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {  
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {  
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (jac->name) PetscFPrintf(pc->comm,fd,"    Shell: %s\n", jac->name);
   } else {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.44 1998/10/09 19:20:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.45 1998/10/19 22:16:54 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -11,7 +11,6 @@ static char vcid[] = "$Id: lsqr.c,v 1.44 1998/10/09 19:20:20 bsmith Exp bsmith $
        This algorithm DOES NOT use a preconditioner. It ignores
        any preconditioner arguments specified.
 */
-#include <math.h>
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
 

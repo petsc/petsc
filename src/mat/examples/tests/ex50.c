@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex50.c,v 1.7 1997/11/28 16:20:18 bsmith Exp balay $";
+static char vcid[] = "$Id: ex50.c,v 1.8 1998/07/27 18:35:45 balay Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII format and writes\n\
@@ -55,7 +55,7 @@ int main(int argc,char **args)
   fclose(file);
 
   PetscPrintf(PETSC_COMM_SELF,"Reading matrix complete.\n");
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
   ierr = MatView(A,view); CHKERRA(ierr);
   ierr = VecView(b,view); CHKERRA(ierr);
   ierr = ViewerDestroy(view); CHKERRA(ierr);

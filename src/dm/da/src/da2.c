@@ -1,12 +1,10 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.104 1998/11/21 01:05:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.105 1998/12/01 20:51:09 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
-#include "pinclude/pviewer.h"
-#include <math.h>
 
 #undef __FUNC__  
 #define __FUNC__ "DAView_2d"
@@ -26,7 +24,7 @@ int DAView_2d(DA da,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
-  if (vtype == ASCII_FILE_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     FILE *fd;
     ierr = ViewerASCIIGetPointer(viewer,&fd);  CHKERRQ(ierr);
     PetscSequentialPhaseBegin(da->comm,1);
@@ -35,7 +33,7 @@ int DAView_2d(DA da,Viewer viewer)
     fprintf(fd,"X range: %d %d, Y range: %d %d\n",da->xs,da->xe,da->ys,da->ye);
     fflush(fd);
     PetscSequentialPhaseEnd(da->comm,1);
-  } else if (vtype == DRAW_VIEWER) {
+  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
     Draw       draw;
     double     ymin = -1*da->s-1, ymax = da->N+da->s;
     double     xmin = -1*da->s-1, xmax = da->M+da->s;
@@ -44,7 +42,7 @@ int DAView_2d(DA da,Viewer viewer)
     char       node[10];
     PetscTruth isnull;
  
-    ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+    ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
     ierr = DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
 

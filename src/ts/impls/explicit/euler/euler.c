@@ -1,13 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: euler.c,v 1.13 1998/04/03 23:16:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: euler.c,v 1.14 1998/10/19 22:19:15 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with explicit Euler.
 */
-#include <math.h>
 #include "src/ts/tsimpl.h"                /*I   "ts.h"   I*/
-#include "pinclude/pviewer.h"
-
 
 typedef struct {
   Vec update;     /* work vector where F(t[i],u[i]) is stored */

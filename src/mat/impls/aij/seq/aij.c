@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.287 1998/11/20 15:29:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.288 1998/11/30 23:23:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -7,7 +7,6 @@ static char vcid[] = "$Id: aij.c,v 1.287 1998/11/20 15:29:13 bsmith Exp bsmith $
   matrix storage format.
 */
 
-#include "pinclude/pviewer.h"
 #include "sys.h"
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -479,12 +478,22 @@ int MatView_SeqAIJ_Draw_Zoom(Draw draw,void *Aa)
 {
   Mat         A = (Mat) Aa;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
-  int         ierr, i,j, m = a->m, shift = a->indexshift,color;
+  int         ierr, i,j, m = a->m, shift = a->indexshift,color,rank;
   int         format;
   double      xl,yl,xr,yr,x_l,x_r,y_l,y_r,maxv = 0.0;
   Viewer      viewer;
+  MPI_Comm    comm;
 
   PetscFunctionBegin; 
+  /*
+      This is nasty. If this is called from an originally parallel matrix
+   then all processes call this, but only the first has the matrix so the
+   rest should return immediately.
+  */
+  ierr = PetscObjectGetComm((PetscObject)draw,&comm);CHKERRQ(ierr);
+  MPI_Comm_rank(comm,&rank);
+  if (rank) PetscFunctionReturn(0);
+
   ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*) &viewer);CHKERRQ(ierr); 
   ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
 
@@ -567,7 +576,7 @@ int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
   PetscTruth isnull;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+  ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
   ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
 
@@ -590,13 +599,13 @@ int MatView_SeqAIJ(Mat A,Viewer viewer)
 
   PetscFunctionBegin;  
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == MATLAB_VIEWER) {
-    ierr = ViewerMatlabPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j);  CHKERRQ(ierr);
-  } else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
+  if (!PetscStrcmp(vtype,MATLAB_VIEWER)) {
+    ierr = ViewerMatlabPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j);CHKERRQ(ierr);
+  } else if (!PetscStrcmp(vtype,ASCII_VIEWER)){
     ierr = MatView_SeqAIJ_ASCII(A,viewer); CHKERRQ(ierr);
-  } else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
     ierr = MatView_SeqAIJ_Binary(A,viewer); CHKERRQ(ierr);
-  } else if (vtype == DRAW_VIEWER) {
+  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
     ierr = MatView_SeqAIJ_Draw(A,viewer); CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

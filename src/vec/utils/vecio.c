@@ -1,17 +1,16 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.44 1998/08/31 14:49:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.45 1998/10/09 19:19:15 bsmith Exp bsmith $";
 #endif
 
 /* 
    This file contains simple binary input routines for vectors.  The
    analogous output routines are within each vector implementation's 
-   VecView (with viewer types BINARY_FILE_VIEWER)
+   VecView (with viewer types BINARY_VIEWER)
  */
 
 #include "petsc.h"
 #include "sys.h"
-#include "vec.h"
-#include "pinclude/pviewer.h"
+#include "vec.h"         /*I  "ve.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ "VecLoad"
@@ -22,7 +21,7 @@ static char vcid[] = "$Id: vecio.c,v 1.44 1998/08/31 14:49:47 bsmith Exp bsmith 
   Collective on Viewer 
 
   Input Parameters:
-. viewer - binary file viewer, obtained from ViewerFileOpenBinary()
+. viewer - binary file viewer, obtained from ViewerBinaryOpen()
 
   Output Parameter:
 . newvec - the newly loaded vector
@@ -57,7 +56,7 @@ and PetscWriteBinary() to see how this may be done.
 
 .keywords: vector, load, binary, input
 
-.seealso: ViewerFileOpenBinary(), VecView(), MatLoad() 
+.seealso: ViewerBinaryOpen(), VecView(), MatLoad() 
 @*/  
 int VecLoad(Viewer viewer,Vec *newvec)
 {
@@ -73,7 +72,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype != BINARY_FILE_VIEWER) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
+  if (PetscStrcmp(vtype,BINARY_VIEWER)) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
   PLogEventBegin(VEC_Load,viewer,0,0,0);
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   PetscObjectGetComm((PetscObject)viewer,&comm);

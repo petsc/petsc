@@ -1,15 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.39 1997/04/10 00:00:31 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.40 1997/07/09 20:49:55 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
   -n <length> : vector length\n\n";
 
-#include "petsc.h"
-#include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {

@@ -1,13 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.110 1998/11/18 23:02:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.111 1998/11/20 15:25:33 bsmith Exp bsmith $";
 #endif
 
 /*
    This file contains routines for Parallel vector operations.
  */
 
-#include "petsc.h"
-#include <math.h>
 #include "src/vec/impls/mpi/pvecimpl.h"   /*I  "vec.h"   I*/
 
 /*

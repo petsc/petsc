@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.60 1997/09/22 15:19:46 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.61 1997/11/28 16:22:00 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
@@ -10,7 +10,7 @@ This example employs a user-defined monitoring routine.\n\n";
    Concepts: SNES^Setting a user-defined monitoring routine
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); SNESSolve();
    Routines: SNESGetTolerances(); SNESSetFromOptions(); SNESSetMonitor();
-   Routines: SNESGetSolution(); ViewerDrawOpenX(); PetscObjectSetName();
+   Routines: SNESGetSolution(); ViewerDrawOpen(); PetscObjectSetName();
    Processors: 1
 T*/
 
@@ -26,7 +26,6 @@ T*/
 */
 
 #include "snes.h"
-#include <math.h>
 
 /* 
    User-defined routines
@@ -108,7 +107,7 @@ int main( int argc, char **argv )
   /* 
      Set an optional user-defined monitoring routine
   */
-  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr); 
 
   /*
@@ -330,7 +329,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
          monitor routine, as set by SNESSetMonitor()
 
    Note:
-   See the manpage for ViewerDrawOpenX() for useful runtime options,
+   See the manpage for ViewerDrawOpen() for useful runtime options,
    such as -nox to deactivate all x-window output.
  */
 int Monitor(SNES snes,int its,double fnorm,void *ctx)

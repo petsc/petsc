@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.15 1998/09/25 03:14:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.16 1998/10/19 22:18:30 bsmith Exp bsmith $";
 #endif
  
 
@@ -302,11 +302,11 @@ int PartitioningCreate(MPI_Comm comm,Partitioning *newp)
          data to the first processor to print. 
 
    The user can open alternative visualization contexts with
-.     ViewerFileOpenASCII() - output to a specified file
+.     ViewerASCIIOpen() - output to a specified file
 
 .keywords: Partitioning, view
 
-.seealso: ViewerFileOpenASCII()
+.seealso: ViewerASCIIOpen()
 @*/
 int PartitioningView(Partitioning  part,Viewer viewer)
 {
@@ -320,11 +320,13 @@ int PartitioningView(Partitioning  part,Viewer viewer)
   if (viewer) {PetscValidHeader(viewer);} 
   else { viewer = VIEWER_STDOUT_SELF;}
 
-  ViewerGetType(viewer,&vtype);
-  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = PartitioningGetType(part,PETSC_NULL,&name); CHKERRQ(ierr);
     PetscFPrintf(part->comm,fd,"Partitioning Object: %s\n",name);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
 
   if (part->view) {

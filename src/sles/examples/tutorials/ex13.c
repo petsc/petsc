@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.8 1997/09/01 16:36:21 balay Exp balay $";
+static char vcid[] = "$Id: ex13.c,v 1.9 1998/07/02 13:17:31 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
@@ -24,7 +24,6 @@ T*/
      viewer.h - viewers               pc.h  - preconditioners
 */
 #include "sles.h"
-#include <math.h>
 
 /*
     User-defined context that contains all the data structures used

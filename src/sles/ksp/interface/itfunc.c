@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.105 1998/10/09 19:19:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.106 1998/11/20 15:27:43 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -223,9 +223,9 @@ int KSPSolve(KSP ksp, int *its)
       Draw      draw;
       DrawSP    drawsp;
 
-      ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",
+      ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",
                              PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);CHKERRQ(ierr);
-      ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+      ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
       ierr = DrawSPCreate(draw,1,&drawsp); CHKERRQ(ierr);
       for ( i=0; i<neig; i++ ) {
         ierr = DrawSPAddPoint(drawsp,r+i,c+i); CHKERRQ(ierr);
@@ -258,9 +258,9 @@ int KSPSolve(KSP ksp, int *its)
       Draw      draw;
       DrawSP    drawsp;
 
-      ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,300,300,&viewer); 
+      ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,300,300,&viewer); 
              CHKERRQ(ierr);
-      ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+      ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
       ierr = DrawSPCreate(draw,1,&drawsp); CHKERRQ(ierr);
       for ( i=0; i<n; i++ ) {
         ierr = DrawSPAddPoint(drawsp,r+i,c+i); CHKERRQ(ierr);

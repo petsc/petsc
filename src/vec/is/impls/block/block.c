@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.29 1998/06/11 02:32:42 curfman Exp balay $";
+static char vcid[] = "$Id: block.c,v 1.30 1998/07/22 20:18:53 balay Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
 */
 #include "src/is/isimpl.h"               /*I  "is.h"     I*/
-#include "pinclude/pviewer.h"
 #include "sys.h"
 
 typedef struct {
@@ -111,7 +110,7 @@ int ISView_Block(IS is, Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) { 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (is->isperm) {
       fprintf(fd,"Block Index set is permutation\n");

@@ -1,5 +1,5 @@
 !
-!  "$Id: ksp.h,v 1.14 1998/03/25 00:37:16 balay Exp balay $";
+!  "$Id: ksp.h,v 1.15 1998/03/27 21:18:09 balay Exp bsmith $";
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
@@ -30,4 +30,6 @@
       parameter (KSP_CG_SYMMETRIC=1, KSP_CG_HERMITIAN=2)
 !
 !  End of Fortran include file for the KSP package in PETSc
+
+
 

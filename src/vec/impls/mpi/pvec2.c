@@ -1,10 +1,10 @@
-
-/* $Id: pvec2.c,v 1.33 1998/06/08 20:03:45 bsmith Exp balay $ */
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: pvec2.c,v 1.34 1998/07/13 18:42:30 balay Exp bsmith $"
+#endif
 
 /*
      Code for some of the parallel vector primatives.
 */
-#include <math.h>
 #include "src/vec/impls/mpi/pvecimpl.h" 
 #include "src/inline/dot.h"
 

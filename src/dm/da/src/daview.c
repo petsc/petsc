@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.22 1998/04/27 15:58:33 curfman Exp curfman $";
+static char vcid[] = "$Id: daview.c,v 1.23 1998/05/19 01:35:50 curfman Exp bsmith $";
 #endif
  
 /*
@@ -29,8 +29,8 @@ static char vcid[] = "$Id: daview.c,v 1.22 1998/04/27 15:58:33 curfman Exp curfm
 -     VIEWER_DRAWX_WORLD - to default window
 
    The user can open alternative visualization contexts with
-+    ViewerFileOpenASCII() - Outputs vector to a specified file
--    ViewerDrawOpenX() - Outputs vector to an X window display
++    ViewerASCIIOpen() - Outputs vector to a specified file
+-    ViewerDrawOpen() - Outputs vector to an X window display
 
    Default Output Format:
   (for 3d arrays)
@@ -60,7 +60,7 @@ static char vcid[] = "$Id: daview.c,v 1.22 1998/04/27 15:58:33 curfman Exp curfm
 
 .keywords: distributed array, view, visualize
 
-.seealso: ViewerFileOpenASCII(), ViewerDrawOpenX(), DAGetInfo(), DAGetCorners(),
+.seealso: ViewerASCIIOpen(), ViewerDrawOpen(), DAGetInfo(), DAGetCorners(),
           DAGetGhostCorners()
 @*/
 int DAView(DA da, Viewer v)

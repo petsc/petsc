@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.10 1998/03/20 22:52:39 bsmith Exp balay $";
+static char vcid[] = "$Id: ex13.c,v 1.11 1998/03/31 17:27:12 balay Exp bsmith $";
 #endif
 
 static char help[] =
@@ -33,7 +33,6 @@ options are:\n\
 
 #include "snes.h"
 #include "da.h"
-#include <math.h>
 
 /* User-defined application context */
 typedef struct {

@@ -1,12 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: flush.c,v 1.15 1998/04/13 17:55:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: flush.c,v 1.16 1998/04/20 19:31:22 bsmith Exp bsmith $";
 #endif
 
-#include "pinclude/pviewer.h"  /*I "viewer.h" I*/
-
-struct _p_Viewer {
-  VIEWERHEADER
-};
+#include "src/viewer/viewerimpl.h"  /*I "viewer.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerFlush"
@@ -14,14 +10,14 @@ struct _p_Viewer {
    ViewerFlush - Flushes a viewer (i.e. tries to dump all the 
    data that has been printed through a viewer).
 
+   Collective on Viewer
+
    Input Parameters:
 .  viewer - the viewer to be flushed
 
-   Collective on Viewer
-
 .keywords: Viewer, flush
 
-.seealso: ViewerMatlabOpen(), ViewerFileOpenASCII()
+.seealso: ViewerMatlabOpen(), ViewerASCIIOpen()
 @*/
 int ViewerFlush(Viewer v)
 {
@@ -29,8 +25,8 @@ int ViewerFlush(Viewer v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (v->flush) {
-    ierr = (*v->flush)(v);CHKERRQ(ierr);
+  if (v->ops->flush) {
+    ierr = (*v->ops->flush)(v);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

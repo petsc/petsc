@@ -1,14 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.43 1998/08/26 22:01:40 balay Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.44 1998/11/04 17:22:13 bsmith Exp bsmith $";
 #endif
 
 /* 
    This file contains simple binary read/write routines.
  */
 
-#include "petsc.h"
+#include "petsc.h"     /*I          "petsc.h"    I*/
 #include "sys.h"
-#include "pinclude/pviewer.h"
 #include <errno.h>
 #include <fcntl.h>
 #if defined(HAVE_UNISTD_H)

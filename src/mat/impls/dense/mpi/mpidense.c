@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.97 1998/09/10 19:37:15 balay Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.98 1998/10/01 18:54:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -509,8 +509,6 @@ int MatDestroy_MPIDense(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#include "pinclude/pviewer.h"
-
 #undef __FUNC__  
 #define __FUNC__ "MatView_MPIDense_Binary"
 static int MatView_MPIDense_Binary(Mat mat,Viewer viewer)
@@ -531,7 +529,7 @@ static int MatView_MPIDense_Binary(Mat mat,Viewer viewer)
 static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
-  int          ierr, format;
+  int          ierr, format, size = mdn->size, rank = mdn->rank; 
   FILE         *fd;
   ViewerType   vtype;
 
@@ -555,48 +553,39 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
   else if (format == VIEWER_FORMAT_ASCII_INFO) {
     PetscFunctionReturn(0);
   }
-  if (vtype == ASCII_FILE_VIEWER) {
-    PetscSequentialPhaseBegin(mat->comm,1);
-    fprintf(fd,"[%d] rows %d starts %d ends %d cols %d\n",
-             mdn->rank,mdn->m,mdn->rstart,mdn->rend,mdn->n);
+
+  if (size == 1) { 
     ierr = MatView(mdn->A,viewer); CHKERRQ(ierr);
-    fflush(fd);
-    PetscSequentialPhaseEnd(mat->comm,1);
   } else {
-    int size = mdn->size, rank = mdn->rank; 
-    if (size == 1) { 
-      ierr = MatView(mdn->A,viewer); CHKERRQ(ierr);
+    /* assemble the entire matrix onto first processor. */
+    Mat          A;
+    int          M = mdn->M, N = mdn->N,m,row,i, nz, *cols;
+    Scalar       *vals;
+    Mat_SeqDense *Amdn = (Mat_SeqDense*) mdn->A->data;
+
+    if (!rank) {
+      ierr = MatCreateMPIDense(mat->comm,M,N,M,N,PETSC_NULL,&A); CHKERRQ(ierr);
     } else {
-      /* assemble the entire matrix onto first processor. */
-      Mat          A;
-      int          M = mdn->M, N = mdn->N,m,row,i, nz, *cols;
-      Scalar       *vals;
-      Mat_SeqDense *Amdn = (Mat_SeqDense*) mdn->A->data;
-
-      if (!rank) {
-        ierr = MatCreateMPIDense(mat->comm,M,N,M,N,PETSC_NULL,&A); CHKERRQ(ierr);
-      } else {
-        ierr = MatCreateMPIDense(mat->comm,0,N,M,N,PETSC_NULL,&A); CHKERRQ(ierr);
-      }
-      PLogObjectParent(mat,A);
-
-      /* Copy the matrix ... This isn't the most efficient means,
-         but it's quick for now */
-      row = mdn->rstart; m = Amdn->m;
-      for ( i=0; i<m; i++ ) {
-        ierr = MatGetRow(mat,row,&nz,&cols,&vals); CHKERRQ(ierr);
-        ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERT_VALUES); CHKERRQ(ierr);
-        ierr = MatRestoreRow(mat,row,&nz,&cols,&vals); CHKERRQ(ierr);
-        row++;
-      } 
-
-      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-      if (!rank) {
-        ierr = MatView(((Mat_MPIDense*)(A->data))->A,viewer); CHKERRQ(ierr);
-      }
-      ierr = MatDestroy(A); CHKERRQ(ierr);
+      ierr = MatCreateMPIDense(mat->comm,0,N,M,N,PETSC_NULL,&A); CHKERRQ(ierr);
     }
+    PLogObjectParent(mat,A);
+
+    /* Copy the matrix ... This isn't the most efficient means,
+       but it's quick for now */
+    row = mdn->rstart; m = Amdn->m;
+    for ( i=0; i<m; i++ ) {
+      ierr = MatGetRow(mat,row,&nz,&cols,&vals); CHKERRQ(ierr);
+      ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatRestoreRow(mat,row,&nz,&cols,&vals); CHKERRQ(ierr);
+      row++;
+    } 
+
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    if (!rank) {
+      ierr = MatView(((Mat_MPIDense*)(A->data))->A,viewer); CHKERRQ(ierr);
+    }
+    ierr = MatDestroy(A); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -609,11 +598,9 @@ int MatView_MPIDense(Mat mat,Viewer viewer)
   ViewerType   vtype;
  
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = MatView_MPIDense_ASCII(mat,viewer); CHKERRQ(ierr);
-  } else if (vtype == ASCII_FILES_VIEWER) {
-    ierr = MatView_MPIDense_ASCII(mat,viewer); CHKERRQ(ierr);
-  } else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
     ierr = MatView_MPIDense_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

@@ -1,12 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.156 1998/11/03 13:50:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.157 1998/11/20 15:28:29 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
-#include "src/pc/pcimpl.h"            /*I "pc.h" I*/
-#include "pinclude/pviewer.h"         /*I "ksp.h" I*/
-
+#include "src/pc/pcimpl.h"            /*I "sles.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy"
@@ -1051,11 +1049,11 @@ int PCPostSolve(PC pc,KSP ksp)
          data to the first processor to print. 
 
    The user can open an alternative visualization contexts with
-   ViewerFileOpenASCII() (output to a specified file).
+   ViewerASCIIOpen() (output to a specified file).
 
 .keywords: PC, view
 
-.seealso: KSPView(), ViewerFileOpenASCII()
+.seealso: KSPView(), ViewerASCIIOpen()
 @*/
 int PCView(PC pc,Viewer viewer)
 {
@@ -1070,7 +1068,7 @@ int PCView(PC pc,Viewer viewer)
   else { viewer = VIEWER_STDOUT_SELF;}
 
   ViewerGetType(viewer,&vtype);
-  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = ViewerGetFormat(viewer,&fmt); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"PC Object:\n");
@@ -1095,7 +1093,7 @@ int PCView(PC pc,Viewer viewer)
       }
       ViewerPopFormat(viewer);
     }
-  } else if (vtype == STRING_VIEWER) {
+  } else if (!PetscStrcmp(vtype,STRING_VIEWER)) {
     PCGetType(pc,&cstr);
     ViewerStringSPrintf(viewer," %-7.7s",cstr);
     if (pc->view) (*pc->view)(pc,viewer);

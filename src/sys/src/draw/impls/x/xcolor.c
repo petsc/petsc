@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.39 1998/03/24 21:00:04 balay Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.40 1998/11/22 19:43:31 bsmith Exp bsmith $";
 #endif
 
 
@@ -144,7 +144,7 @@ int XiInitCmap(Draw_X* XiWin )
 int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue, 
             int mapsize, Draw_X *XiWin )
 {
-  int      i, found;
+  int      i, found, ierr, fast;
   XColor   colordef;
   Colormap defaultmap = DefaultColormap( XiWin->disp, XiWin->screen );
 
@@ -153,33 +153,37 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
 
   XiWin->maxcolors = XiWin->numcolors;
 
-  /*
+  ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
+
+  if (!fast) {
+    /*
      This is very slow because we have to request from the X server for each
      color. Could not figure out a way to request a large number at the
      same time.
-  */
-  for (i=DRAW_BASIC_COLORS; i<mapsize+DRAW_BASIC_COLORS; i++) {
-    colordef.red    = ((int)red[i-DRAW_BASIC_COLORS]   * 65535) / 255;
-    colordef.green  = ((int)green[i-DRAW_BASIC_COLORS] * 65535) / 255;
-    colordef.blue   = ((int)blue[i-DRAW_BASIC_COLORS]  * 65535) / 255;
-    colordef.flags  = DoRed | DoGreen | DoBlue;
-    if (defaultmap == XiWin->cmap) { 
-      XAllocColor( XiWin->disp, XiWin->cmap, &colordef ); 
-    } else {
-      /* try to allocate the color in the default-map */
-      found = XAllocColor( XiWin->disp, defaultmap, &colordef ); 
-      /* use it, if it it exists and is not already used in the new colormap */
-      if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
-        cmap_pixvalues_used[colordef.pixel] = 1; 
-	/* otherwise search for the next available slot */
+    */
+    for (i=DRAW_BASIC_COLORS; i<mapsize+DRAW_BASIC_COLORS; i++) {
+      colordef.red    = ((int)red[i-DRAW_BASIC_COLORS]   * 65535) / 255;
+      colordef.green  = ((int)green[i-DRAW_BASIC_COLORS] * 65535) / 255;
+      colordef.blue   = ((int)blue[i-DRAW_BASIC_COLORS]  * 65535) / 255;
+      colordef.flags  = DoRed | DoGreen | DoBlue;
+      if (defaultmap == XiWin->cmap) { 
+        XAllocColor( XiWin->disp, XiWin->cmap, &colordef ); 
       } else {
-        while (cmap_pixvalues_used[cmap_base]) cmap_base++;
-        colordef.pixel                   = cmap_base;
-        cmap_pixvalues_used[cmap_base++] = 1;
+        /* try to allocate the color in the default-map */
+        found = XAllocColor( XiWin->disp, defaultmap, &colordef ); 
+        /* use it, if it it exists and is not already used in the new colormap */
+        if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
+          cmap_pixvalues_used[colordef.pixel] = 1; 
+          /* otherwise search for the next available slot */
+        } else {
+          while (cmap_pixvalues_used[cmap_base]) cmap_base++;
+          colordef.pixel                   = cmap_base;
+          cmap_pixvalues_used[cmap_base++] = 1;
+        }
+        XStoreColor( XiWin->disp, XiWin->cmap, &colordef ); 
       }
-      XStoreColor( XiWin->disp, XiWin->cmap, &colordef ); 
+      XiWin->cmapping[i]   = colordef.pixel;
     }
-    XiWin->cmapping[i]   = colordef.pixel;
   }
 
   /*
@@ -287,7 +291,6 @@ int XiGetBaseColor(Draw_X* XiWin,PixVal* white_pix,PixVal* black_pix )
    approximate that gives somewhat better results than Gamma = 1.
  */
 static double Gamma = 2.0;
-#include <math.h>
 
 #undef __FUNC__  
 #define __FUNC__ "XiSetGamma" 

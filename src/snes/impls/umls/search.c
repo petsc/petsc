@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: search.c,v 1.16 1997/10/19 03:29:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: search.c,v 1.17 1997/12/01 01:56:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -63,8 +63,6 @@ c     argonne national laboratory. minpack project. june 1983
 c     jorge j. more', david j. thuente
 nc
  */
-
-#include <math.h>
 #include "src/snes/impls/umls/umls.h"
 
 #undef __FUNC__  

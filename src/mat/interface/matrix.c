@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.304 1998/10/09 19:21:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.305 1998/11/20 15:28:59 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -8,7 +8,6 @@ static char vcid[] = "$Id: matrix.c,v 1.304 1998/10/09 19:21:47 bsmith Exp bsmit
 
 #include "src/mat/matimpl.h"        /*I "mat.h" I*/
 #include "src/vec/vecimpl.h"  
-#include "pinclude/pviewer.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetRow"
@@ -151,10 +150,10 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 -     VIEWER_DRAWX_WORLD - graphical display of nonzero structure
 
    The user can open alternative visualization contexts with
-+    ViewerFileOpenASCII() - Outputs matrix to a specified file
-.    ViewerFileOpenBinary() - Outputs matrix in binary to a
++    ViewerASCIIOpen() - Outputs matrix to a specified file
+.    ViewerBinaryOpen() - Outputs matrix in binary to a
          specified file; corresponding input uses MatLoad()
-.    ViewerDrawOpenX() - Outputs nonzero matrix structure to 
+.    ViewerDrawOpen() - Outputs nonzero matrix structure to 
          an X window display
 -    ViewerMatlabOpen() - Outputs matrix to Matlab viewer.
          Currently only the sequential dense and AIJ
@@ -162,7 +161,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 
    The user can call ViewerSetFormat() to specify the output
    format of ASCII printed objects (when using VIEWER_STDOUT_SELF,
-   VIEWER_STDOUT_WORLD and ViewerFileOpenASCII).  Available formats include
+   VIEWER_STDOUT_WORLD and ViewerASCIIOpen).  Available formats include
 +    VIEWER_FORMAT_AS CII_DEFAULT - default, prints matrix contents
 .    VIEWER_FORMAT_ASCII_MATLAB - prints matrix contents in Matlab format
 .    VIEWER_FORMAT_ASCII_DENSE - prints entire matrix including zeros
@@ -177,8 +176,8 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 
 .keywords: matrix, view, visualize, output, print, write, draw
 
-.seealso: ViewerSetFormat(), ViewerFileOpenASCII(), ViewerDrawOpenX(), 
-          ViewerMatlabOpen(), ViewerFileOpenBinary(), MatLoad()
+.seealso: ViewerSetFormat(), ViewerASCIIOpen(), ViewerDrawOpen(), 
+          ViewerMatlabOpen(), ViewerBinaryOpen(), MatLoad()
 @*/
 int MatView(Mat mat,Viewer viewer)
 {
@@ -198,7 +197,7 @@ int MatView(Mat mat,Viewer viewer)
   }
 
   ierr = ViewerGetType(viewer,&vtype);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);  
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {

@@ -25,11 +25,11 @@ int main(int argc,char **args)
 
   ierr = OptionsGetString(PETSC_NULL,"-fin",fin,127,&flg); CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Must indicate binary file with the -fin option");
-  ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,fin,BINARY_RDONLY,&fdin);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,fin,BINARY_RDONLY,&fdin);CHKERRA(ierr);
 
   ierr = OptionsGetString(PETSC_NULL,"-fout",fout,127,&flg); CHKERRA(ierr);
   if (!flg) PetscPrintf(PETSC_COMM_WORLD,"Writing submatrix to file : %s\n",fout);
-  ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,fout,BINARY_CREATE,&fdout);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,fout,BINARY_CREATE,&fdout);CHKERRA(ierr);
 
   ierr = MatLoad(fdin,mtype,&A); CHKERRA(ierr);
   ierr = ViewerDestroy(fdin); CHKERRA(ierr);

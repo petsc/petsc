@@ -1,13 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.10 1998/05/29 20:36:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.11 1998/10/19 22:17:43 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
     This allows embedding a Krylov method inside a preconditioner.
 */
 #include "src/pc/pcimpl.h"   /*I "pc.h" I*/
-#include "sles.h"
-#include <math.h>
+#include "sles.h"            /*I "sles.h" I*/
 
 typedef struct {
   PetscTruth use_true_matrix;       /* use mat rather than pmat in inner linear solve */
@@ -83,7 +82,7 @@ static int PCView_SLES(PC pc,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (jac->use_true_matrix) {
       PetscFPrintf(pc->comm,fd,"Using true matrix (not preconditioner matrix) on inner solve\n");
@@ -94,7 +93,7 @@ static int PCView_SLES(PC pc,Viewer viewer)
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
   ierr = SLESView(jac->sles,viewer); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     PetscFPrintf(pc->comm,fd,"---------------------------------\n");
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

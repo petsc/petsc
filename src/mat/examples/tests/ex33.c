@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex33.c,v 1.4 1997/09/22 15:24:05 balay Exp bsmith $";
+static char vcid[] = "$Id: ex33.c,v 1.5 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -43,7 +43,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(b); CHKERRA(ierr);
 
   ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,127,&flg); CHKERRA(ierr);
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
   ierr = MatView(A,view); CHKERRA(ierr);
   ierr = VecView(b,view); CHKERRA(ierr);
   ierr = ViewerDestroy(view); CHKERRA(ierr);

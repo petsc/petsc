@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pipeline.c,v 1.8 1998/09/25 03:13:12 bsmith Exp balay $";
+static char vcid[] = "$Id: pipeline.c,v 1.9 1998/11/06 23:23:22 balay Exp bsmith $";
 #endif
 
 /*
@@ -16,7 +16,6 @@ static char vcid[] = "$Id: pipeline.c,v 1.8 1998/09/25 03:13:12 bsmith Exp balay
 #include "src/vec/vecimpl.h" /*I "vec.h" I*/
 #include "sys.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
-#include "pinclude/pviewer.h"
 
 typedef int (*PipelineFunction)(int,PetscObject);
 

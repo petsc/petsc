@@ -1,12 +1,9 @@
-
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.51 1998/10/31 22:21:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.52 1998/10/31 22:59:56 bsmith Exp bsmith $";
 #endif
 
-#include "petsc.h"
 #include "sys.h"
-#include "pinclude/pviewer.h"
+#include "src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
 #include <fcntl.h>
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
@@ -15,11 +12,10 @@ static char vcid[] = "$Id: binv.c,v 1.51 1998/10/31 22:21:22 bsmith Exp bsmith $
 #include <io.h>
 #endif
 
-struct _p_Viewer {
-  VIEWERHEADER
+typedef struct  {
   int          fdes;            /* file descriptor */
   FILE         *fdes_info;      /* optional file containing info on binary file*/
-};
+} Viewer_Binary;
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerBinaryGetDescriptor"
@@ -28,7 +24,7 @@ struct _p_Viewer {
 
     Not Collective
 
-+   viewer - viewer context, obtained from ViewerFileOpenBinary()
++   viewer - viewer context, obtained from ViewerBinaryOpen()
 -   fdes - file descriptor
 
     Fortran Note:
@@ -36,12 +32,14 @@ struct _p_Viewer {
 
 .keywords: Viewer, file, get, descriptor
 
-.seealso: ViewerFileOpenBinary(),ViewerBinaryGetInfoPointer()
+.seealso: ViewerBinaryOpen(),ViewerBinaryGetInfoPointer()
 @*/
 int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 {
+  Viewer_Binary *vbinary = (Viewer_Binary *) viewer->data;
+
   PetscFunctionBegin;
-  *fdes = viewer->fdes;
+  *fdes = vbinary->fdes;
   PetscFunctionReturn(0);
 }
 
@@ -53,7 +51,7 @@ int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 
     Not Collective
 
-+   viewer - viewer context, obtained from ViewerFileOpenBinary()
++   viewer - viewer context, obtained from ViewerBinaryOpen()
 -   file - file pointer
 
     Fortran Note:
@@ -61,35 +59,36 @@ int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 
 .keywords: Viewer, file, get, descriptor
 
-.seealso: ViewerFileOpenBinary(),ViewerBinaryGetDescriptor()
+.seealso: ViewerBinaryOpen(),ViewerBinaryGetDescriptor()
 @*/
 int ViewerBinaryGetInfoPointer(Viewer viewer,FILE **file)
 {
+  Viewer_Binary *vbinary = (Viewer_Binary *) viewer->data;
+
   PetscFunctionBegin;
-  *file = viewer->fdes_info;
+  *file = vbinary->fdes_info;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_BinaryFile"
-int ViewerDestroy_BinaryFile(Viewer v)
+#define __FUNC__ "ViewerDestroy_Binary"
+int ViewerDestroy_Binary(Viewer v)
 {
-  int    rank;
+  Viewer_Binary *vbinary = (Viewer_Binary *) v->data;
+  int           rank;
 
   PetscFunctionBegin;
   MPI_Comm_rank(v->comm,&rank);
-  if (!rank) close(v->fdes);
-  if (!rank && v->fdes_info) fclose(v->fdes_info);
-
-  PLogObjectDestroy((PetscObject)v);
-  PetscHeaderDestroy((PetscObject)v);
+  if (!rank) close(vbinary->fdes);
+  if (!rank && vbinary->fdes_info) fclose(vbinary->fdes_info);
+  PetscFree(vbinary);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerFileOpenBinary"
+#define __FUNC__ "ViewerBinaryOpen"
 /*@C
-   ViewerFileOpenBinary - Opens a file for binary input/output.
+   ViewerBinaryOpen - Opens a file for binary input/output.
 
    Collective on MPI_Comm
 
@@ -109,23 +108,26 @@ $    BINARY_WRONLY - open existing file for binary output
 
 .keywords: binary, file, open, input, output
 
-.seealso: ViewerFileOpenASCII(), ViewerSetFormat(), ViewerDestroy(),
+.seealso: ViewerASCIIOpen(), ViewerSetFormat(), ViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), ViewerBinaryGetDescriptor(),
           ViewerBinaryGetInfoPointer()
 @*/
-int ViewerFileOpenBinary(MPI_Comm comm,const char name[],ViewerBinaryType type,Viewer *binv)
+int ViewerBinaryOpen(MPI_Comm comm,const char name[],ViewerBinaryType type,Viewer *binv)
 {  
-  int        rank,ierr;
-  Viewer     v;
-  const char *fname;
-  char       bname[1024];
-  PetscTruth found;
+  int           rank,ierr;
+  Viewer        v;
+  Viewer_Binary *vbinary;
+  const char    *fname;
+  char          bname[1024];
+  PetscTruth    found;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v,_p_Viewer,int,VIEWER_COOKIE,BINARY_FILE_VIEWER,comm,ViewerDestroy,0);
+  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,comm,ViewerDestroy,0);
   PLogObjectCreate(v);
-  v->destroy        = ViewerDestroy_BinaryFile;
-  v->flush          = 0;
+  vbinary = PetscNew(Viewer_Binary);CHKPTRQ(vbinary);
+  v->data           = (void *) vbinary;
+  v->ops->destroy   = ViewerDestroy_Binary;
+  v->ops->flush     = 0;
   v->iformat        = 0;
   *binv             = v;
 
@@ -148,34 +150,34 @@ int ViewerFileOpenBinary(MPI_Comm comm,const char name[],ViewerBinaryType type,V
 
 #if defined(PARCH_nt_gnu) || defined(PARCH_nt) 
     if (type == BINARY_CREATE) {
-      if ((v->fdes = open(fname,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
+      if ((vbinary->fdes = open(fname,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
         SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing");
       }
     } else if (type == BINARY_RDONLY) {
-      if ((v->fdes = open(fname,O_RDONLY|O_BINARY,0)) == -1) {
+      if ((vbinary->fdes = open(fname,O_RDONLY|O_BINARY,0)) == -1) {
         SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for reading");
       }
     } else if (type == BINARY_WRONLY) {
-      if ((v->fdes = open(fname,O_WRONLY|O_BINARY,0)) == -1) {
+      if ((vbinary->fdes = open(fname,O_WRONLY|O_BINARY,0)) == -1) {
         SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for writing");
       }
     } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown file type");
 #else
     if (type == BINARY_CREATE) {
-      if ((v->fdes = creat(fname,0666)) == -1) {
+      if ((vbinary->fdes = creat(fname,0666)) == -1) {
         SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing");
       }
     } else if (type == BINARY_RDONLY) {
-      if ((v->fdes = open(fname,O_RDONLY,0)) == -1) {
+      if ((vbinary->fdes = open(fname,O_RDONLY,0)) == -1) {
         SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for reading");
       }
     } else if (type == BINARY_WRONLY) {
-      if ((v->fdes = open(fname,O_WRONLY,0)) == -1) {
+      if ((vbinary->fdes = open(fname,O_WRONLY,0)) == -1) {
         SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for writing");
       }
     } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown file type");
 #endif
-  } else v->fdes = -1;
+  } else vbinary->fdes = -1;
   v->format    = 0;
 
   /* 
@@ -194,9 +196,11 @@ int ViewerFileOpenBinary(MPI_Comm comm,const char name[],ViewerBinaryType type,V
     ierr = PetscFixFilename(infoname,iname); CHKERRQ(ierr);
     ierr = PetscFileRetrieve(comm,iname,infoname,256,&found); CHKERRQ(ierr);
     if (found) {
-      v->fdes_info = fopen(infoname,"r");
+      vbinary->fdes_info = fopen(infoname,"r");
     }
   }
+  v->type_name = (char *) PetscMalloc((1+PetscStrlen(BINARY_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
+  PetscStrcpy(v->type_name,BINARY_VIEWER);
 
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);

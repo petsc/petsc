@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.20 1998/06/24 04:00:19 curfman Exp balay $";
+! "$Id: ex2f.F,v 1.21 1998/07/01 15:46:52 balay Exp bsmith $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -371,14 +371,14 @@
 !  We use the default X windows viewer
 !       VIEWER_DRAWX_WORLD
 !  that is associated with the PETSC_COMM_WORLD communicator. This
-!  saves the effort of calling ViewerDrawOpenX() to create the window.
+!  saves the effort of calling ViewerDrawOpen() to create the window.
 !  Note that if we wished to plot several items in separate windows we
-!  would create each viewer with ViewerDrawOpenX() and store them in
+!  would create each viewer with ViewerDrawOpen() and store them in
 !  the application context, appctx.
 !
 !  Double buffering makes graphics look better.
 
-      call ViewerDrawGetDraw(VIEWER_DRAWX_WORLD,draw,ierr)
+      call ViewerDrawGetDraw(VIEWER_DRAWX_WORLD,0,draw,ierr)
       call DrawSetDoubleBuffer(draw,ierr)
       call VecView(u,VIEWER_DRAWX_WORLD,ierr)
 

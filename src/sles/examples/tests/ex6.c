@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.51 1998/04/01 00:08:25 balay Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.52 1998/05/29 20:37:53 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -38,7 +38,7 @@ int main(int argc,char **args)
   /* Read matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Must indicate binary file with the -f option");
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,PETSC_NULL,&mtype,&set); CHKERRA(ierr);
   ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);
   ierr = VecLoad(fd,&b); CHKERRA(ierr);

@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.80 1998/04/24 21:21:30 curfman Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.81 1998/10/19 22:17:31 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
 */
-#include "src/pc/impls/mg/mgimpl.h"                    /*I "pc.h" I*/
-#include "pinclude/pviewer.h"          /*I "mg.h" I*/
+#include "src/pc/impls/mg/mgimpl.h"                    /*I "mg.h" I*/
 
 /*
        MGMCycle_Private - Given an MG structure created with MGCreate() runs 
@@ -219,7 +218,7 @@ static int PCView_MG(PC pc,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = SLESGetKSP(mg[0]->smoothu,&kspu); CHKERRQ(ierr);
     ierr = SLESGetKSP(mg[0]->smoothd,&kspd); CHKERRQ(ierr);

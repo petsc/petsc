@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.21 1998/05/21 15:35:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.22 1998/06/03 19:18:43 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -26,11 +26,11 @@ static char vcid[] = "$Id: ao.c,v 1.21 1998/05/21 15:35:55 bsmith Exp bsmith $";
          data to the first processor to print. 
 
    The user can open an alternative visualization context with
-   ViewerFileOpenASCII() - output to a specified file.
+   ViewerASCIIOpen() - output to a specified file.
 
 .keywords: application ordering
 
-.seealso: ViewerFileOpenASCII()
+.seealso: ViewerASCIIOpen()
 @*/
 int AOView(AO ao, Viewer viewer)
 {

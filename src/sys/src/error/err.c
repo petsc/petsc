@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.86 1998/11/25 20:28:57 balay Exp balay $";
+static char vcid[] = "$Id: err.c,v 1.87 1998/11/25 21:26:45 balay Exp bsmith $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -8,7 +8,6 @@ static char vcid[] = "$Id: err.c,v 1.86 1998/11/25 20:28:57 balay Exp balay $";
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "pinclude/pviewer.h"
 
 typedef struct _EH *EH;
 struct _EH {
@@ -165,7 +164,7 @@ int PetscIntView(int N,int idx[],Viewer viewer)
   ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
       PetscSynchronizedFPrintf(comm,file,"%d:",20*i);
@@ -180,7 +179,7 @@ int PetscIntView(int N,int idx[],Viewer viewer)
       PetscSynchronizedFPrintf(comm,file,"\n");
     }
     PetscSynchronizedFlush(comm);
-  } else if (vtype == MATLAB_VIEWER) {
+  } else if (!PetscStrcmp(vtype,MATLAB_VIEWER)) {
     int *array,*sizes,rank,size,Ntotal,*displs;
 
     MPI_Comm_rank(comm,&rank);
@@ -248,7 +247,7 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
   ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
 
     for ( i=0; i<n; i++ ) {
@@ -264,7 +263,7 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
       PetscSynchronizedFPrintf(comm,file,"\n");
     }
     PetscSynchronizedFlush(comm);
-  } else if (vtype == MATLAB_VIEWER) {
+  } else if (!PetscStrcmp(vtype,MATLAB_VIEWER)) {
     int    *sizes,rank,size,Ntotal,*displs;
     double *array;
 
@@ -333,7 +332,7 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
   ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
       PetscSynchronizedFPrintf(comm,file,"%2d:",3*i);

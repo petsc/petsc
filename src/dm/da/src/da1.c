@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.84 1998/11/21 01:06:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.85 1998/11/24 04:11:04 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -8,11 +8,11 @@ static char vcid[] = "$Id: da1.c,v 1.84 1998/11/21 01:06:37 bsmith Exp bsmith $"
 */
 
 #include "src/da/daimpl.h"     /*I  "da.h"   I*/
-#include "pinclude/pviewer.h"   
-#include <math.h>
 
 #if defined (HAVE_AMS)
+EXTERN_C_BEGIN
 extern int AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
+EXTERN_C_END
 #endif
 
 #undef __FUNC__  
@@ -34,7 +34,7 @@ int DAView_1d(DA da,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
 
-  if (vtype == ASCII_FILE_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     FILE *fd;
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscSequentialPhaseBegin(da->comm,1);
@@ -43,14 +43,14 @@ int DAView_1d(DA da,Viewer viewer)
     fprintf(fd,"X range: %d %d\n",da->xs,da->xe);
     fflush(fd);
     PetscSequentialPhaseEnd(da->comm,1);
-  } else if (vtype == DRAW_VIEWER) {
+  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
     Draw       draw;
     double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
     int        base;
     char       node[10];
     PetscTruth isnull;
 
-    ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+    ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
     ierr = DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
@@ -218,7 +218,9 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
 
   /* allocate the base parallel and sequential vectors */
   ierr = VecCreateMPI(comm,x,PETSC_DECIDE,&global); CHKERRQ(ierr);
+  ierr = VecSetBlockSize(global,w);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,(Xe-Xs),&local); CHKERRQ(ierr);
+  ierr = VecSetBlockSize(local,w);CHKERRQ(ierr);
     
   /* compose the DA into the MPI vector so it has access to the 
      distribution information */

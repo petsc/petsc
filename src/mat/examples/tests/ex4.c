@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.4 1997/10/19 03:26:38 bsmith Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.5 1998/07/29 20:16:32 balay Exp bsmith $";
 #endif
 
 static char help[] = "Creates a matrix, inserts some values, and tests\n\
 MatGetSubMatrices and MatZeroEntries.\n\n";
 
-#include <math.h>
 #include "mat.h"
 
 int main(int argc,char **argv)

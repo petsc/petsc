@@ -1,13 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.2 1997/10/12 23:26:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.3 1998/03/20 22:53:15 bsmith Exp bsmith $";
 #endif
       
 static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 
-#include "petsc.h"
 #include "mat.h"
 #include "da.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {

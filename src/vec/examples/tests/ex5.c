@@ -1,16 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.37 1997/07/09 20:49:55 balay Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.38 1997/09/22 15:17:16 balay Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 This does case when we are merely selecting the local part of the\n\
 parallel vector.\n\n";
 
-#include "petsc.h"
-#include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {

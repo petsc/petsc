@@ -1,11 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.136 1998/08/25 19:53:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.137 1998/10/09 19:22:55 bsmith Exp bsmith $";
 #endif
 
-#include "pinclude/pviewer.h"         /*I "mat.h" I*/
-#include "src/mat/impls/baij/mpi/mpibaij.h"
+#include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
 #include "src/vec/vecimpl.h"
-
 
 extern int MatSetUpMultiply_MPIBAIJ(Mat); 
 extern int DisAssemble_MPIBAIJ(Mat);
@@ -372,7 +370,6 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   }
   PetscFunctionReturn(0);
 }
-#include <math.h>
 #define HASH_KEY 0.6180339887
 /* #define HASH1(size,key) ((int)((size)*fmod(((key)*HASH_KEY),1))) */
 #define HASH(size,key,tmp) (tmp = (key)*HASH_KEY,(int)((size)*(tmp-(int)tmp)))
@@ -984,13 +981,13 @@ static int MatView_MPIBAIJ_Binary(Mat mat,Viewer viewer)
 static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ *) mat->data;
-  int          ierr, format,rank,bs = baij->bs;
+  int          ierr, format,bs = baij->bs, size = baij->size, rank = baij->rank;
   FILE         *fd;
   ViewerType   vtype;
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILES_VIEWER || vtype == ASCII_FILE_VIEWER) { 
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) { 
     ierr = ViewerGetFormat(viewer,&format);
     if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
@@ -1015,85 +1012,71 @@ static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
     }
   }
 
-  if (vtype == DRAW_VIEWER) {
+  if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
     Draw       draw;
     PetscTruth isnull;
-    ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+    ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   }
 
-  if (vtype == ASCII_FILE_VIEWER) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscSequentialPhaseBegin(mat->comm,1);
-    fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
-           baij->rank,baij->m,baij->rstart*bs,baij->rend*bs,baij->n,
-            baij->cstart*bs,baij->cend*bs);
+  if (size == 1) {
     ierr = MatView(baij->A,viewer); CHKERRQ(ierr);
-    ierr = MatView(baij->B,viewer); CHKERRQ(ierr);
-    fflush(fd);
-    PetscSequentialPhaseEnd(mat->comm,1);
   } else {
-    int size = baij->size;
-    rank = baij->rank;
-    if (size == 1) {
-      ierr = MatView(baij->A,viewer); CHKERRQ(ierr);
+    /* assemble the entire matrix onto first processor. */
+    Mat         A;
+    Mat_SeqBAIJ *Aloc;
+    int         M = baij->M, N = baij->N,*ai,*aj,col,i,j,k,*rvals;
+    int         mbs = baij->mbs;
+    Scalar      *a;
+
+    if (!rank) {
+      ierr = MatCreateMPIBAIJ(mat->comm,baij->bs,M,N,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
     } else {
-      /* assemble the entire matrix onto first processor. */
-      Mat         A;
-      Mat_SeqBAIJ *Aloc;
-      int         M = baij->M, N = baij->N,*ai,*aj,col,i,j,k,*rvals;
-      int         mbs=baij->mbs;
-      Scalar      *a;
-
-      if (!rank) {
-        ierr = MatCreateMPIBAIJ(mat->comm,baij->bs,M,N,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
-      } else {
-        ierr = MatCreateMPIBAIJ(mat->comm,baij->bs,0,0,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
-      }
-      PLogObjectParent(mat,A);
-
-      /* copy over the A part */
-      Aloc = (Mat_SeqBAIJ*) baij->A->data;
-      ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-      rvals = (int *) PetscMalloc(bs*sizeof(int)); CHKPTRQ(rvals);
-
-      for ( i=0; i<mbs; i++ ) {
-        rvals[0] = bs*(baij->rstart + i);
-        for ( j=1; j<bs; j++ ) { rvals[j] = rvals[j-1] + 1; }
-        for ( j=ai[i]; j<ai[i+1]; j++ ) {
-          col = (baij->cstart+aj[j])*bs;
-          for (k=0; k<bs; k++ ) {
-            ierr = MatSetValues(A,bs,rvals,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
-            col++; a += bs;
-          }
-        }
-      } 
-      /* copy over the B part */
-      Aloc = (Mat_SeqBAIJ*) baij->B->data;
-      ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-      for ( i=0; i<mbs; i++ ) {
-        rvals[0] = bs*(baij->rstart + i);
-        for ( j=1; j<bs; j++ ) { rvals[j] = rvals[j-1] + 1; }
-        for ( j=ai[i]; j<ai[i+1]; j++ ) {
-          col = baij->garray[aj[j]]*bs;
-          for (k=0; k<bs; k++ ) { 
-            ierr = MatSetValues(A,bs,rvals,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
-            col++; a += bs;
-          }
-        }
-      } 
-      PetscFree(rvals);
-      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-      /* 
-         Everyone has to call to draw the matrix since the graphics waits are
-         synchronized across all processors that share the Draw object
-      */
-      if (!rank || vtype == DRAW_VIEWER) {
-        ierr = MatView(((Mat_MPIBAIJ*)(A->data))->A,viewer); CHKERRQ(ierr);
-      }
-      ierr = MatDestroy(A); CHKERRQ(ierr);
+      ierr = MatCreateMPIBAIJ(mat->comm,baij->bs,0,0,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
     }
+    PLogObjectParent(mat,A);
+
+    /* copy over the A part */
+    Aloc = (Mat_SeqBAIJ*) baij->A->data;
+    ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
+    rvals = (int *) PetscMalloc(bs*sizeof(int)); CHKPTRQ(rvals);
+
+    for ( i=0; i<mbs; i++ ) {
+      rvals[0] = bs*(baij->rstart + i);
+      for ( j=1; j<bs; j++ ) { rvals[j] = rvals[j-1] + 1; }
+      for ( j=ai[i]; j<ai[i+1]; j++ ) {
+        col = (baij->cstart+aj[j])*bs;
+        for (k=0; k<bs; k++ ) {
+          ierr = MatSetValues(A,bs,rvals,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
+          col++; a += bs;
+        }
+      }
+    } 
+    /* copy over the B part */
+    Aloc = (Mat_SeqBAIJ*) baij->B->data;
+    ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
+    for ( i=0; i<mbs; i++ ) {
+      rvals[0] = bs*(baij->rstart + i);
+      for ( j=1; j<bs; j++ ) { rvals[j] = rvals[j-1] + 1; }
+      for ( j=ai[i]; j<ai[i+1]; j++ ) {
+        col = baij->garray[aj[j]]*bs;
+        for (k=0; k<bs; k++ ) { 
+          ierr = MatSetValues(A,bs,rvals,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
+          col++; a += bs;
+        }
+      }
+    } 
+    PetscFree(rvals);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    /* 
+       Everyone has to call to draw the matrix since the graphics waits are
+       synchronized across all processors that share the Draw object
+    */
+    if (!rank || !PetscStrcmp(vtype,DRAW_VIEWER)) {
+      ierr = MatView(((Mat_MPIBAIJ*)(A->data))->A,viewer); CHKERRQ(ierr);
+    }
+    ierr = MatDestroy(A); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1109,10 +1092,10 @@ int MatView_MPIBAIJ(Mat mat,Viewer viewer)
  
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER ||
-      vtype == DRAW_VIEWER       || vtype == MATLAB_VIEWER) { 
+  if (!PetscStrcmp(vtype,ASCII_VIEWER) || !PetscStrcmp(vtype,DRAW_VIEWER) || 
+      !PetscStrcmp(vtype,MATLAB_VIEWER)) { 
     ierr = MatView_MPIBAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
-  } else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
     ierr = MatView_MPIBAIJ_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.20 1998/03/12 23:23:34 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.21 1998/04/03 23:18:14 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -11,27 +11,29 @@
 
 struct _p_DA {
   PETSCHEADER(int)
-  int            M,N,P;             /* array dimensions */
-  int            m,n,p;             /* processor layout */
-  int            w;                 /* degrees of freedom per node */
-  int            s;                 /* stencil width */
-  int            xs,xe,ys,ye,zs,ze; /* range of local values */
-  int            Xs,Xe,Ys,Ye,Zs,Ze; /* range including ghost values */
-                                    /* values above already scaled by w */
-  int            *idx,Nl;           /* local to global map */
-  int            base;              /* global number of 1st local node */
-  DAPeriodicType wrap;              /* indicates type of periodic boundaries */
-  VecScatter     gtol, ltog, ltol;  /* scatters, see below for details */
-  DFVec          global, local;     /* vectors that are discrete functions */
-  DAStencilType  stencil_type;      /* stencil, either box or star */
-  int            dim;               /* DA dimension (1,2, or 3) */
-  int            *gtog1;            /* mapping from global ordering to
-                                       ordering that would be used for 1
-                                       proc; intended for internal use only */
-  DF             dfshell;           /* discrete function shell */
-  AO             ao;                /* application ordering context */
+  int            M,N,P;                 /* array dimensions */
+  int            m,n,p;                 /* processor layout */
+  int            w;                     /* degrees of freedom per node */
+  int            s;                     /* stencil width */
+  int            xs,xe,ys,ye,zs,ze;     /* range of local values */
+  int            Xs,Xe,Ys,Ye,Zs,Ze;     /* range including ghost values */
+                                        /* values above already scaled by w */
+  int            *idx,Nl;               /* local to global map */
+  int            base;                  /* global number of 1st local node */
+  DAPeriodicType wrap;                  /* indicates type of periodic boundaries */
+  VecScatter     gtol, ltog, ltol;      /* scatters, see below for details */
+  DFVec          global, local;         /* vectors that are discrete functions */
+  PetscTruth     globalused, localused; /* indicates if global and local have been 
+                                           passed back to user via DACreateXXXVector */
+  DAStencilType  stencil_type;          /* stencil, either box or star */
+  int            dim;                   /* DA dimension (1,2, or 3) */
+  int            *gtog1;                /* mapping from global ordering to
+                                            ordering that would be used for 1
+                                            proc; intended for internal use only */
+  DF             dfshell;               /* discrete function shell */
+  AO             ao;                    /* application ordering context */
 
-  ISLocalToGlobalMapping ltogmap;      /* local to global mapping for associated vectors */
+  ISLocalToGlobalMapping ltogmap;       /* local to global mapping for associated vectors */
   int            (*destroy)(DA);
   int            (*view)(DA,Viewer);
 };

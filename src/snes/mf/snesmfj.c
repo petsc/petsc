@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.73 1998/11/09 03:33:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.74 1998/11/12 03:37:44 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -163,7 +163,7 @@ int MatSNESFDMFView_Private(Mat J,Viewer viewer)
   ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
      PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");
      PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);
      PetscFPrintf(ctx->comm,fd,"    Using %s compute h routine\n",ctx->type_name);  

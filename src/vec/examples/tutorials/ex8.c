@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.6 1997/08/22 15:10:55 bsmith Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.7 1997/09/22 15:16:08 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
@@ -19,7 +19,6 @@ T*/
      sys.h    - system routines       viewer.h - viewers
 */
 #include "vec.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {

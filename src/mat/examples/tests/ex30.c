@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex30.c,v 1.5 1997/07/09 20:55:45 balay Exp bsmith $";
+static char vcid[] = "$Id: ex30.c,v 1.6 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
@@ -26,8 +26,8 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg1); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-lf",&lf,&flg1); CHKERRA(ierr);
 
-  ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,0,0,0,400,400,&viewer1); CHKERRA(ierr);
-  ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,0,400,0,400,400,&viewer2); CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&viewer1); CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,0,400,0,400,400,&viewer2); CHKERRA(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag",&flg2); CHKERRA(ierr);
   if (flg2) {

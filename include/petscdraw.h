@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.58 1998/06/09 21:25:54 bsmith Exp balay $ */
+/* $Id: draw.h,v 1.59 1998/08/26 22:04:55 balay Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -175,9 +175,9 @@ extern int DrawHistSetColor(DrawHist,int);
 /*
     Viewer routines that allow you to access underlying Draw objects
 */
-extern int ViewerDrawGetDraw(Viewer, Draw*);
-extern int ViewerDrawGetDrawLG(Viewer, DrawLG*);
-extern int ViewerDrawGetDrawAxis(Viewer, DrawAxis*);
+extern int ViewerDrawGetDraw(Viewer,int, Draw*);
+extern int ViewerDrawGetDrawLG(Viewer,int, DrawLG*);
+extern int ViewerDrawGetDrawAxis(Viewer,int, DrawAxis*);
 
 /* Mesh management routines */
 typedef struct _p_DrawMesh* DrawMesh;

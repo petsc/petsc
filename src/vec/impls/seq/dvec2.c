@@ -1,18 +1,15 @@
-
-
-/* $Id: dvec2.c,v 1.54 1998/07/13 18:42:27 balay Exp bsmith $ */
+#ifdef PETSC_RCS_HEADER
+static char vcid[] =  "$Id: dvec2.c,v 1.55 1998/10/08 16:09:38 bsmith Exp bsmith $"
+#endif
 
 /* 
    Defines some vector operation functions that are shared by 
   sequential and parallel vectors.
 */
-#include "petsc.h"
+#include "src/vec/impls/dvecimpl.h"   
 #include "src/inline/dot.h"
 #include "src/inline/setval.h"
 #include "src/inline/axpy.h"
-#include "src/vec/vecimpl.h"             
-#include "src/vec/impls/dvecimpl.h"   
-#include "pinclude/pviewer.h"
 
 #undef __FUNC__  
 #define __FUNC__ "VecMDot_Seq"

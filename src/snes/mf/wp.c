@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.2 1998/11/09 19:32:10 bsmith Exp balay $";
+static char vcid[] = "$Id: wp.c,v 1.3 1998/11/11 20:58:02 balay Exp bsmith $";
 #endif
 /*
       Implements an alternative approach for computing the h
@@ -114,7 +114,7 @@ static int MatSNESFDMFView_WP(MatSNESFDMFCtx ctx,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     if (hctx->computenorma) PetscFPrintf(ctx->comm,fd,"    Computes normA\n");  
     else                    PetscFPrintf(ctx->comm,fd,"    Does not compute normA\n");  
     if (hctx->computenormU) PetscFPrintf(ctx->comm,fd,"    Computes normU\n");  

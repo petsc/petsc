@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.29 1998/07/30 21:41:38 balay Exp balay $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.30 1998/08/03 14:58:02 balay Exp bsmith $";
 #endif
 
 /*
@@ -17,8 +17,7 @@ static char vcid[] = "$Id: aodatabasic.c,v 1.29 1998/07/30 21:41:38 balay Exp ba
 */
 
 #include "sys.h"
-#include "src/ao/aoimpl.h"
-#include "pinclude/pviewer.h"
+#include "src/ao/aoimpl.h"          /*I  "ao.h"  I*/
 #include "bitarray.h"
 
 #undef __FUNC__  
@@ -231,9 +230,9 @@ int AODataView_Basic(AOData ao,Viewer viewer)
   }
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) { 
     ierr = AODataView_Basic_ASCII(ao,viewer); CHKERRQ(ierr);
-  } else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
     ierr = AODataView_Basic_Binary(ao,viewer); CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
@@ -909,8 +908,8 @@ int AODataLoadBasic(Viewer viewer,AOData *aoout)
   PetscFunctionBegin;
   *aoout = 0;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  != BINARY_FILE_VIEWER) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,1,"Viewer must be obtained from ViewerFileOpenBinary()");
+  if (PetscStrcmp(vtype,BINARY_VIEWER)) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,1,"Viewer must be obtained from ViewerBinaryOpen()");
   }
 
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm); CHKERRQ(ierr);

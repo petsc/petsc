@@ -1,13 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.25 1998/04/13 17:55:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: view.c,v 1.26 1998/04/27 14:26:01 curfman Exp bsmith $";
 #endif
 
-#include "petsc.h" /*I "petsc.h" I*/
-#include "pinclude/pviewer.h"
-
-struct _p_Viewer {
-   VIEWERHEADER
-};
+#include "src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy"
@@ -19,7 +14,7 @@ struct _p_Viewer {
    Input Parameters:
 .  viewer - the viewer to be destroyed.
 
-.seealso: ViewerMatlabOpen(), ViewerFileOpenASCII()
+.seealso: ViewerMatlabOpen(), ViewerASCIIOpen()
 
 .keywords: Viewer, destroy
 @*/
@@ -30,33 +25,38 @@ int ViewerDestroy(Viewer v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
   if (--v->refct > 0) PetscFunctionReturn(0);
-  ierr = (*v->destroy)(v);CHKERRQ(ierr);
+  if (v->ops->destroy) {
+    ierr = (*v->ops->destroy)(v);CHKERRQ(ierr);
+  }
+  PLogObjectDestroy((PetscObject)v);
+  PetscHeaderDestroy((PetscObject)v);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerGetType"
-/*@
+/*@C
    ViewerGetType - Returns the type of a viewer.
 
    Not Collective
 
    Input Parameter:
-   v - the viewer
+.   v - the viewer
 
    Output Parameter:
 .  type - viewer type (see below)
 
    Available Types Include:
 .  MATLAB_VIEWER - Matlab viewer
-.  ASCII_FILE_VIEWER - uniprocess ASCII viewer
-.  ASCII_FILES_VIEWER - parallel ASCII viewer
-.  BINARY_FILE_VIEWER - binary file viewer
+.  ASCII_VIEWER - ASCII viewer
+.  BINARY_VIEWER - binary file viewer
 .  STRING_VIEWER - string viewer
 .  DRAW_VIEWER - drawing viewer
 
    Note:
    See petsc/include/viewer.h for a complete list of viewers.
+
+   ViewerType is actually a string
 
 .keywords: Viewer, get, type
 @*/
@@ -64,6 +64,12 @@ int ViewerGetType(Viewer v,ViewerType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  *type = (ViewerType) v->type;
+  *type = (ViewerType) v->type_name;
   PetscFunctionReturn(0);
 }
+
+
+
+
+
+

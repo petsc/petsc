@@ -1,13 +1,11 @@
-
-/* $Id: pdvec.c,v 1.99 1998/05/29 22:49:39 balay Exp bsmith $ */
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = $Id: pdvec.c,v 1.100 1998/08/20 16:01:32 bsmith Exp bsmith $ 
+#endif
 
 /*
      Code for some of the parallel vector primatives.
 */
-
-#include "pinclude/pviewer.h"
 #include "src/vec/impls/mpi/pvecimpl.h"   /*I  "vec.h"   I*/
-
 
 #undef __FUNC__  
 #define __FUNC__ "VecGetOwnershipRange_MPI"
@@ -50,42 +48,8 @@ int VecDestroy_MPI(Vec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_File"
-int VecView_MPI_File(Vec xin, Viewer ptr )
-{
-  Vec_MPI *x = (Vec_MPI *) xin->data;
-  int     i, rank, ierr, format;
-  FILE    *fd;
-
-  PetscFunctionBegin;
-  ierr = ViewerASCIIGetPointer(ptr,&fd); CHKERRQ(ierr);
-
-  MPI_Comm_rank(xin->comm,&rank); 
-  PetscSequentialPhaseBegin(xin->comm,1);
-
-  ierr = ViewerGetFormat(ptr,&format); CHKERRQ(ierr);
-  if (format != VIEWER_FORMAT_ASCII_COMMON) fprintf(fd,"Processor [%d] \n",rank);
-  for ( i=0; i<x->n; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
-    if (PetscImaginary(x->array[i]) > 0.0) {
-      fprintf(fd,"%g + %g i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
-    } else if (PetscImaginary(x->array[i]) < 0.0) {
-      fprintf(fd,"%g - %g i\n",PetscReal(x->array[i]),-PetscImaginary(x->array[i]));
-    } else {
-      fprintf(fd,"%g\n",PetscReal(x->array[i]));
-    }
-#else
-    fprintf(fd,"%g\n",x->array[i]);
-#endif
-  }
-  fflush(fd);
-  PetscSequentialPhaseEnd(xin->comm,1);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Files"
-int VecView_MPI_Files(Vec xin, Viewer viewer )
+#define __FUNC__ "VecView_MPI_ASCII"
+int VecView_MPI_ASCII(Vec xin, Viewer viewer )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,len, work = x->n,n,j,size,ierr,format,cnt;
@@ -109,7 +73,7 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
         Matlab uses %18.16e format while ASCII uses %g
     */
     if (format == VIEWER_FORMAT_ASCII_MATLAB) {
-      ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
+      ierr = ViewerGetOutputname(viewer,&outputname); CHKERRQ(ierr);
       fprintf(fd,"%s = [\n",outputname);
       for ( i=0; i<x->n; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
@@ -266,7 +230,7 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
   DrawLG      lg;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDrawLG(v,&lg); CHKERRQ(ierr);
+  ierr = ViewerDrawGetDrawLG(v,0,&lg); CHKERRQ(ierr);
   ierr = DrawLGGetDraw(lg,&draw); CHKERRQ(ierr);
   ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
   MPI_Comm_rank(xin->comm,&rank);
@@ -330,7 +294,7 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
   DrawAxis    axis;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDraw(v,&draw);CHKERRQ(ierr);
+  ierr = ViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
   ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   ierr = ViewerGetFormat(v,&format); CHKERRQ(ierr);
@@ -396,8 +360,6 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
   PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNC__  
 #define __FUNC__ "VecView_MPI_Matlab"
 int VecView_MPI_Matlab(Vec xin, Viewer viewer )
@@ -440,15 +402,13 @@ int VecView_MPI(Vec xin,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER){
-    ierr = VecView_MPI_File(xin,viewer);CHKERRQ(ierr);
-  } else if (vtype == ASCII_FILES_VIEWER){
-    ierr = VecView_MPI_Files(xin,viewer);CHKERRQ(ierr);
-  } else if (vtype == MATLAB_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)){
+    ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
+  } else if (!PetscStrcmp(vtype,MATLAB_VIEWER)) {
     ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
-  } else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
     ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
-  } else if (vtype == DRAW_VIEWER) {
+  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
     ierr = VecView_MPI_Draw(xin,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

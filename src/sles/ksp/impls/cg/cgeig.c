@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgeig.c,v 1.40 1998/06/11 19:55:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.41 1998/10/19 22:16:39 bsmith Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
    running with CG. Note this only works for symmetric real and Hermitian
    matrices (not complex matrices that are symmetric).
 */
-#include <math.h>
 #include "src/ksp/impls/cg/cgctx.h"
 static int ccgtql1_private(int *, double *, double *, int *);
 

@@ -1,7 +1,6 @@
-/* $Id: bdiag.h,v 1.23 1996/08/15 12:47:45 bsmith Exp curfman $ */
+/* $Id: bdiag.h,v 1.24 1996/08/22 20:06:47 curfman Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
-#include <math.h>
 
 #if !defined(__BDIAG_H)
 #define __BDIAG_H

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex34.c,v 1.4 1997/09/22 15:23:59 balay Exp bsmith $";
+static char vcid[] = "$Id: ex34.c,v 1.5 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -23,7 +23,7 @@ int main(int argc,char **args)
   /* Read matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-fin",file,255,&flg); CHKERRA(ierr);
   if (!flg) SETERRA(1,0,help);
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&A); CHKERRA(ierr);
   ierr = VecLoad(fd,&x); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
@@ -31,7 +31,7 @@ int main(int argc,char **args)
   /* Write matrix and vector */
   ierr = OptionsGetString(PETSC_NULL,"-fout",file,255,&flg); CHKERRA(ierr);
   if (!flg) SETERRA(1,0,help);
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_CREATE,&fd);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_CREATE,&fd);CHKERRA(ierr);
   ierr = MatView(A,fd); CHKERRA(ierr);
   ierr = VecView(x,fd); CHKERRA(ierr);
 

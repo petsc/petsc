@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: preonly.c,v 1.25 1998/10/09 19:20:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: preonly.c,v 1.26 1998/10/19 22:16:55 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -7,8 +7,6 @@ static char vcid[] = "$Id: preonly.c,v 1.25 1998/10/09 19:20:21 bsmith Exp bsmit
        This may be used in inner iterations, where it is desired to 
        allow multiple iterations as well as the "0-iteration" case
 */
-#include <math.h>
-#include "petsc.h"
 #include "src/ksp/kspimpl.h"
 
 #undef __FUNC__  

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex53.c,v 1.5 1997/09/22 15:23:01 balay Exp bsmith $";
+static char vcid[] = "$Id: ex53.c,v 1.6 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
@@ -30,11 +30,11 @@ int main(int argc,char **args)
  /* Check out if MatLoad() works */
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Input file not specified");
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
   ierr = MatLoad(fd,MATMPIBAIJ,&A); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
 
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
   ierr = MatLoad(fd,MATMPIAIJ,&B); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
  

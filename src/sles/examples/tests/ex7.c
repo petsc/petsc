@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.1 1998/10/28 15:38:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.2 1998/11/03 16:13:00 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -15,7 +15,7 @@ static char help[] =
    Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops();
    Routines: PetscBarrier(); PetscGetTime();
    Routines: MatGetTypeFromOptions(); MatLoad(); VecLoad();
-   Routines: ViewerFileOpenBinary(); ViewerStringOpen(); ViewerDestroy();
+   Routines: ViewerBinaryOpen(); ViewerStringOpen(); ViewerDestroy();
    Processors: n
 T*/
 
@@ -54,7 +54,7 @@ int main(int argc,char **args)
        Open binary file.  Note that we use BINARY_RDONLY to indicate
        reading from this file.
   */
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file[0],BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[0],BINARY_RDONLY,&fd);CHKERRA(ierr);
 
   /*
        Load the matrix and vector; then destroy the viewer.

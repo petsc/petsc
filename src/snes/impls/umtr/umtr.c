@@ -1,12 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.71 1998/05/29 20:39:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.72 1998/10/19 22:19:49 bsmith Exp bsmith $";
 #endif
 
-#include <math.h>
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
 #include "src/ksp/kspimpl.h"
 #include "src/ksp/impls/qcg/qcg.h"
-#include "pinclude/pviewer.h"
 
 /*
     SNESSolve_UM_TR - Implements Newton's Method with a trust region approach 
@@ -352,7 +350,7 @@ static int SNESView_UM_TR(SNES snes,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(snes->comm,fd,"    eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",
                  tr->eta1,tr->eta2,tr->eta3,tr->eta4);

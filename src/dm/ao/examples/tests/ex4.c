@@ -1,12 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.3 1997/10/10 04:08:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.4 1997/10/28 14:25:35 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests AOData loading\n\n";
 
-#include "petsc.h"
 #include "ao.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {
@@ -20,7 +18,7 @@ int main(int argc,char **argv)
   /*
         Load the database from the file
   */
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"dataoutput",BINARY_RDONLY,&binary);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"dataoutput",BINARY_RDONLY,&binary);CHKERRA(ierr);
   ierr = AODataLoadBasic(binary,&aodata);CHKERRA(ierr);
   ierr = ViewerDestroy(binary); CHKERRA(ierr);
 

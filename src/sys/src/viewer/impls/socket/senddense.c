@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: senddense.c,v 1.28 1998/04/27 14:28:29 curfman Exp curfman $";
+static char vcid[] = "$Id: senddense.c,v 1.29 1998/11/30 19:45:59 curfman Exp bsmith $";
 #endif
 
 #include "src/viewer/impls/matlab/matlab.h"
@@ -29,7 +29,8 @@ static char vcid[] = "$Id: senddense.c,v 1.28 1998/04/27 14:28:29 curfman Exp cu
 */
 int ViewerMatlabPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
 {
-  int ierr,t = viewer->port,type = DENSEREAL,value;
+  Viewer_Matlab *vmatlab = (Viewer_Matlab *) viewer->data;
+  int           ierr,t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0); CHKERRQ(ierr);
@@ -69,7 +70,8 @@ int ViewerMatlabPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
 */
 int ViewerMatlabPutDouble_Private(Viewer viewer,int m,int n,double *array)
 {
-  int ierr,t = viewer->port,type = DENSEREAL,value;
+  Viewer_Matlab *vmatlab = (Viewer_Matlab *) viewer->data;
+  int           ierr,t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0); CHKERRQ(ierr);
@@ -106,7 +108,8 @@ int ViewerMatlabPutDouble_Private(Viewer viewer,int m,int n,double *array)
 */
 int ViewerMatlabPutInt_Private(Viewer viewer,int m,int *array)
 {
-  int ierr,t = viewer->port,type = DENSEINT;
+  Viewer_Matlab *vmatlab = (Viewer_Matlab *) viewer->data;
+  int           ierr,t = vmatlab->port,type = DENSEINT;
 
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0); CHKERRQ(ierr);

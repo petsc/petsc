@@ -1,7 +1,6 @@
-/* $Id: baij.h,v 1.11 1998/10/09 19:22:47 bsmith Exp bsmith $ */
+/* $Id: baij.h,v 1.12 1998/11/20 15:29:24 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
-#include <math.h>
 
 #if !defined(__BAIJ_H)
 #define __BAIJ_H

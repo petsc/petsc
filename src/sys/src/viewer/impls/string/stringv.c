@@ -1,28 +1,26 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.23 1998/06/15 20:32:33 bsmith Exp balay $";
+static char vcid[] = "$Id: stringv.c,v 1.24 1998/08/26 22:03:57 balay Exp bsmith $";
 #endif
 
-#include "petsc.h"
-#include "pinclude/pviewer.h"
+#include "src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
 #include <stdarg.h>
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"
 
-struct _p_Viewer {
-  VIEWERHEADER
+typedef struct  {
   char         *string;   /* string where info is stored */
   char         *head;     /* pointer to begining of unused portion */
   int          curlen,maxlen;
-};
+} Viewer_String;
 
 static int ViewerDestroy_String(Viewer viewer)
 {
-  PetscFunctionBegin;
+  Viewer_String *vstr = (Viewer_String *)viewer->data;
 
-  PLogObjectDestroy((PetscObject)viewer);
-  PetscHeaderDestroy((PetscObject)viewer);
+  PetscFunctionBegin;
+  PetscFree(vstr);
   PetscFunctionReturn(0);
 }
 
@@ -46,13 +44,14 @@ static int ViewerDestroy_String(Viewer viewer)
 @*/
 int ViewerStringSPrintf(Viewer v,char *format,...)
 {
-  va_list Argp;
-  int     shift;
-  char    tmp[512];
+  va_list       Argp;
+  int           shift;
+  char          tmp[512];
+  Viewer_String *vstr = (Viewer_String *) v->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (v->type != STRING_VIEWER) PetscFunctionReturn(0);
+  if (PetscStrcmp(v->type_name,"string")) PetscFunctionReturn(0);
 
   va_start( Argp, format );
 #if defined(HAVE_VPRINTF_CHAR)
@@ -65,11 +64,11 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
   shift = PetscStrlen(tmp);
   if (shift > 512) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"String too long");
   
-  if (shift >= v->maxlen - v->curlen - 1) shift = v->maxlen - v->curlen - 1;
-  PetscStrncpy(v->head,tmp,shift);
+  if (shift >= vstr->maxlen - vstr->curlen - 1) shift = vstr->maxlen - vstr->curlen - 1;
+  PetscStrncpy(vstr->head,tmp,shift);
 
-  v->head   += shift;
-  v->curlen += shift;
+  vstr->head   += shift;
+  vstr->curlen += shift;
   PetscFunctionReturn(0);
 }
 
@@ -98,19 +97,26 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
 @*/
 int ViewerStringOpen(MPI_Comm comm,char string[],int len, Viewer *lab)
 {
-  Viewer v;
+  Viewer        v;
+  Viewer_String *vstr;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v,_p_Viewer,int,VIEWER_COOKIE,STRING_VIEWER,comm,ViewerDestroy,0);
+  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,comm,ViewerDestroy,0);
   PLogObjectCreate(v);
-  v->destroy     = ViewerDestroy_String;
+  v->ops->destroy = ViewerDestroy_String;
+  v->ops->view    = 0;
+  v->ops->flush   = 0;
+  vstr            = PetscNew(Viewer_String);
+  v->data         = (void *) vstr;
+  v->type_name    = (char *) PetscMalloc((1+PetscStrlen(STRING_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
+  PetscStrcpy(v->type_name,STRING_VIEWER);
 
   PetscMemzero(string,len*sizeof(char));
-  v->string      = string;
-  v->head        = string;
+  vstr->string      = string;
+  vstr->head        = string;
 
-  v->curlen      = 0;
-  v->maxlen      = len;
+  vstr->curlen      = 0;
+  vstr->maxlen      = len;
 
   *lab           = v;
   PetscFunctionReturn(0);

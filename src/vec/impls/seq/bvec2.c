@@ -1,17 +1,14 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.140 1998/10/19 22:16:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.141 1998/11/20 15:27:35 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
 */
 
-#include <math.h>
 #include "src/vec/vecimpl.h"          /*I  "vec.h"   I*/
 #include "src/vec/impls/dvecimpl.h" 
 #include "pinclude/blaslapack.h"
-#include "pinclude/pviewer.h"
 #if defined(HAVE_AMS)
-#include "ams.h"
 extern int ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
 #endif
 
@@ -89,7 +86,7 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
 
   ierr = ViewerGetFormat(viewer,&format);
   if (format == VIEWER_FORMAT_ASCII_MATLAB) {
-    ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
+    ierr = ViewerGetOutputname(viewer,&outputname); CHKERRQ(ierr);
     fprintf(fd,"%s = [\n",outputname);
     for (i=0; i<n; i++ ) {
 #if defined(USE_PETSC_COMPLEX)
@@ -146,7 +143,7 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
   DrawLG   lg;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDrawLG(v,&lg); CHKERRQ(ierr);
+  ierr = ViewerDrawGetDrawLG(v,0,&lg); CHKERRQ(ierr);
   ierr = DrawLGGetDraw(lg,&win); CHKERRQ(ierr);
   ierr = DrawCheckResizedWindow(win);CHKERRQ(ierr);
   ierr = DrawLGReset(lg); CHKERRQ(ierr);
@@ -184,7 +181,7 @@ static int VecView_Seq_Draw(Vec xin,Viewer v)
   int        format;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDraw(v,&draw); CHKERRQ(ierr);
+  ierr = ViewerDrawGetDraw(v,0,&draw); CHKERRQ(ierr);
   ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   
   ierr = ViewerGetFormat(v,&format); CHKERRQ(ierr);
@@ -230,13 +227,13 @@ int VecView_Seq(Vec xin,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == DRAW_VIEWER){ 
+  if (!PetscStrcmp(vtype,DRAW_VIEWER)){ 
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
-  } else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
+  } else if (!PetscStrcmp(vtype,ASCII_VIEWER)){
     ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
-  } else if (vtype == MATLAB_VIEWER) {
+  } else if (!PetscStrcmp(vtype,MATLAB_VIEWER)) {
     ierr = ViewerMatlabPutScalar_Private(viewer,x->n,1,x->array);CHKERRQ(ierr);
-  } else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

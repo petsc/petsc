@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.249 1998/09/30 19:30:07 balay Exp bsmith $ 
+# $Id: makefile,v 1.250 1998/11/06 22:03:43 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -124,9 +124,7 @@ petscblas: info chkpetsc_dir
 	-${RM} -f ${PDIR}/libpetscblas.*
 	-@echo "BEGINNING TO COMPILE C VERSION OF BLAS AND LAPACK"
 	-@echo "========================================="
-	-@cd src/adic/blas; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} libfast
-	-@cd src/adic/lapack; \
+	-@cd src/blaslapack; \
 	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=libfast tree
 	${RANLIB} ${PDIR}/libpetscblas.a
 	-@chmod g+w  ${PDIR}/*.a
@@ -217,12 +215,12 @@ TAGS_DOC_FILES      = docs/tex/manual/routin.tex docs/tex/manual/manual.tex \
 TAGS_SRC_FILES      = src/sys/src/*/*.c src/*/*.[c,h] src/*/interface/*.[c,h] src/*/src/*.[c,h] \
                       src/*/utils/*.[c,h] src/snes/mf/*.[c,h] \
                       src/*/impls/*.[c,h] src/*/impls/*/*.[c,h] src/*/impls/*/*/*.[c,h] \
-                      src/snes/interface/noise/*.[c,F,h] src/gvec/impls/*/*/*/*/*.[c,h] \
+                      src/snes/interface/noise/*.[c,F,h] \
 		      src/contrib/*/*.[c,h] \
                       src/contrib/*/src/*.[c,h] src/fortran/custom/*.[c,h,F] \
 		      src/fortran/kernels/*.[c,h,F] \
 		      src/fortran/f90/*.[c,h,F] src/fortran/f90/*/*.[c,h,F] \
-		      src/adic/blas/*.c src/lapack/src[1,2,3]/*.c \
+		      src/blaslapack/blas/*.c src/blaslapack/lapack/src[1,2,3]/*.c \
                       src/contrib/pc/*/*.c
 TAGS_MAKEFILE_FILES = include/makefile include/*/makefile \
                       makefile src/sys/src/*/makefile \
@@ -232,12 +230,10 @@ TAGS_MAKEFILE_FILES = include/makefile include/*/makefile \
                       src/*/impls/makefile src/*/impls/*/makefile src/*/impls/*/*/makefile \
                       src/snes/interface/noise/makefile src/*/examples/makefile \
 		      src/*/examples/*/makefile src/*/examples/*/*/makefile \
-                      src/gvec/impls/*/*/*/*/makefile src/gvec/impls/*/*/*/makefile \
                       src/fortran/*/makefile src/fortran/f90/*/makefile \
                       src/contrib/*/makefile src/contrib/*/src/makefile \
                       src/contrib/*/examples/makefile src/contrib/*/examples/*/makefile \
                       src/contrib/sif/*/makefile docs/makefile src/adic/*/makefile \
-		      src/adic/lapack/*/makefile \
                       src/contrib/pc/*/makefile src/contrib/makefile  
 
 # Builds all etags files
@@ -383,9 +379,7 @@ alladic:
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adic  tree 
 	-@cd src/inline ; \
             ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} adic
-	-@cd src/adic/blas ; \
-            ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} adic
-	-@cd src/adic/lapack ; \
+	-@cd src/blaslapack ; \
             ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adic  tree
 
 alladiclib:
@@ -404,9 +398,7 @@ alladiclib:
 	-@echo "========================================="
 	-@${RM} -f  ${PDIR}/*adic.a
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
-	-@cd src/adic/blas ; \
-            ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} adiclib
-	-@cd src/adic/lapack ; \
+	-@cd src/blaslapack ; \
             ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
 	-@cd src/adic/src ; \
             ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} lib

@@ -1,13 +1,12 @@
-
-
-/* $Id: bvec1.c,v 1.25 1998/06/11 19:54:53 bsmith Exp balay $ */
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: bvec1.c,v 1.26 1998/06/29 21:38:50 balay Exp bsmith $"
+#endif
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
   and sequential vectors.
 */
 
-#include <math.h>
 #include "src/vec/vecimpl.h" 
 #include "src/vec/impls/dvecimpl.h" 
 #include "pinclude/blaslapack.h"

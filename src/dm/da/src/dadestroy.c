@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.18 1998/04/27 15:58:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: dadestroy.c,v 1.19 1998/09/25 03:16:15 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -41,8 +41,12 @@ int DADestroy(DA da)
   ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);
   ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);
   ierr = VecScatterDestroy(da->ltol);CHKERRQ(ierr);
-  ierr = VecDestroy(da->global);CHKERRQ(ierr);
-  ierr = VecDestroy(da->local);CHKERRQ(ierr);
+  if (!da->globalused) {
+    ierr = VecDestroy(da->global);CHKERRQ(ierr);
+  }
+  if (!da->localused) {
+    ierr = VecDestroy(da->local);CHKERRQ(ierr);
+  }
   ierr = AODestroy(da->ao); CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(da->ltogmap); CHKERRQ(ierr);
   if (da->gtog1) PetscFree(da->gtog1);

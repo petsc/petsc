@@ -1,7 +1,6 @@
-/* $Id: dense.h,v 1.3 1996/04/09 20:24:20 curfman Exp bsmith $ */
+/* $Id: dense.h,v 1.4 1996/08/08 14:42:39 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
-#include <math.h>
 
 #if !defined(__DENSE_H)
 #define __DENSE_H

@@ -1,18 +1,18 @@
 !
-!  $Id: viewer.h,v 1.17 1998/03/27 21:17:38 balay Exp balay $;
+!  $Id: viewer.h,v 1.18 1998/03/30 21:14:31 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Viewer package in PETSc
 !
 #define Viewer           PetscFortranAddr
-#define ViewerType       integer
 #define ViewerBinaryType integer
 
-      integer MATLAB_VIEWER, ASCII_FILE_VIEWER,ASCII_FILES_VIEWER
-      integer BINARY_FILE_VIEWER, STRING_VIEWER,DRAW_VIEWER
+#define MATLAB_VIEWER       "matlab"
+#define ASCII_VIEWER        "ascii"
+#define BINARY_VIEWER       "binary"
+#define STRING_VIEWER       "string"
+#define DRAW_VIEWER         "draw"
+#define AMS_VIEWER          "ams"
 
-      parameter (MATLAB_VIEWER = 0, ASCII_FILE_VIEWER = 1)
-      parameter (ASCII_FILES_VIEWER = 2, BINARY_FILE_VIEWER = 3)
-      parameter (STRING_VIEWER = 4, DRAW_VIEWER = 5) 
 !
 !  Flags for binary I/O
 !

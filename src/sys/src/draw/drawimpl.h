@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.25 1998/03/12 23:20:40 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.26 1998/04/03 23:16:19 bsmith Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -47,19 +47,5 @@ struct _p_Draw {
   Draw            popup;
   void            *data;
 };
-
-/*
-     This is for the Draw version of the viewer
-*/
-#include "pinclude/pviewer.h"
-struct _p_Viewer {
-  VIEWERHEADER
-  Draw         draw;
-  DrawLG       drawlg;
-  DrawAxis     drawaxis;
-};
-
-extern int ViewerDestroy_Draw(Viewer);
-extern int ViewerFlush_Draw(Viewer);
 
 #endif

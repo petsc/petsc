@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.72 1998/06/11 19:54:35 bsmith Exp balay $";
+static char vcid[] = "$Id: general.c,v 1.73 1998/07/22 20:19:02 balay Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -87,34 +87,37 @@ int ISInvertPermutation_General(IS is, IS *isout)
 int ISView_General(IS is, Viewer viewer)
 {
   IS_General  *sub = (IS_General *)is->data;
-  int         i,n = sub->n,*idx = sub->idx,ierr;
+  int         i,n = sub->n,*idx = sub->idx, ierr;
   FILE        *fd;
   ViewerType  vtype;
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (is->isperm) {
-      fprintf(fd,"Index set is permutation\n");
-    }
-    fprintf(fd,"Number of indices in set %d\n",n);
-    for ( i=0; i<n; i++ ) {
-      fprintf(fd,"%d %d\n",i,idx[i]);
-    }
-    fflush(fd);
-  } else if (vtype  == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     MPI_Comm comm;
-    int      rank;
+    int      rank,size;
+
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm); CHKERRQ(ierr);
     MPI_Comm_rank(comm,&rank);
+    MPI_Comm_size(comm,&size);
+
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (is->isperm) {
-      PetscSynchronizedFPrintf(comm,fd,"[%d] Index set is permutation\n",rank);
-    }
-    PetscSynchronizedFPrintf(comm,fd,"[%d] Number of indices in set %d\n",rank,n);
-    for ( i=0; i<n; i++ ) {
-      PetscSynchronizedFPrintf(comm,fd,"[%d] %d %d\n",rank,i,idx[i]);
+    if (size > 1) {
+      if (is->isperm) {
+        PetscSynchronizedFPrintf(comm,fd,"[%d] Index set is permutation\n",rank);
+      }
+      PetscSynchronizedFPrintf(comm,fd,"[%d] Number of indices in set %d\n",rank,n);
+      for ( i=0; i<n; i++ ) {
+        PetscSynchronizedFPrintf(comm,fd,"[%d] %d %d\n",rank,i,idx[i]);
+      }
+    } else {
+      if (is->isperm) {
+        PetscSynchronizedFPrintf(comm,fd,"Index set is permutation\n");
+      }
+      PetscSynchronizedFPrintf(comm,fd,"Number of indices in set %d\n",n);
+      for ( i=0; i<n; i++ ) {
+        PetscSynchronizedFPrintf(comm,fd,"%d %d\n",i,idx[i]);
+      }
     }
     PetscSynchronizedFlush(comm);
   } else {

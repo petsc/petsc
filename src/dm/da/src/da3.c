@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.84 1998/11/24 04:12:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.85 1998/12/01 20:56:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -8,8 +8,6 @@ static char vcid[] = "$Id: da3.c,v 1.84 1998/11/24 04:12:34 bsmith Exp bsmith $"
  */
 
 #include "src/da/daimpl.h"     /*I   "da.h"    I*/
-#include "pinclude/pviewer.h"
-#include <math.h>
 
 #if defined (HAVE_AMS)
 EXTERN_C_BEGIN
@@ -34,7 +32,7 @@ int DAView_3d(DA da,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
-  if (vtype == ASCII_FILE_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     FILE *fd;
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
 
@@ -45,7 +43,7 @@ int DAView_3d(DA da,Viewer viewer)
                da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);
     fflush(fd);
     PetscSequentialPhaseEnd(da->comm,1);
-  } else if (vtype == DRAW_VIEWER) {
+  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
     Draw       draw;
     double     ymin = -1.0,ymax = (double) da->N;
     double     xmin = -1.0,xmax = (double) ((da->M+2)*da->P),x,y;
@@ -55,7 +53,7 @@ int DAView_3d(DA da,Viewer viewer)
     char       node[10];
     PetscTruth isnull;
 
-    ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+    ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
     ierr = DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);

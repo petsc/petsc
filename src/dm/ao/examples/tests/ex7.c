@@ -1,12 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.1 1998/06/03 19:18:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.2 1998/06/08 21:22:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates constructing an application ordering\n\n";
 
-#include "petsc.h"
 #include "ao.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {

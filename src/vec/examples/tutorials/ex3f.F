@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f.F,v 1.6 1998/03/30 22:02:29 balay Exp balay $";
+!      "$Id: ex3f.F,v 1.7 1998/04/15 18:00:16 balay Exp bsmith $";
 !
 !  Description: Displays a vector visually.
 !
@@ -7,7 +7,7 @@
 !   Concepts: Vectors^Drawing vectors;
 !   Routines: VecCreate(); VecSetValues(); VecView(); VecDestroy();
 !   Routines: VecAssemblyBegin(); VecAssemblyEnd(); VecGetOwnershipRange();
-!   Routines: ViewerDrawOpenX(); ViewerDestroy();
+!   Routines: ViewerDrawOpen(); ViewerDestroy();
 !   Processors: n
 !T*/
 ! -----------------------------------------------------------------------
@@ -75,7 +75,7 @@
 !               program pauses after DrawPause() has been called
 !              (0 is default, -1 implies until user input).
 
-      call ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,       &
+      call ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,       &
      &                     PETSC_NULL_CHARACTER,0,0,300,300,viewer,ierr)
 
 !  View the vector

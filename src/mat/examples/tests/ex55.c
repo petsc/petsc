@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex55.c,v 1.4 1997/09/22 15:22:59 balay Exp bsmith $";
+static char vcid[] = "$Id: ex55.c,v 1.5 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
@@ -25,7 +25,7 @@ int main(int argc,char **args)
      Open binary file.  Note that we use BINARY_RDONLY to indicate
      reading from this file.
   */
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
 
   /*
      Load the matrix and vector; then destroy the viewer.
@@ -45,7 +45,7 @@ int main(int argc,char **args)
   }
 
   if (size == 1) {
-    ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"testmat",BINARY_CREATE,&fd);CHKERRA(ierr);
+    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"testmat",BINARY_CREATE,&fd);CHKERRA(ierr);
     ierr = MatView(C,fd); CHKERRA(ierr);
     ierr = VecView(v,fd); CHKERRA(ierr);
     ierr = ViewerDestroy(fd); CHKERRA(ierr);

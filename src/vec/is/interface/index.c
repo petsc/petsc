@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.58 1998/06/05 15:17:16 curfman Exp balay $";
+static char vcid[] = "$Id: index.c,v 1.59 1998/07/22 20:18:56 balay Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -290,7 +290,7 @@ int ISRestoreIndices(IS is,int *ptr[])
 
 .keywords: IS, index set, indices
 
-.seealso: ViewerFileOpenASCII()
+.seealso: ViewerASCIIOpen()
 @*/
 int ISView(IS is, Viewer viewer)
 {

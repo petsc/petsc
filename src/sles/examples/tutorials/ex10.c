@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.24 1998/07/23 22:48:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.25 1998/07/28 15:53:11 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -21,7 +21,7 @@ users manual for a discussion of preloading.  Input parameters include\n\
    Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops();
    Routines: PetscBarrier(); PetscGetTime();
    Routines: MatGetTypeFromOptions(); MatLoad(); VecLoad();
-   Routines: ViewerFileOpenBinary(); ViewerStringOpen(); ViewerDestroy();
+   Routines: ViewerBinaryOpen(); ViewerStringOpen(); ViewerDestroy();
    Processors: n
 T*/
 
@@ -93,7 +93,7 @@ int main(int argc,char **args)
        Open binary file.  Note that we use BINARY_RDONLY to indicate
        reading from this file.
     */
-    ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file[i],BINARY_RDONLY,&fd);
+    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[i],BINARY_RDONLY,&fd);
            CHKERRA(ierr);
 
     /* 

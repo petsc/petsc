@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgs.c,v 1.43 1998/10/09 19:20:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.44 1998/10/19 22:16:43 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -10,7 +10,6 @@ static char vcid[] = "$Id: cgs.c,v 1.43 1998/10/09 19:20:11 bsmith Exp bsmith $"
     within the code MUST remain in the order given for correct computation
     of inner products.
 */
-#include <math.h>
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
 

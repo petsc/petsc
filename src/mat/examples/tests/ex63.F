@@ -1,5 +1,5 @@
 !
-!      "$Id: ex63.F,v 1.3 1998/10/02 14:09:21 balay Exp bsmith $";
+!      "$Id: ex63.F,v 1.4 1998/10/16 17:47:36 bsmith Exp bsmith $";
 !
 !   This program tests storage of PETSc Dense matrix. 
 !   It Creates a Dense matrix, and stores it into a file,
@@ -41,7 +41,7 @@
 !         
 !        Now Write this matrix to a binary file
 !
-         call ViewerFileOpenBinary(PETSC_COMM_SELF,'dense.mat',         &
+         call ViewerBinaryOpen(PETSC_COMM_SELF,'dense.mat',             &
      &        BINARY_CREATE,view,ierr)
          call ViewerSetFormat(view,VIEWER_FORMAT_BINARY_NATIVE,         &
      &        PETSC_NULL_CHARACTER,ierr)
@@ -51,7 +51,7 @@
 !
 !        Read this matrix into a SeqDense matrix
 
-         call ViewerFileOpenBinary(PETSC_COMM_SELF,'dense.mat',         &
+         call ViewerBinaryOpen(PETSC_COMM_SELF,'dense.mat',             &
      &        Binary_rdonly,view,ierr)
          call MatLoad(view,MATSEQDENSE,A,ierr)
          write (6,200)
@@ -67,7 +67,7 @@
 !
       call MPI_Barrier(PETSC_COMM_WORLD,ierr)
 
-      call ViewerFileOpenBinary(PETSC_COMM_WORLD,'dense.mat',           &
+      call ViewerBinaryOpen(PETSC_COMM_WORLD,'dense.mat',               &
      &     BINARY_RDONLY,view,ierr)
       call MatLoad(view,MATMPIDENSE,A,ierr)
       if (rank .eq. 0) then

@@ -1,17 +1,16 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.36 1997/09/22 15:20:00 balay Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.37 1998/11/20 15:30:53 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
  matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";
 
 #include "snes.h"
-#include <math.h>
 
-int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
-     FormFunction(SNES,Vec,Vec,void*),
-     FormInitialGuess(SNES,Vec),
-     Monitor(SNES,int,double,void *);
+extern int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int  FormFunction(SNES,Vec,Vec,void*);
+extern int  FormInitialGuess(SNES,Vec);
+extern int  Monitor(SNES,int,double,void *);
 
 typedef struct {
    Viewer viewer;
@@ -37,7 +36,7 @@ int main( int argc, char **argv )
   h = 1.0/(n-1);
 
   /* Set up data structures */
-  ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,0,0,0,400,400,&monP.viewer); CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&monP.viewer); CHKERRA(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)x,"Approximate Solution");
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);

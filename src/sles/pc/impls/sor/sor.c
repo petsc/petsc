@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.73 1998/05/29 20:36:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.74 1998/10/19 22:17:22 bsmith Exp bsmith $";
 #endif
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
 */
 #include "src/pc/pcimpl.h"               /*I "pc.h" I*/
-#include "pinclude/pviewer.h"
 
 typedef struct {
   int        its;        /* inner iterations, number of sweeps */
@@ -92,10 +91,9 @@ static int PCView_SOR(PC pc,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {  
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (sym & SOR_ZERO_INITIAL_GUESS) 
-      PetscFPrintf(pc->comm,fd,"    SOR:  zero initial guess\n");
+    if (sym & SOR_ZERO_INITIAL_GUESS) PetscFPrintf(pc->comm,fd,"    SOR:  zero initial guess\n");
     if (sym == SOR_APPLY_UPPER)              sortype = "apply_upper";
     else if (sym == SOR_APPLY_LOWER)         sortype = "apply_lower";
     else if (sym & SOR_EISENSTAT)            sortype = "Eisenstat";
@@ -104,13 +102,12 @@ static int PCView_SOR(PC pc,Viewer viewer)
     else if (sym & SOR_BACKWARD_SWEEP)       sortype = "backward";
     else if (sym & SOR_FORWARD_SWEEP)        sortype = "forward";
     else if ((sym & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP)
-                                           sortype = "local_symmetric";
+                                             sortype = "local_symmetric";
     else if (sym & SOR_LOCAL_FORWARD_SWEEP)  sortype = "local_forward";
     else if (sym & SOR_LOCAL_BACKWARD_SWEEP) sortype = "local_backward"; 
     else                                     sortype = "unknown";
-    PetscFPrintf(pc->comm,fd,
-       "    SOR: type = %s, iterations = %d, omega = %g\n",
-       sortype,jac->its,jac->omega);
+    PetscFPrintf(pc->comm,fd,"    SOR: type = %s, iterations = %d, omega = %g\n",
+                 sortype,jac->its,jac->omega);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.18 1998/10/19 22:17:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.19 1998/11/20 15:28:14 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: init.c,v 1.18 1998/10/19 22:17:08 bsmith Exp bsmith $
 #if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
-#include "pinclude/pviewer.h"
+#include "src/viewer/viewerimpl.h"
 #include "pinclude/petscfix.h"
 
 /* ------------------------Nasty global variables -------------------------------*/

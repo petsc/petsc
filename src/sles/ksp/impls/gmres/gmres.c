@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.110 1998/10/09 19:20:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.111 1998/10/19 22:16:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -55,9 +55,7 @@ static char vcid[] = "$Id: gmres.c,v 1.110 1998/10/09 19:20:12 bsmith Exp bsmith
     of a unsuccessful gmres iteration always be the solution x.
  */
 
-#include <math.h>
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
-#include "pinclude/pviewer.h"
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
 static int    GMRESGetNewVectors( KSP ,int );
@@ -576,7 +574,7 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
 
     if (gmres->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) {

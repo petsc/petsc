@@ -1,10 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.86 1998/04/24 04:53:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.87 1998/10/19 22:19:45 bsmith Exp bsmith $";
 #endif
 
-#include <math.h>
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
-#include "pinclude/pviewer.h"
 
 /*
    This convergence test determines if the two norm of the 
@@ -271,7 +269,7 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(snes->comm,fd,"    mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);
     PetscFPrintf(snes->comm,fd,"    delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",

@@ -2,7 +2,6 @@
 
 #include "petsc.h"
 #include "src/mat/impls/order/order.h"
-#include <math.h>
 
 /*****************************************************************/
 /********     FN1WD ..... FIND ONE-WAY DISSECTORS        *********/

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.137 1998/10/09 19:19:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.138 1998/11/20 15:27:43 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -9,7 +9,6 @@ static char vcid[] = "$Id: itcreate.c,v 1.137 1998/10/09 19:19:57 bsmith Exp bsm
 #include "src/ksp/kspimpl.h"      /*I "ksp.h" I*/
 #include "sys.h"
 #include "viewer.h"               /*I "viewer.h" I*/
-#include "pinclude/pviewer.h"
 
 int KSPRegisterAllCalled = 0;
 
@@ -33,11 +32,11 @@ int KSPRegisterAllCalled = 0;
          data to the first processor to print. 
 
    The user can open an alternative visualization context with
-   ViewerFileOpenASCII() - output to a specified file.
+   ViewerASCIIOpen() - output to a specified file.
 
 .keywords: KSP, view
 
-.seealso: PCView(), ViewerFileOpenASCII()
+.seealso: PCView(), ViewerASCIIOpen()
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {
@@ -48,7 +47,7 @@ int KSPView(KSP ksp,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(ksp->comm,fd,"KSP Object:\n");
     KSPGetType(ksp,&method);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex31.c,v 1.6 1997/10/28 14:23:30 bsmith Exp balay $";
+static char vcid[] = "$Id: ex31.c,v 1.7 1998/06/05 20:37:56 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -47,7 +47,7 @@ int main(int argc,char **args)
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   PetscPrintf(PETSC_COMM_WORLD,"writing matrix in binary to matrix.dat ...\n"); 
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"matrix.dat",BINARY_CREATE,&viewer); 
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",BINARY_CREATE,&viewer); 
          CHKERRA(ierr);
   ierr = MatView(C,viewer); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
@@ -62,7 +62,7 @@ int main(int argc,char **args)
   ierr = PLogEventRegister(&MATRIX_READ,"Read Matrix",PETSC_NULL);CHKERRA(ierr);
   PLogEventBegin(MATRIX_READ,0,0,0,0);
   PetscPrintf(PETSC_COMM_WORLD,"reading matrix in binary from matrix.dat ...\n"); 
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"matrix.dat",BINARY_RDONLY,&viewer); 
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",BINARY_RDONLY,&viewer); 
          CHKERRA(ierr);
   MatLoad(viewer,MATMPIROWBS,&C); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);

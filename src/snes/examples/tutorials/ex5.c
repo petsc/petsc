@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.97 1998/11/09 19:18:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.98 1998/11/20 15:31:05 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -57,7 +57,6 @@ T*/
 */
 #include "da.h"
 #include "snes.h"
-#include <math.h>
 
 /* 
    User-defined application context - contains data needed by the 
@@ -115,7 +114,6 @@ int main( int argc, char **argv )
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
-  ierr = PetscObjectPublish((PetscObject)snes);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -144,14 +142,10 @@ int main( int argc, char **argv )
      vectors that are the same types
   */
   ierr = DACreateGlobalVector(user.da,&x); CHKERRA(ierr);
-  ierr = PetscObjectPublish((PetscObject)x);CHKERRA(ierr); 
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = PetscObjectPublish((PetscObject)r);CHKERRA(ierr);
 
   ierr = DACreateLocalVector(user.da,&user.localX); CHKERRA(ierr);
-  ierr = PetscObjectPublish((PetscObject)user.localX);CHKERRA(ierr);
   ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
-  ierr = PetscObjectPublish((PetscObject)user.localF);CHKERRA(ierr);
 
   /* 
      Set function evaluation routine and vector
@@ -344,7 +338,13 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
 
-  PetscSleep(5);
+  {
+    int flag,time;
+    ierr = OptionsGetInt(0,"-sleep",&time,&flag);CHKERRQ(ierr);
+    if (flag) {
+      PetscSleep(time);
+    }
+  }
 
   /*
      Get pointers to vector data

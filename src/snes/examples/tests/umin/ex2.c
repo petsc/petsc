@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.41 1997/11/28 16:21:55 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.42 1998/06/11 15:27:29 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -14,7 +14,6 @@ problems from the MINPACK-2 test suite.  The command line options are:\n\
   -par param, where param = angle of twist per unit length (problem 1 only)\n\n";
 
 #include "snes.h"
-#include <math.h>
 
 /* User-defined application context */
    typedef struct {

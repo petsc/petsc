@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.70 1998/04/28 03:49:10 curfman Exp $";
+static char vcid[] = "$Id: ex1.c,v 1.3 1998/05/03 22:10:18 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -49,7 +49,7 @@ int main( int argc, char **argv )
   */
   ierr = OptionsGetString(0,"-f",filename,256,&flag);CHKERRA(ierr);
   if (!flag) SETERRA(1,1,"Unable to open database, must run with: ex1 -f filename");
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,filename,BINARY_RDONLY,&binary);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,filename,BINARY_RDONLY,&binary);CHKERRA(ierr);
   ierr = AODataLoadBasic(binary,&aodata); CHKERRA(ierr);
   ierr = ViewerDestroy(binary); CHKERRQ(ierr);
 
@@ -119,7 +119,7 @@ int main( int argc, char **argv )
 
   if (edited) {
     PetscStrcat(filename,".new");
-    ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,filename,BINARY_CREATE,&binary);CHKERRA(ierr);
+    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,filename,BINARY_CREATE,&binary);CHKERRA(ierr);
     ierr = AODataView(aodata,binary); CHKERRA(ierr);
     ierr = ViewerDestroy(binary); CHKERRQ(ierr);
   }

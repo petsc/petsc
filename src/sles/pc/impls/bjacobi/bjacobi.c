@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.112 1998/07/28 15:51:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.113 1998/10/19 22:17:28 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -7,7 +7,6 @@ static char vcid[] = "$Id: bjacobi.c,v 1.112 1998/07/28 15:51:26 bsmith Exp bsmi
 #include "src/mat/matimpl.h"
 #include "src/pc/pcimpl.h"              /*I "pc.h" I*/
 #include "src/pc/impls/bjacobi/bjacobi.h"
-#include "pinclude/pviewer.h"
 
 extern int PCSetUp_BJacobi_AIJ(PC);
 extern int PCSetUp_BJacobi_BAIJ(PC);
@@ -137,7 +136,7 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
   PetscFunctionBegin;
   if (jac->gs) c = bgs; else c = bj;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (jac->use_true_local) {
       PetscFPrintf(pc->comm,fd,
@@ -168,8 +167,8 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
       fflush(fd);
       PetscSequentialPhaseEnd(pc->comm,1);
     }
-  } else if (vtype == STRING_VIEWER) {
-    ViewerStringSPrintf(viewer," blks=%d",jac->n);
+  } else if (!PetscStrcmp(vtype,STRING_VIEWER)) {
+    ierr = ViewerStringSPrintf(viewer," blks=%d",jac->n);CHKERRQ(ierr);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer); CHKERRQ(ierr);}
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

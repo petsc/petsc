@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.h,v 1.7 1998/04/03 23:16:57 bsmith Exp bsmith $"; 
+static char vcid[] = "$Id: petscpvode.h,v 1.8 1998/06/25 19:21:53 bsmith Exp bsmith $"; 
 #endif
 
 /*
@@ -10,10 +10,8 @@ static char vcid[] = "$Id: petscpvode.h,v 1.7 1998/04/03 23:16:57 bsmith Exp bsm
 #if !defined(__PETSCPVODE_H)
 #define __PETSCPVODE_H
 
-#include <math.h>
 #include "src/ts/tsimpl.h"              /*I   "ts.h"   I*/
 #include "src/pc/pcimpl.h"              /*I   "pc.h"   I*/
-#include "pinclude/pviewer.h"
 #include "src/mat/matimpl.h"
 
 /*

@@ -1,15 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.29 1998/08/03 14:59:21 balay Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.30 1998/10/09 19:22:47 bsmith Exp bsmith $";
 #endif
 
-#include "pinclude/pviewer.h"
 #include "sys.h"
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
-#include "petsc.h"
 #include "bitarray.h"
-
 
 #undef __FUNC__  
 #define __FUNC__ "MatIncreaseOverlap_SeqBAIJ"

@@ -1,13 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.31 1997/09/26 02:21:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.32 1998/03/20 22:53:15 bsmith Exp bsmith $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 
-#include "petsc.h"
 #include "da.h"
 #include "sys.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {
@@ -24,7 +22,7 @@ int main(int argc,char **argv)
   AO             ao;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRA(ierr);
  
   /* Read options */
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);

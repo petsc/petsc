@@ -1,7 +1,6 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres2.c,v 1.11 1998/04/25 11:55:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: gmres2.c,v 1.12 1998/05/29 20:35:50 bsmith Exp bsmith $";
 #endif
-#include <math.h>
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
 #undef __FUNC__  

@@ -1,10 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.71 1998/06/11 15:27:23 balay Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.72 1998/10/19 22:19:52 bsmith Exp bsmith $";
 #endif
 
-#include <math.h>
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
-#include "pinclude/pviewer.h"
 
 extern int SNESStep(SNES,double*,double*,double*,double*,
                     double*,double*,double*,double*,double*);
@@ -206,7 +204,7 @@ static int SNESView_UM_LS(SNES snes,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(snes->comm,fd,"    gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
                  ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);

@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadist.c,v 1.15 1998/04/27 15:58:33 curfman Exp curfman $";
+static char vcid[] = "$Id: dadist.c,v 1.16 1998/05/13 18:42:52 curfman Exp bsmith $";
 #endif
  
 /*
@@ -49,7 +50,15 @@ int DACreateGlobalVector(DA da,Vec* g)
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  ierr = VecDuplicate(da->global,g);CHKERRQ(ierr);
+  if (da->globalused) {
+    ierr = VecDuplicate(da->global,g);CHKERRQ(ierr);
+  } else {
+
+    *g = da->global;
+    da->globalused = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }
+
+
 

@@ -1,9 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.104 1998/11/20 23:15:22 bsmith Exp balay $";
+static char vcid[] = "$Id: sles.c,v 1.105 1998/11/21 15:48:05 balay Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
-#include "pinclude/pviewer.h"
 
 #undef __FUNC__  
 #define __FUNC__ "SLESPublish_Petsc"
@@ -40,11 +39,11 @@ static int SLESPublish_Petsc(PetscObject object)
          data to the first processor to print. 
 
    The user can open alternative visualization contexts with
-.    ViewerFileOpenASCII() - output to a specified file
+.    ViewerASCIIOpen() - output to a specified file
 
 .keywords: SLES, view
 
-.seealso: ViewerFileOpenASCII()
+.seealso: ViewerASCIIOpen()
 @*/
 int SLESView(SLES sles,Viewer viewer)
 {

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.36 1998/04/28 03:01:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.37 1998/04/28 03:06:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -8,8 +8,7 @@ static char vcid[] = "$Id: aobasic.c,v 1.36 1998/04/28 03:01:26 bsmith Exp bsmit
   entire orderings on each processor.
 */
 
-#include "src/ao/aoimpl.h"
-#include "pinclude/pviewer.h"
+#include "src/ao/aoimpl.h"          /*I  "ao.h"   I*/
 #include "sys.h"
 
 typedef struct {
@@ -61,7 +60,7 @@ int AOView_Basic(AO ao,Viewer viewer)
   }
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) { 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     fprintf(fd,"Number of elements in ordering %d\n",aodebug->N);
     fprintf(fd,"   App.   PETSc\n");

@@ -1,9 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmreig.c,v 1.8 1998/06/03 19:57:34 balay Exp bsmith $";
+static char vcid[] = "$Id: gmreig.c,v 1.9 1998/06/11 19:55:20 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"
-#include <math.h>
 #include "pinclude/blaslapack.h"
 
 #undef __FUNC__  

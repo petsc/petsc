@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.76 1998/10/19 22:19:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.77 1998/11/20 15:30:27 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -98,11 +98,13 @@ extern int close(int);
 #define __FUNC__ "ViewerDestroy_Matlab"
 static int ViewerDestroy_Matlab(Viewer viewer)
 {
+  Viewer_Matlab *vmatlab = (Viewer_Matlab *) viewer->data;
+
   PetscFunctionBegin;
-  if (close(viewer->port)) {
+  if (close(vmatlab->port)) {
     SETERRQ(PETSC_ERR_LIB,0,"System error closing socket");
   }
-  PetscHeaderDestroy(viewer);
+  PetscFree(vmatlab);
   PetscFunctionReturn(0);
 }
 
@@ -198,10 +200,11 @@ $    -viewer_matlab_port <port>
 @*/
 int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 {
-  Viewer     v;
-  int        t,rank,ierr,flag;
-  char       mach[256];
-  PetscTruth tflag;
+  Viewer        v;
+  int           t,rank,ierr,flag;
+  char          mach[256];
+  PetscTruth    tflag;
+  Viewer_Matlab *vmatlab;
 
   PetscFunctionBegin;
   if (!machine) {
@@ -226,17 +229,23 @@ int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
     }
   }
 
-  PetscHeaderCreate(v,_p_Viewer,int,VIEWER_COOKIE,MATLAB_VIEWER,comm,ViewerDestroy,0);
+  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,comm,ViewerDestroy,0);
   PLogObjectCreate(v);
+  vmatlab = PetscNew(Viewer_Matlab);CHKPTRQ(vmatlab);
+  v->data = (void *) vmatlab;
+
   MPI_Comm_rank(comm,&rank);
   if (!rank) {
     PLogInfo(0,"Connecting to matlab process on port %d machine %s\n",port,mach);
-    ierr    = SOCKCall_Private(mach,port,&t);CHKERRQ(ierr);
-    v->port = t;
+    ierr          = SOCKCall_Private(mach,port,&t);CHKERRQ(ierr);
+    vmatlab->port = t;
   }
-  v->destroy     = ViewerDestroy_Matlab;
-  v->flush       = 0;
-  *lab           = v;
+  v->ops->destroy = ViewerDestroy_Matlab;
+  v->ops->flush   = 0;
+  v->type_name    = (char *)PetscMalloc((1+PetscStrlen(MATLAB_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
+  PetscStrcpy(v->type_name,MATLAB_VIEWER);
+
+  *lab             = v;
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.195 1998/11/24 22:46:59 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.196 1998/11/24 23:04:36 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -19,7 +19,6 @@ static char vcid[] = "$Id: plog.c,v 1.195 1998/11/24 22:46:59 bsmith Exp balay $
 #if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
-#include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
 #include "pinclude/ptime.h"
 

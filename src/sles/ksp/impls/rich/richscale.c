@@ -1,14 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: richscale.c,v 1.9 1998/04/25 03:09:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: richscale.c,v 1.10 1998/05/29 20:35:58 bsmith Exp bsmith $";
 #endif
-/*          
-            This implements Richardson Iteration.       
-*/
-#include <math.h>
-#include "petsc.h"
+
 #include "src/ksp/kspimpl.h"         /*I "ksp.h" I*/
 #include "src/ksp/impls/rich/richctx.h"
-#include "pinclude/pviewer.h"
 
 
 #undef __FUNC__  

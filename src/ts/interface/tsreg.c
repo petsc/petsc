@@ -1,11 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.36 1998/04/25 11:54:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.37 1998/07/23 22:49:09 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
 #include "src/sys/nreg.h"      
-#include "pinclude/pviewer.h"
-#include <math.h>
 
 FList TSList = 0;
 int TSRegisterAllCalled = 0;

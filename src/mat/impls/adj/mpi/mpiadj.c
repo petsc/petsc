@@ -1,15 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.16 1998/07/14 03:16:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.17 1998/07/23 22:48:32 bsmith Exp bsmith $";
 #endif
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
 */
-
-#include "pinclude/pviewer.h"
 #include "sys.h"
 #include "src/mat/impls/adj/mpi/mpiadj.h"
-
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_MPIAdj_ASCII"
@@ -22,7 +19,7 @@ extern int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
   MPI_Comm    comm = A->comm;
 
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
+  ierr = ViewerGetOutputname(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
   if (format == VIEWER_FORMAT_ASCII_INFO) {
     PetscFunctionReturn(0);
@@ -47,7 +44,7 @@ int MatView_MPIAdj(Mat A,Viewer viewer)
   int         ierr;
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)){
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

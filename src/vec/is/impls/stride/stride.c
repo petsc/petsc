@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.72 1998/05/08 16:11:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.73 1998/06/11 19:54:37 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
 */
 #include "src/is/isimpl.h"             /*I   "is.h"   I*/
-#include "pinclude/pviewer.h"
 
 typedef struct {
   int n,first,step;
@@ -176,17 +175,7 @@ int ISView_Stride(IS is, Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER) { 
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (is->isperm) {
-      fprintf(fd,"Index set is permutation\n");
-    }
-    fprintf(fd,"Number of indices in (stride) set %d\n",n);
-    for ( i=0; i<n; i++ ) {
-      fprintf(fd,"%d %d\n",i,sub->first + i*sub->step);
-    }
-    fflush(fd);
-  } else if (vtype  == ASCII_FILES_VIEWER) { 
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) { 
     MPI_Comm_rank(is->comm,&rank);
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (is->isperm) {

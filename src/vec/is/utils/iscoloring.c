@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.32 1998/07/22 20:18:47 balay Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.33 1998/10/19 22:16:10 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -57,11 +57,7 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
   PetscValidPointer(iscoloring);
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    fprintf(fd,"Number of colors %d\n",iscoloring->n);
-    fflush(fd);
-  } else if (vtype  == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     MPI_Comm comm;
     int      rank;
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm); CHKERRQ(ierr);

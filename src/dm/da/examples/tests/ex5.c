@@ -1,15 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.26 1998/03/31 17:27:07 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.27 1998/10/19 22:20:16 bsmith Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
 
 static char help[] = "Solves the one dimensional heat equation.\n\n";
 
-#include "petsc.h"
 #include "da.h"
 #include "sys.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {
@@ -38,8 +36,8 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(local,&copy); CHKERRA(ierr);
 
   /* Set Up Display to Show Heat Graph */
-  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",80,480,500,160,&viewer); CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,480,500,160,&viewer); CHKERRA(ierr);
+  ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
 
   /* determine starting point of each processor */

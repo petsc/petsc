@@ -1,11 +1,12 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.h,v 1.1 1998/06/03 16:07:08 bsmith Exp bsmith $";
-#endif
+/* "$Id: general.h,v 1.2 1998/06/11 19:54:35 bsmith Exp bsmith $"; */
+
+#if !defined(__GENERAL_H)
+#define __GENERAL_H
+
 /*
     Defines the data structure used for the general index set
 */
 #include "src/is/isimpl.h"
-#include "pinclude/pviewer.h"
 #include "sys.h"
 
 typedef struct {
@@ -14,3 +15,4 @@ typedef struct {
   int *idx;
 } IS_General;
 
+#endif

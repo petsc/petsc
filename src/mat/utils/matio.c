@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.52 1998/08/18 20:15:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.53 1998/10/19 22:18:40 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -7,10 +7,8 @@ static char vcid[] = "$Id: matio.c,v 1.52 1998/08/18 20:15:02 bsmith Exp bsmith 
  */
 
 #include "petsc.h"
-#include "src/mat/matimpl.h"
+#include "src/mat/matimpl.h"             /*I  "mat.h"  I*/
 #include "sys.h"
-#include "pinclude/pviewer.h"
-
 
 static int MatLoadersSet = 0,(*MatLoaders[MAX_MATRIX_TYPES])(Viewer,MatType,Mat*) = 
            {0,0,0,0,0,0,0,0,0,0,0,0};
@@ -66,7 +64,7 @@ static int MatLoadPrintHelp_Private(Mat A)
    Collective on Viewer
 
    Input Parameters:
-+  viewer - binary file viewer, created with ViewerFileOpenBinary()
++  viewer - binary file viewer, created with ViewerBinaryOpen()
 -  outtype - type of matrix desired, for example MATSEQAIJ,
              MATMPIROWBS, etc.  See types in petsc/include/mat.h.
 
@@ -107,7 +105,7 @@ static int MatLoadPrintHelp_Private(Mat A)
    Notes:
    MatLoad() automatically loads into the options database any options
    given in the file filename.info where filename is the name of the file
-   that was passed to the ViewerFileOpenBinary(). The options in the info
+   that was passed to the ViewerBinaryOpen(). The options in the info
    file will be ignored if you use the -mat_ignore_info option.
 
    In parallel, each processor can load a subset of rows (or the
@@ -147,7 +145,7 @@ and PetscWriteBinary() to see how this may be done.
 
 .keywords: matrix, load, binary, input
 
-.seealso: ViewerFileOpenBinary(), MatView(), VecLoad(), MatLoadRegister(),
+.seealso: ViewerBinaryOpen(), MatView(), VecLoad(), MatLoadRegister(),
           MatLoadRegisterAll(), MatGetTypeFromOptions()
 
  @*/  
@@ -171,8 +169,9 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   }
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype != BINARY_FILE_VIEWER)
-  SETERRQ(PETSC_ERR_ARG_WRONG,0,"Invalid viewer; open viewer with ViewerFileOpenBinary()");
+  if (PetscStrcmp(vtype,BINARY_VIEWER)){
+    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Invalid viewer; open viewer with ViewerBinaryOpen()");
+  }
 
   PetscObjectGetComm((PetscObject)viewer,&comm);
   ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);

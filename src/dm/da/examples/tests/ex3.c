@@ -1,13 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.31 1998/03/20 22:53:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.32 1998/10/19 22:20:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
-#include "petsc.h"
 #include "da.h"
 #include "sys.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {
@@ -43,9 +41,9 @@ int main(int argc,char **argv)
   ierr = DACreateLocalVector(da,&local); CHKERRA(ierr);
 
   /* Set up display to show combined wave graph */
-  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"Entire Solution",20,480,800,200,
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"Entire Solution",20,480,800,200,
                          &viewer);CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+  ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
 
   /* determine starting point of each processor */
@@ -54,9 +52,9 @@ int main(int argc,char **argv)
   /* set up display to show my portion of the wave */
   xbase = (int) ((mybase)*((800.0 - 4.0*size)/M) + 4.0*rank);
   width = (int) ((myend-mybase)*800./M);
-  ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,"Local Portion of Solution",xbase,200,
+  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"Local Portion of Solution",xbase,200,
                          width,200,&viewer_private);CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(viewer_private,&draw); CHKERRQ(ierr);
+  ierr = ViewerDrawGetDraw(viewer_private,0,&draw); CHKERRQ(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dalocal.c,v 1.15 1998/05/13 18:42:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: dalocal.c,v 1.16 1998/11/20 23:19:22 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -43,7 +43,6 @@ int DACreateLocalVector(DA da,Vec* g)
   } else {
 
     *g = da->local;
-    PetscObjectReference((PetscObject)da->local);
     da->localused = PETSC_TRUE;
   }
   PetscFunctionReturn(0);

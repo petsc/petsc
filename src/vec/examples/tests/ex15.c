@@ -1,14 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.1 1997/12/06 18:21:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.2 1997/12/12 19:36:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests VecSetValuesBlocked() on Seq vectors\n\n";
 
-#include "petsc.h"
-#include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {

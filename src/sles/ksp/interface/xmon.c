@@ -1,12 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.31 1998/04/24 22:10:20 curfman Exp curfman $";
+static char vcid[] = "$Id: xmon.c,v 1.32 1998/04/25 11:55:14 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include "src/draw/drawimpl.h"  /*I  "draw.h"  I*/
 #include "src/ksp/kspimpl.h"              /*I  "ksp.h"   I*/
-#include <math.h>
-
 
 #undef __FUNC__  
 #define __FUNC__ "KSPLGMonitorCreate"

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ploginfo.c,v 1.6 1998/05/08 16:12:56 bsmith Exp balay $";
+static char vcid[] = "$Id: ploginfo.c,v 1.7 1998/08/26 22:01:58 balay Exp bsmith $";
 #endif
 /*
       PLogInfo() is contained in a different file from the other profiling to 
@@ -15,7 +15,6 @@ static char vcid[] = "$Id: ploginfo.c,v 1.6 1998/05/08 16:12:56 bsmith Exp balay
 #if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
-#include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
 
 extern int PLogPrintInfo,PLogPrintInfoNull;

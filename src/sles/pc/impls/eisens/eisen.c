@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.75 1998/05/29 20:36:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.76 1998/10/19 22:17:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -9,7 +9,6 @@ static char vcid[] = "$Id: eisen.c,v 1.75 1998/05/29 20:36:42 bsmith Exp bsmith 
  with both left and right preconditioning. 
 */
 #include "src/pc/pcimpl.h"           /*I "pc.h" I*/
-#include "pinclude/pviewer.h"
 
 typedef struct {
   Mat    shell,A;
@@ -161,7 +160,7 @@ static int PCView_Eisenstat(PC pc,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"    Eisenstat: omega = %g\n",eis->omega);
   } else {

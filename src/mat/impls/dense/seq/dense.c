@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.158 1998/10/01 21:32:47 balay Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.159 1998/10/08 16:10:42 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -7,7 +7,6 @@ static char vcid[] = "$Id: dense.c,v 1.158 1998/10/01 21:32:47 balay Exp bsmith 
 
 #include "src/mat/impls/dense/seq/dense.h"
 #include "pinclude/blaslapack.h"
-#include "pinclude/pviewer.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MatAXPY_SeqDense"
@@ -636,7 +635,6 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#include "pinclude/pviewer.h"
 #include "sys.h"
 
 #undef __FUNC__  
@@ -651,7 +649,7 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
+  ierr = ViewerGetOutputname(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
   if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     PetscFunctionReturn(0);  /* do nothing for now */
@@ -779,11 +777,11 @@ int MatView_SeqDense(Mat A,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
-  if (vtype == MATLAB_VIEWER) {
+  if (!PetscStrcmp(vtype,MATLAB_VIEWER)) {
     ierr = ViewerMatlabPutScalar_Private(viewer,a->m,a->n,a->v); CHKERRQ(ierr);
-  } else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  } else if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
-  } else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
     ierr = MatView_SeqDense_Binary(A,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.56 1998/09/25 03:16:46 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.57 1998/11/20 15:31:26 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -15,27 +15,26 @@ typedef struct _p_Viewer*            Viewer;
 #include "petsc.h"
 
 #define VIEWER_COOKIE              PETSC_COOKIE+1
-typedef enum { MATLAB_VIEWER,ASCII_FILE_VIEWER, ASCII_FILES_VIEWER, 
-               BINARY_FILE_VIEWER, STRING_VIEWER, DRAW_VIEWER,
-               AMS_VIEWER} ViewerType;
+typedef char* ViewerType;
 
-extern int ViewerFileOpenASCII(MPI_Comm,const char[],Viewer*);
+#define MATLAB_VIEWER       "matlab"
+#define ASCII_VIEWER        "ascii"
+#define BINARY_VIEWER       "binary"
+#define STRING_VIEWER       "string"
+#define DRAW_VIEWER         "draw"
+#define AMS_VIEWER          "ams"
+
+extern int ViewerASCIIOpen(MPI_Comm,const char[],Viewer*);
 typedef enum {BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE} ViewerBinaryType;
-extern int ViewerFileOpenBinary(MPI_Comm,const char[],ViewerBinaryType,Viewer*);
+extern int ViewerBinaryOpen(MPI_Comm,const char[],ViewerBinaryType,Viewer*);
 extern int ViewerMatlabOpen(MPI_Comm,const char[],int,Viewer*);
 extern int ViewerStringOpen(MPI_Comm,char[],int, Viewer*);
-extern int ViewerDrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,Viewer*);
+extern int ViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,Viewer*);
 extern int ViewerDrawOpenVRML(MPI_Comm,const char[],const char[],Viewer*);
-extern int ViewerDrawClear(Viewer);
 
-
+extern int ViewerGetOutputname(Viewer,char**);  
 extern int ViewerGetType(Viewer,ViewerType*);
 extern int ViewerDestroy(Viewer);
-
-extern int ViewerASCIIGetPointer(Viewer,FILE**);
-
-extern int ViewerBinaryGetDescriptor(Viewer,int*);
-extern int ViewerBinaryGetInfoPointer(Viewer,FILE **);
 
 #define VIEWER_FORMAT_ASCII_DEFAULT       0
 #define VIEWER_FORMAT_ASCII_MATLAB        1
@@ -58,10 +57,21 @@ extern int    ViewerSetFormat(Viewer,int,char[]);
 extern int    ViewerPushFormat(Viewer,int,char[]);
 extern int    ViewerPopFormat(Viewer);
 extern int    ViewerGetFormat(Viewer,int*);
-
 extern int    ViewerFlush(Viewer);
-extern int    ViewerStringSPrintf(Viewer,char *,...);
 
+/*
+   Operations explicit to a particular class of viewers
+*/
+extern int ViewerASCIIGetPointer(Viewer,FILE**);
+extern int ViewerBinaryGetDescriptor(Viewer,int*);
+extern int ViewerBinaryGetInfoPointer(Viewer,FILE **);
+extern int ViewerStringSPrintf(Viewer,char *,...);
+extern int ViewerDrawClear(Viewer);
+
+/*
+     These are all the default viewers that do not have 
+   to be explicitly opened
+*/
 extern Viewer VIEWER_STDOUT_SELF;  
 extern Viewer VIEWER_STDERR_SELF;
 extern Viewer VIEWER_STDOUT_WORLD;
@@ -99,9 +109,9 @@ extern int    VIEWER_DRAWX_Destroy(MPI_Comm);
 #define VIEWER_MATLAB_WORLD \
         (ViewerInitializeMatlabWorld_Private(),VIEWER_MATLAB_WORLD_PRIVATE) 
 
-extern int ViewersDrawOpenX(MPI_Comm,char *,char **,int,int,int,Viewer**);
-extern int ViewersDestroy(int,Viewer[]);
-
+/*
+    Viewer based on the ALICE Memory Snooper
+*/
 #if defined(HAVE_AMS)
 #include "ams.h"
 extern int    ViewerAMSGetAMSComm(Viewer,AMS_Comm *);

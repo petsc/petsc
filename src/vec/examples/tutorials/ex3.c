@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.32 1997/09/22 15:16:33 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.33 1997/11/28 16:18:34 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Displays a vector visually.\n\n";
@@ -8,7 +8,7 @@ static char help[] = "Displays a vector visually.\n\n";
    Concepts: Vectors^Drawing vectors;
    Routines: VecCreate(); VecSetValues(); VecView(); VecDestroy(); 
    Routines: VecAssemblyBegin(); VecAssemblyEnd(); VecGetOwnershipRange();
-   Routines: ViewerDrawOpenX(); ViewerDestroy();
+   Routines: ViewerDrawOpen(); ViewerDestroy();
    Processors: n
 T*/
 
@@ -19,7 +19,6 @@ T*/
      sys.h    - system routines       viewer.h - viewers
 */
 #include "vec.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {
@@ -74,7 +73,7 @@ int main(int argc,char **argv)
                   (0 is default, -1 implies until user input).
 
   */
-  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL,PETSC_NULL,0,0,300,300,
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,PETSC_NULL,0,0,300,300,
                          &viewer); CHKERRA(ierr);
 
   /*

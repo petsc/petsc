@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.38 1998/09/30 19:34:08 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.39 1998/09/30 19:40:55 bsmith Exp bsmith $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -97,8 +97,8 @@ PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/IRIX64/libpvode.a
 #
 #  Optional location for ALICE Memory Snooper
 #
-#AMS_INCLUDE = -I/home/bsmith/ams/src/include
-#AMS_LIB     = -L/home/bsmith/ams/lib/lib/irix -lalicepub -lutilmt -lutil
+AMS_INCLUDE = -I/home/alice/ams/include
+AMS_LIB     = -L/home/alice/ams/lib/lib/irix -lalicepub -lutilmt -lutil
 # ---------------------------------------------------------------------------------------
 #
 # PCONF - indicates which OPTIONAL external packages are available at your site
@@ -108,8 +108,8 @@ PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/IRIX64/libpvode.a
 # comment out the locations indicated for that package above.
 #
 #PCONF         = -DHAVE_BLOCKSOLVE 
-#PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_PVODE  -DHAVE_AMS
-PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_PVODE
+PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_PVODE  -DHAVE_AMS
+#PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}  ${AMS_LIB}
 #
 # ---------------------------------------------------------------------------------------

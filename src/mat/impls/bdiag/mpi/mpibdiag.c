@@ -1,12 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.147 1998/07/14 03:13:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.148 1998/07/23 22:48:09 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
 */
-
-#include "pinclude/pviewer.h"
 #include "src/mat/impls/bdiag/mpi/mpibdiag.h"
 #include "src/vec/vecimpl.h"
 
@@ -572,14 +570,14 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) mbd->A->data;
-  int          ierr, format, i;
+  int          ierr, format, i, size = mbd->size, rank = mbd->rank;
   FILE         *fd;
   ViewerType   vtype;
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerGetFormat(viewer,&format);
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       int nline = PetscMin(10,mbd->gnd), k, nk, np;
@@ -610,56 +608,45 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
     }
   }
 
-  if (vtype == DRAW_VIEWER) {
+  if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
     Draw       draw;
     PetscTruth isnull;
-    ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+    ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   }
 
-  if (vtype == ASCII_FILE_VIEWER) {
-    PetscSequentialPhaseBegin(mat->comm,1);
-    fprintf(fd,"[%d] rows %d starts %d ends %d cols %d\n",
-             mbd->rank,mbd->m,mbd->rstart,mbd->rend,mbd->n);
+  if (size == 1) { 
     ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
-    fflush(fd);
-    PetscSequentialPhaseEnd(mat->comm,1);
   } else {
-    int size = mbd->size, rank = mbd->rank; 
-    if (size == 1) { 
-      ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
+    /* assemble the entire matrix onto first processor. */
+    Mat          A;
+    int          M = mbd->M, N = mbd->N, m, row, nz, *cols;
+    Scalar       *vals;
+    Mat_SeqBDiag *Ambd = (Mat_SeqBDiag*) mbd->A->data;
+
+    if (!rank) {
+      ierr = MatCreateMPIBDiag(mat->comm,M,M,N,mbd->gnd,Ambd->bs,
+                               mbd->gdiag,PETSC_NULL,&A); CHKERRQ(ierr);
     } else {
-      /* assemble the entire matrix onto first processor. */
-      Mat       A;
-      int       M = mbd->M, N = mbd->N, m, row, nz, *cols;
-      Scalar    *vals;
-      Mat_SeqBDiag *Ambd = (Mat_SeqBDiag*) mbd->A->data;
-
-      if (!rank) {
-        ierr = MatCreateMPIBDiag(mat->comm,M,M,N,mbd->gnd,Ambd->bs,
-               mbd->gdiag,PETSC_NULL,&A); CHKERRQ(ierr);
-      } else {
-        ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,Ambd->bs,PETSC_NULL,PETSC_NULL,&A);
-               CHKERRQ(ierr);
-      }
-      PLogObjectParent(mat,A);
-
-      /* Copy the matrix ... This isn't the most efficient means,
-         but it's quick for now */
-      row = mbd->rstart; m = Ambd->m;
-      for ( i=0; i<m; i++ ) {
-        ierr = MatGetRow(mat,row,&nz,&cols,&vals); CHKERRQ(ierr);
-        ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERT_VALUES); CHKERRQ(ierr);
-        ierr = MatRestoreRow(mat,row,&nz,&cols,&vals); CHKERRQ(ierr);
-        row++;
-      } 
-      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-      if (!rank) {
-        ierr = MatView(((Mat_MPIBDiag*)(A->data))->A,viewer); CHKERRQ(ierr);
-      }
-      ierr = MatDestroy(A); CHKERRQ(ierr);
+      ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,Ambd->bs,PETSC_NULL,PETSC_NULL,&A);CHKERRQ(ierr);
     }
+    PLogObjectParent(mat,A);
+
+    /* Copy the matrix ... This isn't the most efficient means,
+       but it's quick for now */
+    row = mbd->rstart; m = Ambd->m;
+    for ( i=0; i<m; i++ ) {
+      ierr = MatGetRow(mat,row,&nz,&cols,&vals); CHKERRQ(ierr);
+      ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatRestoreRow(mat,row,&nz,&cols,&vals); CHKERRQ(ierr);
+      row++;
+    } 
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    if (!rank) {
+      ierr = MatView(((Mat_MPIBDiag*)(A->data))->A,viewer); CHKERRQ(ierr);
+    }
+    ierr = MatDestroy(A); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -673,9 +660,9 @@ int MatView_MPIBDiag(Mat mat,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER  ||  vtype == ASCII_FILES_VIEWER || vtype == DRAW_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER) || !PetscStrcmp(vtype,DRAW_VIEWER)) {
     ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
-  } else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
     ierr = MatView_MPIBDiag_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.293 1998/11/09 19:43:09 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.294 1998/11/09 20:16:51 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -5865,15 +5865,15 @@ predefined viewers:
       {\tt ViewerDrawOpenX()} causes the object to be displayed graphically.
 \item To save an object to a file in ASCII format, the user creates
       the viewer object with the command
-      {\tt ViewerFileOpenASCII(MPI\_Comm comm, char* file, Viewer *viewer)}.  
-      This object is \findex{ViewerFileOpenASCII()}
+      {\tt ViewerASCIIOpen(MPI\_Comm comm, char* file, Viewer *viewer)}.  
+      This object is \findex{ViewerASCIIOpen()}
       analogous to {\tt VIEWER\_STDOUT\_SELF} (for a communicator of
       {\tt MPI\_COMM\_SELF}) and 
       {\tt VIEWER\_STDOUT\_WORLD} (for a parallel communicator).
 \item To save an object to a file in binary format, the user creates
       the viewer object with the command
-      {\tt ViewerFileOpenBinary(MPI\_Comm comm,char* file,ViewerBinaryType type,
-      Viewer *viewer)}. \findex{ViewerFileOpenBinary}  Details of binary
+      {\tt ViewerBinaryOpen(MPI\_Comm comm,char* file,ViewerBinaryType type,
+      Viewer *viewer)}. \findex{ViewerBinaryOpen}  Details of binary
       I/O are discussed below.
 \item Vector and matrix objects can be passed to a running Matlab process
       with a viewer created by {\tt ViewerMatlabOpen(MPI\_Comm comm,
@@ -5888,7 +5888,7 @@ predefined viewers:
 \end{itemize}
 
 The user can control the format of ASCII printed objects with viewers 
-created by {\tt ViewerFileOpenASCII()} by calling
+created by {\tt ViewerASCIIOpen()} by calling
 \begin{verbatim}
    ierr = ViewerSetFormat(Viewer viewer,int format,char *name);
 \end{verbatim}  
@@ -5912,7 +5912,7 @@ allow one to temporarily change the format of a viewer.
 \findex{ViewerPushFormat()} \findex{ViewerPopFormat}
 
 As discussed above, one can output PETSc objects in binary format by
-first opening a binary viewer with {\tt ViewerFileOpenBinary()} and
+first opening a binary viewer with {\tt ViewerBinaryOpen()} and
 then using {\tt MatView()}, {\tt VecView()}, etc.  The corresponding
 routines for input of a binary object have the form {\tt XXXLoad()}.  In
 particular, matrix and vector binary input is handled by the

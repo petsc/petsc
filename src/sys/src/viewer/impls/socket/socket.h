@@ -1,17 +1,15 @@
-/* $Id: matlab.h,v 1.12 1997/05/23 18:34:17 balay Exp bsmith $ */
+/* $Id: matlab.h,v 1.13 1998/04/03 20:58:25 bsmith Exp bsmith $ */
 /* 
      This is the definition of the Matlab viewer structure. Note: 
   each viewer has a different data structure.
 */
 
-#include "petsc.h"
-#include "pinclude/pviewer.h"
+#include "src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
 #include "sys.h" 
 
-struct _p_Viewer {
-  VIEWERHEADER
+typedef struct {
   int           port;
-};
+} Viewer_Matlab;
 
 #define DEFAULTPORT    5005
 

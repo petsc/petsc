@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.53 1997/07/09 20:53:11 balay Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.54 1997/09/22 15:21:55 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -15,9 +15,7 @@ This example also demonstrates matrix-free methods\n\n";
 /*
   This is not a good example to understand the use of multigrid with PETSc.
 */
-#include <math.h>
 #include "mg.h"
-#include "petsc.h"
 
 int  residual(Mat,Vec,Vec,Vec);
 int  gauss_seidel(void *,Vec,Vec,Vec,int);

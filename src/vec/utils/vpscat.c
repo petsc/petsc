@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.109 1998/11/24 23:33:52 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.110 1998/12/01 15:56:39 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -11,7 +11,6 @@
 #include "src/vec/vecimpl.h"                     /*I "vec.h" I*/
 #include "src/vec/impls/dvecimpl.h"
 #include "src/vec/impls/mpi/pvecimpl.h"
-#include "pinclude/pviewer.h"
 
 #undef __FUNC__  
 #define __FUNC__ "VecScatterView_MPI"
@@ -26,7 +25,7 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     MPI_Comm_rank(ctx->comm,&rank);
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);

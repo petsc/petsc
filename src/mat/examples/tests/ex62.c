@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex62.c,v 1.1 1998/07/27 03:26:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex62.c,v 1.2 1998/07/28 15:52:55 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the use of MatSolveTrans().\n\n";
@@ -28,7 +28,7 @@ int main(int argc,char **args)
      Open binary file.  Note that we use BINARY_RDONLY to indicate
      reading from this file.
   */
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
 
   /* 
      Determine matrix format to be used (specified at runtime).

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex40.c,v 1.6 1997/09/22 15:23:52 balay Exp bsmith $";
+static char vcid[] = "$Id: ex40.c,v 1.7 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
@@ -31,12 +31,12 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,&flg); CHKERRA(ierr);
 
   /* Read matrix and RHS */
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
   ierr = MatLoad(fd,MATMPIAIJ,&A); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
 
   /* Read the matrix again as a sequential matrix */
-  ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&B); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
   

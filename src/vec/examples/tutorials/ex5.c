@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.30 1998/03/16 18:53:58 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.31 1998/06/05 20:37:41 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -43,7 +43,7 @@ int main(int argc,char **args)
 
   PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n"); 
 
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"vector.dat",BINARY_CREATE,&viewer);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",BINARY_CREATE,&viewer);CHKERRA(ierr);
   ierr = VecView(u,viewer); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);
@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = PLogEventRegister(&VECTOR_READ,"Read Vector","Green:");CHKERRA(ierr);
   PLogEventBegin(VECTOR_READ,0,0,0,0);
   PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"vector.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
   ierr = VecLoad(viewer,&u); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   PLogEventEnd(VECTOR_READ,0,0,0,0);

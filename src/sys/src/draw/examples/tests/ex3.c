@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.27 1997/07/09 20:58:09 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.28 1997/10/10 04:04:50 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Plots a simple line graph\n";
 
 #include "petsc.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {

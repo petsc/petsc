@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.21 1997/11/28 16:20:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.22 1998/04/13 17:44:30 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
 
 #include "sles.h"
-#include <math.h> 
 
 typedef enum {TEST_1, TEST_2, TEST_3, HELMHOLTZ_1, HELMHOLTZ_2} TestType;
 int FormTestMatrix(Mat,int,TestType);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex65.c,v 1.1 1998/10/13 14:39:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex65.c,v 1.2 1998/10/17 16:44:32 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Saves a rectangular sparse matrix to disk\n\n";
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"rect",BINARY_CREATE,&view);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"rect",BINARY_CREATE,&view);CHKERRA(ierr);
   ierr = MatView(A,view); CHKERRA(ierr);
   ierr = ViewerDestroy(view); CHKERRA(ierr);
 

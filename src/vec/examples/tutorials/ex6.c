@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.13 1997/11/28 16:18:34 bsmith Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.14 1998/07/15 22:10:58 balay Exp bsmith $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
 a file, then forms a vector.\n\n";
 
 #include "vec.h"
-#include "pinclude/pviewer.h"
 
 int main(int argc,char **args)
 {
@@ -19,7 +18,7 @@ int main(int argc,char **args)
   MPI_Comm_size(PETSC_COMM_WORLD,&sz);
   if (sz != 1) SETERRA(1,0,"This is a uniprocessor example only!");
   
-  OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
 
   /* ---------------------------------------------------------------------- */
   /*          PART 1: Write some data to a file in binary format            */
@@ -32,7 +31,7 @@ int main(int argc,char **args)
   }
 
   /* Open viewer for binary output */
-  ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,"input.dat",BINARY_CREATE,&view_out);
+  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",BINARY_CREATE,&view_out);
          CHKERRA(ierr);
   ierr = ViewerBinaryGetDescriptor(view_out,&fd); CHKERRA(ierr);
 
@@ -49,7 +48,7 @@ int main(int argc,char **args)
   /* ---------------------------------------------------------------------- */
 
   /* Open input binary viewer */
-  ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,"input.dat",BINARY_RDONLY,&view_in); 
+  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",BINARY_RDONLY,&view_in); 
          CHKERRA(ierr);
   ierr = ViewerBinaryGetDescriptor(view_in,&fd); CHKERRA(ierr);
 

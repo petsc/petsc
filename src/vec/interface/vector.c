@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.153 1998/10/23 14:47:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.154 1998/11/30 19:32:13 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1479,15 +1479,15 @@ int VecRestoreArray(Vec x,Scalar **a)
    option ViewerSetFormat().
 
    The user can open alternative visualization contexts with
-+    ViewerFileOpenASCII() - Outputs vector to a specified file
-.    ViewerFileOpenBinary() - Outputs vector in binary to a
++    ViewerASCIIOpen() - Outputs vector to a specified file
+.    ViewerBinaryOpen() - Outputs vector in binary to a
          specified file; corresponding input uses VecLoad()
-.    ViewerDrawOpenX() - Outputs vector to an X window display
+.    ViewerDrawOpen() - Outputs vector to an X window display
 -    ViewerMatlabOpen() - Outputs vector to Matlab viewer
 
    The user can call ViewerSetFormat() to specify the output
    format of ASCII printed objects (when using VIEWER_STDOUT_SELF,
-   VIEWER_STDOUT_WORLD and ViewerFileOpenASCII).  Available formats include
+   VIEWER_STDOUT_WORLD and ViewerASCIIOpen).  Available formats include
 +    VIEWER_FORMAT_ASCII_DEFAULT - default, prints vector contents
 .    VIEWER_FORMAT_ASCII_MATLAB - prints vector contents in Matlab format
 .    VIEWER_FORMAT_ASCII_INDEX - prints vector contents, including indices of vector elements
@@ -1500,8 +1500,8 @@ int VecRestoreArray(Vec x,Scalar **a)
 
 .keywords: Vec, view, visualize, output, print, write, draw
 
-.seealso: ViewerFileOpenASCII(), ViewerDrawOpenX(), DrawLGCreate(),
-          ViewerMatlabOpen(), ViewerFileOpenBinary(), VecLoad()
+.seealso: ViewerASCIIOpen(), ViewerDrawOpen(), DrawLGCreate(),
+          ViewerMatlabOpen(), ViewerBinaryOpen(), VecLoad()
 @*/
 int VecView(Vec v,Viewer viewer)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.48 1997/09/22 15:19:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.49 1997/11/28 16:22:00 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -29,7 +29,6 @@ T*/
      sles.h   - linear solvers
 */
 #include "snes.h"
-#include <math.h>
 
 /* 
    User-defined routines

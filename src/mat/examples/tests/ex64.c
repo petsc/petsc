@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex64.c,v 1.1 1998/10/07 18:20:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex64.c,v 1.2 1998/10/09 19:23:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Saves 4by4 block matrix.\n\n";
@@ -22,7 +22,7 @@ int main(int argc,char **args)
      Open binary file.  Note that we use BINARY_CREATE to indicate
      writing to this file.
   */
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"4by4",BINARY_CREATE,&fd);CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"4by4",BINARY_CREATE,&fd);CHKERRA(ierr);
 
   ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,4,12,12,0,0,&A);CHKERRA(ierr);
 

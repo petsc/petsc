@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: openport.c,v 1.8 1998/06/11 19:57:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: openport.c,v 1.9 1998/10/02 03:47:33 bsmith Exp bsmith $";
 #endif
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
@@ -27,7 +27,6 @@ typedef unsigned long   u_long;
 #include <fcntl.h>
 #include <stropts.h>
 #include <sys/utsname.h>
-#include <math.h>
 #include "src/viewer/impls/matlab/matlab.h"
 #include "mex.h"
 

@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.12 1998/05/29 20:36:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.13 1998/10/19 22:17:43 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
 #include "src/pc/pcimpl.h"   /*I "pc.h" I*/
-#include "sles.h"
-#include <math.h>
+#include "sles.h"            /*I "sles.h" I*/
 
 typedef struct _PC_CompositeLink *PC_CompositeLink;
 struct _PC_CompositeLink {
@@ -191,7 +190,7 @@ static int PCView_Composite(PC pc,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"PC on inner solver follow\n");
     PetscFPrintf(pc->comm,fd,"---------------------------------\n");
@@ -202,7 +201,7 @@ static int PCView_Composite(PC pc,Viewer viewer)
     ierr = PCView(next->pc,viewer); CHKERRQ(ierr);
     next = next->next;
   }
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
     PetscFPrintf(pc->comm,fd,"---------------------------------\n");
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

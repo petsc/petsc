@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex44.c,v 1.3 1997/09/22 15:23:47 balay Exp bsmith $";
+static char vcid[] = "$Id: ex44.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -14,7 +14,7 @@ int main(int argc,char **args)
   int     ierr;
 
   PetscInitialize(&argc,&args,0,0,help);
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"matrix.dat",BINARY_RDONLY,&viewer); 
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",BINARY_RDONLY,&viewer); 
          CHKERRA(ierr);
   MatLoad(viewer,MATMPIDENSE,&C); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);

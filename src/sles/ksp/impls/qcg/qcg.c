@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.50 1998/10/09 19:20:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.51 1998/10/19 22:16:59 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
 */
 
-#include <math.h>
 #include "src/ksp/kspimpl.h"
 #include "src/ksp/impls/qcg/qcg.h"
 

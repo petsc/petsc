@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoom.c,v 1.3 1998/04/13 17:49:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: zoom.c,v 1.4 1998/04/27 14:47:53 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"     /*I "draw.h"  I*/
@@ -33,6 +33,7 @@ int DrawZoom(Draw draw,int (*func)(Draw,void *),void *ctx)
 
   ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
   ierr = (*func)(draw,ctx);  CHKERRQ(ierr);
+  ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
   DrawGetPause(draw,&pause);
   if (pause >= 0) { PetscSleep(pause); PetscFunctionReturn(0);}

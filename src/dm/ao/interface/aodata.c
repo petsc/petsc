@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.27 1998/05/03 22:08:33 curfman Exp balay $";
+static char vcid[] = "$Id: aodata.c,v 1.28 1998/06/04 22:29:30 balay Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -1202,11 +1202,11 @@ int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs, Pets
          data to the first processor to print. 
 
    The user can open an alternative visualization context with
-   ViewerFileOpenASCII() - output to a specified file.
+   ViewerASCIIOpen() - output to a specified file.
 
 .keywords: database viewing
 
-.seealso: ViewerFileOpenASCII()
+.seealso: ViewerASCIIOpen()
 @*/
 int AODataView(AOData aodata, Viewer viewer)
 {

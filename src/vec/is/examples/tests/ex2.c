@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.6 1997/04/10 00:00:00 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.7 1997/07/09 20:49:20 balay Exp bsmith $";
 #endif
 
 /*
@@ -9,7 +9,6 @@ static char vcid[] = "$Id: ex2.c,v 1.6 1997/04/10 00:00:00 bsmith Exp balay $";
 static char help[] = "Tests IS stride routines\n\n";
 
 #include "is.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {

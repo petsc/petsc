@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5s.c,v 1.3 1997/11/28 16:22:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5s.c,v 1.4 1998/05/29 20:39:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -77,7 +77,6 @@ T*/
      sles.h   - linear solvers
 */
 #include "snes.h"
-#include <math.h>
 
 /* 
    User-defined application context - contains data needed by the 
