@@ -1,5 +1,5 @@
 
-/* $Id: vgrid.h,v 1.2 1996/01/29 14:18:16 curfman Exp curfman $ */
+/* $Id: vgrid.h,v 1.3 1996/01/29 14:19:20 curfman Exp curfman $ */
 
 /* This file declares some utility routines for manipulating vectors that are
    associated with multicomponent problems on grids */
@@ -21,10 +21,13 @@ typedef enum {ORDER_1,ORDER_2} GridComponentOrdering;
 typedef struct _VecGridInfo* VecGridInfo;
 
 extern int VecGridInfoCreate(MPI_Comm,GridType,int,VecGridInfo*);
+extern int VecGridInfoDuplicate(VecGridInfo,VecGridInfo*);
 extern int VecGridInfoDestroy(VecGridInfo);
 extern int VecGridInfoSetComponents(VecGridInfo,int,GridComponentOrdering,char**);
 extern int VecGridInfoSetCoordinates(VecGridInfo,double*,double*,double*,int,int,int);
-extern int VecGridInfoGetComponentVecs(Vec v,VecGridInfo vgrid,Vec **vcomp);
+extern int VecGridInfoGetComponentVecs(Vec,VecGridInfo,Vec**);
+extern int VecGridInfoAssembleGlobalVec(Vec*,VecGridInfo,Vec);
 extern int VecGridInfoDrawContours(Vec,VecGridInfo,int,int);
+extern int VecGridInfoRefine(Vec,VecGridInfo,int,Vec*,VecGridInfo*);
 
 #endif
