@@ -236,7 +236,7 @@
 !  Compute updated iterate
 
          call VecNorm(Y,NORM_2,ynorm,ierr)
-         call VecAYPX(mone,X,Y,ierr)
+         call VecAYPX(Y,mone,X,ierr)
          call VecCopy(Y,X,ierr)
          call VecNorm(X,NORM_2,xnorm,ierr)
          call KSPGetIterationNumber(ksp,lin_its,ierr)

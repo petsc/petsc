@@ -117,8 +117,8 @@ int MatSubstract(Mat Term1, Mat Term2, Mat* Diff)
        /*..Get collumns..*/ 
       ierr = MatGetColumnVector(Term1,col_vec1,col); CHKERRA(ierr); 
       ierr = MatGetColumnVector(Term2,col_vec2,col); CHKERRA(ierr); 
-      /*..Substract collumns..*/ 
-      ierr = VecWAXPY(&dminusone, col_vec2, col_vec1, diff_vec); 
+      /*..Subtract columns..*/ 
+      ierr = VecWAXPY(diff_vec, dminusone, col_vec2, col_vec1); 
              CHKERRA(ierr);  
  
       /*..Compute norm..*/ 

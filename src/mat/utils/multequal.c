@@ -56,7 +56,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth
     if (r2 < tol){
       ierr = VecNorm(s1,NORM_INFINITY,&r1);CHKERRQ(ierr);
     } else {
-      ierr = VecAXPY(&none,s1,s2);CHKERRQ(ierr);
+      ierr = VecAXPY(s2,none,s1);CHKERRQ(ierr);
       ierr = VecNorm(s2,NORM_INFINITY,&r1);CHKERRQ(ierr);
       r1 /= r2;
     }
@@ -127,7 +127,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTr
     if (r2 < tol){
       ierr = VecNorm(s1,NORM_INFINITY,&r1);CHKERRQ(ierr);
     } else {
-      ierr = VecAXPY(&none,s1,s2);CHKERRQ(ierr);
+      ierr = VecAXPY(s2,none,s1);CHKERRQ(ierr);
       ierr = VecNorm(s2,NORM_INFINITY,&r1);CHKERRQ(ierr);
       r1 /= r2;
     }
@@ -197,7 +197,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeEqual(Mat A,Mat B,PetscInt n,P
     if (r2 < tol){
       ierr = VecNorm(s1,NORM_INFINITY,&r1);CHKERRQ(ierr);
     } else {
-      ierr = VecAXPY(&none,s1,s2);CHKERRQ(ierr);
+      ierr = VecAXPY(s2,none,s1);CHKERRQ(ierr);
       ierr = VecNorm(s2,NORM_INFINITY,&r1);CHKERRQ(ierr);
       r1 /= r2;
     }
@@ -268,7 +268,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAddEqual(Mat A,Mat B,PetscInt 
     if (r2 < tol){
       ierr = VecNorm(s1,NORM_INFINITY,&r1);CHKERRQ(ierr);
     } else {
-      ierr = VecAXPY(&none,s1,s2);CHKERRQ(ierr);
+      ierr = VecAXPY(s2,none,s1);CHKERRQ(ierr);
       ierr = VecNorm(s2,NORM_INFINITY,&r1);CHKERRQ(ierr);
       r1 /= r2;
     }

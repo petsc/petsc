@@ -98,7 +98,8 @@ int main(int argc,char **argv)
        */
     ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRQ(ierr);
     if (!matrix_free) {
-      ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&J);CHKERRQ(ierr);
+      ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
+      ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
       ierr = MatSetFromOptions(J);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,J,J,FormJacobian1,&user);CHKERRQ(ierr);
     }
@@ -106,7 +107,7 @@ int main(int argc,char **argv)
     /* Set PetscOptions, then solve nonlinear system */
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
     ierr = FormInitialGuess1(&user,x);CHKERRQ(ierr);
-    ierr = SNESSolve(snes,x);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n",its);CHKERRQ(ierr);
 

@@ -337,7 +337,7 @@ PetscErrorCode MatMultTranspose_MPIBDiag(Mat A,Vec xx,Vec yy)
   PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = (*a->A->ops->multtranspose)(a->A,xx,a->lvec);CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
@@ -511,12 +511,13 @@ static PetscErrorCode MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
     PetscScalar  *vals;
 
     /* Here we are constructing a temporary matrix, so we will explicitly set the type to MPIBDiag */
+    ierr = MatCreate(mat->comm,&A);CHKERRQ(ierr);
     if (!rank) {
-      ierr = MatCreate(mat->comm,M,M,M,N,&A);CHKERRQ(ierr);
+      ierr = MatSetSizes(A,M,N,M,N);CHKERRQ(ierr);
       ierr = MatSetType(A,MATMPIBDIAG);CHKERRQ(ierr);
       ierr = MatMPIBDiagSetPreallocation(A,mbd->gnd,mbd->A->bs,mbd->gdiag,PETSC_NULL);CHKERRQ(ierr);
     } else {
-      ierr = MatCreate(mat->comm,0,0,M,N,&A);CHKERRQ(ierr);
+      ierr = MatSetSizes(A,0,0,M,N);CHKERRQ(ierr);
       ierr = MatSetType(A,MATMPIBDIAG);CHKERRQ(ierr);
       ierr = MatMPIBDiagSetPreallocation(A,0,mbd->A->bs,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
@@ -951,7 +952,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,Pet
   }
 
   /* Form local matrix */
-  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->N,B->m,B->N,&b->A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
+  ierr = MatSetSizes(b->A,B->m,B->N,B->m,B->N);CHKERRQ(ierr);
   ierr = MatSetType(b->A,MATSEQBDIAG);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(b->A,k,bs,ldiag,ldiagv);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
@@ -1171,7 +1173,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIBDiag(MPI_Comm comm,PetscInt m,Pet
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm,m,m,M,N,A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,m,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
     ierr = MatSetType(*A,MATMPIBDIAG);CHKERRQ(ierr);
@@ -1246,7 +1249,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatBDiagGetData(Mat mat,PetscInt *nd,PetscInt 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIBDiag"
-PetscErrorCode MatLoad_MPIBDiag(PetscViewer viewer,const MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPIBDiag(PetscViewer viewer, MatType type,Mat *newmat)
 {
   Mat            A;
   PetscScalar    *vals,*svals;
@@ -1368,7 +1371,8 @@ PetscErrorCode MatLoad_MPIBDiag(PetscViewer viewer,const MatType type,Mat *newma
     if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
   }
 
-  ierr = MatCreate(comm,m,m,M+extra_rows,N+extra_rows,newmat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,newmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*newmat,m,m,M+extra_rows,N+extra_rows);CHKERRQ(ierr);
   ierr = MatSetType(*newmat,type);CHKERRQ(ierr);
   ierr = MatMPIBDiagSetPreallocation(*newmat,0,bs,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   A = *newmat;

@@ -311,7 +311,8 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
     }
   } else {
     for (i=0; i<ismax; i++) {
-      ierr = MatCreate(PETSC_COMM_SELF,nrow[i],ncol[i],nrow[i],ncol[i],submats+i);CHKERRQ(ierr);
+      ierr = MatCreate(PETSC_COMM_SELF,submats+i);CHKERRQ(ierr);
+      ierr = MatSetSizes(submats[i],nrow[i],ncol[i],nrow[i],ncol[i]);CHKERRQ(ierr);
       ierr = MatSetType(submats[i],A->type_name);CHKERRQ(ierr);
       ierr = MatSeqDenseSetPreallocation(submats[i],PETSC_NULL);CHKERRQ(ierr);
     }

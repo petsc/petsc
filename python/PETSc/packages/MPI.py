@@ -295,14 +295,16 @@ class Configure(PETSc.package.Package):
     args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
     args = ' '.join(args)
+    configArgsFilename = os.path.join(installDir,'config.args')
     try:
-      fd      = file(os.path.join(installDir,'config.args'))
+      fd      = file(configArgsFilename)
       oldargs = fd.readline()
       fd.close()
     except:
+      self.framework.logPrint('Unable to find old configure arguments in '+configArgsFilename)
       oldargs = ''
     if not oldargs == args:
-      self.framework.log.write('Have to rebuild MPICH oldargs = '+oldargs+' new args '+args+'\n')
+      self.framework.logPrint('Have to rebuild MPICH oldargs = '+oldargs+' new args '+args)
       try:
         self.logPrintBox('Running configure on MPICH; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';'+envs+' ./configure '+args, timeout=900, log = self.framework.log)[0]
@@ -330,6 +332,12 @@ class Configure(PETSc.package.Package):
   to specify the location of the installation when you rerun configure.')
         raise RuntimeError('Error running make; make install on MPICH: '+str(e))
 
+      try:
+        fd = file(configArgsFilename, 'w')
+        fd.write(args)
+        fd.close()
+      except:
+        self.framework.logPrint('Unable to output configure arguments into '+configArgsFilename)
       if not os.path.isfile(os.path.join(os.getenv('HOME'),'.mpd.conf')):
         fd = open(os.path.join(os.getenv('HOME'),'.mpd.conf'),'w')
         fd.write('secretword=mr45-j9z\n')

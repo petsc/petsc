@@ -31,7 +31,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 
   PetscFunctionBegin;
   ierr = MatMult(mat,x,r);CHKERRQ(ierr);
-  ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
+  ierr = VecAYPX(r,mone,b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   ierr = VecSetFromOptions(x);CHKERRA(ierr);
   ierr = VecDuplicate(x,&y); CHKERRA(ierr);
 
-  ierr = VecSet(&one,x); CHKERRA(ierr);
+  ierr = VecSet(x,one); CHKERRA(ierr);
 
   ierr = Function(x,y); CHKERRA(ierr);
   VecView(y,0);

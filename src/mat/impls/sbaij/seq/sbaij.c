@@ -1458,8 +1458,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat,const MatType,MatReuse,Mat*); 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat,const MatType,MatReuse,Mat*); 
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat, MatType,MatReuse,Mat*); 
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat, MatType,MatReuse,Mat*); 
 EXTERN_C_END
 
 /*MC
@@ -1646,7 +1646,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqSBAIJ(MPI_Comm comm,PetscInt bs,Pe
   PetscErrorCode ierr;
  
   PetscFunctionBegin;
-  ierr = MatCreate(comm,m,n,m,n,A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSEQSBAIJ);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(*A,bs,nz,(PetscInt*)nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1665,7 +1666,8 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   if (a->i[mbs] != nz) SETERRQ(PETSC_ERR_PLIB,"Corrupt matrix");
 
   *B = 0;
-  ierr = MatCreate(A->comm,A->m,A->n,A->m,A->n,&C);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&C);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,A->m,A->n,A->m,A->n);CHKERRQ(ierr);
   ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
   ierr = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   c    = (Mat_SeqSBAIJ*)C->data;
@@ -1729,7 +1731,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqSBAIJ"
-PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer,const MatType type,Mat *A)
+PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer, MatType type,Mat *A)
 {
   Mat_SeqSBAIJ   *a;
   Mat            B;
@@ -1806,7 +1808,8 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer,const MatType type,Mat *A)
   }
 
   /* create our matrix */
-  ierr = MatCreate(comm,M+extra_rows,N+extra_rows,M+extra_rows,N+extra_rows,&B);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,M+extra_rows,N+extra_rows,M+extra_rows,N+extra_rows);CHKERRQ(ierr);
   ierr = MatSetType(B,type);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,0,s_browlengths);CHKERRQ(ierr);
   a = (Mat_SeqSBAIJ*)B->data;

@@ -32,13 +32,13 @@ int main(int argc,char **argv)
   ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
 
   value = -3.0;
-  ierr = VecSet(&value,global);CHKERRQ(ierr);
+  ierr = VecSet(global,value);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   value = rank+1;
-  ierr = VecScale(&value,local);CHKERRQ(ierr);
+  ierr = VecScale(local,value);CHKERRQ(ierr);
   ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRQ(ierr);
 
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);

@@ -106,14 +106,15 @@ and PetscBinaryWrite() to see how this may be done.
 .seealso: PetscViewerBinaryOpen(), MatView(), VecLoad()
 
  @*/  
-PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer,const MatType outtype,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, MatType outtype,Mat *newmat)
 {
   Mat            factory;
   PetscErrorCode ierr;
   PetscTruth     isbinary,flg;
   MPI_Comm       comm;
-  PetscErrorCode (*r)(PetscViewer,const MatType,Mat*);
-  char           mtype[256], *prefix;
+  PetscErrorCode (*r)(PetscViewer, MatType,Mat*);
+  char           mtype[256];
+  const char     *prefix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -137,7 +138,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer,const MatType outty
   if (!outtype) outtype = MATAIJ;
 
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);  
-  ierr = MatCreate(comm,0,0,0,0,&factory);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&factory);CHKERRQ(ierr);
+  ierr = MatSetSizes(factory,0,0,0,0);CHKERRQ(ierr);
   ierr = MatSetType(factory,outtype);CHKERRQ(ierr);
   r = factory->ops->load;
   ierr = MatDestroy(factory);

@@ -75,7 +75,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
   PetscFunctionBegin;	
 
   /* Create the factorization matrix */  
-  ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);
+  ierr = MatCreate(A->comm,&B);
+  ierr = MatSetSizes(B,A->m,A->n,A->M,A->N);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   

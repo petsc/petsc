@@ -109,7 +109,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,P);CHKERRQ(ierr);
     ierr = KSP_MatMultTranspose(ksp,Amat,P,R);CHKERRQ(ierr);
-    ierr = VecAYPX(&mone,T,R);CHKERRQ(ierr);
+    ierr = VecAYPX(R,mone,T);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(T,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
@@ -159,7 +159,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 	   }
            e[i] = sqrt(PetscAbsScalar(b))/a;  
          }
-         ierr = VecAYPX(&b,Z,P);CHKERRQ(ierr);    /*     p <- z + b* p   */
+         ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
      }
      betaold = beta;
      ierr = MatMult(Amat,P,T);CHKERRQ(ierr);
@@ -169,8 +169,8 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
      if (eigs) {
        d[i] = sqrt(PetscAbsScalar(b))*e[i] + 1.0/a;
      }
-     ierr = VecAXPY(&a,P,X);CHKERRQ(ierr);          /*     x <- x + ap     */
-     ma = -a; VecAXPY(&ma,Z,R);                      /*     r <- r - az     */
+     ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
+     ma = -a; VecAXPY(R,ma,Z);                      /*     r <- r - az     */
      if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
        ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
        if (transpose_pc) {

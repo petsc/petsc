@@ -21,7 +21,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-symmetric",&flg);CHKERRQ(ierr);
   if (flg) {  /* Treat matrix as symmetric only if we set this flag */
@@ -46,13 +47,13 @@ int main(int argc,char **args)
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u);CHKERRQ(ierr);
-  ierr = VecSet(&one,u);CHKERRQ(ierr);
+  ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&y);CHKERRQ(ierr);
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
   ierr = VecCopy(b,y);CHKERRQ(ierr);
-  ierr = VecScale(&alpha,y);CHKERRQ(ierr);
+  ierr = VecScale(y,alpha);CHKERRQ(ierr);
 
   ierr = MatNorm(C,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Frobenius norm of matrix %g\n",norm);CHKERRQ(ierr);
@@ -74,14 +75,14 @@ int main(int argc,char **args)
   ierr = MatSolve(C,b,x);CHKERRQ(ierr); 
   ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,u,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,mone,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);
 
   /* Test MatSolveAdd */
   ierr = MatSolveAdd(C,b,y,x);CHKERRQ(ierr); 
-  ierr = VecAXPY(&mone,y,x);CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,u,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,mone,y);CHKERRQ(ierr);
+  ierr = VecAXPY(x,mone,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);

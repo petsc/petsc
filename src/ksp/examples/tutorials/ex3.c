@@ -62,7 +62,8 @@ int main(int argc,char **args)
   /* 
      Create stiffness matrix
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank); 
@@ -92,8 +93,8 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRQ(ierr);
   ierr = VecDuplicate(b,&ustar);CHKERRQ(ierr);
-  ierr = VecSet(&zero,u);CHKERRQ(ierr);
-  ierr = VecSet(&zero,b);CHKERRQ(ierr);
+  ierr = VecSet(u,zero);CHKERRQ(ierr);
+  ierr = VecSet(b,zero);CHKERRQ(ierr);
 
   /* 
      Assemble right-hand-side vector
@@ -170,7 +171,7 @@ int main(int argc,char **args)
   }
   ierr = VecAssemblyBegin(ustar);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(ustar);CHKERRQ(ierr);
-  ierr = VecAXPY(&none,ustar,u);CHKERRQ(ierr);
+  ierr = VecAXPY(u,none,ustar);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %D\n",norm*h,its);CHKERRQ(ierr);

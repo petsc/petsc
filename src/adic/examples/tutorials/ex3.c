@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&z); CHKERRA(ierr);
   ierr = VecDuplicate(z,&Az); CHKERRA(ierr);
 
-  ierr = VecSet(&one,x); CHKERRA(ierr);
+  ierr = VecSet(x,one); CHKERRA(ierr);
 
   /*
      Create a dense matrix to store the Jacobian in 

@@ -80,7 +80,7 @@
      &               PETSC_NULL_INTEGER,ierr)
       h    = 1.d0/((mx-1)*(my-1)*(mz-1))
 
-      call VecSet(h,b,ierr)
+      call VecSet(b,h,ierr)
       return
       end
 

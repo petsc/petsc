@@ -95,10 +95,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,M
       wscale = 0.0;
     }
     ierr = (*eval_fct)(snes,x2,j2a);CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,j1a,j2a);CHKERRQ(ierr);
+    ierr = VecAXPY(j2a,mone,j1a);CHKERRQ(ierr);
     /* Communicate scale to all processors */
     ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
-    ierr = VecScale(&scale,j2a);CHKERRQ(ierr);
+    ierr = VecScale(j2a,scale);CHKERRQ(ierr);
     ierr = VecNorm(j2a,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
     ierr = VecGetArray(j2a,&y);CHKERRQ(ierr);
     for (j=start; j<end; j++) {

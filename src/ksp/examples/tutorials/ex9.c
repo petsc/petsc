@@ -82,7 +82,8 @@ int main(int argc,char **args)
           dimension; the parallel partitioning is determined at runtime. 
         - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C1);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&C1);CHKERRQ(ierr);
+  ierr = MatSetSizes(C1,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C1);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C1,&Istart,&Iend);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
@@ -110,7 +111,8 @@ int main(int argc,char **args)
   /*
      Create data structures for second linear system.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C2);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&C2);CHKERRQ(ierr);
+  ierr = MatSetSizes(C2,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C2);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C2,&Istart2,&Iend2);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b2);CHKERRQ(ierr);
@@ -397,7 +399,7 @@ PetscErrorCode CheckError(Vec u,Vec x,Vec b,PetscInt its,PetscEvent CHECK_ERROR)
      Compute error of the solution, using b as a work vector.
   */
   ierr = VecCopy(x,b);CHKERRQ(ierr);
-  ierr = VecAXPY(&none,u,b);CHKERRQ(ierr);
+  ierr = VecAXPY(b,none,u);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);

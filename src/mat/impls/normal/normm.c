@@ -99,7 +99,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat A,Mat *N)
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatCreate(A->comm,n,n,PETSC_DECIDE,PETSC_DECIDE,N);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,N);CHKERRQ(ierr);
+  ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATNORMAL);CHKERRQ(ierr);
   
   ierr      = PetscNew(Mat_Normal,&Na);CHKERRQ(ierr);

@@ -63,8 +63,8 @@ int main(int argc,char **args)
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,&u);CHKERRQ(ierr); 
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&ustar);CHKERRQ(ierr);
-  ierr = VecSet(&zero,u);CHKERRQ(ierr);
-  ierr = VecSet(&zero,b);CHKERRQ(ierr);
+  ierr = VecSet(u,zero);CHKERRQ(ierr);
+  ierr = VecSet(b,zero);CHKERRQ(ierr);
 
   for (i=0; i<M; i++) {
      /* location of lower left corner of element */
@@ -124,7 +124,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(ustar);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(ustar);CHKERRQ(ierr);
 
-  ierr = VecAXPY(&none,ustar,u);CHKERRQ(ierr);
+  ierr = VecAXPY(u,none,ustar);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %D\n",norm*h,its);CHKERRQ(ierr);

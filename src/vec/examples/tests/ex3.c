@@ -28,8 +28,8 @@ int main(int argc,char **argv)
   ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
   ierr = VecSetSizes(y,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
-  ierr = VecSet(&one,x);CHKERRQ(ierr);
-  ierr = VecSet(&two,y);CHKERRQ(ierr);
+  ierr = VecSet(x,one);CHKERRQ(ierr);
+  ierr = VecSet(y,two);CHKERRQ(ierr);
 
   if (rank == 1) {
     idx = 2; ierr = VecSetValues(y,1,&idx,&three,INSERT_VALUES);CHKERRQ(ierr);

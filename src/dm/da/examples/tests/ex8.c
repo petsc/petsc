@@ -119,7 +119,7 @@ int main(int argc,char **argv)
 
   /* Put the value rank+1 into all locations of vslice and transfer back to global vector */
   value = 1.0 + rank;
-  ierr = VecSet(&value,vslice);CHKERRQ(ierr);
+  ierr = VecSet(vslice,value);CHKERRQ(ierr);
   ierr = VecScatterBegin(vslice,global,INSERT_VALUES,SCATTER_REVERSE,scatter);CHKERRQ(ierr);
   ierr = VecScatterEnd(vslice,global,INSERT_VALUES,SCATTER_REVERSE,scatter);CHKERRQ(ierr);
 

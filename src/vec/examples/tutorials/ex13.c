@@ -36,11 +36,11 @@ int main(int argc,char **argv)
   ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+4,PETSC_DECIDE,&x);CHKERRQ(ierr);
   ierr = PetscObjectPublish((PetscObject)x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
-  ierr = VecSet(&one,x);CHKERRQ(ierr);
+  ierr = VecSet(x,one);CHKERRQ(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,rank+4,&xlocal);CHKERRQ(ierr);
   ierr = PetscObjectPublish((PetscObject)xlocal);CHKERRQ(ierr);
-  ierr = VecSet(&one,xlocal);CHKERRQ(ierr);
+  ierr = VecSet(xlocal,one);CHKERRQ(ierr);
 
   while (1) {
 

@@ -58,14 +58,14 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
   ksp->its = 0;
 
-  ierr = VecSet(&zero,UOLD);CHKERRQ(ierr);         /*     u_old  <-   0   */
+  ierr = VecSet(UOLD,zero);CHKERRQ(ierr);          /*     u_old  <-   0   */
   ierr = VecCopy(UOLD,VOLD);CHKERRQ(ierr);         /*     v_old  <-   0   */
   ierr = VecCopy(UOLD,W);CHKERRQ(ierr);            /*     w      <-   0   */
   ierr = VecCopy(UOLD,WOLD);CHKERRQ(ierr);         /*     w_old  <-   0   */
 
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr); /*     r <- b - A*x    */
-    ierr = VecAYPX(&mone,B,R);CHKERRQ(ierr);
+    ierr = VecAYPX(R,mone,B);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(B,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
@@ -95,8 +95,8 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   ierr = VecCopy(R,V);CHKERRQ(ierr);
   ierr = VecCopy(Z,U);CHKERRQ(ierr);
   ibeta = 1.0 / beta;
-  ierr = VecScale(&ibeta,V);CHKERRQ(ierr);         /*    v <- r / beta     */
-  ierr = VecScale(&ibeta,U);CHKERRQ(ierr);         /*    u <- z / beta     */
+  ierr = VecScale(V,ibeta);CHKERRQ(ierr);         /*    v <- r / beta     */
+  ierr = VecScale(U,ibeta);CHKERRQ(ierr);         /*    u <- z / beta     */
 
   ierr = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);      /*   np <- ||z||        */
 
@@ -117,11 +117,11 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
      ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /*      z <- B*r   */
 
      malpha = - alpha;
-     ierr = VecAXPY(&malpha,V,R);CHKERRQ(ierr);     /*  r <- r - alpha v     */
-     ierr = VecAXPY(&malpha,U,Z);CHKERRQ(ierr);     /*  z <- z - alpha u     */
+     ierr = VecAXPY(R,malpha,V);CHKERRQ(ierr);     /*  r <- r - alpha v     */
+     ierr = VecAXPY(Z,malpha,U);CHKERRQ(ierr);     /*  z <- z - alpha u     */
      mbeta = - beta;
-     ierr = VecAXPY(&mbeta,VOLD,R);CHKERRQ(ierr);   /*  r <- r - beta v_old  */
-     ierr = VecAXPY(&mbeta,UOLD,Z);CHKERRQ(ierr);   /*  z <- z - beta u_old  */
+     ierr = VecAXPY(R,mbeta,VOLD);CHKERRQ(ierr);   /*  r <- r - beta v_old  */
+     ierr = VecAXPY(Z,mbeta,UOLD);CHKERRQ(ierr);   /*  z <- z - beta u_old  */
 
      betaold = beta;
 
@@ -161,14 +161,14 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
      
      ierr = VecCopy(U,W);CHKERRQ(ierr);            /*  w      <- u          */
      mrho2 = - rho2;
-     ierr = VecAXPY(&mrho2,WOLD,W);CHKERRQ(ierr);  /*  w <- w - rho2 w_old  */
+     ierr = VecAXPY(W,mrho2,WOLD);CHKERRQ(ierr);  /*  w <- w - rho2 w_old  */
      mrho3 = - rho3;
-     ierr = VecAXPY(&mrho3,WOOLD,W);CHKERRQ(ierr); /*  w <- w - rho3 w_oold */
+     ierr = VecAXPY(W,mrho3,WOOLD);CHKERRQ(ierr); /*  w <- w - rho3 w_oold */
      irho1 = 1.0 / rho1;
-     ierr = VecScale(&irho1,W);CHKERRQ(ierr);      /*  w <- w / rho1        */
+     ierr = VecScale(W,irho1);CHKERRQ(ierr);      /*  w <- w / rho1        */
 
      ceta = c * eta;
-     ierr = VecAXPY(&ceta,W,X);CHKERRQ(ierr);      /*  x <- x + c eta w     */ 
+     ierr = VecAXPY(X,ceta,W);CHKERRQ(ierr);      /*  x <- x + c eta w     */ 
      eta = - s * eta;
 
      ierr = VecCopy(V,VOLD);CHKERRQ(ierr);
@@ -176,8 +176,8 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
      ierr = VecCopy(R,V);CHKERRQ(ierr);
      ierr = VecCopy(Z,U);CHKERRQ(ierr);
      ibeta = 1.0 / beta;
-     ierr = VecScale(&ibeta,V);CHKERRQ(ierr);      /*  v <- r / beta       */
-     ierr = VecScale(&ibeta,U);CHKERRQ(ierr);      /*  u <- z / beta       */
+     ierr = VecScale(V,ibeta);CHKERRQ(ierr);      /*  v <- r / beta       */
+     ierr = VecScale(U,ibeta);CHKERRQ(ierr);      /*  u <- z / beta       */
      
      np = ksp->rnorm * PetscAbsScalar(s);
 

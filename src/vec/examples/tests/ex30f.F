@@ -57,8 +57,8 @@
       call VecAssemblyEnd(v1,ierr)
 
       num=0.0
-      call VecScale(num,v2,ierr)
-      call VecScale(num,v3,ierr)
+      call VecScale(v2,num,ierr)
+      call VecScale(v3,num,ierr)
 
       from(1)=1
       from(2)=5

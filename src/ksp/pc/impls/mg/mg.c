@@ -41,7 +41,7 @@ PetscErrorCode PCMGMCycle_Private(PC_MG **mglevels,PetscTruth *converged)
 
     mgc = *(mglevels - 1);
     ierr = MatRestrict(mg->restrct,mg->r,mgc->b);CHKERRQ(ierr);
-    ierr = VecSet(&zero,mgc->x);CHKERRQ(ierr);
+    ierr = VecSet(mgc->x,zero);CHKERRQ(ierr);
     while (cycles--) {
       ierr = PCMGMCycle_Private(mglevels-1,converged);CHKERRQ(ierr); 
     }
@@ -191,7 +191,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
     ierr = VecDestroy(tvec);CHKERRQ(ierr);
   }
   if (mg[0]->am == PC_MG_MULTIPLICATIVE) {
-    ierr = VecSet(&zero,x);CHKERRQ(ierr);
+    ierr = VecSet(x,zero);CHKERRQ(ierr);
     ierr = PCMGMCycle_Private(mg+levels-1,PETSC_NULL);CHKERRQ(ierr);
   } 
   else if (mg[0]->am == PC_MG_ADDITIVE) {

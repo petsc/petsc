@@ -82,7 +82,8 @@ int AppCtxSolve(AppCtx* appctx)
   /* initial guess */
   ierr = FormInitialGuess(appctx);CHKERRQ(ierr); 
   /*       Solve the non-linear system  */
-  ierr = SNESSolve(snes, algebra->g, &its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes, PETSC_NULL, algebra->g);CHKERRQ(ierr);
+  ierr = SNESGetIteratioNumber(snes, &its);CHKERRQ(ierr);
 
   if(0){VecView(algebra->g, VIEWER_STDOUT_SELF);}
 
@@ -99,7 +100,7 @@ int FormInitialGuess(AppCtx* appctx)
     AppAlgebra *algebra = &appctx->algebra;
     int ierr;
     double onep1 = 1.234;
-    ierr = VecSet(&onep1,algebra->g ); CHKERRQ(ierr);
+    ierr = VecSet(algebra->g,onep1); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 
@@ -133,9 +134,9 @@ to see if they need to be recomputed */
 
 /****** Perform computation ***********/
   /* need to zero f */
-  ierr = VecSet(&zero, f); CHKERRQ(ierr); 
+  ierr = VecSet(f,zero); CHKERRQ(ierr); 
   /* add rhs to get constant part */
-  ierr = VecAXPY(&mone, b, f); CHKERRQ(ierr); /* this says f = f - 1*b */
+  ierr = VecAXPY(f,mone,b); CHKERRQ(ierr); /* this says f = f - 1*b */
   /*apply matrix to the input vector x, to get linear part */
   /* Assuming matrix doesn't need to be recomputed */
   ierr = MatMultAdd(A, x, f, f); CHKERRQ(ierr);  /* f = A*x + f */

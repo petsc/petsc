@@ -84,7 +84,8 @@ int AppCtxSolve(AppCtx* appctx)
 
    
   /*       Solve the non-linear system  */
-  ierr = SNESSolve(snes, algebra->g, &its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes, PETSC_NULL, algebra->g);CHKERRQ(ierr);
+  ierr = SNESGetIteratioNumber(snes, &its);CHKERRQ(ierr);
 
   /* send solution to matlab */
   if (appctx->view.matlabgraphics){
@@ -167,9 +168,9 @@ int FormStationaryFunction(SNES snes, Vec x, Vec f, void *dappctx)
 
 /****** Perform computation ***********/
   /* need to zero f */
-  ierr = VecSet(&zero, f); CHKERRQ(ierr); 
+  ierr = VecSet(f,zero); CHKERRQ(ierr); 
   /* add rhs to get constant part */
-  ierr = VecAXPY(&mone, algebra->b, f); CHKERRQ(ierr); /* this says f = f - 1*b */
+  ierr = VecAXPY(f,mone,algebra->b); CHKERRQ(ierr); /* this says f = f - 1*b */
 
   if (appctx->view.show_vector ){  printf("f-rhs\n"); VecView(f, VIEWER_STDOUT_SELF);}
 

@@ -25,12 +25,8 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
 
    Collective on MPI_Comm
 
-   Input Parameters:
-+  m - number of local rows (or PETSC_DECIDE)
-.  n - number of local columns (or PETSC_DECIDE)
-.  M - number of global rows (or PETSC_DETERMINE)
-.  N - number of global columns (or PETSC_DETERMINE)
--  comm - MPI communicator
+   Input Parameter:
+.  comm - MPI communicator
  
    Output Parameter:
 .  A - the matrix
@@ -51,13 +47,6 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
    for additional format-specific options.
 
    Notes:
-   If PETSC_DECIDE is not used for the arguments 'm' and 'n', then the
-   user must ensure that they are chosen to be compatible with the
-   vectors. To do this, one first considers the matrix-vector product 
-   'y = A x'. The 'm' that is used in the above routine must match the 
-   local size used in the vector creation routine VecCreateMPI() for 'y'.
-   Likewise, the 'n' used must match that used as the local size in
-   VecCreateMPI() for 'x'.
 
    Level: beginner
 
@@ -74,15 +63,13 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,Mat *A)
 {
   Mat            B;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(A,6);
-  if (M > 0 && m > M) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local column size %D cannot be larger than global column size %D",m,M);
-  if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local row size %D cannot be larger than global row size %D",n,N);
+  PetscValidPointer(A,2);
 
   *A = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -90,15 +77,59 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,PetscInt m,PetscInt n,
 #endif
 
   ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
-
-  B->m             = m;
-  B->n             = n;
-  B->M             = M;
-  B->N             = N;
+  B->m             = -1;
+  B->M             = -1;
+  B->n             = -1;
+  B->N             = -1;
   B->bs            = 1;
   B->preallocated  = PETSC_FALSE;
   B->bops->publish = MatPublish_Base;
   *A               = B;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetSizes"
+/*@
+  MatSetSizes - Sets the local and global sizes, and checks to determine compatibility
+
+  Collective on Mat
+
+  Input Parameters:
++  A - the matrix
+.  m - number of local rows (or PETSC_DECIDE)
+.  n - number of local columns (or PETSC_DECIDE)
+.  M - number of global rows (or PETSC_DETERMINE)
+-  N - number of global columns (or PETSC_DETERMINE)
+
+   Notes:
+   m (n) and M (N) cannot be both PETSC_DECIDE
+   If one processor calls this with M (N) of PETSC_DECIDE then all processors must, otherwise the program will hang.
+
+   If PETSC_DECIDE is not used for the arguments 'm' and 'n', then the
+   user must ensure that they are chosen to be compatible with the
+   vectors. To do this, one first considers the matrix-vector product 
+   'y = A x'. The 'm' that is used in the above routine must match the 
+   local size used in the vector creation routine VecCreateMPI() for 'y'.
+   Likewise, the 'n' used must match that used as the local size in
+   VecCreateMPI() for 'x'.
+
+  Level: beginner
+
+.seealso: MatGetSize(), PetscSplitOwnership()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1); 
+  if (M > 0 && m > M) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local column size %D cannot be larger than global column size %D",m,M);
+  if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local row size %D cannot be larger than global row size %D",n,N);
+  if ((A->m >= 0 || A->M >= 0) && (A->m != m || A->M != M)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->m,A->M);
+  if ((A->n >= 0 || A->N >= 0) && (A->n != n || A->N != N)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->n,A->N);
+  A->m = m;
+  A->n = n;
+  A->M = M;
+  A->N = N;
   PetscFunctionReturn(0);
 }
 

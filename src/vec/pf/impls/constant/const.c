@@ -23,7 +23,7 @@ PetscErrorCode PFApplyVec_Constant(void *value,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecSet((PetscScalar*)value,y);CHKERRQ(ierr);
+  ierr = VecSet(y,*((PetscScalar*)value));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  

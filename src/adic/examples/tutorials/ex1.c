@@ -74,8 +74,8 @@ int Function(Vec x,Scalar input,double *output)
   int      ierr;
   Scalar   one = 1.0;
 
-  ierr = VecSet(&one,x); CHKERRQ(ierr);
-  ierr = VecScale(&input,x); CHKERRQ(ierr);
+  ierr = VecSet(x,one); CHKERRQ(ierr);
+  ierr = VecScale(x,input); CHKERRQ(ierr);
 
   ierr = VecNorm(x,NORM_2,output); CHKERRQ(ierr);
   return 0;

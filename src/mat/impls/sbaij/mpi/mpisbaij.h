@@ -14,5 +14,5 @@ typedef struct {
   VecScatter    sMvctx;                   /* scatter context for vector used for reducing communication */
 } Mat_MPISBAIJ;
 
-EXTERN PetscErrorCode MatLoad_MPISBAIJ(PetscViewer,const MatType,Mat*);
+EXTERN PetscErrorCode MatLoad_MPISBAIJ(PetscViewer, MatType,Mat*);
 #endif

@@ -153,7 +153,7 @@
 
 !  Set exact solution; then compute right-hand-side vector.
 
-      call VecSet(one,u,ierr)
+      call VecSet(u,one,ierr)
       call MatMult(A,u,b,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -220,7 +220,7 @@
 
 !  Check the error
 
-      call VecAXPY(neg_one,u,x,ierr)
+      call VecAXPY(x,neg_one,u,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
 
@@ -327,7 +327,7 @@
       common /myshellpc/ diag
       Vec    diag
 
-      call VecPointwiseMult(x,diag,y,ierr)
+      call VecPointwiseMult(y,x,diag,ierr)
 
       end
 

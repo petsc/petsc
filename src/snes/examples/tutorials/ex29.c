@@ -647,7 +647,7 @@ PetscErrorCode Update(DMMG *dmmg)
 
     for (i=param->mglevels-1; i>0 ;i--) {
       ierr = MatRestrict(dmmg[i]->R, dmmg[i]->x, dmmg[i-1]->x);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(dmmg[i]->Rscale,dmmg[i-1]->x,dmmg[i-1]->x);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(dmmg[i-1]->x,dmmg[i-1]->x,dmmg[i]->Rscale);CHKERRQ(ierr);
       ierr = VecCopy(dmmg[i]->x, ((AppCtx*)DMMGGetUser(dmmg,i))->Xold);CHKERRQ(ierr);
     }
     ierr = VecCopy(dmmg[0]->x, ((AppCtx*)DMMGGetUser(dmmg,0))->Xold);CHKERRQ(ierr);

@@ -42,7 +42,7 @@ int main(int argc,char **args)
   ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecSet(&one,u);CHKERRQ(ierr);
+  ierr = VecSet(u,one);CHKERRQ(ierr);
 
   ierr = MatMultTranspose(C,u,b);CHKERRQ(ierr);
 
@@ -56,7 +56,7 @@ int main(int argc,char **args)
   ierr = MatSolveTranspose(A,b,x);CHKERRQ(ierr);
 
   ierr = ISView(row,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,u,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,mone,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);CHKERRQ(ierr);
 

@@ -78,11 +78,11 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = (*shell->mult)(A,x,y);CHKERRQ(ierr);
   if (shell->shift && shell->scale) {
-    ierr = VecAXPBY(&shell->vshift,&shell->vscale,x,y);CHKERRQ(ierr);
+    ierr = VecAXPBY(y,shell->vshift,shell->vscale,x);CHKERRQ(ierr);
   } else if (shell->scale) {
-    ierr = VecScale(&shell->vscale,y);CHKERRQ(ierr);
+    ierr = VecScale(y,shell->vscale);CHKERRQ(ierr);
   } else {
-    ierr = VecAXPY(&shell->vshift,x,y);CHKERRQ(ierr);
+    ierr = VecAXPY(y,shell->vshift,x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -140,7 +140,7 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatConvert_Shell(Mat,const MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode MatConvert_Shell(Mat, MatType,MatReuse,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetBlockSize_Shell"
@@ -366,7 +366,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateShell(MPI_Comm comm,PetscInt m,PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm,m,n,M,N,A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSHELL);CHKERRQ(ierr);
   ierr = MatShellSetContext(*A,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

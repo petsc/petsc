@@ -73,7 +73,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESClassicalGramSchmidtOrthogonalization(
          This is really a matrix vector product: 
          [h[0],h[1],...]*[ v[0]; v[1]; ...] subtracted from v[it+1].
   */
-  ierr = VecMAXPY(it+1,lhh,VEC_VV(it+1),&VEC_VV(0));CHKERRQ(ierr);
+  ierr = VecMAXPY(VEC_VV(it+1),it+1,lhh,&VEC_VV(0));CHKERRQ(ierr);
   /* note lhh[j] is -<v,vnew> , hence the subtraction */
   for (j=0; j<=it; j++) {
     hh[j]  -= lhh[j];     /* hh += <v,vnew> */
@@ -100,7 +100,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESClassicalGramSchmidtOrthogonalization(
   if (refine) {
     ierr = VecMDot(it+1,VEC_VV(it+1),&(VEC_VV(0)),lhh);CHKERRQ(ierr); /* <v,vnew> */
     for (j=0; j<=it; j++) lhh[j] = - lhh[j];
-    ierr = VecMAXPY(it+1,lhh,VEC_VV(it+1),&VEC_VV(0));CHKERRQ(ierr);
+    ierr = VecMAXPY(VEC_VV(it+1),it+1,lhh,&VEC_VV(0));CHKERRQ(ierr);
     /* note lhh[j] is -<v,vnew> , hence the subtraction */
     for (j=0; j<=it; j++) {
       hh[j]  -= lhh[j];     /* hh += <v,vnew> */

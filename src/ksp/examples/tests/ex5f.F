@@ -32,7 +32,7 @@
 
       call VecCreateSeq(PETSC_COMM_SELF,m,x,ierr)
       call VecDuplicate(x,y,ierr)
-      call VecSet(one,x,ierr)
+      call VecSet(x,one,ierr)
 
       call KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN,ierr)
       call KSPSetFromOptions(ksp,ierr)

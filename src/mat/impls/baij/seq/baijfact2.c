@@ -3243,7 +3243,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
 #endif
 
     /* put together the new matrix */
-    ierr = MatCreate(A->comm,bs*n,bs*n,bs*n,bs*n,fact);CHKERRQ(ierr);
+    ierr = MatCreate(A->comm,fact);CHKERRQ(ierr);
+    ierr = MatSetSizes(*fact,bs*n,bs*n,bs*n,bs*n);CHKERRQ(ierr);
     ierr = MatSetType(*fact,A->type_name);CHKERRQ(ierr);
     ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(*fact,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(*fact,isicol);CHKERRQ(ierr);

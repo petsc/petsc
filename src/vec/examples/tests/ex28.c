@@ -23,8 +23,8 @@ int main(int argc,char **argv)
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
 
-  ierr = VecSet(&one,x);CHKERRQ(ierr);
-  ierr = VecSet(&two,y);CHKERRQ(ierr);
+  ierr = VecSet(x,one);CHKERRQ(ierr);
+  ierr = VecSet(y,two);CHKERRQ(ierr);
 
   /*
         Test mixing dot products and norms that require sums
@@ -129,7 +129,7 @@ int main(int argc,char **argv)
     ierr  = VecSetSizes(vecs[i],PETSC_DECIDE,n);CHKERRQ(ierr);
     ierr  = VecSetFromOptions(vecs[i]);CHKERRQ(ierr);
     value = (PetscReal)i;
-    ierr  = VecSet(&value,vecs[i]);CHKERRQ(ierr);
+    ierr  = VecSet(vecs[i],value);CHKERRQ(ierr);
   }
   for (i=0; i<39; i++) {
     ierr = VecDotBegin(vecs[i],vecs[i+1],results+i);CHKERRQ(ierr);

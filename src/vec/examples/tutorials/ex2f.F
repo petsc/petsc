@@ -53,7 +53,7 @@
       N = rank + 1
       call VecCreateMPI(PETSC_COMM_WORLD,N,PETSC_DECIDE,x,ierr)
       call VecGetSize(x,N,ierr)
-      call VecSet(one,x,ierr)
+      call VecSet(x,one,ierr)
 
 !  Set the vector elements.
 !   - Note that VecSetValues() uses 0-based row and column numbers

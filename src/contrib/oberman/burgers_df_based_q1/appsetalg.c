@@ -54,7 +54,7 @@ PetscErrorCode AppCtxSolve(AppCtx* appctx)
   ierr = FormInitialGuess(appctx);CHKERRQ(ierr); 
   
   /*  10) Solve the non-linear system  */
-  ierr = SNESSolve(snes,algebra->g);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,algebra->g);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 
   if(0){VecView(algebra->g,PETSC_VIEWER_STDOUT_SELF);}
@@ -447,10 +447,10 @@ to see if they need to be recomputed */
 
 /****** Perform computation ***********/
   /* need to zero f */
-  ierr = VecSet(&zero,f);CHKERRQ(ierr); 
+  ierr = VecSet(f,zero);CHKERRQ(ierr); 
 
   /* add rhs to get constant part */
-  ierr = VecAXPY(&mone,b,f);CHKERRQ(ierr); /* this says f = f - 1*b */
+  ierr = VecAXPY(f,mone,b);CHKERRQ(ierr); /* this says f = f - 1*b */
 
   /*apply matrix to the input vector x, to get linear part */
   /* Assuming matrix doesn't need to be recomputed */
@@ -751,6 +751,6 @@ PetscErrorCode FormInitialGuess(AppCtx* appctx)
     AppAlgebra *algebra = &appctx->algebra;
     PetscErrorCode ierr;
     double onep1 = 1.234;
-    ierr = VecSet(&onep1,algebra->g);CHKERRQ(ierr);
+    ierr = VecSet(algebra->g,onep1);CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }           

@@ -59,8 +59,8 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
   rhoold   = 1.0;
   alpha    = 1.0;
   omegaold = 1.0;
-  ierr = VecSet(&zero,P);CHKERRQ(ierr);
-  ierr = VecSet(&zero,V);CHKERRQ(ierr);
+  ierr = VecSet(P,zero);CHKERRQ(ierr);
+  ierr = VecSet(V,zero);CHKERRQ(ierr);
 
   i=0;
   do {
@@ -70,12 +70,12 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
       break;
     }
     beta = (rho/rhoold) * (alpha/omegaold);
-    tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
-    ierr = VecAYPX(&beta,R,P);CHKERRQ(ierr);      /*   p <- r + p beta    */
+    tmp = -omegaold; VecAXPY(P,tmp,V);            /*   p <- p - w v       */
+    ierr = VecAYPX(P,beta,R);CHKERRQ(ierr);      /*   p <- r + p beta    */
     ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr);  /*   v <- K p           */
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     alpha = rho / d1; tmp = -alpha;                /*   a <- rho / (v,rp)  */
-    ierr = VecWAXPY(&tmp,V,R,S);CHKERRQ(ierr);    /*   s <- r - a v       */
+    ierr = VecWAXPY(S,tmp,V,R);CHKERRQ(ierr);      /*   s <- r - a v       */
     ierr = KSP_PCApplyBAorAB(ksp,S,T,R);CHKERRQ(ierr);/*   t <- K s    */
     ierr = VecDot(S,T,&d1);CHKERRQ(ierr);
     ierr = VecDot(T,T,&d2);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         break;
       }
-      ierr = VecAXPY(&alpha,P,X);CHKERRQ(ierr);   /*   x <- x + a p       */
+      ierr = VecAXPY(X,alpha,P);CHKERRQ(ierr);   /*   x <- x + a p       */
       ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->its++;
       ksp->rnorm  = 0.0;
@@ -98,10 +98,10 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
       break;
     }
     omega = d1 / d2;                               /*   w <- (t's) / (t't) */
-    ierr  = VecAXPY(&alpha,P,X);CHKERRQ(ierr);     /*   x <- x + a p       */
-    ierr  = VecAXPY(&omega,S,X);CHKERRQ(ierr);     /*   x <- x + w s       */
+    ierr  = VecAXPY(X,alpha,P);CHKERRQ(ierr);     /*   x <- x + a p       */
+    ierr  = VecAXPY(X,omega,S);CHKERRQ(ierr);     /*   x <- x + w s       */
     tmp   = -omega; 
-    ierr  = VecWAXPY(&tmp,T,S,R);CHKERRQ(ierr);    /*   r <- s - w t       */
+    ierr  = VecWAXPY(R,tmp,T,S);CHKERRQ(ierr);     /*   r <- s - w t       */
     if (ksp->normtype != KSP_NO_NORM) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     }

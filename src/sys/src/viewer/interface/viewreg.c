@@ -65,7 +65,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate(MPI_Comm comm,PetscViewer *invi
 
 .seealso: PetscViewerCreate(), PetscViewerGetType()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerSetType(PetscViewer viewer,const PetscViewerType type)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
 {
   PetscErrorCode ierr,(*r)(PetscViewer);
   PetscTruth     match;

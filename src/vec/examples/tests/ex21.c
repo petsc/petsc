@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
 
-  ierr = VecSet(&one,x);CHKERRQ(ierr);
+  ierr = VecSet(x,one);CHKERRQ(ierr);
   ierr = VecSetValue(x,0,0.0,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecSetValue(x,n-1,2.0,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);

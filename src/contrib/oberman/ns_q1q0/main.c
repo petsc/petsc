@@ -91,7 +91,7 @@ int AppCtxSolve(AppCtx* appctx)
    if (appctx->view.matlabgraphics) {AppCtxViewMatlab(appctx);  } 
 
   /*       Solve the non-linear system  */
-  ierr = SNESSolve(snes, algebra->g);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,algebra->g);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   /* First, send solution vector to Matlab */
   ierr = VecView(appctx->algebra.g,PETSC_VIEWER_SOCKET_WORLD); CHKERRQ(ierr);
@@ -141,7 +141,7 @@ int FormInitialGuess(AppCtx* appctx)
     ierr = VecSetValuesLocal(algebra->g, 9, df_ptr, values, INSERT_VALUES ); CHKERRQ(ierr);
   }
     }
-/* ierr = VecSet(&val, algebra->g);CHKERRQ(ierr); */
+/* ierr = VecSet(algebra->g,val);CHKERRQ(ierr); */
     PetscFunctionReturn(0);
 }
 
@@ -175,9 +175,9 @@ to see if they need to be recomputed */
 
 /****** Perform computation ***********/
   /* need to zero f */
-  ierr = VecSet(&zero, f); CHKERRQ(ierr); 
+  ierr = VecSet(f,zero); CHKERRQ(ierr); 
   /* add rhs to get constant part */
-  ierr = VecAXPY(&mone, b, f); CHKERRQ(ierr); /* this says f = f - 1*b */
+  ierr = VecAXPY(f,mone,b); CHKERRQ(ierr); /* this says f = f - 1*b */
   /*apply matrix to the input vector x, to get linear part */
   /* Assuming matrix doesn't need to be recomputed */
   ierr = MatMultAdd(A, x, f, f); CHKERRQ(ierr);  /* f = A*x - b */

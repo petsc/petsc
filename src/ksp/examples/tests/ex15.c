@@ -36,10 +36,11 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
   ierr = VecSum(u,&avalue);CHKERRQ(ierr);
   avalue = -avalue/(PetscReal)n;
-  ierr = VecShift(&avalue,u);CHKERRQ(ierr);
+  ierr = VecShift(u,avalue);CHKERRQ(ierr);
 
   /* Create and assemble matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
@@ -67,7 +68,7 @@ int main(int argc,char **args)
   /* ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Check error */
-  ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);

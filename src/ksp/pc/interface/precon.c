@@ -202,7 +202,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScaleLeft(PC pc,Vec in,Vec out)
   PetscValidHeaderSpecific(in,VEC_COOKIE,2);
   PetscValidHeaderSpecific(out,VEC_COOKIE,3);
   if (pc->diagonalscale) {
-    ierr = VecPointwiseMult(pc->diagonalscaleleft,in,out);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(out,pc->diagonalscaleleft,in);CHKERRQ(ierr);
   } else if (in != out) {
     ierr = VecCopy(in,out);CHKERRQ(ierr);
   }
@@ -244,7 +244,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScaleRight(PC pc,Vec in,Vec out)
   PetscValidHeaderSpecific(in,VEC_COOKIE,2);
   PetscValidHeaderSpecific(out,VEC_COOKIE,3);
   if (pc->diagonalscale) {
-    ierr = VecPointwiseMult(pc->diagonalscaleright,in,out);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(out,pc->diagonalscaleright,in);CHKERRQ(ierr);
   } else if (in != out) {
     ierr = VecCopy(in,out);CHKERRQ(ierr);
   }
@@ -1471,7 +1471,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCComputeExplicitOperator(PC pc,Mat *mat)
   ierr = PetscMalloc((m+1)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
-  ierr = MatCreate(comm,m,m,M,M,mat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mat,m,m,M,M);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
     ierr = MatSeqDenseSetPreallocation(*mat,PETSC_NULL);CHKERRQ(ierr);
@@ -1482,7 +1483,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCComputeExplicitOperator(PC pc,Mat *mat)
 
   for (i=0; i<M; i++) {
 
-    ierr = VecSet(&zero,in);CHKERRQ(ierr);
+    ierr = VecSet(in,zero);CHKERRQ(ierr);
     ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(in);CHKERRQ(ierr);

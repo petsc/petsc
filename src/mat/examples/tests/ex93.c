@@ -13,7 +13,8 @@ int main(int argc,char **argv) {
   PetscReal      fill=4;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MatCreate(PETSC_COMM_SELF,3,3,3,3,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,3,3,3,3);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES);CHKERRQ(ierr);
 

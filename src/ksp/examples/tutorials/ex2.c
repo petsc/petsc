@@ -63,7 +63,8 @@ int main(int argc,char **args)
          MatCreateMPIBAIJ() - parallel block AIJ
      See the matrix chapter of the users manual for details.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   /* 
@@ -138,7 +139,7 @@ int main(int argc,char **args)
     ierr = VecSetRandom(rctx,u);CHKERRQ(ierr);
     ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
   } else {
-    ierr = VecSet(&one,u);CHKERRQ(ierr);
+    ierr = VecSet(u,one);CHKERRQ(ierr);
   }
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
@@ -199,7 +200,7 @@ int main(int argc,char **args)
   /* 
      Check the error
   */
-  ierr = VecAXPY(&neg_one,u,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /* Scale the norm */

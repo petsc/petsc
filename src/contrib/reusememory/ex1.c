@@ -103,7 +103,7 @@ int main(int argc,char **args)
     /* 
        Set exact solution; then compute right-hand-side vector.
     */
-    ierr = VecSet(&one,u); CHKERRA(ierr);
+    ierr = VecSet(u,one); CHKERRA(ierr);
     ierr = MatMult(A,u,b); CHKERRA(ierr);
 
 
@@ -136,7 +136,7 @@ int main(int argc,char **args)
     /* 
       Check the error
     */
-    ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
+    ierr = VecAXPY(x,none,u); CHKERRA(ierr);
     ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
     if (norm > 1.e-12)
       PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);

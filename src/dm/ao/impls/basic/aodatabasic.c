@@ -709,7 +709,8 @@ PetscErrorCode AODataKeyGetAdjacency_Basic(AOData aodata,const char keyname[],Ma
     ii[i+1] = cnt;
   }
 
-  ierr = MatCreate(aodata->comm,nlocal,n,PETSC_DETERMINE,n,adj);CHKERRQ(ierr);
+  ierr = MatCreate(aodata->comm,adj);CHKERRQ(ierr);
+  ierr = MatSetSizes(*adj,nlocal,n,PETSC_DETERMINE,n);CHKERRQ(ierr);
   ierr = MatSetType(*adj,MATMPIADJ);CHKERRQ(ierr);
   ierr = MatMPIAdjSetPreallocation(*adj,ii,jj,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

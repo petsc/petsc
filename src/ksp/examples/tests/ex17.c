@@ -45,14 +45,15 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-norandom",&flg);CHKERRQ(ierr);
   if (flg) {
     use_random = 0;
-    ierr = VecSet(&pfive,u);CHKERRQ(ierr);
+    ierr = VecSet(u,pfive);CHKERRQ(ierr);
   } else {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
     ierr = VecSetRandom(rctx,u);CHKERRQ(ierr);
   }
 
   /* Create and assemble matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,dim,dim,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,dim,dim);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = FormTestMatrix(A,n,type);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
@@ -71,7 +72,7 @@ int main(int argc,char **args)
   ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Check error */
-  ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
   ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A,Iterations %D\n",norm,its);CHKERRQ(ierr);

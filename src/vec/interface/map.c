@@ -174,6 +174,196 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapDestroy(PetscMap map)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscMapSetOptionsPrefix"
+/*@C
+   PetscMapSetOptionsPrefix - Sets the prefix used for searching for all 
+   PetscMap options in the database.
+
+   Collective on PetscMap
+
+   Input Parameter:
++  map - the PetscMap context
+-  prefix - the prefix to prepend to all option names
+
+   Notes:
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+   Level: advanced
+
+.keywords: PetscMap, set, options, prefix, database
+
+.seealso: PetscMapSetFromOptions()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetOptionsPrefix(PetscMap map,const char prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(map,MAP_COOKIE,1);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)map,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMapAppendOptionsPrefix"
+/*@C
+   PetscMapAppendOptionsPrefix - Appends to the prefix used for searching for all 
+   PetscMap options in the database.
+
+   Collective on PetscMap
+
+   Input Parameters:
++  map - the PetscMap context
+-  prefix - the prefix to prepend to all option names
+
+   Notes:
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+   Level: advanced
+
+.keywords: PetscMap, append, options, prefix, database
+
+.seealso: PetscMapGetOptionsPrefix()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapAppendOptionsPrefix(PetscMap map,const char prefix[])
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(map,MAP_COOKIE,1);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)map,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMapGetOptionsPrefix"
+/*@C
+   PetscMapGetOptionsPrefix - Sets the prefix used for searching for all 
+   PetscMap options in the database.
+
+   Not Collective
+
+   Input Parameter:
+.  map - the PetscMap context
+
+   Output Parameter:
+.  prefix - pointer to the prefix string used
+
+   Notes: On the fortran side, the user should pass in a string 'prefix' of
+   sufficient length to hold the prefix.
+
+   Level: advanced
+
+.keywords: PetscMap, get, options, prefix, database
+
+.seealso: PetscMapAppendOptionsPrefix()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetOptionsPrefix(PetscMap map,const char *prefix[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(map,MAP_COOKIE,1);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)map,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMapSetUp"
+/*@
+   PetscMapSetUp - Sets up the internal map data structures for the later use.
+
+   Collective on PetscMap
+
+   Input Parameters:
+.  map - the PetscMap context
+
+   Notes:
+   For basic use of the PetscMap classes the user need not explicitly call
+   PetscMapSetUp(), since these actions will happen automatically.
+
+   Level: advanced
+
+.keywords: PetscMap, setup
+
+.seealso: PetscMapCreate(), PetscMapDestroy()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetUp(PetscMap map)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(map,MAP_COOKIE,1);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMapView"
+/*@C
+   PetscMapView - Visualizes a map object.
+
+   Collective on PetscMap
+
+   Input Parameters:
++  map - the map
+-  viewer - visualization context
+
+  Notes:
+  The available visualization contexts include
++    PETSC_VIEWER_STDOUT_SELF - standard output (default)
+.    PETSC_VIEWER_STDOUT_WORLD - synchronized standard
+        output where only the first processor opens
+        the file.  All other processors send their 
+        data to the first processor to print. 
+-     PETSC_VIEWER_DRAW_WORLD - graphical display of nonzero structure
+
+   Level: beginner
+
+.seealso: PetscViewerSetFormat(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), 
+          PetscViewerSocketOpen(), PetscViewerBinaryOpen(), PetscMapLoad()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapView(PetscMap map,PetscViewer viewer)
+{
+  PetscErrorCode    ierr;
+  PetscInt          size;
+  PetscTruth        iascii;
+  const char        *cstr;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(map,MAP_COOKIE,1);
+  PetscValidType(map,1);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(map->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscCheckSameComm(map,1,viewer,2);
+
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
+    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      if (map->prefix) {
+        ierr = PetscViewerASCIIPrintf(viewer,"PetscMap Object:(%s)\n",map->prefix);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"PetscMap Object:\n");CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscMapGetType(map,&cstr);CHKERRQ(ierr);
+      ierr = PetscMapGetSize(map,&size);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"type=%s, size=%D\n",cstr,size);CHKERRQ(ierr);
+    }
+  }
+  if (!iascii) {
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
+  } else {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
+    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscMapSetLocalSize"
 /*@C
   PetscMapSetLocalSize - Sets the number of elements associated with this processor.

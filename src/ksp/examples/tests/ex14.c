@@ -238,7 +238,7 @@ int main(int argc,char **argv)
        Compute updated iterate
      */
     ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);       /* ynorm = || Y || */
-    ierr = VecAYPX(&mone,X,Y);CHKERRQ(ierr);             /* Y <- X - Y      */
+    ierr = VecAYPX(Y,mone,X);CHKERRQ(ierr);              /* Y <- X - Y      */
     ierr = VecCopy(Y,X);CHKERRQ(ierr);                   /* X <- Y          */
     ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);       /* xnorm = || X || */
     if (!no_output) {

@@ -54,7 +54,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnVector(Mat A,Vec yy,PetscInt col)
   ierr = VecGetOwnershipRange(yy,&rs,&re);CHKERRQ(ierr);
   if (Rs != rs || Re != re) SETERRQ4(PETSC_ERR_ARG_INCOMP,"Matrix %D %D does not have same ownership range (size) as vector %D %D",Rs,Re,rs,re);
 
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
   for (i=Rs; i<Re; i++) {

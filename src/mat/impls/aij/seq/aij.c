@@ -750,7 +750,7 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
   PetscScalar    *x,zero = 0.0;
 
   PetscFunctionBegin;
-  ierr = VecSet(&zero,v);CHKERRQ(ierr);
+  ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
@@ -822,7 +822,7 @@ PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscErrorCode ierr;
 
   PetscFunctionBegin; 
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = MatMultTransposeAdd_SeqAIJ(A,xx,yy,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1384,7 +1384,8 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,Mat *B)
   ierr = PetscMemzero(col,(1+A->n)*sizeof(PetscInt));CHKERRQ(ierr);
   
   for (i=0; i<ai[m]; i++) col[aj[i]] += 1;
-  ierr = MatCreate(A->comm,A->n,m,A->n,m,&C);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&C);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,A->n,m,A->n,m);CHKERRQ(ierr);
   ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(C,0,col);CHKERRQ(ierr);
   ierr = PetscFree(col);CHKERRQ(ierr);
@@ -1565,7 +1566,8 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
       ierr = MatZeroEntries(*B);CHKERRQ(ierr);
       C = *B;
     } else {  
-      ierr = MatCreate(A->comm,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE,&C);CHKERRQ(ierr);
+      ierr = MatCreate(A->comm,&C);CHKERRQ(ierr);
+      ierr = MatSetSizes(C,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
       ierr = MatSeqAIJSetPreallocation_SeqAIJ(C,0,lens);CHKERRQ(ierr);
     }
@@ -1619,7 +1621,8 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
       ierr = PetscMemzero(c->ilen,(*B)->m*sizeof(PetscInt));CHKERRQ(ierr);
       C = *B;
     } else {  
-      ierr = MatCreate(A->comm,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE,&C);CHKERRQ(ierr);
+      ierr = MatCreate(A->comm,&C);CHKERRQ(ierr);
+      ierr = MatSetSizes(C,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
       ierr = MatSeqAIJSetPreallocation_SeqAIJ(C,0,lens);CHKERRQ(ierr);
     }
@@ -1810,7 +1813,8 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
   for (i=0; i<m; i++) {
     lens[row[i]] = a->i[i+1] - a->i[i];
   }
-  ierr = MatCreate(A->comm,m,n,m,n,B);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,B);CHKERRQ(ierr);
+  ierr = MatSetSizes(*B,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*B,0,lens);CHKERRQ(ierr);
   ierr = PetscFree(lens);CHKERRQ(ierr);
@@ -2034,7 +2038,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
+    ierr = VecAXPY(w2,mone,w1);CHKERRQ(ierr);
 
     /*
        Loop over rows of vector, putting results into Jacobian matrix
@@ -2535,7 +2539,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm,m,n,m,n,A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*A,nz,(PetscInt*)nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2768,7 +2773,8 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
   PetscFunctionBegin;
   *B = 0;
-  ierr = MatCreate(A->comm,A->m,A->n,A->m,A->n,&C);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,&C);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,A->m,A->n,A->m,A->n);CHKERRQ(ierr);
   ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
   ierr = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   
@@ -2852,7 +2858,7 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqAIJ"
-PetscErrorCode MatLoad_SeqAIJ(PetscViewer viewer,const MatType type,Mat *A)
+PetscErrorCode MatLoad_SeqAIJ(PetscViewer viewer, MatType type,Mat *A)
 {
   Mat_SeqAIJ     *a;
   Mat            B;
@@ -2884,7 +2890,8 @@ PetscErrorCode MatLoad_SeqAIJ(PetscViewer viewer,const MatType type,Mat *A)
   if (sum != nz) SETERRQ2(PETSC_ERR_FILE_READ,"Inconsistant matrix data in file. no-nonzeros = %d, sum-row-lengths = %d\n",nz,sum);
 
   /* create our matrix */
-  ierr = MatCreate(comm,PETSC_DECIDE,PETSC_DECIDE,M,N,&B);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   ierr = MatSetType(B,type);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(B,0,rowlengths);CHKERRQ(ierr);
   a = (Mat_SeqAIJ*)B->data;
@@ -2980,7 +2987,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscI
   if (i[0]) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
   }
-  ierr = MatCreate(comm,m,n,m,n,mat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mat,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*mat,MAT_SKIP_ALLOCATION,0);CHKERRQ(ierr);
   aij  = (Mat_SeqAIJ*)(*mat)->data;

@@ -154,11 +154,11 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 
   /* Evaluate function at F(u + ha) */
   hs = h;
-  ierr = VecWAXPY(&hs,a,U,w);CHKERRQ(ierr);
+  ierr = VecWAXPY(w,hs,a,U);CHKERRQ(ierr);
   ierr = eval_fct(snes,w,y);CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,F,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,mone,F);CHKERRQ(ierr);
   hs = 1.0/hs;
-  ierr = VecScale(&hs,y);CHKERRQ(ierr);
+  ierr = VecScale(y,hs);CHKERRQ(ierr);
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
   ierr = PetscLogEventEnd(MATSNESMF_Mult,a,y,0,0);CHKERRQ(ierr);
@@ -267,7 +267,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nloc);CHKERRQ(ierr);
-  ierr = MatCreate(comm,nloc,n,n,n,J);CHKERRQ(ierr);
+  ierr = MatCreate(comm,J);CHKERRQ(ierr);
+  ierr = MatSetSizes(*J,nloc,n,n,n);CHKERRQ(ierr);
   ierr = MatSetType(*J,MATSHELL);CHKERRQ(ierr);
   ierr = MatShellSetContext(*J,mfctx);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_MULT,(void(*)(void))SNESMatrixFreeMult2_Private);CHKERRQ(ierr);

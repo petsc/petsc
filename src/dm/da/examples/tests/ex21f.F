@@ -75,8 +75,8 @@
   
 !   zero out vectors so that ghostpoints are zero 
       value = 0.0
-      call VecSet(value,local,ierr)
-      call VecSet(value,local_copy,ierr)
+      call VecSet(local,value,ierr)
+      call VecSet(local_copy,value,ierr)
 
       call VecGetOwnershipRange(global,start,end,ierr)
       do 10, i=start,end-1
@@ -99,7 +99,7 @@
      &                        in(in_idx+1),ierr)
 
       mone = -1.0
-      call VecAXPY(mone,local,local_copy,ierr)
+      call VecAXPY(local_copy,mone,local,ierr)
       call VecNorm(local_copy,NORM_MAX,work,ierr)
       call MPI_Allreduce(work, norm,1,MPIU_REAL_PRECISION,MPI_MAX,      &
      &                   PETSC_COMM_WORLD,ierr)

@@ -72,7 +72,7 @@
 
 ! Show result
       call MatMult(A,x,u,ierr)
-      call VecAXPY(none,b,u,ierr)
+      call VecAXPY(u,none,b,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp1,its,ierr)
 
@@ -94,7 +94,7 @@
 
 ! Show result
       call MatMult(A,x,u,ierr)
-      call VecAXPY(none,b,u,ierr)
+      call VecAXPY(u,none,b,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp2,its,ierr)
       write(6,100) norm,its

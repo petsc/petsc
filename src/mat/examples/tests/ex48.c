@@ -115,7 +115,7 @@ int main(int argc,char **args)
   /* Test MatMult(), MatMultAdd() */
   for (i=0; i<40; i++) {
     ierr = VecSetRandom(rdm,xx);CHKERRQ(ierr);
-    ierr = VecSet(&zero,s2);CHKERRQ(ierr);
+    ierr = VecSet(s2,zero);CHKERRQ(ierr);
     ierr = MatMult(A,xx,s1);CHKERRQ(ierr);
     ierr = MatMultAdd(A,xx,s2,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);

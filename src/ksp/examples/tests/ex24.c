@@ -28,7 +28,8 @@ int main(int argc,char **args)
 
 
   /* Generate matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&C);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRQ(ierr);
   for (I=Istart; I<Iend; I++) { 
@@ -101,10 +102,10 @@ int main(int argc,char **args)
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /* Check error */
     ierr = VecCopy(u,u_tmp);CHKERRQ(ierr); 
-    ierr = VecAXPY(&none,x,u_tmp);CHKERRQ(ierr);
+    ierr = VecAXPY(u_tmp,none,x);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&err_norm);CHKERRQ(ierr);
     ierr = MatMult(C,x,u_tmp);CHKERRQ(ierr);  
-    ierr = VecAXPY(&none,b,u_tmp);CHKERRQ(ierr);
+    ierr = VecAXPY(u_tmp,none,b);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
   
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);

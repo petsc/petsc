@@ -63,7 +63,7 @@
 
 ! Show result
       call MatMult(A,x,u,ierr)
-      call VecAXPY(none,b,u,ierr)
+      call VecAXPY(u,none,b,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
       print*, 'Number of iterations = ',its

@@ -80,7 +80,7 @@ int main(int argc,char **argv)
 
   /* Solve nonlinear system */
   ierr = FormInitialGuess(snes,x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %D\n\n",its);CHKERRQ(ierr);
 
@@ -128,7 +128,7 @@ PetscErrorCode  FormInitialGuess(SNES snes,Vec x)
 {
   PetscErrorCode     ierr;
   PetscScalar pfive = .50;
-  ierr = VecSet(&pfive,x);CHKERRQ(ierr);
+  ierr = VecSet(x,pfive);CHKERRQ(ierr);
   return 0;
 }
 #undef __FUNCT__

@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
 
   value = -3.0;
-  ierr = VecSet(&value,global);CHKERRQ(ierr);
+  ierr = VecSet(global,value);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 

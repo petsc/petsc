@@ -52,7 +52,7 @@ PetscFList PCList = 0;
 .seealso: KSPSetType(), PCType
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc,const PCType type)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc, PCType type)
 {
   PetscErrorCode ierr,(*r)(PC);
   PetscTruth     match;

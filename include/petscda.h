@@ -358,8 +358,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunctioniTest1(DA,void*);
 
 #include "petscmat.h"
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetColoring(DA,ISColoringType,ISColoring *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetMatrix(DA,const MatType,Mat *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetGetMatrix(DA,PetscErrorCode (*)(DA,const MatType,Mat *));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetMatrix(DA, MatType,Mat *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetGetMatrix(DA,PetscErrorCode (*)(DA, MatType,Mat *));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetInterpolation(DA,DA,Mat*,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetInjection(DA,DA,VecScatter*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetBlockFills(DA,PetscInt*,PetscInt*);
@@ -432,7 +432,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMView(DM,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDestroy(DM);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCreateGlobalVector(DM,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetColoring(DM,ISColoringType,ISColoring*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetMatrix(DM,const MatType,Mat*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetMatrix(DM, MatType,Mat*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInterpolation(DM,DM,Mat*,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInjection(DM,DM,VecScatter*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRefine(DM,MPI_Comm,DM*);

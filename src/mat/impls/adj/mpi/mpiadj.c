@@ -506,7 +506,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAdj(MPI_Comm comm,PetscInt m,Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm,m,n,PETSC_DETERMINE,n,A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,n,PETSC_DETERMINE,n);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATMPIADJ);CHKERRQ(ierr);
   ierr = MatMPIAdjSetPreallocation(*A,i,j,values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -561,7 +562,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvertTo_MPIAdj(Mat A,MatType type,MatReus
   }
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MatCreate(comm,m,N,PETSC_DETERMINE,N,&B);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,m,N,PETSC_DETERMINE,N);CHKERRQ(ierr);
   ierr = MatSetType(B,type);CHKERRQ(ierr);
   ierr = MatMPIAdjSetPreallocation(B,ia,ja,a);CHKERRQ(ierr);
 

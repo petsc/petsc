@@ -86,7 +86,7 @@ int main(int argc,char **args)
       ierr = MatMult(B,x,v1);CHKERRQ(ierr);  
       ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*B*x */
       ierr = MatMult(C,x,v1);CHKERRQ(ierr);   /* v1 = C*x   */
-      ierr = VecAXPY(&none,v2,v1);CHKERRQ(ierr);
+      ierr = VecAXPY(v1,none,v2);CHKERRQ(ierr);
       ierr = VecNorm(v1,NORM_2,&norm_tmp);CHKERRQ(ierr);
       if (norm_tmp > norm) norm = norm_tmp;
     }
@@ -106,7 +106,8 @@ int main(int argc,char **args)
     ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
     PN   = M/2;
     nzp  = 5;
-    ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,PN,&P);CHKERRQ(ierr); 
+    ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr); 
+    ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,M,PN);CHKERRQ(ierr); 
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
@@ -155,7 +156,7 @@ int main(int argc,char **args)
       ierr = MatMult(B,x,v5);CHKERRQ(ierr);            /* v5 = B*x   */
       ierr = MatMultTranspose(P,v5,v3);CHKERRQ(ierr);  /* v3 = Pt*B*x */
       ierr = MatMult(C,x,v4);CHKERRQ(ierr);            /* v4 = C*x   */
-      ierr = VecAXPY(&none,v3,v4);CHKERRQ(ierr);
+      ierr = VecAXPY(v4,none,v3);CHKERRQ(ierr);
       ierr = VecNorm(v4,NORM_2,&norm_tmp);CHKERRQ(ierr);
       if (norm_tmp > norm) norm = norm_tmp;
     }
@@ -178,7 +179,8 @@ int main(int argc,char **args)
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
     PN   = M/2; 
     nzp  = 5; 
-    ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,PN,&P);CHKERRQ(ierr); 
+    ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr); 
+    ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,N,PN);CHKERRQ(ierr); 
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
@@ -224,7 +226,7 @@ int main(int argc,char **args)
 
       ierr = MatMultTranspose(P,v2,v3);CHKERRQ(ierr); /* v3 = Pt*A*P*x */
       ierr = MatMult(C,x,v4);CHKERRQ(ierr);           /* v3 = C*x   */
-      ierr = VecAXPY(&none,v3,v4);CHKERRQ(ierr);
+      ierr = VecAXPY(v4,none,v3);CHKERRQ(ierr);
       ierr = VecNorm(v4,NORM_2,&norm_tmp);CHKERRQ(ierr);
       if (norm_tmp > norm) norm = norm_tmp;
     }

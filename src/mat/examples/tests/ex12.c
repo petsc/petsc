@@ -24,7 +24,8 @@ int main(int argc,char **args)
   n = 2*size;
 
   /* create A Square matrix for the five point stencil,YET AGAIN*/
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   for (i=0; i<m; i++) { 
     for (j=2*rank; j<2*rank+2; j++) {
@@ -54,7 +55,8 @@ int main(int argc,char **args)
   /* Now Create a rectangular matrix with five point stencil (app) 
    n+size is used so that this dimension is always divisible by size.
    This way, we can always use bs = size for any number of procs */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*(n+size),&A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*(n+size));CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   for (i=0; i<m; i++) { 
     for (j=2*rank; j<2*rank+2; j++) {

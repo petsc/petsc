@@ -159,7 +159,8 @@
 !  Create matrix data structure; set Jacobian evaluation routine.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call MatCreate(comm,PETSC_DECIDE,PETSC_DECIDE,m,m,A,ierr)
+      call MatCreate(comm,A,ierr)
+      call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m,ierr)
       call MatSetFromOptions(A,ierr)
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-fdjac',flg,ierr)
       if (flg .eq. 1) then
@@ -402,7 +403,7 @@
       endif
 
 !  Compute the 2-norm and max-norm of the error
-      call VecAXPY(mone,u,solution,ierr)
+      call VecAXPY(solution,mone,u,ierr)
       call VecNorm(solution,NORM_2,en2,ierr)
 !  Scale the 2-norm by the grid spacing
       en2s = dsqrt(h)*en2

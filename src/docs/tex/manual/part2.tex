@@ -76,7 +76,7 @@ order on each process in the communicator.
 One can assign a single value to all components of a vector with the 
 command \findex{VecSet()}
 \begin{tabbing}
-  VecSet(PetscScalar *value,Vec x);
+  VecSet(Vec x,PetscScalar value);
 \end{tabbing}
 Assigning values to individual components of the vector is more 
 complicated, in order to make it possible to write efficient parallel 
@@ -201,28 +201,28 @@ the user is responsible for providing enough space in the array; \trl{n*sizeof(P
 \begin{tabular}{ll}
 {\bf Function Name} & {\bf Operation} \\
 \hline
-VecAXPY(PetscScalar *a,Vec x, Vec y); & $ y = y + a*x$ \\
-VecAYPX(PetscScalar *a,Vec x, Vec y); & $ y = x + a*y$ \\
-VecWAXPY(PetscScalar *a,Vec x,Vec y, Vec w); & $ w = a*x + y$ \\
-VecAXPBY(PetscScalar *a,PetscScalar *,Vec x,Vec y); & $ y = a*x + b*y$ \\
-VecScale(PetscScalar *a, Vec x); & $ x = a*x $ \\
+VecAXPY(Vec y,PetscScalar a,Vec x); & $ y = y + a*x$ \\
+VecAYPX(Vec y,PetscScalar a,Vec x); & $ y = x + a*y$ \\
+VecWAXPY(Vec w,PetscScalar a,Vec x,Vec y); & $ w = a*x + y$ \\
+VecAXPBY(Vec y,PetscScalar a,PetscScalar b,Vec x); & $ y = a*x + b*y$ \\
+VecScale(Vec x, PetscScalar a); & $ x = a*x $ \\
 VecDot(Vec x, Vec y, PetscScalar *r); & $ r = \bar{x}'*y$ \\
 VecTDot(Vec x, Vec y, PetscScalar *r); & $ r = x'*y$ \\
 VecNorm(Vec x,NormType type,  double *r); & $ r = ||x||_{type}$ \\
 VecSum(Vec x,   PetscScalar *r); & $ r = \sum x_{i}$ \\
 VecCopy(Vec x, Vec y); & $ y = x $ \\
 VecSwap(Vec x, Vec y); & $ y = x $ while $ x = y$ \\
-VecPointwiseMult(Vec x,Vec y, Vec w); & $ w_{i} = x_{i}*y_{i} $ \\
-VecPointwiseDivide(Vec x,Vec y, Vec w); & $ w_{i} = x_{i}/y_{i} $ \\
+VecPointwiseMult(Vec w,Vec x,Vec y); & $ w_{i} = x_{i}*y_{i} $ \\
+VecPointwiseDivide(Vec w,Vec x,Vec y); & $ w_{i} = x_{i}/y_{i} $ \\
 VecMDot(int n,Vec x, Vec y[],PetscScalar *r); & $ r[i] = \bar{x}'*y[i]$ \\
 VecMTDot(int n,Vec x, Vec y[],PetscScalar *r); & $ r[i] = x'*y[i]$ \\
-VecMAXPY(int n, PetscScalar *a,Vec y, Vec x[]); \hspace{1cm} & $ y = y + \sum_i a_{i}*x[i] $ \\
+VecMAXPY(Vec y,int n, PetscScalar *a, Vec x[]); \hspace{1cm} & $ y = y + \sum_i a_{i}*x[i] $ \\
 VecMax(Vec x,  int *idx, double *r); & $ r = \max x_{i}$ \\
 VecMin(Vec x,  int *idx, double *r); & $ r = \min x_{i}$ \\
 VecAbs(Vec x); & $ x_i = |x_{i}|$ \\
 VecReciprocal(Vec x); & $ x_i = 1/x_{i}$ \\
-VecShift(PetscScalar *s,Vec x); & $ x_i = s + x_{i}$ \\
-VecSet(PetscScalar *alpha,Vec x); & $ x_i = \alpha$ \\
+VecShift(Vec x,PetscScalar s); & $ x_i = s + x_{i}$ \\
+VecSet(Vec x,PetscScalar alpha); & $ x_i = \alpha$ \\
 \hline 
 \end{tabular}
 \end{center}
@@ -1155,8 +1155,10 @@ the particular storage formats of the matrices.
 \label{sec_matcreate}
 
 The simplest routine for forming a PETSc matrix, \trl{A}, is \findex{MatCreate()}
+followed by \findex{MatSetSizes()}
 \begin{tabbing}
-  MatCreate(MPI\_Comm comm,int m,int n,int M,int N,Mat *A)
+  MatCreate(MPI\_Comm comm,Mat *A)
+  MatSetSizes(Mat A,int m,int n,int M,int N)
 \end{tabbing}
 This routine generates a sequential matrix when running one
 process and a parallel matrix for two or more processes; the
@@ -3383,7 +3385,7 @@ in Chapter~\ref{ch_ksp}.
 After having set these routines and options, the user
 solves the problem by calling \findex{SNESSolve}
 \begin{tabbing}
-  SNESSolve(SNES snes,Vec x);
+  SNESSolve(SNES snes,Vec b,Vec x);
 \end{tabbing}
 where \trl{x} indicates the solution vector. The user should
 initialize this vector to the initial guess for the nonlinear solver
@@ -4708,7 +4710,8 @@ VecESISetVector(s,::esi::Vector\trl{<}double,int\trl{>} *v);
 \end{tabbing}
 
 \begin{tabbing}
-MatCreate(MPI\_Comm,...,Mat *A);\\
+MatCreate(MPI\_Comm,Mat *A);\\
+MatSetSizes(Mat A,...);\\
 MatSetType(A,MATESI);\\
 MatESISetOperator(A,::esi::Operator\trl{<}double,int\trl{>} *a);
 \end{tabbing}
@@ -5005,9 +5008,9 @@ duplicates \trl{v_old} to form two new vectors, \trl{v_new(1)} and \trl{v_new(2)
    ....\\
    call VecDuplicateVecs(v\_old,2,v\_new,ierr)\\
    alpha = 4.3\\
-   call VecSet(alpha,v\_new(1),ierr)\\
+   call VecSet(v\_new(1),alpha,ierr)\\
    alpha = 6.0\\
-   call VecSet(alpha,v\_new(2),ierr)\\
+   call VecSet(v\_new(2),alpha,ierr)\\
    ....\\
    call VecDestroyVecs(v\_new,2,ierr)
 \end{tabbing}

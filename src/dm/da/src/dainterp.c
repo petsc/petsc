@@ -18,7 +18,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolationScale(DM dac,DM daf,Mat mat,V
   PetscFunctionBegin;
   ierr = DMCreateGlobalVector(daf,&fine);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dac,scale);CHKERRQ(ierr);
-  ierr = VecSet(&one,fine);CHKERRQ(ierr);
+  ierr = VecSet(fine,one);CHKERRQ(ierr);
   ierr = MatRestrict(mat,fine,*scale);CHKERRQ(ierr);
   ierr = VecDestroy(fine);CHKERRQ(ierr);
   ierr = VecReciprocal(*scale);CHKERRQ(ierr);
@@ -59,7 +59,8 @@ PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
-  ierr = MatCreate(dac->comm,m_f,m_c,mx,Mx,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(dac->comm,&mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
@@ -150,7 +151,8 @@ PetscErrorCode DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
-  ierr = MatCreate(dac->comm,m_f,m_c,mx,Mx,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(dac->comm,&mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
@@ -286,7 +288,8 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
       ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
     }
   }
-  ierr = MatCreate(daf->comm,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(daf->comm,&mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
@@ -469,7 +472,8 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
       }
     }
   }
-  ierr = MatCreate(dac->comm,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(dac->comm,&mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);

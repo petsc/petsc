@@ -43,9 +43,9 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
   while (next->next) {
     next = next->next;
     ierr = MatMult(mat,y,jac->work1);CHKERRQ(ierr);
-    ierr = VecWAXPY(&mone,jac->work1,x,jac->work2);CHKERRQ(ierr);
+    ierr = VecWAXPY(jac->work2,mone,jac->work1,x);CHKERRQ(ierr);
     ierr = PCApply(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
-    ierr = VecAXPY(&one,jac->work1,y);CHKERRQ(ierr);
+    ierr = VecAXPY(y,one,jac->work1);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -94,7 +94,7 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
   while (next->next) {
     next = next->next;
     ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
-    ierr = VecAXPY(&one,jac->work1,y);CHKERRQ(ierr);
+    ierr = VecAXPY(y,one,jac->work1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

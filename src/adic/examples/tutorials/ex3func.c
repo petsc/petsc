@@ -58,7 +58,8 @@ int Function(Vec F, Vec x)
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,n,n,&J); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&J); CHKERRA(ierr);
+  ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,n,n); CHKERRA(ierr);
 
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -112,7 +113,8 @@ int Function(Vec F, Vec x)
      this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(x); CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,x); CHKERRA(ierr);
+  ierr = SNESGetIterationNumber(snes, &its); CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d\n\n", its );
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -140,7 +142,7 @@ int FormInitialGuess(Vec x)
 {
    int    ierr;
    Scalar pfive = .50;
-   ierr = VecSet(&pfive,x); CHKERRQ(ierr);
+   ierr = VecSet(x,pfive); CHKERRQ(ierr);
    return 0;
 }
 /* ------------------------------------------------------------------- */

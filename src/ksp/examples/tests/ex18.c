@@ -56,7 +56,7 @@ int main(int argc,char **args)
   /* Set up solution */
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
-  ierr = VecSet(&zero,x);CHKERRQ(ierr);
+  ierr = VecSet(x,zero);CHKERRQ(ierr);
 
   /* Solve system */
   PetscLogStagePush(1);
@@ -71,7 +71,7 @@ int main(int argc,char **args)
 
   /* Show result */
   ierr = MatMult(A,x,u);
-  ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
+  ierr = VecAXPY(u,none,b);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);

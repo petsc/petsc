@@ -168,7 +168,8 @@ PetscErrorCode AppCtxCreateMatrix(AppCtx* appctx)
   PetscErrorCode         ierr;
  
   PetscFunctionBegin;
-  ierr = MatCreate(comm,grid->vertex_local_n,grid->vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE,&algebra->A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&algebra->A);CHKERRQ(ierr);
+  ierr = MatSetSizes(algebra->A,grid->vertex_local_n,grid->vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(algebra->A);CHKERRQ(ierr);
 
   /* Allows one to set values into the matrix using the LOCAL numbering, via MatSetValuesLocal() */
@@ -310,7 +311,7 @@ PetscErrorCode SetBoundaryConditions(AppCtx *appctx)
   ierr = VecSetValuesLocal(algebra->b,grid->boundary_n,vertex_ptr,grid->boundary_values,INSERT_VALUES);CHKERRQ(ierr);
 
   /* set initial guess satisfying boundary conditions */
-  ierr = VecSet(&zero,algebra->x);CHKERRQ(ierr);
+  ierr = VecSet(algebra->x,zero);CHKERRQ(ierr);
   ierr = VecSetValuesLocal(algebra->x,grid->boundary_n,vertex_ptr,grid->boundary_values,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(algebra->x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(algebra->x);CHKERRQ(ierr);

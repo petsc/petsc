@@ -198,7 +198,7 @@
 
 ! Set the exact solution; compute the right-hand-side vector
       val = 1.0*count
-      call VecSet(val,u,ierr)
+      call VecSet(u,val,ierr)
       call MatMult(A,u,b,ierr)
 
 ! Set operators, keeping the identical preconditioner matrix for

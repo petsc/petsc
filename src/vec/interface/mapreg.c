@@ -27,7 +27,7 @@ PetscTruth PetscMapRegisterAllCalled          = PETSC_FALSE;
 .keywords: map, set, type
 .seealso PetscMapGetType(), PetscMapCreate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetType(PetscMap map, const PetscMapType method)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetType(PetscMap map, PetscMapType method)
 {
   PetscErrorCode (*r)(PetscMap);
   PetscTruth match;

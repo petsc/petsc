@@ -51,7 +51,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,Rr);CHKERRQ(ierr);      /*   r <- b - Ax       */
-    ierr = VecAYPX(&mone,B,Rr);CHKERRQ(ierr);
+    ierr = VecAYPX(Rr,mone,B);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(B,Rr);CHKERRQ(ierr);           /*     r <- b (x is 0) */
   }
@@ -87,9 +87,9 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
        ierr = VecCopy(Zl,Pl);CHKERRQ(ierr);
      } else {
        b = beta/betaold;
-       ierr = VecAYPX(&b,Zr,Pr);CHKERRQ(ierr);  /*     p <- z + b* p   */
+       ierr = VecAYPX(Pr,b,Zr);CHKERRQ(ierr);  /*     p <- z + b* p   */
        b = PetscConj(b);
-       ierr = VecAYPX(&b,Zl,Pl);CHKERRQ(ierr);
+       ierr = VecAYPX(Pl,b,Zl);CHKERRQ(ierr);
      }
      betaold = beta;
      ierr = KSP_MatMult(ksp,Amat,Pr,Zr);CHKERRQ(ierr);    /*     z <- Kp         */
@@ -99,11 +99,11 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
      ierr = VecConjugate(Zl);CHKERRQ(ierr);
      ierr = VecDot(Zr,Pl,&dpi);CHKERRQ(ierr);               /*     dpi <- z'p      */
      a = beta/dpi;                                 /*     a = beta/p'z    */
-     ierr = VecAXPY(&a,Pr,X);CHKERRQ(ierr);       /*     x <- x + ap     */
+     ierr = VecAXPY(X,a,Pr);CHKERRQ(ierr);       /*     x <- x + ap     */
      ma = -a;
-     ierr = VecAXPY(&ma,Zr,Rr);CHKERRQ(ierr)
+     ierr = VecAXPY(Rr,ma,Zr);CHKERRQ(ierr)
      ma = PetscConj(ma);
-     ierr = VecAXPY(&ma,Zl,Rl);CHKERRQ(ierr);
+     ierr = VecAXPY(Rl,ma,Zl);CHKERRQ(ierr);
      if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
        ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);  /*     z <- Br         */
        ierr = VecConjugate(Rl);CHKERRQ(ierr);

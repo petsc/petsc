@@ -19,8 +19,8 @@ int Function(Vec x,Vec y)
   Scalar   three = 3.0,two = 2.0;
 
   ierr = VecCopy(x,y);
-  ierr = VecScale(&three,y); CHKERRQ(ierr);
-  ierr = VecShift(&two,y); CHKERRQ(ierr);
+  ierr = VecScale(y,three); CHKERRQ(ierr);
+  ierr = VecShift(y,two); CHKERRQ(ierr);
   return 0;
 }
 

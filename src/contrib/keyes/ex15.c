@@ -1,4 +1,4 @@
-c#ifdef PETSC_RCS_HEADER
+#ifdef PETSC_RCS_HEADER
 static char vcid[] = "$Id: ex15.c,v 1.11 1999/10/07 19:09:21 bsmith Exp bsmith $";
 #endif
 
@@ -178,7 +178,8 @@ int main( int argc, char **argv )
   ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf); CHKERRA(ierr);
   ierr = SNESSetTolerances(snes,atol,rtol,stol,1,maxf); CHKERRA(ierr);
   ierr = FormInitialGuess1(&user,finegrid->x); CHKERRA(ierr);
-  ierr = SNESSolve(snes,finegrid->x,&its); CHKERRA(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,finegrid->x); CHKERRA(ierr);
+  ierr = SNESGetIterationNumber(snes, &its); CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Pre-load Newton iterations = %d\n", its );CHKERRA(ierr);
 
   /* Reset options, start timer, then solve nonlinear system */
@@ -186,7 +187,8 @@ int main( int argc, char **argv )
   ierr = FormInitialGuess1(&user,finegrid->x); CHKERRA(ierr);
   ierr = PLogStagePush(1);CHKERRA(ierr);
   ierr = PetscGetTime(&v1); CHKERRA(ierr);
-  ierr = SNESSolve(snes,finegrid->x,&its); CHKERRA(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,finegrid->x); CHKERRA(ierr);
+  ierr = SNESGetIterationNumber(snes, &its); CHKERRA(ierr);
   ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = PetscGetTime(&v2); CHKERRA(ierr);
   ierr = PLogStagePop();CHKERRA(ierr);
@@ -794,7 +796,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       X    = user->grid[i-1].x;      
 
       /* scale to "natural" scaling for that grid */
-      ierr = VecPointwiseMult(user->grid[i].Rscale,X,X);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(X,X,user->grid[i].Rscale);CHKERRQ(ierr);
 
       /* form Jacobian on coarse grid */
       ierr = FormJacobian_Grid(user,&user->grid[i-1],X,&user->grid[i-1].J,&user->grid[i-1].J);CHKERRQ(ierr);
@@ -888,7 +890,7 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   ierr = VecDuplicate(g_c->x,&Rscale);CHKERRQ(ierr);
-  ierr = VecSet(&one,g_f->x);CHKERRQ(ierr);
+  ierr = VecSet(g_f->x,one);CHKERRQ(ierr);
   ierr = MGRestrict(mat,g_f->x,Rscale);CHKERRQ(ierr);
   ierr = VecReciprocal(Rscale);CHKERRQ(ierr);
   g_f->Rscale = Rscale;

@@ -67,7 +67,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
   for (i=1; i<=itg->curl; i++) {
     ierr = VecDot(itg->btilde[i-1],b,&(itg->alpha[i-1]));CHKERRQ(ierr);
     tmp = -itg->alpha[i-1];
-    ierr = VecAXPY(&tmp,itg->btilde[i-1],b);CHKERRQ(ierr);
+    ierr = VecAXPY(b,tmp,itg->btilde[i-1]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -85,7 +85,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
   PetscValidHeaderSpecific(x,VEC_COOKIE,3);  
   ierr = VecCopy(x,itg->xtilde[itg->curl]);CHKERRQ(ierr);
   for (i=1; i<=itg->curl; i++) {
-    ierr = VecAXPY(&itg->alpha[i-1],itg->xtilde[i-1],x);CHKERRQ(ierr);
+    ierr = VecAXPY(x,itg->alpha[i-1],itg->xtilde[i-1]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -109,9 +109,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
   if (curl == itg->maxl) {
     ierr = KSP_MatMult(ksp,Amat,x,itg->btilde[0]);CHKERRQ(ierr);
     ierr = VecNorm(itg->btilde[0],NORM_2,&normax);CHKERRQ(ierr);
-    tmp = 1.0/normax; ierr = VecScale(&tmp,itg->btilde[0]);CHKERRQ(ierr);
+    tmp = 1.0/normax; ierr = VecScale(itg->btilde[0],tmp);CHKERRQ(ierr);
     /* VCOPY(ksp->vc,x,itg->xtilde[0]); */
-    ierr = VecScale(&tmp,itg->xtilde[0]);CHKERRQ(ierr);
+    ierr = VecScale(itg->xtilde[0],tmp);CHKERRQ(ierr);
   } else {
     ierr = KSP_MatMult(ksp,Amat,itg->xtilde[curl],itg->btilde[curl]);CHKERRQ(ierr);
     for (i=1; i<=curl; i++) {
@@ -119,13 +119,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
     }
     for (i=1; i<=curl; i++) {
       tmp  = -itg->alpha[i-1];
-      ierr = VecAXPY(&tmp,itg->btilde[i-1],itg->btilde[curl]);CHKERRQ(ierr);
-      ierr = VecAXPY(&itg->alpha[i-1],itg->xtilde[i-1],itg->xtilde[curl]);CHKERRQ(ierr);
+      ierr = VecAXPY(itg->btilde[curl],tmp,itg->btilde[i-1]);CHKERRQ(ierr);
+      ierr = VecAXPY(itg->xtilde[curl],itg->alpha[i-1],itg->xtilde[i-1]);CHKERRQ(ierr);
     }
     ierr = VecNorm(itg->btilde[curl],NORM_2,&norm);CHKERRQ(ierr);
-    tmp = 1.0/norm; ierr = VecScale(&tmp,itg->btilde[curl]);CHKERRQ(ierr);
+    tmp = 1.0/norm; ierr = VecScale(itg->btilde[curl],tmp);CHKERRQ(ierr);
     ierr = VecNorm(itg->xtilde[curl],NORM_2,&norm);CHKERRQ(ierr);
-    ierr = VecScale(&tmp,itg->xtilde[curl]);CHKERRQ(ierr);
+    ierr = VecScale(itg->xtilde[curl],tmp);CHKERRQ(ierr);
     itg->curl++;
   }
   PetscFunctionReturn(0);

@@ -545,7 +545,7 @@ void PETSC_STDCALL petscrandomgetvalue_(PetscRandom *r,PetscScalar *val,PetscErr
 void PETSC_STDCALL petscobjectgetname_(PetscObject *obj,CHAR name PETSC_MIXED_LEN(len),
                                        PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *tmp;
+  const char *tmp;
   *ierr = PetscObjectGetName(*obj,&tmp);
 #if defined(PETSC_USES_CPTOFCD)
   {

@@ -21,7 +21,7 @@
 !     The Objects vec,comm created in a C routine are now
 !     used in fortran routines.
 !       
-       call VecSet(two,vec,ierr)
+       call VecSet(vec,two,ierr)
        call MPI_Comm_rank(comm,rank,ierr)
 
 !

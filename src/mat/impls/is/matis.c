@@ -60,7 +60,7 @@ PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
   ierr = MatMult(is->A,is->x,is->y);CHKERRQ(ierr);
 
   /* scatter product back into global memory */
-  ierr = VecSet(&zero,y);CHKERRQ(ierr);
+  ierr = VecSet(y,zero);CHKERRQ(ierr);
   ierr = VecScatterBegin(is->y,y,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(is->y,y,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
 
@@ -98,7 +98,8 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mappin
 
   /* Create the local matrix A */
   ierr = ISLocalToGlobalMappingGetSize(mapping,&n);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_SELF,n,n,n,n,&is->A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&is->A);CHKERRQ(ierr);
+  ierr = MatSetSizes(is->A,n,n,n,n);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)is->A,"is");CHKERRQ(ierr);
   ierr = MatSetFromOptions(is->A);CHKERRQ(ierr);
 
@@ -148,8 +149,8 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,IS isrows,const PetscScalar *diag)
     Vec         counter;
     PetscScalar one=1.0, zero=0.0;
     ierr = VecCreateMPI(A->comm,A->n,A->N,&counter);CHKERRQ(ierr);
-    ierr = VecSet(&zero,counter);CHKERRQ(ierr);
-    ierr = VecSet(&one,is->x);CHKERRQ(ierr);
+    ierr = VecSet(counter,zero);CHKERRQ(ierr);
+    ierr = VecSet(is->x,one);CHKERRQ(ierr);
     ierr = VecScatterBegin(is->x,counter,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
     ierr = VecScatterEnd  (is->x,counter,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
     ierr = VecScatterBegin(counter,is->x,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);

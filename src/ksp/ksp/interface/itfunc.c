@@ -336,7 +336,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
 
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
-    ierr = VecPointwiseMult(ksp->diagonal,ksp->vec_rhs,ksp->vec_rhs);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(ksp->vec_rhs,ksp->vec_rhs,ksp->diagonal);CHKERRQ(ierr);
     /* second time in, but matrix was scaled back to original */
     if (ksp->dscalefix && ksp->dscalefix2) {
       Mat mat;
@@ -352,12 +352,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
         ierr = VecCopy(ksp->diagonal,ksp->truediagonal);CHKERRQ(ierr);
         ierr = VecReciprocal(ksp->truediagonal);CHKERRQ(ierr);
       }
-      ierr = VecPointwiseMult(ksp->truediagonal,ksp->vec_sol,ksp->vec_sol);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(ksp->vec_sol,ksp->vec_sol,ksp->truediagonal);CHKERRQ(ierr);
     }
   }
   ierr = PCPreSolve(ksp->pc,ksp);CHKERRQ(ierr);
 
-  if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
+  if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,zero);CHKERRQ(ierr);}
   if (ksp->guess_knoll) {
     ierr            = PCApply(ksp->pc,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
     ierr            = KSP_RemoveNullSpace(ksp,ksp->vec_sol);CHKERRQ(ierr);
@@ -378,13 +378,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   /* diagonal scale solution if called for */
   ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
   if (ksp->dscale) {
-    ierr = VecPointwiseMult(ksp->diagonal,ksp->vec_sol,ksp->vec_sol);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(ksp->vec_sol,ksp->vec_sol,ksp->diagonal);CHKERRQ(ierr);
     /* unscale right hand side and matrix */
     if (ksp->dscalefix) {
       Mat mat;
 
       ierr = VecReciprocal(ksp->diagonal);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(ksp->diagonal,ksp->vec_rhs,ksp->vec_rhs);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(ksp->vec_rhs,ksp->vec_rhs,ksp->diagonal);CHKERRQ(ierr);
       ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
       ierr = VecReciprocal(ksp->diagonal);CHKERRQ(ierr);
@@ -512,7 +512,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = PCGetOperators(ksp->pc,&A,0,0);CHKERRQ(ierr);
     ierr = VecDuplicate(ksp->vec_sol,&t);CHKERRQ(ierr);
     ierr = KSP_MatMult(ksp,A,ksp->vec_sol,t);CHKERRQ(ierr);
-    ierr = VecWAXPY(&mone,t,ksp->vec_rhs,t);CHKERRQ(ierr);
+    ierr = VecWAXPY(t,mone,t,ksp->vec_rhs);CHKERRQ(ierr);
     ierr = VecNorm(t,NORM_2,&norm);CHKERRQ(ierr);
     ierr = VecDestroy(t);CHKERRQ(ierr);
     ierr = PetscPrintf(ksp->comm,"KSP final norm of residual %g\n",norm);CHKERRQ(ierr);
@@ -557,7 +557,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   ksp->vec_rhs = b;
   ksp->vec_sol = x;
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
+  if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,zero);CHKERRQ(ierr);}
   ksp->transpose_solve = PETSC_TRUE;
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -719,10 +719,11 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
     MatScalar   *a;
 
     /* Should this be the same type as mat? */
+    ierr = MatCreate(mat->comm,&A);CHKERRQ(ierr);
     if (!rank) {
-      ierr = MatCreate(mat->comm,M,N,M,N,&A);CHKERRQ(ierr);
+      ierr = MatSetSizes(A,M,N,M,N);CHKERRQ(ierr);
     } else {
-      ierr = MatCreate(mat->comm,0,0,M,N,&A);CHKERRQ(ierr);
+      ierr = MatSetSizes(A,0,0,M,N);CHKERRQ(ierr);
     }
     ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
     ierr = MatMPISBAIJSetPreallocation(A,mat->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
@@ -866,7 +867,7 @@ PetscErrorCode MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
 
   /* diagonal part */
   ierr = (*a->A->ops->mult)(a->A,xx,a->slvec1a);CHKERRQ(ierr); 
-  ierr = VecSet(&zero,a->slvec1b);CHKERRQ(ierr); 
+  ierr = VecSet(a->slvec1b,zero);CHKERRQ(ierr); 
 
   /* subdiagonal part */  
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
@@ -935,7 +936,7 @@ PetscErrorCode MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   */
   /* diagonal part */
   ierr = (*a->A->ops->multadd)(a->A,xx,yy,a->slvec1a);CHKERRQ(ierr); 
-  ierr = VecSet(&zero,a->slvec1b);CHKERRQ(ierr); 
+  ierr = VecSet(a->slvec1b,zero);CHKERRQ(ierr); 
 
   /* subdiagonal part */  
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
@@ -1488,12 +1489,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,Pet
   b->cstart_bs = b->cstart*bs;
   b->cend_bs   = b->cend*bs;
   
-  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->m,B->m,B->m,&b->A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
+  ierr = MatSetSizes(b->A,B->m,B->m,B->m,B->m);CHKERRQ(ierr);
   ierr = MatSetType(b->A,MATSEQSBAIJ);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(b->A,bs,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
 
-  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->M,B->m,B->M,&b->B);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
+  ierr = MatSetSizes(b->B,B->m,B->M,B->m,B->M);CHKERRQ(ierr);
   ierr = MatSetType(b->B,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(b->B,bs,o_nz,o_nnz);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
@@ -1849,7 +1852,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPISBAIJ(MPI_Comm comm,PetscInt bs,Pe
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm,m,n,M,N,A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
     ierr = MatSetType(*A,MATMPISBAIJ);CHKERRQ(ierr);
@@ -1874,7 +1878,8 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
 
   PetscFunctionBegin;
   *newmat       = 0;
-  ierr = MatCreate(matin->comm,matin->m,matin->n,matin->M,matin->N,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(matin->comm,&mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,matin->m,matin->n,matin->M,matin->N);CHKERRQ(ierr);
   ierr = MatSetType(mat,matin->type_name);CHKERRQ(ierr);
   ierr = PetscMemcpy(mat->ops,matin->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   
@@ -1978,7 +1983,7 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPISBAIJ"
-PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
 {
   Mat            A;
   PetscErrorCode ierr;
@@ -2138,7 +2143,8 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
   }
   
   /* create our matrix */
-  ierr = MatCreate(comm,m,m,PETSC_DETERMINE,PETSC_DETERMINE,&A);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(A,type);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(A,bs,0,dlens,0,odlens);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
@@ -2351,7 +2357,7 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
       ierr = PetscMemcpy(ptr,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
       ierr = VecRestoreArray(mat->slvec0,&ptr);CHKERRQ(ierr);  
 
-      ierr = VecScale(&mone,mat->slvec0);CHKERRQ(ierr);
+      ierr = VecScale(mat->slvec0,mone);CHKERRQ(ierr);
 
       /* copy bb into slvec1a */
       ierr = VecGetArray(mat->slvec1,&ptr);CHKERRQ(ierr);
@@ -2360,7 +2366,7 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
       ierr = VecRestoreArray(mat->slvec1,&ptr);CHKERRQ(ierr);  
 
       /* set slvec1b = 0 */
-      ierr = VecSet(&zero,mat->slvec1b);CHKERRQ(ierr); 
+      ierr = VecSet(mat->slvec1b,zero);CHKERRQ(ierr); 
 
       ierr = VecScatterBegin(mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD,mat->sMvctx);CHKERRQ(ierr);  
       ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
@@ -2407,14 +2413,14 @@ PetscErrorCode MatRelax_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORTy
    
       /* lower diagonal part: bb1 = bb - B^T*xx */
       ierr = (*mat->B->ops->multtranspose)(mat->B,xx,lvec1);CHKERRQ(ierr);
-      ierr = VecScale(&mone,lvec1);CHKERRQ(ierr); 
+      ierr = VecScale(lvec1,mone);CHKERRQ(ierr); 
 
       ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr); 
       ierr = VecCopy(bb,bb1);CHKERRQ(ierr);
       ierr = VecScatterBegin(lvec1,bb1,ADD_VALUES,SCATTER_REVERSE,mat->Mvctx);CHKERRQ(ierr);
 
       /* upper diagonal part: bb1 = bb1 - B*x */ 
-      ierr = VecScale(&mone,mat->lvec);CHKERRQ(ierr);
+      ierr = VecScale(mat->lvec,mone);CHKERRQ(ierr);
       ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb1,bb1);CHKERRQ(ierr);
 
       ierr = VecScatterEnd(lvec1,bb1,ADD_VALUES,SCATTER_REVERSE,mat->Mvctx);CHKERRQ(ierr); 

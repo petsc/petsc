@@ -87,7 +87,26 @@ in PETSc 2.2.2 </font></p>
 
       <p><u><b>Vec:</b></u></p>
         <ul> 
-        <li>Faster generation of VecScatter for many processes when indices are mostly sorted</li>
+          <li>Faster generation of VecScatter for many processes when indices are mostly sorted</li>
+          <li>Changed BLAS-type interfaces to PETSc-style:
+          <ul>
+            <li>VecShift</li>
+            <li>VecScale</li>
+            <li>VecSet</li>
+            <li>VecAXPY</li>
+            <li>VecAXPBY</li>
+            <li>VecAYPX</li>
+            <li>VecMAXPY</li>
+            <li>VecWAXPY</li>
+          </ul></li>
+          <li>Changed order of arguments in pointwise routines:
+          <ul>
+            <li>VecPointwiseMult</li>
+            <li>VecPointwiseMax</li>
+            <li>VecPointwiseMin</li>
+            <li>VecPointwiseMaxAbs</li>
+            <li>VecPointwiseDivide</li>
+          </ul></li>
         </ul>
       </p>
 
@@ -97,6 +116,8 @@ in PETSc 2.2.2 </font></p>
         <li>Added the argument MatFactorInfo to MatLUFactorNumeric() and MatCholeskyFactorNumeric()</li>
         <li>Faster MatSetValues()</li>
         <li>Faster parallel-matrix vector products</li>
+        <li>Changed MatCreate() to take only a communicator</li>
+        <li>Added MatSetSize() to specify matrix sizes</li>
         </ul>
       </p>
 
@@ -132,9 +153,16 @@ in PETSc 2.2.2 </font></p>
 
       <p><u><b>SNES:</b></u></p>
       <ul>
-         <li> Changed the name and calling sequence for SNESSetLineSearchCheck() to SNESLineSearchSetPostCheck() and
+         <li>Changed the name and calling sequence for SNESSetLineSearchCheck() to SNESLineSearchSetPostCheck() and
               added a SNESLineSearchSetPreCheck()</li>
-         <li> Changed the names of all SNESxxxxLineSearchyyyy() to SNESLineSearchxxxxyyyy() per PETSc naming standard. 
+         <li>Changed the names of all SNESxxxxLineSearchyyyy() to SNESLineSearchxxxxyyyy() per PETSc naming standard. 
+         <li>Now allow a constant vector to be specified in SNESSolve()</li>
+         <li>Removed the Vec argument from SNESSetUp()</li>
+         <li>Corrected the order of function and context arguments in:
+           <ul>
+             <li>SNESGetFunction()</li>
+             <li>SNESGetJacobian()</li>
+           </ul></li>
       </ul>
       </p>
 

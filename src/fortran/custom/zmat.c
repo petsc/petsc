@@ -483,7 +483,7 @@ void PETSC_STDCALL matorderingregisterdestroy_(PetscErrorCode *ierr)
 
 void PETSC_STDCALL matgettype_(Mat *mm,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *tname;
+  const char *tname;
 
   *ierr = MatGetType(*mm,&tname);
 #if defined(PETSC_USES_CPTOFCD)
@@ -502,9 +502,9 @@ void PETSC_STDCALL matgettype_(Mat *mm,CHAR name PETSC_MIXED_LEN(len),PetscError
 
 }
 
-void PETSC_STDCALL matcreate_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,Mat *V,PetscErrorCode *ierr)
+void PETSC_STDCALL matcreate_(MPI_Comm *comm,Mat *M,PetscErrorCode *ierr)
 {
-  *ierr = MatCreate((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,V);
+  *ierr = MatCreate((MPI_Comm)PetscToPointerComm(*comm),M);
 }
 
 void PETSC_STDCALL matcreateseqaij_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *nz,

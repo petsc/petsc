@@ -7,7 +7,8 @@ int MatCreateFeti(MPI_Comm comm, const int N, Mat* A)
 
     PetscFunctionBegin;
 
-    MatCreate(comm,N,0,0,0,A);                /* N is stored in A->m */
+    MatCreate(comm,A);                /* N is stored in A->m */
+    MatSetSizes(*A,N,0,0,0)
     MatCreate_Feti(*A);
 
     PetscObjectChangeTypeName((PetscObject)*A,MATFETI);                   /* solely changes the typename */
@@ -123,7 +124,7 @@ int MatLoad_Feti(Mat A, Vec* lambda)
     if(matfeti->lambda_copy==0 && lambda!=0)  /* lambda_copy was zeroed by MatCreate_Feti */
     {
 	VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,llen,lambda);
-	VecSet(&zero,*lambda);
+	VecSet(*lambda,zero);
 	/* There is room for optimization; the partitioning of lambda should minimize 
 	   the communication and be influenced somewhat by the scatters BrT      */
 	matfeti->lambda_copy=*lambda; /* save a copy for creation of the scatter */
@@ -273,10 +274,10 @@ int MatMult_Feti(Mat A, Vec src_lambda, Vec dst_lambda)
     ASSERT(src_lambda!=dst_lambda,"Source and destination vectors can't be the same in MatMult_Feti.");
 
     PetscScalar zero=0;
-    VecSet(&zero,dst_lambda);
+    VecSet(dst_lambda,zero);
 
     if(matfeti->domains->use_Q)
-	VecSet(&zero,matfeti->mu);
+	VecSet(matfeti->mu,zero);
 
     MatFetiScatter   (A,                            /* apply all Br */
 		      src_lambda,                   /* src_lambda ---> all ur */
@@ -319,7 +320,7 @@ int MatMult_Feti(Mat A, Vec src_lambda, Vec dst_lambda)
 
     }
 
-    VecSet(&zero,matfeti->uc_ass_tmp);              /* zero uc_ass_tmp               */ 
+    VecSet(matfeti->uc_ass_tmp,zero);              /* zero uc_ass_tmp               */ 
 
     MatFetiScatterBc (A,                            /* all domain->uc --> uc_ass_tmp */
 		      matfeti->uc_ass_tmp,          /* taken out of the loop         */
@@ -381,10 +382,9 @@ int MatMult_Feti(Mat A, Vec src_lambda, Vec dst_lambda)
 	ASSERT(its>0,"SLES error.");
 
 	PetscScalar const unity=1;
-	VecWAXPY         (&unity,                   /* ur = 1*ur_tmp1 + ur_tmp2 */
+	VecWAXPY         (domain->ur,unity,                   /* ur = 1*ur_tmp1 + ur_tmp2 */
 			  domain->ur_tmp1,
-			  domain->ur_tmp2,
-			  domain->ur);
+			  domain->ur_tmp2);
 
     }
 
@@ -950,7 +950,8 @@ int MatFetiSetUpSccTilde(Mat A)
     PetscReal norm;
     PetscScalar minus_one=-1;
 
-    MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,cm_len,cm_len,&Scctilde);
+    MatCreate(PETSC_COMM_WORLD,&Scctilde);
+    MatSetSizes(Scctilde,PETSC_DECIDE,PETSC_DECIDE,cm_len,cm_len);
     MatSetType(Scctilde,MATMPIAIJ);
 
     MatAssignSubMatrix (matfeti->Scc_ass,  /* copy into          */
@@ -976,7 +977,7 @@ int MatFetiSetUpSccTilde(Mat A)
 	    VecNorm(domain->ur_tmp1,NORM_1,&norm);  
 	    if(norm != 0.0) continue;                 
 
-	    VecScale(&minus_one,domain->ur_tmp1);
+	    VecScale(domain->ur_tmp1,minus_one);
 
 	    SLESSolve(domain->Krrinv,
 		      domain->ur_tmp1,
@@ -1019,7 +1020,7 @@ int MatFetiSetUpSccTilde(Mat A)
 		VecNorm(domain->uc,NORM_1,&norm);
 		if(norm != 0.0) continue;               
 
-		VecScale(&minus_one,domain->uc);
+		VecScale(domain->uc,minus_one);
 
 		MatMult   (domain->Krc,
 			   domain->uc,
@@ -1158,12 +1159,12 @@ int MatFetiScatter(Mat A, Vec lambda, FetiScatterMode mode) /* src the local seq
 	    PetscScalar const zero=0;
 	    for(int i=0;i<matfeti->n_dom;i++)
 	    {
-		VecSet(&zero,matfeti->domains[i].ur);
+              VecSet(matfeti->domains[i].ur,zero);
 		VecGetArray(matfeti->domains[i].ur,&matfeti->domains[i].ur_array);
 	    }
 
 	            /* VecScatter */
-	    VecSet(&zero,matfeti->contrib);  
+	    VecSet(matfeti->contrib,zero);  
 	    VecScatterBegin(lambda,matfeti->contrib,INSERT_VALUES,SCATTER_REVERSE,matfeti->Br_scatter); 
 	    VecScatterEnd  (lambda,matfeti->contrib,INSERT_VALUES,SCATTER_REVERSE,matfeti->Br_scatter); 
 
@@ -1248,7 +1249,7 @@ int MatFetiScatterBc(Mat A, Vec ucg, FetiScatterMode mode)  /* uc_ass/ucg here; 
 	    PetscScalar const zero=0;
 	    for(int i=0;i<matfeti->n_dom;i++)
 	    {
-		VecSet(&zero,matfeti->domains[i].uc);
+              VecSet(matfeti->domains[i].uc,zero);
 		VecGetArray(matfeti->domains[i].uc,&matfeti->domains[i].uc_array);
 	    }
 
@@ -1361,13 +1362,14 @@ int AssembleSystemMatrix(Mat A, Mat *system_matrix)
 
     PetscFunctionBegin;
 
-    MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,system_matrix);
+    MatCreate(PETSC_COMM_WORLD,system_matrix);
+    MatSetSizes(*system_matrix,PETSC_DECIDE,PETSC_DECIDE,N,N);
     MatSetType(*system_matrix,MATMPIAIJ);
 
     VecDuplicate(matfeti->lambda_copy,&e);
     VecDuplicate(matfeti->lambda_copy,&dst);
 
-    VecSet(&zero,e);
+    VecSet(e,zero);
 
     for(int i=0;i<N;i++)
     {
@@ -1434,7 +1436,7 @@ int MatFetiCalculatefScc(Mat A)   /* calculates fScc and leaves it as sequential
 			  domain->ur_tmp1,
 			  domain->uc);
 
-	VecScale(&minus_one,domain->uc);
+	VecScale(domain->uc,minus_one);
     }
 
 #if 1  /* both alternatives work; maybe this is the smarter way to do the scatter? Bc is not very big... */
@@ -1480,7 +1482,7 @@ int MatFetiCalculateRHS(Mat A, Vec * dr_Scc)   /* dr with additional correction 
 
     ASSERT(matfeti->lambda_copy,"Need MatLoad first: lambda_copy==0");
     VecDuplicate(matfeti->lambda_copy,dr_Scc);  /* give dr_Scc the same layout as lambda; does not copy values */
-    VecSet(&zero, *dr_Scc);                     
+    VecSet(*dr_Scc,zero);                     
 
     MatFetiCalculatefScc(A);   /* calculates fScc and leaves it as sequential Vec in matfeti->fScc */
 
@@ -1520,7 +1522,7 @@ int MatFetiCalculateRHS(Mat A, Vec * dr_Scc)   /* dr with additional correction 
 
     }
 
-    VecSet(&zero,*dr_Scc);
+    VecSet(*dr_Scc,zero);
     MatFetiScatter  (A,                           /* apply Br */
 		     *dr_Scc,                     /* ur --> dr_Scc */
 		     FETI_SCATTER_FORWARD_ADD);   /* note: *dr_Scc is an mpi-vector */
@@ -1528,7 +1530,7 @@ int MatFetiCalculateRHS(Mat A, Vec * dr_Scc)   /* dr with additional correction 
 
     if(matfeti->domains->use_Q)
     {
-	VecSet(&zero,matfeti->mu);
+	VecSet(matfeti->mu,zero);
 	for(int i=0;i<matfeti->n_dom;i++)
 	{
 	    FetiDomain * const domain=&matfeti->domains[i];
@@ -1545,7 +1547,7 @@ int MatFetiCalculateRHS(Mat A, Vec * dr_Scc)   /* dr with additional correction 
 	VecAssemblyBegin(matfeti->mu);    /* Assemble MPI-mu */
 	VecAssemblyEnd  (matfeti->mu);
 
-	VecScale(&minus_one,matfeti->mu); /* - \sum Q Krrinv fr */
+	VecScale(matfeti->mu,minus_one); /* - \sum Q Krrinv fr */
 
 	if(matfeti->mu_seq)
 	    VecDestroy(matfeti->mu_seq);
@@ -1580,7 +1582,7 @@ int MatFetiCalculateRHS(Mat A, Vec * dr_Scc)   /* dr with additional correction 
 	}
 	else
 	{
-	    VecSet(&zero,domain->ur_tmp1);   /* no contribution */
+	    VecSet(domain->ur_tmp1,zero);   /* no contribution */
 	}
 
 	MatMult        (domain->Bc,          
@@ -1596,8 +1598,8 @@ int MatFetiCalculateRHS(Mat A, Vec * dr_Scc)   /* dr with additional correction 
 			domain->ur_tmp1,
 			domain->ur,&its);	
 
-	VecScale       (&minus_one,          /* minus somewhere else could be faster */
-			domain->ur);
+	VecScale       (                     /* minus somewhere else could be faster */
+			domain->ur,minus_one);
 
 #if 0
 	MatlabInspectVecs(domain->ur,i); 
@@ -1670,12 +1672,12 @@ int MatFetiCalculateMultiplicity(Mat A)
 	if(!domain->ur_multiplicity)
 	    VecDuplicate(domain->ur,&domain->ur_multiplicity);
 
-	VecSet(&one,domain->ur_tmp1);                          /*  11...1  */
+	VecSet(domain->ur_tmp1,one);                          /*  11...1  */
 
 	MatMultTranspose(domain->BrT,domain->ur_tmp1,lam);     /*  B_1^T * B_1 * (11...1)^T   */
 	MatMult(domain->BrT,lam,domain->ur_multiplicity);             
 
-	VecAXPY(&one,domain->ur_tmp1,domain->ur_multiplicity); /*  ur_multiplicity=1*ur_tmp1+ur_multiplicity */
+	VecAXPY(domain->ur_multiplicity,one,domain->ur_tmp1); /*  ur_multiplicity=1*ur_tmp1+ur_multiplicity */
 
     }
     VecDestroy(lam);
@@ -1942,12 +1944,12 @@ int MatFetiCalculateRhoNeighbor(Mat A)
 
     ASSERT(matfeti->lambda_copy,"MatFetiCalculateRhoNeighbor needs lambda_copy as template for temp-space");
     VecDuplicate(matfeti->lambda_copy,&lambda);
-    VecSet(&zero,lambda);
+    VecSet(lambda,zero);
 
     for(int i=0;i<matfeti->n_dom;i++)              /* set all to the same rho */
     {
 	FetiDomain * const domain = &(matfeti->domains[i]);
-	VecSet(&domain->my_rho,domain->ur);
+	VecSet(domain->ur,domain->my_rho);
     }
 
     MatFetiScatter   (A,                           /* apply BrT */
@@ -2005,7 +2007,7 @@ int MatFetiCalculateRhoSum(Mat A)
 
     ASSERT(matfeti->lambda_copy,"MatFetiCalculateRhoSum needs lambda_copy as template for temp-space");
     VecDuplicate(matfeti->lambda_copy,&lambda);
-    VecSet(&zero,lambda);
+    VecSet(lambda,zero);
 
     PetscMalloc(matfeti->scatter_len*sizeof(PetscScalar),&scale);        /* save scatter_scale */
 #if 0
@@ -2019,7 +2021,7 @@ int MatFetiCalculateRhoSum(Mat A)
     for(int i=0;i<matfeti->n_dom;i++)                /* set all to the same rho */
     {
 	FetiDomain * const domain = &(matfeti->domains[i]);
-	VecSet(&domain->my_rho,domain->ur);
+	VecSet(domain->ur,domain->my_rho);
     }
 
     /* save own rho for later */
@@ -2055,16 +2057,14 @@ int MatFetiCalculateRhoSum(Mat A)
 	FetiDomain * const domain = &(matfeti->domains[i]);
 	Vec ur_m;                                    /* multiplicity - 2 */
 	VecDuplicate(domain->ur_multiplicity,&ur_m);
-	VecSet(&minus_two,ur_m);
-	VecAXPY(&one,domain->ur_multiplicity,ur_m);  /* ur_m=1*ur_multiplicity+ur_m */
+	VecSet(ur_m,minus_two);
+	VecAXPY(ur_m,one,domain->ur_multiplicity);  /* ur_m=1*ur_multiplicity+ur_m */
 
-	VecPointwiseMult(ur_m,
-			 ur_rhos[i],
+	VecPointwiseMult(ur_rhos[i],
+                         ur_m,
 			 ur_rhos[i]);                /* ur_rhos[i]=ur_m*ur_rhos[i] */
 
-	VecAXPY(&minus_one,
-		ur_rhos[i],
-		domain->ur);                         /* rho_sum=rho_sum_all-(multiplicity-2)*my_rho
+	VecAXPY(domain->ur,minus_one,ur_rhos[i]);    /* rho_sum=rho_sum_all-(multiplicity-2)*my_rho
 
 	/* now we have the desired sums in domain->ur */
 

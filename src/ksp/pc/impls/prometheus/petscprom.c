@@ -216,7 +216,7 @@ static PetscErrorCode PCApply_Prometheus( PC pc, Vec x, Vec y )
   // get RHS
   PromVector *work = lsc->getRHS();
   if( prom->left_ != NULL ) { // scale f <- f * D^{-1/2}
-    ierr = VecPointwiseMult( x, prom->left_->vec_ , work->vec_ );CHKERRQ(ierr);
+    ierr = VecPointwiseMult( work->vec_, x, prom->left_->vec_ );CHKERRQ(ierr);
   }
   else {
     ierr = VecCopy( x,  work->vec_ );CHKERRQ(ierr);
@@ -233,7 +233,7 @@ static PetscErrorCode PCApply_Prometheus( PC pc, Vec x, Vec y )
 
   // return solution
   if( prom->right_ != NULL ) { // scale u <- D^{-1/2} * u
-    ierr = VecPointwiseMult( XX->vec_, prom->right_->vec_, y );CHKERRQ(ierr);
+    ierr = VecPointwiseMult( y, XX->vec_, prom->right_->vec_ );CHKERRQ(ierr);
   }
   else {
     ierr = VecCopy( XX->vec_, y );CHKERRQ(ierr);

@@ -135,7 +135,8 @@ int main(int argc,char **argv)
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&J);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
+  ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
 
   /* 
@@ -242,7 +243,7 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n\n",its);CHKERRQ(ierr);
 
@@ -253,7 +254,7 @@ int main(int argc,char **argv)
   /* 
      Check the error
   */
-  ierr = VecAXPY(&none,U,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,none,U);CHKERRQ(ierr);
   ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);
 
@@ -289,7 +290,7 @@ PetscErrorCode FormInitialGuess(Vec x)
    PetscScalar    pfive = .50;
 
    PetscFunctionBegin;
-   ierr = VecSet(&pfive,x);CHKERRQ(ierr);
+   ierr = VecSet(x,pfive);CHKERRQ(ierr);
    PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */

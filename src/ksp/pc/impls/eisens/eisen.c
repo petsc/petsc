@@ -39,7 +39,7 @@ static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (eis->usediag)  {ierr = VecPointwiseMult(x,eis->diag,y);CHKERRQ(ierr);}
+  if (eis->usediag)  {ierr = VecPointwiseMult(y,x,eis->diag);CHKERRQ(ierr);}
   else               {ierr = VecCopy(x,y);CHKERRQ(ierr);}
   PetscFunctionReturn(0); 
 }
@@ -162,7 +162,8 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
   if (!pc->setupcalled) {
     ierr = MatGetSize(pc->mat,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(pc->mat,&m,&n);CHKERRQ(ierr);
-    ierr = MatCreate(pc->comm,m,N,M,N,&eis->shell);CHKERRQ(ierr);
+    ierr = MatCreate(pc->comm,&eis->shell);CHKERRQ(ierr);
+    ierr = MatSetSizes(eis->shell,m,N,M,N);CHKERRQ(ierr);
     ierr = MatSetType(eis->shell,MATSHELL);CHKERRQ(ierr);
     ierr = MatShellSetContext(eis->shell,(void*)pc);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,eis->shell);CHKERRQ(ierr);

@@ -189,7 +189,7 @@ void PETSC_STDCALL kspsettype_(KSP *ksp,CHAR type PETSC_MIXED_LEN(len),PetscErro
 
 void PETSC_STDCALL kspgettype_(KSP *ksp,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *tname;
+  const char *tname;
 
   *ierr = KSPGetType(*ksp,&tname);if (*ierr) return;
 #if defined(PETSC_USES_CPTOFCD)
@@ -369,7 +369,7 @@ void PETSC_STDCALL kspbuildresidual_(KSP *ctx,Vec *t,Vec *v,Vec *V,PetscErrorCod
 
 void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *tname;
+  const char *tname;
 
   *ierr = KSPGetOptionsPrefix(*ksp,&tname);
 #if defined(PETSC_USES_CPTOFCD)

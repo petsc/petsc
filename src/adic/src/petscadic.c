@@ -124,14 +124,14 @@ int DefaultComputeJacobian(int (*Function)(Vec,Vec),Vec x1,Mat J)
       wscale = 0.0;
     }
     ierr = (*Function)(x2,j2); CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,j1,j2); CHKERRQ(ierr);
+    ierr = VecAXPY(j2,mone,j1); CHKERRQ(ierr);
     /* Communicate scale to all processors */
 #if !defined(USE_PETSC_COMPLEX)
     ierr = MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #else
     ierr = MPI_Allreduce(&wscale,&scale,2,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #endif
-    VecScale(&scale,j2);
+    VecScale(j2,scale);
     VecGetArray(j2,&y);
     VecNorm(j2,NORM_INFINITY,&amax); amax *= 1.e-14;
     for ( j=start; j<end; j++ ) {

@@ -30,13 +30,15 @@ int main(int argc,char **argv)
       a[i+j*size] = rand(); b[i+j*lda] = a[i+j*size];
     }
   }
-  ierr = MatCreate(MPI_COMM_SELF,size,size,size,size,&A);CHKERRQ(ierr);
+  ierr = MatCreate(MPI_COMM_SELF,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,size,size,size,size);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(A,a);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatCreate(MPI_COMM_SELF,size,size,size,size,&B);CHKERRQ(ierr);
+  ierr = MatCreate(MPI_COMM_SELF,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,size,size,size,size);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(B,b);CHKERRQ(ierr);
   ierr = MatSeqDenseSetLDA(B,lda);CHKERRQ(ierr);
@@ -72,7 +74,7 @@ int main(int argc,char **argv)
   ierr = KSPSolve(solver,X,Y);CHKERRQ(ierr);
   ierr = KSPSetOperators(solver,B,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSolve(solver,X,Z);CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,Y,Z);CHKERRQ(ierr);
+  ierr = VecAXPY(Z,mone,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
   printf("Test1; error norm=%e\n",nrm);
 

@@ -185,7 +185,7 @@
          call VecSetRandom(rctx,u,ierr)
       else
          pfive = 0.5
-         call VecSet(pfive,u,ierr)
+         call VecSet(u,pfive,ierr)
       endif
       call MatMult(A,u,b,ierr)
 
@@ -219,7 +219,7 @@
 
 !  Check the error
 
-      call VecAXPY(none,u,x,ierr)
+      call VecAXPY(x,none,u,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
       if (rank .eq. 0) then
