@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.255 1997/08/22 15:13:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.256 1997/08/24 23:25:59 curfman Exp bsmith $";
 #endif
 
 /*
@@ -490,7 +490,7 @@ int MatSetLocalToGlobalMappingBlocked(Mat x,ISLocalToGlobalMapping mapping)
     SETERRQ(1,0,"Mapping already set for matrix");
   }
  
-  x->mapping = mapping;
+  x->bmapping = mapping;
   PetscObjectReference((PetscObject)mapping);
   return 0;
 }
