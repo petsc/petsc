@@ -103,7 +103,7 @@ info:
 	-@echo " "
 	-@echo "To subscribe to the PETSc users mailing list, send mail to "
 	-@echo "majordomo@mcs.anl.gov with the message: "
-	-@echo "subscribe petsc-users"
+	-@echo "subscribe petsc-announce"
 	-@echo " "
 	-@echo "=========================================="
 	-@echo On `date` on `hostname`

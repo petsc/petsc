@@ -3,7 +3,7 @@
 libtool=$1
 compiler=$4
 shift
-if $libtool $* | egrep -v "($compiler|\.lo)"; then
+if $libtool $* | egrep -v "($compiler|\.lo|mkdir)"; then
   exit 1
 else
   exit 0
