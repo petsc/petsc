@@ -1,4 +1,4 @@
-/* $Id: sles.h,v 1.11 1995/06/07 16:31:09 bsmith Exp curfman $ */
+/* $Id: sles.h,v 1.12 1995/07/07 17:54:07 curfman Exp bsmith $ */
 
 #if !defined(__SLES_PACKAGE)
 #define __SLES_PACKAGE
@@ -19,5 +19,6 @@ extern int SLESDestroy(SLES);
 extern int SLESPrintHelp(SLES);
 extern int SLESView(SLES,Viewer);
 extern int SLESSetOptionsPrefix(SLES,char*);
+extern int SLESSetUp(SLES);
 
 #endif
