@@ -57,7 +57,7 @@ class Preconditioner : public virtual esi::Preconditioner<Scalar,Ordinal>,
     /** Set the preconditioning side. */
     virtual esi::ErrorCode setPreconditionerSide( PreconditionerSide side );
 
-    virtual esi::ErrorCode setOperator( esi::Operator<Scalar,Ordinal> &op) {return 1;};
+    virtual esi::ErrorCode setOperator( esi::Operator<Scalar,Ordinal> &op);
   private:
     PC                         pc;
     esi::IndexSpace<Ordinal>   *rmap,*cmap;
