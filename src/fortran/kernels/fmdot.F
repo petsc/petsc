@@ -1,6 +1,6 @@
 
 C
-C  "$Id: fmdot.F,v 1.1 1997/09/17 02:30:33 bsmith Exp bsmith $";
+C  "$Id: fmdot.F,v 1.2 1997/09/17 23:13:43 bsmith Exp bsmith $";
 C
 C    Fortran kernel for the MDot() vector routine
 C
@@ -16,10 +16,10 @@ C
       integer i
 
       do 10, i=1,n
-        sum1 = sum1 + x(i)*dconjg(y1(i))
-        sum2 = sum2 + x(i)*dconjg(y2(i))
-        sum3 = sum3 + x(i)*dconjg(y3(i))
-        sum4 = sum4 + x(i)*dconjg(y4(i))
+        sum1 = sum1 + x(i)*PetscConj(y1(i))
+        sum2 = sum2 + x(i)*PetscConj(y2(i))
+        sum3 = sum3 + x(i)*PetscConj(y3(i))
+        sum4 = sum4 + x(i)*PetscConj(y4(i))
  10   continue
 
       return 
@@ -35,9 +35,9 @@ C
       integer i
 
       do 10, i=1,n
-        sum1 = sum1 + x(i)*dconjg(y1(i))
-        sum2 = sum2 + x(i)*dconjg(y2(i))
-        sum3 = sum3 + x(i)*dconjg(y3(i))
+        sum1 = sum1 + x(i)*PetscConj(y1(i))
+        sum2 = sum2 + x(i)*PetscConj(y2(i))
+        sum3 = sum3 + x(i)*PetscConj(y3(i))
  10   continue
 
       return 
@@ -53,8 +53,8 @@ C
       integer i
 
       do 10, i=1,n
-        sum1 = sum1 + x(i)*dconjg(y1(i))
-        sum2 = sum2 + x(i)*dconjg(y2(i))
+        sum1 = sum1 + x(i)*PetscConj(y1(i))
+        sum2 = sum2 + x(i)*PetscConj(y2(i))
  10   continue
 
       return 
@@ -71,7 +71,7 @@ C
       integer i
 
       do 10, i=1,n
-        sum1 = sum1 + x(i)*dconjg(y1(i))
+        sum1 = sum1 + x(i)*PetscConj(y1(i))
  10   continue
 
       return 

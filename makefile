@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.185 1997/09/15 16:22:07 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.186 1997/09/17 04:31:45 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -133,6 +133,30 @@ fortran: chkpetsc_dir
 	$(RANLIB) $(PDIR)/libpetscfortran.a
 	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed compiling Fortran interface library"
+	-@echo "========================================="
+
+#
+# Builds PETSc Fortran kernels; some numerical kernels have
+# a Fortran version that may give better performance on certain 
+# machines. It always gives better performance for complex numbers.
+fortrankernels: chkpetsc_dir 
+	-$(RM) -f $(PDIR)/libpetsckernels.*
+	-@echo "Beginning to compile Fortran kernels library"
+	-@echo On `date` on `hostname`
+	-@echo Machine characteristics: `uname -a`
+	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
+	-@echo "------------------------------------------"
+	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "------------------------------------------"
+	-@echo "Using configuration flags: $(CONF)"
+	-@echo "------------------------------------------"
+	-@echo "Using PETSc directory: $(PETSC_DIR)"
+	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+	-@echo "========================================="
+	-@cd src/fortran/kernels; \
+	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib
+	-@chmod g+w  $(PDIR)/*.a
+	-@echo "Completed compiling Fortran kernels library"
 	-@echo "========================================="
 
 # Builds PETSc test examples for a given BOPT and architecture

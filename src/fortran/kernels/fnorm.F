@@ -1,6 +1,6 @@
 
 C
-C  "$Id: fnorm.F,v 1.1 1997/09/17 20:37:29 bsmith Exp $";
+C  "$Id: fnorm.F,v 1.2 1997/09/17 23:13:43 bsmith Exp bsmith $";
 C
 C    Fortran kernel for the Norm() vector routine
 C
@@ -16,7 +16,7 @@ C
       integer i
 
       do 10, i=1,n
-        sum1 = sum1 + dreal(x(i)*dconjg(x(i)))
+        sum1 = sum1 + PetscReal(x(i)*PetscConj(x(i)))
  10   continue
 
       return 
