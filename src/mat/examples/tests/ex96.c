@@ -2,8 +2,8 @@
 static char help[] ="Tests sequential and parallel MatMatMult() and MatPtAP()\n\
   -Mx <xg>, where <xg> = number of coarse grid points in the x-direction\n\
   -My <yg>, where <yg> = number of coarse grid points in the y-direction\n\
-  -Nx <npx>, where <npx> = number of processors in the x-direction\n\
-  -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
+  -Npx <npx>, where <npx> = number of processors in the x-direction\n\
+  -Npy <npy>, where <npy> = number of processors in the y-direction\n\n";
 
 /*  This test is modified from ~src/ksp/examples/tests/ex19.c.
     This problem is modeled by
@@ -59,10 +59,10 @@ int main(int argc,char **argv)
   PetscScalar   one = 1.0;
   PetscReal     fill=2.0;
   Mat           A,A_tmp,P,C;
-  PetscScalar   *array;
+  PetscScalar   *array,none = -1.0,alpha;
   PetscTruth    flg;
   Vec          x,v1,v2;
-  PetscReal    norm,norm_tmp,norm_tmp1,tol=1.e-12,none = -1.0,alpha;
+  PetscReal    norm,norm_tmp,norm_tmp1,tol=1.e-12;
   PetscRandom  rand;
   PetscTruth   Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE;
 
@@ -81,8 +81,8 @@ int main(int argc,char **argv)
   */
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Npx",&Nx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Npy",&Ny,PETSC_NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.fine.mx,
@@ -103,8 +103,7 @@ int main(int argc,char **argv)
     ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,&nrows,&ia,&ja,&flg);
   } else {
     Mat_MPIAIJ *aij = (Mat_MPIAIJ*)A->data;
-    Mat        A=aij->A,B=aij->B;
-    Mat_SeqAIJ *a=(Mat_SeqAIJ*)A->data, *b=(Mat_SeqAIJ*)B->data;
+    Mat_SeqAIJ *a=(Mat_SeqAIJ*)(aij->A)->data, *b=(Mat_SeqAIJ*)(aij->B)->data;
     /* A_part */
     for (i=0; i<a->i[m]; i++) a->a[i] = one;
     /* B_part */
@@ -123,7 +122,7 @@ int main(int argc,char **argv)
   ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(P,&M,&N);CHKERRQ(ierr);
   /* ierr = PetscPrintf(PETSC_COMM_SELF," [%d] P - loc and gl dim: %d, %d; %d, %d\n",rank,m,n,M,N);*/
-  /* ierr = MatView(P, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  /* ierr = MatView(P, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); */
 
   /* Create vectors v1 and v2 that are compatible with A */
   ierr = VecCreate(PETSC_COMM_WORLD,&v1);CHKERRQ(ierr);

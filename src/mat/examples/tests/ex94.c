@@ -14,11 +14,11 @@ int main(int argc,char **args)
   Vec          x,v1,v2;
   PetscViewer  viewer;
   int          i,ierr,m,n,size,rank,j,idxn[10],M,N,nzp;
-  PetscReal    norm,norm_tmp,tol=1.e-10,none = -1.0,fill=4,alpha;
+  PetscReal    norm,norm_tmp,tol=1.e-10,fill=4.0;
   PetscRandom  rand;
   char         file[4][128];
   PetscTruth   flg,preload = PETSC_TRUE;
-  PetscScalar  a[10],rval;
+  PetscScalar  a[10],rval,alpha,none = -1.0;
   PetscTruth   Test_MatMatMult=PETSC_TRUE,Test_MatMatMultTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE;
   Vec          v3,v4,v5;
 
