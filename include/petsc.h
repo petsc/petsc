@@ -46,6 +46,9 @@ extern int  PetscAttachDebuggerErrorHandler(int, char *,char *,int,void*);
 extern int  PetscSetDebugger(char *,int,char *);
 extern int  PetscAttachDebugger();
 
+#include <signal.h> /* I don't like this, but? */
+extern int PetscSetSignalHandler(void (*)(int,int,struct sigcontext *,char*));
+
 extern void *trmalloc(unsigned int,int,char*);
 extern int  trfree(void *,int,char*);
 

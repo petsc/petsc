@@ -19,13 +19,11 @@
 #include "is.h"
 
 typedef struct _Vec*           Vec;
-typedef struct _VecScatterCtx* VecScatterCtx;
 
 extern int VecCreateSequential(int,Vec *);  
 extern int VecCreateSequentialBLAS(int,Vec *); 
 
-#if defined(HAVE_MPI)
-#include "comm.h"
+#if defined(USING_MPI)
 extern int VecCreateMPI(MPI_Comm,int,int,Vec *);  
 extern int VecCreateMPIBLAS(MPI_Comm,int,int,Vec *); 
 #endif
@@ -62,11 +60,11 @@ extern int VecInsertValues(Vec, int, int *,Scalar*);
 extern int VecBeginAssembly(Vec);
 extern int VecEndAssembly(Vec);
 
-extern int VecScatterBegin(Vec,IS,Vec,IS,VecScatterCtx *);
-extern int VecScatterEnd(Vec,IS,Vec,IS,VecScatterCtx *); 
+extern int VecScatterBegin(Vec,IS,Vec,IS,ISScatterCtx *);
+extern int VecScatterEnd(Vec,IS,Vec,IS,ISScatterCtx *); 
 
-extern int VecScatterAddBegin(Vec,IS,Vec,IS,VecScatterCtx *);
-extern int VecScatterAddEnd(Vec,IS,Vec,IS,VecScatterCtx *);  
+extern int VecScatterAddBegin(Vec,IS,Vec,IS,ISScatterCtx *);
+extern int VecScatterAddEnd(Vec,IS,Vec,IS,ISScatterCtx *);  
 
 extern int VecGetArray(Vec,Scalar**);
 extern int VecValidVector(Vec);
