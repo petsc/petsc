@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: grpath.c,v 1.18 1998/05/18 20:12:05 bsmith Exp balay $";
+static char vcid[] = "$Id: grpath.c,v 1.19 1998/07/15 15:15:37 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -63,19 +63,19 @@ static char vcid[] = "$Id: grpath.c,v 1.18 1998/05/18 20:12:05 bsmith Exp balay 
 
 .seealso: PetscGetFullPath()
 @*/
-int PetscGetRealPath(char * path, char *rpath )
+int PetscGetRealPath(char path[], char rpath[])
 {
   char tmp3[MAXPATHLEN];
 
 #if defined(HAVE_REALPATH)
   PetscFunctionBegin;
-  realpath( path, rpath );
+  realpath(path,rpath);
 #elif defined (PARCH_nt)
   PetscFunctionBegin;
-  PetscStrcpy( rpath, path );
+  PetscStrcpy(rpath,path);
 #elif !defined(HAVE_READLINK)
   PetscFunctionBegin;
-  PetscStrcpy( rpath, path );
+  PetscStrcpy(rpath,path);
 #else
   char tmp1[MAXPATHLEN], tmp4[MAXPATHLEN], *tmp2;
   int  n, m, N;

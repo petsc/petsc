@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rpath.c,v 1.15 1998/05/18 20:12:51 bsmith Exp balay $";
+static char vcid[] = "$Id: rpath.c,v 1.16 1998/07/15 15:15:43 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -49,7 +49,7 @@ static char vcid[] = "$Id: rpath.c,v 1.15 1998/05/18 20:12:51 bsmith Exp balay $
 
 .seealso: PetscGetFullPath()
 @*/
-int PetscGetRelativePath( char *fullpath, char *path, int flen )
+int PetscGetRelativePath(const char fullpath[],char path[],int flen )
 {
   char  *p;
 

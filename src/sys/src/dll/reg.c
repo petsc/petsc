@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.20 1998/06/14 15:40:08 balay Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.21 1998/07/08 03:39:06 bsmith Exp balay $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: reg.c,v 1.20 1998/06/14 15:40:08 balay Exp bsmith $";
 
 #undef __FUNC__  
 #define __FUNC__ "FListGetPathAndFunction"
-int FListGetPathAndFunction(char *name,char **path,char **function)
+int FListGetPathAndFunction(const char name[],char *path[],char *function[])
 {
   char work[256],*lfunction;
 
@@ -161,7 +161,7 @@ static FList   dlallhead = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "DLRegister_Private"
-int FListAdd_Private( FList *fl, char *name, char *rname,int (*fnc)(void *))
+int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(void *))
 {
   FList   entry,ne;
   int      ierr;
@@ -292,7 +292,7 @@ int FListDestroyAll(void)
 
 .seealso: FListAdd()
 */
-int FListFind(MPI_Comm comm,FList fl,char *name, int (**r)(void *))
+int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 {
   FList        entry = fl;
   char          *function, *path;
@@ -381,7 +381,7 @@ int FListFind(MPI_Comm comm,FList fl,char *name, int (**r)(void *))
 
 .seealso: FListAdd()
 */
-int FListPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,FList list)
+int FListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],FList list)
 {
   int      count = 0;
   char     p[64];

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.225 1998/07/13 18:20:27 balay Exp balay $ */
+/* $Id: petsc.h,v 1.226 1998/07/22 19:52:42 balay Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -71,14 +71,13 @@ extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*,char*,char*),
 extern int  PetscClearMalloc(void);
 
 extern int   PetscTrDump(FILE *);
-extern int   PetscTrSpace( PLogDouble *, PLogDouble *,PLogDouble *);
-extern int   PetscTrValid(int,char *,char *,char *);
+extern int   PetscTrSpace(PLogDouble *, PLogDouble *,PLogDouble *);
+extern int   PetscTrValid(int,const char[],const char[],const char[]);
 extern int   PetscTrDebugLevel(int);
 extern int   PetscTrLog(void);
 extern int   PetscTrLogDump(FILE *);
 extern int   PetscGetResidentSetSize(PLogDouble *);
 
-#include "src/inline/bitarray.h"
 
 typedef enum {PETSC_INT = 0, PETSC_DOUBLE = 1, PETSC_SHORT = 2, PETSC_FLOAT = 3,
               PETSC_COMPLEX = 4, PETSC_CHAR = 5, PETSC_LOGICAL = 6} PetscDataType;
@@ -93,29 +92,28 @@ typedef enum {PETSC_INT_SIZE = sizeof(int), PETSC_DOUBLE_SIZE = sizeof(double),
               PETSC_CHAR_SIZE = sizeof(char), PETSC_LOGICAL_SIZE = 1} PetscDataTypeSize;
 extern int PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
 extern int PetscDataTypeGetSize(PetscDataType,int*);
-extern int PetscDataTypeGetName(PetscDataType,char**);
+extern int PetscDataTypeGetName(PetscDataType,char*[]);
 
 /*
     Basic memory and string operations
 */
 extern int   PetscMemcpy(void *,const void *,int);
-extern int   PetscBitMemcpy(void*,int,void*,int,int,PetscDataType);
+extern int   PetscBitMemcpy(void*,int,const void*,int,int,PetscDataType);
 extern int   PetscMemmove(void *,void *,int);
 extern int   PetscMemzero(void *,int);
-extern int   PetscMemcmp(void*, void*, int);
-extern int   PetscStrlen(char *);
-extern int   PetscStrcmp(char *,char *);
-extern int   PetscStrcasecmp(char *,char *);
-extern int   PetscStrncmp(char *,char *,int );
-extern int   PetscStrcpy(char *,char *);
-extern int   PetscStrcat(char *,char *);
-extern int   PetscStrncat(char *,char *,int);
-extern int   PetscStrncpy(char *,char *,int);
-extern char* PetscStrchr(char *,char);
-extern char* PetscStrrchr(char *,char);
-extern char* PetscStrstr(char*,char*);
-extern char* PetscStrtok(char*,char*);
-extern char* PetscStrrtok(char*,char*);
+extern int   PetscMemcmp(const void*,const void*, int);
+extern int   PetscStrlen(const char[]);
+extern int   PetscStrcmp(const char[],const char[]);
+extern int   PetscStrcasecmp(const char[],const char[]);
+extern int   PetscStrncmp(const char[],const char[],int );
+extern int   PetscStrcpy(char[],const char[]);
+extern int   PetscStrcat(char[],const char[]);
+extern int   PetscStrncat(char[],const char[],int);
+extern int   PetscStrncpy(char[],const char[],int);
+extern char* PetscStrchr(const char[],char);
+extern char* PetscStrrchr(const char[],char);
+extern char* PetscStrstr(const char[],const char[]);
+extern char* PetscStrtok(const char[],const char[]);
 
 /*
        Basic PETSc constants
@@ -152,12 +150,12 @@ extern int PetscSleep(int);
 /*
     Initialization of PETSc or its micro-kernel ALICE
 */
-extern int  AliceInitialize(int*,char***,char*,char*);
+extern int  AliceInitialize(int*,char***,const char[],const char[]);
 extern int  AliceInitializeNoArguments(void);
 extern int  AliceFinalize(void);
 extern void AliceInitializeFortran(void);
 
-extern int  PetscInitialize(int*,char***,char*,char*);
+extern int  PetscInitialize(int*,char***,char[],const char[]);
 extern int  PetscInitializeNoArguments(void);
 extern int  PetscFinalize(void);
 extern void PetscInitializeFortran(void);
@@ -171,26 +169,26 @@ extern int PetscObjectExists(PetscObject,int*);
 extern int PetscObjectGetComm(PetscObject,MPI_Comm *comm);
 extern int PetscObjectGetCookie(PetscObject,int *cookie);
 extern int PetscObjectGetType(PetscObject,int *type);
-extern int PetscObjectSetName(PetscObject,char*);
-extern int PetscObjectGetName(PetscObject,char**);
+extern int PetscObjectSetName(PetscObject,const char[]);
+extern int PetscObjectGetName(PetscObject,char*[]);
 extern int PetscObjectReference(PetscObject);
 extern int PetscObjectGetReference(PetscObject,int*);
 extern int PetscObjectDereference(PetscObject);
 extern int PetscObjectGetNewTag(PetscObject,int *);
 extern int PetscObjectRestoreNewTag(PetscObject,int *);
 extern int PetscObjectView(PetscObject,Viewer);
-extern int PetscObjectCompose(PetscObject,char *,PetscObject);
-extern int PetscObjectQuery(PetscObject,char *,PetscObject *);
-extern int PetscObjectComposeFunction_Private(PetscObject,char *,char *,void *);
+extern int PetscObjectCompose(PetscObject,const char[],PetscObject);
+extern int PetscObjectQuery(PetscObject,const char[],PetscObject *);
+extern int PetscObjectComposeFunction_Private(PetscObject,const char[],const char[],void *);
 #if defined(USE_DYNAMIC_LIBRARIES)
 #define PetscObjectComposeFunction(a,b,c,d) PetscObjectComposeFunction_Private(a,b,c,0)
 #else
 #define PetscObjectComposeFunction(a,b,c,d) PetscObjectComposeFunction_Private(a,b,c,d)
 #endif
-extern int PetscObjectQueryFunction(PetscObject,char *,void **);
-extern int PetscObjectSetOptionsPrefix(PetscObject,char*);
-extern int PetscObjectAppendOptionsPrefix(PetscObject,char*);
-extern int PetscObjectGetOptionsPrefix(PetscObject,char**);
+extern int PetscObjectQueryFunction(PetscObject,const char[],void **);
+extern int PetscObjectSetOptionsPrefix(PetscObject,const char[]);
+extern int PetscObjectAppendOptionsPrefix(PetscObject,const char[]);
+extern int PetscObjectGetOptionsPrefix(PetscObject,char*[]);
 extern int PetscObjectPublish(PetscObject);
 
 /*
@@ -204,9 +202,8 @@ extern int PetscObjectPublish(PetscObject);
 */
 typedef struct _OList *OList;
 extern int OListDestroy(OList *);
-extern int OListFind(OList,char *,PetscObject*);
-extern int OListAdd(OList *,char *,PetscObject);
-extern int OListRemove(OList *,char *);
+extern int OListFind(OList,const char[],PetscObject*);
+extern int OListAdd(OList *,const char[],PetscObject);
 extern int OListDuplicate(OList,OList *);
 
 /*
@@ -214,10 +211,10 @@ extern int OListDuplicate(OList,OList *);
   link libraries that will be loaded as needed.
 */
 typedef struct _FList *FList;
-extern int FListAdd_Private(FList*,char*,char*,int (*)(void *));
+extern int FListAdd_Private(FList*,const char[],const char[],int (*)(void *));
 extern int FListDestroy(FList);
-extern int FListFind(MPI_Comm,FList,char*,int (**)(void*));
-extern int FListPrintTypes(MPI_Comm,FILE*,char*,char *,FList);
+extern int FListFind(MPI_Comm,FList,const char[],int (**)(void*));
+extern int FListPrintTypes(MPI_Comm,FILE*,const char[],const char[],FList);
 #if defined(USE_DYNAMIC_LIBRARIES)
 #define    FListAdd(a,b,p,c) FListAdd_Private(a,b,p,0)
 #else
@@ -227,10 +224,10 @@ extern int FListDuplicate(FList,FList *);
 
 typedef struct _DLLibraryList *DLLibraryList;
 extern DLLibraryList DLLibrariesLoaded;
-extern int DLLibraryOpen(MPI_Comm,char *,void **);
-extern int DLLibrarySym(MPI_Comm,DLLibraryList *,char*,char *, void **);
-extern int DLLibraryAppend(MPI_Comm,DLLibraryList *,char *);
-extern int DLLibraryPrepend(MPI_Comm,DLLibraryList *,char *);
+extern int DLLibraryOpen(MPI_Comm,const char[],void **);
+extern int DLLibrarySym(MPI_Comm,DLLibraryList *,const char[],const char[],void **);
+extern int DLLibraryAppend(MPI_Comm,DLLibraryList *,const char[]);
+extern int DLLibraryPrepend(MPI_Comm,DLLibraryList *,const char[]);
 extern int DLLibraryClose(DLLibraryList);
 extern int DLLibraryPrintPath();
 
@@ -252,7 +249,7 @@ extern int PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **);
 extern int  PetscSequentialPhaseBegin(MPI_Comm,int);
 extern int  PetscSequentialPhaseEnd(MPI_Comm,int);
 extern int  PetscBarrier(PetscObject);
-extern int  PetscMPIDump(FILE *);
+extern int  PetscMPIDump(FILE*);
 
 /*
       This code allows one to pass a MPI communicator between 
@@ -266,16 +263,16 @@ extern int  MPIFortranCommToCComm(int,MPI_Comm*);
 /*
       Simple PETSc parallel IO for ASCII printing
 */
-extern int  PetscFixFilename(char*);
-extern FILE *PetscFOpen(MPI_Comm,char *,char *);
+extern int  PetscFixFilename(const char[],char[]);
+extern FILE *PetscFOpen(MPI_Comm,const char[],const char[]);
 extern int  PetscFClose(MPI_Comm,FILE*);
-extern int  PetscFPrintf(MPI_Comm,FILE*,char *,...);
-extern int  PetscPrintf(MPI_Comm,char *,...);
-extern int  (*PetscErrorPrintf)(char *,...);
-extern int  (*PetscHelpPrintf)(MPI_Comm,char *,...);
+extern int  PetscFPrintf(MPI_Comm,FILE*,const char[],...);
+extern int  PetscPrintf(MPI_Comm,const char[],...);
+extern int  (*PetscErrorPrintf)(const char[],...);
+extern int  (*PetscHelpPrintf)(MPI_Comm,const char[],...);
 
-extern int  PetscSynchronizedPrintf(MPI_Comm,char *,...);
-extern int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,char *,...);
+extern int  PetscSynchronizedPrintf(MPI_Comm,const char[],...);
+extern int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...);
 extern int  PetscSynchronizedFlush(MPI_Comm);
 
 
@@ -290,19 +287,6 @@ extern int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *);
 
 
 /*
-    C code optimization is often enhanced by telling the compiler 
-  that certain pointer arguments to functions are not aliased to 
-  to other arguments. This is not yet ANSI C standard so we define 
-  the macro "restrict" to indicate that the variable is not aliased 
-  to any other argument.
-*/
-#if defined(HAVE_RESTRICT) && !defined(__cplusplus)
-#define restrict _Restrict
-#else
-#define restrict
-#endif
-
-/*
    For incremental debugging
 */
 extern int PetscCompare;
@@ -314,8 +298,22 @@ extern int PetscCompareInt(int);
    For use in debuggers 
 */
 extern int PetscGlobalRank,PetscGlobalSize;
-extern int PetscIntView(int,int*,Viewer);
-extern int PetscDoubleView(int,double *,Viewer);
+extern int PetscIntView(int,int[],Viewer);
+extern int PetscDoubleView(int,double[],Viewer);
+
+
+/*
+    C code optimization is often enhanced by telling the compiler 
+  that certain pointer arguments to functions are not aliased to 
+  to other arguments. This is not yet ANSI C standard so we define 
+  the macro "restrict" to indicate that the variable is not aliased 
+  to any other argument.
+*/
+#if defined(HAVE_RESTRICT) && !defined(__cplusplus)
+#define restrict _Restrict
+#else
+#define restrict
+#endif
 
 /*
       Determine if some of the kernel computation routines use

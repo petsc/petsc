@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.53 1998/06/11 19:59:10 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.54 1998/07/23 22:50:59 bsmith Exp balay $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -19,16 +19,16 @@ typedef enum { MATLAB_VIEWER,ASCII_FILE_VIEWER, ASCII_FILES_VIEWER,
                BINARY_FILE_VIEWER, STRING_VIEWER, DRAW_VIEWER,
                AMS_VIEWER} ViewerType;
 
-extern int ViewerFileOpenASCII(MPI_Comm,char*,Viewer *);
+extern int ViewerFileOpenASCII(MPI_Comm,const char[],Viewer*);
 typedef enum {BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE} ViewerBinaryType;
-extern int ViewerFileOpenBinary(MPI_Comm,char*,ViewerBinaryType,Viewer *);
-extern int ViewerMatlabOpen(MPI_Comm,char*,int,Viewer *);
-extern int ViewerStringOpen(MPI_Comm,char *,int, Viewer *);
-extern int ViewerDrawOpenX(MPI_Comm,char *,char *,int,int,int,int,Viewer*);
-extern int ViewerDrawOpenVRML(MPI_Comm,char *,char *,Viewer*);
+extern int ViewerFileOpenBinary(MPI_Comm,const char[],ViewerBinaryType,Viewer*);
+extern int ViewerMatlabOpen(MPI_Comm,const char[],int,Viewer*);
+extern int ViewerStringOpen(MPI_Comm,char[],int, Viewer*);
+extern int ViewerDrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,Viewer*);
+extern int ViewerDrawOpenVRML(MPI_Comm,const char[],const char[],Viewer*);
 extern int ViewerDrawClear(Viewer);
 
-extern int ViewerAMSOpen(MPI_Comm,char *,Viewer*);
+extern int ViewerAMSOpen(MPI_Comm,const char[],Viewer*);
 
 extern int ViewerGetType(Viewer,ViewerType*);
 extern int ViewerDestroy(Viewer);
@@ -54,8 +54,8 @@ extern int ViewerBinaryGetInfoPointer(Viewer,FILE **);
 #define VIEWER_FORMAT_DRAW_LG             1
 #define VIEWER_FORMAT_DRAW_CONTOUR        2
 
-extern int    ViewerSetFormat(Viewer,int,char *);
-extern int    ViewerPushFormat(Viewer,int,char *);
+extern int    ViewerSetFormat(Viewer,int,char[]);
+extern int    ViewerPushFormat(Viewer,int,char[]);
 extern int    ViewerPopFormat(Viewer);
 extern int    ViewerGetFormat(Viewer,int*);
 
@@ -102,6 +102,6 @@ extern int    VIEWER_AMS_Destroy(MPI_Comm);
         (ViewerInitializeMatlabWorld_Private(),VIEWER_MATLAB_WORLD_PRIVATE) 
 
 extern int ViewersDrawOpenX(MPI_Comm,char *,char **,int,int,int,Viewer**);
-extern int ViewersDestroy(int,Viewer *);
+extern int ViewersDestroy(int,Viewer[]);
 
 #endif

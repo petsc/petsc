@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.31 1998/04/13 18:01:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plogmpe.c,v 1.32 1998/05/08 16:12:56 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -406,11 +406,15 @@ int PLogEventMPEActivate(int event)
 
 .seealso: PLogDump(), PLogAllBegin(), PLogMPEBegin()
 @*/
-int PLogMPEDump(char* sname)
+int PLogMPEDump(const char sname[])
 {
+  char name[256];
   PetscFunctionBegin;
-  if (!sname) sname = "mpe.log";
-  MPE_Finish_log(sname); 
+
+  if (sname) PetscStrcpy(name,sname);
+  else PetscStrcpy(name,"mpe.log");
+
+  MPE_Finish_log(name); 
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.57 1998/05/13 18:01:51 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.58 1998/06/09 21:25:54 bsmith Exp balay $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -57,8 +57,8 @@ typedef struct _p_Draw* Draw;
 #define DRAW_LAVENDERBLUSH   31
 
 
-extern int DrawOpenX(MPI_Comm,char *,char *,int,int,int,int,Draw*);
-extern int DrawOpenVRML( MPI_Comm, char *, char *, Draw * );
+extern int DrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,Draw*);
+extern int DrawOpenVRML( MPI_Comm,const char[],const char[], Draw* );
 
 extern int DrawOpenNull(MPI_Comm,Draw *);
 extern int DrawDestroy(Draw);

@@ -1,4 +1,4 @@
-/* $Id: options.h,v 1.28 1998/06/11 19:59:10 bsmith Exp bsmith $ */
+/* $Id: options.h,v 1.29 1998/07/23 22:50:59 bsmith Exp balay $ */
 /*
    Routines to determine options set in the options database.
 */
@@ -6,29 +6,29 @@
 #define __OPTIONS_H
 #include "petsc.h"
 
-extern int  OptionsHasName(char*,char *,int*);
-extern int  OptionsGetInt(char*,char *,int *,int*);
-extern int  OptionsGetDouble(char *,char *,double *,int*);
-extern int  OptionsGetScalar(char *,char *,Scalar *,int*);
-extern int  OptionsGetIntArray(char*,char *,int *,int *,int*);
-extern int  OptionsGetDoubleArray(char *,char *,double *,int *,int*);
-extern int  OptionsGetString(char*,char *,char *,int,int*);
-extern int  OptionsGetStringArray(char*,char *,char **,int*,int*);
+extern int  OptionsHasName(const char[],const char[],int*);
+extern int  OptionsGetInt(const char[],const char [],int *,int*);
+extern int  OptionsGetDouble(const char[],const char[],double *,int*);
+extern int  OptionsGetScalar(const char[],const char[],Scalar *,int*);
+extern int  OptionsGetIntArray(const char[],const char[],int[],int *,int*);
+extern int  OptionsGetDoubleArray(const char[],const char[],double[],int *,int*);
+extern int  OptionsGetString(const char[],const char[],char[],int,int*);
+extern int  OptionsGetStringArray(const char[],const char[],char**,int*,int*);
 
-extern int  OptionsSetAlias(char *,char *);
-extern int  OptionsSetValue(char*,char*);
-extern int  OptionsClearValue(char*);
+extern int  OptionsSetAlias(const char[],const char[]);
+extern int  OptionsSetValue(const char[],const char[]);
+extern int  OptionsClearValue(const char[]);
 
 extern int  OptionsAllUsed(void);
 extern int  OptionsLeft(void);
 extern int  OptionsPrint(FILE *);
 
 extern int  OptionsCreate(void);
-extern int  OptionsInsert(int *,char ***,char*);
-extern int  OptionsInsertFile(char *);
+extern int  OptionsInsert(int *,char ***,const char[]);
+extern int  OptionsInsertFile(const char[]);
 extern int  OptionsDestroy(void);
 
-extern int  OptionsReject(char *,char*);
-extern int  OptionsGetAll(char **);
+extern int  OptionsReject(const char[],const char[]);
+extern int  OptionsGetAll(char*[]);
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fpath.c,v 1.18 1998/05/18 20:09:53 bsmith Exp balay $";
+static char vcid[] = "$Id: fpath.c,v 1.19 1998/07/15 15:15:27 balay Exp balay $";
 #endif
 /*
       Code for opening and closing files.
@@ -57,7 +57,7 @@ static char vcid[] = "$Id: fpath.c,v 1.18 1998/05/18 20:09:53 bsmith Exp balay $
 
 .seealso: PetscGetRelativePath()
 @*/
-int PetscGetFullPath( char *path, char *fullpath, int flen )
+int PetscGetFullPath( const char path[], char fullpath[], int flen )
 {
   struct passwd *pwde;
   int           ln;
@@ -121,7 +121,7 @@ int PetscGetFullPath( char *path, char *fullpath, int flen )
 #elif defined (PARCH_nt)
 #undef __FUNC__  
 #define __FUNC__ "PetscGetFullPath"
-int PetscGetFullPath( char *path, char *fullpath, int flen )
+int PetscGetFullPath(const char path[],char fullpath[], int flen )
 {
   PetscFunctionBegin;
   _fullpath(fullpath,path,flen);
@@ -130,7 +130,7 @@ int PetscGetFullPath( char *path, char *fullpath, int flen )
 #else
 #undef __FUNC__  
 #define __FUNC__ "PetscGetFullPath"
-int PetscGetFullPath( char *path, char *fullpath, int flen )
+int PetscGetFullPath(const char path[],char fullpath[], int flen )
 {
   PetscFunctionBegin;
   PetscStrcpy( fullpath, path );

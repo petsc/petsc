@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.38 1998/06/14 18:23:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.39 1998/07/16 21:33:06 bsmith Exp balay $";
 #endif
 /*
      Provides utility routines for manipulating any type of PETSc object.
@@ -8,10 +8,10 @@ static char vcid[] = "$Id: inherit.c,v 1.38 1998/06/14 18:23:22 curfman Exp bsmi
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
 extern int PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
-extern int PetscObjectCompose_Petsc(PetscObject,char *,PetscObject);
-extern int PetscObjectQuery_Petsc(PetscObject,char *,PetscObject *);
-extern int PetscObjectComposeFunction_Petsc(PetscObject,char *,char *,void *);
-extern int PetscObjectQueryFunction_Petsc(PetscObject,char *,void **);
+extern int PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
+extern int PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject *);
+extern int PetscObjectComposeFunction_Petsc(PetscObject,const char[],const char[],void *);
+extern int PetscObjectQueryFunction_Petsc(PetscObject,const char[],void **);
 extern int PetscObjectComposeLanguage_Petsc(PetscObject,PetscLanguage,void *);
 extern int PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
 
@@ -60,6 +60,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
   ierr = OListDestroy(&h->olist);CHKERRQ(ierr);
   ierr = FListDestroy(h->qlist); CHKERRQ(ierr);
   if (h->type_name) PetscFree(h->type_name);
+  if (h->name) PetscFree(h->name);
   h->cookie = PETSCFREEDHEADER;
   if (h->prefix) PetscFree(h->prefix);
   if (h->fortran_func_pointers) {
@@ -162,7 +163,7 @@ int PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectCompose_Petsc"
-int PetscObjectCompose_Petsc(PetscObject obj,char *name,PetscObject ptr)
+int PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
 {
   int ierr;
 
@@ -173,7 +174,7 @@ int PetscObjectCompose_Petsc(PetscObject obj,char *name,PetscObject ptr)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectQuery_Petsc"
-int PetscObjectQuery_Petsc(PetscObject obj,char *name,PetscObject *ptr)
+int PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObject *ptr)
 {
   int ierr;
 
@@ -216,7 +217,8 @@ int PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob
 
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectComposeFunction_Petsc"
-int PetscObjectComposeFunction_Petsc(PetscObject obj,char *name,char *fname,void *ptr)
+int PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],
+                                     const char fname[],void *ptr)
 {
   int ierr;
 
@@ -227,7 +229,7 @@ int PetscObjectComposeFunction_Petsc(PetscObject obj,char *name,char *fname,void
 
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectQueryFunction_Petsc"
-int PetscObjectQueryFunction_Petsc(PetscObject obj,char *name,void **ptr)
+int PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void **ptr)
 {
   int ierr;
 
@@ -271,7 +273,7 @@ int PetscObjectQueryFunction_Petsc(PetscObject obj,char *name,void **ptr)
 
 .seealso: PetscObjectQuery(), PetscObjectContainerCreate()
 @*/
-int PetscObjectCompose(PetscObject obj,char *name,PetscObject ptr)
+int PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
 {
   int ierr;
 
@@ -299,7 +301,7 @@ int PetscObjectCompose(PetscObject obj,char *name,PetscObject ptr)
 
 .seealso: PetscObjectQuery()
 @*/
-int PetscObjectQuery(PetscObject obj,char *name,PetscObject *ptr)
+int PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
 {
   int ierr;
 
@@ -387,7 +389,8 @@ M*/
 
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectComposeFunction_Private"
-int PetscObjectComposeFunction_Private(PetscObject obj,char *name,char *fname,void *ptr)
+int PetscObjectComposeFunction_Private(PetscObject obj,const char name[],
+                                       const char fname[],void *ptr)
 {
   int ierr;
 
@@ -415,7 +418,7 @@ int PetscObjectComposeFunction_Private(PetscObject obj,char *name,char *fname,vo
 
 .seealso: PetscObjectComposeFunction()
 @*/
-int PetscObjectQueryFunction(PetscObject obj,char *name,void **ptr)
+int PetscObjectQueryFunction(PetscObject obj,const char name[],void **ptr)
 {
   int ierr;
 
@@ -478,7 +481,7 @@ int PetscDataTypeGetSize(PetscDataType ptype,int *size)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscDataTypeGetName"
-int PetscDataTypeGetName(PetscDataType ptype,char **name)
+int PetscDataTypeGetName(PetscDataType ptype,char *name[])
 {
   PetscFunctionBegin;
   if (ptype == PETSC_INT) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.41 1998/05/07 22:13:44 balay Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.42 1998/06/01 03:29:42 bsmith Exp balay $";
 #endif
 
 /* 
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: sysio.c,v 1.41 1998/05/07 22:13:44 balay Exp bsmith $
 #if defined (PARCH_nt)
 #include <io.h>
 #endif
-#include "src/inline/bitarray.h"
+#include "bitarray.h"
 
 #if !defined(WORDS_BIGENDIAN)
 #undef __FUNC__  
@@ -334,7 +334,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite()
 @*/
-int PetscBinaryOpen(char *name,int type,int *fd)
+int PetscBinaryOpen(const char name[],int type,int *fd)
 {
   PetscFunctionBegin;
 #if defined(PARCH_nt_gnu) || defined(PARCH_nt) 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ploginfo.c,v 1.5 1998/05/03 17:47:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ploginfo.c,v 1.6 1998/05/08 16:12:56 bsmith Exp balay $";
 #endif
 /*
       PLogInfo() is contained in a different file from the other profiling to 
@@ -57,7 +57,7 @@ $
 
 .seealso: PLogInfoAllow()
 @*/
-int PLogInfo(void *vobj,char *message,...)
+int PLogInfo(void *vobj,const char message[],...)
 {
   va_list     Argp;
   int         rank,urank,len;

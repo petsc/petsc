@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ghome.c,v 1.21 1998/05/18 20:15:47 bsmith Exp balay $";
+static char vcid[] = "$Id: ghome.c,v 1.22 1998/07/15 15:15:35 balay Exp balay $";
 #endif
 /*
       Code for manipulating files.
@@ -45,7 +45,7 @@ static char vcid[] = "$Id: ghome.c,v 1.21 1998/05/18 20:15:47 bsmith Exp balay $
 .  maxlen - maximum lengh allowed
 
    Output Parameter:
-.  dir - the home directory
+.  dir - contains the home directory. Must be long enough to hold the name.
 
    Note:
    On Windows NT machine the enviornmental variable HOME specifies the home directory.
@@ -53,7 +53,7 @@ static char vcid[] = "$Id: ghome.c,v 1.21 1998/05/18 20:15:47 bsmith Exp balay $
 .keywords: system, get, real, path
 
 @*/
-int PetscGetHomeDirectory(int maxlen,char *dir)
+int PetscGetHomeDirectory(char dir[],int maxlen)
 {
 #if defined(PARCH_nt) || defined(PARCH_nt_gnu)
   char *d1 = getenv("HOME");
@@ -81,25 +81,31 @@ int PetscGetHomeDirectory(int maxlen,char *dir)
    Not Collective
 
    Input Parameter:
-.  name - name of file (must be in writable memory)
+.  filein - name of file to be fixed
+
+   Output Parameter:
+.  fileout - the fixed name. Should long enough to hold the filename.
 
    Notes:
    Call PetscFixFilename() just before calling fopen().
 @*/
-int PetscFixFilename(char *file)
+int PetscFixFilename(const char filein[],char fileout[])
 {
   int i,n;
 
   PetscFunctionBegin;
-  if (!file) PetscFunctionReturn(0);
+  if (!filein || !fileout) PetscFunctionReturn(0);
 
-  n = PetscStrlen(file);
+  n = PetscStrlen(filein);
   for (i=0; i<n; i++ ) {
 #if defined(PARCH_nt)
-    if (file[i] == '/') file[i] = '\\';
+    if (filein[i] == '/') fileout[i] = '\\';
 #else
-    if (file[i] == '\\') file[i] = '/';
+    if (filein[i] == '\\') fileout[i] = '/';
 #endif
+    else fileout[i] = filein[i];
   }
+  fileout[n] = 0;
+
   PetscFunctionReturn(0);
 }

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: olist.c,v 1.4 1998/05/08 16:12:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: olist.c,v 1.5 1998/06/03 19:34:41 bsmith Exp balay $";
 #endif
 
 /*
@@ -25,7 +25,7 @@ struct _OList {
 
 .seealso: OListDestroy()
 */
-int OListAdd(OList *fl,char *name,PetscObject obj )
+int OListAdd(OList *fl,const char name[],PetscObject obj )
 {
   OList olist,nlist,prev;
   int   ierr;
@@ -116,7 +116,7 @@ int OListDestroy(OList *fl )
     The id or name must have been registered with the OListAdd() before calling this 
     routine.
 */
-int OListFind(OList fl, char *name, PetscObject *obj)
+int OListFind(OList fl, const char name[], PetscObject *obj)
 {
   PetscFunctionBegin;
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.25 1998/07/22 16:11:58 bsmith Exp balay $";
+static char vcid[] = "$Id: dl.c,v 1.26 1998/07/23 14:46:29 balay Exp balay $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -223,12 +223,12 @@ int DLLibraryObtain(MPI_Comm comm,char *libname,char *llibname,int llen)
    $PETSC_ARCH and $BOPT occuring in directoryname and filename 
    will be replaced with appropriate values.
 @*/
-int DLLibraryOpen(MPI_Comm comm,char *libname,void **handle)
+int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 {
   char       *par2,ierr,len,*par3,arch[10];
   PetscTruth foundlibrary;
   int        flg;
-  int        (*func)(char*);
+  int        (*func)(const char*);
 
   PetscFunctionBegin;
 
@@ -313,15 +313,15 @@ int DLLibraryOpen(MPI_Comm comm,char *libname,void **handle)
   }
 
   /* run the function FListAdd() if it is in the library */
-  func  = (int (*)(char *)) dlsym(*handle,"DLLibraryRegister");
+  func  = (int (*)(const char *)) dlsym(*handle,"DLLibraryRegister");
   if (func) {
     ierr = (*func)(libname);CHKERRQ(ierr);
     PLogInfo(0,"DLLibraryOpen:Loading registered routines from %s\n",libname);
   }
   if (PLogPrintInfo) {
-    char *(*sfunc)(char *,char*),*mess;
+    char *(*sfunc)(const char *,const char*),*mess;
 
-    sfunc   = (char *(*)(char *,char*)) dlsym(*handle,"DLLibraryInfo");
+    sfunc   = (char *(*)(const char *,const char*)) dlsym(*handle,"DLLibraryInfo");
     if (sfunc) {
       mess = (*sfunc)(libname,"Contents");
       if (mess) {
@@ -362,7 +362,8 @@ int DLLibraryOpen(MPI_Comm comm,char *libname,void **handle)
 @*/
 #undef __FUNC__  
 #define __FUNC__ "DLLibrarySym"
-int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,char *path,char *insymbol, void **value)
+int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
+                 const char insymbol[], void **value)
 {
   char          *par1,*symbol;
   int           ierr,len;
@@ -461,7 +462,7 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,char *path,char *insymbol, 
 @*/
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryAppend"
-int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,char *libname)
+int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
 {
   DLLibraryList list,prev;
   void*         handle;
@@ -513,7 +514,7 @@ int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,char *libname)
 @*/
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryPrepend"
-int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,char *libname)
+int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
 {
   DLLibraryList list,prev;
   void*         handle;

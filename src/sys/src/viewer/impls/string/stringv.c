@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.22 1998/05/08 16:14:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.23 1998/06/15 20:32:33 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -96,7 +96,7 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
 
 .seealso: ViewerDestroy(), ViewerStringSPrintf()
 @*/
-int ViewerStringOpen(MPI_Comm comm,char *string,int len, Viewer *lab)
+int ViewerStringOpen(MPI_Comm comm,char string[],int len, Viewer *lab)
 {
   Viewer v;
 

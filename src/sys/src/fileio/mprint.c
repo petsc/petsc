@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.15 1998/05/17 15:30:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.16 1998/05/18 20:16:48 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -49,7 +49,7 @@ static FILE        *queuefile  = PETSC_NULL;
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
           PetscPrintf()
 @*/
-int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
+int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 {
   int rank;
 
@@ -121,7 +121,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
           PetscFOpen()
 
 @*/
-int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,char *format,...)
+int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 {
   int rank;
 
@@ -255,7 +255,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf()
 @*/
-int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
+int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 {
   int rank;
 
@@ -302,7 +302,7 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/
-int PetscPrintf(MPI_Comm comm,char *format,...)
+int PetscPrintf(MPI_Comm comm,const char format[],...)
 {
   int rank;
 
@@ -351,7 +351,7 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/
-int PetscHelpPrintfDefault(MPI_Comm comm,char *format,...)
+int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 {
   int rank;
 
@@ -398,7 +398,7 @@ int PetscHelpPrintfDefault(MPI_Comm comm,char *format,...)
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/
-int PetscErrorPrintfDefault(char *format,...)
+int PetscErrorPrintfDefault(const char format[],...)
 {
   va_list     Argp;
   static  int PetscErrorPrintfCalled = 0;

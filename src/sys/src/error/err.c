@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.83 1998/07/02 02:35:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.84 1998/07/23 22:46:48 bsmith Exp balay $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -149,7 +149,7 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess)
 
 .seealso: PetscDoubleView() 
 @*/
-int PetscIntView(int N,int* idx,Viewer viewer)
+int PetscIntView(int N,int idx[],Viewer viewer)
 {
   int        j,i,n = N/20, p = N % 20,ierr;
   MPI_Comm   comm;
@@ -234,7 +234,7 @@ int PetscIntView(int N,int* idx,Viewer viewer)
 
 .seealso: PetscIntView() 
 @*/
-int PetscDoubleView(int N,double* idx,Viewer viewer)
+int PetscDoubleView(int N,double idx[],Viewer viewer)
 {
   int        j,i,n = N/5, p = N % 5,ierr;
   MPI_Comm   comm;

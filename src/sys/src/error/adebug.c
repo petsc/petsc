@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.78 1998/04/27 20:02:05 balay Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.79 1998/07/01 23:58:04 bsmith Exp balay $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: adebug.c,v 1.78 1998/04/27 20:02:05 balay Exp bsmith 
 /*
       These are the debugger and display used if the debugger is started up
 */
-static char  *Debugger = "gdb", *Display = 0;
+static char  Debugger[256];
 static int   Xterm     = 1;
 
 #undef __FUNC__  
@@ -34,11 +34,10 @@ static int   Xterm     = 1;
               usually "dbx", "gdb", or "xxgdb".  Also, HP-UX
               supports "xdb", and IBM rs6000 supports "xldb".
 
-.  xterm - flag to indicate debugger window, set to either 1 (to indicate
+-  xterm - flag to indicate debugger window, set to either 1 (to indicate
             debugger should be started in a new xterm) or 0 (to start debugger
             in initial window (the option 0 makes no sense when using more
             than one processor.)
--  display - name of display for opening xterm, or null.
 
    Fortran Note:
    This routine is not supported in Fortran.
@@ -47,17 +46,14 @@ static int   Xterm     = 1;
 
 .seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler()
 @*/
-int PetscSetDebugger(char *debugger, int xterm,char *display)
+int PetscSetDebugger(const char debugger[], int xterm)
 {
   PetscFunctionBegin;
-  if (debugger) Debugger = debugger;
-  Xterm    = xterm;
-  if (Display) {PetscFree(Display); Display = 0;}
-  if (display) {
-    int len = PetscStrlen(display)+1;
-    Display = (char *) PetscMalloc(len*sizeof(char)); if (!Display) PetscFunctionReturn(0);
-    PetscStrcpy(Display,display);
+  if (debugger) {
+    PetscStrcpy(Debugger,debugger);
   }
+  Xterm    = xterm;
+
   PetscFunctionReturn(0);
 }
 
@@ -75,14 +71,17 @@ int PetscSetDebugger(char *debugger, int xterm,char *display)
 int PetscAttachDebugger(void)
 {
   int   child=0,sleeptime=0,flg=0,ierr=0;
-  char  program[256];
+  char  program[256],display[256];
 
   PetscFunctionBegin;
+
+  ierr = PetscGetDisplay(display,128);CHKERRQ(ierr);
   ierr = PetscGetProgramName(program,256);
   if (ierr) {
     (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name\n");
     PetscFunctionReturn(1);
   }
+
 #if defined(CANNOT_START_DEBUGGER) 
   (*PetscErrorPrintf)("PETSC ERROR: System cannot start debugger\n");
   (*PetscErrorPrintf)("PETSC ERROR: On Cray run program in Totalview debugger\n");
@@ -121,7 +120,7 @@ int PetscAttachDebugger(void)
     sprintf(pid,"%d",child); 
     if (!PetscStrcmp(Debugger,"xxgdb") || !PetscStrcmp(Debugger,"ups")) {
       args[1] = program; args[2] = pid; args[3] = "-display";
-      args[0] = Debugger; args[4] = Display; args[5] = 0;
+      args[0] = Debugger; args[4] = display; args[5] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
       if (execvp(args[0], args)  < 0) {
         perror("Unable to start debugger");
@@ -131,7 +130,7 @@ int PetscAttachDebugger(void)
 #if defined(PARCH_rs6000)
     else if (!PetscStrcmp(Debugger,"xldb")) {
       args[1] = "-a"; args[2] = pid; args[3] = program;  args[4] = "-display";
-      args[0] = Debugger; args[5] = Display; args[6] = 0;
+      args[0] = Debugger; args[5] = display; args[6] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
       if (execvp(args[0], args)  < 0) {
         perror("Unable to start debugger");
@@ -178,7 +177,7 @@ int PetscAttachDebugger(void)
         exit(0);
       }
     } else {
-      if (!Display) {
+      if (!display) {
         args[0] = "xterm";  args[1] = "-e"; 
         args[2] = Debugger; args[3] = program; 
         args[4] = pid;      args[5] = 0;
@@ -213,7 +212,7 @@ int PetscAttachDebugger(void)
         (*PetscErrorPrintf)("PETSC: Attaching %s to %s on pid %s\n",Debugger,program,pid);
       } else {
         args[0] = "xterm";  args[1] = "-d";
-        args[2] = Display;  args[3] = "-e";
+        args[2] = display;  args[3] = "-e";
         args[4] = Debugger; args[5] = program;
         args[6] = pid;      args[7] = 0;
 #if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)
@@ -245,7 +244,7 @@ int PetscAttachDebugger(void)
       }
 #endif
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s\n",
-              Debugger,program,pid,Display);
+              Debugger,program,pid,display);
       }
 
       if (execvp("xterm", args)  < 0) {

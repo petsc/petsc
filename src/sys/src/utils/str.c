@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.20 1998/04/26 00:08:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.21 1998/05/18 19:15:32 bsmith Exp balay $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: str.c,v 1.20 1998/04/26 00:08:27 bsmith Exp bsmith $"
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrlen"
-int PetscStrlen(char *s)
+int PetscStrlen(const char s[])
 {
   int len;
 
@@ -33,7 +33,7 @@ int PetscStrlen(char *s)
 /*
     Handles copying null string correctly
 */
-int PetscStrcpy(char *s,char *t)
+int PetscStrcpy(char s[],const char t[])
 {
   PetscFunctionBegin;
   if (t && !s) {
@@ -46,7 +46,7 @@ int PetscStrcpy(char *s,char *t)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrncpy"
-int PetscStrncpy(char *s,char *t,int n)
+int PetscStrncpy(char s[],const char t[],int n)
 {
   PetscFunctionBegin;
   strncpy(s,t,n);
@@ -55,7 +55,7 @@ int PetscStrncpy(char *s,char *t,int n)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrcat"
-int PetscStrcat(char *s,char *t)
+int PetscStrcat(char s[],const char t[])
 {
   PetscFunctionBegin;
   strcat(s,t);
@@ -64,7 +64,7 @@ int PetscStrcat(char *s,char *t)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrncat"
-int PetscStrncat(char *s,char *t,int n)
+int PetscStrncat(char s[],const char t[],int n)
 {
   PetscFunctionBegin;
   strncat(s,t,n);
@@ -73,7 +73,7 @@ int PetscStrncat(char *s,char *t,int n)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrcmp"
-int PetscStrcmp(char *a,char *b)
+int PetscStrcmp(const char a[],const char b[])
 {
   int c;
 
@@ -86,7 +86,7 @@ int PetscStrcmp(char *a,char *b)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrcasecmp"
-int PetscStrcasecmp(char *a,char *b)
+int PetscStrcasecmp(const char a[],const char b[])
 {
   int c;
 
@@ -103,7 +103,7 @@ int PetscStrcasecmp(char *a,char *b)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrncmp"
-int PetscStrncmp(char *a,char *b,int n)
+int PetscStrncmp(const char a[],const char b[],int n)
 {
   int c;
 
@@ -114,7 +114,7 @@ int PetscStrncmp(char *a,char *b,int n)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrchr"
-char *PetscStrchr(char *a,char b)
+char *PetscStrchr(const char a[],char b)
 {
   char *c;
 
@@ -130,13 +130,13 @@ char *PetscStrchr(char *a,char b)
 */
 #undef __FUNC__  
 #define __FUNC__ "PetscStrrchr"
-char *PetscStrrchr(char *a,char b)
+char *PetscStrrchr(const char a[],char b)
 {
   char *tmp;
 
   PetscFunctionBegin;
   tmp = strrchr(a,b);
-  if (!tmp) tmp = a; else tmp = tmp + 1;
+  if (!tmp) tmp = (char*)a; else tmp = tmp + 1;
   PetscFunctionReturn(tmp);
 }
 
@@ -153,10 +153,10 @@ char *PetscStrrchr(char *a,char b)
 */
 #undef __FUNC__  
 #define __FUNC__ "PetscStrtok"
-char *PetscStrtok(char *a,char *b)
+char *PetscStrtok(const char a[],const char b[])
 {
   static char init[1024];
-         char *tmp,*ptr;
+         char *tmp=0,*ptr=0;
          int  len;
 
   PetscFunctionBegin;
@@ -172,15 +172,14 @@ char *PetscStrtok(char *a,char *b)
       ptr = init;
     }
     PetscStrncpy(ptr,a,1024);
-    a = ptr;
   }
-  tmp = strtok(a,b);
+  tmp = strtok(ptr,b);
   PetscFunctionReturn(tmp);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrstr"
-char *PetscStrstr(char*a,char *b)
+char *PetscStrstr(const char a[],const char b[])
 {
   char *tmp;
 

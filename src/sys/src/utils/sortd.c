@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortd.c,v 1.16 1998/05/18 19:18:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sortd.c,v 1.17 1998/05/18 19:19:54 bsmith Exp balay $";
 #endif
 
 /*
@@ -59,7 +59,7 @@ static int PetsciDqsort(double *v,int right)
 
 .seealso: PetscSortInt(), PetscSortDoubleWithPermutation()
 @*/
-int PetscSortDouble(int n,double *v)
+int PetscSortDouble(int n,double v[])
 {
   register int    j, k;
   register double tmp, vk;

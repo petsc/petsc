@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.69 1998/04/13 17:54:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.70 1998/04/27 22:18:49 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -203,10 +203,11 @@ $    -viewer_matlab_port <port>
 
 .seealso: MatView(), VecView()
 @*/
-int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
+int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 {
   Viewer v;
   int    t,rank;
+  char   mach[256];
 
   PetscFunctionBegin;
   if (port <= 0) port = DEFAULTPORT;
@@ -214,7 +215,8 @@ int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
   PLogObjectCreate(v);
   MPI_Comm_rank(comm,&rank);
   if (!rank) {
-    t = SOCKCall_Private(machine,port);
+    PetscStrcpy(mach,machine);
+    t = SOCKCall_Private(mach,port);
     v->port        = t;
   }
   v->destroy     = ViewerDestroy_Matlab;
@@ -266,7 +268,7 @@ int ViewerInitializeMatlabWorld_Private(void)
   PetscFunctionReturn(0);
 }
 
-int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
+int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

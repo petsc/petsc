@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.2 1998/05/29 20:36:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pinit.c,v 1.3 1998/07/23 22:46:55 bsmith Exp balay $";
 #endif
 /*
 
@@ -166,7 +166,7 @@ $       call PetscInitialize(file,ierr)
 
 .seealso: PetscFinalize(), PetscInitializeFortran()
 @*/
-int PetscInitialize(int *argc,char ***args,char *file,char *help)
+int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 {
   int        ierr;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.46 1998/05/18 19:04:13 bsmith Exp balay $";
+static char vcid[] = "$Id: memc.c,v 1.47 1998/07/22 19:51:40 balay Exp balay $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -23,6 +23,7 @@ static char vcid[] = "$Id: memc.c,v 1.46 1998/05/18 19:04:13 bsmith Exp balay $"
 #include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"
+#include "bitarray.h"
 
 #undef __FUNC__  
 #define __FUNC__ "PetscMemcpy"
@@ -88,7 +89,7 @@ int PetscMemcpy(void *a,const void *b,int n)
 .seealso: PetscMemmove(), PetscMemcpy()
 
 @*/
-int PetscBitMemcpy(void *a,int ai,void *b,int bi,int bs,PetscDataType dtype)
+int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtype)
 {
   char *aa = (char *)a, *bb = (char *)b;
   int  dsize,ierr;
@@ -155,7 +156,7 @@ int PetscMemzero(void *a,int n)
    Note: 
    This routine is anologous to memcmp()
 @*/
-int PetscMemcmp(void * str1, void *str2, int len)
+int PetscMemcmp(const void *str1,const void *str2, int len)
 {
   int r;
 

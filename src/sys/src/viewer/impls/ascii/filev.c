@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.73 1998/07/23 13:44:52 curfman Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.74 1998/07/23 14:50:47 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -291,10 +291,11 @@ int ViewerGetFormat(Viewer viewer,int *format)
 .seealso: MatView(), VecView(), ViewerDestroy(), ViewerFileOpenBinary(),
           ViewerASCIIGetPointer()
 @*/
-int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
+int ViewerFileOpenASCII(MPI_Comm comm,const char name[],Viewer *lab)
 {
   Viewer v;
   int    ierr;
+  char   fname[256];
 
   PetscFunctionBegin;
   if (comm == PETSC_COMM_SELF) {
@@ -309,8 +310,8 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
   if (!PetscStrcmp(name,"stderr")) v->fd = stderr;
   else if (!PetscStrcmp(name,"stdout")) v->fd = stdout;
   else {
-    ierr         = PetscFixFilename(name);CHKERRQ(ierr);
-    v->fd        = fopen(name,"w"); 
+    ierr         = PetscFixFilename(name,fname);CHKERRQ(ierr);
+    v->fd        = fopen(fname,"w"); 
     if (!v->fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open viewer file");
   }
   v->format        = VIEWER_FORMAT_ASCII_DEFAULT;

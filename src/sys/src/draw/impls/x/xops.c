@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.114 1998/07/14 15:33:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.115 1998/07/23 14:04:25 curfman Exp balay $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -498,7 +498,7 @@ extern int XiQuickWindowFromWindow(Draw_X*,char*,Window,int);
 
 #undef __FUNC__  
 #define __FUNC__ "DrawXGetDisplaySize_Private" 
-int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
+int DrawXGetDisplaySize_Private(const char name[],int *width,int *height)
 {
   Display *display;
 
@@ -568,7 +568,8 @@ int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
 
 .seealso: DrawSynchronizedFlush(), DrawDestroy()
 @*/
-int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,Draw* inctx)
+int DrawOpenX(MPI_Comm comm,const char display[],const char title[],
+              int x,int y,int w,int h,Draw* inctx)
 {
   Draw       ctx;
   Draw_X     *Xwin;
@@ -676,12 +677,12 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,Dr
   if (rank == 0) {
     if (x < 0 || y < 0)   SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative corner of window");
     if (w <= 0 || h <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative window width or height");
-    ierr = XiQuickWindow(Xwin,display,title,x,y,w,h,256); CHKERRQ(ierr);
+    ierr = XiQuickWindow(Xwin,(char *)display,(char *)title,x,y,w,h,256); CHKERRQ(ierr);
     ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,comm);CHKERRQ(ierr);
   } else {
     unsigned long win;
     ierr = MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);CHKERRQ(ierr);
-    ierr = XiQuickWindowFromWindow( Xwin,display, win,256); CHKERRQ(ierr);
+    ierr = XiQuickWindowFromWindow( Xwin,(char *)display, win,256); CHKERRQ(ierr);
   }
 
   Xwin->x      = x;
@@ -710,7 +711,8 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,Dr
 
 #undef __FUNC__  
 #define __FUNC__ "DrawOpenX" 
-int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* ctx)
+int DrawOpenX(MPI_Comm comm,const char disp[],const char ttl[],
+              int x,int y,int w,int h,Draw* ctx)
 {
   int rank,flag,ierr;
 
@@ -770,7 +772,7 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
 
 .seealso: DrawOpenX()
 @*/
-int ViewerDrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,
+int ViewerDrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,
                     int w,int h,Viewer *viewer)
 {
   int    ierr;
@@ -831,15 +833,15 @@ int ViewersDrawOpenX(MPI_Comm comm,char* display,char **titles,int n,int w,int h
 
 #undef __FUNC__  
 #define __FUNC__ "ViewersDestroy" 
-int ViewersDestroy(int n,Viewer *viewer)
+int ViewersDestroy(int n,Viewer viewers[])
 {
   int i,ierr;
 
   PetscFunctionBegin;
   for ( i=0; i<n; i++ ) {
-    ierr = ViewerDestroy(viewer[i]);CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewers[i]);CHKERRQ(ierr);
   }
-  PetscFree(viewer);
+  PetscFree(viewers);
   PetscFunctionReturn(0); 
 }
  

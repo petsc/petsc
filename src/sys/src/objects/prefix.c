@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: prefix.c,v 1.14 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: prefix.c,v 1.15 1997/12/01 01:53:22 bsmith Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: prefix.c,v 1.14 1997/10/19 03:23:45 bsmith Exp bsmith
 
 .keywords: object, set, options, prefix, database
 */
-int PetscObjectSetOptionsPrefix(PetscObject obj, char *prefix)
+int PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
 {
   PetscFunctionBegin;
   if (obj->prefix) PetscFree(obj->prefix);
@@ -52,7 +52,7 @@ int PetscObjectSetOptionsPrefix(PetscObject obj, char *prefix)
 
 .keywords: object, append, options, prefix, database
 */
-int PetscObjectAppendOptionsPrefix(PetscObject obj, char *prefix)
+int PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
 {
   char *buf = obj->prefix ;
   int  ierr;
@@ -86,7 +86,7 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj, char *prefix)
 
 .keywords: object, get, options, prefix, database
 */
-int PetscObjectGetOptionsPrefix(PetscObject obj ,char** prefix)
+int PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
 {
   PetscFunctionBegin;
   *prefix = obj->prefix;

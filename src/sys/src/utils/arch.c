@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: arch.c,v 1.28 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: arch.c,v 1.29 1998/05/18 18:56:41 bsmith Exp balay $";
 #endif
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: arch.c,v 1.28 1998/04/27 19:48:45 curfman Exp bsmith 
 
 .keywords: architecture, machine     
 @*/
-int PetscGetArchType(char *str,int slen)
+int PetscGetArchType(char str[],int slen)
 {
   PetscFunctionBegin;
 #if defined(PETSC_ARCH_NAME)

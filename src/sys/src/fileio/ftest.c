@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ftest.c,v 1.16 1998/05/18 20:15:09 bsmith Exp balay $";
+static char vcid[] = "$Id: ftest.c,v 1.17 1998/07/15 15:15:29 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -46,7 +46,7 @@ static char vcid[] = "$Id: ftest.c,v 1.16 1998/05/18 20:15:09 bsmith Exp balay $
 
 +*/
 #if defined (PARCH_nt)
-int PetscTestFile( char *fname, char mode,PetscTruth *flag)
+int PetscTestFile( const char fname[], char mode,PetscTruth *flag)
 {
   int m;
   
@@ -60,7 +60,7 @@ int PetscTestFile( char *fname, char mode,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 #else 
-int PetscTestFile( char *fname, char mode,PetscTruth *flag)
+int PetscTestFile( const char fname[], char mode,PetscTruth *flag)
 {
   struct stat statbuf;
   int         err,stmode, rbit, wbit, ebit;

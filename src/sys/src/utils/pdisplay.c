@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pdisplay.c,v 1.1 1998/05/18 19:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pdisplay.c,v 1.2 1998/05/29 20:36:18 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"        
@@ -61,7 +61,7 @@ int PetscSetDisplay(void)
 .   display - the display string, may (and should) be freed.
 
 */
-int PetscGetDisplay(char *display,int n)
+int PetscGetDisplay(char display[],int n)
 {
   PetscFunctionBegin;
   PetscStrncpy(display,PetscDisplay,n);

@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.36 1998/06/09 20:54:24 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.37 1998/06/11 19:59:10 bsmith Exp balay $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -7,21 +7,21 @@
 
 #include "petsc.h"
 
-extern int  PetscGetArchType(char *,int);
-extern int  PetscGetHostName(char *,int);
-extern int  PetscGetUserName(char *,int);
-extern int  PetscGetProgramName(char *,int);
-extern int  PetscSetProgramName(char *);
+extern int  PetscGetArchType(char[],int);
+extern int  PetscGetHostName(char[],int);
+extern int  PetscGetUserName(char[],int);
+extern int  PetscGetProgramName(char[],int);
+extern int  PetscSetProgramName(const char[]);
 
 extern char *PetscGetDate(void);
 
-extern int  PetscSortInt(int,int*);
-extern int  PetscSortIntWithPermutation(int,int*,int*);
-extern int  PetscSortDouble(int,double*);
-extern int  PetscSortDoubleWithPermutation(int,double*,int*);
+extern int  PetscSortInt(int,int[]);
+extern int  PetscSortIntWithPermutation(int,const int[],int[]);
+extern int  PetscSortDouble(int,double[]);
+extern int  PetscSortDoubleWithPermutation(int,const double[],int[]);
 
 extern int  PetscSetDisplay(void);
-extern int  PetscGetDisplay(char *,int);
+extern int  PetscGetDisplay(char[],int);
 
 #define PETSCRANDOM_COOKIE PETSC_COOKIE+19
 
@@ -35,15 +35,15 @@ extern int PetscRandomGetValue(PetscRandom,Scalar*);
 extern int PetscRandomSetInterval(PetscRandom,Scalar,Scalar);
 extern int PetscRandomDestroy(PetscRandom);
 
-extern int PetscGetFullPath(char*,char*,int);
-extern int PetscGetRelativePath(char*,char*,int);
-extern int PetscGetWorkingDirectory(char *, int);
-extern int PetscGetRealPath(char *,char*);
-extern int PetscGetHomeDirectory(int,char*);
-extern int PetscTestFile( char *, char,PetscTruth*);
+extern int PetscGetFullPath(const char[],char[],int);
+extern int PetscGetRelativePath(const char[],char[],int);
+extern int PetscGetWorkingDirectory(char[],int);
+extern int PetscGetRealPath(char[],char[]);
+extern int PetscGetHomeDirectory(char[],int);
+extern int PetscTestFile(const char[],char,PetscTruth*);
 extern int PetscBinaryRead(int,void*,int,PetscDataType);
 extern int PetscBinaryWrite(int,void*,int,PetscDataType,int);
-extern int PetscBinaryOpen(char *,int,int *);
+extern int PetscBinaryOpen(const char[],int,int *);
 extern int PetscBinaryClose(int);
 
 /*
@@ -62,7 +62,7 @@ extern int PetscBinaryClose(int);
 typedef enum {BINARY_SEEK_SET = 0,BINARY_SEEK_CUR = 1,BINARY_SEEK_END = 2} PetscBinarySeekType;
 extern int PetscBinarySeek(int,int,PetscBinarySeekType);
 
-extern int PetscSetDebugger(char *,int,char *);
+extern int PetscSetDebugger(const char[],int);
 extern int PetscAttachDebugger(void);
 
 #endif      

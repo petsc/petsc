@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortip.c,v 1.22 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: sortip.c,v 1.23 1998/05/18 19:19:45 bsmith Exp balay $";
 #endif
 
 /*
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: sortip.c,v 1.22 1998/04/27 19:48:45 curfman Exp bsmit
 
 #undef __FUNC__  
 #define __FUNC__ "PetsciIqsortPerm"
-static int PetsciIqsortPerm(int *v,int *vdx,int right)
+static int PetsciIqsortPerm(const int v[],int vdx[],int right)
 {
   int          tmp;
   register int i, vl, last;
@@ -60,7 +60,7 @@ static int PetsciIqsortPerm(int *v,int *vdx,int right)
 
 .seealso: PetscSortInt(), PetscSortDoubleWithPermutation()
  @*/
-int PetscSortIntWithPermutation(int n, int *i, int *idx )
+int PetscSortIntWithPermutation(int n, const int i[], int idx[] )
 {
   register int j, k, tmp, ik;
 
@@ -85,7 +85,7 @@ int PetscSortIntWithPermutation(int n, int *i, int *idx )
 
 #undef __FUNC__  
 #define __FUNC__ "PetsciDqsortPerm"
-static int PetsciDqsortPerm(double *v,int *vdx,int right)
+static int PetsciDqsortPerm(const double v[],int vdx[],int right)
 {
   double       vl;
   register int tmp,i, last;
@@ -129,7 +129,7 @@ static int PetsciDqsortPerm(double *v,int *vdx,int right)
 
 .seealso: PetscSortDouble(), PetscSortIntWithPermutation()
  @*/
-int PetscSortDoubleWithPermutation(int n, double *i, int *idx )
+int PetscSortDoubleWithPermutation(int n, const double i[], int idx[])
 {
   register int j, k,tmp;
   double       ik;

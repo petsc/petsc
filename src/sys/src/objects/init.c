@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.14 1998/07/24 21:32:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.15 1998/07/25 05:49:09 balay Exp balay $";
 #endif
 /*
 
@@ -40,20 +40,21 @@ Scalar        PETSC_i = 0.0;
 #endif
 
 /*
-     These are needed by src/inline/bitarray.h
+     These are needed by bitarray.h
 */
 char _BT_mask, _BT_c;
 int  _BT_idx;
 
-extern int PLogEventRegisterDestroy_Private();
+extern int PLogEventRegisterDestroy_Private(void);
+extern int PLogStageDestroy_Private(void);
 
 /*
        Function that is called to display all error messages
 */
-extern int  PetscErrorPrintfDefault(char [],...);
-extern int  PetscHelpPrintfDefault(MPI_Comm,char [],...);
-int (*PetscErrorPrintf)(char [],...)          = PetscErrorPrintfDefault;
-int (*PetscHelpPrintf)(MPI_Comm,char [],...)  = PetscHelpPrintfDefault;
+extern int  PetscErrorPrintfDefault(const char [],...);
+extern int  PetscHelpPrintfDefault(MPI_Comm,const char [],...);
+int (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
+int (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
 
 /* ------------------------------------------------------------------------------*/
 /* 
@@ -63,10 +64,10 @@ FILE *petsc_history = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "PLogOpenHistoryFile"
-int PLogOpenHistoryFile(char *filename,FILE **fd)
+int PLogOpenHistoryFile(const char filename[],FILE **fd)
 {
   int  ierr,rank,size;
-  char pfile[256],pname[256];
+  char pfile[256],pname[256],fname[256];
 
   PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
@@ -74,13 +75,15 @@ int PLogOpenHistoryFile(char *filename,FILE **fd)
     char arch[10];
     PetscGetArchType(arch,10);
     MPI_Comm_size(PETSC_COMM_WORLD,&size);
-    if (!filename) {
+    if (filename) {
+      ierr = PetscFixFilename(filename,fname);CHKERRQ(ierr);
+    } else {
       ierr = PetscGetHomeDirectory(pfile,240); CHKERRQ(ierr);
       PetscStrcat(pfile,"/.petschistory");
-      filename = pfile;
+      ierr = PetscFixFilename(pfile,fname);CHKERRQ(ierr);
     }
-    ierr = PetscFixFilename(filename);CHKERRQ(ierr);
-    *fd = fopen(filename,"a"); if (!fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"");
+
+    *fd = fopen(fname,"a"); if (!fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"");
     fprintf(*fd,"---------------------------------------------------------\n");
     fprintf(*fd,"%s %s ",PETSC_VERSION_NUMBER,PetscGetDate());
     ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
@@ -355,7 +358,7 @@ int OptionsCheckInitial_Alice(void)
     (*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LDIR);
 #endif
     (*PetscHelpPrintf)(comm,"--------------------------------------------\
----------------------------\n");
+------------------------------\n");
   }
 
   /*
@@ -481,11 +484,11 @@ int OptionsCheckInitial_Alice(void)
     
     ierr = OptionsGetString(PETSC_NULL,"-log_trace",mname,250,&flg1); CHKERRQ(ierr);
     if (flg1) { 
-      char fname[256];
+      char name[256],fname[256];
       FILE *file;
       if (mname[0]) {
-        sprintf(fname,"%s.%d",mname,rank);
-        ierr = PetscFixFilename(fname);CHKERRQ(ierr);
+        sprintf(name,"%s.%d",mname,rank);
+        ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
         file = fopen(fname,"w"); 
         if (!file) {
           SETERRQ(PETSC_ERR_FILE_OPEN,0,"Unable to open trace file");
@@ -659,7 +662,7 @@ $       call AliceInitialize(file,ierr)
 
 .seealso: AliceFinalize(), AliceInitializeFortran()
 @*/
-int AliceInitialize(int *argc,char ***args,char *file,char *help)
+int AliceInitialize(int *argc,char ***args,const char file[],const char help[])
 {
   int        ierr,flag,flg,dummy_tag;
 
@@ -898,6 +901,7 @@ int AliceFinalize(void)
 
 #if defined(USE_PETSC_LOG)
   PLogEventRegisterDestroy_Private();
+  PLogStageDestroy_Private();
 #endif
 
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
