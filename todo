@@ -27,6 +27,8 @@ KSP
     that and then adding back the initial guess.
 
 
+    Add support for point block diagonal scaling the matrix before calling KSPSolve.
+
 Viewers
 
   Change mathematica viewer directory to only compile if mathematica present. Remove all mathematica mesh/grid stuff   
@@ -57,6 +59,8 @@ PC/Mat
   Matrix impls should not use MatGetRow() on their own data structures, they should directly address the data structure.
 
   MatGetRow/ColumnIJ should have const for arrays that are returned
+
+  Add norms for BAIJ matrices
 
   Make a Mat type of PC and KSP.
 

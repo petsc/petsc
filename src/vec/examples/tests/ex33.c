@@ -8,7 +8,7 @@ static char help[] = "Tests the routines VecScatterCreateToAll(), VecScatterCrea
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt       n = 5,i,len,start,end;
+  PetscInt       n = 3,i,len,start,end;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscScalar    value,*yy;

@@ -28,7 +28,7 @@
 PetscErrorCode MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
   PetscErrorCode ierr;
-  int         m1,m2,n1,n2;
+  PetscInt       m1,m2,n1,n2;
 
   PetscFunctionBegin;
   PetscValidScalarPointer(a,1);

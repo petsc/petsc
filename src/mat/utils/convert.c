@@ -13,9 +13,9 @@ PetscErrorCode MatConvert_Basic(Mat mat,const MatType newtype,Mat *newmat)\
 {
   Mat                M;
   const PetscScalar  *vwork;
-  PetscErrorCode ierr;
-  int i,nz,m,n,rstart,rend,lm,ln;
-  const int          *cwork;
+  PetscErrorCode     ierr;
+  PetscInt           i,nz,m,n,rstart,rend,lm,ln;
+  const PetscInt     *cwork;
 
   PetscFunctionBegin;
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);

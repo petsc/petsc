@@ -99,7 +99,7 @@ typedef struct {
 } Parameter;
 
 typedef struct {
-  Vec          Xoldold,Xold,func;
+  Vec          Xoldold,Xold;
   TstepCtx     *tsCtx;
   Parameter    *param;
 } AppCtx;
@@ -266,7 +266,6 @@ int main(int argc,char **argv)
          function value */
       ierr = VecDuplicate(dmmg[i]->x, &user[i].Xoldold);CHKERRQ(ierr);
       ierr = VecDuplicate(dmmg[i]->x, &user[i].Xold);CHKERRQ(ierr);
-      ierr = VecDuplicate(dmmg[i]->x, &user[i].func);CHKERRQ(ierr);
       user[i].tsCtx = &tsCtx;
       user[i].param = &param;
       DMMGSetUser(dmmg,i,&user[i]);
@@ -332,7 +331,6 @@ int main(int argc,char **argv)
     for (i=0; i<param.mglevels; i++) {
       ierr = VecDestroy(user[i].Xoldold);CHKERRQ(ierr);
       ierr = VecDestroy(user[i].Xold);CHKERRQ(ierr);
-      ierr = VecDestroy(user[i].func);CHKERRQ(ierr);
     }
     ierr = PetscFree(user);CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);

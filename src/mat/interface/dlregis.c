@@ -20,9 +20,9 @@ PetscErrorCode MatInitializePackage(char *path)
 {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
-  char             *className;
+  char              *className;
   PetscTruth        opt;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (initialized == PETSC_TRUE) PetscFunctionReturn(0);

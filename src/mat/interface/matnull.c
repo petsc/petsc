@@ -35,11 +35,11 @@ PetscCookie MAT_NULLSPACE_COOKIE = 0;
 
 .seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace
 @*/
-PetscErrorCode MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,const Vec vecs[],MatNullSpace *SP)
+PetscErrorCode MatNullSpaceCreate(MPI_Comm comm,PetscTruth has_cnst,PetscInt n,const Vec vecs[],MatNullSpace *SP)
 {
-  MatNullSpace sp;
+  MatNullSpace   sp;
   PetscErrorCode ierr;
-  int          i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);
@@ -119,10 +119,10 @@ PetscErrorCode MatNullSpaceDestroy(MatNullSpace sp)
 @*/
 PetscErrorCode MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 {
-  PetscScalar sum;
+  PetscScalar    sum;
   PetscErrorCode ierr;
-  int         j,n = sp->n,N;
-  Vec         l = vec;
+  PetscInt       j,n = sp->n,N;
+  Vec            l = vec;
 
   PetscFunctionBegin;
   if (out) {
@@ -170,13 +170,13 @@ PetscErrorCode MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 @*/
 PetscErrorCode MatNullSpaceTest(MatNullSpace sp,Mat mat)
 {
-  PetscScalar  sum;
-  PetscReal    nrm;
-  int          j,n = sp->n,N,m;
+  PetscScalar    sum;
+  PetscReal      nrm;
+  PetscInt       j,n = sp->n,N,m;
   PetscErrorCode ierr;
-  Vec          l,r;
-  MPI_Comm     comm = sp->comm;
-  PetscTruth   flg1,flg2;
+  Vec            l,r;
+  MPI_Comm       comm = sp->comm;
+  PetscTruth     flg1,flg2;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_null_space_test_view",&flg1);CHKERRQ(ierr);

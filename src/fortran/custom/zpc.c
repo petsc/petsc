@@ -161,7 +161,7 @@ void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, PetscErrorCode *ierr)
   *ierr = PCView(*pc,v);
 }
 
-void PETSC_STDCALL matnullspacecreate_(MPI_Comm *comm,int *has_cnst,int *n,Vec *vecs,MatNullSpace *SP,PetscErrorCode *ierr)
+void PETSC_STDCALL matnullspacecreate_(MPI_Comm *comm,PetscTruth *has_cnst,int *n,Vec *vecs,MatNullSpace *SP,PetscErrorCode *ierr)
 {
   *ierr = MatNullSpaceCreate((MPI_Comm)PetscToPointerComm(*comm),*has_cnst,*n,vecs,SP);
 }

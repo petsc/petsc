@@ -10,7 +10,7 @@
 */
 typedef struct {
   PetscScalar *diag;
-  int         bs,mbs;
+  PetscInt    bs,mbs;
 } PC_PBJacobi;
 
 /*
@@ -24,10 +24,10 @@ typedef struct {
 #define __FUNCT__ "PCApply_PBJacobi_2"
 static PetscErrorCode PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
 {
-  PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
+  PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
-  int i,m = jac->mbs;
-  PetscScalar *diag = jac->diag,x0,x1,*xx,*yy;
+  PetscInt       i,m = jac->mbs;
+  PetscScalar    *diag = jac->diag,x0,x1,*xx,*yy;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -47,10 +47,10 @@ static PetscErrorCode PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApply_PBJacobi_3"
 static PetscErrorCode PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
 {
-  PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
+  PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
-  int i,m = jac->mbs;
-  PetscScalar *diag = jac->diag,x0,x1,x2,*xx,*yy;
+  PetscInt       i,m = jac->mbs;
+  PetscScalar    *diag = jac->diag,x0,x1,x2,*xx,*yy;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -71,10 +71,10 @@ static PetscErrorCode PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApply_PBJacobi_4"
 static PetscErrorCode PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
 {
-  PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
+  PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
-  int i,m = jac->mbs;
-  PetscScalar *diag = jac->diag,x0,x1,x2,x3,*xx,*yy;
+  PetscInt       i,m = jac->mbs;
+  PetscScalar    *diag = jac->diag,x0,x1,x2,x3,*xx,*yy;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -96,10 +96,10 @@ static PetscErrorCode PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApply_PBJacobi_5"
 static PetscErrorCode PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
 {
-  PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
+  PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
-  int i,m = jac->mbs;
-  PetscScalar *diag = jac->diag,x0,x1,x2,x3,x4,*xx,*yy;
+  PetscInt       i,m = jac->mbs;
+  PetscScalar    *diag = jac->diag,x0,x1,x2,x3,x4,*xx,*yy;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -124,12 +124,12 @@ EXTERN PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat);
 #define __FUNCT__ "PCSetUp_PBJacobi"
 static PetscErrorCode PCSetUp_PBJacobi(PC pc)
 {
-  PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
+  PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
-  int size;
-  PetscTruth  seqbaij,mpibaij,baij;
-  Mat         A = pc->pmat;
-  Mat_SeqBAIJ *a;
+  PetscMPIInt    size;
+  PetscTruth     seqbaij,mpibaij,baij;
+  Mat            A = pc->pmat;
+  Mat_SeqBAIJ    *a;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQBAIJ,&seqbaij);CHKERRQ(ierr);
@@ -171,7 +171,7 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
 #define __FUNCT__ "PCDestroy_PBJacobi"
 static PetscErrorCode PCDestroy_PBJacobi(PC pc)
 {
-  PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
+  PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -200,7 +200,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCreate_PBJacobi"
 PetscErrorCode PCCreate_PBJacobi(PC pc)
 {
-  PC_PBJacobi *jac;
+  PC_PBJacobi    *jac;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -8,20 +8,20 @@
 
 /* Logging support */
 PetscCookie MAT_COOKIE = 0, MATSNESMFCTX_COOKIE = 0;
-PetscEvent    MAT_Mult = 0, MAT_MultMatrixFree = 0, MAT_Mults = 0, MAT_MultConstrained = 0, MAT_MultAdd = 0, MAT_MultTranspose = 0;
-PetscEvent    MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solve = 0, MAT_Solves = 0, MAT_SolveAdd = 0, MAT_SolveTranspose = 0;
-PetscEvent    MAT_SolveTransposeAdd = 0, MAT_Relax = 0, MAT_ForwardSolve = 0, MAT_BackwardSolve = 0, MAT_LUFactor = 0, MAT_LUFactorSymbolic = 0;
-PetscEvent    MAT_LUFactorNumeric = 0, MAT_CholeskyFactor = 0, MAT_CholeskyFactorSymbolic = 0, MAT_CholeskyFactorNumeric = 0, MAT_ILUFactor = 0;
-PetscEvent    MAT_ILUFactorSymbolic = 0, MAT_ICCFactorSymbolic = 0, MAT_Copy = 0, MAT_Convert = 0, MAT_Scale = 0, MAT_AssemblyBegin = 0;
-PetscEvent    MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0;
-PetscEvent    MAT_IncreaseOverlap = 0, MAT_Partitioning = 0, MAT_ZeroEntries = 0, MAT_Load = 0, MAT_View = 0, MAT_AXPY = 0, MAT_FDColoringCreate = 0;
-PetscEvent    MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0;
-PetscEvent    MAT_MatMult = 0, MAT_MatMultSymbolic = 0, MAT_MatMultNumeric = 0;
-PetscEvent    MAT_PtAP = 0, MAT_PtAPSymbolic = 0, MAT_PtAPNumeric = 0;
-PetscEvent    MAT_MatMultTranspose = 0, MAT_MatMultTransposeSymbolic = 0, MAT_MatMultTransposeNumeric = 0;
+PetscEvent  MAT_Mult = 0, MAT_MultMatrixFree = 0, MAT_Mults = 0, MAT_MultConstrained = 0, MAT_MultAdd = 0, MAT_MultTranspose = 0;
+PetscEvent  MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solve = 0, MAT_Solves = 0, MAT_SolveAdd = 0, MAT_SolveTranspose = 0;
+PetscEvent  MAT_SolveTransposeAdd = 0, MAT_Relax = 0, MAT_ForwardSolve = 0, MAT_BackwardSolve = 0, MAT_LUFactor = 0, MAT_LUFactorSymbolic = 0;
+PetscEvent  MAT_LUFactorNumeric = 0, MAT_CholeskyFactor = 0, MAT_CholeskyFactorSymbolic = 0, MAT_CholeskyFactorNumeric = 0, MAT_ILUFactor = 0;
+PetscEvent  MAT_ILUFactorSymbolic = 0, MAT_ICCFactorSymbolic = 0, MAT_Copy = 0, MAT_Convert = 0, MAT_Scale = 0, MAT_AssemblyBegin = 0;
+PetscEvent  MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0;
+PetscEvent  MAT_IncreaseOverlap = 0, MAT_Partitioning = 0, MAT_ZeroEntries = 0, MAT_Load = 0, MAT_View = 0, MAT_AXPY = 0, MAT_FDColoringCreate = 0;
+PetscEvent  MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0;
+PetscEvent  MAT_MatMult = 0, MAT_MatMultSymbolic = 0, MAT_MatMultNumeric = 0;
+PetscEvent  MAT_PtAP = 0, MAT_PtAPSymbolic = 0, MAT_PtAPNumeric = 0;
+PetscEvent  MAT_MatMultTranspose = 0, MAT_MatMultTransposeSymbolic = 0, MAT_MatMultTransposeNumeric = 0;
 
 /* nasty global values for MatSetValue() */
-int         MatSetValue_Row = 0, MatSetValue_Column = 0;
+PetscInt    MatSetValue_Row = 0, MatSetValue_Column = 0;
 PetscScalar MatSetValue_Value = 0.0;
 
 #undef __FUNCT__  
@@ -88,10 +88,10 @@ PetscScalar MatSetValue_Value = 0.0;
 .seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatGetSubmatrices(), MatGetDiagonal()
 @*/
 
-PetscErrorCode MatGetRow(Mat mat,int row,int *ncols,const int *cols[],const PetscScalar *vals[])
+PetscErrorCode MatGetRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt *cols[],const PetscScalar *vals[])
 {
   PetscErrorCode ierr;
-  int   incols;
+  PetscInt       incols;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -101,7 +101,7 @@ PetscErrorCode MatGetRow(Mat mat,int row,int *ncols,const int *cols[],const Pets
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->getrow) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = PetscLogEventBegin(MAT_GetRow,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getrow)(mat,row,&incols,(int **)cols,(PetscScalar **)vals);CHKERRQ(ierr);
+  ierr = (*mat->ops->getrow)(mat,row,&incols,(PetscInt **)cols,(PetscScalar **)vals);CHKERRQ(ierr);
   if (ncols) *ncols = incols;
   ierr = PetscLogEventEnd(MAT_GetRow,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -142,7 +142,7 @@ PetscErrorCode MatGetRow(Mat mat,int row,int *ncols,const int *cols[],const Pets
 
 .seealso:  MatGetRow()
 @*/
-PetscErrorCode MatRestoreRow(Mat mat,int row,int *ncols,const int *cols[],const PetscScalar *vals[])
+PetscErrorCode MatRestoreRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt *cols[],const PetscScalar *vals[])
 {
   PetscErrorCode ierr;
 
@@ -151,7 +151,7 @@ PetscErrorCode MatRestoreRow(Mat mat,int row,int *ncols,const int *cols[],const 
   PetscValidIntPointer(ncols,3);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->restorerow) PetscFunctionReturn(0);
-  ierr = (*mat->ops->restorerow)(mat,row,ncols,(int **)cols,(PetscScalar **)vals);CHKERRQ(ierr);
+  ierr = (*mat->ops->restorerow)(mat,row,ncols,(PetscInt **)cols,(PetscScalar **)vals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -224,8 +224,8 @@ PetscErrorCode MatRestoreRow(Mat mat,int row,int *ncols,const int *cols[],const 
 @*/
 PetscErrorCode MatView(Mat mat,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  int               rows,cols;
+  PetscErrorCode    ierr;
+  PetscInt          rows,cols;
   PetscTruth        iascii;
   char              *cstr;
   PetscViewerFormat format;
@@ -517,7 +517,7 @@ PetscErrorCode MatValid(Mat m,PetscTruth *flg)
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
           InsertMode, INSERT_VALUES, ADD_VALUES
 @*/
-PetscErrorCode MatSetValues(Mat mat,int m,const int idxm[],int n,const int idxn[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],const PetscScalar v[],InsertMode addv)
 {
   PetscErrorCode ierr;
 
@@ -621,11 +621,11 @@ $    idxm(MatStencil_c,1) = c
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
           MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray(), MatStencil
 @*/
-PetscErrorCode MatSetValuesStencil(Mat mat,int m,const MatStencil idxm[],int n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],PetscInt n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
   PetscErrorCode ierr;
-  int j,i,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
-  int *starts = mat->stencil.starts,*dxm = (int*)idxm,*dxn = (int*)idxn,sdim = dim - (1 - (int)mat->stencil.noc);
+  PetscInt       j,i,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
+  PetscInt       *starts = mat->stencil.starts,*dxm = (PetscInt*)idxm,*dxn = (PetscInt*)idxn,sdim = dim - (1 - (PetscInt)mat->stencil.noc);
 
   PetscFunctionBegin;
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
@@ -730,11 +730,11 @@ $    idxm(MatStencil_k,1) = k
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
           MatSetValues(), MatSetValuesStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray(), MatStencil
 @*/
-PetscErrorCode MatSetValuesBlockedStencil(Mat mat,int m,const MatStencil idxm[],int n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil idxm[],PetscInt n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
   PetscErrorCode ierr;
-  int j,i,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
-  int *starts = mat->stencil.starts,*dxm = (int*)idxm,*dxn = (int*)idxn,sdim = dim - (1 - (int)mat->stencil.noc);
+  PetscInt       j,i,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
+  PetscInt       *starts = mat->stencil.starts,*dxm = (PetscInt*)idxm,*dxn = (PetscInt*)idxn,sdim = dim - (1 - (PetscInt)mat->stencil.noc);
 
   PetscFunctionBegin;
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
@@ -798,9 +798,9 @@ PetscErrorCode MatSetValuesBlockedStencil(Mat mat,int m,const MatStencil idxm[],
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
           MatSetValues(), MatSetValuesBlockedStencil(), MatSetValuesStencil()
 @*/
-PetscErrorCode MatSetStencil(Mat mat,int dim,const int dims[],const int starts[],int dof)
+PetscErrorCode MatSetStencil(Mat mat,PetscInt dim,const PetscInt dims[],const PetscInt starts[],PetscInt dof)
 {
-  int i;
+  PetscInt i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -865,7 +865,7 @@ PetscErrorCode MatSetStencil(Mat mat,int dim,const int dims[],const int starts[]
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal()
 @*/
-PetscErrorCode MatSetValuesBlocked(Mat mat,int m,const int idxm[],int n,const int idxn[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],const PetscScalar v[],InsertMode addv)
 {
   PetscErrorCode ierr;
 
@@ -930,7 +930,7 @@ PetscErrorCode MatSetValuesBlocked(Mat mat,int m,const int idxm[],int n,const in
 
 .seealso: MatGetRow(), MatGetSubmatrices(), MatSetValues()
 @*/
-PetscErrorCode MatGetValues(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScalar v[])
+PetscErrorCode MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
   PetscErrorCode ierr;
 
@@ -1067,10 +1067,10 @@ PetscErrorCode MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapp
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping(),
            MatSetValueLocal()
 @*/
-PetscErrorCode MatSetValuesLocal(Mat mat,int nrow,const int irow[],int ncol,const int icol[],const PetscScalar y[],InsertMode addv) 
+PetscErrorCode MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
 {
   PetscErrorCode ierr;
-  int irowm[2048],icolm[2048];
+  PetscInt       irowm[2048],icolm[2048];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1144,10 +1144,10 @@ PetscErrorCode MatSetValuesLocal(Mat mat,int nrow,const int irow[],int ncol,cons
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesLocal(), MatSetLocalToGlobalMappingBlock(), MatSetValuesBlocked()
 @*/
-PetscErrorCode MatSetValuesBlockedLocal(Mat mat,int nrow,const int irow[],int ncol,const int icol[],const PetscScalar y[],InsertMode addv) 
+PetscErrorCode MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
 {
   PetscErrorCode ierr;
-  int irowm[2048],icolm[2048];
+  PetscInt       irowm[2048],icolm[2048];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1271,7 +1271,7 @@ PetscErrorCode MatMult(Mat mat,Vec x,Vec y)
 PetscErrorCode MatMultTranspose(Mat mat,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  PetscTruth flg1, flg2; 
+  PetscTruth     flg1, flg2; 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2208,8 +2208,8 @@ PetscErrorCode MatBackwardSolve(Mat mat,Vec b,Vec x)
 @*/
 PetscErrorCode MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 {
-  PetscScalar one = 1.0;
-  Vec    tmp;
+  PetscScalar    one = 1.0;
+  Vec            tmp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2337,9 +2337,9 @@ PetscErrorCode MatSolveTranspose(Mat mat,Vec b,Vec x)
 @*/
 PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 {
-  PetscScalar one = 1.0;
+  PetscScalar    one = 1.0;
   PetscErrorCode ierr;
-  Vec         tmp;
+  Vec            tmp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2439,7 +2439,7 @@ PetscErrorCode MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
    Concepts: matrices^Gauss-Seidel
 
 @*/
-PetscErrorCode MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int its,int lits,Vec x)
+PetscErrorCode MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,PetscInt its,PetscInt lits,Vec x)
 {
   PetscErrorCode ierr;
 
@@ -2486,7 +2486,7 @@ PetscErrorCode MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal 
    Level: developer
 
 @*/
-PetscErrorCode MatPBRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int its,int lits,Vec x)
+PetscErrorCode MatPBRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,PetscInt its,PetscInt lits,Vec x)
 {
   PetscErrorCode ierr;
 
@@ -2519,9 +2519,9 @@ PetscErrorCode MatPBRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscRea
 */
 PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
 {
-  PetscErrorCode ierr;
-  int               i,rstart,rend,nz;
-  const int         *cwork;
+  PetscErrorCode    ierr;
+  PetscInt          i,rstart,rend,nz;
+  const PetscInt    *cwork;
   const PetscScalar *vwork;
 
   PetscFunctionBegin;
@@ -2627,7 +2627,7 @@ PetscFList MatConvertList              = 0;
 PetscErrorCode MatConvertRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatType,Mat*))
 {
   PetscErrorCode ierr;
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
@@ -2665,8 +2665,8 @@ PetscErrorCode MatConvertRegister(const char sname[],const char path[],const cha
 PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
 {
   PetscErrorCode ierr;
-  PetscTruth sametype,issame,flg;
-  char       convname[256],mtype[256];
+  PetscTruth     sametype,issame,flg;
+  char           convname[256],mtype[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3017,19 +3017,19 @@ PetscErrorCode MatPermute(Mat mat,IS row,IS col,Mat *B)
 
 .seealso: MatGetOrdering(), MatPermute()
 @*/
-PetscErrorCode MatPermuteSparsify(Mat A, int band, PetscReal frac, PetscReal tol, IS rowp, IS colp, Mat *B)
+PetscErrorCode MatPermuteSparsify(Mat A, PetscInt band, PetscReal frac, PetscReal tol, IS rowp, IS colp, Mat *B)
 {
   IS                irowp, icolp;
-  int               *rows, *cols;
-  int               M, N, locRowStart, locRowEnd;
-  int               nz, newNz;
-  const int         *cwork;
-  int               *cnew;
+  PetscInt          *rows, *cols;
+  PetscInt          M, N, locRowStart, locRowEnd;
+  PetscInt          nz, newNz;
+  const PetscInt    *cwork;
+  PetscInt          *cnew;
   const PetscScalar *vwork;
   PetscScalar       *vnew;
-  int               bw, size;
-  int               row, locRow, newRow, col, newCol;
-  PetscErrorCode ierr;
+  PetscInt          bw, size;
+  PetscInt          row, locRow, newRow, col, newCol;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,    MAT_COOKIE,1);
@@ -3049,15 +3049,15 @@ PetscErrorCode MatPermuteSparsify(Mat A, int band, PetscReal frac, PetscReal tol
     ierr = ISGetIndices(irowp, &rows);CHKERRQ(ierr);
     ierr = ISInvertPermutation(colp, 0, &icolp);CHKERRQ(ierr);
     ierr = ISGetIndices(icolp, &cols);CHKERRQ(ierr);
-    ierr = PetscMalloc(N * sizeof(int),         &cnew);CHKERRQ(ierr);
+    ierr = PetscMalloc(N * sizeof(PetscInt),         &cnew);CHKERRQ(ierr);
     ierr = PetscMalloc(N * sizeof(PetscScalar), &vnew);CHKERRQ(ierr);
 
     /* Setup bandwidth to include */
     if (band == PETSC_DECIDE) {
       if (frac <= 0.0)
-        bw = (int) (M * 0.05);
+        bw = (PetscInt) (M * 0.05);
       else
-        bw = (int) (M * frac);
+        bw = (PetscInt) (M * frac);
     } else {
       if (band <= 0) SETERRQ(PETSC_ERR_ARG_WRONG, "Bandwidth must be a positive integer");
       bw = band;
@@ -3151,7 +3151,7 @@ PetscErrorCode MatEqual(Mat A,Mat B,PetscTruth *flg)
 
    Notes:
    MatDiagonalScale() computes A = LAR, where
-   L = a diagonal matrix, R = a diagonal matrix
+   L = a diagonal matrix (stored as a vector), R = a diagonal matrix (stored as a vector)
 
    Level: intermediate
 
@@ -3261,7 +3261,7 @@ PetscErrorCode MatNorm(Mat mat,NormType type,PetscReal *nrm)
      This variable is used to prevent counting of MatAssemblyBegin() that
    are called from within a MatAssemblyEnd().
 */
-static int MatAssemblyEnd_InUse = 0;
+static PetscInt MatAssemblyEnd_InUse = 0;
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyBegin"
 /*@
@@ -3349,7 +3349,7 @@ PetscErrorCode MatAssembled(Mat mat,PetscTruth *assembled)
 */
 PetscErrorCode MatView_Private(Mat mat)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   PetscTruth        flg;
   static PetscTruth incall = PETSC_FALSE;
 
@@ -3446,9 +3446,9 @@ PetscErrorCode MatView_Private(Mat mat)
 @*/
 PetscErrorCode MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
-  PetscErrorCode ierr;
-  static int inassm = 0;
-  PetscTruth flg;
+  PetscErrorCode  ierr;
+  static PetscInt inassm = 0;
+  PetscTruth      flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3835,7 +3835,7 @@ PetscErrorCode MatZeroRows(Mat mat,IS is,const PetscScalar *diag)
 PetscErrorCode MatZeroRowsLocal(Mat mat,IS is,const PetscScalar *diag)
 {
   PetscErrorCode ierr;
-  IS  newis;
+  IS             newis;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3878,7 +3878,7 @@ PetscErrorCode MatZeroRowsLocal(Mat mat,IS is,const PetscScalar *diag)
 
 .seealso: MatGetLocalSize()
 @*/
-PetscErrorCode MatGetSize(Mat mat,int *m,int* n)
+PetscErrorCode MatGetSize(Mat mat,PetscInt *m,PetscInt* n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3909,7 +3909,7 @@ PetscErrorCode MatGetSize(Mat mat,int *m,int* n)
 
 .seealso: MatGetSize()
 @*/
-PetscErrorCode MatGetLocalSize(Mat mat,int *m,int* n)
+PetscErrorCode MatGetLocalSize(Mat mat,PetscInt *m,PetscInt* n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3941,7 +3941,7 @@ PetscErrorCode MatGetLocalSize(Mat mat,int *m,int* n)
 
    Concepts: matrices^row ownership
 @*/
-PetscErrorCode MatGetOwnershipRange(Mat mat,int *m,int* n)
+PetscErrorCode MatGetOwnershipRange(Mat mat,PetscInt *m,PetscInt* n)
 {
   PetscErrorCode ierr;
 
@@ -4233,11 +4233,11 @@ PetscErrorCode MatRestoreArray(Mat mat,PetscScalar *v[])
 
 .seealso: MatDestroyMatrices(), MatGetSubMatrix(), MatGetRow(), MatGetDiagonal()
 @*/
-PetscErrorCode MatGetSubMatrices(Mat mat,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
+PetscErrorCode MatGetSubMatrices(Mat mat,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
   PetscErrorCode ierr;
-  int        i;
-  PetscTruth eq;
+  PetscInt        i;
+  PetscTruth      eq;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4296,10 +4296,10 @@ PetscErrorCode MatGetSubMatrices(Mat mat,int n,const IS irow[],const IS icol[],M
 
 .seealso: MatGetSubMatrices()
 @*/
-PetscErrorCode MatDestroyMatrices(int n,Mat *mat[])
+PetscErrorCode MatDestroyMatrices(PetscInt n,Mat *mat[])
 {
   PetscErrorCode ierr;
-  int i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of matrices %d",n);
@@ -4334,7 +4334,7 @@ PetscErrorCode MatDestroyMatrices(int n,Mat *mat[])
 
 .seealso: MatGetSubMatrices()
 @*/
-PetscErrorCode MatIncreaseOverlap(Mat mat,int n,IS is[],int ov)
+PetscErrorCode MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
 {
   PetscErrorCode ierr;
 
@@ -4379,7 +4379,7 @@ PetscErrorCode MatIncreaseOverlap(Mat mat,int n,IS is[],int ov)
 PetscErrorCode MatPrintHelp(Mat mat)
 {
   static PetscTruth called = PETSC_FALSE;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4419,7 +4419,7 @@ PetscErrorCode MatPrintHelp(Mat mat)
 
 .seealso: MatCreateSeqBAIJ(), MatCreateMPIBAIJ(), MatCreateSeqBDiag(), MatCreateMPIBDiag()
 @*/
-PetscErrorCode MatGetBlockSize(Mat mat,int *bs)
+PetscErrorCode MatGetBlockSize(Mat mat,PetscInt *bs)
 {
   PetscErrorCode ierr;
 
@@ -4456,7 +4456,7 @@ PetscErrorCode MatGetBlockSize(Mat mat,int *bs)
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ()
 @*/
-PetscErrorCode MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
+PetscErrorCode MatGetRowIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
 
@@ -4499,7 +4499,7 @@ PetscErrorCode MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia
 
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
-PetscErrorCode MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
+PetscErrorCode MatGetColumnIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
 
@@ -4544,7 +4544,7 @@ PetscErrorCode MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int 
 
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
-PetscErrorCode MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
+PetscErrorCode MatRestoreRowIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
 
@@ -4588,7 +4588,7 @@ PetscErrorCode MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ()
 @*/
-PetscErrorCode MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
+PetscErrorCode MatRestoreColumnIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
 
@@ -4629,7 +4629,7 @@ PetscErrorCode MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,
 .seealso: MatGetRowIJ(), MatGetColumnIJ()
 
 @*/
-PetscErrorCode MatColoringPatch(Mat mat,int n,int ncolors,ISColoringValue colorarray[],ISColoring *iscoloring)
+PetscErrorCode MatColoringPatch(Mat mat,PetscInt n,PetscInt ncolors,ISColoringValue colorarray[],ISColoring *iscoloring)
 {
   PetscErrorCode ierr;
 
@@ -4808,11 +4808,11 @@ M*/
 
 .seealso: MatGetSubMatrices(), ISAllGather()
 @*/
-PetscErrorCode MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat)
+PetscErrorCode MatGetSubMatrix(Mat mat,IS isrow,IS iscol,PetscInt csize,MatReuse cll,Mat *newmat)
 {
   PetscErrorCode ierr;
-  int     size;
-  Mat     *local;
+  PetscMPIInt    size;
+  Mat            *local;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4920,7 +4920,7 @@ PetscErrorCode MatGetPetscMaps_Petsc(Mat mat,PetscMap *rmap,PetscMap *cmap)
    Concepts: matrices^stash
 
 @*/
-PetscErrorCode MatStashSetInitialSize(Mat mat,int size, int bsize)
+PetscErrorCode MatStashSetInitialSize(Mat mat,PetscInt size, PetscInt bsize)
 {
   PetscErrorCode ierr;
 
@@ -4962,7 +4962,7 @@ PetscErrorCode MatStashSetInitialSize(Mat mat,int size, int bsize)
 PetscErrorCode MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;
-  int M,N;
+  PetscInt       M,N;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -5006,7 +5006,7 @@ PetscErrorCode MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
 PetscErrorCode MatInterpolate(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  int M,N;
+  PetscInt       M,N;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -5048,7 +5048,7 @@ PetscErrorCode MatInterpolate(Mat A,Vec x,Vec y)
 PetscErrorCode MatRestrict(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  int M,N;
+  PetscInt       M,N;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -5248,7 +5248,7 @@ PetscErrorCode MatSetColoring(Mat mat,ISColoring coloring)
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
           MatSetValues(), MatSetColoring()
 @*/
-PetscErrorCode MatSetValuesAdifor(Mat mat,int nl,void *v)
+PetscErrorCode MatSetValuesAdifor(Mat mat,PetscInt nl,void *v)
 {
   PetscErrorCode ierr;
 
@@ -5292,7 +5292,7 @@ EXTERN PetscErrorCode MatMPIBAIJDiagonalScaleLocal(Mat,Vec);
 PetscErrorCode MatDiagonalScaleLocal(Mat mat,Vec diag)
 {
   PetscErrorCode ierr;
-  int        size;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -5305,7 +5305,7 @@ PetscErrorCode MatDiagonalScaleLocal(Mat mat,Vec diag)
   ierr = PetscLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    int n,m;
+    PetscInt n,m;
     ierr = VecGetSize(diag,&n);CHKERRQ(ierr);
     ierr = MatGetSize(mat,0,&m);CHKERRQ(ierr);
     if (m == n) {
@@ -5348,7 +5348,7 @@ PetscErrorCode MatDiagonalScaleLocal(Mat mat,Vec diag)
 
 
 @*/
-PetscErrorCode MatGetInertia(Mat mat,int *nneg,int *nzero,int *npos)
+PetscErrorCode MatGetInertia(Mat mat,PetscInt *nneg,PetscInt *nzero,PetscInt *npos)
 {
   PetscErrorCode ierr;
 
@@ -5569,7 +5569,7 @@ PetscErrorCode MatIsHermitian(Mat A,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashGetInfo"
-extern PetscErrorCode MatStashGetInfo_Private(MatStash*,int*,int*);
+extern PetscErrorCode MatStashGetInfo_Private(MatStash*,PetscInt*,PetscInt*);
 /*@ 
    MatStashGetInfo - Gets how many values are currently in the vector stash, i.e. need
        to be communicated to other processors during the MatAssemblyBegin/End() process
@@ -5590,7 +5590,7 @@ extern PetscErrorCode MatStashGetInfo_Private(MatStash*,int*,int*);
 .seealso: MatAssemblyBegin(), MatAssemblyEnd(), Mat, MatStashSetInitialSize()
   
 @*/
-PetscErrorCode MatStashGetInfo(Mat mat,int *nstash,int *reallocs,int *bnstash,int *brealloc)
+PetscErrorCode MatStashGetInfo(Mat mat,PetscInt *nstash,PetscInt *reallocs,PetscInt *bnstash,PetscInt *brealloc)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -5629,7 +5629,7 @@ PetscErrorCode MatGetVecs(Mat mat,Vec *right,Vec *left)
   if (mat->ops->getvecs) {
     ierr = (*mat->ops->getvecs)(mat,right,left);CHKERRQ(ierr);
   } else {
-    int size;
+    PetscMPIInt size;
     ierr = MPI_Comm_size(mat->comm, &size);CHKERRQ(ierr);
     if (right) {
       ierr = VecCreate(mat->comm,right);CHKERRQ(ierr);

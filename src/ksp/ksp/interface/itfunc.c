@@ -306,10 +306,10 @@ static const char *convergedreasons[] = {"preconditioner is indefinite",        
 PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x) 
 {
   PetscErrorCode ierr;
-  int rank;
-  PetscTruth   flag1,flag2,viewed=PETSC_FALSE,flg;
-  char         view[10];
-  PetscScalar  zero = 0.0;
+  PetscMPIInt    rank;
+  PetscTruth     flag1,flag2,viewed=PETSC_FALSE,flg;
+  char           view[10];
+  PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -398,7 +398,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flag1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues",&flag2);CHKERRQ(ierr);
   if (flag1 || flag2) {
-    int       nits,n,i,neig;
+    PetscInt   nits,n,i,neig;
     PetscReal *r,*c;
    
     ierr = KSPGetIterationNumber(ksp,&nits);CHKERRQ(ierr);

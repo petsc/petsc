@@ -2,18 +2,18 @@
  * Test file for norm caching
  */
 
-#include <stdlib.h>
 #include "petscvec.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Vec         V,W;
-  PetscReal   nrm1,nrm2,nrm3,nrm4;
-  MPI_Comm    comm;
-  PetscScalar one=1,e=2.7181;
-  int         ione=1, ierr;
+  Vec            V,W;
+  PetscReal      nrm1,nrm2,nrm3,nrm4;
+  MPI_Comm       comm;
+  PetscScalar    one=1,e=2.7181;
+  PetscInt       ione=1;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
@@ -30,12 +30,12 @@ int main(int argc,char **argv)
   /* display norm 1 & 2 */
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"Original: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"Original: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /* display cached norm 1 & 2 */
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"cached: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"cached: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /* 
    * Alter an element
@@ -45,12 +45,12 @@ int main(int argc,char **argv)
   /* display norm 1 & 2 */
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"Altered: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"Altered: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /* display cached norm 1 & 2 */
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"recomputed: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"recomputed: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /*
    * Scale the vector a little
@@ -60,13 +60,13 @@ int main(int argc,char **argv)
   /* display updated cached norm 1 & 2 */
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"Scale: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"Scale: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /* display forced norm 1 & 2 */
   ierr = PetscObjectIncreaseState((PetscObject)V);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"recompute: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"recompute: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /*
    * Normalize the vector a little
@@ -76,13 +76,13 @@ int main(int argc,char **argv)
   /* display updated cached norm 1 & 2 */
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"Normalize: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"Normalize: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /* display forced norm 1 & 2 */
   ierr = PetscObjectIncreaseState((PetscObject)V);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"recompute: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"recompute: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /*
    * Copy to another vector
@@ -93,12 +93,12 @@ int main(int argc,char **argv)
   /* display norm 1 & 2 */
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"Original: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"Original: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /* display cached norm 1 & 2 */
   ierr = VecNorm(W,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(W,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"copied: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"copied: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /*
    * Copy while data is invalid
@@ -109,12 +109,12 @@ int main(int argc,char **argv)
   /* display norm 1 & 2 */
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"Invalidated: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"Invalidated: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /* display norm 1 & 2 */
   ierr = VecNorm(W,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(W,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"copied: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"copied: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /*
    * Constant vector
@@ -124,20 +124,20 @@ int main(int argc,char **argv)
   /* display updated cached norm 1 & 2 */
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"Constant: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"Constant: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /* display forced norm 1 & 2 */
   ierr = PetscObjectIncreaseState((PetscObject)V);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"recomputed: norm1=%e, norm2=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"recomputed: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /*
    * Swap vectors
    */
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(W,NORM_1,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"Orig: norm V=%e, norm W=%e\n",nrm1,nrm2);
+  ierr = PetscPrintf(comm,"Orig: norm V=%e, norm W=%e\n",nrm1,nrm2);CHKERRQ(ierr);
   /* store inf norm */
   ierr = VecNorm(V,NORM_INFINITY,&nrm3);CHKERRQ(ierr);
   ierr = VecNorm(W,NORM_INFINITY,&nrm4);CHKERRQ(ierr);
@@ -148,11 +148,11 @@ int main(int argc,char **argv)
   ierr = PetscObjectIncreaseState((PetscObject)W);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(W,NORM_1,&nrm2);CHKERRQ(ierr);
-  PetscPrintf(comm,"swapped: norm V=%e, norm W=%e\n",nrm2,nrm1);
-  PetscPrintf(comm,"orig: F norm V=%e, F norm W=%e\n",nrm3,nrm4);
+  ierr = PetscPrintf(comm,"swapped: norm V=%e, norm W=%e\n",nrm2,nrm1);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"orig: F norm V=%e, F norm W=%e\n",nrm3,nrm4);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_INFINITY,&nrm3);CHKERRQ(ierr);
   ierr = VecNorm(W,NORM_INFINITY,&nrm4);CHKERRQ(ierr);
-  PetscPrintf(comm,"swapped: F norm V=%e, F norm W=%e\n",nrm4,nrm3);
+  ierr = PetscPrintf(comm,"swapped: F norm V=%e, F norm W=%e\n",nrm4,nrm3);CHKERRQ(ierr);
 
   ierr = VecDestroy(V);CHKERRQ(ierr);
   ierr = VecDestroy(W);CHKERRQ(ierr);

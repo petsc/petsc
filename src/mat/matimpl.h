@@ -15,105 +15,105 @@
 */
 typedef struct _MatOps *MatOps;
 struct _MatOps {
-  PetscErrorCode (*setvalues)(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode),
-            (*getrow)(Mat,int,int *,int*[],PetscScalar*[]),
-            (*restorerow)(Mat,int,int *,int *[],PetscScalar *[]),
-            (*mult)(Mat,Vec,Vec),
-/* 4*/      (*multadd)(Mat,Vec,Vec,Vec),
-            (*multtranspose)(Mat,Vec,Vec),
-            (*multtransposeadd)(Mat,Vec,Vec,Vec),
-            (*solve)(Mat,Vec,Vec),
-            (*solveadd)(Mat,Vec,Vec,Vec),
-            (*solvetranspose)(Mat,Vec,Vec),
-/*10*/      (*solvetransposeadd)(Mat,Vec,Vec,Vec),
-            (*lufactor)(Mat,IS,IS,MatFactorInfo*),
-            (*choleskyfactor)(Mat,IS,MatFactorInfo*),
-            (*relax)(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec),
-            (*transpose)(Mat,Mat *),
-/*15*/      (*getinfo)(Mat,MatInfoType,MatInfo*),
-            (*equal)(Mat,Mat,PetscTruth *),
-            (*getdiagonal)(Mat,Vec),
-            (*diagonalscale)(Mat,Vec,Vec),
-            (*norm)(Mat,NormType,PetscReal *),
-/*20*/      (*assemblybegin)(Mat,MatAssemblyType),
-            (*assemblyend)(Mat,MatAssemblyType),
-            (*compress)(Mat),
-            (*setoption)(Mat,MatOption),
-            (*zeroentries)(Mat),
-/*25*/      (*zerorows)(Mat,IS,const PetscScalar *),
-            (*lufactorsymbolic)(Mat,IS,IS,MatFactorInfo*,Mat *),
-            (*lufactornumeric)(Mat,Mat *),
-            (*choleskyfactorsymbolic)(Mat,IS,MatFactorInfo*,Mat *),
-            (*choleskyfactornumeric)(Mat,Mat *),
-/*30*/      (*setuppreallocation)(Mat),
-            (*ilufactorsymbolic)(Mat,IS,IS,MatFactorInfo*,Mat *),
-            (*iccfactorsymbolic)(Mat,IS,MatFactorInfo*,Mat *),
-            (*getarray)(Mat,PetscScalar **),
-            (*restorearray)(Mat,PetscScalar **),
-/*35*/      (*duplicate)(Mat,MatDuplicateOption,Mat *),
-            (*forwardsolve)(Mat,Vec,Vec),
-            (*backwardsolve)(Mat,Vec,Vec),
-            (*ilufactor)(Mat,IS,IS,MatFactorInfo*),
-            (*iccfactor)(Mat,IS,MatFactorInfo*),
-/*40*/      (*axpy)(const PetscScalar *,Mat,Mat,MatStructure),
-            (*getsubmatrices)(Mat,int,const IS[],const IS[],MatReuse,Mat *[]),
-            (*increaseoverlap)(Mat,int,IS[],int),
-            (*getvalues)(Mat,int,const int[],int,const int[],PetscScalar []),
-            (*copy)(Mat,Mat,MatStructure),
-/*45*/      (*printhelp)(Mat),
-            (*scale)(const PetscScalar *,Mat),
-            (*shift)(const PetscScalar *,Mat),
-            (*diagonalset)(Mat,Vec,InsertMode),
-            (*iludtfactor)(Mat,MatFactorInfo*,IS,IS,Mat *),
-/*50*/      (*getblocksize)(Mat,int *),
-            (*getrowij)(Mat,int,PetscTruth,int*,int *[],int *[],PetscTruth *),
-            (*restorerowij)(Mat,int,PetscTruth,int *,int *[],int *[],PetscTruth *),
-            (*getcolumnij)(Mat,int,PetscTruth,int*,int *[],int *[],PetscTruth *),
-            (*restorecolumnij)(Mat,int,PetscTruth,int*,int *[],int *[],PetscTruth *),
-/*55*/      (*fdcoloringcreate)(Mat,ISColoring,MatFDColoring),
-            (*coloringpatch)(Mat,int,int,ISColoringValue[],ISColoring*),
-            (*setunfactored)(Mat),
-            (*permute)(Mat,IS,IS,Mat*),
-            (*setvaluesblocked)(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode),
-/*60*/      (*getsubmatrix)(Mat,IS,IS,int,MatReuse,Mat*),
-            (*destroy)(Mat),
-            (*view)(Mat,PetscViewer),
-            (*getmaps)(Mat,PetscMap*,PetscMap*),
-            (*usescaledform)(Mat,PetscTruth),
-/*65*/      (*scalesystem)(Mat,Vec,Vec),
-            (*unscalesystem)(Mat,Vec,Vec),
-            (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping),
-            (*setvalueslocal)(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode),
-            (*zerorowslocal)(Mat,IS,const PetscScalar *),
-/*70*/      (*getrowmax)(Mat,Vec),
-            (*convert)(Mat,const MatType,Mat*),
-            (*setcoloring)(Mat,ISColoring),
-            (*setvaluesadic)(Mat,void*),
-            (*setvaluesadifor)(Mat,int,void*),
-/*75*/      (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*),
-            (*setfromoptions)(Mat),
-            (*multconstrained)(Mat,Vec,Vec),
-            (*multtransposeconstrained)(Mat,Vec,Vec),
-            (*ilufactorsymbolicconstrained)(Mat,IS,IS,double,int,int,Mat *),
-/*80*/      (*permutesparsify)(Mat, int, double, double, IS, IS, Mat *),
-            (*mults)(Mat, Vecs, Vecs),
-            (*solves)(Mat, Vecs, Vecs),
-            (*getinertia)(Mat,int*,int*,int*),
-            (*load)(PetscViewer,const MatType,Mat*),
-/*85*/      (*issymmetric)(Mat,PetscReal,PetscTruth*),
-            (*ishermitian)(Mat,PetscTruth*),
-            (*isstructurallysymmetric)(Mat,PetscTruth*),
-            (*pbrelax)(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec),
-            (*getvecs)(Mat,Vec*,Vec*),
-/*90*/      (*matmult)(Mat,Mat,MatReuse,PetscReal,Mat*),
-            (*matmultsymbolic)(Mat,Mat,PetscReal,Mat*),
-            (*matmultnumeric)(Mat,Mat,Mat),
-            (*ptap)(Mat,Mat,MatReuse,PetscReal,Mat*),
-            (*ptapsymbolic)(Mat,Mat,PetscReal,Mat*),
-/*95*/      (*ptapnumeric)(Mat,Mat,Mat),
-            (*matmulttranspose)(Mat,Mat,MatReuse,PetscReal,Mat*),
-            (*matmulttransposesymbolic)(Mat,Mat,PetscReal,Mat*),
-            (*matmulttransposenumeric)(Mat,Mat,Mat);
+  PetscErrorCode (*setvalues)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode),
+                 (*getrow)(Mat,PetscInt,PetscInt *,PetscInt*[],PetscScalar*[]),
+                 (*restorerow)(Mat,PetscInt,PetscInt *,PetscInt *[],PetscScalar *[]),
+                 (*mult)(Mat,Vec,Vec),
+/* 4*/           (*multadd)(Mat,Vec,Vec,Vec),
+                 (*multtranspose)(Mat,Vec,Vec),
+                 (*multtransposeadd)(Mat,Vec,Vec,Vec),
+                 (*solve)(Mat,Vec,Vec),
+                 (*solveadd)(Mat,Vec,Vec,Vec),
+                 (*solvetranspose)(Mat,Vec,Vec),
+/*10*/           (*solvetransposeadd)(Mat,Vec,Vec,Vec),
+                 (*lufactor)(Mat,IS,IS,MatFactorInfo*),
+                 (*choleskyfactor)(Mat,IS,MatFactorInfo*),
+                 (*relax)(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec),
+                 (*transpose)(Mat,Mat *),
+/*15*/           (*getinfo)(Mat,MatInfoType,MatInfo*),
+                 (*equal)(Mat,Mat,PetscTruth *),
+                 (*getdiagonal)(Mat,Vec),
+                 (*diagonalscale)(Mat,Vec,Vec),
+                 (*norm)(Mat,NormType,PetscReal *),
+/*20*/           (*assemblybegin)(Mat,MatAssemblyType),
+                 (*assemblyend)(Mat,MatAssemblyType),
+                 (*compress)(Mat),
+                 (*setoption)(Mat,MatOption),
+                 (*zeroentries)(Mat),
+/*25*/           (*zerorows)(Mat,IS,const PetscScalar *),
+                 (*lufactorsymbolic)(Mat,IS,IS,MatFactorInfo*,Mat *),
+                 (*lufactornumeric)(Mat,Mat *),
+                 (*choleskyfactorsymbolic)(Mat,IS,MatFactorInfo*,Mat *),
+                 (*choleskyfactornumeric)(Mat,Mat *),
+/*30*/           (*setuppreallocation)(Mat),
+                 (*ilufactorsymbolic)(Mat,IS,IS,MatFactorInfo*,Mat *),
+                 (*iccfactorsymbolic)(Mat,IS,MatFactorInfo*,Mat *),
+                 (*getarray)(Mat,PetscScalar **),
+                 (*restorearray)(Mat,PetscScalar **),
+/*35*/           (*duplicate)(Mat,MatDuplicateOption,Mat *),
+                 (*forwardsolve)(Mat,Vec,Vec),
+                 (*backwardsolve)(Mat,Vec,Vec),
+                 (*ilufactor)(Mat,IS,IS,MatFactorInfo*),
+                 (*iccfactor)(Mat,IS,MatFactorInfo*),
+/*40*/           (*axpy)(const PetscScalar *,Mat,Mat,MatStructure),
+                 (*getsubmatrices)(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]),
+                 (*increaseoverlap)(Mat,PetscInt,IS[],PetscInt),
+                 (*getvalues)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar []),
+                 (*copy)(Mat,Mat,MatStructure),
+/*45*/           (*printhelp)(Mat),
+                 (*scale)(const PetscScalar *,Mat),
+                 (*shift)(const PetscScalar *,Mat),
+                 (*diagonalset)(Mat,Vec,InsertMode),
+                 (*iludtfactor)(Mat,MatFactorInfo*,IS,IS,Mat *),
+/*50*/           (*getblocksize)(Mat,PetscInt *),
+                 (*getrowij)(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *),
+                 (*restorerowij)(Mat,PetscInt,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *),
+                 (*getcolumnij)(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *),
+                 (*restorecolumnij)(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *),
+/*55*/           (*fdcoloringcreate)(Mat,ISColoring,MatFDColoring),
+                 (*coloringpatch)(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring*),
+                 (*setunfactored)(Mat),
+                 (*permute)(Mat,IS,IS,Mat*),
+                 (*setvaluesblocked)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode),
+/*60*/           (*getsubmatrix)(Mat,IS,IS,PetscInt,MatReuse,Mat*),
+                 (*destroy)(Mat),
+                 (*view)(Mat,PetscViewer),
+                 (*getmaps)(Mat,PetscMap*,PetscMap*),
+                 (*usescaledform)(Mat,PetscTruth),
+/*65*/           (*scalesystem)(Mat,Vec,Vec),
+                 (*unscalesystem)(Mat,Vec,Vec),
+                 (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping),
+                 (*setvalueslocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode),
+                 (*zerorowslocal)(Mat,IS,const PetscScalar *),
+/*70*/           (*getrowmax)(Mat,Vec),
+                 (*convert)(Mat,const MatType,Mat*),
+                 (*setcoloring)(Mat,ISColoring),
+                 (*setvaluesadic)(Mat,void*),
+                 (*setvaluesadifor)(Mat,PetscInt,void*),
+/*75*/           (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*),
+                 (*setfromoptions)(Mat),
+                 (*multconstrained)(Mat,Vec,Vec),
+                 (*multtransposeconstrained)(Mat,Vec,Vec),
+                 (*ilufactorsymbolicconstrained)(Mat,IS,IS,double,PetscInt,PetscInt,Mat *),
+/*80*/           (*permutesparsify)(Mat, PetscInt, double, double, IS, IS, Mat *),
+                 (*mults)(Mat, Vecs, Vecs),
+                 (*solves)(Mat, Vecs, Vecs),
+                 (*getinertia)(Mat,PetscInt*,PetscInt*,PetscInt*),
+                 (*load)(PetscViewer,const MatType,Mat*),
+/*85*/           (*issymmetric)(Mat,PetscReal,PetscTruth*),
+                 (*ishermitian)(Mat,PetscTruth*),
+                 (*isstructurallysymmetric)(Mat,PetscTruth*),
+                 (*pbrelax)(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec),
+                 (*getvecs)(Mat,Vec*,Vec*),
+/*90*/           (*matmult)(Mat,Mat,MatReuse,PetscReal,Mat*),
+                 (*matmultsymbolic)(Mat,Mat,PetscReal,Mat*),
+                 (*matmultnumeric)(Mat,Mat,Mat),
+                 (*ptap)(Mat,Mat,MatReuse,PetscReal,Mat*),
+                 (*ptapsymbolic)(Mat,Mat,PetscReal,Mat*),
+/*95*/           (*ptapnumeric)(Mat,Mat,Mat),
+                 (*matmulttranspose)(Mat,Mat,MatReuse,PetscReal,Mat*),
+                 (*matmulttransposesymbolic)(Mat,Mat,PetscReal,Mat*),
+                 (*matmulttransposenumeric)(Mat,Mat,Mat);
 };
 
 /*
@@ -124,7 +124,7 @@ EXTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
 EXTERN PetscErrorCode MatView_Private(Mat);
 EXTERN PetscErrorCode MatGetPetscMaps_Petsc(Mat,PetscMap *,PetscMap *);
 EXTERN PetscErrorCode MatHeaderCopy(Mat,Mat);
-EXTERN PetscErrorCode MatAXPYGetxtoy_Private(int,int*,int*,int*, int*,int*,int*, int**);
+EXTERN PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);
 
 /* 
   The stash is used to temporarily store inserted matrix values that 
@@ -133,48 +133,48 @@ EXTERN PetscErrorCode MatAXPYGetxtoy_Private(int,int*,int*,int*, int*,int*,int*,
 */
 
 typedef struct {
-  int           nmax;                   /* maximum stash size */
-  int           umax;                   /* user specified max-size */
-  int           oldnmax;                /* the nmax value used previously */
-  int           n;                      /* stash size */
-  int           bs;                     /* block size of the stash */
-  int           reallocs;               /* preserve the no of mallocs invoked */           
-  int           *idx;                   /* global row numbers in stash */
-  int           *idy;                   /* global column numbers in stash */
+  PetscInt      nmax;                   /* maximum stash size */
+  PetscInt      umax;                   /* user specified max-size */
+  PetscInt      oldnmax;                /* the nmax value used previously */
+  PetscInt      n;                      /* stash size */
+  PetscInt      bs;                     /* block size of the stash */
+  PetscInt      reallocs;               /* preserve the no of mallocs invoked */           
+  PetscInt      *idx;                   /* global row numbers in stash */
+  PetscInt      *idy;                   /* global column numbers in stash */
   MatScalar     *array;                 /* array to hold stashed values */
   /* The following variables are used for communication */
   MPI_Comm      comm;
-  int           size,rank;
-  int           tag1,tag2;
+  PetscMPIInt   size,rank;
+  PetscMPIInt   tag1,tag2;
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   MPI_Status    *send_status;           /* array of send status */
-  int           nsends,nrecvs;         /* numbers of sends and receives */
+  PetscInt      nsends,nrecvs;         /* numbers of sends and receives */
   MatScalar     *svalues,*rvalues;     /* sending and receiving data */
-  int           rmax;                   /* maximum message length */
-  int           *nprocs;                /* tmp data used both duiring scatterbegin and end */
-  int           nprocessed;             /* number of messages already processed */
+  PetscInt      rmax;                   /* maximum message length */
+  PetscInt      *nprocs;                /* tmp data used both duiring scatterbegin and end */
+  PetscInt      nprocessed;             /* number of messages already processed */
 } MatStash;
 
-EXTERN PetscErrorCode MatStashCreate_Private(MPI_Comm,int,MatStash*);
+EXTERN PetscErrorCode MatStashCreate_Private(MPI_Comm,PetscInt,MatStash*);
 EXTERN PetscErrorCode MatStashDestroy_Private(MatStash*);
 EXTERN PetscErrorCode MatStashScatterEnd_Private(MatStash*);
-EXTERN PetscErrorCode MatStashSetInitialSize_Private(MatStash*,int);
-EXTERN PetscErrorCode MatStashGetInfo_Private(MatStash*,int*,int*);
-EXTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,int,int,const int[],const MatScalar[]);
-EXTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,int,int,const int[],const MatScalar[],int);
-EXTERN PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,int,int,const int[],const MatScalar[],int,int,int);
-EXTERN PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,int,int,const int[],const MatScalar[],int,int,int);
-EXTERN PetscErrorCode MatStashScatterBegin_Private(MatStash*,int*);
-EXTERN PetscErrorCode MatStashScatterGetMesg_Private(MatStash*,int*,int**,int**,MatScalar**,int*);
+EXTERN PetscErrorCode MatStashSetInitialSize_Private(MatStash*,PetscInt);
+EXTERN PetscErrorCode MatStashGetInfo_Private(MatStash*,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const MatScalar[]);
+EXTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const MatScalar[],PetscInt);
+EXTERN PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const MatScalar[],PetscInt,PetscInt,PetscInt);
+EXTERN PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const MatScalar[],PetscInt,PetscInt,PetscInt);
+EXTERN PetscErrorCode MatStashScatterBegin_Private(MatStash*,PetscInt*);
+EXTERN PetscErrorCode MatStashScatterGetMesg_Private(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,MatScalar**,PetscInt*);
 
 #define FACTOR_LU       1
 #define FACTOR_CHOLESKY 2
 
 typedef struct {
-  int        dim;
-  int        dims[4];
-  int        starts[4];
+  PetscInt   dim;
+  PetscInt   dims[4];
+  PetscInt   starts[4];
   PetscTruth noc;        /* this is a single component problem, hence user will not set MatStencil.c */
 } MatStencilInfo;
 
@@ -182,14 +182,14 @@ struct _p_Mat {
   PETSCHEADER(struct _MatOps)
   PetscMap               rmap,cmap;
   void                   *data;            /* implementation-specific data */
-  int                    factor;           /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
+  PetscInt               factor;           /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
   PetscReal              lupivotthreshold; /* threshold for pivoting */
   PetscTruth             assembled;        /* is the matrix assembled? */
   PetscTruth             was_assembled;    /* new values inserted into assembled mat */
-  int                    num_ass;          /* number of times matrix has been assembled */
+  PetscInt               num_ass;          /* number of times matrix has been assembled */
   PetscTruth             same_nonzero;     /* matrix has same nonzero pattern as previous */
-  int                    M,N;             /* global numbers of rows, columns */
-  int                    m,n;             /* local numbers of rows, columns */
+  PetscInt               M,N;             /* global numbers of rows, columns */
+  PetscInt               m,n;             /* local numbers of rows, columns */
   MatInfo                info;             /* matrix information */
   ISLocalToGlobalMapping mapping;          /* mapping used in MatSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;         /* mapping used in MatSetValuesBlockedLocal() */
@@ -205,7 +205,7 @@ struct _p_Mat {
   void                   *esimat;
 };
 
-#define MatPreallocated(A) {int _e;if (!(A)->preallocated) {_e = MatSetUpPreallocation(A);CHKERRQ(_e);}}
+#define MatPreallocated(A) {PetscInt _e;if (!(A)->preallocated) {_e = MatSetUpPreallocation(A);CHKERRQ(_e);}}
 extern PetscErrorCode MatAXPY_Basic(const PetscScalar*,Mat,Mat,MatStructure);
 
 /*
@@ -223,11 +223,11 @@ struct _MatPartitioningOps {
 struct _p_MatPartitioning {
   PETSCHEADER(struct _MatPartitioningOps)
   Mat         adj;
-  int         *vertex_weights;
+  PetscInt    *vertex_weights;
   PetscReal   *part_weights;
-  int         n;                                 /* number of partitions */
+  PetscInt    n;                                 /* number of partitions */
   void        *data;
-  int         setupcalled;
+  PetscInt    setupcalled;
 };
 
 /*
@@ -273,26 +273,26 @@ struct _p_MatPartitioning {
 
 struct  _p_MatFDColoring{
   PETSCHEADER(int)
-  int        M,N,m;            /* total rows, columns; local rows */
-  int        rstart;           /* first row owned by local processor */
-  int        ncolors;          /* number of colors */
-  int        *ncolumns;        /* number of local columns for a color */ 
-  int        **columns;        /* lists the local columns of each color (using global column numbering) */
-  int        *nrows;           /* number of local rows for each color */
-  int        **rows;           /* lists the local rows for each color (using the local row numbering) */
-  int        **columnsforrow;  /* lists the corresponding columns for those rows (using the global column) */ 
+  PetscInt   M,N,m;            /* total rows, columns; local rows */
+  PetscInt   rstart;           /* first row owned by local processor */
+  PetscInt   ncolors;          /* number of colors */
+  PetscInt   *ncolumns;        /* number of local columns for a color */ 
+  PetscInt   **columns;        /* lists the local columns of each color (using global column numbering) */
+  PetscInt   *nrows;           /* number of local rows for each color */
+  PetscInt   **rows;           /* lists the local rows for each color (using the local row numbering) */
+  PetscInt   **columnsforrow;  /* lists the corresponding columns for those rows (using the global column) */ 
   PetscReal  error_rel;        /* square root of relative error in computing function */
   PetscReal  umin;             /* minimum allowable u'dx value */
-  int        freq;             /* frequency at which new Jacobian is computed */
+  PetscInt   freq;             /* frequency at which new Jacobian is computed */
   Vec        w1,w2,w3;         /* work vectors used in computing Jacobian */
   PetscErrorCode (*f)(void);       /* function that defines Jacobian */
   void       *fctx;            /* optional user-defined context for use by the function f */
-  int        **vscaleforrow;   /* location in vscale for each columnsforrow[] entry */
+  PetscInt   **vscaleforrow;   /* location in vscale for each columnsforrow[] entry */
   Vec        vscale;           /* holds FD scaling, i.e. 1/dx for each perturbed column */
   PetscTruth usersetsrecompute;/* user determines when Jacobian is recomputed, via MatFDColoringSetRecompute() */
   PetscTruth recompute;        /* used with usersetrecompute to determine if Jacobian should be recomputed */
   Vec        F;                /* current value of user provided function; can set with MatFDColoringSetF() */
-  int        currentcolor;     /* color for which function evaluation is being done now */
+  PetscInt   currentcolor;     /* color for which function evaluation is being done now */
 };
 
 /*
@@ -300,8 +300,8 @@ struct  _p_MatFDColoring{
 */
 struct _p_MatNullSpace {
   PETSCHEADER(int)
-  int         has_cnst;
-  int         n;
+  PetscTruth  has_cnst;
+  PetscInt    n;
   Vec*        vecs;
   Vec         vec;      /* for out of place removals */
 };
