@@ -18,7 +18,7 @@ EXAMPLES_3    = ex1
 RUNEXAMPLES_3 = runex1 runex1_2
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF     = deptfg.f dgl1fg.f dgl2fg.f dmsafg.f dodcfg.f dpjbfg.f dsscfg.f \
-                ndepths.f dgl1hs.f dgl2hs.f dmsahs.f dodchs.f dpjbhs.f dsschs.f \
+                dgl1hs.f dgl2hs.f dmsahs.f dodchs.f dpjbhs.f dsschs.f \
                 dmsabc.f dodcps.f dgl2co.f mpinter.f pdgl2fg.f
 DIRS          = 
 
