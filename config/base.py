@@ -75,7 +75,7 @@ class Configure(script.Script):
 
   def executeTest(self, test, args = [], kargs = {}):
     self.logWrite('================================================================================\n')
-    self.logWrite('TEST '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+'\n')
+    self.logWrite('TEST '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')\n')
     self.logPrint('TESTING: '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')', debugSection = 'screen', indent = 0)
     if test.__doc__: self.logWrite('  '+test.__doc__+'\n')
     if not isinstance(args, list): args = [args]
@@ -314,7 +314,7 @@ class Configure(script.Script):
     return self.preprocess(codeStr)[0]
 
   def checkPreprocess(self, codeStr):
-    '''Return True if an error occurred
+    '''Return True if no error occurred
        - An error is signaled by a nonzero return code, or output on stderr'''
     (out, err, ret) = self.preprocess(codeStr)
     err = self.framework.filterPreprocessOutput(err)
