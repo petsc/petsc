@@ -13,7 +13,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c ex61.c \
 		   ex62.c ex64.c ex65.c ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c \
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c ex87.c \
-                   ex91.c ex92.c ex93.c ex94.c ex95.c
+                   ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F
 
 include ${PETSC_DIR}/bmake/common/base
@@ -355,6 +355,10 @@ ex94: ex94.o chkopts
 ex95: ex95.o chkopts
 	-${CLINKER} -o ex95 ex95.o ${PETSC_MAT_LIB}
 	${RM} ex95.o
+
+ex96: ex96.o chkopts
+	-${CLINKER} -o ex96 ex96.o ${PETSC_KSP_LIB}
+	${RM} ex96.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -831,12 +835,14 @@ runex93:
 	   else echo "Possible problem with ex93_1, diffs above"; fi; \
 	   ${RM} -f ex93_1.tmp
 
-runex94:
+runex94_1:
 	-@${MPIRUN} -np 1 ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1> ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else echo "Possible problem with ex94_1, diffs above"; fi; \
 	   ${RM} -f ex94_1.tmp
-	-@${MPIRUN} -np 4 ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1> ex94_2.tmp 2>&1; \
+
+runex94_2:
+	-@${MPIRUN} -np 3 ex94 -f0 ${DATAFILESPATH}/matrices/small -f1 ${DATAFILESPATH}/matrices/small> ex94_2.tmp 2>&1; \
 	   if (${DIFF} output/ex94_2.out ex94_2.tmp) then true; \
 	   else echo "Possible problem with ex94_2, diffs above"; fi; \
 	   ${RM} -f ex94_2.tmp

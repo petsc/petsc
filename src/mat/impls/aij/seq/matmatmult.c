@@ -229,7 +229,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
 
   /* create mpi matrix C by concatinating C_seq */
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); /* prevent C_seq being destroyed by MatMerge() */
-  ierr = MatMerge(A->comm,mult->C_seq,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
+  ierr = MatMerge(A->comm,mult->C_seq,B->n,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
  
   /* attach the supporting struct to C for reuse of symbolic C */
   (*C)->spptr         = (void*)mult;
@@ -406,7 +406,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
   ierr = MatMatMult_SeqAIJ_SeqAIJ(mult->aseq[0],mult->bseq[0],MAT_REUSE_MATRIX,0.0,&mult->C_seq);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); 
-  ierr = MatMerge(A->comm,mult->C_seq,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr); 
+  ierr = MatMerge(A->comm,mult->C_seq,B->n,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr); 
 
   PetscFunctionReturn(0);
 }
@@ -529,7 +529,6 @@ PetscErrorCode MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
 #define __FUNCT__ "MatMatMultTranspose_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
   PetscErrorCode ierr;
-  int rank;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){

@@ -17,9 +17,10 @@ int main(int argc,char **args)
   Mat         A;
   Vec         b,u,u_tmp;
   char        Ain[PETSC_MAX_PATH_LEN],bin[PETSC_MAX_PATH_LEN],uin[PETSC_MAX_PATH_LEN]; 
-  int         i,m,n,nz,ierr,*ib=0,col_i,row_i;
+  int         i,m,n,nz,ierr,*ib=0,col_i,row_i,dummy,*nnz;
   PetscScalar val_i,*work=0,mone=-1.0;
-  PetscReal   *col=0,*row=0,res_norm,*val=0,*bval=0,*uval=0;
+  int         *col=0,*row=0;
+  PetscReal   res_norm,*val=0,*bval=0,*uval=0;
   FILE        *Afile,*bfile,*ufile;
   PetscViewer view;
   PetscTruth  flg_A,flg_b,flg_u;
@@ -35,20 +36,25 @@ int main(int argc,char **args)
     printf("m: %d, n: %d, nz: %d \n", m,n,nz);
     if (m != n) SETERRQ(PETSC_ERR_ARG_SIZ, "Number of rows, cols must be same for SBAIJ format\n");
 
-    ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,1,n,n,20,0,&A);CHKERRQ(ierr);  
     ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);
 
+    ierr = PetscMalloc(m*sizeof(int),&nnz);CHKERRQ(ierr);
+    ierr = PetscMemzero(nnz,m*sizeof(int));CHKERRQ(ierr);
     ierr = PetscMalloc(nz*sizeof(PetscReal),&val);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscReal),&row);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(PetscReal),&col);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(int),&row);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(int),&col);CHKERRQ(ierr);
     for (i=0; i<nz; i++) {
-      fscanf(Afile,"%le %le %le\n",row+i,col+i,val+i); /* modify according to data file! */
+      fscanf(Afile,"%d %d %le\n",row+i,col+i,val+i); /* modify according to data file! */
       row[i]--; col[i]--;  /* set index set starts at 0 */
+      nnz[row[i]]++;
     }
-    printf("row[0]: %g, col[0]: %g, val: %g\n",row[0],col[0],val[0]);
-    printf("row[last]: %g, col: %g, val: %g\n",row[nz-1],col[nz-1],val[nz-1]);
+    printf("row[0]: %d, col[0]: %d, val: %g\n",row[0],col[0],val[0]);
+    printf("row[last]: %d, col: %d, val: %g\n",row[nz-1],col[nz-1],val[nz-1]);
+    fflush(stdout);
     fclose(Afile);
+    ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,1,n,n,0,nnz,&A);CHKERRQ(ierr);  
+    ierr = PetscFree(nnz);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-bin",bin,PETSC_MAX_PATH_LEN-1,&flg_b);CHKERRQ(ierr);
@@ -60,9 +66,10 @@ int main(int argc,char **args)
     ierr = PetscMalloc(n*sizeof(int),&ib);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       /* fscanf(bfile,"%d %le\n",ib+i,bval+i); ib[i]--;  */  /* modify according to data file! */
-      fscanf(bfile,"%le\n",bval+i); ib[i] = i;         /* modify according to data file! */
+      fscanf(bfile,"%d %le\n",&dummy,bval+i); ib[i] = i;         /* modify according to data file! */
     }
     printf("bval[0]: %g, bval[%d]: %g\n",bval[0],ib[n-1],bval[n-1]);
+    fflush(stdout);
     fclose(bfile);
   }
 
@@ -72,9 +79,10 @@ int main(int argc,char **args)
     ierr = PetscFOpen(PETSC_COMM_SELF,uin,"r",&ufile);CHKERRQ(ierr); 
     ierr = PetscMalloc(n*sizeof(PetscReal),&uval);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      fscanf(ufile,"  %le\n",uval+i);  /* modify according to data file! */
+      fscanf(ufile,"%d  %le\n",&dummy,uval+i);  /* modify according to data file! */
     }
     printf("uval[0]: %g, uval[%d]: %g\n",uval[0], n-1, uval[n-1]);
+    fflush(stdout);
     fclose(ufile);
   }
 

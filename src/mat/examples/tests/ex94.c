@@ -171,13 +171,12 @@ int main(int argc,char **args)
 
   /* Test MatPtAP() */
   /*----------------------*/
-  if (size>1) Test_MatPtAP = PETSC_FALSE;
   if (Test_MatPtAP){
     int PN;
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-    PN   = M/2;
-    nzp  = 5;
+    PN   = M/2; 
+    nzp  = 5; 
     ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,PN,&P);CHKERRQ(ierr); 
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
@@ -198,12 +197,14 @@ int main(int argc,char **args)
     ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); 
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
+    if (size == 1){
     alpha=1.0;
     for (i=0; i<2; i++){
       alpha -=0.1;
       ierr = MatScale(&alpha,A);CHKERRQ(ierr);
       ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
+    } /* if (size == 1) */
 
     /* Create vector x that is compatible with P */
     ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);

@@ -404,8 +404,8 @@ typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
 EXTERN PetscErrorCode MatGetSubMatrices(Mat,int,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN PetscErrorCode MatDestroyMatrices(int,Mat *[]);
 EXTERN PetscErrorCode MatGetSubMatrix(Mat,IS,IS,int,MatReuse,Mat *);
-EXTERN PetscErrorCode MatMerge(MPI_Comm,Mat,MatReuse,Mat*);
-EXTERN PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm,Mat,MatReuse,Mat*);
+EXTERN PetscErrorCode MatMerge(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+EXTERN PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm,Mat,PetscInt,PetscInt,MatReuse,Mat*);
 
 EXTERN PetscErrorCode MatIncreaseOverlap(Mat,int,IS[],int);
 
