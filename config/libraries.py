@@ -23,9 +23,9 @@ class Configure(config.base.Configure):
        - If the filename is "lib"<name>, return -l<name>
        - If the path is absolute, return it unchanged
        - Otherwise return -l<filename>'''
-    if len(library) > 3 and library[-4:] == '.lib':
-      return library
     if not library:
+      return ''
+    if len(library) > 3 and library[-4:] == '.lib':
       return library
     if os.path.basename(library).startswith('lib'):
       name = self.getLibName(library)
