@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.10 1995/04/13 04:58:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.11 1995/04/15 03:27:42 bsmith Exp curfman $";
 #endif
 
 /*
@@ -146,7 +146,19 @@ int PCCreate_Eisenstat(PC pc)
    Options Database Key:
 $  -sor_omega  omega
 
-   Keywords:  Eisenstat, SSOR, relaxation
+   Notes: 
+   The Eisenstat trick implementation of SSOR requires about 50% of the
+   usual amount of floating point operations used for SSOR + Krylov method;
+   however, the preconditioned problem must be solved with both left 
+   and right preconditioning.
+
+   To use SSOR without the Eisenstat trick, employ the PCSOR preconditioner, 
+   which can be chosen with the database options
+$    -pcmethod  sor  -sor_symmetric
+
+.keywords: PC, Eisenstat, set, SOR, SSOR, relaxation, omega
+
+.seealso: PCSORSetOmega()
 @*/
 int PCEisenstatSetOmega(PC pc,double omega)
 {
