@@ -1,29 +1,31 @@
-# $Id: makefile,v 1.12 1998/03/13 23:00:50 balay Exp balay $ 
+# $Id: makefile,v 1.13 1998/03/19 02:04:51 balay Exp balay $ 
 
 ALL: ex1
 
-CFLAGS	        = ${CPPFLAGS} ${FCONF} -D__SDIR__='"${LOCDIR}"'
-FFLAGS	        = 
-SOURCEC	        = 
-SOURCEF	        =
-SOURCEH	        =
-OBJSC	        =
-OBJSF	        = 
-LIBBASE	        = libpetscvec
-LOCDIR          = src/is/examples/tutorial/
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
-                  runex3 ex3.rm clean
-TESTEXAMPLES_2  = 
-TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm clean
-TESTEXAMPLES_9  = 
-TESTEXAMPLES_4  =
-BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
-BUILDEXAMPLES_2 = 
-BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm clean
-BUILDEXAMPLES_9 = 
-BUILDEXAMPLES_4 = 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c
-EXAMPLESF       = ex1f.F ex2f.F ex1f90.F ex3f90.F
+CFLAGS	         = ${CPPFLAGS} ${FCONF} -D__SDIR__='"${LOCDIR}"'
+FFLAGS	         = 
+SOURCEC	         = 
+SOURCEF	         =
+SOURCEH	         =
+OBJSC	         =
+OBJSF	         = 
+LIBBASE	         = libpetscvec
+LOCDIR           = src/is/examples/tutorial/
+TESTEXAMPLES_1   = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
+                   runex3 ex3.rm clean
+TESTEXAMPLES_2   = 
+TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm clean
+TESTEXAMPLES_9   = 
+TESTEXAMPLES_4   =
+TESTEXAMPLES_12  = ex1f90.PETSc runex1f90 ex1f90.rm ex3f90.PETSc runex3f90 ex3f90.rm clean
+BUILDEXAMPLES_1  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
+BUILDEXAMPLES_2  = 
+BUILDEXAMPLES_3  = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm clean
+BUILDEXAMPLES_9  = 
+BUILDEXAMPLES_4  = 
+BUILDEXAMPLES_12 = ex1f90 ex3f90
+EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c
+EXAMPLESF        = ex1f.F ex2f.F ex1f90.F ex3f90.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -71,6 +73,12 @@ runex1f:
 	   else echo "Possible problem with ex1f, diffs above"; fi ;\
 	   ${RM} -f ex1f.tmp
 
+runex1f90:
+	-@${MPIRUN} -np 1  ex1f90  | sort > ex1f90.tmp 2>&1;\
+	   if (diff output/ex1f90.out ex1f90.tmp) then true; \
+	   else echo "Possible problem with ex1f90, diffs above"; fi ;\
+	   ${RM} -f ex1f90.tmp
+
 runex2:
 	-@${MPIRUN} -np 1  ex2  > ex2.tmp 2>&1;\
 	   if (diff output/ex2.out ex2.tmp) then true; \
@@ -89,3 +97,8 @@ runex3:
 	   else echo "Possible problem with ex3, diffs above"; fi ;\
 	   ${RM} -f ex3.tmp
 
+runex3f90:
+	-@${MPIRUN} -np 1  ex3f90 | sort > ex3f90.tmp 2>&1;\
+	   if (diff output/ex3f90.out ex3f90.tmp) then true; \
+	   else echo "Possible problem with ex3f90, diffs above"; fi ;\
+	   ${RM} -f ex3f90.tmp
