@@ -123,3 +123,14 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::getPreconditionerSide(Pre
   side = this->side;
   return 0;
 }
+
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::setOperator( esi::Operator<double,int> &op)
+{
+  /*
+        For now require Operator to be a PETSc Mat
+  */
+  Mat A;
+  int ierr = op.getInterface("Mat",(void*&)A);
+  ierr = PCSetOperators(this->pc,A,A,DIFFERENT_NONZERO_PATTERN);
+  return 0;
+}
