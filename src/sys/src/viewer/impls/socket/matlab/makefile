@@ -2,6 +2,7 @@
 #
 #requirespackage  'PETSC_HAVE_MATLAB'
 #requiresscalar real 
+#requiresprecision  double
 #
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
 # in Matlab. You cannot use a complex numbers. If mex fails 

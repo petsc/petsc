@@ -634,7 +634,7 @@ void PETSC_STDCALL petscsequentialphaseend_(MPI_Comm *comm,PetscInt *ng,PetscErr
 }
 
 
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 
 void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m PETSC_MIXED_LEN(len),PetscMatlabEngine *e,
                                             PetscErrorCode *ierr PETSC_END_LEN(len))

@@ -1,6 +1,7 @@
 
 #requirespackage  'PETSC_HAVE_MATLAB'
 #requiresscalar real 
+#requiresprecision  double
 
 ALL: lib
 
