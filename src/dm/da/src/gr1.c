@@ -1,4 +1,4 @@
-/*$Id: gr1.c,v 1.20 2000/04/12 04:26:20 bsmith Exp balay $*/
+/*$Id: gr1.c,v 1.21 2000/05/05 22:19:22 balay Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate1d()
@@ -15,7 +15,7 @@
 
   Input Parameters:
 +  da - the distributed array object
-.  xmin,xmax - extremes in teh x direction
+.  xmin,xmax - extremes in the x direction
 .  xmin,xmax - extremes in the y direction
 -  xmin,xmax - extremes in the z direction
 
@@ -26,8 +26,8 @@
 @*/
 int DASetUniformCoordinates(DA da,double xmin,double xmax,double ymin,double ymax,double zmin,double zmax)
 {
-  int            i,j,ierr,M,N,P,istart,isize,jstart,jsize,dim,cnt;
-  double         hx,hy;
+  int            i,j,k,ierr,M,N,P,istart,isize,jstart,jsize,kstart,ksize,dim,cnt;
+  double         hx,hy,hz_;
   Vec            xcoor;
   DAPeriodicType periodic;
   Scalar         *coors;
@@ -36,7 +36,7 @@ int DASetUniformCoordinates(DA da,double xmin,double xmax,double ymin,double yma
   if (xmax <= xmin) SETERRQ2(1,1,"Xmax must be larger than xmin %d %d",xmin,xmax);
 
   ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&istart,&jstart,0,&isize,&jsize,0);CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize);CHKERRQ(ierr);
 
   if (dim == 1) {
     ierr = VecCreateMPI(PETSC_COMM_WORLD,isize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
@@ -60,6 +60,30 @@ int DASetUniformCoordinates(DA da,double xmin,double xmax,double ymin,double yma
       for (i=0; i<isize; i++) {
         coors[cnt++] = xmin + hx*(i+istart);
         coors[cnt++] = ymin + hy*(j+jstart);
+      }
+    }
+    ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
+  } else if (dim == 3) {
+    ierr = VecCreateMPI(PETSC_COMM_WORLD,3*isize*jsize*ksize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(xcoor,3);CHKERRQ(ierr);
+    if (periodic == DA_XPERIODIC || periodic == DA_XYPERIODIC || periodic == DA_XZPERIODIC ||
+        periodic == DA_XYZPERIODIC)                            hx = (xmax-xmin)/(M);
+    else                                                       hx = (xmax-xmin)/(M-1);
+    if (periodic == DA_YPERIODIC || periodic == DA_XYPERIODIC || periodic == DA_YZPERIODIC ||
+        periodic == DA_XYZPERIODIC)                            hy = (ymax-ymin)/(N);
+    else                                                       hy = (ymax-ymin)/(N-1);
+    if (periodic == DA_ZPERIODIC || periodic == DA_XZPERIODIC || periodic == DA_YZPERIODIC || 
+        periodic == DA_XYZPERIODIC)                            hz_ = (zmax-zmin)/(P);
+    else                                                       hz_ = (zmax-zmin)/(P-1);
+    ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
+    cnt  = 0;
+    for (k=0; k<ksize; k++) {
+      for (j=0; j<jsize; j++) {
+        for (i=0; i<isize; i++) {
+          coors[cnt++] = xmin + hx*(i+istart);
+          coors[cnt++] = ymin + hy*(j+jstart);
+          coors[cnt++] = zmin + hz_*(k+kstart);
+        }
       }
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
@@ -207,8 +231,6 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
                       PetscRealPart(xg[n-1]),tmp,DRAW_RED);CHKERRQ(ierr);
 #endif
     }
-    PetscObjectRestoreNewTag((PetscObject)xin,&tag2);CHKERRQ(ierr);
-    PetscObjectRestoreNewTag((PetscObject)xin,&tag1);CHKERRQ(ierr);
     ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = DrawPause(draw);CHKERRQ(ierr);
   }
