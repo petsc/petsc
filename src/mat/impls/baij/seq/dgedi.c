@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgedi.c,v 1.8 1998/04/21 17:47:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgedi.c,v 1.9 1998/12/17 22:10:39 bsmith Exp bsmith $";
 #endif
 
 /*  
@@ -8,7 +8,11 @@ static char vcid[] = "$Id: dgedi.c,v 1.8 1998/04/21 17:47:46 bsmith Exp bsmith $
       cleve moler, university of new mexico, argonne national lab.
 
       Computes the inverse of a matrix given its factors and pivots
-    calculated by Linpack_DGEFA().
+    calculated by Linpack_DGEFA(). Performed in-place for an n by n
+    dense matrix.
+
+       Used by the sparse factorization routines in 
+     src/mat/impls/baij/seq and src/mat/impls/bdiag/seq
 */
 
 #include "petsc.h"
