@@ -264,8 +264,8 @@ testex5f: ex5f.PETSc
 	@if [ -f ex5f ]; then \
 	   ${MPIRUN} -np 1 ./ex5f > ex5f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.testout ex5f_1.tmp > /dev/null 2>&1) then \
-           echo "Fortran example src/snes/examples/tutorials/ex5f run successfully on 1 processor"; \
-	   else echo "Error running Fortran example src/snes/examples/tutorials/ex5f on 1 processor"; \
+           echo "Fortran example src/snes/examples/tutorials/ex5f run successfully with 1 MPI process"; \
+	   else echo "Error running Fortran example src/snes/examples/tutorials/ex5f with 1 MPI process"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
            cat ex5f_1.tmp; fi; fi; 
 	-@${RM} -f ex5f_1.tmp
@@ -327,15 +327,15 @@ testex19: ex19.PETSc
 	@if [ -f ex19 ]; then \
            ${MPIRUN} -np 1 ./ex19 -dmmg_nlevels 4  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
-           echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully on 1 processor"; \
-	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 on 1 processor"; \
+           echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully with 1 MPI process"; \
+	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 1 MPI process"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; \
 	if [ "${MPIRUN}" != "${PETSC_DIR}/bin/mpirun.uni" ]; then \
            ${MPIRUN} -np 2 ./ex19 -dmmg_nlevels 4   > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
-           echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully on 2 processors"; \
-	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 on 2 processor"; \
+           echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully with 2 processes"; \
+	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 processes"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; fi; \
 	if [ "${PETSC_HAVE_X11}" != "" ]; then havex="1"; else havex="0"; fi;\
@@ -344,8 +344,8 @@ testex19: ex19.PETSc
 	if [ $${havex} = "1" ]; then \
            ${MPIRUN} -np 1 ./ex19 -dmmg_nlevels 4 -snes_xmonitor  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
-           echo "Graphics example src/snes/examples/tutorials/ex19 run successfully on 1 processor"; \
-	   else echo "Possible error running Graphics examples src/snes/examples/tutorials/ex19 on 1 processor"; \
+           echo "Graphics example src/snes/examples/tutorials/ex19 run successfully with 1 MPI process"; \
+	   else echo "Possible error running Graphics examples src/snes/examples/tutorials/ex19 1 MPI process"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; fi; fi
 	-@${RM} -f ex19_1.tmp
