@@ -133,9 +133,12 @@ class ExtensionFileGroup (TreeFileGroup):
 
 class Transform (Maker):
   "Transforms map one FileGroup into another. By default, this map is the identity"
-  def __init__(self, sources = FileGroup(), fileFilter = lambda file: 1):
+  def __init__(self, sources = None, fileFilter = lambda file: 1):
     Maker.__init__(self)
-    self.sources    = sources
+    if sources:
+      self.sources  = sources
+    else:
+      self.sources  = FileGroup()
     self.products   = self.sources
     self.fileFilter = fileFilter
 
@@ -147,10 +150,14 @@ class Transform (Maker):
 
   def getChecksum(self, source):
     output = self.executeShellCommand('bk checksum -s8 '+source, self.checkChecksum)
-    if self.checksumError:
-      return 0
-    else:
+    if not self.checksumError:
       return string.split(output)[1]
+    else:
+      output = self.executeShellCommand('md5sum --binary '+source, self.checkChecksum)
+      if not self.checksumError:
+        return string.split(output)[0]
+      else:
+        return 0
 
   def getObjectName(self, source):
     (dir, file) = os.path.split(source)
@@ -166,7 +173,7 @@ class Transform (Maker):
 
 class FileCompare (Transform):
   "This class maps sources into the set of files for which self.compare(target, source) returns true"
-  def __init__(self, targets, sources = FileGroup(), fileFilter = lambda file: 1, returnAll = 0):
+  def __init__(self, targets, sources = None, fileFilter = lambda file: 1, returnAll = 0):
     Transform.__init__(self, sources, fileFilter)
     self.targets   = targets
     self.returnAll = returnAll
@@ -202,7 +209,7 @@ class FileCompare (Transform):
 
 class OlderThan (FileCompare):
   "This class maps sources into the set of files which are older than target"
-  def __init__(self, targets, sources = FileGroup(), fileFilter = lambda file: 1, returnAll = 0):
+  def __init__(self, targets, sources = None, fileFilter = lambda file: 1, returnAll = 0):
     FileCompare.__init__(self, targets, sources, fileFilter, returnAll)
 
   def compare(self, target, source):
@@ -217,7 +224,7 @@ class OlderThan (FileCompare):
 
 class NewerThan (FileCompare):
   "This class maps sources into the set of files which are newer than target"
-  def __init__(self, targets, sources = FileGroup(), fileFilter = lambda file: 1, returnAll = 0):
+  def __init__(self, targets, sources = None, fileFilter = lambda file: 1, returnAll = 0):
     FileCompare.__init__(self, targets, sources, fileFilter, returnAll)
 
   def compare(self, target, source):
@@ -232,7 +239,7 @@ class NewerThan (FileCompare):
 
 class NewerThanLibraryObject (FileCompare):
   "This class maps sources into the set of files which are newer than the corresponding object in the target library"
-  def __init__(self, targets, sources = FileGroup(), fileFilter = lambda file: 1, returnAll = 0):
+  def __init__(self, targets, sources = None, fileFilter = lambda file: 1, returnAll = 0):
     FileCompare.__init__(self, targets, sources, fileFilter, returnAll)
 
   def getObjectTimestamp(self, object, library):
@@ -257,7 +264,7 @@ class NewerThanLibraryObject (FileCompare):
 
 class FileChanged (Transform):
   "This class maps sources into the set of files which have checksum changes compared to values in the source database"
-  def __init__(self, sources = FileGroup(), fileFilter = lambda file: 1, returnAll = 0):
+  def __init__(self, sources = None, fileFilter = lambda file: 1, returnAll = 0):
     Transform.__init__(self, sources, fileFilter)
     self.returnAll = returnAll
 
@@ -288,7 +295,7 @@ class FileChanged (Transform):
     return self.products
 
 class Action (Transform):
-  def __init__(self, program, sources = FileGroup(), flags = '', fileFilter = lambda file: 1, allAtOnce = 0, errorHandler = None):
+  def __init__(self, program, sources = None, flags = '', fileFilter = lambda file: 1, allAtOnce = 0, errorHandler = None):
     Transform.__init__(self, sources, fileFilter)
     self.program      = program
     self.flags        = flags
@@ -330,7 +337,7 @@ class Action (Transform):
     return self.products
 
 class RemoveFiles (Action):
-  def __init__(self, sources = FileGroup()):
+  def __init__(self, sources = None):
     Action.__init__(self, self.forceRemove, sources)
 
 class ArchiveObjects (Action):
@@ -344,7 +351,7 @@ class ArchiveObjects (Action):
     return Action.execute(self)
 
 class BKEditFiles (Action):
-  def __init__(self, sources = FileGroup(), extraSources = None, flags = '', fileFilter = lambda file: 1):
+  def __init__(self, sources = None, extraSources = None, flags = '', fileFilter = lambda file: 1):
     Action.__init__(self, 'bk', sources, 'edit '+flags, fileFilter, 1, self.checkEdit)
     self.extraSources = extraSources
 
@@ -363,7 +370,8 @@ class BKEditFiles (Action):
     return Action.execute(self)
 
 class BKCloseFiles (Action):
-  def __init__(self, sources = TreeFileGroup(), flags = '', fileFilter = lambda file: 1):
+  def __init__(self, sources = None, flags = '', fileFilter = lambda file: 1):
+    if not sources: sources = TreeFileGroup()
     Action.__init__(self, 'bk', sources, flags, fileFilter, 1)
 
   def execute(self):
@@ -451,7 +459,7 @@ class CompileFiles (Action):
     return Action.execute(self)
 
 class CompileCFiles (CompileFiles):
-  def __init__(self, library, sources = FileGroup(), compiler='gcc', compilerFlags='-c -g -Wall', archiver = 'ar', archiverFlags = 'crv', allAtOnce = 0):
+  def __init__(self, library, sources = None, compiler='gcc', compilerFlags='-c -g -Wall', archiver = 'ar', archiverFlags = 'crv', allAtOnce = 0):
     CompileFiles.__init__(self, library, sources, self.cFilter, compiler, compilerFlags, archiver, archiverFlags, allAtOnce)
     self.includeDirs.append('.')
     self.products = library
@@ -461,11 +469,13 @@ class CompileCFiles (CompileFiles):
     (base, ext) = os.path.splitext(file)
     if (ext == ".c"):
       return 1
+    elif (ext == ".h"):
+      self.updateSourceDB(source)
     else:
       return 0
 
 class CompileCxxFiles (CompileFiles):
-  def __init__(self, library, sources = FileGroup(), compiler='g++', compilerFlags='-c -g -Wall', archiver = 'ar', archiverFlags = 'crv', allAtOnce = 0):
+  def __init__(self, library, sources = None, compiler='g++', compilerFlags='-c -g -Wall', archiver = 'ar', archiverFlags = 'crv', allAtOnce = 0):
     CompileFiles.__init__(self, library, sources, self.cxxFilter, compiler, compilerFlags, archiver, archiverFlags, allAtOnce)
     self.includeDirs.append('.')
     self.products = library
@@ -475,11 +485,13 @@ class CompileCxxFiles (CompileFiles):
     (base, ext) = os.path.splitext(file)
     if (ext == ".cc"):
       return 1
+    elif (ext == ".hh"):
+      self.updateSourceDB(source)
     else:
       return 0
 
 class CompileSIDLFiles (CompileFiles):
-  def __init__(self, generatedSources, sources = FileGroup(), compiler='babel', compilerFlags='-sC++ -ogenerated', archiver = '', archiverFlags = '', allAtOnce = 1):
+  def __init__(self, generatedSources, sources = None, compiler='babel', compilerFlags='-sC++ -ogenerated', archiver = '', archiverFlags = '', allAtOnce = 1):
     CompileFiles.__init__(self, None, sources, self.sidlFilter, compiler, '--suppress-timestamp '+compilerFlags, archiver, archiverFlags, allAtOnce)
     self.products = generatedSources
 
@@ -495,27 +507,31 @@ class CompileSIDLFiles (CompileFiles):
   def archive(self, source): pass
 
 class LinkSharedLibrary (Action):
-  def __init__(self, sources = FileGroup(), linker = 'g++', linkerFlags = '-g -shared', archiver = 'ar', archiverFlags = 'x', extraLibraries = FileGroup()):
+  def __init__(self, sources = None, linker = 'g++', linkerFlags = '-g -shared', archiver = 'ar', archiverFlags = 'x', extraLibraries = None):
     Action.__init__(self, linker, sources, linkerFlags, allAtOnce = 0)
     self.linker         = linker
     self.linkerFlags    = linkerFlags
     self.archiver       = archiver
     self.archiverFlags  = archiverFlags
-    self.extraLibraries = extraLibraries
+    if extraLibraries:
+      self.extraLibraries = extraLibraries
+    else:
+      self.extraLibraries = FileGroup()
 
   def getSharedName(self, library):
     (base, ext) = os.path.splitext(library)
     return base+'.so'
 
   def execute(self):
+    linkDir = os.path.join(self.tmpDir, 'link')
+    oldDir  = os.getcwd()
+    os.mkdir(linkDir)
+    os.chdir(linkDir)
     for source in self.sources.getFiles():
       sharedLibrary = self.getSharedName(source)
       self.products.append(sharedLibrary)
+      self.updateSourceDB(source)
 
-      linkDir = os.path.join(self.tmpDir, 'link')
-      oldDir  = os.getcwd()
-      os.mkdir(linkDir)
-      os.chdir(linkDir)
       command = self.archiver+' '+self.archiverFlags+' '+source
       self.executeShellCommand(command)
       command = self.linker+' '+self.linkerFlags+' -o '+sharedLibrary+' *.o'
@@ -525,18 +541,21 @@ class LinkSharedLibrary (Action):
         command += ' -L'+dir+' -l'+base[3:]
       self.executeShellCommand(command)
       map(os.remove, os.listdir(linkDir))
-      os.chdir(oldDir)
-      os.rmdir(linkDir)
-      return self.products
+    os.chdir(oldDir)
+    os.rmdir(linkDir)
+    return self.products
 
 class LinkExecutable (Action):
-  def __init__(self, executable, sources = FileGroup(), linker = 'g++', linkerFlags = '', extraLibraries = FileGroup()):
+  def __init__(self, executable, sources = None, linker = 'g++', linkerFlags = '', extraLibraries = None):
     Action.__init__(self, linker, sources, '-o '+executable.getFiles()[0]+' '+linkerFlags, allAtOnce = 1)
     self.executable  = executable
     self.linker      = linker
     self.linkerFlags = linkerFlags
-    self.extraLibraries = extraLibraries
     self.products    = executable
+    if extraLibraries:
+      self.extraLibraries = extraLibraries
+    else:
+      self.extraLibraries = FileGroup()
 
   def execute(self):
     if (self.executable):
