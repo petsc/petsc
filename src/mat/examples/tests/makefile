@@ -28,7 +28,7 @@ EXAMPLESF     = ex36.F
 EXAMPLES_3    = ex36
 RUNEXAMPLES_3 = runex36
 EXAMPLES_4    = ex1 ex2 ex4 ex5 ex6 ex10 ex14\
-		ex15 ex16 ex20 ex21 ex35
+		ex15 ex16 ex20 ex21 ex35 ex47 ex48
 RUNEXAMPLES_4 = runex1 runex2 runex2_2	runex4 runex5 runex6 \
 		runex10 runex14 runex15 runex15_2 \
 		runex16 runex20 runex21 runex35
@@ -381,9 +381,20 @@ runex42_2:
 	   else echo "Possible problem with ex42_2, diffs above"; fi; \
 	   $(RM) -f ex42_2.tmp
 runex46:
-	-@$(MPIRUN)  ex46  -np 2  ex46 -mat_view > ex46_1.tmp 2>&1; \
+	-@$(MPIRUN) -np 2   ex46  -mat_view > ex46_1.tmp 2>&1; \
 	   if (diff output/ex46_1.out ex46_1.tmp) then true; \
 	   else echo "Possible problem with ex46_1, diffs above"; fi; \
 	   $(RM) -f ex46_1.tmp
+runex47:
+	-@$(MPIRUN)  ex47 -f matrices/cfd.1.10 -mat_block_size 5 > ex47_1.tmp 2>&1; \
+	   if (diff /dev/null ex47_1.tmp) then true; \
+	   else echo "Possible problem with ex47_1, diffs above"; fi; \
+	   $(RM) -f ex47_1.tmp
+runex48:
+	-@$(MPIRUN)  ex48 -mat_block_size 3  > ex48_1.tmp 2>&1; \
+	   if (diff /dev/null ex48_1.tmp) then true; \
+	   else echo "Possible problem with ex48_1, diffs above"; fi; \
+	   $(RM) -f ex48_1.tmp
+
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
