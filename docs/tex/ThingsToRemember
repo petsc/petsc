@@ -57,6 +57,7 @@ SGI Power Challenge (IRIX64):
    Also, Paul Plassman has access to an account at NCSA.
 
 ICASE/NASA paragon: crabcake.larc.nasa.gov, account: mcinnes
+   Decommissioned on 6/28/96!   :-)
    See the file ~mcinnes/README on crabcake for up-to-date info on
    the paragon's quirks: 
       - must do "unsetenv TERM" so that make does'nt crash
@@ -64,6 +65,8 @@ ICASE/NASA paragon: crabcake.larc.nasa.gov, account: mcinnes
       - must use make -e PETSC_DIR=<whatever>
       - for BlockSolve95 muse use 
             make -e BS_DIR=<whatever> PETSC_DIR=<whatever>
+      - sample run command:
+        pexec "mpirun -np 4 ex8 -log_summary" -sz 4
 ICASE/NASA SP: poseidon.larc.nasa.gov, account: mcinnes
 
 Paragon account at San Diego
