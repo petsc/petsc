@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.45 1995/10/02 20:19:12 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.46 1995/10/06 22:23:55 bsmith Exp curfman $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -69,7 +69,8 @@ MPI_Datatype  MPIU_COMPLEX;
    If for some reason you must call MPI_Init() separately, call
    it before PetscInitialize().
 
-   In FORTRAN this routine takes only an ierr argument.
+   In FORTRAN this routine takes only an ierr argument, as given by
+$       call PetscInitialize(ierr)
 
 .keywords: initialize, options, database, startup
 
