@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.73 1996/04/04 00:27:58 balay Exp balay $";
+static char vcid[] = "$Id: gcreate.c,v 1.74 1996/04/05 16:40:41 balay Exp balay $";
 #endif
 
 #include "sys.h"
@@ -154,26 +154,36 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
   int     set,ierr,bs=1,flg;
 
   ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
-  if (type == MATSEQDENSE)
+  switch (type) {
+  case MATSEQDENSE:
     return MatCreateSeqDense(comm,m,n,PETSC_NULL,V);
-  if (type == MATMPIBDIAG)
+    break;
+  case MATMPIBDIAG:
     return MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,PETSC_DEFAULT,PETSC_DEFAULT,
            PETSC_NULL,PETSC_NULL,V);
-  if (type == MATSEQBDIAG)
+    break;
+  case MATSEQBDIAG:
     return MatCreateSeqBDiag(comm,m,n,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_NULL,
            PETSC_NULL,V);
-  if (type == MATMPIROWBS)
+    break;
+  case MATMPIROWBS:
     return MatCreateMPIRowbs(comm,PETSC_DECIDE,m,PETSC_DEFAULT,PETSC_NULL,PETSC_NULL,V);
-  if (type == MATMPIDENSE)
+    break;
+  case  MATMPIDENSE:
     return MatCreateMPIDense(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,V);
-  if (type == MATMPIAIJ)
+    break;
+  case MATMPIAIJ:
     return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_DEFAULT,
            PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,V);
-  if (type == MATSEQBAIJ){
+    break;
+  case MATSEQBAIJ:
     ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRQ(ierr);
     return MatCreateSeqBAIJ(comm,bs,m,n,PETSC_DEFAULT,PETSC_NULL,V);
+    break;
+  default:
+    return MatCreateSeqAIJ(comm,m,n,PETSC_DEFAULT,PETSC_NULL,V); 
+    break;
   }
-  return MatCreateSeqAIJ(comm,m,n,PETSC_DEFAULT,PETSC_NULL,V); 
 }
 
 #include "matimpl.h"

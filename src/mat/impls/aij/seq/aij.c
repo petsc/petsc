@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.165 1996/03/31 16:50:47 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.166 1996/03/31 19:59:18 curfman Exp balay $";
 #endif
 
 /*
@@ -951,7 +951,7 @@ static int MatTranspose_SeqAIJ(Mat A,Mat *B)
   Scalar     *array = a->a;
 
   if (B == PETSC_NULL && m != a->n)
-    SETERRQ(1,"MatTranspose_MPIAIJ:Square matrix only for in-place");
+    SETERRQ(1,"MatTranspose_SeqAIJ:Square matrix only for in-place");
   col = (int *) PetscMalloc((1+a->n)*sizeof(int)); CHKPTRQ(col);
   PetscMemzero(col,(1+a->n)*sizeof(int));
   if (shift) {
