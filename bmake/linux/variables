@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.2 1999/02/08 23:46:23 balay Exp balay $ 
+# $Id: base_variables,v 1.3 1999/02/19 18:49:38 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -7,6 +7,7 @@ RM               = rm -f
 OMAKE            = make  --no-print-directory
 RANLIB           = ranlib
 SHELL            = /bin/sh
+LD               = gcc
 # ######################### C and Fortran compiler ########################
 #
 C_CC             = gcc -fPIC
