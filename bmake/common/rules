@@ -113,7 +113,7 @@ libfast: chkpetsc_dir $(SOURCEC) $(SOURCEF)
 	     $(FC) -c $(FFLAGS) $(BASEOPTF) $(SOURCEF) ;\
 	fi
 	@-if [ "$(OBJS)" != " " ] ; then \
-          $(AR) clr $(LIBNAME) $(OBJS); \
+          $(AR) cr $(LIBNAME) $(OBJS); \
 	  $(RM) -f $(OBJS); \
         fi
 
@@ -122,7 +122,7 @@ C2f77lib:
 	@-if [ -n "$(WOBJS)" ] ; then \
 	echo "Compiling wrappers: " $(WSOURCEC); \
 	$(CC) -c $(CDEFS) $(CFLAGS) $(BASEOPT) -I$(IPETSCDIR) $(WSOURCEC); \
-	$(AR) clr $(LDIR)/libpetscfort.a $(WOBJS) ; \
+	$(AR) cr $(LDIR)/libpetscfort.a $(WOBJS) ; \
 	$(RM) -f $(WOBJS) $(WSOURCE); \
 	fi
 
