@@ -185,6 +185,44 @@ class CursesInstall (BootstrapInstall):
     return text
   CenterGetStr = staticmethod(CenterGetStr)
 
+  def SelectFromSubList(stdscr,list,my,text,charactors):
+    stdscr.clear()
+    choices = []
+    CursesInstall.CenterAddStr(stdscr,my,text)
+    (y,x) = stdscr.getmaxyx()
+    omy = my
+    my = my + 2
+    ln = y - my - 2
+    mess = 'Type key to pick selection'
+    if ln < len(list):
+      sublist = list[0:ln]
+      mess    = mess + ' (+ for more choices)'
+    else:              sublist = list
+    if not charactors[0] == ord('0'):
+      mess    = mess + ' (- for previous choices)'
+    i  = 0
+    for l in sublist:
+      stdscr.addstr(my,2,chr(charactors[i])+') '+l)
+      choices.append(charactors[i])
+      i  = i + 1
+      my = my + 1
+    stdscr.addstr(my+1,2,mess)
+    stdscr.refresh()
+    ch = -1
+    while not ch in choices:
+      ch = stdscr.getch()
+      if ch == ord('+'):
+        r = CursesInstall.SelectFromSubList(stdscr,list[ln:-1],omy,text,charactors[ln:-1])
+        if not r == '-':
+          return ln + r
+        else:
+          return CursesInstall.SelectFromSubList(stdscr,list,omy,text,charactors)
+      if ch == ord('-') and not charactors[0] == ord('0'):
+        return '-'
+    ch = choices.index(ch)
+    return ch
+  SelectFromSubList = staticmethod(SelectFromSubList)
+    
   def SelectFromList(stdscr,list,my = 1,text = 'Select desired value'):
     charactors = []
     for i in range(0,10):
@@ -194,23 +232,7 @@ class CursesInstall (BootstrapInstall):
     for i in range(0,26):
       charactors.append(i+ord('A'))
 
-    choices = []
-    CursesInstall.CenterAddStr(stdscr,my,text)
-    (y,x) = stdscr.getmaxyx()
-    my = my + 2
-    i  = 0
-    for l in list:
-      stdscr.addstr(my,2,chr(charactors[i])+') '+l)
-      choices.append(charactors[i])
-      i  = i + 1
-      my = my + 1
-    stdscr.addstr(my+1,2,'Type key to pick selection')
-    stdscr.refresh()
-    ch = -1
-    while not ch in choices:
-      ch = stdscr.getch()
-    ch = choices.index(ch)
-    return ch
+    return CursesInstall.SelectFromSubList(stdscr,list,my,text,charactors)
   SelectFromList = staticmethod(SelectFromList)
 
   def getBrowser(self, stdscr):
