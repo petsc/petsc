@@ -53,7 +53,7 @@ class ArgDict (UserDict.UserDict, logging.Logger):
     if not self.interactive: return (0, None)
     try:
       if self.metadata['help'].has_key(key): print self.metadata['help'][key]
-      value = raw_input('Please enter value for '+key+':')
+      value = self.parseArg(raw_input('Please enter value for '+key+':'))
       return (1, value)
     except KeyboardInterrupt:
       return (0, None)
@@ -74,6 +74,10 @@ class ArgDict (UserDict.UserDict, logging.Logger):
     for key in self.metadata['default'].keys():
       if not self.has_key(key): self[key] = self.metadata['default'][key]
 
+  def inputEnvVars(self):
+    for key in os.environ.keys():
+      self[key] = self.parseArg(os.environ[key])
+
   def inputCommandLineArgs(self, argList):
     if not type(argList) == types.ListType: return
     for arg in argList:
@@ -85,12 +89,11 @@ class ArgDict (UserDict.UserDict, logging.Logger):
       else:
         # Could try just using eval() on val, but we would need to quote lots of stuff
         (key, val) = string.split(arg[1:], '=')
-        if val[0] == '[' and val[-1] == ']': val = string.split(val[1:-1], ',')
-        self[key]  = val
+        self[key]  = self.parseArg(val)
 
   def input(self, clArgs = None):
     self.inputDefaultArgs()
-    self.update(os.environ)
+    self.inputEnvVars()
     self.inputCommandLineArgs(clArgs)
     self.setFromArgs(self)
     if self.filename: self.debugPrint('Read source database from '+self.filename, 2, 'argDB')
@@ -118,6 +121,10 @@ class ArgDict (UserDict.UserDict, logging.Logger):
       return self.metadata['parent'][key]
     else:
       return None
+
+  def parseArg(self, arg):
+    if arg and arg[0] == '[' and arg[-1] == ']': arg = string.split(arg[1:-1], ',')
+    return arg
 
   def expandVars(self, path):
     """Expand arguments of form $var and ${var}"""

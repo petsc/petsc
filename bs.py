@@ -168,7 +168,7 @@ class BS (Maker):
       dbFile.close()
     else:
       sourceDB = {}
-    atexit.register(self.saveSourceDB)
+    atexit.register(self.cleanup)
 
   def calculateDependencies(self):
     self.debugPrint('Recalculating dependencies', 1, 'sourceDB')
@@ -235,6 +235,10 @@ class BS (Maker):
   def consistencyChecks(self):
     if int(argDB['checkDir']): map(self.checkDirectory, self.directories.keys())
 
+  def cleanup(self):
+    if argDB.has_key('target'): del argDB['target']
+    self.saveSourceDB()
+
   def main(self):
     self.consistencyChecks()
     if argDB.has_key('target'):
@@ -251,5 +255,4 @@ class BS (Maker):
           self.debugDependencies()
         else:
           print 'Invalid target: '+target
-    if argDB.has_key('target'): del argDB['target']
     self.cleanupDir(self.tmpDir)
