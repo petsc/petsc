@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
 
   def configureMkdir(self):
     '''Make sure we can have mkdir automatically make intermediate directories'''
-    self.getExecutable('mkdir', getFullPath = 1)
+    self.getExecutable('mkdir', getFullPath = 1,setMakeMacro=0)
     if hasattr(self, 'mkdir'):
       confDir = '.conftest'
       conftmpDir  = os.path.join('.conftest','tmp')
@@ -31,6 +31,7 @@ class Configure(config.base.Configure):
         if not status and os.path.isdir(conftmpDir):
           self.mkdir = self.mkdir+' -p'
       except RuntimeError: pass
+      self.addMakeMacro('MKDIR',self.mkdir)
       if os.path.exists(conftmpDir): os.rmdir(conftmpDir)
       if os.path.exists(confDir): os.rmdir(confDir)
     return
@@ -43,9 +44,9 @@ class Configure(config.base.Configure):
     self.getExecutable('mv',   getFullPath = 1)
     self.getExecutable('cp',   getFullPath = 1)
     self.getExecutable('grep', getFullPath = 1)    
-    self.getExecutable('diff', getFullPath = 1)
     self.getExecutable('rm -f',getFullPath = 1, resultName = 'RM')
     # check if diff supports -w option for ignoring whitespace
+    self.getExecutable('diff', getFullPath = 1,setMakeMacro=0)
     f = file('diff1', 'w')
     f.write('diff\n')
     f.close()
@@ -57,6 +58,7 @@ class Configure(config.base.Configure):
     os.unlink('diff2')
     if not status:    
       self.diff = self.diff + ' -w'
+    self.addMakeMacro('DIFF',self.diff)
       
     self.getExecutable('ps',   path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self, 'UCBPS'):
