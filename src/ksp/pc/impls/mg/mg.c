@@ -446,9 +446,9 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   }
 
   if (mg[0]->galerkin) {
+    Mat B;
     mg[0]->galerkinused = PETSC_TRUE;
     /* currently only handle case where mat and pmat are the same on coarser levels */
-    Mat B;
     ierr = KSPGetOperators(mg[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       for (i=n-2; i>-1; i--) {
