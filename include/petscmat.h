@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.77 1995/11/22 03:40:26 curfman Exp bsmith $ */
+/* $Id: mat.h,v 1.78 1995/11/22 03:53:54 bsmith Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -45,7 +45,8 @@ typedef enum {ROW_ORIENTED=1,COLUMN_ORIENTED=2,ROWS_SORTED=4,
               COLUMNS_SORTED=8,NO_NEW_NONZERO_LOCATIONS=16,
               YES_NEW_NONZERO_LOCATIONS=32,SYMMETRIC_MATRIX=64,
               STRUCTURALLY_SYMMETRIC_MATRIX,NO_NEW_DIAGONALS,
-              YES_NEW_DIAGONALS} MatOption;
+              YES_NEW_DIAGONALS,INODE_LIMIT_1,INODE_LIMIT_2,
+              INODE_LIMIT_3,INODE_LIMIT_4,INODE_LIMIT_5} MatOption;
 
 extern int MatSetOption(Mat,MatOption);
 extern int MatGetType(Mat,MatType*);
