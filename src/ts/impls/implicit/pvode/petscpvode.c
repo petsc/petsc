@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.3 1997/08/22 15:20:05 balay Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.4 1997/09/26 02:20:24 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -290,6 +290,7 @@ static int TSDestroy_PVode(PetscObject obj )
   TS_PVode *cvode = (TS_PVode*) ts->data;
   int       ierr;
 
+  ierr = PCDestroy(cvode->pc); CHKERRQ(ierr);
   ierr = VecDestroy(cvode->update); CHKERRQ(ierr);
   if (cvode->func) {ierr = VecDestroy(cvode->func);CHKERRQ(ierr);}
   if (cvode->rhs) {ierr = VecDestroy(cvode->rhs);CHKERRQ(ierr);}
