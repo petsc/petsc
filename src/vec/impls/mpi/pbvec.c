@@ -1,7 +1,5 @@
-
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.109 1998/10/09 19:19:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.110 1998/11/18 23:02:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -597,6 +595,9 @@ int VecDuplicate_MPI( Vec win, Vec *v)
   int     ierr;
   Vec_MPI *vw, *w = (Vec_MPI *)win->data;
   Scalar  *array;
+#if defined(HAVE_AMS)
+  int     (*f)(AMS_Memory,char *,Vec);
+#endif
 
   PetscFunctionBegin;
   ierr = VecCreateMPI_Private(win->comm,w->n,w->N,w->nghost,w->size,w->rank,0,win->map,v);CHKERRQ(ierr);
@@ -627,9 +628,16 @@ int VecDuplicate_MPI( Vec win, Vec *v)
   }
   (*v)->bs = win->bs;
 
+#if defined(HAVE_AMS)
+  /*
+     If the vector knows its "layout" let it set it, otherwise it defaults
+     to correct 1d distribution
+  */
+  ierr = PetscObjectQueryFunction((PetscObject)(*v),"AMSSetFieldBlock_C",(void**)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)((AMS_Memory)(*v)->amem,"values",*v);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
-
-
-
 
