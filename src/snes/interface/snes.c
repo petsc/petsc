@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.42 1996/01/23 18:28:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.43 1996/01/24 04:15:03 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -433,9 +433,10 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->max_its           = 50;
   snes->max_funcs	  = 1000;
   snes->norm		  = 0.0;
-  if (type == SNES_UNCONSTRAINED_MINIMIZATION)
+  if (type == SNES_UNCONSTRAINED_MINIMIZATION) {
     snes->rtol		  = 1.e-08;
     snes->atol		  = 1.e-10;
+  }
   else {
     snes->rtol		  = 1.e-8;
     snes->ttol            = 0.0;
