@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.288 1999/05/10 16:28:49 balay Exp bsmith $ 
+# $Id: makefile,v 1.289 1999/06/04 14:46:57 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -33,8 +33,10 @@ info:
 	-@echo Machine characteristics: `uname -a`
 	-@echo "-----------------------------------------"
 	-@echo "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}"
-	-@if [ -n "${CCV}" -a "${CCV}" != "unknown" ] ; then \
-	  echo "Compiler version:" `${CCV}` ; fi
+	-@if [ -n "${C_CCV}" -a "${C_CCV}" != "unknown" ] ; then \
+	  echo "C Compiler version:" `${C_CCV}` ; fi
+	-@if [ -n "${CXX_CCV}" -a "${CXX_CCV}" != "unknown" ] ; then \
+	  echo "C++ Compiler version:" `${CXX_CCV}` ; fi
 	-@echo "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}"
 	-@echo "-----------------------------------------"
 	-@grep PETSC_VERSION_NUMBER include/petsc.h | sed "s/........//"
