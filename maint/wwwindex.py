@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.4 1999/01/20 00:43:37 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.5 1999/01/25 21:24:01 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -11,13 +11,13 @@
 #
 import os
 import posixpath
-import regsub
 from exceptions import *
 from sys import *
 from string import *
 
 # Now use the level info, and print a html formatted index
-# table
+# table. Can also provide a header file, whose contents are
+# first copied over.
 def printindex(outfilename,headfilename,titles,tables):
       # Read in the header file
       headbuf = ''
@@ -61,7 +61,7 @@ def printindex(outfilename,headfilename,titles,tables):
 # Read in the filename contents, and search for the formatted
 # String 'Level:' and return the level info.
 # Also adds the BOLD HTML format to Level field
-def extractlevel(filename):
+def modifylevel(filename):
       import re
       try:
             fd = open(filename,'r')
@@ -95,23 +95,6 @@ def extractlevel(filename):
       fd.close()
       return level
       
-def makeboldlevel(filename):
-      try:
-            fd = open(filename,'r')
-      except:
-            print 'Error! Cannot open file:',filename
-            exit()
-      lines = split(fd.read(),'\n')
-      for i in range(len(lines)):
-            line = lines[i]
-            if strip(line) == 'Level:':
-                  # The next line has the level info
-                  level = strip(lines[i+1])
-                  return level
-      print 'Error! No level info in',filename
-  
-      
-      
 # Go through each manpage file, present in dirname,
 # and create and return a table for it, wrt levels specified.
 def createtable(dirname,levels):
@@ -125,7 +108,7 @@ def createtable(dirname,levels):
       for level in levels: table.append([])
       
       for filename in split(strip(buf),'\n'):
-            level = extractlevel(filename)
+            level = modifylevel(filename)
             #if not level: continue
             if level in levels:
                   table[levels.index(level)].append(filename)
