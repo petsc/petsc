@@ -71,8 +71,7 @@ int main(int argc,char **argv)
   ierr = KSPSetOperators(solver,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
   ierr = KSPSolve(solver,X,Y); CHKERRQ(ierr);
   ierr = KSPSetOperators(solver,B,B,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
-  ierr = KSPSetSolution(solver,Z); CHKERRQ(ierr);
-  ierr = KSPSolve(solver,X,Y); CHKERRQ(ierr);
+  ierr = KSPSolve(solver,X,Z); CHKERRQ(ierr);
   ierr = VecAXPY(&mone,Y,Z); CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
   printf("Test1; error norm=%e\n",nrm);

@@ -58,11 +58,11 @@ EXTERN int        PetscLogMPEDump(const char[]);
 extern PetscTruth UseMPE;
 #define PETSC_LOG_EVENT_MPE_BEGIN(e) \
   if(UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) \
-    MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_begin,0,"");
+    MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_begin,0,(char*)"");
 
 #define PETSC_LOG_EVENT_MPE_END(e) \
   if(UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) \
-    MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_end,0,"");
+    MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_end,0,(char*)"");
 
 #else 
 #define PETSC_LOG_EVENT_MPE_BEGIN(e)
