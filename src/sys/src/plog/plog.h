@@ -105,6 +105,7 @@ EXTERN int EventPerfLogDestroy(EventPerfLog);
 /* General functions */
 EXTERN int EventPerfLogEnsureSize(EventPerfLog, int);
 EXTERN int EventPerfInfoClear(EventPerfInfo *);
+EXTERN int EventPerfInfoCopy(EventPerfInfo *, EventPerfInfo *);
 /* Registration functions */
 EXTERN int EventRegLogRegister(EventRegLog, const char [], int, int *);
 /* Query functions */

@@ -152,6 +152,32 @@ int EventPerfInfoClear(EventPerfInfo *eventInfo) {
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "EventPerfInfoCopy"
+/*@C
+  EventPerfInfoCopy - Copy the activity and visibility data in eventInfo to outInfo
+
+  Not collective
+
+  Input Paramter:
+. eventInfo - The input EventPerfInfo
+
+  Output Paramter:
+. outInfo   - The output EventPerfInfo
+
+  Level: beginner
+
+.keywords: log, event, copy
+.seealso: EventPerfInfoClear()
+@*/
+int EventPerfInfoCopy(EventPerfInfo *eventInfo, EventPerfInfo *outInfo) {
+  PetscFunctionBegin;
+  outInfo->id      = eventInfo->id;
+  outInfo->active  = eventInfo->active;
+  outInfo->visible = eventInfo->visible;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "EventPerfLogEnsureSize"
 /*@C
   EventPerfLogEnsureSize - This ensures that a EventPerfLog is at least of a certain size.
