@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.16 1995/07/17 20:43:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.17 1995/07/20 15:35:04 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -229,8 +229,9 @@ int SNESCreate_TR(SNES snes )
 {
   SNES_TR *neP;
 
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
+    "SNESCreate_TR: Valid for SNES_NONLINEAR_EQUATIONS problems only");
   snes->type 		= SNES_EQ_NTR;
-  snes->method_class	= SNES_EQ;
   snes->setup		= SNESSetUp_TR;
   snes->solve		= SNESSolve_TR;
   snes->destroy		= SNESDestroy_TR;
