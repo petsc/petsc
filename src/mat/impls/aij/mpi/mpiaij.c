@@ -1169,11 +1169,13 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
+  case MAT_HERMITIAN:
+  case MAT_SYMMETRY_ETERNAL:
+    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
+    break;
   case MAT_NOT_SYMMETRIC:
   case MAT_NOT_STRUCTURALLY_SYMMETRIC:
-  case MAT_HERMITIAN:
   case MAT_NOT_HERMITIAN:
-  case MAT_SYMMETRY_ETERNAL:
   case MAT_NOT_SYMMETRY_ETERNAL:
     break;
   default:
