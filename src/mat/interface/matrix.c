@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.394 2001/03/09 18:59:52 balay Exp bsmith $*/
+/*$Id: matrix.c,v 1.395 2001/03/14 19:26:04 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -523,26 +523,14 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
 +  mat - the matrix
 .  v - a logically two-dimensional array of values
 .  m - number of rows being entered
-.  idxm - see below 
+.  idxm - grid coordinates (and component number when dof > 1) for matrix rows being entered
 .  n - number of columns being entered
-.  idxn -  see below
+.  idxn - grid coordinates (and component number when dof > 1) for matrix columns being entered 
 -  addv - either ADD_VALUES or INSERT_VALUES, where
    ADD_VALUES adds values to any existing entries, and
    INSERT_VALUES replaces existing entries with new values
 
    Notes:
-   Format of idxm and idxn:
-$    If dof > 1 let dim = dimension of the grid (1,2, or 3)+1;
-$     then idxm[dim*i+dim-1] = component number
-$        idxm[dim*i+dim-2]   = logical coordinate in x
-$        idxm[dim*i+dim-3]   = logical coordinate in y (if it exists)
-$        idxm[dim*i+dim-4]   = logical coordinate in z (if it exists)
-$     else let dim = dimension of the grid (1,2, or 3);
-$        idxm[dim*i+dim-1]   = logical coordinate in x
-$        idxm[dim*i+dim-2]   = logical coordinate in y (if it exists)
-$        idxm[dim*i+dim-3]   = logical coordinate in z (if it exists)
-
-
    By default the values, v, are row-oriented and unsorted.
    See MatSetOption() for other options.
 
@@ -572,9 +560,10 @@ $        idxm[dim*i+dim-3]   = logical coordinate in z (if it exists)
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
           MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil()
 @*/
-int MatSetValuesStencil(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode addv)
+int MatSetValuesStencil(Mat mat,int m,MatStencil *idxm,int n,MatStencil *idxn,Scalar *v,InsertMode addv)
 {
   int j,i,ierr,jdxm[128],jdxn[128],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
+  int *starts = mat->stencil.starts,*dxm = (int*)idxm,*dxn = (int*)idxn,sdim = dim - (1 - (int)mat->stencil.noc);
 
   PetscFunctionBegin;
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
@@ -585,20 +574,70 @@ int MatSetValuesStencil(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
   PetscValidScalarPointer(v);
 
   for (i=0; i<m; i++) {
-    tmp = idxm[dim*i];
+    for (j=0; j<3-sdim; j++) dxm++;  
+    tmp = *dxm++ - starts[0];
     for (j=0; j<dim-1; j++) {
-      tmp = tmp*dims[j] + idxm[dim*i+j+1];
+      tmp = tmp*dims[j] + *dxm++ - starts[j+1];
     }
+    if (mat->stencil.noc) dxm++;
     jdxm[i] = tmp;
   }
   for (i=0; i<n; i++) {
-    tmp = idxn[dim*i];
+    for (j=0; j<3-sdim; j++) dxn++;  
+    tmp = *dxn++ - starts[0];
     for (j=0; j<dim-1; j++) {
-      tmp = tmp*dims[j] + idxn[dim*i+j+1];
+      tmp = tmp*dims[j] + *dxn++ - starts[j+1];
     }
+    if (mat->stencil.noc) dxn++;
     jdxn[i] = tmp;
   }
-  ierr = MatSetValues(mat,m,jdxm,n,jdxn,v,addv);CHKERRQ(ierr);
+  ierr = MatSetValuesLocal(mat,m,jdxm,n,jdxn,v,addv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatSetStencil"
+/*@ 
+   MatSetStencil - Sets the grid information for setting values into a matrix via
+        MatSetStencil()
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+.  dim - dimension of the grid 1,2, or 3
+.  dims - number of grid points in x, y, and z direction, including ghost points on your processor
+.  starts - starting point of ghost nodes on your processor in x, y, and z direction 
+-  dof - number of degrees of freedom per node
+
+
+   Inspired by the structured grid interface to the HYPRE package
+   (www.llnl.gov/CASC/hyper)
+
+   Level: beginner
+
+   Concepts: matrices^putting entries in
+
+.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
+          MatSetValues(), MatSetValuesBlockedStencil(), MatSetValuesStencil()
+@*/
+int MatSetStencil(Mat mat,int dim,int *dims,int *starts,int dof)
+{
+  int i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidIntPointer(dims);
+  PetscValidIntPointer(starts);
+
+  mat->stencil.dim = dim + (dof > 1);
+  for (i=0; i<dim; i++) {
+    mat->stencil.dims[i]   = dims[dim-i-1];      /* copy the values in backwards */
+    mat->stencil.starts[i] = starts[dim-i-1];
+  }
+  mat->stencil.dims[dim]   = dof;
+  mat->stencil.starts[dim] = 0;
+  mat->stencil.noc         = (PetscTruth)(dof == 1);
   PetscFunctionReturn(0);
 }
 
