@@ -3270,7 +3270,12 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
   }
   mat->insertmode = NOT_SET_VALUES;
   MatAssemblyEnd_InUse--;
-
+  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  if (!mat->symmetric_eternal) {
+    mat->symmetric_set              = PETSC_FALSE;
+    mat->hermitian_set              = PETSC_FALSE;
+    mat->structurally_symmetric_set = PETSC_FALSE;
+  }
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
     ierr = MatView_Private(mat);CHKERRQ(ierr);
   }
@@ -3279,7 +3284,6 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
   if (flg) {
     ierr = MatPrintHelp(mat);CHKERRQ(ierr);
   }
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3333,7 +3337,15 @@ int MatCompress(Mat mat)
 .    MAT_STRUCTURALLY_SYMMETRIC - symmetric nonzero structure
 .    MAT_NOT_SYMMETRIC - not symmetric in value
 .    MAT_NOT_HERMITIAN - transpose is not the complex conjugation
--    MAT_NOT_STRUCTURALLY_SYMMETRIC - not symmetric nonzero structure
+.    MAT_NOT_STRUCTURALLY_SYMMETRIC - not symmetric nonzero structure
+.    MAT_SYMMETRY_ETERNAL - if you would like the symmetry/Hermitian flag
+                            you set to be kept with all future use of the matrix
+                            including after MatAssemblyBegin/End() which could
+                            potentially change the symmetry structure, i.e. you 
+                            KNOW the matrix will ALWAYS have the property you set.
+-    MAT_NOT_SYMMETRY_ETERNAL - if MatAssemblyBegin/End() is called then the 
+                                flags you set will be dropped (in case potentially
+                                the symmetry etc was lost).
 
    Options For Use with MatSetValues():
    Insert a logically dense subblock, which can be
@@ -3456,6 +3468,10 @@ int MatSetOption(Mat mat,MatOption op)
     mat->structurally_symmetric     = PETSC_FALSE;
     mat->structurally_symmetric_set = PETSC_TRUE;
     break;
+  case MAT_SYMMETRY_ETERNAL:
+    mat->symmetric_eternal          = PETSC_TRUE;
+  case MAT_NOT_SYMMETRY_ETERNAL:
+    mat->symmetric_eternal          = PETSC_FALSE;
   default:
     break;
   }

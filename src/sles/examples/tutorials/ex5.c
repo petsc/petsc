@@ -104,6 +104,7 @@ int main(int argc,char **args)
     }
   } else {
     ierr = MatSetOption(C,MAT_SYMMETRIC);CHKERRQ(ierr);
+    ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL);CHKERRQ(ierr);
   }
 
   /* 

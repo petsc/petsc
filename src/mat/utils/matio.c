@@ -157,6 +157,7 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
   ierr = PetscOptionsHasName(prefix,"-matload_symmetric",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetOption(*newmat,MAT_SYMMETRIC);CHKERRQ(ierr);
+    ierr = MatSetOption(*newmat,MAT_SYMMETRY_ETERNAL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatLoadPrintHelp_Private(*newmat);CHKERRQ(ierr); }

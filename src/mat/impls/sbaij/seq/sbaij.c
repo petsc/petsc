@@ -179,8 +179,15 @@ int MatSetOption_SeqSBAIJ(Mat A,MatOption op)
     break;
   case MAT_NO_NEW_DIAGONALS:
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
+  case MAT_NOT_SYMMETRIC:
+  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
+  case MAT_HERMITIAN:
+    SETERRQ(PETSC_ERR_SUP,"Matrix must be symmetric");
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
+  case MAT_NOT_HERMITIAN:
+  case MAT_SYMMETRY_ETERNAL:
+  case MAT_NOT_SYMMETRY_ETERNAL:
     break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");

@@ -1352,8 +1352,15 @@ int MatSetOption_MPISBAIJ(Mat A,MatOption op)
   case MAT_USE_HASH_TABLE:
     a->ht_flag = PETSC_TRUE;
     break;
+  case MAT_NOT_SYMMETRIC:
+  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
+  case MAT_HERMITIAN:
+    SETERRQ(PETSC_ERR_SUP,"Matrix must be symmetric");
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
+  case MAT_NOT_HERMITIAN:
+  case MAT_SYMMETRY_ETERNAL:
+  case MAT_NOT_SYMMETRY_ETERNAL:
     break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");

@@ -85,9 +85,17 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
   PetscFunctionBegin;
   switch (op) {
   case MAT_SYMMETRIC:
-    break;
   case MAT_STRUCTURALLY_SYMMETRIC:
+  case MAT_HERMITIAN:
     a->symmetric = PETSC_TRUE;
+    break;
+  case MAT_NOT_SYMMETRIC:
+  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
+  case MAT_NOT_HERMITIAN:
+    a->symmetric = PETSC_FALSE;
+    break;
+  case MAT_SYMMETRY_ETERNAL:
+  case MAT_NOT_SYMMETRY_ETERNAL:
     break;
   default:
     PetscLogInfo(A,"MatSetOption_MPIAdj:Option ignored\n");
