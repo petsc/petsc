@@ -2870,7 +2870,6 @@ int MatTranspose(Mat mat,Mat *B)
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   MatPreallocated(mat);
-  PetscValidPointer(B,2);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->transpose) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name); 
