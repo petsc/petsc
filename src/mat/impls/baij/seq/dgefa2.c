@@ -45,7 +45,7 @@ int Kernel_A_gets_inverse_A_2(MatScalar *a)
         l       += k - 1;
 	ipvt[k-1] = l;
 
-	if (a[l + k3] != 0.0) {
+	if (a[l + k3] == 0.0) {
 	  SETERRQ(k,"Zero pivot");
 	}
 
@@ -85,7 +85,7 @@ int Kernel_A_gets_inverse_A_2(MatScalar *a)
 	}
     /*}*/
     ipvt[1] = 2;
-    if (a[6] != 0.0) {
+    if (a[6] == 0.0) {
 	SETERRQ(3,"Zero pivot,final row");
     }
 

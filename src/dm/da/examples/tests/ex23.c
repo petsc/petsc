@@ -59,7 +59,7 @@ int main(int argc,char **argv)
 
   ierr = VecAXPY(&mone,global1,global2);CHKERRQ(ierr);
   ierr = VecNorm(global2,NORM_MAX,&norm);CHKERRQ(ierr);
-  if (norm != 0.0) {
+  if (norm == 0.0) {
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of processors %d\n",size);CHKERRQ(ierr);

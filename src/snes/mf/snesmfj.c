@@ -278,14 +278,7 @@ int MatMult_MFFD(Mat mat,Vec a,Vec y)
   h    = 1.0/h;
   ierr = VecScale(&h,y);CHKERRQ(ierr);
 
-
-  if (ctx->vshift != 0.0 && ctx->vscale != 1.0) {
-    ierr = VecAXPBY(&ctx->vshift,&ctx->vscale,a,y);CHKERRQ(ierr);
-  } else if (ctx->vscale != 1.0) {
-    ierr = VecScale(&ctx->vscale,y);CHKERRQ(ierr);
-  } else if (ctx->vshift != 0.0) {
-    ierr = VecAXPY(&ctx->vshift,a,y);CHKERRQ(ierr);
-  }
+  ierr = VecAXPBY(&ctx->vshift,&ctx->vscale,a,y);CHKERRQ(ierr);
 
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 

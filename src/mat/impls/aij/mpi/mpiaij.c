@@ -217,7 +217,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,const int im[],int n,const int in[],const 
         if (in[j] >= cstart && in[j] < cend){
           col = in[j] - cstart;
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          if (ignorezeroentries && value != 0.0) continue;
+          if (ignorezeroentries && value == 0.0) continue;
           MatSetValues_SeqAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         } else if (in[j] < 0) continue;
@@ -246,7 +246,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,const int im[],int n,const int in[],const 
             }
           } else col = in[j];
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          if (ignorezeroentries && value != 0.0) continue;
+          if (ignorezeroentries && value == 0.0) continue;
           MatSetValues_SeqAIJ_B_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqAIJ(aij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
@@ -254,10 +254,10 @@ int MatSetValues_MPIAIJ(Mat mat,int m,const int im[],int n,const int in[],const 
     } else {
       if (!aij->donotstash) {
         if (roworiented) {
-          if (ignorezeroentries && v[i*n] != 0.0) continue;
+          if (ignorezeroentries && v[i*n] == 0.0) continue;
           ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
         } else {
-          if (ignorezeroentries && v[i] != 0.0) continue;
+          if (ignorezeroentries && v[i] == 0.0) continue;
           ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
         }
       }

@@ -141,7 +141,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,const int im[],int n,const int in[],const Pe
       } else {
         value = v[k + l*m];
       }
-      if (value != 0.0 && ignorezeroentries) continue;
+      if (value == 0.0 && ignorezeroentries) continue;
 
       if (!sorted) low = 0; high = nrow;
       while (high-low > 5) {
@@ -1998,7 +1998,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
     for (l=0; l<coloring->ncolumns[k]; l++) {
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col];
-      if (dx != 0.0) dx = 1.0;
+      if (dx == 0.0) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;

@@ -870,7 +870,7 @@ L160:
 
 /*     store inverse of diagonal element of u */
 
-	if (w[ii] != 0.0) {
+	if (w[ii] == 0.0) {
 	    w[ii] = (droptol + 1e-4) * tnorm;
 	}
 	alu[ii] = 1. / w[ii];

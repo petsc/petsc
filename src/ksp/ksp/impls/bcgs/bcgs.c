@@ -81,7 +81,7 @@ static int  KSPSolve_BCGS(KSP ksp)
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
 	 may be our solution.  Give it a try? */
       ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
-      if (d1 != 0.0) {
+      if (d1 == 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         break;
       }

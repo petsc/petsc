@@ -32,6 +32,7 @@ SNES
 Vectors
    Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input
 
+   Handle special cases of VecAXPBY
 Error handling
    Add troubleshooting entries and error messages with web address for common errors.
 

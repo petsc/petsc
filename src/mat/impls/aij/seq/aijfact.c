@@ -490,7 +490,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
       while  (row < i) {
         pc = rtmp + row;
         if (*pc != 0.0) {
-          pv         = b->a + diag_offset[row] ;
+          pv         = b->a + diag_offset[row];
           pj         = b->j + diag_offset[row] + 1;
           multiplier = *pc / *pv++;
           *pc        = multiplier;
