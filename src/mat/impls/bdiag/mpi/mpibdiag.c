@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.199 2001/06/21 22:12:27 buschelm Exp buschelm $*/
+/*$Id: mpibdiag.c,v 1.200 2001/06/22 00:23:35 buschelm Exp curfman $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -602,8 +602,6 @@ int MatSetOption_MPIBDiag(Mat A,MatOption op)
   case MAT_ROWS_UNSORTED:
   case MAT_COLUMNS_SORTED:
   case MAT_COLUMNS_UNSORTED:
-  case MAT_YES_NEW_DIAGONALS:
-  case MAT_USE_HASH_TABLE:
   case MAT_USE_SINGLE_PRECISION_SOLVES:
     PetscLogInfo(A,"MatSetOption_MPIBDiag:Option ignored\n");
     break;
