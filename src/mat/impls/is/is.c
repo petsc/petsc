@@ -117,7 +117,7 @@ int MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mapping)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesLocal_IS" 
-int MatSetValuesLocal_IS(Mat A,int m,int *rows,int n,int *cols,PetscScalar *values,InsertMode addv)
+int MatSetValuesLocal_IS(Mat A,int m,const int *rows, int n,const int *cols,const PetscScalar *values,InsertMode addv)
 {
   int    ierr;
   Mat_IS *is = (Mat_IS*)A->data;
