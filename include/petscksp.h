@@ -195,6 +195,7 @@ EXTERN int KSPUnwindPreconditioner(KSP,Vec,Vec);
 EXTERN int KSPDefaultBuildSolution(KSP,Vec,Vec*);
 EXTERN int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 
+EXTERN int KSPSetOperators(KSP,Mat,Mat,MatStructure);
 EXTERN int KSPSetOptionsPrefix(KSP,const char[]);
 EXTERN int KSPAppendOptionsPrefix(KSP,const char[]);
 EXTERN int KSPGetOptionsPrefix(KSP,char*[]);

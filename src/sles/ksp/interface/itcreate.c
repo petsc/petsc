@@ -82,6 +82,7 @@ int KSPView(KSP ksp,PetscViewer viewer)
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
     }
   }
+  ierr = PCView(ksp->B,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -168,10 +169,70 @@ static int KSPPublish_Petsc(PetscObject obj)
 
   ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
 #endif
-
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetOperators"
+/*@
+   KSPSetOperators - Sets the matrix associated with the linear system
+   and a (possibly) different one associated with the preconditioner. 
+
+   Collective on KSP and Mat
+
+   Input Parameters:
++  ksp - the KSP context
+.  Amat - the matrix associated with the linear system
+.  Pmat - the matrix to be used in constructing the preconditioner, usually the
+          same as Amat. 
+-  flag - flag indicating information about the preconditioner matrix structure
+   during successive linear solves.  This flag is ignored the first time a
+   linear system is solved, and thus is irrelevant when solving just one linear
+   system.
+
+   Notes: 
+   The flag can be used to eliminate unnecessary work in the preconditioner 
+   during the repeated solution of linear systems of the same size.  The
+   available options are
+$    SAME_PRECONDITIONER -
+$      Pmat is identical during successive linear solves.
+$      This option is intended for folks who are using
+$      different Amat and Pmat matrices and want to reuse the
+$      same preconditioner matrix.  For example, this option
+$      saves work by not recomputing incomplete factorization
+$      for ILU/ICC preconditioners.
+$    SAME_NONZERO_PATTERN -
+$      Pmat has the same nonzero structure during
+$      successive linear solves. 
+$    DIFFERENT_NONZERO_PATTERN -
+$      Pmat does not have the same nonzero structure.
+
+    Caution:
+    If you specify SAME_NONZERO_PATTERN, PETSc believes your assertion
+    and does not check the structure of the matrix.  If you erroneously
+    claim that the structure is the same when it actually is not, the new
+    preconditioner will not function correctly.  Thus, use this optimization
+    feature carefully!
+
+    If in doubt about whether your preconditioner matrix has changed
+    structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
+
+    Level: beginner
+
+.keywords: KSP, set, operators, matrix, preconditioner, linear system
+
+.seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators()
+@*/
+int KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(Amat,MAT_COOKIE);
+  PetscValidHeaderSpecific(Pmat,MAT_COOKIE);
+  PCSetOperators(ksp->B,Amat,Pmat,flag);
+  ksp->setupcalled = 0;  /* so that next solve call will call setup */
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate"
@@ -254,6 +315,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
 
   ksp->setupcalled     = 0;
   ierr = PetscPublishAll(ksp);CHKERRQ(ierr);
+  ierr = PCCreate(comm,&ksp->B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
  
@@ -276,7 +338,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
    See "petsc/include/petscksp.h" for available methods (for instance,
    KSPCG or KSPGMRES).
 
-  Normally, it is best to use the SLESSetFromOptions() command and
+  Normally, it is best to use the KSPSetFromOptions() command and
   then set the KSP type from the options database rather than by using
   this routine.  Using the options database provides the user with
   maximum flexibility in evaluating the many different Krylov methods.
@@ -430,6 +492,8 @@ int KSPSetFromOptions(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  ierr = PCSetFromOptions(ksp->B);CHKERRQ(ierr);
+
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsBegin(ksp->comm,ksp->prefix,"Krylov Method (KSP) Options","KSP");CHKERRQ(ierr);
     ierr = PetscOptionsList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(ksp->type_name?ksp->type_name:KSPGMRES),type,256,&flg);CHKERRQ(ierr);
@@ -565,8 +629,6 @@ int KSPSetFromOptions(KSP ksp)
       ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
-
   PetscFunctionReturn(0);
 }
 
