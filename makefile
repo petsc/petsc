@@ -23,7 +23,7 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 all: chkpetsc_dir
 	-$(RM) -f $(PDIR)/*.a
 	-@echo "Beginning to compile libraries in all directories"
-	-@echo "Using compiler: $(CC) $(PETSC_INCLUDE) $(CONF) $(PCONF) $(BASEOPT)"
+	-@echo "Using compiler: $(CC) $(CPPFLAGS) $(CONF) $(COPTFLAGS)"
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
 	   ACTION=libfast  tree 
@@ -35,7 +35,7 @@ all: chkpetsc_dir
 # Builds PETSc test examples for a given BOPT and architecture
 testexamples: chkpetsc_dir
 	-@echo "Beginning to compile and run test examples"
-	-@echo "Using compiler: $(CC) $(PETSC_INCLUDE) $(PCONF) $(BASEOPT)"
+	-@echo "Using compiler: $(CC) $(CPPFLAGS) $(COPTFLAGS)"
 	-@echo "Using linker: $(CLINKER)"
 	-@echo "Using libraries: $(PETSC_LIB)"
 	-@echo "------------------------------------------"
@@ -50,7 +50,7 @@ testexamples: chkpetsc_dir
 # Builds PETSc test examples for a given BOPT and architecture
 testexamples_uni: chkpetsc_dir
 	-@echo "Beginning to compile and run uniprocessor test examples"
-	-@echo "Using compiler: $(CC) $(PETSC_INCLUDE) $(PCONF) $(BASEOPT)"
+	-@echo "Using compiler: $(CC) $(CPPFLAGS) $(COPTFLAGS)"
 	-@echo "Using linker: $(CLINKER)"
 	-@echo "Using libraries: $(PETSC_LIB)"
 	-@echo "------------------------------------------"
@@ -65,7 +65,7 @@ testexamples_uni: chkpetsc_dir
 # Builds PETSc test examples for a given BOPT and architecture
 testfortran: chkpetsc_dir
 	-@echo "Beginning to compile and run Fortran test examples"
-	-@echo "Using compiler: $(FC) $(BASEOPTF)"
+	-@echo "Using compiler: $(FC) $(FOPTFLAGS)"
 	-@echo "Using linker: $(FLINKER)"
 	-@echo "Using libraries: $(PETSC_FORTRAN_LIB)  $(PETSC_LIB)"
 	-@echo "------------------------------------------"
@@ -81,8 +81,8 @@ testfortran: chkpetsc_dir
 fortran: chkpetsc_dir
 	-$(RM) -f $(PDIR)/libpetscfortran.a
 	-@echo "Beginning to compile Fortran interface library"
-	-@echo "Using C/C++ compiler: $(CC) $(PETSC_INCLUDE) $(PCONF) $(BASEOPT)"
-	-@echo "Using Fortran compiler: $(FC) $(BASEOPTF)"
+	-@echo "Using C/C++ compiler: $(CC) $(CPPFLAGS) $(COPTFLAGS)"
+	-@echo "Using Fortran compiler: $(FC) $(FOPTFLAGS)"
 	-@echo "------------------------------------------"
 	-@cd src/fortran/custom; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
