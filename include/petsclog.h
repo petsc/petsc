@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.75 1996/07/12 22:29:29 bsmith Exp curfman $ */
+/* $Id: plog.h,v 1.76 1996/07/13 15:14:39 curfman Exp bsmith $ */
 
 /*
     Defines high level logging in PETSc.
@@ -201,67 +201,66 @@ extern int PLogBegin();
 extern int PLogAllBegin();
 extern int PLogDump(char*);
 extern int PLogEventRegister(int*,char*,char*);
+extern double PetscGetFlops();
 
 #if !defined(PETSC_USING_MPIUNI)
 /*
    Logging of MPI activities
 */
-extern double irecv_ct,isend_ct,wait_ct,wait_any_ct;
-extern double irecv_len,isend_len;
-extern double wait_all_ct,allreduce_ct;
+extern double irecv_ct,isend_ct,wait_ct,wait_any_ct,recv_ct,send_ct;
+extern double irecv_len,isend_len,recv_len,send_len;
+extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
 
 #define TypeSize(buff,count,type) \
 { \
   if (type == MPIU_SCALAR) { \
-    buff += count*sizeof(Scalar); \
+    buff += (double) count*sizeof(Scalar); \
   } else if (type == MPI_INT) { \
-    buff += count*sizeof(int); \
+    buff += (double) count*sizeof(int);  \
   } else { \
-    int _size; MPI_Type_size(type,&_size); buff += count*_size; \
+    int _size; MPI_Type_size(type,&_size); buff += (double) count*_size; \
   } \
 }
-
 
 #define MPI_Irecv( buf, count,  datatype, source, tag, comm, request) \
 { \
   MPI_Irecv( buf, count,  datatype, source, tag, comm, request); \
-  irecv_ct++; TypeSize(irecv_len,count,datatype); \
+  irecv_ct++; TypeSize(irecv_len,count,datatype);  \
 }
 
 #define MPI_Recv( buf, count,  datatype, source, tag, comm, status) \
 { \
   MPI_Recv( buf, count,  datatype, source, tag, comm, status); \
-  irecv_ct++; TypeSize(irecv_len,count,datatype); \
+  recv_ct++; TypeSize(recv_len,count,datatype); \
 }
 
 #define MPI_Isend( buf, count,  datatype, dest, tag, comm, request) \
 { \
   MPI_Isend( buf, count,  datatype, dest, tag, comm, request); \
-  isend_ct++;  TypeSize(irecv_len,count,datatype); \
+  isend_ct++;  TypeSize(isend_len,count,datatype); \
 }
 
 #define MPI_Send( buf, count,  datatype, dest, tag, comm) \
 { \
   MPI_Send( buf, count,  datatype, dest, tag, comm); \
-  isend_ct++;  TypeSize(irecv_len,count,datatype); \
+  send_ct++;  TypeSize(send_len,count,datatype); \
 }
-
 
 #define MPI_Wait(request, status) \
 ( \
-  wait_ct++, \
+  wait_ct++, sum_of_waits_ct++,\
   MPI_Wait(request, status)  \
 )
 
 #define MPI_Waitany(a, b, c, d) \
 ( \
-  wait_any_ct++, \
+  wait_any_ct++,sum_of_waits_ct++,  \
   MPI_Waitany(a, b, c, d)\
 )
 
 #define MPI_Waitall(count, array_of_requests, array_of_statuses) \
 ( \
-  wait_all_ct++, \
+  wait_all_ct++, sum_of_waits_ct += (double) count,\
   MPI_Waitall(count, array_of_requests, array_of_statuses) \
 )
 
@@ -295,6 +294,7 @@ extern int PLogMPEDump(char *);
 #define _PLE                          0
 #define _PHC                          0
 #define _PHD                          0
+#define PetscGetFlops                 0.0
 #define PLogEventBegin(e,o1,o2,o3,o4)
 #define PLogEventEnd(e,o1,o2,o3,o4)
 #define PLogObjectParent(p,c)
@@ -314,7 +314,6 @@ extern int PLogMPEDump(char *);
 #define PLogMPEBegin()
 #define PLogMPEDump(a)
 extern int PLogObjectState(PetscObject,char *,...);
-
 #endif
 
 /*MC
@@ -420,6 +419,7 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 
 .keywords: log, event, end
 M*/
+
 
 #endif
 
