@@ -282,3 +282,4 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering(Mat A,Mat *B)
   C->preallocated = PETSC_TRUE;  
   PetscLogFlops(1.3333*343*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
+}
