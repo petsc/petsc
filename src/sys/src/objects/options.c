@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.85 1996/05/07 14:28:16 balay Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.86 1996/05/07 15:11:43 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -156,7 +156,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
     int rank,size;
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     MPI_Comm_size(MPI_COMM_WORLD,&size);
-    PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",rank,size);
+    PLogInfo(0,"PETSc successfully started: procs %d\n",rank,size);
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (help && flg) {
@@ -279,7 +279,7 @@ int PetscFinalize()
   }
   if (PetscBeganMPI) {
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-    PLogInfo(0,"[%d] PETSc successfully ended!\n",rank);
+    PLogInfo(0,"PETSc successfully ended!\n");
     ierr = MPI_Finalize(); CHKERRQ(ierr);
   }
   return 0;
@@ -307,8 +307,10 @@ extern "C" {
   extern int malloc_debug(int);
 #endif
 
-extern int PLogAllowInfo(PetscTruth);
+extern int PLogInfoAllow(PetscTruth);
 extern int PetscSetUseTrMalloc_Private();
+
+#include "snes.h" /* so that cookies are defined */
 
 int OptionsCheckInitial_Private()
 {
@@ -317,7 +319,7 @@ int OptionsCheckInitial_Private()
   int      flg1,flg2,flg3, ierr;
 
 #if defined(PETSC_BOPT_g)
-  ierr = OptionsHasName(PETSC_NULL,"-notrmalloc", &flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-trmalloc_off", &flg1); CHKERRQ(ierr);
   if (!flg1) { ierr = PetscSetUseTrMalloc_Private(); CHKERRQ(ierr); }
 #else
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
@@ -445,8 +447,20 @@ int OptionsCheckInitial_Private()
       }
     }
   }
-  ierr = OptionsHasName(PETSC_NULL,"-info", &flg1); CHKERRQ(ierr);
-  if (flg1) { PLogAllowInfo(PETSC_TRUE);  }
+  ierr = OptionsHasName(PETSC_NULL,"-log_info", &flg1); CHKERRQ(ierr);
+  if (flg1) { 
+    char mname[256];
+    PLogInfoAllow(PETSC_TRUE); 
+    ierr = OptionsGetString(PETSC_NULL,"-log_info",mname,256, &flg1); CHKERRQ(ierr);
+    if (flg1) {
+      if (PetscStrstr(mname,"no_mat")) {
+        PLogInfoDeactivateClass(MAT_COOKIE);
+      }
+      if (PetscStrstr(mname,"no_sles")) {
+        PLogInfoDeactivateClass(SLES_COOKIE);
+      }
+    }
+  }
 #if defined (HAVE_MPE)
   ierr = OptionsHasName(PETSC_NULL,"-log_mpe", &flg1); CHKERRQ(ierr);
   if (flg1) PLogMPEBegin();
@@ -474,7 +488,7 @@ int OptionsCheckInitial_Private()
     PetscPrintf(comm,"           note on IBM RS6000 this slows run greatly\n");
     PetscPrintf(comm," -trdump: dump list of unfreed memory at conclusion\n");
     PetscPrintf(comm," -trmalloc: use our error checking malloc\n");
-    PetscPrintf(comm," -notrmalloc: don't use error checking malloc\n");
+    PetscPrintf(comm," -trmalloc_off: don't use error checking malloc\n");
     PetscPrintf(comm," -trinfo: prints total memory usage\n");
     PetscPrintf(comm," -trdebug: enables extended checking for memory corruption\n");
     PetscPrintf(comm," -optionstable: dump list of options inputted\n");
@@ -483,6 +497,7 @@ int OptionsCheckInitial_Private()
 #if defined (HAVE_MPE)
     PetscPrintf(comm," -log_mpe: Also create logfile viewable through upshot\n");
 #endif
+    PetscPrintf(comm," -log_info: print informative messages about the calculations\n");
     PetscPrintf(comm," -v: prints PETSc version number and release date\n");
     PetscPrintf(comm,"-----------------------------------------------\n");
   }
