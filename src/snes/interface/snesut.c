@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.35 1998/01/06 20:12:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.36 1998/01/14 02:44:45 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -160,8 +160,7 @@ int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *d
 
    Reference:
    S. C. Eisenstat and H. F. Walker, "Choosing the forcing terms in an 
-   inexact Newton method", Utah State University Math. Stat. Dept. Res. 
-   Report 6/94/75, June, 1994, to appear in SIAM J. Sci. Comput. 
+   inexact Newton method", SISC 17 (1), pp.16-32, 1996.
 
 .keywords: SNES, KSP, Eisenstat, Walker, convergence, test, inexact, Newton
 @*/
