@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.134 1998/04/29 15:31:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.135 1998/05/11 18:10:48 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1600,6 +1600,40 @@ int VecDestroyVecs_Default( Vec *v, int m )
   PetscFunctionReturn(0);
 }
 
+#include "src/vec/impls/dvecimpl.h"
+#undef __FUNC__  
+#define __FUNC__ "VecPlaceArray"
+/*@
+   VecPlaceArray - Allows one to replace the array in a vector with 
+   a user-provided one. This is useful to avoid copying an array
+   into a vector.  FOR EXPERTS ONLY!
+
+   Not Collective
+
+   Input Parameters:
++  vec - the vector
+-  array - the array
+
+   Notes:
+   You should back up the original array by calling VecGetArray() and 
+   stashing the value somewhere.  Then when finished using the vector,
+   call VecPlaceArray() with that stashed value; otherwise, you may
+   lose access to the original array.
+
+.seealso: VecGetArray(), VecRestoreArray()
+
+.keywords: vec, place, array
+@*/
+int VecPlaceArray(Vec vec,Scalar *array)
+{
+  Vec_Seq *xin = (Vec_Seq *) vec->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  if (vec->type != VECSEQ && vec->type != VECMPI) SETERRQ(PETSC_ERR_SUP,0,"");
+  xin->array = array;
+  PetscFunctionReturn(0);
+}
 
 /*MC
     VecDuplicateVecsF90 - Creates several vectors of the same type as an existing vector

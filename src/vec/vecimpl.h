@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.45 1998/03/12 23:15:13 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.46 1998/04/03 23:12:51 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -44,7 +44,8 @@ struct _VecOps {
        (*setoption)(Vec,VecOption),
        (*setvaluesblocked)(Vec,int,int*,Scalar*,InsertMode),
        (*destroy)(Vec),
-       (*view)(Vec,Viewer);
+       (*view)(Vec,Viewer),
+       (*placearray)(Vec,Scalar**);       /* place data array */
 };
 
 struct _p_Vec {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.39 1998/04/13 17:26:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: vinv.c,v 1.40 1998/04/27 14:31:38 curfman Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -137,40 +137,6 @@ int VecAbs(Vec v)
   PetscFunctionReturn(0);
 }
 
-#include "src/vec/impls/dvecimpl.h"
-#undef __FUNC__  
-#define __FUNC__ "VecPlaceArray"
-/*@
-   VecPlaceArray - Allows one to replace the array in a vector with 
-   a user-provided one. This is useful to avoid copying an array
-   into a vector.  FOR EXPERTS ONLY!
-
-   Not Collective
-
-   Input Parameters:
-+  vec - the vector
--  array - the array
-
-   Notes:
-   You should back up the original array by calling VecGetArray() and 
-   stashing the value somewhere.  Then when finished using the vector,
-   call VecPlaceArray() with that stashed value; otherwise, you may
-   lose access to the original array.
-
-.seealso: VecGetArray(), VecRestoreArray()
-
-.keywords: vec, place, array
-@*/
-int VecPlaceArray(Vec vec,Scalar *array)
-{
-  Vec_Seq *xin = (Vec_Seq *) vec->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(vec,VEC_COOKIE);
-  if (vec->type != VECSEQ && vec->type != VECMPI) SETERRQ(PETSC_ERR_SUP,0,"");
-  xin->array = array;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNC__  
 #define __FUNC__ "VecEqual"
