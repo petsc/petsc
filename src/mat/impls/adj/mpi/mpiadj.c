@@ -413,12 +413,12 @@ int MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
     call from Fortran you need not create the arrays with PetscMalloc().
    Should not include the matrix diagonals.
 
-   If you already have a matrix, you can create the adjacency matrix by a call
+   If you already have a matrix, you can create its adjacency matrix by a call
    to MatConvert, specifying a type of MATMPIADJ.
 
    Possible values for MatSetOption() - MAT_STRUCTURALLY_SYMMETRIC
 
-.seealso: MatCreate(), MatCreateSeqAdj(), MatGetOrdering()
+.seealso: MatCreate(), MatConvert(), MatGetOrdering()
 @*/
 int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
 {
