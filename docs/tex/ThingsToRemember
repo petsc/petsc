@@ -1,11 +1,16 @@
 
 
-WWW info:
+PETSc Users Mailing list info:
 
-  Perl script for WWW e-mail interface is located in:
-        charlotte:/www/ncsa_httpd/cgi-bin/petsc/mailpetsc
+  Perl script for WWW petsc-users subscription is located in:
+        charlotte:/www/ncsa_httpd/cgi-bin/petsc/subscribe-to-petsc-users
             (MUST access from charlotte)
-
-  To add e-mail to petsc.html, just click add hyperlink to email.html
+  To add this to petsc.html, just add hyperlink to petsc-users.html
 
   petsc-users mailing list password is bsbglmdk
+
+General WWW info:
+
+  email.html (and charlotte:/www/ncsa_httpd/cgi-bin/petsc/petscmail)
+     contains the (unused) WWW interface for petsc-maint.
+
