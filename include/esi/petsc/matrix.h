@@ -54,7 +54,7 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
     virtual esi::ErrorCode isLoaded(bool &state);
     virtual esi::ErrorCode isAllocated(bool &state);
     virtual esi::ErrorCode loadComplete(void);
-    virtual esi::ErrorCode allocate(int rowLengths[]);
+    virtual esi::ErrorCode allocate(Ordinal *rowLengths);
     virtual esi::ErrorCode getDiagonal(esi::Vector<Scalar,Ordinal>& diagVector) ;
     virtual esi::ErrorCode getRowSum(esi::Vector<Scalar,Ordinal>& rowSumVector) ;
     virtual esi::ErrorCode getRowNonzeros(Ordinal row, Ordinal& length);
