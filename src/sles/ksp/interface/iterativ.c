@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.86 1999/05/11 19:15:40 bsmith Exp balay $";
+static char vcid[] = "$Id: iterativ.c,v 1.87 1999/06/30 23:53:21 balay Exp balay $";
 #endif
 
 /*
@@ -60,7 +60,7 @@ int KSPGetResidualNorm(KSP ksp,double *rnorm)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGetIterationNumber"
-/*@C
+/*@
    KSPGetIterationNumber - Gets the current iteration number (if the 
          KSPSolve() (SLESSolve()) is complete, returns the number of iterations
          used.
