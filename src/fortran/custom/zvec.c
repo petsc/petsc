@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.41 1998/07/15 19:47:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.42 1998/07/23 22:18:42 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -35,9 +35,10 @@ static char vcid[] = "$Id: zvec.c,v 1.41 1998/07/15 19:47:54 bsmith Exp bsmith $
 #define vecgetmap_             VECGETMAP
 #define vecghostgetlocalform_     VECGHOSTGETLOCALFORM
 #define vecghostrestorelocalform_ VECGHOSTRESTORELOCALFORM
-#define veccreateghostwitharray_            VECCREATEGHOSTWITHARRAY
-#define veccreateghost_                     VECCREATEGHOST
+#define veccreateghostwitharray_  VECCREATEGHOSTWITHARRAY
+#define veccreateghost_           VECCREATEGHOST
 #define vecstridenorm_            VECSTRIDENORM
+#define vecmax_                   VECMAX
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define vecstridenorm_            vecstridenorm
 #define vecghostrestorelocalform_ vecghostrestorelocalform
@@ -72,6 +73,7 @@ static char vcid[] = "$Id: zvec.c,v 1.41 1998/07/15 19:47:54 bsmith Exp bsmith $
 #define vecload_               vecload
 #define vecgettype_            vecgettype
 #define vecduplicatevecs_      vecduplicatevecs
+#define vecmax_                vecmax
 #endif
 
 #if defined(__cplusplus)
@@ -287,6 +289,11 @@ void vecghostgetlocalform_(Vec *g,Vec *l, int *__ierr )
 void vecghostrestorelocalform_(Vec *g,Vec *l, int *__ierr )
 {
   *__ierr = VecGhostRestoreLocalForm(*g,l);
+}
+
+void vecmax_(Vec x,int *p,double *val, int *__ierr ){
+  if (FORTRANNULLINTEGER(p)) p = PETSC_NULL;
+  *__ierr = VecMax((Vec)PetscToPointer( (x) ),p,val);
 }
 
 #if defined(__cplusplus)

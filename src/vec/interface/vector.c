@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.146 1998/07/24 00:54:53 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.147 1998/07/24 01:01:06 curfman Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -165,7 +165,7 @@ int VecNorm(Vec x,NormType type,double *val)
 
 #undef __FUNC__  
 #define __FUNC__ "VecMax"
-/*@
+/*@C
    VecMax - Determines the maximum vector component and its location.
 
    Collective on Vec
