@@ -7,11 +7,6 @@
 #include "src/mat/utils/freespace.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ for reusing symbolic mat product */
-  IS     isrowa,isrowb,iscolb;
-  Mat    *aseq,*bseq,C_seq;
-} Mat_MatMatMultMPI;
-
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult"
 /*@
@@ -193,12 +188,15 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
 #define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ"
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
-  Mat_MPIAIJ        *a = (Mat_MPIAIJ*)A->data;
-  PetscErrorCode ierr;
-  int               *idx,i,start,end,ncols,imark,nzA,nzB,*cmap;
+  Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*b=(Mat_MPIAIJ*)B->data;
+  PetscErrorCode    ierr;
+  int               *idx,i,start,end,ncols,nzA,nzB,*cmap;
   Mat_MatMatMultMPI *mult;
  
   PetscFunctionBegin;
+  if (a->cstart != b->rstart || a->cend != b->rend){
+    SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%d, %d) != (%d,%d)",a->cstart,a->cend,b->rstart,b->rend);
+  }
   ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
 
   /* create a seq matrix B_seq = submatrix of B by taking rows of B that equal to nonzero col of A */
@@ -212,13 +210,13 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
     if (cmap[i] < start) idx[ncols++] = cmap[i];
     else break;
   }
-  imark = i;
+  mult->brstart = i;
   for (i=0; i<nzA; i++) idx[ncols++] = start + i;
-  for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i];
+  for (i=mult->brstart; i<nzB; i++) idx[ncols++] = cmap[i];
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,&mult->isrowb);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr); 
   ierr = ISCreateStride(PETSC_COMM_SELF,B->N,0,1,&mult->iscolb);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(B,1,&mult->isrowb,&mult->iscolb,MAT_INITIAL_MATRIX,&mult->bseq);CHKERRQ(ierr)
+  ierr = MatGetSubMatrices(B,1,&mult->isrowb,&mult->iscolb,MAT_INITIAL_MATRIX,&mult->bseq);CHKERRQ(ierr);
  
   /*  create a seq matrix A_seq = submatrix of A by taking all local rows of A */
   start = a->rstart; end = a->rend;

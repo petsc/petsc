@@ -43,6 +43,12 @@ typedef struct {
 
 } Mat_MPIAIJ;
 
+typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ for reusing symbolic mat product */
+  IS     isrowa,isrowb,iscolb;
+  Mat    *aseq,*bseq,C_seq; /* A_seq=aseq[0], B_seq=bseq[0] */
+  int    brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
+} Mat_MatMatMultMPI;
+
 EXTERN PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
 EXTERN PetscErrorCode MatSetValuesAdic_MPIAIJ(Mat,void*);
 EXTERN PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat,int,void*);
@@ -57,6 +63,9 @@ EXTERN PetscErrorCode MatLoad_MPIAIJ(PetscViewer,const MatType,Mat*);
 EXTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
+EXTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
+EXTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatSetValues_MPIAIJ(Mat,int,const int[],int,const int[],const PetscScalar [],InsertMode);
 
 

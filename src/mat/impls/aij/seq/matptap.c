@@ -70,6 +70,71 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) {
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatPtAP_MPIAIJ_MPIAIJ"
+PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode    ierr;
+  Mat               C_mpi,AP_seq,P_seq,P_subseq,*psubseq;
+  Mat_MPIAIJ        *p = (Mat_MPIAIJ*)P->data;
+  Mat_MatMatMultMPI *mult;
+  int               i,prow,prstart,prend,m=P->m,pncols;
+  const int         *pcols;
+  const PetscScalar *pvals;
+  int               rank;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
+  
+  ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(A,P,fill,&C_mpi);CHKERRQ(ierr);
+  mult = (Mat_MatMatMultMPI*)C_mpi->spptr;
+  P_seq   = mult->bseq[0];
+  AP_seq  = mult->C_seq;
+  prstart = mult->brstart;
+  prend   = prstart + m;
+  ierr = PetscPrintf(PETSC_COMM_SELF," [%d] prstart: %d, prend: %d, dim of P_seq: %d, %d\n",rank,prstart,prend,P_seq->m,P_seq->n);
+
+  /* get seq matrix P_subseq by taking local rows of P */
+  IS  isrow,iscol;
+  ierr = ISCreateStride(PETSC_COMM_SELF,m,prstart,1,&isrow);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,P_seq->n,0,1,&iscol);CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(P_seq,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&psubseq);CHKERRQ(ierr); 
+  P_subseq = psubseq[0];
+  ierr = PetscPrintf(PETSC_COMM_SELF," [%d] dim of P_subseq: %d, %d\n",rank,P_subseq->m,P_subseq->n);
+
+  /* Compute P_subseq^T*C_seq using outer product (P_loc^T)[:,i]*C_seq[i,:]. */
+  for (i=0;i<m;i++) {
+    prow = prstart + i;
+    ierr = MatGetRow(P_seq,prow,&pncols,&pcols,&pvals);CHKERRQ(ierr);
+    ierr = MatRestoreRow(P_seq,prow,&pncols,&pcols,&pvals);CHKERRQ(ierr);
+  }
+
+  *C = C_mpi; /* to be removed! */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ"
+PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  Mat_MPIAIJ        *a = (Mat_MPIAIJ*)A->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ"
+PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
+{
+  Mat_MPIAIJ        *a = (Mat_MPIAIJ*)A->data;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatPtAP_SeqAIJ_SeqAIJ"
 PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
 {
