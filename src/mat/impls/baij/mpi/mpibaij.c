@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.204 2000/10/12 16:15:29 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.205 2000/10/24 20:25:55 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -1981,14 +1981,6 @@ int MatCreate_MPIBAIJ(Mat B)
   ierr = MPI_Comm_rank(B->comm,&b->rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(B->comm,&b->size);CHKERRQ(ierr);
 
-  ierr = PetscSplitOwnership(B->comm,&B->m,&B->M);CHKERRQ(ierr);
-  ierr = PetscSplitOwnership(B->comm,&B->n,&B->N);CHKERRQ(ierr);
-
-  /* the information in the maps duplicates the information computed below, eventually 
-     we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
-
   /* build local table of row and column ownerships */
   b->rowners = (int*)PetscMalloc(3*(b->size+2)*sizeof(int));CHKPTRQ(b->rowners);
   PLogObjectMemory(B,3*(b->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIBAIJ));
@@ -2139,6 +2131,7 @@ int MatMPIBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)B,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
   if (!flg2) PetscFunctionReturn(0);
+
   B->preallocated = PETSC_TRUE;
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
 
@@ -2146,7 +2139,7 @@ int MatMPIBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_
   if (d_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than -1: value %d",d_nz);
   if (o_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than -1: value %d",o_nz);
   if (d_nnz) {
-    for (i=0; i<B->m/bs; i++) {
+  for (i=0; i<B->m/bs; i++) {
       if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than -1: local row %d value %d",i,d_nnz[i]);
     }
   }
@@ -2155,6 +2148,11 @@ int MatMPIBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_
       if (o_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than -1: local row %d value %d",i,o_nnz[i]);
     }
   }
+  
+  ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->m,&B->M);CHKERRQ(ierr);
+  ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->n,&B->N);CHKERRQ(ierr);
+  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
 
   b = (Mat_MPIBAIJ*)B->data;
   b->bs  = bs;
@@ -2221,14 +2219,14 @@ int MatMPIBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_
            x vector for the matrix-vector product y = Ax.
 .  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
-.  d_nz  - number of block nonzeros per block row in diagonal portion of local 
+.  d_nz  - number of nonzero blocks per block row in diagonal portion of local 
            submatrix  (same for all local rows)
-.  d_nnz - array containing the number of block nonzeros in the various block rows 
+.  d_nnz - array containing the number of nonzero blocks in the various block rows 
            of the in diagonal portion of the local (possibly different for each block
            row) or PETSC_NULL.  You must leave room for the diagonal entry even if it is zero.
-.  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
+.  o_nz  - number of nonzero blocks per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
--  o_nnz - array containing the number of nonzeros in the various block rows of the
+-  o_nnz - array containing the number of nonzero blocks in the various block rows of the
            off-diagonal portion of the local submatrix (possibly different for
            each block row) or PETSC_NULL.
 
@@ -2241,6 +2239,8 @@ int MatMPIBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_
 .   -mat_block_size - size of the blocks to use
 
    Notes:
+   A nonzero block is any block that as 1 or more nonzeros in it
+
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 
@@ -2548,7 +2548,7 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
   }
 
   /* create our matrix */
-  ierr = MatCreateMPIBAIJ(comm,bs,m,PETSC_DECIDE,M+extra_rows,N+extra_rows,0,dlens,0,odlens,newmat);CHKERRQ(ierr);
+  ierr = MatCreateMPIBAIJ(comm,bs,m,m,M+extra_rows,N+extra_rows,0,dlens,0,odlens,newmat);CHKERRQ(ierr);
   A = *newmat;
   MatSetOption(A,MAT_COLUMNS_SORTED); 
   
