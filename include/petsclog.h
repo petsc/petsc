@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.12 1995/08/14 16:12:14 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.13 1995/08/15 20:29:32 bsmith Exp curfman $ */
 
 /*
     Defines high level logging in Petsc.
@@ -9,12 +9,12 @@
 #include "petsc.h"  
 
 /*
-    If you add it here, make sure you add to petsc/bin/tkreview!
-  and in src/sys/src/plog.c
+  If you add it here, make sure you add to petsc/bin/petscsim.cfg
+  and src/sys/src/plog.c!!
 */
 #define MAT_Mult                                0
-#define MAT_BeginAssembly                       1
-#define MAT_EndAssembly                         2
+#define MAT_AssemblyBegin                       1
+#define MAT_AssemblyEnd                         2
 #define MAT_GetReordering                       3
 #define MAT_MultTrans                           4
 #define MAT_MultAdd                             5
@@ -54,8 +54,8 @@
 #define VEC_AYPX                                41
 #define VEC_Swap                                42
 #define VEC_WAXPY                               43
-#define VEC_BeginAssembly                       44
-#define VEC_EndAssembly                         45
+#define VEC_AssemblyBegin                       44
+#define VEC_AssemblyEnd                         45
 #define VEC_MTDot                               46
 #define VEC_MDot                                47
 #define VEC_MAXPY                               48
