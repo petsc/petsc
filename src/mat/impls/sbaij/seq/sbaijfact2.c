@@ -1313,59 +1313,13 @@ int MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
   PetscFunctionReturn(0);
 }
 
-
 /*
       Special case where the matrix was ILU(0) factored in the natural
    ordering. This eliminates the need for the column and row permutation.
-   Note: matrix fact in MatSolve_xxx_inplace(fact, ) uses the same matrix
-         structure as the coefficient mat A, while in MatSolve_xxx() (outplace),
-         fact uses Modified Sparse Row storage for u and ju, see Saad pp.85 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering"
 int MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
-{
-  Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ *)A->data;
-  int             mbs=a->mbs,*ai=a->i,*aj=a->j,ierr;
-  MatScalar       *aa=a->a,*v;
-  PetscScalar     *x,*b,xk;
-  int             nz,*vj,k;
-
-  PetscFunctionBegin;
-  
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
-  
-  /* solve U^T*D*y = b by forward substitution */
-  ierr = PetscMemcpy(x,b,mbs*sizeof(PetscScalar));CHKERRQ(ierr);
-  for (k=0; k<mbs; k++){
-    v  = aa + ai[k]; 
-    vj = aj + ai[k];    
-    xk = x[k];
-    nz = ai[k+1] - ai[k];     
-    while (nz--) x[*vj++] += (*v++) * xk;
-    x[k] = xk*aa[k];  /* note: aa[k] = 1/D(k) */
-  }
-
-  /* solve U*x = y by back substitution */ 
-  for (k=mbs-2; k>=0; k--){ 
-    v  = aa + ai[k]; 
-    vj = aj + ai[k]; 
-    xk = x[k];   
-    nz = ai[k+1] - ai[k];    
-    while (nz--) xk += (*v++) * x[*vj++];    
-    x[k] = xk;      
-  }
-
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  PetscLogFlops(4*a->s_nz + A->m);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace"
-int MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ *)A->data;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j,ierr;
@@ -1430,13 +1384,13 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
     b               = (Mat_SeqSBAIJ*)(*B)->data;  
     b->row          = perm;
     b->icol         = perm;   
-    b->lu_damping   = info->damping;
-    b->lu_zeropivot = info->zeropivot;
+    b->factor_damping   = info->damping;
+    b->factor_zeropivot = info->zeropivot;
     ierr         = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
     ierr         = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
     ierr         = PetscMalloc(((*B)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-    (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace;
-    (*B)->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;    
+    (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
+    (*B)->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering;    
     PetscFunctionReturn(0);
   }
 
@@ -1609,9 +1563,9 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */
   PetscLogObjectMemory(*B,(iu[mbs]-mbs)*(sizeof(int)+sizeof(MatScalar)));
-  b->s_maxnz      = b->s_nz = iu[mbs];
-  b->lu_damping   = info->damping; 
-  b->lu_zeropivot = info->zeropivot; 
+  b->s_maxnz          = b->s_nz = iu[mbs];
+  b->factor_damping   = info->damping; 
+  b->factor_zeropivot = info->zeropivot; 
 
   (*B)->factor                 = FACTOR_CHOLESKY;
   (*B)->info.factor_mallocs    = realloc;
@@ -1623,8 +1577,8 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
   }
 
 
-  (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace;
-  (*B)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+  (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
+  (*B)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
   PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=1\n");
   
   PetscFunctionReturn(0); 
