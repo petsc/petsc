@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.55 2001/06/22 19:34:59 buschelm Exp bsmith $*/
+/*$Id: baijfact2.c,v 1.56 2001/07/06 14:28:34 bsmith Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2649,12 +2649,14 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
         break; 
       case 4:
 #if defined(PETSC_HAVE_SSE)
-        PetscTruth sse_enabled;
-        ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
-        if (sse_enabled) {
-          (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
-        } else {
-          (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+        {
+          PetscTruth sse_enabled;
+          ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
+          if (sse_enabled) {
+            (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
+          } else {
+            (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+          }
         }
 #else
         (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;

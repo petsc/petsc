@@ -1,4 +1,4 @@
-/* $Id: iclsse.h,v 1.1 2001/06/20 20:42:11 buschelm Exp buschelm $ */
+/* $Id: iclsse.h,v 1.2 2001/07/10 23:34:43 buschelm Exp buschelm $ */
 
 #ifndef __ICL_SSE_H_
 #define __ICL_SSE_H_
@@ -16,7 +16,7 @@
 #define SSE_INLINE_BEGIN_2(arg1,arg2)      { float *_tmp_arg1, *_tmp_arg2; _tmp_arg1=arg1; _tmp_arg2=arg2;
 #define SSE_INLINE_END_2                   }
 #define SSE_INLINE_BEGIN_3(arg1,arg2,arg3) { float *_tmp_arg1, *_tmp_arg2, *_tmp_arg3; \
-                                             _tmp_arg1=arg1; _tmp_arg2=arg2; _tmparg3=arg3;
+                                             _tmp_arg1=arg1; _tmp_arg2=arg2; _tmp_arg3=arg3;
 #define SSE_INLINE_END_3                   }
 
 #define SSE_ARG_1 _tmp_arg1
@@ -95,7 +95,7 @@
 #define SSE_LOADU_PS(arg,offset,dstreg)   LOADU_PS(&arg[offset],dstreg);
 
 /* Shuffle */
-#define SSE_SHUFFLE(dstreg,srcreg,imm)    SHUFFLE(dstreg,srcreg,i);
+#define SSE_SHUFFLE(dstreg,srcreg,imm)    SHUFFLE(dstreg,srcreg,imm);
 
 /* Multiply: A:=A*B */
 #define SSE_MULT_SS(dstreg,srcreg)        MULT_SS(dstreg,srcreg);
@@ -168,12 +168,17 @@
 /* Double_4/Float_4 Conversions */
 #define CONVERT_FLOAT4_DOUBLE4(dst,src)   { double *_tmp_double_ptr; float *_tmp_float_ptr; \
                                             _tmp_double_ptr = dst; _tmp_float_ptr = src; \
-                                            dst[0]=(double)src[0];dst[1]=(double)src[1]; \
-                                            dst[2]=(double)src[2];dst[3]=(double)src[3]; }
+                                            _tmp_double_ptr[0]=(double)_tmp_float_ptr[0]; \
+                                            _tmp_double_ptr[1]=(double)_tmp_float_ptr[1]; \
+                                            _tmp_double_ptr[2]=(double)_tmp_float_ptr[2]; \
+                                            _tmp_double_ptr[3]=(double)_tmp_float_ptr[3]; }
+
 #define CONVERT_DOUBLE4_FLOAT4(dst,src)   { double *_tmp_double_ptr; float *_tmp_float_ptr; \
                                             _tmp_double_ptr = src; _tmp_float_ptr = dst; \
-                                            dst[0]=(float)src[0];dst[1]=(float)src[1]; \
-                                            dst[2]=(float)src[2];dst[3]=(float)src[3]; }
+                                            _tmp_float_ptr[0]=(float)_tmp_double_ptr[0]; \
+                                            _tmp_float_ptr[1]=(float)_tmp_double_ptr[1]; \
+                                            _tmp_float_ptr[2]=(float)_tmp_double_ptr[2]; \
+                                            _tmp_float_ptr[3]=(float)_tmp_double_ptr[3]; }
 
 /* Aligned Malloc */
 #define SSE_MALLOC(var,size)              { void *_tmp_void_ptr = *var; size_t _tmp_size; _tmp_size = size; \
