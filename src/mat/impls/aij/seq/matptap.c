@@ -136,12 +136,8 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
     } else {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
     } 
-    
-    /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
+    /* update P_oth */
     ierr = MatGetBrowsOfAoCols(A,P,scall,&ptap->isrowb,&ptap->iscolb,&ptap->brstart,&ptap->B_oth);CHKERRQ(ierr);
-  
-    /* get P_loc by taking all local rows of P */
-    ierr = MatGetLocalMat(P,scall,&ptap->B_loc);CHKERRQ(ierr);
 
   } else {
     SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",scall);
@@ -188,21 +184,20 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   Mat_Merge_SeqsToMPI  *merge; 
   Mat_MatMatMultMPI    *ptap;
   PetscObjectContainer cont_merge,cont_ptap;
-
-  PetscInt       flops=0;
-  Mat_MPIAIJ     *a=(Mat_MPIAIJ*)A->data,*c=(Mat_MPIAIJ*)C->data;
-  Mat_SeqAIJ     *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
-  Mat_SeqAIJ     *cd=(Mat_SeqAIJ*)(c->A)->data,*co=(Mat_SeqAIJ*)(c->B)->data;
-  Mat            C_seq;
-  Mat_SeqAIJ     *p_loc,*p_oth; 
-  PetscInt       *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,*apj,*apjdense,cstart=a->cstart,cend=a->cend,col;
-  PetscInt       *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pJ,*pjj;
-  PetscInt       i,j,k,nzi,pnzi,apnzj,nextap,pnzj,prow,crow;
-  PetscInt       *cjj;
-  MatScalar      *ada=ad->a,*aoa=ao->a,*apa,*paj,*cseqa,*caj; 
-  MatScalar      *pa_loc,*pA,*pa_oth;
-  PetscInt       am=A->m,cN=C->N,cm=C->m; 
-
+  PetscInt             flops=0;
+  Mat_MPIAIJ           *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
+  Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data,
+                       *pd=(Mat_SeqAIJ*)(p->A)->data,*po=(Mat_SeqAIJ*)(p->B)->data,
+                       *cd=(Mat_SeqAIJ*)(c->A)->data,*co=(Mat_SeqAIJ*)(c->B)->data;
+  Mat                  C_seq;
+  Mat_SeqAIJ           *cseq,*p_oth; 
+  PetscInt             *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,*apj,*apjdense,cstart=a->cstart,cend=a->cend;
+  PetscInt             *pi_oth,*pj_oth,*pJ_d=pd->j,*pJ_o=po->j,*pjj;
+  PetscInt             i,j,k,nzi,pnzi,apnzj,nextap,pnzj,prow,crow;
+  PetscInt             *cjj;
+  MatScalar            *ada=ad->a,*aoa=ao->a,*apa,*paj,*cseqa,*caj; 
+  MatScalar            *pA_d=pd->a,*pA_o=po->a,*pa_oth;
+  PetscInt             am=A->m,cN=C->N,cm=C->m; 
   MPI_Comm             comm=C->comm;
   PetscMPIInt          size,rank,taga,*len_s;
   PetscInt             *owners; 
@@ -212,10 +207,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscInt             nrows,**buf_ri_k,**nextrow,**nextcseqi;
   MPI_Request          *s_waits,*r_waits; 
   MPI_Status           *status;
-  MatScalar            **abuf_r,*ba_i;
-  Mat_SeqAIJ           *cseq;
-  PetscInt             *cseqi,*cseqj;
-  MatScalar            *ca;
+  MatScalar            **abuf_r,*ba_i,*ca;
+  PetscInt             *cseqi,*cseqj,col;
+ 
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)C,"MatMergeSeqsToMPI",(PetscObject *)&cont_merge);CHKERRQ(ierr);
@@ -230,14 +224,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   } else {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
   } 
-#ifdef OLD
-  ierr = MatPtAPNumeric_MPIAIJ_MPIAIJ_Local(A,ptap->B_loc,ptap->B_oth,ptap->brstart,merge->C_seq);CHKERRQ(ierr);
-#endif /* OLD */
-   /*--------------------------------------------------------------*/
 
-  p_loc=(Mat_SeqAIJ*)(ptap->B_loc)->data;
   p_oth=(Mat_SeqAIJ*)(ptap->B_oth)->data;
-  pi_loc=p_loc->i; pj_loc=p_loc->j; pJ=pj_loc; pa_loc=p_loc->a; pA=pa_loc; 
   pi_oth=p_oth->i; pj_oth=p_oth->j; pa_oth=p_oth->a;
 
   C_seq=merge->C_seq;
@@ -270,33 +258,40 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     /* diagonal portion of A */
     nzi  = adi[i+1] - adi[i];
     for (j=0;j<nzi;j++) {
-      prow = *adj; 
-      adj++;
-      pnzj = pi_loc[prow+1] - pi_loc[prow];
-      pjj  = pj_loc + pi_loc[prow];
-      paj  = pa_loc + pi_loc[prow];
+      prow = *adj++; 
+      /* diagonal portion of P */
+      pnzj = pd->i[prow+1] - pd->i[prow];
+      pjj  = pd->j + pd->i[prow]; /* local col index of P */
+      paj  = pd->a + pd->i[prow];
       for (k=0;k<pnzj;k++) {
-        if (!apjdense[pjj[k]]) {
-          apjdense[pjj[k]] = -1; 
-          apj[apnzj++]     = pjj[k];
+        col = *pjj + p->cstart; pjj++; /* global col index of P */
+        if (!apjdense[col]) {
+          apjdense[col] = -1; 
+          apj[apnzj++]  = col;
         }
-        apa[pjj[k]] += (*ada)*paj[k];
+        apa[col] += (*ada)*paj[k];
       }
       flops += 2*pnzj;
+      /* off-diagonal portion of P */
+      pnzj = po->i[prow+1] - po->i[prow];
+      pjj  = po->j + po->i[prow]; /* local col index of P */
+      paj  = po->a + po->i[prow];
+      for (k=0;k<pnzj;k++) {
+        col = p->garray[*pjj]; pjj++; /* global col index of P */
+        if (!apjdense[col]) {
+          apjdense[col] = -1; 
+          apj[apnzj++]  = col;
+        }
+        apa[col] += (*ada)*paj[k];
+      }
+      flops += 2*pnzj;
+      
       ada++;
     }
     /* off-diagonal portion of A */
     nzi  = aoi[i+1] - aoi[i];
     for (j=0;j<nzi;j++) {
-      col = a->garray[*aoj];
-      if (col < cstart){
-        prow = *aoj;
-      } else if (col >= cend){
-        prow = *aoj; 
-      } else {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Off-diagonal portion of A has wrong column map");
-      }
-      aoj++;
+      prow = *aoj++;
       pnzj = pi_oth[prow+1] - pi_oth[prow];
       pjj  = pj_oth + pi_oth[prow];
       paj  = pa_oth + pi_oth[prow];
@@ -314,26 +309,35 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     ierr = PetscSortInt(apnzj,apj);CHKERRQ(ierr);
 
     /* Compute P_loc[i,:]^T*AP[i,:] using outer product */
-    pnzi = pi_loc[i+1] - pi_loc[i];
+    /* diagonal portion of P */
+    pnzi = pd->i[i+1] - pd->i[i];
     for (j=0;j<pnzi;j++) {
-      crow   = *pJ++;  
+      crow = (*pJ_d++) + owners[rank]; 
       cjj    = cseqj + cseqi[crow];
       caj    = cseqa + cseqi[crow];
-      /* Perform sparse axpy operation.  Note cjj includes apj. */
-      if (crow >= owners[rank] && crow < owners[rank+1]){ /* add value into mpi C */
-        for (k=0; k<apnzj; k++) ca[k] = (*pA)*apa[apj[k]];
-        ierr = MatSetValues(C,1,&crow,apnzj,apj,ca,ADD_VALUES);CHKERRQ(ierr);
-        ierr = PetscMemzero(ca,apnzj*(sizeof(MatScalar)));CHKERRQ(ierr);
-      } else { /* add value into C_seq to be sent to other processors */
-        nextap = 0;
-        for (k=0;nextap<apnzj;k++) {
-          if (cjj[k]==apj[nextap]) {
-            caj[k] += (*pA)*apa[apj[nextap++]];
-          }
+      /* add value into C */
+      for (k=0; k<apnzj; k++) ca[k] = (*pA_d)*apa[apj[k]];
+      ierr = MatSetValues(C,1,&crow,apnzj,apj,ca,ADD_VALUES);CHKERRQ(ierr);
+      ierr = PetscMemzero(ca,apnzj*(sizeof(MatScalar)));CHKERRQ(ierr);
+      pA_d++;
+      flops += 2*apnzj;
+    }
+
+    /* off-diagonal portion of P */
+    pnzi = po->i[i+1] - po->i[i];
+    for (j=0;j<pnzi;j++) {
+      crow   = p->garray[*pJ_o++]; 
+      cjj    = cseqj + cseqi[crow];
+      caj    = cseqa + cseqi[crow];
+      /* add value into C_seq to be sent to other processors */
+      nextap = 0;
+      for (k=0;nextap<apnzj;k++) {
+        if (cjj[k]==apj[nextap]) {
+          caj[k] += (*pA_o)*apa[apj[nextap++]];
         }
       }
       flops += 2*apnzj;
-      pA++;
+      pA_o++;
     }
 
     /* Zero the current row info for A*P */
@@ -349,9 +353,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = PetscFree(apa);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   
-#ifdef OLD1
-  ierr = MatMerge_SeqsToMPINumeric(merge->C_seq,C);CHKERRQ(ierr); 
-#endif /* OLD1 */
   /*--------------------------------------------------------------*/
   /* send and recv matrix values */
   /*-----------------------------*/
@@ -419,6 +420,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       /* if (rank==1) printf(" [%d] set %d values on C, row: %d\n",rank,bnzi,crow); */
       ierr = MatSetValues(C,1,&crow,bnzi,bj_i,ba_i,ADD_VALUES);CHKERRQ(ierr);
       ierr = PetscMemzero(ba_i,bnzi*sizeof(MatScalar));CHKERRQ(ierr);
+      flops += 2*nzi;
     }
   } 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
