@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.70 1998/04/20 19:30:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.71 1998/04/27 18:13:34 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */
@@ -42,10 +42,6 @@ int main(int argc,char **args)
   int         i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its, flg;
   Scalar      v, one = 1.0, neg_one = -1.0;
   KSP         ksp;
-
-  /* These variables are currently unused */
-  /* PC          pc; */      /* preconditioner context */
-  /* KSP         ksp; */      /* Krylov subspace method context */
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
