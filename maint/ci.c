@@ -35,8 +35,6 @@ int main(int argc, char **argv)
   }
 
 
-
-
   strcpy(command,"cd ");
   strcat(command, path );
   strcat(command,"; /usr/local/bin/ci ");
