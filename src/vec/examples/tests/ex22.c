@@ -1,14 +1,11 @@
-#ifndef lint
-static char vcid[] = "$Id: ex22.c,v 1.6 1996/11/27 22:51:04 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex22.c,v 1.7 1997/04/10 00:00:31 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a parallel vector.\n\n";
 
-#include "petsc.h"
-#include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {
@@ -20,17 +17,17 @@ int main(int argc,char **argv)
   VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
   /* create two vectors */
   N = size*n;
-  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,N,&y); CHKERRA(ierr);
-  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,N,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&y); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStride(PETSC_COMM_SELF,2*n,0,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,2*n,n+2,1,&is2); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&is1); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&is2); CHKERRA(ierr);
 
   value = rank+1; 
   ierr = VecSet(&value,x); CHKERRA(ierr);

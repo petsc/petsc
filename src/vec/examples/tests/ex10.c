@@ -1,35 +1,50 @@
-#ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.35 1997/04/10 00:00:31 bsmith Exp $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex10.c,v 1.1 1997/05/28 02:41:31 bsmith Exp bsmith $";
 #endif
 
-static char help[]= "Scatters from a parallel vector to a sequential vector.\n\n";
+static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
+uses block index sets\n\n";
 
 #include "petsc.h"
 #include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr, idx2[3] = {0,2,3}, idx1[3] = {0,1,2};
-  int           size,rank,i;
-  Scalar        mone = -1.0, value;
+  int           bs = 1, n = 5, ierr, ix0[3] = {5, 7, 9}, ix1[3] = {2,3,4};
+  int           size,rank,i, iy0[3] = {1,2,4}, iy1[3] = {0,1,3},flg;
+  Scalar        value;
   Vec           x,y;
-  IS            is1,is2;
-  VecScatter    ctx = 0;
+  IS            isx,isy;
+  VecScatter    ctx = 0, newctx;
 
   PetscInitialize(&argc,&argv,(char*)0,help); 
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+
+  if (size != 2) SETERRQ(1,1,"Must run with 2 processors");
+
+  ierr = OptionsGetInt(0,"-bs",&bs,&flg); CHKERRA(ierr);
+  n = bs*n;
 
   /* create two vectors */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,size*n,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,size*n,&x); CHKERRA(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx1,&is1); CHKERRA(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx2,&is2); CHKERRA(ierr);
+  for (i=0; i<3; i++ ) {
+    ix0[i] *= bs; ix1[i] *= bs; 
+    iy0[i] *= bs; iy1[i] *= bs; 
+  }
+
+  if (rank == 0) {
+    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix0,&isx); CHKERRA(ierr);
+    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy0,&isy); CHKERRA(ierr);
+  } else {
+    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix1,&isx); CHKERRA(ierr);
+    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy1,&isy); CHKERRA(ierr);
+  }
 
   /* fill local part of parallel vector */
   for ( i=n*rank; i<n*(rank+1); i++ ) {
@@ -41,19 +56,27 @@ int main(int argc,char **argv)
 
   ierr = VecView(x,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
-  ierr = VecSet(&mone,y); CHKERRA(ierr);
+  /* fill local part of parallel vector */
+  for ( i=0; i<n; i++ ) {
+    value = -(Scalar) (i + 100*rank);
+    ierr = VecSetValues(y,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);
+  }
+  ierr = VecAssemblyBegin(y); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(y); CHKERRA(ierr);
 
-  ierr = VecScatterCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
-  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx); CHKERRA(ierr);
+
+  ierr = VecScatterCreate(x,isx,y,isy,&ctx); CHKERRA(ierr);
+  ierr = VecScatterCopy(ctx,&newctx); CHKERRA(ierr);
   ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
 
-  if (!rank) {
-    PetscPrintf(PETSC_COMM_SELF,"scattered vector\n"); 
-    ierr = VecView(y,VIEWER_STDOUT_SELF); CHKERRA(ierr);
-  }
-  ierr = ISDestroy(is1); CHKERRA(ierr);
-  ierr = ISDestroy(is2); CHKERRA(ierr);
+  ierr = VecScatterBegin(y,x,INSERT_VALUES,SCATTER_REVERSE,newctx);CHKERRA(ierr);
+  ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_REVERSE,newctx); CHKERRA(ierr);
+  ierr = VecScatterDestroy(newctx); CHKERRA(ierr);
+
+  ierr = VecView(x,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+
+  ierr = ISDestroy(isx); CHKERRA(ierr);
+  ierr = ISDestroy(isy); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(y); CHKERRA(ierr);
 

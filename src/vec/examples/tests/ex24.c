@@ -1,40 +1,53 @@
-#ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.36 1997/04/10 00:00:31 bsmith Exp $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex24.c,v 1.1 1997/07/09 16:32:28 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
-This does case when we are merely selecting the local part of the\n\
-parallel vector.\n\n";
+Tests where the local part of the scatter is a copy.\n\n";
 
-#include "petsc.h"
-#include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include <math.h>
 
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr, size,rank,i;
+  int           n = 5, ierr, size,rank,i,*blks, bs = 1,flg,m = 2;
   Scalar        value;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+
+  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  OptionsGetInt(PETSC_NULL,"-bs",&bs,&flg);
+
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
   /* create two vectors */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,size*n,&x); CHKERRA(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,size*bs*n,&x); CHKERRA(ierr);
+
 
   /* create two index sets */
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,n*rank,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&is2); CHKERRA(ierr);
+  if (rank < size-1) {
+    m = n + 2; 
+  } else {
+    m = n;
+  }
+  blks = (int *) PetscMalloc( (m)*sizeof(int) ); CHKPTRA(blks);
+  blks[0] = n*rank*bs;
+  for ( i=1; i<m; i++ ) {
+    blks[i] = blks[i-1] + bs;   
+  }
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,m,blks,&is1); CHKERRA(ierr);
+  PetscFree(blks);
+
+  ierr = VecCreateSeq(PETSC_COMM_SELF,bs*m,&y); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,bs*m,0,1,&is2); CHKERRA(ierr);
 
   /* each processor inserts the entire vector */
   /* this is redundant but tests assembly */
-  for ( i=0; i<n*size; i++ ) {
+  for ( i=0; i<bs*n*size; i++ ) {
     value = (Scalar) i;
     ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);
   }
@@ -45,10 +58,13 @@ int main(int argc,char **argv)
   ierr = VecScatterCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx); CHKERRA(ierr);
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx); CHKERRA(ierr);
-  ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
+
   
-  if (!rank)
-   {printf("----\n"); VecView(y,VIEWER_STDOUT_SELF); CHKERRA(ierr);}
+  PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
+    printf("----\n"); ierr = VecView(y,VIEWER_STDOUT_SELF); CHKERRA(ierr); fflush(stdout);
+  PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
+
+  ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
 
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(y); CHKERRA(ierr);
