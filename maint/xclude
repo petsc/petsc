@@ -1,3 +1,4 @@
+petsc/src/ec
 petsc/bin/petscrun
 petsc/src/gvec/RCS
 petsc/src/gvec/interface/RCS
@@ -63,6 +64,7 @@ petsc/bmake/rs6000_impi
 petsc/bmake/rs6000_mpif
 petsc/bmake/rs6000_local
 petsc/bmake/rs6000_p4
+petsc/bmake/paragon/RCS
 petsc/src/snes/impls/trdl
 petsc/src/mat/examples/matrices
 petsc/src/grid
@@ -94,6 +96,10 @@ petsc/bmake/alpha/RCS
 petsc/bmake/freebsd/RCS
 petsc/bmake/rs6000/RCS
 petsc/bmake/sun4/RCS
+petsc/bmake/t3d/RCS
+petsc/bmake/t3e/RCS
+petsc/bmake/linux/RCS
+petsc/bmake/hpux/RCS
 petsc/docs/man/RCS
 petsc/docs/www/RCS
 petsc/src/snes/RCS
