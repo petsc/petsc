@@ -176,11 +176,10 @@
  PUBLISHER= "SIAM",
  BOOKTITLE= "Proceedings of the SIAM Workshop on Object Oriented Methods for
                 Inter-operable Scientific and Engineering Computing",
- note=     "(to appear)",
- month     = "Oct",
- year      = 1998,
+ year      = 1999,
+ pages     = "30-39"
 }
-% pages     = "31-39"
+
 
 @INPROCEEDINGS{ gropp98,
  AUTHOR=    "William Gropp",
@@ -188,8 +187,7 @@
  PUBLISHER= "SIAM",
  BOOKTITLE= "Proceedings of the SIAM Workshop on Object Oriented Methods for
                 Inter-operable Scientific and Engineering Computing",
- month     = OCT,
- year      = 1998,
+ year      = 1999,
  pages     = "21-29",
 }
 
@@ -199,11 +197,9 @@
  PUBLISHER= "SIAM",
  BOOKTITLE= "Proceedings of the SIAM Workshop on Object Oriented Methods for
                 Inter-operable Scientific and Engineering Computing",
- month     = "Oct",
- year      = 1998,
- note=     "(to appear)",
+ year      = 1999,
+ pages     = "129-137"
 }
-% pages     = "129-137",
 
 @INPROCEEDINGS{ freitag_jones_plassmann98,
  AUTHOR=    "Lori Freitag and Mark Jones and Paul Plassmann",
@@ -211,11 +207,9 @@
  PUBLISHER= "SIAM",
  BOOKTITLE= "Proceedings of the SIAM Workshop on Object Oriented Methods for
                 Inter-operable Scientific and Engineering Computing",
- month     = "Oct",
- year      = 1998,
- note=     "(to appear)",
+ year      = 1999,
+ pages     = "215-224",
 }
-% pages     = "215-224",
 
 @BOOK{templates, 
        AUTHOR = {R. Barrett and M. Berry and T. F. Chan and J. Demmel and J. Donato and J. Dongarra and V. Eijkhout
@@ -319,6 +313,15 @@
   year      = 1997,
 }
 
+@Article{cs99,
+  author    = "X.-C. Cai and M. Sarkis",
+  title     = "A restricted additive Schwarz preconditioner for general sparse linear systems",
+  journal =   SISC,
+  year      = "1999",
+  volume    = "21",
+  pages     = "792-797"
+}
+
 @TechReport( cs97a,
     AUTHOR  = "X.-C. Cai and M. Sarkis", 
     TITLE   = "A restricted additive {S}chwarz preconditioner for general sparse linear systems ",
@@ -405,13 +408,6 @@ University of Colorado-Boulder",
   key  = 	 "{ALICE} {W}eb page",
 }
 
-@Unpublished{ kelp-web-page,
-  author =       "Scott Baden", 
-  title = 	 "{KeLP} {W}eb page",
-  note = 	 "http://www-cse.ucsd.edu/groups/hpcl/scg/kelp.html",
-}
-
-
 @Article{ MPI-final, 
 	Title = "{MPI}: A Message-Passing Interface Standard",
         Journal = "International J. Supercomputing Applications",
@@ -493,13 +489,6 @@ University of Colorado-Boulder",
     Year=        "1992",
     Key=         "p4-Manual" )
 
-@inproceedings{kelp,
-    Author    =      "Stephan J. Fink and Scott B. Baden and Scott R. Kohn",
-    title= "Flexible Communication Mechanisms for Dynamic Structured Applications",
-    BOOKTITLE = "Irregular '96",
-    YEAR      = "1996"
-}
-
 @inproceedings{oldparti,
     Author    =      "Gagan Agrawal and Alan Sussman and Joel Saltz",
     Title     =       "Compiler and Runtime Support for Unstructured and Block
@@ -548,13 +537,6 @@ University of Colorado-Boulder",
         publisher = "Birkhauser"
 }
 
-@inbook{diffpack,
-    Author = "A. M. Bruaset and H. P. Langtangen",
-    Title = "A Comprehensive set of Tools for Solving Partial
-                  Differential Equations: Diffpack",
-    BOOKTITLE = "Numerical Methods and Software Tools in Industrial Mathematics",
-    Year = 1996,
-    Publisher = "Birkhauser"}
 
 @TechReport( aztec,
     Author = "Scott A. Hutchinson and John N. Shadid and Ray S. Tuminaro",
@@ -1516,8 +1498,9 @@ year = {1977}
 
 @misc{DPURL,
       author  = "{{Diffpack} {W}eb page}",
-      note = "\\ {URL:}~$<${\em http://www.nobjects.com/Diffpack/}$>$"}
+      note = "See {\tt http://\-www.nobjects.com/\-Diffpack/}",
 }
+%      note = "\\ {URL:}~$<${\em http://www.nobjects.com/Diffpack/}$>$"}
 
 % *****  General intro to object-oriented numerics for "FORTRAN programmers"
 
@@ -1617,8 +1600,7 @@ year = {1977}
         AUTHOR = "W. D. Gropp and D. K. Kaushik and 
                   D. E. Keyes and B. F. Smith",
         TITLE = "Toward Realistic Performance Bounds for Implicit {CFD} codes",
-        BOOKTITLE = "Proceedings of Parallel 
-                    CFD'99",
+        BOOKTITLE = "Proceedings of Parallel CFD'99",
         EDITOR = "A. Ecer et al.",
         PUBLISHER = "Elsevier",
         NOTE = "to appear",
@@ -1744,19 +1726,6 @@ pages="16--32"
   year      = 1998
 }
 
-@Unpublished{ benson99,
-  author = "Steven J. Benson and Lois Curfman McInnes and Jorge J. Mor\'{e}",
-  title  = "{GPCG}:  A Case Study in the Performance and Scalability of Optimization Algorithms",
-  note   = "Mathematics and Computer Science Division, Argonne National Laboratory, (in preparation)",
-  year   = 1999
-}
-
-@Unpublished{ overture-web-page,
-  Author = "David L. Brown and William D. Henshaw and Daniel J. Quinlan",
-  title = 	 "{Overture} {W}eb page",
-  note = 	 "http://www.llnl.gov\-/CASC\-/Overture"
-}
-
 @Unpublished{ nastran-web-page,
   Author = "{MSC Software Corporation}",
   title = 	 "{NASTRAN} {W}eb page",
@@ -1807,3 +1776,245 @@ pages="16--32"
  year      = 1999,
 }
 
+@inproceedings{pooma-atlas,
+author = "S. Atlas and S. Banerjee and J. C. Cummings and P. J. Hinker and
+M. Srikant and J. V. W. Reynders and M. Tholburn",
+title = "{POOMA}: A High-Performance Distributed Simulation Environment for
+Scientific Applications",
+year = 1995,
+month = "December",
+Booktitle = "Supercomputing '95 Proceedings",
+}
+
+% ---------------------------------------------------------------------------------
+% New bib entries for CRPC paper
+
+@misc {
+   mgnet-web-page,
+   author = "Craig C. Douglas",
+   title  = "{MGNet Web page}",
+   note   = "See {\tt http://\-www.mgnet.org}"
+}
+
+@misc {
+   dagh-web-page,
+   author = "M. Parashar and J. C. Browne",
+   title  = "{DAGH Web page}",
+   note   = "See {\tt http://\-www.caip.rutgers.edu/\-\~{ }parashar/\-DAGH/}"
+}
+
+@misc {
+   pooma-web-page,
+   author  = "{POOMA Web page}",
+   note   = "See {\tt http://\-www.acl.lanl.gov/pooma}"
+}
+
+@misc {
+   mudpack-web-page,
+   author = "John C. Adams",
+   title  = "{MUDPACK Web page}",
+   note   = "See {\tt http://\-www.scd.ucar.edu/\-css/\-software/\-mudpack}"
+}
+
+@misc {
+   pellpack-web-page,
+   author = "Elias Houstis and John Rice and Apostolos Hadjidimos",
+   title  = "{Parallel ELLPACK Web page}",
+   note   = "See {\tt http://\-www.cs.purdue.edu/\-research/\-cse/\-pellpack/}"
+}
+
+@inproceedings{pellpack95,
+        AUTHOR = "E. N. Houstis and S. B. Kim and S. Markus and P. Wu and 
+                  N. E. Houstis and A.C. Catlin and S. Weerawarana and T.S. Papatheodorou",
+        TITLE = "Parallel {ELLPACK} Elliptic {PDE} Solvers", 
+        BOOKTITLE = "Proceedings of INTEL Supercomputer User's Group Conference",
+        ADDRESS = "Albuquerque, NM",
+        YEAR = "1995",
+}
+
+@misc {
+   nhse-web-page,
+   author  = "{National High-Performance Software Exchange Web page}",
+   note   = "See {\tt http://\-www.nhse.org}"
+}
+
+@misc {
+   doug-web-page,
+   author = "Mark J. Hagger and Linda Stals",
+   title  = "{DOUG Web Page}",
+   note   = "See {\tt http://\-www.maths.bath.ac.uk/\~{ }parsoft/\-doug/}"
+}
+
+@TECHREPORT{doug97,
+        AUTHOR="Mark J. Hagger",
+        TITLE="Automatic Domain Decomposition on Unstructured Grids {(DOUG)}",
+        INSTITUTION="Mathematical Sciences, University of Bath",
+        YEAR="1997",
+        NUMBER="9706",
+        NOTE= "Advances in Computational Mathematics (to appear)"
+        }
+
+@misc {
+   ug-web-page,
+   author  = "{UG Web Page}",
+   note   = "See {\tt http://\-cox.iwr.uni-heidelberg.de/\~{ }ug/}"
+}
+
+@Article{ug97,
+  author    = "P. Bastian and K. Birken and K. Johannsen and S. Lang and N. Neuss and
+               H. Rentz-Reichert and C. Wieners",
+  title     = "{UG} - A Flexible Software Toolbox for Solving Partial Differential Equations",
+  journal =   "Computing and Visualization in Science",
+  year      = "1997",
+  volume    = "",
+  pages     = ""
+}
+
+@misc {
+   vecfem-web-page,
+   author = "Lutz Grosz",
+   title  = "{VECFEM Web Page}",
+   note   = "See {\tt http://\-wwwmaths.anu.edu.au/\-\~{ }vecfem/}"
+}
+
+@misc {
+   atlas-web-page,
+   author = "R. Clint Whaley and Jack Dongarra",
+   title  = "{ATLAS Web Page}",
+   note   = "See {\tt http://\-www.netlib.org/\-atlas/}"
+}
+
+@misc {
+   phipac-web-page,
+   author = "J. A. Bilmes and K. Asanovic and R. Vudoc and S. Iyer and 
+             J. Demmel and C. Chin and D. Lam",
+   title  = "{PHiPAC Web Page}",
+   note   = "See {\tt http://\-www.icsi.berkeley.edu/\-\~{ }bilmes/\-phipac/}"
+}
+
+@inproceedings{kelp,
+    Author    = "Stephan J. Fink and Scott B. Baden and Scott R. Kohn",
+    title     = "Flexible Communication Mechanisms for Dynamic Structured Applications",
+    BOOKTITLE = "Irregular '96",
+    YEAR      = "1996"
+}
+
+@Unpublished{ kelp-web-page,
+  author =       "Scott Baden", 
+  title = 	 "{KeLP} {W}eb page",
+  note = 	 "http://www-cse.ucsd.edu/groups/hpcl/scg/kelp/",
+}
+
+@Unpublished{samrai-web-page,
+  title   = "{SAMRAI} {W}eb Page",
+  author = "Scott Kohn and Xabier Garaiza and Rich Hornung and Steve Smith",
+  note      = "See {\tt http://www.llnl.gov/\-CASC/SAMRAI}",
+  Institution = "Lawrence Livermore National Laboratory",
+}
+
+@Unpublished{ overture-web-page,
+  Author = "David L. Brown and William D. Henshaw and Daniel J. Quinlan",
+  title = 	 "{Overture} {W}eb page",
+  note = 	 "http://www.llnl.gov\-/CASC\-/Overture"
+}
+
+@INPROCEEDINGS{ overture99,
+ AUTHOR=    "D. L. Brown, William D. Henshaw and Daniel J. Quinlan",
+ TITLE=     "Overture: An Object-Oriented Framework for Solving Partial Differential Equations 
+             on Overlapping Grids",
+ PUBLISHER= "SIAM",
+ BOOKTITLE= "Proceedings of the SIAM Workshop on Object Oriented Methods for
+                Inter-operable Scientific and Engineering Computing",
+ year      = 1999,
+ pages     = "215-224",
+}
+
+@inbook{diffpack,
+    Author = "A. M. Bruaset and H. P. Langtangen",
+    Title = "A Comprehensive set of Tools for Solving Partial
+                  Differential Equations: {D}iffpack",
+    BOOKTITLE = "Numerical Methods and Software Tools in Industrial Mathematics",
+    Year = 1997,
+    pages = "61-90",
+    Publisher = "Birkhauser"}
+
+@Article{Dongarra:1984:ILA,
+   author =       "J. J. Dongarra and F. G. Gustavson and A. Karp",
+   title =        "Implementing Linear Algebra Algorithms for Dense
+                  Matrices on a Vector Pipeline Machine",
+   journal =      "SIAM Review",
+   volume =       "26",
+   number =       "1",
+   pages =        "91--112",
+   month =        jan,
+   year =         "1984",
+   coden =        "SIREAD",
+   ISSN =         "0036-1445 (print), 1095-7200 (electronic)",
+   mrclass =      "65F10 (65F30)",
+   mrnumber =     "85c:65032",
+   bibdate =      "Mon Jan 20 10:31:25 MST 1997",
+   abstract =     "The authors examine common implementations of linear
+                  algebra algorithms, such as matrix-vector
+                  multiplication, matrix-matrix multiplication and the
+                  solution of linear equations. The different versions
+                  are examined for efficiency on a computer architecture
+                  which uses vector processing and has pipelined
+                  instruction execution. By using the advanced
+                  architectural features of such machines, one can
+                  usually achieve maximum performance, and tremendous
+                  improvements in terms of execution speed can be seen
+                  over conventional computers.",
+   acknowledgement = ack-nhfb,
+   classification = "723; 921",
+   journalabr =   "SIAM Rev",
+   keywords =     "computer programming --- Algorithms; dense matrices;
+                  linear algebra algorithms; mathematical programming;
+                  vector pipeline machine",
+}
+
+@BOOK{qv99, 
+       AUTHOR = "Alfio Quarteroni and Alberto Valli",
+       TITLE = "Domain Decomposition Methods for Partial Differential Equations",
+       PUBLISHER = "Oxford Science Publications",
+       address = "Oxford",
+       YEAR = 1999
+}
+
+@BOOK{ksv97, 
+       EDITOR = "David E. Keyes and Ahmed Sameh and V. Venkatakrishnan",
+       TITLE = "Parallel Numerical Algorithms",
+       PUBLISHER = "Kluwer Academic Publishers",
+       address = "the Netherlands",
+       YEAR = 1997
+}
+
+@BOOK{saad96, 
+       AUTHOR = "Yousef Saad",
+       TITLE = "Iterative Methods for Sparse Linear Systems",
+       PUBLISHER = "PWS Publishing Company",
+       address = "Boston",
+       YEAR = 1996
+}
+
+@BOOK{koniges00,
+       EDITOR = "Alice E. Koniges",
+       TITLE = "Industrial Strength Parallel Computing",
+       PUBLISHER = "Morgan Kaufmann Publishers",
+       address = "San Francisco",
+       YEAR = 2000
+}
+
+@techreport{ bmm99,
+ Author      = "Steve Benson and Lois Curfman McInnes and Jorge Mor\'{e}",
+ TITLE       = "{GPCG}: A case study in the performance and scalability of optimization algorithms",
+ year        = 1999,
+ INSTITUTION = "Mathematics and Computer Science Division, Argonne National Laboratory",
+ number      = "ANL/MCS-P768-0799"
+}
+
+@Misc{fftw-web-page,
+  key = {Fftw},
+  title =	 {{FFTW} {Web} page},
+  note =	 {\texttt{http://www.fftw.org/}},
+  annote =	 {fast FFT.  Parallel versions with MPI and Cilk}
+}
