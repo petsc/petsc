@@ -33,7 +33,7 @@ class Configure(config.base.Configure):
     else:
       return ''
 
-  def configureHelp(self, help):
+  def setupHelp(self, help):
     import nargs
     help.addArgument('MPI', '-with-mpi=<bool>',                   nargs.ArgBool(None, 1, 'Activate MPI'))
     help.addArgument('MPI', '-with-mpi-dir=<root dir>',           nargs.ArgDir(None, None, 'Specify the root directory of the MPI installation'))

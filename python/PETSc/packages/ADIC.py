@@ -14,10 +14,10 @@ class Configure(config.base.Configure):
     if self.foundADIC: return 'ADIC: Using '+self.adiC+'\n'
     return ''
     
-  def configureHelp(self, help):
+  def setupHelp(self, help):
     import nargs
-    help.addArgument('ADIC', '-with-adic=<bool>',              nargs.ArgBool(None, 0, 'Activate ADIC'))
-    help.addArgument('ADIC', '-with-adic-path=<path>',         nargs.Arg(None, None, 'Full path of adic executable'))    
+    help.addArgument('ADIC', '-with-adic=<bool>',      nargs.ArgBool(None, 0, 'Activate ADIC'))
+    help.addArgument('ADIC', '-with-adic-path=<path>', nargs.Arg(None, None, 'Full path of adic executable'))    
     return
 
   def generateGuesses(self):
@@ -49,5 +49,4 @@ class Configure(config.base.Configure):
     else:
       self.addSubstitution('ADIC_DEFINES', '')
       self.addSubstitution('ADIC_CC', '')
-      
     return

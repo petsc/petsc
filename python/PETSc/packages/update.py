@@ -15,7 +15,7 @@ class Configure(config.base.Configure):
   def __str__(self):
     return self.strmsg
      
-  def configureHelp(self, help):
+  def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-default-arch=<bool>',         nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     help.addArgument('PETSc', '-with-default-language=<c,c++,complex,0>', nargs.Arg(None, 'c', 'Specifiy default language of libraries. 0 indicates no default'))

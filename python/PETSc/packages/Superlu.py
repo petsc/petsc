@@ -27,7 +27,7 @@ class Configure(config.base.Configure):
       output += '  Library: '+self.lib[0]+'\n'
     return output
   
-  def configureHelp(self,help):
+  def setupHelp(self,help):
     import nargs
     PACKAGE = self.name.upper()
     package = self.name.lower()

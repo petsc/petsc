@@ -58,7 +58,7 @@ class Configure(config.base.Configure):
     return '\n'.join(desc)+'\n'
                               
 
-  def configureHelp(self, help):
+  def setupHelp(self, help):
     import nargs
 
     help.addArgument('PETSc', 'PETSC_DIR',                   nargs.Arg(None, None, 'The root directory of the PETSc installation'))
@@ -521,6 +521,14 @@ class Configure(config.base.Configure):
     self.framework.actions.addArgument('PETSc', 'File creation', 'Created '+scriptName+' for automatic reconfiguration')
     return
 
+  def configureInstall(self):
+    '''Setup the directories for installation'''
+    if self.framework.argDB['prefix']:
+      self.framework.addSubstitution('INSTALL_DIR', os.path.join(self.framework.argDB['prefix'], os.path.basename(os.getcwd())))
+    else:
+      self.framework.addSubstitution('INSTALL_DIR', self.framework.argDB['PETSC_DIR'])
+    return
+
   def configure(self):
     self.framework.header = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf.h'
     self.framework.addSubstitutionFile('bmake/config/packages.in',   'bmake/'+self.framework.argDB['PETSC_ARCH']+'/packages')
@@ -558,9 +566,6 @@ class Configure(config.base.Configure):
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created '+self.bmakeDir+' for configuration data')
     self.executeTest(self.configureRegression)
     self.executeTest(self.configureScript)
-    if self.framework.argDB['prefix']:
-      self.framework.addSubstitution('INSTALL_DIR', os.path.join(self.framework.argDB['prefix'],os.path.basename(os.getcwd())))
-    else:
-      self.framework.addSubstitution('INSTALL_DIR', self.framework.argDB['PETSC_DIR'])
-    self.startLine()
+    self.executeTest(self.configureInstall)
+    self.logClear()
     return
