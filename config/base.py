@@ -350,6 +350,7 @@ class Configure:
     import sys
 
     (out, ret) = self.outputCompile(includes, body, cleanup = 0)
+    out = self.filterCompileOutput(out)
     if ret or len(out): return (out, ret)
     command = self.getLinkerCmd()
     self.framework.log.write('Executing: '+command+'\n')
