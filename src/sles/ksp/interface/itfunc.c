@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.18 1995/04/17 02:15:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.19 1995/04/19 02:59:03 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -80,7 +80,7 @@ int KSPDestroy(KSP itP)
 .  maxits - maximum number of iterations to use
 
    Options Database Key:
-$  -ksp_maxit  maxits
+$  -ksp_max_it  maxits
 
 .keywords: KSP, set, maximum, iterations
 
@@ -156,7 +156,7 @@ int KSPGetPreconditionerSide(KSP itP, int *side)
 int KSPGetMethodFromContext( KSP itP, KSPMETHOD *method )
 {
   VALIDHEADER(itP,KSP_COOKIE);
-  *method = (enum KSPMETHOD) itP->type;
+  *method = (KSPMETHOD) itP->type;
   return 0;
 }
 
