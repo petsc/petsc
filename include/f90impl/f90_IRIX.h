@@ -1,4 +1,4 @@
-/* $Id: f90_IRIX.h,v 1.5 2000/07/27 15:31:40 balay Exp balay $ */
+/* $Id: f90_IRIX.h,v 1.6 2000/07/27 20:02:53 balay Exp balay $ */
 
 #if !defined(__F90_IRIX_H)
 #define __F90_IRIX_H
@@ -21,6 +21,13 @@ typedef struct {
 #else
 #define F90_SCALAR_ID F90_COMPLEX_ID
 #endif
+
+#if (PETSC_SIZEOF_VOIDP == 8)
+#define F90_LONG_ID    35667976
+#else
+#define F90_LONG_ID    33562624
+#endif
+
 
 #define f90_header() \
 void* addr;        /* Pointer to the data/array */ \
