@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.131 2001/03/23 23:24:25 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.132 2001/04/10 19:37:05 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -52,8 +52,8 @@ T*/
    FormFunction().
 */
 typedef struct {
-   double      param;          /* test problem parameter */
-   DA          da;             /* distributed array data structure */
+   DA            da;             /* distributed array data structure */
+   PassiveDouble param;          /* test problem parameter */
 } AppCtx;
 
 /* 
@@ -61,6 +61,7 @@ typedef struct {
 */
 extern int FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec),FormFunctionMatlab(SNES,Vec,Vec,void*);
 extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int FormFunctionLocal(DALocalInfo*info,Scalar**x,Scalar**f,AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -74,6 +75,9 @@ int main(int argc,char **argv)
   PetscTruth             matrix_free,coloring;
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
   PetscTruth             matlab;
+#endif
+#if defined(PETSC_HAVE_ADIC)
+  PetscTruth             adic;
 #endif
   int                    ierr;
   double                 bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
@@ -115,16 +119,19 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set function evaluation routine and vector
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = SNESSetFunction(snes,r,FormFunction,&user);CHKERRQ(ierr);
+
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
   ierr = PetscOptionsHasName(PETSC_NULL,"-matlab",&matlab);CHKERRQ(ierr);
   if (matlab) {
-    ierr = SNESSetFunction(snes,r,FormFunctionMatlab,(void*)&user);CHKERRQ(ierr);
-  } else {
-    ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunctionMatlab,&user);CHKERRQ(ierr);
   }
-#else
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
 #endif
+  ierr = PetscOptionsHasName(PETSC_NULL,"-adic",&adic);CHKERRQ(ierr);
+  if (adic) {
+    ierr = DASetLocalFunction(user.da,(DALocalFunction1)FormFunctionLocal,0,(DALocalFunction1)ad_FormFunctionLocal);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,SNESDAFormFunction,&user);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -142,17 +149,22 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-fdcoloring",&coloring);CHKERRQ(ierr);
   if (!matrix_free) {
-    if (coloring) {
-      ISColoring    iscoloring;
+    ISColoring    iscoloring;
 
-      ierr = DAGetColoring(user.da,IS_COLORING_GLOBAL,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
+    if (coloring) {
+      ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(matfdcoloring,(int (*)(void))FormFunction,&user);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+    } else if (adic) {
+      ierr = DAGetColoring(user.da,IS_COLORING_GHOSTED,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
+      ierr = MatSetColoring(J,iscoloring);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,J,J,SNESDAComputeJacobianWithAdic,&user);CHKERRQ(ierr);
     } else {
-      ierr = DAGetColoring(user.da,IS_COLORING_GLOBAL,MATMPIAIJ,PETSC_IGNORE,&J);CHKERRQ(ierr);
+      ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,MATMPIAIJ,PETSC_IGNORE,&J);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
     }
   }
@@ -331,12 +343,12 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
     for (i=xs; i<xs+xm; i++) {
       if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
         f[j][i] = x[j][i];
-        continue;
+      } else {
+        u       = x[j][i];
+        uxx     = (two*u - x[j][i-1] - x[j][i+1])*hydhx;
+        uyy     = (two*u - x[j-1][i] - x[j+1][i])*hxdhy;
+        f[j][i] = uxx + uyy - sc*PetscExpScalar(u);
       }
-      u       = x[j][i];
-      uxx     = (two*u - x[j][i-1] - x[j][i+1])*hydhx;
-      uyy     = (two*u - x[j-1][i] - x[j+1][i])*hxdhy;
-      f[j][i] = uxx + uyy - sc*PetscExpScalar(u);
     }
   }
 
@@ -347,6 +359,48 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DAVecRestoreArray(user->da,F,(void**)&f);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops(11*ym*xm);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+} 
+/* ------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocal"
+/* 
+   FormFunctionLocal - Evaluates nonlinear function, F(x).
+
+       Process adiC: FormFunctionLocal
+
+ */
+int FormFunctionLocal(DALocalInfo *info,Scalar **x,Scalar **f,AppCtx *user)
+{
+  int     ierr,i,j;
+  double  two = 2.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  Scalar  u,uxx,uyy;
+
+  PetscFunctionBegin;
+
+  lambda = user->param;
+  hx     = 1.0/(double)(info->mx-1);
+  hy     = 1.0/(double)(info->my-1);
+  sc     = hx*hy*lambda;
+  hxdhy  = hx/hy; 
+  hydhx  = hy/hx;
+  /*
+     Compute function over the locally owned part of the grid
+  */
+  for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (i=info->xs; i<info->xs+info->xm; i++) {
+      if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
+        f[j][i] = x[j][i];
+      } else {
+        u       = x[j][i];
+        uxx     = (two*u - x[j][i-1] - x[j][i+1])*hydhx;
+        uyy     = (two*u - x[j-1][i] - x[j+1][i])*hxdhy;
+        f[j][i] = uxx + uyy - sc*PetscExpScalar(u);
+      }
+    }
+  }
+
+  ierr = PetscLogFlops(11*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 /* ------------------------------------------------------------------- */
