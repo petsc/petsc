@@ -13,11 +13,10 @@
 struct _AOOps {
       /* Generic Operations */
   int (*view)(AO, PetscViewer),
-      (*serialize)(MPI_Comm, AO *, PetscViewer, PetscTruth),
       (*destroy)(AO),
       /* AO-Specific Operations */
       (*petsctoapplication)(AO, int, int *),
-    (*applicationtopetsc)(AO, int, int *),
+      (*applicationtopetsc)(AO, int, int *),
       (*petsctoapplicationpermuteint)(AO, int, int *),
       (*applicationtopetscpermuteint)(AO, int, int *),
       (*petsctoapplicationpermutereal)(AO, int, double *),

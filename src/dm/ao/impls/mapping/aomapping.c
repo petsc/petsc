@@ -19,8 +19,6 @@ typedef struct {
   int *petscPerm;
 } AO_Mapping;
 
-int AOSerialize_Mapping(MPI_Comm, AO *, PetscViewer, PetscTruth);
-
 #undef __FUNCT__  
 #define __FUNCT__ "AODestroy_Mapping"
 int AODestroy_Mapping(AO ao)
@@ -145,7 +143,6 @@ int AOApplicationToPetsc_Mapping(AO ao, int n, int *ia)
 }
 
 static struct _AOOps AOps = {AOView_Mapping,
-                             AOSerialize_Mapping,
                              AODestroy_Mapping,
                              AOPetscToApplication_Mapping,
                              AOApplicationToPetsc_Mapping,
@@ -154,6 +151,7 @@ static struct _AOOps AOps = {AOView_Mapping,
                              PETSC_NULL,
                              PETSC_NULL};
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "AOSerialize_Mapping" 
 int AOSerialize_Mapping(MPI_Comm comm, AO *ao, PetscViewer viewer, PetscTruth store)
@@ -200,6 +198,7 @@ int AOSerialize_Mapping(MPI_Comm comm, AO *ao, PetscViewer viewer, PetscTruth st
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOMappingHasApplicationIndex"

@@ -14,8 +14,6 @@ typedef struct {
                     /* petsc[j] is the partner for the jth app slot */
 } AO_Basic;
 
-int AOSerialize_Basic(MPI_Comm, AO *, PetscViewer, PetscTruth);
-
 /*
        All processors have the same data so processor 1 prints it
 */
@@ -175,7 +173,6 @@ int AOApplicationToPetscPermuteReal_Basic(AO ao, int block, double *array)
 }
 
 static struct _AOOps AOops = {AOView_Basic,
-                              AOSerialize_Basic,
                               AODestroy_Basic,
                               AOPetscToApplication_Basic,
                               AOApplicationToPetsc_Basic,
@@ -184,6 +181,7 @@ static struct _AOOps AOops = {AOView_Basic,
                               AOPetscToApplicationPermuteReal_Basic,
                               AOApplicationToPetscPermuteReal_Basic};
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "AOSerialize_Basic" 
 int AOSerialize_Basic(MPI_Comm comm, AO *ao, PetscViewer viewer, PetscTruth store)
@@ -224,6 +222,7 @@ int AOSerialize_Basic(MPI_Comm comm, AO *ao, PetscViewer viewer, PetscTruth stor
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOCreateBasic" 
