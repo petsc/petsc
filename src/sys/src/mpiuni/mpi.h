@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.76 2000/02/12 03:10:46 bsmith Exp bsmith $ */
+/* $Id: mpi.h,v 1.77 2000/03/01 03:54:36 bsmith Exp bsmith $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -61,6 +61,9 @@
 
 #if defined(__BSdependh)
 #error You cannot use MPI-uni with BlockSolve95
+#endif
+#if defined(__basic_H)
+#error You cannot use MPI-uni with SPAI
 #endif
 
 #define USING_MPIUNI
