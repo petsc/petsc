@@ -20,6 +20,7 @@
 	PC             = "typedef int PC;"
 	SLES           = "typedef int SLES;"
 	SNES           = "typedef int SNES;"
+	SNESConvergedReason           = "typedef int SNESConvergedReason;"
 	DAPeriodicType = "typedef int DAPeriodicType;"
 	DAStencilType  = "typedef int DAStencilType;"
         ISColoring     = "typedef int ISColoring;"
@@ -57,6 +58,8 @@
 	Pressure  
 	CalcJunk
         PetscExpScalarPassive
+        WSlab
+        USlab
 
 [INACTIVE_VARIABLES]
 
@@ -78,3 +81,5 @@
         CHKMEMQ
         VecPack
         PetscViewer
+        SNESConvergedReason
+        Parameter

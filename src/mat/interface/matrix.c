@@ -1074,7 +1074,7 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,const int irow[],int ncol,const in
 
    Input Parameters:
 +  mat - the matrix
--  x   - the vector to be multilplied
+-  x   - the vector to be multiplied
 
    Output Parameters:
 .  y - the result
