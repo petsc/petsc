@@ -143,11 +143,11 @@ PETSc</strong></a></li>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#FF0000">export
     PETSC_DIR=/home/petsc/petsc-2.1.6<br>
 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bin/petscarch -suggest<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; export PETSC_ARCH=linux-gnu<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; config/configure.py --with-blas=/usr/lib/libblas.a
     --with-lapack=/usr/lib/liblapack.a --with-mpi-dir=/usr/local/mpich<br>
@@ -163,6 +163,8 @@ PETSc</strong></a></li>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#FF0000">export 
 
   PETSC_DIR=/home/petsc/petsc-2.1.6<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bin/petscarch -suggest<br>
 
@@ -187,6 +189,8 @@ PETSc</strong></a></li>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#FF0000">export 
 
   PETSC_DIR=/home/petsc/petsc-2.1.6<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bin/petscarch -suggest<br>
 
@@ -603,11 +607,14 @@ use MPI:</a></b></font> You can build (sequential) PETSc without an MPI.</p>
             --without-mpi ....</font></li>
           <li>Otherwise edit<font color="#FF0000"> </font><b><font color="#551A8B"><a name="bmake/${PETSC_ARCH}/packages">bmake/${PETSC_ARCH}/packages</a>
             </font> </b>and use
-            <p># Location of MPI (Message Passing Interface) software<br>
-            #<br>
-            MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a<br>
-            MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni<br>
-            MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun</li>
+
+<pre>
+# Location of MPI (Message Passing Interface) software
+#
+MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
+MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
+MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
+</pre>
         </ul>
         <p><font color="#551A8B"><b><a href="#Docs:  Installation">Return to
         Installation Instructions</a></b></font>
