@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fmg.c,v 1.3 1995/06/14 17:23:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fmg.c,v 1.4 1995/07/20 23:43:16 bsmith Exp bsmith $";
 #endif
 /*
      Full multigrid using either additive or multiplicative V or W cycle
@@ -41,3 +41,32 @@ int MGFCycle_Private(MG *mg)
   return 0;
 }
 
+
+/*
+       MGKCycle_Private - Given an MG structure created with MGCreate() runs 
+               full Kascade MG solve.
+
+    Iput Parameters:
+.   mg - structure created with MGCreate().
+
+    Note: This may not be what others call Kascadic MG.
+*/
+int MGKCycle_Private(MG *mg)
+{
+  int    i, l = mg[0]->level,its,ierr;
+  Scalar zero = 0.0;
+
+  /* restrict the RHS through all levels to coarsest. */
+  for ( i=0; i<l; i++ ){
+    MatMult(mg[i]->restrct,  mg[i]->b, mg[i+1]->b ); 
+  }
+  
+  /* work our way up through the levels */
+  for ( i=l; i>0; i-- ) {
+    ierr = SLESSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x,&its); CHKERRQ(ierr);
+    VecSet(&zero, mg[i-1]->x ); 
+    MatMultTransAdd(mg[i-1]->interpolate,mg[i]->x,mg[i-1]->x,mg[i-1]->x); 
+  }
+  ierr = SLESSolve(mg[0]->smoothd,mg[0]->b,mg[0]->x,&its); CHKERRQ(ierr);
+  return 0;
+}

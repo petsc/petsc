@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.37 1996/04/28 15:39:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.38 1996/05/03 19:27:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -70,15 +70,16 @@ int main(int argc,char **args)
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
 
   /* Do solve once to bring in all instruction pages */
-  /*
-  ierr = VecSet(&zero,x); CHKERRA(ierr);
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
-  ierr = SLESSetUp(sles,b,x); CHKERRA(ierr);
-  ierr = SLESSetUpOnBlocks(sles); CHKERRA(ierr);
-  ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  */
+  ierr = OptionsHasName(PETSC_NULL,"-preload",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = VecSet(&zero,x); CHKERRA(ierr);
+    ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+    ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+    ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+    ierr = SLESSetUp(sles,b,x); CHKERRA(ierr);
+    ierr = SLESSetUpOnBlocks(sles); CHKERRA(ierr);
+    ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
+  }
 
   ierr = VecSet(&zero,x); CHKERRA(ierr);
   PetscBarrier(A);
@@ -94,15 +95,12 @@ int main(int argc,char **args)
   PLogStagePop();
   PetscBarrier(A);
 
-PetscTrValid(0,0);
 
   PLogStagePush(2);
   tsolve = PetscGetTime();
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
   tsolve = PetscGetTime() - tsolve;
   PLogStagePop();
-
-PetscTrValid(0,0);
 
   /* Show result */
   ierr = MatMult(A,x,u);

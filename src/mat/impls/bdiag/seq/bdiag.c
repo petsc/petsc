@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.103 1996/05/03 19:26:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.104 1996/05/09 22:35:33 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1332,6 +1332,7 @@ static int MatGetDiagonal_SeqBDiag_N(Mat A,Vec v)
   if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Nonconforming mat and vec");
   if (a->mainbd == -1) SETERRQ(1,"MatGetDiagonal_SeqBDiag:Main diagonal not set");
   len = PetscMin(a->mblock,a->nblock);
+  dd = a->diagv[a->mainbd];
   for (i=0; i<len; i++) {
     ibase = i*nb*nb;  iloc = i*nb;
     for (j=0; j<nb; j++) x[j + iloc] = dd[ibase + j*(nb+1)];

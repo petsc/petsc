@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.170 1996/04/26 00:01:13 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.171 1996/05/03 19:26:29 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -333,7 +333,7 @@ int MatMult(Mat mat,Vec x,Vec y)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);PetscValidHeaderSpecific(y,VEC_COOKIE); 
   if (!mat->assembled) SETERRQ(1,"MatMult:Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,"MatMult:Not for factored matrix");
+  /* if (mat->factor) SETERRQ(1,"MatMult:Not for factored matrix"); */
   if (x == y) SETERRQ(1,"MatMult:x and y must be different vectors");
   if (mat->N != x->N) SETERRQ(PETSC_ERR_SIZ,"MatMult:Mat mat,Vec x: global dim"); 
   if (mat->M != y->N) SETERRQ(PETSC_ERR_SIZ,"MatMult:Mat mat,Vec y: global dim"); 
@@ -364,7 +364,7 @@ int MatMultTrans(Mat mat,Vec x,Vec y)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatMultTrans:Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,"MatMult:Not for factored matrix");
+  /* if (mat->factor) SETERRQ(1,"MatMult:Not for factored matrix"); */
   if (x == y) SETERRQ(1,"MatMultTrans:x and y must be different vectors");
   if (mat->M != x->N) SETERRQ(PETSC_ERR_SIZ,"MatMultTrans:Mat mat,Vec x: global dim"); 
   if (mat->N != y->N) SETERRQ(PETSC_ERR_SIZ,"MatMultTrans:Mat mat,Vec y: global dim"); 
@@ -394,7 +394,7 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);PetscValidHeaderSpecific(v1,VEC_COOKIE);
   PetscValidHeaderSpecific(v2,VEC_COOKIE); PetscValidHeaderSpecific(v3,VEC_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatMultAdd:Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,"MatMult:Not for factored matrix");
+  /* if (mat->factor) SETERRQ(1,"MatMult:Not for factored matrix"); */
   if (mat->N != v1->N) SETERRQ(PETSC_ERR_SIZ,"MatMultAdd:Mat mat,Vec v1: global dim");
   if (mat->M != v2->N) SETERRQ(PETSC_ERR_SIZ,"MatMultAdd:Mat mat,Vec v2: global dim");
   if (mat->M != v3->N) SETERRQ(PETSC_ERR_SIZ,"MatMultAdd:Mat mat,Vec v3: global dim");
@@ -427,7 +427,7 @@ int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);PetscValidHeaderSpecific(v1,VEC_COOKIE);
   PetscValidHeaderSpecific(v2,VEC_COOKIE);PetscValidHeaderSpecific(v3,VEC_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatMultTransAdd:Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,"MatMult:Not for factored matrix");
+  /* if (mat->factor) SETERRQ(1,"MatMult:Not for factored matrix"); */
   if (!mat->ops.multtransadd) SETERRQ(PETSC_ERR_SUP,"MatMultTransAdd");
   if (v1 == v3) SETERRQ(1,"MatMultTransAdd:v1 and v2 must be different vectors");
   if (mat->M != v1->N) SETERRQ(PETSC_ERR_SIZ,"MatMultTransAdd:Mat mat,Vec v1: global dim");

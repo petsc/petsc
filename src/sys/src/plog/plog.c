@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.102 1996/05/10 18:13:22 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.103 1996/05/10 18:44:32 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -831,6 +831,8 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
   double maxo,mino,aveo,mem,totmem,maxmem,minmem;
   double maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott;
   double fmin,fmax,ftot,wdou,totts,totff,rat,stime,sflops,ratf;
+  double ptotts,ptotff,ptotts_stime,ptotff_sflops;
+  double pstime,psflops1,psflops;
   int    size,i,j;
   char   arch[10];
 
@@ -886,23 +888,25 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
  
   }
 
-  if (!tott) tott = 1.e-5;
 
   if (EventsStageMax) {
     PetscFPrintf(comm,fd,"\nSummary of Stages:     Avg Time  %%Total  Avg Flops/sec  %%Total\n");
     for ( j=0; j<=EventsStageMax; j++ ) {
       MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
       MPI_Reduce(&EventsStageTime[j],&stime,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      if (tott > 0) pstime = 100.0*stime/tott; else pstime = 0.0;
+      if (totf > 0) psflops = 100.*sflops/totf; else psflops = 0.0; 
+      if (stime > 0) psflops1 = (size*sflops)/stime; else psflops1 = 0.0;
       if (EventsStageName[j]) {
         PetscFPrintf(comm,fd," %d: %15s:  %7.5e   %4.1f%%    %5.3e     %4.1f%% \n",
-                     j,EventsStageName[j],stime/size,100.0*stime/tott,sflops/size,
-                     100.*sflops/totf);
+                     j,EventsStageName[j],stime/size,pstime,psflops1,psflops);
       } else {
         PetscFPrintf(comm,fd," %d:          %5.3e   %4.1f%%    %5.3e     %4.1f%% \n",
-                    j,stime/size,100.0*stime/tott,(size*sflops)/stime,100.*sflops/totf);
+                    j,stime/size,pstime,psflops1,psflops);
       }
     }
   }
+
 
   PetscFPrintf(comm,fd,  
     "\n------------------------------------------------------------------------------\n"); 
@@ -953,10 +957,14 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
       if (EventsType[j][i][COUNT]) {
         if (mint > 0.0) rat = maxt/mint; else rat = 0.0;
         if (minf > 0.0) ratf = maxf/minf; else ratf = 0.0;
+        if (tott > 0.0) ptotts = 100.*totts/tott; else ptotts = 0.0;
+        if (totf > 0.0) ptotff = 100.*totff/totf; else ptotff = 0.0;
+        if (stime > 0.0) ptotts_stime = 100.*totts/stime; else  ptotts_stime = 0.0;
+        if (sflops > 0.0) ptotff_sflops = 100.*totff/sflops; else ptotff_sflops = 0.0;
         /* Note: Don't change %5.1f for % flop fields below */
         PetscFPrintf(comm,fd,"%s %6d  %4.3e %6.1f  %2.1e %6.1f  %4.1f %5.1f %4.1f %5.1f\n",
                     PLogEventName[i],(int)EventsType[j][i][COUNT],maxt,rat,maxf,ratf,
-                    100.*totts/tott,100.*totff/totf,100.*totts/stime,100.*totff/sflops);
+                    ptotts,ptotff,ptotts_stime,ptotff_sflops);
       }
     }
   }

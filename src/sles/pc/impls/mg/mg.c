@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.48 1996/04/20 04:19:41 bsmith Exp balay $";
+static char vcid[] = "$Id: mg.c,v 1.49 1996/04/23 21:09:39 balay Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -232,10 +232,11 @@ int MGSetCycles(PC pc,int n)
 
 extern int MGACycle_Private(MG*);
 extern int MGFCycle_Private(MG*);
+extern int MGKCycle_Private(MG*);
 
 /*
-   MGCycle - Runs either an additive, multiplicative or full cycle of 
-   multigrid. 
+   MGCycle - Runs either an additive, multiplicative, Kaskadic
+             or full cycle of multigrid. 
 
   Note: 
   A simple wrapper which calls MGMCycle(),MGACycle(), or MGFCycle(). 
@@ -251,6 +252,9 @@ static int MGCycle(PC pc,Vec b,Vec x)
    } 
    else if (mg[0]->am == MGADDITIVE) {
      return MGACycle_Private(mg);
+   }
+   else if (mg[0]->am == MGKASKADE) {
+     return MGKCycle_Private(mg);
    }
    else {
      return MGFCycle_Private(mg);

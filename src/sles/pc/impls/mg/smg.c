@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: smg.c,v 1.5 1995/06/14 17:23:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: smg.c,v 1.6 1995/07/20 23:43:16 bsmith Exp bsmith $";
 #endif
 /*
      Additive Multigrid V Cycle routine    
@@ -21,16 +21,17 @@ int MGACycle_Private(MG *mg)
   Scalar zero = 0.0;
 
   for ( i=0; i<l; i++ ) {
-    MatMult(mg[i]->restrct,  mg[i]->b, mg[i+1]->b); 
+    ierr = MatMult(mg[i]->restrct,  mg[i]->b, mg[i+1]->b);CHKERRQ(ierr);
   }
   for ( i=0; i<l; i++ ) {
-    VecSet(&zero,mg[i]->x); 
-    SLESSolve(mg[i]->smoothd, mg[i]->b, mg[i]->x,&its); 
+    ierr = VecSet(&zero,mg[i]->x);CHKERRQ(ierr); 
+    ierr = SLESSolve(mg[i]->smoothd, mg[i]->b, mg[i]->x,&its);CHKERRQ(ierr); 
   }
-  VecSet(&zero,mg[l]->x); 
-  ierr = SLESSolve(mg[l]->csles, mg[l]->b, mg[l]->x,&its); CHKERRQ(ierr);
+  ierr = VecSet(&zero,mg[l]->x); 
+  ierr = SLESSolve(mg[l]->csles, mg[l]->b, mg[l]->x,&its);CHKERRQ(ierr);
   for ( i=l-1; i>-1; i-- ) {  
-    MatMultTransAdd(mg[i]->interpolate,mg[i+1]->x,mg[i]->x,mg[i]->x); 
+    ierr = MatMultTransAdd(mg[i]->interpolate,mg[i+1]->x,mg[i]->x,mg[i]->x);
+    CHKERRQ(ierr);
   }
   return 0;
 }

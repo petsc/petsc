@@ -110,6 +110,10 @@ ex20: ex20.o  chkopts
 	-$(FLINKER) -o ex20 ex20.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex20.o
 
+ex21: ex21.o  chkopts
+	-$(CLINKER) -o ex21 ex21.o   $(PETSC_LIB)
+	$(RM) ex21.o
+
 runex1:
 	-@$(MPIRUN) ex1 -ksp_smonitor > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \

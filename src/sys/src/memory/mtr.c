@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.55 1996/04/29 18:57:06 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.56 1996/05/03 19:25:58 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -365,6 +365,9 @@ int PetscTrDump( FILE *fp )
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (fp == 0) fp = stderr;
+  if (allocated > 0) {
+    fprintf(fp,"[%d]Total space allocated %d\n",rank,(int)allocated);
+  }
   head = TRhead;
   while (head) {
     fprintf( fp, "[%d]%d bytes at address [%p], id = ",rank, 
