@@ -36,7 +36,7 @@ class Configure(config.base.Configure):
     help.addArgument('Jostle', '-with-jostle-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the Jostle installation'))
     help.addArgument('Jostle', '-with-jostle-include=<dir>',         nargs.ArgDir(None, None, 'The directory containing jostle_lib.h'))
     help.addArgument('Jostle', '-with-jostle-lib=<lib>',             nargs.Arg(None, None, 'The Jostle library or list of libraries'))
-    help.addArgument('Jostle', '-download-jostle=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, ' Automatically install Jostle'))
+    help.addArgument('Jostle', '-download-jostle=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Automatically install Jostle'))
     return
 
   def checkLib(self, libraries):

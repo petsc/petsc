@@ -43,7 +43,7 @@ class Configure(config.base.Configure):
     '''Check for interface in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.framework.argDB['LIBS']
-    found   = self.libraries.check(libraries, 'interface', otherLibs = self.mpi.lib)
+    found   = self.libraries.check(libraries, 'interface', otherLibs = self.mpi.lib + ['libm.a'])
     self.framework.argDB['LIBS'] = oldLibs
     return found
 

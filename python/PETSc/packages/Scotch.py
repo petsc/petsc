@@ -34,14 +34,14 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('Scotch', '-with-scotch=<bool>',                nargs.ArgBool(None, 0, 'Activate Scotch'))
     help.addArgument('Scotch', '-with-scotch-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the Scotch installation'))
-    help.addArgument('Scotch', '-download-scotch=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 2, 'Install MPICH to provide Scotch'))
+    help.addArgument('Scotch', '-download-scotch=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Automatically install Scotch'))
     return
 
   def checkLib(self, libraries):
     '''Check for SCOTCH_archBuild in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.framework.argDB['LIBS']
-    found   = self.libraries.check(libraries, 'SCOTCH_archBuild', otherLibs = self.libraries.toString(self.mpi.lib)) 
+    found   = self.libraries.check(libraries, 'SCOTCH_archBuild', otherLibs = self.mpi.lib)
     self.framework.argDB['LIBS'] = oldLibs
     return found
 
