@@ -93,6 +93,8 @@ in PETSc 2.2.2 </font></p>
         <ul>
         <li>Added Cholesky and ICC support to SeqBAIJ</li>
         <li>Added the argument MatFactorInfo to MatLUFactorNumeric() and MatCholeskyFactorNumeric()</li>
+        <li>Faster MatSetValues()</li>
+        <li>Faster parallel-matrix vector products</li>
         </ul>
       </p>
 
@@ -134,8 +136,8 @@ in PETSc 2.2.2 </font></p>
 
       <p><span style="font-weight: bold; text-decoration: underline;">DA:</span><br></p>
         <ul> 
-        <li>Added DAVecGet/RestoreArrayDOF() allowing indexing in the dimension of degrees of
-                 freedom at each point on the lattice. </li>
+        <li>Added DAVecGet/RestoreArrayDOF() allowing indexing in the dimension of degrees of freedom at each point on the lattice. </li>
+        <li>Faster DAGlobalToLocal() etc for dof > 1. </li>
       </ul>
       </p>
 

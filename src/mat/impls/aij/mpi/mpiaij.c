@@ -215,9 +215,9 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
       high1    = nrow1;
       lastcol2 = -1;
       rp2      = bj + bi[row]; 
-      ap2      = ba + bi[row]; \
+      ap2      = ba + bi[row]; 
       rmax2    = bimax[row]; 
-      nrow2    = bilen[row];  \
+      nrow2    = bilen[row];  
       low2     = 0; 
       high2    = nrow2;
 
@@ -249,6 +249,12 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
               B = aij->B;
               b = (Mat_SeqAIJ*)B->data; 
               bimax = b->imax; bi = b->i; bilen = b->ilen; bj = b->j;
+              rp2      = bj + bi[row]; 
+              ap2      = ba + bi[row]; 
+              rmax2    = bimax[row]; 
+              nrow2    = bilen[row];  
+              low2     = 0; 
+              high2    = nrow2;
               ba = b->a;
             }
           } else col = in[j];
@@ -386,10 +392,10 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,mat->comm);CHKERRQ(ierr);
     if (mat->was_assembled && !other_disassembled) {
       ierr = DisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
-      /* reaccess the b because aij->B was changed */
-      b    = (Mat_SeqAIJ *)aij->B->data;
     }
   }
+  /* reaccess the b because aij->B was changed in MatSetValues() or DisAssemble() */
+  b    = (Mat_SeqAIJ *)aij->B->data;
 
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIAIJ(mat);CHKERRQ(ierr);

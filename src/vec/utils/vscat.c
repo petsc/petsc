@@ -708,8 +708,8 @@ PetscErrorCode VecScatterCopy_SGToSS(VecScatter in,VecScatter out)
     Scatter: parallel to sequential vector, sequential strides for both. 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "VecScatterCopy_PStoSS"
-PetscErrorCode VecScatterCopy_PStoSS(VecScatter in,VecScatter out)
+#define __FUNCT__ "VecScatterCopy_SStoSS"
+PetscErrorCode VecScatterCopy_SStoSS(VecScatter in,VecScatter out)
 {
   VecScatter_Seq_Stride *in_to   = (VecScatter_Seq_Stride*)in->todata,*out_to;
   VecScatter_Seq_Stride *in_from = (VecScatter_Seq_Stride*)in->fromdata,*out_from;
@@ -939,7 +939,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ctx->begin        = VecScatterBegin_SStoSS; 
       ctx->end          = 0; 
       ctx->destroy      = VecScatterDestroy_SStoSS;
-      ctx->copy         = 0;
+      ctx->copy         = VecScatterCopy_SStoSS;
       ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: sequential vector stride to stride\n"));CHKERRQ(ierr);
       goto functionend; 
     } else if (ix->type == IS_GENERAL && iy->type == IS_STRIDE){
@@ -1031,7 +1031,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         ctx->begin        = VecScatterBegin_SStoSS; 
         ctx->end          = 0;  
         ctx->destroy      = VecScatterDestroy_SStoSS;
-        ctx->copy         = 0;
+        ctx->copy         = VecScatterCopy_SStoSS;
         ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: sequential copy\n"));CHKERRQ(ierr);
         goto functionend;
       }
@@ -1101,7 +1101,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         ctx->begin          = VecScatterBegin_SStoSS; 
         ctx->end            = 0; 
         ctx->destroy        = VecScatterDestroy_SStoSS;
-        ctx->copy           = VecScatterCopy_PStoSS;
+        ctx->copy           = VecScatterCopy_SStoSS;
         ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: processors only getting local values\n"));CHKERRQ(ierr);
         goto functionend;
       }
@@ -1309,7 +1309,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         ctx->begin        = VecScatterBegin_SStoSS; 
         ctx->end          = 0;  
         ctx->destroy      = VecScatterDestroy_SStoSS;
-        ctx->copy         = VecScatterCopy_PStoSS;
+        ctx->copy         = VecScatterCopy_SStoSS;
         ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: sequential stride to MPI stride\n"));CHKERRQ(ierr);
         goto functionend;
       }

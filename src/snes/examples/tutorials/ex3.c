@@ -517,8 +517,7 @@ PetscErrorCode StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
   if (iter > 1) {
     ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
     da   = user->da;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration %D with tolerance %g\n",
-       iter,check->tolerance);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration %D with tolerance %g\n",iter,check->tolerance);CHKERRQ(ierr);
 
     /* Access local array data */
     ierr = DAVecGetArray(da,check->last_step,&xa_last);CHKERRQ(ierr);
@@ -545,7 +544,6 @@ PetscErrorCode StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
     ierr = DAVecRestoreArray(da,x,&xa);CHKERRQ(ierr);
   }
   ierr = VecCopy(x,check->last_step);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

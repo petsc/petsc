@@ -500,8 +500,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   ierr = PetscNew(VecScatter_MPI_General,&out_from);CHKERRQ(ierr);
 
   ny                = in_to->starts[in_to->n];
-  len               = ny*(sizeof(PetscInt) + bs*sizeof(PetscScalar)) + (in_to->n+1)*sizeof(PetscInt) +
-                     (in_to->n)*(sizeof(PetscInt) + sizeof(MPI_Request));
+  len               = ny*(sizeof(PetscInt) + bs*sizeof(PetscScalar)) + (in_to->n+1)*sizeof(PetscInt) + (in_to->n)*(sizeof(PetscInt) + sizeof(MPI_Request));
   out_to->n         = in_to->n; 
   out_to->type      = in_to->type;
   out_to->sendfirst = in_to->sendfirst;
