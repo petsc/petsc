@@ -16,7 +16,7 @@ class Configure(PETSc.package.Package):
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build sowing
-    args = ['--prefix='+installDir, '--with-cc='+'"'+self.framework.argDB['CC']+'"']
+    args = ['--prefix='+installDir]
     args = ' '.join(args)
     try:
       fd      = file(os.path.join(installDir,'config.args'))
@@ -59,6 +59,10 @@ class Configure(PETSc.package.Package):
 
   def buildFortranStubs(self):
     if 'FC' in self.framework.argDB:
+      if self.framework.argDB['with-batch']:
+        self.framework.log.write('           Skipping generation of fortran stubs; because cross compiling\n')
+        return
+
       self.framework.log.write('           Running '+self.bfort+' to generate fortran stubs\n')
       try:
         import sys
@@ -74,13 +78,10 @@ class Configure(PETSc.package.Package):
   def configure(self):
     '''Determine whether the Sowing exist or not'''
     if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')):
-      if self.framework.argDB['with-batch']:
-        self.logPrintBox('Cross compiling with petsc-dev; you will need to generate Fortran stubs on another system and copy them over')
-      else:
-        self.framework.log.write('BitKeeper clone of PETSc, checking for Sowing\n')
-        self.Install()
-        self.buildFortranStubs()
+      self.framework.log.write('BitKeeper clone of PETSc, checking for Sowing\n')
+      self.Install()
+      self.buildFortranStubs()
     else:
-      self.framework.log.write("Not BitKeeper clone of PETSc and cross compiling, don't need Sowing\n")
+      self.framework.log.write("Not BitKeeper clone of PETSc, don't need Sowing\n")
     return
 
