@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.36 1995/09/30 19:30:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.37 1995/10/05 00:02:29 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -98,7 +98,7 @@ int main(int argc,char **args)
 int GetElasticityMatrix(int m,Mat *newmat)
 {
   int     i,j,k,i1,i2,j1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz;
-  int     ict, nz, base, r1, r2, N, *rowkeep, nstart, ierr, mem;
+  int     ict, nz, base, r1, r2, N, *rowkeep, nstart, ierr;
   IS      iskeep;
   double  **K, norm;
   Mat     mat, submat;

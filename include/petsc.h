@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.58 1995/09/21 20:13:13 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.59 1995/09/30 19:31:53 bsmith Exp curfman $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -10,6 +10,8 @@
 extern int fprintf(FILE*,const char*,...);
 extern int printf(const char*,...);
 extern int fflush(FILE *);
+extern int fclose(FILE *);
+extern void fscanf(FILE *,char *,...);
 #endif
 
 /* MPI interface */
