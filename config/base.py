@@ -170,30 +170,53 @@ class Configure:
 
   ################
   # Program Checks
-  def getExecutable(self, name, path = '', getFullPath = 0, resultName = ''):
+  def checkExecutable(dir, name):
+    prog  = os.path.join(dir, name)
+    found = 0
+    self.framework.log.write('Checking for program '+prog+'...')
+    if os.path.isfile(prog) and os.access(prog, os.X_OK):
+      found = 1
+      self.framework.log.write('found\n')
+      self.addSubstitution(resultName.upper(), getattr(self, resultName))
+      break
+    self.framework.log.write('not found\n')
+    return found
+
+  def getExecutable(self, name, path = [], getFullPath = 0, usedefaultPath = 0, resultName = ''):
+    found = 0
     index = name.find(' ')
     if index >= 0:
       options = name[index:]
       name    = name[:index]
     else:
       options = ''
-    if not path or path[-1] == ':': path += os.environ['PATH']
-    if not resultName: resultName = name
-    found = 0
-    for dir in path.split(':'):
-      prog = os.path.join(dir, name)
-
-      self.framework.log.write('Checking for program '+prog+'...')
-      if os.path.isfile(prog) and os.access(prog, os.X_OK):
-        if getFullPath:
-          setattr(self, resultName, os.path.abspath(prog)+options)
-        else:
-          setattr(self, resultName, name+options)
-        found = 1
-        self.framework.log.write('found\n')
-        self.addSubstitution(resultName.upper(), getattr(self, resultName))
+    if not resultName:
+      resultName = name
+    if isinstance(path, str):
+      path = path.split(':')
+    if not len(path):
+      useDefaultPath = 1
+    for dir in path:
+      if self.checkExecutable(dir, name):
+        found       = 1
+        getFullPath = 1
         break
-      self.framework.log.write('not found\n')
+    if useDefaultPath:
+      for dir in os.environ['PATH'].split(':'):
+        if self.checkExecutable(dir, name):
+          found     = 1
+          break
+    for dir in self.framework.argDB['search-dirs']:
+      if self.checkExecutable(dir, name):
+        found       = 1
+        getFullPath = 1
+        break
+    if found:
+      if getFullPath:
+        setattr(self, resultName, os.path.abspath(prog)+options)
+      else:
+        setattr(self, resultName, name+options)
+      self.addSubstitution(resultName.upper(), getattr(self, resultName))
     return found
 
   def getExecutables(self, names, path = '', getFullPath = 0, resultName = ''):
