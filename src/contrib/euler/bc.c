@@ -260,7 +260,7 @@ int BoundaryConditionsExplicit(Euler *app,Vec X)
 
   /* Uniprocessor boundary conditions, which are now obselete */
   /*  
-     bc_uni_(app->r,app->ru,app->rv,app->rw,app->e,app->p,
+     bc_uni_(app->xx,app->p,
            app->sadai,app->sadaj,app->sadak,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
            app->aiz,app->ajz,app->akz);
@@ -272,10 +272,14 @@ int BoundaryConditionsExplicit(Euler *app,Vec X)
      first, since the fields at points (i=1,j=2,k=<anything>) are used
      to set the (i=49,j=1,k=<anything>) boundary. */
   if (!app->bc_test) {
-    bc_(app->r,app->ru,app->rv,app->rw,app->e,app->p,
+    bc_(app->xx,app->p,
            app->sadai,app->sadaj,app->sadak,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
            app->aiz,app->ajz,app->akz);
+    /*    bc_(app->r,app->ru,app->rv,app->rw,app->e,app->p,
+           app->sadai,app->sadaj,app->sadak,
+           app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+           app->aiz,app->ajz,app->akz); */
   }
 
   /* Place pressures in work vector */
@@ -288,22 +292,26 @@ int BoundaryConditionsExplicit(Euler *app,Vec X)
   ierr = VecScatterEnd(app->P,app->Pbc,INSERT_VALUES,SCATTER_FORWARD,app->Pbcscatter); CHKERRQ(ierr);
 
   /* Pack pressure work array */
-  ierr = PackWorkComponent(app,app->Pbc,app->localP,app->p_bc); CHKERRQ(ierr);
+  ierr = PackWorkComponent(app,app->Pbc,app->localP,app->p_bc,&app->p_bc); CHKERRQ(ierr);
 
   /* Scatter BC components of X to another work vector */
   ierr = VecScatterBegin(X,app->Xbc,INSERT_VALUES,SCATTER_FORWARD,app->Xbcscatter); CHKERRQ(ierr);
   ierr = VecScatterEnd(X,app->Xbc,INSERT_VALUES,SCATTER_FORWARD,app->Xbcscatter); CHKERRQ(ierr);
 
   /* Convert BC work vector to Julianne format work arrays */
-  ierr = PackWork(app,app->Xbc,app->localX,
-                  app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc); CHKERRQ(ierr);
+  ierr = PackWork(app,app->Xbc,app->localXBC,
+                  app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,&app->xx_bc); CHKERRQ(ierr);
 
   /* Set certain explicit boundary conditions using scattered data */
-  bcpart_j1_(app->r,app->ru,app->rv,app->rw,app->e,app->p,
-           app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,app->p_bc,
+  bcpart_j1_(app->xx,app->p,app->xx_bc,app->p_bc,
            app->sadai,app->sadaj,app->sadak,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
            app->aiz,app->ajz,app->akz);
+  /*  bcpart_j1_(app->r,app->ru,app->rv,app->rw,app->e,app->p,
+           app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,app->p_bc,
+           app->sadai,app->sadaj,app->sadak,
+           app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+           app->aiz,app->ajz,app->akz); */
 
   return 0;
 }
@@ -340,8 +348,8 @@ int BoundaryConditionsImplicit(Euler *app,Vec X)
   ierr = VecScatterEnd(X,app->Xbc,INSERT_VALUES,SCATTER_FORWARD,app->Xbcscatter); CHKERRQ(ierr);
 
   /* Convert BC work vector to Julianne format work arrays */
-  ierr = PackWork(app,app->Xbc,app->localX,
-                  app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc); CHKERRQ(ierr);
+  ierr = PackWork(app,app->Xbc,app->localXBC,
+                  app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,&app->xx_bc); CHKERRQ(ierr);
 
   return 0;
 }

@@ -278,15 +278,15 @@ c       Luckily, we have already determined these column numbers
 c       in the index set is1 when setting up the vector scatters,
 c       so we can just use them here.
 c              uniprocessor: col = ijkid + m
-c               col = ijkid + m
-c               call AOApplicationToPetsc(ao,1,col,ierr)
+               col = ijkid + m
+               call AOApplicationToPetsc(ao,1,col,ierr)
 c               if (col .ne. is1(ict))
 c     &             write(6,*) 'MAT LAST: k,j,i,l,m,ict,col,ictc = ',
 c     &                    k,j,i,l,m,ict,col,is1(ict)
-c               call MatSetValues( mat, 1, row, 1, col,
-c     &              b2bc_tmp(l,m,i,2,k), IV, ierr )
-               call MatSetValues( mat, 1, row, 1, is1(ict),
+               call MatSetValues( mat, 1, row, 1, col,
      &              b2bc_tmp(l,m,i,2,k), IV, ierr )
+c               call MatSetValues( mat, 1, row, 1, is1(ict),
+c     &              b2bc_tmp(l,m,i,2,k), IV, ierr )
                if (ierr .ne. 0) then
                   write(6,*) 'buildmat:rank,k,j,i,row,col = ',
      &                        rank,k,j,i,row,is1(ict)
@@ -1104,7 +1104,7 @@ c
 C  Note: Can delete ncd
 
       integer ijk,ijkn,ncd,istart,iend,format,ijk_noghosts
-      integer b1c,b2c,b3c,b4c,b5c,b6c,i,j,k,l,wkdim,nc_block,col1
+      integer b1c,b2c,b3c,b4c,b5c,b6c,i,j,k,l,wkdim,nc_block
       integer col,ict,chunk,row,id,ijkid,is1(0:*),ierr,ao,m
       integer nloc,ltog(0:nloc-1),nnz_d(0:wkdim-1),nnz_o(0:wkdim-1)
 
@@ -1315,10 +1315,10 @@ c              uniprocessor: col = ijkid + l
             do 124 m=1,nc
                col = ijkid + m
                call AOApplicationToPetsc(ao,1,col,ierr)
-               col1 = is1(ict)
-               if (col .ne. col1)
-     &           write(6,*) 'ALLOC: k,j,i,ict,col, col1 = ',
-     &                       k,j,i,ict,col,col1
+c               col1 = is1(ict)
+c               if (col .ne. col1)
+c     &           write(6,*) 'ALLOC: k,j,i,ict,col, col1 = ',
+c     &                       k,j,i,ict,col,col1
                if (col .ge. istart .and. col .lt. iend) then
                   nnz_d(row) = nnz_d(row) + 1
                else

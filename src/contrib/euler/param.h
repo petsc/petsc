@@ -9,6 +9,7 @@ c
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/ao.h"
 
 c   Parameters
         Double one, two, zero, p5
@@ -80,14 +81,14 @@ c   If nonzero, then print grid information
 c   Type of boundary conditions
        integer bctype
 
-c   Problem number (1, 2, or 3)
-       integer problem
+c   Problem number (1, 2, or 3), number of components per node
+       integer problem, nc
 
 c   Communicator, rank, size
        integer comm, rank, size
 
 c   Common block for local grid data
-       common /pgrid/ rank, size, comm, problem
+       common /pgrid/ rank, size, comm, problem, nc
        common /pgrid/ printg, no_output, bctype
        common /pgrid/ gxsf, gysf, gzsf, gxef, gyef, gzef
        common /pgrid/ gxsf2, gysf2, gzsf2, gxsf1, gysf1, gzsf1

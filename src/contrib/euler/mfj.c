@@ -7,7 +7,10 @@
 #include "snes.h"
 #include "user.h"
 
-extern int ComputeDiffParameterMore(SNES,Vec,Vec,double*,double*);
+
+extern int DiffParameterCreate_More(SNES,Vec,void**);
+extern int DiffParameterCompute_More(SNES,void*,Vec,Vec,double*,double*);
+extern int DiffParameterDestroy_More(void**);
 
 /* Application-defined context for matrix-free SNES */
 typedef struct {
@@ -21,6 +24,7 @@ typedef struct {
   Scalar      h;         /* differencing parameter */
   int         need_h;    /* flag indicating whether we must compute h */
   int         need_err;  /* flag indicating whether we must compute error_rel */
+  void        *data;     /* implementation-specific data */
 } MFCtxEuler_Private;
 
 #undef __FUNC__
@@ -33,6 +37,7 @@ int UserMatrixFreeDestroy(PetscObject obj)
 
   ierr = MatShellGetContext(mat,(void **)&ctx);
   ierr = VecDestroy(ctx->w); CHKERRQ(ierr);
+  if (ctx->jorge || ctx->need_err) {ierr = DiffParameterDestroy_More(ctx->data); CHKERRQ(ierr);}
   PetscFree(ctx);
   return 0;
 }
@@ -113,7 +118,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
 {
   MFCtxEuler_Private *ctx;
   SNES          snes;
-  double        norm, sum, umin, noise, sqrtnoise;
+  double        norm, sum, umin, noise;
   Scalar        h, dot, mone = -1.0, *ya, *aa, *dt, one = 1.0, dti;
   Vec           w,U,F;
   int           ierr, i, j, k, ijkv, ijkx, nc, jkx, dim, ikx;
@@ -160,20 +165,16 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
 
     /* Use Jorge's method to compute h */
     if (ctx->jorge) {
-      ierr = ComputeDiffParameterMore(snes,U,a,&noise,&h); CHKERRQ(ierr);
-      sqrtnoise = sqrt(noise);
-      PLogInfo(snes,"UserMatrixFreeMult: Using Jorge's h: noise=%g, sqrt(noise)=%g, h_more=%g\n",
-          noise,sqrtnoise,h);
+      ierr = DiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h); CHKERRQ(ierr);
 
     /* Use the Brown/Saad method to compute h */
     } else { 
       if (ctx->need_err) {
         /* Use Jorge's method to compute noise */
-        ierr = ComputeDiffParameterMore(snes,U,a,&noise,&h); CHKERRQ(ierr);
-        sqrtnoise = sqrt(noise);
+        ierr = DiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h); CHKERRQ(ierr);
+        ctx->error_rel = sqrt(noise);
         PLogInfo(snes,"UserMatrixFreeMult: Using Jorge's noise: noise=%g, sqrt(noise)=%g, h_more=%g\n",
-            noise,sqrtnoise,h);
-        ctx->error_rel = sqrtnoise;
+            noise,ctx->error_rel,h);
         ctx->need_err = 0;
       }
       ierr = VecDot(U,a,&dot); CHKERRQ(ierr);
@@ -194,7 +195,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
   } else {
     h = ctx->h;
   }
-  PLogInfo(snes,"UserMatrixFreeMult: h = %g\n",h);
+  if (!ctx->jorge || !ctx->need_h) PLogInfo(snes,"UserMatrixFreeMult: h = %g\n",h);
 
   /* Evaluate function at F(u + ha) */ 
   ierr = VecWAXPY(&h,a,U,w); CHKERRQ(ierr);
@@ -340,6 +341,10 @@ int UserMatrixFreeMatCreate(SNES snes,Euler *user,Vec x,Mat *J)
   ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_umin",&mfctx->umin,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-matrix_free_jorge",&mfctx->jorge); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-compute_err",&mfctx->need_err); CHKERRQ(ierr);
+  if (mfctx->jorge || mfctx->need_err) {
+    ierr = DiffParameterCreate_More(snes,x,&mfctx->data); CHKERRQ(ierr);
+  } else mfctx->data = 0;
+
   ierr = VecDuplicate(x,&mfctx->w); CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)x,&comm); CHKERRQ(ierr);
   ierr = VecGetSize(x,&n); CHKERRQ(ierr);
