@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog3.c,v 1.9 1998/08/18 22:28:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog3.c,v 1.10 1998/08/19 18:32:37 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: borthog3.c,v 1.9 1998/08/18 22:28:03 bsmith Exp bsmit
 #include <math.h>
 
 /*
-  This version uses iterative refinement of UNMODIFIED Gram-Schmidt.  
+  This version uses 1 iteration of iterative refinement of UNMODIFIED Gram-Schmidt.  
   It can give better performance when running in a parallel 
   environment and in some cases even in a sequential environment (because
   MAXPY has more data reuse).
@@ -26,7 +26,6 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
   int       j,ncnt;
   Scalar    *hh, *hes,shh[100], *lhh;
-  double    dnorm;
 
   PetscFunctionBegin;
   PLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);
@@ -64,21 +63,7 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
       hh[j]  -= lhh[j];     /* hh += <v,vnew> */
       hes[j] += lhh[j];     /* hes += - <v,vnew> */
     }
-
-    /* Note that dnorm = (norm(d))**2 */
-    dnorm = 0.0;
-#if defined(USE_PETSC_COMPLEX)
-    for (j=0; j<=it; j++) dnorm += PetscReal(lhh[j] * PetscConj(lhh[j]));
-#else
-    for (j=0; j<=it; j++) dnorm += lhh[j] * lhh[j];
-#endif
-
-    /* Continue until either we have only small corrections or we've done
-	 as much work as a full orthogonalization (in terms of Mdots) */
-  } while (dnorm > 1.0e-16 && ncnt++ < 2);
-
-  /* It would be nice to put ncnt somewhere.... */
-  PLogInfo(ksp,"KSPGMRESIROrthogonalization: Number of iterative refinement steps %d dnorm %g\n",ncnt,sqrt(dnorm));
+  } while (ncnt++ < 2);
 
   if (it >= 100) PetscFree( lhh );
   PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);
