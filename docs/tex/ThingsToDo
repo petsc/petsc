@@ -40,9 +40,6 @@ West Bethesda, Md.  20817-5700
 (301) 227-5753 (fax)
 rcheng@oasys.dt.navy.mil
 
- - Fix MatAssemblyBegin_MPIBAIJ() to not do communication if no stash is
-   turned on.
-
  - Fix MatAssemblyEnd_ MPIAIJ and MPIBAIJ to do no communication in setting up
    matrix-vector product if no new nonzero was set.
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.244 1998/05/11 21:53:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.245 1998/05/11 22:07:18 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -448,7 +448,8 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     }
     count--;
   }
-  PetscFree(aij->recv_waits); PetscFree(aij->rvalues);
+  if (aij->recv_waits) PetscFree(aij->recv_waits); 
+  if (aij->rvalues)    PetscFree(aij->rvalues);
  
   /* wait on sends */
   if (aij->nsends) {

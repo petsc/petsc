@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.120 1998/05/06 15:30:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.121 1998/05/11 21:55:16 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -669,7 +669,7 @@ int MatNorm_MPIBAIJ(Mat mat,NormType type,double *norm)
 #define __FUNC__ "MatAssemblyBegin_MPIBAIJ"
 int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
 { 
-  Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ *) mat->data;
+  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   MPI_Comm    comm = mat->comm;
   int         size = baij->size, *owners = baij->rowners,bs=baij->bs;
   int         rank = baij->rank,tag = mat->tag, *owner,*starts,count,ierr;
@@ -679,6 +679,14 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   Scalar      *rvalues,*svalues;
 
   PetscFunctionBegin;
+  if (baij->donotstash) {
+    baij->svalues    = 0; baij->rvalues    = 0;
+    baij->nsends     = 0; baij->nrecvs     = 0;
+    baij->send_waits = 0; baij->recv_waits = 0;
+    baij->rmax       = 0;
+    PetscFunctionReturn(0);
+  }
+
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   ierr = MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) {
@@ -719,7 +727,7 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
 
        This could be done better.
   */
-  rvalues = (Scalar *) PetscMalloc(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));CHKPTRQ(rvalues);
+  rvalues    = (Scalar *) PetscMalloc(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));CHKPTRQ(rvalues);
   recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
     ierr = MPI_Irecv(rvalues+3*nmax*i,3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,comm,recv_waits+i);CHKERRQ(ierr);
@@ -729,9 +737,9 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  svalues = (Scalar *) PetscMalloc(3*(baij->stash.n+1)*sizeof(Scalar));CHKPTRQ(svalues);
+  svalues    = (Scalar *) PetscMalloc(3*(baij->stash.n+1)*sizeof(Scalar));CHKPTRQ(svalues);
   send_waits = (MPI_Request *) PetscMalloc((nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
-  starts = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(starts);
+  starts     = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
   for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<baij->stash.n; i++ ) {
@@ -904,7 +912,8 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     }
     count--;
   }
-  PetscFree(baij->recv_waits); PetscFree(baij->rvalues);
+  if (baij->recv_waits) PetscFree(baij->recv_waits); 
+  if (baij->rvalues)    PetscFree(baij->rvalues);
  
   /* wait on sends */
   if (baij->nsends) {
@@ -912,7 +921,8 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     ierr        = MPI_Waitall(baij->nsends,baij->send_waits,send_status);CHKERRQ(ierr);
     PetscFree(send_status);
   }
-  PetscFree(baij->send_waits); PetscFree(baij->svalues);
+  if (baij->send_waits) PetscFree(baij->send_waits); 
+  if (baij->svalues)    PetscFree(baij->svalues);
 
   ierr = MatAssemblyBegin(baij->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->A,mode); CHKERRQ(ierr);
