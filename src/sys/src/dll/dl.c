@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.5 1998/01/14 22:14:18 balay Exp balay $";
+static char vcid[] = "$Id: dl.c,v 1.6 1998/01/15 02:29:13 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -40,6 +40,7 @@ int DLObtainLibrary(char *libname,char *llibname)
 #if defined(USE_PYTHON_FOR_REMOTE_DLLS)
   char *par4,buf[1024];
   FILE *fp;
+
   PetscFunctionBegin;
 
   if (PetscStrncmp(libname,"ftp://",6) && PetscStrncmp(libname,"http://",7)) {
@@ -143,6 +144,7 @@ int DLOpen(char *libname,void **handle)
   char       *par2,ierr,len,*par3,arch[10];
   PetscTruth foundlibrary;
   int        flg;
+  int        (*func)();
 
   PetscFunctionBegin;
 
@@ -214,6 +216,13 @@ int DLOpen(char *libname,void **handle)
     PetscErrorPrintf("Library name %s\n",libname);
     SETERRQ(1,1,"Unable to locate dynamic library");
   }
+
+  /* run the function DLRegister() if it is in the library */
+  ((void *) func)   = dlsym(handle,"DLRegister");
+  if (func) {
+    ierr = (*func)();CHKERRQ(ierr);
+  }
+
   PetscFree(par2);
   PetscFunctionReturn(0);
 }
