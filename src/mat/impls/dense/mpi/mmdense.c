@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmdense.c,v 1.15 1998/09/09 21:10:00 balay Exp bsmith $";
+static char vcid[] = "$Id: mmdense.c,v 1.16 1999/01/12 23:15:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: mmdense.c,v 1.15 1998/09/09 21:10:00 balay Exp bsmith
 int MatSetUpMultiply_MPIDense(Mat mat)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
-  int          ierr,n;
+  int          ierr;
   IS           tofrom;
   Vec          gvec;
 
@@ -26,7 +26,10 @@ int MatSetUpMultiply_MPIDense(Mat mat)
 
   /* Create temporary global vector to generate scatter context */
   n    = mdn->cowners[mdn->rank+1] - mdn->cowners[mdn->rank];
-  ierr = VecCreateMPI(mat->comm,n,mdn->N,&gvec); CHKERRQ(ierr);
+
+  /* the partitioning of this vector is not right! you don't really know
+     what it is; this will only work for default (PETSC_DECIDE) matrix layouts*/
+  ierr = VecCreateMPI(mat->comm,PETSC_DECIDE,mdn->N,&gvec); CHKERRQ(ierr);
 
   /* Generate the scatter context */
   ierr = VecScatterCreate(gvec,tofrom,mdn->lvec,tofrom,&mdn->Mvctx); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.30 1999/01/04 21:55:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.31 1999/01/31 16:11:10 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -926,7 +926,7 @@ int AODataSegmentRemove(AOData aodata,char *name,char *segname)
 @*/
 int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
 {
-  int       ierr,flag,Ntmp,size,rank,i,len;
+  int       ierr,flag,size,rank,i,len;
   AODataKey *key,*oldkey;
   MPI_Comm  comm = aodata->comm;
 
@@ -935,7 +935,6 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
 
   ierr = AODataKeyFind_Private(aodata,name,&flag,&oldkey);CHKERRQ(ierr);
   if (flag == 1)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key already exists with given name: %s",name);
-  if (nlocal == PETSC_DECIDE && N == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_WRONG,1,"nlocal and N both PETSC_DECIDE");
 
   key                = PetscNew(AODataKey);CHKPTRQ(key);
   if (oldkey) { oldkey->next = key;} 
@@ -953,14 +952,7 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
   MPI_Comm_size(comm,&size);
 
   /*  Set nlocal and ownership ranges */
-  if (N == PETSC_DECIDE) {
-    ierr = MPI_Allreduce(&nlocal,&N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  } else if (nlocal != PETSC_DECIDE) {
-    ierr = MPI_Allreduce(&nlocal,&Ntmp,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    if (Ntmp != N) SETERRQ2(PETSC_ERR_ARG_WRONG,1,"Sum of nlocal is not N: sum %d N %d",Ntmp,N);
-  } else {
-    nlocal = N/size + ((N % size) > rank);
-  }
+  ierr         = PetscSplitOwnership(comm,&nlocal,&N);CHKERRQ(ierr);
   key->rowners = (int *) PetscMalloc((size+1)*sizeof(int));CHKPTRQ(key->rowners);
   ierr = MPI_Allgather(&nlocal,1,MPI_INT,key->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   key->rowners[0] = 0;
