@@ -1,6 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex18.c,v 1.15 1998/12/03 03:57:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex18.c,v 1.16 1999/03/19 21:18:10 bsmith Exp balay $";
 #endif
+
+/* np = 1 */
 
 static char help[] = "Compares BLAS dots on different machines. Input\n\
 arguments are\n\
@@ -13,10 +15,9 @@ arguments are\n\
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int          n = 15, ierr, size,rank,i,flg;
+  int          n = 15,ierr,i,flg;
   Scalar       v;
   Vec          x,y;
-  int          idx;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg); if (n < 5) n = 5;
