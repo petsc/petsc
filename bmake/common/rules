@@ -124,11 +124,9 @@ clean:
 	-$(RM) -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES) $(TESTS) \
                PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log
 
-findusage:
-	@-if [ "$(SOURCE)" != " " ] ; then \
-	grep $(EXPRESSION) $(SOURCE) /dev/null; fi
-	@-if [ "$(SOURCEH)" != "" ] ; then \
-	grep $(EXPRESSION) $(SOURCEH) /dev/null; fi
+testexamples: examples runexamples clean
+	-@echo "Tests complete"
+
 
 tree: $(ACTION)
 	@-if [ "$(DIRS)" != "" ]; then \
