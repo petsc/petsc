@@ -257,7 +257,7 @@ static int MatZeroRows_MPIRowbs_local(Mat A,IS is,PetscScalar *diag)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)A->data;
   BSspmat      *l = a->A;
-  int          i,ierr,N,*rz,m = A->m - 1;
+  int          i,ierr,N,*rz,m = A->m - 1,col,base=a->rowners[a->rank];
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
@@ -267,7 +267,8 @@ static int MatZeroRows_MPIRowbs_local(Mat A,IS is,PetscScalar *diag)
       if (rz[i] < 0 || rz[i] > m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"row out of range");
       ierr = PetscMemzero(l->rows[rz[i]]->nz,l->rows[rz[i]]->length*sizeof(PetscScalar));CHKERRQ(ierr);
       if (diag) {
-        ierr = MatSetValues(A,1,&rz[i],1,&rz[i],diag,INSERT_VALUES);CHKERRQ(ierr);
+        col=rz[i]+base;
+        ierr = MatSetValues_MPIRowbs_local(A,1,&rz[i],1,&col,diag,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   } else {
@@ -279,7 +280,8 @@ static int MatZeroRows_MPIRowbs_local(Mat A,IS is,PetscScalar *diag)
           l->rows[rz[i]]->nz[0]  = *diag;
           l->rows[rz[i]]->col[0] = a->rstart + rz[i];
         } else {
-          ierr = MatSetValues(A,1,&rz[i],1,&rz[i],diag,INSERT_VALUES);CHKERRQ(ierr);
+          col=rz[i]+base;
+          ierr = MatSetValues_MPIRowbs_local(A,1,&rz[i],1,&col,diag,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
     } else {
@@ -995,7 +997,7 @@ int MatZeroRows_MPIRowbs(Mat A,IS is,PetscScalar *diag)
     found = PETSC_FALSE;
     for (j=0; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[2*j]++; nprocs[2*j] = 1; owner[i] = j; found = PETSC_TRUE; break;
+        nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
     if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
