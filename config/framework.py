@@ -42,7 +42,9 @@ class Help:
     for section in self.sections:
       print section+':'
       for item in self.options[section].items():
-        varName = item[0].split('=')[0].strip('-')
+        # SHOULD BE varName = item[0].split('=')[0].strip('-')
+        varName = item[0].split('=')[0]
+        while varName[0] == '-': varName = varName[1:]
 
         if self.framework.argDB.has_key(varName):
           print formatDef % (item[0], item[1], str(self.framework.argDB[varName]))

@@ -26,7 +26,7 @@ class Configure(config.base.Configure):
       self.CC = self.framework.argDB['CC']
     else:
       self.CC = 'gcc'
-    self.addSubstitution('CC', self.CC, comment = 'C compiler')
+    self.addSubstitution('CC', self.CC)
     return
 
   def checkFormatting(self):
@@ -41,7 +41,7 @@ class Configure(config.base.Configure):
       self.CXX = self.framework.argDB['CXX']
     else:
       self.CXX = 'g++'
-    self.addSubstitution('CXX', self.CXX, comment = 'C++ compiler')
+    self.addSubstitution('CXX', self.CXX)
     return
 
   def checkCxxNamespace(self):
@@ -59,7 +59,7 @@ class Configure(config.base.Configure):
       self.FC = self.framework.argDB['FC']
     else:
       self.FC = 'g77'
-    self.addSubstitution('FC', self.FC, comment = 'Fortran compiler')
+    self.addSubstitution('FC', self.FC)
     return
 
   def mangleFortranFunction(self, name):
@@ -129,7 +129,7 @@ class Configure(config.base.Configure):
       self.F90 = self.framework.argDB['F90']
     else:
       self.F90 = 'f90'
-    self.addSubstitution('F90', self.F90, comment = 'Fortran 90 compiler')
+    self.addSubstitution('F90', self.F90)
     return
 
   def checkFortran90Interface(self):
@@ -140,7 +140,9 @@ class Configure(config.base.Configure):
     return
 
   def checkFortranLibraries(self):
-    '''This macro is intended to be used in those situations when it is
+    '''Substitutes for FLIBS the libraries needed to link with Fortran
+
+    This macro is intended to be used in those situations when it is
     necessary to mix, e.g. C++ and Fortran 77, source code into a single
     program or shared library.
 
@@ -257,7 +259,7 @@ class Configure(config.base.Configure):
     for lib in flibs: self.flibs += ' '+lib
     # Append run path
     if ldRunPath: self.flibs = ldRunPath+self.flibs
-    self.addSubstitution('FLIBS', self.flibs, 'Libraries needed for linking with Fortran')
+    self.addSubstitution('FLIBS', self.flibs)
     return
 
   def configure(self):

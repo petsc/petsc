@@ -17,7 +17,7 @@ class Configure(config.base.Configure):
     found = 0
     if self.checkPreprocess('#include <'+header+'>\n'):
       found = 1
-      self.addDefine(self.getDefineName(header), found, 'Defined if we have the header '+header)
+      self.addDefine(self.getDefineName(header), found)
     return found
 
   def checkStdC(self):

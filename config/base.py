@@ -9,7 +9,6 @@ class Configure:
     self.defines   = {}
     self.subst     = {}
     self.argSubst  = {}
-    self.help      = {}
     # Interaction with Autoconf
     self.m4           = '/usr/bin/m4'
     self.acMacroDir   = '/usr/share/autoconf'
@@ -39,32 +38,24 @@ class Configure:
 
   #################################
   # Define and Substitution Support
-  def addDefine(self, name, value, comment = ''):
+  def addDefine(self, name, value):
     '''Designate that "name" should be defined to "value" in the configuration header'''
     self.defines[name] = value
-    if comment: self.addHelp(name, comment)
     return
 
-  def addSubstitution(self, name, value, comment = ''):
+  def addSubstitution(self, name, value):
     '''Designate that "@name@" should be replaced by "value" in all files which experience substitution'''
     self.subst[name] = value
-    if comment: self.addHelp(name, comment)
     return
 
-  def addArgumentSubstitution(self, name, arg, comment = ''):
+  def addArgumentSubstitution(self, name, arg):
     '''Designate that "@name@" should be replaced by argDB["arg"] in all files which experience substitution'''
     self.argSubst[name] = arg
-    if comment: self.addHelp(name, comment)
-    return
-
-  def addHelp(self, name, comment):
-    '''Associate a help string with the variable "name"'''
-    self.help[name] = comment
     return
 
   ################
   # Program Checks
-  def getExecutable(self, name, path = '', getFullPath = 0, comment = '', resultName = ''):
+  def getExecutable(self, name, path = '', getFullPath = 0, resultName = ''):
     if not path or path[-1] == ':': path += os.environ['PATH']
     if not resultName: resultName = name
     found = 0
@@ -77,16 +68,16 @@ class Configure:
           setattr(self, resultName, os.path.abspath(prog))
         else:
           setattr(self, resultName, name)
-        self.addSubstitution(resultName.upper(), getattr(self, resultName), comment = comment)
+        self.addSubstitution(resultName.upper(), getattr(self, resultName))
         found = 1
         self.framework.log.write('found\n')
         break
       self.framework.log.write('not found\n')
     return found
 
-  def getExecutables(self, names, path = '', getFullPath = 0, comment = '', resultName = ''):
+  def getExecutables(self, names, path = '', getFullPath = 0, resultName = ''):
     for name in names:
-      if self.getExecutable(name, path, getFullPath, comment, resultName):
+      if self.getExecutable(name, path, getFullPath, resultName):
         return name
     return None
 

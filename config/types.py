@@ -40,7 +40,7 @@ class Configure(config.base.Configure):
     return
 
   def checkSignal(self):
-    '''Checks the return type of signal() and defines RETSIGTYPE'''
+    '''Checks the return type of signal() and defines RETSIGTYPE to that type name'''
     includes = '''
     #include <sys/types.h>
     #include <signal.h>
@@ -57,7 +57,7 @@ class Configure(config.base.Configure):
       returnType = 'void'
     else:
       returnType = 'int'
-    self.addDefine('RETSIGTYPE', returnType, 'Return type of the signal() function')
+    self.addDefine('RETSIGTYPE', returnType)
     return
 
   def checkComplex(self):
