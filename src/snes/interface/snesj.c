@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.23 1995/09/21 20:12:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.24 1995/11/01 19:12:03 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -33,13 +33,12 @@ $  -snes_fd
 
 .seealso: SNESSetJacobian(), SNESTestJacobian()
 @*/
-int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
-                               MatStructure *flag,void *ctx)
+int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   Vec      j1,j2,x2;
   int      i,ierr,N,start,end,j;
   Scalar   dx, mone = -1.0,*y,scale,*xx,wscale;
-  double   epsilon = 1.e-8,amax; /* assumes double precision */
+  double   amax, epsilon = 1.e-8; /* assumes double precision */
   MPI_Comm comm;
 
   PetscObjectGetComm((PetscObject)x1,&comm);
@@ -80,6 +79,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
 #else
     MPI_Allreduce(&wscale,&scale,2,MPI_DOUBLE,MPI_SUM,comm);
 #endif
+    scale = -scale;
     VecScale(&scale,j2);
     VecGetArray(j2,&y);
     VecNorm(j2,NORM_INFINITY,&amax); amax *= 1.e-14;

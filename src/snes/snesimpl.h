@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.27 1995/10/13 02:04:08 curfman Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.28 1996/01/01 01:05:04 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -23,7 +23,6 @@ struct _SNES {
   int   (*computefunction)(SNES,Vec,Vec,void*);  /* function routine */
   Vec   vec_func,vec_func_always;   /* Pointer to function or gradient */
   void  *funP;                      /* user function context */
-  int   rsign;                      /* sign (+/-) of residual */
 
   int   (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
   Mat   jacobian;                   /* Jacobian (or Hessian) matrix */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.28 1995/12/30 03:22:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.29 1996/01/01 01:05:24 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -90,14 +90,12 @@ int main( int argc, char **argv )
   /* Set various routines */
   if (OptionsHasName(PETSC_NULL,"-cavity")){
     ierr = SNESSetSolution(snes,x,FormInitialGuess2,(void *)&user); CHKERRA(ierr);
-    ierr = SNESSetFunction(snes,r,FormFunction2,(void *)&user,
-           POSITIVE_FUNCTION_VALUE); CHKERRA(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction2,(void *)&user); CHKERRA(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian2,(void *)&user); CHKERRA(ierr);
   }
   else {
     ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); CHKERRA(ierr);
-    ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,
-           POSITIVE_FUNCTION_VALUE); CHKERRA(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user); CHKERRA(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void *)&user);CHKERRA(ierr);
   }
 

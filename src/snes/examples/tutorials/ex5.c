@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.38 1995/12/21 18:34:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.39 1996/01/01 01:05:24 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -93,8 +93,7 @@ int main( int argc, char **argv )
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); CHKERRA(ierr);
-  ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,POSITIVE_FUNCTION_VALUE); 
-         CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user); CHKERRA(ierr);
 
   /* Set Jacobian evaluation routine */
   if (OptionsHasName(PETSC_NULL,"-defaultJ")) { /* default finite differences */

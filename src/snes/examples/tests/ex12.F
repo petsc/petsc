@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.19 1995/12/30 03:38:52 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.20 1996/01/01 01:05:24 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -74,8 +74,7 @@ C Create nonlinear solver
 
 C Set various routines
       call SNESSetSolution(snes,x,FormInitialGuess,0,ierr)
-      call SNESSetFunction(snes,r,FormFunction,ctx,
-     *                     NEGATIVE_FUNCTION_VALUE,ierr)
+      call SNESSetFunction(snes,r,FormFunction,ctx,ierr)
       call SNESSetJacobian(snes,J,J,FormJacobian,ctx,ierr)
 
 C Set up nonlinear solver; then execute it
@@ -146,21 +145,21 @@ C The element xx(ib) is the ibth element in the vector indicated by ctx(3)
 
       if (rank .eq. 0) then 
         s = 0
-        ff(1) = -xx(1)
+        ff(1) = xx(1)
       else
         s = 1
       endif
 
       do 10 i=1,n-2
-       ff(i-s+1) = -d*(xx(i) - 
+       ff(i-s+1) = d*(xx(i) - 
      *                 2.d0*xx(i+1) + 
      *                 xx(i+2)) 
-     *             - xx(i+1)*xx(i+1) +
+     *             + xx(i+1)*xx(i+1) -
      *               F2(i-s+1)
  10   continue
 
       if (rank .eq. size-1) then
-        ff(n-s) = -xx(n) + 1.d0
+        ff(n-s) = xx(n) - 1.d0
       endif
 
       call VecRestoreArray(f,vff,iff,ierr)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.32 1996/01/08 19:33:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.33 1996/01/09 01:13:43 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -107,6 +107,15 @@ int SNESSetFromOptions(SNES snes)
   if (SNESGetTypeFromOptions_Private(snes,&method)) {
     SNESSetType(snes,method);
   }
+  else if (!snes->set_method_called) {
+    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+      ierr = SNESSetType(snes,SNES_EQ_NLS); CHKERRQ(ierr);
+    }
+    else {
+      ierr = SNESSetType(snes,SNES_UM_NTR); CHKERRQ(ierr);
+    }
+  }
+
   if (OptionsHasName(PETSC_NULL,"-help"))  SNESPrintHelp(snes);
   if (OptionsGetDouble(snes->prefix,"-snes_stol",&tmp)) {
     SNESSetSolutionTolerance(snes,tmp);
@@ -450,6 +459,8 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
 
   ierr = SLESCreate(comm,&snes->sles); CHKERRQ(ierr);
   PLogObjectParent(snes,snes->sles)
+
+
   *outsnes = snes;
   return 0;
 }
@@ -463,9 +474,6 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
    Input Parameters:
 .  snes - the SNES context
 .  func - function evaluation routine
-.  rneg - indicator whether func evaluates f or -f. 
-   If rneg is NEGATIVE_FUNCTION_VALUE, then func evaluates -f; otherwise, 
-   func evaluates f.
 .  ctx - optional user-defined function context 
 .  r - vector to store function value
 
@@ -473,7 +481,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
 .  func (SNES, Vec x, Vec f, void *ctx);
 
 .  x - input vector
-.  f - function vector or its negative
+.  f - vector function
 .  ctx - optional user-defined context for private data for the 
          function evaluation routine (may be null)
 
@@ -481,9 +489,6 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
    The Newton-like methods typically solve linear systems of the form
 $      f'(x) x = -f(x),
 $  where f'(x) denotes the Jacobian matrix and f(x) is the function.
-   By setting rneg = NEGATIVE_FUNCTION_VALUE, the user can supply -f(x)
-   directly.  This option enables increased efficiency by eliminating
-   the need for the library to scale the function by -1.
 
    SNESSetFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only.
    Analogous routines for SNES_UNCONSTRAINED_MINIMIZATION methods are
@@ -493,14 +498,12 @@ $  where f'(x) denotes the Jacobian matrix and f(x) is the function.
 
 .seealso: SNESGetFunction(), SNESSetJacobian(), SNESSetSolution()
 @*/
-int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),
-                     void *ctx,SNESFunctionSign rneg)
+int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
     "SNESSetFunction:For SNES_NONLINEAR_EQUATIONS only");
   snes->computefunction     = func; 
-  snes->rsign               = (int) rneg;
   snes->vec_func            = snes->vec_func_always = r;
   snes->funP                = ctx;
   return 0;
@@ -529,13 +532,9 @@ int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),
 int SNESComputeFunction(SNES snes,Vec x, Vec y)
 {
   int    ierr;
-  Scalar mone = -1.0;
 
   PLogEventBegin(SNES_FunctionEval,snes,x,y,0);
   ierr = (*snes->computefunction)(snes,x,y,snes->funP); CHKERRQ(ierr);
-  if (!snes->rsign) {
-    ierr = VecScale(&mone,y); CHKERRQ(ierr);
-  }
   PLogEventEnd(SNES_FunctionEval,snes,x,y,0);
   return 0;
 }
@@ -832,8 +831,6 @@ int SNESSetUp(SNES snes)
   if (!snes->vec_sol) SETERRQ(1,"SNESSetUp:Must call SNESSetSolution() first");
 
   if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
-    if (!snes->set_method_called)
-      {ierr = SNESSetType(snes,SNES_EQ_NLS); CHKERRQ(ierr);}
     if (!snes->vec_func) SETERRQ(1,"SNESSetUp:Must call SNESSetFunction() first");
     if (!snes->computefunction) SETERRQ(1,"SNESSetUp:Must call SNESSetFunction() first");
     if (!snes->jacobian) SETERRQ(1,"SNESSetUp:Must call SNESSetJacobian() first");
@@ -847,8 +844,6 @@ int SNESSetUp(SNES snes)
              (void *)snes); CHKERRQ(ierr);
     }
   } else if ((snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)) {
-    if (!snes->set_method_called)
-      {ierr = SNESSetType(snes,SNES_UM_NTR); CHKERRQ(ierr);}
     if (!snes->vec_func) SETERRQ(1,"SNESSetUp:Must call SNESSetGradient() first");
     if (!snes->computefunction) SETERRQ(1,"SNESSetUp:Must call SNESSetGradient() first");
     if (!snes->computeumfunction) 

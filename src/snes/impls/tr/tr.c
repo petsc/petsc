@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.33 1995/11/09 22:32:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.34 1996/01/01 01:05:12 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -12,12 +12,12 @@ static char vcid[] = "$Id: tr.c,v 1.33 1995/11/09 22:32:41 bsmith Exp bsmith $";
 */
 int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
 {
-  SNES    snes = (SNES) ctx;
+  SNES                snes = (SNES) ctx;
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
-  SNES_TR *neP = (SNES_TR*)snes->data;
-  Vec     x;
-  double  norm;
-  int     ierr, convinfo;
+  SNES_TR             *neP = (SNES_TR*)snes->data;
+  Vec                 x;
+  double              norm;
+  int                 ierr, convinfo;
 
   if (snes->ksp_ewconv) {
     if (!kctx) SETERRQ(1,"SNES_KSP_EW_Converged_Private:Convergence context does not exist");
@@ -60,7 +60,7 @@ static int SNESSolve_TR(SNES snes,int *its)
   int          maxits, i, history_len, ierr, lits;
   MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
   double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm,*history, ynorm;
-  Scalar       one = 1.0,cnorm;
+  Scalar       mone = -1.0,cnorm;
   KSP          ksp;
   SLES         sles;
 
@@ -73,17 +73,16 @@ static int SNESSolve_TR(SNES snes,int *its)
   G		= snes->work[1];
   Ytmp          = snes->work[2];
 
-  ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr); /* X <- X_0 */
+  ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr);        /* X <- X_0 */
   ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);               /* xnorm = || X || */
    
-  ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);   /* (+/-) F(X) */
+  ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);          /* F(X) */
   ierr = VecNorm(F, NORM_2,&fnorm ); CHKERRQ(ierr);             /* fnorm <- || F || */
   snes->norm = fnorm;
   if (history && history_len > 0) history[0] = fnorm;
   delta = neP->delta0*fnorm;         
   neP->delta = delta;
-  if (snes->monitor)
-    {ierr = (*snes->monitor)(snes,0,fnorm,snes->monP); CHKERRQ(ierr);}
+  if (snes->monitor) {ierr = (*snes->monitor)(snes,0,fnorm,snes->monP); CHKERRQ(ierr);}
 
   /* Set the stopping criteria to use the More' trick. */
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
@@ -91,80 +90,78 @@ static int SNESSolve_TR(SNES snes,int *its)
   ierr = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,(void *)snes);CHKERRQ(ierr);
  
   for ( i=0; i<maxits; i++ ) {
-     snes->iter = i+1;
-     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);
-            CHKERRQ(ierr);
-     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
-            CHKERRQ(ierr);
-     ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERRQ(ierr);
-     ierr = VecNorm(Ytmp,NORM_2,&norm); CHKERRQ(ierr);
-     while(1) {
-       ierr = VecCopy(Ytmp,Y); CHKERRQ(ierr);
-       /* Scale Y if need be and predict new value of F norm */
+    snes->iter = i+1;
+    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
+    ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERRQ(ierr);
+    ierr = VecNorm(Ytmp,NORM_2,&norm); CHKERRQ(ierr);
+    while(1) {
+      ierr = VecCopy(Ytmp,Y); CHKERRQ(ierr);
+      /* Scale Y if need be and predict new value of F norm */
 
-       if (norm >= delta) {
-         norm = delta/norm;
-         gpnorm = (1.0 - norm)*fnorm;
-         cnorm = norm;
-         PLogInfo((PetscObject)snes, "Scaling direction by %g \n",norm );
-         ierr = VecScale(&cnorm,Y); CHKERRQ(ierr);
-         norm = gpnorm;
-         ynorm = delta;
-       } else {
-         gpnorm = 0.0;
-         PLogInfo((PetscObject)snes,"Direction is in Trust Region \n" );
-         ynorm = norm;
-       }
-       ierr = VecAXPY(&one,X,Y); CHKERRQ(ierr);             /* Y <- X + Y */
-       ierr = VecCopy(X,snes->vec_sol_update_always); CHKERRQ(ierr);
-       ierr = SNESComputeFunction(snes,Y,G); CHKERRQ(ierr); /* (+/-) F(X) */
-       ierr = VecNorm(G,NORM_2,&gnorm); CHKERRQ(ierr);             /* gnorm <- || g || */
-       if (fnorm == gpnorm) rho = 0.0;
-       else rho = (fnorm*fnorm - gnorm*gnorm)/(fnorm*fnorm - gpnorm*gpnorm); 
+      if (norm >= delta) {
+        norm = delta/norm;
+        gpnorm = (1.0 - norm)*fnorm;
+        cnorm = norm;
+        PLogInfo((PetscObject)snes, "Scaling direction by %g \n",norm );
+        ierr = VecScale(&cnorm,Y); CHKERRQ(ierr);
+        norm = gpnorm;
+        ynorm = delta;
+      } else {
+        gpnorm = 0.0;
+        PLogInfo((PetscObject)snes,"Direction is in Trust Region \n" );
+        ynorm = norm;
+      }
+      ierr = VecAYPX(&mone,X,Y); CHKERRQ(ierr);             /* Y <- X + Y */
+      ierr = VecCopy(X,snes->vec_sol_update_always); CHKERRQ(ierr);
+      ierr = SNESComputeFunction(snes,Y,G); CHKERRQ(ierr); /*  F(X) */
+      ierr = VecNorm(G,NORM_2,&gnorm); CHKERRQ(ierr);             /* gnorm <- || g || */
+      if (fnorm == gpnorm) rho = 0.0;
+      else rho = (fnorm*fnorm - gnorm*gnorm)/(fnorm*fnorm - gpnorm*gpnorm); 
 
-       /* Update size of trust region */
-       if      (rho < neP->mu)  delta *= neP->delta1;
-       else if (rho < neP->eta) delta *= neP->delta2;
-       else                     delta *= neP->delta3;
-       PLogInfo((PetscObject)snes,"%d:  f_norm=%g, g_norm=%g, ynorm=%g\n",
+      /* Update size of trust region */
+      if      (rho < neP->mu)  delta *= neP->delta1;
+      else if (rho < neP->eta) delta *= neP->delta2;
+      else                     delta *= neP->delta3;
+      PLogInfo((PetscObject)snes,"%d:  f_norm=%g, g_norm=%g, ynorm=%g\n",
                                              i, fnorm, gnorm, ynorm );
-       PLogInfo((PetscObject)snes,"gpred=%g, rho=%g, delta=%g,iters=%d\n", 
+      PLogInfo((PetscObject)snes,"gpred=%g, rho=%g, delta=%g,iters=%d\n", 
                                                gpnorm, rho, delta, lits);
-       neP->delta = delta;
-       if (rho > neP->sigma) break;
-       PLogInfo((PetscObject)snes,"Trying again in smaller region\n");
-       /* check to see if progress is hopeless */
-       neP->itflag = 0;
-       if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
-         /* We're not progressing, so return with the current iterate */
-         if (X != snes->vec_sol) {
-           ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
-           snes->vec_sol_always = snes->vec_sol;
-           snes->vec_func_always = snes->vec_func; 
-         }
-       }
-       snes->nfailures++;
-     }
-     fnorm = gnorm;
-     snes->norm = fnorm;
-     if (history && history_len > i+1) history[i+1] = fnorm;
-     TMP = F; F = G; snes->vec_func_always = F; G = TMP;
-     TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
-     VecNorm(X, NORM_2,&xnorm );		/* xnorm = || X || */
-     if (snes->monitor) {ierr = (*snes->monitor)(snes,i+1,fnorm,snes->monP); CHKERRQ(ierr);}
+      neP->delta = delta;
+      if (rho > neP->sigma) break;
+      PLogInfo((PetscObject)snes,"Trying again in smaller region\n");
+      /* check to see if progress is hopeless */
+      neP->itflag = 0;
+      if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
+        /* We're not progressing, so return with the current iterate */
+        if (X != snes->vec_sol) {
+          ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
+          snes->vec_sol_always = snes->vec_sol;
+          snes->vec_func_always = snes->vec_func; 
+        }
+      }
+      snes->nfailures++;
+    }
+    fnorm = gnorm;
+    snes->norm = fnorm;
+    if (history && history_len > i+1) history[i+1] = fnorm;
+    TMP = F; F = G; snes->vec_func_always = F; G = TMP;
+    TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
+    VecNorm(X, NORM_2,&xnorm );		/* xnorm = || X || */
+    if (snes->monitor) {ierr = (*snes->monitor)(snes,i+1,fnorm,snes->monP); CHKERRQ(ierr);}
 
-     /* Test for convergence */
-     neP->itflag = 1;
-     if ((*snes->converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
-       /* Verify solution is in corect location */
-       if (X != snes->vec_sol) {
-         ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
-         snes->vec_sol_always = snes->vec_sol;
-         snes->vec_func_always = snes->vec_func; 
-       }
-       break;
-     } 
-   }
+    /* Test for convergence */
+    neP->itflag = 1;
+    if ((*snes->converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
+      /* Verify solution is in corect location */
+      if (X != snes->vec_sol) {
+        ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
+        snes->vec_sol_always = snes->vec_sol;
+        snes->vec_func_always = snes->vec_func; 
+      }
+      break;
+    } 
+  }
   if (i == maxits) {
     PLogInfo((PetscObject)snes,"Maximum number of iterations has been reached: %d\n",maxits);
     i--;

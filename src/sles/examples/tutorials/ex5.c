@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.43 1995/12/21 18:33:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.44 1996/01/01 01:04:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
@@ -71,7 +71,7 @@ int main(int argc,char **args)
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   {
   MatType mat_type;
-  ierr = MatGetType(C,&mat_type); CHKERRA(ierr);
+  ierr = MatGetType(C,&mat_type,PETSC_NULL); CHKERRA(ierr);
   if (mat_type == MATMPIROWBS) {
     PC pc; KSP ksp; PCType pcmethod;
     ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);

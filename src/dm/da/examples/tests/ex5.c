@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.12 1995/11/30 22:36:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.13 1995/12/21 18:34:32 bsmith Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -31,8 +31,7 @@ int main(int argc,char **argv)
   OptionsGetInt(PETSC_NULL,"-time",&time_steps);
     
   /* Set up the array */ 
-  ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,w,s,&da); 
-  CHKERRA(ierr);
+  ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,w,s,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);

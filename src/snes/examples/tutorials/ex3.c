@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.24 1995/12/30 03:28:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.25 1996/01/01 01:05:24 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -83,8 +83,7 @@ int main( int argc, char **argv )
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&ctx,
-                         NEGATIVE_FUNCTION_VALUE); CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&ctx);CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&ctx); CHKERRA(ierr);
 
   /* Set up nonlinear solver; then execute it */
@@ -124,11 +123,11 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    ierr = VecGetArray(ctx->F,&FF); CHKERRQ(ierr);
    ierr = VecGetLocalSize(xl,&n); CHKERRQ(ierr);
    d = ctx->h*ctx->h;
-   if (rank == 0) {s = 0; ff[0] = -xx[0];} else s = 1;
+   if (rank == 0) {s = 0; ff[0] = xx[0];} else s = 1;
    for ( i=1; i<n-1; i++ ) {
-     ff[i-s] = -d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) - xx[i]*xx[i] + FF[i-s];
+     ff[i-s] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i-s];
    }
-   if (rank == size-1) ff[n-1-s] = -xx[n-1] + 1.0;
+   if (rank == size-1) ff[n-1-s] = xx[n-1] - 1.0;
    ierr = VecRestoreArray(xl,&xx); CHKERRQ(ierr);
    ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr);
    ierr = VecRestoreArray(ctx->F,&FF); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.19 1995/12/12 22:54:02 curfman Exp curfman $";
+static char vcid[] = "$Id: jacobi.c,v 1.20 1996/01/09 01:23:51 curfman Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -37,7 +37,7 @@ static int PCSetUp_Jacobi(PC pc)
   ierr = VecGetLocalSize(diagsqrt,&n); CHKERRQ(ierr);
   ierr = VecGetArray(diagsqrt,&x); CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
-    if (x[i] != 0.0) x[i] = 1.0/sqrt(x[i]);
+    if (x[i] != 0.0) x[i] = 1.0/sqrt(PetscAbsScalar(x[i]));
   }
   jac->diag = diag;
   jac->diagsqrt = diagsqrt;

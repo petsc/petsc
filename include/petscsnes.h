@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.37 1995/12/19 02:20:11 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.38 1996/01/01 01:05:46 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -26,8 +26,7 @@ extern int SNESDestroy(SNES);
 extern int SNESSetType(SNES,SNESType);
 extern int SNESSetMonitor(SNES,int(*)(SNES,int,double,void*),void *);
 extern int SNESSetSolution(SNES,Vec,int(*)(SNES,Vec,void*),void *);
-typedef enum { POSITIVE_FUNCTION_VALUE, NEGATIVE_FUNCTION_VALUE} SNESFunctionSign;
-extern int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *,SNESFunctionSign);
+extern int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *);
 extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
 extern int SNESGetJacobian(SNES,Mat*,Mat*,void **);
 extern int SNESSetUp(SNES);

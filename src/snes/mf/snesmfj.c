@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.22 1995/11/01 23:20:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.23 1995/12/21 18:33:54 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"   /*I  "draw.h"   I*/
@@ -29,10 +29,8 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
 {
   MFCtx_Private *ctx = (MFCtx_Private* ) ptr;
   SNES          snes = ctx->snes;
-  double        norm,epsilon = 1.e-8; /* assumes double precision */
-  Scalar        h,dot;
-  double        sum;
-  Scalar        mone = -1.0;
+  double        norm,sum,epsilon = 1.e-8; /* assumes double precision */
+  Scalar        h,dot,mone = -1.0;
   Vec           w = ctx->w,U,F;
   int           ierr;
 
@@ -57,7 +55,7 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   ierr = VecWAXPY(&h,dx,U,w); CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,w,y); CHKERRQ(ierr);
   ierr = VecAXPY(&mone,F,y); CHKERRQ(ierr);
-  h = -1.0/h;
+  h = 1.0/h;
   ierr = VecScale(&h,y); CHKERRQ(ierr);
   if (ctx->sp) { ierr = PCNullSpaceRemove(ctx->sp,y); CHKERRQ(ierr);}
   return 0;
@@ -135,4 +133,7 @@ int SNESDefaultMatrixFreeMatAddNullSpace(Mat J,int has_cnst,int n,Vec *vecs)
   ierr = PCNullSpaceCreate(comm,has_cnst,n,vecs,&ctx->sp); CHKERRQ(ierr);
   return 0;
 }
+
+
+
 
