@@ -1159,7 +1159,8 @@ fi
     '''Make sure we can have mkdir automatically make intermediate directories'''
     # We use the framework in order to remove the PETSC_ namespace
     self.framework.getExecutable('mkdir', getFullPath = 1, comment = 'Mkdir utility')
-    if hasattr(self, 'mkdir'):
+    if hasattr(self.framework, 'mkdir'):
+      self.mkdir = self.framework.mkdir
       if os.path.exists('.conftest'): os.rmdir('.conftest')
       (status, output) = commands.getstatusoutput(self.mkdir+' -p .conftest/.tmp')
       if not status and os.path.isdir('.conftest/.tmp'):
