@@ -251,8 +251,8 @@ class Configure(config.base.Configure):
     flag = '-L'
     if self.archBase == 'linux':
       flag = '-rdynamic -Wl,-rpath,'
-    self.framework.addSubstitution('CLINKER_SLFLAG', flag)
-    self.framework.addSubstitution('FLINKER_SLFLAG', flag)
+    self.addSubstitution('CLINKER_SLFLAG', flag)
+    self.addSubstitution('FLINKER_SLFLAG', flag)
     return
 
   def configureDebuggers(self):
