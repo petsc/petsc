@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.26 1995/09/21 20:11:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.27 1995/09/30 19:29:59 bsmith Exp bsmith $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -148,8 +148,8 @@ int MatConvert_SeqAIJ(Mat mat, MatType newtype, Mat *newmat)
       OptionsGetInt(0,"-mat_bdiag_bsize",&nb);     
       ierr = MatDetermineDiagonals_Private(mat,nb,m,n,rr,cr,&ndiag,&diag);
       CHKERRQ(ierr); 
-      ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,ndiag,nb,
-                               diag,0,newmat); CHKERRQ(ierr); 
+      ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,ndiag,nb,diag,0,newmat); 
+      CHKERRQ(ierr); 
       PETSCFREE(rr), PETSCFREE(diag);
       break;
       }
