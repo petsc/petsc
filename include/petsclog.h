@@ -25,7 +25,7 @@ extern int PETSC_Barrier;
 extern PetscLogDouble _TotalFlops;
 
 /* General logging of information; different from event logging */
-EXTERN int        PetscLogInfo(void*,const char[],...) __attribute__ ((format (printf, 2,3)));
+EXTERN int        PetscLogInfo(void*,const char[],...) __ATTRIBUTE__ ((format (printf, 2,3)));
 EXTERN int        PetscLogInfoDeactivateClass(int);
 EXTERN int        PetscLogInfoActivateClass(int);
 extern PetscTruth PetscLogPrintInfo;  /* if true, indicates PetscLogInfo() is turned on */
@@ -88,7 +88,7 @@ EXTERN int PetscLogTraceBegin(FILE *);
 EXTERN int PetscLogDestroy(void);
 EXTERN int PetscLogSet(int (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
                    int (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject));
-EXTERN int PetscLogObjectState(PetscObject, const char[], ...) __attribute__ ((format (printf, 2,3)));
+EXTERN int PetscLogObjectState(PetscObject, const char[], ...) __ATTRIBUTE__ ((format (printf, 2,3)));
 /* Output functions */
 EXTERN int PetscLogPrintSummary(MPI_Comm, const char[]);
 EXTERN int PetscLogDump(const char[]);
@@ -399,7 +399,7 @@ EXTERN int EventLogGetEvent(EventLog, int, int *);
 #define PetscLogAllBegin()                  0
 #define PetscLogDump(c)                     0
 #define PetscLogEventRegister(a,b,c,d)      0
-EXTERN int PetscLogObjectState(PetscObject,const char[],...) __attribute__ ((format (printf, 2,3)));
+EXTERN int PetscLogObjectState(PetscObject,const char[],...) __ATTRIBUTE__ ((format (printf, 2,3)));
 
 /* If PETSC_USE_LOG is NOT defined, these still need to be! */
 #define MPI_Startall_irecv(count,number,requests) MPI_Startall(number,requests)

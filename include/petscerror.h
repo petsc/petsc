@@ -121,7 +121,7 @@ EXTERN int PetscEmacsClientErrorHandler(int,char*,char*,char*,int,int,char*,void
 EXTERN int PetscStopErrorHandler(int,char*,char*,char*,int,int,char*,void*);
 EXTERN int PetscAbortErrorHandler(int,char*,char*,char*,int,int,char*,void*);
 EXTERN int PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,int,char*,void*); 
-EXTERN int PetscError(int,char*,char*,char*,int,int,char*,...) __attribute__ ((format (printf, 7,8)));
+EXTERN int PetscError(int,char*,char*,char*,int,int,char*,...) __ATTRIBUTE__ ((format (printf, 7,8)));
 EXTERN int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,int,char*,void*),void*);
 EXTERN int PetscPopErrorHandler(void);
 EXTERN int PetscDefaultSignalHandler(int,void*);
