@@ -33,12 +33,12 @@ PETSC_HAVE_SUPERLU     = -DPETSC_HAVE_SUPERLU
 #
 # SPOOLES, SPOOLES_MPI
 #
-SPOOLES_INCLUDE       = -I/sandbox/hzhang/spooles
-SPOOLES_LIB           = /sandbox/hzhang/spooles/MPI/src/spoolesMPI.a /sandbox/hzhang/spooles/spooles.a 
+SPOOLES_INCLUDE       = -I/home/petsc/software/spooles-2.2
+SPOOLES_LIB           = /home/petsc/software/spooles-2.2/MPI/src/spoolesMPI.a /home/petsc/software/spooles-2.2/spooles.a 
 PETSC_HAVE_SPOOLES    = -DPETSC_HAVE_SPOOLES
 #
 # DSCPACK
 #
-DSCPACK_INCLUDE    = -I/sandbox/hzhang/DSCPACK1.0/DSC_LIB
-DSCPACK_LIB        = /sandbox/hzhang/DSCPACK1.0/DSC_LIB/dsclibdbl.a
+DSCPACK_INCLUDE    = -I/home/petsc/software/DSCPACK1.0/DSC_LIB
+DSCPACK_LIB        = /home/petsc/software/DSCPACK1.0/DSC_LIB/dsclibdbl.a
 PETSC_HAVE_DSCPACK = -DPETSC_HAVE_DSCPACK
