@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.61 1996/01/02 21:36:32 balay Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.62 1996/01/03 22:50:21 balay Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -68,9 +68,6 @@ static int PCSetFromOptions_BGS(PC pc)
   if (OptionsHasName(pc->prefix,"-pc_bgs_truelocal")) {
     PCBGSSetUseTrueLocal(pc);
   }
-  if (OptionsHasName(pc->prefix,"-pc_bgs_backward")) {
-    PCBGSSetSymmetric(pc,BGS_BACKWARD_SWEEP);
-  }
   if (OptionsHasName(pc->prefix,"-pc_bgs_symmetric")) {
     PCBGSSetSymmetric(pc,BGS_SYMMETRIC_SWEEP);
   }
@@ -86,15 +83,13 @@ static int PCSetFromOptions_BGS(PC pc)
 .  pc - the preconditioner context
 .  flag - one of the following:
 $    BGS_FORWARD_SWEEP
-$    BGS_BACKWARD_SWEEP
 $    BGS_SYMMETRIC_SWEEP
 
    Options Database Keys:
 $  -pc_sor_symmetric
-$  -pc_sor_backward
 
 
-.keywords: PC, BGS, gauss-seidel, set, relaxation, sweep, forward, backward, symmetric
+.keywords: PC, BGS, gauss-seidel, set, relaxation, sweep, forward, symmetric
 .seealso: PCSetOperators(), PCBGSSetTotalBlocks() PCBGSSetUseTrueLocal()
 @*/
 int PCBGSSetSymmetric(PC pc, PCBGSType flag)
@@ -250,7 +245,6 @@ static int PCPrintHelp_BGS(PC pc)
   MPIU_printf(pc->comm," %spc_bgs_blocks blks: blocks in preconditioner\n",p);
   MPIU_printf(pc->comm, " %spc_bgs_truelocal: use blocks from the local linear\
  system matrix \n      instead of the preconditioning matrix\n",p);
-  MPIU_printf(pc->comm, " %spc_bgs_backward: use backward sweep instead of forward\n",p);
   MPIU_printf(pc->comm, " %spc_bgs_symmetric: use both, a forward and backward sweep\n",p);
   MPIU_printf(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (i.e., -sub_ksp_type\
