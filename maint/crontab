@@ -15,4 +15,5 @@
 15 0 * * * /home/bsmith/petsc/maint/buildtest 5
 15 0 * * * /home/bsmith/petsc/maint/buildtest 6
 15 0 * * * /home/bsmith/petsc/maint/buildtest 7
+30 7 * * * /home/bsmith/petsc/maint/checknightly
 #
