@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.44 1998/03/27 19:53:43 balay Exp balay $";
+static char vcid[] = "$Id: mpi.c,v 1.45 1998/04/01 00:21:03 balay Exp balay $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -12,7 +12,6 @@ static char vcid[] = "$Id: mpi.c,v 1.44 1998/03/27 19:53:43 balay Exp balay $";
 #include "pinclude/petscfix.h" 
 #define MPI_SUCCESS 0
 void    *MPIUNI_TMP   = 0;
-int     MPIUNI_DUMMY[2] = {100000000,0};
 int     MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),
                                2*sizeof(double),sizeof(char)};
 
