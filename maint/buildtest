@@ -96,12 +96,10 @@ foreach i ($job)
   echo "****************************************************">>examples.log
   echo "Build on $mach  $bopt `date` " >> examples.log
   rsh $mach -n "cd $H ;  \
-    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job1 tree \
-         >>& maint/examples.log"
+    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job1 tree >>& maint/examples.log"
   echo "******************************************************" >> examples.log
   rsh $mach -n "cd $H ;  \
-    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job2 tree \
-         >>& maint/examples.log"
+    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job2 tree  >>& maint/examples.log"
   endif
   echo "Finished Build on $mach $arch $bopt `date`" >> examples.log
   rsh $mach -n "cd $H ; \
