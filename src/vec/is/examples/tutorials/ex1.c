@@ -33,7 +33,7 @@ int main(int argc,char **argv)
      Create an index set with 5 entries. Each processor creates
    its own index set with its own list of integers.
   */
-  ierr = PetscMalloc(5*sizeof(int),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc(5*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   indices[0] = rank + 1; 
   indices[1] = rank + 2; 
   indices[2] = rank + 3; 

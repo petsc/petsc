@@ -10,7 +10,7 @@ EXTERN PetscErrorCode VecInitializePackage(char *);
 PetscErrorCode ISDuplicate_General(IS is,IS *newIS)
 {
   PetscErrorCode ierr;
-  IS_General *sub = (IS_General *)is->data;
+  IS_General     *sub = (IS_General *)is->data;
 
   PetscFunctionBegin;
   ierr = ISCreateGeneral(is->comm,sub->n,sub->idx,newIS);CHKERRQ(ierr);
@@ -21,7 +21,7 @@ PetscErrorCode ISDuplicate_General(IS is,IS *newIS)
 #define __FUNCT__ "ISDestroy_General" 
 PetscErrorCode ISDestroy_General(IS is)
 {
-  IS_General *is_general = (IS_General*)is->data;
+  IS_General     *is_general = (IS_General*)is->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -141,7 +141,7 @@ PetscErrorCode ISView_General(IS is,PetscViewer viewer)
 {
   IS_General     *sub = (IS_General *)is->data;
   PetscErrorCode ierr;
-  PetscInt            i,n = sub->n,*idx = sub->idx;
+  PetscInt       i,n = sub->n,*idx = sub->idx;
   PetscTruth     iascii;
 
   PetscFunctionBegin;
@@ -182,7 +182,7 @@ PetscErrorCode ISView_General(IS is,PetscViewer viewer)
 #define __FUNCT__ "ISSort_General" 
 PetscErrorCode ISSort_General(IS is)
 {
-  IS_General *sub = (IS_General *)is->data;
+  IS_General     *sub = (IS_General *)is->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -246,11 +246,11 @@ static struct _ISOps myops = { ISGetSize_General,
 PetscErrorCode ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],IS *is)
 {
   PetscErrorCode ierr;
-  PetscInt        i,min,max;
-  PetscTruth sorted = PETSC_TRUE;
-  IS         Nindex;
-  IS_General *sub;
-  PetscTruth flg;
+  PetscInt       i,min,max;
+  PetscTruth     sorted = PETSC_TRUE;
+  IS             Nindex;
+  IS_General     *sub;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidPointer(is,4);

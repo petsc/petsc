@@ -3,8 +3,8 @@ CFLAGS		 =
 FFLAGS		 = 
 CPPFLAGS         =
 FPPFLAGS         =
-LOCDIR		 = src/pf/examples/tutorials/
-EXAMPLESC	 = ex1.c
+LOCDIR		 = src/vec/pf/examples/tutorials/
+EXAMPLESC	 = 
 EXAMPLESF	 = 
 MANSEC           = Vec
 
@@ -14,7 +14,7 @@ ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o   ${PETSC_DM_LIB}
 	${RM} -f ex1.o 
 #--------------------------------------------------------------------------
-TESTEXAMPLES_1	 = ex1.PETSc ex1.rm
+TESTEXAMPLES_1	 = 
 TESTEXAMPLES_2	 = 
 TESTEXAMPLES_3	 = 
 TESTEXAMPLES_4	 = 

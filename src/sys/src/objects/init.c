@@ -381,12 +381,14 @@ PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pet
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
 PetscErrorCode PetscOptionsCheckInitial_Private(void)
 {
-  char       string[64],mname[PETSC_MAX_PATH_LEN],*f;
-  MPI_Comm   comm = PETSC_COMM_WORLD;
-  PetscTruth flg1,flg2,flg3,flag;
+  char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
+  MPI_Comm       comm = PETSC_COMM_WORLD;
+  PetscTruth     flg1,flg2,flg3,flag;
   PetscErrorCode ierr;
-  int        *nodes,i,rank;
-  char       version[256];
+  PetscInt       si;
+  int            i;
+  PetscMPIInt    rank;
+  char           version[256];
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -497,6 +499,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(PETSC_NULL,"-stop_for_debugger",string,64,&flg2);CHKERRQ(ierr);
   if (flg1 || flg2) {
     PetscMPIInt    size;
+    PetscInt       lsize,*nodes;
     MPI_Errhandler err_handler;
     /*
        we have to make sure that all processors have opened 
@@ -516,10 +519,10 @@ PetscErrorCode PetscOptionsCheckInitial_Private(void)
       }
     }
     /* check if this processor node should be in debugger */
-    ierr = PetscMalloc(size*sizeof(int),&nodes);CHKERRQ(ierr);
-    ierr = PetscOptionsGetIntArray(PETSC_NULL,"-debugger_nodes",nodes,&size,&flag);CHKERRQ(ierr);
+    ierr = PetscMalloc(size*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
+    ierr = PetscOptionsGetIntArray(PETSC_NULL,"-debugger_nodes",nodes,&lsize,&flag);CHKERRQ(ierr);
     if (flag) {
-      for (i=0; i<size; i++) {
+      for (i=0; i<lsize; i++) {
         if (nodes[i] == rank) { flag = PETSC_FALSE; break; }
       }
     }
@@ -670,9 +673,9 @@ PetscErrorCode PetscOptionsCheckInitial_Private(void)
      ierr = PetscOptionsGetReal(PETSC_NULL,"-compare",&tol,&flg1);CHKERRQ(ierr); 
      ierr = PetscCompareInitialize(tol);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-petsc_sleep",&i,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-petsc_sleep",&si,&flg1);CHKERRQ(ierr);
   if (flg1) {
-    ierr = PetscSleep(i);CHKERRQ(ierr);
+    ierr = PetscSleep(si);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_info_exclude",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);

@@ -35,8 +35,8 @@ PetscErrorCode VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
 {
 
   PetscErrorCode ierr;
-  int        N;
-  IS         is;
+  PetscInt       N;
+  IS             is;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin,VEC_COOKIE,1);
@@ -94,8 +94,9 @@ PetscErrorCode VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
 {
 
   PetscErrorCode ierr;
-  int        N,rank;
-  IS         is;
+  PetscInt       N;
+  PetscMPIInt    rank;
+  IS             is;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin,VEC_COOKIE,1);

@@ -11,8 +11,9 @@ static char help[] = "Tests ISAllGather().\n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  int        i,n,*indices,rank,size;
-  IS         is,newis;
+  PetscInt       i,n,*indices;
+  PetscInt       rank,size;
+  IS             is,newis;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -22,7 +23,7 @@ int main(int argc,char **argv)
      Create IS
   */
   n = 4 + rank;
-  ierr = PetscMalloc(n*sizeof(int),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     indices[i] = rank + i;
   }

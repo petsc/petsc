@@ -15,9 +15,10 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int        i,n = 4,ierr, inputindices[] = {0,3,9,12},bs = 3,issize,*indices;
-  IS         set;
-  PetscTruth isblock;
+  PetscErrorCode ierr;
+  PetscInt       i,n = 4, inputindices[] = {0,3,9,12},bs = 3,issize,*indices;
+  IS             set;
+  PetscTruth     isblock;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
       

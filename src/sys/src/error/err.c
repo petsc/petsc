@@ -320,10 +320,10 @@ PetscErrorCode PetscError(int line,const char *func,const char* file,const char 
 
 .seealso: PetscRealView() 
 @*/
-PetscErrorCode PetscIntView(int N,int idx[],PetscViewer viewer)
+PetscErrorCode PetscIntView(PetscInt N,PetscInt idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  int        j,i,n = N/20,p = N % 20;
+  PetscInt        j,i,n = N/20,p = N % 20;
   PetscTruth iascii,issocket;
   MPI_Comm   comm;
 
@@ -350,7 +350,7 @@ PetscErrorCode PetscIntView(int N,int idx[],PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (issocket) {
-    int         *array,*sizes,Ntotal,*displs;
+    PetscInt         *array,*sizes,Ntotal,*displs;
     PetscMPIInt rank,size;
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -401,10 +401,10 @@ PetscErrorCode PetscIntView(int N,int idx[],PetscViewer viewer)
 
 .seealso: PetscIntView() 
 @*/
-PetscErrorCode PetscRealView(int N,PetscReal idx[],PetscViewer viewer)
+PetscErrorCode PetscRealView(PetscInt N,PetscReal idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  int        j,i,n = N/5,p = N % 5;
+  PetscInt        j,i,n = N/5,p = N % 5;
   PetscTruth iascii,issocket;
   MPI_Comm   comm;
 
@@ -431,7 +431,7 @@ PetscErrorCode PetscRealView(int N,PetscReal idx[],PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (issocket) {
-    int         *sizes,Ntotal,*displs;
+    PetscInt         *sizes,Ntotal,*displs;
     PetscMPIInt rank,size;
     PetscReal   *array;
 
@@ -443,10 +443,10 @@ PetscErrorCode PetscRealView(int N,PetscReal idx[],PetscViewer viewer)
         ierr = MPI_Gather(&N,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
         ierr = MPI_Gatherv(idx,N,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
       } else {
-	ierr   = PetscMalloc(size*sizeof(int),&sizes);CHKERRQ(ierr);
+	ierr   = PetscMalloc(size*sizeof(PetscInt),&sizes);CHKERRQ(ierr);
         ierr   = MPI_Gather(&N,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
         Ntotal = sizes[0]; 
-	ierr   = PetscMalloc(size*sizeof(int),&displs);CHKERRQ(ierr);
+	ierr   = PetscMalloc(size*sizeof(PetscInt),&displs);CHKERRQ(ierr);
         displs[0] = 0;
         for (i=1; i<size; i++) {
           Ntotal    += sizes[i];
@@ -484,10 +484,10 @@ PetscErrorCode PetscRealView(int N,PetscReal idx[],PetscViewer viewer)
 
 .seealso: PetscIntView(), PetscRealView()
 @*/
-PetscErrorCode PetscScalarView(int N,PetscScalar idx[],PetscViewer viewer)
+PetscErrorCode PetscScalarView(PetscInt N,PetscScalar idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  int        j,i,n = N/3,p = N % 3;
+  PetscInt        j,i,n = N/3,p = N % 3;
   PetscTruth iascii,issocket;
   MPI_Comm   comm;
 
@@ -526,7 +526,7 @@ PetscErrorCode PetscScalarView(int N,PetscScalar idx[],PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (issocket) {
-    int         *sizes,Ntotal,*displs;
+    PetscInt         *sizes,Ntotal,*displs;
     PetscMPIInt size,rank;
     PetscScalar *array;
 
@@ -538,10 +538,10 @@ PetscErrorCode PetscScalarView(int N,PetscScalar idx[],PetscViewer viewer)
         ierr = MPI_Gather(&N,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
         ierr = MPI_Gatherv(idx,N,MPIU_SCALAR,0,0,0,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
       } else {
-	ierr   = PetscMalloc(size*sizeof(int),&sizes);CHKERRQ(ierr);
+	ierr   = PetscMalloc(size*sizeof(PetscInt),&sizes);CHKERRQ(ierr);
         ierr   = MPI_Gather(&N,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
         Ntotal = sizes[0]; 
-	ierr   = PetscMalloc(size*sizeof(int),&displs);CHKERRQ(ierr);
+	ierr   = PetscMalloc(size*sizeof(PetscInt),&displs);CHKERRQ(ierr);
         displs[0] = 0;
         for (i=1; i<size; i++) {
           Ntotal    += sizes[i];
