@@ -141,7 +141,7 @@ class Configure(config.base.Configure):
         self.addDefine('HAVE_RTLD_GLOBAL', 1)
 
     #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)
-    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
+    if self.useDynamic and self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
       if self.framework.sharedBlasLapack: bls = 'BLASLAPACK_LIB_SHARED=${BLASLAPACK_LIB}\n'
       else:                               bls = ''
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', bls+'MPI_LIB_SHARED=${MPI_LIB}\ninclude ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
