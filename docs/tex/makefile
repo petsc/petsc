@@ -31,9 +31,10 @@ manual.html: manual.tex part1.tex
 	rm -f  *.xbm latex.err findex.tex sindex.tex tmp.html
 
 intro.dvi: intro.tex part1.tex
-	latex intro
-	bibtex intro
-	latex intro
+	latex manual
+	bibtex manual
+	latex manual
+	mv manual.aux intro.aux
 	latex intro
 	-@chmod g+w intro.dvi intro.aux intro.bbl intro.blg intro.log
 
