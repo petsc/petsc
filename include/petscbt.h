@@ -1,4 +1,4 @@
-/* $Id: bitarray.h,v 1.3 1996/02/01 15:36:30 balay Exp balay $ */
+/* $Id: bitarray.h,v 1.4 1996/02/01 15:43:21 balay Exp balay $ */
 
 /*    
       BT_LOOKUP - Expexts a charecter array -'array' as input, and 
@@ -23,7 +23,10 @@
               2: array[index] = 1;
               3: return retval;
 */
-#include <values.h>
+#if !defined(BITSPERBYTE)
+#define BITSPERBYTE 8
+#endif
+
 static char _mask, _BT_c;
 static int  _BT_idx;
 #define BT_LOOKUP( array,  index) (_BT_idx         = index/BITSPERBYTE, \
