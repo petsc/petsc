@@ -82,7 +82,7 @@ int PetscViewerDrawGetDraw(PetscViewer viewer,int windownumber,PetscDraw *draw)
   if (windownumber >= vdraw->draw_max) {
      /* allocate twice as many slots as needed */
      int           draw_max = vdraw->draw_max;
-     PetscDraw     *draw = vdraw->draw;
+     PetscDraw     *tdraw = vdraw->draw;
      PetscDrawLG   *drawlg = vdraw->drawlg;
      PetscDrawAxis *drawaxis = vdraw->drawaxis;
 
@@ -94,11 +94,11 @@ int PetscViewerDrawGetDraw(PetscViewer viewer,int windownumber,PetscDraw *draw)
      ierr = PetscMalloc(vdraw->draw_max*sizeof(PetscDrawAxis),&vdraw->drawaxis);CHKERRQ(ierr);
      ierr = PetscMemzero(vdraw->drawaxis,vdraw->draw_max*sizeof(PetscDrawAxis));CHKERRQ(ierr);
 
-     ierr = PetscMemcpy(vdraw->draw,draw,draw_max*sizeof(PetscDraw));CHKERRQ(ierr);
+     ierr = PetscMemcpy(vdraw->draw,tdraw,draw_max*sizeof(PetscDraw));CHKERRQ(ierr);
      ierr = PetscMemcpy(vdraw->drawlg,drawlg,draw_max*sizeof(PetscDrawLG));CHKERRQ(ierr);
      ierr = PetscMemcpy(vdraw->drawaxis,drawaxis,draw_max*sizeof(PetscDrawAxis));CHKERRQ(ierr);
 
-     ierr = PetscFree(draw);CHKERRQ(ierr);
+     ierr = PetscFree(tdraw);CHKERRQ(ierr);
      ierr = PetscFree(drawlg);CHKERRQ(ierr);
      ierr = PetscFree(drawaxis);CHKERRQ(ierr);
   }

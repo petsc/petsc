@@ -337,7 +337,7 @@ fortranstubs:
                 echo Running adifor on function $${r};\
                 ${RM} $*.tmp $*.tmp.f $*.ad.F silly.cmp ;\
                 echo "#include \"$<\"" > $*.ad.F;\
-                ${FC} -E ${COPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $< | grep -v '^ *#' > $*.tmp ; \
+                ${FC} -E ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $< | grep -v '^ *#' > $*.tmp ; \
                 ${PETSC_DIR}/bin/adprocess.py $*.tmp $${r}; \
                 echo $*.tmp.f > silly.cmp; \
                 echo ${ADIFOR_FC} AD_TOP=$${r}; \
@@ -346,7 +346,7 @@ fortranstubs:
 	        ${ADIFOR_FC} AD_TOP=$${r} AD_SCALAR_GRADIENTS=true AD_PMAX=1 AD_PREFIX=m ; \
                 sed -e 's/^C/\!/g' -e 's/^     \*/     \&/g' m_$*.tmp.f | ${PETSC_DIR}/bin/adiforfix.py >> $*.ad.F;\
 	        echo ${FC} -o $*.o -c ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $*.ad.F ;\
-	        ${FC} -o $*.o -c ${COPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $*.ad.F ;\
+	        ${FC} -o $*.o -c ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $*.ad.F ;\
               else \
                 echo ${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $< ; \
                 ${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} $< ; \

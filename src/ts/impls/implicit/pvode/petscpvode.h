@@ -55,6 +55,8 @@ typedef struct {
   double   abstol;          /* only for using SS flag in PVODE */
   N_Vector y;               /* current solution */
   void     *mem;            /* time integrater context */
+
+  int      nonlinear_solves,linear_solves; /* since creation of object */
 } TS_PVode;
 
 #endif
