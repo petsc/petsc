@@ -22,6 +22,7 @@ class BuildChecker:
                'solaris64':       ['solaris'],
                't3e':             ['cray'],
                'win32_borland':   ['win32fe', 'borland'],
+               'win32_gnu':       ['gnu'],
                'win32_ms_mpich':  ['win32fe', 'ms']}
 
   # Stolen (like at good code) from the XEmacs compile.el
