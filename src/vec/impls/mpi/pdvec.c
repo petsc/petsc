@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.88 1998/03/16 18:38:12 balay Exp bsmith $ */
+/* $Id: pdvec.c,v 1.89 1998/04/03 21:47:37 bsmith Exp balay $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -392,7 +392,7 @@ int VecView_MPI_Matlab(Vec xin, Viewer viewer )
     }
     ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,xx,lens,x->ownership,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
     PetscFree(lens);
-    ierr = ViewerMatlabPutArray_Private(viewer,N,1,xx);CHKERRQ(ierr);
+    ierr = ViewerMatlabPutScalar_Private(viewer,N,1,xx);CHKERRQ(ierr);
     PetscFree(xx);
   } else {
     ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
