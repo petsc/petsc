@@ -27,7 +27,7 @@ include $(PETSC_DIR)/bmake/common
 libc: $(LIBNAME)($(OBJSC))
 libf: $(LIBNAME)($(OBJSF))
 
- 
+
 #############
 
 .F.o: 

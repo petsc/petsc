@@ -48,10 +48,10 @@ CONF    = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STDLIB_H \
 include $(PETSC_DIR)/bmake/common
 
 libc:
-	 for i in $(OBJSC); do make libmember LIBMEMBER=$$i ; done
+	for i in $(OBJSC); do $(OMAKE) BOPT=$(BOPT) libmember LIBMEMBER=$$i ; done
 
 libf:
-	for i in $(OBJSF); do make libmember LIBMEMBER=$$i ; done
+	for i in $(OBJSF); do $(OMAKE) BOPT=$(BOPT) libmember LIBMEMBER=$$i ; done
 
 libmember:    $(LIBNAME)($(LIBMEMBER))
 
