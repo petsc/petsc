@@ -1,5 +1,5 @@
 c
-c  "$Id: xmod.F,v 1.26 1997/10/12 18:34:56 keyes Exp curfman $";
+c  "$Id: xmod.F,v 1.27 1997/10/16 03:30:13 curfman Exp curfman $";
 c
 c  This file contains routines that are used only within the PETSc
 c  solver.  Most are interface routines to pass between the PETSc
@@ -28,13 +28,13 @@ c
      &        Agxm, Agym, Agzm,
      &        Axef01, Ayef01, Azef01, Agxef01, Agyef01,
      &        Agzef01, Andof, Aggrid, Abcswitch, Amodel,
-     &        Abump)
+     &        Abump, Ank1)
 
 #include "param.h"
 
       integer Aprintg, Acomm, Arank, Asize, Abctype, Anowake,
      &        Aproblem, Agxsf, Agysf, Agzsf, Agxef, Agyef, Agzef,
-     &        Axsf, Aysf, Azsf, Axef, Ayef, Azef, Amodel,
+     &        Axsf, Aysf, Azsf, Axef, Ayef, Azef, Amodel, Ank1,
      &        Axefm1, Ayefm1, Azefm1, Axefp1, Ayefp1, Azefp1, 
      &        Agxefp1, Agyefp1, Agzefp1, ctot, Abcswitch,
      &        Axsf1, Aysf1, Azsf1, Agxsf1, Agysf1, Agzsf1,
@@ -121,6 +121,15 @@ c  in param.h: Common block, pgrid, for local grid data:
       ni1 = ni+1
       nj1 = nj+1
       nk1 = nk+1
+
+c  Fix for 2-dimensional case
+      if (Ank1 .eq. 3) then
+         nk1_boundary = 3
+         nk_boundary  = 2
+      else
+         nk1_boundary = nk1
+         nk_boundary  = nk
+      endif
 
       gxsf    = Agxsf
       gysf    = Agysf

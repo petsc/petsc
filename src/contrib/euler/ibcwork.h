@@ -12,13 +12,13 @@ c
 
 #define fbcfpk1(i,j) fff(ndof,i,j,1)
 
-#define fbcrk2(i,j) fff(1,i,j,nk1)
-#define fbcruk2(i,j) fff(2,i,j,nk1)
-#define fbcrvk2(i,j) fff(3,i,j,nk1)
-#define fbcrwk2(i,j) fff(4,i,j,nk1)
-#define fbcek2(i,j) fff(5,i,j,nk1)
+#define fbcrk2(i,j) fff(1,i,j,nk1_boundary)
+#define fbcruk2(i,j) fff(2,i,j,nk1_boundary)
+#define fbcrvk2(i,j) fff(3,i,j,nk1_boundary)
+#define fbcrwk2(i,j) fff(4,i,j,nk1_boundary)
+#define fbcek2(i,j) fff(5,i,j,nk1_boundary)
 
-#define fbcfpk2(i,j) fff(ndof,i,j,nk1)
+#define fbcfpk2(i,j) fff(ndof,i,j,nk1_boundary)
 
 #define fbcrj1(i,k) fff(1,i,1,k)
 #define fbcruj1(i,k) fff(2,i,1,k)

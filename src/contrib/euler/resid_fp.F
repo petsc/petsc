@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_fp.F,v 1.8 1997/10/12 20:54:31 keyes Exp keyes $";
+c  "$Id: resid_fp.F,v 1.9 1997/10/16 13:49:29 keyes Exp curfman $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -247,8 +247,7 @@ c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
       double precision  ada,qda,ff,p0,r0,c0,pi1k,pb,u,v,w,rqdq
       double precision  u2,v2,w2,ub,con,r0c0,rb,vb,wb,pinj1k,rinj1k,pij1
-      double precision  pijnk1,rni1jk,r1jk
-      double precision  pi,xloc
+      double precision  pijnk1,rni1jk,r1jk,xloc
       integer i,j,k
 
       double precision dx, dy
@@ -256,7 +255,7 @@ c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
       residbc_fp = 0
 
 c set dx and dy from "interior" area metrics (assumes that dz spacing
-c is uniformly unity, and that mesh is uniform
+c is uniformly unity, and that mesh is uniform)
 
       dx = ajy(xsf2,ysf2,zsf2) 
       dy = aix(xsf2,ysf2,zsf2)
@@ -320,10 +319,14 @@ c      DO 6 I=2,NI
       endif
 c
 c zmax boundary is homogeneous Neumann
-      if (zef01 .eq. nk) then
+c      if (zef01 .eq. nk) then
+      if (zef01 .eq. nk_boundary) then
         do 7 j=ysf2,yef01
         do 7 i=xsf2,xef01
-      fbcfpk2(i,j)=fp(i,j,nk1)-fp(i,j,nk)
+       fbcfpk2(i,j)=
+     &   fp(i,j,zefp1)-fp(i,j,zef01)
+        if (fbcfpk2(i,j) .ne. 0.0) 
+     &   write(6,*) 'j,i,f = ',j,i,fbcfpk2(i,j)
     7 CONTINUE
       endif
 c
