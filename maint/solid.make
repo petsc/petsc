@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: solid.make,v 1.31 2000/08/17 23:59:35 buschelm Exp balay $ 
+# $Id: solid.make,v 1.32 2000/08/18 03:31:36 balay Exp balay $ 
 
 # Defaults
-hme="/home/petsc/petsc-2.0.28"
+hme="/home/petsc/petsc-2.0.29"
 src_dir=""
 action="lib"
 
@@ -26,9 +26,9 @@ for arg in "$@" ; do
         echo " "
         echo "Example Usage:"
         echo "  - To update the libraries with changes in src/sles/interface"
-        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.28 SRC_DIR=src/sles/interface ACTION=lib"
+        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.29 SRC_DIR=src/sles/interface ACTION=lib"
         echo "  - To rebuild a new version of PETSC on all the machines"
-        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.28 SRC_DIR=\"\" ACTION=\"all\" "
+        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.29 SRC_DIR=\"\" ACTION=\"all\" "
         echo " "
         echo "Defaults:"
         echo "  PETSC_DIR=$hme SRC_DIR=$src_dir ACTION=$action"
@@ -100,16 +100,10 @@ rsh -n ico09 "cd $hme/$src_dir; $make BOPT=O_c++"
 rsh -n ico09 "cd $hme/$src_dir; $make BOPT=g_complex"
 rsh -n ico09 "cd $hme/$src_dir; $make BOPT=O_complex"
 
-# rs600
-arch=rs6000
-make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh -n  tri34 "cd $hme/$src_dir; $make BOPT=g"
 
-# IRIX
-#arch=IRIX
+#arch=rs6000
 #make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-#rsh -n rock "cd $hme/$src_dir; $make BOPT=g"
-#rsh -n rock "cd $hme/$src_dir; $make BOPT=g_c++"
+#rsh -n  tri34 "cd $hme/$src_dir; $make BOPT=g"
 
 
 arch=linux
