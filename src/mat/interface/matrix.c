@@ -144,6 +144,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int *cols[],PetscScalar *vals[])
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->restorerow) PetscFunctionReturn(0);
   ierr = (*mat->ops->restorerow)(mat,row,ncols,cols,vals);CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3960,6 +3961,7 @@ int MatRestoreArray(Mat mat,PetscScalar *v[])
 #endif
   if (!mat->ops->restorearray) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->restorearray)(mat,v);CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
