@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.225 1997/11/05 22:32:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.226 1997/11/07 01:58:23 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1003,7 +1004,7 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
       }
     } 
   } else {
-    SETERRQ(1,0,"Option not supported");
+    SETERRQ(1,0,"Parallel SOR not supported");
   }
   PetscFunctionReturn(0);
 } 
