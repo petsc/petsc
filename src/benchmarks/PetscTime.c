@@ -1,4 +1,5 @@
 #include "stdio.h"
+#include "petsc.h"
 #include "pinclude/ptime.h"
 
 int main( int argc, char **argv)
