@@ -302,7 +302,7 @@ extern void PETSC_STDCALL f77FILLA(int* nnodesLoc,int* nedgeLoc,int* eptr,int*ns
 				   int* isface,PetscScalar* fxn,PetscScalar* fyn,PetscScalar* fzn, 
 				   PetscScalar* sxn,PetscScalar* syn,PetscScalar* szn,int* nsnodeLoc,int* nvnodeLoc,
 				   int* nfnodeLoc,int* isnode,int* ivnode,int* ifnode, 
-				   PetscScalar* qnode,Mat* jac,PetscScalar* cdt,PetscScalar* rl,PetscScalar* area,PetscScalar* xn,PetscScalar* yn,PetscScalar* zn,
+				   PetscScalar* qnode,Mat* jac,PetscScalar* cdt,PetscScalar* rl,PetscScalar* area,PetscScalar* xn,PetscScalar*,PetscScalar* zn,
              PetscScalar* cfl,int* rank,int* nvertices);
 extern void PETSC_STDCALL f77READR1(int*,int*);
 extern void PETSC_STDCALL f77SUMGS(int*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
@@ -319,7 +319,7 @@ extern void PETSC_STDCALL f77GETRES(int* nnodesLoc,int* ncell,int *nedgeLoc,int*
 				    PetscScalar* sxn,PetscScalar* syn,PetscScalar* szn,
 				    PetscScalar* vxn,PetscScalar* vyn,PetscScalar* vzn,
 				    PetscScalar* fxn,PetscScalar* fyn,PetscScalar* fzn,
-				    PetscScalar* xn,PetscScalar* yn,PetscScalar* zn,PetscScalar* rl,
+				    PetscScalar* xn,PetscScalar*,PetscScalar* zn,PetscScalar* rl,
 				    PetscScalar* qnode,PetscScalar* cdt,PetscScalar* x,PetscScalar* y,PetscScalar* z,PetscScalar* area,
 				    PetscScalar* grad,PetscScalar* res,PetscScalar* turbre,PetscScalar* slen,int* c2n,int* c2e,
 				    PetscScalar* us,PetscScalar* vs,PetscScalar* as,PetscScalar* phi,PetscScalar* amut,

@@ -115,13 +115,13 @@ class Configure(config.base.Configure):
     g.write('BLACSDEFS = $(DEFS1) $(SENDIS) $(BUFF) $(TRANSCOMM) $(WHATMPI) $(SYSERRORS)\n')
     self.setcompilers.pushLanguage('F77')  
     g.write('F77 ='+self.setcompilers.getCompiler()+'\n')
-    g.write('F77FLAGS ='+self.setcompilers.getCompilerFlags()+'\n')
+    g.write('F77FLAGS ='+self.framework.argDB['FFLAGS']+'\n')
     g.write('F77LOADER ='+self.setcompilers.getLinker()+'\n')      
     g.write('F77LOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
     self.setcompilers.popLanguage()
     self.setcompilers.pushLanguage('C')
     g.write('CC ='+self.setcompilers.getCompiler()+'\n')
-    g.write('CCFLAGS ='+self.setcompilers.getCompilerFlags()+'\n')      
+    g.write('CCFLAGS ='+self.framework.argDB['CFLAGS']+'\n')      
     g.write('CCLOADER ='+self.setcompilers.getLinker()+'\n')
     g.write('CCLOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
     self.setcompilers.popLanguage()
@@ -210,14 +210,14 @@ class Configure(config.base.Configure):
     g.write('REDISTdir     = $(home)/REDIST\n')
     self.setcompilers.pushLanguage('F77')  
     g.write('F77 ='+self.setcompilers.getCompiler()+'\n')
-    if self.setcompilers.getCompiler().find('g77') == -1:    g.write('F77FLAGS ='+self.setcompilers.getCompilerFlags()+'\n')
+    if self.setcompilers.getCompiler().find('g77') == -1:    g.write('F77FLAGS ='+self.framework.argDB['FFLAGS']+'\n')
     else:    g.write('F77FLAGS = -O\n')
     g.write('F77LOADER ='+self.setcompilers.getLinker()+'\n')      
     g.write('F77LOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
     self.setcompilers.popLanguage()
     self.setcompilers.pushLanguage('C')
     g.write('CC ='+self.setcompilers.getCompiler()+'\n')
-    g.write('CCFLAGS ='+self.setcompilers.getCompilerFlags()+'\n')      
+    g.write('CCFLAGS ='+self.framework.argDB['CFLAGS']+'\n')      
     g.write('CCLOADER ='+self.setcompilers.getLinker()+'\n')
     g.write('CCLOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
     self.setcompilers.popLanguage()
@@ -227,6 +227,10 @@ class Configure(config.base.Configure):
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
+    try:
+      output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make clean', timeout=2500, log = self.framework.log)[0]
+    except RuntimeError, e:
+      pass
     try:
       output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make', timeout=2500, log = self.framework.log)[0]
     except RuntimeError, e:
