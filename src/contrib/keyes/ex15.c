@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.26 1999/03/26 23:26:43 bsmith Exp $";
+static char vcid[] = "$Id: ex15.c,v 1.1 1999/10/06 16:37:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -106,11 +106,11 @@ int main( int argc, char **argv )
   ierr = OptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,&flg); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-coef",&user.coef,&flg); CHKERRA(ierr);
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
-  PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.coarse.mx,user.coarse.my);
-  PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %d by %d\n",user.fine.mx,user.fine.my);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.coarse.mx,user.coarse.my);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %d by %d\n",user.fine.mx,user.fine.my);CHKERRA(ierr);
   n = user.fine.mx*user.fine.my; N = user.coarse.mx*user.coarse.my;
 
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
 
@@ -176,23 +176,23 @@ int main( int argc, char **argv )
   ierr = SNESSetTolerances(snes,atol,rtol,stol,1,maxf); CHKERRA(ierr);
   ierr = FormInitialGuess1(&user,user.fine.x); CHKERRA(ierr);
   ierr = SNESSolve(snes,user.fine.x,&its); CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"Pre-load Newton iterations = %d\n", its );
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Pre-load Newton iterations = %d\n", its );CHKERRA(ierr);
 
   /* Reset options, start timer, then solve nonlinear system */
   ierr = SNESSetTolerances(snes,atol,rtol,stol,maxit,maxf); CHKERRA(ierr);
   ierr = FormInitialGuess1(&user,user.fine.x); CHKERRA(ierr);
-  PLogStagePush(1);
+  ierr = PLogStagePush(1);CHKERRA(ierr);
   ierr = PetscGetTime(&v1); CHKERRA(ierr);
   ierr = SNESSolve(snes,user.fine.x,&its); CHKERRA(ierr);
   ierr = PetscGetTime(&v2); CHKERRA(ierr);
-  PLogStagePop();
+  ierr = PLogStagePop();CHKERRA(ierr);
   elapsed = v2 - v1;
   ierr = SNESGetNumberLinearIterations(snes,&lits); CHKERRA(ierr);
   litspit = ((double)lits)/((double)its);
-  PetscPrintf(PETSC_COMM_WORLD,"Elapsed Time = %e\n", elapsed );
-  PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );
-  PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %d\n", lits );
-  PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n", litspit );
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Elapsed Time = %e\n", elapsed );CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %d\n", lits );CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n", litspit );CHKERRA(ierr);
 
   /* Free data structures */
   ierr = MatDestroy(user.fine.J); CHKERRA(ierr);
@@ -751,7 +751,6 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;
   int     ierr;
-  PCType  pctype;
   SLES    sles;
   PC      pc;
 
@@ -761,13 +760,12 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   /* create coarse grid jacobian for preconditioner */
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
   ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
-  ierr = PCGetType(pc,&pctype);CHKERRQ(ierr);
-  if (PetscTypeCompare(pctype,PCMG)) {
+  if (PetscTypeCompare(pc,PCMG)) {
 
     ierr = SLESSetOperators(user->sles_fine,user->fine.J,user->fine.J,SAME_NONZERO_PATTERN);CHKERRA(ierr);
 
     /* restrict X to coarse grid */
-    ierr = MatMult(user->R,X,user->coarse.x);CHKERRQ(ierr);
+    ierr = MGRestrict(user->R,X,user->coarse.x);CHKERRQ(ierr);
     ierr = VecPointwiseMult(user->Rscale,user->coarse.x,user->coarse.x);CHKERRQ(ierr);
     /* form Jacobian on coarse grid */
     ierr = FormJacobian_Grid(user,&user->coarse,user->coarse.x,&user->coarse.J,&user->coarse.J);CHKERRQ(ierr);
@@ -778,43 +776,6 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 
   return 0;
 }
-
-/* 
-   Unfortunately the PETSc multigrid interface expects the interpolation to 
-   be provided as a multtrans() and the restriction as a mult() so we need
-   to provide a shell matrix that reverses the roles
-*/
-
-/* this is our interpolation add routine */
-int MatMultTransAdd_Ours(Mat shell,Vec x, Vec y, Vec z)
-{
-  Mat mat;
-  int ierr;
-
-  ierr = MatShellGetContext(shell,(void **)&mat);CHKERRQ(ierr);
-  ierr = MatMultAdd(mat,x,y,z);CHKERRQ(ierr);
-  return 0;
-}
-/* this is our restriction routine */
-int MatMult_Ours(Mat shell,Vec x, Vec y)
-{
-  Mat mat;
-  int ierr;
-
-  ierr = MatShellGetContext(shell,(void **)&mat);CHKERRQ(ierr);
-  ierr = MatMultTrans(mat,x,y);CHKERRQ(ierr);
-  return 0;
-}
-int MatDestroy_Ours(Mat shell)
-{
-  Mat mat;
-  int ierr;
-
-  ierr = MatShellGetContext(shell,(void **)&mat);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
-  return 0;
-}
-
 
 #undef __FUNC__
 #define __FUNC__ "FormInterpolation"
@@ -901,21 +862,10 @@ int FormInterpolation(AppCtx *user)
 
   ierr = VecDuplicate(user->coarse.x,&Rscale);CHKERRQ(ierr);
   ierr = VecSet(&one,user->fine.x);CHKERRQ(ierr);
-  ierr = MatMultTrans(mat,user->fine.x,Rscale);CHKERRQ(ierr);
+  ierr = MGRestrict(mat,user->fine.x,Rscale);CHKERRQ(ierr);
   ierr = VecReciprocal(Rscale);CHKERRQ(ierr);
   user->Rscale = Rscale;
- 
-  /*
-     this is merely so we provide a restriction "matrix" to the multigrid code
-     so we flip the roles of MatMult() and MatMultTrans() on the 
-     "interpolation/restriction" matrix
-  */
-
-  ierr = MatCreateShell(PETSC_COMM_WORLD,m_c_local,m_fine_local,m_coarse,m_fine,
-                        mat,&user->R);CHKERRA(ierr);
-  ierr = MatShellSetOperation(user->R,MATOP_MULT,(void*)MatMult_Ours);CHKERRA(ierr);
-  ierr = MatShellSetOperation(user->R,MATOP_MULT_TRANS_ADD,(void*)MatMultTransAdd_Ours);CHKERRA(ierr);
-  ierr = MatShellSetOperation(user->R,MATOP_DESTROY,(void*)MatDestroy_Ours);CHKERRA(ierr);
+  user->R      = mat;
   return 0;
 }
 
