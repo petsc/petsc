@@ -33,6 +33,10 @@ FILE        *queuefile  = PETSC_NULL;
     REQUIRES a intervening call to PetscSynchronizedFlush() for the information 
     from all the processors to be printed.
 
+    Fortran Note:
+    The call sequence is PetscSynchronizedPrintf(PetscViewer, character(*), int ierr) from Fortran. 
+    That is, you can only pass a single character string from Fortran.
+
     The length of the formatted message cannot exceed QUEUESTRINGSIZE characters.
 
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
@@ -301,7 +305,8 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
    Level: intermediate
 
     Fortran Note:
-    This routine is not supported in Fortran.
+    The call sequence is PetscPrintf(PetscViewer, character(*), int ierr) from Fortran. 
+    That is, you can only pass a single character string from Fortran.
 
    Notes: %A is replace with %g unless the value is < 1.e-12 when it is 
           replaced with < 1.e-12

@@ -10,6 +10,8 @@
 #define petscfclose_               PETSCFCLOSE
 #define petscfprintf_              PETSCFPRINTF
 #define petscsynchronizedfprintf_  PETSCSYNCHRONIZEDFPRINTF
+#define petscprintf_               PETSCPRINTF
+#define petscsynchronizedprintf_   PETSCSYNCHRONIZEDPRINTF
 #define petscsynchronizedflush_    PETSCSYNCHRONIZEDFLUSH
 #define chkmemfortran_             CHKMEMFORTRAN
 #define petscattachdebugger_       PETSCATTACHDEBUGGER
@@ -76,6 +78,8 @@
 #define petscfclose_                  petscfclose
 #define petscfprintf_                 petscfprintf
 #define petscsynchronizedfprintf_     petscsynchronizedfprintf
+#define petscprintf_                  petscprintf
+#define petscsynchronizedprintf_      petscsynchronizedprintf
 #define petscsynchronizedflush_       petscsynchronizedflush
 #define petscmatlabenginecreate_      petscmatlabenginecreate
 #define petscmatlabenginedestroy_     petscmatlabenginedestroy
@@ -309,12 +313,30 @@ void PETSC_STDCALL petscfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIX
   FREECHAR(fname,c1);
 }
 
+void PETSC_STDCALL petscprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+{
+  char *c1;
+
+  FIXCHAR(fname,len1,c1);
+  *ierr = PetscPrintf((MPI_Comm)PetscToPointerComm(*comm),c1);
+  FREECHAR(fname,c1);
+}
+
 void PETSC_STDCALL petscsynchronizedfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
 {
   char *c1;
 
   FIXCHAR(fname,len1,c1);
   *ierr = PetscSynchronizedFPrintf((MPI_Comm)PetscToPointerComm(*comm),*file,c1);
+  FREECHAR(fname,c1);
+}
+
+void PETSC_STDCALL petscsynchronizedprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+{
+  char *c1;
+
+  FIXCHAR(fname,len1,c1);
+  *ierr = PetscSynchronizedPrintf((MPI_Comm)PetscToPointerComm(*comm),c1);
   FREECHAR(fname,c1);
 }
 
