@@ -494,7 +494,7 @@ class Configure(config.base.Configure):
     (headerGuess, sourceGuess) = self.getFortran90SourceGuesses()
     if 'with-f90-header' in self.framework.argDB:
       headerGuess = self.stripquotes(self.framework.argDB['with-f90-header'])
-    if 'with-f90-source' in self.framework.argDB.has_key():
+    if 'with-f90-source' in self.framework.argDB:
       sourceGuess = self.stripquotes(self.framework.argDB['with-f90-source'])
     if headerGuess:
       headerPath = os.path.abspath(headerGuess)
