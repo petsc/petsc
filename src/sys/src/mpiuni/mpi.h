@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.32 1996/09/03 16:10:07 balay Exp balay $ */
+/* $Id: mpi.h,v 1.33 1996/09/24 19:56:05 balay Exp bsmith $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -363,15 +363,12 @@ typedef char*   MPI_Errhandler;
                      MPI_SUCCESS)
 #define MPI_Allgatherv( sendbuf, sendcount,  sendtype, \
 		    recvbuf, recvcounts, displs, recvtype, comm) \
-                     (MPIUNI_TMP = (void *) (sendbuf), \
-                     MPIUNI_TMP = (void *) (sendcount), \
-                     MPIUNI_TMP = (void *) (sendtype), \
-                     MPIUNI_TMP = (void *) (recvbuf), \
-                     MPIUNI_TMP = (void *) (recvcounts), \
+                     (MPIUNI_TMP = (void *) (recvcounts), \
                      MPIUNI_TMP = (void *) (displs), \
                      MPIUNI_TMP = (void *) (recvtype), \
                      MPIUNI_TMP = (void *) (comm), \
-                     MPI_Abort(MPI_COMM_WORLD,0))
+                     PetscMemcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
+                     MPI_SUCCESS)
 #define MPI_Alltoall( sendbuf, sendcount,  sendtype, \
 		  recvbuf, recvcount,  recvtype, \
 		 comm) MPI_Abort(MPI_COMM_WORLD,0)
