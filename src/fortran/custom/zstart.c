@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.27 1997/10/27 00:45:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.28 1997/11/05 20:12:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -244,6 +244,11 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
 
 void petscfinalize_(int *__ierr)
 {
+#if defined(PARCH_solaris)
+  extern void standard_arithmetic();
+  standard_arithmetic();
+#endif
+
   *__ierr = PetscFinalize();
 }
 
