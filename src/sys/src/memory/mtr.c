@@ -605,7 +605,7 @@ int PetscTrLogDump(FILE *fp)
   }
   free(perm);
   free(shortlength);
-  free(shortfunction);
+  free((char **)shortfunction);
   fflush(fp);
   if (rank != size-1) {
     ierr = MPI_Send(&dummy,1,MPI_INT,rank+1,tag,MPI_COMM_WORLD);CHKERRQ(ierr);
