@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijov.c,v 1.4 1996/07/05 22:28:58 balay Exp balay $";
+static char vcid[] = "$Id: baijov.c,v 1.5 1996/07/09 19:02:16 balay Exp balay $";
 #endif
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -991,7 +991,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
           vworkA = a_a + a_i[row]*bs2; vworkB = b_a + b_i[row]*bs2;
 
           /* load the column values for this row into vals*/
-          vals  = sbuf_aa_i+ct2;
+          vals  = sbuf_aa_i+ct2*bs2;
           for ( l=0; l<nzB; l++ ) {
             if ((bmap[cworkB[l]]) < cstart)  
               PetscMemcpy(vals+l*bs2,vworkB+l*bs2,bs2*sizeof(Scalar));
