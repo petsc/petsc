@@ -2,8 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = $(PCONF) $(PETSC_INCLUDE) -D__DIR__='"contrib/sda/examples/tutorials"' \
-           $(CONF) -I../src
+CFLAGS	 = $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"' -I../../src
 SOURCEC  = 
 SOURCEF  =
 SOURCEH  = 
