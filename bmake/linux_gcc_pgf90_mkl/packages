@@ -1,4 +1,4 @@
-# $Id: packages,v 1.1 2001/08/22 20:52:10 balay Exp balay $ 
+# $Id: packages,v 1.2 2001/08/22 21:39:16 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -11,7 +11,7 @@
 # for information on retrieving them.
 #
 #BLASLAPACK_LIB = -L/home/petsc/software/mkl_linux/BIN -lmkl32_lapack -lmkl32_p3 
-BLASLAPACK_LIB = -L/home/petsc/software/mkl_linux/LIB -lmkl32_lapack -lmkl32_p3 /usr/lib/gcc-lib/i586-mandrake-linux/2.95.3/libg2c.a -lpthread
+BLASLAPACK_LIB = -L/home/petsc/software/mkl_linux/LIB -lmkl32_lapack -lmkl32_p3 -lpthread
 PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
 #
 # Location of MPI (Message Passing Interface) software
