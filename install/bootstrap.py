@@ -48,7 +48,8 @@ class BootstrapInstall (object):
     output = BootstrapInstall.getExecutable('bk')
     if output:
       # TODO: Log output
-      return 0
+      # return 0
+      pass
     self.bkPath = os.path.dirname(output)
     return 1
 
@@ -75,15 +76,18 @@ class BootstrapInstall (object):
        - Return True if installation succeeds'''
     # Should really check that it is functioning here
     if not os.path.isdir('BuildSystem'):
-      (status, self.errorString) = commands.getstatusoutput(self.bkpath+'/bk clone bk://sidl.bkbits.net/BuildSystem')
+      (status, self.errorString) = commands.getstatusoutput(self.bkPath+'/bk clone bk://sidl.bkbits.net/BuildSystem')
       if status:
         # TODO: Log error
         return 0
     return 1
 
+# ---------------------------------------------------------------------------------------------------------------------
 class CursesInstall (BootstrapInstall):
   def __init__(self):
-    pass
+    self.bkPath      = None
+    self.installPath = None
+    return
 
   def ConvertReturnToExit(key):
     if key == ord('\n'): return 7
@@ -108,7 +112,7 @@ class CursesInstall (BootstrapInstall):
     stdscr.refresh()
     textobj = curses.textpad.Textbox(subscr)
     textobj.stripspaces = 1
-    text = textobj.edit(ConvertReturnToExit)
+    text = textobj.edit(CursesInstall.ConvertReturnToExit)
     return text
   CenterGetStr = staticmethod(CenterGetStr)
 
@@ -122,7 +126,7 @@ class CursesInstall (BootstrapInstall):
       charactors.append(i+ord('A'))
 
     choices = []
-    CenterAddStr(stdscr,my,text)
+    CursesInstall.CenterAddStr(stdscr,my,text)
     (y,x) = stdscr.getmaxyx()
     my = my + 2
     i  = 0
@@ -134,8 +138,10 @@ class CursesInstall (BootstrapInstall):
     stdscr.addstr(my+1,2,'Type key to pick selection')
     stdscr.refresh()
     ch = -1
-    while not ch in choices:
-      ch = stdscr.getch()
+    print choices
+#    while not ch in choices:
+    ch = stdscr.getch()
+    print ch
     ch = choices.index(ch)
 
     return ch
@@ -207,16 +213,16 @@ class CursesInstall (BootstrapInstall):
     CursesInstall.CenterAddStr(stdscr, 4, 'by the LLNL Babel Team (http://www.llnl.gov/CASC/components)')
     CursesInstall.CenterAddStr(stdscr, 5, '(hit any key to continue)')
     stdscr.refresh()
-    curses.halfdelay(50)
+#    curses.halfdelay(50)
     c = stdscr.getch()
-    curses.nocbreak()
+#    curses.nocbreak()
     stdscr.clear()
     self.getBrowser(stdscr)
     return
 
   def welcome(self):
     '''Provide a user greeting and select a browser'''
-    return curses.wrapper(cursesWelcome)
+    return curses.wrapper(self.cursesWelcome)
 
   def cursesIndicateBKMissing(self, stdscr):
     '''Query the user for the location of Bitkeeper, and return True if it is found.'''
@@ -225,9 +231,9 @@ class CursesInstall (BootstrapInstall):
     CursesInstall.CenterAddStr(stdscr, 2, 'Unable to locate the BitKeeper bk command')
     CursesInstall.CenterAddStr(stdscr, 3, 'Please enter the full path for bk')
     CursesInstall.CenterAddStr(stdscr, 4, '(or hit return if it is not installed)')
-    self.bkpath = CursesInstall.CenterGetStr(stdscr, 5)
+    self.bkPath = CursesInstall.CenterGetStr(stdscr, 5)
     while 1:
-      if not self.bkpath:
+      if not self.bkPath:
         CursesInstall.CenterAddStr(stdscr, 8,  'You can install BitKeeper yourself')
         CursesInstall.CenterAddStr(stdscr, 9,  'http://www.bitkeeper.com/Products.Downloads.html')
         CursesInstall.CenterAddStr(stdscr, 10, 'and then rerun the installer')
@@ -235,13 +241,13 @@ class CursesInstall (BootstrapInstall):
         c = stdscr.getkey()
         return 0
       else:
-        if not os.path.isdir(self.bkpath):
+        if not os.path.isdir(self.bkPath):
           CursesInstall.CenterAddStr(stdscr, 8, 'Directory does not exist. Enter a valid directory or nothing', curses.A_BLINK)
-          self.bkpath = CursesInstall.CenterGetStr(stdscr, 5, text = self.bkpath)
+          self.bkPath = CursesInstall.CenterGetStr(stdscr, 5, text = self.bkPath)
         else:
           if BootstrapInstall.installBitkeeper(self): return 1
           CursesInstall.CenterAddStr(stdscr, 8, 'Directory does not contain the bk command', curses.A_BLINK)
-          self.bkpath = CursesInstall.CenterGetStr(stdscr, 5, text = self.bkpath)    
+          self.bkPath = CursesInstall.CenterGetStr(stdscr, 5, text = self.bkPath)    
     return 1
 
   def installBitkeeper(self):
@@ -301,7 +307,7 @@ class CursesInstall (BootstrapInstall):
     CursesInstall.CenterAddStr(stdscr, 10, 'and rerun this installer for a complete reinstall')
     CursesInstall.CenterAddStr(stdscr, 11, '(hit return to continue)')
     c = stdscr.getkey()
-    return 1
+    return 0
 
   def cursesCannotClone(self, stdscr, mess):
     stdscr.clear()
@@ -316,11 +322,11 @@ class CursesInstall (BootstrapInstall):
   def installBuildSystem(self):
     '''Check for BuildSystem and install it if it is not present.
        - Return True if installation succeeds'''
-    if BootstrapInstaller.installBuildSystem(self):
-      curses.wrapper(self.cursesAlreadyInstalled)
-    else:
+    if os.path.isdir('BuildSystem'):
+      return curses.wrapper(self.cursesAlreadyInstalled)
+    if not BootstrapInstall.installBuildSystem(self):
       return curses.wrapper(self.cursesCannotClone, self.errorString)
-    return 1
+    return 1      
 
   def OpenURL_Netscape(self, url):
     (status, output) = commands.getstatusoutput(self.browser+" -remote 'openURL("+url+")'")
@@ -354,9 +360,9 @@ if __name__ ==  '__main__':
   if not installer.installBuildSystem():
     sys.exit('Could not install BuildSystem')
   # Handoff to installer
-  print 'Installing the BuildSystem, Runtime and Compiler (this will take a while)'
+  sys.stdout.write('Installing the BuildSystem, Runtime and Compiler (this will take a while)\n')
   sys.stdout.flush()
-  sys.path.insert(0, os.path.join(installer.installpath, 'BuildSystem'))
+  sys.path.insert(0, os.path.join(installer.installPath, 'BuildSystem'))
   import install.installer
   install.installer.runinstaller(["-debugSections=[install]",'-debugLevel=2'])
       
