@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.49 2001/03/23 22:06:04 bsmith Exp balay $*/
+/*$Id: mpisbaij.c,v 1.50 2001/03/23 23:22:26 balay Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -1571,7 +1571,7 @@ int MatCreate_MPISBAIJ(Mat B)
 
 #if defined(PETSC_USE_MAT_SINGLE)
   /* stuff for MatSetValues_XXX in single precision */
-  b->lensetvalues     = 0;
+  b->setvalueslen     = 0;
   b->setvaluescopy    = PETSC_NULL;
 #endif
 

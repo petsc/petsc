@@ -1,4 +1,4 @@
-/*$Id: mmbaij.c,v 1.39 2001/03/22 20:30:21 bsmith Exp balay $*/
+/*$Id: mmbaij.c,v 1.40 2001/03/23 23:22:14 balay Exp bsmith $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply
@@ -175,7 +175,7 @@ int DisAssemble_MPIBAIJ(Mat A)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_MAT_SINGLE)
-  ierr = (Scalar*)PetscMalloc(baij->bs*sizeof(Scalar),&atmp);CHKERRQ(ierr);
+  ierr = PetscMalloc(baij->bs*sizeof(Scalar),&atmp);CHKERRQ(ierr);
 #endif
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(baij->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */
