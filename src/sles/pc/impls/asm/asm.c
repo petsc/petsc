@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.67 1997/11/03 04:44:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.68 1997/12/01 01:54:06 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -350,7 +350,7 @@ int PCCreate_ASM(PC pc)
   pc->destroy           = PCDestroy_ASM;
   pc->type              = PCASM;
   pc->printhelp         = PCPrintHelp_ASM;
-  pc->setfrom           = PCSetFromOptions_ASM;
+  pc->setfromoptions    = PCSetFromOptions_ASM;
   pc->setuponblocks     = PCSetUpOnBlocks_ASM;
   pc->data              = (void *) osm;
   pc->view              = PCView_ASM;

@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.29 1997/05/23 18:27:09 balay Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.30 1997/11/12 19:48:40 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -67,6 +67,9 @@ struct _p_KSP {
   int    setupcalled;
 
   DrawLG xmonitor;  /* location for stashing default xmonitor context */
+
+  int    (*setfromoptions)(KSP);
+  int    (*printhelp)(KSP,char*);
 
   int    its;       /* number of iterations so far computed */
   int    (*computeextremesingularvalues)(KSP,double*,double*);

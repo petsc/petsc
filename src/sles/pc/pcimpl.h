@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.17 1997/05/23 15:46:15 balay Exp balay $ */
+/* $Id: pcimpl.h,v 1.18 1997/05/23 18:33:31 balay Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -16,7 +16,7 @@ struct _p_PC {
   int          setupcalled;
   MatStructure flag;
   int          (*apply)(PC,Vec,Vec),(*setup)(PC),(*applyrich)(PC,Vec,Vec,Vec,int),
-               (*applyBA)(PC,int,Vec,Vec,Vec),(*setfrom)(PC),(*printhelp)(PC,char*),
+               (*applyBA)(PC,int,Vec,Vec,Vec),(*setfromoptions)(PC),(*printhelp)(PC,char*),
                (*applytrans)(PC,Vec,Vec),(*applyBAtrans)(PC,int,Vec,Vec,Vec);
   int          (*presolve)(PC,KSP),(*postsolve)(PC,KSP);
   Mat          mat,pmat;

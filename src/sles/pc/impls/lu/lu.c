@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.83 1997/10/19 03:24:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.84 1997/11/03 04:44:37 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -278,21 +278,21 @@ int PCCreate_LU(PC pc)
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_LU));
 
-  dir->fact      = 0;
-  dir->inplace   = 0;
-  dir->fill      = 5.0;
-  dir->col       = 0;
-  dir->row       = 0;
-  dir->ordering  = ORDER_ND;
-  pc->destroy    = PCDestroy_LU;
-  pc->apply      = PCApply_LU;
-  pc->setup      = PCSetUp_LU;
-  pc->type       = PCLU;
-  pc->data       = (void *) dir;
-  pc->setfrom    = PCSetFromOptions_LU;
-  pc->printhelp  = PCPrintHelp_LU;
-  pc->view       = PCView_LU;
-  pc->applyrich  = 0;
+  dir->fact          = 0;
+  dir->inplace       = 0;
+  dir->fill          = 5.0;
+  dir->col           = 0;
+  dir->row           = 0;
+  dir->ordering      = ORDER_ND;
+  pc->destroy        = PCDestroy_LU;
+  pc->apply          = PCApply_LU;
+  pc->setup          = PCSetUp_LU;
+  pc->type           = PCLU;
+  pc->data           = (void *) dir;
+  pc->setfromoptions = PCSetFromOptions_LU;
+  pc->printhelp      = PCPrintHelp_LU;
+  pc->view           = PCView_LU;
+  pc->applyrich      = 0;
   pc->getfactoredmatrix = PCGetFactoredMatrix_LU;
   PetscFunctionReturn(0);
 }

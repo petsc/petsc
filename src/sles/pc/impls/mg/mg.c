@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.71 1997/12/01 01:54:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.72 1997/12/12 19:37:32 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -460,14 +460,14 @@ static int PCSetUp_MG(PC pc)
 int PCCreate_MG(PC pc)
 {
   PetscFunctionBegin;
-  pc->apply     = MGCycle;
-  pc->setup     = PCSetUp_MG;
-  pc->destroy   = PCDestroy_MG;
-  pc->type      = PCMG;
-  pc->data      = (void *) 0;
-  pc->setfrom   = PCSetFromOptions_MG;
-  pc->printhelp = PCPrintHelp_MG;
-  pc->view      = PCView_MG;
+  pc->apply          = MGCycle;
+  pc->setup          = PCSetUp_MG;
+  pc->destroy        = PCDestroy_MG;
+  pc->type           = PCMG;
+  pc->data           = (void *) 0;
+  pc->setfromoptions = PCSetFromOptions_MG;
+  pc->printhelp      = PCPrintHelp_MG;
+  pc->view           = PCView_MG;
   PetscFunctionReturn(0);
 }
 

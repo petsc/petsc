@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.98 1997/10/19 03:24:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.99 1997/12/01 01:53:58 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -369,7 +369,7 @@ int PCCreate_BJacobi(PC pc)
   pc->apply              = 0;
   pc->setup              = PCSetUp_BJacobi;
   pc->destroy            = PCDestroy_BJacobi;
-  pc->setfrom            = PCSetFromOptions_BJacobi;
+  pc->setfromoptions     = PCSetFromOptions_BJacobi;
   pc->printhelp          = PCPrintHelp_BJacobi;
   pc->view               = PCView_BJacobi;
   pc->applyrich          = 0;
@@ -395,13 +395,13 @@ int PCCreate_BGS(PC pc)
   PC_BJacobi *jac;
 
   PetscFunctionBegin;
-  ierr          = PCCreate_BJacobi(pc); CHKERRQ(ierr);
-  jac           = (PC_BJacobi*) pc->data;
-  jac->gs       = PETSC_TRUE;
-  jac->gstype   = PCBGS_FORWARD_SWEEP;
-  pc->setfrom   = PCSetFromOptions_BGS;
-  pc->printhelp = PCPrintHelp_BGS;
-  pc->type      = PCBGS;
+  ierr               = PCCreate_BJacobi(pc); CHKERRQ(ierr);
+  jac                = (PC_BJacobi*) pc->data;
+  jac->gs            = PETSC_TRUE;
+  jac->gstype        = PCBGS_FORWARD_SWEEP;
+  pc->setfromoptions = PCSetFromOptions_BGS;
+  pc->printhelp      = PCPrintHelp_BGS;
+  pc->type           = PCBGS;
   PetscFunctionReturn(0);
 }
   

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.2 1998/01/05 14:53:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.3 1998/01/12 00:40:16 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -379,7 +379,7 @@ int PCCreate_Composite(PC pc)
   pc->apply              = PCApply_Composite_Additive;
   pc->setup              = PCSetUp_Composite;
   pc->destroy            = PCDestroy_Composite;
-  pc->setfrom            = PCSetFromOptions_Composite;
+  pc->setfromoptions     = PCSetFromOptions_Composite;
   pc->printhelp          = PCPrintHelp_Composite;
   pc->view               = PCView_Composite;
   pc->applyrich          = 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.1 1998/01/04 22:15:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.2 1998/01/06 20:10:01 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -65,7 +65,9 @@ static int PCDestroy_SLES(PetscObject obj)
 #undef __FUNC__  
 #define __FUNC__ "PCSLESSetUseTrue"
 /*@
-   PCSLESSetUseTrue - Sets a flag to indicate that the
+   PCSLESSetUseTrue - Sets a flag to indicate that the true matrix (rather than
+                      the matrix used to define the preconditioner) is used to compute
+                      the residual inside the inner solve.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -196,7 +198,7 @@ int PCCreate_SLES(PC pc)
   pc->apply              = PCApply_SLES;
   pc->setup              = PCSetUp_SLES;
   pc->destroy            = PCDestroy_SLES;
-  pc->setfrom            = PCSetFromOptions_SLES;
+  pc->setfromoptions     = PCSetFromOptions_SLES;
   pc->printhelp          = PCPrintHelp_SLES;
   pc->view               = PCView_SLES;
   pc->applyrich          = 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.60 1997/11/03 04:44:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.61 1997/12/01 01:53:50 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -65,18 +65,18 @@ int PCSetType(PC ctx,PCType type)
   if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");}
   if (ctx->data) PetscFree(ctx->data);
 
-  ctx->destroy      = ( int (*)(PetscObject) ) 0;
-  ctx->view         = ( int (*)(PetscObject,Viewer) ) 0;
-  ctx->apply        = ( int (*)(PC,Vec,Vec) ) 0;
-  ctx->setup        = ( int (*)(PC) ) 0;
-  ctx->applyrich    = ( int (*)(PC,Vec,Vec,Vec,int) ) 0;
-  ctx->applyBA      = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
-  ctx->setfrom      = ( int (*)(PC) ) 0;
-  ctx->printhelp    = ( int (*)(PC,char*) ) 0;
-  ctx->applytrans   = ( int (*)(PC,Vec,Vec) ) 0;
-  ctx->applyBAtrans = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
-  ctx->presolve     = ( int (*)(PC,KSP) ) 0;
-  ctx->postsolve    = ( int (*)(PC,KSP) ) 0;
+  ctx->destroy         = ( int (*)(PetscObject) ) 0;
+  ctx->view            = ( int (*)(PetscObject,Viewer) ) 0;
+  ctx->apply           = ( int (*)(PC,Vec,Vec) ) 0;
+  ctx->setup           = ( int (*)(PC) ) 0;
+  ctx->applyrich       = ( int (*)(PC,Vec,Vec,Vec,int) ) 0;
+  ctx->applyBA         = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
+  ctx->setfromoptions  = ( int (*)(PC) ) 0;
+  ctx->printhelp       = ( int (*)(PC,char*) ) 0;
+  ctx->applytrans      = ( int (*)(PC,Vec,Vec) ) 0;
+  ctx->applyBAtrans    = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
+  ctx->presolve        = ( int (*)(PC,KSP) ) 0;
+  ctx->postsolve       = ( int (*)(PC,KSP) ) 0;
   ctx->getfactoredmatrix   = ( int (*)(PC,Mat*) ) 0;
   ctx->applysymmetricleft  = ( int (*)(PC,Vec,Vec) ) 0;
   ctx->applysymmetricright = ( int (*)(PC,Vec,Vec) ) 0;
@@ -181,6 +181,30 @@ int PCPrintHelp(PC pc)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "PCGetTypeFromName"
+/*@C
+   PCGetTypeFromName - Gets the PC method type from its name (as a string)
+
+   Input Parameter:
+.  name - name of preconditioner
+
+   Output Parameter:
+.  meth - preconditioner method
+
+.keywords: PC, get, method, name, type
+@*/
+int PCGetTypeFromName(char *name,PCType *meth)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
+  *meth = (PCType) NRFindID(__PCList,name);
+  if (*meth == -1) SETERRQ(1,1,"Unknown type from name"); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "PCGetType"
 /*@C
    PCGetType - Gets the PC method type and name (as a string) from the PC
@@ -233,12 +257,12 @@ int PCSetFromOptions(PC pc)
   if (flg) {
     ierr = PCSetType(pc,method); CHKERRQ(ierr);
   }
+  if (pc->setfromoptions) {
+    ierr = (*pc->setfromoptions)(pc);CHKERRQ(ierr);
+  }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); 
   if (flg){
     ierr = PCPrintHelp(pc); CHKERRQ(ierr);
-  }
-  if (pc->setfrom) {
-    ierr = (*pc->setfrom)(pc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
