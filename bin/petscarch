@@ -97,6 +97,16 @@ if [ "${PETSC_DIR}" != "" ]; then
     ls ${PETSC_DIR}/lib/libg/${LARCH}*/libpetscdm*.a > /dev/null 2>&1
     if [ $? -eq 0 ]; then
 	LARCH=`ls -t ${PETSC_DIR}/lib/libg/${LARCH}*/libpetscdm*.a | head -1 | sed -e "s?${PETSC_DIR}/lib/lib[gO_c+omplex]*/\([_a-zA-Z0-9]*\)/libpetscdm.a?\1?g"`
+    else 
+	# check if there is a configure installed version
+        ${PETSC_DIR}/bin/configarch > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+           TARCH=`${PETSC_DIR}/bin/configarch`
+           ls ${PETSC_DIR}/lib/libg/${TARCH}*/libpetscdm*.a > /dev/null 2>&1
+           if [ $? -eq 0 ]; then
+	       LARCH=`ls -t ${PETSC_DIR}/lib/libg/${TARCH}*/libpetscdm*.a | head -1 | sed -e "s?${PETSC_DIR}/lib/lib[gO_c+omplex]*/\([_a-zA-Z0-9]*\)/libpetscdm.a?\1?g"`
+           fi
+        fi
     fi
 fi
 
