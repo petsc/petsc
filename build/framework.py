@@ -283,16 +283,14 @@ class Framework(base.Base):
       for p in build.buildGraph.BuildGraph.topologicalSort(self.dependenceGraph, self.project):
         try:
           if p == self.project:
-            maker        = self
-            forceRebuild = 0
+            maker = self
           else:
             maker = self.getMakeModule(p.getRoot()).PetscMake(None, self.argDB)
             maker.setupProject()
             maker.setupDependencies()
             maker.setupSourceDB(maker.project)
             maker.setupBuild()
-            forceRebuild = maker.missingClients()
-          (depGraph, depInput) = maker.getProjectCompileGraph(forceRebuild = forceRebuild)
+          (depGraph, depInput) = maker.getProjectCompileGraph(forceRebuild = maker.missingClients())
           compileGraph.prependGraph(depGraph)
           self.debugPrint('Prepended graph for '+str(maker.project), 4, 'build')
           if None in depInput:
@@ -491,7 +489,7 @@ class Framework(base.Base):
   def t_updateWebsite(self):
     '''Print all the SIDL dependencies as HTML and move to the website'''
     for f in self.executeTarget('printSIDL'):
-      self.executeShellCommand('scp '+f+' '+self.project.getWebDirectory+'/'+f)
+      self.executeShellCommand('scp '+f+' '+self.project.getWebDirectory()+'/'+f)
       os.remove(f)
     return
 
