@@ -115,6 +115,8 @@ class Configure(config.base.Configure):
           yield 'mpicc'
         if not Configure.isGNU('mpxlc') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
           yield 'mpxlc'
+        if not Configure.isGNU('mpcc') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+          yield 'mpcc'
       vendor = self.framework.argDB['with-vendor-compilers']
       if (not vendor or vendor == '0') and self.framework.argDB['with-gnu-compilers']:
         yield 'gcc'
