@@ -124,7 +124,9 @@ To encrypt things for the ftp site, on ryan or violet
 run crypt password < file > coded file. To unencrypt do
 crypt password < codeedfile > clear file.
 
-
-
-
+Tips for using complex numbers:
+     complex x,y(0,0);
+     x = complex(1.1,imag(x));       
+     x = complex(real(x),2.1);
+     x = complex(1.1,2.2);
 
