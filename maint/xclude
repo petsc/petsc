@@ -1,4 +1,5 @@
 petsc/src/ts
+petsc/include/ts
 petsc/src/contrib
 petsc/mis
 petsc/bmake/sun4_umpi
