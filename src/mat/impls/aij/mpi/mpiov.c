@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.24 1996/02/15 17:28:46 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.25 1996/02/15 23:59:09 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -338,7 +338,6 @@ static int MatIncreaseOverlap_MPIAIJ_private(Mat C, int imax, IS *is)
   }
   
   for ( i=0; i<imax; ++i) {
-    ierr = SYIsort(isz[i], data[i]); CHKERRQ(ierr);
     ierr = ISCreateSeq(MPI_COMM_SELF, isz[i], data[i], is+i); CHKERRQ(ierr);
   }
   TrSpace( &space, &fr, &maxs );
@@ -563,6 +562,11 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
   rank   = c->rank;
   m      = c->M;
   ashift = a->indexshift;
+
+    /* Check if the col indices are sorted */
+  for (i=0; i<ismax; i++) {
+    if (ISSorted(iscol[i],&j),!j) SETERRQ(1,"MatGetSubmatrices_MPIAIJ: col IS is not sorted");
+  }
   
   irow   = (int **)PetscMalloc((ismax+1)*sizeof(int *)); CHKPTRQ(irow);
   icol   = (int **)PetscMalloc((ismax+1)*sizeof(int *)); CHKPTRQ(icol);
@@ -576,10 +580,6 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
     ierr = ISGetIndices(iscol[i],&icol[i]);  CHKERRQ(ierr);
     ierr = ISGetLocalSize(isrow[i],&nrow[i]);  CHKERRQ(ierr);
     ierr = ISGetLocalSize(iscol[i],&ncol[i]);  CHKERRQ(ierr);
-    /* Check if the col indices are sorted */
-    for (j =1; j< ncol[i]; j++) {
-      if (icol[i][j-1]>icol[i][j]) SETERRQ(1,"MatGetSubmatrices_MPIAIJ: col IS is not sorted");
-    }
   }
 
   /* Create hash table for the mapping :row -> proc*/

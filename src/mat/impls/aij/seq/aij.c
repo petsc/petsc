@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.148 1996/02/14 15:59:03 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.149 1996/02/15 23:59:34 balay Exp balay $";
 #endif
 
 /*
@@ -990,7 +990,6 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows); CHKERRQ(ierr);
   ierr = ISGetSize(iscol,&ncols); CHKERRQ(ierr);
-  ierr = SYIsort(nrows, irow); CHKERRQ(ierr);
 
   if (ISStrideGetInfo(iscol,&first,&step) && step == 1) { /* no need to sort */
     /* special case of contiguous rows */
@@ -1196,7 +1195,6 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
         }
       }
     }
-    ierr = SYIsort(isz, nidx); CHKERRQ(ierr);
     ierr = ISCreateSeq(MPI_COMM_SELF, isz, nidx, (is+i)); CHKERRQ(ierr);
   }
   PetscFree(table);

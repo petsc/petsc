@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.20 1996/01/18 23:22:32 balay Exp balay $ */
+/* $Id: is.h,v 1.21 1996/02/15 14:58:23 balay Exp balay $ */
 
 /*
       An index set is essentially a subset of the integers. They are used
@@ -33,4 +33,6 @@ extern int   ISGetLocalSize(IS,int *);
 extern int   ISInvertPermutation(IS,IS*);
 extern int   ISView(IS,Viewer);
 extern int   ISEqual(IS , IS , int *);
+extern int   ISSort(IS);
+extern int   ISSorted(IS, int*);
 #endif

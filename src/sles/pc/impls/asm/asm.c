@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.12 1996/01/19 22:58:03 balay Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.13 1996/01/20 04:17:05 bsmith Exp balay $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -70,6 +70,9 @@ static int PCSetUp_ASM(PC pc)
 
     /*  Extend the "overlapping" regions by a number of steps  */
     ierr = MatIncreaseOverlap(pc->pmat,n_local_true,osm->is,osm->overlap); CHKERRQ(ierr);
+    for (i=0; i< n_local_true; i++) {
+      ierr = ISSort(osm->is[i]) ; CHKERRQ(ierr);
+    }
 
     /* create the local work vectors and scatter contexts */
     for ( i=0; i<n_local_true; i++ ) {
