@@ -95,7 +95,6 @@ EXTERN int MatSerializeRegisterAllCalled;
 EXTERN int MatSerialize(MPI_Comm, Mat *, PetscViewer, PetscTruth);
 EXTERN int MatSetSerializeType(Mat, MatSerializeType);
 
-EXTERN int MatCreate(MPI_Comm,int,int,int,int,Mat*);
 EXTERN int MatCreateSeqDense(MPI_Comm,int,int,PetscScalar*,Mat*);
 EXTERN int MatCreateMPIDense(MPI_Comm,int,int,int,int,PetscScalar*,Mat*); 
 EXTERN int MatCreateSeqAIJ(MPI_Comm,int,int,int,int*,Mat*);
