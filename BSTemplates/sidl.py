@@ -336,6 +336,13 @@ class UsingPython(UsingCompiler):
   def getCompiler(self, library):
     return compile.CompilePythonC()
 
+  def getClientLibrary(self, project, lang):
+    '''Need to return empty fileset for Python client library'''
+    if lang == self.getLanguage():
+      return fileset.FileSet()
+    else:
+      return UsingCompiler.getClientLibrary(self, project, lang)
+
   def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
     stubDir = self.usingSIDL.getStubDir(self.getLanguage(), package)
