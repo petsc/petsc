@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.134 2000/04/09 04:35:30 bsmith Exp bsmith $*/
+/* $Id: pdvec.c,v 1.135 2000/04/12 04:22:23 bsmith Exp balay $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -36,9 +36,9 @@ int VecDestroy_MPI(Vec v)
     ierr = VecDestroy(x->localrep);CHKERRQ(ierr);
     if (x->localupdate) {ierr = VecScatterDestroy(x->localupdate);CHKERRQ(ierr);}
   }
-  /* Destroy the stashes */
-  ierr = VecStashDestroy_Private(&v->stash);CHKERRQ(ierr);
+  /* Destroy the stashes: note the order - so that the tags are freed properly */
   ierr = VecStashDestroy_Private(&v->bstash);CHKERRQ(ierr);
+  ierr = VecStashDestroy_Private(&v->stash);CHKERRQ(ierr);
   if (x->browners) {ierr = PetscFree(x->browners);CHKERRQ(ierr);}
   ierr = PetscFree(x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
