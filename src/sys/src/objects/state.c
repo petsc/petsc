@@ -4,9 +4,9 @@
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectGetState"
+#define __FUNCT__ "PetscObjectStateQuery"
 /*@C
-   PetscObjectGetState - Gets the state of any PetscObject, 
+   PetscObjectStateQuery - Gets the state of any PetscObject, 
    regardless of the type.
 
    Not Collective
@@ -14,7 +14,7 @@
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
          cast with a (PetscObject), for example, 
-         PetscObjectGetState((PetscObject)mat,&state);
+         PetscObjectStateQuery((PetscObject)mat,&state);
 
    Output Parameter:
 .  state - the object state
@@ -26,12 +26,12 @@
 
    Level: advanced
 
-   seealso: PetscObjectIncreaseState, PetscObjectSetState
+   seealso: PetscObjectStateIncrease, PetscObjectSetState
 
    Concepts: state
 
 @*/
-PetscErrorCode PetscObjectGetState(PetscObject obj,PetscInt *state)
+PetscErrorCode PetscObjectStateQuery(PetscObject obj,PetscInt *state)
 {
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
@@ -60,7 +60,7 @@ PetscErrorCode PetscObjectGetState(PetscObject obj,PetscInt *state)
 
    Level: advanced
 
-   seealso: PetscObjectGetState,PetscObjectIncreaseState
+   seealso: PetscObjectStateQuery,PetscObjectStateIncrease
 
    Concepts: state
 
@@ -74,9 +74,9 @@ PetscErrorCode PetscObjectSetState(PetscObject obj,PetscInt state)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectIncreaseState"
+#define __FUNCT__ "PetscObjectStateIncrease"
 /*@C
-   PetscObjectIncreaseState - Increases the state of any PetscObject, 
+   PetscObjectStateIncrease - Increases the state of any PetscObject, 
    regardless of the type.
 
    Not Collective
@@ -84,7 +84,7 @@ PetscErrorCode PetscObjectSetState(PetscObject obj,PetscInt state)
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
          cast with a (PetscObject), for example, 
-         PetscObjectIncreaseState((PetscObject)mat);
+         PetscObjectStateIncrease((PetscObject)mat);
 
    Notes: object state is an integer which gets increased every time
    the object is changed. By saving and later querying the object state
@@ -98,12 +98,12 @@ PetscErrorCode PetscObjectSetState(PetscObject obj,PetscInt state)
 
    Level: developer
 
-   seealso: PetscObjectGetState
+   seealso: PetscObjectStateQuery
 
    Concepts: state
 
 @*/
-PetscErrorCode PetscObjectIncreaseState(PetscObject obj)
+PetscErrorCode PetscObjectStateIncrease(PetscObject obj)
 {
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
@@ -112,7 +112,7 @@ PetscErrorCode PetscObjectIncreaseState(PetscObject obj)
 }
 
 PetscInt globalcurrentstate = 0, globalmaxstate = 10;
-PetscErrorCode PetscRegisterComposedData(PetscInt *id)
+PetscErrorCode PetscObjectComposedDataRegister(PetscInt *id)
 {
   PetscFunctionBegin;
   *id = globalcurrentstate++;
@@ -120,7 +120,7 @@ PetscErrorCode PetscRegisterComposedData(PetscInt *id)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectIncreaseIntComposedData(PetscObject obj)
+PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject obj)
 {
   PetscInt       *ar = obj->intcomposeddata,*new_ar;
   PetscInt       *ir = obj->intcomposedstate,*new_ir,n = obj->int_idmax,new_n,i;
@@ -143,7 +143,7 @@ PetscErrorCode PetscObjectIncreaseIntComposedData(PetscObject obj)
   obj->intcomposeddata = new_ar; obj->intcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
-PetscErrorCode PetscObjectIncreaseIntstarComposedData(PetscObject obj)
+PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
 {
   PetscInt       **ar = obj->intstarcomposeddata,**new_ar;
   PetscInt       *ir = obj->intstarcomposedstate,*new_ir,n = obj->intstar_idmax,new_n,i;
@@ -167,7 +167,7 @@ PetscErrorCode PetscObjectIncreaseIntstarComposedData(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectIncreaseRealComposedData(PetscObject obj)
+PetscErrorCode PetscObjectComposedDataIncreaseReal(PetscObject obj)
 {
   PetscReal      *ar = obj->realcomposeddata,*new_ar;
   PetscInt       *ir = obj->realcomposedstate,*new_ir,n = obj->real_idmax,new_n,i;
@@ -191,7 +191,7 @@ PetscErrorCode PetscObjectIncreaseRealComposedData(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectIncreaseRealstarComposedData(PetscObject obj)
+PetscErrorCode PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
 {
   PetscReal      **ar = obj->realstarcomposeddata,**new_ar;
   PetscInt       *ir = obj->realstarcomposedstate,*new_ir,n = obj->realstar_idmax,new_n,i;
@@ -215,7 +215,7 @@ PetscErrorCode PetscObjectIncreaseRealstarComposedData(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectIncreaseScalarComposedData(PetscObject obj)
+PetscErrorCode PetscObjectComposedDataIncreaseScalar(PetscObject obj)
 {
   PetscScalar    *ar = obj->scalarcomposeddata,*new_ar;
   PetscInt       *ir = obj->scalarcomposedstate,*new_ir,n = obj->scalar_idmax,new_n,i;
@@ -239,7 +239,7 @@ PetscErrorCode PetscObjectIncreaseScalarComposedData(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectIncreaseScalarstarComposedData(PetscObject obj)
+PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
 {
   PetscScalar    **ar = obj->scalarstarcomposeddata,**new_ar;
   PetscInt       *ir = obj->scalarstarcomposedstate,*new_ir,n = obj->scalarstar_idmax,new_n,i;

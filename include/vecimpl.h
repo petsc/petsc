@@ -126,7 +126,7 @@ struct _p_Vec {
 };
 
 #define VecGetArray(x,a)     ((x)->petscnative ? (*(a) = *((PetscScalar **)(x)->data),0) : VecGetArray_Private((x),(a)))
-#define VecRestoreArray(x,a) ((x)->petscnative ? PetscObjectIncreaseState((PetscObject)x) : VecRestoreArray_Private((x),(a)))
+#define VecRestoreArray(x,a) ((x)->petscnative ? PetscObjectStateIncrease((PetscObject)x) : VecRestoreArray_Private((x),(a)))
 
 /*
      Common header shared by array based vectors, 

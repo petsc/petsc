@@ -286,21 +286,21 @@ struct _p_PetscObject {
 EXTERN PetscErrorCode PetscObjectPublishBaseBegin(PetscObject);
 EXTERN PetscErrorCode PetscObjectPublishBaseEnd(PetscObject);
 
-EXTERN PetscErrorCode PetscObjectIncreaseState(PetscObject);
-EXTERN PetscErrorCode PetscObjectGetState(PetscObject,PetscInt*);
-EXTERN PetscErrorCode PetscRegisterComposedData(PetscInt*);
-EXTERN PetscErrorCode PetscObjectIncreaseIntComposedData(PetscObject);
-EXTERN PetscErrorCode PetscObjectIncreaseIntstarComposedData(PetscObject);
-EXTERN PetscErrorCode PetscObjectIncreaseRealComposedData(PetscObject);
-EXTERN PetscErrorCode PetscObjectIncreaseRealstarComposedData(PetscObject);
-EXTERN PetscErrorCode PetscObjectIncreaseScalarComposedData(PetscObject);
-EXTERN PetscErrorCode PetscObjectIncreaseScalarstarComposedData(PetscObject);
+EXTERN PetscErrorCode PetscObjectStateIncrease(PetscObject);
+EXTERN PetscErrorCode PetscObjectStateQuery(PetscObject,PetscInt*);
+EXTERN PetscErrorCode PetscObjectComposedDataRegister(PetscInt*);
+EXTERN PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject);
+EXTERN PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject);
+EXTERN PetscErrorCode PetscObjectComposedDataIncreaseReal(PetscObject);
+EXTERN PetscErrorCode PetscObjectComposedDataIncreaseRealstar(PetscObject);
+EXTERN PetscErrorCode PetscObjectComposedDataIncreaseScalar(PetscObject);
+EXTERN PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject);
 EXTERN PetscInt globalcurrentstate,globalmaxstate;
 /*MC
-   PetscObjectSetIntComposedData - attach integer data to a PetscObject
+   PetscObjectComposedDataSetInt - attach integer data to a PetscObject
 
    Synopsis:
-   PetscErrorCode PetscObjectSetIntComposedData(PetscObject obj,int id,int data)
+   PetscErrorCode PetscObjectComposedDataSetInt(PetscObject obj,int id,int data)
 
    Not collective
 
@@ -316,19 +316,19 @@ EXTERN PetscInt globalcurrentstate,globalmaxstate;
 
    Level: developer
 M*/
-#define PetscObjectSetIntComposedData(obj,id,data)                  \
+#define PetscObjectComposedDataSetInt(obj,id,data)                  \
 0; {PetscErrorCode ierr_;                                                       \
   if ((obj)->int_idmax < globalmaxstate) {                            \
-    ierr_ = PetscObjectIncreaseIntComposedData(obj); CHKERRQ(ierr_);  \
+    ierr_ = PetscObjectComposedDataIncreaseInt(obj); CHKERRQ(ierr_);  \
   }                                                                   \
   (obj)->intcomposeddata[id] = data;                                  \
   (obj)->intcomposedstate[id] = (obj)->state;                         \
 }
 /*MC
-   PetscObjectGetIntComposedData - retrieve integer data attached to an object
+   PetscObjectComposedDataGetInt - retrieve integer data attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectGetIntComposedData(PetscObject obj,int id,int *data,PetscTruth *flag)
+   PetscErrorCode PetscObjectComposedDataGetInt(PetscObject obj,int id,int *data,PetscTruth *flag)
 
    Not collective
 
@@ -349,7 +349,7 @@ M*/
 
    Level: developer
 M*/
-#define PetscObjectGetIntComposedData(obj,id,data,flag)              \
+#define PetscObjectComposedDataGetInt(obj,id,data,flag)              \
 0; {                                                                 \
   if ((obj)->intcomposedstate) {                                     \
     if ((obj)->intcomposedstate[id] == (obj)->state) {               \
@@ -362,10 +362,10 @@ M*/
 }
 
 /*MC
-   PetscObjectSetIntstarComposedData - attach integer array data to a PetscObject
+   PetscObjectComposedDataSetIntstar - attach integer array data to a PetscObject
 
    Synopsis:
-   PetscErrorCode PetscObjectSetIntstarComposedData(PetscObject obj,int id,int *data)
+   PetscErrorCode PetscObjectComposedDataSetIntstar(PetscObject obj,int id,int *data)
 
    Not collective
 
@@ -381,20 +381,20 @@ M*/
 
    Level: developer
 M*/
-#define PetscObjectSetIntstarComposedData(obj,id,data)                    \
+#define PetscObjectComposedDataSetIntstar(obj,id,data)                    \
 0; {PetscErrorCode ierr_;                                                            \
   if ((obj)->intstar_idmax < globalmaxstate) {                            \
-    ierr_ = PetscObjectIncreaseIntstarComposedData(obj); CHKERRQ(ierr_);  \
+    ierr_ = PetscObjectComposedDataIncreaseIntstar(obj); CHKERRQ(ierr_);  \
   }                                                                       \
   (obj)->intstarcomposeddata[id] = data;                                  \
   (obj)->intstarcomposedstate[id] = (obj)->state;                         \
 }
 /*MC
-   PetscObjectGetIntstarComposedData - retrieve integer array data 
+   PetscObjectComposedDataGetIntstar - retrieve integer array data 
    attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectGetIntstarComposedData(PetscObject obj,int id,int **data,PetscTruth *flag)
+   PetscErrorCode PetscObjectComposedDataGetIntstar(PetscObject obj,int id,int **data,PetscTruth *flag)
 
    Not collective
 
@@ -415,7 +415,7 @@ M*/
 
    Level: developer
 M*/
-#define PetscObjectGetIntstarComposedData(obj,id,data,flag)              \
+#define PetscObjectComposedDataGetIntstar(obj,id,data,flag)              \
 0; {                                                                     \
   if ((obj)->intstarcomposedstate) {                                     \
     if ((obj)->intstarcomposedstate[id] == (obj)->state) {               \
@@ -428,10 +428,10 @@ M*/
 }
 
 /*MC
-   PetscObjectSetRealComposedData - attach real data to a PetscObject
+   PetscObjectComposedDataSetReal - attach real data to a PetscObject
 
    Synopsis:
-   PetscErrorCode PetscObjectSetRealComposedData(PetscObject obj,int id,PetscReal data)
+   PetscErrorCode PetscObjectComposedDataSetReal(PetscObject obj,int id,PetscReal data)
 
    Not collective
 
@@ -447,10 +447,10 @@ M*/
 
    Level: developer
 M*/
-#define PetscObjectSetRealComposedData(obj,id,data)                  \
+#define PetscObjectComposedDataSetReal(obj,id,data)                  \
 0; {PetscErrorCode ierr_;                                                       \
   if ((obj)->real_idmax < globalmaxstate) {                          \
-    ierr_ = PetscObjectIncreaseRealComposedData(obj); CHKERRQ(ierr_); \
+    ierr_ = PetscObjectComposedDataIncreaseReal(obj); CHKERRQ(ierr_); \
   }                                                                  \
   (obj)->realcomposeddata[id] = data;                                \
   (obj)->realcomposedstate[id] = (obj)->state;                       \
@@ -517,7 +517,7 @@ M*/
 #define PetscObjectSetRealstarComposedData(obj,id,data)                  \
 0; {PetscErrorCode ierr_;                                                       \
   if ((obj)->realstar_idmax < globalmaxstate) {                          \
-    ierr_ = PetscObjectIncreaseRealstarComposedData(obj); CHKERRQ(ierr_); \
+    ierr_ = PetscObjectComposedDataIncreaseRealstar(obj); CHKERRQ(ierr_); \
   }                                                                  \
   (obj)->realstarcomposeddata[id] = data;                                \
   (obj)->realstarcomposedstate[id] = (obj)->state;                       \
@@ -586,20 +586,20 @@ M*/
 #define PetscObjectSetScalarComposedData(obj,id,data)                 \
 0; {PetscErrorCode ierr_;                                                        \
   if ((obj)->scalar_idmax < globalmaxstate) {                         \
-    ierr_ = PetscObjectIncreaseScalarComposedData(obj); CHKERRQ(ierr_);\
+    ierr_ = PetscObjectComposedDataIncreaseScalar(obj); CHKERRQ(ierr_);\
   }                                                                   \
   (obj)->scalarcomposeddata[id] = data;                               \
   (obj)->scalarcomposedstate[id] = (obj)->state;                      \
 }
 #else
 #define PetscObjectSetScalarComposedData(obj,id,data) \
-        PetscObjectSetRealComposedData(obj,id,data)
+        PetscObjectComposedDataSetReal(obj,id,data)
 #endif
 /*MC
-   PetscObjectGetScalarComposedData - retrieve scalar data attached to an object
+   PetscObjectComposedDataGetScalar - retrieve scalar data attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectGetScalarComposedData(PetscObject obj,int id,PetscScalar *data,PetscTruth *flag)
+   PetscErrorCode PetscObjectComposedDataGetScalar(PetscObject obj,int id,PetscScalar *data,PetscTruth *flag)
 
    Not collective
 
@@ -621,7 +621,7 @@ M*/
    Level: developer
 M*/
 #if defined(PETSC_USE_COMPLEX)
-#define PetscObjectGetScalarComposedData(obj,id,data,flag)           \
+#define PetscObjectComposedDataGetScalar(obj,id,data,flag)           \
 0; {                                                                 \
   if ((obj)->scalarcomposedstate) {				     \
     if ((obj)->scalarcomposedstate[id] == (obj)->state) {            \
@@ -633,15 +633,15 @@ M*/
   } else flag = PETSC_FALSE;                                         \
 }
 #else
-#define PetscObjectGetScalarComposedData(obj,id,data,flag)	     \
+#define PetscObjectComposedDataGetScalar(obj,id,data,flag)	     \
         PetscObjectGetRealComposedData(obj,id,data,flag)
 #endif
 
 /*MC
-   PetscObjectSetScalarstarComposedData - attach scalar array data to a PetscObject 
+   PetscObjectComposedDataSetScalarstar - attach scalar array data to a PetscObject 
 
    Synopsis:
-   PetscErrorCode PetscObjectSetScalarstarComposedData(PetscObject obj,int id,PetscScalar *data)
+   PetscErrorCode PetscObjectComposedDataSetScalarstar(PetscObject obj,int id,PetscScalar *data)
 
    Not collective
 
@@ -658,24 +658,24 @@ M*/
    Level: developer
 M*/
 #if defined(PETSC_USE_COMPLEX)
-#define PetscObjectSetScalarstarComposedData(obj,id,data)                   \
+#define PetscObjectComposedDataSetScalarstar(obj,id,data)                   \
 0; {PetscErrorCode ierr_;                                                              \
   if ((obj)->scalarstar_idmax < globalmaxstate) {                           \
-    ierr_ = PetscObjectIncreaseScalarstarComposedData(obj); CHKERRQ(ierr_); \
+    ierr_ = PetscObjectComposedDataIncreaseScalarstar(obj); CHKERRQ(ierr_); \
   }                                                                         \
   (obj)->scalarstarcomposeddata[id] = data;                                 \
   (obj)->scalarstarcomposedstate[id] = (obj)->state;                        \
 }
 #else
-#define PetscObjectSetScalarstarComposedData(obj,id,data) \
+#define PetscObjectComposedDataSetScalarstar(obj,id,data) \
         PetscObjectSetRealstarComposedData(obj,id,data)
 #endif
 /*MC
-   PetscObjectGetScalarstarComposedData - retrieve scalar array data
+   PetscObjectComposedDataGetScalarstar - retrieve scalar array data
    attached to an object
 
    Synopsis:
-   PetscErrorCode PetscObjectGetScalarstarComposedData(PetscObject obj,int id,PetscScalar **data,PetscTruth *flag)
+   PetscErrorCode PetscObjectComposedDataGetScalarstar(PetscObject obj,int id,PetscScalar **data,PetscTruth *flag)
 
    Not collective
 
@@ -697,7 +697,7 @@ M*/
    Level: developer
 M*/
 #if defined(PETSC_USE_COMPLEX)
-#define PetscObjectGetScalarstarComposedData(obj,id,data,flag)           \
+#define PetscObjectComposedDataGetScalarstar(obj,id,data,flag)           \
 0; {                                                                     \
   if ((obj)->scalarstarcomposedstate) {                                  \
     if ((obj)->scalarstarcomposedstate[id] == (obj)->state) {            \
@@ -709,7 +709,7 @@ M*/
   } else flag = PETSC_FALSE;                                             \
 }
 #else
-#define PetscObjectGetScalarstarComposedData(obj,id,data,flag)	         \
+#define PetscObjectComposedDataGetScalarstar(obj,id,data,flag)	         \
         PetscObjectGetRealstarComposedData(obj,id,data,flag)
 #endif
 

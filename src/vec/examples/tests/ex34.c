@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(comm,"Scale: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /* display forced norm 1 & 2 */
-  ierr = PetscObjectIncreaseState((PetscObject)V);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)V);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"recompute: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
@@ -79,7 +79,7 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(comm,"Normalize: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /* display forced norm 1 & 2 */
-  ierr = PetscObjectIncreaseState((PetscObject)V);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)V);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"recompute: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(comm,"Constant: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
   /* display forced norm 1 & 2 */
-  ierr = PetscObjectIncreaseState((PetscObject)V);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)V);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"recomputed: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
@@ -144,8 +144,8 @@ int main(int argc,char **argv)
 
   ierr = VecSwap(V,W);CHKERRQ(ierr);
 
-  ierr = PetscObjectIncreaseState((PetscObject)V);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)W);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)V);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)W);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
   ierr = VecNorm(W,NORM_1,&nrm2);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"swapped: norm V=%e, norm W=%e\n",nrm2,nrm1);CHKERRQ(ierr);
