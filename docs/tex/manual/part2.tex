@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.276 1998/05/20 13:33:34 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.277 1998/05/20 13:58:37 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2305,10 +2305,13 @@ First, before the linear solve one must call
 \end{verbatim}
 Then after the SLES solve one calls \findex{KSPSetComputeEigenvalues()}
 \begin{verbatim}
-  ierr = KSPComputeEigenvalues(KSP ksp, int n,double *realpart,double *complexpart);
+  ierr = KSPComputeEigenvalues(KSP ksp, int n,double *realpart,double *complexpart,int *neig);
 \end{verbatim}
 Here, {\tt n} is the size of the two arrays and the eigenvalues are 
-inserted into those two arrays. \findex{KSPComputeEigenvalues()}
+inserted into those two arrays. {\tt Neig} is the number of eigenvalues computed;
+this number depend depends on the size of the Krylov space generated during the 
+linear system solution, for GMRES it is never larger than the restart parameter.
+ \findex{KSPComputeEigenvalues()}
 There is an additional routine 
 \begin{verbatim}
   ierr = KSPComputeEigenvaluesExplicitly(KSP ksp, int n,double *realpart,
