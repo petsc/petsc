@@ -263,7 +263,7 @@ etags_fexamples:
 BMAKEFILES = bmake/common/base bmake/common/test \
 	     bmake/common/bopt* bmake/*/rules bmake/*/variables bmake/*/packages \
 	     bmake/*/petscconf.h bmake/*/petscfix.h bmake/config/packages.in \
-	     bmake/config/petscfix.h.in  bmake/config/rules.in  bmake/config/stamp-h.in \
+	     bmake/config/petscfix.h.in  bmake/config/rules.in  \
 	     bmake/config/variables.in \
              bmake/*/buildtest bmake/adic.init bmake/adicmf.init
 DOCS	   = bmake/readme bmake/petscconf.defs
