@@ -85,9 +85,7 @@ extern int ad_grad_size_shadow;
 #   define ad_AD_IncrementTotalGradSize(x) \
     { \
          if (x + ad_grad_size_shadow > ad_GRAD_MAX) {\
-                fprintf (stderr, "ad_AD_IncrementTotalGradSize() Error: the number of independent variables %d exceeds the max (GRAD_MAX)!\n", x + ad_grad_size_shadow);\
-                fflush(stderr);  \
-                abort();  \
+                SETERRQ2(1, "The number of independent variables exceeds the maximum compiled for!\n Edit your program and change Process adiC(%d) to Process adiC(%d)", x + ad_grad_size_shadow,ad_GRAD_MAX);\
         }\
         ad_grad_size_shadow += x;\
     }
@@ -117,11 +115,7 @@ extern int ad_grad_size_shadow;
     { \
         int pOsItIoN = ad_AD_IncrShadowVar(); \
         if (pOsItIoN > ad_GRAD_MAX) {\
-            fprintf (stderr, "ad_AD_SetIndep() Error: the number of " \
-		     "independent variables %d exceeds the max (GRAD_MAX)!\n",\
-		     pOsItIoN); \
-            fflush(stderr);  \
-            abort();  \
+          SETERRQ2(1, "The number of independent variables exceeds the maximum compiled for!\n Edit your program and change Process adiC(%d) to Process adiC(%d)",pOsItIoN ,ad_GRAD_MAX);\
         }\
         ad_AD_ClearGrad(DERIV_grad(var)); \
         DERIV_grad(var)[pOsItIoN] = 1; \

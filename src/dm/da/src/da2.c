@@ -1399,7 +1399,7 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 
   ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-  PetscADIncrementTotalGradSize(iscoloring->n);
+  ierr = PetscADIncrementTotalGradSize(iscoloring->n);CHKERRQ(ierr);
   PetscADSetIndepDone();
 
   DALogEventBegin(DA_LocalADFunction,0,0,0,0);
@@ -1461,7 +1461,7 @@ int DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
   ierr = VecRestoreArray(v,&av);CHKERRQ(ierr);
 
   PetscADResetIndep();
-  PetscADIncrementTotalGradSize(1);
+  ierr = PetscADIncrementTotalGradSize(1);CHKERRQ(ierr);
   PetscADSetIndepDone();
 
   ierr = (*da->adicmf_lf)(&info,ad_vu,ad_f,w);CHKERRQ(ierr);
