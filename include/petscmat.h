@@ -335,18 +335,8 @@ typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
 EXTERN int MatCopy(Mat,Mat,MatStructure);
 EXTERN int MatView(Mat,PetscViewer);
 
-EXTERN int MatLoadRegister(char*,char*,char*,int (*)(PetscViewer,MatType,Mat*));
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatLoadRegisterDynamic(a,b,c,d) MatLoadRegister(a,b,c,0)
-#else
-#define MatLoadRegisterDynamic(a,b,c,d) MatLoadRegister(a,b,c,d)
-#endif
-EXTERN int        MatLoadRegisterAll(char*);
-EXTERN int        MatLoadRegisterDestroy(void);
-extern PetscTruth MatLoadRegisterAllCalled;
-extern PetscFList MatLoadList;
-EXTERN int        MatLoad(PetscViewer,MatType,Mat*);
-EXTERN int        MatMerge(MPI_Comm,Mat,Mat*);
+EXTERN int MatLoad(PetscViewer,MatType,Mat*);
+EXTERN int MatMerge(MPI_Comm,Mat,Mat*);
 
 EXTERN int MatGetRowIJ(Mat,int,PetscTruth,int*,int *[],int *[],PetscTruth *);
 EXTERN int MatRestoreRowIJ(Mat,int,PetscTruth,int *,int *[],int *[],PetscTruth *);

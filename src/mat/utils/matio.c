@@ -6,36 +6,6 @@
 
 #include "src/mat/matimpl.h"             /*I  "petscmat.h"  I*/
 #include "petscsys.h"
-PetscTruth MatLoadRegisterAllCalled = PETSC_FALSE;
-PetscFList      MatLoadList              = 0;
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatLoadRegister"
-/*@C
-    MatLoadRegister - Allows one to register a routine that reads matrices
-        from a binary file for a particular matrix type.
-
-  Not Collective
-
-  Input Parameters:
-+   type - the type of matrix (defined in include/petscmat.h), for example, MATSEQAIJ.
--   loader - the function that reads the matrix from the binary file.
-
-  Level: developer
-
-.seealso: MatLoadRegisterAll(), MatLoad()
-
-@*/
-int MatLoadRegister(char *sname,char *path,char *name,int (*function)(PetscViewer,MatType,Mat*))
-{
-  int  ierr;
-  char fullname[256];
-
-  PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatLoadList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoadPrintHelp_Private"
@@ -140,8 +110,7 @@ and PetscWriteBinary() to see how this may be done.
 
 .keywords: matrix, load, binary, input
 
-.seealso: PetscViewerBinaryOpen(), MatView(), VecLoad(), MatLoadRegister(),
-          MatLoadRegisterAll()
+.seealso: PetscViewerBinaryOpen(), MatView(), VecLoad()
 
  @*/  
 int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
@@ -155,10 +124,6 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
 
   *newmat = 0;
 
@@ -176,17 +141,14 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
   if (flg) {
     outtype = mtype;
   }
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   if (!outtype) outtype = MATMPIAIJ;
-  
+
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);  
   ierr = MatCreate(comm,0,0,0,0,&factory);CHKERRQ(ierr);
   ierr = MatSetType(factory,outtype);CHKERRQ(ierr);
   r = factory->ops->load;
   ierr = MatDestroy(factory);
-  if (!r) {
-    ierr =  PetscFListFind(comm,MatLoadList,outtype,(void(**)(void))&r);CHKERRQ(ierr);
-    if (!r) SETERRQ1(1,"Unknown Mat type given: %s",outtype);
-  }
+  if (!r) SETERRQ1(PETSC_ERR_SUP,"MatLoad is not supported for type: %s",outtype);
 
   ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = (*r)(viewer,outtype,newmat);CHKERRQ(ierr);
