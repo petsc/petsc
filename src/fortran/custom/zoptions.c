@@ -4,7 +4,7 @@
   between Fortran and C.
 */
 
-/*M
+/*MC
      PetscFortranAddr - a variable type in Fortran that can hold a
          regular C pointer.
 
@@ -12,7 +12,7 @@
 
 .seealso:  PetscOffset, PetscInt
 M*/
-/*M
+/*MC
      PetscOffset - a variable type in Fortran used with VecGetArray()
         and ISGetIndices()
 
