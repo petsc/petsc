@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.196 1997/02/04 15:39:27 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.197 1997/02/04 15:40:19 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2365,15 +2365,26 @@ support the use of general blocks as long as no blocks are shared
 among processors. The {\tt is} argument contains the index sets that
 define the subdomains. 
 
-{\tt PCASMType} is one of {\tt PC\_ASM\_BASIC, PC\_ASM\_RESTRICT,
-PC\_ASM\_INTERPOLATE, PC\_ASM\_NONE} \findex{PCASMSetType()} and may also be set with the
-options database {\tt -pc\_asm\_type 3, 2, 1, or 0}. \findex{-pc_asm_type}
-Type {\tt PC\_ASM\_RESTRICT} uses a full restriction operator, but during the
-interpolation process ignores the off processor values. Similarly, 
-{\tt PC\_ASM\_INTERPOLATE} uses a limited restriction process, but uses a full
-interpolation. 
+{\tt PCASMType} is one of {\tt PC\_ASM\_BASIC},
+{\tt PC\_ASM\_INTERPOLATE}, {\tt PC\_ASM\_RESTRICT}, {\tt PC\_ASM\_NONE}
+and may also be set with the options database {\tt -pc\_asm\_type [basic,interpolate,restrict,none]}.
+\findex{-pc_asm_type} \findex{PCASMSetType()} \findex{PC_ASM_BASIC} 
+\findex{PC_ASM_RESTRICT} \findex{PC_ASM_INTERPOLATE} \findex{PC_ASM_NONE}
+The type {\tt PC\_ASM\_BASIC} (or \tt -pc\_asm\_type basic) corresponds to the
+standard additive Schwarz method that uses the full restriction and
+interpolation operators.
+The type {\tt PC\_ASM\_RESTRICT} (or {\tt -pc\_asm\_type restrict}) uses a full
+restriction operator, but during the interpolation process ignores the off-processor
+values.
+Similarly, {\tt PC\_ASM\_INTERPOLATE} (or {\tt -pc\_asm\_type interpolate}) uses a limited
+restriction process in conjunction with a full interpolation, while
+{\tt PC\_ASM\_NONE} (or {\tt -pc\_asm\_type none}) ignores off-processor valies
+for both restriction and interpolation.
 The ASM types with limited restriction or interpolation were suggested by 
-Xiao-Chuan Cai.  \index{Cai, Xiao-Chuan} The default is {\tt PC\_ASM\_RESTRICT}.
+Xiao-Chuan Cai.  \sindex{Cai, Xiao-Chuan}
+{\tt PC\_ASM\_RESTRICT} is the PETSc default, as it saves substantial communication
+and for many problems has the added benefit of requiring fewer iterations for convergence
+than the standard additive Schwarz method.
 
 The user can also set the number of blocks and sizes on a per-processor
 basis with the commands
