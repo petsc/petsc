@@ -1,9 +1,9 @@
 
 ALL: lib
 
-SOURCEH  = pfimpl.h ../../include/petscpf.h
+SOURCEH  = pfimpl.h ../../../include/petscpf.h
 DIRS     = interface impls examples
-LOCDIR   = src/pf/
+LOCDIR   = src/vec/pf/
 MANSEC   = PF
 
 include ${PETSC_DIR}/bmake/common/base

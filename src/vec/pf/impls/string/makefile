@@ -10,7 +10,7 @@ OBJSC    = cstring.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/pf/impls/string/
+LOCDIR   = src/vec/pf/impls/string/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
