@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.63 2001/07/13 15:16:18 buschelm Exp buschelm $*/
+/*$Id: baijfact2.c,v 1.64 2001/07/16 04:47:24 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2894,6 +2894,8 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
     ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
     if (sse_enabled) {
 #if defined(PETSC_HAVE_SSE)
+      PetscTruth single_prec,flg;
+      single_prec = flg = PETSC_FALSE;
       ierr = PetscOptionsGetLogical(PETSC_NULL,"-mat_single_precision_solves",&single_prec,&flg);CHKERRQ(ierr);
       if (flg) {
         a->single_precision_solves = single_prec;
