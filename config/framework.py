@@ -20,7 +20,6 @@ class Framework(config.base.Configure):
     self.preprocessorObject = {}
     self.compilerObject     = {}
     self.linkerObject       = {}
-    self.cxxExt       = None
     # Perhaps these initializations should just be local temporary arguments
     self.argDB['CPPFLAGS']   = ''
     self.argDB['LIBS']       = ''

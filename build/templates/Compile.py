@@ -9,9 +9,10 @@ import project
 
 class Template(base.Base):
   '''This template constructs BuildGraphs capable of compiling source into object files'''
-  def __init__(self, sourceDB, project, dependenceGraph, usingSIDL, packages):
+  def __init__(self, argDB, sourceDB, project, dependenceGraph, usingSIDL, packages):
     import build.compile.SIDL
     base.Base.__init__(self)
+    self.argDB           = argDB
     self.sourceDB        = sourceDB
     self.project         = project
     self.dependenceGraph = dependenceGraph
@@ -48,9 +49,9 @@ class Template(base.Base):
       return getattr(self, '_'+name)
     cls = 'Using'+name[5:]
     try:
-      obj = getattr(__import__('build.templates.'+name, globals(), locals(), [cls]), cls)(self.sourceDB, self.project, self.usingSIDL)
+      obj = getattr(__import__('build.templates.'+name, globals(), locals(), [cls]), cls)(self.argDB, self.sourceDB, self.project, self.usingSIDL)
     except ImportError:
-      obj = getattr(__import__(name, globals(), locals(), [cls]), cls)(self.sourceDB, self.project, self.usingSIDL)
+      obj = getattr(__import__(name, globals(), locals(), [cls]), cls)(self.argDB, self.sourceDB, self.project, self.usingSIDL)
     setattr(self, '_'+name, obj)
     return obj
 

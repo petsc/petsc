@@ -7,28 +7,30 @@ import project
 import os
 
 class UsingCxx (base.Base):
-  def __init__(self, sourceDB, project, usingSIDL, usingC = None):
+  def __init__(self, argDB, sourceDB, project, usingSIDL, usingC = None):
     import config.base
 
     base.Base.__init__(self)
     self.language    = 'Cxx'
-    self.cxxExt      = '.cc'
+    self.argDB       = argDB
     self.sourceDB    = sourceDB
     self.project     = project
     self.usingSIDL   = usingSIDL
     self.usingC      = usingC
-    self.linker      = None
-    self.linkerFlags = None
     self.configBase  = config.base.Configure(self)
-    self.configBase.setLanguage(self.language)
     if self.usingC is None:
       import build.templates.usingC
-      self.usingC    = build.templates.usingC.UsingC(self.sourceDB, self.project, self.usingSIDL)
+      self.usingC    = build.templates.usingC.UsingC(self.argDB, self.sourceDB, self.project, self.usingSIDL)
     self.setup()
     # Driver may need many outside includes and libraries
     self.programIncludeDirs = {}
     self.programLibraryTags = {}
     self.programLibraries   = {}
+
+    self.languageModule     = {}
+    self.preprocessorObject = {}
+    self.compilerObject     = {}
+    self.linkerObject       = {}
     return
 
   def __getstate__(self):
@@ -64,28 +66,20 @@ class UsingCxx (base.Base):
 
   def getCompileSuffix(self):
     '''Return the suffix for compilable files (.cc)'''
-    return '.cc'
+    return self.getCompilerObject(self.language).sourceExtension
 
   def getLinker(self):
-    if self._linker is None:
-      self.configBase.pushLanguage('Cxx')
-      linker = self.configBase.getLinker()
-      self.configBase.popLanguage()
-      return linker
+    if not hasattr(self, '_linker'):
+      return self.getLinkerObject(self.language).name
     return self._linker
-
   def setLinker(self, linker):
     self._linker = linker
   linker = property(getLinker, setLinker, doc = 'The linker corresponding to the Cxx compiler')
 
   def getLinkerFlags(self):
-    if self._linkerFlags is None:
-      self.configBase.pushLanguage('Cxx')
-      self.configBase.getLinker()
-      self.configBase.popLanguage()
-      return self.configBase.linkerFlags
+    if not hasattr(self, '_linkerFlags'):
+      return self.getLinkerObject(self.language).getFlags()
     return self._linkerFlags
-
   def setLinkerFlags(self, flags):
     self._linkerFlags = flags
   linkerFlags = property(getLinkerFlags, setLinkerFlags, doc = 'The flags for the Cxx linker')
@@ -233,3 +227,33 @@ class UsingCxx (base.Base):
     '''Does nothing right now'''
     self.installClasses(package)
     return
+
+  #####################
+  # Language Operations
+  def getLanguageModule(self, language):
+    if not language in self.languageModule:
+      moduleName = 'config.compile.'+language.replace('+', 'x')
+      components = moduleName.split('.')
+      module     = __import__(moduleName)
+      for component in components[1:]:
+        module   = getattr(module, component)
+      self.languageModule[language] = module
+    return self.languageModule[language]
+
+  def getPreprocessorObject(self, language):
+    if not language in self.preprocessorObject:
+      self.preprocessorObject[language] = self.getLanguageModule(language).Preprocessor(self.argDB)
+      self.preprocessorObject[language].checkSetup()
+    return self.preprocessorObject[language]
+
+  def getCompilerObject(self, language):
+    if not language in self.compilerObject:
+      self.compilerObject[language] = self.getLanguageModule(language).Compiler(self.argDB)
+      self.compilerObject[language].checkSetup()
+    return self.compilerObject[language]
+
+  def getLinkerObject(self, language):
+    if not language in self.linkerObject:
+      self.linkerObject[language] = self.getLanguageModule(language).Linker(self.argDB)
+      self.linkerObject[language].checkSetup()
+    return self.linkerObject[language]

@@ -185,7 +185,7 @@ class Framework(base.Base):
       import build.templates.Compile
 
       packages = map(lambda f: os.path.splitext(os.path.basename(f))[0], self.filesets['sidl'])
-      self._compileTemplate = build.templates.Compile.Template(self.sourceDB, self.project, self.dependenceGraph, self.sidlTemplate.usingSIDL, packages)
+      self._compileTemplate = build.templates.Compile.Template(self.argDB, self.sourceDB, self.project, self.dependenceGraph, self.sidlTemplate.usingSIDL, packages)
     return self._compileTemplate
   compileTemplate = property(getCompileTemplate, doc = 'This is the default template for source operations')
 

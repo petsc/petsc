@@ -7,15 +7,16 @@ import project
 import os
 
 class UsingPython (base.Base):
-  def __init__(self, sourceDB, project, usingSIDL, usingC = None):
+  def __init__(self, argDB, sourceDB, project, usingSIDL, usingC = None):
     base.Base.__init__(self)
+    self.argDB     = argDB
     self.sourceDB  = sourceDB
     self.project   = project
     self.usingSIDL = usingSIDL
     self.usingC    = usingC
     if self.usingC is None:
       import build.templates.usingC
-      self.usingC = build.templates.usingC.UsingC(self.sourceDB, self.project, self.usingSIDL)
+      self.usingC = build.templates.usingC.UsingC(self.argDB, self.sourceDB, self.project, self.usingSIDL)
     self.language = 'Python'
     self.setup()
     return
