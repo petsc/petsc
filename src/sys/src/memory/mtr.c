@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.108 1998/04/27 20:01:57 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.109 1998/05/05 13:59:17 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -30,11 +30,10 @@ int  PetscTrFreeDefault( void *, int, char *,char *,char *);
   even then is suspicious.
 */
 void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEE;
-static int TrUseNan;   /* unitialize Scalar arrays with Nans */
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSetUseTrMalloc_Private"
-int PetscSetUseTrMalloc_Private(int usenan)
+int PetscSetUseTrMalloc_Private(void)
 {
   int ierr;
 
@@ -44,7 +43,6 @@ int PetscSetUseTrMalloc_Private(int usenan)
   PetscHigh    = (void *) 0x0;
 #endif
   ierr         = PetscSetMalloc(PetscTrMallocDefault,PetscTrFreeDefault); CHKERRQ(ierr);
-  TrUseNan     = usenan;
   PetscFunctionReturn(0);
 }
 
@@ -253,14 +251,6 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
     TRMaxMem   = allocated;
   }
   frags++;
-
-  if (TrUseNan && sizeof(Scalar)*(nsize/sizeof(Scalar)) == nsize) {
-    ierr = PetscInitializeNans((Scalar*) inew,nsize/sizeof(Scalar)); 
-    if (ierr) PetscFunctionReturn(0);
-  } else if (TrUseNan && sizeof(int)*(nsize/sizeof(int)) == nsize) {
-    ierr = PetscInitializeLargeInts((int*) inew,nsize/sizeof(int)); 
-    if (ierr) PetscFunctionReturn(0);
-  }
 
   /*
          Allow logging of all mallocs made

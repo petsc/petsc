@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.3 1998/05/04 02:31:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.4 1998/05/04 03:57:19 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -509,7 +509,7 @@ extern int DLRegisterDestroyAll();
 @*/
 int PetscFinalize(void)
 {
-  int        ierr,i,rank = 0,flg1,flg2,flg3,nopt;
+  int        ierr,rank = 0,flg1,flg2,flg3,nopt;
   PLogDouble rss;
 
   PetscFunctionBegin;
@@ -576,8 +576,8 @@ int PetscFinalize(void)
   if (flg1) {
     if (!rank) OptionsPrint(stdout);
   }
-  nopt = OptionsAllUsed();
   ierr = OptionsHasName(PETSC_NULL,"-optionsleft",&flg1); CHKERRQ(ierr);
+  nopt = OptionsAllUsed();
   if (flg1) {
     ierr = OptionsPrint(stdout);CHKERRQ(ierr);
   }
@@ -703,7 +703,7 @@ extern "C" {
 #endif
 
 extern int PLogInfoAllow(PetscTruth);
-extern int PetscSetUseTrMalloc_Private(int);
+extern int PetscSetUseTrMalloc_Private(void);
 
 #include "snes.h" /* so that cookies are defined */
 
@@ -713,20 +713,19 @@ int OptionsCheckInitial_Private(void)
 {
   char     string[64];
   MPI_Comm comm = PETSC_COMM_WORLD;
-  int      flg1,flg2,flg3,flg4,ierr,*nodes,flag,i,rank;
+  int      flg1,flg2,flg3,ierr,*nodes,flag,i,rank;
 
   PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
-  ierr = OptionsHasName(PETSC_NULL,"-trmalloc_nan",&flg4);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3); CHKERRQ(ierr);
 #if defined(USE_PETSC_BOPT_g)
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_off", &flg1); CHKERRQ(ierr);
-  if (!flg1) { ierr = PetscSetUseTrMalloc_Private(flg4); CHKERRQ(ierr); }
+  if (!flg1) { ierr = PetscSetUseTrMalloc_Private(); CHKERRQ(ierr); }
 #else
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc",&flg2); CHKERRQ(ierr);
-  if (flg1 || flg2 || flg3 || flg4) {ierr = PetscSetUseTrMalloc_Private(flg4);CHKERRQ(ierr);}
+  if (flg1 || flg2 || flg3) {ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);}
 #endif
   if (flg3) {
     ierr = PetscTrLog();CHKERRQ(ierr); 
@@ -968,7 +967,6 @@ int OptionsCheckInitial_Private(void)
     (*PetscHelpPrintf)(comm," -trdump: dump list of unfreed memory at conclusion\n");
     (*PetscHelpPrintf)(comm," -trmalloc: use our error checking malloc\n");
     (*PetscHelpPrintf)(comm," -trmalloc_off: don't use error checking malloc\n");
-    (*PetscHelpPrintf)(comm," -trmalloc_nan: initialize memory locations with NaNs\n");
     (*PetscHelpPrintf)(comm," -trinfo: prints total memory usage\n");
     (*PetscHelpPrintf)(comm," -trdebug: enables extended checking for memory corruption\n");
     (*PetscHelpPrintf)(comm," -optionstable: dump list of options inputted\n");
