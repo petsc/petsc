@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.9 2001/03/29 15:34:00 buschelm Exp $ 
+# $Id: base.site,v 1.1 2001/04/05 19:33:47 balay Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -14,13 +14,12 @@ PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
 #PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_F2C
 #
 # Location of MPI (Message Passing Interface) software  
-#
-# To use the single processor MPI interface provided in PETSc
-#
-MPI_INCLUDE    = -I$(PETSC_DIR)/src/sys/src/mpiuni -DMPIUNI_USE_STDCALL
-MPI_LIB        = -lmpiuni
-MPIRUN         = $(PETSC_DIR)/src/sys/src/mpiuni/mpirun
-
+# MPIPro from www.mpi-softtech.com
+# 
+MPI_HOME       = C:/Program Files/MPIPro
+MPI_INCLUDE    = -I'"$(MPI_HOME)/include"'
+MPI_LIB        = -L'"$(MPI_HOME)/lib"' MPIPro_dvf.lib MPIPro.lib
+MPIRUN         = mpirun
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
 # ----------------------------------------------------------------------------------------  

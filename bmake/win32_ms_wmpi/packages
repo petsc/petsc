@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.7 2001/03/26 19:27:38 balay Exp balay $ 
+# $Id: base.site,v 1.1 2001/03/27 22:16:50 balay Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -17,8 +17,8 @@ PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
 # WMPI (http://dsg.dei.uc.pt/~fafe/w32mpi/) use the following lines
 #
 MPI_HOME        = C:/software/wmpi
-MPI_INCLUDE    = -I$(MPI_DIR)/include
-MPI_LIB        = -L$(MPI_DIR)/lib wmpif_vf.lib wmpi.lib
+MPI_INCLUDE    = -I$(MPI_HOME)/include
+MPI_LIB        = -L$(MPI_HOME)/lib wmpif_vf.lib wmpi.lib
 
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.

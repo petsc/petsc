@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 2001/03/27 22:16:32 balay Exp buschelm $ 
+# $Id: base.site,v 1.2 2001/03/29 17:08:06 buschelm Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -17,8 +17,8 @@ PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
 # MPICH from ANL http://www.mcs.anl.gov/~ashton/mpich.nt/
 #
 MPI_HOME       = C:/Program Files/Argonne National Lab/MPICH.NT.1.2.1/SDK
-MPI_INCLUDE    = -I'"$(MPI_DIR)/include"'
-MPI_LIB        = -L'"$(MPI_DIR)/lib"' ws2_32.lib mpich.lib pmpich.lib 
+MPI_INCLUDE    = -I'"$(MPI_HOME)/include"'
+MPI_LIB        = -L'"$(MPI_HOME)/lib"' ws2_32.lib mpich.lib pmpich.lib 
 MPIRUN         = mpirun
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
