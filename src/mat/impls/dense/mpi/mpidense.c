@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.21 1995/12/31 21:09:28 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.22 1996/01/01 22:32:54 curfman Exp curfman $";
 #endif
 
 /*
@@ -594,13 +594,13 @@ static int MatGetInfo_MPIDense(Mat A,MatInfoType flag,int *nz,
   return 0;
 }
 
-extern int MatLUFactorSymbolic_MPIDense(Mat,IS,IS,double,Mat*);
-extern int MatLUFactorNumeric_MPIDense(Mat,Mat*);
-extern int MatLUFactor_MPIDense(Mat,IS,IS,double);
-extern int MatSolve_MPIDense(Mat,Vec,Vec);
-/* extern int MatSolveAdd_MPIDense(Mat,Vec,Vec,Vec);
-extern int MatSolveTrans_MPIDense(Mat,Vec,Vec);
-extern int MatSolveTransAdd_MPIDense(Mat,Vec,Vec,Vec); */
+/* extern int MatLUFactorSymbolic_MPIDense(Mat,IS,IS,double,Mat*);
+   extern int MatLUFactorNumeric_MPIDense(Mat,Mat*);
+   extern int MatLUFactor_MPIDense(Mat,IS,IS,double);
+   extern int MatSolve_MPIDense(Mat,Vec,Vec);
+   extern int MatSolveAdd_MPIDense(Mat,Vec,Vec,Vec);
+   extern int MatSolveTrans_MPIDense(Mat,Vec,Vec);
+   extern int MatSolveTransAdd_MPIDense(Mat,Vec,Vec,Vec); */
 
 static int MatSetOption_MPIDense(Mat A,MatOption op)
 {
@@ -767,14 +767,16 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
        MatMultTrans_MPIDense,MatMultTransAdd_MPIDense,
        MatSolve_MPIDense,0,
        0,0,
-       MatLUFactor_MPIDense,0,
+       0,0,
+/*       MatLUFactor_MPIDense,0, */
        0,MatTranspose_MPIDense,
        MatGetInfo_MPIDense,0,
        MatGetDiagonal_MPIDense,0,MatNorm_MPIDense,
        MatAssemblyBegin_MPIDense,MatAssemblyEnd_MPIDense,
        0,
        MatSetOption_MPIDense,MatZeroEntries_MPIDense,MatZeroRows_MPIDense,
-       0,MatLUFactorSymbolic_MPIDense,MatLUFactorNumeric_MPIDense,
+       0,0,0,
+/*       0,MatLUFactorSymbolic_MPIDense,MatLUFactorNumeric_MPIDense, */
        0,0,
        MatGetSize_MPIDense,MatGetLocalSize_MPIDense,
        MatGetOwnershipRange_MPIDense,
@@ -884,6 +886,9 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *ne
   a->roworiented = 1;
 
   *newmat = mat;
+  if (OptionsHasName(PETSC_NULL,"-help")) {
+    ierr = MatPrintHelp(mat); CHKERRQ(ierr);
+  }
   return 0;
 }
 
