@@ -96,7 +96,7 @@ int main(int Argc, char **Args)
       if (use_jacobi) { PCShellSetApplyRichardson(pc,jacobi,(void *)0); }
       SLESGetKSP(sles[i],&ksp);
       KSPSetMethod(ksp,KSPRICHARDSON);
-      KSPSetInitialGuessNonZero(ksp);
+      KSPSetInitialGuessNonzero(ksp);
       KSPSetIterations(ksp,smooths);
 
       VecCreateSequential(N[i],&x); X[levels - 1 - i] = x;
