@@ -526,7 +526,7 @@ SLESSolve              1 1.0 8.1397e-01 1.0 2.19e+08 1.0 0.0e+00 0.0e+00 0.0e+00
 
 ************************************************************************************************************************
 /home/balay/ex/ex10 on a linux named j11 with 1 processor, by balay Mon Sep  8 21:54:41 2003 
-[chiba 2.4GHz Pentium4 Xeon 512kb L2 3.2GB/s icc -O3 -use_msasm -xW -tpp7 , MKL]
+[jazz 2.4GHz Pentium4 Xeon 512kb L2 3.2GB/s icc -O3 -use_msasm -xW -tpp7 , MKL]
 ************************************************************************************************************************
 --- Event Stage 2: SLESSetUp
 
