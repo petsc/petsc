@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.44 2000/06/25 03:53:23 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.45 2000/06/26 03:37:25 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -422,6 +422,20 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   MPI_Comm    comm = mapping->comm;
 
   PetscFunctionBegin;
+  /*
+    Notes on ISLocalToGlobalMappingGetInfo
+
+    globally owned node - the nodes that have been assigned to this processor in global
+           numbering, just for this routine.
+
+    nontrivial globally owned node - node assigned to this processor that is on a subdomain
+           boundary (i.e. is has more than one local owner)
+
+    locally owned node - node that exists on this processors subdomain
+
+    nontrivial locally owned node - node that is not in the interior (i.e. has more than one
+           local subdomain
+  */
   ierr = PetscObjectGetNewTag((PetscObject)mapping,&tag);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
@@ -441,8 +455,10 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   /* determine owners of each local node  */
   owner    = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(owner);
   for (i=0; i<n; i++) {
-    proc = lindices[i]/scale; 
-    nprocs[proc]++; nprocs[size+proc] = 1; owner[i] = proc;
+    proc              = lindices[i]/scale; /* processor that globally owns this index */
+    nprocs[size+proc] = 1;                 /* processor globally owns at least one of ours */
+    owner[i]          = proc;              
+    nprocs[proc]++;                        /* count of how many that processor globally owns of ours */
   }
   nsends = 0; for (i=0; i<size; i++) nsends += nprocs[size + i];
   PLogInfo(0,"ISLocalToGlobalMappingGetInfo: Number of global owners for my local data %d\n",nsends);
@@ -519,7 +535,7 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
     else starts[i] = starts[i-1];
   }
 
-  /* for each globally owned node list all ariving processors */
+  /* for each nontrival globally owned node list all ariving processors */
   for (i=0; i<nrecvs; i++) {
     for (j=0; j<len[i]; j++) {
       node = recvs[i*nmax+j]-rstart;
@@ -529,7 +545,7 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
     }
   }
 
-  /* wait on sends */
+  /* wait on original sends */
   if (nsends) {
     send_status = (MPI_Status*)PetscMalloc(nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     ierr        = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
@@ -537,6 +553,12 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   }
   ierr = PetscFree(send_waits);CHKERRQ(ierr);
   ierr = PetscFree(sends);CHKERRQ(ierr);
+  ierr = PetscFree(nprocs);CHKERRQ(ierr);
+
+  /* pack messages to send back to local owners */
+  nsends = nrecvs;
+  nprocs = (int*)PetscMalloc((nsends+1)*sizeof(int));CHKPTRQ(nprocs);
+
   ierr = PetscFree(nownedsenders);CHKERRQ(ierr);
   ierr = PetscFree(ownedsenders);CHKERRQ(ierr);
   ierr = PetscFree(starts);CHKERRQ(ierr);
