@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from __future__ import generators
 import config.base
 import os
@@ -96,3 +97,12 @@ class Configure(config.base.Configure):
   def configure(self):
     self.executeTest(self.configureC2html)
     return
+
+if __name__ == '__main__':
+  import config.framework
+  import sys
+  framework = config.framework.Framework(sys.argv[1:])
+  framework.setupLogging(sys.argv[1:])
+  framework.children.append(Configure(framework))
+  framework.configure()
+  framework.dumpSubstitutions()
