@@ -411,7 +411,11 @@ EXTERN PetscErrorCode MatIncreaseOverlap(Mat,int,IS[],int);
 EXTERN PetscErrorCode MatMatMult(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultSymbolic(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultNumeric(Mat,Mat,Mat);
+
 EXTERN PetscErrorCode MatPtAP(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN PetscErrorCode MatPtAPSymbolic(Mat,Mat,PetscReal,Mat*);
+EXTERN PetscErrorCode MatPtAPNumeric(Mat,Mat,Mat);
+
 EXTERN PetscErrorCode MatAXPY(const PetscScalar *,Mat,Mat,MatStructure);
 EXTERN PetscErrorCode MatAYPX(const PetscScalar *,Mat,Mat);
 EXTERN PetscErrorCode MatCompress(Mat);

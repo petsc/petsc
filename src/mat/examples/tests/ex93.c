@@ -21,15 +21,38 @@ int main(int argc,char **argv) {
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  /* Form A^T*A*A to test PtAP routine. */
   ierr = MatTranspose(A,&B);CHKERRQ(ierr);
   ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-  ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
+  ierr = MatMatMultSymbolic(C,A,fill,&D);CHKERRQ(ierr);
+  ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);
+  ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* Repeat the numeric product to test reuse of the previous symbolic product */
+  ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);
+  ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   ierr = MatDestroy(B);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
 
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
 
+  ierr = MatAXPY(&none,C,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(D);CHKERRQ(ierr);
+
+  /* Repeat PtAP to test symbolic/numeric separation for reuse of the symbolic product */
+  ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatPtAPSymbolic(A,B,fill,&D);CHKERRQ(ierr);
+  ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
+  ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* Repeat numeric product to test reuse of the previous symbolic product */
+  ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
   ierr = MatAXPY(&none,C,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
