@@ -9,6 +9,15 @@ class Base (maker.Maker):
     self.base  = base
     return
 
+  def checkBootstrap(self):
+    '''If the compiler or runtime is not available, we will have to bootstrap and this function returns true'''
+    try:
+      import SIDL.Loader
+      import SIDLLanguage.Parser
+    except ImportError:
+      return 1
+    return 0
+
   def getInstalledProject(self, url):
     if not self.argDB.has_key('installedprojects'):
       self.argDB['installedprojects'] = []

@@ -236,7 +236,6 @@ class UsingPython(UsingCompiler):
         lib = lib.split('.so')[0]+'.so'
         bs.argDB['PYTHON_LIB'] = lib
     except: pass
-    import distutils.sysconfig
 
     extraLibraries = [bs.argDB['PYTHON_LIB']]
     for lib in distutils.sysconfig.get_config_var('LIBS').split():

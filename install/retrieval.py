@@ -33,6 +33,7 @@ class Retriever(install.base.Base):
       os.remove(localFile)
     urllib.urlretrieve(url, localFile)
     output = self.executeShellCommand('tar -zxf '+localFile)
+    os.remove(localFile)
     return root
 
   def ftpRetrieve(self, url, root, canExist = 0):
@@ -44,6 +45,12 @@ class Retriever(install.base.Base):
     return self.genericRetrieve(url, root, canExist)
 
   def bkRetrieve(self, url, root, canExist = 0):
+    if self.checkBootstrap():
+      (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
+      path   = os.path.join('/pub', 'petsc', location.split('.')[0], path[1:]+'.tgz')
+      newUrl = urlparse.urlunparse(('ftp', 'ftp.mcs.anl.gov', path, parameters, query, fragment))
+      return self.ftpRetrieve(newUrl, root, canExist)
+
     self.debugPrint('Retrieving '+url+' --> '+root+' via bk', 3, 'install')
     if os.path.exists(root):
       output = self.executeShellCommand('cd '+root+'; bk pull')

@@ -27,6 +27,7 @@ class Installer(install.base.Base):
     return
 
   def backup(self, projectUrl):
+    '''This should actually get a fresh copy instead of using the one in the database'''
     self.debugPrint('Backing up '+projectUrl, 3, 'install')
     root = self.retriever.retrieve(projectUrl, force = self.force);
     self.builder.build(root, 'sidl')
