@@ -17,6 +17,7 @@ class BuildChecker:
                'linux_alpha_dec': ['mipsUltrix'],
                'linux_gcc_pgf90': ['gcc', 'pgF90'],
                'macx':            ['gcc'],
+               'rs6000':          ['ibm'],
                'rs6000_64':       ['ibm'],
                'rs6000_gnu':      ['gcc'],
                'rs6000_sp':       ['ibm'],
