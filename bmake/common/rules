@@ -171,9 +171,11 @@ examples: examples_1 examples_2
 testexamples_1: examples_1 runexamples_1 clean
 testexamples_2: examples_2 runexamples_2 clean
 testexamples_3: examples_3 runexamples_3 clean
+testexamples_4: examples_4 runexamples_4 clean
 buildexamples_1: examples_1 clean
 buildexamples_2: examples_2 clean
 buildexamples_3: examples_3 clean
+buildexamples_4: examples_4 clean
 
 # Performs the specified action throughout the directory tree
 tree: $(ACTION)
