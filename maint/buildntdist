@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.45 2000/06/07 18:13:16 balay Exp balay $ 
+# $Id: buildntdist,v 1.46 2000/08/29 19:22:56 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -47,10 +47,10 @@ cd $tmpdir/petscnt/petsc/src
 cd $tmpdir/petscnt/petsc
 /bin/rm -rf bin
 find $tmpdir/petscnt -type d -name output -exec /bin/rm -rf {} \;
-/bin/rm -rf bmake/alpha* bmake/sun4* bmake/solaris* bmake/hpux 
-/bin/rm -rf bmake/paragon bmake/rs6000* bmake/freebsd* bmake/linux 
-/bin/rm -rf bmake/nt_gnu bmake/t3d bmake/t3e bmake/IRIX* bmake/i386*
-/bin/rm -rf bmake/ascired*
+/bin/rm -rf bmake/alpha* bmake/sun4* bmake/solaris* bmake/hpux*
+/bin/rm -rf bmake/paragon* bmake/rs6000* bmake/freebsd* bmake/linux*
+/bin/rm -rf bmake/win32_gnu bmake/t3d* bmake/t3e* bmake/IRIX* bmake/i386*
+/bin/rm -rf bmake/ascired* bmake/beos* bmake/mac-x*
 /bin/rm -f  bmake/common. bmake/common 
 /bin/rm -rf src/blaslapack/examples 
 #
