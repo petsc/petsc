@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.24 2001/04/20 15:18:52 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.25 2001/04/25 03:31:42 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -384,12 +384,23 @@ void ad_AD_Final();
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetStructArray2d"
-static int PetscGetStructArray2d(int xs,int ys,int xm,int ym,void ***ptr,void **array_start)
+static int PetscGetStructArray2d(DALocalInfo *info,PetscTruth ghosted,void ***ptr,void **array_start)
 {
-  int  ierr,j,deriv_type_size;
+  int  ierr,j,deriv_type_size,xs,ys,xm,ym;
   void *tmpptr;
-
+  
   PetscFunctionBegin;
+  if (ghosted) {
+    xs = info->gxs*info->dof;
+    ys = info->gys;
+    xm = info->gxm*info->dof;
+    ym = info->gym;
+  } else {
+    xs = info->xs*info->dof;
+    ys = info->ys;
+    xm = info->xm*info->dof;
+    ym = info->ym;
+  }
   deriv_type_size = my_AD_GetDerivTypeSize();
 
   ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*deriv_type_size,(void **)array_start);CHKERRQ(ierr);
@@ -448,8 +459,8 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
 
 
   /* allocate space for derivative objects.  */
-  ierr = PetscGetStructArray2d(gxs*dof,gys,gxm*dof,gym,(void ***)&ad_x,&ad_xstart);CHKERRQ(ierr);
-  ierr = PetscGetStructArray2d(xs*dof,ys,xm*dof,ym,(void ***)&ad_f,&ad_fstart);CHKERRQ(ierr);
+  ierr = PetscGetStructArray2d(&info,PETSC_TRUE,(void ***)&ad_x,&ad_xstart);CHKERRQ(ierr);
+  ierr = PetscGetStructArray2d(&info,PETSC_FALSE,(void ***)&ad_f,&ad_fstart);CHKERRQ(ierr);
 
   /* copy over function inputs to derivate enhanced variable */
   ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
