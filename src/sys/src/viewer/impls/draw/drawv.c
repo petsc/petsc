@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.30 1999/01/13 21:46:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.31 1999/01/14 00:23:00 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -254,7 +254,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "ViewerCreate_Draw" 
 int ViewerCreate_Draw(Viewer ctx)
 {
-  int         ierr,i;
+  int         i;
   Viewer_Draw *vdraw;
 
   PetscFunctionBegin;

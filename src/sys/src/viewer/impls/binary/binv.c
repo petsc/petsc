@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.56 1999/01/12 23:17:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.57 1999/01/13 21:46:05 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -144,7 +144,7 @@ $    BINARY_WRONLY - open existing file for binary output
 #define __FUNC__ "ViewerBinarySetType"
 int ViewerBinarySetType(Viewer viewer,ViewerBinaryType type)
 {
-  int ierr, (*f)(Viewer,ViewerBinaryType type);
+  int ierr, (*f)(Viewer,ViewerBinaryType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
@@ -161,7 +161,6 @@ EXTERN_C_BEGIN
 #define __FUNC__ "ViewerBinarySetType_Binary"
 int ViewerBinarySetType_Binary(Viewer viewer,ViewerBinaryType type)
 {
-  int              rank,ierr;
   Viewer_Binary    *vbinary = (Viewer_Binary *) viewer->data;
 
   PetscFunctionBegin;

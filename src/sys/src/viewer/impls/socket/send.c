@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.81 1999/01/12 23:17:16 bsmith Exp $";
+static char vcid[] = "$Id: send.c,v 1.82 1999/01/14 00:22:56 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -99,10 +99,14 @@ extern int close(int);
 static int ViewerDestroy_Socket(Viewer viewer)
 {
   Viewer_Socket *vmatlab = (Viewer_Socket *) viewer->data;
+  int           ierr;
 
   PetscFunctionBegin;
-  if (close(vmatlab->port)) {
-    SETERRQ(PETSC_ERR_LIB,0,"System error closing socket");
+  if (vmatlab->port) {
+    ierr = close(vmatlab->port);
+    if (ierr) {
+      SETERRQ(PETSC_ERR_LIB,0,"System error closing socket");
+    }
   }
   PetscFree(vmatlab);
   PetscFunctionReturn(0);
@@ -200,13 +204,58 @@ $    -viewer_socket_port <port>
 @*/
 int ViewerSocketOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 {
-  Viewer        v;
-  int           t,rank,ierr,flag;
-  char          mach[256];
-  PetscTruth    tflag;
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = ViewerCreate(comm,lab);CHKERRQ(ierr);
+  ierr = ViewerSetType(*lab,SOCKET_VIEWER);CHKERRQ(ierr);
+  ierr = ViewerSocketSetConnection(*lab,machine,port);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "ViewerCreate_Socket"
+int ViewerCreate_Socket(Viewer v)
+{
   Viewer_Socket *vmatlab;
 
   PetscFunctionBegin;
+
+  vmatlab         = PetscNew(Viewer_Socket);CHKPTRQ(vmatlab);
+  vmatlab->port   = 0;
+  v->data         = (void *) vmatlab;
+  v->ops->destroy = ViewerDestroy_Socket;
+  v->ops->flush   = 0;
+  v->type_name    = (char *)PetscMalloc((1+PetscStrlen(SOCKET_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
+  PetscStrcpy(v->type_name,SOCKET_VIEWER);
+
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNC__  
+#define __FUNC__ "ViewerSocketSetConnection"
+int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
+{
+  int           ierr,rank,flag;
+  char          mach[256];
+  PetscTruth    tflag;
+  Viewer_Socket *vmatlab = (Viewer_Socket *)v->data;
+
+  PetscFunctionBegin;
+   if (port <= 0) {
+    ierr = OptionsGetInt(PETSC_NULL,"-viewer_socket_port",&port,&flag); CHKERRQ(ierr);
+    if (!flag) {
+      char portn[16];
+      ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflag);CHKERRQ(ierr);
+      if (tflag) {
+        port = OptionsAtoi(portn);
+      } else {
+        port = DEFAULTPORT;
+      }
+    }
+  }
   if (!machine) {
     ierr = OptionsGetString(PETSC_NULL,"-viewer_socket_machine",mach,128,&flag);CHKERRQ(ierr);
     if (!flag) {
@@ -216,36 +265,11 @@ int ViewerSocketOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
     PetscStrncpy(mach,machine,256);
   }
 
-  if (port <= 0) {
-    ierr = OptionsGetInt(PETSC_NULL,"-viewer_socket_port",&port,&flag); CHKERRQ(ierr);
-    if (!flag) {
-      char portn[16];
-      ierr = OptionsGetenv(comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflag);CHKERRQ(ierr);
-      if (tflag) {
-        port = OptionsAtoi(portn);
-      } else {
-        port = DEFAULTPORT;
-      }
-    }
-  }
-
-  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
-  PLogObjectCreate(v);
-  vmatlab = PetscNew(Viewer_Socket);CHKPTRQ(vmatlab);
-  v->data = (void *) vmatlab;
-
-  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_rank(v->comm,&rank);
   if (!rank) {
     PLogInfo(0,"Connecting to socket process on port %d machine %s\n",port,mach);
-    ierr          = SOCKCall_Private(mach,port,&t);CHKERRQ(ierr);
-    vmatlab->port = t;
+    ierr          = SOCKCall_Private(mach,port,&vmatlab->port);CHKERRQ(ierr);
   }
-  v->ops->destroy = ViewerDestroy_Socket;
-  v->ops->flush   = 0;
-  v->type_name    = (char *)PetscMalloc((1+PetscStrlen(SOCKET_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
-  PetscStrcpy(v->type_name,SOCKET_VIEWER);
-
-  *lab             = v;
   PetscFunctionReturn(0);
 }
 
@@ -273,6 +297,13 @@ int ViewerDestroySocket_Private(void)
   if (VIEWER_SOCKET_WORLD_PRIVATE) {
     ierr = ViewerDestroy(VIEWER_SOCKET_WORLD_PRIVATE); CHKERRQ(ierr);
   }
+  /*
+      Free any viewers created with the VIEWER_DRAW_(MPI_Comm comm) trick.
+  */
+  ierr = VIEWER_SOCKET_Destroy(PETSC_COMM_WORLD); CHKERRQ(ierr);
+  ierr = VIEWER_SOCKET_Destroy(PETSC_COMM_SELF); CHKERRQ(ierr);
+  ierr = VIEWER_SOCKET_Destroy(MPI_COMM_WORLD); CHKERRQ(ierr);
+  ierr = VIEWER_SOCKET_Destroy(MPI_COMM_SELF); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------------*/
