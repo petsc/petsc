@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.16 1995/12/13 15:59:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.17 1996/01/01 01:05:18 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -40,10 +40,10 @@ static int SNESSolve_UMLS(SNES snes,int *outits)
   f		= &(snes->fc);		/* function to minimize */
   gnorm		= &(snes->norm);	/* gradient norm */
 
-  ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr);/* X <- X_0 */
+  ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr);   /* X <- X_0 */
   ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr); /* f(X) */
-  ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);  /* G(X) <- gradient */
-  ierr = VecNorm(G,NORM_2,gnorm);   CHKERRQ(ierr);             /* gnorm = || G || */
+  ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);     /* G(X) <- gradient */
+  ierr = VecNorm(G,NORM_2,gnorm);   CHKERRQ(ierr);         /* gnorm = || G || */
   if (history && history_len > 0) history[0] = *gnorm;
   if (snes->monitor){(*snes->monitor)(snes,0,*gnorm,snes->monP); CHKERRQ(ierr);}
 
@@ -212,13 +212,13 @@ int SNESConverged_UMLS(SNES snes,double xnorm,double gnorm,double f,
     return 1;
   }
   if (gnorm < snes->atol) {
-    PLogInfo((PetscObject)snes,"SNES:Converged due to gradient norm %g<%g\n",gnorm,snes->atol);
+    PLogInfo((PetscObject)snes,"SNES: Converged due to gradient norm %g < %g\n",gnorm,snes->atol);
     return 2;
   }
   /* Test for termination and stringent tolerances. (failure and stop) */
  if (snes->nfuncs > snes->max_funcs) {
     PLogInfo((PetscObject)snes,
-             "SNES: Exceeded maximum number of function evaluations: %d>%d\n",
+             "SNES: Exceeded maximum number of function evaluations: %d > %d\n",
              snes->nfuncs,snes->max_funcs );
     return -1;
   } 
@@ -342,6 +342,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   }
 
   /* Initialization */
+  neP->bracket = 0;
   *info	  = 0;
   stage1  = 1;
   finit   = *f;
