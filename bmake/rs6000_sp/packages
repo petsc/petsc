@@ -35,8 +35,8 @@ LAPACK_LIB     =  -lesslp2 /ccst/balay/blaslapack/lapack.a
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = /usr/lpp/ppe.poe/lib/libmpi.a
-MPI_INCLUDE    = -I/usr/lpp/ppe.poe/include
+MPI_LIB        = /home/petsc/mpich/lib/rs6000/ch_p4/libmpe.a /usr/lpp/ppe.poe/lib/libmpi.a
+MPI_INCLUDE    = -I/usr/lpp/ppe.poe/include -I/home/petsc/mpich/mpe
 MPIRUN         = mpirun
 #
 # Location of MPE software (optional, if used added HAVE_MPE below)
@@ -75,6 +75,6 @@ CMEX           =
 #    installed on your machine (in /usr/lib/libessl.a) and 
 #    have it listed above in the LAPACK_LIB line above.
 #
-PCONF          =  -DHAVE_ESSL
+PCONF          =  -DHAVE_ESSL -DHAVE_MPE
 #
 EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
