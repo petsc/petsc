@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.135 1999/05/04 20:35:55 balay Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.136 1999/05/12 03:32:39 bsmith Exp balay $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -420,7 +420,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   ierr = VecCopy(y,w);CHKERRQ(ierr);
   ierr = VecAYPX(&mone,x,w);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
-  ierr = VecNorm(g,NORM_2,gnorm); 
+  ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
   if ((*gnorm)*(*gnorm)*0.5 <= fnorm*fnorm*0.5 + alpha*initslope) { /* Sufficient reduction */
     ierr = VecCopy(w,y);CHKERRQ(ierr);
     PLogInfo(snes,"SNESCubicLineSearch: Using full step\n");
@@ -428,7 +428,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   }
 
   /* Fit points with quadratic */
-  lambda = 1.0; count = 0;
+  lambda = 1.0;
   lambdatemp = -initslope/((*gnorm)*(*gnorm) - fnorm*fnorm - 2.0*initslope);
   lambdaprev = lambda;
   gnormprev = *gnorm;
@@ -609,7 +609,7 @@ int SNESQuadraticLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
   }
 
   /* Fit points with quadratic */
-  lambda = 1.0; count = 0;
+  lambda = 1.0;
   count = 1;
   while (1) {
     if (lambda <= minlambda) { /* bad luck; use full step */
