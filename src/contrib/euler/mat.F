@@ -1,5 +1,5 @@
 c
-c  "$Id: mat.F,v 1.17 1997/10/11 18:39:18 curfman Exp curfman $";
+c  "$Id: mat.F,v 1.18 1997/10/16 22:00:33 curfman Exp curfman $";
 c
 c ----------------------------------------------------------------------
 c
@@ -195,7 +195,7 @@ c      endif
 c -------------------------------------------------------------------
 
       integer function nzmat(format,mmtype,ndof_ee,ndof_block,istart,
-     &                   iend,is1,ltog,nloc,wkdim,nnz_d,nnz_o,ao)
+     &               iend,is1,ltog,nloc,wkdim,nnz_d,nnz_o,ao,no_wake)
 c
 c  nnzmat - Determines nonzero structure of the (parallel) Jacobian
 c           matrix in the arrays nnz_d and nnz_o.  These arrays can
@@ -220,6 +220,7 @@ c    nloc         - number of elements in ltog mapping
 c    wkdim        - length of arrays nnz_d and nnz_o
 c    nnz_d        - array for diagonal submatrices
 c    nnz_o        - array for off-diagonal submatrices
+c    no_wake      - exclude wake boundary conditions in matrix
 c
 c  Notes:
 c
@@ -244,7 +245,7 @@ c
       integer b1c,b2c,b3c,b4c,b5c,b6c,i,j,k,l,wkdim,ndof_block
       integer col,ict,row,id,ijkid,is1(0:*),ierr,ao,m, mmtype
       integer nloc,ltog(0:nloc-1),nnz_d(0:wkdim-1),nnz_o(0:wkdim-1)
-      integer chunk_loc,chunk_alc
+      integer chunk_loc,chunk_alc,no_wake
 
       nzmat = 0
 
@@ -442,6 +443,8 @@ c           ijkn = northern neighbor (j=2)
          goto 200
  123        continue
 c
+c Allocate wake boundary space only if no_wake hasn't been set
+            if (no_wake .eq. 0) then
             ID=NI+1-I
 c            ID=NI+2-I
 c Note: This j value corresponds to j=2!!
@@ -476,6 +479,7 @@ c     &                       k,j,i,ict,col,col1
  122           continue
                ict = ict + 1
  124        continue
+            endif
  200     continue
       endif
 
