@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.19 1997/02/10 21:41:24 curfman Exp curfman $";
+static char vcid[] = "$Id: ex12.c,v 1.20 1997/02/13 18:26:03 curfman Exp curfman $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -342,7 +342,7 @@ int main(int argc,char **args)
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_summary).  See PetscFinalize()
-     manpage for more information.
+         manpage for more information.
   */
   PetscFinalize();
   return 0;
