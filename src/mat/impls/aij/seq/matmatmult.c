@@ -138,10 +138,13 @@ int MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C)
   int ierr;
 
   PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX){
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(A,B,fill,C);CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX){ 
+    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(A,B,fill,C);CHKERRQ(ierr);/* numeric product is computed as well */
+  } else if (scall == MAT_REUSE_MATRIX){
+    ierr = MatMatMultNumeric_MPIAIJ_MPIAIJ(A,B,*C);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",scall);
   }
-  ierr = MatMatMultNumeric_MPIAIJ_MPIAIJ(A,B,*C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -226,11 +229,17 @@ EXTERN int MatDestroy_MPIAIJ(Mat);
 int MatDestroy_MPIAIJ_MatMatMult(Mat A)
 {
   int               ierr;
-  Mat_MatMatMultMPI *mult = ( Mat_MatMatMultMPI*)A->spptr; 
+  Mat_MatMatMultMPI *mult=(Mat_MatMatMultMPI*)A->spptr; 
 
   PetscFunctionBegin;
-  /* printf(" ...MatDestroy_MPIAIJ_MatMatMult is called\n"); */
+  ierr = ISDestroy(mult->isrowb);CHKERRQ(ierr);
+  ierr = ISDestroy(mult->iscolb);CHKERRQ(ierr);
+  ierr = ISDestroy(mult->isrowa);CHKERRQ(ierr);
+  ierr = MatDestroyMatrices(1,&mult->aseq);CHKERRQ(ierr); 
+  ierr = MatDestroyMatrices(1,&mult->bseq);CHKERRQ(ierr); 
+  ierr = MatDestroy(mult->C_seq);CHKERRQ(ierr); 
   ierr = PetscFree(mult);CHKERRQ(ierr); 
+
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
@@ -240,13 +249,13 @@ int MatDestroy_MPIAIJ_MatMatMult(Mat A)
 #define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ"
 int MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
-  Mat           *aseq,*bseq,A_seq=PETSC_NULL,B_seq=PETSC_NULL,C_seq;
-  Mat_MPIAIJ    *a = (Mat_MPIAIJ*)A->data;
-  int           ierr,*idx,i,start,end,ncols,imark,nzA,nzB,*cmap;
-  IS            isrow,iscol;
+  Mat_MPIAIJ        *a = (Mat_MPIAIJ*)A->data;
+  int               ierr,*idx,i,start,end,ncols,imark,nzA,nzB,*cmap;
   Mat_MatMatMultMPI *mult;
  
   PetscFunctionBegin;
+  ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
+
   /* create a seq matrix B_seq = submatrix of B by taking rows of B that equal to nonzero col of A */
   start = a->cstart;
   cmap  = a->garray;
@@ -261,36 +270,24 @@ int MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
   imark = i;
   for (i=0; i<nzA; i++) idx[ncols++] = start + i;
   for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i];
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,&isrow);CHKERRQ(ierr); /* isrow of B = iscol of A! */
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,&mult->isrowb);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr); 
-  ierr = ISCreateStride(PETSC_COMM_SELF,B->N,0,1,&iscol);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(B,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&bseq);CHKERRQ(ierr);
-  ierr = ISDestroy(iscol);CHKERRQ(ierr);
-  B_seq = bseq[0];
+  ierr = ISCreateStride(PETSC_COMM_SELF,B->N,0,1,&mult->iscolb);CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(B,1,&mult->isrowb,&mult->iscolb,MAT_INITIAL_MATRIX,&mult->bseq);CHKERRQ(ierr)
  
   /*  create a seq matrix A_seq = submatrix of A by taking all local rows of A */
   start = a->rstart; end = a->rend;
-  ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,&iscol);CHKERRQ(ierr); /* isrow of A = iscol */
-  ierr = MatGetSubMatrices(A,1,&iscol,&isrow,MAT_INITIAL_MATRIX,&aseq);CHKERRQ(ierr); 
-  ierr = ISDestroy(isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(iscol);CHKERRQ(ierr);
-  A_seq = aseq[0];
+  ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,&mult->isrowa);CHKERRQ(ierr); 
+  ierr = MatGetSubMatrices(A,1,&mult->isrowa,&mult->isrowb,MAT_INITIAL_MATRIX,&mult->aseq);CHKERRQ(ierr); 
 
   /* compute C_seq = A_seq * B_seq */
-  ierr = MatMatMult_SeqAIJ_SeqAIJ(A_seq,B_seq,MAT_INITIAL_MATRIX,fill,&C_seq);CHKERRQ(ierr);
-  /*
-  int rank;
-  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF," [%d] A_seq: %d, %d; B_seq: %d, %d; C_seq: %d, %d;\n",rank,A_seq->m,A_seq->n,B_seq->m,B_seq->n,C_seq->m,C_seq->n); 
-  */
-  ierr = MatDestroyMatrices(1,&aseq);CHKERRQ(ierr); 
-  ierr = MatDestroyMatrices(1,&bseq);CHKERRQ(ierr); 
+  ierr = MatMatMult_SeqAIJ_SeqAIJ(mult->aseq[0],mult->bseq[0],MAT_INITIAL_MATRIX,fill,&mult->C_seq);CHKERRQ(ierr);
 
   /* create mpi matrix C by concatinating C_seq */
-  ierr = MatMerge(A->comm,C_seq,C);CHKERRQ(ierr); 
+  ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); /* prevent C_seq being destroyed by MatMerge() */
+  ierr = MatMerge(A->comm,mult->C_seq,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
  
   /* attach the supporting struct to C for reuse of symbolic C */
-  ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
   (*C)->spptr         = (void*)mult;
   (*C)->ops->destroy  = MatDestroy_MPIAIJ_MatMatMult; 
   
@@ -323,7 +320,7 @@ int MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
   LNKLISTINITIALIZE(lnk_init,bn,lnk);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
-  ierr = GetMoreSpace(int(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
+  ierr = GetMoreSpace((int)(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   /* Determine symbolic info for each row of the product: */
@@ -455,11 +452,22 @@ int MatMatMultNumeric(Mat A,Mat B,Mat C){
   PetscFunctionReturn(0);
 }
 
+/* This routine is called ONLY in the case of reusing previously computed symbolic C */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ"
 int MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
 {
+  int               ierr;
+  Mat_MatMatMultMPI *mult=(Mat_MatMatMultMPI*)C->spptr;
+
   PetscFunctionBegin;
+  ierr = MatGetSubMatrices(B,1,&mult->isrowb,&mult->iscolb,MAT_REUSE_MATRIX,&mult->bseq);CHKERRQ(ierr)
+  ierr = MatGetSubMatrices(A,1,&mult->isrowa,&mult->isrowb,MAT_REUSE_MATRIX,&mult->aseq);CHKERRQ(ierr);
+  ierr = MatMatMult_SeqAIJ_SeqAIJ(mult->aseq[0],mult->bseq[0],MAT_REUSE_MATRIX,0.0,&mult->C_seq);CHKERRQ(ierr);
+
+  ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); 
+  ierr = MatMerge(A->comm,mult->C_seq,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr); 
+
   PetscFunctionReturn(0);
 }
 
@@ -528,16 +536,9 @@ int RegisterMatMatMultRoutines_Private(Mat A) {
   if (!logkey_matmatmult_symbolic) {
     ierr = PetscLogEventRegister(&logkey_matmatmult_symbolic,"MatMatMultSymbolic",MAT_COOKIE);CHKERRQ(ierr);
   }
-  /*
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMatMultSymbolic_seqaijseqaij",
-                                           "MatMatMultSymbolic_SeqAIJ_SeqAIJ",
-                                           MatMatMultSymbolic_SeqAIJ_SeqAIJ);CHKERRQ(ierr);*/
   if (!logkey_matmatmult_numeric) {
     ierr = PetscLogEventRegister(&logkey_matmatmult_numeric,"MatMatMultNumeric",MAT_COOKIE);CHKERRQ(ierr);
   }
-  /*
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMatMultNumeric_seqaijseqaij",
-                                           "MatMatMultNumeric_SeqAIJ_SeqAIJ",
-                                           MatMatMultNumeric_SeqAIJ_SeqAIJ);CHKERRQ(ierr);*/
+  
   PetscFunctionReturn(0);
 }

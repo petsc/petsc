@@ -328,7 +328,6 @@ EXTERN int MatView(Mat,PetscViewer);
 EXTERN int MatIsSymmetric(Mat,PetscReal,PetscTruth*);
 EXTERN int MatIsSymmetricKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN int MatLoad(PetscViewer,const MatType,Mat*);
-EXTERN int MatMerge(MPI_Comm,Mat,Mat*);
 
 EXTERN int MatGetRowIJ(Mat,int,PetscTruth,int*,int *[],int *[],PetscTruth *);
 EXTERN int MatRestoreRowIJ(Mat,int,PetscTruth,int *,int *[],int *[],PetscTruth *);
@@ -407,6 +406,7 @@ typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
 EXTERN int MatGetSubMatrices(Mat,int,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN int MatDestroyMatrices(int,Mat *[]);
 EXTERN int MatGetSubMatrix(Mat,IS,IS,int,MatReuse,Mat *);
+EXTERN int MatMerge(MPI_Comm,Mat,MatReuse,Mat*);
 
 EXTERN int MatIncreaseOverlap(Mat,int,IS[],int);
 

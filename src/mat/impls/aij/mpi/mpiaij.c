@@ -2689,7 +2689,8 @@ int MatSetValuesAdifor_MPIAIJ(Mat A,int nl,void *advalues)
 
    Input Parameters:
 +    comm - the communicators the parallel matrix will live on
--    inmat - the input sequential matrices
+.    inmat - the input sequential matrices
+-    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
 .    outmat - the parallel matrix generated
@@ -2700,7 +2701,7 @@ int MatSetValuesAdifor_MPIAIJ(Mat A,int nl,void *advalues)
       MUST be the same.
 
 @*/
-int MatMerge(MPI_Comm comm,Mat inmat, Mat *outmat)
+int MatMerge(MPI_Comm comm,Mat inmat,MatReuse scall,Mat *outmat)
 {
   int               ierr,m,n,i,rstart,nnz,I,*dnz,*onz;
   const int         *indx;
@@ -2708,7 +2709,50 @@ int MatMerge(MPI_Comm comm,Mat inmat, Mat *outmat)
   PetscMap          columnmap,rowmap;
 
   PetscFunctionBegin;
+
+  ierr = MatGetSize(inmat,&m,&n);CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX){ 
+    /* count nonzeros in each row, for diagonal and off diagonal portion of matrix */
+    ierr = PetscMapCreate(comm,&columnmap);CHKERRQ(ierr);
+    ierr = PetscMapSetSize(columnmap,n);CHKERRQ(ierr);
+    ierr = PetscMapSetType(columnmap,MAP_MPI);CHKERRQ(ierr);
+    ierr = PetscMapGetLocalSize(columnmap,&n);CHKERRQ(ierr);
+    ierr = PetscMapDestroy(columnmap);CHKERRQ(ierr);
+
+    ierr = PetscMapCreate(comm,&rowmap);CHKERRQ(ierr);
+    ierr = PetscMapSetLocalSize(rowmap,m);CHKERRQ(ierr);
+    ierr = PetscMapSetType(rowmap,MAP_MPI);CHKERRQ(ierr);
+    ierr = PetscMapGetLocalRange(rowmap,&rstart,0);CHKERRQ(ierr);
+    ierr = PetscMapDestroy(rowmap);CHKERRQ(ierr);
+
+    ierr = MatPreallocateInitialize(comm,m,n,dnz,onz);CHKERRQ(ierr);
+    for (i=0;i<m;i++) {
+      ierr = MatGetRow(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+      ierr = MatPreallocateSet(i+rstart,nnz,indx,dnz,onz);CHKERRQ(ierr);
+      ierr = MatRestoreRow(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+    }
+    /* This routine will ONLY return MPIAIJ type matrix */
+    ierr = MatCreate(comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,outmat);CHKERRQ(ierr);
+    ierr = MatSetType(*outmat,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*outmat,0,dnz,0,onz);CHKERRQ(ierr);
+    ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   
+  } else if (scall == MAT_REUSE_MATRIX){
+    ierr = MatGetOwnershipRange(*outmat,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",scall);
+  }
+
+  for (i=0;i<m;i++) {
+    ierr = MatGetRow(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+    I    = i + rstart;
+    ierr = MatSetValues(*outmat,1,&I,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatRestoreRow(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(inmat);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+#ifdef OLD  
   ierr = MatGetSize(inmat,&m,&n);CHKERRQ(ierr);
 
   /* count nonzeros in each row, for diagonal and off diagonal portion of matrix */
@@ -2745,7 +2789,7 @@ int MatMerge(MPI_Comm comm,Mat inmat, Mat *outmat)
   ierr = MatDestroy(inmat);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
+#endif
   PetscFunctionReturn(0);
 }
 
