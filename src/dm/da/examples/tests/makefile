@@ -1,16 +1,11 @@
-# $Id: makefile,v 1.40 1998/04/03 23:18:27 bsmith Exp balay $ 
+# $Id: makefile,v 1.41 1998/04/23 22:45:08 balay Exp bsmith $ 
 
 ALL: ex1
 
 CFLAGS	        = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 FFLAGS	        = 
-SOURCEC	        = 
-SOURCEF	        =
-SOURCEH	        =
-OBJSC	        = 
-OBJSF	        =
-LIBBASE	        = libpetscvec
 LOCDIR          = sec/da/examples/tests/
+
 TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm clean
 TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc\
 		  runex5 ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc ex7.rm clean

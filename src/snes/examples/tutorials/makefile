@@ -1,16 +1,11 @@
-# $Id: makefile,v 1.36 1998/04/23 22:48:27 balay Exp bsmith $ 
+# $Id: makefile,v 1.37 1998/05/07 23:12:40 bsmith Exp bsmith $ 
 
 ALL: ex1
 
 CFLAGS		 = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' 
 FFLAGS		 = 
-SOURCEC		 = 
-SOURCEF		 = 
-SOURCEH		 = 
-OBJSC		 = 
-OBJSF		 = 
-LIBBASE		 = libpetscsnes
 LOCDIR		 = src/snes/examples/tutorials/
+
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
 		   ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex6.PETSc runex6 runex6_2 \
 		   ex6.rm ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc runex5\

@@ -1,15 +1,9 @@
-# $Id: makefile,v 1.151 1998/04/08 16:02:35 bsmith Exp balay $ 
+# $Id: makefile,v 1.152 1998/04/23 22:48:06 balay Exp bsmith $ 
 
 ALL: ex1
 
 CFLAGS	  = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' ${BS_INCLUDE}
 FFLAGS	  = 
-SOURCEC	  = 
-SOURCEF	  =
-SOURCEH	  = pargrid.h
-OBJSC	  =
-OBJSF	  =
-LIBBASE	  = libpetscsles
 LOCDIR    = src/sles/examples/tests/
 NOADIC    = true
 

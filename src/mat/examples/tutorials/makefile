@@ -1,10 +1,11 @@
-# $Id: makefile,v 1.11 1998/04/26 21:43:42 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.12 1998/04/29 02:50:51 bsmith Exp bsmith $ 
 
 ALL: ex1
 
 CFLAGS 	        = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 FFLAGS	        = 
 LOCDIR          = src/mat/examples/tutorials/
+
 TESTEXAMPLES_1  = 
 TESTEXAMPLES_2  =
 TESTEXAMPLES_3  =

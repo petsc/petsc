@@ -1,18 +1,12 @@
-# $Id: makefile,v 1.26 1998/04/23 23:18:55 curfman Exp balay $ 
+# $Id: makefile,v 1.27 1998/04/23 23:20:32 balay Exp bsmith $ 
 
 ALL: ex1
 
 #
-# the FCONF is needed on the CFLAGS line to pick up the Fortran format info
 CFLAGS		 = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 FFLAGS		 = 
-SOURCEC		 = 
-SOURCEF		 = 
-SOURCEH		 = 
-OBJSC		 = 
-OBJSF		 = 
-LIBBASE		 = libpetscvec
 LOCDIR		 = src/vec/examples/tutorials/
+
 TESTEXAMPLES_1	 = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc \
 		   runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                    ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
