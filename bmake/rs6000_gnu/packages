@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.35 2001/03/27 22:17:30 balay Exp balay $ 
+# $Id: base.site,v 1.36 2001/03/30 16:24:02 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -34,7 +34,7 @@ MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/h
 # ESSL: IBM math library - 
 # The library location should be given in BLASLAPACK_LIB above
 #
-PETSC_HAVE_ESSL = -DPETSC_HAVE_ESSL
+#PETSC_HAVE_ESSL = -DPETSC_HAVE_ESSL
 #
 # Location of BlockSolve (MPI version), if you do not have
 # BlockSolve, then remove -DPETSC_HAVE_BLOCKSOLVE from the PCONF definition
