@@ -17,7 +17,7 @@ Additional Capabilities that PETSc Needs:
     is directed to a file (e.g., failure of sles/examples/ex7.F to
     print KSP residual norms in runex7).  Fix this.
 
-  - Performance file: Elaborate on reuse of vectors, et by employing user
+  X Performance file: Elaborate on reuse of vectors, et by employing user
     context, use SNES examples for illustrations.
 
   - Fix PetscView demo log file to work with new profile format.
