@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.13 1998/07/24 19:49:42 balay Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.14 1998/07/24 21:32:14 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -50,10 +50,10 @@ extern int PLogEventRegisterDestroy_Private();
 /*
        Function that is called to display all error messages
 */
-extern int  PetscErrorPrintfDefault(char *,...);
-extern int  PetscHelpPrintfDefault(MPI_Comm,char *,...);
-int (*PetscErrorPrintf)(char *,...)          = PetscErrorPrintfDefault;
-int (*PetscHelpPrintf)(MPI_Comm,char *,...)  = PetscHelpPrintfDefault;
+extern int  PetscErrorPrintfDefault(char [],...);
+extern int  PetscHelpPrintfDefault(MPI_Comm,char [],...);
+int (*PetscErrorPrintf)(char [],...)          = PetscErrorPrintfDefault;
+int (*PetscHelpPrintf)(MPI_Comm,char [],...)  = PetscHelpPrintfDefault;
 
 /* ------------------------------------------------------------------------------*/
 /* 
