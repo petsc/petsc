@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.290 1998/10/05 19:05:44 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.291 1998/11/02 19:28:23 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3638,6 +3638,16 @@ These parameters can also be set from the options database with
 \findex{-snes_mf_err} \findex{-snes_mf_umin}
 Note that setting these parameter appropriately is crucial for achieving
 fast convergence with matrix-free Newton-Krylov methods.  
+
+It is also possible to monitor the differencing parameters h that are computed
+via the routines
+\begin{verbatim}
+   MatSNESFDMFSetHHistory(Mat,Scalar *,int);
+   MatSNESFDMFResetHHistory(Mat,Scalar *,int);
+   MatSNESFDMFGetH(Mat,Scalar *);
+   MatSNESFDMFKSPMonitor(KSP,int,double,void *);
+\end{verbatim}
+and the runtime option  {\tt -snes\_mf\_ksp\_monitor} {\findex{snes_mf_ksp_monitor}
 
 We include an example in Figure~\ref{fig:snesexample2} that explicitly
 uses a matrix-free approach.  Note that by using the option 
