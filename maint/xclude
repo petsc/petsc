@@ -1,5 +1,6 @@
 petsc/src/contrib/reusememory
-petsc/src/benchmarks/performance_madams
+petsc/src/benchmarks/results
+petsc/src/benchmarks/notes
 petsc/src/snes/examples/tutorials/unstruct
 petsc/src/adic
 petsc/src/ec
