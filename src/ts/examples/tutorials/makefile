@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.21 1999/02/01 20:22:22 balay Exp balay $ 
+# $Id: makefile,v 1.22 1999/04/01 17:11:43 balay Exp curfman $ 
 
 ALL: ex1
 
@@ -50,6 +50,10 @@ ex4: ex4.o  chkopts
 ex5: ex5.o  chkopts
 	-${CLINKER} -o ex5 ex5.o  ${PETSC_TS_LIB}
 	${RM} ex5.o
+
+ex6: ex6.o  chkopts
+	-${CLINKER} -o ex6 ex6.o  ${PETSC_TS_LIB}
+	${RM} ex6.o
 
 runex1:
 	-@${MPIRUN} -np 1 ex1  > ex1_1.tmp 2>&1;	  \
