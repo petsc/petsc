@@ -1469,7 +1469,7 @@ int MatMultTransposeAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 /* ---------------------------------------------------------------------------------- */
-/*@C
+/*MC
   MatCreateMAIJ - Creates a matrix type providing restriction and interpolation 
   operations for multicomponent problems.  It interpolates each component the same
   way independently.  The matrix type is based on MATSEQAIJ for sequential matrices,
