@@ -330,10 +330,14 @@ class Framework(base.Base):
     projects = self.argDB['installedprojects']
     map(lambda p: projects.remove(p), self.getInstalledProject(self.project.getUrl(), returnAll = 1))
     self.argDB['installedprojects'] = projects
-    # TODO: Remove project from 'projectDependenceGraph'
+    # Remove project from 'projectDependenceGraph'
     dependenceGraph = self.argDB['projectDependenceGraph']
     dependenceGraph.removeVertex(self.project)
     self.argDB['projectDependenceGraph'] = dependenceGraph
+    # Remove configure log
+    logName = os.path.join(self.project.getRoot(), 'configure.log')
+    if os.path.isfile(logName):
+      os.remove(logName)
     return self.project
 
   def t_default(self):
