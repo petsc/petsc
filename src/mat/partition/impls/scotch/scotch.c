@@ -116,13 +116,13 @@ static int MatPartitioningApply_Scotch(MatPartitioning part, IS * partitioning)
         ierr = SCOTCH_graphCheck(&grafptr);CHKERRQ(ierr);
 
         /* Construction of the strategy */
-        if (scotch->strategy[0] != 0)   /*strcmp(scotch->strategy,"") */
+        if (scotch->strategy[0] != 0)   /* strcmp(scotch->strategy,"") */
             PetscStrcpy(strategy, scotch->strategy);
         else {
             PetscStrcpy(strategy, "b{strat=");
 
             if (scotch->multilevel) {
-                /*PetscStrcat(strategy,"m{vert=");
+                /* PetscStrcat(strategy,"m{vert=");
                    sprintf(strategy+strlen(strategy),"%d",scotch->nbvtxcoarsed);
                    PetscStrcat(strategy,",asc="); */
                 sprintf(strategy, "b{strat=m{vert=%d,asc=",
