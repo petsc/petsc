@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.17 1995/03/17 04:55:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.18 1995/03/21 23:18:08 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -502,8 +502,8 @@ int VecGetArray(Vec x,Scalar **a)
 }
 
 /*@
-    VecView  - Allows user to view a vector. This routines is intended to 
-              be replacable with fancy graphical based viewing.
+    VecView  - Allows the user to view a vector. This routines is intended
+               to be replacable with fancy graphical based viewing.
 
   Input Parameters:
 .  v - the vector
@@ -516,13 +516,16 @@ int VecView(Vec v,Viewer ptr)
 }
 
 /*@
-    VecGetSize - Returns number of elements in vector.
+    VecGetSize - Returns the global number of elements of the vector.
 
   Input Parameter:
 .   x - the vector
 
   Output Parameters:
-.  size - the length of the vector.
+.  size - the length of the vector
+
+  Note:
+  A related routine is VecGetLocalSize().
 @*/
 int VecGetSize(Vec x,int *size)
 {
@@ -531,15 +534,18 @@ int VecGetSize(Vec x,int *size)
 }
 
 /*@
-    VecGetLocalSize - Returns number of elements in vector stored 
+    VecGetLocalSize - Returns the number of elements of the vector stored 
                in local memory. This may mean different things 
-               for different implementations, use with care.
+               for different implementations, so use with care.
 
   Input Parameter:
 .   x - the vector
 
   Output Parameters:
-.  size - the length of the local piece of the vector.
+.  size - the length of the local piece of the vector
+
+  Note:
+  A related routine is VecGetSize().
 @*/
 int VecGetLocalSize(Vec x,int *size)
 {
