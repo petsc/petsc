@@ -73,11 +73,11 @@ def petsc_configure(configure_options):
     fixWin32Flinker('bmake/'+framework.argDB['PETSC_ARCH']+'/variables')
     return 0
   except RuntimeError, e:
-    msg = '***** Unable to configure with given options ***** (see configure.log for full details):\n'
+    msg = '***** Unable to configure with given options ***** (see configure.log for full details):\n' \
     +str(e)+'\n******************************************************\n'
     se = ''
   except TypeError, e:
-    msg = '***** Error in command line argument to configure.py *****\n'
+    msg = '***** Error in command line argument to configure.py *****\n' \
     +str(e)+'\n******************************************************\n'
     se = ''
   except SystemExit, e:
