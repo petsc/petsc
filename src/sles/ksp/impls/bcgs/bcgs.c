@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.60 1999/06/08 22:57:14 balay Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.61 1999/09/02 14:53:49 bsmith Exp bsmith $";
 #endif
 
 /*                       
     This code implements the BiCGStab (Stabilized version of BiConjugate
-    Gradient Squared) method.  Reference: van der Vorst, 1992.
+    Gradient Squared) method.  Reference: van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
 
     Note that for the complex numbers version, the VecDot() arguments
     within the code MUST remain in the order given for correct computation
