@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.7 2000/07/19 16:34:18 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.8 2000/07/19 20:58:03 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   
 #include "src/vec/vecimpl.h"
@@ -1282,15 +1282,9 @@ int MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
 int MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
-  int        ierr,i,high;
-  Scalar     zero = 0.0;
+  int        ierr;
 
   PetscFunctionBegin;
-  /*
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"calledMatMultAdd_MPISBAIJ \n");
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
-  */
-  
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr); 
   /* do diagonal part */
   ierr = (*a->A->ops->multadd)(a->A,xx,yy,zz);CHKERRQ(ierr);
@@ -1298,36 +1292,11 @@ int MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->B->ops->multadd)(a->B,a->lvec,zz,zz);CHKERRQ(ierr);
 
-  /* do subdiagonal part */
-  ierr = VecGetOwnershipRange(yy,PETSC_NULL,&high); CHKERRA(ierr);
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"high=%d \n",high);
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
-
-  ierr = VecScatterBegin(yy,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(yy,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
-  /* set the begining part of lvec zero ? */
-  
-  /*
-  for (i=0; i<high; i++){
-    ierr = VecSetValues(a->lvec,1,&i,&zero,INSERT_VALUES);CHKERRA(ierr);
-  }
-  */
-  /* VecView(a->lvec, VIEWER_STDOUT_WORLD);  */
-    
-  ierr = (*a->B->ops->multtransposeadd)(a->B,xx,a->lvec,a->lvec);CHKERRQ(ierr);
-  ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
-#ifdef old
-  /* do subdiagonal part */
+  /* do subdiagonal part */    
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
-  /* send it on its way */
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
-  /* do local part */
-  ierr = (*a->B->ops->multadd)(a->B,xx,yy,zz);CHKERRQ(ierr);
-  ierr = (*a->A->ops->multadd)(a->A,xx,zz,zz);CHKERRQ(ierr);  
-  /* receive remote parts */
   ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
-#endif
+
   PetscFunctionReturn(0);
 }
 
