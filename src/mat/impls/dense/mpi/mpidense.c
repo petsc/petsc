@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.119 1999/07/26 02:52:49 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.120 1999/07/27 22:18:47 curfman Exp curfman $";
 #endif
 
 /*
@@ -731,6 +731,45 @@ int MatRestoreRow_MPIDense(Mat mat,int row,int *nz,int **idx,Scalar **v)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "MatDiagonalScale_MPIDense"
+int MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
+{
+  Mat_MPIDense *mdn = (Mat_MPIDense *) A->data;
+  Mat_SeqDense *mat = (Mat_SeqDense*) mdn->A->data;
+  Scalar       *l,*r,x,*v;
+  int          ierr,i,j,m = mat->m, n = mat->n;
+
+  PetscFunctionBegin;
+  if (ll) {
+    ierr = VecGetSize(ll,&m);CHKERRQ(ierr);
+    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
+    if (m != mat->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Left scaling vec wrong size");
+    for ( i=0; i<m; i++ ) {
+      x = l[i];
+      v = mat->v + i;
+      for ( j=0; j<n; j++ ) { (*v) *= x; v+= m;} 
+    }
+    ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
+    PLogFlops(n*m);
+  }
+  if (rr) {
+    ierr = VecGetSize(rr,&n);CHKERRQ(ierr);
+    if (n != mat->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Right scaling vec wrong size");
+    ierr = VecScatterBegin(rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
+    ierr = VecScatterEnd(rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
+    ierr = VecGetArray(mdn->lvec,&r);CHKERRQ(ierr);
+    for ( i=0; i<n; i++ ) {
+      x = r[i];
+      v = mat->v + i*m;
+      for ( j=0; j<m; j++ ) { (*v++) *= x;} 
+    }
+    ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
+    PLogFlops(n*m);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "MatNorm_MPIDense"
 int MatNorm_MPIDense(Mat A,NormType type,double *norm)
 {
@@ -877,7 +916,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        MatTranspose_MPIDense,
        MatGetInfo_MPIDense,0,
        MatGetDiagonal_MPIDense,
-       0,
+       MatDiagonalScale_MPIDense,
        MatNorm_MPIDense,
        MatAssemblyBegin_MPIDense,
        MatAssemblyEnd_MPIDense,
