@@ -100,16 +100,16 @@ extern char   *mktemp(char *);
 extern "C" {
 extern char   *mktemp(char *);
 extern char   *getwd(char *);
-extern int     gethostname(char *,int);
-extern int     getdomainname(char *,int);
-extern char   *getenv( char *);
-extern int    atoi(char*);
+extern int    gethostname(char *,int);
+extern int    getdomainname(char *,int);
 extern void   perror(const char *);
 extern double atof(const char *);
-extern int    free(void *);
-extern void   *malloc(long unsigned int );
 /* These where added to freeBSD recently, thus no longer are needed. */
 /*
+extern int    free(void *);
+extern void   *malloc(long unsigned int );
+extern char   *getenv( char *);
+extern int    atoi(char*);
 extern int    exit(int);
 extern int    abort();
 */

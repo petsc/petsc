@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.71 1996/02/08 20:41:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.72 1996/02/15 17:23:44 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -88,7 +88,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   pc->applyBAtrans= 0;
   pc->applyrich   = 0;
   pc->view        = 0;
-  pc->getfactmat  = 0;
+  pc->getfactoredmatrix  = 0;
   *newpc          = pc;
   /* this violates rule about seperating abstract from implementions*/
   return PCSetType(pc,PCJACOBI);
@@ -474,7 +474,7 @@ int PCSetVector(PC pc,Vec vec)
 int PCGetFactoredMatrix(PC pc,Mat *mat)
 {
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  if (pc->getfactoredmatatrix) return (*pc->getfactoredmatrix)(pc,mat);
+  if (pc->getfactoredmatrix) return (*pc->getfactoredmatrix)(pc,mat);
   return 0;
 }
 

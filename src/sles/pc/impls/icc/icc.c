@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.30 1996/01/29 22:28:11 balay Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.31 1996/02/08 18:26:46 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -123,7 +123,7 @@ int PCCreate_ICC(PC pc)
   pc->setfrom      = PCSetFromOptions_ICC;
   pc->printhelp    = PCPrintHelp_ICC;
   pc->view         = 0;
-  pc->getfactmat   = PCGetFactoredMatrix_ICC;
+  pc->getfactoredmatrix   = PCGetFactoredMatrix_ICC;
   pc->type	   = PCICC;
   pc->data	   = (void *) icc;
   pc->applysymmleft  = PCApplySymmLeft_ICC;

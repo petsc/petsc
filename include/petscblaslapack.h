@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.14 1996/01/26 04:35:51 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.15 1996/02/08 18:28:54 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -18,8 +18,11 @@ Cray T3D.  Yet another reason to hate ...
 #include "fortran.h"
 #endif
 
-/* t3d doesn't have lower level SGETF2 in library, so use SGETRF instead */
 #if !defined(PETSC_COMPLEX)
+
+/*
+    These are real case with no character string arguments
+*/
 #if defined(PARCH_t3d)
 #define LAgeqrf_ SGEQRF
 #define LAgetrf_ SGETRF
@@ -66,6 +69,9 @@ Cray T3D.  Yet another reason to hate ...
 #define BLasum_  dasum_
 #endif
 
+/*
+   Real with character string arguments.
+*/
 #if defined(PARCH_t3d)
 #define LAormqr_(a,b,c,d,e,f,g,h,i,j,k,l,m)  SORMQR(_cptofcd((a),1),\
              _cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
@@ -78,6 +84,11 @@ Cray T3D.  Yet another reason to hate ...
                                         (f),(g),(h),(i),(j),(k))
 #define LAgetrs_(a,b,c,d,e,f,g,h,i) SGETRS(_cptofcd((a),1),(b),(c),(d),(e),\
                                         (f),(g),(h),(i))
+#define LAgetrs_(a,b,c,d,e,f,g,h,i) SGETRS(_cptofcd((a),1),(b),(c),(d),(e),\
+                                        (f),(g),(h),(i))
+#define LAgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) SGEMM(_cptofcd((a),1), \
+                                            _cptofcd((a),1),(c),(d),(e),\
+                                        (f),(g),(h),(i),(j),(k),(l),(m))
 #define LAtrmv_  STRMV
 #define LAtrsl_  STRSL
 #elif defined(HAVE_FORTRAN_CAPS)
@@ -89,6 +100,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgetrs_ DGETRS
 #define LAtrmv_  DTRMV
 #define LAtrsl_  DTRSL
+#define BLgemm_  DGEMM
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define LAormqr_ dormqr
 #define LAtrtrs_ dtrtrs
@@ -98,6 +110,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgetrs_ dgetrs
 #define LAtrmv_  dtrmv
 #define LAtrsl_  dtrsl
+#define BLgemm_  dgemm
 #else
 #define LAormqr_ dormqr_
 #define LAtrtrs_ dtrtrs_
@@ -107,10 +120,14 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgetrs_ dgetrs_
 #define LAtrmv_  dtrmv_
 #define LAtrsl_  dtrsl_
+#define BLgemm_  dgemm_
 #endif
 
 #else
 
+/*
+   Complex with no character string arguments
+*/
 #if defined(PARCH_t3d)
 #define LAgeqrf_ CGEQRF
 #define BLdot_   CDOTC
@@ -155,6 +172,11 @@ Cray T3D.  Yet another reason to hate ...
 #define BLasum_  dzasum_
 #endif
 
+/*
+    Complex with character string arguments.
+  Who the F&%&^ was stupid enough to put character strings
+  into low-level computational kernels? It was a mistake!
+*/
 #if defined(PARCH_t3d)
 #define LAtrtrs_(a,b,c,d,e,f,g,h,i,j) CTRTRS(_cptofcd((a),1),_cptofcd((b),1),\
                               _cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
@@ -165,6 +187,9 @@ Cray T3D.  Yet another reason to hate ...
                                         (f),(g),(h),(i),(j),(k))
 #define LAgetrs_(a,b,c,d,e,f,g,h,i) CGETRS(_cptofcd((a),1),(b),(c),(d),(e),\
                                         (f),(g),(h),(i))
+#define LAgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) SGEMM(_cptofcd((a),1), \
+                                            _cptofcd((a),1),(c),(d),(e),\
+                                        (f),(g),(h),(i),(j),(k),(l),(m))
 #define LAtrmv_  CTRMV
 #define LAtrsl_  CTRSL
 #elif defined(HAVE_FORTRAN_CAPS)
@@ -222,12 +247,16 @@ extern void   CGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
                         Scalar*,Scalar*,int*);
 extern void   CPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
 extern void   CGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
+extern void   CGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
+                      Scalar*,int*,Scalar*,Scalar*,int*);
 #else
 extern void   SPOTRF(_fcd,int*,Scalar*,int*,int*);
 extern void   SGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
                         Scalar*,Scalar*,int*);
 extern void   SPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
 extern void   SGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
+extern void   SGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
+                      Scalar*,int*,Scalar*,Scalar*,int*);
 #endif
 
 #else
@@ -240,6 +269,8 @@ extern void   LAgemv_(char*,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
                        Scalar*,Scalar*,int*);
 extern void   LApotrs_(char*,int*,int*,Scalar*,int*,Scalar*,int*,int*);
 extern void   LAgetrs_(char*,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
+extern void   BLgemm_(char *,char*,int*,int*,int*,Scalar*,Scalar*,int*,
+                      Scalar*,int*,Scalar*,Scalar*,int*);
 #endif
 
 #if defined(__cplusplus)

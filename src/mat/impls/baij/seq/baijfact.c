@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.3 1996/02/17 05:41:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.4 1996/02/18 00:40:22 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -142,39 +142,17 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 }
 
 #include "pinclude/plapack.h"
-
-#define BlockZero(v,idx) {PetscMemzero(v+bs2*(idx),bs2*sizeof(Scalar));}
-
-#define BlockCopy(v_in,v_out,idx_in,idx_out) \
-  {PetscMemcpy(v_out + bs2*(idx_out),v_in + bs2*(idx_in),bs2*sizeof(Scalar));}
-
-#define BlockInvert(vv,idx) \
-  { int _i,info; Scalar *w = vv + bs2*idx; \
-    LAgetrf_(&bs,&bs,w,&bs,v_pivots,&info); CHKERRQ(info); \
-    PetscMemzero(v_work,bs2*sizeof(Scalar));  \
-    for ( _i=0; _i<bs; _i++ ) { v_work[_i + bs*_i] = 1.0; } \
-    LAgetrs_("N",&bs,&bs,w,&bs,v_pivots,v_work,&bs, &info);CHKERRQ(info);\
-    PetscMemcpy(w,v_work,bs2*sizeof(Scalar)); \
-  }
-
-#define BlockMult(v1,v2,v3) \
-  {Scalar _DOne=1.0, _DZero=0.0;\
-  BLgemm_("N","N",&bs,&bs,&bs,&_DOne,v1,&bs,v2,&bs,&_DZero,v3,&bs);} 
-
-#define BlockMultSub(v1,v2,v3,idx2,idx3) \
-  {Scalar _DOne=1.0, _DMOne=-1.0;\
-  BLgemm_("N","N",&bs,&bs,&bs,&_DMOne,v1,&bs,v2+bs2*idx2,&bs,&_DOne,v3+bs2*idx3,&bs);} 
-
 /* ----------------------------------------------------------- */
 int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
 {
-  Mat         C = *B;
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data, *b = (Mat_SeqBAIJ *)C->data;
-  IS          iscol = b->col, isrow = b->row, isicol;
-  int         *r,*ic, ierr, i, j, n = a->mbs, *ai = b->i, *aj = b->j;
-  int         *ajtmpold, *ajtmp, nz, row, bslog;
-  int         *diag_offset = b->diag,diag,bs = a->bs,bs2 = bs*bs, *v_pivots;
-  register Scalar *pv,*v,*rtmp,*multiplier,*v_work,*pc;
+  Mat             C = *B;
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data,*b = (Mat_SeqBAIJ *)C->data;
+  IS              iscol = b->col, isrow = b->row, isicol;
+  int             *r,*ic, ierr, i, j, n = a->mbs, *ai = b->i, *aj = b->j;
+  int             *ajtmpold, *ajtmp, nz, row, bslog,info;
+  int             *diag_offset=b->diag,diag,bs=a->bs,bs2 = bs*bs,*v_pivots;
+  register Scalar *pv,*v,*rtmp,*multiplier,*v_work,*pc,*w;
+  Scalar          one = 1.0, zero = 0.0, mone = -1.0;
   register int    *pj;
 
   ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
@@ -189,29 +167,37 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   v_pivots   = (int *) (multiplier + bs2);
 
   /* flops in while loop */
-  bslog = 4*bs*bs2 - bs;
+  bslog = 2*bs*bs2;
 
   for ( i=0; i<n; i++ ) {
     nz    = ai[i+1] - ai[i];
     ajtmp = aj + ai[i];
-    for  ( j=0; j<nz; j++ ) BlockZero(rtmp,ajtmp[j]);
+    for  ( j=0; j<nz; j++ ) {
+      PetscMemzero(rtmp+bs2*ajtmp[j],bs2*sizeof(Scalar));
+    }
     /* load in initial (unfactored row) */
     nz       = a->i[r[i]+1] - a->i[r[i]];
     ajtmpold = a->j + a->i[r[i]];
     v        = a->a + bs2*a->i[r[i]];
-    for ( j=0; j<nz; j++ ) BlockCopy(v,rtmp,j,ic[ajtmpold[j]]);
+    for ( j=0; j<nz; j++ ) {
+      PetscMemcpy(rtmp+bs2*ic[ajtmpold[j]],v+bs2*j,bs2*sizeof(Scalar)); 
+    }
     row = *ajtmp++;
     while (row < i) {
       pc = rtmp + bs2*row;
 /*      if (*pc) { */
         pv = b->a + bs2*diag_offset[row];
         pj = b->j + diag_offset[row] + 1;
-	BlockMult(pc,pv,multiplier);
-        BlockCopy(multiplier,pc,0,0); 
+        BLgemm_("N","N",&bs,&bs,&bs,&one,pc,&bs,pv,&bs,&zero,
+                multiplier,&bs);
+        PetscMemcpy(pc,multiplier,bs2*sizeof(Scalar));
         nz = ai[row+1] - diag_offset[row] - 1;
         pv += bs2;
-        for (j=0; j<nz; j++) BlockMultSub(multiplier,pv,rtmp,j,pj[j]);
-        PLogFlops(bslog*nz);
+        for (j=0; j<nz; j++) {
+          BLgemm_("N","N",&bs,&bs,&bs,&mone,multiplier,&bs,pv+bs2*j,&bs,
+                  &one,rtmp+bs2*pj[j],&bs);
+        }
+        PLogFlops(bslog*(nz+1)-bs);
 /*      } */
         row = *ajtmp++;
     }
@@ -219,10 +205,17 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
     pv = b->a + bs2*ai[i];
     pj = b->j + ai[i];
     nz = ai[i+1] - ai[i];
-    for ( j=0; j<nz; j++ ) BlockCopy(rtmp,pv,pj[j],j);
+    for ( j=0; j<nz; j++ ) {
+      PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(Scalar)); 
+    }
     diag = diag_offset[i] - ai[i];
     /* invert diagonal block */
-    BlockInvert(pv,diag);
+    w = pv + bs2*diag; 
+    LAgetrf_(&bs,&bs,w,&bs,v_pivots,&info); CHKERRQ(info); 
+    PetscMemzero(v_work,bs2*sizeof(Scalar));  
+    for ( j=0; j<bs; j++ ) { v_work[j + bs*j] = 1.0; } 
+    LAgetrs_("N",&bs,&bs,w,&bs,v_pivots,v_work,&bs, &info);CHKERRQ(info);
+    PetscMemcpy(w,v_work,bs2*sizeof(Scalar)); 
   }
 
   PetscFree(rtmp); PetscFree(v_work);
@@ -232,6 +225,102 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*bs*bs2*b->mbs); /* from inverting diagonal blocks */
+  return 0;
+}
+/* ------------------------------------------------------------*/
+/*
+      Version for when blocks are 2 by 2
+*/
+int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
+{
+  Mat             C = *B;
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data,*b = (Mat_SeqBAIJ *)C->data;
+  IS              iscol = b->col, isrow = b->row, isicol;
+  int             *r,*ic, ierr, i, j, n = a->mbs, *ai = b->i, *aj = b->j;
+  int             *ajtmpold, *ajtmp, nz, row, info;
+  int             *diag_offset=b->diag,*v_pivots,bs = 2,idx;
+  register Scalar *pv,*v,*rtmp,m1,m2,m3,m4,*v_work,*pc,*w,*x,x1,x2,x3,x4;
+  Scalar          p1,p2,p3,p4;
+  register int    *pj;
+
+  ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
+  PLogObjectParent(*B,isicol);
+  ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
+  rtmp  = (Scalar *) PetscMalloc(4*(n+1)*sizeof(Scalar));CHKPTRQ(rtmp);
+
+  /* generate work space needed by dense LU factorization */
+  v_work     = (Scalar *) PetscMalloc(6*sizeof(Scalar));CHKPTRQ(v_work);
+  v_pivots   = (int *) (v_work + 4);
+
+
+  for ( i=0; i<n; i++ ) {
+    nz    = ai[i+1] - ai[i];
+    ajtmp = aj + ai[i];
+    for  ( j=0; j<nz; j++ ) {
+      x = rtmp+4*ajtmp[j]; x[0] = x[1] = x[2] = x[3] = 0.0;
+    }
+    /* load in initial (unfactored row) */
+    idx      = r[i];
+    nz       = a->i[idx+1] - a->i[idx];
+    ajtmpold = a->j + a->i[idx];
+    v        = a->a + 4*a->i[idx];
+    for ( j=0; j<nz; j++ ) {
+      x    = rtmp+4*ic[ajtmpold[j]];
+      x[0] = v[0]; x[1] = v[1]; x[2] = v[2]; x[3] = v[3];
+      v    += 4;
+    }
+    row = *ajtmp++;
+    while (row < i) {
+      pc = rtmp + 4*row;
+      p1 = pc[0]; p2 = pc[1]; p3 = pc[2]; p4 = pc[3];
+      if (p1 || p2 || p3 || p4) { 
+        pv = b->a + 4*diag_offset[row];
+        pj = b->j + diag_offset[row] + 1;
+        x1 = pv[0]; x2 = pv[1]; x3 = pv[2]; x4 = pv[3];
+        pc[0] = m1 = p1*x1 + p3*x2;
+        pc[1] = m2 = p2*x1 + p4*x2;
+        pc[2] = m3 = p1*x3 + p3*x4;
+        pc[3] = m4 = p2*x3 + p4*x4;
+        nz = ai[row+1] - diag_offset[row] - 1;
+        pv += 4;
+        for (j=0; j<nz; j++) {
+          x1   = pv[0]; x2 = pv[1]; x3 = pv[2]; x4 = pv[3];
+          x    = rtmp + 4*pj[j];
+          x[0] -= m1*x1 + m3*x2;
+          x[1] -= m2*x1 + m4*x2;
+          x[2] -= m1*x3 + m3*x4;
+          x[3] -= m2*x3 + m4*x4;
+          pv   += 4;
+        }
+        PLogFlops(16*nz+12);
+      } 
+      row = *ajtmp++;
+    }
+    /* finished row so stick it into b->a */
+    pv = b->a + 4*ai[i];
+    pj = b->j + ai[i];
+    nz = ai[i+1] - ai[i];
+    for ( j=0; j<nz; j++ ) {
+      x     = rtmp+4*pj[j];
+      pv[0] = x[0]; pv[1] = x[1]; pv[2] = x[2]; pv[3] = x[3];
+      pv   += 4;
+    }
+    /* invert diagonal block */
+    w = b->a + 4*diag_offset[i];
+    LAgetrf_(&bs,&bs,w,&bs,v_pivots,&info); CHKERRQ(info);
+    v_work[0] = 1.0; v_work[1] = 0.0; v_work[2] = 0.0; v_work[3] = 1.0; 
+    LAgetrs_("N",&bs,&bs,w,&bs,v_pivots,v_work,&bs, &info);CHKERRQ(info);
+    w[0] = v_work[0]; w[1] = v_work[1]; w[2] = v_work[2]; w[3] = v_work[3];
+  }
+
+  PetscFree(rtmp); PetscFree(v_work);
+  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISDestroy(isicol); CHKERRQ(ierr);
+  C->factor = FACTOR_LU;
+  C->assembled = PETSC_TRUE;
+  PLogFlops(1.3333*8*b->mbs); /* from inverting diagonal blocks */
   return 0;
 }
 
@@ -277,7 +366,7 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
         *pc        = multiplier;
         nz         = ai[row+1] - diag_offset[row] - 1;
         for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
-        PLogFlops(2*nz);
+        PLogFlops(1+2*nz);
       }
       row = *ajtmp++;
     }

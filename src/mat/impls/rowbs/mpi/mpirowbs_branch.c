@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.91 1996/01/27 16:30:52 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.92 1996/02/15 00:56:34 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -63,6 +63,8 @@ static int MatCreateMPIRowbs_local(Mat A,int nz,int *nnz)
 
   /* Allocate BlockSolve matrix context */
   bsif->A                = bsmat = PetscNew(BSspmat); CHKPTRQ(bsmat);
+  BSset_mat_icc_storage(bsmat,PETSC_FALSE);
+  BSset_mat_symmetric(bsmat,PETSC_FALSE);
   len                    = m*(sizeof(BSsprow *) + sizeof(BSsprow)) + 1;
   bsmat->rows            = (BSsprow **) PetscMalloc( len ); CHKPTRQ(bsmat->rows);
   bsmat->num_rows        = m;

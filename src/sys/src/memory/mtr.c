@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.48 1996/02/15 14:54:36 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.49 1996/02/17 00:40:40 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -269,6 +269,10 @@ int TrFree( void *aa, int line, char *file )
     if ((ierr = TrValid(line,file))) return ierr;
   }
 
+  if (PetscLow > aa || PetscHigh < aa){
+    fprintf(stderr,"TrFree called with address not allocated by TrMalloc\n");
+    SETERRQ(1,"TrFree:Invalid Address");
+  } 
   ahead = a;
   a     = a - sizeof(TrSPACE);
   head  = (TRSPACE *)a;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.25 1996/01/27 00:21:19 balay Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.26 1996/02/06 14:30:55 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -46,12 +46,14 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,x); CHKERRA(ierr);
 
   /* Solve system */
+  PLogStagePush(1);
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   time1 = PetscGetTime();
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
   time1 = PetscGetTime() - time1;
+  PLogStagePop();
 
   /* Show result */
   ierr = MatMult(A,x,u);

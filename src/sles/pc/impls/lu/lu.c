@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.55 1996/01/26 04:33:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.56 1996/02/08 18:26:38 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -170,6 +170,6 @@ int PCCreate_LU(PC pc)
   pc->setfrom    = PCSetFromOptions_LU;
   pc->printhelp  = PCPrintHelp_LU;
   pc->view       = PCView_LU;
-  pc->getfactmat = PCGetFactoredMatrix_LU;
+  pc->getfactoredmatrix = PCGetFactoredMatrix_LU;
   return 0;
 }

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.1 1996/02/11 23:25:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex18.c,v 1.1 1996/02/14 00:25:33 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -40,11 +40,10 @@ int main(int argc,char **args)
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
 
-/* 
-   If the load matrix is larger then the vector, due to being padded 
-   to match the blocksize then create a new padded vector
-*/
-
+  /* 
+     If the load matrix is larger then the vector, due to being padded 
+     to match the blocksize then create a new padded vector
+  */
   ierr = MatGetSize(A,&m,&n); CHKERRA(ierr);
   ierr = VecGetSize(b,&mvec); CHKERRA(ierr);
   if (m > mvec) {
@@ -59,28 +58,20 @@ int main(int argc,char **args)
     b = tmp;
   }
 
-/*
-ierr = MatView(A,STDOUT_VIEWER_WORLD);
-ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"newfile",BINARY_CREATE,&fd);
-CHKERRA(ierr);
-ierr = MatView(A,fd); CHKERRA(ierr);
-ierr = VecView(b,fd); CHKERRA(ierr);
-ierr = ViewerDestroy(fd); CHKERRA(ierr);
-*/
-
-
   /* Set up solution */
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
   ierr = VecSet(&zero,x); CHKERRA(ierr);
 
   /* Solve system */
+  PLogStagePush(1);
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   time1 = PetscGetTime();
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
   time1 = PetscGetTime() - time1;
+  PLogStagePop();
 
   /* Show result */
   ierr = MatMult(A,x,u);
@@ -92,7 +83,7 @@ ierr = ViewerDestroy(fd); CHKERRA(ierr);
   } else {
     MPIU_printf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
   }
-  /* MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f seconds\n",time1); */
+  MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f seconds\n",time1); 
 
   /* Cleanup */
   ierr = SLESDestroy(sles); CHKERRA(ierr);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.4 1996/02/17 05:41:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.5 1996/02/18 00:40:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -530,6 +530,9 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   switch (bs) {
     case 1:
       B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;  
+      break;
+    case 2:
+      B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;  
     break;
   }
   B->destroy          = MatDestroy_SeqBAIJ;
