@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.91 1997/06/12 21:49:20 bsmith Exp balay $";
+static char vcid[] = "$Id: ls.c,v 1.92 1997/07/09 20:59:51 balay Exp curfman $";
 #endif
 
 #include <math.h>
@@ -50,7 +50,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   if (history) history[0] = fnorm;
   SNESMonitor(snes,0,fnorm);
 
-  if (fnorm == 0.0) {outits = 0; return 0;}
+  if (fnorm < snes->atol) {*outits = 0; return 0;}
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -282,8 +282,11 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
   steptol = neP->steptol;
 
   ierr = VecNorm(y,NORM_2,ynorm); CHKERRQ(ierr);
-  if (*ynorm == 0.0) {
-    PLogInfo(snes,"SNESCubicLineSearch: Search direction and size is 0\n");
+  if (*ynorm < snes->atol) {
+    PLogInfo(snes,"SNESCubicLineSearch: Search direction and size are nearly 0\n");
+    *gnorm = fnorm;
+    ierr = VecCopy(x,y); CHKERRQ(ierr);
+    ierr = VecCopy(f,g); CHKERRQ(ierr);
     goto theend1;
   }
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
