@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.29 1999/01/31 16:03:27 bsmith Exp curfman $
+# $Id: makefile,v 1.30 1999/02/01 21:47:36 curfman Exp balay $
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    = stride.o 
 OBJSF    =
 LIBBASE  = libpetscvec
-MANSEC   = 9
+MANSEC   = IS
 LOCDIR   = src/vec/is/impls/seq/stride/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

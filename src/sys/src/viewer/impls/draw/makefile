@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 1999/01/12 23:17:33 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.4 1999/01/31 16:04:45 bsmith Exp balay $ 
 
 ALL: lib 
 
@@ -6,10 +6,10 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = drawv.c
 SOURCEF  =
-SOURCEH  =
+SOURCEH  = vdraw.h
 OBJSC    = drawv.o
 OBJSF    =
-MANSEC   = v
+MANSEC   = Viewer
 LIBBASE  = libpetsc
 DIRS     = 
 LOCDIR   = src/sys/src/viewer/impls/draw/

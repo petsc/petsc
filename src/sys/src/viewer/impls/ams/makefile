@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 1999/01/18 22:37:00 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.5 1999/01/31 16:04:44 bsmith Exp balay $ 
 
 ALL: lib 
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  =
 OBJSC    = ams.o amsopen.o
 OBJSF    =
-MANSEC   = v
+MANSEC   = Viewer
 LIBBASE  = libpetsc
 DIRS     = 
 LOCDIR   = src/sys/src/viewer/impls/ams/

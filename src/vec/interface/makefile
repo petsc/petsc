@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.35 1999/01/12 23:13:14 bsmith Exp bsmith $
+# $Id: makefile,v 1.36 1999/01/27 19:45:44 bsmith Exp balay $
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    = vector.o map.o vnake.o
 OBJSF    =
 LIBBASE  = libpetscvec
-MANSEC   = 1
+MANSEC   = Vec
 LOCDIR   = src/vec/interface/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

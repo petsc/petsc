@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.34 1999/01/12 23:16:44 bsmith Exp bsmith $
+# $Id: makefile,v 1.35 1999/01/31 16:05:02 bsmith Exp balay $
 
 ALL: lib 
 
@@ -10,7 +10,7 @@ SOURCEF   =
 SOURCEH   = ximpl.h
 OBJSC     = xinit.o frame.o wmap.o xcolor.o xops.o text.o tone.o drawopenx.o
 OBJSF     =
-MANSEC    = x
+MANSEC    = Draw
 LIBBASE   = libpetsc
 DIRS      = 
 LOCDIR    = src/sys/src/draw/impls/x/

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 1998/07/23 22:46:48 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.7 1999/01/12 23:14:09 bsmith Exp balay $ 
 
 ALL: lib 
 
@@ -9,7 +9,7 @@ SOURCEF	  =
 SOURCEH	  = 
 OBJSC	  = adebug.o err.o errtrace.o errabort.o errstop.o fp.o signal.o stack.o
 OBJSF	  =
-MANSEC	  = 7
+MANSEC	  = Sys
 LIBBASE	  = libpetsc
 DIRS	  = 
 LOCDIR	  = src/sys/src/error/

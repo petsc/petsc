@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.38 1998/06/15 16:08:05 balay Exp bsmith $ 
+# $Id: makefile,v 1.39 1999/01/12 23:13:27 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  = pvecimpl.h
 OBJSC    = pbvec.o pdvec.o pvec2.o pmap.o vmpicr.o
 OBJSF    =
 LIBBASE  = libpetscvec
-MANSEC   = 1
+MANSEC   = Vec
 LOCDIR   = src/vec/impls/mpi/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 1998/11/20 15:28:08 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.7 1999/01/12 23:14:14 bsmith Exp balay $ 
 
 ALL: lib 
 
@@ -12,7 +12,7 @@ SOURCEH	  =
 OBJSC	  = ffpath.o ftest.o ghome.o mpiuopen.o rpath.o \
             fpath.o fwd.o grpath.o mprint.o sysio.o fretrieve.o
 OBJSF	  =
-MANSEC	  = 7
+MANSEC	  = Sys
 LIBBASE	  = libpetsc
 DIRS	  = 
 LOCDIR	  = src/sys/src/fileio/

@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.13 1999/02/01 18:43:38 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.14 1999/02/02 21:11:02 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -39,7 +39,7 @@ def printindex(outfilename,headfilename,titles,tables):
 
       # Add the HTML Header info here.
       fd.write(headbuf)
-      fd.write('<TABLE>')
+      fd.write('<TABLE>\n')
       for i in range(len(titles)):
             title = titles[i]
             if len(tables[i]) == 0:
@@ -52,12 +52,12 @@ def printindex(outfilename,headfilename,titles,tables):
                         # the header saying no functions in this cagetory.
                         fd.write('</TR><TD>')
                         fd.write('<B>' + 'No ' + title +' routines' + '</B>')
-                        fd.write('</TD></TR>')
+                        fd.write('</TD></TR>\n')
                         continue
                   
             fd.write('</TR><TD>')
             fd.write('<B>' + upper(title[0])+title[1:] + '</B>')
-            fd.write('</TD></TR>')
+            fd.write('</TD></TR>\n')
             for filename in tables[i]:
                   path,name     = posixpath.split(filename)
                   func_name,ext = posixpath.splitext(name)
@@ -65,10 +65,10 @@ def printindex(outfilename,headfilename,titles,tables):
                   mesg          = '<TD WIDTH=250><A HREF="' + rel_dir + '/' + name + '">' + \
                                   func_name + '</A></TD>'
                   fd.write(mesg)
-                  if tables[i].index(filename) % 3 == 2 : fd.write('<TR>')
-      fd.write('</TABLE>')
+                  if tables[i].index(filename) % 3 == 2 : fd.write('<TR>\n')
+      fd.write('</TABLE>\n')
       # Add HTML tail info here
-      fd.write('<BR><A HREF="manualpages.html"><IMG SRC="up.gif">Table of Contents</A>')
+      fd.write('<BR><A HREF="manualpages.html"><IMG SRC="up.gif">Table of Contents</A>\n')
       fd.close()
 
 # Read in the filename contents, and search for the formatted

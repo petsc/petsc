@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.42 1999/01/12 23:17:16 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.43 1999/01/31 16:04:29 bsmith Exp balay $ 
 
 #
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
@@ -18,7 +18,7 @@ SOURCEH   = socket.h closeport.c openport.c receivedense.c launch.c receive.c  \
             receivesparse.c closeport.m launch.m openport.m receive.m
 OBJSC     = senddense.o send.o  sendsparse.o
 OBJSF     =
-MANSEC    = v
+MANSEC    = Viewer
 LIBBASE   = libpetsc
 DIRS      = 
 LOCDIR    = src/sys/src/viewer/impls/socket/
