@@ -38,7 +38,6 @@ class Loader(ihooks.FancyModuleLoader):
       stuff = self.find_module_in_dir(name, dir)
       if stuff:
         if len(modules) > 0 and not stuff[2][2] == imp.PKG_DIRECTORY:
-          print 'Rejecting',stuff
           continue
         modules.append(stuff)
     if modules: return modules
