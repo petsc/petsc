@@ -1,5 +1,5 @@
 import config.base
-
+import os
 import re
 
 class Options(config.base.Configure):
@@ -10,13 +10,18 @@ class Options(config.base.Configure):
   def getCFlags(self, compiler, bopt):
     flags = []
     # GNU gcc
-    if compiler == 'gcc':
+    if config.compilers.Configure.isGNU(compiler):
       if bopt == '':
         flags.append('-Wall')
       elif bopt == 'g':
         flags.append('-g3')
       elif bopt == 'O':
-        flags.extend(['-O', '-Wshadow', '-fomit-frame-pointer'])
+        try:
+          if os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm']:
+            flags.append('-Wshadow')
+        except:
+          pass
+        flags.extend(['-O', '-fomit-frame-pointer'])
     # Alpha
     elif re.match(r'alphaev[5-9]', self.framework.host_cpu):
       # Compaq C
@@ -44,13 +49,18 @@ class Options(config.base.Configure):
   def getCxxFlags(self, compiler, bopt):
     flags = []
     # GNU g++
-    if compiler == 'g++':
+    if config.compilers.Configure.isGNU(compiler):
       if bopt == '':
         flags.append('-Wall')
       elif bopt == 'g':
         flags.append('-g3')
       elif bopt == 'O':
-        flags.extend(['-O', '-Wshadow', '-fomit-frame-pointer'])
+        try:
+          if os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm']:
+            flags.append('-Wshadow')
+        except:
+          pass
+        flags.extend(['-O', '-fomit-frame-pointer'])
     # Alpha
     elif re.match(r'alphaev[0-9]', self.framework.host_cpu):
       # Compaq C++
