@@ -534,7 +534,7 @@ manconcepts:
           done
 
 getexlist:
-	-${PETSC_DIR}/maint/getexlist -locdir ${LOCDIR} -byfile -destdir ${LOC}/docs/manualpages/concepts/ ${EXAMPLESC}
+	-@${PETSC_DIR}/maint/getexlist -locdir ${LOCDIR} -byfile -destdir ${LOC}/docs/manualpages/concepts/ ${EXAMPLESC} ${EXAMPLESF}
 	-@${RM} -f logfile.txt
 #
 #   Rules for generating html code from C and Fortran 

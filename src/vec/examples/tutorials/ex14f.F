@@ -8,7 +8,7 @@
 !   Concepts: vectors^ghost padding;
 !   Processors: n
 !
-!   Comment: Ghost padding is one way to handle local calculations that
+!   Description: Ghost padding is one way to handle local calculations that
 !      involve values from other processors. VecCreateGhostBlock() provides
 !      a way to create vectors with extra room at the end of the vector 
 !      array to contain the needed ghost values from other processors, 

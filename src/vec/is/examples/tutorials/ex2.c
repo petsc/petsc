@@ -8,7 +8,7 @@ static char help[] = "Demonstrates creating a stride index set.\n\n";
     Concepts: stride^creating a stride index set;
     Concepts: IS^creating a stride index set;
     
-    Comment: Creates an index set based on a stride. Views that index set
+    Description: Creates an index set based on a stride. Views that index set
     and then destroys it.
 T*/
 

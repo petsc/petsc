@@ -1,14 +1,14 @@
 !
 !  "$Id: ex1f90.F,v 1.18 2001/01/15 21:44:33 bsmith Exp $";
 !
+!  Description: Creates an index set based on a set of integers. Views that index set
+!  and then destroys it.
+!
 !/*T
 !    Concepts: index sets^manipulating a general index set;
 !    Concepts: Fortran90^accessing indices of index set;
 !T*/
 !    
-!  Comment: Creates an index set based on a set of integers. Views that index set
-!  and then destroys it.
-!
 !  The following include statements are required for Fortran programs
 !  that use PETSc index sets:
 !     petsc.h  - base PETSc routines
