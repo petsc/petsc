@@ -1,5 +1,5 @@
 C
-C  "$Id: fsolve.F,v 1.4 1997/10/20 02:30:33 curfman Exp bsmith $";
+C  "$Id: fsolve.F,v 1.5 1997/12/07 04:04:29 bsmith Exp bsmith $";
 C
 C    Fortran kernel for sparse triangular solve in the AIJ matrix format
 C
@@ -11,7 +11,7 @@ C
       Scalar           x(0:*),aa(0:*),b(0:*)
       integer          n, ai(0:*),aj(0:*),adiag(0:*)
 
-      integer          i,j,ai_i,nz,adiag_i,jstart,jend
+      integer          i,j,jstart,jend
       Scalar           sum
 C     
 C     Forward Solve
