@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.36 1997/10/12 19:58:35 bsmith Exp bsmith $;
+C  $Id: mat.h,v 1.37 1997/11/03 04:51:41 bsmith Exp balay $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -7,7 +7,7 @@ C
 #define MatType             integer
 #define MatOption           integer 
 #define MatAssemblyType     integer
-#define MatReorderingType       integer
+#define MatReorderingType   integer
 #define MatSORType          integer
 #define MatInfoType         integer
 #define MatGetSubMatrixCall integer
@@ -15,7 +15,7 @@ C
 #define MatColoring         integer
 #define MatFDColoring       integer
 #define MatInfo             double precision
-
+#define MatStructure        integer
 C
 C  Matrix types
 C
@@ -36,6 +36,16 @@ C
       integer MAT_FLUSH_ASSEMBLY,MAT_FINAL_ASSEMBLY
 
       parameter( MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0)
+C
+C  Flags for PCSetOperators()
+C
+      integer SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,
+     *        SAME_PRECONDITIONER
+
+      parameter (SAME_NONZERO_PATTERN = 0,
+     *           DIFFERENT_NONZERO_PATTERN = 1,
+     *           SAME_PRECONDITIONER = 2)
+
 C
 C  Matrix options
 C
