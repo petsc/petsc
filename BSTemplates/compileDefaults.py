@@ -23,7 +23,6 @@ class UsingCompiler:
     self.defines        = ['PIC']
     self.includeDirs    = BSTemplates.sidlStructs.SIDLPackageDict(usingSIDL)
     self.extraLibraries = BSTemplates.sidlStructs.SIDLPackageDict(usingSIDL)
-    self.libDir         = os.path.abspath('lib')
     return
 
   def getDefines(self):
@@ -31,14 +30,14 @@ class UsingCompiler:
 
   def getClientLibrary(self, project, lang, isArchive = 1, root = None):
     '''Client libraries following the naming scheme: lib<project>-<lang>-client.a'''
-    if not root: root = self.libDir
+    if not root:  root = os.path.join(project.getRoot(), 'lib')
     if isArchive:  ext = '.a'
     else:          ext = '.so'
     return fileset.FileSet([os.path.join(root, 'lib'+project.getName()+'-'+lang.lower()+'-client'+ext)])
 
   def getServerLibrary(self, project, lang, package, isArchive = 1, root = None):
     '''Server libraries following the naming scheme: lib<project>-<lang>-<package>-server.a'''
-    if not root: root = self.libDir
+    if not root:  root = os.path.join(project.getRoot(), 'lib')
     if isArchive:  ext = '.a'
     else:          ext = '.so'
     return fileset.FileSet([os.path.join(root, 'lib'+project.getName()+'-'+lang.lower()+'-'+package+'-server'+ext)])
@@ -88,7 +87,7 @@ class UsingCompiler:
 
   def getExecutableCompileTarget(self, project, sources, executable):
     baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
-    library  = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
+    library  = fileset.FileSet([os.path.join(project.getRoot(), 'lib', 'lib'+baseName+'.a')])
     compiler = self.getCompiler(library)
     # Might be all internal clients
     if os.path.isdir(self.usingSIDL.getClientRootDir(self.getLanguage())):
@@ -325,7 +324,7 @@ class UsingF77 (UsingCompiler):
 
   def getExecutableCompileTarget(self, project, sources, executable):
     baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
-    library  = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
+    library  = fileset.FileSet([os.path.join(project.getRoot(), 'lib', 'lib'+baseName+'.a')])
     compileC = compile.CompileC(library)
     compileC.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
     compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
@@ -367,7 +366,7 @@ class UsingJava (UsingCompiler):
 
   def getClientLibrary(self, project, lang, isArchive = 1, root = None, isJNI = 0):
     '''Client libraries following the naming scheme: lib<project>-<lang>-client.jar (or .a for JNI libraries)'''
-    if not root: root = self.libDir
+    if not root: root = os.path.join(project.getRoot(), 'lib')
     if isJNI:
       if isArchive:
         ext = '.a'
@@ -397,7 +396,7 @@ class UsingJava (UsingCompiler):
 
   def getExecutableCompileTarget(self, project, sources, executable):
     baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
-    library  = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.jar')])
+    library  = fileset.FileSet([os.path.join(project.getRoot(), 'lib', 'lib'+baseName+'.jar')])
     compileJava = compile.CompileJava(library)
     compileJava.includeDirs.extend(self.getClientLibrary(project, self.getLanguage()))
     compileJava.includeDirs.extend(self.getSIDLRuntimeLibraries())

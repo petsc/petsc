@@ -11,7 +11,7 @@ class Defaults:
     self.implRE    = re.compile(r'^(.*)_impl$')
     self.serverRE  = re.compile(r'^(.*)_(Skel|Impl)')
     # Get runtime AST
-    self.usingSIDL.repositoryDirs.append(self.usingSIDL.getRootDir())
+    self.usingSIDL.repositoryDirs.append(self.usingSIDL.getRuntimeProject().getRoot())
     return
 
   def getCompilerModule(self):

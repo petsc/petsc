@@ -211,7 +211,7 @@ class DArgs:
 
 #  This is the client end of a remote dictionary
 class RArgs (UserDict.UserDict):
-  def __init__(self,name = "default",readpw = "open",dictpw = "open",addpw = "open",writepw = "open"):
+  def __init__(self, name = "default", readpw = "open", dictpw = "open", addpw = "open", writepw = "open", addr = None):
     UserDict.UserDict.__init__(self)
     self.name    = name
     if dictpw  == "open": dictpw  = readpw
@@ -221,8 +221,12 @@ class RArgs (UserDict.UserDict):
     self.dictpw  = dictpw
     self.addpw   = addpw
     self.writepw = writepw
-    self.addr    = self.getServerAddr()
-    
+    if addr is None:
+      self.addr  = self.getServerAddr()
+    else:
+      self.addr  = tuple(addr)
+    return
+
   def getServerAddr(self):
     filename = os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.loc')
     if os.path.exists(filename):

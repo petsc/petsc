@@ -21,6 +21,9 @@ class Project:
     self.root = root
     return
 
+  def __str__(self):
+    return self.name
+
   def __hash__(self):
     return self.name.__hash__()
 
@@ -64,10 +67,10 @@ class BS (maker.Maker):
     self.sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
     self.setupSourceDB()
     # Put current project name into the database
-    if argDB.has_key('installedprojects'):
+    if not argDB.has_key('installedprojects'):
       argDB['installedprojects'] = []
     if projectObj not in argDB['installedprojects']:
-      argDB['installedprojects'].append(projectObj)
+      argDB['installedprojects'] = argDB['installedprojects']+[projectObj]
     return
 
   def setupArgDB(self, clArgs):
@@ -78,16 +81,18 @@ class BS (maker.Maker):
   def saveSourceDB(self):
     self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
     global sourceDB
+    # Make sourceDB paths relative
     newDB = sourceDatabase.SourceDB()
-    pwd = os.getcwd()
+    pwd   = self.getRoot()
     for key in sourceDB:
-      new_key = re.split(pwd,key)[-1]
+      new_key        = re.split(pwd,key)[-1]
       newDB[new_key] = sourceDB[key]
     sourceDB = newDB
 
     dbFile = open(self.sourceDBFilename, 'w')
     cPickle.dump(sourceDB, dbFile)
     dbFile.close()
+    return
   
   def setupSourceDB(self):
     self.debugPrint('Reading source database from '+self.sourceDBFilename, 2, 'sourceDB')
@@ -98,13 +103,13 @@ class BS (maker.Maker):
       sourceDB = cPickle.load(dbFile)
       dbFile.close()
 
+      # Make sourceDB paths absolute
       newDB = sourceDatabase.SourceDB()
-      pwd = os.getcwd()
+      pwd   = self.getRoot()
       for key in sourceDB:
-        new_key = pwd+key
+        new_key        = pwd+key
         newDB[new_key] = sourceDB[key]
       sourceDB = newDB
-      
     else:
       sourceDB = sourceDatabase.SourceDB()
     atexit.register(self.cleanup)

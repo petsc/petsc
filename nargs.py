@@ -10,7 +10,7 @@ import sys
 import RDict
 
 #===============================================================================
-def parseArg(arg):
+def parseValue(arg):
   if arg and arg[0] == '[' and arg[-1] == ']':
     if len(arg) > 2: arg = arg[1:-1].split(',')
     else:            arg = []
@@ -23,7 +23,23 @@ def parseArg(arg):
     arg = d
   return arg
 
-    
+def parseArgument(arg):
+  if arg[0] == '-':
+    if arg.find('=') >= 0:
+      (key, value) = arg[1:].split('=')
+    else:
+      (key, value) = (arg[1:], '1')
+    return (key, parseValue(value))
+  return (None, None)
+
+def findArgument(arg, argList):
+  if not isinstance(argList, list): return None
+  for a in argList:
+    (key, value) = parseArgument(a)
+    if key == arg:
+      return value
+  return None
+
 #===============================================================================
 #  The base class of objects that are stored in the ArgDict
 # The dictionary actual contains objects, the actual option is
@@ -63,7 +79,7 @@ class ArgDir(ArgEmpty):
         # default to getting directory as string
         if not hasattr(self,'value'):
            if self.help: print self.help
-           try: self.value = parseArg(raw_input('Please enter value for '+key+':'))
+           try: self.value = parseValue(raw_input('Please enter value for '+key+':'))
            except KeyboardInterrupt: sys.exit(1)
            return (1,self.value)
         else: return (0,self.value)
@@ -91,7 +107,7 @@ class ArgLibrary(ArgEmpty):
         # default to getting library as string
         if not hasattr(self, 'value'):
            if self.help: print self.help
-           try: self.value = parseArg(raw_input('Please enter value for '+key+':'))
+           try: self.value = parseValue(raw_input('Please enter value for '+key+':'))
            except KeyboardInterrupt: sys.exit(1)
            return (1, self.value)
         else: return (0, self.value)
@@ -105,7 +121,7 @@ class ArgString(ArgEmpty):
   def getValue(self,key):
     if not hasattr(self,'value'):
       if self.help: print self.help
-      try:                      self.value = parseArg(raw_input('Please enter value for '+key+':'))
+      try:                      self.value = parseValue(raw_input('Please enter value for '+key+':'))
       except KeyboardInterrupt:	sys.exit(1)
       return (1,self.value)
     else: return (0,self.value)
@@ -121,7 +137,7 @@ class ArgInt(ArgEmpty):
     if not hasattr(self,'value'):
       if self.help: print self.help
       while 1:
-        try: self.value = parseArg(raw_input('Please enter integer value for '+key+':'))
+        try: self.value = parseValue(raw_input('Please enter integer value for '+key+':'))
         except KeyboardInterrupt: sys.exit(1)
         try: self.value = int(self.value)
         except: self.value = self.min
@@ -132,12 +148,12 @@ class ArgInt(ArgEmpty):
 #   Dictionary of actual command line arguments, etc.
 #
 class ArgDict (RDict.RArgs):
-  def __init__(self, name = "ArgDict",argList = None,localDict = 0):
+  def __init__(self, name = "ArgDict", argList = None, localDict = 0, addr = None):
     if localDict or '-localDict' in argList:
       self.purelocal = 1
     else:
       self.purelocal = 0
-      RDict.RArgs.__init__(self,name)
+      RDict.RArgs.__init__(self, name, addr = addr)
     self.local  = {}
     self.target = ['default']
     #  the list of targets is always local
@@ -146,6 +162,7 @@ class ArgDict (RDict.RArgs):
     self.setLocalType('install',ArgInt())
     self.setLocalType('fileset',ArgString())
     self.insertArgList(argList)
+    return
 
   def __setitem__(self,key,value):
     if self.local.has_key(key):
@@ -205,17 +222,15 @@ class ArgDict (RDict.RArgs):
   def insertArgList(self, argList):
     if not isinstance(argList, list): return
     for arg in argList:
-      if arg[0] == '-':
-        if arg.find('=') >= 0:
-          (key, val) = arg[1:].split('=')
-        else:
-          (key, val) = (arg[1:], '1')
-        self[key]  = parseArg(val)
+      (key, value) = parseArgument(arg)
+      if not key is None:
+        self[key] = value
       else:
         if not self.target == ['default']:
           self.target.append(arg)
         else:
           self.target = [arg]
+    return
 
 if __name__ ==  '__main__':
   print "Entries in BS build system options dictionary"
