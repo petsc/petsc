@@ -36,7 +36,7 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 # SPOOLES, SPOOLES_MPI
 #
 SPOOLES_INCLUDE       = -I${SOFT_HOME}/spooles-2.2
-SPOOLES_LIB           = ${SOFT_HOME}/spooles-2.2/MPI/src/spoolesMPI.a ${SOFT_HOME}/spooles-2.2/spooles.a 
+SPOOLES_LIB           = -L${SOFT_HOME}/spooles-2.2/MPI/src/spoolesMPI.a ${SOFT_HOME}/spooles-2.2 -lspooles
 PETSC_HAVE_SPOOLES    = -DPETSC_HAVE_SPOOLES
 #
 #
@@ -48,9 +48,9 @@ PETSC_HAVE_HYPRE = -DPETSC_HAVE_HYPRE
 #
 # Location of SPAI;
 #
-#SPAI_INCLUDE    = -I/soft/apps/packages/petsc-packages/linux-rh72-intel/spai_3.0/lib
-#SPAI_LIB        = /soft/apps/packages/petsc-packages/linux-rh72-intel/spai_3.0/lib/libspai.a
-#PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
+SPAI_INCLUDE    = -I/soft/apps/packages/petsc-packages/linux-rh72-intel/spai_3.0/lib
+SPAI_LIB        = -L/soft/apps/packages/petsc-packages/linux-rh72-intel/spai_3.0/lib -lspai
+PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 #
 # SuperLU
 #
