@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.28 1996/03/10 17:30:09 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.29 1996/03/19 21:30:28 bsmith Exp gropp $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -11,6 +11,7 @@
 /* types of draw contexts */
 #define XWINDOW    0
 #define NULLWINDOW 1
+#define VRML       2
  
 typedef struct _Draw* Draw;
 
@@ -32,6 +33,8 @@ typedef struct _Draw* Draw;
 #define DRAW_YELLOW      15
 
 extern int DrawOpenX(MPI_Comm,char *,char *,int,int,int,int,Draw*);
+extern int DrawOpenVRML( MPI_Comm, char *, char *, Draw * );
+
 extern int DrawOpenNull(MPI_Comm,Draw *);
 extern int DrawDestroy(Draw);
 extern int DrawIsNull(Draw,PetscTruth*);
@@ -65,6 +68,8 @@ extern int DrawFlush(Draw);
 extern int DrawSyncFlush(Draw);
 extern int DrawClear(Draw);
 extern int DrawSyncClear(Draw);
+extern int DrawBOP(Draw);
+extern int DrawEOP(Draw);
 
 typedef enum {BUTTON_NONE, BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT } DrawButton;
 extern int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
