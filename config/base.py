@@ -110,6 +110,9 @@ class Configure:
       status = -1
       self.framework.log.write(error)
     else:
+      import re
+      # get rid of multiple blank lines
+      output = re.sub('\n[\n]*','\n',output)
       if len(output) < 600:
         self.framework.log.write('sh: '+output+'\n')
       else:
