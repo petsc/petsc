@@ -14,7 +14,7 @@ OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/aij/seq/essl
+LOCDIR   = src/mat/impls/aij/seq/essl/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
