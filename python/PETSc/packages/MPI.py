@@ -247,6 +247,9 @@ class Configure(config.base.Configure):
     dir = os.path.join('/cygdrive','c','Program\\ Files','MPICH')
     yield('Default MPICH install location (C:\Program Files\MPICH with MS compatible SDK',self.libraryGuesses(os.path.join(dir,'SDK')),[[os.path.join(dir,'SDK','include')]])
     yield('Default MPICH install location (C:\Program Files\MPICH with SDK.gcc',self.libraryGuesses(os.path.join(dir,'SDK.gcc')),[[os.path.join(dir,'SDK.gcc','include')]])
+    # Try AIX location
+    dir = os.path.abspath(os.path.join('/usr', 'lpp', 'ppe.poe'))
+    yield ('Default AIX location', [[os.path.join(dir, 'lib', 'libmpi_r.a')]], [[os.path.join(dir, 'include')]])
     
     # Try PETSc location
     PETSC_DIR  = None
@@ -404,15 +407,6 @@ class Configure(config.base.Configure):
       raise RuntimeError('Could not locate any functional MPI\n Rerun config/configure.py with --with-mpi=0 to install without MPI\n or -with-mpi-dir=directory to use a MPICH installation\n or -with-mpi-include=directory -with-mpi-lib=library (or list of libraries) -with-mpirun=mpiruncommand for other MPIs.\n Or run with --download-mpich=1 to have PETSc download and compile MPICH for you.\nIt could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
     return
 
-  def configureTypes(self):
-    '''Checking for MPI types'''
-    oldFlags = self.framework.argDB['CPPFLAGS']
-    for inc in self.include: self.framework.argDB['CPPFLAGS'] += ' -I'+inc
-    self.types.checkSizeof('MPI_Comm', 'mpi.h')
-    self.types.checkSizeof('MPI_Fint', 'mpi.h')
-    self.framework.argDB['CPPFLAGS'] = oldFlags
-    return
-
   def configureConversion(self):
     '''Check for the functions which convert communicators between C and Fortran
        - Define HAVE_MPI_COMM_F2C and HAVE_MPI_COMM_C2F if they are present
@@ -423,6 +417,16 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_MPI_COMM_C2F', 1)
     if self.checkMPILink('#include <mpi.h>\n', 'MPI_Fint a;\n'):
       self.addDefine('HAVE_MPI_FINT', 1)
+    return
+
+  def configureTypes(self):
+    '''Checking for MPI types'''
+    oldFlags = self.framework.argDB['CPPFLAGS']
+    for inc in self.include: self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    self.types.checkSizeof('MPI_Comm', 'mpi.h')
+    if 'HAVE_MPI_FINT' in self.defines:
+      self.types.checkSizeof('MPI_Fint', 'mpi.h')
+    self.framework.argDB['CPPFLAGS'] = oldFlags
     return
 
   def configureMPIRUN(self):
@@ -476,8 +480,8 @@ class Configure(config.base.Configure):
       return
     self.executeTest(self.configureLibrary)
     if self.foundMPI:
-      self.executeTest(self.configureTypes)
       self.executeTest(self.configureConversion)
+      self.executeTest(self.configureTypes)
       self.executeTest(self.configureMPIRUN)
     self.setOutput()
     return
