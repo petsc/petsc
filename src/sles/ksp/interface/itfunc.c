@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.57 1996/07/02 15:38:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.58 1996/07/02 16:15:40 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -619,7 +619,7 @@ int KSPGetConvergenceContext(KSP ksp, void **ctx)
 
    Output Parameter: Provide exactly one of
 .  v - location to stash solution.   
-.  V - the solution is returned in this vector. This vector is created 
+.  V - the solution is returned in this location. This vector is created 
        internally. This vector should NOT be  destroyed by the user with
        a VecDestroy().
 
