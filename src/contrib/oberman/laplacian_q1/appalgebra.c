@@ -1,4 +1,4 @@
-/*$Id: appalgebra.c,v 1.10 2000/04/09 03:11:34 bsmith Exp bsmith $*/
+/*$Id: appalgebra.c,v 1.11 2000/06/05 03:52:08 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -6,7 +6,7 @@
 */
 #undef __FUNC__
 #define __FUNC__ "pde_rhs"
-double pde_rhs(void *dummy,int n,double *xx,double *f)
+int pde_rhs(void *dummy,int n,double *xx,double *f)
 {  
   double pi = 3.1415927, x = xx[0], y = xx[1];
   PetscFunctionBegin;
@@ -15,7 +15,7 @@ double pde_rhs(void *dummy,int n,double *xx,double *f)
 }
 #undef __FUNC__
 #define __FUNC__ "pde_bc"
-double pde_bc(void *dummy,int n,double *xx,double *f)
+int pde_bc(void *dummy,int n,double *xx,double *f)
 {
   double pi = 3.1415927, x = xx[0], y = xx[1];
   PetscFunctionBegin;
