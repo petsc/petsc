@@ -325,7 +325,7 @@ EXTERN PetscErrorCode MatCopy(Mat,Mat,MatStructure);
 EXTERN PetscErrorCode MatView(Mat,PetscViewer);
 EXTERN PetscErrorCode MatIsSymmetric(Mat,PetscReal,PetscTruth*);
 EXTERN PetscErrorCode MatIsStructurallySymmetric(Mat,PetscTruth*);
-EXTERN PetscErrorCode MatIsHermitian(Mat,PetscReal,PetscTruth*);
+EXTERN PetscErrorCode MatIsHermitian(Mat,PetscTruth*);
 EXTERN PetscErrorCode MatIsSymmetricKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode MatIsHermitianKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode MatLoad(PetscViewer,const MatType,Mat*);
