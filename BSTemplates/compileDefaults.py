@@ -242,10 +242,10 @@ class UsingPython(UsingCompiler):
     return [compile.TagC(root = rootDir), serverFilter, compiler]
 
   def getExecutableCompileTarget(self, project, sources, executable):
-    raise RuntimeError('No executable compilation in '+self.getLanguage())
+    return []
 
   def getExecutableLinkTarget(self, project):
-    raise RuntimeError('No executable link in '+self.getLanguage())
+    return []
 
 class UsingF77 (UsingCompiler):
   '''This class handles all interaction specific to the Fortran 77 language'''
