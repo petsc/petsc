@@ -22,7 +22,7 @@ typedef struct {
   int    mainbd;     /* the number of the main block diagonal */
   int    nb;         /* Each diagonal element is an nb x nb matrix */
   int    *diag;      /* value of (row-col)/nb for each diagonal */
-  int    *dlength;   /* length of each diagonal */
+  int    *bdlen;     /* block-length of each diagonal */
   int    ndim;       /* Diagonals come from an ndim pde (if 0, ignore) */
   int    ndims[3];   /* Sizes of the mesh if ndim > 0 */
   int    user_alloc; /* True if the user provided the diagonals */
