@@ -44,4 +44,8 @@ ex5: ex5.o
 	-$(CLINKER) -o ex5 ex5.o  $(SYSLIB)
 	$(RM) -f ex5.o
 
+ex6: ex6.o 
+	-$(CLINKER) -o ex6 ex6.o  $(SYSLIB)
+	$(RM) -f ex6.o
+
 include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
