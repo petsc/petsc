@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.54 1996/01/26 20:27:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmres.c,v 1.55 1996/01/27 13:55:38 curfman Exp bsmith $";
 #endif
 
 /*
@@ -536,15 +536,16 @@ static int KSPBuildSolution_GMRES(KSP itP,Vec  ptr,Vec *result )
 .   fcn   - Orthogonalization function.  
 
   Notes:
-  The functions KSPGMRESBasicOrthog and KSPGMRESUnmodifiedOrthog are predefined.
-  The default is KSPGMRESBasicOrthog; KSPGMRESUnmodifiedOrthog is a simple 
-  Gram-Schmidt (NOT modified Gram-Schmidt).  The KSPGMRESUnmodifiedOrthog is 
+  The functions KSPGMRESModifiedGramSchmidtOrthogonalization and 
+  KSPGMRESUnmodifiedGramSchmidtOrthogonalization are predefined.
+  The default is KSPGMRESModifiedGramSchmidtOrthogonalization; 
+  The KSPGMRESUnmodifiedGramSchmidtOrthogonalization is 
   NOT recommended; however, for some problems, particularly when using 
   parallel distributed vectors, this may be significantly faster.
 
-  The routine KSPGMRESIROrthog is an interative refinement version of 
-  KSPGMRESUnmodifiedOrthog.  It may be more numerically stable than
-  KSPGMRESUnmodifiedOrthog on parallel systems.  
+  The routine KSPGMRESIROrthogonalization is an interative refinement
+  version of KSPGMRESUnmodifiedGramSchmidtOrthogonalization. It may be
+  more numerically stable.
 @*/
 int KSPGMRESSetOrthogRoutine( KSP itP,int (*fcn)(KSP,int) )
 {
@@ -557,24 +558,28 @@ int KSPGMRESSetOrthogRoutine( KSP itP,int (*fcn)(KSP,int) )
 
 static int KSPView_GMRES(PetscObject obj,Viewer viewer)
 {
-  KSP       itP = (KSP)obj;
-  KSP_GMRES *gmresP = (KSP_GMRES *)itP->data; 
-  FILE      *fd;
-  char      *cstring;
-  int       ierr;
+  KSP         itP = (KSP)obj;
+  KSP_GMRES   *gmresP = (KSP_GMRES *)itP->data; 
+  FILE        *fd;
+  char        *cstr;
+  int         ierr;
+  ViewerType  vtype;
 
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
 
-  if (gmresP->orthog == KSPGMRESUnmodifiedOrthog) 
-    cstring = "GMRESUnmodifiedOrthog";
-  else if (gmresP->orthog == KSPGMRESBasicOrthog) 
-    cstring = "GMRESBasicOrthog";
-  else if (gmresP->orthog == KSPGMRESIROrthog) 
-    cstring = "GMRESIROrthog";
-  else 
-    cstring = "unknown";
-  MPIU_fprintf(itP->comm,fd,"    GMRES: restart=%d, orthogonalization routine is %s\n",
-               gmresP->max_k,cstring);
+    if (gmresP->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) 
+      cstr = "Unmodified Gram-Schmidt Orthogonalization";
+    else if (gmresP->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) 
+      cstr = "Modified Gram-Schmidt Orthogonalization";
+    else if (gmresP->orthog == KSPGMRESIROrthogonalization) 
+      cstr = "Unmodified Gram-Schmidt + Iterative Refinement Orthogonalization";
+    else 
+      cstr = "unknown orthogonalization";
+    MPIU_fprintf(itP->comm,fd,"    GMRES: restart=%d, using %s\n",
+               gmresP->max_k,cstr);
+  }
   return 0;
 }
 
@@ -600,7 +605,7 @@ int KSPCreate_GMRES(KSP itP)
   gmresP->epsabs         = 1.0e-8;
   gmresP->q_preallocate  = 0;
   gmresP->delta_allocate = GMRES_DELTA_DIRECTIONS;
-  gmresP->orthog         = KSPGMRESBasicOrthog;
+  gmresP->orthog         = KSPGMRESModifiedGramSchmidtOrthogonalization;
   gmresP->nrs            = 0;
   gmresP->sol_temp       = 0;
   gmresP->max_k          = GMRES_DEFAULT_MAXK;

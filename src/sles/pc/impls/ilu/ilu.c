@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.57 1996/02/19 03:50:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.58 1996/03/04 05:15:35 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -110,26 +110,28 @@ static int PCPrintHelp_ILU(PC pc,char *p)
 
 static int PCView_ILU(PetscObject obj,Viewer viewer)
 {
-  PC     pc = (PC)obj;
-  FILE   *fd;
-  PC_ILU *ilu = (PC_ILU *) pc->data;
-  int    ierr;
-  char   *order;
-
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  if (ilu->levels == 1)
-    MPIU_fprintf(pc->comm,fd,"    ILU: %d level of fill\n",ilu->levels);
-  else
-    MPIU_fprintf(pc->comm,fd,"    ILU: %d levels of fill\n",ilu->levels);
-  if (ilu->inplace) MPIU_fprintf(pc->comm,fd,"         in-place factorization\n");
-  else MPIU_fprintf(pc->comm,fd,"         out-of-place factorization\n");
-  if (ilu->ordering == ORDER_NATURAL)  order = "Natural";
-  else if (ilu->ordering == ORDER_ND)  order = "Nested Dissection";
-  else if (ilu->ordering == ORDER_1WD) order = "One-way Dissection";
-  else if (ilu->ordering == ORDER_RCM) order = "Reverse Cuthill-McGee";
-  else if (ilu->ordering == ORDER_QMD) order = "Quotient Minimum Degree";
-  else                                order = "unknown";
-  MPIU_fprintf(pc->comm,fd,"         matrix ordering: %s\n",order);
+  PC         pc = (PC)obj;
+  FILE       *fd;
+  PC_ILU     *ilu = (PC_ILU *) pc->data;
+  int        ierr;
+  char       *order;
+  ViewerType vtype;
+ 
+  MatReorderingGetName(ilu->ordering,&order);
+  ViewerGetType(viewer,&vtype);
+  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    if (ilu->levels == 1)
+      MPIU_fprintf(pc->comm,fd,"    ILU: %d level of fill\n",ilu->levels);
+    else
+      MPIU_fprintf(pc->comm,fd,"    ILU: %d levels of fill\n",ilu->levels);
+    if (ilu->inplace) MPIU_fprintf(pc->comm,fd,"         in-place factorization\n");
+    else MPIU_fprintf(pc->comm,fd,"         out-of-place factorization\n");
+    MPIU_fprintf(pc->comm,fd,"         matrix ordering: %s\n",order);
+  }
+  else if (vtype == STRING_VIEWER) {
+    ViewerStringsprintf(viewer,"levels=%d ordering=%s",ilu->levels,order);
+  }
   return 0;
 }
 

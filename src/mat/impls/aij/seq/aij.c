@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.152 1996/03/01 03:43:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.153 1996/03/04 05:15:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -13,13 +13,12 @@ static char vcid[] = "$Id: aij.c,v 1.152 1996/03/01 03:43:59 bsmith Exp bsmith $
 #include "petsc.h"
 #include "inline/bitarray.h"
 
-extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int**,int**);
+extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
 static int MatGetReordering_SeqAIJ(Mat A,MatOrdering type,IS *rperm, IS *cperm)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        ierr, *ia, *ja,n,*idx,i;
-  /*Viewer     V1, V2;*/
+  int        ierr, *ia, *ja,n,*idx,i,oshift,ishift;
 
   /* 
      this is tacky: In the future when we have written special factorization
@@ -40,10 +39,36 @@ static int MatGetReordering_SeqAIJ(Mat A,MatOrdering type,IS *rperm, IS *cperm)
     return 0;
   }
 
-  ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,a->indexshift, &ia, &ja);CHKERRQ(ierr);
-  ierr = MatGetReordering_IJ(a->n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
-
-  PetscFree(ia); PetscFree(ja);
+  MatReorderingRegisterAll();
+  ishift = a->indexshift;
+  oshift = -MatReorderingIndexShift[(int)type];
+  if (MatReorderingRequiresSymmetric[(int)type]) {
+    ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,ishift,oshift,&ia,&ja);
+    CHKERRQ(ierr);
+    ierr = MatGetReordering_IJ(a->n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
+    PetscFree(ia); PetscFree(ja);
+  } else {
+    if (ishift == oshift) {
+      ierr = MatGetReordering_IJ(a->n,a->i,a->j,type,rperm,cperm); CHKERRQ(ierr);
+    }
+    else if (ishift == -1) {
+      /* temporarily subtract 1 from i and j indices */
+      int nz = a->i[a->n] - 1; 
+      for ( i=0; i<nz; i++ ) a->j[i]--;
+      for ( i=0; i<a->n+1; i++ ) a->i[i]--;
+      ierr = MatGetReordering_IJ(a->n,a->i,a->j,type,rperm,cperm); CHKERRQ(ierr);
+      for ( i=0; i<nz; i++ ) a->j[i]++;
+      for ( i=0; i<a->n+1; i++ ) a->i[i]++;
+    } else {
+      /* temporarily add 1 to i and j indices */
+      int nz = a->i[a->n] - 1; 
+      for ( i=0; i<nz; i++ ) a->j[i]++;
+      for ( i=0; i<a->n+1; i++ ) a->i[i]++;
+      ierr = MatGetReordering_IJ(a->n,a->i,a->j,type,rperm,cperm); CHKERRQ(ierr);
+      for ( i=0; i<nz; i++ ) a->j[i]--;
+      for ( i=0; i<a->n+1; i++ ) a->i[i]--;
+    }
+  }
   return 0; 
 }
 
@@ -279,9 +304,10 @@ static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
   int         ierr, i,j, m = a->m, shift = a->indexshift,pause,color;
   double      xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r;
-  Draw     draw = (Draw) viewer;
+  Draw        draw;
   DrawButton  button;
 
+  ViewerDrawGetDraw(viewer,&draw);
   xr  = a->n; yr = a->m; h = yr/10.0; w = xr/10.0; 
   xr += w;    yr += h;  xl = -w;     yl = -h;
   ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
@@ -377,29 +403,29 @@ static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
   return 0;
 }
 
+
 static int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         A = (Mat) obj;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*) A->data;
-  PetscObject vobj = (PetscObject) viewer;
+  ViewerType  vtype;
+  int         ierr;
 
   if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+    viewer = STDOUT_VIEWER_SELF; 
   }
-  if (vobj->cookie == VIEWER_COOKIE) {
-    if (vobj->type == MATLAB_VIEWER) {
-      return ViewerMatlabPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j); 
-    }
-    else if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER){
-      return MatView_SeqAIJ_ASCII(A,viewer);
-    }
-    else if (vobj->type == BINARY_FILE_VIEWER) {
-      return MatView_SeqAIJ_Binary(A,viewer);
-    }
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == MATLAB_VIEWER) {
+    return ViewerMatlabPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j); 
   }
-  else if (vobj->cookie == DRAW_COOKIE) {
-    if (vobj->type == NULLWINDOW) return 0;
-    else return MatView_SeqAIJ_Draw(A,viewer);
+  else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
+    return MatView_SeqAIJ_ASCII(A,viewer);
+  }
+  else if (vtype == BINARY_FILE_VIEWER) {
+    return MatView_SeqAIJ_Binary(A,viewer);
+  }
+  else if (vtype == DRAW_VIEWER) {
+    return MatView_SeqAIJ_Draw(A,viewer);
   }
   return 0;
 }
@@ -776,9 +802,9 @@ static int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
 static int MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,int *nz,int *nzalloc,int *mem)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  *nz      = a->nz;
-  *nzalloc = a->maxnz;
-  *mem     = (int)A->mem;
+  if (nz)      *nz      = a->nz;
+  if (nzalloc) *nzalloc = a->maxnz;
+  if (mem)     *mem     = (int)A->mem;
   return 0;
 }
 
@@ -1475,9 +1501,13 @@ int MatLoad_SeqAIJ(Viewer bview,MatType type,Mat *A)
   Mat_SeqAIJ   *a;
   Mat          B;
   int          i, nz, ierr, fd, header[4],size,*rowlengths = 0,M,N,shift;
-  PetscObject  vobj = (PetscObject) bview;
-  MPI_Comm     comm = vobj->comm;
+  MPI_Comm     comm;
+  ViewerType   vtype;
 
+  ierr = ViewerGetType(bview,&vtype); CHKERRQ(ierr);
+  if (vtype != BINARY_FILE_VIEWER) SETERRQ(1,"MatLoad_SeqAIJ:Binary only");
+  
+  PetscObjectGetComm((PetscObject) bview,&comm);
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqAIJ:view must have one processor");
   ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
@@ -1519,34 +1549,31 @@ int MatLoad_SeqAIJ(Viewer bview,MatType type,Mat *A)
   return 0;
 }
 
-
-
-/*
-
-  flg =0 if error;
-  flg =1 if both are equal;
-  */
 int MatEqual_SeqAIJ(Mat A,Mat B, int* flg)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data, *b = (Mat_SeqAIJ *)B->data;
 
-  if (B->type !=MATSEQAIJ)  SETERRQ(1,"MatEqual_SeqAIJ:Both matrices should be of type MATSEQAIJ");
+  if (B->type !=MATSEQAIJ)SETERRQ(1,"MatEqual_SeqAIJ:Matrices must be same type");
 
   /* If the  matrix dimensions are not equal, or no of nonzeros or shift */
   if ((a->m != b->m ) || (a->n !=b->n) ||( a->nz != b->nz)|| 
-      (a->indexshift != b->indexshift)) { *flg =0 ; return 0; }
+      (a->indexshift != b->indexshift)) {
+    *flg = 0 ; return 0; 
+  }
   
   /* if the a->i are the same */
-  if(PetscMemcmp((char *)a->i, (char*)b->i, (a->n+1)*sizeof(int))) { *flg =0 ; return 0;}
-  
-  /* if a->j are the same */
-  if(PetscMemcmp((char *)a->j, (char*)b->j, (a->nz)*sizeof(int))) { 
-    *flg =0 ; return 0;
+  if(PetscMemcmp(a->i,b->i, (a->n+1)*sizeof(int))) { 
+    *flg = 0 ; return 0;
   }
   
   /* if a->j are the same */
-  if(PetscMemcmp((char *)a->a, (char*)b->a, (a->nz)*sizeof(Scalar))) {
-    *flg =0 ; return 0;
+  if(PetscMemcmp(a->j, b->j, (a->nz)*sizeof(int))) { 
+    *flg = 0 ; return 0;
+  }
+  
+  /* if a->a are the same */
+  if(PetscMemcmp(a, b->a, (a->nz)*sizeof(Scalar))) {
+    *flg = 0 ; return 0;
   }
   *flg =1 ; 
   return 0;

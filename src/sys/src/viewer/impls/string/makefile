@@ -3,15 +3,15 @@ PETSC_DIR = ../../../..
 
 ALL: lib 
 CFLAGS    =  -I../.. $(PETSC_INCLUDE) $(PCONF)\
-            $(CONF) -D__DIR__='"viewer/impls/file/"'
-SOURCEC   = filev.c
+            $(CONF) -D__DIR__='"viewer/impls/string/"'
+SOURCEC   = stringv.c
 SOURCEF   =
 SOURCEH   =
-OBJSC     = filev.o
+OBJSC     = stringv.o
 OBJSF     =
 MANSEC    = 7
 LIBBASE   = libpetscsys
 DIRS      = 
-LOCDIR    = src/viewer/impls/file/
+LOCDIR    = src/viewer/impls/string/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

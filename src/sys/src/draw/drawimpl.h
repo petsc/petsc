@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.8 1995/11/09 22:31:23 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.9 1995/12/14 00:29:00 bsmith Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -38,5 +38,17 @@ struct _Draw {
   double          coor_xl,coor_yl,coor_xr,coor_yr;
   void            *data;
 };
+
+/*
+     This is for the Draw version of the viewer
+*/
+struct _Viewer {
+  PETSCHEADER
+  int          (*flush)(Viewer);
+  Draw         draw;
+};
+
+extern int ViewerDestroy_Draw(PetscObject);
+extern int ViewerFlush_Draw(Viewer);
 
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.75 1996/03/07 18:16:42 balay Exp balay $";
+static char vcid[] = "$Id: itcreate.c,v 1.76 1996/03/07 20:09:04 balay Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -36,13 +36,13 @@ $    ViewerFileOpenASCII() - output to a specified file
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {
-  PetscObject vobj = (PetscObject) viewer;
   FILE        *fd;
   char        *method;
   int         ierr;
+  ViewerType  vtype;
 
-  if (vobj->cookie == VIEWER_COOKIE && (vobj->type == ASCII_FILE_VIEWER ||
-                                        vobj->type == ASCII_FILES_VIEWER)) {
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER)) {
     ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
     MPIU_fprintf(ksp->comm,fd,"KSP Object:\n");
     KSPGetType(ksp,PETSC_NULL,&method);

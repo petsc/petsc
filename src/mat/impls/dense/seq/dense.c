@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.91 1996/02/14 15:31:53 balay Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.92 1996/03/06 21:47:29 balay Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -24,7 +24,9 @@ static int MatGetInfo_SeqDense(Mat A,MatInfoType flag,int *nz,int *nzalloc,int *
   int          i,N = mat->m*mat->n,count = 0;
   Scalar       *v = mat->v;
   for ( i=0; i<N; i++ ) {if (*v != 0.0) count++; v++;}
-  *nz = count; *nzalloc = N; *mem = (int)A->mem;
+  if (nz)      *nz      = count; 
+  if (nzalloc) *nzalloc = N;
+  if (mem)     *mem     = (int)A->mem;
   return 0;
 }
   
@@ -496,20 +498,22 @@ static int MatView_SeqDense(PetscObject obj,Viewer viewer)
   Mat          A = (Mat) obj;
   Mat_SeqDense *a = (Mat_SeqDense*) A->data;
   PetscObject  vobj = (PetscObject) viewer;
+  ViewerType   vtype;
+  int          ierr;
 
   if (!viewer) { 
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
-  if (vobj->cookie == VIEWER_COOKIE) {
-    if (vobj->type == MATLAB_VIEWER) {
-      return ViewerMatlabPutArray_Private(viewer,a->m,a->n,a->v); 
-    }
-    else if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
-      return MatView_SeqDense_ASCII(A,viewer);
-    }
-    else if (vobj->type == BINARY_FILE_VIEWER) {
-      return MatView_SeqDense_Binary(A,viewer);
-    }
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+
+  if (vtype == MATLAB_VIEWER) {
+    return ViewerMatlabPutArray_Private(viewer,a->m,a->n,a->v); 
+  }
+  else if (vtype == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
+    return MatView_SeqDense_ASCII(A,viewer);
+  }
+  else if (vtype == BINARY_FILE_VIEWER) {
+    return MatView_SeqDense_Binary(A,viewer);
   }
   return 0;
 }

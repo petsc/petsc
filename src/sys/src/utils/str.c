@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: str.c,v 1.3 1995/10/02 20:20:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.4 1995/12/21 18:30:34 bsmith Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -55,9 +55,16 @@ char *PetscStrchr(char *a,char b)
   return strchr(a,b);
 }
 
+/*
+      This is slightly different then the system version. 
+   It returns the position after the position of b and 
+   if it does not find it then it returns the entire string.
+*/
 char *PetscStrrchr(char *a,char b)
 {
-  return strrchr(a,b);
+  char *tmp = strrchr(a,b);
+  if (!tmp) tmp = *a; else tmp += 1;
+  return tmp;
 }
 
 char *PetscStrtok(char *a,char *b)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.13 1995/11/01 23:15:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.14 1995/11/04 23:34:36 bsmith Exp bsmith $";
 #endif
 /*
        Routines used for the orthogonalization of the Hessianburg matrix.
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: borthog.c,v 1.13 1995/11/01 23:15:25 bsmith Exp bsmit
 /*
   This is the basic version using modified Gram-Schmidt.
  */
-int KSPGMRESBasicOrthog( KSP itP,int it )
+int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP itP,int it )
 {
   KSP_GMRES *gmresP = (KSP_GMRES *)(itP->data);
   int       j;
@@ -38,7 +38,7 @@ int KSPGMRESBasicOrthog( KSP itP,int it )
   Multiple applications of this can be used to provide a better 
   orthogonalization (but be careful of the HH and HES values).
  */
-int KSPGMRESUnmodifiedOrthog(KSP  itP,int it )
+int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP  itP,int it )
 {
   KSP_GMRES *gmresP = (KSP_GMRES *)(itP->data);
   int       j;
@@ -74,7 +74,7 @@ int KSPGMRESUnmodifiedOrthog(KSP  itP,int it )
 
   Care is taken to accumulate the updated HH/HES values.
  */
-int KSPGMRESIROrthog(KSP  itP,int it )
+int KSPGMRESIROrthogonalization(KSP  itP,int it )
 {
   KSP_GMRES *gmresP = (KSP_GMRES *)(itP->data);
   int       j,ncnt;

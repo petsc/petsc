@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.21 1996/01/26 04:35:46 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.22 1996/03/07 22:39:21 bsmith Exp bsmith $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -7,11 +7,8 @@
 
 typedef struct _Viewer*            Viewer;
 #define VIEWER_COOKIE              PETSC_COOKIE+1
-#define MATLAB_VIEWER              0
-#define ASCII_FILE_VIEWER          1
-#define ASCII_FILES_VIEWER         2
-#define BINARY_FILE_VIEWER         3
-#define STRING_VIEWER              4
+typedef enum { MATLAB_VIEWER,ASCII_FILE_VIEWER, ASCII_FILES_VIEWER, 
+               BINARY_FILE_VIEWER, STRING_VIEWER, DRAW_VIEWER} ViewerType;
 
 #define FILE_FORMAT_DEFAULT       0
 #define FILE_FORMAT_MATLAB        1
@@ -23,12 +20,16 @@ extern int ViewerFileOpenASCII(MPI_Comm,char*,Viewer *);
 typedef enum { BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE} ViewerBinaryType;
 extern int ViewerFileOpenBinary(MPI_Comm,char*,ViewerBinaryType,Viewer *);
 extern int ViewerMatlabOpen(MPI_Comm,char*,int,Viewer *);
+extern int ViewerStringOpen(MPI_Comm,char *,int, Viewer *);
+extern int ViewerDrawOpenX(MPI_Comm,char *,char *,int,int,int,int,Viewer*);
 
+extern int ViewerGetType(Viewer,ViewerType*);
 extern int ViewerDestroy(Viewer);
 
 extern int ViewerFileGetPointer(Viewer,FILE**);
 extern int ViewerFileSetFormat(Viewer,int,char *);
 extern int ViewerFlush(Viewer);
+extern int ViewerStringsprintf(Viewer,char *,...);
 
 extern Viewer STDOUT_VIEWER_SELF;  
 extern Viewer STDERR_VIEWER_SELF;

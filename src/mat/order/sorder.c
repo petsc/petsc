@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.17 1995/12/13 16:15:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.18 1996/01/12 22:07:48 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -10,6 +10,9 @@ static char vcid[] = "$Id: sorder.c,v 1.17 1995/12/13 16:15:48 curfman Exp bsmit
 #include "sys.h"
 
 static NRList *__MatReorderingList = 0;
+
+PetscTruth MatReorderingRequiresSymmetric[25];
+int        MatReorderingIndexShift[25];
 
 int MatGetReordering_IJ(int n,int *ia,int* ja,MatOrdering type,IS *rperm, IS *cperm)
 {
@@ -34,6 +37,7 @@ int MatGetReordering_IJ(int n,int *ia,int* ja,MatOrdering type,IS *rperm, IS *cp
   ierr = ISCreateSeq(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
   ISSetPermutation(*cperm);
   PetscFree(permr); 
+
   /* 
      this is tacky: In the future when we have written special factorization
      and solve routines for the identity permutation we should use a 
@@ -54,26 +58,79 @@ int MatOrder_Natural(int *N,int *ia,int* ja, int* permr, int* permc)
   return 0;
 }
 
+/*
+     Orders the rows (and columns) by the lengths of the rows. 
+   This produces a symmetric reordering but does not require a 
+   matrix with symmetric non-zero structure.
+*/
+int MatOrder_RowLength(int *N,int *ia,int* ja, int* permr, int* permc)
+{
+  int n = *N, i, *lens,ierr;
+
+  lens = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(lens);
+  for ( i=0; i<n; i++ ) { 
+    lens[i]  = ia[i+1] - ia[i];
+    permr[i] = i;
+  }
+
+  ierr = SYIsortperm(n, lens, permr); CHKERRQ(ierr);
+  PetscFree(lens);
+
+  /* column permutations get same as row */
+  for ( i=0; i<n; i++ ) { 
+    permc[i] = permr[i];
+  }
+  return 0;
+}
+
+extern int MatOrder_Natural(int*,int*,int*,int*,int*);
 /*@C
    MatReorderingRegister - Adds a new sparse matrix reordering to the 
-   matrix package.
+   matrix package. This is only for adding reordering for sequential 
+   matrices. The reordering routine has input in the usual compressed
+   row storage format with indices starting at zero (indexshift == 0)
+   or one (indexshift == 1).
 
    Input Parameters:
-.  name - for instance ORDER_ND, ...
 .  sname -  corresponding string for name
+.  sym - PETSC_TRUE if requires symmetric nonzero structure, else PETSC_FALSE.
+.  indexshift - 0 or 1 depending on first index your program expects.
 .  order - routine that does reordering
+
+   Output Parameters:
+.  name - number associated with the reordering (for example ORDER_ND)
 
 .keywords: matrix, reordering, register
 
 .seealso: MatReorderingRegisterDestroy(), MatReorderingRegisterAll()
 @*/
-int  MatReorderingRegister(MatOrdering name,char *sname,int (*order)(int*,int*,int*,int*,int*))
+int  MatReorderingRegister(MatOrdering *name,char *sname,PetscTruth sym,int shift,
+                           int (*order)(int*,int*,int*,int*,int*))
 {
-  int ierr;
+  int         ierr;
+  static int  numberregistered = 0;
+
   if (!__MatReorderingList) {
     ierr = NRCreate(&__MatReorderingList); CHKERRQ(ierr);
+    numberregistered = 0;
   }
-  return NRRegister(__MatReorderingList,(int)name,sname,(int (*)(void*))order);
+
+  /*
+       This is tacky, it forces the standard ordering routines to 
+     be registered before any user provided. This is so the predefined 
+     types like ORDER_NATURAL match their positions in the list of 
+     registered orderings.
+  */
+  if (numberregistered == 0 && order != MatOrder_Natural) {
+    MatReorderingRegisterAll();
+  }
+
+  *name = (MatOrdering) numberregistered++;
+  ierr = NRRegister(__MatReorderingList,(int)*name,sname,(int (*)(void*))order);
+  CHKERRQ(ierr);
+  MatReorderingRequiresSymmetric[(int)*name] = sym;
+  MatReorderingIndexShift[(int)*name]        = shift;
+  return 0;
 }
 
 /*@C
@@ -125,5 +182,24 @@ int MatGetReorderingTypeFromOptions(char *prefix,MatOrdering *type)
     if (!__MatReorderingList) MatReorderingRegisterAll();
     *type = (MatOrdering)NRFindID( __MatReorderingList, sbuf );
   }
+  return 0;
+}
+
+/*@C
+   MatReorderingGetName - Gets the name associated with a reordering.
+
+   Input Parameter:
+.  ordering - integer name of reordering
+
+   Output Parameter:
+.  name - name of reordering
+
+.keywords: PC, get, method, name, type
+@*/
+int MatReorderingGetName(MatOrdering meth,char **name)
+{
+  int ierr;
+  if (!__MatReorderingList) {ierr = MatReorderingRegisterAll(); CHKERRQ(ierr);}
+   *name = NRFindName( __MatReorderingList, (int)meth );
   return 0;
 }

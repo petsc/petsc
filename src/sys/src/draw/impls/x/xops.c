@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.41 1996/01/23 00:19:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.42 1996/03/08 00:43:21 curfman Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -403,4 +403,44 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
 #endif
 
 
+/*@C
+   ViewerDrawOpenX - Opens an X window for use as a viewer. If you want to 
+        do graphics in this window, you must call ViewerDrawGetDraw() and
+        perform the graphics on the Draw object.
+
+   Input Parameters:
+.  comm - communicator that will share window
+.  display - the X display on which to open, or null for the local machine
+.  title - the title to put in the title bar
+.  x, y - the screen coordinates of the upper left corner of window
+.  w, h - the screen width and height in pixels
+
+   Output Parameters:
+.  viewer - the viewer
+
+   Options Database Keys:
+$  -nox : disable all x-windows output
+$  -display <name> : name of machine for the X display
+
+.keywords: draw, open, x, viewer
+
+.seealso: DrawOpenX()
+@*/
+int ViewerDrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,
+                    int w,int h,Viewer *viewer)
+{
+  int    ierr;
+  Viewer ctx;
+
+  *viewer = 0;
+  PetscHeaderCreate(ctx,_Viewer,VIEWER_COOKIE,DRAW_VIEWER,comm);
+  PLogObjectCreate(ctx);
+  ierr = DrawOpenX(comm,display,title,x,y,w,h,&ctx->draw); CHKERRQ(ierr);
+  PLogObjectParent(ctx,ctx->draw);
+
+  ctx->flush   = ViewerFlush_Draw;
+  ctx->destroy = ViewerDestroy_Draw;
+  *viewer      = ctx;
+  return 0;
+}
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.29 1996/03/04 05:15:49 bsmith Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.30 1996/03/06 21:47:19 balay Exp bsmith $";
 #endif
 
 /*
@@ -558,17 +558,19 @@ static int MatView_MPIDense(PetscObject obj,Viewer viewer)
   Mat          mat = (Mat) obj;
   PetscObject  vobj = (PetscObject) viewer;
   int          ierr;
+  ViewerType   vtype;
  
   if (!viewer) { 
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
-  if (vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILE_VIEWER) {
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER) {
     ierr = MatView_MPIDense_ASCII(mat,viewer); CHKERRQ(ierr);
   }
-  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILES_VIEWER) {
+  else if (vtype == ASCII_FILES_VIEWER) {
     ierr = MatView_MPIDense_ASCII(mat,viewer); CHKERRQ(ierr);
   }
-  else if (vobj->type == BINARY_FILE_VIEWER) {
+  else if (vtype == BINARY_FILE_VIEWER) {
     return MatView_MPIDense_Binary(mat,viewer);
   }
   return 0;
@@ -583,13 +585,19 @@ static int MatGetInfo_MPIDense(Mat A,MatInfoType flag,int *nz,
 
   ierr = MatGetInfo(mdn,MAT_LOCAL,&isend[0],&isend[1],&isend[2]); CHKERRQ(ierr);
   if (flag == MAT_LOCAL) {
-    *nz = isend[0]; *nzalloc = isend[1]; *mem = isend[2];
+    if (nz)      *nz      = isend[0]; 
+    if (nzalloc) *nzalloc = isend[1];
+    if (mem)     *mem     = isend[2];
   } else if (flag == MAT_GLOBAL_MAX) {
     MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_MAX,A->comm);
-    *nz = irecv[0]; *nzalloc = irecv[1]; *mem = irecv[2];
+    if (nz)      *nz      = irecv[0]; 
+    if (nzalloc) *nzalloc = irecv[1]; 
+    if (mem)     *mem     = irecv[2];
   } else if (flag == MAT_GLOBAL_SUM) {
     MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_SUM,A->comm);
-    *nz = irecv[0]; *nzalloc = irecv[1]; *mem = irecv[2];
+    if (nz)      *nz      = irecv[0]; 
+    if (nzalloc) *nzalloc = irecv[1];
+    if (mem)     *mem     = irecv[2];
   }
   return 0;
 }

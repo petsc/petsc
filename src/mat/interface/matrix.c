@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.147 1996/02/27 18:30:59 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.148 1996/03/06 21:47:37 balay Exp bsmith $";
 #endif
 
 /*
@@ -140,7 +140,7 @@ $       data to the first processor to print.
 $    ViewerFileOpenASCII() - output to a specified file
 $    ViewerFileOpenBinary() - output in binary to a
 $         specified file; corresponding input uses MatLoad()
-$    DrawOpenX() - output nonzero matrix structure to 
+$    ViewerDrawOpenX() - output nonzero matrix structure to 
 $         an X window display
 $    ViewerMatlabOpen() - output matrix to Matlab viewer.
 $         Currently only the sequential dense and AIJ
@@ -160,39 +160,45 @@ $      matrix structure
 
 .keywords: matrix, view, visualize, output, print, write, draw
 
-.seealso: ViewerFileSetFormat(), ViewerFileOpenASCII(), DrawOpenX(), 
+.seealso: ViewerFileSetFormat(), ViewerFileOpenASCII(), ViewerDrawOpenX(), 
           ViewerMatlabOpen(), ViewerFileOpenBinary(), MatLoad()
 @*/
 int MatView(Mat mat,Viewer ptr)
 {
   int          format, ierr, rows, cols,nz, nzalloc, mem;
   FILE         *fd;
-  char         *cstring;
+  char         *cstr;
   PetscObject  vobj = (PetscObject) ptr;
+  ViewerType   vtype;
+  MPI_Comm     comm = mat->comm;
 
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatView:Not for unassembled matrix");
 
-  if (!ptr) { /* so that viewers may be used from debuggers */
+  if (!ptr) {
     ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
   }
-  ierr = ViewerFileGetFormat_Private(ptr,&format); CHKERRQ(ierr);
-  ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
-  if (vobj->cookie == VIEWER_COOKIE && 
-      (format == FILE_FORMAT_INFO || format == FILE_FORMAT_INFO_DETAILED) &&
-      (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER)) {
-    MPIU_fprintf(mat->comm,fd,"Matrix Object:\n");
-    ierr = MatGetType(mat,PETSC_NULL,&cstring); CHKERRQ(ierr);
-    ierr = MatGetSize(mat,&rows,&cols); CHKERRQ(ierr);
-    MPIU_fprintf(mat->comm,fd,"  type=%s, rows=%d, cols=%d\n",cstring,rows,cols);
-    if (mat->ops.getinfo) {
-      ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&nz,&nzalloc,&mem); CHKERRQ(ierr);
-      MPIU_fprintf(mat->comm,fd,"  total: nonzeros=%d, allocated nonzeros=%d\n",nz,nzalloc);
+
+  ierr = ViewerGetType(ptr,&vtype);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerFileGetFormat_Private(ptr,&format); CHKERRQ(ierr);  
+    ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
+    if (format == FILE_FORMAT_INFO || format == FILE_FORMAT_INFO_DETAILED) {
+      MPIU_fprintf(comm,fd,"Matrix Object:\n");
+      ierr = MatGetType(mat,PETSC_NULL,&cstr); CHKERRQ(ierr);
+      ierr = MatGetSize(mat,&rows,&cols); CHKERRQ(ierr);
+      MPIU_fprintf(comm,fd,"  type=%s, rows=%d, cols=%d\n",cstr,rows,cols);
+      if (mat->ops.getinfo) {
+        ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&nz,&nzalloc,&mem); CHKERRQ(ierr);
+        MPIU_fprintf(comm,fd,"  total: nonzeros=%d, allocated nonzeros=%d\n",nz,
+                     nzalloc);
+      }
     }
   }
   if (mat->view) {ierr = (*mat->view)((PetscObject)mat,ptr); CHKERRQ(ierr);}
   return 0;
 }
+
 /*@C
    MatDestroy - Frees space taken by a matrix.
   
@@ -413,7 +419,7 @@ int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   return 0;
 }
 /* ------------------------------------------------------------*/
-/*@
+/*@C
    MatGetInfo - Returns information about matrix storage (number of
    nonzeros, memory).
 
@@ -425,9 +431,9 @@ int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 $    flag = MAT_LOCAL: local matrix
 $    flag = MAT_GLOBAL_MAX: maximum over all processors
 $    flag = MAT_GLOBAL_SUM: sum over all processors
-.   nz - the number of nonzeros
-.   nzalloc - the number of allocated nonzeros
-.   mem - the memory used (in bytes)
+.   nz - the number of nonzeros [or PETSC_NULL]
+.   nzalloc - the number of allocated nonzeros [or PETSC_NULL]
+.   mem - the memory used (in bytes)  [or PETSC_NULL]
 
 .keywords: matrix, get, info, storage, nonzeros, memory
 @*/
@@ -564,11 +570,11 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   PLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0); 
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
   if (flg) {
-    Draw    win;
-    ierr = DrawOpenX((*fact)->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
-    ierr = MatView(*fact,(Viewer)win); CHKERRQ(ierr);
-    ierr = DrawSyncFlush(win); CHKERRQ(ierr);
-    ierr = DrawDestroy(win); CHKERRQ(ierr);
+    Viewer  win;
+    ierr = ViewerDrawOpenX((*fact)->comm,0,0,0,0,300,300,&win);CHKERRQ(ierr);
+    ierr = MatView(*fact,win); CHKERRQ(ierr);
+    ierr = ViewerFlush(win); CHKERRQ(ierr);
+    ierr = ViewerDestroy(win); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -1244,7 +1250,7 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
       ierr = MatView(mat,viewer); CHKERRQ(ierr);
       ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     }
-    ierr = OptionsHasName(PETSC_NULL,"-mat_view_info_detailed",&flg); CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-mat_view_info_detailed",&flg);CHKERRQ(ierr);
     if (flg) {
       Viewer viewer;
       ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
@@ -1269,11 +1275,11 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
     }
     ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
     if (flg) {
-      Draw    win;
-      ierr = DrawOpenX(mat->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
-      ierr = MatView(mat,(Viewer)win); CHKERRQ(ierr);
-      ierr = DrawSyncFlush(win); CHKERRQ(ierr);
-      ierr = DrawDestroy(win); CHKERRQ(ierr);
+      Viewer    win;
+      ierr = ViewerDrawOpenX(mat->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
+      ierr = MatView(mat,win); CHKERRQ(ierr);
+      ierr = ViewerFlush(win); CHKERRQ(ierr);
+      ierr = ViewerDestroy(win); CHKERRQ(ierr);
     }
   }
   inassm--;

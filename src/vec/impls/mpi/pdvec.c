@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.41 1996/03/04 05:14:41 bsmith Exp balay $ */
+/* $Id: pdvec.c,v 1.42 1996/03/07 19:36:31 balay Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -151,13 +151,15 @@ static int VecView_MPI_Binary(Vec xin, Viewer ptr )
   return 0;
 }
 
-static int VecView_MPI_Draw(Vec xin, Draw win )
+static int VecView_MPI_Draw(Vec xin, Viewer v )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,size,ierr,start,end;
   MPI_Status  status;
   double      coors[4],ymin,ymax,xmin,xmax,tmp;
+  Draw        win;
 
+  ViewerDrawGetDraw(v,&win);
   MPI_Comm_size(xin->comm,&size); 
 
   xmin = 1.e20; xmax = -1.e20;
@@ -282,36 +284,35 @@ static int VecView_MPI(PetscObject obj,Viewer ptr)
 {
   Vec         xin = (Vec) obj;
   PetscObject vobj = (PetscObject) ptr;
+  ViewerType  vtype;
+  int         ierr;
 
   if (!ptr) { /* so that viewers may be used from debuggers */
     ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
   }
 
-  if (vobj->cookie == VIEWER_COOKIE) {
-    if (vobj->type == ASCII_FILE_VIEWER){
-      return VecView_MPI_File(xin,ptr);
-    }
-    else if (vobj->type == ASCII_FILES_VIEWER){
-      return VecView_MPI_Files(xin,ptr);
-    }
-    else if (vobj->type == MATLAB_VIEWER) {
-      return VecView_MPI_Matlab(xin,ptr);
-    } 
-    else if (vobj->type==BINARY_FILE_VIEWER) {
-      return VecView_MPI_Binary(xin,ptr);
-    }
-  }
 #if !defined(PETSC_COMPLEX)
-  else if (vobj->cookie == LG_COOKIE){
+  if (vobj->cookie == LG_COOKIE){
     return VecView_MPI_LG(xin,(DrawLG) ptr);
   }
-  else if (vobj->cookie == DRAW_COOKIE) {
-    if (vobj->type == NULLWINDOW){ 
-      return 0;
-    }
-    else {
-      return VecView_MPI_Draw(xin,(Draw) ptr);
-    }
+#endif
+
+  ierr = ViewerGetType(ptr,&vtype);
+  if (vtype == ASCII_FILE_VIEWER){
+    return VecView_MPI_File(xin,ptr);
+  }
+  else if (vtype == ASCII_FILES_VIEWER){
+    return VecView_MPI_Files(xin,ptr);
+  }
+  else if (vtype == MATLAB_VIEWER) {
+    return VecView_MPI_Matlab(xin,ptr);
+  } 
+  else if (vtype == BINARY_FILE_VIEWER) {
+    return VecView_MPI_Binary(xin,ptr);
+  }
+#if !defined(PETSC_COMPLEX)
+  else if (vtype == DRAW_VIEWER) {
+    return VecView_MPI_Draw(xin,ptr);
   }
 #endif
   return 0;

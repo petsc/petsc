@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.61 1996/02/08 18:25:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.62 1996/02/13 23:28:19 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -102,11 +102,13 @@ static int VecView_Seq_LG(Vec xin,DrawLG lg)
   return 0;
 }
 
-static int VecView_Seq_Draw(Vec xin,Draw win)
+static int VecView_Seq_Draw(Vec xin,Viewer v)
 {
   int    ierr;
   DrawLG lg;
+  Draw   win;
 
+  ierr = ViewerDrawGetDraw(v,&win); CHKERRQ(ierr);
   ierr = DrawLGCreate(win,1,&lg); CHKERRQ(ierr);
   PLogObjectParent(win,lg);
   ierr = VecView(xin,(Viewer) lg); CHKERRQ(ierr);
@@ -137,35 +139,33 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
   Vec         xin = (Vec) obj;
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   PetscObject vobj = (PetscObject) ptr;
+  ViewerType  vtype;
+  int         ierr;
 
   if (!ptr) { 
     ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
   }
 
-  if (vobj->cookie == VIEWER_COOKIE) {
-    if ((vobj->type == ASCII_FILE_VIEWER) || (vobj->type == ASCII_FILES_VIEWER)){
-      return VecView_Seq_File(xin,ptr);
-    }
-    else if (vobj->type == MATLAB_VIEWER) {
-      return ViewerMatlabPutArray_Private(ptr,x->n,1,x->array);
-    } 
-    else if (vobj->type==BINARY_FILE_VIEWER) {
-      return VecView_Seq_Binary(xin,ptr);
-    }
-  }
 #if !defined(PETSC_COMPLEX)
-  else if (vobj->cookie == LG_COOKIE){
+  if (vobj->cookie == LG_COOKIE){
     return VecView_Seq_LG(xin,(DrawLG) ptr);
   }
-  else if (vobj->cookie == DRAW_COOKIE) {
-    if (vobj->type == NULLWINDOW){ 
-      return 0;
-    }
-    else {
-      return VecView_Seq_Draw(xin,(Draw) ptr);
-    }
+#endif
+  ierr = ViewerGetType(ptr,&vtype); CHKERRQ(ierr);
+#if !defined(PETSC_COMPLEX)
+  if (vtype == DRAW_VIEWER){ 
+    return VecView_Seq_Draw(xin,ptr);
   }
 #endif
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
+    return VecView_Seq_File(xin,ptr);
+  }
+  else if (vtype == MATLAB_VIEWER) {
+    return ViewerMatlabPutArray_Private(ptr,x->n,1,x->array);
+  } 
+  else if (vtype == BINARY_FILE_VIEWER) {
+    return VecView_Seq_Binary(xin,ptr);
+  }
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sregis.c,v 1.8 1995/11/03 03:04:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sregis.c,v 1.9 1996/03/07 18:24:13 bsmith Exp bsmith $";
 #endif
 
 #include "../../matimpl.h"     /*I       "mat.h"   I*/
@@ -38,8 +38,8 @@ $       routine requires recompilation.
 @*/
 int MatReorderingRegisterAll()
 {
-  MatOrder   name;
-  static int called = 0;
+  MatOrdering name;
+  static int  called = 0;
   if (called) return 0; else called = 1;
 
   /*

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.67 1996/02/08 18:25:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.68 1996/02/22 17:19:25 curfman Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -756,13 +756,13 @@ $       data to the first processor to print.
 $    ViewerFileOpenASCII() - output vector to a specified file
 $    ViewerFileOpenBinary() - output in binary to a
 $         specified file; corresponding input uses VecLoad()
-$    DrawOpenX() - output vector to an X window display
+$    ViewerDrawOpenX() - output vector to an X window display
 $    DrawLGCreate() - output vector as a line graph to an X window display
 $    ViewerMatlabOpen() - output vector to Matlab viewer
 
 .keywords: Vec, view, visualize, output, print, write, draw
 
-.seealso: ViewerFileOpenASCII(), DrawOpenX(), DrawLGCreate(),
+.seealso: ViewerFileOpenASCII(), ViewerDrawOpenX(), DrawLGCreate(),
           ViewerMatlabOpen(), ViewerFileOpenBinary(), VecLoad()
 @*/
 int VecView(Vec v,Viewer ptr)

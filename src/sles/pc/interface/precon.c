@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.74 1996/03/04 05:15:19 bsmith Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.75 1996/03/07 20:09:33 balay Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -579,14 +579,14 @@ $    ViewerFileOpenASCII() - output to a specified file
 @*/
 int PCView(PC pc,Viewer viewer)
 {
-  PetscObject vobj = (PetscObject) viewer;
   FILE        *fd;
   char        *cstring;
   int         fmt, ierr, mat_exists;
+  ViewerType  vtype;
 
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  if ((vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) &&
-     vobj->cookie == VIEWER_COOKIE) {
+  ViewerGetType(viewer,&vtype);
+  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = ViewerFileGetFormat_Private(viewer,&fmt); CHKERRQ(ierr);
     MPIU_fprintf(pc->comm,fd,"PC Object:\n");
@@ -612,6 +612,9 @@ int PCView(PC pc,Viewer viewer)
       }
       ViewerFileSetFormat(viewer,viewer_format,0);
     }
+  }
+  else if (vtype == STRING_VIEWER) {
+    if (pc->view) (*pc->view)((PetscObject)pc,viewer);
   }
   return 0;
 }

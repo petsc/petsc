@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.25 1995/12/14 00:42:01 bsmith Exp curfman $ */
+/* $Id: draw.h,v 1.26 1996/01/03 14:42:03 curfman Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -34,6 +34,8 @@ typedef struct _Draw* Draw;
 extern int DrawOpenX(MPI_Comm,char *,char *,int,int,int,int,Draw*);
 extern int DrawOpenNull(MPI_Comm,Draw *);
 extern int DrawDestroy(Draw);
+
+extern int ViewerDrawGetDraw(Viewer, Draw*);
 
 extern int DrawLine(Draw,double,double,double,double,int);
 extern int DrawLineSetWidth(Draw,double);

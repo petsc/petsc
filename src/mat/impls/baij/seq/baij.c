@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.8 1996/02/23 22:03:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.9 1996/03/04 05:16:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,12 +12,12 @@ static char vcid[] = "$Id: baij.c,v 1.8 1996/02/23 22:03:48 bsmith Exp bsmith $"
 #include "inline/spops.h"
 #include "petsc.h"
 
-extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int**,int**);
+extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
 static int MatGetReordering_SeqBAIJ(Mat A,MatOrdering type,IS *rperm,IS *cperm)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr, *ia, *ja,n = a->mbs,*idx,i;
+  int         ierr, *ia, *ja,n = a->mbs,*idx,i,ishift,oshift;
 
   /* 
      this is tacky: In the future when we have written special factorization
@@ -37,10 +37,36 @@ static int MatGetReordering_SeqBAIJ(Mat A,MatOrdering type,IS *rperm,IS *cperm)
     return 0;
   }
 
-  ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,0,&ia,&ja);CHKERRQ(ierr);
-  ierr = MatGetReordering_IJ(n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
-
-  PetscFree(ia); PetscFree(ja);
+  MatReorderingRegisterAll();
+  ishift = a->indexshift;
+  oshift = -MatReorderingIndexShift[(int)type];
+  if (MatReorderingRequiresSymmetric[(int)type]) {
+    ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,ishift,oshift,&ia,&ja);
+    CHKERRQ(ierr);
+    ierr = MatGetReordering_IJ(a->n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
+    PetscFree(ia); PetscFree(ja);
+  } else {
+    if (ishift == oshift) {
+      ierr = MatGetReordering_IJ(a->n,a->i,a->j,type,rperm,cperm);CHKERRQ(ierr);
+    }
+    else if (ishift == -1) {
+      /* temporarily subtract 1 from i and j indices */
+      int nz = a->i[a->n] - 1; 
+      for ( i=0; i<nz; i++ ) a->j[i]--;
+      for ( i=0; i<a->n+1; i++ ) a->i[i]--;
+      ierr = MatGetReordering_IJ(a->n,a->i,a->j,type,rperm,cperm);CHKERRQ(ierr);
+      for ( i=0; i<nz; i++ ) a->j[i]++;
+      for ( i=0; i<a->n+1; i++ ) a->i[i]++;
+    } else {
+      /* temporarily add 1 to i and j indices */
+      int nz = a->i[a->n] - 1; 
+      for ( i=0; i<nz; i++ ) a->j[i]++;
+      for ( i=0; i<a->n+1; i++ ) a->i[i]++;
+      ierr = MatGetReordering_IJ(a->n,a->i,a->j,type,rperm,cperm);CHKERRQ(ierr);
+      for ( i=0; i<nz; i++ ) a->j[i]--;
+      for ( i=0; i<a->n+1; i++ ) a->i[i]--;
+    }
+  }
   return 0; 
 }
 
@@ -369,9 +395,9 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
 static int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,int *nz,int *nza,int *mem)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  *nz  = a->bs*a->bs*a->nz;
-  *nza = a->maxnz;
-  *mem = (int)A->mem;
+  if (nz)  *nz  = a->bs*a->bs*a->nz;
+  if (nza) *nza = a->maxnz;
+  if (mem) *mem = (int)A->mem;
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.57 1996/02/19 03:50:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.58 1996/03/04 05:15:26 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -69,22 +69,26 @@ static int PCPrintHelp_LU(PC pc,char *p)
 
 static int PCView_LU(PetscObject obj,Viewer viewer)
 {
-  PC    pc = (PC)obj;
-  FILE  *fd;
-  PC_LU *lu = (PC_LU *) pc->data;
-  int   ierr;
-  char  *order;
+  PC         pc = (PC)obj;
+  FILE       *fd;
+  PC_LU      *lu = (PC_LU *) pc->data;
+  int        ierr,nzlu;
+  char       *order;
+  ViewerType vtype;
 
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  if (lu->inplace) MPIU_fprintf(pc->comm,fd,"  LU: in-place factorization\n");
-  else MPIU_fprintf(pc->comm,fd,"  LU: out-of-place factorization\n");
-  if (lu->ordering == ORDER_NATURAL)  order = "Natural";
-  else if (lu->ordering == ORDER_ND)  order = "Nested Dissection";
-  else if (lu->ordering == ORDER_1WD) order = "One-way Dissection";
-  else if (lu->ordering == ORDER_RCM) order = "Reverse Cuthill-McGee";
-  else if (lu->ordering == ORDER_QMD) order = "Quotient Minimum Degree";
-  else                                order = "unknown";
-  MPIU_fprintf(pc->comm,fd,"      matrix ordering: %s\n",order);
+  MatReorderingGetName(lu->ordering,&order);
+  ViewerGetType(viewer,&vtype);
+  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    if (lu->inplace) MPIU_fprintf(pc->comm,fd,"  LU: in-place factorization\n");
+    else MPIU_fprintf(pc->comm,fd,"  LU: out-of-place factorization\n");
+    MPIU_fprintf(pc->comm,fd,"      matrix ordering: %s\n",order);
+    ierr = MatGetInfo(lu->fact,MAT_LOCAL,&nzlu,PETSC_NULL,PETSC_NULL);
+    MPIU_fprintf(pc->comm,fd,"      LU nonzeros %d\n",nzlu);
+  }
+  else if (vtype == STRING_VIEWER) {
+    ViewerStringsprintf(viewer,"ordering=%s",order);
+  }
   return 0;
 }
 

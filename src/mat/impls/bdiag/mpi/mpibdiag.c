@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.71 1996/02/13 23:29:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.72 1996/03/04 05:16:07 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -447,13 +447,19 @@ static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,int *nz,
 
   ierr = MatGetInfo(mat->A,MAT_LOCAL,&isend[0],&isend[1],&isend[2]);CHKERRQ(ierr);
   if (flag == MAT_LOCAL) {
-    *nz = isend[0]; *nzalloc = isend[1]; *mem = isend[2];
+    if (nz)       *nz      = isend[0];
+    if (nzalloc)  *nzalloc = isend[1]; 
+    if (mem)      *mem     = isend[2];
   } else if (flag == MAT_GLOBAL_MAX) {
     MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_MAX,matin->comm);
-    *nz = irecv[0]; *nzalloc = irecv[1]; *mem = irecv[2];
+    if (nz)      *nz = irecv[0]; 
+    if (nzalloc) *nzalloc = irecv[1]; 
+    if (mem)     *mem = irecv[2];
   } else if (flag == MAT_GLOBAL_SUM) {
     MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_SUM,matin->comm);
-    *nz = irecv[0]; *nzalloc = irecv[1]; *mem = irecv[2];
+    if (nz)      *nz      = irecv[0]; 
+    if (nzalloc) *nzalloc = irecv[1]; 
+    if (mem)     *mem     = irecv[2];
   }
   return 0;
 }

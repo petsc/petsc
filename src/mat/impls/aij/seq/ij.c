@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.15 1995/11/23 04:28:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.16 1996/02/13 23:29:25 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -17,6 +17,8 @@ static char vcid[] = "$Id: ij.c,v 1.15 1995/11/23 04:28:18 bsmith Exp bsmith $";
 
     Input Parameters:
 .   Matrix - matrix to convert
+.   shiftin - the shift for the original matrix (0 or 1)
+.   shiftout - the shift required for the reordering routine (0 or 1)
 
     Output Parameters:
 .   ia     - ia part of IJ representation (row information)
@@ -25,11 +27,11 @@ static char vcid[] = "$Id: ij.c,v 1.15 1995/11/23 04:28:18 bsmith Exp bsmith $";
     Notes:
 $    Both ia and ja may be freed with PetscFree();
 $    This routine is provided for ordering routines that require a 
-$    symmetric structure.  It is used in SpOrder (and derivatives) since
-$    those routines call SparsePak routines that expect a symmetric 
-$    matrix.
+$    symmetric structure.  It is required since those routines call 
+$    SparsePak routines that expect a symmetric  matrix.
 */
-int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shift, int **iia, int **jja )
+int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shiftin, int shiftout,
+                            int **iia, int **jja )
 {
   int *work,*ia,*ja,*j,i, nz, row, col;
 
@@ -39,19 +41,19 @@ int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shift, int **iia, int **jj
   work = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(work);
 
   /* determine the number of columns in each row */
-  ia[0] = 1;
+  ia[0] = -shiftout;
   for (row = 0; row < n; row++) {
     nz = ai[row+1] - ai[row];
     j  = aj + ai[row];
     while (nz--) {
-       col = *j++ + shift;
+       col = *j++ + shiftin;
        if (col > row) { break;}
        if (col != row) ia[row+1]++;
        ia[col+1]++;
     }
   }
 
-  /* shift ia[i] to point to next row */
+  /* shiftin ia[i] to point to next row */
   for ( i=1; i<n+1; i++ ) {
     row       = ia[i-1];
     ia[i]     += row;
@@ -59,7 +61,7 @@ int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shift, int **iia, int **jj
   }
 
   /* allocate space for column pointers */
-  nz = ia[n] + (!shift);
+  nz = ia[n] + (!shiftin);
   *jja = ja = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(ja);
 
   /* loop over lower triangular part putting into ja */ 
@@ -67,10 +69,10 @@ int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shift, int **iia, int **jj
     nz = ai[row+1] - ai[row];
     j  = aj + ai[row];
     while (nz--) {
-      col = *j++ + shift;
+      col = *j++ + shiftin;
       if (col > row) { break;}
-      if (col != row) {ja[work[col]++] = row + 1; }
-      ja[work[row]++] = col + 1;
+      if (col != row) {ja[work[col]++] = row - shiftout; }
+      ja[work[row]++] = col - shiftout;
     }
   }
   PetscFree(work);

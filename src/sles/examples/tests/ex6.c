@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.31 1996/03/02 04:14:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.32 1996/03/02 04:55:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -17,18 +17,21 @@ Input arguments are:\n\
 
 int main(int argc,char **args)
 {
-  int        ierr, its, set,flg;
-  double     norm;
+  int        ierr, its, set, flg;
+  double     norm,tsetup,tsolve;
   Scalar     zero = 0.0, none = -1.0;
   Vec        x, b, u;
   Mat        A;
   MatType    mtype;
   SLES       sles;
-  char       file[128]; 
+  char       file[128];
   Viewer     fd;
-  int        e1, e2, e3;
-  /*   extern     int xyz(int *); */
+  PetscTruth table = PETSC_FALSE;
+
   PetscInitialize(&argc,&args,0,0,help);
+
+  ierr = OptionsHasName(PETSC_NULL,"-table",&flg);
+  if (flg) table = PETSC_TRUE;
 
 #if defined(PETSC_COMPLEX)
   SETERRA(1,"This example does not work with complex numbers");
@@ -46,43 +49,49 @@ int main(int argc,char **args)
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
   ierr = VecSet(&zero,x); CHKERRA(ierr);
-
-  /* Solve system */
-  PLogEventRegister(&e1,"*SLESCreate     ", "red");
-  PLogEventRegister(&e2,"*SLESSetOperator", "green");
-  PLogEventRegister(&e3,"*SLESSetFromOpti", "orange");
   PetscBarrier(A);
-  
+
   PLogStagePush(1);
-  PLogEventBegin(e1,sles,0,0,0);
+  tsetup = PetscGetTime();  
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  PLogEventEnd(e1,sles,0,0,0);
-  PLogEventBegin(e2,sles,0,0,0);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  PLogEventEnd(e2,sles,0,0,0);
-  PLogEventBegin(e3,sles,0,0,0);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
-  PLogEventEnd(e3,sles,0,0,0);
   ierr = SLESSetUp(sles,b,x); CHKERRA(ierr);
   ierr = SLESSetUpOnBlocks(sles); CHKERRA(ierr);
-  /*  ierr = xyz(&flg); CHKERRQ(ierr); */
+  tsetup = PetscGetTime() - tsetup;
   PLogStagePop();
   PetscBarrier(A);
+
   PLogStagePush(2);
+  tsolve = PetscGetTime();
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
+  tsolve = PetscGetTime() - tsolve;
   PLogStagePop();
 
   /* Show result */
   ierr = MatMult(A,x,u);
   ierr = VecAXPY(&none,b,u); CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"Number of iterations = %3d\n",its);
-  if (norm < 1.e-10) {
-    MPIU_printf(MPI_COMM_WORLD,"Residual norm < 1.e-10\n");
+  /*  matrix PC   KSP   Options       its    residual setuptime solvetime  */
+  if (table) {
+    KSP ksp; PC pc; char *kspname, *pcname, *matrixname, pcinfo[120];
+    Viewer viewer;
+    ViewerStringOpen(MPI_COMM_WORLD,pcinfo,120,&viewer);
+    SLESGetKSP(sles,&ksp); KSPGetType(ksp,PETSC_NULL,&kspname);
+    SLESGetPC(sles,&pc); PCGetType(pc,PETSC_NULL,&pcname);
+    PCView(pc,viewer);
+    matrixname = PetscStrrchr(file,'/');
+    MPIU_printf(MPI_COMM_WORLD,"%-8.8s %-7.7s %-7.7s %-20.20s %3d %2.2e %2.2e %2.2e\n",
+                matrixname,kspname,pcname,pcinfo,its,norm,tsetup,tsolve);
+    ViewerDestroy(viewer);
   } else {
-    MPIU_printf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
+    MPIU_printf(MPI_COMM_WORLD,"Number of iterations = %3d\n",its);
+    if (norm < 1.e-10) {
+      MPIU_printf(MPI_COMM_WORLD,"Residual norm < 1.e-10\n");
+    } else {
+      MPIU_printf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
+    }
   }
-  /* MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f seconds\n",time1); */
 
   /* Cleanup */
   ierr = SLESDestroy(sles); CHKERRA(ierr);

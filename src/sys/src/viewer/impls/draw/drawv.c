@@ -1,80 +1,45 @@
 #ifndef lint
-static char vcid[] = "$Id: drawv.c,v 1.1 1996/03/08 04:12:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.1 1996/03/08 04:15:30 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
-#include <stdio.h>
-#include <stdarg.h>
-#if defined(HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#include "pinclude/petscfix.h"
+#include "drawimpl.h"
 
-struct _Viewer {
-  PETSCHEADER
-  char         *string;   /* string where info is stored */
-  char         *head;     /* pointer to begining of unused portion */
-};
-
-static int ViewerDestroy_String(PetscObject obj)
+int ViewerDestroy_Draw(PetscObject obj)
 {
+  int    ierr;
+  Viewer v = (Viewer) obj;
+
+  ierr = DrawDestroy(v->draw); CHKERRQ(ierr);
   PLogObjectDestroy(obj);
   PetscHeaderDestroy(obj);
   return 0;
 }
 
-/*@C
-      ViewerStringsprintf - Prints information to a viewer string
-
-  Input Parameters:
-.   v - the viewer
-.   format - the format of the input
-
-@*/
-int ViewerStringsprintf(Viewer v,char *format,...)
+int ViewerFlush_Draw(Viewer v)
 {
-  va_list Argp;
-  PETSCVALIDHEADERSPECIFIC(v,VIEWER_COOKIE);
-  if (v->type != STRING_VIEWER) return 0;
-  va_start( Argp, format );
-  vsprintf(v->head,format,Argp);
-  va_end( Argp );
-
-  /* need to update the position of v->head, don't know how */
-  return 0;
+  return DrawSyncFlush(v->draw);
 }
 
-/*@C
-   ViewerStringOpen - Opens a string as a viewer. This is a very 
-        simply viewer, information on the object is simply stored into 
-        the string in a fairly nice way.
+/*@
+    ViewerDrawGetDraw - Returns Draw object from Viewer object.
+      This Draw object may then be used to perform graphics using 
+      DrawXXX() commands.
 
-   Input Parameters:
-.  comm - the communicator
-.  string - the string to use
+  Input Parameter:
+.   viewer - the viewer (created with ViewerDrawOpenX()
 
-   Output Parameter:
-.  lab - the viewer
+  Ouput Parameter:
+.   draw - the draw object
 
-.keywords: Viewer, file, open
-
-.seealso: MatView(), VecView(), ViewerDestroy(), ViewerFileOpenBinary(),
-          ViewerFileGetPointer(), SLESView(), MatView()
 @*/
-int ViewerStringOpen(MPI_Comm comm,char *string,int len, Viewer *lab)
+int ViewerDrawGetDraw(Viewer v, Draw *draw)
 {
-  Viewer v;
-  PetscHeaderCreate(v,_Viewer,VIEWER_COOKIE,STRING_VIEWER,comm);
-  PLogObjectCreate(v);
-  v->destroy     = ViewerDestroy_String;
-
-  v->string      = string;
-  v->head        = string;
-
-  *lab           = v;
+  PETSCVALIDHEADERSPECIFIC(v, VIEWER_COOKIE);
+  if (v->type != DRAW_VIEWER) SETERRQ(1,"ViewerDrawGetDraw:Must be draw");
+  *draw = v->draw;
   return 0;
 }
-
 
 
 

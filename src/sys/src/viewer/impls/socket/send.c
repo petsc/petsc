@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.28 1995/11/01 23:20:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.29 1995/11/09 22:31:56 bsmith Exp bsmith $";
 #endif
 /* 
  
@@ -186,6 +186,7 @@ int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
     v->port        = t;
   }
   v->destroy     = ViewerDestroy_Matlab;
+  v->flush       = 0;
   *lab           = v;
   return 0;
 }

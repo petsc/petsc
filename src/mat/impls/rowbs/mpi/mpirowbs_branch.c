@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.94 1996/03/06 03:13:55 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.95 1996/03/06 22:17:59 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -1052,13 +1052,19 @@ static int MatGetInfo_MPIRowbs(Mat A,MatInfoType flag,int *nz,int *nzalloc,int *
 
   isend[0] = mat->nz; isend[1] = mat->maxnz; isend[2] = A->mem;
   if (flag == MAT_LOCAL) {
-    *nz = isend[0]; *nzalloc = isend[1]; *mem = isend[2];
+    if (nz)      *nz = isend[0];
+    if (nzalloc) *nzalloc = isend[1];
+    if (mem)     *mem = isend[2];
   } else if (flag == MAT_GLOBAL_MAX) {
     MPI_Allreduce( isend,irecv,3,MPI_INT,MPI_MAX,A->comm);
-    *nz = irecv[0]; *nzalloc = irecv[1]; *mem = irecv[2];
+    if (nz)      *nz      = irecv[0]; 
+    if (nzalloc) *nzalloc = irecv[1]; 
+    if (mem)     *mem     = irecv[2];
   } else if (flag == MAT_GLOBAL_SUM) {
     MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_SUM,A->comm);
-    *nz = irecv[0]; *nzalloc = irecv[1]; *mem = irecv[2];
+    if (nz)      *nz      = irecv[0]; 
+    if (nzalloc) *nzalloc = irecv[1]; 
+    if (mem)     *mem     = irecv[2];
   }
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.89 1996/02/13 23:29:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.90 1996/03/04 05:16:04 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -609,9 +609,9 @@ static int MatRelax_SeqBDiag(Mat A,Vec bb,double omega,MatSORType flag,
 static int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,int *nz,int *nzalloc,int *mem)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  *nz      = a->nz;
-  *nzalloc = a->maxnz;
-  *mem     = (int)A->mem;
+  if (nz)      *nz      = a->nz;
+  if (nzalloc) *nzalloc = a->maxnz;
+  if (mem)     *mem     = (int)A->mem;
   return 0;
 }
 

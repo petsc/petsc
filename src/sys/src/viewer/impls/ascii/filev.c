@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.34 1996/02/13 17:13:39 curfman Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.35 1996/02/14 15:41:09 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -8,6 +8,7 @@ static char vcid[] = "$Id: filev.c,v 1.34 1996/02/13 17:13:39 curfman Exp curfma
 
 struct _Viewer {
   PETSCHEADER
+  int         (*flush)(Viewer);
   FILE        *fd;
   int         format;
   char        *outputname;
@@ -40,6 +41,15 @@ int ViewerDestroy_Private()
   ViewerDestroy_File((PetscObject)STDOUT_VIEWER_SELF);
   ViewerDestroy_File((PetscObject)STDOUT_VIEWER_WORLD);
   return 0;
+}
+
+int ViewerFlush_File(Viewer v)
+{
+  int rank;
+  MPI_Comm_rank(v->comm,&rank);
+  if (rank) return 0;
+  fflush(v->fd);
+  return 0;  
 }
 
 /*@C
@@ -115,6 +125,7 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
   }
   PLogObjectCreate(v);
   v->destroy     = ViewerDestroy_File;
+  v->flush       = ViewerFlush_File;
 
   if (!PetscStrcmp(name,"stderr")) v->fd = stderr;
   else if (!PetscStrcmp(name,"stdout")) v->fd = stdout;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.129 1996/02/28 00:12:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.130 1996/03/04 05:15:55 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1019,13 +1019,19 @@ static int MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,int *nz,
   ierr = MatGetInfo(B,MAT_LOCAL,&isend[0],&isend[1],&isend[2]); CHKERRQ(ierr);
   isend[0] += nzA; isend[1] += nzallocA; isend[2] += memA;
   if (flag == MAT_LOCAL) {
-    *nz = isend[0]; *nzalloc = isend[1]; *mem = isend[2];
+    if (nz)       *nz      = isend[0];
+    if (nzalloc)  *nzalloc = isend[1];
+    if (mem)      *mem     = isend[2];
   } else if (flag == MAT_GLOBAL_MAX) {
     MPI_Allreduce( isend, irecv,3,MPI_INT,MPI_MAX,matin->comm);
-    *nz = irecv[0]; *nzalloc = irecv[1]; *mem = irecv[2];
+    if (nz)      *nz      = irecv[0];
+    if (nzalloc) *nzalloc = irecv[1];
+    if (mem)     *mem     = irecv[2];
   } else if (flag == MAT_GLOBAL_SUM) {
     MPI_Allreduce( isend, irecv,3,MPI_INT,MPI_SUM,matin->comm);
-    *nz = irecv[0]; *nzalloc = irecv[1]; *mem = irecv[2];
+    if (nz)      *nz      = irecv[0]; 
+    if (nzalloc) *nzalloc = irecv[1]; 
+    if (mem)     *mem     = irecv[2];
   }
   return 0;
 }
@@ -1533,18 +1539,20 @@ static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
   mat->factor     = matin->factor;
   mat->assembled  = PETSC_TRUE;
 
-  a->m          = oldmat->m;
-  a->n          = oldmat->n;
-  a->M          = oldmat->M;
-  a->N          = oldmat->N;
+  a->m            = oldmat->m;
+  a->n            = oldmat->n;
+  a->M            = oldmat->M;
+  a->N            = oldmat->N;
 
-  a->rstart     = oldmat->rstart;
-  a->rend       = oldmat->rend;
-  a->cstart     = oldmat->cstart;
-  a->cend       = oldmat->cend;
-  a->size       = oldmat->size;
-  a->rank       = oldmat->rank;
-  a->insertmode = NOT_SET_VALUES;
+  a->rstart       = oldmat->rstart;
+  a->rend         = oldmat->rend;
+  a->cstart       = oldmat->cstart;
+  a->cend         = oldmat->cend;
+  a->size         = oldmat->size;
+  a->rank         = oldmat->rank;
+  a->insertmode   = NOT_SET_VALUES;
+  a->rowvalues    = 0;
+  a->getrowactive = PETSC_FALSE;
 
   a->rowners = (int *) PetscMalloc((a->size+1)*sizeof(int)); CHKPTRQ(a->rowners);
   PLogObjectMemory(mat,(a->size+1)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_MPIAIJ));
