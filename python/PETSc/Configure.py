@@ -356,16 +356,19 @@ class Configure(config.base.Configure):
     import os
     if os.path.splitext(os.path.basename(wfe))[0] == 'win32fe':
       self.framework.addDefine('PARCH_win32',1)
-      self.framework.argDB['LIBS'] += ' kernel32.lib user32.lib  gdi32.lib advapi32.lib'
       self.addDefine('CANNOT_START_DEBUGGER',1)
       self.addDefine('USE_NT_TIME',1)
-      self.missingPrototypes.append('typedef int uid_t;')
-      self.missingPrototypes.append('typedef int gid_t;')
-      self.missingPrototypes.append('#define R_OK 04')
-      self.missingPrototypes.append('#define W_OK 02')
-      self.missingPrototypes.append('#define X_OK 01')
-      self.missingPrototypes.append('#define S_ISREG(a) (((a)&_S_IFMT) == _S_IFREG)')
-      self.missingPrototypes.append('#define S_ISDIR(a) (((a)&_S_IFMT) == _S_IFDIR)')
+      if not self.checkCompile('#include <sys/types.h>\n','uid_t u;\n'):
+        self.missingPrototypes.append('typedef int uid_t;')
+        self.missingPrototypes.append('typedef int gid_t;')
+      if not self.checkCompile('#include <sys/stat.h>\n','int a=R_OK;\n'):
+        self.missingPrototypes.append('#define R_OK 04')
+        self.missingPrototypes.append('#define W_OK 02')
+        self.missingPrototypes.append('#define X_OK 01')
+      if not self.checkLink('#include <sys/stat.h>\n','int a=0;\nif (S_ISDIR(a)){}\n'):
+        self.missingPrototypes.append('#define S_ISREG(a) (((a)&_S_IFMT) == _S_IFREG)')
+        self.missingPrototypes.append('#define S_ISDIR(a) (((a)&_S_IFMT) == _S_IFDIR)')
+      self.framework.argDB['LIBS'] += ' kernel32.lib user32.lib  gdi32.lib advapi32.lib'
     return
     
   def configureMPIUNI(self):
