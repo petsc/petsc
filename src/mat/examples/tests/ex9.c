@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.8 1999/04/19 22:13:14 bsmith Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.9 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
@@ -71,7 +71,7 @@ int main(int argc,char **args)
   ierr = VecGetOwnershipRange(u,&low,&high);CHKERRA(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
-    v = one*i + 100*rank;
+    v = one*((double)i) + 100.0*rank;
     ierr = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(u);CHKERRA(ierr);

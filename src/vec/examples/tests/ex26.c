@@ -62,7 +62,7 @@ int main(int Argc,char **Args)
   ierr = VecPipelineBegin(src_v,tar_v,INSERT_VALUES,SCATTER_FORWARD,
 			  PIPELINE_UP,pipe);CHKERRA(ierr);
   ierr = VecGetArray(tar_v,&vec_values);CHKERRA(ierr);
-  my_value = vec_values[0]+(rank+1)*(rank+1);
+  my_value = vec_values[0] + (double)((rank+1)*(rank+1));
   printf("[%d] value=%d\n",rank,(int)PetscReal(my_value));
   ierr = VecRestoreArray(tar_v,&vec_values);CHKERRA(ierr);
   /* -- little trick: we have to be able to call VecAssembly, 
@@ -71,8 +71,7 @@ int main(int Argc,char **Args)
   ierr = VecSetValues(loc_v,1,&zero_loc,&my_value,INSERT_VALUES); 
   ierr = VecAssemblyBegin(loc_v);CHKERRA(ierr);
   ierr = VecAssemblyEnd(loc_v);CHKERRA(ierr);
-  ierr = VecPipelineEnd(src_v,tar_v,INSERT_VALUES,SCATTER_FORWARD,
-			PIPELINE_UP,pipe);CHKERRA(ierr);
+  ierr = VecPipelineEnd(src_v,tar_v,INSERT_VALUES,SCATTER_FORWARD,PIPELINE_UP,pipe);CHKERRA(ierr);
 
   /* Clean up */
   ierr = VecPipelineDestroy(pipe);CHKERRA(ierr);

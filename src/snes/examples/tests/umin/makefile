@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.64 1999/04/01 17:07:05 balay Exp bsmith $ 
+# $Id: makefile,v 1.65 1999/04/01 17:09:15 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -6,7 +6,7 @@ CFLAGS          =
 FFLAGS          = 
 CPPFLAGS        =
 FPPFLAGS        =
-LOCDIR          = src/snes/examples/umin/
+LOCDIR          = src/snes/examples/tests/umin/
 
 TESTEXAMPLES_1  = ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm ex3.PETSc\
 		  runex3 ex3.rm clean

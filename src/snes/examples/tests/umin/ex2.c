@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.49 1999/05/12 03:32:55 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.50 1999/06/30 23:54:24 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -270,13 +270,13 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   for (j=0; j<ny; j++) {
-    temp = PetscMin(j+1,ny-j)*hy;
+    temp = ((double)PetscMin(j+1,ny-j))*hy;
     for (i=0; i<nx; i++) {
       k = nx*j + i;
 #if !defined(PETSC_USE_COMPLEX)
       x[k] = PetscMin((PetscMin(i+1,nx-i))*hx,temp);
 #else
-      x[k] = PetscMin(PetscReal(PetscMin(i+1,nx-i)*hx),PetscReal(temp));
+      x[k] = PetscMin(PetscReal(((double)PetscMin(i+1,nx-i))*hx),PetscReal(temp));
 #endif
     }
   }
@@ -502,9 +502,9 @@ int FormInitialGuess2(AppCtx *user,Vec X)
   ierr = BoundaryValues(user);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   for (j=0; j<ny; j++) {
-    alphaj = (j+1)*hy;
+    alphaj = ((double)(j+1))*hy;
     for (i=0; i<nx; i++) {
-      betai = (i+1)*hx;
+      betai = ((double)(i+1))*hx;
       yline = alphaj*top[i+1] + (one-alphaj)*bottom[i+1];
       xline = betai*right[j+1] + (one-betai)*left[j+1];
       k = nx*j + i;
