@@ -1,12 +1,12 @@
 
-/*      "$Id: ex2.c,v 1.2 1996/08/17 14:35:33 bsmith Exp balay $"; */
+/*      "$Id: ex2.c,v 1.3 1996/08/22 14:35:18 balay Exp balay $"; */
 
 static char help[] = "Demonstrates creating a stride index set.\n\n";
 
 /*T
-    Concepts: Index set, indices, stride
-    Routines: ISCreateStride(), ISDestroy(), ISView()
-    Routines: ISGetIndices(), ISRestoreIndices(), ISStrideGetInfo()
+    Concepts: Index set; indices; stride
+    Routines: ISCreateStride(); ISDestroy(); ISView()
+    Routines: ISGetIndices(); ISRestoreIndices(); ISStrideGetInfo()
     
     Comment: Creates an index set based on a stride. Views that index set
   and then destroys it.

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex21.c,v 1.6 1996/08/22 14:37:52 balay Exp balay $";
+static char vcid[] = "$Id: ex21.c,v 1.7 1996/08/22 14:39:05 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -15,14 +15,14 @@ users manual for a discussion of preloading.  Input parameters include\n\
   -f1 <input_file> : second file to load (larger system)\n\n";
 
 /*T
-   Concepts: SLES, solving linear equations
-   Routines: SLESCreate(), SLESSetOperators(), SLESSetFromOptions()
-   Routines: SLESSolve(), SLESSetUp(), SLESSetUpOnBlocks(), SLESView()
-   Routines: PLogStageRegister(), PLogStagePush(), PLogStagePop(), PLogFlops()
-   Routines: PetscBarrier(), PetscGetTime(), PetscStrrchr()
-   Routines: MatGetTypeFromOptions(), MatLoad()
+   Concepts: SLES; solving linear equations
+   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions()
+   Routines: SLESSolve(); SLESSetUp(); SLESSetUpOnBlocks(); SLESView()
+   Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops()
+   Routines: PetscBarrier(); PetscGetTime(); PetscStrrchr()
+   Routines: MatGetTypeFromOptions(); MatLoad()
    Routines: VecLoad()
-   Routines: ViewerFileOpenBinary(), ViewerStringOpen(), ViewerDestroy()
+   Routines: ViewerFileOpenBinary(); ViewerStringOpen(); ViewerDestroy()
    Processors: n
 T*/
 

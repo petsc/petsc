@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.16 1996/08/18 19:48:03 curfman Exp curfman $";
+static char vcid[] = "$Id: ex19.c,v 1.17 1996/08/18 20:46:17 curfman Exp balay $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -8,14 +8,14 @@ solution of linear systems, while reusing matrix, vector, and solver data\n\
 structures throughout the process.  Note the various stages of event logging.\n\n";
 
 /*T
-   Concepts: SLES, repeatedly solving linear equations, multiple profiling stages
-   Routines: SLESCreate(), SLESSetOperators(), SLESSetFromOptions(), SLESSetUp()
-   Routines: SLESSolve(), SLESView(), SLESGetKSP(), SLESAppendOptionsPrefix()
-   Routines: PLogEventRegister(), PLogEventBegin(), PLogEventEnd()
-   Routines: PLogStageRegister(), PLogStagePush(), PLogStagePop(), PLogFlops()
+   Concepts: SLES; repeatedly solving linear equations; multiple profiling stages
+   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions(); SLESSetUp()
+   Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESAppendOptionsPrefix()
+   Routines: PLogEventRegister(); PLogEventBegin(); PLogEventEnd()
+   Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops()
    Routines: MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS)
-   Routines: KSPSetInitialGuessNonzero(), KSPSetMonitor()
-   Multiprocessor code
+   Routines: KSPSetInitialGuessNonzero(); KSPSetMonitor()
+   Processors:     n  
 T*/
 
 /* 

@@ -1,13 +1,13 @@
 
-/*      "$Id: ex3.c,v 1.2 1996/08/17 14:35:33 bsmith Exp balay $"; */
+/*      "$Id: ex3.c,v 1.3 1996/08/22 14:35:26 balay Exp balay $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
 /*T
-    Concepts: Index set, indices, blocks 
-    Routines: ISCreateBlock(), ISDestroy(), ISView()
-    Routines: ISGetIndices(), ISRestoreIndices(), ISBlockGetSize()
-    Routines: ISBlockGetBlockSize(), ISBlockGetIndices(), ISBlockRestoreIndices()
+    Concepts: Index set; indices; blocks 
+    Routines: ISCreateBlock(); ISDestroy(); ISView()
+    Routines: ISGetIndices(); ISRestoreIndices(); ISBlockGetSize()
+    Routines: ISBlockGetBlockSize(); ISBlockGetIndices(); ISBlockRestoreIndices()
     Routines: ISBlock()
 
     Comment:  Creates an index set based on blocks of integers. Views that index set
