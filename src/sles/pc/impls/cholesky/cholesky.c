@@ -103,6 +103,9 @@ static int PCView_Cholesky(PC pc,PetscViewer viewer)
     if (lu->fact) {
       ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"    Cholesky nonzeros %g\n",info.nz_used);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_FACTOR_INFO);CHKERRQ(ierr);
+      ierr = MatView(lu->fact,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
     if (lu->reusefill)    {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
     if (lu->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
