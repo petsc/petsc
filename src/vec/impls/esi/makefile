@@ -7,7 +7,7 @@
 
 ALL: lib
 
-CFLAGS   = ${CCA_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCEC  = ebvec1.c
 SOURCEF  =

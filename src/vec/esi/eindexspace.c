@@ -119,38 +119,23 @@ template<class Ordinal> class IndexSpaceFactory : public virtual ::esi::IndexSpa
     // Destructor.
   virtual ~IndexSpaceFactory(void){};
 
-    // Interface for gov::cca::Component
-#if defined(PETSC_HAVE_CCA)
-    virtual void setServices(gov::cca::Services *svc)
-    {
-      svc->addProvidesPort(this,svc->createPortInfo("getIndexSpace", "esi::IndexSpaceFactory", 0));
-    };
-#endif
-
     // Construct a IndexSpace
-    virtual ::esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,::esi::IndexSpace<Ordinal>*&v)
+    virtual ::esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,int N,int base,::esi::IndexSpace<Ordinal>*&v)
     {
       PetscTruth ismpi;
       int ierr = PetscStrcmp(name,"MPI",&ismpi);CHKERRQ(ierr);
       if (!ismpi) SETERRQ1(1,"%s not supported, only MPI supported as RunTimeModel",name);
-      v = new esi::petsc::IndexSpace<Ordinal>(*(MPI_Comm*)comm,m,PETSC_DETERMINE);
+      v = new esi::petsc::IndexSpace<Ordinal>(*(MPI_Comm*)comm,m,N);
       return 0;
     };
 
 };
 }}
 EXTERN_C_BEGIN
-#if defined(PETSC_HAVE_CCA)
-gov::cca::Component *create_esi_petsc_indexspacefactory(void)
-{
-  return dynamic_cast<gov::cca::Component *>(new esi::petsc::IndexSpaceFactory<int>);
-}
-#else
 ::esi::IndexSpaceFactory<int> *create_esi_petsc_indexspacefactory(void)
 {
   return dynamic_cast< ::esi::IndexSpaceFactory<int>*>(new esi::petsc::IndexSpaceFactory<int>);
 }
-#endif
 EXTERN_C_END
 
 /* ::esi::petsc::IndexSpaceFactory<int> ISFInstForIntel64CompilerBug; */
@@ -166,16 +151,8 @@ template<class Ordinal> class Petra_ESI_IndexSpaceFactory : public virtual ::esi
     // Destructor.
   virtual ~Petra_ESI_IndexSpaceFactory(void){};
 
-    // Interface for gov::cca::Component
-#if defined(PETSC_HAVE_CCA)
-    virtual void setServices(gov::cca::Services *svc)
-    {
-      svc->addProvidesPort(this,svc->createPortInfo("getIndexSpace", "esi::IndexSpaceFactory", 0));
-    };
-#endif
-
     // Construct a IndexSpace
-    virtual ::esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,::esi::IndexSpace<Ordinal>*&v)
+    virtual ::esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,int M,int base,::esi::IndexSpace<Ordinal>*&v)
     {
       PetscTruth ismpi;
       int ierr = PetscStrcmp(name,"MPI",&ismpi);CHKERRQ(ierr);
@@ -188,16 +165,9 @@ template<class Ordinal> class Petra_ESI_IndexSpaceFactory : public virtual ::esi
 
 };
 EXTERN_C_BEGIN
-#if defined(PETSC_HAVE_CCA)
-gov::cca::Component *create_petra_esi_indexspacefactory(void)
-{
-  return dynamic_cast<gov::cca::Component *>(new Petra_ESI_IndexSpaceFactory<int>);
-}
-#else
 ::esi::IndexSpaceFactory<int> *create_petra_esi_indexspacefactory(void)
 {
   return dynamic_cast< ::esi::IndexSpaceFactory<int> *>(new Petra_ESI_IndexSpaceFactory<int>);
 }
-#endif
 EXTERN_C_END
 #endif

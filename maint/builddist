@@ -111,8 +111,6 @@ for i in bmake/*/packages ; do
     sed "s/^TRILINOS_INCLUDE/#TRILINOS_INCLUDE/g" | \
     sed "s/^PETSC_HAVE_TRILINOS/#PETSC_HAVE_TRILINOS/g" | \
     sed "s/^TRILINOS_LIB/#TRILINOS_LIB/g" | \
-    sed "s/^CCA_INCLUDE/#CCA_INCLUDE/g" | \
-    sed "s/^PETSC_HAVE_CCA/#PETSC_HAVE_CCA/g" | \
     sed "s/^SUPERLU_LIB/#SUPERLU_LIB/g" | \
     sed "s/^SUPERLU_INCLUDE/#SUPERLU_INCLUDE/g" | \
     sed "s/^PETSC_HAVE_SUPERLU/#PETSC_HAVE_SUPERLU/g" | \

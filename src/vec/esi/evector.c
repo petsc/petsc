@@ -253,14 +253,6 @@ namespace esi{namespace petsc{
     // Destructor.
     virtual ~VectorFactory(void){};
 
-    // Interface for gov::cca::Component
-#if defined(PETSC_HAVE_CCA)
-    virtual void setServices(gov::cca::Services *svc)
-    {
-      svc->addProvidesPort(this,svc->createPortInfo("getVector", "esi::VectorFactory", 0));
-    };
-#endif
-
     // Construct a Vector
     virtual ::esi::ErrorCode getVector(::esi::IndexSpace<Ordinal>&map,::esi::Vector<Scalar,Ordinal>*&v)
     {
@@ -273,17 +265,10 @@ namespace esi{namespace petsc{
 /* ::esi::petsc::VectorFactory<double,int> VFInstForIntel64CompilerBug; */
 
 EXTERN_C_BEGIN
-#if defined(PETSC_HAVE_CCA)
-gov::cca::Component *create_esi_petsc_vectorfactory(void)
-{
-  return dynamic_cast<gov::cca::Component *>(new esi::petsc::VectorFactory<double,int>);
-}
-#else
 ::esi::VectorFactory<double,int> *create_esi_petsc_vectorfactory(void)
 {
   return dynamic_cast< ::esi::VectorFactory<double,int> *>(new esi::petsc::VectorFactory<double,int>);
 }
-#endif
 EXTERN_C_END
 
 // --------------------------------------------------------------------------------------------------------
@@ -301,14 +286,6 @@ template<class Scalar,class Ordinal> class Petra_ESI_VectorFactory : public virt
     // Destructor.
     virtual ~Petra_ESI_VectorFactory(void) {};
 
-    // Interface for gov::cca::Component
-#if defined(PETSC_HAVE_CCA)
-    virtual void setServices(gov::cca::Services *svc)
-    {
-      svc->addProvidesPort(this,svc->createPortInfo("getVector", "esi::VectorFactory", 0));
-    };
-#endif
-
     // Construct a Vector
     virtual ::esi::ErrorCode getVector(::esi::IndexSpace<Ordinal>&lmap,::esi::Vector<Scalar,Ordinal>*&v)
     {
@@ -323,17 +300,10 @@ template<class Scalar,class Ordinal> class Petra_ESI_VectorFactory : public virt
 };
 
 EXTERN_C_BEGIN
-#if defined(PETSC_HAVE_CCA)
-gov::cca::Component *create_petra_esi_vectorfactory(void)
-{
-  return dynamic_cast<gov::cca::Component *>(new Petra_ESI_VectorFactory<double,int>);
-}
-#else
 ::esi::VectorFactory<double,int> *create_petra_esi_vectorfactory(void)
 {
   return dynamic_cast< ::esi::VectorFactory<double,int> *>(new Petra_ESI_VectorFactory<double,int>);
 }
-#endif
 EXTERN_C_END
 #endif
 

@@ -126,22 +126,14 @@ class IndexSpace<int>: public virtual esi::IndexSpace<int>, public esi::petsc::O
   /* -------------------------------------------------------------------------*/
 
 template<class Ordinal> class IndexSpaceFactory 
-#if defined(PETSC_HAVE_CCA)
-           :  public virtual gov::cca::Port, public virtual gov::cca::Component
-#endif
 {
   public:
 
     // Destructor.
   virtual ~IndexSpaceFactory(void){};
 
-    // Interface for gov::cca::Component
-#if defined(PETSC_HAVE_CCA)
-    virtual void setServices(gov::cca::Services *) = 0;
-#endif
-
     // Construct a IndexSpace
-    virtual esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,esi::IndexSpace<Ordinal>*&v) = 0; 
+    virtual esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,int M,int base,esi::IndexSpace<Ordinal>*&v) = 0; 
 };
 }
 

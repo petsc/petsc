@@ -7,7 +7,7 @@
 
 ALL: lib
 
-CFLAGS   = ${CCA_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCEC  = mesi.c 
 SOURCEF  =

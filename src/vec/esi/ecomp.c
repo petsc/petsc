@@ -4,10 +4,8 @@
 
 // --------------------------------------------------------------------------------------------------------
 
-// CCAFFEINE expects each .so file to have a getComponentList function.
-// See dccafe/cxx/dc/framework/ComponentFactory.h for details.
 EXTERN_C_BEGIN
-char **getComponentList() {
+char **getESIFactoryList() {
   static char *list[] = {
     "create_esi_petsc_vectorfactory esi::petsc::Vector",
     "create_petra_esi_vectorfactory Petra_ESI_Vector",

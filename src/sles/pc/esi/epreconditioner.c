@@ -165,7 +165,7 @@ namespace esi{namespace petsc{
       PetscTruth flg;
       int        ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ1(1,"Does not support %s, only supports MPI",commname);
-      v = new esi::petsc::Preconditioner<Scalar,Ordinal>((MPI_Comm)comm);
+      v = new esi::petsc::Preconditioner<Scalar,Ordinal>(*(MPI_Comm*)comm);
       return 0;
     };
 };

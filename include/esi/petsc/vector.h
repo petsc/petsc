@@ -126,19 +126,11 @@ template<>
   /* -------------------------------------------------------------------------*/
 
 template<class Scalar,class Ordinal> class VectorFactory 
-#if defined(PETSC_HAVE_CCA)
-           :  public virtual gov::cca::Port, public virtual gov::cca::Component
-#endif
 {
   public:
 
     // Destructor.
   virtual ~VectorFactory(void){};
-
-    // Interface for gov::cca::Component
-#if defined(PETSC_HAVE_CCA)
-    virtual void setServices(gov::cca::Services *) = 0;
-#endif
 
     // Construct a Vector
     virtual esi::ErrorCode getVector(esi::IndexSpace<Ordinal>&,esi::Vector<Scalar,Ordinal>*&v) = 0; 

@@ -7,7 +7,7 @@
 
 ALL: lib
 
-CFLAGS   = ${CCA_INCLUDE} ${TRILINOS_INCLUDE}
+CFLAGS   = ${TRILINOS_INCLUDE}
 FFLAGS   =
 SOURCEC  = eindexspace.c evector.c ecomp.c
 OBJSC    = eindexspace.o evector.o ecomp.o

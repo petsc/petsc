@@ -7,7 +7,7 @@
 
 ALL: lib
 
-CFLAGS   = ${CCA_INCLUDE}  ${TRILINOS_INCLUDE}
+CFLAGS   = ${TRILINOS_INCLUDE}
 FFLAGS   =
 SOURCEC  = ematrix.c
 OBJSC    = ematrix.o

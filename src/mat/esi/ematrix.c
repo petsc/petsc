@@ -281,14 +281,6 @@ namespace esi{namespace petsc{
     // Destructor.
     virtual ~OperatorFactory(void){};
 
-    // Interface for gov::cca::Component
-#if defined(PETSC_HAVE_CCA)
-    virtual void setServices(gov::cca::Services *svc)
-    {
-      svc->addProvidesPort(this,svc->createPortInfo("getOperator", "esi::OperatorFactory", 0));
-    };
-#endif
-
     // Construct a Operator
     virtual ::esi::ErrorCode getOperator(::esi::IndexSpace<Ordinal>&rmap,::esi::IndexSpace<Ordinal>&cmap,::esi::Operator<Scalar,Ordinal>*&v)
     {
@@ -301,17 +293,10 @@ namespace esi{namespace petsc{
 /* ::esi::petsc::OperatorFactory<double,int> OFInstForIntel64CompilerBug; */
 
 EXTERN_C_BEGIN
-#if defined(PETSC_HAVE_CCA)
-gov::cca::Component *create_esi_petsc_operatorfactory(void)
-{
-  return dynamic_cast<gov::cca::Component *>(new esi::petsc::OperatorFactory<double,int>);
-}
-#else
 ::esi::OperatorFactory<double,int> *create_esi_petsc_operatorfactory(void)
 {
   return dynamic_cast< ::esi::OperatorFactory<double,int> *>(new esi::petsc::OperatorFactory<double,int>);
 }
-#endif
 EXTERN_C_END
 
 
@@ -353,13 +338,6 @@ template<class Scalar,class Ordinal> class Petra_ESI_CRS_OperatorFactory : publi
     // Destructor.
     virtual ~Petra_ESI_CRS_OperatorFactory(void){};
 
-    // Interface for gov::cca::Component
-#if defined(PETSC_HAVE_CCA)
-    virtual void setServices(gov::cca::Services *svc)
-    {
-      svc->addProvidesPort(this,svc->createPortInfo("getOperator", "esi::OperatorFactory", 0));
-    };
-#endif
 
     // Construct a Operator
     virtual ::esi::ErrorCode getOperator(::esi::IndexSpace<Ordinal>&rmap,::esi::IndexSpace<Ordinal>&cmap,::esi::Operator<Scalar,Ordinal>*&v)
@@ -379,17 +357,10 @@ template<class Scalar,class Ordinal> class Petra_ESI_CRS_OperatorFactory : publi
 };
 
 EXTERN_C_BEGIN
-#if defined(PETSC_HAVE_CCA)
-gov::cca::Component *create_petra_esi_operatorfactory(void)
-{
-  return dynamic_cast<gov::cca::Component *>(new Petra_ESI_CRS_OperatorFactory<double,int>);
-}
-#else
 ::esi::OperatorFactory<double,int> *create_petra_esi_operatorfactory(void)
 {
   return dynamic_cast< ::esi::OperatorFactory<double,int> *>(new Petra_ESI_CRS_OperatorFactory<double,int>);
 }
-#endif
 EXTERN_C_END
 #endif
 

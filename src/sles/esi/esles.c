@@ -201,7 +201,7 @@ namespace esi{namespace petsc{
     {
       PetscTruth flg;
       int        ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
-      v = new esi::petsc::SolverIterative<Scalar,Ordinal>((MPI_Comm)comm);
+      v = new esi::petsc::SolverIterative<Scalar,Ordinal>(*(MPI_Comm*)comm);
       return 0;
     };
 };

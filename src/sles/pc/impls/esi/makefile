@@ -7,7 +7,7 @@
 
 ALL: lib
 
-CFLAGS   = ${ESI_INCLUDE}  ${CCA_INCLUDE}
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = pesi.c
 SOURCEF  =

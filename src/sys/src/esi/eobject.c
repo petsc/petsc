@@ -65,11 +65,4 @@ esi::ErrorCode esi::petsc::Object::deleteReference()
   return ierr;
 }
 
-#if defined(PETSC_HAVE_CCA)
-void esi::petsc::Object::setServices(gov::cca::Services *)
-{
-  ;
-}
-#endif
-
 /* ::esi::petsc::Object OInstForIntel64CompilerBug; */

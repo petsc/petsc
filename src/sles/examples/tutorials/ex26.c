@@ -57,7 +57,7 @@ int main(int argc,char **args)
   /*
         Define the layout of the vectors and matrices across the processors
   */
-  ierr = ifactory->getIndexSpace("MPI",(void*)&PETSC_COMM_WORLD,n,indexspace);CHKERRQ(ierr);
+  ierr = ifactory->getIndexSpace("MPI",(void*)&PETSC_COMM_WORLD,n,PETSC_DECIDE,PETSC_DECIDE,indexspace);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
@@ -142,7 +142,7 @@ int main(int argc,char **args)
   /* 
      Create linear solver context
   */
-  ierr = sfactory->getSolverIterative("MPI",(void*)PETSC_COMM_WORLD,solver);CHKERRQ(ierr);
+  ierr = sfactory->getSolverIterative("MPI",(void*)&PETSC_COMM_WORLD,solver);CHKERRQ(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system

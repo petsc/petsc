@@ -7,7 +7,7 @@
 
 ALL: lib
 
-CFLAGS   = ${CCA_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCEC  = epreconditioner.c
 OBJSC    = epreconditioner.o

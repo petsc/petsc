@@ -7,7 +7,7 @@
 
 ALL: lib
 
-CFLAGS   = ${CCA_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCEC  = esles.c
 OBJSC    = esles.o

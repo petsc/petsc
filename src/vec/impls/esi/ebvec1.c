@@ -529,11 +529,7 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace
 {
   int                           ierr;
   ::esi::IndexSpaceFactory<int> *f;
-#if defined(PETSC_HAVE_CCA)
-  ::gov::cca::Component         *(*r)(void);
-#else
   ::esi::IndexSpaceFactory<int> *(*r)(void);
-#endif
   char                          name[1024];
   PetscTruth                    found;
 
@@ -544,13 +540,7 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace
   }
   ierr = PetscFListFind(*(MPI_Comm*)comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unable to load esi::IndexSpace Factory constructor %s",name);
-#if defined(PETSC_HAVE_CCA)
-  gov::cca::Component *component = (*r)();
-  gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
-  f    = dynamic_cast<esi::IndexSpaceFactory<int>*>(port);
-#else
   f    = (*r)();
-#endif
   ierr = f->getIndexSpace(commname,comm,m,v);CHKERRQ(ierr);
   delete f;
   PetscFunctionReturn(0);
@@ -569,23 +559,13 @@ int VecESISetType(Vec V,char *name)
   int                              ierr;
   ::esi::Vector<double,int>        *ve;
   ::esi::VectorFactory<double,int> *f;
-#if defined(PETSC_HAVE_CCA)
-  ::gov::cca::Component            *(*r)(void);
-#else
   ::esi::VectorFactory<double,int> *(*r)(void);
-#endif
   ::esi::IndexSpace<int>           *map;
 
   PetscFunctionBegin;
   ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unable to load esi::VectorFactory constructor %s",name);
-#if defined(PETSC_HAVE_CCA)
-  gov::cca::Component *component = (*r)();
-  gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
-  f    = dynamic_cast<esi::VectorFactory<double,int>*>(port);
-#else
   f    = (*r)();
-#endif
   if (V->n == PETSC_DECIDE) {
     ierr = PetscSplitOwnership(V->comm,&V->n,&V->N);CHKERRQ(ierr);
   }
