@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shellpc.c,v 1.24 1996/03/18 00:39:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.25 1996/03/19 21:25:13 bsmith Exp balay $";
 #endif
 
 /*
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: shellpc.c,v 1.24 1996/03/18 00:39:15 bsmith Exp bsmit
 */
 
 #include "pcimpl.h"        /*I "pc.h" I*/
-#include "vec/vecimpl.h"  
+#include "src/vec/vecimpl.h"  
 
 typedef struct {
   void *ctx, *ctxrich;    /* user provided contexts for preconditioner */

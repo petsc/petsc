@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.168 1996/04/06 00:00:57 balay Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.169 1996/04/07 22:45:46 curfman Exp balay $";
 #endif
 
 /*
@@ -8,10 +8,10 @@ static char vcid[] = "$Id: aij.c,v 1.168 1996/04/06 00:00:57 balay Exp curfman $
   matrix storage format.
 */
 #include "aij.h"
-#include "vec/vecimpl.h"
-#include "inline/spops.h"
+#include "src/vec/vecimpl.h"
+#include "src/inline/spops.h"
 #include "petsc.h"
-#include "inline/bitarray.h"
+#include "src/inline/bitarray.h"
 
 extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 

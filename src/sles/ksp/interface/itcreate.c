@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.83 1996/04/04 22:02:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.84 1996/04/20 04:18:56 bsmith Exp balay $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: itcreate.c,v 1.83 1996/04/04 22:02:51 bsmith Exp bsmi
 #include "petsc.h"
 #include "kspimpl.h"      /*I "ksp.h" I*/
 #include <stdio.h>
-#include "sys/nreg.h"     /*I "sys/nreg.h" I*/
+#include "src/sys/nreg.h"     /*I "sys/nreg.h" I*/
 #include "sys.h"
 #include "viewer.h"       /*I "viewer.h" I*/
 #include "pinclude/pviewer.h"

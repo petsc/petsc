@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.40 1996/03/19 21:24:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.41 1996/04/04 22:03:35 bsmith Exp balay $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: pcset.c,v 1.40 1996/03/19 21:24:56 bsmith Exp bsmith 
 #include "petsc.h"
 #include "pcimpl.h"      /*I "pc.h" I*/
 #include <stdio.h>
-#include "sys/nreg.h"
+#include "src/sys/nreg.h"
 #include "sys.h"
 
 static NRList *__PCList = 0;

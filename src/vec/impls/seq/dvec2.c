@@ -1,12 +1,12 @@
-/* $Id: dvec2.c,v 1.26 1996/01/26 04:32:22 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.27 1996/03/19 21:23:01 bsmith Exp balay $ */
 
 /* 
    Defines some vector operation functions that are shared by 
   sequential and parallel vectors.
 */
-#include "inline/dot.h"
-#include "inline/setval.h"
-#include "inline/axpy.h"
+#include "src/inline/dot.h"
+#include "src/inline/setval.h"
+#include "src/inline/axpy.h"
 #include "vecimpl.h"             
 #include "dvecimpl.h"   
 #include "draw.h"          

@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.71 1996/04/01 21:10:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.72 1996/04/04 19:19:25 curfman Exp balay $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
 #include "snesimpl.h"      /*I "snes.h"  I*/
-#include "sys/nreg.h"      
+#include "src/sys/nreg.h"      
 #include "pinclude/pviewer.h"
 #include <math.h>
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.40 1996/04/09 20:24:27 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.41 1996/04/11 20:46:42 curfman Exp balay $";
 #endif
 
 /*
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: mpidense.c,v 1.40 1996/04/09 20:24:27 curfman Exp cur
 */
     
 #include "mpidense.h"
-#include "vec/vecimpl.h"
+#include "src/vec/vecimpl.h"
 
 static int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,
                                int *idxn,Scalar *v,InsertMode addv)
