@@ -36,7 +36,9 @@ int PetscDrawPointSetSize(PetscDraw draw,PetscReal width)
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   if (width < 0.0 || width > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Bad size %g, should be between 0 and 1",width);
-  ierr = (*draw->ops->pointsetsize)(draw,width);CHKERRQ(ierr);
+  if (draw->ops->pointsetsize) {
+    ierr = (*draw->ops->pointsetsize)(draw,width);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
