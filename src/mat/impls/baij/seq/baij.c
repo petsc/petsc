@@ -1087,7 +1087,7 @@ static PetscErrorCode MatView_SeqBAIJ_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  block size is %D\n",bs);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
     Mat aij;
-    ierr = MatConvert(A,MATSEQAIJ,&aij);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&aij);CHKERRQ(ierr);
     ierr = MatView(aij,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(aij);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
@@ -1259,7 +1259,7 @@ PetscErrorCode MatView_SeqBAIJ(Mat A,PetscViewer viewer)
     ierr = MatView_SeqBAIJ_Draw(A,viewer);CHKERRQ(ierr);
   } else {
     Mat B;
-    ierr = MatConvert(A,MATSEQAIJ,&B);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
     ierr = MatView(B,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
@@ -2173,8 +2173,8 @@ PetscErrorCode MatRetrieveValues_SeqBAIJ(Mat mat)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-extern PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat,const MatType,Mat*);
-extern PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat,const MatType,Mat*);
+extern PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 EXTERN_C_BEGIN

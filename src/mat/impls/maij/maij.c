@@ -79,7 +79,7 @@ PetscErrorCode MatView_SeqMAIJ(Mat A,PetscViewer viewer)
   Mat            B;
 
   PetscFunctionBegin;
-  ierr = MatConvert(A,MATSEQAIJ,&B);
+  ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);
   ierr = MatView(B,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -93,7 +93,7 @@ PetscErrorCode MatView_MPIMAIJ(Mat A,PetscViewer viewer)
   Mat            B;
 
   PetscFunctionBegin;
-  ierr = MatConvert(A,MATMPIAIJ,&B);
+  ierr = MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);
   ierr = MatView(B,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1972,10 +1972,10 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqMAIJ_SeqAIJ"
-PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *B)
+PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_SeqMAIJ       *b = (Mat_SeqMAIJ*)A->data;
-  Mat               a = b->AIJ;
+  Mat               a = b->AIJ,B;
   Mat_SeqAIJ        *aij = (Mat_SeqAIJ*)a->data;
   PetscErrorCode    ierr;
   PetscInt          m,n,i,ncols,*ilen,nmax = 0,*icols,j,k,ii,dof = b->dof;
@@ -1991,8 +1991,8 @@ PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *B)
       ilen[dof*i+j] = aij->ilen[i];
     }
   }
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,dof*m,dof*n,0,ilen,B);CHKERRQ(ierr);
-  ierr = MatSetOption(*B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,dof*m,dof*n,0,ilen,&B);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   ierr = PetscFree(ilen);CHKERRQ(ierr);
   ierr = PetscMalloc(nmax*sizeof(PetscInt),&icols);CHKERRQ(ierr);
   ii   = 0;
@@ -2002,24 +2002,30 @@ PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *B)
       for (k=0; k<ncols; k++) {
         icols[k] = dof*cols[k]+j;
       }
-      ierr = MatSetValues_SeqAIJ(*B,1,&ii,ncols,icols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues_SeqAIJ(B,1,&ii,ncols,icols,vals,INSERT_VALUES);CHKERRQ(ierr);
       ii++;
     }
     ierr = MatRestoreRow_SeqAIJ(a,i,&ncols,&cols,&vals);CHKERRQ(ierr);
   }
   ierr = PetscFree(icols);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* Fake support for "inplace" convert. */
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatDestroy(A);CHKERRQ(ierr);
+  }
+  *newmat = B;
   PetscFunctionReturn(0);
 }
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_MPIMAIJ_MPIAIJ"
-PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,Mat *B)
+PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_MPIMAIJ       *maij = (Mat_MPIMAIJ*)A->data;
-  Mat               MatAIJ  = ((Mat_SeqMAIJ*)maij->AIJ->data)->AIJ;
+  Mat               MatAIJ  = ((Mat_SeqMAIJ*)maij->AIJ->data)->AIJ,B;
   Mat               MatOAIJ = ((Mat_SeqMAIJ*)maij->OAIJ->data)->AIJ;
   Mat_SeqAIJ        *AIJ = (Mat_SeqAIJ*) MatAIJ->data;
   Mat_SeqAIJ        *OAIJ =(Mat_SeqAIJ*) MatOAIJ->data;
@@ -2039,8 +2045,8 @@ PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,Mat *B)
       onz[dof*i+j] = OAIJ->ilen[i];
     }
   }
-  ierr = MatCreateMPIAIJ(A->comm,A->m,A->n,A->M,A->N,0,dnz,0,onz,B);CHKERRQ(ierr);
-  ierr = MatSetOption(*B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(A->comm,A->m,A->n,A->M,A->N,0,dnz,0,onz,&B);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
 
   ierr   = PetscMalloc2(nmax,PetscInt,&icols,onmax,PetscInt,&oicols);CHKERRQ(ierr);
@@ -2059,8 +2065,8 @@ PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,Mat *B)
       for (k=0; k<oncols; k++) {
         oicols[k] = dof*garray[ocols[k]]+j;
       }
-      ierr = MatSetValues_MPIAIJ(*B,1,&ii,ncols,icols,vals,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValues_MPIAIJ(*B,1,&ii,oncols,oicols,ovals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues_MPIAIJ(B,1,&ii,ncols,icols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues_MPIAIJ(B,1,&ii,oncols,oicols,ovals,INSERT_VALUES);CHKERRQ(ierr);
       ii++;
     }
     ierr = MatRestoreRow_SeqAIJ(MatAIJ,i,&ncols,&cols,&vals);CHKERRQ(ierr);
@@ -2068,8 +2074,14 @@ PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,Mat *B)
   }
   ierr = PetscFree2(icols,oicols);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* Fake support for "inplace" convert. */
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatDestroy(A);CHKERRQ(ierr);
+  }
+  *newmat = B;
   PetscFunctionReturn(0);
 }
 

@@ -9,7 +9,7 @@
 
   Does not do preallocation so in general will be slow
  */
-PetscErrorCode MatConvert_Basic(Mat mat,const MatType newtype,Mat *newmat)
+PetscErrorCode MatConvert_Basic(Mat mat,const MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat                M;
   const PetscScalar  *vwork;
@@ -36,7 +36,7 @@ PetscErrorCode MatConvert_Basic(Mat mat,const MatType newtype,Mat *newmat)
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Fake support for "inplace" convert. */
-  if (*newmat == mat) {
+  if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatDestroy(mat);CHKERRQ(ierr);
   }
   *newmat = M;

@@ -84,6 +84,18 @@ extern PetscEvent  MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
 extern PetscEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
 extern PetscEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
 
+/*E
+    MatReuse - Indicates if matrices obtained from a previous call to MatGetSubMatrices()
+     or MatGetSubMatrix() are to be reused to store the new matrix values.
+
+    Level: beginner
+
+   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+
+.seealso: MatGetSubMatrices(), MatGetSubMatrix(), MatDestroyMatrices()
+E*/
+typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
+
 EXTERN PetscErrorCode MatInitializePackage(char *);
 
 EXTERN PetscErrorCode MatCreate(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,Mat*);
@@ -297,7 +309,7 @@ EXTERN PetscErrorCode MatMultTransposeConstrained(Mat,Vec,Vec);
 E*/
 typedef enum {MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES} MatDuplicateOption;
 
-EXTERN PetscErrorCode MatConvertRegister(const char[],const char[],const char[],PetscErrorCode (*)(Mat,MatType,Mat*));
+EXTERN PetscErrorCode MatConvertRegister(const char[],const char[],const char[],PetscErrorCode (*)(Mat,MatType,MatReuse,Mat*));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatConvertRegisterDynamic(a,b,c,d) MatConvertRegister(a,b,c,0)
 #else
@@ -307,7 +319,7 @@ EXTERN PetscErrorCode        MatConvertRegisterAll(const char[]);
 EXTERN PetscErrorCode        MatConvertRegisterDestroy(void);
 extern PetscTruth MatConvertRegisterAllCalled;
 extern PetscFList MatConvertList;
-EXTERN PetscErrorCode        MatConvert(Mat,const MatType,Mat*);
+EXTERN PetscErrorCode        MatConvert(Mat,const MatType,MatReuse,Mat*);
 EXTERN PetscErrorCode        MatDuplicate(Mat,MatDuplicateOption,Mat*);
 
 /*E
@@ -397,17 +409,6 @@ EXTERN PetscErrorCode MatGetSize(Mat,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode MatGetLocalSize(Mat,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode MatGetOwnershipRange(Mat,PetscInt*,PetscInt*);
 
-/*E
-    MatReuse - Indicates if matrices obtained from a previous call to MatGetSubMatrices()
-     or MatGetSubMatrix() are to be reused to store the new matrix values.
-
-    Level: beginner
-
-   Any additions/changes here MUST also be made in include/finclude/petscmat.h
-
-.seealso: MatGetSubMatrices(), MatGetSubMatrix(), MatDestroyMatrices()
-E*/
-typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
 EXTERN PetscErrorCode MatGetSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN PetscErrorCode MatDestroyMatrices(PetscInt,Mat *[]);
 EXTERN PetscErrorCode MatGetSubMatrix(Mat,IS,IS,PetscInt,MatReuse,Mat *);

@@ -513,7 +513,7 @@ PetscErrorCode MatCreateMPIAdj(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt *i,P
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvertTo_MPIAdj"
-PetscErrorCode MatConvertTo_MPIAdj(Mat A,MatType type,Mat *newmat)
+PetscErrorCode MatConvertTo_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   Mat               B;
   PetscErrorCode    ierr;
@@ -564,7 +564,7 @@ PetscErrorCode MatConvertTo_MPIAdj(Mat A,MatType type,Mat *newmat)
   ierr = MatMPIAdjSetPreallocation(B,ia,ja,a);CHKERRQ(ierr);
 
   /* Fake support for "inplace" convert. */
-  if (*newmat == A) {
+  if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
   *newmat = B;

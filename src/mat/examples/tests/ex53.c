@@ -36,9 +36,9 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
   ierr = MatLoad(fd,MATBAIJ,&A);CHKERRQ(ierr);
   if (size == 1){
-    ierr = MatConvert(A,MATSEQAIJ,&B);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   } else {
-    ierr = MatConvert(A,MATMPIAIJ,&B);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   }
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
  
@@ -147,7 +147,7 @@ int main(int argc,char **args)
   }
   
   /* Test MatConvert() */
-  ierr = MatConvert(A,MATSAME,&C);CHKERRQ(ierr);
+  ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
   
   /* See if MatMult Says both are same */ 
   for (i=0; i<IMAX; i++) {

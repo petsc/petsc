@@ -83,10 +83,10 @@ EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat,IS,MatFactor
 
 EXTERN PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatConvert_Spooles_Base(Mat,const MatType,Mat*);
-EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSpooles(Mat,const MatType,Mat*);
-EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat,const MatType,Mat*);
-EXTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJSpooles(Mat,const MatType,Mat*);
-EXTERN PetscErrorCode MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat,const MatType,Mat*);
+EXTERN PetscErrorCode MatConvert_Spooles_Base(Mat,const MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSpooles(Mat,const MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat,const MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJSpooles(Mat,const MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 #endif

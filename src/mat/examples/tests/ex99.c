@@ -99,9 +99,9 @@ PetscInt main(PetscInt argc,char **args)
 
     /* Convert aij matrix to MatSeqDense for LAPACK */
     ierr = PetscTypeCompare((PetscObject)A,MATSEQDENSE,&flg); CHKERRQ(ierr);
-    if (!flg) {ierr = MatConvert(A,MATSEQDENSE,&A);CHKERRQ(ierr);}
+    if (!flg) {ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);}
     ierr = PetscTypeCompare((PetscObject)B,MATSEQDENSE,&flg); CHKERRQ(ierr);
-    if (!flg) {ierr = MatConvert(B,MATSEQDENSE,&B);CHKERRQ(ierr);}
+    if (!flg) {ierr = MatConvert(B,MATSEQDENSE,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);}
  
     /* Solve eigenvalue problem: A*x = lambda*B*x */
     /*============================================*/

@@ -474,7 +474,7 @@ PetscErrorCode MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
     ierr = MatView_SeqSBAIJ_Draw(A,viewer);CHKERRQ(ierr);
   } else {
     Mat B;
-    ierr = MatConvert(A,MATSEQAIJ,&B);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
     ierr = MatView(B,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
@@ -1523,8 +1523,8 @@ PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt n
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat,const MatType,Mat*); 
-EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat,const MatType,Mat*); 
+EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat,const MatType,MatReuse,Mat*); 
+EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat,const MatType,MatReuse,Mat*); 
 EXTERN_C_END
 
 /*MC

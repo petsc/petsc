@@ -55,7 +55,7 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
     /* convert adjacency matrix to MPIAdj if needed*/
     ierr = PetscTypeCompare((PetscObject) mat, MATMPIADJ, &flg);CHKERRQ(ierr);
     if (!flg) {
-        ierr = MatConvert(mat, MATMPIADJ, &matMPI);CHKERRQ(ierr);
+        ierr = MatConvert(mat, MATMPIADJ, MAT_INITIAL_MATRIX, &matMPI);CHKERRQ(ierr);
     } else
         matMPI = mat;
 

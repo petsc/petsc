@@ -85,7 +85,7 @@ int main(int argc,char **args)
   /* ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* create a SeqSBAIJ matrix sA (= A) */
-  ierr = MatConvert(A,MATMPISBAIJ,&sA);CHKERRQ(ierr); 
+  ierr = MatConvert(A,MATMPISBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr); 
   /* ierr = MatView(sA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Test sA==A through MatMult() */

@@ -24,7 +24,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatFactorIn
   if (info->levels != 0) {
     SETERRQ(PETSC_ERR_SUP,"Only ILU(0) is supported");
   }
-  ierr = MatConvert(A,MATSAME,B);CHKERRQ(ierr);
+  ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
 
   /* Must set to zero for repeated calls with different nonzero structure */
   (*B)->factor = 0;

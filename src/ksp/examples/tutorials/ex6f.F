@@ -178,7 +178,7 @@
         if (pflag .ne. 0) then
           if (rank .eq. 0) write(6,100)
         endif
-        call MatConvert(A,MATSAME,A2,ierr)
+        call MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,A2,ierr)
 ! All other times: Set previous solution as initial guess for next solve.
       else
         call KSPSetInitialGuessNonzero(ksp,PETSC_TRUE,ierr)

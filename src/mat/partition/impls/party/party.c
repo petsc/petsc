@@ -74,7 +74,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
        and set it to matMPI */
 
     if (!flg) {
-        ierr = MatConvert(matSeq, MATMPIADJ, &matMPI);CHKERRQ(ierr);
+        ierr = MatConvert(matSeq, MATMPIADJ, MAT_INITIAL_MATRIX, &matMPI);CHKERRQ(ierr);
     } else {
         matMPI = matSeq;
     }

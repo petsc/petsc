@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   /* Cholesky factorization is not yet in place for this matrix format */
   factinfo.fill = 1.0;
   ierr = MatMult(mat,x,b);CHKERRQ(ierr);
-  ierr = MatConvert(mat,MATSAME,&fact);CHKERRQ(ierr);
+  ierr = MatConvert(mat,MATSAME,MAT_INITIAL_MATRIX,&fact);CHKERRQ(ierr);
   ierr = MatCholeskyFactor(fact,perm,&factinfo);CHKERRQ(ierr);
   ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
   ierr = MatDestroy(fact);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatMult(mat,x,b);CHKERRQ(ierr);
-  ierr = MatConvert(mat,MATSAME,&fact);CHKERRQ(ierr);
+  ierr = MatConvert(mat,MATSAME,MAT_INITIAL_MATRIX,&fact);CHKERRQ(ierr);
   luinfo.fill           = 5.0;
   luinfo.dtcol          = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
   luinfo.shiftnz        = 0.0;
