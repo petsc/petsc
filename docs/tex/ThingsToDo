@@ -10,6 +10,10 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+ - Add variant ot MatSetOption(MAT_NO_NEW_NONZERO_LOCATIONS) to print error
+   instead of ignoring calls to insert values for which no storage has
+   been allocated.
+
  - Add support to DA so that Global to Local and Local to Global uninterlaces
    multicomponent vectors.
 
