@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.17 2000/08/01 20:57:32 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.18 2000/09/22 20:46:14 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 
@@ -42,7 +42,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
+  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context

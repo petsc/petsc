@@ -1,4 +1,4 @@
-/*$Id: cheby.c,v 1.87 2000/05/05 22:17:40 balay Exp bsmith $*/
+/*$Id: cheby.c,v 1.88 2000/09/14 14:41:10 bsmith Exp bsmith $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
@@ -13,7 +13,7 @@ int KSPSetUp_Chebychev(KSP ksp)
   int ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(2,0,"no symmetric preconditioning for KSPCHEBYCHEV");
+  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(2,"no symmetric preconditioning for KSPCHEBYCHEV");
   ierr = KSPDefaultGetWork(ksp,3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -187,7 +187,7 @@ int KSPView_Chebychev(KSP ksp,Viewer viewer)
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  Chebychev: eigenvalue estimates:  min = %g, max = %g\n",cheb->emin,cheb->emax);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for KSP Chebychev",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for KSP Chebychev",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

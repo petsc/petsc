@@ -1,4 +1,4 @@
-/*$Id: tagm.c,v 1.28 2000/07/13 16:40:02 balay Exp bsmith $*/
+/*$Id: tagm.c,v 1.29 2000/09/22 20:42:24 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites
 */
@@ -82,13 +82,13 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
   PetscValidIntPointer(tag);
 
   ierr = MPI_Attr_get(obj->comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad MPI communicator in PETSc object, likely memory corruption");
+  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator in PETSc object, likely memory corruption");
 
   if (tagvalp[0] < 1) {
     PLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
     if (!flg) {
-      SETERRQ(1,1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
+      SETERRQ(1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
     }
     tagvalp[0] = *maxval - 128; /* hope that any still active tags were issued right at the beginning of the run */
   }
@@ -130,14 +130,14 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
   PetscValidIntPointer(tag);
 
   ierr = MPI_Attr_get(comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad MPI communicator supplied; must be a PETSc communicator");
+  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
 
 
   if (tagvalp[0] < 1) {
     PLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
     if (!flg) {
-      SETERRQ(1,1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
+      SETERRQ(1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
     }
     tagvalp[0] = *maxval - 128; /* hope that any still active tags were issued right at the beginning of the run */
   }
@@ -187,7 +187,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
     ierr       = MPI_Comm_dup(comm_in,comm_out);CHKERRQ(ierr);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
     if (!flg) {
-      SETERRQ(1,1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
+      SETERRQ(1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
     }
     tagvalp    = (int*)PetscMalloc(2*sizeof(int));CHKPTRQ(tagvalp);
     tagvalp[0] = *maxval;
@@ -199,7 +199,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
     int tag;
     ierr = MPI_Allreduce(tagvalp,&tag,1,MPI_INT,MPI_BOR,comm_in);CHKERRQ(ierr);
     if (tag != tagvalp[0]) {
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Communicator was used on subset of processors.");
+      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Communicator was used on subset of processors.");
     }
 #endif
     *comm_out = comm_in;
@@ -209,7 +209,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
     PLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
     if (!flg) {
-      SETERRQ(1,1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
+      SETERRQ(1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
     }
     tagvalp[0] = *maxval - 128; /* hope that any still active tags were issued right at the beginning of the run */
   }
@@ -232,7 +232,7 @@ int PetscCommDestroy_Private(MPI_Comm *comm)
   PetscFunctionBegin;
   ierr = MPI_Attr_get(*comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
   if (!flg) {
-    SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Error freeing MPI_Comm, problem with corrupted memory");
+    SETERRQ(PETSC_ERR_ARG_CORRUPT,"Error freeing MPI_Comm, problem with corrupted memory");
   }
   tagvalp[1]--;
   if (!tagvalp[1]) {

@@ -1,4 +1,4 @@
-/*$Id: ex37.c,v 1.14 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex37.c,v 1.15 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n"; 
 
@@ -49,7 +49,7 @@ int main(int argc,char **args)
   if (flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrices are equal\n");CHKERRA(ierr);
   } else {
-    SETERRA(1,1,"Matrices are NOT equal");
+    SETERRA(1,"Matrices are NOT equal");
   }
 
   ierr = MatStoreValues(A);CHKERRA(ierr);
@@ -59,7 +59,7 @@ int main(int argc,char **args)
   if (flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrices are equal\n");CHKERRA(ierr);
   } else {
-    SETERRA(1,1,"Matrices are NOT equal");
+    SETERRA(1,"Matrices are NOT equal");
   }
 
   ierr = MatDestroy(C);CHKERRA(ierr);

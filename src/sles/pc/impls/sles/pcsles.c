@@ -1,4 +1,4 @@
-/*$Id: pcsles.c,v 1.34 2000/09/11 15:19:40 bsmith Exp bsmith $*/
+/*$Id: pcsles.c,v 1.35 2000/09/12 15:54:20 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of any SLES solver.
     This allows embedding a Krylov method inside a preconditioner.
@@ -87,7 +87,7 @@ static int PCView_SLES(PC pc,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"KSP and PC on SLES preconditioner follow\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = SLESView(jac->sles,viewer);CHKERRQ(ierr);
@@ -208,7 +208,7 @@ int PCSLESGetSLES(PC pc,SLES *sles)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp first");
+  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SLESSetUp first");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSLESGetSLES_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,sles);CHKERRQ(ierr);

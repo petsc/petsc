@@ -1,4 +1,4 @@
-/*$Id: ex72.c,v 1.10 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex72.c,v 1.11 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -26,7 +26,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size > 1) SETERRA(1,0,"Uniprocessor Example only\n");
+  if (size > 1) SETERRA(1,"Uniprocessor Example only\n");
 
   /* Read in matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-fin",filein,127,PETSC_NULL);CHKERRA(ierr);

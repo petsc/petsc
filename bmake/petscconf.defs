@@ -55,7 +55,7 @@ PETSC_HAVE_CRAY90_POINTER
 indicates the Cray vector machine pointer arithmetic. This is needed cause
 one cannot do error checking like 
   if ((unsigned long)h & (unsigned long)3) {                        \
-    SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Pointer to Object");   \
+    SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object");   \
   }                                                                 \
 
 PETSC_HAVE_STD_COMPLEX

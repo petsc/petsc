@@ -1,4 +1,4 @@
-/*$Id: drawv.c,v 1.52 2000/06/24 19:16:39 bsmith Exp bsmith $*/
+/*$Id: drawv.c,v 1.53 2000/09/22 20:41:50 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
@@ -12,7 +12,7 @@ int ViewerDestroy_Draw(Viewer v)
 
   PetscFunctionBegin;
   if (vdraw->singleton_made) {
-    SETERRQ(1,1,"Destroying viewer without first restoring singleton");
+    SETERRQ(1,"Destroying viewer without first restoring singleton");
   }
   for (i=0; i<VIEWER_DRAW_MAX; i++) {
     if (vdraw->drawaxis[i]) {ierr = DrawAxisDestroy(vdraw->drawaxis[i]);CHKERRQ(ierr);}
@@ -71,10 +71,10 @@ int ViewerDrawGetDraw(Viewer viewer,int windownumber,Draw *draw)
   PetscValidPointer(draw);
   ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be draw type viewer");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type viewer");
   }
   if (windownumber < 0 || windownumber >= VIEWER_DRAW_MAX) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Window number out of range");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Window number out of range");
   }
 
   vdraw = (Viewer_Draw*)viewer->data;
@@ -120,14 +120,14 @@ int ViewerDrawGetDrawLG(Viewer viewer,int windownumber,DrawLG *drawlg)
   PetscValidPointer(drawlg);
   ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be draw type viewer");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type viewer");
   }
   if (windownumber < 0 || windownumber >= VIEWER_DRAW_MAX) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Window number out of range");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Window number out of range");
   }
   vdraw = (Viewer_Draw*)viewer->data;
   if (!vdraw->draw[windownumber]) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"No window with that number");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No window with that number");
   }
 
   if (!vdraw->drawlg[windownumber]) {
@@ -171,14 +171,14 @@ int ViewerDrawGetDrawAxis(Viewer viewer,int windownumber,DrawAxis *drawaxis)
   PetscValidPointer(drawaxis);
   ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be draw type viewer");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type viewer");
   }
   if (windownumber < 0 || windownumber >= VIEWER_DRAW_MAX) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Window number out of range");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Window number out of range");
   }
   vdraw = (Viewer_Draw*)viewer->data;
   if (!vdraw->draw[windownumber]) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"No window with that number");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No window with that number");
   }
 
   if (!vdraw->drawaxis[windownumber]) {
@@ -275,7 +275,7 @@ int ViewerGetSingleton_Draw(Viewer viewer,Viewer *sviewer)
 
   PetscFunctionBegin;
   if (vdraw->singleton_made) {
-    SETERRQ(1,1,"Trying to get singleton without first restoring previous");
+    SETERRQ(1,"Trying to get singleton without first restoring previous");
   }
 
   /* only processor zero can use the viewer draw singleton */
@@ -303,7 +303,7 @@ int ViewerRestoreSingleton_Draw(Viewer viewer,Viewer *sviewer)
 
   PetscFunctionBegin;
   if (!vdraw->singleton_made) {
-    SETERRQ(1,1,"Trying to restore a singleton that was not gotten");
+    SETERRQ(1,"Trying to restore a singleton that was not gotten");
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank) {

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.12 2000/05/05 22:19:18 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.13 2000/09/22 20:46:48 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads an AODatabase and displays the key and segment names. Runtime options include:\n\
@@ -46,7 +46,7 @@ int main(int argc,char **argv)
      Load in the grid database
   */
   ierr = OptionsGetString(PETSC_NULL,"-f",filename,256,&flag);CHKERRA(ierr);
-  if (!flag) SETERRA(1,1,"Unable to open database, must run with: ex1 -f filename");
+  if (!flag) SETERRA(1,"Unable to open database, must run with: ex1 -f filename");
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,filename,BINARY_RDONLY,&binary);CHKERRA(ierr);
   ierr = AODataLoadBasic(binary,&aodata);CHKERRA(ierr);
   ierr = ViewerDestroy(binary);CHKERRQ(ierr);

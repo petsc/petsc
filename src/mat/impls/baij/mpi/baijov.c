@@ -1,4 +1,4 @@
-/*$Id: baijov.c,v 1.53 2000/09/18 14:20:35 bsmith Exp bsmith $*/
+/*$Id: baijov.c,v 1.54 2000/09/18 14:20:58 bsmith Exp bsmith $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -54,7 +54,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C,int imax,IS *is_in,IS *is_out
         isz++;
       }
 #else
-      if (ival>Nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"index greater than mat-dim");
+      if (ival>Nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
       if(!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
 #endif
     }
@@ -65,11 +65,11 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C,int imax,IS *is_in,IS *is_out
     j = 0;
     while (tpos) {  
       ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid1,&tt);CHKERRQ(ierr);
-      if (tt-- > isz) { SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"index greater than array-dim"); }
+      if (tt-- > isz) { SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than array-dim"); }
       nidx[tt] = gid1 - 1;
       j++;
     }
-    if (j != isz) { SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"table error: jj != isz"); }
+    if (j != isz) { SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"table error: jj != isz"); }
     ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,(is_out+i));CHKERRQ(ierr);
     ierr = PetscFree(nidx);CHKERRQ(ierr);
 #else
@@ -100,14 +100,14 @@ static int MatCompressIndicesSorted_MPIBAIJ(Mat C,int imax,IS *is_in,IS *is_out)
   PetscFunctionBegin;
   for (i=0; i<imax; i++) {
     ierr = ISSorted(is_in[i],&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Indices are not sorted");
+    if (!flg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Indices are not sorted");
   }
 #if defined (PETSC_USE_CTABLE)
   /* Now check max size */
   for (i=0,maxsz=0; i<imax; i++) {
     ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is_in[i],&n);CHKERRQ(ierr);
-    if (n%bs !=0) SETERRA(1,0,"Indices are not block ordered");
+    if (n%bs !=0) SETERRA(1,"Indices are not block ordered");
     n = n/bs; /* The reduced index size */
     if (n > maxsz) maxsz = n;
   }
@@ -119,15 +119,15 @@ static int MatCompressIndicesSorted_MPIBAIJ(Mat C,int imax,IS *is_in,IS *is_out)
   for (i=0; i<imax; i++) {
     ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is_in[i],&n);CHKERRQ(ierr);
-    if (n%bs !=0) SETERRA(1,0,"Indices are not block ordered");
+    if (n%bs !=0) SETERRA(1,"Indices are not block ordered");
 
     n = n/bs; /* The reduced index size */
     idx_local = idx;
     for (j=0; j<n ; j++) {
       val = idx_local[0];
-      if (val%bs != 0) SETERRA(1,0,"Indices are not block ordered");
+      if (val%bs != 0) SETERRA(1,"Indices are not block ordered");
       for (k=0; k<bs; k++) {
-        if (val+k != idx_local[k]) SETERRA(1,0,"Indices are not block ordered");
+        if (val+k != idx_local[k]) SETERRA(1,"Indices are not block ordered");
       }
       nidx[j] = val/bs;
       idx_local +=bs;
@@ -191,7 +191,7 @@ int MatIncreaseOverlap_MPIBAIJ(Mat C,int imax,IS *is,int ov)
   is_new = (IS *)PetscMalloc(imax*sizeof(IS));CHKPTRQ(is_new);
   /* Convert the indices into block format */
   ierr = MatCompressIndicesGeneral_MPIBAIJ(C,imax,is,is_new);CHKERRQ(ierr);
-  if (ov < 0){ SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative overlap specified\n");}
+  if (ov < 0){ SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified\n");}
   for (i=0; i<ov; ++i) {
     ierr = MatIncreaseOverlap_MPIBAIJ_Once(C,imax,is_new);CHKERRQ(ierr);
   }
@@ -277,7 +277,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C,int imax,IS *is)
     for (j=0; j<len; j++) {
       row  = idx_i[j];
       if (row < 0) {
-        SETERRQ(1,1,"Index set cannot have negative entries");
+        SETERRQ(1,"Index set cannot have negative entries");
       }
       proc = rtable[row];
       w4[proc]++;
@@ -795,13 +795,13 @@ int PetscGetProc(const int gid, const int numprocs, const int proc_gnode[], int 
   int fproc = (int) ((float)gid * (float)numprocs / (float)nGlobalNd + 0.5);
   
   PetscFunctionBegin;
-  /* if(fproc < 0) SETERRQ(1,1,"fproc < 0");*/
+  /* if(fproc < 0) SETERRQ(1,"fproc < 0");*/
   if (fproc > numprocs) fproc = numprocs;
   while (gid < proc_gnode[fproc] || gid >= proc_gnode[fproc+1]) {
     if (gid < proc_gnode[fproc]) fproc--;
     else                         fproc++;
   }
-  /* if(fproc<0 || fproc>=numprocs) { SETERRQ(1,1,"fproc < 0 || fproc >= numprocs"); }*/ 
+  /* if(fproc<0 || fproc>=numprocs) { SETERRQ(1,"fproc < 0 || fproc >= numprocs"); }*/ 
   *proc = fproc;
   PetscFunctionReturn(0);
 }
@@ -854,7 +854,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,M
   /* Check if the col indices are sorted */
   for (i=0; i<ismax; i++) {
     ierr = ISSorted(iscol[i],(PetscTruth*)&j);CHKERRQ(ierr);
-    if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"IS is not sorted");
+    if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
   }
 
   len    = (2*ismax+1)*(sizeof(int*)+ sizeof(int));
@@ -1320,7 +1320,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,M
 #if defined (PETSC_USE_CTABLE)
 	  ierr = PetscTableFind(lrow1_grow1,sbuf1_i[ct1]+1,&row);CHKERRQ(ierr); 
           row--; 
-          if(row < 0) { SETERRQ(1,1,"row not found in table"); }
+          if(row < 0) { SETERRQ(1,"row not found in table"); }
 #else
           row  = rmap_i[sbuf1_i[ct1]]; /* the val in the new matrix to be */
 #endif
@@ -1355,11 +1355,11 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,M
     for (i=0; i<ismax; i++) {
       mat = (Mat_SeqBAIJ *)(submats[i]->data);
       if ((mat->mbs != nrow[i]) || (mat->nbs != ncol[i] || mat->bs != bs)) {
-        SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong size");
+        SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       }
       ierr = PetscMemcmp(mat->ilen,lens[i],mat->mbs *sizeof(int),&flag);CHKERRQ(ierr);
       if (flag == PETSC_FALSE) {
-        SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Cannot reuse matrix. wrong no of nonzeros");
+        SETERRQ(PETSC_ERR_ARG_INCOMP,"Cannot reuse matrix. wrong no of nonzeros");
       }
       /* Initial matrix as if empty */
       ierr = PetscMemzero(mat->ilen,mat->mbs*sizeof(int));CHKERRQ(ierr);
@@ -1411,7 +1411,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,M
 #if defined (PETSC_USE_CTABLE)
 	  ierr = PetscTableFind(lrow1_grow1,row+rstart+1,&row);CHKERRQ(ierr); 
           row--; 
-          if (row < 0) { SETERRQ(1,1,"row not found in table"); }
+          if (row < 0) { SETERRQ(1,"row not found in table"); }
 #else
           row      = rmap_i[row + rstart];
 #endif
@@ -1506,7 +1506,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,M
 #if defined (PETSC_USE_CTABLE)
 	  ierr = PetscTableFind(lrow1_grow1,row+1,&row);CHKERRQ(ierr); 
           row--; 
-          if(row < 0) { SETERRQ(1,1,"row not found in table"); }
+          if(row < 0) { SETERRQ(1,"row not found in table"); }
 #else
           row   = rmap_i[row];
 #endif

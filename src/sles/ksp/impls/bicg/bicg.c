@@ -1,4 +1,4 @@
-/*$Id: bicg.c,v 1.21 2000/06/23 15:23:12 buschelm Exp bsmith $*/
+/*$Id: bicg.c,v 1.22 2000/08/24 22:42:53 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the BiCG (BiConjugate Gradient) method
@@ -17,9 +17,9 @@ int KSPSetUp_BiCG(KSP ksp)
   PetscFunctionBegin;
   /* check user parameters and functions */
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,0,"no right preconditioning for KSPBiCG");
+    SETERRQ(2,"no right preconditioning for KSPBiCG");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(2,0,"no symmetric preconditioning for KSPBiCG");
+    SETERRQ(2,"no symmetric preconditioning for KSPBiCG");
   }
 
   /* get work vectors from user code */

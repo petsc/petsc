@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.19 2000/08/01 20:02:41 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.20 2000/09/22 20:44:34 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and reorders it.\n\
@@ -49,7 +49,7 @@ int main(int argc,char **args)
      (matrix and right-hand-side vector).
   */
   ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Must indicate binary file with the -f0 option");
+  if (!flg) SETERRA(1,"Must indicate binary file with the -f0 option");
   ierr = OptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRA(ierr);
   if (flg) PreLoad = PETSC_TRUE;
 

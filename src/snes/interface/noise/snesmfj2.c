@@ -1,4 +1,4 @@
-/*$Id: snesmfj2.c,v 1.26 2000/08/01 20:57:19 bsmith Exp balay $*/
+/*$Id: snesmfj2.c,v 1.27 2000/09/07 15:17:59 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 
@@ -64,7 +64,7 @@ int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
        ierr = ViewerASCIIPrintf(viewer,"    freq_err=%d (frequency for computing err)\n",ctx->compute_err_freq);CHKERRQ(ierr);
      }
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported by SNES matrix free Jorge",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported by SNES matrix free Jorge",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -112,7 +112,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
     eval_fct = SNESComputeGradient;
     ierr = SNESGetGradient(snes,&F,PETSC_NULL);CHKERRQ(ierr);
   }
-  else SETERRQ(1,0,"Invalid method class");
+  else SETERRQ(1,"Invalid method class");
 
 
   /* Determine a "good" step size, h */

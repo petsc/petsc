@@ -1,4 +1,4 @@
-/*$Id: ex80.c,v 1.2 2000/08/01 20:02:39 bsmith Exp bsmith $*/
+/*$Id: ex80.c,v 1.3 2000/09/22 20:44:16 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Partition tiny grid\n\n";
@@ -29,7 +29,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size != 4) SETERRQ(1,1,"Must run with 4 processors");
+  if (size != 4) SETERRQ(1,"Must run with 4 processors");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   ia = (int*)PetscMalloc(5*sizeof(int));CHKPTRQ(ia);

@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.19 2000/08/24 22:43:04 bsmith Exp bsmith $*/
+/*$Id: snesmfjdef.c,v 1.20 2000/09/02 02:49:35 bsmith Exp bsmith $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -96,7 +96,7 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
   } else {
     *h = ctx->currenth;
   }
-  if (*h != *h) SETERRQ(1,1,"Differencing parameter is not a number");
+  if (*h != *h) SETERRQ(1,"Differencing parameter is not a number");
   ctx->count++;
   PetscFunctionReturn(0);
 } 
@@ -129,7 +129,7 @@ static int MatSNESMFView_Default(MatSNESMFCtx ctx,Viewer viewer)
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr); 
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for this SNES matrix free matrix",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for this SNES matrix free matrix",((PetscObject)viewer)->type_name);
   }    
   PetscFunctionReturn(0);
 }
@@ -193,7 +193,7 @@ int MatSNESMFDefaultSetUmin_Private(Mat mat,PetscReal umin)
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   if (!ctx) {
-    SETERRQ(1,1,"MatSNESMFDefaultSetUmin() attached to non-shell matrix");
+    SETERRQ(1,"MatSNESMFDefaultSetUmin() attached to non-shell matrix");
   }
   hctx = (MatSNESMFDefault*)ctx->hctx;
   hctx->umin = umin;

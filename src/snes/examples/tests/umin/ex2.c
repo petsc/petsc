@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.59 2000/05/05 22:18:32 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.60 2000/08/17 04:52:50 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems on a single processor.  These examples are based on\n\
@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-p",&user.problem,PETSC_NULL);CHKERRA(ierr);
   user.param = 5.0;
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
-  if (user.problem != 1 && user.problem != 2) SETERRA(1,0,"Invalid problem number");
+  if (user.problem != 1 && user.problem != 2) SETERRA(1,"Invalid problem number");
   ierr = OptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
   user.ndim = mx * my; user.mx = mx; user.my = my;
@@ -166,7 +166,7 @@ int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
     ierr = EvalFunctionGradient1(snes,x,f,NULL,FunctionEval,user);CHKERRQ(ierr);
   } else if (user->problem == 2) {
     ierr = EvalFunctionGradient2(snes,x,f,NULL,FunctionEval,user);CHKERRQ(ierr);
-  } else SETERRQ(1,0,"FormMinimizationFunction: Invalid problem number.");
+  } else SETERRQ(1,"FormMinimizationFunction: Invalid problem number.");
   return 0;
 }
 /* -------------------------------------------------------------------- */
@@ -184,7 +184,7 @@ int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
     ierr = EvalFunctionGradient1(snes,x,NULL,g,GradientEval,user);CHKERRQ(ierr);
   } else if (user->problem == 2) {
     ierr = EvalFunctionGradient2(snes,x,NULL,g,GradientEval,user);CHKERRQ(ierr);
-  } else SETERRQ(1,0,"FormGradient: Invalid problem number.");
+  } else SETERRQ(1,"FormGradient: Invalid problem number.");
   return 0;
 }
 /* -------------------------------------------------------------------- */
@@ -847,7 +847,7 @@ int BoundaryValues(AppCtx *user)
       case 3:
         yt = b; xt = r; limit = ny + 2; break;
       default:
-        SETERRQ(1,0,"BoundaryValues: Only cases 0,1,2,3 are valid");
+        SETERRQ(1,"BoundaryValues: Only cases 0,1,2,3 are valid");
     }
     /* Use Newton's method to solve xt = u + u*(v**2) - (u**3)/3,
        yt = -v - (u**2)*v + (v**3)/3. */
@@ -882,7 +882,7 @@ int BoundaryValues(AppCtx *user)
         case 3:
           right[i] = u[0]*u[0] - u[1]*u[1];  yt += hy; break;
         default:
-          SETERRQ(1,0,"Only cases 0,1,2,3 are valid");
+          SETERRQ(1,"Only cases 0,1,2,3 are valid");
       }
     }
   }

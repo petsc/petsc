@@ -1,4 +1,4 @@
-/* $Id: ximpl.h,v 1.13 2000/01/11 20:59:14 bsmith Exp balay $ */
+/* $Id: ximpl.h,v 1.14 2000/05/05 22:13:35 balay Exp bsmith $ */
 
 /*
       Defines the internal data structures for the X-windows 
@@ -49,7 +49,7 @@ typedef struct {
 #define XiDrawable(w) ((w)->drw ? (w)->drw : (w)->win)
 
 #define XiSetColor(Win,icolor)\
-  {if (icolor >= 256 || icolor < 0) SETERRQ(1,1,"Color value out of range");\
+  {if (icolor >= 256 || icolor < 0) SETERRQ(1,"Color value out of range");\
    if ((Win)->gc.cur_pix != (Win)->cmapping[icolor]) { \
      XSetForeground((Win)->disp,(Win)->gc.set,(Win)->cmapping[icolor]); \
      (Win)->gc.cur_pix   = (Win)->cmapping[icolor];\

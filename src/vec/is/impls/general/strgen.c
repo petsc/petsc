@@ -1,4 +1,4 @@
-/*$Id: strgen.c,v 1.16 2000/07/10 03:39:07 bsmith Exp bsmith $*/
+/*$Id: strgen.c,v 1.17 2000/09/25 03:36:09 bsmith Exp bsmith $*/
 
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
@@ -49,7 +49,7 @@ int ISStrideToGeneral(IS inis)
 
   PetscFunctionBegin;
   ierr = ISStride(inis,&stride);CHKERRQ(ierr);
-  if (!stride) SETERRQ(1,1,"Can only convert stride index sets");
+  if (!stride) SETERRQ(1,"Can only convert stride index sets");
 
   sub        = PetscNew(IS_General);CHKPTRQ(sub);
   PLogObjectMemory(inis,sizeof(IS_General));

@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.20 2000/07/20 20:53:20 balay Exp bsmith $*/
+/*$Id: damg.c,v 1.21 2000/08/01 20:57:14 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -83,7 +83,7 @@ int DAMGDestroy(DAMG *damg)
   int     ierr,i,nlevels = damg[0]->nlevels;
 
   PetscFunctionBegin;
-  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
+  if (!damg) SETERRQ(1,"Passing null as DAMG");
 
   for (i=1; i<nlevels; i++) {
     if (damg[i]->R) {ierr = MatDestroy(damg[i]->R);CHKERRA(ierr);}
@@ -139,7 +139,7 @@ int DAMGSetGrid(DAMG *damg,int dim,DAPeriodicType pt,DAStencilType st,int M,int 
   PetscTruth     flg,split = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
+  if (!damg) SETERRQ(1,"Passing null as DAMG");
 
   ierr = OptionsGetIntArray(PETSC_NULL,"-damg_mnp",array,&narray,&flg);CHKERRQ(ierr);
   if (!flg) {
@@ -162,7 +162,7 @@ int DAMGSetGrid(DAMG *damg,int dim,DAPeriodicType pt,DAStencilType st,int M,int 
       }
       ierr = DACreate2d(damg[i]->comm,pt,st,M,N,m,n,dof,sw,0,0,&damg[i]->da);CHKERRQ(ierr);
     } else {
-      SETERRQ1(1,1,"Cannot handle dimension %d",dim);
+      SETERRQ1(1,"Cannot handle dimension %d",dim);
     }
 
     M = damg[i]->ratiox*(M-1) + 1;
@@ -250,7 +250,7 @@ int DAMGSetUpLevel(DAMG *damg,SLES sles,int nlevels)
   MPI_Comm   *comms;
 
   PetscFunctionBegin;
-  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
+  if (!damg) SETERRQ(1,"Passing null as DAMG");
 
   ierr  = SLESGetPC(sles,&pc);CHKERRA(ierr);
   ierr  = PCSetType(pc,PCMG);CHKERRA(ierr);
@@ -307,7 +307,7 @@ int DAMGSetSLES(DAMG *damg,int (*rhs)(DAMG,Vec),int (*func)(DAMG,Mat))
   int        ierr,i,nlevels = damg[0]->nlevels;
 
   PetscFunctionBegin;
-  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
+  if (!damg) SETERRQ(1,"Passing null as DAMG");
 
   /* create solvers for each level */
   for (i=0; i<nlevels; i++) {
@@ -352,12 +352,12 @@ int DAMGView(DAMG *damg,Viewer viewer)
   PetscTruth     isascii;
 
   PetscFunctionBegin;
-  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
+  if (!damg) SETERRQ(1,"Passing null as DAMG");
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_compare(comm,damg[0]->comm,&flag);CHKERRQ(ierr);
   if (flag != MPI_CONGRUENT && flag != MPI_IDENT) {
-    SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,0,"Different communicators in the DAMG and the Viewer");
+    SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the DAMG and the Viewer");
   }
 
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
@@ -369,7 +369,7 @@ int DAMGView(DAMG *damg,Viewer viewer)
       ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported",*((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported",*((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

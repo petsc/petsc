@@ -1,4 +1,4 @@
-/*$Id: itcl.c,v 1.117 2000/04/12 04:24:52 bsmith Exp balay $*/
+/*$Id: itcl.c,v 1.118 2000/05/05 22:17:27 balay Exp bsmith $*/
 /*
     Code for setting KSP options from the options database.
 */
@@ -34,7 +34,7 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP))
 {
   PetscFunctionBegin;
   if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many options checkers, only 5 allowed");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many options checkers, only 5 allowed");
   }
 
   othersetfromoptions[numberofsetfromoptions++] = kspcheck;

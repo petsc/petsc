@@ -1,4 +1,4 @@
-/*$Id: dgefa7.c,v 1.5 2000/04/09 04:36:19 bsmith Exp bsmith $*/
+/*$Id: dgefa7.c,v 1.6 2000/04/12 04:23:32 bsmith Exp bsmith $*/
 /*
       Inverts 7 by 7 matrix using partial pivoting.
 
@@ -46,7 +46,7 @@ int Kernel_A_gets_inverse_A_7(MatScalar *a)
 	ipvt[k] = l;
 
 	if (a[l + k3] == 0.) {
-	  SETERRQ(k,0,"Zero pivot");
+	  SETERRQ(k,"Zero pivot");
 	}
 
 /*           interchange if necessary */
@@ -86,7 +86,7 @@ int Kernel_A_gets_inverse_A_7(MatScalar *a)
     }
     ipvt[7] = 7;
     if (a[56] == 0.) {
-	SETERRQ(3,0,"Zero pivot,final row");
+	SETERRQ(3,"Zero pivot,final row");
     }
 
     /*

@@ -1,4 +1,4 @@
-/*$Id: dgefa.c,v 1.18 2000/04/09 04:36:19 bsmith Exp bsmith $*/
+/*$Id: dgefa.c,v 1.19 2000/04/12 04:23:32 bsmith Exp bsmith $*/
 /*
        This routine was converted by f2c from Linpack source
              linpack. this version dated 08/14/78 
@@ -50,7 +50,7 @@ int LINPACKdgefa(MatScalar *a,int n,int *ipvt)
 	ipvt[k] = l;
 
 	if (a[l + kn] == 0.) {
-	  SETERRQ(k,0,"Zero pivot");
+	  SETERRQ(k,"Zero pivot");
 	}
 
 /*           interchange if necessary */
@@ -90,7 +90,7 @@ int LINPACKdgefa(MatScalar *a,int n,int *ipvt)
     }
     ipvt[n] = n;
     if (a[n + n * n] == 0.) {
-	SETERRQ(n,0,"Zero pivot,final row");
+	SETERRQ(n,"Zero pivot,final row");
     }
     PetscFunctionReturn(0);
 } 

@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.10 2000/05/05 22:17:55 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.11 2000/09/22 20:45:42 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -42,7 +42,7 @@ int main(int argc,char **args)
      (matrix and right-hand-side vector).
   */
   ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Must indicate binary file with the -f0 option");
+  if (!flg) SETERRA(1,"Must indicate binary file with the -f0 option");
 
 
   /* 

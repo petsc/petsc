@@ -1,4 +1,4 @@
-/*$Id: mpiu.c,v 1.96 2000/04/12 04:21:38 bsmith Exp bsmith $*/
+/*$Id: mpiu.c,v 1.97 2000/09/22 20:42:32 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
@@ -143,7 +143,7 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
 
   ierr = MPI_Attr_get(comm,Petsc_Seq_keyval,(void **)&addr_local_comm,&flag);CHKERRQ(ierr);
   if (!flag) {
-    SETERRQ(1,1,"Wrong MPI communicator; must pass in one used with PetscSequentialPhaseBegin()");
+    SETERRQ(1,"Wrong MPI communicator; must pass in one used with PetscSequentialPhaseBegin()");
   }
   local_comm = *addr_local_comm;
 

@@ -1,4 +1,4 @@
-/*$Id: tsreg.c,v 1.63 2000/09/02 02:49:53 bsmith Exp bsmith $*/
+/*$Id: tsreg.c,v 1.64 2000/09/22 20:46:27 bsmith Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 
@@ -58,7 +58,7 @@ int TSSetType(TS ts,TSType type)
   /* Get the function pointers for the method requested */
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr =  FListFind(ts->comm,TSList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
-  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type: %s",type);}
+  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type: %s",type);}
 
   if (ts->sles) {ierr = SLESDestroy(ts->sles);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}

@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.43 2000/05/10 16:40:12 bsmith Exp balay $*/
+/*$Id: shvec.c,v 1.44 2000/09/06 22:58:01 balay Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -237,7 +237,7 @@ int VecCreate_Shared(MPI_Comm comm,int n,int N,Vec *vv)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-    SETERRQ(1,1,"No supported for shared memory vector objects on this machine");
+    SETERRQ(1,"No supported for shared memory vector objects on this machine");
   }
   ierr = VecCreateSeq(comm,PetscMax(n,N),vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.142 2000/08/14 19:59:11 bsmith Exp balay $*/
+/*$Id: mpidense.c,v 1.143 2000/08/16 15:15:16 balay Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -18,7 +18,7 @@ int MatGetDiagonalBlock_MPIDense(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *B)
   MPI_Comm     comm;
 
   PetscFunctionBegin;
-  if (mdn->M != mdn->N) SETERRQ(PETSC_ERR_SUP,0,"Only square matrices supported.");
+  if (mdn->M != mdn->N) SETERRQ(PETSC_ERR_SUP,"Only square matrices supported.");
 
   /* The reuse aspect is not implemented efficiently */
   if (reuse) { ierr = MatDestroy(*B);CHKERRQ(ierr);}
@@ -49,7 +49,7 @@ int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Inse
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
     if (idxm[i] < 0) continue;
-    if (idxm[i] >= A->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
+    if (idxm[i] >= A->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       if (roworiented) {
@@ -57,7 +57,7 @@ int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Inse
       } else {
         for (j=0; j<n; j++) {
           if (idxn[j] < 0) continue;
-          if (idxn[j] >= A->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
+          if (idxn[j] >= A->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
           ierr = MatSetValues(A->A,1,&row,1,&idxn[j],v+i+j*m,addv);CHKERRQ(ierr);
         }
       }
@@ -83,19 +83,19 @@ int MatGetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
-    if (idxm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
-    if (idxm[i] >= mdn->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
+    if (idxm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
+    if (idxm[i] >= mdn->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for (j=0; j<n; j++) {
-        if (idxn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+        if (idxn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column");
         if (idxn[j] >= mdn->N) {
-          SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
+          SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
         }
         ierr = MatGetValues(mdn->A,1,&row,1,&idxn[j],v+i*n+j);CHKERRQ(ierr);
       }
     } else {
-      SETERRQ(PETSC_ERR_SUP,0,"Only local values currently supported");
+      SETERRQ(PETSC_ERR_SUP,"Only local values currently supported");
     }
   }
   PetscFunctionReturn(0);
@@ -139,7 +139,7 @@ static int MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
   
   /* Check submatrix call */
   if (scall == MAT_REUSE_MATRIX) {
-    /* SETERRQ(PETSC_ERR_ARG_SIZ,0,"Reused submatrix wrong size"); */
+    /* SETERRQ(PETSC_ERR_ARG_SIZ,"Reused submatrix wrong size"); */
     /* Really need to test rows and column sizes! */
     newmat = *B;
   } else {
@@ -190,7 +190,7 @@ int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   ierr = MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { 
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Cannot mix adds/inserts on different procs");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot mix adds/inserts on different procs");
   }
   mat->insertmode = addv; /* in case this processor had no cache */
 
@@ -295,7 +295,7 @@ int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Index out of range");
+    if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Index out of range");
   }
   nsends = 0;  for (i=0; i<size; i++) { nsends += procs[i];} 
 
@@ -459,7 +459,7 @@ int MatGetDiagonal_MPIDense(Mat A,Vec v)
   VecSet(&zero,v);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetSize(v,&n);CHKERRQ(ierr);
-  if (n != a->M) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Nonconforming mat and vec");
+  if (n != a->M) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
   len = PetscMin(aloc->m,aloc->n);
   radd = a->rstart*m;
   for (i=0; i<len; i++) {
@@ -521,7 +521,7 @@ static int MatView_MPIDense_Binary(Mat mat,Viewer viewer)
   if (mdn->size == 1) {
     ierr = MatView(mdn->A,viewer);CHKERRQ(ierr);
   }
-  else SETERRQ(PETSC_ERR_SUP,0,"Only uniprocessor output supported");
+  else SETERRQ(PETSC_ERR_SUP,"Only uniprocessor output supported");
   PetscFunctionReturn(0);
 }
 
@@ -619,7 +619,7 @@ int MatView_MPIDense(Mat mat,Viewer viewer)
   } else if (isbinary) {
     ierr = MatView_MPIDense_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported by MPI dense matrix",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported by MPI dense matrix",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -698,9 +698,9 @@ int MatSetOption_MPIDense(Mat A,MatOption op)
   } else if (op == MAT_IGNORE_OFF_PROC_ENTRIES) {
     a->donotstash = 1;
   } else if (op == MAT_NO_NEW_DIAGONALS) {
-    SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");
+    SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
   } else {
-    SETERRQ(PETSC_ERR_SUP,0,"unknown option");
+    SETERRQ(PETSC_ERR_SUP,"unknown option");
   }
   PetscFunctionReturn(0);
 }
@@ -748,7 +748,7 @@ int MatGetRow_MPIDense(Mat A,int row,int *nz,int **idx,Scalar **v)
   int          lrow,rstart = mat->rstart,rend = mat->rend,ierr;
 
   PetscFunctionBegin;
-  if (row < rstart || row >= rend) SETERRQ(PETSC_ERR_SUP,0,"only local rows")
+  if (row < rstart || row >= rend) SETERRQ(PETSC_ERR_SUP,"only local rows")
   lrow = row - rstart;
   ierr = MatGetRow(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -779,7 +779,7 @@ int MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
   ierr = MatGetLocalSize(A,&s2,&s3);CHKERRQ(ierr);
   if (ll) {
     ierr = VecGetLocalSize(ll,&s2a);CHKERRQ(ierr);
-    if (s2a != s2) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Left scaling vector non-conforming local size");
+    if (s2a != s2) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector non-conforming local size");
     ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       x = l[i];
@@ -791,7 +791,7 @@ int MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
   }
   if (rr) {
     ierr = VecGetSize(rr,&s3a);CHKERRQ(ierr);
-    if (s3a != s3) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Right scaling vec non-conforming local size");
+    if (s3a != s3) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vec non-conforming local size");
     ierr = VecScatterBegin(rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
     ierr = VecScatterEnd(rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
     ierr = VecGetArray(mdn->lvec,&r);CHKERRQ(ierr);
@@ -854,7 +854,7 @@ int MatNorm_MPIDense(Mat A,NormType type,PetscReal *norm)
       ierr = MatNorm(mdn->A,type,&ntemp);CHKERRQ(ierr);
       ierr = MPI_Allreduce(&ntemp,norm,1,MPI_DOUBLE,MPI_MAX,A->comm);CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_SUP,0,"No support for two norm");
+      SETERRQ(PETSC_ERR_SUP,"No support for two norm");
     }
   }
   PetscFunctionReturn(0); 
@@ -873,7 +873,7 @@ int MatTranspose_MPIDense(Mat A,Mat *matout)
 
   PetscFunctionBegin;
   if (!matout && M != N) {
-    SETERRQ(PETSC_ERR_SUP,0,"Supports square matrix only in-place");
+    SETERRQ(PETSC_ERR_SUP,"Supports square matrix only in-place");
   }
   ierr = MatCreateMPIDense(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,PETSC_NULL,&B);CHKERRQ(ierr);
 
@@ -1253,7 +1253,7 @@ int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
   if (!rank) {
     ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
-    if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"not matrix object");
+    if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
   }
 
   ierr = MPI_Bcast(header+1,3,MPI_INT,0,comm);CHKERRQ(ierr);
@@ -1333,7 +1333,7 @@ int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
     /* receive message of column indices*/
     ierr = MPI_Recv(mycols,nz,MPI_INT,0,tag,comm,&status);CHKERRQ(ierr);
     ierr = MPI_Get_count(&status,MPI_INT,&maxnz);CHKERRQ(ierr);
-    if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"something is wrong with file");
+    if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
   }
 
   /* loop over local rows, determining number of off diagonal entries */
@@ -1388,7 +1388,7 @@ int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
     /* receive message of values*/
     ierr = MPI_Recv(vals,nz,MPIU_SCALAR,0,A->tag,comm,&status);CHKERRQ(ierr);
     ierr = MPI_Get_count(&status,MPIU_SCALAR,&maxnz);CHKERRQ(ierr);
-    if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"something is wrong with file");
+    if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
 
     /* insert into matrix */
     jj      = rstart;

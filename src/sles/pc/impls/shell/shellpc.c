@@ -1,4 +1,4 @@
-/*$Id: shellpc.c,v 1.69 2000/05/04 14:04:31 balay Exp balay $*/
+/*$Id: shellpc.c,v 1.70 2000/05/05 22:17:07 balay Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -41,7 +41,7 @@ static int PCApply_Shell(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (!shell->apply) SETERRQ(1,1,"No apply() routine provided to Shell PC");
+  if (!shell->apply) SETERRQ(1,"No apply() routine provided to Shell PC");
   ierr  = (*shell->apply)(shell->ctx,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -55,7 +55,7 @@ static int PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (!shell->applytranspose) SETERRQ(1,1,"No applytranspose() routine provided to Shell PC");
+  if (!shell->applytranspose) SETERRQ(1,"No applytranspose() routine provided to Shell PC");
   ierr  = (*shell->applytranspose)(shell->ctx,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -99,7 +99,7 @@ static int PCView_Shell(PC pc,Viewer viewer)
     if (jac->name) {ierr = ViewerASCIIPrintf(viewer,"  Shell: %s\n",jac->name);CHKERRQ(ierr);}
     else           {ierr = ViewerASCIIPrintf(viewer,"  Shell: no name\n");CHKERRQ(ierr);}
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for PCShell",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for PCShell",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -375,7 +375,7 @@ int PCShellGetName(PC pc,char **name)
   if (f) {
     ierr = (*f)(pc,name);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Not shell preconditioner, cannot get name");
+    SETERRQ(1,"Not shell preconditioner, cannot get name");
   }
   PetscFunctionReturn(0);
 }

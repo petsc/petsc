@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.81 2000/09/22 14:41:02 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.82 2000/09/22 20:45:46 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -36,7 +36,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
+  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

@@ -1,4 +1,4 @@
-/*$Id: ex53.c,v 1.15 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex53.c,v 1.16 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
 
@@ -25,12 +25,12 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-  SETERRA(1,0,"This example does not work with complex numbers");
+  SETERRA(1,"This example does not work with complex numbers");
 #else
 
  /* Check out if MatLoad() works */
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Input file not specified");
+  if (!flg) SETERRA(1,"Input file not specified");
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatLoad(fd,MATMPIBAIJ,&A);CHKERRA(ierr);
   ierr = ViewerDestroy(fd);CHKERRA(ierr);
@@ -132,9 +132,9 @@ s1norm,s2norm,bs);CHKERRA(ierr);
     
     for (i=0,j=0; i<ncols1 && j<ncols2; j++) {
       while (cols2[j] != cols1[i]) i++;
-      if (v1[i] != v2[j]) SETERRA(1,0,"MatGetRow() failed - vals incorrect.");
+      if (v1[i] != v2[j]) SETERRA(1,"MatGetRow() failed - vals incorrect.");
     }
-    if (j<ncols2) SETERRA(1,0,"MatGetRow() failed - cols incorrect");
+    if (j<ncols2) SETERRA(1,"MatGetRow() failed - cols incorrect");
     
     ierr = MatRestoreRow(A,row,&ncols1,&cols1,&v1);CHKERRA(ierr);
     ierr = MatRestoreRow(B,row,&ncols2,&cols2,&v2);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.95 2000/08/24 22:42:49 bsmith Exp bsmith $*/
+/*$Id: rich.c,v 1.96 2000/09/02 02:49:14 bsmith Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -12,8 +12,8 @@ int KSPSetUp_Richardson(KSP ksp)
   int ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_RIGHT) {SETERRQ(2,0,"no right preconditioning for KSPRICHARDSON");}
-  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(2,0,"no symmetric preconditioning for KSPRICHARDSON");}
+  if (ksp->pc_side == PC_RIGHT) {SETERRQ(2,"no right preconditioning for KSPRICHARDSON");}
+  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(2,"no symmetric preconditioning for KSPRICHARDSON");}
   ierr = KSPDefaultGetWork(ksp,2);CHKERRQ(ierr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -130,7 +130,7 @@ int KSPView_Richardson(KSP ksp,Viewer viewer)
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  Richardson: damping factor=%g\n",richardsonP->scale);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for KSP Richardson",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for KSP Richardson",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

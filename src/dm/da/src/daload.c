@@ -1,4 +1,4 @@
-/*$Id: daload.c,v 1.18 2000/04/12 04:26:20 bsmith Exp balay $*/
+/*$Id: daload.c,v 1.19 2000/05/05 22:19:22 balay Exp bsmith $*/
 
 #include "src/dm/da/daimpl.h"     /*I  "petscda.h"   I*/
 
@@ -31,17 +31,17 @@ int DALoad(Viewer viewer,int M,int N,int P,DA *da)
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscValidPointer(da);
   ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
+  if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
 
   ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
   ierr = OptionsGetIntArray(PETSC_NULL,"-daload_info",info,&nmax,&flag);CHKERRQ(ierr);
   if (!flag) {
-    SETERRQ(1,1,"No DA information in file");
+    SETERRQ(1,"No DA information in file");
   }
   if (nmax != 8) {
-    SETERRQ1(1,1,"Wrong number of items in DA information in file: %d",nmax);
+    SETERRQ1(1,"Wrong number of items in DA information in file: %d",nmax);
   }
   if (info[0] == 1) {
     ierr = DACreate1d(comm,(DAPeriodicType) info[7],info[1],info[4],info[5],0,da);CHKERRQ(ierr);
@@ -52,7 +52,7 @@ int DALoad(Viewer viewer,int M,int N,int P,DA *da)
     ierr = DACreate3d(comm,(DAPeriodicType) info[7],(DAStencilType) info[6],info[1],info[2],info[3],M,N,P,
                       info[4],info[5],0,0,0,da);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Dimension in info file is not 1, 2, or 3 it is %d",info[0]);
+    SETERRQ1(1,"Dimension in info file is not 1, 2, or 3 it is %d",info[0]);
   }
   for (i=0; i<info[4]; i++) {
     sprintf(fieldnametag,"-daload_fieldname_%d",i);

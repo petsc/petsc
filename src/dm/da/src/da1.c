@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.117 2000/07/21 03:49:44 bsmith Exp bsmith $*/
+/*$Id: da1.c,v 1.118 2000/09/13 03:13:00 bsmith Exp bsmith $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -81,7 +81,7 @@ int DAView_1d(DA da,Viewer viewer)
   } else if (isbinary) {
     ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for DA 1d",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for DA 1d",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -141,8 +141,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   PetscFunctionBegin;
   *inra = 0;
 
-  if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node: %d",dof);
-  if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative: %d",s);
+  if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %d",dof);
+  if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %d",s);
 
   PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   PLogObjectCreate(da);
@@ -157,8 +157,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
 
   m = size;
 
-  if (M < m)     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"More processors than data points! %d %d",m,M);
-  if ((M-1) < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Array is too small for stencil! %d %d",M-1,s);
+  if (M < m)     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"More processors than data points! %d %d",m,M);
+  if ((M-1) < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %d %d",M-1,s);
 
   /* 
      Determine locally owned region 
@@ -192,7 +192,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
       left += lc[i];
     }
     if (left != M) {
-      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Sum of lc across processors not equal to M %d %d",left,M);
+      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Sum of lc across processors not equal to M %d %d",left,M);
     }
   }
 

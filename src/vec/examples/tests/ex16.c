@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.7 2000/01/11 21:00:17 bsmith Exp balay $*/
+/*$Id: ex16.c,v 1.8 2000/05/05 22:15:11 balay Exp bsmith $*/
 
 static char help[] = "Tests VecSetValuesBlocked() on MPI vectors\n\n";
 
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
-  if (size != 2) SETERRA(1,0,"Must be run with two processors");
+  if (size != 2) SETERRA(1,"Must be run with two processors");
 
   /* create vector */
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRA(ierr);

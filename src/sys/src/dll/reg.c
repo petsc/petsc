@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.61 2000/05/10 16:39:16 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.62 2000/08/07 03:49:18 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -59,7 +59,7 @@ int PetscInitialize_DynamicLibraries(void)
   if (found) {
     ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Unable to locate PETSc dynamic library %s \n You cannot move the dynamic libraries!\n or remove USE_DYNAMIC_LIBRARIES from ${PETSC_DIR}/bmake/$PETSC_ARCH/petscconf.h\n and rebuild libraries before moving",libs);
+    SETERRQ1(1,"Unable to locate PETSc dynamic library %s \n You cannot move the dynamic libraries!\n or remove USE_DYNAMIC_LIBRARIES from ${PETSC_DIR}/bmake/$PETSC_ARCH/petscconf.h\n and rebuild libraries before moving",libs);
   }
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
@@ -409,7 +409,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[],int (**r)(void *))
       } else {
         PetscErrorPrintf("Registered function name: %s\n",entry->rname);
         ierr = DLLibraryPrintPath();CHKERRQ(ierr);
-        SETERRQ(1,1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
+        SETERRQ(1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
       }
 #endif
     }
@@ -431,7 +431,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[],int (**r)(void *))
        Do not generate error, just end
   PetscErrorPrintf("Function name: %s\n",function);
   ierr = DLLibraryPrintPath();CHKERRQ(ierr);
-  SETERRQ(1,1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
+  SETERRQ(1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
   */
 
   ierr = PetscFree(function);CHKERRQ(ierr);
@@ -462,7 +462,7 @@ int FListView(FList list,Viewer viewer)
   PetscValidPointer(list);
   
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  if (!isascii) SETERRQ(1,1,"Only ASCII viewer supported");
+  if (!isascii) SETERRQ(1,"Only ASCII viewer supported");
 
   while (list) {
     if (list->path) {

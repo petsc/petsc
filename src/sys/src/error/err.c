@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.115 2000/07/10 03:38:48 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.116 2000/09/22 20:42:15 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -172,7 +172,8 @@ int PetscPopErrorHandler(void)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
--  p - the specific error number
+-  1 indicates the error was initially detected, 0 indicates this is a traceback from a previously
+   detected error
 
   Level: intermediate
 
@@ -180,7 +181,7 @@ int PetscPopErrorHandler(void)
    Most users need not directly use this routine and the error handlers, but
    can instead use the simplified interface SETERRQ, which has the calling 
    sequence
-$     SETERRQ(n,p,mess)
+$     SETERRQ(n,mess)
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 
@@ -298,7 +299,7 @@ int PetscIntView(int N,int idx[],Viewer viewer)
       ierr = ViewerSocketPutInt(viewer,N,idx);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ(1,1,"Cannot handle that viewer");
+    SETERRQ(1,"Cannot handle that viewer");
   }
   PetscFunctionReturn(0);
 }
@@ -379,7 +380,7 @@ int PetscDoubleView(int N,PetscReal idx[],Viewer viewer)
       ierr = ViewerSocketPutReal(viewer,N,1,idx);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ(1,1,"Cannot handle that viewer");
+    SETERRQ(1,"Cannot handle that viewer");
   }
   PetscFunctionReturn(0);
 }
@@ -472,7 +473,7 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
       ierr = ViewerSocketPutScalar(viewer,N,1,idx);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ(1,1,"Cannot handle that viewer");
+    SETERRQ(1,"Cannot handle that viewer");
   }
   PetscFunctionReturn(0);
 }

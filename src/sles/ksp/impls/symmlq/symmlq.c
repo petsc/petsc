@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.7 2000/09/14 14:40:26 bsmith Exp bsmith $*/
+/*$Id: symmlq.c,v 1.8 2000/09/21 19:44:33 bsmith Exp bsmith $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
@@ -18,9 +18,9 @@ int KSPSetUp_SYMMLQ(KSP ksp)
   PetscFunctionBegin;
 
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,0,"No right preconditioning for KSPSYMMLQ");
+    SETERRQ(2,"No right preconditioning for KSPSYMMLQ");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(2,0,"No symmetric preconditioning for KSPSYMMLQ");
+    SETERRQ(2,"No symmetric preconditioning for KSPSYMMLQ");
   }
 
   ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
@@ -80,7 +80,7 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   }
 
 #if !defined(PETSC_USE_COMPLEX)
-  if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner");
+  if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,"Indefinite preconditioner");
 #endif
   dp = PetscSqrtScalar(dp); 
   beta = dp;                         /*  beta <- sqrt(r'*z)  */
@@ -145,7 +145,7 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
     }
 
 #if !defined(PETSC_USE_COMPLEX)
-     if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner");
+     if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,"Indefinite preconditioner");
 #endif
      beta = PetscSqrtScalar(dp);                    /*  beta = sqrt(dp); */
 

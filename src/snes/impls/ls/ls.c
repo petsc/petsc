@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.164 2000/09/05 23:09:41 balay Exp balay $*/
+/*$Id: ls.c,v 1.165 2000/09/07 15:17:50 balay Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -927,7 +927,7 @@ static int SNESView_EQ_LS(SNES snes,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  alpha=%g, maxstep=%g, steptol=%g\n",ls->alpha,ls->maxstep,ls->steptol);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for SNES EQ LS",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for SNES EQ LS",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -973,7 +973,7 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
       } else if (iscubic) {
         ierr = SNESSetLineSearch(snes,SNESCubicLineSearch,PETSC_NULL);CHKERRQ(ierr);
       }
-      else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown line search");}
+      else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown line search");}
     }
   ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1000,7 +1000,7 @@ int SNESCreate_EQ_LS(SNES snes)
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_NONLINEAR_EQUATIONS only");
   }
 
   snes->setup		= SNESSetUp_EQ_LS;

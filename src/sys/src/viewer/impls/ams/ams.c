@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.39 2000/09/22 20:41:49 bsmith Exp balay $*/
+/*$Id: ams.c,v 1.40 2000/09/26 16:13:39 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -79,7 +79,7 @@ int ViewerAMSGetAMSComm_AMS(Viewer lab,AMS_Comm *ams_comm)
   Viewer_AMS *vams = (Viewer_AMS *)lab->data;
 
   PetscFunctionBegin;
-  if (vams->ams_comm == -1) SETERRQ(1,1,"AMS communicator name not yet set with ViewerAMSSetCommName()");
+  if (vams->ams_comm == -1) SETERRQ(1,"AMS communicator name not yet set with ViewerAMSSetCommName()");
   *ams_comm = vams->ams_comm;
   PetscFunctionReturn(0);
 }

@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.18 2000/09/20 15:03:18 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.19 2000/09/21 20:47:33 hzhang Exp bsmith $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -24,7 +24,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(perm,IS_COOKIE);
-  if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
+  if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
 
   /* check whether perm is the identity mapping */
   /*
@@ -2372,7 +2372,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
 
     /* CHECK FOR ZERO PIVOT AND SAVE DIAGONAL ELEMENT */
     if (dk == 0.0){
-      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
     }                                               
 
     /* SAVE NONZERO ENTRIES IN K-TH ROW OF U ... */

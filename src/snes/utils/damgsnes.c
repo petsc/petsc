@@ -1,5 +1,5 @@
 
-/*$Id: damgsnes.c,v 1.5 2000/07/24 14:03:30 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.6 2000/08/17 04:52:55 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -20,7 +20,7 @@ int DAMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *p
   void       *pptr;
 
   PetscFunctionBegin;
-  if (!damg) SETERRQ(1,1,"Passing null as user context which should contain DAMG");
+  if (!damg) SETERRQ(1,"Passing null as user context which should contain DAMG");
 
   if (DAMGGetFine(damg)->computejacobian == SNESDefaultComputeJacobianColor) pptr = DAMGGetFine(damg)->fdcoloring;
   else pptr = DAMGGetFine(damg);
@@ -96,7 +96,7 @@ int DAMGSetSNES(DAMG *damg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   SLES       sles;
 
   PetscFunctionBegin;
-  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
+  if (!damg) SETERRQ(1,"Passing null as DAMG");
 
   /* create solvers for each level */
   for (i=0; i<nlevels; i++) {

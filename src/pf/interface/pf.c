@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.15 2000/09/02 02:50:39 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.16 2000/09/22 20:47:31 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -182,7 +182,7 @@ int PFApplyVec(PF pf,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   if (x) {
     PetscValidHeaderSpecific(x,VEC_COOKIE);
-    if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
+    if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   } else {
     Scalar *xx;
 
@@ -206,7 +206,7 @@ int PFApplyVec(PF pf,Vec x,Vec y)
     n    = n/pf->dimin;
     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-    if (!pf->ops->apply) SETERRQ(1,1,"No function has been provided for this PF");
+    if (!pf->ops->apply) SETERRQ(1,"No function has been provided for this PF");
     ierr = (*pf->ops->apply)(pf->data,n,xx,yy);CHKERRQ(ierr);
     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
@@ -244,8 +244,8 @@ int PFApply(PF pf,int n,Scalar* x,Scalar* y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different arrays");
-  if (!pf->ops->apply) SETERRQ(1,1,"No function has been provided for this PF");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different arrays");
+  if (!pf->ops->apply) SETERRQ(1,"No function has been provided for this PF");
 
   ierr = (*pf->ops->apply)(pf->data,n,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -307,7 +307,7 @@ int PFView(PF pf,Viewer viewer)
       ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported by PF",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported by PF",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -444,7 +444,7 @@ int PFSetType(PF pf,PFType type,void *ctx)
 
   /* Determine the PFCreateXXX routine for a particular function */
   ierr =  FListFind(pf->comm,PFList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(1,1,"Unable to find requested PF type %s",type);
+  if (!r) SETERRQ1(1,"Unable to find requested PF type %s",type);
 
   pf->ops->destroy             = 0;
   pf->ops->view                = 0;

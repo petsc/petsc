@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.10 2000/01/11 21:00:17 bsmith Exp balay $*/
+/*$Id: ex23.c,v 1.11 2000/05/05 22:15:11 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector\n\
   using a blocked send and a strided receive.\n\n";
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
-  if (size != 2) SETERRQ(1,1,"Must run with 2 processors");
+  if (size != 2) SETERRQ(1,"Must run with 2 processors");
 
   /* create two vectors */
   if (!rank) nlocal = 8;

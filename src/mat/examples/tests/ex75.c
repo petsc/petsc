@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.15 2000/08/13 15:13:47 bsmith Exp bsmith $*/
+/*$Id: ex75.c,v 1.16 2000/08/13 15:16:56 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -52,7 +52,7 @@ int main(int argc,char **args)
     else if (prob ==2){ /* matrix for the five point stencil */
       n1 =  (int) sqrt(n); 
       if (n1*n1 != n){
-        SETERRQ(PETSC_ERR_ARG_SIZ,0,"n must be a perfect square of n1");
+        SETERRQ(PETSC_ERR_ARG_SIZ,"n must be a perfect square of n1");
       }
         
       for (i=0; i<n1; i++) {

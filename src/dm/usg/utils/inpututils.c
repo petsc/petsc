@@ -1,4 +1,4 @@
-/* $Id: inpututils.c,v 1.9 2000/08/17 15:36:11 bsmith Exp bsmith $ */
+/* $Id: inpututils.c,v 1.10 2000/08/24 22:43:34 bsmith Exp bsmith $ */
 
 /*
        Utilities for inputing, creating and managing simple two dimensional grids
@@ -113,7 +113,7 @@ int AOData2dGridInput(AOData2dGrid agrid,Draw draw)
     /* wait for second vertex */
     ierr = DrawGetMouseButton(draw,&button,&cx,&cy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     if (button != BUTTON_LEFT) {
-      SETERRQ(1,1,"Must press left button to complete cellrilateral");
+      SETERRQ(1,"Must press left button to complete cellrilateral");
     }
     ierr     = AOData2dGridAddNode(agrid,cx,cy,&cn);CHKERRQ(ierr);
     cell[4*agrid->cell_n+1] = cn;
@@ -124,7 +124,7 @@ int AOData2dGridInput(AOData2dGrid agrid,Draw draw)
     /* wait for third vertex */
     ierr = DrawGetMouseButton(draw,&button,&cx,&cy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     if (button != BUTTON_LEFT) {
-      SETERRQ(1,1,"Must press left button to complete cellrilateral");
+      SETERRQ(1,"Must press left button to complete cellrilateral");
     }
     ierr     = AOData2dGridAddNode(agrid,cx,cy,&cn);CHKERRQ(ierr);
     cell[4*agrid->cell_n+2] = cn;
@@ -135,7 +135,7 @@ int AOData2dGridInput(AOData2dGrid agrid,Draw draw)
     /* wait for fourth vertex */
     ierr = DrawGetMouseButton(draw,&button,&cx,&cy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     if (button != BUTTON_LEFT) {
-      SETERRQ(1,1,"Must press left button to complete cellrilateral");
+      SETERRQ(1,"Must press left button to complete cellrilateral");
     }
     ierr = AOData2dGridAddNode(agrid,cx,cy,&cn);CHKERRQ(ierr);
     cell[4*agrid->cell_n+3] = cn;
@@ -185,7 +185,7 @@ int AOData2dGridFlipCells(AOData2dGrid agrid)
             vertex[1+2*cell[4*i+2]]*vertex[2*cell[4*i+3]] - vertex[1+2*cell[4*i+3]]*vertex[2*cell[4*i]];
 
      if (sign == 0.0) {
-       SETERRQ(1,1,"Bad cell");
+       SETERRQ(1,"Bad cell");
      } else if (sign > 0) {
        int q1tmp = cell[4*i+1];
        cell[4*i+1] = cell[4*i+3];

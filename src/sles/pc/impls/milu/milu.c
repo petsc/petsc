@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.22 2000/05/17 02:19:49 bsmith Exp bsmith $*/
+/*$Id: milu.c,v 1.23 2000/09/02 02:48:58 bsmith Exp bsmith $*/
 
 /*
     Contributed by  Victor Eijkhout <eijkhout@cs.utk.edu>, September 1998
@@ -174,7 +174,7 @@ static int PCView_mILU(PC pc,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"    see src/sles/pc/milu/milu.c\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"    base PC used by mILU next\n");CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for mILU PC",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for mILU PC",((PetscObject)viewer)->type_name);
   }
   ierr = PCView(base_pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

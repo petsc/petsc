@@ -1,4 +1,4 @@
-/*$Id: dagetarray.c,v 1.5 2000/04/12 04:26:20 bsmith Exp balay $*/
+/*$Id: dagetarray.c,v 1.6 2000/05/05 22:19:22 balay Exp bsmith $*/
  
 #include "petscda.h"    /*I   "petscda.h"   I*/
 
@@ -47,7 +47,7 @@ int DAVecGetArray(DA da,Vec vec,void **array)
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    SETERRQ3(1,1,"Vector local size %d is not compatible with DA local sizes %d %d\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+    SETERRQ3(1,"Vector local size %d is not compatible with DA local sizes %d %d\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
   }
 
   if (dim == 1) {
@@ -60,16 +60,16 @@ int DAVecGetArray(DA da,Vec vec,void **array)
     if (dof == 1) {
       ierr = VecGetArray2d(vec,gym,gxm,gys,gxs,(Scalar***)array);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,1,"Not yet done");
+      SETERRQ(1,"Not yet done");
     }
   } else if (dim == 3) {
     if (dof == 1) {
-      SETERRQ(1,1,"Not yet done");
+      SETERRQ(1,"Not yet done");
     } else {
-      SETERRQ(1,1,"Not yet done");
+      SETERRQ(1,"Not yet done");
     }
   } else {
-    SETERRQ1(1,1,"DA dimension not 1, 2, or 3, it is %d\n",dim);
+    SETERRQ1(1,"DA dimension not 1, 2, or 3, it is %d\n",dim);
   }
 
   PetscFunctionReturn(0);
@@ -134,7 +134,7 @@ int DAVecRestoreArray(DA da,Vec vec,void **array)
       ;
     }
   } else {
-    SETERRQ1(1,1,"DA dimension not 1, 2, or 3, it is %d\n",dim);
+    SETERRQ1(1,"DA dimension not 1, 2, or 3, it is %d\n",dim);
   }
   PetscFunctionReturn(0);
 }

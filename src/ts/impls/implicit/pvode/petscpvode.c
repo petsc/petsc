@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.61 2000/09/13 03:12:36 bsmith Exp balay $*/
+/*$Id: petscpvode.c,v 1.62 2000/09/13 15:20:47 balay Exp bsmith $*/
 
 #include "petsc.h"
 /*
@@ -162,14 +162,14 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
     ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
     flag = CVode(cvode->mem,tout,cvode->y,&t,ONE_STEP);
     ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
-    if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,0,"PVODE failed");	
+    if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,"PVODE failed");	
 
     if (t > tout && cvode->exact_final_time) { 
       /* interpolate to final requested time */
       ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
       flag = CVodeDky(cvode->mem,tout,0,cvode->y);
       ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
-      if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,0,"PVODE interpolation to final time failed");	
+      if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,"PVODE interpolation to final time failed");	
       t = tout;
     }
 
@@ -297,7 +297,7 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
       } else if (isadams) {
         ierr = TSPVodeSetType(ts,PVODE_ADAMS);CHKERRQ(ierr);
       } else {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown PVode type.\n");
+        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PVode type.\n");
       }
     }
     ierr = OptionsEList("-ts_pvode_gramschmidt_type","Type of orthogonalization","TSPVodeSetGramSchmidtType",otype,2,"unmodified",method,127,&flag);CHKERRQ(ierr);
@@ -311,7 +311,7 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
       } else if (isunmodified) {
         ierr = TSPVodeSetGramSchmidtType(ts,PVODE_UNMODIFIED_GS);CHKERRQ(ierr);
       } else {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown PVode Gram-Schmidt orthogonalization type \n");
+        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PVode Gram-Schmidt orthogonalization type \n");
       }
     }
     ierr = OptionsDouble("-ts_pvode_atol","Absolute tolerance for convergence","TSPVodeSetTolerance",cvode->abstol,&cvode->abstol,PETSC_NULL);CHKERRQ(ierr);
@@ -380,7 +380,7 @@ int TSView_PVode(TS ts,Viewer viewer)
   } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer,"Pvode type %s",type);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported by TS PVode",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported by TS PVode",((PetscObject)viewer)->type_name);
   }
   ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PCView(cvode->pc,viewer);CHKERRQ(ierr);
@@ -747,7 +747,7 @@ int TSPVodeGetPC(TS ts,PC *pc)
   if (f) {
     ierr = (*f)(ts,pc);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"TS must be of PVode type to extract the PC");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TS must be of PVode type to extract the PC");
   }
 
   PetscFunctionReturn(0);
@@ -803,7 +803,7 @@ int TSCreate_PVode(TS ts)
   ts->view            = TSView_PVode;
 
   if (ts->problem_type != TS_NONLINEAR) {
-    SETERRQ(PETSC_ERR_SUP,0,"Only support for nonlinear problems");
+    SETERRQ(PETSC_ERR_SUP,"Only support for nonlinear problems");
   }
   ts->setup           = TSSetUp_PVode_Nonlinear;  
   ts->step            = TSStep_PVode_Nonlinear;

@@ -1,4 +1,4 @@
-/*$Id: inherit.c,v 1.63 2000/08/24 16:06:35 balay Exp bsmith $*/
+/*$Id: inherit.c,v 1.64 2000/09/22 20:42:24 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -60,7 +60,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
 
   PetscFunctionBegin;
   if (h->amem != -1) {
-    SETERRQ(1,1,"PETSc object destroyed before its AMS publication was destroyed");
+    SETERRQ(1,"PETSc object destroyed before its AMS publication was destroyed");
   }
 
   ierr = PetscCommDestroy_Private(&h->comm);CHKERRQ(ierr);
@@ -157,7 +157,7 @@ int PetscObjectDereference(PetscObject obj)
   if (obj->bops->destroy) {
     ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
   } else if (!--obj->refct) {
-    SETERRQ(PETSC_ERR_SUP,0,"This PETSc object does not have a generic destroy routine");
+    SETERRQ(PETSC_ERR_SUP,"This PETSc object does not have a generic destroy routine");
   }
   PetscFunctionReturn(0);
 }
@@ -187,7 +187,7 @@ int PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
   if (ptr) {
     ierr = OListReverseFind(ptr->olist,obj,&tname);CHKERRQ(ierr);
     if (tname){
-      SETERRQ(1,1,"An object cannot be composed with an object that was compose with it");
+      SETERRQ(1,"An object cannot be composed with an object that was compose with it");
     }
   }
   ierr = OListAdd(&obj->olist,name,ptr);CHKERRQ(ierr);
@@ -213,7 +213,7 @@ int PetscObjectComposeLanguage_Petsc(PetscObject obj,PetscLanguage lang,void *vo
   if (lang == PETSC_LANGUAGE_CPP) {
     obj->cpp = vob;
   } else {
-    SETERRQ(1,1,"No support for this language yet");
+    SETERRQ(1,"No support for this language yet");
   }
   PetscFunctionReturn(0);
 }
@@ -229,10 +229,10 @@ int PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob
     if (obj->cpp) {
       *vob = obj->cpp;
     } else {
-      SETERRQ(1,1,"No C++ wrapper generated");
+      SETERRQ(1,"No C++ wrapper generated");
     }
   } else {
-    SETERRQ(1,1,"No support for this language yet");
+    SETERRQ(1,"No support for this language yet");
   }
   PetscFunctionReturn(0);
 }
@@ -538,7 +538,7 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
   PetscObjectContainer contain;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(contain,_p_PetscObjectContainer,int,PETSC_COOKIE,0,"container",comm,PetscObjectContainerDestroy,0);
+  PetscHeaderCreate(contain,_p_PetscObjectContainer,int,PETSC_COOKIE,"container",comm,PetscObjectContainerDestroy,0);
   *container = contain;
   PetscFunctionReturn(0);
 }

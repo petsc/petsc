@@ -1,4 +1,4 @@
-/*$Id: dvec2.c,v 1.80 2000/04/12 04:22:20 bsmith Exp buschelm $*/
+/*$Id: dvec2.c,v 1.81 2000/06/23 15:08:24 buschelm Exp bsmith $*/
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -716,7 +716,7 @@ int VecGetArray_Seq(Vec vin,Scalar *a[])
 
   PetscFunctionBegin;
   if (vin->array_gotten) {
-    SETERRQ(1,1,"Array has already been gotten for this vector,you may\n\
+    SETERRQ(1,"Array has already been gotten for this vector,you may\n\
     have forgotten a call to VecRestoreArray()");
   }
   vin->array_gotten = PETSC_TRUE;
@@ -735,7 +735,7 @@ int VecRestoreArray_Seq(Vec vin,Scalar *a[])
   PetscFunctionBegin;
 
   if (!vin->array_gotten) {
-    SETERRQ(1,1,"Array has not been gotten for this vector, you may\n\
+    SETERRQ(1,"Array has not been gotten for this vector, you may\n\
     have forgotten a call to VecGetArray()");
   }
   vin->array_gotten = PETSC_FALSE;

@@ -1,4 +1,4 @@
-/*$Id: mmdense.c,v 1.30 2000/05/10 16:40:34 bsmith Exp bsmith $*/
+/*$Id: mmdense.c,v 1.31 2000/07/10 03:39:30 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel dense matrix vector multiply
@@ -106,9 +106,9 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
     /* Check if the col indices are sorted */
   for (i=0; i<ismax; i++) {
     ierr = ISSorted(isrow[i],(PetscTruth*)&j);CHKERRQ(ierr);
-    if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"ISrow is not sorted");
+    if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"ISrow is not sorted");
     ierr = ISSorted(iscol[i],(PetscTruth*)&j);CHKERRQ(ierr);
-    if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"IScol is not sorted");
+    if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
   }
 
   len    =  2*ismax*(sizeof(int *)+sizeof(int)) + (m+1)*sizeof(int);
@@ -311,7 +311,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
     for (i=0; i<ismax; i++) {
       mat = (Mat_SeqDense *)(submats[i]->data);
       if ((mat->m != nrow[i]) || (mat->n != ncol[i])) {
-        SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong size");
+        SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       }
       ierr = PetscMemzero(mat->v,mat->m*mat->n*sizeof(Scalar));CHKERRQ(ierr);
       submats[i]->factor = C->factor;

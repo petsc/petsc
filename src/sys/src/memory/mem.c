@@ -1,4 +1,4 @@
-/*$Id: mem.c,v 1.50 2000/08/16 15:12:19 balay Exp bsmith $*/
+/*$Id: mem.c,v 1.51 2000/09/22 20:42:22 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 #include "petscsys.h"
@@ -95,10 +95,10 @@ int PetscGetResidentSetSize(PLogDouble *foo)
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
   sprintf(proc,"/proc/%d",(int)getpid());
   if ((fd = open(proc,O_RDONLY)) == -1) {
-    SETERRQ(PETSC_ERR_FILE_OPEN,1,"Unable to access system file to get memory usage data");
+    SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to access system file to get memory usage data");
   }
   if (ioctl(fd,PIOCPSINFO,&prusage) == -1) {
-    SETERRQ(PETSC_ERR_FILE_READ,1,"Unable to access system file  to get memory usage data"); 
+    SETERRQ(PETSC_ERR_FILE_READ,"Unable to access system file  to get memory usage data"); 
   }
   *foo = (double)prusage.pr_byrssize;
   close(fd);

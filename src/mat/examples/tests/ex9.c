@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.14 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.15 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
@@ -39,7 +39,7 @@ int main(int argc,char **args)
   } else if (type == MATMPIAIJ || type == MATSEQAIJ) {
     ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
            m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C);CHKERRA(ierr);
-  } else SETERRA(1,0,"Invalid matrix type for this example.");
+  } else SETERRA(1,"Invalid matrix type for this example.");
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   for (i=0; i<m; i++) { 

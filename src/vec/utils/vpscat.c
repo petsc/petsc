@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.142 2000/08/08 20:12:53 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.143 2000/08/08 20:15:12 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -65,7 +65,7 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
       ierr = ViewerFlush(viewer);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for this scatter",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for this scatter",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }  
@@ -329,7 +329,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
     } else if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[tslots[i]]);}
 #endif
-    } else {SETERRQ(1,1,"Wrong insert option");}
+    } else {SETERRQ(1,"Wrong insert option");}
   }
 
   ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
@@ -391,7 +391,7 @@ int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatt
         yv[lindices[i]] = PetscMax(yv[lindices[i]],*val); val++;
       }
 #endif
-    }  else {SETERRQ(1,1,"Wrong insert option");}
+    }  else {SETERRQ(1,"Wrong insert option");}
     count--;
   }
 
@@ -770,7 +770,7 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
         yv[il+11] = PetscMax(yv[il+11],xv[ir+11]);
       }
 #endif
-    } else {SETERRQ(1,1,"Wrong insert option");}
+    } else {SETERRQ(1,"Wrong insert option");}
   }  
   ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
@@ -873,7 +873,7 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
         val        += 12;
       }
 #endif
-    }  else {SETERRQ(1,1,"Wrong insert option");}
+    }  else {SETERRQ(1,"Wrong insert option");}
     count--;
   }
   /* wait on sends */
@@ -1014,7 +1014,7 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+4] = PetscMax(yv[il+4],xv[ir+4]);
       }
 #endif
-    }  else {SETERRQ(1,1,"Wrong insert option");}
+    }  else {SETERRQ(1,"Wrong insert option");}
   }
   ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
@@ -1096,7 +1096,7 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         val       += 5;
       }
 #endif
-    }  else {SETERRQ(1,1,"Wrong insert option");}
+    }  else {SETERRQ(1,"Wrong insert option");}
     count--;
   }
   /* wait on sends */
@@ -1232,7 +1232,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+3] = PetscMax(yv[il+3],xv[ir+3]);
       }
 #endif
-    }  else {SETERRQ(1,1,"Wrong insert option");}
+    }  else {SETERRQ(1,"Wrong insert option");}
   }
   ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
@@ -1311,7 +1311,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         val       += 4;
       }
 #endif
-    }  else {SETERRQ(1,1,"Wrong insert option");}
+    }  else {SETERRQ(1,"Wrong insert option");}
     count--;
   }
   /* wait on sends */
@@ -1444,7 +1444,7 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+3] = PetscMax(yv[il+3],xv[ir+3]);
       }
 #endif
-    }  else {SETERRQ(1,1,"Wrong insert option");}
+    }  else {SETERRQ(1,"Wrong insert option");}
   }
   ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
@@ -1520,7 +1520,7 @@ int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         val       += 3;
       }
 #endif
-    }  else {SETERRQ(1,1,"Wrong insert option");}
+    }  else {SETERRQ(1,"Wrong insert option");}
     count--;
   }
   /* wait on sends */
@@ -1643,7 +1643,7 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+1] = PetscMax(yv[il+1],xv[ir+1]);
       }
 #endif
-    }  else {SETERRQ(1,1,"Wrong insert option");}
+    }  else {SETERRQ(1,"Wrong insert option");}
   }
   ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
@@ -1716,7 +1716,7 @@ int VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         val       += 2;
       }
 #endif
-    }  else {SETERRQ(1,1,"Wrong insert option");}
+    }  else {SETERRQ(1,"Wrong insert option");}
     count--;
   }
   /* wait on sends */
@@ -1832,7 +1832,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Index %d out of range",idx);
+    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %d out of range",idx);
   }
   nprocslocal  = nprocs[rank]; 
   nprocs[rank] = procs[rank] = 0; 
@@ -1963,7 +1963,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   for (i=0; i<nx; i++) {
     if (owner[i] != rank) {
       from->indices[start[lowner[owner[i]]]++] = inidy[i];
-      if (inidy[i] >= lengthy) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Scattering past end of TO vector");
+      if (inidy[i] >= lengthy) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Scattering past end of TO vector");
     }
   }
   ierr = PetscFree(lowner);CHKERRQ(ierr);
@@ -1992,7 +1992,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
       if (idx >= owners[rank] && idx < owners[rank+1]) {
         to->local.slots[nt]     = idx - owners[rank];        
         from->local.slots[nt++] = inidy[i];        
-        if (inidy[i] >= lengthy) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Scattering past end of TO vector");
+        if (inidy[i] >= lengthy) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Scattering past end of TO vector");
       }
     }
   } else { 
@@ -2105,7 +2105,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
       ctx->end       = VecScatterEnd_PtoP_2; 
       break;
     default:
-      SETERRQ(PETSC_ERR_SUP,1,"Blocksize not supported");
+      SETERRQ(PETSC_ERR_SUP,"Blocksize not supported");
     }
   } else {
     ctx->postrecvs = 0;
@@ -2158,7 +2158,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Index %d out of range",idx);
+    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %d out of range",idx);
   }
   nprocslocal  = nprocs[rank];
   nprocs[rank] = procs[rank] = 0; 
@@ -2383,7 +2383,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Index %d out of range",idx);
+    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %d out of range",idx);
   }
   nsends = 0;  for (i=0; i<size; i++) { nsends += procs[i];} 
 

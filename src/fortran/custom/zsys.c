@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.83 2000/07/03 18:53:33 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.84 2000/07/13 14:26:34 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
@@ -401,7 +401,7 @@ void PETSC_STDCALL petscerror_(int *number,int *p,CHAR message PETSC_MIXED_LEN(l
 {
   char *t1;
   FIXCHAR(message,len,t1);
-  *ierr = PetscError(-1,0,"fortran_interface_unknown_file",0,*number,*p,t1);
+  *ierr = PetscError(-1,"fortran_interface_unknown_file",0,*number,*p,t1);
   FREECHAR(message,t1);
 }
 

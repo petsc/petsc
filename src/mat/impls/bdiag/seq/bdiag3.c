@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.22 2000/05/05 22:15:54 balay Exp bsmith $*/
+/*$Id: bdiag3.c,v 1.23 2000/05/10 16:40:47 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -355,7 +355,7 @@ int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *norm)
     }
     ierr = PetscFree(tmp);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,0,"No support for two norm");
+    SETERRQ(PETSC_ERR_SUP,"No support for two norm");
   }
   PetscFunctionReturn(0);
 }
@@ -381,7 +381,7 @@ int MatTranspose_SeqBDiag(Mat A,Mat *matout)
   for (d=0; d<nd; d++) {
     dvnew = anew->diagv[d];
     dwork = a->diagv[nd-d-1];
-    if (anew->bdlen[d] != a->bdlen[nd-d-1]) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Incompatible diagonal lengths");
+    if (anew->bdlen[d] != a->bdlen[nd-d-1]) SETERRQ(PETSC_ERR_ARG_SIZ,"Incompatible diagonal lengths");
     shifto = a->diag[nd-d-1];
     shiftn = anew->diag[d];
     if (shifto > 0)  shifto = bs*bs*shifto; else shifto = 0;
@@ -461,7 +461,7 @@ int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
     ierr = MatRestoreRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
     ict += nz;
   }
-  if (ict != a->maxnz) SETERRQ(PETSC_ERR_PLIB,0,"Error in nonzero count");
+  if (ict != a->maxnz) SETERRQ(PETSC_ERR_PLIB,"Error in nonzero count");
 
   /* Store lengths of each row and write (including header) to file */
   ierr = PetscBinaryWrite(fd,col_lens,4+a->m,PETSC_INT,1);CHKERRQ(ierr);
@@ -711,7 +711,7 @@ int MatView_SeqBDiag(Mat A,Viewer viewer)
   } else if (isdraw) {
     ierr = MatView_SeqBDiag_Draw(A,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported by BDiag matrices",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported by BDiag matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

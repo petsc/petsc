@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.199 2000/08/01 20:02:56 bsmith Exp balay $*/
+/*$Id: precon.c,v 1.200 2000/09/07 15:18:24 balay Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -188,7 +188,7 @@ int PCApply(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -321,8 +321,8 @@ int PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
-  if (!pc->ops->applytranspose) SETERRQ(PETSC_ERR_SUP,0,"");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  if (!pc->ops->applytranspose) SETERRQ(PETSC_ERR_SUP,"");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -365,9 +365,9 @@ int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(work,VEC_COOKIE);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (side != PC_LEFT && side != PC_SYMMETRIC && side != PC_RIGHT) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Side must be right, left, or symmetric");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Side must be right, left, or symmetric");
   }
 
   if (pc->setupcalled < 2) {
@@ -392,7 +392,7 @@ int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
     ierr = PCApplySymmetricLeft(pc,work,y);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid preconditioner side");
+  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid preconditioner side");
 #if !defined(PETSC_USE_DEBUG)
   PetscFunctionReturn(0);   /* so we get no warning message about no return code */
 #endif
@@ -431,13 +431,13 @@ int PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(work,VEC_COOKIE);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->ops->applyBAtranspose) {
     ierr = (*pc->ops->applyBAtranspose)(pc,side,x,y,work);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (side != PC_LEFT && side != PC_RIGHT) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Side must be right or left");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Side must be right or left");
   }
 
   if (pc->setupcalled < 2) {
@@ -524,7 +524,7 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(w,VEC_COOKIE);
-  if (!pc->ops->applyrichardson) SETERRQ(PETSC_ERR_SUP,0,"");
+  if (!pc->ops->applyrichardson) SETERRQ(PETSC_ERR_SUP,"");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -573,8 +573,8 @@ int PCSetUp(PC pc)
   }
   if (pc->setupcalled > 1) PetscFunctionReturn(0);
   ierr = PLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
-  if (!pc->vec) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Vector must be set first");}
-  if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Matrix must be set first");}
+  if (!pc->vec) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Vector must be set first");}
+  if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");}
   if (!pc->type_name) {
     int size;
 
@@ -1248,7 +1248,7 @@ int PCView(PC pc,Viewer viewer)
     ierr = ViewerStringSPrintf(viewer," %-7.7s",cstr);CHKERRQ(ierr);
     if (pc->ops->view) {ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);}
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported by PC",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported by PC",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

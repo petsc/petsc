@@ -1,4 +1,4 @@
-/*$Id: ex40.c,v 1.16 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex40.c,v 1.17 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
@@ -22,7 +22,7 @@ int main(int argc,char **args)
   Scalar      rand;
   PetscInitialize(&argc,&args,(char *)0,help);
 #if defined(PETSC_USE_COMPLEX)
-  SETERRA(1,0,"This example does not work with complex numbers");
+  SETERRA(1,"This example does not work with complex numbers");
 #else
   
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);  CHKERRA(ierr);

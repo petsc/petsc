@@ -1,4 +1,4 @@
-/*$Id: dpoints.c,v 1.32 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dpoints.c,v 1.33 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -35,7 +35,7 @@ int DrawPointSetSize(Draw draw,PetscReal width)
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   ierr = PetscTypeCompare((PetscObject)draw,DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
-  if (width < 0.0 || width > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Bad size %g, should be between 0 and 1",width);
+  if (width < 0.0 || width > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Bad size %g, should be between 0 and 1",width);
   ierr = (*draw->ops->pointsetsize)(draw,width);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

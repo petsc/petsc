@@ -1,4 +1,4 @@
-/*$Id: sor.c,v 1.96 2000/05/05 22:17:04 balay Exp bsmith $*/
+/*$Id: sor.c,v 1.97 2000/09/02 02:48:47 bsmith Exp bsmith $*/
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
@@ -101,7 +101,7 @@ static int PCView_SOR(PC pc,Viewer viewer)
     else                                     sortype = "unknown";
     ierr = ViewerASCIIPrintf(viewer,"  SOR: type = %s, iterations = %d, omega = %g\n",sortype,jac->its,jac->omega);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for PCSOR",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for PCSOR",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -130,7 +130,7 @@ int PCSORSetOmega_SOR(PC pc,PetscReal omega)
   PC_SOR *jac;
 
   PetscFunctionBegin;
-  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Relaxation out of range");
+  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
   jac        = (PC_SOR*)pc->data; 
   jac->omega = omega;
   PetscFunctionReturn(0);

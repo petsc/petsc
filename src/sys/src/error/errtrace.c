@@ -1,4 +1,4 @@
-/*$Id: errtrace.c,v 1.16 2000/09/22 20:42:15 bsmith Exp bsmith $*/
+/*$Id: errtrace.c,v 1.17 2000/09/28 19:18:18 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -55,7 +55,7 @@ int PetscErrorMessage(int errno,char **text)
 {
   PetscFunctionBegin;
   if (errno < PETSC_ERR_MEM || errno > PETSC_ERR_MAT_CH_ZRPVT) {
-    SETERRQ(1,1,"Unknown error code");
+    SETERRQ(1,"Unknown error code");
   }
   *text = PetscErrorStrings[errno-PETSC_ERR_MEM];
   PetscFunctionReturn(0);
@@ -130,7 +130,6 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
     char *text;
     PetscErrorMessage(n,&text);
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s!\n",rank);
-    n = 1;
   }
   if (mess) {
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s\n",rank,mess);

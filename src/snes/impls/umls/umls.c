@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.99 2000/08/24 22:43:09 bsmith Exp bsmith $*/
+/*$Id: umls.c,v 1.100 2000/09/02 02:49:43 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
@@ -197,7 +197,7 @@ static int SNESView_UM_LS(SNES snes,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"  gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
                       ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for SNES UM LS",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for SNES UM LS",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -533,7 +533,7 @@ int SNESCreate_UM_LS(SNES snes)
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
   snes->setup		  = SNESSetUp_UM_LS;
   snes->solve		  = SNESSolve_UM_LS;
@@ -600,7 +600,7 @@ int SNESLineSearchGetDampingParameter(SNES snes,Scalar *damp)
   if (f) {
     ierr = (*f)(snes,damp);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Can only get line search damping when line search algorithm used");
+    SETERRQ(1,"Can only get line search damping when line search algorithm used");
   }
   PetscFunctionReturn(0);
 }

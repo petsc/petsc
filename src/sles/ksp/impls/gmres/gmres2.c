@@ -1,4 +1,4 @@
-/*$Id: gmres2.c,v 1.29 2000/08/01 20:56:55 bsmith Exp bsmith $*/
+/*$Id: gmres2.c,v 1.30 2000/08/24 22:42:47 bsmith Exp bsmith $*/
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 
 #undef __FUNC__  
@@ -28,7 +28,7 @@ int KSPGMRESSetHapTol(KSP ksp,double tol)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (tol < 0.0) SETERRQ(1,1,"Tolerance must be non-negative");
+  if (tol < 0.0) SETERRQ(1,"Tolerance must be non-negative");
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetHapTol_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,tol);CHKERRQ(ierr);
@@ -67,7 +67,7 @@ int KSPGMRESSetRestart(KSP ksp,int max_k)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (max_k < 1) SETERRQ(1,1,"Restart must be positive");
+  if (max_k < 1) SETERRQ(1,"Restart must be positive");
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,max_k);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: cgeig.c,v 1.48 2000/04/09 04:37:53 bsmith Exp bsmith $*/
+/*$Id: cgeig.c,v 1.49 2000/04/12 04:24:58 bsmith Exp bsmith $*/
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
    running with CG. Note this only works for symmetric real and Hermitian
@@ -17,7 +17,7 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *nei
   int       j,n = ksp->its,ierr;
 
   PetscFunctionBegin;
-  if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
+  if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
   ierr = PetscMemzero(c,nmax*sizeof(PetscReal));CHKERRQ(ierr);
@@ -34,7 +34,7 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *nei
   }
 
   LINPACKcgtql1(&n,r,ee,&j);
-  if (j != 0) SETERRQ(PETSC_ERR_LIB,0,"Error from tql1(); eispack eigenvalue routine");  
+  if (j != 0) SETERRQ(PETSC_ERR_LIB,"Error from tql1(); eispack eigenvalue routine");  
   ierr = PetscSortDouble(n,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -62,7 +62,7 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscReal *emin)
   }
 
   LINPACKcgtql1(&n,dd,ee,&j);
-  if (j != 0) SETERRQ(PETSC_ERR_LIB,0,"Error from tql1(); eispack eigenvalue routine");  
+  if (j != 0) SETERRQ(PETSC_ERR_LIB,"Error from tql1(); eispack eigenvalue routine");  
   *emin = dd[0]; *emax = dd[n-1];
   PetscFunctionReturn(0);
 }

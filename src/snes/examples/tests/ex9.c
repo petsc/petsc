@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.41 2000/08/17 04:52:48 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.42 2000/09/06 22:20:15 balay Exp bsmith $*/
 
 static char help[] =
 "This program demonstrates use of the SNES package to solve systems of\n\
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-Nz",&Nz,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,0,"Lambda is out of range");
+    SETERRA(1,"Lambda is out of range");
   }
   
   /* Set up distributed array */

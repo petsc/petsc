@@ -1,4 +1,4 @@
-/*$Id: draw.c,v 1.69 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: draw.c,v 1.70 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -320,7 +320,7 @@ int DrawGetSingleton(Draw draw,Draw *sdraw)
   if (draw->ops->getsingleton) {
     ierr = (*draw->ops->getsingleton)(draw,sdraw);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Cannot get singleton for this type %s of draw object",draw->type_name);
+    SETERRQ1(1,"Cannot get singleton for this type %s of draw object",draw->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -359,7 +359,7 @@ int DrawRestoreSingleton(Draw draw,Draw *sdraw)
   if (draw->ops->restoresingleton) {
     ierr = (*draw->ops->restoresingleton)(draw,sdraw);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Cannot restore singleton for this type %s of draw object",draw->type_name);
+    SETERRQ1(1,"Cannot restore singleton for this type %s of draw object",draw->type_name);
   }
   PetscFunctionReturn(0);
 }

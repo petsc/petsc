@@ -1,4 +1,4 @@
-/*$Id: const.c,v 1.10 2000/08/25 16:45:17 balay Exp bsmith $*/
+/*$Id: const.c,v 1.11 2000/09/02 02:50:41 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 #undef __FUNC__  
@@ -157,7 +157,7 @@ int PFCreate_Identity(PF pf,void *value)
 
   PetscFunctionBegin;
   if (pf->dimout != pf->dimin) {
-    SETERRQ2(1,1,"Input dimension must match output dimension for Identity function, dimin = %d dimout = %d\n",pf->dimin,pf->dimout);
+    SETERRQ2(1,"Input dimension must match output dimension for Identity function, dimin = %d dimout = %d\n",pf->dimin,pf->dimout);
   }
   loc    = (int*)PetscMalloc(sizeof(int));CHKPTRQ(loc);
   loc[0] = pf->dimout;

@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.23 2000/09/06 22:20:19 balay Exp bsmith $*/
+/*$Id: ex14.c,v 1.24 2000/09/22 20:45:46 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -121,7 +121,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,0,"Lambda is out of range");
+    SETERRA(1,"Lambda is out of range");
   }
   N = user.mx*user.my;
 
@@ -143,7 +143,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
-    SETERRA(1,0,"Incompatible number of processors:  Nx * Ny != size");
+    SETERRA(1,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
                     user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
 

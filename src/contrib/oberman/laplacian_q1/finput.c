@@ -23,7 +23,7 @@ int main( int argc, char **argv )
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size > 1) {
-    SETERRQ(1,1,"Must run input program with exactly one processor");
+    SETERRQ(1,"Must run input program with exactly one processor");
   }
   x_min = 0.0; x_max = 1.0;
   y_min = 0.0; y_max = 1.0;

@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.112 2000/08/04 03:53:39 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.113 2000/09/02 02:48:50 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -218,7 +218,7 @@ static int PCSetFromOptions_MG(PC pc)
       else if (isfull) mg = MGFULL;
       else if (iskask) mg = MGKASKADE;
       else if (iscasc) mg = MGKASKADE;
-      else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type: %s",buff);
+      else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type: %s",buff);
       ierr = MGSetType(pc,mg);CHKERRQ(ierr);
     }
   ierr = OptionsTail();CHKERRQ(ierr);
@@ -265,7 +265,7 @@ static int PCView_MG(PC pc,Viewer viewer)
       }
     }
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for PCMG",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for PCMG",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -345,7 +345,7 @@ int MGSetLevels(PC pc,int levels,MPI_Comm *comms)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
 
   if (pc->data) {
-    SETERRQ(1,1,"Number levels already set for MG\n\
+    SETERRQ(1,"Number levels already set for MG\n\
     make sure that you call MGSetLevels() before SLESSetFromOptions()");
   }
   ierr                     = MGCreate_Private(pc->comm,levels,pc,comms,&mg);CHKERRQ(ierr);
@@ -485,7 +485,7 @@ int MGCheck(PC pc)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   mg = (MG*)pc->data;
 
-  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must set MG levels before calling");
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
 
   n = mg[0]->levels;
 

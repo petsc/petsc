@@ -1,4 +1,4 @@
-/*$Id: prefix.c,v 1.26 2000/04/12 04:21:29 bsmith Exp bsmith $*/
+/*$Id: prefix.c,v 1.27 2000/09/22 20:42:24 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -31,7 +31,7 @@ int PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
   if (!prefix) {
     obj->prefix = PETSC_NULL;
   } else {
-     if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,1,"Options prefix should not begin with a hypen");
+     if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hypen");
     ierr  = PetscStrallocpy(prefix,&obj->prefix);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -66,7 +66,7 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
     ierr = PetscObjectSetOptionsPrefix(obj,prefix);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,1,"Options prefix should not begin with a hypen");
+  if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hypen");
 
   ierr        = PetscStrlen(prefix,&len1);CHKERRQ(ierr);
   ierr        = PetscStrlen(buf,&len2);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ int PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
     ierr = PetscObjectSetOptionsPrefix(obj,prefix);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,1,"Options prefix should not begin with a hypen");
+  if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hypen");
 
   ierr        = PetscStrlen(prefix,&len1);CHKERRQ(ierr);
   ierr        = PetscStrlen(buf,&len2);CHKERRQ(ierr);

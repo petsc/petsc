@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.48 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.49 2000/09/28 19:17:44 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -34,13 +34,6 @@
      These are the generic error codes. These error codes are used
      many different places in the PETSc source code.
 
-     In addition, each specific error in the code has an error
-     message: a specific, unique error code.  (The specific error
-     code is not yet in use; these will be generated automatically and
-     embed an integer into the PetscError() calls. For non-English
-     error messages, that integer will be extracted and used to look up the
-     appropriate error message in the local language from a file.)
-
 */
 #define PETSC_ERR_MEM             55   /* unable to allocate requested memory */
 #define PETSC_ERR_SUP             56   /* no support for requested operation */
@@ -73,20 +66,22 @@
 #define PETSC_ERR_MAT_CH_ZRPVT    81   /* detected a zero pivot during Cholesky factorization */
 
 #if defined(PETSC_USE_DEBUG)
-#define SETERRA(n,p,s)     {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);\
+#define SETERRA(n,s)       {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s);\
                            MPI_Abort(PETSC_COMM_WORLD,_ierr);}
-#define SETERRA1(n,p,s,a1) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1);\
+#define SETERRA1(n,s,a1)   {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s,a1);\
                            MPI_Abort(PETSC_COMM_WORLD,_ierr);}
-#define SETERRQ(n,p,s)              {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);}
-#define SETERRQ1(n,p,s,a1)          {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1);}
-#define SETERRQ2(n,p,s,a1,a2)       {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1,a2);}
-#define SETERRQ3(n,p,s,a1,a2,a3)    {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1,a2,a3);}
-#define SETERRQ4(n,p,s,a1,a2,a3,a4) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1,a2,a3,a4);}
+#define SETERRQ(n,s)              {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s);}
+#define SETERRQ1(n,s,a1)          {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s,a1);}
+#define SETERRQ2(n,s,a1,a2)       {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s,a1,a2);}
+#define SETERRQ3(n,s,a1,a2,a3)    {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s,a1,a2,a3);}
+#define SETERRQ4(n,s,a1,a2,a3,a4) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4);}
 
-#define CHKERRQ(n)     {if (n) SETERRQ(n,0,(char *)0);}
-#define CHKERRA(n)     {if (n) SETERRA(n,0,(char *)0);}
-#define CHKPTRQ(p)     if (!p) SETERRQ(PETSC_ERR_MEM,0,(char*)0);
-#define CHKPTRA(p)     if (!p) SETERRA(PETSC_ERR_MEM,0,(char*)0);
+#define CHKERRQ(n)     if (n) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,0,0);}
+#define CHKERRA(n)     if (n) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,0,0);\
+                           MPI_Abort(PETSC_COMM_WORLD,_ierr);}
+#define CHKPTRQ(p)     if (!p) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,PETSC_ERR_MEM,0,0);}
+#define CHKPTRA(p)     if (!p) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,PETSC_ERR_MEM,0,0);\
+                                MPI_Abort(PETSC_COMM_WORLD,_ierr);}
 
 #define CHKMEMQ {int __ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__);CHKERRQ(__ierr);}
 #define CHKMEMA {int __ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__);CHKERRA(__ierr);}

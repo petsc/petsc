@@ -1,4 +1,4 @@
-/*$Id: convert.c,v 1.67 2000/04/12 04:24:13 bsmith Exp bsmith $*/
+/*$Id: convert.c,v 1.68 2000/07/10 03:39:59 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"
 
@@ -23,7 +23,7 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
       break;
 #if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
     case MATMPIROWBS:
-      if (m != n) SETERRQ(PETSC_ERR_SUP,0,"MATMPIROWBS matrix must be square");
+      if (m != n) SETERRQ(PETSC_ERR_SUP,"MATMPIROWBS matrix must be square");
       ierr = MatCreateMPIRowbs(mat->comm,PETSC_DECIDE,m,0,PETSC_NULL,M);CHKERRQ(ierr);
       break;
 #endif
@@ -61,7 +61,7 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
              m,n,0,PETSC_NULL,0,PETSC_NULL,M);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ(PETSC_ERR_SUP,0,"Matrix type is not currently supported");
+      SETERRQ(PETSC_ERR_SUP,"Matrix type is not currently supported");
   }
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {

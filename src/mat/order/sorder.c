@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.78 2000/09/13 15:20:10 balay Exp balay $*/
+/*$Id: sorder.c,v 1.79 2000/09/25 17:29:26 balay Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -22,7 +22,7 @@ int MatOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *icol)
     ierr = MatOrdering_Flow_SeqAIJ(mat,type,irow,icol);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  SETERRQ(PETSC_ERR_SUP,0,"Cannot do default flow ordering for matrix type");
+  SETERRQ(PETSC_ERR_SUP,"Cannot do default flow ordering for matrix type");
 #if !defined(PETSC_USE_DEBUG)
   PetscFunctionReturn(0);
 #endif
@@ -56,7 +56,7 @@ int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
     
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-    SETERRQ(PETSC_ERR_SUP,0,"Currently only for 1 processor matrices");
+    SETERRQ(PETSC_ERR_SUP,"Currently only for 1 processor matrices");
   }
 
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ int MatOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(PETSC_ERR_SUP,0,"Cannot get rows for matrix");
+  if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
   lens  = (int*)PetscMalloc(2*n*sizeof(int));CHKPTRQ(lens);
   permr = lens + n;
@@ -235,8 +235,8 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
   if (mat->type == MATSEQDENSE || mat->type == MATMPIDENSE) { 
     /*
@@ -261,7 +261,7 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 
   ierr = PLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
   ierr =  FListFind(mat->comm,MatOrderingList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
-  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown or unregistered type: %s",type);}
+  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
 
   ierr = (*r)(mat,type,rperm,cperm);CHKERRQ(ierr);
   ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);

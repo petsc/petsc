@@ -1,4 +1,4 @@
-/*$Id: ex57.c,v 1.16 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex57.c,v 1.17 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another\
  binary file.\n\
@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
 
   ierr = OptionsGetString(PETSC_NULL,"-fin",fin,127,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Must indicate binary file with the -fin option");
+  if (!flg) SETERRA(1,"Must indicate binary file with the -fin option");
   ierr = ViewerBinaryOpen(PETSC_COMM_SELF,fin,BINARY_RDONLY,&fdin);CHKERRA(ierr);
 
   ierr = OptionsGetString(PETSC_NULL,"-fout",fout,127,&flg);CHKERRA(ierr);

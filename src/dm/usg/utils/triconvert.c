@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: triconvert.c,v 1.3 2000/05/05 22:19:39 balay Exp balay $";
+static char vcid[] = "$Id: triconvert.c,v 1.4 2000/05/08 15:09:28 balay Exp bsmith $";
 #endif
 /*
       Converts triangulated grid data file.node and file.ele generated
@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   ierr = OptionsGetString(0,"-f",filebase,246,&flag);CHKERRA(ierr);
   if (!flag) {
-    SETERRA(1,1,"Must provide filebase name with -f");
+    SETERRA(1,"Must provide filebase name with -f");
   }
 
   /*
@@ -43,11 +43,11 @@ int main(int argc,char **args)
   ierr = PetscStrcat(filename,".node");CHKERRA(ierr);
   file = fopen(filename,"r"); 
   if (!file) {  
-    SETERRA1(1,1,"Unable to open node file: %s",filename);
+    SETERRA1(1,"Unable to open node file: %s",filename);
   }
   fscanf(file,"%d %d %d %d\n",&nvertex,&dim,&nstuff,&nbound);  
   if (dim != 2) {
-    SETERRA(1,1,"Triangulation is not in two dimensions");
+    SETERRA(1,"Triangulation is not in two dimensions");
   }
   vertex = (double *)PetscMalloc(2*nvertex*sizeof(double));CHKPTRA(vertex);
   ierr   = PetscBTCreate(nvertex,vertex_boundary);CHKERRA(ierr);
@@ -62,7 +62,7 @@ int main(int argc,char **args)
       fscanf(file,"%d %le %le %d\n",&dummy,vertex+2*i,vertex+2*i+1,&bound);
       if (bound) PetscBTSet(vertex_boundary,i);
     }
-  } else SETERRA(1,1,"No support yet for that number of vertex quantities");
+  } else SETERRA(1,"No support yet for that number of vertex quantities");
   fclose(file);
 
   /*  
@@ -80,7 +80,7 @@ int main(int argc,char **args)
   ierr = PetscStrcat(filename,".ele");CHKERRA(ierr);
   file = fopen(filename,"r"); 
   if (!file) {  
-    SETERRA(1,1,"Unable to open element file");
+    SETERRA(1,"Unable to open element file");
   }
   fscanf(file,"%d %d %d\n",&ncell,&nc,&nstuff);ncp = nc;
 
@@ -97,7 +97,7 @@ int main(int argc,char **args)
       }
     }
   } else {
-    SETERRA(1,1,"No support yet for that number of element quantities");
+    SETERRA(1,"No support yet for that number of element quantities");
   }
   fclose(file);
   for (i=0; i<nc*ncell; i++) {
@@ -161,7 +161,7 @@ int main(int argc,char **args)
   file = fopen(filename,"r"); 
   if (file) {  
     fscanf(file,"%d %d\n",&ncell,&nc);
-    if (nc != 3) SETERRQ(PETSC_ERR_SUP,1,"Can only handle three neighbors");
+    if (nc != 3) SETERRQ(PETSC_ERR_SUP,"Can only handle three neighbors");
     for (i=0; i<ncell; i++) {
       fscanf(file,"%d %d %d %d\n",&dummy,cell_cell+3*i+1,cell_cell+3*i+2,cell_cell+3*i);
     }
@@ -171,7 +171,7 @@ int main(int argc,char **args)
     fclose(file);
 
   } else { /* no neighbor list file given, generate manually only works for nc == 3 */
-    if (nc != 3) SETERRQ(PETSC_ERR_SUP,1,"No neighbor file given and cannot determine neighbors");
+    if (nc != 3) SETERRQ(PETSC_ERR_SUP,"No neighbor file given and cannot determine neighbors");
 
     for (i=0; i<ncell; i++) {
       for (k=0; k<3; k++) {

@@ -1,4 +1,4 @@
-/*$Id: fdaij.c,v 1.32 2000/05/16 17:55:22 bsmith Exp bsmith $*/
+/*$Id: fdaij.c,v 1.33 2000/07/10 03:39:32 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -17,7 +17,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 
   PetscFunctionBegin;
   if (!mat->assembled) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
   }
 
   c->M             = mat->M;  /* set total rows, columns and local rows */
@@ -115,7 +115,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
             fm                        = currentcol; 
             /* fm points to present position in list since we know the columns are sorted */
           } else {
-            SETERRQ(PETSC_ERR_PLIB,0,"Detected invalid coloring");
+            SETERRQ(PETSC_ERR_PLIB,"Detected invalid coloring");
           }
 
         }

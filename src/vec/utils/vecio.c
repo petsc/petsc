@@ -1,4 +1,4 @@
-/*$Id: vecio.c,v 1.65 2000/05/05 22:14:53 balay Exp balay $*/
+/*$Id: vecio.c,v 1.66 2000/09/07 15:18:58 balay Exp bsmith $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The
@@ -72,7 +72,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
+  if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
   ierr = PLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
   if (!rank) {
     /* Read vector header. */
     ierr = PetscBinaryRead(fd,&type,1,PETSC_INT);CHKERRQ(ierr);
-    if (type != VEC_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Non-vector object");
+    if (type != VEC_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,"Non-vector object");
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);CHKERRQ(ierr);
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,PETSC_DECIDE,rows,&vec);CHKERRQ(ierr);
@@ -147,7 +147,7 @@ int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
   PetscFunctionBegin;
 
   ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
+  if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
   ierr = PLogEventBegin(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
 
   ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
@@ -158,10 +158,10 @@ int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
   if (!rank) {
     /* Read vector header. */
     ierr = PetscBinaryRead(fd,&type,1,PETSC_INT);CHKERRQ(ierr);
-    if (type != VEC_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Non-vector object");
+    if (type != VEC_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,"Non-vector object");
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);CHKERRQ(ierr);
     ierr = VecGetSize(vec,&n);CHKERRQ(ierr);
-    if (n != rows) SETERRQ(1,1,"Vector in file different length then input vector");
+    if (n != rows) SETERRQ(1,"Vector in file different length then input vector");
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
 
     ierr = OptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);

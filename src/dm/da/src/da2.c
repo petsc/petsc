@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.148 2000/08/06 03:48:16 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.149 2000/09/13 03:13:00 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -98,7 +98,7 @@ int DAView_2d(DA da,Viewer viewer)
   } else if (isbinary) {
     ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for DA2d",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for DA2d",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -151,7 +151,7 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec vec)
       SETERRQ(ierr,1,message);
     }
   } else {
-    SETERRQ1(1,1,"Wrong vector type %s for this call",((PetscObject)vec)->type_name);
+    SETERRQ1(1,"Wrong vector type %s for this call",((PetscObject)vec)->type_name);
   }
 
   PetscFunctionReturn(0);
@@ -200,7 +200,7 @@ int VecMatlabEnginePut_DA2d(PetscObject obj,void *engine)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)vec,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(1,1,"Vector not associated with a DA");
+  if (!da) SETERRQ(1,"Vector not associated with a DA");
   ierr = DAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRQ(ierr);
 
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
@@ -287,10 +287,10 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PetscFunctionBegin;
   *inra = 0;
 
-  if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node: %d",dof);
-  if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative: %d",s);
-  if (M < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have M positive");
-  if (N < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have N positive");
+  if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %d",dof);
+  if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %d",s);
+  if (M < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have M positive");
+  if (N < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have N positive");
 
   PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   PLogObjectCreate(da);
@@ -305,12 +305,12 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
 
   if (m != PETSC_DECIDE) {
-    if (m < 1) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in X direction: %d",m);}
-    else if (m > size) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Too many processors in X direction: %d %d",m,size);}
+    if (m < 1) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %d",m);}
+    else if (m > size) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %d %d",m,size);}
   }
   if (n != PETSC_DECIDE) {
-    if (n < 1) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in Y direction: %d",n);}
-    else if (n > size) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Too many processors in Y direction: %d %d",n,size);}
+    if (n < 1) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %d",n);}
+    else if (n > size) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %d %d",n,size);}
   }
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
@@ -324,11 +324,11 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       m--;
     }
     if (M > N && m < n) {int _m = m; m = n; n = _m;}
-    if (m*n != size) SETERRQ(PETSC_ERR_PLIB,0,"Internally Created Bad Partition");
-  } else if (m*n != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Given Bad partition"); 
+    if (m*n != size) SETERRQ(PETSC_ERR_PLIB,"Internally Created Bad Partition");
+  } else if (m*n != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition"); 
 
-  if (M < m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in x direction is too fine! %d %d",M,m);
-  if (N < n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in y direction is too fine! %d %d",N,n);
+  if (M < m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %d %d",M,m);
+  if (N < n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %d %d",N,n);
 
   /*
      We should create an MPI Cartesian topology here, with reorder
@@ -352,17 +352,17 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       left += lx[i];
     }
     if (left != M) {
-      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Sum of lx across processors not equal to M: %d %d",left,M);
+      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %d %d",left,M);
     }
   } else if (flg2) { 
     x = (M + rank%m)/m;
-    if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
+    if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %d %d",x,s);
     if (M/m == x) { xs = (rank % m)*x; }
     else          { xs = (rank % m)*(x-1) + (M+(rank % m))%(x*m); }
-    SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
+    SETERRQ(PETSC_ERR_SUP,"-da_partition_nodes_at_end not supported");
   } else { /* Normal PETSc distribution */
     x = M/m + ((M % m) > (rank % m));
-    if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
+    if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %d %d",x,s);
     if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
     else                      { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
     flx = lx = (int*)PetscMalloc(m*sizeof(int));CHKPTRQ(lx);
@@ -386,17 +386,17 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       left += ly[i];
     }
     if (left != N) {
-      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Sum of ly across processors not equal to N: %d %d",left,N);
+      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %d %d",left,N);
     }
   } else if (flg2) { 
     y = (N + rank/m)/n;
-    if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);
+    if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %d %d",y,s);
     if (N/n == y) { ys = (rank/m)*y;  }
     else          { ys = (rank/m)*(y-1) + (N+(rank/m))%(y*n); }
-    SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
+    SETERRQ(PETSC_ERR_SUP,"-da_partition_nodes_at_end not supported");
   } else { /* Normal PETSc distribution */
     y = N/n + ((N % n) > (rank/m));
-    if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);
+    if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %d %d",y,s);
     if ((N % n) > (rank/m)) { ys = (rank/m)*y; }
     else                    { ys = (N % n)*(y+1) + ((rank/m)-(N % n))*y; }
     fly = ly = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(lx);
@@ -1122,7 +1122,7 @@ int DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
 
   csize = 4*size;
   do {
-    if (csize % 4) SETERRQ4(1,1,"Cannot split communicator of size %d tried %d %d %d",size,csize,x,y);
+    if (csize % 4) SETERRQ4(1,"Cannot split communicator of size %d tried %d %d %d",size,csize,x,y);
     csize   = csize/4;
   
     m = (int)(0.5 + sqrt(((double)M)*((double)csize)/((double)N)));

@@ -1,4 +1,4 @@
-/*$Id: aodata.c,v 1.48 2000/05/05 22:19:09 balay Exp bsmith $*/
+/*$Id: aodata.c,v 1.49 2000/08/01 20:57:53 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AOData
 */
@@ -37,7 +37,7 @@ int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
   if (keys) {
     *keys = (char**)PetscMalloc((n+1)*sizeof(char *));CHKPTRQ(keys);
     for (i=0; i<n; i++) {
-      if (!key) SETERRQ(PETSC_ERR_COR,1,"Less keys in database then indicated");
+      if (!key) SETERRQ(PETSC_ERR_COR,"Less keys in database then indicated");
       (*keys)[i] = key->name;
       key        = key->next;
     }
@@ -897,10 +897,10 @@ int AODataKeySetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   ierr = AODataKeyFind_Private(aodata,name,&flag,&ikey);CHKERRQ(ierr);
-  if (!flag)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Key does not exist");
+  if (!flag)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Key does not exist");
 
   if (ikey->ltog) {
-    SETERRQ1(1,1,"Database key %s already has local to global mapping",name);
+    SETERRQ1(1,"Database key %s already has local to global mapping",name);
   }
 
   ikey->ltog = map;
@@ -940,7 +940,7 @@ int AODataKeyGetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   ierr = AODataKeyFind_Private(aodata,name,&flag,&ikey);CHKERRQ(ierr);
-  if (!flag)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key does not exist: %s",name);
+  if (!flag)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Key does not exist: %s",name);
 
   *map = ikey->ltog;
   PetscFunctionReturn(0);
@@ -978,7 +978,7 @@ int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   ierr = AODataKeyFind_Private(aodata,name,&flag,&key);CHKERRQ(ierr);
-  if (!flag) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key never created: %s",name);
+  if (!flag) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Key never created: %s",name);
 
   if (rstart) *rstart = key->rstart;
   if (rend)   *rend   = key->rend;
@@ -1020,7 +1020,7 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   ierr = AODataKeyFind_Private(aodata,name,&flag,&key);CHKERRQ(ierr);
-  if (!flag) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key never created: %s",name);
+  if (!flag) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Key never created: %s",name);
 
   if (nglobal)   *nglobal   = key->N;
   if (nlocal)    *nlocal    = key->nlocal;
@@ -1029,7 +1029,7 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
     *segnames = (char**)PetscMalloc((n+1)*sizeof(char *));CHKPTRQ(segnames);
     seg       = key->segments;
     for (i=0; i<n; i++) {
-      if (!seg) SETERRQ(PETSC_ERR_COR,1,"Less segments in database then indicated");
+      if (!seg) SETERRQ(PETSC_ERR_COR,"Less segments in database then indicated");
       (*segnames)[i] = seg->name;
       seg            = seg->next;
     }
@@ -1071,7 +1071,7 @@ int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs,Petsc
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   ierr = AODataSegmentFind_Private(aodata,keyname,segname,&flag,&key,&seg);CHKERRQ(ierr);
-  if (flag == PETSC_FALSE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Segment never created: %s",segname);
+  if (flag == PETSC_FALSE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Segment never created: %s",segname);
   if (bs)        *bs        = seg->bs;
   if (dtype)     *dtype     = seg->datatype;
 
@@ -1425,7 +1425,7 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   ierr = AODataKeyFind_Private(aodata,name,&flag,&oldkey);CHKERRQ(ierr);
-  if (flag)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key already exists with given name: %s",name);
+  if (flag)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Key already exists with given name: %s",name);
 
   key                = PetscNew(AODataKey);CHKPTRQ(key);
   if (oldkey) { oldkey->next = key;} 

@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.147 2000/06/21 15:46:58 bsmith Exp bsmith $*/
+/*$Id: itfunc.c,v 1.148 2000/08/01 20:56:48 bsmith Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -43,7 +43,7 @@ int KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
   PetscValidScalarPointer(emax);
   PetscValidScalarPointer(emin);
   if (!ksp->calc_sings) {
-    SETERRQ(4,0,"Singular values not requested before KSPSetUp()");
+    SETERRQ(4,"Singular values not requested before KSPSetUp()");
   }
 
   if (ksp->ops->computeextremesingularvalues) {
@@ -107,7 +107,7 @@ int KSPComputeEigenvalues(KSP ksp,int n,PetscReal *r,PetscReal *c,int *neig)
   PetscValidScalarPointer(r);
   PetscValidScalarPointer(c);
   if (!ksp->calc_sings) {
-    SETERRQ(4,0,"Eigenvalues not requested before KSPSetUp()");
+    SETERRQ(4,"Eigenvalues not requested before KSPSetUp()");
   }
 
   if (ksp->ops->computeeigenvalues) {
@@ -216,7 +216,7 @@ int KSPSolve(KSP ksp,int *its)
   ksp->transpose_solve = PETSC_FALSE;
   ierr = (*ksp->ops->solve)(ksp,&nits);CHKERRQ(ierr);
   if (!ksp->reason) {
-    SETERRQ(1,1,"Internal error, solver returned without setting converged reason");
+    SETERRQ(1,"Internal error, solver returned without setting converged reason");
   }
   if (its) *its = nits;
 
@@ -957,7 +957,7 @@ int KSPSetMonitor(KSP ksp,int (*monitor)(KSP,int,PetscReal,void*),void *mctx,int
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->numbermonitors >= MAXKSPMONITORS) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many KSP monitors set");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP monitors set");
   }
   ksp->monitor[ksp->numbermonitors]           = monitor;
   ksp->monitordestroy[ksp->numbermonitors]    = monitordestroy;
@@ -1215,7 +1215,7 @@ int KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (!V && !v) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must provide either v or V");
+  if (!V && !v) SETERRQ(PETSC_ERR_ARG_WRONG,"Must provide either v or V");
   if (!V) V = &v;
   ierr = (*ksp->ops->buildsolution)(ksp,v,V);CHKERRQ(ierr);
   PetscFunctionReturn(0);

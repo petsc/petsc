@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.109 2000/09/02 02:49:10 bsmith Exp bsmith $*/
+/*$Id: cg.c,v 1.110 2000/09/14 14:41:04 bsmith Exp bsmith $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -65,9 +65,9 @@ int KSPSetUp_CG(KSP ksp)
      so generate an error otherwise.
   */
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,0,"No right preconditioning for KSPCG");
+    SETERRQ(2,"No right preconditioning for KSPCG");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(2,0,"No symmetric preconditioning for KSPCG");
+    SETERRQ(2,"No symmetric preconditioning for KSPCG");
   }
 
   /* get work vectors needed by CG */
@@ -168,7 +168,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
      } else {
          b = beta/betaold;
 #if !defined(PETSC_USE_COMPLEX)
-         if (b < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Nonsymmetric/bad preconditioner");
+         if (b < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,"Nonsymmetric/bad preconditioner");
 #endif
          if (eigs) {
            e[i] = sqrt(PetscAbsScalar(b))/a;  
@@ -259,7 +259,7 @@ int KSPView_CG(KSP ksp,Viewer viewer)
       ierr = ViewerASCIIPrintf(viewer,"  CG: unknown variant\n");CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for KSP cg",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for KSP cg",((PetscObject)viewer)->type_name);
   }
 #endif
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: itres.c,v 1.45 2000/04/12 04:24:52 bsmith Exp balay $*/
+/*$Id: itres.c,v 1.46 2000/05/05 22:17:27 balay Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
@@ -45,7 +45,7 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec vb)
   } else if (ksp->pc_side == PC_LEFT) {
     ierr = KSP_PCApply(ksp,ksp->B,vb,vbinvf);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,0,"Only right and left preconditioning are currently supported");
+    SETERRQ(PETSC_ERR_SUP,"Only right and left preconditioning are currently supported");
   }
   if (!ksp->guess_zero) {
     /* compute initial residual: f - M*x */

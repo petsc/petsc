@@ -1,4 +1,4 @@
-/* $Id: petscis.h,v 1.55 2000/05/25 22:37:09 bsmith Exp bsmith $ */
+/* $Id: petscis.h,v 1.56 2000/08/01 20:58:40 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -96,7 +96,7 @@ EXTERN int ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,int*,int**,i
   int _i,*_idx = (mapping)->indices,_Nmax = (mapping)->n;\
   for (_i=0; _i<N; _i++) {\
     if ((in)[_i] < 0) {(out)[_i] = (in)[_i]; continue;}\
-    if ((in)[_i] >= _Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,1,"Local index %d too large %d (max) at %d",(in)[_i],_Nmax,_i);\
+    if ((in)[_i] >= _Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Local index %d too large %d (max) at %d",(in)[_i],_Nmax,_i);\
     (out)[_i] = _idx[(in)[_i]];\
   }\
 }

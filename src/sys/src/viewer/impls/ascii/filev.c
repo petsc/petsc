@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.109 2000/07/10 03:38:30 bsmith Exp bsmith $ */
+/* $Id: filev.c,v 1.110 2000/09/22 20:41:47 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -24,7 +24,7 @@ int ViewerDestroy_ASCII(Viewer viewer)
 
   PetscFunctionBegin;
   if (vascii->sviewer) {
-    SETERRQ(1,1,"ASCII Viewer destroyed before restoring singleton viewer");
+    SETERRQ(1,"ASCII Viewer destroyed before restoring singleton viewer");
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank && vascii->fd != stderr && vascii->fd != stdout) {
@@ -36,7 +36,7 @@ int ViewerDestroy_ASCII(Viewer viewer)
       ierr = PetscStrcat(par,vascii->filename);CHKERRQ(ierr);
       ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,par,"r",&fp);CHKERRQ(ierr);
       if (fgets(buf,1024,fp)) {
-        SETERRQ2(1,1,"Error from compression command %s %s\n%s",par,buf);
+        SETERRQ2(1,"Error from compression command %s %s\n%s",par,buf);
       }
     }
   }
@@ -194,7 +194,7 @@ int ViewerASCIIPopTab(Viewer viewer)
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    if (ascii->tab <= 0) SETERRQ(1,1,"More tabs popped than pushed");
+    if (ascii->tab <= 0) SETERRQ(1,"More tabs popped than pushed");
     ascii->tab--;
   }
   PetscFunctionReturn(0);
@@ -282,7 +282,7 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  if (!isascii) SETERRQ(1,1,"Not ASCII viewer");
+  if (!isascii) SETERRQ(1,"Not ASCII viewer");
 
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (ascii->bviewer) {ierr = MPI_Comm_rank(ascii->bviewer->comm,&rank);CHKERRQ(ierr);}
@@ -329,7 +329,7 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
 #endif
     va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
+    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
   }
   PetscFunctionReturn(0);
 }
@@ -357,7 +357,7 @@ int ViewerSetFilename(Viewer viewer,const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
-  if (!name) SETERRQ(1,1,"You must pass in non-null string");
+  if (!name) SETERRQ(1,"You must pass in non-null string");
   ierr = PetscObjectQueryFunction((PetscObject)viewer,"ViewerSetFilename_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,name);CHKERRQ(ierr);
@@ -444,7 +444,7 @@ int ViewerSetFilename_ASCII(Viewer viewer,const char name[])
   else {
     ierr         = PetscFixFilename(name,fname);CHKERRQ(ierr);
     vascii->fd   = fopen(fname,"w"); 
-    if (!vascii->fd) SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open viewer file: %s",fname);
+    if (!vascii->fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open viewer file: %s",fname);
   }
 #if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)viewer,"File: %s",name);
@@ -463,7 +463,7 @@ int ViewerGetSingleton_ASCII(Viewer viewer,Viewer *outviewer)
 
   PetscFunctionBegin;
   if (vascii->sviewer) {
-    SETERRQ(1,1,"Singleton already obtained from viewer and not restored");
+    SETERRQ(1,"Singleton already obtained from viewer and not restored");
   }
   ierr         = ViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr);
   ierr         = ViewerSetType(*outviewer,ASCII_VIEWER);CHKERRQ(ierr);
@@ -498,10 +498,10 @@ int ViewerRestoreSingleton_ASCII(Viewer viewer,Viewer *outviewer)
 
   PetscFunctionBegin;
   if (!ascii->sviewer) {
-    SETERRQ(1,1,"Singleton never obtained from viewer");
+    SETERRQ(1,"Singleton never obtained from viewer");
   }
   if (ascii->sviewer != *outviewer) {
-    SETERRQ(1,1,"This viewer did not generate singleton");
+    SETERRQ(1,"This viewer did not generate singleton");
   }
 
   ascii->sviewer             = 0;
@@ -581,7 +581,7 @@ int ViewerASCIISynchronizedPrintf(Viewer viewer,const char format[],...)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);
-  if (!isascii) SETERRQ(1,1,"Not ASCII viewer");
+  if (!isascii) SETERRQ(1,"Not ASCII viewer");
 
   comm = viewer->comm;
   fp   = vascii->fd;
@@ -631,7 +631,7 @@ int ViewerASCIISynchronizedPrintf(Viewer viewer,const char format[],...)
 #endif
     va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
+    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
   }
   PetscFunctionReturn(0);
 }

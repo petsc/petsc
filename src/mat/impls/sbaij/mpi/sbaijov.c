@@ -1,4 +1,4 @@
-/*$Id: sbaijov.c,v 1.1 2000/07/07 20:55:55 balay Exp balay $*/
+/*$Id: sbaijov.c,v 1.2 2000/07/07 21:01:44 balay Exp bsmith $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -33,7 +33,7 @@ static int MatCompressIndicesGeneral_MPISBAIJ(Mat C,int imax,IS *is_in,IS *is_ou
     ierr = ISGetSize(is_in[i],&n);CHKERRQ(ierr);
     for (j=0; j<n ; j++) {
       ival = idx[j]/bs; /* convert the indices into block indices */
-      if (ival>Nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"index greater than mat-dim");
+      if (ival>Nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
       if(!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
@@ -55,22 +55,22 @@ static int MatCompressIndicesSorted_MPISBAIJ(Mat C,int imax,IS *is_in,IS *is_out
   PetscFunctionBegin;
   for (i=0; i<imax; i++) {
     ierr = ISSorted(is_in[i],&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Indices are not sorted");
+    if (!flg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Indices are not sorted");
   }
   nidx  = (int*)PetscMalloc((Nbs+1)*sizeof(int));CHKPTRQ(nidx); 
   /* Now check if the indices are in block order */
   for (i=0; i<imax; i++) {
     ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
     ierr = ISGetSize(is_in[i],&n);CHKERRQ(ierr);
-    if (n%bs !=0) SETERRA(1,0,"Indices are not block ordered");
+    if (n%bs !=0) SETERRA(1,"Indices are not block ordered");
 
     n = n/bs; /* The reduced index size */
     idx_local = idx;
     for (j=0; j<n ; j++) {
       val = idx_local[0];
-      if (val%bs != 0) SETERRA(1,0,"Indices are not block ordered");
+      if (val%bs != 0) SETERRA(1,"Indices are not block ordered");
       for (k=0; k<bs; k++) {
-        if (val+k != idx_local[k]) SETERRA(1,0,"Indices are not block ordered");
+        if (val+k != idx_local[k]) SETERRA(1,"Indices are not block ordered");
       }
       nidx[j] = val/bs;
       idx_local +=bs;
@@ -120,7 +120,7 @@ int MatIncreaseOverlap_MPISBAIJ(Mat C,int imax,IS *is,int ov)
   is_new = (IS *)PetscMalloc(imax*sizeof(IS));CHKPTRQ(is_new);
   /* Convert the indices into block format */
   ierr = MatCompressIndicesGeneral_MPISBAIJ(C,imax,is,is_new);CHKERRQ(ierr);
-  if (ov < 0){ SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative overlap specified\n");}
+  if (ov < 0){ SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified\n");}
   for (i=0; i<ov; ++i) {
     ierr = MatIncreaseOverlap_MPISBAIJ_Once(C,imax,is_new);CHKERRQ(ierr);
   }
@@ -206,7 +206,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int imax,IS *is)
     for (j=0; j<len; j++) {
       row  = idx_i[j];
       if (row < 0) {
-        SETERRQ(1,1,"Index set cannot have negative entries");
+        SETERRQ(1,"Index set cannot have negative entries");
       }
       proc = rtable[row];
       w4[proc]++;
@@ -757,7 +757,7 @@ static int MatGetSubMatrices_MPISBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   /* Check if the col indices are sorted */
   for (i=0; i<ismax; i++) {
     ierr = ISSorted(iscol[i],(PetscTruth*)&j);CHKERRQ(ierr);
-    if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"IS is not sorted");
+    if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
   }
 
   len    = (2*ismax+1)*(sizeof(int*)+ sizeof(int)) + (Mbs+1)*sizeof(int);
@@ -1186,11 +1186,11 @@ static int MatGetSubMatrices_MPISBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
     for (i=0; i<ismax; i++) {
       mat = (Mat_SeqBAIJ *)(submats[i]->data);
       if ((mat->mbs != nrow[i]) || (mat->nbs != ncol[i] || mat->bs != bs)) {
-        SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong size");
+        SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       }
       ierr = PetscMemcmp(mat->ilen,lens[i],mat->mbs *sizeof(int),&flag);CHKERRQ(ierr);
       if (flag == PETSC_FALSE) {
-        SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Cannot reuse matrix. wrong no of nonzeros");
+        SETERRQ(PETSC_ERR_ARG_INCOMP,"Cannot reuse matrix. wrong no of nonzeros");
       }
       /* Initial matrix as if empty */
       ierr = PetscMemzero(mat->ilen,mat->mbs*sizeof(int));CHKERRQ(ierr);

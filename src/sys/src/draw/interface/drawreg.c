@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.36 2000/08/25 16:45:26 balay Exp bsmith $*/
+/*$Id: drawreg.c,v 1.37 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
@@ -133,11 +133,11 @@ int DrawSetType(Draw draw,DrawType type)
   }
 
   /* Get the function pointers for the graphics method requested */
-  if (!DrawList) SETERRQ(1,1,"No draw implementations ierr");
+  if (!DrawList) SETERRQ(1,"No draw implementations ierr");
 
   ierr =  FListFind(draw->comm,DrawList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
 
-  if (!r) SETERRQ1(1,1,"Unknown Draw type given: %s",type);
+  if (!r) SETERRQ1(1,"Unknown Draw type given: %s",type);
 
   ierr = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
 
@@ -285,7 +285,7 @@ int DrawSetFromOptions(Draw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
 
-  if (!DrawList) SETERRQ(1,1,"No draw implementations registered");
+  if (!DrawList) SETERRQ(1,"No draw implementations registered");
   if (draw->type_name) {
     def = draw->type_name;
   } else {

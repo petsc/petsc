@@ -1,4 +1,4 @@
-/*$Id: dtri.c,v 1.44 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dtri.c,v 1.45 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -153,10 +153,10 @@ int DrawTensorContour(Draw win,int m,int n,const PetscReal xi[],const PetscReal 
   ierr = DrawIsNull(win,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)win,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(1,1,"May only be used with single processor Draw");
+  if (size > 1) SETERRQ(1,"May only be used with single processor Draw");
 
   if (N <= 0) {
-    SETERRQ2(1,1,"n %d and m %d must be positive",m,n);
+    SETERRQ2(1,"n %d and m %d must be positive",m,n);
   }
 
   /* create scale window */

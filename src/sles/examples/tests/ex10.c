@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.82 2000/01/11 21:02:16 bsmith Exp balay $*/
+/*$Id: ex10.c,v 1.83 2000/05/05 22:17:55 balay Exp bsmith $*/
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
@@ -338,7 +338,7 @@ int paulsetup20(void)
 		w[3] = 0.347854845137454;
   }
   else {
-    SETERRQ(1,0,"Unknown value for n_int");
+    SETERRQ(1,"Unknown value for n_int");
   }
 
   /* rst[][i] contains the location of the i-th integration point

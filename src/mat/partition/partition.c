@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.53 2000/09/07 15:18:37 balay Exp bsmith $*/
+/*$Id: partition.c,v 1.54 2000/09/22 20:44:39 bsmith Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
@@ -14,7 +14,7 @@ static int MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(part->comm,&size);CHKERRQ(ierr);
   if (part->n != size) {
-    SETERRQ(PETSC_ERR_SUP,1,"Currently only supports one domain per processor");
+    SETERRQ(PETSC_ERR_SUP,"Currently only supports one domain per processor");
   }
   ierr = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
 
@@ -32,19 +32,19 @@ static int MatPartitioningApply_Square(MatPartitioning part,IS *partitioning)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(part->comm,&size);CHKERRQ(ierr);
   if (part->n != size) {
-    SETERRQ(PETSC_ERR_SUP,1,"Currently only supports one domain per processor");
+    SETERRQ(PETSC_ERR_SUP,"Currently only supports one domain per processor");
   }
   p = (int)sqrt((double)part->n);
   if (p*p != part->n) {
-    SETERRQ(PETSC_ERR_SUP,1,"Square partitioning requires \"perfect square\" number of domains");
+    SETERRQ(PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
   }
   ierr = MatGetSize(part->adj,&N,PETSC_NULL);CHKERRQ(ierr);
   n = (int)sqrt((double)N);
   if (n*n != N) {  /* This condition is NECESSARY, but NOT SUFFICIENT in order to the domain be square */
-    SETERRQ(PETSC_ERR_SUP,1,"Square partitioning requires square domain");
+    SETERRQ(PETSC_ERR_SUP,"Square partitioning requires square domain");
   }
   if (n%p != 0) {
-    SETERRQ(PETSC_ERR_SUP,1,"Square partitioning requires p to divide n"); 
+    SETERRQ(PETSC_ERR_SUP,"Square partitioning requires p to divide n"); 
   }
   ierr = MatGetOwnershipRange(part->adj,&rstart,&rend);CHKERRQ(ierr);
   color = (int*)PetscMalloc((rend-rstart)*sizeof(int));CHKPTRQ(color);
@@ -232,9 +232,9 @@ int MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MATPARTITIONING_COOKIE);
-  if (!matp->adj->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
-  if (matp->adj->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
-  if (!matp->ops->apply) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
+  if (!matp->adj->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (matp->adj->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!matp->ops->apply) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
   ierr = PLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
   ierr = PLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
@@ -432,7 +432,7 @@ int MatPartitioningView(MatPartitioning part,Viewer viewer)
       ierr = ViewerASCIIPrintf(viewer,"  Using vertex weights\n");CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for this MatParitioning",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for this MatParitioning",((PetscObject)viewer)->type_name);
   }
 
   if (part->ops->view) {
@@ -489,7 +489,7 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
   if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
   ierr =  FListFind(part->comm,MatPartitioningList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
 
-  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown partitioning type %s",type);}
+  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown partitioning type %s",type);}
 
   part->ops->destroy      = (int (*)(MatPartitioning)) 0;
   part->ops->view         = (int (*)(MatPartitioning,Viewer)) 0;

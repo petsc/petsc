@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.34 2000/08/16 15:12:21 balay Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.35 2000/09/11 15:42:36 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -182,7 +182,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
       if (rank == i) {
         fd = fopen(filename,"w");
         if (!fd) {
-          SETERRQ1(1,1,"Unable to open test file %s",filename);
+          SETERRQ1(1,"Unable to open test file %s",filename);
         }
         fclose(fd);
       }
@@ -205,7 +205,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
         *shared = PETSC_TRUE;
         break;
       } else if (sum != 1) {
-        SETERRQ(1,1,"Subset of processes share /tmp cannot load remote or compressed file");
+        SETERRQ(1,"Subset of processes share /tmp cannot load remote or compressed file");
       }
     }
     *tagvalp = (int)*shared;
@@ -303,7 +303,7 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
       if (rank == i) {
         fd = fopen(filename,"w");
         if (!fd) {
-          SETERRQ1(1,1,"Unable to open test file %s",filename);
+          SETERRQ1(1,"Unable to open test file %s",filename);
         }
         fclose(fd);
       }
@@ -326,7 +326,7 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
         *shared = PETSC_TRUE;
         break;
       } else if (sum != 1) {
-        SETERRQ(1,1,"Subset of processes share working directory");
+        SETERRQ(1,"Subset of processes share working directory");
       }
     }
     *tagvalp = (int)*shared;
@@ -401,7 +401,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
     if (!exists) {
       ierr = PetscTestFile("urlget.py",'r',&exists);CHKERRQ(ierr);
       if (!exists) {
-        SETERRQ1(1,1,"Cannot locate PETSc python script urlget.py in %s or current directory",urlget);
+        SETERRQ1(1,"Cannot locate PETSc python script urlget.py in %s or current directory",urlget);
       }
       ierr = PetscStrcpy(urlget,"urlget.py");CHKERRQ(ierr);
     }
@@ -420,7 +420,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
 
     ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,par,"r",&fp);CHKERRQ(ierr);
     if (!fgets(buf,1024,fp)) {
-      SETERRQ1(1,1,"No output from ${PETSC_DIR}/bin/urlget.py in getting file %s",libname);
+      SETERRQ1(1,"No output from ${PETSC_DIR}/bin/urlget.py in getting file %s",libname);
     }
     PLogInfo(0,"PetscFileRetrieve:Message back from Python: %s\n",buf);
 

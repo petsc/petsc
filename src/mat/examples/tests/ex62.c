@@ -1,4 +1,4 @@
-/*$Id: ex62.c,v 1.13 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex62.c,v 1.14 2000/07/10 03:39:52 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 
@@ -21,10 +21,10 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size > 1) SETERRA(1,1,"Can only run on one processor");
+  if (size > 1) SETERRA(1,"Can only run on one processor");
 
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Must indicate binary file with the -f option");
+  if (!flg) SETERRA(1,"Must indicate binary file with the -f option");
   /* 
      Open binary file.  Note that we use BINARY_RDONLY to indicate
      reading from this file.

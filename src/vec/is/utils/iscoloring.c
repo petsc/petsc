@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.61 2000/05/24 22:17:46 balay Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.62 2000/07/10 03:39:12 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -67,7 +67,7 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
     ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Number of colors %d\n",rank,iscoloring->n);CHKERRQ(ierr);
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for ISColoring",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for ISColoring",((PetscObject)viewer)->type_name);
   }
 
   for (i=0; i<iscoloring->n; i++) {
@@ -268,7 +268,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
     np = PetscMax(np,indices[i]);
   }  
   if (np >= size) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Number of partitions %d larger than number of processors %d",np,size);
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Number of partitions %d larger than number of processors %d",np,size);
   }
 
   /*
@@ -346,7 +346,7 @@ int ISPartitioningCount(IS part,int count[])
     np = PetscMax(np,indices[i]);
   }  
   if (np >= size) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Number of partitions %d larger than number of processors %d",np,size);
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Number of partitions %d larger than number of processors %d",np,size);
   }
 
   /*

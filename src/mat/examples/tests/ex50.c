@@ -1,4 +1,4 @@
-/*$Id: ex50.c,v 1.18 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex50.c,v 1.19 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII format and writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
@@ -25,13 +25,13 @@ int main(int argc,char **args)
 
   /* Read in matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-fin",filein,255,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Must indicate file for reading");
+  if (!flg) SETERRA(1,"Must indicate file for reading");
   ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,255,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Must indicate file for writing");
+  if (!flg) SETERRA(1,"Must indicate file for writing");
 
   ierr = PetscFixFilename(filein,finname);CHKERRA(ierr);
   if (!(file = fopen(finname,"r"))) {
-    SETERRA(1,0,"cannot open input file\n");
+    SETERRA(1,"cannot open input file\n");
   }
   fscanf(file,"%d\n",&n);
 
@@ -41,7 +41,7 @@ int main(int argc,char **args)
 
   for (row=0; row<n; row++) {
     fscanf(file,"row %d:",&rowin);
-    if (rowin != row) SETERRA(1,0,"Bad file");
+    if (rowin != row) SETERRA(1,"Bad file");
     while (fscanf(file," %d %le",&col,&val)) {
       ierr = MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);CHKERRA(ierr);
     }  

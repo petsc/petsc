@@ -1,4 +1,4 @@
-/*$Id: aoreduced.c,v 1.23 2000/05/05 22:19:12 balay Exp balay $*/
+/*$Id: aoreduced.c,v 1.24 2000/05/08 15:09:19 balay Exp bsmith $*/
 
 #include "src/dm/ao/aoimpl.h"     /*I   "petscao.h"  I*/
 #include "petscsys.h"
@@ -18,9 +18,9 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
   PetscFunctionBegin;
   /* find the correct segment */
   ierr = AODataSegmentFind_Private(ao,name,segname,&flag,&key,&segment);CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_ERR_ARG_WRONG,1,"Cannot locate segment");
+  if (!flag) SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot locate segment");
 
-  if (segment->datatype != PETSC_INT) SETERRQ(PETSC_ERR_ARG_WRONG,1,"Only for PETSC_INT data");
+  if (segment->datatype != PETSC_INT) SETERRQ(PETSC_ERR_ARG_WRONG,"Only for PETSC_INT data");
 
   /*
      Copy the found values into a contiguous location, keeping them in the 

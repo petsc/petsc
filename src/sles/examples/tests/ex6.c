@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.62 2000/05/05 22:17:55 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.63 2000/08/01 20:57:07 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -30,12 +30,12 @@ int main(int argc,char **args)
   ierr = OptionsHasName(PETSC_NULL,"-table",&table);CHKERRA(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-  SETERRA(1,0,"This example does not work with complex numbers");
+  SETERRA(1,"This example does not work with complex numbers");
 #else
 
   /* Read matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Must indicate binary file with the -f option");
+  if (!flg) SETERRA(1,"Must indicate binary file with the -f option");
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,PETSC_NULL,&mtype,&set);CHKERRA(ierr);
   ierr = MatLoad(fd,mtype,&A);CHKERRA(ierr);

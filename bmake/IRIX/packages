@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.34 2000/09/13 15:18:32 balay Exp bsmith $ 
+# $Id: base.site,v 1.35 2000/09/22 20:40:11 bsmith Exp bsmith $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -94,11 +94,11 @@ PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 # depending on how they are named) into src/mat/impls/aij/seq and 
 # uncomment the appropriate lines below
 #
-PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
+#PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
 #PETSC_LUSOL_SOURCE_F = LUSOL.f LUSOL_BLAS.f
 #PETSC_LUSOL_SOURCE_O = LUSOL.o LUSOL_BLAS.o
-PETSC_LUSOL_SOURCE_F = mi25bfac.f mi15blas.f
-PETSC_LUSOL_SOURCE_O = mi25bfac.o mi15blas.o
+#PETSC_LUSOL_SOURCE_F = mi25bfac.f mi15blas.f
+#PETSC_LUSOL_SOURCE_O = mi25bfac.o mi15blas.o
 # ---------------------------------------------------------------------------------------
 #
 # If you are using shared version of any external libraries you must make this

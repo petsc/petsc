@@ -1,4 +1,4 @@
-/*$Id: select.c,v 1.5 2000/05/05 22:14:11 balay Exp bsmith $*/
+/*$Id: select.c,v 1.6 2000/09/22 20:42:32 bsmith Exp bsmith $*/
 #include "petsc.h"              /*I  "petsc.h"  I*/
 #include "petscsys.h"           /*I  "petscsys.h"  I*/
 
@@ -41,8 +41,8 @@ int PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choice
   FILE *fp;
 
   PetscFunctionBegin;
-  if (!title) SETERRQ(1,1,"Must pass in a title line");
-  if (n < 1) SETERRQ(1,1,"Must pass in at least one selection");
+  if (!title) SETERRQ(1,"Must pass in a title line");
+  if (n < 1) SETERRQ(1,"Must pass in at least one selection");
   if (n == 1) {*choice = 0; PetscFunctionReturn(0);}
 
   ierr = PetscStrlen(title,&cols);CHKERRQ(ierr);
@@ -76,7 +76,7 @@ int PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choice
     ierr = PetscFOpen(PETSC_COMM_SELF,"${HOMEDIRECTORY}/.popuptmp","r",&fd);CHKERRQ(ierr);
     fscanf(fd,"%d",choice);
     *choice -= 1;
-    if (*choice < 0 || *choice > n-1) SETERRQ1(1,1,"Selection %d out of range",*choice);
+    if (*choice < 0 || *choice > n-1) SETERRQ1(1,"Selection %d out of range",*choice);
     ierr = PetscFClose(PETSC_COMM_SELF,fd);CHKERRQ(ierr);
   }
   ierr = MPI_Bcast(choice,1,MPI_INT,0,comm);CHKERRQ(ierr);

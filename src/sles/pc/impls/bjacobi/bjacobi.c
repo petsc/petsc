@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.146 2000/09/02 02:48:49 bsmith Exp balay $*/
+/*$Id: bjacobi.c,v 1.147 2000/09/07 15:18:20 balay Exp bsmith $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -36,20 +36,20 @@ static int PCSetUp_BJacobi(PC pc)
       sum = 0;
       for (i=0; i<jac->n_local; i++) {
         if (jac->l_lens[i]/bs*bs !=jac->l_lens[i]) {
-          SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat blocksize doesn't match block Jacobi layout");
+          SETERRQ(PETSC_ERR_ARG_SIZ,"Mat blocksize doesn't match block Jacobi layout");
         }
         sum += jac->l_lens[i];
       }
-      if (sum != M) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local lens sent incorrectly");
+      if (sum != M) SETERRQ(PETSC_ERR_ARG_SIZ,"Local lens sent incorrectly");
     }
   } else if (jac->n > 0 && jac->n_local < 0) { /* global block count given */
     /* global blocks given: determine which ones are local */
     if (jac->g_lens) {
       /* check if the g_lens is has valid entries */
       for (i=0; i<jac->n; i++) {
-        if (!jac->g_lens[i]) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Zero block not allowed");
+        if (!jac->g_lens[i]) SETERRQ(PETSC_ERR_ARG_SIZ,"Zero block not allowed");
         if (jac->g_lens[i]/bs*bs != jac->g_lens[i]) {
-          SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat blocksize doesn't match block Jacobi layout");
+          SETERRQ(PETSC_ERR_ARG_SIZ,"Mat blocksize doesn't match block Jacobi layout");
         }
       }
       if (size == 1) {
@@ -59,7 +59,7 @@ static int PCSetUp_BJacobi(PC pc)
         /* check that user set these correctly */
         sum = 0;
         for (i=0; i<jac->n_local; i++) sum += jac->l_lens[i];
-        if (sum != M) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Global lens sent incorrectly");
+        if (sum != M) SETERRQ(PETSC_ERR_ARG_SIZ,"Global lens sent incorrectly");
       } else {
         ierr = MatGetOwnershipRange(pc->pmat,&start,&end);CHKERRQ(ierr);
         /* loop over blocks determing first one owned by me */
@@ -68,7 +68,7 @@ static int PCSetUp_BJacobi(PC pc)
           if (sum == start) { i_start = i; goto start_1;}
           if (i < jac->n) sum += jac->g_lens[i];
         }
-        SETERRQ(PETSC_ERR_ARG_SIZ,0,"Block sizes\n\
+        SETERRQ(PETSC_ERR_ARG_SIZ,"Block sizes\n\
                    used in PCBJacobiSetTotalBlocks()\n\
                    are not compatible with parallel matrix layout");
  start_1: 
@@ -76,7 +76,7 @@ static int PCSetUp_BJacobi(PC pc)
           if (sum == end) { i_end = i; goto end_1; }
           if (i < jac->n) sum += jac->g_lens[i];
         }          
-        SETERRQ(PETSC_ERR_ARG_SIZ,0,"Block sizes\n\
+        SETERRQ(PETSC_ERR_ARG_SIZ,"Block sizes\n\
                       used in PCBJacobiSetTotalBlocks()\n\
                       are not compatible with parallel matrix layout");
  end_1: 
@@ -89,7 +89,7 @@ static int PCSetUp_BJacobi(PC pc)
       jac->l_lens  = (int*)PetscMalloc(jac->n_local*sizeof(int));CHKPTRQ(jac->l_lens);
       for (i=0; i<jac->n_local; i++) {
         jac->l_lens[i] = ((M/bs)/jac->n_local + (((M/bs) % jac->n_local) > i))*bs;
-        if (!jac->l_lens[i]) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Too many blocks given");
+        if (!jac->l_lens[i]) SETERRQ(PETSC_ERR_ARG_SIZ,"Too many blocks given");
       }
     }
   } else if (jac->n < 0 && jac->n_local < 0) { /* no blocks given */
@@ -124,7 +124,7 @@ static int PCSetUp_BJacobi(PC pc)
       }
       ierr = PetscObjectQueryFunction((PetscObject)pc->mat,"MatGetDiagonalBlock_C",(void**)&f);CHKERRQ(ierr);
       if (!f) {
-        SETERRQ(PETSC_ERR_SUP,0,"This matrix does not support getting diagonal block");
+        SETERRQ(PETSC_ERR_SUP,"This matrix does not support getting diagonal block");
       }
       ierr = (*f)(pc->mat,&iscopy,scall,&mat);CHKERRQ(ierr);
       /* make submatrix have same prefix as entire matrix */
@@ -150,7 +150,7 @@ static int PCSetUp_BJacobi(PC pc)
       }
       ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void**)&f);CHKERRQ(ierr);
       if (!f) {
-        SETERRQ(PETSC_ERR_SUP,0,"This matrix does not support getting diagonal block");
+        SETERRQ(PETSC_ERR_SUP,"This matrix does not support getting diagonal block");
       }
       ierr = (*f)(pc->pmat,&iscopy,scall,&pmat);CHKERRQ(ierr);
       /* make submatrix have same prefix as entire matrix */
@@ -261,7 +261,7 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
     ierr = ViewerStringSPrintf(viewer," blks=%d",jac->n);CHKERRQ(ierr);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer);CHKERRQ(ierr);}
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for block Jacobi",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for block Jacobi",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -290,7 +290,7 @@ int PCBJacobiGetSubSLES_BJacobi(PC pc,int *n_local,int *first_local,SLES **sles)
   PC_BJacobi   *jac = (PC_BJacobi*)pc->data;;
 
   PetscFunctionBegin;
-  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp() or PCSetUp() first");
+  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SLESSetUp() or PCSetUp() first");
 
   if (n_local) *n_local         = jac->n_local;
   if (first_local) *first_local = jac->first_local;
@@ -433,7 +433,7 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   if (f) {
     ierr = (*f)(pc,n_local,first_local,sles);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Cannot get subsolvers for this preconditioner");
+    SETERRQ(1,"Cannot get subsolvers for this preconditioner");
   }
   PetscFunctionReturn(0);
 }
@@ -470,7 +470,7 @@ int PCBJacobiSetTotalBlocks(PC pc,int blocks,int *lens)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (blocks <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have positive blocks");
+  if (blocks <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have positive blocks");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
@@ -506,7 +506,7 @@ int PCBJacobiSetLocalBlocks(PC pc,int blocks,int *lens)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (blocks < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have nonegative blocks");
+  if (blocks < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have nonegative blocks");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetLocalBlocks_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
@@ -884,7 +884,7 @@ static int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
   n_local = jac->n_local;
 
   if (jac->use_true_local) {
-    if (mat->type != pmat->type) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Matrices not of same type");
+    if (mat->type != pmat->type) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices not of same type");
   }
 
   /* set default direct solver with no Krylov method */

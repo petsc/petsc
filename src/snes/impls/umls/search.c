@@ -1,4 +1,4 @@
-/*$Id: search.c,v 1.23 2000/04/09 04:38:48 bsmith Exp bsmith $*/
+/*$Id: search.c,v 1.24 2000/04/12 04:25:37 bsmith Exp bsmith $*/
 
 /*
      The subroutine mcstep is taken from the work of Jorge Nocedal.
@@ -77,9 +77,9 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
   /* Check the input parameters for errors */
   neP->infoc = 0;
   if (neP->bracket && (*stp <= PetscMin(*stx,*sty) || (*stp >= PetscMax(*stx,*sty))))
-    SETERRQ(PETSC_ERR_PLIB,0,"bad stp in bracket");
-  if (*dx * (*stp-*stx) >= zero) SETERRQ(PETSC_ERR_PLIB,0,"dx * (stp-stx) >= 0");
-  if (neP->stepmax < neP->stepmin) SETERRQ(PETSC_ERR_PLIB,0,"stepmax > stepmin");
+    SETERRQ(PETSC_ERR_PLIB,"bad stp in bracket");
+  if (*dx * (*stp-*stx) >= zero) SETERRQ(PETSC_ERR_PLIB,"dx * (stp-stx) >= 0");
+  if (neP->stepmax < neP->stepmin) SETERRQ(PETSC_ERR_PLIB,"stepmax > stepmin");
 
   /* Determine if the derivatives have opposite sign */
   sgnd = *dp * (*dx/PetscAbsDouble(*dx));

@@ -1,4 +1,4 @@
-/*$Id: ptype.c,v 1.1 2000/08/24 16:06:26 balay Exp balay $*/
+/*$Id: ptype.c,v 1.2 2000/09/06 22:57:25 balay Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -28,7 +28,7 @@ int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
   } else if (ptype == PETSC_LOGICAL) {
     *mtype = MPI_BYTE;
   } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown PETSc datatype");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   }
   PetscFunctionReturn(0);
 }
@@ -57,7 +57,7 @@ int PetscDataTypeGetSize(PetscDataType ptype,int *size)
   } else if (ptype == PETSC_LOGICAL) {
     *size = PETSC_LOGICAL_SIZE;
   } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown PETSc datatype");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   }
   PetscFunctionReturn(0);
 }
@@ -86,7 +86,7 @@ int PetscDataTypeGetName(PetscDataType ptype,char *name[])
   } else if (ptype == PETSC_LOGICAL) {
     *name = "logical";
   } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown PETSc datatype");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   }
   PetscFunctionReturn(0);
 }

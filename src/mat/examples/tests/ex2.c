@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.14 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.15 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   /* Test whether matrix has been corrupted (just to demonstrate this
      routine) not needed in most application codes. */
   ierr = MatValid(mat,(PetscTruth*)&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Corrupted matrix.");
+  if (!flg) SETERRA(1,"Corrupted matrix.");
 
   /* ----------------- Test MatNorm()  ----------------- */
 

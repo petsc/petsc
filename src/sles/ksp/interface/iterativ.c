@@ -1,4 +1,4 @@
-/*$Id: iterativ.c,v 1.97 2000/08/01 20:56:48 bsmith Exp balay $*/
+/*$Id: iterativ.c,v 1.98 2000/09/23 15:04:56 balay Exp bsmith $*/
 
 /*
    This file contains some simple default routines.  
@@ -412,16 +412,16 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
   if (ksp->pc_side == PC_RIGHT) {
     if (ksp->B) {
       if (v) {ierr = KSP_PCApply(ksp,ksp->B,ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
-      else {SETERRQ(PETSC_ERR_SUP,0,"Not working with right preconditioner");}
+      else {SETERRQ(PETSC_ERR_SUP,"Not working with right preconditioner");}
     } else {
       if (v) {ierr = VecCopy(ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
       else { *V = ksp->vec_sol;}
     }
   } else if (ksp->pc_side == PC_SYMMETRIC) {
     if (ksp->B) {
-      if (ksp->transpose_solve) SETERRQ(PETSC_ERR_SUP,0,"Not working with symmetric preconditioner and transpose solve");
+      if (ksp->transpose_solve) SETERRQ(PETSC_ERR_SUP,"Not working with symmetric preconditioner and transpose solve");
       if (v) {ierr = PCApplySymmetricRight(ksp->B,ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
-      else {SETERRQ(PETSC_ERR_SUP,0,"Not working with symmetric preconditioner");}
+      else {SETERRQ(PETSC_ERR_SUP,"Not working with symmetric preconditioner");}
     } else  {
       if (v) {ierr = VecCopy(ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
       else { *V = ksp->vec_sol;}

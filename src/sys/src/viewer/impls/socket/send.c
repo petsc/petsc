@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.113 2000/09/02 02:46:28 bsmith Exp bsmith $ */
+/* $Id: send.c,v 1.114 2000/09/22 20:41:42 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -71,7 +71,7 @@ static int ViewerDestroy_Socket(Viewer viewer)
   if (vmatlab->port) {
     ierr = close(vmatlab->port);
     if (ierr) {
-      SETERRQ(PETSC_ERR_LIB,0,"System error closing socket");
+      SETERRQ(PETSC_ERR_LIB,"System error closing socket");
     }
   }
   ierr = PetscFree(vmatlab);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
   PetscFunctionBegin;
   if (!(hp=gethostbyname(hostname))) {
     perror("SEND: error gethostbyname: ");   
-    SETERRQ1(PETSC_ERR_LIB,0,"system error open connection to %s",hostname);
+    SETERRQ1(PETSC_ERR_LIB,"system error open connection to %s",hostname);
   }
   ierr = PetscMemzero(&sa,sizeof(sa));CHKERRQ(ierr);
   ierr = PetscMemcpy(&sa.sin_addr,hp->h_addr,hp->h_length);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
   sa.sin_port = htons((u_short) portnum);
   while (flg) {
     if ((s=socket(hp->h_addrtype,SOCK_STREAM,0)) < 0) {
-      perror("SEND: error socket");  SETERRQ(PETSC_ERR_LIB,0,"system error");
+      perror("SEND: error socket");  SETERRQ(PETSC_ERR_LIB,"system error");
     }
     if (connect(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
        if (errno == EADDRINUSE) {
@@ -119,7 +119,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
         /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
         sleep((unsigned) 1);
       } else {
-        perror(NULL); SETERRQ(PETSC_ERR_LIB,0,"system error");
+        perror(NULL); SETERRQ(PETSC_ERR_LIB,"system error");
       }
       flg = PETSC_TRUE; close(s);
     } 

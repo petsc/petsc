@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.15 2000/05/10 16:43:51 bsmith Exp bsmith $*/
+/* $Id: ispai.c,v 1.16 2000/09/02 02:49:00 bsmith Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -106,7 +106,7 @@ static int PCSetUp_SPAI(PC pc)
 		   ispai->cache_size,
 		   ispai->verbose);
 
-  if (!ispai->M) SETERRQ(1,1,"Unable to create SPAI preconditioner");
+  if (!ispai->M) SETERRQ(1,"Unable to create SPAI preconditioner");
 
   ierr = ConvertMatrixToMat(ispai->M,&ispai->PM);CHKERRQ(ierr);
 

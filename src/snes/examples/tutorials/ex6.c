@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.62 2000/07/27 14:45:45 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.63 2000/09/22 20:46:14 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
 matrices are used for the Jacobian and the preconditioner.  The code also\n\
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
+  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   h = 1.0/(n-1);
 

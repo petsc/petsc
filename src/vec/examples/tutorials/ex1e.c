@@ -1,4 +1,4 @@
-/*$Id: ex1e.c,v 1.3 2000/05/05 22:15:21 balay Exp bsmith $*/
+/*$Id: ex1e.c,v 1.4 2000/09/22 20:43:24 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -167,7 +167,7 @@ _ PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %g %g %g \n",v,v1,v2);___
      routine) not needed in most application codes.
   */
 _ VecValid(x,&flg);___
-  if (!flg) SETERRA(1,0,"Corrupted vector.");
+  if (!flg) SETERRA(1,"Corrupted vector.");
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

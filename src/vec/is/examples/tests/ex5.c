@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.1 2000/06/24 00:46:13 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.2 2000/06/26 20:18:24 bsmith Exp bsmith $*/
 
 static char help[] = "Tests ISLocalToGlobalMappingGetInto()\n\n";
 
@@ -14,7 +14,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 3) SETERRQ(1,1,"Must run with three processors");
+  if (size != 3) SETERRQ(1,"Must run with three processors");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (rank == 0) {
     nlocal = 4; local[0] = 0; local[1] = 3; local[2] = 2; local[3] = 1;

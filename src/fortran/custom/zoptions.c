@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.68 2000/05/05 22:26:47 balay Exp bsmith $*/
+/*$Id: zoptions.c,v 1.69 2000/08/13 00:26:10 bsmith Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -372,7 +372,7 @@ int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);
-  if (ierr) SETERRQ(1,1,"Invalid MPI communicator");
+  if (ierr) SETERRQ(1,"Invalid MPI communicator");
 
   *fcomm = PetscFromPointerComm(comm);
   PetscFunctionReturn(0);
@@ -411,7 +411,7 @@ int MPIFortranCommToCComm(int fcomm,MPI_Comm *comm)
   PetscFunctionBegin;
   *comm = (MPI_Comm)PetscToPointerComm(fcomm);
   ierr = MPI_Comm_size(*comm,&size);
-  if (ierr) SETERRQ(1,1,"Invalid MPI communicator");
+  if (ierr) SETERRQ(1,"Invalid MPI communicator");
   PetscFunctionReturn(0);
 }
 

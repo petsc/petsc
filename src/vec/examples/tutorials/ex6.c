@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.23 2000/01/11 21:00:24 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.24 2000/05/05 22:15:21 balay Exp bsmith $*/
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
 a file, then forms a vector.\n\n";
@@ -16,7 +16,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&sz);CHKERRA(ierr);
-  if (sz != 1) SETERRA(1,0,"This is a uniprocessor example only!");
+  if (sz != 1) SETERRA(1,"This is a uniprocessor example only!");
   
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
 
@@ -57,7 +57,7 @@ int main(int argc,char **args)
 
   /* Read data into vector */
   ierr = PetscBinaryRead(fd,&size,1,PETSC_INT);CHKERRQ(ierr);
-  if (size <=0) SETERRA(1,0,"Error: Must have array length > 0");
+  if (size <=0) SETERRA(1,"Error: Must have array length > 0");
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"reading data in binary from input.dat, size =%d ...\n",size);CHKERRA(ierr); 
   ierr = PetscBinaryRead(fd,avec,size,PETSC_SCALAR);CHKERRA(ierr);

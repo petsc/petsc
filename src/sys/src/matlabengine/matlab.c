@@ -1,4 +1,4 @@
-/* $Id: matlab.c,v 1.9 2000/05/18 18:15:51 bsmith Exp bsmith $ #include "petsc.h" */
+/* $Id: matlab.c,v 1.10 2000/05/18 21:55:07 bsmith Exp bsmith $ #include "petsc.h" */
 
 #include "engine.h"   /* Matlab include file */
 #include "petsc.h" 
@@ -43,7 +43,7 @@ int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *engin
   if (!machine) machine = "\0";
   PLogInfo(0,"Starting Matlab engine on %s\n",machine);
   e->ep = engOpen(machine);
-  if (!e->ep) SETERRQ1(1,1,"Unable to start Matlab engine on %s\n",machine);
+  if (!e->ep) SETERRQ1(1,"Unable to start Matlab engine on %s\n",machine);
   engOutputBuffer(e->ep,e->buffer,1024);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine engine,char *string,...)
   */
 
   if (engine->buffer[4] == '?') {
-    SETERRQ2(1,1,"Error in evaluating Matlab command:%s\n%s",string,engine->buffer);
+    SETERRQ2(1,"Error in evaluating Matlab command:%s\n%s",string,engine->buffer);
   }
 
   /*
@@ -139,7 +139,7 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine engine,char *string,...)
   sscanf(engine->buffer+len," %d\n",&flops);
   PLogFlops(flops);
   /* strip out of engine->buffer the end part about flops */
-  if (len < 14) SETERRQ(1,1,"Internal PETSc error");
+  if (len < 14) SETERRQ(1,"Internal PETSc error");
   len -= 14;
   engine->buffer[len] = 0;
 
@@ -226,7 +226,7 @@ int PetscMatlabEnginePut(PetscMatlabEngine engine,PetscObject obj)
   PetscFunctionBegin;  
   ierr = PetscObjectQueryFunction(obj,"PetscMatlabEnginePut_C",(void**)&put);CHKERRQ(ierr);
   if (!put) {
-    SETERRQ1(1,1,"Object %s cannot be put into Matlab engine",obj->class_name);
+    SETERRQ1(1,"Object %s cannot be put into Matlab engine",obj->class_name);
   }
   PLogInfo(0,"Putting Matlab object\n");
   ierr = (*put)(obj,engine->ep);CHKERRQ(ierr);
@@ -257,11 +257,11 @@ int PetscMatlabEngineGet(PetscMatlabEngine engine,PetscObject obj)
   
   PetscFunctionBegin;  
   if (!obj->name) {
-    SETERRQ(1,1,"Cannot get object that has no name");
+    SETERRQ(1,"Cannot get object that has no name");
   }
   ierr = PetscObjectQueryFunction(obj,"PetscMatlabEngineGet_C",(void**)&get);CHKERRQ(ierr);
   if (!get) {
-    SETERRQ1(1,1,"Object %s cannot be get into Matlab engine",obj->class_name);
+    SETERRQ1(1,"Object %s cannot be get into Matlab engine",obj->class_name);
   }
   PLogInfo(0,"Getting Matlab object\n");
   ierr = (*get)(obj,engine->ep);CHKERRQ(ierr);
@@ -394,7 +394,7 @@ int PetscMatlabEngineGetArray(PetscMatlabEngine engine,int m,int n,Scalar *array
   PetscFunctionBegin;  
   PLogInfo(0,"Getting Matlab array %s\n",name);
   mat  = engGetArray(engine->ep,name);
-  if (!mat) SETERRQ1(1,1,"Unable to get array %s from matlab",name);
+  if (!mat) SETERRQ1(1,"Unable to get array %s from matlab",name);
   ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(Scalar));CHKERRQ(ierr);
   PLogInfo(0,"Got Matlab array %s\n",name);
   PetscFunctionReturn(0);

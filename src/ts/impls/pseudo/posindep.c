@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.47 2000/09/07 15:17:44 balay Exp bsmith $*/
+/*$Id: posindep.c,v 1.48 2000/09/13 03:12:45 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -585,10 +585,10 @@ int TSCreate_Pseudo(TS ts)
   ts->view            = TSView_Pseudo;
 
   if (ts->problem_type == TS_LINEAR) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Only for nonlinear problems");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
   }
   if (!ts->A) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must set Jacobian");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set Jacobian");
   }
   ierr = MatGetType(ts->A,&mtype,PETSC_NULL);CHKERRQ(ierr);
   if (mtype == MATSHELL) {

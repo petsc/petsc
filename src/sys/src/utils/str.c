@@ -1,4 +1,4 @@
-/*$Id: str.c,v 1.45 2000/05/18 16:49:20 balay Exp bsmith $*/
+/*$Id: str.c,v 1.46 2000/07/10 03:38:56 bsmith Exp bsmith $*/
 /*
     We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 
@@ -54,7 +54,7 @@ int PetscStrcpy(char s[],const char t[])
 {
   PetscFunctionBegin;
   if (t && !s) {
-    SETERRQ(1,1,"Trying to copy string into null pointer");
+    SETERRQ(1,"Trying to copy string into null pointer");
   }
   if (t) {strcpy(s,t);}
   else {s[0] = 0;}
@@ -229,7 +229,7 @@ int PetscStrtok(const char a[],const char b[],char **result)
     ierr = PetscStrlen(a,&len);CHKERRQ(ierr);
     if (len > 1023) {
       ptr = (char*)PetscMalloc((len+1)*sizeof(char));
-      if (!ptr) SETERRQ(1,1,"Malloc failed");
+      if (!ptr) SETERRQ(1,"Malloc failed");
     } else {
       ptr = init;
     }
@@ -264,8 +264,8 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len)
   PetscTruth flag;
 
   PetscFunctionBegin;
-  if (len <= 0) SETERRQ(1,1,"Length of b must be greater than 0");
-  if (!a || !b) SETERRQ(1,1,"a and b strings must be nonnull");
+  if (len <= 0) SETERRQ(1,"Length of b must be greater than 0");
+  if (!a || !b) SETERRQ(1,"a and b strings must be nonnull");
   work = (char*)PetscMalloc(len*sizeof(char*));CHKPTRQ(work);
 
   /* get values for replaced variables */
@@ -291,7 +291,7 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len)
       ierr = PetscStrlen(r[i],&l2);CHKERRQ(ierr);
       ierr = PetscStrlen(par,&l3);CHKERRQ(ierr);
       if (l1 + l2 + l3 >= len) {
-        SETERRQ(1,1,"b len is not long enough to hold new values");
+        SETERRQ(1,"b len is not long enough to hold new values");
       }
       ierr  = PetscStrcpy(work,b);CHKERRQ(ierr);
       ierr  = PetscStrcat(work,r[i]);CHKERRQ(ierr);
@@ -317,7 +317,7 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len)
     epar += 1;
     ierr = OptionsGetenv(comm,par,env,256,&flag);CHKERRQ(ierr);
     if (!flag) {
-      SETERRQ1(1,1,"Substitution string ${%s} not found as environmental variable",par);
+      SETERRQ1(1,"Substitution string ${%s} not found as environmental variable",par);
     }
     ierr = PetscStrcat(work,env);CHKERRQ(ierr);
     ierr = PetscStrcat(work,epar);CHKERRQ(ierr);

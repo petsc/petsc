@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.141 2000/08/17 04:51:12 bsmith Exp bsmith $*/
+/* $Id: pdvec.c,v 1.142 2000/09/22 20:43:12 bsmith Exp bsmith $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -415,7 +415,7 @@ int VecView_MPI(Vec xin,Viewer viewer)
       ierr = VecView_MPI_Draw(xin,viewer);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -441,9 +441,9 @@ int VecSetValues_MPI(Vec xin,int ni,const int ix[],const Scalar y[],InsertMode a
   PetscFunctionBegin;
 #if defined(PETSC_USE_BOPT_g)
   if (x->insertmode == INSERT_VALUES && addv == ADD_VALUES) { 
-   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"You have already inserted values; you cannot now add");
+   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
   } else if (x->insertmode == ADD_VALUES && addv == INSERT_VALUES) { 
-   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"You have already added values; you cannot now insert");
+   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
   }
 #endif
   x->insertmode = addv;
@@ -455,7 +455,7 @@ int VecSetValues_MPI(Vec xin,int ni,const int ix[],const Scalar y[],InsertMode a
       } else if (!x->donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-        if (ix[i] >= xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],xin->N);
+        if (ix[i] >= xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d maximum %d",ix[i],xin->N);
 #endif
         VecStashValue_Private(&xin->stash,row,y[i]);
       }
@@ -467,7 +467,7 @@ int VecSetValues_MPI(Vec xin,int ni,const int ix[],const Scalar y[],InsertMode a
       } else if (!x->donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-        if (ix[i] > xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],xin->N);
+        if (ix[i] > xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d maximum %d",ix[i],xin->N);
 #endif        
         VecStashValue_Private(&xin->stash,row,y[i]);
       }
@@ -488,10 +488,10 @@ int VecSetValuesBlocked_MPI(Vec xin,int ni,const int ix[],const Scalar yin[],Ins
   PetscFunctionBegin;
 #if defined(PETSC_USE_BOPT_g)
   if (x->insertmode == INSERT_VALUES && addv == ADD_VALUES) { 
-   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"You have already inserted values; you cannot now add");
+   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
   }
   else if (x->insertmode == ADD_VALUES && addv == INSERT_VALUES) { 
-   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"You have already added values; you cannot now insert");
+   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You have already added values; you cannot now insert");
   }
 #endif
   x->insertmode = addv;
@@ -505,7 +505,7 @@ int VecSetValuesBlocked_MPI(Vec xin,int ni,const int ix[],const Scalar yin[],Ins
       } else if (!x->donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-        if (ix[i] >= xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],xin->N);
+        if (ix[i] >= xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d max %d",ix[i],xin->N);
 #endif
         VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);
       }
@@ -520,7 +520,7 @@ int VecSetValuesBlocked_MPI(Vec xin,int ni,const int ix[],const Scalar yin[],Ins
       } else if (!x->donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-        if (ix[i] > xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],xin->N);
+        if (ix[i] > xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d max %d",ix[i],xin->N);
 #endif
         VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);
       }
@@ -550,7 +550,7 @@ int VecAssemblyBegin_MPI(Vec xin)
 
   ierr = MPI_Allreduce(&x->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { 
-    SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,0,"Some processors inserted values while others added");
+    SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   }
   x->insertmode = addv; /* in case this processor had no cache */
   
@@ -595,7 +595,7 @@ int VecAssemblyEnd_MPI(Vec vec)
       } else if (x->insertmode == INSERT_VALUES) {
         for (i=0; i<n; i++) { x->array[row[i] - base] = val[i]; }
       } else {
-        SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Insert mode is not set correctly; corrupted vector");
+        SETERRQ(PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
       }
     }
     ierr = VecStashScatterEnd_Private(&vec->stash);CHKERRQ(ierr);
@@ -612,7 +612,7 @@ int VecAssemblyEnd_MPI(Vec vec)
         } else if (x->insertmode == INSERT_VALUES) {
           for (j=0; j<bs; j++) { array[j] = vv[j]; }
         } else {
-          SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Insert mode is not set correctly; corrupted vector");
+          SETERRQ(PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
         }
       }
     }

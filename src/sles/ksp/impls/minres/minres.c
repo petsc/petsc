@@ -1,4 +1,4 @@
-/*$Id: minres.c,v 1.8 2000/09/24 18:22:38 bsmith Exp bsmith $*/
+/*$Id: minres.c,v 1.9 2000/09/27 19:40:16 bsmith Exp bsmith $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
@@ -21,9 +21,9 @@ int KSPSetUp_MINRES(KSP ksp)
   PetscFunctionBegin;
 
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,0,"No right preconditioning for KSPMINRES");
+    SETERRQ(2,"No right preconditioning for KSPMINRES");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(2,0,"No symmetric preconditioning for KSPMINRES");
+    SETERRQ(2,"No symmetric preconditioning for KSPMINRES");
   }
 
   ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
@@ -92,7 +92,7 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
   }
 
 #if !defined(PETSC_USE_COMPLEX)
-  if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner");
+  if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,"Indefinite preconditioner");
 #endif
   dp   = PetscSqrtScalar(dp); 
   beta = dp;                                        /*  beta <- sqrt(r'*z  */
@@ -137,7 +137,7 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
      }
 
 #if !defined(PETSC_USE_COMPLEX)
-     if (dp < 0.0) SETERRQ1(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner R'Z = %g",dp);
+     if (dp < 0.0) SETERRQ1(PETSC_ERR_KSP_BRKDWN,"Indefinite preconditioner R'Z = %g",dp);
 #endif
      beta = PetscSqrtScalar(dp);                               /*  beta <- sqrt(r'*z)   */
 

@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.142 2000/09/07 15:18:28 balay Exp bsmith $*/
+/*$Id: sles.c,v 1.143 2000/09/22 20:44:52 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
@@ -467,7 +467,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   PetscCheckSameComm(sles,b);
   PetscCheckSameComm(sles,x);
 
-  if (b == x) SETERRQ(PETSC_ERR_ARG_IDN,0,"b and x must be different vectors");
+  if (b == x) SETERRQ(PETSC_ERR_ARG_IDN,"b and x must be different vectors");
   ksp  = sles->ksp;
   pc   = sles->pc;
   ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
@@ -578,7 +578,7 @@ int SLESSolveTranspose(SLES sles,Vec b,Vec x,int *its)
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
-  if (b == x) SETERRQ(PETSC_ERR_ARG_IDN,0,"b and x must be different vectors");
+  if (b == x) SETERRQ(PETSC_ERR_ARG_IDN,"b and x must be different vectors");
   PetscCheckSameComm(sles,b);
   PetscCheckSameComm(sles,x);
 
@@ -870,7 +870,7 @@ int SLESSetDiagonalScaleFix(SLES sles)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   if (!sles->dscale) {
-    SETERRQ(1,1,"Must call after SLESSetDiagonalScale()");
+    SETERRQ(1,"Must call after SLESSetDiagonalScale()");
   }
   sles->dscalefix = PETSC_TRUE;
   PetscFunctionReturn(0);

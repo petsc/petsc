@@ -1,4 +1,4 @@
-/*$Id: block.c,v 1.48 2000/07/10 03:39:08 bsmith Exp bsmith $*/
+/*$Id: block.c,v 1.49 2000/09/22 20:42:55 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
@@ -63,7 +63,7 @@ int ISRestoreIndices_Block(IS in,int **idx)
     ierr = PetscFree(*idx);CHKERRQ(ierr);
   } else {
     if (*idx !=  sub->idx) {
-      SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must restore with value from ISGetIndices()");
+      SETERRQ(PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
     }
   }
   PetscFunctionReturn(0);
@@ -109,7 +109,7 @@ int ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
     ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
     ierr = PetscFree(ii);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"No inversion written yet for block IS");
+    SETERRQ(1,"No inversion written yet for block IS");
   }
   PetscFunctionReturn(0);
 }
@@ -136,7 +136,7 @@ int ISView_Block(IS is, Viewer viewer)
     }
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -238,6 +238,10 @@ static struct _ISOps myops = { ISGetSize_Block,
 
    Level: beginner
 
+  Concepts: IS^block
+  Concepts: index sets^block
+  Concepts: block^index set
+
 .keywords: IS, index set, create, block
 
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
@@ -303,7 +307,7 @@ int ISBlockGetIndices(IS in,int *idx[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(in,IS_COOKIE);
   PetscValidPointer(idx);
-  if (in->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Not a block index set");
+  if (in->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
 
   sub = (IS_Block*)in->data;
   *idx = sub->idx; 
@@ -334,7 +338,7 @@ int ISBlockRestoreIndices(IS is,int *idx[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidPointer(idx);
-  if (is->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Not a block index set");
+  if (is->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
   PetscFunctionReturn(0);
 }
 
@@ -364,7 +368,7 @@ int ISBlockGetBlockSize(IS is,int *size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(size);
-  if (is->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Not a block index set");
+  if (is->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
 
   sub = (IS_Block *)is->data;
   *size = sub->bs; 
@@ -426,7 +430,7 @@ int ISBlockGetSize(IS is,int *size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(size);
-  if (is->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Not a block index set");
+  if (is->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
 
   sub = (IS_Block *)is->data;
   *size = sub->n; 

@@ -1,4 +1,4 @@
-/*$Id: wp.c,v 1.26 2000/08/24 22:43:04 bsmith Exp bsmith $*/
+/*$Id: wp.c,v 1.27 2000/09/02 02:49:35 bsmith Exp bsmith $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code
@@ -101,7 +101,7 @@ static int MatSNESMFView_WP(MatSNESMFCtx ctx,Viewer viewer)
     if (hctx->computenormU){ierr =  ViewerASCIIPrintf(viewer,"    Computes normU\n");CHKERRQ(ierr);}  
     else                   {ierr =  ViewerASCIIPrintf(viewer,"    Does not compute normU\n");CHKERRQ(ierr);}  
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for SNES matrix-free WP",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for SNES matrix-free WP",((PetscObject)viewer)->type_name);
   }    
   PetscFunctionReturn(0);
 }
@@ -163,7 +163,7 @@ int MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   if (!ctx) {
-    SETERRQ(1,1,"MatSNESMFWPSetComputeNormA() attached to non-shell matrix");
+    SETERRQ(1,"MatSNESMFWPSetComputeNormA() attached to non-shell matrix");
   }
   hctx               = (MatSNESMFWP*)ctx->hctx;
   hctx->computenorma = flag;
@@ -217,7 +217,7 @@ int MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   if (!ctx) {
-    SETERRQ(1,1,"MatSNESMFWPSetComputeNormU() attached to non-shell matrix");
+    SETERRQ(1,"MatSNESMFWPSetComputeNormU() attached to non-shell matrix");
   }
   hctx               = (MatSNESMFWP*)ctx->hctx;
   hctx->computenormU = flag;

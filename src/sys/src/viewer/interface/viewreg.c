@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.30 2000/09/02 02:46:39 bsmith Exp bsmith $*/
+/*$Id: viewreg.c,v 1.31 2000/09/22 20:41:53 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -81,11 +81,11 @@ int ViewerSetType(Viewer viewer,ViewerType type)
     viewer->data      = 0;
   }
   /* Get the function pointers for the graphics method requested */
-  if (!ViewerList) SETERRQ(1,1,"No viewer implementations registered");
+  if (!ViewerList) SETERRQ(1,"No viewer implementations registered");
 
   ierr =  FListFind(viewer->comm,ViewerList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
 
-  if (!r) SETERRQ1(1,1,"Unknown Viewer type given: %s",type);
+  if (!r) SETERRQ1(1,"Unknown Viewer type given: %s",type);
 
   viewer->data        = 0;
   ierr = PetscMemzero(viewer->ops,sizeof(struct _ViewerOps));CHKERRQ(ierr);
@@ -201,7 +201,7 @@ int ViewerSetFromOptions(Viewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
-  if (!ViewerList) SETERRQ(1,1,"No viewer implementations registered");
+  if (!ViewerList) SETERRQ(1,"No viewer implementations registered");
   ierr = OptionsBegin(viewer->comm,viewer->prefix,"Viewer options","Viewer");CHKERRQ(ierr);
     ierr = OptionsList("-viewer_type","Type of viewer","None",ViewerList,(char *)(viewer->type_name?viewer->type_name:ASCII_VIEWER),vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {

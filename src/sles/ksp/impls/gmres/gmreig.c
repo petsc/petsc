@@ -1,4 +1,4 @@
-/*$Id: gmreig.c,v 1.19 2000/04/12 04:25:01 bsmith Exp balay $*/
+/*$Id: gmreig.c,v 1.20 2000/08/16 15:18:04 balay Exp bsmith $*/
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"
 #include "petscblaslapack.h"
@@ -30,14 +30,14 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emi
       The Cray math libraries do not seem to have the DGESVD() lapack routines
   */
 #if defined(PETSC_HAVE_MISSING_DGESVD) 
-  SETERRQ(PETSC_ERR_SUP,0,"DGESVD not found on Cray T3D\nNot able to provide singular value estimates.");
+  SETERRQ(PETSC_ERR_SUP,"DGESVD not found on Cray T3D\nNot able to provide singular value estimates.");
 #else
 #if !defined(PETSC_USE_COMPLEX)
   LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
 #else
   LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,realpart+N,&ierr);
 #endif
-  if (ierr) SETERRQ(PETSC_ERR_LIB,0,"Error in SVD Lapack routine");
+  if (ierr) SETERRQ(PETSC_ERR_LIB,"Error in SVD Lapack routine");
 
   *emin = realpart[n-1];
   *emax = realpart[0];
@@ -60,7 +60,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   PetscReal *work,*realpart = gmres->Dsvd,*imagpart = realpart + N ;
 
   PetscFunctionBegin;
-  if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
+  if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
   if (!n) {
@@ -118,7 +118,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   Scalar    *realpart = gmres->Dsvd,*imagpart = realpart + N,sdummy;
 
   PetscFunctionBegin;
-  if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
+  if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
   if (!n) {
@@ -130,7 +130,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
 
   /* compute eigenvalues */
   LAgeev_("N","N",&n,R,&N,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
-  if (ierr) SETERRQ(PETSC_ERR_LIB,0,"Error in LAPACK routine");
+  if (ierr) SETERRQ(PETSC_ERR_LIB,"Error in LAPACK routine");
   perm = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(perm);
   for (i=0; i<n; i++) { perm[i] = i;}
   ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
@@ -151,7 +151,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   Scalar    *R = gmres->Rsvd,*work = R + N*N,*eigs = work + 5*N,sdummy;
 
   PetscFunctionBegin;
-  if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
+  if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
   if (!n) {
@@ -162,7 +162,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
 
   /* compute eigenvalues */
   LAgeev_("N","N",&n,R,&N,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&ierr);
-  if (ierr) SETERRQ(PETSC_ERR_LIB,0,"Error in LAPACK routine");
+  if (ierr) SETERRQ(PETSC_ERR_LIB,"Error in LAPACK routine");
   perm = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(perm);
   for (i=0; i<n; i++) { perm[i] = i;}
   for (i=0; i<n; i++) { r[i]    = PetscRealPart(eigs[i]);}

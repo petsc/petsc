@@ -1,4 +1,4 @@
-/* $Id: xops.c,v 1.149 2000/07/10 03:38:43 bsmith Exp bsmith $*/
+/* $Id: xops.c,v 1.150 2000/09/22 20:42:03 bsmith Exp bsmith $*/
 
 /*
     Defines the operations for the X Draw implementation.
@@ -310,7 +310,7 @@ static int DrawGetMouseButton_X(Draw draw,DrawButton *button,PetscReal* x_user,
   /* change cursor to indicate input */
   if (!cursor) {
     cursor = XCreateFontCursor(win->disp,XC_hand2); 
-    if (!cursor) SETERRQ(PETSC_ERR_LIB,1,"Unable to create X cursor");
+    if (!cursor) SETERRQ(PETSC_ERR_LIB,"Unable to create X cursor");
   }
   XDefineCursor(win->disp,win->win,cursor);
 
@@ -571,7 +571,7 @@ int DrawXGetDisplaySize_Private(const char name[],int *width,int *height)
   if (!display) {
     *width  = 0; 
     *height = 0; 
-    SETERRQ1(1,1,"Unable to open display on %s\n.  Make sure your DISPLAY variable\n\
+    SETERRQ1(1,"Unable to open display on %s\n.  Make sure your DISPLAY variable\n\
     is set,or you use the -display name option and xhost + has been\n\
     run on your displaying machine.\n",name);
   }
@@ -692,8 +692,8 @@ int DrawCreate_X(Draw draw)
   ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
 
   if (!rank) {
-    if (x < 0 || y < 0)   SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative corner of window");
-    if (w <= 0 || h <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative window width or height");
+    if (x < 0 || y < 0)   SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative corner of window");
+    if (w <= 0 || h <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
     ierr = XiQuickWindow(Xwin,draw->display,draw->title,x,y,w,h);CHKERRQ(ierr);
     ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,draw->comm);CHKERRQ(ierr);
   } else {

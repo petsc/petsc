@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.10 2000/05/05 22:14:28 balay Exp balay $*/
+/*$Id: ex12.c,v 1.11 2000/09/06 22:19:07 balay Exp bsmith $*/
 
 static char help[] = "Tests timing PetscSortInt().\n\n";
 
@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   ierr = PLogEventEnd(event,0,0,0,0);CHKERRA(ierr);
 
   for (i=1; i<n; i++) {
-    if (values[i] < values[i-1]) SETERRA(1,1,"Values not sorted");
+    if (values[i] < values[i-1]) SETERRA(1,"Values not sorted");
   }
   ierr = PetscFree(values);CHKERRA(ierr);
   ierr = PetscRandomDestroy(rand);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: icc.c,v 1.74 2000/09/25 17:29:19 balay Exp balay $*/
+/*$Id: icc.c,v 1.75 2000/09/26 15:53:33 balay Exp bsmith $*/
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
@@ -109,7 +109,7 @@ int PCICCSetLevels(PC pc,int levels)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"negative levels");
+  if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"negative levels");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetLevels_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,levels);CHKERRQ(ierr);
@@ -150,7 +150,7 @@ int PCICCSetFill(PC pc,PetscReal fill)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less than 1.0");
+  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less than 1.0");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetFill_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);

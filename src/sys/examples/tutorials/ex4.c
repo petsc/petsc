@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.11 2000/01/11 20:59:51 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.12 2000/09/22 20:42:48 bsmith Exp bsmith $*/
 
 static char help[] = "Prints loadable objects from dynamic library.\n\n";
 
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
 
   ierr = OptionsGetString(PETSC_NULL,"-library",filename,256,&flg);CHKERRA(ierr);
   if (!flg) {
-    SETERRA(1,1,"Must indicate library name with -library");
+    SETERRA(1,"Must indicate library name with -library");
   }
 
 #if defined(USE_DYNAMIC_LIBRARIES)

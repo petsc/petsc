@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.53 2000/07/10 03:38:51 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.54 2000/09/22 20:42:19 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -79,7 +79,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 #endif
     va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer than %d bytes",QUEUESTRINGSIZE);
+    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Formatted string longer than %d bytes",QUEUESTRINGSIZE);
   }
     
   PetscFunctionReturn(0);
@@ -155,7 +155,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 #endif
     va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
+    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
   }
     
   PetscFunctionReturn(0);
@@ -324,7 +324,7 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
     ierr = PetscStrstr(format,"%A",&sub1);CHKERRQ(ierr);
     if (sub1) {
       ierr = PetscStrstr(format,"%",&sub2);CHKERRQ(ierr);
-      if (sub1 != sub2) SETERRQ(1,1,"%A format must be first in format string");
+      if (sub1 != sub2) SETERRQ(1,"%A format must be first in format string");
       ierr    = PetscStrlen(format,&len);CHKERRQ(ierr);
       nformat = (char*)PetscMalloc((len+16)*sizeof(char));CHKPTRQ(nformat);
       ierr    = PetscStrcpy(nformat,format);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ao.c,v 1.35 2000/05/05 22:19:09 balay Exp bsmith $*/
+/*$Id: ao.c,v 1.36 2000/08/01 20:57:53 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
@@ -113,7 +113,7 @@ int AOPetscToApplicationIS(AO ao,IS is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
   ierr = ISBlock(is,&flag);CHKERRQ(ierr);
-  if (flag) SETERRQ(1,1,"Cannot translate block index sets");
+  if (flag) SETERRQ(1,"Cannot translate block index sets");
   ierr = ISStride(is,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
@@ -160,7 +160,7 @@ int AOApplicationToPetscIS(AO ao,IS is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
   ierr = ISBlock(is,&flag);CHKERRQ(ierr);
-  if (flag) SETERRQ(1,1,"Cannot translate block index sets");
+  if (flag) SETERRQ(1,"Cannot translate block index sets");
   ierr = ISStride(is,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = ISStrideToGeneral(is);CHKERRQ(ierr);

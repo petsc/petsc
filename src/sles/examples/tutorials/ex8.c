@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.41 2000/05/05 22:18:00 balay Exp bsmith $*/
+/*$Id: ex8.c,v 1.42 2000/09/22 20:45:46 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
 Schwarz Method) for solving a linear system in parallel with SLES.  The\n\
@@ -201,7 +201,7 @@ int main(int argc,char **args)
      */
     ierr = PetscTypeCompare((PetscObject)pc,PCASM,&isasm);CHKERRA(ierr);
     if (isasm) {
-      SETERRA(1,0,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
+      SETERRA(1,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
     }
     /* 
        Call SLESSetUp() to set the block Jacobi data structures (including

@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.21 2000/05/05 22:18:56 balay Exp bsmith $*/
+/*$Id: cn.c,v 1.22 2000/09/02 02:49:58 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -22,7 +22,7 @@ typedef struct {
 */
 int TSComputeRHSFunctionEuler(TS ts,double t,Vec x,Vec y)
 {
-  int ierr;
+  int    ierr;
   Scalar neg_two = -2.0,neg_mdt = -1.0/ts->time_step;
 
   PetscFunctionBegin;
@@ -417,7 +417,7 @@ int TSCreate_CN(TS ts)
 
   if (ts->problem_type == TS_LINEAR) {
     if (!ts->A) {
-      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must set rhs matrix for linear problem");
+      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
     }
     ierr = MatGetType(ts->A,&mtype,PETSC_NULL);CHKERRQ(ierr);
     if (!ts->rhsmatrix) {
@@ -440,7 +440,7 @@ int TSCreate_CN(TS ts)
     ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
     if (!ts->A) {
-      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must set Jacobian for nonlinear problem");
+      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set Jacobian for nonlinear problem");
     }
     ierr = MatGetType(ts->A,&mtype,PETSC_NULL);CHKERRQ(ierr);
     if (mtype == MATSHELL) {
@@ -450,7 +450,7 @@ int TSCreate_CN(TS ts)
     ts->step            = TSStep_CN_Nonlinear;
     ts->setfromoptions  = TSSetFromOptions_CN_Nonlinear;
     ierr = SNESCreate(ts->comm,SNES_NONLINEAR_EQUATIONS,&ts->snes);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"No such problem");
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
 
   cn       = PetscNew(TS_CN);CHKPTRQ(cn);
   PLogObjectMemory(ts,sizeof(TS_CN));

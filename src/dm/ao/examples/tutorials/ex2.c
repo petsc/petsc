@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.29 2000/09/06 22:19:17 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.30 2000/09/22 20:46:48 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -195,7 +195,7 @@ int DataRead(GridData *gdata)
 
   if (!rank) {
     FILE *fd;
-    fd = fopen("usgdata","r"); if (!fd) SETERRQ(1,1,"Cannot open grid file");
+    fd = fopen("usgdata","r"); if (!fd) SETERRQ(1,"Cannot open grid file");
 
     /* read in number of vertices */
     fgets(msg,128,fd);

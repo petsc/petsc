@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.157 2000/09/25 17:29:24 balay Exp balay $*/
+/*$Id: ilu.c,v 1.158 2000/09/25 18:09:45 balay Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -93,7 +93,7 @@ int PCILUDTSetReuseFill_ILUDT(PC pc,PetscTruth flag)
   PetscFunctionBegin;
   ilu = (PC_ILU*)pc->data;
   ilu->reusefill = flag;
-  if (flag) SETERRQ(1,1,"Not yet supported");
+  if (flag) SETERRQ(1,"Not yet supported");
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -245,7 +245,7 @@ int PCILUSetFill(PC pc,PetscReal fill)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less than 1.0");
+  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less than 1.0");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetFill_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);
@@ -381,7 +381,7 @@ int PCILUSetLevels(PC pc,int levels)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"negative levels");
+  if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"negative levels");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetLevels_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,levels);CHKERRQ(ierr);
@@ -497,6 +497,9 @@ static int PCSetFromOptions_ILU(PC pc)
     dt[1] = ilu->info.dtcol;
     dt[2] = ilu->info.dtcount;
     ierr = OptionsDoubleArray("-pc_ilu_use_drop_tolerance","<dt,dtcol,maxrowcount>","PCILUSetUseDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCILUSetUseDropTolerance(pc,dt[0],dt[1],(int)dt[2]);CHKERRQ(ierr);
+    }
     ierr = OptionsDouble("-pc_ilu_fill","Expected fill in factorization","PCILUSetFill",ilu->info.fill,&ilu->info.fill,&flg);CHKERRQ(ierr);
     ierr = OptionsDouble("-pc_ilu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,0,0);CHKERRQ(ierr);
 
@@ -545,7 +548,7 @@ static int PCView_ILU(PC pc,Viewer viewer)
   } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer," lvls=%g,order=%s",ilu->info.levels,ilu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for PCILU",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for PCILU",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -688,7 +691,7 @@ static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
   PC_ILU *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
-  if (!ilu->fact) SETERRQ(1,1,"Matrix not yet factored; call after SLESSetUp() or PCSetUp()");
+  if (!ilu->fact) SETERRQ(1,"Matrix not yet factored; call after SLESSetUp() or PCSetUp()");
   *mat = ilu->fact;
   PetscFunctionReturn(0);
 }

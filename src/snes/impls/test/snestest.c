@@ -1,4 +1,4 @@
-/*$Id: snestest.c,v 1.51 2000/08/24 22:43:08 bsmith Exp bsmith $*/
+/*$Id: snestest.c,v 1.52 2000/09/02 02:49:41 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 
@@ -26,7 +26,7 @@ int SNESSolve_Test(SNES snes,int *its)
   *its = 0;
 
   if (A != snes->jacobian_pre) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Cannot test with alternative preconditioner");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot test with alternative preconditioner");
   }
 
   ierr = PetscPrintf(snes->comm,"Testing hand-coded Jacobian, if the ratio is\n");CHKERRQ(ierr);
@@ -95,7 +95,7 @@ int SNESCreate_Test(SNES  snes)
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"SNES_NONLINEAR_EQUATIONS only");
   }
   snes->setup		= 0;
   snes->solve		= SNESSolve_Test;

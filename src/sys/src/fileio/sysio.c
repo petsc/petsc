@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.73 2000/08/15 22:18:09 balay Exp bsmith $*/
+/*$Id: sysio.c,v 1.74 2000/09/22 20:42:19 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -192,7 +192,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     if (longintfile) {
       m *= sizeof(int);
     } else {
-      SETERRQ(1,1,"Can only process data file generated on Cray vector machine;\n\
+      SETERRQ(1,"Can only process data file generated on Cray vector machine;\n\
       if this data WAS then run program with -binary_longints option");
     }
   }
@@ -213,14 +213,14 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
   else if (type == PETSC_LOGICAL) m = PetscBTLength(m)*sizeof(char);
-  else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
+  else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
   
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
     err = read(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
-    if (err == 0 && wsize > 0) SETERRQ(PETSC_ERR_FILE_READ,0,"Read past end of file");
-    if (err < 0) SETERRQ(PETSC_ERR_FILE_READ,0,"Error reading from file");
+    if (err == 0 && wsize > 0) SETERRQ(PETSC_ERR_FILE_READ,"Read past end of file");
+    if (err < 0) SETERRQ(PETSC_ERR_FILE_READ,"Error reading from file");
     m  -= err;
     pp += err;
   }
@@ -345,13 +345,13 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
   else if (type == PETSC_LOGICAL) m = PetscBTLength(m)*sizeof(char);
-  else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
+  else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
     err = write(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
-    if (err != wsize) SETERRQ(PETSC_ERR_FILE_WRITE,0,"Error writing to file.");
+    if (err != wsize) SETERRQ(PETSC_ERR_FILE_WRITE,"Error writing to file.");
     m -= wsize;
     pp += wsize;
   }
@@ -400,32 +400,32 @@ int PetscBinaryOpen(const char name[],int type,int *fd)
 #if defined(PARCH_win32_gnu) || defined(PARCH_win32) 
   if (type == BINARY_CREATE) {
     if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
-      SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing: %s",name);
+      SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
     }
   } else if (type == BINARY_RDONLY) {
     if ((*fd = open(name,O_RDONLY|O_BINARY,0)) == -1) {
-      SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file for reading: %s",name);
+      SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
     }
   } else if (type == BINARY_WRONLY) {
     if ((*fd = open(name,O_WRONLY|O_BINARY,0)) == -1) {
-      SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file for writing: %s",name);
+      SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
     }
 #else
   if (type == BINARY_CREATE) {
     if ((*fd = creat(name,0666)) == -1) {
-      SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing: %s",name);
+      SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
     }
   } else if (type == BINARY_RDONLY) {
     if ((*fd = open(name,O_RDONLY,0)) == -1) {
-      SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file for reading: %s",name);
+      SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
     }
   }
   else if (type == BINARY_WRONLY) {
     if ((*fd = open(name,O_WRONLY,0)) == -1) {
-      SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file for writing: %s",name);
+      SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
     }
 #endif
-  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown file type");
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
   PetscFunctionReturn(0);
 }
 
@@ -494,7 +494,7 @@ int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence,int *offset)
   } else if (whence == BINARY_SEEK_END) {
     iwhence = SEEK_END;
   } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown seek location");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown seek location");
   }
 #if defined(PARCH_win32)
   *offset = _lseek(fd,(long)size,iwhence);

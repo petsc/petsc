@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.27 2000/05/05 22:18:00 balay Exp bsmith $*/
+/*$Id: ex11.c,v 1.28 2000/09/22 20:45:46 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 
@@ -54,7 +54,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 #if !defined(PETSC_USE_COMPLEX)
-  SETERRA(1,0,"This example requires complex numbers");
+  SETERRA(1,"This example requires complex numbers");
 #endif
 
   ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.196 2000/09/02 02:49:07 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.197 2000/09/22 20:45:20 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -283,7 +283,7 @@ int KSPSetType(KSP ksp,KSPType type)
 
   ierr =  FListFind(ksp->comm,KSPList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
 
-  if (!r) SETERRQ1(1,1,"Unknown KSP type given: %s",type);
+  if (!r) SETERRQ1(1,"Unknown KSP type given: %s",type);
 
   ksp->setupcalled = 0;
   ierr = (*r)(ksp);CHKERRQ(ierr);

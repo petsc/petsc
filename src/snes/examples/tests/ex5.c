@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.20 2000/09/06 22:20:17 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.21 2000/09/22 20:46:10 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the modified Bratu problem in a 2D rectangular domain,\n\
@@ -98,11 +98,11 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-lambda",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,0,"Lambda is out of range");
+    SETERRA(1,"Lambda is out of range");
   }
   ierr = OptionsGetDouble(PETSC_NULL,"-kappa",&user.param2,PETSC_NULL);CHKERRA(ierr);
   if (user.param2 >= bratu_kappa_max || user.param2 < bratu_kappa_min) {
-    SETERRA(1,0,"Kappa is out of range");
+    SETERRA(1,"Kappa is out of range");
   }
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the Bratu problem with lambda=%g, kappa=%g\n",user.param,user.param2);CHKERRA(ierr);
 
@@ -126,7 +126,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
-    SETERRA(1,0,"Incompatible number of processors:  Nx * Ny != size");
+    SETERRA(1,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
 
   /*

@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.98 2000/09/25 03:37:31 bsmith Exp bsmith $*/
+/*$Id: stride.c,v 1.99 2000/09/26 21:07:15 bsmith Exp bsmith $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
@@ -229,7 +229,7 @@ int ISView_Stride(IS is,Viewer viewer)
     }
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -310,7 +310,7 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
 
   PetscFunctionBegin;
   *is = 0;
-  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Number of indices < 0");
+  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Number of indices < 0");
 
   PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_STRIDE,"IS",comm,ISDestroy,ISView); 
   PLogObjectCreate(Nindex);

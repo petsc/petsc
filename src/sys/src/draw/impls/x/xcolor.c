@@ -1,4 +1,4 @@
-/*$Id: xcolor.c,v 1.65 2000/05/10 16:39:00 bsmith Exp bsmith $*/
+/*$Id: xcolor.c,v 1.66 2000/07/10 03:38:43 bsmith Exp bsmith $*/
 
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -240,7 +240,7 @@ int DrawSetColormap_X(Draw_X* XiWin,char *host,Colormap colormap)
 
   PetscFunctionBegin;
   if (XiWin->depth < 8) {
-    SETERRQ(1,1,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
+    SETERRQ(1,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
   }
   if (!gColormap){
     Display  *display;  /* Private display will exist forever contains colormap shared by all windows */

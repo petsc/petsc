@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.146 2000/08/17 04:50:43 bsmith Exp bsmith $*/
+/*$Id: mtr.c,v 1.147 2000/09/22 20:42:22 bsmith Exp bsmith $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -162,13 +162,13 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
       (*PetscErrorPrintf)("error detected at  %s() line %d in %s%s\n",function,line,dir,file);
       (*PetscErrorPrintf)("Memory at address %p is corrupted\n",head);
       (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
-      SETERRQ(PETSC_ERR_MEMC,0,"");
+      SETERRQ(PETSC_ERR_MEMC,"");
     }
     if (head->size <=0) {
       (*PetscErrorPrintf)("error detected at  %s() line %d in %s%s\n",function,line,dir,file);
       (*PetscErrorPrintf)("Memory at address %p is corrupted\n",head);
       (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
-      SETERRQ(PETSC_ERR_MEMC,0,"");
+      SETERRQ(PETSC_ERR_MEMC,"");
     }
     a    = (char *)(((TrSPACE*)head) + 1);
     nend = (unsigned long *)(a + head->size);
@@ -181,7 +181,7 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
 	        head->id,head->size,a);
         (*PetscErrorPrintf)("Memory originally allocated in %s() line %d in %s%s\n",head->functionname,
                 head->lineno,head->dirname,head->filename);
-        SETERRQ(PETSC_ERR_MEMC,0,"");
+        SETERRQ(PETSC_ERR_MEMC,"");
       }
     }
     head = head->next;
@@ -317,7 +317,7 @@ int PetscTrFreeDefault(void *aa,int line,char *function,char *file,char *dir)
   /* Do not try to handle empty blocks */
   if (!a) {
     (*PetscErrorPrintf)("PetscTrFreeDefault called from %s() line %d in %s%s\n",function,line,dir,file);
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Trying to free null block");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Trying to free null block");
   }
   
   if (TRdebugLevel > 0) {
@@ -326,7 +326,7 @@ int PetscTrFreeDefault(void *aa,int line,char *function,char *file,char *dir)
   
   if (PetscLow > aa || PetscHigh < aa){
     (*PetscErrorPrintf)("PetscTrFreeDefault called from %s() line %d in %s%s\n",function,line,dir,file);
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"PetscTrFreeDefault called with address not allocated by PetscTrMallocDefault");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"PetscTrFreeDefault called with address not allocated by PetscTrMallocDefault");
   }
   
   ahead = a;
@@ -337,7 +337,7 @@ int PetscTrFreeDefault(void *aa,int line,char *function,char *file,char *dir)
     (*PetscErrorPrintf)("PetscTrFreeDefault called from %s() line %d in %s%s\n",function,line,dir,file);
     (*PetscErrorPrintf)("Block at address %p is corrupted; cannot free;\n\
 may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
-    SETERRQ(PETSC_ERR_MEMC,0,"Bad location or corrupted memory");
+    SETERRQ(PETSC_ERR_MEMC,"Bad location or corrupted memory");
   }
   nend = (unsigned long *)(ahead + head->size);
   if (*nend != COOKIE_VALUE) {
@@ -352,7 +352,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
         (*PetscErrorPrintf)("Block allocated in %s() line %d in %s%s\n",head->functionname,
                             -head->lineno,head->dirname,head->filename);	
       }
-      SETERRQ(PETSC_ERR_ARG_WRONG,0,"Memory already freed");
+      SETERRQ(PETSC_ERR_ARG_WRONG,"Memory already freed");
     } else {
       /* Damaged tail */ 
       (*PetscErrorPrintf)("PetscTrFreeDefault called from %s() line %d in %s%s\n",function,line,dir,file);
@@ -360,7 +360,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
                           head->id,head->size,a);
       (*PetscErrorPrintf)("Block allocated in %s() line %d in %s%s\n",head->functionname,
                           head->lineno,head->dirname,head->filename);
-      SETERRQ(PETSC_ERR_MEMC,0,"Corrupted memory");
+      SETERRQ(PETSC_ERR_MEMC,"Corrupted memory");
     }
   }
   /* Mark the location freed */

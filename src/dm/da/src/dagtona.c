@@ -1,4 +1,4 @@
-/*$Id: dagtona.c,v 1.6 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: dagtona.c,v 1.7 2000/08/01 20:58:01 bsmith Exp bsmith $*/
  
 /*
      Tools to help solve the coarse grid problem redundantly.
@@ -40,7 +40,7 @@ int DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   if (!da->ao) {
-    SETERRQ(1,1,"Cannot use -da_noao with this function");
+    SETERRQ(1,"Cannot use -da_noao with this function");
   }
 
   /* create the scatter context */
@@ -86,7 +86,7 @@ int DANaturalAllToGlobalCreate(DA da,VecScatter *scatter)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   if (!da->ao) {
-    SETERRQ(1,1,"Cannot use -da_noao with this function");
+    SETERRQ(1,"Cannot use -da_noao with this function");
   }
 
   /* create the scatter context */

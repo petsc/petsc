@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.6 2000/01/16 03:29:05 bsmith Exp $*/
+/*$Id: apppartition.c,v 1.2 2000/08/24 22:43:40 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 int AppPartitionGetOwnedSize(AppPartition *part, int *m);
@@ -17,13 +17,13 @@ int AppPartitionSetUp(AppPartition *part, MPI_Comm comm, int Nelx, int Nely, int
   ierr = MPI_Comm_size(comm,&part->size);CHKERRQ(ierr);
 
   if ((Nelx<=0) || (Nely<=0) || (nsdx<=0) || (nsdy<=0)) {
-    SETERRQ(PETSC_ERR_ARG_SIZ,1,"The number of subdomains and the number of elements must be strictly positive!");
+    SETERRQ(PETSC_ERR_ARG_SIZ,"The number of subdomains and the number of elements must be strictly positive!");
   }
   if ((Nelx % nsdx) || (Nely % nsdy)) {
-    SETERRQ(PETSC_ERR_ARG_SIZ,1,"The number of subdomains must divide the number of elements in each direction!");
+    SETERRQ(PETSC_ERR_ARG_SIZ,"The number of subdomains must divide the number of elements in each direction!");
   }
   if (part->size != (nsdx*nsdy)) {
-    SETERRQ(PETSC_ERR_ARG_SIZ,1,"The number of processors doesn't match the number of subdomains!");
+    SETERRQ(PETSC_ERR_ARG_SIZ,"The number of processors doesn't match the number of subdomains!");
   }
 
   part->nsdx = nsdx;

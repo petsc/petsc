@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.78 2000/09/21 18:48:54 bsmith Exp balay $ 
+# $Id: base.site,v 1.79 2000/09/21 18:49:28 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -106,11 +106,11 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 # depending on how they are named) into src/mat/impls/aij/seq and 
 # uncomment the appropriate lines below
 #
-PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
+#PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
 #PETSC_LUSOL_SOURCE_F = LUSOL.f LUSOL_BLAS.f
 #PETSC_LUSOL_SOURCE_O = LUSOL.o LUSOL_BLAS.o
-PETSC_LUSOL_SOURCE_F = mi25bfac.f mi15blas.f
-PETSC_LUSOL_SOURCE_O = mi25bfac.o mi15blas.o
+#PETSC_LUSOL_SOURCE_F = mi25bfac.f mi15blas.f
+#PETSC_LUSOL_SOURCE_O = mi25bfac.o mi15blas.o
 # ---------------------------------------------------------------------------------------
 #
 # If you are using shared version of any external libraries you must make this

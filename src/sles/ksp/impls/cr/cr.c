@@ -1,4 +1,4 @@
-/*$Id: cr.c,v 1.57 2000/04/12 04:24:56 bsmith Exp bsmith $*/
+/*$Id: cr.c,v 1.58 2000/09/14 14:40:58 bsmith Exp bsmith $*/
 
 /*                       
            This implements Preconditioned Conjugate Residuals.       
@@ -12,8 +12,8 @@ static int KSPSetUp_CR(KSP ksp)
   int ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_RIGHT) {SETERRQ(2,0,"no right preconditioning for KSPCR");}
-  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(2,0,"no symmetric preconditioning for KSPCR");}
+  if (ksp->pc_side == PC_RIGHT) {SETERRQ(2,"no right preconditioning for KSPCR");}
+  else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(2,"no symmetric preconditioning for KSPCR");}
   ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: bdiag2.c,v 1.13 2000/04/12 04:23:25 bsmith Exp balay $*/
+/*$Id: bdiag2.c,v 1.14 2000/05/05 22:15:54 balay Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -20,10 +20,10 @@ int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
   for (kk=0; kk<m; kk++) { /* loop over added rows */
     row = im[kk];   
     if (row < 0) continue;
-    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
+    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     for (j=0; j<n; j++) {
       if (in[j] < 0) continue;
-      if (in[j] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
+      if (in[j] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
       ldiag = row - in[j]; /* diagonal number */
       dfound = 0;
       if (roworiented) {
@@ -107,8 +107,8 @@ int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
   PetscFunctionBegin;
   for (kk=0; kk<m; kk++) { /* loop over added rows */
     row = im[kk];   
-    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
-    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
+    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
+    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     shift = (row/bs)*bs*bs + row%bs;
     for (j=0; j<n; j++) {
       ldiag = row/bs - in[j]/bs; /* block diagonal */
@@ -191,11 +191,11 @@ int MatGetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v)
   PetscFunctionBegin;
   for (kk=0; kk<m; kk++) { /* loop over rows */
     row = im[kk];   
-    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
-    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
+    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
+    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     for (j=0; j<n; j++) {
-      if (in[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
-      if (in[j] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
+      if (in[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column");
+      if (in[j] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
       ldiag = row - in[j]; /* diagonal number */
       dfound = 0;
       for (k=0; k<a->nd; k++) {
@@ -222,8 +222,8 @@ int MatGetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v)
   PetscFunctionBegin;
   for (kk=0; kk<m; kk++) { /* loop over rows */
     row = im[kk];   
-    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
-    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
+    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
+    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     shift = (row/bs)*bs*bs + row%bs;
     for (j=0; j<n; j++) {
       ldiag = row/bs - in[j]/bs; /* block diagonal */
@@ -898,7 +898,7 @@ int MatRelax_SeqBDiag_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,
      we should eventually incorporate that option, whatever wavefront
      ordering maybe :-) */
 
-  if (mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Main diagonal not set");
+  if (mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Main diagonal not set");
 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   if (xx != bb) {
@@ -1068,7 +1068,7 @@ int MatRelax_SeqBDiag_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-  if (mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Main diagonal not set");
+  if (mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Main diagonal not set");
   dd = a->diagv[mainbd];
   if (flag == SOR_APPLY_UPPER) {
     /* apply (U + D/omega) to the vector */

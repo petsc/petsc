@@ -1,4 +1,4 @@
-/*$Id: maij.c,v 1.7 2000/06/27 18:32:51 bsmith Exp bsmith $*/
+/*$Id: maij.c,v 1.8 2000/07/10 03:39:48 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the MAIJ  matrix storage format.
   This format is used for restriction and interpolation operations for 
@@ -887,7 +887,7 @@ int MatCreateMAIJ(Mat A,int dof,Mat *maij)
         B->ops->multtranspose    = MatMultTranspose_SeqMAIJ_5;
         B->ops->multtransposeadd = MatMultTransposeAdd_SeqMAIJ_5;
       } else {
-        SETERRQ1(1,1,"Cannot handle a dof of %d\n",dof);
+        SETERRQ1(1,"Cannot handle a dof of %d\n",dof);
       }
     } else {
       Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)A->data;

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.61 2000/08/17 04:51:19 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.62 2000/09/22 20:43:24 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -161,7 +161,7 @@ int main(int argc,char **argv)
      routine) not needed in most application codes.
   */
   ierr = VecValid(x,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Corrupted vector.");
+  if (!flg) SETERRA(1,"Corrupted vector.");
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

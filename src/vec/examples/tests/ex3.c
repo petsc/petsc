@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.45 2000/01/11 21:00:17 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.46 2000/05/05 22:15:11 balay Exp bsmith $*/
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
   -n <length> : local vector length\n\n";
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
-  if (size < 2) SETERRA(1,0,"Must be run with at least two processors");
+  if (size < 2) SETERRA(1,"Must be run with at least two processors");
 
   /* create two vector */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);

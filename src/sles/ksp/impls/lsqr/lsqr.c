@@ -1,4 +1,4 @@
-/*$Id: lsqr.c,v 1.62 2000/04/09 04:38:03 bsmith Exp bsmith $*/
+/*$Id: lsqr.c,v 1.63 2000/04/12 04:25:06 bsmith Exp bsmith $*/
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
@@ -26,7 +26,7 @@ static int KSPSetUp_LSQR(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC){
-    SETERRQ(2,0,"no symmetric preconditioning for KSPLSQR");
+    SETERRQ(2,"no symmetric preconditioning for KSPLSQR");
   }
 
   /* Get work vectors */

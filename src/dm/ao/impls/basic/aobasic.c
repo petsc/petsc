@@ -1,4 +1,4 @@
-/*$Id: aobasic.c,v 1.55 2000/05/05 22:19:12 balay Exp bsmith $*/
+/*$Id: aobasic.c,v 1.56 2000/08/01 20:57:55 bsmith Exp bsmith $*/
 
 /*
     The most basic AO application ordering routines. These store the 
@@ -63,7 +63,7 @@ int AOView_Basic(AO ao,Viewer viewer)
         ierr = ViewerASCIIPrintf(viewer,"%d   %d    %d\n",i,aodebug->app[i],aodebug->petsc[i]);CHKERRQ(ierr);
       }
     } else {
-      SETERRQ1(1,1,"Viewer type %s not supported for AOData basic",((PetscObject)viewer)->type_name);
+      SETERRQ1(1,"Viewer type %s not supported for AOData basic",((PetscObject)viewer)->type_name);
     }
   }
   ierr = ViewerFlush(viewer);CHKERRQ(ierr);
@@ -188,9 +188,9 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   for (i=0; i<N; i++) {
     ip = allpetsc[i]; ia = allapp[i];
     /* check there are no duplicates */
-    if (aodebug->app[ip]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Duplicate in PETSc ordering");
+    if (aodebug->app[ip]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in PETSc ordering");
     aodebug->app[ip] = ia + 1;
-    if (aodebug->petsc[ia]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Duplicate in Application ordering");
+    if (aodebug->petsc[ia]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in Application ordering");
     aodebug->petsc[ia] = ip + 1;
   }
   if (!mypetsc) {ierr = PetscFree(petsc);CHKERRQ(ierr);}
@@ -241,7 +241,7 @@ int AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
   ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
   if (ispetsc) {
     ierr = ISGetLocalSize(ispetsc,&npetsc);CHKERRQ(ierr);
-    if (napp != npetsc) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local IS lengths must match");
+    if (napp != npetsc) SETERRQ(PETSC_ERR_ARG_SIZ,"Local IS lengths must match");
     ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
   }
   ierr = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.154 2000/08/17 04:51:27 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.155 2000/09/28 18:50:54 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -10,7 +10,7 @@ int MatOrdering_Flow_SeqAIJ(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscFunctionBegin;
 
-  SETERRQ(PETSC_ERR_SUP,0,"Code not written");
+  SETERRQ(PETSC_ERR_SUP,"Code not written");
 #if !defined(PETSC_USE_DEBUG)
   PetscFunctionReturn(0);
 #endif
@@ -147,12 +147,12 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   SPARSEKIT2ilutp(&n,o_a,o_j,o_i,&lfill,&info->dt,&permtol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&ierr); 
   if (ierr) {
     switch (ierr) {
-      case -3: SETERRQ2(1,1,"ilutp(), matrix U overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
-      case -2: SETERRQ2(1,1,"ilutp(), matrix L overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
-      case -5: SETERRQ(1,1,"ilutp(), zero row encountered");
-      case -1: SETERRQ(1,1,"ilutp(), input matrix may be wrong");
-      case -4: SETERRQ1(1,1,"ilutp(), illegal info->fill value %d",jmax);
-      default: SETERRQ1(1,1,"ilutp(), zero pivot detected on row %d",ierr);
+      case -3: SETERRQ2(1,"ilutp(), matrix U overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
+      case -2: SETERRQ2(1,"ilutp(), matrix L overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
+      case -5: SETERRQ(1,"ilutp(), zero row encountered");
+      case -1: SETERRQ(1,"ilutp(), input matrix may be wrong");
+      case -4: SETERRQ1(1,"ilutp(), illegal info->fill value %d",jmax);
+      default: SETERRQ1(1,"ilutp(), zero pivot detected on row %d",ierr);
     }
   }
 
@@ -278,7 +278,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
-  if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
+  if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
 
   if (!isrow) {
     ierr = ISCreateStride(PETSC_COMM_SELF,A->M,0,1,&isrow);CHKERRQ(ierr);
@@ -308,7 +308,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   for (i=0; i<n; i++) {
     /* first copy previous fill into linked list */
     nnz     = nz    = ai[r[i]+1] - ai[r[i]];
-    if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,1,"Empty row in matrix");
+    if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix");
     ajtmp   = aj + ai[r[i]] + shift;
     fill[n] = n;
     while (nz--) {
@@ -506,7 +506,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
           ndamp++;
           break;
         } else {
-          SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot row %d",i);
+          SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d",i);
         }
       }
     }
@@ -940,7 +940,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
 
     /* copy current row into linked list */
     nzf     = nz  = ai[r[prow]+1] - ai[r[prow]];
-    if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,1,"Empty row in matrix");
+    if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix");
     xi      = aj + ai[r[prow]] + shift;
     fill[n]    = n;
     fill[prow] = -1; /* marker to indicate if diagonal exists */
@@ -1034,7 +1034,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     }
     /* make sure row has diagonal entry */
     if (ajnew[ainew[prow]+shift+dloc[prow]]+shift != prow) {
-      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,1,"Row %d has missing diagonal in factored matrix\n\
+      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Row %d has missing diagonal in factored matrix\n\
     try running with -pc_ilu_nonzeros_along_diagonal or -pc_ilu_diagonal_fill",prow);
     }
   }

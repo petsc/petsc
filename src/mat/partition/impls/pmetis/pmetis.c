@@ -1,4 +1,4 @@
-/*$Id: pmetis.c,v 1.39 2000/09/19 14:19:30 bsmith Exp bsmith $*/
+/*$Id: pmetis.c,v 1.40 2000/09/19 14:21:40 bsmith Exp bsmith $*/
  
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 
@@ -37,7 +37,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
   if (part->n != size) {
-    SETERRQ(PETSC_ERR_SUP,1,"Supports exactly one domain per processor");
+    SETERRQ(PETSC_ERR_SUP,"Supports exactly one domain per processor");
   }
 
   if (mat->type != MATMPIADJ) {
@@ -50,7 +50,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   adjncy  = adj->j;
   ierr = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
   if (!(vtxdist[rank+1] - vtxdist[rank])) {
-    SETERRQ(1,1,"Does not support any processor with no entries");
+    SETERRQ(1,"Does not support any processor with no entries");
   }
 #if defined(PETSC_USE_BOPT_g)
   /* check that matrix has no diagonal entries */
@@ -59,7 +59,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
     ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
     for (i=0; i<mat->m; i++) {
       for (j=xadj[i]; j<xadj[i+1]; j++) {
-        if (adjncy[j] == i+rstart) SETERRQ1(1,1,"Row %d has illigal diagonal entry",i+rstart);
+        if (adjncy[j] == i+rstart) SETERRQ1(1,"Row %d has illigal diagonal entry",i+rstart);
       }
     }
   }
@@ -102,7 +102,7 @@ int MatPartitioningView_Parmetis(MatPartitioning part,Viewer viewer)
     ierr = ViewerASCIISynchronizedPrintf(viewer,"  [%d]Number of cuts found %d\n",rank,parmetis->cuts);CHKERRQ(ierr);
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for this Parmetis partitioner",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for this Parmetis partitioner",((PetscObject)viewer)->type_name);
   }
 
   PetscFunctionReturn(0);

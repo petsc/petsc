@@ -1,4 +1,4 @@
-/*$Id: tcqmr.c,v 1.53 2000/04/12 04:25:08 bsmith Exp bsmith $*/
+/*$Id: tcqmr.c,v 1.54 2000/09/14 14:41:17 bsmith Exp bsmith $*/
 
 /*
     This file contains an implementation of Tony Chan's transpose-free QMR.
@@ -153,7 +153,7 @@ static int KSPSetUp_TCQMR(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC){
-    SETERRQ(2,0,"no symmetric preconditioning for KSPTCQMR");
+    SETERRQ(2,"no symmetric preconditioning for KSPTCQMR");
   }
   ierr = KSPDefaultGetWork(ksp,TCQMR_VECS);CHKERRQ(ierr);
   PetscFunctionReturn(0);

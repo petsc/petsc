@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.59 2000/01/11 21:02:43 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.60 2000/05/05 22:18:32 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems in parallel.  This example is based on the\n\
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
-    SETERRQ(1,0,"Incompatible number of processors:  Nx * Ny != size");
+    SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
 
   /* Set up user-defined work space */
   user.param = 5.0;

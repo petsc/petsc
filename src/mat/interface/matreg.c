@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.8 2000/09/25 20:50:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matreg.c,v 1.9 2000/09/26 15:24:59 bsmith Exp bsmith $";
 #endif
 /*
      Mechanism for register PETSc matrix types
@@ -54,7 +54,7 @@ int MatSetType(Mat mat,MATType matype)
 
   ierr =  FListFind(mat->comm,MatList,matype,(int(**)(void*))&r);CHKERRQ(ierr);
 
-  if (!r) SETERRQ1(1,1,"Unknown Mat type given: %s",matype);
+  if (!r) SETERRQ1(1,"Unknown Mat type given: %s",matype);
 
   mat->data        = 0;
   ierr = (*r)(mat);CHKERRQ(ierr);

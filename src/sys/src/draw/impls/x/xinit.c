@@ -1,4 +1,4 @@
-/*$Id: xinit.c,v 1.67 2000/05/10 16:39:00 bsmith Exp bsmith $*/
+/*$Id: xinit.c,v 1.68 2000/07/10 03:38:43 bsmith Exp bsmith $*/
 
 /* 
    This file contains routines to open an X window display and window
@@ -31,7 +31,7 @@ int XiOpenDisplay(Draw_X* XiWin,char *display_name)
   PetscFunctionBegin;
   XiWin->disp = XOpenDisplay(display_name);
   if (!XiWin->disp) {
-    SETERRQ1(1,1,"Unable to open display on %s\n.  Make sure your DISPLAY variable\n\
+    SETERRQ1(1,"Unable to open display on %s\n.  Make sure your DISPLAY variable\n\
     is set, or you use the -display name option and xhost + has been\n\
     run on your displaying machine.\n",display_name);
   }
@@ -213,7 +213,7 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
 
   PetscFunctionBegin;
   if (XiOpenDisplay(w,host)) {
-    SETERRQ(PETSC_ERR_LIB,0,"Could not open display: make sure your DISPLAY variable\n\
+    SETERRQ(PETSC_ERR_LIB,"Could not open display: make sure your DISPLAY variable\n\
     is set, or you use the [-display name] option and xhost + has been\n\
     run on your displaying machine.\n");
   }

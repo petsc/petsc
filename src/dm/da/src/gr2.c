@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.39 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: gr2.c,v 1.40 2000/05/10 16:43:30 bsmith Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
@@ -88,7 +88,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(1,1,"Vector not generated from a DA");
+  if (!da) SETERRQ(1,"Vector not generated from a DA");
 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -256,7 +256,7 @@ int VecView_MPI_DA(Vec xin,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(1,1,"Vector not generated from a DA");
+  if (!da) SETERRQ(1,"Vector not generated from a DA");
   ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (isdraw) {
     ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -265,7 +265,7 @@ int VecView_MPI_DA(Vec xin,Viewer viewer)
     } else if (dim == 2) {
       ierr = VecView_MPI_Draw_DA2d(xin,viewer);CHKERRQ(ierr);
     } else {
-      SETERRQ1(1,1,"Cannot graphically view vector associated with this dimensional DA %d",dim);
+      SETERRQ1(1,"Cannot graphically view vector associated with this dimensional DA %d",dim);
     }
   } else {
     /* call viewer on natural ordering */
@@ -290,7 +290,7 @@ int VecLoadIntoVector_Binary_DA(Viewer viewer,Vec xin)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(1,1,"Vector not generated from a DA");
+  if (!da) SETERRQ(1,"Vector not generated from a DA");
   ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
   ierr = VecLoadIntoVector(viewer,natural);CHKERRQ(ierr);
   ierr = DANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: essl.c,v 1.42 2000/05/16 22:56:32 bsmith Exp bsmith $*/
+/*$Id: essl.c,v 1.43 2000/09/11 18:18:11 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver
@@ -103,7 +103,7 @@ int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatLUInfo,Mat *F)
   PetscReal       f = 1.0;
 
   PetscFunctionBegin;
-  if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,0,"matrix must be square"); 
+  if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
   ierr           = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PETSC_NULL,F);CHKERRQ(ierr);
   B                       = *F;
   B->ops->solve           = MatSolve_SeqAIJ_Essl;

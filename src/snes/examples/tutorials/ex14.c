@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.10 2000/05/05 22:18:34 balay Exp bsmith $*/
+/*$Id: ex14.c,v 1.11 2000/09/22 20:46:14 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -107,7 +107,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-debug",&user.debug);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,0,"Lambda is out of range");
+    SETERRA(1,"Lambda is out of range");
   }
   N = user.mx*user.my*user.mz;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mx=%d, my=%d, mz=%d, N=%d, lambda=%g\n",
@@ -133,7 +133,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-Nz",&Nz,PETSC_NULL);CHKERRA(ierr);
   if (Nx*Ny*Nz != user.size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE
                         || Nz != PETSC_DECIDE))
-    SETERRA(1,0,"Incompatible number of processors:  Nx*Ny*Nz != user.size");
+    SETERRA(1,"Incompatible number of processors:  Nx*Ny*Nz != user.size");
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
                     user.my,user.mz,Nx,Ny,Nz,1,1,PETSC_NULL,PETSC_NULL,
                     PETSC_NULL,&user.da);CHKERRA(ierr);

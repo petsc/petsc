@@ -1,4 +1,4 @@
-/*$Id: dupl.c,v 1.9 2000/08/31 17:19:01 bsmith Exp bsmith $*/
+/*$Id: dupl.c,v 1.10 2000/09/22 20:41:53 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 
@@ -42,7 +42,7 @@ int ViewerGetSingleton(Viewer viewer,Viewer *outviewer)
   } else if (viewer->ops->getsingleton) {
     ierr = (*viewer->ops->getsingleton)(viewer,outviewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Cannot get singleton viewer for type %s",viewer->type_name);
+    SETERRQ1(1,"Cannot get singleton viewer for type %s",viewer->type_name);
   }
   PetscFunctionReturn(0);
 }

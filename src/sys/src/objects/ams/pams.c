@@ -1,4 +1,4 @@
-/*$Id: pams.c,v 1.5 2000/05/09 04:27:31 bsmith Exp bsmith $*/
+/*$Id: pams.c,v 1.6 2000/08/24 14:13:58 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -45,7 +45,7 @@ int PetscObjectPublishBaseEnd(PetscObject obj)
 
   PetscFunctionBegin;
 
-  if (amem < 0) SETERRQ(1,1,"Called without a call to PetscObjectPublishBaseBegin()");
+  if (amem < 0) SETERRQ(1,"Called without a call to PetscObjectPublishBaseBegin()");
   ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
   ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
   PetscFunctionReturn(0);

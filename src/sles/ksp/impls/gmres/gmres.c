@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.154 2000/09/22 20:45:28 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.155 2000/09/27 20:41:23 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -46,7 +46,7 @@ int    KSPSetUp_GMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(2,0,"no symmetric preconditioning for KSPGMRES");
+    SETERRQ(2,"no symmetric preconditioning for KSPGMRES");
   }
   max_k         = gmres->max_k;
   hh            = (max_k + 2) * (max_k + 1);
@@ -222,7 +222,7 @@ int GMREScycle(int *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        SETERRQ1(0,0,"You reached the happy break down, but convergence was not indicated. Residual norm = %",res);
+        SETERRQ1(0,"You reached the happy break down, but convergence was not indicated. Residual norm = %",res);
       }
       break;
     }
@@ -259,7 +259,7 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
   PetscFunctionBegin;
 
   if (ksp->calc_sings && !gmres->Rsvd) {
-    SETERRQ(1,1,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
+    SETERRQ(1,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   }
 
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -357,7 +357,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
     }
     PetscFunctionReturn(0);
   }
-  if (*HH(it,it) == 0.0) SETERRQ1(1,1,"HH(it,it) is identically zero; GRS(it) = %g",*GRS(it));
+  if (*HH(it,it) == 0.0) SETERRQ1(1,"HH(it,it) is identically zero; GRS(it) = %g",*GRS(it));
   if (*HH(it,it) != 0.0) {
     nrs[it] = *GRS(it) / *HH(it,it);
   } else {
@@ -435,7 +435,7 @@ static int GMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res
 #else
     tt        = PetscSqrtScalar(*hh * *hh + *(hh+1) * *(hh+1));
 #endif
-    if (tt == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Your matrix or preconditioner is the null operator");}
+    if (tt == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,"Your matrix or preconditioner is the null operator");}
     *cc       = *hh / tt;
     *ss       = *(hh+1) / tt;
     *GRS(it+1) = - (*ss * *GRS(it));
@@ -541,7 +541,7 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
   } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer,"%s restart %d",cstr,gmres->max_k);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for KSP GMRES",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for KSP GMRES",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

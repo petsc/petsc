@@ -1,4 +1,4 @@
-/*$Id: vinv.c,v 1.62 2000/04/12 04:22:10 bsmith Exp balay $*/
+/*$Id: vinv.c,v 1.63 2000/05/05 22:14:53 balay Exp bsmith $*/
 /*
      Some useful vector utility functions.
 */
@@ -54,7 +54,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *norm)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(1,1,"Start of stride subvector (%d) is too large for stride\n\
+    SETERRQ2(1,"Start of stride subvector (%d) is too large for stride\n\
             Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
@@ -84,7 +84,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *norm)
     } 
     ierr   = MPI_Allreduce(&tnorm,norm,1,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Unknown norm type");
+    SETERRQ(1,"Unknown norm type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ int VecStrideMax(Vec v,int start,int *index,PetscReal *norm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   if (index) {
-    SETERRQ(1,1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+    SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -143,7 +143,7 @@ int VecStrideMax(Vec v,int start,int *index,PetscReal *norm)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(1,1,"Start of stride subvector (%d) is too large for stride\n\
+    SETERRQ2(1,"Start of stride subvector (%d) is too large for stride\n\
             Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
@@ -214,7 +214,7 @@ int VecStrideMin(Vec v,int start,int *index,PetscReal *norm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   if (index) {
-    SETERRQ(1,1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+    SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -222,7 +222,7 @@ int VecStrideMin(Vec v,int start,int *index,PetscReal *norm)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(1,1,"Start of stride subvector (%d) is too large for stride\n\
+    SETERRQ2(1,"Start of stride subvector (%d) is too large for stride\n\
             Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
@@ -301,7 +301,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   }
 
   if (n != ns*bs) {
-    SETERRQ2(1,1,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
+    SETERRQ2(1,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
   }
   n =  n/bs;
 
@@ -326,7 +326,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
     }
 #endif
   } else {
-    SETERRQ(1,1,"Unknown insert type");
+    SETERRQ(1,"Unknown insert type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -384,7 +384,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
   }
 
   if (n != ns*bs) {
-    SETERRQ2(1,1,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
+    SETERRQ2(1,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
   }
   n =  n/bs;
 
@@ -409,7 +409,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
     }
 #endif
   } else {
-    SETERRQ(1,1,"Unknown insert type");
+    SETERRQ(1,"Unknown insert type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -468,11 +468,11 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(1,1,"Start of stride subvector (%d) is too large for stride\n\
+    SETERRQ2(1,"Start of stride subvector (%d) is too large for stride\n\
             Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   if (n != ns*bs) {
-    SETERRQ2(1,1,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
+    SETERRQ2(1,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
   }
   x += start;
   n =  n/bs;
@@ -492,7 +492,7 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
     }
 #endif
   } else {
-    SETERRQ(1,1,"Unknown insert type");
+    SETERRQ(1,"Unknown insert type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -544,11 +544,11 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(1,1,"Start of stride subvector (%d) is too large for stride\n\
+    SETERRQ2(1,"Start of stride subvector (%d) is too large for stride\n\
             Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   if (n != ns*bs) {
-    SETERRQ2(1,1,"Subvector length * blocksize %d not correct for scatter to multicomponent vector %d",ns*bs,n);
+    SETERRQ2(1,"Subvector length * blocksize %d not correct for scatter to multicomponent vector %d",ns*bs,n);
   }
   x += start;
   n =  n/bs;
@@ -569,7 +569,7 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
     }
 #endif
   } else {
-    SETERRQ(1,1,"Unknown insert type");
+    SETERRQ(1,"Unknown insert type");
   }
 
 

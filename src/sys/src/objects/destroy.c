@@ -1,4 +1,4 @@
-/*$Id: destroy.c,v 1.53 2000/05/04 16:24:45 bsmith Exp bsmith $*/
+/*$Id: destroy.c,v 1.54 2000/09/22 20:42:24 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -33,7 +33,7 @@ int PetscObjectDestroy(PetscObject obj)
   if (obj->bops->destroy) {
     ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,0,"This PETSc object does not have a generic destroy routine");
+    SETERRQ(PETSC_ERR_SUP,"This PETSc object does not have a generic destroy routine");
   }
   PetscFunctionReturn(0);
 }
@@ -66,7 +66,7 @@ int PetscObjectView(PetscObject obj,Viewer viewer)
   if (obj->bops->view) {
     ierr = (*obj->bops->view)(obj,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,0,"This PETSc object does not have a generic viewer routine");
+    SETERRQ(PETSC_ERR_SUP,"This PETSc object does not have a generic viewer routine");
   }
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.23 2000/05/05 22:15:21 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.24 2000/09/22 20:43:24 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 2) SETERRA(1,1,"Must run example with two processors\n");
+  if (size != 2) SETERRA(1,"Must run example with two processors\n");
 
   /*
      Construct a two dimensional graph connecting nlocal degrees of 

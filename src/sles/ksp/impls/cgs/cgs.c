@@ -1,4 +1,4 @@
-/*$Id: cgs.c,v 1.58 2000/04/09 04:37:55 bsmith Exp bsmith $*/
+/*$Id: cgs.c,v 1.59 2000/04/12 04:25:00 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the CGS (Conjugate Gradient Squared) method. 
@@ -17,7 +17,7 @@ static int KSPSetUp_CGS(KSP ksp)
   int ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(2,0,"no symmetric preconditioning for KSPCGS");
+  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(2,"no symmetric preconditioning for KSPCGS");
   ierr = KSPDefaultGetWork(ksp,8);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

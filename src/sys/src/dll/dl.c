@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.62 2000/05/05 22:13:53 balay Exp balay $*/
+/*$Id: dl.c,v 1.63 2000/08/16 15:12:23 balay Exp bsmith $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -223,13 +223,13 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
   par2 = (char*)PetscMalloc(1024*sizeof(char));CHKPTRQ(par2);
   ierr = DLLibraryRetrieve(comm,libname,par2,1024,&foundlibrary);CHKERRQ(ierr);
   if (!foundlibrary) {
-    SETERRQ1(1,1,"Unable to locate dynamic library:\n  %s\n",libname);
+    SETERRQ1(1,"Unable to locate dynamic library:\n  %s\n",libname);
   }
 
 #if !defined(PETSC_USE_NONEXECUTABLE_SO)
   ierr  = PetscTestFile(par2,'x',&foundlibrary);CHKERRQ(ierr);
   if (!foundlibrary) {
-    SETERRQ2(1,1,"Dynamic library is not executable:\n  %s\n  %s\n",libname,par2);
+    SETERRQ2(1,"Dynamic library is not executable:\n  %s\n  %s\n",libname,par2);
   }
 #endif
 
@@ -247,7 +247,7 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 #endif
 
   if (!*handle) {
-    SETERRQ3(1,1,"Unable to open dynamic library:\n  %s\n  %s\n  Error message from dlopen() %s\n",
+    SETERRQ3(1,"Unable to open dynamic library:\n  %s\n  %s\n  Error message from dlopen() %s\n",
              libname,par2,dlerror());
   }
 
@@ -367,7 +367,7 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],const cha
     done:; 
     *value   = dlsym(handle,symbol);
     if (!*value) {
-      SETERRQ2(1,1,"Unable to locate function %s in dynamic library %s",insymbol,path);
+      SETERRQ2(1,"Unable to locate function %s in dynamic library %s",insymbol,path);
     }
     PLogInfo(0,"DLLibrarySym:Loading function %s from dynamic library %s\n",insymbol,path);
 

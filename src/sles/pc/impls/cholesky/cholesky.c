@@ -1,4 +1,4 @@
-/*$Id: cholesky.c,v 1.5 2000/09/26 16:24:35 curfman Exp balay $*/
+/*$Id: cholesky.c,v 1.6 2000/09/26 16:46:48 balay Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -110,7 +110,7 @@ static int PCView_Cholesky(PC pc,Viewer viewer)
   } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer," order=%s",lu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for PCCholesky",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for PCCholesky",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -122,7 +122,7 @@ static int PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
   
   PetscFunctionBegin;
-  if (!dir->fact) SETERRQ(1,1,"Matrix not yet factored; call after SLESSetUp() or PCSetUp()");
+  if (!dir->fact) SETERRQ(1,"Matrix not yet factored; call after SLESSetUp() or PCSetUp()");
   *mat = dir->fact;
   PetscFunctionReturn(0);
 }
@@ -396,7 +396,7 @@ int PCCholeskySetFill(PC pc,PetscReal fill)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less then 1.0");
+  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less then 1.0");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetFill_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.10 2000/06/20 16:18:48 bsmith Exp bsmith $*/
+/*$Id: pack.c,v 1.11 2000/07/07 16:06:01 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -206,7 +206,7 @@ int VecPackScatter(VecPack packer,Vec gvec,...)
 
   PetscFunctionBegin;
   if (!packer->globalvector) {
-    SETERRQ(1,1,"Must first create global vector with VecPackCreateGlobalVector()");
+    SETERRQ(1,"Must first create global vector with VecPackCreateGlobalVector()");
   }
 
   /* loop over packed objects, handling one at at time */
@@ -222,7 +222,7 @@ int VecPackScatter(VecPack packer,Vec gvec,...)
       PetscValidHeaderSpecific(vec,VEC_COOKIE);
       ierr = VecPackScatter_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,1,"Cannot handle that object type yet");
+      SETERRQ(1,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -256,7 +256,7 @@ int VecPackGather(VecPack packer,Vec gvec,...)
 
   PetscFunctionBegin;
   if (!packer->globalvector) {
-    SETERRQ(1,1,"Must first create global vector with VecPackCreateGlobalVector()");
+    SETERRQ(1,"Must first create global vector with VecPackCreateGlobalVector()");
   }
 
   /* loop over packed objects, handling one at at time */
@@ -272,7 +272,7 @@ int VecPackGather(VecPack packer,Vec gvec,...)
       PetscValidHeaderSpecific(vec,VEC_COOKIE);
       ierr = VecPackGather_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,1,"Cannot handle that object type yet");
+      SETERRQ(1,"Cannot handle that object type yet");
     }
     next = next->next;
   }
@@ -304,7 +304,7 @@ int VecPackAddArray(VecPack packer,int n)
 
   PetscFunctionBegin;
   if (packer->globalvector) {
-    SETERRQ(1,1,"Cannot add an array once you have called VecPackCreateGlobalVector()");
+    SETERRQ(1,"Cannot add an array once you have called VecPackCreateGlobalVector()");
   }
 
   /* create new link */
@@ -350,7 +350,7 @@ int VecPackAddDA(VecPack packer,DA da)
 
   PetscFunctionBegin;
   if (packer->globalvector) {
-    SETERRQ(1,1,"Cannot add a DA once you have called VecPackCreateGlobalVector()");
+    SETERRQ(1,"Cannot add a DA once you have called VecPackCreateGlobalVector()");
   }
 
   /* create new link */
@@ -501,7 +501,7 @@ int VecPackGetGlobalIndices(VecPack packer,...)
       ierr    = VecDestroy(local);CHKERRQ(ierr);
 
     } else {
-      SETERRQ(1,1,"Cannot handle that object type yet");
+      SETERRQ(1,"Cannot handle that object type yet");
     }
     next = next->next;
   }

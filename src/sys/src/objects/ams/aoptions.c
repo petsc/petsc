@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.21 2000/09/13 15:22:38 balay Exp bsmith $*/
+/*$Id: aoptions.c,v 1.22 2000/09/22 20:42:29 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -97,7 +97,7 @@ int OptionsEnd_Private(void)
     char       option[256],value[1024],tmp[32];
     int        j;
 
-    if (amspub.amem < 0) SETERRQ(1,1,"Called without a call to OptionsBegin()");
+    if (amspub.amem < 0) SETERRQ(1,"Called without a call to OptionsBegin()");
     ierr = AMS_Memory_publish(amspub.amem);CHKERRQ(ierr);
     ierr = AMS_Memory_grant_access(amspub.amem);CHKERRQ(ierr);
     /* wait until accessor has unlocked the memory */

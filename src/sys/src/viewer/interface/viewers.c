@@ -1,4 +1,4 @@
-/*$Id: viewers.c,v 1.11 2000/07/10 03:38:34 bsmith Exp bsmith $*/
+/*$Id: viewers.c,v 1.12 2000/09/22 20:41:53 bsmith Exp bsmith $*/
 
 #include "petscviewer.h"
 
@@ -95,7 +95,7 @@ int ViewersGetViewer(Viewers viewers,int n,Viewer *viewer)
   int ierr;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Cannot access using a negative index - %d\n",n);
+  if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Cannot access using a negative index - %d\n",n);
   if (n >= viewers->n) {
     Viewer *v;
     int    newn = n + 64; /* add 64 new ones at a time */

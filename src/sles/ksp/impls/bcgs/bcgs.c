@@ -1,4 +1,4 @@
-/*$Id: bcgs.c,v 1.72 2000/04/12 04:24:57 bsmith Exp bsmith $*/
+/*$Id: bcgs.c,v 1.73 2000/08/01 20:56:53 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the BiCGStab (Stabilized version of BiConjugate
@@ -18,7 +18,7 @@ static int KSPSetUp_BCGS(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_ERR_SUP,0,"no symmetric preconditioning for KSPBCGS");
+    SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPBCGS");
   }
   ierr = KSPDefaultGetWork(ksp,7);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -74,7 +74,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   for (i=0; i<maxit; i++) {
 
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);       /*   rho <- (r,rp)      */
-    if (rho == 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Breakdown, rho = r . rp = 0");
+    if (rho == 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,"Breakdown, rho = r . rp = 0");
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
     ierr = VecAYPX(&beta,R,P);CHKERRQ(ierr);      /*   p <- r + p beta    */
@@ -89,7 +89,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
 	 may be our solution.  Give it a try? */
       ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
-      if (d1 != 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Breakdown, da = s . s != 0");
+      if (d1 != 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,"Breakdown, da = s . s != 0");
       ierr = VecAXPY(&alpha,P,X);CHKERRQ(ierr);   /*   x <- x + a p       */
       ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->its++;

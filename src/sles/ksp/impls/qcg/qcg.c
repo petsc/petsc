@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.72 2000/04/12 04:25:09 bsmith Exp balay $*/
+/*$Id: qcg.c,v 1.73 2000/09/23 15:04:51 balay Exp bsmith $*/
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -71,7 +71,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
   PetscFunctionBegin;
 
   if (ksp->transpose_solve) {
-    SETERRQ(1,1,"Currently does not support transpose solve");
+    SETERRQ(1,"Currently does not support transpose solve");
   }
 
   ksp->its = 0;
@@ -87,9 +87,9 @@ int KSPSolve_QCG(KSP ksp,int *its)
   B        = ksp->vec_rhs;
 
   *its = 0;
-  if (pcgP->delta <= dzero) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Input error: delta <= 0");
+  if (pcgP->delta <= dzero) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Input error: delta <= 0");
   ierr = KSPGetPreconditionerSide(ksp,&side);CHKERRQ(ierr);
-  if (side != PC_SYMMETRIC) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Requires symmetric preconditioner!");
+  if (side != PC_SYMMETRIC) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Requires symmetric preconditioner!");
 
   /* Initialize variables */
   ierr = VecSet(&zero,W);CHKERRQ(ierr);	/* W = 0 */
@@ -281,9 +281,9 @@ int KSPSetUp_QCG(KSP ksp)
   PetscFunctionBegin;
   /* Check user parameters and functions */
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,0,"no right preconditioning for QCG");
+    SETERRQ(2,"no right preconditioning for QCG");
   } else if (ksp->pc_side == PC_LEFT) {
-    SETERRQ(2,0,"no left preconditioning for QCG");
+    SETERRQ(2,"no left preconditioning for QCG");
   }
 
   /* Get work vectors from user code */

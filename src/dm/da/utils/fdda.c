@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.49 2000/06/16 03:54:08 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.50 2000/08/01 20:58:11 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -96,7 +96,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
   
   */
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap,0);CHKERRQ(ierr);
-  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,0,"Currently no support for periodic");
+  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
 
   nc     = w;
   col    = 2*s + 1;
@@ -216,7 +216,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
   
   */
   ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,0);CHKERRQ(ierr);
-  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,0,"Currently no support for periodic");
+  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
   col    = 2*s + 1;
 
   ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -348,7 +348,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
   col    = 2*s + 1;
 
   if (wrap && (m % col)) {
-    SETERRQ(PETSC_ERR_SUP,1,"For coloring efficiency ensure number of grid points is divisible\n\
+    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points is divisible\n\
                  by 2*stencil_width + 1\n");
   }
 

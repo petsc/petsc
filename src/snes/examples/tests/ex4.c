@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.52 2000/01/11 21:02:41 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.53 2000/05/05 22:18:29 balay Exp bsmith $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
   else        user.param = 6.0;
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (!cavity && (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
-    SETERRA(1,0,"Lambda is out of range");
+    SETERRA(1,"Lambda is out of range");
   }
   N = user.mx*user.my;
   

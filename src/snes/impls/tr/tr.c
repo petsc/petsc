@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.118 2000/08/24 22:43:07 bsmith Exp bsmith $*/
+/*$Id: tr.c,v 1.119 2000/09/02 02:49:40 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
@@ -19,7 +19,7 @@ int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n,double rnorm,KSPConvergedReaso
 
   PetscFunctionBegin;
   if (snes->ksp_ewconv) {
-    if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Eisenstat-Walker onvergence context not created");
+    if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Eisenstat-Walker onvergence context not created");
     if (!n) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);CHKERRQ(ierr);}
     kctx->lresid_last = rnorm;
   }
@@ -259,7 +259,7 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"  mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",tr->delta0,tr->delta1,tr->delta2,tr->delta3);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for SNES EQ TR",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for SNES EQ TR",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -315,7 +315,7 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,SNESCon
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_NONLINEAR_EQUATIONS only");
   }
 
   if (fnorm != fnorm) {
@@ -344,7 +344,7 @@ int SNESCreate_EQ_TR(SNES snes)
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_NONLINEAR_EQUATIONS only");
   }
   snes->setup		= SNESSetUp_EQ_TR;
   snes->solve		= SNESSolve_EQ_TR;

@@ -1,4 +1,4 @@
-/*$Id: shellcnv.c,v 1.13 2000/04/12 04:23:17 bsmith Exp balay $*/
+/*$Id: shellcnv.c,v 1.14 2000/05/05 22:15:48 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"  
@@ -17,7 +17,7 @@ int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *mat)
   PetscValidPointer(mat);
 
   if (newtype != MATSEQDENSE && newtype != MATMPIDENSE) {
-    SETERRQ(PETSC_ERR_SUP,1,"Can only convert shell matrices to dense currently");
+    SETERRQ(PETSC_ERR_SUP,"Can only convert shell matrices to dense currently");
   }
   comm = oldmat->comm;
 

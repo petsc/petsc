@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.117 2000/08/01 20:02:01 bsmith Exp bsmith $*/
+/*$Id: aijnode.c,v 1.118 2000/08/29 16:59:11 bsmith Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -81,7 +81,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat_SeqAIJ *A,int **iia,int **jja,
   nslim_row = A->inode.node_count;
   m         = A->m;
   n         = A->n;
-  if (m != n) SETERRA(1,0,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix shoul be square");
+  if (m != n) SETERRA(1,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix shoul be square");
   
   /* Use the row_inode as column_inode */
   nslim_col = nslim_row;
@@ -399,7 +399,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;  
-  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,0,"Missing Inode Structure");
+  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -561,7 +561,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       idx    +=4*sz;
       break;
     default :
-      SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported");
+      SETERRQ(PETSC_ERR_COR,"Node size not yet supported");
     }
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
@@ -582,7 +582,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   int        shift = a->indexshift;
   
   PetscFunctionBegin;  
-  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,0,"Missing Inode Structure");
+  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -750,7 +750,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
       idx    +=4*sz;
       break;
     default :
-      SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported");
+      SETERRQ(PETSC_ERR_COR,"Node size not yet supported");
     }
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
@@ -848,8 +848,8 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   Scalar      sum1,sum2,sum3,sum4,sum5,*v1,*v2,*v3,*v4,*v5;
 
   PetscFunctionBegin;  
-  if (A->factor!=FACTOR_LU) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unfactored matrix");
-  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,0,"Missing Inode Structure");
+  if (A->factor!=FACTOR_LU) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unfactored matrix");
+  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
 
@@ -1034,7 +1034,7 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
       tmp[row ++]=sum5;
       break;
     default:
-      SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported \n");
+      SETERRQ(PETSC_ERR_COR,"Node size not yet supported \n");
     }
   }
   /* backward solve the upper triangular */
@@ -1202,7 +1202,7 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
       x[*c--] = tmp[row] = sum5*a_a[ad[row]+shift]; row--;
       break;
     default:
-      SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported \n");
+      SETERRQ(PETSC_ERR_COR,"Node size not yet supported \n");
     }
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
@@ -1243,7 +1243,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   node_max = a->inode.node_count; 
   ns       = a->inode.size ;
   if (!ns){                   
-    SETERRQ(1,1,"Matrix without inode information");
+    SETERRQ(1,"Matrix without inode information");
   }
 
   /* If max inode size > 3, split it into two inodes.*/
@@ -1340,7 +1340,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
             ndamp++;
             goto endofwhile;
           } else {
-            SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+            SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
           }
         }
         rtmp1[row] = 1.0/rtmp1[row];
@@ -1412,7 +1412,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
               ndamp++;
               goto endofwhile;
             } else {
-              SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+              SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
             }
           }
           mul2 = (*pc2)/(*pc1); /* since diag is not yet inverted.*/
@@ -1438,7 +1438,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
             ndamp++;
             goto endofwhile;
           } else {
-            SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+            SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
           }
         }
         rtmp1[row]   = 1.0/rtmp1[row];
@@ -1523,7 +1523,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
               ndamp++;
               goto endofwhile;
             } else {
-              SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+              SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
             }
           }
           mul2 = (*pc2)/(*pc1);
@@ -1553,7 +1553,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
               ndamp++;
               goto endofwhile;
             } else {
-              SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+              SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
             }
           }
           mul3 = (*pc3)/(*pc2);
@@ -1579,7 +1579,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
             ndamp++;
             goto endofwhile;
           } else {
-            SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+            SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
           }
         }
         rtmp1[row]   = 1.0/rtmp1[row];
@@ -1595,7 +1595,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         break;
 
       default:
-        SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported \n");
+        SETERRQ(PETSC_ERR_COR,"Node size not yet supported \n");
       }
       row += nsz;                 /* Update the row */
     } 

@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.118 2000/07/08 02:28:51 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.119 2000/09/02 02:48:54 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -81,7 +81,7 @@ static int PCView_ASM(PC pc,Viewer viewer)
     ierr = ViewerStringSPrintf(viewer," blks=%d, overlap=%d, type=%d",jac->n,jac->overlap,jac->type);CHKERRQ(ierr);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer);CHKERRQ(ierr);}
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for PCASM",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for PCASM",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -123,7 +123,7 @@ static int PCSetUp_ASM(PC pc)
       sz    = end_val - start_val;
       start = start_val;
       if (end_val/bs*bs != end_val || start_val/bs*bs != start_val) {
-        SETERRQ(PETSC_ERR_ARG_WRONG,0,"Bad distribution for matrix block size");
+        SETERRQ(PETSC_ERR_ARG_WRONG,"Bad distribution for matrix block size");
       }
       for (i=0; i<n_local_true; i++){
         size       =  ((sz/bs)/n_local_true + (((sz/bs) % n_local_true) > i))*bs;
@@ -383,7 +383,7 @@ static int PCSetFromOptions_ASM(PC pc)
       else if (isrestrict)    atype = PC_ASM_RESTRICT;
       else if (isinterpolate) atype = PC_ASM_INTERPOLATE;
       else if (isnone)        atype = PC_ASM_NONE;
-      else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
+      else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
       ierr = PCASMSetType(pc,atype);CHKERRQ(ierr);
     }
   ierr = OptionsTail();CHKERRQ(ierr);
@@ -402,10 +402,10 @@ int PCASMSetLocalSubdomains_ASM(PC pc,int n,IS *is)
   PetscFunctionBegin;
 
   if (pc->setupcalled) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"PCASMSetLocalSubdomains() should be called before calling PCSetup().");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetLocalSubdomains() should be called before calling PCSetup().");
   }
 
-  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Each process must have 0 or more blocks");
+  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 0 or more blocks");
   osm               = (PC_ASM*)pc->data;
   osm->n_local_true = n;
   osm->is           = is;
@@ -437,7 +437,7 @@ they cannot be set globally yet.");
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   osm->n_local_true = N/size + ((N % size) > rank);
   if (osm->n_local_true < 0) {
-    SETERRQ(PETSC_ERR_SUP,0,"Each process must have 0 or more blocks");
+    SETERRQ(PETSC_ERR_SUP,"Each process must have 0 or more blocks");
   }
   osm->is           = 0;
   PetscFunctionReturn(0);
@@ -452,7 +452,7 @@ int PCASMSetOverlap_ASM(PC pc,int ovl)
   PC_ASM *osm;
 
   PetscFunctionBegin;
-  if (ovl < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative overlap value requested");
+  if (ovl < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap value requested");
 
   osm               = (PC_ASM*)pc->data;
   osm->overlap      = ovl;
@@ -484,7 +484,7 @@ int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
 
   PetscFunctionBegin;
   if (jac->n_local_true < 0) {
-    SETERRQ(1,1,"Need to call PCSetUP() on PC (or SLESSetUp() on the outer SLES object) before calling here");
+    SETERRQ(1,"Need to call PCSetUP() on PC (or SLESSetUp() on the outer SLES object) before calling here");
   }
 
   if (n_local)     *n_local     = jac->n_local_true;
@@ -784,7 +784,7 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   if (f) {
     ierr = (*f)(pc,n_local,first_local,sles);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Cannot get subsles for this type of PC");
+    SETERRQ(1,"Cannot get subsles for this type of PC");
   }
 
  PetscFunctionReturn(0);
@@ -879,7 +879,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
   int nidx,*idx,loc,ii,jj,ierr,count;
 
   PetscFunctionBegin;
-  if (dof != 1) SETERRQ(PETSC_ERR_SUP,0,"");
+  if (dof != 1) SETERRQ(PETSC_ERR_SUP,"");
 
   *Nsub = N*M;
   *is = (IS*)PetscMalloc((*Nsub)*sizeof(IS **));CHKPTRQ(is);
@@ -887,13 +887,13 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
   loc_outter = 0;
   for (i=0; i<N; i++) {
     height = n/N + ((n % N) > i); /* height of subdomain */
-    if (height < 2) SETERRA(1,0,"Too many N subdomains for mesh dimension n");
+    if (height < 2) SETERRA(1,"Too many N subdomains for mesh dimension n");
     yleft  = ystart - overlap; if (yleft < 0) yleft = 0;
     yright = ystart + height + overlap; if (yright > n) yright = n;
     xstart = 0;
     for (j=0; j<M; j++) {
       width = m/M + ((m % M) > j); /* width of subdomain */
-      if (width < 2) SETERRA(1,0,"Too many M subdomains for mesh dimension m");
+      if (width < 2) SETERRA(1,"Too many M subdomains for mesh dimension m");
       xleft  = xstart - overlap; if (xleft < 0) xleft = 0;
       xright = xstart + width + overlap; if (xright > m) xright = m;
       nidx   = (xright - xleft)*(yright - yleft);
@@ -948,7 +948,7 @@ int PCASMGetLocalSubdomains(PC pc,int *n,IS **is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!pc->setupcalled) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call after SLESSetUP() or PCSetUp().");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call after SLESSetUP() or PCSetUp().");
   }
 
   osm = (PC_ASM*)pc->data;

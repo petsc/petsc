@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.9 2000/01/11 21:00:17 bsmith Exp balay $*/
+/*$Id: ex15.c,v 1.10 2000/05/05 22:15:11 balay Exp bsmith $*/
 
 static char help[] = "Tests VecSetValuesBlocked() on Seq vectors\n\n";
 
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
-  if (size != 1) SETERRA(1,0,"Must be run with one processor");
+  if (size != 1) SETERRA(1,"Must be run with one processor");
 
   /* create vector */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);

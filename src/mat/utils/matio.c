@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.70 2000/09/05 19:39:31 balay Exp balay $*/
+/*$Id: matio.c,v 1.71 2000/09/07 15:18:44 balay Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
@@ -159,7 +159,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 
   PetscFunctionBegin;
   if (outtype > MAX_MATRIX_TYPES || outtype < 0) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Not a valid matrix type");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Not a valid matrix type");
   }
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   *newmat  = 0;
@@ -170,7 +170,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 
   ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
   if (!isbinary) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Invalid viewer; open viewer with ViewerBinaryOpen()");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with ViewerBinaryOpen()");
   }
 
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -180,7 +180,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   ierr = PLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   if (!MatLoaders[type]) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,1,"Invalid matrix type, or matrix load not registered");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Invalid matrix type, or matrix load not registered");
   }
 
   ierr = (*MatLoaders[type])(viewer,type,newmat);CHKERRQ(ierr);

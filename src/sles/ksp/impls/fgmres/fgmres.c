@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.19 2000/08/24 22:42:54 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.20 2000/09/02 02:49:20 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -38,7 +38,7 @@ int    KSPSetUp_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(2,0,"no symmetric preconditioning for KSPFGMRES");
+    SETERRQ(2,"no symmetric preconditioning for KSPFGMRES");
   }
   max_k         = fgmres->max_k;
   hh            = (max_k + 2) * (max_k + 1);
@@ -288,7 +288,7 @@ int FGMREScycle(int *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        SETERRQ(0,0,"You reached the happy break down,but convergence was not indicated.");
+        SETERRQ(0,"You reached the happy break down,but convergence was not indicated.");
       }
       break;
     }
@@ -543,7 +543,7 @@ static int FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *re
 #else
     tt        = PetscSqrtScalar(*hh * *hh + *(hh+1) * *(hh+1));
 #endif
-    if (tt == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Your matrix or preconditioner is the null operator");}
+    if (tt == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,"Your matrix or preconditioner is the null operator");}
     *cc       = *hh / tt;   /* new cosine value */
     *ss       = *(hh+1) / tt;  /* new sine value */
 
@@ -693,7 +693,7 @@ int KSPView_FGMRES(KSP ksp,Viewer viewer)
     }
     ierr = ViewerASCIIPrintf(viewer,"  FGMRES: restart=%d, using %s\n",fgmres->max_k,cstr);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
+    SETERRQ(1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

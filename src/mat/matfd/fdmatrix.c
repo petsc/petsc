@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.76 2000/09/07 15:18:40 balay Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.77 2000/09/22 20:44:38 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -120,7 +120,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
     }
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for MatFDColoring",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for MatFDColoring",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -379,7 +379,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   PetscFunctionBegin;
   ierr = PLogEventBegin(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
-  if (M != N) SETERRQ(PETSC_ERR_SUP,0,"Only for square matrices");
+  if (M != N) SETERRQ(PETSC_ERR_SUP,"Only for square matrices");
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_COOKIE,0,"MatFDColoring",comm,MatFDColoringDestroy,MatFDColoringView);
@@ -388,7 +388,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   if (mat->ops->fdcoloringcreate) {
     ierr = (*mat->ops->fdcoloringcreate)(mat,iscoloring,c);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,0,"Code not yet written for this matrix type");
+    SETERRQ(PETSC_ERR_SUP,"Code not yet written for this matrix type");
   }
 
   c->error_rel = 1.e-8;
@@ -565,7 +565,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
       dx            *= epsilon;
-      if (!PetscAbsScalar(dx)) SETERRQ(1,1,"Computed 0 differencing parameter");
+      if (!PetscAbsScalar(dx)) SETERRQ(1,"Computed 0 differencing parameter");
       w3_array[col] += dx;
     } 
     w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);

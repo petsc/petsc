@@ -1,4 +1,4 @@
-/*$Id: dgefa3.c,v 1.16 2000/04/09 04:36:19 bsmith Exp bsmith $*/
+/*$Id: dgefa3.c,v 1.17 2000/04/12 04:23:32 bsmith Exp bsmith $*/
 /*
      Inverts 3 by 3 matrix using partial pivoting.
 
@@ -46,7 +46,7 @@ int Kernel_A_gets_inverse_A_3(MatScalar *a)
 	ipvt[k] = l;
 
 	if (a[l + k3] == 0.) {
-	  SETERRQ(k,0,"Zero pivot");
+	  SETERRQ(k,"Zero pivot");
 	}
 
 /*           interchange if necessary */
@@ -86,7 +86,7 @@ int Kernel_A_gets_inverse_A_3(MatScalar *a)
     }
     ipvt[3] = 3;
     if (a[12] == 0.) {
-	SETERRQ(3,0,"Zero pivot,final row");
+	SETERRQ(3,"Zero pivot,final row");
     }
 
     /*

@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.216 2000/09/22 20:43:08 bsmith Exp buschelm $*/
+/*$Id: vector.c,v 1.217 2000/09/23 03:16:26 buschelm Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -33,9 +33,9 @@ int VecSetBlockSize(Vec v,int bs)
   PetscValidHeaderSpecific(v,VEC_COOKIE); 
   if (bs <= 0) bs = 1;
   if (bs == v->bs) PetscFunctionReturn(0);
-  if (v->bs != -1) SETERRQ2(PETSC_ERR_ARG_WRONGSTATE,1,"Cannot reset blocksize. Current size %d new %d",v->bs,bs);
-  if (v->N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Vector length not divisible by blocksize %d %d",v->N,bs);
-  if (v->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Local vector length not divisible by blocksize %d %d",v->n,bs);
+  if (v->bs != -1) SETERRQ2(PETSC_ERR_ARG_WRONGSTATE,"Cannot reset blocksize. Current size %d new %d",v->bs,bs);
+  if (v->N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %d %d",v->N,bs);
+  if (v->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %d %d",v->n,bs);
   
   v->bs        = bs;
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */
@@ -147,8 +147,8 @@ int VecDot(Vec x,Vec y,Scalar *val)
   PetscValidType(y);
   PetscCheckSameType(x,y);
   PetscCheckSameComm(x,y);
-  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,x->comm);CHKERRQ(ierr);
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
@@ -344,8 +344,8 @@ int VecTDot(Vec x,Vec y,Scalar *val)
   PetscValidType(y);
   PetscCheckSameType(x,y);
   PetscCheckSameComm(x,y);
-  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PLogEventBegin(VEC_TDot,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->tdot)(x,y,val);CHKERRQ(ierr);
@@ -422,8 +422,8 @@ int VecCopy(Vec x,Vec y)
   PetscValidType(x);
   PetscValidType(y);
   PetscCheckSameComm(x,y);
-  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PLogEventBegin(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->copy)(x,y);CHKERRQ(ierr);
@@ -560,8 +560,8 @@ int VecAXPY(const Scalar *alpha,Vec x,Vec y)
   PetscValidType(y);
   PetscCheckSameType(x,y);
   PetscCheckSameComm(x,y);
-  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->axpy)(alpha,x,y);CHKERRQ(ierr);
@@ -602,8 +602,8 @@ int VecAXPBY(const Scalar *alpha,const Scalar *beta,Vec x,Vec y)
   PetscValidType(y);
   PetscCheckSameType(x,y);
   PetscCheckSameComm(x,y);
-  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->axpby)(alpha,beta,x,y);CHKERRQ(ierr);
@@ -643,8 +643,8 @@ int VecAYPX(const Scalar *alpha,Vec x,Vec y)
   PetscValidType(y);
   PetscCheckSameType(x,y);
   PetscCheckSameComm(x,y);
-  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PLogEventBegin(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
   ierr =  (*x->ops->aypx)(alpha,x,y);CHKERRQ(ierr);
@@ -677,8 +677,8 @@ int VecSwap(Vec x,Vec y)
   PetscValidType(y);
   PetscCheckSameType(x,y);
   PetscCheckSameComm(x,y);
-  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PLogEventBegin(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->swap)(x,y);CHKERRQ(ierr);
@@ -720,8 +720,8 @@ int VecWAXPY(const Scalar *alpha,Vec x,Vec y,Vec w)
   PetscValidType(w);
   PetscCheckSameType(x,y); PetscCheckSameType(y,w);
   PetscCheckSameComm(x,y); PetscCheckSameComm(y,w);
-  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PLogEventBegin(VEC_WAXPY,x,y,w,0);CHKERRQ(ierr);
   ierr =  (*x->ops->waxpy)(alpha,x,y,w);CHKERRQ(ierr);
@@ -763,8 +763,8 @@ int VecPointwiseMult(Vec x,Vec y,Vec w)
   PetscValidType(w);
   PetscCheckSameType(x,y); PetscCheckSameType(y,w);
   PetscCheckSameComm(x,y); PetscCheckSameComm(y,w);
-  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PLogEventBegin(VEC_PMult,x,y,w,0);CHKERRQ(ierr);
   ierr = (*x->ops->pointwisemult)(x,y,w);CHKERRQ(ierr);
@@ -806,8 +806,8 @@ int VecPointwiseDivide(Vec x,Vec y,Vec w)
   PetscValidType(w);
   PetscCheckSameType(x,y); PetscCheckSameType(y,w);
   PetscCheckSameComm(x,y); PetscCheckSameComm(y,w);
-  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = (*x->ops->pointwisedivide)(x,y,w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -961,7 +961,7 @@ int VecDestroyVecs(const Vec vv[],int m)
   int ierr;
 
   PetscFunctionBegin;
-  if (!vv) SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null vectors");
+  if (!vv) SETERRQ(PETSC_ERR_ARG_BADPTR,"Null vectors");
   PetscValidHeaderSpecific(*vv,VEC_COOKIE);
   PetscValidType(*vv);
   ierr = (*(*vv)->ops->destroyvecs)(vv,m);CHKERRQ(ierr);
@@ -1141,7 +1141,7 @@ int VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
 
   if (x->mapping) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Mapping already set for vector");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
   }
 
   if (x->ops->setlocaltoglobalmapping) {
@@ -1184,7 +1184,7 @@ int VecSetLocalToGlobalMappingBlocked(Vec x,ISLocalToGlobalMapping mapping)
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
 
   if (x->bmapping) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Mapping already set for vector");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
   }
   x->bmapping = mapping;
   ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
@@ -1240,7 +1240,7 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode io
   ierr = PLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   if (!x->ops->setvalueslocal) {
     if (!x->mapping) {
-      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with VecSetLocalToGlobalMapping()");
+      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with VecSetLocalToGlobalMapping()");
     }
     if (ni > 128) {
       lix = (int*)PetscMalloc(ni*sizeof(int));CHKPTRQ(lix);
@@ -1305,7 +1305,7 @@ int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const Scalar y[],Insert
   PetscValidScalarPointer(y);
   PetscValidType(x);
   if (!x->bmapping) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with VecSetLocalToGlobalMappingBlocked()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with VecSetLocalToGlobalMappingBlocked()");
   }
   if (ni > 128) {
     lix = (int*)PetscMalloc(ni*sizeof(int));CHKPTRQ(lix);
@@ -1483,8 +1483,8 @@ int VecMTDot(int nv,Vec x,const Vec y[],Scalar *val)
   PetscValidType(*y);
   PetscCheckSameType(x,*y);
   PetscCheckSameComm(x,*y);
-  if (x->N != (*y)->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (x->n != (*y)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  if (x->N != (*y)->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != (*y)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PLogEventBegin(VEC_MTDot,x,*y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->mtdot)(nv,x,y,val);CHKERRQ(ierr);
@@ -1534,8 +1534,8 @@ int VecMDot(int nv,Vec x,const Vec y[],Scalar *val)
   PetscValidType(*y);
   PetscCheckSameType(x,*y);
   PetscCheckSameComm(x,*y);
-  if (x->N != (*y)->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (x->n != (*y)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  if (x->N != (*y)->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->n != (*y)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,x->comm);CHKERRQ(ierr);
   ierr = (*x->ops->mdot)(nv,x,y,val);CHKERRQ(ierr);
@@ -1574,8 +1574,8 @@ int  VecMAXPY(int nv,const Scalar *alpha,Vec y,Vec *x)
   PetscValidType(*x);
   PetscCheckSameType(y,*x);
   PetscCheckSameComm(y,*x);
-  if (y->N != (*x)->N) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector global lengths");
-  if (y->n != (*x)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible vector local lengths");
+  if (y->N != (*x)->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (y->n != (*x)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PLogEventBegin(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->maxpy)(nv,alpha,y,x);CHKERRQ(ierr);
@@ -1672,7 +1672,7 @@ int VecGetArrays(const Vec x[],int n,Scalar **a[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(*x,VEC_COOKIE);
   PetscValidPointer(a);
-  if (n <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Must get at least one array n = %d",n);
+  if (n <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must get at least one array n = %d",n);
   q = (Scalar**)PetscMalloc(n*sizeof(Scalar*));CHKPTRQ(q);
   for (i=0; i<n; ++i) {
     ierr = VecGetArray(x[i],&q[i]);CHKERRQ(ierr);
@@ -1845,7 +1845,7 @@ int VecView(Vec vec,Viewer viewer)
   if (!viewer) viewer = VIEWER_STDOUT_(vec->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscCheckSameComm(vec,viewer);
-  if (vec->stash.n || vec->bstash.n) SETERRQ(1,1,"Must call VecAssemblyBegin/End() before viewing this vector");
+  if (vec->stash.n || vec->bstash.n) SETERRQ(1,"Must call VecAssemblyBegin/End() before viewing this vector");
 
   /*
      Check if default viewer has been overridden, but user request it anyways
@@ -2039,7 +2039,7 @@ int VecDuplicateVecs_Default(Vec w,int m,Vec *V[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w,VEC_COOKIE);
   PetscValidPointer(V);
-  if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"m must be > 0: m = %d",m);
+  if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %d",m);
   *V = (Vec*)PetscMalloc(m * sizeof(Vec *));CHKPTRQ(*V);
   for (i=0; i<m; i++) {ierr = VecDuplicate(w,*V+i);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -2053,7 +2053,7 @@ int VecDestroyVecs_Default(const Vec v[], int m)
 
   PetscFunctionBegin;
   PetscValidPointer(v);
-  if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"m must be > 0: m = %d",m);
+  if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %d",m);
   for (i=0; i<m; i++) {ierr = VecDestroy(v[i]);CHKERRQ(ierr);}
   ierr = PetscFree((Vec*)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2094,7 +2094,7 @@ int VecPlaceArray(Vec vec,const Scalar array[])
   if (vec->ops->placearray) {
     ierr = (*vec->ops->placearray)(vec,array);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Cannot place array in this type of vector");
+    SETERRQ(1,"Cannot place array in this type of vector");
   }
   PetscFunctionReturn(0);
 }
@@ -2134,7 +2134,7 @@ int VecReplaceArray(Vec vec,const Scalar array[])
   if (vec->ops->replacearray) {
     ierr = (*vec->ops->replacearray)(vec,array);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Cannot replace array in this type of vector");
+    SETERRQ(1,"Cannot replace array in this type of vector");
   }
   PetscFunctionReturn(0);
 }
@@ -2332,7 +2332,7 @@ int VecLoadIntoVector(Viewer viewer,Vec vec)
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
   PetscValidType(vec);
   if (!vec->ops->loadintovector) {
-    SETERRQ(1,1,"Vector does not support load");
+    SETERRQ(1,"Vector does not support load");
   }
   ierr = (*vec->ops->loadintovector)(viewer,vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2363,7 +2363,7 @@ int VecReciprocal(Vec vec)
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
   PetscValidType(vec);
   if (!vec->ops->reciprocal) {
-    SETERRQ(1,1,"Vector does not support reciprocal operation");
+    SETERRQ(1,"Vector does not support reciprocal operation");
   }
   ierr = (*vec->ops->reciprocal)(vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2459,7 +2459,7 @@ int VecStashView(Vec v,Viewer viewer)
   PetscCheckSameComm(v,viewer);
 
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&match);CHKERRQ(ierr);
-  if (!match) SETERRQ1(1,1,"Stash viewer only works with ASCII viewer not %s\n",((PetscObject)v)->type_name);
+  if (!match) SETERRQ1(1,"Stash viewer only works with ASCII viewer not %s\n",((PetscObject)v)->type_name);
   ierr = ViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
   s = &v->bstash;
@@ -2533,7 +2533,7 @@ int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
   PetscValidPointer(a);
   PetscValidType(x);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m*n != N) SETERRQ3(1,1,"Local array size %d does not match 2d array dimensions %d by %d",N,m,n);
+  if (m*n != N) SETERRQ3(1,"Local array size %d does not match 2d array dimensions %d by %d",N,m,n);
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
   *a = (Scalar **)PetscMalloc(m*sizeof(Scalar*));CHKPTRQ(*a);
@@ -2626,7 +2626,7 @@ int VecGetArray1d(Vec x,int m,int mstart,Scalar *a[])
   PetscValidPointer(a);
   PetscValidType(x);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m != N) SETERRQ2(1,1,"Local array size %d does not match 1d array dimensions %d",N,m);
+  if (m != N) SETERRQ2(1,"Local array size %d does not match 1d array dimensions %d",N,m);
   ierr = VecGetArray(x,a);CHKERRQ(ierr);
   *a  -= mstart;
   PetscFunctionReturn(0);

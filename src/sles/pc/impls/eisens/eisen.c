@@ -1,4 +1,4 @@
-/*$Id: eisen.c,v 1.105 2000/05/05 22:17:13 balay Exp bsmith $*/
+/*$Id: eisen.c,v 1.106 2000/09/02 02:48:51 bsmith Exp bsmith $*/
 
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 
@@ -53,7 +53,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
   int          ierr;
 
   PetscFunctionBegin;
-  if (pc->mat != pc->pmat) SETERRQ(PETSC_ERR_SUP,0,"Cannot have different mat and pmat"); 
+  if (pc->mat != pc->pmat) SETERRQ(PETSC_ERR_SUP,"Cannot have different mat and pmat"); 
  
   /* swap shell matrix and true matrix */
   eis->A    = pc->mat;
@@ -147,7 +147,7 @@ static int PCView_Eisenstat(PC pc,Viewer viewer)
       ierr = ViewerASCIIPrintf(viewer,"Eisenstat: Not using diagonal scaling\n");CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(1,1,"Viewer type not supported for Eisenstat PC",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type not supported for Eisenstat PC",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -186,7 +186,7 @@ int PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
   PC_Eisenstat  *eis;
 
   PetscFunctionBegin;
-  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Relaxation out of range");
+  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
   eis = (PC_Eisenstat*)pc->data;
   eis->omega = omega;
   PetscFunctionReturn(0);

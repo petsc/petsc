@@ -1,4 +1,4 @@
-/*$Id: ex64.c,v 1.8 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex64.c,v 1.9 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Saves 4by4 block matrix.\n\n";
 
@@ -16,7 +16,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size > 1) SETERRA(1,1,"Can only run on one processor");
+  if (size > 1) SETERRA(1,"Can only run on one processor");
 
   /* 
      Open binary file.  Note that we use BINARY_CREATE to indicate

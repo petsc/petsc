@@ -1,4 +1,4 @@
-/*$Id: ex81.c,v 1.1 2000/08/05 03:42:09 bsmith Exp bsmith $*/
+/*$Id: ex81.c,v 1.2 2000/08/17 04:51:53 bsmith Exp bsmith $*/
 
 static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing format\n\
   -fout <output_file> : file to load.\n\
@@ -29,10 +29,10 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
 #if defined(PETSC_USE_COMPLEX)
-  SETERRA(1,0,"This example does not work with complex numbers");
+  SETERRA(1,"This example does not work with complex numbers");
 #endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size > 1) SETERRQ(1,1,"Only runs on one processor");
+  if (size > 1) SETERRQ(1,"Only runs on one processor");
 
   ierr = OptionsGetString(PETSC_NULL,"-fin",bfile,127,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetString(PETSC_NULL,"-fout",hbfile,127,PETSC_NULL);CHKERRA(ierr);
@@ -48,12 +48,12 @@ int main(int argc,char **args)
 
   m = A->m;
   n = A->n;
-  if (n != m) SETERRQ(1,1,"Only for square matrices");
+  if (n != m) SETERRQ(1,"Only for square matrices");
 
   /* charrage returns \n may not belong below
     depends on what 80 charactor fixed format means to Fortran */
 
-  file = fopen(hbfile,"w"); if (!file) SETERRQ(1,1,"Cannot open HB file");
+  file = fopen(hbfile,"w"); if (!file) SETERRQ(1,"Cannot open HB file");
   sprintf(head,"%-72s%-8s\n","Title","Key");
   fprintf(file,head);
   a  = (Mat_SeqAIJ*)A->data;
@@ -65,7 +65,7 @@ int main(int argc,char **args)
 
   sprintf(head,"%14d%14d%14d%14d%14d%10s\n",3*m+1,m+1,nz,nz," ");
   fprintf(file,head);
-  sprintf(head,"RUA%14d%14d%14d%14d%13s\n",m,m,nz,0," ");
+  sprintf(head,"RUA%14d%14d%14d%14d%13s\n",m,m,nz," ");
   fprintf(file,head);
 
   fprintf(file,"Formats I don't know\n");

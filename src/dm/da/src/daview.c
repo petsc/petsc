@@ -1,4 +1,4 @@
-/*$Id: daview.c,v 1.44 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: daview.c,v 1.45 2000/08/01 20:58:01 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -199,7 +199,7 @@ int DAView_Binary(DA da,Viewer viewer)
     } else if (dim == 3) {
       ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
     } else {
-      SETERRQ1(1,1,"Dimension is not 1 2 or 3: %d\n",dim);
+      SETERRQ1(1,"Dimension is not 1 2 or 3: %d\n",dim);
     }
     ierr = DACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
     ierr = DAGlobalToNaturalBegin(dac,da->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);

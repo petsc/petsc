@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.3 2000/05/05 22:19:39 balay Exp balay $ */
+/* $Id: input.c,v 1.4 2000/05/08 15:09:28 balay Exp bsmith $ */
 static char help[] ="Allows inputing a 2d  grid into a AO database.\n";
 
 /*
@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size > 1) {
-    SETERRQ(1,1,"Must run input program with exactly one processor");
+    SETERRQ(1,"Must run input program with exactly one processor");
   }
 
   /*---------------------------------------------------------------------

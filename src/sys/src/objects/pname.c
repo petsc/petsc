@@ -1,4 +1,4 @@
-/*$Id: pname.c,v 1.36 2000/05/09 04:27:27 bsmith Exp bsmith $*/
+/*$Id: pname.c,v 1.37 2000/09/22 20:42:24 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -26,7 +26,7 @@ int PetscObjectSetName(PetscObject obj,const char name[])
   int ierr;
 
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null object");
+  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
   ierr = PetscStrfree(obj->name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&obj->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);

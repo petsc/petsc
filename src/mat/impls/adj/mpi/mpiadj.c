@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.46 2000/09/19 14:18:40 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.47 2000/09/22 20:44:09 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -46,7 +46,7 @@ int MatView_MPIAdj(Mat A,Viewer viewer)
   if (isascii) {
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported by MPIAdj",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported by MPIAdj",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -174,7 +174,7 @@ int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
   PetscFunctionBegin;
   row -= a->rstart;
 
-  if (row < 0 || row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row out of range");
+  if (row < 0 || row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
 
   *nz = a->i[row+1] - a->i[row];
   if (v) *v = PETSC_NULL;
@@ -215,7 +215,7 @@ int MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
   PetscTruth  flag;
 
   PetscFunctionBegin;
-  if (B->type != MATMPIADJ) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Matrices must be same type");
+  if (B->type != MATMPIADJ) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
 
   /* If the  matrix dimensions are not equal,or no of nonzeros */
   if ((a->m != b->m) ||(a->nz != b->nz)) {
@@ -379,15 +379,15 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
   b->rend   = b->rowners[rank+1]; 
 
 #if defined(PETSC_USE_BOPT_g)
-  if (i[0] != 0) SETERRQ1(1,1,"First i[] index must be zero, instead it is %d\n",i[0]);
+  if (i[0] != 0) SETERRQ1(1,"First i[] index must be zero, instead it is %d\n",i[0]);
   for (ii=1; ii<m; ii++) {
     if (i[ii] < 0 || i[ii] < i[ii-1]) {
-      SETERRQ4(1,1,"i[%d] index is out of range: i[%d]",ii,i[ii],ii-1,i[ii-1]);
+      SETERRQ4(1,"i[%d] index is out of range: i[%d]",ii,i[ii],ii-1,i[ii-1]);
     }
   }
   for (ii=0; ii<i[m]; ii++) {
     if (j[ii] < 0 || j[ii] >= B->N) {
-      SETERRQ2(1,1,"Column index %d out of range %d\n",ii,j[ii]);
+      SETERRQ2(1,"Column index %d out of range %d\n",ii,j[ii]);
     }
   } 
 #endif

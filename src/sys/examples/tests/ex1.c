@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.19 1999/10/24 14:01:38 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.20 2000/04/09 03:09:21 bsmith Exp bsmith $*/
 
 /* 
    Demonstrates PETSc error handlers.
@@ -11,7 +11,7 @@
 int CreateError(int n)
 {
   int ierr;
-  if (!n) SETERRQ(1,0,"Error Created");
+  if (!n) SETERRQ(1,"Error Created");
   ierr = CreateError(n-1);CHKERRQ(ierr);
   return 0;
 }

@@ -1,4 +1,4 @@
-/*$Id: composite.c,v 1.38 2000/08/17 04:52:14 bsmith Exp bsmith $*/
+/*$Id: composite.c,v 1.39 2000/09/02 02:48:56 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
@@ -32,7 +32,7 @@ static int PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!next) {
-    SETERRQ(1,1,"No composite preconditioners supplied via PCCompositeAddPC()");
+    SETERRQ(1,"No composite preconditioners supplied via PCCompositeAddPC()");
   }
   if (next->next && !jac->work2) { /* allocate second work vector */
     ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
@@ -65,10 +65,10 @@ static int PCApply_Composite_Special(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!next) {
-    SETERRQ(1,1,"No composite preconditioners supplied via PCCompositeAddPC()");
+    SETERRQ(1,"No composite preconditioners supplied via PCCompositeAddPC()");
   }
   if (!next->next || next->next->next) {
-    SETERRQ(1,1,"Special composite preconditioners requires exactly two PCs");
+    SETERRQ(1,"Special composite preconditioners requires exactly two PCs");
   }
 
   ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!next) {
-    SETERRQ(1,1,"No composite preconditioners supplied via PCCompositeAddPC()");
+    SETERRQ(1,"No composite preconditioners supplied via PCCompositeAddPC()");
   }
   ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
@@ -163,7 +163,7 @@ static int PCSetFromOptions_Composite(PC pc)
       if (ismult)          type = PC_COMPOSITE_MULTIPLICATIVE;
       else if (isadd)      type = PC_COMPOSITE_ADDITIVE;
       else if (isspecial)  type = PC_COMPOSITE_SPECIAL;
-      else SETERRQ(1,1,"Unknown composite type given");
+      else SETERRQ(1,"Unknown composite type given");
 
       ierr = PCCompositeSetType(pc,type);CHKERRQ(ierr);
     }
@@ -202,7 +202,7 @@ static int PCView_Composite(PC pc,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for PCComposite",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for PCComposite",((PetscObject)viewer)->type_name);
   }
   if (isascii) {
     ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -245,7 +245,7 @@ int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
   } else if (type ==  PC_COMPOSITE_SPECIAL) {
     pc->ops->apply = PCApply_Composite_Special;
   } else {
-    SETERRQ(1,1,"Unkown composite preconditioner type");
+    SETERRQ(1,"Unkown composite preconditioner type");
   }
   PetscFunctionReturn(0);
 }
@@ -303,7 +303,7 @@ int PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
   next = jac->head;
   for (i=0; i<n; i++) {
     if (!next->next) {
-      SETERRQ(1,1,"Not enough PCs in composite preconditioner");
+      SETERRQ(1,"Not enough PCs in composite preconditioner");
     }
     next = next->next;
   }
@@ -445,7 +445,7 @@ int PCCompositeGetPC(PC pc,int n,PC *subpc)
   if (f) {
     ierr = (*f)(pc,n,subpc);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"Cannot get pc, not composite type");
+    SETERRQ(1,"Cannot get pc, not composite type");
   }
   PetscFunctionReturn(0);
 }

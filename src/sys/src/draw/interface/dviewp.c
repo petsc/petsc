@@ -1,4 +1,4 @@
-/*$Id: dviewp.c,v 1.40 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dviewp.c,v 1.41 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -30,7 +30,7 @@ int DrawSetViewPort(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal y
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl) {
-    SETERRQ4(PETSC_ERR_ARG_OUTOFRANGE,0,"ViewPort values must be >= 0 and <= 1: Instead %g %g %g %g",xl,yl,xr,yr); 
+    SETERRQ4(PETSC_ERR_ARG_OUTOFRANGE,"ViewPort values must be >= 0 and <= 1: Instead %g %g %g %g",xl,yl,xr,yr); 
   }
   draw->port_xl = xl; draw->port_yl = yl;
   draw->port_xr = xr; draw->port_yr = yr;
@@ -227,7 +227,7 @@ int DrawViewPortsSet(DrawViewPorts *ports,int port)
   PetscFunctionBegin;
   if (ports) { 
     if (port < 0 || port > ports->nports-1) {
-      SETERRQ2(1,1,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
+      SETERRQ2(1,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
     }
     ierr = DrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
   }

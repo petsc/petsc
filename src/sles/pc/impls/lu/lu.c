@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.138 2000/09/22 20:44:58 bsmith Exp balay $*/
+/*$Id: lu.c,v 1.139 2000/09/25 17:29:22 balay Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -118,7 +118,7 @@ static int PCView_LU(PC pc,Viewer viewer)
   } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer," order=%s",lu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for PCLU",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for PCLU",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -130,7 +130,7 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
   PC_LU *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  if (!dir->fact) SETERRQ(1,1,"Matrix not yet factored; call after SLESSetUp() or PCSetUp()");
+  if (!dir->fact) SETERRQ(1,"Matrix not yet factored; call after SLESSetUp() or PCSetUp()");
   *mat = dir->fact;
   PetscFunctionReturn(0);
 }
@@ -302,7 +302,7 @@ int PCLUSetColumnPivoting_LU(PC pc,PetscReal dtcol)
   PC_LU *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(1,1,"Column pivot tolerance is %g must be between 0 and 1",dtcol);
+  if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(1,"Column pivot tolerance is %g must be between 0 and 1",dtcol);
   dir->info.dtcol = dtcol;
   PetscFunctionReturn(0);
 }
@@ -412,7 +412,7 @@ int PCLUSetFill(PC pc,PetscReal fill)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less then 1.0");
+  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less then 1.0");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetFill_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);

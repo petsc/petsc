@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.16 2000/09/22 20:46:24 bsmith Exp gropp $*/
+/*$Id: ex10.c,v 1.17 2000/09/28 18:35:45 gropp Exp bsmith $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -125,7 +125,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRA(ierr);
 
   /* The current input file options.inf is for 2 proc run only */
-  if (size != 2) SETERRA(1,0,"This Example currently runs on 2 procs only.");
+  if (size != 2) SETERRA(1,"This Example currently runs on 2 procs only.");
 
   /*
      Initialize problem parameters
@@ -162,7 +162,7 @@ int main(int argc,char **argv)
    */
   fptr = fopen("adj.in","r"); 
   if (!fptr) {
-      SETERRQ(0,0,"Could not open adj.in")
+      SETERRQ(0,"Could not open adj.in")
   }
   
   /*
@@ -172,7 +172,7 @@ int main(int argc,char **argv)
   sprintf(part_name,"output.%d",rank);
   fptr1 = fopen(part_name,"w"); 
   if (!fptr1) {
-      SETERRQ(0,0,"Could no open output file");
+      SETERRQ(0,"Could no open output file");
   }
   user.gloInd = (int*)PetscMalloc(user.Nvglobal*sizeof(int));
   fprintf(fptr1,"Rank is %d\n",rank);

@@ -1,4 +1,4 @@
-/* $Id: dspai.c,v 1.4 2000/01/11 21:03:39 bsmith Exp balay $*/
+/* $Id: dspai.c,v 1.5 2000/05/08 15:09:34 balay Exp bsmith $*/
 
 #include "petscmat.h"
 
@@ -18,7 +18,7 @@ int MatDumpSPAI(Mat A,FILE *file)
   PetscObjectGetComm((PetscObject)A,&comm);
  
   MPI_Comm_size(comm,&size);
-  if (size > 1) SETERRQ(1,1,"Only single processor dumps");
+  if (size > 1) SETERRQ(1,"Only single processor dumps");
 
   ierr = MatGetSize(A,&n,&n);CHKERRQ(ierr);
 

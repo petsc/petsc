@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.22 2000/05/05 22:18:29 balay Exp balay $*/
+/*$Id: ex13.c,v 1.23 2000/09/06 22:20:08 balay Exp bsmith $*/
 
 static char help[] =
 "This program is a replica of ex6.c except that it does 2 solves to avoid paging\n\
@@ -68,7 +68,7 @@ int main(int argc,char **argv)
       ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
       ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
       if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-        SETERRA(1,0,"Lambda is out of range");
+        SETERRA(1,"Lambda is out of range");
       }
     }
     N = user.mx*user.my;
@@ -77,7 +77,7 @@ int main(int argc,char **argv)
     ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
     ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
     if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
-      SETERRQ(1,0,"Incompatible number of processors:  Nx * Ny != size");
+      SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
     
     /* Set up distributed array */
     ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,

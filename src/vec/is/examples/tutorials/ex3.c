@@ -1,5 +1,5 @@
 
-/*      "$Id: ex3.c,v 1.14 2000/09/22 20:42:58 bsmith Exp bsmith $"; */
+/*      "$Id: ex3.c,v 1.15 2000/09/27 03:40:05 bsmith Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
@@ -57,19 +57,19 @@ int main(int argc,char **argv)
     Check if this is really a block index set
   */
   ierr = ISBlock(set,&isblock);CHKERRA(ierr);
-  if (isblock != PETSC_TRUE) SETERRA(1,0,"Index set is not blocked!");
+  if (isblock != PETSC_TRUE) SETERRA(1,"Index set is not blocked!");
 
   /*
     Determine the block size of the index set
   */
   ierr = ISBlockGetBlockSize(set,&bs);CHKERRA(ierr);
-  if (bs != 3) SETERRA(1,0,"Block size is not 3!");
+  if (bs != 3) SETERRA(1,"Block size is not 3!");
 
   /*
     Get the number of blocks
   */
   ierr = ISBlockGetSize(set,&n);CHKERRA(ierr);
-  if (n != 4) SETERRA(1,0,"Number of blocks not 4!");
+  if (n != 4) SETERRA(1,"Number of blocks not 4!");
 
   ierr = ISDestroy(set);CHKERRA(ierr);
   PetscFinalize();

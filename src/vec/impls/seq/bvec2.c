@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.185 2000/08/16 15:15:28 balay Exp bsmith $*/
+/*$Id: bvec2.c,v 1.186 2000/09/22 20:43:10 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -236,7 +236,7 @@ int VecView_Seq(Vec xin,Viewer viewer)
   } else if (isbinary) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported by this vector object",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported by this vector object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -254,7 +254,7 @@ int VecSetValues_Seq(Vec xin,int ni,const int ix[],const Scalar y[],InsertMode m
     for (i=0; i<ni; i++) {
       if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-      if (ix[i] >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],xin->n);
+      if (ix[i] >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d maximum %d",ix[i],xin->n);
 #endif
       xx[ix[i]] = y[i];
     }
@@ -262,7 +262,7 @@ int VecSetValues_Seq(Vec xin,int ni,const int ix[],const Scalar y[],InsertMode m
     for (i=0; i<ni; i++) {
       if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-      if (ix[i] >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],xin->n);
+      if (ix[i] >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d maximum %d",ix[i],xin->n);
 #endif
       xx[ix[i]] += y[i];
     }  
@@ -287,7 +287,7 @@ int VecSetValuesBlocked_Seq(Vec xin,int ni,const int ix[],const Scalar yin[],Ins
       start = bs*ix[i];
       if (start < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-      if (start >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",start,xin->n);
+      if (start >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d maximum %d",start,xin->n);
 #endif
       for (j=0; j<bs; j++) {
         xx[start+j] = y[j];
@@ -299,7 +299,7 @@ int VecSetValuesBlocked_Seq(Vec xin,int ni,const int ix[],const Scalar yin[],Ins
       start = bs*ix[i];
       if (start < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-      if (start >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",start,xin->n);
+      if (start >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d maximum %d",start,xin->n);
 #endif
       for (j=0; j<bs; j++) {
         xx[start+j] += y[j];

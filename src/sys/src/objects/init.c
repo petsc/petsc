@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.66 2000/08/24 22:41:09 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.67 2000/09/22 20:42:24 bsmith Exp bsmith $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -84,7 +84,7 @@ int PLogOpenHistoryFile(const char filename[],FILE **fd)
       ierr = PetscFixFilename(pfile,fname);CHKERRQ(ierr);
     }
 
-    *fd = fopen(fname,"a"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file: %s",fname);
+    *fd = fopen(fname,"a"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file: %s",fname);
     fprintf(*fd,"---------------------------------------------------------\n");
     fprintf(*fd,"%s %s\n",PETSC_VERSION_NUMBER,date);
     ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
@@ -145,7 +145,7 @@ int PetscCompareInt(int d)
   PetscFunctionBegin;
   ierr = MPI_Bcast(&work,1,MPI_INT,0,MPI_COMM_WORLD);CHKERRQ(ierr);
   if (d != work) {
-    SETERRQ(PETSC_ERR_PLIB,0,"Inconsistent integer");
+    SETERRQ(PETSC_ERR_PLIB,"Inconsistent integer");
   }
   PetscFunctionReturn(0);
 }
@@ -177,7 +177,7 @@ int PetscCompareDouble(double d)
   ierr = MPI_Bcast(&work,1,MPI_DOUBLE,0,MPI_COMM_WORLD);CHKERRQ(ierr);
   if (!d && !work) PetscFunctionReturn(0);
   if (PetscAbsDouble(work - d)/PetscMax(PetscAbsDouble(d),PetscAbsDouble(work)) > PetscCompareTolerance) {
-    SETERRQ(PETSC_ERR_PLIB,0,"Inconsistent double");
+    SETERRQ(PETSC_ERR_PLIB,"Inconsistent double");
   }
   PetscFunctionReturn(0);
 }
@@ -209,7 +209,7 @@ int PetscCompareScalar(Scalar d)
   ierr = MPI_Bcast(&work,2,MPI_DOUBLE,0,MPI_COMM_WORLD);CHKERRQ(ierr);
   if (!PetscAbsScalar(d) && !PetscAbsScalar(work)) PetscFunctionReturn(0);
   if (PetscAbsScalar(work - d)/PetscMax(PetscAbsScalar(d),PetscAbsScalar(work)) >= PetscCompareTolerance) {
-    SETERRQ(PETSC_ERR_PLIB,0,"Inconsistent scalar");
+    SETERRQ(PETSC_ERR_PLIB,"Inconsistent scalar");
   }
   PetscFunctionReturn(0);
 }
@@ -258,7 +258,7 @@ int PetscCompareInitialize(double tol)
   /* printf("[%d] my name %s basename %s mysize %d\n",rank,programname,basename,mysize); */
 
   if (!mysize || mysize == size) {
-    SETERRQ(PETSC_ERR_ARG_IDN,0,"Need two different programs to compare");
+    SETERRQ(PETSC_ERR_ARG_IDN,"Need two different programs to compare");
   }
 
   /* create a new communicator for each program */
@@ -544,7 +544,7 @@ int OptionsCheckInitial(void)
       ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
       file = fopen(fname,"w"); 
       if (!file) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Unable to open trace file: %s",fname);
+        SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
       }
     } else {
       file = stdout;

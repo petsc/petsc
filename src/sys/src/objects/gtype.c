@@ -1,4 +1,4 @@
-/*$Id: gtype.c,v 1.20 2000/04/12 04:21:29 bsmith Exp bsmith $*/
+/*$Id: gtype.c,v 1.21 2000/09/22 20:42:24 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -27,7 +27,7 @@
 int PetscObjectGetType(PetscObject obj,int *type)
 {
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null object");
+  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
   *type = obj->type;
   PetscFunctionReturn(0);
 }

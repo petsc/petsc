@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.17 2000/09/06 22:19:37 balay Exp bsmith $*/
+/*$Id: ex5s.c,v 1.18 2000/09/22 20:46:14 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -130,7 +130,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,0,"Lambda is out of range");
+    SETERRA(1,"Lambda is out of range");
   }
   N = user.mx*user.my;
 

@@ -1,4 +1,4 @@
-/*$Id: gcomm.c,v 1.21 2000/04/12 04:21:29 bsmith Exp bsmith $*/
+/*$Id: gcomm.c,v 1.22 2000/09/22 20:42:24 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -31,7 +31,7 @@ int PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
   int ierr;
 
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null object");
+  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
   if (obj->bops->getcomm) {
     ierr = obj->bops->getcomm(obj,comm);CHKERRQ(ierr);
   } else {

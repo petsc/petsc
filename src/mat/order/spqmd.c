@@ -1,4 +1,4 @@
-/*$Id: spqmd.c,v 1.35 2000/04/12 04:24:20 bsmith Exp balay $*/
+/*$Id: spqmd.c,v 1.36 2000/05/05 22:16:44 balay Exp bsmith $*/
 
 #include "petscmat.h"
 #include "src/mat/order/order.h"
@@ -17,7 +17,7 @@ int MatOrdering_QMD(Mat mat,MatOrderingType type,IS *row,IS *col)
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(PETSC_ERR_SUP,0,"Cannot get rows for matrix");
+  if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
   perm   = (int *)PetscMalloc(nrow * sizeof(int));CHKPTRQ(perm);
   iperm  = (int *)PetscMalloc(nrow * sizeof(int));CHKPTRQ(iperm);

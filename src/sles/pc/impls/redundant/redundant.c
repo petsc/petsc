@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.24 2000/09/02 02:48:57 bsmith Exp bsmith $*/
+/*$Id: redundant.c,v 1.25 2000/09/13 03:11:54 bsmith Exp bsmith $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -44,7 +44,7 @@ static int PCView_Redundant(PC pc,Viewer viewer)
     }
     ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for PC redundant",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for PC redundant",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

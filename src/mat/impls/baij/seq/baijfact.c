@@ -1,4 +1,4 @@
-/*$Id: baijfact.c,v 1.82 2000/04/12 04:23:32 bsmith Exp bsmith $*/
+/*$Id: baijfact.c,v 1.83 2000/07/10 03:39:42 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -25,7 +25,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
-  if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
+  if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
 
   if (!isrow) {
     ierr = ISCreateStride(PETSC_COMM_SELF,A->M,0,1,&isrow);CHKERRQ(ierr);
@@ -54,7 +54,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   for (i=0; i<n; i++) {
     /* first copy previous fill into linked list */
     nnz     = nz    = ai[r[i]+1] - ai[r[i]];
-    if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,1,"Empty row in matrix");
+    if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix");
     ajtmp   = aj + ai[r[i]];
     fill[n] = n;
     while (nz--) {
@@ -2319,7 +2319,7 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
     diag = diag_offset[i] - bi[i];
     /* check pivot entry for current row */
     if (pv[diag] == 0.0) {
-      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
     }
     pv[diag] = 1.0/pv[diag];
   }

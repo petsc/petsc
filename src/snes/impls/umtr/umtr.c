@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.98 2000/09/02 02:49:42 bsmith Exp balay $*/
+/*$Id: umtr.c,v 1.99 2000/09/23 15:04:48 balay Exp bsmith $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
@@ -94,7 +94,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
         if (ierr == PETSC_ERR_SUP) {
           PLogInfo(snes,"SNESSolve_UM_TR: Initial delta computed without matrix norm info\n");
         } else {
-          if (PetscAbsDouble(max_val)<1.e-14)SETERRQ(PETSC_ERR_PLIB,0,"Hessian norm is too small");
+          if (PetscAbsDouble(max_val)<1.e-14)SETERRQ(PETSC_ERR_PLIB,"Hessian norm is too small");
           delta = PetscMax(delta,snes->norm/max_val);
         }
       } else { 
@@ -107,7 +107,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       ierr = SLESSolve(snes->sles,G,S,&qits);CHKERRQ(ierr);
       snes->linear_its += qits;
       ierr = KSPGetConvergedReason(ksp,&kreason);CHKERRQ(ierr);
-      if ((int)kreason < 0) SETERRQ(PETSC_ERR_PLIB,0,"Failure in SLESSolve");
+      if ((int)kreason < 0) SETERRQ(PETSC_ERR_PLIB,"Failure in SLESSolve");
       if (kreason != KSP_CONVERGED_QCG_NEG_CURVE && kreason != KSP_CONVERGED_QCG_CONSTRAINED) {
         newton = PETSC_TRUE;
       }
@@ -272,7 +272,7 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,SNESConverg
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   } else if (f != f) {
     PLogInfo(snes,"SNESConverged_UM_TR:Failed to converged, function is NaN\n");
     *reason = SNES_DIVERGED_FNORM_NAN;
@@ -337,7 +337,7 @@ static int SNESView_UM_TR(SNES snes,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"  eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",tr->eta1,tr->eta2,tr->eta3,tr->eta4);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for SNES UM TR",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for SNES UM TR",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -354,7 +354,7 @@ int SNESCreate_UM_TR(SNES snes)
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
   snes->setup		= SNESSetUp_UM_TR;
   snes->solve		= SNESSolve_UM_TR;

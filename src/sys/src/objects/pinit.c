@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.38 2000/09/22 20:42:24 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.39 2000/09/28 17:58:26 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -570,7 +570,7 @@ int PetscFinalize(void)
       char sname[256];
 
       sprintf(sname,"%s_%d",fname,rank);
-      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(1,1,"Cannot open log file: %s",sname);
+      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(1,"Cannot open log file: %s",sname);
       ierr = PetscTrDump(fd);CHKERRQ(ierr);
       fclose(fd);
     } else {
@@ -603,7 +603,7 @@ int PetscFinalize(void)
       char sname[256];
 
       sprintf(sname,"%s_%d",fname,rank);
-      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(1,1,"Cannot open log file: %s",sname);
+      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(1,"Cannot open log file: %s",sname);
       ierr = PetscTrLogDump(fd);CHKERRQ(ierr); 
       fclose(fd);
     } else {

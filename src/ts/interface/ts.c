@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.30 2000/05/17 15:53:41 bsmith Exp balay $ */
+/* $Id: ts.c,v 1.31 2000/09/07 15:17:46 balay Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNC__  
@@ -43,7 +43,7 @@ int TSComputeRHSJacobian(TS ts,double t,Vec X,Mat *A,Mat *B,MatStructure *flg)
   PetscValidHeaderSpecific(X,VEC_COOKIE);
   PetscCheckSameComm(ts,X);
   if (ts->problem_type != TS_NONLINEAR) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For TS_NONLINEAR only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"For TS_NONLINEAR only");
   }
   if (!ts->rhsjacobian) PetscFunctionReturn(0);
   ierr = PLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
@@ -134,7 +134,7 @@ int TSSetRHSFunction(TS ts,int (*f)(TS,double,Vec,Vec,void*),void *ctx)
 
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (ts->problem_type == TS_LINEAR) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Cannot set function for linear problem");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot set function for linear problem");
   }
   ts->rhsfunction = f;
   ts->funP        = ctx;
@@ -196,7 +196,7 @@ int TSSetRHSMatrix(TS ts,Mat A,Mat B,int (*f)(TS,double,Mat*,Mat*,MatStructure*,
   PetscCheckSameComm(ts,A);
   PetscCheckSameComm(ts,B);
   if (ts->problem_type == TS_NONLINEAR) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Not for nonlinear problems; use TSSetRHSJacobian()");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Not for nonlinear problems; use TSSetRHSJacobian()");
   }
 
   ts->rhsmatrix = f;
@@ -261,7 +261,7 @@ int TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,MatStruc
   PetscCheckSameComm(ts,A);
   PetscCheckSameComm(ts,B);
   if (ts->problem_type != TS_NONLINEAR) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Not for linear problems; use TSSetRHSMatrix()");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Not for linear problems; use TSSetRHSMatrix()");
   }
 
   ts->rhsjacobian = f;
@@ -329,7 +329,7 @@ int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,double,Vec,void*),void *ctx)
 
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (ts->problem_type != TS_LINEAR) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For linear problems only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"For linear problems only");
   }
   ts->rhsbc = f;
   ts->bcP   = ctx;
@@ -717,7 +717,7 @@ int TSSetUp(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (!ts->vec_sol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call TSSetSolution() first");
+  if (!ts->vec_sol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
   if (!ts->type_name) {
     ierr = TSSetType(ts,TS_EULER);CHKERRQ(ierr);
   }
@@ -797,7 +797,7 @@ int TSGetSNES(TS ts,SNES *snes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Nonlinear only; use TSGetSLES()");
+  if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_ERR_ARG_WRONG,"Nonlinear only; use TSGetSLES()");
   *snes = ts->snes;
   PetscFunctionReturn(0);
 }
@@ -832,7 +832,7 @@ int TSGetSLES(TS ts,SLES *sles)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->problem_type != TS_LINEAR) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Linear only; use TSGetSNES()");
+  if (ts->problem_type != TS_LINEAR) SETERRQ(PETSC_ERR_ARG_WRONG,"Linear only; use TSGetSNES()");
   *sles = ts->sles;
   PetscFunctionReturn(0);
 }
@@ -938,7 +938,7 @@ int TSSetMonitor(TS ts,int (*monitor)(TS,int,double,Vec,void*),void *mctx,int (*
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (ts->numbermonitors >= MAXTSMONITORS) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many monitors set");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   }
   ts->monitor[ts->numbermonitors]           = monitor;
   ts->mdestroy[ts->numbermonitors]          = mdestroy;

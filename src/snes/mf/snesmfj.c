@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.112 2000/09/22 20:45:59 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.113 2000/09/27 20:01:57 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -54,7 +54,7 @@ int MatSNESMFSetType(Mat mat,MatSNESMFType ftype)
 
   ierr =  FListFind(ctx->comm,MatSNESMFList,ftype,(int (**)(void *)) &r);CHKERRQ(ierr);
 
-  if (!r) SETERRQ(1,1,"Unknown MatSNESMF type given");
+  if (!r) SETERRQ(1,"Unknown MatSNESMF type given");
 
   ierr = (*r)(ctx);CHKERRQ(ierr);
 
@@ -186,7 +186,7 @@ int MatSNESMFView_Private(Mat J,Viewer viewer)
        ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
      }
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for SNES matrix free matrix",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for SNES matrix free matrix",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -214,7 +214,7 @@ int MatSNESMFAssemblyEnd_Private(Mat J)
       ierr = SNESGetFunction(j->snes,&j->current_f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     } else if (j->snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
       ierr = SNESGetGradient(j->snes,&j->current_f,PETSC_NULL);CHKERRQ(ierr);
-    } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid method class");
+    } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid method class");
   }
   PetscFunctionReturn(0);
 }
@@ -281,9 +281,9 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
       eval_fct = SNESComputeFunction;
     } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
       eval_fct = SNESComputeGradient;
-    } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid method class");
+    } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid method class");
     F    = ctx->current_f;
-    if (!F) SETERRQ(1,1,"You must call MatAssembly() even on matrix-free matrices");
+    if (!F) SETERRQ(1,"You must call MatAssembly() even on matrix-free matrices");
     ierr = eval_fct(snes,w,y);CHKERRQ(ierr);
   } else {
     F = ctx->funcvec;
@@ -589,7 +589,7 @@ int MatSNESMFKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
   ierr = PCGetOperators(pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   if (!ctx) {
-    SETERRQ(1,1,"Matrix is not a matrix free shell matrix");
+    SETERRQ(1,"Matrix is not a matrix free shell matrix");
   }
   if (n > 0 || nonzeroinitialguess) {
 #if defined(PETSC_USE_COMPLEX)

@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.16 2000/07/21 03:51:38 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.17 2000/08/01 20:58:01 bsmith Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -40,7 +40,7 @@ int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
   ierr = DAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   ratio = (mx-1)/(Mx-1);
-  if (ratio*(Mx-1) != mx-1) SETERRQ2(1,1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+  if (ratio*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
 
   ierr = DAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
@@ -108,8 +108,8 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
   ierr = DAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   ratio = (mx-1)/(Mx-1);
-  if (ratio*(Mx-1) != mx-1) SETERRQ2(1,1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
-  if (ratio != (my-1)/(My-1)) SETERRQ(1,1,"Grid spacing ratio must be same in X and Y direction");
+  if (ratio*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+  if (ratio != (my-1)/(My-1)) SETERRQ(1,"Grid spacing ratio must be same in X and Y direction");
 
   ierr = DAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
@@ -191,9 +191,9 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
       /* printf("i j %d %d %g %g\n",i,j,x,y); */
       nc = 0;
       /* one left and below; or we are right on it */
-      if (j_c < j_start_ghost_c) SETERRQ3(1,1,"Processor's coarse DA must lie over fine DA\n\
+      if (j_c < j_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
     j_start %d j_c %d j_start_ghost_c %d",j_start,j_c,j_start_ghost_c);
-      if (i_c < i_start_ghost_c) SETERRQ3(1,1,"Processor's coarse DA must lie over fine DA\n\
+      if (i_c < i_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
     i_start %d i_c %d i_start_ghost_c %d",i_start,i_c,i_start_ghost_c);
       col      = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
       cols[nc] = col_shift + idx_c[col]/dof; 
@@ -243,9 +243,9 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
   ierr = DAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   ratio = (mx-1)/(Mx-1);
-  if (ratio*(Mx-1) != mx-1) SETERRQ2(1,1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
-  if (ratio != (my-1)/(My-1)) SETERRQ(1,1,"Grid spacing ratio must be same in X and Y direction");
-  if (ratio != (mz-1)/(Mz-1)) SETERRQ(1,1,"Grid spacing ratio must be same in X and Y direction");
+  if (ratio*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+  if (ratio != (my-1)/(My-1)) SETERRQ(1,"Grid spacing ratio must be same in X and Y direction");
+  if (ratio != (mz-1)/(Mz-1)) SETERRQ(1,"Grid spacing ratio must be same in X and Y direction");
 
   ierr = DAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
@@ -413,14 +413,14 @@ int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
 
   ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(1,1,"Dimensions of DA do not match %d %d",dimc,dimf);CHKERRQ(ierr);
-  /* if (mc != mf) SETERRQ2(1,1,"Processor dimensions of DA in X %d %d do not match",mc,mf);CHKERRQ(ierr);
-     if (nc != nf) SETERRQ2(1,1,"Processor dimensions of DA in Y %d %d do not match",nc,nf);CHKERRQ(ierr);
-     if (pc != pf) SETERRQ2(1,1,"Processor dimensions of DA in Z %d %d do not match",pc,pf);CHKERRQ(ierr); */
-  if (dofc != doff) SETERRQ2(1,1,"DOF of DA do not match %d %d",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(1,1,"Stencil width of DA do not match %d %d",sc,sf);CHKERRQ(ierr);
-  if (wrapc != wrapf) SETERRQ(1,1,"Periodic type different in two DAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(1,1,"Stencil type different in two DAs");CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(1,"Dimensions of DA do not match %d %d",dimc,dimf);CHKERRQ(ierr);
+  /* if (mc != mf) SETERRQ2(1,"Processor dimensions of DA in X %d %d do not match",mc,mf);CHKERRQ(ierr);
+     if (nc != nf) SETERRQ2(1,"Processor dimensions of DA in Y %d %d do not match",nc,nf);CHKERRQ(ierr);
+     if (pc != pf) SETERRQ2(1,"Processor dimensions of DA in Z %d %d do not match",pc,pf);CHKERRQ(ierr); */
+  if (dofc != doff) SETERRQ2(1,"DOF of DA do not match %d %d",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(1,"Stencil width of DA do not match %d %d",sc,sf);CHKERRQ(ierr);
+  if (wrapc != wrapf) SETERRQ(1,"Periodic type different in two DAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(1,"Stencil type different in two DAs");CHKERRQ(ierr);
 
   if (dimc == 1 && wrapc == DA_NONPERIODIC) {
     ierr = DAGetInterpolation_1D_dof(dac,daf,A);CHKERRQ(ierr);
@@ -429,7 +429,7 @@ int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
   } else if (dimc == 3 && wrapc == DA_NONPERIODIC) {
     ierr = DAGetInterpolation_3D_dof(dac,daf,A);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,1,"No support for this DA yet");
+    SETERRQ(1,"No support for this DA yet");
   }
 
   if (scale) {

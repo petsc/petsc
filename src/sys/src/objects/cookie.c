@@ -1,4 +1,4 @@
-/*$Id: cookie.c,v 1.21 2000/04/12 04:21:29 bsmith Exp bsmith $*/
+/*$Id: cookie.c,v 1.22 2000/09/22 20:42:24 bsmith Exp bsmith $*/
 
 #include "petsc.h"  /*I "petsc.h" I*/
 int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_PREDEFINED;
@@ -30,7 +30,7 @@ int PetscRegisterCookie(int *cookie)
 {
   PetscFunctionBegin;
   if (LARGEST_PETSC_COOKIE >= LARGEST_PETSC_COOKIE_ALLOWED) { 
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"You have used too many PETSc cookies");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"You have used too many PETSc cookies");
   }
   if (!*cookie) *cookie = LARGEST_PETSC_COOKIE++;
   PetscFunctionReturn(0);

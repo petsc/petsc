@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.2 2000/08/24 22:42:39 bsmith Exp balay $*/
+/*$Id: nn.c,v 1.3 2000/09/07 15:18:18 balay Exp bsmith $*/
 
 #include "src/sles/pc/impls/is/nn/nn.h"
 
@@ -689,7 +689,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
           pcnn->factor_coarse_rhs += pcnn->work_N[pcnn->shared[0][k]] * pcnn->DZ_IN[0][k];
         }
         if (pcnn->factor_coarse_rhs) { pcnn->factor_coarse_rhs = 1.0 / pcnn->factor_coarse_rhs; }
-        else { SETERRQ(1,1,"Constants cannot be preserved. Remove \"-enforce_preserving_constants\" option."); }
+        else { SETERRQ(1,"Constants cannot be preserved. Remove \"-enforce_preserving_constants\" option."); }
       }
     }
   }

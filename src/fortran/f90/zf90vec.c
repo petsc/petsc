@@ -1,10 +1,8 @@
-/*$Id: zf90vec.c,v 1.14 2000/09/07 04:51:08 balay Exp balay $*/
+/*$Id: zf90vec.c,v 1.15 2000/09/22 18:53:58 balay Exp bsmith $*/
 
 #include "petscis.h"
 #include "petscvec.h"
 #include "petscf90.h"
-
-#if defined (PETSC_HAVE_F90_H)
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define isgetindicesf90_           ISGETINDICESF90
@@ -141,20 +139,6 @@ void PETSC_STDCALL vecdestroyvecsf90_(F90Array1d *ptr,int *m,int *__ierr)
 
 EXTERN_C_END
 
-#else  /* !defined (PETSC_HAVE_F90_H) */
-
-
-/*
-     Dummy function so that compilers won't complain about 
-  empty files.
-*/
-int F90vec_ZF90_Dummy(int dummy)
-{
-  return 0;
-}
- 
-
-#endif
 
 
 

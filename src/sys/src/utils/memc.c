@@ -1,4 +1,4 @@
-/*$Id: memc.c,v 1.63 2000/05/08 15:07:34 balay Exp bsmith $*/
+/*$Id: memc.c,v 1.64 2000/09/22 20:42:32 bsmith Exp bsmith $*/
 /*
     We define the memory operations here. The reason we just do not use 
   the standard memory routines in the PETSc code is that on some machines 
@@ -62,7 +62,7 @@ int PetscMemcpy(void *a,const void *b,int n)
   PetscFunctionBegin;
 #if !defined(PETSC_HAVE_CRAY90_POINTER)
   if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
-    SETERRQ(PETSC_ERR_ARG_INCOMP,1,"Memory regions overlap: either use PetscMemmov()\n\
+    SETERRQ(PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
             or make sure your copy regions and lengths are correct");
   }
 #endif
@@ -157,7 +157,7 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
 int PetscMemzero(void *a,int n)
 {
   PetscFunctionBegin;
-  if (n < 0) SETERRQ(1,1,"Memory length must be >= 0");
+  if (n < 0) SETERRQ(1,"Memory length must be >= 0");
   if (n > 0) {
 #if defined(PETSC_PREFER_BZERO)
     bzero((char *)a,n);

@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.237 2000/09/02 02:46:58 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.238 2000/09/22 20:42:24 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -43,7 +43,7 @@ int OptionsAtoi(const char name[],int *a)
 
   PetscFunctionBegin;
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
-  if (!len) SETERRQ(1,1,"charactor string of length zero has no numerical value");
+  if (!len) SETERRQ(1,"charactor string of length zero has no numerical value");
 
   ierr = PetscStrcasecmp(name,"PETSC_DEFAULT",&tdefault);CHKERRQ(ierr);
   if (!tdefault) {
@@ -63,11 +63,11 @@ int OptionsAtoi(const char name[],int *a)
     *a = -1;
   } else {
     if (name[0] != '+' && name[0] != '-' && name[0] < '0' && name[0] > '9') {
-      SETERRQ1(1,1,"Input string %s has no integer value (do not include . in it)",name);
+      SETERRQ1(1,"Input string %s has no integer value (do not include . in it)",name);
     }
     for (i=1; i<len; i++) {
       if (name[i] < '0' || name[i] > '9') {
-        SETERRQ1(1,1,"Input string %s has no integer value (do not include . in it)",name);
+        SETERRQ1(1,"Input string %s has no integer value (do not include . in it)",name);
       }
     }
     *a  = atoi(name);
@@ -84,7 +84,7 @@ int OptionsAtod(const char name[],PetscReal *a)
 
   PetscFunctionBegin;
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
-  if (!len) SETERRQ(1,1,"charactor string of length zero has no numerical value");
+  if (!len) SETERRQ(1,"charactor string of length zero has no numerical value");
 
   ierr = PetscStrcasecmp(name,"PETSC_DEFAULT",&tdefault);CHKERRQ(ierr);
   if (!tdefault) {
@@ -101,7 +101,7 @@ int OptionsAtod(const char name[],PetscReal *a)
     *a = PETSC_DECIDE;
   } else {
     if (name[0] != '+' && name[0] != '-' && name[0] != '.' && name[0] < '0' && name[0] > '9') {
-      SETERRQ1(1,1,"Input string %s has no numeric value ",name);
+      SETERRQ1(1,"Input string %s has no numeric value ",name);
     }
     *a  = atof(name);
   }
@@ -133,8 +133,8 @@ int PetscGetProgramName(char name[],int len)
   int ierr;
 
   PetscFunctionBegin;
-  if (!options) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must call PetscInitialize() first");
-  if (!options->namegiven) SETERRQ(PETSC_ERR_PLIB,1,"Unable to determine program name");
+  if (!options) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call PetscInitialize() first");
+  if (!options->namegiven) SETERRQ(PETSC_ERR_PLIB,"Unable to determine program name");
   ierr = PetscStrncpy(name,options->programname,len);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -209,7 +209,7 @@ int OptionsInsertFile(const char file[])
         ierr = PetscStrcmp(first,"alias",&match);CHKERRQ(ierr);
         if (match) {
           ierr = PetscStrtok(0," ",&third);CHKERRQ(ierr);
-          if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,0,"Error in options file:alias missing (%s)",second);
+          if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,"Error in options file:alias missing (%s)",second);
           ierr = PetscStrlen(third,&len);CHKERRQ(ierr);
           if (third[len-1] == '\n') third[len-1] = 0;
           ierr = OptionsSetAlias(second,third);CHKERRQ(ierr);
@@ -520,7 +520,7 @@ int OptionsSetValue(const char iname[],const char value[])
     }
   }
   if (N >= MAXOPTIONS) {
-    SETERRQ1(1,1,"No more room in option table, limit %d recompile \n src/sys/src/objects/options.c with larger value for MAXOPTIONS\n",MAXOPTIONS);
+    SETERRQ1(1,"No more room in option table, limit %d recompile \n src/sys/src/objects/options.c with larger value for MAXOPTIONS\n",MAXOPTIONS);
   }
   /* shift remaining values down 1 */
   for (i=N; i>n; i--) {
@@ -602,10 +602,10 @@ int OptionsSetAlias(const char inewname[],const char ioldname[])
   char *newname = (char *)inewname,*oldname = (char*)ioldname;
 
   PetscFunctionBegin;
-  if (newname[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,0,"aliased must have -: Instead %s",newname);
-  if (oldname[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,0,"aliasee must have -: Instead %s",oldname);
+  if (newname[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,"aliased must have -: Instead %s",newname);
+  if (oldname[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,"aliasee must have -: Instead %s",oldname);
   if (n >= MAXALIASES) {
-    SETERRQ1(PETSC_ERR_MEM,0,"You have defined to many PETSc options aliases, limit %d recompile \n  src/sys/src/objects/options.c with larger value for MAXALIASES",MAXALIASES);
+    SETERRQ1(PETSC_ERR_MEM,"You have defined to many PETSc options aliases, limit %d recompile \n  src/sys/src/objects/options.c with larger value for MAXALIASES",MAXALIASES);
   }
 
   newname++; oldname++;
@@ -632,7 +632,7 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
   N = options->N;
   names = options->names;
 
-  if (name[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,0,"Name must begin with -: Instead %s",name);
+  if (name[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,"Name must begin with -: Instead %s",name);
 
   /* append prefix to name */
   if (pre) {
@@ -685,9 +685,9 @@ int OptionsReject(const char name[],const char mess[])
   ierr = OptionsHasName(PETSC_NULL,name,&flag);CHKERRQ(ierr);
   if (flag) {
     if (mess) {
-      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Program has disabled option: %s with %s",name,mess);
+      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: %s with %s",name,mess);
     } else {
-      SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Program has disabled option: %s",name);
+      SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Program has disabled option: %s",name);
     }
   }
   PetscFunctionReturn(0);
@@ -848,7 +848,7 @@ int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,Pets
       ierr = PetscStrcmp(value,"no",&isfalse);CHKERRQ(ierr);
       if (isfalse) PetscFunctionReturn(0);
 
-      SETERRQ1(1,1,"Unknown logical value: %s",value);
+      SETERRQ1(1,"Unknown logical value: %s",value);
     }
   } else {
     if (flg) *flg = PETSC_FALSE;
@@ -942,7 +942,7 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,PetscTrut
       char   *tvalue = 0;
 
       ierr = PetscStrtok(value,",",&tvalue);CHKERRQ(ierr);
-      if (!tvalue) { SETERRQ(1,0,"unknown string specified\n"); }
+      if (!tvalue) { SETERRQ(1,"unknown string specified\n"); }
       ierr    = OptionsAtod(tvalue,&re);CHKERRQ(ierr);
       ierr    = PetscStrtok(0,",",&tvalue);CHKERRQ(ierr);
       if (!tvalue) { /* Unknown separator used. using only real value */

@@ -1,4 +1,4 @@
-/*$Id: dacorn.c,v 1.34 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: dacorn.c,v 1.35 2000/08/01 20:58:01 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -102,7 +102,7 @@ int DASetFieldName(DA da,int nf,const char name[])
   PetscFunctionBegin;
  
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid field number: %d",nf);
+  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %d",nf);
   if (da->fieldname[nf]) {ierr = PetscFree(da->fieldname[nf]);CHKERRQ(ierr);}
   
   ierr = PetscStrallocpy(name,&da->fieldname[nf]);CHKERRQ(ierr);
@@ -136,7 +136,7 @@ int DAGetFieldName(DA da,int nf,char **name)
   PetscFunctionBegin;
  
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid field number: %d",nf);
+  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %d",nf);
   *name = da->fieldname[nf];
   PetscFunctionReturn(0);
 }

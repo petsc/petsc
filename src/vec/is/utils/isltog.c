@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.56 2000/08/07 03:07:00 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.57 2000/08/08 21:51:55 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -66,7 +66,7 @@ int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,Viewer viewer)
     }
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for ISLocalToGlobalMapping",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for ISLocalToGlobalMapping",((PetscObject)viewer)->type_name);
   }
 
   PetscFunctionReturn(0);
@@ -180,7 +180,7 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
   PetscValidPointer(mapping);
   if (--mapping->refct > 0) PetscFunctionReturn(0);
   if (mapping->refct < 0) {
-    SETERRQ(1,1,"Mapping already destroyed");
+    SETERRQ(1,"Mapping already destroyed");
   }
 
   ierr = PetscFree(mapping->indices);CHKERRQ(ierr);
@@ -228,7 +228,7 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis
   
   idxout = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(idxout);
   for (i=0; i<n; i++) {
-    if (idxin[i] >= Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,1,"Local index %d too large %d (max) at %d",idxin[i],Nmax,i);
+    if (idxin[i] >= Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Local index %d too large %d (max) at %d",idxin[i],Nmax,i);
     idxout[i] = idxmap[idxin[i]];
   }
   ierr = ISRestoreIndices(is,&idxin);CHKERRQ(ierr);

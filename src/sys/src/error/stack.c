@@ -1,4 +1,4 @@
-/*$Id: stack.c,v 1.28 2000/05/05 22:13:49 balay Exp bsmith $*/
+/*$Id: stack.c,v 1.29 2000/05/10 16:39:12 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
@@ -27,7 +27,7 @@ int PetscStackPublish(void)
   AMS_Comm acomm;
 
   PetscFunctionBegin;
-  if (!petscstack) SETERRQ(1,1,"Stack not available to publish");
+  if (!petscstack) SETERRQ(1,"Stack not available to publish");
   ierr = ViewerAMSGetAMSComm(VIEWER_AMS_WORLD,&acomm);CHKERRQ(ierr);
   ierr = AMS_Memory_create(acomm,"stack_memory",&stack_mem);CHKERRQ(ierr);
          

@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.79 2000/08/17 04:51:06 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.80 2000/09/02 02:47:29 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "petsc.h"
@@ -170,7 +170,7 @@ int VecSetType(Vec vec,VecType type_name)
 
   ierr =  FListFind(vec->comm,VecList,type_name,(int (**)(void *)) &r);CHKERRQ(ierr);
 
-  if (!r) SETERRQ1(1,1,"Unknown vector type given: %s",type_name);
+  if (!r) SETERRQ1(1,"Unknown vector type given: %s",type_name);
 
   if (vec->ops->destroy) {
     ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
@@ -227,7 +227,7 @@ int VecMatlabEngineGet_Default(PetscObject obj,void *engine)
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   mat  = engGetArray((Engine *)engine,obj->name);
-  if (!mat) SETERRQ1(1,1,"Unable to get object %s from matlab",obj->name);
+  if (!mat) SETERRQ1(1,"Unable to get object %s from matlab",obj->name);
   ierr = PetscMemcpy(array,mxGetPr(mat),n*sizeof(Scalar));CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: bdiag.c,v 1.187 2000/05/10 16:40:47 bsmith Exp bsmith $*/
+/*$Id: bdiag.c,v 1.188 2000/07/10 03:39:39 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -142,7 +142,7 @@ int MatSetOption_SeqBDiag(Mat A,MatOption op)
            op == MAT_USE_HASH_TABLE)
     PLogInfo(A,"MatSetOption_SeqBDiag:Option ignored\n");
   else { 
-    SETERRQ(PETSC_ERR_SUP,0,"unknown option");
+    SETERRQ(PETSC_ERR_SUP,"unknown option");
   }
   PetscFunctionReturn(0);
 }
@@ -173,11 +173,11 @@ static int MatGetDiagonal_SeqBDiag_N(Mat A,Vec v)
   Scalar       *x,*dd,zero = 0.0;
 
   PetscFunctionBegin;
-  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix");  
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Nonconforming mat and vec");
-  if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Main diagonal not set");
+  if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
+  if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Main diagonal not set");
   len = PetscMin(a->mblock,a->nblock);
   dd = a->diagv[a->mainbd];
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -200,8 +200,8 @@ static int MatGetDiagonal_SeqBDiag_1(Mat A,Vec v)
   PetscFunctionBegin;
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Nonconforming mat and vec");
-  if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Main diagonal not set");
+  if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
+  if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Main diagonal not set");
   dd = a->diagv[a->mainbd];
   len = PetscMin(a->m,a->n);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -253,14 +253,14 @@ int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
   ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
-    if (rows[i]<0 || rows[i]>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"row out of range");
+    if (rows[i]<0 || rows[i]>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"row out of range");
     ierr = MatGetRow(A,rows[i],&nz,&col,&val);CHKERRQ(ierr);
     ierr = PetscMemzero(val,nz*sizeof(Scalar));CHKERRQ(ierr);
     ierr = MatSetValues(A,1,&rows[i],nz,col,val,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRow(A,rows[i],&nz,&col,&val);CHKERRQ(ierr);
   }
   if (diag) {
-    if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Main diagonal does not exist");
+    if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Main diagonal does not exist");
     dd = a->diagv[a->mainbd];
     for (i=0; i<N; i++) dd[rows[i]] = *diag;
   }
@@ -387,7 +387,7 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
   PetscFunctionBegin;
   if (ll) {
     ierr = VecGetSize(ll,&m);CHKERRQ(ierr);
-    if (m != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Left scaling vector wrong length");
+    if (m != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
     if (bs == 1) {
       ierr = VecGetArray(ll,&l);CHKERRQ(ierr); 
       for (d=0; d<nd; d++) {
@@ -399,11 +399,11 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
       }
       ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr); 
       PLogFlops(a->nz);
-    } else SETERRQ(PETSC_ERR_SUP,0,"Not yet done for bs>1");
+    } else SETERRQ(PETSC_ERR_SUP,"Not yet done for bs>1");
   }
   if (rr) {
     ierr = VecGetSize(rr,&n);CHKERRQ(ierr);
-    if (n != a->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Right scaling vector wrong length");
+    if (n != a->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
     if (bs == 1) {
       ierr = VecGetArray(rr,&r);CHKERRQ(ierr);  
       for (d=0; d<nd; d++) {
@@ -415,7 +415,7 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
       }
       ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);  
       PLogFlops(a->nz);
-    } else SETERRQ(PETSC_ERR_SUP,0,"Not yet done for bs>1");
+    } else SETERRQ(PETSC_ERR_SUP,"Not yet done for bs>1");
   }
   PetscFunctionReturn(0);
 }
@@ -552,7 +552,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Comm must be of size 1");
+  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
   *A = 0;
   if (bs == PETSC_DEFAULT) bs = 1;
@@ -564,7 +564,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
     nd   = nd2;
   }
 
-  if ((n%bs) || (m%bs)) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Invalid block size");
+  if ((n%bs) || (m%bs)) SETERRQ(PETSC_ERR_ARG_SIZ,"Invalid block size");
   if (!nd) nda = nd + 1;
   else     nda = nd;
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQBDIAG,"Mat",comm,MatDestroy,MatView);
@@ -726,14 +726,14 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,0,"view must have one processor");
+  if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
-  if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"Not matrix object");
+  if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
-  if (M != N) SETERRQ(PETSC_ERR_SUP,0,"Can only load square matrices");
+  if (M != N) SETERRQ(PETSC_ERR_SUP,"Can only load square matrices");
   if (header[3] < 0) {
-    SETERRQ(PETSC_ERR_FILE_UNEXPECTED,1,"Matrix stored in special format, cannot load as SeqBDiag");
+    SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format, cannot load as SeqBDiag");
   }
 
   /* 

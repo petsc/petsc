@@ -1,4 +1,4 @@
-/*$Id: tfqmr.c,v 1.55 2000/04/09 04:38:05 bsmith Exp bsmith $*/
+/*$Id: tfqmr.c,v 1.56 2000/04/12 04:25:09 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the TFQMR (Transpose-free variant of Quasi-Minimal
@@ -19,7 +19,7 @@ static int KSPSetUp_TFQMR(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC){
-    SETERRQ(2,0,"no symmetric preconditioning for KSPTFQMR");
+    SETERRQ(2,"no symmetric preconditioning for KSPTFQMR");
   }
   ierr = KSPDefaultGetWork(ksp,10);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: gr1.c,v 1.22 2000/07/08 16:50:53 bsmith Exp bsmith $*/
+/*$Id: gr1.c,v 1.23 2000/07/10 03:12:46 bsmith Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate1d()
@@ -33,7 +33,7 @@ int DASetUniformCoordinates(DA da,double xmin,double xmax,double ymin,double yma
   Scalar         *coors;
 
   PetscFunctionBegin;
-  if (xmax <= xmin) SETERRQ2(1,1,"Xmax must be larger than xmin %g %g",xmin,xmax);
+  if (xmax <= xmin) SETERRQ2(1,"Xmax must be larger than xmin %g %g",xmin,xmax);
 
   ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize);CHKERRQ(ierr);
@@ -48,7 +48,7 @@ int DASetUniformCoordinates(DA da,double xmin,double xmax,double ymin,double yma
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 2) {
-    if (ymax <= ymin) SETERRQ2(1,1,"Ymax must be larger than ymin %g %g",ymin,ymax);
+    if (ymax <= ymin) SETERRQ2(1,"Ymax must be larger than ymin %g %g",ymin,ymax);
     ierr = VecCreateMPI(PETSC_COMM_WORLD,2*isize*jsize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
     ierr = VecSetBlockSize(xcoor,2);CHKERRQ(ierr);
     if (periodic == DA_XPERIODIC || periodic == DA_XYPERIODIC) hx = (xmax-xmin)/(M);
@@ -65,8 +65,8 @@ int DASetUniformCoordinates(DA da,double xmin,double xmax,double ymin,double yma
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 3) {
-    if (ymax <= ymin) SETERRQ2(1,1,"Ymax must be larger than ymin %g %g",ymin,ymax);
-    if (zmax <= zmin) SETERRQ2(1,1,"Zmax must be larger than zmin %g %g",zmin,zmax);
+    if (ymax <= ymin) SETERRQ2(1,"Ymax must be larger than ymin %g %g",ymin,ymax);
+    if (zmax <= zmin) SETERRQ2(1,"Zmax must be larger than zmin %g %g",zmin,zmax);
     ierr = VecCreateMPI(PETSC_COMM_WORLD,3*isize*jsize*ksize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
     ierr = VecSetBlockSize(xcoor,3);CHKERRQ(ierr);
     if (periodic == DA_XPERIODIC || periodic == DA_XYPERIODIC || periodic == DA_XZPERIODIC ||
@@ -91,7 +91,7 @@ int DASetUniformCoordinates(DA da,double xmin,double xmax,double ymin,double yma
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Cannot create uniform coordinates for this dimension %d\n",dim);
+    SETERRQ1(1,"Cannot create uniform coordinates for this dimension %d\n",dim);
   }
   ierr = DASetCoordinates(da,xcoor);CHKERRQ(ierr);
   PLogObjectParent(da,xcoor);
@@ -121,7 +121,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
   ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(1,1,"Vector not generated from a DA");
+  if (!da) SETERRQ(1,"Vector not generated from a DA");
 
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,&step,0,&periodic,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&istart,0,0,&isize,0,0);CHKERRQ(ierr);

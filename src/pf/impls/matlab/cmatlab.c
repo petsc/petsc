@@ -1,4 +1,4 @@
-/*$Id: cmatlab.c,v 1.3 2000/08/24 22:43:50 bsmith Exp bsmith $*/
+/*$Id: cmatlab.c,v 1.4 2000/09/02 02:50:43 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
@@ -48,7 +48,7 @@ int PFApply_Matlab(void *value,int n,Scalar *in,Scalar *out)
   int        ierr;
 
   PetscFunctionBegin;
-  if (!value) SETERRQ(1,1,"Need to set string for Matlab function, via -pf_matlab string");
+  if (!value) SETERRQ(1,"Need to set string for Matlab function, via -pf_matlab string");
   ierr = PetscMatlabEnginePutArray(matlab->engine,matlab->dimin,n,in,"x");CHKERRQ(ierr);
   ierr = PetscMatlabEngineEvaluate(matlab->engine,matlab->string);CHKERRQ(ierr);
   ierr = PetscMatlabEngineGetArray(matlab->engine,matlab->dimout,n,out,"f");CHKERRQ(ierr);

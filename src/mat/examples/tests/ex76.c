@@ -1,4 +1,4 @@
-/*$Id: ex76.c,v 1.2 2000/09/21 14:05:06 hzhang Exp balay $*/
+/*$Id: ex76.c,v 1.3 2000/09/26 19:09:27 balay Exp bsmith $*/
 
 static char help[] = "Tests vatious sequential routines in MatSBAIJ format. Same as ex74.c except introducing a matrix permutation for factorization and solve.\n";
 
@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
+  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRA(ierr);
 
@@ -65,7 +65,7 @@ int main(int argc,char **args)
     }
     else if (prob ==2){ /* matrix for the five point stencil */
       n1 = (int) (sqrt((double)n) + 0.001); 
-      if (n1*n1 - n) SETERRQ(PETSC_ERR_ARG_WRONG,0,"sqrt(n) must be a positive interger!"); 
+      if (n1*n1 - n) SETERRQ(PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!"); 
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
           I = j + n1*i;

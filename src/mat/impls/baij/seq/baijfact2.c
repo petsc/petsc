@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.39 2000/04/12 04:23:32 bsmith Exp bsmith $*/
+/*$Id: baijfact2.c,v 1.40 2000/05/10 16:40:51 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2332,7 +2332,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
 
     /* copy prow into linked list */
     nzf        = nz  = ai[r[prow]+1] - ai[r[prow]];
-    if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,1,"Empty row in matrix");
+    if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix");
     xi         = aj + ai[r[prow]];
     fill[n]    = n;
     fill[prow] = -1; /* marker for diagonal entry */
@@ -2426,7 +2426,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     }
     /* make sure row has diagonal entry */
     if (ajnew[ainew[prow]+dloc[prow]] != prow) {
-      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,1,"Row %d has missing diagonal in factored matrix\n\
+      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Row %d has missing diagonal in factored matrix\n\
     try running with -pc_ilu_nonzeros_along_diagonal or -pc_ilu_diagonal_fill",prow);
     }
   }

@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.11 2000/05/05 22:18:00 balay Exp bsmith $*/
+/*$Id: ex17.c,v 1.12 2000/09/22 20:45:46 bsmith Exp bsmith $*/
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
 
@@ -40,7 +40,7 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"system size: m=%d, n=%d\n",m,n);CHKERRA(ierr);
-  if (m < n) SETERRA(1,0,"Supports m >= n only!");
+  if (m < n) SETERRA(1,"Supports m >= n only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define

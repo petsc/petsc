@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.91 2000/09/22 20:41:48 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.92 2000/09/26 03:28:43 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -141,7 +141,7 @@ int ViewerDestroy_Binary(Viewer v)
       ierr = PetscStrcat(par,vbinary->filename);CHKERRQ(ierr);
       ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,par,"r",&fp);CHKERRQ(ierr);
       if (fgets(buf,1024,fp)) {
-        SETERRQ2(1,1,"Error from command %s\n%s",par,buf);
+        SETERRQ2(1,"Error from command %s\n%s",par,buf);
       }
       ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
     }
@@ -290,12 +290,12 @@ int ViewerBinaryLoadInfo(Viewer viewer)
 #if defined(PETSC_USE_COMPLEX)
       ierr = PetscStrncmp(first,"-mat_double",11,&wrongtype);CHKERRQ(ierr);
       if (wrongtype) {
-        SETERRQ(1,1,"Loading double number matrix with complex number code");
+        SETERRQ(1,"Loading double number matrix with complex number code");
       }
 #else
       ierr = PetscStrncmp(first,"-mat_complex",12,&wrongtype);CHKERRQ(ierr);
       if (wrongtype) {
-        SETERRQ(1,1,"Loading complex number matrix with double number code");
+        SETERRQ(1,"Loading complex number matrix with double number code");
       }
 #endif
 
@@ -328,7 +328,7 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
 
   PetscFunctionBegin;
   if (type == (ViewerBinaryType) -1) {
-    SETERRQ(1,1,"Must call ViewerBinarySetType() before ViewerSetFilename()");
+    SETERRQ(1,"Must call ViewerBinarySetType() before ViewerSetFilename()");
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
 
@@ -357,7 +357,7 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
       ierr  = PetscFileRetrieve(viewer->comm,vbinary->filename,bname,1024,&found);CHKERRQ(ierr);
       fname = bname;
       if (!rank && !found) {
-        SETERRQ1(1,1,"Cannot locate file: %s on node zero",vbinary->filename);
+        SETERRQ1(1,"Cannot locate file: %s on node zero",vbinary->filename);
       } else if (!found) {
         PLogInfo(viewer,"Nonzero processor did not locate readonly file");
         fname = 0;
@@ -369,34 +369,34 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
 #if defined(PARCH_win32_gnu) || defined(PARCH_win32) 
     if (type == BINARY_CREATE) {
       if ((vbinary->fdes = open(fname,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot create file %s for writing",fname);
+        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file %s for writing",fname);
       }
     } else if (type == BINARY_RDONLY && fname) {
       if ((vbinary->fdes = open(fname,O_RDONLY|O_BINARY,0)) == -1) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file %s for reading",fname);
+        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for reading",fname);
       }
     } else if (type == BINARY_WRONLY) {
       if ((vbinary->fdes = open(fname,O_WRONLY|O_BINARY,0)) == -1) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file %s for writing",fname);
+        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for writing",fname);
       }
     } else if (fname) {
-      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown file type");
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
     }
 #else
     if (type == BINARY_CREATE) {
       if ((vbinary->fdes = creat(fname,0666)) == -1) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot create file %s for writing",fname);
+        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file %s for writing",fname);
       }
     } else if (type == BINARY_RDONLY && fname) {
       if ((vbinary->fdes = open(fname,O_RDONLY,0)) == -1) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file %s for reading",fname);
+        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for reading",fname);
       }
     } else if (type == BINARY_WRONLY) {
       if ((vbinary->fdes = open(fname,O_WRONLY,0)) == -1) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file %s for writing",fname);
+        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for writing",fname);
       }
     } else if (fname) {
-      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown file type");
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
     }
 #endif
   } else vbinary->fdes = -1;
@@ -433,7 +433,7 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
     } else {
       vbinary->fdes_info = fopen(infoname,"w");
       if (! vbinary->fdes_info) {
-        SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open .info file %s for writing",infoname);
+        SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open .info file %s for writing",infoname);
       }
     }
   }

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.75 2000/05/05 22:18:34 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.76 2000/09/22 20:46:14 bsmith Exp bsmith $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 
@@ -82,7 +82,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
+  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
 
   /*
      Initialize problem parameters
@@ -92,7 +92,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,0,"Lambda is out of range");
+    SETERRA(1,"Lambda is out of range");
   }
   N = user.mx*user.my;
   
@@ -140,7 +140,7 @@ int main(int argc,char **argv)
   */
   ierr = OptionsHasName(PETSC_NULL,"-snes_fd_coloring",&fd_coloring);CHKERRA(ierr);
 
-  if (matrix_free && fd_coloring)  SETERRA(1,0,"Use only one of -snes_mf, -snes_fd_coloring options!\n\
+  if (matrix_free && fd_coloring)  SETERRA(1,"Use only one of -snes_mf, -snes_fd_coloring options!\n\
                                                 You can do -snes_mf_operator -snes_fd_coloring");
 
   if (fd_coloring) {

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.64 2000/05/05 22:17:23 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.65 2000/08/01 20:56:46 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -61,7 +61,7 @@ int main(int Argc,char **Args)
   N[0] = x_mesh;
   for (i=1; i<levels; i++) {
     N[i] = N[i-1]/2;
-    if (N[i] < 1) {SETERRA(1,0,"Too many levels");}
+    if (N[i] < 1) {SETERRA(1,"Too many levels");}
   }
 
   ierr = Create1dLaplacian(N[levels-1],&cmat);CHKERRA(ierr);

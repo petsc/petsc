@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.18 2000/09/20 19:13:17 hzhang Exp bsmith $*/
+/*$Id: sro.c,v 1.19 2000/09/21 14:24:28 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -50,7 +50,7 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
 
   for (i=0; i<mbs; i++) {
-    if (rip[i] - riip[i] != 0) SETERRQ(1,1,"Non-symm. permutation, use symm. permutation or general matrix format");     
+    if (rip[i] - riip[i] != 0) SETERRQ(1,"Non-symm. permutation, use symm. permutation or general matrix format");     
   }
   ierr = ISRestoreIndices(iperm,&riip);CHKERRA(ierr);
   ierr = ISDestroy(iperm);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: shell.c,v 1.80 2000/05/05 22:15:48 balay Exp bsmith $*/
+/*$Id: shell.c,v 1.81 2000/07/10 03:39:36 bsmith Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -263,7 +263,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
   B->data = (void*)b;
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
-    SETERRQ(1,1,"Must give local row and column count for matrix");
+    SETERRQ(1,"Must give local row and column count for matrix");
   }
 
   ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: general.c,v 1.98 2000/09/22 20:42:53 bsmith Exp bsmith $*/
+/*$Id: general.c,v 1.99 2000/09/25 03:35:19 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
@@ -70,7 +70,7 @@ int ISRestoreIndices_General(IS in,int **idx)
 
   PetscFunctionBegin;
   if (*idx != sub->idx) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must restore with value from ISGetIndices()");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
   }
   PetscFunctionReturn(0);
 }
@@ -169,7 +169,7 @@ int ISView_General(IS is,Viewer viewer)
     }
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -249,7 +249,7 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
 
   PetscFunctionBegin;
   PetscValidPointer(is);
-  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"length < 0");
+  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) {PetscValidIntPointer(idx);}
 
   *is = 0;

@@ -1,4 +1,4 @@
-/*$Id: mal.c,v 1.49 2000/04/12 04:21:28 bsmith Exp bsmith $*/
+/*$Id: mal.c,v 1.50 2000/09/22 20:42:22 bsmith Exp bsmith $*/
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
@@ -124,7 +124,7 @@ int PetscSetMalloc(void *(*imalloc)(int,int,char*,char*,char*),
                    int (*ifree)(void*,int,char*,char*,char*))
 {
   PetscFunctionBegin;
-  if (petscsetmallocvisited) SETERRQ(PETSC_ERR_SUP,0,"cannot call multiple times");
+  if (petscsetmallocvisited) SETERRQ(PETSC_ERR_SUP,"cannot call multiple times");
   PetscTrMalloc               = imalloc;
   PetscTrFree                 = ifree;
   petscsetmallocvisited       = PETSC_TRUE;

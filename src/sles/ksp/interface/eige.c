@@ -1,4 +1,4 @@
-/*$Id: eige.c,v 1.26 2000/05/05 22:17:27 balay Exp balay $*/
+/*$Id: eige.c,v 1.27 2000/08/16 15:18:07 balay Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
@@ -221,7 +221,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
     imagpart = realpart + n;
     work     = (PetscReal*)PetscMalloc(5*n*sizeof(PetscReal));CHKPTRQ(work);
     LAgeev_("N","N",&n,array,&n,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
-    if (ierr) SETERRQ1(PETSC_ERR_LIB,0,"Error in LAPACK routine %d",ierr);
+    if (ierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",ierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
     perm = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(perm);
     for (i=0; i<n; i++) { perm[i] = i;}
@@ -245,7 +245,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
     rwork    = (PetscReal*)PetscMalloc(2*n*sizeof(PetscReal));CHKPTRQ(rwork);
     eigs     = (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRQ(eigs);
     LAgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&ierr);
-    if (ierr) SETERRQ1(PETSC_ERR_LIB,0,"Error in LAPACK routine %d",ierr);
+    if (ierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",ierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
     perm = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(perm);

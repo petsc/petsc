@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.38 2000/05/04 16:26:53 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.39 2000/05/05 22:19:31 balay Exp bsmith $*/
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 
@@ -42,15 +42,15 @@ int main(int argc,char **argv)
 
   ierr = OptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRA(ierr);
   if (flg) {
-    if (m == PETSC_DECIDE) SETERRA(1,1,"Must set -m option with -distribute option");
+    if (m == PETSC_DECIDE) SETERRA(1,"Must set -m option with -distribute option");
     lx = (int*)PetscMalloc(m*sizeof(int));CHKPTRQ(lx);
     for (i=0; i<m-1; i++) { lx[i] = 4;}
     lx[m-1] = M - 4*(m-1);
-    if (n == PETSC_DECIDE) SETERRA(1,1,"Must set -n option with -distribute option");
+    if (n == PETSC_DECIDE) SETERRA(1,"Must set -n option with -distribute option");
     ly = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(ly);
     for (i=0; i<n-1; i++) { ly[i] = 2;}
     ly[n-1] = N - 2*(n-1);
-    if (p == PETSC_DECIDE) SETERRA(1,1,"Must set -p option with -distribute option");
+    if (p == PETSC_DECIDE) SETERRA(1,"Must set -p option with -distribute option");
     lz = (int*)PetscMalloc(p*sizeof(int));CHKPTRQ(lz);
     for (i=0; i<p-1; i++) { lz[i] = 2;}
     lz[p-1] = P - 2*(p-1);

@@ -1,4 +1,4 @@
-/*$Id: fp.c,v 1.66 2000/05/05 22:13:49 balay Exp bsmith $*/
+/*$Id: fp.c,v 1.67 2000/09/22 20:42:15 bsmith Exp bsmith $*/
 /*
 *	IEEE error handler for all machines. Since each machine has 
 *   enough slight differences we have completely separate codes for each one.
@@ -49,7 +49,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
   } else {
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code,SIGPC(scp));
   }
-  ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
+  ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
   PetscFunctionReturn(0);
 }
@@ -141,7 +141,7 @@ void PetscDefaultFPTrap(int sig,siginfo_t *scp,ucontext_t *uap)
   } else {
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code,SIGPC(scp));
   }
-  ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
+  ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
@@ -211,7 +211,7 @@ void PetscDefaultFPTrap(unsigned exception[],int val[])
   } else{
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",code);  
   }
-  PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
+  PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
@@ -248,7 +248,7 @@ void PetscDefaultFPTrap(int sig)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
+  ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,"floating point error");
   PetscFunctionReturn(ierr);
 }
 
@@ -319,7 +319,7 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
   } else{
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",flt_context.trap);
   }
-  ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
+  ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
@@ -362,7 +362,7 @@ void PetscDefaultFPTrap(int sig)
 {
   PetscFunctionBegin;
   (*PetscErrorPrintf)("*** floating point error occurred ***\n");
-  PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
+  PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 #undef __FUNC__  

@@ -1,4 +1,4 @@
-/*$Id: dasub.c,v 1.28 2000/04/12 04:26:20 bsmith Exp balay $*/
+/*$Id: dasub.c,v 1.29 2000/05/05 22:19:22 balay Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -43,17 +43,17 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
   ierr = DAGetCorners(da,&xs,&xm,&ys,&ym,&zs,&zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(da->comm,&size);CHKERRQ(ierr);
   if (dir == DA_Z) {
-    if (da->dim < 3) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"DA_Z invalid for DA dim < 3");
-    if (gp < 0 || gp > da->P) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"invalid grid point");
+    if (da->dim < 3) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"DA_Z invalid for DA dim < 3");
+    if (gp < 0 || gp > da->P) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= zs && gp < zs+zm) flag = 1;
   } else if (dir == DA_Y) {
-    if (da->dim == 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"DA_Y invalid for DA dim = 1");
-    if (gp < 0 || gp > da->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"invalid grid point");
+    if (da->dim == 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"DA_Y invalid for DA dim = 1");
+    if (gp < 0 || gp > da->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= ys && gp < ys+ym) flag = 1;
   } else if (dir == DA_X) {
-    if (gp < 0 || gp > da->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"invalid grid point");
+    if (gp < 0 || gp > da->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= xs && gp < xs+xm) flag = 1;
-  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid direction");
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
   owners = (int *)PetscMalloc(2*size*sizeof(int));CHKPTRQ(owners);
   ranks = owners + size;
