@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 
 #include "petsc.h"
 #include "kspimpl.h"      /*I "ksp.h" I*/

@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 
 #include "slesimpl.h"
 #include "options.h"

@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 

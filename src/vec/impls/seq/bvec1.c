@@ -1,7 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: $";
-#endif
 
+/*  cannot have vcid because include in other files */
 /*
    Defines the BLAS based vector operations
 */

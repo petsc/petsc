@@ -1,6 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: $";
-#endif
+
+/* cannot have vcid because included in other files */
 
 static int VeiPrange(Vec v,int *low,int* high) 
 {

@@ -1,4 +1,6 @@
-
+#ifndef lint
+static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+#endif
 
 /*
    This file contains routines to draw a 3-d like frame about a given 

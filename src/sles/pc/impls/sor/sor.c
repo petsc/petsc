@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation

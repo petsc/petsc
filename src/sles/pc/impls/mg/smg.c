@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 /*
      Additive Multigrid V Cycle routine    
 */

@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 /*
      Full multigrid using either additive or multiplicative V or W cycle
 */

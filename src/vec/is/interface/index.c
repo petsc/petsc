@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 /*  
    Defines the abstract operations on index sets 
 */

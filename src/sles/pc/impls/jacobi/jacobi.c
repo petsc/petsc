@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
 */

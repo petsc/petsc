@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+#endif
 /*
    This file contains a simple routine for generating a 2-d axis.
    Given an XiWindow, it returns an XiWindow to be used by any 

@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
