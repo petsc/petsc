@@ -933,8 +933,8 @@ int TSSetSolution(TS ts,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetRhsBC"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetRhsBC"
 /*@
   TSSetRhsBC - Sets the function which applies boundary conditions
   to the Rhs of each system.
@@ -963,8 +963,8 @@ int TSSetRhsBC(TS ts, int (*func)(TS, Vec, void *))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSDefaultRhsBC"
+#undef __FUNCT__  
+#define __FUNCT__ "TSDefaultRhsBC"
 /*@
   TSDefaultRhsBC - The default boundary condition function which does nothing.
 
@@ -985,8 +985,8 @@ int TSDefaultRhsBC(TS ts,  Vec rhs, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetSystemMatrixBC"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetSystemMatrixBC"
 /*@
   TSSetSystemMatrixBC - Sets the function which applies boundary conditions
   to the system matrix and preconditioner of each system.
@@ -1016,8 +1016,8 @@ int TSSetSystemMatrixBC(TS ts, int (*func)(TS, Mat, Mat, void *))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSDefaultSystemMatrixBC"
+#undef __FUNCT__  
+#define __FUNCT__ "TSDefaultSystemMatrixBC"
 /*@
   TSDefaultSystemMatrixBC - The default boundary condition function which
   does nothing.
@@ -1040,8 +1040,8 @@ int TSDefaultSystemMatrixBC(TS ts, Mat A, Mat B, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetSolutionBC"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetSolutionBC"
 /*@
   TSSetSolutionBC - Sets the function which applies boundary conditions
   to the solution of each system. This is necessary in nonlinear systems
@@ -1071,8 +1071,8 @@ int TSSetSolutionBC(TS ts, int (*func)(TS, Vec, void *))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSDefaultSolutionBC"
+#undef __FUNCT__  
+#define __FUNCT__ "TSDefaultSolutionBC"
 /*@
   TSDefaultSolutionBC - The default boundary condition function which
   does nothing.
@@ -1094,8 +1094,8 @@ int TSDefaultSolutionBC(TS ts, Vec sol, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetPreStep"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetPreStep"
 /*@
   TSSetPreStep - Sets the general-purpose function
   called once at the beginning of time stepping.
@@ -1121,8 +1121,8 @@ int TSSetPreStep(TS ts, int (*func)(TS))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSDefaultPreStep"
+#undef __FUNCT__  
+#define __FUNCT__ "TSDefaultPreStep"
 /*@
   TSDefaultPreStep - The default pre-stepping function which does nothing.
 
@@ -1141,8 +1141,8 @@ int TSDefaultPreStep(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetUpdate"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetUpdate"
 /*@
   TSSetUpdate - Sets the general-purpose update function called
   at the beginning of every time step. This function can change
@@ -1172,8 +1172,8 @@ int TSSetUpdate(TS ts, int (*func)(TS, double, double *))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSDefaultUpdate"
+#undef __FUNCT__  
+#define __FUNCT__ "TSDefaultUpdate"
 /*@
   TSDefaultUpdate - The default update function which does nothing.
 
@@ -1196,8 +1196,8 @@ int TSDefaultUpdate(TS ts, double t, double *dt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetPostStep"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetPostStep"
 /*@
   TSSetPostStep - Sets the general-purpose function
   called once at the end of time stepping.
@@ -1223,8 +1223,8 @@ int TSSetPostStep(TS ts, int (*func)(TS))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSDefaultPostStep"
+#undef __FUNCT__  
+#define __FUNCT__ "TSDefaultPostStep"
 /*@
   TSDefaultPostStep - The default post-stepping function which does nothing.
 

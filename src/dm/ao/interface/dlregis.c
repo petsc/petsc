@@ -6,8 +6,8 @@ static char vcid[] = "$Id: dlregis.c,v 1.1 2000/01/10 06:34:46 knepley Exp $";
 #include "petscda.h"
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscDLLibraryRegister"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDLLibraryRegister"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
@@ -46,8 +46,8 @@ static char *version = PETSC_VERSION_NUMBER;
 
 /* --------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscDLLibraryInfo"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDLLibraryInfo"
 int PetscDLLibraryInfo(char *path,char *type,char **mess) 
 { 
   PetscTruth iscontents, isauthors, isversion;

@@ -359,8 +359,8 @@ int PetscDrawLGDraw(PetscDrawLG lg)
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawLGPrint"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGPrint"
 /*@
   PetscDrawLGPrint - Prints a line graph.
 

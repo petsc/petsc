@@ -115,8 +115,8 @@ int PetscTypeCompare(PetscObject obj,char *type_name,PetscTruth *same)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "PetscSerializeCompare"
+#undef __FUNCT__
+#define __FUNCT__ "PetscSerializeCompare"
 /*@C
   PetscSerializeCompare - Determines if a PETSc object has a particular serializer.
 

@@ -598,8 +598,8 @@ int VecReciprocal_Default(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "VecSqrt"
+#undef __FUNCT__
+#define __FUNCT__ "VecSqrt"
 /*@
   VecSqrt - Replaces each component of a vector by the square root of its magnitude.
 
@@ -735,8 +735,8 @@ int VecAbs(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "VecPermute"
+#undef __FUNCT__
+#define __FUNCT__ "VecPermute"
 /*@
   VecPermute - Permutes a vector in place using the given ordering.
 

@@ -406,8 +406,8 @@ int PetscDrawHGDraw(PetscDrawHG hist)
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawHGPrint"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawHGPrint"
 /*@
   PetscDrawHGPrint - Prints the histogram information.
 
@@ -557,8 +557,8 @@ int PetscDrawHGSetLimits(PetscDrawHG hist,PetscReal x_min,PetscReal x_max,int y_
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawHGCalcStats"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawHGCalcStats"
 /*@
   PetscDrawHGCalcStats - Turns on calculation of descriptive statistics
 
@@ -584,8 +584,8 @@ int PetscDrawHGCalcStats(PetscDrawHG hist, PetscTruth calc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawHGIntegerBins"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawHGIntegerBins"
 /*@
   PetscDrawHGIntegerBins - Turns on integer width bins
 
