@@ -10,7 +10,7 @@
     docs/tex/manual/intro.tex,
     docs/tex/manual/manual.tex.
 */
-#define PETSC_VERSION_NUMBER "PETSc Version 2.1.1, Patch 210, Released December 19, 2001"
+#define PETSC_VERSION_NUMBER "PETSc Version 2.1.1, Patch 21, Released December 19, 2001"
 
 #define PETSC_VERSION_MAJOR    2
 #define PETSC_VERSION_MINOR    1
