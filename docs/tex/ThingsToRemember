@@ -107,7 +107,7 @@ cqstatl - see all NQE requests
 ps -efMP - process status for application PEs 
 
 performance analysis tool (pat): use "man pat" for info
-scratch space: $TMPDIR or $BIG
+scratch space: $TMPDIR or $BIG or /usr/tmp
 
 ---------------
 LLNL Cray T3D
