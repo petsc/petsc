@@ -14,7 +14,7 @@ EXTERN int gettimeofday(struct timeval *,struct timezone *);
 EXTERN_C_END
 #endif
 
-static char starttime[64];
+static char starttime[256];
    
 /*
   This function is called once during the initialize stage.
@@ -78,7 +78,7 @@ int PetscSetInitialDate(void)
 {
   int ierr;
   PetscFunctionBegin;
-  ierr = PetscGetDate(starttime,64);CHKERRQ(ierr);
+  ierr = PetscGetDate(starttime,256);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
