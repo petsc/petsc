@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.10 1999/08/19 20:43:49 balay Exp bsmith $ 
+# $Id: base_variables,v 1.11 1999/09/07 18:57:31 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -26,7 +26,7 @@ O_COPTFLAGS	   = -O -Wshadow  -fomit-frame-pointer
 O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
 #
-CXX_CC		   = g++ -fPIC -fpermissive
+CXX_CC		   = g++ -fPIC -fpermissive -w
 CXX_FC		   = g77 -Wno-globals
 CXX_CLINKER_SLFLAG = -Wl,-R,
 CXX_FLINKER_SLFLAG = -Wl,-R,
