@@ -1,14 +1,16 @@
 # $Id: makefile,v 1.14 2001/08/22 18:02:45 balay Exp $ 
-
+#
+#    ad_grad.c and ad_utils.c are automatically included into application codes that
+#  use adiC. They are ALSO compiled into the PETSc libraries so that apps that do not 
+#  use adiC can still link.
+#
 ALL: lib
 
 CFLAGS   = $(ADIC_DEFINES) -I$(PETSC_DIR)/include/adic
 FFLAGS   = 
-SOURCEC  = ad_grad.c ad_grad_daxpy.c ad_utils.c
+SOURCEC  = ad_grad_daxpy.c ad_grad.c ad_utils.c
 SOURCEF  =
-SOURCEH  = ../../../../include/adic/ad_grad_macro_axpys.h ../../../../include/adic/ad_grad_daxpy.h \
-           ../../../../include/adic/ad_grad.h ../../../../include/adic/ad_utils.h
-OBJSC    = ad_grad.o ad_grad_daxpy.o ad_utils.o
+OBJSC    = ad_grad_daxpy.o ad_grad.o ad_utils.o
 OBJSF    =
 LIBBASE  = libpetsc
 DIRS     = 

@@ -343,15 +343,19 @@ fortranstubs:
 	if [ "${PETSC_HAVE_ADIC}" != "" -a  "foo$${complex}" = "foo" ]; then \
 	   egrep "Process adiC" $< > /dev/null ; \
               if [ "$$?" = 0 ]; then \
-                r=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC: \([a-zA-Z0-9]\)[ ]*?\1?g"`;\
+                c=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
+                r=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
                 echo Running adiC on function $${r};\
                 ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
 	        echo '#include "petscda.h"' > $*.ad.c ; \
 	        echo '#include "petscsnes.h"' >> $*.ad.c ;\
+	        echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
                 echo ${ADIC_CC}  -i ${PETSC_DIR}/bmake/adic.init $<.tmp; \
 	        ${ADIC_CC}  -i ${PETSC_DIR}/bmake/adic.init  $<.tmp ; \
 	        cat $<.ad.tmp  >> $*.ad.c ;\
 	        ${ADIC_CC} -h -i ${PETSC_DIR}/bmake/adicmf.init   $<.tmp ; \
+	        echo "#include \"${PETSC_DIR}/src/contrib/adic/Gradient/ad_grad.c\"" >> $*.ad.c ;\
+	        echo "#include \"${PETSC_DIR}/src/contrib/adic/Gradient/ad_utils.c\"" >> $*.ad.c ;\
                 echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
                 echo "#define ad_GRAD_MAX 1"  >> $*.ad.c ;\
                 echo "typedef struct {double value;double  grad[1];} mfDERIV_TYPE;"  >> $*.ad.c ;\

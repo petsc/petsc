@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   ierr = DADestroy(da);CHKERRQ(ierr);
 
   /*
-       Process adiC: FormFunctionLocal FormFunctionLocali
+       Process adiC(36): FormFunctionLocal FormFunctionLocali
 
      Create the nonlinear solver, and tell the DMMG structure to use it
   */

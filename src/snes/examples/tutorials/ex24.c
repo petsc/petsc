@@ -197,7 +197,7 @@ int main(int argc,char **argv)
      This local function acts on the ghosted version of U (accessed via DAGetLocalVector())
      BUT the global, nonghosted version of FU
 
-     Process adiC: PDEFormFunctionLocal
+     Process adiC(36): PDEFormFunctionLocal
 */
 #undef __FUNCT__
 #define __FUNCT__ "PDEFormFunctionLocal"
