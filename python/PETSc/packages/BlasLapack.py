@@ -32,14 +32,12 @@ class Configure(config.base.Configure):
 
   def configureHelp(self, help):
     import nargs
-    help.addArgument('BLAS/LAPACK', '-with-blas-lapack-dir=<dir>',   nargs.ArgDir(None, None, 'Indicate the directory containing BLAS and LAPACK libraries'))
-    help.addArgument('BLAS/LAPACK', '-with-blas-lapack-lib=<lib>',       nargs.Arg(None, None, 'Indicate the library containing BLAS and LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-with-blas-lib=<lib>',              nargs.Arg(None, None, 'Indicate the library containing BLAS'))
-    help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<lib>',            nargs.Arg(None, None, 'Indicate the library containing LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-with-c-blas-lapack=<bool>',           nargs.ArgBool(None, 0, 'Automatically install a C version of BLAS/LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-with-f-blas-lapack=<bool>',           nargs.ArgBool(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-with-c-blas-lapack-if-needed=<bool>', nargs.ArgBool(None, 0, 'Automatically install a C version of BLAS/LAPACK if not found'))
-    help.addArgument('BLAS/LAPACK', '-with-f-blas-lapack-if-needed=<bool>', nargs.ArgBool(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK if not found'))
+    help.addArgument('BLAS/LAPACK', '-with-blas-lapack-dir=<dir>',                nargs.ArgDir(None, None, 'Indicate the directory containing BLAS and LAPACK libraries'))
+    help.addArgument('BLAS/LAPACK', '-with-blas-lapack-lib=<lib>',                nargs.Arg(None, None, 'Indicate the library containing BLAS and LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-with-blas-lib=<lib>',                       nargs.Arg(None, None, 'Indicate the library(s) containing BLAS'))
+    help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<lib>',                     nargs.Arg(None, None, 'Indicate the library(s) containing LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-download-c-blas-lapack=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Automatically install a C version of BLAS/LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-download-f-blas-lapack=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
     return
 
   def parseLibrary(self, library):
@@ -214,13 +212,13 @@ class Configure(config.base.Configure):
     self.functionalBlasLapack = []
     self.foundBlas       = 0
     self.foundLapack     = 0
-    if self.framework.argDB['with-c-blas-lapack'] or self.framework.argDB['with-f-blas-lapack']:
-      if self.framework.argDB['with-c-blas-lapack']:
+    if self.framework.argDB['download-c-blas-lapack'] == 1 or self.framework.argDB['download-f-blas-lapack'] == 1:
+      if self.framework.argDB['download-c-blas-lapack']:
         f2c = 'f2c'
         l   = 'c'
       else:
         if not 'FC' in self.framework.argDB:
-          raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --with-c-blas-lapack?')
+          raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
         f2c = 'f'
         l   = 'f'
       self.downLoadBlasLapack(f2c,l)        
@@ -237,13 +235,13 @@ class Configure(config.base.Configure):
             break
 
     if not (self.foundBlas and self.foundLapack):
-      if self.framework.argDB['with-c-blas-lapack-if-needed'] or self.framework.argDB['with-f-blas-lapack-if-needed']:
-        if self.framework.argDB['with-c-blas-lapack-if-needed']:
+      if self.framework.argDB['download-c-blas-lapack'] == 2 or self.framework.argDB['download-f-blas-lapack'] == 2:
+        if self.framework.argDB['download-c-blas-lapack'] == 2:
           f2c = 'f2c'
           l   = 'c'
         else:
           if not 'FC' in self.framework.argDB:
-            raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --with-c-blas-lapack?')
+            raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
           f2c = 'f'
           l   = 'f'
         self.downLoadBlasLapack(f2c,l)        
@@ -263,9 +261,9 @@ class Configure(config.base.Configure):
 
     else:
       if not self.foundBlas:
-        raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate location of BLAS.\n Or --with-c-blas-lapack or --with-f-blas-lapack to have one automatically downloaded and installed\n')
+        raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate location of BLAS.\n Or --download-c-blas-lapack=1 or --download-f-blas-lapack=1 to have one automatically downloaded and installed\n')
       if not self.foundLapack:
-        raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate location of LAPACK.\n Or --with-c-blas-lapack or --with-f-blas-lapack to have one automatically downloaded and installed\n')
+        raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate location of LAPACK.\n Or --download-c-blas-lapack=1 or --download-f-blas-lapack=1 to have one automatically downloaded and installed\n')
     return
 
   def configureESSL(self):

@@ -31,15 +31,14 @@ class Configure(config.base.Configure):
 
   def configureHelp(self, help):
     import nargs
-    help.addArgument('MPI', '-with-mpi=<bool>',              nargs.ArgBool(None, 1, 'Activate MPI'))
-    help.addArgument('MPI', '-with-mpi-dir=<root dir>',      nargs.ArgDir(None, None, 'Specify the root directory of the MPI installation'))
-    help.addArgument('MPI', '-with-mpi-include=<dir>',       nargs.ArgDir(None, None, 'The directory containing mpi.h'))
-    help.addArgument('MPI', '-with-mpi-lib=<lib>',           nargs.Arg(None, None, 'The MPI library or list of libraries'))
-    help.addArgument('MPI', '-with-mpirun=<prog>',           nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
-    help.addArgument('MPI', '-with-mpi-shared=<bool>',       nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
-    help.addArgument('MPI', '-with-mpi-compilers=<bool>',    nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
-    help.addArgument('MPI', '-with-mpich=<bool>',            nargs.ArgBool(None, 0, 'Install MPICH to provide MPI'))
-    help.addArgument('MPI', '-with-mpich-if-needed=<bool>',  nargs.ArgBool(None, 0, 'Install MPICH to provide MPI if cannot find any MPI'))
+    help.addArgument('MPI', '-with-mpi=<bool>',                   nargs.ArgBool(None, 1, 'Activate MPI'))
+    help.addArgument('MPI', '-with-mpi-dir=<root dir>',           nargs.ArgDir(None, None, 'Specify the root directory of the MPI installation'))
+    help.addArgument('MPI', '-with-mpi-include=<dir>',            nargs.ArgDir(None, None, 'The directory containing mpi.h'))
+    help.addArgument('MPI', '-with-mpi-lib=<lib>',                nargs.Arg(None, None, 'The MPI library or list of libraries'))
+    help.addArgument('MPI', '-with-mpirun=<prog>',                nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
+    help.addArgument('MPI', '-with-mpi-shared=<bool>',            nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
+    help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
+    help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Install MPICH to provide MPI'))
     
     return
 
@@ -189,7 +188,7 @@ class Configure(config.base.Configure):
   def generateGuesses(self):
     if 'with-mpi-lib' in self.framework.argDB and 'with-mpi-dir' in self.framework.argDB:
       raise RuntimeError('You cannot give BOTH MPI library with --with-mpi-lib=<lib> and search directory with --with-mpi-dir=<dir>')
-    if self.framework.argDB['with-mpich']:
+    if self.framework.argDB['download-mpich'] == 1:
       (name, lib, include) = self.downLoadMPICH()
       yield (name, lib, include)
       raise RuntimeError('Downloaded MPICH could not be used. Please check install in '+os.path.dirname(include[0])+'\n')
@@ -275,7 +274,7 @@ class Configure(config.base.Configure):
         # This happens with older Petsc versions which are missing those targets
         pass
     # If necessary, download MPICH
-    if not self.foundMPI and self.framework.argDB['with-mpich-if-needed']:
+    if not self.foundMPI and self.framework.argDB['download-mpich'] == 2:
       (name, lib, include) = self.downLoadMPICH()
       yield (name, lib, include)
       raise RuntimeError('Downloaded MPICH could not be used. Please check in install in '+os.path.dirname(include)+'\n')
@@ -402,7 +401,7 @@ class Configure(config.base.Configure):
     elif len(nonsharedMPI):
       raise RuntimeError('Could not locate any MPI with shared libraries')
     else:
-      raise RuntimeError('Could not locate any functional MPI\n Rerun config/configure.py with --with-mpi=0 to install without MPI\n or -with-mpi-dir=directory to use a MPICH installation\n or -with-mpi-include=directory -with-mpi-lib=library (or list of libraries) -with-mpirun=mpiruncommand for other MPIs.\n Or run with --with-mpich to have PETSc download and compile MPICH for you.\nIt could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
+      raise RuntimeError('Could not locate any functional MPI\n Rerun config/configure.py with --with-mpi=0 to install without MPI\n or -with-mpi-dir=directory to use a MPICH installation\n or -with-mpi-include=directory -with-mpi-lib=library (or list of libraries) -with-mpirun=mpiruncommand for other MPIs.\n Or run with --download-mpich=1 to have PETSc download and compile MPICH for you.\nIt could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
     return
 
   def configureTypes(self):

@@ -115,7 +115,7 @@ PETSC_DIR=/home/petsc/petsc-2.1.6<br>
  and no MPI:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">setenv PETSC_DIR /home/petsc/petsc-2.1.6<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py --with-c-blas-lapack-if-needed --with-mpi=0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py --download-c-blas-lapack=ifneeded --with-mpi=0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make test </font></li>
         <li>Install PETSc with default BLAS, LAPACK  and MPI using the GNU compilers, build the optimized version of the 
@@ -304,9 +304,9 @@ these packages provide some basic numeric kernels used by PETSc.</p>
           <li>Alternatively download the source distribution fblaslapack
                or cblaslapack   from <a href="http://www.mcs.anl.gov/petsc/petsc-2/download">PETSc download</a>page</li>
         </ul>
-        <li>Use the <font color="##ff0000">./config/configure.py</font> options <font color="##ff0000">--with-c-blas-lapack</font>,
-         <font color="##ff0000">--with-f-blas-lapack</font>,
-         <font color="##ff0000">--with-c-blas-lapack-if-needed</font> or <font color="##ff0000">--with-f-blas-lapack-if-needed</font> 
+        <li>Use the <font color="##ff0000">./config/configure.py</font> options <font color="##ff0000">--download-c-blas-lapack=yes</font>,
+         <font color="##ff0000">--download-f-blas-lapack</font>,
+         <font color="##ff0000">--download-c-blas-lapack=ifneeded</font> or <font color="##ff0000">--download-f-blas-lapack=ifneeded</font> 
          then PETSc will download and install a BLAS and LAPACK for you. Note that the c and f BLAS and LAPACK will, in general,
          be much slower than any installed system BLAS and LAPACK.
       </ul>
@@ -348,7 +348,7 @@ This software provides the parallel functionality for PETSc. </p>
              <li>If vendor provided MPI is not available, it can be
                    installed from sources.     We recommend MPICH</li>
            </ul>
-     <li>Use the <font color="##ff0000">./config/configure.py</font> option <font color="##ff0000">--with-mpich</font> 
+     <li>Use the <font color="##ff0000">./config/configure.py</font> option <font color="##ff0000">--download-mpich=yes</font> 
          then PETSc will download and install MPICH for you.
       </ul>
       <table border="1" cellpadding="0" cellspacing="0"
