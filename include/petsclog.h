@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.134 1999/11/24 21:55:57 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.135 2000/01/10 23:37:17 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -190,8 +190,7 @@ extern PetscTruth PLogEventDepth[];
 #if defined(PETSC_HAVE_MPE)
 #define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
   { \
-    if (_PLogPLB && PLogEventFlags[e] && !PLogEventDepth[e]) {                           \
-      PLogEventDepth[e] = PETSC_TRUE;  \
+    if (_PLogPLB && PLogEventFlags[e]) {                           \
       PLogEventBegin((e),o1,o2,o3,o4);                                   \
       if (UseMPE && PLogEventMPEFlags[(e)])\
         MPE_Log_event(MPEBEGIN+2*(e),0,"");\
@@ -234,7 +233,6 @@ extern PetscTruth PLogEventDepth[];
 #define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) {\
   if (_PLogPLE && PLogEventFlags[(e)+1]) {\
     (*_PLogPLE)((e)+1,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
-      PLogEventDepth[e] = PETSC_FALSE; } \
   if (UseMPE && PLogEventMPEFlags[(e)+1])\
      MPE_Log_event(MPEBEGIN+2*((e)+1)+1,0,"");\
   }  
@@ -249,7 +247,6 @@ extern PetscTruth PLogEventDepth[];
 #define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) {\
   if (_PLogPLE && PLogEventFlags[(e)+1]) {\
     (*_PLogPLE)((e)+1,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
-    PLogEventDepth[e] = PETSC_FALSE; } \
   } 
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
   if (_PLogPLE && PLogEventFlags[(e)]) {\
@@ -257,7 +254,6 @@ extern PetscTruth PLogEventDepth[];
     PLogEventDepth[e] = PETSC_FALSE;  }\
   } 
 #endif
-
 
 #define PLogObjectParent(p,c)       if (c) {PetscValidHeader((PetscObject)(c)); \
                                      PetscValidHeader((PetscObject)(p));\
