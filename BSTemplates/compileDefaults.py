@@ -241,6 +241,7 @@ class UsingPython(UsingCompiler):
     for lib in distutils.sysconfig.get_config_var('LIBS').split():
       # Change -l<lib> to lib<lib>.so
       extraLibraries.append('lib'+lib[2:]+'.so')
+    self.extraLibraries[self.getLanguage()].extend(extraLibraries)
     for package in self.usingSIDL.getPackages():
       self.extraLibraries[package].extend(extraLibraries)
     return self.extraLibraries
