@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.3 1997/04/10 00:01:45 bsmith Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.4 1997/07/09 20:52:08 balay Exp bsmith $";
 #endif
 
 /*
@@ -15,7 +15,11 @@ int main( int argc, char **argv )
   int size;
 
   MPI_Init( &argc, &argv );
-  PetscSetCommWorld(PETSC_COMM_SELF);
+
+  /*
+    Create a seperate PETSc universe for each processor
+  */
+  PetscSetCommWorld(MPI_COMM_SELF);
   PetscInitialize(&argc, &argv,PETSC_NULL,help);
    
   MPI_Comm_size(PETSC_COMM_WORLD,&size);

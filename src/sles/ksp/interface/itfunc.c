@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.104 1998/07/28 15:49:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.105 1998/10/09 19:19:57 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -571,11 +571,41 @@ int KSPSetUsePreconditionedResidual(KSP ksp)
 .  ksp - iterative context obtained from KSPCreate()
 
 .keywords: KSP, set, initial guess, nonzero
+
+.seealso: KSPSetIntialGuessNonzero()
+
 @*/
 int KSPSetInitialGuessNonzero(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->guess_zero   = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPGetInitialGuessNonzero"
+/*@
+   KSPGetInitialGuessNonzero - Determines if the KSP solver is using a
+       a zero initial guess.
+
+   Not Collective
+
+   Input Parameter:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Output Parameter:
+.  flag - PETSC_TRUE if guess is nonzero, else PETSC_FALSE
+
+.keywords: KSP, set, initial guess, nonzero
+
+.seealso: KSPSetIntialGuessNonzero()
+
+@*/
+int KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
+{
+  PetscFunctionBegin;
+  if (ksp->guess_zero   == 0) *flag = PETSC_TRUE;
+  else                        *flag = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

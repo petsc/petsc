@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.139 1998/10/13 13:04:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.140 1998/10/19 22:16:16 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -346,14 +346,9 @@ int VecDestroy_Seq(Vec v)
 static int VecPublish_Seq(PetscObject object)
 {
 #if defined(HAVE_AMS)
-
   Vec          v = (Vec) object;
   Vec_Seq      *s = (Vec_Seq *) v->data;
-  static int   counter = 0;
-  int          ierr,rank;
-  char         name[16];
-  AMS_Memory   amem;
-  AMS_Comm     acomm;
+  int          ierr;
   int          (*f)(AMS_Memory,char *,Vec);
   
   PetscFunctionBegin;
@@ -361,26 +356,16 @@ static int VecPublish_Seq(PetscObject object)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = ViewerAMSGetAMSComm(VIEWER_AMS_(v->comm),&acomm);CHKERRQ(ierr);
-  if (v->name) {
-    PetscStrcpy(name,v->name);
-  } else {
-    sprintf(name,"SeqVector_%d",counter++);
-  }
-  ierr = AMS_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
-  ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr); 
-  ierr = AMS_Memory_add_field(amem,"values",s->array,v->n,AMS_DOUBLE,AMS_READ,
+  ierr = PetscObjectPublishBaseBegin(object,"Vec");CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"values",s->array,v->n,AMS_DOUBLE,AMS_READ,
                                 AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
   /* if the vector knows its "layout" let it set it*/
   ierr = PetscObjectQueryFunction((PetscObject)v,"AMSSetFieldBlock_C",(void**)&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(amem,"values",v);CHKERRQ(ierr);
+    ierr = (*f)((AMS_Memory)v->amem,"values",v);CHKERRQ(ierr);
   }
-
-  ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
-  ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
-  v->amem = (int) amem;
+  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
 
 #else
   PetscFunctionBegin;
@@ -484,6 +469,7 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
 
   ierr = MapCreateMPI(comm,n,n,&v->map);CHKERRQ(ierr);
   *V = v; 
+  PetscPublishAll(v);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.37 1998/06/11 19:59:10 bsmith Exp balay $ */
+/* $Id: sys.h,v 1.38 1998/08/26 22:04:55 balay Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -45,6 +45,8 @@ extern int PetscBinaryRead(int,void*,int,PetscDataType);
 extern int PetscBinaryWrite(int,void*,int,PetscDataType,int);
 extern int PetscBinaryOpen(const char[],int,int *);
 extern int PetscBinaryClose(int);
+extern int PetscSharedTmp(MPI_Comm,PetscTruth *);
+extern int PetscFileRetrieve(MPI_Comm,const char *,char *,int,PetscTruth*);
 
 /*
    In binary files variables are stored using the following lengths,

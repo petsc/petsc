@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.7 1998/03/24 20:58:34 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.8 1998/10/19 22:19:56 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -401,7 +401,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;  /* user-defined application context */
-  Mat     jac = *J;                /* Jacobian matrix */
+  Mat     jac = *B;                /* Jacobian matrix */
   Vec     localX = user->localX;   /* local vector */
   int     *ltog;                   /* local-to-global mapping */
   int     ierr, i, j, row, mx, my, col[5];

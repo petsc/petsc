@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.80 1998/09/04 18:24:55 bsmith Exp balay $";
+static char vcid[] = "$Id: da3.c,v 1.81 1998/11/05 17:19:30 balay Exp bsmith $";
 #endif
 
 /*
@@ -149,6 +149,8 @@ int DAView_3d(DA da,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+extern int DAPublish_Petsc(PetscObject);
+
 #undef __FUNC__  
 #define __FUNC__ "DACreate3d"
 /*@C
@@ -220,6 +222,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   if (s < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative");
 
   PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,comm,DADestroy,DAView);
+  da->bops->publish = DAPublish_Petsc;
+
   PLogObjectCreate(da);
   PLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim = 3;
@@ -1833,6 +1837,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   if (flg1) {ierr = DAView(da,VIEWER_DRAWX_(da->comm)); CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAPrintHelp(da); CHKERRQ(ierr);}
+  PetscPublishAll(da);
   PetscFunctionReturn(0);
 }
 

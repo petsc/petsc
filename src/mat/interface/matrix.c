@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.303 1998/09/25 03:14:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.304 1998/10/09 19:21:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -163,8 +163,9 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
    The user can call ViewerSetFormat() to specify the output
    format of ASCII printed objects (when using VIEWER_STDOUT_SELF,
    VIEWER_STDOUT_WORLD and ViewerFileOpenASCII).  Available formats include
-+    VIEWER_FORMAT_ASCII_DEFAULT - default, prints matrix contents
++    VIEWER_FORMAT_AS CII_DEFAULT - default, prints matrix contents
 .    VIEWER_FORMAT_ASCII_MATLAB - prints matrix contents in Matlab format
+.    VIEWER_FORMAT_ASCII_DENSE - prints entire matrix including zeros
 .    VIEWER_FORMAT_ASCII_COMMON - prints matrix contents, using a sparse 
          format common among all matrix types
 .    VIEWER_FORMAT_ASCII_IMPL - prints matrix contents, using an implementation-specific 
@@ -2788,7 +2789,7 @@ int MatRestoreArray(Mat mat,Scalar **v)
 
    Fortran Note:
    The Fortran interface is slightly different from that given below, it 
-   requires one to pass in submat a Mat (integer) array of size at least m.
+   requires one to pass in  as submat a Mat (integer) array of size at least m.
 
 .keywords: matrix, get, submatrix, submatrices
 

@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.123 1998/07/23 22:50:59 bsmith Exp balay $ */
+/* $Id: petsclog.h,v 1.124 1998/08/26 22:04:55 balay Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -252,7 +252,8 @@ extern int (*_PLogPHD)(PetscObject);
 
 #define PLogObjectParent(p,c)       if (c) {PetscValidHeader((PetscObject)(c)); \
                                      PetscValidHeader((PetscObject)(p));\
-                                     ((PetscObject)(c))->parent = (PetscObject) (p);}
+                                     ((PetscObject)(c))->parent = (PetscObject) (p);\
+				     ((PetscObject)(c))->parentid = ((PetscObject) p)->id;}
 #define PLogObjectParents(p,n,d)    {int _i; for ( _i=0; _i<n; _i++ ) \
                                     PLogObjectParent(p,(d)[_i]);}
 #define PLogObjectCreate(h)         {if (_PLogPHC) (*_PLogPHC)((PetscObject)h);}

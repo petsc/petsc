@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.68 1998/10/19 22:20:54 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.69 1998/10/26 16:18:16 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -64,10 +64,11 @@ typedef struct {
   int         id;                                      \
   int         refct;                                   \
   int         tag;                                     \
-  FList      qlist;                                   \
+  FList       qlist;                                   \
   OList       olist;                                   \
   char        *type_name;                              \
   PetscObject parent;                                  \
+  int         parentid;                                \
   char*       name;                                    \
   char        *prefix;                                 \
   void        *cpp;                                    \
@@ -231,6 +232,8 @@ struct _p_PetscObject {
   PETSCHEADER(int)
 };
 
+extern int PetscObjectPublishBaseBegin(PetscObject,char *);
+extern int PetscObjectPublishBaseEnd(PetscObject);
 
 #endif
 

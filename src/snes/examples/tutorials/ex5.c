@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.96 1998/11/04 22:47:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.97 1998/11/09 19:18:57 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -91,9 +91,6 @@ int main( int argc, char **argv )
   int      m, flg, N, ierr, nloc, *ltog;
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
-  SLES     sles;
-  KSP      ksp;
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -118,9 +115,7 @@ int main( int argc, char **argv )
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
-  ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
-  ierr = PetscObjectPublish((PetscObject)ksp);CHKERRA(ierr);
+  ierr = PetscObjectPublish((PetscObject)snes);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -349,6 +344,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
 
+  PetscSleep(5);
+
   /*
      Get pointers to vector data
   */
@@ -529,6 +526,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
         feature with caution!
   */
   *flag = SAME_NONZERO_PATTERN;
+
 
   /*
      Tell the matrix we will never add a new nonzero location to the

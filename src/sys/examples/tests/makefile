@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.28 1998/06/12 22:12:41 balay Exp balay $ 
+# $Id: makefile,v 1.29 1998/06/15 19:51:16 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -8,7 +8,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
 
-TESTEXAMPLES_1  = ex13.PETSc runex13 ex13.rm 
+TESTEXAMPLES_1  = ex7.PETSc runex7 ex7.rm ex13.PETSc runex13 ex13.rm 
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 		  ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm 
 TESTEXAMPLES_3  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm ex13f.PETSc runex13f ex13f.rm clean
@@ -107,6 +107,9 @@ runex4:
 	   if (diff output/ex4_1.out ex4_1.tmpz) then true; \
 	   else echo "Error in ex4. Problem with PetscStrtok()"; fi; \
 	   ${RM} -f ex4_1.tmp ex4_1.tmpz
+
+runex7:
+	-@${MPIRUN} -np 2 ex7
 
 runex10:
 	-@${MPIRUN} -np 1 ex10 > ex10_1.tmp 2>&1;\

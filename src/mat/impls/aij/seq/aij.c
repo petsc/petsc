@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.285 1998/10/19 22:17:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.286 1998/11/04 03:51:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -363,7 +363,8 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     if (nofinalvalue) {
       fprintf(fd,"%d %d  %18.16e\n", m, a->n, 0.0);
     } 
-    fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
+    if (outputname) fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
+    else            fprintf(fd,"];\n M = spconvert(zzz);\n");
   } else if (format == VIEWER_FORMAT_ASCII_COMMON) {
     for ( i=0; i<m; i++ ) {
       fprintf(fd,"row %d:",i);
@@ -435,8 +436,9 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     for ( i=0; i<m; i++ ) {
       jcnt = 0;
       for ( j=0; j<a->n; j++ ) {
-        if ( jcnt++ < a->i[i+1]-a->i[i+1] && j == a->j[cnt]) {
+        if ( jcnt < a->i[i+1]-a->i[i] && j == a->j[cnt]) {
           value = a->a[cnt++];
+          jcnt++;
         } else {
           value = 0.0;
         }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.17 1998/10/09 19:20:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.18 1998/10/19 22:17:08 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -44,6 +44,13 @@ Scalar        PETSC_i = 0.0;
 */
 char _BT_mask, _BT_c;
 int  _BT_idx;
+
+/*
+     Determines if all PETSc objects are published to the AMS
+*/
+#if defined(HAVE_AMS)
+PetscTruth PetscAMSPublishAll = PETSC_FALSE;
+#endif
 
 extern int PLogEventRegisterDestroy_Private(void);
 extern int PLogStageDestroy_Private(void);
@@ -480,7 +487,7 @@ int OptionsCheckInitial_Alice(void)
     if (flg1)              {  ierr = PLogAllBegin();  CHKERRQ(ierr); }
     else if (flg2 || flg3) {  ierr = PLogBegin();  CHKERRQ(ierr);}
     
-    ierr = OptionsGetString(PETSC_NULL,"-log_trace",mname,250,&flg1); CHKERRQ(ierr);
+    ierr = OptionsGetString(PETSC_NULL,"-log_trace",mname,250,&flg1);CHKERRQ(ierr);
     if (flg1) { 
       char name[256],fname[256];
       FILE *file;
@@ -496,6 +503,16 @@ int OptionsCheckInitial_Alice(void)
       }
       ierr = PLogTraceBegin(file); CHKERRQ(ierr);
     }
+  }
+#endif
+
+  /*
+     Publishing to the AMS
+  */
+#if defined(HAVE_AMS)
+  ierr = OptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    PetscAMSPublishAll = PETSC_TRUE;
   }
 #endif
 
@@ -550,6 +567,10 @@ int OptionsCheckInitial_Alice(void)
 #endif
     (*PetscHelpPrintf)(comm," -v: prints PETSc version number and release date\n");
     (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");
+#if defined(HAVE_AMS)
+    (*PetscHelpPrintf)(comm," -ams_publish_objects: \n");
+    (*PetscHelpPrintf)(comm," -ams_publish_stack: \n");
+#endif
     (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");
   }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.18 1998/10/05 20:43:14 balay Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.19 1998/10/19 22:15:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -25,8 +25,8 @@ static char vcid[] = "$Id: zsnes.c,v 1.18 1998/10/05 20:43:14 balay Exp bsmith $
 #define snesgettype_                 SNESGETTYPE
 #define snessetoptionsprefix_        SNESSETOPTIONSPREFIX 
 #define snesappendoptionsprefix_     SNESAPPENDOPTIONSPREFIX 
-#define snesdefaultmatrixfreematcreate_ SNESDEFAULTMATRIXFREEMATCREATE
-#define snessettype_                    SNESSETTYPE
+#define matcreatesnesfdmf_           MATCREATESNESFDMF
+#define snessettype_                 SNESSETTYPE
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define snesregisterdestroy_         snesregisterdestroy
 #define snessetjacobian_             snessetjacobian
@@ -47,8 +47,8 @@ static char vcid[] = "$Id: zsnes.c,v 1.18 1998/10/05 20:43:14 balay Exp bsmith $
 #define snesgettype_                 snesgettype
 #define snessetoptionsprefix_        snessetoptionsprefix 
 #define snesappendoptionsprefix_     snesappendoptionsprefix
-#define snesdefaultmatrixfreematcreate_ snesdefaultmatrixfreematcreate
-#define snessettype_                    snessettype
+#define matcreatesnesfdmf_           matcreatesnesfdmf
+#define snessettype_                 snessettype
 #endif
 
 EXTERN_C_BEGIN
@@ -71,9 +71,9 @@ void snesappendoptionsprefix_(SNES *snes,CHAR prefix, int *__ierr,int len )
   FREECHAR(prefix,t);
 }
 
-void snesdefaultmatrixfreematcreate_(SNES *snes,Vec *x,Mat *J, int *__ierr )
+void matcreatesnewsfdmf_(SNES *snes,Vec *x,Mat *J, int *__ierr )
 {
-  *__ierr = SNESDefaultMatrixFreeMatCreate(*snes,*x,J);
+  *__ierr = MatCreateSNESFDMF(*snes,*x,J);
 }
 
 static int (*f7)(SNES*,int*,double*,void*,int*);

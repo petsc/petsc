@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.16 1998/08/26 22:01:46 balay Exp bsmith $";
+static char vcid[] = "$Id: pname.c,v 1.17 1998/11/12 04:16:10 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -73,16 +73,27 @@ int PetscObjectPublishBaseBegin(PetscObject obj,char *memname)
   AMS_Memory amem;
   AMS_Comm   acomm;
   int        ierr;
+  static int counter = 0;
+  char       name[16];
+
+  if (obj->name) {
+    PetscStrncpy(name,obj->name,16);
+  } else {
+    sprintf(name,"%s_%d",memname,counter++);
+  }
 
   PetscFunctionBegin;
   ierr      = ViewerAMSGetAMSComm(VIEWER_AMS_(obj->comm),&acomm);CHKERRQ(ierr);
-  ierr      = AMS_Memory_create(acomm,memname,&amem);CHKERRQ(ierr);
+  ierr      = AMS_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
   obj->amem = (int) amem;
 
   ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr); 
   ierr = AMS_Memory_add_field(amem,"Type",&obj->type_name,1,AMS_STRING,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-
+  ierr = AMS_Memory_add_field(amem,"Id",&obj->id,1,AMS_INT,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amem,"ParentId",&obj->parentid,1,AMS_INT,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 #else
   PetscFunctionBegin;
 #endif

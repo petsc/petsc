@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fretrieve.c,v 1.2 1998/10/31 03:11:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fretrieve.c,v 1.3 1998/10/31 19:20:14 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -162,7 +162,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 -   found - if found and retrieve the file
 
 @*/
-int PetscFileRetrieve(MPI_Comm comm,char *libname,char *llibname,int llen,PetscTruth *found)
+int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,PetscTruth *found)
 {
   char       *par,buf[1024];
   FILE       *fp;

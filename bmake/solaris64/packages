@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.37 1998/08/26 20:17:00 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.38 1998/09/30 19:34:26 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -86,7 +86,7 @@ PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis_solaris.a
 #  Optional location for ALICE Memory Snooper
 #
 AMS_INCLUDE = -I/home/bsmith/ams/include
-AMS_LIB     =  -L/home/bsmith/ams/lib/libg/solaris -lamspub -lamsutilmt -lamsutil -lthread
+AMS_LIB     =  -L/home/bsmith/ams/lib/lib/solaris -lamspub -lamsutilmt -lamsutil -lthread
 # 
 # ---------------------------------------------------------------------------------------
 #

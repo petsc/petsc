@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.81 1998/09/04 18:24:50 bsmith Exp balay $";
+static char vcid[] = "$Id: da1.c,v 1.82 1998/11/05 17:19:16 balay Exp bsmith $";
 #endif
 
 /* 
@@ -94,6 +94,8 @@ int DAView_1d(DA da,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+extern int DAPublish_Petsc(PetscObject);
+
 #undef __FUNC__  
 #define __FUNC__ "DACreate1d"
 /*@C
@@ -148,6 +150,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
 
   PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,comm,DADestroy,DAView);
   PLogObjectCreate(da);
+  da->bops->publish = DAPublish_Petsc;
   PLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim   = 1;
   da->gtog1 = 0;
@@ -379,6 +382,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAPrintHelp(da); CHKERRQ(ierr);}
   *inra = da;
+  PetscPublishAll(da);  
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.230 1998/10/16 03:10:42 bsmith Exp curfman $ */
+/* $Id: petsc.h,v 1.231 1998/10/28 22:54:22 curfman Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -259,6 +259,17 @@ extern int PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **);
      Defines PETSc profiling.
 */
 #include "petsclog.h"
+
+#if defined(HAVE_AMS)
+extern PetscTruth PetscAMSPublishAll;
+#define PetscPublishAll(v)\
+  { if (PetscAMSPublishAll) { \
+    int __ierr;\
+    __ierr = PetscObjectPublish((PetscObject)v);CHKERRQ(__ierr);\
+  }}
+#else
+#define PetscPublishAll(v)
+#endif
 
 extern int  PetscSequentialPhaseBegin(MPI_Comm,int);
 extern int  PetscSequentialPhaseEnd(MPI_Comm,int);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.197 1998/08/20 15:23:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.198 1998/10/09 19:20:45 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -632,6 +632,58 @@ int OptionsGetInt(const char pre[],const char name[],int *ivalue,int *flg)
   if (flag) {
     if (!value) {if (flg) *flg = 0; *ivalue = 0;}
     else        {if (flg) *flg = 1; *ivalue = atoi(value);}
+  } else {
+    if (flg) *flg = 0;
+  }
+  PetscFunctionReturn(0); 
+} 
+
+#undef __FUNC__  
+#define __FUNC__ "OptionsGetLogical"
+/*@C
+   OptionsGetLogical - Gets the Logical (true or false) value for a particular 
+            option in the database.
+
+   Not Collective
+
+   Input Parameters:
++  name - the option one is seeking
+-  pre - the string to prepend to the name or PETSC_NULL
+
+   Output Parameter:
++  ivalue - the logical value to return
+-  flg - 1 if found, else 0
+
+   Notes:
+       TRUE, true, YES, yes, nostring, and 1 all translate to PETSC_TRUE
+       FALSE, false, NO, no, and 0 all translate to PETSC_FALSE
+
+.keywords: options, database, get, logical
+
+.seealso: OptionsGetDouble(), OptionsHasName(), OptionsGetString(),
+          OptionsGetIntArray(), OptionsGetDoubleArray(), OptionsGetInt()
+@*/
+int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,int *flg)
+{
+  char *value;
+  int  flag,ierr;
+
+  PetscFunctionBegin;
+  ierr = OptionsFindPair_Private(pre,name,&value,&flag); CHKERRQ(ierr);
+  if (flag) {
+    if (!value) {if (flg) *flg = 0; *ivalue = PETSC_TRUE;}
+    else        {
+      if (flg) *flg = 1; 
+      if (!PetscStrcmp(value,"TRUE") || !PetscStrcmp(value,"YES") || !PetscStrcmp(value,"1") ||
+          !PetscStrcmp(value,"true") || !PetscStrcmp(value,"yes")) {
+        *ivalue = PETSC_TRUE;
+      } else if (!PetscStrcmp(value,"FALSE") || !PetscStrcmp(value,"NO") || !PetscStrcmp(value,"0") ||
+          !PetscStrcmp(value,"false") || !PetscStrcmp(value,"no")) {
+        *ivalue = PETSC_FALSE;
+      } else {
+        SETERRQ(1,1,"Unknown logical value");
+      }
+    }
   } else {
     if (flg) *flg = 0;
   }

@@ -1,13 +1,13 @@
-# $Id: makefile,v 1.1 1998/11/05 22:13:30 bsmith Exp bsmith $
+# $Id: makefile,v 1.2 1998/11/09 03:37:13 bsmith Exp bsmith $
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = snesmfj.c  snesmfjdef.c mfregis.c 
+SOURCEC  = snesmfj.c  snesmfjdef.c mfregis.c wp.c
 SOURCEF  =
 SOURCEH  = snesmfj.h
-OBJSC    = snesmfj.o  snesmfjdef.o mfregis.o 
+OBJSC    = snesmfj.o  snesmfjdef.o mfregis.o wp.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = n

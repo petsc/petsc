@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.29 1998/03/20 22:52:39 bsmith Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.30 1998/03/31 17:24:22 balay Exp bsmith $";
 #endif
 
 static char help[] =
@@ -85,7 +85,7 @@ int main( int argc, char **argv )
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user); CHKERRA(ierr);
-  ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
+  ierr = MatCreateSNESFDMF(snes,x,&J); CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,J,0,(void *)&user); CHKERRA(ierr);
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 

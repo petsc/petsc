@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.20 1998/04/23 23:25:41 balay Exp balay $ 
+# $Id: makefile,v 1.21 1998/06/13 05:01:54 balay Exp bsmith $ 
 
 ALL: 
 
@@ -69,6 +69,10 @@ Index: Index.o  chkopts
 PetscVecNorm: PetscVecNorm.o  chkopts 
 	-${CLINKER} -o PetscVecNorm PetscVecNorm.o ${PETSC_LIB}
 	${RM} -f PetscVecNorm.o
+
+sizeof: sizeof.o  chkopts 
+	-${CLINKER} -o sizeof sizeof.o ${PETSC_LIB}
+	${RM} -f sizeof.o
 
 test: ${TESTS}
 

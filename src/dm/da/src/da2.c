@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.101 1998/09/04 18:25:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.102 1998/10/19 22:20:13 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -119,6 +119,8 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
 
 
   PetscFunctionBegin;
+  if (((PetscObject)v)->amem < 0) PetscFunctionReturn(0); /* return if not published */
+
   ierr = PetscObjectQuery((PetscObject)v,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) PetscFunctionReturn(0);
   ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0);CHKERRQ(ierr);
@@ -156,6 +158,28 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
 }
 EXTERN_C_END
 #endif
+
+#undef __FUNC__  
+#define __FUNC__ "DAPublish_Petsc"
+int DAPublish_Petsc(PetscObject object)
+{
+#if defined(HAVE_AMS)
+  DA          v = (DA) object;
+  int         ierr;
+  
+  PetscFunctionBegin;
+
+  /* if it is already published then return */
+  if (v->amem >=0 ) PetscFunctionReturn(0);
+
+  ierr = PetscObjectPublishBaseBegin(object,"DA");CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
+#else
+  PetscFunctionBegin;
+#endif
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "DACreate2d"
@@ -225,6 +249,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,comm,DADestroy,DAView);
   PLogObjectCreate(da);
+  da->bops->publish = DAPublish_Petsc;
   PLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim = 2;
 
@@ -392,12 +417,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = PetscObjectCompose((PetscObject)local,"DA",(PetscObject)da);CHKERRQ(ierr);
   ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
   ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
-#if defined(HAVE_AMS)
-  ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
-#endif
+
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
@@ -938,7 +958,17 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (flg1) {ierr = DAView(da,VIEWER_DRAWX_(da->comm)); CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = DAPrintHelp(da); CHKERRQ(ierr);}
-  
+
+  PetscPublishAll(da);  
+#if defined(HAVE_AMS)
+  ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
+         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",
+         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+  if (((PetscObject)global)->amem > -1) {
+    ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0); 
 }
 

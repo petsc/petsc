@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.159 1998/10/09 19:25:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.160 1998/10/24 02:25:31 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -150,7 +150,8 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
                                of convergence test
 .  -snes_monitor - prints residual norm at each iteration 
 .  -snes_xmonitor - plots residual norm at each iteration 
--  -snes_fd - use finite differences to compute Jacobian; very slow, only for testing
+.  -snes_fd - use finite differences to compute Jacobian; very slow, only for testing
+-  -snes_mf_ksp_monitor - if using matrix-free multiply then prints h at each KSP iteration
 
     Options Database for Eisenstat-Walker method:
 +  -snes_ksp_eq_conv - use Eisenstat-Walker method for determining linear system convergence
@@ -249,6 +250,8 @@ int SNESSetFromOptions(SNES snes)
       PLogObjectParent(snes,lg);
     }
   }
+
+
   ierr = OptionsHasName(snes->prefix,"-snes_fd", &flg);  CHKERRQ(ierr);
   if (flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,
@@ -266,6 +269,14 @@ int SNESSetFromOptions(SNES snes)
 
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
+
+  /* set the special KSP monitor for matrix-free application */
+  ierr = OptionsHasName(snes->prefix,"-snes_mf_ksp_monitor",&flg); CHKERRQ(ierr);
+  if (flg) {
+    KSP ksp;
+    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetMonitor(ksp,MatSNESFDMFKSPMonitor,PETSC_NULL);CHKERRQ(ierr);
+  }
 
   /*
       Since the private setfromoptions requires the type to have 
@@ -520,6 +531,35 @@ int SNESGetSLES(SNES snes,SLES *sles)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "SNESPublish_Petsc"
+static int SNESPublish_Petsc(PetscObject object)
+{
+#if defined(HAVE_AMS)
+  SNES          v = (SNES) object;
+  int          ierr;
+  
+  PetscFunctionBegin;
+
+  /* if it is already published then return */
+  if (v->amem >=0 ) PetscFunctionReturn(0);
+
+  ierr = PetscObjectPublishBaseBegin(object,"SNES");CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Iteration",&v->iter,1,AMS_INT,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Residual",&v->norm,1,AMS_DOUBLE,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
+  
+  /* publish children of object */
+  ierr = PetscObjectPublish((PetscObject)v->sles);CHKERRQ(ierr);
+
+#else
+  PetscFunctionBegin;
+#endif
+  PetscFunctionReturn(0);
+}
+
 /* -----------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "SNESCreate"
@@ -562,6 +602,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   }
   PetscHeaderCreate(snes,_p_SNES,int,SNES_COOKIE,0,comm,SNESDestroy,SNESView);
   PLogObjectCreate(snes);
+  snes->bops->publish     = SNESPublish_Petsc;
   snes->max_its           = 50;
   snes->max_funcs	  = 10000;
   snes->norm		  = 0.0;
@@ -618,6 +659,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   PLogObjectParent(snes,snes->sles)
 
   *outsnes = snes;
+  PetscPublishAll(snes);
   PetscFunctionReturn(0);
 }
 
@@ -1203,7 +1245,7 @@ int SNESSetUp(SNES snes,Vec x)
   */
   if (flg) {
     Mat J;
-    ierr = SNESDefaultMatrixFreeMatCreate(snes,snes->vec_sol,&J);CHKERRQ(ierr);
+    ierr = MatCreateSNESFDMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     PLogObjectParent(snes,J);
     snes->mfshell = J;
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
@@ -1215,6 +1257,7 @@ int SNESSetUp(SNES snes,Vec x)
     } else {
       SETERRQ(PETSC_ERR_SUP,0,"Method class doesn't support matrix-free operator option");
     }
+    ierr = MatSNESFDMFSetFromOptions(J);CHKERRQ(ierr);
   }
   ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);  CHKERRQ(ierr); 
   /*
@@ -1223,7 +1266,7 @@ int SNESSetUp(SNES snes,Vec x)
    */
   if (flg) {
     Mat J;
-    ierr = SNESDefaultMatrixFreeMatCreate(snes,snes->vec_sol,&J);CHKERRQ(ierr);
+    ierr = MatCreateSNESFDMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     PLogObjectParent(snes,J);
     snes->mfshell = J;
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
@@ -1235,6 +1278,7 @@ int SNESSetUp(SNES snes,Vec x)
     } else {
       SETERRQ(PETSC_ERR_SUP,0,"Method class doesn't support matrix-free option");
     }
+    ierr = MatSNESFDMFSetFromOptions(J);CHKERRQ(ierr);
   }
   if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
     if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetFunction() first");
@@ -2110,6 +2154,7 @@ int SNESPrintHelp(SNES snes)
     (*PetscHelpPrintf)(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);
     (*PetscHelpPrintf)(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);
     (*PetscHelpPrintf)(snes->comm,"   %ssnes_mf_operator:use matrix-free Jacobian and user-provided preconditioning matrix\n",p);
+    (*PetscHelpPrintf)(snes->comm,"   %ssnes_mf_ksp_monitor - if using matrix-free multiply then prints h at each KSP iteration\n",p);
     (*PetscHelpPrintf)(snes->comm,"   %ssnes_no_convergence_test: Do not test for convergence, always run to SNES max its\n",p);
     (*PetscHelpPrintf)(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",p);
     (*PetscHelpPrintf)(snes->comm,

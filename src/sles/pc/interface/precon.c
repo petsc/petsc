@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.155 1998/09/25 03:14:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.156 1998/11/03 13:50:36 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -38,6 +38,28 @@ int PCDestroy(PC pc)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "PCPublish_Petsc"
+static int PCPublish_Petsc(PetscObject object)
+{
+#if defined(HAVE_AMS)
+  PC          v = (PC) object;
+  int         ierr;
+  
+  PetscFunctionBegin;
+
+  /* if it is already published then return */
+  if (v->amem >=0 ) PetscFunctionReturn(0);
+
+  ierr = PetscObjectPublishBaseBegin(object,"PC");CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
+#else
+  PetscFunctionBegin;
+#endif
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "PCCreate"
 /*@C
    PCCreate - Creates a preconditioner context.
@@ -67,6 +89,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
 
   PetscHeaderCreate(pc,_p_PC,int,PC_COOKIE,-1,comm,PCDestroy,PCView);
   PLogObjectCreate(pc);
+  pc->bops->publish      = PCPublish_Petsc;
   pc->vec                = 0;
   pc->mat                = 0;
   pc->setupcalled        = 0;
@@ -86,6 +109,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   pc->modifysubmatrices   = 0;
   pc->modifysubmatricesP  = 0;
   *newpc                  = pc;
+  PetscPublishAll(pc);
   PetscFunctionReturn(0);
 
 }

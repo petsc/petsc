@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.10 1998/03/26 22:12:11 balay Exp bsmith $ */
+/* $Id: baij.h,v 1.11 1998/10/09 19:22:47 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 #include <math.h>
@@ -8,8 +8,7 @@
 
 /*  
   MATSEQBAIJ format - Block compressed row storage. The i[] and j[] 
-  arrays start at 1, or 0, depending on the value of shift.  
-  For example, in Fortran  j[i[k]+p+shift] is the pth column in row k.
+  arrays start at 0.
 */
 
 typedef struct {
@@ -40,6 +39,10 @@ extern int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,double,int,Mat *);
 extern int MatConvert_SeqBAIJ(Mat,MatType,Mat *);
 extern int MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption, Mat*);
 extern int MatMarkDiag_SeqBAIJ(Mat);
+extern int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat,Mat*);
+extern int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
+extern int MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat,Mat*);
+extern int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat,Vec,Vec);
 
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.75 1998/10/06 13:55:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.76 1998/10/19 22:19:31 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -198,9 +198,10 @@ $    -viewer_matlab_port <port>
 @*/
 int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 {
-  Viewer v;
-  int    t,rank,ierr,flag;
-  char   mach[256];
+  Viewer     v;
+  int        t,rank,ierr,flag;
+  char       mach[256];
+  PetscTruth tflag;
 
   PetscFunctionBegin;
   if (!machine) {
@@ -216,8 +217,8 @@ int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
     ierr = OptionsGetInt(PETSC_NULL,"-viewer_matlab_port",&port,&flag); CHKERRQ(ierr);
     if (!flag) {
       char portn[16];
-      ierr = OptionsGetenv(comm,"PETSC_VIEWER_MATLAB_PORT",portn,16,&flag);CHKERRQ(ierr);
-      if (flag) {
+      ierr = OptionsGetenv(comm,"PETSC_VIEWER_MATLAB_PORT",portn,16,&tflag);CHKERRQ(ierr);
+      if (tflag) {
         port = OptionsAtoi(portn);
       } else {
         port = DEFAULTPORT;

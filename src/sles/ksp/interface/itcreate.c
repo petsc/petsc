@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.136 1998/09/25 03:13:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.137 1998/10/09 19:19:57 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -111,35 +112,20 @@ int KSPSetAvoidNorms(KSP ksp)
 static int KSPPublish_Petsc(PetscObject object)
 {
 #if defined(HAVE_AMS)
-
   KSP          v = (KSP) object;
-  static int   counter = 0;
-  int          ierr,rank;
-  char         name[16];
-  AMS_Memory   amem;
-  AMS_Comm     acomm;
+  int          ierr;
   
   PetscFunctionBegin;
 
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = ViewerAMSGetAMSComm(VIEWER_AMS_(v->comm),&acomm);CHKERRQ(ierr);
-  if (v->name) {
-    PetscStrcpy(name,v->name);
-  } else {
-    sprintf(name,"KSP_%d",counter++);
-  }
-  ierr = AMS_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
-  ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr); 
-  ierr = AMS_Memory_add_field(amem,"Iteration",&v->its,1,AMS_INT,AMS_READ,
+  ierr = PetscObjectPublishBaseBegin(object,"KSP");CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Iteration",&v->its,1,AMS_INT,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amem,"Residual",&v->rnorm,1,AMS_DOUBLE,AMS_READ,
+  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Residual",&v->rnorm,1,AMS_DOUBLE,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
-  ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
-  v->amem = (int) amem;
-
+  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
 #else
   PetscFunctionBegin;
 #endif
@@ -177,7 +163,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   *inksp = 0;
   PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_COOKIE,-1,comm,KSPDestroy,KSPView);
   PLogObjectCreate(ksp);
-  *inksp               = ksp;
+  *inksp             = ksp;
   ksp->bops->publish = KSPPublish_Petsc;
 
   ksp->type          = -1;
@@ -221,6 +207,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->cnvP            = 0;
 
   ksp->setupcalled     = 0;
+  PetscPublishAll(ksp);
   PetscFunctionReturn(0);
 }
  

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.75 1998/08/26 22:03:55 balay Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.76 1998/10/19 22:19:32 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -343,6 +343,7 @@ int ViewerFileOpenASCII(MPI_Comm comm,const char name[],Viewer *lab)
    Available formats include
 +    VIEWER_FORMAT_ASCII_DEFAULT - default format
 .    VIEWER_FORMAT_ASCII_MATLAB - Matlab format
+.    VIEWER_FORMAT_ASCII_DENSE - print matrix as dense
 .    VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
       (which is in many cases the same as the default)
 .    VIEWER_FORMAT_ASCII_INFO - basic information about object

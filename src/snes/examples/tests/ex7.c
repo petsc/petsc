@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.35 1997/07/09 21:00:05 balay Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.36 1997/09/22 15:20:00 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -63,7 +63,7 @@ int main( int argc, char **argv )
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* create matrix free matrix for Jacobian */
-  ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
+  ierr = MatCreateSNESFDMF(snes,x,&J); CHKERRA(ierr);
 
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F); CHKERRA(ierr);

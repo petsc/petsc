@@ -1,41 +1,25 @@
 
-C      "$Id: ex58.F,v 1.1 1997/07/24 18:01:48 bsmith Exp bsmith $";
+C      "$Id: ex67f.F,v 1.1 1998/10/31 17:41:51 bsmith Exp bsmith $";
 C
-C   This program demonstrates use of MatGetRow() from Fortran
+C   This program demonstrates use of MatGetSubMatrices() from Fortran
 C
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/is.h"
-#include "include/FINCLUDE/viewer.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/is.h"
+#include "include/finclude/viewer.h"
 
       Mat      A,B
-      integer  err,i
-      Scalar   values(500)
-      integer  err,cols(500),ncols
+      integer  ierr
       Viewer   v    
-      IS       isrow,iscol
+      IS       isrow
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,err)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call ViewerFileOpenBinary(PETSC_COMM_WORLD,'small',BINARY_RDONLY,
-     &                          v,err)
+      call ViewerFileOpenBinary(PETSC_COMM_WORLD,'../matbinary.ex',
+     &                          BINARY_RDONLY, v,ierr)
 
-      call MatLoad(v,MATSEQAIJ,A,err)
-
-!      call MatView(A,VIEWER_STDOUT_WORLD,err)
-!
-!      call MatGetRow(A,2,ncols,cols,values,err)
-!      do 10, i=1,ncols
-!        print*,i,cols(i),values(i)
-! 10   continue
-!      call MatRestoreRow(A,2,ncols,cols,values,err)
-
-!      call MatGetRow(A,5,ncols,cols,values,err)
-!      do 20, i=1,ncols
-!        print*,i,cols(i),values(i)
-! 20   continue
-!      call MatRestoreRow(A,2,ncols,cols,values,err)
+      call MatLoad(v,MATSEQAIJ,A,ierr)
 
       call ISCreateGeneral(PETSC_COMM_SELF,
      &               1,0,isrow,ierr)
@@ -43,10 +27,19 @@ C
       call MatGetSubmatrices(A,1,isrow,isrow,
      &        MAT_INITIAL_MATRIX,B,ierr)
 
-      call MatDestroy(A,err)
-      call ViewerDestroy(v,err)
+      call MatView(B,VIEWER_STDOUT_SELF,ierr)
 
-      call PetscFinalize(err)
+      call MatGetSubmatrices(A,1,isrow,isrow,
+     &        MAT_REUSE_MATRIX,B,ierr)
+
+      call MatView(B,VIEWER_STDOUT_SELF,ierr)
+
+      call ISDestroy(isrow,ierr)
+      call MatDestroy(A,ierr)
+      call MatDestroy(B,ierr)
+      call ViewerDestroy(v,ierr)
+
+      call PetscFinalize(ierr)
       end
 
 

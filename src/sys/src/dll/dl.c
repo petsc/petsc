@@ -1,6 +1,8 @@
 
+
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.34 1998/10/30 04:35:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.35 1998/10/31 19:20:33 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable

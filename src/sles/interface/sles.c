@@ -1,9 +1,24 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.101 1998/07/28 13:11:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.102 1998/08/16 12:52:12 curfman Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
 #include "pinclude/pviewer.h"
+
+#undef __FUNC__  
+#define __FUNC__ "SLESPublish_Petsc"
+static int SLESPublish_Petsc(PetscObject object)
+{
+  SLES          v = (SLES) object;
+  int          ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscObjectPublishBaseBegin(object,"SLES");CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublish((PetscObject)v->pc);CHKERRQ(ierr);
+  ierr = PetscObjectPublish((PetscObject)v->ksp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "SLESView"
@@ -239,6 +254,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   *outsles = 0;
   PetscHeaderCreate(sles,_p_SLES,int,SLES_COOKIE,0,comm,SLESDestroy,SLESView);
   PLogObjectCreate(sles);
+  sles->bops->publish = SLESPublish_Petsc;
   ierr = KSPCreate(comm,&sles->ksp); CHKERRQ(ierr);
   ierr = PCCreate(comm,&sles->pc); CHKERRQ(ierr);
   PLogObjectParent(sles,sles->ksp);
