@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.31 1995/12/21 22:41:34 curfman Exp gropp $";
+static char vcid[] = "$Id: mpiu.c,v 1.32 1996/01/03 15:41:22 gropp Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -253,7 +253,7 @@ static int MPIU_Tag_keyval = MPI_KEYVAL_INVALID;
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
   it was MPI_Comm *comm.  
 */
-static int MPIU_DelTag(MPI_Comm comm,int* keyval,void* attr_val,void* extra_state )
+static int MPIU_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
 {
   PetscFree( attr_val );
   return MPI_SUCCESS;
