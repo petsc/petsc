@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.19 1999/11/05 14:48:27 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.20 2000/01/11 21:04:04 bsmith Exp bsmith $ */
 
 /* 
   An application ordering is mapping between an application-centric
@@ -88,6 +88,18 @@ extern int AODataSegmentPartition(AOData,char *,char *);
 
 extern int AODataPartitionAndSetupLocal(AOData,char*,char*,IS*,IS*,ISLocalToGlobalMapping*);
 extern int AODataAliasAdd(AOData,char *,char *);
+
+   
+typedef struct _p_AOData2dGrid *AOData2dGrid;
+extern int AOData2dGridAddNode(AOData2dGrid, double, double, int *);
+extern int AOData2dGridInput(AOData2dGrid,Draw);
+extern int AOData2dGridFlipCells(AOData2dGrid);
+extern int AOData2dGridComputeNeighbors(AOData2dGrid);
+extern int AOData2dGridComputeVertexBoundary(AOData2dGrid);
+extern int AOData2dGridDraw(AOData2dGrid,Draw);
+extern int AOData2dGridDestroy(AOData2dGrid);
+extern int AOData2dGridCreate(AOData2dGrid*);
+
 #endif
 
 
