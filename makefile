@@ -88,8 +88,11 @@ testfortran: chkpetsc_dir
 fortran: chkpetsc_dir
 	-$(RM) -f $(PDIR)/libpetscfortran.a
 	-@echo "Beginning to compile Fortran interface library"
-	-@echo "Using C/C++ compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
 	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
+	-@echo "Using C/C++ compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
+	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "Using configuration flags: $(CONF)"
+	-@echo "Using include paths: $(PETSC_INCLUDE)"
 	-@echo "------------------------------------------"
 	-@cd src/fortran/custom; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
