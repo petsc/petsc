@@ -125,8 +125,8 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec vec)
   ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   if (dof > 1) {dim++; shift = 1; ends[0] = dof;}
 
-  ierr = PetscTypeCompare((PetscObject)vec,VEC_SEQ,&isseq);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)vec,VEC_MPI,&ismpi);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)vec,VECSEQ,&isseq);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)vec,VECMPI,&ismpi);CHKERRQ(ierr);
   if (isseq) {
     ierr = DAGetGhostCorners(da,0,0,0,ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
     ends[shift]   += starts[shift]-1;
