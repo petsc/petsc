@@ -273,6 +273,9 @@ alltree: ${ACTION}
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ) ;fi; \
 	done ; fi
 
+getlinklibs:
+	-@echo ${PETSC_LIB}
+
 etags_sourcec:
 	-@if [ "${SOURCEC}" != "" ]; then \
 		etags -a -f ${TAGSFILE} ${SOURCEC} ; fi
