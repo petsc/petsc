@@ -1453,7 +1453,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DAComputeJacobian1WithAdic"
-/*@
+/*@C
     DAComputeJacobian1WithAdic - Evaluates a adiC provided Jacobian function on each processor that 
         share a DA
 

@@ -75,8 +75,7 @@ class Configure(config.base.Configure):
     success  = 0
     oldFlags = self.framework.argDB['CPPFLAGS']
     oldLibs  = self.framework.argDB['LIBS']
-    for inc in self.include:
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
     self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib]+[self.compilers.flibs])+' '+self.framework.argDB['LIBS']
     if self.checkLink(includes, body, cleanup, codeBegin, codeEnd):
       success = 1
@@ -88,8 +87,7 @@ class Configure(config.base.Configure):
     '''Analogous to outputRun(), but the MPI includes and libraries are automatically provided'''
     oldFlags = self.framework.argDB['CPPFLAGS']
     oldLibs  = self.framework.argDB['LIBS']
-    for inc in self.include:
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
     self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib]+[self.compilers.flibs])+' '+self.framework.argDB['LIBS']
     output, status = self.outputRun(includes, body, cleanup, defaultOutputArg)
     self.framework.argDB['CPPFLAGS'] = oldFlags

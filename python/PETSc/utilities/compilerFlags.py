@@ -62,7 +62,10 @@ class Configure(config.base.Configure):
       print 'Failed to load custom options'
     if options:
       lang = self.clanguage.language
-      for language, flags in [(lang, lang+'FLAGS'), ('FC', 'FFLAGS')]:
+      # Need C++ if using C for building external packages
+      if lang == 'C': languages = [('C', 'CFLAGS'), ('FC', 'FFLAGS')]
+      else:           languages = [('C', 'CFLAGS'), ('Cxx', 'CXXFLAGS'), ('FC', 'FFLAGS')]
+      for language, flags in languages:
         # Calling getCompiler() will raise an exception if a language is missing
         self.pushLanguage(language)
         try:
