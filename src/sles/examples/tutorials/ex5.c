@@ -67,7 +67,7 @@ int main(int argc,char **args)
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
-  if (OptionsHasName(0,"-rowbs_mat")) {
+  if (OptionsHasName(0,"-mat_rowbs")) {
     PC pc; KSP ksp; PCMethod pcmethod;
     ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
