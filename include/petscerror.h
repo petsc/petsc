@@ -98,7 +98,7 @@ PETSC_EXTERN_CXX_BEGIN
 
    Concepts: error^setting condition
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ3()
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
 M*/
 #define SETERRQ(n,s)              {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s);}
 
@@ -125,7 +125,7 @@ M*/
 
    Concepts: error^setting condition
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ(), SETERRQ(), SETERRQ2(), SETERRQ3()
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ(), SETERRQ2(), SETERRQ3()
 M*/
 #define SETERRQ1(n,s,a1)          {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1);}
 
@@ -153,7 +153,7 @@ M*/
 
    Concepts: error^setting condition
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ3()
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3()
 M*/
 #define SETERRQ2(n,s,a1,a2)       {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2);}
 
@@ -182,7 +182,7 @@ M*/
 
    Concepts: error^setting condition
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ2()
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
 M*/
 #define SETERRQ3(n,s,a1,a2,a3)    {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3);}
 
@@ -213,7 +213,7 @@ M*/
 
    Concepts: error^setting condition
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ2()
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2()
 M*/
 #define CHKERRQ(n)             if (n) {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");}
 
@@ -226,7 +226,7 @@ M*/
    Not Collective
 
    Synopsis:
-   void CHKMEMQ(void)
+   CHKMEMQ;
 
   Level: beginner
 
@@ -239,7 +239,7 @@ M*/
 
    Concepts: memory corruption
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2(), SETERRQ2(), 
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2(), 
           PetscTrValid()
 M*/
 #define CHKMEMQ {int _7_ierr = PetscTrValid(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(_7_ierr);}

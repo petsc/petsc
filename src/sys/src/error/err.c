@@ -250,7 +250,7 @@ $     SETERRQ(n,mess)
 
    Concepts: error^setting condition
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2()
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
 @*/
 int PetscError(int line,const char *func,const char* file,const char *dir,int n,int p,const char *mess,...)
 {
