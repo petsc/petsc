@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.78 2000/02/23 03:13:58 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.79 2000/02/24 04:11:46 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -90,7 +90,7 @@ PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
 #  Location for ALICE Memory Snooper
 #
-AMS_HOME       = /home/alice/ams
+AMS_HOME       = /home/ibrahba/alice/ams
 AMS_INCLUDE    = -I${AMS_HOME}/include
 AMS_LIB        =  -L${AMS_HOME}/lib/libg/solaris -lamspub -lamsutilmt -lamsutil -lthread -lldap
 PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
@@ -106,6 +106,11 @@ PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 JAVAC           = /usr/java1.2/bin/javac
 JAVA            = /usr/java1.2/bin/java
 PETSC_HAVE_JAVA = -DPETSC_HAVE_JAVA
+#
+# Location/name of Python
+#
+PETSC_PYTHON    = -DPETSC_PYTHON="python1.5"
+#
 # ---------------------------------------------------------------------------------------
 #
 # If you are using shared version of any external libraries you must make this
