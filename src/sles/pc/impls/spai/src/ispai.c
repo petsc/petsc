@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ispai.c,v 1.4 1999/04/02 22:56:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ispai.c,v 1.5 1999/04/05 22:23:26 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -11,6 +11,12 @@ static char vcid[] = "$Id: ispai.c,v 1.4 1999/04/02 22:56:06 bsmith Exp bsmith $
    Code written by Stephen Barnard.
 
       Note: there is some BAD memory bleeding below!
+
+      This code needs work
+
+   1) get rid of all memory bleeding
+   2) fix PETSc/interface so that it gets if the matrix is symmetric from the matrix
+      rather than having the sp flag for PC_SPAI
 
 */
 
