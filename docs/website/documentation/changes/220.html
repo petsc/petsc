@@ -7,6 +7,7 @@
 
   eliminated PetscViewerXXXXType and PetscViewerXXXSetType() replaced with
    PetscViewerFileType and PetscViewerSetFileType()
+  PETSC_BINARY_RDONLY,PETSC_BINARY_WRONLY,PETSC_BINARY_CREATE becomes PETSC_FILE_RDONLY,PETSC_FILE_WRONLY,PETSC_FILE_CREATE
 
   If you use MAT_SYMMETRIC as option for MatSetOption() you will likely
 need to also use the option MAT_SYMMETRY_ETERNAL otherwise at the next MatAssembly

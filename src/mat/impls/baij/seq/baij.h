@@ -43,7 +43,8 @@
                                                                                                      \
   int              *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */      \
   Mat              XtoY;             /* used by MatAXPY() */                                         \
-  PetscScalar      *idiag;           /* inverse of block diagonal  */
+  PetscScalar      *idiag;           /* inverse of block diagonal  */                                \
+  PetscTruth       idiagvalid;       /* if above has correct/current values */
 
 typedef struct {
   SEQBAIJHEADER

@@ -54,7 +54,7 @@ int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS is[],int ov)
       for (brow=0; brow<mbs; brow++) colsearch[brow] = ai[brow];
 
       /* sort nidx[k:isz-1] - needed by col search */
-      ierr = PetscSortInt(isz-k,nidx+k);
+      ierr = PetscSortInt(isz-k,nidx+k);CHKERRQ(ierr);
 
       n = isz;
       for (; k<n ; k++){ /* do only those brows in nidx[k], which are not done yet */
