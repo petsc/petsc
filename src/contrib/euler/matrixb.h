@@ -13,12 +13,12 @@ c  matrix format.
 c
 c  Note: These dimensions MUST agree with those in the routine nd() !!
 c
-      Double B1(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
-      Double B2(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
-      Double B3(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
-      Double B4(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
-      Double B5(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
-      Double B6(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
+      double precision B1(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
+      double precision B2(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
+      double precision B3(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
+      double precision B4(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
+      double precision B5(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
+      double precision B6(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
 c
 c  Uniprocessor array sizes
 c

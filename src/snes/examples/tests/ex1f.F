@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.18 1997/05/06 03:56:04 curfman Exp balay $";
+C "$Id: ex4f.F,v 1.19 1997/07/10 15:48:26 balay Exp balay $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -321,22 +321,22 @@ C  Set parameters
 
       ierr   = 0
       one    = 1.0
-      hx     = one/(DBLE(mx-1))
-      hy     = one/(DBLE(my-1))
+      hx     = one/(dble(mx-1))
+      hy     = one/(dble(my-1))
       sc     = hx*hy*lambda
       hxdhy  = hx/hy
       hydhx  = hy/hx
       temp1  = lambda/(lambda + one)
 
       do 20 j=1,my
-         temp = DBLE(min(j-1,my-j))*hy
+         temp = dble(min(j-1,my-j))*hy
          do 10 i=1,mx
             if (i .eq. 1 .or. j .eq. 1
      &             .or. i .eq. mx .or. j .eq. my) then
               x(i,j) = 0.0
             else
               x(i,j) = temp1 *
-     &          sqrt(min(DBLE(min(i-1,mx-i)*hx),DBLE(temp)))
+     &          sqrt(min(dble(min(i-1,mx-i)*hx),dble(temp)))
             endif
  10      continue
  20   continue
@@ -451,8 +451,8 @@ C  Local variables:
       ierr   = 0
       one    = 1.0
       two    = 2.0
-      hx     = one/DBLE(mx-1)
-      hy     = one/DBLE(my-1)
+      hx     = one/dble(mx-1)
+      hy     = one/dble(my-1)
       sc     = hx*hy*lambda
       hxdhy  = hx/hy
       hydhx  = hy/hx
@@ -610,8 +610,8 @@ C  Set parameters
 
       one    = 1.0
       two    = 2.0
-      hx     = one/DBLE(mx-1)
-      hy     = one/DBLE(my-1)
+      hx     = one/dble(mx-1)
+      hy     = one/dble(my-1)
       sc     = hx*hy
       hxdhy  = hx/hy
       hydhx  = hy/hx

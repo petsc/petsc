@@ -13,11 +13,8 @@ c
 #include "include/FINCLUDE/ao.h"
 
 c   Parameters
-        Double one, two, zero, p5
-        parameter(zero=PetscDoubleExp(0.0,0),
-     &              p5=PetscDoubleExp(0.5,0),
-     &             one=PetscDoubleExp(1.0,0),
-     &             two=PetscDoubleExp(2.0,0))
+        double precision one, two, zero, p5
+        parameter(zero=0.0d0,p5=0.5d0,one=1.0d0,two=2.0d0)
 
 c   Type of system
         integer EXPLICIT, IMPLICIT_SIZE, IMPLICIT

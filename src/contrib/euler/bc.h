@@ -7,12 +7,12 @@ c  Note:  These extra arrays are a convenient means of handling the
 c         parallel vector scatter data.  We could conserve a bit of
 c         space by handling this differently. 
 c
-c      Double  r_bc(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      Double ru_bc(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      Double rv_bc(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      Double rw_bc(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      Double  e_bc(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-      Double  p_bc(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+c      double precision  r_bc(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+c      double precision ru_bc(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+c      double precision rv_bc(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+c      double precision rw_bc(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+c      double precision  e_bc(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+      double precision  p_bc(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 c
 
 #define r_bc(i,j,k) xx_bc(1,i,j,k)
@@ -27,4 +27,4 @@ c
 #define RW_bc(i,j,k) xx_bc(4,i,j,k)
 #define E_bc(i,j,k) xx_bc(5,i,j,k)
 
-       Double xx_bc(5,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+       double precision xx_bc(5,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)

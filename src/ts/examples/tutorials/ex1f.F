@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.9 1997/06/15 14:06:16 bsmith Exp balay $"
+C "$Id: ex1f.F,v 1.10 1997/07/10 15:50:24 balay Exp balay $"
 C
 C   Solves the time dependent Bratu problem using pseudo-timestepping
 C
@@ -226,7 +226,7 @@ C
       call VecGetArray(X,xx,xidx,ierr) 
       temp1 = lambda/(lambda + one)
       do 10, j=1,my
-        temp = DBLE(min(j-1,my-j))*hy
+        temp = dble(min(j-1,my-j))*hy
         do 20 i=1,mx
           row = i + (j-1)*mx  
           if (i .eq. 1 .or. j .eq. 1 .or. 
@@ -234,7 +234,7 @@ C
             xx(row+xidx) = 0.0 
           else
             xx(row+xidx) = 
-     &        temp1*sqrt(min(DBLE(min(i-1,mx-i))*hx,temp)) 
+     &        temp1*sqrt(min(dble(min(i-1,mx-i))*hx,temp)) 
           endif
  20     continue
  10   continue
@@ -271,8 +271,8 @@ C
       my     = user(lmy)
       lambda = user(param)
 
-      hx    = 1.0 / DBLE(mx-1)
-      hy    = 1.0 / DBLE(my-1)
+      hx    = 1.0 / dble(mx-1)
+      hy    = 1.0 / dble(my-1)
       sc    = hx*hy
       hxdhy = hx/hy
       hydhx = hy/hx
@@ -334,8 +334,8 @@ C
       my     = user(lmy)
       lambda = user(param)
 
-      hx    = 1.0 / DBLE(mx-1)
-      hy    = 1.0 / DBLE(my-1)
+      hx    = 1.0 / dble(mx-1)
+      hy    = 1.0 / dble(my-1)
       sc    = hx*hy
       hxdhy = hx/hy
       hydhx = hy/hx

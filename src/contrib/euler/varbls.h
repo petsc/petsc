@@ -15,12 +15,12 @@ c  Uniprocessor array sizes:
 c      COMMON /VARBLS/ R(NI1,NJ1,NK1),RU(NI1,NJ1,NK1),RV(NI1,NJ1,NK1)
 c      COMMON /VARBLS/ RW(NI1,NJ1,NK1),E(NI1,NJ1,NK1),P(NI1,NJ1,NK1)
 c
-c      Double  r(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      Double ru(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      Double rv(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      Double rw(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c /*   Double  e(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1) */
-      Double  p(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+c      double precision  r(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+c      double precision ru(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+c      double precision rv(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+c      double precision rw(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+c /*   double precision  e(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1) */
+      double precision  p(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 
 #define R(i,j,k) xx(1,i,j,k)
 #define RU(i,j,k) xx(2,i,j,k)
@@ -34,5 +34,5 @@ c /*   Double  e(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1) */
 #define rw(i,j,k) xx(4,i,j,k)
 #define e(i,j,k) xx(5,i,j,k)
 
-        Double xx(5,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+        double precision xx(5,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 

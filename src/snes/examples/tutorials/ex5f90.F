@@ -1,5 +1,5 @@
 
-C "$Id: ex5f90.F,v 1.4 1997/07/10 20:22:46 balay Exp balay $";
+C "$Id: ex5f90.F,v 1.5 1997/07/10 20:23:10 balay Exp balay $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -350,8 +350,8 @@ C  Set parameters
       my     = user(2)
       da     = user(3)
       localX = user(4)
-      hx     = one/(DBLE(mx-1))
-      hy     = one/(DBLE(my-1))
+      hx     = one/(dble(mx-1))
+      hy     = one/(dble(my-1))
       sc     = hx*hy*lambda
       hxdhy  = hx/hy
       hydhx  = hy/hx
@@ -382,7 +382,7 @@ C       gxm, gym - widths of local grid (including ghost points)
 C  Compute initial guess over the locally owned part of the grid
 
       do 20 j=ys,ye
-         temp = DBLE(min(j,my-j-1))*hy
+         temp = dble(min(j,my-j-1))*hy
          do 10 i=xs,xe
             row = i - gxs + (j - gys)*gxm + 1
             if (i .eq. 0 .or. j .eq. 0 
@@ -390,7 +390,7 @@ C  Compute initial guess over the locally owned part of the grid
               lx_v(row) = 0.0
             else
               lx_v(row) = temp1 *
-     &          sqrt(min(DBLE(min(i,mx-i-1))*hx,temp))
+     &          sqrt(min(dble(min(i,mx-i-1))*hx,temp))
             endif
  10      continue
  20   continue
@@ -449,8 +449,8 @@ C  Declarations for use with local arrays
       da     = user(3)
       localX = user(4)
       localF = user(5)
-      hx     = one/DBLE(mx-1)
-      hy     = one/DBLE(my-1)
+      hx     = one/dble(mx-1)
+      hy     = one/dble(my-1)
       sc     = hx*hy*lambda
       hxdhy  = hx/hy
       hydhx  = hy/hx
@@ -591,8 +591,8 @@ C  Set parameters
       my     = user(2)
       da     = user(3)
       localX = user(4)
-      hx     = one/DBLE(mx-1)
-      hy     = one/DBLE(my-1)
+      hx     = one/dble(mx-1)
+      hy     = one/dble(my-1)
       sc     = hx*hy
       hxdhy  = hx/hy
       hydhx  = hy/hx

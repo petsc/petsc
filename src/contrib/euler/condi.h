@@ -1,4 +1,4 @@
 
       COMMON /CONDI/ ORDER,PSI,LIMIT
-      Double order,psi
+      double precision order,psi
       integer          limit

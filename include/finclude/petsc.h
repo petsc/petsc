@@ -1,6 +1,6 @@
 C
-C  $Id: petsc.h,v 1.41 1997/04/16 15:19:24 balay Exp bsmith $;
-C
+C  $Id: petsc.h,v 1.42 1997/06/18 12:53:56 bsmith Exp balay $;
+BC
 C  Base include file for Fortran use of the PETSc package
 C
 #define MPI_Comm integer
@@ -10,30 +10,16 @@ C
 #define PetscTruth integer
 
 C
-C     real on the Cray T3d is actually double precision
-C
-#if defined(PARCH_t3d)
-#define Double real
-#define DBLE(a) real(a)
-#define PetscDoubleExp(a,b) a e b
-#define _fortran_two_ -2.0
-#else
-#define Double double precision
-#define DBLE(a) dble(a)
-#define PetscDoubleExp(a,b) a d b
-#define _fortran_two_ -2.0d0
-#endif
-C
 C     Flags
 C
       integer   PETSC_TRUE, PETSC_FALSE, PETSC_DECIDE
       integer   PETSC_DEFAULT_INTEGER
       integer   PETSC_FP_TRAP_OFF, PETSC_FP_TRAP_ON
-      Double    PETSC_DEFAULT_DOUBLE_PRECISION
+      double precision    PETSC_DEFAULT_DOUBLE_PRECISION
 
       parameter (PETSC_TRUE = 1, PETSC_FALSE = 0, PETSC_DECIDE = -1,
      *           PETSC_DEFAULT_INTEGER = -2,
-     *           PETSC_DEFAULT_DOUBLE_PRECISION=PetscDoubleExp(-2.0,0))
+     *           PETSC_DEFAULT_DOUBLE_PRECISION=2.0d0)
       parameter (PETSC_FP_TRAP_OFF = 0, PETSC_FP_TRAP_ON = 1) 
 
 C
@@ -114,7 +100,7 @@ C
 C     Prototypes for functions which return a value.
 C
       external PetscGetTime,PetscGetCPUTime,PetscGetFlops
-      Double PetscGetTime,PetscGetCPUTime,PetscGetFlops
+      double precision PetscGetTime,PetscGetCPUTime,PetscGetFlops
 C     
 C     End of base Fortran include file for the PETSc package
 
