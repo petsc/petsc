@@ -12,6 +12,11 @@ shared_freebsd5: shared_freebsd
 shared_freebsd4: shared_freebsd
 shared_freebsd3: shared_freebsd
 
+shared_aix3:
+shared_aix4:
+shared_aix5:
+shared_aix6:
+
 shared_darwin6: 
 shared_darwin7: 
 
