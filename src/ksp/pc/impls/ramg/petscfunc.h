@@ -35,7 +35,6 @@ EXTERN PetscErrorCode PrintMatrix(Mat mat, char* path, char* base);
 EXTERN PetscErrorCode PrintVector(Vec vec, char* path, char* base);
 
 /*..From the MatCreateFcts collection..*/ 
-EXTERN PetscErrorCode MatMatMult(Mat Fact1, Mat Fact2, Mat* Prod); 
 EXTERN PetscErrorCode MatSubstract(Mat Term1, Mat Term2, Mat* Diff); 
 
 /*..Structure used in the interface to RAMG..*/
