@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.35 1996/04/10 21:38:04 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.36 1996/04/11 16:15:49 balay Exp balay $";
 #endif
 
 /*
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: baij.c,v 1.35 1996/04/10 21:38:04 balay Exp balay $";
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
 #include "petsc.h"
-#define  max(a,b) (a>b ? a:b)
+
 extern   int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
 static int MatGetReordering_SeqBAIJ(Mat A,MatOrdering type,IS *rperm,IS *cperm)
@@ -658,7 +658,7 @@ static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
   default: {
       int  _One = 1,ncols,k; Scalar _DOne = 1.0, *work,*workt;
       if (!a->mult_work) {
-        k = max(a->m,a->n);
+        k = PetscMax(a->m,a->n);
         a->mult_work = (Scalar *) PetscMalloc(k*sizeof(Scalar));
         CHKPTRQ(a->mult_work);
       }
@@ -800,7 +800,7 @@ static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
     default: {
       int  _One = 1,ncols,k; Scalar _DOne = 1.0, *work,*workt;
       if (!a->mult_work) {
-        k = max(a->m,a->n);
+        k = PetscMax(a->m,a->n);
         a->mult_work = (Scalar *) PetscMalloc(k*sizeof(Scalar));
         CHKPTRQ(a->mult_work);
       }
