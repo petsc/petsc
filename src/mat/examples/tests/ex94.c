@@ -1,5 +1,5 @@
 
-static char help[] = "Tests sequtial and parallel MatMatMult().\n\
+static char help[] = "Tests sequential and parallel MatMatMult() and MatPtAP(), sequential MatMatMultTranspose()\n\
 Input arguments are:\n\
   -f0 <input_file> -f1 <input_file> -f2 <input_file> -f3 <input_file> : file to load\n\n";
 /* e.g., ex94 -f0 $D/small -f1 $D/small -f2 $D/arco1 -f3 $D/arco1 */
@@ -196,14 +196,12 @@ int main(int argc,char **args)
     ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); 
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
-    if (size == 1){
     alpha=1.0;
     for (i=0; i<2; i++){
       alpha -=0.1;
       ierr = MatScale(&alpha,A);CHKERRQ(ierr);
       ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
-    } /* if (size == 1) */
 
     /* Create vector x that is compatible with P */
     ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);

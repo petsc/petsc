@@ -49,6 +49,15 @@ typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ for reusing symbolic mat pr
   int    brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
 } Mat_MatMatMultMPI;
 
+typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
+  PetscMap  rowmap;
+  int       nrecv,nsend,*id_r,*bi,*bj,**ijbuf_r;
+  int       *len_sra; /* array of length 2*size, len_sra[i]/len_sra[size+i]
+                         store length of i-th send/recv matrix values */
+  MatScalar *abuf_s;
+  Mat       C_seq;  /* too large to keep? */
+} Mat_Merge_SeqsToMPI; 
+
 EXTERN PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
 EXTERN PetscErrorCode MatSetValuesAdic_MPIAIJ(Mat,void*);
 EXTERN PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat,int,void*);

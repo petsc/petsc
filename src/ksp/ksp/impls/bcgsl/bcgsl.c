@@ -1,3 +1,9 @@
+/*
+ * Implementation of BiCGstab(L) the paper by D.R. Fokkema,
+ * "Enhanced implementation of BiCGStab(L) for solving linear systems
+ * of equations". This uses tricky delayed updating ideas to prevent 
+ * round-off buildup.
+ */
 #include "src/ksp/ksp/kspimpl.h"
 #include "bcgsl.h"
 
@@ -195,7 +201,7 @@ static int  KSPSolve_BCGSL(KSP ksp)
   PetscScalar    rho0, rho1;
   PetscScalar    kappa0, kappaA, kappa1;
   PetscReal      ghat, epsilon, atol;
-  PetscReal      zeta, zeta0, mxres, myres, nrm0;
+  PetscReal      zeta, zeta0, rnmax_computed, rnmax_true, nrm0;
   PetscTruth     bUpdateX;
   PetscTruth     bBombed = PETSC_FALSE;
   
@@ -234,7 +240,7 @@ static int  KSPSolve_BCGSL(KSP ksp)
   
   ierr = KSPInitialResidual(ksp, VX, VTM, VB,VVR[0], ksp->vec_rhs);CHKERRQ(ierr);
   ierr = VecNorm(VVR[0], NORM_2, &zeta0);CHKERRQ(ierr);
-  mxres = zeta0;
+  rnmax_true = rnmax_computed = zeta0;
   
   ierr = (*ksp->converged)( ksp, 0, zeta0,&ksp->reason, ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
@@ -314,8 +320,8 @@ static int  KSPSolve_BCGSL(KSP ksp)
           
       if ( bcgsl->delta>0.0 ){
 	ierr = VecNorm(VVR[0],NORM_2,&nrm0);CHKERRQ(ierr);
-	if ( mxres<nrm0 ) mxres = nrm0;
-	if ( myres<nrm0 ) myres = nrm0;
+	if ( rnmax_computed<nrm0 ) rnmax_computed = nrm0;
+	if ( rnmax_true<nrm0 ) rnmax_true = nrm0;
       }
     }
       
@@ -420,23 +426,24 @@ static int  KSPSolve_BCGSL(KSP ksp)
     
     /* Accurate Update */
     if ( bcgsl->delta>0.0 ){
-      if ( mxres<zeta ) mxres = zeta;
-      if ( myres<zeta ) myres = zeta;
+      if ( rnmax_computed<zeta ) rnmax_computed = zeta;
+      if ( rnmax_true<zeta ) rnmax_true = zeta;
       
-      bUpdateX = (PetscTruth)(zeta<bcgsl->delta*zeta0 && zeta0<=mxres);
-      if ( (zeta<bcgsl->delta*myres && zeta0<=myres) || bUpdateX ){
+      bUpdateX = (PetscTruth)
+	(zeta<bcgsl->delta*zeta0 && zeta0<=rnmax_computed);
+      if ( (zeta<bcgsl->delta*rnmax_true && zeta0<=rnmax_true) || bUpdateX ){
 	/* r0 <- b-inv(K)*A*X */
 	ierr = KSP_PCApplyBAorAB( ksp,VX, VVR[0], VTM);CHKERRQ(ierr); 
 	nu = -1;
 	ierr = VecAYPX(&nu,VB, VVR[0]);CHKERRQ(ierr);
-	myres = zeta;
+	rnmax_true = zeta;
 	
 	if ( bUpdateX ){
 	  nu = 1;
 	  ierr = VecAXPY(&nu,VX, VXR);CHKERRQ(ierr);
 	  ierr = VecSet(&zero,VX);CHKERRQ(ierr); 
 	  ierr = VecCopy(VVR[0], VB);CHKERRQ(ierr); 
-	  mxres = zeta;
+	  rnmax_computed = zeta;
 	}
       }
     }

@@ -2836,14 +2836,6 @@ PetscErrorCode MatFileSplit(Mat A,char *outfile)
   PetscFunctionReturn(0);
 }
 
-typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
-  PetscMap  rowmap;
-  int       nrecv,nsend,*id_r,*bi,*bj,**ijbuf_r;
-  int       *len_sra; /* array of length 2*size, len_sra[i]/len_sra[size+i]
-                         store length of i-th send/recv matrix values */
-  MatScalar *abuf_s;
-} Mat_Merge_SeqsToMPI; 
-
 EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_SeqsToMPI"
@@ -2860,6 +2852,7 @@ PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
   ierr = PetscFree(merge->bj);CHKERRQ(ierr);
   ierr = PetscFree(merge->ijbuf_r);CHKERRQ(ierr);
   ierr = PetscMapDestroy(merge->rowmap);CHKERRQ(ierr); 
+  ierr = MatDestroy(merge->C_seq);CHKERRQ(ierr);
   ierr = PetscFree(merge);CHKERRQ(ierr);
 
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
@@ -3175,6 +3168,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
     merge->bi            = bi;
     merge->bj            = bj;
     merge->ijbuf_r       = ijbuf_r;
+    merge->C_seq         = seqmat;
   
     *mpimat = B_mpi;
   }

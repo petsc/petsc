@@ -1,7 +1,7 @@
 
-static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
-  -mx <xg>, where <xg> = number of grid points in the x-direction\n\
-  -my <yg>, where <yg> = number of grid points in the y-direction\n\
+static char help[] ="Tests sequential and parallel MatMatMult() and MatPtAP()\n\
+  -Mx <xg>, where <xg> = number of coarse grid points in the x-direction\n\
+  -My <yg>, where <yg> = number of coarse grid points in the y-direction\n\
   -Nx <npx>, where <npx> = number of processors in the x-direction\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
@@ -27,7 +27,6 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
 /* User-defined application contexts */
-
 typedef struct {
    int        mx,my;            /* number grid points in x and y direction */
    Vec        localX,localF;    /* local vectors with ghost region */
@@ -35,7 +34,6 @@ typedef struct {
    Vec        x,b,r;            /* global vectors */
    Mat        J;                /* Jacobian on grid */
 } GridCtx;
-
 typedef struct {
    GridCtx     fine;
    GridCtx     coarse;
@@ -46,8 +44,6 @@ typedef struct {
 
 #define COARSE_LEVEL 0
 #define FINE_LEVEL   1
-
-extern int FormJacobian_Grid(AppCtx *,GridCtx *,Mat *);
 
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
@@ -65,12 +61,13 @@ int main(int argc,char **argv)
   Mat           A,A_tmp,P,C;
   PetscScalar   *array;
   PetscTruth    flg;
-  Vec          x,y1,y2;
-  PetscReal    norm,norm_tmp,tol=0.0,none = -1.0,alpha;
+  Vec          x,v1,v2;
+  PetscReal    norm,norm_tmp,norm_tmp1,tol=1.e-12,none = -1.0,alpha;
   PetscRandom  rand;
-  PetscTruth   Test_MatMatMult=PETSC_FALSE,Test_MatMatMultTr=PETSC_FALSE,Test_MatPtAP=PETSC_TRUE;
+  PetscTruth   Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-tol",&tol,PETSC_NULL);CHKERRQ(ierr);
 
   user.ratio = 2;
   user.coarse.mx = 2; user.coarse.my = 2; 
@@ -78,10 +75,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
-
+  /*
   PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.coarse.mx,user.coarse.my);
   PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %d by %d\n",user.fine.mx,user.fine.my);
-
+  */
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
@@ -94,7 +91,7 @@ int main(int argc,char **argv)
   ierr = DAGetMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF," [%d] A - loc and gl dim: %d, %d; %d, %d\n",rank,m,n,M,N);
+  /* ierr = PetscPrintf(PETSC_COMM_SELF," [%d] A - loc and gl dim: %d, %d; %d, %d\n",rank,m,n,M,N);*/
   /* set val=one to A */
   if (size == 1){
     ierr = MatGetRowIJ(A,0,PETSC_FALSE,&nrows,&ia,&ja,&flg);
@@ -125,15 +122,15 @@ int main(int argc,char **argv)
   
   ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(P,&M,&N);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF," [%d] P - loc and gl dim: %d, %d; %d, %d\n",rank,m,n,M,N);
+  /* ierr = PetscPrintf(PETSC_COMM_SELF," [%d] P - loc and gl dim: %d, %d; %d, %d\n",rank,m,n,M,N);*/
   /* ierr = MatView(P, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
-  /* Create vectors y1 and y2 that are compatible with A */
-  ierr = VecCreate(PETSC_COMM_WORLD,&y1);CHKERRQ(ierr);
+  /* Create vectors v1 and v2 that are compatible with A */
+  ierr = VecCreate(PETSC_COMM_WORLD,&v1);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecSetSizes(y1,m,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(y1);CHKERRQ(ierr);
-  ierr = VecDuplicate(y1,&y2);CHKERRQ(ierr);
+  ierr = VecSetSizes(v1,m,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(v1);CHKERRQ(ierr);
+  ierr = VecDuplicate(v1,&v2);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
 
   /* Test MatMatMult(): C = A*P */
@@ -163,15 +160,17 @@ int main(int argc,char **argv)
     norm = 0.0;
     for (i=0; i<10; i++) {
       ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
-      ierr = MatMult(P,x,y1);CHKERRQ(ierr);  
-      ierr = MatMult(A_tmp,y1,y2);CHKERRQ(ierr);  /* y2 = A*P*x */
-      ierr = MatMult(C,x,y1);CHKERRQ(ierr);       /* y1 = C*x   */
-      ierr = VecAXPY(&none,y2,y1);CHKERRQ(ierr);
-      ierr = VecNorm(y1,NORM_2,&norm_tmp);CHKERRQ(ierr);
+      ierr = MatMult(P,x,v1);CHKERRQ(ierr);  
+      ierr = MatMult(A_tmp,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
+      ierr = MatMult(C,x,v1);CHKERRQ(ierr);       /* v1 = C*x   */
+      ierr = VecAXPY(&none,v2,v1);CHKERRQ(ierr);
+      ierr = VecNorm(v1,NORM_1,&norm_tmp);CHKERRQ(ierr);
+      ierr = VecNorm(v2,NORM_1,&norm_tmp1);CHKERRQ(ierr);
+      norm_tmp /= norm_tmp1;
       if (norm_tmp > norm) norm = norm_tmp;
     }
     if (norm >= tol && !rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |y1 - y2|: %g\n",norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|/|v2|: %g\n",norm);CHKERRQ(ierr);
     }
     
     ierr = VecDestroy(x);CHKERRQ(ierr);
@@ -181,15 +180,20 @@ int main(int argc,char **argv)
 
   /* Test P^T * A * P - MatPtAP() */ 
   /*------------------------------*/
-  /* mpirun -np 4 ex96 -Mx 10 -My 5 -- dim is not compatible! */
   if (Test_MatPtAP){
     ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); 
     ierr = MatGetLocalSize(C,&m,&n);CHKERRQ(ierr);
     
-    ierr = PetscPrintf(PETSC_COMM_SELF, " \n[%d] C=P^T*A*P, dim %d, %d: \n",rank,m,n);
-    /*
-    ierr = MatView(C, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    */
+    /* ierr = PetscPrintf(PETSC_COMM_SELF, " \n[%d] C=P^T*A*P, dim %d, %d: \n",rank,m,n); */
+    /* ierr = MatView(C, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+
+    /* Test MAT_REUSE_MATRIX - reuse symbolic C */
+    alpha=1.0;
+    for (i=0; i<1; i++){
+      alpha -=0.1;
+      ierr = MatScale(&alpha,A);CHKERRQ(ierr);
+      ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+    }
 
     /* Create vector x that is compatible with P */
     ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
@@ -197,31 +201,33 @@ int main(int argc,char **argv)
     ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   
-    Vec y3,y4;
-    ierr = VecCreate(PETSC_COMM_WORLD,&y3);CHKERRQ(ierr);
-    ierr = VecSetSizes(y3,n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(y3);CHKERRQ(ierr);
-    ierr = VecDuplicate(y3,&y4);CHKERRQ(ierr);
+    Vec v3,v4;
+    ierr = VecCreate(PETSC_COMM_WORLD,&v3);CHKERRQ(ierr);
+    ierr = VecSetSizes(v3,n,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(v3);CHKERRQ(ierr);
+    ierr = VecDuplicate(v3,&v4);CHKERRQ(ierr);
 
     norm = 0.0;
     for (i=0; i<10; i++) {
       ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
-      ierr = MatMult(P,x,y1);CHKERRQ(ierr);  
-      ierr = MatMult(A,y1,y2);CHKERRQ(ierr);  /* y2 = A*P*x */
+      ierr = MatMult(P,x,v1);CHKERRQ(ierr);  
+      ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
 
-      ierr = MatMultTranspose(P,y2,y3);CHKERRQ(ierr); /* y3 = Pt*A*P*x */
-      ierr = MatMult(C,x,y4);CHKERRQ(ierr);           /* y3 = C*x   */
-      ierr = VecAXPY(&none,y3,y4);CHKERRQ(ierr);
-      ierr = VecNorm(y4,NORM_2,&norm_tmp);CHKERRQ(ierr);
+      ierr = MatMultTranspose(P,v2,v3);CHKERRQ(ierr); /* v3 = Pt*A*P*x */
+      ierr = MatMult(C,x,v4);CHKERRQ(ierr);           /* v3 = C*x   */
+      ierr = VecAXPY(&none,v3,v4);CHKERRQ(ierr);
+      ierr = VecNorm(v4,NORM_1,&norm_tmp);CHKERRQ(ierr);
+      ierr = VecNorm(v3,NORM_1,&norm_tmp1);CHKERRQ(ierr);
+      norm_tmp /= norm_tmp1;
       if (norm_tmp > norm) norm = norm_tmp;
     }
     if (norm >= tol && !rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |y1 - y2|: %g\n",norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v3 - v4|/|v3|: %g\n",norm);CHKERRQ(ierr);
     }
   
     ierr = MatDestroy(C);CHKERRQ(ierr);
-    ierr = VecDestroy(y3);CHKERRQ(ierr);
-    ierr = VecDestroy(y4);CHKERRQ(ierr);
+    ierr = VecDestroy(v3);CHKERRQ(ierr);
+    ierr = VecDestroy(v4);CHKERRQ(ierr);
     ierr = VecDestroy(x);CHKERRQ(ierr);
  
   }
@@ -229,8 +235,8 @@ int main(int argc,char **argv)
   /* Clean up */
    ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
-  ierr = VecDestroy(y1);CHKERRQ(ierr);
-  ierr = VecDestroy(y2);CHKERRQ(ierr);
+  ierr = VecDestroy(v1);CHKERRQ(ierr);
+  ierr = VecDestroy(v2);CHKERRQ(ierr);
   ierr = DADestroy(user.fine.da);CHKERRQ(ierr);
   ierr = DADestroy(user.coarse.da);CHKERRQ(ierr);
   ierr = MatDestroy(P);CHKERRQ(ierr); 
