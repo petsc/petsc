@@ -111,6 +111,7 @@ EXTERN int MatCopy_Basic(Mat,Mat,MatStructure);
 EXTERN int MatView_Private(Mat);
 EXTERN int MatGetPetscMaps_Petsc(Mat,PetscMap *,PetscMap *);
 EXTERN int MatHeaderCopy(Mat,Mat);
+EXTERN int MatAXPYGetxtoy_Private(int,int*,int*,int*, int*,int*,int*, int**);
 
 /* 
   The stash is used to temporarily store inserted matrix values that 

@@ -285,3 +285,40 @@ int MatComputeExplicitOperator(Mat inmat,Mat *mat)
   PetscFunctionReturn(0);
 }
 
+/* Get the map xtoy which is used by MatAXPY() in the case of SUBSET_NONZERO_PATTERN */
+#undef __FUNCT__  
+#define __FUNCT__ "MatAXPYGetxtoy_Private"
+int MatAXPYGetxtoy_Private(int m,int *xi,int *xj,int *xgarray, int *yi,int *yj,int *ygarray, int **xtoy)
+{
+  int ierr,row,i,nz,xcol,ycol,jx,jy,*x2y;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(xi[m]*sizeof(int),&x2y);CHKERRQ(ierr);
+  i = 0;    
+  for (row=0; row<m; row++){
+    nz = xi[1] - xi[0];
+    jy = 0;
+    for (jx=0; jx<nz; jx++,jy++){
+      if (xgarray && ygarray){
+        xcol = xgarray[xj[*xi + jx]];
+        ycol = ygarray[yj[*yi + jy]];  
+      } else {
+        xcol = xj[*xi + jx];
+        ycol = yj[*yi + jy];  /* col index for y */
+      }
+      while ( ycol < xcol ) {
+        jy++; 
+        if (ygarray){
+          ycol = ygarray[yj[*yi + jy]]; 
+        } else {
+          ycol = yj[*yi + jy]; 
+        }
+      }
+      if (xcol != ycol) SETERRQ2(PETSC_ERR_ARG_WRONG,"X matrix entry (%d,%d) is not in Y matrix",row,ycol);
+      x2y[i++] = *yi + jy;
+    }
+    xi++; yi++;
+  }
+  *xtoy = x2y;
+  PetscFunctionReturn(0);
+}
