@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.15 1999/01/12 23:14:38 bsmith Exp balay $ 
+# $Id: makefile,v 1.16 1999/02/02 21:24:11 balay Exp balay $ 
 
 ALL: lib 
 
@@ -9,7 +9,7 @@ SOURCEF	  =
 SOURCEH	  = 
 OBJSC	  = plog.o plogmpe.o ploginfo.o mpitr.o
 OBJSF	  =
-MANSEC	  = Sys
+MANSEC	  = Profiling
 LIBBASE	  = libpetsc
 DIRS	  = 
 LOCDIR	  = src/sys/src/plog/

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.11 1999/01/31 16:12:16 bsmith Exp balay $ 
+# $Id: makefile,v 1.12 1999/02/01 22:38:03 balay Exp balay $ 
 
 ALL: lib
 
@@ -13,7 +13,7 @@ OBJSF    = fmaxpy.o fmdot.o fnorm.o fmult.o fmultadd.o fsolve.o fsolvebaij.o \
            sgemv.o
 DOCS     = README
 LIBBASE  = libpetsc
-MANSEC   = 7
+MANSEC   = Sys
 LOCDIR   = src/fortran/kernels/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

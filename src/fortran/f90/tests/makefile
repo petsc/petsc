@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.8 1998/11/05 17:22:26 balay Exp balay $ 
+# $Id: makefile,v 1.9 1999/02/01 21:45:25 balay Exp balay $ 
 
 ALL: lib
 
@@ -8,7 +8,6 @@ EXAMPLESC  = test_IRIX.c
 EXAMPLESF  = test_IRIXf90.F
 OBJSF      = 
 LIBBASE    = libpetscfortran
-MANSEC     =
 LOCDIR     = src/fortran/f90/tests
 TESTS      = test_IRIX
 CLEANFILES =

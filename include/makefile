@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.42 1998/08/03 15:01:21 balay Exp bsmith $ 
+# $Id: makefile,v 1.43 1998/12/03 04:07:00 bsmith Exp balay $ 
 
 CFLAGS   =
 FFLAGS   =
@@ -13,7 +13,7 @@ OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = pinclude finclude
 LOCDIR   = include/
-MANSEC   = p
+MANSEC   = Profiling
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

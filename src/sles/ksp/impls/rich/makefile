@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.35 1998/06/15 15:56:42 balay Exp bsmith $ 
+# $Id: makefile,v 1.36 1999/01/31 16:08:59 bsmith Exp balay $ 
 
 ALL: lib 
 
@@ -10,7 +10,7 @@ SOURCEH  = richctx.h
 OBJSC    = rich.o richscale.o
 OBJSF    =
 LIBBASE  = libpetscsles
-MANSEC   = 5
+MANSEC   = KSP
 LOCDIR   = src/sles/ksp/impls/rich/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.24 1998/06/15 16:22:39 balay Exp bsmith $ 
+# $Id: makefile,v 1.25 1998/10/30 23:30:31 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -14,7 +14,7 @@ OBJSC    = zoptions.o zksp.o zpc.o zsnes.o zsys.o zmat.o zvec.o zsles.o \
 	   zao.o 
 OBJSF    = somefort.o
 LIBBASE  = libpetscfortran
-MANSEC   = 7
+MANSEC   = Sys
 LOCDIR   = src/fortran/custom/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

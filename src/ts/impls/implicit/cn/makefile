@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.13 1998/06/15 16:12:58 balay Exp $ 
+# $Id: makefile,v 1.1 1998/07/27 03:25:17 curfman Exp balay $ 
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    = cn.o
 OBJSF    =
 LIBBASE  = libpetscts
-MANSEC   = t
+MANSEC   = TS
 LOCDIR   = src/ts/impls/implicit/cn/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.17 1998/06/12 21:22:44 balay Exp balay $ 
+# $Id: makefile,v 1.18 1998/06/15 16:12:40 balay Exp balay $ 
 
 ALL: lib
 
@@ -11,7 +11,7 @@ OBJSC    = mpidense.o mmdense.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
-MANSEC   = 2
+MANSEC   = Mat
 LOCDIR   = src/mat/impls/dense/mpi/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

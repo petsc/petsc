@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.37 1998/06/12 21:35:14 balay Exp balay $
+# $Id: makefile,v 1.38 1998/06/15 15:49:27 balay Exp balay $
 
 ALL: lib
 
@@ -13,7 +13,7 @@ OBJSC    = convert.o stash.o axpy.o zerodiag.o matio.o matioall.o \
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
-MANSEC   = 2
+MANSEC   = Mat
 LOCDIR   = src/mat/utils/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.26 1998/06/15 16:12:25 balay Exp bsmith $ 
+# $Id: makefile,v 1.27 1998/07/22 18:19:41 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  = bdiag.h
 OBJSC    = bdiag.o bdiag2.o bdfact.o bdiag3.o
 OBJSF    =
 LIBBASE  = libpetscmat
-MANSEC   = 2
+MANSEC   = Mat
 LOCDIR   = src/mat/impls/bdiag/seq/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

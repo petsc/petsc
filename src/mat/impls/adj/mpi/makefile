@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 1998/06/12 21:23:38 balay Exp balay $ 
+# $Id: makefile,v 1.7 1998/06/15 16:09:47 balay Exp balay $ 
 
 ALL: lib
 
@@ -11,7 +11,7 @@ OBJSC    = mpiadj.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
-MANSEC   = 2
+MANSEC   = Mat
 LOCDIR   = src/mat/impls/adj/mpi/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

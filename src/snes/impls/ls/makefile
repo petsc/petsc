@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.25 1998/06/12 21:43:33 balay Exp balay $ 
+# $Id: makefile,v 1.26 1998/06/15 16:02:09 balay Exp balay $ 
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  = ls.h
 OBJSC    = ls.o
 OBJSF    =
 LIBBASE  = libpetscsnes
-MANSEC   = n
+MANSEC   = SNES
 LOCDIR   = src/snes/impls/ls/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

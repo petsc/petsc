@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.29 1998/06/15 16:12:44 balay Exp balay $ 
+# $Id: makefile,v 1.30 1999/02/02 21:24:18 balay Exp balay $ 
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  = dense.h
 OBJSC    = dense.o 
 OBJSF    =
 LIBBASE  = libpetscmat
-MANSEC   = Sys
+MANSEC   = Mat
 LOCDIR   = src/mat/impls/dense/seq/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

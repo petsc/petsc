@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.16 1999/01/26 02:30:00 bsmith Exp bsmith $
+# $Id: makefile,v 1.17 1999/01/31 16:11:14 bsmith Exp balay $
 
 ALL: lib
 
@@ -11,7 +11,7 @@ OBJSC    = aobasic.o aodatabasic.o aoreduced.o
 OBJSF    =
 LIBBASE  = libpetscdm
 DIRS     = 
-MANSEC   = 6
+MANSEC   = SNES
 LOCDIR   = src/dm/ao/impls/basic/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.27 1998/06/15 15:59:40 balay Exp bsmith $ 
+# $Id: makefile,v 1.28 1999/01/31 16:08:17 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  = mgimpl.h
 OBJSC    = mg.o fmg.o smg.o mgfunc.o
 OBJSF    =
 LIBBASE  = libpetscsles
-MANSEC   = 4
+MANSEC   = PC
 LOCDIR   = src/sles/pc/impls/mg/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

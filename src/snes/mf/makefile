@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 1998/11/09 03:37:13 bsmith Exp bsmith $
+# $Id: makefile,v 1.3 1998/11/20 15:30:39 bsmith Exp balay $
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  = snesmfj.h
 OBJSC    = snesmfj.o  snesmfjdef.o mfregis.o wp.o
 OBJSF    =
 LIBBASE  = libpetscsnes
-MANSEC   = n
+MANSEC   = SNES
 DIRS     = 
 LOCDIR   = src/snes/mf/
 

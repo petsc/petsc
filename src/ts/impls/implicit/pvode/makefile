@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 1998/06/12 21:47:04 balay Exp balay $ 
+# $Id: makefile,v 1.7 1998/06/15 16:13:03 balay Exp balay $ 
 
 ALL: lib
 
@@ -11,7 +11,7 @@ SOURCEH  = petscpvode.h
 OBJSC    = petscpvode.o
 OBJSF    =
 LIBBASE  = libpetscts
-MANSEC   = t
+MANSEC   = TS
 LOCDIR   = src/ts/impls/implicit/pvode/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

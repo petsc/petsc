@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.31 1998/06/15 15:58:36 balay Exp balay $ 
+# $Id: makefile,v 1.32 1999/02/01 21:33:25 balay Exp balay $ 
 #
 #  All the Sparspak routines have been converted to C with the F2C 
 # converter. We do not include in the distribution the original Fortran 77 
@@ -18,7 +18,7 @@ OBJSC    = sp1wd.o spinver.o spnd.o spqmd.o sprcm.o sorder.o sregis.o\
 LIBBASE  = libpetscmat
 DOCS     = readme
 LOCDIR   = src/mat/impls/order/
-MANSEC   = 2
+MANSEC   = Mat
 
 runexamples:
 

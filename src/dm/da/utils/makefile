@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.9 1999/01/26 02:30:39 bsmith Exp bsmith $
+# $Id: makefile,v 1.10 1999/01/31 16:11:43 bsmith Exp balay $
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    = fdda.o
 OBJSF    =
 LIBBASE  = libpetscdm
-MANSEC   = 6
+MANSEC   = DA
 LOCDIR   = src/dm/da/utils/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

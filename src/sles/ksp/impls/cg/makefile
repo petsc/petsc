@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.34 1998/06/15 15:56:11 balay Exp bsmith $
+# $Id: makefile,v 1.35 1999/01/31 16:08:45 bsmith Exp balay $
 
 ALL: lib 
 
@@ -10,7 +10,7 @@ SOURCEH  = cgctx.h
 OBJSC    = cg.o cgeig.o cgtype.o
 OBJSF    =
 LIBBASE  = libpetscsles
-MANSEC   = 5
+MANSEC   = KSP
 LOCDIR   = src/sles/ksp/impls/cg/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

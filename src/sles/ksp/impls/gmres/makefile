@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.35 1998/06/15 15:56:27 balay Exp bsmith $ 
+# $Id: makefile,v 1.36 1999/01/31 16:08:49 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -12,7 +12,7 @@ OBJSC    = gmres.o borthog.o borthog2.o borthog3.o gmres2.o gmreig.o \
            gmpre.o gmcnv.o
 OBJSF    = 
 LIBBASE  = libpetscsles
-MANSEC   = 5
+MANSEC   = KSP
 LOCDIR   = src/sles/ksp/impls/gmres/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
