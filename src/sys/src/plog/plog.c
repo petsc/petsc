@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.201 1999/02/03 18:37:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.202 1999/02/03 18:39:22 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1191,7 +1191,7 @@ extern int  PLogEventColorMalloced[];
     Output Parameter:
 .   e -  event id for use with PLogEventBegin() and PLogEventEnd().
 
-    Usage:
+    Example of Usage:
 .vb
       int USER_EVENT;
       int user_event_flops;
@@ -1294,13 +1294,10 @@ int PLogEventRegisterDestroy_Private(void)
 
    Usage:
 .vb
-      PetscInitialize(int *argc,char ***args,0,0);
       PLogEventDeactivate(VEC_SetValues);
-         code where you do not want to log VecSetValues() 
+        [code where you do not want to log VecSetValues()]
       PLogEventActivate(VEC_SetValues);
-         code where you do want to log VecSetValues() 
-      .......
-      PetscFinalize();
+        [code where you do want to log VecSetValues()]
 .ve 
 
     Note: 
@@ -1332,13 +1329,10 @@ int PLogEventDeactivate(int event)
 
    Usage:
 .vb
-     PetscInitialize(int *argc,char ***args,0,0);
-     PLogEventDeactivate(VEC_SetValues);
-        code where you do not want to log VecSetValues() 
-     PLogEventActivate(VEC_SetValues);
-        code where you do want to log VecSetValues() 
-     .......
-     PetscFinalize();
+      PLogEventDeactivate(VEC_SetValues);
+        [code where you do not want to log VecSetValues()]
+      PLogEventActivate(VEC_SetValues);
+        [code where you do want to log VecSetValues()]
 .ve 
 
     Level: advanced
@@ -1374,7 +1368,7 @@ int PLogEventActivate(int event)
      PLogBegin();
      ... code ...
      PLogPrintSummary(MPI_Comm,filename);
-     PetscFinalize();
+     PetscFinalize(...);
 .ve
 
    Notes:
