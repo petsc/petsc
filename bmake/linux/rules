@@ -1,4 +1,4 @@
-# $Id: base,v 1.28 1998/04/09 20:43:59 balay Exp balay $ 
+# $Id: base,v 1.29 1998/04/09 21:11:36 balay Exp balay $ 
 
 PARCH    = linux
 CC       = gcc  -DPARCH_linux -fPIC
@@ -69,7 +69,7 @@ shared: chkopts_basic
           if [ "$$flag" != "" ]; then \
 	    echo "building $$LIBNAME.${SLSUFFIX}"; \
 	    ${AR} x ../$$LIBNAME.a ;\
-	    ${CLINKER} -shared -Wl,-soname,$$LIBNAME.${SLSUFFIX} -o $$LIBNAME.${SLSUFFIX} *.o; \
+	    ${CLINKER} -shared -Wl,-soname,$$LIBNAME.${SLSUFFIX} -o ../$$LIBNAME.${SLSUFFIX} *.o; \
 	    ${RM} -f * ; \
 	  fi; \
 	done ;\
