@@ -8,7 +8,7 @@
 
 static char help[] = "2D Hall Magnetic Reconnection with multigrid and timestepping in 2 dimensions.\n\
   \n\
--da_grid_x 5 -da_grid_y 5 -dmmg_nlevels 3 lu -mg_coarse_pc_lu_damping -mg_levels_pc_type sor -mg_levels_pc_sor_symmetric -max_st 5 -ksp_type gmres -mg_levels_ksp_type richardson -ksp_left_pc \n\
+-da_grid_x 5 -da_grid_y 5 -dmmg_nlevels 3 -mg_coarse_pc_lu_damping -mg_levels_pc_type sor -mg_levels_pc_sor_symmetric -max_st 5 -ksp_type gmres -mg_levels_ksp_type richardson -ksp_left_pc \n\
   -viscosity <nu>\n\
   -skin_depth <d_e>\n\
   -larmor_radius <rho_s>\n\
@@ -425,9 +425,11 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   PassiveReal   hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
   PassiveReal   de2,rhos2,nu,dde2;
   PassiveReal   two = 2.0,one = 1.0,p5 = 0.5;
+  PassiveReal   F_eq_x,By_eq;
+
+  PetscScalar   xx;
   PetscScalar   vx,vy,avx,avy,vxp,vxm,vyp,vym;
   PetscScalar   Bx,By,aBx,aBy,Bxp,Bxm,Byp,Bym;
-  PetscScalar xx,F_eq_x,By_eq;
 
   PetscFunctionBegin;
   de2     = sqr(user->param->d_e);
@@ -452,7 +454,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
 #ifdef EQ
-      xx = i * hx;
+      xx = i * hx; 
       F_eq_x = - (1. + de2) * sin(xx);
       By_eq = sin(xx);
 #else
@@ -680,7 +682,7 @@ int AttachNullSpace(PC pc,Vec model)
 int DAGetMatrix_Specialized(DA da,MatType ignored,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
-  int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
+  int                    m,n,dim,s,*cols,nc,*rows,col,cnt,l,p;
   int                    lstart,lend,pstart,pend,*dnz,*onz,size;
   int                    dims[2],starts[2];
   MPI_Comm               comm;

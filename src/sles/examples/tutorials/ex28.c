@@ -104,7 +104,7 @@ int ComputeJacobian(DMMG dmmg,Mat jac)
   ierr = DAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx = 2.0*PETSC_PI / (PetscReal)(mx);
   ierr = DAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  lambda = 4*Hx;
+  lambda = 2*Hx;
   for(i=xs; i<xs+xm; i++){
     row.i = i; row.j = 0; row.k = 0; row.c = 0;
     v[0] = Hx;     col[0].i = i;   col[0].c = 0;
@@ -120,6 +120,7 @@ int ComputeJacobian(DMMG dmmg,Mat jac)
   }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  MatView(jac,PETSC_VIEWER_BINARY_(PETSC_COMM_SELF));
   return 0;
 }
 

@@ -47,9 +47,7 @@ int    KSPSetUp_GMRES(KSP ksp)
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
     SETERRQ(2,"no symmetric preconditioning for KSPGMRES");
-  } else if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,"no right preconditioning for KSPGMRES");
-  }
+  } 
 
   max_k         = gmres->max_k;
   hh            = (max_k + 2) * (max_k + 1);
