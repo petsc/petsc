@@ -33,7 +33,7 @@ static int TSPublish_Petsc(PetscObject obj)
 
 #undef  __FUNCT__
 #define __FUNCT__ "TSCreate"
-/*@ 
+/*@C
   TSCreate - This function creates an empty timestepper. The problem type can then be set with TSSetProblemType() and the 
        type of solver can then be set with TSSetType().
 
