@@ -13,6 +13,7 @@ Additional Capabilities that PETSc Needs:
 
    - Make configure fully functional in PETSc 2.0
 
+   - Fix table of vector operations in html version of users manual.
 
    - Fix documentation for matrices in manual (also AIJ man pages).  
      Fix help info for matrices.
