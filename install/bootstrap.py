@@ -468,6 +468,8 @@ class CursesInstall (BootstrapInstall):
     stdscr.clear()
     CursesInstall.CenterAddStr(stdscr, 3, 'Downloading ASE software')
     stdscr.refresh()
+    if not os.path.exists(os.path.join(os.getenv('HOME'),'.bk','accepted')):
+      os.putenv('BK_LICENSE','ACCEPTED')
     return BootstrapInstall.installBuildSystem(self)
       
   def installBuildSystem(self):
