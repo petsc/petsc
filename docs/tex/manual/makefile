@@ -57,7 +57,7 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
             | sed 's?<b>Figure 2: </b><A NAME="Figure2">Numerical Components of PETSc</a><P>?<P> <center><IMG WIDTH=443 HEIGHT=386 ALIGN=BOTTOM SRC="components.gif"></center><BR><P><center><b>Figure 2: </b><A NAME="Figure2">Numerical Components of PETSc</a><P></center>?g' \
             | sed 's?<b>Figure 8: </b><A NAME="Figure8">Schematic of the PETSc Directory Structure</a><P>?<P> <center><IMG WIDTH=689 HEIGHT=684 ALIGN=BOTTOM SRC="directories.gif"></center><BR><P><center><b>Figure 8: </b><A NAME="Figure8">Schematic of the PETSc Directory Structure</a><P></center>?g' \
             | sed 's?<b>Figure 10: </b><A NAME="Figure10">Ghost Points for Two Stencil Types on the Seventh Processor</a><P>?<P> <center><IMG WIDTH=490 HEIGHT=263 ALIGN=BOTTOM SRC="ghost.gif"></center><BR><P><center><b>Figure 10: </b><A NAME="Figure10">Ghost Points for Two Stencil Types on the Seventh Processor</a><P></center>?g' \
-            | sed 's?<b>Figure 11: </b><A NAME="Figure11">Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four Processors)</a><P>?<P> <center><IMG WIDTH=542 HEIGHT=295 ALIGN=BOTTOM SRC="danumbering.gif"></center><BR><P><center><b>Figure 11: </b><A NAME="Figure11">Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four Processors)</a><P></center>?g' \
+            | sed 's?<b>Figure 11: </b><A NAME="Figure10">Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four Processors)</a><P>?<P> <center><IMG WIDTH=542 HEIGHT=295 ALIGN=BOTTOM SRC="danumbering.gif"></center><BR><P><center><b>Figure 10: </b><A NAME="Figure10">Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four Processors)</a><P></center>?g' \
             | awk '{if ($$1 == "<b>Figure") {print "<center>" $$0 "</center>"} else {print $$0} }' \
             | awk '{if ($$1 == "<b>Table") {print "<center>" $$0 "</center>"} else {print $$0} }' \
             > manual.html
@@ -69,7 +69,7 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 # This is the split version; some users prefer this
 manual/manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	rm -f www.cit latex.err
-	cat ../../www/www.cit | sed 's/+man+../+man+www/g' > www.cit 
+	cat ../../www/www.cit | sed 's/+man+../+man+../www/g' > www.cit 
 	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../www/petsc.cit -nobottomnav
 	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
