@@ -486,7 +486,7 @@ int DAGetMatrix(DA da,MatType mtype,Mat *J)
   int      ierr,dim,dof,nx,ny,nz,size;
   Mat      A;
   MPI_Comm comm;
-  MatType  Atype;
+  MatType  Atype,type;
   void     (*aij)(void)=PETSC_NULL,(*baij)(void)=PETSC_NULL,(*sbaij)(void)=PETSC_NULL;
 
   PetscFunctionBegin;
@@ -550,18 +550,16 @@ int DAGetMatrix(DA da,MatType mtype,Mat *J)
       }
     }
   } else if (dim == 3) {
-    if (size == 1) {
+    ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIBAIJSetPreallocation_C",&baij);CHKERRQ(ierr);
+    if (!baij) {
       ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqBAIJSetPreallocation_C",&baij);CHKERRQ(ierr);
-    } else {
-      ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIBAIJSetPreallocation_C",&baij);CHKERRQ(ierr);
     }
     if (baij) {
       ierr = DAGetMatrix3d_MPIBAIJ(da,A);CHKERRQ(ierr);
     } else {
-      if (size == 1) {
+      ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPISBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
+      if (!sbaij) {
         ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
-      } else {
-        ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPISBAIJSetPreallocation_C",&sbaij);CHKERRQ(ierr);
       }
       if (sbaij) {
         ierr = DAGetMatrix3d_MPISBAIJ(da,A);CHKERRQ(ierr);
