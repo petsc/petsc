@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.165 1996/04/07 16:50:01 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.166 1996/04/08 23:18:36 curfman Exp curfman $";
 #endif
 
 /*
@@ -366,7 +366,6 @@ int MatMultTrans(Mat mat,Vec x,Vec y)
   if (x == y) SETERRQ(1,"MatMultTrans:x and y must be different vectors");
   if (mat->M != x->N) SETERRQ(PETSC_ERR_SIZ,"MatMultTrans:Mat mat,Vec x: global dim"); 
   if (mat->N != y->N) SETERRQ(PETSC_ERR_SIZ,"MatMultTrans:Mat mat,Vec y: global dim"); 
-  if (mat->n != y->n) SETERRQ(PETSC_ERR_SIZ,"MatMultTrans:Mat mat,Vec y: local dim"); 
 
   PLogEventBegin(MAT_MultTrans,mat,x,y,0);
   ierr = (*mat->ops.multtrans)(mat,x,y); CHKERRQ(ierr);
@@ -430,8 +429,6 @@ int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   if (mat->M != v1->N) SETERRQ(PETSC_ERR_SIZ,"MatMultTransAdd:Mat mat,Vec v1: global dim");
   if (mat->N != v2->N) SETERRQ(PETSC_ERR_SIZ,"MatMultTransAdd:Mat mat,Vec v2: global dim");
   if (mat->N != v3->N) SETERRQ(PETSC_ERR_SIZ,"MatMultTransAdd:Mat mat,Vec v3: global dim");
-  if (mat->n != v3->n) SETERRQ(PETSC_ERR_SIZ,"MatMultTransAdd:Mat mat,Vec v3: local dim"); 
-  if (mat->n != v2->n) SETERRQ(PETSC_ERR_SIZ,"MatMultTransAdd:Mat mat,Vec v2: local dim"); 
 
   PLogEventBegin(MAT_MultTransAdd,mat,v1,v2,v3);
   ierr = (*mat->ops.multtransadd)(mat,v1,v2,v3); CHKERRQ(ierr);
