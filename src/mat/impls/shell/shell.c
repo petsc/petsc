@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.61 1998/07/23 22:47:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.62 1998/12/17 22:10:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -224,8 +224,8 @@ $
 $     Vec x, y
 $     Mat A
 $
-$     VecCreate(comm,PETSC_DECIDE,M,&y);
-$     VecCreate(comm,PETSC_DECIDE,N,&x);
+$     VecCreateMPI(comm,PETSC_DECIDE,M,&y);
+$     VecCreateMPI(comm,PETSC_DECIDE,N,&x);
 $     VecGetLocalSize(y,&m);
 $     VecGetLocalSize(x,&n);
 $     MatCreateShell(comm,m,n,M,N,ctx,&A);
@@ -299,7 +299,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
     Usage:
 $      extern int usermult(Mat,Vec,Vec);
 $      ierr = MatCreateShell(comm,m,n,M,N,ctx,&A);
-$      ierr = MatShellSetOperation(A,MATOP_MULT,usermult);
+$      ierr = MatShellSetOperation(A,MATOP_MULT,(void*) usermult);
 
     Notes:
     See the file petsc/include/mat.h for a complete list of matrix
