@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.36 2000/08/17 04:51:59 bsmith Exp balay $ 
+# $Id: makefile,v 1.37 2000/08/17 19:36:51 balay Exp balay $ 
 #
 #  All the Sparspak routines have been converted to C with the F2C 
 # converter. We do not include in the distribution the original Fortran 77 
@@ -16,6 +16,7 @@ OBJSC    = sp1wd.o spinver.o spnd.o spqmd.o sprcm.o sorder.o sregis.o\
            degree.o  fnroot.o genqmd.o qmdqt.o rcm.o fn1wd.o gen1wd.o \
            genrcm.o qmdrch.o rootls.o fndsep.o gennd.o qmdmrg.o qmdupd.o
 LIBBASE  = libpetscmat
+DIRS     = dsc
 DOCS     = readme
 LOCDIR   = src/mat/order/
 MANSEC   = MatOrderings
