@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.48 1995/11/15 01:18:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.49 1995/11/20 04:46:40 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -88,6 +88,7 @@ int PLogInfo(PetscObject obj,char *format,...)
   return 0;
 }
 
+/* -------------------------------------------------------------------*/
 #if defined(PETSC_LOG)
 
 #define CHUNCK       1000
@@ -110,20 +111,52 @@ typedef struct {
 } Objects;
 
 static double  BaseTime;
+       double _TotalFlops = 0;
 static Events  *events = 0;
 static Objects *objects = 0;
+
 static int     nobjects = 0, nevents = 0, objectsspace = CHUNCK;
 static int     ObjectsDestroyed = 0, eventsspace = CHUNCK;
+static double  ObjectsType[20][4];
+
+static int     EventsStage = 0; /* which log sessions are we putting in. */
+static int     EventsStageMax = 0; /* highest event log used */ 
+static int     EventsStagePushed = 0;
+static int     EventsStageStack[100];
 #define COUNT 0
 #define FLOPS 1
 #define TIME  2
-static double EventsType[100][3];
-static double ObjectsType[20][4];
-double _TotalFlops = 0;
+static double  EventsType[10][100][3];
+
+/*@
+     PLogPushStage - You can log up to 10 stages of your code using PLogBegin() or
+                    -log_summary. One switches  stages with this command.
+
+  Input Parameters:
+.   stage - stage to log on, 0 to 9
+
+@*/
+int PLogPushStage(int stage)
+{
+  if (stage < 0 || stage > 10) SETERRQ(1,"PLogPushStage:Out of range");
+  EventsStageStack[EventsStagePushed++] = EventsStage;
+  if (EventsStagePushed++ > 99) SETERRQ(1,"PLogPushStage:Too many pushes");
+  EventsStage = stage;
+  if (stage > EventsStageMax) EventsStageMax = stage;
+  return 0;
+}
+
+int PLogPopStage()
+{
+  if (EventsStagePushed < 1) return 0;
+  EventsStage = EventsStageStack[--EventsStagePushed];
+  return 0;
+}
+
 int (*_PHC)(PetscObject) = 0;
 int (*_PHD)(PetscObject) = 0;
-int (*_PLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
-int (*_PLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
+int (*_PLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject) = 0;
+int (*_PLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject) = 0;
 
 /*
       Default object create logger 
@@ -132,16 +165,14 @@ int phc(PetscObject obj)
 {
   if (nevents >= eventsspace) {
     Events *tmp;
-    tmp = (Events *) PetscMalloc( (eventsspace+CHUNCK)*sizeof(Events) );
-    CHKPTRQ(tmp);
+    tmp = (Events *) PetscMalloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
     PetscFree(events);
     events = tmp; eventsspace += CHUNCK;
   }
   if (nobjects >= objectsspace) {
     Objects *tmp;
-    tmp = (Objects *) PetscMalloc( (objectsspace+CHUNCK)*sizeof(Objects) );
-    CHKPTRQ(tmp);
+    tmp = (Objects *) PetscMalloc((objectsspace+CHUNCK)*sizeof(Objects));CHKPTRQ(tmp);
     PetscMemcpy(tmp,objects,objectsspace*sizeof(Objects));
     PetscFree(objects);
     objects = tmp; objectsspace += CHUNCK;
@@ -169,8 +200,7 @@ int phd(PetscObject obj)
   PetscObject parent;
   if (nevents >= eventsspace) {
     Events *tmp;
-    tmp = (Events *) PetscMalloc( (eventsspace+CHUNCK)*sizeof(Events) );
-    CHKPTRQ(tmp);
+    tmp = (Events *) PetscMalloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
     PetscFree(events);
     events = tmp; eventsspace += CHUNCK;
@@ -206,14 +236,12 @@ int phd(PetscObject obj)
 /*
     Event begin logger with complete logging
 */
-int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
-                                                      PetscObject o4)
+int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
  double ltime;
  if (nevents >= eventsspace) {
     Events *tmp;
-    tmp = (Events *) PetscMalloc( (eventsspace+CHUNCK)*sizeof(Events) );
-    CHKPTRQ(tmp);
+    tmp = (Events *) PetscMalloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
     PetscFree(events);
     events = tmp; eventsspace += CHUNCK;
@@ -227,22 +255,20 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
   events[nevents].cookie = 0;
   events[nevents++].event= ACTIONBEGIN;
   if (t != 1) return 0;
-  EventsType[event][COUNT]++;
-  EventsType[event][TIME]  -= ltime;
-  EventsType[event][FLOPS] -= _TotalFlops;
+  EventsType[EventsStage][event][COUNT]++;
+  EventsType[EventsStage][event][TIME]  -= ltime;
+  EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
   return 0;
 }
 /*
      Event end logger with complete logging
 */
-int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
-                                                         PetscObject o4)
+int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
  double ltime;
  if (nevents >= eventsspace) {
     Events *tmp;
-    tmp = (Events *) PetscMalloc( (eventsspace+CHUNCK)*sizeof(Events) );
-    CHKPTRQ(tmp);
+    tmp = (Events *) PetscMalloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
     PetscFree(events);
     events = tmp; eventsspace += CHUNCK;
@@ -256,31 +282,29 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
   events[nevents].cookie = 0;
   events[nevents++].event= ACTIONEND;
   if (t != 1) return 0;
-  EventsType[event][TIME] += ltime;
-  EventsType[event][FLOPS] += _TotalFlops;
+  EventsType[EventsStage][event][TIME] += ltime;
+  EventsType[EventsStage][event][FLOPS] += _TotalFlops;
   return 0;
 }
 /*
      Default event begin logger
 */
-int plb(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
-        PetscObject o4)
+int plb(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   if (t != 1) return 0;
-  EventsType[event][COUNT]++;
-  PetscTimeSubtract(EventsType[event][TIME]);
-  EventsType[event][FLOPS] -= _TotalFlops;
+  EventsType[EventsStage][event][COUNT]++;
+  PetscTimeSubtract(EventsType[EventsStage][event][TIME]);
+  EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
   return 0;
 }
 /*
      Default event end logger
 */
-int ple(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
-        PetscObject o4)
+int ple(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   if (t != 1) return 0;
-  PetscTimeAdd(EventsType[event][TIME]);
-  EventsType[event][FLOPS] += _TotalFlops;
+  PetscTimeAdd(EventsType[EventsStage][event][TIME]);
+  EventsType[EventsStage][event][FLOPS] += _TotalFlops;
   return 0;
 }
 
@@ -314,11 +338,11 @@ $      with PETSC_LOG)
 int PLogAllBegin()
 {
   objects = (Objects*) PetscMalloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
-  events = (Events*) PetscMalloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
-  _PHC = phc;
-  _PHD = phd;
-  _PLB = plball;
-  _PLE = pleall;
+  events  = (Events*) PetscMalloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
+  _PHC    = phc;
+  _PHD    = phd;
+  _PLB    = plball;
+  _PLE    = pleall;
   /* all processors sync here for more consistent logging */
   MPI_Barrier(MPI_COMM_WORLD);
   PetscTime(BaseTime);
@@ -338,7 +362,7 @@ int PLogAllBegin()
    following code, then 2 sets of summary data will be printed (one during 
    PLogPrint and one during PetscFinalize, which in turn calls PLogPrint).
 $
-$     PetscInitialize(int argc,char **args,0,0,0);
+$     PetscInitialize(int *argc,char ***args,0,0,0);
 $     [section 1 of code]
 $     PLogPrint(MPI_COMM_WORLD,stdout);
 $     PLogDestroy();
@@ -386,11 +410,11 @@ $      to screen (for code compiled with PETSC_LOG)
 int PLogBegin()
 {
   objects = (Objects*) PetscMalloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
-  events = (Events*) PetscMalloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
-  _PHC = phc;
-  _PHD = phd;
-  _PLB = plb;
-  _PLE = ple;
+  events  = (Events*) PetscMalloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
+  _PHC    = phc;
+  _PHD    = phd;
+  _PLB    = plb;
+  _PLE    = ple;
   /* all processors sync here for more consistent logging */
   MPI_Barrier(MPI_COMM_WORLD);
   PetscTime(BaseTime);
@@ -454,9 +478,9 @@ int PLogDump(char* name)
   }
   for ( i=0; i<100; i++ ) {
     flops = 0.0;
-    if (EventsType[i][TIME]){flops = EventsType[i][FLOPS]/EventsType[i][TIME];}
-    fprintf(fd,"%d %16g %16g %16g %16g\n",i,EventsType[i][COUNT],
-                      EventsType[i][FLOPS],EventsType[i][TIME],flops);
+    if (EventsType[0][i][TIME]){flops = EventsType[0][i][FLOPS]/EventsType[0][i][TIME];}
+    fprintf(fd,"%d %16g %16g %16g %16g\n",i,EventsType[0][i][COUNT],
+                      EventsType[0][i][FLOPS],EventsType[0][i][TIME],flops);
   }
   fprintf(fd,"Total Flops %14e %16.8e\n",_TotalFlops,_TotalTime);
   fclose(fd);
@@ -513,7 +537,7 @@ static char *(name[]) = {"MatMult         ",
                          "MatILUFactor    ",
                          "MatGetSubMatrix ",
                          "MatGetSubMatrice",
-                         "                ",
+                         "MatGetValues    ",
                          "                ",
                          "                ",
                          "                ",
@@ -657,9 +681,9 @@ $  -log_summary : Prints summary of log information (for code
 int PLogPrint(MPI_Comm comm,FILE *fd)
 {
   double maxo,mino,aveo,mem,totmem,maxmem,minmem;
-  int    size,i;
   double maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott;
   double fmin,fmax,ftot,wdou,totts,totff;
+  int    size,i,j;
 
   MPI_Comm_size(comm,&size);
 
@@ -705,38 +729,39 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   }
 
   MPIU_fprintf(comm,fd,
-    "\n-----------------------------------------------------------------\
--------------\n"); 
+    "\n------------------------------------------------------------------------------\n"); 
 
   /* loop over operations looking for interesting ones */
   MPIU_fprintf(comm,fd,"\nPhase               Count       Time (sec)        \
    Flops/sec     %%Time %%Flop\n");
   MPIU_fprintf(comm,fd,"                             Min       Max      \
   Min       Max\n");
-  for ( i=0; i<100; i++ ) {
-    if (EventsType[i][TIME]) {
-      wdou = EventsType[i][FLOPS]/EventsType[i][TIME];
+  for ( j=0; j<=EventsStageMax; j++ ) {
+    for ( i=0; i<100; i++ ) {  
+      if (EventsType[j][i][TIME]) {
+        wdou = EventsType[j][i][FLOPS]/EventsType[j][i][TIME];
+      }
+      else wdou = 0.0;
+      MPI_Reduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,0,comm);
+      MPI_Reduce(&wdou,&maxf,1,MPI_DOUBLE,MPI_MAX,0,comm);
+      wdou = EventsType[j][i][FLOPS];
+      MPI_Reduce(&wdou,&totff,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      wdou = EventsType[j][i][TIME];
+      MPI_Reduce(&wdou,&mint,1,MPI_DOUBLE,MPI_MIN,0,comm);
+      MPI_Reduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
+      MPI_Reduce(&wdou,&totts,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      if (EventsType[j][i][COUNT]) {
+        if (!tott) tott = 1.e-5;
+        MPIU_fprintf(comm,fd,"%s %8d  %3.2e  %3.2e   %3.2e  %3.2e %5.1f %5.1f\n",
+                     name[i],(int)EventsType[j][i][COUNT],mint,maxt,minf,maxf,
+                    100.*totts/tott,100.*totff/totf);
+      }
     }
-    else wdou = 0.0;
-    MPI_Reduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,0,comm);
-    MPI_Reduce(&wdou,&maxf,1,MPI_DOUBLE,MPI_MAX,0,comm);
-    wdou = EventsType[i][FLOPS];
-    MPI_Reduce(&wdou,&totff,1,MPI_DOUBLE,MPI_SUM,0,comm);
-    wdou = EventsType[i][TIME];
-    MPI_Reduce(&wdou,&mint,1,MPI_DOUBLE,MPI_MIN,0,comm);
-    MPI_Reduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
-    MPI_Reduce(&wdou,&totts,1,MPI_DOUBLE,MPI_SUM,0,comm);
-    if (EventsType[i][COUNT]) {
-      if (!tott) tott = 1.e-5;
-      MPIU_fprintf(comm,fd,"%s %8d  %3.2e  %3.2e   %3.2e  %3.2e %5.1f %5.1f\n",
-                   name[i],(int)EventsType[i][COUNT],mint,maxt,minf,maxf,
-                   100.*totts/tott,100.*totff/totf);
-    }
+    MPIU_fprintf(comm,fd,
+    "------------------------------------------------------------------------------\n"); 
   }
 
-  MPIU_fprintf(comm,fd,
-    "\n-----------------------------------------------------------------\
--------------\n"); 
+  MPIU_fprintf(comm,fd,"\n"); 
   MPIU_fprintf(comm,fd,"Memory usage is given in bytes:\n\n");
 
   /* loop over objects looking for interesting ones */

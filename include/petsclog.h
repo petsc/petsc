@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.27 1995/11/19 23:30:57 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.28 1995/11/20 04:48:13 bsmith Exp bsmith $ */
 
 /*
     Defines high level logging in Petsc.
@@ -44,6 +44,7 @@
 #define MAT_ILUFactor                           29
 #define MAT_GetSubMatrix                        30
 #define MAT_GetSubMatrices                      31
+#define MAT_GetValues                           32
 
 #define VEC_Dot                                 40
 #define VEC_Norm                                41
@@ -236,6 +237,8 @@ M*/
 extern int PLogObjectState(PetscObject,char *,...);
 extern int PLogInfo(PetscObject,char*,...);
 extern int PLogDestroy();
+extern int PLogPushStage(int);
+extern int PLogPopStage();
 
 #else
 
