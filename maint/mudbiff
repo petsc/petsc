@@ -10,6 +10,7 @@ set display $env(DISPLAY)
 set gety   [lindex $argv 0]
 set swho   [lindex $argv 1]
 
+set time [exec date]
 
 frame .menu
 
@@ -28,6 +29,7 @@ text .stuff.memo -wrap word -width 52 -padx 4m -pady 2m  -bd 2 -font *-times-med
 
 .stuff.memo insert end "
 $gety, you are wanted in the Petsc room on the MUD by $swho
+You were paged $time
 "
 
 
