@@ -1,5 +1,5 @@
 
-C      "$Id: ex16.F,v 1.13 1997/07/10 15:45:20 balay Exp balay $";
+C      "$Id: ex16.F,v 1.14 1997/09/22 15:21:48 balay Exp balay $";
 
        implicit none
 
@@ -38,7 +38,8 @@ C                       use the file petsc/src/mat/examples/mat.ex.binary
 
 C Read in matrix and RHS
       call OptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
-      call ViewerFileOpenBinary(PETSC_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
+      call ViewerFileOpenBinary(PETSC_COMM_WORLD,f,BINARY_RDONLY,
+     $     fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f
         SETERRA(1,0,' ')

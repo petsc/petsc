@@ -1,4 +1,4 @@
-C "$Id: ex1f.F,v 1.14 1997/09/10 15:18:04 balay Exp balay $";
+C "$Id: ex1f.F,v 1.15 1997/09/22 15:19:49 balay Exp balay $";
 C
 C/*T
 C  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -98,7 +98,8 @@ C - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create nonlinear solver context
 C - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,
+     $     snes,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create matrix and vector data structures; set corresponding routines
