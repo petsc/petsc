@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.39 1996/05/30 18:10:48 balay Exp balay $";
+static char vcid[] = "$Id: da1.c,v 1.40 1996/05/30 20:55:24 balay Exp balay $";
 #endif
 
 /* 
@@ -114,7 +114,7 @@ $  -da_view : call DAView() at the conclusion of DACreate1d()
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 {
   int        rank, size,xs,xe,x,Xs,Xe,ierr,start,end,m;
-  int        i,*idx,nn,j,count,left,flg,gdim;
+  int        i,*idx,nn,j,count,left,flg1,flg2,gdim;
   DA         da;
   Vec        local,global;
   VecScatter ltog,gtol;
@@ -137,14 +137,20 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   if ((M-1) < s) SETERRQ(1,"DACreate1d:Array is too small for stencil!");
 
 
-  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg); CHKERRQ(ierr);
-  if (flg) { /* Block Comm type Distribution */
+  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2); CHKERRQ(ierr);
+  if (flg1) {  /* Block Comm type Distribution */
+    xs = rank*M/m;
+    x = (rank + 1)*M/m - xs;
+  }
+  else if (flg2) { /* The odd nodes are evenly distriuted across the last k nodes */
     x = (M + rank)/m;
     
     if (M/m == x) { xs = rank*x; }
     else { xs = rank*(x-1) + (M+rank)%(x*m); }
   }
-  else { /* Regular PETSc Distribution */
+  else { /* The odd nodes are evenly distriuted across the first k nodes */
+    /* Regular PETSc Distribution */
     /* determine locally owned region */
     x = M/m + ((M % m) > (rank));
 
@@ -286,8 +292,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   ierr = DFVecShellAssociate(da->dfshell,global); CHKERRQ(ierr);
   ierr = DFVecShellAssociate(df_local,local); CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg); CHKERRQ(ierr);
-  if (flg) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRQ(ierr);}
+  ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1); CHKERRQ(ierr);
+  if (flg1) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRQ(ierr);}
 
   *inra = da;
   return 0;
