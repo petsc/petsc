@@ -23,5 +23,9 @@ Nightly build:
 
   The password is in petsc/maint/autoftp
 
-Location of email sent to petsc-maint
-/mcs/adm/request/petsc-maint/ active and resolved.
+Location of email sent to petsc-maint:
+  
+  Location of old petsc-maint mail is
+  /mcs/adm/request/petsc-maint/[active,resolved]
+  it may be processed with /usr/local/req-1.0/petsc-maint/bin/petsctkreq
+  make sure that /usr/local/req-1.0/petsc-maint/bin/ is in your path.
