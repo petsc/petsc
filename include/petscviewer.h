@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.54 1998/07/23 22:50:59 bsmith Exp balay $ */
+/* $Id: viewer.h,v 1.55 1998/08/26 22:04:55 balay Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -28,7 +28,6 @@ extern int ViewerDrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,Vi
 extern int ViewerDrawOpenVRML(MPI_Comm,const char[],const char[],Viewer*);
 extern int ViewerDrawClear(Viewer);
 
-extern int ViewerAMSOpen(MPI_Comm,const char[],Viewer*);
 
 extern int ViewerGetType(Viewer,ViewerType*);
 extern int ViewerDestroy(Viewer);
@@ -84,8 +83,6 @@ extern int    ViewerInitializeDrawXSelf_Private(void);
 extern int    ViewerInitializeMatlabWorld_Private(void);
 extern Viewer VIEWER_DRAWX_(MPI_Comm);
 extern int    VIEWER_DRAWX_Destroy(MPI_Comm);
-extern Viewer VIEWER_AMS_(MPI_Comm);
-extern int    VIEWER_AMS_Destroy(MPI_Comm);
 
 #define VIEWER_DRAWX_WORLD_0 \
               (ViewerInitializeDrawXWorld_Private_0(),VIEWER_DRAWX_WORLD_PRIVATE_0) 
@@ -104,4 +101,16 @@ extern int    VIEWER_AMS_Destroy(MPI_Comm);
 extern int ViewersDrawOpenX(MPI_Comm,char *,char **,int,int,int,Viewer**);
 extern int ViewersDestroy(int,Viewer[]);
 
+#if defined(HAVE_AMS)
+#include "ams.h"
+extern int    ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
+extern int    ViewerAMSOpen(MPI_Comm,const char[],Viewer*);
+extern Viewer VIEWER_AMS_(MPI_Comm);
+extern int    VIEWER_AMS_Destroy(MPI_Comm);
+extern Viewer VIEWER_AMS_WORLD_PRIVATE;
+extern int    ViewerInitializeAMSWorld_Private(void);
+#define VIEWER_AMS_WORLD (ViewerInitializeAMSWorld_Private(),VIEWER_AMS_WORLD_PRIVATE) 
 #endif
+
+#endif
+

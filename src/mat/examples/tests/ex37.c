@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex37.c,v 1.3 1997/09/22 15:23:55 balay Exp bsmith $";
+static char vcid[] = "$Id: ex37.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatCopy().\n\n"; 
@@ -11,6 +11,7 @@ int main(int argc,char **args)
   Mat         C,A; 
   int         i,  n = 10, midx[3], ierr,flg;
   Scalar      v[3];
+  PetscTruth  flag;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
@@ -33,11 +34,21 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  ierr = MatCopy(C,A); CHKERRA(ierr);
+  /* test matrices with different nonzero patterns */
+  ierr = MatCopy(C,A,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+
+  /* Now C and A have the same nonzero pattern */
+  ierr = MatCopy(C,A,SAME_NONZERO_PATTERN); CHKERRA(ierr);
 
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
   ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
+  ierr = MatEqual(A,C,&flag);CHKERRA(ierr);
+  if (flag) {
+    PetscPrintf(PETSC_COMM_WORLD,"Matrices are equal\n");
+  } else {
+    SETERRA(1,1,"Matrices are NOT equal");
+  }
   ierr = MatDestroy(C); CHKERRA(ierr);
   ierr = MatDestroy(A); CHKERRA(ierr);
 

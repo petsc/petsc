@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.135 1998/07/23 22:46:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.136 1998/08/16 22:06:18 curfman Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -341,7 +341,6 @@ int VecDestroy_Seq(Vec v)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ "VecPublish_Seq"
 static int VecPublish_Seq(PetscObject object)
@@ -355,16 +354,9 @@ static int VecPublish_Seq(PetscObject object)
   char         name[16];
   AMS_Memory   amem;
   AMS_Comm     acomm;
-  MPI_Comm     comm;
+  int          (*f)(AMS_Memory,char *,Vec);
   
   PetscFunctionBegin;
-
-  /* for now publisher must be ONLY 1st processor */
-  PetscObjectGetComm(object,&comm);
-  comm = PETSC_COMM_WORLD;
-
-  MPI_Comm_rank(comm,&rank);
-  if (rank) PetscFunctionReturn(0);
 
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
@@ -378,7 +370,14 @@ static int VecPublish_Seq(PetscObject object)
   ierr = AMS_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
   ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr); 
   ierr = AMS_Memory_add_field(amem,"values",s->array,v->n,AMS_DOUBLE,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+                                AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+
+  /* if the vector knows its "layout" let it set it*/
+  ierr = PetscObjectQueryFunction((PetscObject)v,"AMSSetFieldBlock_C",(void**)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(amem,"values",v);CHKERRQ(ierr);
+  }
+
   ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
   ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
   v->amem = (int) amem;
@@ -479,6 +478,8 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
   v->bs              = 0;
   s->array           = array;
   s->array_allocated = 0;
+  v->type_name       = (char *) PetscMalloc(3*sizeof(char));CHKPTRQ(v->type_name);
+  PetscStrcpy(v->type_name,"Seq");
 
   ierr = MapCreateMPI(comm,n,n,&v->map);CHKERRQ(ierr);
   *V = v; 
@@ -555,6 +556,7 @@ int VecDuplicate_Seq(Vec win,Vec *V)
   }
   (*V)->bs = win->bs;
   ierr = OListDuplicate(win->olist,&(*V)->olist);CHKERRQ(ierr);
+  ierr = FListDuplicate(win->qlist,&(*V)->qlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

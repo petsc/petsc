@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.13 1998/04/16 16:13:42 bsmith Exp curfman $";
+static char vcid[] = "$Id: partition.c,v 1.14 1998/05/19 01:35:39 curfman Exp bsmith $";
 #endif
  
 
@@ -255,7 +255,9 @@ int PartitioningDestroy(Partitioning part)
 
 .keywords: Partitioning, create, context
 
-.seealso: PartitioningSetUp(), PartitioningApply(), PartitioningDestroy()
+.seealso: PartitioningSetUp(), PartitioningApply(), PartitioningDestroy(),
+          PartitioningSetAdjacency()
+
 @*/
 int PartitioningCreate(MPI_Comm comm,Partitioning *newp)
 {

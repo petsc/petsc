@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.280 1998/08/03 14:58:58 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.281 1998/08/20 15:37:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -952,6 +952,8 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
         SPARSEDENSEDOT(sum,bs,v,idx,n); 
         x[i] = sum;
     }
+    ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+    ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (flag == SOR_APPLY_LOWER) {
@@ -1004,6 +1006,8 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
     /*  x = x + t */
     for ( i=0; i<m; i++ ) { x[i] += t[i]; }
     PetscFree(t);
+    ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+    ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -1067,6 +1071,8 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
       }
     }
   }
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -1688,31 +1694,82 @@ extern int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg);
 extern int MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
 extern int MatColoringPatch_SeqAIJ(Mat,int,int *,ISColoring *);
 
+#undef __FUNC__  
+#define __FUNC__ "MatCopy_SeqAIJ"
+int MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
+{
+  int    ierr,i,rstart,rend,nz,*cwork;
+  Scalar *vwork;
+
+  PetscFunctionBegin;
+  if (str == SAME_NONZERO_PATTERN) {
+    ierr = MatZeroEntries(B); CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(A,&rstart,&rend); CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++) {
+      ierr = MatGetRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
+      ierr = MatSetValues(B,1,&i,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  } else {
+    ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
-       MatGetRow_SeqAIJ,MatRestoreRow_SeqAIJ,
-       MatMult_SeqAIJ,MatMultAdd_SeqAIJ,
-       MatMultTrans_SeqAIJ,MatMultTransAdd_SeqAIJ,
-       MatSolve_SeqAIJ,MatSolveAdd_SeqAIJ,
-       MatSolveTrans_SeqAIJ,MatSolveTransAdd_SeqAIJ,
-       MatLUFactor_SeqAIJ,0,
+       MatGetRow_SeqAIJ,
+       MatRestoreRow_SeqAIJ,
+       MatMult_SeqAIJ,
+       MatMultAdd_SeqAIJ,
+       MatMultTrans_SeqAIJ,
+       MatMultTransAdd_SeqAIJ,
+       MatSolve_SeqAIJ,
+       MatSolveAdd_SeqAIJ,
+       MatSolveTrans_SeqAIJ,
+       MatSolveTransAdd_SeqAIJ,
+       MatLUFactor_SeqAIJ,
+       0,
        MatRelax_SeqAIJ,
        MatTranspose_SeqAIJ,
-       MatGetInfo_SeqAIJ,MatEqual_SeqAIJ,
-       MatGetDiagonal_SeqAIJ,MatDiagonalScale_SeqAIJ,MatNorm_SeqAIJ,
-       0,MatAssemblyEnd_SeqAIJ,
+       MatGetInfo_SeqAIJ,
+       MatEqual_SeqAIJ,
+       MatGetDiagonal_SeqAIJ,
+       MatDiagonalScale_SeqAIJ,
+       MatNorm_SeqAIJ,
+       0,
+       MatAssemblyEnd_SeqAIJ,
        MatCompress_SeqAIJ,
-       MatSetOption_SeqAIJ,MatZeroEntries_SeqAIJ,MatZeroRows_SeqAIJ,
-       MatLUFactorSymbolic_SeqAIJ,MatLUFactorNumeric_SeqAIJ,0,0,
-       MatGetSize_SeqAIJ,MatGetSize_SeqAIJ,MatGetOwnershipRange_SeqAIJ,
-       MatILUFactorSymbolic_SeqAIJ,0,
-       0,0,
-       MatConvertSameType_SeqAIJ,0,0,
-       MatILUFactor_SeqAIJ,0,0,
-       MatGetSubMatrices_SeqAIJ,MatIncreaseOverlap_SeqAIJ,
-       MatGetValues_SeqAIJ,0,
+       MatSetOption_SeqAIJ,
+       MatZeroEntries_SeqAIJ,
+       MatZeroRows_SeqAIJ,
+       MatLUFactorSymbolic_SeqAIJ,
+       MatLUFactorNumeric_SeqAIJ,
+       0,
+       0,
+       MatGetSize_SeqAIJ,
+       MatGetSize_SeqAIJ,
+       MatGetOwnershipRange_SeqAIJ,
+       MatILUFactorSymbolic_SeqAIJ,
+       0,
+       0,
+       0,
+       MatConvertSameType_SeqAIJ,
+       0,
+       0,
+       MatILUFactor_SeqAIJ,
+       0,
+       0,
+       MatGetSubMatrices_SeqAIJ,
+       MatIncreaseOverlap_SeqAIJ,
+       MatGetValues_SeqAIJ,
+       MatCopy_SeqAIJ,
        MatPrintHelp_SeqAIJ,
-       MatScale_SeqAIJ,0,0,
+       MatScale_SeqAIJ,
+       0,
+       0,
        MatILUDTFactor_SeqAIJ,
        MatGetBlockSize_SeqAIJ,
        MatGetRowIJ_SeqAIJ,
@@ -1792,6 +1849,7 @@ int MatSeqAIJSetColumnIndices(Mat mat,int *indices)
   }
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSeqAIJ"

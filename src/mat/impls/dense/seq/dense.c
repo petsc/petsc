@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.154 1998/07/23 22:47:43 bsmith Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.155 1998/07/29 20:17:11 balay Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1172,14 +1172,14 @@ int MatGetSubMatrices_SeqDense(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCal
 
 #undef __FUNC__  
 #define __FUNC__ "MatCopy_SeqDense"
-int MatCopy_SeqDense(Mat A, Mat B)
+int MatCopy_SeqDense(Mat A, Mat B,MatStructure str)
 {
   Mat_SeqDense *a = (Mat_SeqDense *) A->data, *b = (Mat_SeqDense *)B->data;
   int          ierr;
 
   PetscFunctionBegin;
   if (B->type != MATSEQDENSE) {
-    ierr = MatCopy_Basic(A,B);CHKERRQ(ierr);
+    ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (a->m != b->m || a->n != b->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"size(B) != size(A)");

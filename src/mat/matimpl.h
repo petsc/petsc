@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.88 1998/05/19 02:21:13 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.89 1998/07/23 22:47:37 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -61,7 +61,7 @@ struct _MatOps {
             (*getsubmatrices)(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **),
             (*increaseoverlap)(Mat,int,IS *,int),
 /*45*/      (*getvalues)(Mat,int,int *,int,int *,Scalar *),
-            (*copy)(Mat,Mat),
+            (*copy)(Mat,Mat,MatStructure),
             (*printhelp)(Mat),
             (*scale)(Scalar *,Mat),
             (*shift)(Scalar *,Mat),
@@ -129,7 +129,7 @@ extern int StashDestroy_Private(Stash*);
 extern int StashInfo_Private(Stash*);
 
 extern int MatConvert_Basic(Mat,MatType,Mat*);
-extern int MatCopy_Basic(Mat,Mat);
+extern int MatCopy_Basic(Mat,Mat,MatStructure);
 extern int MatView_Private(Mat);
 extern int MatGetMaps_Petsc(Mat,Map *,Map *);
 

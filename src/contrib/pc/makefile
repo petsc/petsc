@@ -1,15 +1,7 @@
-# $Id: makefile,v 1.12 1998/06/15 15:44:24 balay Exp $ 
+# $Id: makefile,v 1.1 1998/09/19 02:52:26 bsmith Exp $ 
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =
-SOURCEF  =
-SOURCEH  = 
-OBJSC    =
-OBJSF    =
-LIBBASE  = libpetscvec
-DIRS     = sda
-LOCDIR   = src/contrib/
+DIRS     = milu
+LOCDIR   = src/contrib/pc
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.10 1998/08/27 14:49:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stack.c,v 1.11 1998/08/27 14:51:51 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -56,7 +56,7 @@ int PetscStackCreate(int stacksize)
   if (ams_flag) {
     AMS_Comm acomm;
 
-    ierr = ViewerAMSGetAMSComm(VIEWER_AMS_(PETSC_COMM_WORLD),&acomm);CHKERRQ(ierr);
+    ierr = ViewerAMSGetAMSComm(VIEWER_AMS_WORLD,&acomm);CHKERRQ(ierr);
     ierr = AMS_Memory_create(acomm, "stack_memory", &stack_mem);CHKERRQ(ierr);
          
     /* Add a field to the memory */

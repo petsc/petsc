@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.45 1998/04/13 17:54:44 bsmith Exp balay $";
+static char vcid[] = "$Id: binv.c,v 1.46 1998/08/18 17:24:40 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -23,10 +23,10 @@ struct _p_Viewer {
 /*@C
     ViewerBinaryGetDescriptor - Extracts the file descriptor from a viewer.
 
-.   viewer - viewer context, obtained from ViewerFileOpenBinary()
-.   fdes - file descriptor
-
     Not Collective
+
++   viewer - viewer context, obtained from ViewerFileOpenBinary()
+-   fdes - file descriptor
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -48,10 +48,10 @@ int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
     ViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
           info file associated with a binary file.
 
-.   viewer - viewer context, obtained from ViewerFileOpenBinary()
-.   file - file pointer
-
     Not Collective
+
++   viewer - viewer context, obtained from ViewerFileOpenBinary()
+-   file - file pointer
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -87,8 +87,10 @@ int ViewerDestroy_BinaryFile(Viewer v)
 /*@C
    ViewerFileOpenBinary - Opens a file for binary input/output.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - MPI communicator
++  comm - MPI communicator
 .  name - name of file 
 .  type - type of file
 $    BINARY_CREATE - create new file for binary output
@@ -96,9 +98,7 @@ $    BINARY_RDONLY - open existing file for binary input
 $    BINARY_WRONLY - open existing file for binary output
 
    Output Parameter:
-.  binv - viewer for binary input/output to use with the specified file
-
-   Collective on MPI_Comm
+-  binv - viewer for binary input/output to use with the specified file
 
    Note:
    This viewer can be destroyed with ViewerDestroy().
@@ -106,7 +106,8 @@ $    BINARY_WRONLY - open existing file for binary output
 .keywords: binary, file, open, input, output
 
 .seealso: ViewerFileOpenASCII(), ViewerSetFormat(), ViewerDestroy(),
-          VecView(), MatView(), VecLoad(), MatLoad(), ViewerBinaryGetDescriptor()
+          VecView(), MatView(), VecLoad(), MatLoad(), ViewerBinaryGetDescriptor(),
+          ViewerBinaryGetInfoPointer()
 @*/
 int ViewerFileOpenBinary(MPI_Comm comm,const char name[],ViewerBinaryType type,Viewer *binv)
 {  
@@ -155,11 +156,14 @@ int ViewerFileOpenBinary(MPI_Comm comm,const char name[],ViewerBinaryType type,V
   } else v->fdes = -1;
   v->format    = 0;
 
-  /* try to open info file */
+  /* 
+      try to open info file: all processors open this file
+  */
   if (type == BINARY_RDONLY) {
     char infoname[256],iname[256];
-    PetscStrcpy(infoname,name);
-    PetscStrcat(infoname,".info");
+  
+    ierr = PetscStrcpy(infoname,name);CHKERRQ(ierr);
+    ierr = PetscStrcat(infoname,".info");CHKERRQ(ierr);
     ierr = PetscFixFilename(infoname,iname); CHKERRQ(ierr);
     v->fdes_info = fopen(iname,"r");
   }

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.259 1998/08/25 19:01:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.260 1998/08/25 19:52:04 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1529,6 +1529,29 @@ int MatEqual_MPIAIJ(Mat A, Mat B, PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "MatCopy_MPIAIJ"
+int MatCopy_MPIAIJ(Mat A,Mat B,MatStructure str)
+{
+  int        ierr;
+  Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
+  Mat_MPIAIJ *b = (Mat_MPIAIJ *)B->data;
+
+  PetscFunctionBegin;
+  if (str != SAME_NONZERO_PATTERN || B->type != MATMPIAIJ) {
+    /* because of the column compression in the off-processor part of the matrix a->B,
+       the number of columns in a->B and b->B may be different, hence we cannot call
+       the MatCopy() directly on the two parts. If need be, we can provide a more 
+       efficient copy than the MatCopy_Basic() by first uncompressing the a->B matrices
+       then copying the submatrices */
+    ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
+  } else {
+    ierr = MatCopy(a->A,b->A,str);CHKERRQ(ierr);
+    ierr = MatCopy(a->B,b->B,str);CHKERRQ(ierr);  
+  }
+  PetscFunctionReturn(0);
+}
+
 extern int MatConvertSameType_MPIAIJ(Mat,Mat *,int);
 extern int MatIncreaseOverlap_MPIAIJ(Mat , int, IS *, int);
 extern int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
@@ -1582,7 +1605,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetSubMatrices_MPIAIJ,
        MatIncreaseOverlap_MPIAIJ,
        MatGetValues_MPIAIJ,
-       0,
+       MatCopy_MPIAIJ,
        MatPrintHelp_MPIAIJ,
        MatScale_MPIAIJ,
        0,

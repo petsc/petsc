@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.107 1998/07/23 22:15:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.108 1998/07/27 21:53:13 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -376,6 +376,8 @@ int MatSolve_SeqAIJ(Mat A,Vec bb, Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->n);
   PetscFunctionReturn(0);
 }
@@ -430,6 +432,8 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb, Vec xx)
   }
 #endif
   PLogFlops(2*a->nz - a->n);
+  ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -477,6 +481,8 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb, Vec yy, Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PLogFlops(2*a->nz);
 
   PetscFunctionReturn(0);
@@ -529,6 +535,8 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
 
   PLogFlops(2*a->nz-a->n);
   PetscFunctionReturn(0);
@@ -583,6 +591,8 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
 
   PLogFlops(2*a->nz);
   PetscFunctionReturn(0);

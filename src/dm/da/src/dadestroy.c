@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.17 1998/04/24 22:03:13 balay Exp curfman $";
+static char vcid[] = "$Id: dadestroy.c,v 1.18 1998/04/27 15:58:33 curfman Exp bsmith $";
 #endif
  
 /*
@@ -29,6 +29,12 @@ int DADestroy(DA da)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   if (--da->refct > 0) PetscFunctionReturn(0);
+  /*
+         Need this test because the da references the vectors that 
+     reference the da, so destroying the da calls destroy on the 
+     vectors that cause another destroy on the da
+  */
+  if (da->refct < 0) PetscFunctionReturn(0);
 
   PLogObjectDestroy(da);
   PetscFree(da->idx);

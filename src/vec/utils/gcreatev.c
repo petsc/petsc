@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.50 1998/06/19 15:56:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.51 1998/07/23 22:45:58 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -169,8 +169,10 @@ int VecCreateWithType(MPI_Comm comm,char *type_name,int n,int N,Vec *v)
 
   ierr = (*r)(comm,n,N,v); CHKERRQ(ierr);
 
-  (*v)->type_name = (char *) PetscMalloc((PetscStrlen(vectype)+1)*sizeof(char));CHKPTRQ((*v)->type_name);
-  PetscStrcpy((*v)->type_name,vectype);
+  if (!(*v)->type_name) {
+    (*v)->type_name = (char *) PetscMalloc((PetscStrlen(vectype)+1)*sizeof(char));CHKPTRQ((*v)->type_name);
+    PetscStrcpy((*v)->type_name,vectype);
+  }
   PetscFunctionReturn(0);
 }
 

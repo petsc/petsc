@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.92 1998/06/20 20:51:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.93 1998/07/23 22:50:12 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -91,6 +91,9 @@ int main( int argc, char **argv )
   int      m, flg, N, ierr, nloc, *ltog;
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
+  SLES     sles;
+  KSP      ksp;
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -115,6 +118,9 @@ int main( int argc, char **argv )
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
+  ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
+  ierr = PetscObjectPublish((PetscObject)ksp);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -143,7 +149,9 @@ int main( int argc, char **argv )
      vectors that are the same types
   */
   ierr = DACreateGlobalVector(user.da,&x); CHKERRA(ierr);
+  ierr = PetscObjectPublish((PetscObject)x);CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
+  ierr = PetscObjectPublish((PetscObject)r);CHKERRA(ierr);
 
   ierr = DACreateLocalVector(user.da,&user.localX); CHKERRA(ierr);
   ierr = PetscObjectPublish((PetscObject)user.localX);CHKERRA(ierr);

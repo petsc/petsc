@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: receivedense.c,v 1.5 1996/12/18 17:05:48 balay Exp bsmith $";
+static char vcid[] = "$Id: receivedense.c,v 1.6 1998/04/03 21:00:37 bsmith Exp bsmith $";
 #endif
 /* 
    This is part of the MatlabSockettool Package. It is called by 
@@ -24,7 +24,7 @@ int ReceiveDenseMatrix(Matrix *plhs[],int t)
   /* get size of matrix */
   if (PetscBinaryRead(t,&m,1,PETSC_INT))   ERROR("reading number columns"); 
   if (PetscBinaryRead(t,&n,1,PETSC_INT))   ERROR("reading number rows"); 
-  if (PetscBinaryRead(t,&compx,1,PETSC_INT))   ERROR("reading number rows"); 
+  if (PetscBinaryRead(t,&compx,1,PETSC_INT))   ERROR("reading if complex"); 
   
   /*allocate matrix */
   plhs[0]  = mxCreateFull(m, n, compx);

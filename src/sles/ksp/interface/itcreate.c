@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.134 1998/07/23 22:46:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.135 1998/07/28 15:49:26 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -107,6 +107,48 @@ int KSPSetAvoidNorms(KSP ksp)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "KSPPublish_Petsc"
+static int KSPPublish_Petsc(PetscObject object)
+{
+#if defined(HAVE_AMS)
+
+  KSP          v = (KSP) object;
+  static int   counter = 0;
+  int          ierr,rank;
+  char         name[16];
+  AMS_Memory   amem;
+  AMS_Comm     acomm;
+  
+  PetscFunctionBegin;
+
+  /* if it is already published then return */
+  if (v->amem >=0 ) PetscFunctionReturn(0);
+
+  ierr = ViewerAMSGetAMSComm(VIEWER_AMS_(v->comm),&acomm);CHKERRQ(ierr);
+  if (v->name) {
+    PetscStrcpy(name,v->name);
+  } else {
+    sprintf(name,"KSP_%d",counter++);
+  }
+  ierr = AMS_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr); 
+  ierr = AMS_Memory_add_field(amem,"Iteration",&v->its,1,AMS_INT,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amem,"Residual",&v->rnorm,1,AMS_DOUBLE,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
+  v->amem = (int) amem;
+
+#else
+  PetscFunctionBegin;
+#endif
+
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNC__  
 #define __FUNC__ "KSPCreate"
 /*@C
    KSPCreate - Creates the default KSP context.
@@ -136,7 +178,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   PetscHeaderCreate(ctx,_p_KSP,int,KSP_COOKIE,-1,comm,KSPDestroy,KSPView);
   PLogObjectCreate(ctx);
   *ksp               = ctx;
-  ctx->view          = 0;
+  ctx->bops->publish = KSPPublish_Petsc;
 
   ctx->type          = -1;
   ctx->max_it        = 10000;

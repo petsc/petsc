@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.76 1998/07/22 15:18:26 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.77 1998/07/22 15:25:57 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -102,6 +102,20 @@ extern int VecScatterDestroy(VecScatter);
 extern int VecScatterCopy(VecScatter,VecScatter *);
 extern int VecScatterView(VecScatter,Viewer);
 extern int VecScatterRemap(VecScatter,int *,int*);
+
+typedef enum {PIPELINE_DOWN=0,PIPELINE_UP=1} PipelineDirection;
+typedef enum {PIPELINE_NONE=1, PIPELINE_SEQUENTIAL=2,
+	      PIPELINE_REDBLACK=3, PIPELINE_MULTICOLOUR=4} PipelineType;
+
+typedef struct _p_VecPipeline*  VecPipeline;
+
+extern int VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *newctx);
+extern int VecPipelineSetType(VecPipeline ctx,PipelineType typ,PetscObject x);
+extern int VecPipelineSetup(VecPipeline ctx);
+extern int VecPipelineBegin(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline);
+extern int VecPipelineEnd(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline); 
+extern int VecPipelineView(VecPipeline pipe,Viewer viewer);
+extern int VecPipelineDestroy(VecPipeline ctx);
 
 extern int VecGetArray(Vec,Scalar**);
 extern int VecRestoreArray(Vec,Scalar**);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.123 1998/07/13 20:11:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.124 1998/07/22 18:01:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -123,6 +123,8 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
       } else {SETERRQ(1,1,"Wrong insert option");}
     }
   }
+  ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -212,6 +214,8 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
       }
     }
   }
+  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -297,6 +301,8 @@ int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
     for ( i=0; i<n; i++ ) {yv[tslots[i]] = PetscMax(yv[tslots[i]],xv[fslots[i]]);}
 #endif
   } else {SETERRQ(1,1,"Wrong insert option");}
+  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -339,6 +345,8 @@ int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
 #endif
     } else {SETERRQ(1,1,"Wrong insert option");}
   }
+  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -380,6 +388,8 @@ int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
 #endif
     } else {SETERRQ(1,1,"Wrong insert option");}
   }
+  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -423,6 +433,8 @@ int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
 #endif
     } else {SETERRQ(1,1,"Wrong insert option");}
   } 
+  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -464,6 +476,8 @@ int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
 #endif
     } else {SETERRQ(1,1,"Wrong insert option");}
   }
+  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -524,6 +538,8 @@ int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
     }
 #endif
   } else {SETERRQ(1,1,"Wrong insert option");}
+  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

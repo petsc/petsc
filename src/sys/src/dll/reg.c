@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.21 1998/07/08 03:39:06 bsmith Exp balay $";
+static char vcid[] = "$Id: reg.c,v 1.22 1998/08/26 22:01:38 balay Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -299,6 +299,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
   int           ierr;
  
   PetscFunctionBegin;
+  *r = 0;
   ierr = FListGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);
 
   /*
@@ -352,17 +353,15 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
   }
 #endif
 
+  /*
+       Don't generate error, just end
   PetscErrorPrintf("Function name: %s\n",function);
-  PetscFree(function);
-
-#if defined(USE_DYNAMIC_LIBRARIES)
   ierr = DLLibraryPrintPath();CHKERRQ(ierr);
-#endif
-
   SETERRQ(1,1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
-#if !defined(USE_PETSC_DEBUG)
+  */
+
+  PetscFree(function);
   PetscFunctionReturn(0);
-#endif
 }
 
 #undef __FUNC__  

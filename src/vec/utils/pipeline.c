@@ -1,10 +1,16 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pipeline.c,v 1.6 1998/08/21 19:21:43 balay Exp balay $";
+static char vcid[] = "$Id: pipeline.c,v 1.7 1998/08/25 15:19:31 balay Exp bsmith $";
 #endif
 
 /*
        Vector pipeline routines. These routines have all been contributed
-    by Victor Eijkhout while working at UCLA and UTK.
+    by Victor Eijkhout while working at UCLA and UTK. 
+
+       Note: these are not completely PETScified. For example the PETSCHEADER in the 
+   pipeline object is not completely filled in so that the pipeline object cannot 
+   be used as a TRUE PETSc object. Also there are some memory leaks. This code 
+   attempts to reuse some of the VecScatter internal code and thus is kind of tricky.
+
 */
 
 #include "src/vec/vecimpl.h" /*I "vec.h" I*/
@@ -21,10 +27,10 @@ struct _p_VecPipeline {
   VecScatter_MPI_General *upto,*upfrom,*dnto,*dnfrom;
   VecScatter_MPI_General *scatterto,*scatterfrom;
   PipelineFunction       upfn,dnfn;
-  int (*setup)(VecPipeline,PetscObject,PetscObject*);
   PetscObject            aux_data;
   PetscObject            custom_pipe_data;
   int                    setupcalled;
+  int                    (*setup)(VecPipeline,PetscObject,PetscObject*);
 };
 
 #undef __FUNC__
@@ -37,7 +43,9 @@ static int VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_General **t
   gen_from  = (VecScatter_MPI_General *) scatter->fromdata;
 
   pipe_to   = (VecScatter_MPI_General *)PetscMalloc(sizeof(VecScatter_MPI_General));CHKPTRQ(pipe_to);
+  PetscMemzero(pipe_to,sizeof(VecScatter_MPI_General));
   pipe_from = (VecScatter_MPI_General *)PetscMalloc(sizeof(VecScatter_MPI_General));CHKPTRQ(pipe_from);
+  PetscMemzero(pipe_from,sizeof(VecScatter_MPI_General));
 
   pipe_to->requests   = gen_to->requests;
   pipe_from->requests = gen_from->requests;
@@ -45,8 +53,6 @@ static int VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_General **t
   pipe_from->local    = gen_from->local;
   pipe_to->values     = gen_to->values;
   pipe_from->values   = gen_from->values;
-  /* sstatus is never used, but it's deallocated in 
-     the VecScatterDestroy routine */
   pipe_to->sstatus    = (MPI_Status *)PetscMalloc((gen_to->n+1)*sizeof(MPI_Status));CHKPTRQ(pipe_to->sstatus);
   pipe_from->sstatus  = (MPI_Status *)PetscMalloc((gen_from->n+1)*sizeof(MPI_Status));CHKPTRQ(pipe_to->sstatus);
   
@@ -57,9 +63,9 @@ static int VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_General **t
 }
 
 /* --------------------------------------------------------------*/
-/*@C
+/*C
    VecPipelineCreate - Creates a vector pipeline context.
-@*/
+*/
 #undef __FUNC__
 #define __FUNC__ "VecPipelineCreate"
 int VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *newctx)
@@ -68,12 +74,20 @@ int VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *new
   int ierr;
 
   ctx       = (VecPipeline) PetscMalloc(sizeof(struct _p_VecPipeline));CHKPTRQ(ctx);
+  PetscMemzero(ctx,sizeof(struct _p_VecPipeline));
   ctx->comm = comm;
-  ierr = VecScatterCreate(xin,ix,yin,iy,&(ctx->scatter)); CHKERRQ(ierr);
-  ierr = VecPipelineSetType(ctx,PIPELINE_SEQUENTIAL,PETSC_NULL); CHKERRQ(ierr);
+  ierr      = VecScatterCreate(xin,ix,yin,iy,&(ctx->scatter)); CHKERRQ(ierr);
+  ierr      = VecPipelineSetType(ctx,PIPELINE_SEQUENTIAL,PETSC_NULL); CHKERRQ(ierr);
   ctx->setupcalled = 0;
   ctx->upfn        = 0;
   ctx->dnfn        = 0;
+
+  /*
+      Keep a copy of the original scatter fields so we can destroy them later
+     when the pipeline is destroyed
+  */
+  ctx->scatterto   = (VecScatter_MPI_General *)ctx->scatter->todata;
+  ctx->scatterfrom = (VecScatter_MPI_General *)ctx->scatter->fromdata;
 
   ierr = VecPipelineCreateUpDown(ctx->scatter,&(ctx->upto),&(ctx->upfrom));CHKERRQ(ierr);
   ierr = VecPipelineCreateUpDown(ctx->scatter,&(ctx->dnto),&(ctx->dnfrom));CHKERRQ(ierr);
@@ -127,12 +141,12 @@ static int VecPipelineSetupSelect(VecScatter_MPI_General *gen,VecScatter_MPI_Gen
   return 0;
 }
 
-/*@C
+/*C
    VecPipelineSetup - Sets up a vector pipeline context.
    This call is done implicitly in VecPipelineBegin, but
    since it is a bit costly, you may want to do it explicitly
    when timing.
-@*/
+*/
 #undef __FUNC__
 #define __FUNC__ "VecPipelineSetup"
 int VecPipelineSetup(VecPipeline ctx)
@@ -160,9 +174,9 @@ int VecPipelineSetup(VecPipeline ctx)
   return 0;
 }
 
-/*@C
+/*
    VecPipelineSetType
-@*/
+*/
 static int ProcYes(int proc,PetscObject pipe_info);
 static int ProcUp(int proc,PetscObject pipe_info);
 static int ProcDown(int proc,PetscObject pipe_info);
@@ -176,7 +190,7 @@ int ProcNo(int proc,PetscObject pipe_info);
 
 #undef __FUNC__
 #define __FUNC__ "VecPipelineSetType"
-/*@
+/*C
    VecPipelineSetType - Sets the type of a vector pipeline. Vector
    pipelines are to be used as
 
@@ -199,8 +213,8 @@ int ProcNo(int proc,PetscObject pipe_info);
    <(PetscObject) pmat> where pmat is the matrix on which the colouring
    is to be based.
 
-.seealso: VecPipelineCreate, VecPipelineBegin, VecPipelineEnd.
-@*/
+.seealso: VecPipelineCreate(), VecPipelineBegin(), VecPipelineEnd().
+*/
 int VecPipelineSetType(VecPipeline ctx,PipelineType type,PetscObject x)
 {
   ctx->pipe_type = type;
@@ -230,11 +244,12 @@ int VecPipelineSetType(VecPipeline ctx,PipelineType type,PetscObject x)
 
 #undef __FUNC__
 #define __FUNC__ "VecPipelineBegin"
-/*@
+/*
    VecPipelineBegin - Receive data from processor earlier in
    a processor pipeline from one vector to another. 
+
 .seealso: VecPipelineEnd.
-@*/
+*/
 int VecPipelineBegin(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirection pmode,VecPipeline ctx)
 {
   int ierr;
@@ -275,12 +290,12 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirec
 
 #undef __FUNC__
 #define __FUNC__ "VecPipelineEnd"
-/*@
+/*
    VecPipelineEnd - Send data to processors later in
    a processor pipeline from one vector to another.
  
 .seealso: VecPipelineBegin.
-@*/
+*/
 int VecPipelineEnd(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirection pmode, VecPipeline ctx)
 {
   VecScatter             scat = ctx->scatter;
@@ -308,24 +323,80 @@ int VecPipelineEnd(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirecti
   return 0;
 }
 
+/*
+      This destroys the material that is allocated inside the 
+   VecScatter_MPI_General datastructure. Mimics the 
+   VecScatterDestroy_PtoP() object except it does not destroy 
+   the wrapper VecScatter object.
+*/
+
+#undef __FUNC__
+#define __FUNC__ "VecPipelineDestroy_MPI_General"
+static int VecPipelineDestroy_MPI_General(VecScatter_MPI_General *gen)
+{
+  PetscFunctionBegin;
+  if (gen->sstatus) {PetscFree(gen->sstatus);}
+  PetscFree(gen);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__
 #define __FUNC__ "VecPipelineDestroy"
-/*@C
+/*C
    VecPipelineDestroy - Destroys a pipeline context created by 
    VecPipelineCreate().
-@*/
+
+*/
 int VecPipelineDestroy( VecPipeline ctx )
 {
   int ierr;
 
-  ierr = VecScatterDestroy(ctx->scatter); CHKERRQ(ierr);
+  /* free the VecScatter_MPI_General data structures */
+  if (ctx->upto) {
+    PetscFree(ctx->upto->procs);
+    PetscFree(ctx->upto->starts);
+    PetscFree(ctx->upto->indices);
+    ierr = VecPipelineDestroy_MPI_General(ctx->upto);CHKERRQ(ierr);
+  }
+  if (ctx->upfrom) {
+    PetscFree(ctx->upfrom->procs);
+    PetscFree(ctx->upfrom->starts);
+    PetscFree(ctx->upfrom->indices);
+    ierr = VecPipelineDestroy_MPI_General(ctx->upfrom);CHKERRQ(ierr);
+  }
+  if (ctx->dnto) {
+    PetscFree(ctx->dnto->procs);
+    PetscFree(ctx->dnto->starts);
+    PetscFree(ctx->dnto->indices);
+    ierr = VecPipelineDestroy_MPI_General(ctx->dnto);CHKERRQ(ierr);
+  }
+  if (ctx->dnfrom) {
+    PetscFree(ctx->dnfrom->procs);
+    PetscFree(ctx->dnfrom->starts);
+    PetscFree(ctx->dnfrom->indices);
+    ierr = VecPipelineDestroy_MPI_General(ctx->dnfrom);CHKERRQ(ierr);
+  }
+  if (ctx->scatterto) {
+    PetscFree(ctx->scatterto->values);
+    if (ctx->scatterto->local.slots) PetscFree(ctx->scatterto->local.slots);
+    ierr = VecPipelineDestroy_MPI_General(ctx->scatterto);CHKERRQ(ierr);
+  }
+  if (ctx->scatterfrom) {
+    PetscFree(ctx->scatterfrom->values);
+    if (ctx->scatterfrom->local.slots) PetscFree(ctx->scatterfrom->local.slots);
+    ierr = VecPipelineDestroy_MPI_General(ctx->scatterfrom);CHKERRQ(ierr);
+  }
+
+  if (ctx->custom_pipe_data) PetscFree(ctx->custom_pipe_data);
+  PetscHeaderDestroy(ctx->scatter);
+  PetscFree(ctx);
 
   return 0;
 }
 
 /* >>>> Routines for sequential ordering of processors <<<< */
 
-typedef struct {int mytid;} Pipeline_sequential_info;
+typedef struct {int rank;} Pipeline_sequential_info;
 
 #undef __FUNC__
 #define __FUNC__ "ProcYes"
@@ -354,9 +425,9 @@ int ProcNo(int proc,PetscObject pipe_info)
 #define __FUNC__ "ProcUp"
 static int ProcUp(int proc,PetscObject pipe_info)
 {
-  int mytid = ((Pipeline_sequential_info *)pipe_info)->mytid;
+  int rank = ((Pipeline_sequential_info *)pipe_info)->rank;
 
-  if (mytid<proc) {
+  if (rank<proc) {
     return 1;
   } else {
     return 0;
@@ -364,9 +435,9 @@ static int ProcUp(int proc,PetscObject pipe_info)
 }
 static int ProcDown(int proc,PetscObject pipe_info)
 { 
-  int mytid = ((Pipeline_sequential_info *)pipe_info)->mytid;
+  int rank = ((Pipeline_sequential_info *)pipe_info)->rank;
 
-  if (mytid>proc) {
+  if (rank>proc) {
     return 1;
   } else {
     return 0;
@@ -380,7 +451,7 @@ static int PipelineSequentialSetup(VecPipeline vs,PetscObject x,PetscObject *obj
   Pipeline_sequential_info *info;
 
   info = PetscNew(Pipeline_sequential_info);
-  MPI_Comm_rank(vs->scatter->comm,&(info->mytid));
+  MPI_Comm_rank(vs->scatter->comm,&(info->rank));
   *obj = (PetscObject) info;
 
   return 0;
@@ -389,15 +460,15 @@ static int PipelineSequentialSetup(VecPipeline vs,PetscObject x,PetscObject *obj
 /* >>>> Routines for multicolour ordering of processors <<<< */
 
 typedef struct {
-  int mytid,numtids,*proc_colours;
+  int rank,size,*proc_colours;
 } Pipeline_coloured_info;
 
 static int ProcColourUp(int proc,PetscObject pipe_info)
 {
   Pipeline_coloured_info* comm_info = (Pipeline_coloured_info *) pipe_info;
-  int                     mytid = comm_info->mytid;
+  int                     rank = comm_info->rank;
 
-  if (comm_info->proc_colours[mytid]<comm_info->proc_colours[proc]) {
+  if (comm_info->proc_colours[rank]<comm_info->proc_colours[proc]) {
     return 1;
   } else {
     return 0;
@@ -406,9 +477,9 @@ static int ProcColourUp(int proc,PetscObject pipe_info)
 static int ProcColourDown(int proc,PetscObject pipe_info)
 { 
   Pipeline_coloured_info* comm_info = (Pipeline_coloured_info *) pipe_info;
-  int mytid = comm_info->mytid;
+  int rank = comm_info->rank;
 
-  if (comm_info->proc_colours[mytid]>comm_info->proc_colours[proc]) {
+  if (comm_info->proc_colours[rank]>comm_info->proc_colours[proc]) {
     return 1;
   } else {
     return 0;
@@ -420,13 +491,13 @@ static int ProcColourDown(int proc,PetscObject pipe_info)
 static int PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_coloured_info *info;
-  int                    numtids,i;
+  int                    size,i;
 
   info = PetscNew(Pipeline_coloured_info);
-  MPI_Comm_rank(vs->scatter->comm,&(info->mytid));
-  MPI_Comm_size(vs->scatter->comm,&numtids);
-  info->proc_colours = (int*)PetscMalloc(numtids*sizeof(int));CHKPTRQ(info->proc_colours);
-  for (i=0; i<numtids; i++) {info->proc_colours[i] = i%2;}
+  MPI_Comm_rank(vs->scatter->comm,&(info->rank));
+  MPI_Comm_size(vs->scatter->comm,&size);
+  info->proc_colours = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(info->proc_colours);
+  for (i=0; i<size; i++) {info->proc_colours[i] = i%2;}
   *obj = (PetscObject) info;
 
   return 0;
@@ -438,13 +509,13 @@ static int PipelineMulticolourSetup(VecPipeline vs,PetscObject x,PetscObject *ob
 {
   Pipeline_coloured_info *info;
   Mat                    mat = (Mat) x;
-  int                    numtids;
+  int                    size;
 
   info = PetscNew(Pipeline_coloured_info);
-  MPI_Comm_rank(mat->comm,&(info->mytid));
-  MPI_Comm_size(mat->comm,&numtids);
-  info->proc_colours = (int*)PetscMalloc(numtids*sizeof(int));CHKPTRQ(info->proc_colours);
-  PetscMemzero(info->proc_colours,numtids*sizeof(int));
+  MPI_Comm_rank(mat->comm,&(info->rank));
+  MPI_Comm_size(mat->comm,&size);
+  info->proc_colours = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(info->proc_colours);
+  PetscMemzero(info->proc_colours,size*sizeof(int));
 
   /* colouring */
   {
@@ -452,13 +523,13 @@ static int PipelineMulticolourSetup(VecPipeline vs,PetscObject x,PetscObject *ob
     int *owners = Aij->rowners, *touch = Aij->garray;
     int ntouch = ((Mat_SeqAIJ *)Aij->B->data)->n;
     int *conn,*colr;
-    int *colours = info->proc_colours, base = info->mytid*numtids;
+    int *colours = info->proc_colours, base = info->rank*size;
     int p,e;
 
     /* allocate connectivity matrix */
-    conn = (int *) PetscMalloc(numtids*numtids*sizeof(int)); CHKPTRQ(conn);
-    colr = (int *) PetscMalloc(numtids*sizeof(int)); CHKPTRQ(colr);
-    PetscMemzero(conn,numtids*numtids*sizeof(int));
+    conn = (int *) PetscMalloc(size*size*sizeof(int)); CHKPTRQ(conn);
+    colr = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(colr);
+    PetscMemzero(conn,size*size*sizeof(int));
 
     /* fill in local row of connectivity matrix */
     p = 0; e = 0;
@@ -466,11 +537,11 @@ static int PipelineMulticolourSetup(VecPipeline vs,PetscObject x,PetscObject *ob
     while (touch[e]>=owners[p+1]) {
       p++;
 #if defined(PETSC_DEBUG)
-      if (p>=numtids) SETERRQ(1,p,"Processor overflow");
+      if (p>=size) SETERRQ(1,p,"Processor overflow");
 #endif
     }
     conn[base+p] = 1;
-    if (p==numtids-1) ;
+    if (p==size-1) ;
     else {
       while (touch[e]<owners[p+1]) {
 	e++;
@@ -480,13 +551,13 @@ static int PipelineMulticolourSetup(VecPipeline vs,PetscObject x,PetscObject *ob
     }
   exit:
     /* distribute to establish local copies of full connectivity matrix */
-    MPI_Allgather(conn+base,numtids,MPI_INT,conn,numtids,MPI_INT,mat->comm);
+    MPI_Allgather(conn+base,size,MPI_INT,conn,size,MPI_INT,mat->comm);
 
-    base = numtids;
+    base = size;
     /*PetscPrintf(mat->comm,"Colouring: 0->0");*/
-    for (p=1; p<numtids; p++) {
+    for (p=1; p<size; p++) {
       int q,hi=-1,nc=0;
-      PetscMemzero(colr,numtids*sizeof(int));
+      PetscMemzero(colr,size*sizeof(int));
       for (q=0; q<p; q++) { /* inspect colours of all connect previous procs */
 	if (conn[base+q] /* should be tranposed! */) {
 	  if (!colr[colours[q]]) {
@@ -502,7 +573,7 @@ static int PipelineMulticolourSetup(VecPipeline vs,PetscObject x,PetscObject *ob
       }
       colours[p] = nc;
       /*PetscPrintf(mat->comm,", %d->%d",p,colours[p]);*/
-      base = base+numtids;
+      base = base+size;
     }
     /*PetscPrintf(mat->comm,"\n");*/
     PetscFree(conn);

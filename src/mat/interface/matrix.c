@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.301 1998/08/05 03:49:43 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.302 1998/09/24 16:24:52 balay Exp bsmith $";
 #endif
 
 /*
@@ -1631,7 +1631,7 @@ int MatRelax(Mat mat,Vec b,double omega,MatSORType flag,double shift,
 /*
       Default matrix copy routine.
 */
-int MatCopy_Basic(Mat A,Mat B)
+int MatCopy_Basic(Mat A,Mat B,MatStructure str)
 {
   int    ierr,i,rstart,rend,nz,*cwork;
   Scalar *vwork;
@@ -1657,7 +1657,8 @@ int MatCopy_Basic(Mat A,Mat B)
    Collective on Mat
 
    Input Parameters:
-.  A - the matrix
++  A - the matrix
+-  str - SAME_NONZERO_PATTERN or DIFFERENT_NONZERO_PATTERN
 
    Output Parameter:
 .  B - where the copy is put
@@ -1671,7 +1672,7 @@ int MatCopy_Basic(Mat A,Mat B)
 
 .seealso: MatConvert()
 @*/
-int MatCopy(Mat A,Mat B)
+int MatCopy(Mat A,Mat B,MatStructure str)
 {
   int ierr;
 
@@ -1683,9 +1684,9 @@ int MatCopy(Mat A,Mat B)
 
   PLogEventBegin(MAT_Copy,A,B,0,0); 
   if (A->ops->copy) { 
-    ierr = (*A->ops->copy)(A,B); CHKERRQ(ierr);
+    ierr = (*A->ops->copy)(A,B,str); CHKERRQ(ierr);
   } else { /* generic conversion */
-    ierr = MatCopy_Basic(A,B); CHKERRQ(ierr);
+    ierr = MatCopy_Basic(A,B,str); CHKERRQ(ierr);
   }
   PLogEventEnd(MAT_Copy,A,B,0,0); 
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.161 1998/07/13 20:24:56 bsmith Exp balay $ */
+/* $Id: mat.h,v 1.162 1998/09/24 22:15:07 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -97,7 +97,9 @@ extern int MatDuplicate(Mat,Mat*);
 extern int MatConvertRegister(MatType,MatType,int (*)(Mat,MatType,Mat*));
 extern int MatConvertRegisterAll(void);
 
-extern int MatCopy(Mat,Mat);
+typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER} MatStructure;
+
+extern int MatCopy(Mat,Mat,MatStructure);
 extern int MatView(Mat,Viewer);
 extern int MatLoad(Viewer,MatType,Mat*);
 extern int MatLoadRegister(MatType,int (*)(Viewer,MatType,Mat*));
@@ -214,7 +216,6 @@ typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_EISENSTAT=32,SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128} MatSORType;
 extern int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
 
-typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER} MatStructure;
 
 /* 
     These routines are for efficiently computing Jacobians via finite differences.

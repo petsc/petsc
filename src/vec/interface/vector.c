@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.149 1998/08/16 22:07:06 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.150 1998/09/23 01:01:19 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
