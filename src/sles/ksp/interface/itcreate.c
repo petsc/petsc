@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.153 1999/03/07 17:28:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.154 1999/03/15 14:36:16 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -411,6 +411,45 @@ extern int numberofsetfromoptions;
 extern int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 
 #undef __FUNC__  
+#define __FUNC__ "KSPSetTypeFromOptions"
+/*@
+   KSPSetTypeFromOptions - Sets KSP type from the options database, if not
+       given then sets default.
+
+   Collective on KSP
+
+   Input Parameters:
+.  ksp - the Krylov space context
+
+   Level: developer
+
+.keywords: KSP, set, from, options, database
+
+.seealso: KSPPrintHelp(), KSPSetFromOptions(), SLESSetFromOptions(),
+          SLESSetTypeFromOptions()
+@*/
+int KSPSetTypeFromOptions(KSP ksp)
+{
+  int       flg, ierr;
+  char      method[256];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+
+  ierr = OptionsGetString(ksp->prefix,"-ksp_type",method,256,&flg);
+  if (flg) {
+    ierr = KSPSetType(ksp,method); CHKERRQ(ierr);
+  }
+  /*
+    Set the type if it was never set.
+  */
+  if (!ksp->type_name) {
+    ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "KSPSetFromOptions"
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
@@ -421,6 +460,22 @@ extern int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 
    Input Parameters:
 .  ksp - the Krylov space context
+
+   Options Database Keys:
++   -ksp_max_it - maximum number of linear iterations
+.   -ksp_rtol rtol - relative tolerance used in default determination of convergence, i.e.
+                if residual norm decreases by this factor than convergence is declared
+.   -ksp_atol atol - absolute tolerance used in default convergence test, i.e. if residual 
+                norm is less than this then convergence is declared
+.   -ksp_divtol tol - if residual norm increases by this factor than divergence is declared
+.   -ksp_avoid_norms - skip norms used in convergence tests (useful only when not using 
+                       convergence test (say you always want to run with 5 iterations) to 
+                       save on communication overhead
+.   -ksp_cancelmonitors - cancel all previous convergene monitor routines set
+.   -ksp_monitor - print residual norm at each iteration
+.   -ksp_xmonitor - plot residual norm at each iteration
+.   -ksp_vecmonitor - plot solution at each iteration
+-   -ksp_singmonitor - monitor extremem singular values at each iteration
 
    Notes:  
    To see all options, run your program with the -help option
@@ -438,21 +493,10 @@ int KSPSetFromOptions(KSP ksp)
   char      method[256];
 
   PetscFunctionBegin;
-  loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
-
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
 
-  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = OptionsGetString(ksp->prefix,"-ksp_type",method,256,&flg);
-  if (flg) {
-    ierr = KSPSetType(ksp,method); CHKERRQ(ierr);
-  }
-  /*
-    Set the type if it was never set.
-  */
-  if (!ksp->type_name) {
-    ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
-  }
+  ierr = KSPSetTypeFromOptions(ksp);CHKERRQ(ierr);
+  loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
 
   ierr = OptionsGetInt(ksp->prefix,"-ksp_max_it",&ksp->max_it, &flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_rtol",&ksp->rtol, &flg); CHKERRQ(ierr);
@@ -568,7 +612,6 @@ int KSPSetFromOptions(KSP ksp)
   for ( i=0; i<numberofsetfromoptions; i++ ) {
     ierr = (*othersetfromoptions[i])(ksp); CHKERRQ(ierr);
   }
-
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) { ierr = KSPPrintHelp(ksp); CHKERRQ(ierr);  }
