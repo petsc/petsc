@@ -281,7 +281,7 @@ EXTERN int VecStashScatterGetMesg_Private(VecStash*,int*,int**,PetscScalar**,int
 
 EXTERN int VecReciprocal_Default(Vec);
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN_C_BEGIN
 EXTERN int VecMatlabEnginePut_Default(PetscObject,void*);
 EXTERN int VecMatlabEngineGet_Default(PetscObject,void*);

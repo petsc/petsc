@@ -5,7 +5,7 @@
 #requiresscalar real 
 #
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
-# in Matlab. You cannot use a BOPT=*_C++ or BOPT=*_complex. If cmex fails 
+# in Matlab. You cannot use a BOPT=*_C++ or BOPT=*_complex. If mex fails 
 # in compiling these files and you are using the gcc compiler then try 
 # removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/variables
 #
@@ -38,30 +38,30 @@ NOADIC    = true
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
 
-# CMEX and MCC are defined in bmake/${PETSC_ARCH}/packages
+# MATLAB_MEX and MATLAB_CC are defined in bmake/${PETSC_ARCH}/packages
 #
 receive:  
-	-@${CMEX} -g CC=${MCC} ${CFLAGS} ${CCPPFLAGS} receive.c receivesparse.c  receivedense.c bread.c
+	-@${MATLAB_MEX} -g CC=${MATLAB_CC} ${CFLAGS} ${CCPPFLAGS} receive.c receivesparse.c  receivedense.c bread.c
 	-@${RM} -f receive.o receivesparse.o  receivedense.o bread.o
 	-@if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f receive.mexsg64 receive.mexsg ; fi 
 
 openport: 
-	-@${CMEX} -g CC=${MCC} ${CFLAGS} ${CCPPFLAGS} openport.c 
+	-@${MATLAB_MEX} -g CC=${MATLAB_CC} ${CFLAGS} ${CCPPFLAGS} openport.c 
 	-@${RM} -f  openport.o 
 	-@if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f openport.mexsg64 openport.mexsg ; fi 
 
 closeport:
-	-@${CMEX} -g CC=${MCC} ${CFLAGS} ${CCPPFLAGS} closeport.c
+	-@${MATLAB_MEX} -g CC=${MATLAB_CC} ${CFLAGS} ${CCPPFLAGS} closeport.c
 	-@${RM} -f  closeport.o 
 	-@if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f closeport.mexsg64 closeport.mexsg ; fi 
 
 launch: 
-	-@${CMEX} -g CC=${MCC}  ${CFLAGS} ${CCPPFLAGS} launch.c
+	-@${MATLAB_MEX} -g CC=${MATLAB_CC}  ${CFLAGS} ${CCPPFLAGS} launch.c
 	-@${RM} -f  launch.o 
 	-@if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f launch.mexsg64 launch.mexsg ; fi 
 
 readinvecs:  
-	-@${CMEX} -g CC=${MCC} ${CFLAGS} ${CCPPFLAGS} readinvecs.c bread.c
+	-@${MATLAB_MEX} -g CC=${MATLAB_CC} ${CFLAGS} ${CCPPFLAGS} readinvecs.c bread.c
 	-@${RM} -f readinvecs.o bread.o
 	-@if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f readinvecs.mexsg64 readinvecs.mexsg ; fi 
 

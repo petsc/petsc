@@ -330,7 +330,7 @@ int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"];\n %s = spconvert(zzz);\n",name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
      ierr = MatSeqAIJFactorInfo_Matlab(A,viewer);CHKERRQ(ierr);
 #endif
      PetscFunctionReturn(0);
@@ -1811,7 +1811,7 @@ int MatPrintHelp_SeqAIJ(Mat A)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_no_inode: Do not use inodes\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_inode_limit <limit>: Set inode limit (max limit=5)\n");CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_matlab: Use Matlab engine sparse LU factorization and solve.\n");CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -2349,7 +2349,7 @@ int MatRetrieveValues(Mat mat)
 /*
    This allows SeqAIJ matrices to be passed to the matlab engine
 */
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN
@@ -2372,8 +2372,7 @@ int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
   /* Matlab indices start at 0 for sparse (what a surprise) */
   
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
-  mxSetName(mat,obj->name);
-  engPutArray((Engine *)mengine,mat);
+  engPutVariable((Engine *)mengine,obj->name,mat);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -2391,7 +2390,7 @@ int MatMatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
   PetscFunctionBegin;
   ierr = PetscFree(aij->a);CHKERRQ(ierr);
 
-  mmat = engGetArray((Engine *)mengine,obj->name);
+  mmat = engGetVariable((Engine *)mengine,obj->name);
 
   aij->nz           = (mxGetJc(mmat))[mat->m];
   ierr              = PetscMalloc(((size_t) aij->nz)*(sizeof(int)+sizeof(PetscScalar))+(mat->m+1)*sizeof(int),&aij->a);CHKERRQ(ierr);
@@ -2709,7 +2708,7 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJGetInodeSizes_C",
                                      "MatSeqAIJGetInodeSizes_SeqAIJ",
                                       MatSeqAIJGetInodeSizes_SeqAIJ);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatMatlabEnginePut_SeqAIJ",MatMatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEngineGet_C","MatMatlabEngineGet_SeqAIJ",MatMatlabEngineGet_SeqAIJ);CHKERRQ(ierr);
 #endif

@@ -6,7 +6,7 @@
 */
 #include "src/mat/impls/aij/seq/aij.h"
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 

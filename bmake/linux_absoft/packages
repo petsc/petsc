@@ -41,9 +41,9 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 # Matlab location
 #
-#CMEX            = /software/linux/com/packages/matlab-5.2/bin/mex
-#MCC             = gcc
-#MATLABCOMMAND   = matlab
+#MATLAB_MEX            = /software/linux/com/packages/matlab-5.2/bin/mex
+#MATLAB_CC             = gcc
+#MATLAB_COMMAND   = matlab
 #PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 # Location where adiC is installed

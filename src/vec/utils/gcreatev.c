@@ -2,7 +2,7 @@
 
 #include "petscvec.h"    /*I "petscvec.h" I*/
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN
@@ -25,8 +25,7 @@ int VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
 #endif
   ierr = PetscMemcpy(mxGetPr(mat),array,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
-  mxSetName(mat,obj->name);
-  engPutArray((Engine *)mengine,mat);
+  engPutVariable((Engine *)mengine,obj->name,mat);
   
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -46,7 +45,7 @@ int VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
   PetscFunctionBegin;
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
-  mat  = engGetArray((Engine *)mengine,obj->name);
+  mat  = engGetVariable((Engine *)mengine,obj->name);
   if (!mat) SETERRQ1(1,"Unable to get object %s from matlab",obj->name);
   ierr = PetscMemcpy(array,mxGetPr(mat),n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);

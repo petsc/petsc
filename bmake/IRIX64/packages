@@ -62,16 +62,16 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 #  The CFLAGS and following stuff is due to Matlab being miss-intalled on our machine
 #  you may not need any of that stuff
-#MCC            = cc
-#CMEX           = /home/bsmith/bin/IRIX64/mex CFLAGS='-32' LDFLAGS="-32 -mips4 -shared -U -Bsymbolic -exported_symbol mexFunction -exported_symbol mexVersion"
-#CMEX           = mex CFLAGS='-32' LDFLAGS="-32 -mips4 -shared -U -Bsymbolic -exported_symbol mexFunction -exported_symbol mexVersion"
-#MATLABCOMMAND  = matlab -sgi
+#MATLAB_CC            = cc
+#MATLAB_MEX           = /home/bsmith/bin/IRIX64/mex CFLAGS='-32' LDFLAGS="-32 -mips4 -shared -U -Bsymbolic -exported_symbol mexFunction -exported_symbol mexVersion"
+#MATLAB_MEX           = mex CFLAGS='-32' LDFLAGS="-32 -mips4 -shared -U -Bsymbolic -exported_symbol mexFunction -exported_symbol mexVersion"
+#MATLAB_COMMAND  = matlab -sgi
 #PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 #
 #MATLAB_ENGINE_INCLUDE    = -I/home/petsc/software/matlab/include
 #MATLAB_ENGINE_LIB        = -L/software/irix-6/com/packages/matlab-r11.1/extern/lib/sgi -leng -lmx -lmat -lmi -lut
-#PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
+
 #
 #
 # Location where adiC is installed

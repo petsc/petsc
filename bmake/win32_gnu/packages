@@ -44,7 +44,7 @@ PETSC_HAVE_X11  = -DPETSC_HAVE_X11
 #
 # Matlab location, remove if not needed.
 #
-#CMEX              = 
-#MCC               = 
-#MATLABCOMMAND     = matlab
+#MATLAB_MEX              = 
+#MATLAB_CC               = 
+#MATLAB_COMMAND     = matlab
 #PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB  

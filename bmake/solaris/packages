@@ -55,9 +55,9 @@ PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 # Matlab location
 #
 #MATLAB_ROOT       = /software/solaris-2/com/packages/matlab-6.1
-#CMEX              = ${MATLAB_ROOT}/bin/mex
-#MCC               = cc
-#MATLABCOMMAND     = matlab
+#MATLAB_MEX              = ${MATLAB_ROOT}/bin/mex
+#MATLAB_CC               = cc
+#MATLAB_COMMAND     = matlab
 #PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 #  The Matlab include file have some bugs in them with C++,  they have a 
@@ -68,7 +68,6 @@ PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
 #MATLAB_ENGINE_INCLUDE    = -I/home/petsc/software/matlab/include
 #MATLAB_ENGINE_LIB        = ${CLINKER_SLFLAG}${MATLAB_ROOT}/extern/lib/sol2 -L${MATLAB_ROOT}/extern/lib/sol2 -leng -lmx -lmat -lut
-#PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
 #
 # Location where adiC is installed
 #

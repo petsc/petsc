@@ -9,7 +9,7 @@
 /*
    This allows the DA vectors to properly tell Matlab their dimensions
 */
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN
@@ -36,8 +36,7 @@ int VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 #endif
   ierr = PetscMemcpy(mxGetPr(mat),array,n*m*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
-  mxSetName(mat,obj->name);
-  engPutArray((Engine *)mengine,mat);
+  engPutVariable((Engine *)mengine,obj->name,mat);
   
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -81,7 +80,7 @@ int DACreateLocalVector(DA da,Vec* g)
   ierr = VecCreateSeq(PETSC_COMM_SELF,da->nlocal,g);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*g,da->w);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   if (da->w == 1  && da->dim == 2) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)*g,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
   }

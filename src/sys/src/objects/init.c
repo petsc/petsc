@@ -259,7 +259,7 @@ int PetscCompareInitialize(double tol)
   ierr = MPI_Allgather(&work,1,MPI_INT,gflag,1,MPI_INT,MPI_COMM_WORLD);CHKERRQ(ierr);
   mysize = 0;
   for (i=0; i<size; i++) {
-    if (work == gflag[i]) gflag[mysize++] = i;
+    if (work == (unsigned int) gflag[i]) gflag[mysize++] = i;
   }
   /* printf("[%d] my name %s basename %s mysize %d\n",rank,programname,basename,mysize); */
 

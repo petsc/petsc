@@ -56,9 +56,9 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 # Matlab location
 #
-#CMEX           = /usr/local/bin/cmex 
-#MCC            = 
-#MATLABCOMMAND  = matlab
+#MATLAB_MEX           = /usr/local/bin/cmex 
+#MATLAB_CC            = 
+#MATLAB_COMMAND  = matlab
 #PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 #

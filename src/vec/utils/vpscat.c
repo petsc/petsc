@@ -319,7 +319,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
     }
     if (gen_to->local.is_copy) {
       ierr = PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
-    } else if (yv != xv || gen_to->local.nonmatching_computed == -1) {
+    } else if (yv != xv || !gen_to->local.nonmatching_computed) {
       int *tslots = gen_to->local.slots,*fslots = gen_from->local.slots;
       int n       = gen_to->local.n;
       for (i=0; i<n; i++) {yv[fslots[i]] = xv[tslots[i]];}

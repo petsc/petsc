@@ -39,9 +39,13 @@ BLOCKSOLVE_LIB     = @BLOCKSOLVE_LIB@
 #
 # Location of Matlab
 #
-CMEX               = @CMEX@
-MCC                = @MCC@
-MATLABCOMMAND      = @MATLABCOMMAND@
+MATLAB_MEX               = @MATLAB_MEX@
+MATLAB_CC                = @MATLAB_CC@
+MATLAB_COMMAND           = @MATLAB_COMMAND@
+MATLAB_ENGINE_INCLUDE    = -I@MATLAB_DIR@/extern/include
+MATLAB_ENGINE_LIB        = ${CLINKER_SLFLAG}@MATLAB_DIR@/extern/lib/@MATLAB_ARCH@ -L@MATLAB_DIR@/extern/lib/@MATLAB_ARCH@  -leng -lmx -lmat -lut @MATLAB_ENGINE_DL@
+
+#
 #
 # Location of ADIC
 #

@@ -48,9 +48,9 @@ PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
 # Matlab location
 #
-#CMEX            = 
-#MCC            = 
-#MATLABCOMMAND  = matlab
+#MATLAB_MEX            = 
+#MATLAB_CC            = 
+#MATLAB_COMMAND  = matlab
 #PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 # Location where adiC is installed

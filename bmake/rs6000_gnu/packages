@@ -55,9 +55,9 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Matlab location, remove if not needed.
 #
-#CMEX            = 
-#MCC            = 
-#MATLABCOMMAND  = matlab
+#MATLAB_MEX            = 
+#MATLAB_CC            = 
+#MATLAB_COMMAND  = matlab
 #PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 # Location of the LUSOL sparse LU factorization code (part of MINOS)

@@ -364,8 +364,7 @@ int PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,PetscScalar 
   mat  = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
 #endif
   ierr = PetscMemcpy(mxGetPr(mat),array,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
-  mxSetName(mat,name);
-  engPutArray(mengine->ep,mat);
+  engPutVariable(mengine->ep,name,mat);
 
   PetscLogInfo(0,"Put Matlab array %s\n",name);
   PetscFunctionReturn(0);
@@ -397,7 +396,7 @@ int PetscMatlabEngineGetArray(PetscMatlabEngine mengine,int m,int n,PetscScalar 
   
   PetscFunctionBegin;  
   PetscLogInfo(0,"Getting Matlab array %s\n",name);
-  mat  = engGetArray(mengine->ep,name);
+  mat  = engGetVariable(mengine->ep,name);
   if (!mat) SETERRQ1(1,"Unable to get array %s from matlab",name);
   ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   PetscLogInfo(0,"Got Matlab array %s\n",name);
