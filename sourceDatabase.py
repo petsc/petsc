@@ -116,7 +116,7 @@ class SourceDB (dict, base.Base):
 
   def __contains__(self, key):
     '''Converts the key to a relative source file path using the root'''
-    return dict.__contains__(self.getRelativePath(key))
+    return dict.__contains__(self, self.getRelativePath(key))
 
   def has_key(self, key):
     '''This method just calls self.__contains__(key)'''
