@@ -40,3 +40,30 @@ libf: $(LIBNAME)($(OBJSF))
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) -f $*.o
 
+
+# SHARED LIBRARIES
+# To create PETSc libraires as shared libraries do the following:
+# 1. use -fPIC flag for gcc, g++ as in base, base.g_c++, base.O_c++, 
+# base.g_complex base.O_complex where CC is defined.
+# CC       = gcc  -DPARCH_freebsd -fPIC
+#
+# 2. Add the following target to "base"
+#shared: chkopts
+#	-@echo making shared libraries in $(LDIR) ;\
+#	cd $(LDIR); \
+#	for LIBNAME in $(SHLIBS) ; \
+#	  do $(LD) -Bshareable -Bforcearchive -o $$LIBNAME.so.1.0 $$LIBNAME.a  > /dev/null 2>&1; \
+#	done
+#
+#3. To make shared libs do in PETSC_DIR:
+#   make BOPT=g all fortran shared
+#   If the regular libraries are already built, you have to rebuilt them.
+#
+#4. To build an example uisng petsc shared library do:
+#   cd petsc/src/sles/tutorials
+#   make BOPT=g ex5
+#
+#6. To run this example do:
+#   setenv LD_LIBRARY_PATH /*****/petsc/lib/libg/freebsd
+#   mpirun ex5
+#
