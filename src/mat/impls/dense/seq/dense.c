@@ -1367,11 +1367,10 @@ int MatCopy_SeqDense(Mat A,Mat B,MatStructure str)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data,*b = (Mat_SeqDense *)B->data;
   int          lda1=a->lda,lda2=b->lda, m=A->m,n=A->n, j,ierr;
-  PetscTruth   flag;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)B,MATSEQDENSE,&flag);CHKERRQ(ierr);
-  if (!flag) {
+  /* If the two matrices don't have the same copy implementation, they aren't compatible for fast copy. */
+  if (A->ops->copy != B->ops->copy) {
     ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }

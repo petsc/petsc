@@ -1878,11 +1878,10 @@ EXTERN int MatILUDTFactor_SeqAIJ(Mat,MatFactorInfo*,IS,IS,Mat*);
 int MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
 {
   int        ierr;
-  PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)B,MATSEQAIJ,&flg);CHKERRQ(ierr);
-  if (str == SAME_NONZERO_PATTERN && flg) {
+  /* If the two matrices have the same copy implementation, use fast copy. */
+  if (str == SAME_NONZERO_PATTERN && (A->ops->copy == B->ops->copy)) {
     Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data; 
     Mat_SeqAIJ *b = (Mat_SeqAIJ*)B->data; 
 

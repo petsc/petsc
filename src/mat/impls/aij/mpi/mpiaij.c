@@ -1526,11 +1526,10 @@ int MatCopy_MPIAIJ(Mat A,Mat B,MatStructure str)
   int        ierr;
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
   Mat_MPIAIJ *b = (Mat_MPIAIJ *)B->data;
-  PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)B,MATMPIAIJ,&flg);CHKERRQ(ierr);
-  if (str != SAME_NONZERO_PATTERN || !flg) {
+  /* If the two matrices don't have the same copy implementation, they aren't compatible for fast copy. */
+  if ((str != SAME_NONZERO_PATTERN) || (A->ops->copy != B->ops->copy)) {
     /* because of the column compression in the off-processor part of the matrix a->B,
        the number of columns in a->B and b->B may be different, hence we cannot call
        the MatCopy() directly on the two parts. If need be, we can provide a more 
