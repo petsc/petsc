@@ -5,20 +5,20 @@
 
 PETSC_DIR = .
 
-CFLAGS   =  -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF) $(PCONF)
-SOURCEC  =
-SOURCEF  =
-SOURCEH  = Changes Machines Readme maint/addlinks \
-           maint/builddist FAQ Installation Performance BugReporting\
-           maint/buildlinks maint/wwwman maint/xclude maint/crontab\
-           bmake/common bmake/sun4/* bmake/paragon/* bmake/linux/* \
-           bmake/rs6000/* bmake/alpha/* bmake/IRIX/* bmake/IRIX64/* \
-           bmake/hpux/* bmake/t3d/* bmake/freebsd/* bmake/solaris/* \
-           maint/autoftp
-OBJSC    =
-OBJSF    =
-LIBBASE  = libpetscvec
-DIRS     = src include docs 
+CFLAGS	 =  -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF) $(PCONF)
+SOURCEC	 =
+SOURCEF	 =
+SOURCEH	 = Changes Machines Readme maint/addlinks \
+	   maint/builddist FAQ Installation Performance BugReporting\
+	   maint/buildlinks maint/wwwman maint/xclude maint/crontab\
+	   bmake/common bmake/sun4/* bmake/paragon/* bmake/linux/* \
+	   bmake/rs6000/* bmake/alpha/* bmake/IRIX/* bmake/IRIX64/* \
+	   bmake/hpux/* bmake/t3d/* bmake/freebsd/* bmake/solaris/* \
+	   maint/autoftp
+OBJSC	 =
+OBJSF	 =
+LIBBASE	 = libpetscvec
+DIRS	 = src include docs 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
@@ -29,7 +29,7 @@ all: chkpetsc_dir
 	-@echo "Using $(CC) $(PETSC_INCLUDE) $(CONF) $(PCONF) $(BASEOPT)"
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
-           ACTION=libfast  tree 
+	   ACTION=libfast  tree 
 	$(RANLIB) $(PDIR)/*.a
 	-@echo "Completed building libraries"
 	-@echo "------------------------------------------"
@@ -45,7 +45,7 @@ testexamples: chkpetsc_dir
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
-           ACTION=testexamples_1  tree 
+	   ACTION=testexamples_1  tree 
 	-@echo "Completed compiling and running test examples"
 	-@echo "------------------------------------------"
 
@@ -60,7 +60,7 @@ testexamples_uni: chkpetsc_dir
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
-           ACTION=testexamples_4  tree 
+	   ACTION=testexamples_4  tree 
 	-@echo "Completed compiling and running uniprocessor test examples"
 	-@echo "------------------------------------------"
 
@@ -72,26 +72,26 @@ testfortran: chkpetsc_dir
 	-@echo "Using libraries: $(PETSC_FORTRAN_LIB)  $(PETSC_LIB)"
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
-           ACTION=testexamples_3  tree 
+	   ACTION=testexamples_3  tree 
 	-@echo "Completed compiling and running Fortran test examples"
 	-@echo "------------------------------------------"
 
 #
 # Builds PETSc Fortran interface libary
-# Note:  libfast cannot run on .F files on certain machines, so we
+# Note:	 libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
 fortran: chkpetsc_dir
 	-$(RM) -f $(PDIR)/libpetscfortran.a
 	-@echo "Beginning to compile Fortran interface library"
 	-@echo "------------------------------------------"
 	-@cd src/fortran/custom; \
-          $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
-          grep -v clog trashz | grep -v "information sections" | \
-          egrep -i '(Error|warning|Can)' >> /dev/null;\
-          if [ "$$?" != 1 ]; then \
-          cat trashz ; fi; $(RM) trashz
+	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
+	  grep -v clog trashz | grep -v "information sections" | \
+	  egrep -i '(Error|warning|Can)' >> /dev/null;\
+	  if [ "$$?" != 1 ]; then \
+	  cat trashz ; fi; $(RM) trashz
 	-@cd src/fortran/auto; \
-          $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast
+	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast
 	$(RANLIB) $(PDIR)/libpetscfortran.a
 	-@echo "Completed compiling Fortran interface library"
 	-@echo "------------------------------------------"
@@ -116,7 +116,7 @@ deletelatexpages:
 	$(RM) -f $(PETSC_DIR)/docs/tex/rsum/*sum*.tex
 
 # To access the tags in emacs, type M-x visit-tags-table and specify
-# the file petsc/TAGS.  Then, to move to where a PETSc function is
+# the file petsc/TAGS.	Then, to move to where a PETSc function is
 # defined, enter M-. and the function name.  To search for a string
 # and move to the first occurrence, use M-x tags-search and the string.
 # To locate later occurrences, use M-,
@@ -127,10 +127,10 @@ alletags:
 	-make etags_noexamples
 	-make etags_makefiles
 
-# Builds the basic etags file.  This should be employed by most users.
+# Builds the basic etags file.	This should be employed by most users.
 etags:
 	$(RM) TAGS
-	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h 
+	etags -f TAGS	 src/*/impls/*/*.h src/*/impls/*/*/*.h 
 	etags -a -f TAGS src/*/examples/*.c src/*/examples/*/*.c
 	etags -a -f TAGS src/*/*.h src/*/*/*.h src/*/interface/*.c 
 	etags -a -f TAGS src/*/src/*.c src/*/impls/*/*.c 
@@ -145,16 +145,17 @@ etags:
 	etags -a -f TAGS src/*/makefile src/*/impls/*/*/makefile
 	etags -a -f TAGS src/fortran/makefile src/fortran/auto/makefile 
 	etags -a -f TAGS src/fortran/custom/makefile
-	etags -a -f TAGS include/makefile include/*/makefile docs/makefile
+	etags -a -f TAGS include/makefile include/*/makefile 
 	etags -a -f TAGS bmake/common bmake/sun4/sun4* bmake/rs6000/rs6000* 
 	etags -a -f TAGS bmake/solaris/solaris*
 	etags -a -f TAGS bmake/IRIX/IRIX* bmake/freebsd/freebsd*
 	etags -a -f TAGS bmake/hpux/hpux* bmake/alpha/alpha*
 	etags -a -f TAGS bmake/t3d/t3d* bmake/paragon/paragon*
-	etags -a -f TAGS docs/tex/routin.tex  docs/tex/manual.tex docs/tex/manual_tex.tex
-	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex docs/tex/part2.tex
 	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c
 	etags -a -f TAGS src/*/examples/*.F src/fortran/custom/*.F
+	etags -a -f TAGS docs/tex/routin.tex  docs/tex/manual.tex docs/tex/manual_tex.tex
+	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex docs/tex/part2.tex
+	etags -a -f TAGS docs/tex/intro.tex docs/makefile
 	chmod g+w TAGS
 
 # Builds the etags file that excludes the examples directories
@@ -174,17 +175,18 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES src/*/makefile src/*/impls/*/*/makefile
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/makefile src/fortran/auto/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/makefile
-	etags -a -f TAGS_NO_EXAMPLES include/makefile include/*/makefile docs/makefile
+	etags -a -f TAGS_NO_EXAMPLES include/makefile include/*/makefile 
 	etags -a -f TAGS_NO_EXAMPLES bmake/common bmake/sun4/sun4* 
 	etags -a -f TAGS_NO_EXAMPLES bmake/rs6000/rs6000* 
 	etags -a -f TAGS_NO_EXAMPLES bmake/solaris/solaris*
 	etags -a -f TAGS_NO_EXAMPLES bmake/IRIX/IRIX* bmake/freebsd/freebsd*
 	etags -a -f TAGS_NO_EXAMPLES bmake/hpux/hpux* bmake/alpha/alpha*
 	etags -a -f TAGS_NO_EXAMPLES bmake/t3d/t3d* bmake/paragon/paragon*
-	etags -a -f TAGS_NO_EXAMPLES docs/tex/routin.tex  docs/tex/manual.tex
-	etags -a -f TAGS_NO_EXAMPLES docs/tex/intro.tex  docs/tex/part1.tex
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/auto/*.c
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/*.c src/fortran/custom/*.F
+	etags -a -f TAGS_NO_EXAMPLES docs/tex/routin.tex  docs/tex/manual.tex
+	etags -a -f TAGS_NO_EXAMPLES docs/tex/intro.tex docs/tex/part1.tex 
+	etags -a -f TAGS_NO_EXAMPLES docs/makefile
 	chmod g+w TAGS_NO_EXAMPLES
 
 # Builds the etags file for makefiles
@@ -199,13 +201,14 @@ etags_makefiles:
 	etags -a -f TAGS_MAKEFILES src/*/examples/makefile src/*/examples/*/makefile
 	etags -a -f TAGS_MAKEFILES src/fortran/makefile src/fortran/auto/makefile 
 	etags -a -f TAGS_MAKEFILES src/fortran/custom/makefile
-	etags -a -f TAGS_MAKEFILES include/makefile include/*/makefile docs/makefile
+	etags -a -f TAGS_MAKEFILES include/makefile include/*/makefile
 	etags -a -f TAGS_MAKEFILES bmake/common bmake/sun4/sun4* 
 	etags -a -f TAGS_MAKEFILES bmake/rs6000/rs6000* 
 	etags -a -f TAGS_MAKEFILES bmake/solaris/solaris*
 	etags -a -f TAGS_MAKEFILES bmake/IRIX/IRIX* bmake/freebsd/freebsd*
 	etags -a -f TAGS_MAKEFILES bmake/hpux/hpux* bmake/alpha/alpha*
 	etags -a -f TAGS_MAKEFILES bmake/t3d/t3d* bmake/paragon/paragon*
+	etags -a -f TAGS_MAKEFILES docs/makefile
 	chmod g+w TAGS_MAKEFILES
 
 # ------------------------------------------------------------------
