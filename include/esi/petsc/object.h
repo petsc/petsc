@@ -33,7 +33,7 @@ class Object : public virtual esi::Object
     Object()               {comm = 0; pobject = 0; refcnt = 1;};	
 
     // Destructor.
-    virtual ~Object() {};
+    virtual ~Object(void) {};
 
 
     //  Interface for esi::Object  ---------------
@@ -67,7 +67,7 @@ namespace gov{namespace cca{namespace petsc{
 class Services  {
   public:
     /** obligatory virtual destructor */
-    virtual ~Services (){}
+    virtual ~Services (void){}
 
     /** Creates a PortInfo to be used in subsequent
           calls to describe a Port. The arguments given are copied, not kept.

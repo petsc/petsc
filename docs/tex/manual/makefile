@@ -4,7 +4,7 @@
 
 PDFELATEX = unset TEXINPUTS; pdfelatex 
 NOADIC    = true
-SHELL     = sh
+SHELL     = csh
 
 # Build the entire manual as well as the intro part
 manual.pdf: intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex gettinginfo.tex

@@ -1,0 +1,844 @@
+%
+%     <H2><center>Research and Publications that make use of PETSc</center></H2>
+%
+
+%  <a name="websites"></a><H3><center>Web sites featuring PETSc related work</center></H3>
+%
+@Unpublished{prometheus,
+   author = "Mark Adams",
+  title = 	"Prometheus - scalable unstructured finite element solver",
+  Institution = "Berkeley",
+  url = 	"http://www.cs.berkeley.edu/\~{ }madams/prometheus/"
+}
+@Unpublished{petscgraphics,
+   author = "Adam C. Powell, IV",
+   title  = "PETScGraphics Distributed Visualization Library",
+   url   = "http://lyre.mit.edu/\~{ }powell/petscgraphics.html"
+}
+@Unpublished{tao-web-page,
+  title   = "{Toolkit for Advanced Optimization (TAO)} {W}eb Page",
+  author  = "Steve Benson and Lois Curfman McInnes and Jorge Mor&eacute",
+  Institution = "Mathematics and Computer Science Division, Argonne National Laboratory",
+  origin = mcs,
+  url    = "http://www.mcs.anl.gov/tao",
+}
+@Unpublished{parpre-web-page,
+  title       = "{ParPre} {W}eb {P}age",
+  url        =	"http://www.cs.utk.edu/\~{ }eijkhout/parpre.html",
+  Institution = "University of Tennessee",
+  author      = "Victor Eijkhout"
+}
+@Unpublished{tipetsc-web-page,
+  title = 	"Ti-PETSc - an interface to PETSc from Titanium",
+  Institution = "Berkeley",
+  url = 	"http://www.cs.berkeley.edu/\~{ }liblit/ti-petsc/"
+}
+@Unpublished{multiphase-web-page,
+  Author = "Q. Zou",
+  title = 	"Multiphase flow with PETSc",
+  Institution = "LANL",
+  url = 	"http://cnls-www.lanl.gov/\~{ }qzou/"
+}
+@Unpublished{electromag-web-page,
+  title = 	"Electromagnetics",
+  Institution = "LLNL",
+  url = 	"http://www.llnl.gov/casc/emsolve"
+}
+@Unpublished{prometueus-web-page,
+  Author =   "Mark Adams",
+  Institution = "Berkeley",
+  title = 	"Prometheus for Structural Mechanics Web page",
+  url = 	"http://www.cs.berkeley.edu/\~{ }madams/#Prometheus"
+}
+@Unpublished{fe-software-web-page,
+  Institution = "Kuleuven",
+  title =  "Finite element software",	
+  url = 	"http://www.esat.kuleuven.ac.be/elen/research/software-development"
+}
+@Unpublished{petsc-web-page,
+  Author = "Satish Balay and William D. Gropp and Lois Curfman McInnes
+		  and Barry F. Smith",
+  title = 	 "{PETSc} {W}eb page",
+  url = 	 "http://www.mcs.anl.gov/petsc",
+  origin = petsc
+}
+@Unpublished{mmmdcmaa-web-page,
+  title = 	 "{M}ulti-{M}odel {M}ulti-{D}omain {C}omputational {M}ethods in {A}erodynamics and {A}coustics {W}eb Page",
+  url = 	 "http://www.cs.odu.edu/\~{ }keyes/nsf",
+  author =      "David E. Keyes",
+  origin = mcs,
+  Institution = "Old Dominion University",
+}
+@Unpublished{oil-reservoir-sim-web-page,
+  title = 	 "{N}ew {G}eneration {F}ramework for {P}etroleum, {R}eservoir {S}imulation", 
+  url = 	"http://www.pe.utexas.edu/CPGE/new_generation",
+  institution = "University of Texas at Austin and Argonne National Laboratory",
+  key         = "University of Texas at Austin and Argonne National Laboratory",
+}
+@Unpublished{petsc-debian-package,
+    author = "Adam C. Powell, IV",
+    title  = "Debian package for PETSc",
+    url   = "http://lyre.mit.edu/\~{ }powell/petsc.html"
+}
+%
+%  <a name="optimization"><H3><center>Optimization</center></H3>
+%
+@Article{biros00,
+   author = "George Biros and Omar Ghattas",
+   title = "A Lagrange-Newton-Krylov-Schur Method for PDE Constrained Optimization",
+   journal="SIAG-Opt Views and News",
+   Volume="11", 
+   number="2", 
+   year="2000",
+   month="august",
+   url="http://www.cs.cmu.edu/\~{ }oghattas/papers/siag-opt/siag-opt.pdf"
+}
+@techreport{bmm99,
+ Author      = "Steve Benson and Lois Curfman McInnes and Jorge Mor&eacute",
+ TITLE       = "{GPCG}: A case study in the performance and scalability of optimization algorithms",
+ year        = 1999,
+ INSTITUTION = "Mathematics and Computer Science Division, Argonne National Laboratory",
+ url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P768.ps.Z",
+ origin      = mcs,
+ number      = "ANL/MCS-P768-0799"
+}
+@inproceedings{oghattas2000,
+   author = "J. Antaki and G. Belloch and O. Ghattas and I. Malcevic 
+             and G. Miller and N. Walkington",
+   title  = "A Parallel Dynamic-Mesh Lagrangian Method for Simulation of Flows with Dynamic
+             Interfaces",
+   booktitle = "Procceedings of SC2000",
+   url    ="http://www.cs.cmu.edu/\~{ }oghattas/papers/sc2000/sc2000.pdf"
+}
+@inproceedings{oghattas1999,
+   author = "George Biros and Omar Ghattas",
+   title  = "Parallel preconditioners for KKT systems arising in optimal control of viscous incompressible flows",
+   booktitle = "Proceedings of Parallel CFD '99, Williamsburg, Virginia, USA, May 23-26, 1999",
+   url    ="http://www.cs.cmu.edu/\~{ }oghattas/papers/pcfd99/pcfd99.pdf"
+}
+@inproceedings{hkms00,
+  title = "Using Automatic Differentiation for Second-order Matrix-free Methods
+          in PDE-constrained Optimization",
+  author = "P. D. Hovland and D. E. Keyes and L. C. McInnes and W. Samyono",
+  booktitle = "Proceedings of AD2000",
+  url = "http://www.icase.edu/\~{ }keyes/papers/ad2000.ps",
+  origin = mcs,
+  note = "(to appear)"
+}
+@techreport{bg011,
+   author = "George Biros and Omar Ghattas",
+   title = "Parallel Lagrange-Newton-Krylov-Schur Methods for PDE-Constrained Optimization. Part I: The Krylov-Schur Solver",
+   institution = "Laboratory for Mechanics, Algorithms, and Computing, Carnegie Mellon University",
+   year = "2001",
+   url = "http://www.cs.cmu.edu/\~{ }oghattas/papers/lnks/lnks1.pdf"
+}
+@techreport{bg012,
+   author = "George Biros and Omar Ghattas",
+   title = "Parallel Lagrange-Newton-Krylov-Schur Methods for PDE-Constrained Optimization. Part II: The Lagrange-Newton Solver, 
+            and its Application to Optimal Control of Steady Viscous Flows",
+   institution = "Laboratory for Mechanics, Algorithms, and Computing, Carnegie Mellon University",
+   year = "2001",
+   url = "http://www.cs.cmu.edu/\~{ }oghattas/papers/lnks/lnks2.pdf"
+}
+
+%
+%  <a name="cfd"><H3><center>CFD</center></H3>
+%
+
+@INPROCEEDINGS{lepotmeersessers2001,
+ AUTHOR=    "I. Lepot and F. Meers and J.A. Essers",
+ TITLE=     "Multilevels Parallel High Order Schemes for Invisid Flow Computations on 3D Unstructured Meshes",
+ YEAR=      "2001",
+ BOOKTITLE= "ECCOMAS Computational Fluid Dynamics Conference 2001",
+ url     = "http://www.ulg.ac.be/aerodyn"
+}
+@Article{aba01:petsc-app,
+  author = 	 {Jason Abate and Peng Wang and Kamy Sepehrnoori},
+  title = 	 {Parallel Compositional Reservior Simulation on Clusters of
+                  {PC}s},
+  journal = "Int. J. High Performance Computing Applications",
+  year = 	 2001,
+  volume =	 15,
+  number =	 1,
+  pages =	 {13--21},
+  month =	 {Spring},
+  origin = other
+}
+@INPROCEEDINGS{knepley98,
+ AUTHOR=    "Matthew Knepley and Denis Vanderstraeten",
+ TITLE=     "Parallel Building Blocks for Finite Element Simulations: Application to
+             Solid-Liquid Mixture Flows",
+ PUBLISHER= "Elsevier",
+ YEAR=      "1998",
+ BOOKTITLE= "Proceedings of Parallel CFD'97",
+ pages =    "281--287"
+}
+@INPROCEEDINGS{pcfd97,
+ AUTHOR=    "William D. Gropp and David E. Keyes and Lois Curfman McInnes and M. D. Tidriri",
+ TITLE=     "Parallel Implicit {PDE} Computations: Algorithms and Software",
+ PUBLISHER= "Elsevier",
+ YEAR=      "1998",
+ BOOKTITLE= "Proceedings of Parallel CFD'97",
+ pages =    "333-344",
+ origin = petsc
+}
+@INBOOK{knepleysamehsari98,
+ AUTHOR=    "Matthew Knepley and Ahmed H. Sameh and Vivek Sarin",
+ TITLE=     "Parallel Simulation of Particulate Flows",
+ editor= "A. Ferreira et al",
+ YEAR=      "1998",
+ BOOKTITLE= "Lecture Notes in Computer Science 1457",
+ pages =    "226--237"
+}
+@Article{gkmt98,
+    Author = "William D. Gropp and David E. Keyes and Lois Curfman McInnes and M. D. Tidriri",
+    Title  = "Globalized {N}ewton-{K}rylov-{S}chwarz Algorithms and Software
+              for Parallel Implicit {CFD}",
+    journal = "Int. J. High Performance Computing Applications",
+    year    = 2000,
+    volume  = 14,
+    note    = "also available as Argonne preprint ANL/MCS-P788-0100",
+    url     = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P788.ps.Z",
+    pages   = "102-136",
+    origin  = petsc
+}
+@INPROCEEDINGS{AGKKS-SC99,  
+        AUTHOR = "W. K. Anderson and W. D. Gropp and D. K. Kaushik
+                  D. E. Keyes and B. F. Smith",
+        TITLE = "Achieving High Sustained Performance in an 
+                 Unstructured Mesh {CFD} Application",
+        BOOKTITLE = "Proceedings of SC 99",
+        EDITOR = "",
+        PUBLISHER = "",
+        NOTE = "also available as Argonne preprint ANL/MCS-P776-0899",
+        url     = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P776.ps.Z",
+        YEAR = "1999",
+        origin = petsc
+} 
+@INPROCEEDINGS{knepleysamehsarin99,  
+        AUTHOR = " Matthew Knepley and Ahmed H. Sameh and Vivek Sarin",
+        TITLE = "Design of Large Scale Parallel Simulations",
+        BOOKTITLE = "Proceedings of Parallel CFD'99",
+        EDITOR = "A. Ecer et al.",
+        PUBLISHER = "Elsevier",
+        YEAR = "1999"
+} 
+@INPROCEEDINGS{GKKS-PCFD99,  
+        AUTHOR = "W. D. Gropp and D. K. Kaushik and 
+                  D. E. Keyes and B. F. Smith",
+        TITLE = "Toward Realistic Performance Bounds for Implicit {CFD} codes",
+        BOOKTITLE = "Proceedings of Parallel CFD'99",
+        EDITOR = "A. Ecer et al.",
+        PUBLISHER = "Elsevier",
+        YEAR = "1999",
+        origin = petsc
+} 
+@INPROCEEDINGS{KKS97,  
+        AUTHOR = "D. K. Kaushik and D. E. Keyes and B. F. Smith",
+        TITLE = "On the Interaction of Architecture and Algorithm in the 
+                 Domain-Based Parallelization of an Unstructured Grid 
+                 Incompressible Flow Code",
+        BOOKTITLE = "Proceedings of the 10th International Conference on 
+                     Domain Decomposition Methods",
+        EDITOR = "J. Mandel et al.",
+        PAGES = "311--319",
+        PUBLISHER = "Wiley",
+        NOTE = "",
+        YEAR = "1997",
+        origin = petsc
+} 
+@INPROCEEDINGS{KKS99,  
+        AUTHOR = "D. K. Kaushik and D. E. Keyes and B. F. Smith",
+        TITLE = "{N}ewton-{K}rylov-{S}chwarz Methods for Aerodynamic Problems: Compressible
+                 and Incompressible Flows on Unstructured Grids",
+        BOOKTITLE = "Proceedings of the 11th International Conference on 
+                     Domain Decomposition Methods",
+        EDITOR = "C.-H. Lai et al.",
+        PUBLISHER = "Domain Decomposition Press, Bergen",
+        NOTE = "to appear, also available as Argonne preprint ANL/MCS-P745-1298",
+        url        = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P745.ps.Z",
+        YEAR = "1999",
+        origin = petsc
+} 
+@INCOLLECTION{KKS97_cfd,
+     AUTHOR = "D. E. Keyes and D. K. Kaushik and B. F. Smith",
+     TITLE = "Perspectives for CFD on Petaflops Systems",
+     BOOKTITLE = "CFD Review 1998",
+     EDITOR = "M. Hafez and K. Oshima",
+     PUBLISHER = "World Scientific, Singapore",
+     PAGES = "1079--1096",
+     NOTE = "",
+     YEAR = "1998",
+     origin = petsc
+}
+@TechReport{NKS-petsc-98,
+  author = 	 {W. D. Gropp and D. E. Keyes and L. C. McInnes and M. D. Tidriri},
+  title = 	 {Globalized
+     {N}ewton-{K}rylov-{S}chwarz algorithms and software for parallel implicit {CFD}},
+  institution =  {ICASE},
+  year = 	 1998,
+  number =	 {98-24},
+  month =	 AUG,
+  annote =	 {to appear in IJHPCA},
+  origin = petsc
+}
+@techreport{hm99,
+ AUTHOR=    "P. D. Hovland and L. C. McInnes",
+ TITLE=     "Parallel Simulation of Compressible Flow Using Automatic
+             Differentiation and {PETSc}",
+ year      = 2000,
+ institution = "Mathematics and Computer Science Division, Argonne National Laboratory",
+ number      = "ANL/MCS-P796-0200",
+ url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P796.ps.Z",
+ note        = "to appear in  a special issue of Parallel Computing on 
+               ``Parallel Computing in Aerospace''",
+ origin = petsc
+}
+@InProceedings{texas98,
+  author = 	 {P. Wang and S. Balay and K. Seperhrnoori and J. Wheeler and J. Abate and B. Smith and
+                 G. A. Pope},
+  title = 	 {A Fully Implicit Parallel {EOS} Compositional Simulator for Large Scale 
+              Reservoir Simulation},
+  booktitle = 	 {Proceedings of the 1999 Society of Petroleum Engineers
+              15th Reservoir Simulation Symposium},
+  note    = "also available as Argonne preprint ANL/MCS-P743-1298",
+  url     = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P743.pdf",
+  year = {1998},
+  origin = petsc
+}
+%
+%  <a name="wave"><H3><center>Wave propagation and the Helmholtz equation</center></H3>
+%
+@Article{DeGersem99,
+  author =       "H. De Gersem and D. Lahaye and S. Vandewalle and
+                  K. Hameyer",
+  title  =       "Comparison of Quasi Minimal Residual and Bi-Conjugate 
+                  Gradient Iterative Methods to Solve Complex Symmetric 
+                  Systems Arising from Time-Harmonic Simulations",
+  journal =      "COMPEL",
+  year =         "1999",
+  volume =       "18",
+  number =       "3",
+  pages =        "298--310",
+  bibdate =      ""
+}
+@InProceedings{widlund-wave-98,
+  author = 	 {Olof B. Widlund},
+  title = 	 {Schwarz Methods for {H}elmholtz's Equation},
+  booktitle = 	 {Mathematical and Numerical Aspects of Wave Propagation},
+  editor =	 {John A. DeSanto},
+  year =	 1998,
+  publisher =	 {SIAM},
+  pages     =    {620--622},
+  address =	 {Philadelphia},
+  note =	 {Proceedings of the Fourth International Conference on Mathematical and Numerical Aspects of Wave Propagation, Golden, Colorado, June 1--5}
+}
+@InProceedings{Toselli-wave-98,
+  author = 	 {Andrea Toselli},
+  title = 	 {Overlapping {S}chwarz Methods for {M}axwell's Equations in Conductive Media},
+  booktitle = 	 {Mathematical and Numerical Aspects of Wave Propagation},
+  editor =	 {John A. DeSanto},
+  year =	 1998,
+  publisher =	 {SIAM},
+  address =	 {Philadelphia},
+  pages =	 {540--542},
+  note =	 {Proceedings of the Fourth International Conference on Mathematical and Numerical Aspects of Wave Propagation, Golden, Colorado, June 1--5}
+}
+@InProceedings{mcinnes-wave-98,
+  author = 	 {L. C. McInnes and R. Susan-Resiga and H. M. Atassi and D. E. Keyes},
+  title = 	 {Parallel Solution of {H}elmholtz Problems using Additive {S}chwarz Methods},
+  booktitle = 	 {Mathematical and Numerical Aspects of Wave Propagation},
+  editor =	 {John A. DeSanto},
+  year =	 1998,
+  publisher =	 {SIAM},
+  address =	 {Philadelphia},
+  pages =	 {623--625},
+  note =	 {Proceedings of the Fourth International Conference on Mathematical and Numerical Aspects of Wave Propagation, Golden, Colorado, June 1--5},
+  origin = petsc
+}
+@InProceedings{mska98,
+  author    = "L. C. McInnes and R. Susan-Resiga and D. E. Keyes  and H. M. Atassi",
+  title     = "Additive {S}chwarz Methods with Nonreflecting Boundary Conditions for the
+               Parallel Computation of {H}elmholtz Problems",
+  booktitle = "Proceedings of the 10th Intl. Conf. on Domain Decomposition Methods",
+  editor    = "J. Mandel et al.",
+  publisher = "AMS",
+  pages     = "349--357",
+  year      = 1998,
+  origin = petsc
+}
+@InProceedings{ccew98,
+  author    = "X.-C. Cai and M. A. Casarin, Jr. and F. W. Elliott, Jr. and O. B. Widlund",
+  title     = "Overlapping {S}chwarz Algorithms for Solving {H}elmholtz's Equation",
+  booktitle = "Proceedings of the 10th Intl. Conf. on Domain Decomposition Methods",
+  editor    = "J. Mandel et al.",
+  publisher = "AMS",
+  pages     = "437-445",
+  year      = 1998
+}
+@InProceedings{ra98a,
+  author    = "R. Susan-Resiga and H. M. Atassi",
+  title     = "Parallel Computing Using {S}chwarz Domain Decomposition Method for Aeroacoustic Problems",
+  booktitle = "Proceedings of the 4th AIAA/CEAS Aeroacoustics Conference",
+  publisher = "AIAA",
+  pages     = "86-96",
+  note      = "AIAA paper 98-2218",
+  year      = 1998
+}
+@InProceedings{ar98c,
+  author    = "H. M. Atassi and R. Susan-Resiga",
+  title     = "Parallel Computation of Harmonic Waves using Domain Decomposition, 
+               Part {I}: General Formulation", 
+  booktitle = "Proceedings of the ASME Noise Control and Acoustics Division",
+  publisher = "ASME",
+  note      = "NCA-25",
+  pages     = "375-379",
+  year      = 1998
+}
+@InProceedings{ra98b,
+  author    = "R. Susan-Resiga and H. M. Atassi",
+  title     = "Parallel Computation of Harmonic Waves using Domain Decomposition, 
+               Part {II}: Numerical Implementation and Applications",
+  booktitle = "Proceedings of the ASME Noise Control and Acoustics Division",
+  publisher = "ASME",
+  note      = "NCA-25",
+  pages     = "381 -388",
+  year      = 1998
+}
+@InProceedings{cai-dd10-98,
+  author =       "Xiao-Chuan Cai and Mario A. Casarin and Frank W. Elliott, Jr. and Olof B. Widlund",
+  title =        "Overlapping {S}chwarz methods for solving {H}elmholtz's Equation",
+  booktitle =    "Domain Decomposition Methods 10",
+  editors =      "Jan Mandel and Charbel Farhat and Xiao-Chuan Cai",
+  series =       "Contemporary Mathematics",
+  volume =       "218",
+  publisher =    "American Mathematical Society",
+  address =      "Providence, Rhode Island",
+  year =         "1998",
+  pages =        "437--445",
+}
+%
+%  <a name="software"><H3><center>Software Engineering</center></H3>
+%
+@INPROCEEDINGS{ gropp98,
+ AUTHOR=    "William D. Gropp",
+ TITLE=     "Exploiting Existing Software in Libraries: Successes, Failures, and Reasons Why",
+ PUBLISHER= "SIAM",
+ BOOKTITLE= "Proceedings of the SIAM Workshop on Object Oriented Methods for
+                Inter-operable Scientific and Engineering Computing",
+ year      = 1999,
+ pages     = "21-29",
+ origin = petsc
+}
+@INPROCEEDINGS{ knepleysarin8,
+ AUTHOR=    "Matthew Knepley and Vivek Sarin",
+ TITLE=     "Algorithm Development for Large Scale Computing",
+ PUBLISHER= "SIAM",
+ BOOKTITLE= "Proceedings of the SIAM Workshop on Object Oriented Methods for
+                Inter-operable Scientific and Engineering Computing",
+ year      = 1999
+}
+@unpublished{ bgms00,
+ author    = "S. Balay and W. D. Gropp and L. C. McInnes and B. F. Smith",
+ title     = "Software for the Scalable Solution of {PDEs}",
+ url       = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P834.ps.Z",
+ note      = "Argonne preprint ANL/MCS-P834-0700, also to appear in the CRPC Handbook of 
+             Parallel Computing, eds. J. Fongarra, I. Foster, G. Fox, K. Kennedy, 
+             L. Torczon, and A. White, Morgan Kaufmann Publishers",
+ origin = petsc             
+}
+@INPROCEEDINGS{ hovland_norris_smith98,
+ AUTHOR=    "Paul Hovland and Boyana Norris and Lucas Roh and Barry Smith",
+ TITLE=     "Developing a Derivative-Enhanced Object-Oriented Toolkit for Scientific Computations",
+ PUBLISHER= "SIAM",
+ BOOKTITLE= "Proceedings of the SIAM Workshop on Object Oriented Methods for
+                Inter-operable Scientific and Engineering Computing",
+ url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P731.ps.Z",
+ note      = "also available as Argonne preprint ANL/MCS-P731-1098",
+ year      = 1999,
+ pages     = "129-137",
+ origin = petsc
+}
+@InProceedings{efficient,
+  author    = "Satish Balay and William D. Gropp and Lois Curfman McInnes
+                  and Barry F. Smith",
+  title     = "Efficient Management of Parallelism in 
+               Object Oriented Numerical Software Libraries",
+  booktitle = "Modern Software Tools in Scientific Computing",
+  editor    = "E. Arge and A. M. Bruaset and H. P. Langtangen",
+  publisher = "Birkhauser Press",
+  pages     = "163--202",
+  year      = 1997,
+  url       = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P634.ps.Z",
+  note      = "also available as Argonne preprint ANL/MCS-P634-0197",
+  origin = petsc
+}
+@TechReport{petsc-user-ref,
+    Author = "Satish Balay and William D. Gropp and Lois Curfman McInnes
+		  and Barry F. Smith",
+    Title  = "{PETS}c 2.0 Users Manual",
+    Institution = "Argonne National Laboratory",
+    Month  = Nov,
+    Year   = 2000,
+    Number = "ANL-95/11 - Revision 2.0.29",
+    url    = "http://www.mcs.anl.gov/petsc/docs",
+    origin = petsc
+    }
+@TechReport{petsc-user-ref,
+    Author = "Marcin Bojko and Piotr Krzyzanowski",
+    Title  = "Rozwiazywanie ukladow rownan przy pomocy pakietu PETSc",
+    Institution = "Instytut Matematyki, Stosowanej i Mechaniki, Uniwersytet Warszawski",
+    Year   = 1998,
+    note   = "An introduction to PETSc in Polish"
+    }
+@inproceedings{abghmn00,
+   title = "Integrating Automatic Differentiation with Object-Oriented
+            Toolkits for High-Performance Scientific Computing",
+   author = "J. Abate and S. Benson and L. Grignon and P. Hovland and
+             L. C. McInnes and B. Norris",
+   booktitle = "Proceedings of AD2000",
+   url       = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P820.ps.Z",
+   note = "to appear, also available as Argonne preprint ANL/MCS-P820-0500",
+   origin = mcs
+}
+@Unpublished{petsc-mpi-paper,
+    Author = "Lois Curfman McInnes and Barry F. Smith",
+    Title  = "{PETS}c 2.0: A Case Study of Using {MPI} to Develop Numerical 
+              Software Libraries",
+    Note   = "Proceedings of the MPI Developers Conference, Notre Dame, IN",
+    Month  = Jun,
+    Year   = "1995", 
+    origin = petsc
+}
+@INPROCEEDINGS{miss-paper,
+ AUTHOR=    "William D. Gropp and Barry F. Smith",
+ TITLE=     "Scalable, Extensible, and Portable
+              Numerical Libraries",
+ PUBLISHER= "IEEE",
+ YEAR=      "1994",
+ BOOKTITLE= "Proceedings of the Scalable Parallel Libraries Conference",
+ ADDRESS=   "Mississippi State University",
+ pages=     "87--93",
+ keyword=   "numerical libraries, scientific computing, parallel computing",
+ origin = petsc
+}
+@INPROCEEDINGS{snes-paper,
+ AUTHOR=    "William D. Gropp and Lois Curfman McInnes and Barry F. Smith",
+ TITLE=     "Scalable Libraries for Solving Systems of Nonlinear Equations
+             and Unconstrained Minimization Problems",
+ PUBLISHER= "IEEE",
+ YEAR=      "1995",
+ BOOKTITLE= "Proceedings of the Scalable Parallel Libraries Conference",
+ ADDRESS=   "Mississippi State University",
+ pages=     "60-67",
+ keyword=   "nonlinear equations, optimization, superconductivity, parallel 
+             computing",
+ origin = petsc
+}
+@article{dsneutral,
+    Author = "Barry F. Smith and William D. Gropp",
+    Title  = "The Design of Data-structure-neutral Libraries for the Iterative
+		Solution of Sparse Linear Systems",
+    Year   = 1996,
+    Journal = "Scientific Programming",
+    Volume = 5,
+    pages  = "329--336",
+    Key    = "GroppSmith96 ! KSP design",
+    origin = petsc
+    }
+@inproceedings{bgms98,
+ author    = "Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith",
+ title     = "A Microkernel Design for Component-based Parallel Numerical Software Systems",
+ booktitle = "Proceedings of the SIAM Workshop on Object Oriented Methods for
+              Inter-operable Scientific and Engineering Computing",
+ publisher = "SIAM",
+ pages     = "58-67",
+ note      = "also available as Argonne preprint ANL/MCS-P727-0998",
+ url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P727.ps.Z",
+ year      = "1998",
+ origin = petsc
+}
+@Article{hkm98,
+  author    = "M. E. Hayder and D. E. Keyes and P. Mehrotra",
+  title     = "A Comparison of the {PETSc} Library and {HPF} Implementations of 
+               an Archetypal {PDE} Computation",
+  journal   = "Advances in Engineering Software",
+  volume    = 29,
+  pages     = "415-424",
+  year      = 1998
+}
+@techreport{pdpta99,
+ AUTHOR=    "L. A. Freitag and W. D. Gropp and P. D. Hovland and L. C. McInnes and B. F. Smith",
+ TITLE=     "Infrastructure and Interfaces for Large-Scale Numerical Software",
+ note        = "to appear in the Proceedings of the 1999 International Conference 
+               on Parallel and Distributed Processing Techniques and Applications, 
+               June 28 - July 1, 1999, Las Vegas, Nevada",
+ institution =  "Mathematics and Computer Science Division, Argonne National Laboratory",
+ url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P751.ps.Z",
+ number      = "ANL/MCS-P751-0599",
+ year      = 1999,
+ origin = mcs
+}
+@TechReport{bischof00,
+  author="C. H. Bischof and H. M. Bücker and P. D. Hovland",
+  title =  "On Combining Computational Differentiation and Toolkits for Parallel Scientific Computing",
+  institution= "Argonne National Laboratory",
+  number = "ANL/MCS-P797-0200",
+  url   = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P797.ps.Z",
+  year="2000",
+  origin = mcs
+}
+@techreport{overture00,
+  author      = "K. R. Buschelman and W. D. Gropp and L. C. McInnes and B. F. Smith",
+  title       = " {PETSc} and Overture: Lessons Learned Developing an Interface between Components",
+  institution = "Argonne National Laboratory",
+  number      = "ANL/MCS-P858-1100",
+  url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P858.ps.Z",
+  note        = "to appear in the Proceedings of the International Federation for Information
+                 Processing Working Conference on Software Architectures for Scientific
+                 Computing, Kluwer",
+  year        = "2000",
+  origin = petsc
+}
+@techreport{smith97,
+  title = 	 "An Interface for Efficient Vector Scatters and Gathers on Parallel Machines",
+  url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P701.ps.Z",
+  number        = "ANL/MCS-P701",
+  author =      "Barry F. Smith",
+  Institution = "Mathematics and Computer Science Division, Argonne National Laboratory",
+ origin = petsc
+}
+@Article{smith98,
+  author =       "Barry Smith",
+  title  =       "The Transition of Numerical Software: From Nuts-and-Bolts to Abstraction",
+  journal =      "SIGNUM Newsletter",
+  year =         "1998",
+  url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P712.ps.Z",
+  origin = petsc
+}
+@techreport{AD-PETSC-TM,
+  title = "Using {ADIFOR} and {ADIC} to Provide a {J}acobian for the {SNES}
+        Component of {PETSc}",
+  author = "Christian Bischof and Paul Hovland and Po-Ting Wu",
+  year = 1997,
+  type = "Technical Memorandum",
+  institution = anl,
+  origin = mcs,
+  url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/TM233.ps.Z",
+  number = "ANL/MCS-TM-233"
+  }
+%  <a name="algorithm"><H3><center>Algorithm design and analysis</center></H3>
+%
+@Article{adams,
+  author =       "Mark F. Adams",
+  title  =       "Evaluation of Three Unstructured Multigrid Methods on 3D Finite Element Problems in 
+                  Solid Mechanics",
+  journal =      "SIAM J. Sci. Comput",
+  notes =        "to appear",
+  url = 	"http://www.cs.berkeley.edu/\~{ }madams/amg.ps"
+}
+@Article{Lahaye00,
+  author =       "Lahaye, D. and De Gersem, H. and 
+                  Vandewalle, S. and Hameyer, K.",
+  title  =       "Algebraic Multigrid for Complex Symmetric Systems", 
+  journal =      @IEEEMAGN, 
+  year =         "2000",
+  volume =       "36", 
+  number =       "4", 
+  pages =        "1535--1538", 
+}
+@Article{Adams-00a,
+  author = 	{Adams, M.~F.},
+  title = 	{Parallel Multigrid Solvers for 3D Unstructured Finite Element 
+Problems in Large Deformation Elasticity and Plasticity},
+  journal = 	{International Journal for Numerical Methods in Engineering},
+  url = 	"http://www.cs.berkeley.edu/\~{ }madams/NMEMFA.ps",
+  year = 	{To appear}
+}
+@InProceedings{Adams-99c, 
+  author =   {Adams, M. F. and J. Demmel}, 
+  title =   {Parallel Multigrid Solver Algorithms and 
+                  Implementations for 3{D} Unstructured Finite Element 
+                  Problem}, 
+  booktitle = {Proceedings of SC99: High Performance Networking and Computing},
+  address = {Portland, Oregon}, 
+  month = {November}, 
+  url = 	"http://www.cs.berkeley.edu/\~{ }madams/sc99.ps",
+  year = {1999} 
+} 
+@Article{chan95,
+  author    = "T. Chan and B. Smith and J. Zou",
+  title     = "Overlapping {S}chwarz Methods
+              on Unstructured Meshes using Non-matching Coarse Grids",
+  journal =   "Numer. Math.",
+  year      = "1995",
+  volume    = "73",
+  origin = mcs,
+  pages     = "149--167"
+}
+@TechReport{Adams-CSD-98-993,
+  pages =        "11",
+  year =         "1998",
+  type =         "Technical Report",
+  number =       "CSD-98-993",
+  institution =  "University of California, Berkeley",
+  title =        "A Parallel Maximal Independent Set Algorithm",
+  bibdate =      "March 11, 1998",
+  author =       "Mark Adams and James Demmel",
+  abstract =     "The parallel construction of maximal independent sets
+                 is a useful building block for many algorithms in the
+                 computational sciences, including graph coloring and
+                 multigrid coarse grid creation on unstructured meshes.
+                 We present an efficient asynchronous maximal
+                 independent set algorithm for use on parallel
+                 computers, for ``well partitioned'' graphs, that arise
+                 from finite element (FE) models. For appropriately
+                 partitioned bounded degree graphs, it is shown that the
+                 running time of our algorithm under the P-RAM
+                 computational model is of $O(1)$, which is an
+                 improvement over the previous best P-RAM complexity for
+                 this class of graphs. We present numerical experiments
+                 on an IBM SP, that confirm our P-RAM complexity model
+                 is indicative of the performance one can expect with
+                 practical partitions on graphs from FE problems.",
+  url = 	"http://www.cs.berkeley.edu/\~{ }madams/pmis.ps",
+  month =        mar # " 11,",
+}
+%
+%  <a name="other"><H3><center>Other</center></H3>
+%
+@inproceedings{brain1,
+   author = "Simon K. Warfield and Matthieu Ferrant and Xavier Gallez and Arya Nabavi and 
+             Ferenc A. Jolesz and Ron Kikinis",
+   title  = "Real-Time Biomechanical Simulation of Volumetric Brain Deformation for Image Guided Neurosurgery",
+   booktitle = "Procceedings of SC2000",
+   url    ="http://www.sc2000.org//techpapr/papers/pap.pap230.pdf"
+}
+@Article{Bludszuwei98,
+  author =        "Mark Bludszuweit",
+  journal =      "Journal of Lightwave Technology",
+  year = "1998",
+  volume = "16",
+  number = "7",
+  pages = "1336--42",
+  title  =       "Mixed Finite Element Beam Propagation Method"
+}
+@Article{s1,
+  author =        "J. L. Friedman and N. Stergioulas",
+  journal =      "Astrophysics Journal",
+  year = "1998",
+  volume = "492",
+  number = "301",
+  pages = "",
+  title  =       ""
+}
+@Article{s1,
+  author =        "S. M. Morsink and N. Stergioulas and S. Blattnig",
+  journal =      "Astrophysics Journal",
+  year = "1999",
+  volume = "510",
+  number = "854",
+  pages = "",
+  title  =       ""
+}
+@techreport{s2,
+ Author      = "N. Stergioulas",
+ TITLE       = "Ph. D. thesis",
+ year        = 1996,
+ INSTITUTION = "University of Wisconsin-Milwaukee",
+}
+@BOOK{1sbg,
+      AUTHOR="Barry F. Smith and Petter Bj{\o}rstad and William D. Gropp",
+      TITLE="Domain Decomposition: Parallel Multilevel Methods for Elliptic 
+             Partial Differential Equations",
+      YEAR="1996",
+      PUBLISHER="Cambridge University Press",
+      origin = mcs,
+      url="http://www.mcs.anl.gov/\~{ }bsmith/ddbook.html"
+      }
+@inproceedings{coral1,
+   AUTHOR	= "L. Kettunen and K. Forsman and D. Levine and W. Gropp",
+   TITLE	= "Solutions of TEAM Problem \#13 Using Integral Equations 
+                   in a Sequential and Parallel Computing Environment",
+   BOOKTITLE	= "Proceedings of the Miami TEAM Workshop",
+   LOCATION     = "Florida International University, Department of Electrical
+                   Engineering and Computing Science",
+   MONTH        = Nov,
+   YEAR		= 1993,
+   origin = mcs
+   }
+@inproceedings{coral2,
+   AUTHOR	= "L. Kettunen and K. Forsman and D. Levine and W. Gropp",
+   TITLE	= "Solutions of TEAM Problems 13 and 20 Using a Volume 
+                   Integral Formulation",
+   BOOKTITLE	= "Proceedings of Aix-les-Bains TEAM Workshop",
+   MONTH        = Dec,
+   YEAR		= 1994,
+   origin = mcs
+   }
+@inproceedings{coral3,
+   AUTHOR	= "L. Kettunen and K. Forsman and D. Levine and W. Gropp",
+   TITLE	= "Computational Electromagnetics and Parallel Dense
+                   Matrix Computations",
+   BOOKTITLE	= "Proceedings of the SIAM Parallel Processing for 
+                   Scientific Computing Conference",
+   LOCATION     = "Florida International University, Department of Electrical
+                   Engineering and Computing Science",
+   YEAR		= 1995,
+   origin = mcs
+   }
+@InProceedings{mijalkovic, 
+   author = {Slobodan Mijalkovi\'{c}}, 
+   title = {Evaluation of Multigrid as a Solver for Stress Analysis Problems 
+             in Semiconductor Process Simulation}, 
+   booktitle = {Multigrid Methods VI: Proceedings of the Sixth European 
+                Multigrid Conference Held Gent, Belgium, September 27--30, 1999.}, 
+   editor = {Erik Dick, Kris Riemslagh, Jan Vierendeels}, 
+   OPTvolume = {14}, 
+   OPTseries = {Lecture Notes in Computational Science and Engineering}, 
+   year = 2000, 
+   publisher = {Springer}, 
+   address = {Berlin}, 
+   OPTpages = {179--184}, 
+}
+@InProceedings{Beaudoin98,
+  author = 	 {A. J. Beaudoin},
+  title = 	 {Use of Polycrystal Plasticity Theory in Assessing Material Performance},
+  booktitle = 	 {Simulation of materials processing: Theory, methods, and applications - 
+                  Proceedings of the Sixth International Conference, NUMIFORM'98},
+  editor = 	 {J. Hu\'etink and F. P. T. Baaijens},
+  OPTvolume = 	 {},
+  OPTnumber = 	 {},
+  OPTseries = 	 {},
+  year = 	 1998,
+  OPTorganization = {},
+  publisher = {A. A. Balkema Publishers},
+  address = 	 {Rotterdam, Netherlands},
+  month = 	 JUN,
+  OPTpages = 	 {},
+}
+@article{Bludszuwei98,
+  author =        "Mark Bludszuweit",
+  journal =      "Journal of Lightwave Technology",
+  year = "1998",
+  volume = "16",
+  number = "7",
+  pages = "1336--42",
+  title  =       "Mixed Finite Element Beam Propagation Method"
+}
+@Article{gilli-pauletto-1998,
+  author =       "Manfred Gilli and Giorgio Pauletto",
+  title =        "Parallel {K}rylov Methods for Econometric Model Simulation",
+  journal = "Computational Economics",
+  year = "2000",
+  volume = "16",
+  pages = "173--186"
+}
+@Unpublished{sintering-web-page,
+  title = 	 "{M}icrostructural {E}volution in {S}intering - an {E}xperimental, {M}athematical 
+                  and {N}umerical {S}tudy", 
+  author =      "W. Zhang and J. H. Schneibel",
+  url = 	 "http://www.oakland.edu/\~{ }w2zhang/sintering.htm",
+  Institution = "Oakland University",
+}
+

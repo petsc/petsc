@@ -20,7 +20,7 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
                public virtual esi::MatrixData<Ordinal>,
                public virtual esi::MatrixRowReadAccess<Scalar,Ordinal>,
                public virtual esi::MatrixRowWriteAccess<Scalar,Ordinal>, 
-               public virtual esi::petsc::Object
+               public         esi::petsc::Object
 {
   public:
 

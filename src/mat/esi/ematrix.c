@@ -294,6 +294,9 @@ namespace esi{namespace petsc{
     };
 };
 }}
+
+::esi::petsc::OperatorFactory<double,int> OFInstForIntel64CompilerBug;
+
 EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_CCA)
 gov::cca::Component *create_esi_petsc_operatorfactory(void)
@@ -323,7 +326,7 @@ template<class Scalar,class Ordinal> class MyPetra_ESI_CRS_Matrix : public virtu
 
   MyPetra_ESI_CRS_Matrix(Petra_DataAccess CV,const Petra_CRS_Graph& graph) :  Petra_ESI_Object(), Petra_RDP_CRS_Matrix(CV, graph), Petra_ESI_CRS_Matrix<Scalar,Ordinal>(CV, graph){graph_ = (Petra_CRS_Graph*)&graph;SetStaticGraph(false);};
 
-  virtual ~MyPetra_ESI_CRS_Matrix() { };
+  virtual ~MyPetra_ESI_CRS_Matrix(void) { };
 
   virtual esi::ErrorCode copyIntoRow(Ordinal row, Scalar* coefs, Ordinal* colIndices, Ordinal length)
     { int ierr;
