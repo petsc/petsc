@@ -36,13 +36,15 @@ class Maker (logging.Logger):
       newTmp = bs.argDB['TMPDIR']
       return 0
       
-    stats     = os.statvfs(mainTmp)
-    freeSpace = stats.f_bavail*stats.f_frsize
-    if freeSpace < 50*1024*1024:
-      del bs.argDB['TMPDIR']
-      bs.argDB.setType('TMPDIR', nargs.ArgDir(1,'Insufficient space ('+str(freeSpace/1024)+'K) on '+mainTmp+'. Select another directory'))
-      newTmp = bs.argDB['TMPDIR']
-      return 0
+    try:
+      stats     = os.statvfs(mainTmp)
+      freeSpace = stats.f_bavail*stats.f_frsize
+      if freeSpace < 50*1024*1024:
+        del bs.argDB['TMPDIR']
+        bs.argDB.setType('TMPDIR', nargs.ArgDir(1,'Insufficient space ('+str(freeSpace/1024)+'K) on '+mainTmp+'. Select another directory'))
+        newTmp = bs.argDB['TMPDIR']
+        return 0
+    except: pass
     return 1
 
   def setupTmpDir(self):
