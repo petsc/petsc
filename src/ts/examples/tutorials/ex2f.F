@@ -78,7 +78,7 @@
       PetscTruth       flg,monitor
       PetscErrorCode ierr
       PetscInt          time_steps_max,steps,i1
-      double precision dt,ftime,time_total_max
+      PetscReal dt,ftime,time_total_max
 
 !  Note: Any user-defined Fortran routines (such as RHSFunction)
 !  MUST be declared as external.
@@ -173,7 +173,7 @@
 !  Set solution vector and initial timestep
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      dt = dreal(h/two_d0)
+      dt = h/two_d0
       call TSSetInitialTimeStep(ts,0.d0,dt,ierr)
       call TSSetSolution(ts,u,ierr)
 
@@ -306,7 +306,7 @@
 #include "ex2f.h"
 
 !  Input/output parameters:
-      double precision  t
+      PetscReal  t
       PetscScalar  x
       PetscErrorCode          ierr
 
@@ -364,7 +364,7 @@
       TS               ts
       PetscInt          step
       PetscObject dummy
-      double precision time
+      PetscReal time
       Vec              u
       PetscErrorCode          ierr
 
@@ -446,7 +446,7 @@
 
 !  Input/output parameters:
       TS               ts
-      double precision t
+      PetscReal t
       Vec              global_in,global_out
       integer          dummy
 
@@ -559,7 +559,7 @@
 
 !  Input/output parameters:
       TS               ts
-      double precision t
+      PetscReal t
       Vec              global_in
       Mat              A,B
       MatStructure     str

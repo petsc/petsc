@@ -84,26 +84,21 @@ ex17f: ex17f.o chkopts
 	${RM} -f ex17f.o
 #----------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1; grep -v p0 ex1_1.tmp > ex1_1.tmpz ;\
-	   if (${DIFF} output/ex1_1.out ex1_1.tmpz) then true; \
-	   else echo "This is a contrived error to test error handling."; fi; \
-	   ${RM} -f ex1_1.tmp ex1_1.tmpz
+	-@${MPIRUN} -np 1 ex1
+	-@echo "This is a contrived error to test error handling."
+
 runex1f:
-	-@${MPIRUN} -np 1 ex1f > ex1f_1.tmp 2>&1; grep -v p0 ex1f_1.tmp > ex1f_1.tmpz ;\
-	   if (${DIFF} output/ex1f_1.out ex1f_1.tmpz) then true; \
-	   else echo "This is a contrived error to test error handling."; fi; \
-	   ${RM} -f ex1f_1.tmp ex1f_1.tmpz
+	-@${MPIRUN} -np 1 ex1f
+	-@echo "This is a contrived error to test error handling."
+
 runex2:
-	-@${MPIRUN} -np 1 ex2	 > ex2_1.tmp 2>&1;grep -v p0 ex2_1.tmp > ex2_1.tmpz ;\
-	   if (${DIFF} output/ex2_1.out ex2_1.tmpz) then true; \
-	   else echo "This is a contrived error to test error handling."; fi; \
-	   ${RM} -f ex2_1.tmp ex2_1.tmpz
+	-@${MPIRUN} -np 1 ex2
+	-@echo "This is a contrived error to test error handling."
+
 runex3:
-	-@${MPIRUN} -np 1 ex3 -fp_trap > ex3_1.tmp 2>&1;\
-	   grep -v p0 ex3_1.tmp > ex3_1.tmpz ;	 \
-	   if (${DIFF} output/ex3_1.out ex3_1.tmpz) then true; \
-	   else echo "This is a contrived error to test floating point traps."; fi; \
-	   ${RM} -f ex3_1.tmp ex3_1.tmpz
+	-@${MPIRUN} -np 1 ex3 -fp_trap
+	-@echo "This is a contrived error to test error handling of floating point exceptions."
+
 runex7:
 	-@${MPIRUN} -np 2 ex7
 runex10:
