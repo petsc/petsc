@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.64 1996/12/03 20:03:22 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.65 1996/12/03 23:41:41 balay Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1453,6 +1453,8 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
   int        row,col,*permr, *permc, *ns_row =  a->inode.size, *tns, start_val, end_val, indx;
   int        nslim_col,*ns_col;
   IS         ris = *rperm, cis = *cperm;
+
+  if (A->type != MATSEQAIJ) return 0;
 
   if (!a->inode.size) return 0;
 
