@@ -37,8 +37,12 @@ deletewwwpages:
 deletelatexpages:
 	$(RM) -f $(PETSC_DIR)/docs/tex/rsum/*sum*.tex
 
-#  to access the tags in emacs type esc-x visit-tags-table 
-#  then esc . to find a function
+#  To access the tags in emacs, type M-x visit-tags-table and specify
+#  the file petsc/TAGS.  Then, to move to where a PETSc function is
+#  defined, enter M-. and the function name.  To search for a string
+#  and move to the first occurrence, use M-x tags-search and the string.
+#  To locate later occurrences, use M-,
+
 etags:
 	$(RM) -f TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h src/*/examples/*.c
