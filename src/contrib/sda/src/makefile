@@ -1,15 +1,16 @@
-PETSC_DIR = ../../..
+PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   = $(PCONF) $(PETSC_INCLUDE) -I$(PETSC_DIR)/src/vec
-SOURCEC  = vgrid.c
+CFLAGS   = $(PCONF) $(PETSC_INCLUDE) -D__DIR__='"contrib/sda/src"' $(CONF) 
+SOURCEC  = sda2.c sda2f.c
 SOURCEF  =
-SOURCEH  = vgrid.h
-OBJSC    = vgrid.o
+SOURCEH  = sda.h
+OBJSC    = sda2.o sda2f.o
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = libpetsccontrib
 DIRS     = 
+LOCDIR   = src/contrib/sda/src
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
