@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aopart.c,v 1.2 1997/11/09 04:09:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aopart.c,v 1.3 1998/04/13 18:02:41 bsmith Exp curfman $";
 #endif
 
 #include "ao.h"       /*I  "ao.h"  I*/
@@ -8,14 +8,14 @@ static char vcid[] = "$Id: aopart.c,v 1.2 1997/11/09 04:09:56 bsmith Exp bsmith 
 #undef __FUNC__
 #define __FUNC__ "AODataKeyPartition"
 /*@C
-     AODataKeyPartition - Partition a key across the processors to reduce
-        communication costs.
+    AODataKeyPartition - Partitions a key across the processors to reduce
+    communication costs.
+
+    Collective on AOData
 
     Input Parameters:
-.    aodata - the database
-.    key - the key you wish partitioned and renumbered
-
-   Collective on AOData
++   aodata - the database
+-   key - the key you wish partitioned and renumbered
 
 .seealso: AODataSegmentPartition()
 @*/
