@@ -565,6 +565,7 @@ void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len),
 #else
   *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
 #endif
+  FIXRETURNCHAR(name,len);
 }
 
 void PETSC_STDCALL snesgetoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_LEN(len),

@@ -485,6 +485,8 @@ void PETSC_STDCALL matgettype_(Mat *mm,CHAR name PETSC_MIXED_LEN(len),PetscError
     *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
   }
 #endif
+  FIXRETURNCHAR(name,len);
+
 }
 
 void PETSC_STDCALL matcreate_(MPI_Comm *comm,int *m,int *n,int *M,int *N,Mat *V,PetscErrorCode *ierr)
