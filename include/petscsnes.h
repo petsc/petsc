@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.44 1996/02/06 16:17:14 curfman Exp curfman $ */
+/* $Id: snes.h,v 1.45 1996/02/13 15:32:57 curfman Exp curfman $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -98,7 +98,7 @@ extern int SNESSetMinimizationFunction(SNES,int(*)(SNES,Vec,double*,void*),void*
 extern int SNESComputeMinimizationFunction(SNES,Vec,double*);
 extern int SNESGetMinimizationFunction(SNES,double*);
 extern int SNESSetMinFunctionTolerance(SNES,double);
-extern int SNESGetLineSearchDampingParameter(SNES,double*);
+extern int SNESGetLineSearchDampingParameter(SNES,Scalar*);
 extern int SNESConverged_UMLS(SNES,double,double,double,void*);
 extern int SNESConverged_UMTR(SNES,double,double,double,void*);
 
