@@ -1082,18 +1082,22 @@ int MatMultAdd_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatMultTranspose_MPISBAIJ"
 int MatMultTranspose_MPISBAIJ(Mat A,Vec xx,Vec yy)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  SETERRQ(1,"Matrix is symmetric. Call MatMult().");
-  /* PetscFunctionReturn(0); */
+  ierr = MatMult(A,xx,yy);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultTransposeAdd_MPISBAIJ"
 int MatMultTransposeAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  SETERRQ(1,"Matrix is symmetric. Call MatMultAdd().");
-  /* PetscFunctionReturn(0); */
+  ierr = MatMultAdd(A,xx,yy,zz);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
 }
 
 /*

@@ -281,6 +281,32 @@ int main(int argc,char **args)
     }
   }                
 
+  /* Test MatMultTranspose(), MatMultTransposeAdd() */
+  for (i=0; i<10; i++) {
+    ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
+    ierr = MatMultTranspose(A,x,s1);CHKERRQ(ierr);
+    ierr = MatMultTranspose(sA,x,s2);CHKERRQ(ierr);
+    ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
+    ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
+    r1 -= r2;
+    if (r1<-tol || r1>tol) {
+      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMult() or MatScale(), err=%g\n",rank,r1);
+      PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    }
+  }
+  for (i=0; i<10; i++) {
+    ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
+    ierr = VecSetRandom(rctx,y);CHKERRQ(ierr);
+    ierr = MatMultTransposeAdd(A,x,y,s1);CHKERRQ(ierr);
+    ierr = MatMultTransposeAdd(sA,x,y,s2);CHKERRQ(ierr);
+    ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
+    ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
+    r1 -= r2;
+    if (r1<-tol || r1>tol) {
+      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMultAdd(), err=%g \n",rank,r1);
+      PetscSynchronizedFlush(PETSC_COMM_WORLD);      
+    }
+  }
   /* ierr = MatView(sA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  */
   /* ierr = MatView(sA, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);  */
   
