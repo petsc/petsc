@@ -157,6 +157,7 @@ class Configure(config.base.Configure):
       if path[0]      == ':': path = path[1:]
       if not path[-1] == ':': path += ':'
     self.getExecutable('mpirun', path = path, getFullPath = 1)
+    self.addSubstitution('MPIRUN', self.mpirun)
     return
 
   def configureMPE(self):
