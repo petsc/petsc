@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.17 1995/05/18 22:43:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.18 1995/05/23 23:09:25 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -17,7 +17,7 @@ int PrintPVecScatterCtx(VecScatterCtx ctx)
   VecScatterMPI *from = (VecScatterMPI *) ctx->fromdata;
   int           i,mytid;
 
-  MPE_Seq_begin(ctx->comm,1);
+  MPIU_Seq_begin(ctx->comm,1);
   MPI_Comm_rank(ctx->comm,&mytid);
 
   fprintf(stderr,"[%d]Number sends %d below %d self %d\n",mytid,to->n,
@@ -42,7 +42,7 @@ int PrintPVecScatterCtx(VecScatterCtx ctx)
   for ( i=0; i<from->starts[from->n]; i++ ){
     fprintf(stderr,"[%d]%d \n",mytid,from->indices[i]);
   }
-  MPE_Seq_end(ctx->comm,1);
+  MPIU_Seq_end(ctx->comm,1);
   return 0;
 }  
 /*

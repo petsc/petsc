@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.5 1995/05/16 00:47:10 curfman Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.6 1995/05/18 22:48:08 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -31,11 +31,11 @@ int SNESSolve_Test(SNES snes,int *its)
 
   if (A != snes->jacobian_pre) SETERR(1,"Cannot test with alternative pre");
 
-  MPE_printf(snes->comm,"Testing handcoded Jacobian, if the ratio is\n");
-  MPE_printf(snes->comm,"O(1.e-8) it is probably correct.\n");
+  MPIU_printf(snes->comm,"Testing handcoded Jacobian, if the ratio is\n");
+  MPIU_printf(snes->comm,"O(1.e-8) it is probably correct.\n");
   if (!neP->complete_print) {
-    MPE_printf(snes->comm,"Run with -snes_test_display to show difference\n");
-    MPE_printf(snes->comm,"of hand coding and finite difference Jacobian.\n");
+    MPIU_printf(snes->comm,"Run with -snes_test_display to show difference\n");
+    MPIU_printf(snes->comm,"of hand coding and finite difference Jacobian.\n");
   }
 
   for ( i=0; i<3; i++ ) {
@@ -49,7 +49,7 @@ int SNESSolve_Test(SNES snes,int *its)
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);
     CHKERR(ierr);
     if (neP->complete_print) {
-      MPE_printf(snes->comm,"Finite difference Jacobian\n");
+      MPIU_printf(snes->comm,"Finite difference Jacobian\n");
       MatView(B,SYNC_STDOUT_VIEWER);
     }
     /* compare */
@@ -57,10 +57,10 @@ int SNESSolve_Test(SNES snes,int *its)
     MatNorm(B,NORM_FROBENIUS,&norm);
     MatNorm(A,NORM_FROBENIUS,&gnorm);
     if (neP->complete_print) {
-      MPE_printf(snes->comm,"Hand-coded Jacobian\n");
+      MPIU_printf(snes->comm,"Hand-coded Jacobian\n");
       MatView(A,SYNC_STDOUT_VIEWER);
     }
-    MPE_printf(snes->comm,"Norm of matrix ratio %g difference %g\n",
+    MPIU_printf(snes->comm,"Norm of matrix ratio %g difference %g\n",
                            norm/gnorm,norm);
   }
   MatDestroy(B);

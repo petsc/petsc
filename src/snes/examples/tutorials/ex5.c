@@ -23,13 +23,11 @@ is solved.  The command line options are:\n\
     A finite difference approximation with the usual 5-point stencil
     is used to discretize the boundary value problem to obtain a nonlinear 
     system of equations.
-  
-
 */
 
 #include "draw.h"
-#include "snes.h"
 #include "petsc.h"
+#include "snes.h"
 #include "da.h"
 #include <math.h>
 #include <stdio.h>
@@ -102,7 +100,7 @@ int main( int argc, char **argv )
   ierr = SNESSetUp(snes); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
 
-  MPE_printf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
+  MPIU_printf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
   /* Free data structures */
   ierr = VecDestroy(x); CHKERRA(ierr);
@@ -113,12 +111,7 @@ int main( int argc, char **argv )
 
   return 0;
 }
-/* ------------------------------------------------------------------ */
-/*           Bratu (Solid Fuel Ignition) Test Problem                 */
-/* ------------------------------------------------------------------ */
-
 /* --------------------  Form initial approximation ----------------- */
-
 int FormInitialGuess1(SNES snes,Vec X,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
@@ -132,18 +125,16 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   mx	 = user->mx; 
   my	 = user->my;
   lambda = user->param;
-
-  hx    = one / (double)(mx-1);
-  hy    = one / (double)(my-1);
-  sc    = hx*hy;
-  hxdhy = hx/hy;
-  hydhx = hy/hx;
+  hx     = one / (double)(mx-1);
+  hy     = one / (double)(my-1);
+  sc     = hx*hy;
+  hxdhy  = hx/hy;
+  hydhx  = hy/hx;
 
   ierr = VecGetArray(localX,&x); CHKERR(ierr);
   temp1 = lambda/(lambda + one);
   DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);
   DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);
-
   for (j=ys; j<ys+ym; j++) {
     temp = (double)(MIN(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
@@ -161,7 +152,6 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   return 0;
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
- 
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
@@ -174,12 +164,11 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   mx	 = user->mx; 
   my	 = user->my;
   lambda = user->param;
-
-  hx    = one / (double)(mx-1);
-  hy    = one / (double)(my-1);
-  sc    = hx*hy;
-  hxdhy = hx/hy;
-  hydhx = hy/hx;
+  hx     = one / (double)(mx-1);
+  hy     = one / (double)(my-1);
+  sc     = hx*hy;
+  hxdhy  = hx/hy;
+  hydhx  = hy/hx;
 
   ierr = DAGlobalToLocalBegin(user->da,X,INSERTVALUES,localX);
   ierr = DAGlobalToLocalEnd(user->da,X,INSERTVALUES,localX);

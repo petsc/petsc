@@ -1,23 +1,30 @@
 #ifndef lint
-static char vcid[] = "$Id: mal.c,v 1.1 1995/05/23 21:52:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.2 1995/05/23 23:09:53 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include <malloc.h>
 #include "petscfix.h"
 
-void *(*PetscMalloc)(int,...) = (void*(*)(int,...))malloc;
-int  (*PetscFree)(void *,...) = (int (*)(void*,...))free;
+void *(*PetscMalloc)(unsigned int,int,char*) = 
+                            (void*(*)(unsigned int,int,char*))malloc;
+int  (*PetscFree)(void *,int,char*) = (int (*)(void*,int,char*))free;
 
-/*
+/*@
+      PetscSetMalloc - Sets the routines used to do mallocs and frees.
+         This MUST be called before PetscInitialize() and may be
+         called only once.
 
-      PetscSetMalloc_Private - Sets the routines used to do mallocs and frees.
+  Input Parameters:
+.   malloc - the malloc routine
+.   free - the free routine
 
-*/
-int PetscSetMalloc_Private(void *(*malloc)(int,...),int (*free)(void*,...))
+@*/
+int PetscSetMalloc(void *(*malloc)(unsigned int,int,char*),
+                   int (*free)(void*,int,char*))
 {
   static int visited = 0;
-  if (visited) SETERR(1,"You cannot reset malloc");
+  if (visited) SETERR(1,"PetscSetMalloc: cannot call multiple times");
   PetscMalloc = malloc;
   PetscFree   = free;
   visited     = 1;

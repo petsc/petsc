@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.43 1995/05/14 16:33:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.44 1995/05/18 22:45:52 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -509,14 +509,14 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
   if (vobj->cookie == VIEWER_COOKIE && vobj->type == FILE_VIEWER) {
     FILE *fd = ViewerFileGetPointer_Private(viewer);
-    MPE_Seq_begin(mat->comm,1);
+    MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
              aij->mytid,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
              aij->cend);
     ierr = MatView(aij->A,viewer); CHKERR(ierr);
     ierr = MatView(aij->B,viewer); CHKERR(ierr);
     fflush(fd);
-    MPE_Seq_end(mat->comm,1);
+    MPIU_Seq_end(mat->comm,1);
   }
   else if ((vobj->cookie == VIEWER_COOKIE && vobj->type == FILES_VIEWER) || 
             vobj->cookie == DRAW_COOKIE) {

@@ -45,7 +45,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
   if (vobj->cookie == VIEWER_COOKIE) {
     FILE *fd = ViewerFileGetPointer_Private(ptr);
     if (vobj->type == FILE_VIEWER) {
-      MPE_Seq_begin(xin->comm,1);
+      MPIU_Seq_begin(xin->comm,1);
       fprintf(fd,"Processor [%d] \n",mytid);
       for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
@@ -55,7 +55,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
 #endif
       }
       fflush(fd);
-      MPE_Seq_end(xin->comm,1);
+      MPIU_Seq_end(xin->comm,1);
     }
     else if (vobj->type == FILES_VIEWER) {
       int        len, work = x->n,n,j,numtids;

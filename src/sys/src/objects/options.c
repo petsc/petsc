@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.7 1995/05/18 22:44:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.8 1995/05/23 23:09:53 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -141,9 +141,9 @@ int PetscFinalize()
   if (OptionsHasName(0,"-trdump")) {
     OptionsDestroy_Private();
     NRDestroyAll();
-    MPE_Seq_begin(MPI_COMM_WORLD,1);
+    MPIU_Seq_begin(MPI_COMM_WORLD,1);
       ierr = Trdump(stderr); CHKERR(ierr);
-    MPE_Seq_end(MPI_COMM_WORLD,1);
+    MPIU_Seq_end(MPI_COMM_WORLD,1);
   }
   else {
     OptionsDestroy_Private();
@@ -176,13 +176,14 @@ extern "C" {
 #endif
 
 extern int PLogAllowInfo(PetscTruth);
+extern int PetscSetUseTrMalloc_Private();
 
 static int OptionsCheckInitial_Private()
 {
   char     string[64];
   MPI_Comm comm = MPI_COMM_WORLD;
 
-  if (OptionsHasName(0,"-trdump")) {
+  if (OptionsHasName(0,"-trdump") || OptionsHasName(0,"-trmalloc")) {
     PetscSetUseTrMalloc_Private();
   }
 #if defined(PARCH_sun4) && defined(PETSC_DEBUG)
@@ -192,14 +193,14 @@ static int OptionsCheckInitial_Private()
 #endif
   if (OptionsHasName(0,"-v") || OptionsHasName(0,"-version") ||
       OptionsHasName(0,"-help")) {
-    MPE_printf(comm,"--------------------------------------------\
+    MPIU_printf(comm,"--------------------------------------------\
 ------------------------------\n");
-    MPE_printf(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
-    MPE_printf(comm,"Bill Gropp,Lois Curfman McInnes,Barry Smith.\
+    MPIU_printf(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
+    MPIU_printf(comm,"Bill Gropp,Lois Curfman McInnes,Barry Smith.\
  Bugs: petsc-maint@mcs.anl.gov\n");
-    MPE_printf(comm,"See petsc/COPYRIGHT for copyright information,\
+    MPIU_printf(comm,"See petsc/COPYRIGHT for copyright information,\
  petsc/Changes for recent updates.\n");
-    MPE_printf(comm,"--------------------------------------------\
+    MPIU_printf(comm,"--------------------------------------------\
 ---------------------------\n");
   }
   if (OptionsHasName(0,"-fp_trap")) {
@@ -217,7 +218,10 @@ static int OptionsCheckInitial_Private()
     if (OptionsGetString(0,"-display",string,64)){
       display = string;
     }
-    if (!display) {MPE_Set_display(comm,&display); sfree = 1;}; 
+    if (!display) {
+      display = (char *) malloc( 128*sizeof(char)); CHKPTR(display);
+      MPIU_Set_display(comm,display,128); sfree = 1;
+    } 
     PetscSetDebugger(debugger,xterm,display);
     if (sfree) free(display);
     PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);
@@ -249,7 +253,11 @@ static int OptionsCheckInitial_Private()
     if (OptionsGetString(0,"-display",string,64)){
       display = string;
     }
-    if (!display) {MPE_Set_display(comm,&display);sfree = 1;} 
+    if (!display) {
+      display = (char *) malloc( 128*sizeof(char) ); CHKPTR(display);
+      MPIU_Set_display(comm,display,128);
+      sfree = 1;
+    } 
     PetscSetDebugger(debugger,xterm,display);
     if (sfree) free(display);
     PetscPushErrorHandler(PetscAbortErrorHandler,0);
@@ -274,25 +282,26 @@ static int OptionsCheckInitial_Private()
 
 #endif
   if (OptionsHasName(0,"-help")) {
-    MPE_printf(comm,"Options for all PETSc programs:\n");
-    MPE_printf(comm," -on_error_abort: cause an abort when an error is");
-    MPE_printf(comm," detected. Useful \n       only when run in the debugger\n");
-    MPE_printf(comm," -on_error_attach_debugger [dbx,xxgdb,noxterm]"); 
-    MPE_printf(comm," [-display display]:\n");
-    MPE_printf(comm,"       start the debugger (gdb by default) in new xterm\n");
-    MPE_printf(comm,"       unless noxterm is given\n");
-    MPE_printf(comm," -start_in_debugger [dbx,xxgdb,noxterm]");
-    MPE_printf(comm," [-display display]:\n");
-    MPE_printf(comm,"       start all processes in the debugger\n");
-    MPE_printf(comm," -no_signal_handler: do not trap error signals\n");
-    MPE_printf(comm," -fp_trap: stop on floating point exceptions\n");
-    MPE_printf(comm," -trdump: dump list of unfreed memory at conclusion\n");
-    MPE_printf(comm," -optionstable: dump list of options inputted\n");
-    MPE_printf(comm," -optionsleft: dump list of unused options\n");
-    MPE_printf(comm," -optionsused: print number of unused options\n");
-    MPE_printf(comm," -monitor: logging objects and events\n");
-    MPE_printf(comm," -v: prints PETSc version number and release date\n");
-    MPE_printf(comm,"-----------------------------------------------\n");
+    MPIU_printf(comm,"Options for all PETSc programs:\n");
+    MPIU_printf(comm," -on_error_abort: cause an abort when an error is");
+    MPIU_printf(comm," detected. Useful \n       only when run in the debugger\n");
+    MPIU_printf(comm," -on_error_attach_debugger [dbx,xxgdb,noxterm]"); 
+    MPIU_printf(comm," [-display display]:\n");
+    MPIU_printf(comm,"       start the debugger (gdb by default) in new xterm\n");
+    MPIU_printf(comm,"       unless noxterm is given\n");
+    MPIU_printf(comm," -start_in_debugger [dbx,xxgdb,noxterm]");
+    MPIU_printf(comm," [-display display]:\n");
+    MPIU_printf(comm,"       start all processes in the debugger\n");
+    MPIU_printf(comm," -no_signal_handler: do not trap error signals\n");
+    MPIU_printf(comm," -fp_trap: stop on floating point exceptions\n");
+    MPIU_printf(comm," -trdump: dump list of unfreed memory at conclusion\n");
+    MPIU_printf(comm," -trmalloc: use our error checking malloc\n");
+    MPIU_printf(comm," -optionstable: dump list of options inputted\n");
+    MPIU_printf(comm," -optionsleft: dump list of unused options\n");
+    MPIU_printf(comm," -optionsused: print number of unused options\n");
+    MPIU_printf(comm," -monitor: logging objects and events\n");
+    MPIU_printf(comm," -v: prints PETSc version number and release date\n");
+    MPIU_printf(comm,"-----------------------------------------------\n");
   }
   return 0;
 }

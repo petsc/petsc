@@ -2,8 +2,8 @@
 static char help[] = 
 "This example uses Newton's method to solve a two-variable system.\n\n";
 
-#include "snes.h"
 #include "petsc.h"
+#include "snes.h"
 
 int  FormJacobian(SNES snes,Vec,Mat*,Mat*,int*,void*),
      FormFunction(SNES snes,Vec,Vec,void*),
@@ -48,11 +48,9 @@ int main( int argc, char **argv )
   ierr = MatDestroy(J); CHKERRA(ierr);
   ierr = SNESDestroy(snes); CHKERRA(ierr);
   PetscFinalize();
-
   return 0;
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
-
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy )
 {
    int    ierr;
@@ -64,7 +62,6 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy )
    return 0;
 }
 /* --------------------  Form initial approximation ----------------- */
-
 int FormInitialGuess(SNES snes,Vec x,void *dummy)
 {
    int    ierr;
@@ -73,7 +70,6 @@ int FormInitialGuess(SNES snes,Vec x,void *dummy)
    return 0;
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
-
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B, int *flag,void *dummy)
 {
   Scalar *xx, A[4];
@@ -86,7 +82,6 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B, int *flag,void *dummy)
   return 0;
 }
 /* --------------------  User-defined monitor ----------------------- */
-
 int Monitor(SNES snes,int its,double fnorm,void *dummy)
 {
   int ierr;

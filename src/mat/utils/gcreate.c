@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.22 1995/05/16 00:42:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.23 1995/05/18 22:46:31 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -46,6 +46,10 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 {
   int numtid;
   MPI_Comm_size(comm,&numtid);
+  if (OptionsHasName(0,"-help")) {
+    MPIU_printf(comm,"MatCreate() options: -mat_dense, -mat_row -mat_rowbs\n");
+    MPIU_printf(comm,"                     -mat_bdiag, -mpi_objects\n"); 
+  }
   if (OptionsHasName(0,"-mat_dense")) {
     return MatCreateSequentialDense(comm,m,n,V);
   }

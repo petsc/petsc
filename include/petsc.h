@@ -14,18 +14,7 @@ int fclose(FILE*);
 
 /* MPI interface */
 #include "mpi.h"
-#include "mpe.h"
-#if defined(PETSC_COMPLEX)
-#define MPI_SCALAR MPIR_dcomplex_dte
-#else
-#define MPI_SCALAR MPI_DOUBLE
-#endif
-extern FILE *MPE_fopen(MPI_Comm,char *,char *);
-extern int MPE_fclose(MPI_Comm,FILE*);
-extern int MPE_fprintf(MPI_Comm,FILE*,char *,...);
-extern int MPE_printf(MPI_Comm,char *,...);
-extern int MPE_Set_display(MPI_Comm,char **);
-
+#include "mpiu.h"
 
 #if defined(PETSC_COMPLEX)
 /* work around for bug in alpha g++ compiler */
@@ -41,15 +30,14 @@ extern int MPE_Set_display(MPI_Comm,char **);
 #define Scalar       double
 #endif
 
+void *(*PetscMalloc)(unsigned int,int,char*);
+int  (*PetscFree)(void *,int,char*);
+#define MALLOC(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
+#define FREE(a)         (*PetscFree)(a,__LINE__,__FILE__)
+extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),
+                           int (*)(void *,int,char*));
+extern int  Trdump(FILE *);
 
-/*  Macros for getting and freeing memory */
-#if defined(PETSC_MALLOC)
-#define MALLOC(a)       Trmalloc(a,__LINE__,__FILE__)
-#define FREE(a)         Trfree(a,__LINE__,__FILE__)
-#else
-#define MALLOC(a)       malloc(a)
-#define FREE(a)         free(a)
-#endif
 #define NEW(a)          (a *) MALLOC(sizeof(a))
 #define MEMCPY(a,b,n)   memcpy((char*)(a),(char*)(b),n)
 #define MEMSET(a,b,n)   memset((char*)(a),(int)(b),n)
@@ -116,13 +104,6 @@ extern int PetscSetFPTrap(int);
 #define FP_TRAP_ON     1
 #define FP_TRAP_ALWAYS 2
 
-#if defined(PETSC_MALLOC)
-extern void *Trmalloc(unsigned int,int,char*);
-extern int  Trfree(void *,int,char*);
-extern int  Trdump(FILE *);
-#else
-#include <malloc.h>
-#endif
 
 #if defined(PARCH_cray) || defined(PARCH_NCUBE)
 #define FORTRANCAPS

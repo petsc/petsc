@@ -43,7 +43,7 @@ int main(int argc,char **args)
 
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);   /* check error */
   ierr  = VecNorm(x,&norm); CHKERRA(ierr);
-  MPE_printf(MPI_COMM_WORLD,"Norm of error %g Iterations %d\n",norm,its);
+  MPIU_printf(MPI_COMM_WORLD,"Norm of error %g Iterations %d\n",norm,its);
  
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);

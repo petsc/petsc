@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.16 1995/05/16 00:47:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.17 1995/05/18 22:46:57 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "ximpl.h"
@@ -284,7 +284,10 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
     if (!display && OptionsGetString(0,"-display",string,128)) {
       display = string;
     }
-    if (!display) {MPE_Set_display(comm,&display);}
+    if (!display) {
+      display = (char *) MALLOC( 128*sizeof(char) ); CHKPTR(display);
+      MPIU_Set_display(comm,display,128);
+    }
     ierr = XiQuickWindow(Xwin,display,title,x,y,w,h,256); CHKERR(ierr);
     if (display != string) FREE(display);
     MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,comm);
@@ -294,7 +297,10 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
     if (!display && OptionsGetString(0,"-display",string,128)) {
       display = string;
     }
-    if (!display) {MPE_Set_display(comm,&display);}
+    if (!display) {
+      display = (char *) MALLOC( 128*sizeof(char) ); CHKPTR(display);
+      MPIU_Set_display(comm,display,128);
+    }
     MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);
     ierr = XiQuickWindowFromWindow( Xwin,display, win,256 ); CHKERR(ierr);
     if (display != string) FREE(display);

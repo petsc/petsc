@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.4 1995/05/18 19:25:36 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.5 1995/05/23 14:41:43 curfman Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -285,12 +285,12 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
   if (vobj->cookie == VIEWER_COOKIE && vobj->type == FILE_VIEWER) {
     FILE *fd = ViewerFileGetPointer_Private(viewer);
-    MPE_Seq_begin(mat->comm,1);
+    MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d\n",
              mbd->mytid,mbd->m,mbd->rstart,mbd->rend,mbd->n);
     ierr = MatView(mbd->A,viewer); CHKERR(ierr);
     fflush(fd);
-    MPE_Seq_end(mat->comm,1);
+    MPIU_Seq_end(mat->comm,1);
   }
   else if ((vobj->cookie == VIEWER_COOKIE && vobj->type == FILES_VIEWER) || 
             vobj->cookie == DRAW_COOKIE) {

@@ -126,7 +126,7 @@ int main(int argc,char **args)
 
   ierr = VecAXPY(&none,ustar,u); CHKERRA(ierr);
   ierr = VecNorm(u,&norm); CHKERRA(ierr);
-  MPE_printf(MPI_COMM_WORLD,"Norm of error %g Number iterations %d\n",
+  MPIU_printf(MPI_COMM_WORLD,"Norm of error %g Number iterations %d\n",
       norm*h,its);
 
   sleep(2);

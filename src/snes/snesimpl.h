@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.9 1995/05/12 21:05:17 curfman Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.10 1995/05/18 22:47:54 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -78,6 +78,4 @@ struct _SNES {
 #define MIN(a,b)     ((a) < (b) ? (a) : (b))
 #endif
 
-extern int SNESComputeFunction(SNES,Vec,Vec);
-extern int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void *);
 #endif

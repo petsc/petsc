@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: try.c,v 1.7 1995/03/27 22:57:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: try.c,v 1.8 1995/05/14 16:32:28 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: try.c,v 1.7 1995/03/27 22:57:15 bsmith Exp bsmith $";
 #include "petscfix.h"
 
 /*@
-    MPE_fopen - The first process in the communicator opens a file,
+    MPIU_fopen - The first process in the communicator opens a file,
                 all others do nothing.
 
   Input Parameters:
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: try.c,v 1.7 1995/03/27 22:57:15 bsmith Exp bsmith $";
 .  name - the filename
 .  mode - usually "w"
 @*/
-FILE *MPE_fopen(MPI_Comm comm,char *name,char *mode)
+FILE *MPIU_fopen(MPI_Comm comm,char *name,char *mode)
 {
   int  mytid;
   FILE *fd;
@@ -28,15 +28,15 @@ FILE *MPE_fopen(MPI_Comm comm,char *name,char *mode)
   return fd;
 }
 /*@
-     MPE_fclose - The first processor in the communicator closes a 
+     MPIU_fclose - The first processor in the communicator closes a 
                   file, all others do nothing.
 
   Input Parameters:
 .  comm - the communicator
-.  fd - the file, opened with MPE_fopen()
+.  fd - the file, opened with MPIU_fopen()
 
 @*/
-int MPE_fclose(MPI_Comm comm,FILE *fd)
+int MPIU_fclose(MPI_Comm comm,FILE *fd)
 {
   int  mytid;
   MPI_Comm_rank(comm,&mytid);
@@ -45,7 +45,7 @@ int MPE_fclose(MPI_Comm comm,FILE *fd)
 }
 
 /*@
-      MPE_fprintf - Single print to a file only from the first
+      MPIU_fprintf - Single print to a file only from the first
                     processor in the communicator.
 
   Input Parameters:
@@ -53,7 +53,7 @@ int MPE_fclose(MPI_Comm comm,FILE *fd)
 .  fd - the file pointer
 .  format - the usual printf() format string 
 @*/
-int MPE_fprintf(MPI_Comm comm,FILE* fd,char *format,...)
+int MPIU_fprintf(MPI_Comm comm,FILE* fd,char *format,...)
 {
   int mytid;
   MPI_Comm_rank(comm,&mytid);
@@ -66,14 +66,14 @@ int MPE_fprintf(MPI_Comm comm,FILE* fd,char *format,...)
   return 0;
 }
 /*@
-      MPE_printf - Single print to standard out, only from the first
+      MPIU_printf - Single print to standard out, only from the first
                     processor in the communicator.
 
   Input Parameters:
 .  comm - the communicator
 .  format - the usual printf() format string 
 @*/
-int MPE_printf(MPI_Comm comm,char *format,...)
+int MPIU_printf(MPI_Comm comm,char *format,...)
 {
   int mytid;
   MPI_Comm_rank(comm,&mytid);
@@ -95,21 +95,20 @@ extern char *getenv(char*);
 #endif
 
 /*@
-     MPE_Set_display - Tries to set the display variable for all processors.
+     MPIU_Set_display - Tries to set the display variable for all processors.
 
   Input Parameters:
 .   comm - the communicatior, probably MPI_COMM_WORLD
+.   n - length of string display
 
   Output Parameters:
 .   display - the display string, may (and should) be freed.
 
 @*/
-int MPE_Set_display(MPI_Comm comm,char **display)
+int MPIU_Set_display(MPI_Comm comm,char *display,int n)
 {
-  int  MPI_Used,numtid,mytid,len;
+  int  numtid,mytid,len;
   char *string,*str;
-  MPI_Initialized(&MPI_Used);
-  if (!MPI_Used) { *display = 0; return 0;}
   MPI_Comm_size(comm,&numtid);
   MPI_Comm_rank(comm,&mytid);  
   if (!mytid) {
@@ -117,24 +116,112 @@ int MPE_Set_display(MPI_Comm comm,char **display)
     if (!str || str[0] == ':') {
       string = (char *) MALLOC( 256*sizeof(char) ); CHKPTR(string);
       MPI_Get_processor_name(string,&len);
-      *display = (char *) MALLOC( (5+len)*sizeof(char) ); CHKPTR(*display);
-      strcpy(*display,string); FREE(string);
-      strcat(*display,":0.0");
+      strncpy(display,string,n-4); FREE(string);
+      strcat(display,":0.0");
     }
     else {
       len = strlen(str);
-      *display = (char *) MALLOC( (5+len)*sizeof(char) ); CHKPTR(*display);
-      strcpy(*display,str);
+      strncpy(display,str,n);
     }
-    len = strlen(*display);
+    len = strlen(display);
     MPI_Bcast(&len,1,MPI_INT,0,comm);
-    MPI_Bcast(*display,len,MPI_CHAR,0,comm);
+    MPI_Bcast(display,len,MPI_CHAR,0,comm);
   }
   else {
     MPI_Bcast(&len,1,MPI_INT,0,comm);
-    *display = (char *) MALLOC( (len+1)*sizeof(char) ); CHKPTR(*display);
-    MPI_Bcast(*display,len,MPI_CHAR,0,comm);
-    (*display)[len] = 0;
+    MPI_Bcast(display,len,MPI_CHAR,0,comm);
+    display[len] = 0;
   }
   return 0;  
+}
+
+
+#ifndef NULL
+#define NULL (void *)0
+#endif
+extern void *malloc();
+
+static int MPIU_Seq_keyval = MPI_KEYVAL_INVALID;
+
+/*@
+   MPIU_Seq_begin - Begins a sequential section of code.  
+
+   Input Parameters:
+.  comm - Communicator to sequentialize.  
+.  ng   - Number in group.  This many processes are allowed to execute
+   at the same time.  Usually one.  
+
+   Notes:
+   MPIU_Seq_begin and MPIU_Seq_end provide a way to force a section of code to
+   be executed by the processes in rank order.  Typically, this is done 
+   with
+$  MPIU_Seq_begin( comm, 1 );
+$  <code to be executed sequentially>
+$  MPIU_Seq_end( comm, 1 );
+$
+   Often, the sequential code contains output statements (e.g., printf) to
+   be executed.  Note that you may need to flush the I/O buffers before
+   calling MPIU_Seq_end; also note that some systems do not propagate I/O in any
+   order to the controling terminal (in other words, even if you flush the
+   output, you may not get the data in the order that you want).
+@*/
+void MPIU_Seq_begin(MPI_Comm comm,int ng )
+{
+  int        lidx, np;
+  int        flag;
+  MPI_Comm   local_comm;
+  MPI_Status status;
+
+  /* Get the private communicator for the sequential operations */
+  if (MPIU_Seq_keyval == MPI_KEYVAL_INVALID) {
+    MPI_Keyval_create( MPI_NULL_COPY_FN, MPI_NULL_DELETE_FN, 
+                       &MPIU_Seq_keyval, NULL );
+  }
+  MPI_Attr_get( comm, MPIU_Seq_keyval, (void *)&local_comm, &flag );
+  if (!flag) {
+    /* This expects a communicator to be a pointer */
+    MPI_Comm_dup( comm, &local_comm );
+    MPI_Attr_put( comm, MPIU_Seq_keyval, (void *)local_comm );
+  }
+  MPI_Comm_rank( comm, &lidx );
+  MPI_Comm_size( comm, &np );
+  if (lidx != 0) {
+    MPI_Recv( NULL, 0, MPI_INT, lidx-1, 0, local_comm, &status );
+  }
+  /* Send to the next process in the group unless we are the last process 
+   in the processor set */
+  if ( (lidx % ng) < ng - 1 && lidx != np - 1) {
+    MPI_Send( NULL, 0, MPI_INT, lidx + 1, 0, local_comm );
+  }
+}
+
+/*@
+   MPIU_Seq_end - Ends a sequential section of code.
+
+   Input Parameters:
+.  comm - Communicator to sequentialize.  
+.  ng   - Number in group.  This many processes are allowed to execute
+   at the same time.  Usually one.  
+
+   Notes:
+   See MPIU_Seq_begin for more details.
+@*/
+void MPIU_Seq_end(MPI_Comm comm,int ng )
+{
+  int        lidx, np, flag;
+  MPI_Status status;
+  MPI_Comm   local_comm;
+
+  MPI_Comm_rank( comm, &lidx );
+  MPI_Comm_size( comm, &np );
+  MPI_Attr_get( comm, MPIU_Seq_keyval, (void *)&local_comm, &flag );
+  if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
+  /* Send to the first process in the next group OR to the first process
+     in the processor set */
+  if ( (lidx % ng) == ng - 1 || lidx == np - 1) {
+    MPI_Send( NULL, 0, MPI_INT, (lidx + 1) % np, 0, local_comm );
+  }
+  if (lidx == 0) {
+    MPI_Recv( NULL, 0, MPI_INT, np-1, 0, local_comm, &status );
+  }
 }

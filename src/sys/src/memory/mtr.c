@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.12 1995/05/14 16:32:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.13 1995/05/23 23:09:53 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_STRING_H)
@@ -33,8 +33,7 @@ int PetscSetUseTrMalloc_Private()
 {
   PetscLow = (void *) 0xEEEEEEEE;
   PetscHigh = (void *) 0x0;
-  PetscSetMalloc_Private((void *(*)(int,...))TrMalloc,
-                         (int(*)(void*,...))TrFree);
+  PetscSetMalloc(TrMalloc,TrFree);
   return 0;
 }
 

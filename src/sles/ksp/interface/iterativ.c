@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.18 1995/05/14 16:32:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.19 1995/05/18 22:44:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -68,7 +68,7 @@ int KSPCheckDef( KSP itP )
 @*/
 int KSPDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
 {
-  MPE_printf(itP->comm,"%d %14.12e \n",n,rnorm); return 0;
+  MPIU_printf(itP->comm,"%d %14.12e \n",n,rnorm); return 0;
 }
 
 /*ARGSUSED*/
