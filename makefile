@@ -380,11 +380,12 @@ allcleanhtml:
 
 # Builds Fortran stub files
 allfortranstubs:
-	-@include/foldinclude/generateincludes
+	-@include/foldinclude/generateincludes ${PETSC_DIR}
 	-@${RM} -f src/fortran/auto/*.c
 	-${OMAKE} ACTION=fortranstubs tree_basic
-	-@cd src/fortran/auto; ${OMAKE} fixfortran
 	chmod g+w src/fortran/auto/*.c
+	-@cd src/fortran/auto; ${RM} makefile.src; echo SOURCEC = `find . -type f -name "*.c" -printf "%f "` > makefile.src
+	-@cd src/fortran/auto; ${OMAKE} fixfortran
 
 allci: 
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=ci  alltree 

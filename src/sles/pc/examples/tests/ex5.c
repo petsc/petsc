@@ -16,8 +16,8 @@ This example also demonstrates matrix-free methods\n\n";
 #include "petscmg.h"
 
 int  residual(Mat,Vec,Vec,Vec);
-int  gauss_seidel(void *,Vec,Vec,Vec,int);
-int  jacobi(void *,Vec,Vec,Vec,int);
+int  gauss_seidel(void *,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
+int  jacobi(void *,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
 int  interpolate(Mat,Vec,Vec,Vec);
 int  restrct(Mat,Vec,Vec);
 int  Create1dLaplacian(int,Mat*);
@@ -75,8 +75,7 @@ int main(int Argc,char **Args)
   ierr = MGSetType(pcmg,am);CHKERRQ(ierr);
 
   ierr = MGGetCoarseSolve(pcmg,&csles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(csles,cmat,cmat,
-         DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = SLESSetOperators(csles,cmat,cmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = SLESGetPC(csles,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
   ierr = SLESGetKSP(csles,&ksp);CHKERRQ(ierr);
@@ -103,7 +102,7 @@ int main(int Argc,char **Args)
     /* this is a dummy! since SLES requires a matrix passed in  */
     ierr = SLESSetOperators(sles[i],mat[i],mat[i],DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     /* 
-        We override the matrix passed in by forcint it to use Richardson with 
+        We override the matrix passed in by forcing it to use Richardson with 
         a user provided application. This is non-standard and this practice
         should be avoided.
     */
@@ -179,9 +178,10 @@ int main(int Argc,char **Args)
 #define __FUNCT__ "residual"
 int residual(Mat mat,Vec bb,Vec xx,Vec rr)
 {
-  int    i,n1,ierr;
+  int         i,n1,ierr;
   PetscScalar *b,*x,*r;
 
+  PetscFunctionBegin;
   ierr = VecGetSize(bb,&n1);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -195,15 +195,16 @@ int residual(Mat mat,Vec bb,Vec xx,Vec rr)
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 #undef __FUNCT__
 #define __FUNCT__ "amult"
 int amult(Mat mat,Vec xx,Vec yy)
 {
-  int    i,n1,ierr;
+  int         i,n1,ierr;
   PetscScalar *y,*x;
 
+  PetscFunctionBegin;
   ierr = VecGetSize(xx,&n1);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
@@ -215,16 +216,17 @@ int amult(Mat mat,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "gauss_seidel"
-int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,int m)
+int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal atol,PetscReal dtol,int m)
 {
-  int    i,n1,ierr;
+  int         i,n1,ierr;
   PetscScalar *x,*b;
 
+  PetscFunctionBegin;
   ierr = VecGetSize(bb,&n1);CHKERRQ(ierr); n1--;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -241,16 +243,17 @@ int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,int m)
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "jacobi"
-int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
+int jacobi(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal atol,PetscReal dtol,int m)
 {
-  int      i,n,n1,ierr;
-  PetscScalar   *r,*b,*x;
+  int         i,n,n1,ierr;
+  PetscScalar *r,*b,*x;
 
+  PetscFunctionBegin;
   ierr = VecGetSize(bb,&n);CHKERRQ(ierr); n1 = n - 1;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -267,7 +270,7 @@ int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(w,&r);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /*
    We know for this application that yy  and zz are the same
@@ -277,9 +280,10 @@ int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
 #define __FUNCT__ "interpolate"
 int interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 {
-  int    i,n,N,i2,ierr;
+  int         i,n,N,i2,ierr;
   PetscScalar *x,*y;
 
+  PetscFunctionBegin;
   ierr = VecGetSize(yy,&N);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
@@ -292,16 +296,17 @@ int interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "restrct"
 int restrct(Mat mat,Vec rr,Vec bb)
 {
-  int    i,n,N,i2,ierr;
+  int         i,n,N,i2,ierr;
   PetscScalar *r,*b;
 
+  PetscFunctionBegin;
   ierr = VecGetSize(rr,&N);CHKERRQ(ierr);
   ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
@@ -313,7 +318,7 @@ int restrct(Mat mat,Vec rr,Vec bb)
   }
   ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -321,8 +326,9 @@ int restrct(Mat mat,Vec rr,Vec bb)
 int Create1dLaplacian(int n,Mat *mat)
 {
   PetscScalar mone = -1.0,two = 2.0;
-  int    ierr,i,idx;
+  int         ierr,i,idx;
 
+  PetscFunctionBegin;
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,mat);CHKERRQ(ierr);
   
   idx= n-1;
@@ -335,7 +341,7 @@ int Create1dLaplacian(int n,Mat *mat)
   }
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -345,6 +351,8 @@ int CalculateRhs(Vec u)
   int         i,n,ierr;
   PetscReal   h,x = 0.0;
   PetscScalar uu;
+
+  PetscFunctionBegin;
   ierr = VecGetSize(u,&n);CHKERRQ(ierr);
   h = 1.0/((PetscReal)(n+1));
   for (i=0; i<n; i++) {
@@ -352,7 +360,7 @@ int CalculateRhs(Vec u)
     ierr = VecSetValues(u,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -362,13 +370,15 @@ int CalculateSolution(int n,Vec *solution)
   int         i,ierr;
   PetscReal   h,x = 0.0;
   PetscScalar uu;
+
+  PetscFunctionBegin;
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,solution);CHKERRQ(ierr);
   h = 1.0/((PetscReal)(n+1));
   for (i=0; i<n; i++) {
     x += h; uu = x*(1.-x); 
     ierr = VecSetValues(*solution,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -378,11 +388,12 @@ int CalculateError(Vec solution,Vec u,Vec r,PetscReal *e)
   PetscScalar mone = -1.0;
   int    ierr;
 
+  PetscFunctionBegin;
   ierr = VecNorm(r,NORM_2,e+2);CHKERRQ(ierr);
   ierr = VecWAXPY(&mone,u,solution,r);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,e);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_1,e+1);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 

@@ -24,10 +24,10 @@ EXAMPLESF        = user.F userJac.F
 include $(PETSC_DIR)/bmake/common/base
 
 flow: flow.o $(OBJSF) chkopts
-	-$(CLINKER) -o flow flow.o $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	-$(CLINKER) -o flow flow.o $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_SNES_LIB)
 
 puns3d: puns3d.a.o
-	$(FLINKER) -o puns3d puns3d.a.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(FLINKER) -o puns3d puns3d.a.o $(PETSC_FORTRAN_LIB) $(PETSC_DM_LIB)
 
 runflow1:
 	-@${MPIRUN} -np 1 flow -options_file testgrid/petsc.opt -mesh testgrid/uns3d.msh -partition testgrid/part_vec.part.1 | grep clift | tail -1 > runflow1.tmp 2>&1;   \
