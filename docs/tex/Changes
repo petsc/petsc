@@ -9,14 +9,14 @@ add to it).
 
 
   MAT
-
+   - MatSNESMFFormJacobian() has been renamed to MatSNESMFComputeJacobian().
 
    
   KSP
 
   DA
-    DAGetColoring()
-    DAGetMatrix()
+   - DAGetColoring() has a different calling sequence; now use this in conjunction 
+     with the new routine DAGetMatrix().
 
 
   SLES
