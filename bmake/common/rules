@@ -16,8 +16,8 @@ PETSC_INCLUDE = -I$(PETSC_DIR) -I$(PETSC_DIR)/include $(MPI_INCLUDE) \
 	       -I$(PETSC_DIR)/src
 #
 # Defines all libraries needed for using linear and nonlinear solvers, 
-# stencils, grids, and all lower level PETSc components (such as vectors 
-# and matrices).  The order of listing these libraries is important!
+# and all lower level PETSc components (such as vectors and matrices
+# The order of listing these libraries is important!
 #
 #
 PETSC_LIB   = -L$(LDIR) -lpetscsnes  -lpetscsles -lpetscksp \
