@@ -1,4 +1,4 @@
-/*$Id: ex30.c,v 1.18 2000/07/10 03:39:52 bsmith Exp bsmith $*/
+/*$Id: ex30.c,v 1.19 2000/10/24 20:26:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
 of matrix sparsity structure with MatView().  Input parameters are:\n\
@@ -16,8 +16,8 @@ directly.\n\n";
 int main(int argc,char **args)
 {
   Mat         C,A; 
-  int         i,j,bs,m = 5,n = 5,I,J,ierr,lf = 0;
-  PetscTruth  flg1,flg2;
+  int         i,j,m = 5,n = 5,I,J,ierr,lf = 0;
+  PetscTruth  flg1;
   Scalar      v;
   IS          row,col;
   Viewer      viewer1,viewer2;
@@ -32,7 +32,7 @@ int main(int argc,char **args)
 
   ierr = MatCreate(PETSC_COMM_SELF,m*n,m*n,m*n,m*n,&C);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatSeqBDiagSetPreallocation(C,0,bs,PETSC_NULL,PETSC_NULL);CHKERRA(ierr);
+  ierr = MatSeqBDiagSetPreallocation(C,0,1,PETSC_NULL,PETSC_NULL);CHKERRA(ierr);
   ierr = MatSeqAIJSetPreallocation(C,5,PETSC_NULL);CHKERRA(ierr);
 
   /* Create the matrix. (This is five-point stencil with some extra elements) */
@@ -66,6 +66,8 @@ int main(int argc,char **args)
     info.levels        = lf;
     info.fill          = 1.0;
     info.diagonal_fill = 0;
+    info.damping       = 0;
+    info.damp          = 0;
     ierr = MatILUFactorSymbolic(C,row,col,&info,&A);CHKERRA(ierr);
   }
   ierr = MatLUFactorNumeric(C,&A);CHKERRA(ierr);
