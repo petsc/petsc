@@ -1,6 +1,6 @@
-/*$Id: ex19.c,v 1.14 2001/03/16 22:18:51 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.15 2001/03/16 23:06:36 bsmith Exp bsmith $*/
 
-static char help[] = "Solves nonlinear driven cavity with multigrid.\n\
+static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
   \n\
 The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\
 The flow can be driven with the lid or with bouyancy or both:\n\
@@ -209,7 +209,7 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   DMMG    dmmg = (DMMG)ptr;
   AppCtx  *user = (AppCtx*)dmmg->user;
   DA      da = (DA)dmmg->dm;
-  int     i,j,row,mx,ierr,xs,ys,xm,ym;
+  int     i,j,mx,ierr,xs,ys,xm,ym;
   double  grashof,dx;
   Field   **x;
 
@@ -276,7 +276,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   DMMG    dmmg = (DMMG)ptr;
   AppCtx  *user = (AppCtx*)dmmg->user;
-  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
+  int     ierr,i,j,mx,my,xs,ys,xm,ym;
   int     xints,xinte,yints,yinte;
   double  two = 2.0,one = 1.0,p5 = 0.5,hx,hy,dhx,dhy,hxdhy,hydhx;
   double  grashof,prandtl,lid;
