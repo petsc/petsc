@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.19 1996/03/04 05:14:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex20.c,v 1.20 1996/03/10 17:26:53 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   /* PART 1:  Generate vector, then write it in binary format */
 
-  PLogEventRegister(&VECTOR_GENERATE,"Generate Vector ","Red");
+  PLogEventRegister(&VECTOR_GENERATE,"Generate Vector ","Red:");
   PLogEventBegin(VECTOR_GENERATE,0,0,0,0);
   /* Generate vector */
   ierr = VecCreate(MPI_COMM_WORLD,m,&u); CHKERRA(ierr);
@@ -58,7 +58,7 @@ int main(int argc,char **args)
   PetscSleep(10);
 
   /* Read new vector in binary format */
-  PLogEventRegister(&VECTOR_READ,"Read Vector     ","Green");
+  PLogEventRegister(&VECTOR_READ,"Read Vector     ","Green:");
   PLogEventBegin(VECTOR_READ,0,0,0,0);
   MPIU_printf(MPI_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
