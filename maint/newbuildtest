@@ -45,7 +45,7 @@ make PETSC_ARCH=linux PETSC_DIR=$PETSC_DIR update >>& $PETSC_DIR/build.log
 
 # Run Configure
 if ("${CONFIGURE}" == "yes") then
-  cd $PETSC_DIR; ./config/${CONFIGURE_FILE}.py --enable-update=0 -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$PETSC_DIR ${CONFIGURE_ARGS} >>& build.log
+  cd $PETSC_DIR; ./config/${CONFIGURE_FILE}.py -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$PETSC_DIR ${CONFIGURE_ARGS} >>& build.log
   echo '****************************************************' >>& $PETSC_DIR/maint/build_$PETSC_ARCH.$BOPT.$MACH.log
   set EJOBS=`cat $PETSC_DIR/bmake/$PETSC_ARCH/ejobs`
   set JOBS=`cat $PETSC_DIR/bmake/$PETSC_ARCH/jobs`
