@@ -34,15 +34,15 @@ class UsingCompiler:
   def getClientCompileTarget(self, project):
     sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())
     # Client filter
-    tag       = self.getLanguage().lower().replace('+', 'x')
-    filter    = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isClient(source, sourceDir), tags = tag)
+    tag          = self.getLanguage().lower().replace('+', 'x')
+    clientFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isClient(source, sourceDir), tags = [tag, 'old '+tag])
     # Client compiler
     compiler  = self.getCompiler(self.getClientLibrary(project, self.getLanguage()))
     compiler.defines.extend(self.getDefines())
     compiler.includeDirs.append(sourceDir)
     compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
-    return [self.getTagger(sourceDir), filter, compiler]
+    return [self.getTagger(sourceDir), clientFilter, compiler]
 
   def getClientLinkTarget(self, project, doLibraryCheck = 1):
     libraries = fileset.FileSet([])
@@ -136,14 +136,14 @@ class UsingCxx (UsingCompiler):
     stubDir = self.usingSIDL.getStubDir(self.getLanguage(), package)
     library = self.getServerLibrary(project, self.getLanguage(), package)
     # IOR Filter
-    iorFilter = transform.FileFilter(self.usingSIDL.compilerDefaults.isIOR, tags = 'c')
+    iorFilter = transform.FileFilter(self.usingSIDL.compilerDefaults.isIOR, tags = ['c', 'old c'])
     # IOR compiler
     compileC = compile.CompileC(library)
     compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(rootDir)
     compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     # Server Filter
-    serverFilter = transform.FileFilter(self.usingSIDL.compilerDefaults.isServer, tags = 'cxx')
+    serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['cxx', 'old cxx'])
     # Server compiler
     compileCxx = compile.CompileCxx(library)
     compileCxx.defines.extend(self.getDefines())
