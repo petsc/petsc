@@ -830,6 +830,8 @@ acfindx:
       self.executeTest(self.configureFortranStubs)
     if 'FC' in self.framework.argDB:
       self.executeTest(self.configureFortranPIC)
+    else:
+      self.framework.addSubstitution('FC_SHARED_OPT', '')
     self.executeTest(self.configureFortranCPP)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configureLibtool)
