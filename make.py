@@ -21,6 +21,12 @@ class PetscMake(bs.BS):
     self.defineDirectories()
     self.defineFileSets()
     self.defineTargets()
+    self.setupDirs()
+
+  def setupDirs(self):
+    for root in self.filesets['serverSourceRoots']:
+      if not os.path.exists(root):
+        os.mkdir(root)
 
   def defineHelp(self):
     bs.argDB.setHelp('PYTHON_INCLUDE', 'The directory in which the Python headers were installed (like Python.h)')
@@ -28,7 +34,8 @@ class PetscMake(bs.BS):
 
   def defineDirectories(self):
     self.directories['sidl']               = os.path.join(os.getcwd(), 'sidl')
-    self.directories['serverSource']       = os.path.join(os.getcwd(), 'server')
+    self.directories['sidlRepository']     = os.path.join(os.getcwd(), 'xml')
+    self.directories['serverSourceBase']   = os.path.join(os.getcwd(), 'server')
     self.directories['pythonClientSource'] = os.path.join(os.getcwd(), 'python')
     self.directories['lib']                = os.path.join(os.getcwd(), 'lib')
     self.directories['pythonInc']          = bs.argDB['PYTHON_INCLUDE']
@@ -39,70 +46,96 @@ class PetscMake(bs.BS):
 
   def defineFileSets(self):
     self.filesets['babelLib']           = fileset.FileSet([os.path.join(self.directories['babelLib'], 'libsidl.so')])
+
     self.filesets['sidl']               = fileset.ExtensionFileSet(self.directories['sidl'], '.sidl')
-    self.filesets['serverSource']       = fileset.ExtensionFileSet(self.directories['serverSource'], ['.h', '.c', '.hh', '.cc'])
+    self.filesets['serverSourceRoots']  = fileset.FileSet(map(lambda file, dir=self.directories['serverSourceBase']:
+                                                              dir+'-'+os.path.splitext(os.path.split(file)[1])[0],
+                                                              self.filesets['sidl']))
     self.filesets['pythonClientSource'] = fileset.ExtensionFileSet(self.directories['pythonClientSource'], ['.h', '.c'])
     self.filesets['serverLib']          = fileset.FileSet([os.path.join(self.directories['lib'], 'libbs.a')])
     self.filesets['pythonClientLib']    = fileset.FileSet([os.path.join(self.directories['lib'], 'libpythonbs.a')])
 
   def defineTargets(self):
     sidlRepositoryAction = babel.CompileSIDLRepository()
-    sidlServerAction = babel.CompileSIDLServer(self.filesets['serverSource'])
-    sidlServerAction.outputDir = self.directories['serverSource']
+    sidlCxxServerAction = babel.CompileSIDLServer(None)
+    sidlCxxServerAction.outputDir = self.directories['serverSourceBase']
+    sidlCxxServerAction.repositoryDirs.append(self.directories['sidlRepository'])
     sidlPythonClientAction = babel.CompileSIDLClient()
+    sidlPythonClientAction.language  = 'Python'
     sidlPythonClientAction.outputDir = self.directories['pythonClientSource']
-    serverCAction = compile.CompileC(self.filesets['serverLib'])
-    serverCAction.defines.append('PIC')
-    serverCAction.includeDirs.append(self.directories['babelInc'])
-    serverCxxAction = compile.CompileCxx(self.filesets['serverLib'])
-    serverCxxAction.defines.append('PIC')
-    serverCxxAction.includeDirs.append(self.directories['babelInc'])
-    serverCxxAction.includeDirs.append(self.directories['serverSource'])
+    sidlPythonClientAction.repositoryDirs.append(self.directories['sidlRepository'])
+
     pythonClientCAction = compile.CompileC(self.filesets['pythonClientLib'])
     pythonClientCAction.defines.append('PIC')
-    pythonClientCAction.includeDirs.append(self.directories['babel'])
+    pythonClientCAction.includeDirs.append(self.directories['pythonClientSource'])
     pythonClientCAction.includeDirs.append(self.directories['babelInc'])
     pythonClientCAction.includeDirs.append(self.directories['babelPythonInc'])
-    pythonClientCAction.includeDirs.append(self.directories['serverSource'])
     pythonClientCAction.includeDirs.append(self.directories['pythonInc'])
 
+    serverTargets = []
+    for sidlFile in self.filesets['sidl'].getFiles():
+      package   = os.path.splitext(os.path.split(sidlFile)[1])[0]
+      rootDir   = self.directories['serverSourceBase']+'-'+package
+      library   = fileset.FileSet([os.path.join(self.directories['lib'], 'libserver-'+package+'.a')])
+      libraries = self.filesets['babelLib']
+
+      serverCAction = compile.CompileC(library)
+      serverCAction.defines.append('PIC')
+      serverCAction.includeDirs.append(self.directories['babelInc'])
+
+      serverCxxAction = compile.CompileCxx(library)
+      serverCxxAction.defines.append('PIC')
+      serverCxxAction.includeDirs.append(self.directories['babelInc'])
+      serverCxxAction.includeDirs.append(self.directories['serverSourceBase']+'-'+package)
+
+      serverTargets.append(target.Target(fileset.ExtensionFileSet(rootDir, ['.h', '.c', '.hh', '.cc']),
+                                         [compile.TagC(root = rootDir),
+                                          compile.TagCxx(root = rootDir),
+                                          serverCAction,
+                                          serverCxxAction,
+                                          link.TagLibrary(),
+                                          link.LinkSharedLibrary(extraLibraries = libraries)]))
+
+    self.targets['repositorySidl']  = target.Target(None,
+                                                    [babel.TagAllSIDL(),
+                                                     sidlRepositoryAction])
+    self.targets['cxxServerSidl']  = target.Target(None,
+                                                   [bk.TagBKOpen(roots = self.filesets['serverSourceRoots']),
+                                                    bk.BKOpen(),
+                                                    babel.TagSIDL(),
+                                                    sidlCxxServerAction,
+                                                    bk.TagBKClose(roots = self.filesets['serverSourceRoots']),
+                                                    transform.FileFilter(self.isImpl, tags = 'bkadd'),
+                                                    bk.BKClose()])
+    self.targets['pythonClientSidl']  = target.Target(None,
+                                                      [babel.TagAllSIDL(),
+                                                       sidlPythonClientAction])
     self.targets['sidl']  = target.Target(self.filesets['sidl'],
-                                          [babel.TagSIDL(),
-                                           bk.TagBKOpen(root = self.directories['serverSource']),
-                                           bk.BKOpen(),
-                                           (sidlRepositoryAction,
-                                            sidlServerAction,
-                                            sidlPythonClientAction),
-                                           bk.TagBKClose(root = self.directories['serverSource']),
-                                           transform.FileFilter(self.isImpl, tags = 'bkadd'),
-                                           bk.BKClose()])
+                                          [(self.targets['repositorySidl'],
+                                            self.targets['cxxServerSidl'],
+                                            self.targets['pythonClientSidl']),
+                                           transform.Update()
+                                           ])
+
     self.targets['serverCompile'] = target.Target(None,
-                                                  [self.targets['sidl'],
-                                                   compile.TagC(),
-                                                   compile.TagCxx(),
-                                                   serverCAction,
-                                                   serverCxxAction,
-                                                   link.TagLibrary(),
-                                                   link.LinkSharedLibrary(extraLibraries=self.filesets['babelLib'])])
+                                                  [tuple(serverTargets),
+                                                   transform.Update()])
+
     self.targets['pythonModuleFixup'] = target.Target(None,
                                                       [transform.FileFilter(lambda source: source[-2:] == '.c'),
                                                        babel.PythonModuleFixup(self.filesets['pythonClientLib'], self.directories['pythonClientSource'])])
     self.targets['pythonClientCompile'] = target.Target(self.filesets['pythonClientSource'],
                                                         (self.targets['pythonModuleFixup'],
                                                          [compile.TagC(),
-                                                          transform.FileFilter(self.isPythonStub, tags = ['c', 'old c']),
                                                           pythonClientCAction,
                                                           link.TagLibrary(),
                                                           link.LinkSharedLibrary(extraLibraries=self.filesets['babelLib'])]))
+
     self.targets['default'] = target.Target(None,
-                                            [(self.targets['serverCompile'], self.targets['pythonClientCompile'])])
+                                            [(self.targets['sidl'], self.targets['serverCompile'], self.targets['pythonClientCompile'])])
 
   def isImpl(self, source):
     if self.implRE.match(os.path.dirname(source)): return 1
     return 0
-
-  def isPythonStub(self, source):
-    if os.path.dirname(source) == self.directories['pythonClientSource']: return 0
-    return 1
 
 if __name__ ==  '__main__': PetscMake(sys.argv[1:]).main()
