@@ -509,7 +509,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
         if (j != diag) rs += PetscAbsScalar(pv[j]);
       }
 #define MAX_NSHIFT 5
-      if (PetscRealPart(pv[diag]) < zeropivot*rs && b->lu_shift) {
+      if (PetscRealPart(pv[diag]) <= zeropivot*rs && b->lu_shift) {
 	if (nshift>MAX_NSHIFT) {
 	  SETERRQ(1,"Unable to determine shift to enforce positive definite preconditioner");
 	} else if (nshift==MAX_NSHIFT) {
