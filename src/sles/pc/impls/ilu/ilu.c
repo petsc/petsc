@@ -121,17 +121,21 @@ int PCILUSetMatOrdering_ILU(PC pc,MatOrderingType ordering)
 {
   PC_ILU *dir = (PC_ILU*)pc->data;
   int    ierr;
+  PetscTruth flg;
  
   PetscFunctionBegin;
   if (!pc->setupcalled) {
      ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
      ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
-  } else if (dir->ordering != ordering) {
-     pc->setupcalled = 0;
-     ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
-     ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
-     /* free the data structures, then create them again */
-     ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrcmp(dir->ordering,ordering,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      pc->setupcalled = 0;
+      ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
+      ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
+      /* free the data structures, then create them again */
+      ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
