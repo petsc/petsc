@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.79 1998/06/05 19:47:12 balay Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.80 1998/07/15 18:53:49 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -620,6 +620,8 @@ int PCASMSetType(PC pc,PCASMType type)
 -  sles - the array of SLES contexts
 
    Note:  
+   After PCASMGetSubSLES() the array of SLESes is not to be freed
+
    Currently for some matrix implementations only 1 block per processor 
    is supported.
    

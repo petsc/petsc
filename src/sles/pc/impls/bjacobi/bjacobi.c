@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.109 1998/05/29 20:36:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.110 1998/07/24 15:36:56 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -432,6 +432,8 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 -  sles - the array of SLES contexts
 
    Note:  
+   After PCBGSGetSubSLES() the array of SLESes is not to be freed
+
    Currently for some matrix implementations only 1 block per processor 
    is supported.
    
