@@ -560,7 +560,7 @@ int PetscOptionsList(const char opt[],const char ltext[],const char man[],PetscF
 
    Input Parameters:
 +  opt - option name
-.  text - short string that describes the option
+.  ltext - short string that describes the option
 .  man - manual page with additional information on option
 .  list - the possible choices
 .  ntext - number of choices
