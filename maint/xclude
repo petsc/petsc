@@ -1,3 +1,4 @@
+petsc/src/contrib/ksp
 petsc/src/contrib/pc/spai/RCS
 petsc/src/contrib/pc/spai/examples/RCS
 petsc/src/contrib/pc/spai/examples/tutorials/RCS
