@@ -8,6 +8,8 @@ echo "and run maint/wwwman to make www manpage indices"
 #
 pushd ~/petsc; make ACTION=clean tree; popd
 #
+/bin/rm -f ~/petsc.tar
+#
 tar cFFXf ~/petsc/maint/xclude ~/petsc.tar -C ~  petsc
 #
 #
