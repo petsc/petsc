@@ -8,11 +8,11 @@
 typedef struct {
   VECHEADER
   MPI_Request *send_waits,*recv_waits;  /* for communication during VecAssembly() */
-  PetscInt         nsends,nrecvs;
+  PetscInt    nsends,nrecvs;
   PetscScalar *svalues,*rvalues;
-  PetscInt         rmax;
+  PetscInt    rmax;
   
-  PetscInt         nghost;                   /* length of local portion including ghost padding */
+  PetscInt    nghost;                   /* length of local portion including ghost padding */
   
   Vec         localrep;                 /* local representation of vector */
   VecScatter  localupdate;              /* scatter to update ghost values */

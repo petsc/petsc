@@ -352,6 +352,25 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecGetValues_Seq"
+PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscScalar y[])
+{
+  Vec_Seq     *x = (Vec_Seq *)xin->data;
+  PetscScalar *xx = x->array;
+  PetscInt    i;
+
+  PetscFunctionBegin;
+  for (i=0; i<ni; i++) {
+#if defined(PETSC_USE_DEBUG)
+    if (ix[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
+    if (ix[i] >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D to large maximum allowed %D",ix[i],xin->n);
+#endif
+    y[i] = xx[ix[i]];
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecSetValues_Seq"
 PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode m)
 {
@@ -499,7 +518,8 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecLoad_Binary,
             VecPointwiseMax_Seq,
             VecPointwiseMaxAbs_Seq,
-            VecPointwiseMin_Seq
+            VecPointwiseMin_Seq,
+            VecGetValues_Seq
           };
 
 
