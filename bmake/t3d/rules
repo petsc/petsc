@@ -1,4 +1,4 @@
-# $Id: base,v 1.29 1998/04/09 20:52:30 balay Exp balay $ 
+# $Id: base,v 1.30 1998/04/09 21:12:26 balay Exp balay $ 
 
 PARCH    = t3d
 CC       = cc -DPARCH_t3d -h jump
@@ -18,6 +18,7 @@ CLINKER  = ${CC} ${COPTFLAGS}
 FLINKER  = ${FC} ${FOPTFLAGS}
 SYS_LIB  =
 SHELL    = /bin/sh
+FCONF    = -DHAVE_64BITS 
 
 include ${PETSC_DIR}/bmake/common
 

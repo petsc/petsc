@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.1 1998/04/09 20:26:47 balay Exp $ */
+/* $Id: petscconf.h,v 1.1 1998/04/09 20:30:46 balay Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -20,6 +20,6 @@
 
 #define HAVE_FORTRAN_UNDERSCORE
 
-#undef HAVE_READLINK
+#define HAVE_MEMMOVE
 #define NEEDS_GETTIMEOFDAY_PROTO
 #endif

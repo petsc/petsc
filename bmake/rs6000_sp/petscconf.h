@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.2 1998/04/09 20:54:00 balay Exp $ */
+/* $Id: petscconf.h,v 1.1 1998/04/09 21:00:31 balay Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -30,5 +30,8 @@
 #define HAVE_XLF90
 
 #define PREFER_BZERO
+
+#define HAVE_READLINK
+#define HAVE_MEMMOVE
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.1 1998/04/09 20:52:44 balay Exp balay $ */
+/* $Id: petscconf.h,v 1.2 1998/04/09 20:54:00 balay Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -19,5 +19,8 @@
 
 #define HAVE_FORTRAN_CAPS 
 #define USES_FORTRAN_SINGLE
+
+#define HAVE_READLINK
+#define HAVE_MEMMOVE
 
 #endif

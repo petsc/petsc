@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.1 1998/04/09 20:33:29 balay Exp balay $ */
+/* $Id: petscconf.h,v 1.2 1998/04/09 20:40:41 balay Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -24,7 +24,7 @@
 #define HAVE_64BITS  
 #define HAVE_IRIXF90
 
-#undef HAVE_READLINK
+#define HAVE_MEMMOVE
 #define NEEDS_GETTIMEOFDAY_PROTO
 
 #endif
