@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.22 1996/10/11 19:50:00 balay Exp balay $";
+static char vcid[] = "$Id: ij.c,v 1.23 1996/10/11 21:07:47 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -30,19 +30,19 @@ $    This routine is provided for ordering routines that require a
 $    symmetric structure.  It is required since those routines call 
 $    SparsePak routines that expect a symmetric  matrix.
 */
-int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shiftin, int shiftout,
+int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin, int shiftout,
                             int **iia, int **jja )
 {
   int *work,*ia,*ja,*j,i, nz, row, col;
 
   /* allocate space for row pointers */
-  *iia = ia = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(ia);
-  PetscMemzero(ia,(n+1)*sizeof(int));
-  work = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(work);
+  *iia = ia = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(ia);
+  PetscMemzero(ia,(m+1)*sizeof(int));
+  work = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(work);
 
   /* determine the number of columns in each row */
   ia[0] = shiftout;
-  for (row = 0; row < n; row++) {
+  for (row = 0; row < m; row++) {
     nz = ai[row+1] - ai[row];
     j  = aj + ai[row] + shiftin;
     while (nz--) {
@@ -54,18 +54,18 @@ int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shiftin, int shiftout,
   }
 
   /* shiftin ia[i] to point to next row */
-  for ( i=1; i<n+1; i++ ) {
+  for ( i=1; i<m+1; i++ ) {
     row       = ia[i-1];
     ia[i]     += row;
     work[i-1] = row - shiftout;
   }
 
   /* allocate space for column pointers */
-  nz = ia[n] + (!shiftin);
+  nz = ia[m] + (!shiftin);
   *jja = ja = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(ja);
 
   /* loop over lower triangular part putting into ja */ 
-  for (row = 0; row < n; row++) {
+  for (row = 0; row < m; row++) {
     nz = ai[row+1] - ai[row];
     j  = aj + ai[row] + shiftin;
     while (nz--) {

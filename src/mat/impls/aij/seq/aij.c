@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.188 1996/10/15 23:17:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.189 1996/10/16 21:01:58 bsmith Exp balay $";
 #endif
 
 /*
@@ -27,31 +27,31 @@ int MatILUDTFactor_SeqAIJ(Mat A,double dt,int maxnz,IS row,IS col,Mat *fact)
 
 extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
-static int MatGetRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
+static int MatGetRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int **ja,
                            PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        ierr,i,ishift;
  
-  *n     = A->n;
+  *m     = A->m;
   if (!ia) return 0;
   ishift = a->indexshift;
   if (symmetric) {
-    ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,ishift,oshift,ia,ja); CHKERRQ(ierr);
+    ierr = MatToSymmetricIJ_SeqAIJ(a->m,a->i,a->j,ishift,oshift,ia,ja); CHKERRQ(ierr);
   } else if (oshift == 0 && ishift == -1) {
-    int nz = a->i[a->n]; 
+    int nz = a->i[a->m]; 
     /* malloc space and  subtract 1 from i and j indices */
-    *ia = (int *) PetscMalloc( (a->n+1)*sizeof(int) ); CHKPTRQ(*ia);
+    *ia = (int *) PetscMalloc( (a->m+1)*sizeof(int) ); CHKPTRQ(*ia);
     *ja = (int *) PetscMalloc( (nz+1)*sizeof(int) ); CHKPTRQ(*ja);
     for ( i=0; i<nz; i++ ) (*ja)[i] = a->j[i] - 1;
-    for ( i=0; i<a->n+1; i++ ) (*ia)[i] = a->i[i] - 1;
+    for ( i=0; i<a->m+1; i++ ) (*ia)[i] = a->i[i] - 1;
   } else if (oshift == 1 && ishift == 0) {
-    int nz = a->i[a->n] + 1; 
+    int nz = a->i[a->m] + 1; 
     /* malloc space and  add 1 to i and j indices */
-    *ia = (int *) PetscMalloc( (a->n+1)*sizeof(int) ); CHKPTRQ(*ia);
+    *ia = (int *) PetscMalloc( (a->m+1)*sizeof(int) ); CHKPTRQ(*ia);
     *ja = (int *) PetscMalloc( (nz+1)*sizeof(int) ); CHKPTRQ(*ja);
     for ( i=0; i<nz; i++ ) (*ja)[i] = a->j[i] + 1;
-    for ( i=0; i<a->n+1; i++ ) (*ia)[i] = a->i[i] + 1;
+    for ( i=0; i<a->m+1; i++ ) (*ia)[i] = a->i[i] + 1;
   } else {
     *ia = a->i; *ja = a->j;
   }
