@@ -72,8 +72,8 @@ if __name__ == '__main__':
     else:
       if installer.checkBootstrap():
         booter = Installer(localDict = 1, initDict = installer.argDB)
-        # Must install BuildSystem
-        booter.builder.build(os.path.dirname(booter.builder.getRoot()), 'install')
+        # Must build and install BuildSystem
+        booter.builder.build(os.path.dirname(booter.builder.getRoot()))
         # Install Compiler and Runtime
         booter.bootstrapInstall('bk://sidl.bkbits.net/Compiler', installer.argDB)
       if installer.checkBootstrap():

@@ -1,4 +1,5 @@
 #include <Python.h>
+#include "cygwinpath_Module.h"
 
 #ifdef HAVE_CYGWIN
 
