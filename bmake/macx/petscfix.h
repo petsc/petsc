@@ -1,4 +1,4 @@
-/*$Id: petscfix.h,v 1.1 2000/04/04 21:54:07 balay Exp $*/
+/*$Id: petscfix.h,v 1.1 2000/04/18 23:26:42 balay Exp balay $*/
 
 /*
     This fixes various things in system files that are incomplete, for 
@@ -15,7 +15,7 @@
 
 #include "petsc.h"
 
-/* -----------------------mac-x ------------------------------------------*/
+/* -----------------------macx ------------------------------------------*/
 #if defined(__cplusplus)
 extern "C" {
 }
