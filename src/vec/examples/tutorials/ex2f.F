@@ -1,5 +1,5 @@
 
-C    "$Id: ex2f.F,v 1.1 1996/10/26 18:34:22 curfman Exp curfman $"
+C    "$Id: ex2f.F,v 1.2 1996/10/28 20:59:22 curfman Exp curfman $"
 
 C  Description: Builds a parallel vector with 1 component on the first
 C               processor, 2 on the second, etc.  Then each processor adds
@@ -31,14 +31,14 @@ C     is.h     - index sets
 C
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
-C
-      Vec     x
-      integer N, ierr, rank, i
-      Scalar  one
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                 Beginning of program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+      Vec     x
+      integer N, ierr, rank, i
+      Scalar  one
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one   = 1.0

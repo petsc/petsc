@@ -1,9 +1,12 @@
 
+C      "$Id: ex4f.F,v 1.14 1996/09/28 17:58:14 curfman Exp curfman $";
+
 C  Description: Displays a vector visually.
 C
 C/*T
 C   Concepts: Vectors^Drawing vectors;
 C   Routines: VecCreate(); VecSetValues(); VecView(); VecDestroy();
+C   Routines: VecAssemblyBegin(); VecAssemblyEnd(); VecGetOwnershipRange();
 C   Routines: ViewerDrawOpenX(); ViewerDestroy();
 C   Processors: n
 CT*/
@@ -25,15 +28,15 @@ C
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/viewer.h"
-C
-      Vec     x
-      Viewer  viewer
-      Scalar  v
-      integer i, istart, iend, n, ierr, flg
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                 Beginning of program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+      Vec     x
+      Viewer  viewer
+      Scalar  v
+      integer i, istart, iend, n, ierr, flg
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       n = 50
