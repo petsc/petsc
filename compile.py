@@ -16,7 +16,7 @@ class Process (action.Action):
       action.Action.__init__(self, self.process, sources, compilerFlags, setwiseExecute)
     self.compiler        = compiler
     self.buildProducts   = 0
-    if products:
+    if isinstance(products, fileset.FileSet):
       self.products      = products
     else:
       self.products      = fileset.FileSet()
