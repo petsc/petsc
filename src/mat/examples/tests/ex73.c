@@ -23,7 +23,7 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  const MatType   mtype = MATMPIAIJ; /* matrix format */
+  MatType         mtype = MATMPIAIJ; /* matrix format */
   Mat             A,B;               /* matrix */
   PetscViewer     fd;                /* viewer */
   char            file[PETSC_MAX_PATH_LEN];         /* input file name */
