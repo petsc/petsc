@@ -36,7 +36,7 @@ X11_LIB        = -lX11
 # Location of MPI (Message Passing Interface) software
 #
 #  If you are using the MPICH 1.1 (or higher) implementation of MPI, you 
-#  add  -DUSES_INT_MPI_COMM to the line MPI_INCLUDE    = below.
+#  add  -DUSES_INT_MPI_COMM to the line MPI_INCLUDE below.
 #
 MPI_LIB        = /home/petsc/mpich/lib/alpha/ch_p4/libmpi.a 
 MPI_INCLUDE    = -I/home/petsc/mpich/include
