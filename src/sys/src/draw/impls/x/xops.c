@@ -1,4 +1,4 @@
-/* $Id: xops.c,v 1.142 1999/11/05 14:43:58 bsmith Exp bsmith $*/
+/* $Id: xops.c,v 1.143 1999/11/24 21:41:48 balay Exp balay $*/
 
 /*
     Defines the operations for the X Draw implementation.
@@ -593,7 +593,7 @@ EXTERN_C_BEGIN
 int DrawCreate_X(Draw draw)
 {
   Draw_X     *Xwin;
-  int        ierr,size,rank,xywh[4],osize = 4;
+  int        ierr,rank,xywh[4],osize = 4;
   int        x = draw->x, y = draw->y, w = draw->w, h = draw->h;
   static int xavailable = 0,yavailable = 0,xmax = 0,ymax = 0, ybottom = 0;
   PetscTruth flg;
@@ -693,7 +693,6 @@ int DrawCreate_X(Draw draw)
   Xwin         = (Draw_X *) PetscMalloc( sizeof(Draw_X) );CHKPTRQ(Xwin);
   PLogObjectMemory(draw,sizeof(Draw_X)+sizeof(struct _p_Draw));
   ierr = PetscMemzero(Xwin,sizeof(Draw_X));CHKERRQ(ierr);
-  ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
 
   if (!rank) {

@@ -1,4 +1,4 @@
-/*$Id: mem.c,v 1.43 1999/11/24 21:21:22 balay Exp balay $*/
+/*$Id: mem.c,v 1.44 1999/11/24 21:28:56 balay Exp balay $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 #include "sys.h"
@@ -77,7 +77,7 @@
 @*/
 int PetscGetResidentSetSize(PLogDouble *foo)
 {
-#if defined(PETSC_HAVE_SYS_PROCFS_H)
+#if defined(PETSC_USE_PROCFS_FOR_SIZE)
   int             fd;
   char            proc[1024];
   prpsinfo_t      prusage;
@@ -90,7 +90,7 @@ int PetscGetResidentSetSize(PLogDouble *foo)
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_SYS_PROCFS_H)
+#if defined(PETSC_USE_PROCFS_FOR_SIZE)
   sprintf(proc,"/proc/%d", (int)getpid());
   if ((fd = open(proc,O_RDONLY)) == -1) {
     SETERRQ(PETSC_ERR_FILE_OPEN,1,"Unable to access system file to get memory usage data");

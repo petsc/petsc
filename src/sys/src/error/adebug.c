@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.97 1999/11/05 14:44:06 bsmith Exp bsmith $*/
+/*$Id: adebug.c,v 1.98 1999/11/10 03:17:52 bsmith Exp bsmith $*/
 /*
       Code to handle PETSc starting up in debuggers, etc.
 */
@@ -118,7 +118,7 @@ int PetscAttachDebugger(void)
          We need to send a continue signal to the "child" process on the 
        alpha, otherwise it just stays off forever
     */
-#if defined (PARCH_alpha)
+#if defined (PETSC_NEED_KILL_FOR_DEBUGGER)
     kill(child,SIGCONT);
 #endif
     sprintf(pid,"%d",child); 
@@ -147,14 +147,14 @@ int PetscAttachDebugger(void)
     } else if (!Xterm) {
       args[1] = program; args[2] = pid; args[3] = 0;
       args[0] = Debugger;
-#if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)  
+#if defined(PETSC_USE_P_FOR_DEBUGGER)
       if (isdbx) {
         args[1] = "-p";
         args[2] = pid;
         args[3] = program;
         args[4] = 0;
       }
-#elif defined(PARCH_hpux)
+#elif defined(PETSC_USE_LARGEP_FOR_DEBUGGER)
       if (isxdb) {
         args[1] = "-l";
         args[2] = "ALL";
@@ -163,13 +163,13 @@ int PetscAttachDebugger(void)
         args[5] = program;
         args[6] = 0;
       }
-#elif defined(PARCH_rs6000)
+#elif defined(PETSC_USE_A_FOR_DEBUGGER)
       if (isdbx) {
         args[1] = "-a";
         args[2] = pid;
         args[3] = 0;
       }
-#elif defined(PARCH_alpha)
+#elif defined(PETSC_USE_PID_FOR_DEBUGGER)
       if (isdbx) {
         args[1] = "-pid";
         args[2] = pid;
@@ -187,27 +187,27 @@ int PetscAttachDebugger(void)
         args[0] = "xterm";  args[1] = "-e"; 
         args[2] = Debugger; args[3] = program; 
         args[4] = pid;      args[5] = 0;
-#if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5) 
+#if defined(PETSC_USE_P_FOR_DEBUGGER)
         if (isdbx) {
           args[3] = "-p";
           args[4] = pid;
           args[5] = program;
           args[6] = 0;
         }
-#elif defined(PARCH_hpux)
+#elif defined(PETSC_USE_LARGEP_FOR_DEBUGGER)
         if (isxdb) {
           args[5] = program;
           args[3] = "-P";
           args[4] = pid;
           args[6] = 0;
         }
-#elif defined(PARCH_rs6000)
+#elif defined(PETSC_USE_A_FOR_DEBUGGER)
         if (isdbx) {
           args[3] = "-a";
           args[4] = pid;
           args[5] = 0;
         }
-#elif defined(PARCH_alpha)
+#elif defined(PETSC_USE_PID_FOR_DEBUGGER)
       if (isdbx) {
         args[3] = "-pid";
         args[4] = pid;
@@ -221,27 +221,27 @@ int PetscAttachDebugger(void)
         args[2] = display;  args[3] = "-e";
         args[4] = Debugger; args[5] = program;
         args[6] = pid;      args[7] = 0;
-#if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)
+#if defined(PETSC_USE_P_FOR_DEBUGGER)
         if (isdbx) {
           args[5] = "-p";
           args[6] = pid;
           args[7] = program;
           args[8] = 0;
         }
-#elif defined(PARCH_hpux)
+#elif defined(PETSC_USE_LARGEP_FOR_DEBUGGER)
         if (isxdb) {
           args[7] = program;
           args[5] = "-P";
           args[6] = pid;
           args[8] = 0;
         }
-#elif defined(PARCH_rs6000)
+#elif defined(PETSC_USE_A_FOR_DEBUGGER)
         if (isdbx) {
           args[5] = "-a";
           args[6] = pid;
           args[7] = 0;
         }
-#elif defined(PARCH_alpha)
+#elif defined(PETSC_USE_PID_FOR_DEBUGGER)
       if (isdbx) {
         args[5] = "-pid";
         args[6] = pid;
@@ -261,7 +261,7 @@ int PetscAttachDebugger(void)
     sleeptime = 10; /* default to sleep waiting for debugger */
     ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);
     if (sleeptime < 0) sleeptime = -sleeptime;
-#if defined(PARCH_hpux)
+#if defined(PETSC_NEED_DEBUGGER_NO_SLEEP)
     /*
         HP cannot attach process to sleeping debugger, hence count instead
     */
@@ -270,7 +270,7 @@ int PetscAttachDebugger(void)
       int i=10000000;
       while (i--) x++ ; /* cannot attach to sleeper */
     }
-#elif defined(PARCH_rs6000)
+#elif defined(PETSC_HAVE_SLEEP_RETURNS_EARLY)
     /*
         IBM sleep may return at anytime, hence must see if there is more time to sleep
     */
@@ -412,24 +412,24 @@ int PetscStopForDebugger(void)
   if (isxxgdb || isups) {
     (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
   }
-#if defined(PARCH_rs6000)
+#if definedPETSC_USE_A_FOR_DEBUGGER)
   else if (isxldb) {
     (*PetscErrorPrintf)("{%d]%s>>%s -a %d %s\n",rank,hostname,Debugger,ppid,program);
   }
 #endif
-#if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)  
+#if defined(PETSC_USE_P_FOR_DEBUGGER)
   else if (isdbx) {
     (*PetscErrorPrintf)("[%d]%s>>%s -p %d %s\n",rank,hostname,Debugger,ppid,program);
   }
-#elif defined(PARCH_hpux)
+#elif defined(PETSC_USE_LARGEP_FOR_DEBUGGER)
   else if (isxdb) {
     (*PetscErrorPrintf)("[%d]%s>>%s -l ALL -P %d %s\n",rank,hostname,Debugger,ppid,program);
   }
-#elif defined(PARCH_rs6000)
+#elif defined(PETSC_USE_A_FOR_DEBUGGER)
   else if (isdbx) {
-    (*PetscErrorPrintf)("[%d]%s>>%s a %d\n",rank,hostname,Debugger,ppid);
+    (*PetscErrorPrintf)("[%d]%s>>%s -a %d\n",rank,hostname,Debugger,ppid);
   }
-#elif defined(PARCH_alpha)
+#elif defined(PETSC_USE_PID_FOR_DEBUGGER)
   else if (isdbx) {
     (*PetscErrorPrintf)("[%d]%s>>%s -pid %d %s\n",rank,hostname,Debugger,ppid,program);
   }
@@ -443,7 +443,7 @@ int PetscStopForDebugger(void)
   sleeptime = 25; /* default to sleep waiting for debugger */
   ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);
   if (sleeptime < 0) sleeptime = -sleeptime;
-#if defined(PARCH_hpux)
+#if defined(PETSC_NEED_DEBUGGER_NO_SLEEP)
   /*
       HP cannot attach process to sleeping debugger, hence count instead
   */
@@ -452,7 +452,7 @@ int PetscStopForDebugger(void)
     int i=10000000;
     while (i--) x++ ; /* cannot attach to sleeper */
   }
-#elif defined(PARCH_rs6000)
+#elif defined(PETSC_HAVE_SLEEP_RETURNS_EARLY)
   /*
       IBM sleep may return at anytime, hence must see if there is more time to sleep
   */
