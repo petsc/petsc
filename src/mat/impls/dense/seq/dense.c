@@ -9,21 +9,22 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqDense"
-PetscErrorCode MatAXPY_SeqDense(const PetscScalar *alpha,Mat X,Mat Y,MatStructure str)
+PetscErrorCode MatAXPY_SeqDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
 {
-  Mat_SeqDense *x = (Mat_SeqDense*)X->data,*y = (Mat_SeqDense*)Y->data;
-  PetscInt     j;
-  PetscBLASInt N = (PetscBLASInt)X->m*X->n,m=(PetscBLASInt)X->m,ldax = x->lda,lday=y->lda,one = 1;
+  Mat_SeqDense   *x = (Mat_SeqDense*)X->data,*y = (Mat_SeqDense*)Y->data;
+  PetscScalar    oalpha = alpha;
+  PetscInt       j;
+  PetscBLASInt   N = (PetscBLASInt)X->m*X->n,m=(PetscBLASInt)X->m,ldax = x->lda,lday=y->lda,one = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (X->m != Y->m || X->n != Y->n) SETERRQ(PETSC_ERR_ARG_SIZ,"size(B) != size(A)");
+  if (X->m != Y->m || X->n != Y->n) SETERRQ(PETSC_ERR_ARG_SIZ,"size(X) != size(Y)");
   if (ldax>m || lday>m) {
     for (j=0; j<X->n; j++) {
-      BLASaxpy_(&m,(PetscScalar*)alpha,x->v+j*ldax,&one,y->v+j*lday,&one);
+      BLASaxpy_(&m,&oalpha,x->v+j*ldax,&one,y->v+j*lday,&one);
     }
   } else {
-    BLASaxpy_(&N,(PetscScalar*)alpha,x->v,&one,y->v,&one);
+    BLASaxpy_(&N,&oalpha,x->v,&one,y->v,&one);
   }
   ierr = PetscLogFlops(2*N-1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -60,9 +61,10 @@ PetscErrorCode MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SeqDense"
-PetscErrorCode MatScale_SeqDense(const PetscScalar *alpha,Mat A)
+PetscErrorCode MatScale_SeqDense(Mat A,PetscScalar alpha)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
+  PetscScalar  oalpha = alpha;
   PetscBLASInt one = 1,lda = a->lda,j,nz;
   PetscErrorCode ierr;
 
@@ -70,11 +72,11 @@ PetscErrorCode MatScale_SeqDense(const PetscScalar *alpha,Mat A)
   if (lda>A->m) {
     nz = (PetscBLASInt)A->m;
     for (j=0; j<A->n; j++) {
-      BLASscal_(&nz,(PetscScalar*)alpha,a->v+j*lda,&one);
+      BLASscal_(&nz,&oalpha,a->v+j*lda,&one);
     }
   } else {
     nz = (PetscBLASInt)A->m*A->n;
-    BLASscal_(&nz,(PetscScalar*)alpha,a->v,&one);
+    BLASscal_(&nz,&oalpha,a->v,&one);
   }
   ierr = PetscLogFlops(nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1295,27 +1297,23 @@ PetscErrorCode MatZeroEntries_SeqDense(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqDense"
-PetscErrorCode MatZeroRows_SeqDense(Mat A,IS is,const PetscScalar *diag)
+PetscErrorCode MatZeroRows_SeqDense(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
 {
   Mat_SeqDense   *l = (Mat_SeqDense*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       n = A->n,i,j,N,*rows;
+  PetscInt       n = A->n,i,j;
   PetscScalar    *slot;
 
   PetscFunctionBegin;
-  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     slot = l->v + rows[i];
     for (j=0; j<n; j++) { *slot = 0.0; slot += n;}
   }
-  if (diag) {
+  if (diag != 0.0) {
     for (i=0; i<N; i++) { 
       slot = l->v + (n+1)*rows[i];
-      *slot = *diag;
+      *slot = diag;
     }
   }
-  ISRestoreIndices(is,&rows);
   PetscFunctionReturn(0);
 }
 

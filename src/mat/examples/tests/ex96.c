@@ -159,7 +159,7 @@ int main(int argc,char **argv)
     alpha=1.0;
     for (i=0; i<2; i++){
       alpha -=0.1;
-      ierr = MatScale(&alpha,A_tmp);CHKERRQ(ierr);
+      ierr = MatScale(A_tmp,alpha);CHKERRQ(ierr);
       ierr = MatMatMult(A_tmp,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
     /*
@@ -204,7 +204,7 @@ int main(int argc,char **argv)
     alpha=1.0;
     for (i=0; i<1; i++){
       alpha -=0.1;
-      ierr = MatScale(&alpha,A);CHKERRQ(ierr);
+      ierr = MatScale(A,alpha);CHKERRQ(ierr);
       ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
 

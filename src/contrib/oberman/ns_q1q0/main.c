@@ -409,15 +409,15 @@ IS is_single_pressure;
 
   /**********  boundary conditions ************/
   /* here should zero rows corresponding to dfs where bc imposed */
- ierr = MatZeroRowsLocal(*jac, grid->iswall_vdf,&one);CHKERRQ(ierr); 
+ ierr = MatZeroRowsLocalIS(*jac, grid->iswall_vdf,one);CHKERRQ(ierr); 
   if(equations->vin_flag){
-    ierr = MatZeroRowsLocal(*jac, grid->isinlet_vdf,&one);CHKERRQ(ierr);}
+    ierr = MatZeroRowsLocalIS(*jac, grid->isinlet_vdf,one);CHKERRQ(ierr);}
   if(equations->vout_flag){
-    ierr = MatZeroRowsLocal(*jac, grid->isoutlet_vdf,&one);CHKERRQ(ierr);}
+    ierr = MatZeroRowsLocalIS(*jac, grid->isoutlet_vdf,one);CHKERRQ(ierr);}
  if(equations->pout_flag){
-   ierr = MatZeroRowsLocal(*jac, grid->isoutlet_pdf,&one);CHKERRQ(ierr);}
+   ierr = MatZeroRowsLocalIS(*jac, grid->isoutlet_pdf,one);CHKERRQ(ierr);}
  if(equations->pin_flag){
-   ierr = MatZeroRowsLocal(*jac, grid->isinlet_pdf,&one);CHKERRQ(ierr);}
+   ierr = MatZeroRowsLocalIS(*jac, grid->isinlet_pdf,one);CHKERRQ(ierr);}
 
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

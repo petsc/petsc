@@ -302,8 +302,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOptionsPrefix(Mat A,const char *prefix[]
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat A)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  ierr = MatSetUpPreallocation(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3371,21 +3374,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScale(Mat mat,Vec l,Vec r)
 
 .seealso: MatDiagonalScale()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatScale(const PetscScalar *a,Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatScale(Mat mat,PetscScalar a)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidScalarPointer(a,1);
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,2);
-  PetscValidType(mat,2);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
   if (!mat->ops->scale) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->scale)(a,mat);CHKERRQ(ierr);
+  ierr = (*mat->ops->scale)(mat,a);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3916,10 +3918,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
 
    Input Parameters:
 +  mat - the matrix
-.  is - index set of rows to remove
--  diag - pointer to value put in all diagonals of eliminated rows.
-          Note that diag is not a pointer to an array, but merely a
-          pointer to a single value.
+.  numRows - the number of rows to remove
+.  rows - the global row indices
+-  diag - value put in all diagonals of eliminated rows
 
    Notes:
    For the AIJ and BAIJ matrix formats this removes the old nonzero structure,
@@ -3932,8 +3933,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
 
    The user can set a value in the diagonal entry (or for the AIJ and
    row formats can optionally remove the main diagonal entry from the
-   nonzero structure as well, by passing a null pointer (PETSC_NULL 
-   in C or PETSC_NULL_SCALAR in Fortran) as the final argument).
+   nonzero structure as well, by passing 0.0 as the final argument).
 
    For the parallel case, all processes that share the matrix (i.e.,
    those in the communicator used for matrix creation) MUST call this
@@ -3946,25 +3946,80 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
 
    Concepts: matrices^zeroing rows
 
-.seealso: MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
+.seealso: MatZeroRowsIS(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,IS is,const PetscScalar *diag)
+PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
-  PetscValidHeaderSpecific(is,IS_COOKIE,2);
-  if (diag) PetscValidScalarPointer(diag,3);
+  if (numRows) PetscValidIntPointer(rows,3);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->zerorows) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
-  ierr = (*mat->ops->zerorows)(mat,is,diag);CHKERRQ(ierr);
+  ierr = (*mat->ops->zerorows)(mat,numRows,rows,diag);CHKERRQ(ierr);
   ierr = MatView_Private(mat);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroRowsIS"
+/*@C
+   MatZeroRowsIS - Zeros all entries (except possibly the main diagonal)
+   of a set of rows of a matrix.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  is - index set of rows to remove
+-  diag - value put in all diagonals of eliminated rows
+
+   Notes:
+   For the AIJ and BAIJ matrix formats this removes the old nonzero structure,
+   but does not release memory.  For the dense and block diagonal
+   formats this does not alter the nonzero structure.
+
+   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS) the nonzero structure
+   of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
+   merely zeroed.
+
+   The user can set a value in the diagonal entry (or for the AIJ and
+   row formats can optionally remove the main diagonal entry from the
+   nonzero structure as well, by passing 0.0 as the final argument).
+
+   For the parallel case, all processes that share the matrix (i.e.,
+   those in the communicator used for matrix creation) MUST call this
+   routine, regardless of whether any rows being zeroed are owned by
+   them.
+
+   Each processor should list the rows that IT wants zeroed
+
+   Level: intermediate
+
+   Concepts: matrices^zeroing rows
+
+.seealso: MatZeroRows(), MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsIS(Mat mat,IS is,PetscScalar diag)
+{
+  PetscInt       numRows;
+  PetscInt       *rows;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(is,IS_COOKIE,2);
+  ierr = ISGetLocalSize(is,&numRows);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
+  ierr = MatZeroRows(mat,numRows,rows,diag);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&rows);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3978,10 +4033,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,IS is,const PetscScalar *d
 
    Input Parameters:
 +  mat - the matrix
-.  is - index set of rows to remove
--  diag - pointer to value put in all diagonals of eliminated rows.
-          Note that diag is not a pointer to an array, but merely a
-          pointer to a single value.
+.  numRows - the number of rows to remove
+.  rows - the global row indices
+-  diag - value put in all diagonals of eliminated rows
 
    Notes:
    Before calling MatZeroRowsLocal(), the user must first set the
@@ -3997,38 +4051,98 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,IS is,const PetscScalar *d
 
    The user can set a value in the diagonal entry (or for the AIJ and
    row formats can optionally remove the main diagonal entry from the
-   nonzero structure as well, by passing a null pointer (PETSC_NULL
-   in C or PETSC_NULL_SCALAR in Fortran) as the final argument).
+   nonzero structure as well, by passing 0.0 as the final argument).
 
    Level: intermediate
 
    Concepts: matrices^zeroing
 
-.seealso: MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
+.seealso: MatZeroRows(), MatZeroRowsLocalIS(), MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,IS is,const PetscScalar *diag)
+PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag)
 {
   PetscErrorCode ierr;
-  IS             newis;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
-  PetscValidHeaderSpecific(is,IS_COOKIE,2);
-  if (diag) PetscValidScalarPointer(diag,3);
+  if (numRows) PetscValidIntPointer(rows,3);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   if (mat->ops->zerorowslocal) {
-    ierr = (*mat->ops->zerorowslocal)(mat,is,diag);CHKERRQ(ierr);
+    ierr = (*mat->ops->zerorowslocal)(mat,numRows,rows,diag);CHKERRQ(ierr);
   } else {
+    IS is, newis;
+    PetscInt *newRows;
+
     if (!mat->mapping) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide local to global mapping to matrix first");
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,numRows,rows,&is);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApplyIS(mat->mapping,is,&newis);CHKERRQ(ierr);
-    ierr = (*mat->ops->zerorows)(mat,newis,diag);CHKERRQ(ierr);
+    ierr = ISGetIndices(newis,&newRows);CHKERRQ(ierr);
+    ierr = (*mat->ops->zerorows)(mat,numRows,newRows,diag);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(newis,&newRows);CHKERRQ(ierr);
     ierr = ISDestroy(newis);CHKERRQ(ierr);
+    ierr = ISDestroy(is);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroRowsLocal"
+/*@C 
+   MatZeroRowsLocal - Zeros all entries (except possibly the main diagonal)
+   of a set of rows of a matrix; using local numbering of rows.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  is - index set of rows to remove
+-  diag - value put in all diagonals of eliminated rows
+
+   Notes:
+   Before calling MatZeroRowsLocal(), the user must first set the
+   local-to-global mapping by calling MatSetLocalToGlobalMapping().
+
+   For the AIJ matrix formats this removes the old nonzero structure,
+   but does not release memory.  For the dense and block diagonal
+   formats this does not alter the nonzero structure.
+
+   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS) the nonzero structure
+   of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
+   merely zeroed.
+
+   The user can set a value in the diagonal entry (or for the AIJ and
+   row formats can optionally remove the main diagonal entry from the
+   nonzero structure as well, by passing 0.0 as the final argument).
+
+   Level: intermediate
+
+   Concepts: matrices^zeroing
+
+.seealso: MatZeroRows(), MatZeroRowsLocal(), MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar diag)
+{
+  PetscErrorCode ierr;
+  PetscInt       numRows;
+  PetscInt       *rows;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(is,IS_COOKIE,2);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  ierr = ISGetLocalSize(is,&numRows);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
+  ierr = MatZeroRowsLocal(mat,numRows,rows,diag);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&rows);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

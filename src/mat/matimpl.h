@@ -16,7 +16,7 @@
 typedef struct _MatOps *MatOps;
 struct _MatOps {
   /* 0*/
-  PetscErrorCode (*setvalues)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+  PetscErrorCode (*setvalues)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const MatScalar[],InsertMode);
   PetscErrorCode (*getrow)(Mat,PetscInt,PetscInt *,PetscInt*[],PetscScalar*[]);
   PetscErrorCode (*restorerow)(Mat,PetscInt,PetscInt *,PetscInt *[],PetscScalar *[]);
   PetscErrorCode (*mult)(Mat,Vec,Vec);
@@ -46,7 +46,7 @@ struct _MatOps {
   PetscErrorCode (*setoption)(Mat,MatOption);
   PetscErrorCode (*zeroentries)(Mat);
   /*25*/
-  PetscErrorCode (*zerorows)(Mat,IS,const PetscScalar*);
+  PetscErrorCode (*zerorows)(Mat,PetscInt,const PetscInt[],PetscScalar);
   PetscErrorCode (*lufactorsymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
   PetscErrorCode (*lufactornumeric)(Mat,MatFactorInfo*,Mat*);
   PetscErrorCode (*choleskyfactorsymbolic)(Mat,IS,MatFactorInfo*,Mat*);
@@ -64,15 +64,15 @@ struct _MatOps {
   PetscErrorCode (*ilufactor)(Mat,IS,IS,MatFactorInfo*);
   PetscErrorCode (*iccfactor)(Mat,IS,MatFactorInfo*);
   /*40*/
-  PetscErrorCode (*axpy)(const PetscScalar *,Mat,Mat,MatStructure);
+  PetscErrorCode (*axpy)(Mat,PetscScalar,Mat,MatStructure);
   PetscErrorCode (*getsubmatrices)(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
   PetscErrorCode (*increaseoverlap)(Mat,PetscInt,IS[],PetscInt);
   PetscErrorCode (*getvalues)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar []);
   PetscErrorCode (*copy)(Mat,Mat,MatStructure);
   /*45*/
   PetscErrorCode (*printhelp)(Mat);
-  PetscErrorCode (*scale)(const PetscScalar *,Mat);
-  PetscErrorCode (*shift)(const PetscScalar *,Mat);
+  PetscErrorCode (*scale)(Mat,PetscScalar);
+  PetscErrorCode (*shift)(Mat,PetscScalar);
   PetscErrorCode (*diagonalset)(Mat,Vec,InsertMode);
   PetscErrorCode (*iludtfactor)(Mat,IS,IS,MatFactorInfo*,Mat *);
   /*50*/
@@ -98,7 +98,7 @@ struct _MatOps {
   PetscErrorCode (*unscalesystem)(Mat,Vec,Vec);
   PetscErrorCode (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping);
   PetscErrorCode (*setvalueslocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-  PetscErrorCode (*zerorowslocal)(Mat,IS,const PetscScalar *);
+  PetscErrorCode (*zerorowslocal)(Mat,PetscInt,const PetscInt[],PetscScalar);
   /*70*/
   PetscErrorCode (*getrowmax)(Mat,Vec);
   PetscErrorCode (*convert)(Mat, MatType,MatReuse,Mat*);
@@ -248,7 +248,7 @@ struct _p_Mat {
 };
 
 #define MatPreallocated(A)  ((!(A)->preallocated) ? MatSetUpPreallocation(A) : 0)
-extern PetscErrorCode MatAXPY_Basic(const PetscScalar*,Mat,Mat,MatStructure);
+extern PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
 /*
     Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */

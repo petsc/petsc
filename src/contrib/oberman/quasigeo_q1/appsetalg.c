@@ -245,7 +245,7 @@ int SetMatrixBoundaryConditions(AppCtx *appctx)
   AppGrid *grid = &appctx->grid;
 
   /**********  boundary conditions ************/
-  ierr = MatZeroRowsLocal(algebra->A, grid->vertex_boundary,&one);CHKERRQ(ierr); 
+  ierr = MatZeroRowsLocalIS(algebra->A, grid->vertex_boundary,one);CHKERRQ(ierr); 
   
   ierr = MatAssemblyBegin(algebra->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(algebra->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

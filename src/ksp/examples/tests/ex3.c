@@ -108,7 +108,6 @@ int main(int argc,char **args)
   for (i=2*m+1; i<m*(m+1); i+= m+1) {
     rows[count++] = i;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,4*m,rows,&is);CHKERRQ(ierr);
   for (i=0; i<4*m; i++) {
      x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
      val = y;
@@ -121,8 +120,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr); 
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
-  ierr = MatZeroRows(C,is,&one);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = MatZeroRows(C,4*m,rows,one);CHKERRQ(ierr);
 
 
   { Mat A;

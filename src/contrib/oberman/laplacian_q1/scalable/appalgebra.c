@@ -342,7 +342,7 @@ int SetMatrixBoundaryConditions(AppCtx *appctx)
 
   ierr = PetscFree(vertex_ptr);CHKERRQ(ierr);
 
-  ierr = MatZeroRowsLocal(algebra->A,is,&one);CHKERRQ(ierr); 
+  ierr = MatZeroRowsLocalIS(algebra->A,is,one);CHKERRQ(ierr); 
 
   ierr = ISDestroy(is);CHKERRQ(ierr);
   

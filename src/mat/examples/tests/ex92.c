@@ -74,7 +74,7 @@ int main(int argc,char **args)
   
   /* make A a symmetric matrix: A <- A^T + A */
   ierr = MatTranspose(A, &Atrans);CHKERRQ(ierr);
-  ierr = MatAXPY(&one,Atrans,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+  ierr = MatAXPY(A,one,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
   ierr = MatDestroy(Atrans);CHKERRQ(ierr);
   ierr = MatTranspose(A, &Atrans);
   ierr = MatEqual(A, Atrans, &flg);

@@ -359,21 +359,21 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatShift_MFFD"
-PetscErrorCode MatShift_MFFD(const PetscScalar *a,Mat Y)
+PetscErrorCode MatShift_MFFD(Mat Y,PetscScalar a)
 {
   MatSNESMFCtx shell = (MatSNESMFCtx)Y->data;  
   PetscFunctionBegin;
-  shell->vshift += *a;
+  shell->vshift += a;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MFFD"
-PetscErrorCode MatScale_MFFD(const PetscScalar *a,Mat Y)
+PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
 {
   MatSNESMFCtx shell = (MatSNESMFCtx)Y->data;  
   PetscFunctionBegin;
-  shell->vscale *= *a;
+  shell->vscale *= a;
   PetscFunctionReturn(0);
 }
 

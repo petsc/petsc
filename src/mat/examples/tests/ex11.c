@@ -40,7 +40,7 @@ int main(int argc,char **args)
     ierr = MatSetOption(C,MAT_KEEP_ZEROED_ROWS);CHKERRQ(ierr);
   }
 
-  ierr = MatZeroRows(C,isrow,&five);CHKERRQ(ierr);
+  ierr = MatZeroRowsIS(C,isrow,five);CHKERRQ(ierr);
 
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 

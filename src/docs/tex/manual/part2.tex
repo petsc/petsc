@@ -1674,20 +1674,20 @@ page and Section~\ref{sec_viewers}.
 \begin{tabular}{ll}
 {\bf Function Name} & {\bf Operation} \\
 \hline
-MatAXPY(PetscScalar *a,Mat X, Mat Y,MatStructure); & $ Y = Y + a*X $ \\
+MatAXPY(Mat Y,Mat X, PetscScalar a,MatStructure); & $ Y = Y + a*X $ \\
 MatMult(Mat A,Vec x, Vec y); & $ y = A*x $ \\
 MatMultAdd(Mat A,Vec x, Vec y,Vec z); & $ z = y + A*x $ \\
 MatMultTranspose(Mat A,Vec x, Vec y); & $ y = A^{T}*x $ \\
 MatMultTransposeAdd(Mat A,Vec x, Vec y,Vec z); & $ z = y + A^{T}*x $ \\
 MatNorm(Mat A,NormType type,  double *r); & $ r = ||A||_{type}$ \\
 MatDiagonalScale(Mat A,Vec l,Vec r); & $ A = \hbox{diag}(l)*A*\hbox{diag}(r) $ \\
-MatScale(PetscScalar *a,Mat A); & $ A = a*A $ \\
+MatScale(Mat A,PetscScalar a); & $ A = a*A $ \\
 MatConvert(Mat A,MatType type,Mat *B); & $ B = A $ \\
 MatCopy(Mat A,Mat B,MatStructure); &  $ B = A $ \\
 MatGetDiagonal(Mat A,Vec x); & $ x = \hbox{diag}(A)$ \\
 MatTranspose(Mat A,Mat* B); & $ B = A^{T} $ \\
 MatZeroEntries(Mat A); & $ A = 0 $ \\
-MatShift(PetscScalar *a,Mat Y); & $ Y =  Y + a*I $ \\
+MatShift(Mat Y,PetscScalar a); & $ Y =  Y + a*I $ \\
 \hline 
 \end{tabular}
 \end{center}
@@ -1808,7 +1808,11 @@ matrix associated with known boundary conditions, by rows of the
 identity matrix (or some scaling of it). This action can be done with 
 the command \findex{MatZeroRows()}
 \begin{tabbing}
-  MatZeroRows(Mat A,IS rows,const PetscScalar diag\_value[]);
+  MatZeroRowsIS(Mat A,PetscInt numRows,PetscInt rows[],PetscScalar diag\_value),
+\end{tabbing}
+or equivalently,
+\begin{tabbing}
+  MatZeroRowsIS(Mat A,IS rows,PetscScalar diag\_value);
 \end{tabbing}
 For sparse matrices this removes the data structures for certain rows 
 of the matrix. If the pointer \trl{diag_value} is \trl{PETSC_NULL}, it 

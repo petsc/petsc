@@ -12,7 +12,6 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscScalar    x[6][9],y[3][3],one=1.0;
-  IS             is;
   PetscTruth     flg,testsbaij=PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -83,9 +82,7 @@ int main(int argc,char **args)
     col[0] = rstart*bs+0;
     col[1] = rstart*bs+1;
     col[2] = rstart*bs+2;
-    ierr = ISCreateGeneral(MPI_COMM_SELF,3,col,&is);CHKERRQ(ierr);
-    ierr = MatZeroRows(A,is,&one);CHKERRQ(ierr);
-    ISDestroy(is);
+    ierr = MatZeroRows(A,3,col,one);CHKERRQ(ierr);
   }
 
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

@@ -241,8 +241,8 @@ int main(int argc,char **args)
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
   }
   
-  ierr = MatScale(&alpha,A);CHKERRQ(ierr);
-  ierr = MatScale(&alpha,sA);CHKERRQ(ierr);
+  ierr = MatScale(A,alpha);CHKERRQ(ierr);
+  ierr = MatScale(sA,alpha);CHKERRQ(ierr);
 
   /* Test MatGetRowMax() */
   ierr = MatGetRowMax(A,s1);CHKERRQ(ierr);  

@@ -214,29 +214,26 @@ PetscErrorCode MatZeroEntries_SeqBDiag(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqBDiag"
-PetscErrorCode MatZeroRows_SeqBDiag(Mat A,IS is,const PetscScalar *diag)
+PetscErrorCode MatZeroRows_SeqBDiag(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
 {
   Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,N,*rows,m = A->m - 1,nz;
+  PetscInt       i,m = A->m - 1,nz;
   PetscScalar    *dd;
   PetscScalar    *val;
 
   PetscFunctionBegin;
-  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     if (rows[i]<0 || rows[i]>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"row out of range");
     ierr = MatGetRow_SeqBDiag(A,rows[i],&nz,PETSC_NULL,&val);CHKERRQ(ierr);
     ierr = PetscMemzero((void*)val,nz*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = MatRestoreRow_SeqBDiag(A,rows[i],&nz,PETSC_NULL,&val);CHKERRQ(ierr);
   }
-  if (diag) {
+  if (diag != 0.0) {
     if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Main diagonal does not exist");
     dd = a->diagv[a->mainbd];
-    for (i=0; i<N; i++) dd[rows[i]] = *diag;
+    for (i=0; i<N; i++) dd[rows[i]] = diag;
   }
-  ISRestoreIndices(is,&rows);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -323,10 +320,11 @@ PetscErrorCode MatGetSubMatrices_SeqBDiag(Mat A,PetscInt n,const IS irow[],const
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SeqBDiag"
-PetscErrorCode MatScale_SeqBDiag(const PetscScalar *alpha,Mat inA)
+PetscErrorCode MatScale_SeqBDiag(Mat inA,PetscScalar alpha)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)inA->data;
   PetscInt          i,bs = inA->bs;
+  PetscScalar  oalpha = alpha;
   PetscBLASInt one = 1,len;
   PetscErrorCode ierr;
 
@@ -334,9 +332,9 @@ PetscErrorCode MatScale_SeqBDiag(const PetscScalar *alpha,Mat inA)
   for (i=0; i<a->nd; i++) {
     len = (PetscBLASInt)bs*bs*a->bdlen[i];
     if (a->diag[i] > 0) {
-      BLASscal_(&len,(PetscScalar*)alpha,a->diagv[i] + bs*bs*a->diag[i],&one);
+      BLASscal_(&len,&oalpha,a->diagv[i] + bs*bs*a->diag[i],&one);
     } else {
-      BLASscal_(&len,(PetscScalar*)alpha,a->diagv[i],&one);
+      BLASscal_(&len,&oalpha,a->diagv[i],&one);
     }
   }
   ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);

@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   /* Test MAT_REUSE_MATRIX */
   alpha = 0.1;
   for (i=0; i<3; i++){
-    ierr = MatScale(&alpha,A);CHKERRQ(ierr);
+    ierr = MatScale(A,alpha);CHKERRQ(ierr);
     ierr = MatMerge_SeqsToMPI(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
   }
   ierr = MatView(B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

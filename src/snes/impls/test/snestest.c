@@ -51,7 +51,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = MatView(B,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
     }
     /* compare */
-    ierr = MatAXPY(&mone,A,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatAXPY(B,mone,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
     ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
     if (neP->complete_print) {

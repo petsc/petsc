@@ -26,24 +26,24 @@
 
 .seealso: MatAYPX()
  @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
+PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
   PetscInt       m1,m2,n1,n2;
 
   PetscFunctionBegin;
   PetscValidScalarPointer(a,1);
-  PetscValidHeaderSpecific(X,MAT_COOKIE,2); 
-  PetscValidHeaderSpecific(Y,MAT_COOKIE,3);
+  PetscValidHeaderSpecific(X,MAT_COOKIE,3); 
+  PetscValidHeaderSpecific(Y,MAT_COOKIE,1);
 
   ierr = MatGetSize(X,&m1,&n1);CHKERRQ(ierr);
   ierr = MatGetSize(Y,&m2,&n2);CHKERRQ(ierr);
   if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_ERR_ARG_SIZ,"Non conforming matrix add: %D %D %D %D",m1,m2,n1,n2);
 
-  if (X->ops->axpy) {
-    ierr = (*X->ops->axpy)(a,X,Y,str);CHKERRQ(ierr);
+  if (Y->ops->axpy) {
+    ierr = (*Y->ops->axpy)(Y,a,X,str);CHKERRQ(ierr);
   } else {
-    ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
+    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -51,7 +51,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatSt
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_Basic"
-PetscErrorCode MatAXPY_Basic(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
+PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscInt          i,start,end,j,ncols,m,n;
   PetscErrorCode    ierr;
@@ -62,7 +62,7 @@ PetscErrorCode MatAXPY_Basic(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
   PetscFunctionBegin;
   ierr = MatGetSize(X,&m,&n);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
-  if (*a == 1.0) {
+  if (a == 1.0) {
     for (i = start; i < end; i++) {
       ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
       ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
@@ -73,7 +73,7 @@ PetscErrorCode MatAXPY_Basic(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
     for (i=start; i<end; i++) {
       ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
       for (j=0; j<ncols; j++) {
-	val[j] = (*a)*vals[j];
+	val[j] = a*vals[j];
       }
       ierr = MatSetValues(Y,1,&i,ncols,row,val,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
@@ -102,24 +102,24 @@ PetscErrorCode MatAXPY_Basic(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 
 .seealso: MatDiagonalSet()
  @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatShift(const PetscScalar *a,Mat Y)
+PetscErrorCode PETSCMAT_DLLEXPORT MatShift(Mat Y,PetscScalar a)
 {
   PetscErrorCode ierr;
   PetscInt       i,start,end;
 
   PetscFunctionBegin;
-  PetscValidScalarPointer(a,1);
-  PetscValidHeaderSpecific(Y,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(Y,MAT_COOKIE,1);
   if (!Y->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (Y->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   ierr = MatPreallocated(Y);CHKERRQ(ierr);
 
   if (Y->ops->shift) {
-    ierr = (*Y->ops->shift)(a,Y);CHKERRQ(ierr);
+    ierr = (*Y->ops->shift)(Y,a);CHKERRQ(ierr);
   } else {
+    PetscScalar alpha = a;
     ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
     for (i=start; i<end; i++) {
-      ierr = MatSetValues(Y,1,&i,1,&i,a,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(Y,1,&i,1,&i,&alpha,ADD_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -200,23 +200,22 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 
 .seealso: MatAXPY()
  @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(const PetscScalar *a,Mat X,Mat Y)
+PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat Y,PetscScalar a,Mat X)
 {
   PetscScalar    one = 1.0;
   PetscErrorCode ierr;
   PetscInt       mX,mY,nX,nY;
 
   PetscFunctionBegin;
-  PetscValidScalarPointer(a,1);
   PetscValidHeaderSpecific(X,MAT_COOKIE,2);
-  PetscValidHeaderSpecific(Y,MAT_COOKIE,3);
+  PetscValidHeaderSpecific(Y,MAT_COOKIE,1);
 
   ierr = MatGetSize(X,&mX,&nX);CHKERRQ(ierr);
   ierr = MatGetSize(X,&mY,&nY);CHKERRQ(ierr);
   if (mX != mY || nX != nY) SETERRQ4(PETSC_ERR_ARG_SIZ,"Non conforming matrices: %D %D first %D %D second",mX,mY,nX,nY);
 
-  ierr = MatScale(a,Y);CHKERRQ(ierr);
-  ierr = MatAXPY(&one,X,Y,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatScale(Y,a);CHKERRQ(ierr);
+  ierr = MatAXPY(Y,one,X,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

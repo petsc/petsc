@@ -341,7 +341,7 @@ PetscErrorCode SetMatrixBoundaryConditions(AppCtx *appctx)
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  ierr = MatZeroRowsLocal(algebra->A,grid->vertex_boundary,&one);CHKERRQ(ierr); 
+  ierr = MatZeroRowsLocalIS(algebra->A,grid->vertex_boundary,one);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 

@@ -54,7 +54,7 @@ int main(int argc,char **argv) {
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* Perform diff of two matrices */
-  ierr = MatAXPY(&none,mC,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+  ierr = MatAXPY(C,none,mC,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
   /* Note: We should be able to use SAME_NONZERO_PATTERN on the line above, */
   /*       but don't because this flag doesn't assist testing. */
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

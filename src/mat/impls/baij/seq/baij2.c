@@ -1313,10 +1313,11 @@ PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SeqBAIJ"
-PetscErrorCode MatScale_SeqBAIJ(const PetscScalar *alpha,Mat inA)
+PetscErrorCode MatScale_SeqBAIJ(Mat inA,PetscScalar alpha)
 {
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)inA->data;
   PetscInt     totalnz = a->bs2*a->nz;
+  PetscScalar  oalpha = alpha;
   PetscErrorCode ierr;
 #if defined(PETSC_USE_MAT_SINGLE)
   PetscInt     i;
@@ -1326,9 +1327,9 @@ PetscErrorCode MatScale_SeqBAIJ(const PetscScalar *alpha,Mat inA)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_MAT_SINGLE)
-  for (i=0; i<totalnz; i++) a->a[i] *= *alpha;
+  for (i=0; i<totalnz; i++) a->a[i] *= oalpha;
 #else
-  BLASscal_(&tnz,(PetscScalar*)alpha,a->a,&one);
+  BLASscal_(&tnz,&oalpha,a->a,&one);
 #endif
   ierr = PetscLogFlops(totalnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);

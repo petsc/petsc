@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* a shift can make C indefinite. Preconditioners LU, ILU (for BAIJ format) and ICC may fail */
-  /* ierr = MatShift(&alpha, C);CHKERRQ(ierr); */
+  /* ierr = MatShift(C,alpha);CHKERRQ(ierr); */
   /* ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Setup and solve for system */

@@ -364,12 +364,12 @@ PetscErrorCode MatZeroEntries_MPIAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIAIJ"
-PetscErrorCode MatZeroRows_MPIAIJ(Mat A,IS is,const PetscScalar *diag)
+PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
 {
   Mat_MPIAIJ     *l = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
   PetscMPIInt    size = l->size,imdex,n,rank = l->rank,tag = A->tag,lastidx = -1;
-  PetscInt       i,N,*rows,*owners = l->rowners;
+  PetscInt       i,*owners = l->rowners;
   PetscInt       *nprocs,j,idx,nsends,row;
   PetscInt       nmax,*svalues,*starts,*owner,nrecvs;
   PetscInt       *rvalues,count,base,slen,*source;
@@ -377,15 +377,11 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,IS is,const PetscScalar *diag)
   MPI_Comm       comm = A->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
-  IS             istmp;
 #if defined(PETSC_DEBUG)
   PetscTruth     found = PETSC_FALSE;
 #endif
 
   PetscFunctionBegin;
-  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
-
   /*  first count number of contributors to each processor */
   ierr = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
   ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
@@ -434,7 +430,6 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,IS is,const PetscScalar *diag)
   for (i=0; i<N; i++) {
     svalues[starts[owner[i]]++] = rows[i];
   }
-  ierr = ISRestoreIndices(is,&rows);CHKERRQ(ierr);
 
   starts[0] = 0;
   for (i=1; i<size+1; i++) { starts[i] = starts[i-1] + nprocs[2*i-2];} 
@@ -478,37 +473,33 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,IS is,const PetscScalar *diag)
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
     
   /* actually zap the local rows */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
-  ierr = PetscLogObjectParent(A,istmp);CHKERRQ(ierr);
-
   /*
         Zero the required rows. If the "diagonal block" of the matrix
      is square and the user wishes to set the diagonal we use seperate
      code so that MatSetValues() is not called for each diagonal allocating
      new memory, thus calling lots of mallocs and slowing things down.
 
-       Contributed by: Mathew Knepley
+       Contributed by: Matthew Knepley
   */
   /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
-  ierr = MatZeroRows(l->B,istmp,0);CHKERRQ(ierr); 
-  if (diag && (l->A->M == l->A->N)) {
-    ierr      = MatZeroRows(l->A,istmp,diag);CHKERRQ(ierr);
-  } else if (diag) {
-    ierr = MatZeroRows(l->A,istmp,0);CHKERRQ(ierr);
+  ierr = MatZeroRows(l->B,slen,lrows,0.0);CHKERRQ(ierr); 
+  if ((diag != 0.0) && (l->A->M == l->A->N)) {
+    ierr      = MatZeroRows(l->A,slen,lrows,diag);CHKERRQ(ierr);
+  } else if (diag != 0.0) {
+    ierr = MatZeroRows(l->A,slen,lrows,0.0);CHKERRQ(ierr);
     if (((Mat_SeqAIJ*)l->A->data)->nonew) {
       SETERRQ(PETSC_ERR_SUP,"MatZeroRows() on rectangular matrices cannot be used with the Mat options\n\
 MAT_NO_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
     }
     for (i = 0; i < slen; i++) {
       row  = lrows[i] + rstart;
-      ierr = MatSetValues(A,1,&row,1,&row,diag,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(A,1,&row,1,&row,&diag,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   } else {
-    ierr = MatZeroRows(l->A,istmp,0);CHKERRQ(ierr);
+    ierr = MatZeroRows(l->A,slen,lrows,0.0);CHKERRQ(ierr);
   }
-  ierr = ISDestroy(istmp);CHKERRQ(ierr);
   ierr = PetscFree(lrows);CHKERRQ(ierr);
 
   /* wait on sends */
@@ -675,14 +666,14 @@ PetscErrorCode MatGetDiagonal_MPIAIJ(Mat A,Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIAIJ"
-PetscErrorCode MatScale_MPIAIJ(const PetscScalar aa[],Mat A)
+PetscErrorCode MatScale_MPIAIJ(Mat A,PetscScalar aa)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatScale(aa,a->A);CHKERRQ(ierr);
-  ierr = MatScale(aa,a->B);CHKERRQ(ierr);
+  ierr = MatScale(a->A,aa);CHKERRQ(ierr);
+  ierr = MatScale(a->B,aa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1538,7 +1529,7 @@ PetscErrorCode MatSetUpPreallocation_MPIAIJ(Mat A)
 #include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_MPIAIJ"
-PetscErrorCode MatAXPY_MPIAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str)
+PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -1548,16 +1539,17 @@ PetscErrorCode MatAXPY_MPIAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {  
+    PetscScalar alpha = a;
     x = (Mat_SeqAIJ *)xx->A->data;
     y = (Mat_SeqAIJ *)yy->A->data;
     bnz = (PetscBLASInt)x->nz;
-    BLASaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);    
+    BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);    
     x = (Mat_SeqAIJ *)xx->B->data;
     y = (Mat_SeqAIJ *)yy->B->data;
     bnz = (PetscBLASInt)x->nz;
-    BLASaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);
+    BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) {  
-    ierr = MatAXPY_SeqAIJ(a,xx->A,yy->A,str);CHKERRQ(ierr);
+    ierr = MatAXPY_SeqAIJ(yy->A,a,xx->A,str);CHKERRQ(ierr);
 
     x = (Mat_SeqAIJ *)xx->B->data;
     y = (Mat_SeqAIJ *)yy->B->data;
@@ -1569,9 +1561,9 @@ PetscErrorCode MatAXPY_MPIAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str
       ierr = MatAXPYGetxtoy_Private(xx->B->m,x->i,x->j,xx->garray,y->i,y->j,yy->garray,&y->xtoy);CHKERRQ(ierr);
       y->XtoY = xx->B;
     } 
-    for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += (*a)*(x->a[i]);   
+    for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += a*(x->a[i]);   
   } else {
-    ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
+    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

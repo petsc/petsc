@@ -44,11 +44,11 @@ int main(int argc,char **args)
   Imax = n*rank; if (Imax>= n*m -m - 1) Imax = m*n - m - 1;
   ierr = ISCreateStride(PETSC_COMM_SELF,m,Imax,1,&is);CHKERRQ(ierr);
 
-  ierr = TestMatZeroRows_Basic(A,is,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TestMatZeroRows_Basic(A,is,&diag);CHKERRQ(ierr);
+  ierr = TestMatZeroRows_Basic(A,is,0.0);CHKERRQ(ierr);
+  ierr = TestMatZeroRows_Basic(A,is,diag);CHKERRQ(ierr);
 
-  ierr = TestMatZeroRows_with_no_allocation(A,is,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TestMatZeroRows_with_no_allocation(A,is,&diag);CHKERRQ(ierr);
+  ierr = TestMatZeroRows_with_no_allocation(A,is,0.0);CHKERRQ(ierr);
+  ierr = TestMatZeroRows_with_no_allocation(A,is,diag);CHKERRQ(ierr);
 
   ierr = MatDestroy(A);CHKERRQ(ierr);
 
@@ -71,8 +71,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = TestMatZeroRows_Basic(A,is,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TestMatZeroRows_Basic(A,is,&diag);CHKERRQ(ierr);
+  ierr = TestMatZeroRows_Basic(A,is,0.0);CHKERRQ(ierr);
+  ierr = TestMatZeroRows_Basic(A,is,diag);CHKERRQ(ierr);
 
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr); 
@@ -82,7 +82,7 @@ int main(int argc,char **args)
 
 #undef __FUNCT__
 #define __FUNCT__ "TestMatZeroRows_Basic"
-PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,const PetscScalar diag[])
+PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,PetscScalar diag)
 {
   Mat            B;
   PetscErrorCode ierr;
@@ -96,7 +96,7 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,const PetscScalar diag[])
     ierr = MatSetOption(B,MAT_KEEP_ZEROED_ROWS);CHKERRQ(ierr);
   }
 
-  ierr = MatZeroRows(B,is,diag);CHKERRQ(ierr);
+  ierr = MatZeroRowsIS(B,is,diag);CHKERRQ(ierr);
   ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
   ierr = MatDestroy(B);CHKERRQ(ierr);
   return 0;
@@ -104,7 +104,7 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,const PetscScalar diag[])
 
 #undef __FUNCT__
 #define __FUNCT__ "TestMatZeroRows_with_no_allocation"
-PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A,IS is,const PetscScalar diag[])
+PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A,IS is,PetscScalar diag)
 {
   Mat            B;
   PetscErrorCode ierr;
@@ -114,7 +114,7 @@ PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A,IS is,const PetscScalar 
   /* Set this flag after assembly. This way, it affects only MatZeroRows() */
   ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR);CHKERRQ(ierr);
 
-  ierr = MatZeroRows(B,is,diag);CHKERRQ(ierr);
+  ierr = MatZeroRowsIS(B,is,diag);CHKERRQ(ierr);
   ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
   ierr = MatDestroy(B);CHKERRQ(ierr);
   return 0;

@@ -241,7 +241,7 @@ PetscErrorCode MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
   PetscErrorCode  ierr;
   PetscInt        i,*row,*col,flg,j,rstart,ncols;
   PetscMPIInt     n;
-  PetscScalar     *val;
+  PetscScalar       *val;
   InsertMode      addv=mat->insertmode;
 
   PetscFunctionBegin;
@@ -291,11 +291,11 @@ PetscErrorCode MatZeroEntries_MPIDense(Mat A)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIDense"
-PetscErrorCode MatZeroRows_MPIDense(Mat A,IS is,const PetscScalar *diag)
+PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
 {
   Mat_MPIDense   *l = (Mat_MPIDense*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,N,*rows,*owners = l->rowners;
+  PetscInt       i,*owners = l->rowners;
   PetscInt       *nprocs,j,idx,nsends;
   PetscInt       nmax,*svalues,*starts,*owner,nrecvs;
   PetscInt       *rvalues,tag = A->tag,count,base,slen,*source;
@@ -304,13 +304,9 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,IS is,const PetscScalar *diag)
   MPI_Comm       comm = A->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
-  IS             istmp;
   PetscTruth     found;
 
   PetscFunctionBegin;
-  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
-
   /*  first count number of contributors to each processor */
   ierr  = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
   ierr  = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
@@ -349,7 +345,6 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,IS is,const PetscScalar *diag)
   for (i=0; i<N; i++) {
     svalues[starts[owner[i]]++] = rows[i];
   }
-  ISRestoreIndices(is,&rows);
 
   starts[0] = 0;
   for (i=1; i<size+1; i++) { starts[i] = starts[i-1] + nprocs[2*i-2];} 
@@ -393,11 +388,8 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,IS is,const PetscScalar *diag)
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
     
   /* actually zap the local rows */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
-  ierr = PetscLogObjectParent(A,istmp);CHKERRQ(ierr);
+  ierr = MatZeroRows(l->A,slen,lrows,diag);CHKERRQ(ierr);
   ierr = PetscFree(lrows);CHKERRQ(ierr);
-  ierr = MatZeroRows(l->A,istmp,diag);CHKERRQ(ierr);
-  ierr = ISDestroy(istmp);CHKERRQ(ierr);
 
   /* wait on sends */
   if (nsends) {
@@ -583,7 +575,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     Mat         A;
     PetscInt    M = mat->M,N = mat->N,m,row,i,nz;
     PetscInt    *cols;
-    PetscScalar *vals;
+    PetscScalar   *vals;
 
     ierr = MatCreate(mat->comm,&A);CHKERRQ(ierr);
     if (!rank) {
@@ -841,13 +833,13 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
 #define __FUNCT__ "MatTranspose_MPIDense"
 PetscErrorCode MatTranspose_MPIDense(Mat A,Mat *matout)
 { 
-  Mat_MPIDense *a = (Mat_MPIDense*)A->data;
-  Mat_SeqDense *Aloc = (Mat_SeqDense*)a->A->data;
-  Mat          B;
-  PetscInt          M = A->M,N = A->N,m,n,*rwork,rstart = a->rstart;
+  Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
+  Mat_SeqDense   *Aloc = (Mat_SeqDense*)a->A->data;
+  Mat            B;
+  PetscInt       M = A->M,N = A->N,m,n,*rwork,rstart = a->rstart;
   PetscErrorCode ierr;
-  PetscInt          j,i;
-  PetscScalar  *v;
+  PetscInt       j,i;
+  PetscScalar      *v;
 
   PetscFunctionBegin;
   if (!matout && M != N) {
@@ -879,15 +871,16 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,Mat *matout)
 #include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIDense"
-PetscErrorCode MatScale_MPIDense(const PetscScalar *alpha,Mat inA)
+PetscErrorCode MatScale_MPIDense(Mat inA,PetscScalar alpha)
 {
   Mat_MPIDense *A = (Mat_MPIDense*)inA->data;
   Mat_SeqDense *a = (Mat_SeqDense*)A->A->data;
+  PetscScalar  oalpha = alpha;
   PetscBLASInt one = 1,nz = (PetscBLASInt)inA->m*inA->N;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  BLASscal_(&nz,(PetscScalar*)alpha,a->v,&one);
+  BLASscal_(&nz,&oalpha,a->v,&one);
   ierr = PetscLogFlops(nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -89,17 +89,17 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatShift_Shell"
-PetscErrorCode MatShift_Shell(const PetscScalar *a,Mat Y)
+PetscErrorCode MatShift_Shell(Mat Y,PetscScalar a)
 {
   Mat_Shell *shell = (Mat_Shell*)Y->data;  
 
   PetscFunctionBegin;
   if (shell->scale || shell->shift) {
-    shell->vshift += *a;
+    shell->vshift += a;
   } else {
     shell->mult   = Y->ops->mult;
     Y->ops->mult  = MatMult_Shell;
-    shell->vshift = *a;
+    shell->vshift = a;
   }
   shell->shift  =  PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -107,17 +107,17 @@ PetscErrorCode MatShift_Shell(const PetscScalar *a,Mat Y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_Shell"
-PetscErrorCode MatScale_Shell(const PetscScalar *a,Mat Y)
+PetscErrorCode MatScale_Shell(Mat Y,PetscScalar a)
 {
   Mat_Shell *shell = (Mat_Shell*)Y->data;  
 
   PetscFunctionBegin;
   if (shell->scale || shell->shift) {
-    shell->vscale *= *a;
+    shell->vscale *= a;
   } else {
     shell->mult   = Y->ops->mult;
     Y->ops->mult  = MatMult_Shell;
-    shell->vscale = *a;
+    shell->vscale = a;
   }
   shell->scale  =  PETSC_TRUE;
   PetscFunctionReturn(0);

@@ -1021,14 +1021,14 @@ PetscErrorCode MatGetDiagonal_MPISBAIJ(Mat A,Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPISBAIJ"
-PetscErrorCode MatScale_MPISBAIJ(const PetscScalar *aa,Mat A)
+PetscErrorCode MatScale_MPISBAIJ(Mat A,PetscScalar aa)
 {
   Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatScale(aa,a->A);CHKERRQ(ierr);
-  ierr = MatScale(aa,a->B);CHKERRQ(ierr);
+  ierr = MatScale(a->A,aa);CHKERRQ(ierr);
+  ierr = MatScale(a->B,aa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

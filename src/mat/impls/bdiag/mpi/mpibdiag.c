@@ -179,12 +179,12 @@ PetscErrorCode MatZeroEntries_MPIBDiag(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIBDiag"
-PetscErrorCode MatZeroRows_MPIBDiag(Mat A,IS is,const PetscScalar *diag)
+PetscErrorCode MatZeroRows_MPIBDiag(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
 {
   Mat_MPIBDiag   *l = (Mat_MPIBDiag*)A->data;
   PetscErrorCode ierr;
   PetscMPIInt    n,imdex,size = l->size,rank = l->rank,tag = A->tag;
-  PetscInt       i,N,*rows,*owners = l->rowners;
+  PetscInt       i,*owners = l->rowners;
   PetscInt       *nprocs,j,idx,nsends;
   PetscInt       nmax,*svalues,*starts,*owner,nrecvs;
   PetscInt       *rvalues,count,base,slen,*source;
@@ -192,13 +192,9 @@ PetscErrorCode MatZeroRows_MPIBDiag(Mat A,IS is,const PetscScalar *diag)
   MPI_Comm       comm = A->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
-  IS             istmp;
   PetscTruth     found;
 
   PetscFunctionBegin;
-  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
-
   /*  first count number of contributors to each processor */
   ierr   = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
   ierr   = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
@@ -237,7 +233,6 @@ PetscErrorCode MatZeroRows_MPIBDiag(Mat A,IS is,const PetscScalar *diag)
   for (i=0; i<N; i++) {
     svalues[starts[owner[i]]++] = rows[i];
   }
-  ISRestoreIndices(is,&rows);
 
   starts[0] = 0;
   for (i=1; i<size+1; i++) { starts[i] = starts[i-1] + nprocs[2*i-2];} 
@@ -282,11 +277,8 @@ PetscErrorCode MatZeroRows_MPIBDiag(Mat A,IS is,const PetscScalar *diag)
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
     
   /* actually zap the local rows */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);  
-  ierr = PetscLogObjectParent(A,istmp);CHKERRQ(ierr);
+  ierr = MatZeroRows(l->A,slen,lrows,diag);CHKERRQ(ierr);
   ierr = PetscFree(lrows);CHKERRQ(ierr);
-  ierr = MatZeroRows(l->A,istmp,diag);CHKERRQ(ierr);
-  ierr = ISDestroy(istmp);CHKERRQ(ierr);
 
   /* wait on sends */
   if (nsends) {
@@ -710,13 +702,13 @@ PetscErrorCode MatPrintHelp_MPIBDiag(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIBDiag"
-PetscErrorCode MatScale_MPIBDiag(const PetscScalar *alpha,Mat A)
+PetscErrorCode MatScale_MPIBDiag(Mat A,PetscScalar alpha)
 {
   PetscErrorCode ierr;
   Mat_MPIBDiag   *a = (Mat_MPIBDiag*)A->data;
 
   PetscFunctionBegin;
-  ierr = MatScale_SeqBDiag(alpha,a->A);CHKERRQ(ierr);
+  ierr = MatScale_SeqBDiag(a->A,alpha);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
