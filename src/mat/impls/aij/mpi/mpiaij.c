@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.236 1998/04/13 17:37:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.237 1998/04/13 18:06:10 bsmith Exp curfman $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1539,9 +1539,9 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    Output Parameter:
 .  A - the matrix 
 
-   Collective on MPI_Comm
-
    Notes:
+   This routine is collective over all processes in the communicator, comm.  
+
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage), is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at

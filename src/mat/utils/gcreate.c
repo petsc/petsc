@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreate.c,v 1.105 1997/10/19 03:27:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.106 1998/04/13 17:43:46 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -20,8 +20,6 @@ static char vcid[] = "$Id: gcreate.c,v 1.105 1997/10/19 03:27:05 bsmith Exp bsmi
  
    Output Parameter:
 .  A - the matrix
-
-   Collective on MPI_Comm
 
    Basic Options Database Keys:
    These options use MatCreateSeqXXX or MatCreateMPIXXX,
@@ -49,7 +47,9 @@ $    -mat_mpibaij  : block AIJ type, uses MatCreateMPIBAIJ()
    for additional format-specific options.
 
    Notes:
-   This routine calls MatGetTypeFromOptions() to determind the matrix type.
+   This routine is collective over all processes in the communicator, comm.  
+
+   This routine calls MatGetTypeFromOptions() to determine the matrix type.
 
 .keywords: matrix, create
 

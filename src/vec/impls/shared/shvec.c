@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.9 1998/04/13 17:27:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: shvec.c,v 1.10 1998/04/15 04:11:44 curfman Exp curfman $";
 #endif
 
 /*
@@ -64,10 +64,10 @@ int VecDuplicate_Shared( Vec win, Vec *v)
 .  vv - the vector
  
    Notes:
-   Currently VecCreateShared() is available only on the SGI); otherwise,
-   this routine is the same as VecCreateMPI().
+   This routine is collective over all processes in the communicator, comm.  
 
-   VecCreateShared() is collective over the communicator comm.  
+   Currently VecCreateShared() is available only on the SGI; otherwise,
+   this routine is the same as VecCreateMPI().
 
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.

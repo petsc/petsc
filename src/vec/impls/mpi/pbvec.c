@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.97 1998/04/13 17:26:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: pbvec.c,v 1.98 1998/04/15 04:21:24 curfman Exp curfman $";
 #endif
 
 /*
@@ -188,7 +188,7 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
 .  vv - the vector
  
    Notes:
-   VecCreateMPI() is collective over the communicator comm.  
+   This routine is collective over all processes in the communicator, comm.  
 
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.

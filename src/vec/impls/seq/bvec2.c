@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.113 1998/04/09 04:09:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.114 1998/04/13 17:26:44 bsmith Exp curfman $";
 #endif
 /*
    Implements the sequential vectors.
@@ -408,9 +408,9 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
    Output Parameter:
 .  V - the vector
 
-   Collective on MPI_Comm
-
    Notes:
+   This routine is collective over all processes in the communicator, comm.  
+
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.131 1998/04/09 04:14:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.132 1998/04/13 17:39:42 bsmith Exp curfman $";
 #endif
 
 /*
@@ -1177,14 +1177,14 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
    Output Parameter:
 .  A - the matrix 
 
-   Collective on MPI_Comm
-
    Options Database Keys:
 $    -mat_no_unroll - uses code that does not unroll the loops in the 
 $                     block calculations (much slower)
 $    -mat_block_size - size of the blocks to use
 
    Notes:
+   This routine is collective over all processes in the communicator, comm.  
+
    The block AIJ format is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.143 1998/04/09 04:12:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.144 1998/04/13 17:36:04 bsmith Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1236,12 +1236,12 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
    Output Parameter:
 .  A - the matrix
 
-   Collective on MPI_Comm
+   Notes:
+   This routine is collective over all processes in the communicator, comm.  
 
-  Notes:
-  The data input variable is intended primarily for Fortran programmers
-  who wish to allocate their own matrix memory space.  Most users should
-  set data=PETSC_NULL.
+   The data input variable is intended primarily for Fortran programmers
+   who wish to allocate their own matrix memory space.  Most users should
+   set data=PETSC_NULL.
 
 .keywords: dense, matrix, LAPACK, BLAS
 
