@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.231 2001/07/11 04:27:45 buschelm Exp buschelm $*/
+/*$Id: baij.c,v 1.232 2001/07/11 19:12:27 buschelm Exp buschelm $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1224,8 +1224,7 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
       ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
       if (sse_enabled) {
         inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
-        /* What should this prefix be mat_solve, pc_solve, check both? */
-        ierr = PetscOptionsGetLogical(PETSC_NULL,"-single_precision",&single_prec,&flg);CHKERRQ(ierr);
+        ierr = PetscOptionsGetLogical(PETSC_NULL,"-matsolve_single_precision",&single_prec,&flg);CHKERRQ(ierr);
         if (flg) {
           if (single_prec) {
             a->singleprecisionsolves = PETSC_TRUE;
