@@ -63,6 +63,10 @@ class Options(config.base.Configure):
           flags.append('-Z7')
         elif bopt == 'O':
           flags.extend(['-O3', '-QxW'])
+      # Windows Borland
+      elif compiler.find('win32fe bcc32') >= 0:
+        if bopt == '':
+          flags.append('-RT -w-8019 -w-8060 -w-8057 -w-8004 -w-8066')
     # Generic
     if not len(flags):
       if bopt == 'g':
@@ -130,9 +134,10 @@ class Options(config.base.Configure):
           flags.extend(['-Z7', '-Zm200'])
         elif bopt == 'O_complex':
           flags.extend(['-O2', '-Zm200'])
+      # Windows Borland
       elif compiler.find('win32fe bcc32') >= 0:
         if bopt == '':
-          flags.append('-RT')
+          flags.append('-RT -w-8019 -w-8060 -w-8057 -w-8004 -w-8066')
     # Generic
     if not len(flags):
       if bopt in ['g', 'g_complex']:

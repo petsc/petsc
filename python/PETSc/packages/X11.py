@@ -36,7 +36,8 @@ class Configure(config.autoconf.Configure):
 
   def checkXMake(self):
     import shutil
-
+    import time
+    
     includeDir = ''
     libraryDir = ''
     # Create Imakefile
@@ -76,6 +77,7 @@ acfindx:
       self.framework.log.write('Error using Xmake: '+str(e)+'\n')
     # Cleanup
     os.chdir(os.path.dirname(dir))
+    time.sleep(1)
     shutil.rmtree(dir)
     return (includeDir, libraryDir)
 
