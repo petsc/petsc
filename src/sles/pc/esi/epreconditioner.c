@@ -8,7 +8,7 @@
 
 esi::petsc::Preconditioner<double,int>::Preconditioner(PC pc)
 {
-  int      ierr;
+  int ierr;
   this->pc      = pc;
   this->pobject = (PetscObject)this->pc;
   PetscObjectGetComm((PetscObject)this->pc,&this->comm);
@@ -61,15 +61,16 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::apply( esi::Vector<double
   ierr = yy.getInterface("Vec",static_cast<void*>(py));
   ierr = xx.getInterface("Vec",static_cast<void*>(px));
 
+  ierr = PCSetVector(this->pc,px);CHKERRQ(ierr);
   return PCApply(this->pc,px,py);
 }
 
-esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveM( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::solve( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
   return this->apply(xx,yy);
 }
 
-esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveM1( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveLeft( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
   int ierr;
   Vec py,px;
@@ -80,7 +81,7 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveM1( esi::Vector<doub
   return PCApplySymmetricLeft(this->pc,px,py);
 }
 
-esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveM2( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveRight( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
   int ierr;
   Vec py,px;
@@ -110,17 +111,16 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::applyB( esi::Vector<doubl
 
 esi::ErrorCode esi::petsc::Preconditioner<double,int>::setup()
 {
-  int ierr;
-  return PCSetUp(this->pc);
+  return 0;
 }
 
-esi::ErrorCode esi::petsc::Preconditioner<double,int>::setPreconSide(int side)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::setPreconditionerSide(PreconditionerSide side)
 {
   this->side = side;
   return 0;
 }
 
-esi::ErrorCode esi::petsc::Preconditioner<double,int>::getPreconSide(int & side)
+esi::ErrorCode esi::petsc::Preconditioner<double,int>::getPreconditionerSide(PreconditionerSide & side)
 {
   side = this->side;
   return 0;

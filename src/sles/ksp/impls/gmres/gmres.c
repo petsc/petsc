@@ -571,6 +571,7 @@ int KSPGMRESSetHapTol_GMRES(KSP ksp,double tol)
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
+  if (tol < 0.0) SETERRQ(1,"Tolerance must be non-negative");
   gmres->haptol = tol;
   PetscFunctionReturn(0);
 }
@@ -584,6 +585,7 @@ int KSPGMRESSetRestart_GMRES(KSP ksp,int max_k)
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
+  if (max_k < 1) SETERRQ(1,"Restart must be positive");
   gmres->max_k = max_k;
   PetscFunctionReturn(0);
 }
