@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.1 1995/03/23 15:16:46 curfman Exp curfman $";
+static char vcid[] = "$Id: convert.c,v 1.2 1995/03/23 22:05:59 curfman Exp curfman $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -43,38 +43,27 @@ int MatConvert_AIJ(Mat mat, MATTYPE newtype, Mat *newmat)
 int MatConvert_MPIAIJ(Mat mat, MATTYPE newtype, Mat *newmat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  Mat        A = aij->A, B = aij->B, OldM;
-  Mat_AIJ    *Ad = (Mat_AIJ *)(A->data), *Bd = (Mat_AIJ *)(B->data);
+  Mat_AIJ    *Ad = (Mat_AIJ *)(aij->A->data), *Bd = (Mat_AIJ *)(aij->B->data);
+  int        ierr, nz, i, ig,rstart = aij->rstart, m = aij->m, *cwork;
   Scalar     *vwork;
-  int        ierr, m = aij->m, n = aij->n, M = aij->M, N = aij->N, *cwork;
-  int        nz,i,j,ig,submat, rstart = aij->rstart, cstart = aij->cstart;
 
   if (mat->type != MATMPIAIJ) SETERR(1,"Input matrix must be MATMPIAIJ.");
   switch (newtype) {
     case MATMPIROW:
       for (i=0; i<m; i++)
-           printf("row=%d, A-nz=%d, B-nz=%d\n",i,Ad->ilen[i],Bd->ilen[i]);
-      ierr = MatCreateMPIRow(mat->comm,m,n,M,N,0,Ad->ilen,0,Bd->ilen,newmat);
-      CHKERR(ierr); break;
+      ierr = MatCreateMPIRow(mat->comm,m,aij->n,aij->M,aij->N,0,Ad->ilen,
+			0,Bd->ilen,newmat); CHKERR(ierr); 
+      break;
     default:
       SETERR(1,"Only MATMPIROW is currently suported.");
   }
-  for (submat = 0; submat<2; submat++) {
-    if (submat == 0) OldM = A; 
-    else OldM = B; 
-    for (i=0; i<m; i++) {
-      ig   = i + rstart;
-      ierr = MatGetRow(OldM,i,&nz,&cwork,&vwork);	CHKERR(ierr);
-      if (submat == 0) {
-        for (j=0; j<nz; j++) cwork[j] += cstart;
-      } else {
-        /* This part is incorrect! */
-        for (j=0; j<nz; j++) cwork[j] += cstart;
-      }
-      ierr = MatSetValues(*newmat,1,&ig,nz,cwork,vwork,
+  /* Each processor converts its local rows */
+  for (i=0; i<m; i++) {
+    ig   = i + rstart;
+    ierr = MatGetRow(mat,ig,&nz,&cwork,&vwork);	CHKERR(ierr);
+    ierr = MatSetValues(*newmat,1,&ig,nz,cwork,vwork,
 		InsertValues);				CHKERR(ierr);
-      ierr = MatRestoreRow(OldM,ig,&nz,&cwork,&vwork);	CHKERR(ierr);
-    }
+    ierr = MatRestoreRow(mat,ig,&nz,&cwork,&vwork);	CHKERR(ierr);
   }
   ierr = MatBeginAssembly(*newmat);			CHKERR(ierr);
   ierr = MatEndAssembly(*newmat);			CHKERR(ierr);
