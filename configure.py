@@ -18,6 +18,5 @@ class Configure(config.base.Configure):
   def configure(self):
     import os
 
-    self.framework.header = os.path.join(self.getRoot(), 'python-scandal', 'cygwinpath_Module.h')
     self.executeTest(self.configureCygwin)
     return
