@@ -1,13 +1,13 @@
-# $Id: makefile,v 1.2 1998/06/24 20:25:19 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 1999/01/12 23:17:33 bsmith Exp bsmith $ 
 
 ALL: lib 
 
 CFLAGS   = ${AMS_INCLUDE}
 FFLAGS   =
-SOURCEC  = ams.c
+SOURCEC  = ams.c amsopen.c
 SOURCEF  =
 SOURCEH  =
-OBJSC    = ams.o
+OBJSC    = ams.o amsopen.o
 OBJSF    =
 MANSEC   = v
 LIBBASE  = libpetsc
