@@ -96,8 +96,11 @@ extern  int __gierr;
 #define SETERRQ2(n,s,a1,a2) ;
 #define SETERRQ3(n,s,a1,a2,a3) ;
 #define SETERRQ4(n,s,a1,a2,a3,a4) ;
+#define SETERRABORT(comm,n,s) ;
 
 #define CHKERRQ(n)     ;
+#define CHKERRABORT(comm,n) ;
+#define CHKERRCONTINUE(n) ;
 
 #define CHKMEMQ        ;
 
