@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.82 2000/09/10 21:38:15 curfman Exp curfman $ 
+# $Id: makefile,v 1.83 2000/09/12 21:28:13 curfman Exp balay $ 
 
 CFLAGS	         =
 FFLAGS	         = 
@@ -279,7 +279,7 @@ runex10_7:
                     1.0e-15 -ksp_smonitor >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
                     -mat_seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
-                    1.0e-15 -ksp_smonitor -mat_ordering_type nd >> ex10_7.tmp 2>&1 ; \
+                    1.0e-15 -ksp_smonitor -pc_ilu_mat_ordering_type nd >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
                     -mat_seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
                     1.0e-15 -ksp_smonitor -pc_ilu_levels 1 >> ex10_7.tmp 2>&1 ; \

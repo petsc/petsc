@@ -14,6 +14,8 @@ add to it).
    Changed MatDiagonalShift(Mat,Vec) to MatDiagonalSet(Mat,Vec,InsertMode);
    Dropped the second to last argument to MatCreateRowbs()
   
+   -mat_ordering_type now should be either -pc_ilu_mat_ordering_type or
+   -pc_lu_mat_ordering_type
 
   KSP
 
