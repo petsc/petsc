@@ -1,4 +1,4 @@
-/*$Id: memc.c,v 1.55 1999/11/05 14:44:20 bsmith Exp bsmith $*/
+/*$Id: memc.c,v 1.56 1999/12/21 21:02:43 bsmith Exp bsmith $*/
 /*
     We define the memory operations here. The reason we just don't use 
   the standard memory routines in the PETSc code is that on some machines 
@@ -41,6 +41,10 @@
 
    Level: intermediate
 
+   Compile Option:
+    PETSC_PREFER_DCOPY_FOR_MEMCPY will cause the BLAS dcopy() routine to be used 
+   for memory copies on double precision values.
+
    Note:
    This routine is analogous to memcpy().
 
@@ -62,7 +66,11 @@ int PetscMemcpy(void *a,const void *b,int n)
   }
 #endif
 #if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
+#if defined(PETSC_HAVE_DOUBLE_ALIGN)
   if (!(((long) a) % 8) && !(n % 8)) {
+#else
+  if (!(((long) a) % 4) && !(n % 8)) {
+#endif
     int one = 1;
     dcopy_(&n,(Scalar *)a,&one,(Scalar *)b,&one);
   } else {
