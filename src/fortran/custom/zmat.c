@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.45 1998/03/30 22:22:07 balay Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.46 1998/04/16 03:56:47 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -194,90 +194,23 @@ void matgettypefromoptions_(MPI_Comm *comm,CHAR prefix,MatType *type,
 void matgetarray_(Mat mat,Scalar *fa,long *ia, int *__ierr)
 {
   Scalar *mm;
-  int    shift,ierr;
+  int    shift,m,n;
+  Mat    A = (Mat)PetscToPointer(mat);
 
-  *__ierr = MatGetArray((Mat)PetscToPointer(mat),&mm);
-  PetscScalarAddressToFortran(fa,mm,ia,&shift);
-
-#if defined(joe)
-  if (shift) {
-    unsigned long tmp1 = (unsigned long) mm;
-    unsigned long tmp2 = (unsigned long) fa;
-    /* Address conversion is messed up */
-    (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
-    (*PetscErrorPrintf)("not commonly aligned.\n");
-    (*PetscErrorPrintf)("Locations/sizeof(Scalar): C %f Fortran %f\n",
-                          ((double) tmp1)/sizeof(Scalar),((double) tmp2)/sizeof(Scalar));
-    MPI_Abort(PETSC_COMM_WORLD,1);
-  }
-#else
-  if (shift) {
-    /* 
-       Unable to access memory directly from Fortran due to Fortran array not 
-       being Scalar aligned. We malloc space large enough, copy the data over,
-       and pass the ia for that 
-    */
-    int                  m,n,shift2;
-    Scalar               *work;
-    PetscObjectContainer container;
-
-    /* only works for sequential dense arrays */
-    ierr = MatGetSize((Mat)PetscToPointer(mat),&m,&n); 
-    work = (Scalar *) PetscMalloc((m*n+1)*sizeof(Scalar)); 
-
-    /* shift work by that number of bytes */
-    work = (Scalar *) (((char *) work) + shift);
-    PetscMemcpy(work,mm,m*n*sizeof(Scalar));
-
-    /* store in the first location in mm how much you shift it */
-    ((int *)mm)[0] = shift;
-
-    ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);
-    ierr = PetscObjectContainerSetPointer(container,mm);
-    ierr = PetscObjectCompose((PetscObject)PetscToPointer(mat),"GetArrayPtr",(PetscObject)container);
-
-    PetscScalarAddressToFortran(fa,work,ia,&shift2);
-    if (shift2) {
-      unsigned long tmp1 = (unsigned long) work;
-      unsigned long tmp2 = (unsigned long) fa;
-      /* Address conversion is messed up */
-      (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
-      (*PetscErrorPrintf)("not commonly aligned.\n");
-      (*PetscErrorPrintf)("Locations/sizeof(Scalar): C %f Fortran %f\n",
-                          ((double) tmp1)/sizeof(Scalar),((double) tmp2)/sizeof(Scalar));
-      MPI_Abort(PETSC_COMM_WORLD,1);
-    }
-    PLogInfo((void *)PetscToPointer(mat),"Efficiency warning, copy matrix in MatGetArray() due\n\
-  to alignment differences between C and Fortran\n");
-  }
-#endif
+  *__ierr = MatGetArray(A,&mm); if (*__ierr) return;
+  *__ierr = MatGetSize(A,&m,&n);  if (*__ierr) return;
+  *__ierr = PetscScalarAddressToFortran((PetscObject)A,fa,mm,m*n,ia); if (*__ierr) return;
 }
 
 void matrestorearray_(Mat mat,Scalar *fa,long *ia,int *__ierr)
 {
   Mat                  min = (Mat)PetscToPointer(mat);
-  Scalar               *lx,*tlx;
-  int                  ierr,shift,m,n;
-  PetscObjectContainer container;
+  Scalar               *lx;
+  int                  m,n;
 
-  ierr = PetscObjectQuery((PetscObject)PetscToPointer(mat),"GetArrayPtr",(PetscObject *)&container);
-  if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void **) &lx);
-    tlx = PetscScalarAddressFromFortran(fa,*ia);
-
-    shift = *(int *)lx;
-    /* only works for sequential dense arrays */
-    ierr = MatGetSize((Mat)PetscToPointer(mat),&m,&n); 
-    PetscMemcpy(lx,tlx,m*n*sizeof(Scalar));
-    tlx  = (Scalar *) (((char *)tlx) - shift);
-    PetscFree(tlx);
-    ierr = PetscObjectContainerDestroy(container);
-    ierr = PetscObjectCompose((PetscObject)PetscToPointer(mat),"GetArrayPtr",0);
-  } else {
-    lx = PetscScalarAddressFromFortran(fa,*ia);
-  }
-
-  *__ierr = MatRestoreArray(min,&lx);
+  *__ierr = MatGetSize(min,&m,&n); if (*__ierr) return;
+  *__ierr = PetscScalarAddressFromFortran((PetscObject) min,fa,*ia,m*n,&lx);if (*__ierr) return;
+  *__ierr = MatRestoreArray(min,&lx);if (*__ierr) return;
 }
 
 void mattranspose_(Mat mat,Mat *B, int *__ierr )

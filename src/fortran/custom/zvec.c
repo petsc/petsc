@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.32 1998/03/30 22:23:23 balay Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.33 1998/04/16 03:56:58 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -93,29 +93,23 @@ void vecload_(Viewer viewer,Vec *newvec, int *__ierr )
 void vecrestorearray_(Vec x,Scalar *fa,long *ia,int *__ierr)
 {
   Vec    xin = (Vec)PetscToPointer(x);
-  Scalar *lx = PetscScalarAddressFromFortran(fa,*ia);
+  int    m;
+  Scalar *lx;
 
-  *__ierr = VecRestoreArray(xin,&lx);
+  *__ierr = VecGetLocalSize(xin,&m);if (*__ierr) return;
+  *__ierr = PetscScalarAddressFromFortran((PetscObject)xin,fa,*ia,m,&lx);if (*__ierr) return;
+  *__ierr = VecRestoreArray(xin,&lx);if (*__ierr) return;
 }
 
 void vecgetarray_(Vec x,Scalar *fa,long *ia,int *__ierr)
 {
   Vec    xin = (Vec)PetscToPointer(x);
   Scalar *lx;
-  int    shift;
+  int    m;
 
   *__ierr = VecGetArray(xin,&lx); if (*__ierr) return;
-  PetscScalarAddressToFortran(fa,lx,ia,&shift);
-  if (shift) {
-    unsigned long tmp1 = (unsigned long) lx;
-    unsigned long tmp2 = (unsigned long) fa;
-    /* Address conversion is messed up */
-    (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
-    (*PetscErrorPrintf)("not commonly aligned.\n");
-    (*PetscErrorPrintf)("Locations/sizeof(Scalar): C %f Fortran %f\n",
-                          ((double) tmp1)/sizeof(Scalar),((double) tmp2)/sizeof(Scalar));
-    MPI_Abort(PETSC_COMM_WORLD,1);
-  }
+  *__ierr = VecGetLocalSize(xin,&m);if (*__ierr) return;
+  *__ierr = PetscScalarAddressToFortran((PetscObject) xin,fa,lx,m,ia);if (*__ierr) return;
 }
 
 void vecscatterdestroy_(VecScatter ctx, int *__ierr )

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.39 1998/03/31 16:44:47 balay Exp balay $";
+static char vcid[] = "$Id: zoptions.c,v 1.40 1998/04/08 22:30:23 balay Exp bsmith $";
 #endif
 
 /*
@@ -205,8 +205,7 @@ long PetscIntAddressToFortran(int *base,int *addr)
   if (tmp3 > tmp1) {
     tmp2  = (tmp3 - tmp1)/sizeof(int);
     itmp2 = (long) tmp2;
-  }
-  else {
+  } else {
     tmp2  = (tmp1 - tmp3)/sizeof(int);
     itmp2 = -((long) tmp2);
   }
@@ -224,40 +223,105 @@ int *PetscIntAddressFromFortran(int *base,long addr)
   return base + addr;
 }
 
-long PetscScalarAddressToFortran(Scalar *base,Scalar *addr)
+/*
+       obj - PETSc object on which request is made
+       base - Fortran array address
+       addr - C array address
+       res  - will contain offset from C to Fortran
+       shift - number of bytes that prevent base and addr from being commonly aligned
+*/
+int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,long *res)
 {
   unsigned long tmp1 = (unsigned long) base,tmp2 = tmp1/sizeof(Scalar);
   unsigned long tmp3 = (unsigned long) addr;
   long          itmp2;
+  int           shift;
 
-  if (tmp3 > tmp1) {
+  if (tmp3 > tmp1) {  /* C is bigger than Fortran */
     tmp2  = (tmp3 - tmp1)/sizeof(Scalar);
     itmp2 = (long) tmp2;
-  }
-  else {
+    shift = (sizeof(Scalar) - (int) ((tmp3 - tmp1) % sizeof(Scalar))) % sizeof(Scalar);
+  } else {  
     tmp2  = (tmp1 - tmp3)/sizeof(Scalar);
     itmp2 = -((long) tmp2);
+    shift = (int) ((tmp1 - tmp3) % sizeof(Scalar));
   }
-  if (base + itmp2 != addr) {
-    /* Address conversion is messed up */
-    if ((tmp1 - tmp3)%sizeof(Scalar)!=0) {
-    (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
-    (*PetscErrorPrintf)("not commonly aligned.\n");
-    (*PetscErrorPrintf)("Locations/sizeof(Scalar): C %f Fortran %f\n",
-                          ((double) tmp3)/sizeof(Scalar),((double) tmp1)/sizeof(Scalar));
-    } else {
-    (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
-    (*PetscErrorPrintf)("are too far apart to be indexed by an integer.\n");
-    (*PetscErrorPrintf)("Locations: C %ld Fortran %ld\n",tmp3,tmp1);
+  
+  if (shift) { 
+    /* 
+        Fortran and C not Scalar aligned, recover by copying values into
+        memory that is aligned with the Fortran
+    */
+    int                  ierr;
+    Scalar               *work;
+    PetscObjectContainer container;
+
+    work = (Scalar *) PetscMalloc((N+1)*sizeof(Scalar));CHKPTRQ(work); 
+
+    /* shift work by that number of bytes */
+    work = (Scalar *) (((char *) work) + shift);
+    PetscMemcpy(work,addr,N*sizeof(Scalar));
+
+    /* store in the first location in addr how much you shift it */
+    ((int *)addr)[0] = shift;
+ 
+    ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+    ierr = PetscObjectContainerSetPointer(container,addr);CHKERRQ(ierr);
+    ierr = PetscObjectCompose(obj,"GetArrayPtr",(PetscObject)container);CHKERRQ(ierr);
+
+    tmp3 = (unsigned long) work;
+    if (tmp3 > tmp1) {  /* C is bigger than Fortran */
+      tmp2  = (tmp3 - tmp1)/sizeof(Scalar);
+      itmp2 = (long) tmp2;
+      shift = (sizeof(Scalar) - (int) ((tmp3 - tmp1) % sizeof(Scalar))) % sizeof(Scalar);
+    } else {  
+      tmp2  = (tmp1 - tmp3)/sizeof(Scalar);
+      itmp2 = -((long) tmp2);
+      shift = (int) ((tmp1 - tmp3) % sizeof(Scalar));
     }
-    MPI_Abort(PETSC_COMM_WORLD,1);
+    if (shift) {
+      (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
+      (*PetscErrorPrintf)("not commonly aligned.\n");
+      (*PetscErrorPrintf)("Locations/sizeof(Scalar): C %f Fortran %f\n",
+                         ((double) tmp3)/sizeof(Scalar),((double) tmp1)/sizeof(Scalar));
+      MPI_Abort(PETSC_COMM_WORLD,1);
+    }
+    PLogInfo((void *)obj,"Efficiency warning, copy array in XXXGetArray() due\n\
+    to alignment differences between C and Fortran\n");
   }
-  return itmp2;
+  *res = itmp2;
+  return 0;
 }
 
-Scalar *PetscScalarAddressFromFortran(Scalar *base,long addr)
+/*
+    obj - the PETSc object where the scalar pointer came from
+    base - the Fortran array address
+    addr - the Fortran offset from base
+    N    - the amount of data
+
+    lx   - the array space that is to be passed to XXXXRestoreArray()
+*/     
+int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,Scalar **lx)
 {
-  return base + addr;
+  int                  ierr,shift,m,n;
+  PetscObjectContainer container;
+  Scalar               *tlx;
+
+  ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject *)&container);
+  if (container) {
+    ierr  = PetscObjectContainerGetPointer(container,(void **) lx);
+    tlx   = base + addr;
+
+    shift = *(int *)*lx;
+    PetscMemcpy(*lx,tlx,N*sizeof(Scalar));
+    tlx  = (Scalar *) (((char *)tlx) - shift);
+    PetscFree(tlx);
+    ierr = PetscObjectContainerDestroy(container);
+    ierr = PetscObjectCompose(obj,"GetArrayPtr",0);
+  } else {
+    *lx = base + addr;
+  }
+  return 0;
 }
 
 /*@
