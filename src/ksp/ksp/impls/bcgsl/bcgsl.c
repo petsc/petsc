@@ -182,12 +182,14 @@ int bcgsl_cleanup_i(KSP ksp)
 #define __FUNCT__ "bcgsl_setup_i" 
 int bcgsl_setup_i(KSP ksp)
 {
-	KSP_BiCGStabL *bcgsl = (KSP_BiCGStabL *)ksp->data;
-	int ell = ELL;
-	int ierr;
+  KSP_BiCGStabL *bcgsl = (KSP_BiCGStabL *)ksp->data;
+  int ell = ELL;
+  int ierr;
 	
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
+  ierr = KSPDefaultGetWork(ksp,6+2*ell);CHKERRQ(ierr);
+#if 0
 	ierr = VecDuplicate(ksp->vec_rhs,&VB);			CHKERRQ(ierr);
 	ierr = VecDuplicate(ksp->vec_sol,&VRT);			CHKERRQ(ierr);
 	ierr = VecDuplicate(ksp->vec_sol,&VTM);			CHKERRQ(ierr);
@@ -223,10 +225,9 @@ int bcgsl_setup_i(KSP ksp)
 			&MZ);					CHKERRQ(ierr);
 	}
 
-
+#endif
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__  
 
 /****************************************************
  *
@@ -234,7 +235,8 @@ int bcgsl_setup_i(KSP ksp)
  *
  ****************************************************/
 
-#define __FUNCT__ "KSPsolve_BCGS"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPsolve_BCGSL"
 /*@C
    KSPSolve_BCGSL - Solve a linear system of equations using
 BiCGStab(L).
@@ -243,7 +245,6 @@ BiCGStab(L).
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate
--  its - Number of outer iteration steps done
 
    Options Database Keys:
 
@@ -257,324 +258,373 @@ BiCGStab(L).
 @*/
 static int  KSPSolve_BCGSL(KSP ksp)
 {
-	KSP_BiCGStabL *bcgsl = (KSP_BiCGStabL *) ksp->data;
+  KSP_BiCGStabL *bcgsl = (KSP_BiCGStabL *) ksp->data;
+  
+  PetscScalar	alpha, beta, nu, omega, sigma;
+  PetscScalar	zero = 0;
+  PetscScalar	rho0, rho1;
+  PetscScalar	kappa0, kappaA, kappa1;
+  PetscReal	ghat, bidule, epsilon, atol;
+  PetscReal	zeta, zeta0, mxres, myres, nrm0;
+  PetscReal	xx0, xxt;
+  
+  PetscTruth	bUpdateX;
+  PetscTruth	bComputeR;
+  PetscTruth	bBombed = PETSC_FALSE;
+  
+  int	maxit, zits;
+  int	h, i, j, k, vi,ell;
+  int	rank;
+  PetscErrorCode ierr, jerr;
+  
+  PetscFunctionBegin;
 
-	PetscScalar	alpha, beta, nu, omega, sigma;
-	PetscScalar	zero = 0;
-	PetscScalar	rho0, rho1;
-	PetscScalar	kappa0, kappaA, kappa1;
-	PetscReal	ghat, bidule, epsilon, atol;
-	PetscReal	zeta, zeta0, mxres, myres, nrm0;
-	PetscReal	xx0, xxt;
+  /* set up temporary vectors */
+  vi = 0; ell = ELL;
+  bcgsl->vB    = ksp->work[vi]; vi++;
+  bcgsl->vRt   = ksp->work[vi]; vi++;
+  bcgsl->vTm   = ksp->work[vi]; vi++;
+  bcgsl->vvR   = ksp->work+vi; vi += ell+1;
+  bcgsl->vvU   = ksp->work+vi; vi += ell+1;
+  bcgsl->vXr   = ksp->work[vi]; vi++;
+  {
+    LDZ  = ell-1;
+    LDZc = ell+1;
 
-	PetscTruth	bUpdateX;
-	PetscTruth	bComputeR;
-	PetscTruth	bBombed = PETSC_FALSE;
+    ierr = PetscMalloc
+      ( LDZc*sizeof(PetscScalar),
+	&AY0c);						CHKERRQ(ierr);
+    ierr = PetscMalloc
+      ( LDZc*sizeof(PetscScalar),
+	&AYlc);						CHKERRQ(ierr);
+    ierr = PetscMalloc
+      ( LDZc*sizeof(PetscScalar),
+	&AYtc);						CHKERRQ(ierr);
+    ierr = PetscMalloc
+      (LDZc*LDZc*sizeof(PetscScalar), &MZc);			CHKERRQ(ierr);
+    if ( LDZ>0 ) {
+      ierr = PetscMalloc
+	( LDZ*sizeof(PetscScalar),
+	  &AY0t);					CHKERRQ(ierr);
+      ierr = PetscMalloc
+	( LDZ*sizeof(PetscScalar),
+	  &AYlt);					CHKERRQ(ierr);
+      ierr = PetscMalloc
+	( LDZ*LDZ*sizeof(PetscScalar),
+	  &MZ);					CHKERRQ(ierr);
+    }
+  }
 
-	int	maxit, zits, ierr, jerr;
-	int	h, i, j, k;
-	int	rank;
-	
-	/* Prime the iterative solver */
-	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-
-	ierr = KSPInitialResidual(ksp, VX, VTM, VB,
-		VVR[0], ksp->vec_rhs);				CHKERRQ(ierr);
-	ierr = VecNorm(VVR[0], NORM_2, &zeta0);			CHKERRQ(ierr);
-	mxres = zeta0;
-
-	ierr = (*ksp->converged)( ksp, 0, zeta0,
-		&ksp->reason, ksp->cnvP);		CHKERRQ(ierr);
-	if (ksp->reason)
+  /* Prime the iterative solver */
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  
+  ierr = KSPInitialResidual
+    (ksp, VX, VTM, VB,
+     VVR[0], ksp->vec_rhs);				CHKERRQ(ierr);
+  ierr = VecNorm(VVR[0], NORM_2, &zeta0);			CHKERRQ(ierr);
+  mxres = zeta0;
+  
+  ierr = (*ksp->converged)( ksp, 0, zeta0,
+			    &ksp->reason, ksp->cnvP);		CHKERRQ(ierr);
+  if (ksp->reason)
+    {
+      return;
+    }
+  
+  ierr = VecSet( &zero, VVU[0] );				CHKERRQ(ierr);
+  alpha = 0;
+  rho0 = omega = 1;
+  
+  if ( DELTA>0.0 )
+    {
+      ierr = VecCopy(VX,VXR);				CHKERRQ(ierr);
+      ierr = VecSet(&zero,VX);			CHKERRQ(ierr);
+      ierr = VecCopy(VVR[0],VB);			CHKERRQ(ierr);
+    }
+  else
+    {
+      ierr = VecCopy(ksp->vec_rhs, VB);		CHKERRQ(ierr);
+    }
+  
+  /* Life goes on */
+  ierr = VecCopy(VVR[0], VRT);				CHKERRQ(ierr);
+  zeta = zeta0;
+  
+  ierr = KSPGetTolerances( ksp, &epsilon,
+			   &atol, PETSC_NULL, &maxit);			CHKERRQ(ierr);
+  
+  for ( k=0; k<maxit; k += ELL )
+    {
+      ierr = PetscObjectTakeAccess(ksp);		CHKERRQ(ierr);
+      ksp->its   = k;
+      ksp->rnorm = zeta;
+      ierr = PetscObjectGrantAccess(ksp);		CHKERRQ(ierr);
+      
+      KSPLogResidualHistory(ksp,zeta);
+      KSPMonitor(ksp,ksp->its,zeta); 
+      
+      ierr = (*ksp->converged)( ksp, k, zeta,
+				&ksp->reason, ksp->cnvP);		CHKERRQ(ierr);
+      if (ksp->reason)
 	{
-		return;
+	  break;
 	}
-
-	ierr = VecSet( &zero, VVU[0] );				CHKERRQ(ierr);
-	alpha = 0;
-	rho0 = omega = 1;
-
-	if ( DELTA>0.0 )
+      
+      /* BiCG part */
+      rho0 = -omega*rho0;
+      nrm0 = zeta;
+      for ( j=0; j<ELL; j++ )
 	{
-		ierr = VecCopy(VX,VXR);				CHKERRQ(ierr);
-		ierr = VecSet(&zero,VX);			CHKERRQ(ierr);
-		ierr = VecCopy(VVR[0],VB);			CHKERRQ(ierr);
+	  /* rho1 <- r_j' * r_tilde */
+	  ierr = VecDot(VVR[j],VRT,&rho1);	CHKERRQ(ierr);
+	  if (rho1 == 0.0)
+	    {
+	      ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
+	      bBombed = PETSC_TRUE;
+	      break;
+	    }
+	  beta = alpha*(rho1/rho0);
+	  rho0 = rho1;
+	  nu = -beta;
+	  for ( i=0; i<=j; i++ )
+	    {
+	      /* u_i <- r_i - beta*u_i */
+	      ierr = VecAYPX( &nu, VVR[i],
+			      VVU[i]);		CHKERRQ(ierr);
+	    }
+	  /* u_{j+1} <- inv(K)*A*u_j */
+	  ierr = KSP_PCApplyBAorAB(ksp,
+				   VVU[j], VVU[j+1],
+				   VTM);				CHKERRQ(ierr); 
+	  
+	  ierr = VecDot(VVU[j+1],VRT,&sigma);	CHKERRQ(ierr);
+	  if (sigma == 0.0)
+	    {
+	      ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
+	      bBombed = PETSC_TRUE;
+	      break;
+	    }
+	  alpha = rho1/sigma;
+	  
+	  /* x <- x + alpha*u_0 */
+	  ierr = VecAXPY( &alpha, VVU[0], VX);	CHKERRQ(ierr);
+	  
+	  nu = -alpha;
+	  for ( i=0; i<=j; i++ )
+	    {
+	      
+	      /* r_i <- r_i - alpha*u_{i+1} */
+	      ierr = VecAXPY( &nu, VVU[i+1],
+			      VVR[i]);		CHKERRQ(ierr);
+	    }
+	  
+	  /* r_{j+1} <- inv(K)*A*r_j */
+	  ierr = KSP_PCApplyBAorAB(ksp,
+				   VVR[j], VVR[j+1],
+				   VTM);				CHKERRQ(ierr); 
+	  
+	  
+	  if ( DELTA>0.0 )
+	    {
+	      ierr = VecNorm(VVR[0],NORM_2,
+			     &nrm0);			CHKERRQ(ierr);
+	      if ( mxres<nrm0 ) mxres = nrm0;
+	      if ( myres<nrm0 ) myres = nrm0;
+	    }
 	}
-	else
+      
+      if (bBombed==PETSC_TRUE)
 	{
-		ierr = VecCopy(ksp->vec_rhs, VB);		CHKERRQ(ierr);
+	  break;
+	} 
+      
+      ierr = (*ksp->converged)( ksp, k, nrm0,
+				&ksp->reason, ksp->cnvP);		CHKERRQ(ierr);
+      if (ksp->reason)
+	{
+	  break;
 	}
-
-	/* Life goes on */
-	ierr = VecCopy(VVR[0], VRT);				CHKERRQ(ierr);
-	zeta = zeta0;
-	
-	ierr = KSPGetTolerances( ksp, &epsilon,
-		&atol, PETSC_NULL, &maxit);			CHKERRQ(ierr);
-
-	for ( k=0; k<maxit; k += ELL )
+      
+      /* Polynomial part */
+      
+      for ( i=0; i<=ELL; i++ )
 	{
-		ierr = PetscObjectTakeAccess(ksp);		CHKERRQ(ierr);
-		ksp->its   = k;
-		ksp->rnorm = zeta;
-		ierr = PetscObjectGrantAccess(ksp);		CHKERRQ(ierr);
-
-		KSPLogResidualHistory(ksp,zeta);
-        	KSPMonitor(ksp,ksp->its,zeta); 
-
-		ierr = (*ksp->converged)( ksp, k, zeta,
-			&ksp->reason, ksp->cnvP);		CHKERRQ(ierr);
-		if (ksp->reason)
+	  for ( j=0; j<i; j++ )
+	    {
+	      ierr = VecDot(VVR[j],VVR[i],&nu);CHKERRQ(ierr);
+	      MZc[i+LDZc*j] = nu;
+	      MZc[j+LDZc*i] = nu;
+	    }
+	  
+	  ierr = VecDot(VVR[i],VVR[i], &nu);	CHKERRQ(ierr);
+	  MZc[i+LDZc*i] = nu;
+	}
+      
+      if ( ELL==1 )
+	/* KSP_BCGSL_SetEll has been set top prevent this case
+	 * because BiCGstab is typically better, but the routine
+	 * stands alone anyways.
+	 */
+	{
+	  nu = MZc[1+LDZc];
+	  if ( nu==0.0 )
+	    { 
+	      ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
+	      break;
+	    }
+	  AY0c[0] = -1;
+	  AY0c[1] = MZc[0]/nu;
+	}
+      else
+	{
+	  for ( i=0; i<LDZ; i++ )
+	    {
+	      for ( j=0; j<LDZ; j++ )
 		{
-			break;
+		  MZ[i+LDZ*j] = MZc[(i+1)+LDZc*(j+1)];
 		}
-
-		/* BiCG part */
-		rho0 = -omega*rho0;
-		nrm0 = zeta;
-		for ( j=0; j<ELL; j++ )
+	      AY0t[i] = MZc[i+1];
+	      AYlt[i] = MZc[i+1+LDZc*ELL];
+	    }
+	  
+	  ierr = bcgsl_factr_i(LDZ,MZ,LDZ);
+	  if ( ierr!=0 )
+	    {
+	      ksp->reason = KSP_DIVERGED_BREAKDOWN;
+	      bBombed = PETSC_TRUE;
+	      break;
+	    }
+	  ierr = bcgsl_solve_i(LDZ,MZ,LDZ,AY0t,
+			       &AY0c[1]);			CHKERRQ(ierr);
+	  AY0c[0] = -1;	AY0c[ELL] = 0;
+	  
+	  ierr = bcgsl_solve_i(LDZ,MZ,LDZ,AYlt,
+			       &AYlc[1]);			CHKERRQ(ierr);
+	  AYlc[0] = 0;	AYlc[ELL] = -1;
+	  
+	  ierr = bcgsl_mvmul_i(LDZc,MZc,LDZc,
+			       AY0c,AYtc);			CHKERRQ(ierr);
+	  ierr = bcgsl_dot_i(LDZc,AY0c,AYtc,
+			     &kappa0);			CHKERRQ(ierr);
+	  
+	  /* round-off can cause negative kappa's */
+	  if ( kappa0<0 ) kappa0 = -kappa0;
+	  kappa0 = PetscSqrtScalar(kappa0); 
+	  
+	  ierr = bcgsl_dot_i(LDZc,AYlc,AYtc,
+			     &kappaA);			CHKERRQ(ierr);
+	  
+	  ierr = bcgsl_mvmul_i(LDZc,MZc,LDZc,
+			       AYlc, AYtc);			CHKERRQ(ierr);
+	  ierr = bcgsl_dot_i(LDZc,AYlc,AYtc,
+			     &kappa1);			CHKERRQ(ierr);
+	  
+	  if ( kappa1<0 ) kappa1 = -kappa1;
+	  kappa1 = PetscSqrtScalar(kappa1); 
+	  
+	  if ( kappa0!=0.0 && kappa1!=0.0)
+	    {
+	      if ( kappaA<0.7*kappa0*kappa1 )
 		{
-			/* rho1 <- r_j' * r_tilde */
-			ierr = VecDot(VVR[j],VRT,&rho1);	CHKERRQ(ierr);
-			if (rho1 == 0.0)
-			{
-         			ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
-				bBombed = PETSC_TRUE;
-				break;
-			}
-			beta = alpha*(rho1/rho0);
-			rho0 = rho1;
-			nu = -beta;
-			for ( i=0; i<=j; i++ )
-			{
-				/* u_i <- r_i - beta*u_i */
-				ierr = VecAYPX( &nu, VVR[i],
-					VVU[i]);		CHKERRQ(ierr);
-			}
-			/* u_{j+1} <- inv(K)*A*u_j */
-			ierr = KSP_PCApplyBAorAB(ksp,
-				VVU[j], VVU[j+1],
-				VTM);				CHKERRQ(ierr); 
-
-			ierr = VecDot(VVU[j+1],VRT,&sigma);	CHKERRQ(ierr);
-			if (sigma == 0.0)
-			{
-         			ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
-				bBombed = PETSC_TRUE;
-				break;
-			}
-			alpha = rho1/sigma;
-
-			/* x <- x + alpha*u_0 */
-			ierr = VecAXPY( &alpha, VVU[0], VX);	CHKERRQ(ierr);
-
-			nu = -alpha;
-			for ( i=0; i<=j; i++ )
-			{
-
-				/* r_i <- r_i - alpha*u_{i+1} */
-				ierr = VecAXPY( &nu, VVU[i+1],
-					VVR[i]);		CHKERRQ(ierr);
-			}
-
-			/* r_{j+1} <- inv(K)*A*r_j */
-			ierr = KSP_PCApplyBAorAB(ksp,
-				VVR[j], VVR[j+1],
-				VTM);				CHKERRQ(ierr); 
-
-
-			if ( DELTA>0.0 )
-			{
-				ierr = VecNorm(VVR[0],NORM_2,
-					&nrm0);			CHKERRQ(ierr);
-				if ( mxres<nrm0 ) mxres = nrm0;
-				if ( myres<nrm0 ) myres = nrm0;
-			}
+		  ghat = ( kappaA<0.0 ) ?
+		    -0.7*kappa0/kappa1 :
+		    0.7*kappa0/kappa1  ; 
 		}
-
-		if (bBombed==PETSC_TRUE)
+	      else
 		{
-			break;
-		} 
-
-		ierr = (*ksp->converged)( ksp, k, nrm0,
-			&ksp->reason, ksp->cnvP);		CHKERRQ(ierr);
-		if (ksp->reason)
-		{
-			break;
+		  ghat = kappaA/(kappa1*kappa1);
 		}
-
-		/* Polynomial part */
-
-		for ( i=0; i<=ELL; i++ )
+	      
+	      for ( i=0; i<=ELL; i++ )
 		{
-			for ( j=0; j<i; j++ )
-			{
-				ierr = VecDot(VVR[j],VVR[i],&nu);CHKERRQ(ierr);
-				MZc[i+LDZc*j] = nu;
-				MZc[j+LDZc*i] = nu;
-			}
-
-			ierr = VecDot(VVR[i],VVR[i], &nu);	CHKERRQ(ierr);
-			MZc[i+LDZc*i] = nu;
+		  AY0c[i] = AY0c[i] - ghat* AYlc[i];
 		}
-
-		if ( ELL==1 )
-		/* KSP_BCGSL_SetEll has been set top prevent this case
-		 * because BiCGstab is typically better, but the routine
-		 * stands alone anyways.
-		 */
-		{
-			nu = MZc[1+LDZc];
-			if ( nu==0.0 )
-			{ 
-         			ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
-				break;
-			}
-			AY0c[0] = -1;
-			AY0c[1] = MZc[0]/nu;
-		}
-		else
-		{
-			for ( i=0; i<LDZ; i++ )
-			{
-				for ( j=0; j<LDZ; j++ )
-				{
-					MZ[i+LDZ*j] = MZc[(i+1)+LDZc*(j+1)];
-				}
-				AY0t[i] = MZc[i+1];
-				AYlt[i] = MZc[i+1+LDZc*ELL];
-			}
-
-			ierr = bcgsl_factr_i(LDZ,MZ,LDZ);
-			if ( ierr!=0 )
-			{
-         			ksp->reason = KSP_DIVERGED_BREAKDOWN;
-				bBombed = PETSC_TRUE;
-				break;
-			}
-			ierr = bcgsl_solve_i(LDZ,MZ,LDZ,AY0t,
-				&AY0c[1]);			CHKERRQ(ierr);
-			AY0c[0] = -1;	AY0c[ELL] = 0;
-
-			ierr = bcgsl_solve_i(LDZ,MZ,LDZ,AYlt,
-				&AYlc[1]);			CHKERRQ(ierr);
-			AYlc[0] = 0;	AYlc[ELL] = -1;
-
-			ierr = bcgsl_mvmul_i(LDZc,MZc,LDZc,
-				AY0c,AYtc);			CHKERRQ(ierr);
-			ierr = bcgsl_dot_i(LDZc,AY0c,AYtc,
-				&kappa0);			CHKERRQ(ierr);
-
-			/* round-off can cause negative kappa's */
-			if ( kappa0<0 ) kappa0 = -kappa0;
-			kappa0 = PetscSqrtScalar(kappa0); 
-
-			ierr = bcgsl_dot_i(LDZc,AYlc,AYtc,
-				&kappaA);			CHKERRQ(ierr);
-
-			ierr = bcgsl_mvmul_i(LDZc,MZc,LDZc,
-				AYlc, AYtc);			CHKERRQ(ierr);
-			ierr = bcgsl_dot_i(LDZc,AYlc,AYtc,
-				&kappa1);			CHKERRQ(ierr);
-
-			if ( kappa1<0 ) kappa1 = -kappa1;
-			kappa1 = PetscSqrtScalar(kappa1); 
-
-			if ( kappa0!=0.0 && kappa1!=0.0)
-			{
-				if ( kappaA<0.7*kappa0*kappa1 )
-				{
-					ghat = ( kappaA<0.0 ) ?
-						-0.7*kappa0/kappa1 :
-						0.7*kappa0/kappa1  ; 
-				}
-				else
-				{
-					ghat = kappaA/(kappa1*kappa1);
-				}
-
-				for ( i=0; i<=ELL; i++ )
-				{
-					AY0c[i] = AY0c[i] - ghat* AYlc[i];
-				}
-			}
-		}
-
-		h = ELL; omega = 0.0;
-		for ( h=ELL; h>0 && omega==0.0; h-- )
-		{
-			omega = AY0c[h];
-		}
-
-		if ( h==0 )
-		{
-         		ksp->reason = KSP_DIVERGED_BREAKDOWN;
-			break;
-		}
-			
-		for ( i=1; i<=ELL; i++ )
-		{
-			PetscReal xxx, xxu, xxr;
-			nu = -AY0c[i];
-			ierr = VecAXPY(&nu,VVU[i],VVU[0]);	CHKERRQ(ierr);
-			nu = AY0c[i];
-			ierr = VecAXPY(&nu,VVR[i-1],VX);	CHKERRQ(ierr);
-			nu = -AY0c[i];
-			ierr = VecAXPY(&nu,VVR[i],VVR[0]);	CHKERRQ(ierr);
-		}
-
-		ierr = VecNorm(VVR[0],NORM_2,&zeta);		CHKERRQ(ierr);
-
-		/* Accurate Update */
-		if ( DELTA>0.0 )
-		{
-			if ( mxres<zeta ) mxres = zeta;
-			if ( myres<zeta ) myres = zeta;
-
-			bUpdateX = (zeta<DELTA*zeta0 && zeta0<=mxres);
-			if ( (zeta<DELTA*myres && zeta0<=myres) ||
-				bUpdateX )
-			{
-				/* r0 <- b-inv(K)*A*X */
-				ierr = KSP_PCApplyBAorAB( ksp,
+	    }
+	}
+      
+      h = ELL; omega = 0.0;
+      for ( h=ELL; h>0 && omega==0.0; h-- )
+	{
+	  omega = AY0c[h];
+	}
+      
+      if ( h==0 )
+	{
+	  ksp->reason = KSP_DIVERGED_BREAKDOWN;
+	  break;
+	}
+      
+      for ( i=1; i<=ELL; i++ )
+	{
+	  PetscReal xxx, xxu, xxr;
+	  nu = -AY0c[i];
+	  ierr = VecAXPY(&nu,VVU[i],VVU[0]);	CHKERRQ(ierr);
+	  nu = AY0c[i];
+	  ierr = VecAXPY(&nu,VVR[i-1],VX);	CHKERRQ(ierr);
+	  nu = -AY0c[i];
+	  ierr = VecAXPY(&nu,VVR[i],VVR[0]);	CHKERRQ(ierr);
+	}
+      
+      ierr = VecNorm(VVR[0],NORM_2,&zeta);		CHKERRQ(ierr);
+      
+      /* Accurate Update */
+      if ( DELTA>0.0 )
+	{
+	  if ( mxres<zeta ) mxres = zeta;
+	  if ( myres<zeta ) myres = zeta;
+	  
+	  bUpdateX = (zeta<DELTA*zeta0 && zeta0<=mxres);
+	  if ( (zeta<DELTA*myres && zeta0<=myres) ||
+	       bUpdateX )
+	    {
+	      /* r0 <- b-inv(K)*A*X */
+	      ierr = KSP_PCApplyBAorAB( ksp,
 					VX, VVR[0], VTM);	CHKERRQ(ierr); 
-				nu = -1;
-				ierr = VecAYPX(&nu,VB, VVR[0]);
-								CHKERRQ(ierr);
-				myres = zeta;
-
-				if ( bUpdateX )
-				{
-					nu = 1;
-					ierr = VecAXPY(&nu,VX, VXR);
-								CHKERRQ(ierr);
-					ierr = VecSet(&zero,VX);
-							CHKERRQ(ierr); 
-					ierr = VecCopy(VVR[0], VB);
-							CHKERRQ(ierr); 
-					mxres = zeta;
-				}
-			}
+	      nu = -1;
+	      ierr = VecAYPX(&nu,VB, VVR[0]);
+	      CHKERRQ(ierr);
+	      myres = zeta;
+	      
+	      if ( bUpdateX )
+		{
+		  nu = 1;
+		  ierr = VecAXPY(&nu,VX, VXR);
+		  CHKERRQ(ierr);
+		  ierr = VecSet(&zero,VX);
+		  CHKERRQ(ierr); 
+		  ierr = VecCopy(VVR[0], VB);
+		  CHKERRQ(ierr); 
+		  mxres = zeta;
 		}
+	    }
 	}
-
-        KSPMonitor(ksp,ksp->its,zeta); 
-
-	if ( DELTA>0.0 )
-	{
-		nu = 1;
-		ierr = VecAXPY(&nu,VXR,VX);			CHKERRQ(ierr);
-	}
-
-	ierr = (*ksp->converged)( ksp, k, zeta,
-		&ksp->reason, ksp->cnvP);			CHKERRQ(ierr);
-	if ( !ksp->reason ) {
-		ksp->reason = KSP_DIVERGED_ITS;
-	}
-
-	PetscFunctionReturn(0);
-
+    }
+  
+  KSPMonitor(ksp,ksp->its,zeta); 
+  
+  if ( DELTA>0.0 )
+    {
+      nu = 1;
+      ierr = VecAXPY(&nu,VXR,VX);			CHKERRQ(ierr);
+    }
+  
+  ierr = (*ksp->converged)( ksp, k, zeta,
+			    &ksp->reason, ksp->cnvP);			CHKERRQ(ierr);
+  if ( !ksp->reason ) {
+    ksp->reason = KSP_DIVERGED_ITS;
+  }
+  
+  ierr = PetscFree(AY0c); CHKERRQ(ierr);
+  ierr = PetscFree(AYlc); CHKERRQ(ierr);
+  ierr = PetscFree(AYtc); CHKERRQ(ierr);
+  ierr = PetscFree(MZc); CHKERRQ(ierr);
+  if (LDZ>0) {
+    ierr = PetscFree(AY0t); CHKERRQ(ierr);
+    ierr = PetscFree(AYlt); CHKERRQ(ierr);
+    ierr = PetscFree(MZ); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+  
 }
 #undef __FUNCT__  
 
@@ -587,19 +637,19 @@ static int  KSPSolve_BCGSL(KSP ksp)
 EXTERN_C_BEGIN
 #define __FUNCT__ "KSP_BCGSL_SetXRes" 
 /*@C
-   KSP_BCGSL_SetXRes - Sets the parameter governing when
-exact residuals will be used instead of computed residuals. 
-
-   Collective on KSP
-
-   Input Parameters:
-+  ksp - iterative context obtained from KSPCreate
--  delta - computed residuals are used alone when delta is not positive
-
-   Options Database Keys:
-
-+  -ksp_bcgsl_xres delta 
-
+  KSP_BCGSL_SetXRes - Sets the parameter governing when
+  exact residuals will be used instead of computed residuals. 
+  
+  Collective on KSP
+  
+  Input Parameters:
+  +  ksp - iterative context obtained from KSPCreate
+  -  delta - computed residuals are used alone when delta is not positive
+  
+  Options Database Keys:
+  
+  +  -ksp_bcgsl_xres delta 
+  
    Level: intermediate
 
 .keywords: KSP, BiCGStab(L), set, exact residuals
