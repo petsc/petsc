@@ -43,7 +43,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   PetscMPIInt       j,n,size,rank,tag = ((PetscObject)viewer)->tag;
   MPI_Status        status;
   PetscScalar       *values,*xarray;
-  char              *name;
+  const char        *name;
   PetscViewerFormat format;
 
   PetscFunctionBegin;

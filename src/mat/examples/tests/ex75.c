@@ -192,7 +192,7 @@ int main(int argc,char **args)
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
   ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
-  ierr = VecSet(&one,u);CHKERRQ(ierr);
+  ierr = VecSet(u,one);CHKERRQ(ierr);
 
   /* Test MatNorm() */
   ierr = MatNorm(A,NORM_FROBENIUS,&r1);CHKERRQ(ierr); 

@@ -125,7 +125,7 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
   int                hierr;
 
   PetscFunctionBegin;
-  if (!jac->applyrichardson) {ierr = VecSet(&zero,x);CHKERRQ(ierr);}
+  if (!jac->applyrichardson) {ierr = VecSet(x,zero);CHKERRQ(ierr);}
   ierr = VecGetArray(b,&bv);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
   HYPREReplacePointer(jac->b,bv,sbv);

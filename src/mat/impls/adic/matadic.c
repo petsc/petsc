@@ -142,7 +142,7 @@ PetscErrorCode MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
 
   ierr = DAGetLocalVector(a->da,&localxx);CHKERRQ(ierr);
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    ierr = VecSet(&zero,localxx);CHKERRQ(ierr);
+    ierr = VecSet(localxx,zero);CHKERRQ(ierr);
   } else {
     ierr = DAGlobalToLocalBegin(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
     ierr = DAGlobalToLocalEnd(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);

@@ -138,7 +138,7 @@ int main(int argc,char **args)
     ierr = VecSetRandom(rctx,u);CHKERRQ(ierr);
     ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
   } else {
-    ierr = VecSet(&one,u);CHKERRQ(ierr);
+    ierr = VecSet(u,one);CHKERRQ(ierr);
   }
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
@@ -199,7 +199,7 @@ int main(int argc,char **args)
   /* 
      Check the error
   */
-  ierr = VecAXPY(&neg_one,u,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /* Scale the norm */

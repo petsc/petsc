@@ -394,7 +394,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   /*
      Compute the 2-norm and max-norm of the error
   */
-  ierr = VecAXPY(&mone,u,appctx->solution);CHKERRQ(ierr);
+  ierr = VecAXPY(appctx->solution,mone,u);CHKERRQ(ierr);
   ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
   norm_2 = sqrt(appctx->h)*norm_2;
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);

@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   /*
      Set the vectors to entries to a constant value.
   */
-  ierr = VecSet(&one,x);CHKERRQ(ierr);
+  ierr = VecSet(x,one);CHKERRQ(ierr);
 
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of entire vector %g\n",norm);CHKERRQ(ierr);

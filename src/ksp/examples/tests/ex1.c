@@ -28,8 +28,8 @@ int main(int argc,char **args)
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,&u);CHKERRQ(ierr); 
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&x);CHKERRQ(ierr);
-  ierr = VecSet(&zero,u);CHKERRQ(ierr);
-  ierr = VecSet(&zero,b);CHKERRQ(ierr);
+  ierr = VecSet(u,zero);CHKERRQ(ierr);
+  ierr = VecSet(b,zero);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
@@ -42,7 +42,7 @@ int main(int argc,char **args)
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
 
   ierr = MatMult(C,u,x);CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,b,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,mone,b);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   printf("Norm of residual %g\n",norm);
 

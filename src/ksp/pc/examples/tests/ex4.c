@@ -44,7 +44,7 @@ int main(int argc,char **args)
 
   value[0] = 1.0;
   for (i=0; i<n; i++) {
-    ierr = VecSet(&zero,u);CHKERRQ(ierr);
+    ierr = VecSet(u,zero);CHKERRQ(ierr);
     ierr = VecSetValues(u,1,&i,value,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(u);CHKERRQ(ierr);

@@ -140,7 +140,7 @@ int main(int argc,char **argv)
      Evaluate initial guess; then solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecSet(&pfive,x);CHKERRQ(ierr);
+  ierr = VecSet(x,pfive);CHKERRQ(ierr);
   ierr = SNESSolve(snes,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Newton iterations = %D\n\n",it);CHKERRQ(ierr);

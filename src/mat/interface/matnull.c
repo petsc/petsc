@@ -138,13 +138,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec
     ierr = VecSum(l,&sum);CHKERRQ(ierr);
     ierr = VecGetSize(l,&N);CHKERRQ(ierr);
     sum  = sum/(-1.0*N);
-    ierr = VecShift(&sum,l);CHKERRQ(ierr);
+    ierr = VecShift(l,sum);CHKERRQ(ierr);
   }
 
   for (j=0; j<n; j++) {
     ierr = VecDot(l,sp->vecs[j],&sum);CHKERRQ(ierr);
     sum  = -sum;
-    ierr = VecAXPY(&sum,sp->vecs[j],l);CHKERRQ(ierr);
+    ierr = VecAXPY(l,sum,sp->vecs[j]);CHKERRQ(ierr);
   }
   
   PetscFunctionReturn(0);
@@ -196,7 +196,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat)
     ierr = VecDuplicate(l,&r);CHKERRQ(ierr);
     ierr = VecGetSize(l,&N);CHKERRQ(ierr);
     sum  = 1.0/N;
-    ierr = VecSet(&sum,l);CHKERRQ(ierr);
+    ierr = VecSet(l,sum);CHKERRQ(ierr);
     ierr = MatMult(mat,l,r);CHKERRQ(ierr);
     ierr = VecNorm(r,NORM_2,&nrm);CHKERRQ(ierr);
     if (nrm < 1.e-7) {ierr = PetscPrintf(comm,"Constants are likely null vector");CHKERRQ(ierr);}

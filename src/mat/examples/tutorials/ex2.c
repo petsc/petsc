@@ -99,7 +99,7 @@ int main(int argc,char **argv)
   ierr = MatMultAdd(A12,X2,Z1,Z1);CHKERRQ(ierr);
   ierr = MatMult(A22,X2,Z2);CHKERRQ(ierr);
   ierr = MatMultAdd(A21,X1,Z2,Z2);CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,Y,Z);CHKERRQ(ierr);
+  ierr = VecAXPY(Z,mone,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
   printf("Test1; error norm=%e\n",nrm);
   /*
@@ -130,7 +130,7 @@ int main(int argc,char **argv)
   ierr = MatMultAdd(A12,X2,Z1,Z1);CHKERRQ(ierr);
   ierr = MatMult(A22,X2,Z2);CHKERRQ(ierr);
   ierr = MatMultAdd(A21,X1,Z2,Z2);CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,Y,Z);CHKERRQ(ierr);
+  ierr = VecAXPY(Z,mone,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
   printf("Test2; error norm=%e\n",nrm);
 
@@ -142,7 +142,7 @@ int main(int argc,char **argv)
   ierr = MatMultTransposeAdd(A21,X2,Z1,Z1);CHKERRQ(ierr);
   ierr = MatMultTranspose(A22,X2,Z2);CHKERRQ(ierr);
   ierr = MatMultTransposeAdd(A12,X1,Z2,Z2);CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,Y,Z);CHKERRQ(ierr);
+  ierr = VecAXPY(Z,mone,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
   printf("Test3; error norm=%e\n",nrm);
 

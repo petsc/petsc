@@ -451,7 +451,7 @@ PetscErrorCode MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
 PetscErrorCode MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqBDiag      *a = (Mat_SeqBDiag*)A->data;
-  char              *name;
+  const char        *name;
   PetscErrorCode    ierr;
   PetscInt          *col,i,j,len,diag,nr = A->m,bs = A->bs,iprint,nz;
   PetscScalar       *val,*dv,zero = 0.0;

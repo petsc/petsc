@@ -165,7 +165,7 @@ int TimeStep(AppCtx* appctx)
       /* w_old is initially in g, later put into g. */
       /*rhs = 1/dt*Mg */
       ierr = MatMult(algebra->M, algebra->g, algebra->b);CHKERRQ(ierr);
-      ierr = VecScale(&idt, algebra->b);
+      ierr = VecScale(algebra->b,idt);
  
       /*operator D = 1/dt*M + C - eta*A*/
       MatCopy(algebra->M, algebra->D,DIFFERENT_NONZERO_PATTERN );

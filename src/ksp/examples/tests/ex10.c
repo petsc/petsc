@@ -68,7 +68,7 @@ int main(int argc,char **args)
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /* Check error */
-  ierr = VecAXPY(&neg1,u,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,neg1,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Number of iterations %D\n",norm,its);CHKERRQ(ierr);

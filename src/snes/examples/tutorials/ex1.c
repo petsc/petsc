@@ -109,7 +109,7 @@ int main(int argc,char **argv)
      Evaluate initial guess; then solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (!flg) {
-    ierr = VecSet(&pfive,x);CHKERRQ(ierr);
+    ierr = VecSet(x,pfive);CHKERRQ(ierr);
   } else {
     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
     xx[0] = 2.0; xx[1] = 3.0;

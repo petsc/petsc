@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = MatLUFactorNumeric(C,PETSC_NULL,&A);CHKERRQ(ierr);
   ierr = MatSolveTranspose(A,b,x);CHKERRQ(ierr);
 
-  ierr = VecAXPY(&mone,u,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,mone,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);CHKERRQ(ierr);
 

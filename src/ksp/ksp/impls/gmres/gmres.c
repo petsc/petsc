@@ -371,15 +371,15 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
   }
 
   /* Accumulate the correction to the solution of the preconditioned problem in TEMP */
-  ierr = VecSet(&zero,VEC_TEMP);CHKERRQ(ierr);
-  ierr = VecMAXPY(it+1,nrs,VEC_TEMP,&VEC_VV(0));CHKERRQ(ierr);
+  ierr = VecSet(VEC_TEMP,zero);CHKERRQ(ierr);
+  ierr = VecMAXPY(VEC_TEMP,it+1,nrs,&VEC_VV(0));CHKERRQ(ierr);
 
   ierr = KSPUnwindPreconditioner(ksp,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
   /* add solution to previous solution */
   if (vdest != vs) {
     ierr = VecCopy(vs,vdest);CHKERRQ(ierr);
   }
-  ierr = VecAXPY(&one,VEC_TEMP,vdest);CHKERRQ(ierr);
+  ierr = VecAXPY(vdest,one,VEC_TEMP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*

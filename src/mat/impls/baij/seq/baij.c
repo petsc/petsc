@@ -1894,7 +1894,7 @@ PetscErrorCode MatGetRowMax_SeqBAIJ(Mat A,Vec v)
   aj   = a->j;
   mbs = a->mbs;
 
-  ierr = VecSet(&zero,v);CHKERRQ(ierr);
+  ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");

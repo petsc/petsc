@@ -33,8 +33,8 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_SELF,n,rank,1,&is2);CHKERRQ(ierr);
 
   value = rank+1; 
-  ierr = VecSet(&value,x);CHKERRQ(ierr);
-  ierr = VecSet(&zero,y);CHKERRQ(ierr);
+  ierr = VecSet(x,value);CHKERRQ(ierr);
+  ierr = VecSet(y,zero);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
   ierr = VecScatterBegin(x,y,ADD_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);

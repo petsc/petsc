@@ -48,7 +48,7 @@ int main(int argc,char **args)
   /* Set up solution */
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
-  ierr = VecSet(&zero,x); CHKERRA(ierr);
+  ierr = VecSet(x,zero); CHKERRA(ierr);
 
   /* Solve system */
   ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
@@ -60,7 +60,7 @@ int main(int argc,char **args)
 
   /* Show result */
   ierr = MatMult(A,x,u);
-  ierr = VecAXPY(&none,b,u); CHKERRA(ierr);
+  ierr = VecAXPY(u,none,b); CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);
   if (norm < 1.e-10) {

@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   ierr = VecSetValues(x,6,loc,vals,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"----\n");CHKERRQ(ierr);
-  ierr = VecSet(&two,y);CHKERRQ(ierr);
+  ierr = VecSet(y,two);CHKERRQ(ierr);
   ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
   ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);

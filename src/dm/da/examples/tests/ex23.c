@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   ierr = VecLoadIntoVector(viewer,global2);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
-  ierr = VecAXPY(&mone,global1,global2);CHKERRQ(ierr);
+  ierr = VecAXPY(global2,mone,global1);CHKERRQ(ierr);
   ierr = VecNorm(global2,NORM_MAX,&norm);CHKERRQ(ierr);
   if (norm != 0.0) {
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

@@ -126,7 +126,7 @@ int main(int argc,char **args)
      Set exact solution; then compute right-hand-side vector.
      Use an exact solution of a vector with all elements of 1.0;  
   */
-  ierr = VecSet(&one,u);CHKERRQ(ierr);
+  ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -177,7 +177,7 @@ int main(int argc,char **args)
   /* 
      Check the error
   */
-  ierr = VecAXPY(&neg_one,u,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /* Scale the norm */

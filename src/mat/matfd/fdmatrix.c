@@ -668,7 +668,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
       ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
       ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-      ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
+      ierr = VecAXPY(w2,mone,w1);CHKERRQ(ierr);
 
       /*
 	Loop over rows of vector, putting results into Jacobian matrix
@@ -834,7 +834,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring color
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = (*f)(sctx,t,w3,w2,fctx);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
+    ierr = VecAXPY(w2,mone,w1);CHKERRQ(ierr);
 
     /*
        Loop over rows of vector, putting results into Jacobian matrix

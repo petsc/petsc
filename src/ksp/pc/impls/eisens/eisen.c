@@ -39,7 +39,7 @@ static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (eis->usediag)  {ierr = VecPointwiseMult(x,eis->diag,y);CHKERRQ(ierr);}
+  if (eis->usediag)  {ierr = VecPointwiseMult(y,x,eis->diag);CHKERRQ(ierr);}
   else               {ierr = VecCopy(x,y);CHKERRQ(ierr);}
   PetscFunctionReturn(0); 
 }

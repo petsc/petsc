@@ -82,7 +82,7 @@ int main(int argc,char **argv)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
   /* set values for rhs vector */
-  ierr = VecSet(&one,fine_ctx.b);CHKERRQ(ierr);
+  ierr = VecSet(fine_ctx.b,one);CHKERRQ(ierr);
   {
     PetscRandom rdm;
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);

@@ -40,7 +40,7 @@ int main(int argc,char **argv)
 
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = VecSet(&mone,y);CHKERRQ(ierr);
+  ierr = VecSet(y,mone);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
   ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);

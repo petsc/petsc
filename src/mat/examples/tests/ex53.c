@@ -80,7 +80,7 @@ int main(int argc,char **args)
     ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
     ierr = MatMult(A,xx,s1);CHKERRQ(ierr);
     ierr = MatMult(B,xx,s2);CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,s1,s2);CHKERRQ(ierr);
+    ierr = VecAXPY(s2,mone,s1);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_2,&rnorm);CHKERRQ(ierr);
     if (rnorm>tol) { 
       ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error: MatMult - Norm2=%16.14e bs = %D\n",rank,rnorm,bs);CHKERRQ(ierr);  
@@ -93,7 +93,7 @@ int main(int argc,char **args)
     ierr = VecSetRandom(rand,yy);CHKERRQ(ierr);
     ierr = MatMultAdd(A,xx,yy,s1);CHKERRQ(ierr);
     ierr = MatMultAdd(B,xx,yy,s2);CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,s1,s2);CHKERRQ(ierr);
+    ierr = VecAXPY(s2,mone,s1);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_2,&rnorm);CHKERRQ(ierr);
     if (rnorm>tol) { 
       ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error: MatMultAdd - Norm2=%16.14e bs = %D\n",rank,rnorm,bs);CHKERRQ(ierr);

@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
   ierr = VecView(u, PETSC_VIEWER_MATHEMATICA_WORLD);                                                      CHKERRQ(ierr);
 #endif
   v    = 0.0;
-  ierr = VecSet(&v, u);                                                                                   CHKERRQ(ierr);
+  ierr = VecSet(u,v);                                                                                     CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VECTOR_GENERATE, 0, 0, 0, 0);                                                   CHKERRQ(ierr);
 
   /* All processors wait until test vector has been dumped */

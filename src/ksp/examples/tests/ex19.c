@@ -136,7 +136,7 @@ int main(int argc,char **argv)
 
   ierr = KSPSetOperators(ksp,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  ierr = VecSet(&one,user.fine.b);CHKERRQ(ierr);
+  ierr = VecSet(user.fine.b,one);CHKERRQ(ierr);
   {
     PetscRandom rdm;
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);

@@ -375,7 +375,7 @@
 
       call Solution(time,csolution,ctx) 
       mone = -1.0
-      call VecAXPY(mone,global,csolution,ierr) 
+      call VecAXPY(csolution,mone,global,ierr) 
       call VecNorm(csolution,NORM_2,lnrm_2,ierr) 
       lnrm_2 = sqrt(h)*lnrm_2
       call VecNorm(csolution,NORM_MAX,lnrm_max,ierr) 

@@ -54,7 +54,7 @@ int main(int argc,char **argv)
     PetscReal   petscnorm;
     ierr = VecDuplicate(appctx->algebra.b,&r);CHKERRQ(ierr);
     ierr = MatMult(appctx->algebra.A,appctx->algebra.x,r);CHKERRQ(ierr);
-    ierr = VecAYPX(&m1,appctx->algebra.b,r);CHKERRQ(ierr);
+    ierr = VecAYPX(r,m1,appctx->algebra.b);CHKERRQ(ierr);
     ierr = VecNorm(r,NORM_2,&petscnorm);CHKERRQ(ierr);
     ierr = VecDestroy(r);CHKERRQ(ierr);
     norm = (double)petscnorm;

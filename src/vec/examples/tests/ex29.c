@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Now do the blocksetvalues */
-  ierr = VecSet(&zero,x);CHKERRQ(ierr);
+  ierr = VecSet(x,zero);CHKERRQ(ierr);
   ierr = PetscMalloc(bs*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     for (j=0; j<bs; j++) {

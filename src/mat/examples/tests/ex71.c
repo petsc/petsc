@@ -36,7 +36,7 @@ int main(int argc,char **args)
   ierr = MatView(A,PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
 #endif
   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);
-  ierr = VecSet(&one,x);CHKERRQ(ierr);
+  ierr = VecSet(x,one);CHKERRQ(ierr);
 #if defined(PETSC_USE_SOCKET_VIEWER)
   ierr = VecView(x,PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
 #endif

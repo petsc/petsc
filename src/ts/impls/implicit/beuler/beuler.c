@@ -39,7 +39,7 @@ static PetscErrorCode TSStep_BEuler_Linear_Constant_Matrix(TS ts,PetscInt *steps
 
   for (i=0; i<max_steps; i++) {
     ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
-    ierr = VecScale(&mdt,rhs);CHKERRQ(ierr);
+    ierr = VecScale(rhs,mdt);CHKERRQ(ierr);
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
     ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 
@@ -83,7 +83,7 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
 
   for (i=0; i<max_steps; i++) {
     ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
-    ierr = VecScale(&mdt,rhs);CHKERRQ(ierr);
+    ierr = VecScale(rhs,mdt);CHKERRQ(ierr);
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
     ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 

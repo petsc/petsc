@@ -1155,7 +1155,7 @@ PetscErrorCode MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecSet(&zero,zz);CHKERRQ(ierr);
+  ierr = VecSet(zz,zero);CHKERRQ(ierr);
   ierr = MatMultTransposeAdd_SeqBAIJ(A,xx,zz,zz);CHKERRQ(ierr);
 
   ierr = PetscLogFlops(2*a->nz*a->bs2 - A->n);CHKERRQ(ierr);
@@ -1444,7 +1444,7 @@ PetscErrorCode MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
   ambs = a->mbs;
   bs2  = a->bs2;
 
-  ierr = VecSet(&zero,v);CHKERRQ(ierr);
+  ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");

@@ -247,7 +247,7 @@ int PCApply_Feti(PC pc, Vec src_lambda, Vec dst_lambda)
 
     PetscScalar zero=0;
     PetscScalar minusone=-1;
-    VecSet(&zero, dst_lambda);
+    VecSet(dst_lambda,zero);
 
     MatFetiScatter   (pc->mat,                     /* apply all Br */
 		      src_lambda,                      /* src_lambda ---> all ur */
@@ -284,7 +284,7 @@ int PCApply_Feti(PC pc, Vec src_lambda, Vec dst_lambda)
 		      pcdomain->uii_tmp1,
 		      pcdomain->uii_tmp2,&its);
 
-	    VecScale(&minusone,pcdomain->uii_tmp2);                   /* scale by -1 */
+	    VecScale(pcdomain->uii_tmp2,minusone);                   /* scale by -1 */
 
 	    MatMultTranspose(pcdomain->Kib,
 			     pcdomain->uii_tmp2,

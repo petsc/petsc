@@ -23,8 +23,8 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecSetType(x,"mpi");CHKERRQ(ierr);
 
-  ierr = VecSet(&one,x);CHKERRQ(ierr);
-  ierr = VecSet(&two,y);CHKERRQ(ierr);
+  ierr = VecSet(x,one);CHKERRQ(ierr);
+  ierr = VecSet(y,two);CHKERRQ(ierr);
 
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);

@@ -277,7 +277,7 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,
       ierr = MatMult(A, evec[i], vt1);
       ierr = MatMult(B, evec[i], vt2);
       tmp  = -eval[i];
-      ierr = VecAXPY(&tmp, vt2, vt1);
+      ierr = VecAXPY(vt1,tmp,vt2);
       ierr = VecNorm(vt1, NORM_INFINITY, &norm);
       norm = PetscAbsScalar(norm); 
       if (norm > norm_max) norm_max = norm;

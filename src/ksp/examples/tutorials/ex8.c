@@ -96,7 +96,7 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
-  ierr = VecSet(&one,u);CHKERRQ(ierr);
+  ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
   /* 

@@ -300,7 +300,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   /* Restrict Xold to coarser levels */
   for (mglevel=param->mglevels-1; mglevel>0; mglevel--) {
     ierr = MatRestrict(dmmg[mglevel]->R, ((AppCtx*)dmmg[mglevel]->user)->Xold, ((AppCtx*)dmmg[mglevel-1]->user)->Xold);CHKERRQ(ierr);
-    ierr = VecPointwiseMult(dmmg[mglevel]->Rscale,((AppCtx*)dmmg[mglevel-1]->user)->Xold,((AppCtx*)dmmg[mglevel-1]->user)->Xold);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(((AppCtx*)dmmg[mglevel-1]->user)->Xold,((AppCtx*)dmmg[mglevel-1]->user)->Xold,dmmg[mglevel]->Rscale);CHKERRQ(ierr);
   }
   
   /* Store X in the qold for time stepping */
@@ -674,7 +674,7 @@ PetscErrorCode Update(DMMG *dmmg)
     ierr = VecCopy(dmmg[param->mglevels-1]->x, ((AppCtx*)dmmg[param->mglevels-1]->user)->Xold);CHKERRQ(ierr);
     for (its=param->mglevels-1; its>0 ;its--) {
       ierr = MatRestrict(dmmg[its]->R, ((AppCtx*)dmmg[its]->user)->Xold, ((AppCtx*)dmmg[its-1]->user)->Xold);CHKERRQ(ierr);
-      ierr = VecPointwiseMult(dmmg[its]->Rscale,((AppCtx*)dmmg[its-1]->user)->Xold,((AppCtx*)dmmg[its-1]->user)->Xold);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(((AppCtx*)dmmg[its-1]->user)->Xold,((AppCtx*)dmmg[its-1]->user)->Xold,dmmg[its]->Rscale);CHKERRQ(ierr);
     }
 
     

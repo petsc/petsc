@@ -78,11 +78,11 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = (*shell->mult)(A,x,y);CHKERRQ(ierr);
   if (shell->shift && shell->scale) {
-    ierr = VecAXPBY(&shell->vshift,&shell->vscale,x,y);CHKERRQ(ierr);
+    ierr = VecAXPBY(y,shell->vshift,shell->vscale,x);CHKERRQ(ierr);
   } else if (shell->scale) {
-    ierr = VecScale(&shell->vscale,y);CHKERRQ(ierr);
+    ierr = VecScale(y,shell->vscale);CHKERRQ(ierr);
   } else {
-    ierr = VecAXPY(&shell->vshift,x,y);CHKERRQ(ierr);
+    ierr = VecAXPY(y,shell->vshift,x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

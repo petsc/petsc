@@ -89,8 +89,8 @@ int main(int argc,char **args)
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultAdd()\n");CHKERRQ(ierr);
   ierr = MatMultAdd(C,y,z,w);CHKERRQ(ierr);
-  ierr = VecAXPY(&one,z,x);CHKERRQ(ierr);
-  ierr = VecAXPY(&negone,w,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,one,z);CHKERRQ(ierr);
+  ierr = VecAXPY(x,negone,w);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > 1.e-8){
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);CHKERRQ(ierr);
@@ -110,8 +110,8 @@ int main(int argc,char **args)
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTransposeAdd()\n");CHKERRQ(ierr);
   ierr = MatMultTransposeAdd(C,x,u,s);CHKERRQ(ierr);
-  ierr = VecAXPY(&one,u,y);CHKERRQ(ierr);
-  ierr = VecAXPY(&negone,s,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,one,u);CHKERRQ(ierr);
+  ierr = VecAXPY(y,negone,s);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > 1.e-8){
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);CHKERRQ(ierr);
@@ -121,7 +121,7 @@ int main(int argc,char **args)
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatGetDiagonal(), MatDiagonalScale()\n");CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecSet(&one,x);CHKERRQ(ierr);
+  ierr = VecSet(x,one);CHKERRQ(ierr);
   ierr = MatGetDiagonal(C,x);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   for (i=vstart; i<vend; i++) {

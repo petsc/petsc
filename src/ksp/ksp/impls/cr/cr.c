@@ -42,7 +42,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);     /*   R <- A*X           */
-    ierr = VecAYPX(&mone,B,R);CHKERRQ(ierr);            /*   R <- B-R == B-A*X  */
+    ierr = VecAYPX(R,mone,B);CHKERRQ(ierr);            /*   R <- B-R == B-A*X  */
   } else { 
     ierr = VecCopy(B,R);CHKERRQ(ierr);                  /*   R <- B (X is 0)    */
   }
@@ -85,9 +85,9 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     }
     ai = btop/apq;                                      /* ai = (RT,ART)/(AP,Q)  */
 
-    ierr   = VecAXPY(&ai,P,X);CHKERRQ(ierr);            /*   X   <- X + ai*P     */
+    ierr   = VecAXPY(X,ai,P);CHKERRQ(ierr);            /*   X   <- X + ai*P     */
     ai     = -ai; 
-    ierr   = VecAXPY(&ai,Q,RT);CHKERRQ(ierr);           /*   RT  <- RT - ai*Q    */
+    ierr   = VecAXPY(RT,ai,Q);CHKERRQ(ierr);           /*   RT  <- RT - ai*Q    */
     ierr   = KSP_MatMult(ksp,Amat,RT,ART);CHKERRQ(ierr);/*   ART <-   A*RT       */
     bbot = btop;
     ierr   = VecDot(RT,ART,&btop);CHKERRQ(ierr);
@@ -104,7 +104,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     } else if (ksp->normtype == KSP_NO_NORM) {
       dp = 0.0; 
     } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
-      ierr = VecAXPY(&ai,AP,R);CHKERRQ(ierr);           /*   R   <- R - ai*AP    */
+      ierr = VecAXPY(R,ai,AP);CHKERRQ(ierr);           /*   R   <- R - ai*AP    */
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);       /*   dp <- R'*R          */
     } else {
       SETERRQ1(PETSC_ERR_SUP,"KSPNormType of %d not supported",(int)ksp->normtype);
@@ -121,8 +121,8 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     if (ksp->reason) break;
 
     bi = btop/bbot;
-    ierr = VecAYPX(&bi,RT,P);CHKERRQ(ierr);              /*   P <- RT + Bi P     */
-    ierr = VecAYPX(&bi,ART,AP);CHKERRQ(ierr);            /*   AP <- ART + Bi AP  */
+    ierr = VecAYPX(P,bi,RT);CHKERRQ(ierr);              /*   P <- RT + Bi P     */
+    ierr = VecAYPX(AP,bi,ART);CHKERRQ(ierr);            /*   AP <- ART + Bi AP  */
     i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) {

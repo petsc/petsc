@@ -337,7 +337,7 @@ PetscErrorCode MatMultTranspose_MPIBDiag(Mat A,Vec xx,Vec yy)
   PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = (*a->A->ops->multtranspose)(a->A,xx,a->lvec);CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);

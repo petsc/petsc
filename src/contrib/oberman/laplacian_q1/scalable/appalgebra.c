@@ -299,7 +299,7 @@ int SetBoundaryConditions(AppCtx *appctx)
   ierr = VecAssemblyEnd(algebra->b);CHKERRQ(ierr);
 
   /* set initial guess satisfying boundary conditions */
-  ierr = VecSet(&zero,algebra->x);CHKERRQ(ierr);
+  ierr = VecSet(algebra->x,zero);CHKERRQ(ierr);
   ierr = VecSetValuesLocal(algebra->x,n,vertex_ptr,values,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(algebra->x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(algebra->x);CHKERRQ(ierr);

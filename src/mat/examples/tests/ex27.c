@@ -61,7 +61,7 @@ int main(int argc,char **args)
   ierr = VecSetSizes(x,PETSC_DECIDE,m*n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
-  v = 1.0; ierr = VecSet(&v,x);CHKERRQ(ierr);
+  v = 1.0; ierr = VecSet(x,v);CHKERRQ(ierr);
   ierr = MatMult(C,x,y);CHKERRQ(ierr);
 
   ierr = MatDestroy(C);CHKERRQ(ierr);

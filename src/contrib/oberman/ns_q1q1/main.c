@@ -149,7 +149,7 @@ int FormInitialGuess(AppCtx* appctx)
     int ierr;
     double zero = 0.0;
     double onep1 = 1.234;
-    ierr = VecSet(&onep1,g ); CHKERRQ(ierr);
+    ierr = VecSet(g,&onep1); CHKERRQ(ierr);
  PetscFunctionReturn(0);
 }
 
@@ -182,9 +182,9 @@ to see if they need to be recomputed */
 
 /****** Perform computation ***********/
   /* need to zero f */
-  ierr = VecSet(&zero, f); CHKERRQ(ierr); 
+  ierr = VecSet(f,zero); CHKERRQ(ierr); 
   /* add rhs to get constant part */
-  ierr = VecAXPY(&mone, b, f); CHKERRQ(ierr); /* this says f = f - 1*b */
+  ierr = VecAXPY(f,mone,b); CHKERRQ(ierr); /* this says f = f - 1*b */
   /*apply matrix to the input vector x, to get linear part */
   /* Assuming mattrix doesn't need to be recomputed */
   ierr = MatMultAdd(A, x, f, f); CHKERRQ(ierr);  /* f = A*x + f */
@@ -734,12 +734,12 @@ Vec xold = algebra->g;
 /****** Perform computation ***********/
   /* and input scaled by 1/dt */
   ierr = VecCopy(x, f); CHKERRQ(ierr); 
-  ierr = VecScale(&idt, f);CHKERRQ(ierr); /* f = input/dt */
+  ierr = VecScale(f,idt);CHKERRQ(ierr); /* f = input/dt */
   /* subtract old solution  */
-  ierr = VecScale(&idt, xold);CHKERRQ(ierr); 
-  ierr = VecAXPY(&mone, xold, f);/* f = f - xold/dt */
+  ierr = VecScale(xold,idt);CHKERRQ(ierr); 
+  ierr = VecAXPY(f,mone,xold);/* f = f - xold/dt */
   /* add rhs to get constant part */
-  ierr = VecAXPY(&mone, b, f); CHKERRQ(ierr); /* f = f - 1*b */
+  ierr = VecAXPY(f,mone,b); CHKERRQ(ierr); /* f = f - 1*b */
   /*apply matrix to the input vector x, to get linear part */
   ierr = MatMultAdd(A, x, f, f); CHKERRQ(ierr);  /* f = A*x + f */
  /* create nonlinear part */

@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   /*
    * Scale the vector a little
    */
-  ierr = VecScale(&e,V);CHKERRQ(ierr);
+  ierr = VecScale(V,e);CHKERRQ(ierr);
 
   /* display updated cached norm 1 & 2 */
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ int main(int argc,char **argv)
   /*
    * Constant vector
    */
-  ierr = VecSet(&e,V);CHKERRQ(ierr);
+  ierr = VecSet(V,e);CHKERRQ(ierr);
 
   /* display updated cached norm 1 & 2 */
   ierr = VecNorm(V,NORM_1,&nrm1);CHKERRQ(ierr);

@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
   ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,DMMGGetRHS(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
+  ierr = VecAXPY(DMMGGetr(dmmg),mone,DMMGGetRHS(dmmg));CHKERRQ(ierr);
   ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
   /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",norm);CHKERRQ(ierr); */
 
@@ -64,7 +64,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
   PetscFunctionBegin;
   ierr = DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
-  ierr = VecSet(&h,b);CHKERRQ(ierr);
+  ierr = VecSet(b,h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
     

@@ -149,7 +149,7 @@ int main(int argc,char **args)
        an exact solution of a vector with all elements equal to 1.0*k.
     */
     rhs = one * (PetscReal)k;
-    ierr = VecSet(&rhs,u);CHKERRQ(ierr);
+    ierr = VecSet(u,rhs);CHKERRQ(ierr);
     ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
     /*
@@ -163,7 +163,7 @@ int main(int argc,char **args)
     /* 
        Check the error
     */
-    ierr = VecAXPY(&neg_one,u,x);CHKERRQ(ierr);
+    ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
     ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     /*

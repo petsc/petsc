@@ -556,7 +556,7 @@ PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
 
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr); 
   ierr = VecRestoreArray(y,&yarray);CHKERRQ(ierr); 
-  ierr = VecAXPY(&one,w,y);CHKERRQ(ierr); 
+  ierr = VecAXPY(y,one,w);CHKERRQ(ierr); 
 
   PetscFunctionReturn(0);
 }

@@ -251,12 +251,12 @@ void PETSC_STDCALL sneslinesearchgetparams_(SNES *snes,PetscReal *alpha,PetscRea
 }
 
 /*  func is currently ignored from Fortran */
-void PETSC_STDCALL snesgetjacobian_(SNES *snes,Mat *A,Mat *B,void **ctx,int *func,PetscErrorCode *ierr)
+void PETSC_STDCALL snesgetjacobian_(SNES *snes,Mat *A,Mat *B,int *func,void **ctx,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(ctx);
   CHKFORTRANNULLOBJECT(A);
   CHKFORTRANNULLOBJECT(B);
-  *ierr = SNESGetJacobian(*snes,A,B,ctx,0);
+  *ierr = SNESGetJacobian(*snes,A,B,0,ctx);
 }
 
 void PETSC_STDCALL matsnesmfsettype_(Mat *mat,CHAR ftype PETSC_MIXED_LEN(len),
@@ -438,11 +438,11 @@ void PETSC_STDCALL snesgetsolutionupdate_(SNES *snes,Vec *x,PetscErrorCode *ierr
 }
 
 /* the func argument is ignored */
-void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void **ctx,void *func,PetscErrorCode *ierr)
+void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void *func,void **ctx,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(ctx);
   CHKFORTRANNULLOBJECT(r);
-  *ierr = SNESGetFunction(*snes,r,ctx,PETSC_NULL);
+  *ierr = SNESGetFunction(*snes,r,PETSC_NULL,ctx);
 }
 
 void PETSC_STDCALL snesdestroy_(SNES *snes,PetscErrorCode *ierr)
@@ -554,7 +554,7 @@ void PETSC_STDCALL snesregisterdestroy_(PetscErrorCode *ierr)
 void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len),
                                 PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *tname;
+  const char *tname;
 
   *ierr = SNESGetType(*snes,&tname);
 #if defined(PETSC_USES_CPTOFCD)
@@ -571,7 +571,7 @@ void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len),
 void PETSC_STDCALL snesgetoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_LEN(len),
                                          PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *tname;
+  const char *tname;
 
   *ierr = SNESGetOptionsPrefix(*snes,&tname);
 #if defined(PETSC_USES_CPTOFCD)

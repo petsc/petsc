@@ -137,12 +137,12 @@ int main(int argc,char **args)
   /* 
      Make solution vector be 1 to random noise
   */
-  ierr = VecSet(&one,u);CHKERRQ(ierr);
+  ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&tmp);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
   ierr = VecSetRandom(rctx,tmp);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
-  ierr = VecAXPY(&scale,tmp,u);CHKERRQ(ierr);
+  ierr = VecAXPY(u,scale,tmp);CHKERRQ(ierr);
   ierr = VecDestroy(tmp);CHKERRQ(ierr);
 
   /*

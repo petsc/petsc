@@ -30,8 +30,8 @@ int main(int argc,char **argv)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,2,idx1,&is1);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,2,idx2,&is2);CHKERRQ(ierr);
 
-  ierr = VecSet(&one,x);CHKERRQ(ierr);
-  ierr = VecSet(&two,y);CHKERRQ(ierr);
+  ierr = VecSet(x,one);CHKERRQ(ierr);
+  ierr = VecSet(y,two);CHKERRQ(ierr);
   ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
   ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);

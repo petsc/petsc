@@ -108,7 +108,7 @@ PetscErrorCode MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     BSperm_dvec(xa,xworka,mbs->pA->perm);CHKERRBS(0);
     ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(mbs->xwork,&xworka);CHKERRQ(ierr);
-    ierr = VecPointwiseMult(mbs->diag,mbs->xwork,y);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(y,mbs->diag,mbs->xwork);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(x,y);CHKERRQ(ierr);
   }
@@ -126,7 +126,7 @@ PetscErrorCode MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 
   /* Apply diagonal scaling and unpermute, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
-    ierr = VecPointwiseMult(y,mbs->diag,mbs->xwork);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(mbs->xwork,y,mbs->diag);CHKERRQ(ierr);
     ierr = VecGetArray(y,&ya);CHKERRQ(ierr);
     ierr = VecGetArray(mbs->xwork,&xworka);CHKERRQ(ierr);
     BSiperm_dvec(xworka,ya,mbs->pA->perm);CHKERRBS(0);
@@ -161,7 +161,7 @@ PetscErrorCode MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     BSperm_dvec(xa,xworka,mbs->pA->perm);CHKERRBS(0);
     ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(mbs->xwork,&xworka);CHKERRQ(ierr);
-    ierr = VecPointwiseMult(mbs->diag,mbs->xwork,y);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(y,mbs->diag,mbs->xwork);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(x,y);CHKERRQ(ierr);
   }
@@ -210,7 +210,7 @@ PetscErrorCode MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 
   /* Apply diagonal scaling and unpermute, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
-    ierr = VecPointwiseMult(y,mbs->diag,mbs->xwork);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(mbs->xwork,y,mbs->diag);CHKERRQ(ierr);
     ierr = VecGetArray(y,&ya);CHKERRQ(ierr);
     ierr = VecGetArray(mbs->xwork,&xworka);CHKERRQ(ierr);
     BSiperm_dvec(xworka,ya,mbs->pA->perm);CHKERRBS(0);

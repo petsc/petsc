@@ -1352,7 +1352,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctioniTest1(DA da,void *w)
   }
   ierr = VecRestoreArray(fui,&ui);CHKERRQ(ierr);
 
-  ierr = VecAXPY(&mone,fu,fui);CHKERRQ(ierr);
+  ierr = VecAXPY(fui,mone,fu);CHKERRQ(ierr);
   ierr = VecNorm(fui,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(da->comm,"Norm of difference in vectors %g\n",norm);CHKERRQ(ierr);
   ierr = VecView(fu,0);CHKERRQ(ierr);

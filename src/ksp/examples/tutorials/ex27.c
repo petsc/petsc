@@ -77,7 +77,7 @@ int main(int argc,char **args)
       ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
       ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-      ierr = VecSet(&one,b);CHKERRQ(ierr);
+      ierr = VecSet(b,one);CHKERRQ(ierr);
     }
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
@@ -110,7 +110,7 @@ int main(int argc,char **args)
     ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
     ierr = VecCreateMPI(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&Ab);CHKERRQ(ierr);
-    ierr = VecSet(&zero,x);CHKERRQ(ierr);
+    ierr = VecSet(x,zero);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                       Setup solve for system
@@ -168,7 +168,7 @@ int main(int argc,char **args)
        Check error
     */
     ierr = MatMult(A,x,u);CHKERRQ(ierr);
-    ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
+    ierr = VecAXPY(u,none,b);CHKERRQ(ierr);
     ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);

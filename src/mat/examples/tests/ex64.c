@@ -52,7 +52,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(A);CHKERRQ(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_WORLD,12,&x);CHKERRQ(ierr);
-  ierr = VecSet(&one,x);CHKERRQ(ierr);
+  ierr = VecSet(x,one);CHKERRQ(ierr);
   ierr = VecView(x,fd);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
 

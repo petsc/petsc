@@ -153,7 +153,7 @@ int NV = grid->NV;
   MPI_Comm_rank(comm,&rank);    /* Get the index of this processor */
   srank = rank;
    /* set all values of x to the index of this processor */
-  ierr = VecSet(&srank,x);CHKERRQ(ierr);           
+  ierr = VecSet(x,srank);CHKERRQ(ierr);           
 
   /* w_local contains all vertices, including ghosted that this processor uses */
   ierr = VecScatterBegin(x,w_local,INSERT_VALUES,SCATTER_FORWARD,gtol);CHKERRQ(ierr);
@@ -163,10 +163,10 @@ int NV = grid->NV;
   ierr = VecGetArray(w_local,&procs);CHKERRQ(ierr);
   /* make an array the size x_local ( total number of vertices, including ghosted) ,
  this is for the elements on this processor */ 
-  ierr = VecSet(&zero,x_local);CHKERRQ(ierr);   
+  ierr = VecSet(x_local,zero);CHKERRQ(ierr);   
   ierr = VecGetArray(x_local,&sdnz);CHKERRQ(ierr);  
   /* make an array of appropriate size, for the  vertices off this processor */
-  ierr = VecSet(&zero,z_local);CHKERRQ(ierr); 
+  ierr = VecSet(z_local,zero);CHKERRQ(ierr); 
   ierr = VecGetArray(z_local,&sonz);CHKERRQ(ierr);
 
   /* 2) loop over local elements; count matrix nonzeros */
@@ -203,12 +203,12 @@ int NV = grid->NV;
   ierr = VecRestoreArray(w_local,&procs);CHKERRQ(ierr);
 
   /* copy the local values up into x. */
-  ierr = VecSet(&zero,x);CHKERRQ(ierr);
+  ierr = VecSet(x,zero);CHKERRQ(ierr);
   ierr = VecScatterBegin(x_local,x,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
   ierr = VecScatterEnd(x_local,x,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
   ierr = VecGetArray(x,&sdnz);CHKERRQ(ierr);
   /* copy the local values up into z. */
-  ierr = VecSet(&zero,z);CHKERRQ(ierr);
+  ierr = VecSet(z,zero);CHKERRQ(ierr);
   ierr = VecScatterBegin(z_local,z,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
   ierr = VecScatterEnd(z_local,z,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
   ierr = VecGetArray(z,&sonz);CHKERRQ(ierr);

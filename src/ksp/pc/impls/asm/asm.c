@@ -102,7 +102,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   IS             isl;
   KSP            ksp;
   PC             subpc;
-  char           *prefix,*pprefix;
+  const char     *prefix,*pprefix;
   Vec            vec;
 
   PetscFunctionBegin;
@@ -252,7 +252,7 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
     for (i=0; i<n_local_true; i++) {
-      ierr = VecSet(&zero,osm->x[i]);CHKERRQ(ierr);
+      ierr = VecSet(osm->x[i],zero);CHKERRQ(ierr);
     }
   }
   if (!(osm->type & PC_ASM_INTERPOLATE)) {
@@ -262,7 +262,7 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
   for (i=0; i<n_local; i++) {
     ierr = VecScatterBegin(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
   }
-  ierr = VecSet(&zero,y);CHKERRQ(ierr);
+  ierr = VecSet(y,zero);CHKERRQ(ierr);
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
@@ -302,7 +302,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
     for (i=0; i<n_local_true; i++) {
-      ierr = VecSet(&zero,osm->x[i]);CHKERRQ(ierr);
+      ierr = VecSet(osm->x[i],zero);CHKERRQ(ierr);
     }
   }
   if (!(osm->type & PC_ASM_RESTRICT)) {
@@ -312,7 +312,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   for (i=0; i<n_local; i++) {
     ierr = VecScatterBegin(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
   }
-  ierr = VecSet(&zero,y);CHKERRQ(ierr);
+  ierr = VecSet(y,zero);CHKERRQ(ierr);
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);

@@ -210,7 +210,7 @@ int main(int argc,char **args)
   ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);  
   ierr = MatGetDiagonal(sB,s2);CHKERRQ(ierr);
   
-  ierr = VecAXPY(&neg_one,s1,s2);CHKERRQ(ierr);
+  ierr = VecAXPY(s2,neg_one,s1);CHKERRQ(ierr);
   ierr = VecNorm(s2,NORM_1,&norm1);CHKERRQ(ierr);
   if ( norm1>tol) { 
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal(), ||s1-s2||=%g\n",norm1);CHKERRQ(ierr);
@@ -301,7 +301,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(sC);CHKERRQ(ierr);
       
     /* Check the error */
-    ierr = VecAXPY(&neg_one,x,y);CHKERRQ(ierr);
+    ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
     /* printf("lf: %d, error: %g\n", lf,norm2); */
     if (10*norm1 < norm2 && lf-inc != -1){

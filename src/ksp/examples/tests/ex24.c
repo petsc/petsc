@@ -101,10 +101,10 @@ int main(int argc,char **args)
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /* Check error */
     ierr = VecCopy(u,u_tmp);CHKERRQ(ierr); 
-    ierr = VecAXPY(&none,x,u_tmp);CHKERRQ(ierr);
+    ierr = VecAXPY(u_tmp,none,x);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&err_norm);CHKERRQ(ierr);
     ierr = MatMult(C,x,u_tmp);CHKERRQ(ierr);  
-    ierr = VecAXPY(&none,b,u_tmp);CHKERRQ(ierr);
+    ierr = VecAXPY(u_tmp,none,b);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
   
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);

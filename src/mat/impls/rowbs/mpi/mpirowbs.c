@@ -1191,7 +1191,7 @@ PetscErrorCode MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
     BSperm_dvec(xxa,xworka,bsif->pA->perm);CHKERRBS(0);
     ierr = VecRestoreArray(bsif->xwork,&xworka);CHKERRQ(ierr);
     ierr = VecRestoreArray(xx,&xxa);CHKERRQ(ierr);
-    ierr = VecPointwiseDivide(bsif->xwork,bsif->diag,xx);CHKERRQ(ierr);
+    ierr = VecPointwiseDivide(xx,bsif->xwork,bsif->diag);CHKERRQ(ierr);
   } 
 
   ierr = VecGetArray(xx,&xxa);CHKERRQ(ierr);
@@ -1222,7 +1222,7 @@ PetscErrorCode MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
     BSiperm_dvec(xworka,xxa,bsif->pA->perm);CHKERRBS(0);
     ierr = VecRestoreArray(bsif->xwork,&xworka);CHKERRQ(ierr);
     ierr = VecRestoreArray(xx,&xxa);CHKERRQ(ierr);
-    ierr = VecPointwiseDivide(yy,bsif->diag,bsif->xwork);CHKERRQ(ierr);
+    ierr = VecPointwiseDivide(bsif->xwork,yy,bsif->diag);CHKERRQ(ierr);
     ierr = VecGetArray(bsif->xwork,&xworka);CHKERRQ(ierr);
     ierr = VecGetArray(yy,&yya);CHKERRQ(ierr);
     BSiperm_dvec(xworka,yya,bsif->pA->perm);CHKERRBS(0);
@@ -1243,7 +1243,7 @@ PetscErrorCode MatMultAdd_MPIRowbs(Mat mat,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = (*mat->ops->mult)(mat,xx,zz);CHKERRQ(ierr);
-  ierr = VecAXPY(&one,yy,zz);CHKERRQ(ierr);
+  ierr = VecAXPY(zz,one,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1305,7 +1305,7 @@ PetscErrorCode MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
     ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat);CHKERRQ(ierr);
   }
 
-  ierr = VecSet(&zero,v);CHKERRQ(ierr);
+  ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != mat->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
   ierr = VecGetArray(v,&x);CHKERRQ(ierr); 

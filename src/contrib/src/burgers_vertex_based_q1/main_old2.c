@@ -115,7 +115,7 @@ int AppCtxSolve(AppCtx* appctx)
  
  /* Instead call FormInitialGuess  */
   x = algebra->x;
-  ierr = VecSet(&onep2,x ); CHKERRQ(ierr);
+  ierr = VecSet(x,onep2); CHKERRQ(ierr);
 
   printf("about to call the solver\n");
 
@@ -152,12 +152,12 @@ int FormFunction(SNES snes, Vec x, Vec f, void *dappctx)
   Vec  b = algebra->b;
 
   /* need to zero f */
-  ierr = VecSet(&zero, f); CHKERRQ(ierr); /* don't need to assemble for VecSet */
+  ierr = VecSet(f,zero); CHKERRQ(ierr); /* don't need to assemble for VecSet */
   printf("(zeros) about to view the vector f\n");
   ierr = VecView(f, VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
  
   /* add rhs to get constant part */
-  ierr = VecAXPY(&mone, b, f); CHKERRQ(ierr); /* this says f = f - 1*b */
+  ierr = VecAXPY(f,mone,b); CHKERRQ(ierr); /* this says f = f - 1*b */
   printf("(plus b)about to view the vector f\n");
   ierr = VecView(f, VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
 
@@ -690,7 +690,7 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   srank = rank;
 
   /* set all values of x to the index of this processor */
-  ierr = VecSet(&srank,x);CHKERRQ(ierr);            
+  ierr = VecSet(x,srank);CHKERRQ(ierr);            
 
   /* w_local contains all vertices, including ghosted that this processor uses */
   ierr = VecScatterBegin(x,w_local,INSERT_VALUES,SCATTER_FORWARD,gtol);CHKERRQ(ierr);
@@ -699,10 +699,10 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   /* copy w_local into the array procs */
   ierr = VecGetArray(w_local,&procs);CHKERRQ(ierr);
   /* make an array the size x_local ( total number of vertices, including ghosted) , fill with zeros */ 
- ierr = VecSet(&zero,x_local);CHKERRQ(ierr);   
+ ierr = VecSet(x_local,zero);CHKERRQ(ierr);   
   ierr = VecGetArray(x_local,&sdnz);CHKERRQ(ierr);  
   /* make an array of appropriate size, for the off-diagonals whic corresponds to vertices off this processor */
-  ierr = VecSet(&zero,z_local);CHKERRQ(ierr); 
+  ierr = VecSet(z_local,zero);CHKERRQ(ierr); 
   ierr = VecGetArray(z_local,&sonz);CHKERRQ(ierr);
 
   /* 2) loop over local elements; count matrix nonzeros */
@@ -747,12 +747,12 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   ierr = VecRestoreArray(z_local,&sonz);CHKERRQ(ierr);
   ierr = VecRestoreArray(w_local,&procs);CHKERRQ(ierr);
 
-  ierr = VecSet(&zero,x);CHKERRQ(ierr);
+  ierr = VecSet(x,zero);CHKERRQ(ierr);
   ierr = VecScatterBegin(x_local,x,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
   ierr = VecScatterEnd(x_local,x,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
   ierr = VecGetArray(x,&sdnz);CHKERRQ(ierr);
 
-  ierr = VecSet(&zero,z);CHKERRQ(ierr);
+  ierr = VecSet(z,zero);CHKERRQ(ierr);
   ierr = VecScatterBegin(z_local,z,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
   ierr = VecScatterEnd(z_local,z,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
   ierr = VecGetArray(z,&sonz);CHKERRQ(ierr);

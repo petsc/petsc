@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-  ierr = VecSet(&mone,y);CHKERRQ(ierr);
+  ierr = VecSet(y,mone);CHKERRQ(ierr);
 
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

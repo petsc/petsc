@@ -154,11 +154,11 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 
   /* Evaluate function at F(u + ha) */
   hs = h;
-  ierr = VecWAXPY(&hs,a,U,w);CHKERRQ(ierr);
+  ierr = VecWAXPY(w,hs,a,U);CHKERRQ(ierr);
   ierr = eval_fct(snes,w,y);CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,F,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,mone,F);CHKERRQ(ierr);
   hs = 1.0/hs;
-  ierr = VecScale(&hs,y);CHKERRQ(ierr);
+  ierr = VecScale(y,hs);CHKERRQ(ierr);
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
   ierr = PetscLogEventEnd(MATSNESMF_Mult,a,y,0,0);CHKERRQ(ierr);

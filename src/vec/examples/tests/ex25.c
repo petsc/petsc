@@ -41,7 +41,7 @@ int main(int argc,char **argv)
     ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is2);CHKERRQ(ierr);
   }
 
-  ierr = VecSet(&zero,x);CHKERRQ(ierr);
+  ierr = VecSet(x,zero);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(y,&low,&high);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     iglobal = i + low; value = (PetscScalar) (i + 10*rank);

@@ -165,7 +165,7 @@
 !  this vector to zero by calling VecSet().
 
       pfive = 0.5
-      call VecSet(pfive,x,ierr)
+      call VecSet(x,pfive,ierr)
       call SNESSolve(snes,x,ierr)
       call SNESGetIterationNumber(snes,its,ierr);
       if (rank .eq. 0) then
@@ -331,7 +331,7 @@
       mone = -1.0d0
       flag = 0
       call VecNorm(y,NORM_2,ynorm,ierr)
-      call VecAYPX(mone,x,y,ierr)
+      call VecAYPX(y,mone,x,ierr)
       call SNESComputeFunction(snes,y,g,ierr)
       call VecNorm(g,NORM_2,gnorm,ierr)
       return 

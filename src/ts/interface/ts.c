@@ -1796,7 +1796,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSAppendOptionsPrefix(TS ts,const char prefix[]
 
 .seealso: TSAppendOptionsPrefix()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetOptionsPrefix(TS ts,char *prefix[])
+PetscErrorCode PETSCTS_DLLEXPORT TSGetOptionsPrefix(TS ts,const char *prefix[])
 {
   PetscErrorCode ierr;
 

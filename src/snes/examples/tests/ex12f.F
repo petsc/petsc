@@ -219,7 +219,7 @@
       PetscScalar      five 
 
       five = 5.d-1
-      call VecSet(five,x,ierr)
+      call VecSet(x,five,ierr)
       return
       end
 

@@ -42,7 +42,7 @@ int main(int argc,char **args)
   /* Check accuracy of the data */ 
   /*
   ierr = MatMult(C,u,u_tmp);CHKERRQ(ierr);
-  ierr = VecAXPY(&none,b,u_tmp);CHKERRQ(ierr);
+  ierr = VecAXPY(u_tmp,none,b);CHKERRQ(ierr);
   ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Accuracy of the loading data: | b - A*u |_2 : %A \n",res_norm);CHKERRQ(ierr); 
   */
@@ -87,10 +87,10 @@ int main(int argc,char **args)
    
   /* Check error */
     ierr = VecCopy(u,u_tmp);CHKERRQ(ierr); 
-    ierr = VecAXPY(&none,x,u_tmp);CHKERRQ(ierr);
+    ierr = VecAXPY(u_tmp,none,x);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&err_norm);CHKERRQ(ierr);
     ierr = MatMult(C,x,u_tmp);CHKERRQ(ierr);  
-    ierr = VecAXPY(&none,b,u_tmp);CHKERRQ(ierr);
+    ierr = VecAXPY(u_tmp,none,b);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
   
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);

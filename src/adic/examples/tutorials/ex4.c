@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&z); CHKERRA(ierr);
   ierr = VecDuplicate(z,&Az); CHKERRA(ierr);
 
-  ierr = VecSet(&one,x); CHKERRA(ierr);
+  ierr = VecSet(x,one); CHKERRA(ierr);
   indices[0] = 0; indices[1] = 1; indices[2] = 2;
   values[0] = 1.5; values[1] = 23.9; values[2] = 1.5;
   ierr = VecSetValues(x,3,indices,values,ADD_VALUES);

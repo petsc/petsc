@@ -75,7 +75,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   /* Compute initial residual, temporarily use work vector u */
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,U);CHKERRQ(ierr);       /*   u <- b - Ax     */
-    ierr = VecAYPX(&mone,B,U);CHKERRQ(ierr);
+    ierr = VecAYPX(U,mone,B);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(B,U);CHKERRQ(ierr);            /*   u <- b (x is 0) */
   }
@@ -93,13 +93,13 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
   ierr = VecCopy(B,U);CHKERRQ(ierr);
   ierr = VecNorm(U,NORM_2,&beta);CHKERRQ(ierr);
-  tmp = 1.0/beta; ierr = VecScale(&tmp,U);CHKERRQ(ierr);
+  tmp = 1.0/beta; ierr = VecScale(U,tmp);CHKERRQ(ierr);
   ierr = KSP_MatMultTranspose(ksp,Amat,U,V);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
-  tmp = 1.0/alpha; ierr = VecScale(&tmp,V);CHKERRQ(ierr);
+  tmp = 1.0/alpha; ierr = VecScale(V,tmp);CHKERRQ(ierr);
 
   ierr = VecCopy(V,W);CHKERRQ(ierr);
-  ierr = VecSet(&zero,X);CHKERRQ(ierr);
+  ierr = VecSet(X,zero);CHKERRQ(ierr);
 
   phibar = beta;
   rhobar = alpha;
@@ -107,14 +107,14 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   do {
 
     ierr = KSP_MatMult(ksp,Amat,V,U1);CHKERRQ(ierr);
-    tmp  = -alpha; ierr = VecAXPY(&tmp,U,U1);CHKERRQ(ierr);
+    tmp  = -alpha; ierr = VecAXPY(U1,tmp,U);CHKERRQ(ierr);
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
-    tmp  = 1.0/beta; ierr = VecScale(&tmp,U1);CHKERRQ(ierr);
+    tmp  = 1.0/beta; ierr = VecScale(U1,tmp);CHKERRQ(ierr);
 
     ierr = KSP_MatMultTranspose(ksp,Amat,U1,V1);CHKERRQ(ierr);
-    tmp  = -beta; ierr = VecAXPY(&tmp,V,V1);CHKERRQ(ierr);
+    tmp  = -beta; ierr = VecAXPY(V1,tmp,V);CHKERRQ(ierr);
     ierr = VecNorm(V1,NORM_2,&alpha);CHKERRQ(ierr);
-    tmp  = 1.0 / alpha; ierr = VecScale(&tmp,V1);CHKERRQ(ierr);
+    tmp  = 1.0 / alpha; ierr = VecScale(V1,tmp);CHKERRQ(ierr);
 
     rho    = PetscSqrtScalar(rhobar*rhobar + beta*beta);
     c      = rhobar / rho;
@@ -125,9 +125,9 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     phibar = s * phibar;
 
     tmp  = phi/rho; 
-    ierr = VecAXPY(&tmp,W,X);CHKERRQ(ierr);  /*    x <- x + (phi/rho) w   */
+    ierr = VecAXPY(X,tmp,W);CHKERRQ(ierr);  /*    x <- x + (phi/rho) w   */
     tmp  = -theta/rho; 
-    ierr = VecAYPX(&tmp,V1,W);CHKERRQ(ierr); /*    w <- v - (theta/rho) w */
+    ierr = VecAYPX(W,tmp,V1);CHKERRQ(ierr); /*    w <- v - (theta/rho) w */
 
     rnorm = PetscRealPart(phibar);
 

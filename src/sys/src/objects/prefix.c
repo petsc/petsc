@@ -92,7 +92,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectAppendOptionsPrefix(PetscObject obj,co
    Concepts: prefix^getting
 
 */
-PetscErrorCode PETSC_DLLEXPORT PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
+PetscErrorCode PETSC_DLLEXPORT PetscObjectGetOptionsPrefix(PetscObject obj,const char *prefix[])
 {
   PetscFunctionBegin;
   *prefix = obj->prefix;

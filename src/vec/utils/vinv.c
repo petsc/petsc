@@ -1130,19 +1130,18 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSum(Vec v,PetscScalar *sum)
    Concepts: vector^adding constant
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecShift(const PetscScalar *shift,Vec v)
+PetscErrorCode PETSCVEC_DLLEXPORT VecShift(Vec v,PetscScalar shift)
 {
   PetscErrorCode ierr;
-  PetscInt         i,n;
-  PetscScalar *x,lsum = *shift;
+  PetscInt i,n;
+  PetscScalar *x;
 
   PetscFunctionBegin;
-  PetscValidScalarPointer(shift,1);
-  PetscValidHeaderSpecific(v,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr); 
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    x[i] += lsum;
+    x[i] += shift;
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -38,7 +38,7 @@ static PetscErrorCode TSStep_Euler(TS ts,PetscInt *steps,PetscReal *ptime)
   for (i=0; i<max_steps; i++) {
     ts->ptime += ts->time_step;
     ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update);CHKERRQ(ierr);
-    ierr = VecAXPY(&dt,update,sol);CHKERRQ(ierr);
+    ierr = VecAXPY(sol,dt,update);CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
     if (ts->ptime > ts->max_time) break;

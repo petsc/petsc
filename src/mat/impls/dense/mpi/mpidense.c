@@ -446,7 +446,7 @@ PetscErrorCode MatMultTranspose_MPIDense(Mat A,Vec xx,Vec yy)
   PetscScalar  zero = 0.0;
 
   PetscFunctionBegin;
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = MatMultTranspose_SeqDense(a->A,xx,a->lvec);CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
@@ -479,7 +479,7 @@ PetscErrorCode MatGetDiagonal_MPIDense(Mat A,Vec v)
   PetscScalar  *x,zero = 0.0;
   
   PetscFunctionBegin;
-  ierr = VecSet(&zero,v);CHKERRQ(ierr);
+  ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetSize(v,&n);CHKERRQ(ierr);
   if (n != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");

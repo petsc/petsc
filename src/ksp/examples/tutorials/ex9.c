@@ -397,7 +397,7 @@ PetscErrorCode CheckError(Vec u,Vec x,Vec b,PetscInt its,PetscEvent CHECK_ERROR)
      Compute error of the solution, using b as a work vector.
   */
   ierr = VecCopy(x,b);CHKERRQ(ierr);
-  ierr = VecAXPY(&none,u,b);CHKERRQ(ierr);
+  ierr = VecAXPY(b,none,u);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);

@@ -123,7 +123,7 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
        the difference table */
     for (k=0; k<nf; k++) {
       alpha = h * ( k+1 - (nf+1)/2 );
-      ierr = VecWAXPY(&alpha,p,x,xp);CHKERRQ(ierr);
+      ierr = VecWAXPY(xp,alpha,p,x);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes,xp,fvec);CHKERRQ(ierr);
       neP->function_count++;
       ierr = VecDot(fvec,w,&fval[k]);CHKERRQ(ierr);
@@ -288,7 +288,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
     }
 
     /* Compute relative error */
-    ierr = VecAXPY(&alpha,yy1,yy2);CHKERRQ(ierr);
+    ierr = VecAXPY(yy2,alpha,yy1);CHKERRQ(ierr);
     ierr = VecNorm(yy2,NORM_2,&enorm);CHKERRQ(ierr);
     enorm = enorm/yy1n;
     ierr = PetscFPrintf(comm,stdout,"h = %g: relative error = %g\n",h,enorm);CHKERRQ(ierr);

@@ -83,11 +83,11 @@ _ VecDuplicateVecs(x,3,&z);___
   /*
      Set the vectors to entries to a constant value.
   */
-_ VecSet(&one,x);___
-_ VecSet(&two,y);___
-_ VecSet(&one,z[0]);___
-_ VecSet(&two,z[1]);___
-_ VecSet(&three,z[2]);___
+_ VecSet(x,one);___
+_ VecSet(y,two);___
+_ VecSet(z[0],one);___
+_ VecSet(z[1],two);___
+_ VecSet(z[2],three);___
 
   /*
      Demonstrate various basic vector routines.
@@ -112,7 +112,7 @@ _ PetscPrintf(PETSC_COMM_WORLD,"Vector length %D %D %D\n",(PetscInt)dots[0],
 
 _ PetscPrintf(PETSC_COMM_WORLD,"All other values should be near zero\n");___
 
-_ VecScale(&two,x);___
+_ VecScale(x,two);___
 _ VecNorm(x,NORM_2,&norm);___
   v = norm-2.0*sqrt((PetscReal) n); if (v > -PETSC_EPS && v < PETSC_EPS) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecScale %g\n",v);___
@@ -122,12 +122,12 @@ _ VecNorm(w,NORM_2,&norm);___
   v = norm-2.0*sqrt((PetscReal) n); if (v > -PETSC_EPS && v < PETSC_EPS) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecCopy  %g\n",v);___
 
-_ VecAXPY(&three,x,y);___
+_ VecAXPY(y,three,x);___
 _ VecNorm(y,NORM_2,&norm);___
   v = norm-8.0*sqrt((PetscReal) n); if (v > -PETSC_EPS && v < PETSC_EPS) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);___
 
-_ VecAYPX(&two,x,y);___
+_ VecAYPX(y,&two,x);___
 _ VecNorm(y,NORM_2,&norm);___
   v = norm-18.0*sqrt((PetscReal) n); if (v > -PETSC_EPS && v < PETSC_EPS) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecAYPX %g\n",v);___
@@ -140,17 +140,17 @@ _ VecNorm(x,NORM_2,&norm);___
   v = norm-18.0*sqrt((PetscReal) n); if (v > -PETSC_EPS && v < PETSC_EPS) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);___
 
-_ VecWAXPY(&two,x,y,w);___
+_ VecWAXPY(w,two,x,y);___
 _ VecNorm(w,NORM_2,&norm);___
   v = norm-38.0*sqrt((PetscReal) n); if (v > -PETSC_EPS && v < PETSC_EPS) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecWAXPY %g\n",v);___
 
-_ VecPointwiseMult(y,x,w);___
+_ VecPointwiseMult(w,y,x);___
 _ VecNorm(w,NORM_2,&norm);___ 
   v = norm-36.0*sqrt((PetscReal) n); if (v > -PETSC_EPS && v < PETSC_EPS) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseMult %g\n",v);___
 
-_ VecPointwiseDivide(x,y,w);___
+_ VecPointwiseDivide(w,x,y);___
 _ VecNorm(w,NORM_2,&norm);___
   v = norm-9.0*sqrt((PetscReal) n); if (v > -PETSC_EPS && v < PETSC_EPS) v = 0.0; 
 _ PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %g\n",v);___
@@ -158,8 +158,8 @@ _ PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %g\n",v);___
   dots[0] = one;
   dots[1] = three;
   dots[2] = two;
-_ VecSet(&one,x);___
-_ VecMAXPY(3,dots,x,z);___
+_ VecSet(x,one);___
+_ VecMAXPY(x,3,dots,z);___
 _ VecNorm(z[0],NORM_2,&norm);___
   v = norm-sqrt((PetscReal) n); if (v > -PETSC_EPS && v < PETSC_EPS) v = 0.0; 
 _ VecNorm(z[1],NORM_2,&norm);___

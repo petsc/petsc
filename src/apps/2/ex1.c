@@ -175,13 +175,13 @@ int AppCtxSetMatrix(AppCtx* appctx)
   
   /* 1) make proc[] contain the processor number of each ghosted vertex */
   srank = rank;
-  ierr = VecSet(&srank,x);CHKERRQ(ierr);
+  ierr = VecSet(x,srank);CHKERRQ(ierr);
   ierr = VecScatterBegin(x,w_local,INSERT_VALUES,SCATTER_FORWARD,gtol);CHKERRQ(ierr);
   ierr = VecScatterEnd(x,w_local,INSERT_VALUES,SCATTER_FORWARD,gtol);CHKERRQ(ierr);
   ierr = VecGetArray(w_local,&procs);CHKERRQ(ierr);
-  ierr = VecSet(&zero,x_local);CHKERRQ(ierr);
+  ierr = VecSet(x_local,zero);CHKERRQ(ierr);
   ierr = VecGetArray(x_local,&sdnz);CHKERRQ(ierr);
-  ierr = VecSet(&zero,z_local);CHKERRQ(ierr);
+  ierr = VecSet(z_local,zero);CHKERRQ(ierr);
   ierr = VecGetArray(z_local,&sonz);CHKERRQ(ierr);
 
   /* 2) loop over local elements; count matrix nonzeros */
@@ -269,11 +269,11 @@ int AppCtxSetMatrix(AppCtx* appctx)
   ierr = VecRestoreArray(x_local,&sdnz);CHKERRQ(ierr);
   ierr = VecRestoreArray(z_local,&sonz);CHKERRQ(ierr);
   ierr = VecRestoreArray(w_local,&procs);CHKERRQ(ierr);
-  ierr = VecSet(&zero,x);CHKERRQ(ierr);
+  ierr = VecSet(x,zero);CHKERRQ(ierr);
   ierr = VecScatterBegin(x_local,x,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
   ierr = VecScatterEnd(x_local,x,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
   ierr = VecGetArray(x,&sdnz);CHKERRQ(ierr);
-  ierr = VecSet(&zero,z);CHKERRQ(ierr);
+  ierr = VecSet(z,zero);CHKERRQ(ierr);
   ierr = VecScatterBegin(z_local,z,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
   ierr = VecScatterEnd(z_local,z,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
   ierr = VecGetArray(z,&sonz);CHKERRQ(ierr);

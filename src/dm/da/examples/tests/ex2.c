@@ -38,14 +38,14 @@ int main(int argc,char **argv)
 
   /* Set global vector; send ghost points to local vectors */
   value = 1;
-  ierr = VecSet(&value,global);CHKERRQ(ierr);
+  ierr = VecSet(global,value);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
   /* Scale local vectors according to processor rank; pass to global vector */
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   value = rank+1;
-  ierr = VecScale(&value,local);CHKERRQ(ierr);
+  ierr = VecScale(local,value);CHKERRQ(ierr);
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
 
   ierr = VecView(global,viewer);CHKERRQ(ierr); 

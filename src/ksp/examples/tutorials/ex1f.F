@@ -141,7 +141,7 @@
 
 !  Set exact solution; then compute right-hand-side vector.
 
-      call VecSet(one,u,ierr)
+      call VecSet(u,one,ierr)
       call MatMult(A,u,b,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -195,7 +195,7 @@
 
 !  Check the error
 
-      call VecAXPY(none,u,x,ierr)
+      call VecAXPY(x,none,u,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
       if (norm .gt. 1.e-12) then

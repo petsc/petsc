@@ -310,7 +310,7 @@ PetscErrorCode SetBoundaryConditions(AppCtx *appctx)
   ierr = VecSetValuesLocal(algebra->b,grid->boundary_n,vertex_ptr,grid->boundary_values,INSERT_VALUES);CHKERRQ(ierr);
 
   /* set initial guess satisfying boundary conditions */
-  ierr = VecSet(&zero,algebra->x);CHKERRQ(ierr);
+  ierr = VecSet(algebra->x,zero);CHKERRQ(ierr);
   ierr = VecSetValuesLocal(algebra->x,grid->boundary_n,vertex_ptr,grid->boundary_values,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(algebra->x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(algebra->x);CHKERRQ(ierr);

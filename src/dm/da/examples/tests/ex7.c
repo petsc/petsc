@@ -53,8 +53,8 @@ int main(int argc,char **argv)
   
   /* zero out vectors so that ghostpoints are zero */
   value = 0;
-  ierr = VecSet(&value,local);CHKERRQ(ierr);
-  ierr = VecSet(&value,local_copy);CHKERRQ(ierr);
+  ierr = VecSet(local,value);CHKERRQ(ierr);
+  ierr = VecSet(local_copy,value);CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
@@ -83,7 +83,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
 
-  ierr = VecAXPY(&mone,local,local_copy);CHKERRQ(ierr);
+  ierr = VecAXPY(local_copy,mone,local);CHKERRQ(ierr);
   ierr = VecNorm(local_copy,NORM_MAX,&work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&work,&norm,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);CHKERRQ(ierr);

@@ -128,13 +128,13 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
 
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);     /*  r = b - Ax     */
-    ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
+    ierr = VecAYPX(r,mone,b);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(b,r);CHKERRQ(ierr);
   }
                   
   ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + x */
-  ierr = VecAYPX(&scale,x,p[k]);CHKERRQ(ierr);
+  ierr = VecAYPX(p[k],scale,x);CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -144,7 +144,7 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
     omega = omegaprod*c[k]/c[kp1];
 
     ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);                 /*  r = b - Ap[k]    */
-    ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);                       
+    ierr = VecAYPX(r,mone,b);CHKERRQ(ierr);                       
     ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}z  */
 
     /* calculate residual norm if requested */
@@ -163,9 +163,9 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
 
     /* y^{k+1} = omega(y^{k} - y^{k-1} + Gamma*r^{k}) + y^{k-1} */
     tmp  = omega*Gamma*scale;
-    ierr = VecScale(&tmp,p[kp1]);CHKERRQ(ierr);
-    tmp  = 1.0-omega; VecAXPY(&tmp,p[km1],p[kp1]);
-    ierr = VecAXPY(&omega,p[k],p[kp1]);CHKERRQ(ierr);
+    ierr = VecScale(p[kp1],tmp);CHKERRQ(ierr);
+    tmp  = 1.0-omega; VecAXPY(p[kp1],tmp,p[km1]);
+    ierr = VecAXPY(p[kp1],omega,p[k]);CHKERRQ(ierr);
 
     ktmp = km1;
     km1  = k;
@@ -175,7 +175,7 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
   if (!ksp->reason && ksp->normtype != KSP_NO_NORM) {
     ksp->reason = KSP_DIVERGED_ITS;
     ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);       /*  r = b - Ap[k]    */
-    ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
+    ierr = VecAYPX(r,mone,b);CHKERRQ(ierr);
     if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
     else {
       ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}z */

@@ -66,7 +66,7 @@
 !
 !     Set the vectors to entries to a constant value.
 !
-      call VecSet(one,x,ierr) 
+      call VecSet(x,one,ierr) 
 
       call VecNorm(x,NORM_2,norm,ierr) 
       if (rank .eq. 0) then

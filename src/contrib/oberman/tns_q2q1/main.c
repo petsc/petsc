@@ -150,9 +150,9 @@ int FormStationaryFunction(SNES snes, Vec x, Vec f, void *dappctx)
 
 /****** Perform computation ***********/
   /* need to zero f */
-  ierr = VecSet(&zero, f); CHKERRQ(ierr); 
+  ierr = VecSet(f,zero); CHKERRQ(ierr); 
   /* add rhs to get constant part */
-  ierr = VecAXPY(&mone, algebra->b, f); CHKERRQ(ierr); /* this says f = f - 1*b */
+  ierr = VecAXPY(f,mone,algebra->b); CHKERRQ(ierr); /* this says f = f - 1*b */
 
   if (appctx->view.show_vector ){  printf("f-rhs\n"); VecView(f, VIEWER_STDOUT_SELF);}
 
@@ -163,11 +163,11 @@ int FormStationaryFunction(SNES snes, Vec x, Vec f, void *dappctx)
 
  /* create nonlinear part */
 if( !appctx->equations.stokes_flag ){
-  ierr = VecSet(&zero, algebra->conv); CHKERRQ(ierr); 
+  ierr = VecSet(algebra->conv,zero); CHKERRQ(ierr); 
   ierr = SetNonlinearFunction(x, appctx, algebra->conv);CHKERRQ(ierr);
   if (appctx->view.show_vector ){ printf("put nonlinear part in conv\n"); VecView(algebra->conv, VIEWER_STDOUT_SELF);} 
   /* add the real convected term */
-    ierr = VecAXPY(&one, algebra->conv, f); CHKERRQ(ierr); 
+    ierr = VecAXPY(f,one,algebra->conv); CHKERRQ(ierr); 
 }
 
   /* apply boundary conditions */
@@ -209,18 +209,18 @@ int FormDynamicFunction(SNES snes, Vec x, Vec f, void *dappctx)
      3 add to velocity computed input - xold
    */
 /* need to zero f */
-  ierr = VecSet(&zero, f); CHKERRQ(ierr); 
+  ierr = VecSet(f,zero); CHKERRQ(ierr); 
 
   /*apply matrix to the input vector x, to get linear part */
   ierr = MatMultAdd(algebra->A, x, f, f); CHKERRQ(ierr);  /* f = A*x + f */
 
   /* add rhs to get constant part */
-  ierr = VecAXPY(&mone, algebra->b, f); CHKERRQ(ierr); /* this says f = f - 1*b */
+  ierr = VecAXPY(f,mone,algebra->b); CHKERRQ(ierr); /* this says f = f - 1*b */
 
  /*  nonlinear part */
 /* create nonlinear part */
 if( !appctx->equations.stokes_flag ){
-  ierr = VecSet(&zero, algebra->conv); CHKERRQ(ierr); 
+  ierr = VecSet(algebra->conv,zero); CHKERRQ(ierr); 
   ierr = SetNonlinearFunction(x, appctx, algebra->conv);CHKERRQ(ierr);
   if (appctx->view.show_vector ){ printf("put nonlinear part in conv\n"); VecView(algebra->conv, VIEWER_STDOUT_SELF);}
 }
@@ -228,13 +228,13 @@ if( !appctx->equations.stokes_flag ){
 /* in explicit convection, do Adams-Bashford on the old convection vector, add add to rhs, then compute the convection vector and increment the old guys */
 if(appctx->equations.convection_flag){
   /* current convection term = 3/2conv(1 time-step ago) - 1/2conv(2 time steps) */
-   ierr = VecAXPY(&onep5, algebra->convl, f); CHKERRQ(ierr); 
-   ierr = VecAXPY(&mhalf, algebra->convll, f); CHKERRQ(ierr); 
+   ierr = VecAXPY(f,onep5,algebra->convl); CHKERRQ(ierr); 
+   ierr = VecAXPY(f,mhalf,algebra->convll); CHKERRQ(ierr); 
 }
 else
   { 
     /* add the real convected term */
-    ierr = VecAXPY(&one, algebra->conv, f); CHKERRQ(ierr); 
+    ierr = VecAXPY(f,one,algebra->conv); CHKERRQ(ierr); 
   }  
 
   /* view mass matrix */
@@ -249,7 +249,7 @@ else
   /* set dtvec */  
   alpha = 1.0/equations->dt;  malpha = -alpha;
   ierr = VecCopy(x, algebra->dtvec);CHKERRQ(ierr); /* dtvec = x */
-  ierr = VecAXPBY(&malpha, &alpha, algebra->g, algebra->dtvec); /* dtvec = (x-g)/dt */
+  ierr = VecAXPBY(algebra->dtvec, malpha, alpha, algebra->g); /* dtvec = (x-g)/dt */
 
   /* apply mass matrix to dt and add to f */
   ierr = MatMultAdd(algebra->M, algebra->dtvec, f, f); CHKERRQ(ierr);  /* f = A*x + f */
@@ -417,14 +417,14 @@ ierr = VecView(algebra->soln, 0);
   ierr = VecView(algebra->v1, 0);
 
   /* now compute a bunch of partials */
-  ierr = VecSet(&mone, algebra->v1a); CHKERRQ(ierr);
+  ierr = VecSet(algebra->v1a,mone); CHKERRQ(ierr);
   ierr = SetPartialDx(algebra->v1, algebra->v1a); CHKERRQ(ierr);
   ierr = SetPartialDy(algebra->v1, algebra->v1b); CHKERRQ(ierr);
   ierr = SetPartialDx(algebra->v2, algebra->v2a); CHKERRQ(ierr);
   ierr = SetPartialDy(algebra->v2, algebra->v2b); CHKERRQ(ierr);
  
   /* now do the vector arithmetic */
-  ierr = VecAXPY(&mone , algebra->v1a, algebra->v2b);CHKERRQ(ierr);
+  ierr = VecAXPY(algebra->v2b,mone,algebra->v1a);CHKERRQ(ierr);
  
   /* now output the solution */
 ierr = VecView(algebra->v2b, 0);
@@ -536,7 +536,7 @@ int ExplicitConvectionSolve(AppCtx* appctx, SNES snes)
   double ddt;
   /* zero the old convections vectors */
     ierr = VecCopy(algebra->conv, algebra->convl); CHKERRQ(ierr); 
-    ierr = VecSet(&dzero, algebra->convll); CHKERRQ(ierr); 
+    ierr = VecSet(algebra->convll,dzero); CHKERRQ(ierr); 
  
     ierr = SNESSetFunction(snes,algebra->f,FormDynamicFunction,(void *)appctx); CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,algebra->J,algebra->J,FormDynamicJacobian,(void *)appctx);CHKERRQ(ierr);

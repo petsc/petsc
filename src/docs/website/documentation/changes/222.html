@@ -87,7 +87,26 @@ in PETSc 2.2.2 </font></p>
 
       <p><u><b>Vec:</b></u></p>
         <ul> 
-        <li>Faster generation of VecScatter for many processes when indices are mostly sorted</li>
+          <li>Faster generation of VecScatter for many processes when indices are mostly sorted</li>
+          <li>Changed BLAS-type interfaces to PETSc-style:
+          <ul>
+            <li>VecShift</li>
+            <li>VecScale</li>
+            <li>VecSet</li>
+            <li>VecAXPY</li>
+            <li>VecAXPBY</li>
+            <li>VecAYPX</li>
+            <li>VecMAXPY</li>
+            <li>VecWAXPY</li>
+          </ul></li>
+          <li>Changed order of arguments in pointwise routines:
+          <ul>
+            <li>VecPointwiseMult</li>
+            <li>VecPointwiseMax</li>
+            <li>VecPointwiseMin</li>
+            <li>VecPointwiseMaxAbs</li>
+            <li>VecPointwiseDivide</li>
+          </ul></li>
         </ul>
       </p>
 
@@ -135,6 +154,12 @@ in PETSc 2.2.2 </font></p>
          <li> Changed the name and calling sequence for SNESSetLineSearchCheck() to SNESLineSearchSetPostCheck() and
               added a SNESLineSearchSetPreCheck()</li>
          <li> Changed the names of all SNESxxxxLineSearchyyyy() to SNESLineSearchxxxxyyyy() per PETSc naming standard. 
+         <li>Removed the Vec argument from SNESSetUp()</li>
+         <li>Corrected the order of function and context arguments in:
+           <ul>
+             <li>SNESGetFunction()</li>
+             <li>SNESGetJacobian()</li>
+           </ul></li>
       </ul>
       </p>
 

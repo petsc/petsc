@@ -28,8 +28,8 @@ int main(int argc,char **args)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&ustar);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);
-  ierr = VecSet(&one,ustar);CHKERRQ(ierr);
-  ierr = VecSet(&zero,u);CHKERRQ(ierr);
+  ierr = VecSet(ustar,one);CHKERRQ(ierr);
+  ierr = VecSet(u,zero);CHKERRQ(ierr);
 
   /* Create and assemble matrix */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat);CHKERRQ(ierr);
@@ -68,7 +68,7 @@ int main(int argc,char **args)
   ierr = PCGetType(pc,&pcname);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,ustar,u);CHKERRQ(ierr);
+  ierr = VecAXPY(u,mone,ustar);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %A Number of iterations %D\n",norm,its);

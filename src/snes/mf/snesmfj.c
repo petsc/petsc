@@ -268,7 +268,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   ctx->ncurrenth++;
 
   /* w = u + ha */
-  ierr = VecWAXPY(&h,a,U,w);CHKERRQ(ierr);
+  ierr = VecWAXPY(w,h,a,U);CHKERRQ(ierr);
 
   if (ctx->usesnes) {
     eval_fct = SNESComputeFunction;
@@ -284,11 +284,11 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     ierr = (*ctx->func)(snes,w,y,ctx->funcctx);CHKERRQ(ierr);
   }
 
-  ierr = VecAXPY(&mone,F,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,mone,F);CHKERRQ(ierr);
   h    = 1.0/h;
-  ierr = VecScale(&h,y);CHKERRQ(ierr);
+  ierr = VecScale(y,h);CHKERRQ(ierr);
 
-  ierr = VecAXPBY(&ctx->vshift,&ctx->vscale,a,y);CHKERRQ(ierr);
+  ierr = VecAXPBY(y,ctx->vshift,ctx->vscale,a);CHKERRQ(ierr);
 
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 

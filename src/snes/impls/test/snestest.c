@@ -37,8 +37,8 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   }
 
   for (i=0; i<3; i++) {
-    if (i == 1) {ierr = VecSet(&mone,x);CHKERRQ(ierr);}
-    else if (i == 2) {ierr = VecSet(&one,x);CHKERRQ(ierr);}
+    if (i == 1) {ierr = VecSet(x,mone);CHKERRQ(ierr);}
+    else if (i == 2) {ierr = VecSet(x,one);CHKERRQ(ierr);}
  
     /* compute both versions of Jacobian */
     ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);

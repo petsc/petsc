@@ -127,7 +127,7 @@
 
 !  Set exact solution; then compute right-hand-side vector.
 
-      call VecSet(pfive,u,ierr)
+      call VecSet(u,pfive,ierr)
       call MatMult(A,u,b,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

@@ -218,22 +218,16 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMax(Vec,PetscInt*,PetscReal *);
 PetscPolymorphicSubroutine(VecMax,(Vec x,PetscReal *r),(x,PETSC_NULL,r))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMin(Vec,PetscInt*,PetscReal *);
 PetscPolymorphicSubroutine(VecMin,(Vec x,PetscReal *r),(x,PETSC_NULL,r))
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScale(const PetscScalar *a,Vec v);
+  EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScale(Vec v,PetscScalar a);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec,Vec);        
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(PetscRandom,Vec);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSet(const PetscScalar*,Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec,PetscScalar);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec,Vec);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAXPY(const PetscScalar*,Vec,Vec);  
-PetscPolymorphicScalar(VecAXPY,(PetscScalar _t,Vec x,Vec y),(&_T,x,y))
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(const PetscScalar*,const PetscScalar *,Vec,Vec);  
-#if !defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
-PETSC_STATIC_INLINE PetscErrorCode VecAXPBY(PetscScalar a,PetscScalar b,Vec x,Vec y) {PetscScalar _a = a,_b = b; return VecAXPBY(&_a,&_b,x,y);}
-#endif
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(PetscInt,const PetscScalar[],Vec,Vec*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(const PetscScalar*,Vec,Vec);
-PetscPolymorphicScalar(VecAYPX,(PetscScalar _t,Vec x,Vec y),(&_T,x,y))
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(const PetscScalar*,Vec,Vec,Vec);
-PetscPolymorphicScalar(VecWAXPY,(PetscScalar _t,Vec x,Vec y,Vec z),(&_T,x,y,z))
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAXPY(Vec,PetscScalar,Vec);  
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(Vec,PetscScalar,PetscScalar,Vec);  
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(Vec,PetscInt,const PetscScalar[],Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec,PetscScalar,Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(Vec,PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMax(Vec,Vec,Vec);    
 PetscPolymorphicSubroutine(VecPointwiseMax,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMaxAbs(Vec,Vec,Vec);    
@@ -245,7 +239,7 @@ PetscPolymorphicSubroutine(VecPointwiseMult,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec,Vec,Vec);    
 PetscPolymorphicSubroutine(VecPointwiseDivide,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec,Vec,PetscReal*);    
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecShift(const PetscScalar*,Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecShift(Vec,PetscScalar);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPermute(Vec, IS, PetscTruth);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSqrt(Vec);

@@ -96,11 +96,11 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
     ierr = VecDot(V,RP,&s);CHKERRQ(ierr);           /* s <- (v,rp)          */
     a = rhoold / s;                                  /* a <- rho / s         */
     tmp = -a; 
-    ierr = VecWAXPY(&tmp,V,U,Q);CHKERRQ(ierr);      /* q <- u - a v         */
-    ierr = VecWAXPY(&one,U,Q,T);CHKERRQ(ierr);      /* t <- u + q           */
-    ierr = VecAXPY(&a,T,X);CHKERRQ(ierr);           /* x <- x + a (u + q)   */
+    ierr = VecWAXPY(Q,tmp,V,U);CHKERRQ(ierr);      /* q <- u - a v         */
+    ierr = VecWAXPY(T,one,U,Q);CHKERRQ(ierr);      /* t <- u + q           */
+    ierr = VecAXPY(X,a,T);CHKERRQ(ierr);           /* x <- x + a (u + q)   */
     ierr = KSP_PCApplyBAorAB(ksp,T,AUQ,U);CHKERRQ(ierr);
-    ierr = VecAXPY(&tmp,AUQ,R);CHKERRQ(ierr);       /* r <- r - a K (u + q) */
+    ierr = VecAXPY(R,tmp,AUQ);CHKERRQ(ierr);       /* r <- r - a K (u + q) */
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);         /* rho <- (r,rp)        */
     if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
@@ -118,9 +118,9 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
     if (ksp->reason) break;
 
     b    = rho / rhoold;                             /* b <- rho / rhoold    */
-    ierr = VecWAXPY(&b,Q,R,U);CHKERRQ(ierr);         /* u <- r + b q         */
-    ierr = VecAXPY(&b,P,Q);CHKERRQ(ierr);
-    ierr = VecWAXPY(&b,Q,U,P);CHKERRQ(ierr);         /* p <- u + b(q + b p)  */
+    ierr = VecWAXPY(U,b,Q,R);CHKERRQ(ierr);         /* u <- r + b q         */
+    ierr = VecAXPY(Q,b,P);CHKERRQ(ierr);
+    ierr = VecWAXPY(P,b,Q,U);CHKERRQ(ierr);         /* p <- u + b(q + b p)  */
     ierr = KSP_PCApplyBAorAB(ksp,P,V,Q);CHKERRQ(ierr);      /* v <- K p    */
     rhoold = rho;
     i++;

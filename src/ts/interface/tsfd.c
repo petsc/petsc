@@ -141,10 +141,10 @@ PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,
       wscale = 0.0;
     }
     ierr = TSComputeRHSFunction(ts,t,xx2,jj2);CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,jj1,jj2);CHKERRQ(ierr);
+    ierr = VecAXPY(jj2,mone,jj1);CHKERRQ(ierr);
     /* Communicate scale to all processors */
     ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
-    ierr = VecScale(&scale,jj2);CHKERRQ(ierr);
+    ierr = VecScale(jj2,scale);CHKERRQ(ierr);
     ierr = VecNorm(jj2,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
     ierr = VecGetArray(jj2,&y);CHKERRQ(ierr);
     for (j=start; j<end; j++) {

@@ -36,15 +36,15 @@ struct _VecOps {
   PetscErrorCode (*norm)(Vec,NormType,PetscReal*);        /* z = sqrt(x^H * x) */
   PetscErrorCode (*tdot)(Vec,Vec,PetscScalar*);             /* x'*y */
   PetscErrorCode (*mtdot)(PetscInt,Vec,const Vec[],PetscScalar*);/* z[j] = x dot y[j] */
-  PetscErrorCode (*scale)(const PetscScalar*,Vec);          /* x = alpha * x   */
+  PetscErrorCode (*scale)(Vec,PetscScalar);                 /* x = alpha * x   */
   PetscErrorCode (*copy)(Vec,Vec);                     /* y = x */
-  PetscErrorCode (*set)(const PetscScalar*,Vec);            /* y = alpha  */
-  PetscErrorCode (*swap)(Vec,Vec);                     /* exchange x and y */
-  PetscErrorCode (*axpy)(const PetscScalar*,Vec,Vec);       /* y = y + alpha * x */
-  PetscErrorCode (*axpby)(const PetscScalar*,const PetscScalar*,Vec,Vec); /* y = y + alpha * x + beta * y*/
-  PetscErrorCode (*maxpy)(PetscInt,const PetscScalar*,Vec,Vec*); /* y = y + alpha[j] x[j] */
-  PetscErrorCode (*aypx)(const PetscScalar*,Vec,Vec);       /* y = x + alpha * y */
-  PetscErrorCode (*waxpy)(const PetscScalar*,Vec,Vec,Vec);  /* w = y + alpha * x */
+  PetscErrorCode (*set)(Vec,PetscScalar);                        /* y = alpha  */
+  PetscErrorCode (*swap)(Vec,Vec);                               /* exchange x and y */
+  PetscErrorCode (*axpy)(Vec,PetscScalar,Vec);                   /* y = y + alpha * x */
+  PetscErrorCode (*axpby)(Vec,PetscScalar,PetscScalar,Vec);      /* y = y + alpha * x + beta * y*/
+  PetscErrorCode (*maxpy)(Vec,PetscInt,const PetscScalar*,Vec*); /* y = y + alpha[j] x[j] */
+  PetscErrorCode (*aypx)(Vec,PetscScalar,Vec);                   /* y = x + alpha * y */
+  PetscErrorCode (*waxpy)(Vec,PetscScalar,Vec,Vec);         /* w = y + alpha * x */
   PetscErrorCode (*pointwisemult)(Vec,Vec,Vec);        /* w = x .* y */
   PetscErrorCode (*pointwisedivide)(Vec,Vec,Vec);      /* w = x ./ y */
   PetscErrorCode (*setvalues)(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);

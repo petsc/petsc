@@ -72,7 +72,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
 
-  ierr = VecSet(&zero,x);CHKERRQ(ierr);
+  ierr = VecSet(x,zero);CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
 
   PetscLogStageRegister(&stage1,"mystage 1");
@@ -98,7 +98,7 @@ int main(int argc,char **args)
 
   /* Show result */
   ierr = MatMult(A,x,u);
-  ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
+  ierr = VecAXPY(u,none,b);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /*  matrix PC   KSP   Options       its    residual setuptime solvetime  */

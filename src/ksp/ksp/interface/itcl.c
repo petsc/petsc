@@ -143,7 +143,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPAppendOptionsPrefix(KSP ksp,const char pref
 
 .seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOptionsPrefix(KSP ksp,char *prefix[])
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

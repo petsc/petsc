@@ -205,7 +205,7 @@
          call VecSetRandom(rctx,u,ierr)
          call PetscRandomDestroy(rctx,ierr)
       else
-         call VecSet(one,u,ierr)
+         call VecSet(u,one,ierr)
       endif
       call MatMult(A,u,b,ierr)
 
@@ -287,7 +287,7 @@
 
 !  Check the error
 
-      call VecAXPY(neg_one,u,x,ierr)
+      call VecAXPY(x,neg_one,u,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
       if (rank .eq. 0) then

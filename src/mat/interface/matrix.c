@@ -2260,13 +2260,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
     /* do the solve then the add manually */
     if (x != y) {
       ierr = MatSolve(mat,b,x);CHKERRQ(ierr);
-      ierr = VecAXPY(&one,y,x);CHKERRQ(ierr);
+      ierr = VecAXPY(x,one,y);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(mat,tmp);CHKERRQ(ierr);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolve(mat,b,x);CHKERRQ(ierr);
-      ierr = VecAXPY(&one,tmp,x);CHKERRQ(ierr);
+      ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);
       ierr = VecDestroy(tmp);CHKERRQ(ierr);
     }
   }
@@ -2387,13 +2387,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x
     /* do the solve then the add manually */
     if (x != y) {
       ierr = MatSolveTranspose(mat,b,x);CHKERRQ(ierr);
-      ierr = VecAXPY(&one,y,x);CHKERRQ(ierr);
+      ierr = VecAXPY(x,one,y);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(mat,tmp);CHKERRQ(ierr);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolveTranspose(mat,b,x);CHKERRQ(ierr);
-      ierr = VecAXPY(&one,tmp,x);CHKERRQ(ierr);
+      ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);
       ierr = VecDestroy(tmp);CHKERRQ(ierr);
     }
   }

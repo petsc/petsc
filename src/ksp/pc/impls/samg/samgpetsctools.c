@@ -429,7 +429,7 @@ PetscErrorCode MatSubstract(Mat Term1, Mat Term2, Mat* Diff)
       ierr = MatGetColumnVector(Term1,col_vec1,col);CHKERRQ(ierr); 
       ierr = MatGetColumnVector(Term2,col_vec2,col);CHKERRQ(ierr); 
       /*..Substract collumns..*/ 
-      ierr = VecWAXPY(&dminusone, col_vec2, col_vec1, diff_vec); 
+      ierr = VecWAXPY(diff_vec, dminusone, col_vec2, col_vec1); 
              CHKERRQ(ierr);  
  
       /*..Compute norm..*/ 

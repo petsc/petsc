@@ -67,7 +67,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
   for (i=0; i<M; i++) {
 
-    ierr = VecSet(&zero,in);CHKERRQ(ierr);
+    ierr = VecSet(in,zero);CHKERRQ(ierr);
     ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(in);CHKERRQ(ierr);

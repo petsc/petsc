@@ -218,7 +218,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_2(Mat A,Vec xx,Vec yy)
   PetscInt       m = b->AIJ->m,n,i,*idx;
 
   PetscFunctionBegin; 
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
  
@@ -355,7 +355,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_3(Mat A,Vec xx,Vec yy)
   PetscInt       m = b->AIJ->m,n,i,*idx;
 
   PetscFunctionBegin; 
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   
@@ -510,7 +510,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_4(Mat A,Vec xx,Vec yy)
   PetscInt       m = b->AIJ->m,n,i,*idx;
 
   PetscFunctionBegin; 
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
@@ -675,7 +675,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_5(Mat A,Vec xx,Vec yy)
   PetscInt       m = b->AIJ->m,n,i,*idx;
 
   PetscFunctionBegin; 
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   
@@ -852,7 +852,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_6(Mat A,Vec xx,Vec yy)
   PetscInt       m = b->AIJ->m,n,i,*idx;
 
   PetscFunctionBegin; 
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
@@ -1039,7 +1039,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_7(Mat A,Vec xx,Vec yy)
   PetscInt       m = b->AIJ->m,n,i,*idx;
 
   PetscFunctionBegin; 
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
@@ -1234,7 +1234,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_8(Mat A,Vec xx,Vec yy)
   PetscInt       m = b->AIJ->m,n,i,*idx;
 
   PetscFunctionBegin; 
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
@@ -1441,7 +1441,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_9(Mat A,Vec xx,Vec yy)
   PetscInt       m = b->AIJ->m,n,i,*idx;
 
   PetscFunctionBegin; 
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
@@ -1677,7 +1677,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_16(Mat A,Vec xx,Vec yy)
   PetscInt       m = b->AIJ->m,n,i,*idx;
 
   PetscFunctionBegin; 
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 

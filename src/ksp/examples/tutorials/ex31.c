@@ -256,9 +256,9 @@ PetscErrorCode TaylorGalerkinStepI(DA da, UserContext *user)
   ierr = DAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx   = 1.0 / (PetscReal)(mx-1);
   hy   = 1.0 / (PetscReal)(my-1);
-  ierr = VecSet(&zero, user->sol_phi.rho);CHKERRQ(ierr);
-  ierr = VecSet(&zero, user->sol_phi.rho_u);CHKERRQ(ierr);
-  ierr = VecSet(&zero, user->sol_phi.rho_v);CHKERRQ(ierr);
+  ierr = VecSet(user->sol_phi.rho,zero);CHKERRQ(ierr);
+  ierr = VecSet(user->sol_phi.rho_u,zero);CHKERRQ(ierr);
+  ierr = VecSet(user->sol_phi.rho_v,zero);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.u,       &u_n);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.v,       &v_n);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.rho,     &rho_n);CHKERRQ(ierr);
@@ -434,8 +434,8 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DA da, UserContext *user)
   ierr = VecAssemblyEnd(rhs_u);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(rhs_v);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecScale(&(user->dt), rhs_u);CHKERRQ(ierr);
-  ierr = VecScale(&(user->dt), rhs_v);CHKERRQ(ierr);
+  ierr = VecScale(rhs_u,user->dt);CHKERRQ(ierr);
+  ierr = VecScale(rhs_v,user->dt);CHKERRQ(ierr);
 
   ierr = KSPSetOperators(ksp, mat, mat, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_u, user->sol_np1.rho_u);CHKERRQ(ierr);
@@ -583,8 +583,8 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DA da, UserContext *user)
   ierr = VecAssemblyEnd(rhs_m);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(rhs_e);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecScale(&(user->dt), rhs_m);CHKERRQ(ierr);
-  ierr = VecScale(&(user->dt), rhs_e);CHKERRQ(ierr);
+  ierr = VecScale(rhs_m, user->dt);CHKERRQ(ierr);
+  ierr = VecScale(rhs_e, user->dt);CHKERRQ(ierr);
 
   ierr = KSPSetOperators(ksp, mat, mat, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_m, user->sol_np1.rho);CHKERRQ(ierr);
@@ -778,10 +778,10 @@ PetscErrorCode ComputeCorrector(DMMG dmmg, Vec uOld, Vec u)
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = VecSet(&zero, u);CHKERRQ(ierr);
+  ierr = VecSet(u,zero);CHKERRQ(ierr);
   ierr = DAGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
   ierr = DAGetLocalVector(da, &uLocal);CHKERRQ(ierr);
-  ierr = VecSet(&zero, uLocal);CHKERRQ(ierr);
+  ierr = VecSet(uLocal,zero);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = VecGetArray(uOldLocal, &cOld);CHKERRQ(ierr);

@@ -314,9 +314,9 @@ void PETSC_STDCALL vecmdot_(PetscInt *nv,Vec *x,Vec *y,PetscScalar *val,PetscErr
   *ierr = VecMDot(*nv,*x,y,val);
 }
 
-void PETSC_STDCALL vecmaxpy_(PetscInt *nv,PetscScalar *alpha,Vec *x,Vec *y,PetscErrorCode *ierr)
+void PETSC_STDCALL vecmaxpy_(Vec *y,PetscInt *nv,PetscScalar *alpha,Vec *x,PetscErrorCode *ierr)
 {
-  *ierr = VecMAXPY(*nv,alpha,*x,y);
+  *ierr = VecMAXPY(*y,*nv,alpha,x);
 }
 
 void PETSC_STDCALL vecstridenorm_(Vec *x,PetscInt *start,NormType *type,PetscReal *val,PetscErrorCode *ierr)

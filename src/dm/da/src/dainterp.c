@@ -18,7 +18,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolationScale(DM dac,DM daf,Mat mat,V
   PetscFunctionBegin;
   ierr = DMCreateGlobalVector(daf,&fine);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dac,scale);CHKERRQ(ierr);
-  ierr = VecSet(&one,fine);CHKERRQ(ierr);
+  ierr = VecSet(fine,one);CHKERRQ(ierr);
   ierr = MatRestrict(mat,fine,*scale);CHKERRQ(ierr);
   ierr = VecDestroy(fine);CHKERRQ(ierr);
   ierr = VecReciprocal(*scale);CHKERRQ(ierr);

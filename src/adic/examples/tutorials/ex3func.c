@@ -140,7 +140,7 @@ int FormInitialGuess(Vec x)
 {
    int    ierr;
    Scalar pfive = .50;
-   ierr = VecSet(&pfive,x); CHKERRQ(ierr);
+   ierr = VecSet(x,pfive); CHKERRQ(ierr);
    return 0;
 }
 /* ------------------------------------------------------------------- */

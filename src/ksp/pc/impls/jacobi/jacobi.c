@@ -233,7 +233,7 @@ static PetscErrorCode PCApply_Jacobi(PC pc,Vec x,Vec y)
   if (!jac->diag) {
     ierr = PCSetUp_Jacobi_NonSymmetric(pc);CHKERRQ(ierr);
   }
-  ierr = VecPointwiseMult(x,jac->diag,y);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(y,x,jac->diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -261,7 +261,7 @@ static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
   if (!jac->diagsqrt) {
     ierr = PCSetUp_Jacobi_Symmetric(pc);CHKERRQ(ierr);
   }
-  VecPointwiseMult(x,jac->diagsqrt,y);
+  VecPointwiseMult(y,x,jac->diagsqrt);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

@@ -1021,7 +1021,7 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
 
       /* update rhs: bb1 = bb - B*x */ 
-      ierr = VecScale(&mone,mat->lvec);CHKERRQ(ierr);
+      ierr = VecScale(mat->lvec,mone);CHKERRQ(ierr);
       ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
 
       /* local sweep */
@@ -1038,7 +1038,7 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
 
       /* update rhs: bb1 = bb - B*x */ 
-      ierr = VecScale(&mone,mat->lvec);CHKERRQ(ierr);
+      ierr = VecScale(mat->lvec,mone);CHKERRQ(ierr);
       ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
 
       /* local sweep */
@@ -1055,7 +1055,7 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
 
       /* update rhs: bb1 = bb - B*x */ 
-      ierr = VecScale(&mone,mat->lvec);CHKERRQ(ierr);
+      ierr = VecScale(mat->lvec,mone);CHKERRQ(ierr);
       ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
 
       /* local sweep */

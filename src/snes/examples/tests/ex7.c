@@ -128,7 +128,7 @@ PetscErrorCode  FormInitialGuess(SNES snes,Vec x)
 {
   PetscErrorCode     ierr;
   PetscScalar pfive = .50;
-  ierr = VecSet(&pfive,x);CHKERRQ(ierr);
+  ierr = VecSet(x,pfive);CHKERRQ(ierr);
   return 0;
 }
 #undef __FUNCT__

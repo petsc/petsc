@@ -253,7 +253,7 @@ int main(int argc,char **argv)
   /* 
      Check the error
   */
-  ierr = VecAXPY(&none,U,x);CHKERRQ(ierr);
+  ierr = VecAXPY(x,none,U);CHKERRQ(ierr);
   ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);
 
@@ -289,7 +289,7 @@ PetscErrorCode FormInitialGuess(Vec x)
    PetscScalar    pfive = .50;
 
    PetscFunctionBegin;
-   ierr = VecSet(&pfive,x);CHKERRQ(ierr);
+   ierr = VecSet(x,pfive);CHKERRQ(ierr);
    PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */

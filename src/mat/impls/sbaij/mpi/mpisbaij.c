@@ -866,7 +866,7 @@ PetscErrorCode MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
 
   /* diagonal part */
   ierr = (*a->A->ops->mult)(a->A,xx,a->slvec1a);CHKERRQ(ierr); 
-  ierr = VecSet(&zero,a->slvec1b);CHKERRQ(ierr); 
+  ierr = VecSet(a->slvec1b,zero);CHKERRQ(ierr); 
 
   /* subdiagonal part */  
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
@@ -935,7 +935,7 @@ PetscErrorCode MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   */
   /* diagonal part */
   ierr = (*a->A->ops->multadd)(a->A,xx,yy,a->slvec1a);CHKERRQ(ierr); 
-  ierr = VecSet(&zero,a->slvec1b);CHKERRQ(ierr); 
+  ierr = VecSet(a->slvec1b,zero);CHKERRQ(ierr); 
 
   /* subdiagonal part */  
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
@@ -2351,7 +2351,7 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
       ierr = PetscMemcpy(ptr,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
       ierr = VecRestoreArray(mat->slvec0,&ptr);CHKERRQ(ierr);  
 
-      ierr = VecScale(&mone,mat->slvec0);CHKERRQ(ierr);
+      ierr = VecScale(mat->slvec0,mone);CHKERRQ(ierr);
 
       /* copy bb into slvec1a */
       ierr = VecGetArray(mat->slvec1,&ptr);CHKERRQ(ierr);
@@ -2360,7 +2360,7 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
       ierr = VecRestoreArray(mat->slvec1,&ptr);CHKERRQ(ierr);  
 
       /* set slvec1b = 0 */
-      ierr = VecSet(&zero,mat->slvec1b);CHKERRQ(ierr); 
+      ierr = VecSet(mat->slvec1b,zero);CHKERRQ(ierr); 
 
       ierr = VecScatterBegin(mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD,mat->sMvctx);CHKERRQ(ierr);  
       ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
@@ -2407,14 +2407,14 @@ PetscErrorCode MatRelax_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORTy
    
       /* lower diagonal part: bb1 = bb - B^T*xx */
       ierr = (*mat->B->ops->multtranspose)(mat->B,xx,lvec1);CHKERRQ(ierr);
-      ierr = VecScale(&mone,lvec1);CHKERRQ(ierr); 
+      ierr = VecScale(lvec1,mone);CHKERRQ(ierr); 
 
       ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr); 
       ierr = VecCopy(bb,bb1);CHKERRQ(ierr);
       ierr = VecScatterBegin(lvec1,bb1,ADD_VALUES,SCATTER_REVERSE,mat->Mvctx);CHKERRQ(ierr);
 
       /* upper diagonal part: bb1 = bb1 - B*x */ 
-      ierr = VecScale(&mone,mat->lvec);CHKERRQ(ierr);
+      ierr = VecScale(mat->lvec,mone);CHKERRQ(ierr);
       ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb1,bb1);CHKERRQ(ierr);
 
       ierr = VecScatterEnd(lvec1,bb1,ADD_VALUES,SCATTER_REVERSE,mat->Mvctx);CHKERRQ(ierr); 

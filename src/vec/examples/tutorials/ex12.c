@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   /*
      Set the vectors to entries to a constant value.
   */
-  ierr = VecSet(&one,v);CHKERRQ(ierr);
+  ierr = VecSet(v,one);CHKERRQ(ierr);
 
   /*
      Get the first component from the multi-component vector to the single vector

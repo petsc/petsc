@@ -556,7 +556,7 @@ PetscErrorCode PetscViewerGetSingleton_ASCII(PetscViewer viewer,PetscViewer *out
   PetscMPIInt       rank;
   PetscErrorCode    ierr;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data,*ovascii;
-  char              *name;
+  const char        *name;
 
   PetscFunctionBegin;
   if (vascii->sviewer) {

@@ -46,9 +46,9 @@ PetscErrorCode TSComputeRHSFunctionEuler(TS ts,PetscReal t,Vec x,Vec y)
   }
   ierr = MatMult(ts->A,x,y);CHKERRQ(ierr);
   /* shift: y = y -2*x */
-  ierr = VecAXPY(&neg_two,x,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,neg_two,x);CHKERRQ(ierr);
   /* scale: y = y -2*x */
-  ierr = VecScale(&neg_mdt,y);CHKERRQ(ierr);
+  ierr = VecScale(y,neg_mdt);CHKERRQ(ierr);
 
   /* apply user-provided boundary conditions (only needed if these are time dependent) */
   ierr = TSComputeRHSBoundaryConditions(ts,t,y);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ static PetscErrorCode TSStep_CN_Linear_Constant_Matrix(TS ts,PetscInt *steps,Pet
 
     /* phase 1 - explicit step */
     ierr = TSComputeRHSFunctionEuler(ts,ts->ptime,sol,update);CHKERRQ(ierr);
-    ierr = VecAXPBY(&dt,&two,update,sol);CHKERRQ(ierr);
+    ierr = VecAXPBY(sol,dt,two,update);CHKERRQ(ierr);
 
     /* phase 2 - implicit step */
     ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
@@ -139,7 +139,7 @@ static PetscErrorCode TSStep_CN_Linear_Variable_Matrix(TS ts,PetscInt *steps,Pet
 
     /* phase 1 - explicit step */
     ierr = TSComputeRHSFunctionEuler(ts,ts->ptime,sol,update);CHKERRQ(ierr);
-    ierr = VecAXPBY(&dt,&two,update,sol);CHKERRQ(ierr);
+    ierr = VecAXPBY(sol,dt,two,update);CHKERRQ(ierr);
 
     /* phase 2 - implicit step */
     ierr = VecCopy(sol,rhs);CHKERRQ(ierr);

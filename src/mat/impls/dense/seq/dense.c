@@ -332,8 +332,8 @@ PetscErrorCode MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
     if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   }
-  if (tmp) {ierr = VecAXPY(&sone,tmp,yy);CHKERRQ(ierr); ierr = VecDestroy(tmp);CHKERRQ(ierr);}
-  else     {ierr = VecAXPY(&sone,zz,yy);CHKERRQ(ierr);}
+  if (tmp) {ierr = VecAXPY(yy,sone,tmp);CHKERRQ(ierr); ierr = VecDestroy(tmp);CHKERRQ(ierr);}
+  else     {ierr = VecAXPY(yy,sone,zz);CHKERRQ(ierr);}
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2*A->n*A->n);CHKERRQ(ierr);
@@ -377,10 +377,10 @@ PetscErrorCode MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 #endif
   }
   if (tmp) {
-    ierr = VecAXPY(&sone,tmp,yy);CHKERRQ(ierr);
+    ierr = VecAXPY(yy,sone,tmp);CHKERRQ(ierr);
     ierr = VecDestroy(tmp);CHKERRQ(ierr);
   } else {
-    ierr = VecAXPY(&sone,zz,yy);CHKERRQ(ierr);
+    ierr = VecAXPY(yy,sone,zz);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
@@ -403,7 +403,7 @@ PetscErrorCode MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   PetscFunctionBegin;
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     /* this is a hack fix, should have another version without the second BLASdot */
-    ierr = VecSet(&zero,xx);CHKERRQ(ierr);
+    ierr = VecSet(xx,zero);CHKERRQ(ierr);
   }
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
@@ -752,7 +752,7 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
   Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
   PetscErrorCode    ierr;
   PetscInt          i,j;
-  char              *name;
+  const char        *name;
   PetscScalar       *v;
   PetscViewerFormat format;
 
@@ -1116,7 +1116,7 @@ PetscErrorCode MatGetDiagonal_SeqDense(Mat A,Vec v)
   PetscScalar    *x,zero = 0.0;
 
   PetscFunctionBegin;
-  ierr = VecSet(&zero,v);CHKERRQ(ierr);
+  ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   len = PetscMin(A->m,A->n);

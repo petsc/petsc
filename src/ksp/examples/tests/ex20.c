@@ -66,9 +66,9 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRQ(ierr);
 
-  ierr = VecSet(&one,u);CHKERRQ(ierr);
+  ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
-  ierr = VecSet(&zero,u);CHKERRQ(ierr);
+  ierr = VecSet(u,zero);CHKERRQ(ierr);
 
   /* Solve linear system */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);

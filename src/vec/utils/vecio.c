@@ -75,7 +75,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer,const VecType outty
 {
   PetscErrorCode ierr;
   PetscTruth     isbinary,flg;
-  char           vtype[256],*prefix;
+  char           vtype[256];
+  const char    *prefix;
 #if defined(PETSC_HAVE_PNETCDF)
   PetscTruth     isnetcdf;
 #endif
@@ -357,7 +358,7 @@ PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
   MPI_Status     status;
   PetscMap       map;
   PetscTruth     flag;
-  char           *prefix;
+  const char     *prefix;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);

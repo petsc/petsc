@@ -45,7 +45,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
   SNES_KSP_EW_ConvCtx *kctx;
   PetscErrorCode      ierr;
   KSP                 ksp;
-  char                *type;
+  const char          *type;
   PetscTruth          iascii,isstring;
 
   PetscFunctionBegin;
@@ -773,7 +773,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES snes,Vec x,Vec y)
   CHKERRQ(ierr);
   if (snes->afine) {
     PetscScalar mone = -1.0;
-    ierr = VecAXPY(&mone,snes->afine,y);CHKERRQ(ierr);
+    ierr = VecAXPY(y,mone,snes->afine);CHKERRQ(ierr);
   }
   snes->nfuncs++;
   ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
@@ -1571,7 +1571,7 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
      nrm = *delta/nrm;
      *gpnorm = (1.0 - nrm)*(*fnorm);
      cnorm = nrm;
-     ierr = VecScale(&cnorm,y);CHKERRQ(ierr);
+     ierr = VecScale(y,cnorm);CHKERRQ(ierr);
      *ynorm = *delta;
   } else {
      *gpnorm = 0.0;
@@ -1699,7 +1699,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec x)
 .seealso: SNESType, SNESCreate()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES snes,const SNESType type)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES snes,SNESType type)
 {
   PetscErrorCode ierr,(*r)(SNES);
   PetscTruth     match;
@@ -1989,7 +1989,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAppendOptionsPrefix(SNES snes,const char 
 
 .seealso: SNESAppendOptionsPrefix()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESGetOptionsPrefix(SNES snes,char *prefix[])
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetOptionsPrefix(SNES snes,const char *prefix[])
 {
   PetscErrorCode ierr;
 

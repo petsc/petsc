@@ -113,7 +113,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer,const MatType outty
   PetscTruth     isbinary,flg;
   MPI_Comm       comm;
   PetscErrorCode (*r)(PetscViewer,const MatType,Mat*);
-  char           mtype[256],*prefix;
+  char           mtype[256];
+  const char     *prefix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);

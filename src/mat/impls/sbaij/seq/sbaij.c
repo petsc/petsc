@@ -292,7 +292,7 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscInt          i,j,bs = A->bs,k,l,bs2=a->bs2;
-  char              *name;
+  const char        *name;
   PetscViewerFormat format;
   
   PetscFunctionBegin;

@@ -266,7 +266,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscInt          i,j,m = A->m,shift=0;
-  char              *name;
+  const char        *name;
   PetscViewerFormat format;
 
   PetscFunctionBegin;  
@@ -750,7 +750,7 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
   PetscScalar    *x,zero = 0.0;
 
   PetscFunctionBegin;
-  ierr = VecSet(&zero,v);CHKERRQ(ierr);
+  ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
@@ -822,7 +822,7 @@ PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscErrorCode ierr;
 
   PetscFunctionBegin; 
-  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecSet(yy,zero);CHKERRQ(ierr);
   ierr = MatMultTransposeAdd_SeqAIJ(A,xx,yy,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2034,7 +2034,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
+    ierr = VecAXPY(w2,mone,w1);CHKERRQ(ierr);
 
     /*
        Loop over rows of vector, putting results into Jacobian matrix

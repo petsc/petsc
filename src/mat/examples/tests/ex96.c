@@ -179,7 +179,7 @@ int main(int argc,char **argv)
       ierr = MatMult(P,x,v1);CHKERRQ(ierr);  
       ierr = MatMult(A_tmp,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
       ierr = MatMult(C,x,v1);CHKERRQ(ierr);       /* v1 = C*x   */
-      ierr = VecAXPY(&none,v2,v1);CHKERRQ(ierr);
+      ierr = VecAXPY(v1,none,v2);CHKERRQ(ierr);
       ierr = VecNorm(v1,NORM_1,&norm_tmp);CHKERRQ(ierr);
       ierr = VecNorm(v2,NORM_1,&norm_tmp1);CHKERRQ(ierr);
       norm_tmp /= norm_tmp1;
@@ -227,7 +227,7 @@ int main(int argc,char **argv)
 
       ierr = MatMultTranspose(P,v2,v3);CHKERRQ(ierr); /* v3 = Pt*A*P*x */
       ierr = MatMult(C,x,v4);CHKERRQ(ierr);           /* v3 = C*x   */
-      ierr = VecAXPY(&none,v3,v4);CHKERRQ(ierr);
+      ierr = VecAXPY(v4,none,v3);CHKERRQ(ierr);
       ierr = VecNorm(v4,NORM_1,&norm_tmp);CHKERRQ(ierr);
       ierr = VecNorm(v3,NORM_1,&norm_tmp1);CHKERRQ(ierr);
       norm_tmp /= norm_tmp1;

@@ -29,15 +29,15 @@
        call VecDuplicate(x,y,ierr)
        call VecDuplicate(x,w,ierr)
 
-       call VecSet(one,x,ierr)
-       call VecSet(two,y,ierr)
+       call VecSet(x,one,ierr)
+       call VecSet(y,two,ierr)
 
        call VecDot(x,y,dot,ierr)
        rdot = PetscRealPart(dot)
        write(6,100) rdot
   100  format('Result of inner product ',f10.4)
 
-       call VecScale(two,x,ierr)
+       call VecScale(x,two,ierr)
        call VecNorm(x,NORM_2,norm,ierr)
        write(6,110) norm
   110  format('Result of scaling ',f10.4)
@@ -47,7 +47,7 @@
        write(6,120) norm
   120  format('Result of copy ',f10.4)
 
-       call VecAXPY(three,x,y,ierr)
+       call VecAXPY(y,three,x,ierr)
        call VecNorm(y,NORM_2,norm,ierr)
        write(6,130) norm
   130  format('Result of axpy ',f10.4)

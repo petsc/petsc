@@ -134,7 +134,7 @@ static PetscErrorCode FGMRESResidual(KSP ksp)
   /* put A*x into VEC_TEMP */
   ierr = MatMult(Amat,ksp->vec_sol,VEC_TEMP);CHKERRQ(ierr);
   /* now put residual (-A*x + f) into vec_vv(0) */
-  ierr = VecWAXPY(&mone,VEC_TEMP,ksp->vec_rhs,VEC_VV(0));CHKERRQ(ierr);
+  ierr = VecWAXPY(VEC_VV(0),mone,VEC_TEMP,ksp->vec_rhs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -207,7 +207,7 @@ PetscErrorCode FGMREScycle(PetscInt *itcount,KSP ksp)
   }
 
   /* scale VEC_VV (the initial residual) */
-  tmp = 1.0/res_norm; ierr = VecScale(&tmp,VEC_VV(0));CHKERRQ(ierr);
+  tmp = 1.0/res_norm; ierr = VecScale(VEC_VV(0),tmp);CHKERRQ(ierr);
 
 
 
@@ -259,11 +259,11 @@ PetscErrorCode FGMREScycle(PetscInt *itcount,KSP ksp)
     if (tt > hapbnd) {
         tmp = 1.0/tt; 
         /* scale new direction by its norm */
-        ierr = VecScale(&tmp,VEC_VV(loc_it+1));CHKERRQ(ierr);
+        ierr = VecScale(VEC_VV(loc_it+1),tmp);CHKERRQ(ierr);
     } else {
         /* This happens when the solution is exactly reached. */
         /* So there is no new direction... */
-          ierr   = VecSet(&zero,VEC_TEMP);CHKERRQ(ierr); /* set VEC_TEMP to 0 */
+          ierr   = VecSet(VEC_TEMP,zero);CHKERRQ(ierr); /* set VEC_TEMP to 0 */
           hapend = PETSC_TRUE;
     }
     /* note that for FGMRES we could get HES(loc_it+1, loc_it)  = 0 and the
@@ -465,15 +465,15 @@ static PetscErrorCode BuildFgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP 
 
   /* Accumulate the correction to the soln of the preconditioned prob. in 
      VEC_TEMP - note that we use the preconditioned vectors  */
-  ierr = VecSet(&zero,VEC_TEMP);CHKERRQ(ierr); /* set VEC_TEMP components to 0 */
-  ierr = VecMAXPY(it+1,nrs,VEC_TEMP,&PREVEC(0));CHKERRQ(ierr); 
+  ierr = VecSet(VEC_TEMP,zero);CHKERRQ(ierr); /* set VEC_TEMP components to 0 */
+  ierr = VecMAXPY(VEC_TEMP,it+1,nrs,&PREVEC(0));CHKERRQ(ierr); 
 
   /* put updated solution into vdest.*/
   if (vdest != vguess) {
     ierr = VecCopy(VEC_TEMP,vdest);CHKERRQ(ierr);
-    ierr = VecAXPY(&one,vguess,vdest);CHKERRQ(ierr);
+    ierr = VecAXPY(vdest,one,vguess);CHKERRQ(ierr);
   } else  {/* replace guess with solution */
-    ierr = VecAXPY(&one,VEC_TEMP,vdest);CHKERRQ(ierr);
+    ierr = VecAXPY(vdest,one,VEC_TEMP);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

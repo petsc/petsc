@@ -363,7 +363,7 @@ Additional vectors of the same type can be formed with
 \end{tabbing}
 The commands \findex{VecSet()} \findex{VecSetValues()}
 \begin{tabbing}
-  VecSet(PetscScalar *value,Vec x);\\
+  VecSet(Vec x,PetscScalar value);\\
   VecSetValues(Vec x,int n,int *indices,PetscScalar *values,INSERT\_VALUES);
 \end{tabbing}
 respectively set all the components of a vector to a particular scalar

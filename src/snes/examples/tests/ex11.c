@@ -451,7 +451,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
 
     /* restrict X to coarse grid */
     ierr = MatMult(user->R,X,user->coarse.x);CHKERRQ(ierr);
-    ierr = VecPointwiseMult(user->Rscale,user->coarse.x,user->coarse.x);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(user->coarse.x,user->coarse.x,user->Rscale);CHKERRQ(ierr);
 
     /* form Jacobian on coarse grid */
     if (user->redundant_build) {
@@ -554,7 +554,7 @@ PetscErrorCode FormInterpolation(AppCtx *user)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = VecDuplicate(user->coarse.x,&Rscale);CHKERRQ(ierr);
-  ierr = VecSet(&one,user->fine.x);CHKERRQ(ierr);
+  ierr = VecSet(user->fine.x,one);CHKERRQ(ierr);
   ierr = MatMultTranspose(mat,user->fine.x,Rscale);CHKERRQ(ierr);
   ierr = VecReciprocal(Rscale);CHKERRQ(ierr);
   user->Rscale = Rscale;

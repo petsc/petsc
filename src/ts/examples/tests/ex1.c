@@ -281,7 +281,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal ltime,Vec global,void *ctx)
   ierr = VecView(global,appctx->viewer2);CHKERRQ(ierr);
 
   ierr = Solution(ltime,appctx->solution,ctx);CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,global,appctx->solution);CHKERRQ(ierr);
+  ierr = VecAXPY(appctx->solution,mone,global);CHKERRQ(ierr);
   ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
   norm_2 = sqrt(appctx->h)*norm_2;
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);

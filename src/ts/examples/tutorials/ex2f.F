@@ -402,7 +402,7 @@
       endif
 
 !  Compute the 2-norm and max-norm of the error
-      call VecAXPY(mone,u,solution,ierr)
+      call VecAXPY(solution,mone,u,ierr)
       call VecNorm(solution,NORM_2,en2,ierr)
 !  Scale the 2-norm by the grid spacing
       en2s = dsqrt(h)*en2
