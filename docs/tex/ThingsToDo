@@ -25,11 +25,11 @@ Additional Capabilities that PETSc Needs:
          - complex numbers: -DUSES_TEMPLATED_COMPLEX
          - etc.
 
+  - Finish "Performance" section "System Related Problems"
+
   - Finish users manual:
       - Add info about BAIJ matrix to Chapter 15
       - Update viewer section (add VRML stuff, reorganize)
-      - Finish "Performance" chapter, especially last section:
-          System Related Problems
 
   - Fix VRML vector viewer interface; add documentation about VRML.
 
