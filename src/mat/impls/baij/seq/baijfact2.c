@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.8 1998/03/26 22:59:08 balay Exp bsmith $";
+static char vcid[] = "$Id: baijfact2.c,v 1.9 1998/04/03 23:15:34 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -260,7 +260,7 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
   Scalar          *aa=a->a,sum1,sum2,sum3,sum4,x1,x2,x3,x4;
-  Scalar *x,*b,*tmp,*v;
+  Scalar          *x,*b,*tmp,*v;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
@@ -339,20 +339,24 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   int             i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt;
   int             ierr,*diag = a->diag,jdx;
   Scalar          *aa=a->a,sum1,sum2,sum3,sum4,x1,x2,x3,x4;
-  Scalar *x,*b,*v;
+  Scalar          *x,*b,*v;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
 
+#if defined(USE_FORTRAN_KERNEL_SOLVEBAIJ)
+  fortransolvebaij4_(&n,x,ai,aj,adiag,aa,b);
+#else
+
   /* forward solve the lower triangular */
   idx    = 0;
-  x[0] = b[idx]; x[1] = b[1+idx]; x[2] = b[2+idx]; x[3] = b[3+idx];
+  x[0]   = b[0]; x[1] = b[1]; x[2] = b[2]; x[3] = b[3];
   for ( i=1; i<n; i++ ) {
-    v     =  aa + 16*ai[i];
-    vi    =  aj + ai[i];
+    v     =  aa      + 16*ai[i];
+    vi    =  aj      + ai[i];
     nz    =  diag[i] - ai[i];
-    idx   =  4*i;
+    idx   +=  4;
     sum1  =  b[idx];sum2 = b[1+idx];sum3 = b[2+idx];sum4 = b[3+idx];
     while (nz--) {
       jdx   = 4*(*vi++);
@@ -383,7 +387,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
       sum2 -= v[1]*x1 + v[5]*x2 + v[9]*x3   + v[13]*x4; 
       sum3 -= v[2]*x1 + v[6]*x2 + v[10]*x3  + v[14]*x4;
       sum4 -= v[3]*x1 + v[7]*x2 + v[11]*x3  + v[15]*x4;
-      v += 16;
+      v    += 16;
     }
     v        = aa + 16*diag[i];
     x[idt]   = v[0]*sum1 + v[4]*sum2 + v[8]*sum3  + v[12]*sum4;
@@ -391,6 +395,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[2+idt] = v[2]*sum1 + v[6]*sum2 + v[10]*sum3 + v[14]*sum4;
     x[3+idt] = v[3]*sum1 + v[7]*sum2 + v[11]*sum3 + v[15]*sum4;
   }
+#endif
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
@@ -615,7 +620,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
   ISIdentity(isrow,&row_identity); ISIdentity(iscol,&col_identity);
   if (levels == 0 && row_identity && col_identity) {
-    ierr = MatConvertSameType_SeqBAIJ(A,fact,DO_NOT_COPY_VALUES); CHKERRQ(ierr);
+    ierr = MatDuplicate_SeqBAIJ(A,MAT_DO_NOT_COPY_VALUES,fact); CHKERRQ(ierr);
     (*fact)->factor = FACTOR_LU;
     b               = (Mat_SeqBAIJ *) (*fact)->data;
     if (!b->diag) {
