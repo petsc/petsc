@@ -1029,6 +1029,51 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
   PetscFunctionReturn(0); 
 }
 
+#include "src/mat/impls/sbaij/seq/sbaij.h"
+typedef struct {
+  Mat          sbaijMat;  /* mat in sbaij format */
+  PetscTruth   flg_sbaij; /* TRUE if sbaijMat exits */
+} Mat_SeqAIJ_SeqSBAIJ;
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ"
+int MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
+{
+  Mat_SeqAIJ_SeqSBAIJ *sbaij = (Mat_SeqAIJ_SeqSBAIJ*)A->spptr; 
+  int                 ierr;
+  Mat                 sA;
 
+  PetscFunctionBegin; 
+
+  if (!sbaij->flg_sbaij){
+    ierr = MatConvert(A,MATSEQSBAIJ,&sbaij->sbaijMat);CHKERRQ(ierr);
+  } 
+  ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(sbaij->sbaijMat,fact);CHKERRQ(ierr);
+  ierr = MatDestroy(sbaij->sbaijMat);CHKERRQ(ierr);
+  ierr = PetscFree(sbaij);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ"
+int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,PetscReal fill,int levels,Mat *fact)
+{
+  Mat_SeqAIJ_SeqSBAIJ *sbaij; 
+  int                 ierr;
+  Mat                 sA;
+
+  PetscFunctionBegin;   
+  ierr     = PetscNew(Mat_SeqAIJ_SeqSBAIJ,&sbaij);CHKERRQ(ierr);
+  A->spptr = (void*)sbaij;
+
+  ierr = MatConvert(A,MATSEQSBAIJ,&sbaij->sbaijMat);CHKERRQ(ierr);
+  sbaij->flg_sbaij = PETSC_TRUE;
+
+  ierr = MatICCFactorSymbolic(sbaij->sbaijMat,perm,fill,levels,fact);CHKERRQ(ierr);
+
+  /* icc/cholesky with non-natural ordering is not implemented yet */
+  (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
+  (*fact)->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering; 
+  PetscFunctionReturn(0); 
+}
 

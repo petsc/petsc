@@ -1420,10 +1420,6 @@ int MatRetrieveValues_SeqSBAIJ(Mat mat)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-extern int MatConvert_SeqAIJ_SeqSBAIJ(Mat,MatType,Mat*);
-EXTERN_C_END
-
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqSBAIJ"
 int MatCreate_SeqSBAIJ(Mat B)

@@ -2424,8 +2424,8 @@ PetscFList MatConvertList              = 0;
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvertRegister"
 /*@C
-    MatConvertRegister - Allows one to register a routine that reads matrices
-        from a binary file for a particular matrix type.
+    MatConvertRegister - Allows one to register a routine that converts a sparse matrix
+        from one format to another.
 
   Not Collective
 

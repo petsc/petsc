@@ -2116,7 +2116,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatLUFactorSymbolic_SeqAIJ,
        MatLUFactorNumeric_SeqAIJ,
        0,
-       0,
+       MatCholeskyFactorNumeric_SeqAIJ,
        MatSetUpPreallocation_SeqAIJ,
        MatILUFactorSymbolic_SeqAIJ,
        MatICCFactorSymbolic_SeqAIJ,
@@ -2640,6 +2640,10 @@ int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
 EXTERN int RegisterApplyPtAPRoutines_Private(Mat);
 
 EXTERN_C_BEGIN
+extern int MatConvert_SeqAIJ_SeqSBAIJ(Mat,MatType,Mat*);
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqAIJ"
 int MatCreate_SeqAIJ(Mat B)
@@ -2719,6 +2723,9 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_SeqAIJ",
                                      MatRetrieveValues_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqsbaij_C",
+                                     "MatConvert_SeqAIJ_SeqSBAIJ",
+                                      MatConvert_SeqAIJ_SeqSBAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatMatlabEnginePut_SeqAIJ",MatMatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEngineGet_C","MatMatlabEngineGet_SeqAIJ",MatMatlabEngineGet_SeqAIJ);CHKERRQ(ierr);

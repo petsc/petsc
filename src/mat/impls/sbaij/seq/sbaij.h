@@ -21,11 +21,14 @@ typedef struct {
   int              s_nz,s_maxnz; /* total diagonal and superdiagonal nonzero blocks, 
                                     total allocated diagonal and superdiagonal nonzero blocks*/                            
   int              *diag;        /* pointers to diagonal elements */
-  int              *i,*inew;     /* pointer to beginning of each row */
+  int              *i;           /* pointer to beginning of each row */
+  int              *inew;        /* pointer to beginning of each row of reordered matrix */
   int              *imax;        /* maximum space allocated for each row */
   int              *ilen;        /* actual length of each row */
-  int              *j,*jnew;     /* column values: j + i[k] is start of row k */
-  MatScalar        *a,*anew;     /* nonzero diagonal and superdiagonal elements */
+  int              *j;           /* column values: j + i[k] is start of row k of reordered matrix */
+  int              *jnew;        /* column values: jnew + i[k] is start of row k */
+  MatScalar        *a;           /* nonzero diagonal and superdiagonal elements */
+  MatScalar        *anew;        /* nonzero diagonal and superdiagonal elements of reordered matrix */
   IS               row,icol;     /* index sets, used for reorderings */
   PetscScalar      *solve_work;  /* work space used in MatSolve */
   PetscScalar      *solves_work; /* work space used in MatSolves */
