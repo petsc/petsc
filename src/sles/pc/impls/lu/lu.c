@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.135 2000/08/17 04:52:07 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.136 2000/08/24 22:42:31 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -50,68 +50,45 @@ EXTERN_C_END
 #define __FUNC__ /*<a name="PCSetFromOptions_LU"></a>*/"PCSetFromOptions_LU"
 static int PCSetFromOptions_LU(PC pc)
 {
+  PC_LU      *lu = (PC_LU*)pc->data;
   int        ierr;
   PetscTruth flg;
-  PetscReal  fill,dtcol,damping;
   char       tname[256];
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(pc->prefix,"-pc_lu_in_place",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCLUSetUseInPlace(pc);CHKERRQ(ierr);
+  if (!MatOrderingRegisterAllCalled) {
+    ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
-  ierr = OptionsGetDouble(pc->prefix,"-pc_lu_fill",&fill,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCLUSetFill(pc,fill);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetDouble(pc->prefix,"-pc_lu_damping",&damping,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCLUSetDamping(pc,damping);CHKERRQ(ierr);
-  } else {
+  ierr = OptionsHead("LU options");CHKERRQ(ierr);
+    ierr = OptionsName("-pc_lu_in_place","Form LU in the same memory as the matrix","PCLUSetUseInPlace",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCLUSetUseInPlace(pc);CHKERRQ(ierr);
+    }
+    ierr = OptionsDouble("-pc_lu_fill","Expected non-zeros in LU/non-zeros in matrix","PCLUSetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
+
     ierr = OptionsHasName(pc->prefix,"-pc_lu_damping",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCLUSetDamping(pc,0.0);CHKERRQ(ierr);
+        ierr = PCLUSetDamping(pc,0.0);CHKERRQ(ierr);
     }
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_lu_reuse_fill",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCLUSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_lu_reuse_ordering",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCLUSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetString(pc->prefix,"-pc_lu_mat_ordering_type",tname,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCLUSetMatOrdering(pc,tname);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetDouble(pc->prefix,"-pc_lu_column_pivoting",&dtcol,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCLUSetColumnPivoting(pc,dtcol);CHKERRQ(ierr);
-  }
+    ierr = OptionsDouble("-pc_lu_damping","Damping added to diagonal","PCLUSetDamping",lu->info.damping,&lu->info.damping,0);CHKERRQ(ierr);
 
-  PetscFunctionReturn(0);
-}
+    ierr = OptionsName("-pc_lu_reuse_fill","Use fill from previous factorization","PCLUSetReuseFill",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCLUSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    ierr = OptionsName("-pc_lu_reuse_ordering","Reuse ordering from previous factorization","PCLUSetReuseOrdering",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCLUSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
+    }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="PCPrintHelp_LU"></a>*/"PCPrintHelp_LU"
-static int PCPrintHelp_LU(PC pc,char *p)
-{
-  int ierr;
+    ierr = OptionsList("-pc_lu_mat_ordering_type","Reordering to reduce nonzeros in LU","PCLUSetMatOrdering",MatOrderingList,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCLUSetMatOrdering(pc,tname);CHKERRQ(ierr);
+    }
+    ierr = OptionsDouble("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,0,0);CHKERRQ(ierr);
 
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCLU preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_in_place: do factorization in place\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_fill <fill>: expected fill in factor\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_damping <damping>: damping added to diagonal\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," -pc_lu_mat_ordering_type <name>: ordering to reduce fill",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," (nd,natural,1wd,rcm,qmd)\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_nonzeros_along_diagonal <tol>: changes column ordering\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm,"    to reduce the change of obtaining zero pivot during LU.\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm,"    If <tol> not given defaults to 1.e-10.\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_reuse_ordering:                          \n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_reuse_fill:                             \n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_column_pivoting <r>: r = 0 no pivoting, r = 1 full column pivoting\n",p);CHKERRQ(ierr);
+    ierr = OptionsDouble("-pc_lu_column_pivoting","Column pivoting tolerance (not used)","PCLUSetColumnPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -616,7 +593,6 @@ int PCCreate_LU(PC pc)
   pc->ops->applytranspose    = PCApplyTranspose_LU;
   pc->ops->setup             = PCSetUp_LU;
   pc->ops->setfromoptions    = PCSetFromOptions_LU;
-  pc->ops->printhelp         = PCPrintHelp_LU;
   pc->ops->view              = PCView_LU;
   pc->ops->applyrichardson   = 0;
   pc->ops->getfactoredmatrix = PCGetFactoredMatrix_LU;
