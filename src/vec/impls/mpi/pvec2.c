@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.26 1997/08/13 22:22:33 bsmith Exp bsmith $ */
+/* $Id: pvec2.c,v 1.27 1997/08/21 03:10:01 bsmith Exp curfman $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -84,7 +84,7 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
     } 
     /*
          On the IBM Power2 Super with four memory cards unrolling to 4
-         worked better then to 8
+         worked better than unrolling to 8.
     */
     /*
     switch (n & 0x7) {
