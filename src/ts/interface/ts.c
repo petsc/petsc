@@ -114,11 +114,16 @@ int TSSetFromOptions(TS ts)
 
   /* Handle subobject options */
   switch(ts->problem_type) {
+    /* Should check for implicit/explicit */
   case TS_LINEAR:
-    ierr = SLESSetFromOptions(ts->sles);                                                                  CHKERRQ(ierr);
+    if (ts->sles != PETSC_NULL) {
+      ierr = SLESSetFromOptions(ts->sles);                                                                CHKERRQ(ierr);
+    }
     break;
   case TS_NONLINEAR:
-    ierr = SNESSetFromOptions(ts->snes);                                                                  CHKERRQ(ierr);
+    if (ts->snes != PETSC_NULL) {
+      ierr = SNESSetFromOptions(ts->snes);                                                                CHKERRQ(ierr);
+    }
     break;
   default:
     SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid problem type: %d", ts->problem_type);
