@@ -331,9 +331,9 @@ etags_fexamples:
 # These are here for the target allci and allco, and etags
 #
 
-BMAKEFILES = bmake/common/base bmake/common/rules_win32 bmake/common/test \
+BMAKEFILES = bmake/common/base bmake/common/test \
 	     bmake/common/bopt* bmake/*/rules bmake/*/variables bmake/*/packages \
-	     bmake/*/petscconf.h bmake/*/petscfix.h bmake/win32/makefile.dos bmake/config/*.in \
+	     bmake/*/petscconf.h bmake/*/petscfix.h bmake/config/*.in \
              bmake/*/buildtest bmake/adic.init bmake/adicmf.init
 DOCS	   = bmake/readme bmake/petscconf.defs
 SCRIPTS    = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
