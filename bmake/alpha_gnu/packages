@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.4 1999/03/24 19:10:57 balay Exp balay $ 
+# $Id: base.site,v 1.5 1999/04/24 00:21:21 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -72,8 +72,8 @@ MPIRUN         = /home/petsc/mpich/lib/alpha/ch_shmem/mpirun
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
-#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/alpha/libpvode.a
+#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
+#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/alpha/libpvode.a
 #
 # Optional location of ParMetis
 #

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.20 1999/03/06 19:19:06 balay Exp balay $ 
+# $Id: base.site,v 1.21 1999/03/24 19:11:18 balay Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -61,8 +61,8 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
-#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/freebsd/libpvode.a
+#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
+#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/freebsd/libpvode.a
 #
 # Optional location of ParMetis
 #

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.49 1999/05/07 15:51:40 balay Exp balay $ 
+# $Id: base.site,v 1.50 1999/05/07 15:55:11 balay Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -78,8 +78,8 @@ CMEX           = /home/bsmith/bin/IRIX64/mex CFLAGS='-32' LDFLAGS="-32 -mips4 -s
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
-PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/IRIX64/libpvode.a
+PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
+PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/IRIX64/libpvode.a
 #
 # Optional location of ParMetis
 #

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.41 1999/03/31 17:17:13 bsmith Exp balay $ 
+# $Id: base.site,v 1.42 1999/04/24 00:21:23 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -82,8 +82,8 @@ BS_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
-#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/alpha/libpvode.a
+#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
+#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/alpha/libpvode.a
 #
 # Optional location of ParMetis
 #

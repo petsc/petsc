@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.19 1999/03/24 19:18:42 balay Exp balay $ 
+# $Id: base.site,v 1.20 1999/04/23 19:54:25 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -60,8 +60,8 @@ CMEX           = /usr/local/bin/cmex
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
-#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/sun4/libpvode.a
+#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
+#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/sun4/libpvode.a
 #
 # ---------------------------------------------------------------------------------------
 #

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.31 1999/04/24 00:21:36 balay Exp balay $ 
+# $Id: base.site,v 1.32 1999/05/07 15:51:31 balay Exp balay $ 
 #
 #    This file is for SGI Machines running OS 5.x, which is the old
 #  IRIX OS, if you are running 6.x then use either IRIX or IRIX64 
@@ -64,8 +64,8 @@ BS_LIB        = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
-#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/IRIX/libpvode.a
+#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
+#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/IRIX/libpvode.a
 #
 # Optional location of ParMetis
 #
