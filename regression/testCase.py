@@ -7,14 +7,14 @@ class MPITest (unittest.TestCase):
   def setUpMPI(baseClass):
     '''Initialize MPI'''
     if MPITest.mpi is None:
-      import SIDL.Args
-      import SIDL.Loader
+      import ASE.Args
+      import ASE.Loader
       import MPIB.Base
       import atexit
       import sys
 
-      SIDL.Args.set(sys.argv)
-      MPITest.mpi = MPIB.Base.Base(SIDL.Loader.createClass(baseClass))
+      ASE.Args.Args.set(sys.argv)
+      MPITest.mpi = MPIB.Base.Base(ASE.Loader.Loader.createClass(baseClass))
       MPITest.mpi.Initialize()
       atexit.register(MPITest.mpi.Finalize)
     return
