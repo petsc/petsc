@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.48 2000/11/07 17:58:29 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.49 2000/11/07 20:31:04 hzhang Exp hzhang $*/
 /*
     Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -399,7 +399,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat A,Mat *B)
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   int                ierr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
-  int                *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
+  int                *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   int                bs=a->bs,bs2 = a->bs2;
   MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
@@ -3250,11 +3250,9 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   int                ierr,i,j,mbs = a->mbs,*bi = b->i,*bj = b->j;
-  int                *ai,*aj,*r;
+  int                *ai,*aj;
   int                k,jmin,jmax,*jl,*il,vj,nexti,ili;
-  MatScalar          *rtmp;
-  MatScalar          *ba = b->a,*aa,ak;
-  MatScalar          dk,uikdi;
+  MatScalar          *rtmp,*ba = b->a,*aa,dk,uikdi;
 
   PetscFunctionBegin;
   
