@@ -1,0 +1,78 @@
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# FCLIB contains the libraries for a CLINKER to use for code containing
+# FORTRAN code (such as I/O or special Fortran runtimes).  
+# The extra -lm is needed to force the C version of libm.a to 
+# be searched before the Fortran 77 version.
+#
+FC_LIB         = @FC_LIB@
+#
+# Location of BLAS and LAPACK.  These libraries are available via Netlib,
+# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+#
+# If your machine has the file /usr/lang/SC3.0.1/lib/libsunperf.a then
+# you can use -lsunperf or /usr/lang/SC3.0.1/lib/libsunperf.a below as the 
+# BLAS and LAPACK library
+#
+BLAS_LIB       =  @BLAS_LIB@
+LAPACK_LIB     =  @LAPACK_LIB@
+#
+# Location of X-windows software
+#
+X11_INCLUDE    = @CPP_X_INCLUDE@
+X11_LIB        = @X_LIBRARIES@
+#
+# Location of MPI (Message Passing Interface) software  
+# Note that version 1.1 of MPICH now requires linking pmpi when using mpe;
+# make sure to remove the -lmpe and -lpmpi below if you are not using mpe or any 
+# MPI profiling libraries. And remove the -DHAVE_MPE from the bottom of the file.
+#
+MPI_LIB        = @MPI_LIB@
+MPI_INCLUDE    = @MPI_INCLUDE@	
+MPIRUN         = @MPIRUN@
+#
+# --------------------------------------------------------------------------  
+#
+# Optional location of MPE
+#
+MPE_LIB       = @MPE_LIB@
+MPE_INCLUDE   = @MPE_INCLUDE@
+#
+# Optional location of BlockSolve (MPI version)
+#
+BS_INCLUDE = @BS_INCLUDE@
+BS_LIB     = @BS_LIB@
+#
+# Optional Matlab location
+#
+MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
+MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
+CMEX           = /usr/local/bin/cmex 
+#
+# Option location where adiC is installed
+#
+ADIC_INCLUDE = @ADIC_INCLUDE@
+ADIC_LIB     = @ADIC_LIB@
+ADIC_CC      = @ADIC_CC@
+#
+# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# 
+PVODE_INCLUDE = @PVODE_INCLUDE@
+PVODE_LIB     = @PVODE_LIB@
+#
+# ---------------------------------------------------------------------------------------
+#
+# PCONF - indicates which OPTIONAL external packages are available at your site
+#
+# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# the locations are appropriately indicated above. If you do not have the package then
+# comment out the locations indicated for that package.
+#
+PCONF         = @PCONF@
+EXTERNAL_LIB  = $(BS_LIB) $(PVODE_LIB) $(MPE_LIB) $(ADIC_LIB)
+

@@ -1,0 +1,70 @@
+#
+#     See the file bmake/base_variables.defs for a complete explanation of all these fields
+#
+AR               = ar
+RM               = rm -f
+OMAKE            = make
+RANLIB           = @RANLIB@
+SHELL            = /bin/sh
+#
+PARCH            = @PETSC_ARCH@
+# ######################### C and Fortran compiler ########################
+#
+C_CC       = @CC@ -DPARCH_@PETSC_ARCH@ @CC_SHARED_OPT@
+C_FC       = @FC@ @FC_SHARED_OPT@
+C_CLINKER  = @CC@ $(COPTFLAGS)
+C_FLINKER  = @FC@ $(FOPTFLAGS)
+# What is CCV? Solaris base is cc -V -c
+C_CCV      = @CC@ -c
+C_SYS_LIB  = @LIBS@
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g
+G_FOPTFLAGS      = -g
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O
+O_FOPTFLAGS      = -O
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = @CCC@
+CXX_FC           = @FC@   -xpp=cpp
+CXX_CLINKER      = @CCC@    ${COPTFLAGS}
+CXX_FLINKER      = @CCC@    ${COPTFLAGS}
+CXX_CCV          = @CCC@  -c
+CXX_SYS_LIB      = @LIBS@
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g
+GCXX_FOPTFLAGS   = -g
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O
+OCXX_FOPTFLAGS   = -O
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g
+GCOMP_FOPTFLAGS  = -g
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O
+OCOMP_FOPTFLAGS  = -O
+# ########################### PETSc install options ###########################
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK 
+O_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+OCXX_PETSCFLAGS  =  -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS
+# ############################ Notes ############################################
+#
+#  1) use the Solaris command fpversion to get detailed compiler optimization
+#     flags regarding the cache, e.g.
+#fire>fpversion
+#Use "-xtarget=ultra2 -xcache=16/32/1:2048/64/1" code-generation option.
+#
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
+
+include ${PETSC_DIR}/bmake/common_variables
