@@ -4,11 +4,11 @@ ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../.. -I../seq \
            -I$(IPETSCDIR)/pinclude $(CONF)
-SOURCEC  = mpiaij.c mmaij.c
+SOURCEC  = mpiaij.c mmaij.c maijfact.c
 SOURCEF  =
 WSOURCEC = 
 SOURCEH  = 
-OBJSC    = mpiaij.o mmaij.o
+OBJSC    = mpiaij.o mmaij.o maijfact.o
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscmat
