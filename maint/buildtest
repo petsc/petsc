@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.139 1998/04/21 22:36:24 balay Exp balay $ 
+# $Id: buildtest,v 1.140 1998/04/22 14:29:06 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -92,8 +92,8 @@ if ($day == Fri) then
   set J1=(0      1          1          1             1           4           1            1           1           1           1            )
   set J2=(2      2          2          2             2           9           2            2           2           2           2            )
   set J3=(0      3          3          3             3           0           3            3           3           3           3            )
-  set J4=(6      6          5          5             5           0           7            5           6           6           6            )
-  set J5=(0      8          10         10            10          0           8            10          8           7           7            )
+  set J4=(6      6          5          5             6           0           7            5           6           6           6            )
+  set J5=(0      8          10         10            8           0           8            10          8           7           7            )
   set J6=(0      0          0          0             0           0           0            0           0           12          8            )
   set H=($PETSC  $SB_S      $TMP_P     $SATISH       $TMP_P      $TMP_P      $SB_P        $CCST       $TMP_P      $SB_P       $TMP_P       )
 endif
