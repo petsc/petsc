@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.60 1995/10/13 02:05:21 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.61 1995/10/13 19:40:06 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -899,154 +899,183 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
 }
 
 /* ----------------------------------------------------------------*/
+
 #include "draw.h"
 #include "pinclude/pviewer.h"
+#include "sysio.h"
 
-int MatView_SeqBDiag(PetscObject obj,Viewer ptr)
+static int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
 {
-  Mat          A = (Mat) obj;
+  SETERRQ(1,"MatView_SeqBDiag_Binary: Routine not finished yet.");
+  return 0;
+}
+
+static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
+{
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  FILE         *fd;
+  char         *outputname;
   int          ierr, *col, i, j, len, diag, nr = a->m, nb = a->nb;
-  int          nz, nzalloc, mem;
+  int          format, nz, nzalloc, mem;
   Scalar       *val, *dv, zero = 0.0;
-  PetscObject  vobj = (PetscObject) ptr;
+
+  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
+  ierr = ViewerFileGetFormat_Private(viewer,&format); CHKERRQ(ierr);
+  if (format == FILE_FORMAT_INFO) {
+    fprintf(fd,"  block size=%d, number of diagonals=%d\n",nb,a->nd);
+  }
+  else if (format == FILE_FORMAT_MATLAB) {
+    MatGetInfo(A,MAT_LOCAL,&nz,&nzalloc,&mem);
+    fprintf(fd,"%% Size = %d %d \n",nr, a->n);
+    fprintf(fd,"%% Nonzeros = %d \n",nz);
+    fprintf(fd,"zzz = zeros(%d,3);\n",nz);
+    fprintf(fd,"zzz = [\n");
+    for ( i=0; i<a->m; i++ ) {
+      ierr = MatGetRow( A, i, &nz, &col, &val ); CHKERRQ(ierr);
+      for (j=0; j<nz; j++) {
+        if (val[j] != zero)
+#if defined(PETSC_COMPLEX)
+          fprintf(fd,"%d %d  %18.16e  %18.16e \n",
+             i+1, col[j]+1, real(val[j]), imag(val[j]) );
+#else
+          fprintf(fd,"%d %d  %18.16e\n", i+1, col[j]+1, val[j]);
+#endif
+      }
+    }
+    fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
+  } 
+  else if (format == FILE_FORMAT_IMPL) {
+#if !defined(PETSC_COMPLEX)
+    if (nb == 1) { /* diagonal format */
+      for (i=0; i< a->nd; i++) {
+        dv   = a->diagv[i];
+        diag = a->diag[i];
+        fprintf(fd,"\n<diagonal %d>\n",diag);
+        /* diag[i] is (row-col)/nb */
+        if (diag > 0) {  /* lower triangle */
+          len = nr - diag;
+          for (j=0; j<len; j++)
+             if (dv[j]) fprintf(fd,"A[ %d , %d ] = %e\n", j+diag, j, dv[j]);
+        }
+        else {         /* upper triangle, including main diagonal */
+          len = nr + diag;
+          for (j=0; j<len; j++)
+            if (dv[j]) fprintf(fd,"A[ %d , %d ] = %e\n", j, j-diag, dv[j]);
+        }
+      }
+    } else {  /* Block diagonals */
+      int d, k, kshift;
+      for (d=0; d< a->nd; d++) {
+        dv   = a->diagv[d];
+        diag = a->diag[d];
+        len  = a->bdlen[d];
+	fprintf(fd,"\n<diagonal %d>\n", diag);
+	if (diag > 0) {		/* lower triangle */
+	  for (k=0; k<len; k++) {
+	    kshift = k*nb*nb;
+	    for (i=0; i<nb; i++) {
+	      for (j=0; j<nb; j++) {
+		if (dv[kshift + j*nb + i])
+		  fprintf(fd,"A[%d,%d]=%5.2e   ", (k+diag)*nb + i, 
+			  k*nb + j, dv[kshift + j*nb + i] );
+	      }
+	      fprintf(fd,"\n");
+	    }
+	  }
+	} else {		/* upper triangle, including main diagonal */
+	  for (k=0; k<len; k++) {
+	    kshift = k*nb*nb;
+	    for (i=0; i<nb; i++) {
+	      for (j=0; j<nb; j++) {
+		if (dv[kshift + j*nb + i])
+		  fprintf(fd,"A[%d,%d]=%5.2e   ", k*nb + i, 
+                          (k-diag)*nb + j, dv[kshift + j*nb + i] );
+	      }
+	      fprintf(fd,"\n");
+	    }
+	  }
+	}
+      }
+    }
+#endif
+  } else {
+    for (i=0; i<a->m; i++) { /* the usual row format */
+      fprintf(fd,"row %d:",i);
+      ierr = MatGetRow(A,i,&nz,&col,&val); CHKERRQ(ierr);
+      for (j=0; j<nz; j++) {
+	if (val[j] != zero)
+#if defined(PETSC_COMPLEX)
+	  if (imag(val[j]) != 0.0) {
+	    fprintf(fd," %d %g ", col[j], real(val[j]), imag(val[j]) );
+	  }
+	  else {
+	    fprintf(fd," %d %g ", col[j], real(val[j]) );
+	  }
+#else
+	fprintf(fd," %d %g ", col[j], val[j] );
+#endif
+      }
+      fprintf(fd,"\n");
+      ierr = MatRestoreRow(A,i,&nz,&col,&val); CHKERRQ(ierr);
+    }
+  }
+  fflush(fd);
+  return 0;
+}
+
+static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
+{
+  Mat_SeqBDiag  *a = (Mat_SeqBDiag *) A->data;
+  DrawCtx draw = (DrawCtx) viewer;
+  double  xl, yl, xr, yr, w, h;
+  int     ierr, nz, *col, i, j, nr = a->m;
+
+  xr = a->n; yr = a->m; h = yr/10.0; w = xr/10.0;
+  xr += w; yr += h; xl = -w; yl = -h;
+  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+
+  /* loop over matrix elements drawing boxes; we really should do this
+     by diagonals.  What do we really want to draw here: nonzeros, 
+     allocated space? */
+  for ( i=0; i<nr; i++ ) {
+    yl = nr - i - 1.0; yr = yl + 1.0;
+    ierr = MatGetRow(A,i,&nz,&col,0); CHKERRQ(ierr);
+    for ( j=0; j<nz; j++ ) {
+      xl = col[j]; xr = xl + 1.0;
+      ierr = DrawRectangle(draw,xl,yl,xr,yr,DRAW_BLACK,DRAW_BLACK,
+			   DRAW_BLACK,DRAW_BLACK); CHKERRQ(ierr);
+    }
+    ierr = MatRestoreRow(A,i,&nz,&col,0); CHKERRQ(ierr);
+  }
+  ierr = DrawFlush(draw); CHKERRQ(ierr);
+  return 0;
+}
+
+static int MatView_SeqBDiag(PetscObject obj,Viewer viewer)
+{
+  Mat         A = (Mat) obj;
+  Mat_SeqBDiag  *a = (Mat_SeqBDiag*) A->data;
+  PetscObject vobj = (PetscObject) viewer;
 
   if (!a->assembled) SETERRQ(1,"MatView_SeqBDiag:Not for unassembled matrix");
-  if (!ptr) { 
-    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
+  if (!viewer) { 
+    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
-  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-  if (vobj && vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
-    SETERRQ(1,"MatView_SeqBDiag:Matlab viewer not supported for MATSEQBDIAG format");
+  if (vobj->cookie == VIEWER_COOKIE) {
+    if (vobj->type == MATLAB_VIEWER) {
+      SETERRQ(PETSC_ERR_SUP,"MatView_SeqBDiag:Matlab viewer");
+    }
+    else if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER){
+      return MatView_SeqBDiag_ASCII(A,viewer);
+    }
+    else if (vobj->type == BINARY_FILE_VIEWER) {
+      return MatView_SeqBDiag_Binary(A,viewer);
+    }
   }
-  if (vobj && vobj->cookie == DRAW_COOKIE) {
-    DrawCtx draw = (DrawCtx) ptr;
-    double  xl,yl,xr,yr,w,h;
-    xr = a->n; yr = a->m; h = yr/10.0; w = xr/10.0;
-    xr += w; yr += h; xl = -w; yl = -h;
-    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
-    /* loop over matrix elements drawing boxes; we really should do this
-       by diagonals. */
-    /* What do we really want to draw here?  nonzeros, allocated space? */
-    for ( i=0; i<nr; i++ ) {
-      yl = nr - i - 1.0; yr = yl + 1.0;
-      ierr = MatGetRow(A,i,&nz,&col,0); CHKERRQ(ierr);
-      for ( j=0; j<nz; j++ ) {
-        xl = col[j]; xr = xl + 1.0;
-        ierr = DrawRectangle(draw,xl,yl,xr,yr,DRAW_BLACK,DRAW_BLACK,
-                      DRAW_BLACK,DRAW_BLACK); CHKERRQ(ierr);
-      }
-      ierr = MatRestoreRow(A,i,&nz,&col,0); CHKERRQ(ierr);
-    }
-    return 0;
-  }
-  else {
-    FILE *fd;
-    char *outputname;
-    int format;
-
-    ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
-    ierr = ViewerFileGetOutputname_Private(ptr,&outputname);
-    ierr = ViewerFileGetFormat_Private(ptr,&format);
-    if (format == FILE_FORMAT_INFO) {
-      fprintf(fd,"  block size=%d, number of diagonals=%d\n",nb,a->nd);
-    }
-    else if (format == FILE_FORMAT_MATLAB) {
-      MatGetInfo(A,MAT_LOCAL,&nz,&nzalloc,&mem);
-      fprintf(fd,"%% Size = %d %d \n",nr, a->n);
-      fprintf(fd,"%% Nonzeros = %d \n",nz);
-      fprintf(fd,"zzz = zeros(%d,3);\n",nz);
-      fprintf(fd,"zzz = [\n");
-      for ( i=0; i<a->m; i++ ) {
-        ierr = MatGetRow( A, i, &nz, &col, &val ); CHKERRQ(ierr);
-        for (j=0; j<nz; j++) {
-          if (val[j] != zero)
-#if defined(PETSC_COMPLEX)
-            fprintf(fd,"%d %d  %18.16e  %18.16e \n",
-               i+1, col[j]+1, real(val[j]), imag(val[j]) );
-#else
-            fprintf(fd,"%d %d  %18.16e\n", i+1, col[j]+1, val[j]);
-#endif
-        }
-      }
-      fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
-    } 
-    else if (format == FILE_FORMAT_IMPL) {
-#if !defined(PETSC_COMPLEX)
-      if (nb == 1) { /* diagonal format */
-        for (i=0; i< a->nd; i++) {
-          dv   = a->diagv[i];
-          diag = a->diag[i];
-          fprintf(fd,"\n<diagonal %d>\n",diag);
-          /* diag[i] is (row-col)/nb */
-          if (diag > 0) {  /* lower triangle */
-            len = nr - diag;
-            for (j=0; j<len; j++)
-               if (dv[j]) fprintf(fd,"A[ %d , %d ] = %e\n", j+diag, j, dv[j]);
-          }
-          else {         /* upper triangle, including main diagonal */
-            len = nr + diag;
-            for (j=0; j<len; j++)
-              if (dv[j]) fprintf(fd,"A[ %d , %d ] = %e\n", j, j-diag, dv[j]);
-          }
-        }
-      } else {  /* Block diagonals */
-        int d, k, kshift;
-        for (d=0; d< a->nd; d++) {
-          dv   = a->diagv[d];
-          diag = a->diag[d];
-          len  = a->bdlen[d];
-          fprintf(fd,"\n<diagonal %d>\n", diag);
-          if (diag > 0) {  /* lower triangle */
-            for (k=0; k<len; k++) {
-              kshift = k*nb*nb;
-              for (i=0; i<nb; i++) {
-                for (j=0; j<nb; j++) {
-                  if (dv[kshift + j*nb + i])
-                    fprintf(fd,"A[%d,%d]=%5.2e   ", (k+diag)*nb + i, 
-	                k*nb + j, dv[kshift + j*nb + i] );
-                }
-                fprintf(fd,"\n");
-              }
-            }
-         } else {  /* upper triangle, including main diagonal */
-            for (k=0; k<len; k++) {
-              kshift = k*nb*nb;
-              for (i=0; i<nb; i++) {
-                for (j=0; j<nb; j++) {
-                  if (dv[kshift + j*nb + i])
-                    fprintf(fd,"A[%d,%d]=%5.2e   ", k*nb + i, 
-                          (k-diag)*nb + j, dv[kshift + j*nb + i] );
-                }
-                fprintf(fd,"\n");
-              }
-            }
-          }
-        }
-      }
-#endif
-    } else {
-      for (i=0; i<a->m; i++) { /* the usual row format */
-        fprintf(fd,"row %d:",i);
-        ierr = MatGetRow( A, i, &nz, &col, &val ); CHKERRQ(ierr);
-        for (j=0; j<nz; j++) {
-          if (val[j] != zero)
-#if defined(PETSC_COMPLEX)
-            if (imag(val[j]) != 0.0) {
-              fprintf(fd," %d %g ", col[j], real(val[j]), imag(val[j]) );
-            }
-            else {
-              fprintf(fd," %d %g ", col[j], real(val[j]) );
-            }
-#else
-            fprintf(fd," %d %g ", col[j], val[j] );
-#endif
-        }
-        fprintf(fd,"\n");
-        ierr = MatRestoreRow( A, i, &nz, &col, &val ); CHKERRQ(ierr);
-      }
-    }
-    fflush(fd);
+  else if (vobj->cookie == DRAW_COOKIE) {
+    if (vobj->type == NULLWINDOW) return 0;
+    else return MatView_SeqBDiag_Draw(A,viewer);
   }
   return 0;
 }
