@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.44 1996/06/30 17:36:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.45 1996/07/08 22:23:15 bsmith Exp bsmith $";
 #endif
 
 static char *help="Uses Newton's method to solve a two-variable system.\n";
@@ -12,7 +12,7 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 
 int main( int argc, char **argv )
 {
-  SNES         snes;               /* SNES context */
+  SNES         snes;               /* nonlinear solver context */
   Vec          x,r;                /* solution, residual vectors */
   Mat          J;                  /* Jacobian matrix */
   int          ierr, its;
@@ -20,7 +20,6 @@ int main( int argc, char **argv )
 
   PetscInitialize( &argc, &argv,(char *)0,help );
 
-  /* Set up data structures */
   ierr = VecCreateSeq(MPI_COMM_SELF,2,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = MatCreateSeqDense(MPI_COMM_SELF,2,2,PETSC_NULL,&J); CHKERRA(ierr);
