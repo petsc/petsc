@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.14 1999/09/07 17:05:46 bsmith Exp balay $ 
+# $Id: base_variables,v 1.15 1999/09/30 19:58:45 balay Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -10,7 +10,7 @@ OMAKE		   = make
 SHELL		   = /bin/sh
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = cc -64 -woff 1164 -woff 1048
+C_CC		   = cc -64 -woff 1164
 C_FC		   = f90 -cpp -64
 C_CLINKER_SLFLAG   = -rpath
 C_FLINKER_SLFLAG   = -rpath
@@ -27,7 +27,7 @@ O_COPTFLAGS	   = -Ofast=ip27
 O_FOPTFLAGS	   = -Ofast=ip27 -IPA:cprop=OFF -OPT:IEEE_arithmetic=1
 # ########################## C++ compiler ##################################
 #
-CXX_CC		   = CC -64 -woff 1164 -woff 1048
+CXX_CC		   = CC -64 -woff 1164
 CXX_FC		   = f90 -cpp -64
 CXX_CLINKER_SLFLAG = -rpath
 CXX_FLINKER_SLFLAG = -rpath
