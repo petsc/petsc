@@ -40,7 +40,6 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
   } 
   /* form array of columns we need */
   ierr = PetscMalloc((ec+1)*sizeof(int),&garray);CHKERRQ(ierr);
-  /* ierr = PetscMalloc((ec*bs+1)*sizeof(int),&tmp);CHKERRQ(ierr); */
   ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
   while (tpos) {  
     ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr); 
@@ -80,7 +79,6 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   /* form array of columns we need */
   ierr = PetscMalloc((ec+1)*sizeof(int),&garray);CHKERRQ(ierr);
-  /* ierr = PetscMalloc((ec*bs+1)*sizeof(int),&tmp);CHKERRQ(ierr); */
   ec = 0;
   for (i=0; i<Nbs; i++) {
     if (indices[i]) {
@@ -103,17 +101,11 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
   baij->B->n   = ec*B->bs;
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  
-  /*
-  for (i=0,col=0; i<ec; i++) {
-    for (j=0; j<bs; j++,col++) tmp[col] = garray[i]*bs+j;
-  }
-  */
+  
   /* create local vector that is used to scatter into */
   ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&baij->lvec);CHKERRQ(ierr);
 
   /* create two temporary index sets for building scatter-gather */
-
-  /* ierr = ISCreateGeneral(PETSC_COMM_SELF,ec*bs,tmp,&from);CHKERRQ(ierr); */
   for (i=0; i<ec; i++) {
     garray[i] = bs*garray[i];
   }
@@ -153,7 +145,6 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = VecDestroy(gvec);CHKERRQ(ierr);
-  /* ierr = PetscFree(tmp);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 

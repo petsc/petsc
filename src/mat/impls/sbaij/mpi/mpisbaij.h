@@ -43,8 +43,8 @@ typedef struct {
 
   Vec           lvec;                    /* local seq vector */
   VecScatter    Mvctx;            /* scatter context for vector */
-  /* Vec           slvec0,slvec1;   */        /* parallel vectors */
-  /* VecScatter    sMvctx; */
+  Vec           slvec0,slvec1;          /* parallel vectors */
+  VecScatter    sMvctx; 
   PetscTruth    roworiented;             /* if true, row-oriented input, default true */
 
   /* The following variables are for MatGetRow() */
