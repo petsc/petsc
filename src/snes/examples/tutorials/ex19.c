@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.20 2001/04/19 20:29:26 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.21 2001/04/24 22:04:24 bsmith Exp bsmith $*/
 
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
   \n\
@@ -456,8 +456,6 @@ int FormFunctionLocal(Field **x,Field **f,DALocalInfo *info,void *ptr)
   hxdhy = hx*dhy;                 hydhx = hy*dhx;
 
   xints = info->xs; xinte = info->xs+info->xm; yints = info->ys; yinte = info->ys+info->ym;
-
-  f[-10][-100].u = 2.0;
 
   /* Test whether we are on the bottom edge of the global array */
   if (yints == 0) {
