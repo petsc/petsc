@@ -8,3 +8,5 @@ set CONF=linux-gnu-ia64
 
 if ($day == Tue || $day == Wed || $day == Thu) then
   set CONF=linux-gnu-ia64-intel
+endif
+

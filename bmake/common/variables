@@ -175,6 +175,7 @@ CP       = cp
 BFORT    = bfort
 DOCTEXT  = doctext
 MAPNAMES = mapnames
+C2HTML   = c2html
 #
 # The following include files set customized site, optimization, and version
 # options.  Do NOT remove any of these include files.  You should generally
