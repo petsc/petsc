@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.124 1998/04/01 00:42:36 balay Exp balay $ 
+# $Id: buildtest,v 1.125 1998/04/01 15:58:11 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -26,7 +26,7 @@ set SB_S=/sandbox/balay/petsc
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
   set M =(snake  fire       violet     flight        tri63       ptera        lava        quad        eagle       yukon       homer        )
-  set B =(O      O_complex  g          g_c++         O_c++       Opg          O           O_c++       g           g_complex   g            ) 
+  set B =(O      O_complex  g          g_c++         O_c++       Opg          O           O_c++       g           g_complex   g            )
   set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha        solaris_uni rs6000      sun4        IRIX64      freebsd_egcs )
   set S =(shared shared     shared     shared        noshared    shared       shared      shared      shared      shared      noshared     )
   set J1=(1      1          1          1             1           1            4           4           2           1           1            )
@@ -38,7 +38,7 @@ if ($day == Sun) then
   set H=($PETSC  $SB_S      $TMP_P     $BALAY        $TMP_P      $LOIS        $SB_P       $CCST       $TMP_B      $SB_P       $TMP_P       )
 endif
 if ($day == Mon) then
-  set M =(snake  fire       violet     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
+  set M =(snake  fire       alaska     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
   set B =(g      Opg_c++    O_c++      g             O           g           Opg          O           Opg_complex O_complex   O_c++        )
   set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha_nolog solaris      rs6000      sun4        IRIX64      freebsd_egcs )
   set S =(shared noshared   shared     shared        noshared    shared      noshared     shared      shared      shared      nonshared    )
@@ -64,7 +64,7 @@ if ($day == Tue) then
   set H=($PETSC  $SB_S      $TMP_P     $BALAY        $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
 endif
 if ($day == Wed) then
-  set M =(snake  fire       violet     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
+  set M =(snake  fire       alaska     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
   set B =(g      g_c++      O          g_complex     Opg_complex Opg         Opg_c++      Opg_complex O           g           O            )
   set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha_uni   solaris_uni  rs6000      sun4        IRIX64      freebsd_egcs )
   set S =(shared shared     shared     shared        noshared    shared      noshared     shared      shared      shared      noshared     )
@@ -90,7 +90,7 @@ if ($day == Thu) then
   set H=($PETSC  $SB_S      $TMP_P     $BALAY       $TMP_P      $LOIS       $SB_P        $CCST       $TMP_B      $SB_P       $TMP_P       )
 endif  
 if ($day == Fri) then
-  set M =(snake  fire       violet     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
+  set M =(snake  fire       alaska     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
   set B =(g      O_c++      g_complex  O_complex     g           O           Opg          g_complex   g_c++       O           g            )
   set A =(hpux   solaris    IRIX       linux         rs6000_gnu  alpha_uni   solaris      rs6000      sun4        IRIX64      freebsd_egcs )
   set S =(shared shared     shared     shared        noshared    shared      noshared     shared      shared      shared      noshared     )
