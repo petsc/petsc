@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.362 2000/04/12 04:22:51 bsmith Exp balay $*/
+/*$Id: matrix.c,v 1.363 2000/05/05 22:15:29 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -1331,11 +1331,7 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,PetscReal f,Mat *fact)
 
    Input Parameters:
 +  mat - the matrix
--  row, col - row and  column permutations
-
-   Output Parameters:
-.  fact - symbolically factored matrix that must have been generated
-          by MatLUFactorSymbolic()
+-  fact - the matrix generated for the factor, from MatLUFactorSymbolic()
 
    Notes:
    See MatLUFactor() for in-place factorization.  See 

@@ -1,4 +1,4 @@
-/*$Id: getcolv.c,v 1.14 2000/05/04 03:12:33 bsmith Exp balay $*/
+/*$Id: getcolv.c,v 1.15 2000/05/05 22:16:35 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
@@ -10,9 +10,9 @@
    Not Collective
 
    Input Parameters:
-+  X - the matrix
-.  v - the vector
--  c - the column requested
++  A - the matrix
+.  yy - the vector
+-  c - the column requested (in global numbering)
 
    Level: advanced
 
