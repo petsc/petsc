@@ -1,10 +1,15 @@
-/*$Id: zsys.c,v 1.81 2000/06/24 18:51:29 bsmith Exp balay $*/
+/*$Id: zsys.c,v 1.82 2000/06/25 15:23:15 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
 #include "petscengine.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define petscfopen_                PETSCFOPEN
+#define petscfclose_               PETSCFCLOSE
+#define petscfprintf_              PETSCFPRINTF
+#define petscsynchronizedfprintf_  PETSCSYNCHRONIZEDFPRINTF
+#define petscsynchronizedflush_    PETSCSYNCHRONIZEDFLUSH
 #define chkmemfortran_             CHKMEMFORTRAN
 #define petscattachdebugger_       PETSCATTACHDEBUGGER
 #define petscobjectsetname_        PETSCOBJECTSETNAME
@@ -37,9 +42,7 @@
 #define petscsynchronizedflush_    PETSCSYNCHRONIZEDFLUSH
 #define petscsplitownership_       PETSCSPLITOWNERSHIP
 #define petscobjectgetnewtag_      PETSCOBJECTGETNEWTAG
-#define petscobjectrestorenewtag_  PETSCOBJECTRESTORENEWTAG
 #define petsccommgetnewtag_        PETSCCOMMGETNEWTAG
-#define petsccommrestorenewtag_    PETSCCOMMRESTORENEWTAG
 #define petscfptrap_               PETSCFPTRAP
 #define petscoffsetfortran_        PETSCOFFSETFORTRAN
 #define petscmatlabenginecreate_      PETSCMATLABENGINECREATE
@@ -52,6 +55,11 @@
 #define petscmatlabengineputarray_    PETSCMATLABENGINEPUTARRAY
 #define petscmatlabenginegetarray_    PETSCMATLABENGINEGETARRAY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define petscfopen_                   petscfopen
+#define petscfclose_                  petscfclose
+#define petscfprintf_                 petscfprintf
+#define petscsynchronizedfprintf_     petscsynchronizedfprintf
+#define petscsynchronizedflush_       petscsynchronizedflush
 #define petscmatlabenginecreate_      petscmatlabenginecreate
 #define petscmatlabenginedestroy_     petscmatlabenginedestroy
 #define petscmatlabengineevaluate_    petscmatlabengineevaluate
@@ -64,9 +72,7 @@
 #define petscoffsetfortran_        petscoffsetfortran     
 #define chkmemfortran_             chkmemfortran
 #define petscobjectgetnewtag_      petscobjectgetnewtag
-#define petscobjectrestorenewtag_  petscobjectrestorenewtag
 #define petsccommgetnewtag_        petsccommgetnewtag
-#define petsccommrestorenewtag_    petsccommrestorenewtag
 #define petscsplitownership_       petscsplitownership
 #define petscbarrier_              petscbarrier
 #define petscstrncpy_              petscstrncpy
@@ -119,7 +125,47 @@ void PETSC_STDCALL petscoffsetfortran_(Scalar *x,Scalar *y,int *shift,int *ierr)
   *ierr = 0;
   *shift = y - x;
 }
+
+void PETSC_STDCALL petscfopen_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),CHAR fmode PETSC_MIXED_LEN(len2),
+                               FILE **file,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+{
+  char *c1,*c2;
+
+  FIXCHAR(fname,len1,c1);
+  FIXCHAR(fmode,len2,c2);
+  *ierr = PetscFOpen((MPI_Comm)PetscToPointerComm(*comm),c1,c2,file);
+  FREECHAR(fname,c1);
+  FREECHAR(fmode,c2);
+}
   
+void PETSC_STDCALL petscfclose_(MPI_Comm *comm,FILE **file,int *ierr)
+{
+  *ierr = PetscFClose((MPI_Comm)PetscToPointerComm(*comm),*file);
+}
+
+void PETSC_STDCALL petscsynchronizedflush_(MPI_Comm *comm,int *ierr)
+{
+  *ierr = PetscSynchronizedFlush((MPI_Comm)PetscToPointerComm(*comm));
+}
+
+void PETSC_STDCALL petscfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+{
+  char *c1;
+
+  FIXCHAR(fname,len1,c1);
+  *ierr = PetscFPrintf((MPI_Comm)PetscToPointerComm(*comm),*file,c1);
+  FREECHAR(fname,c1);
+}
+
+void PETSC_STDCALL petscsynchronizedfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+{
+  char *c1;
+
+  FIXCHAR(fname,len1,c1);
+  *ierr = PetscSynchronizedFPrintf((MPI_Comm)PetscToPointerComm(*comm),*file,c1);
+  FREECHAR(fname,c1);
+}
+
 void PETSC_STDCALL petscsetfptrap_(PetscFPTrap *flag,int *ierr)
 {
   *ierr = PetscSetFPTrap(*flag);
@@ -130,19 +176,9 @@ void PETSC_STDCALL petscobjectgetnewtag_(PetscObject *obj,int *tag,int *ierr)
   *ierr = PetscObjectGetNewTag(*obj,tag);
 }
 
-void PETSC_STDCALL petscobjectrestorenewtag_(PetscObject *obj,int *tag,int *ierr)
-{
-  *ierr = PetscObjectRestoreNewTag(*obj,tag);
-}
-
 void PETSC_STDCALL petsccommgetnewtag_(MPI_Comm *comm,int *tag,int *ierr)
 {
   *ierr = PetscCommGetNewTag((MPI_Comm)PetscToPointerComm(*comm),tag);
-}
-
-void PETSC_STDCALL petsccommrestorenewtag_(MPI_Comm *comm,int *tag,int *ierr)
-{
-  *ierr = PetscCommRestoreNewTag((MPI_Comm)PetscToPointerComm(*comm),tag);
 }
 
 void PETSC_STDCALL petscsplitownership_(MPI_Comm *comm,int *n,int *N,int *ierr)
@@ -408,10 +444,6 @@ void PETSC_STDCALL petscsequentialphaseend_(MPI_Comm *comm,int *ng,int *ierr){
 	(MPI_Comm)PetscToPointerComm(*comm),*ng);
 }
 
-void PETSC_STDCALL petscsynchronizedflush_(MPI_Comm *comm,int *ierr)
-{
-  *ierr = PetscSynchronizedFlush((MPI_Comm)PetscToPointerComm(*comm));
-}
 
 #if defined(PETSC_HAVE_MATLAB)
 
