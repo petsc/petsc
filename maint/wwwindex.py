@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.33 2000/09/27 16:58:41 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.34 2000/10/04 19:09:36 balay Exp balay $ 
 # 
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -256,7 +256,7 @@ def getallmandirs(dirs):
       mandirs = []
       for filename in dirs:
             path,name = posixpath.split(filename)
-            if name == 'RCS' or name == 'sec': continue
+            if name == 'RCS' or name == 'sec' or name == "concepts" : continue
             if posixpath.isdir(filename):
                   mandirs.append(filename)
       return mandirs
