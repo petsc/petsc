@@ -1,11 +1,11 @@
 #!/usr/local/bin/expect -f
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: autoftp,v 1.10 1997/09/10 19:38:40 balay Exp balay $ 
 
 #
 #  automatically ftp's to a certain site and 
 # drops off a file
 #
-#  old passwords: Pzr92a8i, 1953bz24
+#  old passwords: K23p66ai, Pzr92a8i, 1953bz24
 # 
   set host     [lindex $argv 0]
   set user     [lindex $argv 1]
@@ -22,7 +22,7 @@
      expect {*Name*}
      send "$user\r"
      expect {*Password:}
-     send "K23p66ai\r"
+     send "F43z22gh\r"
      expect {*ftp>*}
      # may be moving a large file 
      set timeout 2000
