@@ -131,11 +131,12 @@ int  KSPSolve_CGNE(KSP ksp,int *its)
   KSP_CG       *cg;
   Mat          Amat,Pmat;
   MatStructure pflag;
-  PetscTruth   diagonalscale;
+  PetscTruth   diagonalscale,transpose_pc;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCDiagonalScale(ksp->B,&diagonalscale); CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  ierr = PCHasTransposeApply(ksp->B,&transpose_pc); CHKERRQ(ierr);
 
   cg            = (KSP_CG*)ksp->data;
   eigs          = ksp->calc_sings;
@@ -166,7 +167,11 @@ int  KSPSolve_CGNE(KSP ksp,int *its)
     ierr = VecCopy(T,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
   ierr = PCApply(ksp->B,R,T,ksp->pc_side); CHKERRQ(ierr);
-  ierr = PCApplyTranspose(ksp->B,T,Z); CHKERRQ(ierr);
+  if (transpose_pc) {
+    ierr = PCApplyTranspose(ksp->B,T,Z); CHKERRQ(ierr);
+  } else {
+    ierr = PCApply(ksp->B,T,Z,ksp->pc_side); CHKERRQ(ierr);
+  }
 
   ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);
   if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
@@ -221,7 +226,11 @@ int  KSPSolve_CGNE(KSP ksp,int *its)
      ma = -a; VecAXPY(&ma,Z,R);                      /*     r <- r - az     */
      if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
        ierr = PCApply(ksp->B,R,T,ksp->pc_side); CHKERRQ(ierr);
-       ierr = PCApplyTranspose(ksp->B,T,Z); CHKERRQ(ierr);
+       if (transpose_pc) {
+	 ierr = PCApplyTranspose(ksp->B,T,Z); CHKERRQ(ierr);
+       } else {
+	 ierr = PCApply(ksp->B,T,Z,ksp->pc_side); CHKERRQ(ierr);
+       }
        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
      } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
        ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);

@@ -500,7 +500,7 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 
 .keywords: PC, apply, transpose
 
-.seealso: PCApplyTranspose(), PCApplyBAorAB(), PCApplyBAorABTranspose()
+.seealso: PCApply(), PCApplyBAorAB(), PCApplyBAorABTranspose(), PCHasTransposeApply()
 @*/
 int PCApplyTranspose(PC pc,Vec x,Vec y)
 {
@@ -520,6 +520,33 @@ int PCApplyTranspose(PC pc,Vec x,Vec y)
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCHasTransposeApply"
+/*@
+   PCHasTransposeApply - Test whether the preconditioner has a transpose apply operation
+
+   Collective on PC and Vec
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  flg - PETSC_TRUE if a transpose operation is defined
+
+   Level: developer
+
+.keywords: PC, apply, transpose
+
+.seealso: PCApplyTranspose()
+@*/
+int PCHasTransposeApply(PC pc,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  *flg = (PetscTruth) (pc->ops->applytranspose);
   PetscFunctionReturn(0);
 }
 
