@@ -1,3 +1,4 @@
+from __future__ import generators
 import base
 import build.transform
 import build.fileset
@@ -213,6 +214,18 @@ class Linker(Processor):
   def __str__(self):
     return 'Linker('+self.processor+') for '+str(self.inputTag)
 
+  def extraLibrariesIter(self):
+    '''Return an iterator for the extra libraries'''
+    for lib in self.extraLibraries:
+      try:
+        lib = str(lib)
+      except TypeError:
+        for l in lib.getPath():
+          yield l
+      else:
+        yield lib
+    return
+
   def getLibrary(self, object):
     '''Get the library for "object", and ensures that a FileSet all has the same library'''
     if isinstance(object, build.fileset.FileSet):
@@ -245,7 +258,7 @@ class Linker(Processor):
   def getLinkerFlags(self, source):
     '''Return a list of the linker specific flags. The default is gives the extraLibraries as arguments.'''
     flags = []
-    for lib in map(str, self.extraLibraries):
+    for lib in self.extraLibrariesIter():
       # Options and object files are passed verbatim
       if lib[0] == '-' or lib.endswith('.o'):
         flags.append(lib)

@@ -83,6 +83,9 @@ class ArgumentPath (base.Base):
     return
 
   def __str__(self):
+    return self.getPath()
+
+  def getPath(self):
     if self.path is None:
       return self.argDB[self.key]
     return os.path.join(self.argDB[key], self.path)

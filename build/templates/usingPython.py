@@ -77,19 +77,16 @@ class UsingPython (base.Base):
         except: pass
       except: pass
 
-    extraLibraries = [self.argDB['PYTHON_LIB']]
+    extraLibraries = []
     if not distutils.sysconfig.get_config_var('LIBS') is None:
       for lib in distutils.sysconfig.get_config_var('LIBS').split():
         # Change -l<lib> to lib<lib>.so
         extraLibraries.append('lib'+lib[2:]+'.so')
+    self.argDB['PYTHON_EXTRA_LIB'] = extraLibraries
 
-    # We need separate libraries in separate keys
     self.extraLibraries = []
-    i = 0
-    for lib in extraLibraries:
-      self.argDB['PYTHON_LIB_'+str(i)] = lib
-      self.extraLibraries.append(project.ArgumentPath('PYTHON_LIB_'+str(i)))
-      i += 1
+    self.extraLibraries.append(project.ArgumentPath('PYTHON_LIB'))
+    self.extraLibraries.append(project.ArgumentPath('PYTHON_EXTRA_LIB'))
     return self.extraLibraries
 
   def getServerLibrary(self, package, proj = None, lang = None):
