@@ -35,6 +35,28 @@
 #endif
 
 EXTERN_C_BEGIN
+static int (PETSC_STDCALL *theirmat)(DMMG*,Mat*,int*);
+EXTERN_C_END
+
+static int ourrhs(DMMG dmmg,Vec vec)
+{
+  int              ierr = 0;
+  (*(int (PETSC_STDCALL *)(DMMG*,Vec*,int*))(((PetscObject)dmmg->dm)->fortran_func_pointers[0]))(&dmmg,&vec,&ierr);
+  return ierr;
+}
+
+/*
+   Since DMMGSetKSP() immediately calls the matrix functions for each level we do not need to store
+  the mat() function inside the DMMG object
+*/
+static int ourmat(DMMG dmmg,Mat mat)
+{
+  int              ierr = 0;
+  (*theirmat)(&dmmg,&mat,&ierr);
+  return ierr;
+}
+
+EXTERN_C_BEGIN
 
 void PETSC_STDCALL dmmggetx_(DMMG **dmmg,Vec *x,int *ierr)
 {
@@ -67,24 +89,6 @@ void PETSC_STDCALL dmmggetlevels_(DMMG **dmmg,int *x,int *ierr)
 }
 
 /* ----------------------------------------------------------------------------------------------------------*/
-static int ourrhs(DMMG dmmg,Vec vec)
-{
-  int              ierr = 0;
-  (*(int (PETSC_STDCALL *)(DMMG*,Vec*,int*))(((PetscObject)dmmg->dm)->fortran_func_pointers[0]))(&dmmg,&vec,&ierr);
-  return ierr;
-}
-
-/*
-   Since DMMGSetKSP() immediately calls the matrix functions for each level we do not need to store
-  the mat() function inside the DMMG object
-*/
-static int (PETSC_STDCALL *theirmat)(DMMG*,Mat*,int*);
-static int ourmat(DMMG dmmg,Mat mat)
-{
-  int              ierr = 0;
-  (*theirmat)(&dmmg,&mat,&ierr);
-  return ierr;
-}
 
 void PETSC_STDCALL dmmgsetksp_(DMMG **dmmg,int (PETSC_STDCALL *rhs)(DMMG*,Vec*,int*),int (PETSC_STDCALL *mat)(DMMG*,Mat*,int*),int *ierr)
 {

@@ -47,9 +47,8 @@
 #endif
 
 typedef void (PETSC_STDCALL *FCN)(PetscDraw*,void*,int*); /* force argument to next function to not be extern C*/
-EXTERN_C_BEGIN
-
 static FCN f1;
+
 static int ourdrawzoom(PetscDraw draw,void *ctx)
 {
   int ierr = 0;
@@ -57,6 +56,8 @@ static int ourdrawzoom(PetscDraw draw,void *ctx)
   (*f1)(&draw,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
+EXTERN_C_BEGIN
+
 
 void PETSC_STDCALL petscdrawzoom_(PetscDraw *draw,FCN f,void *ctx,int *ierr)
 {

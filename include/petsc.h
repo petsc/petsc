@@ -435,6 +435,7 @@ EXTERN int PetscObjectQuery(PetscObject,const char[],PetscObject *);
 EXTERN int PetscObjectComposeFunction(PetscObject,const char[],const char[],void (*)(void));
 
 typedef void (*FCNVOID)(void); /* cast in next macro should never be extern C */
+typedef int  (*FCNINTVOID)(void); /* used in casts to make sure they are not extern C */
 /*MC
    PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object. 
                        
