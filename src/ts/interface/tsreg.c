@@ -54,7 +54,7 @@ PetscErrorCode TSSetType(TS ts, const TSType type)
   if (match) PetscFunctionReturn(0);
 
   /* Get the function pointers for the method requested */
-  if (TSRegisterAllCalled == PETSC_FALSE) {
+  if (!TSRegisterAllCalled) {
     ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscFListFind(ts->comm, TSList, type, (void (**)(void)) &r);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ PetscErrorCode TSGetType(TS ts, TSType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   PetscValidPointer(type,2);
-  if (TSRegisterAllCalled == PETSC_FALSE) {
+  if (!TSRegisterAllCalled) {
     ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   *type = ts->type_name;
@@ -147,7 +147,7 @@ PetscErrorCode TSRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (TSList != PETSC_NULL) {
+  if (TSList) {
     ierr = PetscFListDestroy(&TSList);CHKERRQ(ierr);
     TSList = PETSC_NULL;
   }

@@ -86,6 +86,23 @@ PetscErrorCode PetscInitialized(PetscTruth *isInitialized)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFinalized"
+/*@
+      PetscFinalized - Determine whether PetscFinalize() has been called yet
+  
+   Level: developer
+
+.seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
+@*/
+PetscErrorCode PetscFinalized(PetscTruth *isFinalized)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(isFinalized, 1);
+  *isFinalized = PetscFinalizeCalled;
+  PetscFunctionReturn(0);
+}
+
 EXTERN PetscErrorCode        PetscOptionsCheckInitial_Private(void);
 extern PetscTruth PetscBeganMPI;
 
@@ -349,7 +366,7 @@ PetscErrorCode PetscInitialize(int *argc,char ***args,const char file[],const ch
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
-
+  
   ierr = PetscOptionsCreate();CHKERRQ(ierr);
 
   /*
@@ -373,6 +390,7 @@ PetscErrorCode PetscInitialize(int *argc,char ***args,const char file[],const ch
     PetscGlobalArgs = *args;
   }
   PetscInitializeCalled = PETSC_TRUE;
+  PetscFinalizeCalled   = PETSC_FALSE;
 
   /* Done after init due to a bug in MPICH-GM? */
   ierr = PetscErrorPrintfInitialize();CHKERRQ(ierr);
@@ -733,6 +751,7 @@ PetscErrorCode PetscFinalize(void)
 */
   ierr = PetscClearMalloc();CHKERRQ(ierr);
   PetscInitializeCalled = PETSC_FALSE;
+  PetscFinalizeCalled   = PETSC_TRUE;
   PetscFunctionReturn(ierr);
 }
 

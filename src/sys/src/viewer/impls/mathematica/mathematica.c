@@ -81,10 +81,10 @@ static PetscErrorCode PetscViewerDestroy_Mathematica(PetscViewer viewer)
 
   PetscFunctionBegin;
   MLClose(vmath->link);
-  if (vmath->linkname != PETSC_NULL) {
+  if (vmath->linkname) {
     ierr = PetscFree(vmath->linkname);CHKERRQ(ierr);
   }
-  if (vmath->linkhost != PETSC_NULL) {
+  if (vmath->linkhost) {
     ierr = PetscFree(vmath->linkhost);CHKERRQ(ierr);
   }
   ierr = PetscFree(vmath);CHKERRQ(ierr);
@@ -209,11 +209,11 @@ PetscErrorCode PetscViewerMathematicaParseLinkMode_Private(char *modename, LinkM
   ierr = PetscStrcasecmp(modename, "Create",  &isCreate);CHKERRQ(ierr);
   ierr = PetscStrcasecmp(modename, "Connect", &isConnect);CHKERRQ(ierr);
   ierr = PetscStrcasecmp(modename, "Launch",  &isLaunch);CHKERRQ(ierr);
-  if (isCreate == PETSC_TRUE) {
+  if (isCreate) {
     *mode = MATHEMATICA_LINK_CREATE;
-  } else if (isConnect == PETSC_TRUE) {
+  } else if (isConnect) {
     *mode = MATHEMATICA_LINK_CONNECT;
-  } else if (isLaunch == PETSC_TRUE) {
+  } else if (isLaunch) {
     *mode = MATHEMATICA_LINK_LAUNCH;
   } else {
     SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid Mathematica link mode: %s", modename);
@@ -245,14 +245,14 @@ PetscErrorCode PetscViewerMathematicaSetFromOptions(PetscViewer v)
 
   /* Get link name */
   ierr = PetscOptionsGetString("viewer_", "-math_linkname", linkname, 255, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscViewerMathematicaSetLinkName(v, linkname);CHKERRQ(ierr);
   }
   /* Get link port */
   numPorts = size;
   ierr = PetscMalloc(size * sizeof(int), &ports);CHKERRQ(ierr);
   ierr = PetscOptionsGetIntArray("viewer_", "-math_linkport", ports, &numPorts, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     if (numPorts > rank) {
       snprintf(linkname, 255, "%6d", ports[rank]);
     } else {
@@ -265,7 +265,7 @@ PetscErrorCode PetscViewerMathematicaSetFromOptions(PetscViewer v)
   numHosts = size;
   ierr = PetscMalloc(size * sizeof(char *), &hosts);CHKERRQ(ierr);
   ierr = PetscOptionsGetStringArray("viewer_", "-math_linkhost", hosts, &numHosts, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     if (numHosts > rank) {
       ierr = PetscStrncpy(hostname, hosts[rank], 255);CHKERRQ(ierr);
     } else {
@@ -279,7 +279,7 @@ PetscErrorCode PetscViewerMathematicaSetFromOptions(PetscViewer v)
   ierr = PetscFree(hosts);CHKERRQ(ierr);
   /* Get link mode */
   ierr = PetscOptionsGetString("viewer_", "-math_linkmode", modename, 255, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     LinkMode mode;
 
     ierr = PetscViewerMathematicaParseLinkMode_Private(modename, &mode);CHKERRQ(ierr);
@@ -287,36 +287,36 @@ PetscErrorCode PetscViewerMathematicaSetFromOptions(PetscViewer v)
   }
   /* Get graphics type */
   ierr = PetscOptionsGetString("viewer_", "-math_graphics", type, 255, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     PetscTruth isMotif, isPS, isPSFile;
 
     ierr = PetscStrcasecmp(type, "Motif",  &isMotif);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(type, "PS",     &isPS);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(type, "PSFile", &isPSFile);CHKERRQ(ierr);
-    if (isMotif == PETSC_TRUE) {
+    if (isMotif) {
       vmath->graphicsType = GRAPHICS_MOTIF;
-    } else if (isPS == PETSC_TRUE) {
+    } else if (isPS) {
       vmath->graphicsType = GRAPHICS_PS_STDOUT;
-    } else if (isPSFile == PETSC_TRUE) {
+    } else if (isPSFile) {
       vmath->graphicsType = GRAPHICS_PS_FILE;
     }
   }
   /* Get plot type */
   ierr = PetscOptionsGetString("viewer_", "-math_type", type, 255, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     PetscTruth isTri, isVecTri, isVec, isSurface;
 
     ierr = PetscStrcasecmp(type, "Triangulation",       &isTri);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(type, "VectorTriangulation", &isVecTri);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(type, "Vector",              &isVec);CHKERRQ(ierr);
     ierr = PetscStrcasecmp(type, "Surface",             &isSurface);CHKERRQ(ierr);
-    if (isTri == PETSC_TRUE) {
+    if (isTri) {
       vmath->plotType     = MATHEMATICA_TRIANGULATION_PLOT;
-    } else if (isVecTri == PETSC_TRUE) {
+    } else if (isVecTri) {
       vmath->plotType     = MATHEMATICA_VECTOR_TRIANGULATION_PLOT;
-    } else if (isVec == PETSC_TRUE) {
+    } else if (isVec) {
       vmath->plotType     = MATHEMATICA_VECTOR_PLOT;
-    } else if (isSurface == PETSC_TRUE) {
+    } else if (isSurface) {
       vmath->plotType     = MATHEMATICA_SURFACE_PLOT;
     }
   }
@@ -747,7 +747,7 @@ PetscErrorCode PetscViewerMathematicaPutCSRMatrix(PetscViewer viewer, int m, int
   ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);CHKERRQ(ierr);
   MLGetSymbol(link, &symbol);
   ierr = PetscStrcmp("True", (char *) symbol, &match);CHKERRQ(ierr);
-  if (match == PETSC_FALSE) {
+  if (!match) {
     MLDisownSymbol(link, symbol);
     SETERRQ(PETSC_ERR_PLIB, "Invalid CSR matrix in Mathematica");
   }

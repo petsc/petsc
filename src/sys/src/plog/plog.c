@@ -147,17 +147,17 @@ PetscErrorCode PetscLogBegin_Private(void)
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   ierr = PetscOptionsHasName(PETSC_NULL, "-log_exclude_actions", &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     logActions = PETSC_FALSE;
   }
   ierr = PetscOptionsHasName(PETSC_NULL, "-log_exclude_objects", &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     logObjects = PETSC_FALSE;
   }
-  if (logActions == PETSC_TRUE) {
+  if (logActions) {
     ierr = PetscMalloc(maxActions * sizeof(Action), &actions);CHKERRQ(ierr);
   }
-  if (logObjects == PETSC_TRUE) {
+  if (logObjects) {
     ierr = PetscMalloc(maxObjects * sizeof(Object), &objects);CHKERRQ(ierr);
   }
   _PetscLogPHC = PetscLogObjCreateDefault;
@@ -775,7 +775,7 @@ PetscErrorCode PetscLogEventSetActiveAll(PetscEvent event, PetscTruth isActive)
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   for(stage = 0; stage < stageLog->numStages; stage++) {
-    if (isActive == PETSC_TRUE) {
+    if (isActive) {
       ierr = EventPerfLogActivate(stageLog->stageInfo[stage].eventLog, event);CHKERRQ(ierr);
     } else {
       ierr = EventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event);CHKERRQ(ierr);
@@ -1331,15 +1331,15 @@ PetscErrorCode PetscLogPrintSummary(MPI_Comm comm, const char filename[])
     ierr = MPI_Allreduce(localStageUsed,    stageUsed,    numStages, MPI_INT, MPI_LOR,  comm);CHKERRQ(ierr);
     ierr = MPI_Allreduce(localStageVisible, stageVisible, numStages, MPI_INT, MPI_LAND, comm);CHKERRQ(ierr);
     for(stage = 0; stage < numStages; stage++) {
-      if (stageUsed[stage] == PETSC_TRUE) {
+      if (stageUsed[stage]) {
         ierr = PetscFPrintf(comm, fd, "\nSummary of Stages:   ----- Time ------  ----- Flops -----  --- Messages ---  -- Message Lengths --  -- Reductions --\n");CHKERRQ(ierr);
         ierr = PetscFPrintf(comm, fd, "                        Avg     %%Total     Avg     %%Total   counts   %%Total     Avg         %%Total   counts   %%Total \n");CHKERRQ(ierr);
         break;
       }
     }
     for(stage = 0; stage < numStages; stage++) {
-      if (stageUsed[stage] == PETSC_FALSE) continue;
-      if (localStageUsed[stage] == PETSC_TRUE) {
+      if (!stageUsed[stage]) continue;
+      if (localStageUsed[stage]) {
         ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.time,          &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
         ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.flops,         &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
         ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.numMessages,   &mess,      1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
@@ -1444,8 +1444,8 @@ PetscErrorCode PetscLogPrintSummary(MPI_Comm comm, const char filename[])
                                                                                                           CHKERRQ(ierr); 
   /* Problem: The stage name will not show up unless the stage executed on proc 1 */
   for(stage = 0; stage < numStages; stage++) {
-    if (stageVisible[stage] == PETSC_FALSE) continue;
-    if (localStageUsed[stage] == PETSC_TRUE) {
+    if (!stageVisible[stage]) continue;
+    if (localStageUsed[stage]) {
       ierr = PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stageInfo[stage].name);CHKERRQ(ierr);
       ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.time,          &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
       ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.flops,         &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
@@ -1470,7 +1470,7 @@ PetscErrorCode PetscLogPrintSummary(MPI_Comm comm, const char filename[])
        Problem: If the event did not happen on proc 1, its name will not be available.
        Problem: Event visibility is not implemented
     */
-    if (localStageUsed[stage] == PETSC_TRUE) {
+    if (localStageUsed[stage]) {
       eventInfo      = stageLog->stageInfo[stage].eventLog->eventInfo;
       localNumEvents = stageLog->stageInfo[stage].eventLog->numEvents;
     } else {
@@ -1478,7 +1478,7 @@ PetscErrorCode PetscLogPrintSummary(MPI_Comm comm, const char filename[])
     }
     ierr = MPI_Allreduce(&localNumEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
     for(event = 0; event < numEvents; event++) {
-      if ((localStageUsed[stage] == PETSC_TRUE) && (event < stageLog->stageInfo[stage].eventLog->numEvents)) {
+      if (localStageUsed[stage] && (event < stageLog->stageInfo[stage].eventLog->numEvents)) {
         if ((eventInfo[event].count > 0) && (eventInfo[event].time > 0.0)) {
           flopr = eventInfo[event].flops/eventInfo[event].time;
         } else {
@@ -1554,7 +1554,7 @@ PetscErrorCode PetscLogPrintSummary(MPI_Comm comm, const char filename[])
   /* We should figure out the longest object name here (now 20 characters) */
   ierr = PetscFPrintf(comm, fd, "Object Type          Creations   Destructions   Memory  Descendants' Mem.\n");CHKERRQ(ierr);
   for(stage = 0; stage < numStages; stage++) {
-    if (localStageUsed[stage] == PETSC_TRUE) {
+    if (localStageUsed[stage]) {
       classInfo = stageLog->stageInfo[stage].classLog->classInfo;
       ierr = PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stageInfo[stage].name);CHKERRQ(ierr);
       for(oclass = 0; oclass < stageLog->stageInfo[stage].classLog->numClasses; oclass++) {

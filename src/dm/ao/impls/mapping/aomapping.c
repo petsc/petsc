@@ -48,7 +48,7 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   }
 
   ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
-  if (iascii == PETSC_TRUE) {
+  if (iascii) {
     PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %D\n", aomap->N);
     PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n");
     for(i = 0; i < aomap->N; i++) {
@@ -379,7 +379,7 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp[
   ierr = PetscFree(allapp);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL, "-ao_view", &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = AOView(ao, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 

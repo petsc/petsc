@@ -72,13 +72,13 @@ PC/Mat
   Fix MatGet/RestoreRow/ColumnIJ() to have an additional flag indicating if one may change the
 ia and ja data. Then the reoordering codes need to check that flag since Sparsepack corrupts the data.
 
-  For seqaij and seqbaij handle many empty rows for optimization re Hong and Kris
+  + (Hong) For seqaij and seqbaij handle many empty rows for optimization re Hong and Kris
 
   Fix all MatPartitioners to optionally turn on edge weights from the matrix values.
   Currently the are ignored for all partitioners except parmetis, where they are 
   incorrectly always used.
 
-  Convert the Tufo-Fischer parallel direct solver to its own PC.
+  + (Satish) Convert the Tufo-Fischer parallel direct solver to its own PC.
 
   Manual pages for partitioners
 
@@ -97,6 +97,9 @@ ia and ja data. Then the reoordering codes need to check that flag since Sparsep
   Add support for i,j,k too large to get ignored just like negative ones get ignored.
 
 DMMG
+
+DM
+   General mechanism for DMGetMatrix() etc ...
 
 DA
 
@@ -120,9 +123,6 @@ General
     in vecfinalizepackage() and have a PETSc way to register packages that are freed on the end of petsc
 
   Allow setting precision of printed numbers in ASCII viewers.
-
-  PetscSequentialPhaseBegin/End..() should NOT use a tag of 0!!! Need to stash tag used in begin
-  in communicator for use in end?
 
 Related Packages
 

@@ -36,7 +36,7 @@ PetscErrorCode VecInitializePackage(char *path)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
+  if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&IS_COOKIE,          "Index Set");CHKERRQ(ierr);
@@ -90,7 +90,7 @@ PetscErrorCode VecInitializePackage(char *path)
   ierr = PetscLogEventSetActiveAll(VEC_ReduceBarrier, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogInfoDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ PetscErrorCode VecInitializePackage(char *path)
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogEventDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ PetscErrorCode VecInitializePackage(char *path)
   }
   /* Special processing */
   ierr = PetscOptionsHasName(PETSC_NULL, "-log_sync", &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscLogEventActivate(VEC_ScatterBarrier);CHKERRQ(ierr);
     ierr = PetscLogEventActivate(VEC_NormBarrier);CHKERRQ(ierr);
     ierr = PetscLogEventActivate(VEC_DotBarrier);CHKERRQ(ierr);

@@ -80,7 +80,7 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   ierr = PetscMalloc(h->maxValues * sizeof(PetscReal), &h->values);CHKERRQ(ierr);
   PetscLogObjectMemory(h, (h->maxBins + h->maxValues)*sizeof(PetscReal));
   ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);CHKERRQ(ierr);
-  if (isnull == PETSC_FALSE) {
+  if (!isnull) {
     ierr = PetscDrawAxisCreate(draw, &h->axis);CHKERRQ(ierr);
     PetscLogObjectParent(h, h->axis);
   } else {
@@ -175,7 +175,7 @@ PetscErrorCode PetscDrawHGDestroy(PetscDrawHG hist)
   PetscValidHeader(hist,1);
 
   if (--hist->refct > 0) PetscFunctionReturn(0);
-  if (hist->axis != PETSC_NULL) {
+  if (hist->axis) {
     ierr = PetscDrawAxisDestroy(hist->axis);CHKERRQ(ierr);
   }
   ierr = PetscDrawDestroy(hist->win);CHKERRQ(ierr);
@@ -285,7 +285,7 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);CHKERRQ(ierr);
-  if (isnull == PETSC_TRUE) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(0);
   if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
@@ -342,7 +342,7 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
   } else {
     numBins    = hist->numBins;
     numBinsOld = hist->numBins;
-    if ((hist->integerBins == PETSC_TRUE) && (((int) xmax - xmin) + 1.0e-05 > xmax - xmin)) {
+    if (hist->integerBins && (((int) xmax - xmin) + 1.0e-05 > xmax - xmin)) {
       initSize = (int) ((int) xmax - xmin)/numBins;
       while (initSize*numBins != (int) xmax - xmin) {
         initSize = PetscMax(initSize - 1, 1);
@@ -448,7 +448,7 @@ PetscErrorCode PetscDrawHGPrint(PetscDrawHG hist)
   } else {
     numBins    = hist->numBins;
     numBinsOld = hist->numBins;
-    if ((hist->integerBins == PETSC_TRUE) && (((int) xmax - xmin) + 1.0e-05 > xmax - xmin)) {
+    if (hist->integerBins && (((int) xmax - xmin) + 1.0e-05 > xmax - xmin)) {
       initSize = (int) ((int) xmax - xmin)/numBins;
       while (initSize*numBins != (int) xmax - xmin) {
         initSize = PetscMax(initSize - 1, 1);

@@ -1165,7 +1165,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
         SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       }
       ierr = PetscMemcmp(mat->ilen,lens[i],mat->mbs *sizeof(PetscInt),&flag);CHKERRQ(ierr);
-      if (flag == PETSC_FALSE) {
+      if (!flag) {
         SETERRQ(PETSC_ERR_ARG_INCOMP,"Cannot reuse matrix. wrong no of nonzeros");
       }
       /* Initial matrix as if empty */

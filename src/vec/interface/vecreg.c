@@ -81,7 +81,7 @@ PetscErrorCode VecGetType(Vec vec, VecType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_COOKIE,1);
   PetscValidCharPointer(type,2);
-  if (VecRegisterAllCalled == PETSC_FALSE) {
+  if (!VecRegisterAllCalled) {
     ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   *type = vec->type_name;
@@ -130,7 +130,7 @@ PetscErrorCode VecRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (VecList != PETSC_NULL) {
+  if (VecList) {
     ierr = PetscFListDestroy(&VecList);CHKERRQ(ierr);
     VecList = PETSC_NULL;
   }

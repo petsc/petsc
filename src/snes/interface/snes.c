@@ -1742,7 +1742,7 @@ PetscErrorCode SNESSolve(SNES snes,Vec x)
 
   if (!snes->setupcalled) {ierr = SNESSetUp(snes,x);CHKERRQ(ierr);}
   else {snes->vec_sol = snes->vec_sol_always = x;}
-  if (snes->conv_hist_reset == PETSC_TRUE) snes->conv_hist_len = 0;
+  if (snes->conv_hist_reset) snes->conv_hist_len = 0;
   ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
   ierr = (*(snes)->solve)(snes);CHKERRQ(ierr);

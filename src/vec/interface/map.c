@@ -32,7 +32,7 @@ static PetscErrorCode PetscMapSetTypeFromOptions_Private(PetscMap map)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (map->type_name != PETSC_NULL) {
+  if (map->type_name) {
     defaultType = map->type_name;
   } else {
     ierr = MPI_Comm_size(map->comm, &size);CHKERRQ(ierr);
@@ -48,7 +48,7 @@ static PetscErrorCode PetscMapSetTypeFromOptions_Private(PetscMap map)
   }
   ierr = PetscOptionsList("-map_type", "PetscMap type"," PetscMapSetType", PetscMapList, defaultType, typeName, 256, &opt);
   CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscMapSetType(map, typeName);CHKERRQ(ierr);
   } else {
     ierr = PetscMapSetType(map, defaultType);CHKERRQ(ierr);
@@ -89,7 +89,7 @@ PetscErrorCode PetscMapSetFromOptions(PetscMap map)
 
   /* Handle generic maptor options */
   ierr = PetscOptionsHasName(PETSC_NULL, "-help", &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscMapPrintHelp(map);CHKERRQ(ierr);
   }
 
@@ -97,7 +97,7 @@ PetscErrorCode PetscMapSetFromOptions(PetscMap map)
   ierr = PetscMapSetTypeFromOptions_Private(map);CHKERRQ(ierr);
 
   /* Handle specific maptor options */
-  if (map->ops->setfromoptions != PETSC_NULL) {
+  if (map->ops->setfromoptions) {
     ierr = (*map->ops->setfromoptions)(map);CHKERRQ(ierr);
   }
 
@@ -131,7 +131,7 @@ PetscErrorCode PetscMapPrintHelp(PetscMap map)
   PetscValidHeaderSpecific(map, MAP_COOKIE,1);
 
   ierr = PetscStrcpy(p, "-");CHKERRQ(ierr);
-  if (map->prefix != PETSC_NULL) {
+  if (map->prefix) {
     ierr = PetscStrcat(p, map->prefix);CHKERRQ(ierr);
   }
 
@@ -162,10 +162,10 @@ PetscErrorCode PetscMapDestroy(PetscMap map)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(map, MAP_COOKIE,1); 
   if (--map->refct > 0) PetscFunctionReturn(0);
-  if (map->range != PETSC_NULL) {
+  if (map->range) {
     ierr = PetscFree(map->range);CHKERRQ(ierr);
   }
-  if (map->ops->destroy != PETSC_NULL) {
+  if (map->ops->destroy) {
     ierr = (*map->ops->destroy)(map);CHKERRQ(ierr);
   }
   PetscLogObjectDestroy(map);

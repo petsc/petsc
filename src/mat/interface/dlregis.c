@@ -25,7 +25,7 @@ PetscErrorCode MatInitializePackage(char *path)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
+  if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&MAT_COOKIE,              "Matrix");CHKERRQ(ierr);
@@ -94,7 +94,7 @@ PetscErrorCode MatInitializePackage(char *path)
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "mat", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogInfoDeactivateClass(MAT_COOKIE);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ PetscErrorCode MatInitializePackage(char *path)
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "mat", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogEventDeactivateClass(MAT_COOKIE);CHKERRQ(ierr);

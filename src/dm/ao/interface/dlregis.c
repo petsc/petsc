@@ -39,7 +39,7 @@ PetscErrorCode DMInitializePackage(const char path[]) {
   ierr = PetscLogEventRegister(&DA_LocalADFunction,    "DALocalADFunc",        DA_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "ao", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogInfoDeactivateClass(AO_COOKIE);CHKERRQ(ierr);
@@ -51,7 +51,7 @@ PetscErrorCode DMInitializePackage(const char path[]) {
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "ao", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogEventDeactivateClass(AO_COOKIE);CHKERRQ(ierr);

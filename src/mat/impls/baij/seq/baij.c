@@ -1589,7 +1589,7 @@ static PetscErrorCode MatZeroRows_SeqBAIJ_Check_Blocks(PetscInt idx[],PetscInt n
           break;
         }
       }
-      if (flg == PETSC_TRUE) { /* No break in the bs */
+      if (flg) { /* No break in the bs */
         sizes[j] = bs;
         i+= bs;
       } else {

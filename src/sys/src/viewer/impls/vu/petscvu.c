@@ -28,7 +28,7 @@ PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (vu->vecSeen == PETSC_TRUE) {
+  if (vu->vecSeen) {
     ierr = PetscViewerVUPrintDeferred(viewer, "};\n\n");CHKERRQ(ierr);
   }
   ierr = PetscViewerVUFlushDeferred(viewer);CHKERRQ(ierr);
@@ -294,7 +294,7 @@ PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _PrintfQueue, &next);CHKERRQ(ierr);
-  if (vu->queue != PETSC_NULL) {
+  if (vu->queue) {
     vu->queue->next = next;
     vu->queue       = next;
     vu->queue->next = PETSC_NULL;

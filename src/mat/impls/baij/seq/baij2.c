@@ -115,7 +115,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,PetscInt 
 
     if (c->mbs!=nrows || c->nbs!=ncols || (*B)->bs!=bs) SETERRQ(PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
     ierr = PetscMemcmp(c->ilen,lens,c->mbs *sizeof(PetscInt),&flag);CHKERRQ(ierr);
-    if (flag == PETSC_FALSE) {
+    if (!flag) {
       SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
     }
     ierr = PetscMemzero(c->ilen,c->mbs*sizeof(PetscInt));CHKERRQ(ierr);
@@ -1371,13 +1371,13 @@ PetscErrorCode MatEqual_SeqBAIJ(Mat A,Mat B,PetscTruth* flg)
   
   /* if the a->i are the same */
   ierr = PetscMemcmp(a->i,b->i,(a->mbs+1)*sizeof(PetscInt),flg);CHKERRQ(ierr);
-  if (*flg == PETSC_FALSE) {
+  if (!*flg) {
     PetscFunctionReturn(0);
   }
   
   /* if a->j are the same */
   ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(PetscInt),flg);CHKERRQ(ierr);
-  if (*flg == PETSC_FALSE) {
+  if (!*flg) {
     PetscFunctionReturn(0);
   }  
   /* if a->a are the same */

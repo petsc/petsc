@@ -96,7 +96,7 @@ PetscErrorCode PCILUSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,P
 
   PetscFunctionBegin;
   ilu = (PC_ILU*)pc->data;
-  if (pc->setupcalled && (ilu->usedt == PETSC_FALSE || ilu->info.dt != dt || ilu->info.dtcol != dtcol || ilu->info.dtcount != dtcount)) {
+  if (pc->setupcalled && (!ilu->usedt || ilu->info.dt != dt || ilu->info.dtcol != dtcol || ilu->info.dtcount != dtcount)) {
     pc->setupcalled   = 0;
     ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
   }
@@ -192,7 +192,7 @@ PetscErrorCode PCILUSetLevels_ILU(PC pc,PetscInt levels)
 
   if (!pc->setupcalled) {
     ilu->info.levels = levels;
-  } else if (ilu->usedt == PETSC_TRUE || ilu->info.levels != levels) {
+  } else if (ilu->usedt || ilu->info.levels != levels) {
     ilu->info.levels = levels;
     pc->setupcalled  = 0;
     ilu->usedt       = PETSC_FALSE;

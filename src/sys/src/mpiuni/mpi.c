@@ -33,6 +33,10 @@ typedef struct {
 static MPI_Attr attr[MAX_ATTR];
 static int      num_attr = 1,mpi_tag_ub = 100000000;
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 /* 
    To avoid problems with prototypes to the system memcpy() it is duplicated here
 */
@@ -145,9 +149,6 @@ int Petsc_MPI_Finalize(void)
 
 /* -------------------     Fortran versions of several routines ------------------ */
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
 /******mpi_init*******/
 void MPIUNI_STDCALL  mpi_init(int *ierr)
@@ -290,7 +291,6 @@ void MPIUNI_STDCALL MPI_ALLREDUCE(void *sendbuf,void *recvbuf,int *count,int *da
   MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
-
 
 #if defined(__cplusplus)
 }

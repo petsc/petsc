@@ -130,7 +130,8 @@ class Configure(config.base.Configure):
       # '' for Unix, .exe for Windows
       self.addMakeMacro('FC_LINKER_SUFFIX','')
       self.addMakeMacro('FC_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.compilers.flibs)    
-
+    else:
+      self.addMakeMacro('FC','')
 
     # shared library linker values
     self.setCompilers.pushLanguage(self.clanguage.language)

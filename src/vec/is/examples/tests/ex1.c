@@ -47,7 +47,7 @@ int main(int argc,char **argv)
      Check identity and permutation 
   */
   ierr = ISPermutation(is,&flg);CHKERRQ(ierr);
-  if (flg == PETSC_TRUE) SETERRQ(1,"ISPermutation");
+  if (flg) SETERRQ(1,"ISPermutation");
   ierr = ISIdentity(is,&flg);CHKERRQ(ierr);
   if (flg != PETSC_TRUE) SETERRQ(1,"ISIdentity");
   ierr = ISSetPermutation(is);CHKERRQ(ierr);
@@ -74,9 +74,9 @@ int main(int argc,char **argv)
      Thinks it is a different type?
   */
   ierr = ISStride(is,&flg);CHKERRQ(ierr);
-  if (flg == PETSC_TRUE) SETERRQ(1,"ISStride");
+  if (flg) SETERRQ(1,"ISStride");
   ierr = ISBlock(is,&flg);CHKERRQ(ierr);
-  if (flg == PETSC_TRUE) SETERRQ(1,"ISBlock");
+  if (flg) SETERRQ(1,"ISBlock");
 
   ierr = ISDestroy(is);CHKERRQ(ierr);
 

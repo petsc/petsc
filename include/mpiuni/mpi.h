@@ -60,16 +60,13 @@
 /* Requred by abort() in mpi.c & for win64 */
 #include "petscconf.h"
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 /* require an int variable large enough to hold a pointer */
 #if !defined(MPIUNI_INTPTR)
 #define MPIUNI_INTPTR long
-#endif
-
-#if defined(__BSdependh)
-#error You cannot use MPI-uni with BlockSolve95
-#endif
-#if defined(__basic_H)
-#error You cannot use MPI-uni with SPAI
 #endif
 
 #define _petsc_mpi_uni
@@ -130,8 +127,6 @@ extern int MPIUNI_Memcpy(void*,const void*,int);
 #define MPI_SHORT_INT       (sizeof(short) + sizeof(int))
 #define MPI_2INT            (2* sizeof(int))
 
-
-
 #define MPI_REQUEST_NULL    ((MPI_Request)0)
 #define MPI_GROUP_NULL      ((MPI_Group)0)
 typedef int MPI_Op;
@@ -181,7 +176,6 @@ extern int    Petsc_MPI_Finalize(void);
 
 #define MPI_Comm_f2c(comm) (MPI_Comm)(comm)
 #define MPI_Comm_c2f(comm) (MPI_Fint)(comm)
-
 
 #define MPI_Init(argc,argv) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (argc),\
@@ -626,5 +620,8 @@ extern int    Petsc_MPI_Finalize(void);
 #define MPI_NULL_COPY_FN   0
 #define MPI_NULL_DELETE_FN 0
 
+#if defined(__cplusplus)
+}
+#endif
 #endif
 
