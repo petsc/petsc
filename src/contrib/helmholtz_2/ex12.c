@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.18 1997/02/05 22:02:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex12.c,v 1.19 1997/02/10 21:41:24 curfman Exp curfman $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -24,6 +24,7 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
    Concepts: DA^Using distributed arrays;
    Concepts: Complex numbers; 
    Concepts: Matrices^Preallocating matrix memory
+   Concepts: Error Handling^Using the macro __FUNC__ to define routine names;
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSetUp(); SLESSetUpOnBlocks();
    Routines: SLESSolve(); SLESView(); SLESGetPC(); SLESGetKSP();
@@ -156,8 +157,22 @@ int UserMatrixCreate1(Atassi*,Mat*);
 int FormSystem1(Atassi*,Mat,Vec);
 int UserDetermineMatrixNonzeros(Atassi*,MatType,int**,int**);
 int ModifySubmatrices1(PC,int,IS*,IS*,Mat*,void*);
+
+/* 
+   User-defined routines.  Note that immediately before each routine below,
+   we define the macro __FUNC__ to be a string containing the routine name.
+   If defined, this macro is used in the PETSc error handlers to provide a
+   complete traceback of routine names.  All PETSc library routines use this
+   macro, and users can optionally employ it as well in their application
+   codes.  Note that users can get a traceback of PETSc errors regardless of
+   whether they define __FUNC__ in application codes; this macro merely
+   provides the added traceback detail of the application routine names.
+*/
+
 #define sqr(x) ((x)*(x))
 
+#undef __FUNC__  
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Vec     b;            /* solution, RHS vectors */
@@ -333,6 +348,8 @@ int main(int argc,char **args)
   return 0;
 }
 /* -------------------------------------------------------------------------------- */
+#undef __FUNC__  
+#define __FUNC__ "UserMatrixCreate1"
 /*
    UserMatrixCreate1 - Creates matrix data structure, selecting a particular format
    at runtime.  This routine is just a customized version of the generic PETSc
@@ -382,6 +399,8 @@ int UserMatrixCreate1(Atassi *user,Mat *mat)
   return 0;
 }
 /* -------------------------------------------------------------------------------- */
+#undef __FUNC__  
+#define __FUNC__ "UserDetermineMatrixNonzeros"
 /*
    UserDetermineMatrixNonzeros - Precompute amount of space for matrix preallocation,
    to enable fast matrix assembly without continual dynamic memory allocation.
@@ -556,6 +575,8 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
   return 0;
   }
 /* -------------------------------------------------------------------------------- */
+#undef __FUNC__  
+#define __FUNC__ "FormSystem1"
 /*
    FormSystem1 - Evaluates matrix and vector for Helmholtz model problem #1,
    described above.
@@ -739,6 +760,8 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
   return 0;
 }
 /* -------------------------------------------------------------------------------- */
+#undef __FUNC__  
+#define __FUNC__ "ModifySubmatrices1"
 /*
    ModifySubmatrices1 - Modifies the submatrices that arise in certain
    preconditioners (block Jacobi, ASM, and block Gauss-Seidel) (for
@@ -814,9 +837,3 @@ int ModifySubmatrices1(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
   }
   return 0;
 }
-
-
-
-
-
-
