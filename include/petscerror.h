@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.42 2000/01/20 03:56:24 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.43 2000/02/02 21:21:25 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -99,12 +99,13 @@ extern  int __gierr;
 #endif
 
 #else
+#define SETERRA(n,p,s) ;
+#define SETERRA1(n,p,s,b) ;
 #define SETERRQ(n,p,s) ;
 #define SETERRQ1(n,p,s,a1) ;
 #define SETERRQ2(n,p,s,a1,a2) ;
 #define SETERRQ3(n,p,s,a1,a2,a3) ;
 #define SETERRQ4(n,p,s,a1,a2,a3,a4) ;
-#define SETERRA(n,p,s) ;
 
 #define CHKERRQ(n)     ;
 #define CHKERRA(n)     ;
