@@ -5,7 +5,7 @@ static char help[] =
 #include "petsc.h"
 #include "snes.h"
 
-int  FormJacobian(SNES snes,Vec,Mat*,Mat*,int*,void*),
+int  FormJacobian(SNES snes,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(SNES snes,Vec,Vec,void*),
      FormInitialGuess(SNES snes,Vec,void*),
      Monitor(SNES,int,double,void *);
@@ -70,7 +70,8 @@ int FormInitialGuess(SNES snes,Vec x,void *dummy)
    return 0;
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
-int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B, int *flag,void *dummy)
+int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
+                 void *dummy)
 {
   Scalar *xx, A[4];
   int    ierr, idx[2] = {0,1};
