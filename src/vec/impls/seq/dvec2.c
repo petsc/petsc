@@ -670,7 +670,7 @@ int VecAYPX_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 #else
   {
     int i;
-    PetscScalar oalpha = *alpha
+    PetscScalar oalpha = *alpha;
     for (i=0; i<n; i++) {
       yy[i] = xx[i] + oalpha*yy[i];
     }
