@@ -603,8 +603,8 @@ acfindx:
   def configureAlpha(self):
     '''Alpha specific stuff'''
     if self.archBase.startswith('osf'):
-      self.missingPrototypesC.append('int getdomainname(char *, size_t);')
-      self.missingPrototypesExternC.append('int getdomainname(char *, size_t);')
+      self.missingPrototypesC.append('int getdomainname(char *, int);')
+      self.missingPrototypesExternC.append('int getdomainname(char *, int);')
     return
 
   def configureIRIX(self):
