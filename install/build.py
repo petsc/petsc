@@ -91,7 +91,7 @@ class Builder(install.urlMapping.UrlMapping):
       try:
         maker = self.getMakeModule(p.getRoot()).PetscMake(sys.argv[1:], self.argDB)
       except ImportError:
-        self.debugPrint('  No make module present in '+root, 2, 'install')
+        self.debugPrint('  No make module present in '+proj.getRoot(), 2, 'install')
         continue
       maker.main(target)
     return

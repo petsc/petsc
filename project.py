@@ -10,7 +10,7 @@ class Project:
     # Read-only variables
     self.url          = url
     self.root         = root
-    self.webdirectory = None
+    self.webdirectory = 'petsc@terra.mcs.anl.gov://mcs/www-unix/sidl/'
     self.web          = web
     # Updated variables
     self.pythonPath = []
