@@ -1,7 +1,6 @@
 src/draw/impls/x/xinit.c
 src/mat/impls/aij/seq/aijfact.c
 src/mat/impls/aij/seq/aijnode.c
-src/mat/impls/dense/mpi/mpidense.c
 src/mat/impls/dense/mpi/mmdense.c
 src/vec/interface/vector.c
 src/sys/src/objects/options.c
@@ -24,3 +23,4 @@ src/mat/impls/aij/seq/aij.c
 src/mat/impls/aij/seq/aij.h
 src/mat/matimpl.h
 src/mat/utils/stash.c
+src/ksp/impls/lsqr/lsqr.c
