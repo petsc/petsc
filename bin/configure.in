@@ -1,0 +1,1128 @@
+dnl This is an autoconf script.
+dnl To rebuild the `configure' script from this, execute the command
+dnl 	autoconf
+dnl in the directory containing this script.  You must have autoconf
+dnl version 1.4 or later (but NOT version 2.0 or later)
+dnl
+dnl The following text appears in the resulting `configure' script,
+dnl explaining how to rebuild it.
+[#!/bin/sh
+# Guess values for system-dependent variables and create Makefiles.
+# Generated automatically using autoconf.
+# Copyright (C) 1991, 1992, 1993 Free Software Foundation, Inc.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+progname="`echo $0 | sed 's:^\./\./:\./:'`"
+print_error() {
+    echo "*# $*" 2>&1 ;
+    }
+print_usage() {
+cat <<.
+Usage: ${progname} -arch=ARCH_TYPE -device=DEVICE
+                   [-archname=BMAKEARCH] [-site=SITEFILE] [-installsite]
+                   [-c++=C++_COMPILER]
+                   [-cc=C_COMPILER] [-fc=FORTRAN_COMPILER]
+                   [-clinker=C_LINKER] [-flinker=FORTRAN_LINKER]
+                   [-nof77] [-f90nag] [-opt=OPTFLAGS] [-make=MAKEPGM]
+                   [-cflags=CFLAGS] [-fflags=FFLAGS] [-optname=OPTNAME]
+                   [-mpiuni] [-mpiinc=MPIINC] [-mpilib=MPILIB]
+                   [-optcc=C_OPTFLAGS] [-optf77=F77_OPTFLAGS]
+                   [-x11_lib=X11LIB] [-x11_inc=X11INC]
+                   [-wish=WISH]
+                   [-fortnames=FORTRANNAMES]
+                   [-ar_nolocal] [-automountfix=AUTOMOUNTFIX]
+where
+   ARCH_TYPE    = the type of machine that PETSc is to be configured for
+   BMAKEARCH    = architecture name to use in bmake (see below)
+   DEVICE       = communications device to be used
+   C++_COMPILER = default is to use g++ (optional)
+   OPTFLAGS     = optimization flags to give the compilers (e.g. -g)
+   OPTNAME      = name to use for file to contain these options (e.g., g or O)
+   CFLAGS       = flags to give C compiler
+   FFLAGS       = flags to give Fortran compiler
+   MAKEPGM      = version of make to use
+   WISH         = Name of tcl/tk wish executable.  Configure will attempt
+                  to find a version of wish for you, but if there is
+                  no wish in your path or you need to use a different version,
+                  use this option.  Used only for the display tools.
+   FORTRANNAMES = Form of the Fortran names.  See below.
+   X11LIB       = Full path name for libX11.a
+   X11INC       = Full path name for X11.h
+   AUTOMOUNTFIX = Command to fix automounters
+   SITEFILE     = Site-specific values for options (see below)
+
+This script may be used to produce an alternate set of "bmake" files
+for building PETSc.  Each system has two primary bmake files and a 
+collection of secondary file.  The primary file specify how make is to
+compile and build file (the BMAKEARCH file) and special, site-specific
+options, such as where X11 or MPI is located (the BMAKEARCH.site file).
+Other files, like "BMAKEARCH.g" or "BMAKEARCH.O" specify compiler options
+for debugging or production.  This script will help build the primary 
+bmake files by searching your system for the correct choice of the various
+symbols.  In this release, the generated files should be used as input for
+a final pass (performed by hand) before using the files to build PETSc.
+
+You can select a different C and Fortran compiler by using the '-cc' and 'fc'
+switches.  The environment variables 'CC' and 'FC' can also provide values
+for these but their settings may be overridden by the configure script.
+Using '-cc=\$CC -fc=\$FC' will force configure to use those compilers.
+
+The option '-nof77' prevents the compilation of routines that require a
+Fortran compiler.  If this option is selected, you may not use the
+Fortran interface to PETSc.
+
+The option '-opt' allows you to specify options for the compilers (both
+C and Fortran).  For example, '-opt=-O' chooses optimized code
+generation on many systems.  '-optcc' and '-optf77' allow you to specify
+options for just the C or Fortran compilers
+
+The option '-make' may be used to select an alternate make program.  For
+example, on FreeBSD systems, -make=gnumake may be required because of
+bugs in the system make.
+
+The option '-fortnames=FORTRANNAMES' allows you to specify the form of the
+Fortran names.  This is used primarily to generate names with and without 
+trailing underscores for those systems that support both.  Possible values 
+are 
+    FORTRANNAMES value     if Fortran MPI_SEND looks like
+    DOUBLEUNDERSCORE       mpi_send__
+    UNDERSCORE             mpi_send_
+    CAPS                   MPI_SEND
+    NOUNDERSCORE           mpi_send
+This option should normally NOT be used; configure determines what the Fortran
+compiler generates.  This can be used to override that choice.
+
+
+The option '-ar_nolocal' prevents the library archive command from attempting
+to use the local directory for temporary space.  This option should be used
+when (a) there isn't much space (less than 20 MB) available in the partition
+where MPICH resides and (b) there is enough space in /tmp (or wherever ar
+places temporary files by default).
+
+You can use '-mpiuni' to build PETSc for uniprocessors only.  
+For parallel programming, configure will attempt to find your MPI
+implementation.  If it can not, of if you want to specify a particular 
+implementation, use '-mpiinc=MPIINC' to specify the include directory and 
+'-mpilib=MPILIB' to specify the library.  In many cases this is not needed if
+you specify the cc and f77 compilers for your MPI implementation.
+ !! -mpilib and -mpiinc are not yet implemented !!
+
+Site-specific options
+The SITEFILE can contains sh-style assignments for variables used 
+to find special features of the system.  Current, the variables that 
+can be set include
+
+BLOCKSOLVEPATH - Path to BlockSolve95
+                 (default $HOME/BlockSolve95 )
+BLOCKSOLVELIBPATH - Path to BlockSolve95 libraries
+                 (default $HOME/BlockSolve95/lib/lib<BOPT>/<ARCH>)
+MATLABPATH     - Path to Matlab libraries 
+                 (default /usr/local/matlab/extern/lib/<ARCH>)
+MATLABINCPATH  - Path to Matlab extern (for includes)
+                 (default /usr/local/matlab/extern)
+SUPERLUPATH    - Path to SuperLU
+                 (default $HOME/SuperLU)
+MPIRUNPATH     - Path to mpirun (program to run MPI programs)
+                 (default is /usr/local/mpi/lib/<arch>/<device>)
+
+If '-installsite' is given, the site files will be installed in the directory
+specified with ARCHNAME. If '-noinstallsite', the files are left in the
+current directory.
+
+Sample Configure Usage:
+
+To make for running on sun4's running SunOS,
+and with the installation directory equal to the current directory:
+
+  ./configure -arch=sun4
+  make
+
+Note: This configure script is under development.  Please report problems
+to petsc-maint@mcs.anl.gov .
+.
+}
+
+ARCH=""
+CPP_DIR=""
+LIB_PATH=""
+FLIB_PATH=""
+OPTFLAGS=""
+OPTFLAGSF=""
+NOF77=0
+AR_LOCAL=l
+BOPT=g
+optname=g
+HAS_FORTRAN=1
+# Nag F90 names are call f90_unix_MP_getarg(i,s) and 
+# f90_unix_MP_iargc().
+F77GETARG="call getarg(i,s)"
+F77IARGC="iargc()"
+F90UNIX="C"
+CFLAGS=""
+# sitefile = - causes output to go to stdout
+sitefile="-"
+sitefileopt="-"
+# We use @ because configure uses %
+AUTOMOUNTFIX='sed -e s@/tmp_mnt/@/@g'
+siteinfofile="petsc.site"
+install_sitefile=0
+#
+# By not setting FFLAGS, we get the values from the environment
+MAKE=make
+P4_MDEPCFLAGS=""
+PREFIX=""
+CONFIGURE_ARGS="$*"
+# This next variable is a version without quotes.
+# We could also consider `echo $a | sed -e 's/"/\\"/g'`
+CONFIGURE_ARGS_CLEAN=`echo $* | tr '"' ' '`
+if test -n "$CONFIGURE_ARGS" ; then 
+    echo "Configuring with args $CONFIGURE_ARGS"
+fi
+#
+mpiuni=0
+# 
+#MPIVERSION=`cat include/patchlevel.h | awk '{print $3}' | sed -e 's/\.[0-9]//' | tr '\012' '.'`
+# Also check for exp version by looking for "mpich-exp" in the directory
+# path
+#mpidirname=`pwd | sed -e 's%^.*/mpich-exp$%FOUND%g'`
+#if test "$mpidirname" = "FOUND" ; then
+#    MPIVERSION="$MPIVERSION (experimental)"
+#fi
+#echo "Configuring MPICH Version $MPIVERSION"
+echo "Configuring PETSc Version 2.x"
+for arg
+do
+  # Handle --exec-prefix with a space before the argument.
+  if test x$next_exec_prefix = xyes; then exec_prefix=$arg; next_exec_prefix=
+  # Handle --host with a space before the argument.
+  elif test x$next_host = xyes; then next_host=
+  # Handle --prefix with a space before the argument.
+  elif test x$next_prefix = xyes; then prefix=$arg; next_prefix=
+  # Handle --srcdir with a space before the argument.
+  elif test x$next_srcdir = xyes; then srcdir=$arg; next_srcdir=
+  else
+    case $arg in
+     # For backward compatibility, also recognize exact --exec_prefix.
+     -exec-prefix=* | --exec_prefix=* | --exec-prefix=* | --exec-prefi=* | --exec-pref=* | --exec-pre=* | --exec-pr=* | --exec-p=* | --exec-=* | --exec=* | --exe=* | --ex=* | --e=*)
+	exec_prefix=`echo $arg | sed 's/[-a-z_]*=//'` ;;
+     -exec-prefix | --exec_prefix | --exec-prefix | --exec-prefi | --exec-pref | --exec-pre | --exec-pr | --exec-p | --exec- | --exec | --exe | --ex | --e)
+	next_exec_prefix=yes ;;
+
+     -prefix=* | --prefix=* | --prefi=* | --pref=* | --pre=* | --pr=* | --p=*)
+	PREFIX=`echo $arg | sed 's/[-a-z_]*=//'` ;;
+     -prefix | --prefix | --prefi | --pref | --pre | --pr | --p)
+	next_prefix=yes ;;
+
+     -srcdir=* | --srcdir=* | --srcdi=* | --srcd=* | --src=* | --sr=* | --s=*)
+	srcdir=`echo $arg | sed 's/[-a-z_]*=//'` ;;
+     -srcdir | --srcdir | --srcdi | --srcd | --src | --sr | --s)
+	next_srcdir=yes ;;
+
+     -arch=* | --arch=*)
+       package=`echo $arg|sed 's/-*arch=//'`
+       # Delete all the valid chars; see if any are left.
+       if test -n "`echo $package|sed 's/[-a-zA-Z0-9_]*//g'`"; then
+         print_error "configure: $package: invalid architecture name"; exit 1
+       fi
+       ARCH=`echo $package|sed s/-/_/g`
+       eval "arch_`echo $package|sed s/-/_/g`=1"
+       ;;
+
+     -bopt=* | --bopt=*)
+       package=`echo $arg|sed 's/-*bopt=//'`
+       # Delete all the valid chars; see if any are left.
+       if test -n "`echo $package|sed 's/[-a-zA-Z0-9_]*//g'`"; then
+         print_error "configure: $package: invalid bopt value" ; exit 1
+       fi
+       BOPT=`echo $package|sed s/-/_/g`
+       eval "bopt_`echo $package|sed s/-/_/g`=1" ;;
+
+     -device=* | --device=*)
+       package=`echo $arg|sed 's/-*device=//'`
+       # Delete all the valid chars; see if any are left.
+       if test -n "`echo $package|sed 's/[-a-zA-Z0-9_]*//g'`"; then
+         print_error "configure: $package: invalid device name" ; exit 1
+       fi
+       DEVICE=$package    #|sed s/-/_/g`	
+       eval "device_$package=1" 
+       # Handle possible synonyms
+       if test -n "$device_ch_mpl"; then
+           device_ch_eui=1
+           DEVICE=ch_eui
+       fi
+       ;;
+
+      -ar_nolocal | --ar_nolocal)
+	AR_LOCAL=''
+	;;
+
+     -f77idx)
+	# Force POINTER_64_BITS definition
+	F77IDX=1
+	;;
+
+     -f90nag)
+        # Insert module 
+	F90UNIX="      use f90_unix"
+	FC=f90
+	# Still to do - make sure that the Fortran interface is correctly
+	# selected.
+        ;;
+
+     -site=* | --site=*)
+        siteinfofile=`echo A$arg|sed 's/A-*site=//'`
+        ;;
+
+     -c++ | --c++)
+       CPP_DIR="src/c++"
+       CPP_COMPILER="g++"
+       echo Compiling C++ interface with g++ ;;
+
+     -c++=* | --c++=*)
+       package=`echo $arg|sed 's/-*c\+\+=//'`
+       # Delete all the valid chars; see if any are left.
+       if test -n "`echo $package|sed 's/[-a-zA-Z0-9_+]*//g'`"; then
+         print_error "configure: $package: invalid c++ compiler name"; exit 1
+       fi
+       CPP_DIR="src/c++"
+       CPP_COMPILER=`echo $package`		
+       echo Compiling C++ interface with $package ;;
+
+     -cc=* | --cc=*)
+	CC=`echo $arg|sed 's/-*cc=//'`
+	USERCC=1
+	;;
+
+     -fc=* | --fc=*)
+	FC=`echo $arg|sed 's/-*fc=//'`
+	USERF77=1
+	;;
+
+     -fortnames=*)
+	# Valid values are
+	# FORTRANDOUBLEUNDERSCORE
+	# FORTRANUNDERSCORE
+	# FORTRANCAPS
+	# FORTRANNOUNDERSCORE
+	FORTRANNAMES="FORTRAN`echo $arg|sed 's/-*fortnames=//'`"
+	;;
+
+     -clinker=* | --clinker=*)
+	CLINKER=`echo $arg|sed 's/-*clinker=//'`
+	USERCLINKER=1
+	;;
+
+     -flinker=* | --flinker=*)
+	FLINKER=`echo $arg|sed 's/-*flinker=//'`
+	USERFLINKER=1
+	;;
+
+     -lib=* | --lib=*)
+       package="`echo $arg|sed 's/-*lib=//'`"
+       USERLIB="$package" ;;
+
+     -opt=* | --opt=*)
+       package="`echo $arg|sed 's/-*opt=//'`"
+       OPTFLAGS="$package" ;;
+
+     -optcc=* | --optcc=*)
+       package="`echo $arg|sed 's/-*optcc=//'`"
+       OPTFLAGSC="$package" ;;
+
+     -optf77=* | --optf77=*)
+       package="`echo $arg|sed 's/-*optf7=//'`"
+       OPTFLAGSF="$package" ;;
+
+     -cflags=* | --cflags=*)
+       package="`echo $arg|sed 's/-*cflags=//'`"
+       CFLAGS="$package" ;;
+
+     -fflags=* | --fflags=*)
+       package="`echo $arg|sed 's/-*fflags=//'`"
+       FFLAGS="$package" ;;
+
+     -optname=* | --optname=*)
+       package="`echo $arg|sed 's/-*optname=//'`"
+       optname="$package" ;;
+
+     -x11_lib=* | --x11_lib=* )
+       USERXLIB=1
+       X11LIB="`echo $arg|sed 's/-*x11_lib=//'`"
+       ;;
+
+     -x11_inc=* | --x11_inc=* )
+       USERXLIB=1
+       X11INC="`echo $arg|sed 's/-*x11_inc=//'`"
+       ;;
+
+     -mpiuni )
+       mpiuni=1
+       ;;
+
+     -make=* | --make=*)
+       package=`echo $arg|sed 's/-*make=//'`
+       MAKE="$package"
+	;;
+
+     -nof77 | --nof77)
+       echo "Don't build the Fortran interfaces"
+       NOF77=1
+       HAS_FORTRAN=0
+       CFLAGS="-DMPID_NO_FORTRAN $CFLAGS"
+       MPI_FOBJECTS="" ;;
+	
+     -wish=* | --wish=*)
+	wishloc="`echo $arg|sed 's/-*wish=//'`"
+       ;;
+
+     -tkdir=* | --tkdir=*)
+	TK_DIR="`echo $arg|sed 's/-*tkdir=//'`"
+       ;;
+
+     -tcldir=* | --tcldir=*)
+	TCL_DIR="`echo $arg|sed 's/-*tcldir=//'`"
+       ;;
+
+     -archname=* | --archname=*)
+	basefile="`echo $arg | sed 's/-*archname=//'`"
+	;;
+
+     -installsite)
+	install_sitefile=1
+	;;
+
+     -noinstallsite)
+	install_sitefile=0
+	;;
+
+     -automountfix=* | --automountfix=*)
+	AUTOMOUNTFIX="`echo $arg | sed 's/-*automountfix=//'`"
+	;;
+
+     -echo )
+	set -x 
+	;;
+
+     -u | -usage | --usage | --usag | --usa | --us | --u | -help | --help )
+	print_usage >& 2
+       exit 1 ;;
+
+     -v | -verbose | --verbose | --verbos | --verbo | --verb | --ver | --ve | --v)
+       verbose=yes ;;
+
+     *) 
+	print_error "Unrecognized configure option $arg" 
+	;;
+    esac
+  fi
+done]
+
+dnl Finish the initalization
+AC_PREPARE()
+if test ! -f .petsc ; then
+  print_error " "
+  print_error You should register your copy of PETSC with us by sending mail
+  print_error to majordomo@mcs.anl.gov containing the message
+  print_error subscribe petsc-users
+  print_error This will allow us to notify you of new releases of PETSC.
+  print_error " "
+  print_error "You can also check the PETSC home page at "
+  print_error "http://www.mcs.anl.gov/petsc/petsc.html"
+  print_error " "
+fi
+#
+#
+if test -n "$siteinfofile" ; then
+    if test -s $siteinfofile ; then
+        . ./$siteinfofile
+    fi
+fi
+
+if test -z "$ARCH" -a -x bin/petscarch ; then
+    echo "Trying to guess architecture ..."
+    ARCH=`./bin/petscarch | sed s/-/_/g`
+    if test -z "$ARCH" ; then
+       print_error "Error: Couldn't guess target architecture, you must"
+       print_error "       set an architecture type with -arch=<value>"
+       exit 1
+    fi
+    eval "arch_$ARCH=1"
+    echo "  configuring for \"$ARCH\" target architecture"
+fi
+
+if test -z "$ARCH" ; then
+    print_error "Please set an architecture type with -arch=name"
+    print_error "For example, -arch=sun4 or -arch=paragon"
+    exit 1
+fi
+#
+if test -n "$basefile" ; then
+    # The new PETSc form is to use $basefile/base and $basefile/base.site
+    if test $install_sitefile = 1 ; then
+        if test ! -d bmake/$basefile ; then mkdir bmake/$basefile ; fi
+        sitefile="bmake/$basefile/base"
+        sitefile2="bmake/$basefile/base.site"
+	sitefileopt="bmake/$basefile/base.$optname"
+    else
+        sitefile=$basefile
+        sitefile2=$basefile.site
+	sitefileopt=$basefile.$optname
+    fi
+else
+    sitefile="-"
+    sitefile2="-"
+    sitefileopt="-"
+fi
+#sitefile="site.sample"
+#
+# Set a default device
+if test -z "$DEVICE" ; then
+    DEVICE=ch_p4
+fi
+
+PAC_GETWD(petsc_dir,bin/configure)
+
+# Fixup for make
+PAC_MAKE_IS_GNUMAKE
+PAC_MAKE_IS_BSD44
+PAC_MAKE_IS_OSF
+#
+# This handles wierd systems like IRIX that have different flavors
+PAC_GET_SPECIAL_SYSTEM_INFO
+#
+#
+# Set Default values of variables
+CC=${CC:-cc}
+F77=${FC:-f77}
+if test -n "$FC" ; then
+    USERF77=1
+fi
+# CLINKER and FLINKER are set by PAC _GET_CC and F77
+#
+# First, check for the basic CC and Ranlib 
+if test -z "$USERCC" ; then
+    AC_PROG_CC()
+fi
+# Get the C compiler, Fortran compiler, and archiver
+CARCH=$ARCH
+case $DEVICE in
+    ch_cmmd)         CARCH=cm5 ;;
+    ch_mpl|ch_eui)   CARCH=ibmpoe ;;
+    ch_meiko|meiko)  CARCH=meiko ;;
+    ch_nx|nx)        CARCH=intelnx ;;
+    ch_nc)           CARCH=ncube ;;
+    ch_spp)          CARCH=convex_spp ;;
+esac
+PAC_GET_ANSI_CC($CARCH)
+if test -z "$CC" ; then
+    print_error "Could not find an ANSI C compiler"
+    exit 1
+fi
+PAC_CHECK_COMPILER_OK(,exit 1)
+#
+# This requires the ccbugs directory...
+PAC_CORRECT_COMPILER
+# Check for stdarg.h WORKS.
+#
+# It isn't enough to check for stdarg.  Even gcc doesn't get it right;
+# on some systems, the gcc version of stdio.h loads stdarg.h WITH THE WRONG
+# OPTIONS (causing it to choose the OLD STYLE va_start etc).
+#
+PAC_CHECK_HEADER(stdarg.h,[AC_DEFINE(HAVE_STDARG_H)
+havestdarg=1])
+if test -n "$havestdarg" ; then
+    PAC_COMPILE_CHECK_FUNC(stdarg is correct,[
+#include <stdio.h>
+#include <stdarg.h>
+int func( int a, ... ){
+int b;
+va_list ap;
+va_start( ap, a );
+b = va_arg(ap, int);
+printf( "%d-%d\n", a, b );
+va_end(ap);
+fflush(stdout);
+return 0;
+}
+int main() { func( 1, 2 ); return 0;}],AC_DEFINE(USE_STDARG))
+fi
+#
+#
+if test $NOF77 = 0 ; then
+    PAC_GET_F77($CARCH)
+else
+    HAS_F77=0
+fi
+#
+# This needs to get ar without the options.
+PAC_GET_AR($CARCH)
+AR="$ARNAME"
+#
+AC_PROG_RANLIB
+PAC_RANLIB_WORKS
+#
+# Now that we have ranlib, see if we can build a reasonable makefile
+AC_MSG_CHECKING(that $MAKE works)
+cat > conftest.make <<EOF
+ALL: libc
+objs = conftest_a.o conftest_b.o
+libc: libfoo.a(\$(objs))
+	$RANLIB libfoo.a
+.c.a:
+	$CC -c \$*.c
+	$AR cr libfoo.a \$*.o
+	rm \$*.o
+conftest: conftest_c.c libc
+	cc -o conftest conftest_c.c libfoo.a
+EOF
+cat > conftest_a.c <<EOF
+int b()
+{return 0;}
+EOF
+cat > conftest_b.c <<EOF
+int a()
+{return 1;}
+EOF
+cat > conftest_c.c <<EOF
+int main(argc,argv)
+int argc;
+char **argv;
+{
+int f = a();
+int g = b();
+return 0;
+}
+EOF
+if $MAKE -f conftest.make > /dev/null 2>&1 ; then
+    AC_MSG_RESULT(yes)
+    :
+else
+    AC_MSG_RESULT(no)
+  print_error "$MAKE does not support library archive rules.  You will need to"
+  print_error "use a better make or edit bmake/$ARCH/base ."
+fi
+/bin/rm -f conftest_a.* conftest_b.* conftest_c.* conftest libfoo.a
+#
+cross_compiling=0
+AC_CROSS_CHECK()
+#
+# Find X11
+X_INC=""
+X_LIB=""
+
+# FIND_X doesn't always work correctly when cross compiling, so we
+# try to be more careful and conservative
+if test -z "$USERXLIB" ; then 
+ # The user has specified the libraries/include paths; pick them up 
+ # below....
+ if test $cross_compiling = 0 ; then 
+    AC_FIND_X()
+    if test -n "$no_x" ; then
+	  print_error "Did not find X11 libraries and/or include files"
+    fi
+ else
+    # Try to compile a program with an include file.
+    # I didn't use HEADER_CHECK because I want to insist that the 
+    # code try to compile with the header
+    no_x=true
+    AC_COMPILE_CHECK([X11 headers],[#include <X11/Xlib.h>],,no_x="")
+    if test -z "$no_x" ; then 
+       # Try to link a simple X program
+       AC_HAVE_LIBRARY(X11,no_x="",no_x="true")
+    fi
+    if test -n "$no_x" ; then
+      print_error " " 
+      print_error "X11 is not used when cross compiling (because of the"
+      print_error "difficulties in finding the correct libraries)"
+      print_error " "
+    fi
+  fi
+else
+	# Pick up the paths from the user if possible
+	if test -z "$x_includes" -a -n "$X11INC" ; then 
+	    x_includes="$X11INC"
+	fi
+	if test -z "$x_libraries" -a -n "$X11LIB" ; then 
+	    x_libraries="$X11LIB"
+	fi
+fi
+if test -z "$no_x" ; then
+    PCONF="$PCONF -DHAVE_X11=1"
+fi
+#
+# Check for Fortran interface names
+PAC_GET_FORTNAMES
+# Switch to PETSc names
+case "$WDEF" in 
+    -DFORTRANDOUBLEUNDERSCORE) 
+	AC_DEFINE(HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+	AC_DEFINE(FORTRANDOUBLEUNDERSCORE)
+    ;;
+    -DFORTRANUNDERSCORE)
+	AC_DEFINE(HAVE_FORTRAN_UNDERSCORE)
+    ;;
+    -DFORTRANCAPS)
+	AC_DEFINE(HAVE_FORTRAN_CAPS)
+    ;;
+    -DFORTRANNOUNDERSCORE)
+    ;;
+esac
+#
+# Get the Fortran libraries to link with
+PAC_FIND_FCLIB($CARCH)
+#
+# Check for various functions
+# Floating point ... compare with code in src/sys/src/fp.c 
+echo "Checking for special routines for floating-point exceptions"
+case $ARCH in
+    sun4) 
+          # Despite the documentation, the IEEE functions are in libm,
+          # at least in SunOS 4.1.4.  We need to do this to get 
+          # the compiler to link against -lm .
+          AC_HAVE_LIBRARY(m)
+	  PAC_CHECK_HEADERS(floatingpoint.h)
+          AC_HAVE_FUNCS(ieee_flags ieee_handler)
+	  ;;
+    IRIX|SGI) 
+	  AC_HAVE_LIBRARY(fpe)
+	  PAC_CHECK_HEADERS(sigfpe.h)
+          AC_HAVE_FUNCS(handle_sigfpes) 
+	  ;;
+    intelnx|paragon)
+	  PAC_CHECK_HEADERS(ieeefp.h)
+          AC_HAVE_FUNCS(fpsetmask)
+	  ;;
+    rs6000|AIX)
+	  PAC_CHECK_HEADERS(fpxcp.h)
+          PAC_CHECK_HEADERS(fptrap.h)
+          AC_HAVE_FUNCS(fp_sh_trap_info fp_trap fp_enable fp_disable)
+          ;;
+    # Other cases just use default handler.
+esac
+#
+# Common tests for function names
+AC_HAVE_FUNCS(gethostname sysinfo uname)
+AC_HAVE_FUNCS(drand48)
+#
+# getdomainname is special BECAUSE IT MAY BE USELESS (!Network computing 
+# indeed - stuff like this is why Windows95/NT WILL WIN). 
+AC_CHECK_FUNC(getdomainname,has_getdomainname=1,has_getdomainname=0)
+if test $has_getdomainname = 1 -a $cross_compiling = 0 ; then
+    PAC_PROGRAM_CHECK(has_domainname,domainname,1,0,d_domainname)
+    PAC_PROGRAM_CHECK(has_hostname,hostname,1,0,d_hostname)
+    PAC_PROGRAM_CHECK(has_rup,rup,1,0,d_rup)
+    # Form hostname.domainname, do rup to it
+    # rup may not be enabled, but short of running a program to lookup the
+    # local host, there does not seem to be a better alternative.
+    #
+    if test $has_domainname = 1 -a $has_hostname = 1 -a $has_rup = 1 ; then
+changequote(,)
+        fullhost=`$d_hostname | sed -e 's/^\([^\.]*\)\..*/\1/'`
+changequote([,])
+#	echo $fullhost
+        fullhost="${fullhost}.`$d_domainname`"
+        response=`($d_rup $fullhost 2>&1) | grep 'Unknown host'`
+#	echo $fullhost
+        if test -n "$response" ; then
+   print_error "The getdomainname system routine has been rendered USELESS"
+   print_error "on your system.  This is not a bug and will not affect"
+   print_error "most of PETSc.  Some routines (particularly those that"
+   print_error "interact with X Windows) may not work."
+        else
+             AC_DEFINE(HAVE_GETDOMAINNAME)
+        fi
+    fi
+fi
+#
+# Look for sigaction routine (instead of signal)
+AC_HAVE_FUNCS(sigaction)
+AC_HAVE_FUNCS(signal)
+AC_HAVE_FUNCS(sigset)
+# Also need to get signal hander arg count 1? 3? 4? something else?
+PAC_SIGNALS_WORK
+AC_RETSIGTYPE
+#
+#
+# Check for various header files
+#
+PAC_CHECK_HEADERS(stropts.h search.h pwd.h string.h malloc.h unistd.h)
+#
+# Check for form of tsearch calls by trying to compile different forms
+is_ok=""
+PAC_COMPILE_CHECK_FUNC(args for tsearch are void,[
+#include <search.h>
+int a( void *a, void *b )
+{  return a == b;}
+void *b(void *key, void *root )
+{    void *fnd;
+    fnd=(void *)tsearch((void *)key,(void **)&root,
+                          (int (*)(void*,void*))a);
+    return fnd;
+}
+int main (int argc, char ** argv){return 0;}
+],is_ok=USES_VOID_VOID_VOID_VOID_TSEARCH)
+if test -z "$is_ok" ; then
+    PAC_COMPILE_CHECK_FUNC(args for tsearch are const void,[
+#include <search.h>
+int a( void *a, void *b )
+{  return a == b;}
+void *b(void *key, void *root )
+{    void *fnd;
+    fnd=(void *)tsearch((void *)key,(void **)&root, 
+                          (int (*)(const void*,const void*))a);
+    return fnd;
+}
+int main (int argc, char ** argv){return 0;}
+],is_ok=USES_VOID_VOID_CONST_VOID_CONST_VOID_TSEARCH)
+fi
+if test -n "$is_ok" ; then
+    AC_DEFINE($is_ok)
+fi
+
+# Fall-through case
+#    fnd=(TRINFO **)tsearch((char *)key,(char **)&root,
+#                          (int (*)(void*,void*))a);
+
+#
+# Check for various libraries
+AC_HAVE_LIBRARY(blas,BLAS_LIB=-lblas)
+if test -z "$BLAS_LIB" ; then
+    PAC_FIND_USER_LIB(blas,/usr/local/lapack,BLAS_LIB=$pac_lib_file)
+fi
+#
+AC_HAVE_LIBRARY(lapack,LAPACK_LIB=-llapack)
+if test -z "$LAPACK_LIB" ; then
+    PAC_FIND_USER_LIB(lapack,,LAPACK_LIB=$pac_lib_file)
+    # Test that the library is complete: many are missing dpotrs
+    #LIBSsave="$LIBS"
+    #LIBS="$LIBS $LAPACK_LIB"
+    #....
+    #LIBS="$LIBSsave"
+fi
+# IBM's ESSL is an important special case.
+AC_HAVE_LIBRARY(essl,PCONF="$PCONF -DHAVE_ESSL=1";LAPACK_LIB="-lessl $LAPACK_LIB")
+#
+# For mpi, we first check for mpiuni
+if test $mpiuni = 1 ; then
+   echo "Using uniprocessor MPI"
+   MPI_LIB='$(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)/libmpiuni.a'
+   MPI_INCLUDE='-I$(PETSC_DIR)/src/mpiuni'
+   MPIRUN='$(PETSC_DIR)/src/mpiuni/mpirun'
+else
+ PAC_FIND_USER_LIB(mpi,/usr/local/mpi/lib/$ARCH/$DEVICE,MPI_LIB=$pac_lib_file)
+ if test -z "$MPI_LIB" ; then
+     print_error "Could not find the mpi library.  Consider setting"
+     print_error "The environment variable MPI_LIB with the directory"
+     print_error "that contains the MPI libraries."
+ fi
+ # Find the mpe library
+ PAC_FIND_USER_LIB(mpe,/usr/local/mpi/lib/$ARCH/$DEVICE,MPE_LIB=$pac_lib_file)
+ PAC_FIND_USER_INCLUDE(mpi,/usr/local/mpi,MPI_INCLUDE=-I$pac_inc_dir)
+ # Mpirun MIGHT be in pac_lib_dir (it is for MPICH)
+ MPIRUN_TEST_DIR="$pac_lib_dir"
+ if test -z "$MPIRUNPATH" ; then
+    MPIRUNPATH=/usr/local/mpi/lib/$ARCH/$DEVICE
+ fi
+ if test -x $MPIRUNPATH/mpirun ; then
+    MPIRUN=$MPIRUNPATH/mpirun
+ else 
+    PAC_PROGRAM_CHECK(MPIRUNLOC,mpirun,,,MPIRUN)
+    if test -z "$MPIRUN" ; then
+        if test -x $MPIRUN_TEST_DIR/mpirun ; then
+	    MPIRUN=$MPIRUN_TEST_DIR/mpirun
+	    echo "mpirun found in $MPIRUN"
+        fi
+    fi
+ fi
+ if test -z "$MPIRUN" ; then
+    if test -x /usr/local/mpi/bin/mpirun ; then
+        MPIRUN=/usr/local/mpi/bin/mpirun
+        echo "mpirun found in $MPIRUN"
+    fi
+ fi
+fi
+#
+# Find blocksolve
+#
+if test -z "$BLOCKSOLVEPATH" ; then
+    BLOCKSOLVEPATH=$HOME/BlockSolve95
+fi
+if test -z "$BLOCKSOLVELIBPATH" ; then
+    BLOCKSOLVELIBPATH="$BLOCKSOLVEPATH/lib/lib$BOPT/$ARCH"
+fi
+PAC_FIND_USER_LIB(bslib,$BLOCKSOLVEPATH $BLOCKSOLVELIBPATH,BS_LIB=$pac_lib_file;PCONF="$PCONF -DHAVE_BLOCKSOLVE")
+PAC_FIND_USER_INCLUDE(BSsparse,$BLOCKSOLVEPATH,BS_INCLUDE=-I$pac_inc_dir)
+
+#
+# MATLAB arches are somewhat different than PETSc's; we might try for
+# lib/*, particularly if there is only on directory there
+#
+if test -z "$MATLABPATH" ; then
+    MATLABPATH=/usr/local/matlab/extern/lib/$ARCH
+fi
+if test -z "$MATLABINCPATH" ; then
+    MATLABINCPATH=/usr/local/matlab/extern
+fi
+PAC_FIND_USER_LIB(mex,$MATLABPATH,MATLAB_LIB=$pac_lib_file)
+PAC_FIND_USER_INCLUDE(cmex,$MATLABINCPATH,MATLAB_INCLUDE=-I$pac_inc_dir)
+#
+
+#
+# The "/home/bsmith" location needs to be fixed.
+#
+if test -z "$SUPERLU" ; then
+    SUPERLU=$HOME/SuperLU
+fi
+PAC_FIND_USER_LIB(superlu$ARCH$BOPT,$SUPERLUPATH,SUPERLU_LIB=$pac_lib_file;PCONF="$PCONF -DHAVE_SUPERLU")
+PAC_FIND_USER_INCLUDE(supermatrix,$SUPERLUPATH/SRC,SUPERLU_INCLUDE=-I$pac_inc_dir)
+
+
+# Check for various programs
+PAC_PROGRAM_CHECK(CMEXLOC,cmex,,,CMEX)
+#
+# Look for wish (the tcl/tk windowing shell; this is used by the new
+# Upshot
+#
+if test -z "$wishloc" ; then
+    PAC_FIND_WISH
+fi
+#
+# Test that wish exists
+if test -n "$wishloc" ; then
+   namelen=`expr "$wishloc" : ".*"`
+   if test $namelen -gt 26 ; then
+	print_error "The path for wish, $wishloc, may be too long"
+        print_error "for some Unix systems to accept as a command interpreter."
+	print_error "This may cause problems when using upshot."
+        print_error "(Some systems limit the length to 26 characters!)"
+   fi
+   if test ! -x $wishloc ; then
+       wishloc=
+   fi
+fi
+if test -z "$wishloc" ; then
+    print_error "Could not find executable wish (needed for Upshot)"
+fi
+
+# Check for 64 bit pointers
+PAC_POINTER_64_BITS(HAVE_64BITS)
+#
+# Check for swapped bytes
+PAC_WORDS_BIGENDIAN(HAVE_SWAPPED_BYTES)
+#
+# Generate the output.  This adds comments to the fields to simplify later, 
+# manual updating
+#
+# This if for the file "archname"
+if test $sitefile != - ; then
+    /bin/rm -f $sitefile $sitefile2 $sitefileopt
+fi
+PAC_APPEND_FILE(CC,$CC,$sitefile)
+PAC_APPEND_FILE(CLINKER,$CLINKER,$sitefile)
+PAC_APPEND_FILE(AR,$AR,$sitefile)
+PAC_APPEND_FILE(RANLIB,$RANLIB,$sitefile)
+PAC_APPEND_FILE(FC,$F77,$sitefile)
+PAC_APPEND_FILE(FLINKER,$FLINKER,$sitefile)
+PAC_APPEND_FILE(OMAKE,$MAKE,$sitefile)
+PAC_APPEND_FILE(SHELL,/bin/sh,$sitefile)
+PAC_APPEND_FILE(CONF,$DEFS \$(PCONF),$sitefile)
+if test "$sitefile" != "-" ; then
+ cat >> $sitefile <<EOF
+include $(PETSC_DIR)/bmake/common
+
+libc: $(LIBNAME)($(OBJSC))
+libf: $(LIBNAME)($(OBJSF))
+
+#
+#############
+.PRECIOUS: $(LIBNAME)
+.c.a:
+	$(CC) -c $(CFLAGS) $(BASEOPT) \$*.c
+	$(AR) cr $(LIBNAME) \$*.o
+	$(RM) \$*.o
+.c.o:
+	$(CC) -c $(CFLAGS) $(BASEOPT) \$*.c
+.C.a:
+	$(CC) -c $(CFLAGS) $(BASEOPT) \$*.C
+	$(AR) cr $(LIBNAME) \$*.o
+	$(RM) \$*.o
+.C.o:
+	$(CC) -c $(CFLAGS) $(BASEOPT) \$*.C
+.f.o: 
+	$(FC) -c $(FFLAGS) $(BASEOPTF)  \$*.f
+.f.a: 
+	$(FC) -c $(FFLAGS) $(BASEOPTF) \$*.f
+	$(AR) cr $(LIBNAME) \$*.o
+	$(RM) \$*.o
+
+.F.o: 
+	$(FC) -c $(FFLAGS) $(PETSC_INCLUDE) $(BASEOPTF) \$*.F
+.F.a: 
+	$(FC) -c $(FFLAGS) $(PETSC_INCLUDE) $(BASEOPTF) \$*.F
+	$(AR) cr $(LIBNAME) \$*.o
+	$(RM) \$*.o
+EOF
+fi
+#
+# Some systems will also require 
+if test 0 = 1 ; then 
+    cat >>$sitefile <<EOF
+.SUFFIXES: \$(SUFFIXES) .F
+.SUFFIXES: \$(SUFFIXES) .r
+
+# This F.f rule ensures that the old *.f files are removed.
+.F.f:
+        -\$(RM) \$*.f
+        -\$(CC) \$(CFLAGS) -E \$< | grep -v '^ *#' > \$*.f
+
+.F.o:
+        -\$(RM) \$*.f
+        -\$(CC) \$(CFLAGS) -E \$< | grep -v '^ *#' > \$*.f
+        -\$(FC) -c \$(FFLAGS) \$(BASEOPTF) \$*.f
+        -\$(RM) \$*.f
+
+.F.a:
+        -\$(RM) \$*.f
+        -\$(CC) \$(CFLAGS) -E \$< | grep -v '^ *#' > \$*.f
+        -\$(FC) -c \$(FFLAGS) \$(BASEOPTF) \$*.f
+        -\$(AR) cr \$(LIBNAME) \$*.o
+        -\$(RM) \$*.o     \$*.f
+EOF
+fi
+# 
+# This is for the "archname.site" file
+if test $sitefile2 != "-" ; then
+    cat >>$sitefile2 <<EOF
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# FC_LIB contains the libraries for a CLINKER to use for code containing
+# FORTRAN code (such as I/O or special Fortran runtimes).  
+# The value chosen by configure is a best guess, but may need editing
+# for each environment.  
+#
+EOF
+fi
+PAC_APPEND_FILE(FC_LIB,$FCLIB,$sitefile2)
+
+if test $sitefile2 != - ; then
+    cat >>$sitefile2 <<EOF
+#
+# Location of BLAS and LAPACK.  These libraries are available via Netlib,
+# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+#
+EOF
+fi
+PAC_APPEND_FILE(BLAS_LIB,$BLAS_LIB,$sitefile2)
+PAC_APPEND_FILE(LAPACK_LIB,$LAPACK_LIB,$sitefile2)
+
+if test $sitefile2 != - ; then
+    cat >>$sitefile2 <<EOF
+#
+# Location of X-windows software
+#
+EOF
+fi
+if test -n "$x_includes" ; then
+    PAC_APPEND_FILE(X11_INCLUDE,-I$x_includes,$sitefile2)
+fi
+# This needs to try to use -lX11, not just full path to lib.
+if test -n "$x_libraries" ; then
+    PAC_APPEND_FILE(X11_LIB,-L$x_libraries -lX11,$sitefile2)
+fi
+#
+if test $sitefile2 != - ; then
+    cat >>$sitefile2 <<EOF
+#
+# Location of MPI (Message Passing Interface) software
+#
+EOF
+fi
+PAC_APPEND_FILE(MPI_LIB,$MPE_LIB $MPI_LIB,$sitefile2)
+PAC_APPEND_FILE(MPI_INCLUDE,$MPI_INCLUDE,$sitefile2)
+PAC_APPEND_FILE(MPIRUN,$MPIRUN,$sitefile2)
+
+if test $sitefile2 != - ; then
+    cat >>$sitefile2 <<EOF
+#
+# Optional location of BlockSolve (MPI version), if you do not have
+# BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
+# below if it is there.
+#
+EOF
+fi
+PAC_APPEND_FILE(BS_LIB,$BS_LIB,$sitefile2)
+PAC_APPEND_FILE(BS_INCLUDE,$BS_INCLUDE,$sitefile2)
+
+if test $sitefile2 != - ; then
+    cat >>$sitefile2 <<EOF
+#
+# Optional Matlab location, remove if not needed.
+#
+EOF
+fi
+PAC_APPEND_FILE(MATLAB_LIB,$MATLAB_LIB,$sitefile2)
+PAC_APPEND_FILE(MATLAB_INCLUDE,$MATLAB_INCLUDE,$sitefile2)
+PAC_APPEND_FILE(CMEX,$CMEX,$sitefile2)
+
+
+if test $sitefile2 != - ; then
+    cat >>$sitefile2 <<EOF
+#  
+# PCONF - indicates which external packages are available at your site
+#  Make sure that -DHAVE_BLOCKSOLVE and -DHAVE_SUPERLU are not listed below
+#
+EOF
+fi
+PAC_APPEND_FILE(PCONF,$PCONF,$sitefile2)
+
+if test $sitefile2 != - ; then
+    cat >>$sitefile2 <<EOF
+#
+#
+# Optional location of SuperLU, if you do not have
+# SuperLU, then remove -DHAVE_SUPERLU from the PCONF definition
+# if it is there.
+#
+EOF
+fi
+PAC_APPEND_FILE(SUPERLU_LIB,$SUPERLU_LIB,$sitefile2)
+PAC_APPEND_FILE(SUPERLU_INCLUDE,$SUPERLU_INCLUDE,$sitefile2)
+PAC_APPEND_FILE(WISH,$wishloc,$sitefile2)
+#
+# The optimization args.
+PAC_APPEND_FILE(BASEOPT,$OPTFLAGS $OPTFLAGSC -DPETSC_BOPT_$optname -DPETSC_LOG -DPETSC_DEBUG,$sitefileopt)
+PAC_APPEND_FILE(BASEOPTF,$OPTFLAGS $OPTFLAGSF,$sitefileopt)
+PAC_APPEND_FILE(SYS_LIB,,$sitefileopt)
+#
+# Need to find:
+# Nothing?
+AC_OUTPUT()
+#
+# Finally, check for things to do before running make
+if test -z "$PETSC_ARCH" ; then
+    echo "Don't forget to set PETSC_ARCH to $basefile."
+    echo "(csh) setenv PETSC_ARCH $basefile"
+    echo "(sh) PETSC_ARCH=$basefile"
+fi
+if test -z "$PETSC_DIR" ; then
+    echo "Don't forget to set PETSC_DIR to $petsc_dir"
+    echo "(csh) setenv PETSC_DIR $petsc_dir"
+    echo "(sh) PETSC_DIR=$petsc_dir"
+fi
