@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.14 1996/10/24 20:46:12 curfman Exp curfman $";
+static char vcid[] = "$Id: zvec.c,v 1.15 1996/10/25 17:36:49 curfman Exp curfman $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -138,13 +138,10 @@ void vecduplicate_(Vec v,Vec *newv, int *__ierr )
   *(int*)newv = PetscFromPointer(lV);
 }
 
-void vecduplicatevecs_(Vec v,int *m,PetscObject newv1, int *__ierr )
+void vecduplicatevecs_(Vec v,int *m,int *newv, int *__ierr )
 {
   Vec *lV;
-  int i, *newv;
-
-  /*  newv = (int *)PetscToPointer( *(int*)(newv1) ); */
-  newv = (int *)newv1;
+  int i;
   *__ierr = VecDuplicateVecs((Vec)PetscToPointer( *(int*)(v) ),*m,&lV);
   for (i=0; i<*m; i++) {
     newv[i] = PetscFromPointer(lV[i]);
@@ -152,19 +149,52 @@ void vecduplicatevecs_(Vec v,int *m,PetscObject newv1, int *__ierr )
   PetscFree(lV); 
 }
 
-void vecdestroyvecs_(PetscObject v1,int *m,int *__ierr )
+void vecdestroyvecs_(int *vecs,int *m,int *__ierr )
 {
-  int i, *vecs;
-
-  vecs = (int *)v1;
-  if (*m <= 0) {
-    *__ierr = PetscError(__LINE__,__DIR__,__FILE__,1,"vecdestroyvecs_: m must be > 0!");
-    return;
-  }   
+  int i;
   for (i=0; i<*m; i++) {
     *__ierr = VecDestroy((Vec)PetscToPointer(vecs[i]));
     PetscRmPointer(vecs[i]); 
   }
+}
+
+void vecmtdot_(int *nv,Vec x,int *y,Scalar *val, int *__ierr ){
+  int i;
+  Vec *yV = (Vec *) PetscMalloc( *nv * sizeof(Vec *));
+  if (!(yV)) {
+     *__ierr = PetscError(__LINE__,__DIR__,__FILE__,PETSC_ERR_MEM,(char*)0);
+     return;
+  }
+  for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(y[i]));
+  *__ierr = VecMTDot(*nv,
+	(Vec)PetscToPointer( *(int*)(x) ),yV,val);
+  PetscFree(yV);
+}
+
+void vecmdot_(int *nv,Vec x,int *y,Scalar *val, int *__ierr ){
+  int i;
+  Vec *yV = (Vec *) PetscMalloc( *nv * sizeof(Vec *));
+  if (!(yV)) {
+     *__ierr = PetscError(__LINE__,__DIR__,__FILE__,PETSC_ERR_MEM,(char*)0);
+     return;
+  }
+  for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(y[i]));
+  *__ierr = VecMDot(*nv,
+	(Vec)PetscToPointer( *(int*)(x) ),yV,val);
+  PetscFree(yV);
+}
+
+void vecmaxpy_(int *nv,Scalar *alpha,Vec x,int *y, int *__ierr ){
+  int i;
+  Vec *yV = (Vec *) PetscMalloc( *nv * sizeof(Vec *));
+  if (!(yV)) {
+     *__ierr = PetscError(__LINE__,__DIR__,__FILE__,PETSC_ERR_MEM,(char*)0);
+     return;
+  }
+  for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(y[i]));
+  *__ierr = VecMAXPY(*nv,alpha,
+	(Vec)PetscToPointer( *(int*)(x) ),yV);
+  PetscFree(yV);
 }
 
 #if defined(__cplusplus)
