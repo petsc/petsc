@@ -3,6 +3,7 @@
 #  Makes distribution version of Petsc 2.0
 #
 echo "------- Have you done ALL of the following?? -----------------------------"
+echo "(0) excluded any directories not for public release (for example, src/eg)"
 echo "(1) Built manpages, wwwpages, latexpages by running make allmanpages?"
 echo "(2) Set the version number in manual_tex.tex, manual.tex, and intro.tex?"
 echo "(3) Built the users manual (and intro) in .ps and .html?"
