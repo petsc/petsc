@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.208 1999/03/11 16:18:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.209 1999/03/17 23:22:00 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -497,14 +497,11 @@ int PLogStageRegister(int stage, const char sname[])
 .vb
       PetscInitialize(int *argc,char ***args,0,0);
       [stage 0 of code]   
-      for (i=0; i<ntimes; i++) {
-         PLogStagePush(1);
-         [stage 1 of code]
-         PLogStagePop()
-         PLogStagePush(2);
-         [stage 2 of code]
-         PLogStagePop()
-      }
+      PLogStagePush(1);
+      [stage 1 of code]
+      PLogStagePop();
+      PetscBarrier(...);
+      [more stage 0 of code]   
       PetscFinalize();
 .ve
  
@@ -515,7 +512,7 @@ int PLogStageRegister(int stage, const char sname[])
 
 .keywords: log, push, stage
 
-.seealso: PLogStagePop(), PLogStageRegister()
+.seealso: PLogStagePop(), PLogStageRegister(), PetscBarrier()
 @*/
 int PLogStagePush(int stage)
 {
@@ -558,8 +555,8 @@ int PLogStagePush(int stage)
       [stage 0 of code]   
       PLogStagePush(1);
       [stage 1 of code]
-      [some code (stage 1)]
       PLogStagePop();
+      PetscBarrier(...);
       [more stage 0 of code]   
       PetscFinalize();
 .ve
@@ -571,7 +568,7 @@ int PLogStagePush(int stage)
 
 .keywords: log, pop, stage
 
-.seealso: PLogStagePush(), PLogStageRegister()
+.seealso: PLogStagePush(), PLogStageRegister(), PetscBarrier()
 @*/
 int PLogStagePop(void)
 {
