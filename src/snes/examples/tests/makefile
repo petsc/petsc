@@ -21,7 +21,10 @@ RUNEXAMPLES_3 = runex12
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c
 EXAMPLESF     = ex12.F
 DIRS          = umin
-
+#
+#  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
+# they require too many processors
+#
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o $(PETSC_LIB)
 	$(RM) ex1.o
@@ -144,6 +147,18 @@ runex9:
            if (diff output/ex9_1.out ex9_1.tmp) then true; \
            else echo "Possible problem with ex9_1, diffs above"; fi; \
            $(RM) -f ex9_1.tmp
+
+runex9_2:
+	-@$(MPIRUN) -np 8 ex9 -snes_smonitor  > ex9_2.tmp 2>&1;   \
+           if (diff output/ex9_1.out ex9_2.tmp) then true; \
+           else echo "Possible problem with ex9_1, diffs above"; fi; \
+           $(RM) -f ex9_2.tmp
+
+runex9_3:
+	-@$(MPIRUN) -np 8 ex9 -star -snes_smonitor  > ex9_3.tmp 2>&1;   \
+           if (diff output/ex9_1.out ex9_3.tmp) then true; \
+           else echo "Possible problem with ex9_1, diffs above"; fi; \
+           $(RM) -f ex9_3.tmp
 
 runex12:
 	-@$(MPIRUN) -np 2 ex12 -n 10 -snes_smonitor  > ex12_1.tmp 2>&1;   \
