@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.31 1995/11/01 23:20:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.32 1996/01/26 04:35:09 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -82,7 +82,7 @@ int ViewerFileGetFormat_Private(Viewer viewer,int *format)
    As shown below, ViewerFileOpenASCII() is useful in conjunction with 
    MatView() and VecView()
 $
-$    ViewerFileOpenASCII("mat.output",MPI_COMM_WORLD,&viewer);
+$    ViewerFileOpenASCII(MPI_COMM_WORLD,"mat.output",&viewer);
 $    MatView(matrix,viewer);
 
    This viewer can be destroyed with ViewerDestroy().
