@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.19 1998/04/27 13:30:05 curfman Exp curfman $";
+static char vcid[] = "$Id: ao.c,v 1.20 1998/04/27 14:03:23 curfman Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -82,7 +82,10 @@ int AODestroy(AO ao)
 +  ao - the application ordering context
 -  is - the index set
 
-   Note: Any integers in ia[] that are negative are left unchanged. This 
+   Notes:
+   The index set cannot be of type stride or block
+   
+   Any integers in ia[] that are negative are left unchanged. This 
          allows one to convert, for example, neighbor lists that use negative
          entries to indicate nonexistent neighbors due to boundary conditions
          etc.
@@ -94,10 +97,16 @@ int AODestroy(AO ao)
 @*/
 int AOPetscToApplicationIS(AO ao,IS is)
 {
-  int n,*ia,ierr;
-  
+  int        n,*ia,ierr;
+  PetscTruth flag;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
+  ierr = ISStride(is,&flag);CHKERRQ(ierr);
+  if (flag) SETERRQ(1,1,"Cannot translate stride index sets");
+  ierr = ISBlock(is,&flag);CHKERRQ(ierr);
+  if (flag) SETERRQ(1,1,"Cannot translate block index sets");
+
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ia); CHKERRQ(ierr);
   ierr = (*ao->ops->petsctoapplication)(ao,n,ia); CHKERRQ(ierr);
@@ -118,6 +127,8 @@ int AOPetscToApplicationIS(AO ao,IS is)
 -  is - the index set
 
    Note:
+   The index set cannot be of type stride or block
+   
    Any integers in ia[] that are negative are left unchanged. This 
    allows one to convert, for example, neighbor lists that use negative
    entries to indicate nonexistent neighbors due to boundary conditions, etc.
@@ -129,10 +140,16 @@ int AOPetscToApplicationIS(AO ao,IS is)
 @*/
 int AOApplicationToPetscIS(AO ao,IS is)
 {
-  int n,*ia,ierr;
+  int        n,*ia,ierr;
+  PetscTruth flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
+  ierr = ISStride(is,&flag);CHKERRQ(ierr);
+  if (flag) SETERRQ(1,1,"Cannot translate stride index sets");
+  ierr = ISBlock(is,&flag);CHKERRQ(ierr);
+  if (flag) SETERRQ(1,1,"Cannot translate block index sets");
+
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ia); CHKERRQ(ierr);
   ierr = (*ao->ops->applicationtopetsc)(ao,n,ia); CHKERRQ(ierr);
