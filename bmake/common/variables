@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.2 1999/02/05 00:23:03 balay Exp balay $ 
+# $Id: common_variables,v 1.3 1999/02/19 21:09:18 balay Exp balay $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -45,14 +45,12 @@ PETSC_SNES_LIB  = -L${LDIR} -lpetscsnes ${PETSC_SLES_LIB}
 
 PETSC_TS_LIB  = -L${LDIR} -lpetscts ${PETSC_SNES_LIB}
 
-PETSC_LIB   = -L${LDIR} -lpetsc -lpetscts -lpetscsnes  -lpetscsles -lpetscdm -lpetscmat \
-		-lpetscvec -lpetsc -lpetscts -lpetscsnes  -lpetscsles -lpetscdm -lpetscmat \
+PETSC_LIB   = -L${LDIR} -lpetscts -lpetscsnes  -lpetscsles -lpetscdm -lpetscmat \
 		-lpetscvec -lpetsc \
 		${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} \
 		${MPE_LIB} ${MPI_LIB} ${X11_LIB} ${FC_LIB} ${SYS_LIB} -lm
 #
-ALICE_LIB    =	-L${LDIR}  -lpetscmat  -lpetscvec -lpetscmat \
-                 -lpetscvec -lpetscsys \
+ALICE_LIB    =	-L${LDIR}  -lpetscmat -lpetscvec -lpetscsys \
 		${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB}\
 		${MPE_LIB} ${MPI_LIB} ${X11_LIB} ${FC_LIB} ${SYS_LIB} -lm
 #
@@ -60,7 +58,7 @@ ALICE_LIB    =	-L${LDIR}  -lpetscmat  -lpetscvec -lpetscmat \
 #   Currently ignore this entry
 #
 PETSC_ADIC_LIB  = -L${LDIR} -lpetscsnes -lpetscsles \
-		 -lpetscmat  -lpetscvec -lpetscmat   -lpetscvec -lpetscsys  \
+		 -lpetscmat  -lpetscvec -lpetscsys  \
                   -lpetscblas -lmpiuni  ${EXTERNAL_LIB}  ${LAPACK_LIB} \
                   ${BLAS_LIB} ${X11_LIB} \
 		  ${FC_LIB} ${SYS_LIB} -lm
