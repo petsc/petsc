@@ -186,7 +186,7 @@ class Configure(config.base.Configure):
 
       packages = self.framework.argDB['with-external-packages-dir']
       if hasattr(self.sourceControl, 'bk'):
-        config.base.Configure.executeShellCommand('bk clone bk://parmetis.bkbits.net/ParMetis-dev '+os.path.join(packages,'ParMetis'), log = self.framework.log)
+        config.base.Configure.executeShellCommand('bk clone bk://parmetis.bkbits.net/ParMetis-dev '+os.path.join(packages,'ParMetis'), log = self.framework.log, timeout= 600.0)
       else:
         try:
           urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/parmetis.tar.gz', os.path.join(packages, 'parmetis.tar.gz'))
