@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.102 2001/01/20 03:36:18 bsmith Exp bsmith $*/
+/*$Id: umtr.c,v 1.103 2001/01/22 23:07:01 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
@@ -199,8 +199,8 @@ static int SNESSetUp_UM_TR(SNES snes)
 {
   int        ierr;
   PetscTruth ilu,bjacobi;
-  SLES       sles,*subsles;
-  PC         pc,subpc;
+  SLES       sles;
+  PC         pc;
 
   PetscFunctionBegin;
   snes->nwork = 4;

@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.104 2001/01/19 20:58:44 bsmith Exp bsmith $*/
+/*$Id: umls.c,v 1.105 2001/01/22 23:07:03 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
@@ -140,8 +140,8 @@ static int SNESSetUp_UM_LS(SNES snes)
 {
   int        ierr;
   PetscTruth ilu,bjacobi;
-  SLES       sles,*subsles;
-  PC         pc,subpc;
+  SLES       sles;
+  PC         pc;
 
   PetscFunctionBegin;
   snes->nwork = 4;
