@@ -124,7 +124,7 @@ class BS (install.base.Base):
         root = project.getRoot()
         repositoryDirs.append(root)
         try:
-          self.getMakeModule(root).PetscMake(sys.argv[1:]).updateRepositoryDirs(repositoryDirs)
+          self.getMakeModule(root).PetscMake(argDB = self.argDB).updateRepositoryDirs(repositoryDirs)
         except ImportError:
           self.debugPrint('Invalid repository: No make module in '+root, 4, 'compile')
     return

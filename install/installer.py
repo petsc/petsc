@@ -36,12 +36,14 @@ class Installer(install.base.Base):
     self.builder.build(root)
     return
 
-  def bootstrapInstall(self, projectUrl):
+  def bootstrapInstall(self, projectUrl, argDB):
     self.debugPrint('Installing '+projectUrl+' from bootstrap', 3, 'install')
     root = self.retriever.retrieve(projectUrl, force = self.force);
     # This is for purging the sidl after the build
     self.argDB['fileset'] = 'sidl'
     self.builder.build(root, target = ['default', 'purge'], setupTarget = 'setupBootstrap')
+    # Fixup install arguments
+    argDB['installedprojects'] = self.argDB['installedprojects']
     return
 
   def backup(self, projectUrl):
@@ -64,7 +66,7 @@ if __name__ == '__main__':
     else:
       if installer.checkBootstrap():
         booter = Installer(localDict = 1, initDict = installer.argDB)
-        booter.bootstrapInstall('bk://sidl.bkbits.net/Compiler')
+        booter.bootstrapInstall('bk://sidl.bkbits.net/Compiler', installer.argDB)
       if installer.checkBootstrap():
         raise RuntimeError('Should not still be bootstraping')
       installer.install(url)
