@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.20 1996/02/13 00:28:12 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.21 1996/02/13 22:36:43 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -840,6 +840,9 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int ismax, IS *isrow,IS *iscol,MatGetSubMatr
         }*/
         row = rbuf1[i][ct1];
         ierr = MatGetRow(C, row, &ncols, &cols, 0); CHKERRQ(ierr);
+        /* MPIU_printf(MPI_COMM_SELF,"[%d]",rank);
+        for (l =0; l<ncols ; l++ ) MPIU_printf(MPI_COMM_SELF,"%d ",cols[l]);
+        MPIU_printf (MPI_COMM_SELF,"\n"); */
         PetscMemcpy(sbuf_aj[i]+ct2, cols, ncols*sizeof(int));
         ct2 += ncols;
         ierr = MatRestoreRow(C,row, &ncols, &cols,0); CHKERRQ(ierr);
