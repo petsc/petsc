@@ -743,7 +743,7 @@ int PetscLogEventDeactivate(int event) {
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogEventSetActiveAll"
 /*@
-  PetscLogEventSetActive - Sets the event activity in every stage.
+  PetscLogEventSetActiveAll - Sets the event activity in every stage.
 
   Not Collective
 

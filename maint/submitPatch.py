@@ -26,13 +26,15 @@ class Patch (object):
     return output
 
   def checkPetscRoot(self, root):
+    '''Find the root of the Petsc tree. Currently, we require it to be os.getcwd()'''
     if not os.path.isfile(os.path.join(root, 'include', 'petsc.h')):
       raise RuntimeError('Directory '+root+' is not the root of a Petsc tree')
 
   def setVersion(self):
+    '''If petscversion.h has not been edited, increment the patch level and checkin'''
     filename = os.path.join(self.root, 'include', 'petscversion.h')
-    if len(self.executeShellCommand('bk sfiles -lg '+filename)):
-      return
+    output   = self.executeShellCommand('bk sfiles -lg '+filename)
+    if output.find(filename) >= 0: return
     self.executeShellCommand('bk edit '+filename)
     patchRE = re.compile(r'^#define PETSC_VERSION_PATCH([\s]+)(?P<patchNum>\d+)[\s]*$');
     dateRE  = re.compile(r'^#define PETSC_VERSION_DATE([\s]+)"(?P<date>(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d\d?, \d\d\d\d)"[\s]*$');
@@ -56,6 +58,7 @@ class Patch (object):
     self.executeShellCommand('bk ci -u -y"Cranked up patch level" '+filename)
 
   def pushChange(self):
+    '''Push the change and parse the output to discover the change sets'''
     self.executeShellCommand('bk citool')
     output = self.executeShellCommand('bk push')
     # Get the change sets pushed
@@ -76,6 +79,7 @@ class Patch (object):
     return self.changeSets
 
   def makePatch(self):
+    '''Make a patch, self.patchNum, from the pushed change sets, self.changeSets'''
     command = 'bk export -tpatch -T'
     if len(self.changeSets) == 1:
       command += ' -r1.'+str(self.changeSets[0])
@@ -90,6 +94,7 @@ class Patch (object):
     os.chmod(patchName, 0644)
 
   def makeMasterPatch(self):
+    '''Recreate the master patch from all patch files present'''
     masterName = os.path.join(self.patchDir, 'petsc_patch_all-2.1.2')
     if os.path.exists(masterName): os.remove(masterName)
     masterFile = file(masterName, 'w')
@@ -114,6 +119,9 @@ class Patch (object):
 if __name__ == '__main__':
   try:
     Patch().submit()
+    # Need self.patchNum and self.changeSets set in order to bypass the push
+    # Need a better way of getting change sets
+    #   Should be 
   except Exception, e:
     import sys
     import traceback

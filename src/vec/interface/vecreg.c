@@ -229,7 +229,7 @@ int VecRegister(const char sname[], const char path[], const char name[], int (*
   PetscFunctionReturn(0);
 }
 
-/*@MC
+/*MC
   VecSerializeRegisterDynamic - Adds a serialization method to the vec package.
 
   Synopsis:
