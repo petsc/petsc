@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.125 1999/03/14 17:17:00 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.126 1999/03/14 17:54:40 curfman Exp curfman $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -234,16 +234,23 @@ int SNESDestroy_EQ_LS(SNES snes)
 int SNESNoLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, Vec w,
                      double fnorm, double *ynorm, double *gnorm,int *flag )
 {
-  int    ierr;
-  Scalar mone = -1.0;
+  int        ierr;
+  Scalar     mone = -1.0;
+  SNES_LS    *neP = (SNES_LS *) snes->data;
+  PetscTruth change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
-  *flag = 0;
+  *flag = 0; 
   PLogEventBegin(SNES_LineSearch,snes,x,f,g);
-  ierr = VecNorm(y,NORM_2,ynorm); CHKERRQ(ierr);       /* ynorm = || y || */
   ierr = VecAYPX(&mone,x,y); CHKERRQ(ierr);            /* y <- y - x      */
+  if (neP->CheckStep) {
+   ierr = (*neP->CheckStep)(snes,neP->checkP,y,&change_y); CHKERRQ(ierr);
+  }
   ierr = SNESComputeFunction(snes,y,g); CHKERRQ(ierr); /* Compute F(y)    */
-  ierr = VecNorm(g,NORM_2,gnorm); CHKERRQ(ierr);       /* gnorm = || g || */
+  ierr = VecNormBegin(y,NORM_2,ynorm); CHKERRQ(ierr);  /* ynorm = || y || */
+  ierr = VecNormBegin(g,NORM_2,gnorm); CHKERRQ(ierr);  /* gnorm = || g || */
+  ierr = VecNormEnd(y,NORM_2,ynorm); CHKERRQ(ierr);
+  ierr = VecNormEnd(g,NORM_2,gnorm); CHKERRQ(ierr);
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   PetscFunctionReturn(0);
 }
@@ -289,13 +296,18 @@ int SNESNoLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, Vec w,
 int SNESNoLineSearchNoNorms(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, Vec w,
                      double fnorm, double *ynorm, double *gnorm,int *flag )
 {
-  int    ierr;
-  Scalar mone = -1.0;
+  int        ierr;
+  Scalar     mone = -1.0;
+  SNES_LS    *neP = (SNES_LS *) snes->data;
+  PetscTruth change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
-  *flag = 0;
+  *flag = 0; 
   PLogEventBegin(SNES_LineSearch,snes,x,f,g);
   ierr = VecAYPX(&mone,x,y); CHKERRQ(ierr);            /* y <- y - x      */
+  if (neP->CheckStep) {
+   ierr = (*neP->CheckStep)(snes,neP->checkP,y,&change_y); CHKERRQ(ierr);
+  }
   ierr = SNESComputeFunction(snes,y,g); CHKERRQ(ierr); /* Compute F(y)    */
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   PetscFunctionReturn(0);
@@ -347,14 +359,15 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
      where z(x) = .5 * fnorm*fnorm, and fnorm = || f ||_2.
    */
         
-  double  steptol, initslope, lambdaprev, gnormprev, a, b, d, t1, t2;
-  double  maxstep, minlambda, alpha, lambda, lambdatemp, lambdaneg;
+  double     steptol, initslope, lambdaprev, gnormprev, a, b, d, t1, t2;
+  double     maxstep, minlambda, alpha, lambda, lambdatemp, lambdaneg;
 #if defined(USE_PETSC_COMPLEX)
-  Scalar  cinitslope, clambda;
+  Scalar     cinitslope, clambda;
 #endif
-  int     ierr, count;
-  SNES_LS *neP = (SNES_LS *) snes->data;
-  Scalar  mone = -1.0,scale;
+  int        ierr, count;
+  SNES_LS    *neP = (SNES_LS *) snes->data;
+  Scalar     mone = -1.0, scale;
+  PetscTruth change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   PLogEventBegin(SNES_LineSearch,snes,x,f,g);
@@ -474,6 +487,17 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
     count++;
   }
   theend1:
+  /* Optional user-defined check for line search step validity */
+  if (neP->CheckStep) {
+    ierr = (*neP->CheckStep)(snes,neP->checkP,y,&change_y); CHKERRQ(ierr);
+    if (change_y == PETSC_TRUE) { /* recompute the function if the step has changed */
+      ierr = SNESComputeFunction(snes,y,g); CHKERRQ(ierr);
+      ierr = VecNormBegin(y,NORM_2,ynorm); CHKERRQ(ierr);
+      ierr = VecNormBegin(g,NORM_2,gnorm); CHKERRQ(ierr);
+      ierr = VecNormEnd(y,NORM_2,ynorm); CHKERRQ(ierr);
+      ierr = VecNormEnd(g,NORM_2,gnorm); CHKERRQ(ierr);
+    }
+  }
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   PetscFunctionReturn(0);
 }
@@ -522,13 +546,14 @@ int SNESQuadraticLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
         min  z(x):  R^n -> R,
      where z(x) = .5 * fnorm*fnorm, and fnorm = || f ||_2.
    */
-  double  steptol,initslope,maxstep,minlambda,alpha,lambda,lambdatemp;
+  double     steptol,initslope,maxstep,minlambda,alpha,lambda,lambdatemp;
 #if defined(USE_PETSC_COMPLEX)
-  Scalar  cinitslope,clambda;
+  Scalar     cinitslope,clambda;
 #endif
-  int     ierr,count;
-  SNES_LS *neP = (SNES_LS *) snes->data;
-  Scalar  mone = -1.0,scale;
+  int        ierr, count;
+  SNES_LS    *neP = (SNES_LS *) snes->data;
+  Scalar     mone = -1.0,scale;
+  PetscTruth change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   PLogEventBegin(SNES_LineSearch,snes,x,f,g);
@@ -603,6 +628,17 @@ int SNESQuadraticLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
     count++;
   }
   theend2:
+  /* Optional user-defined check for line search step validity */
+  if (neP->CheckStep) {
+    ierr = (*neP->CheckStep)(snes,neP->checkP,y,&change_y); CHKERRQ(ierr);
+    if (change_y == PETSC_TRUE) { /* recompute the function if the step has changed */
+      ierr = SNESComputeFunction(snes,y,g); CHKERRQ(ierr);
+      ierr = VecNormBegin(y,NORM_2,ynorm); CHKERRQ(ierr);
+      ierr = VecNormBegin(g,NORM_2,gnorm); CHKERRQ(ierr);
+      ierr = VecNormEnd(y,NORM_2,ynorm); CHKERRQ(ierr);
+      ierr = VecNormEnd(g,NORM_2,gnorm); CHKERRQ(ierr);
+    }
+  }
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   PetscFunctionReturn(0);
 }
@@ -659,7 +695,7 @@ int SNESQuadraticLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
 
 .keywords: SNES, nonlinear, set, line search, routine
 
-.seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), SNESNoLineSearch(), SNESNoLineSearchNoNorms()
+.seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), SNESNoLineSearch(), SNESNoLineSearchNoNorms(), SNESSetLineSearchCheck()
 @*/
 int SNESSetLineSearch(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*),void *lsctx)
 {
@@ -689,8 +725,8 @@ EXTERN_C_END
 #undef __FUNC__  
 #define __FUNC__ "SNESSetLineSearchCheck"
 /*@C
-   SNESSetLineSearchCheck - Sets a routine to check the step computed by the 
-   line search routine in the Newton-based method SNES_EQ_LS.
+   SNESSetLineSearchCheck - Sets a routine to check the new iterate computed
+   by the line search routine in the Newton-based method SNES_EQ_LS.
 
    Input Parameters:
 +  snes - nonlinear context obtained from SNESCreate()
@@ -701,28 +737,44 @@ EXTERN_C_END
 
    Calling sequence of func:
 .vb
-   func (SNES snes, void *lsctx, Vec x, int *flag)
+   func (SNES snes, void *lsctx, Vec x, PetscTruth *flag)
 .ve
 
-    Input parameters for func:
-+   snes - nonlinear context
-.   checkctx - optional user-defined context for use by step checking routine 
--   x - current iterate
+   Input parameters for func:
++  snes - nonlinear context
+.  checkctx - optional user-defined context for use by step checking routine 
+-  x - current candidate iterate
 
-    Output parameters for func:
-+   x - current iterate (possibly modified)
--   flag - flag indicating whether x has been modified (either
+   Output parameters for func:
++  x - current iterate (possibly modified)
+-  flag - flag indicating whether x has been modified (either
            PETSC_TRUE of PETSC_FALSE)
 
-    Level: advanced
+   Level: advanced
+
+   Notes:
+   The user-defined line search checking routine is available for
+   use in conjunction with SNESNoLineSearch(), SNESNoLineSearchNoNorms(),
+   which (1) compute a candidate iterate u_{i+1}, (2) pass control to the
+   checking routine, and then (3) compute the corresponding function f(u_{i+1})
+   with the (possibly altered) iterate u_{i+1}.
+
+   The user-defined line search checking routine is also available for
+   use in conjunction with SNESQuadraticLineSearch() and SNESCubicLineSearch().
+   These routines (1) compute a candidate iterate u_{i+1} as well as a
+   candidate function f(u_{i+1}), (2) pass control to the checking routine,
+   and then (3) force a re-evaluation of f(u_{i+1}) if any changes were made
+   to the candidate iterate in the checking routine (as indicated by 
+   flag=PETSC_TRUE).  The overhead of this re-evaluation can be costly, so
+   this feature with caution.
 
 .keywords: SNES, nonlinear, set, line search check, step check, routine
 
 .seealso: SNESSetLineSearch()
 @*/
-int SNESSetLineSearchCheck(SNES snes,int (*func)(SNES,void*,Vec,int*),void *checkctx)
+int SNESSetLineSearchCheck(SNES snes,int (*func)(SNES,void*,Vec,PetscTruth*),void *checkctx)
 {
-  int ierr, (*f)(SNES,int (*)(SNES,void*,Vec,int*),void*);
+  int ierr, (*f)(SNES,int (*)(SNES,void*,Vec,PetscTruth*),void*);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESSetLineSearchCheck_C",(void **)&f);CHKERRQ(ierr);
@@ -735,7 +787,7 @@ int SNESSetLineSearchCheck(SNES snes,int (*func)(SNES,void*,Vec,int*),void *chec
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "SNESSetLineSearchCheck_LS"
-int SNESSetLineSearchCheck_LS(SNES snes,int (*func)(SNES,void*,Vec,int*),void *checkctx)
+int SNESSetLineSearchCheck_LS(SNES snes,int (*func)(SNES,void*,Vec,PetscTruth*),void *checkctx)
 {
   PetscFunctionBegin;
   ((SNES_LS *)(snes->data))->CheckStep = func;
