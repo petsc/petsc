@@ -240,6 +240,7 @@ class Configure(config.base.Configure):
         self.executeShellCommand('tar -xf mpich.tar')
       except:
         raise RuntimeError('Error doing tar -xf mpich.tar')
+      os.unlink('mpich.tar')
       
     # get the release number of MPICH
     ls = os.listdir(self.framework.argDB['PETSC_DIR'])
@@ -250,10 +251,24 @@ class Configure(config.base.Configure):
     if not releasename:
       raise RuntimeError('Error locating MPICH directory')
 
-    libdir = os.path.join(self.framework.argDB['PETSC_DIR'],releasename,self.framework.argDB['PETSC_ARCH'])
-    if not os.path.isdir(libdir)
+    libdir = os.path.join(self.framework.argDB['PETSC_DIR'],releasename,self.framework.arch)
+    if not os.path.isdir(libdir):
       os.mkdir(libdir)
 
+    try:
+      args   = ' -cc='+self.framework.argDB['CC']
+      if 'CXX' in self.framework.argDB:  args  += ' -c++='+self.framework.argDB['CXX']
+      else: args += ' --disable-c++'
+      if 'FC' in self.framework.argDB:   args  += ' -fc='+self.framework.argDB['FC']      
+      else: args += ' --disable-f77 --disable-f90'
+      args += ' --without-mpe -rsh=ssh'
+      output = self.executeShellCommand('cd '+releasename+';./configure --prefix='+libdir+args,timeout=900)[0]
+      self.framework.log.write(output)
+    except:
+      raise RuntimeError('Error running configure on MPICH')
+    
+    return libdir;
+  
       
   def configureLibrary(self):
     '''Find all working MPI libraries and then choose one'''
@@ -261,33 +276,37 @@ class Configure(config.base.Configure):
     nonsharedMPI  = []
 
     if self.framework.argDB['with-mpich']:
-      self.downLoadMPICH()
-      
-    for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
-      self.framework.log.write('================================================================================\n')
-      self.framework.log.write('Checking for a functional MPI in '+name+'\n')
-      self.lib     = None
-      self.include = None
-      for libraries in libraryGuesses:
-        if self.checkLib(libraries):
-          self.lib = libraries
-          break
-      if self.lib is None: continue
-      for includeDir in includeGuesses:
-        if self.checkInclude(includeDir):
-          self.include = includeDir
-          break
-      if self.include is None: continue
-      if not self.executeTest(self.checkWorkingLink): continue
-      version = self.executeTest(self.configureVersion)
-      if self.framework.argDB['with-mpi-shared']:
-        if not self.executeTest(self.checkSharedLibrary):
-          nonsharedMPI.append((name, self.lib, self.include, version))
-          continue
+      root          = self.downLoadMPICH()
       self.foundMPI = 1
-      functionalMPI.append((name, self.lib, self.include, version))
-      if not self.framework.argDB['with-alternatives']:
-        break
+      self.lib      = [os.path.join(root, 'lib', 'libmpich.a'), os.path.join(root, 'lib', 'libpmpich.a')]
+      self.include  = [os.path.join(root, 'include')]
+      functionalMPI.append(('Downloaded MPICH', self.lib, self.include, '1.2'))
+    else:
+      for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
+        self.framework.log.write('================================================================================\n')
+        self.framework.log.write('Checking for a functional MPI in '+name+'\n')
+        self.lib     = None
+        self.include = None
+        for libraries in libraryGuesses:
+          if self.checkLib(libraries):
+            self.lib = libraries
+            break
+        if self.lib is None: continue
+        for includeDir in includeGuesses:
+          if self.checkInclude(includeDir):
+            self.include = includeDir
+            break
+        if self.include is None: continue
+        if not self.executeTest(self.checkWorkingLink): continue
+        version = self.executeTest(self.configureVersion)
+        if self.framework.argDB['with-mpi-shared']:
+          if not self.executeTest(self.checkSharedLibrary):
+            nonsharedMPI.append((name, self.lib, self.include, version))
+            continue
+        self.foundMPI = 1
+        functionalMPI.append((name, self.lib, self.include, version))
+        if not self.framework.argDB['with-alternatives']:
+          break
       
     # User chooses one or take first (sort by version)
     if self.foundMPI:
