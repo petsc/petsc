@@ -6,14 +6,15 @@ import build.transform
 import os
 
 class UsingPython (base.Base):
-  def __init__(self, sourceDB, project, usingC = None):
+  def __init__(self, sourceDB, project, usingSIDL, usingC = None):
     base.Base.__init__(self)
-    self.sourceDB = sourceDB
-    self.project  = project
-    self.usingC   = usingC
+    self.sourceDB  = sourceDB
+    self.project   = project
+    self.usingSIDL = usingSIDL
+    self.usingC    = usingC
     if self.usingC is None:
       import build.templates.usingC
-      self.usingC = build.templates.usingC.UsingC(self.sourceDB, self.project)
+      self.usingC = build.templates.usingC.UsingC(self.sourceDB, self.project, self.usingSIDL)
     self.language = 'Python'
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
@@ -71,10 +72,11 @@ class UsingPython (base.Base):
   def getGenericCompileTarget(self, action):
     '''Python code does not need compilation, so only a C compiler is necessary.'''
     import build.compile.C
-    tagger   = build.fileState.GenericTag(self.sourceDB, 'python '+action+' c', inputTag = 'python '+action, ext = 'c', deferredExt = 'h')
-    compiler = build.compile.C.Compiler(self.sourceDB, self.usingC, inputTag = 'python '+action+' c')
+    outputTag = self.language.lower()+' '+action+' '+self.usingC.language.lower()
+    tagger    = build.fileState.GenericTag(self.sourceDB, outputTag, inputTag = self.language.lower()+' '+action, ext = 'c', deferredExt = 'h')
+    compiler  = build.compile.C.Compiler(self.sourceDB, self.usingC, inputTag = outputTag)
     compiler.includeDirs.extend(self.includeDirs)
-    target   = build.buildGraph.BuildGraph()
+    target    = build.buildGraph.BuildGraph()
     target.addVertex(tagger)
     target.addEdges(tagger, outputs = [compiler])
     return (target, compiler)

@@ -218,6 +218,7 @@ class Linker(Processor):
 
   def processFileSet(self, set):
     '''Link all the files in "set"'''
+    if len(set) == 0: return self.output
     # Leave this set unchanged
     for f in set:
       build.transform.Transform.handleFile(self, f, set.tag)

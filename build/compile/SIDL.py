@@ -7,7 +7,7 @@ class SIDLConstants:
   def getLanguages():
     '''Returns a list of all permissible SIDL target languages'''
     # This should be argDB['installedLanguages']
-    return ['C', 'C++', 'Python', 'F77', 'F90', 'Java', 'Mathematica', 'Matlab']
+    return ['C', 'Cxx', 'C++', 'Python', 'F77', 'F90', 'Java', 'Mathematica', 'Matlab']
   getLanguages = staticmethod(getLanguages)
 
   def checkLanguage(language):

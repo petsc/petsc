@@ -35,17 +35,3 @@ class Compiler (build.processor.Compiler):
               '-Wconversion', '-Wsign-compare', '-Wstrict-prototypes', '-Wmissing-prototypes', '-Wmissing-declarations',
               '-Wmissing-noreturn', '-Wredundant-decls', '-Wnested-externs', '-Winline']
     return self.warningFlags
-
-class MatlabCompiler (Compiler):
-  def __init__(self, sourceDB, compiler = 'g++', warningFlags = None):
-    Compiler.__init__(self, sourceDB, compiler, warningFlags)
-    self.includeDirs.append(self.argDB['MATLAB_INCLUDE'])
-    return
-
-  def getLibraryName(self, source = None):
-    '''Return the sahred library'''
-    if not source: return None
-    (dir, file) = os.path.split(source)
-    (base, ext) = os.path.splitext(file)
-    libraryName = os.path.join(dir, base+'.a')
-    return libraryName

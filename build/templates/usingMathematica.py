@@ -3,11 +3,12 @@ import base
 import os
 
 class UsingMathematica (base.Base):
-  def __init__(self, sourceDB, project, usingCxx = None):
+  def __init__(self, sourceDB, project, usingSIDL, usingCxx = None):
     base.Base.__init__(self)
-    self.sourceDB = sourceDB
-    self.project  = project
-    self.usingCxx = usingCxx
+    self.sourceDB  = sourceDB
+    self.project   = project
+    self.usingSIDL = usingSIDL
+    self.usingCxx  = usingCxx
     if self.usingCxx is None:
       import build.templates.usingCxx
       self.usingCxx = build.templates.usingCxx.UsingCxx(self.sourceDB, self.project)

@@ -56,3 +56,23 @@ class Operation (Transform):
       self.func(f, tag)
       return self.output
     return Transform.handleFile(self, f, tag)
+
+class Consolidator (Transform):
+  '''A Consolidator combines every file in sets matching inputTag into a single output set'''
+  def __init__(self, inputTag, outputTag):
+    Transform.__init__(self)
+    self.inputTag = inputTag
+    if not isinstance(self.inputTag, list):
+      self.inputTag = [self.inputTag]
+    self.output.tag = outputTag
+    return
+
+  def __str__(self):
+    return 'Consolidating '+str(self.inputTag)+' into '+self.output.tag
+
+  def handleFile(self, f, tag):
+    '''Put all files matching inputTag in the output set'''
+    if self.inputTag is None or tag in self.inputTag:
+      self.output.append(f)
+      return self.output
+    return Transform.handleFile(self, f, tag)
