@@ -453,6 +453,34 @@ static int PCView_ICC(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*MC
+     PCICC - Incomplete Cholesky factorization preconditioners.
+
+   Options Database Keys:
++  -pc_icc_levels <k> - number of levels of fill for ICC(k)
+.  -pc_icc_in_place - only for ICC(0) with natural ordering, reuses the space of the matrix for
+                      its factorization (overwrites original matrix)
+.  -pc_icc_damping - add damping to diagonal to prevent zero (or very small) pivots
+.  -pc_icc_shift - apply Manteuffel shift to diagonal to force positive definite preconditioner
+.  -pc_icc_zeropivot <tol> - set tolerance for what is considered a zero pivot
+.  -pc_icc_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
+-  -pc_icc_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
+
+   Level: beginner
+
+  Concepts: incomplete Cholesky factorization
+
+   Notes: Only implemented for some matrix formats. Not implemented in parallel
+
+          For BAIJ matrices this implements a point block ICC.
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
+           PCICCSetSetZeroPivot(), PCICCSetDamping(), PCICCSetShift(), 
+           PCICCSetFill(), PCICCSetMatOrdering(), PCICCSetReuseOrdering(), 
+           PCICCSetLevels()
+
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ICC"

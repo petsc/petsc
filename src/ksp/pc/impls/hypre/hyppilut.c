@@ -678,7 +678,7 @@ int PCHYPRESetType(PC pc,const char name[])
 
    Options Database Keys:
 +   -pc_hypre_type - One of pilut, parasails, boomerAMG, euclid
--   Too many others to list, run with -pc_type hypre -pc_hypre_type XXX to see options for the XXX
+-   Too many others to list, run with -pc_type hypre -pc_hypre_type XXX -help to see options for the XXX
           preconditioner
  
    Level: intermediate

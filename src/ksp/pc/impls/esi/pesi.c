@@ -191,6 +191,19 @@ int PCESISetFromOptions(PC V)
   PetscFunctionReturn(0);
 }
 
+/*MC
+     PCESI - Makes an ESI operator be able to used in PETSc as a preconditioner
+
+   Options Database Keys:
+.  -pc_esi_type - the string name of an ESI operator type that will be dynamically loaded
+
+  Level: intermediate
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types),
+           PCESISetPreconditioner(), 
+
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ESI"

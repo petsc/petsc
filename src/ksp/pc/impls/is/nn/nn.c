@@ -146,16 +146,25 @@ static int PCDestroy_NN(PC pc)
 }
 
 /* -------------------------------------------------------------------------- */
-/*
-   PCCreate_NN - Creates a NN preconditioner context, PC_NN, 
-   and sets this as the private data within the generic preconditioning 
-   context, PC, that was created within PCCreate().
+/*M
+   PCNN - Balancing Neumann-Neumann for scalar elliptic PDEs.
 
-   Input Parameter:
-.  pc - the preconditioner context
+   Options Database Keys:
++    -pc_nn_turn_off_first_balancing - do not balance the residual before solving the local Neumann problems
+                                       (this skips the first coarse grid solve in the preconditioner)
+-    -pc_nn_turn_off_second_balancing - do not balance the solution solving the local Neumann problems
+                                       (this skips the second coarse grid solve in the preconditioner)
 
-   Application Interface Routine: PCCreate()
-*/
+   Level: intermediates
+
+   Notes: The matrix used with this preconditioner must be of type MATIS 
+
+          Options for the coarse grid preconditioner can be set with -coarse_pc_xxx
+
+   Contributed by Paulo Goldfeld
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,  MatIS
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_NN"

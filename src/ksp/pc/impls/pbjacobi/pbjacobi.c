@@ -179,6 +179,19 @@ static int PCDestroy_PBJacobi(PC pc)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
+/*MC
+     PCPBJACOBI - Point block Jacobi
+
+   Level: beginner
+
+  Concepts: point block Jacobi
+
+   Notes: Only implemented for the BAIJ matrix formats.
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
+
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_PBJacobi"
