@@ -1,3 +1,4 @@
+/*$Id: gmres2.c,v 1.27 2000/04/12 04:25:01 bsmith Exp $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
