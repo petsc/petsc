@@ -1,5 +1,5 @@
 !
-!      "$Id: ex16.F,v 1.22 2000/01/11 21:02:16 bsmith Exp balay $";
+!      "$Id: ex16.F,v 1.23 2000/05/05 22:17:55 balay Exp balay $";
 !
        implicit none
 
@@ -43,13 +43,13 @@
      &     fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f
-        SETERRA(1,0,' ')
+        SETERRA(1,0,' ',ierr)
       endif
 
       call MatLoad(fd,MATSEQAIJ,A,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to load matrix '
-        SETERRA(1,0,' ')
+        SETERRA(1,0,' ',ierr)
       endif
 
       call VecLoad(fd,b,ierr)
