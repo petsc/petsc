@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.31 1996/01/23 00:19:49 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.32 1996/01/23 05:19:28 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -107,6 +107,13 @@ typedef struct {
   double lresid_last;         /* linear residual from last iteration */
   double norm_last;           /* function norm from last iteration */
 } SNES_KSP_EW_ConvCtx;
+
+#define SNESMonitor(snes,rnorm,it) \
+        if (snes->monitor) { \
+          int _ierr; \
+          _ierr = (*snes->monitor)(snes,it,rnorm,snes->monP); \
+          CHKERRQ(_ierr); \
+        }
 
 int SNES_KSP_EW_Converged_Private(KSP,int,double,void*);
 int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES,KSP);
