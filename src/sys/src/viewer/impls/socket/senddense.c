@@ -1,4 +1,4 @@
-/* $Id: senddense.c,v 1.40 2000/04/12 04:20:47 bsmith Exp bsmith $ */
+/* $Id: senddense.c,v 1.41 2000/06/23 03:21:57 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
@@ -11,6 +11,8 @@
 .  viewer - obtained from ViewerSocketOpen()
 .  m, n - number of rows and columns of array
 .  array - the array stored in Fortran 77 style (matrix or vector data) 
+
+    Level: advanced
 
    Notes:
    Most users should not call this routine, but instead should employ
@@ -55,6 +57,8 @@ int ViewerSocketPutScalar(Viewer viewer,int m,int n,Scalar *array)
 .  m, n - number of rows and columns of array
 -  array - the array stored in Fortran 77 style (matrix or vector data) 
 
+    Level: advanced
+
    Notes:
    Most users should not call this routine, but instead should employ
    either
@@ -93,6 +97,8 @@ int ViewerSocketPutReal(Viewer viewer,int m,int n,PetscReal *array)
 +  viewer - obtained from ViewerSocketOpen()
 .  m - number of rows of array
 -  array - the array stored in Fortran 77 style (matrix or vector data) 
+
+    Level: advanced
 
    Notes:
    Most users should not call this routine, but instead should employ either

@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.9 2000/06/20 15:22:51 bsmith Exp bsmith $*/
+/*$Id: pack.c,v 1.10 2000/06/20 16:18:48 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -192,6 +192,8 @@ int VecPackGather_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
 .    gvec - the global vector
 -    ... - the individual sequential objects (arrays or vectors)
  
+    Level: advanced
+
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
          VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices()
 
@@ -240,6 +242,8 @@ int VecPackScatter(VecPack packer,Vec gvec,...)
 .    gvec - the global vector
 -    ... - the individual sequential objects (arrays or vectors)
  
+    Level: advanced
+
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
          VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices()
 
@@ -288,13 +292,14 @@ int VecPackGather(VecPack packer,Vec gvec,...)
 +    packer - the packer object
 -    n - the length of the array
  
+    Level: advanced
+
 .seealso VecPackDestroy(), VecPackGather(), VecPackAddDA(), VecPackCreateGlobalVector(),
          VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices()
 
 @*/
 int VecPackAddArray(VecPack packer,int n)
 {
-  int                ierr;
   struct VecPackLink *mine,*next = packer->next;
 
   PetscFunctionBegin;
@@ -332,6 +337,8 @@ int VecPackAddArray(VecPack packer,int n)
 +    packer - the packer object
 -    da - the DA object
  
+    Level: advanced
+
 .seealso VecPackDestroy(), VecPackGather(), VecPackAddDA(), VecPackCreateGlobalVector(),
          VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices()
 
@@ -340,7 +347,6 @@ int VecPackAddDA(VecPack packer,DA da)
 {
   int                ierr,n;
   struct VecPackLink *mine,*next = packer->next;
-  Vec                local;
 
   PetscFunctionBegin;
   if (packer->globalvector) {
@@ -431,6 +437,8 @@ int VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
     Output Parameters:
 .    idx - the individual indices for each packed vector/array
  
+    Level: advanced
+
     Notes:
        The idx parameters should be freed by the calling routine with PetscFree()
 
