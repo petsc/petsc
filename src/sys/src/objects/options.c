@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.64 1996/01/13 00:16:48 balay Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.65 1996/01/13 13:42:38 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -29,7 +29,7 @@ static char vcid[] = "$Id: options.c,v 1.64 1996/01/13 00:16:48 balay Exp balay 
     For simplicity, we begin with a static size database
 */
 #define MAXOPTIONS 256
-#define MAXALIASES 10
+#define MAXALIASES 25
 
 typedef struct {
   int  N,argc,Naliases;
@@ -208,6 +208,7 @@ int PetscFinalize()
   if (flg1) {
     if (!rank) {
       int nopt = OptionsAllUsed();
+      OptionsPrint(stdout);
       if (nopt == 0) 
         fprintf(stdout,"There are no unused options.\n");
       else if (nopt == 1) 
@@ -280,7 +281,7 @@ int OptionsCheckInitial_Private()
 
 #if defined(PETSC_BOPT_g)
   ierr = OptionsHasName(PETSC_NULL,"-notrmalloc", &flg1); CHKERRQ(ierr);
- if (!flg1) {
+  if (!flg1) {
     PetscSetUseTrMalloc_Private();
   }
 #else
@@ -319,7 +320,7 @@ int OptionsCheckInitial_Private()
   if (flg1) {
     PetscPushErrorHandler(PetscAbortErrorHandler,0);
   }
-  ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64, \
+  ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64, 
                           &flg1); CHKERRQ(ierr);
   if (flg1) {
     char *debugger = 0, *display = 0;
@@ -334,6 +335,7 @@ int OptionsCheckInitial_Private()
     if (PetscStrstr(string,"xldb"))    debugger = "xldb";
 #endif
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
+    if (PetscStrstr(string,"ups"))     debugger = "ups";
     ierr = OptionsGetString(PETSC_NULL,"-display",string,64, &flg1); CHKERRQ(ierr);
     if (flg1){
       display = string;
@@ -346,12 +348,11 @@ int OptionsCheckInitial_Private()
     if (sfree) free(display);
     PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);
   }
-  ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64, \
-                          &flg1); CHKERRQ(ierr);
-  if(flg1) {
-  char *debugger = 0, *display = 0;
-  int  xterm     = 1, sfree = 0,size = 1;
-  MPI_Errhandler abort_handler;
+  ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64,&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    char           *debugger = 0, *display = 0;
+    int            xterm     = 1, sfree = 0,size = 1;
+    MPI_Errhandler abort_handler;
     /*
        we have to make sure that all processors have opened 
        connections to all other processors, otherwise once the 
@@ -379,9 +380,10 @@ int OptionsCheckInitial_Private()
     if (PetscStrstr(string,"xldb"))    debugger = "xldb";
 #endif
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
+    if (PetscStrstr(string,"ups"))     debugger = "ups";
     ierr = OptionsGetString(PETSC_NULL,"-display",string,64, &flg1); CHKERRQ(ierr);
-  if (flg1){
-    display = string;
+    if (flg1){
+      display = string;
     }
     if (!display) {
       display = (char *) malloc( 128*sizeof(char) ); CHKPTRQ(display);
@@ -395,8 +397,8 @@ int OptionsCheckInitial_Private()
     MPI_Errhandler_create((MPI_Handler_function*)abort_function,&abort_handler);
     MPI_Errhandler_set(comm,abort_handler);
   }
-     ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler", &flg1); CHKERRQ(ierr);
-     if (!flg1) {
+  ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler", &flg1); CHKERRQ(ierr);
+  if (!flg1) {
     PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0);
   }
 #if defined(PETSC_LOG)
@@ -413,30 +415,30 @@ int OptionsCheckInitial_Private()
       }
     }
   }
-     ierr = OptionsHasName(PETSC_NULL,"-info", &flg1); CHKERRQ(ierr);
-     if (flg1) {
-     PLogAllowInfo(PETSC_TRUE);
-   }
-   ierr = OptionsHasName(PETSC_NULL,"-log_all", &flg1); CHKERRQ(ierr);
-   ierr = OptionsHasName(PETSC_NULL,"-log", &flg2); CHKERRQ(ierr);
-   ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3); CHKERRQ(ierr);
-   if (flg1) {
-     PLogAllBegin();
-   }
-   else if (flg2 || flg3) {
+  ierr = OptionsHasName(PETSC_NULL,"-info", &flg1); CHKERRQ(ierr);
+  if (flg1) {
+    PLogAllowInfo(PETSC_TRUE);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-log_all", &flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-log", &flg2); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3); CHKERRQ(ierr);
+  if (flg1) {
+    PLogAllBegin();
+  }
+  else if (flg2 || flg3) {
     PLogBegin();
   }
 #endif
-    ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);
-     if (flg1) {
+  ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);
+  if (flg1) {
     MPIU_printf(comm,"Options for all PETSc programs:\n");
     MPIU_printf(comm," -on_error_abort: cause an abort when an error is");
     MPIU_printf(comm," detected. Useful \n       only when run in the debugger\n");
-    MPIU_printf(comm," -on_error_attach_debugger [dbx,xxgdb,noxterm]"); 
+    MPIU_printf(comm," -on_error_attach_debugger [dbx,xxgdb,ups,noxterm]"); 
     MPIU_printf(comm," [-display display]:\n");
     MPIU_printf(comm,"       start the debugger (gdb by default) in new xterm\n");
     MPIU_printf(comm,"       unless noxterm is given\n");
-    MPIU_printf(comm," -start_in_debugger [dbx,xxgdb,noxterm]");
+    MPIU_printf(comm," -start_in_debugger [dbx,xxgdb,ups,noxterm]");
     MPIU_printf(comm," [-display display]:\n");
     MPIU_printf(comm,"       start all processes in the debugger\n");
     MPIU_printf(comm," -no_signal_handler: do not trap error signals\n");
@@ -527,8 +529,9 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
         }
         else if (first && !PetscStrcmp(first,"alias")) {
           third = PetscStrtok(0," ");
-          if (!third) SETERRQ(1,"OptionsCreate_Private:Error in options file: alias");
-          len = PetscStrlen(third); third[len-1] = 0;
+          if (!third) SETERRQ(1,"OptionsCreate_Private:Error in options file:alias");
+          len = PetscStrlen(third); 
+          if (third[len-1] == '\n') third[len-1] = 0;
           ierr = OptionsSetAlias_Private(second,third); CHKERRQ(ierr);
         }
       }
@@ -716,7 +719,11 @@ int OptionsSetAlias_Private(char *newname,char *oldname)
 {
   int len,n = options->Naliases;
 
+  if (newname[0] != '-') SETERRQ(1,"OptionsSetAlias_Private:aliased must have -");
+  if (oldname[0] != '-') SETERRQ(1,"OptionsSetAlias_Private:aliasee must have -");
   if (n >= MAXALIASES) {SETERRQ(1,"OptionsSetAlias_Private:Aliases overflow");}
+
+  newname++; oldname++;
   len = (PetscStrlen(newname)+1)*sizeof(char);
   options->aliases1[n] = (char *) malloc( len ); CHKPTRQ(options->aliases1[n]);
   PetscStrcpy(options->aliases1[n],newname);
@@ -726,26 +733,32 @@ int OptionsSetAlias_Private(char *newname,char *oldname)
   options->Naliases++;
   return 0;
 }
-static int OptionsFindPair_Private( char *pre,char *name,char **value)
+
+static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
 {
-  int  i, N;
+  int  i, N,ierr;
   char **names,tmp[128];
-  if (!options) OptionsCreate_Private(0,0,0,0);
+
+  if (!options) {ierr = OptionsCreate_Private(0,0,0,0); CHKERRQ(ierr);}
   N = options->N;
   names = options->names;
 
-  /* append prefix to name; second check is for pre passed from Fortran */
+  if (name[0] != '-') SETERRQ(1,"OptionsFindPair_Private:Name must begin with -");
+
+  /* append prefix to name */
   if (pre) {
     PetscStrcpy(tmp,pre); PetscStrcat(tmp,name+1);
   }
   else PetscStrcpy(tmp,name+1);
 
   /* slow search */
+  *flg = 0;
   for ( i=0; i<N; i++ ) {
     if (!PetscStrcmp(names[i],tmp)) {
        *value = options->values[i];
        options->used[i]++;
-       return 1;
+       *flg = 1;
+       break;
      }
   }
   return 0;
@@ -770,8 +783,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value)
 int OptionsHasName(char* pre,char *name,int *flg)
 {
   char *value;
-  if (!OptionsFindPair_Private(pre,name,&value)) *flg = 0;
-  else *flg = 1;
+  return OptionsFindPair_Private(pre,name,&value,flg);
   return 0;
 }
 
@@ -795,10 +807,13 @@ int OptionsHasName(char* pre,char *name,int *flg)
 int OptionsGetInt(char*pre,char *name,int *ivalue,int *flg)
 {
   char *value;
-  if (!OptionsFindPair_Private(pre,name,&value)) {*flg = 0; return 0;}
+  int  ierr;
+
+  ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
+  if (!*flg) return 0;
   if (!value) SETERRQ(-1,"OptionsGetInt:Missing value for option");
   *ivalue = atoi(value);
-  *flg = 1; return 0; 
+  return 0; 
 } 
 
 /*@C
@@ -821,10 +836,12 @@ int OptionsGetInt(char*pre,char *name,int *ivalue,int *flg)
 int OptionsGetDouble(char* pre,char *name,double *dvalue,int *flg)
 {
   char *value;
-  if (!OptionsFindPair_Private(pre,name,&value)) {*flg = 0; return 0;}
+  int  ierr;
+  ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
+  if (!*flg) return 0;
   if (!value) SETERRQ(-1,"OptionsGetDouble:Missing value for option");
   *dvalue = atof(value);
-  *flg = 1; return 0; 
+  return 0; 
 } 
 
 /*@C
@@ -848,10 +865,13 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue,int *flg)
 int OptionsGetScalar(char* pre,char *name,Scalar *dvalue,int *flg)
 {
   char *value;
-  if (!OptionsFindPair_Private(pre,name,&value)) {*flg = 0; return 0;}
+  int  ierr;
+  
+  ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
+  if (!*flg) return 0;
   if (!value) SETERRQ(-1,"OptionsGetScalar:Missing value for option");
   *dvalue = atof(value);
-  *flg = 1; return 0; 
+  return 0; 
 } 
 
 /*@C
@@ -877,10 +897,11 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue,int *flg)
 int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *flg)
 {
   char *value;
-  int  n = 0;
+  int  n = 0,ierr;
    
-  *flg = 0;
-  if (!OptionsFindPair_Private(pre,name,&value)) {*nmax = 0; return 0;}
+
+  ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
+  if (!*flg)  {*nmax = 0; return 0;}
   value = PetscStrtok(value,",");
   while (n < *nmax) {
     if (!value) break;
@@ -889,7 +910,6 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *fl
     n++;
   }
   *nmax = n;
-  *flg = 1;
   return 0; 
 } 
 
@@ -916,10 +936,10 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *fl
 int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
 {
   char *value;
-  int  n = 0;
+  int  n = 0,ierr;
 
-  *flg = 0;
-  if (!OptionsFindPair_Private(pre,name,&value)) {*nmax = 0; return 0;}
+  ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
+  if (!*flg) {*nmax = 0; return 0;}
   value = PetscStrtok(value,",");
   while (n < *nmax) {
     if (!value) break;
@@ -928,7 +948,6 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
     n++;
   }
   *nmax = n;
-  *flg = 1;
   return 0; 
 } 
 
@@ -953,8 +972,10 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
 int OptionsGetString(char *pre,char *name,char *string,int len, int *flg)
 {
   char *value;
-  if (!OptionsFindPair_Private(pre,name,&value)) {*flg = 0; return 0;}
-  *flg = 1;
+  int  ierr;
+
+  ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr); 
+  if (!*flg) {return 0;}
   if (value) PetscStrncpy(string,value,len);
   else PetscMemzero(string,len);
   return 0; 
