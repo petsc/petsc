@@ -1,0 +1,7 @@
+#! /bin/csh
+
+set MACH=dreamcast
+set USR=petsc
+set LOC=/home/petsc/petsc-dev-2
+set TAO_LOC=/home/petsc/tao-devel-2
+set CONF=freebsd5.1-c89
