@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.96 1999/03/17 23:21:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.97 1999/03/29 22:29:20 bsmith Exp bsmith $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -43,6 +43,10 @@ $    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess
 .  p - the specific error number
 .  mess - an error text string, usually just printed to the screen
 -  ctx - the error handler context
+
+   Options Database Keys:
++   -on_error_attach_debugger <noxterm,gdb or dbx>
+-   -on_error_abort
 
    Level: intermediate
 
