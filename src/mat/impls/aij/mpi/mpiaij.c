@@ -1,6 +1,5 @@
-
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.170 1996/09/24 20:14:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.171 1996/11/01 16:57:26 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1154,20 +1153,34 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   return 0;
 }
 
-int MatDiagonalScale_MPIAIJ(Mat A,Vec ll,Vec rr)
+int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
 {
-  Mat a = ((Mat_MPIAIJ *) A->data)->A;
-  Mat b = ((Mat_MPIAIJ *) A->data)->B;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
+  Mat a = aij->A, b = aij->B;
   int ierr,s1,s2,s3;
 
-  if (ll)  {
-    ierr = VecGetLocalSize(ll,&s1); CHKERRQ(ierr);
-    ierr = MatGetLocalSize(A,&s2,&s3); CHKERRQ(ierr);
-    if (s1!=s2) SETERRQ(1,"MatDiagonalScale_MPIAIJ:non-conforming local sizes");
-    ierr = MatDiagonalScale(a,ll,0); CHKERRQ(ierr);
-    ierr = MatDiagonalScale(b,ll,0); CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&s2,&s3); CHKERRQ(ierr);
+  if (rr) {
+    s3 = aij->n;
+    VecGetLocalSize_Fast(rr,s1);
+    if (s1!=s3) SETERRQ(1,"MatDiagonalScale: right vector non-conforming local size");
+    /* Overlap communication with computation. */
+    ierr = VecScatterBegin(rr,aij->lvec,INSERT_VALUES,SCATTER_ALL,aij->Mvctx); CHKERRQ(ierr);
   }
-  if (rr) SETERRQ(1,"MatDiagonalScale_MPIAIJ:not supported for right vector");
+  if (ll) {
+    VecGetLocalSize_Fast(ll,s1);
+    if (s1!=s2) SETERRQ(1,"MatDiagonalScale: left vector non-conforming local size");
+    ierr = (*mat->ops.diagonalscale)(b,ll,0); CHKERRQ(ierr);
+  }
+  /* scale  the diagonal block */
+  ierr = (*mat->ops.diagonalscale)(a,ll,rr); CHKERRQ(ierr);
+
+  if (rr) {
+    /* Do a scatter end and then right scale the off-diagonal block */
+    ierr = VecScatterEnd(rr,aij->lvec,INSERT_VALUES,SCATTER_ALL,aij->Mvctx); CHKERRQ(ierr);
+    ierr = (*mat->ops.diagonalscale)(b,0,aij->lvec); CHKERRQ(ierr);
+  } 
+  
   return 0;
 }
 
