@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.25 2000/01/11 20:59:32 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.26 2000/02/02 20:08:20 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -506,6 +506,9 @@ int PetscFinalize(void)
   if (flg1 && flg2) {
     if (!rank) {ierr = OptionsPrint(stdout);CHKERRQ(ierr);}
   }
+  /* to prevent PETSc -options_left from warning */
+  ierr = OptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr)
+
   ierr = OptionsHasName(PETSC_NULL,"-optionsleft",&flg1);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-options_left",&flg2);CHKERRQ(ierr);
   ierr = OptionsAllUsed(&nopt);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.18 2000/01/26 14:18:39 kaushik Exp bsmith $";*/
+/* "$Id: flow.c,v 1.19 2000/02/01 18:35:09 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -618,7 +618,7 @@ int Update(SNES snes, void *ctx)
  Scalar 	time1, time2, cpuloc, cpuglo;
  int 		max_steps;
  PETSCTRUTH     print_flag = PETSC_FALSE;
- FILE 		*fptr;
+ FILE 		*fptr = 0;
  static int     PreLoadFlag = 1;
  int		nfailsCum = 0, nfails = 0;
  /*Scalar         cpu_ini, cpu_fin, cpu_time;*/
@@ -629,7 +629,7 @@ int Update(SNES snes, void *ctx)
   PetscFunctionBegin;
 
   ierr = OptionsHasName(PETSC_NULL,"-print", &print_flag);CHKERRQ(ierr);
-  if ((!rank) && (print_flag)) {
+  if (!rank && print_flag) {
     fptr = fopen("history.out", "w");
     fprintf(fptr, "VARIABLES = iter,cfl,fnorm,clift,cdrag,cmom,cpu\n");
   }
@@ -744,8 +744,7 @@ int Update(SNES snes, void *ctx)
              clift, cdrag, cmom);
 
  /*PetscPrintf(MPI_COMM_WORLD, "Total cpu time needed %g seconds\n", cpu_time);*/
- if ((!rank) && (print_flag))
-   fclose(fptr);
+ if (!rank && print_flag) fclose(fptr);
  if (PreLoadFlag) {
   tsCtx->fnorm_ini = 0.0;
   PetscPrintf(MPI_COMM_WORLD, "Preloading done ...\n");
