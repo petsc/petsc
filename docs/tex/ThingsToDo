@@ -229,6 +229,38 @@ Additional Capabilities that PETSc Needs:
   - checkout http://nfhsg3.rus.uni-stuttgart.de/projects/ddd
     Klaus Birhen birhan@rus.uni-stuttgart.de
 
+  - checkout 
+
+Date: Wed, 5 Jun 1996 23:08:49 +0300 (EET DST)
+From: Jussi Maki <Jussi.Maki@csc.fi>
+To: rs2hpm@csc.fi
+Subject: rs2hpm list and sources available
+
+Howdy folks,
+
+I finally got the permission from IBM Austin to distribute the source
+code on rs2hpm (on 15th May 1996 Ed Welbon IBM/Austin stated:
+"Jussi, You may release your source code for the SP2 performance
+monitor at your disgression. ... As in the past, we can commit no
+support for the monitor. ")
+
+I have now created the rs2hpm@csc.fi mailing list on the SP2 and
+POWER2 hardware performance monitor subject. Please use it for
+discussion and on distributing new ideas. I hope you don't mind but I
+added all you who have contacted me on the rs2hpm subject to the list.
+
+The source code version is now available at
+http://www.csc.fi/~jmaki/rs2hpm-dist/960605/rs2hpm-2.0-960605-src.tar.Z
+This latest version fixes some bugs including wrong sampling
+collection of data cache counters (my apologies on that).
+
++------------------------------------------------------------------------+
+! Jussi Maki                          ! Email: Jussi.Maki@csc.fi         !
+! Centre for Scientific Computing     ! URL:   http://www.csc.fi/~jmaki  !
+! P.O. Box 405                        ! Voice:     +358-0-457 2747       !
+! FIN-02101 Espoo, Finland            ! Telefax:   +358-0-457 2302       !
++------------------------------------------------------------------------+
+
   - MatSetBlockValues()
 
   - Right and left preconditioning for all KSP types.
