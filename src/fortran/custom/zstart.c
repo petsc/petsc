@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.66 1999/11/24 21:27:45 balay Exp bsmith $*/
+/*$Id: zstart.c,v 1.67 1999/12/01 16:12:43 balay Exp balay $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -176,11 +176,11 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
 #else
   int i;
 #endif
-  int  j,flag,argc = 0,dummy_tag,ierr;
+  int  j,flag,argc = 0,dummy_tag;
   char **args = 0,*t1, name[256];
 
   *ierr = 1;
-  ierr = PetscMemzero(name,256); if (ierr) return;
+  *ierr = PetscMemzero(name,256); if (*ierr) return;
   if (PetscInitializedCalled) {*ierr = 0; return;}
   
   *ierr = OptionsCreate(); 
@@ -188,7 +188,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   i = 0;
 #if defined(PETSC_HAVE_PXFGETARG)
   { int ilen;
-    PXFGETARG(&i, _cptofcd(name,256),&ilen,ierr); 
+    PXFGETARG(&i, _cptofcd(name,256),&ilen,*ierr); 
     if (*ierr) return;
     name[ilen] = 0;
   }

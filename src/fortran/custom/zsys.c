@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.74 1999/11/05 14:48:14 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.75 1999/12/01 16:08:57 balay Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
@@ -156,13 +156,11 @@ void PETSC_STDCALL petscfixfilename_(CHAR filein ,CHAR fileout,int *ierr,int len
 
 void PETSC_STDCALL petscbinaryopen_(CHAR name,int *type,int *fd,int *ierr,int len)
 {
-  int  ierr;
   char *c1;
 
   FIXCHAR(name,len,c1);
-  ierr = PetscBinaryOpen(c1,*type,fd);
+  *ierr = PetscBinaryOpen(c1,*type,fd);
   FREECHAR(name,c1);
-  *ierr = ierr;
 }
 
 void PETSC_STDCALL petscbinarywrite_(int *fd,void *p,int *n,PetscDataType *type,int *istemp,int *ierr)

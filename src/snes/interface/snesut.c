@@ -1,4 +1,4 @@
-/*$Id: snesut.c,v 1.50 1999/11/10 03:21:14 bsmith Exp bsmith $*/
+/*$Id: snesut.c,v 1.51 1999/11/24 21:55:08 bsmith Exp balay $*/
 
 #include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
 
@@ -358,16 +358,17 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
 
 #undef __FUNC__  
 #define __FUNC__ "SNES_KSP_EW_Converged_Private"
-int SNES_KSP_EW_Converged_Private(KSP ksp,int n,double rnorm,void *ctx)
+int SNES_KSP_EW_Converged_Private(KSP ksp,int n,double rnorm,KSPConvergedReason *reason, void *ctx)
 {
   SNES                snes = (SNES)ctx;
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
-  int                 convinfo,ierr;
+  int                 ierr;
+  KSPConvergedReason  convinfo;
 
   PetscFunctionBegin;
   if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"No Eisenstat-Walker context set");
   if (n == 0) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);CHKERRQ(ierr);}
-  convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
+  ierr = KSPDefaultConverged(ksp,n,rnorm,&convinfo,ctx);CHKERRQ(ierr);
   kctx->lresid_last = rnorm;
   if (convinfo) {
     PLogInfo(snes,"SNES_KSP_EW_Converged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);

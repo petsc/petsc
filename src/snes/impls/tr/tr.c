@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.107 1999/11/10 03:21:21 bsmith Exp bsmith $*/
+/*$Id: tr.c,v 1.108 1999/12/01 16:03:41 balay Exp balay $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
 
@@ -8,14 +8,15 @@
 */
 #undef __FUNC__  
 #define __FUNC__ "SNES_EQ_TR_KSPConverged_Private"
-int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
+int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, KSPConvergedReason *reason, void *ctx)
 {
   SNES                snes = (SNES) ctx;
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
   SNES_EQ_TR          *neP = (SNES_EQ_TR*)snes->data;
   Vec                 x;
   double              norm;
-  int                 ierr, convinfo;
+  int                 ierr;
+  KSPConvergedReason  convinfo;
 
   PetscFunctionBegin;
   if (snes->ksp_ewconv) {
@@ -23,7 +24,7 @@ int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
     if (!n) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);CHKERRQ(ierr);}
     kctx->lresid_last = rnorm;
   }
-  convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
+  ierr = KSPDefaultConverged(ksp,n,rnorm,&convinfo,ctx);
   if (convinfo) {
     PLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
     PetscFunctionReturn(convinfo);
