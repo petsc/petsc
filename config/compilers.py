@@ -462,7 +462,7 @@ class Configure(config.base.Configure):
       self.popLanguage()
       # Define to equivalent of C99 restrict keyword, or to nothing if this is not supported.  Do not define if restrict is supported directly.
       if not self.restrictKeyword == 'restrict':
-        self.framework.addDefine('restrict', self.restrictKeyword)
+        self.addDefine('RESTRICT', self.restrictKeyword)
       if self.gccFormatChecking:
         self.addDefine(self.gccFormatChecking[0], self.gccFormatChecking[1])
     if 'CXX' in self.framework.argDB:
