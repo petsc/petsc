@@ -72,7 +72,7 @@ class Retriever(install.urlMapping.UrlMapping):
         wasAuth = 1
       else:
         login   = location.split('.')[0]
-        authUrl = urlparse.urlunparse((scheme, login+'foo@'+location, path, parameters, query, fragment))
+        authUrl = urlparse.urlunparse((scheme, login+'@'+location, path, parameters, query, fragment))
         wasAuth = 0
     return (url, authUrl, wasAuth)
 
