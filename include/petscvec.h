@@ -1,3 +1,4 @@
+/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved

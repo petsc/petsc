@@ -1,3 +1,4 @@
+/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
 /*
    This is to provide some name space protection from Lapack and Blas 
 allow the appropriate single or double precision version to be used.

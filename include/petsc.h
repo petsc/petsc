@@ -1,3 +1,4 @@
+/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE

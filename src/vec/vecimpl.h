@@ -1,3 +1,4 @@
+/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
 /* 
    This should not be included in users code.
 */
