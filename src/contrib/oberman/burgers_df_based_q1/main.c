@@ -1,5 +1,5 @@
 
-static char help[] ="Solves the 2d Burgers equation.\n u*du/dx + v*du/dy - c(lap(u)) = f.\n  u*dv/dx + v*dv/dy - c(lap(v)) =g.  This has exact solution, see Fletcher.\n  This version has new indexing of Degrees of Freedom";
+static char help[] ="Solves the 2d Burgers equation. \n  u*du/dx + v*du/dy - c(lap(u)) = f. \n  u*dv/dx + v*dv/dy - c(lap(v)) = g.  This has exact solution, see Fletcher.\n  This version has new indexing of Degrees of Freedom";
 
 #include "appctx.h"
 extern int FormInitialGuess(AppCtx*);
@@ -50,35 +50,34 @@ int AppCtxSolve(AppCtx* appctx)
  
   PetscFunctionBegin;
 
-  /*        Create vector to contain load and various work vectors  */
+  /*  1) Create vector to contain load and various work vectors  */
   ierr = AppCtxCreateVector(appctx); CHKERRQ(ierr);
-  /*      Create the sparse matrix, with correct nonzero pattern  */
+  /*  2) Create the sparse matrix, with correct nonzero pattern  */
   ierr = AppCtxCreateMatrix(appctx); CHKERRQ(ierr);
-  /*     Set the quadrature values for the reference square element  */
+  /*  A) Set the quadrature values for the reference square element  */
   ierr = AppCtxSetReferenceElement(appctx);CHKERRQ(ierr);
-  /*      Set the right hand side values into the vectors   */
+  /*  3) Set the right hand side values into the vectors   */
   ierr = AppCtxSetRhs(appctx); CHKERRQ(ierr);
 
   /* The coeff of diffusivity.  LATER call a function set equations */
   appctx->equations.eta =-0.04;  
-  /*      Set the matrix entries   */
+  /*  4) Set the stiffness matrix entries   */
   ierr = AppCtxSetMatrix(appctx); CHKERRQ(ierr);
 
 /* MatView(algebra->A, VIEWER_STDOUT_SELF); */
 
-  /*     Create the nonlinear solver context  */
+  /*  5) Create the nonlinear solver context  */
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRQ(ierr);
 
-  /********* solve the stationary problem with boundary conditions.  ************/
-  /*      Set function evaluation rountine and vector */
+  /*  6) Set function evaluation rountine and vector */
   ierr = SNESSetFunction(snes,algebra->f ,FormStationaryFunction,(void *)appctx); CHKERRQ(ierr);
-  /*      Set Jacobian   */ 
+  /*  7) Set Jacobian   */ 
   ierr = SNESSetJacobian(snes, algebra->J, algebra->J, FormStationaryJacobian,(void *)appctx);CHKERRQ(ierr);
-  /*      Set Solver Options, could put internal options here      */
+  /*  8) Set Solver Options, could put internal options here      */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  /* initial guess */
+  /*  9) Initial guess */
   ierr = FormInitialGuess(appctx);CHKERRQ(ierr); 
-  /*       Solve the non-linear system  */
+  /*  10) Solve the non-linear system  */
   ierr = SNESSolve(snes, algebra->g, &its);CHKERRQ(ierr);
 
   if(0){VecView(algebra->g, VIEWER_STDOUT_SELF);}
@@ -90,6 +89,8 @@ int AppCtxSolve(AppCtx* appctx)
 }
 
 /*------------------------------------------------------------------------*/
+/*  9) Initial guess */
+
 #undef __FUNC__
 #define __FUNC__ "FormInitialGuess"
 int FormInitialGuess(AppCtx* appctx)
@@ -101,7 +102,9 @@ int FormInitialGuess(AppCtx* appctx)
     PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------------------------- 
+/*---------------------------------------------------------------------------- 
+    6) Set function evaluation rountine and vector 
+
 FormStationaryFunction - Evaluates the nonlinear function, F(x), 
         which is the discretised equations, 
    Input Parameters:
@@ -153,6 +156,8 @@ to see if they need to be recomputed */
 }
 
 /*---------------------------------------------------------------------*/
+/*  7) Set Jacobian   */
+
 #undef __FUNC__
 #define __FUNC__ "FormStationaryJacobian"
 int FormStationaryJacobian(SNES snes, Vec g, Mat *jac, Mat *B, MatStructure *flag, void *dappctx)
@@ -170,7 +175,9 @@ int FormStationaryJacobian(SNES snes, Vec g, Mat *jac, Mat *B, MatStructure *fla
   PetscFunctionReturn(0);
 }
 
-/*--------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
+/*  6) Set function evaluation rountine and vector (non-linear parts) */
+
 #undef __FUNC__
 #define __FUNC__ "SetNonlinearFunction"
 /* input vector is g, output is f.  Loop over elements, getting coords of each vertex and 
@@ -220,6 +227,8 @@ int SetNonlinearFunction(Vec g, AppCtx *appctx, Vec f)
 
 
 /*----------------------------------------------------------------*/
+/*  6) Set function evaluation rountine and vector (boundary conditions)*/
+
 #undef __FUNC__
 #define __FUNC__ "SetBoundaryConditions"
 int SetBoundaryConditions(Vec g, AppCtx *appctx, Vec f)
@@ -261,6 +270,8 @@ int SetBoundaryConditions(Vec g, AppCtx *appctx, Vec f)
 }
 
 /*----------------------------------------------------------------------*/
+/*  7) Set Jacobian   */
+
 /* input is the input vector , output is the jacobian jac */
 #undef __FUNC__
 #define __FUNC__ "SetJacobian"
@@ -317,6 +328,8 @@ int SetJacobian(Vec g, AppCtx *appctx, Mat* jac)
 }
 
 /*----------------------------------------------------------------*/
+/*  3) Set the right hand side values into the vectors   */
+
 #undef __FUNC__
 #define __FUNC__ "AppCxtSetRhs"
 int AppCtxSetRhs(AppCtx* appctx)
@@ -354,6 +367,8 @@ int AppCtxSetRhs(AppCtx* appctx)
 }  
 
 /*---------------------------------------------------------*/
+/*  4) Set the stiffness matrix entries   */
+
 #undef __FUNC__
 #define __FUNC__ "AppCxtSetMatrix"
 int AppCtxSetMatrix(AppCtx* appctx)
