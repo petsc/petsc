@@ -1,8 +1,8 @@
-/* $Id: is.h,v 1.29 1996/08/05 03:49:27 bsmith Exp bsmith $ */
+/* $Id: is.h,v 1.30 1996/08/15 12:51:50 bsmith Exp curfman $ */
 
 /*
-      An index set is a genralization of a subset of integers. They are used
-   for defining scatters and gathers.
+   An index set is a generalization of a subset of integers.  Index sets
+   are used for defining scatters and gathers.
 */
 #if !defined(__IS_PACKAGE)
 #define __IS_PACKAGE
