@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.9 2000/04/12 04:26:58 bsmith Exp balay $*/
+/*$Id: pf.c,v 1.10 2000/05/05 22:20:09 balay Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -8,7 +8,7 @@ FList      PFList = 0; /* list of all registered PD functions */
 PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFSet"
+#define __FUNC__ /*<a name="PFSet"></a>*/"PFSet"
 /*@C
    PFSet - Sets the C/C++/Fortran functions to be used by the PF function
 
@@ -43,7 +43,7 @@ int PFSet(PF pf,int(*apply)(void*,int,Scalar*,Scalar*),int(*applyvec)(void*,Vec,
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFDestroy"
+#define __FUNC__ /*<a name="PFDestroy"></a>*/"PFDestroy"
 /*@C
    PFDestroy - Destroys PF context that was created with PFCreate().
 
@@ -82,7 +82,7 @@ int PFDestroy(PF pf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFPublish_Petsc"
+#define __FUNC__ /*<a name="PFPublish_Petsc"></a>*/"PFPublish_Petsc"
 static int PFPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -104,7 +104,7 @@ static int PFPublish_Petsc(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFCreate"
+#define __FUNC__ /*<a name="PFCreate"></a>*/"PFCreate"
 /*@C
    PFCreate - Creates a mathematical function context.
 
@@ -152,7 +152,7 @@ int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
 /* -------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFApplyVec"
+#define __FUNC__ /*<a name="PFApplyVec"></a>*/"PFApplyVec"
 /*@
    PFApplyVec - Applies the mathematical function to a vector
 
@@ -200,7 +200,7 @@ int PFApplyVec(PF pf,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFApply"
+#define __FUNC__ /*<a name="PFApply"></a>*/"PFApply"
 /*@
    PFApply - Applies the mathematical function to an array of values.
 
@@ -234,7 +234,7 @@ int PFApply(PF pf,int n,Scalar* x,Scalar* y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFView"
+#define __FUNC__ /*<a name="PFView"></a>*/"PFView"
 /*@ 
    PFView - Prints information about a mathematical function
 
@@ -336,7 +336,7 @@ $     -pf_type my_function
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFRegister"
+#define __FUNC__ /*<a name="PFRegister"></a>*/"PFRegister"
 int PFRegister(char *sname,char *path,char *name,int (*function)(PF,void*))
 {
   int  ierr;
@@ -352,7 +352,7 @@ int PFRegister(char *sname,char *path,char *name,int (*function)(PF,void*))
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFGetType"
+#define __FUNC__ /*<a name="PFGetType"></a>*/"PFGetType"
 /*@C
    PFGetType - Gets the PF method type and name (as a string) from the PF
    context.
@@ -381,7 +381,7 @@ int PFGetType(PF pf,PFType *meth)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFSetType"
+#define __FUNC__ /*<a name="PFSetType"></a>*/"PFSetType"
 /*@C
    PFSetType - Builds PF for a particular function
 
@@ -442,7 +442,7 @@ int PFSetType(PF pf,PFType type,void *ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFSetFromOptions"
+#define __FUNC__ /*<a name="PFSetFromOptions"></a>*/"PFSetFromOptions"
 /*@
    PFSetFromOptions - Sets PF options from the options database.
 
@@ -489,7 +489,7 @@ int PFSetFromOptions(PF pf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PFPrintHelp"
+#define __FUNC__ /*<a name="PFPrintHelp"></a>*/"PFPrintHelp"
 /*@
    PFPrintHelp - Prints all the options for the PF component.
 
