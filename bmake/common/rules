@@ -58,7 +58,7 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(BOPT)
 
 # Checks that PETSC_DIR variable is set and creates library directory
 # if it does not exist
-chkpetsc_dir: 
+chkpetsc_dir:
 	@if [ Holder = Holder$(BOPT) ] ; then \
 	  echo "You must set the variable BOPT=[g,O, or Opg]" ; false; fi
 	-@if [ ! -d $(PDIR) ]; then \

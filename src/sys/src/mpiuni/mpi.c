@@ -2,13 +2,15 @@
 #include "petsc.h"
 #define MPI_SUCCESS 0
 void * MPID_TMP  = 0;
-int _v_ = 0;
-void *MPID_DUMMY =(void *)&_v_;
+int _v_[2] = {0, 0};
+void *MPID_DUMMY =(void *)_v_;
 
-MPI_Attr_get( int comm, int key_val, void* attr_val, int* flg)
+int MPI_Attr_get( int comm, int key_val, void* attr_val, int* flg)
 {
   *flg = 1;
-  (*(void**)attr_val)  = MPID_DUMMY;
+  void *x;
+  x = MPID_DUMMY;
+  (*(void**)attr_val)  = x;
   return 0;
 }
 
