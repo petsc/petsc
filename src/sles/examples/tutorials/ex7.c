@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.27 1996/08/27 18:14:21 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.28 1996/08/27 22:34:34 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -60,7 +60,8 @@ int main(int argc,char **args)
   n = m+2;
 
   /* -------------------------------------------------------------------
-                     Set up the linear system
+         Compute the matrix and right-hand-side vector that define
+         the linear system, Ax = b.
      ------------------------------------------------------------------- */
 
   /* 

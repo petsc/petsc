@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.25 1996/08/22 20:16:41 balay Exp curfman $";
+static char vcid[] = "$Id: ex11.c,v 1.26 1996/08/27 18:15:09 curfman Exp curfman $";
 #endif
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
@@ -30,7 +30,7 @@ T*/
 int main(int argc,char **args)
 {
   SLES        sles;      /* linear solver context */
-  Mat         C, B;      /* linear system matrix, preconditioning matrix */
+  Mat         A, B;      /* linear system matrix, preconditioning matrix */
   PetscRandom rctx;      /* random number generator context */
   Vec         x, b, u;   /* approx solution, RHS, exact solution */
   Vec         tmp;       /* work vector */
@@ -42,14 +42,20 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
   ierr = OptionsGetScalar(PETSC_NULL,"-scale",&scale,&flg); CHKERRA(ierr);
 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+         Compute the matrix and right-hand-side vector that define
+         the linear system, Ax = b.  Also, create a different
+         preconditioner matrix.
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   /*
-     Create the linear system matrix (C).
+     Create the linear system matrix (A).
       - Here we use a block diagonal matrix format (MATMPIBDIAG) and
         specify only the global size.  The parallel partitioning of
         the matrix will be determined at runtime by PETSc.
   */
   ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m*n,m*n,
-         0,1,PETSC_NULL,PETSC_NULL,&C); CHKERRA(ierr);
+         0,1,PETSC_NULL,PETSC_NULL,&A); CHKERRA(ierr);
 
   /* 
      Create a different preconditioner matrix (B).  This is usually
@@ -65,7 +71,7 @@ int main(int argc,char **args)
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned. 
   */
-  ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend); CHKERRA(ierr);
 
   /*
      Set entries within the two matrices
@@ -74,23 +80,23 @@ int main(int argc,char **args)
     v = -1.0; i = I/n; j = I - i*n;  
     if ( i>0 ) {
       J=I-n; 
-      ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
       ierr = MatSetValues(B,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
     }
     if ( i<m-1 ) {
       J=I+n; 
-      ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
       ierr = MatSetValues(B,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
     }
     if ( j>0 ) {
       J=I-1; 
-      ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
     }
     if ( j<n-1 ) {
       J=I+1; 
-      ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
     }
-    v = 5.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
+    v = 5.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
     v = 3.0; ierr = MatSetValues(B,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
   }
 
@@ -104,19 +110,19 @@ int main(int argc,char **args)
   for ( I=Istart; I<Iend; I++ ) { 
     v = -0.5; i = I/n;
     if ( i>1 ) { 
-      J=I-(n+1); ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
+      J=I-(n+1); ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
     }
     if ( i<m-2 ) {
-      J=I+n+1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
+      J=I+n+1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
     }
   }
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* 
-     Assemble the linear system matrix, (C)
+     Assemble the linear system matrix, (A)
   */
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* 
      Create parallel vectors.
@@ -142,7 +148,11 @@ int main(int argc,char **args)
   /*
      Compute right-hand-side vector 
   */
-  ierr = MatMult(C,u,b); CHKERRA(ierr);
+  ierr = MatMult(A,u,b); CHKERRA(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+                Create the linear solver and set various options
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* 
     Create linear solver context
@@ -153,16 +163,17 @@ int main(int argc,char **args)
      Set operators. Note that we use different matrices to define the
      linear system and to precondition it.
   */
-  ierr = SLESSetOperators(sles,C,B,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,B,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
 
   /* 
      Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
   */
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
-  /* 
-     Solve linear system
-  */
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+                      Solve the linear system
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
 
   /* 
@@ -171,7 +182,7 @@ int main(int argc,char **args)
   */
   ierr = SLESDestroy(sles); CHKERRA(ierr); ierr = VecDestroy(u); CHKERRA(ierr);
   ierr = MatDestroy(B); CHKERRA(ierr);     ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = MatDestroy(C); CHKERRA(ierr);     ierr = VecDestroy(b); CHKERRA(ierr);
+  ierr = MatDestroy(A); CHKERRA(ierr);     ierr = VecDestroy(b); CHKERRA(ierr);
 
   PetscFinalize();
   return 0;
