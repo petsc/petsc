@@ -221,3 +221,19 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_NETCDF)
+#include "pnetcdf.h"
+#undef __FUNCT__  
+#define __FUNCT__ "VecLoad_Netcdf"
+int VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
+{
+  int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs,nierr;
+  Vec         vec;
+  PetscScalar *avec;
+  MPI_Comm    comm;
+  MPI_Request request;
+  MPI_Status  status;
+  PetscMap    map;
+  PetscTruth  isnetcdf,flag;
+
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
