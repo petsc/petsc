@@ -19,7 +19,7 @@ c      Double  r(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 c      Double ru(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 c      Double rv(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 c      Double rw(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
-c      Double  e(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+c /*   Double  e(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1) */
       Double  p(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 
 #define R(i,j,k) xx(1,i,j,k)
