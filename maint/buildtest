@@ -18,7 +18,7 @@ if ($1 == balay) then
 endif
 #
 #
-setenv H /home/petsc/$1
+setenv H /home/$1/petsc
 cd $H/maint
 /bin/rm -f build.log examples.log
 #
@@ -62,19 +62,6 @@ end
 echo "Finished Build `date`" >> build.log
 echo "Finished Build `date`" >> examples.log
 
-echo "Errors from PETSc nightly build" > trashz
-date >> trashz
-cat build.log examples.log \
-           | egrep -i 'error|warning|problem|failed|undefined' >> trashz
-if ($status == 0) then
-  echo "Errors generated in $H" > trash
-  cat trashz >> trash
-  /bin/mail balay < trash
-else
-  echo "No errors generated in $H -- hard to believe" > trash
-  /bin/mail curfman < trash
-endif 
-/bin/rm -f trash trashz
 chmod ug+w  build.log examples.log
 
 
