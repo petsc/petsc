@@ -96,10 +96,10 @@ class BS (install.base.Base):
     argDB.setLocalType('fileset',        nargs.ArgString('Name of a FileSet or full path of an individual file'))
     argDB.setLocalType('regExp',         nargs.ArgString('Regular expression'))
 
-    if initDB is None:
-      argDB['noConfigure']    = 0
-      argDB['forceConfigure'] = 0
-      argDB['displayTarget']  = 0
+    # Cannot just check whether initDB is given since an empty one comes in during installation
+    if not 'noConfigure'    in argDB: argDB['noConfigure']    = 0
+    if not 'forceConfigure' in argDB: argDB['forceConfigure'] = 0
+    if not 'displayTarget'  in argDB: argDB['displayTarget']  = 0
 
     argDB.insertArgs(clArgs)
     return argDB
