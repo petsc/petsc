@@ -1,25 +1,30 @@
 
-To: leaf, gunter, dstevens, canfield, taylor, jichen, meena, maa, freitag, diachin, plassman, kwong, bischof, roh, pwu, hovland, zwu, adams, kaushik, michalakes, elliott, resiga, murillo
+To: leaf, gunter, dstevens, canfield, taylor, jichen, meena, maa, freitag, diachin, plassman, kwong, bischof, roh, pwu, hovland, zwu, adams, kaushik, michalakes, elliott, resiga, murillo, knepley, lixu, jovanovi, keyes
 cc: bsmith, balay, gropp, curfman
 Subject: new local PETSc installation
 
 
-We have installed a new local version of PETSc (version 2.0.17)
-in /home/petsc/petsc.solid.  Please see the file
-/home/petsc/petsc.solid/Changes for new features and changes 
-in the software.
+We  have  installed a new local  version  of PETSc (version 2.0.18) in
+/home/petsc/petsc.solid.  Please see the Changes file for new features
+and changes in the software. 
 
-The previous two versions (PETSc 2.0.15 and 2.0.16) are located in
-/home/petsc/petsc-2.0.15 and /home/petsc/petsc-2.0.16.  Please try 
-using the new code when you have a chance.  Please only revert to the
-previous version in case of emergency.  Be sure to let us know by
-writing to petsc-maint@mcs.anl.gov if you experience any problems with
-the new code, as we should be able to resolve them quickly.  Also,
-let us know if you need to use a variant of PETSc-2.0.17 that hasn't
-been built (by specifying the needed PETSC_ARCH and BOPT).
+PETSc 2.0.18   is a private release,  and  is not distributed from our
+regular ftp site.  However  you can obtain the tar  file by copying it
+from /home/petsc/archive/petsc-2.0.18.tar.gz. 
 
-Thanks for your support.
-Barry, Satish, Bill, and Lois
+
+The   previous    version      (PETSc 2.0.17)       is   located    in
+/home/petsc/petsc-2.0.17.  Please try using the new code when you have
+a chance.   Please  only revert  to the previous   version  in case of
+emergency.    Be  sure   to    let     us    know  by  writing      to
+petsc-maint@mcs.anl.gov if you experience  any  problems with the  new
+code, as we should be able to resolve them quickly.  Also, let us know
+if you need to  use a variant of PETSc-2.0.18  that hasn't been  built
+(by specifying the needed PETSC_ARCH and BOPT). 
+
+
+Thanks for your support.  
+Barry, Bill, Lois and Satish 
 
 
 ******************
@@ -29,7 +34,5 @@ The following versions are currently installed:
    Arch     PETSC_ARCH   BOPT             machine (examples)
   ----------------------------------------------------------
   SP (new)  rs6000_quad  g,O,g_c++,O_c++   quad
-  SP (old)  rs6000       O,O_c++           bonnie
-  dwarves   rs6000_p4    g,O               dwarf
-  SGIs      IRIX         g,O,g_c++         cyan
-  Suns      sun4         g,O,g_c++,O_c++   cosmo
+  SP (old)  rs6000       g,O,g_c++,O_c++   bonnie
+  Suns      sun4         g,g_c++           cosmo
