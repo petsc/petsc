@@ -1,4 +1,4 @@
-# $Id: base,v 1.14 1997/09/10 18:32:00 balay Exp bsmith $ 
+# $Id: base,v 1.15 1997/09/17 04:31:45 bsmith Exp balay $ 
 
 PARCH    = alpha
 CC       = cc -DPARCH_alpha
@@ -34,13 +34,13 @@ libf: $(OBJSF)
 #######
 .F.o:
 	$(RM) $*.f
-	cpp $(CFLAGS) $(COPTFLAGS) -E $< | grep -v '^ *#' > $*.f
+	cpp $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
 	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(RM) $*.f
 
 .F.a: 
 	$(RM) $*.f
-	cpp $(CFLAGS) $(COPTFLAGS) -E $< | grep -v '^ *#' > $*.f
+	cpp $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
 	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(RM) $*.f
 	$(AR) cr $(LIBNAME) $*.o

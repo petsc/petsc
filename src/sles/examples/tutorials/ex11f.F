@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.12 1997/08/07 14:40:39 bsmith Exp balay $";
+C    "$Id: ex11f.F,v 1.13 1997/09/22 15:21:25 balay Exp balay $";
 C
 C/*T
 C  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -130,8 +130,8 @@ C   - Always specify global rows and columns of matrix entries.
          sigma2 = 10.0*PETSC_i
       else
          use_random = .true.
-         call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,
-     *                          rctx,ierr)
+         call PetscRandomCreate(PETSC_COMM_WORLD,
+     $        RANDOM_DEFAULT_IMAGINARY,rctx,ierr)
       endif
       h2 = 1.0/((n+1)*(n+1))
 

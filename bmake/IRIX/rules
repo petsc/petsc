@@ -1,4 +1,4 @@
-# $Id: base,v 1.4 1997/09/18 20:11:42 balay Exp balay $ 
+# $Id: base,v 1.5 1997/09/24 18:33:48 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -n32 -woff 1048 -DPARCH_IRIX
@@ -50,10 +50,10 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 
 ############
 .F.o:
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $(COPTFLAGS) $*.F
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
 
 .F.a: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $(COPTFLAGS) $*.F
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 

@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.93 1997/09/18 19:20:23 balay Exp balay $ 
+# $Id: buildtest,v 1.94 1997/09/19 14:25:01 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -63,7 +63,7 @@ if ($day == Wed) then
   set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha_uni   sun4_uni    rs6000_quad solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared      shared       )
   set J1=(3      1          1          1             1           4           4           1           1           1            )
-  set J2=(0      2          2          2             2           9           9           2           2           2            )
+  set J2=(0      2          2          2             2           0           9           2           2           2            )
   set J3=(0      3          3          3             3           0           0           3           3           3            )
   set J4=(6      6          6          5             5           0           0           5           6           4            )
   set J5=(0      8          7          10            10          0           0           10          7           7            )
@@ -89,7 +89,7 @@ if ($day == Fri) then
   set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha_uni   sun4        rs6000_quad solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared      shared       )
   set J1=(0      1          1          1             1           4           1           1           1           1            )
-  set J2=(2      2          2          2             2           9           2           2           2           2            )
+  set J2=(2      2          2          2             2           0           2           2           2           2            )
   set J3=(0      3          3          3             3           0           3           3           3           3            )
   set J4=(6      6          5          5             5           0           7           5           6           6            )
   set J5=(0      8          10         10            10          0           8           10          8           7            )
