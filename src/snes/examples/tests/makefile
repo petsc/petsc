@@ -1,21 +1,20 @@
-IPETSCDIR = ../../../
+IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS    = $(OPT) $(CONF) $(INCLUDEDIRS)
-SOURCEC   = 
-SOURCEF   =
-WSOURCEC  = 
-SOURCEH   =
-OBJSC     =
-WOBJS     = 
-OBJSF     =
-LIBBASE   = libpetscsnes
-EXAMPLES  = ex3 ex4 ex5 ex6
-REXAMPLES = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6
-CEXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8
-EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c
-LINCLUDE  = $(SOURCEH)
-DIRS      = umin
+CFLAGS        = $(OPT) $(CONF) $(INCLUDEDIRS)
+SOURCEC       = 
+SOURCEF       =
+WSOURCE       = 
+SOURCEH       =
+OBJSC         =
+WOBJS         = 
+OBJSF         =
+LIBBASE       = libpetscsnes
+EXAMPLES_1    = ex3 ex4 ex5 ex6
+RUNEXAMPLES_1 = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6
+EXAMPLES_2    = ex1 ex2 ex7 ex8
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c
+DIRS          = umin
 
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o $(PETSC_LIB)

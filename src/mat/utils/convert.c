@@ -1,11 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.19 1995/06/08 03:10:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.20 1995/07/17 20:41:50 bsmith Exp bsmith $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
 
 #include "mpiaij.h"
-#define  ABS(a) ((a > 0) ? a : -a)
 
 /* Determines the block diagonals within a subset of a matrix */
 /* For now this is just sequential -- not parallel */
@@ -71,7 +70,7 @@ int MatDetermineDiagonals_Private(Mat mat,int nb,int newr,int newc,
         if (dnew) {
 	  diag[nd] = jdiag;
 	  nd++;
-          if (ABS(jdiag) > newr/nb) 
+          if (PETSCABS(jdiag) > newr/nb) 
              { printf("ERROR jdiag\n"); }
         }
       }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.10 1995/06/08 03:10:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.11 1995/06/23 12:41:11 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -431,14 +431,12 @@ PixVal XiSimColor(DrawCtx_X *XiWin,PixVal pixel, int intensity, int is_fore)
   red   = colordef.red;
   green = colordef.green;
   blue  = colordef.blue;
-#define min(a,b) ((a)<(b) ? a : b)
-#define max(a,b) ((a)>(b) ? a : b)
 #define WHITE_AMOUNT 5000
   if (intensity > 0) {
     /* Add white to the color */
-    red   = min(65535,red + WHITE_AMOUNT);
-    green = min(65535,green + WHITE_AMOUNT);
-    blue  = min(65535,blue + WHITE_AMOUNT);
+    red   = PETSCMIN(65535,red + WHITE_AMOUNT);
+    green = PETSCMIN(65535,green + WHITE_AMOUNT);
+    blue  = PETSCMIN(65535,blue + WHITE_AMOUNT);
   }
   else {
     /* Subtract white from the color */

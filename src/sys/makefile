@@ -1,4 +1,4 @@
-IPETSCDIR = ../../
+IPETSCDIR = ../..
 
 ALL: lib 
 CFLAGS    = $(OPT) $(INCLUDEDIRS) $(CONF) -D__DIR__='"sys/"' \
@@ -8,10 +8,9 @@ SOURCEF   =
 SOURCEH   = nreg.h
 OBJSC     =
 OBJSF     =
-WSOURCEC  = 
+WSOURCE  = 
 WOBJS     = 
 MANSEC    = 7
-LINCLUDE  = $(SOURCEH)
 LIBBASE   = libpetscsys
 DIRS      = src examples
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.23 1995/07/23 18:25:17 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -14,9 +14,6 @@ diagonal data structure.\n\n";
 
 /* This code is not intended as an efficient implementation, it is only
    here to produce an interesting sparse matrix quickly.*/
-
-#define MAX(a,b)  ((a) > (b) ? (a) : (b))
-#define ABS(a)    ((a) < 0.0 ? -(a) : (a))
 
 int GetElasticityMatrix(int,Mat*);
 int Elastic20Stiff(double**);
@@ -192,7 +189,7 @@ int AddElement(Mat mat,int r1,int r2,Scalar **K,int h1,int h2)
    NOTE you should never do this! Inserting values 1 at a time is 
    just too expensive!
 */
-      if (ABS(K[h1+l1][h2+l2]) != 0.0) {
+      if (PETSCABS(K[h1+l1][h2+l2]) != 0.0) {
         row = r1+l1; col = r2+l2; val = K[h1+l1][h2+l2]; 
 	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
         row = r2+l2; col = r1+l1;
@@ -269,7 +266,7 @@ int Elastic20Stiff(double **Ke)
       for ( k=0; k<3; k++ ) {
         for ( l=0; l<3; l++ ) {
           Ke[3*rmap[i]+k][3*rmap[j]+l] = v = K[I+k][J+l];
-          m = MAX(m,ABS(v));
+          m = PETSCMAX(m,PETSCABS(v));
         }
       }
       J += 3;
@@ -280,7 +277,7 @@ int Elastic20Stiff(double **Ke)
   m = (1.e-8)*m;
   for ( i=0; i<81; i++ ) {
     for ( j=0; j<81; j++ ) {
-      if (ABS(Ke[i][j]) < m)  Ke[i][j] = 0.0;
+      if (PETSCABS(Ke[i][j]) < m)  Ke[i][j] = 0.0;
     }
   }  
   /* force the matrix to be exactly symmetric */

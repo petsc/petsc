@@ -1,21 +1,20 @@
-IPETSCDIR = ../../../
+IPETSCDIR = ../../..
 ALL: ex1
 
 CFLAGS   = $(OPT)  $(CONF) $(INCLUDEDIRS) $(BS_INCLUDE)
 
-SOURCEC  = 
-SOURCEF  =
-WSOURCEC = 
-SOURCEH  =
-OBJSC    =
-WOBJS    = 
-OBJSF    =
-LIBBASE  = libpetscvec
-EXAMPLES = ex1 ex2 ex3 ex4
-REXAMPLES= runex1 runex2 runex3 runex4 runex4_2
-CEXAMPLES= ex1 ex2 ex3 ex4 ex5 ex6
-EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
-LINCLUDE = $(SOURCEH)
+SOURCEC       = 
+SOURCEF       =
+WSOURCE       = 
+SOURCEH       =
+OBJSC         =
+WOBJS         = 
+OBJSF         =
+LIBBASE       = libpetscvec
+EXAMPLES_1    = ex1 ex2 ex3 ex4
+RUNEXAMPLES_1 = runex1 runex2 runex3 runex4 runex4_2
+EXAMPLES_2    = ex5 ex6
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)

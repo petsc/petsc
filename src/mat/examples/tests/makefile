@@ -1,28 +1,27 @@
-IPETSCDIR = ../../../
+IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF) $(COPT)
-SOURCEC  = 
-SOURCEF  =
-WSOURCEC = 
-SOURCEH  =
-OBJSC    =
-WOBJS    = 
-OBJSF    =
-LIBBASE  = libpetscmat
-EXAMPLES = ex1  ex3  ex5 ex6  ex8 ex9 ex10 ex11  ex14\
-           ex15 ex16 ex19 ex20 ex21 ex22
-REXAMPLES= runex1  runex3  runex5 runex6  runex8 runex9\
-           runex10 runex11 runex14 runex15 runex16 runex19\
-           runex20 runex21 runex22
-CEXAMPLES= ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14\
-           ex15 ex16 ex17 ex18 ex19 ex20 ex21 ex22 ex23 ex24 ex25 ex26\
-           ex27 ex28
-EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
-           ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c\
-           ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c\
-           ex28.c
-LINCLUDE = $(SOURCEH)
+CFLAGS        = $(OPT) $(INCLUDEDIRS) $(CONF) $(COPT)
+SOURCEC       = 
+SOURCEF       =
+WSOURCE       = 
+SOURCEH       =
+OBJSC         =
+WOBJS         = 
+OBJSF         =
+LIBBASE       = libpetscmat
+EXAMPLES_1    = ex1  ex3  ex5 ex6  ex8 ex9 ex10 ex11  ex14\
+                ex15 ex16 ex19 ex20 ex21 ex22
+RUNEXAMPLES_1 = runex1  runex3  runex5 runex6  runex8 runex9\
+                runex10 runex11 runex14 runex15 runex16 runex19\
+                runex20 runex21 runex22
+EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex18 ex23 ex24 ex25 ex26\
+                ex27 ex28
+RUNEXAMPLES_2 = runex2 runex4 runex7 runex12 runex13 
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
+                ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
+                ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c \
+                ex26.c ex27.c ex28.c
 
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB)
@@ -171,7 +170,7 @@ runex6:
            else echo "Possible problem with ex6_1, diffs above"; fi; \
            $(RM) -f ex6_1.tmp
 runex7:
-	-@$(MPIRUN)  ex7 -mpi_objects > ex7_1.tmp 2>&1;   \
+	-@$(MPIRUN)  ex7 > ex7_1.tmp 2>&1;   \
            if (diff output/ex7_1.out ex7_1.tmp) then true; \
            else echo "Possible problem with ex7_1, diffs above"; fi; \
            $(RM) -f ex7_1.tmp

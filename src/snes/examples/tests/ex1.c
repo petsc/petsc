@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.15 1995/07/23 18:20:43 curfman Exp bsmith $";
 #endif
 
 static char help[] =
@@ -39,7 +39,6 @@ is solved.  The command line options are:\n\
 #include "draw.h"
 #include "snes.h"
 #include <math.h>
-#define MIN(a,b) ( ((a)<(b)) ? a : b )
 
 typedef struct {
       double      param;        /* test problem parameter */
@@ -144,7 +143,7 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   double  one = 1.0, lambda;
   double  temp1, temp, hx, hy, hxdhy, hydhx;
   double  sc;
-  double  *x;
+  Scalar  *x;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -159,14 +158,14 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);
   for (j=0; j<my; j++) {
-    temp = (double)(MIN(j,my-j-1))*hy;
+    temp = (double)(PETSCMIN(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
       row = i + j*mx;  
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt( MIN( (double)(MIN(i,mx-i-1))*hx,temp) ); 
+      x[row] = temp1*sqrt( PETSCMIN( (double)(PETSCMIN(i,mx-i-1))*hx,temp) ); 
     }
   }
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
@@ -180,7 +179,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   int     ierr, i, j, row, mx, my;
   double  two = 2.0, one = 1.0, lambda;
   double  hx, hy, hxdhy, hydhx;
-  double  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
+  Scalar  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -224,7 +223,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   int     i, j, row, mx, my, col[5], ierr;
   double  two = 2.0, one = 1.0, lambda, v[5];
   double  hx, hy, hxdhy, hydhx;
-  double  sc, *x;
+  Scalar  sc, *x;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -308,7 +307,7 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
   double  two = 2.0, one = 1.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
   double  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
   double  hx, hy;
-  double  *x,*f, hx2, hy2, hxhy2;
+  Scalar  *x,*f, hx2, hy2, hxhy2;
 
   mx	 = user->mx; 
   my	 = user->my;

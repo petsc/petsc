@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.30 1995/07/17 20:41:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.31 1995/07/26 15:42:27 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -962,7 +962,6 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   int       i, j, nda, temp, sizetot;
   Scalar    *dtemp;
 
-#define  MIN(a,b) ((a) < (b) ? (a) : (b))
   *newmat       = 0;
   if ((n%nb) || (m%nb)) 
     SETERRQ(1,"MatCreateSequentialBDiag:Invalid block size");
@@ -1018,7 +1017,7 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   for (i=0; i<nd; i++) {
     mat->diag[i] = diag[i];
     if (diag[i] > 0) /* lower triangular */
-      mat->bdlen[i] = MIN(mat->nblock,mat->mblock - diag[i]);
+      mat->bdlen[i] = PETSCMIN(mat->nblock,mat->mblock - diag[i]);
     else {           /* upper triangular */
       if (mat->mblock - diag[i] > mat->nblock)
         mat->bdlen[i] = mat->nblock + diag[i];

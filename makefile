@@ -3,7 +3,7 @@ IPETSCDIR = .
 CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
-WSOURCEC = 
+WSOURCE = 
 SOURCEH  = Changes Machines Readme maint/addlinks maint/buildtest \
            maint/builddist FAQ Installation Performance\
            maint/buildlinks maint/wwwman maint/xclude maint/crontab
@@ -11,7 +11,6 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
-LINCLUDE = $(SOURCEH)
 DIRS     = src include pinclude docs
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

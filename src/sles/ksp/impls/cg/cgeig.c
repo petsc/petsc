@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.12 1995/07/17 03:53:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: cgeig.c,v 1.13 1995/07/27 21:42:01 curfman Exp bsmith $";
 #endif
 /*                       
 
@@ -201,14 +201,14 @@ static int ccgtql1_private(int *n, Scalar *d, Scalar *e, int *ierr)
     i__1 = *n;
     for (l = 1; l <= i__1; ++l) {
         j = 0;
-        h = (d__1 = d[l], ABS(d__1)) + (d__2 = e[l], ABS(d__2));
+        h = (d__1 = d[l], PETSCABS(d__1)) + (d__2 = e[l], PETSCABS(d__2));
         if (tst1 < h) {
             tst1 = h;
         }
 /*     .......... LOOK FOR SMALL SUB-DIAGONAL ELEMENT .......... */
         i__2 = *n;
         for (m = l; m <= i__2; ++m) {
-            tst2 = tst1 + (d__1 = e[m], ABS(d__1));
+            tst2 = tst1 + (d__1 = e[m], PETSCABS(d__1));
             if (tst2 == tst1) {
                 goto L120;
             }
@@ -279,7 +279,7 @@ L145:
         p = -s * s2 * c3 * el1 * e[l] / dl1;
         e[l] = s * p;
         d[l] = c * p;
-        tst2 = tst1 + (d__1 = e[l], ABS(d__1));
+        tst2 = tst1 + (d__1 = e[l], PETSCABS(d__1));
         if (tst2 > tst1) {
             goto L130;
         }

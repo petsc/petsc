@@ -1,4 +1,4 @@
-IPETSCDIR = ../../../../
+IPETSCDIR = ../../../..
 
 ALL: lib 
 CFLAGS    = $(OPT) -I../.. $(INCLUDEDIRS) -I$(IPETSCDIR)/pinclude \
@@ -8,10 +8,9 @@ SOURCEF   =
 SOURCEH   = ximpl.h
 OBJSC     = xinit.o frame.o wmap.o color.o xops.o text.o tone.o
 OBJSF     =
-WSOURCEC  =   
+WSOURCE  =   
 WOBJS     = 
 MANSEC    = x
-LINCLUDE  = $(SOURCEH)
 LIBBASE   = libpetscdraw
 DIRS      = 
 

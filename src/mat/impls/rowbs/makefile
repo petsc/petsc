@@ -1,17 +1,16 @@
-IPETSCDIR = ../../../../
+IPETSCDIR = ../../../..
 
 ALL: lib
 
 CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
-WSOURCEC = 
+WSOURCE = 
 SOURCEH  = 
 OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscmat
-LINCLUDE = $(SOURCEH)
 DIRS     = mpi
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

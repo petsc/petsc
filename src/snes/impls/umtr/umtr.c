@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.4 1995/07/26 22:37:00 curfman Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.5 1995/07/27 03:01:47 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -90,7 +90,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
         else delta = neP->delta0;
         /* Compute L-1 matrix norm */
         ierr = MatNorm(snes->jacobian,NORM_1,&max_val); CHKERRQ(ierr);
-        delta = MAX(delta,*gnorm/max_val);
+        delta = PETSCMAX(delta,*gnorm/max_val);
       } else { 
         delta = neP->delta0;
       }
@@ -114,7 +114,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
       neP->prered = -qcgP->quadratic;
 
       /* Adjust delta for the first Newton step */
-      if ((i == 0) && (newton)) delta = MIN(delta,qcgP->ltsnrm);
+      if ((i == 0) && (newton)) delta = PETSCMIN(delta,qcgP->ltsnrm);
 
       if (neP->actred < neP->eta1 * neP->prered) {  /* Unsuccessful step */
 

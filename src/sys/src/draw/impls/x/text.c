@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: text.c,v 1.9 1995/06/23 12:41:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.10 1995/07/17 20:42:05 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -121,8 +121,6 @@ int XiInitFonts( DrawCtx_X *XBWin )
   return 0;
 }
 
-#define ABS(a)             ((a) < 0.0 ? -(a) : (a))
-#define MAX(a,b)           ((a) > (b) ? (a) : (b))
 int XiMatchFontSize( XiFont *font, int w, int h )
 {
   int i,max,imax,tmp;
@@ -138,9 +136,9 @@ int XiMatchFontSize( XiFont *font, int w, int h )
 
   /* determine closest fit, per max. norm */
   imax = 0;
-  max  = MAX(ABS(nfonts[0].w - w),ABS(nfonts[0].h - h));
+  max  = PETSCMAX(PETSCABS(nfonts[0].w - w),PETSCABS(nfonts[0].h - h));
   for (i=1; i<act_nfonts; i++) {
-    tmp = MAX(ABS(nfonts[i].w - w),ABS(nfonts[i].h - h));
+    tmp = PETSCMAX(PETSCABS(nfonts[i].w - w),PETSCABS(nfonts[i].h - h));
     if (tmp < max) {max = tmp; imax = i;}
   }
 

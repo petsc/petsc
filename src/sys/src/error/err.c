@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.15 1995/06/08 03:08:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.16 1995/07/20 03:58:36 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>  /*I <stdio.h> I*/
@@ -91,6 +91,7 @@ $    PetscAbortErrorHandler()
 int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
                              int number,void *ctx)
 {
+  fprintf(stderr,"PETSC ERROR: ");
   if (!dir) fprintf(stderr,"%s %d %s %d\n",file,line,message,number);
   else      fprintf(stderr,"%s%s %d %s %d\n",dir,file,line,message,number);
   return number;
@@ -210,4 +211,16 @@ int DoubleView(int N,double* idx,Viewer viewer)
   }
   return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
 

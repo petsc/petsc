@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.17 1995/07/11 15:10:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.18 1995/07/17 03:54:14 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -58,17 +58,17 @@ int PetscAttachDebugger()
   int   child;
   char *program = OptionsGetProgramName();
 #if defined(PARCH_t3d)
-  fprintf(stderr,"Cray t3d cannot start debugger\n");
+  fprintf(stderr,"PETSC ERROR: Cray t3d cannot start debugger\n");
   MPI_Finalize();
   exit(0);
 #else
   if (!program) {
-    fprintf(stderr,"Cannot determine program name\n");
+    fprintf(stderr,"PETSC ERROR: Cannot determine program name\n");
     return 1;
   }
   child = fork(); 
   if (child <0) {
-    fprintf(stderr,"Error attaching debugger\n");
+    fprintf(stderr,"PETSC ERROR: Error attaching debugger\n");
     return -1;
   }
   if (child) { /* I am the parent will run the debugger */
@@ -80,7 +80,7 @@ int PetscAttachDebugger()
     if (!strcmp(Debugger,"xxgdb")) {
       args[1] = program; args[2] = pid; args[3] = "-display";
       args[0] = Debugger; args[4] = Display; args[5] = 0;
-      fprintf(stderr,"Attaching %s to %s %s\n",args[0],args[1],pid);
+      fprintf(stderr,"PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
       if (execvp(args[0], args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
@@ -110,7 +110,8 @@ int PetscAttachDebugger()
         args[3] = 0;
       }
 #endif
-      fprintf(stderr,"Attaching %s to %s of pid %s\n",Debugger,program,pid);
+      fprintf(stderr,"PETSC: Attaching %s to %s of pid %s\n",Debugger,
+                                                                program,pid);
       if (execvp(args[0], args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
@@ -142,7 +143,8 @@ int PetscAttachDebugger()
           args[5] = 0;
         }
 #endif
-        fprintf(stderr,"Attaching %s to %s on pid %s\n",Debugger,program,pid);
+        fprintf(stderr,"PETSC: Attaching %s to %s on pid %s\n",Debugger,
+                program,pid);
       }
       else {
         args[0] = "xterm";  args[1] = "-d";
@@ -170,7 +172,7 @@ int PetscAttachDebugger()
           args[7] = 0;
         }
 #endif
-      fprintf(stderr,"Attaching %s to %s of pid %s on display %s\n",
+      fprintf(stderr,"PETSC: Attaching %s to %s of pid %s on display %s\n",
               Debugger,program,pid,Display);
       }
 

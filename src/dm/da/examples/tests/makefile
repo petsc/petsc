@@ -1,20 +1,18 @@
 IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF) 
-SOURCEC  = 
-SOURCEF  =
-WSOURCEC = 
-SOURCEH  =
-OBJSC    =
-WOBJS    = 
-OBJSF    =
-LIBBASE  = libpetscvec
-EXAMPLES = 
-REXAMPLES=
-CEXAMPLES= ex1 ex2 ex3 ex4 ex5
-EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c
-LINCLUDE = $(SOURCEH)
+CFLAGS        = $(OPT) $(INCLUDEDIRS) $(CONF) 
+SOURCEC       = 
+SOURCEF       =
+WSOURCE       = 
+SOURCEH       =
+OBJSC         =
+WOBJS         = 
+OBJSF         =
+LIBBASE       = libpetscvec
+RUNEXAMPLES_2 =
+EXAMPLES_2    = ex1 ex2 ex3 ex4 ex5
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)

@@ -1,4 +1,4 @@
-IPETSCDIR = ../../../
+IPETSCDIR = ../../..
 
 ALL: lib
 
@@ -9,10 +9,9 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = view.o 
 OBJSF    =
-WSOURCEC = 
+WSOURCE = 
 WOBJS    = 
 LIBBASE  = libpetscsys
-LINCLUDE = $(SOURCEH)
 MANSEC   = 1
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.13 1995/06/20 01:48:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.14 1995/07/07 17:16:47 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -19,6 +19,7 @@ struct _DrawLGCtx {
   DrawAxisCtx axis;
   double      xmin, xmax, ymin, ymax, *x, *y;
   int         nopts, dim;
+  int         use_dots;
 };
 #define CHUNCKSIZE 100
 
@@ -57,6 +58,7 @@ int DrawLGCreate(DrawCtx win,int dim,DrawLGCtx *outctx)
   lg->y       = lg->x + dim*CHUNCKSIZE;
   lg->len     = dim*CHUNCKSIZE;
   lg->loc     = 0;
+  lg->use_dots= 0;
   ierr = DrawAxisCreate(win,&lg->axis); CHKERRQ(ierr);
   *outctx = lg;
   return 0;
@@ -138,6 +140,18 @@ int DrawLGAddPoint(DrawLGCtx lg,double *x,double *y)
   return 0;
 }
 /*@
+    DrawLGIndicateDataPoints - Causes LG to draw a big dot for each data-point.
+
+  Input Parameters:
+.   lg - the linegraph context
+@*/
+int DrawLGIndicateDataPoints(DrawLGCtx lg)
+{
+  lg->use_dots = 1;
+  return 0;
+}
+
+/*@
     DrawLGAddPoints - Adds several points to each of the 
                       line graphs. The new point must have a
                       X coordinate larger than the old points.
@@ -208,6 +222,9 @@ int DrawLG(DrawLGCtx lg)
     for ( j=1; j<nopts; j++ ) {
       DrawLine(win,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
                    lg->x[j*dim+i],lg->y[j*dim+i],DRAW_BLACK);
+      if (lg->use_dots) {
+        DrawText(win,lg->x[j*dim+i],lg->y[j*dim+i],DRAW_RED,"x");
+      }
     }
   }
   DrawSyncFlush(lg->win);

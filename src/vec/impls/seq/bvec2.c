@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.32 1995/07/20 23:42:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.33 1995/07/21 15:35:06 curfman Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -22,7 +22,10 @@ static int VecNorm_Blas(Vec xin,double* z )
 {
   Vec_Seq * x = (Vec_Seq *) xin->data;
   int  one = 1;
-#if defined(PARCH_sun4)
+/*
+   This is because the Fortran Norm is very slow! 
+*/
+#if defined(PARCH_sun4) && !defined(PETSC_COMPLEX)
   *z = BLdot_( &x->n, x->array, &one, x->array, &one );
   *z = sqrt(*z);
 #else

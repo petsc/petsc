@@ -1,4 +1,4 @@
-IPETSCDIR = ../../../../
+IPETSCDIR = ../../../..
 
 
 ALL: lib 
@@ -9,10 +9,9 @@ SOURCEF   =
 SOURCEH   =
 OBJSC     = filev.o
 OBJSF     =
-WSOURCEC  =   
+WSOURCE  =   
 WOBJS     = 
 MANSEC    = x
-LINCLUDE  = $(SOURCEH)
 LIBBASE   = libpetscsys
 DIRS      = 
 

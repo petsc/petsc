@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.15 1995/07/23 18:20:35 curfman Exp bsmith $";
 #endif
 
 static char help[] =
@@ -33,7 +33,6 @@ is solved.  The command line options are:\n\
 #include "da.h"
 #include <math.h>
 #include <stdio.h>
-#define MIN(a,b) ( ((a)<(b)) ? a : b )
 
 typedef struct {
       double      param;         /* test problem parameter */
@@ -127,14 +126,14 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);
   DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);
   for (j=ys; j<ys+ym; j++) {
-    temp = (double)(MIN(j,my-j-1))*hy;
+    temp = (double)(PETSCMIN(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
       row = i - Xs + (j - Ys)*Xm; 
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt( MIN( (double)(MIN(i,mx-i-1))*hx,temp) ); 
+      x[row] = temp1*sqrt( PETSCMIN( (double)(PETSCMIN(i,mx-i-1))*hx,temp) ); 
     }
   }
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);

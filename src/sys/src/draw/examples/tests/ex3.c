@@ -33,7 +33,7 @@ int main(int argc,char **argv)
     xd = (double)( i - 5 ); yd = xd*xd;
     DrawLGAddPoint(lg,&xd,&yd);
   }
-
+  ierr = DrawLGIndicateDataPoints(lg); CHKERRA(ierr);
   ierr = DrawLG(lg); CHKERRA(ierr);
   ierr = DrawFlush(draw); sleep(2);
 

@@ -1,20 +1,18 @@
 IPETSCDIR = ../../../../
 ALL: ex1
 
-CFLAGS    = $(OPT) $(CONF) $(INCLUDEDIRS)
-SOURCEC   = 
-SOURCEF   =
-WSOURCEC  = 
-SOURCEH   =
-OBJSC     =
-WOBJS     = 
-OBJSF     =
-LIBBASE   = libpetscsnes
-EXAMPLES  = ex1
-REXAMPLES = runex1 runex1_2
-CEXAMPLES = $(EX1)
-EXAMPLESC = ex1.c
-LINCLUDE  = $(SOURCEH)
+CFLAGS        = $(OPT) $(CONF) $(INCLUDEDIRS)
+SOURCEC       = 
+SOURCEF       =
+WSOURCEC      = 
+SOURCEH       =
+OBJSC         =
+WOBJS         = 
+OBJSF         =
+LIBBASE       = libpetscsnes
+EXAMPLES_2    = ex1
+RUNEXAMPLES_2 = runex1 runex1_2
+EXAMPLESC     = ex1.c
 
 FOBJ = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
        depths.o dgl1hs.o dgl2hs.o dmsahs.o dodchs.o dpjbhs.o dsschs.o \

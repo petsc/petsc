@@ -1,4 +1,4 @@
-IPETSCDIR = ../../../../
+IPETSCDIR = ../../../..
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEF  =
 SOURCEH  = umtr.h
 OBJSC    = umtr.o
 OBJSF    =
-WSOURCEC = 
+WSOURCE  = 
 WOBJS    = 
 LIBBASE  = libpetscsnes
 MANSEC   = n

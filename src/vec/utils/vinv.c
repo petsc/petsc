@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.8 1995/06/20 01:45:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.9 1995/06/23 12:39:47 bsmith Exp bsmith $";
 #endif
 
 #include "vec.h"   /*I "vec.h" I*/
@@ -21,8 +21,8 @@ int VecReciprocal(Vec v)
   int    ierr, i,n;
   Scalar *x;
   VALIDHEADER(v,VEC_COOKIE);
-  if ((ierr = VecGetLocalSize(v,&n))) return ierr;
-  if ((ierr = VecGetArray(v,&x))) return ierr;
+  ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     if (x[i] != 0.0) x[i] = 1.0/x[i];
   }
@@ -47,8 +47,8 @@ int VecSum(Vec v,Scalar *sum)
   int    ierr, i,n;
   Scalar *x,lsum = 0.0;
   VALIDHEADER(v,VEC_COOKIE);
-  if ((ierr = VecGetLocalSize(v,&n))) return ierr;
-  if ((ierr = VecGetArray(v,&x))) return ierr;
+  ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     lsum += x[i];
   }
@@ -78,10 +78,34 @@ int VecShift(Scalar *shift,Vec v)
   int    ierr, i,n;
   Scalar *x,lsum = *shift;
   VALIDHEADER(v,VEC_COOKIE);
-  if ((ierr = VecGetLocalSize(v,&n))) return ierr;
-  if ((ierr = VecGetArray(v,&x))) return ierr;
+  ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     x[i] += lsum;
+  }
+  return 0;
+}
+/*@
+   VecAbs - Replaces every element in a vector with its absolute value.
+
+   Input Parameters:
+.  v - the vector 
+
+.keywords: vector,absolute value
+@*/
+int VecAbs(Vec v)
+{
+  int    ierr, i,n;
+  Scalar *x;
+  VALIDHEADER(v,VEC_COOKIE);
+  ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
+  for ( i=0; i<n; i++ ) {
+#if defined(PETSC_COMPLEX)
+    x[i] = abs(x[i]);
+#else
+    if (x[i] < 0.0) x[i] = -x[i];
+#endif
   }
   return 0;
 }

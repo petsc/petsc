@@ -1,4 +1,4 @@
-IPETSCDIR = ../../../
+IPETSCDIR = ../../..
 
 ALL: lib
 
@@ -10,13 +10,12 @@ CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(IPETSCDIR)/pinclude\
            $(CONF) -D__DIR__='"mat/utils/"'
 SOURCEC  = gcreate.c convert.c stash.c axpy.c mscat.c zerodiag.c
 SOURCEF  =
-WSOURCEC = gcreatef.c axpyf.c zerodiagf.c
+WSOURCE = gcreatef.c axpyf.c zerodiagf.c
 SOURCEH  =
 OBJSC    = gcreate.o convert.o stash.o axpy.o mscat.o zerodiag.o
 WOBJS    = gcreatef.o axpyf.o zerodiagf.o
 OBJSF    =
 LIBBASE  = libpetscmat
-LINCLUDE = $(SOURCEH)
 DIRS     = 
 MANSEC   = 2
 

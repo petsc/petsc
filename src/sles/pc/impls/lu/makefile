@@ -1,4 +1,4 @@
-IPETSCDIR = ../../../../
+IPETSCDIR = ../../../..
 
 ALL: lib
 
@@ -6,13 +6,12 @@ CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../.. -I$(IPETSCDIR)/pinclude\
            $(CONF) -D__DIR__='"pc/impls/lu/"'
 SOURCEC  = lu.c
 SOURCEF  =
-WSOURCEC = 
+WSOURCE = 
 SOURCEH  = 
 OBJSC    = lu.o
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscsles
-LINCLUDE = $(SOURCEH)
 DIRS     = 
 MANSEC   = 4
 

@@ -51,7 +51,7 @@ int main(int Argc, char **Args)
   OptionsGetInt(0,"-l",&levels);  
   OptionsGetInt(0,"-c",&cycles);  
   OptionsGetInt(0,"-smooths",&smooths);  
-  if (OptionsHasName(0,"-help")) {fprintf(stdout,"%s",help); exit(0);}
+  if (OptionsHasName(0,"-help")) {fprintf(stdout,"%s",help);}
   if (OptionsHasName(0,"-a")) {am = MGADDITIVE;}
   if (OptionsHasName(0,"-f")) {am = MGFULL;}
   if (OptionsHasName(0,"-j")) {use_jacobi = 1;}
@@ -74,7 +74,7 @@ int main(int Argc, char **Args)
   ierr = MGSetMethod(pcmg,am); CHKERRA(ierr);
 
   MGGetCoarseSolve(pcmg,&csles);
-  SLESSetOperators(csles,cmat,cmat,0);
+  SLESSetOperators(csles,cmat,cmat,ALLMAT_DIFFERENT_NONZERO_PATTERN);
   SLESGetPC(csles,&pc); PCSetMethod(pc,PCLU);
   SLESGetKSP(csles,&ksp); KSPSetMethod(ksp,KSPPREONLY);
 
@@ -92,7 +92,8 @@ int main(int Argc, char **Args)
       MGGetSmoother(pcmg,levels - 1 - i,&sles[i]);
       SLESGetPC(sles[i],&pc);
       PCSetMethod(pc,PCSHELL);
-      SLESSetOperators(sles[i],mat[i],mat[i],0); /* this is a dummy! */
+      /* this is a dummy! */
+      SLESSetOperators(sles[i],mat[i],mat[i],ALLMAT_DIFFERENT_NONZERO_PATTERN);
       PCShellSetApplyRichardson(pc,gauss_seidel,(void *)0);
       if (use_jacobi) { PCShellSetApplyRichardson(pc,jacobi,(void *)0); }
       SLESGetKSP(sles[i],&ksp);
@@ -118,7 +119,7 @@ int main(int Argc, char **Args)
   /* create matrix multiply for finest level */
   MatShellCreate(MPI_COMM_WORLD,N[0],N[0],(void *)0,&fmat);
   MatShellSetMult(fmat,amult);
-  SLESSetOperators(slesmg,fmat,fmat,0);
+  SLESSetOperators(slesmg,fmat,fmat,ALLMAT_DIFFERENT_NONZERO_PATTERN);
 
   CalculateSolution(N[0],&solution);
   CalculateRhs(B[levels-1]);
@@ -183,8 +184,8 @@ int amult(void *ptr,Vec xx,Vec yy)
 /* --------------------------------------------------------------------- */
 int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,int m)
 {
-  int      i, n1;
-  double *x, *b;
+  int    i, n1;
+  Scalar *x, *b;
   VecGetSize(bb,&n1);n1--;
   VecGetArray(bb,&b); VecGetArray(xx,&x);
   while (m--) {
@@ -204,7 +205,7 @@ int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,int m)
 int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
 {
   int      i, n, n1;
-  double   *r,*b,*x;
+  Scalar   *r,*b,*x;
 
   VecGetSize(bb,&n); n1 = n - 1;
   VecGetArray(bb,&b); VecGetArray(xx,&x);
@@ -227,7 +228,7 @@ int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
 int interpolate(void *ptr,Vec xx,Vec yy,Vec zz)
 {
   int    i, n, N, i2;
-  double *x,*y;
+  Scalar *x,*y;
 
   VecGetSize(yy,&N);
   VecGetArray(xx,&x); VecGetArray(yy,&y);
@@ -244,7 +245,7 @@ int interpolate(void *ptr,Vec xx,Vec yy,Vec zz)
 int restrct(void *ptr,Vec rr,Vec bb)
 {
   int    i, n, N, i2;
-  double *r,*b;
+  Scalar *r,*b;
 
   VecGetSize(rr,&N);
   VecGetArray(rr,&r); VecGetArray(bb,&b);
@@ -279,7 +280,8 @@ int Create1dLaplacian(int n,Mat *mat)
 int CalculateRhs(Vec u)
 {
   int    i,n, ierr;
-  double h,x = 0.0,uu;
+  double h,x = 0.0;
+  Scalar uu;
   VecGetSize(u,&n);
   h = 1.0/((double) (n+1));
   for ( i=0; i<n; i++ ) {
@@ -293,7 +295,8 @@ int CalculateRhs(Vec u)
 int CalculateSolution(int n,Vec *solution)
 {
   int    i,ierr;
-  double h,x = 0.0,uu;
+  double h,x = 0.0;
+  Scalar uu;
   VecCreateSequential(MPI_COMM_SELF,n,solution);
   h = 1.0/((double) (n+1));
   for ( i=0; i<n; i++ ) {

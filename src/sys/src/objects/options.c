@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.27 1995/07/17 20:40:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.28 1995/07/20 04:24:24 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -100,7 +100,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env)
 
    Options Database Keys:
 $  -optionstable : Calls OptionsPrint()
-$  -optionused : Calls OptionsAllUsed()
+$  -optionsused : Calls OptionsAllUsed()
 $  -optionsleft : Prints unused options that remain in 
 $     the database
 $  -no_signal_handler : Turns off the signal handler

@@ -1,22 +1,28 @@
 IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF) 
-SOURCEC  = 
-SOURCEF  =
-WSOURCEC = 
-SOURCEH  =
-OBJSC    =
-WOBJS    = 
-OBJSF    =
-LIBBASE  = libpetscdraw
-CEXAMPLES= ex1 ex2 ex3 ex4
-EXAMPLESC= ex1.c ex2.c ex3.c ex4.c
-REXAMPLES=runex1
-LINCLUDE = $(SOURCEH)
+CFLAGS        = $(OPT) $(INCLUDEDIRS) $(CONF) 
+SOURCEC       = 
+SOURCEF       =
+WSOURCE       = 
+SOURCEH       =
+OBJSC         =
+WOBJS         = 
+OBJSF         =
+LIBBASE       = libpetscdraw
+
+RUNEXAMPLES_2 = runex1 runex2 runex3 runex4
+EXAMPLES_2    = ex1 ex2 ex3 ex4
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c
 
 runex1:
-	-@echo "Run examples in src/draw/examples manually"
+	-@$(MPIRUN) ex1
+runex2:
+	-@$(MPIRUN) ex2
+runex3:
+	-@$(MPIRUN) ex3
+runex4:
+	-@$(MPIRUN) ex4
 
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)

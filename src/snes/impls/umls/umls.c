@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.1 1995/07/24 15:57:51 curfman Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.2 1995/07/27 03:01:55 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -389,16 +389,16 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   for (i=0; i< neP->maxfev; i++) {
     /* Set min and max steps to correspond to the interval of uncertainty */
     if (bracket) {
-      neP->stepmin = MIN(stx,sty); 
-      neP->stepmax = MAX(stx,sty); 
+      neP->stepmin = PETSCMIN(stx,sty); 
+      neP->stepmax = PETSCMAX(stx,sty); 
     } else {
       neP->stepmin = stx;
       neP->stepmax = *step + xtrapf * (*step - stx);
     }
 
     /* Force the step to be within the bounds */
-    *step = MAX(*step,neP->stepmin);
-    *step = MIN(*step,neP->stepmax);
+    *step = PETSCMAX(*step,neP->stepmin);
+    *step = PETSCMIN(*step,neP->stepmax);
 
     /* If an unusual termination is to occur, then let step be the lowest
        point obtained thus far */
@@ -463,7 +463,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
     /* In the first stage, we seek a step for which the modified function
         has a nonpositive value and nonnegative derivative */
     if ((stage1) && (*f <= ftest1) && 
-        (dg >= dginit * MIN(neP->ftol, neP->gtol))) stage1 = 0;
+        (dg >= dginit * PETSCMIN(neP->ftol, neP->gtol))) stage1 = 0;
 
     /* A modified function is used to predict the step only if we
        have not obtained a step for which the modified function has a 

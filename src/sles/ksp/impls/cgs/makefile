@@ -1,15 +1,14 @@
+IPETSCDIR = ../../../..
 ALL: lib 
-IPETSCDIR = ../../../../
 
 CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) \
            -I$(IPETSCDIR)/pinclude -I../../ -D__DIR__='"ksp/impls/cgs/"'
 SOURCEC  = cgs.c
-WSOURCEC = 
+WSOURCE = 
 SOURCEF  =
 OBJSC    = cgs.o
 WOBJS    = 
 OBJSF    = 
 LIBBASE  = libpetscksp
-LINCLUDE = 
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

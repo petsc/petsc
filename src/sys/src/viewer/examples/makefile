@@ -1,21 +1,20 @@
-IPETSCDIR = ../../../
+IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF) -I$(IPETSCDIR)/include
-SOURCEC  = 
-SOURCEF  =
-WSOURCEC = 
-SOURCEH  =
-OBJSC    =
-WOBJS    = 
-OBJSF    =
-LIBBASE  = libpetscvec
-CEXAMPLES= ex2
-EXAMPLESC= ex2.c
-REXAMPLES= runex1
-LINCLUDE = $(SOURCEH)
+CFLAGS        = $(OPT) $(INCLUDEDIRS) $(CONF) -I$(IPETSCDIR)/include
+SOURCEC       = 
+SOURCEF       =
+WSOURCE       = 
+SOURCEH       =
+OBJSC         =
+WOBJS         = 
+OBJSF         =
+LIBBASE       = libpetscvec
+EXAMPLES_2    = ex2
+EXAMPLESC     = ex2.c
+RUNEXAMPLES_2 = runex2
 
-runex1:
+runex2:
 	@echo "There are no externally runable examples in this directory"
 	
 ex2: ex2.o   chkopts

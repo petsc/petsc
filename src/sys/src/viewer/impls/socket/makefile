@@ -1,4 +1,4 @@
-IPETSCDIR = ../../../../
+IPETSCDIR = ../../../..
 
 
 ALL: lib 
@@ -10,10 +10,9 @@ SOURCEF   =
 SOURCEH   = matlab.h
 OBJSC     = senddense.o send.o  sendsparse.o
 OBJSF     =
-WSOURCEC  =   
+WSOURCE  =   
 WOBJS     = 
 MANSEC    = x
-LINCLUDE  = $(SOURCEH)
 LIBBASE   = libpetscsys
 DIRS      = 
 
