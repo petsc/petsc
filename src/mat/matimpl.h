@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.31 1995/10/22 04:19:42 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.32 1995/10/24 21:45:02 bsmith Exp curfman $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -77,6 +77,7 @@ extern int StashDestroy_Private(Stash*);
   SparsePak routines.
 */
 extern int MatGetReordering_IJ(int,int*,int*,MatOrdering,IS *,IS*);
+extern int MatConvert_Basic(Mat,MatType,Mat*);
 
 #endif
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.106 1995/10/26 19:17:24 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.107 1995/10/26 21:54:37 curfman Exp curfman $";
 #endif
 
 /*
@@ -854,76 +854,18 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
-  if (!M) SETERRQ(1,"MatConvert:Bad address");
-  if (newtype == mat->type || newtype == MATSAME) {
-    if (mat->ops.copyprivate) {
-      PLogEventBegin(MAT_Convert,mat,0,0,0); 
-      ierr = (*mat->ops.copyprivate)(mat,M,COPY_VALUES); CHKERRQ(ierr);
-      PLogEventEnd(MAT_Convert,mat,0,0,0); 
-      return 0;
-    }
-  }
+  if (!M) SETERRQ(1,"MatConvert:Bad new matrix address");
   PLogEventBegin(MAT_Convert,mat,0,0,0); 
-  if (!mat->ops.convert) {
-    Scalar *vwork;
-    int    i, nz, m, n, *cwork, rstart, rend;
-    ierr = MatGetSize(mat,&m,&n); CHKERRQ(ierr);
-    switch (newtype) {
-      case MATSEQAIJ:
-        ierr = MatCreateSeqAIJ(mat->comm,m,n,0,0,M); CHKERRQ(ierr); 
-        break;
-      case MATSEQROW:
-        ierr = MatCreateSeqRow(mat->comm,m,n,0,0,M); CHKERRQ(ierr); 
-        break;
-      case MATMPIROW:
-        ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                               m,n,0,0,0,0,M); CHKERRQ(ierr);
-        break;
-      case MATMPIROWBS:
-        if (m != n) SETERRQ(1,"MatConvert:MATMPIROWBS matrix must be square");
-        ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,m,0,0,0,M);
-               CHKERRQ(ierr);
-        break;
-      case MATMPIAIJ:
-        ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                               m,n,0,0,0,0,M); CHKERRQ(ierr);
-        break;
-      case MATSEQDENSE:
-        ierr = MatCreateSeqDense(mat->comm,m,n,M); CHKERRQ(ierr);
-        break;
-      case MATMPIDENSE:
-        ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                                 m,n,M); CHKERRQ(ierr);
-        break;
-      case MATSEQBDIAG:
-        {
-        int nb = 1; /* Default block size = 1 */ 
-        OptionsGetInt(0,"-mat_bdiag_bsize",&nb);     
-        ierr = MatCreateSeqBDiag(mat->comm,m,n,0,nb,0,0,M); CHKERRQ(ierr); 
-        break;
-        }
-      case MATMPIBDIAG:
-        {
-        int nb = 1; /* Default block size = 1 */ 
-        OptionsGetInt(0,"-mat_bdiag_bsize",&nb);     
-        ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,0,nb,0,0,M); 
-        CHKERRQ(ierr); 
-        break;
-        }
-      default:
-        SETERRQ(1,"MatConvert:Matrix type is not currently supported");
+  if (newtype == mat->type || newtype == MATSAME) {
+    if (mat->ops.copyprivate) { /* customized copy */
+      ierr = (*mat->ops.copyprivate)(mat,M,COPY_VALUES); CHKERRQ(ierr);
     }
-    ierr = MatGetOwnershipRange(*M,&rstart,&rend); CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++) {
-      ierr = MatGetRow(mat,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
-      ierr = MatSetValues(*M,1,&i,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
-      ierr = MatRestoreRow(mat,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(*M,FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*M,FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
-  else {
+  if (mat->ops.convert) { /* customized conversion */
     ierr = (*mat->ops.convert)(mat,newtype,M); CHKERRQ(ierr);
+  }
+  else { /* generic conversion */
+    ierr = MatConvert_Basic(mat,newtype,M); CHKERRQ(ierr);
   }
   PLogEventEnd(MAT_Convert,mat,0,0,0); 
   return 0;
