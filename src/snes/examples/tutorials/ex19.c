@@ -73,7 +73,6 @@ typedef struct {
 } Field;
 
 extern int FormInitialGuess(SNES,Vec,void*);
-extern int FormFunction(SNES,Vec,Vec,void*);
 extern int FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
 extern int FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
 
@@ -93,7 +92,6 @@ int main(int argc,char **argv)
   MPI_Comm   comm;
   SNES       snes;
   DA         da;
-  PetscTruth localfunction = PETSC_TRUE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -139,13 +137,8 @@ int main(int argc,char **argv)
 
        Process adiC: FormFunctionLocal FormFunctionLocali
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = PetscOptionsGetLogical(PETSC_NULL,"-localfunction",&localfunction,PETSC_IGNORE);CHKERRQ(ierr);
-    if (localfunction) {
-      ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
-      ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);
-    } else {
-      ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
-    }
+    ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
+    ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);
 
     ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",
 		       user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
@@ -247,195 +240,6 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   ierr = DAVecRestoreArray(da,X,(void**)&x);CHKERRQ(ierr);
   return 0;
 } 
-/* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
-/* 
-   FormFunction - Evaluates the nonlinear function, F(x).
-
-   Input Parameters:
-.  snes - the SNES context
-.  X - input vector
-.  ptr - optional user-defined context, as set by SNESSetFunction()
-
-   Output Parameter:
-.  F - function vector
-
-   Notes:
-   We process the boundary nodes before handling the interior
-   nodes, so that no conditional statements are needed within the
-   PetscReal loop over the local grid indices. 
- */
-int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
-{
-  DMMG         dmmg = (DMMG)ptr;
-  AppCtx       *user = (AppCtx*)dmmg->user;
-  int          ierr,i,j,mx,my,xs,ys,xm,ym;
-  int          xints,xinte,yints,yinte;
-  PetscReal    two = 2.0,one = 1.0,p5 = 0.5,hx,hy,dhx,dhy,hxdhy,hydhx;
-  PetscReal    grashof,prandtl,lid;
-  PetscScalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
-  Field        **x,**f;
-  Vec          localX;
-  DA           da = (DA)dmmg->dm;
-
-  ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-
-  grashof = user->grashof;  
-  prandtl = user->prandtl;
-  lid     = user->lidvelocity;
-
-  /* 
-     Define mesh intervals ratios for uniform grid.
-     [Note: FD formulae below are normalized by multiplying through by
-     local volume element to obtain coefficients O(1) in two dimensions.]
-  */
-  dhx = (PetscReal)(mx-1);     dhy = (PetscReal)(my-1);
-  hx = one/dhx;             hy = one/dhy;
-  hxdhy = hx*dhy;           hydhx = hy*dhx;
-
-  /*
-     Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
-     By placing code between these two statements, computations can be
-     done while messages are in transition.
-  */
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-
-  /*
-     Get pointers to vector data
-  */
-  ierr = DAVecGetArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
-
-  /*
-     Get local grid boundaries
-  */
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-
-  /*
-     Compute function over the locally owned part of the grid
-     (physical corner points are set twice to avoid more conditionals).
-  */
-  xints = xs; xinte = xs+xm; yints = ys; yinte = ys+ym;
-
-  /* Test whether we are on the bottom edge of the global array */
-  if (yints == 0) {
-    j = 0;
-    yints = yints + 1;
-    /* bottom edge */
-    for (i=xs; i<xs+xm; i++) {
-        f[j][i].u     = x[j][i].u;
-        f[j][i].v     = x[j][i].v;
-        f[j][i].omega = x[j][i].omega + (x[j+1][i].u - x[j][i].u)*dhy; 
-	f[j][i].temp  = x[j][i].temp-x[j+1][i].temp;
-    }
-  }
-
-  /* Test whether we are on the top edge of the global array */
-  if (yinte == my) {
-    j = my - 1;
-    yinte = yinte - 1;
-    /* top edge */
-    for (i=xs; i<xs+xm; i++) {
-        f[j][i].u     = x[j][i].u - lid;
-        f[j][i].v     = x[j][i].v;
-        f[j][i].omega = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy; 
-	f[j][i].temp  = x[j][i].temp-x[j-1][i].temp;
-    }
-  }
-
-  /* Test whether we are on the left edge of the global array */
-  if (xints == 0) {
-    i = 0;
-    xints = xints + 1;
-    /* left edge */
-    for (j=ys; j<ys+ym; j++) {
-      f[j][i].u     = x[j][i].u;
-      f[j][i].v     = x[j][i].v;
-      f[j][i].omega = x[j][i].omega - (x[j][i+1].v - x[j][i].v)*dhx; 
-      f[j][i].temp  = x[j][i].temp;
-    }
-  }
-
-  /* Test whether we are on the right edge of the global array */
-  if (xinte == mx) {
-    i = mx - 1;
-    xinte = xinte - 1;
-    /* right edge */ 
-    for (j=ys; j<ys+ym; j++) {
-      f[j][i].u     = x[j][i].u;
-      f[j][i].v     = x[j][i].v;
-      f[j][i].omega = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx; 
-      f[j][i].temp  = x[j][i].temp - (PetscReal)(grashof>0);
-    }
-  }
-
-  /* Compute over the interior points */
-  for (j=yints; j<yinte; j++) {
-    for (i=xints; i<xinte; i++) {
-
-	/*
-	  convective coefficients for upwinding
-        */
-	vx = x[j][i].u; avx = PetscAbsScalar(vx);
-        vxp = p5*(vx+avx); vxm = p5*(vx-avx);
-	vy = x[j][i].v; avy = PetscAbsScalar(vy);
-        vyp = p5*(vy+avy); vym = p5*(vy-avy);
-
-	/* U velocity */
-        u          = x[j][i].u;
-        uxx        = (two*u - x[j][i-1].u - x[j][i+1].u)*hydhx;
-        uyy        = (two*u - x[j-1][i].u - x[j+1][i].u)*hxdhy;
-        f[j][i].u  = uxx + uyy - p5*(x[j+1][i].omega-x[j-1][i].omega)*hx;
-
-	/* V velocity */
-        u          = x[j][i].v;
-        uxx        = (two*u - x[j][i-1].v - x[j][i+1].v)*hydhx;
-        uyy        = (two*u - x[j-1][i].v - x[j+1][i].v)*hxdhy;
-        f[j][i].v  = uxx + uyy + p5*(x[j][i+1].omega-x[j][i-1].omega)*hy;
-
-	/* Omega */
-        u          = x[j][i].omega;
-        uxx        = (two*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
-        uyy        = (two*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;
-	f[j][i].omega = uxx + uyy + 
-			(vxp*(u - x[j][i-1].omega) +
-			  vxm*(x[j][i+1].omega - u)) * hy +
-			(vyp*(u - x[j-1][i].omega) +
-			  vym*(x[j+1][i].omega - u)) * hx -
-			p5 * grashof * (x[j][i+1].temp - x[j][i-1].temp) * hy;
-
-        /* Temperature */
-        u             = x[j][i].temp;
-        uxx           = (two*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
-        uyy           = (two*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
-	f[j][i].temp =  uxx + uyy  + prandtl * (
-			(vxp*(u - x[j][i-1].temp) +
-			  vxm*(x[j][i+1].temp - u)) * hy +
-		        (vyp*(u - x[j-1][i].temp) +
-		       	  vym*(x[j+1][i].temp - u)) * hx);
-    }
-  }
-
-  /*
-     Restore vectors
-  */
-  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
-
-  ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
-
-  /*
-     Flop count (multiply-adds are counted as 2 operations)
-  */
-  ierr = PetscLogFlops(84*ym*xm);CHKERRQ(ierr);
-
-  return 0; 
-} 
-
 int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
  {
   AppCtx       *user = (AppCtx*)ptr;
@@ -567,6 +371,9 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   PetscFunctionReturn(0);
 } 
 
+/*
+    This is an experimental function and can be safely ignored.
+*/
 int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f,void *ptr)
  {
   AppCtx      *user = (AppCtx*)ptr;
