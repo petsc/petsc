@@ -57,6 +57,7 @@ class Configure(script.Script):
     script.Script.__init__(self, framework.clArgs, framework.argDB)
     self.framework       = framework
     self.defines         = {}
+    self.makeMacros      = {}    
     self.typedefs        = {}
     self.prototypes      = {}
     self.subst           = {}
@@ -84,6 +85,12 @@ class Configure(script.Script):
     '''Designate that "name" should be deleted (never put in)  configuration header'''
     self.framework.log.write('Deleting '+name+' in '+str(self.__module__)+'\n')
     if name in self.defines: del self.defines[name]
+    return
+
+  def addMakeMacro(self, name, value):
+    '''Designate that "name" should be defined to "value" in the makefile header (bmake file)'''
+    self.framework.log.write('Defined make macro '+name+' to '+str(value)+' in '+str(self.__module__)+'\n')
+    self.makeMacros[name] = value
     return
 
   def addDefine(self, name, value):
@@ -170,6 +177,7 @@ class Configure(script.Script):
       else:
         setattr(self, resultName, name+options)
       self.addSubstitution(resultName.upper(), getattr(self, resultName))
+      self.addMakeMacro(resultName.upper(), getattr(self, resultName))      
     return found
 
   def getExecutables(self, names, path = '', getFullPath = 0, useDefaultPath = 0, resultName = ''):

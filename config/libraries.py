@@ -40,6 +40,10 @@ class Configure(config.base.Configure):
        - Otherwise return -l<library>'''
     if not library:
       return ''
+    if library.startswith('${CC_LINKER_SLFLAG}'):
+      return library
+    if library.startswith('${FC_LINKER_SLFLAG}'):
+      return library
     if library[0] == '-':
       return library
     if len(library) > 3 and library[-4:] == '.lib':

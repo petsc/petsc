@@ -163,6 +163,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     for child in self.childGraph.vertices:
       self.logWrite(str(child), debugSection = 'screen', forceScroll = 1)
     self.substitute()
+    if self.makeMacroHeader:
+      self.outputMakeMacroHeader(self.makeMacroHeader)
+      self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeMacroHeader)
     if self.header:
       self.outputHeader(self.header)
       self.actions.addArgument('Framework', 'File creation', 'Created configure header '+self.header)
@@ -366,6 +369,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         else:
           print pair[0]+'  --->  '+str(self.argDB[pair[1]])
     return
+  
 
   def storeSubstitutions(self, argDB):
     '''Store all the substitutions in the argument database'''
@@ -395,6 +399,20 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     else:
       f.write('/* #undef '+name+' */\n')
     f.write('#endif\n\n')
+    return
+
+  def outputMakeMacro(self, f, name, value):
+    f.write(name+' = '+str(value)+'\n')
+    return
+
+  def outputMakeMacros(self, f, child, prefix = None):
+    '''If the child contains a dictionary named "makemacros", the entries are output in the makefile config header.
+    - No prefix is used
+    '''
+    if not hasattr(child, 'makeMacros') or not isinstance(child.makeMacros, dict): return
+    for pair in child.makeMacros.items():
+      if not pair[1]: continue
+      self.outputMakeMacro(f, pair[0], pair[1])
     return
 
   def outputDefines(self, f, child, prefix = None):
@@ -439,6 +457,24 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       for prototype in child.prototypes[language]:
         f.write(prototype)
         f.write('\n')
+    return
+
+  def outputMakeMacroHeader(self, name):
+    '''Write the make configuration header (bmake file)'''
+    if isinstance(name, file):
+      f = name
+      filename = 'Unknown'
+    else:
+      dir = os.path.dirname(name)
+      if dir and not os.path.exists(dir):
+        os.makedirs(dir)
+      f = file(name, 'w')
+      filename = os.path.basename(name)
+    self.outputMakeMacros(f, self)
+    for child in self.childGraph.vertices:
+      self.outputMakeMacros(f, child)
+    if not isinstance(name, file):
+      f.close()
     return
 
   def outputHeader(self, name):
