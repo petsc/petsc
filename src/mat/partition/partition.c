@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.24 1999/04/02 04:16:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.25 1999/04/02 15:09:25 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -45,7 +45,7 @@ EXTERN_C_END
 #include "sys.h"
 
 FList MatPartitioningList = 0;
-int   MatPartitioingRegisterAllCalled = 0;
+int   MatPartitioningRegisterAllCalled = 0;
 
 /*MC
    MatPartitioningRegister - Adds a new sparse matrix partitioning to the 
