@@ -427,7 +427,10 @@ class Configure(script.Script):
       cmd = self.getLinkerCmd()
     (out, err, ret) = Configure.executeShellCommand(cmd, checkCommand = report, log = self.framework.log)
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-    if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
+    if cleanup:
+      if os.path.isfile(self.linkerObj):os.remove(self.linkerObj)
+      pdbfile = os.path.splitext(self.linkerObj)[0]+'.pdb'
+      if os.path.isfile(pdbfile): os.remove(pdbfile)
     return (out+err, ret)
 
   def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
