@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.8 2000/07/14 18:49:33 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.9 2000/07/17 19:09:00 hzhang Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -19,7 +19,7 @@ int main(int argc,char **args)
 
   PetscTruth  flg;
   Scalar      v, one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*diag;
-  int         bs=1, d_nz=3, o_nz=3, n = 16, prob=2;
+  int         bs=1, d_nz=3, o_nz=3, n = 16, prob=1;
   int         rank,size,col[3],n1,mbs,block,row;
   int         flg_A = 0, flg_sA = 1;
   int         ncols,*cols,*ip_ptr,rstart,rend,N;
@@ -57,8 +57,6 @@ int main(int argc,char **args)
     }
     else if (prob ==2){ /* matrix for the five point stencil */
       n1 = sqrt(n); 
-      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d],for sA, n1=%d\n",rank,n1); 
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
       if (n1*n1 != n){
         SETERRQ(PETSC_ERR_ARG_SIZ,0,"n must be a perfect square of n1");
       }
@@ -103,10 +101,11 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
-  /* Test MatView(,VIEWER_STDOUT_WORLD): not working yet! */  
-  /* ierr = MatView(sA, VIEWER_DRAW_WORLD); CHKERRA(ierr); */
-  /* ierr = MatView(sA, VIEWER_STDOUT_WORLD); CHKERRA(ierr); */
-
+  /* Test MatView() */  
+  /*
+  ierr = MatView(sA, VIEWER_STDOUT_WORLD); CHKERRA(ierr); 
+  ierr = MatView(sA, VIEWER_DRAW_WORLD); CHKERRA(ierr);
+  */
   /* Assemble MPIBAIJ matrix A */
   ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);CHKERRA(ierr);
 
@@ -127,7 +126,7 @@ int main(int argc,char **args)
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
     }
     else if (prob ==2){ /* matrix for the five point stencil */
-      n1 = sqrt(n); printf("n1 = %d\n",n1);
+      n1 = sqrt(n); 
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
           I = j + n1*i;
@@ -167,8 +166,6 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  /* ierr = MatView(A, VIEWER_DRAW_WORLD); CHKERRA(ierr); */
-  /* ierr = MatView(A, VIEWER_STDOUT_WORLD); CHKERRA(ierr); */
 
   /* Test MatGetSize(), MatGetLocalSize() */
   ierr = MatGetSize(sA, &i1,&j1); ierr = MatGetSize(A, &i2,&j2);
@@ -234,6 +231,9 @@ int main(int argc,char **args)
   ierr = MatScale(&alpha,sA);CHKERRA(ierr);
   */
   /* Test MatMult(), MatMultAdd() */
+  MatView(sA, VIEWER_STDOUT_WORLD);
+
+#ifndef MatMult
   for (i=0; i<1; i++) {
     ierr = VecSetRandom(rctx,x);CHKERRA(ierr);
     ierr = MatMult(A,x,s1);CHKERRA(ierr);
@@ -249,6 +249,7 @@ int main(int argc,char **args)
       PetscSynchronizedFlush(PETSC_COMM_WORLD);
     }
   }
+#endif
 #ifdef MatMultAdd
   for (i=0; i<20; i++) {
     ierr = VecSetRandom(rctx,x);CHKERRA(ierr);
@@ -263,7 +264,7 @@ int main(int argc,char **args)
     }
   }                
 #endif
-
+#ifdef MatGetRow
   /* Test MatGetRow(): can only obtain rows associated with the given processor */
   for (i=rstart; i<rstart+1; i++) {
     ierr = MatGetRow(sA,i,&ncols,&cols,&vr);CHKERRA(ierr);
@@ -289,7 +290,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(isrow);CHKERRA(ierr);
   /* ierr = MatView(sA, VIEWER_STDOUT_WORLD); CHKERRA(ierr);  */  
 
- 
+#endif 
   ierr = VecDestroy(u);CHKERRA(ierr);  
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(y);CHKERRA(ierr); 
