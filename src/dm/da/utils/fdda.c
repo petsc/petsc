@@ -87,7 +87,7 @@ int DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
 int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,ii,gxs,gys,gnx,gny;           
-  int                    m,n,dim,w,s,k,nc,col,size;
+  int                    m,n,M,N,dim,w,s,k,nc,col,size;
   MPI_Comm               comm;
   DAPeriodicType         wrap;
   DAStencilType          st;
@@ -98,7 +98,7 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap,&st);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,&n,0,&M,&N,0,&w,&s,&wrap,&st);CHKERRQ(ierr);
   nc     = w;
   col    = 2*s + 1;
   if (DAXPeriodic(wrap) && (m % col)){ 
@@ -115,7 +115,7 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* create the coloring */
-  if (st == DA_STENCIL_STAR && s == 1) {
+  if (st == DA_STENCIL_STAR && s == 1 && !DAXPeriodic(wrap) && !DAYPeriodic(wrap)) {
     ierr = DAGetColoring2d_5pt_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
   } else if (ctype == IS_COLORING_LOCAL) {
     if (!da->localcoloring) {
@@ -132,13 +132,23 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
     }
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
+    if (DAXPeriodic(wrap) && (M == 1)){ 
+      SETERRQ(PETSC_ERR_SUP,"For algorithmic issues you need to have at least 2 processors in each direction\n\
+                 that is periodic when using AD, try FD instead. In x direction you only have 1.\n");
+    }
+    if (DAYPeriodic(wrap) && (N == 1)){ 
+      SETERRQ(PETSC_ERR_SUP,"For algorithmic issues you need to have at least 2 processors in each direction\n\
+                 that is periodic when using AD, try FD instead. In y direction you only have 1.\n");
+    }
     if (!da->ghostedcoloring) {
       ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
       ii = 0;
       for (j=gys; j<gys+gny; j++) {
         for (i=gxs; i<gxs+gnx; i++) {
           for (k=0; k<nc; k++) {
-            colors[ii++] = k + nc*((i % col) + col*(j % col));
+            /* the complicated stuff is to handle periodic boundaries */
+            colors[ii++] = k + nc*(    (((i < 0) ? m+i:((i >= m) ? i-m:i)) % col) +
+  			           col*(((j < 0) ? n+j:((j >= n) ? j-n:j)) % col));
           }
         }
       }
@@ -158,7 +168,7 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,gxs,gys,gnx,gny;           
-  int                    m,n,p,dim,s,k,nc,col,size,zs,gzs,ii,l,nz,gnz;
+  int                    m,n,p,dim,s,k,nc,col,size,zs,gzs,ii,l,nz,gnz,M,N,P;
   MPI_Comm               comm;
   DAPeriodicType         wrap;
   DAStencilType          st;
@@ -169,7 +179,7 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&nc,&s,&wrap,&st);CHKERRQ(ierr);
   col    = 2*s + 1;
   if (DAXPeriodic(wrap) && (m % col)){ 
     SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
@@ -207,6 +217,18 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
     }
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
+    if (DAXPeriodic(wrap) && (M == 1)){ 
+      SETERRQ(PETSC_ERR_SUP,"For algorithmic issues you need to have at least 2 processors in each direction\n\
+                 that is periodic when using AD, try FD instead. In x direction you only have 1.\n");
+    }
+    if (DAYPeriodic(wrap) && (N == 1)){ 
+      SETERRQ(PETSC_ERR_SUP,"For algorithmic issues you need to have at least 2 processors in each direction\n\
+                 that is periodic when using AD, try FD instead. In y direction you only have 1.\n");
+    }
+    if (DAZPeriodic(wrap) && (P == 1)){ 
+      SETERRQ(PETSC_ERR_SUP,"For algorithmic issues you need to have at least 2 processors in each direction\n\
+                 that is periodic when using AD, try FD instead. In z direction you only have 1.\n");
+    }
     if (!da->ghostedcoloring) {
       ierr = PetscMalloc(nc*gnx*gny*gnz*sizeof(int),&colors);CHKERRQ(ierr);
       ii = 0;
@@ -214,7 +236,10 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
         for (j=gys; j<gys+gny; j++) {
           for (i=gxs; i<gxs+gnx; i++) {
             for (l=0; l<nc; l++) {
-              colors[ii++] = l + nc*((i % col) + col*(j % col) + col*col*(k % col));
+              /* the complicated stuff is to handle periodic boundaries */
+              colors[ii++] = l + nc*(        (((i < 0) ? m+i:((i >= m) ? i-m:i)) % col) +
+  			                 col*(((j < 0) ? n+j:((j >= n) ? j-n:j)) % col) +
+                                     col*col*(((k < 0) ? p+k:((k >= p) ? k-p:k)) % col));
             }
           }
         }
@@ -235,7 +260,7 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
   int                    ierr,xs,nx,*colors,i,i1,gxs,gnx,l;           
-  int                    m,dim,s,nc,col,size;
+  int                    m,M,dim,s,nc,col,size;
   MPI_Comm               comm;
   DAPeriodicType         wrap;
 
@@ -245,7 +270,7 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,&wrap,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,0,0,&M,0,0,&nc,&s,&wrap,0);CHKERRQ(ierr);
   col    = 2*s + 1;
 
   if (DAXPeriodic(wrap) && (m % col)) {
@@ -272,12 +297,17 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
     }
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
+    if (DAXPeriodic(wrap) && (M == 1)){ 
+      SETERRQ(PETSC_ERR_SUP,"For algorithmic issues you need to have at least 2 processors in each direction\n\
+                 that is periodic when using AD, try FD instead. In x direction you only have 1.\n");
+    }
     if (!da->ghostedcoloring) {
       ierr = PetscMalloc(nc*gnx*sizeof(int),&colors);CHKERRQ(ierr);
       i1 = 0;
       for (i=gxs; i<gxs+gnx; i++) {
         for (l=0; l<nc; l++) {
-          colors[i1++] = l + nc*(i % col);
+          /* the complicated stuff is to handle periodic boundaries */
+          colors[i1++] = l + nc*((((i < 0) ? m+i:((i >= m) ? i-m:i)) % col));
         }
       }
       ierr = ISColoringCreate(comm,nc*gnx,colors,&da->ghostedcoloring);CHKERRQ(ierr);
@@ -462,7 +492,7 @@ int DAGetMatrix2d_MPIAIJ(DA da,Mat *J)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* create empty Jacobian matrix */
-  ierr    = MatCreate(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
+  ierr = MatCreate(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
 
   ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -474,14 +504,14 @@ int DAGetMatrix2d_MPIAIJ(DA da,Mat *J)
   ierr = MatPreallocateInitialize(comm,nc*nx*ny,nc*nx*ny,dnz,onz);CHKERRQ(ierr);
   for (i=xs; i<xs+nx; i++) {
 
-    pstart = PetscMax(-s,-i);
-    pend   = PetscMin(s,m-i-1);
+    pstart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
+    pend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
 
     for (j=ys; j<ys+ny; j++) {
       slot = i - gxs + gnx*(j - gys);
 
-      lstart = PetscMax(-s,-j); 
-      lend   = PetscMin(s,n-j-1);
+      lstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j)); 
+      lend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
 
       cnt  = 0;
       for (k=0; k<nc; k++) {
@@ -519,14 +549,14 @@ int DAGetMatrix2d_MPIAIJ(DA da,Mat *J)
   */
   for (i=xs; i<xs+nx; i++) {
     
-    pstart = PetscMax(-s,-i);
-    pend   = PetscMin(s,m-i-1);
+    pstart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
+    pend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
       
     for (j=ys; j<ys+ny; j++) {
       slot = i - gxs + gnx*(j - gys);
       
-      lstart = PetscMax(-s,-j); 
-      lend   = PetscMin(s,n-j-1);
+      lstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j)); 
+      lend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1)); 
 
       cnt  = 0;
       for (k=0; k<nc; k++) {
@@ -605,14 +635,14 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat *J)
   /* determine the matrix preallocation information */
   ierr = MatPreallocateInitialize(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);CHKERRQ(ierr);
   for (i=xs; i<xs+nx; i++) {
-    istart = PetscMax(-s,-i);
-    iend   = PetscMin(s,m-i-1);
+    istart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
+    iend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
     for (j=ys; j<ys+ny; j++) {
-      jstart = PetscMax(-s,-j); 
-      jend   = PetscMin(s,n-j-1);
+      jstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j)); 
+      jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
       for (k=zs; k<zs+nz; k++) {
-	kstart = PetscMax(-s,-k); 
-	kend   = PetscMin(s,p-k-1);
+	kstart = DAZPeriodic(wrap) ? -s : (PetscMax(-s,-k)); 
+	kend   = DAZPeriodic(wrap) ?  s : (PetscMin(s,p-k-1));
 	
 	slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
 	
@@ -654,14 +684,14 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat *J)
     PETSc ordering.
   */
   for (i=xs; i<xs+nx; i++) {
-    istart = PetscMax(-s,-i);
-    iend   = PetscMin(s,m-i-1);
+    istart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
+    iend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
     for (j=ys; j<ys+ny; j++) {
-      jstart = PetscMax(-s,-j); 
-      jend   = PetscMin(s,n-j-1);
+      jstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j)); 
+      jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
       for (k=zs; k<zs+nz; k++) {
-	kstart = PetscMax(-s,-k); 
-	kend   = PetscMin(s,p-k-1);
+	kstart = DAZPeriodic(wrap) ? -s : (PetscMax(-s,-k)); 
+	kend   = DAZPeriodic(wrap) ?  s : (PetscMin(s,p-k-1));
 	
 	slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
 	
@@ -812,14 +842,14 @@ int DAGetMatrix3d_MPIBAIJ(DA da,Mat *J)
   /* determine the matrix preallocation information */
   ierr = MatPreallocateInitialize(comm,nx*ny*nz,nx*ny*nz,dnz,onz);CHKERRQ(ierr);
   for (i=xs; i<xs+nx; i++) {
-    istart = PetscMax(-s,-i);
-    iend   = PetscMin(s,m-i-1);
+    istart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
+    iend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
     for (j=ys; j<ys+ny; j++) {
-      jstart = PetscMax(-s,-j); 
-      jend   = PetscMin(s,n-j-1);
+      jstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j)); 
+      jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
       for (k=zs; k<zs+nz; k++) {
-	kstart = PetscMax(-s,-k); 
-	kend   = PetscMin(s,p-k-1);
+	kstart = DAZPeriodic(wrap) ? -s : (PetscMax(-s,-k)); 
+	kend   = DAZPeriodic(wrap) ?  s : (PetscMin(s,p-k-1));
 
 	slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
 
@@ -873,14 +903,14 @@ int DAGetMatrix3d_MPIBAIJ(DA da,Mat *J)
   */
 
   for (i=xs; i<xs+nx; i++) {
-    istart = PetscMax(-s,-i);
-    iend   = PetscMin(s,m-i-1);
+    istart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
+    iend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
     for (j=ys; j<ys+ny; j++) {
-      jstart = PetscMax(-s,-j); 
-      jend   = PetscMin(s,n-j-1);
+      jstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j)); 
+      jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
       for (k=zs; k<zs+nz; k++) {
-	kstart = PetscMax(-s,-k); 
-	kend   = PetscMin(s,p-k-1);
+	kstart = DAZPeriodic(wrap) ? -s : (PetscMax(-s,-k)); 
+	kend   = DAZPeriodic(wrap) ?  s : (PetscMin(s,p-k-1));
 	
 	slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
 	
