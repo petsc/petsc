@@ -38,7 +38,7 @@ O_COPTFLAGS        = @CFLAGS@ @PETSC_CFLAGS_O@
 # ############################ Fortran compiler ############################
 C_FC               = @FC@ @FC_SHARED_OPT@
 C_FLINKER_SLFLAG   = @PETSC_FLINKER_SLFLAG@
-C_FLINKER          = @CC@ @LDFLAGS@
+C_FLINKER          = @FC@ @LDFLAGS@
 C_FCV              = echo "@PETSC_F_VERSION@"
 CXX_FC             = @FC@  @FC_SHARED_OPT@
 CXX_FLINKER_SLFLAG = @PETSC_FLINKER_SLFLAG@
