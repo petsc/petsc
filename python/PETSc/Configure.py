@@ -86,7 +86,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-mpi',                   nargs.ArgBool(None, 1, 'If this is false, MPIUNI will be used as a uniprocessor substitute'))
     help.addArgument('PETSc', '-with-libtool',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
     help.addArgument('PETSc', '-with-make',                  nargs.Arg(None, 'make',   'Specify make'))
-    help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, 'ranlib', 'Specify ranlib'))
+    help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None, 'Specify ranlib'))
 
     self.framework.argDB['PETSCFLAGS'] = ''
     self.framework.argDB['COPTFLAGS']  = ''
@@ -191,8 +191,6 @@ class Configure(config.base.Configure):
         self.framework.argDB['C_VERSION']   = options.getCompilerVersion('C',       self.compilers.CC,  self)
       if self.framework.argDB['CXX_VERSION'] == 'Unknown':
         self.framework.argDB['CXX_VERSION'] = options.getCompilerVersion('Cxx',     self.compilers.CXX, self)
-      if self.framework.argDB['F_VERSION']   == 'Unknown':
-        self.framework.argDB['F_VERSION']   = options.getCompilerVersion('Fortran', self.compilers.FC,  self)
 
       if self.framework.argDB['CFLAGS_g']   == 'Unknown':
         self.framework.argDB['CFLAGS_g']    = options.getCompilerFlags('C',       self.compilers.CC,  'g', self)
@@ -202,10 +200,14 @@ class Configure(config.base.Configure):
         self.framework.argDB['CXXFLAGS_g']  = options.getCompilerFlags('Cxx',     self.compilers.CXX, 'g', self)
       if self.framework.argDB['CXXFLAGS_O'] == 'Unknown':
         self.framework.argDB['CXXFLAGS_O']  = options.getCompilerFlags('Cxx',     self.compilers.CXX, 'O', self)
-      if self.framework.argDB['FFLAGS_g']   == 'Unknown':
-        self.framework.argDB['FFLAGS_g']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'g', self)
-      if self.framework.argDB['FFLAGS_O']   == 'Unknown':
-        self.framework.argDB['FFLAGS_O']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'O', self)
+
+      if hasattr(self.compilers,'FC'):
+        if self.framework.argDB['F_VERSION']   == 'Unknown':
+          self.framework.argDB['F_VERSION']   = options.getCompilerVersion('Fortran', self.compilers.FC,  self)
+        if self.framework.argDB['FFLAGS_g']   == 'Unknown':
+          self.framework.argDB['FFLAGS_g']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'g', self)
+        if self.framework.argDB['FFLAGS_O']   == 'Unknown':
+          self.framework.argDB['FFLAGS_O']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'O', self)
 
     self.addSubstitution('C_VERSION',   self.framework.argDB['C_VERSION'])
     self.addSubstitution('CFLAGS_g',    self.framework.argDB['CFLAGS_g'])
@@ -392,9 +394,19 @@ libf: ${OBJSF}
     self.framework.getExecutable('diff', getFullPath = 1)
     self.framework.getExecutable('ar',   getFullPath = 1)
     self.framework.addSubstitution('AR_FLAGS', 'cr')
-    self.framework.getExecutable(self.framework.argDB['with-ranlib'])
+    if 'with-ranlib' in self.framework.argDB:
+      self.framework.getExecutable(self.framework.argDB['with-ranlib'], resultName = 'RANLIB')
+      if not hasattr(self.framework,'RANLIB'):
+         raise RuntimeError('You set a value for --with-ranlib, but '+self.framework.argDB['with-ranlib']+' does not exist')
+    else:
+      self.framework.getExecutable('ranlib')
+      if not hasattr(self.framework,'RANLIB'): 
+        self.addSubstitution('RANLIB', 'true')
+      else:
+        # check if -s -c options work (required by Mac OS X)
+        pass 
     self.framework.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
-    if hasattr(self, 'UCBPS'):
+    if hasattr(self.framework, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
     return
 
