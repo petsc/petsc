@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.52 1996/08/27 21:28:05 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.53 1996/08/28 18:42:16 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
@@ -28,8 +28,8 @@ int main(int argc,char **args)
   Vec     x, b, u;      /* approx solution, RHS, exact solution */
   Mat     A;            /* linear system matrix */
   SLES    sles;         /* linear solver context */
-  PC       pc;          /* preconditioner context */
-  KSP      ksp;         /* Krylov subspace method context */
+  PC      pc;           /* preconditioner context */
+  KSP     ksp;          /* Krylov subspace method context */
   double  norm;         /* norm of solution error */
   int     ierr, i, n = 10, col[3], its, flg, size;
   Scalar  none = -1.0, one = 1.0, value[3];
@@ -105,7 +105,8 @@ int main(int argc,char **args)
   ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCJACOBI); CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,n); CHKERRA(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
+         PETSC_DEFAULT); CHKERRA(ierr);
 
   /* 
     Set runtime options, e.g.,
