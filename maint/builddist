@@ -23,8 +23,8 @@ if [ $# = 2 ] ; then
   petscrepo=$1
   version=$2
 elif [ $# = 1 ]; then
-  set petscrepo=$1
-  set version=""
+  petscrepo=$1
+  version=""
 else
   echo 'Error: petscrepo not specified. Usge: builddist petscrepo [version]'
   exit
