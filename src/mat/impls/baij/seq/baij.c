@@ -349,7 +349,6 @@ int MatSetOption_SeqBAIJ(Mat A,MatOption op)
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
   case MAT_USE_SINGLE_PRECISION_SOLVES:
     if (a->bs==4) {
-      int        ierr;
       a->single_precision_solves = PETSC_TRUE;
       A->ops->solve              = MatSolve_SeqBAIJ_Update;
       A->ops->solvetranspose     = MatSolveTranspose_SeqBAIJ_Update;
