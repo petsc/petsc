@@ -129,7 +129,6 @@ int TSSetFromOptions(TS ts)
     SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid problem type: %d", ts->problem_type);
   }
 
-  ierr = TSViewFromOptions(ts, ts->name);                                                                 CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1513,9 +1512,8 @@ int TSStep(TS ts,int *steps,PetscReal *ptime)
   ierr = (*ts->ops->poststep)(ts);                                                                        CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step, ts, 0, 0, 0);                                                          CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(ts->prefix, "-ts_view", &opt);                                               CHKERRQ(ierr);
-  if ((opt == PETSC_TRUE) && !PetscPreLoadingOn) {
-    ierr = TSView(ts, PETSC_VIEWER_STDOUT_(ts->comm));                                                    CHKERRQ(ierr);
+  if (!PetscPreLoadingOn) {
+    ierr = TSViewFromOptions(ts,ts->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
