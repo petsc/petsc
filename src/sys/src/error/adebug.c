@@ -5,7 +5,7 @@
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
 #include <signal.h> 
-#include "petscsys.h"
+#include "petscsys.h"            /*I   "petscsys.h" I*/
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif 

@@ -138,6 +138,8 @@ EXTERN int PetscViewerDrawClear(PetscViewer);
 EXTERN int PetscViewerDrawSetInfo(PetscViewer,const char[],const char[],int,int,int,int);
 EXTERN int PetscViewerSocketSetConnection(PetscViewer,const char[],int);
 EXTERN int PetscViewerBinarySkipInfo(PetscViewer);
+EXTERN int PetscViewerBinaryLoadInfo(PetscViewer);
+
 
 EXTERN int PetscViewerSetFilename(PetscViewer,const char[]);
 EXTERN int PetscViewerGetFilename(PetscViewer,char**);
