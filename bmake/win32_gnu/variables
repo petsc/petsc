@@ -1,4 +1,4 @@
-# $Id: base,v 1.29 1998/12/04 23:44:45 balay Exp $ 
+# $Id: base_variables,v 1.2 1999/02/09 00:06:30 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -10,7 +10,7 @@ SHELL            = /bin/sh
 # ######################### C and Fortran compiler ########################
 #
 C_CC             = gcc -D__USE_FIXED_PROTOTYPES__
-C_FC             = g77
+C_FC             = g77 -Wno-globals
 C_CLINKER        = gcc ${COPTFLAGS} 
 C_FLINKER        = g77 ${FOPTFLAGS} 
 C_CCV            = gcc --version
@@ -23,7 +23,7 @@ O_COPTFLAGS      = -O4 -Wshadow -fomit-frame-pointer
 O_FOPTFLAGS      = -O4
 # ########################## C++ compiler ##################################
 CXX_CC           = g++
-CXX_FC           = g77
+CXX_FC           = g77 -Wno-globals
 CXX_CLINKER      = g++ ${COPTFLAGS} 
 CXX_FLINKER      = g77 ${FOPTFLAGS} 
 CXX_CCV          = gcc --version
