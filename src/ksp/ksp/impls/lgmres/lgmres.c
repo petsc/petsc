@@ -408,8 +408,7 @@ int KSPSolve_LGMRES(KSP ksp)
   int        itcount;   /* running total of iterations, incl. those in restarts */
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
   PetscTruth guess_zero = ksp->guess_zero;
-  /*LGMRES_MOD variable */
-  int ii;
+  int        ii;        /*LGMRES_MOD variable */
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !lgmres->Rsvd) {
@@ -454,7 +453,7 @@ int KSPSolve_LGMRES(KSP ksp)
 int KSPDestroy_LGMRES(KSP ksp)
 {
   KSP_LGMRES *lgmres = (KSP_LGMRES*)ksp->data;
-  int       i,ierr;
+  int        i,ierr;
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrices */

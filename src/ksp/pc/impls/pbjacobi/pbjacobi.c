@@ -12,7 +12,7 @@
 */
 typedef struct {
   PetscScalar *diag;
-  int    bs,mbs;
+  int         bs,mbs;
 } PC_PBJacobi;
 
 /*
@@ -122,8 +122,8 @@ static int PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
 static int PCSetUp_PBJacobi(PC pc)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
-  int         ierr,i,*diag_offset,bs2;
-  PetscTruth  seqbaij,mpibaij;
+  int         ierr,i,*diag_offset,bs2,size;
+  PetscTruth  seqbaij,mpibaij,baij;
   Mat         A = pc->pmat;
   PetscScalar *diag,*odiag,*v;
   Mat_SeqBAIJ *a;
@@ -131,10 +131,12 @@ static int PCSetUp_PBJacobi(PC pc)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQBAIJ,&seqbaij);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)pc->pmat,MATMPIBAIJ,&mpibaij);CHKERRQ(ierr);
-  if (!seqbaij && !mpibaij) {
+  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATBAIJ,&baij);CHKERRQ(ierr);
+  if (!seqbaij && !mpibaij && !baij) {
     SETERRQ(1,"Currently only supports BAIJ matrices");
   }
-  if (mpibaij) A = ((Mat_MPIBAIJ*)A->data)->A;
+  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+  if (mpibaij || (baij && (size > 1))) A = ((Mat_MPIBAIJ*)A->data)->A;
   if (A->m != A->n) SETERRQ(1,"Supported only for square matrices and square storage");
   ierr        = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
   a           = (Mat_SeqBAIJ*)A->data;
