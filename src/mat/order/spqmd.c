@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spqmd.c,v 1.2 1994/11/25 23:04:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.3 1995/01/13 04:36:17 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -12,7 +12,9 @@ static char vcid[] = "$Id: spqmd.c,v 1.2 1994/11/25 23:04:56 bsmith Exp bsmith $
 
 #if defined(__cplusplus)
 extern "C" {
-  void genqmd_(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
+#endif
+extern void genqmd_(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
+#if defined(__cplusplus)
 };
 #endif 
 
