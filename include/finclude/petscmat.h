@@ -1,5 +1,5 @@
 !
-!  $Id: petscmat.h,v 1.69 2001/04/10 22:37:56 balay Exp balay $;
+!  $Id: petscmat.h,v 1.70 2001/04/18 20:43:32 balay Exp buschelm $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -116,6 +116,7 @@
       parameter (MAT_KEEP_ZEROED_ROWS=79)
       parameter (MAT_IGNORE_ZERO_ENTRIES=80)
       parameter (MAT_USE_INODES=81,MAT_DO_NOT_USE_INODES=82)
+      parameter (MAT_USE_SINGLE_PRECISION_SOLVES=83)
 !
 !  MatDuplicateOption
 !
