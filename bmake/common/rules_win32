@@ -1,4 +1,4 @@
-# $Id: common_win32,v 1.3 2000/09/13 15:18:48 balay Exp balay $ 
+# $Id: common_win32,v 1.4 2001/01/04 22:07:33 balay Exp balay $ 
 #
 #  Sets the rule used to remove collections of libraries (different under NT and 95!)
 #
@@ -10,13 +10,16 @@ CP               = copy
 NULL             = nul
 RM               = deltree /y
 CP               = copy /y
-!endif
+!ENDIF
 #
 # Variables from base\common_variables
 #
+!IF "$(LDIR)" == ""
 LDIR	       = $(PETSC_DIR)\lib\lib$(BOPT)\$(PETSC_ARCH)
+!ENDIF
+
 PDIR	       = $(PETSC_DIR)\lib\lib$(BOPT)\$(PETSC_ARCH)
-LIBNAME        = $(PDIR)\$(LIBBASE).lib
+LIBNAME        = $(LDIR)\$(LIBBASE).lib
 SOURCE	       = $(SOURCEC) $(SOURCEF)
 OBJS	       = $(OBJSC) $(OBJSF)
 PETSC_INCLUDE  = /I$(PETSC_DIR) /I$(PETSC_DIR)\include $(MPI_INCLUDE) \
@@ -47,7 +50,7 @@ PETSC_CONTRIB     = libpetsccontrib.lib
 # hence in the link line it does not indicate the directories where the libraries
 # are located, just the library names (this is confusing!)
 #
-LIB           = $(LIB);$(LDIR)
+LIB           = $(LIB);$(PDIR)
 
 !include $(PETSC_DIR)\bmake\$(PETSC_ARCH)\base.site
 !include $(PETSC_DIR)\bmake\common_$(BOPT)
