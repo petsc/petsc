@@ -1,0 +1,31 @@
+#! /bin/csh
+# $Id: builddist,v 1.86 2001/03/27 18:26:10 balay Exp $ 
+
+# 
+#  takes a full distribution tar file, and creates a 'lite' distribution
+#
+if ($#argv == 1) then
+  set fulldistfile=$1
+  echo "using $fulldistfile as the full distribution file"
+else
+   echo "usage: builddistlite fulldist.tar.gz"
+   exit 0
+endif
+
+set tmpdir=/mcs/tmp
+/bin/rm -rf $tmpdir/petsc-lite
+mkdir -p $tmpdir/petsc-lite
+cd $tmpdir/petsc-lite
+
+gunzip -c $fulldistfile | tar -xf -
+
+/bin/rm -rf $tmpdir/petsc*/doc
+
+# remove all the .html files
+find $tmpdir/petsc-lite -type f -name "*.html" -exec rm {} \;
+
+# Tar up the remaning files to create the 'lite' distribution
+
+/bin/tar -cf  $tmpdir/petsc-lite.tar $tmpdir/petsc-lite/petsc*
+gzip -f $tmpdir/petsc-lite.tar
+/bin/cp  $tmpdir/petsc-lite.tar.gz ~/
