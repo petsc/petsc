@@ -19,24 +19,17 @@ def parseArg(arg):
     else:            arg = []
   return arg
 
-def insertArgList(dict,argList):
-  if not type(argList) == types.ListType: return
-  for arg in argList:
-    if arg[0] == '-':
-      (key, val) = string.split(arg[1:], '=')
-      dict[key]  = parseArg(val)
-    else:
-      if dict.has_key('target') and not dict['target'] == ['default']:
-        dict['target'].append(arg)
-      else:
-        dict['target'] = [arg]
     
 #===============================================================================
 #  The base class of objects that are stored in the ArgDict
 # The dictionary actual contains objects, the actual option is
 # is obtained from the object with getValue(), this allows
 # us to provide properties of the option before the option is set
-class Arg:
+class ArgEmpty:
+  def getValue(self,key):
+    return (0,None)
+
+class Arg(ArgEmpty):
   def __init__(self,value):
     self.value = value
 
@@ -46,7 +39,7 @@ class Arg:
     return (0,self.value)
 
 #  Objects that are stored in the ArgDict that represent directories
-class ArgDir:
+class ArgDir(ArgEmpty):
   def __init__(self,dirmustexist = 1, help = None):
     self.exist = dirmustexist
     self.help  = help
@@ -68,7 +61,7 @@ class ArgDir:
     else: return (0,self.value)
       
 #  Objects that are stored in the ArgDict that are strings
-class ArgString:
+class ArgString(ArgEmpty):
   def __init__(self,help = None):
     self.help  = help
     
@@ -81,7 +74,7 @@ class ArgString:
     else: return (0,self.value)
     
 #  Objects that are stored in the ArgDict that are integers
-class ArgInt:
+class ArgInt(ArgEmpty):
   def __init__(self,help = None,min = -1000000, max = 1000000):
     self.help  = help
     self.min   = min
@@ -104,18 +97,18 @@ class ArgInt:
 class ArgDict (RDict.RArgs):
   def __init__(self, name = "ArgDict",argList = None):
     RDict.RArgs.__init__(self,name)
-    self.local = {}
+    self.local  = {}
+    self.target = ['default']
     #  the list of targets is always local
     #  These should not be listed here, but need to be set
     #  before the command line is parse, hence put here
-    self.setLocalType('target',Arg(['default']))
     self.setLocalType('install',ArgInt())
     self.setLocalType('fileset',ArgString())
-    insertArgList(self,argList)
+    self.insertArgList(argList)
 
   def __setitem__(self,key,value):
     if self.local.has_key(key):
-      self.local[key].value = Arg(value)
+      self.local[key].value = value
     else:
       # set the value into the remote dictionary
       RDict.RArgs.__setitem__(self,key,Arg(value))
@@ -156,6 +149,18 @@ class ArgDict (RDict.RArgs):
   def setLocalType(self,key,arg):
     # sets properties of the option that will be requested later
     if not self.local.has_key(key): self.local[key] = arg
+
+  def insertArgList(self,argList):
+    if not type(argList) == types.ListType: return
+    for arg in argList:
+      if arg[0] == '-':
+        (key, val) = string.split(arg[1:], '=')
+        self[key]  = parseArg(val)
+      else:
+        if not self.target == ['default']:
+          self.target.append(arg)
+        else:
+          self.target = [arg]
 
 if __name__ ==  '__main__':
   print "Entries in BS build system options dictionary"

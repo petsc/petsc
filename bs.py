@@ -151,20 +151,18 @@ class BS (maker.Maker):
         print 'FileSet '+setName+' not found for update'
 
   def cleanup(self):
-    if argDB.has_key('target'):  del argDB['target']
-    if argDB.has_key('restart'): argDB['restart'] = '0'
     self.saveSourceDB()
 
   def main(self):
     try:
-      if argDB.has_key('target'):
-        for target in argDB['target']:
-          if self.targets.has_key(target):
-            self.targets[target].execute()
-          elif hasattr(self, 't_'+target):
-            getattr(self, 't_'+target)()
-          else:
-            print 'Invalid target: '+target
+      print argDB.target
+      for target in argDB.target:
+        if self.targets.has_key(target):
+          self.targets[target].execute()
+        elif hasattr(self, 't_'+target):
+          getattr(self, 't_'+target)()
+        else:
+          print 'Invalid target: '+target
     except Exception, e:
       print str(e)
       if not argDB.has_key('noStackTrace') or not int(argDB['noStackTrace']):
