@@ -606,8 +606,8 @@ We now discuss the specific functions in the ALICE common function table.
       {\tt queryfunction()} call. On systems that support dynamic libraries the {\tt func}
       argument is ignored; otherwise {\tt func} is the actual function pointer.
 
-      For example, {\tt fname} may be {\tt libpetscsles:PCCreate\_LU} or 
-      {\tt http://www.mcs.anl.gov/petsc/libpetscsles:PCCreate\_LU}.
+      For example, {\tt fname} may be {\tt libpetscksp:PCCreate\_LU} or 
+      {\tt http://www.mcs.anl.gov/petsc/libpetscksp:PCCreate\_LU}.
 
 \item {\tt queryfunction(PetscObject,char *name,void **func)} retreives a function pointer that
       was associated with the object. If dynamic libraries are used the function is loaded
@@ -810,7 +810,7 @@ component that is compatible with ALICE.
 
 \section{Elementary Objects: IS, Vec, Mat}
 
-\section{Solver Objects: PC, KSP, SLES, SNES, TS}
+\section{Solver Objects: PC, KSP, SNES, TS}
 
 The PETSc solver objects have not yet been completely cast into the common component 
 header 
@@ -828,19 +828,19 @@ fields. We hope to rectify this in the next release. Regardless, this does not
 effect (except superficially) the development of the objects.
 
 \subsection{Preconditioners: PC}
-The base PETSc PC object is defined in the {\tt src/sles/pc/pcimpl.h} include file. 
+The base PETSc PC object is defined in the {\tt src/ksp/pc/pcimpl.h} include file. 
 A carefully commented implementation of a PC object can be found in 
-{\tt src/sles/pc/impls/jacobi/jacobi.c}. 
+{\tt src/ksp/pc/impls/jacobi/jacobi.c}. 
 
 \subsection{Krylov Solvers}
-The base PETSc KSP object is defined in the {\tt src/sles/ksp/kspimpl.h} include file. 
+The base PETSc KSP object is defined in the {\tt src/ksp/ksp/kspimpl.h} include file. 
 A carefully commented implementation of a KSP object can be found in 
-{\tt src/sles/ksp/impls/cg/cg.c}. 
+{\tt src/ksp/ksp/impls/cg/cg.c}. 
 
 \subsection{Registering New Methods}
 \label{sec:registeringnewmethods}
 
-See {\tt src/sles/examples/tutorials/ex12.c} for an example of registering a new
+See {\tt src/ksp/examples/tutorials/ex12.c} for an example of registering a new
 preconditioning (PC) method.
 
 
@@ -857,7 +857,7 @@ important in making the package both usable and maintainable.
 We use several conventions:
 \begin{itemize}
 \item All function names and enum types consist of words, each of 
-      which is capitalized, for example {\tt SLESSolve()} and 
+      which is capitalized, for example {\tt KSPSolve()} and 
       {\tt MatGetOrdering()}.
 \item All enum elements and macro variables are capitalized. When
       they consist of several

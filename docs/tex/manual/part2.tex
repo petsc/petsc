@@ -1970,7 +1970,7 @@ great deal of time.
 
 % ------------------------------------------------------------------
 \chapter{KSP: Linear Equations Solvers} \sindex{linear system solvers}
-\label{ch_sles}
+\label{ch_ksp}
 
 The object KSP is the heart of PETSc, because it provides uniform and efficient access 
 to all of the package's linear system solvers, including parallel and sequential,
@@ -3374,7 +3374,7 @@ various parameters and customized routines (e.g., specialized line
 search variants), prescribe the convergence tolerance, and set
 monitoring routines.  With this routine the user can also control all
 linear solver options in the KSP, and PC modules, as discussed
-in Chapter~\ref{ch_sles}.
+in Chapter~\ref{ch_ksp}.
 
 After having set these routines and options, the user
 solves the problem by calling \findex{SNESSolve}
@@ -3702,7 +3702,7 @@ methods, of particular interest are Newton-Krylov methods, where the
 subsidiary iterative technique for solving the Newton system is 
 chosen from the class of Krylov subspace projection methods. 
 Note that at runtime the user can set any of the linear solver
-options discussed in Chapter~\ref{ch_sles}, such as 
+options discussed in Chapter~\ref{ch_ksp}, such as 
 \trl{-ksp_type <ksp_method>} and \trl{-pc_type <pc_method>},
 to set the Krylov subspace and preconditioner methods.
 
@@ -5090,16 +5090,16 @@ IBM and the NAG Fortran 90 compiler.
 Sample programs that illustrate the PETSc interface for Fortran
 are given in Figures \ref{fig_vec-Fortran} {\em --} \ref{fig_SNES-Fortran},
 corresponding to
-\trl{${PETSC_DIR}/src/vec/examples/tests/ex19.F}, 
+\trl{${PETSC_DIR}/src/vec/examples/tests/ex19f.F}, 
 \trl{${PETSC_DIR}/src/vec/examples/tutorials/ex4f.F}, 
-\break \trl{${PETSC_DIR}/src/draw/examples/tests/ex5.F}, and 
+\break \trl{${PETSC_DIR}/src/sys/src/draw/examples/tests/ex5.F}, and 
 \trl{${PETSC_DIR}/src/snes/examples/ex1f.F}, respectively.  We also
 refer Fortran programmers to the C examples listed throughout the manual,
 since PETSc usage within the two languages differs only slightly.
 
 \begin{figure}[H]
 {\small
-\fileinclude{../../../src/vec/examples/tests/ex19.F}
+\fileinclude{../../../src/vec/examples/tests/ex19f.F}
 }
 \caption{Sample Fortran Program:  Using PETSc Vectors}
 \label{fig_vec-Fortran}
@@ -5928,7 +5928,7 @@ what is best for a given problem and customize the solvers accordingly.
 \section{Tips for Efficient Use of Linear Solvers}
 \label{sec_slestips}
 
-As discussed in Chapter~\ref{ch_sles}, the default linear solvers are
+As discussed in Chapter~\ref{ch_ksp}, the default linear solvers are
 \begin{itemize}
 \item uniprocess: GMRES(30) with ILU(0) preconditioning\\
 \item multiprocess: GMRES(30) with block Jacobi preconditioning, where there
@@ -6101,7 +6101,7 @@ One could then override this choice at runtime with the option
 \begin{tabbing}
     -ksp\_type tfqmr
 \end{tabbing}
-to select the Transpose-Free QMR algorithm. (See Chapter~\ref{ch_sles} for details.)
+to select the Transpose-Free QMR algorithm. (See Chapter~\ref{ch_ksp} for details.)
 
 The remainder of this section discusses details of runtime options.
 
@@ -7112,7 +7112,7 @@ To create a \trl{B} matrix that may be multiplied with a vector \trl{x} one can 
 \label{sec_matfactor}
 
 Normally, PETSc users will access the matrix solvers through the 
-KSP interface, as discussed in Chapter \ref{ch_sles}, but the underlying 
+KSP interface, as discussed in Chapter \ref{ch_ksp}, but the underlying 
 factorization and triangular solve routines are also directly 
 accessible to the user.
 
