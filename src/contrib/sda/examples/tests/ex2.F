@@ -1,5 +1,5 @@
 
-/* "$Id: ex2.F,v 1.1 1996/04/03 20:11:27 balay Exp balay $"; */
+/* "$Id: ex2.F,v 1.2 1996/04/03 20:15:04 balay Exp bsmith $"; */
 
 
 #include "include/FINCLUDE/petsc.h"
@@ -21,7 +21,7 @@ C   not also work with DA contexts.
       Scalar         value,mone,in(1),out(1)
       Scalar         norm,work
  
-      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
       m             = PETSC_DECIDE
       n             = PETSC_DECIDE
@@ -35,18 +35,18 @@ C   not also work with DA contexts.
       stencil_type  = DA_STENCIL_STAR
 
 
-      call OptionsGetInt(PETSC_NULL_CHAR,'-M',MM,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHAR,'-N',NN,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHAR,'-dof',dof,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHAR,'-stencil_width',
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-M',MM,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-N',NN,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-dof',dof,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-stencil_width',
      *                   stencil_width,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHAR,'-periodic',periodic,
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-periodic',periodic,
      *                   flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHAR,'-stencil_type',
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-stencil_type',
      *                   stencil_type,flg,ierr)
 
-      call OptionsHasName(PETSC_NULL,'-2d',flg2,ierr)
-      call OptionsHasName(PETSC_NULL,'-3d',flg3,ierr)
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-2d',flg2,ierr)
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-3d',flg3,ierr)
       if (flg2 .ne. 0) then
         call DACreate2d(MPI_COMM_WORLD,periodic,stencil_type,
      *                  MM,NN,m,n,dof,stencil_width,da,ierr)
@@ -107,6 +107,6 @@ C   zero out vectors so that ghostpoints are zero
 
       call VecDestroy(local,ierr)
       call VecDestroy(global,ierr)
-      call PetscFinalize()
+      call PetscFinalize(ierr)
       stop 
       end
