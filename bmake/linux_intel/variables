@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.1 2001/06/13 20:27:10 balay Exp balay $ 
+# $Id: base_variables,v 1.2 2001/06/13 21:53:24 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -22,7 +22,7 @@ C_CLINKER	   = icc
 C_FLINKER	   = icc
 C_CCV		   = icc -V 2>&1| head -1
 C_FCV              = ifc -V 2>&1| head -1
-C_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lF90
+C_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lF90 -lpthread
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g

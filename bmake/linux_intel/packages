@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 2001/06/13 20:03:59 balay Exp $ 
+# $Id: base.site,v 1.1 2001/06/13 20:27:10 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,13 +10,11 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-# Location of MKL:
-#BLASLAPACK_LIB = -L/usr/local/intel/mkl/LIB -lmkl32_lapack -lmkl32_p4 \
-#		 /usr/lib/gcc-lib/i586-mandrake-linux/egcs-2.91.66/libg2c.a \
-#		 -lpthread
-#PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
+#BLASLAPACK_LIB = -L/home/balay/software/fblaslapack/linux_intel -lflapack -lfblas
+#
+BLASLAPACK_LIB = -L/usr/local/intel/mkl/LIB -lmkl32_lapack -lmkl32_p4 
+PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
 
-BLASLAPACK_LIB = -L/home/balay/software/fblaslapack/linux_intel -lflapack -lfblas
 #
 # Location of MPI (Message Passing Interface) software
 #
