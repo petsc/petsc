@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.312 2000/08/16 19:15:07 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.313 2000/08/16 19:17:47 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -426,7 +426,9 @@ noise: info chkpetsc_dir
 # DO NOT EDIT the pageform.txt or *.htm files generated since they will be automatically replaced.
 # The pagemaker rule is in the file bmake/common (at the bottom)
 #
+# Eventually the line below will replace the two cd in the rule below, it is just this way now for speed
 #	-@${OMAKE} PETSC_DIR=${PETSC_DIR} pagemaker
+#
 exercises:
 	-@echo "========================================="
 	-@echo "Generating HTML tutorial exercises"
