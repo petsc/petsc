@@ -53,4 +53,7 @@
 #endif
 #define PETSC_HAVE_CXX_NAMESPACE
 
+#define PETSC_HAVE_F90_H "f90impl/f90_intel.h"
+#define PETSC_HAVE_F90_C "src/sys/src/f90/f90_intel.c"
+
 #endif
