@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.73 1996/03/20 03:57:17 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.74 1996/03/21 23:12:20 curfman Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -247,7 +247,7 @@ int VecSet(Scalar *alpha,Vec x)
    VecSetRandom - Sets all components of a vector to random numbers.
 
    Input Parameters:
-.  rctx - the random number context, formed by SYCreateRandom()
+.  rctx - the random number context, formed by PetscRandomCreate()
 .  x  - the vector
 
    Output Parameter:
