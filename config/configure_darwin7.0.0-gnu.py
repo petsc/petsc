@@ -7,8 +7,9 @@ if __name__ == '__main__':
 
     configure_options = [
     '--with-mpi=0',
-    '-PETSC_ARCH=darwin7.0.0-gnu',
-    '-PETSC_DIR=/Users/barrysmith/petsc-test'
+    '-PETSC_ARCH='+configure.getarch()
     ]
 
     configure.petsc_configure(configure_options)
+
+

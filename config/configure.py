@@ -3,8 +3,12 @@ import os
 import sys
 import commands
 
+
 if not hasattr(sys, 'version_info'):
   raise RuntimeError('You must have Python version 2.2 or higher to run configure')
+
+def getarch():
+  return os.path.basename(sys.argv[0])[10:]
 
 def petsc_configure(configure_options):
   # Should be run from the toplevel or from ./config

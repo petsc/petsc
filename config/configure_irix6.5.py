@@ -17,9 +17,8 @@ if __name__ == '__main__':
     '--with-mpi-include=/home/petsc/software/mpich-1.2.0/IRIX/include',
     '--with-mpi-lib=/home/petsc/software/mpich-1.2.0/IRIX/lib/libmpich.a',
     '--with-mpirun=mpirun',
-    '-PETSC_ARCH=irix6.5',
-    '-PETSC_DIR=/sandbox/petsc/petsc-test',
     '--with-lapack=/home/petsc/software/blaslapack/IRIX/libflapack.a',
+    '-PETSC_ARCH='+configure.getarch()
     ]
 
     configure.petsc_configure(configure_options)

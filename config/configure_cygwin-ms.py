@@ -6,8 +6,6 @@ if __name__ == '__main__':
     import configure
 
     configure_options = [
-    '-PETSC_ARCH=cygwin-ms',
-    '-PETSC_DIR=/home/Kris/petsc/petsc-dev',
     # Using MPICH for Windows 2000/NT available from http://www.mcs.anl.gov/mpi/mpich
     '--with-mpi-dir=/software/MPI/mpich-nt.1.2.5/SDK',
     '--with-mpi-compilers=0',
@@ -17,6 +15,7 @@ if __name__ == '__main__':
     '--with-cxx=win32fe cl',
     # Using Compaq FORTRAN Compiler
     '--with-fc=win32fe f90',
+    '-PETSC_ARCH='+configure.getarch()
     ]
 
     configure.petsc_configure(configure_options)

@@ -11,9 +11,8 @@ if __name__ == '__main__':
         '--with-mpi-include=/home/petsc/soft/linux-rh73-intel/mpich-1.2.5/include',
         '--with-mpi-lib=[/home/petsc/soft/linux-rh73-intel/mpich-1.2.5/lib/libmpich.a,libpmpich.a]',
         '--with-mpirun=mpirun',
-        '-PETSC_ARCH=linux-gnu-intel',
-        '-PETSC_DIR=/sandbox/petsc/petsc-test',
-	'--with-blas-lapck-dir=/home/petsc/soft/linux-rh73-intel/mkl-52'
+	'--with-blas-lapck-dir=/home/petsc/soft/linux-rh73-intel/mkl-52',
+        '-PETSC_ARCH='+configure.getarch()
         ]
 
     configure.petsc_configure(configure_options)
