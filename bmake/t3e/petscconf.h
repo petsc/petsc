@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.22 1999/11/24 21:52:17 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.23 2000/05/05 18:28:31 bsmith Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -31,10 +31,7 @@
 
 #define PETSC_HAVE_DOUBLE_ALIGN
 #define PETSC_HAVE_DOUBLE_ALIGN_MALLOC
-
 #define PETSC_HAVE_FAST_MPI_WTIME
-#define PETSC_HAVE_T3EF90
-
 #define PETSC_SIZEOF_VOIDP 8
 #define PETSC_SIZEOF_INT 8
 #define PETSC_SIZEOF_SHORT 4
@@ -50,5 +47,8 @@
 #define PETSC_CAN_SLEEP_AFTER_ERROR
 #define PETSC_USE_CTABLE
 #define PETSC_USE_SBREAK_FOR_SIZE
+
+#define PETSC_HAVE_F90_H "f90impl/f90_t3e.h"
+#define PETSC_HAVE_F90_C "src/sys/src/f90/f90_t3e.c"
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.21 1999/11/24 21:52:17 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.22 2000/05/05 18:28:31 bsmith Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -28,11 +28,6 @@
 #define PETSC_SIZEOF_VOIDP 8
 #define PETSC_SIZEOF_INT 4
 #define PETSC_SIZEOF_DOUBLE 8
-
-#define PETSC_HAVE_IRIXF90
-
-#define PETSC_HAVE_IRIXF90
-
 #define PETSC_WORDS_BIGENDIAN 1
 
 #define PETSC_HAVE_MEMMOVE
@@ -55,5 +50,8 @@
 #define PETSC_HAVE_4ARG_SIGNAL_HANDLER
 #define PETSC_USE_KBYTES_FOR_SIZE
 #define PETSC_USE_P_FOR_DEBUGGER
+
+#define PETSC_HAVE_F90_H "f90impl/f90_IRIX.h"
+#define PETSC_HAVE_F90_C "src/sys/src/f90/f90_IRIX.c"
 
 #endif

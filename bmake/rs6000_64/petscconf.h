@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.8 2000/01/24 16:23:36 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.9 2000/05/05 18:28:31 bsmith Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -33,11 +33,7 @@
 #endif
 #define _ALL_SOURCE
 #define PETSC_HAVE_DOUBLE_ALIGN_MALLOC
-
-#define PETSC_HAVE_XLF90
-
 #define PETSC_PREFER_BZERO
-
 #define PETSC_HAVE_READLINK
 #define PETSC_HAVE_MEMMOVE
 
@@ -54,5 +50,8 @@
 #define PETSC_HAVE_SLEEP_RETURNS_EARLY
 #define PETSC_USE_KBYTES_FOR_SIZE
 #define PETSC_USE_A_FOR_DEBUGGER
+
+#define PETSC_HAVE_F90_H "f90impl/f90_rs6000.h"
+#define PETSC_HAVE_F90_C "src/sys/src/f90/f90_rs6000.c"
 
 #endif

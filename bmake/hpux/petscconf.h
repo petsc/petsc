@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.19 1999/11/24 21:27:42 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.20 2000/05/05 18:28:31 bsmith Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -39,7 +39,6 @@
 #define PETSC_SIZEOF_DOUBLE 8
 
 #define PETSC_WORDS_BIGENDIAN 1
-#define PETSC_HAVE_HPUXF90
 #define PETSC_NEED_SOCKET_PROTO
 
 #define PETSC_HAVE_FORTRAN_IARGC_UNDERSCORE
@@ -48,5 +47,7 @@
 #define PETSC_HAVE_NO_GETRUSAGE
 #define PETSC_USE_LARGEP_FOR_DEBUGGER
 
-#endif
+#define PETSC_HAVE_F90_H "f90impl/f90_hpux.h"
+#define PETSC_HAVE_F90_C "src/sys/src/f90/f90_hpux.c"
 
+#endif
