@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.9 1996/01/16 17:51:26 balay Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.10 1996/01/16 23:12:00 balay Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: zsys.c,v 1.9 1996/01/16 17:51:26 balay Exp balay $";
 #define petscgettime_         PETSCGETTIME
 #define petscgetflops_        PETSCGETFLOPS
 #define petscerror_           PETSCERROR
-plogstagepop
+
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define petscattachdebugger_  petscattachdebugger
 #define plogallbegin_         plogallbegin
