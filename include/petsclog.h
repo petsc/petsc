@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.66 1996/03/23 19:22:34 curfman Exp bsmith $ */
+/* $Id: plog.h,v 1.67 1996/03/23 20:44:39 bsmith Exp curfman $ */
 
 /*
     Defines high level logging in PETSc.
@@ -209,7 +209,7 @@ extern int PLogObjectState(PetscObject,char *,...);
 
 #endif
 
-/*M
+/*MC
    PLogFlops - Adds floating point operations to the global counter.
 
    Input Parameter:

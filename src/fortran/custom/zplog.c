@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.15 1996/03/23 17:15:03 curfman Exp curfman $";
+static char vcid[] = "$Id: zplog.c,v 1.1 1996/03/23 19:22:22 curfman Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -101,8 +101,8 @@ void plogeventend_(int e,int o1,int o2,int o3,int o4){
 #endif
 }
 
-void plogflops_(int f) {
-  PLogFlops(f);
+void plogflops_(int *f) {
+  PLogFlops(*f);
 }
 
 void plogstagepop_(int *__ierr )
