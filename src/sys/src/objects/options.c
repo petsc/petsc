@@ -240,7 +240,7 @@ int PetscOptionsInsertString(const char in_str[])
 @*/
 int PetscOptionsInsertFile(const char file[])
 {
-  char       string[128],fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*final;
+  char       string[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*final;
   int        len,ierr,i,startIndex;
   FILE       *fd;
   PetscToken *token;

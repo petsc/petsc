@@ -26,7 +26,7 @@ T*/
 int main(int argc,char **argv)
 {
   int            ierr,bs,zero = 0,edited = 0;
-  char           filename[256],string[256],*segname,*value,keyname[256],*ikeyname;
+  char           filename[PETSC_MAX_PATH_LEN],string[256],*segname,*value,keyname[256],*ikeyname;
   PetscViewer    binary;
   AOData         aodata;
   PetscTruth     keyexists,flag;

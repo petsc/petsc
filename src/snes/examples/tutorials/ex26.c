@@ -287,7 +287,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
      Check to see if we can import an initial guess from disk
   */
   {
-    char         filename[256];
+    char         filename[PETSC_MAX_PATH_LEN];
     PetscTruth   flg;
     PetscViewer  view_in;
     PetscReal    fnorm;

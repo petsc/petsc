@@ -526,7 +526,7 @@ int PetscOptionsList(const char opt[],const char ltext[],const char man[],PetscF
   if (!PetscOptionsPublishCount) {
     PetscOptionsAMS amsopt;
     int        ntext;
-    char       ldefault[128];
+    char       ldefault[PETSC_MAX_PATH_LEN];
 
     ierr = PetscOptionsCreate_Private(opt,ltext,man,&amsopt);CHKERRQ(ierr);
     amsopt->type             = OPTION_LIST;
@@ -594,7 +594,7 @@ int PetscOptionsEList(const char opt[],const char ltext[],const char man[],const
 #if defined(PETSC_HAVE_AMS)
   if (!PetscOptionsPublishCount) {
     PetscOptionsAMS amsopt;
-    char       ldefault[128];
+    char       ldefault[PETSC_MAX_PATH_LEN];
 
     ierr = PetscOptionsCreate_Private(opt,ltext,man,&amsopt);CHKERRQ(ierr);
     amsopt->type             = OPTION_LIST;

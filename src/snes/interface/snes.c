@@ -2105,7 +2105,7 @@ int SNESGetOptionsPrefix(SNES snes,char *prefix[])
 @*/
 int SNESRegister(const char sname[],const char path[],const char name[],int (*function)(SNES))
 {
-  char fullname[256];
+  char fullname[PETSC_MAX_PATH_LEN];
   int  ierr;
 
   PetscFunctionBegin;

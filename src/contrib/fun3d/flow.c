@@ -225,9 +225,9 @@ int main(int argc,char **args)
     /* Add cells field */
     /* First read the cells*/
     if (!rank) {
-      char       cells_file[256];
+      char       cells_file[PETSC_MAX_PATH_LEN];
       PetscTruth exists;
-      ierr = PetscOptionsGetString(PETSC_NULL,"-cells_msh",cells_file,256,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(PETSC_NULL,"-cells_msh",cells_file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
       ierr = PetscTestFile(cells_file,'r',&exists);CHKERRQ(ierr);
       if (!exists) { /* try cells.msh as the file name */
 	ierr = PetscStrcpy(cells_file,"cells.msh");CHKERRQ(ierr);
@@ -584,7 +584,7 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
 #if defined(MATRIX_VIEW)
   if ((tsCtx->itstep != 0) &&(tsCtx->itstep % tsCtx->print_freq) == 0) {
     PetscViewer viewer;
-    char mat_file[256];
+    char mat_file[PETSC_MAX_PATH_LEN];
     sprintf(mat_file,"mat_bin.%d",tsCtx->itstep);
     ierr = PetscViewerBinaryOpen(MPI_COMM_WORLD,mat_file,PETSC_FILE_CREATE,&viewer);
     ierr = MatView(pc_mat,viewer);CHKERRQ(ierr);
@@ -827,7 +827,7 @@ int GetLocalOrdering(GRID *grid)
   int	       *tmp,*tmp1,*tmp2;
   PetscScalar  time_ini,time_fin;
   PetscScalar  *ftmp,*ftmp1;
-  char         mesh_file[256];
+  char         mesh_file[PETSC_MAX_PATH_LEN];
   AO           ao;
   FILE         *fptr,*fptr1;
   PetscTruth   flg;
@@ -892,10 +892,10 @@ int GetLocalOrdering(GRID *grid)
       ierr = PetscMemzero(v2p,nnodes*sizeof(int));CHKERRQ(ierr);
     }
     else {
-      char       spart_file[256],part_file[256];
+      char       spart_file[PETSC_MAX_PATH_LEN],part_file[PETSC_MAX_PATH_LEN];
       PetscTruth exists;
       
-      ierr = PetscOptionsGetString(PETSC_NULL,"-partition",spart_file,256,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(PETSC_NULL,"-partition",spart_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
       ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
       if (!exists) { /* try appending the number of processors */
 	sprintf(part_file,"part_vec.part.%d",size);
@@ -1232,7 +1232,7 @@ int GetLocalOrdering(GRID *grid)
    if (flg) {  
      int *partv_loc, *partv_glo;
      int *disp,*counts,*loc2glo_glo;
-     char part_file[256];
+     char part_file[PETSC_MAX_PATH_LEN];
      FILE *fp;
      
      ICALLOC(nnodes, &partv_glo);
@@ -1845,7 +1845,7 @@ int GetLocalOrdering(GRID *grid)
  }
  ierr = PetscOptionsHasName(0,"-partition_info",&flg);CHKERRQ(ierr);
  if (flg) {
-  char part_file[256];
+  char part_file[PETSC_MAX_PATH_LEN];
   sprintf(part_file,"output.%d",rank);
   fptr1 = fopen(part_file,"w");
 

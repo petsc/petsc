@@ -53,7 +53,7 @@ int PFStringCreateFunction(PF pf,char *string,void **f)
 {
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   int        ierr;
-  char       task[1024],tmp[256],lib[256],username[64];
+  char       task[1024],tmp[256],lib[PETSC_MAX_PATH_LEN],username[64];
   FILE       *fd;
   PetscTruth tmpshared,wdshared,keeptmpfiles = PETSC_FALSE;
   MPI_Comm   comm;
@@ -68,10 +68,10 @@ int PFStringCreateFunction(PF pf,char *string,void **f)
   ierr = PetscSharedTmp(pf->comm,&tmpshared);CHKERRQ(ierr);
   ierr = PetscSharedWorkingDirectory(pf->comm,&wdshared);CHKERRQ(ierr);
   if (tmpshared) {  /* do it in /tmp since everyone has one */
-    ierr = PetscGetTmp(pf->comm,tmp,256);CHKERRQ(ierr);
+    ierr = PetscGetTmp(pf->comm,tmp,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     comm = pf->comm;
   } else if (!wdshared) {  /* each one does in private /tmp */
-    ierr = PetscGetTmp(pf->comm,tmp,256);CHKERRQ(ierr);
+    ierr = PetscGetTmp(pf->comm,tmp,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     comm = PETSC_COMM_SELF;
   } else { /* do it in current directory */
     ierr = PetscStrcpy(tmp,".");CHKERRQ(ierr);
@@ -102,12 +102,12 @@ int PFSetFromOptions_String(PF pf)
 {
   int        ierr;
   PetscTruth flag;
-  char       value[256];
+  char       value[PETSC_MAX_PATH_LEN];
   int        (*f)(void *,int,PetscScalar*,PetscScalar*) = 0;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("String function options");CHKERRQ(ierr);
-    ierr = PetscOptionsString("-pf_string","Enter the function","PFStringCreateFunction","",value,256,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-pf_string","Enter the function","PFStringCreateFunction","",value,PETSC_MAX_PATH_LEN,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = PFStringCreateFunction(pf,value,(void**)&f);CHKERRQ(ierr);
       pf->ops->apply = f;

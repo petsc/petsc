@@ -741,7 +741,7 @@ int Update(DMMG *dmmg)
       Mat mat, pmat;
       MatStructure flag;
       PetscViewer viewer;
-      char file[128];
+      char file[PETSC_MAX_PATH_LEN];
 
       ierr = PetscStrcpy(file, "matrix");CHKERRQ(ierr);
 
@@ -816,7 +816,7 @@ int Update(DMMG *dmmg)
 	/* output */
 	if (ic_out++ == (int)(tsCtx->dt_out / tsCtx->dt + .5)) {
 #ifdef HAVE_DA_HDF
-          char fname[128];
+          char fname[PETSC_MAX_PATH_LEN];
 
           sprintf(fname, "out-%g.hdf", tsCtx->t);
           ierr = DAVecHDFOutput(DMMGGetDA(dmmg), DMMGGetx(dmmg), fname);

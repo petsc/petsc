@@ -6,9 +6,9 @@
 #include "petscsys.h"
 
 struct _PetscOList {
-    char        name[128];
+    char        name[256];
     PetscObject obj;
-    PetscOList       next;
+    PetscOList  next;
 };
 
 #undef __FUNCT__  

@@ -15,7 +15,7 @@ int main(int argc,char **args)
   int         ierr,nd = 2,ov=1,i,j,size,m,n,rank,*idx;
   PetscTruth  flg;
   Mat         A,B;
-  char        file[128]; 
+  char        file[PETSC_MAX_PATH_LEN]; 
   PetscViewer fd;
   IS          *is1,*is2;
   PetscRandom r;
@@ -27,7 +27,7 @@ int main(int argc,char **args)
 #else
   
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRQ(ierr);
 

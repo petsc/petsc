@@ -118,7 +118,7 @@ int PetscViewerSetFilename_Netcdf(PetscViewer viewer,const char name[])
     ierr = PetscStrallocpy(name,&vnetcdf->filename);CHKERRQ(ierr);
   }
   if (type == (PetscViewerFileType) -1) {
-    SETERRQ(1,"Must call PetscViewerSetFileType() before PetscViewerSetFilename()");
+    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerSetFileType() before PetscViewerSetFilename()");
   } else if (type == PETSC_FILE_RDONLY) {
     ierr = ncmpi_open(comm,vnetcdf->filename,0,MPI_INFO_NULL,&vnetcdf->ncid);CHKERRQ(ierr);
   } else if (type == PETSC_FILE_RDWR) {

@@ -12,7 +12,7 @@ int main(int argc,char **args)
 {
   Mat         A;
   Vec         b;
-  char        filein[256],finname[256],fileout[256];
+  char        filein[PETSC_MAX_PATH_LEN],finname[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN];
   int         n,ierr,col,row;
   int         rowin;
   PetscTruth  flg;

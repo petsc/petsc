@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   int        ierr;
   PetscTruth flg;
   const char *string;
-  char       filename[256];
+  char       filename[PETSC_MAX_PATH_LEN];
   void       *handle;
 
   /*

@@ -329,7 +329,7 @@ int PetscViewerBinaryLoadInfo(PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
       ierr = PetscStrncmp(first,"-mat_double",11,&wrongtype);CHKERRQ(ierr);
       if (wrongtype) {
-        SETERRQ(1,"Loading double number matrix with complex number code");
+        SETERRQ(,"Loading double number matrix with complex number code");
       }
 #else
       ierr = PetscStrncmp(first,"-mat_complex",12,&wrongtype);CHKERRQ(ierr);
@@ -367,7 +367,7 @@ int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
 
   PetscFunctionBegin;
   if (type == (PetscViewerFileType) -1) {
-    SETERRQ(1,"Must call PetscViewerBinarySetType() before PetscViewerSetFilename()");
+    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerBinarySetType() before PetscViewerSetFilename()");
   }
   ierr = PetscOptionsHasName(viewer->prefix,"-viewer_binary_skip_info",&vbinary->skipinfo);CHKERRQ(ierr);
 

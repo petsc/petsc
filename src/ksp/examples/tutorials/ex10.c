@@ -45,7 +45,7 @@ int main(int argc,char **args)
   Mat            A,B;            /* matrix */
   Vec            x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
-  char           file[3][128];     /* input file name */
+  char           file[3][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,partition=PETSC_FALSE;
   int            ierr,its,ierrp;
   PetscReal      norm;
@@ -65,14 +65,14 @@ int main(int argc,char **args)
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file[0],127,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file[0],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscStrcpy(file[1],file[0]);CHKERRQ(ierr);
     preload = PETSC_FALSE;
   } else {
-    ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(1,"Must indicate binary file with the -f0 or -f option");
-    ierr = PetscOptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-f1",file[1],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
     if (!flg) {preload = PETSC_FALSE;} /* don't bother with second system */
   }
 
@@ -122,7 +122,7 @@ int main(int argc,char **args)
     /* Add a shift to A */
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-mat_sigma",&sigma,&flg);CHKERRQ(ierr);
     if(flg) {
-      ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[2],127,&flgB);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[2],PETSC_MAX_PATH_LEN-1,&flgB);CHKERRQ(ierr);
       if (flgB){
         /* load B to get A = A + sigma*B */
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);

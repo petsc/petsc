@@ -28,7 +28,7 @@ int DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   PetscRandom  rctx;  /* random number generator context */
   int          ierr;
   PetscTruth   flg;
-  char         noise_file[128];
+  char         noise_file[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
 
@@ -53,7 +53,7 @@ int DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
 
   /* Open output file */
-  ierr = PetscOptionsGetString(snes->prefix,"-snes_mf_noise_file",noise_file,128,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(snes->prefix,"-snes_mf_noise_file",noise_file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (flg) neP->fp = fopen(noise_file,"w"); 
   else     neP->fp = fopen("noise.out","w"); 
   if (!neP->fp) SETERRQ(PETSC_ERR_FILE_OPEN,"Cannot open file");

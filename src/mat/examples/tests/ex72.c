@@ -15,7 +15,7 @@ int main(int argc,char **args)
 {
   Mat         A;
   Vec         b;
-  char        filein[128],fileout[128],buf[128];
+  char        filein[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
   int         i,m,n,nnz,ierr,size,col,row;
   PetscScalar val;
   FILE*       file;
@@ -28,12 +28,12 @@ int main(int argc,char **args)
   if (size > 1) SETERRQ(1,"Uniprocessor Example only\n");
 
   /* Read in matrix and RHS */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRQ(ierr);
 
   /* Ignore the first line */
   /* while (getc(file) != '\n') ; */
-  fgets(buf,128,file);
+  fgets(buf,PETSC_MAX_PATH_LEN-1,file);
   printf("%s",buf);
   fscanf(file,"%d %d %d\n",&m,&n,&nnz);
   printf ("m = %d, n = %d, nnz = %d\n",m,n,nnz);
@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,PETSC_FILE_CREATE,&view);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
   ierr = VecView(b,view);CHKERRQ(ierr);

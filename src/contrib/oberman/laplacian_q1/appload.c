@@ -17,7 +17,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   int        ierr;
   PetscTruth flag;
   PetscViewer     binary;
-  char       filename[256];
+  char       filename[PETSC_MAX_PATH_LEN];
   AppView    *view;
 
   PetscFunctionBegin;

@@ -27,7 +27,7 @@ int main(int argc,char **args)
   Mat         A,B;                /* matrix */
   Vec         x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer fd;               /* viewer */
-  char        file[2][128];     /* input file name */
+  char        file[2][PETSC_MAX_PATH_LEN];     /* input file name */
   int         ierr,its;
   PetscTruth  flg;
   PetscReal   norm;
@@ -39,7 +39,7 @@ int main(int argc,char **args)
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,"Must indicate binary file with the -f0 option");
 
 

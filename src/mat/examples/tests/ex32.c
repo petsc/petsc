@@ -12,7 +12,7 @@ int main(int argc,char **args)
 {
   Mat         A;
   Vec         b;
-  char        filein[128],fileout[128];
+  char        filein[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN];
   int         i,j,m,n,nnz,ierr,rank,size,start,end,*col,*row,*brow,length;
   PetscScalar *val,*bval;
   FILE*       file;
@@ -22,7 +22,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read in matrix and RHS */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,127,&opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,PETSC_MAX_PATH_LEN-1,&opt);CHKERRQ(ierr);
   if (opt == PETSC_FALSE) {
     SETERRQ(PETSC_ERR_ARG_WRONG, "No filename was specified for this test");
   }
@@ -85,7 +85,7 @@ int main(int argc,char **args)
   ierr = PetscFree(brow);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,PETSC_FILE_CREATE,&view);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
   ierr = VecView(b,view);CHKERRQ(ierr);

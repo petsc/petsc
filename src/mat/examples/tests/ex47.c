@@ -15,7 +15,7 @@ int main(int argc,char **args)
   Vec               x,y;
   int               ierr,i,j,row,m,n,ncols1,ncols2,ct,m2,n2;
   const int         *cols1,*cols2;
-  char              file[128];
+  char              file[PETSC_MAX_PATH_LEN];
   PetscTruth        tflg;
   PetscScalar       rval;
   const PetscScalar *vals1,*vals2;
@@ -28,7 +28,7 @@ int main(int argc,char **args)
   SETERRQ(1,"This example does not work with complex numbers");
 #else
   
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
 
   /* Load the matrix as AIJ format */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&va);CHKERRQ(ierr);

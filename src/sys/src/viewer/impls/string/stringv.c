@@ -56,7 +56,7 @@ int PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
   PetscValidCharPointer(format,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (!isstring) PetscFunctionReturn(0);
-  if (!vstr->string) SETERRQ(1,"Must call PetscViewerStringSetString() before using");
+  if (!vstr->string) SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerStringSetString() before using");
 
   va_start(Argp,format);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
@@ -189,7 +189,7 @@ int PetscViewerStringSetString(PetscViewer viewer,char string[],int len)
   PetscValidCharPointer(string,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (!isstring)  PetscFunctionReturn(0);
-  if (len <= 2) SETERRQ(1,"String must have length at least 2");
+  if (len <= 2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"String must have length at least 2");
 
   ierr = PetscMemzero(string,len*sizeof(char));CHKERRQ(ierr);
   vstr->string      = string;

@@ -34,7 +34,7 @@ int MATLABENGINE_COOKIE = -1;
 int PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],PetscMatlabEngine *mengine)
 {
   int               ierr,rank,size;
-  char              buffer[128];
+  char              buffer[256];
   PetscMatlabEngine e;
 
   PetscFunctionBegin;

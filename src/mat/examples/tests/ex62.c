@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscReal   norm;
   PetscViewer fd;
   char        type[256];
-  char        file[128];
+  char        file[PETSC_MAX_PATH_LEN];
   PetscScalar one = 1.0,mone = -1.0;
   PetscTruth  flg;
 
@@ -22,7 +22,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(1,"Can only run on one processor");
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,"Must indicate binary file with the -f option");
   /* 
      Open binary file.  Note that we use PETSC_FILE_RDONLY to indicate

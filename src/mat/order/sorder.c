@@ -98,7 +98,7 @@ EXTERN_C_END
 int MatOrderingRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,const MatOrderingType,IS*,IS*))
 {
   int  ierr;
-  char fullname[256];
+  char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);

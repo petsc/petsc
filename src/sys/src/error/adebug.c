@@ -499,7 +499,7 @@ int PetscStopForDebugger(void)
   int        ierr,sleeptime=0;
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
   int        ppid,rank;
-  char       program[256],hostname[256];
+  char       program[PETSC_MAX_PATH_LEN],hostname[256];
   PetscTruth isdbx,isxldb,isxxgdb,isddd,isups,isxdb;
 #endif
 

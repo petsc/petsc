@@ -23,7 +23,7 @@ int main(int argc,char **args)
   MatType         mtype = MATMPIAIJ; /* matrix format */
   Mat             A,B;               /* matrix */
   PetscViewer     fd;                /* viewer */
-  char            file[128];         /* input file name */
+  char            file[PETSC_MAX_PATH_LEN];         /* input file name */
   PetscTruth      flg;
   int             ierr,*nlocal,rank,size;
   MatPartitioning part;
@@ -36,7 +36,7 @@ int main(int argc,char **args)
   /* 
      Determine file from which we read the matrix
   */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 
   /* 
        Open binary file.  Note that we use PETSC_FILE_RDONLY to indicate

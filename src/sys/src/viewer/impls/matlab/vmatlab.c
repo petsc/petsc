@@ -153,7 +153,7 @@ int PetscViewerSetFilename_Matlab(PetscViewer viewer,const char name[])
 
   PetscFunctionBegin;
   if (type == (PetscViewerFileType) -1) {
-    SETERRQ(1,"Must call PetscViewerSetFileType() before PetscViewerSetFilename()");
+    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerSetFileType() before PetscViewerSetFilename()");
   }
 
   /* only first processor opens file */

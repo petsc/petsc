@@ -12,11 +12,11 @@
 #define __FUNCT__ "AppCxtCreate"
 int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
 {
-  int        ierr;
-  PetscTruth flag;
-  PetscViewer     binary;
-  char       filename[256];
-  AppView    *view;  /*added by H. */
+  int         ierr;
+  PetscTruth  flag;
+  PetscViewer binary;
+  char        filename[PETSC_MAX_PATH_LEN];
+  AppView     *view;  /*added by H. */
 
   ierr = PetscMalloc(sizeof(AppCtx),appctx);CHKERRQ(ierr);
   (*appctx)->comm = comm;

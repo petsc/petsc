@@ -120,7 +120,7 @@ int TSGetType(TS ts, TSType *type)
 @*/
 int TSRegister(const char sname[], const char path[], const char name[], int (*function)(TS))
 {
-  char fullname[256];
+  char fullname[PETSC_MAX_PATH_LEN];
   int  ierr;
 
   PetscFunctionBegin;
