@@ -53,6 +53,7 @@ typedef struct {
     int    first_time_resid;     /* flag: 1: first time computing residual */
     int    bc_test;              /* flag: 1: test boundary condition scatters */
     int    no_output;            /* flag: 1: no runtime output (use when timing code) */
+    int    no_wake;              /* flag: 1: no wake BCs in Jacobian */
     int    use_vecsetvalues;     /* flag: 1: use of VecSetValues() */
     int    post_process;         /* flag: 1: do post-processing */
     int    global_grid;          /* flag: 1: store global grid instead of just local part */
@@ -360,7 +361,7 @@ extern int bc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,S
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int bcpart_j1_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-extern int parsetup_(int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,int*,
+extern int parsetup_(int*,int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,

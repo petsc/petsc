@@ -836,7 +836,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
       else if (mtype == MATMPIBAIJ) {ierr = MatViewDFVec_MPIBAIJ(*pjac,X,view); CHKERRQ(ierr);}
       else                          {ierr = MatView(*pjac,view); CHKERRQ(ierr);} */
 
-      if (app->mmtype == MMHYBRID_E || app->mmtype == MMHYBRID_F || app->mmtype == MMHYBRID_EF1
+      if ((app->mmtype == MMHYBRID_E || app->mmtype == MMHYBRID_F || app->mmtype == MMHYBRID_EF1)
         && mtype == MATSEQAIJ) {
         ierr = MatView_Hybrid(*pjac,view); CHKERRQ(ierr);
       } else {
@@ -1265,6 +1265,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->last_its              = 0;
   app->post_process          = 0;
   app->global_grid           = 0;
+  app->no_wake               = 0;
 
   /* control of forming new preconditioner matrices */
   app->jfreq                 = 10;       /* default frequency of computing Jacobian matrix */
@@ -1292,6 +1293,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   if (flg) app->ts_type = GLOBAL_TS;
   ierr = OptionsHasName(PETSC_NULL,"-check_solution",&app->check_solution); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-use_jratio",&app->use_jratio); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-jac_no_wake",&app->no_wake); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-jratio",&app->jratio,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_switch",&app->cfl_switch,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max",&app->cfl_max,&flg); CHKERRQ(ierr);
@@ -1332,6 +1334,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
 
   if (app->mat_assemble_direct) PetscPrintf(comm,"Problem %d (%dx%dx%d grid), assembling PETSc matrix directly: angle of attack = %g, eps_jac = %g\n",problem,ni1,nj1,nk1,app->angle,app->eps_jac);
   else PetscPrintf(comm,"Problem %d (%dx%dx%d grid), assembling PETSc matrix via translation of Eagle format: angle of attack = %g, eps_jac = %g\n",problem,ni1,nj1,nk1,app->angle,app->eps_jac);
+  if (app->no_wake) PetscPrintf(comm,"No wake BCs in Jacobian (preconditioner)\n");
   if (app->dump_vrml) dump_angle_vrml(app->angle);
 
   app->ni1              = ni1;
@@ -1526,7 +1529,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   *(int*)(&fort_comm) = PetscFromPointerComm(comm);
-  ierr = parsetup_(&fort_comm, &app->print_grid, &app->no_output,
+  ierr = parsetup_(&fort_comm, &app->print_grid, &app->no_wake, &app->no_output,
             &app->bctype, &app->rank, &app->size, &problem,
             &app->gxsf, &app->gysf, &app->gzsf,
             &app->gxef, &app->gyef, &app->gzef, 

@@ -76,6 +76,9 @@ c   Grid points 1,1,1
 c   If nonzero, then print grid information
        integer printg, no_output
 
+c   Deactivate wake wrap-around BCs in Jacobian if nonzero
+       integer nowake
+
 c   Type of boundary conditions, switch for impermeability
        integer bctype, bcswitch
 
@@ -91,6 +94,7 @@ c   Communicator, rank, size
 c   Common block for local data
        common /pgrid/ rank, size, comm, problem, ndof, ndof_e
        common /pgrid/ printg, no_output, bctype, bcswitch
+       common /pgrid/ nowake
        common /pgrid/ xsf, ysf, zsf, xef, yef, zef
        common /pgrid/ xsf2, ysf2, zsf2, xsf1, ysf1, zsf1
        common /pgrid/ xefm1, yefm1, zefm1, xm, ym, zm

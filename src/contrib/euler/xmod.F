@@ -14,7 +14,7 @@ c        C code (xefp2,gxefp2) -> Fortran code (xefp1,gxefp1)
 c        Seems most natural for both parts of application,
 c          although admittedly somewhat confusing.
 c
-      integer function parsetup(Acomm, Aprintg, 
+      integer function parsetup(Acomm, Aprintg, Anowake,
      &        Ano_output, Abctype, Arank, Asize, Aproblem,
      &        Agxsf, Agysf, Agzsf, Agxef, Agyef, Agzef, 
      &        Axsf, Aysf, Azsf, Axef, Ayef, Azef, 
@@ -29,7 +29,7 @@ c
 
 #include "param.h"
 
-      integer Aprintg, Acomm, Arank, Asize, Abctype, 
+      integer Aprintg, Acomm, Arank, Asize, Abctype, Anowake,
      &        Aproblem, Agxsf, Agysf, Agzsf, Agxef, Agyef, Agzef,
      &        Axsf, Aysf, Azsf, Axef, Ayef, Azef, 
      &        Axefm1, Ayefm1, Azefm1, Axefp1, Ayefp1, Azefp1, 
@@ -53,6 +53,7 @@ c  in param.h: Common block, pgrid, for local grid data:
       ndof      = Andof
       ndof_e    = 5
       bcswitch  = Abcswitch
+      nowake    = Anowake
 
       if (problem .eq. 1) then
          OPEN (2,FILE='m6c',STATUS='OLD')
@@ -215,7 +216,7 @@ c       Using local grid
       write(6,130) rank,zsf,zsf1,zsf2,zefm1,zef01,zefp1,zm
 
  100  format('Local coord ranges: rank ',i4,
-     & ': cx1,cxn,cy1,cyn,cz1,czn:',6(i4),', ctot:'i8)
+     & ': cx1,cxn,cy1,cyn,cz1,czn:',6(i4),', ctot:',i8)
  110  format('Fort grid: rank ',i4,
      & ': xsf,xsf1,xsf2,xefm1,xef01,xefp1,xm:',7(i4))
  120  format('Fort grid: rank ',i4,

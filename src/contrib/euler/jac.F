@@ -555,9 +555,16 @@ c       Luckily, we have already determined these column numbers
 c       when setting up the vector scatters.
 c         uniprocessor: col(1) = ijkid+m
          col(1) = ijkid+m
+
+c optionally just ignore these wake BCs in the Jacobian since they
+c destroy sparsity
+         if (nowake .eq. 1) goto 22
+
          call AOApplicationToPetsc(ao,1,col(1),ierr)
 cc         col(1) = is1(ict)
          call MatSetValues(mat,5,row,1,col,bw,IV,ierr)
+   22 continue
+
       endif
       ict = ict + ndof
 c      b2bc(1,m,id,2,k)=(fb1rj1-Fbcrj1(i,k))*epsi
@@ -1282,7 +1289,7 @@ c
       double precision  ql(5,d_ni),qer(5),qel(5)
       double precision  epsi,tl,pl
       integer i,j,k,l,m,ib,jb,kb,IV,row(5),pass,ijm,nloc
-      integer ltog(0:nloc-1),ij,ndof,ierr,col,ijp
+      integer ltog(0:nloc-1),ij,ierr,col,ijp
       integer ip1,jp1,kp1
       Mat     mat
 
