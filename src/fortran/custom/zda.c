@@ -1,4 +1,4 @@
-/*$Id: zda.c,v 1.45 2001/04/25 14:57:07 bsmith Exp bsmith $*/
+/*$Id: zda.c,v 1.46 2001/05/03 16:33:02 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -58,19 +58,46 @@
 
 EXTERN_C_BEGIN
 
-static void (PETSC_STDCALL *f2)(DALocalInfo*,void*,void*,void*,int*);
+static void (PETSC_STDCALL *f1d)(DALocalInfo*,void*,void*,void*,int*);
+static int ourlf1d(DALocalInfo *info,Scalar *in,Scalar *out,void *ptr)
+{
+  int ierr = 0;
+  (*f1d)(info,&in[info->gxs],&out[info->xs],ptr,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+static void (PETSC_STDCALL *f2d)(DALocalInfo*,void*,void*,void*,int*);
 static int ourlf2d(DALocalInfo *info,Scalar **in,Scalar **out,void *ptr)
 {
   int ierr = 0;
-  (*f2)(info,&in[info->gys][info->gxs],&out[info->ys][info->xs],ptr,&ierr);CHKERRQ(ierr);
+  (*f2d)(info,&in[info->gys][info->gxs],&out[info->ys][info->xs],ptr,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+static void (PETSC_STDCALL *f3d)(DALocalInfo*,void*,void*,void*,int*);
+static int ourlf3d(DALocalInfo *info,Scalar ***in,Scalar ***out,void *ptr)
+{
+  int ierr = 0;
+  (*f3d)(info,&in[info->gzs][info->gys][info->gxs],&out[info->zs][info->ys][info->xs],ptr,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 void PETSC_STDCALL dasetlocalfunction_(DA *da,void (PETSC_STDCALL *func)(DALocalInfo*,void*,void*,void*,int*),
 				       void (PETSC_STDCALL *jfunc)(DALocalInfo*,void*,void*,void*,int*),int *ierr)
 {
-   f2    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,int*))func; 
-  *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf2d,0);
+  int dim;
+
+  *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
+  if (dim == 2) {
+     f2d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,int*))func; 
+    *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf2d,0);
+  } else if (dim == 3) {
+     f3d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,int*))func; 
+    *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf3d,0);
+  } else if (dim == 1) {
+     f1d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,int*))func; 
+    *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf1d,0);
+  } else *ierr = 1;
 }
 
 void PETSC_STDCALL dagetlocalinfo_(DA *da,DALocalInfo *ao,int *ierr)
