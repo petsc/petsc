@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.76 1997/03/01 15:45:33 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.77 1997/03/14 23:49:53 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -432,11 +432,11 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
 
 .seealso: PetscTrDump()
  @*/
-int PetscTrSpace( double *space, double *fr, double *maxs )
+int PetscTrSpace( PLogDouble *space, PLogDouble *fr, PLogDouble *maxs )
 {
-  if (space) *space = (double) allocated;
-  if (fr)    *fr    = (double) frags;
-  if (maxs)  *maxs  = (double) TRMaxMem;
+  if (space) *space = (PLogDouble) allocated;
+  if (fr)    *fr    = (PLogDouble) frags;
+  if (maxs)  *maxs  = (PLogDouble) TRMaxMem;
   return 0;
 }
 
@@ -453,6 +453,8 @@ int PetscTrSpace( double *space, double *fr, double *maxs )
 
    Options Database Key:
 $  -trdump : dumps unfreed memory during call to PetscFinalize()
+
+   Notes: The calling sequence in Fortran is PetscTrDump(integer ierr)
 
 .keywords: memory, allocation, tracing, space, statistics
 
@@ -510,12 +512,15 @@ int PetscTrLog()
 @*/
 int PetscTrLogDump(FILE *fp)
 {
-  int  i,rank,j,n,*shortlength;
-  char **shortfunction;
+  int        i,rank,j,n,*shortlength,ierr;
+  char       **shortfunction;
+  PLogDouble rss;
 
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (fp == 0) fp = stderr;
-  fprintf(stderr,"Maximum memory used %d\n",(int) TRMaxMem);
+  ierr = PetscGetResidentSetSize(&rss); CHKERRQ(ierr);
+  fprintf(stderr,"Maximum memory used %d Size of entire process %d\n",(int) TRMaxMem,(int) rss);
+
   for ( i=0; i<PetscLogMalloc; i++ ) {
     fprintf(fp,"[%d] %d %s%s %s()\n",rank,PetscLogMallocLength[i],PetscLogMallocDirectory[i],
             PetscLogMallocFile[i],PetscLogMallocFunction[i]);
