@@ -4,13 +4,15 @@
           C = A * B
 */
 
-#include "src/mat/impls/aij/seq/aij.h"
+#include "src/mat/impls/aij/seq/aij.h" /*I "petscmat.h" I*/
 #include "src/mat/utils/freespace.h"
 
 static int logkey_matmatmult          = 0;
 static int logkey_matmatmult_symbolic = 0;
 static int logkey_matmatmult_numeric  = 0;
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMult"
 /*@
    MatMatMult - Performs Matrix-Matrix Multiplication C=A*B.
 
@@ -32,8 +34,6 @@ static int logkey_matmatmult_numeric  = 0;
 
 .seealso: MatMatMultSymbolic(),MatMatMultNumeric()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMult"
 int MatMatMult(Mat A,Mat B, Mat *C) {
   /* Perhaps this "interface" routine should be moved into the interface directory.*/
   /* To facilitate implementations with varying types, QueryFunction is used.*/
@@ -99,6 +99,8 @@ int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B, Mat *C) {
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultSymbolic"
 /*@
    MatMatMultSymbolic - Performs construction, preallocation, and computes the ij structure
    of the matrix-matrix product C=A*B.  Call this routine before calling MatMatMultNumeric().
@@ -121,8 +123,6 @@ int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B, Mat *C) {
 
 .seealso: MatMatMult(),MatMatMultNumeric()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultSymbolic"
 int MatMatMultSymbolic(Mat A,Mat B,Mat *C) {
   /* Perhaps this "interface" routine should be moved into the interface directory.*/
   /* To facilitate implementations with varying types, QueryFunction is used.*/
@@ -262,6 +262,8 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultNumeric"
 /*@
    MatMatMultNumeric - Performs the numeric matrix-matrix product.
    Call this routine after first calling MatMatMultSymbolic().
@@ -284,8 +286,6 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
 
 .seealso: MatMatMult(),MatMatMultSymbolic()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultNumeric"
 int MatMatMultNumeric(Mat A,Mat B,Mat C){
   /* Perhaps this "interface" routine should be moved into the interface directory.*/
   /* To facilitate implementations with varying types, QueryFunction is used.*/
