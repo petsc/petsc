@@ -54,6 +54,13 @@ class Configure(config.base.Configure):
     self.framework.require('PETSc.packages.fortranstubs',  self.blaslapack)
     return
 
+  def __str__(self):
+    desc = ['PETSc:']
+    desc.append('  PETSC_ARCH: '+str(self.framework.argDB['PETSC_ARCH']))
+    desc.append('  PETSC_DIR: '+str(self.framework.argDB['PETSC_DIR']))
+    return '\n'.join(desc)+'\n'
+                              
+
   def configureHelp(self, help):
     import nargs
 
