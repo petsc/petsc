@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.46 2001/04/10 19:34:33 bsmith Exp balay $*/
+/*$Id: pinit.c,v 1.47 2001/04/11 17:04:53 balay Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -504,16 +504,15 @@ int PetscFinalize(void)
   if (flg1 && flg2) {
     if (!rank) {ierr = PetscOptionsPrint(stdout);CHKERRQ(ierr);}
   }
+
   /* to prevent PETSc -options_left from warning */
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr)
+  ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stderr",&flg1);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-optionsleft",&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-options_left",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsGetLogical(PETSC_NULL,"-options_left",&flg2,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
-  if (flg1 || flg2) {
+  if (flg2) {
     ierr = PetscOptionsPrint(stdout);CHKERRQ(ierr);
-  }
-  if (flg1) {
     if (!nopt) { 
       ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
     } else if (nopt == 1) {
@@ -521,23 +520,17 @@ int PetscFinalize(void)
     } else {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %d unused database options. They are:\n",nopt);CHKERRQ(ierr);
     }
-  }
-
-  /* make sure this unused option does not get printed */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stderr",&flg1);CHKERRQ(ierr);
-
+  } 
 #if defined(PETSC_USE_BOPT_g)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-options_left_off",&flg2);CHKERRQ(ierr);
   if (nopt && !flg1 && !flg2) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);
-  }
-  if ((nopt || flg1) && !flg2) {
 #else 
-  if (nopt || flg1) {
+  if (nopt || flg2) {
 #endif
     ierr = PetscOptionsLeft();CHKERRQ(ierr);
   }
+
   ierr = PetscOptionsHasName(PETSC_NULL,"-log_history",&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscLogCloseHistoryFile(&petsc_history);CHKERRQ(ierr);
