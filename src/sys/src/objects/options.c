@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.161 1998/01/17 17:36:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.162 1998/01/26 19:20:56 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -725,8 +725,7 @@ int OptionsCheckInitial_Private()
   ierr = PetscSetDebugger("xdb",1,0); CHKERRQ(ierr);
 #endif
 
-  ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64, 
-                          &flg1); CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64,&flg1);CHKERRQ(ierr);
   if (flg1) {
     char *debugger = 0, *display = 0;
     int  xterm     = 1;
@@ -821,18 +820,18 @@ int OptionsCheckInitial_Private()
   ierr = OptionsHasName(PETSC_NULL,"-log_info", &flg1); CHKERRQ(ierr);
   if (flg1) { 
     PLogInfoAllow(PETSC_TRUE); 
-    ierr = OptionsGetString(PETSC_NULL,"-log_info",mname,256, &flg1);CHKERRQ(ierr);
+    ierr = OptionsGetString(PETSC_NULL,"-log_info_exclude",mname,256, &flg1);CHKERRQ(ierr);
     if (flg1) {
-      if (PetscStrstr(mname,"no_vec")) {
+      if (PetscStrstr(mname,"vec")) {
         PLogInfoDeactivateClass(VEC_COOKIE);
       }
-      if (PetscStrstr(mname,"no_mat")) {
+      if (PetscStrstr(mname,"mat")) {
         PLogInfoDeactivateClass(MAT_COOKIE);
       }
-      if (PetscStrstr(mname,"no_sles")) {
+      if (PetscStrstr(mname,"sles")) {
         PLogInfoDeactivateClass(SLES_COOKIE);
       }
-      if (PetscStrstr(mname,"no_snes")) {
+      if (PetscStrstr(mname,"snes")) {
         PLogInfoDeactivateClass(SNES_COOKIE);
       }
     }
@@ -844,8 +843,26 @@ int OptionsCheckInitial_Private()
   ierr = OptionsHasName(PETSC_NULL,"-log_all", &flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-log", &flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3); CHKERRQ(ierr);
-  if (flg1)              {  PLogAllBegin();  }
-  else if (flg2 || flg3) {  PLogBegin(); }
+  if (flg1)              {  ierr = PLogAllBegin();  CHKERRQ(ierr); }
+  else if (flg2 || flg3) {  ierr = PLogBegin();  CHKERRQ(ierr);}
+  if (flg3) {
+    ierr = OptionsGetString(PETSC_NULL,"-log_summary_exclude",mname,256, &flg1);CHKERRQ(ierr);
+    if (flg1) {
+      if (PetscStrstr(mname,"vec")) {
+        PLogEventDeactivateClass(VEC_COOKIE);
+      }
+      if (PetscStrstr(mname,"mat")) {
+        PLogEventDeactivateClass(MAT_COOKIE);
+      }
+      if (PetscStrstr(mname,"sles")) {
+        PLogEventDeactivateClass(SLES_COOKIE);
+      }
+      if (PetscStrstr(mname,"snes")) {
+        PLogEventDeactivateClass(SNES_COOKIE);
+      }
+    }
+  }
+
   ierr = OptionsHasName(PETSC_NULL,"-log_sync",&flg1);CHKERRQ(ierr);
   if (flg1) {
     PLogEventActivate(VEC_ScatterBarrier);
@@ -912,6 +929,7 @@ int OptionsCheckInitial_Private()
     (*PetscHelpPrintf)(comm," -optionsleft: dump list of unused options\n");
 #if defined (USE_PETSC_LOG)
     (*PetscHelpPrintf)(comm," -log[_all _summary]: logging objects and events\n");
+    (*PetscHelpPrintf)(comm," -log_summary_exclude: <vec,mat,sles,snes>\n");
     (*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n");
 #if defined (HAVE_MPE)
     (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through upshot\n");
@@ -1427,13 +1445,16 @@ int OptionsHasName(char* pre,char *name,int *flg)
 int OptionsGetInt(char*pre,char *name,int *ivalue,int *flg)
 {
   char *value;
-  int  ierr;
+  int  flag,ierr;
 
   PetscFunctionBegin;
-  ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
-  if (!*flg) PetscFunctionReturn(0);
-  if (!value) {*flg = 0; *ivalue = 0;}
-  else        *ivalue = atoi(value);
+  ierr = OptionsFindPair_Private(pre,name,&value,&flag); CHKERRQ(ierr);
+  if (flag) {
+    if (!value) {if (flg) *flg = 0; *ivalue = 0;}
+    else        {if (flg) *flg = 1; *ivalue = atoi(value);}
+  } else {
+    if (flg) *flg = 0;
+  }
   PetscFunctionReturn(0); 
 } 
 
@@ -1459,13 +1480,16 @@ int OptionsGetInt(char*pre,char *name,int *ivalue,int *flg)
 int OptionsGetDouble(char* pre,char *name,double *dvalue,int *flg)
 {
   char *value;
-  int  ierr;
+  int  flag,ierr;
 
   PetscFunctionBegin;
-  ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
-  if (!*flg) PetscFunctionReturn(0);
-  if (!value) {*flg = 0; *dvalue = 0.0;}
-  else *dvalue = atof(value);
+  ierr = OptionsFindPair_Private(pre,name,&value,&flag); CHKERRQ(ierr);
+  if (flag) {
+    if (!value) {if (flg) *flg = 0; *dvalue = 0.0;}
+    else        {if (flg) *flg = 1; *dvalue = atof(value);}
+  } else {
+    if (flg) *flg = 0;
+  }
   PetscFunctionReturn(0); 
 } 
 
@@ -1492,13 +1516,16 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue,int *flg)
 int OptionsGetScalar(char* pre,char *name,Scalar *dvalue,int *flg)
 {
   char *value;
-  int  ierr;
+  int  flag,ierr;
   
   PetscFunctionBegin;
-  ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
-  if (!*flg) PetscFunctionReturn(0);
-  if (!value) {*flg = 0; *dvalue = 0;}
-  else        *dvalue = atof(value);
+  ierr = OptionsFindPair_Private(pre,name,&value,&flag); CHKERRQ(ierr);
+  if (flag) {
+    if (!value) {if (flg) *flg = 0; *dvalue = 0.0;}
+    else        {if (flg) *flg = 1; *dvalue = atof(value);}
+  } else {
+    if (flg) *flg = 0;
+  }
   PetscFunctionReturn(0); 
 } 
 
