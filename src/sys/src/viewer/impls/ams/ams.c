@@ -152,7 +152,7 @@ int PetscViewerAMSGetAMSComm(PetscViewer v,AMS_Comm *ams_comm)
 static int Petsc_Viewer_Ams_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__  
-#define __FUNCT__ "VIEWER_AMS_" 
+#define __FUNCT__ "PETSC_VIEWER_AMS_" 
 /*@C
      PetscViewer_AMS_ - Creates an AMS memory snooper PetscViewer shared by all processors 
                    in a communicator.
@@ -180,30 +180,30 @@ PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
   PetscFunctionBegin;
   if (Petsc_Viewer_Ams_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Ams_keyval,0);
-    if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   }
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Ams_keyval,(void **)&viewer,&flag);
-  if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+  if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   if (!flag) { /* PetscViewer not yet created */
     if (comm == PETSC_COMM_WORLD) {
       ierr = PetscStrcpy(name,"PETSc");
-      if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+      if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     } else {
       ierr = MPI_Comm_size(comm,&size);
-      if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+      if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
       if (size == 1) {
         ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);if (ierr) PetscFunctionReturn(0);
         sprintf(name,"PETSc_%d",rank);
       } else {
-        PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;
+        PetscError(__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;
       } 
     }
     ierr = PetscViewerAMSOpen(comm,name,&viewer); 
-    if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Ams_keyval,(void*)viewer);
-    if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
 }
@@ -212,7 +212,7 @@ PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
        If there is a PetscViewer associated with this communicator, it is destroyed.
 */
 #undef __FUNCT__  
-#define __FUNCT__ "VIEWER_AMS_Destroy" 
+#define __FUNCT__ "PETSC_VIEWER_AMS_Destroy" 
 int PetscViewer_AMS_Destroy(MPI_Comm comm)
 {
   int         ierr,flag;

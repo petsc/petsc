@@ -203,12 +203,12 @@ int TSGetSerializeType(TS ts, TSSerializeType *type)
 }
 
 /*--------------------------------------------------------------------------------------------------------------------*/
-/*@C
-  TSRegister - Adds a creation method to the TS package.
+/*MC
+  TSRegisterDynamic - Adds a creation method to the TS package.
 
   Synopsis:
 
-  TSRegister(char *name, char *path, char *func_name, int (*create_func)(TS))
+  TSRegisterDynamic(char *name, char *path, char *func_name, int (*create_func)(TS))
 
   Not Collective
 
@@ -219,7 +219,7 @@ int TSGetSerializeType(TS ts, TSSerializeType *type)
 - create_func - The creation routine itself
 
   Notes:
-  TSRegister() may be called multiple times to add several user-defined tses.
+  TSRegisterDynamic() may be called multiple times to add several user-defined tses.
 
   If dynamic libraries are used, then the fourth input argument (create_func) is ignored.
 
@@ -238,15 +238,21 @@ int TSGetSerializeType(TS ts, TSSerializeType *type)
     -ts_type my_ts
 .ve
 
-  Note: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+  Notes: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+        If your function is not being put into a shared library then use TSRegister() instead
 
   Level: advanced
 
 .keywords: TS, register
 .seealso: TSRegisterAll(), TSRegisterDestroy()
-@*/
+M*/
+
 #undef __FUNCT__  
 #define __FUNCT__ "TSRegister"
+/*@C
+      TSRegister - See TSRegisterDynamic()
+
+@*/
 int TSRegister(const char sname[], const char path[], const char name[], int (*function)(TS))
 {
   char fullname[256];
@@ -322,14 +328,14 @@ int TSSerializeRegister(const char sname[], const char path[], const char name[]
 #undef __FUNCT__  
 #define __FUNCT__ "TSRegisterDestroy"
 /*@C
-   TSRegisterDestroy - Frees the list of timestepping routines that were registered by TSREgister().
+   TSRegisterDestroy - Frees the list of timestepping routines that were registered by TSRegister()/TSRegisterDynamic().
 
    Not Collective
 
    Level: advanced
 
 .keywords: TS, timestepper, register, destroy
-.seealso: TSRegister(), TSRegisterAll(), TSSerializeRegisterDestroy()
+.seealso: TSRegister(), TSRegisterAll(), TSSerializeRegisterDestroy(), TSRegisterDynamic()
 @*/
 int TSRegisterDestroy(void)
 {

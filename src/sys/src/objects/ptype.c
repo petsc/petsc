@@ -6,6 +6,21 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDataTypeToMPIDataType"
+/*@
+     PetscDataTypeToMPIDataType - Converts the PETSc name of a datatype to its MPI name.
+
+   Not collective
+
+    Input Parameter:
+.     ptype - the PETSc datatype name (for example PETSC_DOUBLE)
+
+    Output Parameter:
+.     mtype - the MPI datatype (for example MPI_DOUBLE, ...)
+
+    Level: advanced
+   
+.seealso: PetscDataType, PetscDataTypeGetName()
+@*/
 int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
 {
   PetscFunctionBegin;
@@ -52,6 +67,21 @@ typedef enum {PETSC_INT_SIZE = sizeof(int),PETSC_DOUBLE_SIZE = sizeof(double),
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDataTypeGetSize"
+/*@
+     PetscDataTypeGetSize - Gets the size (in bytes) of a PETSc datatype
+
+   Not collective
+
+    Input Parameter:
+.     ptype - the PETSc datatype name (for example PETSC_DOUBLE)
+
+    Output Parameter:
+.     size - the size in bytes (for example the size of PETSC_DOUBLE is 8)
+
+    Level: advanced
+   
+.seealso: PetscDataType, PetscDataTypeGetName(), PetscDataTypeToMPIDataType()
+@*/
 int PetscDataTypeGetSize(PetscDataType ptype,int *size)
 {
   PetscFunctionBegin;
@@ -81,6 +111,21 @@ int PetscDataTypeGetSize(PetscDataType ptype,int *size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDataTypeGetName"
+/*@
+     PetscDataTypeGetName - Gets the string representation of a PETSc datatype
+
+   Not collective
+
+    Input Parameter:
+.     ptype - the PETSc datatype name (for example PETSC_DOUBLE)
+
+    Output Parameter:
+.     name - the name as a string (for example "double")
+
+    Level: advanced
+   
+.seealso: PetscDataType, PetscDataTypeGetSize(), PetscDataTypeToMPIDataType()
+@*/
 int PetscDataTypeGetName(PetscDataType ptype,char *name[])
 {
   PetscFunctionBegin;

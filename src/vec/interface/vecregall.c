@@ -28,7 +28,7 @@ EXTERN_C_END
   Level: advanced
 
 .keywords: Vec, register, all
-.seealso:  VecRegister(), VecRegisterDestroy()
+.seealso:  VecRegister(), VecRegisterDestroy(), VecRegisterDynamic()
 @*/
 int VecRegisterAll(const char path[])
 {

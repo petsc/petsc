@@ -2060,6 +2060,8 @@ $     -snes_type my_solver
 
    Level: advanced
 
+    Note: If your function is not being put into a shared library then use SNESRegister() instead
+
 .keywords: SNES, nonlinear, register
 
 .seealso: SNESRegisterAll(), SNESRegisterDestroy()
@@ -2067,6 +2069,10 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESRegister"
+/*@C
+      SNESRegister - See SNESRegisterDynamic()
+
+@*/
 int SNESRegister(char *sname,char *path,char *name,int (*function)(SNES))
 {
   char fullname[256];

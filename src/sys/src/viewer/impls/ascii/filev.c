@@ -654,7 +654,7 @@ EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerASCIISynchronizedPrintf" 
 /*@C
-    PetscViewerASCIISynchronizedFPrintf - Prints synchronized output to the specified file from
+    PetscViewerASCIISynchronizedPrintf - Prints synchronized output to the specified file from
     several processors.  Output of the first processor is followed by that of the 
     second, etc.
 

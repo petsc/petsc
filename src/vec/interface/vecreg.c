@@ -187,7 +187,7 @@ int VecGetSerializeType(Vec map, VecSerializeType *type)
 - create_func - The creation routine itself
 
   Notes:
-  VecRegister() may be called multiple times to add several user-defined vectors
+  VecRegisterDynamic() may be called multiple times to add several user-defined vectors
 
   If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
 
@@ -206,16 +206,21 @@ int VecGetSerializeType(Vec map, VecSerializeType *type)
     -vec_type my_vector_name
 .ve
 
-  Note: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
-
+  Notes: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+         If your function is not being put into a shared library then use VecRegister() instead
+        
   Level: advanced
 
 .keywords: Vec, register
-.seealso: VecRegisterAll(), VecRegisterDestroy()
+.seealso: VecRegisterAll(), VecRegisterDestroy(), VecRegister()
 M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecRegister"
+/*@C
+      VecRegister - See VecRegisterDynamic()
+
+@*/
 int VecRegister(const char sname[], const char path[], const char name[], int (*function)(Vec))
 {
   char fullname[PETSC_MAX_PATH_LEN];
@@ -291,14 +296,14 @@ int VecSerializeRegister(const char sname[], const char path[], const char name[
 #undef __FUNCT__  
 #define __FUNCT__ "VecRegisterDestroy"
 /*@C
-   VecRegisterDestroy - Frees the list of Vec methods that were registered by VecRegister().
+   VecRegisterDestroy - Frees the list of Vec methods that were registered by VecRegister()/VecRegisterDynamic().
 
    Not Collective
 
    Level: advanced
 
 .keywords: Vec, register, destroy
-.seealso: VecRegister(), VecRegisterAll(), VecSerializeRegisterDestroy()
+.seealso: VecRegister(), VecRegisterAll(), VecSerializeRegisterDestroy(), VecRegisterDynamic()
 @*/
 int VecRegisterDestroy(void)
 {

@@ -49,8 +49,8 @@
 .keywords: distributed array, get, global, indices, local-to-global
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlobal()
-          DAGlobalToLocal(), DALocalToLocal(), DAGetAO(), DAGetGlobalIndicesF90()
-          DAGetISLocalToGlobalMapping(), DACreate3d(), DACreate1d()
+          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DAGetAO(), DAGetGlobalIndicesF90()
+          DAGetISLocalToGlobalMapping(), DACreate3d(), DACreate1d(), DALocalToLocalEnd()
 @*/
 int DAGetGlobalIndices(DA da,int *n,int **idx)
 {
@@ -87,7 +87,7 @@ int DAGetGlobalIndices(DA da,int *n,int **idx)
 .keywords: distributed array, get, global, indices, local-to-global
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
-          DAGlobalToLocal(), DALocalToLocal(), DAGetGlobalIndices()
+          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetGlobalIndices()
 @*/
 int DAGetAO(DA da,AO *ao)
 {
