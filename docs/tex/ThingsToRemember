@@ -134,9 +134,9 @@ Nightly build:
 ---------
 
 ICASE suns:
-  ete08-f.icase.ed
+  ete08-f.icase.edu
   elc02.icase.edu
-  dolphin.icase.ed
+  dolphin.icase.edu
 
   A good idea is to look at mpich***/util/machines/machines.sun4 at icase.
   It lists the good sun4s at icase.

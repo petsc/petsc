@@ -1,5 +1,5 @@
 
-CC       = gcc  -DPARCH_freebsd
+CC       = /usr/local/gcc-2.7.2/bin/gcc  -DPARCH_freebsd
 #
 # We use the f77 f2c that comes with freebsd, the -Nn1000 is required for
 # large Fortran files, you can increase the 1000 if need be.
@@ -15,7 +15,7 @@ RM       = rm -f *.c.*
 OMAKE    = gmake  --no-print-directory
 RANLIB   = ranlib
 SHELL    = /bin/sh
-CLINKER  = gcc $(COPTFLAGS)
+CLINKER  = /usr/local/gcc-2.7.2/bin/gcc $(COPTFLAGS)
 FLINKER  = f77 $(FOPTFLAGS)
 CONF     = -DHAVE_PWD_H -DHAVE_STDLIB_H -DHAVE_STRING_H \
            -DHAVE_SWAPPED_BYTES -DHAVE_X11 -DHAVE_FORTRAN_UNDERSCORE \
