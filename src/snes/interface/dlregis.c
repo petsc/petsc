@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.4 1998/04/20 17:49:07 curfman Exp curfman $";
+static char vcid[] = "$Id: dlregis.c,v 1.5 1998/04/22 14:23:59 curfman Exp curfman $";
 #endif
 
 #include "snes.h"
@@ -29,10 +29,9 @@ int DLLibraryRegister(char *path)
 }
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc nonlinear solver library\n\
-  Contains:\n\
-     line search\n\
-     trust region\n";
+static char *contents = "PETSc nonlinear solver library. Contains:\n\
+     line search Newton methods\n\
+     trust region Newton methods\n";
 
 static char *authors = PETSC_AUTHOR_INFO;
 static char *version = PETSC_VERSION_NUMBER;

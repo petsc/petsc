@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.14 1998/03/20 22:47:23 bsmith Exp curfman $";
+static char vcid[] = "$Id: dl.c,v 1.15 1998/04/20 17:57:36 curfman Exp curfman $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -273,15 +273,15 @@ int DLLibraryOpen(MPI_Comm comm,char *libname,void **handle)
     if (sfunc) {
       mess = (*sfunc)(libname,"Contents");
       if (mess) {
-        PLogInfo(0,"Library %s contents \n %s",libname,mess);
+        PLogInfo(0,"Library: %s, Contents:\n %s",libname,mess);
       }
       mess = (*sfunc)(libname,"Authors");
       if (mess) {
-        PLogInfo(0,"Library %s authors \n %s",libname,mess);
+        PLogInfo(0,"Library: %s, Authors:\n %s",libname,mess);
       }
       mess = (*sfunc)(libname,"Version");
       if (mess) {
-        PLogInfo(0,"Library %s version \n %s",libname,mess);
+        PLogInfo(0,"Library: %s, Version:\n %s",libname,mess);
       }
     }
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.5 1998/04/20 17:43:41 curfman Exp curfman $";
+static char vcid[] = "$Id: dlregis.c,v 1.6 1998/04/22 14:23:30 curfman Exp curfman $";
 #endif
 
 #include "ts.h"
@@ -29,8 +29,7 @@ int DLLibraryRegister(char *path)
 }
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc timestepping library\n\
-  Contains:\n\
+static char *contents = "PETSc timestepping library. Contains:\n\
      Euler\n\
      Backward Euler\n\
      PVODE interface\n";
