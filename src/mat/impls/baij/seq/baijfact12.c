@@ -170,6 +170,9 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
   SSE_SCOPE_BEGIN;
 
   ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  if (((int) (rtmp)) % 16) SETERRQ(1,"rtmp is misaligned in MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE");
+  if (((int) (ba)) % 16) SETERRQ(1,"ba is misaligned in MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE");
+  if (((int) (aa)) % 16) SETERRQ(1,"aa is misaligned in MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE");
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];
