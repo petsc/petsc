@@ -34,16 +34,14 @@ class Configure(config.base.Configure):
       self.addDefine('USE_SBREAK_FOR_SIZE', 1)
       return
     # /proc is used on Linux systems
-    if os.path.isfile(os.path.join('/proc',str(os.getpid()),'stat')):
+    if os.path.isfile(os.path.join('/proc',str(os.getpid()),'statm')):
       self.addDefine('USE_PROC_FOR_SIZE', 1)
       try:
-        fd = open(os.path.join('/proc',str(os.getpid()),'stat'))
+        fd = open(os.path.join('/proc',str(os.getpid()),'statm'))
         l  = fd.readline().split(' ')
-        if not l[0] == str(os.getpid()):
-          raise RuntimeError("/proc stat file has wrong format")
         # make sure we can access the rss field
-        if not l[23].isdigit():
-          raise RuntimeError("/proc stat file has wrong format rss not integer "+l[23])
+        if not l[1].isdigit():
+          raise RuntimeError("/proc stat file has wrong format rss not integer:"+l[1])
         self.framework.log.write("Using /proc for PetscGetResidentSetSize()")
         return
       except:
