@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.7 1995/11/01 19:11:34 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.8 1995/11/09 22:31:23 bsmith Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -27,6 +27,7 @@ struct _DrawOps {
   int (*triangle)(Draw,double,double,double,double,double,double,int,int,int);
   int (*getmousebutton)(Draw,DrawButton*,double *,double *,double*,double*);
   int (*pause)(Draw);
+  int (*syncclear)(Draw);
 };
 
 struct _Draw {
