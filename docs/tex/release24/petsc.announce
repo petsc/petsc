@@ -15,19 +15,19 @@ block diagonal storage.
    PETSc is fully usable from Fortran, C and C++, and runs portably on
 on most UNIX systems.  PETSc uses MPI for all parallel communication.
 
-   One of the unique features of PETSc is that it enables the application
-programmer to easily and efficiently assemble parallel vectors and sparse 
-matrices without writing any message-passing code.  Thus, users can create 
-complete application programs for the parallel solution of nonlinear 
-PDEs without writing much explicit message-passing code themselves.
+   One of the unique features of PETSc is that it enables the
+application programmer to easily and efficiently assemble parallel
+vectors and sparse matrices.  Thus, users can create complete
+application programs for the parallel solution of nonlinear PDEs
+without writing much explicit message-passing code themselves.
 
    In addition, PETSc is designed to facilitate extensibility.  Thus,
-users can incorporate customized solvers and data structures when using
-the package.
+users can incorporate customized solvers and data structures when
+using the package.
 
-   Information regarding PETSc as well as the complete software distribution 
-can be obtained from http://www.mcs.anl.gov/petsc/petsc.html or 
-ftp://info.mcs.anl.gov/pub/petsc.
+   Information regarding PETSc as well as the complete software
+distribution can be obtained from ftp://info.mcs.anl.gov/pub/petsc
+or http://www.mcs.anl.gov/petsc/petsc.html.
 
    The PETSc Team,
     Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith
