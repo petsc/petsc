@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.29 2001/08/06 21:17:13 bsmith Exp balay $*/
+/*$Id: snesmfjdef.c,v 1.30 2001/08/07 03:04:10 balay Exp balay $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -97,7 +97,7 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
   } else {
     *h = ctx->currenth;
   }
-  if (*h != *h) SETERRQ3(1,"Differencing parameter is not a number sum = %g dot = %g norm = %g",sum,dot,norm);
+  if (*h != *h) SETERRQ3(1,"Differencing parameter is not a number sum = %g dot = %g norm = %g",sum,PetscRealPart(dot),norm);
   ctx->count++;
   PetscFunctionReturn(0);
 } 
