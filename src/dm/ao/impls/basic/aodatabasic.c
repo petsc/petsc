@@ -884,7 +884,7 @@ int AODataCreateBasic(MPI_Comm comm,AOData *aoout)
   PetscValidPointer(aoout);
   *aoout = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);
+  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   PetscHeaderCreate(ao,_p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,"AOData",comm,AODataDestroy,AODataView); 
@@ -938,6 +938,9 @@ int AODataLoadBasic(PetscViewer viewer,AOData *aoout)
 
   PetscFunctionBegin;
   *aoout = 0;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Viewer must be obtained from PetscViewerBinaryOpen()");
