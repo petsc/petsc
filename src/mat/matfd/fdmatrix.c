@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.77 2000/09/22 20:44:38 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.78 2000/09/28 21:12:18 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -187,7 +187,7 @@ int MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umi
 
 .keywords: Mat, finite differences, coloring, set, frequency
 
-.seealso: MatFDColoringCreate(), MatFDColoringGetFrequency()
+.seealso: MatFDColoringCreate(), MatFDColoringGetFrequency(), MatFDColoringSetRecompute()
 @*/
 int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
 {
@@ -391,9 +391,11 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
     SETERRQ(PETSC_ERR_SUP,"Code not yet written for this matrix type");
   }
 
-  c->error_rel = 1.e-8;
-  c->umin      = 1.e-6;
-  c->freq      = 1;
+  c->error_rel         = 1.e-8;
+  c->umin              = 1.e-6;
+  c->freq              = 1;
+  c->usersetsrecompute = PETSC_FALSE;
+  c->recompute         = PETSC_FALSE;
 
   ierr = MatFDColoringView_Private(c);CHKERRQ(ierr);
 
@@ -472,7 +474,7 @@ int MatFDColoringDestroy(MatFDColoring c)
 @*/
 int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
-  int           (*f)(void *,Vec,Vec,void*)= (int (*)(void *,Vec,Vec,void *))coloring->f;
+  int           (*f)(void *,Vec,Vec,void*) = (int (*)(void *,Vec,Vec,void *))coloring->f;
   int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow;
   Scalar        dx,mone = -1.0,*y,*xx,*w3_array;
   Scalar        *vscale_array;
@@ -486,6 +488,15 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   PetscValidHeaderSpecific(J,MAT_COOKIE);
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE);
   PetscValidHeaderSpecific(x1,VEC_COOKIE);
+
+  if (coloring->usersetsrecompute) {
+    if (!coloring->recompute) {
+      *flag = SAME_PRECONDITIONER;
+      PetscFunctionReturn(0);
+    } else {
+      coloring->recompute = PETSC_FALSE;
+    }
+  }
 
   ierr = PLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   if (!coloring->w1) {
@@ -743,13 +754,43 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
     }
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  xx = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
+  ierr  = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  xx    = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = PLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringSetRecompute()"
+/*@C
+   MatFDColoringSetRecompute - Indicates that the next time a Jacobian preconditioner
+     is needed it sholuld be recomputed. Once this is called and the new Jacobian is computed
+     no additional Jacobian's will be computed (the same one will be used) until this is
+     called again.
+
+   Collective on MatFDColoring
+
+   Input  Parameters:
+.  c - the coloring context
+
+   Level: intermediate
+
+   Notes: The MatFDColoringSetFrequency() is ignored once this is called
+
+.seealso: MatFDColoringCreate(), MatFDColoringSetFrequency()
+
+.keywords: Mat, finite differences, coloring
+@*/
+int MatFDColoringSetRecompute(MatFDColoring c)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE);
+  c->usersetsrecompute = PETSC_TRUE;
+  c->recompute         = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
 
 
