@@ -7,6 +7,11 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+Documentation:
+ - put vec/examples/tests/ex13.c in tutorials section; add other vecscatter
+   examples to tutorials 
+ - add mention of useful error function labels for error handling, memory tracing, etc.
+
 Current applications using PETSc (3) - pointers
         to dinesh's work and ACTI?  This would
         go into http://www.nersc.gov/ACTS/gallery.html
