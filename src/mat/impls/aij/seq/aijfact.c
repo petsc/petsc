@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.26 1995/07/10 05:02:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.27 1995/07/17 20:40:53 bsmith Exp curfman $";
 #endif
 
 
@@ -128,7 +128,6 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
   aijnew->imax       = 0;
   aijnew->row        = isrow;
   aijnew->col        = iscol;
-  (*fact)->factor    = FACTOR_LU;
   aijnew->solve_work = (Scalar *) PETSCMALLOC( n*sizeof(Scalar)); 
   CHKPTRQ(aijnew->solve_work);
   /* In aijnew structure:  Free imax, ilen, old a, old j.  

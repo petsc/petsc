@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.7 1995/07/17 03:53:44 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.8 1995/07/17 20:39:55 bsmith Exp curfman $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -88,6 +88,7 @@ int KSPCreate_TFQMR(KSP);
 int KSPCreate_LSQR(KSP);
 int KSPCreate_PREONLY(KSP);
 int KSPCreate_CR(KSP);
+int KSPCreate_QCG(KSP);
 
 int KSPiDefaultAdjustWork(KSP);
 int KSPDefaultBuildSolution(KSP,Vec,Vec*);

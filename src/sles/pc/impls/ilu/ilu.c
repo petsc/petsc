@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.24 1995/07/20 14:47:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.25 1995/07/20 23:43:21 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -161,19 +161,27 @@ static int PCApply_ILU(PC pc,Vec x,Vec y)
   return MatSolve(dir->fact,x,y);
 }
 
+static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
+{
+  PC_ILU *dir = (PC_ILU *) pc->data;
+  *mat = dir->fact;
+  return 0;
+}
+
 int PCCreate_ILU(PC pc)
 {
   PC_ILU *dir = PETSCNEW(PC_ILU); CHKPTRQ(dir);
-  dir->fact     = 0;
-  dir->ordering = ORDER_ND;
-  dir->levels   = 0;
-  pc->destroy   = PCDestroy_ILU;
-  pc->apply     = PCApply_ILU;
-  pc->setup     = PCSetUp_ILU;
-  pc->type      = PCILU;
-  pc->data      = (void *) dir;
-  pc->setfrom   = PCSetFromOptions_ILU;
-  pc->printhelp = PCPrintHelp_ILU;
-  pc->view      = PCView_ILU;
+  dir->fact      = 0;
+  dir->ordering  = ORDER_ND;
+  dir->levels    = 0;
+  pc->destroy    = PCDestroy_ILU;
+  pc->apply      = PCApply_ILU;
+  pc->setup      = PCSetUp_ILU;
+  pc->type       = PCILU;
+  pc->data       = (void *) dir;
+  pc->setfrom    = PCSetFromOptions_ILU;
+  pc->printhelp  = PCPrintHelp_ILU;
+  pc->getfactmat = PCGetFactoredMatrix_ILU;
+  pc->view       = PCView_ILU;
   return 0;
 }
