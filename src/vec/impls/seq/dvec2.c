@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.60 1999/03/09 23:13:39 bsmith Exp bsmith $"
+static char vcid[] =  "$Id: dvec2.c,v 1.61 1999/03/09 23:14:50 bsmith Exp bsmith $"
 #endif
 
 /* 
@@ -730,7 +730,8 @@ int VecPointwiseMult_Seq( Vec xin, Vec yin, Vec win )
   } else if (ww == yy) {
     for (i=0; i<n; i++) ww[i] *= xx[i];
   } else {
-    /*    double * __restrict www = ww;
+    /*  This was suppose to help on SGI but didn't really seem to
+          double * __restrict www = ww;
           double * __restrict yyy = yy;
           double * __restrict xxx = xx;
           for (i=0; i<n; i++) www[i] = xxx[i] * yyy[i];
