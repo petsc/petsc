@@ -1,6 +1,7 @@
 
+
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.70 1997/01/16 04:46:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.71 1997/01/22 18:41:59 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -201,6 +202,13 @@ int PetscTrValid(int line,char *function,char *file,char *dir )
   return 0;
 }
 
+/*
+      Arrays to log information on all Mallocs
+*/
+static int  PetscLogMallocMax = 10000, PetscLogMalloc = -1, *PetscLogMallocLength;
+static char **PetscLogMallocDirectory, **PetscLogMallocFile,**PetscLogMallocFunction;
+
+
 #undef __FUNC__  
 #define __FUNC__ "PetscTrMallocDefault"
 /*
@@ -289,6 +297,27 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
     ierr = PetscInitializeLargeInts((int*) inew,nsize/sizeof(int)); 
     if (ierr) return 0;
   }
+
+  /*
+         Allow logging of all mallocs made
+  */
+  if (PetscLogMalloc > -1 && PetscLogMalloc < PetscLogMallocMax) {
+    if (PetscLogMalloc == 0) {
+      PetscLogMallocLength    = (int *) malloc( PetscLogMallocMax*sizeof(int));
+      if (!PetscLogMallocLength) return 0;
+      PetscLogMallocDirectory = (char **) malloc( PetscLogMallocMax*sizeof(char**));
+      if (!PetscLogMallocDirectory) return 0;
+      PetscLogMallocFile = (char **) malloc( PetscLogMallocMax*sizeof(char**));
+      if (!PetscLogMallocFile) return 0;
+      PetscLogMallocFunction = (char **) malloc( PetscLogMallocMax*sizeof(char**));
+      if (!PetscLogMallocFunction) return 0;
+    }
+    PetscLogMallocLength[PetscLogMalloc]      = nsize;
+    PetscLogMallocDirectory[PetscLogMalloc]   = dir;
+    PetscLogMallocFile[PetscLogMalloc]        = filename;
+    PetscLogMallocFunction[PetscLogMalloc++]  = function; 
+  }
+
   return (void *)inew;
 }
 
@@ -442,12 +471,85 @@ int PetscTrDump( FILE *fp )
   }
   head = TRhead;
   while (head) {
-    fprintf(fp,"[%d]%d bytes id=%d %s() line %d in %s%s\n",rank,(int) head->size,head->id,
+    fprintf(fp,"[%d]%d bytes %s() line %d in %s%s\n",rank,(int) head->size,
             head->functionname,head->lineno,head->dirname,head->filename);
     head = head->next;
   }
   return 0;
 }
+
+/* ---------------------------------------------------------------------------- */
+
+#undef __FUNC__  
+#define __FUNC__ "PetscTrLog"
+/*@C
+    PetscTrLog - Indicates that you wish all calls to malloc to be logged.
+
+     Options Database:
+.     -trmalloc_log
+
+.seealso: PetscTrLogDump()
+@*/
+int PetscTrLog()
+{
+  PetscLogMalloc = 0;
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscTrLogDump"
+/*@C
+    PetscTrLogDump - Dumps the log of all calls to malloc.
+
+  Input Parameters:
+.    fp - file pointer; or PETSC_NULL
+
+     Options Database:
+.     -trmalloc_log
+
+.seealso: PetscTrLog()
+@*/
+int PetscTrLogDump(FILE *fp)
+{
+  int  i,rank,j,n,*shortlength;
+  char **shortfunction;
+
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  if (fp == 0) fp = stderr;
+  fprintf(stderr,"Maximum memory used %d\n",(int) TRMaxMem);
+  for ( i=0; i<PetscLogMalloc; i++ ) {
+    fprintf(fp,"[%d] %d %s%s %s()\n",rank,PetscLogMallocLength[i],PetscLogMallocDirectory[i],
+            PetscLogMallocFile[i],PetscLogMallocFunction[i]);
+  }
+
+  shortlength   = (int *) malloc(PetscLogMalloc*sizeof(int)); CHKPTRQ(shortlength);
+  shortfunction = (char**) malloc(PetscLogMalloc*sizeof(char *));CHKPTRQ(shortfunction);
+  shortfunction[0] = PetscLogMallocFunction[0];
+  shortlength[0]   = PetscLogMallocLength[0]; 
+  n = 1;
+  for ( i=1; i<PetscLogMalloc; i++ ) {
+    for ( j=0; j<n; j++ ) {
+      if (!PetscStrcmp(shortfunction[j],PetscLogMallocFunction[i])) {
+        shortlength[j] += PetscLogMallocLength[i];
+        goto foundit;
+      }
+    }
+    shortfunction[n] = PetscLogMallocFunction[i];
+    shortlength[n]   = PetscLogMallocLength[i]; 
+    n++;
+    foundit:;
+  }
+
+  fprintf(fp,"Sorted by function\n");
+  for ( i=0; i<n; i++ ) {
+    fprintf(fp,"[%d] %d %s()\n",rank,shortlength[i],shortfunction[i]);
+  }
+  free(shortlength);
+  free(shortfunction);
+  return 0;
+}
+
+/* ---------------------------------------------------------------------------- */
 
 #undef __FUNC__  
 #define __FUNC__ "PetscTrDebugLevel"
