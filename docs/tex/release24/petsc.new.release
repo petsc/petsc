@@ -1,31 +1,36 @@
 
 PETSc Users,
 
-We have just released a new version of PETSc (2.0.13) with a
+We have just released a new version of PETSc (2.0.15) with a
 variety of extensions and enhancements to the software.  You can find
 a list of new features and changes in PETSc in the "Changes" file at
 ftp://info.mcs.anl.gov/pub/petsc or
 http://www.mcs.anl.gov/petsc/petsc.html.
 
 Highlights of new features added since the last public release of
-PETSc (version 2.0.10) include:
-  - New scalable time-spepping module
-  - New overlapping additive Schwarz preconditioner (parallel and
-      sequential versions)
-  - Improved logging capabilities, including (1) gathering of data for
-      viewing with Upshot/Nupshot when using MPICH and (2) optional use of
-      multiple stages for monitoring
-  - Enhancements to Fortran interface, including support of files with
-      suffixes .F and .f
-  - New high-level interface to BlockSolve95, a software package of
-      high-performance parallel preconditioners (ICC and ILU) for
-      symmetric and structurally symmetric systems.
-  - Support for complex numbers in most of the KSP solvers
-  - Miscellaneous improvements and enhancements throughout the software
-  - Improved HTML version of man pages with full hypertext links
+PETSc (version 2.0.13) include:
+ - Added support for shared version of PETSc libraries for several
+   machines to enable faster linking and smaller executables
+ - Added new parallel block row matrix format, improved efficiency for
+   block diagonal formats
+ - Added a suite of routines to help manage the mappings between an
+   application-defined ordering of variables and the ordering used by
+   PETSc for matrices and vectors
+ - Expanded users manual information for performance tuning and profiling
+ - The option -log_summary now summarize of message-passing activity
+   as well as flop rates.
+ - Running the test suite now requires much less disk space.
+ - Example programs are in the process of being reorganized into tutorials
+   and tests (see, e.g., petsc/src/sles/examples/tutorials for
+   tutorial-style examples for the linear solvers).  
+ - The HTML version of the PETSc man pages now provides indices 
+   (organized by both concepts and routine names) to tutorial examples.
 
 As always, please send bug reports, questions, and requests for new 
 features to petsc-maint@mcs.anl.gov.
+
+A reminder about our upcoming "Bring Your Own Code" Workshops:
+Information is available via: http://www.mcs.anl.gov/petsc/petsc-byoc.html.
 
 Thanks for your support.
 
