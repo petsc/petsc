@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.201 1997/02/05 04:37:33 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.202 1997/02/06 03:03:30 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2375,7 +2375,7 @@ define the subdomains.
 and may also be set with the options database {\tt -pc\_asm\_type [basic,interpolate,restrict,none]}.
 \findex{-pc_asm_type} \findex{PCASMSetType()} \findex{PC_ASM_BASIC} 
 \findex{PC_ASM_RESTRICT} \findex{PC_ASM_INTERPOLATE} \findex{PC_ASM_NONE}
-The type {\tt PC\_ASM\_BASIC} (or \tt -pc\_asm\_type basic) corresponds to the
+The type {\tt PC\_ASM\_BASIC} (or {\tt -pc\_asm\_type basic}) corresponds to the
 standard additive Schwarz method that uses the full restriction and
 interpolation operators.
 The type {\tt PC\_ASM\_RESTRICT} (or {\tt -pc\_asm\_type restrict}) uses a full
@@ -2527,8 +2527,9 @@ The user is responsible for freeing these vectors once the iteration
 is complete.
 
 % ---------------------------------------------------------------
-\chapter{SNES: Nonlinear Solvers}
+\chapter{SNES: Nonlinear Solvers and Unconstrained Minimization}
 \sindex{nonlinear equation solvers}
+\sindex{unconstrained minimization}
 \label{chapter:snes}
 
 The solution of large-scale nonlinear problems pervades many facets of
@@ -5487,6 +5488,36 @@ read into a block oriented data structure (for example,
 {\tt s1,s2,s3,...} indicates
 which (block) diagonals in the matrix have nonzero values.
 Section \ref{sec:bdiag} gives details.
+
+\section{Debugging} \sindex{debugging} \label{sec:debugging}
+
+PETSc programs may be debugged using one of the two options below.
+\begin{itemize}
+\item {\tt -start\_in\_debugger [noxterm,dbx,xxgdb] [-display name]} 
+     - start all processes in debugger
+\item {\tt -on\_error\_attach\_debugger [noxterm,dbx,xxgdb]
+      [-display name]} - start debugger only on encountering an error
+\end{itemize}
+Note that, in general, debugging MPI programs cannot be done in the usual
+manner of starting the programming in the debugger (because then it cannot
+set up the MPI communication and remote processes).
+
+By default the GNU debugger {\em gdb} is used when {\tt -start\_in\_debugger}
+or {\tt -on\_error\_attach\_debugger} is specified. \sindex{debugging}
+To employ either {\em xxgdb} or the common UNIX debugger {\em dbx}, one uses
+command line options as indicated above. On HP-UX machines the debugger
+{\em xdb} should be used instead of {\em dbx}; on RS/6000 machines the
+{\em xldb} debugger is supported as well.
+By  default, the debugger will be started in a new xterm (to enable 
+running separate debuggers on each process), unless the option 
+{\tt noxterm} is used.
+In order to handle the MPI startup phase, the debugger command ``cont'' 
+should be used to continue execution of the program within the debugger.
+Rerunning the program through the debugger requires terminating 
+the first job and restarting the processor(s); the usual ``run'' 
+option in the debugger will not correctly handle the MPI startup and
+should not be used.  Not all debuggers work on all machines, so the user
+may have to experiment to find one that works correctly.
 
 \section{Error Handling} \sindex{errors} \sindex{debugging} 
 

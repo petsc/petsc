@@ -1,4 +1,4 @@
-% $Id: manual_tex.tex,v 1.114 1997/01/06 20:45:04 bsmith Exp curfman $ 
+% $Id: manual_tex.tex,v 1.115 1997/01/24 02:21:52 curfman Exp bsmith $ 
 %
 % LATEX version of the PETSc users manual.
 %
@@ -44,8 +44,8 @@ William Gropp\\ Lois Curfman McInnes\\ Barry Smith\\
 \hspace{0.3in}\\
 Mathematics and Computer Science Division
 \vspace{0.5in} \\
-{\rm This manual is intended for use with PETSc 2.0.16-A}}
-{95/11 - Revision 2.0.16-A}{1996}
+{\rm This manual is intended for use with PETSc 2.0.17}}
+{95/11 - Revision 2.0.17}{1997}
 
 \newpage
 
@@ -57,18 +57,15 @@ Mathematics and Computer Science Division
 % Blank page makes double sided printout look bettter.
 \newpage
 
-%  Temp removed
 % Abstract for users manual
-%\addcontentsline{toc}{chapter}{Abstract}
-%\input{abstract.tex}
+\addcontentsline{toc}{chapter}{Abstract}
+\input{abstract.tex}
 
 \medskip \medskip
 
 %
-%   Next line temp removed
-%
 % Acknowledgements for users manual
-%\input{acknowl.tex}
+\input{acknowl.tex}
 
 % Blank page makes double sided printout look bettter.
 \newpage \hbox{ } \newpage
@@ -79,9 +76,6 @@ Mathematics and Computer Science Division
 \clearpage
 \pagenumbering{arabic}
 
-% temp here
-\addcontentsline{toc}{chapter}{Abstract}
-\input{abstract.tex}
 
 % --------------------------------------------------------------------
 %                            PART 1
@@ -110,33 +104,17 @@ Mathematics and Computer Science Division
 \vfill
 \eject
 
-%
-%   Next two lines temp added
-%
-% Acknowledgements for users manual
-\addcontentsline{toc}{chapter}{Acknowledgements}
-\input{acknowl.tex}
 
 \newpage
-
-%
-%   Next three lines temp added
-%
-\bibliographystyle{plain}
-\addcontentsline{toc}{chapter}{Bibliography}
-\bibliography{petsc}
 
 \addcontentsline{toc}{chapter}{Subject Index}
 \include{sindex}
 \addcontentsline{toc}{chapter}{Function Index}
 \include{findex}
 
-%
-%  Next three lines temp removed
-%
-%\bibliographystyle{plain}
-%\addcontentsline{toc}{chapter}{Bibliography}
-%\bibliography{petsc}
+\bibliographystyle{plain}
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliography{petsc}
 
 \end{document}
 

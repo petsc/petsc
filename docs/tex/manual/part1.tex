@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.95 1997/01/10 20:40:07 curfman Exp curfman $ 
+% $Id: part1.tex,v 1.96 1997/01/10 21:06:41 curfman Exp bsmith $ 
 
 % --------------------------------------------------------------------
 %
@@ -32,6 +32,7 @@ experiences with scientific computation. Some of the PETSc modules deal with
 \item Krylov subspace methods;
 \item preconditioners;
 \item nonlinear solvers;
+\item unconstrained minimization;
 \item timesteppers for solving time dependent (nonlinear) PDEs; and
 \item graphics devices.
 \end{itemize}
@@ -189,13 +190,11 @@ command initiates a program that uses eight processors:
 
 All PETSc 2.0-compliant programs support the use of the {\tt -h}
 \findex{-h} or {\tt -help} option as well as the {\tt -v} \findex{-v}
-or {\tt -version} option. For C and C++ programs these options can be
-placed on the \findex{-help} \findex{-version} command line.  For most
-machines, options for Fortran programs can also be specified on the
-command line; otherwise, they can be set in the environmental
-variable {\tt PETSC\_OPTIONS} or placed in a file called {\tt
-.petscrc} in the user's home directory.  Under the UNIX C shell the
-environmental variable can be set \findex{PETSC_OPTIONS}
+or {\tt -version} option. These options can be placed on the
+\findex{-help} \findex{-version} command line or set in the
+environmental variable {\tt PETSC\_OPTIONS} or placed in a file called
+{\tt .petscrc} in the user's home directory.  Under the UNIX C shell
+the environmental variable can be set \findex{PETSC_OPTIONS}
 \sindex{options} with a command such as {\tt setenv PETSC\_OPTIONS
 "-help -version".}  See Section \ref{sec:options} for details.
 
@@ -215,22 +214,7 @@ running any PETSc program with the option {\tt -help}.
 \item {\tt -on\_error\_attach\_debugger [noxterm,dbx,xxgdb]
       [-display name]} - start debugger only on encountering an error
 \end{itemize}
-By default the GNU debugger {\em gdb} is used when {\tt -start\_in\_debugger}
-or {\tt -on\_error\_attach\_debugger} is specified. \sindex{debugging}
-To employ either {\em xxgdb} or the common UNIX debugger {\em dbx}, one uses
-command line options as indicated above. On HP-UX machines the debugger
-{\em xdb} should be used instead of {\em dbx}; on RS/6000 machines the
-{\em xldb} debugger is supported as well.
-By  default, the debugger will be started in a new xterm (to enable 
-running separate debuggers on each process), unless the option 
-{\tt noxterm} is used.
-In order to handle the MPI startup phase, the debugger command ``cont'' 
-should be used to continue execution of the program within the debugger.
-Rerunning the program through the debugger requires terminating 
-the first job and restarting the processor(s); the usual ``run'' 
-option in the debugger will not correctly handle the MPI startup and
-should not be used.  Not all debuggers work on all machines, so the user
-may have to experiment to find one that works correctly.
+See Section \ref{sec:debugging} for more information on debugging PETSc programs.
 
 Most PETSc programs begin with a call to \findex{PetscInitialize()}
 \begin{verbatim}
@@ -271,7 +255,7 @@ PETSC\_COMM\_WORLD} by calling \findex{PetscSetCommWorld}
    ierr = PetscSetCommWorld(MPI_Comm comm)
 \end{verbatim}
 {\em before} calling {\tt PetscInitialize()}, but, obviously, after
-calling {\tt MPI\_Init()}. {\tt PetscSetCommWorld()} can only be called
+calling {\tt MPI\_Init()}. {\tt PetscSetCommWorld()} can be called
 at most once per process. Most users will never need to use 
 {\tt PetscSetCommWorld()}.
 
@@ -455,11 +439,17 @@ details regarding error checking when using the PETSc Fortran interface.
 \begin{figure}[H]
 {\small
 \begin{verbatim}
-   eagle>mpirun ex3 -m 100000000000
-   mat/impls/aij/seq/aij.c line # 858 No memory
-   mat/interface/matrix.c line # 123
-   ex3.c line # 49
-   Aborting program!
+   eagle>mpirun ex3 -m 10000
+   [0]PETSC ERROR: MatCreateSeqAIJ() line 1673 in src/mat/impls/aij/seq/aij.c
+   [0]PETSC ERROR:   Out of memory. This could be due to allocating
+   [0]PETSC ERROR:   too large an object or bleeding by not properly
+   [0]PETSC ERROR:   destroying unneeded objects.
+   [0]PETSC ERROR:   Try running with -trdump for more information. 
+   [0]PETSC ERROR: MatCreate() line 99 in src/mat/utils/gcreate.c  
+   [0]PETSC ERROR: main() line 71 in src/sles/examples/tutorials/ex3.c  
+   [0] MPI Abort by user Aborting program !
+   [0] Aborting program!
+   p0_28969:  p4_error: : 1
 \end{verbatim}
 }
 \nobreak
@@ -696,7 +686,7 @@ the root directory of PETSc contains the following directories:
  \subitem {\tt ksp} - Krylov space accelerators,
  \subitem {\tt pc} - preconditioners,
  \subitem {\tt sles} - complete linear equations solvers,
- \subitem {\tt snes} - nonlinear solvers,
+ \subitem {\tt snes} - nonlinear solvers and unconstrained minimization,
  \subitem {\tt ts} - ODE solvers and timestepping,
  \subitem {\tt sys} - general system-related routines,
  \subitem {\tt plog} - PETSc logging and profiling routines,
