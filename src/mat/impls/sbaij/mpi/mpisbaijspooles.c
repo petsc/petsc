@@ -14,9 +14,9 @@
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MPISBAIJ_Spooles"
 int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
 {
-  Mat_MPISBAIJ     *mat = (Mat_MPISBAIJ*)A->data;
+  Mat_MPISBAIJ  *mat = (Mat_MPISBAIJ*)A->data;
   Mat_Spooles   *lu;   
-  int              ierr,M=A->M,N=A->N;
+  int           ierr,M=A->M,N=A->N;
   
   PetscFunctionBegin;	
   A->ops->lufactornumeric  = MatFactorNumeric_MPIAIJ_Spooles;  

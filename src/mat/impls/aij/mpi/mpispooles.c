@@ -50,7 +50,6 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
   int              ierr,size,rank,m=A->m,irow,*rowindY;
   PetscScalar      *array;
   DenseMtx         *newY ;
-  IV               *rowmapIV ;
   SubMtxManager    *solvemanager ; 
   Vec              vec_spooles;
   IS               iden, is_petsc;
@@ -73,7 +72,7 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
 
   DenseMtx_rowIndices(lu->mtxY, &m, &rowindY) ;  /* get m, rowind */
   for ( irow = 0 ; irow < m ; irow++ ) {
-    rowindY[irow] = irow + lu->rstart; 
+    rowindY[irow] = irow + lu->rstart;           /* global rowind */
     DenseMtx_setRealEntry(lu->mtxY, irow, 0, *array++) ; 
   }
   /* DenseMtx_column(lu->mtxY, 0, &array);  doesn't work! */
@@ -107,7 +106,7 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
   if ( FRONTMTX_IS_PIVOTING(lu->frontmtx) ) {
     /*   pivoting has taken place, redistribute the right hand side
          to match the final rows and columns in the fronts             */
-
+    IV *rowmapIV ;
     rowmapIV = FrontMtx_MPI_rowmapIV(lu->frontmtx, lu->ownersIV, lu->options.msglvl,
                                     lu->options.msgFile, MPI_COMM_WORLD) ;
     newY = DenseMtx_MPI_splitByRows(lu->mtxY, rowmapIV, lu->stats, lu->options.msglvl, 
@@ -178,22 +177,11 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   PetscScalar     *av, *bv; 
   int             *ai, *aj, *bi,*bj, nz, *ajj, *bjj, *garray,
                   i,j,irow,jcol,countA,countB,jB,*row,*col,colA_start,jj;
-  int             M=A->M,N=A->N,m=A->m,root,nedges;
+  int             M=A->M,m=A->m,root,nedges;
   
   PetscFunctionBegin;	
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-
-  if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
-
-    (*F)->ops->solve   = MatSolve_MPIAIJ_Spooles;
-    (*F)->ops->destroy = MatDestroy_MPIAIJ_Spooles;  
-    (*F)->assembled    = PETSC_TRUE;
-
-    IVzero(20, lu->stats) ; 
-    DVzero(20, lu->cpus) ;
-    
-    ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr);
 
     /* copy A to Spooles' InpMtx object */ 
     if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) { 
@@ -214,10 +202,9 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
       lu->rstart = mat->rstart;
       nz         = aa->s_nz + bb->nz;     
       garray     = mat->garray;
-     
     } 
       
-    lu->mtxA   = InpMtx_new() ;
+    if(lu->flg == DIFFERENT_NONZERO_PATTERN) { lu->mtxA   = InpMtx_new() ; }
     InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, nz, 0) ; 
     row   = InpMtx_ivec1(lu->mtxA); 
     col   = InpMtx_ivec2(lu->mtxA); 
@@ -261,6 +248,17 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
       InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
       fflush(lu->options.msgFile) ;
     }
+
+  if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
+
+    (*F)->ops->solve   = MatSolve_MPIAIJ_Spooles;
+    (*F)->ops->destroy = MatDestroy_MPIAIJ_Spooles;  
+    (*F)->assembled    = PETSC_TRUE;
+
+    IVzero(20, lu->stats) ; 
+    DVzero(20, lu->cpus) ;
+    
+    ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr);
 
     /*
       -------------------------------------------------------
@@ -396,72 +394,6 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     lu->mtxmanager = SubMtxManager_new() ;
     SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0) ;
 
-    /* copy new numerical values of A into mtxA */   
-    if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) { 
-      Mat_MPIAIJ  *mat =  (Mat_MPIAIJ*)A->data;  
-      Mat_SeqAIJ  *aa=(Mat_SeqAIJ*)(mat->A)->data;
-      Mat_SeqAIJ  *bb=(Mat_SeqAIJ*)(mat->B)->data;
-      ai=aa->i; aj=aa->j; av=aa->a;   
-      bi=bb->i; bj=bb->j; bv=bb->a;
-      lu->rstart = mat->rstart;
-      nz         = aa->nz + bb->nz;
-      garray     = mat->garray; 
-    } else {         /* SPOOLES_SYMMETRIC  */
-      Mat_MPISBAIJ  *mat = (Mat_MPISBAIJ*)A->data;
-      Mat_SeqSBAIJ  *aa=(Mat_SeqSBAIJ*)(mat->A)->data;
-      Mat_SeqBAIJ    *bb=(Mat_SeqBAIJ*)(mat->B)->data;
-      ai=aa->i; aj=aa->j; av=aa->a;  
-      bi=bb->i; bj=bb->j; bv=bb->a;
-      lu->rstart = mat->rstart;
-      nz         = aa->s_nz + bb->nz;     
-      garray     = mat->garray;
-     
-    } 
-
-    InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, nz, 0) ; 
-    row   = InpMtx_ivec1(lu->mtxA); 
-    col   = InpMtx_ivec2(lu->mtxA); 
-    val   = InpMtx_dvec(lu->mtxA);
-     
-    jj= 0; jB = 0; irow = lu->rstart;
-    for ( i=0; i<m; i++ ) {
-      ajj = aj + ai[i];              /* ptr to the beginning of this row */
-      colA_start = lu->rstart + ajj[0]; /* the smallest col index for A */
-      countB = bi[i+1] - bi[i];
-      countA = ai[i+1] - ai[i];
-      
-      /* B part, smaller col index */   
-      bjj = bj + bi[i];      
-      for (j=0; j<countB; j++){
-        jcol = garray[bjj[j]];
-        if (jcol > colA_start ) {
-          jB = j; break;
-        }
-        row[jj] = irow; col[jj] = jcol; val[jj] = *bv;
-        jj++;
-        if (j==countB-1) jB = countB;
-      }
-      /* A part */
-      for (j=0; j<countA; j++){
-        row[jj] = irow; col[jj] = lu->rstart + ajj[j]; val[jj] = *av++;
-        jj++;
-      }
-      /* B part, larger col index */      
-      for (j=jB; j<countB; j++){
-        row[jj] = irow; col[jj] = garray[bjj[j]]; val[jj] = *bv++;
-        jj++;
-      }
-      irow++;
-    }     
-    InpMtx_inputRealTriples(lu->mtxA, nz, row, col, val); 
-
-    InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
-    if ( lu->options.msglvl > 2 ) {
-      fprintf(lu->options.msgFile, "\n\n input matrix") ;
-      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
-      fflush(lu->options.msgFile) ;
-    }
- 
     /* permute mtxA */
     InpMtx_permute(lu->mtxA, IV_entries(lu->oldToNewIV), IV_entries(lu->oldToNewIV)) ;
     if ( lu->options.symflag == SPOOLES_SYMMETRIC ) InpMtx_mapToUpperTriangle(lu->mtxA) ;

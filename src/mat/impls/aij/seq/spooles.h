@@ -28,18 +28,21 @@ typedef struct {
   IV              *newToOldIV, *oldToNewIV ; /* permutation vectors */
   IVL             *symbfacIVL ;              /* symbolic factorization */
   SubMtxManager   *mtxmanager  ;  /* working array */
-  double          cpus[20] ; 
   MatStructure    flg;
-  int             *oldToNew,nz;
+  double          cpus[20] ;
+  int             *oldToNew,stats[20];
+  Spooles_options options;
 
   /* Followings are used for MPI Spooles */
   IV              *ownersIV,*ownedColumnsIV,*vtxmapIV;
   SolveMap        *solvemap ;
   DenseMtx        *mtxY, *mtxX;
   double          *entX;
-  int             *rowindX,stats[20],rstart,firsttag,nmycol;
-  Spooles_options options;
+  int             *rowindX,rstart,firsttag,nmycol;
 } Mat_Spooles;
+
+EXTERN int SetSpoolesOptions(Mat, Spooles_options *);
+EXTERN int MatFactorInfo_Spooles(Mat,PetscViewer);
 
 EXTERN int MatDestroy_SeqAIJ_Spooles(Mat);
 EXTERN int MatSolve_SeqAIJ_Spooles(Mat,Vec,Vec);
