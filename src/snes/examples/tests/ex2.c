@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.49 1996/08/27 01:54:26 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.50 1996/08/27 02:03:54 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
@@ -35,7 +35,7 @@ int main( int argc, char **argv )
   SNES     snes;         /* nonlinear solver context */
   SLES     sles;         /* linear solver context */
   PC       pc;           /* preconditioner context */
-  KSP      ksp;          /* KSP context */
+  KSP      ksp;          /* Krylov subspace method context */
   Vec      x, r;         /* solution, residual vectors */
   Mat      J;            /* Jacobian matrix */
   int      ierr, its;
@@ -43,12 +43,11 @@ int main( int argc, char **argv )
 
   PetscInitialize( &argc, &argv,(char *)0,help );
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver contest
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix and vector data structures; set corresponding routines
@@ -245,3 +244,5 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
   ierr = VecView(x,VIEWER_STDOUT_SELF); CHKERRQ(ierr);
   return 0;
 }
+
+
