@@ -11,7 +11,8 @@ SED              = /bin/sed
 MKDIR            = @MKDIR@
 #
 PARCH            = @PETSC_ARCH@
-LIB_SUFFIX         = a
+LIB_SUFFIX       = a
+DIFF             = diff
 # ######################### C and Fortran compiler ########################
 #
 C_CC       = @CC@  @CC_SHARED_OPT@

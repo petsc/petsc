@@ -121,9 +121,11 @@ dnl
 AC_ARG_WITH(bmakedir,[ --with-bmakedir=dir - Use BMAKEDIR],BMAKEDIR=$withval)
 dnl
 AC_ARG_WITH(blas,[ --with-blas=library - Use system-provided BLAS],BLAS_LIB=$withval)
-AC_SUBST(BLAS_LIB)
+dnl AC_SUBST(BLAS_LIB)
 AC_ARG_WITH(lapack,[ --with-lapack=library - Use system-provide LAPACK],LAPACK_LIB=$withval)
-AC_SUBST(LAPACK_LIB)
+dnl AC_SUBST(LAPACK_LIB)
+BLASLAPACK_LIB =$LAPACK_LIB $BLAS_LIB
+AC_SUBST(BLASLAPACK_LIB)
 dnl
 AC_ARG_WITH(blocksolve,[ --with-blocksolve=library - Use BlockSolve95],BLOCKSOLVE_LIB=$withval)
 AC_ARG_WITH(blocksolve-inc,[ --with-blocksolve-inc=dir - Use BlockSolve95 (include path)],BLOCKSOLVE_INCLUDE=$withval)
