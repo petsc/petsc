@@ -1,0 +1,166 @@
+<html>
+
+<head>
+<title>PETSc: Misc: Acknowledgements</title>
+</head>
+
+<body stylesrc="http://www-fp.mcs.anl.gov/petsc/images/bgcolor.htm" bgcolor="#D5EAFF">
+
+<table border="0" width="100%">
+  <tr>
+    <td width="25%" valign="top"><h1><font color="#FF0000" size="7">PETSc</font></h1>
+    <ul>
+      <li><a href="../index.html"><strong>Home</strong></a></li>
+    </ul>
+    </td>
+    <td width="75%"><h1>Misc:&nbsp; Acknowledgements</h1>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+  <tr>
+    <td width="25%" valign="top"><ul>
+      <li><a href="../download/index.htm"><strong>Download</strong></a></li>
+      <li><a href="../features/index.htm"><strong>Features</strong></a></li>
+      <li><a href="../docs/index.html"><strong>Documentation</strong></a></li>
+      <li><strong><a href="../publications/index.htm">Publications</a></strong></li>
+      <li><a href="../talks/index.htm"><strong>Presentations</strong></a></li>
+      <li><a href="index.htm"><strong>Miscellaneous</strong></a><ul>
+          <li><a href="index.htm"><strong>PETSc Team</strong></a></li>
+          <li><a href="../docs/bugreporting.html"><strong>Questions &amp; Bug Reports</strong></a></li>
+          <li><strong><a href="mail_list.htm">User Mailing List</a></strong></li>
+          <li><font color="#FF0000"><strong>Acknowledgements</strong></font></li>
+          <li><a href="funding.htm"><strong>Funding</strong></a></li>
+          <li><a href="petscthreads.htm"><strong>Threads and PETSc</strong></a></li>
+          <li><a href="Y2K.htm"><strong>Y2K Statement</strong></a></li>
+          <li><a href="usage.html"><strong>Usage statistics</strong></a></li>
+        </ul>
+      </li>
+    </ul>
+    </td>
+    <td width="75%" valign="top"><p align="left">We thank all PETSc users for their many
+    suggestions, bug reports, and encouragement. We especially thank Victor
+      Eijkhout and David Keyes for their valuable comments on the source code, functionality,
+    and documentation for PETSc. We thank Paul Hovland and Boyanna Norris for
+      all of their assistance in developing the ADIC and ADIFOR automatic
+      differentiation interfaces.</p>
+    <p align="left">Some of the source code and utilities in PETSc
+    have been written by </p>
+    <ul>
+      <li>Mark Adams,&nbsp; (scalability features of MPIBAIJ matrices) </li>
+      <li>Allison Baker,&nbsp; (the flexible GMRES code) </li>
+      <li>Tony Caola,&nbsp; (the SPARSEKIT2 ilutp() interface) </li>
+      <li>Chad Carroll , (the Win32 graphics), </li>
+      <li>Cameron Cooper,&nbsp; (portions of the VecScatter routines) </li>
+      <li>Victor Eijkhout,&nbsp;&nbsp; </li>
+      <li>Paulo Goldfeld,&nbsp; (the balancing Neumann-Neumann preconditioner). </li>
+      <li>Matt Hille,&nbsp; </li>
+      <li>Domenico Lahaye,&nbsp; (the interface to John Ruge and Klaus Stueben's
+        AMG) </li>
+      <li>Peter Mell,&nbsp; (portions of the DA routines) </li>
+      <li>Todd Munson, (the LUSOL interface) </li>
+      <li><a href="http://lyre.mit.edu/~powell/petsc.html">Adam Powell</a> (the <a href="../download/index.htm">PETSc
+        Debian</a> package)&nbsp; </li>
+      <li>Robert Scheichl ,&nbsp; (the MINRES implementation) </li>
+      <li>Liyang Xu, (the interface to PVODE) </li>
+    </ul>
+    <p align="left"> PETSc uses
+    routines from </p>
+    <ul>
+      <li>BLAS </li>
+      <li>LAPACK </li>
+      <li>LINPACK (matrix factorization and solve; converted to C using&nbsp; f2c and then
+        hand-optimized for small matrix sizes) </li>
+      <li>MINPACK (sequential matrix coloring routines for finite difference Jacobian evaluations;
+        converted to C using f2c) </li>
+      <li>SPARSPAK (matrix reordering routines, converted to C using f2c) </li>
+      <li><a href="http://www.cs.umn.edu/Research/arpa/SPARSKIT/sparskit.html">SPARSEKIT2</a>
+        (written byYousef Saad) (iludtp(), converted to C using f2c). These routines are
+        copyrighted by Saad under the GNU copyright, see <a
+        href="http://www-unix.mcs.anl.gov/petsc/petsc-current/src/mat/impls/aij/seq/ilut.c">$(PETSC_DIR)/src/mat/impls/aij/seq/ilut.c</a>.</li>
+      <li>libtfs (the scalable parallel direct solver created and written by
+        Henry Tufo and Paul Fischer).</li>
+    </ul>
+    <p align="left"><a name="otherpackages">PETSc</a> interfaces to the following
+    optional external software (<a href="../docs/installation/packages.htm">installing
+    PETSc to use these Packages</a>): </p>
+    <ul>
+      <li><a href="http://www.mcs.anl.gov/adic">ADIC/</a><a href="http://www.mcs.anl.gov/adifor">ADIFOR</a>
+        -&nbsp; (automatic
+        differentiation for the computation of sparse Jacobians) </li>
+      <li><a href="http://www.mgnet.org/mgnet-codes-gmd.html">AMG </a>(John Ruge
+        and Klaus Stueben's algebraic multigrid solver) </li>
+      <li><a href="http://www.mcs.anl.gov/blocksolve">BlockSolve95</a> (for parallel ICC(0) and
+        ILU(0) preconditioning, developed by Mark Jones and Paul Plassmann, the
+        ILU was programmed by Wing-Lok Wan) </li>
+      <li><a href="http://www.cse.psu.edu/~raghavan/">DSCPACK </a>(a Domain-Separator Cholesky Package for solving sparse&nbsp;
+        symmetric positive-definite developed by Padma Raghavan) </li>
+      <li>ESSL (IBM's math library for fast sparse direct LU factorization) </li>
+      <li><a href="http://www.cs.odu.edu/~hysom/Euclid/">Euclid </a>(parallel
+        ILU(k) developed by David Hysom, accessed through the <a href="http://www.llnl.gov/CASC/hypre">Hypre</a>&nbsp;
+        interface) </li>
+      <li><a href="http://www.llnl.gov/CASC/hypre">Hypre</a> (the LLNL
+        preconditioner library) </li>
+      <li>LUSOL (sparse LU factorization and solve portion of <a href="http://www.sbsi-sol-optimize.com/">MINOS,
+        </a>Michael Saunders,
+        Systems Optimization Laboratory, Stanford University.) </li>
+      <li><a href="http://www.wolfram.com/">Mathematica</a>, </li>
+      <li><a href="http://www.mathworks.com">Matlab</a>, </li>
+      <li><a href="http://www-users.cs.umn.edu/~karypis/metis/">ParMeTiS</a> (parallel graph
+        partitioner) </li>
+      <li><a href="http://www.llnl.gov/CASC/PVODE">PVODE</a> (parallel ODE integrator) </li>
+      <li><a href="http://www.sam.math.ethz.ch/~grote/spai/">SPAI</a> (for parallel sparse
+        approximate inverse preconditioning) </li>
+      <li><a href="http://www.netlib.org/linalg/spooles/spooles.2.2.html">SPOOLES</a>
+        (SParse Object Oriented Linear Equations Solve developed by Cleve
+        Ashcraft) </li>
+      <li><a href="http://www.nersc.gov/~xiaoye/SuperLU/">SuperLU</a>  and <a href="http://www.nersc.gov/~xiaoye/SuperLU/">SuperLU_Dist
+        </a>-&nbsp; (for robust and efficient sequential and
+        parallel direct sparse solves) </li>
+      <li><a href="http://www.cise.ufl.edu/research/sparse/umfpack/">UMFPACK</a> 
+      - </li>
+    </ul>
+      <p>Instrumentation of PETSc</p>
+    <ul>
+      <li>PETSc can
+      <a href="http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/images/petsc/ex19/">
+      instumented</a> using the
+      <a href="http://www.cs.uoregon.edu/research/paracomp/tau/tautools/">TAU</a> 
+      package. To install PETSc with TAU, check the configuration files in bmake/linux_tau. 
+      TAU requires the use of
+      <a href="http://www.cs.uoregon.edu/research/paracomp/pdtoolkit/">PDT</a> 
+      package - so this must also be installed</li>
+    </ul>
+      <p align="left">PETSc software is developed and maintained with&nbsp;
+      <ul>
+        <li>
+          <p align="left"><a href="http://www.bitkeeper.com">Bitkeeper</a>
+          revision control system</li>
+        <li>
+          <p align="left"><a href="http://www.gnu.org">Emacs </a>editor</li>
+      </ul>
+      <p align="left">PETSc documentation has been generated using</p>
+      <ul>
+        <li>
+          <p align="left"><a href="ftp://ftp.mcs.anl.gov/pub/sowing">the text
+          processing tools developed by Bill Gropp</a></li>
+        <li>
+          <p align="left"><a href="http://user.cs.tu-berlin.de/~schintke/x2html/index.html">c2html</a></li>
+        <li>
+          <p align="left"><a href="http://www.microsoft.com/frontpage/">Microsoft Frontpage</a></li>
+        <li>
+          <p align="left">pdflatex</li>
+        <li>
+          <p align="left"><a href="http://www.python.org/">python</a></li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<html>
+
+<head>
+<title>PETSc: Documentation</title>
+</head>
+
+<body bgcolor="#D5EAFF">
+
+<table border="0" width="100%">
+  <tr>
+    <td width="25%" valign="top"><h1><font color="#FF0000" size="7">PETSc</font></h1>
+    <ul>
+      <li><a href="../index.html"><strong>Home</strong></a></li>
+    </ul>
+    </td>
+    <td width="75%"><!##begin> <h1>Documentation</h1><!##end>
+ </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+  <tr>
+    <td width="25%" valign="top"><ul>
+      <li><a href="../download/index.htm"><strong>Download</strong></a></li>
+      <li><a href="../features/index.htm"><strong>Features</strong></a></li>
+      <li><font color="#FF0000"><strong>Documentation</strong></font><ul>
+          <li><strong><font color="#FF0000">Manual pages and Users Manual</font></strong></li>
+          <li><a href="referencing.htm"><strong>Referencing&nbsp; PETSc</strong></a></li>
+          <li><a href="tutorials/index.htm"><strong>Tutorials</strong></a></li>
+          <li><strong><a href="installation/index.htm">Installation</a> </strong></li>
+          <li><strong><font color="#0000FF"><a href="machines.html">Machines Supported</a></font></strong></li>
+          <li><strong><a href="changes/index.htm">Changes</a></strong></li>
+          <li><strong><a href="troubleshooting.html">Troubleshooting</a></strong></li>
+          <li><strong><a href="bugreporting.html">Bug Reporting</a></strong></li>
+          <li><strong><a href="codemanagement.html">Code Management</a></strong></li>
+          <li><strong><a href="faq.html">FAQ</a> </strong></li>
+          <li><strong><a href="copyright.html">Copyright</a> </strong></li>
+        </ul>
+      </li>
+      <li><strong><a href="../publications/index.htm">Publications</a></strong></li>
+      <li><a href="../talks/index.htm"><strong>Presentations</strong></a></li>
+      <li><a href="../misc/index.htm"><strong>Miscellaneous</strong></a></li>
+    </ul>
+    </td>
+    <td width="75%" valign="top"><!##begin> <b>PETSc</b> is a sophisticated
+      package and fully
+    understanding its usage requires time. However, application programmers can easily begin
+    to use <b>PETSc</b> from a high level and then gradually learn more details according to
+    their needs. Users should read the users manual before attempting to do any serious coding
+    with <b>PETSc</b>! <ul>
+      <li><strong>PETSc users manual</strong> - <a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">pdf
+        (fully searchable with hyperlinks)</a>
+      </li>
+      <li> <a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/help.html">Index</a> of all help topics</li>
+      <li><a href="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/singleindex.html">Index</a>
+        of all manual pages</li>
+    </ul>
+      <p><strong>PETSc Manual Pages and Examples &nbsp;&nbsp;&nbsp;</strong><a
+    href="http://www.mcs.anl.gov/ams/apidoc.html">AMS</a> &nbsp;&nbsp; <a
+    href="http://www.mcs.anl.gov/mpi/www">MPI</a>&nbsp;&nbsp;&nbsp; <a href="http://www.mcs.anl.gov/tao/docs/index.htm">TAO</a> 
+      <ul>
+          <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/index.html">Vector
+            Operations (Vec)</a> </li>
+          <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/index.html">Matrix
+            Operations (Mat)</a> <menu>
+              <li><a href="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/MatOrderings/index.html">Matrix
+                colorings (MatColoring), orderings (MatOrdering), and partitionings (MatPartitioning)</a></li>
+              <li><a href="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/MatFD/index.html">Finite
+                difference computation of Jacobians (MatFD)</a></li>
+            </menu>
+        <li>Data and grid management</li>
+      <menu>
+          <li><a href="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/IS/index.html">Index
+            sets (IS)</a> </li>
+          <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/DA/index.html">Distributed
+            Arrays (DA)</a> </li>
+          <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/AO/index.html">Application
+            Orderings (AO)</a> </li>
+          <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PF/index.html">Defining
+            your own mathematical functions (PF)</a> </li>
+        </menu>
+      <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SLES/index.html">Linear
+        Solvers (SLES)</a> <menu>
+          <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/index.html">Preconditioners
+            (PC)</a> </li>
+          <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/index.html">Krylov
+            Subspace Methods (KSP)</a> </li>
+        </menu>
+      </li>
+      <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/index.html">Nonlinear
+        Solvers (SNES)</a> <menu>
+          <li><a href="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNESMF/index.html">Matrix-free
+            nonlinear solvers (SNESMFFD)</a></li>
+        </menu>
+      </li>
+      <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/TS/index.html">Time Stepping
+        (TS) ODE solvers</a></li>
+      <li>Utilities <menu>
+          <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Viewer/index.html">Viewing
+            Objects</a> </li>
+          <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Draw/index.html">Graphics
+            (Draw)</a> </li>
+          <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Sys/index.html">System
+            Routines (Options, IO, utilities)</a> </li>
+          <li><a HREF="http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Profiling/index.html">Profiling
+            and Logging</a> </li>
+        </menu>
+      </li>
+      </ul>
+    <p>The manual pages are split into four categories; we recommend that you begin with basic
+    functionality and then gradually explore more sophisticated library features. <menu>
+      <li><i>Beginner </i>- Basic usage </li>
+      <li><i>Intermediate </i>- Setting options for algorithms and data structures </li>
+      <li><i>Advanced </i>- Setting more advanced options and customization </li>
+      <li><i>Developer </i>- Interfaces intended primarily for library developers, not for typical
+        applications programmers </li>
+    </menu>
+    <h3 align="left"><a name="Supplementary">Supplementary</a> Documentation</h3>
+    <ul>
+      <li><a href="installation/index.htm">Installation</a> - detailed instructions for installing
+        PETSc</li>
+      <li><a href="machines.html">Machines Supported</a></li>
+      <li><a href="changes/index.htm">Changes</a> - changes and new features in recent versions of
+        PETSc </li>
+      <li><a href="troubleshooting.html">Troubleshooting</a> - help when something goes wrong</li>
+      <li><a href="bugreporting.html">Bug Reporting</a> - details on how to report bugs</li>
+      <li><a href="codemanagement.html">Code Management </a>- hints for efficient management of
+        large-scale application codes</li>
+      <li><a href="faq.html">FAQ</a> - frequently asked questions about PETSc</li>
+      <li><a href="copyright.html">Copyright</a> - statement of the PETSc copyright<!##end></li>
+    </ul>
+    <p> &nbsp;
+ </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+</table>
+</body>
+</html>

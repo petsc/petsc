@@ -1,0 +1,67 @@
+<html>
+
+<head>
+<title>PETSc: Documentation</title>
+</head>
+
+<body bgcolor="#D5EAFF">
+
+<table border="0" width="100%">
+  <tr>
+    <td width="25%" valign="top"><h1><font color="#FF0000" size="7">PETSc</font></h1>
+    <ul>
+      <li><a href="../index.html"><strong>Home</strong></a></li>
+    </ul>
+    </td>
+    <td width="75%"><!##begin> <h1>Benchmark</h1><!##end>
+ </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+  <tr>
+    <td width="25%" valign="top"><ul>
+      <li><a href="../download/index.htm"><strong>Download</strong></a></li>
+      <li><a href="../features/index.htm"><strong>Features</strong></a></li>
+      <li><font color="#FF0000"><strong>Documentation</strong></font><ul>
+          <li><strong><font color="#FF0000"><a href="index.html">Manual pages and Users Manual</a></font></strong></li>
+          <li><a href="referencing.htm"><strong>Referencing&nbsp; PETSc</strong></a></li>
+          <li><a href="tutorials/index.htm"><strong>Tutorials</strong></a></li>
+          <li><strong><a href="installation/index.htm">Installation</a> </strong></li>
+          <li><strong><font color="#0000FF"><a href="machines.html">Machines Supported</a></font></strong></li>
+          <li><strong><a href="changes/index.htm">Changes</a></strong></li>
+          <li><strong><a href="troubleshooting.html">Troubleshooting</a></strong></li>
+          <li><strong><a href="bugreporting.html">Bug Reporting</a></strong></li>
+          <li><strong><a href="codemanagement.html">Code Management</a></strong></li>
+          <li><strong><a href="faq.html">FAQ</a> </strong></li>
+          <li><strong><a href="copyright.html">Copyright</a> </strong></li>
+          <li><strong><font color="#FF0000">Benchmarks</font></strong></li>
+        </ul>
+      </li>
+      <li><strong><a href="../publications/index.htm">Publications</a></strong></li>
+      <li><a href="../talks/index.htm"><strong>Presentations</strong></a></li>
+      <li><a href="../misc/index.htm"><strong>Miscellaneous</strong></a></li>
+    </ul>
+    </td>
+    <td width="75%" valign="top"><!##end>&nbsp;&nbsp;&nbsp; See also <a href="http://www.mcs.anl.gov/petsc-fun3d">http://www.mcs.anl.gov/petsc-fun3d</a>
+      for another benchmark
+      <p>&nbsp;</p>
+      <p>&nbsp;&nbsp;&nbsp; Solve arising from the solution of a compressible
+      Euler problem on a mapped, structured grid using GMRES+(Point-block)ILU(0)</p>
+      <p>&nbsp;&nbsp; Command line to run benchmark<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src/sles/examples/tutorials/ex10 -f0
+      medium -f1 cfd.2.10 -pc_type ilu<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -ksp_gmres_unmodifiedgramschmidt -optionsleft -mat_baij
+      -matload_ignore_info<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -matload_block_size 5 -log_summary</p>
+    <p> &nbsp;
+ </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+</table>
+</body>
+</html>
