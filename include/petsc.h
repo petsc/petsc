@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.145 1996/12/09 16:55:37 curfman Exp bsmith $ */
+/* $Id: petsc.h,v 1.146 1997/01/01 03:42:38 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -22,6 +22,7 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 #define PetscReal(a)      real(a)
 #define PetscImaginary(a) imag(a)
 #define PetscAbsScalar(a) abs(a)
+#define PetscConj(a)      conj(a)
 /*
   The new complex class for GNU C++ is based on templates and is not backward
   compatible with all previous complex class libraries.
@@ -35,10 +36,11 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 /* Compiling for real numbers only */
 #else
 #define MPIU_SCALAR       MPI_DOUBLE
-#define PetscReal(a)      a
-#define PetscImaginary(a) a
+#define PetscReal(a)      (a)
+#define PetscImaginary(a) (a)
 #define PetscAbsScalar(a) ( ((a)<0.0)   ? -(a) : (a) )
 #define Scalar            double
+#define PetscConj(a)      (a)
 #endif
 
 extern MPI_Comm PETSC_COMM_WORLD;
