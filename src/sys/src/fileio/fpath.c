@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fpath.c,v 1.6 1997/01/06 20:22:55 balay Exp balay $";
+static char vcid[] = "$Id: fpath.c,v 1.7 1997/02/17 23:18:53 balay Exp balay $";
 #endif
 /*
       Code for opening and closing files.
@@ -57,7 +57,7 @@ int PetscGetFullPath( char *path, char *fullpath, int flen )
 	/* Find username */
 	name = fullpath + 1;
 	p    = name;
-#if defined( PARCH_gnu_nt)
+#if defined( PARCH_nt_gnu)
 	while (*p && isalnum((int)(*p))) p++;
 #else
 	while (*p && isalnum(*p)) p++;
