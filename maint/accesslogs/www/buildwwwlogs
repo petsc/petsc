@@ -1,0 +1,9 @@
+#! /bin/csh
+#
+#   Generates the PETSc homepage profile information for the day and copies 
+# yesterdays into a backup file.
+#
+cd /home/bsmith/petscmaint/accesslogs/www
+mv index.html index.`date '+%m%d%y'`
+mv details.html details.`date '+%m%d%y'`
+accesswatch.pl
