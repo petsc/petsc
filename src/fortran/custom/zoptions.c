@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.10 1995/11/28 19:42:25 curfman Exp curfman $";
+static char vcid[] = "$Id: zoptions.c,v 1.11 1995/11/29 21:58:57 curfman Exp bsmith $";
 #endif
 
 /*
@@ -186,7 +186,12 @@ int  optionssetvalue_(char *name,char *value,int *err, int len1,int len2)
 int  optionshasname_(char* pre,char *name,int *err,int len1,int len2){
   char *c1,*c2;
   int  ierr;
-  if (!pre[len1] == 0) {
+
+  if (pre == PetscNull_Fortran) {
+    c1 = 0; pre = 0;
+    len2 = len1;
+  }
+  else if (!pre[len1] == 0) {
     c1 = (char *) PetscMalloc( (len1+1)*sizeof(char)); 
     PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
@@ -202,11 +207,15 @@ int  optionshasname_(char* pre,char *name,int *err,int len1,int len2){
   return *err = ierr;
 }
 
-int  optionsgetint_(char*pre,char *name,int *ivalue,int *err,
-                    int len1,int len2){
+int  optionsgetint_(char*pre,char *name,int *ivalue,int *err,int len1,int len2){
   char *c1,*c2;
   int  ierr;
-  if (!pre[len1] == 0) {
+
+  if (pre == PetscNull_Fortran) {
+    c1 = 0; pre = 0;
+    len2 = len1;
+  }
+  else if (!pre[len1] == 0) {
     c1 = (char *) PetscMalloc( (len1+1)*sizeof(char)); 
     PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
@@ -226,7 +235,12 @@ int  optionsgetdouble_(char* pre,char *name,double *dvalue,int *err,
                        int len1,int len2){
   char *c1,*c2;
   int  ierr;
-  if (!pre[len1] == 0) {
+
+  if (pre == PetscNull_Fortran) {
+    c1 = 0; pre = 0;
+    len2 = len1;
+  }
+  else if (!pre[len1] == 0) {
     c1 = (char *) PetscMalloc( (len1+1)*sizeof(char)); 
     PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
@@ -246,7 +260,12 @@ int  optionsgetdoublearray_(char* pre,char *name,
                       double *dvalue,int *nmax,int *err,int len1,int len2){
   char *c1,*c2;
   int  ierr;
-  if (!pre[len1] == 0) {
+
+  if (pre == PetscNull_Fortran) {
+    c1 = 0; pre = 0;
+    len2 = len1;
+  }
+  else if (!pre[len1] == 0) {
     c1 = (char *) PetscMalloc( (len1+1)*sizeof(char)); 
     PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
@@ -266,7 +285,12 @@ int  optionsgetintarray_(char* pre,char *name,int *dvalue,int *nmax,int *err,
                          int len1,int len2){
   char *c1,*c2;
   int  ierr;
-  if (!pre[len1] == 0) {
+
+  if (pre == PetscNull_Fortran) {
+    c1 = 0; pre = 0;
+    len2 = len1;
+  }
+  else if (!pre[len1] == 0) {
     c1 = (char *) PetscMalloc( (len1+1)*sizeof(char)); 
     PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
@@ -286,7 +310,12 @@ int  optionsgetstring_(char *pre,char *name,char *string,
                        int *err, int len1, int len2,int len){
   char *c1,*c2;
   int  ierr;
-  if (!pre[len1] == 0) {
+
+  if (pre == PetscNull_Fortran) {
+    c1 = 0; pre = 0;
+    len = len2; len2 = len1; 
+  }
+  else if (!pre[len1] == 0) {
     c1 = (char *) PetscMalloc( (len1+1)*sizeof(char)); 
     PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
@@ -320,6 +349,11 @@ int *PetscIntAddressFromFortran(int *base,int addr)
 
 int PetscDoubleAddressToFortran(double *base,double *addr)
 {
+  int tmp1 = (int) base,tmp2 = tmp1/sizeof(double);
+  if (tmp2*sizeof(double) != tmp1) {
+    fprintf(stderr,"PetscDoubleAddressToFortran: unaligned Fortran double\n");
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
   return (((int)addr) - (int)base)/sizeof(double);
 }
 
