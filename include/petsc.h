@@ -87,7 +87,7 @@ M*/
 
    Level: beginner
 
-.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
+.seealso: PETSC_NULL, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
 
 M*/
 #define PETSC_DECIDE         -1
@@ -98,7 +98,7 @@ M*/
 
    Level: beginner
 
-.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
+.seealso: PETSC_DECIDE, PETSC_NULL, PETSC_IGNORE, PETSC_DETERMINE
 
 M*/
 #define PETSC_DEFAULT        -2
@@ -128,7 +128,7 @@ M*/
 
    Level: beginner
 
-.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE, VecSetSizes()
+.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_NULL, VecSetSizes()
 
 M*/
 #define PETSC_DETERMINE      PETSC_DECIDE
@@ -139,7 +139,7 @@ M*/
 
    Level: beginner
 
-   Notes: PETSC_COMM_WORLD and MPI_COMM_WORLD are equivalent except that passint MPI_COMM_WORLD
+   Notes: PETSC_COMM_WORLD and MPI_COMM_WORLD are equivalent except that passing MPI_COMM_WORLD
           into PETSc object constructors will result in using more MPI resources since an MPI_Comm_dup()
           will be done on it internally. We recommend always using PETSC_COMM_WORLD
 
@@ -331,6 +331,8 @@ EXTERN int PetscMaxSum(MPI_Comm,const int[],int*,int*);
 
    Level: beginner
 
+   Note: This is the base class from which all objects appear.
+
 .seealso:  PetscObjectDestroy(), PetscObjectView(), PetscObjectGetName(), PetscObjectSetName()
 S*/
 typedef struct _p_PetscObject* PetscObject;
@@ -373,7 +375,8 @@ typedef void (**PetscVoidFunction)(void);
 
 /*
    PetscTryMethod - Queries an object for a method, if it exists then calls it.
-          Can support argument checking 
+          Can support argument checking. This was an experiment that seems to work ok
+          (see KSPGMRESSetRestart()) but we never followed through on it.
 */
 #if defined(PETSC_FORTRAN_STUBS)
 #define  PetscTryMethod(obj,A,B,C) \
