@@ -9,7 +9,7 @@ SOURCEH	        =
 OBJSC	        =
 OBJSF	        =
 LIBBASE	        = libpetscsnes
-LOCDIR          = src/snes/examples/tests
+LOCDIR          = src/snes/examples/tests/
 TESTEXAMPLES_1  = 
 TESTEXAMPLES_2  = ex7.PETSc runex7 ex7.rm ex9.PETSc \
 		  runex9 ex9.rm ex13.PETSc ex13.rm  clean
