@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.1 2000/01/18 16:45:51 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.1 2000/06/21 15:47:00 balay Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -8,7 +8,7 @@
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
-#include "sbaij.h"
+#include "src/mat/impls/sbaij/seq/sbaij.h"
 
 #define CHUNKSIZE  10
 
@@ -1678,14 +1678,14 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   if (flg) {ierr = MatPrintHelp(B);CHKERRQ(ierr); }
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
-                                     "MatStoreValues_SeqBAIJ",
-                                     (void*)MatStoreValues_SeqBAIJ);CHKERRQ(ierr);
+                                     "MatStoreValues_SeqSBAIJ",
+                                     (void*)MatStoreValues_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
-                                     "MatRetrieveValues_SeqBAIJ",
-                                     (void*)MatRetrieveValues_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqBAIJSetColumnIndices_C",
-                                     "MatSeqBAIJSetColumnIndices_SeqBAIJ",
-                                     (void*)MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);
+                                     "MatRetrieveValues_SeqSBAIJ",
+                                     (void*)MatRetrieveValues_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqSBAIJSetColumnIndices_C",
+                                     "MatSeqSBAIJSetColumnIndices_SeqSBAIJ",
+                                     (void*)MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);
    /* printf("In MatCreateSeqSBAIJ, \n");                                   
    for (i=0; i<mbs; i++){
      printf("imax[%d]= %d, ilen[%d]= %d\n", i,b->imax[i], i,b->ilen[i]);
