@@ -9,8 +9,8 @@
 #include "src/snes/snesimpl.h"
 #include "src/fortran/custom/zpetsc.h"
 
-int RHSFunction(TS,PetscReal,Vec,Vec,void*);
-int RHSJacobianFD(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
+PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
+PetscErrorCode RHSJacobianFD(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
 
 /* -------------------------------------------------------------------*/
 
@@ -23,7 +23,7 @@ int RHSJacobianFD(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL setcroutinefromfortran_(TS *ts,Mat *A,Mat *B,int *__ierr)
+void PETSC_STDCALL setcroutinefromfortran_(TS *ts,Mat *A,Mat *B,PetscErrorCode *__ierr)
 {
     *__ierr = TSSetRHSJacobian(*ts,*A,*B,RHSJacobianFD,PETSC_NULL);
 }
@@ -52,15 +52,16 @@ EXTERN_C_END
    Sparse approximations using colorings are also available and
    would be a much better alternative!
 */
-int RHSJacobianFD(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode RHSJacobianFD(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  Vec         jj1,jj2,xx2;
-  int         i,ierr,N,start,end,j;
-  PetscScalar dx,mone = -1.0,*y,scale,*xx,wscale;
-  PetscReal   amax,epsilon = 1.e-8; /* assumes PetscReal precision */
-  PetscReal   dx_min = 1.e-16,dx_par = 1.e-1;
-  MPI_Comm    comm;
-  PetscTruth  assembled;
+  Vec            jj1,jj2,xx2;
+  PetscInt       i,N,start,end,j;
+  PetscErrorCode ierr;
+  PetscScalar    dx,mone = -1.0,*y,scale,*xx,wscale;
+  PetscReal      amax,epsilon = 1.e-8; /* assumes PetscReal precision */
+  PetscReal      dx_min = 1.e-16,dx_par = 1.e-1;
+  MPI_Comm       comm;
+  PetscTruth     assembled;
 
   ierr = VecDuplicate(xx1,&jj1);CHKERRQ(ierr);
   ierr = VecDuplicate(xx1,&jj2);CHKERRQ(ierr);

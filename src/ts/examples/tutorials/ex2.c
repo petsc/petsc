@@ -54,7 +54,7 @@ typedef struct {
   Vec        localwork;     /* local ghosted work vector */
   Vec        u_local;       /* local ghosted approximate solution vector */
   Vec        solution;      /* global exact solution vector */
-  int        m;             /* total number of grid points */
+  PetscInt   m;             /* total number of grid points */
   PetscReal  h;             /* mesh width: h = 1/(m-1) */
   PetscTruth debug;         /* flag (1 indicates activation of debugging printouts) */
 } AppCtx;
@@ -62,31 +62,32 @@ typedef struct {
 /* 
    User-defined routines, provided below.
 */
-extern int InitialConditions(Vec,AppCtx*);
-extern int RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern int RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int Monitor(TS,int,PetscReal,Vec,void*);
-extern int ExactSolution(PetscReal,Vec,AppCtx*);
+extern PetscErrorCode InitialConditions(Vec,AppCtx*);
+extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
+extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 
 /*
    Utility routine for finite difference Jacobian approximation
 */
-extern int RHSJacobianFD(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSJacobianFD(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  AppCtx     appctx;                 /* user-defined application context */
-  TS         ts;                     /* timestepping context */
-  Mat        A;                      /* Jacobian matrix data structure */
-  Vec        u;                      /* approximate solution vector */
-  int        time_steps_max = 1000;  /* default max timesteps */
-  int        ierr,steps;
-  PetscReal  ftime;                  /* final time */
-  PetscReal  dt;
-  PetscReal  time_total_max = 100.0; /* default max total time */
-  PetscTruth flg;
+  AppCtx         appctx;                 /* user-defined application context */
+  TS             ts;                     /* timestepping context */
+  Mat            A;                      /* Jacobian matrix data structure */
+  Vec            u;                      /* approximate solution vector */
+  PetscInt       time_steps_max = 1000;  /* default max timesteps */
+  PetscErrorCode ierr;
+  PetscInt       steps;
+  PetscReal      ftime;                  /* final time */
+  PetscReal      dt;
+  PetscReal      time_total_max = 100.0; /* default max total time */
+  PetscTruth     flg;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
@@ -229,10 +230,11 @@ int main(int argc,char **argv)
    Output Parameter:
    u - vector with solution at initial time (global)
 */ 
-int InitialConditions(Vec u,AppCtx *appctx)
+PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
 {
-  PetscScalar *u_localptr,h = appctx->h,x;
-  int    i,mybase,myend,ierr;
+  PetscScalar    *u_localptr,h = appctx->h,x;
+  PetscInt       i,mybase,myend;
+  PetscErrorCode ierr;
 
   /* 
      Determine starting point of each processor's range of
@@ -290,10 +292,11 @@ int InitialConditions(Vec u,AppCtx *appctx)
    Output Parameter:
    solution - vector with the newly computed exact solution
 */
-int ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
+PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
 {
-  PetscScalar *s_localptr,h = appctx->h,x;
-  int    i,mybase,myend,ierr;
+  PetscScalar    *s_localptr,h = appctx->h,x;
+  PetscInt       i,mybase,myend;
+  PetscErrorCode ierr;
 
   /* 
      Determine starting and ending points of each processor's 
@@ -340,13 +343,13 @@ int ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
             information about the problem size, workspace and the exact 
             solution.
 */
-int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
+PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 {
-  AppCtx       *appctx = (AppCtx*) ctx;   /* user-defined application context */
-  int          ierr;
-  PetscReal    en2,en2s,enmax;
-  PetscScalar  mone = -1.0;
-  PetscDraw    draw;
+  AppCtx         *appctx = (AppCtx*) ctx;   /* user-defined application context */
+  PetscErrorCode ierr;
+  PetscReal      en2,en2s,enmax;
+  PetscScalar    mone = -1.0;
+  PetscDraw      draw;
 
   /*
      We use the default X windows viewer
@@ -421,14 +424,16 @@ int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
    Output Parameter:
    global_out - vector containing the newly evaluated function
 */
-int RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *ctx)
+PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *ctx)
 {
-  AppCtx *appctx = (AppCtx*) ctx;       /* user-defined application context */
-  DA     da = appctx->da;               /* distributed array */
-  Vec    local_in = appctx->u_local;    /* local ghosted input vector */
-  Vec    localwork = appctx->localwork; /* local ghosted work vector */
-  int    ierr,i,localsize,rank,size; 
-  PetscScalar *copyptr,*localptr,sc;
+  AppCtx         *appctx = (AppCtx*) ctx;       /* user-defined application context */
+  DA             da = appctx->da;               /* distributed array */
+  Vec            local_in = appctx->u_local;    /* local ghosted input vector */
+  Vec            localwork = appctx->localwork; /* local ghosted work vector */
+  PetscErrorCode ierr;
+  PetscInt       i,localsize;
+  PetscMPIInt    rank,size; 
+  PetscScalar    *copyptr,*localptr,sc;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Get ready for local function computations
@@ -536,14 +541,15 @@ int RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *ctx)
    - Note that MatSetValues() uses 0-based row and column numbers
      in Fortran as well as in C.
 */
-int RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  Mat    A = *AA;                      /* Jacobian matrix */
-  AppCtx *appctx = (AppCtx*)ctx;     /* user-defined application context */
-  Vec    local_in = appctx->u_local;   /* local ghosted input vector */
-  DA     da = appctx->da;              /* distributed array */
-  PetscScalar v[3],*localptr,sc;
-  int    ierr,i,mstart,mend,mstarts,mends,idx[3],is;
+  Mat            A = *AA;                      /* Jacobian matrix */
+  AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
+  Vec            local_in = appctx->u_local;   /* local ghosted input vector */
+  DA             da = appctx->da;              /* distributed array */
+  PetscScalar    v[3],*localptr,sc;
+  PetscErrorCode ierr;
+  PetscInt       i,mstart,mend,mstarts,mends,idx[3],is;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Get ready for local Jacobian computations

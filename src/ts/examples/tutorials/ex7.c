@@ -21,8 +21,8 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 /* 
    User-defined routines
 */
-extern int FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DA,Vec);
-extern int Monitor(TS,int,PetscReal,Vec,void*);
+extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DA,Vec);
+extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -31,8 +31,8 @@ int main(int argc,char **argv)
   TS                     ts;                 /* nonlinear solver */
   Vec                    x,r;                  /* solution, residual vectors */
   Mat                    J;                    /* Jacobian matrix */
-  int                    steps;                  /* iterations for convergence */
-  int                    ierr;
+  PetscInt               steps;                  /* iterations for convergence */
+  PetscErrorCode         ierr;
   DA                     da;
   MatFDColoring          matfdcoloring;
   ISColoring             iscoloring;
@@ -132,13 +132,14 @@ int main(int argc,char **argv)
    Output Parameter:
 .  F - function vector
  */
-int FormFunction(TS ts,PetscReal time,Vec X,Vec F,void *ptr)
+PetscErrorCode FormFunction(TS ts,PetscReal time,Vec X,Vec F,void *ptr)
 {
-  DA           da = (DA)ptr;
-  int          ierr,i,j,Mx,My,xs,ys,xm,ym;
-  PetscReal    two = 2.0,hx,hy,hxdhy,hydhx,sx,sy;
-  PetscScalar  u,uxx,uyy,**x,**f;
-  Vec          localX;
+  DA             da = (DA)ptr;
+  PetscErrorCode ierr;
+  PetscInt       i,j,Mx,My,xs,ys,xm,ym;
+  PetscReal      two = 2.0,hx,hy,hxdhy,hydhx,sx,sy;
+  PetscScalar    u,uxx,uyy,**x,**f;
+  Vec            localX;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
@@ -201,11 +202,12 @@ int FormFunction(TS ts,PetscReal time,Vec X,Vec F,void *ptr)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialSolution"
-int FormInitialSolution(DA da,Vec U)
+PetscErrorCode FormInitialSolution(DA da,Vec U)
 {
-  int         ierr,i,j,xs,ys,xm,ym,Mx,My;
-  PetscScalar **u;
-  PetscReal   hx,hy,x,y,r;
+  PetscErrorCode ierr;
+  PetscInt       i,j,xs,ys,xm,ym,Mx,My;
+  PetscScalar    **u;
+  PetscReal      hx,hy,x,y,r;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -249,11 +251,11 @@ int FormInitialSolution(DA da,Vec U)
 
 #undef __FUNCT__  
 #define __FUNCT__ "Monitor"
-int Monitor(TS ts,int step,PetscReal ptime,Vec v,void *ctx)
+PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
 {
-  int       ierr;
-  PetscReal norm;
-  MPI_Comm  comm;
+  PetscErrorCode ierr;
+  PetscReal      norm;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   ierr = VecNorm(v,NORM_2,&norm);CHKERRQ(ierr);
