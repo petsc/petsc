@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f90.F,v 1.11 2000/05/05 22:14:48 balay Exp bsmith $";
+!  "$Id: ex1f90.F,v 1.12 2000/07/10 03:39:11 bsmith Exp balay $";
 !
 !/*T
 !    Concepts: Index sets^Manipulating a general index set;
@@ -51,6 +51,12 @@
 !   Get the indices in the index set
 
       call ISGetIndicesF90(is,idx,ierr)
+
+      if ( associated(idx) ) then 
+         write (*,*) 'Association check passed'
+      else
+         write (*,*) 'Association check failed'
+      endif
 
 !   Now any code that needs access to the list of integers
 !   has access to it here
