@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.27 1998/06/23 14:29:01 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.28 1998/06/25 22:58:31 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -108,4 +108,4 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB} \
 # If you are using dynamic libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-DYLIBPATH     = /opt/SUNWspro/SC4.0/lib
+DYLIBPATH     = /opt/SUNWspro/SC4.2/lib
