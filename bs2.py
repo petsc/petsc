@@ -162,8 +162,7 @@ class Transform (Maker):
   def getObjectName(self, source):
     (dir, file) = os.path.split(source)
     (base, ext) = os.path.splitext(file)
-    checksum    = self.getChecksum(source)
-    return os.path.join(self.tmpDir, string.replace(dir, '/', '_')+'_'+base+'_'+str(checksum)+'.o')
+    return os.path.join(self.tmpDir, string.replace(dir, '/', '_')+'_'+base+'.o')
 
   def updateSourceDB(self, source):
     sourceDB[source] = (self.getChecksum(source), os.path.getmtime(source), time.time());
@@ -443,13 +442,14 @@ class CompileFiles (Action):
       if (not files): return
       sources = ''
       for file in files:
-        self.updateSourceDB(file)
         sources += ' '+file
       if (not sources): return
       self.compile(sources)
+      for file in files:
+        self.updateSourceDB(file)
     else:
-      self.updateSourceDB(source)
       object = self.compile(source)
+      self.updateSourceDB(source)
       self.archive(object)
 
   def execute(self):
@@ -530,7 +530,6 @@ class LinkSharedLibrary (Action):
     for source in self.sources.getFiles():
       sharedLibrary = self.getSharedName(source)
       self.products.append(sharedLibrary)
-      self.updateSourceDB(source)
 
       command = self.archiver+' '+self.archiverFlags+' '+source
       self.executeShellCommand(command)
@@ -540,6 +539,7 @@ class LinkSharedLibrary (Action):
         (base, ext) = os.path.splitext(file)
         command += ' -L'+dir+' -l'+base[3:]
       self.executeShellCommand(command)
+      self.updateSourceDB(source)
       map(os.remove, os.listdir(linkDir))
     os.chdir(oldDir)
     os.rmdir(linkDir)
@@ -562,8 +562,12 @@ class LinkExecutable (Action):
       (dir, file) = os.path.split(self.executable.getFiles()[0])
       if not os.path.exists(dir): os.makedirs(dir)
     if (self.sources):
+      files = self.sources.getFiles()
       self.sources.extend(self.extraLibraries)
-      return Action.execute(self)
+      products = Action.execute(self)
+      for source in files:
+        self.updateSourceDB(source)
+      return products
 
 class Target (Transform):
   def __init__(self, sources, transforms = []):
