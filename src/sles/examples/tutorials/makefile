@@ -521,7 +521,7 @@ TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
 TESTEXAMPLES_BLOCKSOLVE   = ex5.PETSc runex5_3 runex5_4 ex5.rm
 # even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
-TESTEXAMPLES_8             = ex10.PETSc runex10_13 ex10.rm
+TESTEXAMPLES_8             =
 TESTEXAMPLES_10            = ex11f.PETSc runex11f ex11f.rm
 TESTEXAMPLES_12            = ex13f90.PETSc runex13f90 ex13f90.rm
 TESTEXAMPLES_13            = ex3.PETSc ex3.rm ex14f.PETSc ex14f.rm
@@ -530,5 +530,6 @@ TESTEXAMPLES_17            = ex10.PETSc runex10_11 ex10.rm
 TESTEXAMPLES_18            = ex2.PETSc runex2_6 ex2.rm ex26.PETSc runex26 ex26.rm
 TESTEXAMPLES_SPAI          = ex10.PETSc runex10_14 ex10.rm
 TESTEXAMPLES_HYPRE         = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_1 ex10.rm
+TESTEXAMPLES_LUSOL         = ex10.PETSc runex10_13 ex10.rm
 
 include ${PETSC_DIR}/bmake/common/test

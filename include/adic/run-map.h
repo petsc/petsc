@@ -1,4 +1,3 @@
-#line 453 "adic/run-map.w"
 #if !defined(RUN_MAP_H)
 #define RUN_MAP_H
 

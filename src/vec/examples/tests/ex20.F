@@ -11,13 +11,13 @@
 !  This example demonstrates writing an array to a file in binary format
 !  that may be read in by PETSc's VecLoad() routine.
 !
-       integer          n,ierr,i,fd,veccookie
+       integer          n,ierr,i,fd,veccookie(1)
        PetscScalar      array(5)
        Vec              x
        PetscViewer           v
 
-       n         = 5
-       veccookie = 1211211 + 3
+       n            = 5
+       veccookie(1) = 1211211 + 3
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)                  
 

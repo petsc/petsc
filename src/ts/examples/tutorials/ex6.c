@@ -84,10 +84,10 @@ typedef struct {
    User-defined routines
 */
 extern int InitialConditions(Vec,AppCtx*);
-extern int RHSMatrixHeat(TS,double,Mat*,Mat*,MatStructure*,void*);
-extern int Monitor(TS,int,double,Vec,void*);
-extern int ExactSolution(double,Vec,AppCtx*);
-extern int MyBCRoutine(TS,double,Vec,void*);
+extern int RHSMatrixHeat(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
+extern int Monitor(TS,int,PetscReal,Vec,void*);
+extern int ExactSolution(PetscReal,Vec,AppCtx*);
+extern int MyBCRoutine(TS,PetscReal,Vec,void*);
 
 #undef __FUNC__
 #define __FUNC__ "main"
@@ -102,7 +102,8 @@ int main(int argc,char **argv)
   PetscDraw          draw;                   /* drawing context */
   PetscTruth    flg;
   int           ierr,  steps, size, m;
-  double        dt, ftime;
+  double        dt;
+  PetscReal     ftime;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
@@ -322,7 +323,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
    Output Parameter:
    solution - vector with the newly computed exact solution
 */
-int ExactSolution(double t,Vec solution,AppCtx *appctx)
+int ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
 {
   PetscScalar *s_localptr, h = appctx->h, ex1, ex2, sc1, sc2;
   int    i, ierr;
@@ -369,11 +370,11 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
             information about the problem size, workspace and the exact 
             solution.
 */
-int Monitor(TS ts,int step,double time,Vec u,void *ctx)
+int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
 {
   AppCtx     *appctx = (AppCtx*) ctx;   /* user-defined application context */
   int         ierr;
-  double      norm_2, norm_max, dt, dttol;
+  PetscReal   norm_2, norm_max, dt, dttol;
   PetscTruth  flg;
   PetscScalar mone = -1.0;
 
@@ -455,7 +456,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
    Recall that MatSetValues() uses 0-based row and column numbers
    in Fortran as well as in C.
 */
-int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+int RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   Mat    A = *AA;                      /* Jacobian matrix */
   AppCtx *appctx = (AppCtx *) ctx;     /* user-defined application context */
@@ -539,7 +540,7 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
    f - function
    ctx - optional user-defined context, as set by TSetBCFunction()
  */
-int MyBCRoutine(TS ts,double t,Vec f,void *ctx)
+int MyBCRoutine(TS ts,PetscReal t,Vec f,void *ctx)
 {
   AppCtx *appctx = (AppCtx *) ctx;     /* user-defined application context */
   int    ierr, m = appctx->m;
