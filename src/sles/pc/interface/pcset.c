@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.22 1995/08/07 18:51:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.23 1995/08/22 16:30:13 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -60,9 +60,13 @@ int PCSetMethod(PC ctx,PCMethod method)
    package,  given an iterative name (PCMethod) and a function pointer.
 
    Input Parameters:
-.      name - for instance PCJACOBI, ...
-.      sname -  corresponding string for name
-.      create - routine to create method context
+.  name - for instance PCJACOBI, ...
+.  sname -  corresponding string for name
+.  create - routine to create method context
+
+.keywords: PC, register
+
+.seealso: PCRegisterAll(), PCRegisterDestroy()
 @*/
 int  PCRegister(PCMethod name,char *sname,int (*create)(PC))
 {

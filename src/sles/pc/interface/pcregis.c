@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.18 1995/08/21 18:11:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.19 1995/08/22 16:30:13 bsmith Exp curfman $";
 #endif
 
 
@@ -37,10 +37,6 @@ $       routine requires recompilation.
   save memory, copy this routine and modify it to register only 
   those methods you desire.  Make sure that the replacement routine 
   is linked before libpetscsles.a.
-
-  Notes:
-  To prevent all the methods from being registered and thus save
-  memory, copy this routine and register only those methods desired.
 
 .keywords: PC, register, all
 
