@@ -37,6 +37,14 @@ class BootstrapInstall (object):
     '''Find Bitkeeper if it is installed, otherwise install it.
        - Return True if installation is successful
        - Set self.bkPath to the directory containing Bitkeeper.'''
+    # First check that hostname returns something BitKeeper is happy with
+    import socket
+    hostname = socket.gethostname()
+    if hostname[-1] == '.':
+      os.putenv('BK_HOST',hostname+'org')
+    elif hostname.find('.') == -1:
+      os.putenv('BK_HOST',hostname+'.org')
+                
     # If self.bkPath is set, check it
     if self.bkPath:
       if os.path.isdir(self.bkPath):

@@ -17,6 +17,14 @@ def setupRC(path):
   contents = contents + '# Code added by BuildSystem/install/setuprc.py\n'
   contents = contents + 'import sys\n'
   contents = contents + 'sys.path.insert(0,"'+path+'")\n'
+  # Check that hostname returns something BitKeeper is happy with
+  import socket
+  hostname = socket.gethostname()
+  if hostname[-1] == '.':
+    contents = contents + 'os.putenv("BK_HOST","'+hostname+'org")\n'
+  elif hostname.find('.') == -1:
+    contents = contents + 'os.putenv("BK_HOST","'+hostname+'.org")\n'
+
   f = open(fname,'w')
   f.write(contents)
   f.close()
