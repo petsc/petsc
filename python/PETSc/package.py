@@ -94,14 +94,18 @@ class Package(config.base.Configure):
     return
 
   # by default, just check for all the libraries in self.liblist 
-  def generateLibList(self,dir):
+  def generateLibList(self, dir):
     '''Generates full path list of libraries from self.liblist'''
     alllibs = []
-    for l in self.liblist:
+    for libSet in self.liblist:
       libs = []
-      for ll in l:
-        if not self.libdir == dir: libs.append(os.path.join(dir,ll))
-        else: libs.append(ll)
+      for library in libSet:
+        if not self.libdir == dir:
+          fullLib = os.path.join(dir, library)
+        else:
+          fullLib = library
+        libs.append(fullLib)
+      libs.extend(self.extraLib)
       alllibs.append(libs)
     return alllibs
     
