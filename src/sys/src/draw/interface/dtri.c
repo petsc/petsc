@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dtri.c,v 1.10 1997/03/01 15:54:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtri.c,v 1.11 1997/03/09 17:59:14 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -55,21 +55,21 @@ int DrawTensorContourPatch(Draw win,int m,int n,double *x,double *y,double max,
   int           c1, c2, c3, c4, i, j,ierr;
   double        x1, x2, x3, x4, y1, y2, y3, y4,scale;
 
-  scale = (200.0 - 32.0)/(max - min);
+  scale = (245.0 - 16.0)/(max - min);
 
   /* Draw the contour plot patch */
   for ( j=0; j<n-1; j++ ) {
     for ( i=0; i<m-1; i++ ) {
 #if !defined(PETSC_COMPLEX)
-      x1 = x[i];  y1 = y[j];  c1 = (int) (32. + scale*(v[i+j*m] - min));
-      x2 = x[i+1];y2 = y1;    c2 = (int) (32. + scale*(v[i+j*m+1]-min));
-      x3 = x2;    y3 = y[j+1];c3 = (int) (32. + scale*(v[i+j*m+1+m]-min));
-      x4 = x1;    y4 = y3;    c4 = (int) (32. + scale*(v[i+j*m+m]-min));
+      x1 = x[i];  y1 = y[j];  c1 = (int) (16. + scale*(v[i+j*m] - min));
+      x2 = x[i+1];y2 = y1;    c2 = (int) (16. + scale*(v[i+j*m+1]-min));
+      x3 = x2;    y3 = y[j+1];c3 = (int) (16. + scale*(v[i+j*m+1+m]-min));
+      x4 = x1;    y4 = y3;    c4 = (int) (16. + scale*(v[i+j*m+m]-min));
 #else
-      x1 = x[i];  y1 = y[j];  c1 = (int) (32. + scale*PetscReal(v[i+j*m]-min));
-      x2 = x[i+1];y2 = y1;    c2 = (int) (32. + scale*PetscReal(v[i+j*m+1]-min));
-      x3 = x2;    y3 = y[j+1];c3 = (int) (32. + scale*PetscReal(v[i+j*m+1+m]-min));
-      x4 = x1;    y4 = y3;    c4 = (int) (32. + scale*PetscReal(v[i+j*m+m]-min));
+      x1 = x[i];  y1 = y[j];  c1 = (int) (16. + scale*PetscReal(v[i+j*m]-min));
+      x2 = x[i+1];y2 = y1;    c2 = (int) (16. + scale*PetscReal(v[i+j*m+1]-min));
+      x3 = x2;    y3 = y[j+1];c3 = (int) (16. + scale*PetscReal(v[i+j*m+1+m]-min));
+      x4 = x1;    y4 = y3;    c4 = (int) (16. + scale*PetscReal(v[i+j*m+m]-min));
 #endif
       ierr = DrawTriangle(win,x1,y1,x2,y2,x3,y3,c1,c2,c3); CHKERRQ(ierr);
       ierr = DrawTriangle(win,x1,y1,x3,y3,x4,y4,c1,c3,c4); CHKERRQ(ierr);

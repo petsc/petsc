@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.26 1997/02/22 02:27:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.27 1997/04/22 18:24:54 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -17,6 +17,7 @@ static char vcid[] = "$Id: xinit.c,v 1.26 1997/02/22 02:27:19 bsmith Exp bsmith 
 #include <stdio.h>
 #if defined(HAVE_X11)
 #include "src/draw/impls/x/ximpl.h"
+#include <math.h>
 
 extern int XiUniformHues(Draw_X *,int);
 extern int Xi_wait_map( Draw_X*);
@@ -56,25 +57,34 @@ int XiSetVisual(Draw_X* XiWin,int q_default_visual,Colormap cmap,int nc )
     /* Try to match to some popular types */
     XVisualInfo vinfo;
     if (XMatchVisualInfo(XiWin->disp,XiWin->screen,24,DirectColor,&vinfo)) {
-	XiWin->vis    = vinfo.visual;
-	XiWin->depth  = 24;
+      XiWin->vis    = vinfo.visual;
+      XiWin->depth  = 24;
+      nc            = 256;
     }
     else if (XMatchVisualInfo(XiWin->disp,XiWin->screen,8,PseudoColor,&vinfo)){
-	XiWin->vis    = vinfo.visual;
-	XiWin->depth  = 8;
+      XiWin->vis    = vinfo.visual;
+      XiWin->depth  = 8;
+      nc            = 256;
+      PLogInfo(0,"Opening pseudo color 8 bit X window\n");
     }
     else if (XMatchVisualInfo( XiWin->disp, XiWin->screen,
 			 DefaultDepth(XiWin->disp,XiWin->screen),PseudoColor,&vinfo)){
-	XiWin->vis    = vinfo.visual;
-	XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
+      XiWin->vis    = vinfo.visual;
+      XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
+      nc            = (int) pow(2.0,(double) XiWin->depth);
+      PLogInfo(0,"Opening pseudo color %d bit X window\n",XiWin->depth);
+      cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
     }
     else {
-	XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
-	XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
+      XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
+      XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
+      nc            = (int) pow(2.0,(double) XiWin->depth);
+      PLogInfo(0,"Opening basic color %d bit X window\n",XiWin->depth);
+      cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
     }
     /* There are other types; perhaps this routine should accept a 
        "hint" on which types to look for. */
-    XiWin->cmap = (Colormap) 0;
+    XiWin->cmap = cmap;
   }
 
   /* reset the number of colors from info on the display, the colormap */
@@ -231,7 +241,7 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
 
   XiSetGC( w, w->cmapping[1] );
   XiSetPixVal(w, w->background );
-  ierr = XiUniformHues(w,nc-36); CHKERRQ(ierr);
+  ierr = XiUniformHues(w,nc-16); CHKERRQ(ierr);
   ierr = XiFontFixed( w,6, 10,&w->font ); CHKERRQ(ierr);
   XFillRectangle(w->disp,w->win,w->gc.set,0,0,nx,ny);
   return 0;

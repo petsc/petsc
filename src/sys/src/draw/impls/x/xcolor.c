@@ -1,8 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.21 1997/01/06 20:27:07 balay Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.22 1997/02/22 02:27:19 bsmith Exp bsmith $";
 #endif
 /*
     Code for managing color the X implementation of the Draw routines.
+
+    Currently we default to using cmapping[0-15] for the basic colors and 
+  cmapping[16-255] for a uniform hue of all the colors. But in the contour
+  plot we only use from 16-240 since the ones beyond that are too dark.
+
 */
 #if defined(HAVE_X11)
 #include "src/draw/impls/x/ximpl.h"
@@ -13,10 +18,9 @@ static char *(colornames[]) = { "white", "black", "red", "green",
                                 "pink", "coral", "gray", "yellow" };
 
 extern int XiInitCmap( Draw_X* );
-extern int XiAllocBW( Draw_X*, PixVal*,PixVal*);
 extern int XiGetVisualClass( Draw_X * );
 extern int XiHlsToRgb(int,int,int,unsigned char*,unsigned char*,unsigned char*);
-Colormap XiCreateColormap(Display*,int,Visual *);
+Colormap XiCreateColormap(Draw_X*,Display*,int,Visual *);
 
 #include <X11/Xatom.h>
 
@@ -35,7 +39,7 @@ int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
 
   /* we will use the default colormap of the visual */
   if (!XiWin->cmap)
-    XiWin->cmap = XiCreateColormap( XiWin->disp, XiWin->screen, XiWin->vis );
+    XiWin->cmap = XiCreateColormap(XiWin, XiWin->disp, XiWin->screen, XiWin->vis );
 
   /* get the initial colormap */
   if (XiWin->numcolors > 2)  XiInitCmap( XiWin );
@@ -53,29 +57,47 @@ int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
 }
 
 /*
+    Keep a record of which pixel numbers in the cmap have been 
+  used so far.
+*/
+static long int cmap_pixvalues_used[256];
+static int cmap_base = 0;
+
+/*
     Set the initial color map
  */
 #undef __FUNC__  
 #define __FUNC__ "XiInitCmap" /* ADIC Ignore */
 int XiInitCmap(Draw_X* XiWin )
 {
-  XColor  colordef;
-  int     i;
+  XColor   colordef;
+  int      i;
+  Colormap defaultmap = DefaultColormap( XiWin->disp, XiWin->screen );
+
+  cmap_base = 0;
+  PetscMemzero(cmap_pixvalues_used,256*sizeof(long int));
+
   /* Also, allocate black and white first, in the same order that
-   there "pixel" values are, incase the pixel values assigned
+   there "pixel" values are, in case the pixel values assigned
    start from 0 */
-  XiAllocBW( XiWin, &XiWin->cmapping[DRAW_WHITE],
-                    &XiWin->cmapping[DRAW_BLACK] );
-  XiWin->background = XiWin->cmapping[DRAW_WHITE];
-  XiWin->foreground = XiWin->cmapping[DRAW_BLACK];
   /* Look up the colors so that they can be use server standards
     (and be corrected for the monitor) */
-  for (i=2; i<16; i++) {
+  for (i=0; i<16; i++) {
     XParseColor( XiWin->disp, XiWin->cmap, colornames[i], &colordef );
-    XAllocColor( XiWin->disp, XiWin->cmap, &colordef );
-    XiWin->cmapping[i]   = colordef.pixel;
+    if (defaultmap != XiWin->cmap) { 
+      /* allocate the color in the default-map in case it is already not there */
+      XAllocColor( XiWin->disp, defaultmap, &colordef );
+      /*  force the new color map to use the same slot as the default colormap  */
+      XStoreColor( XiWin->disp, XiWin->cmap, &colordef );
+    } else {
+      XAllocColor( XiWin->disp, XiWin->cmap, &colordef );
+    } 
+    XiWin->cmapping[i]                  = colordef.pixel;
+    cmap_pixvalues_used[colordef.pixel] = 1;
   }
-  XiWin->maxcolors = 15;
+  XiWin->background = XiWin->cmapping[DRAW_WHITE];
+  XiWin->foreground = XiWin->cmapping[DRAW_BLACK];
+  XiWin->maxcolors = 16;
   return 0;
 }
 
@@ -88,64 +110,36 @@ int XiInitCmap(Draw_X* XiWin )
 int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue, 
             int mapsize, Draw_X *XiWin )
 {
-  int         i, err;
-  XColor      colordef;
-  PixVal      white_pixel, black_pixel, pix, white_pix, black_pix;
-
-  white_pixel     = WhitePixel(XiWin->disp,XiWin->screen);
-  black_pixel     = BlackPixel(XiWin->disp,XiWin->screen);
-
-  /*
-    Free the old colors if we have the colormap.
-  */
-  if (XiWin->cmap != DefaultColormap( XiWin->disp, XiWin->screen ) ) {
-    if (XiGetVisualClass( XiWin ) == PseudoColor ||
-	XiGetVisualClass( XiWin ) == DirectColor )
-	XFreeColors( XiWin->disp, XiWin->cmap, XiWin->cmapping,
-		     XiWin->maxcolors + 1, (unsigned long)0 );
-  }
-
-  /*
-     The sun convention is that 0 is the background and 2**depth-1 is
-     foreground.  We make these the Xtools conventions (ignoring foreground)
-  */
+  int      i, found;
+  XColor   colordef;
+  Colormap defaultmap = DefaultColormap( XiWin->disp, XiWin->screen );
 
   if (mapsize > XiWin->numcolors) mapsize = XiWin->numcolors;
 
-  XiWin->maxcolors = mapsize - 1;
-  /*  Now, set the color values
+  XiWin->maxcolors = XiWin->numcolors;
 
-    Since it is hard (impossible?) to insure that black and white are
-    allocated to the SAME pixel values in the default/window manager
-    colormap, we ALWAYS allocate black and white FIRST
-
-    Note that we may have allocated more than mapsize colors if the
-    map did not include black or white.  We need to handle this later.
- */
-  XiAllocBW( XiWin, &white_pix, &black_pix );
-  err = 0;
-  for (i=16; i<mapsize; i++) {
-    if (red[i] == 0 && green[i] == 0 && blue[i] == 0)
-	XiWin->cmapping[i]   = black_pix;
-    else if (red[i] == 255 && green[i] == 255 && blue[i] == 255)
-	XiWin->cmapping[i]   = white_pix;
-    else {
-	colordef.red    = ((int)red[i]   * 65535) / 255;
-	colordef.green  = ((int)green[i] * 65535) / 255;
-	colordef.blue   = ((int)blue[i]  * 65535) / 255;
-	colordef.flags  = DoRed | DoGreen | DoBlue;
-	if (!XAllocColor( XiWin->disp, XiWin->cmap, &colordef ))
-	    err = 1;
-	XiWin->cmapping[i]   = colordef.pixel;
+  for (i=16; i<mapsize+16; i++) {
+    colordef.red    = ((int)red[i-16]   * 65535) / 255;
+    colordef.green  = ((int)green[i-16] * 65535) / 255;
+    colordef.blue   = ((int)blue[i-16]  * 65535) / 255;
+    colordef.flags  = DoRed | DoGreen | DoBlue;
+    if (defaultmap == XiWin->cmap) { 
+      XAllocColor( XiWin->disp, XiWin->cmap, &colordef );
+    } else {
+      /* try to allocate the color in the default-map */
+      found = XAllocColor( XiWin->disp, defaultmap, &colordef );
+      /* use it, if it it exists and is not already used in the new colormap */
+      if (found && !cmap_pixvalues_used[colordef.pixel]) {
+        cmap_pixvalues_used[colordef.pixel] = 1; 
+	/* otherwise search for the next available slot */
+      } else {
+        while (cmap_pixvalues_used[cmap_base]) cmap_base++;
+        colordef.pixel                   = cmap_base;
+        cmap_pixvalues_used[cmap_base++] = 1;
+      }
+      XStoreColor( XiWin->disp, XiWin->cmap, &colordef );
     }
-  }
-
-  /* make sure that there are 2 different colors */
-  pix             = XiWin->cmapping[0];
-  for (i=1; i<mapsize; i++)  if (pix != XiWin->cmapping[i]) break;
-  if (i >= mapsize) {
-    if (XiWin->cmapping[0] != black_pixel) XiWin->cmapping[0] = black_pixel;
-    else	XiWin->cmapping[0]   = white_pixel;
+    XiWin->cmapping[i]   = colordef.pixel;
   }
 
   /*
@@ -162,7 +156,7 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
    We could detect this only by seeing if there are any duplications
    among the XiWin->cmap values.
   */
-  return err;
+  return 0;
 }
 
 /*
@@ -222,15 +216,20 @@ int XiGetVisualClass(Draw_X* XiWin )
 
 #undef __FUNC__  
 #define __FUNC__ "XiCreateColormap" /* ADIC Ignore */
-Colormap XiCreateColormap(Display* display,int screen,Visual *visual )
+Colormap XiCreateColormap(Draw_X* XiWin, Display* display,int screen,Visual *visual )
 {
   Colormap Cmap;
 
   if (DefaultDepth( display, screen ) <= 1)
     Cmap    = DefaultColormap( display, screen );
-  else
-    Cmap    = XCreateColormap( display, RootWindow(display,screen),
-			       visual, AllocNone );
+  else {
+    Cmap    = XCreateColormap( display, RootWindow(display,screen),visual, AllocAll );
+     if (XiGetVisualClass(XiWin) == PseudoColor || XiGetVisualClass(XiWin) == DirectColor ){
+      int i; 
+      for (i=0; i<XiWin->numcolors; i++ ) {XiWin->cmapping[i] = i;}
+      /* XFreeColors( XiWin->disp, XiWin->cmap, XiWin->cmapping,XiWin->numcolors, (unsigned long)0 );*/
+    } 
+  }
   return Cmap;
 }
 
@@ -239,26 +238,6 @@ Colormap XiCreateColormap(Display* display,int screen,Visual *visual )
 int XiSetColormap(Draw_X* XiWin )
 {
   XSetWindowColormap( XiWin->disp, XiWin->win, XiWin->cmap );
-  return 0;
-}
-
-#undef __FUNC__  
-#define __FUNC__ "XiAllocBW" /* ADIC Ignore */
-int XiAllocBW(Draw_X* XiWin,PixVal* white,PixVal* black )
-{
-  XColor  bcolor, wcolor;
-  XParseColor( XiWin->disp, XiWin->cmap, "black", &bcolor );
-  XParseColor( XiWin->disp, XiWin->cmap, "white", &wcolor );
-  if (BlackPixel(XiWin->disp,XiWin->screen) == 0) {
-    XAllocColor( XiWin->disp, XiWin->cmap, &bcolor );
-    XAllocColor( XiWin->disp, XiWin->cmap, &wcolor );
-  }
-  else {
-    XAllocColor( XiWin->disp, XiWin->cmap, &wcolor );
-    XAllocColor( XiWin->disp, XiWin->cmap, &bcolor );
-  }
-  *black = bcolor.pixel;
-  *white = wcolor.pixel;
   return 0;
 }
 
@@ -306,16 +285,13 @@ int XiSetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,
   hue         = 0;        /* in 0:359 */
   lightness   = 50;       /* in 0:100 */
   saturation  = 100;      /* in 0:100 */
-  for (i = 1; i < mapsize-1; i++) {
+  for (i = 0; i < mapsize; i++) {
     XiHlsToRgb( hue, lightness, saturation, red + i, green + i, blue + i );
     red[i]   = (int)floor( 255.999 * pow( ((double)  red[i])/255.0, igamma ) );
     blue[i]  = (int)floor( 255.999 * pow( ((double) blue[i])/255.0, igamma ) );
     green[i] = (int)floor( 255.999 * pow( ((double)green[i])/255.0, igamma ) );
     hue += (359/(mapsize-2));
   }
-  red  [mapsize-1]    = 255;
-  green[mapsize-1]    = 255;
-  blue [mapsize-1]    = 255;
   return 0;
 }
 
@@ -381,47 +357,6 @@ int XiFindColor( Draw_X *XiWin, char *name, PixVal *pixval )
     if (st)  *pixval = colordef.pixel;
   }
   return st;
-}
-
-/*
-    When there are several windows being displayed, it may help to
-    merge their colormaps together so that all of the windows
-    may be displayed simultaneously with true colors.
-    These routines attempt to accomplish this
- */
-
-/*
- * The input to this routine is RGB, not HLS.
- * X colors are 16 bits, not 8, so we have to shift the input by 8.
- * This is like XiCmap, except that it APPENDS to the existing
- * colormap.
- */
-#undef __FUNC__  
-#define __FUNC__ "XiFindColor" /* ADIC Ignore */
-int XiAddCmap( unsigned char *red, unsigned char *green, unsigned char *blue,
-               int mapsize, Draw_X *XiWin )
-{
-  int      i, err;
-  XColor   colordef;
-  int      cmap_start;
-
-  if (mapsize + XiWin->maxcolors > XiWin->numcolors)
-     mapsize = XiWin->numcolors - XiWin->maxcolors;
-
-  cmap_start  = XiWin->maxcolors;
-  XiWin->maxcolors += mapsize;
-
-  err = 0;
-  for (i=0; i<mapsize; i++) {
-    colordef.red    = ((int)red[i]   * 65535) / 255;
-    colordef.green  = ((int)green[i] * 65535) / 255;
-    colordef.blue   = ((int)blue[i]  * 65535) / 255;
-    colordef.flags  = DoRed | DoGreen | DoBlue;
-    if (!XAllocColor( XiWin->disp, XiWin->cmap, &colordef ))
-	err = 1;
-    XiWin->cmapping[cmap_start+i]    = colordef.pixel;
-  }
-  return err;
 }
 
 /*
@@ -494,8 +429,7 @@ int XiUniformHues( Draw_X *Xiwin, int ncolors )
 {
   unsigned char *red, *green, *blue;
 
-  red   = (unsigned char *)PetscMalloc( 3 * ncolors * sizeof(unsigned char) );   
-  CHKPTRQ(red);
+  red   = (unsigned char *)PetscMalloc(3*ncolors*sizeof(unsigned char));CHKPTRQ(red);
   green = red + ncolors;
   blue  = green + ncolors;
   XiSetCmapHue( red, green, blue, ncolors );

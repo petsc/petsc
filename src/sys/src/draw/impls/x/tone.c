@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tone.c,v 1.10 1997/01/06 20:27:07 balay Exp bsmith $";
+static char vcid[] = "$Id: tone.c,v 1.11 1997/02/22 02:27:19 bsmith Exp bsmith $";
 #endif
 /*
     Code for drawing color interpolated triangles using X-windows.
@@ -61,20 +61,20 @@ int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1,
     if (rx > lx) {
       for (xx=lx; xx<=rx; xx++) {
         c = (((xx-lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
-        XiSetPixVal( win, c );
+        XiSetColor( win, c );
         XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
       }
     }
     else if (rx < lx) {
       for (xx=lx; xx>=rx; xx--) {
         c = (((xx-lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
-        XiSetPixVal( win, c );
+        XiSetColor( win, c );
         XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
       }
     }
     else {
       c = lc >> SHIFT_VAL;
-      XiSetPixVal( win, c );
+      XiSetColor( win, c );
       XDrawPoint(win->disp,XiDrawable(win),win->gc.set,lx,y);
     }
   }
@@ -110,20 +110,20 @@ int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1,
     if (rx > lx) {
       for (xx=lx; xx<=rx; xx++) {
         c = (((xx-lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
-        XiSetPixVal( win, c );
+        XiSetColor( win, c );
         XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
       }
     }
     else if (rx < lx) {
       for (xx=lx; xx>=rx; xx--) {
         c = (((xx-lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
-        XiSetPixVal( win, c );
+        XiSetColor( win, c );
         XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
       }
     }
     else {
       c = lc >> SHIFT_VAL;
-      XiSetPixVal( win, c );
+      XiSetColor( win, c );
       XDrawPoint(win->disp,XiDrawable(win),win->gc.set,lx,y);
     }
   }
