@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.18 1996/08/04 23:12:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.19 1996/08/06 04:02:50 bsmith Exp balay $";
 #endif
 
 #include "mpibaij.h"
@@ -134,7 +134,8 @@ static int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *
           if (!baij->colmap) {
             ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
           } 
-          if (baij->garray[baij->colmap[idxn[j]/bs]-1] != idxn[j]/bs) *(v+i*n+j) = 0.0;
+          if((baij->colmap[idxn[j]/bs]-1 < 0) || 
+             (baij->garray[baij->colmap[idxn[j]/bs]-1] != idxn[j]/bs)) *(v+i*n+j) = 0.0;
           else {
             col  = (baij->colmap[idxn[j]/bs]-1)*bs + idxn[j]%bs;
             ierr = MatGetValues(baij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
