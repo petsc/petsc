@@ -198,9 +198,12 @@ int PetscViewerCreate_Matlab(PetscViewer viewer)
 #define __FUNCT__ "PetscViewerDestroy_Matlab"
 int PetscViewerDestroy_Matlab(PetscViewer v)
 {
+  int                ierr;
   PetscViewer_Matlab *vf = (PetscViewer_Matlab*)v->data; 
+
   PetscFunctionBegin;
   if (vf->ep) matClose(vf->ep);
+  ierr = PetscFree(vf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

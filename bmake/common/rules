@@ -461,6 +461,7 @@ fortranstubs:
 	  grep -v "Inconsistent structure" | \
           grep -v "object file assumed" | \
 	  grep -v "ex20.F:30:" | \
+	  grep -v "ex20f.F:31: warning" | \
 	  grep -v "f90 continuing despite warning messages" | \
           grep -v "is an array from" | \
           grep -v "consider using mkstemp"  |\

@@ -377,11 +377,12 @@ int PetscOptionsInsert(int *argc,char ***args,const char file[])
   if (argc && args && *argc) {
     int        left    = *argc - 1;
     char       **eargs = *args + 1;
-    PetscTruth isoptions_file,isp4,tisp4;
+    PetscTruth isoptions_file,isp4,tisp4,isp4yourname;
 
     while (left) {
       ierr = PetscStrcmp(eargs[0],"-options_file",&isoptions_file);CHKERRQ(ierr);
       ierr = PetscStrcmp(eargs[0],"-p4pg",&isp4);CHKERRQ(ierr);
+      ierr = PetscStrcmp(eargs[0],"-p4yourname",&isp4yourname);CHKERRQ(ierr);
       ierr = PetscStrcmp(eargs[0],"-p4wd",&tisp4);CHKERRQ(ierr);
       isp4 = (PetscTruth) (isp4 || tisp4);
       ierr = PetscStrcmp(eargs[0],"-np",&tisp4);CHKERRQ(ierr);
@@ -400,7 +401,7 @@ int PetscOptionsInsert(int *argc,char ***args,const char file[])
       */
       } else if (tisp4) {
         eargs += 1; left -= 1;        
-      } else if (isp4) {
+      } else if (isp4 || isp4yourname) {
         eargs += 2; left -= 2;
       } else if ((left < 2) || ((eargs[1][0] == '-') && 
                ((eargs[1][1] > '9') || (eargs[1][1] < '0')))) {
