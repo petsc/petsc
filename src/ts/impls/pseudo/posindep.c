@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.43 2000/05/04 14:03:54 balay Exp balay $*/
+/*$Id: posindep.c,v 1.44 2000/05/05 22:18:57 balay Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -683,8 +683,7 @@ int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
   }
   if (pseudo->fnorm == 0.0) {
     *newdt = 1.e12*inc*ts->time_step; 
-  }
-  else if (pseudo->increment_dt_from_initial_dt) {
+  } else if (pseudo->increment_dt_from_initial_dt) {
     *newdt = inc*ts->initial_time_step*pseudo->initial_fnorm/pseudo->fnorm;
   } else {
     *newdt = inc*ts->time_step*fnorm_previous/pseudo->fnorm;
@@ -692,4 +691,20 @@ int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
   pseudo->fnorm_previous = pseudo->fnorm;
   PetscFunctionReturn(0);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
