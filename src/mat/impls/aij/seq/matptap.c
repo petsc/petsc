@@ -8,24 +8,6 @@
 #include "petscbt.h"
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPtAP_SeqAIJ_SeqAIJ"
-PetscErrorCode MatPtAP_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (scall == MAT_INITIAL_MATRIX){
-    ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
-    ierr = MatPtAPSymbolic(A,P,fill,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
-  }
-  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
-  ierr = MatPtAPNumeric(A,P,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic_SeqAIJ"
 PetscErrorCode MatPtAPSymbolic_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 {

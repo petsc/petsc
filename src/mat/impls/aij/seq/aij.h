@@ -96,7 +96,6 @@ EXTERN PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
 EXTERN PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
-EXTERN PetscErrorCode MatPtAP_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatPtAPNumeric_SeqAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
