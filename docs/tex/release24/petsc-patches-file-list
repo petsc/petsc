@@ -1,3 +1,4 @@
 include/petscversion.h
 src/sles/pc/impls/mg/mg.c
 src/sles/pc/impls/mg/mgfunc.c
+src/sles/ksp/impls/cg/cg.c

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.83 1999/01/31 16:08:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.84 1999/03/01 04:55:47 bsmith Exp balay $";
 #endif
 
 /*
@@ -184,15 +184,16 @@ int  KSPSolve_CG(KSP ksp,int *its)
      if (eigs) {
        d[i] = sqrt(PetscAbsScalar(b))*e[i] + 1.0/a;
      }
-     ierr = VecAXPY(&a,P,X); CHKERRQ(ierr);        /*     x <- x + ap     */
-     ma = -a; VecAXPY(&ma,Z,R);                    /*     r <- r - az     */
-     if (!ksp->avoidnorms) {
-       if (pres) {
-         ierr = PCApply(ksp->B,R,Z); CHKERRQ(ierr);    /*     z <- Br         */
-         ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- z'*z       */
-       } else {
-         ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- r'*r       */
+     ierr = VecAXPY(&a,P,X); CHKERRQ(ierr);          /*     x <- x + ap     */
+     ma = -a; VecAXPY(&ma,Z,R);                      /*     r <- r - az     */
+     if (pres) {
+       ierr = PCApply(ksp->B,R,Z); CHKERRQ(ierr);    /*     z <- Br         */
+       if (!ksp->avoidnorms) {
+         ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- z'*z       */
        }
+     }
+     else if (!ksp->avoidnorms) {
+       ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- r'*r       */
      }
      ksp->rnorm = dp;
      KSPLogResidualHistory(ksp,dp);
