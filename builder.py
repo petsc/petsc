@@ -320,7 +320,7 @@ class Builder(logging.Logger):
         self.logWrite('Source:\n'+str(source)+'\n')
         if not self.argDB['ignoreCompileOutput']:
           # This is a hack
-          if len(''.join(filter(lambda l: l.find('warning') < 0 and l.find('In function') < 0 and l.find('At top level') < 0, error.split('\n')))):
+          if len(''.join(filter(lambda l: l.find('warning') < 0 and l.find('In function') < 0 and l.find('At top level') < 0 and l.find('In file included from') < 0, error.split('\n')))):
             raise CompileError(output+error)
       self.shouldCompile.update(source)
       return
