@@ -64,8 +64,10 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-enable-fortran-kernels',     nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
     help.addArgument('PETSc', '-with-mpi',                   nargs.ArgBool(None, 1, 'If this is false, MPIUNI will be used as a uniprocessor substitute'))
     help.addArgument('PETSc', '-with-libtool',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
-    help.addArgument('PETSc', '-with-make',                  nargs.Arg(None, 'make',   'Specify make'))
-    help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None, 'Specify ranlib'))
+    help.addArgument('PETSc', '-with-make',                  nargs.Arg(None, 'make', 'Specify make'))
+    help.addArgument('PETSc', '-with-ar',                    nargs.Arg(None, 'ar',   'Specify the archiver'))
+    help.addArgument('PETSc', 'AR_FLAGS',                    nargs.Arg(None, 'cv',   'Specify the archiver flags'))
+    help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
     help.addArgument('PETSc', '-with-default-language=<c,c++,c++-complex,0(zero for no default)>', nargs.Arg(None, 'c', 'Specifiy default language of libraries'))
     help.addArgument('PETSc', '-with-default-optimization=<g,O,0(zero for no default)>',           nargs.Arg(None, 'g', 'Specifiy default optimization of libraries'))
     help.addArgument('PETSc', '-with-default-arch',          nargs.ArgBool(None, 1, 'Allow using the most recently configured arch without setting PETSC_ARCH'))
@@ -229,14 +231,14 @@ class Configure(config.base.Configure):
       if os.path.exists('.conftest'): os.removedirs('.conftest/.tmp')
     return
 
-  def configurePrograms(self):
-    '''Check for the programs needed to build and run PETSc'''
-    # We use the framework in order to remove the PETSC_ namespace
-    self.framework.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
-    self.framework.getExecutable('sed',  getFullPath = 1)
-    self.framework.getExecutable('diff', getFullPath = 1)
-    self.framework.getExecutable('ar',   getFullPath = 1)
-    self.framework.addSubstitution('AR_FLAGS', 'cr')
+  def configureArchiver(self):
+    '''Check the archiver'''
+    self.framework.getExecutable(self.framework.argDB['with-ar'], getFullPath = 1, resultName = 'AR')
+    self.framework.addArgumentSubstitution('AR_FLAGS', 'AR_FLAGS')
+    return
+
+  def configureRanlib(self):
+    '''Check for ranlib, using "true" if it is not found'''
     if 'with-ranlib' in self.framework.argDB:
       found = self.framework.getExecutable(self.framework.argDB['with-ranlib'], resultName = 'RANLIB')
       if not found:
@@ -245,7 +247,15 @@ class Configure(config.base.Configure):
       found = self.framework.getExecutable('ranlib')
       if not found:
         self.framework.addSubstitution('RANLIB', 'true')
-    self.framework.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
+    return
+
+  def configurePrograms(self):
+    '''Check for the programs needed to build and run PETSc'''
+    # We use the framework in order to remove the PETSC_ namespace
+    self.framework.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
+    self.framework.getExecutable('sed',  getFullPath = 1)
+    self.framework.getExecutable('diff', getFullPath = 1)
+    self.framework.getExecutable('ps',   path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self.framework, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
     return
@@ -518,6 +528,8 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)
     self.executeTest(self.configureMkdir)
+    self.executeTest(self.configureArchiver)
+    self.executeTest(self.configureRanlib)
     self.executeTest(self.configurePrograms)
     self.executeTest(self.configureMissingFunctions)
     self.executeTest(self.configureMissingSignals)
