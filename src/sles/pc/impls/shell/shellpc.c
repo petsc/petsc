@@ -1,4 +1,4 @@
-/*$Id: shellpc.c,v 1.74 2001/03/23 23:23:08 balay Exp bsmith $*/
+/*$Id: shellpc.c,v 1.75 2001/04/10 19:36:09 bsmith Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -12,6 +12,7 @@ typedef struct {
   void *ctx,*ctxrich;    /* user provided contexts for preconditioner */
   int  (*setup)(void *);
   int  (*apply)(void *,Vec,Vec);
+  int  (*view)(void *,PetscViewer);
   int  (*applytranspose)(void *,Vec,Vec);
   int  (*applyrich)(void *,Vec,Vec,Vec,int);
   char *name;
@@ -89,17 +90,20 @@ static int PCDestroy_Shell(PC pc)
 #define __FUNCT__ "PCView_Shell"
 static int PCView_Shell(PC pc,PetscViewer viewer)
 {
-  PC_Shell   *jac = (PC_Shell*)pc->data;
+  PC_Shell   *shell = (PC_Shell*)pc->data;
   int        ierr;
   PetscTruth isascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    if (jac->name) {ierr = PetscViewerASCIIPrintf(viewer,"  Shell: %s\n",jac->name);CHKERRQ(ierr);}
-    else           {ierr = PetscViewerASCIIPrintf(viewer,"  Shell: no name\n");CHKERRQ(ierr);}
-  } else {
-    SETERRQ1(1,"Viewer type %s not supported for PCShell",((PetscObject)viewer)->type_name);
+    if (shell->name) {ierr = PetscViewerASCIIPrintf(viewer,"  Shell: %s\n",shell->name);CHKERRQ(ierr);}
+    else             {ierr = PetscViewerASCIIPrintf(viewer,"  Shell: no name\n");CHKERRQ(ierr);}
+  }
+  if (shell->view) {
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr  = (*shell->view)(shell->ctx,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -130,6 +134,20 @@ int PCShellSetApply_Shell(PC pc,int (*apply)(void*,Vec,Vec),void *ptr)
   shell        = (PC_Shell*)pc->data;
   shell->apply = apply;
   shell->ctx   = ptr;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetView_Shell"
+int PCShellSetView_Shell(PC pc,int (*view)(void*,PetscViewer))
+{
+  PC_Shell *shell;
+
+  PetscFunctionBegin;
+  shell        = (PC_Shell*)pc->data;
+  shell->view = view;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -228,6 +246,45 @@ int PCShellSetSetUp(PC pc,int (*setup)(void*))
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetSetUp_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,setup);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetView"
+/*@C
+   PCShellSetView - Sets routine to use as viewer of shell preconditioner
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  view - the application-provided view routine
+
+   Calling sequence of apply:
+.vb
+   int view(void *ptr,PetscViewer v)
+.ve
+
++  ptr - the application context
+-  v   - viewer
+
+   Level: developer
+
+.keywords: PC, shell, set, apply, user-provided
+
+.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose()
+@*/
+int PCShellSetView(PC pc,int (*view)(void*,PetscViewer))
+{
+  int ierr,(*f)(PC,int (*)(void*,PetscViewer));
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetView_C",(void (**)())&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,view);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -456,6 +513,7 @@ int PCCreate_Shell(PC pc)
   pc->name         = 0;
 
   pc->ops->apply           = PCApply_Shell;
+  pc->ops->view            = PCView_Shell;
   pc->ops->applytranspose  = PCApplyTranspose_Shell;
   pc->ops->applyrichardson = 0;
   pc->ops->setup           = PCSetUp_Shell;
@@ -468,11 +526,14 @@ int PCCreate_Shell(PC pc)
   shell->ctxrich        = 0;
   shell->ctx            = 0;
   shell->setup          = 0;
+  shell->view           = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetSetUp_C","PCShellSetSetUp_Shell",
                     PCShellSetSetUp_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApply_C","PCShellSetApply_Shell",
                     PCShellSetApply_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetView_C","PCShellSetView_Shell",
+                    PCShellSetView_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApplyTranspose_C",
                     "PCShellSetApplyTranspose_Shell",
                     PCShellSetApplyTranspose_Shell);CHKERRQ(ierr);
