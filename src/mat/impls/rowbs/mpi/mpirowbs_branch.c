@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.14 1995/05/02 21:18:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.15 1995/05/02 23:17:01 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -279,7 +279,7 @@ static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
   int          ierr, i, j, row, col, rstart = mrow->rstart, rend = mrow->rend;
 
-  if (mrow->insertmode != NotSetValues && mrow->insertmode != addv) {
+  if (mrow->insertmode != NOTSETVALUES && mrow->insertmode != addv) {
     SETERR(1,"You cannot mix inserts and adds");
   }
   mrow->insertmode = addv;
@@ -338,7 +338,7 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce((void *) &mrow->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
-  if (addv == (AddValues|InsertValues)) {
+  if (addv == (AddValues|INSERTVALUES)) {
     SETERR(1,"Some processors have inserted while others have added");
   }
   mrow->insertmode = addv; /* in case this processor had no cache */
@@ -522,7 +522,7 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
       loc = low + i;
       val = 1.0/sqrt(mrow->pA->scale_diag[i]);
       mrow->inv_diag[i] = 1.0/(mrow->pA->scale_diag[i]);
-      ierr = VecSetValues(mrow->diag,1,&loc,&val,InsertValues); CHKERR(ierr);
+      ierr = VecSetValues(mrow->diag,1,&loc,&val,INSERTVALUES); CHKERR(ierr);
     }
     ierr = VecAssemblyBegin( mrow->diag ); CHKERR(ierr);
     ierr = VecAssemblyEnd( mrow->diag ); CHKERR(ierr);
@@ -900,7 +900,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   mrow->assembled        = 0;
   mrow->fact_clone       = 0;
   mrow->reassemble_begun = 0;
-  mrow->insertmode       = NotSetValues;
+  mrow->insertmode       = NOTSETVALUES;
   MPI_Comm_rank(comm,&mrow->mytid);
   MPI_Comm_size(comm,&mrow->numtids);
 
