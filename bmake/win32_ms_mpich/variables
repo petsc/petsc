@@ -68,6 +68,7 @@ OCOMP_PETSCFLAGS = -DPETSC_USE_DEBUG -DPETSC_USE_BOPT_O -DPETSC_USE_LOG -DPETSC_
 ##################################################################################
 
 PARCH    = nt
+LOCDIR   =
 
 ################################################################
 # Notes:
