@@ -25,7 +25,7 @@ Additional Capabilities that PETSc Needs:
 
   - Add routine SNESWillNeedJacobian(SNES,SNESJacobianNeeded yes,no,maybe);
 
-  - Need to allow repeated matix assembly for repeated linear solves with
+  * Need to allow repeated matix assembly for repeated linear solves with
     in-place ILU(0). Perhaps new routine MatSetUnfactored(Mat)? 
 
   - Use MPI topology routines for DA codes.
