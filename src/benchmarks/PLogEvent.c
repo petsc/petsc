@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: PLogEvent.c,v 1.8 1997/07/09 21:01:29 balay Exp bsmith $";
+static char vcid[] = "$Id: PLogEvent.c,v 1.9 1997/10/19 03:30:47 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -12,9 +12,9 @@ int main( int argc, char **argv)
   PetscInitialize(&argc, &argv,0,0);
   PLogEventRegister(&e1,"*DummyEvent     ", "red:");
   /* To take care of the paging effects */
+  x = PetscGetTime();
   PLogEventBegin(e1,&x,0,0,0);
   PLogEventEnd(e1,&x,0,0,0);  
-  x = PetscGetTime();
 
   x = PetscGetTime();
   /* 10 Occurences of the dummy event */
