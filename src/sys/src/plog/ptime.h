@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.8 1995/08/16 16:01:06 bsmith Exp gropp $ */
+/* $Id: ptime.h,v 1.9 1995/10/06 14:38:44 gropp Exp bsmith $ */
 
 #if !defined(__PTIME_PACKAGE)
 #define __PTIME_PACKAGE
@@ -43,13 +43,20 @@ extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
    Synopsis:
    PetscTime(double v)
 
+   Usage: 
+     double v;
+     PetscTime(v);
+     /* perform some calculation */
+     PetscTimeElapsed(v); 
+     printf("Time for operation %g\n",v);
+
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations, 
    PetscTime() is intended only for timing of application codes.  
    The options database commands -log, -log_summary, and -log_all activate
    PETSc library timing.  See the users manual for further details.
 
-.seealso:  PetscTimeSubtract(), PetscTimeAdd()
+.seealso:  PetscTimeSubtract(), PetscTimeAdd(), PetscTimeElapsed()
 
 .keywords:  Petsc, time
 M*/
@@ -76,7 +83,7 @@ M*/
    The options database commands -log, -log_summary, and -log_all activate
    PETSc library timing.  See the users manual for further details.
 
-.seealso:  PetscTime(), PetscTimeAdd()
+.seealso:  PetscTime(), PetscTimeAdd() PetscTimeElapsed()
 
 .keywords:  Petsc, time, subtract
 M*/
@@ -102,7 +109,7 @@ M*/
    The options database commands -log, -log_summary, and -log_all activate
    PETSc library timing.  See the users manual for further details.
 
-.seealso:  PetscTime(), PetscTimeSubtract()
+.seealso:  PetscTime(), PetscTimeSubtract(), PetscTimeElapsed() 
 
 .keywords:  Petsc, time, add
 M*/
@@ -110,4 +117,31 @@ M*/
                              gettimeofday(&_tp,(struct timezone *)0);\
                              (v)+=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
 
+/*M
+   PetscTimeElapsed - Returns the time from the call to PetscTime().  
+
+   Output Parameter:
+.  v - time counter
+
+   Synopsis:
+   PetscTimeElapsed(double v)
+
+   Usage: 
+     double v;
+     PetscTime(v);
+     /* perform some calculation */
+     PetscTimeElapsed(v); 
+     printf("Time for operation %g\n",v);
+
+   Notes:
+   Since the PETSc libraries incorporate timing of phases and operations, 
+   PetscTimeElapsed() is intended only for timing of application codes.  
+   The options database commands -log, -log_summary, and -log_all activate
+   PETSc library timing.  See the users manual for further details.
+
+.seealso:  PetscTimeSubtract(), PetscTimeAdd(), PetscTim()
+
+.keywords:  Petsc, time
+M*/
+#define PetscTimeElapsed(v)  {PetscTimeSubtract(v); v = -v; }
 #endif
