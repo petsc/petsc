@@ -288,7 +288,7 @@ SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/crontab python/PET
              python/PETSc/packages/PLAPACK.py python/PETSc/packages/Triangle.py python/PETSc/packages/Matlab.py \
              python/PETSc/packages/PVODE.py python/PETSc/packages/BlasLapack.py python/PETSc/packages/MPI.py \
              python/PETSc/packages/BlockSolve.py python/PETSc/packages/NetCDF.py python/PETSc/packages/ParMetis.py \
-             python/PETSc/packages/update.py maint/buildtest/* config/configure*.py
+             python/PETSc/packages/update.py maint/confignightly/* config/*.py
 
 
 updatewebdocs:

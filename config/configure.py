@@ -37,17 +37,21 @@ def petsc_configure(configure_options):
   framework.argDB['LIBS'] = ''
   try:
     framework.configure(out = sys.stdout)
+    framework.storeSubstitutions(framework.argDB)
+    return 0
+  except RuntimeError, e:
+    msg = '******* Unable to configure with given options ******* (see configure.log for full details):\n'+str(e)+'\n******************************************************\n'
+    se = ''
   except Exception, e:
+    msg = '******* CONFIGURATION CRASH **** Please send configure.log to petsc-maint@mcs.anl.gov\n'
+    se  = str(e)
+    
+  print msg
+  if hasattr(framework, 'log'):
     import traceback
-
-    msg = 'CONFIGURATION FAILURE (see configure.log for full details):\n'+str(e)+'\n'
-    print msg
-    if hasattr(framework, 'log'):
-      framework.log.write(msg)
-      traceback.print_tb(sys.exc_info()[2], file = framework.log)
+    framework.log.write(msg+se)
+    traceback.print_tb(sys.exc_info()[2], file = framework.log)
     sys.exit(1)
-  framework.storeSubstitutions(framework.argDB)
-  return 0
 
 if __name__ == '__main__':
   for opt in sys.argv[1:]:
