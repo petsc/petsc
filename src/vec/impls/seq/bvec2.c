@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.143 1998/12/17 22:08:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.144 1999/01/12 23:13:22 bsmith Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -311,7 +311,6 @@ int VecSetValuesBlocked_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 int VecDestroy_Seq(Vec v)
 {
   Vec_Seq *vs = (Vec_Seq*) v->data;
-  int     ierr;
 
   PetscFunctionBegin;
 
@@ -324,6 +323,7 @@ int VecDestroy_Seq(Vec v)
   /* if memory was published with AMS then destroy it */
 #if defined(HAVE_AMS)
   if (v->amem >= 0) {
+    int     ierr;
     ierr = AMS_Memory_destroy(v->amem);CHKERRQ(ierr);
   }
 #endif

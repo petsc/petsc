@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vnake.c,v 1.1 1999/01/06 20:58:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vnake.c,v 1.2 1999/01/12 23:13:14 bsmith Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
@@ -35,7 +35,6 @@ static char vcid[] = "$Id: vnake.c,v 1.1 1999/01/06 20:58:48 bsmith Exp bsmith $
 int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
 {
   Vec     v;
-  int     ierr,size;
 
   PetscFunctionBegin;
   *V             = 0;
