@@ -1,4 +1,4 @@
-/*$Id: bdiag.c,v 1.192 2001/03/23 22:05:25 bsmith Exp balay $*/
+/*$Id: bdiag.c,v 1.193 2001/03/23 23:22:03 balay Exp buschelm $*/
 
 /* Block diagonal matrix format */
 
@@ -109,23 +109,38 @@ int MatSetOption_SeqBDiag(Mat A,MatOption op)
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
 
   PetscFunctionBegin;
-  if (op == MAT_NO_NEW_NONZERO_LOCATIONS)       a->nonew       = 1;
-  else if (op == MAT_YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
-  else if (op == MAT_NO_NEW_DIAGONALS)          a->nonew_diag  = 1;
-  else if (op == MAT_YES_NEW_DIAGONALS)         a->nonew_diag  = 0;
-  else if (op == MAT_COLUMN_ORIENTED)           a->roworiented = PETSC_FALSE;
-  else if (op == MAT_ROW_ORIENTED)              a->roworiented = PETSC_TRUE;
-  else if (op == MAT_ROWS_SORTED || 
-           op == MAT_ROWS_UNSORTED || 
-           op == MAT_COLUMNS_SORTED || 
-           op == MAT_COLUMNS_UNSORTED || 
-           op == MAT_IGNORE_OFF_PROC_ENTRIES ||
-           op == MAT_NEW_NONZERO_LOCATION_ERR ||
-           op == MAT_NEW_NONZERO_ALLOCATION_ERR ||
-           op == MAT_USE_HASH_TABLE)
+  switch (op) {
+  case MAT_NO_NEW_NONZERO_LOCATIONS:
+    a->nonew       = 1;
+    break;
+  case MAT_YES_NEW_NONZERO_LOCATIONS:
+    a->nonew       = 0;
+    break;
+  case MAT_NO_NEW_DIAGONALS:
+    a->nonew_diag  = 1;
+    break;
+  case MAT_YES_NEW_DIAGONALS:
+    a->nonew_diag  = 0;
+    break;
+  case MAT_COLUMN_ORIENTED:
+    a->roworiented = PETSC_FALSE;
+    break;
+  case MAT_ROW_ORIENTED:
+    a->roworiented = PETSC_TRUE;
+    break;
+  case MAT_ROWS_SORTED:
+  case MAT_ROWS_UNSORTED:
+  case MAT_COLUMNS_SORTED:
+  case MAT_COLUMNS_UNSORTED:
+  case MAT_IGNORE_OFF_PROC_ENTRIES:
+  case MAT_NEW_NONZERO_LOCATION_ERR:
+  case MAT_NEW_NONZERO_ALLOCATION_ERR:
+  case MAT_USE_HASH_TABLE:
     PetscLogInfo(A,"MatSetOption_SeqBDiag:Option ignored\n");
-  else { 
+    break;
+  default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
+    break;
   }
   PetscFunctionReturn(0);
 }

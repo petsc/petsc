@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.200 2001/04/25 15:04:47 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.201 2001/06/21 21:16:19 bsmith Exp buschelm $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -1150,21 +1150,27 @@ int MatSetOption_SeqDense(Mat A,MatOption op)
   Mat_SeqDense *aij = (Mat_SeqDense*)A->data;
   
   PetscFunctionBegin;
-  if (op == MAT_ROW_ORIENTED)            aij->roworiented = PETSC_TRUE;
-  else if (op == MAT_COLUMN_ORIENTED)    aij->roworiented = PETSC_FALSE;
-  else if (op == MAT_ROWS_SORTED || 
-           op == MAT_ROWS_UNSORTED ||
-           op == MAT_COLUMNS_SORTED ||
-           op == MAT_COLUMNS_UNSORTED ||
-           op == MAT_NO_NEW_NONZERO_LOCATIONS ||
-           op == MAT_YES_NEW_NONZERO_LOCATIONS ||
-           op == MAT_NEW_NONZERO_LOCATION_ERR ||
-           op == MAT_NO_NEW_DIAGONALS ||
-           op == MAT_YES_NEW_DIAGONALS ||
-           op == MAT_IGNORE_OFF_PROC_ENTRIES ||
-           op == MAT_USE_HASH_TABLE) {
+  switch (op) {
+  case MAT_ROW_ORIENTED:
+    aij->roworiented = PETSC_TRUE;
+    break;
+  case MAT_COLUMN_ORIENTED:
+    aij->roworiented = PETSC_FALSE;
+    break;
+  case MAT_ROWS_SORTED: 
+  case MAT_ROWS_UNSORTED:
+  case MAT_COLUMNS_SORTED:
+  case MAT_COLUMNS_UNSORTED:
+  case MAT_NO_NEW_NONZERO_LOCATIONS:
+  case MAT_YES_NEW_NONZERO_LOCATIONS:
+  case MAT_NEW_NONZERO_LOCATION_ERR:
+  case MAT_NO_NEW_DIAGONALS:
+  case MAT_YES_NEW_DIAGONALS:
+  case MAT_IGNORE_OFF_PROC_ENTRIES:
+  case MAT_USE_HASH_TABLE:
     PetscLogInfo(A,"MatSetOption_SeqDense:Option ignored\n");
-  } else {
+    break;
+  default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
   }
   PetscFunctionReturn(0);
