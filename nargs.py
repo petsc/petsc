@@ -18,13 +18,19 @@ def parseArg(arg):
     else:            arg = []
   return arg
 
-def insertArgList(argList):
+def insertArgList(list,argList):
   if not type(argList) == types.ListType: return
   for arg in argList:
     if arg[0] == '-':
       (key, val) = string.split(arg[1:], '=')
-      self[key]  = parseArg(val)
-
+      list[key]  = parseArg(val)
+    else:
+      if list.has_key('target') and not list['target'] == ['default']:
+        list['target'].append(arg)
+      else:
+        list['target'] = [arg]
+        
+    
 #  The base class of objects that are stored in the ArgDict
 class Arg:
   def __init__(self,value):
@@ -88,10 +94,13 @@ class ArgInt:
         if self.value > self.min and self.value < self.max: return (1,self.value)
     else: return (0,self.value)
 
+#=======================================================================================================
+#   Dictionary of actual command line arguements, etc.
+#
 class ArgDict (rargs.RArgs):
   def __init__(self, name = "ArgDict",argList = None):
     rargs.RArgs.__init__(self,name)
-    insertArgList(argList)
+    insertArgList(self,argList)
 
   def __setitem__(self,key,value):
     rargs.RArgs.__setitem__(self,key,Arg(value))
@@ -106,6 +115,9 @@ class ArgDict (rargs.RArgs):
     if tup[0]: rargs.RArgs.__setitem__(self,key,rval)
     return tup[1]
 
+  def __delitem__(self,key):
+    rargs.RArgs.__delitem__(self,key)
+    
   def has_key(self,key):
     # get the remote object
     try: rval = rargs.RArgs.__getitem__(self,key)

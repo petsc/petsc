@@ -1,10 +1,12 @@
 import bs
 import fileset
 import logging
+import nargs
 
 import commands
 import os
 import string
+import pwd
 
 class ChecksumError (RuntimeError):
   def __init__(self, value):
@@ -30,7 +32,7 @@ class Maker (logging.Logger):
   def checkTmpDir(self, mainTmp):
     if not os.path.exists(mainTmp):
       del bs.argDB['TMPDIR']
-      bs.argDB.setHelp('TMPDIR', 'Temporary directory '+mainTmp+' does not exist. Select another directory')
+      bs.argDB.setType('TMPDIR', nargs.ArgDir(1,'Temporary directory '+mainTmp+' does not exist. Select another directory'))
       newTmp = bs.argDB['TMPDIR']
       return 0
       
@@ -38,12 +40,25 @@ class Maker (logging.Logger):
     freeSpace = stats.f_bavail*stats.f_frsize
     if freeSpace < 50*1024*1024:
       del bs.argDB['TMPDIR']
-      bs.argDB.setHelp('TMPDIR', 'Insufficient space ('+str(freeSpace/1024)+'K) on '+mainTmp+'. Select another directory')
+      bs.argDB.setType('TMPDIR', nargs.ArgDir(1,'Insufficient space ('+str(freeSpace/1024)+'K) on '+mainTmp+'. Select another directory'))
       newTmp = bs.argDB['TMPDIR']
       return 0
     return 1
 
   def setupTmpDir(self):
+        
+    #  get tmp directory; needs to be different for each user
+    if not bs.argDB.has_key('TMPDIR') and os.environ.has_key('TMPDIR'):
+      bs.argDB['TMPDIR'] = os.environ['TMPDIR']
+
+    if not bs.argDB.has_key('TMPDIR') or bs.argDB['TMPDIR'] == '/tmp':
+      bs.argDB['TMPDIR'] = os.path.join('/tmp', pwd.getpwuid(os.getuid())[0])
+    if not os.path.exists(bs.argDB['TMPDIR']):
+      try:
+        os.makedirs(bs.argDB['TMPDIR'])
+      except:
+        raise RuntimeError("Cannot create tmp directory "+bs.argDB['TMPDIR'])
+
     mainTmp = bs.argDB['TMPDIR']
     while not self.checkTmpDir(mainTmp):
       mainTmp = bs.argDB['TMPDIR']

@@ -12,6 +12,7 @@ import SocketServer
 import socket
 import time
 from nargs import *
+import dargs
 
 class Args (UserDict.UserDict):
   def __init__(self,name,readpw,addpw,writepw):
@@ -115,17 +116,17 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
       cPickle.dump((0,None),self.wfile)
 
 class DArgs:
-  def __init__(self, filename = "DArgs.db", dictpw = "open"):
+  def __init__(self, dictpw = "open"):
     self.data      = UserDict.UserDict()
-    self.filename  = filename
-    self.load(filename)
+    self.filename  = os.path.join(os.path.dirname(sys.modules['dargs'].__file__), 'DArgs.db')
+    self.load()
     self.dictpw    = dictpw
-    self.logfile   = open("DArgs.log",'a')
+    self.logfile   = open(os.path.join(os.path.dirname(sys.modules['dargs'].__file__), 'DArgs.log'),'a')
     atexit.register(self.save)
 
-  def load(self, filename):
-    if filename and os.path.exists(filename):
-      dbFile    = open(filename, 'r')
+  def load(self):
+    if self.filename and os.path.exists(self.filename):
+      dbFile    = open(self.filename, 'r')
       self.data = cPickle.load(dbFile)
       dbFile.close()
 
@@ -133,7 +134,8 @@ class DArgs:
     dbFile = open(self.filename, 'w')
     cPickle.dump(self.data, dbFile)
     dbFile.close()
-    try: os.unlink('DArgs.loc')
+    filename = os.path.join(os.path.dirname(sys.modules['dargs'].__file__), 'DArgs.loc')
+    try: os.unlink(filename)
     except: pass
     self.logfile.write("Shutting down\n")
     self.logfile.flush()
@@ -152,7 +154,8 @@ class DArgs:
     if p == 1000:
       raise RuntimeError,"Cannot get available socket"
         
-    f = open("DArgs.loc", 'w')
+    filename = os.path.join(os.path.dirname(sys.modules['dargs'].__file__), 'DArgs.loc')
+    f = open(filename, 'w')
     cPickle.dump(server.server_address, f)
     f.close()
 

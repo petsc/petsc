@@ -1,4 +1,3 @@
-import argtest
 import babel
 import bk
 import bs
@@ -306,8 +305,6 @@ class UsingPython(UsingCompiler):
   '''This class handles all interaction specific to the Python language'''
   def __init__(self, usingSIDL):
     UsingCompiler.__init__(self, usingSIDL)
-    bs.argDB.setTester('PYTHON_INCLUDE', argtest.DirectoryTester())
-    #TODO: bs.argDB.setTester('PYTHON_LIB',     argtest.LibraryTester())
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
 
@@ -418,8 +415,8 @@ class UsingJava (UsingCompiler):
   '''This class handles all interaction specific to the Java language'''
   def __init__(self, usingSIDL):
     UsingCompiler.__init__(self, usingSIDL)
-    bs.argDB.setTester('JAVA_INCLUDE', argtest.DirectoryTester())
-    bs.argDB.setTester('JAVA_RUNTIME_LIB', argtest.DirectoryTester())
+    bs.argDB.setType('JAVA_INCLUDE', nargs.ArgDir(0,"List of Java JNI include directories"))
+    bs.argDB.setTester('JAVA_RUNTIME_LIB', nargs.ArgDir(0,"Location of JAVA JNI libraries"))
     self.setupIncludeDirectories()
 
   def setupIncludeDirectories(self):

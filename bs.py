@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-import args
-import argtest
+import nargs
 import maker
 import sourceDatabase
 
@@ -20,30 +19,19 @@ class BS (maker.Maker):
   def __init__(self, clArgs = None):
     self.setupArgDB(clArgs)
     maker.Maker.__init__(self)
-    for key in argDB.keys():
-      self.debugPrint('Set '+key+' to '+str(argDB[key]), 3, 'argDB')
+#    for key in argDB.keys():
+#      self.debugPrint('Set '+key+' to '+str(argDB[key]), 3, 'argDB')
     self.sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
     self.setupSourceDB()
     self.setupDefaultTargets()
 
   def setupDefaultArgs(self):
-    argDB.setDefault('target',      ['default'])
-    argDB.setDefault('TMPDIR',      '/tmp')
-    argDB.setDefault('checksumType', 'md5')
-
-    argDB.setHelp('BS_DIR', 'The directory in which BS was installed')
+    argDB['checksumType'] = 'md5'
 
   def setupArgDB(self, clArgs):
     global argDB
-    parent = None
-
-    if sys.modules.has_key('bs'):
-      filename = os.path.join(os.path.dirname(sys.modules['bs'].__file__), 'bsArg.db')
-      if os.path.exists(filename):
-        parent = filename
-    argDB = args.ArgDict(os.path.join(os.getcwd(), 'bsArg.db'), parent)
+    argDB = nargs.ArgDict("ArgDict",sys.argv[1:])
     self.setupDefaultArgs()
-    argDB.input(clArgs)
 
   def saveSourceDB(self):
     self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
@@ -79,7 +67,6 @@ class BS (maker.Maker):
       sourceDB = sourceDatabase.SourceDB()
     atexit.register(self.cleanup)
     sourceDB.setFromArgs(argDB)
-    argDB.setTester('restart',argtest.IntTester())
     if not int(argDB['restart']):
       for source in sourceDB:
         sourceDB.clearUpdateFlag(source)

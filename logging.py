@@ -1,7 +1,7 @@
 import sys
 import traceback
 import types
-import argtest
+import nargs
 
 class LoggerdebugSectionsTester:
   def test(self,value):
@@ -20,10 +20,9 @@ class Logger:
 
   def setFromArgs(self, argDB):
     if not argDB: return
-    argDB.setHelp('debugLevel', 'Integer 0 to 4')
-    argDB.setTester('debugLevel',argtest.IntTester())
+    argDB.setType('debugLevel', nargs.ArgInt('Integer 0 to 4',-1,5))
     self.debugLevel    = int(argDB['debugLevel'])
-    argDB.setTester('debugSections',LoggerdebugSectionsTester())
+    argDB.setType('debugLevel', nargs.ArgString('Sections to debug'))
     self.debugSections = argDB['debugSections']
 
   def debugListStr(self, list):
