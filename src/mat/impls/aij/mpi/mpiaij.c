@@ -3047,7 +3047,6 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   PetscInt             nrows,*buf_s,*buf_si,*buf_si_i,**nextrow,**nextai;
   MPI_Request          *si_waits,*sj_waits,*ri_waits,*rj_waits; 
   MPI_Status           *status;
-  MatScalar            *ba;
   FreeSpaceList        free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT              lnkbt;
   Mat_Merge_SeqsToMPI  *merge;
