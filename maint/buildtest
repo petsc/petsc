@@ -9,7 +9,7 @@ set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
   set M =(snake            eagle      ryan       elvis         doc          ptera               maverick   )
   set B =(O                O_complex  g          g_c++         O_c++        Opg                 O          )
-  set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha               sun4_uni   )
+  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha               sun4_uni   )
   set S =(noshared         noshared   shared     noshared      noshared     shared              shared     )
   set J1=(1                1          1          1             1            1                   4          )
   set J2=(0                2          2          2             2            2                   9          )
@@ -22,7 +22,7 @@ endif
 if ($day == Mon) then
   set M =(snake            eagle      ryan       elvis         doc          ptera                maverick    )
   set B =(g                Opg_c++    O_c++      g             O            g                    Opg         )
-  set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha_nolog          sun4_local  )
+  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha_nolog          sun4        )
   set S =(noshared         noshared   shared     noshared      noshared     shared               noshared    )
   set J1=(0                1          1          1             1            1                    1           )
   set J2=(1                2          2          2             2            2                    2           )
@@ -35,7 +35,7 @@ endif
 if ($day == Tue) then
   set M =(snake            eagle      ryan       elvis         doc          ptera                maverick    )
   set B =(O                g          O_complex  O             g            O                    Opg_c++     )
-  set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha                sun4_local  )
+  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha                sun4        )
   set S =(noshared         noshared   shared     noshared      noshared     shared               noshared    )
   set J1=(0                1          1          1             1            1                    1           )
   set J2=(2                2          2          2             2            2                    2           )
@@ -48,7 +48,7 @@ endif
 if ($day == Wed) then
   set M =(snake            eagle      ryan       elvis         doc          ptera                maverick    )
   set B =(g                g_c++      Opg        g_complex     Opg_complex  g                    Opg_c++     )
-  set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha_nolog          sun4_uni    )
+  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha_nolog          sun4_uni    )
   set S =(noshared         noshared   shared     noshared      noshared     shared               noshared    )
   set J1=(3                1          1          1             1            1                    4           )
   set J2=(0                2          3          2             2            2                    9           )
@@ -61,7 +61,7 @@ endif
 if ($day == Thu) then
   set M =(snake            eagle      ryan       elvis         doc          ptera                maverick    )
   set B =(O                g_complex  g_c++      O_c++         g_c++        g                    Opg_complex )
-  set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha                sun4_local  )
+  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha                sun4        )
   set S =(noshared         noshared   shared     noshared      noshared     shared               noshared    )
   set J1=(0                1          1          1             1            1                    1           )
   set J2=(0                2          2          2             2            2                    2           )
@@ -74,7 +74,7 @@ endif
 if ($day == Fri) then
   set M =(snake            eagle      ryan       elvis         doc          ptera                maverick    )
   set B =(g                O_c++      g_complex  O_complex     g_complex    g_complex            Opg         )
-  set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha                sun4_local  )
+  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha                sun4        )
   set S =(noshared         noshared   shared     noshared      noshared     shared               noshared    )
   set J1=(0                1          1          1             1            1                    1           )
   set J2=(2                2          2          2             2            2                    2           )
@@ -87,7 +87,7 @@ endif
 if ($day == Sat) then
   set M =(snake            eagle      ryan       elvis         doc          ptera                maverick    )
   set B =(O                O          O          Opg_complex   g_complex    g                    g_complex   )
-  set A =(hpux             sun4_local IRIX       freebsd_local rs6000_local alpha                sun4_uni    )
+  set A =(hpux             sun4       IRIX       freebsd_local rs6000_local alpha                sun4_uni    )
   set S =(noshared         noshared   shared     noshared      noshared     shared               shared      )
   set J1=(1                1          1          1             1            1                    4           )
   set J2=(0                2          2          2             2            2                    9           )
@@ -118,39 +118,33 @@ foreach job ($*)
   rsh $mach -n /home/bsmith/petsc/maint/buildlinks $hme > /dev/null
   rsh $mach -n "cd $hme/maint ;rm -f build_$arch.$bopt.$mach.log examples_$arch.$bopt.$mach.log"
 
-  if ($mach == ptera) then
-    set E = -e
-  else
-    set E = ""
-  endif
-
   rsh $mach -n "cd $hme ; echo 'Build on $mach $bopt `date` ' > maint/build_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme ;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt all $shar >>& maint/build_$arch.$bopt.$mach.log"
+  rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt all $shar >>& maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ; echo '****************************************************' >> maint/build_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt fortran >>& maint/build_$arch.$bopt.$mach.log"
+  rsh $mach -n "cd $hme;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt fortran >>& maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme; chmod -R g+w lib" >& /dev/null
   rsh $mach -n "cd $hme ;echo 'Finished Build on $mach  $arch $bopt `date`' >> maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ;echo 'Build on $mach  $bopt `date` ' > maint/examples_$arch.$bopt.$mach.log"
   if ( $job1 != 0 ) then 
-    rsh $mach -n "cd $hme ;   make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job1 tree >>& maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ;   make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job1 tree >>& maint/examples_$arch.$bopt.$mach.log"
     rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job2 != 0 ) then 
-    rsh $mach -n "cd $hme ;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job2 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job2 tree  >>& maint/examples_$arch.$bopt.$mach.log"
     rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job3 != 0 ) then 
-    rsh $mach -n "cd $hme ;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job3 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job3 tree  >>& maint/examples_$arch.$bopt.$mach.log"
     rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job4 != 0 ) then 
-    rsh $mach -n "cd $hme ;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job4 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job4 tree  >>& maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job5 != 0 ) then 
-    rsh $mach -n "cd $hme ;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job5 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job5 tree  >>& maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job6 != 0 ) then 
-    rsh $mach -n "cd $hme ;  make $E PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job6 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=testexamples_$job6 tree  >>& maint/examples_$arch.$bopt.$mach.log"
   endif
   rsh $mach -n "cd $hme ;echo 'Finished Build on $mach $arch $bopt `date`' >> maint/examples_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ; echo 'Finished Build `date`' >> maint/build_$arch.$bopt.$mach.log"
