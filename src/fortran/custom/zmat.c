@@ -1,9 +1,10 @@
-/*$Id: zmat.c,v 1.81 2000/07/11 03:05:42 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.82 2000/07/12 02:58:20 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define matcreateseqaijwitharrays_       MATCREATESEQAIJWITHARRAYS
 #define matpartitioningdestroy_          MATPARTITIONINGDESTROY
 #define matsetvalue_                     MATSETVALUE
 #define matgetrow_                       MATGETROW
@@ -49,6 +50,7 @@
 #define matpartitioningapply_            MATPARTITIONINGAPPLY
 #define matcreatempiadj_                 MATCREATEMPIADJ
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matcreateseqaijwitharrays_       matcreateseqaijwitharrays
 #define matpartitioningdestroy_          matpartitioningdestroy
 #define matpartitioningsettype_          matpartitioningsettype
 #define matsetvalue_                     matsetvalue
@@ -96,6 +98,12 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL matcreateseqaijwitharrays_(MPI_Comm *comm,int *m,int *n,int *i,int *j,Scalar *a,Mat *mat,int *ierr)
+{
+  *ierr = MatCreateSeqAIJWithArrays((MPI_Comm)PetscToPointerComm(*comm),*m,*n,i,j,a,mat);
+}
+
 
 #include "src/mat/impls/adj/mpi/mpiadj.h"
 void PETSC_STDCALL matcreatempiadj(MPI_Comm *comm,int *m,int *n,int *i,int *j,int *values,Mat *A,int *ierr)
