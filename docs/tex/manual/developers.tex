@@ -1,4 +1,4 @@
-% $Id: developers.tex,v 1.1 1998/04/21 23:15:02 bsmith Exp bsmith $ 
+% $Id: developers.tex,v 1.2 1998/04/21 23:41:48 bsmith Exp bsmith $ 
 %
 % LATEX version of the PETSc users manual.
 %
@@ -30,7 +30,8 @@ Mathematics and Computer Science Division \\
 http://www.mcs.anl.gov/petsc
 \vspace{0.5in} \\
 {\rm This manual is intended for use with PETSc 2.0.22}}
-{95/11 - Revision 2.0.22}{1998}
+%{98/?? - Revision 2.0.22}{1998}
+{\Large This is not yet an official ANL document}{1998}
 
 \newpage
 
@@ -57,11 +58,32 @@ http://www.mcs.anl.gov/petsc
 \medskip \medskip
 This manual describes how to develop library codes that are compatible and
 may be used directly and easily with PETSc 2.0. It assumes that you are 
-familar with PETSc, have a copy of the users manual and access to all its
+familar with PETSc, have a copy of the PETSc users manual and access to all its
 source code and documentation (available via http://www.mcs.anl.gov/petsc).
 
+PETSc is designed using a component object oriented architecture. This means that
+libraries consist of {\em objects} that have a certain, defined functionality. This
+document defines how these objects are implemented.
 
-% $Id: developers.tex,v 1.1 1998/04/21 23:15:02 bsmith Exp bsmith $ 
+\vspace{1cm}
+
+This is the first draft of the PETSc developers users manual, therefore it is
+very sketchy and incomplete. You are welcome to direct all commponents and 
+questions regarding PETSc development to {\tt petsc-developers@mcs.anl.gov}.
+Note that all {\em bug reports and questions regarding the use of PETSc} should
+continue to be directed to {\tt petsc-maint@mcs.anl.gov}.
+
+The PETSc team is part of a larger group (mostly at the DOE labs) funded by 
+the DOE2000 initiative to develop a Common Component Architecture (CCA). In addition,
+we are involved in a related DOE lab initiative to develop a standard object 
+interface for scalable linear solvers. Already as a result of these efforts
+we have modifid the PETSc software design and will continue to evolve PETSc as
+these initiatives continue.  Part of these projects will allow C and C++ objects
+to interoperate in the same application, through the use of object wrappers; this
+work is still experimental and thus is not yet part of PETSc.
+
+
+% $Id: developers.tex,v 1.2 1998/04/21 23:41:48 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -72,8 +94,13 @@ source code and documentation (available via http://www.mcs.anl.gov/petsc).
 %    \tt mode from running of the page)
 %
 
+% Blank page makes double sided printout look bettter.
+\newpage
+\hbox{ }
+\newpage
 
-\chapter{Design and Implementations of the  Abstract Classes}
+
+\chapter{Basic Object Design}
 \label{chapter:design}
 
 PETSc 2.0 is designed using strong data encapsulation.  Hence,
@@ -82,12 +109,14 @@ a way that is completely private from the application code. The application
 code can manipulate the data only through a well-defined interface, as it 
 does {\em not} know how the data is stored internally. 
 
+\section{Introduction}
+
 PETSc is designed around several components (e.g. {\tt Vec} (vectors),
 {\tt Mat} (matrices, both dense and sparse)). Each component has
 \begin{itemize}
 \item Its own include file {\tt \$\{PETSC\_DIR\}/include/<component>.h} 
 \item Its own directory, {\tt \$\{PETSC\_DIR\}/src/<component>}
-\item An abstract data structure defined in  the file
+\item A data structure defined in  the file
       {\tt \$\{PETSC\_DIR\}/src/<component>/<component>impl.h}.
       This data structure is shared by all the different implementations of the 
       component. For example, for matrices it is shared by dense,
@@ -104,12 +133,16 @@ PETSc is designed around several components (e.g. {\tt Vec} (vectors),
 \end{itemize}
 
 Each type of object, for instance a vector, is defined in its own
-include file, by {\tt typedef \_p\_Object* Object;}, (for example, 
-{\tt typedef \_p\_Vec* Vec;}).  This organization
-allows the compiler to perform type checking while at the same time
+include file, by 
+\begin{verbatim}
+   typedef _p_<component>* <component>;,
+\end{verbatim}
+(for example, {\tt typedef \_p\_Vec* Vec;}).  This organization
+allows the compiler to perform type checking on all subroutine calls
+while at the same time
 completely removing the details of the implementation of {\tt
-\_p\_Object} from the application code. The exact details of {\tt
-\_p\_Object} may be changed at link time. This capability is extremely important
+\_p\_<component} from the application code. The exact details of {\tt
+\_p\_<component>} may be changed at link time. This capability is extremely important
 because it allows the library internals to be changed
 without altering or recompiling the application code.
 
@@ -119,20 +152,116 @@ operations on the object.  Essentially, these routines do some error
 checking of arguments and logging of profiling information 
 and then call the function appropriate for the
 particular implementation of the object. The name of the abstract
-function is {\tt ObjectOperation}, for instance, {\tt MatMult} or {\tt PCCreate}, while
+function is {\tt <component>Operation}, for instance, {\tt MatMult} or {\tt PCCreate}, while
 the name of a particular implementation is 
-\break{\tt ObjectOperation\_Implementation}, for instance, 
+\break{\tt <component>Operation\_Implementation}, for instance, 
 {\tt MatMult\_SeqAIJ} or {\tt PCCreate\_ILU}. These naming
 conventions are used to simplify code maintenance.
 
-Each object structure (named {\tt \_p\_Object}) consists of three parts:
-a common PETSc header (defined in {\tt include/petschead.h},
-a pointer to a list of operations for the
-object, and any additional information that is appropriate for the
-particular abstract object.  The PETSc header includes an integer
-cookie, an integer type, an MPI communicator, a function pointer that
-indicates a destroy routine, and a function pointer that indicates a
-viewer routine. The header can also contain additional records.
+\section{Common Object Header}
+
+All PETSc objects have the following common header,
+
+\begin{verbatim}
+
+typedef struct {
+   int (*view)(PetscObject,Viewer);
+   int (*destroy)(PetscObject);
+   int (*query)(PetscObject,char *,PetscObject *);
+   int (*compose)(PetscObject,char*,PetscObject);
+   int (*reference)(PetscObject);
+   int (*composefunction)(PetscObject,char *,char *,void *);
+   int (*queryfunction)(PetscObject,char *, void **);
+} PetscOps;
+
+struct _p_<component> {
+  int              cookie;                                  
+  MPI_Comm         comm;                                    
+  PetscOps         *bops;                                   
+  <component>Ops   *ops;                                    
+  int              type;                                    
+  PLogDouble       flops,time,mem;                          
+  int              id;                                      
+  int              refct;                                   
+  int              tag;                                     
+  DLList           qlist;                                   
+  OList            olist;                                   
+  char             *type_name;                              
+  PetscObject      parent;                                  
+  char*            name;                                    
+  char             *prefix;                                 
+  void**           fortran_func_pointers;       
+  COMPONENT SPECIFIC DATASTRUCTURES
+}; 
+
+\end{verbatim}
+Here {\tt <component>ops} is a function table (like the {\tt PetscOps} above) that 
+will contain the function pointers for the operations specific to that component.
+For example, the PETSc vector component object looks like
+
+\begin{verbatim}
+struct _VecOps {
+  int  (*duplicate)(Vec,Vec*),           /* get single vector */
+       (*duplicatevecs)(Vec,int,Vec**),  /* get array of vectors */
+       (*destroyvecs)(Vec*,int),         /* free array of vectors */
+       (*dot)(Vec,Vec,Scalar*),          /* z = x^H * y */
+       (*mdot)(int,Vec,Vec*,Scalar*),    /* z[j] = x dot y[j] */
+       (*norm)(Vec,NormType,double*),    /* z = sqrt(x^H * x) */
+       (*tdot)(Vec,Vec,Scalar*),         /* x'*y */
+       (*mtdot)(int,Vec,Vec*,Scalar*),   /* z[j] = x dot y[j] */
+       (*scale)(Scalar*,Vec),            /* x = alpha * x   */
+       (*copy)(Vec,Vec),                 /* y = x */
+       (*set)(Scalar*,Vec),              /* y = alpha  */
+       (*swap)(Vec,Vec),                 /* exchange x and y */
+       (*axpy)(Scalar*,Vec,Vec),         /* y = y + alpha * x */
+       (*axpby)(Scalar*,Scalar*,Vec,Vec),/* y = y + alpha * x + beta * y*/
+       (*maxpy)(int,Scalar*,Vec,Vec*),   /* y = y + alpha[j] x[j] */
+       (*aypx)(Scalar*,Vec,Vec),         /* y = x + alpha * y */
+       (*waxpy)(Scalar*,Vec,Vec,Vec),    /* w = y + alpha * x */
+       (*pointwisemult)(Vec,Vec,Vec),    /* w = x .* y */
+       (*pointwisedivide)(Vec,Vec,Vec),  /* w = x ./ y */
+       (*setvalues)(Vec,int,int*,Scalar*,InsertMode),
+       (*assemblybegin)(Vec),            /* start global assembly */
+       (*assemblyend)(Vec),              /* end global assembly */
+       (*getarray)(Vec,Scalar**),        /* get data array */
+       (*getsize)(Vec,int*),(*getlocalsize)(Vec,int*),
+       (*getownershiprange)(Vec,int*,int*),
+       (*restorearray)(Vec,Scalar**),    /* restore data array */
+       (*max)(Vec,int*,double*),         /* z = max(x); idx=index of max(x) */
+       (*min)(Vec,int*,double*),         /* z = min(x); idx=index of min(x) */
+       (*setrandom)(PetscRandom,Vec),    /* set y[j] = random numbers */
+       (*setoption)(Vec,VecOption),
+       (*setvaluesblocked)(Vec,int,int*,Scalar*,InsertMode),
+       (*destroy)(Vec),
+       (*view)(Vec,Viewer);
+};
+
+struct _p_Vec {
+typedef struct {
+  int                    cookie;                                  
+  MPI_Comm               comm;                                    
+  PetscOps               *bops;                                   
+  struct _VecOps         *ops;                                    
+  int                    type;                                    
+  PLogDouble             flops,time,mem;                          
+  int                    id;                                      
+  int                    refct;                                   
+  int                    tag;                                     
+  DLList                 qlist;                                   
+  OList                  olist;                                   
+  char                   *type_name;                              
+  PetscObject            parent;                                  
+  char*                  name;                                    
+  char                   *prefix;                                 
+  void**                 fortran_func_pointers;       
+  void                   *data;     /* implementation-specific data */
+  int                    N, n;      /* global, local vector size */
+  int                    bs;
+  ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
+  ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
+};
+\end{verbatim}
+
 Several routines are provided for manipulating data within the header,
 including
 \begin{verbatim}
@@ -140,22 +269,81 @@ including
 \end{verbatim}
 which returns in {\tt comm} \findex{PetscObjectGetComm()}
 \sindex{communicator} the MPI communicator associated with the
-specified object.
+specified object for any component object.
 
-After the header, each PETSc object contains a pointer to a list of
-operations for the object.  For example, the vector operations include
-norms, assembly routines, scatters, gathers, etc.  Finally,
-information that is appropriate for the particular abstract object is
-included. Generally, this information includes a pointer to data used
-by a particular implementation.  For example, the {\tt \_p\_Vec}
-structure is given by
+The longer term plans for making PETSc compatible with an emerging
+CCA would possibly require that all CCA C objects have the common header:
+
 \begin{verbatim}
-   struct _p_Vec {
-      PETSCHEADER
-      struct _VeOps ops;
-      void          *data;
-   };
+struct _p_<component> {
+  int              cookie;                                  
+  MPI_Comm         comm;                                    
+  PetscOps         *bops;                                   
+  <component>Ops   *ops;       
+  OTHER STUFF SPECIFIC TO THAT PARTICULAR LIBRARY
+};
 \end{verbatim}
+
+% -------------------------------------------------------------------------------
+\chapter{Implementation of Error Handling}
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\chapter{Implementation of Profiling}
+\label{sec:profimpl}
+
+This section provides details about the implementation of event
+logging and profiling within PETSc.   
+
+The interface for profiling in PETSc is contained in the file 
+{\tt \$\{PETSC\_DIR\}/include/petsclog.h}. It includes \findex{PLogObjectCreate()}
+\begin{verbatim}
+   PLogObjectCreate(PetscObject h);
+\end{verbatim}
+which logs the creation of any PETSc object. This should be included in 
+any PETSc source code that uses {\tt PetscHeaderCreate()}. 
+
+Just before an object is destroyed, it is logged
+with \findex{PLogObjectDestroy()} 
+\begin{verbatim}
+   PLogObjectDestroy(PetscObject h);
+\end{verbatim}
+
+If an object has a clearly defined parent object (for instance, when 
+a work vector is generated for use in a Krylov solver), this information
+is logged with the command, \findex{PLogObjectParent()}
+\begin{verbatim}
+   PLogObjectParent(PetscObject parent,PetscObject child);
+\end{verbatim}
+It is also useful to log information about the state of an object, as can
+be done with the command \findex{PLogObjectState()}
+\begin{verbatim}
+   PLogObjectState(PetscObject h,char *format,...);
+\end{verbatim}
+For example, for sparse matrices we usually log the matrix 
+dimensions and number of nonzeros.
+
+Events are logged using the 
+pair \findex{PLogEventBegin()}
+\begin{verbatim}
+   PLogEventBegin(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
+   PLogEventEnd(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
+\end{verbatim}
+This logging is usually done in the abstract
+interface file for the operations, for example, {\tt src/mat/src/matrix.c}.
+
+Several routines that will be used rarely by the 
+application programmer \findex{PLogPrintSummary()}
+are \findex{PLogBegin()} \findex{PLogDump()} \findex{PLogAllBegin()} 
+\begin{verbatim}
+   PLogBegin();
+   PLogAllBegin();
+   PLogDump(char *filename);
+   PLogPrintSummary(FILE *fd);
+\end{verbatim}
+These routines are normally called by the {\tt PetscInitialize()}
+and {\tt PetscFinalize()} routines when the option {\tt -log}, 
+{\tt -log\_summary}, or 
+{\tt -log\_all} is given.
 
 \chapter{Style Guide}
 
@@ -175,7 +363,7 @@ We use several conventions:
       \begin{itemize}
         \item have an appended {\tt \_Private} (for example, 
            {\tt StashValues\_Private}) or
-        \item have an appended {\tt \_ObjectSubtype} (for example,
+        \item have an appended {\tt \_<component>Subtype} (for example,
            {\tt MatMult\_SeqAIJ}).
       \end{itemize}
 
@@ -185,7 +373,7 @@ We use several conventions:
       function name without the object prefix, and all are in small letters. 
       For example, {\tt MatMultTrans()} has a structure name of 
       {\tt multtrans()}.
-\item Each application usable function begins with the name of the object, 
+\item Each application usable function begins with the name of the component object, 
       for example, {\tt ISInvertPermutation} or {\tt MatMult}. 
 \end{itemize}
 
@@ -263,81 +451,20 @@ or
 
 Since consistency simplifies usage and code maintenance, the names of
 PETSc routines, flags, options, etc. have been selected with great care.
-The default option names are of the form {\tt -package\_subpackage\_name}.  
+The default option names are of the form {\tt -<component>\_sub<component>\_name}.  
 For example, the option name for the basic convergence tolerance for 
 the KSP package is {\tt -ksp\_atol}. In addition, operations in different 
 packages of a similar nature have a similar name.  For example, the option
 name for the basic convergence tolerance for the SNES package is 
 {\tt -snes\_atol}.
 
-%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\chapter{Implementation of Profiling}
-\label{sec:profimpl}
-
-This section provides details about the implementation of event
-logging and profiling within PETSc.   Chapter~\ref{ch:profiling}
-gives information about using the profiling in application codes. 
-
-The interface for profiling in PETSc is contained in the file 
-{\tt \$\{PETSC\_DIR\}/include/petsclog.h}. It includes \findex{PLogObjectCreate()}
-\begin{verbatim}
-   PLogObjectCreate(PetscObject h);
-\end{verbatim}
-which logs the creation of any PETSc object. This should be included in 
-any PETSc source code that uses {\tt PetscHeaderCreate()}. 
-
-Just before an object is destroyed, it is logged
-with \findex{PLogObjectDestroy()} 
-\begin{verbatim}
-   PLogObjectDestroy(PetscObject h);
-\end{verbatim}
-
-If an object has a clearly defined parent object (for instance, when 
-a work vector is generated for use in a Krylov solver), this information
-is logged with the command, \findex{PLogObjectParent()}
-\begin{verbatim}
-   PLogObjectParent(PetscObject parent,PetscObject child);
-\end{verbatim}
-It is also useful to log information about the state of an object, as can
-be done with the command \findex{PLogObjectState()}
-\begin{verbatim}
-   #if defined(USE_PETSC_LOG)
-   PLogObjectState(PetscObject h,char *format,...);
-   #endif
-\end{verbatim}
-For example, for sparse matrices we usually log the matrix 
-dimensions and number of nonzeros.
-
-As discussed in the preceding section, events are logged using the 
-pair \findex{PLogEventBegin()}
-\begin{verbatim}
-   PLogEventBegin(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
-   PLogEventEnd(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
-\end{verbatim}
-This logging is usually done in the abstract
-interface file for the operations, for example, {\tt src/mat/src/matrix.c}.
-
-Several routines that will be used rarely by the 
-application programmer \findex{PLogPrintSummary()}
-are \findex{PLogBegin()} \findex{PLogDump()} \findex{PLogAllBegin()} 
-\begin{verbatim}
-   PLogBegin();
-   PLogAllBegin();
-   PLogDump(char *filename);
-   PLogPrintSummary(FILE *fd);
-\end{verbatim}
-These routines are normally called by the {\tt PetscInitialize()}
-and {\tt PetscFinalize()} routines when the option {\tt -log}, 
-{\tt -log\_summary}, or 
-{\tt -log\_all} is given.
-
 \chapter{The Various Matrix Classes}
 \label{sec:matclasses}
 
 PETSc provides a variety of matrix implementations, since no single
 matrix format is appropriate for all problems.  This section first
-discusses various matrix blocking strategies, and then briefly
-describes the ever-expanding assortment of matrix types within PETSc.
+discusses various matrix blocking strategies, and then 
+describes the assortment of matrix types within PETSc.
 
 \subsection{Matrix Blocking Strategies}
 \sindex{matrix blocking} 
@@ -411,7 +538,7 @@ I-nodes (with the option -mat\_seqaij); a fixed block size code,
 with a block size of three for these problems (using the option 
 -mat\_seqbaij); and the BlockSolve95 variable block size code (using
 PETSc option -mat\_mpirowbs). The rates were computed on one
-node of an IBM SP2, using two test matrices.  The first matrix
+node of an older IBM SP, using two test matrices.  The first matrix
 (ARCO1), courtesy of Rick Dean of Arco, arises in multiphase flow
 simulation; it has 1501 degrees of freedom, 26,131 matrix nonzeros
 and, a natural block size of 3, and a small number of well terms. The
@@ -458,12 +585,11 @@ using each processor less efficiently.
 
 The default matrix representation within PETSc is the general sparse
 AIJ format (also called the Yale sparse matrix format or compressed
-sparse row format, CSR). Section~\ref{sec:matsparse} describes this
-matrix type.
+sparse row format, CSR).
 
 \subsection{Parallel AIJ Sparse Matrices}
 
-Section~\ref{sec:matsparse} describes this matrix type, which is the
+This matrix type, which is the
 default parallel matrix format; additional implementation details are
 given in \cite{efficient}.
 
@@ -472,10 +598,8 @@ given in \cite{efficient}.
 The sequential and parallel block AIJ formats, which are extensions of
 the AIJ formats described above, are intended especially for use with
 multicomponent PDEs.  The block variants store matrix elements by
-fixed-sized dense {\tt nb} $\times$ {\tt nb} blocks, where currently
-{\tt nb} ranges from two through five.  These formats are fully
-compatible with standard Fortran77 storage.  That is, the stored row
-and column indices can begin at either one (as in Fortran) or zero.
+fixed-sized dense {\tt nb} $\times$ {\tt nb} blocks.  The stored row
+and column indices begin at zero.
 
 The routine for creating a sequential block AIJ matrix with {\tt m} 
 rows, {\tt n} columns, and a block size of {\tt nb} is
@@ -487,7 +611,7 @@ The arguments {\tt nz} and {\tt nnz} can be used to preallocate matrix
 memory by indicating the number of {\em block} nonzeros per row.  For good
 performance during matrix assembly, preallocation is crucial; however, the
 user can set {\tt nz=0} and {\tt nzz=PETSC\_NULL} for PETSc to dynamically
-allocate matrix memory as needed.  Section~\ref{sec:matsparse}
+allocate matrix memory as needed.  The PETSc users manual 
 discusses preallocation for the AIJ format; extension to the block AIJ
 format is straightforward.
 
@@ -530,7 +654,7 @@ For a square global matrix, we define each processor's diagonal portion
 to be its local rows and the corresponding columns (a square submatrix);  
 each processor's off-diagonal portion encompasses the remainder of the
 local matrix (a rectangular submatrix).  
-Section~\ref{sec:matsparse} gives an example of preallocation for
+The PETSc users manual gives an example of preallocation for
 the parallel AIJ matrix format; extension to the block parallel AIJ case
 is straightforward.
 
@@ -538,8 +662,7 @@ is straightforward.
 
 PETSc provides both sequential and parallel dense matrix formats,
 where each processor stores its entries in a column-major array in the
-usual Fortran77 style.  Section~\ref{sec:matdense} provides details
-on creating these matrices.
+usual Fortran77 style. 
 
 \subsection{Parallel Dense Matrices}
 
@@ -551,8 +674,7 @@ dense format described above.
 
 PETSc provides a parallel, sparse, row-based matrix format that is
 intended for use in conjunction with the ILU and ICC preconditioners
-in BlockSolve95.  Section~\ref{sec:ilu_icc} gives details on this
-matrix type.
+in BlockSolve95.  
 
 \subsection{Block Diagonal Sparse Matrices}
 \label{sec:bdiag}
@@ -617,6 +739,7 @@ Either the {\tt m} or {\tt M} can be set to {\tt PETSC\_DECIDE} for PETSc
 to determine the corresponding quantity.
 
 
+\bibliographystyle{plain}
 \bibliography{petsc}
 
 \end{document}
