@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.80 2000/05/05 22:18:00 balay Exp $*/
+/*$Id: ex23.c,v 1.1 2000/09/10 21:58:08 curfman Exp curfman $*/
 
 /* Program usage:  mpirun ex23 [-help] [all PETSc options] */
 
@@ -34,11 +34,10 @@ int main(int argc,char **args)
   PC      pc;           /* preconditioner context */
   KSP     ksp;          /* Krylov subspace method context */
   double  norm;         /* norm of solution error */
-  int     ierr,i,n = 10,col[3],its,rank,rstart,rend;
+  int     ierr,i,n = 10,col[3],its,rstart,rend;
   Scalar  neg_one = -1.0,one = 1.0,value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
