@@ -28,6 +28,7 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
   options->maxdomainsize  = 500;
   options->maxzeros       = 1000;
   options->maxsize        = 96;   
+  options->FrontMtxInfo   = PETSC_FALSE; 
   if ( options->symflag == SPOOLES_SYMMETRIC ) {
     options->patchAndGoFlag = 0;  /* no patch */
     options->storeids       = 1; 
@@ -86,6 +87,9 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
                            options->maxzeros,&options->maxzeros,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_spooles_maxsize","maxsize","None",\
                            options->maxsize,&options->maxsize,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsLogical("-mat_spooles_FrontMtxInfo","FrontMtxInfo","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    if (flg) options->FrontMtxInfo = PETSC_TRUE; 
+
     if ( options->symflag == SPOOLES_SYMMETRIC ) {
       ierr = PetscOptionsInt("-mat_spooles_patchAndGoFlag","patchAndGoFlag","None", \
                            options->patchAndGoFlag,&options->patchAndGoFlag,PETSC_NULL);CHKERRQ(ierr);
@@ -150,6 +154,7 @@ int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"  maxdomainsize:  %d \n",lu->options.maxdomainsize);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  maxzeros:       %d \n",lu->options.maxzeros);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  maxsize:        %d \n",lu->options.maxsize);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  FrontMtxInfo:   %d \n",lu->options.FrontMtxInfo);CHKERRQ(ierr);
 
   if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
     ierr = PetscViewerASCIIPrintf(viewer,"  patchAndGoFlag: %d \n",lu->options.patchAndGoFlag);CHKERRQ(ierr);

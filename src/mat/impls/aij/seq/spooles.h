@@ -13,7 +13,7 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 typedef struct {
-  int             msglvl,pivotingflag,symflag,seed;
+  int             msglvl,pivotingflag,symflag,seed,FrontMtxInfo;
   int             ordering,maxdomainsize,maxzeros,maxsize,
                   patchAndGoFlag,storeids,storevalues;
   double          tau,toosmall,fudge;

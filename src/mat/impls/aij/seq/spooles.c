@@ -244,6 +244,32 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   rootchv = FrontMtx_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, 0.0, 
             chvmanager, &ierr, lu->cpus, lu->stats, lu->options.msglvl, lu->options.msgFile) ; 
   ChvManager_free(chvmanager) ;
+  if(lu->options.FrontMtxInfo){
+    PetscPrintf(PETSC_COMM_SELF,"\n %8d pivots, %8d pivot tests, %8d delayed rows and columns\n",\
+               lu->stats[0], lu->stats[1], lu->stats[2]);
+    double cputotal;
+    cputotal = lu->cpus[8] ;
+    if ( cputotal > 0.0 ) {
+      PetscPrintf(PETSC_COMM_SELF,
+           "\n    initialize fronts       %8.3f %6.2f"
+           "\n    load original entries   %8.3f %6.2f"
+           "\n    update fronts           %8.3f %6.2f"
+           "\n    assemble postponed data %8.3f %6.2f"
+           "\n    factor fronts           %8.3f %6.2f"
+           "\n    extract postponed data  %8.3f %6.2f"
+           "\n    store factor entries    %8.3f %6.2f"
+           "\n    miscellaneous           %8.3f %6.2f"
+           "\n    total time              %8.3f \n",
+           lu->cpus[0], 100.*lu->cpus[0]/cputotal,
+           lu->cpus[1], 100.*lu->cpus[1]/cputotal,
+           lu->cpus[2], 100.*lu->cpus[2]/cputotal,
+           lu->cpus[3], 100.*lu->cpus[3]/cputotal,
+           lu->cpus[4], 100.*lu->cpus[4]/cputotal,
+           lu->cpus[5], 100.*lu->cpus[5]/cputotal,
+           lu->cpus[6], 100.*lu->cpus[6]/cputotal,
+           lu->cpus[7], 100.*lu->cpus[7]/cputotal, cputotal) ;
+    }
+  }
   if ( lu->options.msglvl > 0 ) {
     fprintf(lu->options.msgFile, "\n\n factor matrix") ;
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile) ;
