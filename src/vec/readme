@@ -1,70 +1,35 @@
-                   readme for vector directory
- 
-  Organization of directory
-
-  vecimpl.h - definition of the VeVector structure
-  src - source code for the abstract vector implementation,
-        these routines just call routines defined in the 
-        VeVector structure.
-  tests - simple test programs
-  examples - simple example programs
-  impls - various specific implementations of vectors, these 
-          directories are organized in a hierarchy. No source 
-          should depend on other source except that higher in 
-          the tree on the same branch.
-  utils - some useful utility programs, these many know about 
-          the various implementations.
-
-  Note: it is possible for a vector to change it's data representation
-at anytime. Thus any reference to it (that is any other place that
-contains a pointer to it) will automatically point to the new 
-storage format. This is achieved by mallocing the vector stub 
-(which basically contains pointers to the ops and the data) seperately
-from the data. Often this results in a small (seemingly unneeded) 
-extra malloc but we take that as a small price to pay.
-
 /*D
-   VeIntro - This is an introduction to the vector routines.
+   VecIntro - This is an introduction to the vector routines.
 
    Include file: include/vec.h
 
-   Vector Operations:
+   Vector Operations: (there are many others not listed)
 
-void VeDot           (VeVector, VeVector, VeScalar);
-void VeTDot          (VeVector, VeVector, VeScalar);  
-void VeMDot          (int,      VeVector ,VeVector*,VeScalar);
-void VeMTDot         (int,      VeVector ,VeVector*,VeScalar); 
-void VeNorm          (VeVector, VeScalar);
-void VeASum          (VeVector, VeScalar);
-void VeMax           (VeVector, int *,    VeScalar);
-void VeScale         (VeScalar, VeVector);    
-void VeCopy          (VeVector, VeVector);        
-void VeSet           (VeScalar, VeVector);    
-void VeSwap          (VeVector, VeVector);
-void VeAXPY          (VeScalar, VeVector, VeVector);  
-void VeMAXPY         (int,      VeScalar, VeVector ,VeVector*);
-void VeAYPX          (VeScalar, VeVector, VeVector);
-void VeWAXPY         (VeScalar, VeVector, VeVector, VeVector);
-void VePMult         (VeVector, VeVector, VeVector);    
-void VePDiv          (VeVector, VeVector, VeVector);    
-VeVector VeCreate    (VeVector);          
-void VeDestroy       (VeVector);        
-VeVector *VeGetVecs  (VeVector, int);         
-void VeFreeVecs      (VeVector*,int); 
-void VeScatterBegin  (VeVector,*SGCtx);   
-void VeScatter       (VeScalar, int *,    int,      VeVector);   
-void VeScatterEnd    (VeVector,*SGCtx);   
-void VeScatterWaiton (VeVector,*SGCtx);   
-void VeScatterAdd    (VeScalar, int *,    int,      VeVector); 
-void VeGather        (VeVector, int *,    int, VeScalar,*SGCtx);
+int VecDot           (Vec, Vec, Scalar*);
+int VecTDot          (Vec, Vec, Scalar*);  
+int VecMDot          (int, Vec ,Vec*,Scalar**);
+int VecMTDot         (int, Vec ,Vec*,Scalar**); 
+int VecNorm          (Vec, Scalar*);
+int VecASum          (Vec, Scalar*);
+int VecMax           (Vec, int *,Scalar*);
+int VecScale         (Scalar*, Vec);    
+int VecCopy          (Vec, Vec);        
+int VecSet           (Scalar*, Vec);    
+int VecSwap          (Vec, Vec);
+int VecAXPY          (Scalar*, Vec, Vec);  
+int VecMAXPY         (int, Scalar*, Vec ,Vec*);
+int VecAYPX          (Scalar*, Vec, Vec);
+int VecWAXPY         (Scalar*, Vec, Vec, Vec);
+int VecPMult         (Vec, Vec, Vec);    
+int VecPDiv          (Vec, Vec, Vec);    
+int VecCreate        (MPI_Comm,int,Vec);          
+int VecDestroy       (Vec);        
+int VecGetVecs       (Vec, int,Vec**);         
+int VecFreeVecs      (Vec*,int); 
 
   Present Implementations:
 
-VeVector VeCreateSequential          (int);  
-VeVector VeCreateSequentialBLAS      (int); 
-VeVector VeCreateComplexSequential   (int);  
-VeVector VeCreateChameleon           (void *,int,int);  
-VeVector VeCreateChameleonBLAS       (void *,int,int);  
-VeVector VeCreateComplexChameleon    (void *,int,int);  
+int VecCreateSequential(MPI_Comm,int,Vec*);  
+int VecCreateMPI(MPI_Comm,int,int,Vec*);  
 e
 D*/
