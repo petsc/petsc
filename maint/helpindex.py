@@ -1,6 +1,6 @@
-#!/usr/bin/env python1.5
+#! /usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: helpindex.py,v 1.5 2000/09/22 20:05:08 balay Exp balay $ 
+# $Id: helpindex.py,v 1.6 2000/09/25 16:12:30 balay Exp gropp $ 
 # 
 # reads in docs/tex/exampleconcepts,manconcepts, and create
 # the file help.html
@@ -93,12 +93,13 @@ def updatedata(dict,line):
 def printdata(fd,dict):
 
       # Put some  HTML Header 
-      fd.write("<HTML>")
-      fd.write("<TITLE>Concepts_File</TITLE>")
-      fd.write("<BODY>")
+      fd.write("<HTML>\n")
+      fd.write("<TITLE>Concepts_File</TITLE>\n")
+      fd.write("<!-- Created by helpindex.py -->\n");
+      fd.write("<BODY>\n")
       
       # Put the Table Header
-      fd.write("<H1><center> PETSc Help Index</center></H1>")
+      fd.write("<H1><center> PETSc Help Index</center></H1>\n")
     
       prim_keys = dict.keys()
       prim_keys.sort(comptxt)
@@ -144,25 +145,49 @@ def printdata(fd,dict):
                   del dict[prim_key]['PetscNoKey'][link_name]
                   
                   temp = "<A HREF=\"" + "../../" + filename + "\">" + link_name + "</A>"
-                  fd.write("<TABLE>")
+                  fd.write("<TABLE>\n")
                   fd.write("<TD WIDTH=4 ><BR></TD>")
                   fd.write("<TD WIDTH=260 ><B><FONT SIZE=4>")
-                  fd.write(prim_key)
+		  # If prim_key exists in the concepts directory, 
+		  # create a link to it.
+                  concept_filename = replace(lower(prim_key)," ","_")
+                  concept_filename = "concepts/" + concept_filename + ".htm"
+                  
+                  if os.access(concept_filename,os.F_OK):
+                      fd.write("<A HREF=\"")
+                      fd.write(concept_filename)
+                      fd.write("\">")
+                      fd.write(prim_key)
+                      fd.write("</A>")
+ 	          else:
+                      fd.write(prim_key)
                   fd.write("</FONT></B></TD>")
                   fd.write("<TD WIDTH=500>")
                   fd.write(temp)
                   fd.write("</TD>")
                  
-                  fd.write("</TR>")
-                  fd.write("</TABLE>")
+                  fd.write("</TR>\n")
+                  fd.write("</TABLE>\n")
             else:
                   fd.write("<TABLE>")
                   fd.write("<TD WIDTH=4 ><BR></TD>")
                   fd.write("<TD WIDTH=300 ><B><FONT SIZE=4>")
-                  fd.write(prim_key)
+		  # If prim_key exists in the concepts directory, 
+		  # create a link to it.
+                  concept_filename = replace(lower(prim_key)," ","_")
+                  concept_filename = "concepts/" + concept_filename + ".htm"
+                  
+                  if os.access(concept_filename,os.F_OK):
+                      fd.write("<A HREF=\"")
+                      fd.write(concept_filename)
+                      fd.write("\">")
+                      fd.write(prim_key)
+                      fd.write("</A>")
+ 	          else:
+                      fd.write(prim_key)
                   fd.write("</FONT></B></TD>")
-                  fd.write("</TR>")
-                  fd.write("</TABLE>")
+                  fd.write("</TR>\n")
+                  fd.write("</TABLE>\n")
                   
 
 
@@ -183,8 +208,8 @@ def printdata(fd,dict):
                         fd.write("<TD WIDTH=500 >")
                         fd.write(temp)
                         fd.write("</TD>")
-                        fd.write("</TR>")
-                        fd.write("</TABLE>")
+                        fd.write("</TR>\n")
+                        fd.write("</TABLE>\n")
 
                   for link_name in link_names:
                         filename = dict[prim_key][sub_key][link_name]
@@ -194,8 +219,8 @@ def printdata(fd,dict):
                         fd.write("<TD WIDTH=500>")
                         fd.write(temp)
                         fd.write("</TD>")
-                        fd.write("</TR>")
-                        fd.write("</TABLE>")
+                        fd.write("</TR>\n")
+                        fd.write("</TABLE>\n")
 
       # HTML Tail
       fd.write("</BODY>")
