@@ -1,9 +1,11 @@
 #! /bin/sh
 # 
-# torcs full-file-name [ full-file-name .... ]
+# steals a lock from one person to another.
 #
-for file in $* ; do 
- echo "Initial Version" | rcs -i -agropp,bsmith,curfman -L $file 
- ci -l $file 
-done
+mv $1 $1.stolen
+rcs -u $1
+co -l $1
+/bin/cp $1.stolen $1
+
+
 
