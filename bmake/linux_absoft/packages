@@ -10,8 +10,7 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/linux_absoft -lflapack -lfblas 
-
+BLASLAPACK_LIB = -L/home/petsc/software/LAPACK -llapack_linux_absoft -lblas_linux_absoft
 #
 # Location of MPI (Message Passing Interface) software
 #

@@ -1,28 +1,32 @@
 Demonstrates how PETSc can trap error interrupts
 The error below is contrived to test the code!
 --------------------------------------------------------------------------
-PETSc Version 2.0.22, Released April 28, 1998.
-Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.
-Bug reports, questions: petsc-maint@mcs.anl.gov
-Web page: http://www.mcs.anl.gov/petsc/
+Petsc Version 2.1.1, Patch 9, Released December 19, 2001
+       The PETSc Team
+    petsc-maint@mcs.anl.gov
+ http://www.mcs.anl.gov/petsc/
+
 See docs/copyright.html for copyright information.
 See docs/changes.html for recent updates.
 See docs/troubleshooting.html for hints about trouble shooting.
 See docs/manualpages/index.html for manual pages.
 -----------------------------------------------------------------------
-ex2 
- on a solaris named maple.mcs.anl.gov by balay Mon Jun 15 13:01:25 1998
-Libraries linked from /tmp/balay/petsc/lib/libg/solaris
+ex2 on a linux named shakey.mcs.anl.gov by balay Tue Jan 29 16:10:30 2002
+Libraries linked from /homes/balay/spetsc/lib/libg_c++/linux
 -----------------------------------------------------------------------
 --------------- Stack Frames ---------------
+Note: The EXACT line numbers in the stack are not available,
+      INSTEAD the line number of the start of the function
+      is given.
 --------------------------------------------
-[0]PETSC ERROR: unknownfunction() line 0 in  unknown file
+[0]PETSC ERROR: unknownfunction() line 0 in Unknown directoryUnknown file
 [0]PETSC ERROR:   Signal received!
 [0]PETSC ERROR:   Caught signal SEGV:
 PETSC ERROR: Segmentation Violation, probably memory access out of range
 PETSC ERROR: Try option -start_in_debugger or -on_error_attach_debugger to
 PETSC ERROR: determine where problem occurs
 PETSC ERROR: likely location of problem given above in stack
-
+!
 [0] MPI Abort by user Aborting program !
 [0] Aborting program!
+p0_28202:  p4_error: : 59

@@ -1,21 +1,21 @@
 Demonstrates PETSc Error Handlers
 The error is a contrived error to test error handling
 --------------------------------------------------------------------------
-PETSc Version 2.0.22, Released April 28, 1998.
-Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.
-Bug reports, questions: petsc-maint@mcs.anl.gov
-Web page: http://www.mcs.anl.gov/petsc/
+Petsc Version 2.1.1, Patch 9, Released December 19, 2001
+       The PETSc Team
+    petsc-maint@mcs.anl.gov
+ http://www.mcs.anl.gov/petsc/
+
 See docs/copyright.html for copyright information.
 See docs/changes.html for recent updates.
 See docs/troubleshooting.html for hints about trouble shooting.
 See docs/manualpages/index.html for manual pages.
 -----------------------------------------------------------------------
-ex1 
- on a solaris named maple.mcs.anl.gov by balay Mon Jun 15 12:56:27 1998
-Libraries linked from /tmp/balay/petsc/lib/libg/solaris
+ex1 on a linux named shakey.mcs.anl.gov by balay Tue Jan 29 16:10:36 2002
+Libraries linked from /homes/balay/spetsc/lib/libg_c++/linux
 -----------------------------------------------------------------------
 [0]PETSC ERROR: CreateError() line 14 in src/sys/examples/tests/ex1.c
-[0]PETSC ERROR:   Error Created
+[0]PETSC ERROR:   Error Created!
 [0]PETSC ERROR: CreateError() line 15 in src/sys/examples/tests/ex1.c
 [0]PETSC ERROR: CreateError() line 15 in src/sys/examples/tests/ex1.c
 [0]PETSC ERROR: CreateError() line 15 in src/sys/examples/tests/ex1.c
@@ -24,3 +24,4 @@ Libraries linked from /tmp/balay/petsc/lib/libg/solaris
 [0]PETSC ERROR: main() line 28 in src/sys/examples/tests/ex1.c
 [0] MPI Abort by user Aborting program !
 [0] Aborting program!
+p0_28203:  p4_error: : 1

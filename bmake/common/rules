@@ -295,7 +295,8 @@ fortranstubs:
 #
 #
 .c.o .cpp.o .cc.o .C.o .ad.o: 
-	-@if [ "${PETSC_HAVE_ADIC}" != "" ]; then \
+	-@complex=`echo ${PETSCFLAGS} |grep PETSC_USE_COMPLEX`; \
+	if [ "${PETSC_HAVE_ADIC}" != "" -a  "foo$${complex}" = "foo" ]; then \
 	   egrep "Process adiC" $< > /dev/null ; \
               if [ "$$?" = 0 ]; then \
                 r=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC: \([a-zA-Z0-9]\)[ ]*?\1?g"`;\

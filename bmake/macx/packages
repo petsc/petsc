@@ -16,7 +16,7 @@ PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_F2C
 # Location of MPI (Message Passing Interface) software
 #
 MPI_HOME       = /Users/petsc/software/mpich-1.2.3/macx
-MPI_LIB        = -L${MPI_HOME}/lib -lmpich
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich -lpmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun
 
