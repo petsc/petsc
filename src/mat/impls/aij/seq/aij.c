@@ -2396,9 +2396,11 @@ int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
 
   /* Matlab indices start at 0 for sparse (what a surprise) */
   if (aij->indexshift) {
+    ai = mxGetJc(mat);
     for (i=0; i<B->m+1; i++) {
       ai[i]--;
     }
+    aj = mxGetIr(mat);
     for (i=0; i<aij->nz; i++) {
       aj[i]--;
     }

@@ -51,10 +51,11 @@ struct _p_DA {
   int                 base;                  /* global number of 1st local node */
   DAPeriodicType      wrap;                  /* indicates type of periodic boundaries */
   VecScatter          gtol,ltog,ltol;        /* scatters, see below for details */
-  Vec                 global,local;          /* vectors that are discrete functions */
   DAStencilType       stencil_type;          /* stencil, either box or star */
   int                 dim;                   /* DA dimension (1,2, or 3) */
   DAInterpolationType interptype;
+
+  int                 nlocal,Nlocal;         /* local size of local vector and global vector */
 
   AO                  ao;                    /* application ordering context */
 

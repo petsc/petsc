@@ -6,6 +6,46 @@
 
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
+/*
+   This allows the DA vectors to properly tell Matlab their dimensions
+*/
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#include "engine.h"   /* Matlab include file */
+#include "mex.h"      /* Matlab include file */
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "VecMatlabEnginePut_DA2d"
+int VecMatlabEnginePut_DA2d(PetscObject obj,void *engine)
+{
+  int     ierr,n,m;
+  Vec     vec = (Vec)obj;
+  PetscScalar  *array;
+  mxArray *mat;
+  DA      da;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)vec,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) SETERRQ(1,"Vector not associated with a DA");
+  ierr = DAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRQ(ierr);
+
+  ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+  mat  = mxCreateDoubleMatrix(m,n,mxREAL);
+#else
+  mat  = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
+#endif
+  ierr = PetscMemcpy(mxGetPr(mat),array,n*m*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscObjectName(obj);CHKERRQ(ierr);
+  mxSetName(mat,obj->name);
+  engPutArray((Engine *)engine,mat);
+  
+  ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+#endif
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "DACreateLocalVector"
 /*@C
@@ -38,8 +78,13 @@ int DACreateLocalVector(DA da,Vec* g)
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  ierr = VecDuplicate(da->local,g);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,da->nlocal,g);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  if (da->w == 1  && da->dim == 2) {
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)*g,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -85,8 +130,7 @@ int DAGetLocalVector(DA da,Vec* g)
       goto alldone;
     }
   }
-  ierr = VecDuplicate(da->local,g);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,g);CHKERRQ(ierr);
 
   alldone:
   for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
@@ -184,8 +228,7 @@ int DAGetGlobalVector(DA da,Vec* g)
       goto alldone;
     }
   }
-  ierr = VecDuplicate(da->global,g);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,g);CHKERRQ(ierr);
 
   alldone:
   for (i=0; i<DA_MAX_WORK_VECTORS; i++) {

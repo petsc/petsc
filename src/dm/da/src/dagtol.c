@@ -204,6 +204,7 @@ int DAGlobalToNatural_Create(DA da)
   int ierr,m,start;
   IS  from,to;
   AO  ao;
+  Vec global;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
@@ -218,7 +219,9 @@ int DAGlobalToNatural_Create(DA da)
   ierr = ISCreateStride(da->comm,m,start,1,&to);CHKERRQ(ierr);
   ierr = AOPetscToApplicationIS(ao,to);CHKERRQ(ierr);
   ierr = ISCreateStride(da->comm,m,start,1,&from);CHKERRQ(ierr);
-  ierr = VecScatterCreate(da->global,from,da->natural,to,&da->gton);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(da->comm,da->Nlocal,PETSC_DETERMINE,0,&global);
+  ierr = VecScatterCreate(global,from,da->natural,to,&da->gton);CHKERRQ(ierr);
+  ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   PetscFunctionReturn(0);
