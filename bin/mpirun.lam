@@ -17,5 +17,12 @@ shift
 progname=$1
 shift
 options=$*
-
-/home/petsc/software/lam62b/solaris/bin/mpirun -w -D -c $np -s n0 $progname -- $options
+#
+# Please modify the following path to point to the correct location of LAM's mpirun
+#
+lam_path=/home/petsc/software/lam62b/solaris/bin
+#
+# Now execute the mpirun comman
+#
+$lam_path/mpirun -w -D -c $np -s n0 $progname -- $options
+$lam_path/lamclean
