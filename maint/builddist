@@ -4,8 +4,8 @@
 #
 echo "Have you rebuilt: manpages, wwwpages, latexpages,"
 echo "by running make allmanpages"
-echo "and the users manual (and intro) in .ps and .html"
-echo "Deleted TAGS, TAGS_MAKEFILES, and TAGS_NO_EXAMPLES?"
+echo "and the users manual (and intro) in .ps and .html?"
+echo "Set the version number and release date in petsc.h?"
 #
 cd /home/bsmith/petsc
 make ACTION=clean tree
