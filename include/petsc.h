@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.191 1997/12/06 05:40:06 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.192 1997/12/12 04:57:40 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -257,6 +257,12 @@ extern int  (*PetscErrorPrintf)(char *,...);
 extern int  PetscSynchronizedPrintf(MPI_Comm,char *,...);
 extern int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,char *,...);
 extern int  PetscSynchronizedFlush(MPI_Comm);
+
+/*
+    Dynamic library lists. Lists of names of routines in dynamic 
+  link libraries that will be loaded as needed.
+*/
+typedef struct _DLList *DLList;
 
 /*
     C code optimization is often enhanced by telling the compiler 
