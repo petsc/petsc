@@ -12,7 +12,7 @@ Additional Capabilities that PETSc Needs:
   --------------------------------
 
    - Allow column and row oriented input for MatSetValues() for all matrix types,
-     note presently only SeqDense supports both types.
+     note presently only SeqDense and SeqAIJ supports both types.
 
    - Make configure fully functional in PETSc 2.0
 
