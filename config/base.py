@@ -181,7 +181,7 @@ class Configure:
       self.framework.log.write('not found\n')
     return found
 
-  def getExecutable(self, name, path = [], getFullPath = 0, usedefaultPath = 0, resultName = ''):
+  def getExecutable(self, name, path = [], getFullPath = 0, useDefaultPath = 0, resultName = ''):
     found = 0
     index = name.find(' ')
     if index >= 0:
@@ -221,7 +221,7 @@ class Configure:
 
   def getExecutables(self, names, path = '', getFullPath = 0, resultName = ''):
     for name in names:
-      if self.getExecutable(name, path, getFullPath, resultName):
+      if self.getExecutable(name, path = path, getFullPath = getFullPath, useDefaultPath = 0, resultName = resultName):
         return name
     return None
 

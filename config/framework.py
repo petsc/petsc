@@ -315,9 +315,34 @@ class Framework(config.base.Configure):
     self.log.write(('='*80)+'\n')
     return
 
+  def listDirs(self,base,variable):
+    '''Returns a list of all directories of the form base/variable where variable can be regular expression syntax'''
+    if not variable: return [base]
+    dirs = []
+    variable = variable.split('/')
+    variable1 = variable[0]
+    variable2 = '/'.join(variable[1:])
+    try:
+      ls = os.listdir(base)
+      ls.sort()
+      for dir in ls:
+        if re.match(variable1,dir):
+          dirs.extend(self.listDirs(os.path.join(base,dir),variable2))
+    except:
+      pass
+    return dirs
+
+    
   def configureHelp(self, help):
     import nargs
 
+    searchdirs = [os.getenv('HOME')]
+    packagedirs = [os.getenv('HOME')]
+    list = self.listDirs('/opt/ibmcmp/vacpp/','[0-9.]*/bin')
+    if list: searchdirs.append(list[-1])
+    list = self.listDirs('/opt/ibmcmp/xlf/','[0-9.]*/bin')
+    if list: searchdirs.append(list[-1])
+    
     help.addArgument('Framework', 'help',                nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
     help.addArgument('Framework', 'h',                   nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
     help.addArgument('Framework', 'configModules',       nargs.Arg(None, None, 'A list of Python modules with a Configure class'))
@@ -326,8 +351,8 @@ class Framework(config.base.Configure):
     help.addArgument('Framework', 'ignoreLinkOutput',    nargs.ArgBool(None, 1, 'Ignore linker output'))
     help.addArgument('Framework', 'ignoreWarnings',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
     help.addArgument('Framework', 'with-alternatives',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
-    help.addArgument('Framework', 'search-dirs',         nargs.Arg(None, [], 'A list of directories used to search for executables'))
-    help.addArgument('Framework', 'package-dirs',        nargs.Arg(None, [], 'A list of directories used to search for packages'))
+    help.addArgument('Framework', 'search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
+    help.addArgument('Framework', 'package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
     return
 
   def configure(self, out = None):
