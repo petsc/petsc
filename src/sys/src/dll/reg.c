@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.6 1998/01/12 15:57:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.7 1998/01/14 02:39:22 bsmith Exp bsmith $";
 #endif
 /*
          Provides a general mechanism to allow one to register
@@ -16,6 +16,44 @@ static char vcid[] = "$Id: reg.c,v 1.6 1998/01/12 15:57:07 bsmith Exp bsmith $";
 */
 DLLibraryList DLLibrariesLoaded = 0;
 
+#undef __FUNC__  
+#define __FUNC__ "PetscInitialize_DynamicLibraries"
+/*
+      PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the 
+            search path.
+*/ 
+int PetscInitialize_DynamicLibraries()
+{
+  char *libname[32];
+  int  nmax,i,ierr,flg;
+
+  PetscFunctionBegin;
+
+
+  ierr = DLAppend(&DLLibrariesLoaded,PETSC_DEFAULT_DYNAMIC_LIBRARY);CHKERRQ(ierr);
+
+  nmax = 32;
+  ierr = OptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,&flg);CHKERRQ(ierr);
+  for ( i=nmax-1; i>=0; i-- ) {
+    ierr = DLPrepend(&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
+    PetscFree(libname[i]);
+  }
+  nmax = 32;
+  ierr = OptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,&flg);CHKERRQ(ierr);
+  for ( i=0; i<nmax; i++ ) {
+    ierr = DLAppend(&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
+    PetscFree(libname[i]);
+  }
+
+  PetscFunctionReturn(0);
+}
+#else
+int PetscInitialize_DynamicLibraries()
+{
+ PetscFunctionBegin;
+
+  PetscFunctionReturn(0);
+}
 #endif
 
 /* ------------------------------------------------------------------------------*/
