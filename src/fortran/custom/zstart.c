@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.4 1996/04/26 22:53:10 bsmith Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.5 1996/05/28 21:29:31 balay Exp bsmith $";
 #endif
 
 /*
@@ -26,7 +26,6 @@ extern int          PetscBeganMPI;
 #ifdef HAVE_FORTRAN_CAPS
 #define petscfinalize_                PETSCFINALIZE
 #define petscsetcommonblock_          PETSCSETCOMMONBLOCK
-#define petscsetfortranbasepointers_  PETSCSETFORTRANBASEPOINTERS
 #define petscinitialize_              PETSCINITIALIZE
 #define iargc_                        IARGC
 #define getarg_                       GETARG
@@ -35,7 +34,6 @@ extern int          PetscBeganMPI;
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscfinalize_                petscfinalize
 #define petscsetcommonblock_          petscsetcommonblock
-#define petscsetfortranbasepointers_  petscsetfortranbasepointers
 #define petscinitialize_              petscinitialize
 #define mpi_init_                     mpi_init
 #define petscinitializefortran_       petscinitializefortran
@@ -127,44 +125,25 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   return 0;   
 }
 
-/*
-  This function should be called to be able to use PETSc routines
-  from the FORTRAN subroutines, when the main() routine is in C
-*/
-
-void PetscInitializeFortran()
-{
-  int s1,s2,s3;
-  s1 = MPIR_FromPointer(STDOUT_VIEWER_SELF);
-  s2 = MPIR_FromPointer(STDERR_VIEWER_SELF);
-  s3 = MPIR_FromPointer(STDOUT_VIEWER_WORLD);
-  petscsetcommonblock_(&s1,&s2,&s3);
-}
-  
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-void petscinitializefortran_()
-{
-  PetscInitializeFortran();
-}
-
 extern int PetscInitializedCalled;
 
-void petscinitialize_(CHAR filename,int *err,int len)
+void petscinitialize_(CHAR filename,int *__ierr,int len)
 {
   int  flag,argc = 0;
   char **args = 0,*t1;
-  *err = 1;
+  *__ierr = 1;
 
-  if (PetscInitializedCalled) {*err = 0; return;}
+  if (PetscInitializedCalled) {*__ierr = 0; return;}
   PetscInitializedCalled = 1;
 
   MPI_Initialized(&flag);
   if (!flag) {
-    mpi_init_(err);
-    if (*err) {fprintf(stderr,"PetscInitialize:");return;}
+    mpi_init_(__ierr);
+    if (*__ierr) {fprintf(stderr,"PetscInitialize:");return;}
     PetscBeganMPI = 1;
   }
   PetscInitializeFortran();
@@ -174,14 +153,14 @@ void petscinitialize_(CHAR filename,int *err,int len)
 #endif
   PETScParseFortranArgs_Private(&argc,&args);
   FIXCHAR(filename,len,t1);
-  *err = OptionsCreate_Private(&argc,&args,t1); 
+  *__ierr = OptionsCreate_Private(&argc,&args,t1); 
   FREECHAR(filename,t1);
-  if (*err) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
+  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
   PetscFree(args);
-  *err = OptionsCheckInitial_Private(); 
-  if (*err) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
-  *err = ViewerInitialize_Private(); 
-  if (*err) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
+  *__ierr = OptionsCheckInitial_Private(); 
+  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
+  *__ierr = ViewerInitialize_Private(); 
+  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
 
   if (PetscBeganMPI) {
     int rank,size;
@@ -189,26 +168,13 @@ void petscinitialize_(CHAR filename,int *err,int len)
     MPI_Comm_size(MPI_COMM_WORLD,&size);
     PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",rank,size);
   }
-  *err = 0;
+  *__ierr = 0;
 }
 
-void petscfinalize_(int *ierr){
-  *ierr = PetscFinalize();
+void petscfinalize_(int *__ierr){
+  *__ierr = PetscFinalize();
 }
 
-#if defined(USES_CPTOFCD)
-void petscsetfortranbasepointers_(void *fnull,_fcd fcnull)
-{
-  PETSC_NULL_Fortran       = fnull;
-  PETSC_NULL_CHAR_Fortran  = _fcdtocp(fcnull);
-}
-#else
-void petscsetfortranbasepointers_(void *fnull,char *fcnull)
-{
-  PETSC_NULL_Fortran       = fnull;
-  PETSC_NULL_CHAR_Fortran  = fcnull;
-}
-#endif 
 
 #if defined(__cplusplus)
 }
