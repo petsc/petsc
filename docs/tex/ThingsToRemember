@@ -81,10 +81,6 @@ PETScView info:
 
 
 ------------Accounts (around the world and around the block) -----
-Dec Alpha:
-        Machine: marathon.cpge.utexas.edu
-        userid: bsmith
-        passwd: petsc-passwd
 
 Power3:
         Machine: temp4.msi.umn.edu
@@ -269,11 +265,13 @@ Scheduler: lsf (similar to NCSA - commands: bjobs, bqueues etc)
 
 ---------
 UT account:
-  use seaboard.pe.utexas.edu (also have brazos.pe.utexas.edu  and frankfort)
-  login ID: bsmith
-  password: petsc-password
- 
-brahma.ticam.utexas.edu 
+
+DEC Alpha:
+marathon.cpge.utexas.edu
+ userid: bsmith
+ passwd: petsc-passwd
+
+brahma.ticam.utexas.edu (AIX)
   login id: sbalay
   passwd  : petsc-password 
 
