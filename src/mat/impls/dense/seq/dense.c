@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.74 1995/11/03 02:47:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.75 1995/11/21 03:29:07 curfman Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -302,7 +302,7 @@ static int MatRestoreRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **v
 }
 /* ----------------------------------------------------------------*/
 static int MatInsert_SeqDense(Mat A,int m,int *indexm,int n,
-                                                 int *indexn,Scalar *v,InsertMode addv)
+                                    int *indexn,Scalar *v,InsertMode addv)
 { 
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          i,j;
@@ -849,8 +849,12 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *newmat)
   if (!data) {
     l->v = (Scalar *) (l + 1);
     PetscMemzero(l->v,m*n*sizeof(Scalar));
+    l->user_alloc = 0;
   } 
-  else l->v = data; /* user-allocated storage */
+  else { /* user-allocated storage */
+    l->v = data;
+    l->user_alloc = 1;
+  }
 
   *newmat = mat;
   return 0;
