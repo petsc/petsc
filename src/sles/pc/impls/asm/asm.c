@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.15 1996/02/23 22:46:09 balay Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.16 1996/02/23 23:58:23 balay Exp balay $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -18,6 +18,7 @@ static char vcid[] = "$Id: asm.c,v 1.15 1996/02/23 22:46:09 balay Exp balay $";
 
 typedef struct {
   int        n,n_local,n_local_true;
+  int        is_flg;                  /* flg set to 1 if the IS created in pcsetup*/
   int        overlap;                 /* overlap requested by user */
   SLES       *sles;                   /* linear solvers for each block */
   VecScatter *scat;                   /* mapping to subregion */
@@ -38,7 +39,7 @@ static int PCSetUp_ASM(PC pc)
   PC                  subpc;
   char                *prefix;
 
-  if (pc->setupcalled == 0) {
+    if (pc->setupcalled == 0) {
     if (osm->n == PETSC_DECIDE && osm->n_local_true == PETSC_DECIDE) { 
       /* no subdomains given, use one per processor */
       osm->n_local_true = osm->n_local = 1;
@@ -61,6 +62,7 @@ static int PCSetUp_ASM(PC pc)
         start    += size;
         osm->is[i] = isl;
       }
+      osm->is_flg = PETSC_TRUE;
     }
 
     osm->sles = (SLES *) PetscMalloc(n_local*sizeof(SLES **)); CHKPTRQ(osm->sles);
@@ -162,6 +164,10 @@ static int PCDestroy_ASM(PetscObject obj)
     ierr = MatDestroy(osm->pmat[i]);
     ierr = SLESDestroy(osm->sles[i]);
   }
+  if (osm->is_flg) {
+     for ( i=0; i<n_local; i++ ) ISDestroy(osm->is[i]);
+     PetscFree(osm->is);
+  }
   PetscFree(osm->sles);
   PetscFree(osm->scat);
   PetscFree(osm->x);
@@ -201,6 +207,7 @@ int PCCreate_ASM(PC pc)
   osm->n            = PETSC_DECIDE;
   osm->n_local_true = PETSC_DECIDE;
   osm->overlap      = 1;
+  osm->is_flg       = PETSC_FALSE;
 
   pc->apply         = PCApply_ASM;
   pc->setup         = PCSetUp_ASM;
