@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.113 1999/02/24 22:56:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.114 1999/03/01 04:58:26 bsmith Exp bsmith $";
 #endif
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
@@ -210,12 +210,12 @@ int DAPublish_Petsc(PetscObject object)
 .  M,N - global dimension in each direction of the array
 .  m,n - corresponding number of processors in each dimension 
          (or PETSC_DECIDE to have calculated)
-.  w - number of degrees of freedom per node
-.  lx, ly - arrays containing the number of nodes in each cell along
+.  dof - number of degrees of freedom per node
+.  s - stencil width
+-  lx, ly - arrays containing the number of nodes in each cell along
            the x and y coordinates, or PETSC_NULL. If non-null, these
            must be of length as m and n, and the corresponding
            m and n cannot be PETSC_DECIDE. Sum of the lx[] entries must be M, sum of the ly[] entries N
--  s - stencil width
 
    Output Parameter:
 .  inra - the resulting distributed array object
@@ -240,7 +240,7 @@ int DAPublish_Petsc(PetscObject object)
 
 @*/
 int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
-                int M,int N,int m,int n,int w,int s,int *lx,int *ly,DA *inra)
+                int M,int N,int m,int n,int dof,int s,int *lx,int *ly,DA *inra)
 {
   int           rank, size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
@@ -257,7 +257,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PetscFunctionBegin;
   *inra = 0;
 
-  if (w < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node: %d",w);
+  if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node: %d",dof);
   if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative: %d",s);
 
   PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
@@ -268,8 +268,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   da->gtog1      = 0;
   da->localused  = PETSC_FALSE;
   da->globalused = PETSC_FALSE;
-  da->fieldname  = (char **) PetscMalloc(w*sizeof(char*));CHKPTRQ(da->fieldname);
-  ierr = PetscMemzero(da->fieldname, w*sizeof(char*));CHKERRQ(ierr);
+  da->fieldname  = (char **) PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
+  ierr = PetscMemzero(da->fieldname, dof*sizeof(char*));CHKERRQ(ierr);
 
   MPI_Comm_size(comm,&size); 
   MPI_Comm_rank(comm,&rank); 
@@ -409,12 +409,12 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   }
 
   /* Resize all X parameters to reflect w */
-  x   *= w;
-  xs  *= w;
-  xe  *= w;
-  Xs  *= w;
-  Xe  *= w;
-  s_x = s*w;
+  x   *= dof;
+  xs  *= dof;
+  xe  *= dof;
+  Xs  *= dof;
+  Xe  *= dof;
+  s_x = s*dof;
   s_y = s;
 
   /* determine starting point of each processor */
@@ -432,9 +432,9 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* allocate the base parallel and sequential vectors */
   ierr = VecCreateMPI(comm,x*y,PETSC_DECIDE,&global); CHKERRQ(ierr);
-  ierr = VecSetBlockSize(global,w);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(global,dof);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,(Xe-Xs)*(Ye-Ys),&local);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(local,w);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(local,dof);CHKERRQ(ierr);
 
 
   /* generate appropriate vector scatters */
@@ -581,7 +581,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   xbase = bases[rank];
   for ( i=1; i<=s_y; i++ ) {
     if (n0 >= 0) { /* left below */
-      x_t = lx[n0 % m]*w;
+      x_t = lx[n0 % m]*dof;
       y_t = ly[(n0/m)];
       s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
       for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -593,7 +593,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
     }
     if (n2 >= 0) { /* right below */
-      x_t = lx[n2 % m]*w;
+      x_t = lx[n2 % m]*dof;
       y_t = ly[(n2/m)];
       s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
       for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -602,7 +602,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   for ( i=0; i<y; i++ ) {
     if (n3 >= 0) { /* directly left */
-      x_t = lx[n3 % m]*w;
+      x_t = lx[n3 % m]*dof;
       y_t = y;
       s_t = bases[n3] + (i+1)*x_t - s_x;
       for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -611,7 +611,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     for ( j=0; j<x; j++ ) { idx[nn++] = xbase++; } /* interior */
 
     if (n5 >= 0) { /* directly right */
-      x_t = lx[n5 % m]*w;
+      x_t = lx[n5 % m]*dof;
       y_t = y;
       s_t = bases[n5] + (i)*x_t;
       for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -620,7 +620,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   for ( i=1; i<=s_y; i++ ) {
     if (n6 >= 0) { /* left above */
-      x_t = lx[n6 % m]*w;
+      x_t = lx[n6 % m]*dof;
       y_t = ly[(n6/m)];
       s_t = bases[n6] + (i)*x_t - s_x;
       for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -632,7 +632,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
     }
     if (n8 >= 0) { /* right above */
-      x_t = lx[n8 % m]*w;
+      x_t = lx[n8 % m]*dof;
       y_t = ly[(n8/m)];
       s_t = bases[n8] + (i-1)*x_t;
       for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -657,7 +657,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     xbase = bases[rank];
     for ( i=1; i<=s_y; i++ ) {
       if (n0 >= 0) { /* left below */
-        x_t = lx[n0 % m]*w;
+        x_t = lx[n0 % m]*dof;
         y_t = ly[(n0/m)];
         s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
         for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -669,7 +669,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
         for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
       }
       if (n2 >= 0) { /* right below */
-        x_t = lx[n2 % m]*w;
+        x_t = lx[n2 % m]*dof;
         y_t = ly[(n2/m)];
         s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
         for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -678,7 +678,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
     for ( i=0; i<y; i++ ) {
       if (n3 >= 0) { /* directly left */
-        x_t = lx[n3 % m]*w;
+        x_t = lx[n3 % m]*dof;
         y_t = y;
         s_t = bases[n3] + (i+1)*x_t - s_x;
         for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -687,7 +687,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       for ( j=0; j<x; j++ ) { idx[nn++] = xbase++; } /* interior */
 
       if (n5 >= 0) { /* directly right */
-        x_t = lx[n5 % m]*w;
+        x_t = lx[n5 % m]*dof;
         y_t = y;
         s_t = bases[n5] + (i)*x_t;
         for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -696,7 +696,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
     for ( i=1; i<=s_y; i++ ) {
       if (n6 >= 0) { /* left above */
-        x_t = lx[n6 % m]*w;
+        x_t = lx[n6 % m]*dof;
         y_t = ly[(n6/m)];
         s_t = bases[n6] + (i)*x_t - s_x;
         for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -708,7 +708,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
         for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
       }
       if (n8 >= 0) { /* right above */
-        x_t = lx[n8 % m]*w;
+        x_t = lx[n8 % m]*dof;
         y_t = ly[(n8/m)];
         s_t = bases[n8] + (i-1)*x_t;
         for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -716,7 +716,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     }
   }
 
-  da->M  = M;  da->N  = N;  da->m  = m;  da->n  = n;  da->w = w;  da->s = s;
+  da->M  = M;  da->N  = N;  da->m  = m;  da->n  = n;  da->w = dof;  da->s = s;
   da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye; da->zs = 0; da->ze = 0;
   da->Xs = Xs; da->Xe = Xe; da->Ys = Ys; da->Ye = Ye; da->Zs = 0; da->Ze = 0;
   da->P  = 1;  da->p  = 1;
@@ -819,7 +819,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   xbase = bases[rank];
   for ( i=1; i<=s_y; i++ ) {
     if (n0 >= 0) { /* left below */
-      x_t = lx[n0 % m]*w;
+      x_t = lx[n0 % m]*dof;
       y_t = ly[(n0/m)];
       s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
       for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -831,7 +831,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
     }
     if (n2 >= 0) { /* right below */
-      x_t = lx[n2 % m]*w;
+      x_t = lx[n2 % m]*dof;
       y_t = ly[(n2/m)];
       s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
       for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -840,7 +840,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   for ( i=0; i<y; i++ ) {
     if (n3 >= 0) { /* directly left */
-      x_t = lx[n3 % m]*w;
+      x_t = lx[n3 % m]*dof;
       y_t = y;
       s_t = bases[n3] + (i+1)*x_t - s_x;
       for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -849,7 +849,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     for ( j=0; j<x; j++ ) { idx[nn++] = xbase++; } /* interior */
 
     if (n5 >= 0) { /* directly right */
-      x_t = lx[n5 % m]*w;
+      x_t = lx[n5 % m]*dof;
       y_t = y;
       s_t = bases[n5] + (i)*x_t;
       for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -858,7 +858,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   for ( i=1; i<=s_y; i++ ) {
     if (n6 >= 0) { /* left above */
-      x_t = lx[n6 % m]*w;
+      x_t = lx[n6 % m]*dof;
       y_t = ly[(n6/m)];
       s_t = bases[n6] + (i)*x_t - s_x;
       for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -870,7 +870,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
     }
     if (n8 >= 0) { /* right above */
-      x_t = lx[n8 % m]*w;
+      x_t = lx[n8 % m]*dof;
       y_t = ly[(n8/m)];
       s_t = bases[n8] + (i-1)*x_t;
       for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
@@ -911,7 +911,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     for (j=ys; j<ye; j++) {
       for (i=xs; i<xe; i++) {
         /*  global number in natural ordering */
-        lidx[lict++] = i + j*M*w;
+        lidx[lict++] = i + j*M*dof;
       }
     }
     ierr = ISCreateGeneral(comm,Nlocal,lidx,&isnatural);CHKERRQ(ierr);
@@ -959,7 +959,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   for (j=ys; j<ye; j++) {
     for (i=xs; i<xe; i++) {
       /* gA = global number for 1 proc; gB = current global number */
-      gA[ict] = i + j*M*w;
+      gA[ict] = i + j*M*dof;
       gB[ict] = start + ict;
       ict++;
     }

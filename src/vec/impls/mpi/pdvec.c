@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.107 1999/02/25 21:53:37 balay Exp bsmith $ 
+static char vcid[] = $Id: pdvec.c,v 1.108 1999/03/04 21:48:25 bsmith Exp bsmith $ 
 #endif
 
 /*
@@ -184,6 +184,7 @@ int VecView_MPI_Binary(Vec xin, Viewer viewer )
   int         rank,ierr,len, work = x->n,n,j,size, fdes;
   MPI_Status  status;
   Scalar      *values;
+  FILE        *file;
 
   PetscFunctionBegin;
   ierr = ViewerBinaryGetDescriptor(viewer,&fdes); CHKERRQ(ierr);
@@ -206,6 +207,10 @@ int VecView_MPI_Binary(Vec xin, Viewer viewer )
       ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,0); 
     }
     PetscFree(values);
+    ierr = ViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
+    if (file && xin->bs > 1) {
+      fprintf(file,"-vecload_block_size %d\n",xin->bs);
+    }
   } else {
     /* send values */
     ierr = MPI_Send(x->array,x->n,MPIU_SCALAR,0,47,xin->comm);CHKERRQ(ierr);
