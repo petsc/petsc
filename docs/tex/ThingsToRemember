@@ -122,7 +122,7 @@ Multimedia lab SP2:
     - doesn't have ESSL
     - doesn't have MPI (run directly with POE by rlogging into a node)
     - wide nodes are:  [eyas5,eyas11,eyas13,eyas15].mcs.anl.gov
- to run:  poe -hostfile hostfilename ex1
+ to run:  poe ex1 -hostfile hostfilename -procs n_processors
    where hostfile lists hosts
    there is a sample hostfile in /home/curfman/mmsp2.host.list
 
