@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.136 2000/02/24 04:46:10 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.137 2000/02/24 22:23:48 balay Exp balay $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -247,7 +247,7 @@ extern PetscTruth PLogEventDepth[];
 #else
 #define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) {\
   if (_PLogPLE && PLogEventFlags[(e)+1]) {\
-    (*_PLogPLE)((e)+1,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
+    (*_PLogPLE)((e)+1,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));} \
   } 
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
   if (_PLogPLE && PLogEventFlags[(e)]) {\
