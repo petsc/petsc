@@ -1,10 +1,12 @@
 
-   Start in debugger on all machines, with C and C++ and all possible debuggers
+ - Start in debugger on all machines, with C and C++ and all possible debuggers
 
-   Basic, C++ and complex (and Fortran)
+ - Basic, C++ and complex (and Fortran)
 
-   With LAM, MPICH, native MPI
+ - With LAM, MPICH, native MPI
 
-   Every routine!
+ - Every routine!
 
-   PETScView with all possible log files.   
+ - PETScView with all possible log files
+
+ - Complex numbers with Fortran
