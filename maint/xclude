@@ -50,6 +50,7 @@ petsc/docs/www/petsc.cit
 petsc/docs/www/sec
 petsc/bmake/sun4_lam
 petsc/bmake/sun4_uni
+petsc/bmake/sun4_nodebug
 petsc/bmake/IRIX_uni
 petsc/bmake/IRIX/make_dso_IRIX
 petsc/bmake/freebsd_nolog

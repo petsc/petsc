@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base.site,v 1.12 1997/09/10 18:18:03 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -7,7 +7,7 @@
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
 #
-# FCLIB contains the libraries for a CLINKER to use for code containing
+# FC_LIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes). 
 #
 FC_LIB         = 
@@ -37,17 +37,44 @@ MPIRUN         = /usr/local/mpi/bin/mpirun
 # complex finds the /usr/include/complex.h not /usr/include/mpp/complex.h
 # which appears to be for C NOT c++.
 #
-# If you are not using Blocksolve then remove the -DHAVE_BLOCKSOLVE below 
-# and comment out or remove the next two lines below.
-#  Note that you cannot use BlockSolve with complex
+# ----------------------------------------------------------------------------------------  
+#
+# Optional location of MPE
+#
+#MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
+#MPE_INCLUDE   = -I/usr/local/mpi/include
+#
+# Optional location of BlockSolve (MPI version)
 #
 BS_INCLUDE = -I/u/ddscf/bsmith/BlockSolve95/include
 BS_LIB     = /u/ddscf/bsmith/BlockSolve95/lib/libO/$(PETSC_ARCH)/libBS95.a
 #
-# PCONF - indicates which external packages are available at your site
+# Optional Matlab location
 #
-# Cray T3D doesn't support X11 so DO NOT put -DHAVE_X11 below.
+#MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
+#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
+#CMEX           = /usr/local/bin/cmex 
+#
+# Option location where adiC is installed
+#
+#ADIC_INCLUDE = -I$(ADIC)/run-lib/include -I$(ADIC)/gradient -I$(ADIC)/include -Dad_GRAD_MAX=1
+#ADIC_LIB     = -L$(ADIC)/lib -L$(ADIC)/run-lib/lib -L$(ADIC)/gradient -lADIntrinsics-C -laif_
+#ADIC_CC      = adiC -aeud gradient -i $(PETSC_DIR)/bmake/adicmastercontrol
+#
+# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# 
+#PVODE_INCLUDE = -I/home/bsmith/MPI_PVODE/include
+#PVODE_LIB     = /home/bsmith/MPI_PVODE/lib/sun4/libpvode.a
+#
+# ---------------------------------------------------------------------------------------
+#
+# PCONF - indicates which OPTIONAL external packages are available at your site
+#
+# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# the locations are appropriately indicated above. If you do not have the package then
+# comment out the locations indicated for that package above.
 #
 PCONF         =  -DHAVE_BLOCKSOLVE
-#
-EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
+#PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
+EXTERNAL_LIB  = $(BS_LIB)  $(MPE_LIB) $(PVODE_LIB) $(ADIC_LIB)
+
