@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.56 1996/03/18 19:04:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.57 1996/03/19 21:22:50 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -44,7 +44,11 @@ static int MPIToAll(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
         if (scat->work2) xvt2 = scat->work2; 
         else {scat->work2 = xvt2 = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(xvt2);}
         MPI_Gatherv(yv,yy->n,MPIU_SCALAR,xvt2,scat->count,yy->ownership,MPIU_SCALAR,0,ctx->comm);
+#if defined(PETSC_COMPLEX)
+        MPI_Reduce(xv, xvt, 2*size, MPI_DOUBLE, MPI_SUM, 0, ctx->comm);
+#else
         MPI_Reduce(xv, xvt, size, MPIU_SCALAR, MPI_SUM, 0, ctx->comm);
+#endif
 	for ( i=0; i<size; i++ ) {
 	  xvt[i] += xvt2[i];
 	}
@@ -52,7 +56,11 @@ static int MPIToAll(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
       }
       else {
         MPI_Gatherv(yv, yy->n, MPIU_SCALAR, 0,  0, 0, MPIU_SCALAR, 0, ctx->comm);
+#if defined(PETSC_COMPLEX)
+        MPI_Reduce(xv, xvt, 2*size, MPI_DOUBLE, MPI_SUM, 0, ctx->comm);
+#else
         MPI_Reduce(xv, xvt, size, MPIU_SCALAR, MPI_SUM, 0, ctx->comm);
+#endif
         MPI_Scatterv(0,scat->count,yy->ownership,MPIU_SCALAR,yv,yy->n,MPIU_SCALAR,0,ctx->comm);
       }
     }
