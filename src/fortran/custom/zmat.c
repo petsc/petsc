@@ -331,7 +331,7 @@ static const PetscScalar *my_ovals = 0;
 
 void PETSC_STDCALL matgetrow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscInt *cols,PetscScalar *vals,PetscErrorCode *ierr)
 {
-  const PetscInt         **oocols = &my_ocols;
+  const PetscInt    **oocols = &my_ocols;
   const PetscScalar **oovals = &my_ovals;
 
   if (matgetrowactive) {

@@ -68,7 +68,7 @@ void PETSC_STDCALL isduplicate_(IS *is,IS *newis,PetscErrorCode *ierr)
 
 void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,PetscViewer *viewer,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECT(viewer);
+  CHKFORTRANNULLOBJECTDEREFERENCE(viewer);
   *ierr = ISLocalToGlobalMappingView(*mapping,*viewer);
 }
 

@@ -229,8 +229,8 @@ void PETSC_STDCALL vecdestroy_(Vec *v,PetscErrorCode *ierr)
 
 void PETSC_STDCALL vecscattercreate_(Vec *xin,IS *ix,Vec *yin,IS *iy,VecScatter *newctx,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECT(ix);
-  CHKFORTRANNULLOBJECT(iy);
+  CHKFORTRANNULLOBJECTDEREFERENCE(ix);
+  CHKFORTRANNULLOBJECTDEREFERENCE(iy);
   *ierr = VecScatterCreate(*xin,*ix,*yin,*iy,newctx);
 }
 
