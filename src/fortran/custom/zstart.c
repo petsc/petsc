@@ -213,8 +213,6 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
 #endif
   *ierr = PetscSetProgramName(name);
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize: Calling PetscSetProgramName()");return;}
-  *ierr = PetscSetInitialDate();
-  if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize: Calling PetscSetInitialDate()");return;}
 
   MPI_Initialized(&flag);
   if (!flag) {
@@ -223,6 +221,9 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
     PetscBeganMPI    = PETSC_TRUE;
   }
   PetscInitializeCalled = PETSC_TRUE;
+
+  *ierr = PetscSetInitialDate();
+  if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize: Calling PetscSetInitialDate()");return;}
 
   if (!PETSC_COMM_WORLD) {
     PETSC_COMM_WORLD          = MPI_COMM_WORLD;
