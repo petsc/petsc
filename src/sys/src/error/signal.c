@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.45 1997/09/18 16:56:09 balay Exp balay $";
+static char vcid[] = "$Id: signal.c,v 1.46 1997/09/18 18:11:55 balay Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -21,10 +21,10 @@ static int        SignalSet = 0;
 
 static char *SIGNAME[] = { "unknown", "HUP",  "INT",  "QUIT", "ILL",
                            "TRAP",    "ABRT", "EMT",  
-                           "FPE: Floating Point Exception, probably divide by zero",
+                           "FPE:\nPETSC ERROR: Floating Point Exception, probably divide by zero",
                            "KILL", 
                            "BUS: Bus Error",  
-                           "SEGV: Segmentation Violation, probably memory corruption", 
+                           "SEGV:\nPETSC ERROR: Segmentation Violation, probably memory corruption", 
                            "SYS",  "PIPE", "ALRM",
                            "TERM",    "URG",  "STOP", "TSTP", "CONT", 
                            "CHLD" }; 
