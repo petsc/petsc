@@ -1,41 +1,53 @@
 #!/usr/bin/env python
 import user
-import build.buildGraph
-import build.framework
+import maker
 import project
 
 import os
 
-class PetscMake(build.framework.Framework):
-  def __init__(self, clArgs = None, argDB = None):
-    build.framework.Framework.__init__(self, project.Project('bk://sidl.bkbits.net/BuildSystem', self.getRoot()), clArgs, argDB)
+class Make(maker.Make):
+  def __init__(self):
+    maker.Make.__init__(self)
+    self.project = project.Project('bk://sidl.bkbits.net/BuildSystem', self.getRoot())
     self.project.setWebDirectory('petsc@harley.mcs.anl.gov://mcs/www-unix/ase')
     return
 
-  def t_configure(self):
-    self.configureHeader = os.path.join(self.project.getRoot(), self.sidlTemplate.usingSIDL.getClientRootDir('Python', 'sidl'), 'cygwinpath_Module.h')
-    return build.framework.Framework.t_configure(self)
-
-  def setupSIDL(self):
-    import build.fileset
-    self.filesets['sidl'] = build.fileset.FileSet()
+  def setupDependencies(self, sourceDB):
+    maker.Make.setupDependencies(self, sourceDB)
+    sourceDB.addDependency(os.path.join('client-python', 'cygwinpath.c'), os.path.join('client-python', 'cygwinpath.h'))
     return
 
-  def setupSource(self):
-    import build.fileset
-    url                     = self.project.getUrl()
-    pythonRoot              = self.sidlTemplate.usingSIDL.getClientRootDir('Python')
-    self.filesets['python'] = build.fileset.RootedFileSet(url, [os.path.join(pythonRoot, 'cygwinpath_Module.c')], tag = 'python client')
-    self.filesets['sidl'].children.append(self.filesets['python'])
+  def updateDependencies(self, sourceDB):
+    sourceDB.updateSource(os.path.join('client-python', 'cygwinpath.h'))
+    maker.Make.updateDependencies(self, sourceDB)
     return
 
-  def setupProject(self):
-    self.setupSIDL()
+  def setupConfigure(self, framework):
+    doConfigure = maker.Make.setupConfigure(self, framework)
+    framework.header = os.path.join('client-python', 'cygwinpath.h')
+    return doConfigure
+
+  def configure(self, builder):
+    framework   = maker.Make.configure(self, builder)
+    self.python = framework.require('config.python', None)
     return
 
-  def setupBuild(self):
-    self.setupSource()
-    self.sidlTemplate.addClient('Python')
+  def buildCygwinPath(self, builder):
+    '''Builds the Python module which translates Cygwin paths'''
+    builder.pushConfiguration('Triangle Library')
+    compiler = builder.getCompilerObject()
+    linker   = builder.getLinkerObject()
+    compiler.includeDirectories.extend(self.python.include)
+    linker.libraries.extend(self.python.lib)
+    source = os.path.join('client-python', 'cygwinpath.c')
+    object = os.path.join('client-python', 'cygwinpath.o')
+    self.builder.compile([source], object)
+    self.builder.link([object], os.path.join('client-python', 'cygwinpath.so'), shared = 1)
+    builder.popConfiguration()
+    return
+
+  def build(self, builder):
+    self.buildCygwinPath(builder)
     return
 
   def t_updateWebsite(self):
@@ -61,8 +73,6 @@ class PetscMake(build.framework.Framework):
       self.cpFile(tarball, 'petsc@harley.mcs.anl.gov:/'+dir)
       os.remove(tarball)
     return
-  
-if __name__ ==  '__main__':
-  import sys
-  pm = PetscMake(sys.argv[1:])
-  pm.main()
+
+if __name__ == '__main__':
+  Make().run()

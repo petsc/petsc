@@ -3,17 +3,17 @@ import config.base
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    libraries = [('cygwin', 'log')]
-    # Add dependencies
+    libraries         = [('cygwin', 'log')]
     self.setCompilers = self.framework.require('config.setCompilers', self)
-    self.compilers    = self.framework.require('config.compilers',    self)
     self.libraries    = self.framework.require('config.libraries',    self)
+    self.python       = self.framework.require('config.python',       self)
     self.libraries.libraries.extend(libraries)
     return
 
   def configureCygwin(self):
     '''If libcygwin.a is found, define HAVE_CYGWIN'''
-    if self.libraries.haveLib('cygwin'):
+    self.hasCygwin = self.libraries.haveLib('cygwin')
+    if self.hasCygwin:
       self.framework.addDefine('HAVE_CYGWIN', 1)
       self.framework.addSubstitution('HAVE_CYGWIN', 1)
     else:
@@ -23,19 +23,18 @@ class Configure(config.base.Configure):
   def checkCompiler(self):
     '''Make sure the compiler is recent enough'''
     if self.setCompilers.isGCXX:
-      import commands
+      def checkCommand(command, status, output, error):
+        if status:
+          raise RuntimeError('g++ is not in your path; please make sure that you have a g++ of at least version 3 installed in your path. Get gcc/g++ at http://gcc.gnu.com')
+        return
 
-      (status,output) = commands.getstatusoutput(self.framework.argDB['CXX']+' -dumpversion')
-      if not status == 0:
-        raise RuntimeError('g++ is not in your path; please make sure that you have a g++ of at least version 3 installed in your path. Get gcc/g++ at http://gcc.gnu.com')
+      (output, error, status) = self.executeShellCommand(self.framework.argDB['CXX']+' -dumpversion', checkCommand)
       version = output.split('.')[0]
       if not version == '3':
         raise RuntimeError('The g++ in your path is version '+version+'; please install a g++ of at least version 3 or fix your path. Get gcc/g++ at http://gcc.gnu.com')
     return
 
   def configure(self):
-    import os
-
     self.executeTest(self.checkCompiler)
     self.executeTest(self.configureCygwin)
     return
