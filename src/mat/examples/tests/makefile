@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.214 1999/02/05 22:48:52 balay Exp balay $ 
+# $Id: makefile,v 1.215 1999/03/22 21:41:23 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -23,7 +23,7 @@ TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.P
 		   ex24.rm ex25.PETSc ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
 		   ex30.PETSc ex30.rm ex31.PETSc ex31.rm \
                    ex33.PETSc ex33.rm ex34.PETSc ex34.rm ex35.PETSc runex35 \
-		   ex35.rm ex37.PETSc ex37.rm ex38.PETSc ex38.rm \
+		   ex35.rm ex37.PETSc runex37 ex37.rm ex38.PETSc ex38.rm \
 		   ex43.PETSc ex43.rm ex48.PETSc runex48 ex48.rm ex49.PETSc ex49.rm \
 		   ex51.PETSc runex51 ex51.rm \
 		   ex52.PETSc ex52.rm ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 \
@@ -555,6 +555,23 @@ runex36:
 	   if (diff output/ex36_1.out ex36_1.tmp) then true; \
 	   else echo "Possible problem with ex36_1, diffs above"; fi; \
 	   ${RM} -f ex36_1.tmp
+runex37:
+	-@${MPIRUN} -np 1  ex37 > ex37_1.tmp 2>&1;   \
+	   if (diff output/ex37_1.out ex37_1.tmp) then true; \
+	   else echo "Possible problem with part I of ex37_1, diffs above"; fi; \
+	   ${RM} -f ex37_1.tmp
+	-@${MPIRUN} -np 3  ex37 > ex37_1.tmp 2>&1;   \
+	   if (diff output/ex37_1.out ex37_1.tmp) then true; \
+	   else echo "Possible problem with part II of ex37_1, diffs above"; fi; \
+	   ${RM} -f ex37_1.tmp
+	-@${MPIRUN} -np 1  ex37 -mat_baij > ex37_1.tmp 2>&1;   \
+	   if (diff output/ex37_1.out ex37_1.tmp) then true; \
+	   else echo "Possible problem with part III of ex37_1, diffs above"; fi; \
+	   ${RM} -f ex37_1.tmp
+	-@${MPIRUN} -np 3  ex37 -mat_baij > ex37_1.tmp 2>&1;   \
+	   if (diff output/ex37_1.out ex37_1.tmp) then true; \
+	   else echo "Possible problem with part IV of ex37_1, diffs above"; fi; \
+	   ${RM} -f ex37_1.tmp
 runex40:
 	-@${MPIRUN} -np 3 ex40 -f ../matrices/arco1 -nd 7 -ov 2 -optionsleft_off > ex40_1.tmp 2>&1; \
 	   grep -v "flg =1" ex40_1.tmp > ex40_12.tmp; \
