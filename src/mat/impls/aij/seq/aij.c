@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.135 1996/01/18 16:28:29 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.136 1996/01/18 23:58:30 balay Exp balay $";
 #endif
 
 /*
@@ -1164,13 +1164,17 @@ static int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatr
 static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int row, i,j,k,l,m,n, *idx,ierr, *table, *nidx, isz, val, start, end, *ai, *aj;
+  int        shift, row, i,j,k,l,m,n, *idx,ierr, *table, *nidx, isz, val;
+  int        start, end, *ai, *aj;
   
+  shift = a->indexshift;
   m     = a->m;
   ai    = a->i;
-  aj    = a->j;
+  aj    = a->j+shift;
+
   table = (int *) PetscMalloc(m * sizeof(int));
   nidx  = (int *) PetscMalloc(m * sizeof(int));
+
   
   if (ov < 0)  SETERRQ(1,"MatIncreaseOverlap_SeqAIJ: illegal overlap value used");
   for ( i=0; i<is_max; i++ ) {
@@ -1193,7 +1197,7 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
         start = ai[row];
         end   = ai[row+1];
         for ( l = start; l<end ; ++l){
-          val = aj[l];
+          val = aj[l] + shift;
           if(!table[val]++) { nidx[isz++] = val;}
         }
       }
