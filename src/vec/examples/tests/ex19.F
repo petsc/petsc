@@ -1,5 +1,5 @@
 
-C    "$Id: ex19.F,v 1.12 1995/11/01 19:08:41 bsmith Exp bsmith $";
+C    "$Id: ex19.F,v 1.13 1995/11/30 22:31:54 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -46,6 +46,9 @@ C Create a vector, then duplicate it
        write(6,130) norm
   130  format('Result of axpy ',f10.4)
 
+       call VecDestroy(x,ierr)
+       call VecDestroy(y,ierr)
+       call VecDestroy(w,ierr)
        call PetscFinalize(ierr)
        stop 
        end
