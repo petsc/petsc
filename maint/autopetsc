@@ -28,51 +28,45 @@
     while (1) {
 #       puts "Waiting for text string"
        expect { 
-                "* pages you.*\r\n" { 
-#                                   puts $expect_out(buffer)
+                   "* pages you.*\r\n" { 
                                    scan $expect_out(buffer) "%s pages," swho  
-#                                   puts "who: $swho"
                                    send "page $swho I have received your page\r"
                  } "* whispers to you, *\r\n" {
-#                                   puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s whispers to you, %s\r\n" swho message
-#                                   puts "who: $swho message: $message"
                                    send "mu $swho I have received your whisper\r" 
                  } "* pages,*\r\n" { 
-#                                   puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s pages, %s\r\n" swho  message
-#                                   puts "who: $swho message: $message"
                                    send "page $swho I have received your page\r"
                  } "* *to you*: *\r\n" { 
-#                                   puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s \[to you\]: %s\r\n" swho  message
-#                                   puts "who: $swho message: $message"
                                    send "\`$swho I acknowledge your message\r"
-                 } "* blinks\r\n" { 
-#                                   puts $expect_out(buffer)
-                                   scan $expect_out(buffer) "%s blinks\r\n" swho
-#                                   puts "who: $swho"
-                                   send "say Welcome back,  $swho\r"
                  } "* waves to Petsc.\r\n" { 
-#                                   puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s waves to Petsc.\r\n" swho
-#                                   puts "who: $swho"
                                    send "emote waves to $swho.\r"
-                 } "* eyes you warily.\r\n" { 
-#                                   puts $expect_out(buffer)
-                                   scan $expect_out(buffer) "%s eyes you warily.\r\n" swho
-#                                   puts "who: $swho"
-                                   send "eye $swho\r"
-                 } "* peers at you suspiciously.\r\n" { 
-#                                   puts $expect_out(buffer)
-                                   scan $expect_out(buffer) "%s peers at you suspiciously.\r\n" swho
-#                                   puts "who: $swho"
-                                   send "peer $swho\r"
+#
+#  people arriving
+#
                  } "* arrives from the hallway.\r\n" { 
-#                                   puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s arrives from the hallway.\r\n" swho
-#                                   puts "who: $swho"
                                    send "\`$swho Welcome to PETSc Plaza\r"
+                 } "* blinks\r\n" { 
+                                   scan $expect_out(buffer) "%s blinks\r\n" swho
+                                   send "say Welcome back,  $swho\r"
+#
+#  antisocial to Petsc
+#
+                 } "* eyes you warily.\r\n" { 
+                                   scan $expect_out(buffer) "%s eyes you warily.\r\n" swho
+                                   send "eye $swho\r"
+                 } "* nudges you.\r\n" { 
+                                   scan $expect_out(buffer) "%s nudges you.\r\n" swho
+                                   send "mu $who What is up?\r"
+                 } "* pokes you.\r\n" { 
+                                   scan $expect_out(buffer) "%s pokes you.\r\n" swho
+                                   send "mu $who What is up?\r"
+                 } "* peers at you suspiciously.\r\n" { 
+                                   scan $expect_out(buffer) "%s peers at you suspiciously.\r\n" swho
+                                   send "peer $swho\r"
                  } "*\r\n" { 
 #                                   puts "Irrelevant message"
                  }
