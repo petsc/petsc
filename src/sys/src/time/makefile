@@ -1,8 +1,6 @@
-# $Id: makefile,v 1.2 1998/05/08 16:12:52 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 1998/05/21 14:53:31 bsmith Exp balay $ 
 
 ALL: lib 
-CFLAGS	  = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' -DPETSC_BOPT='"${BOPT}"' \
-            -DPETSC_LDIR='"${LDIR}"' -DPETSC_DIR='"${PETSC_DIR}"' -DPETSC_SLSUFFIX='"${SLSUFFIX}"'
 
 SOURCEC	  = cputime.c fdate.c nt_time.c 
 SOURCEF	  =

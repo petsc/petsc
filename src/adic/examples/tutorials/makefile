@@ -1,16 +1,13 @@
-# $Id: makefile,v 1.6 1998/03/24 17:38:30 balay Exp bsmith $ 
+# $Id: makefile,v 1.7 1998/06/12 22:13:31 bsmith Exp balay $ 
 
 ALL: ex1
 
 CFLAGS 	        =  ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
 FFLAGS	        = 
-SOURCEC	        = 
-SOURCEF	        =
-SOURCEH	        =
-OBJSC	        =
-OBJSF	        =
-LIBBASE	        = 
+CPPFLAGS        =
+FPPFLAGS        =
 LOCDIR          = src/adic/examples/tutorials/
+
 TESTEXAMPLES_1  =
 TESTEXAMPLES_2  =
 TESTEXAMPLES_3  =
