@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.16 1998/12/04 23:22:05 bsmith Exp balay $ 
+# $Id: base.site,v 1.17 1998/12/07 18:21:59 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -22,7 +22,7 @@ LAPACK_LIB     = -lessl /home/bsmith/libraries/blaslapack/lapack_rs6000_p4.a
 #MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
 #MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 
-MPI_LIB        = /home/petsc/mpich-1.1.1/lib/rs6000/ch_p4/libmpi.a 
+MPI_LIB        = -L/home/petsc/mpich-1.1.1/lib/rs6000 -lmpich
 MPI_INCLUDE    = -I/home/petsc/mpich-1.1.1/include
 MPIRUN         = /home/petsc/mpich-1.1.1/lib/rs6000/ch_p4/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 
@@ -41,9 +41,8 @@ X11_LIB        = -lX11
 #
 # MPE Libraries
 #
-MPE_LIB      = /home/petsc/mpich/lib/rs6000/ch_p4/libmpe.a \
-               /home/petsc/mpich/lib/rs6000/ch_p4/libpmpi.a
-MPE_INCLUDE  = -I/home/petsc/mpich/mpe
+MPE_LIB      = -lmpe -lpmpich
+MPE_INCLUDE  = -I/home/petsc/mpich-1.1.1/mpe
 #
 # Optional Matlab location, remove if not needed.
 #
