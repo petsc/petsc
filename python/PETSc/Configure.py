@@ -47,7 +47,7 @@ class Configure(config.base.Configure):
         packageObj.headerPrefix = self.headerPrefix
         setattr(self, packageName.lower(), packageObj)
     # Put in dependencies
-    self.update = self.framework.require('PETSc.packages.update', self.setCompilers)
+    self.framework.require('PETSc.packages.update', self.setCompilers)
     self.framework.require('PETSc.packages.compilerFlags', self.compilers)
     self.framework.require('PETSc.packages.fortranstubs',  self.blaslapack)
     return
@@ -161,7 +161,7 @@ class Configure(config.base.Configure):
     else:
       self.framework.addSubstitution('LT_CC', '')
       self.framework.addSubstitution('LIBTOOL', '')
-      self.framework.addSubstitution('SHARED_TARGET', 'shared_'+re.sub(r'^(\w+)[-_]?.*$', r'\1', self.update.host_os))
+      self.framework.addSubstitution('SHARED_TARGET', 'shared_'+self.framework.argDB['PETSC_ARCH_BASE'])
     return
 
   def configureDebuggers(self):
