@@ -1,5 +1,5 @@
 C
-C "$Id: sif.F,v 1.7 1999/03/02 22:29:16 bsmith Exp curfman $";
+C "$Id: sif.F,v 1.8 1999/11/01 19:39:37 curfman Exp curfman $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -565,9 +565,11 @@ C
                f1  = (f0h + f1h)*half
 c
                del(xm-1) = hi1*(f1 - four*f0h + three*f0)
-               del(xm-1) = del(xm-1) + d1o*par1*(60.d0 - 2.0d0)      
+c               del(xm-1) = del(xm-1) + d1o*par1*(60.d0 - 2.0d0)      
+               del(xm-1) = del(xm-1) + d1o*par1*(M*1.0d0 - 2.0d0)      
                del(xm-2) = d2p2*((cp - ci)*(dp + di) - 
-     &             (ci - cm)*(di + dm)) + par1*d1p*(60.d0 - 3.0d0) 
+c     &             (ci - cm)*(di + dm)) + par1*d1p*(60.d0 - 3.0d0) 
+     &             (ci - cm)*(di + dm)) + par1*d1p*(M*1.0d0 - 3.0d0) 
 
         endif
 
