@@ -13,17 +13,12 @@ Additional Capabilities that PETSc Needs:
 
 Barry  * Fix fortran interface for TS. and read David Keyes comments.
 
-Satish * Create an Database for examples
-
 Satish * Make all systems use shared libraries if possible, and document how to
            use these variants.
 
 Satish * Make sure all Fortran examples run for complex on all machines, note
          this means the bmake files must insure that -DPETSC_COMPLEX is 
          properly set.
-
-Everyone  - Aim for more exhaustive PETSc testing.  See
-            /home/MPI/mpich/examples/test/rlist.srt:
 
   * Make configure fully functional in PETSc 2.0
       - document usage somewhere
@@ -35,6 +30,11 @@ Everyone  - Aim for more exhaustive PETSc testing.  See
 -----------------------------------------------------------------------
   To do sometime soon:
 -----------------------------------------------------------------------
+
+ - Finish converting examples to tutorials/tests formats
+
+ - Aim for more exhaustive PETSc testing.  See
+         /home/MPI/mpich/examples/test/rlist.srt:
 
  - Features in TS wanted by Carl:
       - Crank-Nicholson
