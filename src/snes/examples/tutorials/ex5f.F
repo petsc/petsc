@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.78 2001/08/06 21:17:42 bsmith Exp balay $";
+! "$Id: ex5f.F,v 1.79 2001/08/07 03:04:16 balay Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -84,7 +84,7 @@
       lambda_max = 6.81
       lambda_min = 0.0
       lambda     = 6.0
-      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par',lambda,    &
+      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par',lambda,                &
      &                           flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
@@ -95,7 +95,7 @@
 !  Create nonlinear solver context
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,        &
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,                  &
      &                snes,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -183,10 +183,10 @@
       A = J
 #endif
 
-      call DAGetColoring(da,IS_COLORING_GHOSTED,                               &
+      call DAGetColoring(da,IS_COLORING_GHOSTED,                                 &
      &                     coloring,ierr)
       call MatSetColoring(J,coloring,ierr)
-      call SNESSetJacobian(snes,A,J,SNESDAComputeJacobianWithAdifor,            &
+      call SNESSetJacobian(snes,A,J,SNESDAComputeJacobianWithAdifor,             &
      &                         da,ierr)
       call ISColoringDestroy(coloring,ierr)
 

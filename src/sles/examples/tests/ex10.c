@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.95 2001/08/07 03:03:57 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.96 2001/08/07 21:30:50 bsmith Exp bsmith $*/
 
 static char help[] = "This example calculates the stiffness matrix for a brick in three\n\
 dimensions using 20 node serendipity elements and the equations of linear\n\
@@ -270,7 +270,7 @@ int Elastic20Stiff(PetscReal **Ke)
       for (k=0; k<3; k++) {
         for (l=0; l<3; l++) {
           Ke[3*rmap[i]+k][3*rmap[j]+l] = v = K[I+k][J+l];
-          m = PetscMax(m,PetscAbsPetscReal(v));
+          m = PetscMax(m,PetscAbsReal(v));
         }
       }
       J += 3;
@@ -281,7 +281,7 @@ int Elastic20Stiff(PetscReal **Ke)
   m = (1.e-8)*m;
   for (i=0; i<81; i++) {
     for (j=0; j<81; j++) {
-      if (PetscAbsPetscReal(Ke[i][j]) < m)  Ke[i][j] = 0.0;
+      if (PetscAbsReal(Ke[i][j]) < m)  Ke[i][j] = 0.0;
     }
   }  
   /* force the matrix to be exactly symmetric */

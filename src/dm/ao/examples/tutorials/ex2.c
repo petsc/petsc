@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.43 2001/08/07 21:31:37 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.44 2001/08/10 03:34:31 bsmith Exp bsmith $*/
 
 static char help[] = "Reads a a simple unstructured grid from a file. Partitions it,\n\
 and distributes the grid data accordingly\n\n";
@@ -237,7 +237,7 @@ int DataRead(GridData *gdata)
         fscanf(fd,"%d %lf %lf\n",&cnt,tmpvert+2*i,tmpvert+2*i+1);
         printf("%d %g %g\n",cnt,tmpvert[2*i],tmpvert[2*i+1]);
       }
-      ierr = MPI_Send(tmpvert,2*mmlocal_vert[j],MPI_PETSCREAL,j,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Send(tmpvert,2*mmlocal_vert[j],MPIU_REAL,j,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
     ierr = PetscFree(tmpvert);CHKERRQ(ierr);
     ierr = PetscFree(mmlocal_vert);CHKERRQ(ierr);
