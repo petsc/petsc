@@ -348,12 +348,16 @@ if [ "`ls $rundir/*`" != "" ] ; then
   cp -rf $rundir ./output.$$ 
   cd output.$$
   mv */*.[0-9]* . > /dev/null 2>&1
-  if [ "`ls ./ccn[0-9]*`" = "" ] ; then
+  if [ "`ls ./ccn[0-9]*/* 2> /dev/null`" = "" ] ; then
     rm -rf ccn[0-9]*
   fi
-  cd
-  if [ $showtimes = "yes" ] ; then
-  echo "Output files placed into " output.$$
+  cd ..
+  if [ "`ls ./output.$$/* 2> /dev/null`" = "" ] ; then
+    rm -rf output.$$
+  else 
+    if [ $showtimes = "yes" ] ; then
+      echo "Output files placed into " output.$$
+    fi
   fi
 fi
 
