@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.28 1997/11/05 20:12:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.29 1997/11/11 15:22:50 bsmith Exp balay $";
 #endif
 
 /*
@@ -69,6 +69,7 @@ int OptionsCheckInitial_Private(),
 #if defined(__cplusplus)
 extern "C" {
 #endif
+extern void mpi_init_(int*);
 #if defined(PARCH_nt)
 /*
 extern short  __declspec(dllimport) __stdcall iargc_();
@@ -78,7 +79,6 @@ extern short __stdcall iargc_();
 extern void __stdcall  getarg_(short*,char*,int,short *);
 
 #else
-extern void mpi_init_(int*);
 extern int  iargc_();
 extern void getarg_(int*,char*,int);
 #if defined(PARCH_t3d)
