@@ -28,8 +28,6 @@ petsc/src/contrib/flash
 petsc/src/contrib/elliott
 petsc/src/contrib/odu
 petsc/src/contrib/tutorials.tar.gz
-petsc/src/mat/impls/baij/seq/dgedi.ff
-petsc/src/mat/impls/baij/seq/dgefa.ff
 petsc/src/contrib/reusememory
 petsc/src/benchmarks/results
 petsc/src/benchmarks/notes
