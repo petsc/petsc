@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.47 1997/01/01 03:40:33 bsmith Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.48 1997/01/06 20:29:26 balay Exp balay $";
 #endif
 
 /* 
@@ -130,18 +130,20 @@ int SOCKCall_Private(char *hostname,int portnum)
       perror("SEND: error socket");  SETERRQ(1,0,"system error");
     }
     if ( connect(s,(struct sockaddr *)&sa,sizeof(sa)) < 0 ) {
-      if ( errno == EALREADY ) {
-        fprintf(stderr,"SEND: socket is non-blocking \n");
-      }
-      else if ( errno == EADDRINUSE ) {
+       if ( errno == EADDRINUSE ) {
         fprintf(stderr,"SEND: address is in use\n");
       }
-      else if ( errno == ECONNREFUSED ) {
-        /* fprintf(stderr,"SEND: forcefully rejected\n"); */
-        sleep((unsigned) 1);
+#if !defined(PARCH_nt_gnu)
+       else if ( errno == EALREADY ) {
+        fprintf(stderr,"SEND: socket is non-blocking \n");
       }
       else if ( errno == EISCONN ) {
         fprintf(stderr,"SEND: socket already connected\n"); 
+        sleep((unsigned) 1);
+      }
+#endif
+      else if ( errno == ECONNREFUSED ) {
+        /* fprintf(stderr,"SEND: forcefully rejected\n"); */
         sleep((unsigned) 1);
       }
       else {
