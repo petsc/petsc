@@ -51,7 +51,7 @@ class Configure(config.base.Configure):
   def checkInclude(self,bs95incl):
     '''Check that BSsparse.h is present'''
     oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.mpi.include])
+    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.mpi.include+bs95incl])
     found = self.checkPreprocess('#include <BSsparse.h>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     return found
@@ -100,18 +100,15 @@ class Configure(config.base.Configure):
         if self.executeTest(self.checkInclude,bs95incl):
           self.framework.log.write('Found BlockSolve95 header file BSsparse.h: '+str(bs95incl)+'\n')
           self.include = bs95incl
+          self.addDefine('HAVE_BLOCKSOLVE',1)
+          self.framework.packages.append(self)
           self.foundBS95 = 1
-          self.setFoundOutput()
-          break
-    else:
-      self.framework.log.write('Could not find a functional BlockSolve95\n')
-      raise RuntimeError('Could not find a functional BlockSolve95\n')
+          return
+        
+    self.framework.log.write('Could not find a functional BlockSolve95\n')
+    raise RuntimeError('Could not find a functional BlockSolve95\n')
     return
 
-  def setFoundOutput(self):
-    self.addDefine('HAVE_BLOCKSOLVE',1)
-    self.framework.packages.append(self)
-    
   def configure(self):
     if self.framework.argDB['with-blocksolve95']:
       if self.mpi.usingMPIUni:

@@ -1,4 +1,14 @@
 
+  count for PSSetUpOnBlocks() is wrong, since it always has to call in, since it
+  does not know if the setup was done.
+
+  all Raise RuntimeError() in configure that are intended for users 
+should have instead self.framework.Box('message','url') that formats the 
+message with ** around it for users to see easily.
+
+  Figure out why gmres as smoother for one iteration can be some much better
+than Richardson? Is it computing some good damping factor?
+
   Interface for vectors to fftw.
 
 Before release
