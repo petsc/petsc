@@ -87,9 +87,9 @@ class BS (maker.Maker):
 
   def getCompileDefaults(self):
     if not hasattr(self, 'compileDefaults'):
-      if self.filesets.has_key('etags'):
+      if not self.filesets.has_key('etags'):
         self.filesets['etags'] = None
-      self.compileDefaults = BSTemplates.compileTargets.Defaults(self.getSidlDefaults(), self.filesets['etags'])
+      self.compileDefaults = BSTemplates.compileTargets.Defaults(self.getSIDLDefaults(), self.filesets['etags'])
     return self.compileDefaults
 
   def t_sidl(self):
