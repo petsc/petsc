@@ -65,6 +65,7 @@ extern int KSPRichardsonSetScale(KSP , double);
 extern int KSPChebychevSetEigenvalues(KSP , double, double);
 extern int KSPCGGetEigenvalues(KSP, int n,double*,double*);
 extern int KSPGMRESSetRestart(KSP, int);
+extern int KSPGMRESSetUseUnmodifiedGrammSchmidt(KSP);
 extern int KSPSetFromOptions(KSP);
 
 extern int KSPDefaultCGMonitor(KSP,int,double, void * );
