@@ -7,9 +7,10 @@ if test -n "$1"; then
 fi
 
 # Stolen from AC_CANONICAL_HOST
-CONFIG_AUX_DIR="$PETSC_DIR/config"
+CONFIG_AUX_DIR="$PETSC_DIR/bin/config"
 if test ! -x "$CONFIG_AUX_DIR/config.sub"; then
-    CONFIG_AUX_DIR="/usr/share/automake"
+    echo "Missing $CONFIG_AUX_DIR/config.sub. Check that PETSC_DIR is set correctly."
+    exit 1
 fi
 ac_config_sub="$CONFIG_AUX_DIR/config.sub"
 ac_config_guess="$CONFIG_AUX_DIR/config.guess"
