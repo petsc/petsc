@@ -85,7 +85,9 @@ void dCompRow_to_CompCol(int m, int n, int nnz,
     SUPERLU_FREE(marker);
 }
 #else
+EXTERN_C_BEGIN
 extern void dCompRow_to_CompCol(int,int,int,double*,int*,int*,double**,int**,int**);
+EXTERN_C_END
 #endif /* PETSC_HAVE_SUPERLU*/
 
 #undef __FUNCT__  
