@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.26 1997/04/03 22:15:28 balay Exp balay $ */
+/* $Id: plapack.h,v 1.27 1997/04/04 04:32:39 balay Exp balay $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -182,6 +182,7 @@ Cray T3D/T3E.
 #define ZGETRS  CGETRS
 #define ZGEMM   SGEMM
 #define ZTRMV   CTRMV
+#define ZTRSL   CTRSL
 #define ZGEEV   CGEEV
 #endif
 

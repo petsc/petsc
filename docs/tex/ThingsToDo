@@ -18,7 +18,7 @@ Meta priorities:
 Satish - Make sure one can run block Jacobi on several matrices with number of rows
    on all matrices but first zero for both AIJ and BAIJ matrices.
 
- - Test mpiuni on DEC alpha, document any changes needed for it to work.
+ X Test mpiuni on DEC alpha, document any changes needed for it to work.
 
        Maybe, like, say, test one or two BDiag routines before making a release?
        More test cases that involve, zero size vectors, matrices, IS's etc.
