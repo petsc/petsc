@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.32 1995/10/24 21:45:02 bsmith Exp curfman $ */
+/* $Id: matimpl.h,v 1.33 1995/10/27 14:01:58 curfman Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -33,7 +33,7 @@ struct _MatOps {
             (*incompletecholeskyfactorsymbolic)(Mat,IS,double,int,Mat *),
             (*getarray)(Mat,Scalar **),(*restorearray)(Mat,Scalar **),
             (*convert)(Mat,MatType,Mat *),
-            (*getsubmatrix)(Mat,IS,IS,Mat*),
+            (*getsubmatrix)(Mat,IS,IS,MatGetSubMatrixCall,Mat*),
             (*getsubmatrixinplace)(Mat,IS,IS),
             (*copyprivate)(Mat,Mat *,int),
             (*forwardsolve)(Mat,Vec,Vec),(*backwardsolve)(Mat,Vec,Vec),
