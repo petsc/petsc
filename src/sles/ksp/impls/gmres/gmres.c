@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.94 1998/03/20 22:47:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.95 1998/04/03 23:13:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -560,6 +560,8 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
     }
     PetscFPrintf(ksp->comm,fd,"    GMRES: restart=%d, using %s\n",
                gmres->max_k,cstr);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.70 1998/03/20 22:47:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.71 1998/04/03 23:13:29 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -196,6 +196,8 @@ int KSPView_CG(KSP ksp,Viewer viewer)
     } else {
       PetscFPrintf(ksp->comm,fd,"    CG: unknown variant\n");
     }
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
 #endif
   PetscFunctionReturn(0);

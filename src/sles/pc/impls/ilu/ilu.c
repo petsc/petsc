@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.101 1998/03/23 21:20:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.102 1998/04/03 23:14:27 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -418,9 +418,10 @@ static int PCView_ILU(PC pc,Viewer viewer)
     if (ilu->inplace) PetscFPrintf(pc->comm,fd,"         in-place factorization\n");
     else PetscFPrintf(pc->comm,fd,"         out-of-place factorization\n");
     PetscFPrintf(pc->comm,fd,"         matrix ordering: %s\n",order);
-  }
-  else if (vtype == STRING_VIEWER) {
+  } else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->levels,order);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

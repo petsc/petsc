@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.104 1998/03/20 22:48:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.105 1998/04/03 23:14:18 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -171,6 +171,8 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
   } else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer," blks=%d",jac->n);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer); CHKERRQ(ierr);}
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

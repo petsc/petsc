@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.141 1998/03/23 21:24:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.142 1998/04/03 23:17:44 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -197,7 +198,7 @@ int SNESSetFromOptions(SNES snes)
   ierr = SNES_KSP_SetParametersEW(snes,version,rtol_0,rtol_max,gamma2,alpha,
                                   alpha2,threshold); CHKERRQ(ierr);
   ierr = OptionsHasName(snes->prefix,"-snes_cancelmonitors",&flg); CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetMonitor(snes,0,0);CHKERRQ(ierr);}
+  if (flg) {ierr = SNESClearMonitor(snes);CHKERRQ(ierr);}
   ierr = OptionsHasName(snes->prefix,"-snes_monitor",&flg); CHKERRQ(ierr);
   if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultMonitor,0);CHKERRQ(ierr);}
   ierr = OptionsHasName(snes->prefix,"-snes_smonitor",&flg); CHKERRQ(ierr);
@@ -1357,7 +1358,7 @@ int SNESSetMinimizationFunctionTolerance(SNES snes,double ftol)
 #undef __FUNC__  
 #define __FUNC__ "SNESSetMonitor"
 /*@C
-   SNESSetMonitor - Sets the function that is to be used at every
+   SNESSetMonitor - Sets an ADDITIONAL function that is to be used at every
    iteration of the nonlinear solver to display the iteration's 
    progress.   
 
@@ -1398,21 +1399,46 @@ $                           the options database.
 
 .keywords: SNES, nonlinear, set, monitor
 
-.seealso: SNESDefaultMonitor()
+.seealso: SNESDefaultMonitor(), SNESClearMonitor()
 @*/
 int SNESSetMonitor( SNES snes, int (*func)(SNES,int,double,void*),void *mctx )
 {
   PetscFunctionBegin;
-  if (!func) {
-    snes->numbermonitors = 0;
-    PetscFunctionReturn(0);
-  }
   if (snes->numbermonitors >= MAXSNESMONITORS) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many monitors set");
   }
 
   snes->monitor[snes->numbermonitors]           = func;
   snes->monitorcontext[snes->numbermonitors++]  = (void*)mctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESClearMonitor"
+/*@C
+   SNESClearMonitor - Clears all the monitor functions for a SNES object.
+
+   Input Parameters:
+.  snes - the SNES context
+
+   Options Database:
+$    -snes_cancelmonitors : cancels all monitors that have
+$                           been hardwired into a code by 
+$                           calls to SNESSetMonitor(), but
+$                           does not cancel those set via
+$                           the options database.
+
+   Notes: 
+     There is no way to clear one specific monitor from a SNES object.
+
+.keywords: SNES, nonlinear, set, monitor
+
+.seealso: SNESDefaultMonitor(), SNESSetMonitor()
+@*/
+int SNESClearMonitor( SNES snes )
+{
+  PetscFunctionBegin;
+  snes->numbermonitors = 0;
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.72 1998/03/20 22:48:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.73 1998/04/03 23:14:31 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -76,6 +76,8 @@ static int PCView_ASM(PC pc,Viewer viewer)
   } else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer," blks=%d, overlap=%d, type=%d",jac->n,jac->overlap,jac->type);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer);}
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

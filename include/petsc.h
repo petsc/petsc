@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.204 1998/03/31 22:39:15 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.205 1998/03/31 23:34:38 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -21,10 +21,12 @@
    contains various definitions that handle portability issues and the 
    presence of important features.  For backward compatibility while 
    developing, this configuration is itself conditionally included.
- */
+
+   petscconf.h is contained in bmake/${PETSC_ARCH}/petscconf.h  
+*/
 #ifdef HAVE_PETSCCONF_H
 #include "petscconf.h"
-#else
+#endif
 
 /* These are temporary; they contain PARCH_xxxx -> feature-specific
    definitions */
@@ -60,7 +62,6 @@
 #if defined(PARCH_paragon) ||  defined(PARCH_alpha)
 /* Some versions of these systems require u_type definitions */
 #define NEED_UTYPE_TYPEDEFS
-#endif
 #endif
 
 /* ========================================================================== */

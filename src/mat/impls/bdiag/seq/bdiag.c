@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.150 1998/03/16 19:03:07 balay Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.151 1998/04/03 23:15:21 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1766,6 +1766,8 @@ int MatView_SeqBDiag(Mat A,Viewer viewer)
     ierr = MatView_SeqBDiag_Binary(A,viewer);CHKERRQ(ierr);
   } else if (vtype == DRAW_VIEWER) {
     ierr = MatView_SeqBDiag_Draw(A,viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported by PETSc object");
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.71 1998/03/20 22:53:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.72 1998/04/03 23:18:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -139,6 +139,8 @@ int DAView_3d(DA da,Viewer viewer)
     } 
     ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = DrawPause(draw);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

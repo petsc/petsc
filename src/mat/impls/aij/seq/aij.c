@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.255 1998/03/26 22:32:03 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.256 1998/04/03 23:14:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -621,15 +621,14 @@ int MatView_SeqAIJ(Mat A,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == MATLAB_VIEWER) {
     ierr = ViewerMatlabPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j);  CHKERRQ(ierr);
-  }
-  else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
+  } else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
     ierr = MatView_SeqAIJ_ASCII(A,viewer); CHKERRQ(ierr);
-  }
-  else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (vtype == BINARY_FILE_VIEWER) {
     ierr = MatView_SeqAIJ_Binary(A,viewer); CHKERRQ(ierr);
-  }
-  else if (vtype == DRAW_VIEWER) {
+  } else if (vtype == DRAW_VIEWER) {
     ierr = MatView_SeqAIJ_Draw(A,viewer); CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported by PETSc object");
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.21 1998/03/23 21:23:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.22 1998/04/03 23:16:57 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -388,7 +388,9 @@ static int TSView_PVode(TS ts,Viewer viewer)
     }
   } else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer,"Pvode type %s",type);
-  } 
+  } else {
+    SETERRQ(1,1,"Viewer type not supported by PETSc object");
+  }
   ierr = PCView(cvode->pc,viewer); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

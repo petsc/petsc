@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.107 1998/03/24 20:59:01 balay Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.108 1998/04/03 23:16:28 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -633,6 +633,11 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,Dr
     xavailable = 0;
     yavailable = yavailable + h + 30;
     ybottom    = yavailable;
+  }
+  if (yavailable >= ymax) {
+    y          = 0;
+    yavailable = 0;
+    ybottom    = 0;
   }
 
   *inctx = 0;

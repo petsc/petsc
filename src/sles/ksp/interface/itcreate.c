@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.115 1998/03/23 21:18:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.116 1998/04/03 23:13:21 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -358,7 +358,7 @@ int KSPSetFromOptions(KSP ksp)
   */
   ierr = OptionsHasName(ksp->prefix,"-ksp_cancelmonitors",&flg); CHKERRQ(ierr);
   if (flg) {
-    KSPSetMonitor(ksp,0,(void *)0);
+    ierr = KSPClearMonitor(ksp); CHKERRQ(ierr);
   }
   /*
      Prints preconditioned residual norm at each iteration
@@ -368,7 +368,7 @@ int KSPSetFromOptions(KSP ksp)
     int rank = 0;
     MPI_Comm_rank(ksp->comm,&rank);
     if (!rank) {
-      KSPSetMonitor(ksp,KSPDefaultMonitor,(void *)0);
+      ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,(void *)0); CHKERRQ(ierr);
     }
   }
   /*
@@ -376,7 +376,7 @@ int KSPSetFromOptions(KSP ksp)
   */
   ierr = OptionsHasName(ksp->prefix,"-ksp_truemonitor",&flg); CHKERRQ(ierr);
   if (flg) {
-    KSPSetMonitor(ksp,KSPTrueMonitor,(void *)0); 
+    ierr = KSPSetMonitor(ksp,KSPTrueMonitor,(void *)0); CHKERRQ(ierr);
   }
   /*
      Prints extreme eigenvalue estimates at each iteration
@@ -384,7 +384,7 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(ksp->prefix,"-ksp_singmonitor",&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = KSPSetComputeSingularValues(ksp); CHKERRQ(ierr);
-    KSPSetMonitor(ksp,KSPSingularValueMonitor,(void *)0); 
+    ierr = KSPSetMonitor(ksp,KSPSingularValueMonitor,(void *)0);CHKERRQ(ierr); 
   }
   /*
      Prints true residual for BlockSolve95 preconditioners

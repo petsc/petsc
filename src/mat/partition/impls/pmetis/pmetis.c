@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.7 1998/04/03 23:15:54 bsmith Exp balay $";
+static char vcid[] = "$Id: pmetis.c,v 1.8 1998/04/05 15:57:10 balay Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -83,6 +83,8 @@ int PartitioningView_Parmetis(Partitioning part,Viewer viewer)
     PetscFPrintf(part->comm,fd,"  Using %d fold factor\n",parmetis->foldfactor);
     PetscSynchronizedFPrintf(part->comm,fd,"  [%d]Number of cuts found %d\n",rank,parmetis->cuts);
     PetscSynchronizedFlush(part->comm);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
 
   PetscFunctionReturn(0);

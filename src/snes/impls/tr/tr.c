@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.81 1998/03/06 00:18:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.82 1998/04/03 23:17:53 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -276,6 +276,8 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
     PetscFPrintf(snes->comm,fd,"    mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);
     PetscFPrintf(snes->comm,fd,"    delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",
                  tr->delta0,tr->delta1,tr->delta2,tr->delta3);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

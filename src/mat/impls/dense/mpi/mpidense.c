@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.81 1998/03/16 18:55:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.82 1998/04/03 23:14:50 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -604,6 +604,8 @@ int MatView_MPIDense(Mat mat,Viewer viewer)
     ierr = MatView_MPIDense_ASCII(mat,viewer); CHKERRQ(ierr);
   } else if (vtype == BINARY_FILE_VIEWER) {
     ierr = MatView_MPIDense_Binary(mat,viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported by PETSc object");
   }
   PetscFunctionReturn(0);
 }

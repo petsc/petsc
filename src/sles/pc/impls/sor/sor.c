@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.68 1998/03/20 22:48:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.69 1998/04/03 23:14:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -111,6 +111,8 @@ static int PCView_SOR(PC pc,Viewer viewer)
     PetscFPrintf(pc->comm,fd,
        "    SOR: type = %s, iterations = %d, omega = %g\n",
        sortype,jac->its,jac->omega);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

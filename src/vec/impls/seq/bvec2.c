@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.111 1998/04/03 22:24:37 bsmith Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.112 1998/04/03 22:26:48 balay Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -211,15 +211,14 @@ int VecView_Seq(Vec xin,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == DRAW_VIEWER){ 
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
-  }
-  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
+  } else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
     ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
-  }
-  else if (vtype == MATLAB_VIEWER) {
+  } else if (vtype == MATLAB_VIEWER) {
     ierr = ViewerMatlabPutScalar_Private(viewer,x->n,1,x->array);CHKERRQ(ierr);
-  } 
-  else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (vtype == BINARY_FILE_VIEWER) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported by PETSc object");
   }
   PetscFunctionReturn(0);
 }

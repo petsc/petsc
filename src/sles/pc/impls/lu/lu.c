@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.88 1998/03/20 22:48:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.89 1998/04/03 23:14:14 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -77,9 +77,10 @@ static int PCView_LU(PC pc,Viewer viewer)
       ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info); CHKERRQ(ierr);
       PetscFPrintf(pc->comm,fd,"      LU nonzeros %g\n",info.nz_used);
     }
-  }
-  else if (vtype == STRING_VIEWER) {
+  } else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer," order=%s",order);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

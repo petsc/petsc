@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.141 1998/04/03 22:01:04 balay Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.142 1998/04/06 20:57:46 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -780,6 +780,8 @@ int MatView_SeqDense(Mat A,Viewer viewer)
     ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (vtype == BINARY_FILE_VIEWER) {
     ierr = MatView_SeqDense_Binary(A,viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported by PETSc object");
   }
   PetscFunctionReturn(0);
 }

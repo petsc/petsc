@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.220 1998/04/04 14:32:45 bsmith Exp balay $ 
+# $Id: makefile,v 1.221 1998/04/09 00:06:37 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -40,6 +40,8 @@ info:
 	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "-----------------------------------------"
 	-@echo "Using configuration flags: ${CONF}"
+	-@if [ -r bmake/${PETSC_ARCH}/petscconf.h ] ; then \
+	  grep "define " bmake/${PETSC_ARCH}/petscconf.h ; fi
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
 	-@echo "-----------------------------------------"

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.129 1998/03/26 22:32:11 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.130 1998/04/03 23:15:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -586,6 +586,8 @@ int MatView_SeqBAIJ(Mat A,Viewer viewer)
     ierr = MatView_SeqBAIJ_Binary(A,viewer);CHKERRQ(ierr);
   } else if (vtype == DRAW_VIEWER) {
     ierr = MatView_SeqBAIJ_Draw(A,viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported by PETSc object");
   }
   PetscFunctionReturn(0);
 }

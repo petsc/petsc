@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.113 1998/03/16 18:55:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.114 1998/04/03 23:15:42 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -1097,6 +1097,8 @@ int MatView_MPIBAIJ(Mat mat,Viewer viewer)
     ierr = MatView_MPIBAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
   } else if (vtype == BINARY_FILE_VIEWER) {
     ierr = MatView_MPIBAIJ_Binary(mat,viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported by PETSc object");
   }
   PetscFunctionReturn(0);
 }

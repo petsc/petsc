@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.32 1998/03/12 23:24:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.33 1998/04/03 23:18:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -68,6 +68,8 @@ int AOView_Basic(AO ao,Viewer viewer)
     for ( i=0; i<aodebug->N; i++ ) {
       fprintf(fd,"%d   %d    %d\n",i,aodebug->app[i],aodebug->petsc[i]);
     }
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.70 1998/03/20 22:48:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.71 1998/04/03 23:14:25 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -164,6 +164,8 @@ static int PCView_Eisenstat(PC pc,Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"    Eisenstat: omega = %g\n",eis->omega);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

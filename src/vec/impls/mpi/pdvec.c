@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.89 1998/04/03 21:47:37 bsmith Exp balay $ */
+/* $Id: pdvec.c,v 1.90 1998/04/03 21:55:02 balay Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -412,18 +412,16 @@ int VecView_MPI(Vec xin,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER){
     ierr = VecView_MPI_File(xin,viewer);CHKERRQ(ierr);
-  }
-  else if (vtype == ASCII_FILES_VIEWER){
+  } else if (vtype == ASCII_FILES_VIEWER){
     ierr = VecView_MPI_Files(xin,viewer);CHKERRQ(ierr);
-  }
-  else if (vtype == MATLAB_VIEWER) {
+  } else if (vtype == MATLAB_VIEWER) {
     ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
-  } 
-  else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (vtype == BINARY_FILE_VIEWER) {
     ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
-  }
-  else if (vtype == DRAW_VIEWER) {
+  } else if (vtype == DRAW_VIEWER) {
     ierr = VecView_MPI_Draw(xin,viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

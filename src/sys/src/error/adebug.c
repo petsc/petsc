@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.72 1997/12/12 19:37:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.73 1998/03/23 21:18:59 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
 */
 
-#include <signal.h> 
 #include "petsc.h"               /*I   "petsc.h"   I*/
+#include <signal.h> 
 #include "sys.h"
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>

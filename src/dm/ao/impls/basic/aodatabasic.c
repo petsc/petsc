@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.22 1998/03/12 23:24:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.23 1998/04/03 23:18:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -240,6 +240,8 @@ int AODataView_Basic(AOData ao,Viewer viewer)
     ierr = AODataView_Basic_ASCII(ao,viewer); CHKERRQ(ierr);
   } else if (vtype == BINARY_FILE_VIEWER) {
     ierr = AODataView_Basic_Binary(ao,viewer); CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
 
   PetscFunctionReturn(0);

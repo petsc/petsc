@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.98 1998/03/16 18:53:39 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.99 1998/04/03 23:12:53 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -26,33 +26,36 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
-  if (vtype != ASCII_FILE_VIEWER && vtype != ASCII_FILES_VIEWER) PetscFunctionReturn(0);
+  if (vtype == ASCII_FILE_VIEWER && vtype == ASCII_FILES_VIEWER) {
+ 
+    MPI_Comm_rank(ctx->comm,&rank);
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    PetscSequentialPhaseBegin(ctx->comm,1);
+    fprintf(fd,"[%d] Number sends %d self %d\n",rank,to->n,to->local.n);
+    for ( i=0; i<to->n; i++ ){
+      fprintf(fd,"[%d]   %d length %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);
+    }
 
-  MPI_Comm_rank(ctx->comm,&rank);
-  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  PetscSequentialPhaseBegin(ctx->comm,1);
-  fprintf(fd,"[%d] Number sends %d self %d\n",rank,to->n,to->local.n);
-  for ( i=0; i<to->n; i++ ){
-    fprintf(fd,"[%d]   %d length %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);
+    fprintf(fd,"Now the indices\n");
+    for ( i=0; i<to->starts[to->n]; i++ ){
+      fprintf(fd,"[%d]%d \n",rank,to->indices[i]);
+    }
+
+    fprintf(fd,"[%d]Number receives %d self %d\n",rank,from->n,from->local.n);
+    for ( i=0; i<from->n; i++ ){
+      fprintf(fd,"[%d] %d length %d to whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);
+    }
+
+    fprintf(fd,"Now the indices\n");
+    for ( i=0; i<from->starts[from->n]; i++ ){
+      fprintf(fd,"[%d]%d \n",rank,from->indices[i]);
+    }
+
+    fflush(fd);
+    PetscSequentialPhaseEnd(ctx->comm,1);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
-
-  fprintf(fd,"Now the indices\n");
-  for ( i=0; i<to->starts[to->n]; i++ ){
-    fprintf(fd,"[%d]%d \n",rank,to->indices[i]);
-  }
-
-  fprintf(fd,"[%d]Number receives %d self %d\n",rank,from->n,from->local.n);
-  for ( i=0; i<from->n; i++ ){
-    fprintf(fd,"[%d] %d length %d to whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);
-  }
-
-  fprintf(fd,"Now the indices\n");
-  for ( i=0; i<from->starts[from->n]; i++ ){
-    fprintf(fd,"[%d]%d \n",rank,from->indices[i]);
-  }
-
-  fflush(fd);
-  PetscSequentialPhaseEnd(ctx->comm,1);
   PetscFunctionReturn(0);
 }  
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.6 1998/03/20 22:48:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.7 1998/04/03 23:14:33 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -90,10 +90,14 @@ static int PCView_SLES(PC pc,Viewer viewer)
     }
     PetscFPrintf(pc->comm,fd,"KSP and PC on inner solver follow\n");
     PetscFPrintf(pc->comm,fd,"---------------------------------\n");
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   ierr = SLESView(jac->sles,viewer); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     PetscFPrintf(pc->comm,fd,"---------------------------------\n");
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

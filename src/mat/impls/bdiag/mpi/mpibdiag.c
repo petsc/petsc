@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.132 1998/03/12 23:18:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.133 1998/04/03 23:15:26 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -665,6 +665,8 @@ int MatView_MPIBDiag(Mat mat,Viewer viewer)
     ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
   } else if (vtype == BINARY_FILE_VIEWER) {
     ierr = MatView_MPIBDiag_Binary(mat,viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported by PETSc object");
   }
   PetscFunctionReturn(0);
 }

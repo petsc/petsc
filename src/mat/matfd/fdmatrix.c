@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.29 1998/03/12 23:18:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.30 1998/04/08 16:06:13 curfman Exp bsmith $";
 #endif
 
 /*
@@ -37,14 +37,14 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
     for ( j=0; j<fd->nrows[i]; j++ ) {
       y = fd->M - fd->rows[i][j] - fd->rstart;
       x = fd->columnsforrow[i][j];
-      DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);
+      ierr = DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1); CHKERRQ(ierr);
     }
   }
   ierr = DrawSynchronizedFlush(draw); CHKERRQ(ierr); 
   ierr = DrawGetPause(draw,&pause); CHKERRQ(ierr);
   if (pause >= 0) { PetscSleep(pause); PetscFunctionReturn(0);}
-  ierr = DrawCheckResizedWindow(draw);
-  ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0); 
+  ierr = DrawCheckResizedWindow(draw); CHKERRQ(ierr);
+  ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);  CHKERRQ(ierr);
   while (button != BUTTON_RIGHT) {
     ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
     if (button == BUTTON_LEFT) scale = .5;
@@ -60,11 +60,11 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
       for ( j=0; j<fd->nrows[i]; j++ ) {
         y = fd->M - fd->rows[i][j] - fd->rstart;
         x = fd->columnsforrow[i][j];
-        DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);
+        ierr = DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1); CHKERRQ(ierr);
       }
     }
-    ierr = DrawCheckResizedWindow(draw);
-    ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0); 
+    ierr = DrawCheckResizedWindow(draw); CHKERRQ(ierr);
+    ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);  CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -107,8 +107,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
   if (vtype == DRAW_VIEWER) { 
     ierr = MatFDColoringView_Draw(c,viewer); CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  }
-  else if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+  } else if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(c->comm,fd,"MatFDColoring Object:\n");
     PetscFPrintf(c->comm,fd,"  Error tolerance=%g\n",c->error_rel);
@@ -129,6 +128,8 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
         }
       }
     }
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.16 1997/12/01 01:58:10 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.17 1998/03/23 21:27:32 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -104,10 +104,10 @@ extern int PetscInitializeLargeInts(int *,int);
 #if defined(USE_PETSC_STACK)
 
 typedef struct  {
-  char *function;
-  char *file;
-  char *directory;
-  int  line;
+  char **function;
+  char **file;
+  char **directory;
+  int  *line;
 } PetscStack;
 
 extern int        petscstacksize_max;
@@ -116,33 +116,34 @@ extern PetscStack *petscstack;
 
 #define PetscFunctionBegin \
   {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
-    petscstack[petscstacksize].function  = __FUNC__; \
-    petscstack[petscstacksize].file      = __FILE__; \
-    petscstack[petscstacksize].directory = __SDIR__;  \
-    petscstack[petscstacksize].line      = __LINE__; \
+    petscstack->function[petscstacksize]  = __FUNC__; \
+    petscstack->file[petscstacksize]      = __FILE__; \
+    petscstack->directory[petscstacksize] = __SDIR__;  \
+    petscstack->line[petscstacksize]      = __LINE__; \
     petscstacksize++; \
   }}
 
-#define PetscFunctionReturn(a) \
-  {if (petscstack && petscstacksize > 0) {    \
-    petscstacksize--; \
-  } \
-  return(a);}
+#define PetscStackPush(n) \
+  {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
+    petscstack->function[petscstacksize]  = n; \
+    petscstack->file[petscstacksize]      = 0; \
+    petscstack->directory[petscstacksize] = 0;  \
+    petscstack->line[petscstacksize]      = 0; \
+    petscstacksize++; \
+  }}
 
 #define PetscStackPop \
-  { \
-    if (petscstack && petscstacksize) petscstacksize--;\
-  } 
+  {if (petscstack && petscstacksize > 0) {    \
+    petscstacksize--; \
+    petscstack->function[petscstacksize]  = 0; \
+    petscstack->file[petscstacksize]      = 0; \
+    petscstack->directory[petscstacksize] = 0;  \
+    petscstack->line[petscstacksize]      = 0; \
+  }};
 
-#define PetscStackPush(f) \
-  { \
-    if (petscstack && (petscstacksize < petscstacksize_max)) {    \
-    petscstack[petscstacksize].function  = f; \
-    petscstack[petscstacksize].file      = "unknown"; \
-    petscstack[petscstacksize].directory = "/unknown/";  \
-    petscstack[petscstacksize].line      = 0; \
-    petscstacksize++; \
-  }}
+#define PetscFunctionReturn(a) \
+  {PetscStackPop; \
+  return(a);}
 
 #define PetscStackActive (petscstack != 0)
 

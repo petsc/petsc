@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.66 1998/03/12 23:14:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.67 1998/04/03 23:12:41 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -192,6 +192,8 @@ int ISView_Stride(IS is, Viewer viewer)
       fprintf(fd,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);
     }
     fflush(fd);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.61 1998/03/16 18:45:31 balay Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.62 1998/04/03 23:17:44 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -51,6 +51,8 @@ int SNESMatrixFreeView_Private(Mat J,Viewer viewer)
      PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");
      PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);
      PetscFPrintf(comm,fd,"    umin=%g (minimum iterate parameter)\n",ctx->umin);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

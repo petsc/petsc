@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.102 1998/03/20 22:52:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.103 1998/04/03 23:17:51 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -635,6 +635,8 @@ static int SNESView_EQ_LS(SNES snes,Viewer viewer)
     PetscFPrintf(snes->comm,fd,"    line search variant: %s\n",cstr);
     PetscFPrintf(snes->comm,fd,"    alpha=%g, maxstep=%g, steptol=%g\n",
                  ls->alpha,ls->maxstep,ls->steptol);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }

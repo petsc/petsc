@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.5 1998/03/23 21:18:59 bsmith Exp balay $";
+static char vcid[] = "$Id: stack.c,v 1.6 1998/03/24 21:00:18 balay Exp bsmith $";
 #endif
 /*
 
@@ -17,13 +17,19 @@ PetscStack *petscstack = 0;
 
 int PetscStackCreate(int stacksize)
 {
+  PetscStack *petscstack_in;
   if (stacksize <=0 ) return 0;
   if (petscstack) return 0;
   
-  petscstack = (PetscStack *) PetscMalloc(stacksize*sizeof(PetscStack));CHKPTRQ(petscstack);
-  petscstacksize = 0;
+  petscstack_in      = (PetscStack *) PetscMalloc(sizeof(PetscStack));CHKPTRQ(petscstack_in);
+  petscstacksize     = 0;
   petscstacksize_max = stacksize;
 
+  petscstack_in->function  = (char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->function);
+  petscstack_in->line      = (int *) PetscMalloc(stacksize*sizeof(int));CHKPTRQ(petscstack_in->line);
+  petscstack_in->directory = (char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->directory);
+  petscstack_in->file      = (char **) PetscMalloc(stacksize*sizeof(char*));CHKPTRQ(petscstack_in->file);
+  petscstack = petscstack_in;
   return 0;
 }
 
@@ -38,18 +44,18 @@ int PetscStackView(Viewer viewer)
   if (file == stderr) {
     for ( i=petscstacksize-1; i>=0; i-- ) {
       (*PetscErrorPrintf)("[%d] %s line %d %s%s\n",PetscGlobalRank,
-                                                petscstack[i].function,
-                                                petscstack[i].line,
-                                                petscstack[i].directory,
-                                                petscstack[i].file);
+                                                petscstack->function[i],
+                                                petscstack->line[i],
+                                                petscstack->directory[i],
+                                                petscstack->file[i]);
     }
   } else {
     for ( i=petscstacksize-1; i>=0; i-- ) {
       fprintf(stdout,"[%d] %s line %d %s%s\n",PetscGlobalRank,
-                                              petscstack[i].function,
-                                              petscstack[i].line,
-                                              petscstack[i].directory,
-                                              petscstack[i].file);
+                                              petscstack->function[i],
+                                              petscstack->line[i],
+                                              petscstack->directory[i],
+                                              petscstack->file[i]);
     }
   }
   return 0;
@@ -57,8 +63,15 @@ int PetscStackView(Viewer viewer)
 
 int PetscStackDestroy(void) 
 {
-  if (petscstack) PetscFree(petscstack);
-  petscstack = 0;
+  if (petscstack){
+    PetscStack *petscstack_in = petscstack;
+    petscstack = 0;
+    PetscFree(petscstack_in->line);
+    PetscFree(petscstack_in->function);
+    PetscFree(petscstack_in->file);
+    PetscFree(petscstack_in->directory);
+    PetscFree(petscstack_in);
+  }
   return 0;
 }
 

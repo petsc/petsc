@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.93 1998/03/06 00:10:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.94 1998/04/03 23:13:21 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -699,7 +699,7 @@ int KSPGetPC(KSP ksp, PC *B)
 #undef __FUNC__  
 #define __FUNC__ "KSPSetMonitor"
 /*@C
-   KSPSetMonitor - Sets the function to be called at every iteration to monitor 
+   KSPSetMonitor - Sets an ADDITIONAL function to be called at every iteration to monitor 
    the residual/error etc.
       
 
@@ -748,17 +748,12 @@ $                          the options database.
 
 .keywords: KSP, set, monitor
 
-.seealso: KSPDefaultMonitor(), KSPLGMonitorCreate()
+.seealso: KSPDefaultMonitor(), KSPLGMonitorCreate(), KSPClearMonitor()
 @*/
 int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-
-  if (!monitor) {
-    ksp->numbermonitors = 0;
-    PetscFunctionReturn(0);
-  }
   if (ksp->numbermonitors >= MAXKSPMONITORS) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too KSP many monitors set");
   }
@@ -769,10 +764,37 @@ int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "KSPClearMonitor"
+/*@C
+   KSPClearMonitor - Clears all monitors for a KSP object.
+
+   Input Parameters:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Options Database Keys:
+$    -ksp_cancelmonitors : cancels all monitors that have
+$                          been hardwired into a code by 
+$                          calls to KSPSetMonitor(), but
+$                          does not cancel those set via
+$                          the options database.
+
+.keywords: KSP, set, monitor
+
+.seealso: KSPDefaultMonitor(), KSPLGMonitorCreate(), KSPSetMonitor()
+@*/
+int KSPClearMonitor(KSP ksp)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  ksp->numbermonitors = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "KSPGetMonitorContext"
 /*@C
    KSPGetMonitorContext - Gets the monitoring context, as set by 
-   KSPSetMonitor().
+   KSPSetMonitor() for the FIRST monitor only.
 
    Input Parameter:
 .  ksp - iterative context obtained from KSPCreate()

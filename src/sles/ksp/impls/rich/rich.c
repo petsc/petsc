@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.60 1998/03/20 22:47:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.61 1998/04/03 23:13:37 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -119,6 +119,8 @@ extern int KSPView_Richardson(KSP ksp,Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(ksp->comm,fd,"    Richardson: damping factor=%g\n",richardsonP->scale);
+  } else {
+    SETERRQ(1,1,"Viewer type not supported for this object");
   }
   PetscFunctionReturn(0);
 }
