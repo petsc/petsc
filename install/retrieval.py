@@ -58,40 +58,54 @@ class Retriever(install.base.Base):
     self.debugPrint('Retrieving '+url+' --> '+root+' via cp', 3, 'install')
     return self.genericRetrieve(url, root, canExist, force)
 
+  def getAuthroizedUrl(url):
+    '''This returns a tuple of the unauthorized and authorized URLs for the given repository, as well as a flag indicating which was input'''
+    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
+    if not location:
+      url     = urlparse.urlunparse(('','', path, parameters, query, fragment))
+      authUrl = None
+      wasAuth = 0
+    else:
+      index = location.find('@')
+      if index >= 0:
+        login   = location[0:index]
+        authUrl = url
+        url     = urlparse.urlunparse((scheme, location[index+1:], path, parameters, query, fragment))
+        wasAuth = 1
+      else:
+        login   = location.split('.')[0]
+        authUrl = urlparse.urlunparse((scheme, login+'@'+location, path, parameters, query, fragment))
+        wasAuth = 0
+    return (url, authUrl, wasAuth)
+
+  def getBKParentURL(self, root):
+    '''Return the parent URL for the BK repository at "root"'''
+    return self.executeShellCommand('cd '+root+'; bk parent')[21:]
+
   def bkRetrieve(self, url, root, canExist = 0, force = 0):
     self.debugPrint('Retrieving '+url+' --> '+root+' via bk', 3, 'install')
     if os.path.exists(root):
+      if self.argDB['userRepositories']:
+        (url, authUrl, wasAuth) = self.getAuthorizedUrl(self.getBKParentURL(root))
+        if not wasAuth:
+          self.debugPrint('Changing parent from '+url+' --> '+authUrl, 1, 'install')
+          output = self.executeShellCommand('cd '+root+'; bk parent '+authUrl)
       try:
         output = self.executeShellCommand('cd '+root+'; bk pull')
       except RuntimeError, e:
-        # Try removing user from parent
-        parentUrl = self.executeShellCommand('cd '+root+'; bk parent')[21:]
-        (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(parentUrl)
-        index = location.find('@')
-        if index >= 0:
-          login  = location[0:index]
-          newUrl = urlparse.urlunparse((scheme, location[index+1:], path, parameters, query, fragment))
-          self.debugPrint('Changing parent from '+parentUrl+' --> '+newUrl, 1, 'install')
-          output = self.executeShellCommand('cd '+root+'; bk parent '+newUrl)
+        (url, authUrl, wasAuth) = self.getAuthorizedUrl(self.getBKParentURL(root))
+        if wasAuth:
+          self.debugPrint('Changing parent from '+authUrl+' --> '+url, 1, 'install')
+          output = self.executeShellCommand('cd '+root+'; bk parent '+url)
           output = self.executeShellCommand('cd '+root+'; bk pull')
         else:
           raise e
     else:
-      (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
-      if not location:
-        url = urlparse.urlunparse(('','', path, parameters, query, fragment))
-      else:
-        # Always try an authorized login first
-        index = location.find('@')
-        if index >= 0:
-          login = location[0:index]
-          # Strip off login from original URL
-          url   = urlparse.urlunparse((scheme, location[index+1:], path, parameters, query, fragment))
-        else:
-          login = location.split('.')[0]
-        newUrl = urlparse.urlunparse((scheme, login+'@'+location, path, parameters, query, fragment))
+      (url, authUrl, wasAuth) = self.getAuthorizedUrl(url)
+      if wasAuth or self.argDB['userRepositories']:
+        # Try an authorized login first
         try:
-          output = self.executeShellCommand('bk clone '+newUrl+' '+root)
+          output = self.executeShellCommand('bk clone '+authUrl+' '+root)
         except RuntimeError:
           pass
         else:
