@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.48 1996/01/17 23:17:10 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.49 1996/01/23 00:18:40 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -65,6 +65,8 @@ struct _Mat {
   int              factor;            /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
   double           lupivotthreshold;  /* threshold for pivoting */
 };
+
+
 
 /* final argument for MatConvertXXX() */
 #define DO_NOT_COPY_VALUES 0
