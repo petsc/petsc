@@ -14,6 +14,7 @@ OBJSC    = ispai.o dspai.o
 OBJSF    =
 LIBBASE  = libpetscsles
 DIRS     = 
+MANSEC   = PC
 LOCDIR   = src/sles/pc/impls/spai/src/
 
 include ${PETSC_DIR}/bmake/common/base
