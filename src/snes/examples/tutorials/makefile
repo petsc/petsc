@@ -11,11 +11,11 @@ OBJSF	        =
 LIBBASE	        = libpetscsnes
 LOCDIR          = src/snes/examples/tutorials/
 TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
-		  ex3.PETSc runex3 runex3_2 ex3.rm ex6.PETSc runex6 runex6_2 \
+		  ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex6.PETSc runex6 runex6_2 \
 		  ex6.rm ex4.PETSc runex4 runex4_2 ex4.rm ex5.PETSc runex5\
 		  runex5_2 runex5_3 runex5_4 runex5_5 runex5_6 runex5_7 \
                   ex5.rm clean
-TESTEXAMPLES_2  = ex3.PETSc runex3 runex3_2 ex3.rm clean
+TESTEXAMPLES_2  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm clean
 TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm clean
 TESTEXAMPLES_8  = ex5f.PETSc runex5f runex5f_2 runex5f_3 ex5f.rm clean
 TESTEXAMPLES_9  = ex1f.PETSc runex1f ex1f.rm clean
@@ -101,7 +101,7 @@ runex2_2:
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   $(RM) -f ex2_2.tmp
 runex3:
-	-@$(MPIRUN) -np 2 ex3 -nox -snes_smonitor  > ex3_1.tmp 2>&1;	  \
+	-@$(MPIRUN) ex3 -nox -snes_smonitor  > ex3_1.tmp 2>&1;	  \
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   $(RM) -f ex3_1.tmp
@@ -111,6 +111,11 @@ runex3_2:
 	   if (diff output/ex3_2.out ex3_2.tmp) then true; \
 	   else echo "Possible problem with ex3_2, diffs above"; fi; \
 	   $(RM) -f ex3_2.tmp
+runex3_3:
+	-@$(MPIRUN) -np 2 ex3 -nox -snes_smonitor > ex3_3.tmp 2>&1; \
+	   if (diff output/ex3_3.out ex3_3.tmp) then true; \
+	   else echo "Possible problem with ex3_3, diffs above"; fi; \
+	   $(RM) -f ex3_3.tmp
 runex4:
 	-@$(MPIRUN) ex4 -nox > ex4_1.tmp 2>&1;	 \
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
