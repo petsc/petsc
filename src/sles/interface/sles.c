@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.89 1997/08/22 15:15:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.90 1997/09/10 20:50:25 curfman Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -315,7 +315,7 @@ $        divergence or breakdown was detected.
      If using a direct method (e.g., via the KSP solver
      KSPPREONLY and a preconditioner such as PCLU/PCILU),
      then its=1.  See KSPSetTolerances() and KSPDefaultConverged()
-     for more details.  Also see KSPSolve() for more details
+     for more details.  Also, see KSPSolve() for more details
      about iterative solver options.
 
    Setting a Nonzero Initial Guess:

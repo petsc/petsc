@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.86 1997/07/22 04:23:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.87 1997/08/22 15:11:05 bsmith Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -38,7 +38,7 @@ int KSPComputeExtremeSingularValues(KSP ksp,double *emax,double *emin)
   PetscValidScalarPointer(emax);
   PetscValidScalarPointer(emin);
   if (!ksp->calc_sings) {
-    SETERRQ(4,0,"SingularValues not requested before KSPSetUp");
+    SETERRQ(4,0,"Singular values not requested before KSPSetUp");
   }
 
   if (ksp->computeextremesingularvalues) {
@@ -50,10 +50,8 @@ int KSPComputeExtremeSingularValues(KSP ksp,double *emax,double *emin)
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvalues"
 /*@
-   KSPComputeEigenvalues - Computes the extreme eigenvalue
-          for the preconditioned operator. Called after or during KSPSolve() (SLESSolve()).
-          This does not usually provide accurate estimates; it is only for helping 
-          people understand the convergence of iterative methods, not for eigenanalysis. 
+   KSPComputeEigenvalues - Computes the extreme eigenvalues for the
+   preconditioned operator. Called after or during KSPSolve() (SLESSolve()).
 
    Input Parameter:
 .  ksp - iterative context obtained from KSPCreate()
@@ -63,9 +61,17 @@ int KSPComputeExtremeSingularValues(KSP ksp,double *emax,double *emin)
 .  r - real part of computed eigenvalues
 .  c - complex part of computed eigenvalues
 
+   Options Database Key:
+$     -ksp_compute_eigenvalues : prints eigenvalues to 
+$     -ksp_plot_eigenvalues : plots eigenvalues in an x-window display
+
    Notes:
+   KSPComputeEigenvalues() does not usually provide accurate estimates; it is
+   intended only for assistance in understanding the convergence of iterative 
+   methods, not for eigenanalysis. 
+
    One must call KSPSetComputeEigenvalues() before calling KSPSetUp() 
-   (or use the option -ksp_eigen) in order for this routine to work correctly.
+   in order for this routine to work correctly.
 
    Many users may just want to use the monitoring routine
    KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
@@ -136,6 +142,11 @@ $      divergence or breakdown was detected.
    then its=1.  See KSPSetTolerances() and KSPDefaultConverged()
    for more details.
 
+   Understanding Convergence:
+   The routines KSPSetMonitor(), KSPComputeEigenvalues(), and
+   KSPComputeEigenvaluesExplicitly() provide information on additional
+   options to monitor convergence and print eigenvalue information.
+
 .keywords: KSP, solve, linear system
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged()
@@ -163,9 +174,10 @@ int KSPSolve(KSP ksp, int *its)
     c = r + n;
     ierr = KSPComputeEigenvalues(ksp,n,r,c); CHKERRQ(ierr);
     if (flag1) {
-      PetscPrintf(ksp->comm,"Iteratively computed Eigenvalues\n");
+      PetscPrintf(ksp->comm,"Iteratively computed eigenvalues\n");
       for ( i=0; i<n; i++ ) {
-        PetscPrintf(ksp->comm,"%g %g\n",r[i],c[i]);
+        if (c[i] >= 0.0) PetscPrintf(ksp->comm,"%g + %gi\n",r[i],c[i]);
+        else             PetscPrintf(ksp->comm,"%g - %gi\n",r[i],-c[i]);
       }
     }
     if (flag2 && !rank) {
@@ -198,9 +210,10 @@ int KSPSolve(KSP ksp, int *its)
     c = r + n;
     ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c); CHKERRQ(ierr); 
     if (flag1) {
-      PetscPrintf(ksp->comm,"Explicitly computed Eigenvalues\n");
+      PetscPrintf(ksp->comm,"Explicitly computed eigenvalues\n");
       for ( i=0; i<n; i++ ) {
-        PetscPrintf(ksp->comm,"%g %g\n",r[i],c[i]);
+        if (c[i] >= 0.0) PetscPrintf(ksp->comm,"%g + %gi\n",r[i],c[i]);
+        else             PetscPrintf(ksp->comm,"%g - %gi\n",r[i],-c[i]);
       }
     }
     if (flag2 && !rank) {
@@ -221,7 +234,6 @@ int KSPSolve(KSP ksp, int *its)
     }
     PetscFree(r);
   }
-  
   return 0;
 }
 
@@ -476,7 +488,7 @@ $  -ksp_singmonitor
    KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
    to print the singular values at each iteration of the linear solve.
 
-.keywords: KSP, set, singular values, calculate
+.keywords: KSP, set, compute, singular values
 
 .seealso: KSPComputeExtremeSingularValues(), KSPSingularValueMonitor()
 @*/
@@ -497,15 +509,12 @@ int KSPSetComputeSingularValues(KSP ksp)
    Input Parameters:
 .  ksp - iterative context obtained from KSPCreate()
 
-   Options Database Key:
-$  -ksp_eigmonitor
-
    Notes:
    Currently this option is not valid for all iterative methods.
 
-.keywords: KSP, set, eigenvalues, singular values, calculate
+.keywords: KSP, set, compute, eigenvalues
 
-.seealso: KSPComputeExtremeSingularValues(), KSPSingularValueMonitor()
+.seealso: KSPComputeEigenvalues(), KSPComputeEigenvaluesExplicitly()
 @*/
 int KSPSetComputeEigenvalues(KSP ksp)
 {
