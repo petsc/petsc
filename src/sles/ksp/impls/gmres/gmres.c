@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.155 2000/09/27 20:41:23 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.156 2000/09/28 21:13:20 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -170,7 +170,7 @@ int GMREScycle(int *itcount,KSP ksp)
   /* check for the convergence */
   if (!res) {
     if (itcount) *itcount = 0;
-    ksp->reason = KSP_CONVERGED_RTOL;
+    ksp->reason = KSP_CONVERGED_ATOL;
     PetscFunctionReturn(0);
   }
 
