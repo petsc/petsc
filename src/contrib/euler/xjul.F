@@ -7,7 +7,6 @@ C************************************************************************
 
       SUBROUTINE BC_UNI(xx,p,sadai,sadaj,sadak,
      &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
-c      SUBROUTINE BC_UNI(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
 c
 c Apply boundary conditions
 #include "param.h"
@@ -547,5 +546,100 @@ c     COMMON /DIAG/ D(5,5,NI,NJ,NK)
      * D(5,2,I,J,K)*D(2,5,I,J,K)-D(5,3,I,J,K)*D(3,5,I,J,K)-D(5,4,I,J,K)
      * *D(4,5,I,J,K)
     1 CONTINUE
+      RETURN
+      END
+C ----------------------------------------------------------------
+
+      integer function PVAR_UNI(xx,p,
+     &                      aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+     &                      x,y,z,pprint,tcl,tcd,tcl_scale,tcd_scale)
+c
+c PVAR_UNI post-processes the solution for physical quanities of interest
+c Uniprocessor version only!  The parallel analog is pvar().
+c
+#include "param.h"
+#include "varbls.h"
+#include "consts.h"
+#include "wing.h"
+#include "coord.h"
+#include "avctrs.h"
+#include "ang.h"
+c      COMMON /ANG/ ALPHA,BETA,PHI
+c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
+c      COMMON /CONST2/ PINIT
+c      COMMON /COORD/ X(NI,NJ,NK),Y(NI,NJ,NK),Z(NI,NJ,NK)
+c      COMMON /VARBLS/ R(NI1,NJ1,NK1),RU(NI1,NJ1,NK1),RV(NI1,NJ1,NK1)
+c      COMMON /VARBLS/ RW(NI1,NJ1,NK1),E(NI1,NJ1,NK1),P(NI1,NJ1,NK1)
+c      COMMON /AVCTRS/ AIX(NI,NJ,NK),AJX(NI,NJ,NK),AKX(NI,NJ,NK)
+c      COMMON /AVCTRS/ AIY(NI,NJ,NK),AJY(NI,NJ,NK),AKY(NI,NJ,NK)
+c      COMMON /AVCTRS/ AIZ(NI,NJ,NK),AJZ(NI,NJ,NK),AKZ(NI,NJ,NK)
+c      COMMON /WING/ ITL,ITU,ILE,KTIP
+      Double  CP2(D_NI,D_NK),S(D_NI),CL(D_NI),CD(D_NI)
+      Double  ZLOC(D_NK),tcl_scale,tcd_scale
+      Double  chord,pbody,tcl,tcd,areas,cn,cc,area,cls,cds
+      integer i,k,pprint
+
+      pvar_uni = 0
+
+      DO 10 K=2,KTIP
+      ZLOC(K) = (Z(1,1,K)+Z(1,1,K-1))*p5
+      CHORD   = X(ITU,1,K)-X(ILE,1,K)
+      DO 10 I=ITL,ITU+1
+      PBODY    = p5*(P(I,1,K)+P(I,2,K))
+      CP2(I,K) = (PBODY-RGAM)/FSMACH**2*2.
+   10 S(I)     = ((X(I,1,K)+X(I-1,1,K))*p5-X(ILE,1,K))/CHORD
+      if (pprint .eq. 1) then
+      IF (NI.EQ.49) WRITE (6,20) NCYC
+   20 FORMAT (/,4X,'WING SURFACE PRESSURE COEFFICIENTS FOR',
+     * ' NCYC =',I6,/,4X,'X/C',6X,
+     * 'CP',6X,'CP',6X,'CP',6X,'CP',6X,'CP')
+      IF (NI.EQ.49) WRITE (6,21) (ZLOC(K),K=2,KTIP)
+   21 FORMAT (4X,'Z = ',5F8.4,/)
+      IF (NI.EQ.49)
+     * WRITE (6,30) (S(I),(CP2(I,K),K=2,KTIP),I=ITL,ITU+1)
+   30 FORMAT(6F8.4)
+      IF (NI.EQ.97) WRITE (6,90) NCYC
+   90 FORMAT (/,4X,'WING SURFACE PRESSURE COEFFICIENTS FOR',
+     * ' NCYC =',I6,/,4X,'X/C',6X,
+     * 'CP',6X,'CP',6X,'CP',6X,'CP',6X,'CP',6X,
+     * 'CP',6X,'CP',6X,'CP',6X,'CP',6X,'CP')
+      IF (NI.EQ.97) WRITE (6,91) (ZLOC(K),K=2,KTIP)
+   91 FORMAT (4X,'Z = ',10F8.4,/)
+      IF (NI.EQ.97)
+     * WRITE (6,93) (S(I),(CP2(I,K),K=2,KTIP),I=ITL,ITU+1)
+   93 FORMAT(11F8.4)
+      endif
+      TCL=0.
+      TCD=0.
+      AREAS=0.
+      DO 41 K=2,KTIP
+      CN=0.
+      CC=0.
+      AREA=0.
+      DO 42 I=ITL+1,ITU
+      AREA  = AREA+ABS(AJY(I,1,K))*.5
+      CN    = CN-CP2(I,K)*AJY(I,1,K)
+   42 CC    = CC-CP2(I,K)*AJX(I,1,K)
+      CLS   = CN*COS(-BETA)-CC*SIN(-BETA)
+      CDS   = CN*SIN(-BETA)+CC*COS(-BETA)
+      CL(K) = CLS/AREA
+      CD(K) = CDS/AREA
+      AREAS = AREAS+AREA
+      TCL   = TCL+CLS
+   41 TCD   = TCD+CDS
+      TCL   = TCL/AREAS
+      TCD   = TCD/AREAS
+      TCL_scale = TCL/AREAS*2./FSMACH**2
+      TCD_scale = TCD/AREAS*2./FSMACH**2
+      WRITE (6,43)
+   43 FORMAT (/ /,20X,'SPANWISE LIFT DISTRIBUTION',/ /)
+      WRITE (6,44)
+   44 FORMAT (5X,'Z',12X,'CL',12X,'CD',/)
+      WRITE (6,45) (ZLOC(K),CL(K),CD(K),K=2,KTIP)
+   45 FORMAT (2X,F6.3,4X,F10.4,4X,F10.4)
+      WRITE (6,46) TCL,TCD
+   46 FORMAT (/,2X,'WING LIFT COEFFICIENT =',F10.4,5X,
+     1 'WING DRAG COEFFICIENT =',F10.4,/)
+
       RETURN
       END

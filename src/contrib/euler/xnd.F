@@ -119,7 +119,6 @@ C Default frequency of forming Jacobian is every 10 iterations
       endif
 c Read input and set up initial conditions
       CALL IC(xx,p)
-c      CALL IC(r,ru,rv,rw,e,p)
       cfl_init = cfl
       READ (15,100) NB,NT
       close(15)
@@ -214,7 +213,6 @@ c     DO 3 L=1,NB
       if (jsolve .ne. 1) then
 #endif
          if (rank .eq. 0) write(6,*) 'Calling SNES driver'
-c        Note:  call pvar at conclusion of SNES solver.
 #if defined(ACTIVATE_JULIANNE)
       else
          if (rank .eq. 0) write(6,*) 'Calling original solver'
@@ -230,21 +228,12 @@ c At each step, solve a Newton problem, and update the boundary conditions
      &             br,bl,be,sadai,sadaj,sadak,
      &             aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &             f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-c         CALL STEP(time_init,eps,epsi,rtol,converge,
-c     &             b1,b2,b3,b4,b5,b6,d,dt,
-c     &             r,ru,rv,rw,e,p,
-c     &             dr,dru,drv,drw,de,
-c     &             br,bl,be,sadai,sadaj,sadak,
-c     &             aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-c     &             f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
          if (converge .eq. 1) goto 20
     2    CONTINUE
    20    continue
 c Calculate the physical quanties of interest
-         CALL PVAR(xx,p,
+         CALL PVAR_UNI(xx,p,
      &             aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,x,y,z)
-c         CALL PVAR(r,ru,rv,rw,e,p,
-c     &             aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,x,y,z)
       endif
       if (jsolve .eq. 1 .and. no_output .eq. 0) then
          write(29,*) ' ];'
@@ -282,7 +271,6 @@ C************************************************************************
 C************************************************************************
 
       SUBROUTINE IC(xx,p)
-c      SUBROUTINE IC(r,ru,rv,rw,e,p)
 c IC reads case data and initializes the flow field to plug flow
 #include "param.h"
 #include "varbls.h"
