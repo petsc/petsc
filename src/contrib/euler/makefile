@@ -1,3 +1,4 @@
+# $Id: makefile,v 1.38 1997/08/22 15:09:47 bsmith Exp $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -11,10 +12,10 @@
 # -----------------------------------------------------------------------
 
 # Argonne Quad machine
-  PETSC_DIR = /home/petsc/petsc-2.0.18
-#   PETSC_DIR = /ccsthome/petsc/petsc
+#  PETSC_DIR = /home/petsc/petsc-2.0.18
+   PETSC_DIR = /ccsthome/petsc/petsc
 # Argonne tmp directories
-#    PETSC_DIR = /tmp/petsc
+#   PETSC_DIR = /tmp/petsc
 # Argonne network
 #   PETSC_DIR = /home/curfman/petsc
 # Argonne SPx
@@ -52,7 +53,8 @@
 #             (shouldn't be needed by most applications)
 
 #  CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -DACTIVATE_JULIANNE
- CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -DACTIVATE_PVAR 
+ CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -D__SDIR__='"src/contrib/euler/"' \
+             -DACTIVATE_PVAR 
 
 # -----------------------------------------------------------------------
 # Define application source code
@@ -99,8 +101,10 @@ ALL: ex1
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #
 # Define C source code:
-  OBJSC     = user1.o grid.o bc.o misc.o mfj.o monitor.o vrml.o 
-  SOURCEC   = user1.c grid.c bc.c misc.c mfj.c monitor.c vrml.c 
+  OBJSC_MM   = mmregis.o mmset.o mmbasic.o mmmethods.o matv.o
+  SOURCEC_MM = mmregis.c mmset.c mmbasic.c mmmethods.c matv.c
+  OBJSC      = user1.o grid.o bc.o misc.o mfj.o monitor.o vrml.o $(OBJSC_MM)
+  SOURCEC    = user1.c grid.c bc.c misc.c mfj.c monitor.c vrml.c $(SOURCEC_MM)
 
 # Source no longer used.
 # SOURCE_SURPLUS = regmpimat.c matbd.F
@@ -184,6 +188,9 @@ etags_fortran:
 
 clean_f:
 	$(RM) $(OBJSF)
+
+clean_mm:
+	$(RM) $(OBJSC_MM)
 
 clean_c:
 	$(RM) $(OBJSC)
