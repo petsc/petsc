@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.11 1995/04/13 22:40:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcregis.c,v 1.12 1995/04/16 02:19:17 curfman Exp bsmith $";
 #endif
 
 
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: pcregis.c,v 1.11 1995/04/13 22:40:28 bsmith Exp curfm
 extern int PCCreate_Jacobi(PC);
 extern int PCCreate_BJacobi(PC);
 extern int PCCreate_None(PC);
-extern int PCCreate_Direct(PC);
+extern int PCCreate_LU(PC);
 extern int PCCreate_SOR(PC);
 extern int PCCreate_Shell(PC);
 extern int PCCreate_MG(PC);
@@ -35,7 +35,7 @@ int PCRegisterAll()
   PCRegister(PCJACOBI       , "jacobi",     PCCreate_Jacobi);
   PCRegister(PCBJACOBI      , "bjacobi",    PCCreate_BJacobi);
   PCRegister(PCSOR          , "sor",        PCCreate_SOR);
-  PCRegister(PCDIRECT       , "direct",     PCCreate_Direct);
+  PCRegister(PCLU           , "lu",         PCCreate_LU);
   PCRegister(PCSHELL        , "shell",      PCCreate_Shell);
   PCRegister(PCMG           , "mg",         PCCreate_MG);
   PCRegister(PCESOR         , "eisenstat",  PCCreate_Eisenstat);

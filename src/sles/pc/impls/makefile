@@ -12,7 +12,7 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscsles
 LINCLUDE = $(SOURCEH)
-DIRS     = jacobi none sor direct shell bjacobi mg eisens ilu icc
+DIRS     = jacobi none sor lu shell bjacobi mg eisens ilu icc
 
 runexamples:
 

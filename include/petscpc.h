@@ -7,7 +7,7 @@
 #include "petsc.h"
 #include "mat.h"
 
-typedef enum { PCNONE, PCJACOBI, PCSOR, PCDIRECT, PCSHELL, PCBJACOBI, PCMG,
+typedef enum { PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG,
                PCESOR, PCILU, PCICC } PCMETHOD;
 
 typedef struct _PC* PC;
@@ -57,8 +57,8 @@ extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
 
 extern int PCGetOperators(PC,Mat*,Mat*,int*);
 
-extern int PCDirectSetOrdering(PC,int);
-extern int PCDirectSetUseInplace(PC);
+extern int PCLUSetOrdering(PC,int);
+extern int PCLUSetUseInplace(PC);
 extern int PCILUSetOrdering(PC,int);
 extern int PCILUSetLevels(PC,int);
 

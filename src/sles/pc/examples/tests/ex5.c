@@ -74,7 +74,7 @@ int main(int Argc, char **Args)
 
   MGGetCoarseSolve(pcmg,&csles);
   SLESSetOperators(csles,cmat,cmat,0);
-  SLESGetPC(csles,&pc); PCSetMethod(pc,PCDIRECT);
+  SLESGetPC(csles,&pc); PCSetMethod(pc,PCLU);
   SLESGetKSP(csles,&ksp); KSPSetMethod(ksp,KSPPREONLY);
 
   /* zero is finest level */
