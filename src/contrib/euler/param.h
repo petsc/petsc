@@ -1,5 +1,5 @@
 c
-c  $Id: mat.h,v 1.35 1997/08/13 22:27:52 bsmith Exp $;
+c  $Id: param.h,v 1.15 1997/10/11 18:39:18 curfman Exp curfman $;
 c
 c PETSc include files needed by Fortran routines
 c   petsc.h - basic PETSc interface
@@ -119,3 +119,7 @@ c   Type of multi-model
 
 c   Common block for multi-model data
        common /multimodel/ model
+
+c   Duct problem parameters
+       double precision bump
+       common /duct/ bump

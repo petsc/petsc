@@ -1,4 +1,4 @@
-/* $Id: user.h,v 1.27 1997/10/11 18:39:18 curfman Exp curfman $ */
+/* $Id: user.h,v 1.28 1997/10/12 17:21:59 curfman Exp curfman $ */
 
 /* Include file for 3D Euler application code */
 
@@ -214,6 +214,8 @@ typedef struct {
     Scalar phi_te[2];                         /* 2-component circulation */
     VecScatter phi_te_scatter;                /* scatter for boundary conditins */
     Vec    diagv;                             /* diagonal of Jacobian */
+  /* duct problem */
+    Scalar bump;                              /* flow parameter - max bump height */
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
@@ -286,6 +288,7 @@ int ComputeFunctionNoWake(SNES,Vec,Vec,void*);
 int ComputeFunctionCore(int,SNES,Vec,Vec,void*);
 int ComputeJacobianFDColoring(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int ComputeJacobianFDBasic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+int ComputeMachDuct(int,Euler*,Scalar*);
 int UserSetJacobian(SNES,Euler*);
 int UserMatrixFreeMatCreate(SNES,Euler*,Vec,Mat*);
 int UserMatrixFreeMatDestroy(Mat);
@@ -385,7 +388,7 @@ extern int parsetup_(int*,int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,i
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,MMType*);
+                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,MMType*,Scalar*);
 extern int buildmat_(int*,ScaleType*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*);
