@@ -5,9 +5,11 @@ import sys
 
 #Determine whether we can safely use threads
 import nargs
-useThreads = int(nargs.Arg.findArgument('useThreads', sys.argv[1:]))
+useThreads = nargs.Arg.findArgument('useThreads', sys.argv[1:])
 if useThreads is None:
   useThreads = 1
+else:
+  useThreads = int(useThreads)
 
 class Configure:
   def __init__(self, framework):
