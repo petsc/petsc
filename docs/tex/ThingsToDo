@@ -14,7 +14,7 @@ Additional Capabilities that PETSc Needs:
 
   - Add VecCreateWithData() and VecCreateXXXWithData().
 
-  - Pur signalling nans into trmalloc()
+  - Test routine PetscInitializeNans() to work on all machine types.
 
   - Add to MatCreateXXX() man pages clear indicattion of optional 
     preallocation arguments.
