@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.22 1999/01/22 20:13:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact2.c,v 1.23 1999/01/24 19:57:49 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -736,11 +736,11 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     if (b->bs == 4) {
       (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
       (*fact)->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
-      PLogInfo(A,"Using special natural ordering factor and solve BS=4\n"); 
+      PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Using special natural ordering factor and solve BS=4\n"); 
     } else if (b->bs == 5) {
       (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
       (*fact)->ops->solve           = MatSolve_SeqBAIJ_5_NaturalOrdering;
-      PLogInfo( A,"Using special natural ordering factor and solve BS=5\n"); 
+      PLogInfo( A,"MatILUFactorSymbolic_SeqBAIJ:Using special natural ordering factor and solve BS=5\n"); 
     }
     PetscFunctionReturn(0);
   }
