@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.106 1998/06/24 14:44:25 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.107 1998/07/13 19:28:47 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -26,7 +26,7 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
-  if (vtype == ASCII_FILE_VIEWER && vtype == ASCII_FILES_VIEWER) {
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
  
     MPI_Comm_rank(ctx->comm,&rank);
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -2192,7 +2192,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   to = PetscNew(VecScatter_MPI_General); CHKPTRQ(to);
   PetscMemzero(to,sizeof(VecScatter_MPI_General));
   PLogObjectMemory(ctx,sizeof(VecScatter_MPI_General));
-  ierr = OptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&from->sendfirst);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&to->sendfirst);CHKERRQ(ierr);
   len = ny*(sizeof(int) + sizeof(Scalar)) + (nsends+1)*sizeof(int) +
         nsends*(sizeof(int) + sizeof(MPI_Request));
   to->n        = nsends; 

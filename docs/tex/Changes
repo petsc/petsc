@@ -28,7 +28,12 @@ add to it).
    the index for each vector entry to be printed with the vector values
 
    Added two new vector scatter options; -vecscatter_merge and -vecscatter_ssend
-   this may improve performance a great deal when using MPICH for MPI.
+   -vecscatter_sendfirst this may improve performance a great deal when using MPICH for MPI
+   on ethernet or fast ethernet
+
+   changed VecGhostGetLocalRepresentation() and VecGhostRestoreLocalRepresentation(),
+   to VecGhostGetLocalForm() and VecGhostRestoreLocalForm(), the other names had
+   too many characters for some machines.
 
   MAT
 
