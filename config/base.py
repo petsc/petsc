@@ -612,7 +612,7 @@ class Configure:
     valid    = 1
     self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
     (output, status)               = self.outputLink('', '')
-    if status
+    if status:
       valid = 0
       self.framework.log.write('Rejecting linker flag '+flag+' due to nonzero status from link\n')
     if output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or (output.find('bad ') and output.find(' option')):
