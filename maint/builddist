@@ -49,7 +49,6 @@ make configure
 make alldoc allhtml LOC=${PETSC_DIR}
 ${PETSC_DIR}/maint/update-docs.py ${PETSC_DIR}
 make ACTION=clean tree
-cd ${PETSC_DIR}/projects; make 
 # now tar up the PETSc tree
 cd /sandbox/petsc
 /bin/tar --create --file $tmpdir/petsc.tar --exclude=SCCS --exclude-from  ${PETSC_DIR}/maint/xclude  petsc-dist
@@ -80,6 +79,9 @@ cd $tmpdir/petsc
 
 # Create EMACS-TAGS
 make etags etags_examples TAGSDIR=`pwd`
+# Update project files
+cd $tmpdir/petsc/projects; make
+cd $tmpdir/petsc
 
 # Clean up the external Packages from PETSC_ARCH/packages files
 for i in bmake/*/packages ; do
