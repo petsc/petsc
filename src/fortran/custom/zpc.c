@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.48 2001/05/01 15:04:08 balay Exp balay $*/
+/*$Id: zpc.c,v 1.49 2001/05/14 15:27:23 balay Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -38,6 +38,7 @@
 #define pccompositespecialsetalpha_  PCCOMPOSITESETALPHA
 #define pcshellsetsetup_           PCSHELLSETSETUP
 #define pcilusetmatordering_       PCILUSETMATORDERING
+#define pclusetmatordering_        PCLUSETMATORDERING
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define mgdefaultresidual_         mgdefaultresidual
 #define mgsetresidual_             mgsetresidual
@@ -72,6 +73,7 @@
 #define pccompositespecialsetalpha_  pccompositespecialsetalpha
 #define pcshellsetsetup_           pcshellsetsetup
 #define pcilusetmatordering_       pcilusetmatordering
+#define pclusetmatordering_        pclusetmatordering
 #endif
 
 EXTERN_C_BEGIN
@@ -356,6 +358,14 @@ void PETSC_STDCALL pcilusetmatordering_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len
 
     FIXCHAR(ordering,len,t);
     *ierr = PCILUSetMatOrdering(*pc,t);
+    FREECHAR(ordering,t);
+}
+
+void PETSC_STDCALL pclusetmatordering_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), int *ierr PETSC_END_LEN(len)){
+  char *t;
+
+    FIXCHAR(ordering,len,t);
+    *ierr = PCLUSetMatOrdering(*pc,t);
     FREECHAR(ordering,t);
 }
 
