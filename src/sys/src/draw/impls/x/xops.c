@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.125 1999/02/26 04:43:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.126 1999/03/01 20:43:22 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -76,6 +76,7 @@ static int DrawTriangle_X(Draw Win, double X1, double Y_1, double X2,
                           double Y2,double X3,double Y3, int c1, int c2,int c3)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
+  int     ierr;
 
   PetscFunctionBegin;
   if (c1 == c2 && c2 == c3) {
@@ -87,8 +88,7 @@ static int DrawTriangle_X(Draw Win, double X1, double Y_1, double X2,
     pt[1].y = YTRANS(Win,XiWin,Y2); 
     pt[2].x = XTRANS(Win,XiWin,X3);
     pt[2].y = YTRANS(Win,XiWin,Y3); 
-    XFillPolygon(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,pt,3,Convex,
-                 CoordModeOrigin);
+    XFillPolygon(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,pt,3,Convex,CoordModeOrigin);
   } else {
     int x1,y_1,x2,y2,x3,y3;
     x1 = XTRANS(Win,XiWin,X1);
@@ -97,7 +97,7 @@ static int DrawTriangle_X(Draw Win, double X1, double Y_1, double X2,
     y2 = YTRANS(Win,XiWin,Y2); 
     x3 = XTRANS(Win,XiWin,X3);
     y3 = YTRANS(Win,XiWin,Y3); 
-    XiDrawInterpolatedTriangle(XiWin,x1,y_1,c1,x2,y2,c2,x3,y3,c3);
+    ierr = XiDrawInterpolatedTriangle(XiWin,x1,y_1,c1,x2,y2,c2,x3,y3,c3);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
