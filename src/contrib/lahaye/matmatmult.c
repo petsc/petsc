@@ -1,4 +1,4 @@
-/*$Id: matmatmult.c,v 1.9 2001/09/06 16:42:06 buschelm Exp buschelm $*/
+/*$Id: matmatmult.c,v 1.10 2001/09/06 19:21:42 buschelm Exp buschelm $*/
 /*
   Defines a matrix-matrix product for 2 SeqAIJ matrices
           C = A * B
@@ -36,7 +36,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
   int           *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   int           *ci,*bjj,*cj,*cj2,*densefill,*sparsefill;
   int           an=A->N,am=A->M,bn=B->N,bm=B->M;
-  int           ierr,i,j,k,anzi,brow,bnzj,cnzi,free_space_size=bi[bm+1];
+  int           ierr,i,j,k,anzi,brow,bnzj,cnzi,free_space_size=bi[bm];
   MatScalar     *ca;
 
   PetscFunctionBegin;
