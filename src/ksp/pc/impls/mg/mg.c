@@ -250,7 +250,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_MG"
-static PetscErrorCode PCSetFromOptions_MG(PC pc)
+PetscErrorCode PCSetFromOptions_MG(PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       indx,m,levels = 1;
@@ -423,7 +423,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
 #endif
     }
     for (i=0; i<n-1; i++) {
-      if (!mg[i]->r) {
+      if (!mg[i]->r && i) {
         ierr = VecDuplicate(mg[i]->b,&tvec);CHKERRQ(ierr);
         ierr = MGSetR(pc,i,tvec);CHKERRQ(ierr);
         ierr = VecDestroy(tvec);CHKERRQ(ierr);
