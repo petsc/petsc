@@ -1,14 +1,15 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.58 1996/10/29 19:12:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.59 1996/12/10 20:47:09 curfman Exp curfman $";
 #endif
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\
 Input parameters include:\n\
-  -random_sol : use a random solution vector\n\
-  -m <mesh_x> : number of mesh points in x-direction\n\
-  -n <mesh_n> : number of mesh points in y-direction\n\n";
+  -random_exact_sol : use a random exact solution vector\n\
+  -view_exact_sol   : write exact solution vector to stdout\n\
+  -m <mesh_x>       : number of mesh points in x-direction\n\
+  -n <mesh_n>       : number of mesh points in y-direction\n\n";
 
 /*T
    Concepts: SLES^Solving a system of linear equations (basic parallel example);
@@ -37,7 +38,7 @@ int main(int argc,char **args)
   Mat         A;        /* linear system matrix */
   SLES        sles;     /* linear solver context */
   PetscRandom rctx;     /* random number generator context */
-  double      norm;         /* norm of solution error */
+  double      norm;     /* norm of solution error */
   int         i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its, flg;
   Scalar      v, one = 1.0, neg_one = -1.0;
 
@@ -113,7 +114,7 @@ int main(int argc,char **args)
      elements of 1.0;  Alternatively, using the runtime option
      -random_sol forms a solution vector with random components.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-random_sol",&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-random_exact_sol",&flg); CHKERRA(ierr);
   if (flg) {
     ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
     ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
@@ -122,6 +123,12 @@ int main(int argc,char **args)
     ierr = VecSet(&one,u); CHKERRA(ierr);
   }
   ierr = MatMult(A,u,b); CHKERRA(ierr);
+
+  /*
+     View the exact solution vector if desired
+  */
+  ierr = OptionsHasName(PETSC_NULL,"-view_exact_sol",&flg); CHKERRA(ierr);
+  if (flg) {ierr = VecView(u,VIEWER_STDOUT_WORLD); CHKERRA(ierr);}
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                 Create the linear solver and set various options
