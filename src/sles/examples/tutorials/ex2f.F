@@ -1,5 +1,5 @@
 
-C    "$Id: ex2f.F,v 1.35 1996/09/30 22:54:58 balay Exp bsmith $";
+C    "$Id: ex2f.F,v 1.36 1996/10/24 15:29:41 bsmith Exp curfman $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -93,7 +93,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 C  Create parallel matrix, specifying only its global dimensions.
 C  When using MatCreate(), the matrix format can be specified at
-C  runtime. Also, the parallel partioning of the matrix is
+C  runtime. Also, the parallel partitioning of the matrix is
 C  determined by PETSc at runtime.
 
       call MatCreate(MPI_COMM_WORLD,m*n,m*n,A,ierr)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.1 1996/09/14 15:32:43 curfman Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.2 1996/09/17 20:08:22 balay Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -57,7 +57,7 @@ int slesex(int argc,char **args)
   /* 
      Create parallel matrix, specifying only its global dimensions.
      When using MatCreate(), the matrix format can be specified at
-     runtime. Also, the parallel partioning of the matrix is
+     runtime. Also, the parallel partitioning of the matrix is
      determined by PETSc at runtime.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
