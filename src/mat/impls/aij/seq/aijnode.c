@@ -1,11 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.6 1995/11/17 00:54:21 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.7 1995/11/17 23:44:02 balay Exp bsmith $";
 #endif
-
+/*
+    Provides high performance routines for the AIJ (compressed row) storage 
+  format by taking advantage of rows with identical non-zero structure (I-nodes).
+*/
 #include "aij.h"                
 
-int Mat_AIJ_CheckInode(Mat);
-int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
+extern int Mat_AIJ_CheckInode(Mat);
+extern int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
 
 /*
    MatToSymmetricIJ_SeqAIJ_Inode - Convert a sparse AIJ matrix to IJ format.
@@ -40,9 +43,8 @@ int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
 
   m = A->inode.node_count;
   /* allocate space for reformated inode structure */
-  tns = (int *) PetscMalloc((m +1 )*sizeof(int));
-  for(i1 = 0, tns[0] =0; i1 < m; ++i1)
-    tns[i1+1] = tns[i1]+ ns[i1];
+  tns = (int *) PetscMalloc((m +1 )*sizeof(int)); CHKPTRQ(tns);
+  for(i1 = 0, tns[0] =0; i1 < m; ++i1) tns[i1+1] = tns[i1]+ ns[i1];
 
   /* allocate space for row pointers */
   *iia = ia = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(ia);
@@ -61,8 +63,7 @@ int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
     while (i2 <= i1) {
       while (col > tns[i2]) ++i2; /* skip until corresponding inode is found*/
       if(i2 >i1 ) {printf("goofy\n"); break;}
-      if(i2 <i1 ) 
-        ia[i1+1]++;
+      if(i2 <i1 ) ia[i1+1]++;
       ia[i2+1]++;
       i2++;                     /* Start col of next node */
       while((col = *j + shift)< tns[i2]) ++j; /* goto the first col of this node*/
@@ -71,7 +72,7 @@ int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
 
   /* shift ia[i] to point to next row */
   for ( i1=1; i1<m+1; i1++ ) {
-    row       = ia[i1-1];
+    row        = ia[i1-1];
     ia[i1]     += row;
     work[i1-1] = row - 1;
   }
@@ -159,7 +160,7 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
   ierr  = MatToSymmetricIJ_SeqAIJ_Inode( a, &ia, &ja ); CHKERRQ(ierr);
   ierr  = MatGetReordering_IJ(m,ia,ja,type,&ris,&cis); CHKERRQ(ierr);
 
-  tns   = (int *) PetscMalloc((m +1 )*sizeof(int));
+  tns   = (int *) PetscMalloc((m +1 )*sizeof(int)); CHKPTRQ(tns);
   permr = (int *) PetscMalloc( (2*a->n+1)*sizeof(int) ); CHKPTRQ(permr);
   permc = permr + n;
 
@@ -171,21 +172,18 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
   ierr  = ISGetIndices(invcis,&invcidx); CHKERRQ(ierr);
 
   /* Form the inode structure for the rows of permuted matric using inv perm*/
-  for(i = 0, tns[0] =0; i < m; ++i)
-    tns[i+1] = tns[i]+ ns[invridx[i]];
+  for(i = 0, tns[0] =0; i < m; ++i) tns[i+1] = tns[i]+ ns[invridx[i]];
 
   /* Consturct the permutations for rows*/
-  for( i = 0,row =0; i<m ; ++i){
+  for( i = 0,row = 0; i<m; ++i){
     indx      = ridx[i];
     start_val = tns[indx];
     end_val   = tns[indx + 1];
-    for(j = start_val; j< end_val; ++j, ++row)
-      permr[row]= j;
+    for(j = start_val; j< end_val; ++j, ++row) permr[row]= j;
   }
 
    /* Form the inode structure for the cols of permuted matric using inv perm*/
-  for(i = 0, tns[0] =0; i < m; ++i)
-    tns[i+1] = tns[i]+ ns[invcidx[i]];
+  for(i = 0, tns[0] =0; i < m; ++i) tns[i+1] = tns[i]+ ns[invcidx[i]];
 
  /*Construct permutations for columns*/
   for( i = 0,row =0; i<m ; ++i){
@@ -200,7 +198,6 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
   ISSetPermutation(*rperm);
   ierr = ISCreateSeq(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
   ISSetPermutation(*cperm);
-/*  ISView(*rperm, STDOUT_VIEWER_SELF);*/
  
   ViewerFileOpenASCII(MPI_COMM_SELF,"row_is", &V1);
   ViewerFileOpenASCII(MPI_COMM_SELF,"col_is", &V2);
@@ -209,7 +206,7 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
   ViewerDestroy(V1);
   ViewerDestroy(V2);
  
- PetscFree(ia); PetscFree(ja); PetscFree(permr);
+  PetscFree(ia); PetscFree(ja); PetscFree(permr);
   ISDestroy(cis); ISDestroy(invcis);
   ISDestroy(ris); ISDestroy(invris);
   PetscFree(tns);
@@ -224,8 +221,7 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
   Scalar     sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
   Scalar     *v1, *v2, *v3, *v4, *v5,*x, *y;
-  int        *idx, i1, i2, n, i, row;
-  int        node_max, *ns, *ii, nsz, sz;
+  int        *idx, i1, i2, n, i, row,node_max, *ns, *ii, nsz, sz;
   int        m = a->m, shift = a->indexshift;
   
   if (!a->assembled) SETERRQ(1,"MatMult_SeqAIJ_Inode: Not for unassembled matrix");
@@ -254,7 +250,7 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
         tmp0 = x[i1];
         tmp1 = x[i2]; 
         idx += 2;
-        sum1 += v1[0] * tmp0 + v1[1] *tmp1; v1 += 2;
+        sum1 += v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
        }
      
       if(n   == sz-1){          /* Take care of the last nonzero  */
@@ -274,8 +270,8 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
         tmp0 = x[i1];
         tmp1 = x[i2];
         idx += 2;
-        sum1 += v1[0] * tmp0 + v1[1] *tmp1; v1 += 2;
-        sum2 += v2[0] * tmp0 + v2[1] *tmp1; v2 += 2;
+        sum1 += v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
+        sum2 += v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
       }
       if(n   == sz-1){
         tmp0  = x[*idx++];
@@ -294,17 +290,17 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       v2    = v1 + n;
       v3    = v2 + n;
       
-      for( n = 0; n< sz-1; n+=2) {
+      for (n = 0; n< sz-1; n+=2) {
         i1   = idx[0];
         i2   = idx[1];
         tmp0 = x[i1];
         tmp1 = x[i2]; 
         idx += 2;
-        sum1 += v1[0] * tmp0 + v1[1] *tmp1; v1 += 2;
-        sum2 += v2[0] * tmp0 + v2[1] *tmp1; v2 += 2;
-        sum3 += v3[0] * tmp0 + v3[1] *tmp1; v3 += 2;
+        sum1 += v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
+        sum2 += v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
+        sum3 += v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
       }
-      if(n   == sz-1){
+      if (n == sz-1){
         tmp0  = x[*idx++];
         sum1 += *v1++ * tmp0;
         sum2 += *v2++ * tmp0;
@@ -325,7 +321,7 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       v3    = v2 + n;
       v4    = v3 + n;
       
-      for( n = 0; n< sz-1; n+=2) {
+      for (n = 0; n< sz-1; n+=2) {
         i1   = idx[0];
         i2   = idx[1];
         tmp0 = x[i1];
@@ -336,7 +332,7 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
         sum3 += v3[0] * tmp0 + v3[1] *tmp1; v3 += 2;
         sum4 += v4[0] * tmp0 + v4[1] *tmp1; v4 += 2;
       }
-      if(n   == sz-1){
+      if (n == sz-1){
         tmp0  = x[*idx++];
         sum1 += *v1++ * tmp0;
         sum2 += *v2++ * tmp0;
@@ -351,7 +347,7 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       idx    +=3*sz;
       break;
     case 5:
-       sum1  = 0;
+      sum1  = 0;
       sum2  = 0;
       sum3  = 0;
       sum4  = 0;
@@ -361,7 +357,7 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       v4    = v3 + n;
       v5    = v4 + n;
       
-      for( n = 0; n< sz-1; n+=2) {
+      for (n = 0; n<sz-1; n+=2) {
         i1   = idx[0];
         i2   = idx[1];
         tmp0 = x[i1];
@@ -400,17 +396,15 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 
 int Mat_AIJ_CheckInode(Mat A)
 {
-
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        i, j, m, nzx, nzy, *idx, *idy;
-  int        * ns,*ii, node_count, blk_size, limit;
+  int        i, j, m, nzx, nzy, *idx, *idy, *ns,*ii, node_count, blk_size, limit;
 
   limit      = 5;               /* Mult/Solve Can't Handle more than 5 */
   if (OptionsHasName(0, "-mat_aij_no_inode")) return 0;
   OptionsGetInt(0, "-mat_aij_inode_limit", &limit);
-  if(limit >5 ) limit = 5;
+  if(limit > 5) limit = 5;
   m = a->m;        
-  if(!a->inode.size && m){
+  if (!a->inode.size && m){
     ns = (int *)PetscMalloc(m*sizeof(int));  CHKPTRQ(ns);
   }
   else return 0;                /* Use the Already formed Inode info */
@@ -426,7 +420,7 @@ int Mat_AIJ_CheckInode(Mat A)
       nzy     = ii[j+1] - ii[j]; /* same no of nonzeros */
       if(nzy != nzx) break;
       idy    += nzx;            /* Same nonzero pattern */
-      if(PetscMemcmp((char *)idx,(char *)idy,nzx*sizeof(int))) break;
+      if (PetscMemcmp((char *)idx,(char *)idy,nzx*sizeof(int))) break;
     }
     ns[node_count++] = blk_size;
     /*printf("%3d \t %d\n", i, blk_size);*/
@@ -439,21 +433,19 @@ int Mat_AIJ_CheckInode(Mat A)
   A->ops.getreordering = MatGetReordering_SeqAIJ_Inode;
   a->inode.node_count  = node_count;
   a->inode.size        = ns;
-  PLogInfo((PetscObject)A, "Found %d nodes. Limit used : %d. Using Inode_Routines\n", node_count, limit);
+  PLogInfo((PetscObject)A,"Found %d nodes. Limit used:%d.Using Inode_Routines\n",node_count,limit);
   return 0;
 }
 
 /* ----------------------------------------------------------- */
 int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ *) A->data;
-  IS              iscol = a->col, isrow = a->row;
-  int             *r,*c, ierr, i, j, n = a->m, *ai = a->i;
-  int             nz,shift = a->indexshift, *a_j = a->j;
-  int             node_max, *ns,row, nsz, aii,*vi,*ad, *aj, i0, i1;
-  Scalar          *x,*b, *a_a = a->a;
-  Scalar         *tmp, *tmps, *aa, tmp0, tmp1;
-  Scalar         sum1, sum2, sum3, sum4, sum5,*v1, *v2, *v3,*v4, *v5;
+  Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
+  IS          iscol = a->col, isrow = a->row;
+  int         *r,*c, ierr, i, j, n = a->m, *ai = a->i, nz,shift = a->indexshift, *a_j = a->j;
+  int         node_max, *ns,row, nsz, aii,*vi,*ad, *aj, i0, i1;
+  Scalar      *x,*b, *a_a = a->a,*tmp, *tmps, *aa, tmp0, tmp1;
+  Scalar      sum1, sum2, sum3, sum4, sum5,*v1, *v2, *v3,*v4, *v5;
 
   if (A->factor!=FACTOR_LU) SETERRQ(1,"MatSolve_SeqAIJ_Inode: Not for unfactored matrix");
   if (!a->inode.size)SETERRQ(1,"MatSolve_SeqAIJ_Inode: Missing Inode Structure");
@@ -846,7 +838,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   rtmp  = (Scalar *) PetscMalloc( (2*n+1)*sizeof(Scalar) ); CHKPTRQ(rtmp);
   rtmps = rtmp + shift; ics = ic + shift;
   
-if (!a->inode.size)SETERRQ(1,"MatLUFactorNumeric_SeqAIJ_Inode: Missing Inode Structure");
+  if (!a->inode.size)SETERRQ(1,"MatLUFactorNumeric_SeqAIJ_Inode: Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
   
@@ -867,8 +859,6 @@ if (!a->inode.size)SETERRQ(1,"MatLUFactorNumeric_SeqAIJ_Inode: Missing Inode Str
       pc = rtmp + row;
       if (*pc != 0.0) {
         pv         = b->a + diag_offset[row] + shift;
-
-
         pj         = b->j + diag_offset[row] + (!shift);
         multiplier = *pc * *pv++;
         *pc        = multiplier;

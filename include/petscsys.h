@@ -1,4 +1,7 @@
-/* $Id: sys.h,v 1.8 1995/10/24 21:55:05 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.9 1995/11/09 22:33:28 bsmith Exp bsmith $ */
+/*
+    Provides access to a small number of system related and general utility routines.
+*/
 #if !defined(__SYS_PACKAGE)
 #define __SYS_PACKAGE
 

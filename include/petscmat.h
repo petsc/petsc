@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.71 1995/10/26 21:45:32 curfman Exp bsmith $ */
+/* $Id: mat.h,v 1.72 1995/11/01 19:12:32 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -23,10 +23,8 @@ extern int MatCreateMPIAIJ(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*);
 extern int MatCreateSeqRow(MPI_Comm,int,int,int,int *,Mat*);
 extern int MatCreateMPIRow(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
 extern int MatCreateMPIRowbs(MPI_Comm,int,int,int,int*,void*,Mat*); 
-extern int MatCreateSeqBDiag(MPI_Comm,int,int,int,int,int*,
-                                    Scalar**,Mat*); 
-extern int MatCreateMPIBDiag(MPI_Comm,int,int,int,int,int,int*,
-                                    Scalar**,Mat*); 
+extern int MatCreateSeqBDiag(MPI_Comm,int,int,int,int,int*,Scalar**,Mat*); 
+extern int MatCreateMPIBDiag(MPI_Comm,int,int,int,int,int,int*,Scalar**,Mat*); 
 
 extern int MatShellCreate(MPI_Comm,int,int,void *,Mat*);
 extern int MatShellSetMult(Mat,int (*)(void*,Vec,Vec));
@@ -71,8 +69,7 @@ typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
 extern int MatGetReordering(Mat,MatOrdering,IS*,IS*);
 extern int MatGetReorderingTypeFromOptions(char *,MatOrdering*);
 extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
-extern int MatReorderingRegister(MatOrdering,char*,
-                     int (*)(int*,int*,int*,int*,int*));
+extern int MatReorderingRegister(MatOrdering,char*,int (*)(int*,int*,int*,int*,int*));
 extern int MatReorderingRegisterAll();
 extern int MatReorderingRegisterDestroy();
 

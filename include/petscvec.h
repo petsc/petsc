@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.38 1995/11/05 14:00:41 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.39 1995/11/09 22:33:28 bsmith Exp bsmith $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -11,8 +11,6 @@
 
    All vectors should be declared as a Vec. All vector routines begin
    with Vec.
-   
-
  */
 
 #ifndef __VEC_PACKAGE 
@@ -33,11 +31,12 @@ extern int VecCreate(MPI_Comm,int,Vec *);
 
 extern int VecDot(Vec, Vec, Scalar*);
 extern int VecTDot(Vec, Vec, Scalar*);  
-extern int VecMDot(int,      Vec ,Vec*,Scalar*);
-extern int VecMTDot(int,      Vec ,Vec*,Scalar*); 
+extern int VecMDot(int,  Vec ,Vec*,Scalar*);
+extern int VecMTDot(int,  Vec ,Vec*,Scalar*); 
 
 typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4} NormType;
 #define NORM_MAX NORM_INFINITY
+
 extern int VecNorm(Vec,NormType,double *);
 extern int VecSum(Vec,Scalar*);
 extern int VecMax(Vec, int *,    double*);
@@ -91,7 +90,6 @@ extern int VecLoad(Viewer,Vec*);
 extern int VecGetSize(Vec,int *);
 extern int VecGetLocalSize(Vec,int *);
 extern int VecGetOwnershipRange(Vec,int*,int*);
-
 
 /* utility routines */
 extern int VecReciprocal(Vec);

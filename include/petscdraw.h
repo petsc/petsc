@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.18 1995/11/01 19:12:32 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.19 1995/11/09 22:33:28 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -9,7 +9,7 @@
 #define DRAW_COOKIE PETSC_COOKIE+6
 
 /* types of draw contexts */
-#define XWINDOW 0
+#define XWINDOW    0
 #define NULLWINDOW 1
  
 typedef struct _Draw* Draw;

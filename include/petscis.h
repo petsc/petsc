@@ -1,7 +1,8 @@
-/* $Id: is.h,v 1.16 1995/10/11 17:59:04 curfman Exp bsmith $ */
+/* $Id: is.h,v 1.17 1995/10/24 21:55:05 bsmith Exp bsmith $ */
 
 /*
-      An index set is essentially a subset of the integers
+      An index set is essentially a subset of the integers. They are used
+   for defining scatters and gathers.
 */
 #if !defined(__IS_PACKAGE)
 #define __IS_PACKAGE

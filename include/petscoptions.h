@@ -1,5 +1,7 @@
-/* $Id: options.h,v 1.11 1995/09/30 19:31:53 bsmith Exp bsmith $ */
-
+/* $Id: options.h,v 1.12 1995/10/17 21:43:12 bsmith Exp bsmith $ */
+/*
+   Application callable routines to determine options set in the options database.
+*/
 #if !defined(__OPTIONS_PACKAGE)
 #define __OPTIONS_PACKAGE
 #include "petsc.h"

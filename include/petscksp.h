@@ -1,5 +1,7 @@
-/* $Id: ksp.h,v 1.27 1995/11/01 19:12:32 bsmith Exp bsmith $ */
-
+/* $Id: ksp.h,v 1.28 1995/11/09 22:33:28 bsmith Exp bsmith $ */
+/*
+   Defines the interface functions for the Krylov subspace accelerators.
+*/
 #ifndef __KSP_PACKAGE
 #define __KSP_PACKAGE
 #include "petsc.h"
@@ -12,9 +14,8 @@
 typedef struct _KSP*     KSP;
 
 /*  Possible Krylov Space Methods */
-typedef enum { KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, 
-               KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR,
-               KSPPREONLY, KSPQCG } KSPMethod;
+typedef enum { KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, KSPTCQMR, KSPBCGS, 
+               KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPPREONLY, KSPQCG} KSPMethod;
 
 extern int KSPCreate(MPI_Comm,KSP *);
 extern int KSPSetMethod(KSP,KSPMethod);

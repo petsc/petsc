@@ -1,5 +1,7 @@
-/* $Id: snes.h,v 1.32 1995/09/21 20:13:13 bsmith Exp bsmith $ */
-
+/* $Id: snes.h,v 1.33 1995/10/12 04:21:53 bsmith Exp bsmith $ */
+/*
+    User interface for the nonlinear solvers package.
+*/
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
 #include "sles.h"
@@ -14,22 +16,18 @@ typedef enum { SNES_UNKNOWN_METHOD=-1,
                SNES_EQ_NTR2_LIN,
                SNES_EQ_NTEST,
                SNES_UM_NLS,
-               SNES_UM_NTR }
-  SNESMethod;
+               SNES_UM_NTR 
+} SNESMethod;
 
-typedef enum { POSITIVE_FUNCTION_VALUE, 
-               NEGATIVE_FUNCTION_VALUE } SNESFunctionSign;
+typedef enum { POSITIVE_FUNCTION_VALUE, NEGATIVE_FUNCTION_VALUE} SNESFunctionSign;
 
-
-typedef enum { SNES_NONLINEAR_EQUATIONS, SNES_UNCONSTRAINED_MINIMIZATION } 
-        SNESType;
+typedef enum { SNES_NONLINEAR_EQUATIONS, SNES_UNCONSTRAINED_MINIMIZATION} SNESType;
 
 extern int SNESCreate(MPI_Comm,SNESType,SNES*);
 extern int SNESSetMethod(SNES,SNESMethod);
 extern int SNESSetMonitor(SNES,int(*)(SNES,int,double,void*),void *);
 extern int SNESSetSolution(SNES,Vec,int(*)(SNES,Vec,void*),void *);
-extern int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *,
-                           SNESFunctionSign);
+extern int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *,SNESFunctionSign);
 extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
 extern int SNESDestroy(SNES);
 extern int SNESSetUp(SNES);
@@ -85,8 +83,7 @@ extern int SNESDestroy(SNES);
 
 extern int SNESSetApplicationContext(SNES,void *);
 extern int SNESGetApplicationContext(SNES,void **);
-extern int SNESSetConvergenceTest(SNES,
-                  int (*)(SNES,double,double,double,void*),void*);
+extern int SNESSetConvergenceTest(SNES,int (*)(SNES,double,double,double,void*),void*);
 
 /* Unconstrained minimization routines */
 

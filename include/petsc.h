@@ -1,5 +1,7 @@
-/* $Id: petsc.h,v 1.68 1995/11/15 17:04:09 curfman Exp curfman $ */
-
+/* $Id: petsc.h,v 1.69 1995/11/15 20:07:20 curfman Exp bsmith $ */
+/*
+   PETSc header file, included in all PETSc programs.
+*/
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
@@ -34,12 +36,11 @@ extern void fscanf(FILE *,char *,...);
 extern void *(*PetscMalloc)(unsigned int,int,char*);
 extern int  (*PetscFree)(void *,int,char*);
 #define PetscMalloc(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
+#define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
 #define PetscFree(a)         (*PetscFree)(a,__LINE__,__FILE__)
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,char*));
 extern int  TrDump(FILE *);
 extern int  TrGetMaximumAllocated(double*);
-
-#define PetscNew(A)         (A*) PetscMalloc(sizeof(A))
 
 extern void  PetscMemcpy(void *,void *,int);
 extern void  PetscMemzero(void *,int);

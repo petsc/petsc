@@ -1,7 +1,7 @@
-/* $Id: pc.h,v 1.36 1995/11/01 19:12:32 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.37 1995/11/09 22:33:28 bsmith Exp bsmith $ */
 
 /*
-      Preconditioner module.
+      Preconditioner module. Defines the preconditioner routines.
 */
 #if !defined(__PC_PACKAGE)
 #define __PC_PACKAGE
@@ -34,8 +34,7 @@ extern int    PCGetFactoredMatrix(PC,Mat*);
 
 /* Flags for PCSetOperators */
 typedef enum {ALLMAT_DIFFERENT_NONZERO_PATTERN=0,MAT_SAME_NONZERO_PATTERN=1, 
-              PMAT_SAME_NONZERO_PATTERN=2,ALLMAT_SAME_NONZERO_PATTERN=3}
-              MatStructure;
+              PMAT_SAME_NONZERO_PATTERN=2,ALLMAT_SAME_NONZERO_PATTERN=3} MatStructure;
 
 extern int PCSetOperators(PC,Mat,Mat,MatStructure);
 extern int PCBJacobiSetUseTrueLocal(PC);
