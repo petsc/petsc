@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.26 1997/01/06 20:29:45 balay Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.27 1997/02/04 21:26:13 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -260,8 +260,7 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
   PLogInfo(snes,
     "SNES: iter %d, Eisenstat-Walker (version %d) KSP rtol = %g\n",
      snes->iter,kctx->version,rtol);
-  ierr = KSPSetTolerances(ksp,rtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
-  CHKERRQ(ierr);
+  ierr = KSPSetTolerances(ksp,rtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRQ(ierr);
   kctx->norm_last = snes->norm;
   return 0;
 }
