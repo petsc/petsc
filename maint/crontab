@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.122 1998/07/15 16:38:58 balay Exp balay $ 
+# $Id: crontab,v 1.123 1998/08/11 14:21:36 balay Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -50,7 +50,7 @@
 #
 # Stash away a copy of petsc.tar.gz every tuesday
 #
-45 5 * * 2 /bin/rcp /home/petsc/petsc.tar.gz mcshsm:~/userbackups/
+45 5 * * 2 /usr/ucb/rcp /home/petsc/petsc.tar.gz mcshsm:~/userbackups/
 #
 # Recreate the indices on the PETSc web site once every sunday
 #
