@@ -254,28 +254,96 @@ package PETSc {
     void shift(in double alpha);
   }
 
-  enum MatStructure {SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN, SAME_PRECONDITIONER, SUBSET_NONZERO_PATTERN};
-
-  //   enum ConvergedReason {KSP_CONVERGED_ITERATING = 0,
-  //               KSP_CONVERGED_ATOL               =  3,
-  //               KSP_CONVERGED_RTOL               =  2,
-  //               KSP_CONVERGED_ITS                =  4,
-  //               KSP_CONVERGED_QCG_NEG_CURVE      =  5,
-  //               KSP_CONVERGED_QCG_CONSTRAINED    =  6,
-  //               KSP_CONVERGED_STEP_LENGTH        =  7,
-  //               KSP_DIVERGED_NULL                = -2,
-  //               KSP_DIVERGED_ITS                 = -3,
-  //               KSP_DIVERGED_DTOL                = -4,
-  //               KSP_DIVERGED_BREAKDOWN           = -5,
-  //               KSP_DIVERGED_BREAKDOWN_BICG      = -6,
-  //               KSP_DIVERGED_NONSYMMETRIC        = -7,
-  //               KSP_DIVERGED_INDEFINITE_PC       = -8,
-  //               KSP_DIVERGED_NAN                 = -9,
-  //               KSP_DIVERGED_INDEFINITE_MAT      = -10};
-  class KSP implements PetscObject {
-  }
+  enum PCSide {PC_LEFT, PC_RIGHT, PC_SYMMETRIC};
 
   class PC implements PetscObject {
+    // Setup local preconditioner blocks
+    void setUpOnBlocks();
+    // Apply the preconditioner M^{-1} x = y
+    void apply(in Vec x, in Vec y);
+    // Apply the preconditioner M_L^{-1/2} x = y
+    void applySymmetricLeft(in Vec x, in Vec y);
+    // Apply the preconditioner M_R^{-1/2} x = y
+    void applySymmetricRight(in Vec x, in Vec y);
+    // Apply M^{-1} to x and store the result in y
+    void applyBAorAB(in PCSide side, in Vec x, in Vec y, in Vec work);
+    // Apply the preconditioner M^{-T} x = y
+    void applyTranspose(in Vec x, in Vec y);
+    // Determine whether M^{-T} is available
+    void hasApplyTranspose(out bool hasTranspose);
+    // Apply M^{-T} to x and store the result in y
+    void applyBAorABTranspose(in PCSide side, in Vec x, in Vec y, in Vec work);
+    // Apply Richardson exstrapolation
+    void applyRichardson(in Vec x, in Vec y, in Vec work, in double relativeTol, in double absoluteTol, in double divergenceTol, in int numIterations);
+    // Determine whether Richardson extrapolation is available
+    void applyRichardsonExists(out bool richardsonExists);
+  }
+
+  enum KSPNormType {KSP_NO_NORM, KSP_PRECONDITIONED_NORM, KSP_UNPRECONDITIONED_NORM, KSP_NATURAL_NORM};
+
+  enum KSPConvergedReason {KSP_CONVERGED_ITERATING          = 0,
+                           KSP_CONVERGED_ATOL               =  3,
+                           KSP_CONVERGED_RTOL               =  2,
+                           KSP_CONVERGED_ITS                =  4,
+                           KSP_CONVERGED_QCG_NEG_CURVE      =  5,
+                           KSP_CONVERGED_QCG_CONSTRAINED    =  6,
+                           KSP_CONVERGED_STEP_LENGTH        =  7,
+                           KSP_DIVERGED_NULL                = -2,
+                           KSP_DIVERGED_ITS                 = -3,
+                           KSP_DIVERGED_DTOL                = -4,
+                           KSP_DIVERGED_BREAKDOWN           = -5,
+                           KSP_DIVERGED_BREAKDOWN_BICG      = -6,
+                           KSP_DIVERGED_NONSYMMETRIC        = -7,
+                           KSP_DIVERGED_INDEFINITE_PC       = -8,
+                           KSP_DIVERGED_NAN                 = -9,
+                           KSP_DIVERGED_INDEFINITE_MAT      = -10};
+  class KSP implements PetscObject {
+    // Solve the linear system A x = b
+    void solve(in Vec b, in Vec x);
+    // Solve the linear system A^T x = b
+    void solveTranspose(in Vec b, in Vec x);
+
+    // Get the matrix A and preconditioning matrix M
+    void getOperators(out Mat A, out Mat M, out MatStructure flag);
+    // Set the matrix A and preconditioning matrix M
+    void setOperators(in Mat A, in Mat M, in MatStructure flag);
+    // Get the preconditioner
+    void getPC(out PC preconditioner);
+    // Set the preconditioner
+    void setPC(in PC preconditioner);
+    // Get the preconditioner application type
+    void getPreconditionerSide(out PCSide side);
+    // Set the preconditioner application type
+    void setPreconditionerSide(in PCSide side);
+    // Get the solution tolerances
+    void getTolerances(out double relativeTol, out double absoluteTol, out double divergenceTol, out int maxIterations);
+    // Set the solution tolerances
+    void setTolerances(in double relativeTol, in double absoluteTol, in double divergenceTol, in int maxIterations);
+    // Get the flag for a nonzero initial guess
+    void getInitialGuessNonzero(out bool nonzeroGuess);
+    // Set the flag for a nonzero initial guess
+    void setInitialGuessNonzero(in bool nonzeroGuess);
+    // Get the flag for computing eigenvalues of the reduced matrix
+    void getComputeEigenvalues(out bool computeEigenvalues);
+    // Set the flag for computing eigenvalues of the reduced matrix
+    void setComputeEigenvalues(in bool computeEigenvalues);
+    // Get the flag for computing singular values of the reduced matrix
+    void getComputeSingularValues(out bool computeSingularvalues);
+    // Set the flag for computing singular values of the reduced matrix
+    void setComputeSingularValues(in bool computeSingularValues);
+
+    void setNormType(in KSPNormType normType);
+
+    // Get the rhs
+    void getRhs(out Vec b);
+    // Get the solution
+    void getSolution(out Vec x);
+    // Get the norm of the residual b - A x
+    void getResidualNorm(out double residualNorm);
+    // Get the number of iterates performed
+    void getIterationNumber(out int numIterates);
+    // Get the reason for solver termination
+    void getConvergedReason(out KSPConvergedReason convergedReason);
   }
 
   // Convergence

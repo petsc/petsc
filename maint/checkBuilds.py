@@ -37,6 +37,7 @@ class BuildChecker(script.Script):
                'freebsd5.1':           ['gcc'],
                'linux':                ['gcc'],
                'linux-gnu':            ['gcc'],
+               'linux-gnu-amd64':      ['gcc'],
                'linux-gnu-gcc-absoft': ['gcc', 'absoftF90'],
                'linux-gnu-gcc-ifc':    ['gcc', 'intelF90'],
                'linux-gnu-gcc-pgf90':  ['gcc', 'pgF90'],
