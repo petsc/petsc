@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.31 1996/01/03 14:45:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.32 1996/01/08 19:33:11 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -463,8 +463,8 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
    Input Parameters:
 .  snes - the SNES context
 .  func - function evaluation routine
-.  resid_neg - indicator whether func evaluates f or -f. 
-   If resid_neg is NEGATIVE_FUNCTION_VALUE, then func evaluates -f; otherwise, 
+.  rneg - indicator whether func evaluates f or -f. 
+   If rneg is NEGATIVE_FUNCTION_VALUE, then func evaluates -f; otherwise, 
    func evaluates f.
 .  ctx - optional user-defined function context 
 .  r - vector to store function value
@@ -481,7 +481,9 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
    The Newton-like methods typically solve linear systems of the form
 $      f'(x) x = -f(x),
 $  where f'(x) denotes the Jacobian matrix and f(x) is the function.
-   By setting resid_neg = 1, the user can supply -f(x) directly.
+   By setting rneg = NEGATIVE_FUNCTION_VALUE, the user can supply -f(x)
+   directly.  This option enables increased efficiency by eliminating
+   the need for the library to scale the function by -1.
 
    SNESSetFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only.
    Analogous routines for SNES_UNCONSTRAINED_MINIMIZATION methods are

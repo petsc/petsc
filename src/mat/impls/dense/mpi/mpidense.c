@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.22 1996/01/01 22:32:54 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.23 1996/01/09 00:46:34 curfman Exp curfman $";
 #endif
 
 /*
@@ -765,7 +765,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
        MatGetRow_MPIDense,MatRestoreRow_MPIDense,
        MatMult_MPIDense,MatMultAdd_MPIDense,
        MatMultTrans_MPIDense,MatMultTransAdd_MPIDense,
-       MatSolve_MPIDense,0,
+/*       MatSolve_MPIDense,0, */
+       0,0,
        0,0,
        0,0,
 /*       MatLUFactor_MPIDense,0, */

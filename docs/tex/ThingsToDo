@@ -32,6 +32,10 @@ Additional Capabilities that PETSc Needs:
 
    - Do overlapping additive Schwarz for Seq and MPI AIJ.
 
+   - Fix SNES so that the right-hand-side of the Newton systems is not
+     ever scaled by -1.0, but instead this is taken care of in the
+     update step, x += alpha * dx   OR   x -= alpha * dx.
+
  (Lois)   - Complex versions of the Krylov subspace solvers
 
  (Lois)   - Complex version work from Fortran
