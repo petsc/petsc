@@ -1,4 +1,4 @@
-/*$Id: zsles.c,v 1.31 2001/03/28 17:03:38 bsmith Exp bsmith $*/
+/*$Id: zsles.c,v 1.32 2001/03/28 18:35:00 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -20,6 +20,7 @@
 #define dmmgview_                DMMGVIEW
 #define dmmgsolve_               DMMGSOLVE
 #define dmmgsetusematrixfree_    DMMGSETUSEMATRIXFREE
+#define dmmggetda_               DMMGGETDA
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmgdestroy_             dmmgdestroy
 #define dmmgcreate_              dmmgcreate
@@ -33,6 +34,7 @@
 #define slesgetoptionsprefix_    slesgetoptionsprefix
 #define slesview_                slesview
 #define dmmgsetdm_               dmmgsetdm
+#define dmmggetda_               dmmggetda
 #define dmmgview_                dmmgview
 #define dmmgsolve_               dmmgsolve
 #define dmmgsetusematrixfree_    dmmgsetusematrixfree
@@ -75,13 +77,19 @@ void PETSC_STDCALL dmmgsetsles_(DMMG **dmmg,int (PETSC_STDCALL *rhs)(DMMG*,Vec*,
 
 /* ----------------------------------------------------------------------------------------------------------*/
 
+void PETSC_STDCALL dmmggetda_(DMMG *dmmg,DA *da,int *ierr)
+{
+  *da   = (DA)(*dmmg)->dm;
+  *ierr = 0;
+}
+
 void PETSC_STDCALL dmmgsetdm_(DMMG **dmmg,DM *dm,int *ierr)
 {
   int i;
   *ierr = DMMGSetDM(*dmmg,*dm);if (*ierr) return;
   /* loop over the levels added a place to hang the function pointers in the DM for each level*/
   for (i=0; i<(**dmmg)->nlevels; i++) {
-    *ierr = PetscMalloc(3*sizeof(void (*)()),&((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (ierr) return;
+    *ierr = PetscMalloc(3*sizeof(void (*)()),&((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (*ierr) return;
   }
 }
 
@@ -110,7 +118,7 @@ void PETSC_STDCALL dmmgdestroy_(DMMG **dmmg,int *ierr)
   int i;
   /* loop over the levels remove the place to hang the function pointers in the DM for each level*/
   for (i=0; i<(**dmmg)->nlevels; i++) {
-    *ierr = PetscFree(((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (ierr) return;
+    *ierr = PetscFree(((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (*ierr) return;
   }
   *ierr = DMMGDestroy(*dmmg);
 }
