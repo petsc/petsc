@@ -1,4 +1,4 @@
-/*$Id: lusol.c,v 1.7 2001/01/15 21:45:34 bsmith Exp balay $*/
+/*$Id: lusol.c,v 1.8 2001/03/23 23:21:51 balay Exp bsmith $*/
 /* 
         Provides an interface to the LUSOL package of ....
 
@@ -255,7 +255,6 @@ int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
 {
      Mat_SeqAIJ       *a;
      Mat_SeqAIJ_LUSOL *lusol = (Mat_SeqAIJ_LUSOL *)((Mat_SeqAIJ *)(*F)->data)->spptr;
-     PetscTruth       flg;
      int              m, n, nz, nnz, status;
      int              i, rs, re,ierr;
      int              factorizations;
@@ -391,7 +390,6 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatLUInfo *info, Mat *F)
      /************************************************************************/
 
      Mat_SeqAIJ_LUSOL *lusol;
-     PetscTruth       flg;
      int              ierr,i, m, n, nz, nnz;
 
      PetscFunctionBegin;
