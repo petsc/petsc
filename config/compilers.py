@@ -132,6 +132,7 @@ class Configure(config.base.Configure):
     found     = 0
 
     for cfunc, cobj, mangler in zip(cfuncs, cobjs, manglers):
+      self.framework.log.write('Testing Fortran mangling type '+mangler+' with code '+cfunc)
       # Compile each of the C test objects
       self.pushLanguage('C')
       if not self.checkCompile(cfunc,None,cleanup = 0):
