@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.74 1998/10/31 23:07:33 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.75 1998/10/31 23:57:32 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -54,13 +54,25 @@ extern int SNESGetOptionsPrefix(SNES,char**);
 extern int SNESSetFromOptions(SNES);
 extern int SNESAddOptionsChecker(int (*)(SNES));
 
-extern int SNESDefaultMatrixFreeCreate(SNES,Vec x,Mat*);
-extern int SNESDefaultMatrixFreeAddNullSpace(Mat,int,int,Vec *);
-extern int SNESDefaultMatrixFreeSetHHistory(Mat,Scalar *,int);
-extern int SNESDefaultMatrixFreeResetHHistory(Mat,Scalar *,int);
-extern int SNESDefaultMatrixFreeSetParameters(Mat,double,double);
-extern int SNESDefaultMatrixFreeGetH(Mat,Scalar *);
-extern int SNESDefaultMatrixFreeKSPMonitor(KSP,int,double,void *);
+extern int MatCreateSNESFDMF(SNES,Vec x,Mat*);
+extern int MatSNESFDMFAddNullSpace(Mat,int,int,Vec *);
+extern int MatSNESFDMFSetHHistory(Mat,Scalar *,int);
+extern int MatSNESFDMFResetHHistory(Mat);
+extern int MatSNESFDMFSetFunctionError(Mat,double);
+extern int MatSNESFDMFGetH(Mat,Scalar *);
+extern int MatSNESFDMFKSPMonitor(KSP,int,double,void *);
+extern int MatSNESFDMFSetFromOptions(Mat);
+typedef struct _p_MatSNESFDMFCtx   *MatSNESFDMFCtx;
+extern int MatSNESFDMFSetType(Mat,char*);
+extern int MatSNESFDMFRegister_Private(char *,char *,char *,int (*)(MatSNESFDMFCtx));
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define MatSNESFDMFRegister(a,b,c,d) MatSNESFDMFRegister_Private(a,b,c,0)
+#else
+#define MatSNESFDMFRegister(a,b,c,d) MatSNESFDMFRegister_Private(a,b,c,d)
+#endif
+extern int MatSNESFDMFRegisterAll(char *);
+extern int MatSNESFDMFRegisterDestroy(void);
+extern int MatSNESFDMFDefaultSetUmin(Mat,double);
 
 extern int SNESGetType(SNES,SNESType*);
 extern int SNESDefaultMonitor(SNES,int,double,void *);

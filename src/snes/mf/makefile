@@ -1,18 +1,18 @@
-# $Id: makefile,v 1.39 1998/06/15 15:48:39 balay Exp $
+# $Id: makefile,v 1.1 1998/11/05 22:13:30 bsmith Exp bsmith $
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c snesj2.c dlregis.c
+SOURCEC  = snesmfj.c  snesmfjdef.c mfregis.c 
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = snesregi.o snes.o snesj.o snesmfj.o snesut.o snesj2.o dlregis.o
+SOURCEH  = snesmfj.h
+OBJSC    = snesmfj.o  snesmfjdef.o mfregis.o 
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = n
 DIRS     = 
-LOCDIR   = src/snes/interface/
+LOCDIR   = src/snes/mf/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
