@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.11 1995/06/08 03:10:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.12 1995/06/14 17:24:39 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: axis.c,v 1.11 1995/06/08 03:10:49 bsmith Exp bsmith $
 
 #include "petsc.h"
 #include "ptscimpl.h"
-#include "draw.h"
+#include "draw.h"              /*I "draw.h" I*/
 #include <math.h>
 
 struct _DrawAxisCtx {
@@ -171,8 +171,8 @@ int DrawAxis(DrawAxisCtx ad )
   DrawSetCoordinates(awin,xl,yl,xr,yr);
   DrawTextGetSize(awin,&tw,&th);
 
-  DrawLine( awin, ad->xlow,ad->ylow,ad->xhigh,ad->ylow,ac,ac );
-  DrawLine( awin, ad->xlow,ad->ylow,ad->xlow,ad->yhigh,ac,ac );
+  DrawLine( awin, ad->xlow,ad->ylow,ad->xhigh,ad->ylow,ac);
+  DrawLine( awin, ad->xlow,ad->ylow,ad->xlow,ad->yhigh,ac);
 
   if (ad->toplabel) {
     w = xl + .5*(xr - xl) - .5*strlen(ad->toplabel)*tw;
@@ -186,7 +186,7 @@ int DrawAxis(DrawAxisCtx ad )
     /* Draw in tick marks */
     for (i=0; i<ntick; i++ ) {
       DrawLine(awin,tickloc[i],ad->ylow-.5*th,tickloc[i],ad->ylow+.5*th,
-               tc,tc);
+               tc);
     }
     /* label ticks */
     for (i=0; i<ntick; i++) {
@@ -210,7 +210,7 @@ int DrawAxis(DrawAxisCtx ad )
     /* Draw in tick marks */
     for (i=0; i<ntick; i++ ) {
       DrawLine(awin,ad->xlow -.5*tw,tickloc[i],ad->xlow+.5*tw,tickloc[i],
-               tc,tc);
+               tc);
     }
     /* label ticks */
     for (i=0; i<ntick; i++) {

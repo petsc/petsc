@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.11 1995/04/27 22:10:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.12 1995/05/18 22:46:53 bsmith Exp bsmith $";
 #endif
 #include "drawimpl.h"  /*I "draw.h" I*/
   
@@ -9,14 +9,13 @@ static char vcid[] = "$Id: draw.c,v 1.11 1995/04/27 22:10:53 bsmith Exp bsmith $
   Input Parameters:
 .   ctx - the drawing context
 .   xl,yl,xr,yr - the coordinates of the line endpoints
-.   cl,cr - the colors of the two endpoints
+.   cl - the colors of the endpoints
 @*/
-int DrawLine(DrawCtx ctx,double xl,double yl,double xr,double yr,
-               int cl, int cr)
+int DrawLine(DrawCtx ctx,double xl,double yl,double xr,double yr,int cl)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
-  return (*ctx->ops->drawline)(ctx,xl,yl,xr,yr,cl,cr);
+  return (*ctx->ops->drawline)(ctx,xl,yl,xr,yr,cl);
 }
 
 /*@

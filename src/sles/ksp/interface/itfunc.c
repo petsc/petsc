@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.25 1995/06/17 18:56:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.26 1995/06/18 16:23:05 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -68,8 +68,12 @@ int KSPSolve(KSP itP, int *its)
 @*/
 int KSPDestroy(KSP itP)
 {
+  int ierr;
   VALIDHEADER(itP,KSP_COOKIE);
-  return (*(itP)->destroy)((PetscObject)itP);
+  ierr = (*(itP)->destroy)((PetscObject)itP); CHKERRQ(ierr);
+  PLogObjectDestroy(itP);
+  PETSCHEADERDESTROY(itP);
+  return 0;
 }
 
 /*@

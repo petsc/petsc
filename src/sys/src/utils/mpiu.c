@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: try.c,v 1.12 1995/06/14 14:49:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.13 1995/06/20 01:46:42 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -244,7 +244,7 @@ static int MPIU_DelTag(MPI_Comm *comm,int* keyval,void* attr_val,
 }
 
 /*
-  MPIU_PetscDup - Duplicates only if communicator is not a PETSc communicator.
+  MPIU_Comm_dup - Duplicates only if communicator is not a PETSc communicator.
 
 
   Input Parameters:

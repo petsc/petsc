@@ -10,17 +10,12 @@ OBJSC     =
 WOBJS     = 
 OBJSF     =
 LIBBASE   = libpetscvec
-EXAMPLES  = ex1 ex2
-REXAMPLES = runex1 runex2
+EXAMPLES  = ex2
+REXAMPLES = runex2
 CEXAMPLES = ex1 ex2
 EXAMPLESC = ex1.c ex2.c
 LINCLUDE  = $(SOURCEH)
 
-runex1:
-	-@$(MPIRUN)  -np 4 ex1 > ex1_1.tmp 2>&1;   \
-           if (diff ex1_1.out ex1_1.tmp) then true; \
-           else echo "Possible problem with ex1_1, diffs above"; fi; \
-           $(RM) -f ex1_1.tmp
 runex2:
 	-@$(MPIRUN)  ex2  > ex2_1.tmp 2>&1;\
            if (diff ex2_1.out ex2_1.tmp) then true; \

@@ -1,13 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.28 1995/06/17 18:56:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.29 1995/06/18 16:23:05 bsmith Exp bsmith $";
 #endif
 /*
     Command line interface for KSP
 */
 
-#include "petsc.h"
-#include "draw.h"
-#include "kspimpl.h"
+#include "draw.h"     /*I "draw.h" I*/
+#include "kspimpl.h"  /*I "ksp.h" I*/
 #include "sys.h"
 
 extern int KSPGetMethodFromOptions_Private(KSP,KSPMethod *);

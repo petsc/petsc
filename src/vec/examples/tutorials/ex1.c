@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   ierr = VecDot(x,x,&dot); CHKERRA(ierr);
   ierr = VecMDot(3,x,z,dots); CHKERRA(ierr);
 #if defined(PETSC_COMPLEX)
-  MPIU_printf(MPI_COMM_WORLD,"Vector length %d\n",(int) real(dot));
+  MPIU_printf(MPI_COMM_WORLD,"Vector length %d\n", int (real(dot)));
   MPIU_printf(MPI_COMM_WORLD,"Vector length %d %d %d\n",(int)real(dots[0]),
                              (int)real(dots[1]),(int)real(dots[2]));
 #else

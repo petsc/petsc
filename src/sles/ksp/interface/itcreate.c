@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.37 1995/06/08 03:07:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.38 1995/06/18 16:23:05 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include "kspimpl.h"      /*I "ksp.h" I*/
 #include <stdio.h>
-#include "sys/nreg.h"
+#include "sys/nreg.h"     /*I "sys/nreg.h I*/
 #include "sys.h"
-#include "viewer.h"
+#include "viewer.h"       /*I "viewer.h" I*/
 #include "pviewer.h"
 
 /*@ 
@@ -122,10 +122,12 @@ $      (for instance, cg or gmres)
 @*/
 int KSPSetMethod(KSP ctx,KSPMethod itmethod)
 {
-  int (*r)(KSP);
+  int ierr,(*r)(KSP);
   VALIDHEADER(ctx,KSP_COOKIE);
   if (ctx->setupcalled) {
-    SETERRQ(1,"KSPSetMethod: Method cannot be called after KSPSetUp");
+    /* destroy the old private KSP context */
+    ierr = (*(ctx)->destroy)((PetscObject)ctx); CHKERRQ(ierr);
+    ctx->MethodPrivate = 0;
   }
   /* Get the function pointers for the iterative method requested */
   if (!__ITList) {KSPRegisterAll();}

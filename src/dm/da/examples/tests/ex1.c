@@ -27,7 +27,7 @@ int main(int argc,char **argv)
 
   ierr = DACreate2d(MPI_COMM_WORLD,DA_STENCIL_BOX,M,N,m,n,1,1,&da); 
   CHKERRA(ierr);
-  ierr = DAGetDistributedVector(da,&global); CHKERA(ierr);
+  ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
 
   value = -3.0;

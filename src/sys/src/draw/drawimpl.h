@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: drawimpl.h,v 1.3 1995/06/07 16:36:14 bsmith Exp bsmith $ */
 
 #if !defined(_DRAWIMPL_H)
 #define _DRAWIMPL_H
@@ -9,7 +9,7 @@
 struct _DrawOps {
   int (*doublebuff)(DrawCtx);
   int (*flush)(DrawCtx);
-  int (*drawline)(DrawCtx,double,double,double,double,int,int);
+  int (*drawline)(DrawCtx,double,double,double,double,int);
   int (*drawlinewidth)(DrawCtx,double);
   int (*drawpoint)(DrawCtx,double,double,int);
   int (*drawpointsize)(DrawCtx,double);

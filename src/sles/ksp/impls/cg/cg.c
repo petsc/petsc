@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.20 1995/06/17 20:29:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.21 1995/06/17 20:31:23 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -138,8 +138,6 @@ int KSPDestroy_CG(PetscObject obj)
   
   /* free the context variables */
   PETSCFREE(cgP); 
-  PLogObjectDestroy(itP);
-  PETSCHEADERDESTROY(itP);
   return 0;
 }
 

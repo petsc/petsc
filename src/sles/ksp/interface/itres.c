@@ -1,8 +1,7 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.10 1995/05/06 17:54:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: itres.c,v 1.11 1995/05/12 21:28:28 bsmith Exp bsmith $";
 #endif
 
-#include "petsc.h"
 #include "kspimpl.h"   /*I "ksp.h" I*/
 /*@
    KSPResidual - Computes the residual without making any assumptions

@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   ierr = DrawOpenX(MPI_COMM_SELF,0,"Window Title",x,y,width,height,&draw);
   CHKERRA(ierr);
   for ( i=0; i<256; i++) {
-    ierr = DrawLine(draw,0.0,((double)i)/256.,1.0,((double)i)/256.,i,i);
+    ierr = DrawLine(draw,0.0,((double)i)/256.,1.0,((double)i)/256.,i);
   }
   ierr = DrawFlush(draw);
   sleep(2);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.20 1995/06/08 03:10:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.21 1995/06/23 12:41:11 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 
@@ -20,11 +20,11 @@ static char vcid[] = "$Id: xops.c,v 1.20 1995/06/08 03:10:40 bsmith Exp bsmith $
 */
 
 int DrawLine_X(DrawCtx Win, double xl, double yl, double xr, double yr,
-                int cl, int cr)
+                int cl)
 {
   DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
-  int       x1,y1,x2,y2, c = (cl + cr)/2;
-  XiSetColor( XiWin, c );
+  int       x1,y1,x2,y2;
+  XiSetColor( XiWin, cl );
   x1 = XTRANS(Win,XiWin,xl);   x2  = XTRANS(Win,XiWin,xr); 
   y1 = YTRANS(Win,XiWin,yl);   y2  = YTRANS(Win,XiWin,yr); 
   XDrawLine( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, x1, y1, x2, y2);
@@ -143,7 +143,7 @@ int DrawTextVertical_X(DrawCtx Win,double x,double  y,int c,char *chrs )
 static int DrawFlush_X(DrawCtx Win )
 {
   DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
-  XFlush( XiWin->disp );
+  XFlush( XiWin->disp ); XSync(XiWin->disp,False);
   return 0;
 }
 

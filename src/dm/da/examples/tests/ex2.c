@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   OptionsGetInt(0,"-s",&s);  /* stencil width */
   OptionsGetInt(0,"-wrap",&wrap);  /* wrap or not */
 
-  ierr = DACreate1d(MPI_COMM_WORLD,M,w,s,wrap,&da); CHKERRA(ierr);
+  ierr = DACreate1d(MPI_COMM_WORLD,M,w,s,(DAPeriodicType)wrap,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
 
@@ -47,9 +47,9 @@ int main(int argc,char **argv)
 
   ierr = VecView(global,(Viewer) win1); CHKERRA(ierr); 
 
-  if (mytid == 0) printf ("\nGlobal Vectors:\n");
+  MPIU_printf(MPI_COMM_WORLD,"\nGlobal Vectors:\n");
   ierr = VecView(global,SYNC_STDOUT_VIEWER); CHKERRA(ierr); 
-  if (mytid == 0) printf ("\n\n");
+  MPIU_printf(MPI_COMM_WORLD,"\n\n");
 
   ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   printf ("\nView Local Array - Processor [%d]\n",mytid);
   ierr = VecView(local,SYNC_STDOUT_VIEWER); CHKERRA(ierr); 
 
-  DAView1d(da,(Viewer) win2);
+  DAView(da,(Viewer) win2);
   DADestroy(da);
   PetscFinalize();
   return 0;

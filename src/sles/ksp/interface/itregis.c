@@ -1,11 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: itregis.c,v 1.7 1995/04/13 21:08:18 curfman Exp curfman $";
+static char vcid[] = "$Id: itregis.c,v 1.8 1995/04/16 00:50:01 curfman Exp bsmith $";
 #endif
 
-
-#include "petsc.h"
-#include "kspimpl.h"
-
+#include "kspimpl.h"  /*I "ksp.h" I*/
 
 /*@
    KSPRegisterAll - Registers all the iterative methods in KSP.

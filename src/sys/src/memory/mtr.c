@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.24 1995/06/28 15:31:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.25 1995/06/28 16:25:34 curfman Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_STRING_H)
@@ -227,7 +227,9 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
   }
   frags     ++;
   /* dirty the page up */
+#if !defined(PETSC_INSIGHT)
   PETSCMEMSET(inew,111,a*sizeof(char));
+#endif
   return (void *)inew;
 }
 
@@ -357,8 +359,7 @@ int Trdump( FILE *fp )
     }
     head = head->next;
   }
-  fprintf( fp, "The maximum space allocated was %lx bytes [%lx]\n", 
-	 TRMaxMem, TRMaxMemId );
+  fprintf( fp, "The maximum space allocated was %d bytes\n",(int)TRMaxMem);
   return 0;
 }
 

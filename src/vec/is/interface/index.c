@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.11 1995/06/08 03:06:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.12 1995/06/18 16:22:36 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -48,7 +48,7 @@ int ISSetPermutation(IS is)
 
 .keywords: IS, index set, destroy
 
-.seealso: ISCreateSequential(), ISCreateStrideSequential(), ISCreateMPI()
+.seealso: ISCreateSequential(), ISCreateStrideSequential()
 @*/
 int ISDestroy(IS is)
 {

@@ -12,12 +12,20 @@ OBJSF    =
 LIBBASE  = libpetscvec
 EXAMPLES = 
 REXAMPLES=
-CEXAMPLES= ex1
-EXAMPLESC= ex1.c
+CEXAMPLES= ex1 ex2 ex3 
+EXAMPLESC= ex1.c ex2.c ex3.c
 LINCLUDE = $(SOURCEH)
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
 	$(RM) -f ex1.o
+
+ex2: ex2.o 
+	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
+	$(RM) -f ex2.o
+
+ex3: ex3.o 
+	-$(CLINKER) -o ex3 ex3.o  $(PETSC_LIB)
+	$(RM) -f ex3.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

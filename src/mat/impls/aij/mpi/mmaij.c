@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.12 1995/06/30 03:35:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.13 1995/07/06 17:19:42 bsmith Exp bsmith $";
 #endif
 
 
@@ -100,7 +100,7 @@ fprintf(stderr,"Warning: you are adding tricky new nonzeros\n");
   /* free stuff related to matrix-vec multiply */
   ierr = VecDestroy(aij->lvec); CHKERRQ(ierr); aij->lvec = 0;
   ierr = VecScatterCtxDestroy(aij->Mvctx); CHKERRQ(ierr); aij->Mvctx = 0;
-  PETSCFREE(aij->colmap); aij->colmap = 0;
+  if (aij->colmap) PETSCFREE(aij->colmap); aij->colmap = 0;
 
   /* make sure that B is assembled so we can access its values */
   ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.26 1995/06/18 16:23:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.27 1995/06/21 14:14:50 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -336,8 +336,6 @@ static int KSPDestroy_GMRES(PetscObject obj)
   if (gmresP->nrs) PETSCFREE( gmresP->nrs );
   if (gmresP->sol_temp) VecDestroy(gmresP->sol_temp);
   PETSCFREE( gmresP ); 
-  PLogObjectDestroy(itP);
-  PETSCHEADERDESTROY( itP );
   return 0;
 }
 /*

@@ -13,8 +13,6 @@ int main(int argc,char **argv)
   int      n = 5, ierr,indices[5],mytid;
   IS       is;
 
- 
-
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
@@ -25,9 +23,9 @@ int main(int argc,char **argv)
   indices[2] = mytid + 3; 
   indices[3] = mytid + 4; 
   indices[4] = mytid + 5; 
-  ierr = ISCreateMPI(n,-1,indices,MPI_COMM_WORLD,&is); CHKERRA(ierr);
+  ierr = ISCreateSequential(MPI_COMM_SELF,n,indices,&is); CHKERRA(ierr);
 
-  ISView(is,SYNC_STDOUT_VIEWER);
+  ISView(is,STDOUT_VIEWER);
   ISDestroy(is);
   PetscFinalize();
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: draw.h,v 1.13 1995/06/07 16:33:40 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -26,7 +26,7 @@ extern int DrawOpenX(MPI_Comm,char *,char *,int,int,int,int,DrawCtx*);
 extern int DrawOpenNull(MPI_Comm,DrawCtx *);
 extern int DrawDestroy(DrawCtx);
 
-extern int DrawLine(DrawCtx,double,double,double,double,int,int);
+extern int DrawLine(DrawCtx,double,double,double,double,int);
 extern int DrawLineSetWidth(DrawCtx,double);
 
 extern int DrawPoint(DrawCtx,double,double,int);

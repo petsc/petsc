@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.12 1995/06/08 03:10:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.13 1995/06/20 01:48:41 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: lg.c,v 1.12 1995/06/08 03:10:49 bsmith Exp bsmith $";
 
 #include "petsc.h"
 #include "ptscimpl.h"
-#include "draw.h"
+#include "draw.h"         /*I "draw.h" I*/
 
 struct _DrawLGCtx {
   PETSCHEADER 
@@ -207,7 +207,7 @@ int DrawLG(DrawLGCtx lg)
   for ( i=0; i<dim; i++ ) {
     for ( j=1; j<nopts; j++ ) {
       DrawLine(win,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
-                   lg->x[j*dim+i],lg->y[j*dim+i],DRAW_BLACK,DRAW_BLACK);
+                   lg->x[j*dim+i],lg->y[j*dim+i],DRAW_BLACK);
     }
   }
   DrawSyncFlush(lg->win);

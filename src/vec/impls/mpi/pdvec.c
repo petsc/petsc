@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.14 1995/07/05 17:23:08 bsmith Exp curfman $ */
+/* $Id: pdvec.c,v 1.15 1995/07/05 17:37:27 curfman Exp bsmith $ */
 
 #include "pviewer.h"
 
@@ -133,20 +133,20 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
     for ( i=1; i<x->n; i++ ) {
 #if !defined(PETSC_COMPLEX)
       DrawLine(win,(double)(i-1+start),x->array[i-1],(double)(i+start),
-                   x->array[i],DRAW_RED,DRAW_RED);
+                   x->array[i],DRAW_RED);
 #else
       DrawLine(win,(double)(i-1+start),real(x->array[i-1]),(double)(i+start),
-                   real(x->array[i]),DRAW_RED,DRAW_RED);
+                   real(x->array[i]),DRAW_RED);
 #endif
     }
     if (mytid) { /* receive value from right */
       MPI_Recv(&tmp,1,MPI_DOUBLE,mytid-1,xin->tag,xin->comm,&status);
 #if !defined(PETSC_COMPLEX)
       DrawLine(win,(double)start-1,tmp,(double)start,x->array[0],
-                   DRAW_RED,DRAW_RED);
+                   DRAW_RED);
 #else
       DrawLine(win,(double)start-1,tmp,(double)start,real(x->array[0]),
-                    DRAW_RED,DRAW_RED);
+                    DRAW_RED);
 #endif
     }
     DrawSyncFlush(win);

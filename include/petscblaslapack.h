@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.4 1995/06/14 17:25:19 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.5 1995/06/21 15:29:45 bsmith Exp bsmith $ */
 /*
    This is to provide some name space protection from Lapack and Blas 
 allow the appropriate single or double precision version to be used.
@@ -18,9 +18,9 @@ Cray T3D. Yet another reason to hate ...
 #include "fortran.h"
 #endif
 
-
 #if !defined(PETSC_COMPLEX)
 #if defined(PARCH_cray) || defined(PARCH_t3d)
+#define LAgeqrf_ SGEQRF
 #define LAgetrf_ SGETRF
 #define BLdot_   SDOT
 #define BLnrm2_  SNRM2
@@ -30,6 +30,7 @@ Cray T3D. Yet another reason to hate ...
 #define BLaxpy_  SAXPY
 #define BLasum_  SASUM
 #elif defined(FORTRANCAPS)
+#define LAgeqrf_ DGEQRF
 #define LAgetrf_ DGETRF
 #define BLdot_   DDOT
 #define BLnrm2_  DNRM2
@@ -39,6 +40,7 @@ Cray T3D. Yet another reason to hate ...
 #define BLaxpy_  DAXPY
 #define BLasum_  DASUM
 #elif !defined(FORTRANUNDERSCORE)
+#define LAgeqrf_ dgeqrf
 #define LAgetrf_ dgetrf
 #define BLdot_   ddot
 #define BLnrm2_  dnrm2
@@ -48,6 +50,7 @@ Cray T3D. Yet another reason to hate ...
 #define BLaxpy_  daxpy
 #define BLasum_  dasum
 #else
+#define LAgeqrf_ dgeqrf_
 #define LAgetrf_ dgetrf_
 #define BLdot_   ddot_
 #define BLnrm2_  dnrm2_
@@ -59,6 +62,10 @@ Cray T3D. Yet another reason to hate ...
 #endif
 
 #if defined(PARCH_t3d)
+#define LAormqr_(a,b,c,d,f,g,h,i,j,k,l,m,n)  SORMQR(cptofcd((a),1),\
+             cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
+#define LAtrtrs_ STRTRS(_cptofcd((a),1),_cptofcd((b),1),\
+                             _cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
 #define LApotrf_(a,b,c,d,e) SPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
 #define LApotrs_(a,b,c,d,e,f,g,h) SPOTRS(_cptofcd((a),1),(b),(c),(d),(e),\
                                          (f),(g),(h))
@@ -69,6 +76,8 @@ Cray T3D. Yet another reason to hate ...
 #define LAtrmv_  STRMV
 #define LAtrsl_  STRSL
 #elif defined(PARCH_cray)
+#define LAormqr_ SORMQR
+#define LAtrtrs_ STRTRS
 #define LApotrf_ SPOTRF
 #define LApotrs_ SPOTRS
 #define LAgemv_  SGEMV
@@ -77,6 +86,8 @@ Cray T3D. Yet another reason to hate ...
 #define LAtrmv_  STRMV
 #define LAtrsl_  STRSL
 #elif defined(FORTRANCAPS)
+#define LAormqr_ DORMQR
+#define LAtrtrs_ DTRTRS
 #define LApotrf_ DPOTRF
 #define LApotrs_ DPOTRS
 #define LAgemv_  DGEMV
@@ -84,6 +95,8 @@ Cray T3D. Yet another reason to hate ...
 #define LAtrmv_  DTRMV
 #define LAtrsl_  DTRSL
 #elif !defined(FORTRANUNDERSCORE)
+#define LAormqr_ dormqr
+#define LAtrtrs_ dtrtrs
 #define LApotrf_ dpotrf
 #define LApotrs_ dpotrs
 #define LAgemv_  dgemv
@@ -91,6 +104,8 @@ Cray T3D. Yet another reason to hate ...
 #define LAtrmv_  dtrmv
 #define LAtrsl_  dtrsl
 #else
+#define LAormqr_ dormqr_
+#define LAtrtrs_ dtrtrs_
 #define LApotrf_ dpotrf_
 #define LApotrs_ dpotrs_
 #define LAgemv_  dgemv_
@@ -102,6 +117,7 @@ Cray T3D. Yet another reason to hate ...
 #else
 
 #if defined(PARCH_cray) || defined(PARCH_t3d)
+#define LAgeqrf_ CGEQRF
 #define BLdot_   CDOTC
 #define BLnrm2_  SCNRM2
 #define BLscal_  CSCAL
@@ -111,6 +127,7 @@ Cray T3D. Yet another reason to hate ...
 #define BLasum_  SCASUM
 #define LAgetrf_ CGETRF
 #elif defined(FORTRANCAPS)
+#define LAgeqrf_ ZGEQRF
 #define BLdot_   ZDOTC
 #define BLnrm2_  DZNRM2
 #define BLscal_  ZSCAL
@@ -119,6 +136,7 @@ Cray T3D. Yet another reason to hate ...
 #define BLaxpy_  ZAXPY
 #define BLasum_  DZASUM
 #elif !defined(FORTRANUNDERSCORE)
+#define LAgeqrf_ zgeqrf
 #define LAgetrf_ zgetrf
 #define BLdot_   zdotc
 #define BLnrm2_  dznrm2
@@ -128,6 +146,7 @@ Cray T3D. Yet another reason to hate ...
 #define BLaxpy_  zaxpy
 #define BLasum_  dzasum
 #else
+#define LAgeqrf_ zgeqrf_
 #define LAgetrf_ zgetrf_
 #define BLdot_   zdotc_
 #define BLnrm2_  dznrm2_
@@ -139,6 +158,10 @@ Cray T3D. Yet another reason to hate ...
 #endif
 
 #if defined(PARCH_t3d)
+#define LAormqr_(a,b,c,d,f,g,h,i,j,k,l,m,n)  CORMQR(cptofcd((a),1),\
+             cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
+#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j)  CTRTRS(_cptofcd((a),1),_cptofcd((b),1),\
+                              _cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
 #define LApotrf_(a,b,c,d,e)       CPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
 #define LApotrs_(a,b,c,d,e,f,g,h) CPOTRS(_cptofcd((a),1),(b),(c),(d),(e),\
                                          (f),(g),(h))
@@ -149,6 +172,8 @@ Cray T3D. Yet another reason to hate ...
 #define LAtrmv_  CTRMV
 #define LAtrsl_  CTRSL
 #elif defined(PARCH_cray)
+#define LAormqr_ CORMQR
+#define LAtrtrs_ CTRTRS
 #define LApotrf_ CPOTRF
 #define LApotrs_ CPOTRS
 #define LAgetrs_ CGETRS
@@ -156,6 +181,8 @@ Cray T3D. Yet another reason to hate ...
 #define LAtrmv_  CTRMV
 #define LAtrsl_  CTRSL
 #elif defined(FORTRANCAPS)
+#define LAormqr_ ZORMQR
+#define LAtrtrs_ ZTRTRS
 #define LApotrf_ ZPOTRF
 #define LApotrs_ ZPOTRS
 #define LAgemv_  ZGEMV
@@ -164,6 +191,8 @@ Cray T3D. Yet another reason to hate ...
 #define LAtrmv_  ZTRMV
 #define LAtrsl_  ZTRSL
 #elif !defined(FORTRANUNDERSCORE)
+#define LAormqr_ zormqr
+#define LAtrtrs_ ztrtrs
 #define LApotrf_ zpotrf
 #define LApotrs_ zpotrs
 #define LAgemv_  zgemv
@@ -171,6 +200,8 @@ Cray T3D. Yet another reason to hate ...
 #define LAtrmv_  ztrmv
 #define LAtrsl_  ztrsl
 #else
+#define LAormqr_ zormqr_
+#define LAtrtrs_ ztrtrs_
 #define LApotrf_ zpotrf_
 #define LApotrs_ zpotrs_
 #define LAgemv_  zgemv_
@@ -195,6 +226,7 @@ extern void   BLcopy_(int*,Scalar*,int*,Scalar*,int*);
 extern void   BLswap_(int*,Scalar*,int*,Scalar*,int*);
 extern void   BLaxpy_(int*,Scalar*,Scalar*,int*,Scalar*,int*);
 extern void   LAgetrf_(int*,int*,Scalar*,int*,int*,int*);
+extern void   LAgeqrf_(int*,int*,Scalar*,int*,Scalar*,Scalar*,int*,int*);
 
 #if defined(PARCH_t3d)
 extern void   CPOTRF(_fcd,int*,Scalar*,int*,int*);
@@ -203,6 +235,10 @@ extern void   CGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
 extern void   CPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
 extern void   CGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
 #else
+extern void   LAormqr_(char*,char*,int*,int*,int*,Scalar*,int*,Scalar*,Scalar*,
+                       int*,Scalar*,int*,int*);
+extern void   LAtrtrs_(char*,char*,char*,int*,int*,Scalar*,int*,Scalar*,int*,
+                       int*);
 extern void   LApotrf_(char*,int*,Scalar*,int*,int*);
 extern void   LAgemv_(char*,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
                        Scalar*,Scalar*,int*);

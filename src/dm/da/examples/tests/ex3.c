@@ -10,15 +10,11 @@ static char help[] = "This example creates a 1d wave.\n\n";
 #include <math.h>
 #include <sysio.h>
 
-#define NO_WRAP 0
-#define WRAP 1
 #define PI 3.14159265
-
 
 int main(int argc,char **argv)
 {
-  int       mytid, numtid, M = 14, ierr;
-  int       w=1, s=1, wrap=1;
+  int       mytid, numtid, M = 60, ierr;
   DA        da;
   DrawCtx   win;
   Vec       local,global,copy;
@@ -33,10 +29,9 @@ int main(int argc,char **argv)
   if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
 
   OptionsGetInt(0,"-M",&M);
-  OptionsGetInt(0,"-wrap",&wrap);
     
   /* Set up the array */ 
-  ierr = DACreate1d(MPI_COMM_WORLD,M,w,s,wrap,&da); CHKERRA(ierr);
+  ierr = DACreate1d(MPI_COMM_WORLD,M,1,1,DA_XPERIODIC,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRQ(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRQ(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
@@ -62,9 +57,6 @@ int main(int argc,char **argv)
 
   VecRestoreArray(local,&localptr);
   ierr = DALocalToGlobal(da,local,INSERTVALUES,global); CHKERRQ(ierr);
-  printf ("\nInitial Local Array [%d]\n",mytid);
-  for (i=0; i< localsize; i++) { printf (" %f",localptr[i]); }
-  printf ("\n\n");
 
   /* Make copy of local array for doing updates */
   ierr = VecDuplicate(local,&copy); CHKERRA(ierr);
@@ -79,8 +71,8 @@ int main(int argc,char **argv)
   for (j=0; j<time_steps; j++) {  
 
     /* Global to Local */
-    ierr = DAGlobalToLocalBegin (da,global,INSERTVALUES,local); CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd   (da,global,INSERTVALUES,local); CHKERRQ(ierr);
+    ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRQ(ierr);
+    ierr = DAGlobalToLocalEnd  (da,global,INSERTVALUES,local); CHKERRQ(ierr);
 
     /*Extract local array */ 
     VecGetArray (local,&localptr); 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.14 1995/06/14 14:49:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.15 1995/06/18 16:23:36 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -70,7 +70,9 @@ int PetscAttachDebugger()
   }
   if (child) { /* I am the parent will run the debugger */
     char  *args[9],pid[9];
+#if !defined(PARCH_rs6000)
     kill(child,SIGSTOP);
+#endif
     sprintf(pid,"%d",child); 
     if (!strcmp(Debugger,"xxgdb")) {
       args[1] = program; args[2] = pid; args[3] = "-display";
@@ -98,6 +100,12 @@ int PetscAttachDebugger()
         args[2] = pid;
         args[4] = 0;
       }
+#elif defined(PARCH_rs6000)
+      if (!strcmp(Debugger,"dbx")) {
+        args[1] = "-a";
+        args[2] = pid;
+        args[3] = 0;
+      }
 #endif
       fprintf(stderr,"Attaching %s to %s of pid %s\n",Debugger,program,pid);
       if (execvp(args[0], args)  < 0) {
@@ -124,6 +132,12 @@ int PetscAttachDebugger()
           args[4] = pid;
           args[6] = 0;
         }
+#elif defined(PARCH_rs6000)
+        if (!strcmp(Debugger,"dbx")) {
+          args[3] = "-a";
+          args[4] = pid;
+          args[5] = 0;
+        }
 #endif
         fprintf(stderr,"Attaching %s to %s on pid %s\n",Debugger,program,pid);
       }
@@ -146,6 +160,12 @@ int PetscAttachDebugger()
           args[6] = pid;
           args[8] = 0;
         }
+#elif defined(PARCH_rs6000)
+        if (!strcmp(Debugger,"dbx")) {
+          args[5] = "-a";
+          args[6] = pid;
+          args[7] = 0;
+        }
 #endif
       fprintf(stderr,"Attaching %s to %s of pid %s on display %s\n",
               Debugger,program,pid,Display);
@@ -161,7 +181,7 @@ int PetscAttachDebugger()
 #if defined(PARCH_hpux)
     while (1) ; /* HP cannot attach to sleeper */
 #else
-    sleep(10);
+    sleep(30);
 #endif
     return 0;
   }

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.16 1995/06/20 01:46:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.17 1995/06/23 12:40:17 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -104,11 +104,11 @@ $  -optionsleft : Prints unused options that remain in
 $     the database
 $  -no_signal_handler : Turns off the signal handler
 $  -trdump : Calls Trdump()
-$  -logall : Prints log information (for code compiled
+$  -log_all : Prints log information (for code compiled
 $      with PETSC_LOG)
 $  -log : Prints log information (for code compiled 
 $      with PETSC_LOG)
-$  -logsummary : Prints summary of flop information to screen
+$  -log_summary : Prints summary of flop information to screen
 $  -fp_trap : stops on floating point exceptions
 
 .keywords: finalize, exit, end
@@ -127,17 +127,15 @@ int PetscFinalize()
   if (OptionsHasName(0,"-optionstable")) {
     if (!mytid) OptionsPrint(stderr);
   }
-  if (OptionsHasName(0,"-optionsused")) {
-    if (!mytid) {
-      int nopt = OptionsAllUsed();
-      if (nopt == 1) 
-        fprintf(stderr,"There is %d unused database option.\n",nopt);
-      else
-        fprintf(stderr,"There are %d unused database options.\n",nopt);
-    }
-  }
   if (OptionsHasName(0,"-optionsleft")) {
     if (!mytid) {
+      int nopt = OptionsAllUsed();
+      if (nopt == 0) 
+        fprintf(stderr,"There are no unused options.\n");
+      else if (nopt == 1) 
+        fprintf(stderr,"There is one unused database option. It is:\n");
+      else
+        fprintf(stderr,"There are %d unused database options.They are:\n",nopt);
       for ( i=0; i<options->N; i++ ) {
         if (!options->used[i]) {
           fprintf(stderr,"Option left: name:%s value: %s\n",options->names[i],
@@ -149,12 +147,12 @@ int PetscFinalize()
 #if defined(PETSC_LOG)
   {
     char monitorname[64];
-    if (OptionsGetString(0,"-logall",monitorname,64) || 
+    if (OptionsGetString(0,"-log_all",monitorname,64) || 
         OptionsGetString(0,"-log",monitorname,64)) {
       if (monitorname[0]) PLogDump(monitorname); 
       else PLogDump(0);
     }
-    if (OptionsHasName(0,"-logsummary")) {
+    if (OptionsHasName(0,"-log_summary")) {
        PLogPrint(MPI_COMM_WORLD,stdout);
     }
   }
@@ -307,10 +305,10 @@ static int OptionsCheckInitial_Private()
     PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0);
   }
 #if defined(PETSC_LOG)
-  if (OptionsHasName(0,"-logall")) {
+  if (OptionsHasName(0,"-log_all")) {
     PLogAllBegin();
   }
-  else if (OptionsHasName(0,"-log") || OptionsHasName(0,"-logsummary")) {
+  else if (OptionsHasName(0,"-log") || OptionsHasName(0,"-log_summary")) {
     PLogAllBegin();
   }
   if (OptionsHasName(0,"-info")) {
@@ -336,7 +334,6 @@ static int OptionsCheckInitial_Private()
     MPIU_printf(comm," -notrmalloc: don't use error checking malloc\n");
     MPIU_printf(comm," -optionstable: dump list of options inputted\n");
     MPIU_printf(comm," -optionsleft: dump list of unused options\n");
-    MPIU_printf(comm," -optionsused: print number of unused options\n");
     MPIU_printf(comm," -log[all summary]: logging objects and events\n");
     MPIU_printf(comm," -v: prints PETSc version number and release date\n");
     MPIU_printf(comm,"-----------------------------------------------\n");
@@ -393,7 +390,7 @@ static int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
 
   /* insert file options */
   {
-    char string[128],*first,*second,*third;
+    char string[128],*first,*second,*third,*final;
     int   len;
     FILE *fd = fopen(file,"r"); 
     if (fd) {
@@ -401,8 +398,12 @@ static int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
         first = strtok(string," ");
         second = strtok(0," ");
         if (first && first[0] == '-') {
+          if (second) {final = second;} else {final = first;}
+          len = strlen(final);
+          while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
+            len--; final[len] = 0;
+          }
           OptionsSetValue(first,second);
-          if (second) {len = strlen(second); second[len-1] = 0;}
         }
         else if (first && !strcmp(first,"alias")) {
           third = strtok(0," ");
@@ -639,7 +640,7 @@ $  -1 if an error is detected.
 
 .keywords: options, database, has, name
 
-.seealso: OptionsGetInt(), OptionsGetDouble(), OptionsGetScalar(),
+.seealso: OptionsGetInt(), OptionsGetDouble(),
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
 int OptionsHasName(char* pre,char *name)
@@ -663,7 +664,7 @@ int OptionsHasName(char* pre,char *name)
 .keywords: options, database, get, int
 
 .seealso: OptionsGetDouble(), OptionsHasName(), OptionsGetString(),
-           OptionsGetScalar(), OptionsGetIntArray(), OptionsGetDoubleArray()
+          OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
 int OptionsGetInt(char*pre,char *name,int *ivalue)
 {
@@ -687,7 +688,7 @@ int OptionsGetInt(char*pre,char *name,int *ivalue)
 
 .keywords: options, database, get, double
 
-.seealso: OptionsGetInt(), OptionsGetScalar(), OptionsHasName(), 
+.seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
 int OptionsGetDouble(char* pre,char *name,double *dvalue)
@@ -714,7 +715,7 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue)
 
 .keywords: options, database, get, double
 
-.seealso: OptionsGetInt(), OptionsGetScalar(), OptionsHasName(), 
+.seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray()
 @*/
 int OptionsGetDoubleArray(char* pre,char *name,
@@ -751,7 +752,7 @@ int OptionsGetDoubleArray(char* pre,char *name,
 
 .keywords: options, database, get, double
 
-.seealso: OptionsGetInt(), OptionsGetScalar(), OptionsHasName(), 
+.seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetDoubleArray()
 @*/
 int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax)
@@ -770,30 +771,6 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax)
   return 1; 
 } 
 
-/*@
-   OptionsGetScalar - Gets the double or complex value for a
-   particular option in the database.
-
-   Input Parameters:
-.  name - the option one is seeking
-.  pre - string to prepend to the name (usually 0)
-
-   Output Parameter:
-.  dvalue - the value to return
-
-.keywords: options, database, get, scalar
-
-.seealso: OptionsGetInt(), OptionsGetDouble(), OptionsGetString(), 
-           OptionsHasName(), OptionsGetIntArray(), OptionsGetDoubleArray()
-@*/
-int OptionsGetScalar(char* pre,char *name,Scalar *dvalue)
-{
-  char *value;
-  if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
-  if (!value) SETERRQ(1,"OptionsGetScalar: Missing value for option");
-  *dvalue = atof(value);
-  return 1; 
-} 
 
 /*@
    OptionsGetString - Gets the string value for a particular option in
@@ -810,7 +787,7 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue)
 
 .keywords: options, database, get, string
 
-.seealso: OptionsGetInt(), OptionsGetDouble(), OptionsGetScalar(), 
+.seealso: OptionsGetInt(), OptionsGetDouble(),  
            OptionsHasName(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
 int OptionsGetString(char *pre,char *name,char *string,int len)
@@ -827,7 +804,7 @@ int OptionsGetString(char *pre,char *name,char *string,int len)
    database that have never been selected.
 
    Options Database Key:
-$  -optionsused : checked within PetscFinalize()
+$  -optionsleft : checked within PetscFinalize()
 
 .keywords: options, database, missed, unused, all, used
 

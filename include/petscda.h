@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.7 1995/06/07 16:33:23 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.8 1995/06/13 01:18:51 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallism of simple grid 
@@ -13,6 +13,7 @@
 
 typedef struct _DA* DA;
 typedef enum { DA_STENCIL_STAR, DA_STENCIL_BOX } DAStencilType;
+typedef enum { DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC} DAPeriodicType;
 
 extern int   DACreate2d(MPI_Comm,DAStencilType,int,int,int,int,int,int,DA *);
 extern int   DADestroy(DA);

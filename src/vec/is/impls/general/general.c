@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.20 1995/05/10 21:14:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.21 1995/06/08 03:06:43 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -89,7 +89,7 @@ static struct _ISOps myops = { ISGetSize_General,ISGetSize_General,
 
 .keywords: IS, sequential, index set, create
 
-.seealso: ISCreateStrideSequential(), ISCreateMPI()
+.seealso: ISCreateStrideSequential()
 @*/
 int ISCreateSequential(MPI_Comm comm,int n,int *idx,IS *is)
 {
