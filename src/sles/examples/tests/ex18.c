@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex18.c,v 1.4 1996/03/26 15:09:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex18.c,v 1.5 1998/03/24 16:41:30 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -16,7 +16,8 @@ int main(int argc,char **args)
 {
   int        ierr, its, flg,m,n,mvec;
   PetscTruth set;
-  double     time1, norm;
+  PLogDouble time1,time2,time;
+  double     norm;
   Scalar     zero = 0.0, none = -1.0;
   Vec        x, b, u;
   Mat        A;
@@ -67,9 +68,10 @@ int main(int argc,char **args)
   ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
-  time1 = PetscGetTime();
+  ierr = PetscGetTime(&time1); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  time1 = PetscGetTime() - time1;
+  ierr = PetscGetTime(&time2); CHKERRA(ierr);
+  time = time2 - time1;
   PLogStagePop();
 
   /* Show result */
@@ -82,7 +84,7 @@ int main(int argc,char **args)
   } else {
     PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %10.4e\n",norm);
   }
-  PetscPrintf(PETSC_COMM_WORLD,"Time for solve = %5.2f seconds\n",time1); 
+  PetscPrintf(PETSC_COMM_WORLD,"Time for solve = %5.2f seconds\n",time); 
 
   /* Cleanup */
   ierr = SLESDestroy(sles); CHKERRA(ierr);

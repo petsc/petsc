@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.47 1998/03/30 22:23:18 balay Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.48 1998/03/31 23:42:18 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -232,7 +232,7 @@ void petscerror_(int *number,int *p,CHAR message,int *__ierr,int len)
 void petscgetflops_(PLogDouble *d,int *__ierr)
 {
 #if defined(USE_PETSC_LOG)
-  __ierr = PetscGetFlops(d);
+  *__ierr = PetscGetFlops(d);
 #else
   __ierr = 0;
   *d     = 0.0;

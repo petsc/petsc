@@ -1,5 +1,5 @@
 !
-!      "$Id: ex16.F,v 1.16 1998/03/24 16:45:45 balay Exp balay $";
+!      "$Id: ex16.F,v 1.17 1998/03/30 22:03:35 balay Exp balay $";
 !
        implicit none
 
@@ -24,13 +24,14 @@
 !                       use the file petsc/src/mat/examples/mat.ex.binary
 
       integer          ierr, its, flg
-      Scalar           time, norm,none, five
+      Scalar           norm,none, five
       Vec              x, b, u
       Mat              A
       SLES             sles1, sles2
       character*(128)  f 
       Viewer           fd
       IS               isrow
+      PLogDouble       time1,time2
 
       none = -1.0
       five = 5.0
@@ -65,16 +66,16 @@
       call SLESSetOperators(sles1,A,A,DIFFERENT_NONZERO_PATTERN,        &  
      &                      ierr)
       call SLESSetFromOptions(sles1,ierr)
-      time = PetscGetTime()
+      call PetscGetTime(time1,ierr)
       call SLESSolve(sles1,b,x,its,ierr)
-      time = PetscGetTime()-time
+      call PetscGetTime(time2,ierr)
 
 ! Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
 
-!      print*, 'Time for solve = ',time
+!      print*, 'Time for solve = ',time2-time1
 
       write(6,100) norm, its
   100 format('Residual norm ',e10.4,' iterations ',i5)
@@ -90,15 +91,15 @@
       call SLESSetOperators(sles2,A,A,DIFFERENT_NONZERO_PATTERN,        &
      &                      ierr)
       call SLESSetFromOptions(sles2,ierr)
-      time = PetscGetTime()
+      call PetscGetTime(time1,ierr)
       call SLESSolve(sles2,b,x,its,ierr)
-      time = PetscGetTime()-time
+      call PetscGetTime(time2,ierr)
 
 ! Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
-!      print*, 'Time for solve = ',time
+!      print*, 'Time for solve = ',time2-time1
       write(6,100) norm, its
 
 ! Cleanup

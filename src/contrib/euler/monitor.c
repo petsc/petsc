@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.52 1998/03/20 23:01:08 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.53 1998/03/24 02:12:15 curfman Exp balay $";
 #endif
 
 /*
@@ -34,12 +34,13 @@ static char vcid[] = "$Id: monitor.c,v 1.52 1998/03/20 23:01:08 curfman Exp curf
 int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 {
   MPI_Comm comm;
-  Euler    *app = (Euler *)dummy;
-  Scalar   negone = -1.0, cfl1, ratio, ratio1, ksprtol, ksprtol1;
-  Vec      DX, X;
-  Viewer   view1;
-  char     filename[64], outstring[64];
-  int      ierr, lits, overlap, flg;
+  Euler      *app = (Euler *)dummy;
+  Scalar     negone = -1.0, cfl1, ratio, ratio1, ksprtol, ksprtol1;
+  Vec        DX, X;
+  Viewer     view1;
+  PLogDouble t;
+  char       filename[64], outstring[64];
+  int        ierr, lits, overlap, flg;
 
   PLogEventBegin(app->event_monitor,0,0,0,0);
   PetscObjectGetComm((PetscObject)snes,&comm);
@@ -55,7 +56,8 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
   }
   app->flog[its]  = log10(fnorm);
   app->fcfl[its]  = app->cfl; 
-  app->ftime[its] = PetscGetTime() - app->time_init;
+  ierr            = PetscGetTime(&t); CHKERR(ierr);
+  app->ftime[its] = t - app->time_init;
   if (!its) {
     /* Do the following only during the initial call to this routine */
     app->fnorm_init    = app->fnorm_last = fnorm;

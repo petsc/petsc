@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.72 1998/03/20 19:25:14 curfman Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.73 1998/03/24 02:12:23 curfman Exp balay $";
 #endif
 
 /***************************************************************************
@@ -125,12 +125,12 @@ int main(int argc,char **argv)
   /* char     filename[64], outstring[64]; */
 
   /* Set Defaults */
-  int      total_stages = 1;      /* number of times to run nonlinear solver */
-  int      log_stage_0 = 0;       /* are we doing dummy solve for logging stage 0? */
-  int      maxsnes;               /* maximum number of SNES iterations */
-  double   rtol = 1.e-10;         /* SNES relative convergence tolerance */
-  double   time1, tsolve;         /* time for solution process */
-  Scalar   c_lift, c_drag;
+  int        total_stages = 1;      /* number of times to run nonlinear solver */
+  int        log_stage_0 = 0;       /* are we doing dummy solve for logging stage 0? */
+  int        maxsnes;               /* maximum number of SNES iterations */
+  double     rtol = 1.e-10;         /* SNES relative convergence tolerance */
+  Scalar     c_lift, c_drag;
+  PLogDouble time1,time2,tsolve;    /* time for solution process */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize PETSc and print help information
@@ -219,7 +219,7 @@ int main(int argc,char **argv)
 
     PLogEventBegin(init3,0,0,0,0);
     *(int*) (&fort_app) = PetscFromPointer(app);
-    time1 = PetscGetTime();
+    ierr = PetscGetTime(&time1); CHKERRA(ierr);
 
     ierr = julianne_(&time1,&solve_with_julianne,&fort_app,&app->cfl,
            &rtol,&app->eps_jac,app->b1,app->b2,
@@ -231,7 +231,8 @@ int main(int argc,char **argv)
            app->f1,app->g1,app->h1,
            app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
            &app->angle,&app->jfreq); CHKERRA(ierr);
-    tsolve = PetscGetTime() - time1;
+    ierr = PetscGetTime(&time2); CHKERRA(ierr);
+    tsolve = time2 - time1;
     PLogEventEnd(init3,0,0,0,0);
     PetscPrintf(comm,"Julianne solution time = %g seconds\n",tsolve);
     PetscFinalize();
@@ -244,7 +245,7 @@ int main(int argc,char **argv)
 
   PLogEventBegin(init2,0,0,0,0);
   *(int*) (&fort_app) = PetscFromPointer(app);
-  time1 = PetscGetTime();
+  ierr = PetscGetTime(&time1); CHKERRA(ierr);
 
   solve_with_julianne = 0;
   ierr = julianne_(&time1,&solve_with_julianne,&fort_app,&app->cfl,
@@ -258,6 +259,7 @@ int main(int argc,char **argv)
          app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
          &app->angle,&app->jfreq); CHKERRA(ierr);
   ierr = GetWingCommunicator(app,&app->fort_wing_comm,&wing); CHKERRQ(ierr);
+  ierr = PetscGetTime(&time2); CHKERRA(ierr);
   PLogEventEnd(init2,0,0,0,0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -348,7 +350,7 @@ int main(int argc,char **argv)
      Solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  app->time_init = PetscGetTime();
+  ierr = PetscGetTime(&(app->time_init)); CHKERRA(ierr);
   ierr = SNESSolve(snes,app->X,&its); CHKERRA(ierr);
   PetscPrintf(comm,"number of Newton iterations = %d\n\n",its);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.43 1998/03/23 21:26:09 bsmith Exp balay $";
+static char vcid[] = "$Id: mpi.c,v 1.44 1998/03/27 19:53:43 balay Exp balay $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -18,7 +18,9 @@ int     MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),
 
 PLogDouble MPI_Wtime(void)
 {
-  return PetscGetTime();
+  PLogDouble d;
+  PetscGetTime(&d);
+  return d;
 }
 
 /*
@@ -242,22 +244,30 @@ PLogDouble MPI_WTICK(void)
 /*******mpi_wtime******/
 PLogDouble mpi_wtime(void)
 {
-  return PetscGetTime();
+  PLogDouble d;
+  PetscGetTime(&d);
+  return d;
 }
 
 PLogDouble mpi_wtime_(void)
 {
-  return PetscGetTime();
+  PLogDouble d;
+  PetscGetTime(&d);
+  return d;
 }
 
 PLogDouble mpi_wtime__(void)
 {
-  return PetscGetTime();
+  PLogDouble d;
+  PetscGetTime(&d);
+  return d;
 }
 
 PLogDouble MPI_WTIME(void)
 {
-  return PetscGetTime();
+  PLogDouble d;
+  PetscGetTime(&d);
+  return d;
 }
 
 /*******mpi_abort******/

@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.258 1998/03/27 22:15:20 balay Exp balay $ 
+% $Id: part2.tex,v 1.259 1998/03/31 17:15:23 balay Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -5440,7 +5440,8 @@ events at runtime for matrix and linear solver components via {\tt -log\_info [n
 PETSc application programmers can access the wall clock time directly 
 with the command \sindex{wall clock time}
 \begin{verbatim}
-  double time = PetscGetTime();
+  PLogDouble time;
+ ierr = PetscGetTime(&time); CHKERRA(ierr);
 \end{verbatim}
 \findex{PetscGetTime()} \sindex{time}
 In addition, as discussed in Section~\ref{sec:profileuser},
