@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.174 1998/03/27 19:54:07 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.175 1998/03/31 21:22:40 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -1306,8 +1306,9 @@ int OptionsSetValue(char *name,char *value)
   }
   /* shift remaining values down 1 */
   for ( i=N; i>n; i-- ) {
-    names[i] = names[i-1];
+    names[i]           = names[i-1];
     options->values[i] = options->values[i-1];
+    options->used[i]   = options->used[i-1];
   }
   /* insert new name and value */
   len = (PetscStrlen(name)+1)*sizeof(char);
@@ -1318,6 +1319,7 @@ int OptionsSetValue(char *name,char *value)
     options->values[n] = (char *) malloc( len ); CHKPTRQ(options->values[n]);
     PetscStrcpy(options->values[n],value);
   } else {options->values[n] = 0;}
+  options->used[n] = 0;
   options->N++;
   PetscFunctionReturn(0);
 }
@@ -1362,6 +1364,7 @@ int OptionsClearValue(char *name)
   for ( i=n; i<N-1; i++ ) {
     names[i]           = names[i+1];
     options->values[i] = options->values[i+1];
+    options->used[i]   = options->used[i+1];
   }
   options->N--;
   PetscFunctionReturn(0);
