@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.72 2001/09/19 16:07:01 bsmith Exp balay $*/
+/*$Id: dl.c,v 1.73 2001/09/25 00:20:36 balay Exp balay $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -685,7 +685,7 @@ int PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char
   ierr = PetscTokenFind(token1,&libname1);CHKERRQ(ierr);
   while (libname1) {
     fp    = fopen(libname1,"r"); if (!fp) continue;
-    while (found = fgets(fbuf,1024,fp)) {
+    while ((found = fgets(fbuf,1024,fp))) {
       if (found[0] == '!') continue;
       ierr = PetscStrstr(found,suffix,&f2);CHKERRQ(ierr);
       if (f2) { /* found library name */
