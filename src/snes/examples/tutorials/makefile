@@ -218,8 +218,8 @@ runex5_11:
 	   else echo "Possible problem with ex5_11, diffs above"; fi; \
 	   ${RM} -f ex5_11.tmp
 runex5_13:
-	-@for F in -global_function -matlab_function -local_function; do \
-            for J in -global_jacobian -local_jacobian -fd_jacobian -adic_jacobian; do \
+	-@for F in " " -matlab_function ; do \
+            for J in " " -fd_jacobian -adic_jacobian; do \
               ${MPIRUN} -np 2 ex5 -snes_smonitor $$F $$J > ex5_13.tmp 2>&1; \
               if (${DIFF} output/ex5_13.out ex5_13.tmp) then true; \
 	      else echo "Possible problem with ex5_13, diffs above " $F $J; fi; \

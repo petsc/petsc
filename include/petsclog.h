@@ -427,6 +427,8 @@ EXTERN int StageLogGetStage(StageLog, const char [], int *);
 #define PetscLogAllBegin()                  0
 #define PetscLogDump(c)                     0
 #define PetscLogEventRegister(a,b,c)        0
+#define PetscLogObjects(a)                  0
+#define PetscLogActions(a)                  0
 EXTERN int PetscLogObjectState(PetscObject,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
 
 /* If PETSC_USE_LOG is NOT defined, these still need to be! */
