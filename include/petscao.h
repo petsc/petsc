@@ -1,14 +1,14 @@
-/* $Id: ao.h,v 1.21 2000/01/19 21:42:33 bsmith Exp bsmith $ */
+/* $Id: petscao.h,v 1.22 2000/02/02 21:21:25 bsmith Exp balay $ */
 
 /* 
   An application ordering is mapping between an application-centric
   ordering (the ordering that is "natural" for the application) and 
   the parallel ordering that PETSc uses.
 */
-#if !defined(__AO_H)
-#define __AO_H
-#include "is.h"
-#include "mat.h"
+#if !defined(__PETSCAO_H)
+#define __PETSCAO_H
+#include "petscis.h"
+#include "petscmat.h"
 
 typedef enum {AO_BASIC=0,AO_ADVANCED=1} AOType;
 

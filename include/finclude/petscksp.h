@@ -1,10 +1,10 @@
 !
-!  "$Id: ksp.h,v 1.23 1999/11/28 17:28:11 bsmith Exp bsmith $";
+!  "$Id: petscksp.h,v 1.24 2000/01/11 21:04:11 bsmith Exp balay $";
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
-#if !defined (__KSP_H)
-#define __KSP_H
+#if !defined (__PETSCKSP_H)
+#define __PETSCKSP_H
 
 #define KSP                PetscFortranAddr
 #define KSPCGType          integer

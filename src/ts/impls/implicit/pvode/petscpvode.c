@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.57 2000/04/12 04:26:02 bsmith Exp balay $*/
+/*$Id: petscpvode.c,v 1.58 2000/05/04 13:59:10 balay Exp balay $*/
 
 #include "petsc.h"
 /*
@@ -6,7 +6,7 @@
    solver.
 */
 
-#include "src/ts/impls/implicit/pvode/petscpvode.h"  /*I "ts.h" I*/    
+#include "src/ts/impls/implicit/pvode/petscpvode.h"  /*I "petscts.h" I*/    
 
 /*
       TSPrecond_PVode - function that we provide to PVODE to

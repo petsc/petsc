@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.336 2000/03/27 21:46:52 balay Exp bsmith $ 
+% $Id: part2.tex,v 1.337 2000/04/18 03:37:59 bsmith Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1678,7 +1678,7 @@ equation solvers discussed in the following chapters.
 
 The routine {\tt MatShellSetOperation()} can be used to set any other
 matrix operations as well.  The file 
-{\tt \$\{PETSC\_DIR\}/include/mat.h} provides a complete list of matrix
+{\tt \$\{PETSC\_DIR\}/include/petscmat.h} provides a complete list of matrix
 operations, which have the form {\tt MATOP\_<OPERATION>}, where {\tt
 <OPERATION>} is the name (in all capital letters) of the user
 interface routine (for example, {\tt MatMult()} $ \rightarrow $ {\tt MATOP\_MULT}).  All
@@ -1780,7 +1780,7 @@ Another matrix routine of interest is \findex{MatConvert()}
 which converts the matrix {\tt mat} to new matrix, {\tt M}, that has
 either the same or different format.  Set {\tt newtype} to {\tt MATSAME}
 to copy the matrix, keeping the same matrix format.  See 
-{\tt \$\{PETSC\_DIR\}/include/mat.h} for other available matrix types;
+{\tt \$\{PETSC\_DIR\}/include/petscmat.h} for other available matrix types;
 standard ones are {\tt MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ,  
                MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG,  MATSEQBAIJ}, and
                {\tt MATMPIBAIJ}.
@@ -4309,7 +4309,7 @@ To draw a line, one uses
    ierr = DrawLine(Draw win,double xl,double yl,double xr,double yr,int cl);
 \end{verbatim}
 The argument {\tt cl} indicates the color (which is an integer between 0 and 255)
-of the line. A list of predefined colors may be found in {\tt include/draw.h}
+of the line. A list of predefined colors may be found in {\tt include/petscdraw.h}
 and includes {\tt DRAW\_BLACK}, {\tt DRAW\_RED}, {\tt DRAW\_BLUE} etc.
 
 To ensure that all graphics actually have been displayed, one should use 
@@ -4495,7 +4495,7 @@ in a Fortran routine, application programmers must manually include
 each file needed for the various PETSc components within their
 program.  This approach differs from the PETSc C/C++ interface, where
 the user need only include the highest level file, for example, {\tt
-snes.h}, which then automatically includes all of the required lower
+petscsnes.h}, which then automatically includes all of the required lower
 level files.  As shown in the examples of Section
 \ref{sec:fortran-examples}, in Fortran one must explicitly list {\em
 each} of the include files. If using this approach one must employ
@@ -4843,10 +4843,10 @@ use the routines {\tt VecGetArrayF90()}, {\tt VecRestoreArrayF90()}
 {\tt VecDuplicateVecsF90()}, and {\tt VecDestroyVecsF90()}, one must
 use the Fortran90 vector include file,
 \begin{verbatim}
-    #include "include/finclude/vec.h90"
+    #include "include/finclude/petscvec.h90"
 \end{verbatim}
-Analogous include files for other components are {\tt da.h90},
-{\tt mat.h90}, and {\tt is.h90}; the conventional Fortran style
+Analogous include files for other components are {\tt petscda.h90},
+{\tt petscmat.h90}, and {\tt petscis.h90}; the conventional Fortran style
 include files (as discussed in Section~\ref{sec:fortran_includes})
 are supported as well.
 
@@ -6614,7 +6614,7 @@ with the command
 \end{verbatim}
 The \findex{MatOrderingRegisterDynamic()} \sindex{ordering} \sindex{matrix ordering}
 input argument {\tt inname} is a string of the user's choice, {\tt iname} is either 
-an ordering defined in {\tt mat.h} or a users string,
+an ordering defined in {\tt petscmat.h} or a users string,
 to indicate one is introducing a new ordering, while the output
 See the code in {\tt src/mat/impls/order/sorder.c} and other files in that 
 directory for examples on how the reordering routines may be written.

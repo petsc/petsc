@@ -1,13 +1,13 @@
-/* $Id: da.h,v 1.51 2000/02/02 21:21:25 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.52 2000/04/07 04:47:14 bsmith Exp balay $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
    problems on regular distributed arrays.
 */
-#if !defined(__DA_H)
-#define __DA_H
-#include "vec.h"
-#include "ao.h"
+#if !defined(__PETSCDA_H)
+#define __PETSCDA_H
+#include "petscvec.h"
+#include "petscao.h"
 
 #define DA_COOKIE PETSC_COOKIE+14
 
@@ -65,11 +65,11 @@ extern int   DAGetFieldName(DA,int,char **);
 extern int   DAVecGetArray(DA,Vec,void **);
 extern int   DAVecRestoreArray(DA,Vec,void **);
 
-#include "mat.h"
+#include "petscmat.h"
 extern int   DAGetColoring(DA,ISColoring *,Mat *);
 extern int   DAGetInterpolation(DA,DA,Mat*,Vec*);
 
-#include "pf.h"
+#include "petscpf.h"
 extern int DACreatePF(DA,PF*);
 
 #endif

@@ -1,10 +1,10 @@
 !
-!  $Id: da.h,v 1.14 1999/09/14 15:58:14 balay Exp bsmith $;
+!  $Id: petscda.h,v 1.15 2000/01/11 21:04:11 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the DA (distributed array) package in PETSc
 !
-#if !defined (__DA_H)
-#define __DA_H
+#if !defined (__PETSCDA_H)
+#define __PETSCDA_H
 
 #define DA             PetscFortranAddr
 #define DAPeriodicType integer

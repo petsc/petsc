@@ -1,4 +1,4 @@
-/*$Id: aodatabasic.c,v 1.52 2000/04/12 04:26:13 bsmith Exp balay $*/
+/*$Id: aodatabasic.c,v 1.53 2000/05/05 22:19:12 balay Exp balay $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.
@@ -15,7 +15,7 @@
 
 #include "petscsys.h"
 #include "src/dm/ao/aoimpl.h"          /*I  "petscao.h"  I*/
-#include "petscba.h"
+#include "petscbt.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"AODataDestroy_Basic"

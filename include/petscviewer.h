@@ -1,10 +1,10 @@
-/* $Id: viewer.h,v 1.73 2000/01/11 21:04:04 bsmith Exp bsmith $ */
+/* $Id: petscviewer.h,v 1.74 2000/05/04 16:27:19 bsmith Exp balay $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
 
-#if !defined(__VIEWER_H)
-#define __VIEWER_H
+#if !defined(__PETSCVIEWER_H)
+#define __PETSCVIEWER_H
 
 typedef struct _p_Viewer*            Viewer;
 

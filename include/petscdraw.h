@@ -1,9 +1,9 @@
-/* $Id: draw.h,v 1.69 1999/11/24 21:55:57 bsmith Exp bsmith $ */
+/* $Id: petscdraw.h,v 1.70 2000/01/11 21:04:04 bsmith Exp balay $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
-#if !defined(__DRAW_H)
-#define __DRAW_H
+#if !defined(__PETSCDRAW_H)
+#define __PETSCDRAW_H
 #include "petsc.h"
 
 #define DRAW_COOKIE PETSC_COOKIE+6

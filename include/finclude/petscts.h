@@ -1,10 +1,10 @@
 !
-!  $Id: ts.h,v 1.17 1999/09/14 15:58:46 balay Exp bsmith $;
+!  $Id: petscts.h,v 1.18 2000/01/11 21:04:11 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the TS (timestepping) package in PETSc
 !
-#if !defined (__TS_H)
-#define __TS_H
+#if !defined (__PETSCTS_H)
+#define __PETSCTS_H
 
 #define TS                     PetscFortranAddr
 #define TSProblemType          integer 

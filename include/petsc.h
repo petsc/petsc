@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.272 2000/05/04 18:58:45 balay Exp balay $ */
+/* $Id: petsc.h,v 1.273 2000/05/04 18:58:51 balay Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -164,8 +164,8 @@ extern int LARGEST_PETSC_COOKIE;
 typedef struct _p_PetscObject* PetscObject;
 typedef struct _FList *FList;
 
-#include "viewer.h"
-#include "options.h"
+#include "petscviewer.h"
+#include "petscoptions.h"
 
 extern int PetscShowMemoryUsage(Viewer,char*);
 extern int PetscGetTime(PLogDouble*);
@@ -289,7 +289,7 @@ extern int PetscMPIDump(FILE*);
 /*
     Defines basic graphics available from PETSc.
 */
-#include "draw.h"
+#include "petscdraw.h"
 
 /*
     Defines the base data structures for all PETSc objects

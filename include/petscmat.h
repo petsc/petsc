@@ -1,10 +1,10 @@
-/* $Id: mat.h,v 1.188 2000/04/09 03:11:53 bsmith Exp balay $ */
+/* $Id: petscmat.h,v 1.189 2000/04/27 17:40:55 balay Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
-#ifndef __MAT_H
-#define __MAT_H
-#include "vec.h"
+#ifndef __PETSCMAT_H
+#define __PETSCMAT_H
+#include "petscvec.h"
 
 #define MAT_COOKIE         PETSC_COOKIE+5
 
@@ -66,7 +66,7 @@ extern int MatAssembled(Mat,PetscTruth*);
   _ierr = MatGetValues(v,1,&_row,1,&_col,&va);CHKERRQ(_ierr); \
 }
 /*
-   Any additions/changes here MUST also be made in include/finclude/mat.h
+   Any additions/changes here MUST also be made in include/finclude/petscmat.h
 */
 typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
               MAT_COLUMNS_SORTED=8,MAT_NO_NEW_NONZERO_LOCATIONS=16,
@@ -121,7 +121,7 @@ extern int MatRestoreColumnIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth 
 /* 
    Context of matrix information, used with MatGetInfo()
    Note: If any entries are added to this context, be sure
-         to adjust MAT_INFO_SIZE in finclude/mat.h
+         to adjust MAT_INFO_SIZE in finclude/petscmat.h
  */
 typedef struct {
   PLogDouble rows_global,columns_global;         /* number of global rows and columns */
@@ -247,7 +247,7 @@ extern int MatCholeskyFactorNumeric(Mat,Mat*);
 /* 
    Context of matrix information, used with MatILUFactor() and MatILUFactorSymbolic()
    Note: If any entries are added to this context, be sure
-         to adjust MAT_ILUINFO_SIZE in finclude/mat.h
+         to adjust MAT_ILUINFO_SIZE in finclude/petscmat.h
 
    Note: The integer values below are passed in double to allow easy use from 
          Fortran
@@ -366,7 +366,7 @@ extern int MatPartitioningGetType(MatPartitioning,MatPartitioningType*);
 extern int MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
 
 /*
-    If you add entries here you must also add them to finclude/mat.h
+    If you add entries here you must also add them to finclude/petscmat.h
 */
 typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_ROW=1,

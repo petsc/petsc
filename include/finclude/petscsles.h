@@ -1,10 +1,10 @@
 !
-!  $Id: sles.h,v 1.9 1998/03/27 21:17:49 balay Exp balay $;
+!  $Id: petscsles.h,v 1.10 1999/03/24 18:09:52 balay Exp balay $;
 !
 !  Include file for Fortran use of the SLES package in PETSc
 !
-#if !defined (__SLES_H)
-#define __SLES_H
+#if !defined (__PETSCSLES_H)
+#define __PETSCSLES_H
 #define SLES         PetscFortranAddr
 #endif
 !

@@ -1,10 +1,10 @@
-/* $Id: ksp.h,v 1.88 2000/01/11 21:04:04 bsmith Exp bsmith $ */
+/* $Id: petscksp.h,v 1.89 2000/05/04 03:47:37 bsmith Exp balay $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
-#ifndef __KSP_H
-#define __KSP_H
-#include "pc.h"
+#ifndef __PETSCKSP_H
+#define __PETSCKSP_H
+#include "petscpc.h"
 
 #define KSP_COOKIE  PETSC_COOKIE+8
 

@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.66 1999/05/14 15:23:53 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.67 2000/01/11 21:04:10 bsmith Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -111,32 +111,6 @@ extern PLogDouble rs6000_time(void);
 #define PetscTimeSubtract(v) (v)-=rs6000_time();
 
 #define PetscTimeAdd(v)      (v)+=rs6000_time();
-
-/* ------------------------------------------------------------------
-
-    Defines the interface to the IBM rs6000 high accuracy clock. The 
-  routine used is defined in petsc/src/sys/src/time/rs6000_time.s
-*/ 
-#elif defined(PETSC_USE_IBM_ASM_CLOCK)
-#include <sys/time.h>
-struct my_timestruc_t {
-  unsigned long tv_sec;/* seconds*/
-  long          tv_nsec;/* and nanoseconds*/
-};
-EXTERN_C_BEGIN
-extern void rs6000_asmtime(struct my_timestruc_t *);
-EXTERN_C_END
-#define PetscTime(v)         {static struct  my_timestruc_t _tp; \
-                             rs6000_asmtime(&_tp); \
-                             (v)=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
-
-#define PetscTimeSubtract(v) {static struct my_timestruc_t  _tp; \
-                             rs6000_asmtime(&_tp); \
-                             (v)-=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
-
-#define PetscTimeAdd(v)      {static struct my_timestruc_t  _tp; \
-                             rs6000_asmtime(&_tp); \
-                             (v)+=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 /* ------------------------------------------------------------------
     Dec Alpha has a very fast system clock accessible through getclock()

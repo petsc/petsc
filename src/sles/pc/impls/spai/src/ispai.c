@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.12 2000/04/12 04:26:41 bsmith Exp balay $*/
+/* $Id: ispai.c,v 1.13 2000/05/04 14:03:46 balay Exp balay $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -18,7 +18,7 @@
 
 */
 
-#include "src/sles/pc/pcimpl.h"        /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"        /*I "petscpc.h" I*/
 
 /*
     These are the SPAI include files

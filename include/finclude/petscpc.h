@@ -1,10 +1,10 @@
 !
-!  $Id: pc.h,v 1.31 1999/09/14 15:58:32 balay Exp bsmith $;
+!  $Id: petscpc.h,v 1.32 2000/01/11 21:04:11 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
-#if !defined (__PC_H)
-#define __PC_H
+#if !defined (__PETSCPC_H)
+#define __PETSCPC_H
 
 #define PC              PetscFortranAddr
 #define PCNullSpace     PetscFortranAddr

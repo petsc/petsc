@@ -1,11 +1,11 @@
-/* $Id: pf.h,v 1.3 2000/01/25 00:48:27 bsmith Exp bsmith $ */
+/* $Id: petscpf.h,v 1.4 2000/04/09 03:11:53 bsmith Exp balay $ */
 
 /*
       mathematical function module. 
 */
-#if !defined(__PF_H)
-#define __PF_H
-#include "mat.h"
+#if !defined(__PETSCPF_H)
+#define __PETSCPF_H
+#include "petscmat.h"
 
 /*
     PFList contains the list of preconditioners currently registered

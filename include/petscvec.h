@@ -1,14 +1,14 @@
-/* $Id: vec.h,v 1.106 2000/04/07 15:18:24 bsmith Exp bsmith $ */
+/* $Id: petscvec.h,v 1.107 2000/05/04 16:27:19 bsmith Exp balay $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
   on a grid. They have more mathematical structure then simple arrays.
 */
 
-#ifndef __VEC_H 
-#define __VEC_H
-#include "is.h"
-#include "sys.h"
+#ifndef __PETSCVEC_H 
+#define __PETSCVEC_H
+#include "petscis.h"
+#include "petscsys.h"
 
 #define VEC_COOKIE         PETSC_COOKIE+3
 #define MAP_COOKIE         PETSC_COOKIE+22

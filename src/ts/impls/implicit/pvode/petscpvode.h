@@ -1,4 +1,4 @@
-/*$Id: petscpvode.h,v 1.11 1999/05/12 03:33:28 bsmith Exp bsmith $*/
+/*$Id: petscpvode.h,v 1.12 1999/10/24 14:03:52 bsmith Exp balay $*/
 
 /*
     Provides a PETSc interface to PVODE. Alan Hindmarsh's parallel ODE
@@ -8,8 +8,8 @@
 #if !defined(__PETSCPVODE_H)
 #define __PETSCPVODE_H
 
-#include "src/ts/tsimpl.h"              /*I   "ts.h"   I*/
-#include "src/sles/pc/pcimpl.h"              /*I   "pc.h"   I*/
+#include "src/ts/tsimpl.h"              /*I   "petscts.h"   I*/
+#include "src/sles/pc/pcimpl.h"         /*I   "petscpc.h"   I*/
 #include "src/mat/matimpl.h"
 
 /*

@@ -1,10 +1,10 @@
-/* $Id: mg.h,v 1.16 1999/11/24 21:55:57 bsmith Exp bsmith $ */
+/* $Id: petscmg.h,v 1.17 2000/01/11 21:04:04 bsmith Exp balay $ */
 /*
       Structure used for Multigrid preconditioners 
 */
-#if !defined(__MG_H)
-#define __MG_H
-#include "sles.h"
+#if !defined(__PETSCMG_H)
+#define __PETSCMG_H
+#include "petscsles.h"
 
 /*  Possible Multigrid Variants */
 typedef enum { MGMULTIPLICATIVE,MGADDITIVE,MGFULL,MGKASKADE } MGType;

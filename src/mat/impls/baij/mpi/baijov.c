@@ -1,11 +1,11 @@
-/*$Id: baijov.c,v 1.45 2000/04/12 04:23:40 bsmith Exp balay $*/
+/*$Id: baijov.c,v 1.46 2000/05/05 22:16:08 balay Exp balay $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
   and to find submatrices that were shared across processors.
 */
 #include "src/mat/impls/baij/mpi/mpibaij.h"
-#include "petscba.h"
+#include "petscbt.h"
 
 static int MatIncreaseOverlap_MPIBAIJ_Once(Mat,int,IS *);
 static int MatIncreaseOverlap_MPIBAIJ_Local(Mat,int,char **,int*,int**);

@@ -1,4 +1,4 @@
-/* $Id: bitarray.h,v 1.14 1999/11/05 14:48:27 bsmith Exp bsmith $ */
+/* $Id: petscbt.h,v 1.15 2000/01/11 21:04:04 bsmith Exp balay $ */
 
 /*    
 
@@ -25,8 +25,8 @@
     the operation.
 
 */
-#if !defined(__BITARRAY_H)
-#define __BITARRAY_H
+#if !defined(__PETSCBT_H)
+#define __PETSCBT_H
 
 #if !defined(BITSPERBYTE)
 #define BITSPERBYTE 8

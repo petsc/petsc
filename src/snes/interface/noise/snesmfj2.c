@@ -1,6 +1,6 @@
-/*$Id: snesmfj2.c,v 1.21 1999/10/13 20:38:26 bsmith Exp bsmith $*/
+/*$Id: snesmfj2.c,v 1.23 2000/05/05 20:10:17 balay Exp balay $*/
 
-#include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
+#include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 
 extern int DiffParameterCreate_More(SNES,Vec,void**);
 extern int DiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);

@@ -1,12 +1,12 @@
-/* $Id: sles.h,v 1.31 1999/11/10 03:22:47 bsmith Exp bsmith $ */
+/* $Id: petscsles.h,v 1.32 1999/11/24 21:55:57 bsmith Exp balay $ */
 /*
    Defines PETSc interface to the linear solvers. The details of Krylov methods
-  and preconditioners are handled in the ksp.h and pc.h files
+  and preconditioners are handled in the petscksp.h and petscpc.h files
 */
-#if !defined(__SLES_H)
-#define __SLES_H
-#include "pc.h"
-#include "ksp.h"
+#if !defined(__PETSCSLES_H)
+#define __PETSCSLES_H
+#include "petscpc.h"
+#include "petscksp.h"
 
 #define SLES_COOKIE PETSC_COOKIE+10
 

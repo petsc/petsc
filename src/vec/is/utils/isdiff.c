@@ -1,8 +1,8 @@
-/*$Id: isdiff.c,v 1.18 2000/04/12 04:22:08 bsmith Exp balay $*/
+/*$Id: isdiff.c,v 1.19 2000/05/05 22:14:51 balay Exp balay $*/
 
 #include "petscis.h"                    /*I "petscis.h"  I*/
 #include "petsc.h"
-#include "petscba.h"
+#include "petscbt.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"ISDifference"

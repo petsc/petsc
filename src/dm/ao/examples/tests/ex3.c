@@ -1,9 +1,9 @@
-/*$Id: ex3.c,v 1.18 2000/01/11 21:03:13 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.19 2000/05/05 22:19:15 balay Exp balay $*/
 
 static char help[] = "Tests AOData \n\n";
 
 #include "petscao.h"
-#include "petscba.h"
+#include "petscbt.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"

@@ -1,10 +1,10 @@
 !
-!  $Id: mg.h,v 1.7 1999/09/14 15:58:30 balay Exp bsmith $;
+!  $Id: petscmg.h,v 1.8 2000/01/11 21:04:11 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the MG preconditioner in PETSc
 !
-#if !defined (__MG_H)
-#define __MG_H
+#if !defined (__PETSCMG_H)
+#define __PETSCMG_H
 
 #define MGType    integer
 

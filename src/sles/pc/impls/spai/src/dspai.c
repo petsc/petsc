@@ -1,6 +1,6 @@
-/* $Id: dspai.c,v 1.3 1999/11/24 21:55:44 bsmith Exp bsmith $*/
+/* $Id: dspai.c,v 1.4 2000/01/11 21:03:39 bsmith Exp balay $*/
 
-#include "mat.h"
+#include "petscmat.h"
 
 /*
      MatDumpSPAI - Dumps a PETSc matrix to a file in an ASCII format 

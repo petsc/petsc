@@ -9,7 +9,7 @@
 
 #include "petscao.h"        /* allows using the PETSc AOData-base routines for grid information */
 #include "petscsnes.h"      /* allows using PETSc nonlinear solvers */
-#include "petscba.h"       /* allows using PETSc's logical bit arrays */
+#include "petscbt.h"       /* allows using PETSc's logical bit arrays */
 
 /*--------------------------------------------------------------------
 
@@ -39,7 +39,7 @@
        NVs                  -the number of vertices per cell (4 in the case of billinear elements)
 
 */
-        
+
 typedef struct {
   /********* Data structures for cells ************/
   int                    cell_n;          /* number of cells on this process */

@@ -1,11 +1,11 @@
-/* $Id: inpututils.c,v 1.6 2000/05/04 16:26:56 bsmith Exp balay $ */
+/* $Id: inpututils.c,v 1.7 2000/05/05 22:19:39 balay Exp balay $ */
 
 /*
        Utilities for inputing, creating and managing simple two dimensional grids
 */
 
 #include "src/dm/ao/aoimpl.h"
-#include "petscba.h"
+#include "petscbt.h"
 #include "petscdraw.h"
 
 /*

@@ -1,4 +1,4 @@
-/*$Id: appctx.h,v 1.6 2000/01/06 20:43:22 bsmith Exp balay $*/
+/*$Id: appctx.h,v 1.7 2000/05/05 22:19:55 balay Exp balay $*/
 /*
     Defines some simple data structures for writing cell (element) based PDE codes.
 
@@ -9,7 +9,7 @@
 #define __APPCTX_H
 
 #include "petscao.h"
-#include "petscba.h"
+#include "petscbt.h"
 #include "petscsnes.h"
 /*
   cell_n               - number of cells on this processor 

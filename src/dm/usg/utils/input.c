@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.2 2000/02/02 20:10:37 bsmith Exp balay $ */
+/* $Id: input.c,v 1.3 2000/05/05 22:19:39 balay Exp balay $ */
 static char help[] ="Allows inputing a 2d  grid into a AO database.\n";
 
 /*
@@ -6,7 +6,7 @@ static char help[] ="Allows inputing a 2d  grid into a AO database.\n";
 */
 
 #include "petscao.h"
-#include "petscba.h"
+#include "petscbt.h"
 
 int main(int argc, char **argv)
 {

@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.344 2000/05/04 18:59:21 balay Exp balay $*/
+/*$Id: aij.c,v 1.345 2000/05/05 22:15:38 balay Exp balay $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -9,7 +9,7 @@
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 #include "src/inline/dot.h"
-#include "petscba.h"
+#include "petscbt.h"
 
 
 extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);

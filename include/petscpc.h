@@ -1,11 +1,11 @@
-/* $Id: pc.h,v 1.97 2000/01/11 21:04:04 bsmith Exp bsmith $ */
+/* $Id: petscpc.h,v 1.98 2000/02/02 21:21:25 bsmith Exp balay $ */
 
 /*
       Preconditioner module. 
 */
-#if !defined(__PC_H)
-#define __PC_H
-#include "mat.h"
+#if !defined(__PETSCPC_H)
+#define __PETSCPC_H
+#include "petscmat.h"
 
 /*
     PCList contains the list of preconditioners currently registered

@@ -1,10 +1,10 @@
 !
-!  $Id: is.h,v 1.19 1999/09/14 15:58:20 balay Exp bsmith $;
+!  $Id: petscis.h,v 1.20 2000/01/11 21:04:11 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the IS (index set) package in PETSc
 !
-#if !defined (__IS_H)
-#define __IS_H
+#if !defined (__PETSCIS_H)
+#define __PETSCIS_H
 
 #define IS                         PetscFortranAddr
 #define ISLocalToGlobalMapping     PetscFortranAddr

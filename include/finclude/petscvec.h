@@ -1,10 +1,10 @@
 !
-!  $Id: vec.h,v 1.31 1999/09/14 15:58:48 balay Exp bsmith $;
+!  $Id: petscvec.h,v 1.32 2000/01/11 21:04:11 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !
-#if !defined (__VEC_H)
-#define __VEC_H
+#if !defined (__PETSCVEC_H)
+#define __PETSCVEC_H
 
 #define Vec               PetscFortranAddr
 #define VecScatter        PetscFortranAddr

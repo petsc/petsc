@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.61 2000/04/28 16:56:44 curfman Exp balay $*/
+/*$Id: init.c,v 1.62 2000/05/05 22:14:00 balay Exp balay $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -36,7 +36,7 @@ Scalar        PETSC_i = 0.0;
 #endif
 
 /*
-     These are needed by petscba.h
+     These are needed by petscta.h
 */
 char _BT_mask,_BT_c;
 int  _BT_idx;

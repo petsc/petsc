@@ -1,10 +1,10 @@
-/* $Id: snes.h,v 1.97 2000/01/11 21:04:04 bsmith Exp bsmith $ */
+/* $Id: petscsnes.h,v 1.98 2000/04/01 04:24:29 bsmith Exp balay $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
-#if !defined(__SNES_H)
-#define __SNES_H
-#include "sles.h"
+#if !defined(__PETSCSNES_H)
+#define __PETSCSNES_H
+#include "petscsles.h"
 
 typedef struct _p_SNES* SNES;
 #define SNES_COOKIE         PETSC_COOKIE+13

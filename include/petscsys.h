@@ -1,9 +1,9 @@
-/* $Id: sys.h,v 1.47 2000/04/22 04:01:27 bsmith Exp bsmith $ */
+/* $Id: petscsys.h,v 1.48 2000/05/04 16:27:19 bsmith Exp balay $ */
 /*
     Provides access to system related and general utility routines.
 */
-#if !defined(__SYS_H)
-#define __SYS_H
+#if !defined(__PETSCSYS_H)
+#define __PETSCSYS_H
 
 #include "petsc.h"
 #include <errno.h> 

@@ -1,10 +1,10 @@
 !
-!  $Id: mat.h,v 1.60 2000/01/11 21:04:11 bsmith Exp balay $;
+!  $Id: petscmat.h,v 1.61 2000/04/27 17:40:52 balay Exp balay $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
-#if !defined (__MAT_H)
-#define __MAT_H
+#if !defined (__PETSCMAT_H)
+#define __PETSCMAT_H
 
 #define Mat                 PetscFortranAddr
 #define MatFDColoring       PetscFortranAddr
@@ -70,7 +70,7 @@
 
       parameter(MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0)
 !
-!  Matrix options; must match those in include/mat.h
+!  Matrix options; must match those in include/petscmat.h
 !
       integer MAT_ROW_ORIENTED,MAT_COLUMN_ORIENTED,MAT_ROWS_SORTED
       integer MAT_COLUMNS_SORTED,MAT_NO_NEW_NONZERO_LOCATIONS
@@ -116,7 +116,7 @@
 
 !
 !  Note: MAT_INFO_SIZE must equal # elements in MatInfo structure
-!  (See petsc/include/mat.h)
+!  (See petsc/include/petscmat.h)
 !
       integer   MAT_INFO_SIZE
 
@@ -154,7 +154,7 @@
 
 !
 !  Note: MAT_ILUINFO_SIZE must equal # elements in MatILUInfo structure
-!  (See petsc/include/mat.h)
+!  (See petsc/include/petscmat.h)
 !
       integer   MAT_ILUINFO_SIZE
 

@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.68 2000/04/12 04:21:24 bsmith Exp balay $*/
+/*$Id: sysio.c,v 1.69 2000/05/05 22:13:54 balay Exp balay $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -13,7 +13,7 @@
 #if defined (PARCH_win32)
 #include <io.h>
 #endif
-#include "petscba.h"
+#include "petscbt.h"
 
 
 #if !defined(PETSC_WORDS_BIGENDIAN)

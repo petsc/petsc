@@ -1,11 +1,11 @@
 !
-!  $Id: draw.h,v 1.23 1999/09/14 15:58:17 balay Exp bsmith $;
+!  $Id: petscdraw.h,v 1.24 2000/01/11 21:04:11 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the Draw package in PETSc
 !
 
-#if !defined (__DRAW_H)
-#define __DRAW_H
+#if !defined (__PETSCDRAW_H)
+#define __PETSCDRAW_H
 
 #define Draw       PetscFortranAddr
 #define DrawLG     PetscFortranAddr

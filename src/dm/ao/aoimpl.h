@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.20 2000/02/02 20:10:23 bsmith Exp balay $ */
+/* $Id: aoimpl.h,v 1.21 2000/05/05 22:19:08 balay Exp balay $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -113,7 +113,7 @@ extern int AODataKeyFind_Private(AOData,char *,PetscTruth *,AODataKey **);
 extern int AODataSegmentFind_Private(AOData,char *,char *,PetscTruth *,AODataKey **,AODataSegment **);
 
 
-#include "petscba.h"
+#include "petscbt.h"
 
 struct _p_AOData2dGrid {
    int     cell_n, vertex_n, edge_n;

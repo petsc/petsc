@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.26 2000/04/09 03:11:18 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.27 2000/05/05 22:19:18 balay Exp balay $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -56,7 +56,7 @@ T*/
   Include "petscao.h" allows use of the AO (application ordering) commands,
   used below for renumbering the vertex numbers after the partitioning.
 
-  Include "petscba.h" for managing logical bit arrays that are used to 
+  Include "petscbt.h" for managing logical bit arrays that are used to 
   conserve space. Note that the code does use order N bit arrays on each 
   processor so is theoretically not scalable, but even with 64 million 
   vertices it will only need temporarily 8 megabytes of memory for the 
@@ -66,7 +66,7 @@ T*/
 */
 #include "petscmat.h"
 #include "petscao.h"
-#include "petscba.h"
+#include "petscbt.h"
 
 /* 
     This is the user-defined grid data context 

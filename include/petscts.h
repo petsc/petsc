@@ -1,11 +1,11 @@
-/* $Id: ts.h,v 1.39 2000/02/02 21:21:25 bsmith Exp bsmith $ */
+/* $Id: petscts.h,v 1.40 2000/03/01 03:03:26 bsmith Exp balay $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
 */
-#if !defined(__TS_H)
-#define __TS_H
-#include "snes.h"
+#if !defined(__PETSCTS_H)
+#define __PETSCTS_H
+#include "petscsnes.h"
 
 typedef struct _p_TS* TS;
 #define TS_COOKIE PETSC_COOKIE+18
