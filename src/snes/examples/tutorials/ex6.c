@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.43 1996/10/02 02:32:26 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.44 1997/01/01 03:41:24 bsmith Exp balay $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -36,7 +36,7 @@ T*/
 */
 int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int FormFunction(SNES,Vec,Vec,void*);
-int MatrixFreePreconditioner(void *ctx,Vec x,Vec y);
+int MatrixFreePreconditioner(void*,Vec,Vec);
 
 int main( int argc, char **argv )
 {
