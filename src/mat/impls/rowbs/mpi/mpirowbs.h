@@ -27,14 +27,16 @@ typedef struct {
 
   /*  Used in Matrix assembly */
   int           assembled;          /* MatAssemble has been called */
+  int           reassemble_begun;   /* We're re-assembling */
   InsertMode    insertmode;
   Stash3        stash;
   MPI_Request   *send_waits,*recv_waits;
   int           nsends,nrecvs;
   Scalar        *svalues,*rvalues;
   int           rmax;
-  int           ctx_filled;         /* matrix context has been filled */
-  int           vecs_permuted;      /* flag indicating permuted vectors */
+  int           vecs_permscale;     /* flag indicating permuted and scaled
+                                       vectors */
+  int           fact_clone;
 
   /* BlockSolve data */
   BSprocinfo *procinfo;
@@ -46,6 +48,7 @@ typedef struct {
   BScomm     *comm_fpA;         /* communication info for factorization */
   Vec diag;                     /* diagonal scaling vector */
   Vec xwork;                    /* work space for mat-vec mult */
+  Scalar     *inv_diag;
 
   /* Cholesky factorization data */
   double     alpha;             /* restart for failed factorization */

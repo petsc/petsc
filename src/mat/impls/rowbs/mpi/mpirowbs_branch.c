@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.8 1995/04/20 16:03:15 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.9 1995/04/21 14:42:52 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -600,6 +600,9 @@ static int MatRelax_MPIRowbs(Mat mat,Vec bb,double omega,int flag,
   Scalar *b;
   int ierr;
 
+/* None of the relaxation code is finished now! */
+  SETERR(1,"Not done yet");
+
   if (!bsif->assembled) 
     SETERR(1,"MatRelax_MPIRowbs: Must assemble matrix first");
   VecGetArray(bb,&b);
@@ -611,7 +614,6 @@ static int MatRelax_MPIRowbs(Mat mat,Vec bb,double omega,int flag,
   if (its != 1) SETERR(1,"its != 1 : Not yet done.")
 
   if (flag == SOR_APPLY_UPPER) {
-   /* apply ( U + D/omega) to the vector */
     SETERR(1,"Not done yet");
   }
   if (flag == SOR_APPLY_LOWER) {
@@ -682,8 +684,16 @@ static int MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
   VecSet(&zero,v);
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
   if (n != mrow->m) SETERR(1,"Nonconforming matrix and vector.");
-  for ( i=0; i<mrow->m; i++ )
-      x[i] = rs[i]->nz[rs[i]->diag_ind] * scale[i];
+  if (mrow->vecs_permscale) {
+    for ( i=0; i<mrow->m; i++ ) {
+      x[i] = rs[i]->nz[rs[i]->diag_ind];
+      printf("x[%d] = %g\n",i,x[i]);
+    }
+  } else {
+    for ( i=0; i<mrow->m; i++ ) {
+      x[i] = rs[i]->nz[rs[i]->diag_ind] * scale[i]; 
+    }
+  }
   return 0;
 }
 
