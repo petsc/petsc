@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.9 1999/02/21 16:01:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: comb.c,v 1.10 1999/03/17 23:22:19 bsmith Exp curfman $";
 #endif
 
 /*
@@ -285,18 +285,20 @@ int VecSplitReductionGet(Vec x,VecSplitReduction **sr)
 #undef __FUNC__
 #define __FUNC__ "VecDotBegin"
 /*@
-     VecDotBegin - Starts a split phase dot product
+   VecDotBegin - Starts a split phase dot product.
 
-  Input Parameters:
+   Input Parameters:
 +   x - the first vector
 .   y - the second vector
 -   result - where the result will go (can be PETSC_NULL)
 
    Level: advanced
 
-seealso: VecDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
-         VecDotBegin(), VecDotEnd(), VecTDotBegin(), VecTDotEnd()
+   Notes:
+   Each call to VecDotBegin() should be paired with a call to VecDotEnd().
 
+seealso: VecDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+         VecTDotBegin(), VecTDotEnd()
 @*/
 int VecDotBegin(Vec x, Vec y,Scalar *result) 
 {
@@ -323,17 +325,20 @@ int VecDotBegin(Vec x, Vec y,Scalar *result)
 #undef __FUNC__
 #define __FUNC__ "VecDotEnd"
 /*@
-     VecDotEnd - Ends a split phase dot product
+   VecDotEnd - Ends a split phase dot product.
 
-  Input Parameters:
-+   x - the first vector (can be PETSC_NULL)
-.   y - the second vector (can be PETSC_NULL)
--   result - where the result will go
+   Input Parameters:
++  x - the first vector (can be PETSC_NULL)
+.  y - the second vector (can be PETSC_NULL)
+-  result - where the result will go
 
    Level: advanced
 
+   Notes:
+   Each call to VecDotBegin() should be paired with a call to VecDotEnd().
+
 seealso: VecDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
-         VecDotBegin(), VecDotEnd(), VecTDotBegin(), VecTDotEnd()
+         VecTDotBegin(), VecTDotEnd()
 
 @*/
 int VecDotEnd(Vec x, Vec y,Scalar *result) 
@@ -374,17 +379,20 @@ int VecDotEnd(Vec x, Vec y,Scalar *result)
 #undef __FUNC__
 #define __FUNC__ "VecTDotBegin"
 /*@
-     VecTDotBegin - Starts a split phase transpose dot product
+   VecTDotBegin - Starts a split phase transpose dot product computation.
 
-  Input Parameters:
-+   x - the first vector
-.   y - the second vector
--   result - where the result will go (can be PETSC_NULL)
+   Input Parameters:
++  x - the first vector
+.  y - the second vector
+-  result - where the result will go (can be PETSC_NULL)
 
    Level: advanced
 
+   Notes:
+   Each call to VecTDotBegin() should be paired with a call to VecTDotEnd().
+
 seealso: VecTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
-         VecDotBegin(), VecDotEnd(), VecDotBegin(), VecDotEnd()
+         VecDotBegin(), VecDotEnd()
 
 @*/
 int VecTDotBegin(Vec x, Vec y,Scalar *result) 
@@ -412,18 +420,20 @@ int VecTDotBegin(Vec x, Vec y,Scalar *result)
 #undef __FUNC__
 #define __FUNC__ "VecTDotEnd"
 /*@
-     VecTDotEnd - Ends a split phase transpose dot product
+   VecTDotEnd - Ends a split phase transpose dot product computation.
 
-  Input Parameters:
-+   x - the first vector (can be PETSC_NULL)
-.   y - the second vector (can be PETSC_NULL)
--   result - where the result will go
+   Input Parameters:
++  x - the first vector (can be PETSC_NULL)
+.  y - the second vector (can be PETSC_NULL)
+-  result - where the result will go
 
    Level: advanced
 
-seealso: VecTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
-         VecDotBegin(), VecDotEnd(), VecDotBegin(), VecDotEnd()
+   Notes:
+   Each call to VecTDotBegin() should be paired with a call to VecTDotEnd().
 
+seealso: VecTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+         VecDotBegin(), VecDotEnd()
 @*/
 int VecTDotEnd(Vec x, Vec y,Scalar *result) 
 {
@@ -442,14 +452,17 @@ int VecTDotEnd(Vec x, Vec y,Scalar *result)
 #undef __FUNC__
 #define __FUNC__ "VecNormBegin"
 /*@
-     VecNormBegin - Starts a split phase norm
+   VecNormBegin - Starts a split phase norm computation.
 
-  Input Parameters:
-+   x - the first vector
-.   ntype - norm type, one of NORM_1, NORM_2, NORM_MAX, NORM_1_AND_2
--   result - where the result will go (can be PETSC_NULL)
+   Input Parameters:
++  x - the first vector
+.  ntype - norm type, one of NORM_1, NORM_2, NORM_MAX, NORM_1_AND_2
+-  result - where the result will go (can be PETSC_NULL)
 
    Level: advanced
+
+   Notes:
+   Each call to VecNormBegin() should be paired with a call to VecNormEnd().
 
 .seealso: VecNormEnd(), VecNorm(), VecDot(), VecMDot(), VecDotBegin(), VecDotEnd()
 
@@ -489,14 +502,17 @@ int VecNormBegin(Vec x, NormType ntype, double *result)
 #undef __FUNC__
 #define __FUNC__ "VecNormBegin"
 /*@
-     VecNormEnd - Ends a split phase norm
+   VecNormEnd - Ends a split phase norm computation.
 
-  Input Parameters:
-+   x - the first vector (can be PETSC_NULL)
-.   ntype - norm type, one of NORM_1, NORM_2, NORM_MAX, NORM_1_AND_2
--   result - where the result will go
+   Input Parameters:
++  x - the first vector (can be PETSC_NULL)
+.  ntype - norm type, one of NORM_1, NORM_2, NORM_MAX, NORM_1_AND_2
+-  result - where the result will go
 
    Level: advanced
+
+   Notes:
+   Each call to VecNormBegin() should be paired with a call to VecNormEnd().
 
 .seealso: VecNormBegin(), VecNorm(), VecDot(), VecMDot(), VecDotBegin(), VecDotEnd()
 
