@@ -10,6 +10,7 @@ keyes@cs.odu.edu - David Keyes, needs parallel nonlinear solvers for CFD
 balay@cs.odu.edu - Satish Balay, needs matrix-free nonlinear solvers
 zhang_k@cs.odu.edu - Jie Zhang, needs parallel nonlinear solvers
 ozturan@cs.rpi.edu - Can Ozturan, needs parallel linear solvers
+mday@opus.nersc.gov - Marcus Day, sequential nonlinear solvers
 
 Local Users:
 
