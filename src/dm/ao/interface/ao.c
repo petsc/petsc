@@ -73,6 +73,8 @@ int AODestroy(AO ao)
   ierr = PetscObjectDepublish(ao);CHKERRQ(ierr);
 
   ierr = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
+  PetscLogObjectDestroy(ao);
+  PetscHeaderDestroy(ao);
   PetscFunctionReturn(0);
 }
 
@@ -243,3 +245,117 @@ int AOApplicationToPetsc(AO ao,int n,int *ia)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "AOPetscToApplicationPermuteInt"
+/*@
+  AOPetscToApplicationPermuteInt - Permutes an array of blocks of integers
+  in the PETSc ordering to the application-defined ordering.
+
+  Collective on AO
+
+  Input Parameters:
++ ao    - The application ordering context
+. block - The block size
+- array - The integer array
+
+  Level: beginner
+
+.keywords: application ordering, mapping
+.seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
+@*/
+int AOPetscToApplicationPermuteInt(AO ao, int block, int *array)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ao, AO_COOKIE);
+  ierr = (*ao->ops->petsctoapplicationpermuteint)(ao, block, array);                                      CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "AOApplicationToPetscPermuteInt"
+/*@
+  AOApplicationToPetscPermuteInt - Permutes an array of blocks of integers
+  in the application-defined ordering to the PETSc ordering.
+
+  Collective on AO
+
+  Input Parameters:
++ ao    - The application ordering context
+. block - The block size
+- array - The integer array
+
+  Level: beginner
+
+.keywords: application ordering, mapping
+
+.seealso: AOCreateBasic(), AOView(), AOPetscToApplicationIS(), AOApplicationToPetsc()
+@*/
+int AOApplicationToPetscPermuteInt(AO ao, int block, int *array)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ao, AO_COOKIE);
+  ierr = (*ao->ops->applicationtopetscpermuteint)(ao, block, array);                                      CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "AOPetscToApplicationPermuteReal"
+/*@
+  AOPetscToApplicationPermuteReal - Permutes an array of blocks of reals
+  in the PETSc ordering to the application-defined ordering.
+
+  Collective on AO
+
+  Input Parameters:
++ ao    - The application ordering context
+. block - The block size
+- array - The integer array
+
+  Level: beginner
+
+.keywords: application ordering, mapping
+
+.seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
+@*/
+int AOPetscToApplicationPermuteReal(AO ao, int block, double *array)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ao, AO_COOKIE);
+  ierr = (*ao->ops->petsctoapplicationpermutereal)(ao, block, array);                                     CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "AOApplicationToPetscPermuteReal"
+/*@
+  AOApplicationToPetscPermuteReal - Permutes an array of blocks of reals
+  in the application-defined ordering to the PETSc ordering.
+
+  Collective on AO
+
+  Input Parameters:
++ ao    - The application ordering context
+. block - The block size
+- array - The integer array
+
+  Level: beginner
+
+.keywords: application ordering, mapping
+
+.seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(), AOPetscToApplicationIS()
+@*/
+int AOApplicationToPetscPermuteReal(AO ao, int block, double *array)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ao, AO_COOKIE);
+  ierr = (*ao->ops->applicationtopetscpermutereal)(ao, block, array);                                     CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

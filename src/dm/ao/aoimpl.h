@@ -11,10 +11,17 @@
     Defines the abstract AO operations
 */
 struct _AOOps {
-  int (*petsctoapplication)(AO,int,int*),  /* map a set of integers to application order */
-      (*applicationtopetsc)(AO,int,int*);   
-  int (*destroy)(AO);
-  int (*view)(AO,PetscViewer);
+      /* Generic Operations */
+  int (*view)(AO, PetscViewer),
+      (*serialize)(MPI_Comm, AO *, PetscViewer, PetscTruth),
+      (*destroy)(AO),
+      /* AO-Specific Operations */
+      (*petsctoapplication)(AO, int, int *),
+    (*applicationtopetsc)(AO, int, int *),
+      (*petsctoapplicationpermuteint)(AO, int, int *),
+      (*applicationtopetscpermuteint)(AO, int, int *),
+      (*petsctoapplicationpermutereal)(AO, int, double *),
+      (*applicationtopetscpermutereal)(AO, int, double *);
 };
 
 struct _p_AO {

@@ -2,7 +2,7 @@
 
 ALL: lib
 
-DIRS     = basic
+DIRS     = basic mapping
 LOCDIR   = src/dm/ao/impls/
 
 include ${PETSC_DIR}/bmake/common/base

@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ao.c aodata.c aodataalias.c
+SOURCEC  = ao.c aoreg.c aoregall.c aoserialize.c aodata.c aodataalias.c dlregis.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = ao.o aodata.o aodataalias.o
+OBJSC    = ${SOURCEC:.c=.o}
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = AO
