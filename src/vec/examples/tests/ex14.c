@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.25 1995/10/11 17:52:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.26 1995/10/12 04:13:20 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
@@ -15,26 +15,26 @@ This does the tricky case.\n\n";
 int main(int argc,char **argv)
 {
   int           n = 5, ierr;
-  int           numtids,mytid,N;
+  int           size,rank,N;
   Scalar        value,zero = 0.0;
   Vec           x,y;
   IS            is1,is2;
   VecScatterCtx ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
   /* create two vectors */
-  N = numtids*n;
+  N = size*n;
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,N,&y); CHKERRA(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
 
   /* create two index sets */
   ierr = ISCreateStrideSeq(MPI_COMM_SELF,n,0,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,n,mytid,1,&is2); CHKERRA(ierr);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,n,rank,1,&is2); CHKERRA(ierr);
 
-  value = mytid+1; 
+  value = rank+1; 
   ierr = VecSet(&value,x); CHKERRA(ierr);
   ierr = VecSet(&zero,y); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.27 1995/09/30 19:26:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.28 1995/10/12 04:13:20 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
@@ -14,17 +14,17 @@ static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
 
 int main(int argc,char **argv)
 {
-  int          n = 5, ierr, numtids,mytid;
+  int          n = 5, ierr, size,rank;
   Scalar       one = 1.0, two = 2.0, three = 3.0;
   Vec          x,y;
   int          idx;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   OptionsGetInt(0,"-n",&n); if (n < 5) n = 5;
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid); 
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
 
-  if (numtids < 2) SETERRA(1,"Must be run with at least two processors");
+  if (size < 2) SETERRA(1,"Must be run with at least two processors");
 
   /* create two vector */
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   ierr = VecSet(&one,x); CHKERRA(ierr);
   ierr = VecSet(&two,y); CHKERRA(ierr);
 
-  if (mytid == 1) {
+  if (rank == 1) {
     idx = 2; ierr = VecSetValues(y,1,&idx,&three,INSERT_VALUES); CHKERRA(ierr);
     idx = 0; ierr = VecSetValues(y,1,&idx,&two,INSERT_VALUES); CHKERRA(ierr); 
     idx = 0; ierr = VecSetValues(y,1,&idx,&one,INSERT_VALUES); CHKERRA(ierr); 

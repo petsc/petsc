@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.46 1995/09/30 19:29:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.47 1995/10/18 03:16:27 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -21,8 +21,8 @@ static char vcid[] = "$Id: gcreate.c,v 1.46 1995/09/30 19:29:59 bsmith Exp curfm
  @*/
 int MatGetFormatFromOptions(MPI_Comm comm,MatType *type,int *set)
 {
-  int numtid;
-  MPI_Comm_size(comm,&numtid);
+  int size;
+  MPI_Comm_size(comm,&size);
   if (OptionsHasName(0,"-help")) {
     MPIU_printf(comm,"Matrix format options: -mat_aij, -mat_seqaij, -mat_mpiaij\n");
     MPIU_printf(comm,"   -mat_row, -mat_seqrow, -mat_mpirow\n");
@@ -65,22 +65,22 @@ int MatGetFormatFromOptions(MPI_Comm comm,MatType *type,int *set)
     *set = 1;
   }
   else if (OptionsHasName(0,"-mat_aij")){
-    if (numtid == 1) *type = MATSEQAIJ;
+    if (size == 1) *type = MATSEQAIJ;
     else *type = MATMPIAIJ;
     *set = 1;
   }  
   else if (OptionsHasName(0,"-mat_row")){
-    if (numtid == 1) *type = MATSEQROW;
+    if (size == 1) *type = MATSEQROW;
     else *type = MATMPIROW;
     *set = 1;
   }  
   else if (OptionsHasName(0,"-mat_bdiag")){
-    if (numtid == 1) *type = MATSEQBDIAG;
+    if (size == 1) *type = MATSEQBDIAG;
     else *type = MATMPIBDIAG;
     *set = 1;
   }  
   else {
-    if (numtid == 1) *type = MATSEQAIJ;
+    if (size == 1) *type = MATSEQAIJ;
     else *type = MATMPIAIJ;
     *set = 0;
   }

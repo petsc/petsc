@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.18 1995/09/11 19:20:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.19 1995/10/01 21:53:44 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -16,10 +16,10 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
 {
   DA da  = (DA) pobj;
   PetscObject vobj = (PetscObject)ptr;
-  int         mytid, ierr;
+  int         rank, ierr;
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
 
-  MPI_Comm_rank(da->comm,&mytid); 
+  MPI_Comm_rank(da->comm,&rank); 
 
   if (!ptr) { /* so that viewers may be used from debuggers */
     ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
@@ -32,7 +32,7 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
     ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
     if (vobj->type == ASCII_FILE_VIEWER) {
       MPIU_Seq_begin(da->comm,1);
-      fprintf(fd,"Processor [%d] M %d m %d w %d s %d\n",mytid,da->M,
+      fprintf(fd,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
                  da->m,da->w,da->s);
       fprintf(fd,"X range %d %d Y range %d %d\n",da->xs,da->xe,1,1);
       fflush(fd);
@@ -40,7 +40,7 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
     }
     else if (vobj->type == ASCII_FILES_VIEWER) {
 
-      if (!mytid) {
+      if (!rank) {
       }
       else {
       }
@@ -56,7 +56,7 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
 
     /* first processor draws all node lines */
 
-    if (!mytid) {
+    if (!rank) {
       ymin = 0.0; ymax = 0.3;
 
       for ( xmin=0; xmin<da->M; xmin++ ) {
@@ -112,7 +112,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 @*/
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 {
-  int           mytid, numtid,xs,xe,x,Xs,Xe,ierr,start,end,m;
+  int           rank, size,xs,xe,x,Xs,Xe,ierr,start,end,m;
   int           i,*idx,nn;
   DA            da;
   Vec           local,global;
@@ -124,19 +124,19 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   PLogObjectCreate(da);
   PLogObjectMemory(da,sizeof(struct _DA));
 
-  MPI_Comm_size(comm,&numtid); 
-  MPI_Comm_rank(comm,&mytid); 
+  MPI_Comm_size(comm,&size); 
+  MPI_Comm_rank(comm,&rank); 
 
-  m = numtid;
+  m = size;
 
   if (M < m)     SETERRQ(1,"DACreate1d:More processors than data points!");
   if ((M-1) < s) SETERRQ(1,"DACreate1d:Array is too small for stencil!");
 
   /* determine local owned region */
-  x = M/m + ((M % m) > (mytid));
+  x = M/m + ((M % m) > (rank));
 
-  if (mytid >= (M % m)) {xs = (mytid * (int) (M/m) + M % m);}
-    else {xs = mytid * (int)(M/m) + mytid;}
+  if (rank >= (M % m)) {xs = (rank * (int) (M/m) + M % m);}
+    else {xs = rank * (int)(M/m) + rank;}
 
   /* From now on x,s,xs,xe,Xs,Xe are the exact location in the array */
 

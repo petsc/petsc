@@ -1,6 +1,5 @@
-
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.43 1995/10/11 15:18:30 bsmith Exp curfman $";
+static char vcid[] = "$Id: pbvec.c,v 1.44 1995/10/11 17:52:54 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -59,37 +58,37 @@ static struct _VeOps DvOps = { VecDuplicate_MPI,
             VecGetArray_Seq,VecGetSize_MPI,VecGetSize_Seq,
             VecGetOwnershipRange_MPI,0,VecMax_MPI,VecMin_MPI};
 
-static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int numtids,
-                                int mytid,int *owners,Vec *vv)
+static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,
+                                int rank,int *owners,Vec *vv)
 {
   Vec     v;
   Vec_MPI *s;
-  int     size,i;
+  int     mem,i;
   *vv = 0;
 
-  size           = sizeof(Vec_MPI)+(numtids+1)*sizeof(int);
+  mem           = sizeof(Vec_MPI)+(size+1)*sizeof(int);
   PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,VECMPI,comm);
   PLogObjectCreate(v);
-  PLogObjectMemory(v,size + sizeof(struct _Vec) + (n+1)*sizeof(Scalar));
-  s              = (Vec_MPI *) PETSCMALLOC(size); CHKPTRQ(s);
+  PLogObjectMemory(v,mem + sizeof(struct _Vec) + (n+1)*sizeof(Scalar));
+  s              = (Vec_MPI *) PETSCMALLOC(mem); CHKPTRQ(s);
   PetscMemcpy(&v->ops,&DvOps,sizeof(DvOps));
   v->data        = (void *) s;
   v->destroy     = VecDestroy_MPI;
   v->view        = VecView_MPI;
   s->n           = n;
   s->N           = N;
-  s->numtids     = numtids;
-  s->mytid       = mytid;
+  s->size        = size;
+  s->rank        = rank;
   s->array       = (Scalar *) PETSCMALLOC((n+1)*sizeof(Scalar));CHKPTRQ(s->array);
   s->ownership   = (int *) (s + 1);
   s->insertmode  = NOT_SET_VALUES;
   if (owners) {
-    PetscMemcpy(s->ownership,owners,(numtids+1)*sizeof(int));
+    PetscMemcpy(s->ownership,owners,(size+1)*sizeof(int));
   }
   else {
     MPI_Allgather(&n,1,MPI_INT,s->ownership+1,1,MPI_INT,comm);
     s->ownership[0] = 0;
-    for (i=2; i<=numtids; i++ ) {
+    for (i=2; i<=size; i++ ) {
       s->ownership[i] += s->ownership[i-1];
     }
   }
@@ -123,25 +122,25 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int numtids,
 @*/ 
 int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 {
-  int sum, work = n, numtids, mytid;
+  int sum, work = n, size, rank;
   *vv = 0;
 
-  MPI_Comm_size(comm,&numtids);
-  MPI_Comm_rank(comm,&mytid); 
+  MPI_Comm_size(comm,&size);
+  MPI_Comm_rank(comm,&rank); 
   if (N == PETSC_DECIDE) { 
     MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,comm );
     N = sum;
   }
   if (n == PETSC_DECIDE) { 
-    n = N/numtids + ((N % numtids) > mytid);
+    n = N/size + ((N % size) > rank);
   }
-  return VecCreateMPIBase(comm,n,N,numtids,mytid,0,vv);
+  return VecCreateMPIBase(comm,n,N,size,rank,0,vv);
 }
 
 static int VecDuplicate_MPI( Vec win, Vec *v)
 {
   Vec_MPI *w = (Vec_MPI *)win->data;
-  return VecCreateMPIBase(win->comm,w->n,w->N,w->numtids,w->mytid,w->ownership,v);
+  return VecCreateMPIBase(win->comm,w->n,w->N,w->size,w->rank,w->ownership,v);
 }
 
 

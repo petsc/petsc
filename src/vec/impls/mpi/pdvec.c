@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.28 1995/10/01 21:51:20 bsmith Exp curfman $ */
+/* $Id: pdvec.c,v 1.29 1995/10/11 17:52:54 curfman Exp curfman $ */
 
 #include "pinclude/pviewer.h"
 #include "sysio.h"
@@ -6,8 +6,8 @@
 static int VecGetOwnershipRange_MPI(Vec v,int *low,int* high) 
 {
   Vec_MPI *x = (Vec_MPI *) v->data;
-  *low  = x->ownership[x->mytid];
-  *high = x->ownership[x->mytid+1];
+  *low  = x->ownership[x->rank];
+  *high = x->ownership[x->rank+1];
   return 0;
 }
 
@@ -29,13 +29,13 @@ static int VecDestroy_MPI(PetscObject obj )
 static int VecView_MPI_File(Vec xin, Viewer ptr )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,mytid,ierr;
+  int         i,rank,ierr;
   FILE        *fd;
   ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
 
-  MPI_Comm_rank(xin->comm,&mytid); 
+  MPI_Comm_rank(xin->comm,&rank); 
   MPIU_Seq_begin(xin->comm,1);
-  fprintf(fd,"Processor [%d] \n",mytid);
+  fprintf(fd,"Processor [%d] \n",rank);
   for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
     if (imag(x->array[i]) != 0.0) {
@@ -56,21 +56,21 @@ static int VecView_MPI_File(Vec xin, Viewer ptr )
 static int VecView_MPI_Files(Vec xin, Viewer ptr )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,mytid;
+  int         i,rank;
   MPI_Status  status;
   FILE        *fd;
-  int         len, work = x->n,n,j,numtids,ierr;
+  int         len, work = x->n,n,j,size,ierr;
   Scalar      *values;
 
   ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
   /* determine maximum message to arrive */
-  MPI_Comm_rank(xin->comm,&mytid);
+  MPI_Comm_rank(xin->comm,&rank);
   MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);
-  MPI_Comm_size(xin->comm,&numtids);
+  MPI_Comm_size(xin->comm,&size);
 
-  if (!mytid) {
+  if (!rank) {
     values = (Scalar *) PETSCMALLOC( len*sizeof(Scalar) ); CHKPTRQ(values);
-    fprintf(fd,"Processor [%d]\n",mytid);
+    fprintf(fd,"Processor [%d]\n",rank);
     for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
       if (imag(x->array[i]) != 0.0) {
@@ -85,7 +85,7 @@ static int VecView_MPI_Files(Vec xin, Viewer ptr )
 
     }
     /* receive and print messages */
-    for ( j=1; j<numtids; j++ ) {
+    for ( j=1; j<size; j++ ) {
       MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
       MPI_Get_count(&status,MPIU_SCALAR,&n);          
       fprintf(fd,"Processor [%d]\n",j);
@@ -114,18 +114,18 @@ static int VecView_MPI_Files(Vec xin, Viewer ptr )
 static int VecView_MPI_Binary(Vec xin, Viewer ptr )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         mytid,ierr,len, work = x->n,n,j,numtids, fdes;
+  int         rank,ierr,len, work = x->n,n,j,size, fdes;
   MPI_Status  status;
   Scalar      *values;
 
   ierr = ViewerFileGetDescriptor_Private(ptr,&fdes); CHKERRQ(ierr);
 
   /* determine maximum message to arrive */
-  MPI_Comm_rank(xin->comm,&mytid);
+  MPI_Comm_rank(xin->comm,&rank);
   MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);
-  MPI_Comm_size(xin->comm,&numtids);
+  MPI_Comm_size(xin->comm,&size);
 
-  if (!mytid) {
+  if (!rank) {
     ierr = SYWrite(fdes,&xin->cookie,1,SYINT,0); CHKERRQ(ierr);
     ierr = SYWrite(fdes,&x->N,1,SYINT,0); CHKERRQ(ierr);
     ierr = SYWrite(fdes,x->array,x->n,SYSCALAR,0); 
@@ -133,7 +133,7 @@ static int VecView_MPI_Binary(Vec xin, Viewer ptr )
 
     values = (Scalar *) PETSCMALLOC( len*sizeof(Scalar) ); CHKPTRQ(values);
     /* receive and print messages */
-    for ( j=1; j<numtids; j++ ) {
+    for ( j=1; j<size; j++ ) {
       MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
       MPI_Get_count(&status,MPIU_SCALAR,&n);          
       ierr = SYWrite(fdes,values,n,SYSCALAR,0); 
@@ -150,11 +150,11 @@ static int VecView_MPI_Binary(Vec xin, Viewer ptr )
 static int VecView_MPI_DrawCtx(Vec xin, DrawCtx win )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,mytid,numtid,ierr,start,end;
+  int         i,rank,size,ierr,start,end;
   MPI_Status  status;
   double      coors[4],ymin,ymax,xmin,xmax,tmp;
 
-  MPI_Comm_size(xin->comm,&numtid); 
+  MPI_Comm_size(xin->comm,&size); 
 
   xmin = 1.e20; xmax = -1.e20;
   for ( i=0; i<x->n; i++ ) {
@@ -168,8 +168,8 @@ static int VecView_MPI_DrawCtx(Vec xin, DrawCtx win )
   }
   MPI_Reduce(&xmin,&ymin,1,MPI_DOUBLE,MPI_MIN,0,xin->comm);
   MPI_Reduce(&xmax,&ymax,1,MPI_DOUBLE,MPI_MAX,0,xin->comm);
-  MPI_Comm_rank(xin->comm,&mytid);
-  if (!mytid) {
+  MPI_Comm_rank(xin->comm,&rank);
+  if (!rank) {
     DrawAxisCtx axis;
     DrawClear(win); DrawFlush(win);
     ierr = DrawAxisCreate(win,&axis); CHKERRQ(ierr);
@@ -180,11 +180,11 @@ static int VecView_MPI_DrawCtx(Vec xin, DrawCtx win )
     DrawGetCoordinates(win,coors,coors+1,coors+2,coors+3);
   }
   MPI_Bcast(coors,4,MPI_DOUBLE,0,xin->comm);
-  if (mytid) DrawSetCoordinates(win,coors[0],coors[1],coors[2],coors[3]);
+  if (rank) DrawSetCoordinates(win,coors[0],coors[1],coors[2],coors[3]);
   /* draw local part of vector */
   VecGetOwnershipRange(xin,&start,&end);
-  if (mytid < numtid-1) { /*send value to right */
-    MPI_Send(&x->array[x->n-1],1,MPI_DOUBLE,mytid+1,xin->tag,xin->comm);
+  if (rank < size-1) { /*send value to right */
+    MPI_Send(&x->array[x->n-1],1,MPI_DOUBLE,rank+1,xin->tag,xin->comm);
   }
   for ( i=1; i<x->n; i++ ) {
 #if !defined(PETSC_COMPLEX)
@@ -195,8 +195,8 @@ static int VecView_MPI_DrawCtx(Vec xin, DrawCtx win )
                    real(x->array[i]),DRAW_RED);
 #endif
   }
-  if (mytid) { /* receive value from right */
-    MPI_Recv(&tmp,1,MPI_DOUBLE,mytid-1,xin->tag,xin->comm,&status);
+  if (rank) { /* receive value from right */
+    MPI_Recv(&tmp,1,MPI_DOUBLE,rank-1,xin->tag,xin->comm,&status);
 #if !defined(PETSC_COMPLEX)
     DrawLine(win,(double)start-1,tmp,(double)start,x->array[0],
                    DRAW_RED);
@@ -212,19 +212,19 @@ static int VecView_MPI_DrawCtx(Vec xin, DrawCtx win )
 static int VecView_MPI_LG(Vec xin, DrawLGCtx lg )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,mytid,numtid, N = x->N,*lens;
+  int         i,rank,size, N = x->N,*lens;
   DrawCtx     win;
   double      *xx,*yy;
 
-  MPI_Comm_rank(xin->comm,&mytid);
-  MPI_Comm_size(xin->comm,&numtid);
-  if (!mytid) {
+  MPI_Comm_rank(xin->comm,&rank);
+  MPI_Comm_size(xin->comm,&size);
+  if (!rank) {
     DrawLGReset(lg);
     xx = (double *) PETSCMALLOC( 2*N*sizeof(double) ); CHKPTRQ(xx);
     for ( i=0; i<N; i++ ) {xx[i] = (double) i;}
     yy = xx + N;
-    lens = (int *) PETSCMALLOC(numtid*sizeof(int)); CHKPTRQ(lens);
-    for (i=0; i<numtid; i++ ) {
+    lens = (int *) PETSCMALLOC(size*sizeof(int)); CHKPTRQ(lens);
+    for (i=0; i<size; i++ ) {
       lens[i] = x->ownership[i+1] - x->ownership[i];
     }
     /* The next line is wrong for complex, one should stride out the 
@@ -299,8 +299,8 @@ static int VecGetSize_MPI(Vec xin,int *N)
 static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
-  int        mytid = x->mytid, *owners = x->ownership, start = owners[mytid];
-  int        end = owners[mytid+1], i, j, alreadycached;
+  int        rank = x->rank, *owners = x->ownership, start = owners[rank];
+  int        end = owners[rank+1], i, j, alreadycached;
   Scalar     *xx = x->array;
 
   if (x->insertmode == INSERT_VALUES && addv == ADD_VALUES) { SETERRQ(1,
@@ -357,7 +357,7 @@ to make sure we never malloc an empty one.
 static int VecAssemblyBegin_MPI(Vec xin)
 {
   Vec_MPI    *x = (Vec_MPI *)xin->data;
-  int         mytid = x->mytid, *owners = x->ownership, numtids = x->numtids;
+  int         rank = x->rank, *owners = x->ownership, size = x->size;
   int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
   int         *owner,*starts,count,tag = xin->tag;
   InsertMode  addv;
@@ -373,25 +373,25 @@ static int VecAssemblyBegin_MPI(Vec xin)
   x->insertmode = addv; /* in case this processor had no cache */
 
   /*  first count number of contributors to each processor */
-  nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
+  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC( (x->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
   for ( i=0; i<x->stash.n; i++ ) {
     idx = x->stash.idx[i];
-    for ( j=0; j<numtids; j++ ) {
+    for ( j=0; j<size; j++ ) {
       if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[j]++; procs[j] = 1; owner[i] = j; break;
       }
     }
   }
-  nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
+  nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(work);
-  MPI_Allreduce((void *) procs,(void *) work,numtids,MPI_INT,MPI_SUM,comm);
-  nreceives = work[mytid]; 
-  MPI_Allreduce((void *) nprocs,(void *) work,numtids,MPI_INT,MPI_MAX,comm);
-  nmax = work[mytid];
+  work = (int *) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(work);
+  MPI_Allreduce((void *) procs,(void *) work,size,MPI_INT,MPI_SUM,comm);
+  nreceives = work[rank]; 
+  MPI_Allreduce((void *) nprocs,(void *) work,size,MPI_INT,MPI_MAX,comm);
+  nmax = work[rank];
   PETSCFREE(work);
 
   /* post receives: 
@@ -419,18 +419,18 @@ static int VecAssemblyBegin_MPI(Vec xin)
   svalues = (Scalar *) PETSCMALLOC(2*(x->stash.n+1)*sizeof(Scalar));CHKPTRQ(svalues);
   send_waits = (MPI_Request *) PETSCMALLOC( (nsends+1)*sizeof(MPI_Request));
   CHKPTRQ(send_waits);
-  starts = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(starts);
+  starts = (int *) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
-  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<x->stash.n; i++ ) {
     svalues[2*starts[owner[i]]]       = (Scalar)  x->stash.idx[i];
     svalues[2*(starts[owner[i]]++)+1] =  x->stash.array[i];
   }
   PETSCFREE(owner);
   starts[0] = 0;
-  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   count = 0;
-  for ( i=0; i<numtids; i++ ) {
+  for ( i=0; i<size; i++ ) {
     if (procs[i]) {
       MPI_Isend((void*)(svalues+2*starts[i]),2*nprocs[i],MPIU_SCALAR,i,tag,
                 comm,send_waits+count++);
@@ -457,7 +457,7 @@ static int VecAssemblyEnd_MPI(Vec vec)
   int         imdex,base,nrecvs = x->nrecvs, count = nrecvs, i, n;
   Scalar      *values;
 
-  base = x->ownership[x->mytid];
+  base = x->ownership[x->rank];
 
   /*  wait on receives */
   while (count) {

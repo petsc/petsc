@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreatev.c,v 1.21 1995/09/07 22:35:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.22 1995/09/11 18:45:33 bsmith Exp curfman $";
 #endif
 
 
@@ -34,12 +34,12 @@ $   -vec_mpi : use MPI vectors, even for the uniprocessor case
 @*/
 int VecCreate(MPI_Comm comm,int n,Vec *V)
 {
-  int numtid;
-  MPI_Comm_size(comm,&numtid);
+  int size;
+  MPI_Comm_size(comm,&size);
   if (OptionsHasName(0,"-help")) {
     MPIU_printf(comm,"VecCreate() option: -vec_mpi\n");
   }
-  if (numtid > 1 || OptionsHasName(0,"-vec_mpi")) {
+  if (size > 1 || OptionsHasName(0,"-vec_mpi")) {
     return VecCreateMPI(comm,PETSC_DECIDE,n,V);
   }
   return VecCreateSeq(comm,n,V);

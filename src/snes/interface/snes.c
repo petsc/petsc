@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.21 1995/10/12 04:19:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.22 1995/10/13 01:56:32 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -149,11 +149,11 @@ int SNESSetFromOptions(SNES snes)
     SNESSetMonitor(snes,SNESDefaultSMonitor,0);
   }
   if (OptionsHasName(snes->prefix,"-snes_xmonitor")){
-    int       mytid = 0;
+    int       rank = 0;
     DrawLGCtx lg;
-    MPI_Initialized(&mytid);
-    if (mytid) MPI_Comm_rank(snes->comm,&mytid);
-    if (!mytid) {
+    MPI_Initialized(&rank);
+    if (rank) MPI_Comm_rank(snes->comm,&rank);
+    if (!rank) {
       ierr = SNESLGMonitorCreate(0,0,0,0,300,300,&lg); CHKERRQ(ierr);
       ierr = SNESSetMonitor(snes,SNESLGMonitor,(void *)lg); CHKERRQ(ierr);
       PLogObjectParent(snes,lg);

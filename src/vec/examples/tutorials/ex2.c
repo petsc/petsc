@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.19 1995/09/30 19:26:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.20 1995/10/12 04:13:20 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
 processor, 2 on the second, etc.  Then each processor adds one to all\n\
-elements except the last mytid.\n\n";
+elements except the last rank.\n\n";
 
 #include "petsc.h"
 #include "is.h"
@@ -15,19 +15,19 @@ elements except the last mytid.\n\n";
 
 int main(int argc,char **argv)
 {
-  int          i,N,ierr, numtids,mytid;
+  int          i,N,ierr, size,rank;
   Scalar       one = 1.0;
   Vec          x;
 
   PetscInitialize(&argc,&argv,0,0,help);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid); 
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
 
-  ierr = VecCreateMPI(MPI_COMM_WORLD,mytid+1,PETSC_DECIDE,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,rank+1,PETSC_DECIDE,&x); CHKERRA(ierr);
   ierr = VecGetSize(x,&N); CHKERRA(ierr);
   ierr = VecSet(&one,x); CHKERRA(ierr);
 
-  for ( i=0; i<N-mytid; i++ ) {
+  for ( i=0; i<N-rank; i++ ) {
     ierr = VecSetValues(x,1,&i,&one,ADD_VALUES); CHKERRA(ierr);  
   }
   ierr = VecAssemblyBegin(x); CHKERRA(ierr);

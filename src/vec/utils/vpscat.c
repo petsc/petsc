@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.30 1995/10/11 17:52:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.31 1995/10/12 04:13:05 bsmith Exp curfman $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -14,32 +14,32 @@ static char vcid[] = "$Id: vpscat.c,v 1.30 1995/10/11 17:52:38 curfman Exp bsmit
 int PrintPVecScatterCtx(VecScatterCtx ctx)
 {
   VecScatterMPI *to=(VecScatterMPI *) ctx->todata, *from=(VecScatterMPI *) ctx->fromdata;
-  int           i,mytid;
+  int           i,rank;
 
   MPIU_Seq_begin(ctx->comm,1);
-  MPI_Comm_rank(ctx->comm,&mytid);
+  MPI_Comm_rank(ctx->comm,&rank);
 
-  fprintf(stderr,"[%d]Number sends %d below %d self %d\n",mytid,to->n,
+  fprintf(stderr,"[%d]Number sends %d below %d self %d\n",rank,to->n,
                  to->nbelow,to->nself);
-  fprintf(stderr,"[%d]Inital start should be zero %d\n",mytid,to->starts[0]);
+  fprintf(stderr,"[%d]Inital start should be zero %d\n",rank,to->starts[0]);
   for ( i=0; i<to->n; i++ ){
-    fprintf(stderr,"[%d]start %d %d\n",mytid,i,to->starts[i+1]);
-    fprintf(stderr,"[%d]proc %d\n",mytid,to->procs[i]);
+    fprintf(stderr,"[%d]start %d %d\n",rank,i,to->starts[i+1]);
+    fprintf(stderr,"[%d]proc %d\n",rank,to->procs[i]);
   }
   fprintf(stderr,"Now the indices\n");
   for ( i=0; i<to->starts[to->n]; i++ ){
-    fprintf(stderr,"[%d]%d \n",mytid,to->indices[i]);
+    fprintf(stderr,"[%d]%d \n",rank,to->indices[i]);
   }
-  fprintf(stderr,"[%d]Number receives %d below %d self %d\n",mytid,from->n,
+  fprintf(stderr,"[%d]Number receives %d below %d self %d\n",rank,from->n,
                      from->nbelow,from->nself);
-  fprintf(stderr,"[%d]Inital start should be zero %d\n",mytid,from->starts[0]);
+  fprintf(stderr,"[%d]Inital start should be zero %d\n",rank,from->starts[0]);
   for ( i=0; i<from->n; i++ ){
-    fprintf(stderr,"[%d]start %d %d\n",mytid,i,from->starts[i+1]);
-    fprintf(stderr,"[%d]proc %d\n",mytid,from->procs[i]);
+    fprintf(stderr,"[%d]start %d %d\n",rank,i,from->starts[i+1]);
+    fprintf(stderr,"[%d]proc %d\n",rank,from->procs[i]);
   }
   fprintf(stderr,"Now the indices\n");
   for ( i=0; i<from->starts[from->n]; i++ ){
-    fprintf(stderr,"[%d]%d \n",mytid,from->indices[i]);
+    fprintf(stderr,"[%d]%d \n",rank,from->indices[i]);
   }
   MPIU_Seq_end(ctx->comm,1);
   return 0;
@@ -500,8 +500,8 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
 {
   Vec_MPI        *x = (Vec_MPI *)xin->data;
   VecScatterMPI  *from,*to;
-  int            *source,*lens,mytid = x->mytid, *owners = x->ownership;
-  int            numtids = x->numtids,*lowner,*start,found;
+  int            *source,*lens,rank = x->rank, *owners = x->ownership;
+  int            size = x->size,*lowner,*start,found;
   int            *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
   int            *owner,*starts,count,tag = xin->tag,slen;
   int            *rvalues,*svalues,base,imdex,nmax,*values,len,*indx,nprocslocal;
@@ -510,29 +510,29 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
   MPI_Status     recv_status,*send_status;
 
   /*  first count number of contributors to each processor */
-  nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
+  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC((nx+1)*sizeof(int)); CHKPTRQ(owner);
   for ( i=0; i<nx; i++ ) {
     idx = inidx[i];
     found = 0;
-    for ( j=0; j<numtids; j++ ) {
+    for ( j=0; j<size; j++ ) {
       if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
     if (!found) SETERRQ(1,"PtoSScatterCtxCreate:Index out of range");
   }
-  nprocslocal = nprocs[mytid]; 
-  nprocs[mytid] = procs[mytid] = 0; 
-  nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
+  nprocslocal = nprocs[rank]; 
+  nprocs[rank] = procs[rank] = 0; 
+  nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(work);
-  MPI_Allreduce( procs, work,numtids,MPI_INT,MPI_SUM,comm);
-  nrecvs = work[mytid]; 
-  MPI_Allreduce( nprocs, work,numtids,MPI_INT,MPI_MAX,comm);
-  nmax = work[mytid];
+  work = (int *) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(work);
+  MPI_Allreduce( procs, work,size,MPI_INT,MPI_SUM,comm);
+  nrecvs = work[rank]; 
+  MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);
+  nmax = work[rank];
   PETSCFREE(work);
 
   /* post receives:   */
@@ -549,19 +549,19 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
   */
   svalues = (int *) PETSCMALLOC( (nx+1)*sizeof(int) ); CHKPTRQ(svalues);
   send_waits = (MPI_Request *)PETSCMALLOC((nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
-  starts = (int *) PETSCMALLOC( (numtids+1)*sizeof(int) ); CHKPTRQ(starts);
+  starts = (int *) PETSCMALLOC( (size+1)*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
-  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<nx; i++ ) {
-    if (owner[i] != mytid) {
+    if (owner[i] != rank) {
       svalues[starts[owner[i]]++] = inidx[i];
     }
   }
 
   starts[0] = 0;
-  for ( i=1; i<numtids+1; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size+1; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   count = 0;
-  for ( i=0; i<numtids; i++ ) {
+  for ( i=0; i<size; i++ ) {
     if (procs[i]) {
       MPI_Isend((void*)(svalues+starts[i]),nprocs[i],MPI_INT,i,tag,
                 comm,send_waits+count++);
@@ -569,7 +569,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
   }
   PETSCFREE(starts);
 
-  base = owners[mytid];
+  base = owners[rank];
 
   /*  wait on receives */
   lens = (int *) PETSCMALLOC( 2*(nrecvs+1)*sizeof(int) ); CHKPTRQ(lens);
@@ -612,8 +612,8 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
     for ( i=0; i<nrecvs; i++ ) {
       to->starts[i+1] = to->starts[i] + lens[indx[i]];
       to->procs[i]    = source[indx[i]];
-      if (source[indx[i]] < mytid) to->nbelow++;
-      if (source[indx[i]] == mytid) to->nself = 1;
+      if (source[indx[i]] < rank) to->nbelow++;
+      if (source[indx[i]] == rank) to->nself = 1;
       values = rvalues + indx[i]*nmax;
       for ( j=0; j<lens[indx[i]]; j++ ) {
         to->indices[to->starts[i] + j] = values[j] - base;
@@ -640,20 +640,20 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
   ctx->fromdata  = (void *) from;
 
   /* move data into receive scatter */
-  lowner = (int *) PETSCMALLOC( (numtids+nsends+1)*sizeof(int) ); CHKPTRQ(lowner);
-  start = lowner + numtids;
+  lowner = (int *) PETSCMALLOC( (size+nsends+1)*sizeof(int) ); CHKPTRQ(lowner);
+  start = lowner + size;
   count = 0; from->starts[0] = start[0] = 0;
-  for ( i=0; i<numtids; i++ ) {
+  for ( i=0; i<size; i++ ) {
     if (procs[i]) {
-      if (i < mytid) from->nbelow++;
-      if (i == mytid) from->nself = 1;
+      if (i < rank) from->nbelow++;
+      if (i == rank) from->nself = 1;
       lowner[i]            = count;
       from->procs[count++] = i;
       from->starts[count]  = start[count] = start[count-1] + nprocs[i];
     }
   }
   for ( i=0; i<nx; i++ ) {
-    if (owner[i] != mytid) {
+    if (owner[i] != rank) {
       from->indices[start[lowner[owner[i]]]++] = inidy[i];
     }
   }
@@ -679,8 +679,8 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
     nt = 0;
     for ( i=0; i<nx; i++ ) {
       idx = inidx[i];
-      if (idx >= owners[mytid] && idx < owners[mytid+1]) {
-        from->local.slots[nt] = idx - owners[mytid];        
+      if (idx >= owners[rank] && idx < owners[rank+1]) {
+        from->local.slots[nt] = idx - owners[rank];        
         to->local.slots[nt++] = inidy[i];        
       }
     }
@@ -707,8 +707,8 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatterC
 {
   Vec_MPI        *y = (Vec_MPI *)yin->data;
   VecScatterMPI  *from,*to;
-  int            *source,nprocslocal,*lens,mytid = y->mytid, *owners = y->ownership;
-  int            numtids = y->numtids,*lowner,*start;
+  int            *source,nprocslocal,*lens,rank = y->rank, *owners = y->ownership;
+  int            size = y->size,*lowner,*start;
   int            *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
   int            *owner,*starts,count,tag = yin->tag,slen;
   int            *rvalues,*svalues,base,imdex,nmax,*values,len,found;
@@ -717,29 +717,29 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatterC
   MPI_Status     recv_status,*send_status;
 
   /*  first count number of contributors to each processor */
-  nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
+  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC((nx+1)*sizeof(int)); CHKPTRQ(owner); /* see note*/
   for ( i=0; i<nx; i++ ) {
     idx = inidy[i];
     found = 0;
-    for ( j=0; j<numtids; j++ ) {
+    for ( j=0; j<size; j++ ) {
       if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
     if (!found) SETERRQ(1,"StoPScatterCtxCreate:Index out of range");
   }
-  nprocslocal = nprocs[mytid];
-  nprocs[mytid] = procs[mytid] = 0; 
-  nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
+  nprocslocal = nprocs[rank];
+  nprocs[rank] = procs[rank] = 0; 
+  nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(work);
-  MPI_Allreduce( procs, work,numtids,MPI_INT,MPI_SUM,comm);
-  nrecvs = work[mytid]; 
-  MPI_Allreduce( nprocs, work,numtids,MPI_INT,MPI_MAX,comm);
-  nmax = work[mytid];
+  work = (int *) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(work);
+  MPI_Allreduce( procs, work,size,MPI_INT,MPI_SUM,comm);
+  nrecvs = work[rank]; 
+  MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);
+  nmax = work[rank];
   PETSCFREE(work);
 
   /* post receives:   */
@@ -757,19 +757,19 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatterC
   */
   svalues = (int *) PETSCMALLOC( (nx+1)*sizeof(int) ); CHKPTRQ(svalues);
   send_waits = (MPI_Request *)PETSCMALLOC((nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
-  starts = (int *) PETSCMALLOC( (numtids+1)*sizeof(int) ); CHKPTRQ(starts);
+  starts = (int *) PETSCMALLOC( (size+1)*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
-  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<nx; i++ ) {
-    if (owner[i] != mytid) {
+    if (owner[i] != rank) {
       svalues[starts[owner[i]]++] = inidy[i];
     }
   }
 
   starts[0] = 0;
-  for ( i=1; i<numtids+1; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size+1; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   count = 0;
-  for ( i=0; i<numtids; i++ ) {
+  for ( i=0; i<size; i++ ) {
     if (procs[i]) {
       MPI_Isend(svalues+starts[i],nprocs[i],MPI_INT,i,tag,comm,send_waits+count++);
     }
@@ -792,10 +792,10 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatterC
   ctx->todata  = (void *) to;
 
   /* move data into send scatter context */
-  lowner = (int *) PETSCMALLOC( (numtids+nsends+1)*sizeof(int) ); CHKPTRQ(lowner);
-  start = lowner + numtids;
+  lowner = (int *) PETSCMALLOC( (size+nsends+1)*sizeof(int) ); CHKPTRQ(lowner);
+  start = lowner + size;
   count = 0; to->starts[0] = start[0] = 0;
-  for ( i=0; i<numtids; i++ ) {
+  for ( i=0; i<size; i++ ) {
     if (procs[i]) {
       lowner[i]          = count;
       to->procs[count++] = i;
@@ -803,13 +803,13 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatterC
     }
   }
   for ( i=0; i<nx; i++ ) {
-    if (owner[i] != mytid) {
+    if (owner[i] != rank) {
       to->indices[start[lowner[owner[i]]]++] = inidx[i];
     }
   }
   PETSCFREE(lowner); PETSCFREE(owner); PETSCFREE(nprocs);
 
-  base = owners[mytid];
+  base = owners[rank];
 
   /*  wait on receives */
   lens = (int *) PETSCMALLOC( 2*(nrecvs+1)*sizeof(int) ); CHKPTRQ(lens);
@@ -872,8 +872,8 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatterC
     nt = 0;
     for ( i=0; i<ny; i++ ) {
       idx = inidy[i];
-      if (idx >= owners[mytid] && idx < owners[mytid+1]) {
-        to->local.slots[nt] = idx - owners[mytid];        
+      if (idx >= owners[rank] && idx < owners[rank+1]) {
+        to->local.slots[nt] = idx - owners[rank];        
         from->local.slots[nt++] = inidx[i];        
       }
     }

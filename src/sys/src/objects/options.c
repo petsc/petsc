@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.48 1995/10/11 15:18:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.49 1995/10/17 21:41:24 bsmith Exp curfman $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -98,10 +98,10 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env,char *help)
   ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr);
   ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
   if (PetscBeganMPI) {
-    int mytid,numtid;
-    MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-    MPI_Comm_size(MPI_COMM_WORLD,&numtid);
-    PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",mytid,numtid);
+    int rank,size;
+    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+    MPI_Comm_size(MPI_COMM_WORLD,&size);
+    PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",rank,size);
   }
   if (help && OptionsHasName(0,"-help")) {
     MPIU_printf(MPI_COMM_WORLD,help);
@@ -135,7 +135,7 @@ $             this slows your code by at least a factor of 10.
 @*/
 int PetscFinalize()
 {
-  int  ierr,i,mytid = 0;
+  int  ierr,i,rank = 0;
   char mname[64];
 
   ViewerDestroy_Private();
@@ -153,12 +153,12 @@ int PetscFinalize()
     PetscPopSignalHandler();
   }
   OptionsHasName(0,"-trdump");
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (OptionsHasName(0,"-optionstable")) {
-    if (!mytid) OptionsPrint(stdout);
+    if (!rank) OptionsPrint(stdout);
   }
   if (OptionsHasName(0,"-optionsleft")) {
-    if (!mytid) {
+    if (!rank) {
       int nopt = OptionsAllUsed();
       if (nopt == 0) 
         fprintf(stdout,"There are no unused options.\n");
@@ -186,8 +186,8 @@ int PetscFinalize()
     NRDestroyAll(); 
   }
   if (PetscBeganMPI) {
-    MPI_Comm_size(MPI_COMM_WORLD,&mytid);
-    PLogInfo(0,"[%d] PETSc successfully ended!\n",mytid);
+    MPI_Comm_size(MPI_COMM_WORLD,&rank);
+    PLogInfo(0,"[%d] PETSc successfully ended!\n",rank);
     ierr = MPI_Finalize(); CHKERRQ(ierr);
   }
   return 0;
@@ -277,7 +277,7 @@ int OptionsCheckInitial_Private()
   }
   if (OptionsGetString(0,"-start_in_debugger",string,64)) {
     char *debugger = 0, *display = 0;
-    int  xterm     = 1, sfree = 0,numtid = 1;
+    int  xterm     = 1, sfree = 0,size = 1;
     MPI_Errhandler abort_handler;
     /*
        we have to make sure that all processors have opened 
@@ -285,14 +285,14 @@ int OptionsCheckInitial_Private()
        debugger has stated it is likely to receive a SIGUSR1
        and kill the program. 
     */
-    MPI_Comm_size(MPI_COMM_WORLD,&numtid);
-    if (numtid > 2) {
+    MPI_Comm_size(MPI_COMM_WORLD,&size);
+    if (size > 2) {
       int        i,dummy;
       MPI_Status status;
-      for ( i=0; i<numtid; i++) {
+      for ( i=0; i<size; i++) {
         MPI_Send(&dummy,1,MPI_INT,i,109,MPI_COMM_WORLD);
       }
-      for ( i=0; i<numtid; i++) {
+      for ( i=0; i<size; i++) {
         MPI_Recv(&dummy,1,MPI_INT,i,109,MPI_COMM_WORLD,&status);
       }
     }

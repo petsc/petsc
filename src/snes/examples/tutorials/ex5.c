@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.29 1995/09/30 19:31:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.30 1995/10/12 04:20:45 bsmith Exp curfman $";
 #endif
 
 static char help[] =
@@ -56,7 +56,7 @@ int main( int argc, char **argv )
   SNES          snes;
   SNESMethod    method = SNES_EQ_NLS;  /* nonlinear solution method */
   Vec           x,r;
-  int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, numtids; 
+  int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, size; 
   AppCtx        user;
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
   Mat           J;
@@ -73,11 +73,11 @@ int main( int argc, char **argv )
   }
   N = user.mx*user.my;
 
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
   OptionsGetInt(0,"-Nx",&Nx);
   OptionsGetInt(0,"-Ny",&Ny);
-  if (Nx*Ny != numtids && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
-    SETERRQ(1,"Incompatible number of processors:  Nx * Ny != numtids");
+  if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
+    SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
  
   /* Set up distributed array */
   ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,stencil,user.mx,

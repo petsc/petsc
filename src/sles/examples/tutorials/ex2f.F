@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.4 1995/10/10 01:21:02 curfman Exp bsmith $";
+C    "$Id: ex7.F,v 1.5 1995/10/17 21:42:34 bsmith Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -10,7 +10,7 @@ C
 C  This example demonstrates basic use of the SLES Fortran interface.
 C
       integer          i, j, II, JJ, ierr, m, n
-      integer          mytid, numtids, its, Istart, Iend
+      integer          rank, size, its, Istart, Iend
       double precision v, zero, one, none
       Vec              x, u, b
       Mat              A 
@@ -25,8 +25,8 @@ C
       n = 3
       call OptionsGetInt(' ','-m',m,ierr)
       call OptionsGetInt(' ','-n',n,ierr)
-      call MPI_Comm_rank(MPI_COMM_WORLD,mytid,ierr)
-      call MPI_Comm_size(MPI_COMM_WORLD,numtids,ierr)
+      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+      call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
 
 C Create and assemble matrix
       call MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
@@ -79,7 +79,7 @@ C Solve linear system
 C Check the error
       call VecAXPY(none,u,x,ierr)
       call VecNorm(x,norm,ierr)
-      if (mytid .eq. 0) then
+      if (rank .eq. 0) then
         if (norm .gt. 1.e-12) then
            write(6,100) norm, its
         else

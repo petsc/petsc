@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.9 1995/09/30 19:31:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.10 1995/10/12 04:21:23 bsmith Exp curfman $";
 #endif
       
 /* Peter Mell created this file on 7/25/95 */
@@ -15,7 +15,7 @@ static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  int            mytid,M = 3, N = 5, P=3; 
+  int            rank,M = 3, N = 5, P=3; 
   int            m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, ierr;
   int            s=1, w=2;
   DA             da;
@@ -44,14 +44,14 @@ int main(int argc,char **argv)
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   value = 1;
   ierr = VecSet(&value,global); CHKERRA(ierr);
      
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
-  value = mytid;
+  value = rank;
   ierr = VecScale(&value,local); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
   if (M*N*P<40) {
-    MPIU_printf(MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",mytid);
+    MPIU_printf(MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",rank);
     ierr = VecView(local,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
   }
   ierr = DAView(da,(Viewer) win); CHKERRA(ierr);

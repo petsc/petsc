@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.61 1995/10/13 19:40:06 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.62 1995/10/16 23:00:58 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -906,7 +906,43 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
 
 static int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
 {
-  SETERRQ(1,"MatView_SeqBDiag_Binary: Routine not finished yet.");
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          i, ict, fd, *col_lens, *cval, *col, ierr, nz;
+  Scalar       *anonz, *val;
+
+  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
+
+  /* For MATSEQBDIAG format, maxnz = nz */
+  col_lens    = (int *) PETSCMALLOC( (4+a->m)*sizeof(int) ); CHKPTRQ(col_lens);
+  col_lens[0] = MAT_COOKIE;
+  col_lens[1] = a->m;
+  col_lens[2] = a->n;
+  col_lens[3] = a->maxnz;
+
+  /* Should do translation using less memory; this is just a quick initial version */
+  cval  = (int *) PETSCMALLOC( (a->maxnz)*sizeof(int) ); CHKPTRQ(cval);
+  anonz = (Scalar *) PETSCMALLOC( (a->maxnz)*sizeof(Scalar) ); CHKPTRQ(anonz);
+
+  ict = 0;
+  for (i=0; i<a->m; i++) {
+    ierr = MatGetRow(A,i,&nz,&col,&val); CHKERRQ(ierr);
+    col_lens[4+i] = nz;
+    PetscMemcpy(&cval[ict],col,nz*sizeof(int)); CHKERRQ(ierr);
+    PetscMemcpy(&anonz[ict],anonz,nz*sizeof(Scalar)); CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,i,&nz,&col,&val); CHKERRQ(ierr);
+    ict += nz;
+  }
+  if (ict != a->maxnz) SETERRQ(1,"MatView_SeqBDiag_Binary:Error in nonzero count");
+
+  /* Store lengths of each row and write (including header) to file */
+  ierr = SYWrite(fd,col_lens,4+a->m,SYINT,1); CHKERRQ(ierr);
+  PETSCFREE(col_lens);
+
+  /* Store column indices (zero start index) */
+  ierr = SYWrite(fd,cval,a->maxnz,SYINT,0); CHKERRQ(ierr);
+
+  /* Store nonzero values */
+  ierr = SYWrite(fd,anonz,a->maxnz,SYSCALAR,0); CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.16 1995/09/30 19:31:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.17 1995/10/12 04:21:23 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests various DA routines.\n\n";
@@ -13,7 +13,7 @@ static char help[] = "Tests various DA routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  int      mytid, M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr;
+  int      rank, M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr;
   DA       da;
   DrawCtx  win;
   Vec      local, global;
@@ -37,8 +37,8 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  value = mytid+1;
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  value = rank+1;
   ierr = VecScale(&value,local); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,ADD_VALUES,global); CHKERRA(ierr);
 

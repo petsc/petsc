@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.10 1995/09/30 19:31:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.11 1995/10/12 04:21:23 bsmith Exp curfman $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -13,7 +13,7 @@ static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  int            mytid,M = 10, N = 8, m = PETSC_DECIDE,ierr;
+  int            rank,M = 10, N = 8, m = PETSC_DECIDE,ierr;
   int            s=2, w=2,n = PETSC_DECIDE ;
   DAPeriodicType wrap = DA_NONPERIODIC;
   DA             da;
@@ -41,14 +41,14 @@ int main(int argc,char **argv)
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   value = 1;
   ierr = VecSet(&value,global); CHKERRA(ierr);
 
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
-  value = mytid;
+  value = rank;
   ierr = VecScale(&value,local); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
-  MPIU_printf (MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",mytid);
+  MPIU_printf (MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",rank);
 
   ierr = DAView(da,(Viewer) win); CHKERRA(ierr);
   ierr = DADestroy(da); CHKERRA(ierr);

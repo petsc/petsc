@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.27 1995/10/04 23:17:43 curfman Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.28 1995/10/11 17:57:48 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -26,9 +26,9 @@ int ViewerInitialize_Private()
 static int ViewerDestroy_File(PetscObject obj)
 {
   Viewer v = (Viewer) obj;
-  int    mytid = 0;
-  if (v->type == ASCII_FILES_VIEWER) {MPI_Comm_rank(v->comm,&mytid);} 
-  if (!mytid && v->fd != stderr && v->fd != stdout) fclose(v->fd);
+  int    rank = 0;
+  if (v->type == ASCII_FILES_VIEWER) {MPI_Comm_rank(v->comm,&rank);} 
+  if (!rank && v->fd != stderr && v->fd != stdout) fclose(v->fd);
   PLogObjectDestroy(obj);
   PETSCHEADERDESTROY(obj);
   return 0;

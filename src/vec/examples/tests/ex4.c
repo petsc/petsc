@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.27 1995/10/11 17:52:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.28 1995/10/12 04:13:20 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Scatters from a parallel vector into seqential vectors.\n\n";
@@ -13,7 +13,7 @@ static char help[] = "Scatters from a parallel vector into seqential vectors.\n\
 
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr, idx1[2] = {0,3}, idx2[2] = {1,4},mytid;
+  int           n = 5, ierr, idx1[2] = {0,3}, idx2[2] = {1,4},rank;
   Scalar        one = 1.0, two = 2.0;
   Vec           x,y;
   IS            is1,is2;
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   OptionsGetInt(0,"-n",&n);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
   /* create two vectors */
   ierr = VecCreateMPI(MPI_COMM_WORLD,n,PETSC_DECIDE,&x); CHKERRA(ierr);
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
-  if (!mytid) {VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
+  if (!rank) {VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
 
   ierr = ISDestroy(is1); CHKERRA(ierr);
   ierr = ISDestroy(is2); CHKERRA(ierr);

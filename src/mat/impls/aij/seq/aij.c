@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.102 1995/10/19 15:47:56 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.103 1995/10/19 19:43:09 curfman Exp curfman $";
 #endif
 
 #include "aij.h"
@@ -1177,12 +1177,12 @@ int MatLoad_SeqAIJ(Viewer bview,MatType type,Mat *A)
 {
   Mat_SeqAIJ   *a;
   Mat          B;
-  int          i, nz, ierr, fd, header[4],numtid,*rowlengths = 0,M,N,shift;
+  int          i, nz, ierr, fd, header[4],size,*rowlengths = 0,M,N,shift;
   PetscObject  vobj = (PetscObject) bview;
   MPI_Comm     comm = vobj->comm;
 
-  MPI_Comm_size(comm,&numtid);
-  if (numtid > 1) SETERRQ(1,"MatLoad_SeqAIJ:view must have one processor");
+  MPI_Comm_size(comm,&size);
+  if (size > 1) SETERRQ(1,"MatLoad_SeqAIJ:view must have one processor");
   ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqAIJ:not matrix object in file");

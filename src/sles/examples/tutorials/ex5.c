@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.34 1995/10/12 04:18:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.35 1995/10/12 20:05:41 curfman Exp curfman $";
 #endif
 
 static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
@@ -18,16 +18,16 @@ int main(int argc,char **args)
   Mat     C; 
   Scalar  v, none = -1.0;
   int     I, J, ldim, ierr, low, high, iglobal, Istart,Iend;
-  int     i, j, m = 3, n = 2, mytid, numtids, its;
+  int     i, j, m = 3, n = 2, rank, size, its;
   Vec     x, u, b;
   SLES    sles;
   double  norm;
 
   PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(0,"-m",&m);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
-  n = 2*numtids;
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  n = 2*size;
 
   /* Create and assemble matrix */
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
@@ -52,7 +52,7 @@ int main(int argc,char **args)
   ierr = VecGetOwnershipRange(x,&low,&high); CHKERRA(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
-    v = (Scalar)(i + 100*mytid);
+    v = (Scalar)(i + 100*rank);
     ierr = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(u); CHKERRA(ierr);
@@ -96,7 +96,7 @@ int main(int argc,char **args)
   ierr = MatZeroEntries(C); CHKERRA(ierr);
   /* Fill matrix again */
   for ( i=0; i<m; i++ ) { 
-    for ( j=2*mytid; j<2*mytid+2; j++ ) {
+    for ( j=2*rank; j<2*rank+2; j++ ) {
       v = -1.0;  I = j + n*i;
       if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
       if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}

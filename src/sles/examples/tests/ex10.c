@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.40 1995/10/11 19:35:08 curfman Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.41 1995/10/12 20:06:30 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -27,7 +27,7 @@ extern int paulintegrate20(double K[60][60]);
 int main(int argc,char **args)
 {
   Mat     mat;
-  int     ierr, i, its, m = 3, rdim, cdim, rstart, rend, mytid, numtids;
+  int     ierr, i, its, m = 3, rdim, cdim, rstart, rend, rank, size;
   Scalar  v, neg1 = -1.0;
   Vec     u, x, b;
   SLES    sles;
@@ -36,8 +36,8 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(0,"-m",&m);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
 
   /* Form matrix */
   ierr = GetElasticityMatrix(m,&mat); CHKERRA(ierr);
@@ -49,7 +49,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   for (i=rstart; i<rend; i++) {
-    v = (Scalar)(i-rstart + 100*mytid); 
+    v = (Scalar)(i-rstart + 100*rank); 
     ierr = VecSetValues(u,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
   } 
   ierr = VecAssemblyBegin(u); CHKERRA(ierr);

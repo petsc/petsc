@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.39 1995/10/06 22:23:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.40 1995/10/11 15:18:56 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -70,11 +70,11 @@ int PLogAllowInfo(PetscTruth flag)
 int PLogInfo(PetscObject obj,char *format,...)
 {
   va_list Argp;
-  int     mytid;
+  int     rank;
   if (!PrintInfo) return 0;
-  if (!obj) mytid = 0;
-  else      {MPI_Comm_rank(obj->comm,&mytid);} 
-  if (mytid) return 0;
+  if (!obj) rank = 0;
+  else      {MPI_Comm_rank(obj->comm,&rank);} 
+  if (rank) return 0;
   va_start( Argp, format );
   vfprintf(stdout,format,Argp);
   va_end( Argp );
@@ -400,8 +400,8 @@ int PLogBegin()
 
    Notes:
    The default file name is 
-$      Log.<mytid>
-   where <mytid> is the processor number. If no name is specified, 
+$      Log.<rank>
+   where <rank> is the processor number. If no name is specified, 
    this file will be used.
 
    Options Database Keys:
@@ -416,7 +416,7 @@ $      with PETSC_LOG)
 @*/
 int PLogDump(char* name)
 {
-  int    i,mytid;
+  int    i,rank;
   FILE   *fd;
   char   file[64];
   double flops,_TotalTime;
@@ -424,9 +424,9 @@ int PLogDump(char* name)
   PetscTime(_TotalTime);
   _TotalTime -= BaseTime;
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  if (name) sprintf(file,"%s.%d",name,mytid);
-  else  sprintf(file,"Log.%d",mytid);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  if (name) sprintf(file,"%s.%d",name,rank);
+  else  sprintf(file,"Log.%d",rank);
   fd = fopen(file,"w"); if (!fd) SETERRQ(1,"PlogDump:cannot open file");
 
   fprintf(fd,"Objects created %d Destroyed %d\n",nobjects,
@@ -609,11 +609,11 @@ $  -log_summary : Prints summary of log information (for code
 int PLogPrint(MPI_Comm comm,FILE *fd)
 {
   double maxo,mino,aveo,mem,totmem,maxmem,minmem;
-  int    numtid,i;
+  int    size,i;
   double maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott;
   double fmin,fmax,ftot,wdou,totts,totff;
 
-  MPI_Comm_size(comm,&numtid);
+  MPI_Comm_size(comm,&size);
 
   PetscTime(_TotalTime);  _TotalTime -= BaseTime;
 
@@ -621,17 +621,17 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   MPI_Reduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,0,comm);
   MPI_Reduce(&wdou,&maxf,1,MPI_DOUBLE,MPI_MAX,0,comm);
   MPI_Reduce(&wdou,&totf,1,MPI_DOUBLE,MPI_SUM,0,comm);
-  avef = (totf)/((double) numtid);
+  avef = (totf)/((double) size);
   wdou = nobjects;
   MPI_Reduce(&wdou,&mino,1,MPI_DOUBLE,MPI_MIN,0,comm);
   MPI_Reduce(&wdou,&maxo,1,MPI_DOUBLE,MPI_MAX,0,comm);
   MPI_Reduce(&wdou,&aveo,1,MPI_DOUBLE,MPI_SUM,0,comm);
-  aveo = (aveo)/((double) numtid);
+  aveo = (aveo)/((double) size);
   wdou = _TotalTime;
   MPI_Reduce(&wdou,&mint,1,MPI_DOUBLE,MPI_MIN,0,comm);
   MPI_Reduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
   MPI_Reduce(&wdou,&tott,1,MPI_DOUBLE,MPI_SUM,0,comm);
-  avet = (tott)/((double) numtid);
+  avet = (tott)/((double) size);
 
   MPIU_fprintf(comm,fd,"\nPerformance Summary:\n");
 

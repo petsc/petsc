@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.9 1995/09/30 19:26:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.10 1995/10/12 04:13:00 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests various IS routines\n\n";
@@ -12,18 +12,18 @@ static char help[] = "Tests various IS routines\n\n";
 
 int main(int argc,char **argv)
 {
-  int      n = 5, ierr,indices[5],mytid;
+  int      n = 5, ierr,indices[5],rank;
   IS       is;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
   /* create an index set */
-  indices[0] = mytid + 1; 
-  indices[1] = mytid + 2; 
-  indices[2] = mytid + 3; 
-  indices[3] = mytid + 4; 
-  indices[4] = mytid + 5; 
+  indices[0] = rank + 1; 
+  indices[1] = rank + 2; 
+  indices[2] = rank + 3; 
+  indices[3] = rank + 4; 
+  indices[4] = rank + 5; 
   ierr = ISCreateSeq(MPI_COMM_SELF,n,indices,&is); CHKERRA(ierr);
 
   ierr = ISView(is,STDOUT_VIEWER_SELF); CHKERRA(ierr);

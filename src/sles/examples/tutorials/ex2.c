@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.29 1995/09/30 19:30:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.30 1995/10/12 04:18:22 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.  To test the\n\
@@ -11,19 +11,19 @@ processors differently from the way it is assembled.\n\n";
 
 int main(int argc,char **args)
 {
-  int       i, j, I, J, ierr, m = 3, n = 2, mytid, numtids, its;
+  int       i, j, I, J, ierr, m = 3, n = 2, rank, size, its;
   Scalar    v, zero = 0.0, one = 1.0, none = -1.0;
   Vec       x, u, b;                       Mat       A; 
   SLES      sles;                          double    norm;
   PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(0,"-m",&m);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);  n = 2*numtids;
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);  n = 2*size;
 
   /* Create and assemble matrix */
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) {   /* assemble matrix for the five point stencil */
-    for ( j=2*mytid; j<2*mytid+2; j++ ) {
+    for ( j=2*rank; j<2*rank+2; j++ ) {
       v = -1.0;  I = j + n*i;
       if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
       if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}

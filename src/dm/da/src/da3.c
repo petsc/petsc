@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.16 1995/09/11 19:20:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.17 1995/10/01 21:53:44 bsmith Exp curfman $";
 #endif
 
 /*
@@ -16,10 +16,10 @@ int DAView_3d(PetscObject dain,Viewer ptr)
 {
   DA da = (DA) dain;
   PetscObject vobj = (PetscObject)ptr;
-  int         mytid, ierr;
+  int         rank, ierr;
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
 
-  MPI_Comm_rank(da->comm,&mytid); 
+  MPI_Comm_rank(da->comm,&rank); 
 
   if (!ptr) { /* so that viewers may be used from debuggers */
     ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
@@ -33,14 +33,14 @@ int DAView_3d(PetscObject dain,Viewer ptr)
     if (vobj->type == ASCII_FILE_VIEWER) {
       MPIU_Seq_begin(da->comm,1);
       fprintf(fd,"Processor [%d] M %d N %d P %d m %d n %d p %d w %d s %d\n",
-                 mytid,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);
+                 rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);
       fprintf(fd,"X range %d %d Y range %d %d\n",da->xs,da->xe,da->ys,da->ye);
       fflush(fd);
       MPIU_Seq_end(da->comm,1);
     }
     else if (vobj->type == ASCII_FILES_VIEWER) {
 
-      if (!mytid) {
+      if (!rank) {
       }
       else {
       }
@@ -58,7 +58,7 @@ int DAView_3d(PetscObject dain,Viewer ptr)
     DrawSetCoordinates(win,xmin,ymin,xmax,ymax);
 
     /* first processor draw all node lines */
-    if (!mytid) {
+    if (!rank) {
       for (k=0; k<da->P; k++) {
         ymin = 0.0; ymax = (double) (da->N - 1);
         for ( xmin=(double)(k*(da->M+1)); xmin<(double)(da->M+(k*(da->M+1))); xmin++ ) {
@@ -95,7 +95,7 @@ int DAView_3d(PetscObject dain,Viewer ptr)
         base = (da->base+(da->xe-da->xs)*(da->ye-da->ys)*(k-da->zs))/da->w;
 
         /* Identify which processor owns the box */
-        sprintf(node,"%d",mytid);
+        sprintf(node,"%d",rank);
         DrawText(win,xmin+(da->M+1)*k+.2,ymin+.3,DRAW_RED,node);
 
         for ( y=ymin; y<=ymax; y++ ) {
@@ -173,7 +173,7 @@ $      DA_YZPERIODIC
 int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type, 
              int M, int N, int P, int m, int n, int p, int w, int s, DA *inra)
 {
-  int           mytid, numtid,ierr,start,end,pm;
+  int           rank, size,ierr,start,end,pm;
   int           xs,xe,ys,ye,zs,ze,x,y,z,Xs,Xe,Ys,Ye,Zs,Ze;
   int           left,up,down,bottom,top,i,j,k,*idx,nn;
   int           n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
@@ -190,26 +190,26 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   PLogObjectCreate(da);
   PLogObjectMemory(da,sizeof(struct _DA));
 
-  MPI_Comm_size(comm,&numtid); 
-  MPI_Comm_rank(comm,&mytid); 
+  MPI_Comm_size(comm,&size); 
+  MPI_Comm_rank(comm,&rank); 
 
   /* Partition the array among the processors */
   if (m == PETSC_DECIDE && n != PETSC_DECIDE && p != PETSC_DECIDE) {
-    m = numtid/(n*p);
+    m = size/(n*p);
   } 
   else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p != PETSC_DECIDE) {
-    n = numtid/(m*p);
+    n = size/(m*p);
   }
   else if (m != PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
-    p = numtid/(m*n);
+    p = size/(m*n);
   }
   else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p != PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int) sqrt( ((double)M)*((double)numtid)/((double)N*p) );
+    m = (int) sqrt( ((double)M)*((double)size)/((double)N*p) );
     if (m == 0) m = 1;
     while (m > 0) {
-      n = numtid/(m*p);
-      if (m*n*p == numtid) break;
+      n = size/(m*p);
+      if (m*n*p == size) break;
       m--;
     }
     if (m == 0) SETERRQ(1,"DACreate3d:bad p value");
@@ -217,11 +217,11 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   }  
   else if (m == PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int) sqrt( ((double)M)*((double)numtid)/((double)P*n) );
+    m = (int) sqrt( ((double)M)*((double)size)/((double)P*n) );
     if (m == 0) m = 1;
     while (m > 0) {
-      p = numtid/(m*n);
-      if (m*n*p == numtid) break;
+      p = size/(m*n);
+      if (m*n*p == size) break;
       m--;
     }
     if (m == 0) SETERRQ(1,"DACreate3d:bad n value");
@@ -229,11 +229,11 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   } 
   else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (int) sqrt( ((double)N)*((double)numtid)/((double)P*m) );
+    n = (int) sqrt( ((double)N)*((double)size)/((double)P*m) );
     if (n == 0) n = 1;
     while (n > 0) {
-      p = numtid/(m*n);
-      if (m*n*p == numtid) break;
+      p = size/(m*n);
+      if (m*n*p == size) break;
       n--;
     }
     if (n == 0) SETERRQ(1,"DACreate3d:bad m value");
@@ -241,49 +241,49 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   } 
   else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (int) pow( ((double)N*N)*((double)numtid)/((double)P*M), 1./3. );
+    n = (int) pow( ((double)N*N)*((double)size)/((double)P*M), 1./3. );
     if (n == 0) n = 1;
     while (n > 0) {
-      pm = numtid/n;
-      if (n*pm == numtid) break;
+      pm = size/n;
+      if (n*pm == size) break;
       n--;
     }   
     if (n == 0) n = 1; 
-    m = (int) sqrt( ((double)M)*((double)numtid)/((double)P*n) );
+    m = (int) sqrt( ((double)M)*((double)size)/((double)P*n) );
     if (m == 0) m = 1;
     while (m > 0) {
-      p = numtid/(m*n);
-      if (m*n*p == numtid) break;
+      p = size/(m*n);
+      if (m*n*p == size) break;
       m--;
     }
     if (M > P && m < p) {int _m = m; m = p; p = _m;}
   } 
-  else if (m*n*p != numtid) SETERRQ(1,"DACreate3d:Given Bad partition"); 
+  else if (m*n*p != size) SETERRQ(1,"DACreate3d:Given Bad partition"); 
 
-  if (m*n*p != numtid) SETERRQ(1,"DACreate3d:Could not find good partition");  
+  if (m*n*p != size) SETERRQ(1,"DACreate3d:Could not find good partition");  
   if (M < m) SETERRQ(1,"DACreate3d:Partition in x direction is too fine!");
   if (N < n) SETERRQ(1,"DACreate3d:Partition in y direction is too fine!");
   if (P < p) SETERRQ(1,"DACreate3d:Partition in z direction is too fine!");
 
   /* determine local owned region */
-  x = M/m + ((M % m) > (mytid % m));
-  y = N/n + ((N % n) > ((mytid % (m*n)) /m)); 
-  z = P/p + ((P % p) > (mytid / (m*n)));
+  x = M/m + ((M % m) > (rank % m));
+  y = N/n + ((N % n) > ((rank % (m*n)) /m)); 
+  z = P/p + ((P % p) > (rank / (m*n)));
 
   if (x < s) SETERRQ(1,"DACreate3d:Column width is too thin for stencil!");
   if (y < s) SETERRQ(1,"DACreate3d:Row width is too thin for stencil!");
   if (z < s) SETERRQ(1,"DACreate3d:Plane width is too thin for stencil!");
 
-  if ((M % m) > (mytid % m)) { xs = (mytid % m)*x; }
-  else { xs = (M % m)*(x+1) + ((mytid % m)-(M % m))*x; }
+  if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
+  else { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
   xe = xs + x;
 
-  if ((N % n) > ((mytid % (m*n)) /m)) { ys = ((mytid % (m*n))/m)*y; }
-  else { ys = (N % n)*(y+1) + (((mytid % (m*n))/m)-(N % n))*y; }
+  if ((N % n) > ((rank % (m*n)) /m)) { ys = ((rank % (m*n))/m)*y; }
+  else { ys = (N % n)*(y+1) + (((rank % (m*n))/m)-(N % n))*y; }
   ye = ys + y;
 
-  if ((P % p) > (mytid / (m*n))) { zs = (mytid/(m*n))*z; }
-  else { zs = (P % p)*(z+1) + ((mytid/(m*n))-(P % p))*z; }
+  if ((P % p) > (rank / (m*n))) { zs = (rank/(m*n))*z; }
+  else { zs = (P % p)*(z+1) + ((rank/(m*n))-(P % p))*z; }
   ze = zs + z;
 
   /* determine ghost region */
@@ -328,10 +328,10 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
 
   /* determine starting point of each processor */
   nn = x*y*z;
-  bases = (int *) PETSCMALLOC( (numtid+1)*sizeof(int) ); CHKPTRQ(bases);
+  bases = (int *) PETSCMALLOC( (size+1)*sizeof(int) ); CHKPTRQ(bases);
   MPI_Allgather(&nn,1,MPI_INT,bases+1,1,MPI_INT,comm);
   bases[0] = 0;
-  for ( i=1; i<=numtid; i++ ) {
+  for ( i=1; i<=size; i++ ) {
     bases[i] += bases[i-1];
   }
 
@@ -424,189 +424,189 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
  
   /* Assume Nodes are Internal to the Cube */
  
-  n0  = mytid - m*n - m - 1;
-  n1  = mytid - m*n - m;
-  n2  = mytid - m*n - m + 1;
-  n3  = mytid - m*n -1;
-  n4  = mytid - m*n;
-  n5  = mytid - m*n + 1;
-  n6  = mytid - m*n + m - 1;
-  n7  = mytid - m*n + m;
-  n8  = mytid - m*n + m + 1;
+  n0  = rank - m*n - m - 1;
+  n1  = rank - m*n - m;
+  n2  = rank - m*n - m + 1;
+  n3  = rank - m*n -1;
+  n4  = rank - m*n;
+  n5  = rank - m*n + 1;
+  n6  = rank - m*n + m - 1;
+  n7  = rank - m*n + m;
+  n8  = rank - m*n + m + 1;
 
-  n9  = mytid - m - 1;
-  n10 = mytid - m;
-  n11 = mytid - m + 1;
-  n12 = mytid - 1;
-  n14 = mytid + 1;
-  n15 = mytid + m - 1;
-  n16 = mytid + m;
-  n17 = mytid + m + 1;
+  n9  = rank - m - 1;
+  n10 = rank - m;
+  n11 = rank - m + 1;
+  n12 = rank - 1;
+  n14 = rank + 1;
+  n15 = rank + m - 1;
+  n16 = rank + m;
+  n17 = rank + m + 1;
 
-  n18 = mytid + m*n - m - 1;
-  n19 = mytid + m*n - m;
-  n20 = mytid + m*n - m + 1;
-  n21 = mytid + m*n - 1;
-  n22 = mytid + m*n;
-  n23 = mytid + m*n + 1;
-  n24 = mytid + m*n + m - 1;
-  n25 = mytid + m*n + m;
-  n26 = mytid + m*n + m + 1;
+  n18 = rank + m*n - m - 1;
+  n19 = rank + m*n - m;
+  n20 = rank + m*n - m + 1;
+  n21 = rank + m*n - 1;
+  n22 = rank + m*n;
+  n23 = rank + m*n + 1;
+  n24 = rank + m*n + m - 1;
+  n25 = rank + m*n + m;
+  n26 = rank + m*n + m + 1;
 
   /* Assume Pieces are on Faces of Cube */
 
   if (xs == 0) { /* First assume not corner or edge */
-    n0  = mytid       -1 - (m*n);
-    n3  = mytid + m   -1 - (m*n);
-    n6  = mytid + 2*m -1 - (m*n);
-    n9  = mytid       -1;
-    n12 = mytid + m   -1;
-    n15 = mytid + 2*m -1;
-    n18 = mytid       -1 + (m*n);
-    n21 = mytid + m   -1 + (m*n);
-    n24 = mytid + 2*m -1 + (m*n);
+    n0  = rank       -1 - (m*n);
+    n3  = rank + m   -1 - (m*n);
+    n6  = rank + 2*m -1 - (m*n);
+    n9  = rank       -1;
+    n12 = rank + m   -1;
+    n15 = rank + 2*m -1;
+    n18 = rank       -1 + (m*n);
+    n21 = rank + m   -1 + (m*n);
+    n24 = rank + 2*m -1 + (m*n);
    }
 
   if (xe == M*w) { /* First assume not corner or edge */
-    n2  = mytid -2*m +1 - (m*n);
-    n5  = mytid - m  +1 - (m*n);
-    n8  = mytid      +1 - (m*n);      
-    n11 = mytid -2*m +1;
-    n14 = mytid - m  +1;
-    n17 = mytid      +1;
-    n20 = mytid -2*m +1 + (m*n);
-    n23 = mytid - m  +1 + (m*n);
-    n26 = mytid      +1 + (m*n);
+    n2  = rank -2*m +1 - (m*n);
+    n5  = rank - m  +1 - (m*n);
+    n8  = rank      +1 - (m*n);      
+    n11 = rank -2*m +1;
+    n14 = rank - m  +1;
+    n17 = rank      +1;
+    n20 = rank -2*m +1 + (m*n);
+    n23 = rank - m  +1 + (m*n);
+    n26 = rank      +1 + (m*n);
   }
 
   if (ys==0) { /* First assume not corner or edge */
-    n0  = mytid + m * (n-1) -1 - (m*n);
-    n1  = mytid + m * (n-1)    - (m*n);
-    n2  = mytid + m * (n-1) +1 - (m*n);
-    n9  = mytid + m * (n-1) -1;
-    n10 = mytid + m * (n-1);
-    n11 = mytid + m * (n-1) +1;
-    n18 = mytid + m * (n-1) -1 + (m*n);
-    n19 = mytid + m * (n-1)    + (m*n);
-    n20 = mytid + m * (n-1) +1 + (m*n);
+    n0  = rank + m * (n-1) -1 - (m*n);
+    n1  = rank + m * (n-1)    - (m*n);
+    n2  = rank + m * (n-1) +1 - (m*n);
+    n9  = rank + m * (n-1) -1;
+    n10 = rank + m * (n-1);
+    n11 = rank + m * (n-1) +1;
+    n18 = rank + m * (n-1) -1 + (m*n);
+    n19 = rank + m * (n-1)    + (m*n);
+    n20 = rank + m * (n-1) +1 + (m*n);
   }
 
   if (ye == N) { /* First assume not corner or edge */
-    n6  = mytid - m * (n-1) -1 - (m*n);
-    n7  = mytid - m * (n-1)    - (m*n);
-    n8  = mytid - m * (n-1) +1 - (m*n);
-    n15 = mytid - m * (n-1) -1;
-    n16 = mytid - m * (n-1);
-    n17 = mytid - m * (n-1) +1;
-    n24 = mytid - m * (n-1) -1 + (m*n);
-    n25 = mytid - m * (n-1)    + (m*n);
-    n26 = mytid - m * (n-1) +1 + (m*n);
+    n6  = rank - m * (n-1) -1 - (m*n);
+    n7  = rank - m * (n-1)    - (m*n);
+    n8  = rank - m * (n-1) +1 - (m*n);
+    n15 = rank - m * (n-1) -1;
+    n16 = rank - m * (n-1);
+    n17 = rank - m * (n-1) +1;
+    n24 = rank - m * (n-1) -1 + (m*n);
+    n25 = rank - m * (n-1)    + (m*n);
+    n26 = rank - m * (n-1) +1 + (m*n);
   }
  
   if (zs == 0) { /* First assume not corner or edge */
-    n0 = numtid - (m*n) + mytid - m - 1;
-    n1 = numtid - (m*n) + mytid - m;
-    n2 = numtid - (m*n) + mytid - m + 1;
-    n3 = numtid - (m*n) + mytid - 1;
-    n4 = numtid - (m*n) + mytid;
-    n5 = numtid - (m*n) + mytid + 1;
-    n6 = numtid - (m*n) + mytid + m - 1;
-    n7 = numtid - (m*n) + mytid + m ;
-    n8 = numtid - (m*n) + mytid + m + 1;
+    n0 = size - (m*n) + rank - m - 1;
+    n1 = size - (m*n) + rank - m;
+    n2 = size - (m*n) + rank - m + 1;
+    n3 = size - (m*n) + rank - 1;
+    n4 = size - (m*n) + rank;
+    n5 = size - (m*n) + rank + 1;
+    n6 = size - (m*n) + rank + m - 1;
+    n7 = size - (m*n) + rank + m ;
+    n8 = size - (m*n) + rank + m + 1;
   }
 
   if (ze == P) { /* First assume not corner or edge */
-    n18 = (m*n) - (numtid-mytid) - m - 1;
-    n19 = (m*n) - (numtid-mytid) - m;
-    n20 = (m*n) - (numtid-mytid) - m + 1;
-    n21 = (m*n) - (numtid-mytid) - 1;
-    n22 = (m*n) - (numtid-mytid);
-    n23 = (m*n) - (numtid-mytid) + 1;
-    n24 = (m*n) - (numtid-mytid) + m - 1;
-    n25 = (m*n) - (numtid-mytid) + m;
-    n26 = (m*n) - (numtid-mytid) + m + 1; 
+    n18 = (m*n) - (size-rank) - m - 1;
+    n19 = (m*n) - (size-rank) - m;
+    n20 = (m*n) - (size-rank) - m + 1;
+    n21 = (m*n) - (size-rank) - 1;
+    n22 = (m*n) - (size-rank);
+    n23 = (m*n) - (size-rank) + 1;
+    n24 = (m*n) - (size-rank) + m - 1;
+    n25 = (m*n) - (size-rank) + m;
+    n26 = (m*n) - (size-rank) + m + 1; 
   }
 
   if ((xs==0) && (zs==0)) { /* Assume an edge, not corner */
-    n0 = numtid - m*n + mytid + m-1 - m;
-    n3 = numtid - m*n + mytid + m-1;
-    n6 = numtid - m*n + mytid + m-1 + m;
+    n0 = size - m*n + rank + m-1 - m;
+    n3 = size - m*n + rank + m-1;
+    n6 = size - m*n + rank + m-1 + m;
   }
  
   if ((xs==0) && (ze==P)) { /* Assume an edge, not corner */
-    n18 = m*n - (numtid - mytid) + m-1 - m;
-    n21 = m*n - (numtid - mytid) + m-1;
-    n24 = m*n - (numtid - mytid) + m-1 + m;
+    n18 = m*n - (size - rank) + m-1 - m;
+    n21 = m*n - (size - rank) + m-1;
+    n24 = m*n - (size - rank) + m-1 + m;
   }
 
   if ((xs==0) && (ys==0)) { /* Assume an edge, not corner */
-    n0  = mytid + m*n -1 - m*n;
-    n9  = mytid + m*n -1;
-    n18 = mytid + m*n -1 + m*n;
+    n0  = rank + m*n -1 - m*n;
+    n9  = rank + m*n -1;
+    n18 = rank + m*n -1 + m*n;
   }
 
   if ((xs==0) && (ye==N)) { /* Assume an edge, not corner */
-    n6  = mytid - m*(n-1) + m-1 - m*n;
-    n15 = mytid - m*(n-1) + m-1;
-    n24 = mytid - m*(n-1) + m-1 + m*n;
+    n6  = rank - m*(n-1) + m-1 - m*n;
+    n15 = rank - m*(n-1) + m-1;
+    n24 = rank - m*(n-1) + m-1 + m*n;
   }
 
   if ((xe==M*w) && (zs==0)) { /* Assume an edge, not corner */
-    n2 = numtid - (m*n-mytid) - (m-1) - m;
-    n5 = numtid - (m*n-mytid) - (m-1);
-    n8 = numtid - (m*n-mytid) - (m-1) + m;
+    n2 = size - (m*n-rank) - (m-1) - m;
+    n5 = size - (m*n-rank) - (m-1);
+    n8 = size - (m*n-rank) - (m-1) + m;
   }
 
   if ((xe==M*w) && (ze==P)) { /* Assume an edge, not corner */
-    n20 = m*n - (numtid - mytid) - (m-1) - m;
-    n23 = m*n - (numtid - mytid) - (m-1);
-    n26 = m*n - (numtid - mytid) - (m-1) + m;
+    n20 = m*n - (size - rank) - (m-1) - m;
+    n23 = m*n - (size - rank) - (m-1);
+    n26 = m*n - (size - rank) - (m-1) + m;
   }
 
   if ((xe==M*w) && (ys==0)) { /* Assume an edge, not corner */
-    n2  = mytid + m*(n-1) - (m-1) - m*n;
-    n11 = mytid + m*(n-1) - (m-1);
-    n20 = mytid + m*(n-1) - (m-1) + m*n;
+    n2  = rank + m*(n-1) - (m-1) - m*n;
+    n11 = rank + m*(n-1) - (m-1);
+    n20 = rank + m*(n-1) - (m-1) + m*n;
   }
 
   if ((xe==M*w) && (ye==N)) { /* Assume an edge, not corner */
-    n8  = mytid - m*n +1 - m*n;
-    n17 = mytid - m*n +1;
-    n26 = mytid - m*n +1 + m*n;
+    n8  = rank - m*n +1 - m*n;
+    n17 = rank - m*n +1;
+    n26 = rank - m*n +1 + m*n;
   }
 
   if ((ys==0) && (zs==0)) { /* Assume an edge, not corner */
-    n0 = numtid - m + mytid -1;
-    n1 = numtid - m + mytid;
-    n2 = numtid - m + mytid +1;
+    n0 = size - m + rank -1;
+    n1 = size - m + rank;
+    n2 = size - m + rank +1;
   }
 
   if ((ys==0) && (ze==P)) { /* Assume an edge, not corner */
-    n18 = m*n - (numtid - mytid) + m*(n-1) -1;
-    n19 = m*n - (numtid - mytid) + m*(n-1);
-    n20 = m*n - (numtid - mytid) + m*(n-1) +1;
+    n18 = m*n - (size - rank) + m*(n-1) -1;
+    n19 = m*n - (size - rank) + m*(n-1);
+    n20 = m*n - (size - rank) + m*(n-1) +1;
   }
 
   if ((ye==N) && (zs==0)) { /* Assume an edge, not corner */
-    n6 = numtid - (m*n-mytid) - m * (n-1) -1;
-    n7 = numtid - (m*n-mytid) - m * (n-1);
-    n8 = numtid - (m*n-mytid) - m * (n-1) +1;
+    n6 = size - (m*n-rank) - m * (n-1) -1;
+    n7 = size - (m*n-rank) - m * (n-1);
+    n8 = size - (m*n-rank) - m * (n-1) +1;
   }
 
   if ((ye==N) && (ze==P)) { /* Assume an edge, not corner */
-    n24 = mytid - (numtid-m) -1;
-    n25 = mytid - (numtid-m);
-    n26 = mytid - (numtid-m) +1;
+    n24 = rank - (size-m) -1;
+    n25 = rank - (size-m);
+    n26 = rank - (size-m) +1;
   }
 
   /* Check for Corners */
-  if ((xs==0)   && (ys==0) && (zs==0)) { n0  = numtid -1;}
+  if ((xs==0)   && (ys==0) && (zs==0)) { n0  = size -1;}
   if ((xs==0)   && (ys==0) && (ze==P)) { n18 = m*n-1;}    
-  if ((xs==0)   && (ye==N) && (zs==0)) { n6  = (numtid-1)-m*(n-1);}
+  if ((xs==0)   && (ye==N) && (zs==0)) { n6  = (size-1)-m*(n-1);}
   if ((xs==0)   && (ye==N) && (ze==P)) { n24 = m-1;}
-  if ((xe==M*w) && (ys==0) && (zs==0)) { n2  = numtid-m;}
+  if ((xe==M*w) && (ys==0) && (zs==0)) { n2  = size-m;}
   if ((xe==M*w) && (ys==0) && (ze==P)) { n20 = m*n-m;}
-  if ((xe==M*w) && (ye==N) && (zs==0)) { n8  = numtid-m*n;}
+  if ((xe==M*w) && (ye==N) && (zs==0)) { n8  = size-m*n;}
   if ((xe==M*w) && (ye==N) && (ze==P)) { n26 = 0;}
 
   /* Check for when not X,Y, and Z Periodic */
@@ -756,7 +756,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
       }
 
       /* Interior */
-      s_t = bases[mytid] + i*x + k*x*y;
+      s_t = bases[rank] + i*x + k*x*y;
       for ( j=0; j<x; j++ ) { idx[nn++] = s_t++;}
 
       if (n14 >= 0) { /* directly right */
@@ -869,7 +869,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
       }
     }
   }  
-  base = bases[mytid];
+  base = bases[rank];
   ierr = ISCreateSeq(comm,nn,idx,&from); CHKERRQ(ierr);
   ierr = VecScatterCtxCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
   PLogObjectParent(da,gtol);
@@ -901,189 +901,189 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
  
   /* Assume Nodes are Internal to the Cube */
  
-  n0  = mytid - m*n - m - 1;
-  n1  = mytid - m*n - m;
-  n2  = mytid - m*n - m + 1;
-  n3  = mytid - m*n -1;
-  n4  = mytid - m*n;
-  n5  = mytid - m*n + 1;
-  n6  = mytid - m*n + m - 1;
-  n7  = mytid - m*n + m;
-  n8  = mytid - m*n + m + 1;
+  n0  = rank - m*n - m - 1;
+  n1  = rank - m*n - m;
+  n2  = rank - m*n - m + 1;
+  n3  = rank - m*n -1;
+  n4  = rank - m*n;
+  n5  = rank - m*n + 1;
+  n6  = rank - m*n + m - 1;
+  n7  = rank - m*n + m;
+  n8  = rank - m*n + m + 1;
 
-  n9  = mytid - m - 1;
-  n10 = mytid - m;
-  n11 = mytid - m + 1;
-  n12 = mytid - 1;
-  n14 = mytid + 1;
-  n15 = mytid + m - 1;
-  n16 = mytid + m;
-  n17 = mytid + m + 1;
+  n9  = rank - m - 1;
+  n10 = rank - m;
+  n11 = rank - m + 1;
+  n12 = rank - 1;
+  n14 = rank + 1;
+  n15 = rank + m - 1;
+  n16 = rank + m;
+  n17 = rank + m + 1;
 
-  n18 = mytid + m*n - m - 1;
-  n19 = mytid + m*n - m;
-  n20 = mytid + m*n - m + 1;
-  n21 = mytid + m*n - 1;
-  n22 = mytid + m*n;
-  n23 = mytid + m*n + 1;
-  n24 = mytid + m*n + m - 1;
-  n25 = mytid + m*n + m;
-  n26 = mytid + m*n + m + 1;
+  n18 = rank + m*n - m - 1;
+  n19 = rank + m*n - m;
+  n20 = rank + m*n - m + 1;
+  n21 = rank + m*n - 1;
+  n22 = rank + m*n;
+  n23 = rank + m*n + 1;
+  n24 = rank + m*n + m - 1;
+  n25 = rank + m*n + m;
+  n26 = rank + m*n + m + 1;
 
   /* Assume Pieces are on Faces of Cube */
 
   if (xs == 0) { /* First assume not corner or edge */
-    n0  = mytid       -1 - (m*n);
-    n3  = mytid + m   -1 - (m*n);
-    n6  = mytid + 2*m -1 - (m*n);
-    n9  = mytid       -1;
-    n12 = mytid + m   -1;
-    n15 = mytid + 2*m -1;
-    n18 = mytid       -1 + (m*n);
-    n21 = mytid + m   -1 + (m*n);
-    n24 = mytid + 2*m -1 + (m*n);
+    n0  = rank       -1 - (m*n);
+    n3  = rank + m   -1 - (m*n);
+    n6  = rank + 2*m -1 - (m*n);
+    n9  = rank       -1;
+    n12 = rank + m   -1;
+    n15 = rank + 2*m -1;
+    n18 = rank       -1 + (m*n);
+    n21 = rank + m   -1 + (m*n);
+    n24 = rank + 2*m -1 + (m*n);
    }
 
   if (xe == M*w) { /* First assume not corner or edge */
-    n2  = mytid -2*m +1 - (m*n);
-    n5  = mytid - m  +1 - (m*n);
-    n8  = mytid      +1 - (m*n);      
-    n11 = mytid -2*m +1;
-    n14 = mytid - m  +1;
-    n17 = mytid      +1;
-    n20 = mytid -2*m +1 + (m*n);
-    n23 = mytid - m  +1 + (m*n);
-    n26 = mytid      +1 + (m*n);
+    n2  = rank -2*m +1 - (m*n);
+    n5  = rank - m  +1 - (m*n);
+    n8  = rank      +1 - (m*n);      
+    n11 = rank -2*m +1;
+    n14 = rank - m  +1;
+    n17 = rank      +1;
+    n20 = rank -2*m +1 + (m*n);
+    n23 = rank - m  +1 + (m*n);
+    n26 = rank      +1 + (m*n);
   }
 
   if (ys==0) { /* First assume not corner or edge */
-    n0  = mytid + m * (n-1) -1 - (m*n);
-    n1  = mytid + m * (n-1)    - (m*n);
-    n2  = mytid + m * (n-1) +1 - (m*n);
-    n9  = mytid + m * (n-1) -1;
-    n10 = mytid + m * (n-1);
-    n11 = mytid + m * (n-1) +1;
-    n18 = mytid + m * (n-1) -1 + (m*n);
-    n19 = mytid + m * (n-1)    + (m*n);
-    n20 = mytid + m * (n-1) +1 + (m*n);
+    n0  = rank + m * (n-1) -1 - (m*n);
+    n1  = rank + m * (n-1)    - (m*n);
+    n2  = rank + m * (n-1) +1 - (m*n);
+    n9  = rank + m * (n-1) -1;
+    n10 = rank + m * (n-1);
+    n11 = rank + m * (n-1) +1;
+    n18 = rank + m * (n-1) -1 + (m*n);
+    n19 = rank + m * (n-1)    + (m*n);
+    n20 = rank + m * (n-1) +1 + (m*n);
   }
 
   if (ye == N) { /* First assume not corner or edge */
-    n6  = mytid - m * (n-1) -1 - (m*n);
-    n7  = mytid - m * (n-1)    - (m*n);
-    n8  = mytid - m * (n-1) +1 - (m*n);
-    n15 = mytid - m * (n-1) -1;
-    n16 = mytid - m * (n-1);
-    n17 = mytid - m * (n-1) +1;
-    n24 = mytid - m * (n-1) -1 + (m*n);
-    n25 = mytid - m * (n-1)    + (m*n);
-    n26 = mytid - m * (n-1) +1 + (m*n);
+    n6  = rank - m * (n-1) -1 - (m*n);
+    n7  = rank - m * (n-1)    - (m*n);
+    n8  = rank - m * (n-1) +1 - (m*n);
+    n15 = rank - m * (n-1) -1;
+    n16 = rank - m * (n-1);
+    n17 = rank - m * (n-1) +1;
+    n24 = rank - m * (n-1) -1 + (m*n);
+    n25 = rank - m * (n-1)    + (m*n);
+    n26 = rank - m * (n-1) +1 + (m*n);
   }
  
   if (zs == 0) { /* First assume not corner or edge */
-    n0 = numtid - (m*n) + mytid - m - 1;
-    n1 = numtid - (m*n) + mytid - m;
-    n2 = numtid - (m*n) + mytid - m + 1;
-    n3 = numtid - (m*n) + mytid - 1;
-    n4 = numtid - (m*n) + mytid;
-    n5 = numtid - (m*n) + mytid + 1;
-    n6 = numtid - (m*n) + mytid + m - 1;
-    n7 = numtid - (m*n) + mytid + m ;
-    n8 = numtid - (m*n) + mytid + m + 1;
+    n0 = size - (m*n) + rank - m - 1;
+    n1 = size - (m*n) + rank - m;
+    n2 = size - (m*n) + rank - m + 1;
+    n3 = size - (m*n) + rank - 1;
+    n4 = size - (m*n) + rank;
+    n5 = size - (m*n) + rank + 1;
+    n6 = size - (m*n) + rank + m - 1;
+    n7 = size - (m*n) + rank + m ;
+    n8 = size - (m*n) + rank + m + 1;
   }
 
   if (ze == P) { /* First assume not corner or edge */
-    n18 = (m*n) - (numtid-mytid) - m - 1;
-    n19 = (m*n) - (numtid-mytid) - m;
-    n20 = (m*n) - (numtid-mytid) - m + 1;
-    n21 = (m*n) - (numtid-mytid) - 1;
-    n22 = (m*n) - (numtid-mytid);
-    n23 = (m*n) - (numtid-mytid) + 1;
-    n24 = (m*n) - (numtid-mytid) + m - 1;
-    n25 = (m*n) - (numtid-mytid) + m;
-    n26 = (m*n) - (numtid-mytid) + m + 1; 
+    n18 = (m*n) - (size-rank) - m - 1;
+    n19 = (m*n) - (size-rank) - m;
+    n20 = (m*n) - (size-rank) - m + 1;
+    n21 = (m*n) - (size-rank) - 1;
+    n22 = (m*n) - (size-rank);
+    n23 = (m*n) - (size-rank) + 1;
+    n24 = (m*n) - (size-rank) + m - 1;
+    n25 = (m*n) - (size-rank) + m;
+    n26 = (m*n) - (size-rank) + m + 1; 
   }
 
   if ((xs==0) && (zs==0)) { /* Assume an edge, not corner */
-    n0 = numtid - m*n + mytid + m-1 - m;
-    n3 = numtid - m*n + mytid + m-1;
-    n6 = numtid - m*n + mytid + m-1 + m;
+    n0 = size - m*n + rank + m-1 - m;
+    n3 = size - m*n + rank + m-1;
+    n6 = size - m*n + rank + m-1 + m;
   }
  
   if ((xs==0) && (ze==P)) { /* Assume an edge, not corner */
-    n18 = m*n - (numtid - mytid) + m-1 - m;
-    n21 = m*n - (numtid - mytid) + m-1;
-    n24 = m*n - (numtid - mytid) + m-1 + m;
+    n18 = m*n - (size - rank) + m-1 - m;
+    n21 = m*n - (size - rank) + m-1;
+    n24 = m*n - (size - rank) + m-1 + m;
   }
 
   if ((xs==0) && (ys==0)) { /* Assume an edge, not corner */
-    n0  = mytid + m*n -1 - m*n;
-    n9  = mytid + m*n -1;
-    n18 = mytid + m*n -1 + m*n;
+    n0  = rank + m*n -1 - m*n;
+    n9  = rank + m*n -1;
+    n18 = rank + m*n -1 + m*n;
   }
 
   if ((xs==0) && (ye==N)) { /* Assume an edge, not corner */
-    n6  = mytid - m*(n-1) + m-1 - m*n;
-    n15 = mytid - m*(n-1) + m-1;
-    n24 = mytid - m*(n-1) + m-1 + m*n;
+    n6  = rank - m*(n-1) + m-1 - m*n;
+    n15 = rank - m*(n-1) + m-1;
+    n24 = rank - m*(n-1) + m-1 + m*n;
   }
 
   if ((xe==M*w) && (zs==0)) { /* Assume an edge, not corner */
-    n2 = numtid - (m*n-mytid) - (m-1) - m;
-    n5 = numtid - (m*n-mytid) - (m-1);
-    n8 = numtid - (m*n-mytid) - (m-1) + m;
+    n2 = size - (m*n-rank) - (m-1) - m;
+    n5 = size - (m*n-rank) - (m-1);
+    n8 = size - (m*n-rank) - (m-1) + m;
   }
 
   if ((xe==M*w) && (ze==P)) { /* Assume an edge, not corner */
-    n20 = m*n - (numtid - mytid) - (m-1) - m;
-    n23 = m*n - (numtid - mytid) - (m-1);
-    n26 = m*n - (numtid - mytid) - (m-1) + m;
+    n20 = m*n - (size - rank) - (m-1) - m;
+    n23 = m*n - (size - rank) - (m-1);
+    n26 = m*n - (size - rank) - (m-1) + m;
   }
 
   if ((xe==M*w) && (ys==0)) { /* Assume an edge, not corner */
-    n2  = mytid + m*(n-1) - (m-1) - m*n;
-    n11 = mytid + m*(n-1) - (m-1);
-    n20 = mytid + m*(n-1) - (m-1) + m*n;
+    n2  = rank + m*(n-1) - (m-1) - m*n;
+    n11 = rank + m*(n-1) - (m-1);
+    n20 = rank + m*(n-1) - (m-1) + m*n;
   }
 
   if ((xe==M*w) && (ye==N)) { /* Assume an edge, not corner */
-    n8  = mytid - m*n +1 - m*n;
-    n17 = mytid - m*n +1;
-    n26 = mytid - m*n +1 + m*n;
+    n8  = rank - m*n +1 - m*n;
+    n17 = rank - m*n +1;
+    n26 = rank - m*n +1 + m*n;
   }
 
   if ((ys==0) && (zs==0)) { /* Assume an edge, not corner */
-    n0 = numtid - m + mytid -1;
-    n1 = numtid - m + mytid;
-    n2 = numtid - m + mytid +1;
+    n0 = size - m + rank -1;
+    n1 = size - m + rank;
+    n2 = size - m + rank +1;
   }
 
   if ((ys==0) && (ze==P)) { /* Assume an edge, not corner */
-    n18 = m*n - (numtid - mytid) + m*(n-1) -1;
-    n19 = m*n - (numtid - mytid) + m*(n-1);
-    n20 = m*n - (numtid - mytid) + m*(n-1) +1;
+    n18 = m*n - (size - rank) + m*(n-1) -1;
+    n19 = m*n - (size - rank) + m*(n-1);
+    n20 = m*n - (size - rank) + m*(n-1) +1;
   }
 
   if ((ye==N) && (zs==0)) { /* Assume an edge, not corner */
-    n6 = numtid - (m*n-mytid) - m * (n-1) -1;
-    n7 = numtid - (m*n-mytid) - m * (n-1);
-    n8 = numtid - (m*n-mytid) - m * (n-1) +1;
+    n6 = size - (m*n-rank) - m * (n-1) -1;
+    n7 = size - (m*n-rank) - m * (n-1);
+    n8 = size - (m*n-rank) - m * (n-1) +1;
   }
 
   if ((ye==N) && (ze==P)) { /* Assume an edge, not corner */
-    n24 = mytid - (numtid-m) -1;
-    n25 = mytid - (numtid-m);
-    n26 = mytid - (numtid-m) +1;
+    n24 = rank - (size-m) -1;
+    n25 = rank - (size-m);
+    n26 = rank - (size-m) +1;
   }
 
   /* Check for Corners */
-  if ((xs==0)   && (ys==0) && (zs==0)) { n0  = numtid -1;}
+  if ((xs==0)   && (ys==0) && (zs==0)) { n0  = size -1;}
   if ((xs==0)   && (ys==0) && (ze==P)) { n18 = m*n-1;}    
-  if ((xs==0)   && (ye==N) && (zs==0)) { n6  = (numtid-1)-m*(n-1);}
+  if ((xs==0)   && (ye==N) && (zs==0)) { n6  = (size-1)-m*(n-1);}
   if ((xs==0)   && (ye==N) && (ze==P)) { n24 = m-1;}
-  if ((xe==M*w) && (ys==0) && (zs==0)) { n2  = numtid-m;}
+  if ((xe==M*w) && (ys==0) && (zs==0)) { n2  = size-m;}
   if ((xe==M*w) && (ys==0) && (ze==P)) { n20 = m*n-m;}
-  if ((xe==M*w) && (ye==N) && (zs==0)) { n8  = numtid-m*n;}
+  if ((xe==M*w) && (ye==N) && (zs==0)) { n8  = size-m*n;}
   if ((xe==M*w) && (ye==N) && (ze==P)) { n26 = 0;}
 
   /* Check for when not X,Y, and Z Periodic */
@@ -1224,7 +1224,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
       }
 
       /* Interior */
-      s_t = bases[mytid] + i*x + k*x*y;
+      s_t = bases[rank] + i*x + k*x*y;
       for ( j=0; j<x; j++ ) { idx[nn++] = s_t++;}
 
       if (n14 >= 0) { /* directly right */

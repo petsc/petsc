@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.37 1995/10/13 00:57:15 curfman Exp gropp $";
+static char vcid[] = "$Id: itcl.c,v 1.38 1995/10/19 21:17:48 gropp Exp curfman $";
 #endif
 /*
     Command line interface for KSP
@@ -40,16 +40,16 @@ int KSPSetFromOptions(KSP ctx)
   OptionsGetDouble(ctx->prefix,"-ksp_atol",&ctx->atol);
   OptionsGetDouble(ctx->prefix,"-ksp_divtol",&ctx->divtol);
   if (OptionsHasName(ctx->prefix,"-ksp_monitor")){
-    int mytid = 0;
-    MPI_Comm_rank(ctx->comm,&mytid);
-    if (!mytid) {
+    int rank = 0;
+    MPI_Comm_rank(ctx->comm,&rank);
+    if (!rank) {
       KSPSetMonitor(ctx,KSPDefaultMonitor,(void *)0);
     }
   }
   if (OptionsHasName(ctx->prefix,"-ksp_smonitor")){
-    int mytid = 0;
-    MPI_Comm_rank(ctx->comm,&mytid);
-    if (!mytid) {
+    int rank = 0;
+    MPI_Comm_rank(ctx->comm,&rank);
+    if (!rank) {
       KSPSetMonitor(ctx,KSPDefaultSMonitor,(void *)0);
     }
   }
@@ -59,11 +59,11 @@ int KSPSetFromOptions(KSP ctx)
   {
   int loc[4] = {0,0,300,300},nmax = 4;
   if (OptionsGetIntArray(ctx->prefix,"-ksp_xmonitor",loc,&nmax)){
-    int       ierr,mytid = 0;
+    int       ierr,rank = 0;
     DrawLGCtx lg;
-    MPI_Initialized(&mytid);
-    if (mytid) MPI_Comm_rank(ctx->comm,&mytid);
-    if (!mytid) {
+    MPI_Initialized(&rank);
+    if (rank) MPI_Comm_rank(ctx->comm,&rank);
+    if (!rank) {
       ierr = KSPLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); 
       PLogObjectParent(ctx,(PetscObject) lg);
       CHKERRQ(ierr);
@@ -111,10 +111,10 @@ $  -help, -h
 int KSPPrintHelp(KSP ctx)
 {
   char *p;
-  int  mytid = 0;
-  MPI_Comm_rank(ctx->comm,&mytid);
+  int  rank = 0;
+  MPI_Comm_rank(ctx->comm,&rank);
     
-  if (!mytid) {
+  if (!rank) {
     if (ctx->prefix) p = ctx->prefix;
     else             p = "-";
     PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);

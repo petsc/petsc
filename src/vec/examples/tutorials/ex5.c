@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.11 1995/10/12 03:17:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex20.c,v 1.12 1995/10/12 04:13:20 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -14,7 +14,7 @@ user-defined event logging.\n\n";
 
 int main(int argc,char **args)
 {
-  int     i, m = 10, mytid, numtids, low, high, ldim, iglobal, ierr;
+  int     i, m = 10, rank, size, low, high, ldim, iglobal, ierr;
   Scalar  v;
   Vec     u;
   VecType vtype;
@@ -24,8 +24,8 @@ int main(int argc,char **args)
 #define VECTOR_READ     87
 
   PetscInitialize(&argc,&args,0,0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
   OptionsGetInt(0,"-m",&m);
 
   /* PART 1:  Generate vector, then write it in binary format */
@@ -38,7 +38,7 @@ int main(int argc,char **args)
   ierr = VecGetLocalSize(u,&ldim); CHKERRA(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
-    v = (Scalar)(i + 100*mytid);
+    v = (Scalar)(i + 100*rank);
     ierr = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(u); CHKERRA(ierr);

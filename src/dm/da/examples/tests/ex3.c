@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.9 1995/09/30 19:31:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.10 1995/10/12 04:21:23 bsmith Exp curfman $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -17,7 +17,7 @@ static char help[] = "Creates a 1-dimensional wave equation.\n\n";
 
 int main(int argc,char **argv)
 {
-  int       mytid, numtid, M = 60, ierr,  time_steps = 100;
+  int       rank, size, M = 60, ierr,  time_steps = 100;
   DA        da;
   DrawCtx   win;
   Vec       local, global, copy;
@@ -34,8 +34,8 @@ int main(int argc,char **argv)
   ierr = DACreate1d(MPI_COMM_WORLD,DA_XPERIODIC,M,1,1,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtid); 
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size); 
 
   /* Set up display to show wave graph */
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",80,480,500,160,&win); CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.20 1995/09/12 03:25:35 bsmith Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.21 1995/10/06 22:24:41 bsmith Exp curfman $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -14,27 +14,33 @@
  */
 
 typedef struct {
-  int           *rowners;           /* range of rows owned by each processor */
-  int           m,n,M,N;            /* local rows, cols; global rows, cols */
-  int           rstart,rend;        /* starting and ending owned rows */
-  int           numtids,mytid;      /* number of procs, my proc ID */
-  int           singlemalloc, sorted, roworiented, nonew;
-  int           nz, maxnz;          /* total nonzeros stored, allocated */
-  int           *imax;              /* allocated matrix space per row */
+  int         *rowners;           /* range of rows owned by each proc */
+  int         m, n;               /* local rows and columns */
+  int         M, N;               /* global rows and columns */
+  int         rstart, rend;       /* starting and ending owned rows */
+  int         size;               /* size of communicator */
+  int         rank;               /* rank of proc in communicator */ 
+  int         sorted;             /* if true, rows sorted by increasing cols */
+  int         roworiented;        /* if true, row-oriented storage */
+  int         nonew;              /* if true, no new elements allowed */
+  int         nz, maxnz;          /* total nonzeros stored, allocated */
+  int         *imax;              /* allocated matrix space per row */
 
-  /*  Used in Matrix assembly */
-  int           assembled;          /* MatAssemble has been called */
-  int           reassemble_begun;   /* We're re-assembling */
-  InsertMode    insertmode;
-  Stash         stash;
-  MPI_Request   *send_waits,*recv_waits;
-  int           nsends,nrecvs;
-  Scalar        *svalues,*rvalues;
-  int           rmax;
-  int           vecs_permscale;     /* flag indicating permuted and scaled
-                                       vectors */
-  int           fact_clone;
-  int           mat_is_symmetric;   /* indicates matrix is symmetric hence use ICC */
+  /*  The following variables are used in matrix assembly */
+
+  int         assembled;          /* MatAssemble has been called */
+  int         reassemble_begun;   /* We're re-assembling */
+  InsertMode  insertmode;         /* mode for MatSetValues */
+  Stash         stash;            /* stash for non-local elements */
+  MPI_Request *send_waits;        /* array of send requests */
+  MPI_Request *recv_waits;        /* array of receive requests */
+  int         nsends, nrecvs;     /* numbers of sends and receives */
+  Scalar      *svalues, *rvalues; /* sending and receiving data */
+  int         rmax;               /* maximum message length */
+  int         vecs_permscale;     /* flag indicating permuted and scaled
+                                     vectors */
+  int         fact_clone;
+  int         mat_is_symmetric;   /* matrix is symmetric; hence use ICC */
 
   /* BlockSolve data */
   BSprocinfo *procinfo;         /* BlockSolve processor context */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.23 1995/10/01 21:53:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.24 1995/10/11 17:58:55 curfman Exp curfman $";
 #endif
  
 /*
@@ -16,10 +16,10 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
 {
   DA          da = (DA) dain;
   PetscObject vobj = (PetscObject)ptr;
-  int         mytid, ierr;
+  int         rank, ierr;
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
 
-  MPI_Comm_rank(da->comm,&mytid); 
+  MPI_Comm_rank(da->comm,&rank); 
 
   if (!ptr) { /* so that viewers may be used from debuggers */
     ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
@@ -32,7 +32,7 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
     ierr = ViewerFileGetPointer_Private(ptr,&fd);  CHKERRQ(ierr);
     if (vobj->type == ASCII_FILE_VIEWER) {
       MPIU_Seq_begin(da->comm,1);
-      fprintf(fd,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",mytid,da->M,
+      fprintf(fd,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",rank,da->M,
                  da->N,da->m,da->n,da->w,da->s);
       fprintf(fd,"X range %d %d Y range %d %d\n",da->xs,da->xe,da->ys,da->ye);
       fflush(fd);
@@ -40,7 +40,7 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
     }
     else if (vobj->type == ASCII_FILES_VIEWER) {
 
-      if (!mytid) {
+      if (!rank) {
       }
       else {
       }
@@ -57,7 +57,7 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
     DrawSetCoordinates(win,xmin,ymin,xmax,ymax);
 
     /* first processor draw all node lines */
-    if (!mytid) {
+    if (!rank) {
       ymin = 0.0; ymax = da->N - 1;
       for ( xmin=0; xmin<da->M; xmin++ ) {
         DrawLine(win,xmin,ymin,xmin,ymax,DRAW_BLACK);
@@ -139,7 +139,7 @@ $         DA_YPERIODIC, DA_XYPERIODIC
 int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                 int M, int N, int m,int n, int w, int s, DA *inra)
 {
-  int           mytid, numtid,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
+  int           rank, size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
   int           xbase,*bases,j,x_t,y_t,s_t,base;
   int           s_x,s_y; /* s proportionalized to w */
@@ -153,37 +153,37 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PLogObjectCreate(da);
   PLogObjectMemory(da,sizeof(struct _DA));
 
-  MPI_Comm_size(comm,&numtid); 
-  MPI_Comm_rank(comm,&mytid); 
+  MPI_Comm_size(comm,&size); 
+  MPI_Comm_rank(comm,&rank); 
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int) sqrt( ((double)M)*((double)numtid)/((double)N) );
+    m = (int) sqrt( ((double)M)*((double)size)/((double)N) );
     if (m == 0) m = 1;
     while (m > 0) {
-      n = numtid/m;
-      if (m*n == numtid) break;
+      n = size/m;
+      if (m*n == size) break;
       m--;
     }
     if (M > N && m < n) {int _m = m; m = n; n = _m;}
-    if (m*n != numtid)SETERRQ(1,"DaCreate2d:Internally Created Bad Partition");
+    if (m*n != size)SETERRQ(1,"DaCreate2d:Internally Created Bad Partition");
   }
-  else if (m*n != numtid) SETERRQ(1,"DACreate2d:Given Bad partition"); 
+  else if (m*n != size) SETERRQ(1,"DACreate2d:Given Bad partition"); 
 
   if (M < m) SETERRQ(1,"DACreate2d:Partition in x direction is too fine!");
   if (N < n) SETERRQ(1,"DACreate2d:Partition in y direction is too fine!");
 
   /* determine local owned region */
-  x = M/m + ((M % m) > (mytid % m));
-  y = N/n + ((N % n) > (mytid/m));
+  x = M/m + ((M % m) > (rank % m));
+  y = N/n + ((N % n) > (rank/m));
 
   if (x < s) SETERRQ(1,"DACreate2d:Column width is too thin for stencil!");
   if (y < s) SETERRQ(1,"DACreate2d:Row width is too thin for stencil!");
-  if ((M % m) > (mytid % m)) { xs = (mytid % m)*x; }
-  else { xs = (M % m)*(x+1) + ((mytid % m)-(M % m))*x; }
+  if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
+  else { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
   xe = xs + x;
-  if ((N % n) > (mytid/m)) { ys = (mytid/m)*y; }
-  else { ys = (N % n)*(y+1) + ((mytid/m)-(N % n))*y; }
+  if ((N % n) > (rank/m)) { ys = (rank/m)*y; }
+  else { ys = (N % n)*(y+1) + ((rank/m)-(N % n))*y; }
   ye = ys + y;
 
   /* determine ghost region */
@@ -216,10 +216,10 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* determine starting point of each processor */
   nn = x*y;
-  bases = (int *) PETSCMALLOC( (numtid+1)*sizeof(int) ); CHKPTRQ(bases);
+  bases = (int *) PETSCMALLOC( (size+1)*sizeof(int) ); CHKPTRQ(bases);
   MPI_Allgather(&nn,1,MPI_INT,bases+1,1,MPI_INT,comm);
   bases[0] = 0;
-  for ( i=1; i<=numtid; i++ ) {
+  for ( i=1; i<=size; i++ ) {
     bases[i] += bases[i-1];
   }
 
@@ -286,73 +286,73 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   */
 
   /* Assume the Non-Periodic Case */
-  n1 = mytid - m; 
-  if (mytid % m) {
+  n1 = rank - m; 
+  if (rank % m) {
     n0 = n1 - 1; 
   }
   else {
     n0 = -1;
   }
-  if ((mytid+1) % m) {
+  if ((rank+1) % m) {
     n2 = n1 + 1;
-    n5 = mytid + 1;
-    n8 = mytid + m + 1; if (n8 >= m*n) n8 = -1;
+    n5 = rank + 1;
+    n8 = rank + m + 1; if (n8 >= m*n) n8 = -1;
   }
   else {
     n2 = -1; n5 = -1; n8 = -1;
   }
-  if (mytid % m) {
-    n3 = mytid - 1; 
+  if (rank % m) {
+    n3 = rank - 1; 
     n6 = n3 + m; if (n6 >= m*n) n6 = -1;
   }
   else {
     n3 = -1; n6 = -1;
   }
-  n7 = mytid + m; if (n7 >= m*n) n7 = -1;
+  n7 = rank + m; if (n7 >= m*n) n7 = -1;
 
 
   /* Modify for Periodic Cases */
   if (wrap == DA_YPERIODIC) {  /* Handle Top and Bottom Sides */
-    if (n1 < 0) n1 = mytid + m * (n-1);
-    if (n7 < 0) n7 = mytid - m * (n-1);
-    if ((n3 >= 0) && (n0 < 0)) n0 = numtid - m + mytid - 1;
-    if ((n3 >= 0) && (n6 < 0)) n6 = (mytid%m)-1;
-    if ((n5 >= 0) && (n2 < 0)) n2 = numtid - m + mytid + 1;
-    if ((n5 >= 0) && (n8 < 0)) n8 = (mytid%m)+1;
+    if (n1 < 0) n1 = rank + m * (n-1);
+    if (n7 < 0) n7 = rank - m * (n-1);
+    if ((n3 >= 0) && (n0 < 0)) n0 = size - m + rank - 1;
+    if ((n3 >= 0) && (n6 < 0)) n6 = (rank%m)-1;
+    if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
+    if ((n5 >= 0) && (n8 < 0)) n8 = (rank%m)+1;
   } 
   else if (wrap == DA_XPERIODIC) { /* Handle Left and Right Sides */
-    if (n3 < 0) n3 = mytid + (m-1);
-    if (n5 < 0) n5 = mytid - (m-1);
-    if ((n1 >= 0) && (n0 < 0)) n0 = mytid-1;
-    if ((n1 >= 0) && (n2 < 0)) n2 = mytid-2*m+1;
-    if ((n7 >= 0) && (n6 < 0)) n6 = mytid+2*m-1;
-    if ((n7 >= 0) && (n8 < 0)) n8 = mytid+1;
+    if (n3 < 0) n3 = rank + (m-1);
+    if (n5 < 0) n5 = rank - (m-1);
+    if ((n1 >= 0) && (n0 < 0)) n0 = rank-1;
+    if ((n1 >= 0) && (n2 < 0)) n2 = rank-2*m+1;
+    if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
+    if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
   }
   else if (wrap == DA_XYPERIODIC) {
 
     /* Handle all four corners */
     if ((n6 < 0) && (n7 < 0) && (n3 < 0)) n6 = m-1;
     if ((n8 < 0) && (n7 < 0) && (n5 < 0)) n8 = 0;
-    if ((n2 < 0) && (n5 < 0) && (n1 < 0)) n2 = numtid-m;
-    if ((n0 < 0) && (n3 < 0) && (n1 < 0)) n0 = numtid-1;   
+    if ((n2 < 0) && (n5 < 0) && (n1 < 0)) n2 = size-m;
+    if ((n0 < 0) && (n3 < 0) && (n1 < 0)) n0 = size-1;   
 
     /* Handle sides */
 
     /* Handle Top and Bottom Sides */
-    if (n1 < 0) n1 = mytid + m * (n-1);
-    if (n7 < 0) n7 = mytid - m * (n-1);
-    if ((n3 >= 0) && (n0 < 0)) n0 = numtid - m + mytid - 1;
-    if ((n3 >= 0) && (n6 < 0)) n6 = (mytid%m)-1;
-    if ((n5 >= 0) && (n2 < 0)) n2 = numtid - m + mytid + 1;
-    if ((n5 >= 0) && (n8 < 0)) n8 = (mytid%m)+1;
+    if (n1 < 0) n1 = rank + m * (n-1);
+    if (n7 < 0) n7 = rank - m * (n-1);
+    if ((n3 >= 0) && (n0 < 0)) n0 = size - m + rank - 1;
+    if ((n3 >= 0) && (n6 < 0)) n6 = (rank%m)-1;
+    if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
+    if ((n5 >= 0) && (n8 < 0)) n8 = (rank%m)+1;
 
     /* Handle Left and Right Sides */
-    if (n3 < 0) n3 = mytid + (m-1);
-    if (n5 < 0) n5 = mytid - (m-1);
-    if ((n1 >= 0) && (n0 < 0)) n0 = mytid-1;
-    if ((n1 >= 0) && (n2 < 0)) n2 = mytid-2*m+1;
-    if ((n7 >= 0) && (n6 < 0)) n6 = mytid+2*m-1;
-    if ((n7 >= 0) && (n8 < 0)) n8 = mytid+1;
+    if (n3 < 0) n3 = rank + (m-1);
+    if (n5 < 0) n5 = rank - (m-1);
+    if ((n1 >= 0) && (n0 < 0)) n0 = rank-1;
+    if ((n1 >= 0) && (n2 < 0)) n2 = rank-2*m+1;
+    if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
+    if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
   }
 
   if (stencil_type == DA_STENCIL_STAR) {n0 = n2 = n6 = n8 = -1;}
@@ -361,7 +361,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PLogObjectMemory(da,(x+2*s_x)*(y+2*s_y)*sizeof(int));
   nn = 0;
 
-  xbase = bases[mytid];
+  xbase = bases[rank];
   for ( i=1; i<=s_y; i++ ) {
     if (n0 >= 0) { /* left below */
       x_t = (M/m + ((M % m) > (n0 % m)))*w;
@@ -422,7 +422,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     }
   }
 
-  base = bases[mytid];
+  base = bases[rank];
   ierr = ISCreateSeq(comm,nn,idx,&from); CHKERRQ(ierr);
   ierr = VecScatterCtxCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
   PLogObjectParent(da,to);
@@ -451,78 +451,78 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* recalculate the idx including missed ghost points */
   /* Assume the Non-Periodic Case */
-  n1 = mytid - m; 
-  if (mytid % m) {
+  n1 = rank - m; 
+  if (rank % m) {
     n0 = n1 - 1; 
   }
   else {
     n0 = -1;
   }
-  if ((mytid+1) % m) {
+  if ((rank+1) % m) {
     n2 = n1 + 1;
-    n5 = mytid + 1;
-    n8 = mytid + m + 1; if (n8 >= m*n) n8 = -1;
+    n5 = rank + 1;
+    n8 = rank + m + 1; if (n8 >= m*n) n8 = -1;
   }
   else {
     n2 = -1; n5 = -1; n8 = -1;
   }
-  if (mytid % m) {
-    n3 = mytid - 1; 
+  if (rank % m) {
+    n3 = rank - 1; 
     n6 = n3 + m; if (n6 >= m*n) n6 = -1;
   }
   else {
     n3 = -1; n6 = -1;
   }
-  n7 = mytid + m; if (n7 >= m*n) n7 = -1;
+  n7 = rank + m; if (n7 >= m*n) n7 = -1;
 
 
   /* Modify for Periodic Cases */
   if (wrap == DA_YPERIODIC) {  /* Handle Top and Bottom Sides */
-    if (n1 < 0) n1 = mytid + m * (n-1);
-    if (n7 < 0) n7 = mytid - m * (n-1);
-    if ((n3 >= 0) && (n0 < 0)) n0 = numtid - m + mytid - 1;
-    if ((n3 >= 0) && (n6 < 0)) n6 = (mytid%m)-1;
-    if ((n5 >= 0) && (n2 < 0)) n2 = numtid - m + mytid + 1;
-    if ((n5 >= 0) && (n8 < 0)) n8 = (mytid%m)+1;
+    if (n1 < 0) n1 = rank + m * (n-1);
+    if (n7 < 0) n7 = rank - m * (n-1);
+    if ((n3 >= 0) && (n0 < 0)) n0 = size - m + rank - 1;
+    if ((n3 >= 0) && (n6 < 0)) n6 = (rank%m)-1;
+    if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
+    if ((n5 >= 0) && (n8 < 0)) n8 = (rank%m)+1;
   } 
   else if (wrap == DA_XPERIODIC) { /* Handle Left and Right Sides */
-    if (n3 < 0) n3 = mytid + (m-1);
-    if (n5 < 0) n5 = mytid - (m-1);
-    if ((n1 >= 0) && (n0 < 0)) n0 = mytid-1;
-    if ((n1 >= 0) && (n2 < 0)) n2 = mytid-2*m+1;
-    if ((n7 >= 0) && (n6 < 0)) n6 = mytid+2*m-1;
-    if ((n7 >= 0) && (n8 < 0)) n8 = mytid+1;
+    if (n3 < 0) n3 = rank + (m-1);
+    if (n5 < 0) n5 = rank - (m-1);
+    if ((n1 >= 0) && (n0 < 0)) n0 = rank-1;
+    if ((n1 >= 0) && (n2 < 0)) n2 = rank-2*m+1;
+    if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
+    if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
   }
   else if (wrap == DA_XYPERIODIC) {
 
     /* Handle all four corners */
     if ((n6 < 0) && (n7 < 0) && (n3 < 0)) n6 = m-1;
     if ((n8 < 0) && (n7 < 0) && (n5 < 0)) n8 = 0;
-    if ((n2 < 0) && (n5 < 0) && (n1 < 0)) n2 = numtid-m;
-    if ((n0 < 0) && (n3 < 0) && (n1 < 0)) n0 = numtid-1;   
+    if ((n2 < 0) && (n5 < 0) && (n1 < 0)) n2 = size-m;
+    if ((n0 < 0) && (n3 < 0) && (n1 < 0)) n0 = size-1;   
 
     /* Handle sides */
 
     /* Handle Top and Bottom Sides */
-    if (n1 < 0) n1 = mytid + m * (n-1);
-    if (n7 < 0) n7 = mytid - m * (n-1);
-    if ((n3 >= 0) && (n0 < 0)) n0 = numtid - m + mytid - 1;
-    if ((n3 >= 0) && (n6 < 0)) n6 = (mytid%m)-1;
-    if ((n5 >= 0) && (n2 < 0)) n2 = numtid - m + mytid + 1;
-    if ((n5 >= 0) && (n8 < 0)) n8 = (mytid%m)+1;
+    if (n1 < 0) n1 = rank + m * (n-1);
+    if (n7 < 0) n7 = rank - m * (n-1);
+    if ((n3 >= 0) && (n0 < 0)) n0 = size - m + rank - 1;
+    if ((n3 >= 0) && (n6 < 0)) n6 = (rank%m)-1;
+    if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
+    if ((n5 >= 0) && (n8 < 0)) n8 = (rank%m)+1;
 
     /* Handle Left and Right Sides */
-    if (n3 < 0) n3 = mytid + (m-1);
-    if (n5 < 0) n5 = mytid - (m-1);
-    if ((n1 >= 0) && (n0 < 0)) n0 = mytid-1;
-    if ((n1 >= 0) && (n2 < 0)) n2 = mytid-2*m+1;
-    if ((n7 >= 0) && (n6 < 0)) n6 = mytid+2*m-1;
-    if ((n7 >= 0) && (n8 < 0)) n8 = mytid+1;
+    if (n3 < 0) n3 = rank + (m-1);
+    if (n5 < 0) n5 = rank - (m-1);
+    if ((n1 >= 0) && (n0 < 0)) n0 = rank-1;
+    if ((n1 >= 0) && (n2 < 0)) n2 = rank-2*m+1;
+    if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
+    if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
   }
 
   nn = 0;
 
-  xbase = bases[mytid];
+  xbase = bases[rank];
   for ( i=1; i<=s_y; i++ ) {
     if (n0 >= 0) { /* left below */
       x_t = (M/m + ((M % m) > (n0 % m)))*w;

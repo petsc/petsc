@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex13.c,v 1.26 1995/10/11 17:52:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.27 1995/10/12 04:13:20 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.  In\n\
@@ -15,18 +15,18 @@ this case each local vector is as long as the entire parallel vector.\n";
 int main(int argc,char **argv)
 {
   int           n = 5, ierr;
-  int           numtids,mytid,i,N;
+  int           size,rank,i,N;
   Scalar        value;
   Vec           x,y;
   IS            is1,is2;
   VecScatterCtx ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
   /* create two vectors */
-  N = numtids*n;
+  N = size*n;
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,N,&y); CHKERRA(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.47 1995/10/11 15:19:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.48 1995/10/17 21:41:38 bsmith Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -141,18 +141,18 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
   PC               pc = (PC)obj;
   FILE             *fd;
   PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
-  int              mytid, ierr;
+  int              rank, ierr;
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
   if (jac->use_true_local) 
     MPIU_fprintf(pc->comm,fd,
        "    Block Jacobi: using true local matrix, number of blocks = %d\n",
        jac->n);
   MPIU_fprintf(pc->comm,fd,"    Block Jacobi: number of blocks = %d\n",jac->n);
-  MPI_Comm_rank(pc->comm,&mytid);
+  MPI_Comm_rank(pc->comm,&rank);
   if (jac->same_local_solves) {
     MPIU_fprintf(pc->comm,fd,
     "    Local solve is same for all blocks, in the following KSP and PC objects:\n");
-    if (!mytid) {
+    if (!rank) {
       ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
     }           /* now only 1 block per proc */
                 /* This shouldn't really be STDOUT */
@@ -161,7 +161,7 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
      "    Local solve info for each block is in the following KSP and PC objects:\n");
     MPIU_Seq_begin(pc->comm,1);
     fprintf(fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
-    mytid,jac->n_local,jac->first_local);
+    rank,jac->n_local,jac->first_local);
     ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
            /* now only 1 block per proc */
            /* This shouldn't really be STDOUT */
@@ -173,11 +173,11 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
 
 int PCCreate_BJacobi(PC pc)
 {
-  int          mytid,numtid;
+  int          rank,size;
   PC_BJacobi   *jac = PETSCNEW(PC_BJacobi); CHKPTRQ(jac);
 
-  MPI_Comm_rank(pc->comm,&mytid);
-  MPI_Comm_size(pc->comm,&numtid);
+  MPI_Comm_rank(pc->comm,&rank);
+  MPI_Comm_size(pc->comm,&size);
   pc->apply              = 0;
   pc->setup              = PCSetUp_BJacobi;
   pc->destroy            = PCDestroy_BJacobi;
@@ -188,7 +188,7 @@ int PCCreate_BJacobi(PC pc)
   pc->data               = (void *) jac;
   jac->n                 = -1;
   jac->n_local           = -1;
-  jac->first_local       = mytid;
+  jac->first_local       = rank;
   jac->sles              = 0;
   jac->use_true_local    = 0;
   jac->same_local_solves = 1;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex18.c,v 1.6 1995/09/21 20:08:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex18.c,v 1.7 1995/09/30 19:26:45 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Compares BLAS dots on different machines. Input\n\
@@ -14,7 +14,7 @@ arguments are\n\
 
 int main(int argc,char **argv)
 {
-  int          n = 15, ierr, numtids,mytid,i;
+  int          n = 15, ierr, size,rank,i;
   Scalar       v;
   Vec          x,y;
   int          idx;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.15 1995/09/30 19:31:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.16 1995/10/12 04:20:45 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -17,7 +17,7 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 typedef struct {
    DA     da;
    Vec    F,xl;
-   int    mytid,numtid;
+   int    rank,size;
    double h;
 } ApplicationCtx;
 
@@ -35,8 +35,8 @@ int main( int argc, char **argv )
   OptionsGetInt(0,"-n",&N);
   ctx.h = 1.0/(N-1);
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&ctx.mytid);
-  MPI_Comm_size(MPI_COMM_WORLD,&ctx.numtid);
+  MPI_Comm_rank(MPI_COMM_WORLD,&ctx.rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&ctx.size);
 
   /* Set up data structures */
   ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,N,1,1,&ctx.da);
@@ -111,7 +111,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    ApplicationCtx *ctx = (ApplicationCtx*) dummy;
    DA             da = (DA) ctx->da;
    Scalar         *xx, *ff,*FF,d;
-   int            i, ierr, n,mytid = ctx->mytid,numtid = ctx->numtid,s;
+   int            i, ierr, n,rank = ctx->rank,size = ctx->size,s;
    Vec            xl;
 
    xl = ctx->xl; 
@@ -122,11 +122,11 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    ierr = VecGetArray(ctx->F,&FF); CHKERRQ(ierr);
    ierr = VecGetLocalSize(xl,&n); CHKERRQ(ierr);
    d = ctx->h*ctx->h;
-   if (mytid == 0) {s = 0; ff[0] = -xx[0];} else s = 1;
+   if (rank == 0) {s = 0; ff[0] = -xx[0];} else s = 1;
    for ( i=1; i<n-1; i++ ) {
      ff[i-s] = -d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) - xx[i]*xx[i] + FF[i-s];
    }
-   if (mytid == numtid-1) ff[n-1-s] = -xx[n-1] + 1.0;
+   if (rank == size-1) ff[n-1-s] = -xx[n-1] + 1.0;
    ierr = VecRestoreArray(xl,&xx); CHKERRQ(ierr);
    ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr);
    ierr = VecRestoreArray(ctx->F,&FF); CHKERRQ(ierr);
@@ -147,7 +147,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
   ApplicationCtx *ctx = (ApplicationCtx*) dummy;
   Scalar         *xx, d, A;
-  int            i, j, ierr, n, mytid = ctx->mytid, numtid = ctx->numtid;
+  int            i, j, ierr, n, rank = ctx->rank, size = ctx->size;
   Vec            xl;
   int            start, end, N, ii, istart, iend;
 
@@ -157,13 +157,13 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   n = end - start; 
   d = ctx->h*ctx->h;
   ierr = VecGetSize(x,&N); CHKERRQ(ierr);
-  if (mytid == 0) {
+  if (rank == 0) {
     A = 1.0; 
     ierr = MatSetValues(*jac,1,&start,1,&start,&A,INSERT_VALUES); CHKERRQ(ierr);
     istart = 1;
   }
   else {istart = 0; }
-  if (mytid == numtid-1) {
+  if (rank == size-1) {
     i = N-1; A = 1.0; 
     ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
     iend = n-1;

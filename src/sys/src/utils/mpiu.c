@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.17 1995/09/30 19:27:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.18 1995/10/01 02:26:08 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -21,10 +21,10 @@ static char vcid[] = "$Id: mpiu.c,v 1.17 1995/09/30 19:27:41 bsmith Exp bsmith $
 @*/
 FILE *MPIU_fopen(MPI_Comm comm,char *name,char *mode)
 {
-  int  mytid;
+  int  rank;
   FILE *fd;
-  MPI_Comm_rank(comm,&mytid);
-  if (!mytid) fd = fopen(name,mode);
+  MPI_Comm_rank(comm,&rank);
+  if (!rank) fd = fopen(name,mode);
   else fd = 0;
   return fd;
 }
@@ -39,9 +39,9 @@ FILE *MPIU_fopen(MPI_Comm comm,char *name,char *mode)
 @*/
 int MPIU_fclose(MPI_Comm comm,FILE *fd)
 {
-  int  mytid;
-  MPI_Comm_rank(comm,&mytid);
-  if (!mytid) return fclose(fd);
+  int  rank;
+  MPI_Comm_rank(comm,&rank);
+  if (!rank) return fclose(fd);
   else return 0;
 }
 
@@ -56,9 +56,9 @@ int MPIU_fclose(MPI_Comm comm,FILE *fd)
 @*/
 int MPIU_fprintf(MPI_Comm comm,FILE* fd,char *format,...)
 {
-  int mytid;
-  MPI_Comm_rank(comm,&mytid);
-  if (!mytid) {
+  int rank;
+  MPI_Comm_rank(comm,&rank);
+  if (!rank) {
     va_list Argp;
     va_start( Argp, format );
     vfprintf(fd,format,Argp);
@@ -76,9 +76,9 @@ int MPIU_fprintf(MPI_Comm comm,FILE* fd,char *format,...)
 @*/
 int MPIU_printf(MPI_Comm comm,char *format,...)
 {
-  int mytid;
-  MPI_Comm_rank(comm,&mytid);
-  if (!mytid) {
+  int rank;
+  MPI_Comm_rank(comm,&rank);
+  if (!rank) {
     va_list Argp;
     va_start( Argp, format );
     vfprintf(stdout,format,Argp);
@@ -100,11 +100,11 @@ int MPIU_printf(MPI_Comm comm,char *format,...)
 */
 int MPIU_Set_display(MPI_Comm comm,char *display,int n)
 {
-  int  numtid,mytid,len;
+  int  size,rank,len;
   char *string,*str;
-  MPI_Comm_size(comm,&numtid);
-  MPI_Comm_rank(comm,&mytid);  
-  if (!mytid) {
+  MPI_Comm_size(comm,&size);
+  MPI_Comm_rank(comm,&rank);  
+  if (!rank) {
     str = getenv("DISPLAY");
     if (!str || str[0] == ':') {
       string = (char *) PETSCMALLOC( 256*sizeof(char) ); CHKPTRQ(string);

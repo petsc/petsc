@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.43 1995/10/13 02:05:29 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.44 1995/10/17 03:15:45 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -41,8 +41,8 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIBDiag  *mbd = (Mat_MPIBDiag *) mat->data;
   MPI_Comm    comm = mat->comm;
-  int         numtids = mbd->numtids, *owners = mbd->rowners;
-  int         mytid = mbd->mytid;
+  int         size = mbd->size, *owners = mbd->rowners;
+  int         rank = mbd->rank;
   MPI_Request *send_waits,*recv_waits;
   int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
   int         tag = mat->tag, *owner,*starts,count,ierr;
@@ -58,25 +58,25 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   mbd->insertmode = addv; /* in case this processor had no cache */
 
   /*  first count number of contributors to each processor */
-  nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
+  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC( (mbd->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
   for ( i=0; i<mbd->stash.n; i++ ) {
     idx = mbd->stash.idx[i];
-    for ( j=0; j<numtids; j++ ) {
+    for ( j=0; j<size; j++ ) {
       if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[j]++; procs[j] = 1; owner[i] = j; break;
       }
     }
   }
-  nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
+  nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(work);
-  MPI_Allreduce((void *) procs,(void *) work,numtids,MPI_INT,MPI_SUM,comm);
-  nreceives = work[mytid]; 
-  MPI_Allreduce((void *) nprocs,(void *) work,numtids,MPI_INT,MPI_MAX,comm);
-  nmax = work[mytid];
+  work = (int *) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(work);
+  MPI_Allreduce((void *) procs,(void *) work,size,MPI_INT,MPI_SUM,comm);
+  nreceives = work[rank]; 
+  MPI_Allreduce((void *) nprocs,(void *) work,size,MPI_INT,MPI_MAX,comm);
+  nmax = work[rank];
   PETSCFREE(work);
 
   /* post receives: 
@@ -106,9 +106,9 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   CHKPTRQ(svalues);
   send_waits = (MPI_Request *) PETSCMALLOC( (nsends+1)*sizeof(MPI_Request));
   CHKPTRQ(send_waits);
-  starts = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(starts);
+  starts = (int *) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
-  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<mbd->stash.n; i++ ) {
     svalues[3*starts[owner[i]]]       = (Scalar)  mbd->stash.idx[i];
     svalues[3*starts[owner[i]]+1]     = (Scalar)  mbd->stash.idy[i];
@@ -116,9 +116,9 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   }
   PETSCFREE(owner);
   starts[0] = 0;
-  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   count = 0;
-  for ( i=0; i<numtids; i++ ) {
+  for ( i=0; i<size; i++ ) {
     if (procs[i]) {
       MPI_Isend((void*)(svalues+3*starts[i]),3*nprocs[i],MPIU_SCALAR,i,tag,
                 comm,send_waits+count++);
@@ -217,9 +217,9 @@ static int MatZeroEntries_MPIBDiag(Mat A)
 static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIBDiag   *l = (Mat_MPIBDiag *) A->data;
-  int            i,ierr,N, *rows,*owners = l->rowners,numtids = l->numtids;
+  int            i,ierr,N, *rows,*owners = l->rowners,size = l->size;
   int            *procs,*nprocs,j,found,idx,nsends,*work;
-  int            nmax,*svalues,*starts,*owner,nrecvs,mytid = l->mytid;
+  int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
   int            *lens,imdex,*lrows,*values;
   MPI_Comm       comm = A->comm;
@@ -233,27 +233,27 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
 
   /*  first count number of contributors to each processor */
-  nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
+  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC((N+1)*sizeof(int)); CHKPTRQ(owner); /* see note*/
   for ( i=0; i<N; i++ ) {
     idx = rows[i];
     found = 0;
-    for ( j=0; j<numtids; j++ ) {
+    for ( j=0; j<size; j++ ) {
       if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
     if (!found) SETERRQ(1,"MatZeroRows_MPIRowBDiag:row out of range");
   }
-  nsends = 0;  for ( i=0; i<numtids; i++ ) {nsends += procs[i];} 
+  nsends = 0;  for ( i=0; i<size; i++ ) {nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(work);
-  MPI_Allreduce((void *) procs,(void *) work,numtids,MPI_INT,MPI_SUM,comm);
-  nrecvs = work[mytid]; 
-  MPI_Allreduce((void *) nprocs,(void *) work,numtids,MPI_INT,MPI_MAX,comm);
-  nmax = work[mytid];
+  work = (int *) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(work);
+  MPI_Allreduce((void *) procs,(void *) work,size,MPI_INT,MPI_SUM,comm);
+  nrecvs = work[rank]; 
+  MPI_Allreduce((void *) nprocs,(void *) work,size,MPI_INT,MPI_MAX,comm);
+  nmax = work[rank];
   PETSCFREE(work);
 
   /* post receives:   */
@@ -273,18 +273,18 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   svalues = (int *) PETSCMALLOC( (N+1)*sizeof(int) ); CHKPTRQ(svalues);
   send_waits = (MPI_Request *) PETSCMALLOC( (nsends+1)*sizeof(MPI_Request));
   CHKPTRQ(send_waits);
-  starts = (int *) PETSCMALLOC( (numtids+1)*sizeof(int) ); CHKPTRQ(starts);
+  starts = (int *) PETSCMALLOC( (size+1)*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
-  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<N; i++ ) {
     svalues[starts[owner[i]]++] = rows[i];
   }
   ISRestoreIndices(is,&rows);
 
   starts[0] = 0;
-  for ( i=1; i<numtids+1; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size+1; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   count = 0;
-  for ( i=0; i<numtids; i++ ) {
+  for ( i=0; i<size; i++ ) {
     if (procs[i]) {
       MPI_Isend((void*)(svalues+starts[i]),nprocs[i],MPI_INT,i,tag,
                 comm,send_waits+count++);
@@ -292,7 +292,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   }
   PETSCFREE(starts);
 
-  base = owners[mytid];
+  base = owners[rank];
 
   /*  wait on receives */
   lens = (int *) PETSCMALLOC( 2*(nrecvs+1)*sizeof(int) ); CHKPTRQ(lens);
@@ -423,7 +423,7 @@ static int MatView_MPIBDiag_Binary(Mat mat,Viewer viewer)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
-  if (mbd->numtids == 1) {
+  if (mbd->size == 1) {
     ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
   }
   else SETERRQ(1,"MatView_MPIBDiag_Binary:Only uniprocessor output supported");
@@ -452,14 +452,14 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
     ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d\n",
-             mbd->mytid,mbd->m,mbd->rstart,mbd->rend,mbd->n);
+             mbd->rank,mbd->m,mbd->rstart,mbd->rend,mbd->n);
     ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
     fflush(fd);
     MPIU_Seq_end(mat->comm,1);
   }
   else {
-    int numtids = mbd->numtids, mytid = mbd->mytid; 
-    if (numtids == 1) { 
+    int size = mbd->size, rank = mbd->rank; 
+    if (size == 1) { 
       ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
     }
     else {
@@ -469,7 +469,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
       Scalar    *vals;
       Mat_SeqBDiag *Ambd = (Mat_SeqBDiag*) mbd->A->data;
 
-      if (!mytid) {
+      if (!rank) {
         ierr = MatCreateMPIBDiag(mat->comm,M,M,N,mbd->gnd,Ambd->nb,
                                  mbd->gdiag,0,&A); CHKERRQ(ierr);
       }
@@ -490,7 +490,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 
       ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
       ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-      if (!mytid) {
+      if (!rank) {
         ierr = MatView(((Mat_MPIBDiag*)(A->data))->A,viewer); CHKERRQ(ierr);
       }
       ierr = MatDestroy(A); CHKERRQ(ierr);
@@ -672,8 +672,8 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   mat->factor	= 0;
 
   mbd->insertmode = NOT_SET_VALUES;
-  MPI_Comm_rank(comm,&mbd->mytid);
-  MPI_Comm_size(comm,&mbd->numtids);
+  MPI_Comm_rank(comm,&mbd->rank);
+  MPI_Comm_size(comm,&mbd->size);
 
   if (M == PETSC_DECIDE) {
     if ((m%nb)) SETERRQ(1,
@@ -683,7 +683,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   if (m == PETSC_DECIDE) {
     if ((M%nb)) SETERRQ(1,
       "MatCreateMPIBDiag:Invalid block size - bad global row number");
-    m = M/mbd->numtids + ((M % mbd->numtids) > mbd->mytid);
+    m = M/mbd->size + ((M % mbd->size) > mbd->rank);
     if ((m%nb)) SETERRQ(1,
        "MatCreateMPIBDiag:Invalid block size - bad local row number");
   }
@@ -694,15 +694,15 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   mbd->gnd = nd;
 
   /* build local table of row ownerships */
-  mbd->rowners = (int *) PETSCMALLOC((mbd->numtids+2)*sizeof(int)); 
+  mbd->rowners = (int *) PETSCMALLOC((mbd->size+2)*sizeof(int)); 
   CHKPTRQ(mbd->rowners);
   MPI_Allgather(&m,1,MPI_INT,mbd->rowners+1,1,MPI_INT,comm);
   mbd->rowners[0] = 0;
-  for ( i=2; i<=mbd->numtids; i++ ) {
+  for ( i=2; i<=mbd->size; i++ ) {
     mbd->rowners[i] += mbd->rowners[i-1];
   }
-  mbd->rstart  = mbd->rowners[mbd->mytid]; 
-  mbd->rend    = mbd->rowners[mbd->mytid+1]; 
+  mbd->rstart  = mbd->rowners[mbd->rank]; 
+  mbd->rend    = mbd->rowners[mbd->rank+1]; 
 
   mbd->brstart = (mbd->rstart)/nb;
   mbd->brend   = (mbd->rend)/nb;
@@ -713,7 +713,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   ldiag = (int *) PETSCMALLOC((nd+1)*sizeof(int)); CHKPTRQ(ldiag); 
   mbd->gdiag = (int *) PETSCMALLOC((nd+1)*sizeof(int)); CHKPTRQ(mbd->gdiag);
   k = 0;
-  PLogObjectMemory(mat,(nd+1)*sizeof(int) + (mbd->numtids+2)*sizeof(int)
+  PLogObjectMemory(mat,(nd+1)*sizeof(int) + (mbd->size+2)*sizeof(int)
                         + sizeof(struct _Mat) + sizeof(Mat_MPIBDiag));
   if (diagv) {
     ldiagv = (Scalar **)PETSCMALLOC((nd+1)*sizeof(Scalar*)); CHKPTRQ(ldiagv); 
@@ -817,13 +817,13 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
   PetscObject  vobj = (PetscObject) bview;
   MPI_Comm     comm = vobj->comm;
   MPI_Status   status;
-  int          i, nz, ierr, j,rstart, rend, fd, *rowners, maxnz, *cols;
-  int          header[4], mytid, numtid, *rowlengths = 0, M, N, m;
+  int          nb, i, nz, ierr, j, rstart, rend, fd, *rowners, maxnz, *cols;
+  int          header[4], rank, size, *rowlengths = 0, M, N, m;
   int          *ourlens, *sndcounts = 0, *procsnz = 0, jj, *mycols, *smycols;
   int          tag = ((PetscObject)bview)->tag;
 
-  MPI_Comm_size(comm,&numtid); MPI_Comm_rank(comm,&mytid);
-  if (!mytid) {
+  MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
+  if (!rank) {
     ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIBDiag:not matrix object");
@@ -832,23 +832,23 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
   M = header[1]; N = header[2];
   /* determine ownership of all rows */
-  m = M/numtid + ((M % numtid) > mytid);
-  rowners = (int *) PETSCMALLOC((numtid+2)*sizeof(int)); CHKPTRQ(rowners);
+  m = M/size + ((M % size) > rank);
+  rowners = (int *) PETSCMALLOC((size+2)*sizeof(int)); CHKPTRQ(rowners);
   MPI_Allgather(&m,1,MPI_INT,rowners+1,1,MPI_INT,comm);
   rowners[0] = 0;
-  for ( i=2; i<=numtid; i++ ) {
+  for ( i=2; i<=size; i++ ) {
     rowners[i] += rowners[i-1];
   }
-  rstart = rowners[mytid]; 
-  rend   = rowners[mytid+1]; 
+  rstart = rowners[rank]; 
+  rend   = rowners[rank+1]; 
 
   /* distribute row lengths to all processors */
   ourlens = (int*) PETSCMALLOC( (rend-rstart)*sizeof(int) ); CHKPTRQ(ourlens);
-  if (!mytid) {
+  if (!rank) {
     rowlengths = (int*) PETSCMALLOC( M*sizeof(int) ); CHKPTRQ(rowlengths);
     ierr = SYRead(fd,rowlengths,M,SYINT); CHKERRQ(ierr);
-    sndcounts = (int*) PETSCMALLOC( numtid*sizeof(int) ); CHKPTRQ(sndcounts);
-    for ( i=0; i<numtid; i++ ) sndcounts[i] = rowners[i+1] - rowners[i];
+    sndcounts = (int*) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(sndcounts);
+    for ( i=0; i<size; i++ ) sndcounts[i] = rowners[i+1] - rowners[i];
     MPI_Scatterv(rowlengths,sndcounts,rowners,MPI_INT,ourlens,rend-rstart,MPI_INT,0,comm);
     PETSCFREE(sndcounts);
   }
@@ -856,11 +856,11 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
     MPI_Scatterv(0,0,0,MPI_INT,ourlens,rend-rstart,MPI_INT, 0,comm);
   }
 
-  if (!mytid) {
+  if (!rank) {
     /* calculate the number of nonzeros on each processor */
-    procsnz = (int*) PETSCMALLOC( numtid*sizeof(int) ); CHKPTRQ(procsnz);
-    PetscZero(procsnz,numtid*sizeof(int));
-    for ( i=0; i<numtid; i++ ) {
+    procsnz = (int*) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(procsnz);
+    PetscZero(procsnz,size*sizeof(int));
+    for ( i=0; i<size; i++ ) {
       for ( j=rowners[i]; j< rowners[i+1]; j++ ) {
         procsnz[i] += rowlengths[j];
       }
@@ -869,7 +869,7 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
 
     /* determine max buffer needed and allocate it */
     maxnz = 0;
-    for ( i=0; i<numtid; i++ ) {
+    for ( i=0; i<size; i++ ) {
       maxnz = PETSCMAX(maxnz,procsnz[i]);
     }
     cols = (int *) PETSCMALLOC( maxnz*sizeof(int) ); CHKPTRQ(cols);
@@ -880,7 +880,7 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
     ierr = SYRead(fd,mycols,nz,SYINT); CHKERRQ(ierr);
 
     /* read in every one elses and ship off */
-    for ( i=1; i<numtid; i++ ) {
+    for ( i=1; i<size; i++ ) {
       nz = procsnz[i];
       ierr = SYRead(fd,cols,nz,SYINT); CHKERRQ(ierr);
       MPI_Send(cols,nz,MPI_INT,i,tag,comm);
@@ -901,12 +901,14 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
     if (maxnz != nz) SETERRQ(1,"MatLoad_MPIBDiag:something is wrong with file");
   }
 
-  /* uses a block size of 1, this is not good! */
-  ierr = MatCreateMPIBDiag(comm,m,M,N,0,1,0,0,newmat);CHKERRQ(ierr);
+  nb = 1;   /* uses a block size of 1 by default; maybe need a different options
+              database key, since this is used for MatCreate() also? */
+  OptionsGetInt(0,"-mat_bdiag_bsize",&nb);
+  ierr = MatCreateMPIBDiag(comm,m,M,N,0,nb,0,0,newmat); CHKERRQ(ierr);
   A = *newmat;
   ierr = MatSetOption(A,COLUMNS_SORTED); CHKERRQ(ierr);
 
-  if (!mytid) {
+  if (!rank) {
     vals = (Scalar *) PETSCMALLOC( maxnz*sizeof(Scalar) ); CHKPTRQ(vals);
 
     /* read in my part of the matrix numerical values  */
@@ -918,14 +920,14 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
     smycols = mycols;
     svals   = vals;
     for ( i=0; i<m; i++ ) {
-      ierr = MatSetValues(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES); CHKERRQ(ierr);
       smycols += ourlens[i];
       svals   += ourlens[i];
       jj++;
     }
 
     /* read in other processors and ship out */
-    for ( i=1; i<numtid; i++ ) {
+    for ( i=1; i<size; i++ ) {
       nz = procsnz[i];
       ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
       MPI_Send(vals,nz,MPIU_SCALAR,i,A->tag,comm);

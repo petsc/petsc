@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.27 1995/10/11 17:52:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.28 1995/10/12 04:13:20 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\n";
@@ -14,25 +14,25 @@ static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 int main(int argc,char **argv)
 {
   int           ierr;
-  int           numtids,mytid,i,N;
+  int           size,rank,i,N;
   Scalar        mone = -1.0, value;
   Vec           x,y;
   IS            is1,is2;
   VecScatterCtx ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help); 
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
   /* create two vectors */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,mytid+1,PETSC_DECIDE,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,rank+1,PETSC_DECIDE,&x); CHKERRA(ierr);
   ierr = VecGetSize(x,&N); CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,N-mytid,&y); CHKERRA(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,N-rank,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,N-mytid,mytid,1,&is1);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,N-rank,rank,1,&is1);
   CHKERRA(ierr);
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,N-mytid,0,1,&is2); 
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,N-rank,0,1,&is2); 
   CHKERRA(ierr);
 
   /* fill parallel vector: note this is not efficient way*/
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
 
-  if (!mytid) 
+  if (!rank) 
     {printf("----\n"); ierr = VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
 
   ierr = ISDestroy(is1); CHKERRA(ierr);

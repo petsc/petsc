@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.7 1995/09/30 19:31:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.8 1995/10/12 04:21:23 bsmith Exp curfman $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -17,7 +17,7 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 
 int main(int argc,char **argv)
 {
-  int       mytid, numtid, M = 14, ierr, time_steps = 1000, w=1, s=1, a=1;
+  int       rank, size, M = 14, ierr, time_steps = 1000, w=1, s=1, a=1;
   DA        da;
   DrawCtx   win;
   Vec       local, global, copy;
@@ -35,8 +35,8 @@ int main(int argc,char **argv)
   CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtid); 
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size); 
 
   /* Make copy of local array for doing updates */
   ierr = VecDuplicate(local,&copy); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.71 1995/10/12 04:38:00 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.72 1995/10/13 02:04:27 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -86,7 +86,6 @@ static int MatCreateMPIRowbs_local(Mat A,int nz,int *nnz)
   bsif->sorted       = 0;
   bsif->roworiented  = 1;
   bsif->nonew        = 0;
-  bsif->singlemalloc = 0;
 
   if (nzalloc) PETSCFREE(nnz);
   return 0;
@@ -155,7 +154,6 @@ static int MatSetValues_MPIRowbs_local(Mat AA,int m,int *im,int n,int *in,Scalar
           {ierr = MatFreeRowbs_Private(AA,rmax,vs->col,vs->nz); CHKERRQ(ierr);}
         vs->col           =  iout; vs->nz = vout;
         rmax              =  imax[row];
-        mat->singlemalloc =  0;
         mat->maxnz        += CHUNCKSIZE_LOCAL;
       }
       else {
@@ -399,8 +397,8 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIRowbs  *a = (Mat_MPIRowbs *) mat->data;
   MPI_Comm      comm = mat->comm;
-  int           numtids = a->numtids, *owners = a->rowners;
-  int           mytid = a->mytid;
+  int           size = a->size, *owners = a->rowners;
+  int           rank = a->rank;
   MPI_Request   *send_waits,*recv_waits;
   int           *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
   int           tag = mat->tag, *owner,*starts,count,ierr;
@@ -426,25 +424,25 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   a->insertmode = addv; /* in case this processor had no cache */
 
   /*  first count number of contributors to each processor */
-  nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
+  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC( (a->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
   for ( i=0; i<a->stash.n; i++ ) {
     idx = a->stash.idx[i];
-    for ( j=0; j<numtids; j++ ) {
+    for ( j=0; j<size; j++ ) {
       if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[j]++; procs[j] = 1; owner[i] = j; break;
       }
     }
   }
-  nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
+  nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(work);
-  MPI_Allreduce(procs,work,numtids,MPI_INT,MPI_SUM,comm);
-  nreceives = work[mytid]; 
-  MPI_Allreduce(nprocs, work,numtids,MPI_INT,MPI_MAX,comm);
-  nmax = work[mytid];
+  work = (int *) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(work);
+  MPI_Allreduce(procs,work,size,MPI_INT,MPI_SUM,comm);
+  nreceives = work[rank]; 
+  MPI_Allreduce(nprocs, work,size,MPI_INT,MPI_MAX,comm);
+  nmax = work[rank];
   PETSCFREE(work);
 
   /* post receives: 
@@ -472,9 +470,9 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   svalues = (Scalar *) PETSCMALLOC( 3*(a->stash.n+1)*sizeof(Scalar) );CHKPTRQ(svalues);
   send_waits = (MPI_Request *) PETSCMALLOC( (nsends+1)*sizeof(MPI_Request));
   CHKPTRQ(send_waits);
-  starts = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(starts);
+  starts = (int *) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
-  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<a->stash.n; i++ ) {
     svalues[3*starts[owner[i]]]       = (Scalar)  a->stash.idx[i];
     svalues[3*starts[owner[i]]+1]     = (Scalar)  a->stash.idy[i];
@@ -482,9 +480,9 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   }
   PETSCFREE(owner);
   starts[0] = 0;
-  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   count = 0;
-  for ( i=0; i<numtids; i++ ) {
+  for ( i=0; i<size; i++ ) {
     if (procs[i]) {
       MPI_Isend(svalues+3*starts[i],3*nprocs[i],MPIU_SCALAR,i,tag,comm,send_waits+count++);
     }
@@ -519,7 +517,7 @@ static int MatView_MPIRowbs_ASCII(Mat mat,Viewer viewer)
   if (format == FILE_FORMAT_INFO) return 0; /* do nothing for now */
   MPIU_Seq_begin(mat->comm,1);
   fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
-           a->mytid,a->m,a->rstart,a->rend,a->n,0,a->N);
+           a->rank,a->m,a->rstart,a->rend,a->n,0,a->N);
   for ( i=0; i<A->num_rows; i++ ) {
     fprintf(fd,"row %d:",i+a->rstart);
     for (j=0; j<rs[i]->length; j++) {
@@ -535,7 +533,7 @@ static int MatView_MPIRowbs_ASCII(Mat mat,Viewer viewer)
 static int MatView_MPIRowbs_Binary(Mat mat,Viewer viewer)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs *) mat->data;
-  int          ierr,i,M,m,mytid,numtid,*sbuff,*rowlengths;
+  int          ierr,i,M,m,rank,size,*sbuff,*rowlengths;
   int          *recvcts,*recvdisp,fd,*cols,maxnz,nz,j,totalnz,dummy;
   BSspmat      *A = a->A;
   BSsprow      **rs = A->rows;
@@ -543,8 +541,8 @@ static int MatView_MPIRowbs_Binary(Mat mat,Viewer viewer)
   MPI_Status   status;
   Scalar       *vals;
 
-  MPI_Comm_size(comm,&numtid);
-  MPI_Comm_rank(comm,&mytid);
+  MPI_Comm_size(comm,&size);
+  MPI_Comm_rank(comm,&rank);
 
   M = a->M; m = a->m;
   /* First gather together on the first processor the lengths of 
@@ -554,12 +552,12 @@ static int MatView_MPIRowbs_Binary(Mat mat,Viewer viewer)
     sbuff[i] = rs[i]->length;
   }
   MatGetInfo(mat,MAT_GLOBAL_SUM,&totalnz,&dummy,&dummy);
-  if (!mytid) {
+  if (!rank) {
     ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
     rowlengths = (int*) PETSCMALLOC( (4+M)*sizeof(int) ); CHKPTRQ(rowlengths);
-    recvcts = (int*) PETSCMALLOC( numtid*sizeof(int) ); CHKPTRQ(recvcts);
+    recvcts = (int*) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(recvcts);
     recvdisp = a->rowners;
-    for ( i=0; i<numtid; i++ ) {
+    for ( i=0; i<size; i++ ) {
       recvcts[i] = recvdisp[i+1] - recvdisp[i];
     }
     /* first four elements of rowlength are the header */
@@ -571,15 +569,15 @@ static int MatView_MPIRowbs_Binary(Mat mat,Viewer viewer)
     PETSCFREE(sbuff);
     ierr = SYWrite(fd,rowlengths,4+M,SYINT,0); CHKERRQ(ierr);
     /* count the number of nonzeros on each processor */
-    PetscZero(recvcts,numtid*sizeof(int));
-    for ( i=0; i<numtid; i++ ) {
+    PetscZero(recvcts,size*sizeof(int));
+    for ( i=0; i<size; i++ ) {
       for ( j=recvdisp[i]; j<recvdisp[i+1]; j++ ) {
         recvcts[i] += rowlengths[j+3];
       }
     }
     /* allocate buffer long enough to hold largest one */
     maxnz = 0;
-    for ( i=0; i<numtid; i++ ) {
+    for ( i=0; i<size; i++ ) {
       maxnz = PETSCMAX(maxnz,recvcts[i]);
     }
     PETSCFREE(rowlengths); PETSCFREE(recvcts);
@@ -595,7 +593,7 @@ static int MatView_MPIRowbs_Binary(Mat mat,Viewer viewer)
     ierr = SYWrite(fd,cols,nz,SYINT,0); CHKERRQ(ierr);
 
     /* receive and store column indices for all other processors */
-    for ( i=1; i<numtid; i++ ) {
+    for ( i=1; i<size; i++ ) {
       /* should tell processor that I am now ready and to begin the send */
       MPI_Recv(cols,maxnz,MPI_INT,i,mat->tag,comm,&status);
       MPI_Get_count(&status,MPI_INT,&nz);
@@ -614,7 +612,7 @@ static int MatView_MPIRowbs_Binary(Mat mat,Viewer viewer)
     ierr = SYWrite(fd,vals,nz,SYSCALAR,0); CHKERRQ(ierr);
 
     /* receive and store nonzeros for all other processors */
-    for ( i=1; i<numtid; i++ ) {
+    for ( i=1; i<size; i++ ) {
       /* should tell processor that I am now ready and to begin the send */
       MPI_Recv(vals,maxnz,MPIU_SCALAR,i,mat->tag,comm,&status);
       MPI_Get_count(&status,MPIU_SCALAR,&nz);
@@ -796,9 +794,9 @@ static int MatZeroEntries_MPIRowbs(Mat mat)
 static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIRowbs   *l = (Mat_MPIRowbs *) A->data;
-  int            i,ierr,N, *rows,*owners = l->rowners,numtids = l->numtids;
+  int            i,ierr,N, *rows,*owners = l->rowners,size = l->size;
   int            *procs,*nprocs,j,found,idx,nsends,*work;
-  int            nmax,*svalues,*starts,*owner,nrecvs,mytid = l->mytid;
+  int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
   int            *lens,imdex,*lrows,*values;
   MPI_Comm       comm = A->comm;
@@ -811,27 +809,27 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
 
   /*  first count number of contributors to each processor */
-  nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
+  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC((N+1)*sizeof(int)); CHKPTRQ(owner); /* see note*/
   for ( i=0; i<N; i++ ) {
     idx = rows[i];
     found = 0;
-    for ( j=0; j<numtids; j++ ) {
+    for ( j=0; j<size; j++ ) {
       if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
     if (!found) SETERRQ(1,"MatZeroRows_MPIRowbs:Row out of range");
   }
-  nsends = 0;  for ( i=0; i<numtids; i++ ) {nsends += procs[i];} 
+  nsends = 0;  for ( i=0; i<size; i++ ) {nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(work);
-  MPI_Allreduce(procs, work,numtids,MPI_INT,MPI_SUM,comm);
-  nrecvs = work[mytid]; 
-  MPI_Allreduce( nprocs, work,numtids,MPI_INT,MPI_MAX,comm);
-  nmax = work[mytid];
+  work = (int *) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(work);
+  MPI_Allreduce(procs, work,size,MPI_INT,MPI_SUM,comm);
+  nrecvs = work[rank]; 
+  MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);
+  nmax = work[rank];
   PETSCFREE(work);
 
   /* post receives:   */
@@ -847,25 +845,25 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
   */
   svalues = (int *) PETSCMALLOC( (N+1)*sizeof(int) ); CHKPTRQ(svalues);
   send_waits = (MPI_Request *)PETSCMALLOC((nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
-  starts = (int *) PETSCMALLOC( (numtids+1)*sizeof(int) ); CHKPTRQ(starts);
+  starts = (int *) PETSCMALLOC( (size+1)*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
-  for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<N; i++ ) {
     svalues[starts[owner[i]]++] = rows[i];
   }
   ISRestoreIndices(is,&rows);
 
   starts[0] = 0;
-  for ( i=1; i<numtids+1; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for ( i=1; i<size+1; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   count = 0;
-  for ( i=0; i<numtids; i++ ) {
+  for ( i=0; i<size; i++ ) {
     if (procs[i]) {
       MPI_Isend(svalues+starts[i],nprocs[i],MPI_INT,i,tag,comm,send_waits+count++);
     }
   }
   PETSCFREE(starts);
 
-  base = owners[mytid];
+  base = owners[rank];
 
   /*  wait on receives */
   lens = (int *) PETSCMALLOC( 2*(nrecvs+1)*sizeof(int) ); CHKPTRQ(lens);
@@ -916,7 +914,7 @@ static int MatNorm_MPIRowbs(Mat mat,MatNormType type,double *norm)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs *) mat->data;
   int          ierr;
-  if (a->numtids == 1) {
+  if (a->size == 1) {
     ierr = MatNorm_MPIRowbs_local(mat,type,norm); CHKERRQ(ierr);
   } else 
     SETERRQ(1,"MatNorm_MPIRowbs:Not supported in parallel");
@@ -1203,7 +1201,7 @@ static int MatRestoreRow_MPIRowbs(Mat A,int row,int *nz,int **idx,Scalar **v)
 int MatConvert_MPIRowbs(Mat A, MatType newtype, Mat *newmat)
 {
   Mat_MPIRowbs *row = (Mat_MPIRowbs *) A->data;
-  int          ierr, nz, i, ig,rstart = row->rstart, m = row->m, *cwork, numtid;
+  int          ierr, nz, i, ig,rstart = row->rstart, m = row->m, *cwork, size;
   Scalar       *vwork;
 
   switch (newtype) {
@@ -1216,13 +1214,13 @@ int MatConvert_MPIRowbs(Mat A, MatType newtype, Mat *newmat)
       CHKERRQ(ierr);
       break;
     case MATSEQROW:
-      MPI_Comm_size(A->comm,&numtid);
-      if (numtid != 1) SETERRQ(1,"MatConvert_MPIRowbs: SEQROW requires 1 proc");
+      MPI_Comm_size(A->comm,&size);
+      if (size != 1) SETERRQ(1,"MatConvert_MPIRowbs: SEQROW requires 1 proc");
       ierr = MatCreateSeqRow(A->comm,row->M,row->N,0,0,newmat);CHKERRQ(ierr);
       break;
     case MATSEQAIJ:
-      MPI_Comm_size(A->comm,&numtid);
-      if (numtid != 1) SETERRQ(1,"MatConvert_MPIRowbs: SEQAIJ requires 1 proc");
+      MPI_Comm_size(A->comm,&size);
+      if (size != 1) SETERRQ(1,"MatConvert_MPIRowbs: SEQAIJ requires 1 proc");
       ierr = MatCreateSeqAIJ(A->comm,row->M,row->N,0,0,newmat); CHKERRQ(ierr);
       break;
     default:
@@ -1328,8 +1326,8 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,void *procinfo,
   a->vecs_permscale   = 0;
   a->reassemble_begun = 0;
   a->insertmode       = NOT_SET_VALUES;
-  MPI_Comm_rank(comm,&a->mytid);
-  MPI_Comm_size(comm,&a->numtids);
+  MPI_Comm_rank(comm,&a->rank);
+  MPI_Comm_size(comm,&a->size);
 
   if (M != PETSC_DECIDE && m != PETSC_DECIDE) {
     /* Perhaps this should be removed for better efficiency -- but could be
@@ -1340,7 +1338,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,void *procinfo,
   } else if (M == PETSC_DECIDE) {
     MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);
   } else if (m == PETSC_DECIDE) {
-    {m = M/a->numtids + ((M % a->numtids) > a->mytid);}
+    {m = M/a->size + ((M % a->size) > a->rank);}
   } else {
     SETERRQ(1,"MatCreateMPIRowbs:Must set local and/or global matrix size");
   }
@@ -1353,15 +1351,15 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,void *procinfo,
   a->mat_is_structurally_symmetric = 0;
 
   /* build local table of row ownerships */
-  a->rowners = (int *) PETSCMALLOC((a->numtids+2)*sizeof(int));CHKPTRQ(a->rowners);
+  a->rowners = (int *) PETSCMALLOC((a->size+2)*sizeof(int));CHKPTRQ(a->rowners);
   MPI_Allgather(&m,1,MPI_INT,a->rowners+1,1,MPI_INT,comm);
   a->rowners[0] = 0;
-  for ( i=2; i<=a->numtids; i++ ) {
+  for ( i=2; i<=a->size; i++ ) {
     a->rowners[i] += a->rowners[i-1];
   }
-  a->rstart = a->rowners[a->mytid]; 
-  a->rend   = a->rowners[a->mytid+1]; 
-  PLogObjectMemory(A,(a->m+a->numtids+3)*sizeof(int));
+  a->rstart = a->rowners[a->rank]; 
+  a->rend   = a->rowners[a->rank+1]; 
+  PLogObjectMemory(A,(a->m+a->size+3)*sizeof(int));
 
   /* build cache for off array entries formed */
   ierr = StashBuild_Private(&a->stash); CHKERRQ(ierr);
@@ -1382,8 +1380,8 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,void *procinfo,
   PLogObjectMemory(A,(a->m+1)*sizeof(Scalar));
   if (!bspinfo) {bspinfo = BScreate_ctx(); CHKERRBS(0);}
   a->procinfo = bspinfo;
-  BSctx_set_id(bspinfo,a->mytid); CHKERRBS(0);
-  BSctx_set_np(bspinfo,a->numtids); CHKERRBS(0);
+  BSctx_set_id(bspinfo,a->rank); CHKERRBS(0);
+  BSctx_set_np(bspinfo,a->size); CHKERRBS(0);
   BSctx_set_ps(bspinfo,comm); CHKERRBS(0);
   BSctx_set_cs(bspinfo,INT_MAX); CHKERRBS(0);
   BSctx_set_is(bspinfo,INT_MAX); CHKERRBS(0);
@@ -1466,10 +1464,10 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
   PetscObject  vobj = (PetscObject) bview;
   MPI_Comm     comm = vobj->comm;
   MPI_Status   status;
-  int          header[4],mytid,numtid,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
+  int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
 
-  MPI_Comm_size(comm,&numtid); MPI_Comm_rank(comm,&mytid);
-  if (!mytid) {
+  MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
+  if (!rank) {
     ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIRowbs: not matrix object");
@@ -1478,23 +1476,23 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
   M = header[1]; N = header[2];
   /* determine ownership of all rows */
-  m = M/numtid + ((M % numtid) > mytid);
-  rowners = (int *) PETSCMALLOC((numtid+2)*sizeof(int)); CHKPTRQ(rowners);
+  m = M/size + ((M % size) > rank);
+  rowners = (int *) PETSCMALLOC((size+2)*sizeof(int)); CHKPTRQ(rowners);
   MPI_Allgather(&m,1,MPI_INT,rowners+1,1,MPI_INT,comm);
   rowners[0] = 0;
-  for ( i=2; i<=numtid; i++ ) {
+  for ( i=2; i<=size; i++ ) {
     rowners[i] += rowners[i-1];
   }
-  rstart = rowners[mytid]; 
-  rend   = rowners[mytid+1]; 
+  rstart = rowners[rank]; 
+  rend   = rowners[rank+1]; 
 
   /* distribute row lengths to all processors */
   ourlens = (int*) PETSCMALLOC( (rend-rstart)*sizeof(int) ); CHKPTRQ(ourlens);
-  if (!mytid) {
+  if (!rank) {
     rowlengths = (int*) PETSCMALLOC( M*sizeof(int) ); CHKPTRQ(rowlengths);
     ierr = SYRead(fd,rowlengths,M,SYINT); CHKERRQ(ierr);
-    sndcounts = (int*) PETSCMALLOC( numtid*sizeof(int) ); CHKPTRQ(sndcounts);
-    for ( i=0; i<numtid; i++ ) sndcounts[i] = rowners[i+1] - rowners[i];
+    sndcounts = (int*) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(sndcounts);
+    for ( i=0; i<size; i++ ) sndcounts[i] = rowners[i+1] - rowners[i];
     MPI_Scatterv(rowlengths,sndcounts,rowners,MPI_INT,ourlens,rend-rstart,MPI_INT,0,comm);
     PETSCFREE(sndcounts);
   }
@@ -1511,11 +1509,11 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
   A = a->A;
   rs = A->rows;
 
-  if (!mytid) {
+  if (!rank) {
     /* calculate the number of nonzeros on each processor */
-    procsnz = (int*) PETSCMALLOC( numtid*sizeof(int) ); CHKPTRQ(procsnz);
-    PetscZero(procsnz,numtid*sizeof(int));
-    for ( i=0; i<numtid; i++ ) {
+    procsnz = (int*) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(procsnz);
+    PetscZero(procsnz,size*sizeof(int));
+    for ( i=0; i<size; i++ ) {
       for ( j=rowners[i]; j< rowners[i+1]; j++ ) {
         procsnz[i] += rowlengths[j];
       }
@@ -1524,7 +1522,7 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
 
     /* determine max buffer needed and allocate it */
     maxnz = 0;
-    for ( i=0; i<numtid; i++ ) {
+    for ( i=0; i<size; i++ ) {
       maxnz = PETSCMAX(maxnz,procsnz[i]);
     }
     cols = (int *) PETSCMALLOC( maxnz*sizeof(int) ); CHKPTRQ(cols);
@@ -1542,7 +1540,7 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
       rs[i]->length = a->imax[i];
     }
     /* read in parts for all other processors */
-    for ( i=1; i<numtid; i++ ) {
+    for ( i=1; i<size; i++ ) {
       nz = procsnz[i];
       ierr = SYRead(fd,cols,nz,SYINT); CHKERRQ(ierr);
       MPI_Send(cols,nz,MPI_INT,i,mat->tag,comm);
@@ -1562,7 +1560,7 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
       }
     }
     /* read in parts for all other processors */
-    for ( i=1; i<numtid; i++ ) {
+    for ( i=1; i<size; i++ ) {
       nz = procsnz[i];
       ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
       MPI_Send(vals,nz,MPIU_SCALAR,i,mat->tag,comm);

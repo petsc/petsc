@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.16 1995/10/12 04:13:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: vecio.c,v 1.17 1995/10/17 16:11:00 curfman Exp curfman $";
 #endif
 
 /* 
@@ -36,7 +36,7 @@ static char vcid[] = "$Id: vecio.c,v 1.16 1995/10/12 04:13:05 bsmith Exp curfman
 @*/  
 int VecLoad(Viewer bview,Vec *newvec)
 {
-  int         i, rows, ierr, type, fd,mytid,numtid,n;
+  int         i, rows, ierr, type, fd,rank,size,n;
   Vec         vec;
   Vec_MPI     *v;
   Scalar      *avec;
@@ -51,10 +51,10 @@ int VecLoad(Viewer bview,Vec *newvec)
   ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
   
   PetscObjectGetComm(obj,&comm);
-  MPI_Comm_rank(comm,&mytid);
-  MPI_Comm_size(comm,&numtid);
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&size);
 
-  if (!mytid) {
+  if (!rank) {
     /* Read vector header. */
     ierr = SYRead(fd,&type,1,SYINT); CHKERRQ(ierr);
     if ((VecType)type != VEC_COOKIE) SETERRQ(1,"VecLoadBinary: Non-vector object");
@@ -66,22 +66,22 @@ int VecLoad(Viewer bview,Vec *newvec)
     ierr = SYRead(fd,avec,v->n,SYSCALAR);CHKERRQ(ierr);
     ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
 
-    if (numtid > 1) {
+    if (size > 1) {
       /* read in other chuncks and send to other processors */
       /* determine maximum chunck owned by other */
       n = 1;
-      for ( i=1; i<numtid; i++ ) {
+      for ( i=1; i<size; i++ ) {
         n = PETSCMAX(n,v->ownership[i] - v->ownership[i-1]);
       }
       avec = (Scalar *) PETSCMALLOC( n*sizeof(Scalar) ); CHKPTRQ(avec);
-      requests = (MPI_Request *) PETSCMALLOC((numtid-1)*sizeof(MPI_Request));CHKPTRQ(requests);
-      statuses = (MPI_Status *) PETSCMALLOC((numtid-1)*sizeof(MPI_Status));CHKPTRQ(statuses);
-      for ( i=1; i<numtid; i++ ) {
+      requests = (MPI_Request *) PETSCMALLOC((size-1)*sizeof(MPI_Request));CHKPTRQ(requests);
+      statuses = (MPI_Status *) PETSCMALLOC((size-1)*sizeof(MPI_Status));CHKPTRQ(statuses);
+      for ( i=1; i<size; i++ ) {
         n = v->ownership[i+1]-v->ownership[i];
         ierr = SYRead(fd,avec,n,SYSCALAR);CHKERRQ(ierr);
         MPI_Isend(avec,n,MPIU_SCALAR,i,vec->tag,vec->comm,requests+i-1);
       }
-      MPI_Waitall(numtid-1,requests,statuses);
+      MPI_Waitall(size-1,requests,statuses);
       PETSCFREE(avec); PETSCFREE(requests); PETSCFREE(statuses);
     }
   } else {

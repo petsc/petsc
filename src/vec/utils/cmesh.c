@@ -20,7 +20,7 @@
 @*/
 int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
 {
-  int           xin = 1, yin = 1, c1, c2, c3, c4, i, N, mytid, ierr;
+  int           xin = 1, yin = 1, c1, c2, c3, c4, i, N, rank, ierr;
   double        h,x1,x2,x3,x4,y1,y2,y3,y4,*v,min,max;
   Scalar        scale;
   Vec           W;
@@ -30,10 +30,10 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
 
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
 
-  MPI_Comm_rank(win->comm,&mytid);
+  MPI_Comm_rank(win->comm,&rank);
 
   /* move entire vector to first processor */
-  if (mytid == 0) {
+  if (rank == 0) {
     VecGetSize(V,&N);
     ierr = VecCreateSeq(MPI_COMM_SELF,N,&W); CHKERRQ(ierr);
     ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&from); CHKERRQ(ierr);
@@ -51,7 +51,7 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
   ierr = VecScatterEnd(V,W,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRQ(ierr);
   ISDestroy(from); ISDestroy(to); VecScatterCtxDestroy(ctx);
 
-  if (mytid == 0) {
+  if (rank == 0) {
 #if !defined(PETSC_COMPLEX)
     VecGetArray(W,&v);
 

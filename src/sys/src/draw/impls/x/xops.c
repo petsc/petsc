@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.29 1995/09/30 19:30:30 bsmith Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.30 1995/10/18 01:57:23 curfman Exp curfman $";
 #endif
 
 #include <stdio.h>
@@ -200,11 +200,11 @@ static int DrawClear_X(DrawCtx Win)
 static int DrawSetDoubleBuffer_X(DrawCtx Win)
 {
   DrawCtx_X*  win = (DrawCtx_X*) Win->data;
-  int         mytid;
+  int         rank;
   if (win->drw) return 0;
 
-  MPI_Comm_rank(Win->comm,&mytid);
-  if (!mytid) {
+  MPI_Comm_rank(Win->comm,&rank);
+  if (!rank) {
     win->drw = XCreatePixmap(win->disp,win->win,win->w,win->h,win->depth);
   }
   /* try to make sure it is actually done before passing info to all */
@@ -262,7 +262,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
 {
   DrawCtx   ctx;
   DrawCtx_X *Xwin;
-  int       ierr,numtid,mytid;
+  int       ierr,size,rank;
   char      string[128];
 
   if (OptionsHasName(0,"-nox")) {
@@ -287,9 +287,9 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   Xwin         = (DrawCtx_X *) PETSCMALLOC( sizeof(DrawCtx_X) ); CHKPTRQ(Xwin);
   PLogObjectMemory(ctx,sizeof(DrawCtx_X)+sizeof(struct _DrawCtx));
   PetscZero(Xwin,sizeof(DrawCtx_X));
-  MPI_Comm_size(comm,&numtid);
-  MPI_Comm_rank(comm,&mytid);
-  if (mytid == 0) {
+  MPI_Comm_size(comm,&size);
+  MPI_Comm_rank(comm,&rank);
+  if (rank == 0) {
     if (!display && OptionsGetString(0,"-display",string,128)) {
       display = string;
     }

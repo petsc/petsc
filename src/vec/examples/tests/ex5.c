@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.28 1995/10/11 17:52:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.29 1995/10/12 04:13:20 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
@@ -16,27 +16,27 @@ parallel vector.\n\n";
 int main(int argc,char **argv)
 {
   int           n = 5, ierr;
-  int           numtids,mytid,i;
+  int           size,rank,i;
   Scalar        value;
   Vec           x,y;
   IS            is1,is2;
   VecScatterCtx ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
   /* create two vectors */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,numtids*n,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,size*n,&x); CHKERRA(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,n,n*mytid,1,&is1); CHKERRA(ierr);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,n,n*rank,1,&is1); CHKERRA(ierr);
   ierr = ISCreateStrideSeq(MPI_COMM_SELF,n,0,1,&is2); CHKERRA(ierr);
 
   /* each processor inserts the entire vector */
   /* this is redundant but tests assembly */
-  for ( i=0; i<n*numtids; i++ ) {
+  for ( i=0; i<n*size; i++ ) {
     value = (Scalar) i;
     ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);
   }
@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
-  if (!mytid)
+  if (!rank)
    {printf("----\n"); VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
 
   ierr = VecDestroy(x); CHKERRA(ierr);

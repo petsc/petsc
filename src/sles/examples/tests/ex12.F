@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.1 1995/10/11 17:47:25 bsmith Exp bsmith $";
+C      "$Id: ex12.F,v 1.2 1995/10/12 04:18:22 bsmith Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -8,7 +8,10 @@ C      "$Id: ex12.F,v 1.1 1995/10/11 17:47:25 bsmith Exp bsmith $";
 #include "include/finclude/sles.h"
 #include "include/finclude/viewer.h"
 C
-C  This example is the Fortran version of ex6.c
+C  This example is the Fortran version of ex6.c.  The program reads a PETSc matrix
+C  and vector from a file and solves a linear system.  Input arguments are:
+C        -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil
+C                          use the file petsc/src/mat/examples/mat.ex.binary
 C
 
       integer          ierr, its
@@ -22,7 +25,7 @@ C
       none = -1.0
       call PetscInitialize(ierr)
 
-C   /*   Read in matrix and RHS   */
+C Read in matrix and RHS
       call OptionsGetString(' ','-f',f,ierr)
       call ViewerFileOpenBinary(MPI_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
       if (ierr .ne. 0) then
@@ -35,11 +38,11 @@ C   /*   Read in matrix and RHS   */
       call VecLoad(fd,b,ierr)
       call ViewerDestroy(fd,ierr)
 
-C   /*   Set up solution   */
+C Set up solution
       call VecDuplicate(b,x,ierr)
       call VecDuplicate(b,u,ierr)
 
-C   /*   Solve system    */
+C Solve system
       call SLESCreate(MPI_COMM_WORLD,sles,ierr)
       call SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN,
      &                      ierr)
@@ -48,7 +51,7 @@ C   /*   Solve system    */
       call SLESSolve(sles,b,x,its,ierr)
       time = MPI_Wtime()-time
 
-C   /*   Show result   */
+C Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,norm,ierr)

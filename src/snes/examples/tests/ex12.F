@@ -1,5 +1,5 @@
 
-C    "$Id: ex12.F,v 1.9 1995/10/09 19:54:33 curfman Exp curfman $";
+C    "$Id: ex12.F,v 1.10 1995/10/10 22:29:07 curfman Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -13,8 +13,8 @@ C
 C      ctx(1) = da
 C          2  = F
 C          3  = xl
-C          4  = mytid
-C          5  = numtid
+C          4  = rank
+C          5  = size
 C          6  = N
 C
       integer          ctx(8),ierr
@@ -108,7 +108,7 @@ C --------------------  Evaluate Function F(x) ---------------------
 
       subroutine FormFunction(snes,x,f,ctx)
       integer snes,x,f,ctx(*)
-      integer mytid, numtid,i,s,n,ierr
+      integer rank, size,i,s,n,ierr
       double precision h,d,ff(1000),F2(1000),xx(1000)
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -116,8 +116,8 @@ C --------------------  Evaluate Function F(x) ---------------------
 #include "include/finclude/mat.h"
 #include "include/finclude/snes.h"
 
-      mytid  = ctx(4)
-      numtid = ctx(5)
+      rank  = ctx(4)
+      size = ctx(5)
       h = 1.d0/(ctx(6) - 1.d0)
       call DAGlobalToLocalBegin(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
       call DAGlobalToLocalEnd(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
@@ -134,7 +134,7 @@ C --------------------  Evaluate Function F(x) ---------------------
 
       d = h*h
 
-      if (mytid .eq. 0) then 
+      if (rank .eq. 0) then 
         s = 0
         ff(1) = -xx(1)
       else
@@ -146,7 +146,7 @@ C --------------------  Evaluate Function F(x) ---------------------
      *             + F2(i-s+1)
  10   continue
 
-      if (mytid .eq. numtid-1) then
+      if (rank .eq. size-1) then
         ff(n-s) = -xx(n) + 1.d0
       endif
 
@@ -176,25 +176,25 @@ C --------------------  Evaluate Jacobian F'(x) --------------------
 #include "include/finclude/snes.h"
       integer          snes,x,jac(*),B,flag,ctx(*),ii,istart,iend
       double precision xx(1000),d,A,h
-      integer          i,j,n,mytid,numtid,end,start,ierr
+      integer          i,j,n,rank,size,end,start,ierr
 
       h = 1.d0/(ctx(6) - 1.d0)
       d = h*h
-      mytid = ctx(4)
-      numtid = ctx(5)
+      rank = ctx(4)
+      size = ctx(5)
 
       call VecGetArray(x,xx,ierr)
       call VecGetOwnershipRange(x,start,end,ierr)
       n = end - start
 
-      if (mytid .eq. 0) then
+      if (rank .eq. 0) then
         A = 1.0 
         call MatSetValues(jac,1,start,1,start,A,INSERT_VALUES,ierr)
         istart = 1
       else 
         istart = 0
       endif
-      if (mytid .eq. numtid-1) then
+      if (rank .eq. size-1) then
         i = ctx(6)-1
         A = 1.0 
         call MatSetValues(jac,1,i,1,i,A,INSERT_VALUES,ierr)

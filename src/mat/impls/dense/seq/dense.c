@@ -1,23 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.65 1995/10/13 02:05:06 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.66 1995/10/18 03:18:20 curfman Exp curfman $";
 #endif
 
-/*
-    Standard Fortran style matrices
-*/
-#include "petsc.h"
+#include "dense.h"
 #include "pinclude/plapack.h"
-#include "matimpl.h"
-#include "math.h"
-#include "vec/vecimpl.h"
 #include "pinclude/pviewer.h"
-
-typedef struct {
-  Scalar *v;                /* matrix elements */
-  int    roworiented;       /* if true, row oriented input (default) */
-  int    m,n,pad;           /* rows, columns, padding */
-  int    *pivots;           /* pivots in LU factorization */
-} Mat_SeqDense;
 
 int MatAXPY_SeqDense(Scalar *alpha,Mat X,Mat Y)
 {

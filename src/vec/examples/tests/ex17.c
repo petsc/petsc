@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.12 1995/10/11 17:52:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.13 1995/10/12 04:13:20 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
@@ -15,18 +15,18 @@ this case each local vector is as long as the entire parallel vector.\n\n";
 int main(int argc,char **argv)
 {
   int           n = 5, ierr;
-  int           numtids,mytid,N,low,high,iglobal,i;
+  int           size,rank,N,low,high,iglobal,i;
   Scalar        value,zero = 0.0;
   Vec           x,y;
   IS            is1,is2;
   VecScatterCtx ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
   /* create two vectors */
-  N = numtids*n;
+  N = size*n;
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,N,&y); CHKERRA(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
 
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = VecSet(&zero,x); CHKERRA(ierr);
   ierr = VecGetOwnershipRange(y,&low,&high); CHKERRA(ierr);
   for ( i=0; i<n; i++ ) {
-    iglobal = i + low; value = (Scalar) (i + 10*mytid);
+    iglobal = i + low; value = (Scalar) (i + 10*rank);
     ierr = VecSetValues(y,1,&iglobal,&value,INSERT_VALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(y); CHKERRA(ierr);
@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(y,x,ADD_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
-  if (!mytid) 
+  if (!rank) 
     {printf("----\n"); ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
 
   ierr = VecDestroy(x); CHKERRA(ierr);

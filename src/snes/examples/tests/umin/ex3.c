@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.8 1995/09/21 20:12:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.9 1995/09/30 19:31:36 bsmith Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -54,17 +54,17 @@ int main(int argc,char **argv)
   int        my=10;                 /* discretization in y-direction */
   int        Nx=PETSC_DECIDE;       /* processors in x-direction */
   int        Ny=PETSC_DECIDE;       /* processors in y-direction */
-  int        ierr, its, nfails, numtids;
+  int        ierr, its, nfails, size;
   double     one = 1.0;
   SLES       sles;
   PC         pc;
 
   PetscInitialize(&argc,&argv,0,0,help);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
   OptionsGetInt(0,"-Nx",&Nx);
   OptionsGetInt(0,"-Ny",&Ny);
-  if (Nx*Ny != numtids && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
-    SETERRQ(1,"Incompatible number of processors:  Nx * Ny != numtids");
+  if (Nx*Ny != size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
+    SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
 
   /* Set up user-defined work space */
   user.param = 5.0;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.37 1995/10/11 17:52:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.38 1995/10/12 04:13:05 bsmith Exp curfman $";
 #endif
 
 /*
@@ -139,12 +139,12 @@ int StoPScatterCtxCreate(int,int *,int,int *,Vec,VecScatterCtx);
 int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
 {
   VecScatterCtx ctx;
-  int           len,numtid; 
+  int           len,size; 
   MPI_Comm      comm = xin->comm;
 
   /* next 2 lines insure that we use parallel comm if it exists */
-  MPI_Comm_size(yin->comm,&numtid);
-  if (numtid > 1) comm = yin->comm; 
+  MPI_Comm_size(yin->comm,&size);
+  if (size > 1) comm = yin->comm; 
 
   /* generate the Scatter context */
   PETSCHEADERCREATE(ctx,_VecScatterCtx,VEC_SCATTER_COOKIE,0,comm);
@@ -243,7 +243,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
     if (ix->type == IS_STRIDE_SEQ && iy->type == IS_STRIDE_SEQ){
       Vec_MPI         *x = (Vec_MPI *)xin->data;
       int               nx,ny,to_first,to_step,from_first,from_step,islocal,cando;
-      int               start = x->ownership[x->mytid], end = x->ownership[x->mytid+1];
+      int               start = x->ownership[x->rank], end = x->ownership[x->rank+1];
       VecScatterStride  *from,*to;
 
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
@@ -280,8 +280,8 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
     /* special case local copy portion */ 
     if (ix->type == IS_STRIDE_SEQ && iy->type == IS_STRIDE_SEQ){
       Vec_MPI         *y = (Vec_MPI *)yin->data;
-      int               nx,ny,to_first,to_step,from_step, start = y->ownership[y->mytid];
-      int               end = y->ownership[y->mytid+1],islocal,cando,from_first;
+      int               nx,ny,to_first,to_step,from_step, start = y->ownership[y->rank];
+      int               end = y->ownership[y->rank+1],islocal,cando,from_first;
       VecScatterStride  *from,*to;
 
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
@@ -459,11 +459,11 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
 @*/
 int VecPipelineBegin(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatterCtx inctx)
 {
-  int numtid;
+  int size;
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(inctx,VEC_SCATTER_COOKIE);
-  MPI_Comm_size(inctx->comm,&numtid);
-  if (numtid == 1) return 0;
+  MPI_Comm_size(inctx->comm,&size);
+  if (size == 1) return 0;
   if (!inctx->pipelinebegin) SETERRQ(1,"VecPipelineBegin:No pipeline for this context");
   return (*(inctx)->pipelinebegin)(x,y,addv,mode,inctx);
 }
@@ -496,11 +496,11 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatterCtx
 @*/
 int VecPipelineEnd(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatterCtx ctx)
 {
-  int numtid;
+  int size;
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(ctx,VEC_SCATTER_COOKIE);
-  MPI_Comm_size(ctx->comm,&numtid);
-  if (numtid == 1) return 0;
+  MPI_Comm_size(ctx->comm,&size);
+  if (size == 1) return 0;
   if ((ctx)->pipelineend) return (*(ctx)->pipelineend)(x,y,addv,mode,ctx);
   else return 0;
 }

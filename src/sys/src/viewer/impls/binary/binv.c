@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.10 1995/10/11 17:57:51 curfman Exp curfman $";
+static char vcid[] = "$Id: binv.c,v 1.11 1995/10/17 15:20:40 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -20,10 +20,10 @@ int ViewerFileGetDescriptor_Private(Viewer viewer,int *fdes)
 
 static int ViewerDestroy_BinaryFile(PetscObject obj)
 {
-  int    mytid;
+  int    rank;
   Viewer v = (Viewer) obj;
-  MPI_Comm_rank(v->comm,&mytid);
-  if (!mytid) close(v->fdes);
+  MPI_Comm_rank(v->comm,&rank);
+  if (!rank) close(v->fdes);
   PLogObjectDestroy(obj);
   PETSCHEADERDESTROY(obj);
   return 0;
@@ -52,7 +52,7 @@ $    BINARY_WRONLY - open existing file for binary output
 @*/
 int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *binv)
 {  
-  int    mytid;
+  int    rank;
   Viewer v;
 
   PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,BINARY_FILE_VIEWER,comm);
@@ -60,8 +60,8 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
   v->destroy = ViewerDestroy_BinaryFile;
   *binv = v;
 
-  MPI_Comm_rank(comm,&mytid);
-  if (!mytid) {
+  MPI_Comm_rank(comm,&rank);
+  if (!rank) {
     if (type == BINARY_CREATE) {
       if ((v->fdes = creat(name,0666)) == -1)
         SETERRQ(1,"ViewerFileOpenBinary:Cannot create file for writing");

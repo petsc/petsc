@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.34 1995/10/12 20:05:57 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.35 1995/10/12 20:06:22 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -29,7 +29,7 @@ int FormElementRhs(double x, double y, double H,Scalar *r)
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i, m = 5, mytid,numtids, N, start,end,M,its;
+  int         i, m = 5, rank,size, N, start,end,M,its;
   Scalar      val, zero = 0.0, one = 1.0, none = -1.0,Ke[16],r[4];
   double      x,y,h,norm;
   int         ierr,idx[4],count,*rows;
@@ -43,13 +43,13 @@ int main(int argc,char **args)
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
 
   /* Create stiffness matrix */
   ierr = MatCreate(MPI_COMM_WORLD,N,N,&C); CHKERRA(ierr);
-  start = mytid*(M/numtids) + ((M%numtids) < mytid ? (M%numtids) : mytid);
-  end   = start + M/numtids + ((M%numtids) > mytid); 
+  start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
+  end   = start + M/size + ((M%size) > rank); 
 
   /* Assemble matrix */
   ierr = FormElementStiffness(h*h,Ke);   /* element stiffness for Laplacian */

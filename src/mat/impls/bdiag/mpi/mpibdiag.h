@@ -1,4 +1,4 @@
-/* $Id: mpibdiag.h,v 1.4 1995/06/07 17:33:08 bsmith Exp curfman $ */
+/* $Id: mpibdiag.h,v 1.5 1995/06/21 05:29:05 curfman Exp curfman $ */
 
 #include "bdiag.h"
 
@@ -19,7 +19,7 @@ typedef struct {
   Mat           A;                  /* local matrix */
   int           gnd;                /* number of global diagonals */
   int           *gdiag;             /* global matrix diagonal numbers */
-  int           numtids,mytid;
+  int           size,rank;
 /*  Used in Matrix assembly */
   int           assembled;          /* MatAssemble has been called */
   InsertMode    insertmode;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.8 1995/09/30 19:30:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.9 1995/10/12 04:18:22 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for solving\n\
@@ -12,7 +12,7 @@ using different linear solvers on the individual blocks.\n\n";
 int main(int argc,char **args)
 {
   int       i, j, I, J, ierr, m = 3, n = 2;
-  int       mytid, numtids, its, nlocal, first, Istart, Iend;
+  int       rank, size, its, nlocal, first, Istart, Iend;
   Scalar    v, zero = 0.0, one = 1.0, none = -1.0;
   Vec       x, u, b;
   Mat       A; 
@@ -24,8 +24,8 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,0,0,help);
   OptionsGetInt(0,"-m",&m);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);  n = 2*numtids;
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);  n = 2*size;
 
   /* Create and assemble matrix */
   ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,
@@ -74,7 +74,7 @@ int main(int argc,char **args)
     ierr = PCBJacobiGetSubSLES(pc,&nlocal,&first,&subsles); CHKERRA(ierr);
     ierr = SLESGetPC(subsles[0],&subpc); CHKERRA(ierr);
     ierr = SLESGetKSP(subsles[0],&subksp); CHKERRA(ierr);
-    if (mytid == 0) {
+    if (rank == 0) {
       ierr = PCSetMethod(subpc,PCILU); CHKERRA(ierr);
       ierr = KSPSetTolerances(subksp,1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,
              PETSC_DEFAULT); CHKERRA(ierr);
