@@ -1511,7 +1511,7 @@ int SNESDefaultRhsBC(SNES snes, Vec rhs, void *ctx)
 . func - The function
 
   Calling sequence of func:
-. func (TS ts, Vec rsol, void *ctx);
+. func (SNES snes, Vec rsol, void *ctx);
 
 . sol - The current solution vector
 . ctx - The user-context
