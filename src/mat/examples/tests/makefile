@@ -23,7 +23,7 @@ EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
 		ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex33.c \
 		ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c \
-		ex44.c ex45.c ex46.cex47.c
+		ex44.c ex45.c ex46.c ex47.c ex48.c
 EXAMPLESF     = ex36.F
 EXAMPLES_3    = ex36
 RUNEXAMPLES_3 = runex36
@@ -216,9 +216,15 @@ ex45: ex45.o chkopts
 ex46: ex46.o chkopts
 	-$(CLINKER) -o ex46 ex46.o $(PETSC_LIB)
 	$(RM) ex46.o
+
 ex47: ex47.o chkopts
 	-$(CLINKER) -o ex47 ex47.o $(PETSC_LIB)
 	$(RM) ex47.o
+
+ex48: ex48.o chkopts
+	-$(CLINKER) -o ex48 ex48.o $(PETSC_LIB)
+	$(RM) ex48.o
+
 
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
