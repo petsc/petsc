@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.142 1997/01/01 03:42:03 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.143 1997/01/06 20:31:09 balay Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -976,8 +976,8 @@ int PLogBegin()
 $   -log_trace [filename]:
 
     Notes:
-    PLogTraceBegin() prints the processor number, then
-    "Event begin:" or "Event end:" followed by the event name.
+    PLogTraceBegin() prints the processor number, the execution time (sec),
+    then "Event begin:" or "Event end:" followed by the event name.
 
     PLogTraceBegin() allows tracing of all PETSc calls, which is useful
     to determine where a program is hanging without running in the 
