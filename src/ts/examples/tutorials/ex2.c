@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.15 1998/06/21 01:06:45 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.16 1998/06/24 04:00:15 curfman Exp bsmith $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
 timestepping.  Runtime options include:\n\
@@ -17,7 +17,7 @@ timestepping.  Runtime options include:\n\
 
 /* ------------------------------------------------------------------------
 
-   This program solves the ODE
+   This program solves the PDE
 
                u * u_xx 
          u_t = ---------
