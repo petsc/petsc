@@ -539,6 +539,7 @@ int MatSNESMFSetFromOptions(Mat mat)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 /*MC
   MATMFFD - MATMFFD = "mffd" - A matrix free matrix type.
 
@@ -549,7 +550,6 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MFFD"
-EXTERN_C_BEGIN
 int MatCreate_MFFD(Mat A)
 {
   MatSNESMFCtx mfctx;
@@ -613,7 +613,6 @@ int MatCreate_MFFD(Mat A)
 
   PetscFunctionReturn(0);
 }
-
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -677,7 +676,7 @@ int MatCreateMF(Vec x,Mat *J)
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nloc);CHKERRQ(ierr);
   ierr = MatCreate(comm,nloc,nloc,n,n,J);CHKERRQ(ierr);
-  ierr = MatRegister(MATMFFD,0,"MatCreate_MFFD",MatCreate_MFFD);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMFFD,0,"MatCreate_MFFD",MatCreate_MFFD);CHKERRQ(ierr);
   ierr = MatSetType(*J,MATMFFD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -749,6 +748,7 @@ int MatSNESMFKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetFunction"
 /*@C
@@ -786,6 +786,7 @@ int MatSNESMFSetFunction(Mat mat,Vec v,int (*func)(SNES,Vec,Vec,void *),void *fu
   ctx->funcvec = v;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetFunctioni"

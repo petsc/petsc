@@ -128,7 +128,9 @@ EXTERN int MatCreateSNESMF(SNES,Vec,Mat*);
 EXTERN int MatCreateMF(Vec,Mat*);
 EXTERN int MatSNESMFSetBase(Mat,Vec);
 EXTERN int MatSNESMFComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+EXTERN_C_BEGIN
 EXTERN int MatSNESMFSetFunction(Mat,Vec,int(*)(SNES,Vec,Vec,void*),void*);
+EXTERN_C_END
 EXTERN int MatSNESMFSetFunctioni(Mat,int (*)(int,Vec,PetscScalar*,void*));
 EXTERN int MatSNESMFSetFunctioniBase(Mat,int (*)(Vec,void*));
 EXTERN int MatSNESMFAddNullSpace(Mat,MatNullSpace);
@@ -274,11 +276,15 @@ EXTERN int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,
 EXTERN int SNESGetJacobian(SNES,Mat*,Mat*,void **,int(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
 EXTERN int SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 EXTERN int SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+
+EXTERN_C_BEGIN
 EXTERN int SNESSetLineSearch(SNES,int(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*),void*);
 EXTERN int SNESNoLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*);
 EXTERN int SNESNoLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*);
 EXTERN int SNESCubicLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*);
 EXTERN int SNESQuadraticLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*);
+EXTERN_C_END
+
 EXTERN int SNESSetLineSearchCheck(SNES,int(*)(SNES,void*,Vec,PetscTruth*),void*);
 EXTERN int SNESSetLineSearchParams(SNES,PetscReal,PetscReal,PetscReal);
 EXTERN int SNESGetLineSearchParams(SNES,PetscReal*,PetscReal*,PetscReal*);

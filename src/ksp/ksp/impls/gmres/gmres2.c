@@ -54,6 +54,7 @@ M*/
 .seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors()
 M*/
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetOrthogonalization" 
 /*@C
@@ -102,3 +103,4 @@ int KSPGMRESSetOrthogonalization(KSP ksp,int (*fcn)(KSP,int))
   }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

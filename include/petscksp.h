@@ -162,9 +162,11 @@ EXTERN int KSPComputeEigenvaluesExplicitly(KSP,int,PetscReal*,PetscReal*);
 #define KSPGMRESSetHapTol(ksp,tol) PetscTryMethod((ksp),KSPGMRESSetHapTol_C,(KSP,PetscReal),((ksp),(tol)))
 
 EXTERN int KSPGMRESSetPreAllocateVectors(KSP);
+EXTERN_C_BEGIN
 EXTERN int KSPGMRESSetOrthogonalization(KSP,int (*)(KSP,int));
 EXTERN int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP,int);
 EXTERN int KSPGMRESClassicalGramSchmidtOrthogonalization(KSP,int);
+EXTERN_C_END
 /*E
     KSPGMRESCGSRefinementType - How the classical (unmodified) Gram-Schmidt is performed.
 
@@ -177,9 +179,11 @@ E*/
 typedef enum {KSP_GMRES_CGS_REFINE_NEVER, KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS} KSPGMRESCGSRefinementType;
 EXTERN int KSPGMRESSetCGSRefinementType(KSP,KSPGMRESCGSRefinementType);
 
+EXTERN_C_BEGIN
 EXTERN int KSPFGMRESModifyPCNoChange(KSP,int,int,PetscReal,void*);
 EXTERN int KSPFGMRESModifyPCKSP(KSP,int,int,PetscReal,void*);
 EXTERN int KSPFGMRESSetModifyPC(KSP,int (*)(KSP,int,int,PetscReal,void*),void*,int(*)(void*));
+EXTERN_C_END
 
 EXTERN int KSPQCGSetTrustRegionRadius(KSP,PetscReal);
 EXTERN int KSPQCGGetQuadratic(KSP,PetscReal*);
