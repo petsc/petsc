@@ -1,12 +1,11 @@
-/*$Id: ex3.c,v 1.42 2000/05/05 22:15:21 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.43 2000/08/17 04:51:19 bsmith Exp bsmith $*/
 
-static char help[] = "Displays a vector.\n\n";
+static char help[] = "Parallel vector layout.\n\n";
 
 /*T
-   Concepts: Vectors^Drawing vectors;
-   Routines: VecCreate(); VecSetFromOptions(); VecSetValues(); VecView(); VecDestroy(); 
-   Routines: VecAssemblyBegin(); VecAssemblyEnd(); VecGetOwnershipRange();
-   Routines: ViewerDrawOpen(); ViewerDestroy();
+   Concepts: Vectors^setting values
+   Concepts: Vectors^local access to
+   Concepts: Vectors^drawing vectors;
    Processors: n
 T*/
 
@@ -22,14 +21,16 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int        i,istart,iend,n = 50,ierr;
-  Scalar     v;
+  int        i,istart,iend,n = 6,ierr,rank,nlocal;
+  Scalar     v,*array;
   Vec        x;
   Viewer     viewer;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  
   /* 
      Create a vector, specifying only its global dimension.
      When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel
@@ -40,20 +41,22 @@ int main(int argc,char **argv)
   ierr = VecSetFromOptions(x);CHKERRA(ierr);
 
   /* 
-     Currently, all PETSc parallel vectors are partitioned by
+     PETSc parallel vectors are partitioned by
      contiguous chunks of rows across the processors.  Determine
      which vector are locally owned. 
   */
   ierr = VecGetOwnershipRange(x,&istart,&iend);CHKERRA(ierr);
 
-  /* 
+  /* -------------------------------------------------------------------- 
      Set the vector elements.
       - Always specify global locations of vector entries.
-      - Each processor needs to insert only elements that it owns locally.
+      - Each processor can insert into any location, even ones it does not own
+      - In this case each processor adds values to all the entries,
+         this is not practical, but is merely done as an example
    */
-  for (i=istart; i<iend; i++) { 
-    v = (double)i;
-    ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
+  for (i=0; i<n; i++) { 
+    v = (double)(rank*i);
+    ierr = VecSetValues(x,1,&i,&v,ADD_VALUES);CHKERRA(ierr);
   }
 
   /* 
@@ -76,6 +79,23 @@ int main(int argc,char **argv)
   */
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,PETSC_NULL,0,0,300,300,&viewer);CHKERRA(ierr);
   ierr = ViewerPushFormat(viewer,VIEWER_FORMAT_DRAW_LG,"Line graph Plot");CHKERRA(ierr);
+  /*
+     View the vector
+  */
+  ierr = VecView(x,viewer);CHKERRA(ierr);
+
+  /* --------------------------------------------------------------------
+       Access the vector values directly. Each processor has access only 
+    to its portion of the vector. For default PETSc vectors VecGetArray()
+    does NOT involve a copy
+  */
+  ierr = VecGetLocalSize(x,&nlocal);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&array);CHKERRQ(ierr);
+  for ( i=0; i<nlocal; i++) {
+    array[i] = rank + 1;
+  }
+  ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
+
   /*
      View the vector
   */
