@@ -7,19 +7,10 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-  - Vecscatter and DA are communication objects that manage the
-movement of data stored in Vec objects.
 
-  - Redisign TS,SNES,KSP set monitor. 
 
-  Once DrawOpenX runs out of unused screen real estate, it just reuses space
-at the bottom of the screen.  I'd prefer a "screen reuse policy" that was
-closer to LRU: restarting from the top of the screen.  This really shows up
-with the contour plotters: once near the bottom of the screen, the legends
-are drawn on top of the contour plots (that's a separate problem).
+  - Support saving SLES etc objects with a binary viewer to read in later
 
-  - all XXXView() calls should either generate error or warning if viewer
-    is not supported.
 
   - Change function prototypes and declaration as 
 
@@ -984,3 +975,13 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
   X Put in Hysom's fixes for ilu preallocation in docs/tex/hysom
 
+  X all XXXView() calls should either generate error or warning if viewer
+    is not supported.
+
+  X Redisign TS,SNES,KSP set monitor. 
+
+  X Once DrawOpenX runs out of unused screen real estate, it just reuses space
+at the bottom of the screen.  I'd prefer a "screen reuse policy" that was
+closer to LRU: restarting from the top of the screen.  This really shows up
+with the contour plotters: once near the bottom of the screen, the legends
+are drawn on top of the contour plots (that's a separate problem).
