@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.27 1997/05/05 04:25:15 curfman Exp curfman $";
+C "$Id: ex5f.F,v 1.28 1997/05/06 04:06:54 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -687,9 +687,7 @@ C  Set parameters
 
 C  Compute entries for the locally owned part of the Jacobian.
 C   - Currently, all PETSc parallel matrix formats are partitioned by
-C     contiguous chunks of rows across the processors. The "grow"
-C     parameter computed below specifies the global row number 
-C     corresponding to each local grid point.
+C     contiguous chunks of rows across the processors. 
 C   - Each processor needs to insert only elements that it owns
 C     locally (but any non-local elements will be sent to the
 C     appropriate processor during matrix assembly). 
