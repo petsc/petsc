@@ -1106,9 +1106,11 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatMultTranspose_SeqSBAIJ"
 int MatMultTranspose_SeqSBAIJ(Mat A,Vec xx,Vec zz)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  SETERRQ(1,"Matrix is symmetric. Call MatMult().");
-  /* PetscFunctionReturn(0); */
+  ierr = MatMult(A,xx,zz);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
 }
 
 #undef __FUNCT__  
@@ -1116,9 +1118,11 @@ int MatMultTranspose_SeqSBAIJ(Mat A,Vec xx,Vec zz)
 int MatMultTransposeAdd_SeqSBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 {
+  int ierr;
+
   PetscFunctionBegin;
-  SETERRQ(1,"Matrix is symmetric. Call MatMultAdd().");
-  /* PetscFunctionReturn(0); */
+  ierr = MatMultAdd(A,xx,yy,zz);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
 }
 
 #undef __FUNCT__  
