@@ -716,19 +716,143 @@ extern int MatMPIAIJFactorInfo_SuperLu(Mat,PetscViewer);
 extern int MatFactorInfo_Spooles(Mat,PetscViewer);
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatView_MPIAIJ_Binary"
+int MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
+{
+  Mat_MPIAIJ        *aij = (Mat_MPIAIJ*)mat->data;
+  Mat_SeqAIJ*       A = (Mat_SeqAIJ*)aij->A->data;
+  Mat_SeqAIJ*       B = (Mat_SeqAIJ*)aij->B->data;
+  int               nz,fd,ierr,header[4],rank,size,*row_lengths,*range,rlen,i,tag = ((PetscObject)viewer)->tag;
+  int               nzmax,*column_indices,j,k,col,*garray = aij->garray,cnt,cstart = aij->cstart;
+  PetscScalar       *column_values;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
+  nz   = A->nz + B->nz;
+  if (rank == 0) {
+    header[0] = MAT_FILE_COOKIE;
+    header[1] = mat->M;
+    header[2] = mat->N;
+    ierr = MPI_Reduce(&nz,&header[3],1,MPI_INT,MPI_SUM,0,mat->comm);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,header,4,PETSC_INT,1);CHKERRQ(ierr);
+    /* get largest number of rows any processor has */
+    rlen = mat->m;
+    ierr = PetscMapGetGlobalRange(mat->rmap,&range);CHKERRQ(ierr);
+    for (i=1; i<size; i++) {
+      rlen = PetscMax(rlen,range[i+1] - range[i]);
+    }
+  } else {
+    ierr = MPI_Reduce(&nz,0,1,MPI_INT,MPI_SUM,0,mat->comm);CHKERRQ(ierr);
+    rlen = mat->m;
+  }
+
+  /* load up the local row counts */
+  ierr = PetscMalloc((rlen+1)*sizeof(int),&row_lengths);CHKERRQ(ierr);
+  for (i=0; i<mat->m; i++) {
+    row_lengths[i] = A->i[i+1] - A->i[i] + B->i[i+1] - B->i[i];
+  }
+
+  /* store the row lengths to the file */
+  if (rank == 0) {
+    MPI_Status status;
+    ierr = PetscBinaryWrite(fd,row_lengths,mat->m,PETSC_INT,1);CHKERRQ(ierr);
+    for (i=1; i<size; i++) {
+      rlen = range[i+1] - range[i];
+      ierr = MPI_Recv(row_lengths,rlen,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,row_lengths,rlen,PETSC_INT,1);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = MPI_Send(row_lengths,mat->m,MPI_INT,0,tag,mat->comm);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(row_lengths);CHKERRQ(ierr);
+
+  /* load up the local column indices */
+  nzmax = nz; /* )th processor needs space a largest processor needs */
+  ierr = MPI_Reduce(&nz,&nzmax,1,MPI_INT,MPI_MAX,0,mat->comm);CHKERRQ(ierr);
+  ierr = PetscMalloc((nzmax+1)*sizeof(int),&column_indices);CHKERRQ(ierr);
+  cnt  = 0;
+  for (i=0; i<mat->m; i++) {
+    for (j=B->i[i]; j<B->i[i+1]; j++) {
+      if ( (col = garray[B->j[j]]) > cstart) break;
+      column_indices[cnt++] = col;
+    }
+    for (k=A->i[i]; k<A->i[i+1]; k++) {
+      column_indices[cnt++] = A->j[k] + cstart;
+    }
+    for (; j<B->i[i+1]; j++) {
+      column_indices[cnt++] = garray[B->j[j]];
+    }
+  }
+  if (cnt != A->nz + B->nz) SETERRQ2(PETSC_ERR_LIB,"Internal PETSc error: cnt = %d nz = %d",cnt,A->nz+B->nz);
+
+  /* store the column indices to the file */
+  if (rank == 0) {
+    MPI_Status status;
+    ierr = PetscBinaryWrite(fd,column_indices,nz,PETSC_INT,1);CHKERRQ(ierr);
+    for (i=1; i<size; i++) {
+      ierr = MPI_Recv(&nz,1,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
+      if (nz > nzmax) SETERRQ2(PETSC_ERR_LIB,"Internal PETSc error: nz = %d nzmax = %d",nz,nzmax);
+      ierr = MPI_Recv(column_indices,nz,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,column_indices,nz,PETSC_INT,1);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = MPI_Send(&nz,1,MPI_INT,0,tag,mat->comm);CHKERRQ(ierr);
+    ierr = MPI_Send(column_indices,nz,MPI_INT,0,tag,mat->comm);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(column_indices);CHKERRQ(ierr);
+
+  /* load up the local column values */
+  ierr = PetscMalloc((nzmax+1)*sizeof(PetscScalar),&column_values);CHKERRQ(ierr);
+  cnt  = 0;
+  for (i=0; i<mat->m; i++) {
+    for (j=B->i[i]; j<B->i[i+1]; j++) {
+      if ( garray[B->j[j]] > cstart) break;
+      column_values[cnt++] = B->a[j];
+    }
+    for (k=A->i[i]; k<A->i[i+1]; k++) {
+      column_values[cnt++] = A->a[k];
+    }
+    for (; j<B->i[i+1]; j++) {
+      column_values[cnt++] = B->a[j];
+    }
+  }
+  if (cnt != A->nz + B->nz) SETERRQ2(1,"Internal PETSc error: cnt = %d nz = %d",cnt,A->nz+B->nz);
+
+  /* store the column values to the file */
+  if (rank == 0) {
+    MPI_Status status;
+    ierr = PetscBinaryWrite(fd,column_values,nz,PETSC_SCALAR,1);CHKERRQ(ierr);
+    for (i=1; i<size; i++) {
+      ierr = MPI_Recv(&nz,1,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
+      if (nz > nzmax) SETERRQ2(PETSC_ERR_LIB,"Internal PETSc error: nz = %d nzmax = %d",nz,nzmax);
+      ierr = MPI_Recv(column_values,nz,MPIU_SCALAR,i,tag,mat->comm,&status);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,column_values,nz,PETSC_SCALAR,1);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = MPI_Send(&nz,1,MPI_INT,0,tag,mat->comm);CHKERRQ(ierr);
+    ierr = MPI_Send(column_values,nz,MPIU_SCALAR,0,tag,mat->comm);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(column_values);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIAIJ_ASCIIorDraworSocket"
 int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ*       C = (Mat_SeqAIJ*)aij->A->data;
   int               ierr,shift = C->indexshift,rank = aij->rank,size = aij->size;
-  PetscTruth        isdraw,isascii,flg;
+  PetscTruth        isdraw,isascii,flg,isbinary;
   PetscViewer       sviewer;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr  = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (isascii) { 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
@@ -762,8 +886,16 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 
       PetscFunctionReturn(0);
     }
+  } else if (isbinary) {
+    if (size == 1) {
+      ierr = PetscObjectSetName((PetscObject)aij->A,mat->name);CHKERRQ(ierr);
+      ierr = MatView(aij->A,viewer);CHKERRQ(ierr);
+    } else {
+      ierr = MatView_MPIAIJ_Binary(mat,viewer);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
   } else if (isdraw) {
-    PetscDraw       draw;
+    PetscDraw  draw;
     PetscTruth isnull;
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
