@@ -22,6 +22,9 @@
 #endif
 #include "petscfix.h"
 #include "petscbt.h"
+#if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
+#include "petscblaslapack.h"
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMemcpy"
@@ -74,7 +77,7 @@ int PetscMemcpy(void *a,const void *b,int n)
     if (!(((long) a) % 4) && !(n % 8)) {
 #endif
       int one = 1;
-      dcopy_(&n,(PetscScalar *)a,&one,(PetscScalar *)b,&one);
+      BLcopy_(&n,(PetscScalar *)a,&one,(PetscScalar *)b,&one);
     } else {
       memcpy((char*)(a),(char*)(b),n);
     }
