@@ -247,6 +247,30 @@ PetscErrorCode MatISGetLocalMat(Mat mat,Mat *local)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroEntries_IS"
+PetscErrorCode MatZeroEntries_IS(Mat A)
+{
+  Mat_IS         *a = (Mat_IS*)A->data; 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;  
+  ierr = MatZeroEntries(a->A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetOption_IS"
+PetscErrorCode MatSetOption_IS(Mat A,MatOption op)
+{
+  Mat_IS         *a = (Mat_IS*)A->data; 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;  
+  ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
    MATIS - MATIS = "is" - A matrix type to be used for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 
@@ -254,7 +278,12 @@ PetscErrorCode MatISGetLocalMat(Mat mat,Mat *local)
    product is handled "implicitly".
 
    Operations Provided:
-.  MatMult
++  MatMult()
+.  MatZeroEntries()
+.  MatSetOption()
+.  MatZeroRowsLocal()
+.  MatSetValuesLocal()
+-  MatSetLocalToGlobalMapping()
 
    Options Database Keys:
 . -mat_type is - sets the matrix type to "is" during a call to MatSetFromOptions()
@@ -295,6 +324,8 @@ PetscErrorCode MatCreate_IS(Mat A)
   A->ops->assemblybegin           = MatAssemblyBegin_IS;
   A->ops->assemblyend             = MatAssemblyEnd_IS;
   A->ops->view                    = MatView_IS;
+  A->ops->zeroentries             = MatZeroEntries_IS;
+  A->ops->setoption               = MatSetOption_IS;
 
   ierr = PetscSplitOwnership(A->comm,&A->m,&A->M);CHKERRQ(ierr);
   ierr = PetscSplitOwnership(A->comm,&A->n,&A->N);CHKERRQ(ierr);

@@ -280,13 +280,15 @@ class Configure(config.base.Configure):
       self.framework.log.write('Could not find a functional '+self.name+'\n')
 
     # hypre requires LAPACK routine dgels()
-    if not self.libraries.check(self.blasLapack.lib,'dgels',fortranMangle = 1):
+    if not self.blasLapack.checkForRoutine('dgels'):
       raise RuntimeError('hypre requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
     self.framework.log.write('Found dgels() in Lapack library as needed by hypre\n')
     return
 
   def configure(self):
     if self.framework.argDB['download-'+self.package]:
+      self.framework.argDB['with-'+self.package] = 1
+    if 'with-'+self.package+'-dir' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
     if self.framework.argDB['with-'+self.package]:
       if self.mpi.usingMPIUni:

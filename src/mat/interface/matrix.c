@@ -3674,7 +3674,7 @@ PetscErrorCode MatCompress(Mat mat)
    MAT_KEEP_ZEROED_ROWS indicates when MatZeroRows() is called the zeroed entries
    are kept in the nonzero structure
 
-   MAT_IGNORE_ZERO_ENTRIES - for AIJ matrices this will stop zero values from creating
+   MAT_IGNORE_ZERO_ENTRIES - for AIJ/IS matrices this will stop zero values from creating
    a zero location in the matrix
 
    MAT_USE_INODES - indicates using inode version of the code - works with AIJ and 

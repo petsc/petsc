@@ -1,4 +1,8 @@
 
+  for configure optional external packages, write a package independent rule to check if the
+  user wants the package installed and if all stuff it needs is available. See hypre.py
+  for a template. Put the rule up in the ../../PETSc directory
+
   count for PSSetUpOnBlocks() is wrong, since it always has to call in, since it
   does not know if the setup was done.
 

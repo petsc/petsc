@@ -392,6 +392,14 @@ class Configure(config.base.Configure):
         self.framework.argDB['LIBS'] = oldLibs
     return
 
+  def checkForRoutine(self,routine):
+    ''' used by other packages to see if a BLAS routine is available
+        This is not really correct because other packages do not (usually) know about f2cblasLapack'''
+    if self.f2c:
+      return self.libraries.check(self.lib,routine+'_')
+    else:
+      return self.libraries.check(self.lib,routine,fortranMangle = ('FC' in self.framework.argDB))
+
   def configure(self):
     self.executeTest(self.configureLibrary)
     self.executeTest(self.checkESSL)
