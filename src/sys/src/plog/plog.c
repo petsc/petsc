@@ -1398,7 +1398,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
     ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");    CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"      #                          WARNING!!!                    #\n");    CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");    CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      #   This code was run without the PreLoadinBegin()       #\n");    CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      #   This code was run without the PreLoadBegin()         #\n");    CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"      #   macros. To get timing results we always recommend    #\n");    CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"      #   preloading. otherwise timing numbers may be          #\n");    CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"      #   meaningless.                                         #\n");    CHKERRQ(ierr);
