@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.107 1998/12/17 22:11:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.108 1998/12/21 01:01:58 bsmith Exp balay $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -396,12 +396,14 @@ static int slesdoublecount = 0;
      and SLESSolve() for each solve.  See SLESSetOperators() for
      options that can save work for such cases.
 
-
 .keywords: SLES, solve, linear system
 
 .seealso: SLESCreate(), SLESSetOperators(), SLESGetKSP(), KSPSetTolerances(),
           KSPDefaultConverged(), KSPSetInitialGuessNonzero(), KSPGetResidualNorm(),
           KSPSolve()
+
+Level: advanced
+
 @*/
 int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 {
