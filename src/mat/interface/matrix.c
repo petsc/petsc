@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.218 1997/01/22 18:39:23 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.219 1997/01/22 20:12:37 curfman Exp curfman $";
 #endif
 
 /*
@@ -2476,6 +2476,12 @@ int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
 $     PCType(pc,PCILU);
 $     PCILUSeUseInPlace(pc);
   or by using the options -pc_type ilu -pc_ilu_in_place
+
+  In-place factorization ILU(0) can also be used as a local
+  solver for the blocks within the block Jacobi or additive Schwarz
+  methods (runtime option: -sub_pc_ilu_in_place).  See the discussion 
+  of these preconditioners in the users manual for details on setting
+  local solver options.
 
 .seealso: PCILUSetUseInPlace(), PCLUSetUseInPlace()
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.79 1997/01/01 03:37:10 bsmith Exp balay $";
+static char vcid[] = "$Id: ilu.c,v 1.80 1997/01/06 20:23:51 balay Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -151,7 +151,7 @@ $  -pc_ilu_in_place
    Krylov methods, or when a different matrices are employed for the linear
    system and preconditioner.  Do NOT use this option if the linear system
    matrix also serves as the preconditioning matrix, since the factored
-   matrix overwrites the original matrix. 
+   matrix would then overwrite the original matrix. 
 
 .keywords: PC, set, factorization, inplace, in-place, ILU
 
