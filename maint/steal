@@ -1,11 +1,13 @@
-#! /bin/sh
+#! /bin/csh
 # 
 # steals a lock from one person to another.
 #
+setenv victim `ls -ld $1 | cut -f4 -d" "`
 mv $1 $1.stolen
 rcs -u $1
 co -l $1
 /bin/cp $1.stolen $1
+echo "I have stolen $1 in " `pwd` | mail $victim
 
 
 
