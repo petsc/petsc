@@ -116,6 +116,8 @@ static int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inser
   int        *aj = a->j, nonew = a->nonew,shift = a->indexshift;
   Scalar     *ap,value, *aa = a->a;
 
+int ierr;
+
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k];   
     if (row < 0) SETERRQ(1,"MatSetValues_SeqAIJ:Negative row");
