@@ -116,7 +116,7 @@ int main(int argc,char **args)
   ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,u,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,u);CHKERRQ(ierr);
 
   /* check error */
   for (i=0; i<N; i++) {
@@ -129,6 +129,7 @@ int main(int argc,char **args)
 
   ierr = VecAXPY(&none,ustar,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %d\n",norm*h,its);CHKERRQ(ierr);
 
   ierr = SLESDestroy(sles);CHKERRQ(ierr);

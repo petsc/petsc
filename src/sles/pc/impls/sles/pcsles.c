@@ -16,9 +16,12 @@ static int PCApply_SLES(PC pc,Vec x,Vec y)
 {
   int     ierr,its;
   PC_SLES *jac = (PC_SLES*)pc->data;
+  KSP     ksp;
 
   PetscFunctionBegin;
-  ierr      = SLESSolve(jac->sles,x,y,&its);CHKERRQ(ierr);
+  ierr      = SLESSolve(jac->sles,x,y);CHKERRQ(ierr);
+  ierr      = SLESGetKSP(jac->sles,&ksp);CHKERRQ(ierr);
+  ierr      = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   jac->its += its;
   PetscFunctionReturn(0);
 }
@@ -27,11 +30,14 @@ static int PCApply_SLES(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplyTranspose_SLES"
 static int PCApplyTranspose_SLES(PC pc,Vec x,Vec y)
 {
-  int     ierr,its;
+  int     its,ierr;
   PC_SLES *jac = (PC_SLES*)pc->data;
+  KSP     ksp;
 
   PetscFunctionBegin;
-  ierr      = SLESSolveTranspose(jac->sles,x,y,&its);CHKERRQ(ierr);
+  ierr      = SLESSolveTranspose(jac->sles,x,y);CHKERRQ(ierr);
+  ierr      = SLESGetKSP(jac->sles,&ksp);CHKERRQ(ierr);
+  ierr      = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   jac->its += its;
   PetscFunctionReturn(0);
 }

@@ -24,7 +24,7 @@ int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 int main(int argc,char **args)
 {
   Mat          C; 
-  int          i,m = 5,rank,size,N,start,end,M,its;
+  int          i,m = 5,rank,size,N,start,end,M;
   int          ierr,idx[4];
   PetscTruth   flg;
   PetscScalar  zero = 0.0,Ke[16], one = 1.0;
@@ -88,7 +88,7 @@ int main(int argc,char **args)
     ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
   }
 
-  ierr = SLESSolve(sles,b,u,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,u);CHKERRQ(ierr);
 
 
   /* Free work space */

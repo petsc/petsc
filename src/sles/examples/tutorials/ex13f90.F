@@ -256,7 +256,7 @@
       Mat  A
       integer m,n
 
-      integer i,j,II,JJ,its
+      integer i,j,II,JJ
       PetscScalar  v
 
 !      PetscScalar tmpx(*),tmpb(*)
@@ -357,7 +357,7 @@
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call SLESSolve(sles,b,x,its,ierr)
+      call SLESSolve(sles,b,x,ierr)
 
       return
       end

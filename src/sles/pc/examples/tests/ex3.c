@@ -69,7 +69,8 @@ int main(int argc,char **args)
   ierr = KSPGetType(ksp,&kspname);CHKERRQ(ierr);
   ierr = PCGetType(pc,&pcname);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,&its);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations %d\n",its);
 
   /* Free data structures */

@@ -23,9 +23,10 @@
       Mat              A
       SLES             sles
       character*(128)  f 
-      PetscViewer           fd
+      PetscViewer      fd
       MatInfo          info(MAT_INFO_SIZE)
-      PetscLogDouble       time1,time2
+      PetscLogDouble   time1,time2
+      KSP              ksp
 
       none = -1.0
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -61,13 +62,15 @@
      &                      ierr)
       call SLESSetFromOptions(sles,ierr)
       call PetscGetTime(time1,ierr)
-      call SLESSolve(sles,b,x,its,ierr)
+      call SLESSolve(sles,b,x,ierr)
       call PetscGetTime(time2,ierr)
 
 ! Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
+      call SLESGetKSP(sles,ksp,ierr)
+      call KSPGetIterationNumber(ksp,its,ierr)
       print*, 'Number of iterations = ',its
       print*, 'Residual norm = ',norm
       print*, 'Time for solve = ',time2-time1

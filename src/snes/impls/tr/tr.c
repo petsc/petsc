@@ -88,6 +88,8 @@ static int SNESSolve_TR(SNES snes,int *its)
   neP->delta = delta;
   SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
 
  if (fnorm < snes->atol) {*its = 0; snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
 
@@ -97,8 +99,6 @@ static int SNESSolve_TR(SNES snes,int *its)
   /* Set the stopping criteria to use the More' trick. */
   ierr = PetscOptionsHasName(PETSC_NULL,"-snes_tr_ksp_regular_convergence_test",&conv);CHKERRQ(ierr);
   if (!conv) {
-    ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
     ierr = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,(void *)snes);CHKERRQ(ierr);
     PetscLogInfo(snes,"SNESSolve_TR: Using Krylov convergence test SNES_TR_KSPConverged_Private\n");
   }
@@ -108,7 +108,8 @@ static int SNESSolve_TR(SNES snes,int *its)
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
 
     /* Solve J Y = F, where J is Jacobian matrix */
-    ierr = SLESSolve(snes->sles,F,Ytmp,&lits);CHKERRQ(ierr);
+    ierr = SLESSolve(snes->sles,F,Ytmp);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     PetscLogInfo(snes,"SNESSolve_TR: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
     ierr = VecNorm(Ytmp,NORM_2,&nrm);CHKERRQ(ierr);

@@ -12,7 +12,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_TCQMR"
-static int KSPSolve_TCQMR(KSP ksp,int *its)
+static int KSPSolve_TCQMR(KSP ksp)
 {
   PetscReal   rnorm0,rnorm,dp1,Gamma;
   PetscScalar theta,ep,cl1,sl1,cl,sl,sprod,tau_n1,f; 
@@ -27,7 +27,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its)
   ierr  = VecNorm(r,NORM_2,&rnorm0);CHKERRQ(ierr);         /*  rnorm0 = ||r|| */
 
   ierr = (*ksp->converged)(ksp,0,rnorm0,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  if (ksp->reason) {*its = 0; PetscFunctionReturn(0);}
+  if (ksp->reason) PetscFunctionReturn(0);
 
   ierr  = VecSet(&zero,um1);CHKERRQ(ierr);
   ierr  = VecCopy(r,u);CHKERRQ(ierr);
@@ -141,7 +141,6 @@ static int KSPSolve_TCQMR(KSP ksp,int *its)
   KSPMonitor(ksp,ksp->its,rnorm);
   ierr = KSPUnwindPreconditioner(ksp,x,vtmp);CHKERRQ(ierr);
 
-  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

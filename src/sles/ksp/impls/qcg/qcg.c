@@ -148,7 +148,7 @@ $  other KSP converged/diverged reasons
 
  We should perhaps rewrite using PCApplyBAorAB().
  */
-int KSPSolve_QCG(KSP ksp,int *its)
+int KSPSolve_QCG(KSP ksp)
 {
 /* 
    Correpondence with documentation above:  
@@ -191,7 +191,6 @@ int KSPSolve_QCG(KSP ksp,int *its)
   X        = ksp->vec_sol;
   B        = ksp->vec_rhs;
 
-  *its = 0;
   if (pcgP->delta <= dzero) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Input error: delta <= 0");
   ierr = KSPGetPreconditionerSide(ksp,&side);CHKERRQ(ierr);
   if (side != PC_SYMMETRIC) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Requires symmetric preconditioner!");
@@ -212,7 +211,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
   KSPLogResidualHistory(ksp,bsnrm);
   KSPMonitor(ksp,0,bsnrm);
   ierr = (*ksp->converged)(ksp,0,bsnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
+  if (ksp->reason) PetscFunctionReturn(0);
 
   /* Compute the initial scaled direction and scaled residual */
   ierr = VecCopy(BS,R);CHKERRQ(ierr);
@@ -372,7 +371,6 @@ int KSPSolve_QCG(KSP ksp,int *its)
 #else
   pcgP->quadratic = btx + p5*xtax;              /* Compute q(x) */
 #endif
-  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

@@ -2053,7 +2053,7 @@ routine accepts the options \trl{-h} and \trl{-help} as well as
 any of the KSP and PC options discussed below. 
 To solve a linear system, one merely executes the command \findex{SLESSolve()}
 \begin{tabbing}
-  SLESSolve(SLES sles,Vec b,Vec x,int *its);
+  SLESSolve(SLES sles,Vec b,Vec x);
 \end{tabbing}
 where \trl{b} and \trl{x} respectively denote the right-hand-side and
 solution vectors.  On return, the parameter \trl{its} contains
@@ -4834,8 +4834,8 @@ code is set to be nonzero if an error has been detected; otherwise, it
 is zero.  For example, the Fortran and C variants of SLESSolve() are
 given, respectively, below, where \trl{ierr} denotes the error variable:
 \begin{tabbing}
-   call SLESSolve(SLES sles,Vec b,Vec x,int its,int ierr)\\
-  SLESSolve(SLES sles,Vec b,Vec x,int *its);
+   call SLESSolve(SLES sles,Vec b,Vec x,int ierr)\\
+  SLESSolve(SLES sles,Vec b,Vec x);
 \end{tabbing}
 
 Fortran programmers

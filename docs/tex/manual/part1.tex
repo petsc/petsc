@@ -421,7 +421,7 @@ with the following sequence of commands:
   SLESCreate(MPI\_Comm comm,SLES *sles); \\
   SLESSetOperators(SLES sles,Mat A,Mat PrecA,MatStructure flag);\\
   SLESSetFromOptions(SLES sles);\\
-  SLESSolve(SLES sles,Vec b,Vec x,int *its);\\
+  SLESSolve(SLES sles,Vec b,Vec x);\\
   SLESDestroy(SLES sles);
 \end{tabbing}
 The user first creates the SLES context and sets the operators

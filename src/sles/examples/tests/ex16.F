@@ -30,10 +30,10 @@
       Mat              A
       SLES             sles1,sles2
       character*(128)  f 
-      PetscViewer           fd
+      PetscViewer      fd
       IS               isrow
-      PetscLogDouble       time1,time2
-
+      PetscLogDouble   time1,time2
+      KSP              ksp
       none = -1.0
       five = 5.0
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -68,13 +68,15 @@
      &                      ierr)
       call SLESSetFromOptions(sles1,ierr)
       call PetscGetTime(time1,ierr)
-      call SLESSolve(sles1,b,x,its,ierr)
+      call SLESSolve(sles1,b,x,ierr)
       call PetscGetTime(time2,ierr)
 
 ! Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
+      call SLESGetKSP(sles,ksp,ierr)
+      call KSPGetIterationNumber(ksp,its,ierr)
 
 !      print*, 'Time for solve = ',time2-time1
 
@@ -93,13 +95,15 @@
      &                      ierr)
       call SLESSetFromOptions(sles2,ierr)
       call PetscGetTime(time1,ierr)
-      call SLESSolve(sles2,b,x,its,ierr)
+      call SLESSolve(sles2,b,x,ierr)
       call PetscGetTime(time2,ierr)
 
 ! Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
+      call SLESGetKSP(sles,ksp,ierr)
+      call KSPGetIterationNumber(ksp,its,ierr)
 !      print*, 'Time for solve = ',time2-time1
       write(6,100) norm,its
 

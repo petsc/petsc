@@ -215,7 +215,7 @@
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call SLESSolve(sles,b,x,its,ierr)
+      call SLESSolve(sles,b,x,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                     Check solution and clean up
@@ -225,6 +225,9 @@
 
       call VecAXPY(neg_one,u,x,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
+      call SLESGetKSP(sles,ksp,ierr)
+      call KSPGetIterationNumber(ksp,its,ierr)
+
       if (rank .eq. 0) then
         if (norm .gt. 1.e-12) then
            write(6,100) norm,its

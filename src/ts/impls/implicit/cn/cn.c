@@ -67,10 +67,12 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
   Vec         rhs = cn->rhs;
   int         ierr,i,max_steps = ts->max_steps,its;
   PetscScalar dt = ts->time_step,two = 2.0;
-  
+  KSP         ksp;
+
   PetscFunctionBegin;
+  ierr   = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
   *steps = -ts->steps;
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
+  ierr   = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   /* set initial guess to be previous solution */
   ierr = VecCopy(sol,update);CHKERRQ(ierr);
@@ -88,7 +90,8 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
     ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 
-    ierr = SLESSolve(ts->sles,rhs,update,&its);CHKERRQ(ierr);
+    ierr = SLESSolve(ts->sles,rhs,update);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
     ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;
@@ -111,10 +114,12 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
   int          ierr,i,max_steps = ts->max_steps,its;
   PetscScalar  dt = ts->time_step,two = 2.0,neg_dt = -1.0*ts->time_step;
   MatStructure str;
+  KSP          ksp;
 
   PetscFunctionBegin;
+  ierr   = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
   *steps = -ts->steps;
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
+  ierr   = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   /* set initial guess to be previous solution */
   ierr = VecCopy(sol,update);CHKERRQ(ierr);
@@ -144,7 +149,8 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
     ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 
     ierr = SLESSetOperators(ts->sles,ts->A,ts->B,str);CHKERRQ(ierr);
-    ierr = SLESSolve(ts->sles,rhs,update,&its);CHKERRQ(ierr);
+    ierr = SLESSolve(ts->sles,rhs,update);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
     ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;

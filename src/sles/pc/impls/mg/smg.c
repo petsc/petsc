@@ -17,7 +17,7 @@
 #define __FUNCT__ "MGACycle_Private"
 int MGACycle_Private(MG *mg)
 {
-  int    i,l = mg[0]->levels,its,ierr;
+  int    i,l = mg[0]->levels,ierr;
   PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
@@ -29,7 +29,7 @@ int MGACycle_Private(MG *mg)
   for (i=0; i<l; i++) {
     ierr = VecSet(&zero,mg[i]->x);CHKERRQ(ierr); 
     if (mg[i]->eventsolve) {ierr = PetscLogEventBegin(mg[i]->eventsolve,0,0,0,0);CHKERRQ(ierr);}
-    ierr = SLESSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x,&its);CHKERRQ(ierr); 
+    ierr = SLESSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x);CHKERRQ(ierr); 
     if (mg[i]->eventsolve) {ierr = PetscLogEventEnd(mg[i]->eventsolve,0,0,0,0);CHKERRQ(ierr);}
   }
   for (i=1; i<l; i++) {  

@@ -16,7 +16,7 @@
 
       Mat         A
       Vec         x,y
-      integer     m,ierr,its 
+      integer     m,ierr
       SLES        sles
       external    mymatmult
       PetscScalar one
@@ -38,7 +38,7 @@
       call SLESSetOperators(sles,A,A,SAME_NONZERO_PATTERN,ierr)
       call SLESSetFromOptions(sles,ierr)
 
-      call SLESSolve(sles,x,y,its,ierr)
+      call SLESSolve(sles,x,y,ierr)
 
       call MatDestroy(A,ierr)
       call SLESDestroy(sles,ierr)

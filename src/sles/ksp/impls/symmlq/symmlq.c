@@ -29,7 +29,7 @@ int KSPSetUp_SYMMLQ(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_SYMMLQ"
-int  KSPSolve_SYMMLQ(KSP ksp,int *its)
+int  KSPSolve_SYMMLQ(KSP ksp)
 {
   int          ierr,i;
   PetscScalar  alpha,malpha,beta,mbeta,ibeta,betaold,beta1,ceta,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
@@ -95,7 +95,7 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   ierr = VecCopy(U,Wbar);CHKERRQ(ierr);        /* w_bar <- u;   */
   ierr = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);      /*   np <- ||z||        */
   ierr = (*ksp->converged)(ksp,0,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);  /* test for convergence */
-  if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
+  if (ksp->reason) PetscFunctionReturn(0);
   KSPLogResidualHistory(ksp,np);
   KSPMonitor(ksp,0,np);            /* call any registered monitor routines */
   ksp->rnorm = np;  
@@ -191,8 +191,6 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   if (i == ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
-  *its = ksp->its;
-
   PetscFunctionReturn(0);
 }
 

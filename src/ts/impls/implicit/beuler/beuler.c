@@ -20,13 +20,15 @@ typedef struct {
 #define __FUNCT__ "TSStep_BEuler_Linear_Constant_Matrix"
 static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
 {
-  TS_BEuler *beuler = (TS_BEuler*)ts->data;
-  Vec       sol = ts->vec_sol,update = beuler->update;
-  Vec       rhs = beuler->rhs;
-  int       ierr,i,max_steps = ts->max_steps,its;
-  PetscScalar    mdt = 1.0/ts->time_step;
-  
+  TS_BEuler   *beuler = (TS_BEuler*)ts->data;
+  Vec         sol = ts->vec_sol,update = beuler->update;
+  Vec         rhs = beuler->rhs;
+  int         ierr,i,max_steps = ts->max_steps,its;
+  PetscScalar mdt = 1.0/ts->time_step;
+  KSP         ksp;
+
   PetscFunctionBegin;
+  ierr = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
   *steps = -ts->steps;
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
@@ -41,7 +43,8 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptim
 
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
-    ierr = SLESSolve(ts->sles,rhs,update,&its);CHKERRQ(ierr);
+    ierr = SLESSolve(ts->sles,rhs,update);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ts->linear_its += its;
     ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;
@@ -64,8 +67,10 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptim
   int          ierr,i,max_steps = ts->max_steps,its;
   PetscScalar  mdt = 1.0/ts->time_step,mone = -1.0;
   MatStructure str;
+  KSP          ksp;
 
   PetscFunctionBegin;
+  ierr = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
   *steps = -ts->steps;
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
@@ -91,7 +96,8 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptim
       ierr = MatShift(&mdt,ts->B);CHKERRQ(ierr);
     }
     ierr = SLESSetOperators(ts->sles,ts->A,ts->B,str);CHKERRQ(ierr);
-    ierr = SLESSolve(ts->sles,rhs,update,&its);CHKERRQ(ierr);
+    ierr = SLESSolve(ts->sles,rhs,update);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ts->linear_its += its;
     ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;

@@ -26,7 +26,7 @@ static int KSPSetUp_BCGS(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_BCGS"
-static int  KSPSolve_BCGS(KSP ksp,int *its)
+static int  KSPSolve_BCGS(KSP ksp)
 {
   int         i,ierr;
   PetscScalar rho,rhoold,alpha,beta,omega,omegaold,d1,d2,zero = 0.0,tmp;
@@ -58,7 +58,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  if (ksp->reason) {*its = 0; PetscFunctionReturn(0);}
+  if (ksp->reason) PetscFunctionReturn(0);
 
   /* Make the initial Rp == R */
   ierr = VecCopy(R,RP);CHKERRQ(ierr);
@@ -124,7 +124,6 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   if (i == ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
-  *its = ksp->its;
 
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -23,6 +23,7 @@ int main(int argc,char **args)
   SLES           sles;
   char           file[128]; 
   PetscViewer    fd;
+  KSP            ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -64,7 +65,7 @@ int main(int argc,char **args)
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
   ierr = PetscGetTime(&time1);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
   ierr = PetscGetTime(&time2);CHKERRQ(ierr);
   time = time2 - time1;
   PetscLogStagePop();
@@ -73,6 +74,8 @@ int main(int argc,char **args)
   ierr = MatMult(A,x,u);
   ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Time for solve = %5.2f seconds\n",time);CHKERRQ(ierr);

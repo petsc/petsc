@@ -302,14 +302,16 @@ int main(int argc,char **args)
     */
     ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
     if (trans) {
-      ierr = SLESSolveTranspose(sles,b,x,&its);CHKERRQ(ierr);
+      ierr = SLESSolveTranspose(sles,b,x);CHKERRQ(ierr);
     } else {
       int  num_rhs=1;
       ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
       while ( num_rhs-- ) {
-        ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+        ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
       }
     }
+    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
     tsolve = tsolve2 - tsolve1;
 

@@ -55,6 +55,7 @@ int main(int argc,char **args)
   int         i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
   PetscScalar v,one = 1.0,neg_one = -1.0;
   PC          pc;      /* preconditioner context */
+  KSP         ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -168,7 +169,7 @@ int main(int argc,char **args)
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up
@@ -179,7 +180,8 @@ int main(int argc,char **args)
   */
   ierr = VecAXPY(&neg_one,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /* Scale the norm */
   /*  norm *= sqrt(1.0/((m+1)*(n+1))); */
 

@@ -189,7 +189,7 @@ int UserInitializeLinearSolver(int m,int n,UserCtx *userctx)
 /* ------------------------------------------------------------------------*/
 int UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,PetscScalar *userx)
 {
-  int    ierr,i,j,I,J,m = userctx->m,n = userctx->n,its;
+  int    ierr,i,j,I,J,m = userctx->m,n = userctx->n;
   Mat    A = userctx->A;
   PC     pc;
   PetscScalar v,hx2 = userctx->hx2,hy2 = userctx->hy2;
@@ -285,7 +285,7 @@ int UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,Pets
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(userctx->sles,userctx->b,userctx->x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(userctx->sles,userctx->b,userctx->x);CHKERRQ(ierr);
 
   /*
     Put back the PETSc array that belongs in the vector xuserctx->x

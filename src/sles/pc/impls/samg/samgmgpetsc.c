@@ -273,7 +273,8 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
    ierr = PetscGetTime(&v1);CHKERRQ(ierr); 
 
    /*..Solve linear system..*/
-   ierr = SLESSolve(sles,b,x,&its); CHKERRQ(ierr);
+   ierr = SLESSolve(sles,b,x); CHKERRQ(ierr);
+   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
  
    /*..Print number of iterations..*/ 
    PetscPrintf(PETSC_COMM_WORLD,"\n** Number of iterations done = %d \n",

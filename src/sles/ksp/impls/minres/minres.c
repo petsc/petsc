@@ -34,7 +34,7 @@ int KSPSetUp_MINRES(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_MINRES"
-int  KSPSolve_MINRES(KSP ksp,int *its)
+int  KSPSolve_MINRES(KSP ksp)
 {
   int          ierr,i;
   PetscScalar  alpha,malpha,beta,mbeta,ibeta,betaold,eta,c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
@@ -86,7 +86,6 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
     dp = PetscAbsScalar(dp); /* tiny number, can't use 0.0, cause divided by below */
     if (dp == 0.0) {
       ksp->reason = KSP_CONVERGED_ATOL;
-      *its        = 0;
       PetscFunctionReturn(0);
     }
   }
@@ -107,7 +106,7 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
   ierr = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);      /*   np <- ||z||        */
 
   ierr = (*ksp->converged)(ksp,0,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);  /* test for convergence */
-  if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
+  if (ksp->reason) PetscFunctionReturn(0);
   KSPLogResidualHistory(ksp,np);
   KSPMonitor(ksp,0,np);            /* call any registered monitor routines */
   ksp->rnorm = np;  
@@ -193,7 +192,6 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
   if (i == ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
-  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

@@ -312,9 +312,9 @@ int PCISCreate(PC pc)
 #define __FUNCT__ "PCIterSuApplySchur"
 int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
-  int    ierr, its;
+  int         ierr;
   PetscScalar m_one = -1.0;
-  PC_IS  *pcis = (PC_IS*)(pc->data);
+  PC_IS       *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
 
@@ -322,7 +322,7 @@ int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 
   ierr = MatMult(pcis->A_BB,v,vec1_B);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_IB,v,vec1_D);CHKERRQ(ierr);
-  ierr = SLESSolve(pcis->sles_D,vec1_D,vec2_D,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(pcis->sles_D,vec1_D,vec2_D);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_BI,vec2_D,vec2_B);CHKERRQ(ierr);
   ierr = VecAXPY(&m_one,vec2_B,vec1_B);CHKERRQ(ierr);
 
@@ -403,8 +403,8 @@ int PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMode imode, Sc
 #define __FUNCT__ "PCISApplyInvSchur"
 int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 {
-  int    ierr, its;
-  PC_IS  *pcis = (PC_IS*)(pc->data);
+  int         ierr;
+  PC_IS       *pcis = (PC_IS*)(pc->data);
   PetscScalar zero  = 0.0;
 
   PetscFunctionBegin;
@@ -439,7 +439,7 @@ int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
     }
   }
   /* Solving the system for vec2_N */
-  ierr = SLESSolve(pcis->sles_N,vec1_N,vec2_N,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(pcis->sles_N,vec1_N,vec2_N);CHKERRQ(ierr);
   /* Extracting the local interface vector out of the solution */
   ierr = VecScatterBegin(vec2_N,x,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);
   ierr = VecScatterEnd  (vec2_N,x,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);

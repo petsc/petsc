@@ -94,6 +94,7 @@ int main(int argc,char **argv)
   int       size;                /* number of processors */
   PetscReal bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
   int       m,N,ierr;
+  KSP       ksp;
 
   /* --------------- Data to define nonlinear solver -------------- */
   PetscReal       rtol = 1.e-8;        /* relative convergence tolerance */
@@ -215,6 +216,7 @@ int main(int argc,char **argv)
       offers many advantages over coding nonlinear solvers independently.
    */
 
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   for (i=0; i<max_nonlin_its; i++) {
 
     /* 
@@ -231,7 +233,8 @@ int main(int argc,char **argv)
           - Then solve the Newton system.
      */
     ierr = SLESSetOperators(sles,J,J,mat_flag);CHKERRQ(ierr);
-    ierr = SLESSolve(sles,F,Y,&lin_its);CHKERRQ(ierr);
+    ierr = SLESSolve(sles,F,Y);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&lin_its);CHKERRQ(ierr);
 
     /* 
        Compute updated iterate

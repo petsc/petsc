@@ -749,7 +749,7 @@ int PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
 #define __FUNCT__ "PCApply_BJacobi_Singleblock"
 int PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
-  int                    ierr,its;
+  int                    ierr;
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
   PetscScalar            *x_array,*y_array;
@@ -765,7 +765,7 @@ int PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr); 
-  ierr = SLESSolve(jac->sles[0],bjac->x,bjac->y,&its);CHKERRQ(ierr); 
+  ierr = SLESSolve(jac->sles[0],bjac->x,bjac->y);CHKERRQ(ierr); 
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr); 
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
@@ -841,7 +841,7 @@ int PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplyTranspose_BJacobi_Singleblock"
 int PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
-  int                    ierr,its;
+  int                    ierr;
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
   PetscScalar            *x_array,*y_array;
@@ -857,7 +857,7 @@ int PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr); 
-  ierr = SLESSolveTranspose(jac->sles[0],bjac->x,bjac->y,&its);CHKERRQ(ierr); 
+  ierr = SLESSolveTranspose(jac->sles[0],bjac->x,bjac->y);CHKERRQ(ierr); 
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr); 
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
@@ -997,7 +997,7 @@ int PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
 int PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
-  int                   ierr,its,i,n_local = jac->n_local;
+  int                   ierr,i,n_local = jac->n_local;
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
   PetscScalar           *xin,*yin;
   static PetscTruth     flag = PETSC_TRUE;
@@ -1020,7 +1020,7 @@ int PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
     ierr = VecPlaceArray(bjac->y[i],yin+bjac->starts[i]);CHKERRQ(ierr);
 
     ierr = PetscLogEventBegin(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
-    ierr = SLESSolve(jac->sles[i],bjac->x[i],bjac->y[i],&its);CHKERRQ(ierr);
+    ierr = SLESSolve(jac->sles[i],bjac->x[i],bjac->y[i]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(x,&xin);CHKERRQ(ierr);
@@ -1036,7 +1036,7 @@ int PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 int PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
-  int                   ierr,its,i,n_local = jac->n_local;
+  int                   ierr,i,n_local = jac->n_local;
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
   PetscScalar           *xin,*yin;
   static PetscTruth     flag = PETSC_TRUE;
@@ -1059,7 +1059,7 @@ int PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
     ierr = VecPlaceArray(bjac->y[i],yin+bjac->starts[i]);CHKERRQ(ierr);
 
     ierr = PetscLogEventBegin(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
-    ierr = SLESSolveTranspose(jac->sles[i],bjac->x[i],bjac->y[i],&its);CHKERRQ(ierr);
+    ierr = SLESSolveTranspose(jac->sles[i],bjac->x[i],bjac->y[i]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(x,&xin);CHKERRQ(ierr);

@@ -27,7 +27,7 @@ static int KSPSetUp_TFQMR(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_TFQMR"
-static int  KSPSolve_TFQMR(KSP ksp,int *its)
+static int  KSPSolve_TFQMR(KSP ksp)
 {
   int       i,m, ierr;
   PetscScalar    rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
@@ -58,7 +58,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   ksp->its    = 0;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  if (ksp->reason) {*its = 0; PetscFunctionReturn(0);}
+  if (ksp->reason) PetscFunctionReturn(0);
   KSPMonitor(ksp,0,dp);
 
   /* Make the initial Rp == R */
@@ -137,7 +137,6 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   }
 
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
-  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

@@ -72,8 +72,8 @@ int myPCApply(DMMG dmmg,Vec x,Vec y)
   if (yw && xw) {
     yw[0] = xw[0];
   }
-  ierr = SLESSolve(appctx->sles,xu,yu,PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = SLESSolveTranspose(appctx->sles,xlambda,ylambda,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = SLESSolve(appctx->sles,xu,yu);CHKERRQ(ierr);
+  ierr = SLESSolveTranspose(appctx->sles,xlambda,ylambda);CHKERRQ(ierr);
   /*  ierr = VecCopy(xu,yu);CHKERRQ(ierr);
       ierr = VecCopy(xlambda,ylambda);CHKERRQ(ierr); */
   ierr = VecPackRestoreAccess(packer,x,&xw,&xu,&xlambda);CHKERRQ(ierr);

@@ -38,6 +38,7 @@ int main(int argc,char **args)
   int         m = 8,n = 7,its;
   PetscTruth  flg;
   PetscScalar v,one = 1.0,neg_one = -1.0,rhs;
+  KSP         ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -158,14 +159,15 @@ int main(int argc,char **args)
     ierr = PetscOptionsHasName(PETSC_NULL,"-view_exact_sol",&flg);CHKERRQ(ierr);
     if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
-    ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+    ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
 
     /* 
        Check the error
     */
     ierr = VecAXPY(&neg_one,u,x);CHKERRQ(ierr);
     ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-
+    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     /*
        Print convergence information.  PetscPrintf() produces a single 
        print statement from all processes that share a communicator.

@@ -36,7 +36,7 @@ int main(int argc,char **args)
   Vec          u;              /* exact solution vector */
   Mat          C1,C2;         /* matrices for systems #1 and #2 */
   SLES         sles1,sles2;   /* SLES contexts for systems #1 and #2 */
-  KSP          ksp1;           /* KSP context for system #1 */
+  KSP          ksp;           /* KSP context for system #1 */
   int          ntimes = 3;     /* number of times to solve the linear systems */
   int          CHECK_ERROR;    /* event number for error checking */
   int          ldim,ierr,low,high,iglobal,Istart,Iend,Istart2,Iend2;
@@ -104,9 +104,9 @@ int main(int argc,char **args)
   /* 
      Set user-defined monitoring routine for first linear system.
   */
-  ierr = SLESGetKSP(sles1,&ksp1);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles1,&ksp);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-my_ksp_monitor",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPSetMonitor(ksp1,MyKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);}
+  if (flg) {ierr = KSPSetMonitor(ksp,MyKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);}
 
   /*
      Create data structures for second linear system.
@@ -246,7 +246,7 @@ int main(int argc,char **args)
        guess vector; otherwise, an initial guess of zero is used.
     */
     if (t>0) {
-      ierr = KSPSetInitialGuessNonzero(ksp1,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
 
     /* 
@@ -257,7 +257,9 @@ int main(int argc,char **args)
        within SLESSolve() if it hasn't been called already.
     */
     ierr = SLESSetUp(sles1,b1,x1);CHKERRQ(ierr);
-    ierr = SLESSolve(sles1,b1,x1,&its);CHKERRQ(ierr);
+    ierr = SLESSolve(sles1,b1,x1);CHKERRQ(ierr);
+    ierr = SLESGetKSP(sles1,&ksp);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
     /*
        Check error of solution to first linear system
@@ -330,7 +332,9 @@ int main(int argc,char **args)
        Solve the second linear system
     */
     ierr = SLESSetUp(sles2,b2,x2);CHKERRQ(ierr);
-    ierr = SLESSolve(sles2,b2,x2,&its);CHKERRQ(ierr);
+    ierr = SLESSolve(sles2,b2,x2);CHKERRQ(ierr);
+    ierr = SLESGetKSP(sles2,&ksp);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
     /*
        Check error of solution to second linear system

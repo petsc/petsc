@@ -30,7 +30,7 @@ int pde_bc(void *dummy,int n,double *xx,double *f)
 */
 #undef __FUNCT__
 #define __FUNCT__ "AppCxtSolve"
-int AppCtxSolve(AppCtx* appctx, int *its)
+int AppCtxSolve(AppCtx* appctx)
 {
   AppAlgebra   *algebra = &appctx->algebra;
   AppPartition *part = &appctx->part;
@@ -87,7 +87,7 @@ int AppCtxSolve(AppCtx* appctx, int *its)
     ierr = SLESSetUp(sles,appctx->algebra.b,appctx->algebra.b);CHKERRQ(ierr);
 
     PreLoadStage("Solve");  
-    ierr = SLESSolve(sles,algebra->b,algebra->x,its);CHKERRQ(ierr);
+    ierr = SLESSolve(sles,algebra->b,algebra->x);CHKERRQ(ierr);
 
     {
       PetscTruth flg;

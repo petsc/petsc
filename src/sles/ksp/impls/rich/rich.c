@@ -20,7 +20,7 @@ int KSPSetUp_Richardson(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_Richardson"
-int  KSPSolve_Richardson(KSP ksp,int *its)
+int  KSPSolve_Richardson(KSP ksp)
 {
   int             i,maxit,ierr;
   MatStructure    pflag;
@@ -46,7 +46,6 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   /* if user has provided fast Richardson code use that */
   ierr = PCApplyRichardsonExists(ksp->B,&exists);CHKERRQ(ierr);
   if (exists && !ksp->numbermonitors && !ksp->transpose_solve) {
-    if (its) *its = maxit;
     ierr = PCApplyRichardson(ksp->B,b,x,r,ksp->rtol,ksp->atol,ksp->divtol,maxit);CHKERRQ(ierr);
     ksp->reason = KSP_DIVERGED_ITS; /* what should we really put here? */
     PetscFunctionReturn(0);
@@ -113,7 +112,6 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
     ksp->reason = KSP_DIVERGED_ITS;
   }
 
-  if (its) *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

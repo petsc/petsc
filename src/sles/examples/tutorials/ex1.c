@@ -136,7 +136,7 @@ int main(int argc,char **args)
   /* 
      Solve linear system
   */
-  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr); 
+  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr); 
 
   /* 
      View solver info; we could instead use the option -sles_view to
@@ -152,6 +152,7 @@ int main(int argc,char **args)
   */
   ierr = VecAXPY(&neg_one,u,x);CHKERRQ(ierr);
   ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",
                      norm,its);CHKERRQ(ierr);
   /* 

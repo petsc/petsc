@@ -103,7 +103,7 @@ int main(int argc,char **argv)
    * without the shift this will diverge with
    * an indefinite preconditioner
    */
-  ierr = SLESSolve(solver,B,X,&its); CHKERRQ(ierr);
+  ierr = SLESSolve(solver,B,X); CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(itmeth,&reason); CHKERRQ(ierr);
   if (reason==KSP_DIVERGED_INDEFINITE_PC) {
     printf("\nDivergence because of indefinite preconditioner;\n");
@@ -111,6 +111,7 @@ int main(int argc,char **argv)
   } else if (reason<0) {
     printf("\nOther kind of divergence: this should not happen.\n");
   } else {
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     printf("\nConvergence in %d iterations.\n",its);
   }
   printf("\n");

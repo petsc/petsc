@@ -36,6 +36,7 @@ int main(int argc,char **args)
   int          i,j,m = 3,n = 2,rank,size,its;
   PetscTruth   mat_nonsymmetric;
   int          stages[2];
+  KSP          ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -188,13 +189,15 @@ int main(int argc,char **args)
      called already.
   */
   ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
  
   /* 
      Check the error
   */
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
 
   /* -------------- Stage 1: Solve Second System ---------------------- */
@@ -272,13 +275,15 @@ int main(int argc,char **args)
      Solve linear system
   */
   ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
 
   /* 
      Check the error
   */
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
 
   /* 

@@ -20,7 +20,7 @@ static int KSPSetUp_CR(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_CR"
-static int  KSPSolve_CR(KSP ksp,int *its)
+static int  KSPSolve_CR(KSP ksp)
 {
   int          i = 0, ierr;
   MatStructure pflag;
@@ -62,10 +62,10 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     dp = sqrt(PetscAbsScalar(btop));                    /* dp = sqrt(R,AR)      */
   }
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  if (ksp->reason) {*its = 0; PetscFunctionReturn(0);}
+  ksp->its = 0;
+  if (ksp->reason) PetscFunctionReturn(0);
   KSPMonitor(ksp,0,dp);
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-  ksp->its = 0;
   ksp->rnorm              = dp;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
@@ -116,7 +116,6 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   if (i == ksp->max_it) {
     ksp->reason =  KSP_DIVERGED_ITS;
   }
-  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

@@ -402,7 +402,7 @@ int LGMREScycle(int *itcount,KSP ksp)
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_LGMRES"
 
-int KSPSolve_LGMRES(KSP ksp,int *outits)
+int KSPSolve_LGMRES(KSP ksp)
 {
   int        ierr;
   int        cycle_its; /* iterations done in a call to LGMREScycle */
@@ -440,7 +440,6 @@ int KSPSolve_LGMRES(KSP ksp,int *outits)
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
-  if (outits) *outits = itcount;
   PetscFunctionReturn(0);
 }
 
