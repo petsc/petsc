@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.165 2001/04/13 03:00:55 bsmith Exp balay $*/
+/*$Id: ilu.c,v 1.166 2001/05/14 15:27:37 balay Exp buschelm $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -9,7 +9,21 @@
 /* ------------------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetDamping_ILU"
+#define __FUNCT__ "PCILUSetSinglePrecisionSolves_ILU"
+int PCILUSetSinglePrecisionSolves_ILU(PC pc,PetscTruth flag)
+{
+  PC_ILU *dir;
+
+  PetscFunctionBegin;
+  dir = (PC_ILU*)pc->data;
+  dir->single_precision_solve = flag;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCILUSetDamping_ILU"
 int PCILUSetDamping_ILU(PC pc,PetscReal damping)
 {
   PC_ILU *dir;
@@ -141,6 +155,38 @@ int PCILUSetAllowDiagonalFill_ILU(PC pc)
 EXTERN_C_END
 
 /* ------------------------------------------------------------------------------------------*/
+#undef __FUNCT__  
+#define __FUNCT__ "PCILUSetSinglePrecisionSolves"
+/*@
+   PCILUSetSinglePrecisionSolves - Sets precision of triangular solves to single precision
+
+   Collective on PC
+   
+   Input Parameters:
++  pc - the preconditioner context
+-  flag - PETSC_TRUE to use single precision, default is PETSC_FALSE
+
+   Options Database Key:
+.  -pc_ilu_single_precision_solves - activates PCILUSetSinglePrecisionSolves
+.  -pc_ilu_single_precision_solves <flag> - flag of TRUE/FALSE will override this call in the code.
+
+   Level: intermediate
+
+.keywords: PC, set, solve, precision
+@*/
+int PCILUSetSinglePrecisionSolves(PC pc,PetscTruth flag)
+{
+  int ierr,(*f)(PC,PetscReal);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetSinglePrecisionSolves_C",(void (**)())&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,flag);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetDamping"
 /*@
@@ -474,7 +520,7 @@ int PCILUSetUseInPlace(PC pc)
 static int PCSetFromOptions_ILU(PC pc)
 {
   int        ierr,dtmax = 3,itmp;
-  PetscTruth flg;
+  PetscTruth flg,single_prec;
   PetscReal  dt[3];
   char       tname[256];
   PC_ILU     *ilu = (PC_ILU*)pc->data;
@@ -491,6 +537,10 @@ static int PCSetFromOptions_ILU(PC pc)
     ilu->info.diagonal_fill = (double) flg;
     ierr = PetscOptionsName("-pc_iludt_reuse_fill","Reuse fill from previous ILUdt","PCILUDTSetReuseFill",&ilu->reusefill);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_ilu_reuse_ordering","Reuse previous reordering","PCILUSetReuseOrdering",&ilu->reuseordering);CHKERRQ(ierr);
+    ierr = PetscOptionsLogical("-pc_ilu_single_precision_solves","Precision for triangular solves","PCILUSetSinglePrecisionSolves",ilu->single_precision_solve,&single_prec,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCILUSetSinglePrecisionSolves(pc,single_prec);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsHasName(pc->prefix,"-pc_ilu_damping",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCILUSetDamping(pc,0.0);CHKERRQ(ierr);
@@ -607,7 +657,7 @@ static int PCSetUp_ILU(PC pc)
     } else {
       ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact);CHKERRQ(ierr);
     }
-  } else {
+   } else {
     if (!pc->setupcalled) {
       /* first time in so compute reordering and symbolic factorization */
       ierr = MatGetOrdering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
@@ -645,6 +695,7 @@ static int PCSetUp_ILU(PC pc)
     }
     ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact);CHKERRQ(ierr);
   }
+  ierr = MatSetOption(ilu->fact,MAT_USE_SINGLE_PRECISION_SOLVES);
   PetscFunctionReturn(0);
 }
 
@@ -712,33 +763,37 @@ int PCCreate_ILU(PC pc)
   ierr = PetscNew(PC_ILU,&ilu);CHKERRQ(ierr);
   PetscLogObjectMemory(pc,sizeof(PC_ILU));
 
-  ilu->fact               = 0;
-  ilu->info.levels        = 0;
-  ilu->info.fill          = 1.0; 
-  ilu->col                = 0;
-  ilu->row                = 0;
-  ilu->inplace            = PETSC_FALSE;
+  ilu->fact                    = 0;
+  ilu->info.levels             = 0;
+  ilu->info.fill               = 1.0; 
+  ilu->col                     = 0;
+  ilu->row                     = 0;
+  ilu->inplace                 = PETSC_FALSE;
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&ilu->ordering);CHKERRQ(ierr);
-  ilu->reuseordering      = PETSC_FALSE;
-  ilu->usedt              = PETSC_FALSE;
-  ilu->info.dt            = PETSC_DEFAULT;
-  ilu->info.dtcount       = PETSC_DEFAULT;
-  ilu->info.dtcol         = PETSC_DEFAULT;
-  ilu->info.damp          = 0.0;
-  ilu->info.damping       = 0.0;
-  ilu->reusefill          = PETSC_FALSE;
-  ilu->info.diagonal_fill = 0;
-  pc->data                = (void*)ilu;
+  ilu->reuseordering           = PETSC_FALSE;
+  ilu->usedt                   = PETSC_FALSE;
+  ilu->info.dt                 = PETSC_DEFAULT;
+  ilu->info.dtcount            = PETSC_DEFAULT;
+  ilu->info.dtcol              = PETSC_DEFAULT;
+  ilu->info.damp               = 0.0;
+  ilu->info.damping            = 0.0;
+  ilu->reusefill               = PETSC_FALSE;
+  ilu->info.diagonal_fill      = 0;
+  ilu->single_precision_solve  = PETSC_FALSE;
+  pc->data                     = (void*)ilu;
 
-  pc->ops->destroy           = PCDestroy_ILU;
-  pc->ops->apply             = PCApply_ILU;
-  pc->ops->applytranspose    = PCApplyTranspose_ILU;
-  pc->ops->setup             = PCSetUp_ILU;
-  pc->ops->setfromoptions    = PCSetFromOptions_ILU;
-  pc->ops->getfactoredmatrix = PCGetFactoredMatrix_ILU;
-  pc->ops->view              = PCView_ILU;
-  pc->ops->applyrichardson   = 0;
+  pc->ops->destroy             = PCDestroy_ILU;
+  pc->ops->apply               = PCApply_ILU;
+  pc->ops->applytranspose      = PCApplyTranspose_ILU;
+  pc->ops->setup               = PCSetUp_ILU;
+  pc->ops->setfromoptions      = PCSetFromOptions_ILU;
+  pc->ops->getfactoredmatrix   = PCGetFactoredMatrix_ILU;
+  pc->ops->view                = PCView_ILU;
+  pc->ops->applyrichardson     = 0;
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetSinglePrecisionSolves_C",
+                    "PCILUSetSinglePrecisionSolves_ILU",
+                     PCILUSetSinglePrecisionSolves_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetUseDropTolerance_C","PCILUSetUseDropTolerance_ILU",
                     PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetFill_C","PCILUSetFill_ILU",
