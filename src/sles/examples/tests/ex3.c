@@ -129,7 +129,7 @@ int main(int argc,char **args)
   if ((ierr = SLESSetOperators(sles,C,C,0))) SETERRA(ierr,0);
   if ((ierr = SLESSetFromOptions(sles))) SETERRA(ierr,0);
   SLESGetKSP(sles,&ksp);
-  KSPSetInitialGuessNonZero(ksp);
+  KSPSetInitialGuessNonzero(ksp);
   if ((ierr = SLESSolve(sles,b,u,&its))) SETERRA(ierr,0);
 
   /* check error */

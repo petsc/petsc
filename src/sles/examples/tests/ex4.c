@@ -110,7 +110,7 @@ int main(int argc,char **args)
   if ((ierr = SLESSetOperators(sles,C,C,0))) SETERRA(ierr,0);
   if ((ierr = SLESSetFromOptions(sles))) SETERRA(ierr,0);
   SLESGetKSP(sles,&ksp);
-  KSPSetInitialGuessNonZero(ksp);
+  KSPSetInitialGuessNonzero(ksp);
   if ((ierr = SLESSolve(sles,b,u,&its))) SETERRA(ierr,0);
 
   /* check error */
@@ -123,7 +123,8 @@ int main(int argc,char **args)
 
   if ((ierr = VecAXPY(&none,ustar,u))) SETERRA(ierr,0);
   if ((ierr = VecNorm(u,&norm))) SETERRA(ierr,0);
-  printf("Norm of error %g Number iterations %d\n",norm*h,its);
+  MPE_printf(MPI_COMM_WORLD,"Norm of error %g Number iterations %d\n",
+      norm*h,its);
 
   sleep(2);
   ierr = SLESDestroy(sles); CHKERRA(ierr);
