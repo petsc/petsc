@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.100 1995/10/22 04:19:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.101 1995/10/22 20:02:57 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1320,7 +1320,8 @@ int MatGetArray(Mat mat,Scalar **v)
 }
 
 /*@C
-   MatGetSubMatrix - Extracts a submatrix from a matrix.
+   MatGetSubMatrix - Extracts a submatrix from a matrix. If submat points
+                     to a valid matrix it may be reused.
 
    Input Parameters:
 .  mat - the matrix
