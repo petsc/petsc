@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.41 1998/08/11 01:02:09 curfman Exp curfman $";
+static char vcid[] = "$Id: lsqr.c,v 1.42 1998/08/11 01:09:33 curfman Exp balay $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: lsqr.c,v 1.41 1998/08/11 01:02:09 curfman Exp curfman
        This implements LSQR (Paige and Saunders, ACM Transactions on
        Mathematical Software, Vol 8, pp 43-71, 1982).
 
-       This algorithm does not use a preconditioner. It ignores
+       This algorithm DOES NOT use a preconditioner. It ignores
        any preconditioner arguments specified.
 */
 #include <math.h>
