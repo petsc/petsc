@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.11 2001/02/26 16:13:25 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.12 2001/03/12 23:02:29 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint\n\n";
 
@@ -196,13 +196,13 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     fw[0] = -2.*d*lambda[0];
   }
 
-for (i=xs; i<xs+xm; i++) {
-     if      (i == 0)   flambda[0]   = 2.*d*lambda[0]   - d*lambda[1] + h2*lambda[0]*u[0];
-     else if (i == 1)   flambda[1]   = 2.*d*lambda[1]   - d*lambda[2] + h2*lambda[1]*u[1];
-     else if (i == N-1) flambda[N-1] = 2.*d*lambda[N-1] - d*lambda[N-2] + h2*lambda[N-1]*u[N-1];
-     else if (i == N-2) flambda[N-2] = 2.*d*lambda[N-2] - d*lambda[N-3] + h2*lambda[N-2]*u[N-2];
-     else               flambda[i]   = - d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]) + h2*lambda[i]*u[i];
-     }  
+  for (i=xs; i<xs+xm; i++) {
+    if      (i == 0)   flambda[0]   = 2.*d*lambda[0]   - d*lambda[1] + h2*lambda[0]*u[0];
+    else if (i == 1)   flambda[1]   = 2.*d*lambda[1]   - d*lambda[2] + h2*lambda[1]*u[1];
+    else if (i == N-1) flambda[N-1] = 2.*d*lambda[N-1] - d*lambda[N-2] + h2*lambda[N-1]*u[N-1];
+    else if (i == N-2) flambda[N-2] = 2.*d*lambda[N-2] - d*lambda[N-3] + h2*lambda[N-2]*u[N-2];
+    else               flambda[i]   = - d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]) + h2*lambda[i]*u[i];
+  }  
 
   /* derivative of function part of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
@@ -212,7 +212,6 @@ for (i=xs; i<xs+xm; i++) {
     else if (i == N-2) flambda[N-2] +=    h2*u[N-2];
     else               flambda[i]   +=    h2*u[i];
   } 
-
 
   ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
