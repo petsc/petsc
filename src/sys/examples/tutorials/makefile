@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.14 1998/04/28 15:10:32 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.15 1998/04/28 15:12:21 bsmith Exp bsmith $ 
 
 ALL:
 
@@ -16,14 +16,35 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
                    ex3.PETSc runex3 ex3.rm clean
 TESTEXAMPLES_3  = ex3f.PETSc runex3f ex3f.rm clean
-BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean
-BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean
-
-EXAMPLESC       = ex1.c ex2.c
-EXAMPLESF       = 
+BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm \
+                  ex3.PETSc ex3.rm clean
+BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
+BUILDEXAMPLES_3 = ex3f.PETSc ex3f.rm clean
+-
+EXAMPLESC       = ex1.c ex2.c ex3.c
+EXAMPLESF       = ex3f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
+ex1: ex1.o 
+	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
+	${RM} -f ex1.o
+
+ex2: ex2.o 
+	-${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
+	${RM} -f ex2.o
+
+ex3: ex3.o 
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_LIB}
+	${RM} -f ex3.o
+
+ex3f: ex3f.o 
+	-${FLINKER} -o ex3f ex3f.o  ${PETSC__FORTRAN_LIB} ${PETSC_LIB}
+	${RM} -f ex3f.o
+
+#
+# ------------------------------------------------------------------------
+#
 runex1:
 	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1; \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -43,27 +64,4 @@ runex3f:
         -@${MPIRUN} -np 1 ex3f
 
 
-ex1: ex1.o 
-	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
-	${RM} -f ex1.o
-
-ex2: ex2.o 
-	-${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
-	${RM} -f ex2.o
-
-ex3: ex3.o 
-	-${CLINKER} -o ex3 ex3.o  ${PETSC_LIB}
-	${RM} -f ex3.o
-
-ex4: ex4.o 
-	-${CLINKER} -o ex4 ex4.o  ${PETSC_LIB}
-	${RM} -f ex4.o
-
-ex5: ex5.o 
-	-${FLINKER} -o ex5 ex5.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
-	${RM} -f ex5.o
-
-ex6: ex6.o 
-	-${FLINKER} -o ex6 ex6.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
-	${RM} -f ex6.o
 
