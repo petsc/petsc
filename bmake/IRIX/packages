@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.10 1998/12/11 19:39:56 balay Exp balay $ 
+# $Id: base.site,v 1.11 1998/12/11 20:57:04 balay Exp balay $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -32,10 +32,14 @@ X11_LIB        = -lX11
 #
 # Location of MPI (Message Passing Interface) software  
 #
-MPI_LIB        = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpi
-MPI_INCLUDE    = -I/home/petsc/mpich/include
-MPIRUN         = /home/petsc/mpich/lib/IRIX/ch_shmem/mpirun.ch_shmem
-#MPIRUN        = /usr/local/mpi/lib/IRIX/ch_shmem/mpirun.ch_shmem
+#MPI_LIB        = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpi
+#MPI_INCLUDE    = -I/home/petsc/mpich/include
+#MPIRUN         = /home/petsc/mpich/lib/IRIX/ch_shmem/mpirun.ch_shmem
+MPI_HOME       = /home/MPI/releases/mpich-1.1.2
+MPI_BUILD_HOME = /home/MPI/releases/mpich-1.1.2/build/IRIXN32/ch_shmem
+MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
+MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
@@ -44,8 +48,10 @@ MPIRUN         = /home/petsc/mpich/lib/IRIX/ch_shmem/mpirun.ch_shmem
 #
 # Optional location of MPE
 #
-MPE_LIB       = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpe -lpmpi
-MPE_INCLUDE   = -I/home/petsc/mpich/mpe 
+#MPE_LIB       = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpe -lpmpi
+#MPE_INCLUDE   = -I/home/petsc/mpich/mpe 
+MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+MPE_INCLUDE   = -I${MPI_HOME}/include 
 #
 # Optional location of BlockSolve (MPI version)
 #

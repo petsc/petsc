@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.31 1998/12/22 21:16:14 balay Exp balay $ 
+# $Id: base.site,v 1.32 1998/12/23 22:39:13 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -21,9 +21,14 @@ X11_LIB        = -L/usr/X11R6/lib -lX11
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpich
-MPI_INCLUDE    = -I/home/petsc/mpich-1.1.1/include
-MPIRUN         = /home/petsc/mpich-1.1.1/lib/LINUX/ch_p4/mpirun
+#MPI_LIB        = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpich
+#MPI_INCLUDE    = -I/home/petsc/mpich-1.1.1/include
+#MPIRUN         = /home/petsc/mpich-1.1.1/lib/LINUX/ch_p4/mpirun
+MPI_HOME       = /home/MPI/releases/mpich-1.1.2
+MPI_BUILD_HOME = /home/MPI/releases/mpich-1.1.2/build/sun4/ch_p4
+MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
+MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
@@ -32,8 +37,10 @@ MPIRUN         = /home/petsc/mpich-1.1.1/lib/LINUX/ch_p4/mpirun
 #
 # Optional location of MPE
 #
-MPE_LIB       = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpe -lpmpich
-MPE_INCLUDE   = -I/home/petsc/mpich-1.1.1/mpe
+#MPE_LIB       = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpe -lpmpich
+#MPE_INCLUDE   = -I/home/petsc/mpich-1.1.1/mpe
+MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+MPE_INCLUDE   = -I${MPI_HOME}/include 
 #
 # Optional location of BlockSolve (MPI version)
 #
