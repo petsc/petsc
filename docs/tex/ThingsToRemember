@@ -14,3 +14,11 @@ General WWW info:
   email.html (and charlotte:/www/ncsa_httpd/cgi-bin/petsc/petscmail)
      contains the (unused) WWW interface for petsc-maint.
 
+Nightly build:
+ 
+  On solaris it is at poplar.math.ucla.edu username bsmith
+  On Cray t3d it is at h4p.nersc.gov       username bsmith
+     For the t3d we are not allowed to use cron so buildtest 
+     uses at to start itself up again 24 hours later.
+
+  The password is in petsc/maint/autoftp
