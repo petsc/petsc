@@ -98,7 +98,8 @@ typedef struct {
 
   /* ----------------- Parallel information ------------------- */
 
-    MPI_Comm   comm;               /* general communicator */
+    MPI_Comm   comm;               /* communicator for entire problem */
+    int        fort_xcomm;         /* Fortran pointer to subsidiary communicator */
     VecScatter Xbcscatter;         /* scatter context for vector BCs */
     VecScatter Pbcscatter;         /* scatter context for pressure BCs */
     int        rank;               /* my processor number */
@@ -218,6 +219,7 @@ typedef struct {
 #define bc_            BC
 #define bcpart_j1_     BCPART_J1
 #define readmesh_      READMESH
+#define wingsurface_   WINGSURFACE
 
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define eigenv_        eigenv
@@ -244,6 +246,7 @@ typedef struct {
 #define bc_            bc
 #define bcpart_j1_     bcpart_j1
 #define readmesh_      readmesh
+#define wingsurface_   wingsurface
 #endif
 
 /* Basic routines */
@@ -258,6 +261,7 @@ int UserMatrixFreeMatDestroy(Mat);
 int UserSetMatrixFreeParameters(SNES,double,double);
 int UserSetGridParameters(Euler*);
 int UserSetGrid(Euler*);
+int GetWingCommunicator(Euler*,int*);
 int BoundaryConditionsImplicit(Euler*,Vec);
 int BoundaryConditionsExplicit(Euler*,Vec);
 int BCScatterSetUp(Euler*);
@@ -287,7 +291,7 @@ extern int printvec_(double*,int*,FILE*);
 extern int printjul_(double*,double*,int*);
 extern int printgjul_(double*,double*,int*);
 extern int printbjul_(double*,double*,int*);
-
+extern int wingsurface_(int*);
 extern int jmonitor_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int jpressure_(Scalar*,Scalar*);
@@ -385,7 +389,7 @@ extern int buildmat_(int*,ScaleType*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
 extern int nzmat_(MatType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
 extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,
-                      Scalar*,Scalar*);
+                      Scalar*,Scalar*,int*);
 
 /* Fortran interface definitions */
 
