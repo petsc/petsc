@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.6 1995/03/06 04:32:04 bsmith Exp curfman $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -54,11 +54,13 @@ static void PetscSignalHandler( int sig )
 }
 
 /*@
-  PetscDefaultSignalHandler - Default signal handler.
+   PetscDefaultSignalHandler - Default signal handler.
 
-  Input Parameters:
-. sig   - signal value
-. ptr - unused pointer
+   Input Parameters:
+.  sig - signal value
+.  ptr - unused pointer
+
+.keywords: default, signal, handler
 @*/
 int PetscDefaultSignalHandler( int sig, void *ptr)
 {
@@ -76,12 +78,13 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
 
 /*@
    PetscPushSignalHandler - Set up to catch the usual fatal errors and 
-   kill the job..
+   kill the job.
 
-   Input parameter:
-.  routine - routine to call when a signal is received.
+   Input Parameter:
+.  routine - routine to call when a signal is received
 .  ctx - optional context needed by the routine
 
+.keywords: push, signal, handler
 @*/
 int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
 {
