@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dadist.c,v 1.2 1996/02/22 00:31:40 curfman Exp bsmith $";
+static char vcid[] = "$Id: dadist.c,v 1.3 1996/03/19 21:29:33 bsmith Exp curfman $";
 #endif
  
 /*
@@ -27,6 +27,13 @@ int   DAGetDistributedVector(DA da,Vec* g)
 {
   PetscValidHeaderSpecific(da,DA_COOKIE);
   *g = da->global;
+  return 0;
+}
+
+int DAGetGlobalToGlobal1_Private(DA da,int **gtog1)
+{
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  *gtog1 = da->gtog1;
   return 0;
 }
 
