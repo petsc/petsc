@@ -1,5 +1,5 @@
 
-C      "$Id: ex36.F,v 1.19 1997/07/10 15:44:44 balay Exp balay $";
+C      "$Id: ex36.F,v 1.20 1997/09/22 15:23:56 balay Exp bsmith $";
 C
 C   This program demonstrates use of PETSc dense matrices.
 C
@@ -40,7 +40,6 @@ C
       Mat      A
       integer  ia, n, m, err
       Scalar   aa(1)
-      common   aa
 
       n = 4
       m = 5

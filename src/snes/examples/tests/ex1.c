@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.51 1997/08/13 22:26:32 bsmith Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.52 1997/09/22 15:19:38 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system on 1 processor with SNES. We\n\
@@ -224,7 +224,7 @@ int main( int argc, char **argv )
   */
   ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
   ierr = DrawTensorContour(draw,user.mx,user.my,0,0,x); CHKERRA(ierr);
-  ierr = DrawSyncFlush(draw); CHKERRA(ierr);
+  ierr = DrawSynchronizedFlush(draw); CHKERRA(ierr);
   ierr = DrawPause(draw); CHKERRA(ierr);
 
   /* 

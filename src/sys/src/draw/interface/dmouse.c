@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dmouse.c,v 1.10 1997/08/13 22:24:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dmouse.c,v 1.11 1997/08/22 15:15:58 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: dmouse.c,v 1.10 1997/08/13 22:24:59 bsmith Exp bsmith
   Notes:
     Only processor 0 of the communicator used to create the Draw may call this routine.
 
-.seealso: DrawSyncGetMouseButton()
+.seealso: DrawSynchronizedGetMouseButton()
 @*/
 int DrawGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_user,
                        double *x_phys,double *y_phys)
@@ -36,9 +36,9 @@ int DrawGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_use
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSyncGetMouseButton"
+#define __FUNC__ "DrawSynchronizedGetMouseButton"
 /*@
-       DrawSyncGetMouseButton - Returns location of mouse and which button was
+       DrawSynchronizedGetMouseButton - Returns location of mouse and which button was
             pressed. Waits for button to be pressed.
 
   Input Parameter:
@@ -54,7 +54,7 @@ int DrawGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_use
 
 .seealso: DrawGetMouseButton()
 @*/
-int DrawSyncGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_user,
+int DrawSynchronizedGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_user,
                        double *x_phys,double *y_phys)
 {
   double bcast[4];

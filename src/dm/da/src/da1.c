@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.66 1997/08/22 15:18:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.67 1997/09/26 02:21:21 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -66,7 +66,7 @@ int DAView_1d(PetscObject pobj,Viewer viewer)
       DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_BLACK);
     }
 
-    DrawSyncFlush(draw); 
+    DrawSynchronizedFlush(draw); 
     DrawPause(draw);
     MPI_Barrier(da->comm);
 
@@ -84,7 +84,7 @@ int DAView_1d(PetscObject pobj,Viewer viewer)
       DrawString(draw,x,ymin,DRAW_RED,node);
     }
 
-    DrawSyncFlush(draw);
+    DrawSynchronizedFlush(draw);
     DrawPause(draw); 
   }
   return 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dsflush.c,v 1.11 1997/07/09 20:57:34 balay Exp bsmith $";
+static char vcid[] = "$Id: dsflush.c,v 1.12 1997/08/22 15:15:58 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,9 +7,9 @@ static char vcid[] = "$Id: dsflush.c,v 1.11 1997/07/09 20:57:34 balay Exp bsmith
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSyncFlush" 
+#define __FUNC__ "DrawSynchronizedFlush" 
 /*@
-   DrawSyncFlush - Flushes graphical output. This waits until all 
+   DrawSynchronizedFlush - Flushes graphical output. This waits until all 
    processors have arrived and flushed, then does a global flush.
    This is usually done to change the frame for double buffered graphics.
 
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: dsflush.c,v 1.11 1997/07/09 20:57:34 balay Exp bsmith
 .keywords: draw, sync, flush
 
 @*/
-int DrawSyncFlush(Draw draw)
+int DrawSynchronizedFlush(Draw draw)
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (draw->type == DRAW_NULLWINDOW) return 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.60 1997/08/22 15:10:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.61 1997/10/01 22:43:51 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -116,6 +116,10 @@ int ISDestroy_Stride(PetscObject obj)
   PetscHeaderDestroy(is); return 0;
 }
 
+/*
+     Returns a legitimate index memory even if 
+   the stride index set is empty.
+*/
 #undef __FUNC__  
 #define __FUNC__ "ISGetIndices_Stride" 
 int ISGetIndices_Stride(IS in,int **idx)
@@ -123,12 +127,9 @@ int ISGetIndices_Stride(IS in,int **idx)
   IS_Stride *sub = (IS_Stride *) in->data;
   int       i;
 
-  if (sub->n) {
-    *idx = (int *) PetscMalloc(sub->n*sizeof(int)); CHKPTRQ(idx);
-    (*idx)[0] = sub->first;
-    for ( i=1; i<sub->n; i++ ) (*idx)[i] = (*idx)[i-1] + sub->step;
-  }
-  else *idx = 0;
+  *idx = (int *) PetscMalloc((sub->n+1)*sizeof(int)); CHKPTRQ(idx);
+  (*idx)[0] = sub->first;
+  for ( i=1; i<sub->n; i++ ) (*idx)[i] = (*idx)[i-1] + sub->step;
   return 0;
 }
 
@@ -136,7 +137,7 @@ int ISGetIndices_Stride(IS in,int **idx)
 #define __FUNC__ "ISRestoreIndices_Stride" 
 int ISRestoreIndices_Stride(IS in,int **idx)
 {
-  if (*idx) PetscFree(*idx);
+  PetscFree(*idx);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.26 1997/04/10 00:05:05 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.27 1997/07/09 20:58:09 balay Exp bsmith $";
 #endif
 
 static char help[] = "Plots a simple line graph\n";
@@ -20,7 +20,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-width",&width,&flg); 
-  OptionsGetInt(0,"-height",&height,&flg);
+  OptionsGetInt(PETSC_NULL,"-height",&height,&flg);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
   OptionsHasName(PETSC_NULL,"-nolabels",&flg); 
   if (flg) {

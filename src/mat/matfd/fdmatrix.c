@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.18 1997/10/01 22:25:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.19 1997/10/01 22:45:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -24,7 +24,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
 
   ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
   ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
-  ierr = DrawSyncClear(draw); CHKERRQ(ierr);
+  ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
 
   xr  = fd->N; yr = fd->M; h = yr/10.0; w = xr/10.0; 
   xr += w;    yr += h;  xl = -w;     yl = -h;
@@ -38,13 +38,13 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
       DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);
     }
   }
-  ierr = DrawSyncFlush(draw); CHKERRQ(ierr); 
+  ierr = DrawSynchronizedFlush(draw); CHKERRQ(ierr); 
   ierr = DrawGetPause(draw,&pause); CHKERRQ(ierr);
   if (pause >= 0) { PetscSleep(pause); return 0;}
   ierr = DrawCheckResizedWindow(draw);
-  ierr = DrawSyncGetMouseButton(draw,&button,&xc,&yc,0,0); 
+  ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0); 
   while (button != BUTTON_RIGHT) {
-    ierr = DrawSyncClear(draw); CHKERRQ(ierr);
+    ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
     if (button == BUTTON_LEFT) scale = .5;
     else if (button == BUTTON_CENTER) scale = 2.;
     xl = scale*(xl + w - xc) + xc - w*scale;
@@ -62,7 +62,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
       }
     }
     ierr = DrawCheckResizedWindow(draw);
-    ierr = DrawSyncGetMouseButton(draw,&button,&xc,&yc,0,0); 
+    ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0); 
   }
 
   return 0;

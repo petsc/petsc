@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.66 1997/09/18 18:12:21 balay Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.67 1997/09/22 18:50:04 balay Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -7,6 +7,7 @@ static char vcid[] = "$Id: adebug.c,v 1.66 1997/09/18 18:12:21 balay Exp balay $
 
 #include <signal.h> 
 #include "petsc.h"               /*I   "petsc.h"   I*/
+#include "sys.h"
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif 
@@ -54,9 +55,6 @@ int PetscSetDebugger(char *debugger, int xterm,char *display)
   return 0;
 }
 
-extern char *OptionsGetProgramName();
- 
-
 #undef __FUNC__  
 #define __FUNC__ "PetscAttachDebugger"
 /*@C
@@ -69,7 +67,9 @@ extern char *OptionsGetProgramName();
 int PetscAttachDebugger()
 {
   int   child=0,sleeptime=0,flg=0,ierr=0;
-  char *program = OptionsGetProgramName();
+  char  program[256];
+
+  PetscGetProgramName(program,256);
 #if defined(PARCH_t3d) 
   fprintf(stderr,"PETSC ERROR: Cray t3d cannot start debugger\n");
   MPI_Finalize();

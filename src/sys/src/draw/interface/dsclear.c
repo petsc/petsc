@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dsclear.c,v 1.10 1997/07/09 20:57:34 balay Exp bsmith $";
+static char vcid[] = "$Id: dsclear.c,v 1.11 1997/08/22 15:15:58 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,9 +7,9 @@ static char vcid[] = "$Id: dsclear.c,v 1.10 1997/07/09 20:57:34 balay Exp bsmith
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSyncClear" 
+#define __FUNC__ "DrawSynchronizedClear" 
 /*@
-   DrawSyncClear - Clears graphical output. All processors must call this routine.
+   DrawSynchronizedClear - Clears graphical output. All processors must call this routine.
        Does not return until the drawable is clear.
 
    Input Parameters:
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: dsclear.c,v 1.10 1997/07/09 20:57:34 balay Exp bsmith
 
 .keywords: draw, clear
 @*/
-int DrawSyncClear(Draw draw)
+int DrawSynchronizedClear(Draw draw)
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (draw->type == DRAW_NULLWINDOW) return 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.92 1997/08/22 15:16:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.93 1997/09/26 02:20:09 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -187,8 +187,8 @@ static int DrawFlush_X(Draw Win )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSyncFlush_X" 
-static int DrawSyncFlush_X(Draw Win )
+#define __FUNC__ "DrawSynchronizedFlush_X" 
+static int DrawSynchronizedFlush_X(Draw Win )
 {
   int     rank;
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -243,8 +243,8 @@ static int DrawClear_X(Draw Win)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSyncClear_X" 
-static int DrawSyncClear_X(Draw Win)
+#define __FUNC__ "DrawSynchronizedClear_X" 
+static int DrawSynchronizedClear_X(Draw Win)
 {
   int     rank;
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -440,12 +440,12 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
                                  DrawString_X,DrawStringVertical_X,
                                  DrawStringSetSize_X,DrawStringGetSize_X,
                                  DrawSetViewport_X,DrawClear_X,
-                                 DrawSyncFlush_X,
+                                 DrawSynchronizedFlush_X,
                                  DrawRectangle_X,
                                  DrawTriangle_X,
                                  DrawGetMouseButton_X,
                                  DrawPause_X,
-                                 DrawSyncClear_X, 
+                                 DrawSynchronizedClear_X, 
 				 0, 0,
                                  DrawCreatePopUp_X,
                                  DrawSetTitle_X,
@@ -524,6 +524,7 @@ $     window to see  the correct colors. This options forces
 $     PETSc to use the default colormap which will usually result
 $     in bad contour plots.
 $  -draw_double_buffer: uses double buffering for smooth animation.
+$  -geometry: location and size of window
 
    Note:
    When finished with the drawing context, it should be destroyed
@@ -537,14 +538,13 @@ $  -draw_double_buffer: uses double buffering for smooth animation.
 
 .keywords: draw, open, x
 
-.seealso: DrawSyncFlush(), DrawDestroy()
+.seealso: DrawSynchronizedFlush(), DrawDestroy()
 @*/
-int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
-              Draw* inctx)
+int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,Draw* inctx)
 {
   Draw       ctx;
   Draw_X     *Xwin;
-  int        ierr,size,rank,flg;
+  int        ierr,size,rank,flg,xywh[4],osize = 4;
   char       string[128];
   static int xavailable = 0,yavailable = 0,xmax = 0,ymax = 0, ybottom = 0;
 
@@ -552,6 +552,12 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   if (flg) {
     return DrawOpenNull(comm,inctx);
   }
+
+  /* allow user to set location and size of window */
+  if (VIEWER_DRAWX_SELF_PRIVATE) return 0;
+  xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
+  ierr = OptionsGetIntArray(PETSC_NULL,"-geometry",xywh,&osize,&flg);CHKERRQ(ierr);
+  x = xywh[0]; y = xywh[1]; w = xywh[2]; h = xywh[3];
 
   if (!display) {
     PetscGetDisplay(string,128);
@@ -643,26 +649,26 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
     MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);
     ierr = XiQuickWindowFromWindow( Xwin,display, win,256 ); CHKERRQ(ierr);
   }
-  /*
-      Need barrier here so processor 0 doesn't destroy the window before other 
-    processors have completed XiQuickWindow()
-  */
-  MPI_Barrier(comm);
- 
+
   Xwin->x      = x;
   Xwin->y      = y;
   Xwin->w      = w;
   Xwin->h      = h;
-
-
-
   ctx->data    = (void *) Xwin;
-  *inctx       = ctx;
+
+  /*
+      Need barrier here so processor 0 doesn't destroy the window before other 
+    processors have completed XiQuickWindow()
+  */
+  ierr = DrawClear(ctx);CHKERRQ(ierr);
+  ierr = DrawSynchronizedFlush(ctx);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-draw_double_buffer",&flg);CHKERRQ(ierr);
   if (flg) {
      ierr = DrawSetDoubleBuffer(ctx); CHKERRQ(ierr);
   } 
+  *inctx       = ctx;
+
   return 0;
 }
 
@@ -750,6 +756,29 @@ int ViewerDrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,
   return 0;
 }
 
+int ViewersDrawOpenX(MPI_Comm comm,char* display,char **titles,int n,
+                    int w,int h,Viewer **viewer)
+{
+  int i,ierr;
+
+  *viewer = (Viewer * ) PetscMalloc((n+1)*sizeof(Viewer *));CHKPTRQ(*viewer);
+  for ( i=0; i<n; i++ ) {
+    ierr = ViewerDrawOpenX(comm,display,titles[i],PETSC_DECIDE,PETSC_DECIDE,w,h,(*viewer+i));
+    CHKERRQ(ierr);
+  }
+  return 0;
+}
+
+int ViewersDestroy(int n,Viewer *viewer)
+{
+  int i,ierr;
+  for ( i=0; i<n; i++ ) {
+    ierr = ViewerDestroy(viewer[i]);CHKERRQ(ierr);
+  }
+  PetscFree(viewer);
+  return 0; 
+}
+ 
 /* -------------------------------------------------------------------*/
 /* 
      Default X window viewers, may be used at any time.

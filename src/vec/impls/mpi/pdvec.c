@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.78 1997/09/11 20:38:20 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.79 1997/09/26 02:17:49 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -281,7 +281,7 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
     }
 #endif
   }
-  DrawSyncFlush(draw);
+  DrawSynchronizedFlush(draw);
   DrawPause(draw);
   return 0;
 }
@@ -358,7 +358,7 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
     DrawLine(draw,(double)start-1,tmp,(double)start,real(x->array[0]),DRAW_RED);
 #endif
   }
-  ierr = DrawSyncFlush(draw); CHKERRQ(ierr);
+  ierr = DrawSynchronizedFlush(draw); CHKERRQ(ierr);
   ierr = DrawPause(draw); CHKERRQ(ierr);
   return 0;
 }
@@ -456,7 +456,7 @@ int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
       }
       else if (!x->stash.donotstash) {
 #if defined(PETSC_BOPT_g)
-        if (ix[i] < 0 || ix[i] > x->N) SETERRQ(1,0,"Out of range");
+        if (ix[i] < 0 || ix[i] >= x->N) SETERRQ(1,0,"Out of range");
 #endif
         if (x->stash.n == x->stash.nmax) { /* cache is full */
           int    *idx, nmax = x->stash.nmax;

@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.38 1997/09/26 02:22:17 bsmith Exp bsmith $ */
+/* $Id: is.h,v 1.39 1997/10/01 22:47:58 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -36,6 +36,7 @@ extern int   ISEqual(IS, IS, PetscTruth *);
 extern int   ISSort(IS);
 extern int   ISSorted(IS, PetscTruth *);
 extern int   ISDifference(IS,IS,IS*);
+extern int   ISSum(IS,IS,IS*);
 
 extern int   ISBlock(IS,PetscTruth*);
 extern int   ISBlockGetIndices(IS,int **);
@@ -62,6 +63,7 @@ extern int   ISDuplicate(IS, IS *);
 typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 
 extern int ISLocalToGlobalMappingCreate(MPI_Comm,int, int*, ISLocalToGlobalMapping*);
+extern int ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMapping *);
 extern int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);
 extern int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping,int,int*,int *);
 extern int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);

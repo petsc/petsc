@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.19 1997/07/09 20:57:34 balay Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.20 1997/08/22 15:15:58 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -23,7 +23,7 @@ int ViewerDestroy_Draw(PetscObject obj)
 #define __FUNC__ "ViewerFlush_Draw" 
 int ViewerFlush_Draw(Viewer v)
 {
-  return DrawSyncFlush(v->draw);
+  return DrawSynchronizedFlush(v->draw);
 }
 
 #undef __FUNC__  

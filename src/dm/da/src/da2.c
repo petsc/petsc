@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.84 1997/08/22 15:18:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.85 1997/09/26 02:21:21 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -58,7 +58,7 @@ int DAView_2d(PetscObject dain,Viewer viewer)
         DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_BLACK);
       }
     }
-    DrawSyncFlush(draw);
+    DrawSynchronizedFlush(draw);
     DrawPause(draw);
     MPI_Barrier(da->comm);
 
@@ -79,7 +79,7 @@ int DAView_2d(PetscObject dain,Viewer viewer)
       }
     }
 
-    DrawSyncFlush(draw);
+    DrawSynchronizedFlush(draw);
     DrawPause(draw);
     MPI_Barrier(da->comm);
     /* overlay ghost numbers, useful for error checking */
@@ -96,7 +96,7 @@ int DAView_2d(PetscObject dain,Viewer viewer)
         base++;
       }
     }        
-    DrawSyncFlush(draw);
+    DrawSynchronizedFlush(draw);
     DrawPause(draw);
   }
   return 0;

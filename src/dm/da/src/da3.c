@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.62 1997/08/22 15:18:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.63 1997/09/26 02:21:21 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -69,7 +69,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
         }
       }
     }
-    DrawSyncFlush(draw);
+    DrawSynchronizedFlush(draw);
     DrawPause(draw);
     MPI_Barrier(da->comm);
 
@@ -106,7 +106,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
  
       }
     } 
-    DrawSyncFlush(draw);
+    DrawSynchronizedFlush(draw);
     DrawPause(draw);
     MPI_Barrier(da->comm);
     for (k=0-da->s; k<da->P+da->s; k++) {  
@@ -140,7 +140,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
         }
       }         
     } 
-    DrawSyncFlush(draw);
+    DrawSynchronizedFlush(draw);
     DrawPause(draw);
   }
   return 0;

@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.22 1997/09/22 15:19:33 balay Exp balay $";
+C "$Id: ex4f.F,v 1.23 1997/10/01 15:08:38 balay Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -211,7 +211,7 @@ C  Draw contour plot of solution
       call DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',
      &               300,0,300,300,draw,ierr)
       call DrawTensorContour(draw,mx,my,PETSC_NULL,PETSC_NULL,x,ierr)
-      call DrawSyncFlush(draw,ierr)
+      call DrawSynchronizedFlush(draw,ierr)
       call DrawPause(draw,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -260,7 +260,6 @@ C  Input/output variables:
 
 C  Declarations for use with local arrays:
       Scalar   lx_v(0:1)
-      common   lx_v
       integer  lx_i
 
       ierr   = 0
@@ -388,7 +387,6 @@ C  Local variables:
 
 C  Declarations for use with local arrays:
       Scalar   lx_v(0:1), lf_v(0:1)
-      common   lx_v, lf_v
       integer  lx_i, lf_i 
 
 C  Get pointers to vector data.
@@ -527,7 +525,6 @@ C  Local variables:
 
 C  Declarations for use with local array:
       Scalar   lx_v(0:1)
-      common   lx_v
       integer  lx_i
 
 C  Get a pointer to vector data

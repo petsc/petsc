@@ -1,11 +1,41 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.14 1997/09/11 20:38:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.15 1997/09/26 02:17:37 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "src/is/isimpl.h"    /*I "is.h"  I*/
 
+#undef __FUNC__  
+#define __FUNC__ "ISLocalToGlobalMappingCreateIS"
+/*@C
+    ISLocalToGlobalMappingCreateIS - Creates a mapping between a local (0 to n)
+    ordering and a global parallel ordering.
+
+    Input Parameters:
+.   is - index set containing the global numbers for each local
+
+    Output Parameters:
+.   mapping - new mapping data structure
+
+.keywords: IS, local-to-global mapping, create
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
+@*/
+int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
+{
+  int      n,*indices,ierr;
+  MPI_Comm comm;
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+
+  ierr = PetscObjectGetComm((PetscObject)is,&comm); CHKERRQ(ierr);
+  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,n,indices,mapping);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
+
+  return 0;
+}
 #undef __FUNC__  
 #define __FUNC__ "ISLocalToGlobalMappingCreate"
 /*@C
@@ -22,7 +52,7 @@ static char vcid[] = "$Id: isltog.c,v 1.14 1997/09/11 20:38:10 bsmith Exp bsmith
 
 .keywords: IS, local-to-global mapping, create
 
-.seealso: ISLocalToGlobalMappingDestroy()
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
 @*/
 int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n, int *indices,ISLocalToGlobalMapping *mapping)
 {

@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.7 1997/10/01 22:47:58 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.8 1997/10/08 01:29:46 bsmith Exp bsmith $ */
 
 /* 
    An application ordering is mapping between application-centric
@@ -37,6 +37,7 @@ typedef struct _p_AOData* AOData;
 extern int AODataCreateBasic(MPI_Comm,int,AOData *);
 
 extern int AODataAddKey(AOData,char*,int,int,int);
+extern int AODataAddKeyLocalToGlobalMapping(AOData,char*,ISLocalToGlobalMapping);
 
 extern int AODataAddSegment(AOData,char*,char *,int, int, int *,void *,PetscDataType);
 extern int AODataAddSegmentIS(AOData,char*,char *,int, IS,void *,PetscDataType);
@@ -49,6 +50,14 @@ extern int AODataGetSegment(AOData,char *,char *,int,int*,void **);
 extern int AODataRestoreSegment(AOData,char *,char *,int,int*,void **);
 extern int AODataGetSegmentIS(AOData,char *,char *,IS,void **);
 extern int AODataRestoreSegmentIS(AOData,char *,char *,IS,void **);
+
+extern int AODataGetLocalSegment(AOData,char *,char *,int,int*,void **);
+extern int AODataRestoreLocalSegment(AOData,char *,char *,int,int*,void **);
+extern int AODataGetLocalSegmentIS(AOData,char *,char *,IS,void **);
+extern int AODataRestoreLocalSegmentIS(AOData,char *,char *,IS,void **);
+
+extern int AODataGetReducedSegment(AOData,char *,char *,int,int*,IS *);
+extern int AODataGetReducedSegmentIS(AOData,char *,char *,IS,IS *);
 
 extern int AODataView(AOData,Viewer);
 extern int AODataDestroy(AOData);

@@ -1,7 +1,8 @@
 
 
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.9 1997/10/01 22:47:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.10 1997/10/09 04:03:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -324,12 +325,27 @@ int AODataRestoreSegment_Basic(AOData aodata,char *name,char *segname,int n,int 
 
 int AODataGetLocalSegment_Basic(AOData ao,char *name,char *segname,int n,int *keys,void **data)
 {
-  int ierr,flag,ikey;
+  int           ierr,flag,ikey,*globals,*locals,bs;
+  PetscDataType dtype;
 
   ierr = AODataFindKey_Private(ao,segname,&flag,&ikey);CHKERRQ(ierr);
-  if (!flag) SETERRQ(1,1,"Segment does not have corresponding key");
-  if (!ao->keys[ikey].ltog) SETERRQ(1,1,"No local to globalling mapping set for key");
+  if (flag) SETERRQ(1,1,"Segment does not have corresponding key");
+  if (!ao->keys[ikey].ltog) SETERRQ(1,1,"No local to global mapping set for key");
+  ierr = AODataGetInfoSegment(ao,name,segname,PETSC_NULL,PETSC_NULL,&bs,&dtype); CHKERRQ(ierr);
+  if (dtype != PETSC_INT) SETERRQ(1,1,"Datatype of segment must be PETSC_INT");
 
+  /* get the values in global indexing */
+  ierr = AODataGetSegment_Basic(ao,name,segname,n,keys,(void **)&globals);CHKERRQ(ierr);
+  
+  /* allocate space to store them in local indexing */
+  locals = (int *) PetscMalloc((n+1)*bs*sizeof(int));CHKPTRQ(locals);
+
+  ierr = ISGlobalToLocalMappingApply(ao->keys[ikey].ltog,IS_GTOLM_MASK,n*bs,globals,PETSC_NULL,locals);
+         CHKERRQ(ierr);
+
+  ierr = AODataRestoreSegment_Basic(ao,name,segname,n,keys,(void **)&globals);CHKERRQ(ierr);
+
+  *data = (void *) locals;
   return 0;
 }
 
@@ -339,14 +355,12 @@ int AODataRestoreLocalSegment_Basic(AOData aodata,char *name,char *segname,int n
   return 0;
 }
 
-extern int AODataGetReducedSegment_Basic(AOData,char *,char *,int,int*,int *,void **);
-extern int AODataRestoreReducedSegment_Basic(AOData,char *,char *,int,int*,int *,void **);
+extern int AODataGetReducedSegment_Basic(AOData,char *,char *,int,int*,IS *);
 
 static struct _AODataOps myops = {AODataAddSegment_Basic,
                                   AODataGetSegment_Basic,
                                   AODataRestoreSegment_Basic,
                                   AODataGetReducedSegment_Basic,
-                                  AODataRestoreReducedSegment_Basic,
                                   AODataGetLocalSegment_Basic,
                                   AODataRestoreLocalSegment_Basic};
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.171 1997/10/02 18:23:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.172 1997/10/04 04:45:45 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1278,7 +1278,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PLogDouble rp,mp,lp,rpg,mpg,lpg,totms,totmls,totrs,mps,lps,rps,lpmp;
   PLogDouble pstime,psflops1,psflops,flopr,mict,mact,rct;
   int        size,rank,i,j;
-  char       arch[10],hostname[64],username[16],*pname;
+  char       arch[10],hostname[64],username[16],pname[256];
   FILE       *fd = stdout;
 
   /* pop off any stages the user forgot to remove */
@@ -1303,7 +1303,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PetscGetArchType(arch,10);
   PetscGetHostName(hostname,64);
   PetscGetUserName(username,16);
-  OptionsGetProgramName(&pname);
+  PetscGetProgramName(pname,256);
   if (size == 1)
     PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s",
                  pname,arch,hostname,size,username,PetscGetDate());

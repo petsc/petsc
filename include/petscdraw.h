@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.48 1997/09/26 02:22:17 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.49 1997/10/03 17:17:14 bsmith Exp bsmith $ */
 /*
   Interface to the graphics
 */
@@ -87,6 +87,8 @@ extern int DrawStringSetSize(Draw,double,double);
 extern int DrawStringGetSize(Draw,double*,double*);
 
 extern int DrawSetViewPort(Draw,double,double,double,double);
+extern int DrawSplitViewPort(Draw);
+
 extern int DrawSetCoordinates(Draw,double,double,double,double);
 extern int DrawGetCoordinates(Draw,double*,double*,double*,double*);
 
@@ -99,15 +101,15 @@ extern int DrawGetPause(Draw,int*);
 extern int DrawPause(Draw);
 extern int DrawSetDoubleBuffer(Draw);
 extern int DrawFlush(Draw);
-extern int DrawSyncFlush(Draw);
+extern int DrawSynchronizedFlush(Draw);
 extern int DrawClear(Draw);
-extern int DrawSyncClear(Draw);
+extern int DrawSynchronizedClear(Draw);
 extern int DrawBOP(Draw);
 extern int DrawEOP(Draw);
 
 typedef enum {BUTTON_NONE, BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT } DrawButton;
 extern int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
-extern int DrawSyncGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
+extern int DrawSynchronizedGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
 
 /*
     Routines for drawing X-Y axises in a Draw object

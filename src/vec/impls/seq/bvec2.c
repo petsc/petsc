@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.103 1997/09/11 20:38:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.104 1997/09/26 02:17:47 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -144,7 +144,7 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
 #endif
   PetscFree(xx);
   DrawLGDraw(lg);
-  DrawSyncFlush(win);
+  DrawSynchronizedFlush(win);
   DrawPause(win);
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.2 1997/09/21 03:34:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.3 1997/10/01 22:47:40 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests AOData \n\n";
@@ -10,18 +10,31 @@ static char help[] = "Tests AOData \n\n";
 
 int main(int argc,char **argv)
 {
-  int         n, bs = 2, *keys, *data,ierr,flg,rank,size,i,start;
+  int         n,nglobal, bs = 2, *keys, *data,ierr,flg,rank,size,i,start;
   double      *gd;
   AOData      aodata;
   Viewer      binary;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank); n = rank + 2;
+  MPI_Allreduce(&n,&nglobal,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
+  /*
+       Create a database with two sets of keys 
+  */
+  ierr = AODataCreateBasic(PETSC_COMM_WORLD,2,&aodata);CHKERRA(ierr);
+
+  /*
+       Put two segments in the first key and one in the second
+  */
+  ierr = AODataAddKey(aodata,"key1",PETSC_DECIDE,nglobal,2); CHKERRA(ierr);
+  ierr = AODataAddKey(aodata,"key2",PETSC_DECIDE,nglobal,1); CHKERRA(ierr);
+
+  /* allocate space for the keys each processor will provide */
   keys = (int *) PetscMalloc( n*sizeof(int) );CHKPTRA(keys);
-  data = (int *) PetscMalloc( bs*n*sizeof(int) );CHKPTRA(data);
 
   /*
      We assign the first set of keys (0 to 2) to processor 0, etc.
@@ -32,16 +45,21 @@ int main(int argc,char **argv)
 
   for ( i=0; i<n; i++ ) {
     keys[i]     = start + i;
+  }
+
+  /* 
+      Allocate data for the first key and first segment 
+  */
+  data = (int *) PetscMalloc( bs*n*sizeof(int) );CHKPTRA(data);
+  for ( i=0; i<n; i++ ) {
     data[2*i]   = -(start + i);
     data[2*i+1] = -(start + i) - 10000;
   }
-
-  ierr = AODataCreateBasic(PETSC_COMM_WORLD,2,&aodata);CHKERRA(ierr);
-  ierr = AODataAdd(aodata,"someints",bs,n,keys,data,PETSC_INT);CHKERRA(ierr);
+  ierr = AODataAddSegment(aodata,"key1","seg1",bs,n,keys,data,PETSC_INT);CHKERRA(ierr); 
   PetscFree(data);
 
   /*
-      Now create a database with double precision numbers 
+      Allocate data for first key and second segment 
   */
   bs   = 3;
   gd   = (double *) PetscMalloc( bs*n*sizeof(double) );CHKPTRA(gd);
@@ -50,8 +68,12 @@ int main(int argc,char **argv)
     gd[3*i+1] = -(start + i) - 10000;
     gd[3*i+2] = -(start + i) - 100000;
   }
+  ierr = AODataAddSegment(aodata,"key1","seg2",bs,n,keys,gd,PETSC_DOUBLE);CHKERRA(ierr); 
 
-  ierr = AODataAdd(aodata,"somedoubles",bs,n,keys,gd,PETSC_DOUBLE);CHKERRA(ierr);
+  /*
+       Use same data for second key and first segment 
+  */
+  ierr = AODataAddSegment(aodata,"key2","seg1",bs,n,keys,gd,PETSC_DOUBLE);CHKERRA(ierr); 
   PetscFree(gd);
   PetscFree(keys);
 

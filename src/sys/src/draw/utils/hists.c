@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.1.1.1 1997/08/23 06:21:01 knepley Exp $";
+static char vcid[] = "$Id: hists.c,v 1.1 1997/10/03 19:49:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -284,7 +284,7 @@ int DrawHistDraw(DrawHist hist)
     ierr = DrawLine(win,binRight,ymin,binRight,bins[i],DRAW_BLACK); CHKERRQ(ierr);
     ierr = DrawLine(win,binLeft,bins[i],binRight,bins[i],DRAW_BLACK);CHKERRQ(ierr);
   }
-  DrawSyncFlush(win);
+  DrawSynchronizedFlush(win);
   DrawPause(win);
   return(0);
 } 

@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.5 1997/10/01 04:09:08 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.6 1997/10/08 01:32:19 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -29,8 +29,9 @@ struct _AODataOps {
   int (*addsegment)(AOData,char *,char *,int,int,int*,void*,PetscDataType);
   int (*getsegment)(AOData,char *,char*,int,int*,void**);
   int (*restoresegment)(AOData,char *,char *,int,int*,void**);
-  int (*getreducedsegment)(AOData,char *,char*,int,int*,int *,void**);
-  int (*restorereducedsegment)(AOData,char *,char *,int,int*,int *,void**);
+  int (*getreducedsegment)(AOData,char *,char*,int,int*,IS *);
+  int (*getlocalsegment)(AOData,char *,char*,int,int*,void**);
+  int (*restorelocalsegment)(AOData,char *,char *,int,int*,void**);
 };
 
 /*
@@ -40,7 +41,7 @@ struct _AODataOps {
 	       * name      = name of first key
                * N         = number of local keys 
                * nsegments = number of segments in first key  
-
+               * ltog      = local to global mapping 
                - segment1 
                   * name      = name of first segment in first key
                   * bs        = blocksize of first segment in first key
@@ -62,17 +63,19 @@ typedef struct {
 } AODataSegment;
 
 typedef struct {
-  void              *data;                   /* implementation-specific data */
-  char              *name;
-  int               N;                       /* number of keys */
-  int               nsegments;               /* number of segments in key */
-  int               nsegments_max;           /* number of segments allocated for */
-  AODataSegment     *segments;
+  void                   *data;                   /* implementation-specific data */
+  char                   *name;
+  int                    N;                       /* number of keys */
+  int                    nsegments;               /* number of segments in key */
+  int                    nsegments_max;           /* number of segments allocated for */
+  AODataSegment          *segments;
+  ISLocalToGlobalMapping ltog;
 
   /* should the following be so public? */
-  int               nlocal;                  /* number of keys owned locally */
-  int               *rowners;                /* ownership range of each processor */
-  int               rstart,rend;             /* first and 1 + last owned locally */
+
+  int                    nlocal;                  /* number of keys owned locally */
+  int                    *rowners;                /* ownership range of each processor */
+  int                    rstart,rend;             /* first and 1 + last owned locally */
 } AODataKey;
 
 struct _p_AOData {

@@ -1,4 +1,4 @@
-C "$Id: ex1f.F,v 1.16 1997/09/25 15:30:37 balay Exp $";
+C "$Id: ex5f.F,v 1.36 1997/10/07 14:49:48 balay Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -284,7 +284,6 @@ C  Input/output variables:
 
 C  Declarations for use with local arrays:
       Scalar   lx_v(0:1)
-      common   lx_v
       integer  lx_i
 
       ierr = 0
@@ -403,7 +402,6 @@ C  Input/output variables:
 
 C  Declarations for use with local arrays:
       Scalar   lx_v(0:1), lf_v(0:1)
-      common   lx_v, lf_v
       integer  lx_i, lf_i 
 
 C  Scatter ghost points to local vector, using the 2-step process
@@ -565,7 +563,6 @@ C  Input/output variables:
 
 C  Declarations for use with local arrays:
       Scalar   lx_v(0:1)
-      common   lx_v
       integer  lx_i
 
 C  Scatter ghost points to local vector, using the 2-step process

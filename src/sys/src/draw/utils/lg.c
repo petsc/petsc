@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.45 1997/07/09 20:58:15 balay Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.46 1997/08/22 15:16:30 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -299,7 +299,7 @@ int DrawLGDraw(DrawLG lg)
       }
     }
   }
-  DrawSyncFlush(lg->win);
+  DrawSynchronizedFlush(lg->win);
   DrawPause(lg->win);
   return 0;
 } 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dscatter.c,v 1.11 1997/07/09 20:58:15 balay Exp bsmith $";
+static char vcid[] = "$Id: dscatter.c,v 1.12 1997/08/22 15:16:30 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -274,7 +274,7 @@ int DrawSPDraw(DrawSP sp)
       DrawString(win,sp->x[j*dim+i],sp->y[j*dim+i],DRAW_RED,"x");
     }
   }
-  DrawSyncFlush(sp->win);
+  DrawSynchronizedFlush(sp->win);
   DrawPause(sp->win);
   return 0;
 } 

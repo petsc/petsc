@@ -1,62 +1,77 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.23 1997/09/22 15:18:03 balay Exp $";
-#endif
+C
+C "$Id: ex17f.F,v 1.1 1997/10/06 14:19:08 bsmith Exp bsmith $";
+C
+C
+C   "Scatters from a parallel vector to a sequential vector.  In
+C  this case each local vector is as long as the entire parallel vector.
+C
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/is.h"
+#include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/sys.h"
 
-static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
-this case each local vector is as long as the entire parallel vector.\n\n";
+      implicit none
+      integer    n,ierr
+      integer    size,rank,NN,low,high,iglobal,i
+      Scalar     value,zero
+      Vec        x,y
+      IS         is1,is2
+      VecScatter ctx
 
-#include "petsc.h"
-#include "is.h"
-#include "vec.h"
-#include "sys.h"
-#include <math.h>
+      n    = 5
+      zero = 0.d0
+      call  PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-int main(int argc,char **argv)
-{
-  int           n = 5, ierr;
-  int           size,rank,N,low,high,iglobal,i;
-  Scalar        value,zero = 0.0;
-  Vec           x,y;
-  IS            is1,is2;
-  VecScatter    ctx;
+      call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
+      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+C     create two vectors 
+C     one parallel and one sequential. The sequential one on each processor
+C     is as long as the entire parallel one.
 
-  /* create two vectors */
-  N = size*n;
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&y); CHKERRA(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x); CHKERRA(ierr);
+      NN = size*n
 
-  /* create two index sets */
-  ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is2); CHKERRA(ierr);
+      call VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,NN,y,ierr)
+      call VecCreateSeq(MPI_COMM_SELF,NN,x,ierr)
 
-  ierr = VecSet(&zero,x); CHKERRA(ierr);
-  ierr = VecGetOwnershipRange(y,&low,&high); CHKERRA(ierr);
-  for ( i=0; i<n; i++ ) {
-    iglobal = i + low; value = (Scalar) (i + 10*rank);
-    ierr = VecSetValues(y,1,&iglobal,&value,INSERT_VALUES); CHKERRA(ierr);
-  }
-  ierr = VecAssemblyBegin(y); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(y); CHKERRA(ierr);
-  ierr = VecView(y,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+      call VecSet(zero,x,ierr)
+      call VecGetOwnershipRange(y,low,high,ierr)
+      do 10, i=0,n-1
+         iglobal = i + low
+         value   = i + 10*rank
+         call VecSetValues(y,1,iglobal,value,INSERT_VALUES,ierr)
+ 10   continue
 
-  ierr = VecScatterCreate(y,is2,x,is1,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(y,x,ADD_VALUES,SCATTER_FORWARD,ctx); CHKERRA(ierr);
-  ierr = VecScatterEnd(y,x,ADD_VALUES,SCATTER_FORWARD,ctx); CHKERRA(ierr);
-  ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
-  
-  if (!rank) 
-    {printf("----\n"); ierr = VecView(x,VIEWER_STDOUT_SELF); CHKERRA(ierr);}
+      call VecAssemblyBegin(y,ierr)
+      call VecAssemblyEnd(y,ierr)
+C
+C   View the parallel vector
+C
+      call VecView(y,VIEWER_STDOUT_WORLD,ierr)
 
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(y); CHKERRA(ierr);
-  ierr = ISDestroy(is1); CHKERRA(ierr);
-  ierr = ISDestroy(is2); CHKERRA(ierr);
+C     create two index sets and the scatter context to move the contents of
+C     of the parallel vector to each sequential vector. If you want the
+C     parallel vector delivered to only one processor then create a is2 
+C     of length zero on all processors except the one to receive the parallel vector
 
-  PetscFinalize(); 
-  return 0;
-}
+      call ISCreateStride(PETSC_COMM_SELF,NN,0,1,is1,ierr)
+      call ISCreateStride(PETSC_COMM_SELF,NN,0,1,is2,ierr)
+      call VecScatterCreate(y,is2,x,is1,ctx,ierr)
+      call VecScatterBegin(y,x,ADD_VALUES,SCATTER_FORWARD,ctx,ierr)
+      call VecScatterEnd(y,x,ADD_VALUES,SCATTER_FORWARD,ctx,ierr)
+      call VecScatterDestroy(ctx,ierr)
+C
+C   View the sequential vector on the 0th processor
+C  
+      if (rank .eq. 0) then
+        call VecView(x,VIEWER_STDOUT_SELF,ierr)
+      endif
+
+      call VecDestroy(x,ierr)
+      call VecDestroy(y,ierr)
+      call ISDestroy(is1,ierr)
+      call ISDestroy(is2,ierr)
+
+      call PetscFinalize(ierr) 
+      end
  
