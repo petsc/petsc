@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.57 2000/08/15 21:12:54 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.58 2000/08/20 03:23:35 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -481,14 +481,22 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
               grid->xyzn,
               qnode,        grid->cdt,
               grid->xyz,    grid->area,
-              grad,
-              res,  grid->resd,         
+              grad, res,
               grid->turbre,
               grid->slen,   grid->c2n,
               grid->c2e,
               grid->us,     grid->vs,      grid->as,
               grid->phi,
               grid->amut,   &ires,
+#if defined(_OPENMP) 
+              &max_threads,
+#if defined(HAVE_REDUNDANT_WORK)     
+              grid->resd,       
+#else
+              &grid->nedgeAllThr,
+              grid->part_thr,grid->nedge_thr,grid->edge_thr,grid->xyzn_thr,
+#endif
+#endif  
               &tsCtx->LocalTimeStepping,&rank,&grid->nvertices);
 
 /* Add the contribution due to time stepping */
@@ -863,6 +871,7 @@ int GetLocalOrdering(GRID *grid)
       nnodesLoc++;
     } 
   }
+  
   ierr = PetscGetTime(&time_fin);CHKERRQ(ierr);
   time_fin -= time_ini;
   ierr = PetscPrintf(comm,"Partition Vector read successfully\n");CHKERRQ(ierr);
@@ -1004,9 +1013,95 @@ int GetLocalOrdering(GRID *grid)
   nnz = grid->ia[nnodesLoc] - 1;
   ICALLOC(nnz,&grid->ja);
   f77GETJA(&nnodesLoc,&nedgeLoc,grid->eptr,grid->ia,grid->ja,tmp,&rank);
-
   ierr = PetscFree(tmp);CHKERRQ(ierr);
+#if defined(_OPENMP) 
+#if defined(HAVE_REDUNDANT_WORK)
+   FCALLOC(4*nnodesLoc,   &grid->resd);
+#else
 
+  {
+    /* Get the local adjacency structure of the graph for partitioning the local
+       graph into max_threads pieces */
+   int *ia,*ja, options[5];
+   int numflag = 0, wgtflag = 0, edgecut;
+   int thr1,thr2,nedgeAllThreads,ned1,ned2;
+   ICALLOC((nnodesLoc+1),&ia);
+   ICALLOC((2*nedgeLoc),&ja);
+   ia[0] = 0;
+   for (i = 1; i <= nnodesLoc; i++) 
+     ia[i] = grid->ia[i]-2;
+   for (i = 0; i <= nnodesLoc; i++) {
+     int jstart,jend;
+     jstart = ia[i];
+     jend = ia[i+1]-1;
+     k = jstart;
+     for (j=jstart; j <= jend; j++) {
+      inode = grid->ja[i]-1;
+      if (inode != i)
+       ja[k++] = inode;
+     }
+   }
+   ICALLOC(nnodesLoc,&grid->part_thr);
+   options[0] = 0;
+   /* Call the pmetis library routine */
+   METIS_PartGraphRecursive(&nnodesLoc,ia,ja,0,0,
+                            &wgtflag,&numflag,&max_threads,options,&edgecut,grid->part_thr);
+   PetscPrintf(MPI_COMM_WORLD,"The number of cut edges is %d\n", edgecut);
+   k = 0;
+   /* Divide the work among threads */
+   ICALLOC((max_threads+1),&grid->nedge_thr);
+   ierr = PetscMemzero(grid->nedge_thr,(max_threads+1)*sizeof(int));CHKERRQ(ierr);
+   for (i = 0; i < nedgeLoc; i++) {
+    node1 = grid->eptr[k++];
+    node2 = grid->eptr[k++];
+    thr1 = grid->part_thr[node1];
+    thr2 = grid->part_thr[node2];
+    grid->nedge_thr[thr1]+=1;
+    if (thr1 != thr2) 
+     grid->nedge_thr[thr2]+=1;
+   }
+   ned1 = grid->nedge_thr[0];
+   grid->nedge_thr[0] = 1;
+   for (i = 1; i < max_threads; i++) {
+    ned2 = grid->nedge_thr[i];
+    grid->nedge_thr[i] = grid->nedge_thr[i-1]+ned1;
+    ned1 = ned2;
+   } 
+   /* Allocate a shared edge array. Note that a cut edge is evaluated
+      by both the threads but updates are done only for the locally
+      owned node */
+   grid->nedgeAllThr = nedgeAllThreads = grid->nedge_thr[max_threads]-1;
+   ICALLOC(2*nedgeAllThreads, &grid->edge_thr);
+   ICALLOC(max_threads,&tmp);
+   FCALLOC(4*nedgeAllThreads,&grid->xyzn_thr);
+   for (i = 0; i < max_threads; i++) {
+     tmp[i] = grid->nedge_thr[i];
+   }
+   for (i = 0; i < nedgeLoc; i++) {
+    node1 = grid->eptr[k++];
+    node2 = grid->eptr[k++];
+    thr1 = grid->part_thr[node1];
+    thr2 = grid->part_thr[node2];
+    grid->edge_thr[2*tmp[thr1]] = node1;
+    grid->edge_thr[2*tmp[thr1]+1] = node2;
+    grid->xyzn_thr[4*tmp[thr1]] = grid->xyzn[4*i];
+    grid->xyzn_thr[4*tmp[thr1]+1] = grid->xyzn[4*i+1];
+    grid->xyzn_thr[4*tmp[thr1]+2] = grid->xyzn[4*i+2];
+    grid->xyzn_thr[4*tmp[thr1]+3] = grid->xyzn[4*i+3];
+    tmp[thr1]+=1;
+    if (thr1 != thr2){ 
+     grid->edge_thr[tmp[thr2]] = node1;
+     grid->edge_thr[tmp[thr2]+1] = node2;
+     grid->xyzn_thr[4*tmp[thr2]] = grid->xyzn[4*i];
+     grid->xyzn_thr[4*tmp[thr2]+1] = grid->xyzn[4*i+1];
+     grid->xyzn_thr[4*tmp[thr2]+2] = grid->xyzn[4*i+2];
+     grid->xyzn_thr[4*tmp[thr2]+3] = grid->xyzn[4*i+3];
+     tmp[thr2]+=1;
+    }
+   }
+  }  
+#endif
+#endif
   ICALLOC(nvertices,&grid->loc2glo);
   ierr = PetscMemcpy(grid->loc2glo,l2a,nvertices*sizeof(int));CHKERRQ(ierr);
   ierr = PetscFree(l2a);CHKERRQ(ierr);
@@ -1017,7 +1112,6 @@ int GetLocalOrdering(GRID *grid)
   ierr = AOApplicationToPetsc(ao,nvertices,l2p);CHKERRQ(ierr);
 
 /* Map the 'ja' array in petsc ordering */
-  nnz = grid->ia[nnodesLoc] - 1;
   for (i = 0; i < nnz; i++){
     grid->ja[i] = l2a[grid->ja[i] - 1];
   }
@@ -1590,7 +1684,6 @@ int GetLocalOrdering(GRID *grid)
    FCALLOC(nvertices,   &grid->r33);
 */
    FCALLOC(7*nnodesLoc,   &grid->rxy);
-   FCALLOC(4*nnodesLoc,   &grid->resd);
 
 /* Print the different mappings
  *

@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.25 2000/08/20 03:24:14 kaushik Exp balay $
+c  $Id: user.F,v 1.26 2000/09/06 22:19:11 balay Exp kaushik $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -728,7 +728,7 @@ c
       Scalar  cdt(1)
       integer isnode(1),ivnode(1),ifnode(1)
       integer n,i,node1,node2,inode
-      integer flops
+      integer flops,ierr
       Scalar xnorm,ynorm,znorm,area,
      &       u1,v1,w1,u2,v2,w2,u,v,c,w,
      &       ubar,Vn,term
@@ -920,14 +920,16 @@ c=============================================================================
      &                nnfacet,f2ntn,nnbound,
      &                nvfacet,f2ntv,nvbound,
      &                nffacet,f2ntf,nfbound,
-     &                grad,
-     &                evec, qvec,
-     &                xyz,
-     &                resvec,resd,
-     &                xyzn,
-     &                sxn, syn, szn,
-     &                vxn, vyn, vzn,
-     &                fxn,fyn,fzn,phi,
+     &                grad,evec,qvec,xyz,resvec,xyzn,
+     &                sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,
+#if defined(_OPENMP) 
+     &                max_threads,
+#if defined(HAVE_REDUNDANT_WORK)     
+     &                resd,       
+#else
+     &                nedgeAllThr,part_thr,nedge_thr,edge_thr,xyzn_thr,
+#endif
+#endif  
      &                irank,nvertices)
       implicit none      
 #include "include/finclude/petscdef.h"
@@ -963,7 +965,7 @@ c=============================================================================
       integer f2ntv(nvfacet,4)
       integer f2ntf(nffacet,4)
       integer i,n,node1,node2,node3,inode      
-      integer flops
+      integer flops,ierr,first_edge,last_edge
       Scalar  xmean,ymean,zmean,xnorm,ynorm,znorm,
      &        rlen,area,dot,size,
      &        X1,Y1,Z1,X2,Y2,Z2,X3,Y3,Z3,p1,p2,p3,
@@ -1010,7 +1012,6 @@ c=============================================================================
       Scalar qvec(nvertices,4) 
       Scalar grad(nvertices,4,3) 
       Scalar resvec(nnodes,4)
-      Scalar resd(nnodes,4)
       Scalar xyz(nvertices,3)
       Scalar xyzn(nedge,4)
       integer evec(nedge,2)
@@ -1030,15 +1031,31 @@ c=============================================================================
 #endif
 #if defined(_OPENMP)
        integer my_thread_id,omp_get_thread_num,ierr,
-     1         tot_threads,omp_get_num_threads,
+     1         max_threads,omp_get_num_threads,
      2         first_node,last_node,chunk
 #if defined(HAVE_REDUNDANT_WORK)
+       Scalar resd(4,nnodes)
 #undef res(a,b)
 #define res(a,b) resd(a,b)
-       call PetscMemzero(resd,8*4*nnodes,ierr)
+#else
+       integer nedgeAllThr,part_thr(nnodes),nedge_thr(max_threads),
+     1     edge_thr(2,nedgeAllThr),xyzn_thr(4,nedgeAllThr)
+#undef eptr(a,b)
+#define eptr(a,b) edge_thr(b,a)
+#undef xn(i)
+#undef yn(i)
+#undef zn(i)
+#undef ra(i)
+#define xn(i) xyzn_thr(1,i)
+#define yn(i) xyzn_thr(2,i)
+#define zn(i) xyzn_thr(3,i)
+#define ra(i) xyzn_thr(4,i)
 #endif
 #endif
 
+#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
+       call PetscMemzero(resd,8*4*nnodes,ierr)
+#endif
        flops = 0
        second = 1.0d0
 c      if(ntt.le.nitfo)second = 0.0
@@ -1052,12 +1069,15 @@ c
 !$omp4 eig4,dp,du,dv,dw,ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4,r11,r21,
 !$omp5 r31,r41,r12,r22,r32,r42,r13,r23,r33,r43,r14,r24,r34,r44,t1,t2,
 !$omp6 t3,t4,fluxp1,fluxp2,fluxp3,fluxp4,fluxm1,fluxm2,fluxm3,fluxm4,
-!$omp7 res1,res2,res3,res4,c68,c18,inode) firstprivate(resd)
+!$omp7 res1,res2,res3,res4,c68,c18,inode) 
 !$omp8 private(x3,y3,z3,p1,p2,p3,ax,ay,az,bx,by,bz,pa,pb,pc,area,c20,
 !$omp9 c0,ubar0,t11,t21,t31,t41,t12,t22,t32,t42,t13,t23,t33,t43,t14,
 !$omp1 t24,t34,t44,pi,ui,vi,wi,unorm,rhs1,rhs2,rhs3,rhs4,ub,vb,wb,node3)
+!$omp8 private(my_thread_id,first_edge,last_edge,chunk)
+#if defined(HAVE_REDUNDANT_WORK)
+!$omp9 firstprivate(resd)
+#endif
 !$omp2 reduction(+:flops)
-!$omp8 private(my_thread_id,tot_threads,first_node,last_node,chunk)
 c!$omp1 shared(evec,qvec,resvec,xyz,xyzn,grad,nedge,nnodes,second,flops,
 c!$omp2 title,beta,alpha,Re,dt,tot,res0,resc,ntt,mseq,ivisc,irest,icyc,
 c!$omp3 ihane,ntturb,gamma,gm1,gp1,gm1g,gp1g,ggm1,p0,rho0,c0,u0,v0,w0,
@@ -1067,29 +1087,35 @@ c!$      my_thread_id = omp_get_thread_num()
 c!$omp   critical
 c!$      print *, 'My thread id on processor ',irank,' is ',my_thread_id
 c!$omp   end critical
+       first_edge = 1
+       last_edge = nedge
 #if defined(_OPENMP)
 #if defined(HAVE_REDUNDANT_WORK)
 !$omp  do 
 #else
-      tot_threads = omp_get_num_threads()
-      my_thread_id = omp_get_thread_num()
-      chunk = nnodes/tot_threads
-      first_node = my_thread_id*chunk+1
-      if (my_thread_id .eq. (size-1)) then
-         last_node = nnodes
-      else
-         last_node = (my_thread_id+1)*chunk
-      endif
+c     tot_threads = omp_get_num_threads()
+c     my_thread_id = omp_get_thread_num()
+c     chunk = nnodes/tot_threads
+c     first_node = my_thread_id*chunk+1
+c     if (my_thread_id .eq. (size-1)) then
+c        last_node = nnodes
+c     else
+c        last_node = (my_thread_id+1)*chunk
+c     endif
+      first_edge = nedge_thr(my_thread_id)
+      last_edge = nedge_thr(my_thread_id)-1
+
 c     print *, 'On thread ', my_thread_id,', first node = ',first_node,
 c    1         ', last_node = ',last_node, ' chunk = ',chunk
 #endif
+#else
 #endif       
-      do n = 1, nedge
+      do n = first_edge, last_edge
         node1 = eptr(n,1)
         node2 = eptr(n,2)
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-        if (((node1.ge.first_node).and.(node1.le.last_node))
-     1       .or.((node2.ge.first_node).and.(node2.le.last_node))) then
+        if ((part_thr(node1) .eq. my_thread_id)
+     1       .or.(part_thr(node2) .eq. my_thread_id)) then
 #endif
 c
 c Calculate unit normal to face and length of face
@@ -1282,7 +1308,8 @@ c
 
 c
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((node1.ge.first_node).and.(node1.le.last_node)) then
+          if ((part_thr(node1).eq.my_thread_id)
+     1        .and.(node1.le.nnodes)) then
 #else         
           if (node1.le.nnodes) then
 #endif
@@ -1294,7 +1321,8 @@ c
           endif
 c
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((node2.ge.first_node).and.(node2.le.last_node)) then
+          if ((part_thr(node2).eq.my_thread_id)
+     1        .and.(node2.le.nnodes)) then
 #else         
           if (node2.le.nnodes) then
 #endif
@@ -1365,7 +1393,8 @@ c
 c
                flops = flops + 35
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((node1.ge.first_node).and.(node1.le.last_node)) then
+          if ((part_thr(node1).eq.my_thread_id)
+     1        .and.(node1.le.nnodes)) then
 #else         
           if (node1.le.nnodes) then
 #endif
@@ -1376,7 +1405,8 @@ c
           endif
 
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((node2.ge.first_node).and.(node2.le.last_node)) then
+          if ((part_thr(node2).eq.my_thread_id)
+     1        .and.(node2.le.nnodes)) then
 #else         
           if (node2.le.nnodes) then
 #endif
@@ -1387,7 +1417,8 @@ c
           endif
 
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((node3.ge.first_node).and.(node3.le.last_node)) then
+          if ((part_thr(node3).eq.my_thread_id)
+     1        .and.(node3.le.nnodes)) then
 #else         
           if (node3.le.nnodes) then
 #endif
@@ -1449,7 +1480,8 @@ c
 	       flops = flops + 35
 c
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((node1.ge.first_node).and.(node1.le.last_node)) then
+          if ((part_thr(node1).eq.my_thread_id)
+     1        .and.(node1.le.nnodes)) then
 #else         
           if (node1.le.nnodes) then
 #endif
@@ -1461,7 +1493,8 @@ c
           endif
 
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((node2.ge.first_node).and.(node2.le.last_node)) then
+          if ((part_thr(node2).eq.my_thread_id)
+     1        .and.(node2.le.nnodes)) then
 #else         
           if (node2.le.nnodes) then
 #endif
@@ -1472,7 +1505,8 @@ c
           endif
 
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((node3.ge.first_node).and.(node3.le.last_node)) then
+          if ((part_thr(node3).eq.my_thread_id)
+     1        .and.(node3.le.nnodes)) then
 #else         
           if (node3.le.nnodes) then
 #endif
@@ -1666,7 +1700,8 @@ c
          flops = flops + 180
 c
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-        if ((inode.ge.first_node).and.(inode.le.last_node)) then
+          if ((part_thr(inode).eq.my_thread_id)
+     1        .and.(inode.le.nnodes)) then
 #else         
         if (inode.le.nnodes) then
 #endif
@@ -1732,6 +1767,7 @@ c=====================================================================72
 #define r23(i) rxy(5,i)
 #define r33(i) rxy(6,i)
 #define r44(i) rxy(7,i)
+#undef eptr(j,i)
 #define eptr(j,i) evec(i,j)
 #else
       Scalar xyz(nvertices,3)
@@ -2233,17 +2269,21 @@ c=====================================================================72
       subroutine GETRES(nnodes,ncell,nedge,nsface,nvface,nfface,nbface,
      1                  nsnode,nvnode,nfnode,isface,ivface,ifface,
      2                  ileast,isnode,ivnode,ifnode,
-     &                  nnfacet,f2ntn,nnbound,
-     &                  nvfacet,f2ntv,nvbound,
-     &                  nffacet,f2ntf,nfbound,
-     &                  evec,
-     3                  sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
-     4                  xyzn,qvec,cdt,xyz,area,
-     5                  grad,
-     5                  resvec,resd,
-     6                  turbre,slen,c2n,c2e,
-     7                  us,vs,as,phi,
-     &                  amut,ires,
+     3                  nnfacet,f2ntn,nnbound,
+     4                  nvfacet,f2ntv,nvbound,
+     5                  nffacet,f2ntf,nfbound,
+     6                  evec,sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
+     7                  xyzn,qvec,cdt,xyz,area,grad,resvec,turbre,
+     8                  slen,c2n,c2e,us,vs,as,phi,amut,ires,
+#if defined(_OPENMP) 
+     &                  max_threads,
+#if defined(HAVE_REDUNDANT_WORK)     
+     &                  resd,       
+#else
+     &                  nedgeAllThr,part_thr,nedge_thr,
+     &                  edge_thr,xyzn_thr,
+#endif
+#endif  
      &                  LocalTS,irank, nvertices)
 c
       implicit none      
@@ -2271,7 +2311,7 @@ c
       Scalar xyz(nvertices,3),area(nvertices)
       Scalar xyzn(nedge,4)
       Scalar turbre(1),slen(1)
-      Scalar qvec(nvertices,4),resd(4,nnodes)
+      Scalar qvec(nvertices,4)
       Scalar phi(nvertices,4)
       Scalar cdt(nvertices)
       Scalar grad(3,4,nvertices)
@@ -2310,6 +2350,15 @@ c     save flux_event,delta2_event,flag, flux_label,delta2_label
        Scalar resvec(nnodes,4)
 #define res(i,j) resvec(j,i)
 #endif
+#if defined(_OPENMP) 
+       integer max_threads
+#if defined(HAVE_REDUNDANT_WORK)     
+       Scalar resd(4,nnodes)       
+#else
+       integer nedgeAllThr,part_thr(nnodes),nedge_thr(max_threads),
+     1         edge_thr(2,nedgeAllThr),xyzn_thr(4,nedgeAllThr)
+#endif
+#endif  
 c
 
 c     if (flag .eq. -1) then
@@ -2390,9 +2439,17 @@ c       call PLogEventBegin(flux_event,0,0,0,0,ierr)
      &            nnfacet,f2ntn,nnbound,
      &            nvfacet,f2ntv,nvbound,
      &            nffacet,f2ntf,nfbound,
-     &            grad,evec,qvec,
-     &            xyz,resvec,resd,xyzn,sxn,syn,szn,vxn,vyn,vzn,
-     &            fxn,fyn,fzn,phi,irank,nvertices)
+     &            grad,evec,qvec,xyz,resvec,xyzn,
+     &            sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,
+#if defined(_OPENMP) 
+     &            max_threads,
+#if defined(HAVE_REDUNDANT_WORK)     
+     &            resd,       
+#else
+     &            nedgeAllThr,part_thr,nedge_thr,edge_thr,xyzn_thr,
+#endif
+#endif  
+     &            irank,nvertices)
 c        call PLogEventEnd(flux_event,0,0,0,0,ierr)
 c /*'
 c calculate viscous fluxes

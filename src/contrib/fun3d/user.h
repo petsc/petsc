@@ -1,4 +1,4 @@
-/*$Id: user.h,v 1.13 2000/08/17 17:42:34 kaushik Exp kaushik $*/
+/*$Id: user.h,v 1.14 2000/08/18 05:27:19 kaushik Exp kaushik $*/
 #include "petsc.h" 
                   
 #define max_colors  200
@@ -90,7 +90,6 @@ typedef struct gxy{                            /* GRID STRUCTURE             */
    REAL *us, *vs, *ws, *as;                   /* For linearizing viscous    */
    REAL *phi;                                 /* Flux limiter               */
    REAL *rxy;                                 /*                            */
-   REAL *resd;                                /*                            */
 
    int  *icoefup;                             /* Surrounding nodes          */
    REAL *rcoefup;                             /* Coefficients               */
@@ -136,6 +135,15 @@ typedef struct gxy{                            /* GRID STRUCTURE             */
    Vec qGlo;
    VecScatter scatterGlo;*/
    
+#if defined(_OPENMP) 
+#if defined(HAVE_REDUNDANT_WORK)
+   REAL *resd;  
+#else 
+   int nedgeAllThr;
+   int *part_thr,*nedge_thr,*edge_thr;
+   REAL *xyzn_thr;
+#endif
+#endif
 } GRID;                                         /* Grids                      */
                                                /*============================*/
                                             
@@ -288,9 +296,19 @@ extern void f77LSTGS(int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*);
 extern void f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*, 
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*, 
                       Scalar*,Scalar*,Scalar*,int*,int*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,int*,int*);
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,
+#if defined(_OPENMP) 
+                      int*,
+#if defined(HAVE_REDUNDANT_WORK)     
+                      Scalar*,       
+#else
+                      int*,
+                      int*,int*,int*,Scalar*,
+#endif
+#endif  
+                      int*,int*,int*);
 extern void f77FORCE(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,Scalar*,Scalar*,int*,int*,
                      Scalar*,Scalar*,Scalar*,int*,int*);
 extern void f77GETIA(int*,int*,int*,int*,int*,int*);
