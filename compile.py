@@ -224,7 +224,7 @@ class CompileC (Compile):
 
   def handleCErrors(self, command, status, output):
     if status:
-      raise RuntimeError('Could not execute \''+command+'\': '+output)
+      raise RuntimeError('Could not execute \''+command+'\':\n'+output)
     elif output.find('warning') >= 0:
       print('\''+command+'\': '+output)
 
@@ -267,7 +267,7 @@ class CompileCxx (Compile):
 
   def handleCxxErrors(self, command, status, output):
     if status:
-      raise RuntimeError('Could not execute \''+command+'\': '+output)
+      raise RuntimeError('Could not execute \''+command+'\':\n'+output)
     elif output.find('warning') >= 0:
       print('\''+command+'\': '+output)
 
@@ -322,7 +322,7 @@ class CompileJava (Compile):
 
   def handleJavaErrors(self, command, status, output):
     if status:
-      raise RuntimeError('Could not execute \''+command+'\': '+output)
+      raise RuntimeError('Could not execute \''+command+'\':\n'+output)
     elif output.find('warning') >= 0:
       print('\''+command+'\': '+output)
 

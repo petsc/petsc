@@ -79,7 +79,7 @@ class Maker (logging.Logger):
     return checksum
 
   def defaultCheckCommand(self, command, status, output):
-    if status: raise RuntimeError('Could not execute \''+command+'\': '+output)
+    if status: raise RuntimeError('Could not execute \''+command+'\':\n'+output)
 
   def executeShellCommand(self, command, checkCommand = None):
     self.debugPrint('sh: '+command, 3, 'shell')
