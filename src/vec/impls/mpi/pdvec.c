@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.91 1998/04/09 04:09:23 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.92 1998/05/11 18:15:15 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -624,6 +624,10 @@ int VecAssemblyBegin_MPI(Vec xin)
   MPI_Request *send_waits,*recv_waits;
 
   PetscFunctionBegin;
+  if (w->stash.donotstash) {
+    PetscFunctionReturn(0);
+  }
+
   ierr = MPI_Allreduce(&x->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { 
     SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,0,"Some processors inserted values while others added");
@@ -715,6 +719,11 @@ int VecAssemblyEnd_MPI(Vec vec)
   Scalar      *values;
 
   PetscFunctionBegin;
+  if (w->stash.donotstash) {
+    x->insertmode = NOT_SET_VALUES;
+    PetscFunctionReturn(0);
+  }
+
   base = x->ownership[x->rank];
 
   /*  wait on receives */
