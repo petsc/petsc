@@ -440,7 +440,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   ChvManager_init(chvmanager, NO_LOCK, 0) ;  
 
   tagbound = maxTagMPI(MPI_COMM_WORLD) ;
-  lasttag  = lu->firsttag + 3*lu->frontETree->nfront + 3;
+  lasttag  = lu->firsttag + 3*lu->frontETree->nfront + 2;
   /* if(!rank) PetscPrintf(PETSC_COMM_SELF,"\n firsttag: %d, nfront: %d\n",lu->firsttag, lu->frontETree->nfront);*/
   if ( lasttag > tagbound ) {
       SETERRQ3(1,"fatal error in FrontMtx_MPI_factorInpMtx(), tag range is [%d,%d], tag_bound = %d",\
