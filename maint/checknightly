@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: checknightly,v 1.20 1997/09/10 19:40:27 balay Exp balay $ 
+# $Id: checknightly,v 1.21 1997/09/15 02:19:57 balay Exp balay $ 
 
 #
 # Crontab job that checks if the nightly runs have finished by 7:30 am,
@@ -37,7 +37,7 @@ proc CheckNightlyBuilds { } {
     set day(Sat) Fri
     set today [exec date +%a ]
     
-    set files {build_linux.log build_t3d.log}
+    set files {build_linux.log}
     foreach file $files {
         if { [file exists $file ] == 0 } {
             set mesg "$file: File does not exist"

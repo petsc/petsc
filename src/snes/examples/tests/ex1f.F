@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.21 1997/08/07 14:42:34 bsmith Exp balay $";
+C "$Id: ex4f.F,v 1.22 1997/09/22 15:19:33 balay Exp balay $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -131,7 +131,8 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create nonlinear solver context
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,
+     $     snes,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create vector data structures; set function evaluation routine
