@@ -1,3 +1,4 @@
+petsc/src/mat/examples/matrices
 petsc/src/grid
 petsc/src/stencil
 petsc/src/ksp/examples/output

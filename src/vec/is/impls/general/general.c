@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.31 1995/09/07 04:24:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.32 1995/09/11 18:45:22 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -125,7 +125,7 @@ int ISCreateSeq(MPI_Comm comm,int n,int *idx,IS *is)
   *is = Nindex; return 0;
 }
 
-/*@
+/*@C
    ISAddStrideSeq - Adds additional entries to a sequential 
                            index set by a stride.
 

@@ -76,13 +76,12 @@ alletags:
 etags:
 	$(RM) TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h 
-	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c
 	etags -a -f TAGS src/*/examples/*.F
 	etags -a -f TAGS src/*/examples/*.c src/*/examples/*/*.c
 	etags -a -f TAGS src/*/*.h src/*/interface/*.c 
 	etags -a -f TAGS src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS src/*/impls/*/*/*.c 
-	etags -a -f TAGS include/*.h include/pinclude/*.h bmake/common
+	etags -a -f TAGS include/*.h include/*include/*.h bmake/common
 	etags -a -f TAGS src/*/impls/*.c src/*/utils/*.c
 	etags -a -f TAGS makefile src/*/src/makefile
 	etags -a -f TAGS src/*/interface/makefile src/makefile 
@@ -100,18 +99,17 @@ etags:
 	etags -a -f TAGS bmake/t3d/t3d* bmake/paragon/paragon*
 	etags -a -f TAGS docs/tex/routin.tex  docs/tex/manual.tex
 	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex
+	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c
 	chmod g+w TAGS
 
 # Builds the etags file that excludes the examples directories
 etags_noexamples:
 	$(RM) TAGS_NO_EXAMPLES
 	etags -f TAGS_NO_EXAMPLES src/*/impls/*/*.h src/*/impls/*/*/*.h 
-	etags -a -f TAGS_NO_EXAMPLES src/fortran/auto/*.c
-	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/*.c 
 	etags -a -f TAGS_NO_EXAMPLES src/*/*.h src/*/interface/*.c
 	etags -a -f TAGS_NO_EXAMPLES src/*/src/*.c  src/*/impls/*/*.c 
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*/*/*.c 
-	etags -a -f TAGS_NO_EXAMPLES include/*.h include/pinclude/*.h
+	etags -a -f TAGS_NO_EXAMPLES include/*.h include/*include/*.h
 	etags -a -f TAGS_NO_EXAMPLES bmake/common
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*.c src/*/utils/*.c
 	etags -a -f TAGS_NO_EXAMPLES makefile src/*/src/makefile 
@@ -130,6 +128,8 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES bmake/t3d/t3d* bmake/paragon/paragon*
 	etags -a -f TAGS_NO_EXAMPLES docs/tex/routin.tex  docs/tex/manual.tex
 	etags -a -f TAGS_NO_EXAMPLES docs/tex/intro.tex  docs/tex/part1.tex
+	etags -a -f TAGS_NO_EXAMPLES src/fortran/auto/*.c
+	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/*.c 
 	chmod g+w TAGS_NO_EXAMPLES
 
 # Builds the etags file for makefiles

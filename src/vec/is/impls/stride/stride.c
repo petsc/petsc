@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.26 1995/09/07 04:24:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.27 1995/09/11 18:45:24 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
 */
-#include "isimpl.h"
+#include "isimpl.h"             /*I   "is.h"   I*/
 #include "pinclude/pviewer.h"
 
 typedef struct {
