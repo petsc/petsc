@@ -418,10 +418,10 @@ int MatApplyPtAP_SeqAIJ_Numeric(Mat A,Mat P,Mat C) {
   Mat_SeqAIJ *p  = (Mat_SeqAIJ *) P->data;
   Mat_SeqAIJ *c  = (Mat_SeqAIJ *) C->data;
   int        aishift=a->indexshift,pishift=p->indexshift,cishift=c->indexshift;
-  int        *ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj,*ci=c->i,*cj=c->j,*cjj;
+  int        *ai=a->i,*aj=a->j,*apj,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj,*ci=c->i,*cj=c->j,*cjj;
   int        an=A->N,am=A->M,pn=P->N,pm=P->M,cn=C->N,cm=C->M;
-  int        i,j,k,anzi,pnzi,pnzj,cnzj,prow,crow;
-  MatScalar  *aa=a->a,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj,*temp;
+  int        i,j,k,anzi,pnzi,apnzj,pnzj,cnzj,prow,crow;
+  MatScalar  *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
 
   PetscFunctionBegin;
 
@@ -438,20 +438,25 @@ int MatApplyPtAP_SeqAIJ_Numeric(Mat A,Mat P,Mat C) {
   ierr = PetscLogEventBegin(logkey_matapplyptap_numeric,A,P,C,0);CHKERRQ(ierr);
   flops = 0;
 
-  ierr = PetscMalloc(cn*sizeof(MatScalar),&temp);CHKERRQ(ierr);
-  ierr = PetscMemzero(temp,cn*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscMalloc(cn*(sizeof(MatScalar)+sizeof(int)),&apa);CHKERRQ(ierr);
+  ierr = PetscMemzero(apa,cn*(sizeof(MatScalar)+sizeof(int)));CHKERRQ(ierr);
+  apj = (int *)(apa + cn);
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
   for (i=0;i<am;i++) {
     /* Form sparse row of A*P */
-    anzi = ai[i+1] - ai[i];
+    anzi  = ai[i+1] - ai[i];
+    apnzj = 0;
     for (j=0;j<anzi;j++) {
       prow = *aj++;
       pnzj = pi[prow+1] - pi[prow];
       pjj  = pj + pi[prow];
       paj  = pa + pi[prow];
       for (k=0;k<pnzj;k++) {
-        temp[pjj[k]] += (*aa)*paj[k];
+        if (!apa[pjj[k]]) {
+          apj[apnzj++]=pjj[k];
+        }
+        apa[pjj[k]] += (*aa)*paj[k];
       }
       flops += 2*pnzj;
       aa++;
@@ -460,25 +465,26 @@ int MatApplyPtAP_SeqAIJ_Numeric(Mat A,Mat P,Mat C) {
     /* Compute P^T*A*P using outer product (P^T)[:,j]*(A*P)[j,:]. */
     pnzi = pi[i+1] - pi[i];
     for (j=0;j<pnzi;j++) {
+      int nextap=0;
       crow = *pJ++;
       cnzj = ci[crow+1] - ci[crow];
       cjj  = cj + ci[crow];
       caj  = ca + ci[crow];
+      /* Perform the sparse axpy operation.  Note cjj includes apj. */
       for (k=0;k<cnzj;k++) {
-        caj[k] += (*pA)*temp[cjj[k]];
+        if (cjj[k]==apj[nextap]) {
+          caj[k] += (*pA)*apa[apj[nextap++]];
+        }
       }
-      flops += 2*cnzj;
+      flops += 2*apnzj;
       pA++;
     }
 
-    /* Note: The nonzero elements in the last touched row are a */
-    /*       superset of the nonzero elements in temp.  So, zeroing */
-    /*       these elements suffices, instead of zeroing all of */
-    /*       temp.  Something more precise could still be done. */
-    for (j=0;j<cnzj;j++) {
-      temp[cjj[j]] = 0.;
+    for (j=0;j<apnzj;j++) {
+      apa[apj[j]] = 0.;
     }
   }
+  ierr = PetscFree(apa);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(logkey_matapplyptap_numeric,A,P,C,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
