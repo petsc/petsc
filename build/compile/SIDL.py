@@ -71,7 +71,8 @@ class Compiler(build.processor.Processor):
     '''Return a list of the compiler flags specifying the generation action.'''
     return ['-'+self.action+'='+self.language]
 
-  def getIncludeFlags(self, source):
+  def getDependenciesSIDL(self):
+    '''Return all SIDL files found in project dependencies'''
     if not self.repositoryDirs: return []
     sources = []
     for dir in self.repositoryDirs:
@@ -82,10 +83,12 @@ class Compiler(build.processor.Processor):
       for source in os.listdir(dir):
         if not os.path.splitext(source)[1] == '.sidl': continue
         source = os.path.join(dir, source)
-        if not os.path.exists(source): raise RuntimeError('Invalid SIDL include: '+source)
+        if not os.path.isfile(source): raise RuntimeError('Invalid SIDL include: '+source)
         sources.append(source)
-    arg = '-includes=['+','.join(sources)+']'
-    return [arg]
+    return sources
+
+  def getIncludeFlags(self, source):
+    return ['-includes=['+','.join(self.getDependenciesSIDL())+']']
 
   def getOutputFlags(self, source):
     '''Return a list of the compiler flags specifying the output directories'''

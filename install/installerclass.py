@@ -60,7 +60,7 @@ class Installer(install.urlMapping.UrlMapping):
     return
 
   def backup(self, url):
-    '''This forces a fresh copy of the project instead of using the one in the database'''
+    '''This forces a fresh copy of the project instead of using the one in the database, and returns the tarball created'''
     import shutil
 
     self.debugPrint('Backing up '+url, 3, 'install')
@@ -69,11 +69,12 @@ class Installer(install.urlMapping.UrlMapping):
     self.argDB.saveFilename = os.path.join(root, 'RDict.db')
     self.builder.build(root, ['activate', 'sidlCheckpoint', 'deactivate'], ignoreDependencies = 1)
     self.argDB.save(force = 1)
-    output = self.executeShellCommand('tar -czf '+self.getRepositoryName(self.getMappedUrl(url))+'.tgz -C '+os.path.dirname(root)+' '+os.path.basename(root))
+    tarball = self.getRepositoryName(self.getMappedUrl(url))+'.tgz'
+    output  = self.executeShellCommand('tar -czf '+tarball+' -C '+os.path.dirname(root)+' '+os.path.basename(root))
     # Reset this since we are removing the directory
     self.argDB.saveFilename = 'RDict.db'
     shutil.rmtree(os.path.dirname(root))
-    return
+    return tarball
 
   def removeProject(self, url):
     '''Remove a project'''

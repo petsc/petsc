@@ -432,6 +432,38 @@ class Framework(base.Base):
       self.sourceDB.save()
     return
 
+  def t_printSIDL(self):
+    '''Print all the SIDL dependencies as HTML'''
+    import build.compile.SIDL
+
+    self.argDB.target = []
+    for v in self.sidlTemplate.getClientTarget('Python').vertices:
+      if hasattr(v, 'getIncludeFlags'):
+        includes = v.getIncludeFlags(None)
+    mod      = build.compile.SIDL.Compiler(self.sourceDB, 'Python', None, 0, self.sidlTemplate.usingSIDL).getCompilerModule('scandalDoc')
+    args     = ['-printer=[ANL.SIDL.PrettyPrinterHTML]']+includes+self.filesets['sidl']
+    self.debugPrint('Running scandalDoc with arguments '+str(args), 3, 'build')
+    compiler = mod.ScandalDoc(args)
+    compiler.run()
+    return compiler.outputFiles
+
+  def t_updateBootstrap(self):
+    '''Create a bootstrap tarball and copy it to the FTP site'''
+    import installerclass
+
+    installer = installerclass.Installer()
+    tarball   = installer.backup(self.project.getUrl())
+    self.executeShellCommand('scp '+tarball+' petsc@terra.mcs.anl.gov://mcs/ftp/pub/petsc/sidl/'+tarball)
+    raise RuntimeError('Need to fix the path')
+    return
+
+  def t_updateWebsite(self):
+    '''Print all the SIDL dependencies as HTML and move to the website'''
+    for f in self.executeTarget('printSIDL'):
+      self.executeShellCommand('scp '+f+' petsc@terra.mcs.anl.gov://mcs/www-unix/sidl/'+f)
+      os.remove(f)
+    return
+
   def setupProject(self):
     '''Hook for user operations before project activation'''
     return
