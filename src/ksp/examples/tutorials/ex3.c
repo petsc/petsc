@@ -32,7 +32,6 @@ int main(int argc,char **args)
 {
   Vec         u,b,ustar; /* approx solution, RHS, exact solution */
   Mat         A;           /* linear system matrix */
-  KSP        ksp;        /* linear solver context */
   KSP         ksp;         /* Krylov subspace method context */
   IS          is;          /* index set - used for boundary conditions */
   int         N;           /* dimension of system (global) */

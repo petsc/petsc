@@ -30,7 +30,6 @@ int main(int argc,char **args)
   PetscScalar  zero = 0.0,Ke[16], one = 1.0;
   PetscReal    h;
   Vec          u,b;
-  KSP         ksp;
   KSP          ksp;
   MatNullSpace nullsp;
   PC           pc;
