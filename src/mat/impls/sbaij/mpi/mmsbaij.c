@@ -122,13 +122,7 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   ierr = VecGetPetscMap(sbaij->slvec0,&vecmap);CHKERRQ(ierr);   
   ierr = PetscMapGetGlobalRange(vecmap,&sowners);CHKERRQ(ierr); 
-  /* for (i=0; i<=size;i++) sowners[i] /= bs; */
  
-  if (rank==prank){
-    printf("length of slvec0: \n", vec_size); 
-    for (i=0; i<=size;i++)  printf("[%d]: owners = %d, sowners/bs = %d\n", i,owners[i], sowners[i]/bs); 
-  }
-
   /* x index in the IS sfrom */
   for (i=0; i<ec; i++) { 
     j = ec_owner[i];

@@ -868,7 +868,7 @@ int MatDestroy_MPISBAIJ(Mat mat)
 int MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
-  int         ierr,i,nt,mbs=a->mbs,bs=a->bs;
+  int         ierr,nt,mbs=a->mbs,bs=a->bs;
   PetscScalar *x,*from,zero=0.0;
  
   PetscFunctionBegin;
