@@ -40,9 +40,13 @@ class BuildGraph(object):
   def getEdges(self, vertex):
     return (self.inEdges[vertex], self.outEdges[vertex])
 
-  def clearEdges(self, vertex):
-    self.inEdges[vertex]  = []
-    self.outEdges[vertex] = []
+  def clearEdges(self, vertex, inOnly = 0, outOnly = 0):
+    if inOnly and outOnly:
+      raise RuntimeError('Inconsistent arguments')
+    if not outOnly:
+      self.inEdges[vertex]  = []
+    if not inOnly:
+      self.outEdges[vertex] = []
     return
 
   def removeVertex(self, vertex):
@@ -117,7 +121,7 @@ class BuildGraph(object):
     for v in graph.getEdges(vertex)[outEdges]:
       if not v in seen:
         try:
-          for v2 in BuildGraph.depthFirstVisit(graph, v, seen, returnFinished):
+          for v2 in BuildGraph.depthFirstVisit(graph, v, seen, returnFinished, outEdges):
             yield v2
         except StopIteration:
           pass

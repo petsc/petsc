@@ -150,7 +150,7 @@ class Framework(base.Base):
       self.argDB['projectDependenceGraph'] = build.buildGraph.BuildGraph()
     self.dependenceGraph = self.argDB['projectDependenceGraph']
     self.dependenceGraph.addVertex(self.project)
-    self.dependenceGraph.clearEdges(self.project)
+    self.dependenceGraph.clearEdges(self.project, outOnly = 1)
     self.dependenceGraph.addEdges(self.project, outputs = map(self.getInstalledProject, self.executeTarget('getDependencies')))
     return self.dependenceGraph
 
