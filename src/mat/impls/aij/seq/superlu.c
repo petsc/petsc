@@ -1,4 +1,4 @@
-/*$Id: superlu.c,v 1.4 2001/06/21 21:16:21 bsmith Exp balay $*/
+/*$Id: superlu.c,v 1.5 2001/06/25 14:03:05 balay Exp bsmith $*/
 
 /* 
         Provides an interface to the SuperLU sparse solver
@@ -30,8 +30,8 @@ typedef struct {
 
 extern int MatDestroy_SeqAIJ(Mat);
 
-#undef __FUNC__  
-#define __FUNC__ "MatDestroy_SeqAIJ_SuperLU"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_SeqAIJ_SuperLU"
 extern int MatDestroy_SeqAIJ_SuperLU(Mat A)
 {
   Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)A->data;
@@ -56,8 +56,8 @@ extern int MatDestroy_SeqAIJ_SuperLU(Mat A)
 }
 
 #include "src/mat/impls/dense/seq/dense.h"
-#undef __FUNC__  
-#define __FUNC__ "MatCreateNull_SeqAIJ_SuperLU"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateNull_SeqAIJ_SuperLU"
 int MatCreateNull_SeqAIJ_SuperLU(Mat A,Mat *nullMat)
 {
   Mat_SeqAIJ         *a       = (Mat_SeqAIJ*)A->data;
@@ -116,8 +116,8 @@ int MatCreateNull_SeqAIJ_SuperLU(Mat A,Mat *nullMat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSolve_SeqAIJ_SuperLU"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqAIJ_SuperLU"
 extern int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)A->data;
@@ -147,8 +147,8 @@ extern int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
 /*
    Note the r permutation is ignored
 */
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorSymbolic_SeqAIJ_SuperLU"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_SuperLU"
 extern int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
@@ -185,8 +185,8 @@ extern int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqAIJ_SuperLU"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_SuperLU"
 extern int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
 {
   Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)(*F)->data;
@@ -254,8 +254,8 @@ extern int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatUseSuperLU_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatUseSuperLU_SeqAIJ"
 int MatUseSuperLU_SeqAIJ(Mat A)
 {
   PetscTruth flg;
@@ -275,8 +275,8 @@ int MatUseSuperLU_SeqAIJ(Mat A)
 
 #else
 
-#undef __FUNC__  
-#define __FUNC__ "MatUseSuperLU_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatUseSuperLU_SeqAIJ"
 int MatUseSuperLU_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;

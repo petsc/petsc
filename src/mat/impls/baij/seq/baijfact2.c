@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.54 2001/06/21 19:59:16 buschelm Exp buschelm $*/
+/*$Id: baijfact2.c,v 1.55 2001/06/22 19:34:59 buschelm Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -1877,7 +1877,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
     x[0] = b[0]; x[1] = b[1]; x[2] = b[2]; x[3] = b[3];
     v    =  aa + 16*ai[1];
 
-    for (i=1; i<n; ) {
+    for (i=1; i<n;) {
       PREFETCH_NTA(&v[8]);
       vi   =  aj      + ai[i];
       nz   =  diag[i] - ai[i];
@@ -1938,7 +1938,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
     idt  = 4*(n-1);
     ai16 = 16*diag[n-1];
     v    = aa + ai16 + 16;
-    for (i=n-1; i>=0; ){
+    for (i=n-1; i>=0;){
       PREFETCH_NTA(&v[8]);
       vi = aj + diag[i] + 1;
       nz = ai[i+1] - diag[i] - 1;

@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.75 2001/06/20 03:39:38 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.76 2001/06/21 21:18:53 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -66,7 +66,7 @@
 !  MUST be declared as external.
 
       external FormInitialGuess
-      external FormFunctionLocal,FormFunctionLocal,FormJacobianLocal
+      external FormFunctionLocal,FormJacobianLocal
 #if defined(PETSC_HAVE_ADIFOR)
       external g_FormFunctionLocal,m_FormFunctionLocal
 #endif

@@ -1,4 +1,4 @@
-/*$Id: matadic.c,v 1.4 2001/07/03 18:54:27 curfman Exp bsmith $*/
+/*$Id: matadic.c,v 1.5 2001/07/05 15:27:46 bsmith Exp bsmith $*/
 /*
     ADIC matrix-free matrix implementation
 */
@@ -250,7 +250,6 @@ EXTERN_C_END
 @*/
 int MatDAADSetDA(Mat A,DA da)
 {
-  Mat_DAAD *a = (Mat_DAAD*)A->data;
   int      ierr,(*f)(Mat,void*);
 
   PetscFunctionBegin;
@@ -281,7 +280,6 @@ int MatDAADSetDA(Mat A,DA da)
 @*/
 int MatDAADSetSNES(Mat A,SNES snes)
 {
-  Mat_DAAD *a = (Mat_DAAD*)A->data;
   int      ierr,(*f)(Mat,void*);
 
   PetscFunctionBegin;
@@ -312,7 +310,6 @@ int MatDAADSetSNES(Mat A,SNES snes)
 @*/
 int MatDAADSetCtx(Mat A,void *ctx)
 {
-  Mat_DAAD *a = (Mat_DAAD*)A->data;
   int      ierr,(*f)(Mat,void*);
 
   PetscFunctionBegin;
