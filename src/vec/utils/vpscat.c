@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.158 2001/03/23 23:21:18 balay Exp bsmith $*/
+/*$Id: vpscat.c,v 1.159 2001/04/10 19:34:51 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -44,23 +44,32 @@ int VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 
     } else { 
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number sends = %d; Number to self = %d\n",rank,to->n,to->local.n);CHKERRQ(ierr);
-      for (i=0; i<to->n; i++){
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]   %d length = %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);CHKERRQ(ierr);
-      }
-
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Now the indices\n");CHKERRQ(ierr);
-      for (i=0; i<to->starts[to->n]; i++){
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]%d \n",rank,to->indices[i]);CHKERRQ(ierr);
+      if (to->n) {
+        for (i=0; i<to->n; i++){
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]   %d length = %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Now the indices for all remote sends (in order by process sent to)\n");CHKERRQ(ierr);
+        for (i=0; i<to->starts[to->n]; i++){
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]%d \n",rank,to->indices[i]);CHKERRQ(ierr);
+        }
       }
 
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Number receives = %d; Number from self = %d\n",rank,from->n,from->local.n);CHKERRQ(ierr);
-      for (i=0; i<from->n; i++){
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d length %d from whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);CHKERRQ(ierr);
-      }
+      if (from->n) {
+	for (i=0; i<from->n; i++){
+	  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d length %d from whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);CHKERRQ(ierr);
+	}
 
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Now the indices\n");CHKERRQ(ierr);
-      for (i=0; i<from->starts[from->n]; i++){
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]%d \n",rank,from->indices[i]);CHKERRQ(ierr);
+	ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Now the indices for all remote receives (in order by process received from)\n");CHKERRQ(ierr);
+	for (i=0; i<from->starts[from->n]; i++){
+	  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]%d \n",rank,from->indices[i]);CHKERRQ(ierr);
+	}
+      }
+      if (to->local.n) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Indices for local part of scatter\n",rank);CHKERRQ(ierr);
+        for (i=0; i<to->local.n; i++){
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]From %d to %d \n",rank,from->local.slots[i],to->local.slots[i]);CHKERRQ(ierr);
+        }
       }
 
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
