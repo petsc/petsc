@@ -142,7 +142,7 @@ static int PetscDrawGetMouseButton_Win32(PetscDraw draw, PetscDrawButton *button
   }
   /* If no actions have occured, wait for one */
   node = current->MouseListHead;
-  if (node == NULL) {
+  if (!node) {
     ReleaseMutex(g_hWindowListMutex);
     WaitForSingleObject(current->event, INFINITE);
     WaitForSingleObject(g_hWindowListMutex, INFINITE);
@@ -156,7 +156,7 @@ static int PetscDrawGetMouseButton_Win32(PetscDraw draw, PetscDrawButton *button
   if (y_phys) *y_phys = current->MouseListHead->phys.y;
   /* remove set of information from sub linked-list, delete the node */
   current->MouseListHead = current->MouseListHead->mnext;
-  if (current->MouseListHead == NULL) {
+  if (!current->MouseListHead) {
     ResetEvent(current->event);
     current->MouseListTail = NULL;
   }
@@ -632,7 +632,7 @@ void PopMessageLoopThread_Win32(PetscDraw popdraw)
   pop->w = width;
   pop->h = height;
   
-  if(hWnd == NULL) {
+  if(!hWnd) {
     lpMsgBuf = "Window Not Succesfully Created";
     MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
     LocalFree( lpMsgBuf );
@@ -720,7 +720,7 @@ void MessageLoopThread_Win32(PetscDraw draw)
                         hInst,
                         NULL);
   
-  if(hWnd == NULL) {
+  if (!hWnd) {
     lpMsgBuf = "Window Not Succesfully Created";
     MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
     LocalFree( lpMsgBuf );
@@ -1001,7 +1001,7 @@ static int  MouseRecord_Win32(HWND hWnd,PetscDrawButton button)
         ScreenToClient(hWnd,&mousepos);
         newnode->phys.x = mousepos.x;
         newnode->phys.y = mousepos.y;
-        if(current->MouseListTail == NULL) {
+        if (!current->MouseListTail) {
           current->MouseListHead = newnode;
           current->MouseListTail = newnode;
         } else {

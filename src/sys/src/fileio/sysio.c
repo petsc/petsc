@@ -218,7 +218,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     wsize = (m < maxblock) ? m : maxblock;
     err = read(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
-    if (err == 0 && wsize > 0) SETERRQ(PETSC_ERR_FILE_READ,"Read past end of file");
+    if (!err && wsize > 0) SETERRQ(PETSC_ERR_FILE_READ,"Read past end of file");
     if (err < 0) SETERRQ(PETSC_ERR_FILE_READ,"Error reading from file");
     m  -= err;
     pp += err;
@@ -308,7 +308,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 #endif
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(1,"Trying to write a negative amount of data %d",n);
+  if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %d",n);
   if (!n) PetscFunctionReturn(0);
 
   maxblock = 65536;

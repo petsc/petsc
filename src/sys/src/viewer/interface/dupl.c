@@ -41,7 +41,7 @@ int PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer)
   } else if (viewer->ops->getsingleton) {
     ierr = (*viewer->ops->getsingleton)(viewer,outviewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Cannot get singleton PetscViewer for type %s",viewer->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Cannot get singleton PetscViewer for type %s",viewer->type_name);
   }
   PetscFunctionReturn(0);
 }

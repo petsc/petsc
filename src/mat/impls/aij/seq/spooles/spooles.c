@@ -43,13 +43,13 @@ int MatDestroy_SeqAIJSpooles(Mat A)
   PetscFunctionBegin;
  
   if (lu->CleanUpSpooles) {
-    FrontMtx_free(lu->frontmtx) ;        
-    IV_free(lu->newToOldIV) ;            
-    IV_free(lu->oldToNewIV) ;            
-    InpMtx_free(lu->mtxA) ;             
-    ETree_free(lu->frontETree) ;          
-    IVL_free(lu->symbfacIVL) ;         
-    SubMtxManager_free(lu->mtxmanager) ; 
+    FrontMtx_free(lu->frontmtx);        
+    IV_free(lu->newToOldIV);            
+    IV_free(lu->oldToNewIV);            
+    InpMtx_free(lu->mtxA);             
+    ETree_free(lu->frontETree);          
+    IVL_free(lu->symbfacIVL);         
+    SubMtxManager_free(lu->mtxmanager); 
     Graph_free(lu->graph);
   }
   ierr = MatConvert_Spooles_Base(A,lu->basetype,&A);
@@ -73,14 +73,14 @@ int MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
 
   PetscFunctionBegin;
 
-  mtxY = DenseMtx_new() ;
-  DenseMtx_init(mtxY, lu->options.typeflag, 0, 0, nrow, 1, 1, nrow) ; /* column major */
+  mtxY = DenseMtx_new();
+  DenseMtx_init(mtxY, lu->options.typeflag, 0, 0, nrow, 1, 1, nrow); /* column major */
   ierr = VecGetArray(b,&array);CHKERRQ(ierr);
 
   if (lu->options.useQR) {   /* copy b to mtxY */
     for ( irow = 0 ; irow < nrow; irow++ )  
 #if !defined(PETSC_USE_COMPLEX)
-      DenseMtx_setRealEntry(mtxY, irow, 0, *array++) ; 
+      DenseMtx_setRealEntry(mtxY, irow, 0, *array++); 
 #else
       DenseMtx_setComplexEntry(mtxY, irow, 0, PetscRealPart(array[irow]), PetscImaginaryPart(array[irow]));
 #endif
@@ -88,28 +88,28 @@ int MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
     iv = IV_entries(lu->oldToNewIV); 
     for ( irow = 0 ; irow < nrow; irow++ ) 
 #if !defined(PETSC_USE_COMPLEX)
-      DenseMtx_setRealEntry(mtxY, *iv++, 0, *array++) ; 
+      DenseMtx_setRealEntry(mtxY, *iv++, 0, *array++); 
 #else
       DenseMtx_setComplexEntry(mtxY,*iv++,0,PetscRealPart(array[irow]),PetscImaginaryPart(array[irow]));
 #endif
   }
   ierr = VecRestoreArray(b,&array);CHKERRQ(ierr);
 
-  mtxX = DenseMtx_new() ;
-  DenseMtx_init(mtxX, lu->options.typeflag, 0, 0, neqns, 1, 1, neqns) ;
+  mtxX = DenseMtx_new();
+  DenseMtx_init(mtxX, lu->options.typeflag, 0, 0, neqns, 1, 1, neqns);
   if (lu->options.useQR) {
     FrontMtx_QR_solve(lu->frontmtx, lu->mtxA, mtxX, mtxY, lu->mtxmanager,
-                  lu->cpus, lu->options.msglvl, lu->options.msgFile) ;
+                  lu->cpus, lu->options.msglvl, lu->options.msgFile);
   } else {
     FrontMtx_solve(lu->frontmtx, mtxX, mtxY, lu->mtxmanager, 
-                 lu->cpus, lu->options.msglvl, lu->options.msgFile) ;
+                 lu->cpus, lu->options.msglvl, lu->options.msgFile);
   }
   if ( lu->options.msglvl > 2 ) {
-    fprintf(lu->options.msgFile, "\n\n right hand side matrix after permutation") ;
-    DenseMtx_writeForHumanEye(mtxY, lu->options.msgFile) ; 
-    fprintf(lu->options.msgFile, "\n\n solution matrix in new ordering") ;
-    DenseMtx_writeForHumanEye(mtxX, lu->options.msgFile) ;
-    fflush(lu->options.msgFile) ;
+    fprintf(lu->options.msgFile, "\n\n right hand side matrix after permutation");
+    DenseMtx_writeForHumanEye(mtxY, lu->options.msgFile); 
+    fprintf(lu->options.msgFile, "\n\n solution matrix in new ordering");
+    DenseMtx_writeForHumanEye(mtxX, lu->options.msgFile);
+    fflush(lu->options.msgFile);
   }
 
   /* permute solution into original ordering, then copy to x */  
@@ -129,8 +129,8 @@ int MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
   ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
   
   /* free memory */
-  DenseMtx_free(mtxX) ;
-  DenseMtx_free(mtxY) ;
+  DenseMtx_free(mtxX);
+  DenseMtx_free(mtxY);
 
   PetscFunctionReturn(0);
 }
@@ -164,7 +164,7 @@ int MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
     /* set Spooles options */
     ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr); 
 
-    lu->mtxA = InpMtx_new() ;
+    lu->mtxA = InpMtx_new();
   }
 
   /* copy A to Spooles' InpMtx object */
@@ -187,7 +187,7 @@ int MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
       ai=mat->i; aj=mat->j; av=mat->a;
       nz=mat->nz;
   } 
-  InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, lu->options.typeflag, nz, 0) ;
+  InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, lu->options.typeflag, nz, 0);
  
 #if defined(PETSC_USE_COMPLEX)
     for (irow=0; irow<nrow; irow++) {
@@ -229,12 +229,12 @@ int MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
     InpMtx_inputRealTriples(lu->mtxA, nz, ivec1, ivec2, dvec); 
 #endif
 
-  InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ; 
+  InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS); 
   if ( lu->options.msglvl > 0 ) {
-    printf("\n\n input matrix") ;
-    fprintf(lu->options.msgFile, "\n\n input matrix") ;
-    InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
-    fflush(lu->options.msgFile) ;
+    printf("\n\n input matrix");
+    fprintf(lu->options.msgFile, "\n\n input matrix");
+    InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
+    fflush(lu->options.msgFile);
   }
 
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */  
@@ -244,22 +244,22 @@ int MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
          (2) order the graph 
     -------------------------------------------------------*/  
     if (lu->options.useQR){
-      adjIVL = InpMtx_adjForATA(lu->mtxA) ;
+      adjIVL = InpMtx_adjForATA(lu->mtxA);
     } else {
-      adjIVL = InpMtx_fullAdjacency(lu->mtxA) ;
+      adjIVL = InpMtx_fullAdjacency(lu->mtxA);
     }
-    nedges = IVL_tsize(adjIVL) ;
+    nedges = IVL_tsize(adjIVL);
 
-    lu->graph = Graph_new() ;
-    Graph_init2(lu->graph, 0, neqns, 0, nedges, neqns, nedges, adjIVL, NULL, NULL) ;
+    lu->graph = Graph_new();
+    Graph_init2(lu->graph, 0, neqns, 0, nedges, neqns, nedges, adjIVL, NULL, NULL);
     if ( lu->options.msglvl > 2 ) {
       if (lu->options.useQR){
-        fprintf(lu->options.msgFile, "\n\n graph of A^T A") ;
+        fprintf(lu->options.msgFile, "\n\n graph of A^T A");
       } else {
-        fprintf(lu->options.msgFile, "\n\n graph of the input matrix") ;
+        fprintf(lu->options.msgFile, "\n\n graph of the input matrix");
       }
-      Graph_writeForHumanEye(lu->graph, lu->options.msgFile) ;
-      fflush(lu->options.msgFile) ;
+      Graph_writeForHumanEye(lu->graph, lu->options.msgFile);
+      fflush(lu->options.msgFile);
     }
 
     switch (lu->options.ordering) {
@@ -280,88 +280,88 @@ int MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
     }
 
     if ( lu->options.msglvl > 0 ) {
-      fprintf(lu->options.msgFile, "\n\n front tree from ordering") ;
-      ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile) ;
-      fflush(lu->options.msgFile) ;
+      fprintf(lu->options.msgFile, "\n\n front tree from ordering");
+      ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile);
+      fflush(lu->options.msgFile);
     }
   
     /* get the permutation, permute the front tree */
-    lu->oldToNewIV = ETree_oldToNewVtxPerm(lu->frontETree) ;
-    lu->oldToNew   = IV_entries(lu->oldToNewIV) ;
-    lu->newToOldIV = ETree_newToOldVtxPerm(lu->frontETree) ;
-    if (!lu->options.useQR) ETree_permuteVertices(lu->frontETree, lu->oldToNewIV) ;
+    lu->oldToNewIV = ETree_oldToNewVtxPerm(lu->frontETree);
+    lu->oldToNew   = IV_entries(lu->oldToNewIV);
+    lu->newToOldIV = ETree_newToOldVtxPerm(lu->frontETree);
+    if (!lu->options.useQR) ETree_permuteVertices(lu->frontETree, lu->oldToNewIV);
 
     /* permute the matrix */
     if (lu->options.useQR){
-      InpMtx_permute(lu->mtxA, NULL, lu->oldToNew) ;
+      InpMtx_permute(lu->mtxA, NULL, lu->oldToNew);
     } else {
-      InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ; 
+      InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew); 
       if ( lu->options.symflag == SPOOLES_SYMMETRIC) {
-        InpMtx_mapToUpperTriangle(lu->mtxA) ; 
+        InpMtx_mapToUpperTriangle(lu->mtxA); 
       }
 #if defined(PETSC_USE_COMPLEX)
       if ( lu->options.symflag == SPOOLES_HERMITIAN ) {
-        InpMtx_mapToUpperTriangleH(lu->mtxA) ; 
+        InpMtx_mapToUpperTriangleH(lu->mtxA); 
       }
 #endif
-      InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
+      InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS);
     }
-    InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
+    InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS);
 
     /* get symbolic factorization */
     if (lu->options.useQR){
-      lu->symbfacIVL = SymbFac_initFromGraph(lu->frontETree, lu->graph) ;
-      IVL_overwrite(lu->symbfacIVL, lu->oldToNewIV) ;
-      IVL_sortUp(lu->symbfacIVL) ;
-      ETree_permuteVertices(lu->frontETree, lu->oldToNewIV) ;
+      lu->symbfacIVL = SymbFac_initFromGraph(lu->frontETree, lu->graph);
+      IVL_overwrite(lu->symbfacIVL, lu->oldToNewIV);
+      IVL_sortUp(lu->symbfacIVL);
+      ETree_permuteVertices(lu->frontETree, lu->oldToNewIV);
     } else {
-      lu->symbfacIVL = SymbFac_initFromInpMtx(lu->frontETree, lu->mtxA) ;
+      lu->symbfacIVL = SymbFac_initFromInpMtx(lu->frontETree, lu->mtxA);
     }
     if ( lu->options.msglvl > 2 ) {
-      fprintf(lu->options.msgFile, "\n\n old-to-new permutation vector") ;
-      IV_writeForHumanEye(lu->oldToNewIV, lu->options.msgFile) ;
-      fprintf(lu->options.msgFile, "\n\n new-to-old permutation vector") ;
-      IV_writeForHumanEye(lu->newToOldIV, lu->options.msgFile) ;
-      fprintf(lu->options.msgFile, "\n\n front tree after permutation") ;
-      ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile) ;
-      fprintf(lu->options.msgFile, "\n\n input matrix after permutation") ;
-      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
-      fprintf(lu->options.msgFile, "\n\n symbolic factorization") ;
-      IVL_writeForHumanEye(lu->symbfacIVL, lu->options.msgFile) ;
-      fflush(lu->options.msgFile) ;
+      fprintf(lu->options.msgFile, "\n\n old-to-new permutation vector");
+      IV_writeForHumanEye(lu->oldToNewIV, lu->options.msgFile);
+      fprintf(lu->options.msgFile, "\n\n new-to-old permutation vector");
+      IV_writeForHumanEye(lu->newToOldIV, lu->options.msgFile);
+      fprintf(lu->options.msgFile, "\n\n front tree after permutation");
+      ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile);
+      fprintf(lu->options.msgFile, "\n\n input matrix after permutation");
+      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
+      fprintf(lu->options.msgFile, "\n\n symbolic factorization");
+      IVL_writeForHumanEye(lu->symbfacIVL, lu->options.msgFile);
+      fflush(lu->options.msgFile);
     }  
 
-    lu->frontmtx   = FrontMtx_new() ;
-    lu->mtxmanager = SubMtxManager_new() ;
-    SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0) ;
+    lu->frontmtx   = FrontMtx_new();
+    lu->mtxmanager = SubMtxManager_new();
+    SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0);
 
   } else { /* new num factorization using previously computed symbolic factor */ 
 
     if (lu->options.pivotingflag) { /* different FrontMtx is required */
-      FrontMtx_free(lu->frontmtx) ;   
-      lu->frontmtx   = FrontMtx_new() ;
+      FrontMtx_free(lu->frontmtx);   
+      lu->frontmtx   = FrontMtx_new();
     } else {
       FrontMtx_clearData (lu->frontmtx); 
     }
 
-    SubMtxManager_free(lu->mtxmanager) ;  
-    lu->mtxmanager = SubMtxManager_new() ;
-    SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0) ;
+    SubMtxManager_free(lu->mtxmanager);  
+    lu->mtxmanager = SubMtxManager_new();
+    SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0);
 
     /* permute mtxA */
     if (lu->options.useQR){
-      InpMtx_permute(lu->mtxA, NULL, lu->oldToNew) ;
+      InpMtx_permute(lu->mtxA, NULL, lu->oldToNew);
     } else {
-      InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ; 
+      InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew); 
       if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
-        InpMtx_mapToUpperTriangle(lu->mtxA) ; 
+        InpMtx_mapToUpperTriangle(lu->mtxA); 
       }
-      InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
+      InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS);
     }
-    InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
+    InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS);
     if ( lu->options.msglvl > 2 ) {
-      fprintf(lu->options.msgFile, "\n\n input matrix after permutation") ;
-      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ; 
+      fprintf(lu->options.msgFile, "\n\n input matrix after permutation");
+      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile); 
     } 
   } /* end of if( lu->flg == DIFFERENT_NONZERO_PATTERN) */
   
@@ -369,50 +369,49 @@ int MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
     FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, lu->options.typeflag, 
                  SPOOLES_SYMMETRIC, FRONTMTX_DENSE_FRONTS, 
                  SPOOLES_NO_PIVOTING, NO_LOCK, 0, NULL,
-                 lu->mtxmanager, lu->options.msglvl, lu->options.msgFile) ;
+                 lu->mtxmanager, lu->options.msglvl, lu->options.msgFile);
   } else {
     FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, lu->options.typeflag, lu->options.symflag, 
                 FRONTMTX_DENSE_FRONTS, lu->options.pivotingflag, NO_LOCK, 0, NULL, 
-                lu->mtxmanager, lu->options.msglvl, lu->options.msgFile) ;   
+                lu->mtxmanager, lu->options.msglvl, lu->options.msgFile);   
   }
 
   if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {  /* || SPOOLES_HERMITIAN ? */
     if ( lu->options.patchAndGoFlag == 1 ) {
-      lu->frontmtx->patchinfo = PatchAndGoInfo_new() ;
+      lu->frontmtx->patchinfo = PatchAndGoInfo_new();
       PatchAndGoInfo_init(lu->frontmtx->patchinfo, 1, lu->options.toosmall, lu->options.fudge,
-                       lu->options.storeids, lu->options.storevalues) ;
+                       lu->options.storeids, lu->options.storevalues);
     } else if ( lu->options.patchAndGoFlag == 2 ) {
-      lu->frontmtx->patchinfo = PatchAndGoInfo_new() ;
+      lu->frontmtx->patchinfo = PatchAndGoInfo_new();
       PatchAndGoInfo_init(lu->frontmtx->patchinfo, 2, lu->options.toosmall, lu->options.fudge,
-                       lu->options.storeids, lu->options.storevalues) ;
+                       lu->options.storeids, lu->options.storevalues);
     }   
   }
 
   /* numerical factorization */
-  chvmanager = ChvManager_new() ;
-  ChvManager_init(chvmanager, NO_LOCK, 1) ;
-  DVfill(10, lu->cpus, 0.0) ;
+  chvmanager = ChvManager_new();
+  ChvManager_init(chvmanager, NO_LOCK, 1);
+  DVfill(10, lu->cpus, 0.0);
   if (lu->options.useQR){
     facops = 0.0 ; 
     FrontMtx_QR_factor(lu->frontmtx, lu->mtxA, chvmanager, 
-                   lu->cpus, &facops, lu->options.msglvl, lu->options.msgFile) ;
+                   lu->cpus, &facops, lu->options.msglvl, lu->options.msgFile);
     if ( lu->options.msglvl > 1 ) {
-      fprintf(lu->options.msgFile, "\n\n factor matrix") ;
-      fprintf(lu->options.msgFile, "\n facops = %9.2f", facops) ;
+      fprintf(lu->options.msgFile, "\n\n factor matrix");
+      fprintf(lu->options.msgFile, "\n facops = %9.2f", facops);
     }
   } else {
-    IVfill(20, lu->stats, 0) ;
+    IVfill(20, lu->stats, 0);
     rootchv = FrontMtx_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, 0.0, 
-            chvmanager, &ierr, lu->cpus,lu->stats,lu->options.msglvl,lu->options.msgFile) ; 
-    if ( rootchv != NULL ) SETERRQ(1,"\n matrix found to be singular");    
-    if ( ierr >= 0 ) SETERRQ1(1,"\n error encountered at front %d", ierr);
+            chvmanager, &ierr, lu->cpus,lu->stats,lu->options.msglvl,lu->options.msgFile); 
+    if (rootchv) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"\n matrix found to be singular");    
+    if (ierr >= 0) SETERRQ1(PETSC_ERR_LIB,"\n error encountered at front %d", ierr);
     
     if(lu->options.FrontMtxInfo){
-      PetscPrintf(PETSC_COMM_SELF,"\n %8d pivots, %8d pivot tests, %8d delayed rows and columns\n",\
-               lu->stats[0], lu->stats[1], lu->stats[2]);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"\n %8d pivots, %8d pivot tests, %8d delayed rows and columns\n",lu->stats[0], lu->stats[1], lu->stats[2]);CHKERRQ(ierr);
       cputotal = lu->cpus[8] ;
       if ( cputotal > 0.0 ) {
-        PetscPrintf(PETSC_COMM_SELF,
+        ierr = PetscPrintf(PETSC_COMM_SELF,
            "\n                               cpus   cpus/totaltime"
            "\n    initialize fronts       %8.3f %6.2f"
            "\n    load original entries   %8.3f %6.2f"
@@ -430,48 +429,48 @@ int MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
            lu->cpus[4], 100.*lu->cpus[4]/cputotal,
            lu->cpus[5], 100.*lu->cpus[5]/cputotal,
            lu->cpus[6], 100.*lu->cpus[6]/cputotal,
-           lu->cpus[7], 100.*lu->cpus[7]/cputotal, cputotal) ;
+	   lu->cpus[7], 100.*lu->cpus[7]/cputotal, cputotal);CHKERRQ(ierr);
       }
     }
   }
-  ChvManager_free(chvmanager) ;
+  ChvManager_free(chvmanager);
 
   if ( lu->options.msglvl > 0 ) {
-    fprintf(lu->options.msgFile, "\n\n factor matrix") ;
-    FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile) ;
-    fflush(lu->options.msgFile) ;
+    fprintf(lu->options.msgFile, "\n\n factor matrix");
+    FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
+    fflush(lu->options.msgFile);
   }
 
   if ( lu->options.symflag == SPOOLES_SYMMETRIC ) { /* || SPOOLES_HERMITIAN ? */
     if ( lu->options.patchAndGoFlag == 1 ) {
       if ( lu->frontmtx->patchinfo->fudgeIV != NULL ) {
         if (lu->options.msglvl > 0 ){
-          fprintf(lu->options.msgFile, "\n small pivots found at these locations") ;
-          IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->options.msgFile) ;
+          fprintf(lu->options.msgFile, "\n small pivots found at these locations");
+          IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->options.msgFile);
         }
       }
-      PatchAndGoInfo_free(lu->frontmtx->patchinfo) ;
+      PatchAndGoInfo_free(lu->frontmtx->patchinfo);
     } else if ( lu->options.patchAndGoFlag == 2 ) {
       if (lu->options.msglvl > 0 ){
         if ( lu->frontmtx->patchinfo->fudgeIV != NULL ) {
-          fprintf(lu->options.msgFile, "\n small pivots found at these locations") ;
-          IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->options.msgFile) ;
+          fprintf(lu->options.msgFile, "\n small pivots found at these locations");
+          IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->options.msgFile);
         }
         if ( lu->frontmtx->patchinfo->fudgeDV != NULL ) {
-          fprintf(lu->options.msgFile, "\n perturbations") ;
-          DV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeDV, lu->options.msgFile) ;
+          fprintf(lu->options.msgFile, "\n perturbations");
+          DV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeDV, lu->options.msgFile);
         }
       }
-      PatchAndGoInfo_free(lu->frontmtx->patchinfo) ;
+      PatchAndGoInfo_free(lu->frontmtx->patchinfo);
     }
   }
 
   /* post-process the factorization */
-  FrontMtx_postProcess(lu->frontmtx, lu->options.msglvl, lu->options.msgFile) ;
+  FrontMtx_postProcess(lu->frontmtx, lu->options.msglvl, lu->options.msgFile);
   if ( lu->options.msglvl > 2 ) {
-    fprintf(lu->options.msgFile, "\n\n factor matrix after post-processing") ;
-    FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile) ;
-    fflush(lu->options.msgFile) ;
+    fprintf(lu->options.msgFile, "\n\n factor matrix after post-processing");
+    FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
+    fflush(lu->options.msgFile);
   }
 
   lu->flg = SAME_NONZERO_PATTERN;

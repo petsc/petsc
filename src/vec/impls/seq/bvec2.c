@@ -337,7 +337,7 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
     ierr = VecView_Seq_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by this vector object",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this vector object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -153,7 +153,7 @@ int MatZeroRowsLocal_IS(Mat A,IS isrows,const PetscScalar *diag)
     ierr = VecDestroy(counter);CHKERRQ(ierr);
   }
   ierr = ISGetLocalSize(isrows,&n);CHKERRQ(ierr);
-  if (n == 0) {
+  if (!n) {
     is->pure_neumann = PETSC_TRUE;
   } else {
     is->pure_neumann = PETSC_FALSE;

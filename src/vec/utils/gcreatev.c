@@ -45,7 +45,7 @@ int VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   mat  = engGetVariable((Engine *)mengine,obj->name);
-  if (!mat) SETERRQ1(1,"Unable to get object %s from matlab",obj->name);
+  if (!mat) SETERRQ1(PETSC_ERR_LIB,"Unable to get object %s from matlab",obj->name);
   ierr = PetscMemcpy(array,mxGetPr(mat),n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);

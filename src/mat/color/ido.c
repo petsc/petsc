@@ -165,7 +165,7 @@ L70:
 /*        Update the size of the largest clique */
 /*        found during the ordering. */
 
-    if (maxinc == 0) {
+    if (!maxinc) {
 	ncomp = 0;
     }
     ++ncomp;
@@ -182,7 +182,7 @@ L70:
 
 /*        Delete column jcol from the maxinc list. */
 
-    if (iwa2[jcol] == 0) {
+    if (!iwa2[jcol]) {
 	iwa1[maxinc] = iwa3[jcol];
     } else {
 	iwa3[iwa2[jcol]] = iwa3[jcol];
@@ -225,7 +225,7 @@ L70:
 
 /*                 Delete column ic from the numinc list. */
 
-		if (iwa2[ic] == 0) {
+		if (!iwa2[ic]) {
 		    iwa1[numinc] = iwa3[ic];
 		} else {
 		    iwa3[iwa2[ic]] = iwa3[ic];

@@ -65,7 +65,7 @@ int PetscLogInfoAllow(PetscTruth flag, char *filename)
     sprintf(tname, ".%d", rank);
     ierr = PetscStrcat(fname, tname);CHKERRQ(ierr);
     ierr = PetscFOpen(MPI_COMM_SELF, fname, "w", &PetscLogInfoFile);CHKERRQ(ierr);
-    if (PetscLogInfoFile == PETSC_NULL) SETERRQ1(PETSC_ERR_FILE_OPEN, "Cannot open requested file for writing: %s",fname);
+    if (!PetscLogInfoFile) SETERRQ1(PETSC_ERR_FILE_OPEN, "Cannot open requested file for writing: %s",fname);
   } else if (flag) {
     PetscLogInfoFile = stdout;
   }
@@ -95,7 +95,7 @@ int PetscLogInfoAllow(PetscTruth flag, char *filename)
 int PetscLogInfoDeactivateClass(int objclass)
 {
   PetscFunctionBegin;
-  if (objclass == 0) {
+  if (!objclass) {
     PetscLogPrintInfoNull = PETSC_FALSE;
     PetscFunctionReturn(0); 
   }
@@ -124,7 +124,7 @@ int PetscLogInfoDeactivateClass(int objclass)
 int PetscLogInfoActivateClass(int objclass)
 {
   PetscFunctionBegin;
-  if (objclass == 0) {
+  if (!objclass) {
     PetscLogPrintInfoNull = PETSC_TRUE;
   } else {
     PetscLogInfoFlags[objclass - PETSC_COOKIE - 1] = 1;

@@ -447,7 +447,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   da->Nlocal = x*y;
   ierr = VecCreateMPIWithArray(comm,da->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
   ierr = VecSetBlockSize(global,dof);CHKERRQ(ierr);
-  da->nlocal = (Xe-Xs)*(Ye-Ys) ;
+  da->nlocal = (Xe-Xs)*(Ye-Ys);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,da->nlocal,0,&local);CHKERRQ(ierr);
   ierr = VecSetBlockSize(local,dof);CHKERRQ(ierr);
 

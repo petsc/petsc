@@ -658,7 +658,7 @@ int PetscLogEventBeginTrace(PetscEvent event, int t, PetscObject o1, PetscObject
   int            ierr;
 
   PetscFunctionBegin;
-  if (tracetime == 0.0) {PetscTime(tracetime);}
+  if (!tracetime) {PetscTime(tracetime);}
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);

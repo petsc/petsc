@@ -105,7 +105,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
     ierr = ISGetLocalSize(is[i],&n[i]);CHKERRQ(ierr);
     len += n[i]; 
   }
-  if (len == 0) { 
+  if (!len) { 
     is_max = 0;
   } else {
     len += 1 + is_max; /* max length of data1 for one processor */

@@ -1076,7 +1076,7 @@ int PetscLogDump(const char sname[]) {
   }
   ierr = PetscFixFilename(file, fname);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_WORLD, fname, "w", &fd);CHKERRQ(ierr);
-  if ((rank == 0) && (fd == PETSC_NULL)) SETERRQ1(PETSC_ERR_FILE_OPEN, "Cannot open file: %s", fname);
+  if ((!rank) && (!fd)) SETERRQ1(PETSC_ERR_FILE_OPEN, "Cannot open file: %s", fname);
   /* Output totals */
   ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Total Flops %14e %16.8e\n", _TotalFlops, _TotalTime);
   ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Clock Resolution %g\n", 0.0);

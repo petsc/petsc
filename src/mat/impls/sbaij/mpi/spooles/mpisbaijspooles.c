@@ -51,7 +51,7 @@ int MatGetInertia_MPISBAIJSpooles(Mat F,int *nneg,int *nzero,int *npos)
   int         ierr,neg,zero,pos,sbuf[3],rbuf[3];
 
   PetscFunctionBegin;
-  FrontMtx_inertia(lu->frontmtx, &neg, &zero, &pos) ;
+  FrontMtx_inertia(lu->frontmtx, &neg, &zero, &pos);
   sbuf[0] = neg; sbuf[1] = zero; sbuf[2] = pos;
   ierr = MPI_Allreduce(sbuf,rbuf,3,MPI_INT,MPI_SUM,F->comm);CHKERRQ(ierr);
   *nneg  = rbuf[0]; *nzero = rbuf[1]; *npos  = rbuf[2];

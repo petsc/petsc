@@ -70,7 +70,7 @@ int MatLUFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
   lu->options.useQR         = PETSC_FALSE;
 
-  if (info->dtcol == 0.0) {
+  if (!info->dtcol) {
     lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
   }
   *F = B;

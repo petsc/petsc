@@ -262,7 +262,7 @@ int MatView(Mat mat,PetscViewer viewer)
     ierr = (*mat->ops->view)(mat,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else if (!iascii) {
-    SETERRQ1(1,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
   }
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
@@ -631,8 +631,8 @@ int MatSetValuesStencil(Mat mat,int m,const MatStencil idxm[],int n,const MatSte
   PetscValidIntPointer(idxn,5);
   PetscValidScalarPointer(v,6);
 
-  if (m > 128) SETERRQ1(1,"Can only set 128 rows at a time; trying to set %d",m);
-  if (n > 128) SETERRQ1(1,"Can only set 256 columns at a time; trying to set %d",n);
+  if (m > 128) SETERRQ1(PETSC_ERR_SUP,"Can only set 128 rows at a time; trying to set %d",m);
+  if (n > 128) SETERRQ1(PETSC_ERR_SUP,"Can only set 256 columns at a time; trying to set %d",n);
 
   for (i=0; i<m; i++) {
     for (j=0; j<3-sdim; j++) dxm++;  
@@ -739,8 +739,8 @@ int MatSetValuesBlockedStencil(Mat mat,int m,const MatStencil idxm[],int n,const
   PetscValidIntPointer(idxn,5);
   PetscValidScalarPointer(v,6);
 
-  if (m > 128) SETERRQ1(1,"Can only set 128 rows at a time; trying to set %d",m);
-  if (n > 128) SETERRQ1(1,"Can only set 256 columns at a time; trying to set %d",n);
+  if (m > 128) SETERRQ1(PETSC_ERR_SUP,"Can only set 128 rows at a time; trying to set %d",m);
+  if (n > 128) SETERRQ1(PETSC_ERR_SUP,"Can only set 256 columns at a time; trying to set %d",n);
 
   for (i=0; i<m; i++) {
     for (j=0; j<3-sdim; j++) dxm++;  
@@ -2046,7 +2046,7 @@ int MatSolve(Mat mat,Vec b,Vec x)
   if (mat->N != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %d %d",mat->N,x->N);
   if (mat->M != b->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %d %d",mat->M,b->N);
   if (mat->m != b->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %d %d",mat->m,b->n); 
-  if (mat->M == 0 && mat->N == 0) PetscFunctionReturn(0);
+  if (!mat->M && !mat->N) PetscFunctionReturn(0);
 
   if (!mat->ops->solve) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = PetscLogEventBegin(MAT_Solve,mat,b,x,0);CHKERRQ(ierr);
@@ -4332,7 +4332,7 @@ int MatIncreaseOverlap(Mat mat,int n,IS is[],int ov)
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   MatPreallocated(mat);
-  if (n < 0) SETERRQ1(1,"Must have one or more domains, you have %d",n);
+  if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have one or more domains, you have %d",n);
   if (n) {
     PetscValidPointer(is,3);
     PetscValidHeaderSpecific(*is,IS_COOKIE,3);
@@ -5389,7 +5389,7 @@ int MatSolves(Mat mat,Vecs b,Vecs x)
   MatPreallocated(mat);
   if (x == b) SETERRQ(PETSC_ERR_ARG_IDN,"x and b must be different vectors");
   if (!mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
-  if (mat->M == 0 && mat->N == 0) PetscFunctionReturn(0);
+  if (!mat->M && !mat->N) PetscFunctionReturn(0);
 
   if (!mat->ops->solves) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = PetscLogEventBegin(MAT_Solves,mat,0,0,0);CHKERRQ(ierr);
@@ -5429,7 +5429,7 @@ int MatIsSymmetric(Mat A,PetscReal tol,PetscTruth *flg)
     if (!A->ops->issymmetric) {
       MatType mattype;
       ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
-      SETERRQ1(1,"Matrix of type <%s> does not support checking for symmetric",mattype);
+      SETERRQ1(PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for symmetric",mattype);
     }
     ierr = (*A->ops->issymmetric)(A,tol,&A->symmetric);CHKERRQ(ierr);
     A->symmetric_set = PETSC_TRUE;

@@ -548,7 +548,7 @@ int MatSeqBDiagSetPreallocation_SeqBDiag(Mat B,int nd,int bs,int *diag,PetscScal
 
   B->preallocated = PETSC_TRUE;
   if (bs == PETSC_DEFAULT) bs = 1;
-  if (bs == 0) SETERRQ(1,"Blocksize cannot be zero");
+  if (!bs) SETERRQ(1,"Blocksize cannot be zero");
   if (nd == PETSC_DEFAULT) nd = 0;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetIntArray(PETSC_NULL,"-mat_bdiag_diags",idiag,&nd2,&flg1);CHKERRQ(ierr);

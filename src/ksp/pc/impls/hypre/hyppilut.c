@@ -532,7 +532,7 @@ static int PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: load balance %g\n",jac->loadbal);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: reuse nonzero structure %s\n",jac->ruse ? "true" : "false");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: print info to screen %s\n",jac->logging ? "true" : "false");CHKERRQ(ierr);
-    if (jac->symt == 0) {
+    if (!jac->symt) {
       symt = "nonsymmetric matrix and preconditioner";
     } else if (jac->symt == 1) {
       symt = "SPD matrix and preconditioner";
@@ -609,7 +609,7 @@ static int PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->solve              = HYPRE_BoomerAMGSolve;
     PetscFunctionReturn(0);
   }
-  SETERRQ1(1,"Unknown HYPRE preconditioner %s; Choices are pilut, parasails, euclid, boomeramg",name);
+  SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown HYPRE preconditioner %s; Choices are pilut, parasails, euclid, boomeramg",name);
   PetscFunctionReturn(0);
 }
 

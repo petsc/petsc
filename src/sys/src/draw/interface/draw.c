@@ -339,13 +339,12 @@ int PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
   ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     *sdraw = draw;
-    PetscFunctionReturn(0);
-  }
-
-  if (draw->ops->getsingleton) {
-    ierr = (*draw->ops->getsingleton)(draw,sdraw);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Cannot get singleton for this type %s of draw object",draw->type_name);
+    if (draw->ops->getsingleton) {
+      ierr = (*draw->ops->getsingleton)(draw,sdraw);CHKERRQ(ierr);
+    } else {
+      SETERRQ1(PETSC_ERR_SUP,"Cannot get singleton for this type %s of draw object",draw->type_name);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -377,14 +376,12 @@ int PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)
   PetscValidHeaderSpecific(*sdraw,PETSC_DRAW_COOKIE,2);
 
   ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-     PetscFunctionReturn(0);
-  }
-
-  if (draw->ops->restoresingleton) {
-    ierr = (*draw->ops->restoresingleton)(draw,sdraw);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(1,"Cannot restore singleton for this type %s of draw object",draw->type_name);
+  if (size != 1) {
+    if (draw->ops->restoresingleton) {
+      ierr = (*draw->ops->restoresingleton)(draw,sdraw);CHKERRQ(ierr);
+    } else {
+      SETERRQ1(PETSC_ERR_SUP,"Cannot restore singleton for this type %s of draw object",draw->type_name);
+    }
   }
   PetscFunctionReturn(0);
 }

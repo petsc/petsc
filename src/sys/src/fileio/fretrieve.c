@@ -180,7 +180,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
       if (rank == i) {
         fd = fopen(filename,"w");
         if (!fd) {
-          SETERRQ1(1,"Unable to open test file %s",filename);
+          SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
         }
         fclose(fd);
       }
@@ -301,7 +301,7 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
       if (rank == i) {
         fd = fopen(filename,"w");
         if (!fd) {
-          SETERRQ1(1,"Unable to open test file %s",filename);
+          SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
         }
         fclose(fd);
       }
@@ -394,7 +394,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
     if (!exists) {
       ierr = PetscTestFile("urlget",'r',&exists);CHKERRQ(ierr);
       if (!exists) {
-        SETERRQ1(1,"Cannot locate PETSc script urlget in %s or current directory",urlget);
+        SETERRQ1(PETSC_ERR_PLIB,"Cannot locate PETSc script urlget in %s or current directory",urlget);
       }
       ierr = PetscStrcpy(urlget,"urlget");CHKERRQ(ierr);
     }
@@ -412,7 +412,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
 
     ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,urlget,"r",&fp);CHKERRQ(ierr);
     if (!fgets(buf,1024,fp)) {
-      SETERRQ1(1,"No output from ${PETSC_DIR}/bin/urlget in getting file %s",libname);
+      SETERRQ1(PETSC_ERR_PLIB,"No output from ${PETSC_DIR}/bin/urlget in getting file %s",libname);
     }
     PetscLogInfo(0,"PetscFileRetrieve:Message back from urlget: %s\n",buf);
 

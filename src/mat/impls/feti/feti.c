@@ -975,7 +975,7 @@ int MatFetiSetUpSccTilde(Mat A)
 			       j);              
 
 	    VecNorm(domain->ur_tmp1,NORM_1,&norm);  
-	    if(!norm) continue;                 
+	    if(norm != 0.0) continue;                 
 
 	    VecScale(&minus_one,domain->ur_tmp1);
 
@@ -1018,7 +1018,7 @@ int MatFetiSetUpSccTilde(Mat A)
 				   j);              
 
 		VecNorm(domain->uc,NORM_1,&norm);
-		if(!norm) continue;               
+		if(norm != 0.0) continue;               
 
 		VecScale(&minus_one,domain->uc);
 

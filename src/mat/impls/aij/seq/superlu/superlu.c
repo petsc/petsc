@@ -139,7 +139,7 @@ int MatCreateNull_SuperLU(Mat A,Mat *nullMat)
   ierr = MatCreate(A->comm,numRows,numNullCols,numRows,numNullCols,nullMat);CHKERRQ(ierr);
   ierr = MatSetType(*nullMat,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(*nullMat,PETSC_NULL);CHKERRQ(ierr);
-  if (numNullCols == 0) {
+  if (!numNullCols) {
     ierr = MatAssemblyBegin(*nullMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*nullMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -233,7 +233,7 @@ int MatSolve_SuperLU(Mat A,Vec b,Vec x)
   ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
 
-  if ( info == 0 || info == lu->A.ncol+1 ) {
+  if ( !info || info == lu->A.ncol+1 ) {
     if ( lu->options.IterRefine ) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Iterative Refinement:\n");
       ierr = PetscPrintf(PETSC_COMM_SELF,"  %8s%8s%16s%16s\n", "rhs", "Steps", "FERR", "BERR");
@@ -307,7 +307,7 @@ int MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
            &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
            &lu->mem_usage, &stat, &info);
 #endif
-  if ( info == 0 || info == lu->A.ncol+1 ) {
+  if ( !info || info == lu->A.ncol+1 ) {
     if ( lu->options.PivotGrowth ) 
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. pivot growth = %e\n", lu->rpg);
     if ( lu->options.ConditionNumber )

@@ -378,14 +378,10 @@ int KSPSetType(KSP ksp,const KSPType type)
   }
   /* Get the function pointers for the iterative method requested */
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-
   ierr =  PetscFListFind(ksp->comm,KSPList,type,(void (**)(void)) &r);CHKERRQ(ierr);
-
-  if (!r) SETERRQ1(1,"Unknown KSP type given: %s",type);
-
+  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown KSP type given: %s",type);
   ksp->setupcalled = 0;
   ierr = (*r)(ksp);CHKERRQ(ierr);
-
   ierr = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

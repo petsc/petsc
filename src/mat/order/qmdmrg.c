@@ -83,7 +83,7 @@ L200:
 	    root = -nabor;
 	    if (nabor < 0) {
 		goto L200;
-	    } else if (nabor == 0) {
+	    } else if (!nabor) {
 		goto L700;
 	    } else {
 		goto L300;
@@ -92,7 +92,7 @@ L300:
 	    mark = marker[nabor];
 	    if (mark < 0) {
 		goto L600;
-	    } else if (mark == 0) {
+	    } else if (!mark) {
 		goto L400;
 	    } else {
 		goto L500;

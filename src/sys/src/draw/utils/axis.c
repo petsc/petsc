@@ -491,7 +491,7 @@ int PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 	    val = 0.0;
 	    w   = d;
         }
-	else if (val == 0.0) w   = d;
+	else if (!val) w   = d;
 	else w = (int)(ceil(log10(PetscAbsReal(val))) + d);
 	if (w < 1)   w ++;
 	if (val < 0) w ++;

@@ -144,16 +144,11 @@ int PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
   if (!PetscDrawList) {
     ierr = PetscDrawRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
-
   ierr =  PetscFListFind(draw->comm,PetscDrawList,type,(void (**)(void)) &r);CHKERRQ(ierr);
-
-  if (!r) SETERRQ1(1,"Unknown PetscDraw type given: %s",type);
-
+  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDraw type given: %s",type);
   ierr = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
-
   draw->data        = 0;
   ierr = (*r)(draw);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

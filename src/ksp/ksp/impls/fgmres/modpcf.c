@@ -130,7 +130,7 @@ int KSPFGMRESModifyPCKSP(KSP ksp,int total_its,int loc_its,PetscReal res_norm,vo
       KSPGMRESSetOrthogonalization() or KSPSetTolerances() */
 
     ierr = KSPGetTolerances(sub_ksp,&rtol,&atol,&dtol,&maxits);CHKERRQ(ierr);
-    if (loc_its == 0) {
+    if (!loc_its) {
       rtol = .1;
     } else {
       rtol *= .9;

@@ -150,7 +150,7 @@ int PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
 
   PetscFunctionBegin;
   ierr = PetscViewerSiloGetFilePointer(viewer, &fp);CHKERRQ(ierr);
-  if (vsilo->meshName == PETSC_NULL) {
+  if (!vsilo->meshName) {
     mesh_type = DBInqMeshtype(fp, "PetscMesh");
   } else {
     mesh_type = DBInqMeshtype(fp, vsilo->meshName);

@@ -218,7 +218,7 @@ int PetscTrMallocDefault(size_t a,int lineno,const char function[],const char fi
   if (TRdebugLevel) {
     ierr = PetscTrValid(lineno,function,filename,dir); if (ierr) PetscFunctionReturn(ierr);
   }
-  if (a == 0) SETERRQ(PETSC_ERR_MEM_MALLOC_0,"Cannot malloc size zero");
+  if (!a) SETERRQ(PETSC_ERR_MEM_MALLOC_0,"Cannot malloc size zero");
 
   nsize = a;
   if (nsize & TR_ALIGN_MASK) nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
@@ -265,7 +265,7 @@ int PetscTrMallocDefault(size_t a,int lineno,const char function[],const char fi
          Allow logging of all mallocs made
   */
   if (PetscLogMalloc > -1 && PetscLogMalloc < PetscLogMallocMax) {
-    if (PetscLogMalloc == 0) {
+    if (!PetscLogMalloc) {
       PetscLogMallocLength    = (int*)malloc(PetscLogMallocMax*sizeof(int));
       if (!PetscLogMallocLength) SETERRQ(PETSC_ERR_MEM," ");
       PetscLogMallocDirectory = (const char**)malloc(PetscLogMallocMax*sizeof(char**));

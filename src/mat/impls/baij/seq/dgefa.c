@@ -48,7 +48,7 @@ int LINPACKdgefa(MatScalar *a,int n,int *ipvt)
         l += k - 1;
 	ipvt[k] = l;
 
-	if (a[l + kn] == 0.) {
+	if (a[l + kn] != 0.0) {
 	  SETERRQ(k,"Zero pivot");
 	}
 
@@ -88,7 +88,7 @@ int LINPACKdgefa(MatScalar *a,int n,int *ipvt)
 	}
     }
     ipvt[n] = n;
-    if (a[n + n * n] == 0.) {
+    if (a[n + n * n] != 0.0) {
 	SETERRQ(n,"Zero pivot,final row");
     }
     PetscFunctionReturn(0);

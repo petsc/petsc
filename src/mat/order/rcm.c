@@ -91,7 +91,7 @@ L100:
 	i__2 = jstop;
 	for (j = jstrt; j <= i__2; ++j) {
 	    nbr = adjncy[j];
-	    if (mask[nbr] == 0) {
+	    if (!mask[nbr]) {
 		goto L200;
 	    }
 	    ++lnbr;

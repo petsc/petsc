@@ -102,9 +102,9 @@ int PetscTypeCompare(PetscObject obj,const char type_name[],PetscTruth *same)
   PetscFunctionBegin;
   if (!obj) {
     *same = PETSC_FALSE;
-  } else if (type_name == PETSC_NULL && obj->type_name == PETSC_NULL) {
+  } else if (!type_name && !obj->type_name) {
     *same = PETSC_TRUE;
-  } else if (type_name == PETSC_NULL || obj->type_name == PETSC_NULL) {
+  } else if (!type_name || !obj->type_name) {
     *same = PETSC_FALSE;
   } else {
     PetscValidHeader(obj,1);

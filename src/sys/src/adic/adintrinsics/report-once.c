@@ -58,8 +58,7 @@ static void *
 xmalloc ARG1(size_t,size)
 {
      void *tmp = malloc (size);
-     if ( tmp == 0 )
-     {
+     if (!tmp) {
           fprintf(stderr,"report once mode: out of virtual memory\n");
           fflush(stderr);
           abort();
@@ -70,7 +69,7 @@ static void *
 xcalloc ARG2(size_t, number, size_t, size_of_one)
 {
      void *tmp = calloc ( number, size_of_one );
-     if ( tmp == 0 )
+     if (!tmp)
      {
           fprintf (stderr,"report once mode: virtual memory exhausted\n");
           fflush(stderr);
@@ -83,7 +82,7 @@ static void *
 xrealloc ARG2(void *, ptr, size_t, new_size)
 {
      void *tmp = realloc (ptr, new_size);
-     if ( tmp == 0 )
+     if (!tmp)
      {
           fprintf (stderr,"report once mode: virtual memory exhausted\n");
           fflush(stderr);
@@ -113,7 +112,7 @@ reportonce_ehsfid ARG3(int *,g_ehfid, char *,routine, char *,filename)
      filename_len = strlen(filename);
 
      {
-          if ( allocated == 0 )
+          if (!allocated)
           {
                allocated = initial_max_files;
 
@@ -212,7 +211,7 @@ reportonce_accumulate ARG3(int, file, int, line, int, exception)
                line_numbers_count =
                     (int *) xrealloc (line_numbers_count,
                                       (current_max_files + file_growth_increment)*
-                                      sizeof (int) ) ;
+                                      sizeof (int) );
 
                for (i = current_max_files;
                     i < current_max_files + file_growth_increment;
@@ -233,7 +232,7 @@ reportonce_accumulate ARG3(int, file, int, line, int, exception)
           exception_info *previous_loc = 0;
 
           {
-               if ( exception_info_store[file][hashed_line] == 0 )
+               if (!exception_info_store[file][hashed_line])
                {
                     exception_info_store[file][hashed_line] =
                          (exception_info*)xcalloc (1, sizeof(exception_info));
@@ -263,7 +262,7 @@ reportonce_accumulate ARG3(int, file, int, line, int, exception)
                }
           }
 
-          if (our_loc == 0)
+          if (!our_loc)
           {
                {
                     exception_info *old_first_elt = exception_info_store[file][hashed_line];
@@ -320,7 +319,7 @@ reportonce_summary ARG0(void)
                int found_count = 0;
 
                /* Just skip this iteration if there's nothing to be done. */
-               if ( line_numbers_count[current_file] == 0 ) 
+               if (!line_numbers_count[current_file]) 
                     continue;
 
               /* Make an array big enough to hold all of the extracted
@@ -418,7 +417,7 @@ reportonce_set_output_file ARG1(char *,output_filename)
 {
      FILE *check_file;
      check_file = fopen(output_filename,"w");
-     if ( check_file == 0 )
+     if (!check_file)
      {
           fprintf(stderr,"Unable to open reportonce output file: %s\n",
                   output_filename);

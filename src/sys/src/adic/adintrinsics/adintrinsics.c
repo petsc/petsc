@@ -47,11 +47,11 @@ ADIntr_die_malloc_failure ARG0(void)
 void
 adintr_mode_push ARG1(Mode, new_mode)
 {
-     if (ADIntr_mode_stack == 0) 
+     if (!ADIntr_mode_stack) 
      {
 	  ADIntr_mode_stack = (Mode *) malloc(ADIntr_mode_max_depth *
 					      sizeof(Mode));
-	  if (ADIntr_mode_stack == 0) 
+	  if (!ADIntr_mode_stack) 
 	  {
 	       ADIntr_die_malloc_failure();
 	  }
@@ -65,7 +65,7 @@ adintr_mode_push ARG1(Mode, new_mode)
 	       (Mode *) realloc (ADIntr_mode_stack,
 				 ADIntr_mode_max_depth * sizeof(Mode));
 
-	  if (ADIntr_mode_stack == 0) 
+	  if (!ADIntr_mode_stack) 
 	  {
 	       ADIntr_die_malloc_failure();
 	  }
@@ -81,7 +81,7 @@ adintr_mode_push ARG1(Mode, new_mode)
 void
 adintr_mode_pop ARG0(void)
 {
-     if ( ADIntr_mode_stack == 0 || ADIntr_mode_depth == 0 )
+     if (!ADIntr_mode_stack || !ADIntr_mode_depth)
      {
 	  fprintf (stderr,"ADIntrinsics warning: more mode POP's than PUSH's (arising from AD_EXCEPTION_BEGIN_IGNORE\n");
 	  fprintf (stderr,"ADIntrinsics: Ignoring POP request\n");

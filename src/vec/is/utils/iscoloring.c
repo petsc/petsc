@@ -73,7 +73,7 @@ int ISColoringView(ISColoring iscoloring,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of colors %d\n",rank,iscoloring->n);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for ISColoring",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for ISColoring",((PetscObject)viewer)->type_name);
   }
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&is);CHKERRQ(ierr);

@@ -72,7 +72,7 @@ int MINPACKnumsrt(int *n,int *nmax,int *num,int *mode,int *idex,int *last,int *n
 	next[k] = last[l];
 	last[l] = k;
     }
-    if (*mode == 0) {
+    if (!*mode) {
 	PetscFunctionReturn(0);
     }
 
@@ -93,7 +93,7 @@ int MINPACKnumsrt(int *n,int *nmax,int *num,int *mode,int *idex,int *last,int *n
     for (j = jl; i__2 < 0 ? j >= i__1 : j <= i__1; j += i__2) {
 	k = last[j];
 L30:
-	if (k == 0) {
+	if (!k) {
 	    goto L40;
 	}
 	idex[i] = k;

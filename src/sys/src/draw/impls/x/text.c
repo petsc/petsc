@@ -68,7 +68,7 @@ int XiLoadFont(PetscDraw_X *XBWin,XiFont *font)
 
   /* Set the current font in the CG */
   values.font = font->fnt ;
-  XChangeGC(XBWin->disp,XBWin->gc.set,GCFont,&values) ; 
+  XChangeGC(XBWin->disp,XBWin->gc.set,GCFont,&values); 
   PetscFunctionReturn(0);
 }
 

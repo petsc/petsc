@@ -20,23 +20,20 @@ void* ad_map_init(int dsize, int msize, int bsize, int asize)
   
   desc_size = dsize;
   entry_size = dsize + sizeof(Pair) - sizeof(double);
-  if (asize == 0) {
+  if (!asize) {
     buckets_per_block = DEFAULT_BUCKETS_PER_BLOCK;
-  }
-  else {
+  } else {
     buckets_per_block = asize;
   }	  
   
-  if (msize == 0) {
+  if (!msize) {
       map_size = DEFAULT_MAP_SIZE;
-  }
-  else {
+  } else {
     map_size = msize;
   }
-  if (bsize == 0) {
+  if (!bsize) {
     entries_per_bucket = DEFAULT_BUCKET_SIZE;
-  }
-  else {
+  } else {
     entries_per_bucket = bsize;
   }
   bucket_size = entries_per_bucket*entry_size;
@@ -111,7 +108,7 @@ void* ad_map_get(void* key)
     }
   }
   */
-  MapEntry*	entry = map_def + (((long)key>>3) % map_size) ;
+  MapEntry*	entry = map_def + (((long)key>>3) % map_size);
   if (entry->cache && entry->cache->key == key) {
     return entry->cache->val;
   }

@@ -493,18 +493,16 @@ int VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
     for (i = 0; i < n; i++) {
       xlf[i] = (float) x[i*bs + k];
     }
-    if (rank == 0) {
+    if (!rank) {
       cur = 0;
-      PetscMemcpy(xf + cur, xlf, n * sizeof(float));
+      ierr = PetscMemcpy(xf + cur, xlf, n * sizeof(float));CHKERRQ(ierr);
       cur += n;
       for (j = 1; j < size; j++) {
- ierr = MPI_Recv(xf + cur, N - cur, MPI_FLOAT, j, tag, X->comm,
- &status);CHKERRQ(ierr);
- ierr = MPI_Get_count(&status, MPI_FLOAT, &len);CHKERRQ(ierr);
- cur += len;
+        ierr = MPI_Recv(xf + cur, N - cur, MPI_FLOAT, j, tag, X->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Get_count(&status, MPI_FLOAT, &len);CHKERRQ(ierr);cur += len;
       }
       if (cur != N) {
- SETERRQ2(1, "? %d %d", cur, N);
+        SETERRQ2(1, "? %d %d", cur, N);
       }
       ierr = PetscViewerHDF4WriteSDS(viewer, xf, 2, dims, bs);CHKERRQ(ierr); 
     } else {
@@ -579,7 +577,7 @@ int VecView_MPI(Vec xin,PetscViewer viewer)
   } else if (ismatlab) {
     ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -170,11 +170,10 @@ giop(int *vals, int *work, int n, int *oprs)
     {oprs++;}
 
   /* major league hack */
-  if ((fp = (vfp) ivec_fct_addr(type)) == NULL)
-    {
-      error_msg_warning("giop() :: hope you passed in a rbfp!\n");
-      fp = (vfp) oprs;
-    }
+  if (!(fp = (vfp) ivec_fct_addr(type))) {
+    error_msg_warning("giop() :: hope you passed in a rbfp!\n");
+    fp = (vfp) oprs;
+  }
 
 #if  defined NXSRC
   /* all msgs will be of the same length */
@@ -335,11 +334,10 @@ grop(REAL *vals, REAL *work, int n, int *oprs)
   if ((type=oprs[0])==NON_UNIFORM)
     {oprs++;}
 
-  if ((fp = (vfp) rvec_fct_addr(type)) == NULL)
-    {
-      error_msg_warning("grop() :: hope you passed in a rbfp!\n");
-      fp = (vfp) oprs;
-    }
+  if (!(fp = (vfp) rvec_fct_addr(type))) {
+    error_msg_warning("grop() :: hope you passed in a rbfp!\n");
+    fp = (vfp) oprs;
+  }
 
 #if  defined NXSRC
   /* all msgs will be of the same length */
@@ -513,11 +511,10 @@ grop_hc(REAL *vals, REAL *work, int n, int *oprs, int dim)
   if ((type=oprs[0])==NON_UNIFORM)
     {oprs++;}
 
-  if ((fp = (vfp) rvec_fct_addr(type)) == NULL)
-    {
-      error_msg_warning("grop_hc() :: hope you passed in a rbfp!\n");
-      fp = (vfp) oprs;
-    }
+  if (!(fp = (vfp) rvec_fct_addr(type))) {
+    error_msg_warning("grop_hc() :: hope you passed in a rbfp!\n");
+    fp = (vfp) oprs;
+  }
 
 #if  defined NXSRC
   /* all msgs will be of the same length */
@@ -951,11 +948,10 @@ grop_hc_vvl(REAL *vals, REAL *work, int *segs, int *oprs, int dim)
   if ((type=oprs[0])==NON_UNIFORM)
     {oprs++;}
 
-  if ((fp = (vfp) rvec_fct_addr(type)) == NULL)
-    {
-      error_msg_warning("grop_hc() :: hope you passed in a rbfp!\n");
-      fp = (vfp) oprs;
-    }
+  if (!(fp = (vfp) rvec_fct_addr(type))){
+    error_msg_warning("grop_hc() :: hope you passed in a rbfp!\n");
+    fp = (vfp) oprs;
+  }
 
 #if  defined NXSRC
   /* all msgs are *NOT* the same length */
@@ -1992,11 +1988,10 @@ giop_hc(int *vals, int *work, int n, int *oprs, int dim)
   if ((type=oprs[0])==NON_UNIFORM)
     {oprs++;}
 
-  if ((fp = (vfp) ivec_fct_addr(type)) == NULL)
-    {
-      error_msg_warning("giop_hc() :: hope you passed in a rbfp!\n");
-      fp = (vfp) oprs;
-    }
+  if (!(fp = (vfp) ivec_fct_addr(type))){
+    error_msg_warning("giop_hc() :: hope you passed in a rbfp!\n");
+    fp = (vfp) oprs;
+  }
 
 #if  defined NXSRC
   /* all msgs will be of the same length */

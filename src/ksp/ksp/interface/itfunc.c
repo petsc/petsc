@@ -192,7 +192,7 @@ int KSPSetUp(KSP ksp)
 
   ierr = PetscLogEventBegin(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
-  if (ksp->setupcalled == 0) {
+  if (!ksp->setupcalled) {
     ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
   }
 

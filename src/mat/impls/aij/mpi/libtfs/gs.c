@@ -709,13 +709,10 @@ gsi_via_bit_mask(gs_id *gs)
   map = gs->companion;
 
   /* is there any local compression */
-  if (gs->num_local == 0)
-    {
-      gs->local_strength = NONE;
-      gs->num_local_gop = 0;
-    }
-  else
-    {
+  if (!gs->num_local) {
+    gs->local_strength = NONE;
+    gs->num_local_gop = 0;
+  } else {
       /* ok find intersection */
       map = gs->companion;
       reduce = gs->local_reduce;  

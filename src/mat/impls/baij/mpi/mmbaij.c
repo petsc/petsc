@@ -31,7 +31,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       int data,gid1 = aj[B->i[i]+j] + 1;
-      ierr = PetscTableFind(gid1_lid1,gid1,&data) ;CHKERRQ(ierr);
+      ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
       if (!data) {
         /* one based table */ 
         ierr = PetscTableAdd(gid1_lid1,gid1,++ec);CHKERRQ(ierr); 

@@ -56,9 +56,9 @@ int MatSeqAIJPtAP(Mat A,Mat P,Mat *C) {
   /* When other implementations exist, attack the multiple dispatch problem. */
   ierr = PetscStrcpy(funct,"MatApplyPtAPNumeric_seqaij_seqaij");CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)P,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(1,"MatSeqAIJPtAPNumeric is not supported for P of type %s",P->type_name);
+  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatSeqAIJPtAPNumeric is not supported for P of type %s",P->type_name);
   ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(1,"MatSeqAIJPtAPNumeric is not supported for A of type %s",A->type_name);
+  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatSeqAIJPtAPNumeric is not supported for A of type %s",A->type_name);
 
   ierr = (*f)(A,P,*C);CHKERRQ(ierr);
     
@@ -119,9 +119,9 @@ int MatSeqAIJPtAPSymbolic(Mat A,Mat P,Mat *C) {
   /* When other implementations exist, attack the multiple dispatch problem. */
   ierr = PetscStrcpy(funct,"MatApplyPtAPSymbolic_seqaij_seqaij");CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)P,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(1,"MatSeqAIJPtAPSymbolic is not supported for P of type %s",P->type_name);
+  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatSeqAIJPtAPSymbolic is not supported for P of type %s",P->type_name);
   ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(1,"MatSeqAIJPtAPSymbolic is not supported for A of type %s",A->type_name);
+  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatSeqAIJPtAPSymbolic is not supported for A of type %s",A->type_name);
 
   ierr = (*f)(A,P,C);CHKERRQ(ierr);
 
@@ -437,9 +437,9 @@ int MatSeqAIJPtAPNumeric(Mat A,Mat P,Mat C) {
   /* When other implementations exist, attack the multiple dispatch problem. */
   ierr = PetscStrcpy(funct,"MatApplyPtAPNumeric_seqaij_seqaij");CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)P,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(1,"MatSeqAIJPtAPNumeric is not supported for P of type %s",P->type_name);
+  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatSeqAIJPtAPNumeric is not supported for P of type %s",P->type_name);
   ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(1,"MatSeqAIJPtAPNumeric is not supported for A of type %s",A->type_name);
+  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatSeqAIJPtAPNumeric is not supported for A of type %s",A->type_name);
 
   ierr = (*f)(A,P,C);CHKERRQ(ierr);
 

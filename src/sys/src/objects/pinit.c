@@ -659,7 +659,7 @@ int PetscFinalize(void)
       char sname[PETSC_MAX_PATH_LEN];
 
       sprintf(sname,"%s_%d",fname,rank);
-      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(1,"Cannot open log file: %s",sname);
+      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscTrDump(fd);CHKERRQ(ierr);
       fclose(fd);
     } else {
@@ -692,7 +692,7 @@ int PetscFinalize(void)
       char sname[PETSC_MAX_PATH_LEN];
 
       sprintf(sname,"%s_%d",fname,rank);
-      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(1,"Cannot open log file: %s",sname);
+      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscTrLogDump(fd);CHKERRQ(ierr); 
       fclose(fd);
     } else {

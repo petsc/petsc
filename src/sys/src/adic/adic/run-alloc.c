@@ -32,16 +32,14 @@ static int nCount = 0;
 
 void* ad_adic_deriv_init(int dsize, int bsize)
 { 
-  if (dsize == 0) {
+  if (!dsize) {
     deriv_size = DEFAULT_DERIV_SIZE;
-  }
-  else {
+  } else {
     deriv_size = dsize;
   }
-  if (bsize == 0) {
+  if (!bsize) {
     bucket_size = DEFAULT_BUCKET_SIZE;
-  }
-  else {
+  } else {
     bucket_size = bsize;
   }
   

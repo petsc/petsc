@@ -51,28 +51,26 @@ int TSSetType(TS ts, const TSType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
-  if (match == PETSC_TRUE) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(0);
 
   /* Get the function pointers for the method requested */
   if (TSRegisterAllCalled == PETSC_FALSE) {
     ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscFListFind(ts->comm, TSList, type, (void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Unknown TS type: %s", type);
-
-  if (ts->ksp != PETSC_NULL) {
+  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
+  if (ts->ksp) {
     ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);
     ts->ksp = PETSC_NULL;
   }
-  if (ts->snes != PETSC_NULL) {
+  if (ts->snes) {
     ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);
     ts->snes = PETSC_NULL;
   }
-  if (ts->ops->destroy != PETSC_NULL) {
+  if (ts->ops->destroy) {
     ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
   }
   ierr = (*r)(ts);CHKERRQ(ierr);
-
   ierr = PetscObjectChangeTypeName((PetscObject)ts, type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

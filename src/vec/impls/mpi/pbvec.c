@@ -344,7 +344,7 @@ int VecGhostGetLocalForm(Vec g,Vec *l)
   } else if (isseq) {
     *l = g;
   } else {
-    SETERRQ1(1,"Vector type %s does not have local representation",g->type_name);
+    SETERRQ1(PETSC_ERR_ARG_WRONG,"Vector type %s does not have local representation",g->type_name);
   }
   ierr = PetscObjectReference((PetscObject)*l);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -237,9 +237,8 @@ int VecPipelineSetType(VecPipeline ctx,PipelineType type,PetscObject x)
     ctx->dnfn = &ProcColorDown;
     ctx->setup = &PipelineMulticolorSetup;
   } else {
-    SETERRQ1(1,"VecPipelineSetType: unknown or not implemented type %d",(int)type);
+    SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown or not implemented type %d",(int)type);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -266,7 +265,7 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirec
   } else if (pmode==PIPELINE_DOWN) {
     ctx->scatter->todata = ctx->dnto;
     ctx->scatter->fromdata = ctx->dnfrom;
-  } else SETERRQ1(1,"VecPipelineBegin: unknown or not implemented pipeline mode %d",pmode);
+  } else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"VecPipelineBegin: unknown or not implemented pipeline mode %d",pmode);
 
   {
     VecScatter             scat = ctx->scatter;
@@ -553,7 +552,7 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 #endif
     }
     conn[base+p] = 1;
-    if (p==size-1) ;
+    if (p==size-1);
     else {
       while (touch[e]<owners[p+1]) {
 	e++;

@@ -170,7 +170,7 @@ int ISView_General(IS is,PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
