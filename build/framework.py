@@ -149,7 +149,7 @@ class Framework(base.Base):
       if fp: fp.close()
 
   def setupDependencies(self):
-    '''Augment the project dependence graph with this projcet
+    '''Augment the project dependence graph with this project
        - The project and dependencies MUST be activated prior to calling this method'''
     if not 'projectDependenceGraph' in self.argDB:
       import build.buildGraph
@@ -231,24 +231,31 @@ class Framework(base.Base):
     '''Recompile the SIDL for this project'''
     return self.executeGraph(self.sidlTemplate.getTarget(), input = self.filesets['sidl'])
 
-  def checkClients(self):
+  def buildClient(self, proj, lang):
+    import build.buildGraph
+
+    clientDir = self.compileTemplate.usingSIDL.getClientRootDir(lang)
+    self.debugPrint('Building '+lang+' client in '+proj.getRoot(), 1, 'build')
+    maker  = self.getMakeModule(proj.getRoot()).PetscMake(None, self.argDB)
+    maker.setupProject()
+    maker.setupDependencies()
+    maker.setupSourceDB(maker.project)
+    sidlGraph    = maker.sidlTemplate.getClientTarget(lang, fullTarget = 1, forceRebuild = 1)
+    compileGraph = maker.compileTemplate.getClientTarget(lang)
+    compileGraph.prependGraph(sidlGraph)
+    maker.executeGraph(compileGraph, input = maker.filesets['sidl'])
+    return
+
+  def missingClients(self):
+    '''Check that this project has built all the clients, and if not return True'''
     import build.buildGraph
 
     for lang in self.compileTemplate.usingSIDL.clientLanguages:
       clientDir = self.compileTemplate.usingSIDL.getClientRootDir(lang)
-      for v in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project):
-        if v == self.project: continue
-        if not os.path.isdir(os.path.join(v.getRoot(), clientDir)):
-          self.debugPrint('Building missing '+lang+' client in '+v.getRoot(), 1, 'build')
-          maker  = self.getMakeModule(v.getRoot()).PetscMake(None, self.argDB)
-          maker.setupProject()
-          maker.setupDependencies()
-          maker.setupSourceDB(maker.project)
-          sidlGraph    = maker.sidlTemplate.getClientTarget(lang, fullTarget = 1, forceRebuild = 1)
-          compileGraph = maker.compileTemplate.getClientTarget(lang)
-          compileGraph.prependGraph(sidlGraph)
-          maker.executeGraph(compileGraph, input = maker.filesets['sidl'])
-    return
+      if not os.path.isdir(os.path.join(v.getRoot(), clientDir)):
+        self.debugPrint('Building missing '+lang+' client in '+self.project.getRoot(), 1, 'build')
+        return 1
+    return 0
 
   def getCompileGraph(self):
     if 'checkpoint' in self.argDB:
@@ -260,7 +267,7 @@ class Framework(base.Base):
       import build.buildGraph
 
       input        = {None: self.filesets['sidl']}
-      sidlGraph    = self.sidlTemplate.getTarget()
+      sidlGraph    = self.sidlTemplate.getTarget(forceRebuild = self.missingClients())
       compileGraph = self.compileTemplate.getTarget()
       compileGraph.prependGraph(sidlGraph)
       # Add project dependency compile graphs
@@ -324,7 +331,6 @@ class Framework(base.Base):
   def t_compile(self):
     '''Recompile the entire source for this project'''
     (compileGraph, input) = self.getCompileGraph()
-    self.checkClients()
     return self.executeGraph(compileGraph, input = input)
 
   def t_compilePrograms(self):

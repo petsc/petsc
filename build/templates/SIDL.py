@@ -96,12 +96,12 @@ class Template(base.Base):
       target.addSubgraph(self.getClientTarget(lang))
     return target
 
-  def getTarget(self):
+  def getTarget(self, forceRebuild = 0):
     '''Return a BuildGraph which will compile SIDL into the servers and clients specified'''
     import build.fileState
 
     target = build.buildGraph.BuildGraph()
-    tagger = build.fileState.GenericTag(self.sourceDB, 'sidl', ext = 'sidl')
+    tagger = build.fileState.GenericTag(self.sourceDB, 'sidl', ext = 'sidl', force = forceRebuild)
     target.addVertex(tagger)
     client = self.getClientTargets()
     server = self.getServerTargets()
