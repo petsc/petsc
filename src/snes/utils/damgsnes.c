@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.31 2001/04/26 03:14:51 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.32 2001/04/26 03:15:20 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -378,8 +378,6 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
 #if defined(PETSC_HAVE_ADIC)
 
-void ad_AD_Init();
-void ad_AD_Final();
 #include "adic_utils.h"
 
 #undef __FUNCT__
