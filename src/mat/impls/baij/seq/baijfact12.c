@@ -1,4 +1,4 @@
-/*$Id: baijfact12.c,v 1.6 2001/04/05 18:27:42 buschelm Exp buschelm $*/
+/*$Id: baijfact12.c,v 1.7 2001/04/05 18:43:23 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -100,6 +100,7 @@ int Kernel_LU_Row_Update_4_SSE(int N,float *a,float *b,float *cc,int *offset)
   int    i; 
   
   PetscFunctionBegin;
+  _mm_prefetch(b,_MM_HINT_T0);
 /*    A0 = _mm_load_ps(a   ); */ 
 /*    A1 = _mm_load_ps(a+4 ); */ 
 /*    A2 = _mm_load_ps(a+8 ); */ 
@@ -109,7 +110,10 @@ int Kernel_LU_Row_Update_4_SSE(int N,float *a,float *b,float *cc,int *offset)
   A2 = _mm_loadh_pi(_mm_loadl_pi(A2,(__m64 *)(a+8 )),(__m64 *)(a+10)); 
   A3 = _mm_loadh_pi(_mm_loadl_pi(A3,(__m64 *)(a+12)),(__m64 *)(a+14)); 
   
-  for (i=0;i<N;i++) { 
+  for (i=0;i<N;i++) {
+    _mm_prefetch(b+8,_MM_HINT_T0);
+    _mm_prefetch(b+16,_MM_HINT_T0);
+
     /* Get pointer to C(i) */  
     c = cc + 16*offset[i]; 
     
@@ -148,6 +152,8 @@ int Kernel_LU_Row_Update_4_SSE(int N,float *a,float *b,float *cc,int *offset)
 /*      _mm_store_ps(c+12,C3); */ 
     _mm_storel_pi((__m64 *)(c+12),C3); 
     _mm_storeh_pi((__m64 *)(c+14),C3); 
+
+    b += 16;
   } 
   PetscFunctionReturn(0);
 }
