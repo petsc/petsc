@@ -82,7 +82,10 @@ class BS (maker.Maker):
     if not hasattr(self, 'sidlDefaults'):
       if not self.filesets.has_key('sidl'):
         self.filesets['sidl'] = None
-      self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.filesets['sidl'])
+      if self.filesets.has_key('bootstrap'):
+        self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.filesets['sidl'], bootstrapPackages = self.filesets['bootstrap'])
+      else:
+        self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.filesets['sidl'])
     return self.sidlDefaults
 
   def getCompileDefaults(self):
