@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.34 1996/07/31 15:42:40 bsmith Exp bsmith $ */
+/* $Id: phead.h,v 1.35 1996/08/05 03:57:06 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all data types. 
@@ -148,7 +148,6 @@ extern void *PetscLow,*PetscHigh;
   if ((unsigned long)h & (unsigned long)7) {                        \
     SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Scalar");             \
   }}
-#endif
 
 #define PetscCheckSameType(a,b) \
   if ((a)->type != (b)->type) SETERRQ(3,"Objects not of same type");
