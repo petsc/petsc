@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: PetscTime.c,v 1.6 1996/03/19 21:30:13 bsmith Exp $";
+#endif
 
 #include "stdio.h"
 #include "petsc.h"
@@ -35,31 +38,17 @@ int test1()
   /* Take care of paging effects */
   t1 = PetscGetTime(); 
   
-  for (i=0; i<2000; i++) {
-    zi[i] = i;
-    z[i]  = i;
-  }
- 
-  for (i=0; i<20000; i++) {
-    x[i] = i;
-    y[i]  = i;
-  }
-
    /* Form the random set of integers */
   for (i=0; i<2000; i++) {
     ierr   = PetscRandomGetValue(r, &value); CHKERRQ(ierr);
     intval = (int)(value*20000.0);
-    tmp    = z[i];
-    z[i]   = z[intval];
-    z[intval] = tmp;
+    z[i]   = intval;
   }
 
   for (i=0; i<2000; i++) {
     ierr   = PetscRandomGetValue(r, &value); CHKERRQ(ierr);
     intval = (int)(value*20000.0);
-    tmp    = zi[i];
-    zi[i]  = zi[intval];
-    zi[intval] = tmp;
+    z[i]   = intval;
   }
   fprintf(stderr,"Done setup\n");
 
