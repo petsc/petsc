@@ -1,0 +1,150 @@
+/*
+ * Example code testing SeqDense matrices with an LDA (leading dimension
+ * of the user-allocated arrray) larger than M.
+ * This example tests the functionality of MatInsertValues, MatMult,
+ * and MatMultTranspose.
+ */
+#include <stdlib.h>
+#include "petscmat.h"
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc,char **argv)
+{
+  Mat A,A11,A12,A21,A22;
+  Vec X,X1,X2,Y,Z,Z1,Z2;
+  PetscScalar *a,*b,*x,*y,*z,v,one=1,mone=-1;
+  PetscReal nrm;
+  int ierr,size=8,size1=6,size2=2, i,j;
+
+  PetscInitialize(&argc,&argv,0,0);
+
+  /*
+   * Create matrix and three vectors: these are all normal
+   */
+  ierr = PetscMalloc(size*size*sizeof(PetscScalar),&a); CHKERRQ(ierr);
+  ierr = PetscMalloc(size*size*sizeof(PetscScalar),&b); CHKERRQ(ierr);
+  for (i=0; i<size; i++) {
+    for (j=0; j<size; j++) {
+      a[i+j*size] = rand(); b[i+j*size] = a[i+j*size];
+    }
+  }
+  ierr = MatCreate(MPI_COMM_SELF,size,size,size,size,&A); CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSEQDENSE); CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(A,a); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  ierr = PetscMalloc(size*sizeof(PetscScalar),&x); CHKERRQ(ierr);
+  for (i=0; i<size; i++) {
+    x[i] = one;
+  }
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size,x,&X); CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(X); CHKERRQ(ierr);
+
+  ierr = PetscMalloc(size*sizeof(PetscScalar),&y); CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size,y,&Y); CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(Y); CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(Y); CHKERRQ(ierr);
+
+  ierr = PetscMalloc(size*sizeof(PetscScalar),&z); CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size,z,&Z); CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(Z); CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(Z); CHKERRQ(ierr);
+
+  /*
+   * Now create submatrices and subvectors
+   */
+  ierr = MatCreate(MPI_COMM_SELF,size1,size1,size1,size1,&A11); CHKERRQ(ierr);
+  ierr = MatSetType(A11,MATSEQDENSE); CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(A11,b); CHKERRQ(ierr);
+  ierr = MatSeqDenseSetLDA(A11,size); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A11,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A11,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  ierr = MatCreate(MPI_COMM_SELF,size1,size2,size1,size2,&A12); CHKERRQ(ierr);
+  ierr = MatSetType(A12,MATSEQDENSE); CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(A12,b+size1*size); CHKERRQ(ierr);
+  ierr = MatSeqDenseSetLDA(A12,size); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A12,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A12,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  ierr = MatCreate(MPI_COMM_SELF,size2,size1,size2,size1,&A21); CHKERRQ(ierr);
+  ierr = MatSetType(A21,MATSEQDENSE); CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(A21,b+size1); CHKERRQ(ierr);
+  ierr = MatSeqDenseSetLDA(A21,size); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A21,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A21,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  ierr = MatCreate(MPI_COMM_SELF,size2,size2,size2,size2,&A22); CHKERRQ(ierr);
+  ierr = MatSetType(A22,MATSEQDENSE); CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(A22,b+size1*size+size1); CHKERRQ(ierr);
+  ierr = MatSeqDenseSetLDA(A22,size); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A22,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A22,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size1,x,&X1); CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size2,x+size1,&X2); CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size1,z,&Z1); CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size2,z+size1,&Z2); CHKERRQ(ierr);
+
+  /*
+   * Now multiple matrix times input in two ways;
+   * compare the results
+   */
+  ierr = MatMult(A,X,Y); CHKERRQ(ierr);
+  ierr = MatMult(A11,X1,Z1); CHKERRQ(ierr);
+  ierr = MatMultAdd(A12,X2,Z1,Z1); CHKERRQ(ierr);
+  ierr = MatMult(A22,X2,Z2); CHKERRQ(ierr);
+  ierr = MatMultAdd(A21,X1,Z2,Z2); CHKERRQ(ierr);
+  ierr = VecAXPY(&mone,Y,Z); CHKERRQ(ierr);
+  ierr = VecNorm(Z,NORM_2,&nrm);
+  printf("Test1; error norm=%e\n",nrm);
+  /*
+  printf("MatMult the usual way:\n"); VecView(Y,0);
+  printf("MatMult by subblock:\n"); VecView(Z,0);
+  */
+
+  /*
+   * Next test: change both matrices
+   */
+  v = rand(); i=1; j=size-2;
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRQ(ierr);
+  j -= size1;
+  ierr = MatSetValues(A12,1,&i,1,&j,&v,INSERT_VALUES); CHKERRQ(ierr);
+  v = rand(); i=j=size1+1;
+  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES); CHKERRQ(ierr);
+  i=j=1;
+  ierr = MatSetValues(A22,1,&i,1,&j,&v,INSERT_VALUES); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A12,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A12,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A22,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A22,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  ierr = MatMult(A,X,Y); CHKERRQ(ierr);
+  ierr = MatMult(A11,X1,Z1); CHKERRQ(ierr);
+  ierr = MatMultAdd(A12,X2,Z1,Z1); CHKERRQ(ierr);
+  ierr = MatMult(A22,X2,Z2); CHKERRQ(ierr);
+  ierr = MatMultAdd(A21,X1,Z2,Z2); CHKERRQ(ierr);
+  ierr = VecAXPY(&mone,Y,Z); CHKERRQ(ierr);
+  ierr = VecNorm(Z,NORM_2,&nrm);
+  printf("Test2; error norm=%e\n",nrm);
+
+  /*
+   * Transpose product
+   */
+  ierr = MatMultTranspose(A,X,Y); CHKERRQ(ierr);
+  ierr = MatMultTranspose(A11,X1,Z1); CHKERRQ(ierr);
+  ierr = MatMultTransposeAdd(A21,X2,Z1,Z1); CHKERRQ(ierr);
+  ierr = MatMultTranspose(A22,X2,Z2); CHKERRQ(ierr);
+  ierr = MatMultTransposeAdd(A12,X1,Z2,Z2); CHKERRQ(ierr);
+  ierr = VecAXPY(&mone,Y,Z); CHKERRQ(ierr);
+  ierr = VecNorm(Z,NORM_2,&nrm);
+  printf("Test3; error norm=%e\n",nrm);
+
+  ierr = PetscFinalize();CHKERRQ(ierr);
+  return 0;
+}
