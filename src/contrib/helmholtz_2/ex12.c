@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.12 1996/10/29 19:13:17 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex12.c,v 1.13 1996/12/10 23:36:35 curfman Exp bsmith $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -168,12 +168,16 @@ int main(int argc,char **args)
   int     N_eta, N_xi;       /* number of processors in eta and xi directions */
   Scalar  none = -1.0;
   double  k1, beta_sq, norm;
-  int     ierr, its, flg, size;
+  int     ierr, its, flg;
 
   /*
       Initialize PETSc
   */
   PetscInitialize(&argc,&args,(char *)0,help);
+#if !defined(PETSC_COMPLEX)
+  SETERRA(1,"This example does not work with complex numbers");
+#endif
+
   /*
       Set default viewer to cause matrices to be printed in 
      a standard format; independent of the underlying data structure.
@@ -768,7 +772,7 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
 int ModifySubmatrices1(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 {
   Atassi *user = (Atassi*)dummy;
-  int    i, ierr, m, n, rank, lrow, lcol;
+  int    i, ierr, m, n, lrow, lcol;
   IS     is;
   Scalar one = 1.0, val;
 
