@@ -109,6 +109,9 @@ Additional Capabilities that PETSc Needs:
    To do sometime soon:
   ----------------------
 
+   - Augment some KSP methods to support symmetric preconditioning; fix relevant
+     KSP support routines.
+
  (Barry)   - Make VecScatterCopy_  for the different types of scatters and use 
      a uniform naming scheme.
 
