@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.20 2001/01/16 18:19:14 balay Exp bsmith $*/
+/* $Id: ispai.c,v 1.21 2001/01/17 22:24:37 bsmith Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -74,7 +74,7 @@ static int PCSetUp_SPAI(PC pc)
     ierr = ConvertMatToMatrix(pc->pmat,pc->pmat,&ispai->B);CHKERRQ(ierr);
   } else {
     /* Use the transpose to get the column nonzero structure. */
-    ierr = MatTranspose(pc->pmat,&AT) ;CHKERRQ(ierr);
+    ierr = MatTranspose(pc->pmat,&AT);CHKERRQ(ierr);
     ierr = ConvertMatToMatrix(pc->pmat,AT,&ispai->B);CHKERRQ(ierr);
     ierr = MatDestroy(AT);CHKERRQ(ierr);
   }
@@ -111,7 +111,7 @@ static int PCSetUp_SPAI(PC pc)
   ierr = ConvertMatrixToMat(ispai->M,&ispai->PM);CHKERRQ(ierr);
 
   /* free the SPAI matrices */
-  sp_free_matrix(ispai->B);
+  ierr = MatrixConvertedFree(ispai->B);CHKERRQ(ierr);
   sp_free_matrix(ispai->M);
 
   PetscFunctionReturn(0);
@@ -538,23 +538,21 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
   int      row_indx;
   int      len,pe,local_indx,start_indx;
   int      *mapping;
-
-  struct compressed_lines *rows;
-
   int      ierr,*cols;
   double   *vals;
   int      *num_ptr,n,mnl,nnl,rank,size,nz,rstart,rend;
   MPI_Comm comm;
+  struct compressed_lines *rows;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
  
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MatGetSize(A,&n,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&mnl,&nnl);CHKERRQ(ierr);
 
-  ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   M = new_matrix((void *)comm);
 							      
@@ -568,8 +566,7 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
   ierr = PetscMalloc(sizeof(int)*n,&M->block_sizes);CHKERRQ(ierr);
   for (i=0; i<n; i++) M->block_sizes[i] = 1;
 
-  ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&mnl,1,MPI_INT,M->mnls,1,MPI_INT,MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&mnl,1,MPI_INT,M->mnls,1,MPI_INT,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   M->start_indices[0] = 0;
   for (i=1; i<size; i++) {
@@ -587,8 +584,7 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
 
   if (AT) {
     M->lines = new_compressed_lines(M->mnls[rank],1);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     M->lines = new_compressed_lines(M->mnls[rank],0);CHKERRQ(ierr);
   }
 
@@ -642,12 +638,11 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
       col = cols[j];
       len = rows->len[row_indx]++;
       rows->ptrs[row_indx][len] = mapping[col];
-      rows->A[row_indx][len]          = vals[j];
+      rows->A[row_indx][len]    = vals[j];
     }
     rows->slen[row_indx] = rows->len[row_indx];
-    ierr     = MatRestoreRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
   }
-
 
 
   /************************************************************/
@@ -687,8 +682,8 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
     }
   }
 
-  PetscFree(num_ptr);
-  PetscFree(mapping);
+  ierr = PetscFree(num_ptr);CHKERRQ(ierr);
+  ierr = PetscFree(mapping);CHKERRQ(ierr);
 
   order_pointers(M);
   M->maxnz = calc_maxnz(M);
@@ -709,32 +704,31 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
 #define __FUNC__ "ConvertMatrixToMat"
 int ConvertMatrixToMat(matrix *B,Mat *PB)
 {
-  int size,rank;
-  int ierr;
-  int m,n,M,N;
-  int d_nz,o_nz;
-  int *d_nnz,*o_nnz;
-  int i,k,global_row,global_col,first_diag_col,last_diag_col;
+  int    size,rank;
+  int    ierr;
+  int    m,n,M,N;
+  int    d_nz,o_nz;
+  int    *d_nnz,*o_nnz;
+  int    i,k,global_row,global_col,first_diag_col,last_diag_col;
   Scalar val;
 
   PetscFunctionBegin;
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   
   m = n = B->mnls[rank];
   d_nz = o_nz = 0;
 
   /* Determine preallocation for MatCreateMPIAIJ */
-  ierr = PetscMalloc(m*sizeof(int),&d_nnz);
-  ierr = PetscMalloc(m*sizeof(int),&o_nnz);
+  ierr = PetscMalloc(m*sizeof(int),&d_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(int),&o_nnz);CHKERRQ(ierr);
   for (i=0; i<m; i++) d_nnz[i] = o_nnz[i] = 0;
   first_diag_col = B->start_indices[rank];
   last_diag_col = first_diag_col + B->mnls[rank];
   for (i=0; i<B->mnls[rank]; i++) {
     for (k=0; k<B->lines->len[i]; k++) {
       global_col = B->lines->ptrs[i][k];
-      if ((global_col >= first_diag_col) &&
-	  (global_col <= last_diag_col))
+      if ((global_col >= first_diag_col) && (global_col <= last_diag_col))
 	d_nnz[i]++;
       else
 	o_nnz[i]++;
@@ -753,11 +747,11 @@ int ConvertMatrixToMat(matrix *B,Mat *PB)
     }
   }
 
-  PetscFree(d_nnz);
-  PetscFree(o_nnz);
+  ierr = PetscFree(d_nnz);CHKERRQ(ierr);
+  ierr = PetscFree(o_nnz);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*PB,MAT_FINAL_ASSEMBLY);  CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*PB,MAT_FINAL_ASSEMBLY);  CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*PB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*PB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -771,13 +765,11 @@ int ConvertMatrixToMat(matrix *B,Mat *PB)
 #define __FUNC__ "ConvertVectorToVec"
 int ConvertVectorToVec(vector *v,Vec *Pv)
 {
-  int size,rank;
-  int ierr,m,M,i;
-  int *mnls,*start_indices,*global_indices;
+  int size,rank,ierr,m,M,i,*mnls,*start_indices,*global_indices;
   
   PetscFunctionBegin;
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   
   m = v->mnl;
   M = v->n;
@@ -785,28 +777,27 @@ int ConvertVectorToVec(vector *v,Vec *Pv)
   
   ierr = VecCreateMPI(PETSC_COMM_WORLD,m,M,Pv);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(size*sizeof(int),&mnls);
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(int),&mnls);CHKERRQ(ierr);
   ierr = MPI_Allgather((void*)&v->mnl,1,MPI_INT,(void*)mnls,1,MPI_INT,PETSC_COMM_WORLD);CHKERRQ(ierr);
   
-  ierr = PetscMalloc(size*sizeof(int),&start_indices);
+  ierr = PetscMalloc(size*sizeof(int),&start_indices);CHKERRQ(ierr);
   start_indices[0] = 0;
   for (i=1; i<size; i++) 
     start_indices[i] = start_indices[i-1] +mnls[i-1];
   
-  ierr = PetscMalloc(v->mnl*sizeof(int),&global_indices);
+  ierr = PetscMalloc(v->mnl*sizeof(int),&global_indices);CHKERRQ(ierr);
   for (i=0; i<v->mnl; i++) 
     global_indices[i] = start_indices[rank] + i;
 
-  PetscFree(mnls);
-  PetscFree(start_indices);
+  ierr = PetscFree(mnls);CHKERRQ(ierr);
+  ierr = PetscFree(start_indices);CHKERRQ(ierr);
   
   ierr = VecSetValues(*Pv,v->mnl,global_indices,v->v,INSERT_VALUES);CHKERRQ(ierr);
 
-  PetscFree(global_indices);
+  ierr = PetscFree(global_indices);CHKERRQ(ierr);
 
-  ierr = VecAssemblyBegin(*Pv);  CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(*Pv);  CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(*Pv);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(*Pv);CHKERRQ(ierr);
  
   PetscFunctionReturn(0);
 }
@@ -829,13 +820,12 @@ int ConvertVectorToVec(vector *v,Vec *Pv)
 #define __FUNC__ "MM_to_PETSC"
 int MM_to_PETSC(char *f0,char *f1,char *f2)
 {
-  Mat        A_PETSC;          /* matrix */
-  Vec        b_PETSC;          /* RHS */
-  PetscViewer     fd;               /* viewer */
-  int        ierr;
-
-  matrix *A_spai;
-  vector *b_spai;
+  Mat         A_PETSC;          /* matrix */
+  Vec         b_PETSC;          /* RHS */
+  PetscViewer fd;               /* viewer */
+  int         ierr;
+  matrix      *A_spai;
+  vector      *b_spai;
 
   PetscFunctionBegin;
   A_spai = read_mm_matrix(f0,1,1,1,0,0,0,NULL);
