@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.60 1996/11/07 15:10:16 bsmith Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.61 1996/11/30 17:16:45 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -194,7 +194,7 @@ int AddElement(Mat mat,int r1,int r2,double **K,int h1,int h2)
    NOTE you should never do this! Inserting values 1 at a time is 
    just too expensive!
 */
-      if (PetscAbsScalar(K[h1+l1][h2+l2]) != 0.0) {
+      if (K[h1+l1][h2+l2] != 0.0) {
         row = r1+l1; col = r2+l2; val = K[h1+l1][h2+l2]; 
 	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES); CHKERRQ(ierr);
         row = r2+l2; col = r1+l1;
@@ -229,7 +229,7 @@ int     rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
  */
 int Elastic20Stiff(double **Ke)
 {
-  Scalar K[60][60],x,y,z,dx,dy,dz,m,v;
+  double K[60][60],x,y,z,dx,dy,dz,m,v;
   int    i,j,k,l,I,J;
 
   paulsetup20();
