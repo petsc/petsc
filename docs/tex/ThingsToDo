@@ -11,9 +11,6 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
   --------------------------------
 
-   - Allow column and row oriented input for MatSetValues() for all matrix types,
-     note presently only SeqDense, MPIDense, SeqAIJ, MPIAIJ, SeqRow support both types.
-
    - Have all preconditioners (including LU) support null space, see 
      tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
 
@@ -23,6 +20,11 @@ Additional Capabilities that PETSc Needs:
 
    - Fix documentation for matrices in manual (also AIJ man pages).  
      Fix help info for matrices.
+
+   - Allow mpirowbs matrix to insert values even when not symmetric.
+
+   * don't require user to set diagonal entries in mpirowbs, that is insane.
+     Half done, see MatAssemblyEnd_MPIRowbs_local. 
 
    * Design better ILU/ICC interface for mpirowbs format (so that PC 
      selection is correct and symmetric matrix can use ILU). Cannot do.
@@ -39,8 +41,10 @@ Additional Capabilities that PETSc Needs:
 
    - Complex versions of the Krylov subspace solvers
 
-   - Test PETSc with LAM.
+   * Test PETSc with LAM.
     
+   X Allow column and row oriented input for MatSetValues() for all matrix types,
+
    X Increase user-definable events (needed by Tom Canfield).  Maybe now's
      the time to expand base PETSc events as well?
 
@@ -62,12 +66,11 @@ Additional Capabilities that PETSc Needs:
    To do sometime soon:
   ----------------------
 
-   - MatExpand() and VecExpand() talk to Paul about how this is done 
-     in SUMMA.
+   - MatExpand() and VecExpand() talk to Paul about how this is done in SUMMA.
 
    - Make PLogFlops() also log loads and stores.
 
-   - Implement nested factorization preconditioner.
+   - Implement nested factorization preconditioner?
 
    - Add matrix reduction plus ILU preconditioner. 
 
@@ -82,8 +85,6 @@ Additional Capabilities that PETSc Needs:
    - Redue parts of inline for basic operations and improved performance.
      Associated with MISF.
 
-   - Make PETSc work using include/mpiuni.h (i.e. no MPI needed)
-
    * Parallel dense matrix implementation.
 
    - Block compressed row storage format implementation.
@@ -97,7 +98,7 @@ Additional Capabilities that PETSc Needs:
 
    - Develop more thorough test program suite.
 
-   - Make special MatLUFactorNumeric_SeqAIJ() for identity permutation.
+   - Make special MatLUFactorNumeric_SeqAIJ() for identity permutation?
 
    * Improve history (-log_history) logging.
 
@@ -106,6 +107,8 @@ Additional Capabilities that PETSc Needs:
    * Upgrade tohtml and doc2tex
 
    * More nonlinear solvers, including those for unconstrained minimization
+
+   X Make PETSc work using include/mpiuni.h (i.e. no MPI needed)
 
    X Make it possible to zoom in on viewed matrices.
 
