@@ -1,13 +1,13 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: concepts.py,v 1.2 2000/09/22 17:59:21 balay Exp balay $ 
+# $Id: concepts.py,v 1.3 2000/09/22 18:37:13 balay Exp balay $ 
 # 
 # reads in docs/tex/exampleconcepts,manconcepts, and create
 # the file help.html
 # 
 #
 #  Usage:
-#    concepts.py
+#    helpindex.py
 #
 import os
 import glob
@@ -35,7 +35,11 @@ def updatedata(dict,line):
       if split(filename,'.')[-1] == 'html':
             link_title = split(split(filename,'/')[-1],'.')[0]
       else:
-            link_title = filename
+            # should be an example file
+            tmp = filename
+            link_title = replace(filename,'src/','')
+            link_title = replace(link_title,'examples/','')
+            link_title = replace(link_title,'tutorials/','')
       
       # ';' is a field separator
       keys = split(concept_list,";")
@@ -100,24 +104,50 @@ def printdata(fd,dict):
                               fd.write('<A HREF="help.html#' + key_tmp + '"> ' + \
                                        upper(key_tmp) + ' </A> | \n')
                   fd.write('</CENTER></H3> \n')
-                 
 
-                  
-            fd.write("<TABLE>")
-            fd.write("<TD WIDTH=4 ><BR></TD>")
-            fd.write("<TD WIDTH=1000 ><B><FONT SIZE=4>")
-            fd.write(prim_key)
-            fd.write("</FONT></B></TD>")
-            fd.write("</TR>")
-            fd.write("</TABLE>")
-
+            # Precheck the sub_keys so that if it has 'PetscNoKey', then start printing
+            # the filename (data) in the same column
             sub_keys = dict[prim_key].keys()
             sub_keys.sort(comptxt)
+            # Now move 'PetscNoKey' to the begining of this list
+            if not sub_keys.count('PetscNoKey') == 0:
+                  sub_keys.remove('PetscNoKey')
+                  sub_keys.insert(0,'PetscNoKey')
+
+            if  sub_keys[0] == 'PetscNoKey':
+                  link_names = dict[prim_key]['PetscNoKey'].keys()
+                  link_names.sort(comptxt)
+                  link_name  = link_names[0]
+                  filename = dict[prim_key]['PetscNoKey'][link_name]                  
+                  del dict[prim_key]['PetscNoKey'][link_name]
+                  
+                  temp = "<A HREF=\"" + "../../" + filename + "\">" + link_name + "</A>"
+                  fd.write("<TABLE>")
+                  fd.write("<TD WIDTH=4 ><BR></TD>")
+                  fd.write("<TD WIDTH=260 ><B><FONT SIZE=4>")
+                  fd.write(prim_key)
+                  fd.write("</FONT></B></TD>")
+                  fd.write("<TD WIDTH=300>")
+                  fd.write(temp)
+                  fd.write("</TD>")
+                 
+                  fd.write("</TR>")
+                  fd.write("</TABLE>")
+            else:
+                  fd.write("<TABLE>")
+                  fd.write("<TD WIDTH=4 ><BR></TD>")
+                  fd.write("<TD WIDTH=1000 ><B><FONT SIZE=4>")
+                  fd.write(prim_key)
+                  fd.write("</FONT></B></TD>")
+                  fd.write("</TR>")
+                  fd.write("</TABLE>")
+                  
+
 
             for sub_key in sub_keys:
                   link_names = dict[prim_key][sub_key].keys()
                   link_names.sort(comptxt)
-
+                  
                   if not sub_key == 'PetscNoKey':
                         # Extract the first element from link_names
                         link_name = link_names[0]
@@ -125,7 +155,7 @@ def printdata(fd,dict):
                         temp = "<A HREF=\"" + "../../" + filename + "\">" + link_name + "</A>"
                         fd.write("<TABLE>")
                         fd.write("<TD WIDTH=60 ><BR></TD>")
-                        fd.write("<TD WIDTH=210><FONT COLOR=\"#CC3333\"><B>")
+                        fd.write("<TD WIDTH=205><FONT COLOR=\"#CC3333\"><B>")
                         fd.write(sub_key)
                         fd.write("</B></FONT></TD>")
                         fd.write("<TD WIDTH=300 >")
@@ -139,7 +169,7 @@ def printdata(fd,dict):
                         temp = "<A HREF=\"" + "../../" + filename + "\">" + link_name + "</A>"
                         fd.write("<TABLE>")
                         fd.write("<TD WIDTH=270><BR></TD>")
-                        fd.write("<TD WIDTH=300 >")
+                        fd.write("<TD WIDTH=300>")
                         fd.write(temp)
                         fd.write("</TD>")
                         fd.write("</TR>")
