@@ -4,7 +4,7 @@
    This is for a user who is not using PETSc Vecs (vectors).
 */
 
-#include "src/contrib/sda/src/sda.h"    /*I   "da.h"   I*/
+#include "petscda.h"    /*I   "petscda.h"   I*/
 
 extern int DALocalToLocalCreate(DA);
 

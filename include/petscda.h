@@ -123,6 +123,35 @@ EXTERN int   DAVecRestoreArray(DA,Vec,void *);
 
 EXTERN int   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
 
+/*S
+     SDA - This provides a simplified interface to the DA distributed
+           array object in PETSc. This is intended for people who are
+           NOT using PETSc vectors or objects but just want to distribute
+           simple rectangular arrays amoung a number of procesors and have
+           PETSc handle moving the ghost-values when needed.
+
+          In certain applications this can serve as a replacement for 
+          BlockComm (which is apparently being phased out?).
+
+
+   Level: beginner
+
+  Concepts: simplified distributed array
+
+.seealso:  SDACreate1d(), SDACreate2d(), SDACreate3d(), SDADestroy(), DA, SDALocalToLocalBegin(),
+           SDALocalToLocalEnd(), SDAGetCorners(), SDAGetGhostCorners()
+S*/
+typedef struct _SDA* SDA;
+
+EXTERN int   SDACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int,int,int *,int *,int *,SDA *);
+EXTERN int   SDACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int *,int *,SDA *);
+EXTERN int   SDACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,SDA *);
+EXTERN int   SDADestroy(SDA);
+EXTERN int   SDALocalToLocalBegin(SDA,PetscScalar*,InsertMode,PetscScalar*);
+EXTERN int   SDALocalToLocalEnd(SDA,PetscScalar*,InsertMode,PetscScalar*);
+EXTERN int   SDAGetCorners(SDA,int*,int*,int*,int*,int*,int*);
+EXTERN int   SDAGetGhostCorners(SDA,int*,int*,int*,int*,int*,int*);
+
 EXTERN int   MatRegisterDAAD(void);
 EXTERN int   MatCreateDAAD(DA,Mat*);
 
@@ -272,6 +301,7 @@ EXTERN int VecPackGetGlobalIndices(VecPack,...);
 EXTERN int VecPackRefine(VecPack,MPI_Comm,VecPack*);
 EXTERN int VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
 
+
 #include "petscsnes.h"
 
 /*S
@@ -282,6 +312,10 @@ EXTERN int VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
   Concepts: grids, grid refinement
 
    Notes: The DA object and the VecPack object are examples of DMs
+
+          Though the DA objects require the petscsnes.h include files the DM library is
+    NOT dependent on the SNES or SLES library. In fact, the SLES and SNES libraries depend on
+    DM. (This is not great design, but not trivial to fix).
 
 .seealso:  VecPackCreate(), DA, VecPack
 S*/

@@ -6,8 +6,8 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/da/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
-                  ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex19.c
-EXAMPLESF       = 
+                  ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex19.c ex20.c
+EXAMPLESF       = ex21.F
 MANSEC          = DA
 
 include ${PETSC_DIR}/bmake/common/base
@@ -87,6 +87,15 @@ ex18: ex18.o   chkopts
 ex19: ex19.o   chkopts
 	-${CLINKER} -o ex19 ex19.o  ${PETSC_DM_LIB}
 	${RM} -f ex19.o
+
+ex20: ex20.o   chkopts
+	-${CLINKER} -o ex20 ex20.o  ${PETSC_DM_LIB}
+	${RM} -f ex20.o
+
+ex21f: ex21f.o  chkopts
+	-${FLINKER} -o ex21f ex21f.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	${RM} -f ex21f.o
+
 #-------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 2 ex1 -nox > ex1_1.tmp 2>&1;	  \
@@ -121,11 +130,29 @@ runex13:
 runex14:
 	-@${MPIRUN} -np 4 ex14 ; sleep 1
 
+runex20:
+	-@${MPIRUN} -np 2 ex20 -2d -periodic 1 -dof 2 -stencil_width 1 -stencil_type 0
+
+runex20_2:
+	-@for d in -1d -2d -3d; do \
+            for np in 1 2 3 4; do \
+              for per in 0 1; do \
+                for dof in 1 2 3; do \
+                  for stencil_width in 1 2; do \
+                    for stencil_type in 0 1; do \
+                      ${MPIRUN} -np $$np ex20 $$d -periodic $$per -dof $$dof -stencil_width $$stencil_width -stencil_type $$stencil_type ;\
+                    done; \
+                  done; \
+                done; \
+              done; \
+            done; \
+          done;
+
 TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc\
-		  runex5 ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc ex7.rm \
+		  runex5 ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc ex7.rm  ex20.PETSc runex20 runex20_2 ex20.rm \
                   ex14.PETSc runex14 ex14.rm ex13.PETSc runex13 ex13.rm
-TESTEXAMPLES_3  =
+TESTEXAMPLES_3  = ex21.PETSc ex21.rm
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
 		  ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
 		  ex6.PETSc ex6.rm ex12.PETSc ex12.rm

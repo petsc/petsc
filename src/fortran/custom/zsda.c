@@ -3,8 +3,7 @@
      Fortran interface for SDA routines.
 */
 #include "src/fortran/custom/zpetsc.h"
-
-#include "src/contrib/sda/src/sda.h"
+#include "petscda.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define sdadestroy_           SDADESTROY
