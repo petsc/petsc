@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex30.c,v 1.6 1997/10/19 03:26:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex30.c,v 1.7 1998/12/03 04:01:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
@@ -65,9 +65,12 @@ int main(int argc,char **args)
   ierr = OptionsHasName(PETSC_NULL,"-lu",&flg1); CHKERRA(ierr);
   if (flg1){ 
     ierr = MatLUFactorSymbolic(C,row,col,1.0,&A); CHKERRA(ierr);
-  }
-  else {
-    ierr = MatILUFactorSymbolic(C,row,col,1.0,lf,&A); CHKERRA(ierr);
+  } else {
+    MatILUInfo info;
+    info.levels        = lf;
+    info.fill          = 1.0;
+    info.diagonal_fill = 0;
+    ierr = MatILUFactorSymbolic(C,row,col,&info,&A); CHKERRA(ierr);
   }
   ierr = MatLUFactorNumeric(C,&A); CHKERRA(ierr);
 

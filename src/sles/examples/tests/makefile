@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.157 1998/10/28 16:07:24 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.158 1999/01/20 16:09:04 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -19,7 +19,7 @@ TESTEXAMPLES_4  = ex3.PETSc runex3 ex3.rm ex4.PETSc \
 		  runex4 ex4.rm clean
 TESTEXAMPLES_5  = ex17.PETSc runex17 ex17.rm clean
 TESTEXAMPLES_11 = ex17.PETSc runex17 ex17.rm clean
-TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 runex6_4 runex6_5 \
+TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 \
 		  ex6.rm clean
 TESTEXAMPLES_7  = ex6.PETSc runex6_6 ex6.rm clean
 TESTEXAMPLES_8  = ex16.PETSc ex16.rm clean
@@ -235,20 +235,6 @@ runex6_3:
 	   if (diff output/ex6_3.out ex6_3.tmp) then true; \
 	   else echo "Possible problem with ex6_3, diffs above"; fi; \
 	   ${RM} -f ex6_3.tmp
-runex6_4:
-	-@${MPIRUN} -np 1 ex6 -pc_type bgs -pc_bgs_blocks 5 -sub_pc_type lu\
-	   -f ${PETSC_DIR}/src/mat/examples/matrices/arco1 -optionsleft_off \
-	   -ksp_gmres_restart 100  -ksp_smonitor  > ex6_4.tmp 2>&1; \
-	   if (diff output/ex6_4.out ex6_4.tmp) then true; \
-	   else echo "Possible problem with ex6_4, diffs above"; fi; \
-	   ${RM} -f ex6_4.tmp
-runex6_5:
-	-@${MPIRUN} -np 1 ex6 -pc_type bgs -pc_bgs_blocks 5 -mat_aij_oneindex \
-	    -sub_pc_type lu -f ${PETSC_DIR}/src/mat/examples/matrices/arco1 \
-	   -ksp_gmres_restart 100  -ksp_smonitor  -optionsleft_off > ex6_5.tmp 2>&1; \
-	   if (diff output/ex6_4.out ex6_5.tmp) then true; \
-	   else echo "Possible problem with ex6_5, diffs above"; fi; \
-	   ${RM} -f ex6_5.tmp
 
 # Note: We test these BlockSolve95 examples differently from the usual
 # because the coloring heuristic is machine-dependent; convergence rates
