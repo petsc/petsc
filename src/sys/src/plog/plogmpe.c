@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plogmpe.c,v 1.7 1996/03/11 17:37:51 balay Exp bsmith $";
+static char vcid[] = "$Id: plogmpe.c,v 1.8 1996/04/20 04:22:02 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: plogmpe.c,v 1.7 1996/03/11 17:37:51 balay Exp bsmith 
 #if defined(HAVE_MPE)
 #include "mpe.h"
 
-int MPEFlags[] = {      1,1,1,1,1,  /* 0 - 24*/
+int PLogEventMPEFlags[] = {  1,1,1,1,1,  /* 0 - 24*/
                         1,1,1,1,1,
                         1,1,1,1,1,
                         1,1,1,1,1,
@@ -214,7 +214,8 @@ $      with PETSC_LOG)
 
 .keywords: log, all, begin
 
-.seealso: PLogDump(), PLogBegin(), PLogAllBegin()
+.seealso: PLogDump(), PLogBegin(), PLogAllBegin(), PLogEventActivate(),
+          PLogEventDeActivate()
 @*/
 int PLogMPEBegin()
 {
@@ -225,12 +226,67 @@ int PLogMPEBegin()
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (!rank) {
     for ( i=0; i < PLOG_USER_EVENT_HIGH; i++) {
-      if (MPEFlags[i]) {
+      if (PLogEventMPEFlags[i]) {
         MPE_Describe_state(MPEBEGIN+2*i,MPEBEGIN+2*i+1,PLogEventName[i],PLogEventColor[i]);
       }
     }
   }
   UseMPE = 1;
+  return 0;
+}
+
+/*@
+    PLogEventMPEDeActivate - Indicates that a particular event should not be
+       logged using MPE. Note: the event may be either a pre-defined
+       PETSc event (found in include/plog.h) or an event number obtained
+       with PLogEventRegister().
+
+  Input Parameter:
+.   event - integer indicating event
+
+   Example of Usage:
+$
+$     PetscInitialize(int *argc,char ***args,0,0);
+$     PLogEventMPEDeactivate(VEC_SetValues);
+$      code where you do not want to log VecSetValues() 
+$     PLogEventMPEActivate(VEC_SetValues);
+$      code where you do want to log VecSetValues() 
+$     .......
+$     PetscFinalize();
+$
+
+.seealso: PLogEventMPEActivate(),PlogEventActivate(),PlogEventDeActivate()
+@*/
+int PLogEventMPEDeActivate(int event)
+{
+  PLogEventMPEFlags[event] = 0;
+  return 0;
+}
+/*@
+    PLogEventMPEActivate - Indicates that a particular event should be
+       logged using MPE. Note: the event may be either a pre-defined
+       PETSc event (found in include/plog.h) or an event number obtained
+       with PLogEventRegister().
+
+  Input Parameter:
+.   event - integer indicating event
+
+   Example of Usage:
+$
+$     PetscInitialize(int *argc,char ***args,0,0);
+$     PLogEventMPEDeactivate(VEC_SetValues);
+$      code where you do not want to log VecSetValues() 
+$     PLogEventMPEActivate(VEC_SetValues);
+$      code where you do want to log VecSetValues() 
+$     .......
+$     PetscFinalize();
+$
+
+.seealso: PLogEventMPEDeActivate(),PLogEventActivate(),PLogEventDeActivate()
+@*/
+int PLogEventMPEActivate(int event)
+{
+  PLogEventMPEFlags[event] = 1;
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.69 1996/04/05 22:32:23 curfman Exp curfman $ */
+/* $Id: plog.h,v 1.70 1996/04/17 02:47:05 curfman Exp bsmith $ */
 
 /*
     Defines high level logging in PETSc.
@@ -83,8 +83,8 @@
 #define PC_SetUp                                75
 #define PC_SetUpOnBlocks                        76
 #define PC_Apply                                77
-#define PC_ApplySymmLeft                        78
-#define PC_ApplySymmRight                       79
+#define PC_ApplySymmetricLeft                   78
+#define PC_ApplySymmetricRight                  79
 
 #define SNES_Solve                              80
 #define SNES_LineSearch                         81
@@ -113,24 +113,36 @@
 
 /* Global flop counter */
 extern double _TotalFlops;
-#if defined(PETSC_LOG)
-#define PLogFlops(n) {_TotalFlops += n;}
-#else
-#define PLogFlops(n)
-#endif 
 
 /* General logging of information; different from event logging */
 extern int PLogInfo(void*,char*,...);
+extern int PLogInfoDeActivateClass(int);
+extern int PLogInfoActivateClass(int);
+
+#if defined(PETSC_LOG)  /* --------------------------------------------*/
+
+#define PLogFlops(n) {_TotalFlops += n;}
 
 #if defined (HAVE_MPE)
 #include "mpe.h"
+#define MPEBEGIN    1000 
 extern int PLogMPEBegin();
 extern int PLogMPEDump(char *);
-extern int UseMPE,MPEFlags[];
-#define MPEBEGIN    1000 
+extern int UseMPE,PLogEventMPEFlags[];
+extern int PLogEventMPEActivate(int);
+extern int PLogEventMPEDeActivate(int);
+#else
+#define PLogEventMPEActivate(a)
+#define PLogEventMPEDeActivate(a)
 #endif
 
-#if defined(PETSC_LOG)
+extern int PLogEventActivate(int);
+extern int PLogEventDeActivate(int);
+
+extern int PLogEventActivateClass();
+extern int PLogEventDeActivateClass();
+
+extern int PLogEventFlags[];
 extern int (*_PLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 extern int (*_PLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 extern int (*_PHC)(PetscObject);
@@ -139,29 +151,29 @@ extern int (*_PHD)(PetscObject);
 #if defined(HAVE_MPE)
 #define PLogEventBegin(e,o1,o2,o3,o4) {static int _tacky = 0; \
   { _tacky++; \
-   if (_PLB) \
+   if (_PLB && PLogEventFlags[e]) \
      (*_PLB)(e,_tacky,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
-   if (_tacky == 1 && UseMPE && MPEFlags[e])\
+   if (_tacky == 1 && UseMPE && PLogEventMPEFlags[e])\
      MPE_Log_event(MPEBEGIN+2*e,0,"");\
   }
 #else
 #define PLogEventBegin(e,o1,o2,o3,o4) {static int _tacky = 0; \
   { _tacky++; \
-   if (_PLB) \
+   if (_PLB && PLogEventFlags[e]) \
      (*_PLB)(e,_tacky,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   }
 #endif
 
 #if defined(HAVE_MPE)
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
-  if (_PLE) \
+  if (_PLE && PLogEventFlags[e]) \
     (*_PLE)(e,_tacky,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
-  if (_tacky == 1 && UseMPE && MPEFlags[e])\
+  if (_tacky == 1 && UseMPE && PLogEventMPEFlags[e])\
      MPE_Log_event(MPEBEGIN+2*e+1,0,"");\
   }  _tacky--;}
 #else
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
-  if (_PLE) \
+  if (_PLE && PLogEventFlags[e]) \
     (*_PLE)(e,_tacky,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   } _tacky--;}
 #endif
@@ -187,7 +199,25 @@ extern int PLogAllBegin();
 extern int PLogDump(char*);
 extern int PLogEventRegister(int*,char*,char*);
 
+
+#else  /* ------------------------------------------------------------*/
+
+#define PLogFlops(n)
+
+#if defined (HAVE_MPE)
+#define MPEBEGIN    1000 
+extern int PLogMPEBegin();
+extern int PLogMPEDump(char *);
 #else
+#define PLogEventMPEActivate(a)
+#define PLogEventMPEDeActivate(a)
+#endif
+
+#define PLogEventActivate(a)
+#define PLogEventDeActivate(a)
+
+#define PLogEventActivateClass()
+#define PLogEventDeActivateClass()
 
 #define _PLB                          0
 #define _PLE                          0

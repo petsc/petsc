@@ -1,11 +1,12 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.103 1996/05/10 18:44:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.104 1996/05/11 04:06:21 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
+#include "snes.h"      /* This include is to define all the PETSc cookies */
 #if defined(HAVE_MPE)
 #include "mpe.h"
 #endif
@@ -24,9 +25,10 @@ static char vcid[] = "$Id: plog.c,v 1.103 1996/05/10 18:44:32 curfman Exp bsmith
 #include "pinclude/ptime.h"
 
 static int PrintInfo = 0;
-
+static int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                              1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 /*@C
-    PLogAllowInfo - Causes PLogInfo() messages to be printed to standard output.
+    PLogInfoAllow - Causes PLogInfo() messages to be printed to standard output.
 
     Input Parameter:
 .   flag - PETSC_TRUE or PETSC_FALSE
@@ -38,7 +40,7 @@ $    -info
 
 .seealso: PLogInfo()
 @*/
-int PLogAllowInfo(PetscTruth flag)
+int PLogInfoAllow(PetscTruth flag)
 {
   PrintInfo = (int) flag;
   return 0;
@@ -46,8 +48,46 @@ int PLogAllowInfo(PetscTruth flag)
 
 extern FILE *petsc_history;
 
+/*@
+    PLogInfoDeActivate - Deactivates PlogInfo() messages for a PETSc object
+        class.
+
+  Input Parameter:
+.    objclass - for example MAT_COOKIE, SNES_COOKIE,
+
+.seealso: PLogInfoActivate(),PLogInfo(),PLogInfoAllow()
+@*/
+int PLogInfoDeActivateClass(int objclass)
+{
+  PLogInfoFlags[objclass - PETSC_COOKIE - 1] = 0;
+  if (objclass == SLES_COOKIE) {
+    PLogInfoFlags[PC_COOKIE - PETSC_COOKIE - 1]  = 0;
+    PLogInfoFlags[PC_COOKIE - PETSC_COOKIE - 1] = 0;
+  }
+  return 0;
+}
+
+/*@
+    PLogInfoActivateClass - Activates PlogInfo() messages for a PETSc object
+        class.
+
+  Input Parameter:
+.    objclass - for example MAT_COOKIE, SNES_COOKIE,
+
+.seealso: PLogInfoDeActivate(),PLogInfo(),PLogInfoAllow()
+@*/
+int PLogInfoActivateClass(int objclass)
+{
+  PLogInfoFlags[objclass - PETSC_COOKIE - 1] = 1;
+  if (objclass == SLES_COOKIE) {
+    PLogInfoFlags[PC_COOKIE - PETSC_COOKIE - 1]  = 1;
+    PLogInfoFlags[KSP_COOKIE - PETSC_COOKIE - 1] = 1;
+  }
+  return 0;
+}
+
 /*@C
-    PLogInfo - Logs informative data, which is printed to standart output
+    PLogInfo - Logs informative data, which is printed to standard output
     when the option -info is specified.
 
     Input Parameter:
@@ -69,21 +109,27 @@ $
 
 .keywords: information, printing, monitoring
 
-.seealso: PLogAllowInfo()
+.seealso: PLogInfoAllow()
 @*/
 int PLogInfo(void *vobj,char *message,...)
 {
   va_list     Argp;
-  int         rank;
+  int         rank,urank,len;
   PetscObject obj = (PetscObject) vobj;
+  char        string[256];
 
   if (obj) PetscValidHeader(obj);
   if (!PrintInfo) return 0;
+  if (obj && !PLogInfoFlags[obj->cookie - PETSC_COOKIE - 1]) return 0;
   if (!obj) rank = 0;
   else      {MPI_Comm_rank(obj->comm,&rank);} 
   if (rank) return 0;
+
+  MPI_Comm_rank(MPI_COMM_WORLD,&urank);
   va_start( Argp, message );
-  vfprintf(stdout,message,Argp);
+  sprintf(string,"[%d]",urank); len = PetscStrlen(string);
+  vsprintf(string+len,message,Argp);
+  fflush(stdout);
   if (petsc_history) {
     vfprintf(petsc_history,message,Argp);
   }
@@ -94,6 +140,48 @@ int PLogInfo(void *vobj,char *message,...)
 /* -------------------------------------------------------------------*/
 #if defined(PETSC_LOG)
 static int PLOG_USER_EVENT_LOW = PLOG_USER_EVENT_LOW_STATIC;
+
+int PLogEventFlags[] = {      1,1,1,1,1,  /* 0 - 24*/
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,  /* 25 -49 */
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1, /* 50 - 74 */
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1, /* 75 - 99 */
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1, /* 100 - 124 */ 
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1, /* 125 - 149 */
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1, /* 150 - 174 */
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1, /* 175 - 199 */
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1,
+                        1,1,1,1,1};
 
 static char *(oname[]) = {"Viewer           ",
                           "Index set        ",
@@ -501,7 +589,7 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   }
   PetscTime(ltime);
   events[nevents].time = ltime - BaseTime;
-  events[nevents].id1     = o1->id;
+  if (o1) events[nevents].id1     = o1->id; else events[nevents].id1 = -1;
   if (o2) events[nevents].id2     = o2->id; else events[nevents].id2 = -1;
   if (o3) events[nevents].id3     = o3->id; else events[nevents].id3 = -1;
   events[nevents].type   = event;
@@ -533,7 +621,7 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   }
   PetscTime(ltime);
   events[nevents].time   = ltime - BaseTime;
-  events[nevents].id1    = o1->id;
+  if (o1) events[nevents].id1    = o1->id; else events[nevents].id1 = -1;
   if (o2) events[nevents].id2    = o2->id; else events[nevents].id2 = -1;
   if (o3) events[nevents].id3    = o3->id; else events[nevents].id3 = -1;
   events[nevents].type   = event;
@@ -740,7 +828,8 @@ int PLogDump(char* sname)
 }
 
 extern char *PLogEventColor[];
-extern int  *MPEFlag,UseMPE;
+
+
 /*@C
     PLogEventRegister - Registers an event name for logging operations in 
     an application code. 
@@ -781,7 +870,9 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 
 .keywords: log, event, register
 
-.seealso: PLogEventBegin(), PLogEventEnd(), PLogFlops()
+.seealso: PLogEventBegin(), PLogEventEnd(), PLogFlops(),
+          PLogEventMPEActivate(), PLogEventMPEDeActivate(),
+          PLogEventActivate(), PLogEventDeActivate()
 @*/
 int PLogEventRegister(int *e,char *string,char *color)
 {
@@ -795,7 +886,7 @@ int PLogEventRegister(int *e,char *string,char *color)
   if (UseMPE) {
     int rank;
 
-    MPEFlags[*e]       = 1;
+    PLogEventMPEFlags[*e]       = 1;
     PLogEventColor[*e] = color;
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     if (!rank) {
@@ -806,6 +897,62 @@ int PLogEventRegister(int *e,char *string,char *color)
   return 0;
 }
   
+/*@
+    PLogEventDeActivate - Indicates that a particular event should not be
+       logged. Note: the event may be either a pre-defined
+       PETSc event (found in include/plog.h) or an event number obtained
+       with PLogEventRegister().
+
+  Input Parameter:
+.   event - integer indicating event
+
+   Example of Usage:
+$
+$     PetscInitialize(int *argc,char ***args,0,0);
+$     PLogEventDeactivate(VEC_SetValues);
+$      code where you do not want to log VecSetValues() 
+$     PLogEventActivate(VEC_SetValues);
+$      code where you do want to log VecSetValues() 
+$     .......
+$     PetscFinalize();
+$
+
+.seealso: PLogEventMPEDeActivate(),PLogEventMPEActivate(),PlogEventActivate()
+@*/
+int PLogEventDeActivate(int event)
+{
+  PLogEventFlags[event] = 0;
+  return 0;
+}
+/*@
+    PLogEventActivate - Indicates that a particular event should be
+       logged. Note: the event may be either a pre-defined
+       PETSc event (found in include/plog.h) or an event number obtained
+       with PLogEventRegister().
+
+  Input Parameter:
+.   event - integer indicating event
+
+   Example of Usage:
+$
+$     PetscInitialize(int *argc,char ***args,0,0);
+$     PLogEventDeactivate(VEC_SetValues);
+$      code where you do not want to log VecSetValues() 
+$     PLogEventActivate(VEC_SetValues);
+$      code where you do want to log VecSetValues() 
+$     .......
+$     PetscFinalize();
+$
+
+.seealso: PLogEventMPEDeActivate(),PLogEventMPEActivate(),PlogEventDeActivate()
+@*/
+int PLogEventActivate(int event)
+{
+  PLogEventFlags[event] = 1;
+  return 0;
+}
+
+
 /*@C
    PLogPrintSummary - Prints a summary of the logging.
 
@@ -895,7 +1042,9 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
       MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
       MPI_Reduce(&EventsStageTime[j],&stime,1,MPI_DOUBLE,MPI_SUM,0,comm);
       if (tott > 0) pstime = 100.0*stime/tott; else pstime = 0.0;
+      if (tott >= 100.0 ) tott = 99.9;
       if (totf > 0) psflops = 100.*sflops/totf; else psflops = 0.0; 
+      if (totf >= 100.0 ) totf = 99.9;
       if (stime > 0) psflops1 = (size*sflops)/stime; else psflops1 = 0.0;
       if (EventsStageName[j]) {
         PetscFPrintf(comm,fd," %d: %15s:  %7.5e   %4.1f%%    %5.3e     %4.1f%% \n",
@@ -958,11 +1107,14 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
         if (mint > 0.0) rat = maxt/mint; else rat = 0.0;
         if (minf > 0.0) ratf = maxf/minf; else ratf = 0.0;
         if (tott > 0.0) ptotts = 100.*totts/tott; else ptotts = 0.0;
+        if (ptotts >= 100.0 ) ptotts = 99.9;
         if (totf > 0.0) ptotff = 100.*totff/totf; else ptotff = 0.0;
+        if (ptotff >= 100.0 ) ptotff = 99.9;
         if (stime > 0.0) ptotts_stime = 100.*totts/stime; else  ptotts_stime = 0.0;
+        if (ptotts_stime >= 100.0 ) ptotts_stime = 99.9;
         if (sflops > 0.0) ptotff_sflops = 100.*totff/sflops; else ptotff_sflops = 0.0;
-        /* Note: Don't change %5.1f for % flop fields below */
-        PetscFPrintf(comm,fd,"%s %6d  %4.3e %6.1f  %2.1e %6.1f  %4.1f %5.1f %4.1f %5.1f\n",
+        if (ptotff_sflops >= 100.0 ) ptotff_sflops = 99.9;
+        PetscFPrintf(comm,fd,"%s %6d  %4.3e %6.1f  %2.1e %6.1f  %4.1f %4.1f %4.1f %4.1f\n",
                     PLogEventName[i],(int)EventsType[j][i][COUNT],maxt,rat,maxf,ratf,
                     ptotts,ptotff,ptotts_stime,ptotff_sflops);
       }
@@ -1015,8 +1167,202 @@ double PetscGetFlops()
   return _TotalFlops;
 }
 
+/* --------- Activate version -------------  */
+
+/*@
+    PLogEventActivateClass - Activates event logging for a PETSc object
+        class.
+
+  Input Parameter:
+.    cookie - for example MAT_COOKIE, SNES_COOKIE,
+
+.seealso: PLogInfoActivate(),PLogInfo(),PLogInfoAllow(),PLogEventDeActivateClass(),
+          PLogEventActivate(),PLogEventDeActivate()
+@*/
+int PLogEventActivateClass(int cookie)
+{
+  if (cookie == SNES_COOKIE) {
+    PLogEventActivate(SNES_Solve);
+    PLogEventActivate(SNES_LineSearch);
+    PLogEventActivate(SNES_FunctionEval);
+    PLogEventActivate(SNES_JacobianEval);
+    PLogEventActivate(SNES_MinimizationFunctionEval);
+    PLogEventActivate(SNES_GradientEval);
+    PLogEventActivate(SNES_HessianEval);
+  } else if (cookie == SLES_COOKIE || cookie == PC_COOKIE || cookie == KSP_COOKIE) {
+    PLogEventActivate(SLES_Solve);
+    PLogEventActivate(SLES_SetUp);
+    PLogEventActivate(KSP_GMRESOrthogonalization);
+    PLogEventActivate(PC_SetUp);
+    PLogEventActivate(PC_SetUpOnBlocks);
+    PLogEventActivate(PC_Apply);
+    PLogEventActivate(PC_ApplySymmetricLeft);
+    PLogEventActivate(PC_ApplySymmetricRight);
+  } else if (cookie == MAT_COOKIE) {
+    PLogEventActivate(MAT_Mult);
+    PLogEventActivate(MAT_MatrixFreeMult);
+    PLogEventActivate(MAT_AssemblyBegin);
+    PLogEventActivate(MAT_AssemblyEnd);
+    PLogEventActivate(MAT_GetReordering);
+    PLogEventActivate(MAT_MultTrans);
+    PLogEventActivate(MAT_MultAdd);
+    PLogEventActivate(MAT_MultTransAdd);
+    PLogEventActivate(MAT_LUFactor);
+    PLogEventActivate(MAT_CholeskyFactor);
+    PLogEventActivate(MAT_LUFactorSymbolic);
+    PLogEventActivate(MAT_ILUFactorSymbolic);
+    PLogEventActivate(MAT_CholeskyFactorSymbolic);
+    PLogEventActivate(MAT_IncompleteCholeskyFactorSymbolic);
+    PLogEventActivate(MAT_LUFactorNumeric);
+    PLogEventActivate(MAT_CholeskyFactorNumeric);
+    PLogEventActivate(MAT_CholeskyFactorNumeric);
+    PLogEventActivate(MAT_Relax);
+    PLogEventActivate(MAT_Copy);
+    PLogEventActivate(MAT_Convert);
+    PLogEventActivate(MAT_Scale);
+    PLogEventActivate(MAT_ZeroEntries);
+    PLogEventActivate(MAT_Solve);
+    PLogEventActivate(MAT_SolveAdd);
+    PLogEventActivate(MAT_SolveTrans);
+    PLogEventActivate(MAT_SolveTransAdd);
+    PLogEventActivate(MAT_SetValues);
+    PLogEventActivate(MAT_ForwardSolve);
+    PLogEventActivate(MAT_BackwardSolve);
+    PLogEventActivate(MAT_Load);
+    PLogEventActivate(MAT_View);
+    PLogEventActivate(MAT_ILUFactor);
+    PLogEventActivate(MAT_GetSubMatrix);
+    PLogEventActivate(MAT_GetValues);
+    PLogEventActivate(MAT_IncreaseOverlap);
+    PLogEventActivate(MAT_GetRow);
+  } else if (cookie == VEC_COOKIE) {
+    PLogEventActivate(VEC_Dot);
+    PLogEventActivate(VEC_Norm);
+    PLogEventActivate(VEC_Max);
+    PLogEventActivate(VEC_Min);
+    PLogEventActivate(VEC_TDot);
+    PLogEventActivate(VEC_Scale);
+    PLogEventActivate(VEC_Copy);
+    PLogEventActivate(VEC_Set);
+    PLogEventActivate(VEC_AXPY);
+    PLogEventActivate(VEC_AYPX);
+    PLogEventActivate(VEC_Swap);
+    PLogEventActivate(VEC_WAXPY);
+    PLogEventActivate(VEC_AssemblyBegin);
+    PLogEventActivate(VEC_AssemblyEnd);
+    PLogEventActivate(VEC_MTDot);
+    PLogEventActivate(VEC_MDot);
+    PLogEventActivate(VEC_MAXPY);
+    PLogEventActivate(VEC_PMult);
+    PLogEventActivate(VEC_SetValues);
+    PLogEventActivate(VEC_Load);
+    PLogEventActivate(VEC_View);
+    PLogEventActivate(VEC_ScatterBegin);
+    PLogEventActivate(VEC_ScatterEnd);
+    PLogEventActivate(VEC_SetRandom);
+  }
+  return 0;
+}
+
+/*@
+    PLogEventDeActivateClass - Deactivates event logging for a PETSc object
+        class.
+
+  Input Parameter:
+.    cookie - for example MAT_COOKIE, SNES_COOKIE,
+
+.seealso: PLogInfoActivate(),PLogInfo(),PLogInfoAllow(),PLogEventActivateClass(),
+          PLogEventActivate(),PLogEventDeActivate()
+@*/
+int PLogEventDeActivateClass(int cookie)
+{
+  if (cookie == SNES_COOKIE) {
+    PLogEventDeActivate(SNES_Solve);
+    PLogEventDeActivate(SNES_LineSearch);
+    PLogEventDeActivate(SNES_FunctionEval);
+    PLogEventDeActivate(SNES_JacobianEval);
+    PLogEventDeActivate(SNES_MinimizationFunctionEval);
+    PLogEventDeActivate(SNES_GradientEval);
+    PLogEventDeActivate(SNES_HessianEval);
+  } else if (cookie == SLES_COOKIE || cookie == PC_COOKIE || cookie == KSP_COOKIE) {
+    PLogEventDeActivate(SLES_Solve);
+    PLogEventDeActivate(SLES_SetUp);
+    PLogEventDeActivate(KSP_GMRESOrthogonalization);
+    PLogEventDeActivate(PC_SetUp);
+    PLogEventDeActivate(PC_SetUpOnBlocks);
+    PLogEventDeActivate(PC_Apply);
+    PLogEventDeActivate(PC_ApplySymmetricLeft);
+    PLogEventDeActivate(PC_ApplySymmetricRight);
+  } else if (cookie == MAT_COOKIE) {
+    PLogEventDeActivate(MAT_Mult);
+    PLogEventDeActivate(MAT_MatrixFreeMult);
+    PLogEventDeActivate(MAT_AssemblyBegin);
+    PLogEventDeActivate(MAT_AssemblyEnd);
+    PLogEventDeActivate(MAT_GetReordering);
+    PLogEventDeActivate(MAT_MultTrans);
+    PLogEventDeActivate(MAT_MultAdd);
+    PLogEventDeActivate(MAT_MultTransAdd);
+    PLogEventDeActivate(MAT_LUFactor);
+    PLogEventDeActivate(MAT_CholeskyFactor);
+    PLogEventDeActivate(MAT_LUFactorSymbolic);
+    PLogEventDeActivate(MAT_ILUFactorSymbolic);
+    PLogEventDeActivate(MAT_CholeskyFactorSymbolic);
+    PLogEventDeActivate(MAT_IncompleteCholeskyFactorSymbolic);
+    PLogEventDeActivate(MAT_LUFactorNumeric);
+    PLogEventDeActivate(MAT_CholeskyFactorNumeric);
+    PLogEventDeActivate(MAT_CholeskyFactorNumeric);
+    PLogEventDeActivate(MAT_Relax);
+    PLogEventDeActivate(MAT_Copy);
+    PLogEventDeActivate(MAT_Convert);
+    PLogEventDeActivate(MAT_Scale);
+    PLogEventDeActivate(MAT_ZeroEntries);
+    PLogEventDeActivate(MAT_Solve);
+    PLogEventDeActivate(MAT_SolveAdd);
+    PLogEventDeActivate(MAT_SolveTrans);
+    PLogEventDeActivate(MAT_SolveTransAdd);
+    PLogEventDeActivate(MAT_SetValues);
+    PLogEventDeActivate(MAT_ForwardSolve);
+    PLogEventDeActivate(MAT_BackwardSolve);
+    PLogEventDeActivate(MAT_Load);
+    PLogEventDeActivate(MAT_View);
+    PLogEventDeActivate(MAT_ILUFactor);
+    PLogEventDeActivate(MAT_GetSubMatrix);
+    PLogEventDeActivate(MAT_GetValues);
+    PLogEventDeActivate(MAT_IncreaseOverlap);
+    PLogEventDeActivate(MAT_GetRow);
+  } else if (cookie == VEC_COOKIE) {
+    PLogEventDeActivate(VEC_Dot);
+    PLogEventDeActivate(VEC_Norm);
+    PLogEventDeActivate(VEC_Max);
+    PLogEventDeActivate(VEC_Min);
+    PLogEventDeActivate(VEC_TDot);
+    PLogEventDeActivate(VEC_Scale);
+    PLogEventDeActivate(VEC_Copy);
+    PLogEventDeActivate(VEC_Set);
+    PLogEventDeActivate(VEC_AXPY);
+    PLogEventDeActivate(VEC_AYPX);
+    PLogEventDeActivate(VEC_Swap);
+    PLogEventDeActivate(VEC_WAXPY);
+    PLogEventDeActivate(VEC_AssemblyBegin);
+    PLogEventDeActivate(VEC_AssemblyEnd);
+    PLogEventDeActivate(VEC_MTDot);
+    PLogEventDeActivate(VEC_MDot);
+    PLogEventDeActivate(VEC_MAXPY);
+    PLogEventDeActivate(VEC_PMult);
+    PLogEventDeActivate(VEC_SetValues);
+    PLogEventDeActivate(VEC_Load);
+    PLogEventDeActivate(VEC_View);
+    PLogEventDeActivate(VEC_ScatterBegin);
+    PLogEventDeActivate(VEC_ScatterEnd);
+    PLogEventDeActivate(VEC_SetRandom);
+  }
+  return 0;
+}
+
+
+
 /* end of -DPETSC_LOG section */
-#else
+#else  /* -------------------------------------------------------------*/
 
 int PLogObjectState(PetscObject obj,char *format,...)
 {
