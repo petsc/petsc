@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.13 1995/05/16 00:33:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.14 1995/05/18 22:44:57 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -17,8 +17,13 @@ static NRList *__PCList = 0;
 .  pc - the preconditioner context.
 .  method - a known method
 
+   Options Database Command:
+$  -pc_method  <method>
+$      Use -help for a list of available methods
+$      (for instance, jacobi or bdd)
+
   Notes:
-  See "petsc/include/pc.h" for available methods (for instance 
+  See "petsc/include/pc.h" for available methods (for instance,
   PCJACOBI or PCBDD).
 
 .keywords: PC, set, method

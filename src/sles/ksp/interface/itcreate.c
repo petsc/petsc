@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.34 1995/05/16 00:33:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.35 1995/05/18 22:44:02 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -108,6 +108,11 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
    Input Parameter:
 .  ctx      - the Krylov space context
 .  itmethod - a known method
+
+   Options Database Command:
+$  -ksp_method  <method>
+$      Use -help for a list of available methods
+$      (for instance, cg or gmres)
 
    Notes:  
    See "petsc/include/ksp.h" for available methods (for instance KSPCG 
