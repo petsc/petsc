@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.21 1998/04/21 18:23:47 balay Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.22 1998/08/05 17:28:00 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -35,90 +35,75 @@ static char vcid[] = "$Id: zda.c,v 1.21 1998/04/21 18:23:47 balay Exp bsmith $";
 #if defined(__cplusplus)
 extern "C" {
 #endif
-void dagetcoloring_(DA da, ISColoring *coloring, Mat *J,int *__ierr)
+void dagetcoloring_(DA *da, ISColoring *coloring, Mat *J,int *__ierr)
 {
-  ISColoring ocoloring;
-  Mat        oJ;
-  *__ierr = DAGetColoring((DA)PetscToPointer(da),&ocoloring,&oJ);
-  *(PetscFortranAddr*) coloring = PetscFromPointer(ocoloring);
-  *(PetscFortranAddr*) J = PetscFromPointer(oJ);
+  *__ierr = DAGetColoring(*da,coloring,J);
 }
 
-void daview_(DA da,Viewer v, int *__ierr )
+void daview_(DA *da,Viewer v, int *__ierr )
 {
   PetscPatchDefaultViewers_Fortran(v);
-  *__ierr = DAView((DA)PetscToPointer(da),v);
+  *__ierr = DAView(*da,v);
 }
 
-void dagetglobalindices_(DA da,int *n, int *indices, long *ia,int *__ierr )
+void dagetglobalindices_(DA *da,int *n, int *indices, long *ia,int *__ierr )
 {
   int *idx;
-  *__ierr = DAGetGlobalIndices((DA)PetscToPointer(da),n,&idx);
+  *__ierr = DAGetGlobalIndices(*da,n,&idx);
   *ia     = PetscIntAddressToFortran(indices,idx);
 }
 
-void dacreateglobalvector_(DA da,Vec* g, int *__ierr )
+void dacreateglobalvector_(DA *da,Vec* g, int *__ierr )
 {
-  Vec v;
-  *__ierr = DACreateGlobalVector((DA)PetscToPointer(da),&v);
-  *(PetscFortranAddr*) g = PetscFromPointer(v);
+  *__ierr = DACreateGlobalVector(*da,g);
 }
 
-void dacreatelocalvector_(DA da,Vec* l, int *__ierr )
+void dacreatelocalvector_(DA *da,Vec* l, int *__ierr )
 {
-  Vec v;
-  *__ierr = DACreateLocalVector((DA)PetscToPointer(da),&v);
-  *(PetscFortranAddr*) l = PetscFromPointer(v);
+  *__ierr = DACreateLocalVector(*da,l);
 }
 
-void dagetscatter_(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,
+void dagetscatter_(DA *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,
                    int *__ierr )
 {
   VecScatter l,g,ll;
-  *__ierr = DAGetScatter((DA)PetscToPointer(da),&l,&g,&ll);
+  *__ierr = DAGetScatter(*da,&l,&g,&ll);
   if (!FORTRANNULLINTEGER(ltog)) *(PetscFortranAddr*) ltog = PetscFromPointer(l);
   if (!FORTRANNULLINTEGER(gtol)) *(PetscFortranAddr*) gtol = PetscFromPointer(g);
   if (!FORTRANNULLINTEGER(ltol)) *(PetscFortranAddr*) ltol = PetscFromPointer(ll);
 }
 
-void dadestroy_(DA da, int *__ierr )
+void dadestroy_(DA *da, int *__ierr )
 {
-  *__ierr = DADestroy((DA)PetscToPointer(da));
-  PetscRmPointer(da);
+  *__ierr = DADestroy(*da);
 }
 
 void dacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                   *stencil_type,int *M,int *N,int *m,int *n,int *w,
                   int *s,int *lx,int *ly,DA *inra, int *__ierr )
 {
-  DA da;
   if (FORTRANNULLINTEGER(lx)) lx = PETSC_NULL;
   if (FORTRANNULLINTEGER(ly)) ly = PETSC_NULL;
   *__ierr = DACreate2d((MPI_Comm)PetscToPointerComm( *comm ),*wrap,
-                       *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,&da);
-  *(PetscFortranAddr*) inra = PetscFromPointer(da);
+                       *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
 }
 
 void dacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,int *M,int *w,int *s,
                  int *lc,DA *inra, int *__ierr )
 {
-  DA da;
   if (FORTRANNULLINTEGER(lc)) lc = PETSC_NULL;
-  *__ierr = DACreate1d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*M,*w,*s,lc,&da);
-  *(PetscFortranAddr*) inra = PetscFromPointer(da);
+  *__ierr = DACreate1d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*M,*w,*s,lc,inra);
 }
 
 void dacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType 
                  *stencil_type,int *M,int *N,int *P,int *m,int *n,int *p,
                  int *w,int *s,int *lx,int *ly,int *lz,DA *inra, int *__ierr )
 {
-  DA da;
   if (FORTRANNULLINTEGER(lx)) lx = PETSC_NULL;
   if (FORTRANNULLINTEGER(ly)) ly = PETSC_NULL;
   if (FORTRANNULLINTEGER(lz)) lz = PETSC_NULL;
   *__ierr = DACreate3d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,
-                        *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,&da);
-  *(PetscFortranAddr*) inra = PetscFromPointer(da);
+                        *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,inra);
 }
 
 void dagetinfo_(DA *da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,
@@ -130,3 +115,4 @@ void dagetinfo_(DA *da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w
 #if defined(__cplusplus)
 }
 #endif
+

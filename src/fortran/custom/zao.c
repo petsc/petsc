@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zao.c,v 1.7 1997/10/28 14:19:31 bsmith Exp balay $";
+static char vcid[] = "$Id: zao.c,v 1.8 1998/03/30 22:21:54 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -22,10 +22,8 @@ void aocreatebasic_(MPI_Comm *comm,int *napp,int *myapp,int *mypetsc,AO *aoout, 
 *__ierr = AOCreateBasic(
 	(MPI_Comm)PetscToPointerComm( *comm ),*napp,myapp,mypetsc,aoout);
 }
-void aocreatebasicis_(IS isapp,IS ispetsc,AO *aoout, int *__ierr ){
-*__ierr = AOCreateBasicIS(
-	(IS)PetscToPointer(isapp),
-	(IS)PetscToPointer(ispetsc),aoout);
+void aocreatebasicis_(IS *isapp,IS *ispetsc,AO *aoout, int *__ierr ){
+*__ierr = AOCreateBasicIS(*isapp,*ispetsc,aoout);
 }
 #if defined(__cplusplus)
 }

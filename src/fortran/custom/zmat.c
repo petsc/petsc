@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.54 1998/08/05 13:03:53 bsmith Exp balay $";
+static char vcid[] = "$Id: zmat.c,v 1.55 1998/09/24 16:13:34 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -147,9 +147,9 @@ void matview_(Mat *mat,Viewer viewer, int *__ierr )
   *__ierr = MatView(*mat,viewer);
 }
 
-void matcopy_(Mat *A,Mat *B, int *__ierr )
+void matcopy_(Mat *A,Mat *B, MatStructure *str,int *__ierr )
 {
-  *__ierr = MatCopy(*A,*B);
+  *__ierr = MatCopy(*A,*B,*str);
 }
 
 void matgetinfo_(Mat *mat,MatInfoType *flag,double *finfo,int *__ierr )
