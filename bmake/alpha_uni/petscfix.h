@@ -225,6 +225,10 @@ extern char   *mktemp(char *);
 extern char   *mktemp(char *);
 extern char   *getenv( char *);
 extern void   *malloc(long unsigned int );
+/*
+  Later versions of the Paragon have 
+  extern void free(void *);
+*/
 extern int    free(void *);
 extern double atof(char *);
 #endif
