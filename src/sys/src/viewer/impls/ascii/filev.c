@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.38 1996/03/19 21:28:43 bsmith Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.39 1996/04/01 03:12:00 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -155,7 +155,10 @@ $    ASCII_FORMAT_MATLAB - Matlab format
 $    ASCII_FORMAT_IMPL - implementation-specific format
 $      (which is in many cases the same as the default)
 $    ASCII_FORMAT_INFO - basic information about object
-$    ASCII_FORMAT_INFO_DETAILED 
+$    ASCII_FORMAT_INFO_DETAILED - more detailed info
+$       about object
+$    ASCII_FORMAT_COMMON - identical output format for
+$       all objects of a particular type
 $    BINARY_FORMAT_NATIVE - store the object to the binary
 $      file in its native format (for example, dense
 $       matrices are stored as dense)
@@ -165,7 +168,7 @@ $       matrices are stored as dense)
 
 .keywords: Viewer, file, set, format
 
-.seealso: ViewerFileOpenASCII(), MatView(), VecView()
+.seealso: ViewerFileOpenASCII(), ViewerFileOpenBinary(), MatView(), VecView()
 @*/
 int ViewerSetFormat(Viewer v,int format,char *name)
 {

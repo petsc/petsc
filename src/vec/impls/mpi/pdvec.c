@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.48 1996/03/19 21:23:07 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.49 1996/04/04 22:02:42 bsmith Exp curfman $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -79,7 +79,7 @@ static int VecView_MPI_Files(Vec xin, Viewer viewer )
       ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
       fprintf(fd,"%s = [\n",outputname);
     } else {
-      fprintf(fd,"Processor [%d]\n",rank);
+      if (format != ASCII_FORMAT_COMMON) fprintf(fd,"Processor [%d]\n",rank);
     }
     for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
@@ -98,7 +98,7 @@ static int VecView_MPI_Files(Vec xin, Viewer viewer )
     for ( j=1; j<size; j++ ) {
       MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
       MPI_Get_count(&status,MPIU_SCALAR,&n);          
-      if (format != ASCII_FORMAT_MATLAB) {
+      if (format != ASCII_FORMAT_MATLAB && format != ASCII_FORMAT_COMMON) {
         fprintf(fd,"Processor [%d]\n",j);
       }
       for ( i=0; i<n; i++ ) {

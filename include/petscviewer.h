@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.26 1996/03/19 21:30:28 bsmith Exp curfman $ */
+/* $Id: viewer.h,v 1.27 1996/04/07 22:47:18 curfman Exp curfman $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -29,6 +29,7 @@ extern int ViewerBinaryGetDescriptor(Viewer,int*);
 #define ASCII_FORMAT_INFO          3
 #define ASCII_FORMAT_INFO_DETAILED 4
 #define ASCII_FORMAT_COMMON        5
+#define BINARY_FORMAT_DEFAULT      0
 #define BINARY_FORMAT_NATIVE       1
 extern int ViewerSetFormat(Viewer,int,char *);
 extern int ViewerGetFormat(Viewer,int*);
