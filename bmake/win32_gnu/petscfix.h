@@ -263,7 +263,7 @@ extern int    atoi(char*);
 #endif
 #endif
 
-/* -----------------------Windows NT ---------------------------------------*/
+/* -----------------------Windows NT with gcc --------------------------*/
 #if defined(PARCH_nt_gnu)
 
 #if defined(__cplusplus)
@@ -296,6 +296,11 @@ extern int close(int);
 extern int    readlink(const char *, char *, int);
 extern int    getdomainname(char *,int);
 #endif
+#endif
+
+/* -----------------------Windows NT with MS Visual C++ ---------------------*/
+#if defined(PARCH_nt)
+
 #endif
 
 #endif
