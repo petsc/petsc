@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.128 1999/03/17 23:25:44 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.129 1999/05/12 03:35:01 bsmith Exp balay $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -290,7 +290,7 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 
      It does not work with Windows NT because winmpich lacks MPI_Type_size()
 */
-#if !defined(USING_MPIUNI) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO)
+#if !defined(USING_MPIUNI) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
 /*
    Logging of MPI activities
 */
