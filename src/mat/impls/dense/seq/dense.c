@@ -94,7 +94,7 @@ int MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
   A->factor = FACTOR_LU;
   if (!A->m || !A->n) PetscFunctionReturn(0);
 #if defined(PETSC_MISSING_LAPACK_GETRF) 
-  SETERRQ(PETSC_ERR_SUP,"GETRF - Lapack routine is unavilable.");
+  SETERRQ(PETSC_ERR_SUP,"GETRF - Lapack routine is unavailable.");
 #else
   LAgetrf_(&A->m,&A->n,mat->v,&mat->lda,mat->pivots,&info);
   if (info<0) SETERRQ(PETSC_ERR_LIB,"Bad argument to LU factorization");
@@ -188,7 +188,7 @@ int MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
   }
   if (!A->m || !A->n) PetscFunctionReturn(0);
 #if defined(PETSC_MISSING_LAPACK_POTRF) 
-  SETERRQ(PETSC_ERR_SUP,"POTRF - Lapack routine is unavilable.");
+  SETERRQ(PETSC_ERR_SUP,"POTRF - Lapack routine is unavailable.");
 #else
   LApotrf_("L",&A->n,mat->v,&mat->lda,&info);
   if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
@@ -226,14 +226,14 @@ int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
   ierr = PetscMemcpy(y,x,A->m*sizeof(PetscScalar));CHKERRQ(ierr);
   if (A->factor == FACTOR_LU) {
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
-    SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
     LAgetrs_("N",&A->m,&one,mat->v,&mat->lda,mat->pivots,y,&A->m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"MBad solve");
 #endif
   } else if (A->factor == FACTOR_CHOLESKY){
 #if defined(PETSC_MISSING_LAPACK_POTRS) 
-    SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
 #else
     LApotrs_("L",&A->m,&one,mat->v,&mat->lda,y,&A->m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"MBad solve");
@@ -262,14 +262,14 @@ int MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
-    SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
     LAgetrs_("T",&A->m,&one,mat->v,&mat->lda,mat->pivots,y,&A->m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   } else {
 #if defined(PETSC_MISSING_LAPACK_POTRS) 
-    SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
 #else
     LApotrs_("L",&A->m,&one,mat->v,&mat->lda,y,&A->m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
@@ -303,14 +303,14 @@ int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
-    SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
     LAgetrs_("N",&A->m,&one,mat->v,&mat->lda,mat->pivots,y,&A->m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   } else {
 #if defined(PETSC_MISSING_LAPACK_POTRS) 
-    SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
 #else
     LApotrs_("L",&A->m,&one,mat->v,&mat->lda,y,&A->m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
@@ -346,14 +346,14 @@ int MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
-    SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
     LAgetrs_("T",&A->m,&one,mat->v,&mat->lda,mat->pivots,y,&A->m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   } else {
 #if defined(PETSC_MISSING_LAPACK_POTRS) 
-    SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
 #else
     LApotrs_("L",&A->m,&one,mat->v,&mat->lda,y,&A->m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");

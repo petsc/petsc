@@ -2,7 +2,12 @@ from __future__ import generators
 import config.base
 import os
 import re
+import exceptions
 
+class UpdateException(exceptions.Exception):
+  def __init__(self,args=None):
+    self.args = args
+    
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -121,8 +126,9 @@ class Configure(config.base.Configure):
         raise RuntimeError('Error pulling latest source code from PETSc BK website\nRun with --enable-update=0 to configure without updating')
       if output1.find('Nothing to pull') >= 0:
         self.strmsg = 'Source is current with PETSc BK website\n'
-      else: 
-        self.strmsg = 'Updated source code from PETSc BK website\n'
+      else:
+        self.updated = 1
+        self.strmsg  = 'Updated source code from PETSc BK website\n'
     except RuntimeError:
       self.framework.log.write('Error doing bk pull. Continuing configure anyways.\n')
       self.framework.log.write(output1+'\n')
@@ -158,7 +164,8 @@ class Configure(config.base.Configure):
       if output2.find('Nothing to pull') >= 0:
         self.strmsg = self.strmsg+'BuildSystem source is current with PETSc BK website\n'
       else: 
-        self.strmsg = self.strmsg+'Updated BuildSystem source code from PETSc BK website\n'
+        self.updated = 1
+        self.strmsg  = self.strmsg+'Updated BuildSystem source code from PETSc BK website\n'
     except RuntimeError:
       self.framework.log.write('Error doing bk pull on BuildSystem. Continuing configure anyways.\n')
       self.framework.log.write(output2+'\n')
@@ -240,6 +247,7 @@ class Configure(config.base.Configure):
       if output1.find('error') >= 0:
         self.framework.log.write(output1+'\n')
         raise RuntimeError('Error applying '+self.framework.argDB['with-patch-petsc']+' update.\n')
+      self.updated = 1
     if self.framework.argDB.has_key('with-patch-buildsystem'):
       try:
         output1 = self.executeShellCommand('cd python/BuildSystem; '+patch+' -Np1 < '+self.framework.argDB['with-patch-buildsystem'])[0]
@@ -248,6 +256,7 @@ class Configure(config.base.Configure):
       if output1.find('error') >= 0:
         self.framework.log.write(output1+'\n')
         raise RuntimeError('Error applying '+self.framework.argDB['with-patch-buildsystem']+' update.\n')
+      self.updated = 1
 
   def configure(self):
     self.executeTest(self.configureDirectories)
@@ -256,5 +265,8 @@ class Configure(config.base.Configure):
     if os.path.isdir('BitKeeper'): 
       self.executeTest(self.updateBK)
       self.executeTest(self.updateBKBuildSystem)
-    else:                          self.executeTest(self.updatePatches)
+    else:
+      self.executeTest(self.updatePatches)
+    if self.updated:
+      raise UpdateException("Source code update, rerunning configure")
     return
