@@ -116,8 +116,8 @@ int main(int argc,char **argv)
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of processors %d\n",size);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  M,N,P,dof %d %d %d %d\n",M,N,P,dof);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  stencil_width %d stencil_type %d periodic %d\n",stencil_width,stencil_type,periodic);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  M,N,P,dof %D %D %D %D\n",M,N,P,dof);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  stencil_width %D stencil_type %d periodic %d\n",stencil_width,(int)stencil_type,(int)periodic);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  dimension %d\n",1 + (int) flg2 + (int) flg3);CHKERRQ(ierr);
   }
    

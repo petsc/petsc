@@ -7,11 +7,12 @@ static char help[] = "Creates a matrix, inserts some values, and tests MatGetSub
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat         mat,submat,*submatrices;
-  int         m = 10,n = 10,i = 4,tmp,ierr;
-  IS          irkeep,ickeep;
-  PetscScalar value = 1.0;
-  PetscViewer sviewer;
+  Mat             mat,submat,*submatrices;
+  PetscInt        m = 10,n = 10,i = 4,tmp;
+  PetscErrorCode  ierr;
+  IS              irkeep,ickeep;
+  PetscScalar     value = 1.0;
+  PetscViewer     sviewer;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);

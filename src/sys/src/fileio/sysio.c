@@ -269,7 +269,7 @@ PetscErrorCode PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pet
 #endif
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %d",n);
+  if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
   if (!n) PetscFunctionReturn(0);
 
   maxblock = 65536;

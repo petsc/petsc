@@ -490,11 +490,11 @@ PetscErrorCode PetscTrDump(FILE *fp)
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!fp) fp = stdout;
   if (TRallocated > 0) {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d]Total space allocated %d bytes\n",rank,(int)TRallocated);CHKERRQ(ierr);
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d]Total space allocated %D bytes\n",rank,(PetscInt)TRallocated);CHKERRQ(ierr);
   }
   head = TRhead;
   while (head) {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%2d]%8d bytes %s() line %d in %s%s\n",rank,(int)head->size,
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%2d]%D bytes %s() line %d in %s%s\n",rank,(PetscInt)head->size,
             head->functionname,head->lineno,head->dirname,head->filename);CHKERRQ(ierr);
 #if defined(PETSC_USE_STACK)
     ierr = PetscStackPrint(&head->stack,fp);CHKERRQ(ierr);
@@ -575,9 +575,9 @@ PetscErrorCode PetscTrLogDump(FILE *fp)
   if (!fp) fp = stdout;
   ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
   if (rss) {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);CHKERRQ(ierr);
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory used %D Size of entire process %D\n",rank,(PetscInt)TRMaxMem,(PetscInt)rss);CHKERRQ(ierr);
   } else {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory used %d OS cannot compute size of entire process\n",rank,(int)TRMaxMem);CHKERRQ(ierr);
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory used %D OS cannot compute size of entire process\n",rank,(PetscInt)TRMaxMem);CHKERRQ(ierr);
   }
   shortlength      = (PetscInt*)malloc(PetscLogMalloc*sizeof(PetscInt));if (!shortlength) SETERRQ(PETSC_ERR_MEM,"Out of memory");
   shortfunction    = (const char**)malloc(PetscLogMalloc*sizeof(char *));if (!shortfunction) SETERRQ(PETSC_ERR_MEM,"Out of memory");

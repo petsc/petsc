@@ -134,6 +134,8 @@ PetscErrorCode VecInitializePackage(char *path)
          Create the special MPI reduction operation that may be used by VecNorm/DotBegin()
   */
   ierr = MPI_Op_create(PetscSplitReduction_Local,1,&PetscSplitReduction_Op);CHKERRQ(ierr);
+  ierr = MPI_Op_create(VecMax_Local,2,&VecMax_Local_Op);CHKERRQ(ierr);
+  ierr = MPI_Op_create(VecMin_Local,2,&VecMin_Local_Op);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -95,7 +95,7 @@ comm_init (void)
     {edge_not_pow_2 = 0;}
 
 #ifdef DEBUG  
-  error_msg_warning("c_init() done :: my_id=%d, num_nodes=%d",my_id,num_nodes);
+  error_msg_warning("c_init() done :: my_id=%d, num_nodes=%D",my_id,num_nodes);
 #endif
 }
 
@@ -121,7 +121,7 @@ giop(int *vals, int *work, int n, int *oprs)
 #ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs)
-    {error_msg_fatal("giop() :: vals=%d, work=%d, oprs=%d",vals,work,oprs);}
+    {error_msg_fatal("giop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
   if ((oprs[0] == NON_UNIFORM)&&(n<2))
@@ -136,14 +136,14 @@ giop(int *vals, int *work, int n, int *oprs)
   if ((num_nodes<2)||(!n))
     {
 #ifdef DEBUG
-      error_msg_warning("giop() :: n=%d num_nodes=%d",n,num_nodes);
+      error_msg_warning("giop() :: n=%D num_nodes=%d",n,num_nodes);
 #endif
       return;
     }
 
   /* a negative number if items to send ==> fatal */
   if (n<0)
-    {error_msg_fatal("giop() :: n=%d<0?",n);}
+    {error_msg_fatal("giop() :: n=%D<0?",n);}
 
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM)
@@ -235,7 +235,7 @@ grop(REAL *vals, REAL *work, int n, int *oprs)
 #ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs)
-    {error_msg_fatal("grop() :: vals=%d, work=%d, oprs=%d",vals,work,oprs);}
+    {error_msg_fatal("grop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
   if ((oprs[0] == NON_UNIFORM)&&(n<2))
@@ -252,7 +252,7 @@ grop(REAL *vals, REAL *work, int n, int *oprs)
 
   /* a negative number of items to send ==> fatal */
   if (n<0)
-    {error_msg_fatal("gdop() :: n=%d<0?",n);}
+    {error_msg_fatal("gdop() :: n=%D<0?",n);}
 
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM)
@@ -348,7 +348,7 @@ grop_hc(REAL *vals, REAL *work, int n, int *oprs, int dim)
 #ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs)
-    {error_msg_fatal("grop_hc() :: vals=%d, work=%d, oprs=%d",vals,work,oprs);}
+    {error_msg_fatal("grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
   if ((oprs[0] == NON_UNIFORM)&&(n<2))
@@ -369,7 +369,7 @@ grop_hc(REAL *vals, REAL *work, int n, int *oprs, int dim)
 
   /* a negative number of items to send ==> fatal */
   if (n<0)
-    {error_msg_fatal("grop_hc() :: n=%d<0?",n);}
+    {error_msg_fatal("grop_hc() :: n=%D<0?",n);}
 
   /* can't do more dimensions then exist */
   dim = MIN(dim,i_log2_num_nodes);
@@ -440,7 +440,7 @@ void gfop(void *vals, void *work, int n, vbfp fp, DATA_TYPE dt, int comm_type)
 
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!fp)
-    {error_msg_fatal("gop() :: v=%d, w=%d, f=%d",vals,work,fp);}
+    {error_msg_fatal("gop() :: v=%D, w=%D, f=%D",vals,work,fp);}
 #endif
 
   /* if there's nothing to do return */
@@ -449,7 +449,7 @@ void gfop(void *vals, void *work, int n, vbfp fp, DATA_TYPE dt, int comm_type)
 
   /* a negative number of items to send ==> fatal */
   if (n<0)
-    {error_msg_fatal("gop() :: n=%d<0?",n);}
+    {error_msg_fatal("gop() :: n=%D<0?",n);}
 
   if (comm_type==MPI)
     {
@@ -631,7 +631,7 @@ grop_hc_vvl(REAL *vals, REAL *work, int *segs, int *oprs, int dim)
 #ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs||!segs)
-    {error_msg_fatal("grop_hc() :: vals=%d, work=%d, oprs=%d",vals,work,oprs);}
+    {error_msg_fatal("grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
 #if defined(not_used)
@@ -803,7 +803,7 @@ void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
 #ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs)
-    {error_msg_fatal("giop_hc() :: vals=%d, work=%d, oprs=%d",vals,work,oprs);}
+    {error_msg_fatal("giop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
   if ((oprs[0] == NON_UNIFORM)&&(n<2))
@@ -824,7 +824,7 @@ void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
 
   /* a negative number of items to send ==> fatal */
   if (n<0)
-    {error_msg_fatal("giop_hc() :: n=%d<0?",n);}
+    {error_msg_fatal("giop_hc() :: n=%D<0?",n);}
 
   /* can't do more dimensions then exist */
   dim = MIN(dim,i_log2_num_nodes);

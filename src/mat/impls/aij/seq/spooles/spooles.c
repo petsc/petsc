@@ -423,7 +423,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
     rootchv = FrontMtx_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, 0.0, 
             chvmanager, &fierr, lu->cpus,lu->stats,lu->options.msglvl,lu->options.msgFile); 
     if (rootchv) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"\n matrix found to be singular");    
-    if (fierr >= 0) SETERRQ1(PETSC_ERR_LIB,"\n error encountered at front %d", fierr);
+    if (fierr >= 0) SETERRQ1(PETSC_ERR_LIB,"\n error encountered at front %D", fierr);
     
     if(lu->options.FrontMtxInfo){
       ierr = PetscPrintf(PETSC_COMM_SELF,"\n %8d pivots, %8d pivot tests, %8d delayed rows and columns\n",lu->stats[0], lu->stats[1], lu->stats[2]);CHKERRQ(ierr);

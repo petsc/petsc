@@ -28,7 +28,8 @@ int main(int argc,char **argv)
   MPI_Comm           comm;
   PetscScalar        v; 
   KSPConvergedReason reason;
-  int                i,j,its,ierr;
+  PetscInt           i,j,its;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
@@ -112,7 +113,7 @@ int main(int argc,char **argv)
     printf("\nOther kind of divergence: this should not happen.\n");
   } else {
     ierr = KSPGetIterationNumber(solver,&its);CHKERRQ(ierr);
-    printf("\nConvergence in %d iterations.\n",its);
+    printf("\nConvergence in %d iterations.\n",(int)its);
   }
   printf("\n");
 

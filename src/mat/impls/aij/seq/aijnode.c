@@ -831,7 +831,7 @@ PetscErrorCode Mat_AIJ_CheckInode(Mat A,PetscTruth samestructure)
     A->ops->coloringpatch   = 0;
     a->inode.node_count     = 0;
     a->inode.size           = 0;
-    PetscLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes out of %d rows. Not using Inode routines\n",node_count,m);
+    PetscLogInfo(A,"Mat_AIJ_CheckInode: Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);
   } else {
     A->ops->mult            = MatMult_SeqAIJ_Inode;
     A->ops->multadd         = MatMultAdd_SeqAIJ_Inode;
@@ -844,7 +844,7 @@ PetscErrorCode Mat_AIJ_CheckInode(Mat A,PetscTruth samestructure)
     A->ops->coloringpatch   = MatColoringPatch_SeqAIJ_Inode;
     a->inode.node_count     = node_count;
     a->inode.size           = ns;
-    PetscLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes of %d. Limit used: %d. Using Inode routines\n",node_count,m,a->inode.limit);
+    PetscLogInfo(A,"Mat_AIJ_CheckInode: Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);
   }
   PetscFunctionReturn(0);
 }
@@ -1355,7 +1355,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
             ndamp++;
             goto endofwhile;
           } else {
-            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",row,PetscAbsScalar(rtmp1[row]),zeropivot);
+            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,PetscAbsScalar(rtmp1[row]),zeropivot);
           }
         }
         rtmp1[row] = 1.0/rtmp1[row];
@@ -1426,7 +1426,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
               ndamp++;
               goto endofwhile;
             } else {
-              SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",prow,PetscAbsScalar(*pc1),zeropivot);
+              SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",prow,PetscAbsScalar(*pc1),zeropivot);
             }
           }
           mul2 = (*pc2)/(*pc1); /* since diag is not yet inverted.*/
@@ -1451,9 +1451,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
             ndamp++;
             goto endofwhile;
           } else if (PetscAbsScalar(rtmp1[row]) < zeropivot) {
-            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",row,PetscAbsScalar(rtmp1[row]),zeropivot);
+            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,PetscAbsScalar(rtmp1[row]),zeropivot);
           } else {
-            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",row+1,PetscAbsScalar(rtmp2[row+1]),zeropivot);
+            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row+1,PetscAbsScalar(rtmp2[row+1]),zeropivot);
           }
         }
         rtmp1[row]   = 1.0/rtmp1[row];
@@ -1537,7 +1537,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
               ndamp++;
               goto endofwhile;
             } else {
-              SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",prow,PetscAbsScalar(*pc1),zeropivot);
+              SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",prow,PetscAbsScalar(*pc1),zeropivot);
             }
           }
           mul2 = (*pc2)/(*pc1);
@@ -1566,7 +1566,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
               ndamp++;
               goto endofwhile;
             } else {
-              SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",prow,PetscAbsScalar(*pc2),zeropivot);
+              SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",prow,PetscAbsScalar(*pc2),zeropivot);
             }
           }
           mul3 = (*pc3)/(*pc2);
@@ -1591,11 +1591,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
             ndamp++;
             goto endofwhile;
           } else if (PetscAbsScalar(rtmp1[row]) < zeropivot) {
-            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",row,PetscAbsScalar(rtmp1[row]),zeropivot);
+            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,PetscAbsScalar(rtmp1[row]),zeropivot);
           } else if (PetscAbsScalar(rtmp2[row+1]) < zeropivot) {
-            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",row+1,PetscAbsScalar(rtmp2[row+1]),zeropivot);
+            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row+1,PetscAbsScalar(rtmp2[row+1]),zeropivot);
 	} else {
-            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",row+2,PetscAbsScalar(rtmp3[row+2]),zeropivot);
+            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row+2,PetscAbsScalar(rtmp3[row+2]),zeropivot);
           }
         }
         rtmp1[row]   = 1.0/rtmp1[row];
@@ -1625,7 +1625,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   C->factor      = FACTOR_LU;
   C->assembled   = PETSC_TRUE;
   if (ndamp || b->lu_damping) {
-    PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ_Inode: number of damping tries %d damping value %g\n",ndamp,damping);
+    PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ_Inode: number of damping tries %D damping value %g\n",ndamp,damping);
   }
   PetscLogFlops(C->n);
   PetscFunctionReturn(0);

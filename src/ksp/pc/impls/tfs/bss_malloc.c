@@ -169,7 +169,7 @@ perm_malloc(size_t size)
     }
 #endif
 
-  error_msg_fatal("perm_malloc() :: can't satisfy %d byte request",size);
+  error_msg_fatal("perm_malloc() :: can't satisfy %D byte request",size);
   return(NULL);
 }
 
@@ -227,9 +227,9 @@ perm_stats(void)
   if (!my_id)
     {
       printf("%d :: perm_malloc stats:\n",my_id);
-      printf("%d :: perm_req min = %d\n",my_id,(int)min);
-      printf("%d :: perm_req ave = %d\n",my_id,(int)ave);
-      printf("%d :: perm_req max = %d\n",my_id,(int)max);
+      printf("%d :: perm_req min = %D\n",my_id,(int)min);
+      printf("%d :: perm_req ave = %D\n",my_id,(int)ave);
+      printf("%d :: perm_req max = %D\n",my_id,(int)max);
     }
 
 #elif defined MPISRC
@@ -251,16 +251,16 @@ perm_stats(void)
   if (!my_id)
     {
       printf("%d :: perm_malloc stats:\n",my_id);
-      printf("%d :: perm_req min = %d\n",my_id,min);
-      printf("%d :: perm_req ave = %d\n",my_id,ave);
-      printf("%d :: perm_req max = %d\n",my_id,max);
+      printf("%d :: perm_req min = %D\n",my_id,min);
+      printf("%d :: perm_req ave = %D\n",my_id,ave);
+      printf("%d :: perm_req max = %D\n",my_id,max);
     }
 #endif
 #else
   if (!my_id)
     {
       printf("%d :: perm_malloc stats:\n",my_id);
-      printf("%d :: perm_req     = %d\n",my_id,perm_req);
+      printf("%d :: perm_req     = %D\n",my_id,perm_req);
     }
 #endif
 
@@ -268,8 +268,8 @@ perm_stats(void)
 #ifdef DEBUG
   if (num_perm_frees+num_perm_req)
     {
-      printf("%d :: perm # frees = %d\n",my_id,-1*num_perm_frees);
-      printf("%d :: perm # calls = %d\n",my_id,num_perm_req);
+      printf("%d :: perm # frees = %D\n",my_id,-1*num_perm_frees);
+      printf("%d :: perm # calls = %D\n",my_id,num_perm_req);
     }
 #endif
 
@@ -389,7 +389,7 @@ bss_malloc(size_t size)
     }
 #endif
 
-  error_msg_fatal("bss_malloc() :: can't satisfy %d request",size);
+  error_msg_fatal("bss_malloc() :: can't satisfy %D request",size);
   return(NULL);
 }
 
@@ -446,9 +446,9 @@ bss_stats(void)
   if (!my_id)
     {
       printf("%d :: bss_malloc stats:\n",my_id);
-      printf("%d :: bss_req min   = %d\n",my_id,(int)min);
-      printf("%d :: bss_req ave   = %d\n",my_id,(int)ave);
-      printf("%d :: bss_req max   = %d\n",my_id,(int)max);
+      printf("%d :: bss_req min   = %D\n",my_id,(int)min);
+      printf("%d :: bss_req ave   = %D\n",my_id,(int)ave);
+      printf("%d :: bss_req max   = %D\n",my_id,(int)max);
     }
 
 #elif defined MPISRC
@@ -471,9 +471,9 @@ bss_stats(void)
   if (!my_id)
     {
       printf("%d :: bss_malloc stats:\n",my_id);
-      printf("%d :: bss_req min   = %d\n",my_id,min);
-      printf("%d :: bss_req ave   = %d\n",my_id,ave);
-      printf("%d :: bss_req max   = %d\n",my_id,max);
+      printf("%d :: bss_req min   = %D\n",my_id,min);
+      printf("%d :: bss_req ave   = %D\n",my_id,ave);
+      printf("%d :: bss_req max   = %D\n",my_id,max);
     }
 #endif
 
@@ -481,7 +481,7 @@ bss_stats(void)
   if (!my_id)
     {
       printf("%d :: bss_malloc stats:\n",my_id);
-      printf("%d :: bss_req       = %d\n",my_id,bss_req);
+      printf("%d :: bss_req       = %D\n",my_id,bss_req);
     }
 
 #endif  
@@ -489,8 +489,8 @@ bss_stats(void)
 #ifdef DEBUG
   if (num_bss_frees+num_bss_req)
     {
-      printf("%d :: bss # frees   = %d\n",my_id,-1*num_bss_frees);
-      printf("%d :: bss # calls   = %d\n",my_id,num_bss_req);
+      printf("%d :: bss # frees   = %D\n",my_id,-1*num_bss_frees);
+      printf("%d :: bss # calls   = %D\n",my_id,num_bss_req);
     }
 #endif
 

@@ -455,8 +455,8 @@ static PetscErrorCode TSView_Rk(TS ts,PetscViewer viewer)
    /*double elapsed;*/
    
    PetscFunctionBegin;
-   ierr = PetscPrintf(PETSC_COMM_WORLD,"  number of ok steps: %d\n",rk->nok);CHKERRQ(ierr);
-   ierr = PetscPrintf(PETSC_COMM_WORLD,"  number of rejected steps: %d\n",rk->nnok);CHKERRQ(ierr);
+   ierr = PetscPrintf(PETSC_COMM_WORLD,"  number of ok steps: %D\n",rk->nok);CHKERRQ(ierr);
+   ierr = PetscPrintf(PETSC_COMM_WORLD,"  number of rejected steps: %D\n",rk->nnok);CHKERRQ(ierr);
    /*   elapsed = ((double) (rk->end - rk->start)) / CLOCKS_PER_SEC;
    
    ierr = PetscPrintf(PETSC_COMM_WORLD,"  CPU time used (in seconds): %f\n",elapsed);CHKERRQ(ierr); */

@@ -218,7 +218,7 @@ int main(int argc,char **argv)
   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
   ierr = SNESSolve(snes,x);CHKERRQ(ierr); 
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n",its);CHKERRQ(ierr);
 
 
   /* 
@@ -228,7 +228,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-print_history",&flg);CHKERRQ(ierr);
   if (flg) {
     for (i=0; i<its+1; i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %d: Linear iterations %d Function norm = %g\n",i,hist_its[i],history[i]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %D: Linear iterations %D Function norm = %g\n",i,hist_its[i],history[i]);CHKERRQ(ierr);
     }
   }
 

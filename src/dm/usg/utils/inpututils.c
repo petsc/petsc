@@ -406,7 +406,7 @@ PetscErrorCode AOData2dGridDraw(AOData2dGrid agrid,PetscDraw draw)
      Number the vertex
   */
   for (i=0; i<agrid->vertex_n; i++) {
-    sprintf(str,"%d",i);
+    sprintf(str,"%d",(int)i);
     ierr = PetscDrawString(draw,vertex[2*i],vertex[1+2*i],PETSC_DRAW_BLUE,str);CHKERRQ(ierr);
   }
 
@@ -414,7 +414,7 @@ PetscErrorCode AOData2dGridDraw(AOData2dGrid agrid,PetscDraw draw)
      Number the cell
   */
   for (i=0; i<agrid->cell_n; i++) {
-    sprintf(str,"%d",i);
+    sprintf(str,"%d",(int)i);
     xx = .25*(vertex[2*cell[4*i]] + vertex[2*cell[4*i+1]] + vertex[2*cell[4*i+2]] + vertex[2*cell[4*i+3]]);
     yy = .25*(vertex[1+2*cell[4*i]] + vertex[1+2*cell[4*i+1]] + vertex[1+2*cell[4*i+2]] + vertex[1+2*cell[4*i+3]]);
     ierr = PetscDrawString(draw,xx,yy,PETSC_DRAW_GREEN,str);CHKERRQ(ierr);
@@ -424,7 +424,7 @@ PetscErrorCode AOData2dGridDraw(AOData2dGrid agrid,PetscDraw draw)
      Number the edge
   */
   for (i=0; i<agrid->edge_n; i++) {
-    sprintf(str,"%d",i);
+    sprintf(str,"%d",(int)i);
     xx = .5*(vertex[2*edge[2*i]] + vertex[2*edge[2*i+1]]);
     yy = .5*(vertex[1+2*edge[2*i]] + vertex[1+2*edge[2*i+1]]);
     ierr = PetscDrawLine(draw,vertex[2*edge[2*i]],vertex[1+2*edge[2*i]],vertex[2*edge[2*i+1]],vertex[1+2*edge[2*i+1]],PETSC_DRAW_BLACK);CHKERRQ(ierr);

@@ -70,7 +70,7 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
     if (file) {
       char fieldname[PETSC_MAX_PATH_LEN];
 
-      fprintf(file,"-daload_info %d,%d,%d,%d,%d,%d,%d,%d\n",dim,m,n,p,dof,swidth,stencil,periodic);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-daload_info %D,%D,%D,%D,%D,%D,%D,%D\n",dim,m,n,p,dof,swidth,stencil,periodic);CHKERRQ(ierr);
       for (i=0; i<dof; i++) {
         if (da->fieldname[i]) {
           ierr = PetscStrncpy(fieldname,da->fieldname[i],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
@@ -79,20 +79,20 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
           for (j=0; j<len; j++) {
             if (fieldname[j] == ' ') fieldname[j] = '_';
           }
-          fprintf(file,"-daload_fieldname_%d %s\n",i,fieldname);
+          ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-daload_fieldname_%D %s\n",i,fieldname);CHKERRQ(ierr);
         }
       }
       if (da->coordinates) { /* save the DA's coordinates */
-        fprintf(file,"-daload_coordinates\n");
+        ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-daload_coordinates\n");CHKERRQ(ierr);
       }
     }
   } 
 
   /* save the coordinates if they exist to disk (in the natural ordering) */
   if (da->coordinates) {
-    DA  dac;
-    int *lx,*ly,*lz;
-    Vec natural;
+    DA       dac;
+    PetscInt *lx,*ly,*lz;
+    Vec      natural;
 
     /* create the appropriate DA to map to natural ordering */
     ierr = DAGetOwnershipRange(da,&lx,&ly,&lz);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
     } else if (dim == 3) {
       ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
     } else {
-      SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Dimension is not 1 2 or 3: %d\n",dim);
+      SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Dimension is not 1 2 or 3: %D\n",dim);
     }
     ierr = DACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,"coor_");CHKERRQ(ierr);

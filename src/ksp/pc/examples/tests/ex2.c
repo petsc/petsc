@@ -11,16 +11,16 @@ users should employ the KSP interface instead of using PC directly.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         mat;          /* matrix */
-  Vec         b,ustar,u;  /* vectors (RHS, exact solution, approx solution) */
-  PC          pc;           /* PC context */
-  KSP         ksp;          /* KSP context */
+  Mat            mat;          /* matrix */
+  Vec            b,ustar,u;  /* vectors (RHS, exact solution, approx solution) */
+  PC             pc;           /* PC context */
+  KSP            ksp;          /* KSP context */
   PetscErrorCode ierr;
-  int n = 10,i,its,col[3];
-  PetscScalar value[3],mone = -1.0,one = 1.0,zero = 0.0;
-  PCType      pcname;
-  KSPType     kspname;
-  PetscReal   norm;
+  PetscInt       n = 10,i,its,col[3];
+  PetscScalar    value[3],mone = -1.0,one = 1.0,zero = 0.0;
+  PCType         pcname;
+  KSPType        kspname;
+  PetscReal      norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -71,7 +71,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&mone,ustar,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %A Number of iterations %d\n",norm,its);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %A Number of iterations %D\n",norm,its);
 
   /* Free data structures */
   ierr = KSPDestroy(ksp);CHKERRQ(ierr);

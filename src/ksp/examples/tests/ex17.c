@@ -11,15 +11,16 @@ extern int FormTestMatrix(Mat,int,TestType);
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec         x,b,u;      /* approx solution, RHS, exact solution */
-  Mat         A;            /* linear system matrix */
-  KSP        ksp;         /* KSP context */
-  int         ierr,n = 10,its, dim,p = 1,use_random;
-  PetscScalar none = -1.0,pfive = 0.5;
-  PetscReal   norm;
-  PetscRandom rctx;
-  TestType    type;
-  PetscTruth  flg;
+  Vec            x,b,u;      /* approx solution, RHS, exact solution */
+  Mat            A;            /* linear system matrix */
+  KSP            ksp;         /* KSP context */
+  PetscErrorCode ierr;
+  PetscInt       n = 10,its, dim,p = 1,use_random;
+  PetscScalar    none = -1.0,pfive = 0.5;
+  PetscReal      norm;
+  PetscRandom    rctx;
+  TestType       type;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -73,7 +74,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A,Iterations %d\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A,Iterations %D\n",norm,its);CHKERRQ(ierr);
 
   /* Free work space */
   ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(u);CHKERRQ(ierr);
@@ -86,14 +87,15 @@ int main(int argc,char **args)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormTestMatrix"
-int FormTestMatrix(Mat A,int n,TestType type)
+int FormTestMatrix(Mat A,PetscInt n,TestType type)
 {
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(1,"FormTestMatrix: These problems require complex numbers.");
 #else
 
-  PetscScalar val[5];
-  int    i,j,I,J,ierr,col[5],Istart,Iend;
+  PetscScalar    val[5];
+  PetscErrorCode ierr;
+  PetscInt       i,j,I,J,col[5],Istart,Iend;
 
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
   if (type == TEST_1) {

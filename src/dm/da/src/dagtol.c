@@ -216,7 +216,7 @@ PetscErrorCode DAGlobalToNatural_Create(DA da)
   ierr = VecGetOwnershipRange(da->natural,&start,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DAGetNatural_Private(da,&Nlocal,&to);CHKERRQ(ierr);
-  if (Nlocal != m) SETERRQ2(PETSC_ERR_PLIB,"Internal error: Nlocal %d local vector size %d",Nlocal,m);
+  if (Nlocal != m) SETERRQ2(PETSC_ERR_PLIB,"Internal error: Nlocal %D local vector size %D",Nlocal,m);
   ierr = ISCreateStride(da->comm,m,start,1,&from);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(da->comm,da->Nlocal,PETSC_DETERMINE,0,&global);
   ierr = VecScatterCreate(global,from,da->natural,to,&da->gton);CHKERRQ(ierr);

@@ -394,7 +394,7 @@ PetscErrorCode PetscDrawLGPrint(PetscDrawLG lg)
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
 
   for(i = 0; i < dim; i++) {
-    PetscPrintf(lg->comm, "Line %d\n", i);
+    PetscPrintf(lg->comm, "Line %d>\n", i);
     for(j = 0; j < nopts; j++) {
       PetscPrintf(lg->comm, "  X: %g Y: %g\n", lg->x[j*dim+i], lg->y[j*dim+i]);
     }

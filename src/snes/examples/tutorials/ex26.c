@@ -197,7 +197,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESDAFormFunction(snes,user.psi,user.r,(void*)&user);CHKERRQ(ierr);
   ierr = VecNorm(user.r,NORM_MAX,&fnorm);CHKERRQ(ierr); 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d fnorm %g\n",its,fnorm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D fnorm %g\n",its,fnorm);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
      Output the solution vector
@@ -405,7 +405,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   imin = 0; imax = Mx-1;
   ierr = VecMin(X,&imin,&psi_0);CHKERRQ(ierr);
   ierr = VecMax(X,&imax,&psi_a);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"psi_0(%d)=%g, psi_a(%d)=%g.\n",imin,psi_0,imax,psi_a);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"psi_0(%D)=%g, psi_a(%D)=%g.\n",imin,psi_0,imax,psi_a);CHKERRQ(ierr);
 
   /*
      Scatter ghost points to local vector, using the 2-step process

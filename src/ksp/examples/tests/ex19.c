@@ -54,12 +54,13 @@ extern int FormJacobian_Grid(AppCtx *,GridCtx *,Mat *);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  AppCtx        user;                      
-  int           ierr,its,N,n,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE;
-  int           size,nlocal,Nlocal;
-  KSP           ksp,ksp_fine;
-  PC            pc;
-  PetscScalar   one = 1.0;
+  AppCtx         user;                      
+  PetscErrorCode ierr;
+  PetscInt       its,N,n,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE,nlocal,Nlocal;
+  PetscMPIInt    size;
+  KSP            ksp,ksp_fine;
+  PC             pc;
+  PetscScalar    one = 1.0;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -70,8 +71,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
 
-  PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.coarse.mx,user.coarse.my);
-  PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %d by %d\n",user.fine.mx,user.fine.my);
+  PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %D by %D\n",user.coarse.mx,user.coarse.my);
+  PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",user.fine.mx,user.fine.my);
 
   n = user.fine.mx*user.fine.my; N = user.coarse.mx*user.coarse.my;
 
@@ -148,7 +149,7 @@ int main(int argc,char **argv)
 
   ierr = KSPSolve(ksp,user.fine.b,user.fine.x);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %d\n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %D\n",its);CHKERRQ(ierr);
 
   /* Free data structures */
   ierr = MatDestroy(user.fine.J);CHKERRQ(ierr);
@@ -177,10 +178,11 @@ int main(int argc,char **argv)
 #define __FUNCT__ "FormJacobian_Grid"
 int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
 {
-  Mat     jac = *J;
-  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
-  int     nloc,*ltog,grow;
-  PetscScalar  two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
+  Mat            jac = *J;
+  PetscErrorCode ierr;
+  PetscInt       i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
+  PetscInt       nloc,*ltog,grow;
+  PetscScalar    two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
 
   mx = grid->mx;            my = grid->my;            
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);

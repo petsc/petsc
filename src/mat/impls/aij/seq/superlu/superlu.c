@@ -181,7 +181,7 @@ PetscErrorCode MatCreateNull_SuperLU(Mat A,Mat *nullMat)
     sp_dtrsv("L","T","U",&lu->L,&lu->U,&nullVals[b*numRows],&stat,&ierr);
 #endif
     if (ierr < 0)
-      SETERRQ1(PETSC_ERR_ARG_WRONG,"The argument %d was invalid",-ierr);
+      SETERRQ1(PETSC_ERR_ARG_WRONG,"The argument %D was invalid",-ierr);
   }
   ierr = PetscFree(workVals);CHKERRQ(ierr);
 
@@ -244,12 +244,12 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
     }
   } else if ( info > 0 ){
     if ( lu->lwork == -1 ) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %d bytes\n", info - lu->A.ncol);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", info - lu->A.ncol);
     } else {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %d\n",info);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %D\n",info);
     }
   } else if (info < 0){
-    SETERRQ2(PETSC_ERR_LIB, "info = %d, the %d-th argument in gssvx() had an illegal value", info,-info);
+    SETERRQ2(PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", info,-info);
   }
 
   if ( lu->options.PrintStat ) {
@@ -317,12 +317,12 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. condition number = %e\n", lu->rcond);
   } else if ( info > 0 ){
     if ( lu->lwork == -1 ) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %d bytes\n", info - lu->A.ncol);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", info - lu->A.ncol);
     } else {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %d\n",info);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %D\n",info);
     }
   } else { /* info < 0 */
-    SETERRQ2(PETSC_ERR_LIB, "info = %d, the %d-th argument in gssvx() had an illegal value", info,-info); 
+    SETERRQ2(PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", info,-info); 
   }
 
   if ( lu->options.PrintStat ) {
@@ -330,10 +330,10 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
     StatPrint(&stat);
     Lstore = (SCformat *) lu->L.Store;
     Ustore = (NCformat *) lu->U.Store;
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor L = %d\n", Lstore->nnz);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor U = %d\n", Ustore->nnz);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in L+U = %d\n", Lstore->nnz + Ustore->nnz - lu->A.ncol);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  L\\U MB %.3f\ttotal MB needed %.3f\texpansions %d\n",
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor L = %D\n", Lstore->nnz);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor U = %D\n", Ustore->nnz);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in L+U = %D\n", Lstore->nnz + Ustore->nnz - lu->A.ncol);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  L\\U MB %.3f\ttotal MB needed %.3f\texpansions %D\n",
 	       lu->mem_usage.for_lu/1e6, lu->mem_usage.total_needed/1e6,
 	       lu->mem_usage.expansions);
   }
@@ -417,7 +417,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   if (lu->lwork > 0 ){
     ierr = PetscMalloc(lu->lwork,&lu->work);CHKERRQ(ierr); 
   } else if (lu->lwork != 0 && lu->lwork != -1){
-    ierr = PetscPrintf(PETSC_COMM_SELF,"   Warning: lwork %d is not supported by SUPERLU. The default lwork=0 is used.\n",lu->lwork);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"   Warning: lwork %D is not supported by SUPERLU. The default lwork=0 is used.\n",lu->lwork);
     lu->lwork = 0;
   }
   PetscOptionsEnd();
@@ -467,16 +467,16 @@ PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
   options = lu->options;
   ierr = PetscViewerASCIIPrintf(viewer,"SuperLU run parameters:\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Equil: %s\n",(options.Equil != NO) ? "YES": "NO");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ColPerm: %d\n",options.ColPerm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  IterRefine: %d\n",options.IterRefine);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ColPerm: %D\n",options.ColPerm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  IterRefine: %D\n",options.IterRefine);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  SymmetricMode: %s\n",(options.SymmetricMode != NO) ? "YES": "NO");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  DiagPivotThresh: %g\n",options.DiagPivotThresh);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  PivotGrowth: %s\n",(options.PivotGrowth != NO) ? "YES": "NO");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  ConditionNumber: %s\n",(options.ConditionNumber != NO) ? "YES": "NO");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  RowPerm: %d\n",options.RowPerm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  RowPerm: %D\n",options.RowPerm);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  ReplaceTinyPivot: %s\n",(options.ReplaceTinyPivot != NO) ? "YES": "NO");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  PrintStat: %s\n",(options.PrintStat != NO) ? "YES": "NO");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  lwork: %d\n",lu->lwork);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  lwork: %D\n",lu->lwork);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

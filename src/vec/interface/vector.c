@@ -87,7 +87,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
 @*/
 PetscErrorCode VecSetFromOptions(Vec vec)
 {
-  PetscTruth opt;
+  PetscTruth     opt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -161,7 +161,7 @@ PetscErrorCode VecSetSizes(Vec v, PetscInt n, PetscInt N)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_COOKIE,1); 
-  if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local size %d cannot be larger than global size %d",n,N);
+  if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local size %D cannot be larger than global size %D",n,N);
   v->n = n;
   v->N = N;
   PetscFunctionReturn(0);
@@ -194,9 +194,9 @@ PetscErrorCode VecSetBlockSize(Vec v,PetscInt bs)
   PetscValidHeaderSpecific(v,VEC_COOKIE,1); 
   if (bs <= 0) bs = 1;
   if (bs == v->bs) PetscFunctionReturn(0);
-  if (v->bs != -1) SETERRQ2(PETSC_ERR_ARG_WRONGSTATE,"Cannot reset blocksize. Current size %d new %d",v->bs,bs);
-  if (v->N != -1 && v->N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %d %d",v->N,bs);
-  if (v->n != -1 && v->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %d %d\n\
+  if (v->bs != -1) SETERRQ2(PETSC_ERR_ARG_WRONGSTATE,"Cannot reset blocksize. Current size %D new %D",v->bs,bs);
+  if (v->N != -1 && v->N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %D %D",v->N,bs);
+  if (v->n != -1 && v->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %D %D\n\
    Try setting blocksize before setting the vector type",v->n,bs);
   
   v->bs        = bs;
@@ -373,9 +373,9 @@ $     NORM_INFINITY denotes max_i |x_i|
 @*/
 PetscErrorCode VecNorm(Vec x,NormType type,PetscReal *val)  
 {
-  PetscTruth flg;
+  PetscTruth     flg;
   PetscErrorCode ierr;
-  PetscInt        type_id;
+  PetscInt       type_id;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
@@ -417,7 +417,8 @@ PetscErrorCode VecNorm(Vec x,NormType type,PetscReal *val)
 PetscErrorCode VecNormComposedDataID(NormType type,PetscInt *type_id)
 {
   static PetscInt id_norm1=-1,id_norm2=-1,id_normInf=-1,id_normF=-1,id_norm12=-1;
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
+
   PetscFunctionBegin;
   switch (type) {
   case NORM_1 :
@@ -641,10 +642,10 @@ $      x[i] = alpha * x[i], for i=1,...,n.
 @*/
 PetscErrorCode VecScale (const PetscScalar *alpha,Vec x)
 {
-  PetscReal  scale,norm1=0.0,norm2=0.0,normInf=0.0,normF=0.0;
-  PetscTruth flg1,flg2,flgInf,flgF;
+  PetscReal      scale,norm1=0.0,norm2=0.0,normInf=0.0,normF=0.0;
+  PetscTruth     flg1,flg2,flgInf,flgF;
   PetscErrorCode ierr;
-  PetscInt        type_id1,type_id2,type_idInf,type_idF;
+  PetscInt       type_id1,type_id2,type_idInf,type_idF;
 
   PetscFunctionBegin;
   PetscValidScalarPointer(alpha,1);
@@ -719,10 +720,10 @@ PetscErrorCode VecScale (const PetscScalar *alpha,Vec x)
 @*/
 PetscErrorCode VecCopy(Vec x,Vec y)
 {
-  PetscTruth flg;
-  PetscReal  norm=0.0;
+  PetscTruth     flg;
+  PetscReal      norm=0.0;
   PetscErrorCode ierr;
-  PetscInt        type_id;
+  PetscInt       type_id;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1); 
@@ -801,9 +802,9 @@ $     x[i] = alpha, for i=1,...,n,
 @*/
 PetscErrorCode VecSet(const PetscScalar *alpha,Vec x) 
 {
-  PetscReal  val;
+  PetscReal      val;
   PetscErrorCode ierr;
-  PetscInt        type_id;
+  PetscInt       type_id;
 
   PetscFunctionBegin;
   PetscValidScalarPointer(alpha,1);
@@ -870,7 +871,7 @@ PetscErrorCode VecSet(const PetscScalar *alpha,Vec x)
 PetscErrorCode VecSetRandom(PetscRandom rctx,Vec x) 
 {
   PetscErrorCode ierr;
-  PetscRandom randObj = PETSC_NULL;
+  PetscRandom    randObj = PETSC_NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
@@ -1039,11 +1040,11 @@ PetscErrorCode VecAYPX(const PetscScalar *alpha,Vec x,Vec y)
 @*/
 PetscErrorCode VecSwap(Vec x,Vec y)
 {
-  PetscReal  norm1x=0.0,norm2x=0.0,normInfx=0.0,normFx=0.0;
-  PetscReal  norm1y=0.0,norm2y=0.0,normInfy=0.0,normFy=0.0;
-  PetscTruth flg1x,flg2x,flgInfx,flgFx;
-  PetscTruth flg1y,flg2y,flgInfy,flgFy;
-  PetscInt        type_id1,type_id2,type_idInf,type_idF;
+  PetscReal      norm1x=0.0,norm2x=0.0,normInfx=0.0,normFx=0.0;
+  PetscReal      norm1y=0.0,norm2y=0.0,normInfy=0.0,normFy=0.0;
+  PetscTruth     flg1x,flg2x,flgInfx,flgFx;
+  PetscTruth     flg1y,flg2y,flgInfy,flgFy;
+  PetscInt       type_id1,type_id2,type_idInf,type_idF;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1571,6 +1572,7 @@ seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLoca
 PetscErrorCode VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,2);
@@ -1614,6 +1616,7 @@ PetscErrorCode VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 PetscErrorCode VecSetLocalToGlobalMappingBlock(Vec x,ISLocalToGlobalMapping mapping)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,2);
@@ -1735,7 +1738,7 @@ PetscErrorCode VecSetValuesLocal(Vec x,PetscInt ni,const PetscInt ix[],const Pet
 PetscErrorCode VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora) 
 {
   PetscErrorCode ierr;
-  PetscInt lixp[128],*lix = lixp;
+  PetscInt       lixp[128],*lix = lixp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
@@ -1780,7 +1783,7 @@ PetscErrorCode VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],co
 PetscErrorCode VecAssemblyBegin(Vec vec)
 {
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
@@ -1827,7 +1830,7 @@ PetscErrorCode VecAssemblyBegin(Vec vec)
 PetscErrorCode VecAssemblyEnd(Vec vec)
 {
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
@@ -2110,14 +2113,14 @@ PetscErrorCode VecGetArray_Private(Vec x,PetscScalar *a[])
 PetscErrorCode VecGetArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 {
   PetscErrorCode ierr;
-  PetscInt         i;
-  PetscScalar **q;
+  PetscInt       i;
+  PetscScalar    **q;
 
   PetscFunctionBegin;
   PetscValidPointer(x,1);
   PetscValidHeaderSpecific(*x,VEC_COOKIE,1);
   PetscValidPointer(a,3);
-  if (n <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must get at least one array n = %d",n);
+  if (n <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must get at least one array n = %D",n);
   ierr = PetscMalloc(n*sizeof(PetscScalar*),&q);CHKERRQ(ierr);
   for (i=0; i<n; ++i) {
     ierr = VecGetArray(x[i],&q[i]);CHKERRQ(ierr);
@@ -2155,8 +2158,8 @@ PetscErrorCode VecGetArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 PetscErrorCode VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 {
   PetscErrorCode ierr;
-  PetscInt         i;
-  PetscScalar **q = *a;
+  PetscInt       i;
+  PetscScalar    **q = *a;
 
   PetscFunctionBegin;
   PetscValidPointer(x,1);
@@ -2249,13 +2252,13 @@ PetscErrorCode VecRestoreArray_Private(Vec x,PetscScalar *a[])
 @*/
 PetscErrorCode VecViewFromOptions(Vec vec, char *title)
 {
-  PetscViewer viewer;
-  PetscDraw   draw;
-  PetscTruth  opt;
-  char       *titleStr;
-  char        typeName[1024];
-  char        fileName[PETSC_MAX_PATH_LEN];
-  size_t      len;
+  PetscViewer    viewer;
+  PetscDraw      draw;
+  PetscTruth     opt;
+  char           *titleStr;
+  char           typeName[1024];
+  char           fileName[PETSC_MAX_PATH_LEN];
+  size_t         len;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2347,7 +2350,7 @@ PetscErrorCode VecViewFromOptions(Vec vec, char *title)
 @*/
 PetscErrorCode VecView(Vec vec,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -2545,12 +2548,12 @@ PetscErrorCode VecSetOption(Vec x,VecOption op)
 PetscErrorCode VecDuplicateVecs_Default(Vec w,PetscInt m,Vec *V[])
 {
   PetscErrorCode ierr;
-  PetscInt  i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w,VEC_COOKIE,1);
   PetscValidPointer(V,3);
-  if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %d",m);
+  if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
   ierr = PetscMalloc(m*sizeof(Vec*),V);CHKERRQ(ierr);
   for (i=0; i<m; i++) {ierr = VecDuplicate(w,*V+i);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -2561,11 +2564,11 @@ PetscErrorCode VecDuplicateVecs_Default(Vec w,PetscInt m,Vec *V[])
 PetscErrorCode VecDestroyVecs_Default(Vec v[], PetscInt m)
 {
   PetscErrorCode ierr;
-  PetscInt i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidPointer(v,1);
-  if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %d",m);
+  if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
   for (i=0; i<m; i++) {ierr = VecDestroy(v[i]);CHKERRQ(ierr);}
   ierr = PetscFree(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2997,7 +3000,7 @@ PetscErrorCode VecStashView(Vec v,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscInt            i,j;
+  PetscInt       i,j;
   PetscTruth     match;
   VecStash       *s;
   PetscScalar    val;
@@ -3014,9 +3017,9 @@ PetscErrorCode VecStashView(Vec v,PetscViewer viewer)
   s = &v->bstash;
 
   /* print block stash */
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %d block size %d\n",rank,s->n,s->bs);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %D block size %D\n",rank,s->n,s->bs);CHKERRQ(ierr);
   for (i=0; i<s->n; i++) {
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d ",rank,s->idx[i]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D ",rank,s->idx[i]);CHKERRQ(ierr);
     for (j=0; j<s->bs; j++) {
       val = s->array[i*s->bs+j];
 #if defined(PETSC_USE_COMPLEX)
@@ -3032,13 +3035,13 @@ PetscErrorCode VecStashView(Vec v,PetscViewer viewer)
   s = &v->stash;
 
   /* print basic stash */
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector stash size %d\n",rank,s->n);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector stash size %D\n",rank,s->n);CHKERRQ(ierr);
   for (i=0; i<s->n; i++) {
     val = s->array[i];
 #if defined(PETSC_USE_COMPLEX)
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d (%18.16e %18.16e) ",rank,s->idx[i],PetscRealPart(val),PetscImaginaryPart(val));CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D (%18.16e %18.16e) ",rank,s->idx[i],PetscRealPart(val),PetscImaginaryPart(val));CHKERRQ(ierr);
 #else
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d %18.16e\n",rank,s->idx[i],val);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D %18.16e\n",rank,s->idx[i],val);CHKERRQ(ierr);
 #endif
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -3085,15 +3088,15 @@ PetscErrorCode VecStashView(Vec v,PetscViewer viewer)
 PetscErrorCode VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
 {
   PetscErrorCode ierr;
-  PetscInt         i,N;
-  PetscScalar *aa;
+  PetscInt       i,N;
+  PetscScalar    *aa;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidPointer(a,6);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m*n != N) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Local array size %d does not match 2d array dimensions %d by %d",N,m,n);
+  if (m*n != N) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Local array size %D does not match 2d array dimensions %D by %D",N,m,n);
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
   ierr = PetscMalloc(m*sizeof(PetscScalar*),a);CHKERRQ(ierr);
@@ -3179,14 +3182,14 @@ PetscErrorCode VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,Pet
 PetscErrorCode VecGetArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
 {
   PetscErrorCode ierr;
-  PetscInt N;
+  PetscInt       N;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidPointer(a,4);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m != N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local array size %d does not match 1d array dimensions %d",N,m);
+  if (m != N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local array size %D does not match 1d array dimensions %D",N,m);
   ierr = VecGetArray(x,a);CHKERRQ(ierr);
   *a  -= mstart;
   PetscFunctionReturn(0);
@@ -3304,15 +3307,15 @@ PetscErrorCode VecConjugate(Vec x)
 PetscErrorCode VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
 {
   PetscErrorCode ierr;
-  PetscInt         i,N,j;
-  PetscScalar *aa,**b;
+  PetscInt       i,N,j;
+  PetscScalar    *aa,**b;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidPointer(a,8);
   PetscValidType(x,1);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m*n*p != N) SETERRQ4(PETSC_ERR_ARG_INCOMP,"Local array size %d does not match 3d array dimensions %d by %d by %d",N,m,n,p);
+  if (m*n*p != N) SETERRQ4(PETSC_ERR_ARG_INCOMP,"Local array size %D does not match 3d array dimensions %D by %D by %D",N,m,n,p);
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
   ierr = PetscMalloc(m*sizeof(PetscScalar**)+m*n*sizeof(PetscScalar*),a);CHKERRQ(ierr);

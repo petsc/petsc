@@ -75,10 +75,6 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
-  /*
-  PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.coarse.mx,user.coarse.my);
-  PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %d by %d\n",user.fine.mx,user.fine.my);
-  */
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Npx",&Nx,PETSC_NULL);CHKERRQ(ierr);
@@ -91,7 +87,6 @@ int main(int argc,char **argv)
   ierr = DAGetMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  /* ierr = PetscPrintf(PETSC_COMM_SELF," [%d] A - loc and gl dim: %d, %d; %d, %d\n",rank,m,n,M,N);*/
   /* set val=one to A */
   if (size == 1){
     ierr = MatGetRowIJ(A,0,PETSC_FALSE,&nrows,&ia,&ja,&flg);
@@ -121,8 +116,6 @@ int main(int argc,char **argv)
   
   ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(P,&M,&N);CHKERRQ(ierr);
-  /* ierr = PetscPrintf(PETSC_COMM_SELF," [%d] P - loc and gl dim: %d, %d; %d, %d\n",rank,m,n,M,N);*/
-  /* ierr = MatView(P, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); */
 
   /* Create vectors v1 and v2 that are compatible with A */
   ierr = VecCreate(PETSC_COMM_WORLD,&v1);CHKERRQ(ierr);
@@ -183,9 +176,6 @@ int main(int argc,char **argv)
     ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); 
     ierr = MatGetLocalSize(C,&m,&n);CHKERRQ(ierr);
     
-    /* ierr = PetscPrintf(PETSC_COMM_SELF, " \n[%d] C=P^T*A*P, dim %d, %d: \n",rank,m,n); */
-    /* ierr = MatView(C, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
     for (i=0; i<1; i++){

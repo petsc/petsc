@@ -256,8 +256,6 @@ PetscErrorCode PetscCompareInitialize(double tol)
   for (i=0; i<size; i++) {
     if ((int) work == gflag[i]) gflag[mysize++] = i;
   }
-  /* printf("[%d] my name %s basename %s mysize %d\n",rank,programname,basename,mysize); */
-
   if (!mysize || mysize == size) {
     SETERRQ(PETSC_ERR_ARG_IDN,"Need two different programs to compare");
   }

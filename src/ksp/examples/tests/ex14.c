@@ -84,29 +84,30 @@ extern int ComputeJacobian(AppCtx*,Vec,Mat,MatStructure*);
 int main(int argc,char **argv)
 {
   /* -------------- Data to define application problem ---------------- */
-  MPI_Comm  comm;                /* communicator */
-  KSP      ksp;                /* linear solver */
-  Vec       X,Y,F;             /* solution, update, residual vectors */
-  Mat       J;                   /* Jacobian matrix */
-  AppCtx    user;                /* user-defined work context */
-  int       Nx,Ny;              /* number of preocessors in x- and y- directions */
-  int       size;                /* number of processors */
-  PetscReal bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
-  int       m,N,ierr;
-  KSP       ksp;
+  MPI_Comm       comm;                /* communicator */
+  KSP            ksp;                /* linear solver */
+  Vec            X,Y,F;             /* solution, update, residual vectors */
+  Mat            J;                   /* Jacobian matrix */
+  AppCtx         user;                /* user-defined work context */
+  PetscInt       Nx,Ny;              /* number of preocessors in x- and y- directions */
+  PetscMPIInt    size;                /* number of processors */
+  PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  PetscInt       m,N;
+  PetscErrorCode ierr;
+  KSP            ksp;
 
   /* --------------- Data to define nonlinear solver -------------- */
-  PetscReal       rtol = 1.e-8;        /* relative convergence tolerance */
-  PetscReal       xtol = 1.e-8;        /* step convergence tolerance */
-  PetscReal       ttol;                /* convergence tolerance */
-  PetscReal       fnorm,ynorm,xnorm; /* various vector norms */
-  int          max_nonlin_its = 10; /* maximum number of iterations for nonlinear solver */
-  int          max_functions = 50;  /* maximum number of function evaluations */
-  int          lin_its;             /* number of linear solver iterations for each step */
-  int          i;                   /* nonlinear solve iteration number */
-  MatStructure mat_flag;        /* flag indicating structure of preconditioner matrix */
-  PetscTruth   no_output;           /* flag indicating whether to surpress output */
-  PetscScalar  mone = -1.0;       
+  PetscReal      rtol = 1.e-8;        /* relative convergence tolerance */
+  PetscReal      xtol = 1.e-8;        /* step convergence tolerance */
+  PetscReal      ttol;                /* convergence tolerance */
+  PetscReal      fnorm,ynorm,xnorm; /* various vector norms */
+  PetscInt       max_nonlin_its = 10; /* maximum number of iterations for nonlinear solver */
+  PetscInt       max_functions = 50;  /* maximum number of function evaluations */
+  PetscInt       lin_its;             /* number of linear solver iterations for each step */
+  PetscInt       i;                   /* nonlinear solve iteration number */
+  MatStructure   mat_flag;        /* flag indicating structure of preconditioner matrix */
+  PetscTruth     no_output;           /* flag indicating whether to surpress output */
+  PetscScalar    mone = -1.0;       
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -242,7 +243,7 @@ int main(int argc,char **argv)
     ierr = VecCopy(Y,X);CHKERRQ(ierr);                   /* X <- Y          */
     ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);       /* xnorm = || X || */
     if (!no_output) {
-      ierr = PetscPrintf(comm,"   linear solve iterations = %d, xnorm=%g, ynorm=%g\n",lin_its,xnorm,ynorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"   linear solve iterations = %D, xnorm=%g, ynorm=%g\n",lin_its,xnorm,ynorm);CHKERRQ(ierr);
     }
 
     /* 
@@ -251,7 +252,7 @@ int main(int argc,char **argv)
     ierr = ComputeFunction(&user,X,F);CHKERRQ(ierr);     /* Compute F(X)    */
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);       /* fnorm = || F || */
     if (!no_output) {
-      ierr = PetscPrintf(comm,"Iteration %d, function norm = %g\n",i+1,fnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"Iteration %D, function norm = %g\n",i+1,fnorm);CHKERRQ(ierr);
     }
 
     /*
@@ -271,12 +272,12 @@ int main(int argc,char **argv)
     }
     if (i > max_functions) {
       if (!no_output) {
-        ierr = PetscPrintf(comm,"Exceeded maximum number of function evaluations: %d > %d\n",i,max_functions);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"Exceeded maximum number of function evaluations: %D > %D\n",i,max_functions);CHKERRQ(ierr);
       }
       break;
     }  
   }
-  ierr = PetscPrintf(comm,"Number of Newton iterations = %d\n",i+1);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Number of Newton iterations = %D\n",i+1);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -306,7 +307,7 @@ int main(int argc,char **argv)
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int          i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
+  PetscInt     i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
   PetscReal    one = 1.0,lambda,temp1,temp,hx,hy;
   PetscScalar  *x;
   Vec          localX = user->localX;

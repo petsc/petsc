@@ -35,20 +35,20 @@
 @*/
 PetscErrorCode SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  MatFDColoring color = (MatFDColoring) ctx;
+  MatFDColoring  color = (MatFDColoring) ctx;
   PetscErrorCode ierr;
-  int freq,it;
-  Vec           f;
+  PetscInt       freq,it;
+  Vec            f;
 
   PetscFunctionBegin;
   ierr = MatFDColoringGetFrequency(color,&freq);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
   if ((freq > 1) && ((it % freq))) {
-    PetscLogInfo(color,"SNESDefaultComputeJacobianColor:Skipping Jacobian recomputation, it %d, freq %d\n",it,freq);
+    PetscLogInfo(color,"SNESDefaultComputeJacobianColor:Skipping Jacobian recomputation, it %D, freq %D\n",it,freq);
     *flag = SAME_PRECONDITIONER;
   } else {
-    PetscLogInfo(color,"SNESDefaultComputeJacobianColor:Computing Jacobian, it %d, freq %d\n",it,freq);
+    PetscLogInfo(color,"SNESDefaultComputeJacobianColor:Computing Jacobian, it %D, freq %D\n",it,freq);
     *flag = SAME_NONZERO_PATTERN;
     ierr  = SNESGetFunction(snes,&f,0,0);CHKERRQ(ierr);
     ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);

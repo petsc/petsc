@@ -130,16 +130,16 @@ PetscErrorCode AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
     ierr = AODataGetInfo(ao,&nkeys,&keynames);CHKERRQ(ierr);
     for (i=0; i<nkeys; i++) {
       ierr = AODataKeyGetInfo(ao,keynames[i],&N,0,&nsegs,&segnames);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  %s: (%d)\n",keynames[i],N);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  %s: (%D)\n",keynames[i],N);CHKERRQ(ierr);
       for (j=0; j<nsegs; j++) {
         ierr = AODataSegmentGetInfo(ao,keynames[i],segnames[j],&bs,&dtype);CHKERRQ(ierr);
         ierr = PetscDataTypeGetName(dtype,&stype);CHKERRQ(ierr);
         if (dtype == PETSC_CHAR) {
           ierr = AODataSegmentGet(ao,keynames[i],segnames[j],1,&zero,(void **)&segvalue);CHKERRQ(ierr);
-          ierr = PetscViewerASCIIPrintf(viewer,"      %s: (%d) %s -> %s\n",segnames[j],bs,stype,segvalue);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"      %s: (%D) %s -> %s\n",segnames[j],bs,stype,segvalue);CHKERRQ(ierr);
           ierr = AODataSegmentRestore(ao,keynames[i],segnames[j],1,&zero,(void **)&segvalue);CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIIPrintf(viewer,"      %s: (%d) %s\n",segnames[j],bs,stype);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"      %s: (%D) %s\n",segnames[j],bs,stype);CHKERRQ(ierr);
         }
       }
     }
@@ -147,27 +147,27 @@ PetscErrorCode AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     while (key) {
-      ierr = PetscViewerASCIIPrintf(viewer,"AOData Key: %s Length %d Ownership: ",key->name,key->N);CHKERRQ(ierr);
-      for (j=0; j<size+1; j++) {ierr = PetscViewerASCIIPrintf(viewer,"%d ",key->rowners[j]);CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer,"AOData Key: %s Length %D Ownership: ",key->name,key->N);CHKERRQ(ierr);
+      for (j=0; j<size+1; j++) {ierr = PetscViewerASCIIPrintf(viewer,"%D ",key->rowners[j]);CHKERRQ(ierr);}
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
 
       segment = key->segments;
       while (segment) {      
         ierr = PetscDataTypeGetName(segment->datatype,&dt);CHKERRQ(ierr);    
-        ierr = PetscViewerASCIIPrintf(viewer,"  AOData Segment: %s Blocksize %d datatype %s\n",segment->name,segment->bs,dt);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  AOData Segment: %s Blocksize %D datatype %s\n",segment->name,segment->bs,dt);CHKERRQ(ierr);
         if (segment->datatype == PETSC_INT) {
           int *mdata = (int*)segment->data;
           for (k=0; k<key->N; k++) {
-            ierr = PetscViewerASCIIPrintf(viewer," %d: ",k);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," %D: ",k);CHKERRQ(ierr);
             for (l=0; l<segment->bs; l++) {
-              ierr = PetscViewerASCIIPrintf(viewer,"   %d ",mdata[k*segment->bs + l]);CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer,"   %D ",mdata[k*segment->bs + l]);CHKERRQ(ierr);
             }
             ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
           }
         } else if (segment->datatype == PETSC_DOUBLE) {
           PetscReal *mdata = (PetscReal*)segment->data;
           for (k=0; k<key->N; k++) {
-            ierr = PetscViewerASCIIPrintf(viewer," %d: ",k);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," %D: ",k);CHKERRQ(ierr);
             for (l=0; l<segment->bs; l++) {
               ierr = PetscViewerASCIIPrintf(viewer,"   %18.16e ",mdata[k*segment->bs + l]);CHKERRQ(ierr);
             }
@@ -176,7 +176,7 @@ PetscErrorCode AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
         } else if (segment->datatype == PETSC_SCALAR) {
           PetscScalar *mdata = (PetscScalar*)segment->data;
           for (k=0; k<key->N; k++) {
-            ierr = PetscViewerASCIIPrintf(viewer," %d: ",k);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," %D: ",k);CHKERRQ(ierr);
             for (l=0; l<segment->bs; l++) {
 #if !defined(PETSC_USE_COMPLEX)
               ierr = PetscViewerASCIIPrintf(viewer,"   %18.16e ",mdata[k*segment->bs + l]);CHKERRQ(ierr);
@@ -196,7 +196,7 @@ PetscErrorCode AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
         } else if (segment->datatype == PETSC_LOGICAL) {
           PetscBT mdata = (PetscBT) segment->data;
           for (k=0; k<key->N; k++) {
-            ierr = PetscViewerASCIIPrintf(viewer," %d: ",k);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," %D: ",k);CHKERRQ(ierr);
             for (l=0; l<segment->bs; l++) {
               ierr = PetscViewerASCIIPrintf(viewer,"   %d ",(int)PetscBTLookup(mdata,k*segment->bs + l));CHKERRQ(ierr);
             }

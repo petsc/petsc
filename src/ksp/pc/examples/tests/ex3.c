@@ -10,14 +10,15 @@ also tests the MatRelax() routines.  Input parameters are:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat     mat;          /* matrix */
-  Vec     b,ustar,u;  /* vectors (RHS, exact solution, approx solution) */
-  PC      pc;           /* PC context */
-  KSP     ksp;          /* KSP context */
-  int     ierr,n = 10,i,its,col[3];
-  PetscScalar  value[3],one = 1.0,zero = 0.0;
-  KSPType kspname;
-  PCType  pcname;
+  Mat            mat;          /* matrix */
+  Vec            b,ustar,u;  /* vectors (RHS, exact solution, approx solution) */
+  PC             pc;           /* PC context */
+  KSP            ksp;          /* KSP context */
+  PetscErrorCode ierr;
+  PetscInt       n = 10,i,its,col[3];
+  PetscScalar    value[3],one = 1.0,zero = 0.0;
+  KSPType        kspname;
+  PCType         pcname;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -67,7 +68,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations %d\n",its);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations %D\n",its);
 
   /* Free data structures */
   ierr = KSPDestroy(ksp);CHKERRQ(ierr);

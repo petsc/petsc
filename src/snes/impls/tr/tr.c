@@ -7,14 +7,14 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNES_TR_KSPConverged_Private"
-PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
+PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   SNES                snes = (SNES) ctx;
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
   SNES_TR             *neP = (SNES_TR*)snes->data;
   Vec                 x;
   PetscReal           nrm;
-  PetscErrorCode ierr;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   if (snes->ksp_ewconv) {
@@ -24,14 +24,14 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,int n,PetscReal rnorm,KSPCon
   }
   ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
   if (*reason) {
-    PetscLogInfo(snes,"SNES_TR_KSPConverged_Private: regular convergence test KSP iterations=%d, rnorm=%g\n",n,rnorm);
+    PetscLogInfo(snes,"SNES_TR_KSPConverged_Private: regular convergence test KSP iterations=%D, rnorm=%g\n",n,rnorm);
   }
 
   /* Determine norm of solution */
   ierr = KSPBuildSolution(ksp,0,&x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&nrm);CHKERRQ(ierr);
   if (nrm >= neP->delta) {
-    PetscLogInfo(snes,"SNES_TR_KSPConverged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
+    PetscLogInfo(snes,"SNES_TR_KSPConverged_Private: KSP iterations=%D, rnorm=%g\n",n,rnorm);
     PetscLogInfo(snes,"SNES_TR_KSPConverged_Private: Ending linear iteration early, delta=%g, length=%g\n",neP->delta,nrm);
     *reason = KSP_CONVERGED_STEP_LENGTH;
   }
@@ -103,7 +103,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
     ierr = KSPSolve(snes->ksp,F,Ytmp);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
-    PetscLogInfo(snes,"SNESSolve_TR: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
+    PetscLogInfo(snes,"SNESSolve_TR: iter=%D, linear solve iterations=%D\n",snes->iter,lits);
     ierr = VecNorm(Ytmp,NORM_2,&nrm);CHKERRQ(ierr);
     norm1 = nrm;
     while(1) {
@@ -183,7 +183,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   snes->vec_sol_always  = snes->vec_sol;
   snes->vec_func_always = snes->vec_func; 
   if (i == maxits) {
-    PetscLogInfo(snes,"SNESSolve_TR: Maximum number of iterations has been reached: %d\n",maxits);
+    PetscLogInfo(snes,"SNESSolve_TR: Maximum number of iterations has been reached: %D\n",maxits);
     reason = SNES_DIVERGED_MAX_IT;
   }
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
@@ -320,7 +320,7 @@ PetscErrorCode SNESConverged_TR(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscR
   } else if (neP->itflag) {
     ierr = SNESConverged_LS(snes,xnorm,pnorm,fnorm,reason,dummy);CHKERRQ(ierr);
   } else if (snes->nfuncs > snes->max_funcs) {
-    PetscLogInfo(snes,"SNESConverged_TR: Exceeded maximum number of function evaluations: %d > %d\n",snes->nfuncs,snes->max_funcs);
+    PetscLogInfo(snes,"SNESConverged_TR: Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   } else {
     *reason = SNES_CONVERGED_ITERATING;

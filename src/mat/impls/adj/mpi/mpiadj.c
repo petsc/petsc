@@ -24,9 +24,9 @@ PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %d:",i+a->rstart);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %D:",i+a->rstart);CHKERRQ(ierr);
       for (j=a->i[i]; j<a->i[i+1]; j++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d ",a->j[j]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %D ",a->j[j]);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
@@ -62,7 +62,7 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d, NZ=%d",mat->m,mat->n,a->nz);
+  PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D, NZ=%D",mat->m,mat->n,a->nz);
 #endif
   if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
   if (a->freeaij) {
@@ -358,15 +358,15 @@ PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscInt *j,Pe
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
 #if defined(PETSC_USE_BOPT_g)
-  if (i[0] != 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %d\n",i[0]);
+  if (i[0] != 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %D\n",i[0]);
   for (ii=1; ii<B->m; ii++) {
     if (i[ii] < 0 || i[ii] < i[ii-1]) {
-      SETERRQ4(PETSC_ERR_ARG_OUTOFRANGE,"i[%d]=%d index is out of range: i[%d]=%d",ii,i[ii],ii-1,i[ii-1]);
+      SETERRQ4(PETSC_ERR_ARG_OUTOFRANGE,"i[%D]=%D index is out of range: i[%D]=%D",ii,i[ii],ii-1,i[ii-1]);
     }
   }
   for (ii=0; ii<i[B->m]; ii++) {
     if (j[ii] < 0 || j[ii] >= B->N) {
-      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column index %d out of range %d\n",ii,j[ii]);
+      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column index %D out of range %D\n",ii,j[ii]);
     }
   } 
 #endif

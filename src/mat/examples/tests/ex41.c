@@ -74,7 +74,7 @@ int main(int argc,char **args)
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
     ierr = ISGetSize(is1[i],&sz1);CHKERRQ(ierr);
     ierr = ISGetSize(is2[i],&sz2);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%d, flg =%d sz1 = %d sz2 = %d\n",rank,i,flg,sz1,sz2);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%D, flg =%d sz1 = %D sz2 = %D\n",rank,i,(int)flg,sz1,sz2);CHKERRQ(ierr);
     /* ISView(is1[i],PETSC_VIEWER_STDOUT_SELF);
     ISView(is2[i],PETSC_VIEWER_STDOUT_SELF); */
   }

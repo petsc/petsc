@@ -406,14 +406,14 @@ PetscErrorCode KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverg
   }
   if (rnorm <= ksp->ttol) {
     if (rnorm < ksp->atol) {
-      PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than absolute tolerance %g at iteration %d\n",rnorm,ksp->atol,n);
+      PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than absolute tolerance %g at iteration %D\n",rnorm,ksp->atol,n);
       *reason = KSP_CONVERGED_ATOL;
     } else {
-      PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than relative tolerance %g times initial residual norm %g at iteration %d\n",rnorm,ksp->rtol,ksp->rnorm0,n);
+      PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than relative tolerance %g times initial residual norm %g at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);
       *reason = KSP_CONVERGED_RTOL;
     }
   } else if (rnorm >= ksp->divtol*ksp->rnorm0) {
-    PetscLogInfo(ksp,"Linear solver is diverging. Initial residual norm %g, current residual norm %g at iteration %d\n",ksp->rnorm0,rnorm,n);
+    PetscLogInfo(ksp,"Linear solver is diverging. Initial residual norm %g, current residual norm %g at iteration %D\n",ksp->rnorm0,rnorm,n);
     *reason = KSP_DIVERGED_DTOL;
   } else if (rnorm != rnorm) {
     PetscLogInfo(ksp,"Linear solver has created a not a number (NaN) as the residual norm, declaring divergence\n");

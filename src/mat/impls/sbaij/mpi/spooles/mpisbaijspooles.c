@@ -32,7 +32,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJSpooles(Mat A,MatAssemblyType mode) {
   PetscFunctionBegin;
   ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
   ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
-  if (bs > 1) SETERRQ1(PETSC_ERR_SUP,"Block size %d not supported by Spooles",bs);
+  if (bs > 1) SETERRQ1(PETSC_ERR_SUP,"Block size %D not supported by Spooles",bs);
   lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
   A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPISBAIJSpooles;  
   PetscFunctionReturn(0);

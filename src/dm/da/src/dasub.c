@@ -60,11 +60,11 @@ PetscErrorCode DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
   ranks = owners + size;
   ierr = MPI_Allgather(&flag,1,MPI_INT,owners,1,MPI_INT,da->comm);CHKERRQ(ierr);
   ict = 0;
-  PetscLogInfo(da,"DAGetProcessorSubset: dim=%d, direction=%d, procs: ",da->dim,(int)dir);
+  PetscLogInfo(da,"DAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);
   for (i=0; i<size; i++) {
     if (owners[i]) {
       ranks[ict] = i; ict++;
-      PetscLogInfo(da,"%d ",i);
+      PetscLogInfo(da,"%D ",i);
     }
   }
   PetscLogInfo(da,"\n");

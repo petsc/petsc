@@ -210,9 +210,9 @@ PetscErrorCode MatNullSpaceTest(MatNullSpace sp,Mat mat)
   for (j=0; j<n; j++) {
     ierr = (*mat->ops->mult)(mat,sp->vecs[j],l);CHKERRQ(ierr);
     ierr = VecNorm(l,NORM_2,&nrm);CHKERRQ(ierr);
-    if (nrm < 1.e-7) {ierr = PetscPrintf(comm,"Null vector %d is likely null vector",j);CHKERRQ(ierr);}
-    else {ierr = PetscPrintf(comm,"Null vector %d unlikely null vector ",j);CHKERRQ(ierr);}
-    ierr = PetscPrintf(comm,"|| A * v[%d] || = %g\n",j,nrm);CHKERRQ(ierr);
+    if (nrm < 1.e-7) {ierr = PetscPrintf(comm,"Null vector %D is likely null vector",j);CHKERRQ(ierr);}
+    else {ierr = PetscPrintf(comm,"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);}
+    ierr = PetscPrintf(comm,"|| A * v[%D] || = %g\n",j,nrm);CHKERRQ(ierr);
     if (nrm > 1.e-7 && flg1) {ierr = VecView(l,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
     if (nrm > 1.e-7 && flg2) {ierr = VecView(l,PETSC_VIEWER_DRAW_(comm));CHKERRQ(ierr);}
   }

@@ -1431,7 +1431,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
 
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
+    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",realloc,f,af);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_cholesky_fill %g or use \n",af);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCCholeskySetFill(pc,%g);\n",af);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:for best performance.\n");
@@ -1614,7 +1614,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
-    PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
+    PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",realloc,f,af);
     PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Run with -pc_icc_fill %g or use \n",af);
     PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:PCICCSetFill(pc,%g);\n",af);
     PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:for best performance.\n");
