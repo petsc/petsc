@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.3 1995/05/05 11:44:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.4 1995/05/05 11:48:16 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"
@@ -43,19 +43,19 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
 }
 /*@
    SNESDefaultMatrixFreeComputeJacobian - Computes Jacobian using finite 
-       differences, matrix free style.
+   differences, matrix-free style.
 
- Input Parameters:
+   Input Parameters:
 .  x - compute Jacobian at this point
 .  ctx - applications Function context
 
-  Output Parameters:
+   Output Parameters:
 .  J - Jacobian
 .  B - preconditioner, same as Jacobian
 
-.keywords: finite differences, Jacobian
+.keywords: SNES, finite differences, Jacobian
 
-.seealso: SNESSetJacobian, SNESTestJacobian
+.seealso: SNESSetJacobian(), SNESTestJacobian()
 @*/
 int SNESDefaultMatrixFreeComputeJacobian(SNES snes, Vec x1,Mat *J,Mat *B,
                                          int *flag,void *ctx)
