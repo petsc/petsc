@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.20 1995/04/12 20:39:19 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.21 1995/04/13 17:38:10 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -17,6 +17,7 @@ static char vcid[] = "$Id: itcreate.c,v 1.20 1995/04/12 20:39:19 curfman Exp cur
 .  ksp - the Krylov space context
 .  viewer - the location to display context (usually 0)
 
+   Notes:
    Keywords:  KSP, view
 @*/
 int KSPView(KSP ksp,Viewer viewer)
@@ -43,7 +44,7 @@ static NRList *__ITList = 0;
    Output Parameter:
 .  ksp - location to put the Krylov Space context.
 
-   Note:
+   Notes:
    The default KSP method is GMRES with a restart of 10.
 
    Keywords:  KSP, create, context
@@ -113,7 +114,7 @@ int KSPCreate(KSP *ksp)
 .  ctx      - the Krylov space context.
 .  itmethod - a known method.  
 
-   Note:  
+   Notes:  
    See "petsc/include/ksp.h" for available methods (for instance KSPCG 
    or KSPGMRES).
 
@@ -147,6 +148,7 @@ int KSPSetMethod(KSP ctx,KSPMETHOD itmethod)
 .  sname  - corresponding string for name
 .  create - routine to create method context
 
+   Notes:
    Keywords:  KSP, register
 @*/
 int  KSPRegister(KSPMETHOD name, char *sname, int  (*create)(KSP))
@@ -161,6 +163,7 @@ int  KSPRegister(KSPMETHOD name, char *sname, int  (*create)(KSP))
    KSPRegisterDestroy - Frees the list of iterative solvers that were
    registered by KSPRegister().
 
+   Notes:
    Keywords: KSP, register, destroy
 @*/
 int KSPRegisterDestroy()
@@ -188,6 +191,7 @@ int KSPRegisterDestroy()
    Options Database Key:
 $  -kspmethod  itmethod
 
+   Notes:
    Keywords: KSP, options, database, get, method
 @*/
 int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod)
@@ -211,6 +215,7 @@ int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod)
    Output Parameter:
 .  name - name of KSP method
 
+   Notes:
    Keywords: KSP, get, method, name
 @*/
 int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
@@ -232,6 +237,7 @@ int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
    Note:
    This routine is called from KSPPrintHelp().
 
+   Notes:
    Keywords: KSP, print, methods, options, database
 @*/
 int KSPPrintMethods(char* prefix,char *name)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.14 1995/04/13 02:30:27 curfman Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.15 1995/04/13 17:25:21 curfman Exp curfman $";
 #endif
 /*
     Command line interface for KSP
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: itcl.c,v 1.14 1995/04/13 02:30:27 curfman Exp curfman
    Input Parameters:
 .  ctx - the Krylov space context
    
-   Note:
+   Notes:
    See KSPPrintHelp() for a list of avaliable KSP options.
 
    Keywords:  KSP, options, database
@@ -79,6 +79,7 @@ int KSPSetFromOptions(KSP ctx)
    Input Parameters:
 .  ctx - the KSP context
 
+   Notes:
    Keywords:  KSP, help
 @*/
 int KSPPrintHelp(KSP ctx)
@@ -119,6 +120,7 @@ int KSPPrintHelp(KSP ctx)
 .  ksp - the Krylov context
 .  prefix - the prefix string to prepend to all KSP option requests
 
+   Notes:
    Keywords:  KSP, options, prefix, database
 @*/
 int KSPSetOptionsPrefix(KSP ksp,char *prefix)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.6 1995/04/12 23:50:59 curfman Exp curfman $";
+static char vcid[] = "$Id: itres.c,v 1.7 1995/04/13 17:14:48 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -77,6 +77,7 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
    Output Parameter:
 .  vsoln - contains solution on output  
 
+   Notes:
    Keywords:  KSP, unwind, preconditioner
 @*/
 int KSPUnwindPre( KSP itP, Vec vsoln, Vec vt1 )
