@@ -10,6 +10,10 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+ - Where does the Fortran interface flag really belong?  Should be more
+   readily available to applications codes so that $(CONF) need not be
+   use there.
+
  - Document which routines are not currently supported (e.g., PCILUSetUseDropTolerance()).
 
  - Make sure one can run block Jacobi on several matrices with number of rows
