@@ -566,8 +566,16 @@ class UsingMatlab(UsingCompiler):
   '''This class handles all interaction specific to the Matlab language'''
   def __init__(self, usingSIDL):
     UsingCompiler.__init__(self, usingSIDL)
-    bs.argDB.setType('MATLAB_INCLUDE', nargs.ArgDir(1,'The directory containing mex.h'))
-    #TODO: bs.argDB.setType('MATLAB_LIB', nargs.ArgLibrary(1, 'The libraries marix, mx, and ut))
+    if bs.argDB['MATLAB_DIR']:
+      bs.argDB['MATLAB_INCLUDE'] = bs.argDB['MATLAB_DIR'] + '/extern/include'
+      bs.argDB['MATLAB_LIB']     = [bs.argDB['MATLAB_DIR']+'/extern/lib/glnx86/libmat.a',
+                                      bs.argDB['MATLAB_DIR']+'/extern/lib/glnx86/libmx.a',
+                                      bs.argDB['MATLAB_DIR']+'/extern/lib/glnx86/libut.a',
+                                      bs.argDB['MATLAB_DIR']+'/bin/glnx86/libmex.a']
+    else:
+      bs.argDB['MATLAB_INCLUDE'] = ''
+      bs.argDB['MATLAB_LIB']     = ''
+
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
     return
