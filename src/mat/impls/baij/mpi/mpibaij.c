@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.97 1998/01/12 20:34:41 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.98 1998/01/12 21:15:42 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -386,7 +386,7 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
   
   int         h1,key,size=baij->ht_size,k,bs=baij->bs;
   int         * HT  = baij->ht;
-  Scalar      ** HD = (Scalar **)(HT + size),value;
+  Scalar      ** HD = baij->hd,value;
 
 
   PetscFunctionBegin;
@@ -441,7 +441,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
 
   int         h1,key,size=baij->ht_size;
   int         * HT  = baij->ht;
-  Scalar      ** HD = (Scalar **)(HT + size),*value,*baij_a;
+  Scalar      ** HD = baij->hd,*value,*baij_a;
  
   PetscFunctionBegin;
 
@@ -736,9 +736,12 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
   }
   
   /* Allocate Memory for Hash Table */
-  baij->ht = (int*)PetscMalloc(size*(sizeof(int)+sizeof(Scalar*))+1); CHKPTRQ(baij->ht);
+  baij->hd = (Scalar**)PetscMalloc((size)*(sizeof(int)+sizeof(Scalar*))+1); CHKPTRQ(baij->hd);
+  baij->ht = (int*)(baij->hd + size);
+  HD = baij->hd;
   HT = baij->ht;
-  HD = (Scalar**)(HT + size);
+
+
   PetscMemzero(HT,size*sizeof(int)+sizeof(Scalar*));
   
 
@@ -1052,7 +1055,7 @@ int MatDestroy_MPIBAIJ(PetscObject obj)
   if (baij->Mvctx)  VecScatterDestroy(baij->Mvctx);
   if (baij->rowvalues) PetscFree(baij->rowvalues);
   if (baij->barray) PetscFree(baij->barray);
-  if (baij->ht) PetscFree(baij->ht);
+  if (baij->hd) PetscFree(baij->hd);
   PetscFree(baij); 
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
