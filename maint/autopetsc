@@ -13,7 +13,8 @@
 
      set timeout 1000000
 #
-#   
+#   Main loop, looks for certain text strings coming back from the MUD server.
+#        eventually for each pattern we can call large sophisticated functions.
 #
     while (1) {
        puts "Waiting for text string"
@@ -33,11 +34,11 @@
                                    scan $expect_out(buffer) "%s pages, %s\r\n" swho  message
                                    puts "who: $swho message: $message"
                                    send "page $swho I have received your page\r"
-                 } "* [to Petsc]: *\r\n" { 
+                 } "* *to you*: *\r\n" { 
                                    puts $expect_out(buffer)
-                                   scan $expect_out(buffer) "%s [to Petsc]: %s\r\n" swho  message
+                                   scan $expect_out(buffer) "%s \[to you\]: %s\r\n" swho  message
                                    puts "who: $swho message: $message"
-                                   send "\`$swho I acknowlege your comment\r"
+                                   send "\`$swho I acknowlege your message\r"
                  } "* blinks\r\n" { 
                                    puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s blinks\r\n" swho
