@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.136 1997/05/23 18:37:49 balay Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.137 1997/06/05 12:54:10 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1744,7 +1744,7 @@ int MatDestroy_SeqBDiag(PetscObject obj)
 {
   Mat          A = (Mat) obj;
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, bs = a->bs,ierr;
+  int          i, bs = a->bs;
 
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d, BSize=%d, NDiag=%d",

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.219 1997/05/23 18:38:26 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.220 1997/06/05 12:53:38 bsmith Exp curfman $";
 #endif
 
 /*
@@ -639,7 +639,6 @@ int MatDestroy_SeqAIJ(PetscObject obj)
 {
   Mat        A  = (Mat) obj;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        ierr;
 
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
