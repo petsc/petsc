@@ -1,5 +1,5 @@
-<html><body><pre>*/
-/*$Id: vector.c,v 1.200 2000/04/09 04:35:24 bsmith Exp bsmith $*/
+/*<html><body><pre>*/
+/*$Id: vector.c,v 1.201 2000/04/12 04:22:17 bsmith Exp balay $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
