@@ -7,7 +7,7 @@ set petscdir=/home/bsmith/petsc
 cd $petscdir
 /bin/rm -f $petscdir/maint/links.log
 set shadowdir=/home/curfman/petsc
-echo "petscdir = " $petscdir
+echo "Building links from" $petscdir "to" $shadowdir "..."
 
 find . \( -name RCS -prune -o -name docs \) -o -type d \
        -exec $petscdir/maint/addlinks $shadowdir \{\} \
