@@ -428,7 +428,7 @@ int FormJacobian2(SNES snes,Vec X,Mat *J, Mat *B, int *flag, void *pptr)
   double  two = 2.0, one = 1.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
   double  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
   double  hx, hy,val,four = 4.0, three = 3.0;
-  double  *x,*f, hx2, hy2, hxhy2;
+  double  *x, hx2, hy2, hxhy2;
 
   mx	 = user->mx; 
   my	 = user->my;
