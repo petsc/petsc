@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.12 2000/09/06 20:20:20 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.13 2000/09/07 16:13:53 hzhang Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -28,7 +28,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
   
   ierr = ISIdentity(perm,ident);CHKERRQ(ierr);
-  if (!ident) { /* for a non-trivial perm, the matrix A in SBAIJ format needs to be 
+  if (!*ident) { /* for a non-trivial perm, the matrix A in SBAIJ format needs to be 
                    re-indexed so that A(perm(i),iperm(k)) is stored in the upper
                    triangle. */
     SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Call MatReIndexingSeqSBAIJ() to re-indexing (ai,aj,a)");
