@@ -1,6 +1,6 @@
 /*$Id: mumps.c,v 1.10 2001/08/15 15:56:50 bsmith Exp $*/
 /* 
-    Provides an interface to the MUMPS_4.3 sparse solver
+    Provides an interface to the MUMPS_4.3.1 sparse solver
 */
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -390,6 +390,34 @@ int MatSolve_AIJMUMPS(Mat A,Vec b,Vec x) {
   PetscFunctionReturn(0);
 }
 
+/* 
+  input:
+   F:        numeric factor
+  output:
+   nneg:     total number of negative pivots
+   nzero:    0
+   npos:     (global dimension of F) - nneg
+*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetInertia_SBAIJMUMPS"
+int MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
+{ 
+  Mat_MUMPS  *lu =(Mat_MUMPS*)F->spptr; 
+  int        ierr,neg,zero,pos;
+
+  PetscFunctionBegin;
+  if (nneg){  
+    if (!lu->myid){
+      *nneg = lu->id.INFOG(12);
+    } 
+    ierr = MPI_Bcast(nneg,1,MPI_INT,0,lu->comm_mumps);
+  }
+  if (nzero) *nzero = 0;  
+  if (npos)  *npos  = F->M - (*nneg);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__   
 #define __FUNCT__ "MatFactorNumeric_MPIAIJMUMPS"
 int MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
@@ -630,6 +658,7 @@ int MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat A,IS r,MatFactorInfo *info,Mat *F) 
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
   B->ops->choleskyfactornumeric = MatFactorNumeric_AIJMUMPS;
+  B->ops->getinertia            = MatGetInertia_SBAIJMUMPS;
   B->factor                     = FACTOR_CHOLESKY;
   lu                            = (Mat_MUMPS*)B->spptr;
   lu->sym                       = 2;
