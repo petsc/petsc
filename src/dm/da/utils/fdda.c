@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.9 1997/07/09 21:01:12 balay Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.10 1997/08/11 20:55:50 bsmith Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -300,8 +300,10 @@ int DAGetColoring2dBoxMC(DA da,ISColoring *coloring,Mat *J)
       ny1--;
       slot = xs - gxs + gnx*(ys - gys);
       for ( k=0; k<nc; k++ ) {
-        indices[0+k]    = slot;         indices[1*nc+k] = slot + 1; 
-        indices[2*nc+k] = slot + gnx;   indices[3*nc+k] = slot + gnx + 1;
+        indices[0+k]    = slot;         
+        indices[1*nc+k] = slot + 1; 
+        indices[2*nc+k] = slot + gnx;  
+        indices[3*nc+k] = slot + gnx + 1;
         cols[k]         = slot;
       }
       ierr = MatSetValuesLocal(*J,nc,cols,4*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
@@ -311,19 +313,24 @@ int DAGetColoring2dBoxMC(DA da,ISColoring *coloring,Mat *J)
       ny1--;
       slot = xs - gxs + gnx*(ys + (ny - 1) - gys);
       for ( k=0; k<nc; k++ ) {
-        indices[0] = slot - gnx;   indices[1] = slot - gnx + 1;
-        indices[2] = slot;         indices[3] = slot + 1;
-        cols[0]    = slot;
+        indices[0+k]    = slot - gnx;  
+        indices[1*nc+k] = slot - gnx + 1;
+        indices[2*nc+k] = slot;         
+        indices[3*nc+k] = slot + 1;
+        cols[k]         = slot;
       }
       ierr = MatSetValuesLocal(*J,nc,cols,4*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
     }
     for ( j=ys1; j<ys1+ny1; j++ ) {
       slot = xs - gxs + gnx*(j - gys);
       for ( k=0; k<nc; k++ ) {
-        indices[0] = slot - gnx;   indices[1] = slot - gnx + 1;
-        indices[2] = slot;         indices[3] = slot + 1;
-        indices[4] = slot + gnx;   indices[5] = slot + gnx + 1;
-        cols[0]    = slot;
+        indices[0+k]    = slot - gnx;  
+        indices[1*nc+k] = slot - gnx + 1;
+        indices[2*nc+k] = slot;         
+        indices[3*nc+k] = slot + 1;
+        indices[4*nc+k] = slot + gnx;   
+        indices[5*nc+k] = slot + gnx + 1;
+        cols[k]         = slot;
       }
       ierr = MatSetValuesLocal(*J,nc,cols,6*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);  
     }
@@ -339,9 +346,11 @@ int DAGetColoring2dBoxMC(DA da,ISColoring *coloring,Mat *J)
       ny1--;
       slot = xs + (nx - 1) - gxs + gnx*(ys - gys);
       for ( k=0; k<nc; k++ ) {
-        indices[0] = slot - 1;         indices[1] = slot; 
-        indices[2] = slot + gnx - 1;   indices[3] = slot + gnx;
-        cols[0]    = slot;
+        indices[0+k]    = slot - 1;        
+        indices[1*nc+k] = slot; 
+        indices[2*nc+k] = slot + gnx - 1;  
+        indices[3*nc+k] = slot + gnx;
+        cols[k]         = slot;
       }
       ierr = MatSetValuesLocal(*J,nc,cols,4*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
     }
@@ -350,19 +359,24 @@ int DAGetColoring2dBoxMC(DA da,ISColoring *coloring,Mat *J)
       ny1--;
       slot = xs + (nx - 1) - gxs + gnx*(ys + (ny - 1) - gys);
       for ( k=0; k<nc; k++ ) {
-        indices[0] = slot - gnx - 1;   indices[1] = slot - gnx;
-        indices[2] = slot-1;           indices[3] = slot;
-        cols[0]    = slot;
+        indices[0+k]    = slot - gnx - 1;  
+        indices[1*nc+k] = slot - gnx;
+        indices[2*nc+k] = slot-1;         
+        indices[3*nc+k] = slot;
+        cols[k]         = slot;
       }
       ierr = MatSetValuesLocal(*J,nc,cols,4*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
     }
     for ( j=ys1; j<ys1+ny1; j++ ) {
       slot = xs + (nx - 1) - gxs + gnx*(j - gys);
       for ( k=0; k<nc; k++ ) {
-        indices[0] = slot - gnx - 1;   indices[1] = slot - gnx;
-        indices[2] = slot - 1;         indices[3] = slot;
-        indices[4] = slot + gnx - 1;   indices[5] = slot + gnx;
-        cols[0]    = slot;
+        indices[0+k]    = slot - gnx - 1;  
+        indices[1*nc+k] = slot - gnx;
+        indices[2*nc+k] = slot - 1;       
+        indices[3*nc+k] = slot;
+        indices[4*nc+k] = slot + gnx - 1; 
+        indices[5*nc+k] = slot + gnx;
+        cols[k]         = slot;
       }
       ierr = MatSetValuesLocal(*J,nc,cols,6*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);   
     }
@@ -375,9 +389,13 @@ int DAGetColoring2dBoxMC(DA da,ISColoring *coloring,Mat *J)
     for ( i=xs1; i<xs1+nx1; i++ ) {
       slot = i - gxs + gnx*(ys - gys);
       for ( k=0; k<nc; k++ ) {
-        indices[0] = slot - 1;       indices[1] = slot;        indices[2] = slot + 1;
-        indices[3] = slot + gnx - 1; indices[4] = slot + gnx;  indices[5] = slot + gnx + 1;
-        cols[0]    = slot;
+        indices[0+k]    = slot - 1;      
+        indices[1*nc+k] = slot;       
+        indices[2*nc+k] = slot + 1;
+        indices[3*nc+k] = slot + gnx - 1; 
+        indices[4*nc+k] = slot + gnx;
+        indices[5*nc+k] = slot + gnx + 1;
+        cols[k]         = slot;
       }
       ierr = MatSetValuesLocal(*J,nc,cols,6*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
     }
@@ -390,9 +408,13 @@ int DAGetColoring2dBoxMC(DA da,ISColoring *coloring,Mat *J)
     for ( i=xs1; i<xs1+nx1; i++ ) {
       slot = i - gxs + gnx*(ys + (ny - 1) - gys);
       for ( k=0; k<nc; k++ ) {    
-        indices[0] = slot - gnx - 1;   indices[1] = slot - gnx;  indices[2] = slot - gnx + 1;
-        indices[3] = slot - 1;         indices[4] = slot;        indices[5] = slot  + 1;
-        cols[0]    = slot;
+        indices[0+k]    = slot - gnx - 1;
+        indices[1*nc+k] = slot - gnx;  
+        indices[2*nc+k] = slot - gnx + 1;
+        indices[3*nc+k] = slot - 1;      
+        indices[4*nc+k] = slot;       
+        indices[5*nc+k] = slot  + 1;
+        cols[k]         = slot;
       }
       ierr = MatSetValuesLocal(*J,nc,cols,6*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
     }
@@ -409,10 +431,16 @@ int DAGetColoring2dBoxMC(DA da,ISColoring *coloring,Mat *J)
     for ( j=ys; j<ys+ny1; j++ ) {
       slot = i - gxs + gnx*(j - gys);
       for ( k=0; k<nc; k++ ) {    
-        indices[0] = slot - gnx - 1;indices[1] = slot - gnx; indices[2] = slot - gnx + 1;
-        indices[3] = slot - 1  ;    indices[4] = slot;       indices[5] = slot + 1;
-        indices[6] = slot + gnx - 1;indices[7] = slot + gnx; indices[8] = slot + gnx + 1;
-        cols[0]    = slot;
+        indices[0+k]    = slot - gnx - 1;
+        indices[1*nc+k] = slot - gnx;
+        indices[2*nc+k] = slot - gnx + 1;
+        indices[3*nc+k] = slot - 1  ;  
+        indices[4*nc+k] = slot;      
+        indices[5*nc+k] = slot + 1;
+        indices[6*nc+k] = slot + gnx - 1;
+        indices[7*nc+k] = slot + gnx; 
+        indices[8*nc+k] = slot + gnx + 1;
+        cols[k]         = slot;
     }
       ierr = MatSetValuesLocal(*J,nc,cols,9*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
     }
