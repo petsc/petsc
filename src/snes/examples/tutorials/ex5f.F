@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.71 2001/05/04 18:53:33 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.72 2001/05/04 19:47:27 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -60,7 +60,7 @@
       integer                its,flg,ierr,skipadifor
       double precision       lambda_max,lambda_min
       ISColoring             coloring
-      PetscTruth             adic_jacobian
+      PetscTruth             adifor_jacobian
 
 !  Note: Any user-defined Fortran routines (such as FormJacobianLocal)
 !  MUST be declared as external.
@@ -141,8 +141,10 @@
 
 !  Set function evaluation routine and vector
 
+#if defined(PETSC_HAVE_ADIFOR)
       call DASetLocalFunction(da,FormFunctionLocal,                        &
      &         FormJacobianLocal,g_FormFunctionLocal,ierr)
+#endif
       call SNESSetFunction(snes,r,SNESDAFormFunction,da,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -158,9 +160,10 @@
 !                         products within Newton-Krylov method
 !
 
-      call PetscOptionsGetLogical(PETSC_NULL_CHARACTER,'-adic_jacobian',           &
-     &     adic_jacobian,PETSC_NULL_INTEGER,ierr)
-      if (adic_jacobian .eq. 0) then
+      call PetscOptionsGetLogical(PETSC_NULL_CHARACTER                            &
+     &     ,'-adifor_jacobian',                                                   &
+     &     adifor_jacobian,PETSC_NULL_INTEGER,ierr)
+      if (adifor_jacobian .eq. 0) then
         call DAGetColoring(da,IS_COLORING_LOCAL,MATMPIAIJ,                        &
      &                     PETSC_NULL_OBJECT,J,ierr)
         call SNESSetJacobian(snes,J,J,SNESDAComputeJacobian,                      &
