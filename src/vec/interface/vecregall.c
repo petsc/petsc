@@ -1,10 +1,11 @@
+#define PETSCVEC_DLL
 
 #include "vecimpl.h"     /*I  "vec.h"  I*/
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode VecCreate_Seq(Vec);
-EXTERN PetscErrorCode VecCreate_MPI(Vec);
-EXTERN PetscErrorCode VecCreate_Shared(Vec);
-EXTERN PetscErrorCode VecCreate_FETI(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPI(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_FETI(Vec);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -22,7 +23,7 @@ EXTERN_C_END
 .keywords: Vec, register, all
 .seealso:  VecRegister(), VecRegisterDestroy(), VecRegisterDynamic()
 @*/
-PetscErrorCode VecRegisterAll(const char path[])
+PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

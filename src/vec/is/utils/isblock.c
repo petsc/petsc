@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 
 /* Routines to be used by MatIncreaseOverlap() for BAIJ and SBAIJ matrices */
 #include "petscis.h" 
@@ -20,7 +21,7 @@
 
    Level: intermediate
 @*/
-PetscErrorCode ISCompressIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
   PetscErrorCode     ierr;
   PetscInt           isz,len,i,j,*idx,ival,Nbs;
@@ -92,7 +93,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,con
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISCompressIndicesSorted"
-PetscErrorCode ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k,val,len,*idx,*nidx,*idx_local;
@@ -146,7 +147,7 @@ PetscErrorCode ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,cons
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISExpandIndicesGeneral"
-PetscErrorCode ISExpandIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISExpandIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
   PetscErrorCode ierr;
   PetscInt       len,i,j,k,*idx,*nidx;

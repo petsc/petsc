@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /*
      Code for creating scatters between vectors. This file 
   includes the code for scattering between sequential vectors and
@@ -8,7 +9,7 @@
 #include "vecimpl.h"                     /*I "petscvec.h" I*/
 
 /* Logging support */
-PetscCookie VEC_SCATTER_COOKIE = 0;
+PetscCookie PETSCVEC_DLLEXPORT VEC_SCATTER_COOKIE = 0;
 
 #if defined(PETSC_USE_DEBUG)
 /*
@@ -793,7 +794,7 @@ EXTERN PetscErrorCode VecScatterCreate_StoP(PetscInt,PetscInt *,PetscInt,PetscIn
 
 .seealso: VecScatterDestroy(), VecScatterCreateToAll(), VecScatterCreateToZero()
 @*/
-PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
+PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter     ctx;
   PetscErrorCode ierr;
@@ -1399,7 +1400,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
 .seealso: VecScatterCreate(), VecScatterEnd(), VecScatterBegin()
 @*/
-PetscErrorCode VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
+PetscErrorCode PETSCVEC_DLLEXPORT VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
 {
   PetscErrorCode ierr;
 
@@ -1432,7 +1433,7 @@ PetscErrorCode VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,
 
 .seealso: VecScatterCreate(), VecScatterEnd(), VecScatterBegin()
 @*/
-PetscErrorCode VecScatterGetMerged(VecScatter ctx,PetscTruth *flg)
+PetscErrorCode PETSCVEC_DLLEXPORT VecScatterGetMerged(VecScatter ctx,PetscTruth *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,1);
@@ -1485,7 +1486,7 @@ PetscErrorCode VecScatterGetMerged(VecScatter ctx,PetscTruth *flg)
 
 .seealso: VecScatterCreate(), VecScatterEnd()
 @*/
-PetscErrorCode VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
+PetscErrorCode PETSCVEC_DLLEXPORT VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
 {
   PetscErrorCode ierr;
 #if defined(PETSC_USE_DEBUG)
@@ -1554,7 +1555,7 @@ PetscErrorCode VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecS
 
 .seealso: VecScatterBegin(), VecScatterCreate()
 @*/
-PetscErrorCode VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+PetscErrorCode PETSCVEC_DLLEXPORT VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   PetscErrorCode ierr;
 
@@ -1587,7 +1588,7 @@ PetscErrorCode VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSca
 
 .seealso: VecScatterCreate(), VecScatterCopy()
 @*/
-PetscErrorCode VecScatterDestroy(VecScatter ctx)
+PetscErrorCode PETSCVEC_DLLEXPORT VecScatterDestroy(VecScatter ctx)
 {
   PetscErrorCode ierr;
 
@@ -1619,7 +1620,7 @@ PetscErrorCode VecScatterDestroy(VecScatter ctx)
 
 .seealso: VecScatterCreate(), VecScatterDestroy()
 @*/
-PetscErrorCode VecScatterCopy(VecScatter sctx,VecScatter *ctx)
+PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCopy(VecScatter sctx,VecScatter *ctx)
 {
   PetscErrorCode ierr;
 
@@ -1650,7 +1651,7 @@ PetscErrorCode VecScatterCopy(VecScatter sctx,VecScatter *ctx)
    Level: intermediate
 
 @*/
-PetscErrorCode VecScatterView(VecScatter ctx,PetscViewer viewer)
+PetscErrorCode PETSCVEC_DLLEXPORT VecScatterView(VecScatter ctx,PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -1688,7 +1689,7 @@ PetscErrorCode VecScatterView(VecScatter ctx,PetscViewer viewer)
           This is backwards from the paralllel case! CRY! CRY! CRY!
 
 @*/
-PetscErrorCode VecScatterRemap(VecScatter scat,PetscInt *rto,PetscInt *rfrom)
+PetscErrorCode PETSCVEC_DLLEXPORT VecScatterRemap(VecScatter scat,PetscInt *rto,PetscInt *rfrom)
 {
   VecScatter_Seq_General *to,*from;
   VecScatter_MPI_General *mto;

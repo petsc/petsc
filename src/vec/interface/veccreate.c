@@ -1,4 +1,4 @@
-
+#define PETSCVEC_DLL
 #include "vecimpl.h"      /*I "petscvec.h" I*/
 
 #undef __FUNCT__  
@@ -24,7 +24,7 @@
 .seealso: VecSetType(), VecSetSizes(), VecCreateMPIWithArray(), VecCreateMPI(), VecDuplicate(),
           VecDuplicateVecs(), VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
 @*/
-PetscErrorCode VecCreate(MPI_Comm comm, Vec *vec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm comm, Vec *vec)
 {
   Vec v;
   PetscErrorCode ierr;

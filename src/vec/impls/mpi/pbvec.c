@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /*
    This file contains routines for Parallel vector operations.
  */
@@ -211,7 +212,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_MPI"
-PetscErrorCode VecCreate_MPI(Vec vv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPI(Vec vv)
 {
   PetscErrorCode ierr;
 
@@ -261,7 +262,7 @@ EXTERN_C_END
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 
 @*/ 
-PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm,PetscInt n,PetscInt N,const PetscScalar array[],Vec *vv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreateMPIWithArray(MPI_Comm comm,PetscInt n,PetscInt N,const PetscScalar array[],Vec *vv)
 {
   PetscErrorCode ierr;
 
@@ -307,7 +308,7 @@ PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm,PetscInt n,PetscInt N,const P
 .seealso: VecCreateGhost(), VecGhostRestoreLocalForm(), VecCreateGhostWithArray()
 
 @*/
-PetscErrorCode VecGhostGetLocalForm(Vec g,Vec *l)
+PetscErrorCode PETSCVEC_DLLEXPORT VecGhostGetLocalForm(Vec g,Vec *l)
 {
   PetscErrorCode ierr;
   PetscTruth isseq,ismpi;
@@ -352,7 +353,7 @@ PetscErrorCode VecGhostGetLocalForm(Vec g,Vec *l)
 
 .seealso: VecCreateGhost(), VecGhostGetLocalForm(), VecCreateGhostWithArray()
 @*/
-PetscErrorCode VecGhostRestoreLocalForm(Vec g,Vec *l)
+PetscErrorCode PETSCVEC_DLLEXPORT VecGhostRestoreLocalForm(Vec g,Vec *l)
 {
   PetscFunctionBegin;
   PetscObjectDereference((PetscObject)*l);
@@ -400,7 +401,7 @@ PetscErrorCode VecGhostRestoreLocalForm(Vec g,Vec *l)
           VecGhostRestoreLocalForm(),VecCreateGhostWithArray()
 
 @*/ 
-PetscErrorCode VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
+PetscErrorCode PETSCVEC_DLLEXPORT VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
 {
   Vec_MPI *v;
   PetscErrorCode ierr;
@@ -462,7 +463,7 @@ PetscErrorCode VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scatt
           VecGhostRestoreLocalForm(),VecCreateGhostWithArray()
 
 @*/ 
-PetscErrorCode VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
+PetscErrorCode PETSCVEC_DLLEXPORT VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
 {
   Vec_MPI *v;
   PetscErrorCode ierr;
@@ -515,7 +516,7 @@ PetscErrorCode VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scatter
           VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
 
 @*/ 
-PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],const PetscScalar array[],Vec *vv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],const PetscScalar array[],Vec *vv)
 {
   PetscErrorCode ierr;
   Vec_MPI        *w;
@@ -584,7 +585,7 @@ PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Petsc
           VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
 
 @*/ 
-PetscErrorCode VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
 {
   PetscErrorCode ierr;
 
@@ -679,7 +680,7 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
           VecCreateGhostWithArray(), VecCreateGhostBlocked()
 
 @*/ 
-PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],const PetscScalar array[],Vec *vv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],const PetscScalar array[],Vec *vv)
 {
   PetscErrorCode ierr;
   Vec_MPI        *w;
@@ -755,7 +756,7 @@ PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt n
           VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecCreateGhostBlockWithArray()
 
 @*/ 
-PetscErrorCode VecCreateGhostBlock(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlock(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
 {
   PetscErrorCode ierr;
 
@@ -806,7 +807,7 @@ PetscErrorCode VecSetValuesLocal_FETI(Vec vv,PetscInt n,const PetscInt *ix,const
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_FETI"
-PetscErrorCode VecCreate_FETI(Vec vv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_FETI(Vec vv)
 {
   PetscErrorCode ierr;
 

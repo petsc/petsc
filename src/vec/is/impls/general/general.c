@@ -1,9 +1,10 @@
+#define PETSCVEC_DLL
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
-EXTERN PetscErrorCode VecInitializePackage(char *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDuplicate_General" 
@@ -290,7 +291,7 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
 
 .seealso: ISCreateGeneralWithArray(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
-PetscErrorCode ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],IS *is)
+PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],IS *is)
 {
   PetscErrorCode ierr;
   IS             Nindex;
@@ -349,7 +350,7 @@ PetscErrorCode ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],IS 
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
-PetscErrorCode ISCreateGeneralWithArray(MPI_Comm comm,PetscInt n,PetscInt idx[],IS *is)
+PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneralWithArray(MPI_Comm comm,PetscInt n,PetscInt idx[],IS *is)
 {
   PetscErrorCode ierr;
   IS             Nindex;

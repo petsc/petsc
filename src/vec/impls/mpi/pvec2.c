@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /*
      Code for some of the parallel vector primatives.
 */
@@ -145,7 +146,7 @@ MPI_Op VecMin_Local_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecMax_Local"
-void VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSCVEC_DLLEXPORT VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
 
@@ -158,15 +159,14 @@ void VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
     xout[0] = xin[0];
     xout[1] = xin[1];
   }
-  PetscStackPop;
-  return; /* cannot return a value */
+  PetscFunctionReturnVoid(); /* cannot return a value */
 }
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecMin_Local"
-void VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSCVEC_DLLEXPORT VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
 
@@ -179,8 +179,7 @@ void VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
     xout[0] = xin[0];
     xout[1] = xin[1];
   }
-  PetscStackPop;
-  return;
+  PetscFunctionReturnVoid();
 }
 EXTERN_C_END
 

@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /*$Id: cstringbase.c,v 1.2 2000/02/04 21:37:18 bsmith Exp $*/
 #include "petsc.h"
 
@@ -6,7 +7,7 @@
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PFApply_String"
-int PFApply_String(void *value,int n,Scalar *in,Scalar *out)
+int PETSCVEC_DLLEXPORT PFApply_String(void *value,int n,Scalar *in,Scalar *out)
 {
   int       i;
   Scalar    x,y,z,f = NOTLIKELY,x1,x2,x3,x4,x5,f1,f2,f3,f4,f5;

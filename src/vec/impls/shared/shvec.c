@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /*
    This file contains routines for Parallel vector operations that use shared memory
  */
@@ -48,7 +49,7 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Shared"
-PetscErrorCode VecCreate_Shared(Vec vv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
   PetscScalar    *array;
@@ -226,13 +227,13 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
 #else
 
 EXTERN_C_BEGIN
-extern PetscErrorCode VecCreate_Seq(Vec);
+extern PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Shared"
-PetscErrorCode VecCreate_Shared(Vec vv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -279,7 +280,7 @@ EXTERN_C_END
           VecCreateGhost(), VecCreateMPIWithArray(), VecCreateGhostWithArray()
 
 @*/ 
-PetscErrorCode VecCreateShared(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
+PetscErrorCode PETSCVEC_DLLEXPORT VecCreateShared(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
 {
   PetscErrorCode ierr;
 

@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
@@ -5,7 +6,7 @@
 #include "src/vec/is/isimpl.h"               /*I  "petscis.h"     I*/
 #include "petscsys.h"
 
-EXTERN PetscErrorCode VecInitializePackage(char *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *);
 
 typedef struct {
   PetscInt        N,n;            /* number of blocks */
@@ -249,7 +250,7 @@ static struct _ISOps myops = { ISGetSize_Block,
 
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
 @*/
-PetscErrorCode ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt idx[],IS *is)
+PetscErrorCode PETSCVEC_DLLEXPORT ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt idx[],IS *is)
 {
   PetscErrorCode ierr;
   PetscInt       i,min,max;
@@ -313,7 +314,7 @@ PetscErrorCode ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt
 
 .seealso: ISGetIndices(), ISBlockRestoreIndices()
 @*/
-PetscErrorCode ISBlockGetIndices(IS in,PetscInt *idx[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetIndices(IS in,PetscInt *idx[])
 {
   IS_Block *sub;
 
@@ -348,7 +349,7 @@ PetscErrorCode ISBlockGetIndices(IS in,PetscInt *idx[])
 
 .seealso: ISRestoreIndices(), ISBlockGetIndices()
 @*/
-PetscErrorCode ISBlockRestoreIndices(IS is,PetscInt *idx[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockRestoreIndices(IS is,PetscInt *idx[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -377,7 +378,7 @@ PetscErrorCode ISBlockRestoreIndices(IS is,PetscInt *idx[])
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISBlock(), ISCreateBlock()
 @*/
-PetscErrorCode ISBlockGetBlockSize(IS is,PetscInt *size)
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetBlockSize(IS is,PetscInt *size)
 {
   IS_Block *sub;
 
@@ -411,7 +412,7 @@ PetscErrorCode ISBlockGetBlockSize(IS is,PetscInt *size)
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISBlockGetBlockSize(), ISCreateBlock()
 @*/
-PetscErrorCode ISBlock(IS is,PetscTruth *flag)
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlock(IS is,PetscTruth *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -441,7 +442,7 @@ PetscErrorCode ISBlock(IS is,PetscTruth *flag)
 
 .seealso: ISBlockGetBlockSize(), ISGetSize(), ISBlock(), ISCreateBlock()
 @*/
-PetscErrorCode ISBlockGetSize(IS is,PetscInt *size)
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetSize(IS is,PetscInt *size)
 {
   IS_Block *sub;
 

@@ -1,3 +1,5 @@
+#define PETSCVEC_DLL
+
 #include "vecimpl.h"
 
 #undef __FUNCT__  
@@ -31,7 +33,7 @@ $        VecDestroy(vout);
 .seealso VecScatterCreate(), VecScatterCreateToZero(), VecScatterBegin(), VecScatterEnd()
 
 @*/
-PetscErrorCode VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
+PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
 {
 
   PetscErrorCode ierr;
@@ -90,7 +92,7 @@ $        VecDestroy(vout);
 .seealso VecScatterCreate(), VecScatterCreateToAll(), VecScatterBegin(), VecScatterEnd()
 
 @*/
-PetscErrorCode VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
+PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
 {
 
   PetscErrorCode ierr;

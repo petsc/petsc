@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /* 
    This file contains simple binary input routines for vectors.  The
    analogous output routines are within each vector implementation's 
@@ -70,7 +71,7 @@ and PetscWriteBinary() to see how this may be done.
 
 .seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
 @*/  
-PetscErrorCode VecLoad(PetscViewer viewer,const VecType outtype,Vec *newvec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer,const VecType outtype,Vec *newvec)
 {
   PetscErrorCode ierr;
   PetscTruth     isbinary,flg;

@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -34,7 +35,7 @@ $    is2 = {2, 3} {0, 1}
     Concepts: IS^equal
 
 @*/
-PetscErrorCode ISEqual(IS is1,IS is2,PetscTruth *flg)
+PetscErrorCode PETSCVEC_DLLEXPORT ISEqual(IS is1,IS is2,PetscTruth *flg)
 {
   PetscInt       sz1,sz2,*ptr1,*ptr2,*a1,*a2;
   PetscTruth     flag;

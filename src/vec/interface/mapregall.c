@@ -1,7 +1,8 @@
+#define PETSCVEC_DLL
 
 #include "vecimpl.h"     /*I  "vec.h"  I*/
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PetscMapCreate_MPI(PetscMap);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCreate_MPI(PetscMap);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -19,7 +20,7 @@ EXTERN_C_END
 .keywords: map, register, all
 .seealso: PetscMapRegister(), PetscMapRegisterDestroy()
 @*/
-PetscErrorCode PetscMapRegisterAll(const char path[])
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

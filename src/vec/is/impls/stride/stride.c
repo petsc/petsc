@@ -1,10 +1,11 @@
+#define PETSCVEC_DLL
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
 */
 #include "src/vec/is/isimpl.h"             /*I   "petscis.h"   I*/
 
-EXTERN PetscErrorCode VecInitializePackage(char *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *);
 
 typedef struct {
   PetscInt N,n,first,step;
@@ -86,7 +87,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
 
 .seealso: ISCreateStride(), ISGetSize()
 @*/
-PetscErrorCode ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
+PetscErrorCode PETSCVEC_DLLEXPORT ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
 {
   IS_Stride *sub;
 
@@ -122,7 +123,7 @@ PetscErrorCode ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
 
 .seealso: ISCreateStride(), ISGetSize()
 @*/
-PetscErrorCode ISStride(IS is,PetscTruth *flag)
+PetscErrorCode PETSCVEC_DLLEXPORT ISStride(IS is,PetscTruth *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -306,7 +307,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
 
 .seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather()
 @*/
-PetscErrorCode ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt step,IS *is)
+PetscErrorCode PETSCVEC_DLLEXPORT ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt step,IS *is)
 {
   PetscErrorCode ierr;
   PetscInt        min,max;

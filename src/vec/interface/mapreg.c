@@ -1,4 +1,4 @@
-
+#define PETSCVEC_DLL
 #include "vecimpl.h"  /*I "petscvec.h"  I*/
 
 PetscFList PetscMapList                       = PETSC_NULL;
@@ -27,7 +27,7 @@ PetscTruth PetscMapRegisterAllCalled          = PETSC_FALSE;
 .keywords: map, set, type
 .seealso PetscMapGetType(), PetscMapCreate()
 @*/
-PetscErrorCode PetscMapSetType(PetscMap map, const PetscMapType method)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetType(PetscMap map, const PetscMapType method)
 {
   PetscErrorCode (*r)(PetscMap);
   PetscTruth match;
@@ -70,7 +70,7 @@ PetscErrorCode PetscMapSetType(PetscMap map, const PetscMapType method)
 .keywords: map, get, type, name
 .seealso PetscMapSetType(), PetscMapCreate()
 @*/
-PetscErrorCode PetscMapGetType(PetscMap map, PetscMapType *type)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetType(PetscMap map, PetscMapType *type)
 {
   PetscErrorCode ierr;
 
@@ -129,7 +129,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapRegister"
-PetscErrorCode PetscMapRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(PetscMap))
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(PetscMap))
 {
   char fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -155,7 +155,7 @@ PetscErrorCode PetscMapRegister(const char sname[], const char path[], const cha
 .keywords: map, register, destroy
 .seealso: PetscMapRegister(), PetscMapRegisterAll()
 @*/
-PetscErrorCode PetscMapRegisterDestroy()
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapRegisterDestroy()
 {
   PetscErrorCode ierr;
 

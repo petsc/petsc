@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 
 #include "src/vec/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
@@ -78,7 +79,7 @@ PetscErrorCode PFSetFromOptions_Matlab(PF pf)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_Matlab"
-PetscErrorCode PFCreate_Matlab(PF pf,void *value)
+PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Matlab(PF pf,void *value)
 {
   PetscErrorCode ierr;
   PF_Matlab      *matlab;

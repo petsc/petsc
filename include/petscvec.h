@@ -32,33 +32,33 @@ typedef struct _p_PetscMap*         PetscMap;
 /* Logging support */
 extern PetscCookie MAP_COOKIE;
 
-EXTERN PetscErrorCode PetscMapCreate(MPI_Comm,PetscMap*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCreate(MPI_Comm,PetscMap*);
 PetscPolymorphicSubroutine(PetscMapCreate,(PetscMap*m),(m))
 PetscPolymorphicFunction(PetscMapCreate,(void),(PETSC_COMM_SELF,&m),PetscMap,m)
-EXTERN PetscErrorCode PetscMapCreateMPI(MPI_Comm,PetscInt,PetscInt,PetscMap*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCreateMPI(MPI_Comm,PetscInt,PetscInt,PetscMap*);
 PetscPolymorphicFunction(PetscMapCreateMPI,(MPI_Comm comm,PetscInt l,PetscInt g),(comm,l,g,&m),PetscMap,m)
-EXTERN PetscErrorCode PetscMapSetFromOptions(PetscMap);
-EXTERN PetscErrorCode PetscMapPrintHelp(PetscMap);
-EXTERN PetscErrorCode PetscMapDestroy(PetscMap);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetFromOptions(PetscMap);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapPrintHelp(PetscMap);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapDestroy(PetscMap);
 
-EXTERN PetscErrorCode PetscMapSetLocalSize(PetscMap,PetscInt);
-EXTERN PetscErrorCode PetscMapGetLocalSize(PetscMap,PetscInt *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap,PetscInt);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap,PetscInt *);
 PetscPolymorphicFunction(PetscMapGetLocalSize,(PetscMap m),(m,&s),PetscInt,s)
-EXTERN PetscErrorCode PetscMapSetSize(PetscMap,PetscInt);
-EXTERN PetscErrorCode PetscMapGetSize(PetscMap,PetscInt *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap,PetscInt);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap,PetscInt *);
 PetscPolymorphicFunction(PetscMapGetSize,(PetscMap m),(m,&s),PetscInt,s)
-EXTERN PetscErrorCode PetscMapGetLocalRange(PetscMap,PetscInt *,PetscInt *);
-EXTERN PetscErrorCode PetscMapGetGlobalRange(PetscMap,PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalRange(PetscMap,PetscInt *,PetscInt *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap,PetscInt *[]);
 
 /* Dynamic creation and loading functions */
 extern PetscFList PetscMapList;
 extern PetscTruth PetscMapRegisterAllCalled;
-EXTERN PetscErrorCode PetscMapSetType(PetscMap, const PetscMapType);
-EXTERN PetscErrorCode PetscMapGetType(PetscMap, PetscMapType *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetType(PetscMap, const PetscMapType);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetType(PetscMap, PetscMapType *);
 PetscPolymorphicFunction(PetscMapGetType,(PetscMap m),(m,&t),PetscMapType,t)
-EXTERN PetscErrorCode PetscMapRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscMap));
-EXTERN PetscErrorCode PetscMapRegisterAll(const char []);
-EXTERN PetscErrorCode PetscMapRegisterDestroy(void);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscMap));
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapRegisterAll(const char []);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapRegisterDestroy(void);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PetscMapRegisterDynamic(a,b,c,d) PetscMapRegister(a,b,c,0)
 #else
@@ -105,36 +105,37 @@ E*/
 
 /* Logging support */
 #define    VEC_FILE_COOKIE 1211214
-extern PetscCookie VEC_COOKIE, VEC_SCATTER_COOKIE;
+extern PETSCVEC_DLLEXPORT PetscCookie VEC_COOKIE;
+extern PETSCVEC_DLLEXPORT PetscCookie VEC_SCATTER_COOKIE;
 extern PetscEvent    VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot;
 extern PetscEvent    VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY;
 extern PetscEvent    VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
 extern PetscEvent    VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
 extern PetscEvent    VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier;
 
-EXTERN PetscErrorCode VecInitializePackage(char *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *);
 
-EXTERN PetscErrorCode VecCreate(MPI_Comm,Vec *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm,Vec *);
 PetscPolymorphicSubroutine(VecCreate,(Vec *x),(PETSC_COMM_SELF,x))
-EXTERN PetscErrorCode VecCreateSeq(MPI_Comm,PetscInt,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateSeq(MPI_Comm,PetscInt,Vec*);
 PetscPolymorphicSubroutine(VecCreateSeq,(PetscInt n,Vec *x),(PETSC_COMM_SELF,n,x))
-EXTERN PetscErrorCode VecCreateMPI(MPI_Comm,PetscInt,PetscInt,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateMPI(MPI_Comm,PetscInt,PetscInt,Vec*);
 PetscPolymorphicSubroutine(VecCreateMPI,(PetscInt n,PetscInt N,Vec *x),(PETSC_COMM_WORLD,n,N,x))
-EXTERN PetscErrorCode VecCreateSeqWithArray(MPI_Comm,PetscInt,const PetscScalar[],Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateSeqWithArray(MPI_Comm,PetscInt,const PetscScalar[],Vec*);
 PetscPolymorphicSubroutine(VecCreateSeqWithArray,(PetscInt n,PetscScalar s[],Vec *x),(PETSC_COMM_SELF,n,s,x))
-EXTERN PetscErrorCode VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar[],Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,const PetscScalar[],Vec*);
 PetscPolymorphicSubroutine(VecCreateMPIWithArray,(PetscInt n,PetscInt N,PetscScalar s[],Vec *x),(PETSC_COMM_WORLD,n,N,s,x))
-EXTERN PetscErrorCode VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
-EXTERN PetscErrorCode VecSetFromOptions(Vec);
-EXTERN PetscErrorCode VecPrintHelp(Vec);
-EXTERN PetscErrorCode VecDestroy(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPrintHelp(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec);
 
-EXTERN PetscErrorCode VecSetSizes(Vec,PetscInt,PetscInt);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec,PetscInt,PetscInt);
 
-EXTERN PetscErrorCode VecDot(Vec,Vec,PetscScalar*);
-EXTERN PetscErrorCode VecTDot(Vec,Vec,PetscScalar*);  
-EXTERN PetscErrorCode VecMDot(PetscInt,Vec,const Vec[],PetscScalar*);
-EXTERN PetscErrorCode VecMTDot(PetscInt,Vec,const Vec[],PetscScalar*); 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDot(Vec,Vec,PetscScalar*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecTDot(Vec,Vec,PetscScalar*);  
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(PetscInt,Vec,const Vec[],PetscScalar*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(PetscInt,Vec,const Vec[],PetscScalar*); 
 
 /*E
     NormType - determines what type of norm to compute
@@ -203,67 +204,67 @@ M*/
 
 M*/
 
-EXTERN PetscErrorCode VecNorm(Vec,NormType,PetscReal *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec,NormType,PetscReal *);
 PetscPolymorphicSubroutine(VecNorm,(Vec x,PetscReal *r),(x,NORM_2,r))
 PetscPolymorphicFunction(VecNorm,(Vec x,NormType t),(x,t,&r),PetscReal,r)
 PetscPolymorphicFunction(VecNorm,(Vec x),(x,NORM_2,&r),PetscReal,r)
-EXTERN PetscErrorCode VecNormComposedDataID(NormType,PetscInt*);
-EXTERN PetscErrorCode VecNormalize(Vec,PetscReal *);
-EXTERN PetscErrorCode VecSum(Vec,PetscScalar*);
-EXTERN PetscErrorCode VecMax(Vec,PetscInt*,PetscReal *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNormComposedDataID(NormType,PetscInt*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNormalize(Vec,PetscReal *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSum(Vec,PetscScalar*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMax(Vec,PetscInt*,PetscReal *);
 PetscPolymorphicSubroutine(VecMax,(Vec x,PetscReal *r),(x,PETSC_NULL,r))
-EXTERN PetscErrorCode VecMin(Vec,PetscInt*,PetscReal *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMin(Vec,PetscInt*,PetscReal *);
 PetscPolymorphicSubroutine(VecMin,(Vec x,PetscReal *r),(x,PETSC_NULL,r))
-EXTERN PetscErrorCode VecScale(const PetscScalar *a,Vec v);
-EXTERN PetscErrorCode VecCopy(Vec,Vec);        
-EXTERN PetscErrorCode VecSetRandom(PetscRandom,Vec);
-EXTERN PetscErrorCode VecSet(const PetscScalar*,Vec);
-EXTERN PetscErrorCode VecSwap(Vec,Vec);
-EXTERN PetscErrorCode VecAXPY(const PetscScalar*,Vec,Vec);  
-EXTERN PetscErrorCode VecAXPBY(const PetscScalar*,const PetscScalar *,Vec,Vec);  
-EXTERN PetscErrorCode VecMAXPY(PetscInt,const PetscScalar*,Vec,Vec*);
-EXTERN PetscErrorCode VecAYPX(const PetscScalar*,Vec,Vec);
-EXTERN PetscErrorCode VecWAXPY(const PetscScalar*,Vec,Vec,Vec);
-EXTERN PetscErrorCode VecPointwiseMax(Vec,Vec,Vec);    
-EXTERN PetscErrorCode VecPointwiseMaxAbs(Vec,Vec,Vec);    
-EXTERN PetscErrorCode VecPointwiseMin(Vec,Vec,Vec);    
-EXTERN PetscErrorCode VecPointwiseMult(Vec,Vec,Vec);    
-EXTERN PetscErrorCode VecPointwiseDivide(Vec,Vec,Vec);    
-EXTERN PetscErrorCode VecMaxPointwiseDivide(Vec,Vec,PetscReal*);    
-EXTERN PetscErrorCode VecShift(const PetscScalar*,Vec);
-EXTERN PetscErrorCode VecReciprocal(Vec);
-EXTERN PetscErrorCode VecPermute(Vec, IS, PetscTruth);
-EXTERN PetscErrorCode VecSqrt(Vec);
-EXTERN PetscErrorCode VecAbs(Vec);
-EXTERN PetscErrorCode VecDuplicate(Vec,Vec*);          
-EXTERN PetscErrorCode VecDuplicateVecs(Vec,PetscInt,Vec*[]);         
-EXTERN PetscErrorCode VecDestroyVecs(Vec[],PetscInt); 
-EXTERN PetscErrorCode VecGetPetscMap(Vec,PetscMap*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScale(const PetscScalar *a,Vec v);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec,Vec);        
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(PetscRandom,Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSet(const PetscScalar*,Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec,Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAXPY(const PetscScalar*,Vec,Vec);  
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(const PetscScalar*,const PetscScalar *,Vec,Vec);  
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(PetscInt,const PetscScalar*,Vec,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(const PetscScalar*,Vec,Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(const PetscScalar*,Vec,Vec,Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMax(Vec,Vec,Vec);    
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMaxAbs(Vec,Vec,Vec);    
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMin(Vec,Vec,Vec);    
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec,Vec,Vec);    
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec,Vec,Vec);    
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec,Vec,PetscReal*);    
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecShift(const PetscScalar*,Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPermute(Vec, IS, PetscTruth);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSqrt(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAbs(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec,Vec*);          
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicateVecs(Vec,PetscInt,Vec*[]);         
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDestroyVecs(Vec[],PetscInt); 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetPetscMap(Vec,PetscMap*);
 
-EXTERN PetscErrorCode VecStrideNormAll(Vec,NormType,PetscReal*);
-EXTERN PetscErrorCode VecStrideMaxAll(Vec,PetscInt *,PetscReal *);
-EXTERN PetscErrorCode VecStrideMinAll(Vec,PetscInt *,PetscReal *);
-EXTERN PetscErrorCode VecStrideScaleAll(Vec,PetscScalar*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec,NormType,PetscReal*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMaxAll(Vec,PetscInt *,PetscReal *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec,PetscInt *,PetscReal *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScaleAll(Vec,PetscScalar*);
 
-EXTERN PetscErrorCode VecStrideNorm(Vec,PetscInt,NormType,PetscReal*);
-EXTERN PetscErrorCode VecStrideMax(Vec,PetscInt,PetscInt *,PetscReal *);
-EXTERN PetscErrorCode VecStrideMin(Vec,PetscInt,PetscInt *,PetscReal *);
-EXTERN PetscErrorCode VecStrideScale(Vec,PetscInt,PetscScalar*);
-EXTERN PetscErrorCode VecStrideGather(Vec,PetscInt,Vec,InsertMode);
-EXTERN PetscErrorCode VecStrideScatter(Vec,PetscInt,Vec,InsertMode);
-EXTERN PetscErrorCode VecStrideGatherAll(Vec,Vec*,InsertMode);
-EXTERN PetscErrorCode VecStrideScatterAll(Vec*,Vec,InsertMode);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNorm(Vec,PetscInt,NormType,PetscReal*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMax(Vec,PetscInt,PetscInt *,PetscReal *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMin(Vec,PetscInt,PetscInt *,PetscReal *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec,PetscInt,PetscScalar*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGather(Vec,PetscInt,Vec,InsertMode);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatter(Vec,PetscInt,Vec,InsertMode);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec,Vec*,InsertMode);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatterAll(Vec*,Vec,InsertMode);
 
-EXTERN PetscErrorCode VecSetValues(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-EXTERN PetscErrorCode VecGetValues(Vec,PetscInt,const PetscInt[],PetscScalar[]);
-EXTERN PetscErrorCode VecAssemblyBegin(Vec);
-EXTERN PetscErrorCode VecAssemblyEnd(Vec);
-EXTERN PetscErrorCode VecStashSetInitialSize(Vec,PetscInt,PetscInt);
-EXTERN PetscErrorCode VecStashView(Vec,PetscViewer);
-EXTERN PetscErrorCode VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetValues(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetValues(Vec,PetscInt,const PetscInt[],PetscScalar[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyBegin(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStashSetInitialSize(Vec,PetscInt,PetscInt);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStashView(Vec,PetscViewer);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
-extern PetscInt         VecSetValue_Row;
-extern PetscScalar VecSetValue_Value;
+extern PETSCVEC_DLLEXPORT PetscInt    VecSetValue_Row;
+extern PETSCVEC_DLLEXPORT PetscScalar VecSetValue_Value;
 /*MC
    VecSetValue - Set a single entry into a vector.
 
@@ -322,18 +323,18 @@ M*/
 M*/
 #define VecSetValueLocal(v,i,va,mode) ((VecSetValue_Row = i,VecSetValue_Value = va,0) || VecSetValuesLocal(v,1,&VecSetValue_Row,&VecSetValue_Value,mode))
 
-EXTERN PetscErrorCode VecSetBlockSize(Vec,PetscInt);
-EXTERN PetscErrorCode VecGetBlockSize(Vec,PetscInt*);
-EXTERN PetscErrorCode VecSetValuesBlocked(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec,PetscInt);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetBlockSize(Vec,PetscInt*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlocked(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 
 /* Dynamic creation and loading functions */
 extern PetscFList VecList;
 extern PetscTruth VecRegisterAllCalled;
-EXTERN PetscErrorCode VecSetType(Vec, const VecType);
-EXTERN PetscErrorCode VecGetType(Vec, VecType *);
-EXTERN PetscErrorCode VecRegister(const char[],const char[],const char[],PetscErrorCode (*)(Vec));
-EXTERN PetscErrorCode VecRegisterAll(const char []);
-EXTERN PetscErrorCode VecRegisterDestroy(void);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec, const VecType);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec, VecType *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRegister(const char[],const char[],const char[],PetscErrorCode (*)(Vec));
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterAll(const char []);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterDestroy(void);
 
 /*MC
   VecRegisterDynamic - Adds a new vector component implementation
@@ -384,58 +385,58 @@ M*/
 #endif
 
 
-EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
-EXTERN PetscErrorCode VecScatterPostRecvs(Vec,Vec,InsertMode,ScatterMode,VecScatter);
-EXTERN PetscErrorCode VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatter);
-EXTERN PetscErrorCode VecScatterEnd(Vec,Vec,InsertMode,ScatterMode,VecScatter); 
-EXTERN PetscErrorCode VecScatterDestroy(VecScatter);
-EXTERN PetscErrorCode VecScatterCopy(VecScatter,VecScatter *);
-EXTERN PetscErrorCode VecScatterView(VecScatter,PetscViewer);
-EXTERN PetscErrorCode VecScatterRemap(VecScatter,PetscInt *,PetscInt*);
-EXTERN PetscErrorCode VecScatterGetMerged(VecScatter,PetscTruth*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterPostRecvs(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterEnd(Vec,Vec,InsertMode,ScatterMode,VecScatter); 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterDestroy(VecScatter);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCopy(VecScatter,VecScatter *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterView(VecScatter,PetscViewer);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterRemap(VecScatter,PetscInt *,PetscInt*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterGetMerged(VecScatter,PetscTruth*);
 
-EXTERN PetscErrorCode VecGetArray_Private(Vec,PetscScalar*[]);
-EXTERN PetscErrorCode VecRestoreArray_Private(Vec,PetscScalar*[]);
-EXTERN PetscErrorCode VecGetArray4d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
-EXTERN PetscErrorCode VecRestoreArray4d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
-EXTERN PetscErrorCode VecGetArray3d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar***[]);
-EXTERN PetscErrorCode VecRestoreArray3d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar***[]);
-EXTERN PetscErrorCode VecGetArray2d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar**[]);
-EXTERN PetscErrorCode VecRestoreArray2d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar**[]);
-EXTERN PetscErrorCode VecGetArray1d(Vec,PetscInt,PetscInt,PetscScalar *[]);
-EXTERN PetscErrorCode VecRestoreArray1d(Vec,PetscInt,PetscInt,PetscScalar *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray_Private(Vec,PetscScalar*[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray_Private(Vec,PetscScalar*[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray4d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray4d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray3d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar***[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray3d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar***[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray2d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar**[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray2d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar**[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray1d(Vec,PetscInt,PetscInt,PetscScalar *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray1d(Vec,PetscInt,PetscInt,PetscScalar *[]);
 
-EXTERN PetscErrorCode VecPlaceArray(Vec,const PetscScalar[]);
-EXTERN PetscErrorCode VecResetArray(Vec);
-EXTERN PetscErrorCode VecReplaceArray(Vec,const PetscScalar[]);
-EXTERN PetscErrorCode VecGetArrays(const Vec[],PetscInt,PetscScalar**[]);
-EXTERN PetscErrorCode VecRestoreArrays(const Vec[],PetscInt,PetscScalar**[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPlaceArray(Vec,const PetscScalar[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecReplaceArray(Vec,const PetscScalar[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetArrays(const Vec[],PetscInt,PetscScalar**[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArrays(const Vec[],PetscInt,PetscScalar**[]);
 
-EXTERN PetscErrorCode VecValid(Vec,PetscTruth*);
-EXTERN PetscErrorCode VecView(Vec,PetscViewer);
-EXTERN PetscErrorCode VecViewFromOptions(Vec, char *);
-EXTERN PetscErrorCode VecEqual(Vec,Vec,PetscTruth*);
-EXTERN PetscErrorCode VecLoad(PetscViewer,const VecType,Vec*);
-EXTERN PetscErrorCode VecLoadIntoVector(PetscViewer,Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecValid(Vec,PetscTruth*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec,PetscViewer);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec, char *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec,Vec,PetscTruth*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer,const VecType,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer,Vec);
 
-EXTERN PetscErrorCode VecGetSize(Vec,PetscInt*);
-EXTERN PetscErrorCode VecGetLocalSize(Vec,PetscInt*);
-EXTERN PetscErrorCode VecGetOwnershipRange(Vec,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetSize(Vec,PetscInt*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetLocalSize(Vec,PetscInt*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec,PetscInt*,PetscInt*);
 
-EXTERN PetscErrorCode VecSetLocalToGlobalMapping(Vec,ISLocalToGlobalMapping);
-EXTERN PetscErrorCode VecSetValuesLocal(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-EXTERN PetscErrorCode VecSetLocalToGlobalMappingBlock(Vec,ISLocalToGlobalMapping);
-EXTERN PetscErrorCode VecSetValuesBlockedLocal(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec,ISLocalToGlobalMapping);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesLocal(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMappingBlock(Vec,ISLocalToGlobalMapping);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlockedLocal(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 
-EXTERN PetscErrorCode VecDotBegin(Vec,Vec,PetscScalar *);
-EXTERN PetscErrorCode VecDotEnd(Vec,Vec,PetscScalar *);
-EXTERN PetscErrorCode VecTDotBegin(Vec,Vec,PetscScalar *);
-EXTERN PetscErrorCode VecTDotEnd(Vec,Vec,PetscScalar *);
-EXTERN PetscErrorCode VecNormBegin(Vec,NormType,PetscReal *);
-EXTERN PetscErrorCode VecNormEnd(Vec,NormType,PetscReal *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDotBegin(Vec,Vec,PetscScalar *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDotEnd(Vec,Vec,PetscScalar *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecTDotBegin(Vec,Vec,PetscScalar *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecTDotEnd(Vec,Vec,PetscScalar *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNormBegin(Vec,NormType,PetscReal *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNormEnd(Vec,NormType,PetscReal *);
 
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_TREAT_OFF_PROC_ENTRIES} VecOption;
-EXTERN PetscErrorCode VecSetOption(Vec,VecOption);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec,VecOption);
 
 /*
    Expose VecGetArray()/VecRestoreArray() to users. Allows this to work without any function
@@ -443,7 +444,7 @@ EXTERN PetscErrorCode VecSetOption(Vec,VecOption);
 */
 #include "vecimpl.h"
 
-EXTERN PetscErrorCode VecContourScale(Vec,PetscReal,PetscReal);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecContourScale(Vec,PetscReal,PetscReal);
 
 /*
     These numbers need to match the entries in 
@@ -452,28 +453,28 @@ EXTERN PetscErrorCode VecContourScale(Vec,PetscReal,PetscReal);
 typedef enum { VECOP_VIEW = 32,
                VECOP_LOADINTOVECTOR = 38
              } VecOperation;
-EXTERN PetscErrorCode VecSetOperation(Vec,VecOperation,void(*)(void));
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec,VecOperation,void(*)(void));
 
 /*
      Routines for dealing with ghosted vectors:
   vectors with ghost elements at the end of the array.
 */
-EXTERN PetscErrorCode VecCreateGhost(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Vec*);  
-EXTERN PetscErrorCode VecCreateGhostWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],Vec*);  
-EXTERN PetscErrorCode VecCreateGhostBlock(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Vec*);  
-EXTERN PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],Vec*);  
-EXTERN PetscErrorCode VecGhostGetLocalForm(Vec,Vec*);
-EXTERN PetscErrorCode VecGhostRestoreLocalForm(Vec,Vec*);
-EXTERN PetscErrorCode VecGhostUpdateBegin(Vec,InsertMode,ScatterMode);
-EXTERN PetscErrorCode VecGhostUpdateEnd(Vec,InsertMode,ScatterMode);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhost(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Vec*);  
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],Vec*);  
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlock(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Vec*);  
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],Vec*);  
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGhostGetLocalForm(Vec,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGhostRestoreLocalForm(Vec,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGhostUpdateBegin(Vec,InsertMode,ScatterMode);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGhostUpdateEnd(Vec,InsertMode,ScatterMode);
 
-EXTERN PetscErrorCode VecConjugate(Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecConjugate(Vec);
 
-EXTERN PetscErrorCode VecScatterCreateToAll(Vec,VecScatter*,Vec*);
-EXTERN PetscErrorCode VecScatterCreateToZero(Vec,VecScatter*,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec,VecScatter*,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec,VecScatter*,Vec*);
 
-EXTERN PetscErrorCode PetscViewerMathematicaGetVector(PetscViewer, Vec);
-EXTERN PetscErrorCode PetscViewerMathematicaPutVector(PetscViewer, Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerMathematicaGetVector(PetscViewer, Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerMathematicaPutVector(PetscViewer, Vec);
 
 /*S
      Vecs - Collection of vectors where the data for the vectors is stored in 

@@ -1,4 +1,4 @@
-
+#define PETSCVEC_DLL
 /* 
    Defines some vector operation functions that are shared by 
   sequential and parallel vectors.

@@ -1,3 +1,4 @@
+#define PETSCVEC_DLL
 /*
    This file contains routines for basic map object implementation.
 */
@@ -20,7 +21,7 @@ static struct _PetscMapOps DvOps = {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapCreate_MPI"
-PetscErrorCode PetscMapCreate_MPI(PetscMap m)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCreate_MPI(PetscMap m)
 {
   PetscMPIInt    rank,size;
   PetscInt       p;
@@ -72,7 +73,7 @@ EXTERN_C_END
           PetscMapGetLocalRange()
 
 @*/ 
-PetscErrorCode PetscMapCreateMPI(MPI_Comm comm,PetscInt n,PetscInt N,PetscMap *m)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCreateMPI(MPI_Comm comm,PetscInt n,PetscInt N,PetscMap *m)
 {
   PetscErrorCode ierr;
 
