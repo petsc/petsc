@@ -9,8 +9,10 @@ extern int MatSetUpMultiply_MPISBAIJ(Mat);
 extern int MatSetUpMultiply_MPISBAIJ_2comm(Mat); 
 extern int DisAssemble_MPISBAIJ(Mat);
 extern int MatGetValues_SeqSBAIJ(Mat,int,const int[],int,const int[],PetscScalar []);
+extern int MatGetValues_SeqBAIJ(Mat,int,const int[],int,const int[],PetscScalar []);
 extern int MatSetValues_SeqSBAIJ(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
 extern int MatSetValuesBlocked_SeqSBAIJ(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
+extern int MatSetValuesBlocked_SeqBAIJ(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
 extern int MatGetRow_SeqSBAIJ(Mat,int,int*,int**,PetscScalar**);
 extern int MatRestoreRow_SeqSBAIJ(Mat,int,int*,int**,PetscScalar**);
 extern int MatPrintHelp_SeqSBAIJ(Mat);
@@ -512,7 +514,7 @@ int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,const int im[],int n,co
             }
           }
           else col = in[j];
-          ierr = MatSetValuesBlocked_SeqSBAIJ(baij->B,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
+          ierr = MatSetValuesBlocked_SeqBAIJ(baij->B,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
         }
       }
     } else {
@@ -583,7 +585,7 @@ int MatGetValues_MPISBAIJ(Mat mat,int m,const int idxm[],int n,const int idxn[],
           if((data < 0) || (baij->garray[data/bs] != idxn[j]/bs)) *(v+i*n+j) = 0.0;
           else {
             col  = data + idxn[j]%bs;
-            ierr = MatGetValues_SeqSBAIJ(baij->B,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);
+            ierr = MatGetValues_SeqBAIJ(baij->B,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);
           } 
         }
       }
