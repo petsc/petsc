@@ -35,14 +35,14 @@ class Configure(config.base.Configure):
     self.compilers.CPPFLAGS = oldFlags
     return found
 
-  def checkPythonLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None):
+  def checkPythonLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
     '''Analogous to checkLink(), but the Python includes and libraries are automatically provided'''
     success  = 0
     oldFlags = self.compilers.CPPFLAGS
     oldLibs  = self.framework.argDB['LIBS']
     self.compilers.CPPFLAGS += ' '+' '.join([self.getIncludeArgument(inc) for inc in self.include])
     self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib])+' '+self.framework.argDB['LIBS']
-    if self.checkLink(includes, body, cleanup, codeBegin, codeEnd):
+    if self.checkLink(includes, body, cleanup, codeBegin, codeEnd, shared):
       success = 1
     self.compilers.CPPFLAGS = oldFlags
     self.framework.argDB['LIBS'] = oldLibs

@@ -171,10 +171,8 @@ class Configure(config.base.Configure):
     if checkLink is None: checkLink = self.checkLink
 
     # Fix these flags
-    oldFlags                         = self.framework.argDB['LDFLAGS']
-    self.framework.argDB['LDFLAGS'] += ' -shared'
-    for lib in libraries:
-      self.framework.argDB['LDFLAGS'] += ' -Wl,-rpath,'+os.path.dirname(lib)
+    oldFlags = self.framework.argDB['LIBS']
+    self.framework.argDB['LIBS'] += ' '+self.toString(libraries)
 
     # Make a library which calls initFunction(), and returns checkFunction()
     if noCheckArg:
@@ -195,9 +193,9 @@ int init(int argc,  char *argv[]) {
   return (int) isInitialized;
 ''' % (boolType, initFunction, initArgs, checkCode)
     codeEnd   = '\n}\n'
-    if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd):
+    if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd, shared = 1):
       if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-      self.framework.argDB['LDFLAGS'] = oldFlags
+      self.framework.argDB['LIBS'] = oldFlags
       raise RuntimeError('Could not complete shared library check')
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     os.rename(self.linkerObj, 'lib1.so')
@@ -216,15 +214,15 @@ int checkInit(void) {
   return (int) isInitialized;
 ''' % (boolType, checkCode)
     codeEnd   = '\n}\n'
-    if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd):
+    if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd, shared = 1):
       if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-      self.framework.argDB['LDFLAGS'] = oldFlags
+      self.framework.argDB['LIBS'] = oldFlags
       self.framework.logPrint('Could not complete shared library check')
       return 0
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     os.rename(self.linkerObj, 'lib2.so')
 
-    self.framework.argDB['LDFLAGS'] = oldFlags
+    self.framework.argDB['LIBS'] = oldFlags
 
     # Make an executable that dynamically loads and calls both libraries
     #   If the check returns true in the second library, the static data was shared
