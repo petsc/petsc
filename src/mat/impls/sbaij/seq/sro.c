@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.4 2000/07/07 20:50:34 balay Exp bsmith $*/
+/*$Id: sro.c,v 1.5 2000/08/13 15:04:12 bsmith Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -94,7 +94,6 @@ int MatReorderingSeqSBAIJ(Mat A,IS isp)
   ierr = ISRestoreIndices(isp,&rip);CHKERRQ(ierr);
 
   a->row  = isp;
-  a->col  = isp;
   a->icol = isp;
   ierr = PetscObjectReference((PetscObject)isp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
