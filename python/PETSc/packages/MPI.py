@@ -181,7 +181,21 @@ class Configure(config.base.Configure):
     # Try /usr/local
     dir = os.path.abspath(os.path.join('/usr', 'local'))
     yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
-
+    # Try /usr/local/*mpich*
+    ls = os.listdir(os.path.join('/usr','local'))
+    for dir in ls:
+      if dir.find('mpich') >= 0:
+        dir = os.path.join('/usr','local',dir)
+        if os.path.isdir(dir):
+          yield ('Frequent user install location (/usr/local/*mpich*)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
+    # Try ~/mpich*
+    ls = os.listdir(os.getenv('HOME'))
+    for dir in ls:
+      if dir.find('mpich') >= 0:
+        dir = os.path.join(os.getenv('HOME'),dir)
+        if os.path.isdir(dir):
+          yield ('Frequent user install location (~/*mpich*)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
+        
     # Try PETSc location
     PETSC_DIR  = None
     PETSC_ARCH = None
