@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.57 1998/04/03 23:19:27 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.58 1998/04/13 18:04:41 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -103,7 +103,7 @@ extern int PetscHeaderDestroy_Private(PetscObject);
 */
 extern void *PetscLow,*PetscHigh;
 
-#if defined(USE_PETSC_BOPT_g) && !defined(PETSC_INSIGHT)
+#if defined(USE_PETSC_BOPT_g)
 #define PetscValidHeaderSpecific(h,ck)                                        \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null Object");}                  \
   if ((unsigned long)h & (unsigned long)3) {                                  \
@@ -115,8 +115,7 @@ extern void *PetscLow,*PetscHigh;
   if (((PetscObject)(h))->cookie != ck) {                                     \
     if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {                     \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Object already free");                 \
-    }                                                                         \
-    else {                                                                    \
+    } else {                                                                    \
       SETERRQ(PETSC_ERR_ARG_WRONG,0,"Wrong Object");                          \
     }                                                                         \
   }}
@@ -124,14 +123,11 @@ extern void *PetscLow,*PetscHigh;
   {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null Object");}                  \
   if ((unsigned long)h & (unsigned long)3) {                                  \
     SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Pointer to Object");             \
-  }                                                                           \
-  else if (PetscLow > (void *) h || PetscHigh < (void *)h){                   \
+  } else if (PetscLow > (void *) h || PetscHigh < (void *)h){                 \
     SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Pointer to Object:out of range");\
-  }                                                                           \
-  else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {                  \
+  } else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {                \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Object already free");                 \
-  }                                                                           \
-  else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||                       \
+  } else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||                     \
       ((PetscObject)(h))->cookie > LARGEST_PETSC_COOKIE) {                    \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Object");                      \
   }}
@@ -144,8 +140,7 @@ extern void *PetscLow,*PetscHigh;
   if (((PetscObject)(h))->cookie != ck) {                           \
     if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {           \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Object already free");       \
-    }                                                               \
-    else {                                                          \
+    } else {                                                        \
       SETERRQ(PETSC_ERR_ARG_WRONG,0,"Wrong Object");                \
     }                                                               \
   }} 
@@ -153,11 +148,9 @@ extern void *PetscLow,*PetscHigh;
   {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null Object");}        \
   if ((unsigned long)h & (unsigned long)3) {                        \
     SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Pointer to Object");   \
-  }                                                                 \
-  else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {        \
+  } else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {      \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Object already free");       \
-  }                                                                 \
-  else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||             \
+  } else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||           \
       ((PetscObject)(h))->cookie > LARGEST_PETSC_COOKIE) {          \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Object");            \
   }}
