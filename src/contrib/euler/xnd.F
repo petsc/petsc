@@ -1,5 +1,5 @@
 C
-C    "$Id: xnd.F,v 1.26 1997/10/17 03:39:22 curfman Exp curfman $";
+C    "$Id: xnd.F,v 1.27 1998/03/21 20:51:36 curfman Exp curfman $";
 C
 C This file contains routines that are used by both the Julianne 
 C and PETSc solvers.
@@ -122,10 +122,10 @@ c this elsewhere.
       endif
       isgs = 3
 c Read input and set up initial conditions (the potential requires coordinates)
-      if (model .ne. MMFP) then
+      if (model .ne. MMFP_INT) then
          CALL IC(xx,p)
       endif
-      if (model .ne. MMEULER) then
+      if (model .ne. MMEULER_INT) then
          CALL IC_fp(xx,p,x,y,z)
       endif
 

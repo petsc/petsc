@@ -1,4 +1,4 @@
-/* $Id: user.h,v 1.38 1998/03/31 17:01:15 balay Exp balay $ */
+/* $Id: user.h,v 1.39 1998/03/31 17:15:43 balay Exp curfman $ */
 
 /* Include file for 3D Euler application code */
 
@@ -224,6 +224,7 @@ typedef struct {
 
     MM     multimodel;                        /* multi-model context */
     MMType mmtype;                            /* type of multi-model */
+    MMTypeInt mmtype_int;                     /* temporary kluge for Fortran stuff */
     Vec    den, xvel, yvel, zvel;             /* full potential work space */
     Scalar *den_a, *xvel_a, *yvel_a, *zvel_a; /* pointers to local arrays */
     Scalar phi_te[2];                         /* 2-component circulation */
@@ -356,18 +357,18 @@ extern int  localfortfct_euler_(int*,LimiterType*,int*,Scalar*,Scalar*,Scalar*,S
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-extern int julianne_(Scalar*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+extern int julianne_(Scalar*,int*,long*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*);
-extern int jformdt2_(Scalar*,Scalar*,int*,int*,int*,int*,Scalar*,
+extern int jformdt2_(Scalar*,Scalar*,int*,int*,long*,int*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,int*);
+                      Scalar*,Scalar*,long*);
 extern int jformdt_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
@@ -386,11 +387,12 @@ extern int parsetup_(int*,int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,i
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,MMType*,Scalar*,int*,int*,int*);
-extern int buildmat_(int*,ScaleType*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      int*,int*,MMTypeInt*,Scalar*,int*,int*,int*);
+extern int buildmat_(long*,ScaleType*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*);
-extern int nzmat_(MatType*,MMType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
+extern int nzmat_(MMTypeInt*,MatType*,int*,int*,int*,int*,int*,int*,int*,int*,
+                      int*,int*,PetscFortranAddr *,int*);
 extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,
                       Scalar*,Scalar*,int*,int*);
@@ -402,7 +404,8 @@ extern int  localfortfct_fp_(int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
 
 /* Fortran interface definitions */
 
-#ifdef HAVE_64BITS
+/* #ifdef HAVE_64BITS version 2.0.22 */
+#if (SIZEOF_VOIDP == 8)
 extern void *MPIR_ToPointer();
 extern int MPIR_FromPointer();
 extern void MPIR_RmPointer();

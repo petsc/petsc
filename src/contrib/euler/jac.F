@@ -1,5 +1,5 @@
 c
-c  "$Id: jac.F,v 1.5 1997/10/11 18:39:18 curfman Exp curfman $";
+c  "$Id: jac.F,v 1.6 1997/10/16 22:00:37 curfman Exp curfman $";
 c
 c  This file contains code for approximating the Jacobian matrix
 c  with sparse finite differences.
@@ -28,7 +28,6 @@ c
 #include "wing.h"
 #include "avctrs.h"
 #include "sada.h"
-#include "freq.h"
 #include "ang.h"
 #include "es.h"
 #include "bc.h"
@@ -54,7 +53,6 @@ c      COMMON /DIAG/ D(5,5,NI,NJ,NK)
 c      COMMON /TSTEP/ DT(NI,NJ,NK)
 c      COMMON /ANG/ ALPHA,BETA,PHI
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
-c      COMMON /FREQ/ IFREQ,ISGS
 c      COMMON /BCINFO/  b1bc(5,5,4,nj,nk), b2bc(5,5,ni,4,nk),
 c     &                 b3bc(5,5,ni,nj,4), b2bc_tmp(5,5,ni,4,nk)
 
@@ -1266,9 +1264,7 @@ c
 #include "wing.h"
 #include "avctrs.h"
 #include "sada.h"
-#include "freq.h"
 #include "es.h"
-#include "condi.h"
 #include "sigma.h"
 #include "diag.h"
 #include "fv.h"
@@ -1285,8 +1281,6 @@ c      common /fv/ f1(5,ni,nj,nk),g1(5,ni,nj,nk),h1(5,ni,nj,nk)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /SIGMA/ SP(5,NI),SM(5,NI)
 c      COMMON /SIGMA/ SP1(5,NI),SP2(5,NI),SM1(5,NI),SM2(5,NI)
-c      COMMON /CONDI/ ORDER,PSI,LIMIT
-c      COMMON /FREQ/ IFREQ,ISGS
 c
       double precision  BW(5)
       double precision  dq(5,d_ni),f(5,d_ni)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.14 1998/05/06 14:31:27 curfman Exp curfman $";
+static char vcid[] = "$Id: jacob.c,v 1.15 1998/06/05 20:13:07 curfman Exp curfman $";
 #endif
 
 #include "user.h"
@@ -64,7 +64,6 @@ int UserSetJacobian(SNES snes,Euler *app)
 
     ierr = MatFDColoringSetFunction(fdc,
          (int (*)(void)) ComputeFunctionNoWake,app); CHKERRQ(ierr);
-	 /*         (int (*)(void *,Vec,Vec,void *))ComputeFunctionNoWake,app); CHKERRQ(ierr); */
 
     ierr = MatFDColoringSetParameters(fdc,app->eps_jac,PETSC_DEFAULT); CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(fdc); CHKERRQ(ierr); 
@@ -189,9 +188,9 @@ int UserSetJacobian(SNES snes,Euler *app)
     }
 
     if (jac_snes_fd) {
-     ierr = SNESSetJacobian(snes,app->Jmf,J,ComputeJacobianFDColoring,app); CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,app->Jmf,J,ComputeJacobianFDColoring,app); CHKERRQ(ierr);
     } else {
-     ierr = SNESSetJacobian(snes,app->Jmf,J,ComputeJacobianFDBasic,app); CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,app->Jmf,J,ComputeJacobianFDBasic,app); CHKERRQ(ierr);
     }
 
     /* Set matrix-free parameters and view matrix context */

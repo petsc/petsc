@@ -1,5 +1,5 @@
 c
-c  "$Id: xmod.F,v 1.32 1997/10/20 17:39:39 curfman Exp curfman $";
+c  "$Id: xmod.F,v 1.33 1998/03/21 20:51:25 curfman Exp curfman $";
 c
 c  This file contains routines that are used only within the PETSc
 c  solver.  Most are interface routines to pass between the PETSc
@@ -310,6 +310,10 @@ c Multi-model info:
       call flush(6)
 #endif
       call PetscSequentialPhaseEnd(comm,1,ierr)
+      if (rank .eq. 0) write(6,*) 'nk, nk1 = ', nk, nk1
+      if (rank .eq. 0) write(6,*) 'nk_boundary, nk1_boundary = ',
+     &            nk_boundary, nk1_boundary
+
       endif
 
       return
