@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.89 2000/11/28 17:26:31 bsmith Exp balay $ 
+# $Id: base.site,v 1.90 2001/01/16 18:13:45 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -66,6 +66,7 @@ CMEX              = /software/solaris-2/com/packages/matlab-r11.1/bin/mex
 #CMEX             = mex
 MCC               = cc
 MATLABCOMMAND     = matlab
+PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 #  The Matlab include file have some bugs in them with C++,  they have a 
 # #include <stdlib.h> INSIDE an extern "C" {} :-(. You can fix this by moving the 
@@ -76,7 +77,7 @@ MATLABCOMMAND     = matlab
 #MATLAB_INCLUDE    = -I/software/solaris-2/com/packages/matlab-r11.1/extern/include
 MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
 MATLAB_LIB        = ${CLINKER_SLFLAG}/software/solaris-2/com/packages/matlab-r11.1/extern/lib/sol2 -L/software/solaris-2/com/packages/matlab-r11.1/extern/lib/sol2 -leng -lmx -lmat -lmi -lut
-PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
+PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
 #
 # Location where adiC is installed
 #
@@ -115,6 +116,7 @@ PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 # 
 JAVAC           = /usr/java1.2/bin/javac
 JAVA            = /usr/java1.2/bin/java
+JAR             = /usr/java1.2/bin/jar
 PETSC_HAVE_JAVA = -DPETSC_HAVE_JAVA
 #
 # Location/name of Python

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.16 2001/03/09 21:01:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.17 2001/03/12 18:23:29 bsmith Exp bsmith $ 
 
 #requirespackage  'PETSC_HAVE_JAVA'
 #requirespackage  'PETSC_HAVE_AMS'
@@ -27,7 +27,7 @@ DOCS      =
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 include ${PETSC_DIR}/bmake/common_test
 
-TCLASSPATH  = ".:${AMS_HOME}/java/src:./AMSBean:${CLASSPATH}"
+TCLASSPATH  = "${AMS_HOME}/java/client/AMSBean.jar:.:${AMS_HOME}/java/src:./AMSBean:${CLASSPATH}"
 
 PETScRun:
 	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScRun.java
