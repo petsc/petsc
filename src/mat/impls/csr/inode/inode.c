@@ -1147,10 +1147,42 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj,ndamp = 0;
   PetscScalar    *rtmp1,*rtmp2,*rtmp3,*v1,*v2,*v3,*pc1,*pc2,*pc3,mul1,mul2,mul3;
   PetscScalar    tmp,*ba = b->a,*aa = a->a,*pv,*rtmps1,*rtmps2,*rtmps3;
-  PetscReal      damping = b->lu_damping,zeropivot = b->lu_zeropivot;
-  PetscTruth     damp;
+  PetscReal      rs;
+  LUShift_Ctx    sctx;
+  PetscInt       newshift;
 
   PetscFunctionBegin;  
+
+  /* if both shift schemes are chosen by user, only use info->shiftpd */
+  if (info->shiftpd && info->shiftnz) info->shiftnz = 0.0; 
+  if (info->shiftpd) { /* set sctx.shift_top=max{row_shift} */
+    sctx.shift_top = 0;
+    for (i=0; i<n; i++) {
+      /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
+      rs    = 0.0;
+      ajtmp = aj + ai[i];
+      rtmp1 = aa + ai[i];
+      nz = ai[i+1] - ai[i];
+      for (j=0; j<nz; j++){ 
+        if (*ajtmp != i){
+          rs += PetscAbsScalar(*rtmp1++);
+        } else {
+          rs -= PetscRealPart(*rtmp1++);
+        }
+        ajtmp++;
+      }
+      if (rs>sctx.shift_top) sctx.shift_top = rs;
+    }
+    if (sctx.shift_top == 0.0) sctx.shift_top += 1.e-12;
+    sctx.shift_top   *= 1.1;
+    sctx.nshift_max   = 5;
+    sctx.shift_lo     = 0.;
+    sctx.shift_hi     = 1.;
+    printf("shift_top: %g\n",sctx.shift_top);
+  }
+  sctx.shift_amount = 0;
+  sctx.nshift       = 0;
+
   ierr   = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr   = ISGetIndices(iscol,&c);CHKERRQ(ierr);
   ierr   = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
@@ -1202,15 +1234,14 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   /* Now use the correct ns */
   ns = tmp_vec2;
 
-
   do {
-    damp = PETSC_FALSE;
+    sctx.lushift = PETSC_FALSE;
     /* Now loop over each block-row, and do the factorization */
     for (i=0,row=0; i<node_max; i++) { 
       nsz   = ns[i];
       nz    = bi[row+1] - bi[row];
       bjtmp = bj + bi[row];
-    
+      printf("nsz: %d\n",nsz);
       switch (nsz){
       case 1:
         for  (j=0; j<nz; j++){
@@ -1227,8 +1258,8 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         for (j=0; j<nz; j++) {
           idx        = ics[ajtmp[j]];
           rtmp1[idx] = v1[j];
-          if (ndamp && ajtmp[j] == r[row]) {
-            rtmp1[idx] += damping;
+          if (sctx.nshift && ajtmp[j] == r[row]) {
+            rtmp1[idx] += sctx.shift_amount;
           }          
         }
         prow = *bjtmp++ ;
@@ -1252,16 +1283,17 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         nz  = bi[row+1] - bi[row];
         pj  = bj + bi[row];
         pc1 = ba + bi[row];
-        if (PetscAbsScalar(rtmp1[row]) < zeropivot) {
-          if (damping) {
-            if (ndamp) damping *= 2.0;
-            damp = PETSC_TRUE;
-            ndamp++;
-            goto endofwhile;
-          } else {
-            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,PetscAbsScalar(rtmp1[row]),zeropivot);
-          }
+
+        rs       = 1.0;/* modify later! */
+        sctx.rs  = rs; 
+        sctx.pv  = rtmp1[row];
+        ierr = MatLUCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr);
+        if (newshift == 1){
+          goto endofwhile;
+        } else if (newshift == -1){
+          SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
         }
+
         rtmp1[row] = 1.0/rtmp1[row];
         for (j=0; j<nz; j++) {
           idx    = pj[j];
@@ -1287,11 +1319,11 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           idx        = ics[ajtmp[j]];
           rtmp1[idx] = v1[j];
           rtmp2[idx] = v2[j];
-          if (ndamp && ajtmp[j] == r[row]) {
-            rtmp1[idx] += damping;
+          if (sctx.nshift && ajtmp[j] == r[row]) {
+            rtmp1[idx] += sctx.shift_amount; 
           }
-          if (ndamp && ajtmp[j] == r[row+1]) {
-            rtmp2[idx] += damping;
+          if (sctx.nshift && ajtmp[j] == r[row+1]) {
+            rtmp2[idx] += sctx.shift_amount; 
           }
         }
         prow = *bjtmp++ ;
@@ -1323,16 +1355,17 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         pc2 = rtmp2 + prow;
         if (*pc2 != 0.0){
           pj   = nbj + bd[prow];
-          if (PetscAbsScalar(*pc1) < zeropivot) {
-            if (damping) {
-              if (ndamp) damping *= 2.0;
-              damp = PETSC_TRUE;
-              ndamp++;
-              goto endofwhile;
-            } else {
-              SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",prow,PetscAbsScalar(*pc1),zeropivot);
-            }
+         
+          rs       = 1.0;
+          sctx.rs  = rs; /* modify later! */
+          sctx.pv  = *pc1;
+          ierr = MatLUCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr);
+          if (newshift == 1){
+            goto endofwhile; /* sctx.shift_amount is updated */
+          } else if (newshift == -1){
+            SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
           }
+
           mul2 = (*pc2)/(*pc1); /* since diag is not yet inverted.*/
           *pc2 = mul2;
           nz   = bi[prow+1] - bd[prow] - 1;
@@ -1348,17 +1381,15 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         pj  = bj + bi[row];
         pc1 = ba + bi[row];
         pc2 = ba + bi[row+1];
-        if (PetscAbsScalar(rtmp1[row]) < zeropivot || PetscAbsScalar(rtmp2[row+1]) < zeropivot) {
-          if (damping) {
-            if (ndamp) damping *= 2.0;
-            damp = PETSC_TRUE;
-            ndamp++;
-            goto endofwhile;
-          } else if (PetscAbsScalar(rtmp1[row]) < zeropivot) {
-            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,PetscAbsScalar(rtmp1[row]),zeropivot);
-          } else {
-            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row+1,PetscAbsScalar(rtmp2[row+1]),zeropivot);
-          }
+
+        rs       = 1.0;
+        sctx.rs  = 1.0; /* modify later! */
+        sctx.pv  = PetscMin(PetscAbsScalar(rtmp1[row]), PetscAbsScalar(rtmp2[row+1]));
+        ierr = MatLUCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr);
+        if (newshift == 1){
+          goto endofwhile;
+        } else if (newshift == -1){
+          SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
         }
         rtmp1[row]   = 1.0/rtmp1[row];
         rtmp2[row+1] = 1.0/rtmp2[row+1];
@@ -1388,14 +1419,14 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           rtmp1[idx] = v1[j];
           rtmp2[idx] = v2[j];
           rtmp3[idx] = v3[j];
-          if (ndamp && ajtmp[j] == r[row]) {
-            rtmp1[idx] += damping;
+          if (sctx.nshift && ajtmp[j] == r[row]) {
+            rtmp1[idx] += sctx.shift_amount; 
           }
-          if (ndamp && ajtmp[j] == r[row+1]) {
-            rtmp2[idx] += damping;
+          if (sctx.nshift && ajtmp[j] == r[row+1]) {
+            rtmp2[idx] += sctx.shift_amount; 
           }
-          if (ndamp && ajtmp[j] == r[row+2]) {
-            rtmp3[idx] += damping;
+          if (sctx.nshift && ajtmp[j] == r[row+2]) {
+            rtmp3[idx] += sctx.shift_amount; 
           }
         }
         /* loop over all pivot row blocks above this row block */
@@ -1434,15 +1465,15 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         pc3 = rtmp3 + prow;
         if (*pc2 != 0.0 || *pc3 != 0.0){
           pj   = nbj + bd[prow];
-          if (PetscAbsScalar(*pc1) < zeropivot) {
-            if (damping) {
-              if (ndamp) damping *= 2.0;
-              damp = PETSC_TRUE;
-              ndamp++;
-              goto endofwhile;
-            } else {
-              SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",prow,PetscAbsScalar(*pc1),zeropivot);
-            }
+
+          rs = 1.0;
+          sctx.rs  = rs; 
+          sctx.pv = *pc1;
+          ierr = MatLUCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr);
+          if (newshift == 1){
+            goto endofwhile;
+          } else if (newshift == -1){
+            SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
           }
           mul2 = (*pc2)/(*pc1);
           mul3 = (*pc3)/(*pc1);
@@ -1463,15 +1494,15 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (*pc3 != 0.0){
           pj   = nbj + bd[prow];
           pj   = nbj + bd[prow];
-          if (PetscAbsScalar(*pc2) < zeropivot) {
-            if (damping) {
-              if (ndamp) damping *= 2.0;
-              damp = PETSC_TRUE;
-              ndamp++;
-              goto endofwhile;
-            } else {
-              SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",prow,PetscAbsScalar(*pc2),zeropivot);
-            }
+
+          rs       = 1.0;
+          sctx.rs  = 1.0; /* modify later! */
+          sctx.pv  = *pc2;
+          ierr = MatLUCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr);
+          if (newshift == 1){
+            goto endofwhile;
+          } else if (newshift == -1){
+            SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
           }
           mul3 = (*pc3)/(*pc2);
           *pc3 = mul3;
@@ -1488,20 +1519,17 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         pc1 = ba + bi[row];
         pc2 = ba + bi[row+1];
         pc3 = ba + bi[row+2];
-        if (PetscAbsScalar(rtmp1[row]) < zeropivot || PetscAbsScalar(rtmp2[row+1]) < zeropivot || PetscAbsScalar(rtmp3[row+2]) < zeropivot) {
-          if (damping) {
-            if (ndamp) damping *= 2.0;
-            damp = PETSC_TRUE;
-            ndamp++;
-            goto endofwhile;
-          } else if (PetscAbsScalar(rtmp1[row]) < zeropivot) {
-            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row,PetscAbsScalar(rtmp1[row]),zeropivot);
-          } else if (PetscAbsScalar(rtmp2[row+1]) < zeropivot) {
-            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row+1,PetscAbsScalar(rtmp2[row+1]),zeropivot);
-	} else {
-            SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",row+2,PetscAbsScalar(rtmp3[row+2]),zeropivot);
-          }
+
+        rs = 1.0;
+        sctx.rs  = 1.0; /* modify later! */
+        sctx.pv  = PetscMin(PetscAbsScalar(rtmp1[row]), PetscAbsScalar(rtmp2[row+1]));      
+        ierr = MatLUCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr);
+        if (newshift == 1){
+          goto endofwhile;
+        } else if (newshift == -1){
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D-%D value %g tolerance %g * rs %g",row,row+2,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
         }
+
         rtmp1[row]   = 1.0/rtmp1[row];
         rtmp2[row+1] = 1.0/rtmp2[row+1];
         rtmp3[row+2] = 1.0/rtmp3[row+2];
@@ -1520,7 +1548,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
       row += nsz;                 /* Update the row */
     } 
     endofwhile:;
-  } while (damp);
+  } while (sctx.lushift);
   ierr = PetscFree(rtmp1);CHKERRQ(ierr);
   ierr = PetscFree(tmp_vec2);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
@@ -1528,8 +1556,12 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   ierr = ISRestoreIndices(iscol,&c);CHKERRQ(ierr);
   C->factor      = FACTOR_LU;
   C->assembled   = PETSC_TRUE;
-  if (ndamp || b->lu_damping) {
-    PetscLogInfo(0,"MatLUFactorNumeric_Inode: number of damping tries %D damping value %g\n",ndamp,damping);
+  if (sctx.nshift) {
+    if (info->shiftnz) {
+      PetscLogInfo(0,"MatLUFactorNumeric_Inode: number of shift_nz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
+    } else if (info->shiftpd) {
+      PetscLogInfo(0,"MatLUFactorNumeric_Inode: number of shift_pd tries %D, shift_amount %g, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);
+    }
   }
   ierr = PetscLogFlops(C->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
