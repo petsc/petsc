@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.95 2001/08/07 03:05:11 balay Exp balay $*/
+/*$Id: zsys.c,v 1.96 2001/10/04 18:45:16 balay Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
@@ -43,7 +43,7 @@
 #define petscbarrier_              PETSCBARRIER
 #define petscsynchronizedflush_    PETSCSYNCHRONIZEDFLUSH
 #define petscsplitownership_       PETSCSPLITOWNERSHIP
-#define petscsplitownershipBLOCK_  PETSCSPLITOWNERSHIPBLOCK
+#define petscsplitownershipblock_  PETSCSPLITOWNERSHIPBLOCK
 #define petscobjectgetnewtag_      PETSCOBJECTGETNEWTAG
 #define petsccommgetnewtag_        PETSCCOMMGETNEWTAG
 #define petscfptrap_               PETSCFPTRAP
