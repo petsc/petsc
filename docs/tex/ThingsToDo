@@ -11,9 +11,9 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
   --------------------------------
 
-   - Fix bfort so that it correctly deals with PetscRandom. 
+  - Fix bfort so that it correctly deals with PetscRandom. 
 
-  - Fortran doesn't read aliases from .petscrc
+  X Fortran doesn't read aliases from .petscrc
 
   - Do something about viewer formats - maybe use enum?
     Make ViewerGetFormat() a real public routine (seems good to me); else
