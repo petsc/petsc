@@ -9,10 +9,10 @@ PetscCookie DRAWAXIS_COOKIE = 0;
 struct _p_DrawAxis {
     PETSCHEADER(int)
     PetscReal      xlow,ylow,xhigh,yhigh;     /* User - coord limits */
-    PetscErrorCode (*ylabelstr)(PetscReal,PetscReal,char **),/* routines to generate labels */ 
-                   (*xlabelstr)(PetscReal,PetscReal,char **);
-    PetscErrorCode (*xticks)(PetscReal,PetscReal,int,int*,PetscReal*,int),
-                   (*yticks)(PetscReal,PetscReal,int,int*,PetscReal*,int);  
+    PetscErrorCode (*ylabelstr)(PetscReal,PetscReal,char **);/* routines to generate labels */ 
+    PetscErrorCode (*xlabelstr)(PetscReal,PetscReal,char **);
+    PetscErrorCode (*xticks)(PetscReal,PetscReal,int,int*,PetscReal*,int);
+    PetscErrorCode (*yticks)(PetscReal,PetscReal,int,int*,PetscReal*,int);  
                                           /* location and size of ticks */
     PetscDraw  win;
     int        ac,tc,cc;                     /* axis,tick, character color */

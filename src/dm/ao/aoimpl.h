@@ -11,16 +11,16 @@
     Defines the abstract AO operations
 */
 struct _AOOps {
-      /* Generic Operations */
-       PetscErrorCode (*view)(AO, PetscViewer),
-                      (*destroy)(AO),
-      /* AO-Specific Operations */
-                      (*petsctoapplication)(AO, PetscInt, PetscInt[]),
-                      (*applicationtopetsc)(AO, PetscInt, PetscInt[]),
-                      (*petsctoapplicationpermuteint)(AO, PetscInt, PetscInt[]),
-                      (*applicationtopetscpermuteint)(AO, PetscInt, PetscInt[]),
-                      (*petsctoapplicationpermutereal)(AO, PetscInt, PetscReal[]),
-                      (*applicationtopetscpermutereal)(AO, PetscInt, PetscReal[]);
+  /* Generic Operations */
+  PetscErrorCode (*view)(AO, PetscViewer);
+  PetscErrorCode (*destroy)(AO);
+  /* AO-Specific Operations */
+  PetscErrorCode (*petsctoapplication)(AO, PetscInt, PetscInt[]);
+  PetscErrorCode (*applicationtopetsc)(AO, PetscInt, PetscInt[]);
+  PetscErrorCode (*petsctoapplicationpermuteint)(AO, PetscInt, PetscInt[]);
+  PetscErrorCode (*applicationtopetscpermuteint)(AO, PetscInt, PetscInt[]);
+  PetscErrorCode (*petsctoapplicationpermutereal)(AO, PetscInt, PetscReal[]);
+  PetscErrorCode (*applicationtopetscpermutereal)(AO, PetscInt, PetscReal[]);
 };
 
 struct _p_AO {

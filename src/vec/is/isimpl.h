@@ -10,17 +10,17 @@ and matrices.
 #include "petscis.h"
 
 struct _ISOps {
-  PetscErrorCode (*getsize)(IS,PetscInt*),
-                 (*getlocalsize)(IS,PetscInt*),
-                 (*getindices)(IS,PetscInt**),
-                 (*restoreindices)(IS,PetscInt**),
-                 (*invertpermutation)(IS,PetscInt,IS*),
-                 (*sortindices)(IS),
-                 (*sorted)(IS,PetscTruth *),
-                 (*duplicate)(IS,IS *),
-                 (*destroy)(IS),
-                 (*view)(IS,PetscViewer),
-                 (*identity)(IS,PetscTruth*);
+  PetscErrorCode (*getsize)(IS,PetscInt*);
+  PetscErrorCode (*getlocalsize)(IS,PetscInt*);
+  PetscErrorCode (*getindices)(IS,PetscInt**);
+  PetscErrorCode (*restoreindices)(IS,PetscInt**);
+  PetscErrorCode (*invertpermutation)(IS,PetscInt,IS*);
+  PetscErrorCode (*sortindices)(IS);
+  PetscErrorCode (*sorted)(IS,PetscTruth *);
+  PetscErrorCode (*duplicate)(IS,IS *);
+  PetscErrorCode (*destroy)(IS);
+  PetscErrorCode (*view)(IS,PetscViewer);
+  PetscErrorCode (*identity)(IS,PetscTruth*);
 };
 
 #if defined(__cplusplus)
