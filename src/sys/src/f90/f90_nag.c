@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: f90_nag.c,v 1.5 1998/04/06 22:51:38 balay Exp balay $";
+static char vcid[] = "$Id: f90_nag.c,v 1.6 1998/04/07 00:55:11 balay Exp balay $";
 #endif
 
 /*
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: f90_nag.c,v 1.5 1998/04/06 22:51:38 balay Exp balay $
 */ 
 int PetscF90Create1dArrayScalar(Scalar *array,int len, array1d *ptr)
 {
-  ptr->addr          = (void *)array;
+  ptr->addr          = (Pointer)array;
   ptr->offset        = -sizeof(Scalar);
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(Scalar);
@@ -76,7 +76,7 @@ int PetscF90Destroy1dArrayScalar(array1d *ptr)
 */ 
 int PetscF90Create2dArrayScalar(Scalar *array,int m,int n, array2d *ptr)
 {
-  ptr->addr          = (void *)array;
+  ptr->addr          = (Pointer)array;
   ptr->offset        = -sizeof(Scalar)-m*sizeof(Scalar);
   ptr->dim[0].extent = m;
   ptr->dim[0].mult   = sizeof(Scalar);
@@ -131,7 +131,7 @@ int PetscF90Destroy2dArrayScalar(array2d *ptr)
 */ 
 int PetscF90Create1dArrayInt(int *array,int len, array1d *ptr)
 {
-  ptr->addr          = (void *)array;
+  ptr->addr          = (Pointer)array;
   ptr->offset        = -sizeof(int);
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(int);
@@ -183,7 +183,7 @@ int PetscF90Destroy1dArrayInt(array1d *ptr)
 */ 
 int PetscF90Create1dArrayPetscFortranAddr(PetscFortranAddr *array,int len, array1d *ptr)
 {
-  ptr->addr          = (void *)array;
+  ptr->addr          = (Pointer)array;
   ptr->offset        = -sizeof(PetscFortranAddr);
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(PetscFortranAddr);
