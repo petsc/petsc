@@ -1,4 +1,4 @@
-/*$Id: matmatmult.c,v 1.7 2001/09/05 18:47:21 buschelm Exp buschelm $*/
+/*$Id: matmatmult.c,v 1.8 2001/09/06 15:56:12 buschelm Exp buschelm $*/
 /*
   Defines a matrix-matrix product for 2 SeqAIJ matrices
           C = A * B
@@ -59,8 +59,8 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
   sparsefill = densefill + bn;
 
   ierr = PetscMalloc(sizeof(_p_free_space),&free_space);
-  ierr = PetscMalloc((free_space_size+1)*sizeof(int),&(free_space->space));CHKERRQ(ierr);
-  free_space->head      = free_space->space;
+  ierr = PetscMalloc((free_space_size+1)*sizeof(int),&(free_space->head));CHKERRQ(ierr);
+  free_space->space     = free_space->head;
   free_space->remaining = free_space_size;
   free_space->used      = 0;
   free_space->morespace = NULL;
@@ -94,8 +94,8 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
     if (current_space->remaining<cnzi) {
       ierr = PetscMalloc(sizeof(_p_free_space),&(current_space->morespace));CHKERRQ(ierr);
       current_space = current_space->morespace;
-      ierr = PetscMalloc((free_space_size+1)*sizeof(int),&(current_space->space));CHKERRQ(ierr);
-      current_space->head      = current_space->space;
+      ierr = PetscMalloc((free_space_size+1)*sizeof(int),&(current_space->head));CHKERRQ(ierr);
+      current_space->space     = current_space->head;
       current_space->remaining = free_space_size;
       current_space->used      = 0;
       current_space->morespace = NULL;
