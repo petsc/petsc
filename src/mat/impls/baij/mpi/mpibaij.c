@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.68 1997/05/03 22:43:28 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.69 1997/05/03 22:48:22 curfman Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -271,7 +271,12 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
             col = baij->colmap[in[j]/bs] - 1 + in[j]%bs;
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
               ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr); 
-              col =  in[j];              
+              col =  in[j]; 
+              /* Reinitialize the variables required by MatSetValues_SeqBAIJ_B_Private() */
+              B = baij->B;
+              b = (Mat_SeqBAIJ *) (B)->data; 
+              bimax=b->imax;bi=b->i;bilen=b->ilen;bj=b->j; 
+              ba=b->a;
             }
           }
           else col = in[j];

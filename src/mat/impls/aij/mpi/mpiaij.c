@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.204 1997/05/03 22:48:26 curfman Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.205 1997/05/09 22:30:43 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -239,7 +239,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
             if (col < 0 && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
               ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
               col =  in[j];
-              /* Reinitalize the variables required by the macro MatSetValues_SeqAIJ_B_Private() */
+              /* Reinitialize the variables required by MatSetValues_SeqAIJ_B_Private() */
               B = aij->B;
               b = (Mat_SeqAIJ *) B->data; 
               bimax = b->imax; bi = b->i; bilen = b->ilen; bj = b->j;
