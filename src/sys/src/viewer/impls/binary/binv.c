@@ -1,8 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.1 1995/08/22 19:26:33 curfman Exp curfman $";
+static char vcid[] = "$Id: binv.c,v 1.2 1995/08/23 17:19:29 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
+#include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -31,6 +32,7 @@ static int ViewerDestroy_BinaryFile(PetscObject obj)
    ViewerFileOpenBinary - Opens a file for binary input/output.
 
    Input Parameters:
+.  comm - MPI communicator
 .  name - name of file 
 .  type - type of file
 $    BIN_CREAT - create new file for binary output
@@ -38,7 +40,7 @@ $    BIN_RDONLY - open existing file for binary input
 $    BIN_WRONLY - open existing file for binary output
 
    Output Parameter:
-.  fd - file descriptor
+.  binv - viewer for binary input/output to use with the specified file
 
    Notes:
    When a new file is created (type = BIN_CREAT), the file permissions
@@ -53,10 +55,9 @@ $      world: read
 
 .seealso: ViewerDestroy()
 @*/
-ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,
-                     Viewer *binv)
+int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,
+                         Viewer *binv)
 {
-  int otype;
   Viewer v;
   if (comm == MPI_COMM_SELF) {
     PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,BIN_FILE_VIEWER,comm);
@@ -65,30 +66,27 @@ ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,
   }
   PLogObjectCreate(v);
   v->destroy     = ViewerDestroy_BinaryFile;
+  *binv = v;
 
   /* So far we're not using comm */
   if (type == BIN_CREAT) {
     if ((v->fdes = creat(name,664)) == -1)
       SETERRQ(1,"ViewerFileOpenBinary: Cannot create file for writing");
-    return 0;
   } 
-  switch ((int) type) {
-    case (int)BIN_RDONLY: otype = O_RDONLY; break;
-    case (int)BIN_WRONLY: otype = O_WRONLY; break;
-    default: SETERRQ(1,"PetscBinaryFileOpen: File type not supported");
+  else if (type == BIN_RDONLY) {
+    if ((v->fdes = open(name,O_RDONLY,0)) == -1) {
+      SETERRQ(1,"ViewerFileOpenBinary: Cannot open file for reading");
+    }
   }
-  if ((v->fdes = open(name,otype,0)) == -1) {
-    if (type == BIN_RDONLY) {
-      SETERRQ(1,"ViewerBinaryFileOpenBinary: Cannot open file for reading");
-    } else if (type == BIN_WRONLY) {
+  else if (type == BIN_WRONLY) {
+    if ((v->fdes = open(name,O_WRONLY,0)) == -1) {
       SETERRQ(1,"ViewerFileOpenBinary: Cannot open file for writing");
-    } else SETERRQ(1,"PetscBinaryFileOpen: Cannot open file");
-  }
+    }
+  } else SETERRQ(1,"ViewerFileOpenBinary: File type not supported");
 
 #if defined(PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
 #endif
-  *binv = v;
   return 0;
 }
 

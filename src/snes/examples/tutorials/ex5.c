@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.18 1995/08/02 04:19:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.19 1995/08/03 02:24:49 curfman Exp curfman $";
 #endif
 
 static char help[] =
@@ -57,46 +57,45 @@ int main( int argc, char **argv )
   PetscInitialize( &argc, &argv, 0,0 );
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
 
-  user.mx    = 4; user.my    = 4; user.param = 6.0;
+  user.mx = 4; user.my = 4; user.param = 6.0;
   OptionsGetInt(0,"-mx",&user.mx); OptionsGetInt(0,"-my",&user.my);
   OptionsGetDouble(0,"-par",&user.param);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,"Lambda is out of range");
   }
-  N          = user.mx*user.my;
+  N = user.mx*user.my;
   
   /* Set up distributed array */
-  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
-               user.mx,user.my,PETSC_DECIDE,PETSC_DECIDE,1,1,&user.da); 
-  CHKERRA(ierr);
-  ierr = DAGetDistributedVector(user.da,&x); CHKERRQ(ierr);
+  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,user.mx,
+         user.my,PETSC_DECIDE,PETSC_DECIDE,1,1,&user.da); CHKERRA(ierr);
+  ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = DAGetLocalVector(user.da,&user.localX); CHKERRQ(ierr);
+  ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);
   ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
 
   /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);
-  CHKERRA(ierr);
+         CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); 
-           CHKERRA(ierr);
+         CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,0); 
-           CHKERRA(ierr);
+         CHKERRA(ierr);
   ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,J,0,(void *)&user); CHKERRA(ierr);
 
   /* Set up nonlinear solver; then execute it */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
-  /* Force no preconditioning to be used. */
-  ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
-  ierr = PCSetMethod(pc,PCNONE); CHKERRQ(ierr);
+  /* Force no preconditioning to be used */
+  ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
+  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+  ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
 
   ierr = SNESSetUp(snes); CHKERRA(ierr);
-  ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
+  ierr = SNESSolve(snes,&its); CHKERRA(ierr);
 
   MPIU_printf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
@@ -107,7 +106,7 @@ int main( int argc, char **argv )
   ierr = VecDestroy(user.localX); CHKERRA(ierr);
   ierr = VecDestroy(user.localF); CHKERRA(ierr);
   ierr = SNESDestroy(snes); CHKERRA(ierr);
-  ierr = DADestroy(user.da); CHKERRQ(ierr);
+  ierr = DADestroy(user.da); CHKERRA(ierr);
   PetscFinalize();
 
   return 0;
@@ -125,10 +124,13 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   sc     = hx*hy;
   hxdhy  = hx/hy; hydhx  = hy/hx;
 
+  /* Get ghost points */
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);
-  DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);
-  DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);
+  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
+
+  /* Compute initial guess */
   for (j=ys; j<ys+ym; j++) {
     temp = (double)(PETSCMIN(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
@@ -141,8 +143,9 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
     }
   }
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-  /* stick values into global vector */
-  ierr = DALocalToGlobal(user->da,localX,INSERTVALUES,X);
+
+  /* Insert values into global vector */
+  ierr = DALocalToGlobal(user->da,localX,INSERTVALUES,X); CHKERRQ(ierr);
   return 0;
 }/* --------------------  Evaluate Function F(x) --------------------- */
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
@@ -158,13 +161,15 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   hy     = one / (double)(my-1);
   sc     = hx*hy*lambda; hxdhy  = hx/hy; hydhx  = hy/hx;
 
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERTVALUES,localX);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERTVALUES,localX);
+  /* Get ghost points */
+  ierr = DAGlobalToLocalBegin(user->da,X,INSERTVALUES,localX); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(user->da,X,INSERTVALUES,localX); CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   ierr = VecGetArray(localF,&f); CHKERRQ(ierr);
-  DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);
-  DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);
+  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
 
+  /* Evaluate function */
   for (j=ys; j<ys+ym; j++) {
     row = (j - Ys)*Xm + xs - Xs - 1; 
     for (i=xs; i<xs+xm; i++) {
@@ -182,8 +187,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   ierr = VecRestoreArray(localF,&f); CHKERRQ(ierr);
 
-  /* stick values into global vector */
-  ierr = DALocalToGlobal(user->da,localF,INSERTVALUES,F);
+  /* Insert values into global vector */
+  ierr = DALocalToGlobal(user->da,localF,INSERTVALUES,F); CHKERRQ(ierr);
   PLogFlops(11*ym*xm);
   return 0; 
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.18 1995/08/22 19:38:14 curfman Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.19 1995/08/23 17:19:25 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -64,11 +64,11 @@ int ViewerFileGetFormat_Private(Viewer viewer)
    ViewerFileOpen - Opens an ASCII file as a viewer.
 
    Input Parameters:
-.  name - the file name
 .  comm - the communicator
+.  name - the file name
 
    Output Parameter:
-.  lab - the viewer to use with that file
+.  lab - the viewer to use with the specified file
 
    Notes:
    If a multiprocessor communicator is used (such as MPI_COMM_WORLD), 
