@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.49 1997/09/22 15:21:37 balay Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.50 1997/10/19 03:27:15 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -15,7 +15,8 @@ int main(int argc,char **args)
 {
   int        ierr, its, flg;
   PetscTruth set;
-  double     norm,tsetup,tsolve;
+  double     norm;
+  PLogDouble tsetup1,tsetup2,tsetup,tsolve1,tsolve2,tsolve;
   Scalar     zero = 0.0, none = -1.0;
   Vec        x, b, u;
   Mat        A;
@@ -86,21 +87,23 @@ int main(int argc,char **args)
   PetscBarrier(A);
 
   PLogStagePush(1);
-  tsetup = PetscGetTime();  
+  ierr = PetscGetTime(&tsetup1); CHKERRA(ierr);
   ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSetUp(sles,b,x); CHKERRA(ierr);
   ierr = SLESSetUpOnBlocks(sles); CHKERRA(ierr);
-  tsetup = PetscGetTime() - tsetup;
+  ierr = PetscGetTime(&tsetup2); CHKERRA(ierr);
+  tsetup = tsetup2 -tsetup1;
   PLogStagePop();
   PetscBarrier(A);
 
 
   PLogStagePush(2);
-  tsolve = PetscGetTime();
+  ierr = PetscGetTime(&tsolve1); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  tsolve = PetscGetTime() - tsolve;
+  ierr = PetscGetTime(&tsolve2); CHKERRA(ierr);
+  tsolve = tsolve2 - tsolve1;
   PLogStagePop();
 
   /* Show result */
