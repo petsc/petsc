@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.55 1997/02/12 18:59:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.56 1997/02/22 02:24:21 bsmith Exp curfman $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -338,7 +338,10 @@ int PCCreate_ASM(PC pc)
 .   is - the index sets that define the subdomains for this processor
          (or PETSC_NULL for PETSc to determine subdomains)
 
-    Note:
+    Notes:
+    These index sets cannot be destroyed until after completion of the
+    linear solves for which the ASM preconditioner is being used.
+
     Use PCASMSetTotalSubdomains() to set the subdomains for all processors.
 
 .keywords: PC, ASM, set, local, subdomains, additive Schwarz
@@ -377,6 +380,9 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 $    -pc_asm_blocks <blks>
 
     Note:
+    These index sets cannot be destroyed until after completion of the
+    linear solves for which the ASM preconditioner is being used.
+
     Use PCASMSetLocalSubdomains() to set local subdomains.
 
 .keywords: PC, ASM, set, total, global, subdomains, additive Schwarz
