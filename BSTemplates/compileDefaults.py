@@ -4,7 +4,7 @@ import fileset
 import link
 import nargs
 import transform
-import BSTemplates.sidlDefaults as sidlDefaults
+import BSTemplates.sidlStructs
 
 import distutils.sysconfig
 import os
@@ -15,21 +15,27 @@ class UsingCompiler:
   def __init__(self, usingSIDL):
     self.usingSIDL      = usingSIDL
     self.defines        = ['PIC']
-    self.includeDirs    = sidlDefaults.SIDLPackageDict(usingSIDL)
-    self.extraLibraries = sidlDefaults.SIDLPackageDict(usingSIDL)
+    self.includeDirs    = BSTemplates.sidlStructs.SIDLPackageDict(usingSIDL)
+    self.extraLibraries = BSTemplates.sidlStructs.SIDLPackageDict(usingSIDL)
     self.libDir         = os.path.abspath('lib')
     return
 
   def getDefines(self):
     return self.defines
 
-  def getClientLibrary(self, project, lang):
+  def getClientLibrary(self, project, lang, isArchive = 1):
     '''Client libraries following the naming scheme: lib<project>-<lang>-client.a'''
-    return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-client.a')])
+    if isArchive:
+      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-client.a')])
+    else:
+      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-client.so')])
 
-  def getServerLibrary(self, project, lang, package):
+  def getServerLibrary(self, project, lang, package, isArchive = 1):
     '''Server libraries following the naming scheme: lib<project>-<lang>-<package>-server.a'''
-    return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.a')])
+    if isArchive:
+      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.a')])
+    else:
+      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project+'-'+lang.lower()+'-'+package+'-server.so')])
 
   def getClientCompileTarget(self, project):
     sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())
@@ -211,12 +217,12 @@ class UsingPython(UsingCompiler):
   def getCompiler(self, library):
     return compile.CompilePythonC()
 
-  def getClientLibrary(self, project, lang):
+  def getClientLibrary(self, project, lang, isArchive = 1):
     '''Need to return empty fileset for Python client library'''
     if lang == self.getLanguage():
       return fileset.FileSet()
     else:
-      return UsingCompiler.getClientLibrary(self, project, lang)
+      return UsingCompiler.getClientLibrary(self, project, lang, isArchive)
 
   def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
@@ -321,10 +327,13 @@ class UsingJava (UsingCompiler):
       runtimeLibs = [runtimeLibs]
     return runtimeLibs
 
-  def getClientLibrary(self, project, lang, isJNI = 0):
-    '''Client libraries following the naming scheme: lib<project>-<lang>-client.jar'''
+  def getClientLibrary(self, project, lang, isArchive = 1, isJNI = 0):
+    '''Client libraries following the naming scheme: lib<project>-<lang>-client.jar (or .a for JNI libraries)'''
     if isJNI:
-      libraryName = 'lib'+project+'-'+lang.lower()+'-client.a'
+      if isArchive:
+        libraryName = 'lib'+project+'-'+lang.lower()+'-client.a'
+      else:
+        libraryName = 'lib'+project+'-'+lang.lower()+'-client.so'
     else:
       libraryName = 'lib'+project+'-'+lang.lower()+'-client.jar'
     return fileset.FileSet([os.path.join(self.libDir, libraryName)])

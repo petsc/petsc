@@ -2,64 +2,11 @@ import bs
 import fileset
 import logging
 import transform
+import BSTemplates.compileDefaults as compileDefaults
+import BSTemplates.sidlStructs as sidlStructs
 
 import os
 import re
-
-class SIDLConstants:
-  def getLanguages():
-    return ['C', 'C++', 'Python', 'F77', 'Java']
-  getLanguages = staticmethod(getLanguages)
-
-  def checkLanguage(language):
-    if not language in SIDLConstants.getLanguages():
-      raise ValueError('Invalid SIDL language: '+language)
-  checkLanguage = staticmethod(checkLanguage)
-
-class SIDLLanguageList (list):
-  def __setitem__(self, key, value):
-    SIDLConstants.checkLanguage(value)
-    self.data[key] = value
-
-class SIDLPackages:
-  '''We now allow packages or languages as keys'''
-  def __init__(self, defaults):
-    self.defaults = defaults
-
-  def getPackages(self):
-    return self.defaults.getPackages()
-
-  def checkPackage(self, package):
-    if not package in self.getPackages():
-      if package in SIDLConstants.getLanguages(): return
-      if package == 'executable': return
-      raise KeyError('Invalid SIDL package: '+package)
-
-class SIDLPackageList (list, SIDLPackages):
-  '''We now allow packages or languages as keys'''
-  def __init__(self, defaults):
-    list.__init__(self)
-    SIDLPackages.__init__(self, defaults)
-
-  def __setitem__(self, key, value):
-    self.checkPackage(value)
-    self.data[key] = value
-
-class SIDLPackageDict (dict, SIDLPackages):
-  '''We now allow packages or languages as keys'''
-  def __init__(self, defaults):
-    dict.__init__(self)
-    SIDLPackages.__init__(self, defaults)
-
-  def __getitem__(self, key):
-    self.checkPackage(key)
-    if not self.has_key(key): dict.__setitem__(self, key, [])
-    return dict.__getitem__(self, key)
-
-  def __setitem__(self, key, value):
-    self.checkPackage(key)
-    if not type(value) == types.ListType: raise ValueError('Entries must be lists')
-    dict.__setitem__(self, key, value)
 
 class UsingSIDL (logging.Logger):
   '''This class handles all interaction specific to the SIDL language'''
@@ -78,12 +25,12 @@ class UsingSIDL (logging.Logger):
       self.serverBaseDir = os.path.abspath('server')
     # The repositories used during compilation
     self.repositoryDirs  = []
-    self.clientLanguages = SIDLLanguageList()
-    self.serverLanguages = SIDLLanguageList()
+    self.clientLanguages = sidlStructs.SIDLLanguageList()
+    self.serverLanguages = sidlStructs.SIDLLanguageList()
     # Languages in which the client must be linked with the server
-    self.internalClientLanguages = SIDLPackageDict(self)
+    self.internalClientLanguages = sidlStructs.SIDLPackageDict(self)
     # Packages which must be compiled before the clients
-    self.bootstrapPackages = SIDLPackageList(self)
+    self.bootstrapPackages = sidlStructs.SIDLPackageList(self)
     self.bootstrapPackages.extend(bootstrapPackages)
     # Setup compiler specific defaults
     if bs.argDB.has_key('babelCrap') and int(bs.argDB['babelCrap']):
@@ -98,33 +45,34 @@ class UsingSIDL (logging.Logger):
     self.compilerFlags       = ''
     self.serverCompilerFlags = ''
     self.clientCompilerFlags = ''
-    self.includeDirs         = SIDLPackageDict(self)
-    self.extraLibraries      = SIDLPackageDict(self)
+    self.includeDirs         = sidlStructs.SIDLPackageDict(self)
+    self.extraLibraries      = sidlStructs.SIDLPackageDict(self)
     self.libDir              = os.path.join(self.getRootDir(), 'lib')
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
 
   def setupIncludeDirectories(self):
     rootDir = self.getRootDir()
-    for lang in SIDLConstants.getLanguages():
+    for lang in sidlStructs.SIDLConstants.getLanguages():
       self.includeDirs[lang].append(self.getServerRootDir(self.getBaseLanguage(), self.getBasePackage(), root = os.path.join(rootDir, 'server')))
-      if not self.compilerDefaults.generatesAllStubs() and not lang in self.internalClientLanguages[self.getBasePackage()]:
+      if not self.compilerDefaults.generatesAllStubs() and not lang == self.getBaseLanguage():
         self.includeDirs[lang].append(self.getClientRootDir(lang, root = rootDir))
     # TODO: Fix this debacle by generating SIDLObjA and SIDLPyArrays
     self.includeDirs['Python'].append(os.path.join(rootDir, 'python'))
     return self.includeDirs
 
   def setupExtraLibraries(self):
-    clientLib  = self.getClientLibrary('sidlruntime', self.getBaseLanguage(), self.getBasePackage(), 0)
-    runtimeLib = self.getServerLibrary('sidlruntime', self.getBaseLanguage(), self.getBasePackage(), 0)
-    self.extraLibraries['executable'].extend(runtimeLib)
-    for lang in SIDLConstants.getLanguages():
-      self.extraLibraries[lang].extend(runtimeLib)
-      if not lang in self.internalClientLanguages[self.getBasePackage()]:
+    using     = getattr(compileDefaults, 'Using'+self.getBaseLanguage().replace('+', 'x'))(self)
+    clientLib = using.getClientLibrary('sidlruntime', self.getBaseLanguage(), isArchive = 0)
+    serverLib = using.getServerLibrary('sidlruntime', self.getBaseLanguage(), self.getBasePackage(), isArchive = 0)
+    self.extraLibraries['executable'].extend(serverLib)
+    for lang in sidlStructs.SIDLConstants.getLanguages():
+      self.extraLibraries[lang].extend(serverLib)
+      if not lang == self.getBaseLanguage():
         self.extraLibraries[lang].extend(clientLib)
     for package in self.getPackages():
       if not self.project == 'sidlruntime' or not package in self.bootstrapPackages:
-        self.extraLibraries[package].extend(runtimeLib)
+        self.extraLibraries[package].extend(serverLib)
     return self.extraLibraries
 
   def getLanguage(self):
