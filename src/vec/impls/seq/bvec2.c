@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.137 1998/09/25 03:13:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.138 1998/10/09 19:19:28 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -444,7 +444,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
    same type as an existing vector.
 
    If the user-provided array is PETSC_NULL, then VecPlaceArray() can be used
-   at a later atage to SET the array for storing the vector values.
+   at a later stage to SET the array for storing the vector values.
 
    PETSc does NOT free the array when the vector is destroyed via VecDestroy().
    The user should not free the array until the vector is destroyed.
