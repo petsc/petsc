@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.26 1998/04/13 17:59:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: fdda.c,v 1.27 1998/04/20 18:11:49 curfman Exp curfman $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -178,9 +178,9 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 #define __FUNC__ "DAGetColoring3d" 
 int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 {
-  int                    ierr, xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
+  int                    ierr, xs,ys,nx,ny,*colors,i,j,i1,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
-  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,i1,j1a,k1;
+  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
   Scalar                 *values;
   DAPeriodicType         wrap;
@@ -247,10 +247,10 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 
         cnt  = 0;
         for ( l=0; l<nc; l++ ) {
-          for ( i1=istart; i1<iend+1; i1++ ) {
-            for ( j1a=jstart; j1a<jend+1; j1a++ ) {
-              for ( k1=kstart; k1<kend+1; k1++ ) {
-                cols[cnt++]  = l + nc*(slot + i1 + gnx*j1a + gnx*gny*k1);
+          for ( ii=istart; ii<iend+1; ii++ ) {
+            for ( jj=jstart; jj<jend+1; jj++ ) {
+              for ( kk=kstart; kk<kend+1; kk++ ) {
+                cols[cnt++]  = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
               }
             }
           }
@@ -279,7 +279,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 #define __FUNC__ "DAGetColoring2d_1" 
 int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
 {
-  int                    ierr, xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,ys1,ny1;
+  int                    ierr, xs,ys,nx,ny,*colors,i,j,i1,slot,gxs,gys,ys1,ny1;
   int                    m,n,dim,w,s,*indices,k,xs1,nc,*cols;
   int                    nx1,gnx,gny;           
   MPI_Comm               comm;
@@ -318,11 +318,11 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
 
   /* create the coloring */
   colors = (int *) PetscMalloc( nc*nx*ny*sizeof(int) ); CHKPTRQ(colors);
-  ii = 0;
+  i1 = 0;
   for ( j=ys; j<ys+ny; j++ ) {
     for ( i=xs; i<xs+nx; i++ ) {
       for ( k=0; k<nc; k++ ) {
-        colors[ii++] = k + nc*((i % 3) + 3*(j % 3));
+        colors[i1++] = k + nc*((i % 3) + 3*(j % 3));
       }
     }
   }
@@ -510,7 +510,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
 #define __FUNC__ "DAGetColoring1d" 
 int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
 {
-  int                    ierr, xs,nx,*colors,i,ii,slot,gxs,gnx;           
+  int                    ierr, xs,nx,*colors,i,i1,slot,gxs,gnx;           
   int                    m,dim,s,*cols,nc,*rows,col,cnt,l;
   int                    istart,iend,i1;
   MPI_Comm               comm;
@@ -545,10 +545,10 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
 
   /* create the coloring */
   colors = (int *) PetscMalloc( nc*nx*sizeof(int) ); CHKPTRQ(colors);
-  ii = 0;
+  i1 = 0;
   for ( i=xs; i<xs+nx; i++ ) {
     for ( l=0; l<nc; l++ ) {
-      colors[ii++] = l + nc*(i % col);
+      colors[i1++] = l + nc*(i % col);
     }
   }
   ierr = ISColoringCreate(comm,nc*nx,colors,coloring); CHKERRQ(ierr);
