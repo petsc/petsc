@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.77 1998/05/31 14:55:25 curfman Exp balay $";
+static char vcid[] = "$Id: user1.c,v 1.78 1998/06/05 20:38:02 balay Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -1054,6 +1054,14 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       PetscPrintf(comm,"Including wake BCs in Jacobian (preconditioner)\n");
     } else {
       PetscPrintf(comm,"No wake BCs in Jacobian (preconditioner)\n");
+      app->no_wake = 1;
+    }
+  } else {
+     /* But, by default we use these wake BCs in the Jacobian if explicitly
+        forming the Jacobian. */
+    ierr = OptionsHasName(PETSC_NULL,"-jac_no_wake",&flg); CHKERRQ(ierr);
+    if (flg) {
+      PetscPrintf(comm,"No wake BCs in Jacobian (preconditioner AND linear operator)\n");
       app->no_wake = 1;
     }
   }

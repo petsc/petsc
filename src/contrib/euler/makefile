@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.26 1998/04/23 23:21:09 balay Exp curfman $ 
+# $Id: makefile,v 1.27 1998/06/07 19:26:39 curfman Exp curfman $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -246,7 +246,7 @@ runtest_2b:
 
 # -order_rtol = 1.e-7 works well for the m6n grid
 runtest_3:
-	-@${MPIRUN} -np 16 ex1 -problem 3 -optionsleft -vecscatter_rr \
+	-@${MPIRUN} -np 16 -maxtime 30 ex1 -problem 3 -optionsleft -vecscatter_rr \
 	   -order 1.5 -order_rtol 1.e-7 -limiter none -bc_imperm 0 \
 	   -pc_type asm -pc_asm_type restrict -pc_asm_overlap 2 \
 	   -matrix_free -cfl_advance > log.m6n.3d.mf.asm2.p16 2>&1; \
@@ -271,6 +271,24 @@ runex1_2d_1b:
 	   if (diff output/order1/2d/log.m6c.2d.me.lnone.p1 log.m6c.2d.me.lnone.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm0_p1.m f_m6c_2d_me_lnone_p1.m
+
+# Matrix-free multiplication, advancing CFL
+# Explicitly form preconditioning Jacobian via default Julianne FD
+# (no wake boundary conditions in preconditioning matrix)
+runex1_2d_2:
+	-@${MPIRUN} ex1 -dim2 -optionsleft \
+	   -matrix_free -cfl_advance > log.m6c.2d.mf.lva.p1 2>&1; \
+	   if (diff output/order2/2d/log.m6c.2d.mf.lva.p1 log.m6c.2d.mf.lva.p1) then true; \
+	   else echo "Output differences as above"; fi; \
+	   mv f_m6c_cc1_asm0_p1.m f_m6c_2d_mf_lva_p1.m
+
+# Same as runex1_2d_2 except with 1st order discretization, no limiters
+runex1_2d_2b:
+	-@${MPIRUN} ex1 -dim2 -optionsleft -order 1 -limiter none \
+	   -matrix_free -cfl_advance > log.m6c.2d.mf.lnone.p1 2>&1; \
+	   if (diff output/order1/2d/log.m6c.2d.mf.lnone.p1 log.m6c.2d.mf.lnone.p1) then true; \
+	   else echo "Output differences as above"; fi; \
+	   mv f_m6c_cc1_asm0_p1.m f_m6c_2d_mf_lnone_p1.m
 
 
 # -----------------------------------------------------------------------
