@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.43 1996/08/08 14:41:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.44 1996/09/14 03:37:24 curfman Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -15,9 +15,7 @@ static char vcid[] = "$Id: pcset.c,v 1.43 1996/08/08 14:41:55 bsmith Exp curfman
 static NRList *__PCList = 0;
 
 /*@
-   PCSetType - Builds PC for a particular preconditioner. It is best
-   to use the SLESSetFromOptions() command and then set the PC type
-   from the options database rather than by using this routine.
+   PCSetType - Builds PC for a particular preconditioner.
 
    Input Parameter:
 .  pc - the preconditioner context.
@@ -29,8 +27,10 @@ $      Use -help for a list of available methods
 $      (for instance, jacobi or bjacobi)
 
   Notes:
-  See "petsc/include/pc.h" for available methods (for instance,
-  PCJACOBI, PCILU, or PCBJACOBI).
+   It is best to use the SLESSetFromOptions() command and then set the PC type
+   from the options database rather than by using this routine.
+   See "petsc/include/pc.h" for available methods (for instance,
+   PCJACOBI, PCILU, or PCBJACOBI).
 
 .keywords: PC, set, method, type
 @*/
@@ -43,7 +43,7 @@ int PCSetType(PC ctx,PCType type)
   if (ctx->setupcalled) {
     if (ctx->destroy) ierr =  (*ctx->destroy)((PetscObject)ctx);
     else {if (ctx->data) PetscFree(ctx->data);}
-    ctx->data = 0;
+    ctx->data        = 0;
     ctx->setupcalled = 0;
   }
   /* Get the function pointers for the method requested */
@@ -160,13 +160,16 @@ int PCGetType(PC pc,PCType *meth,char **name)
 int PCPrintTypes_Private(MPI_Comm comm,char *prefix,char *name)
 {
   FuncList *entry;
-  int      ierr;
+  int      count = 0,ierr;
+
   if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
   entry = __PCList->head;
   PetscPrintf(comm," %s%s (one of)",prefix,name);
   while (entry) {
     PetscPrintf(comm," %s",entry->name);
     entry = entry->next;
+    count++;
+    if (count == 8) PetscPrintf(comm,"\n     ");
   }
   PetscPrintf(comm,"\n");
   return 0;
