@@ -417,19 +417,19 @@ template<class Scalar,class Ordinal> class MyPetra_ESI_CRS_Matrix : public virtu
 {
   public:
 
-  MyPetra_ESI_CRS_Matrix(Petra_DataAccess CV,const Petra_CRS_Graph& graph) :  Petra_ESI_Object(), Petra_RDP_CRS_Matrix(CV, graph), Petra_ESI_CRS_Matrix<Scalar,Ordinal>(CV, graph){graph_ = (Petra_CRS_Graph*)&graph;};
+  MyPetra_ESI_CRS_Matrix(Petra_DataAccess CV,const Petra_CRS_Graph& graph) :  Petra_ESI_Object(), Petra_RDP_CRS_Matrix(CV, graph), Petra_ESI_CRS_Matrix<Scalar,Ordinal>(CV, graph){graph_ = (Petra_CRS_Graph*)&graph;SetStaticGraph(false);};
 
   virtual ~MyPetra_ESI_CRS_Matrix() { };
 
   virtual esi::ErrorCode copyInRow(Ordinal row, Scalar* coefs, Ordinal* colIndices, Ordinal length)
     { int ierr;
-      ierr = graph_->InsertGlobalIndices(row, length, colIndices);CHKERRQ(ierr); 
-      ierr = Petra_ESI_CRS_Matrix<Scalar,Ordinal>::copyInRow(row,coefs,colIndices,length);CHKERRQ(ierr);
+      ierr = graph_->InsertGlobalIndices(row, length, colIndices);CHKERRQ(((ierr == 1) ? 0 : ierr));
+      ierr = Petra_ESI_CRS_Matrix<Scalar,Ordinal>::copyInRow(row,coefs,colIndices,length);CHKERRQ(ierr); 
+      //  ierr = this->setup();CHKERRQ(ierr);
       return 0;
      }
 
-  private:
-    Petra_CRS_Graph *graph_; 
+  Petra_CRS_Graph *graph_; 
 };
 
 
@@ -457,8 +457,10 @@ template<class Scalar,class Ordinal> class Petra_ESI_CRS_OperatorFactory : publi
       int       ierr;
       Petra_Map *rowmap,*colmap;
       ierr = rmap.getInterface("Petra_Map",static_cast<void *>(rowmap));CHKERRQ(ierr);
+      if (!rowmap) SETERRQ(1,"Petra requires all IndexSpaces be Petra_ESI_IndexSpaces");
       ierr = cmap.getInterface("Petra_Map",static_cast<void *>(colmap));CHKERRQ(ierr);
-      Petra_CRS_Graph  *graph = new Petra_CRS_Graph(Copy,*(Petra_BlockMap*)rowmap,*(Petra_BlockMap*)colmap,1);
+      if (!colmap) SETERRQ(1,"Petra requires all IndexSpaces be Petra_ESI_IndexSpaces");
+      Petra_CRS_Graph  *graph = new Petra_CRS_Graph(Copy,*(Petra_BlockMap*)rowmap,*(Petra_BlockMap*)colmap,200);
       ierr = rmap.addReference();CHKERRQ(ierr);
       ierr = cmap.addReference();CHKERRQ(ierr);
       v = new MyPetra_ESI_CRS_Matrix<Scalar,Ordinal>(Copy,*graph);

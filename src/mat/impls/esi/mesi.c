@@ -220,7 +220,7 @@ int MatAssemblyEnd_ESI(Mat mat,MatAssemblyType mode)
     }
   }
   ierr = MatStashScatterEnd_Private(&mat->stash);CHKERRQ(ierr);
-  a->wmat->loadComplete();CHKERRQ(ierr);
+  ierr = a->wmat->loadComplete();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -281,7 +281,7 @@ int MatView_ESI(Mat A,PetscViewer viewer)
     ierr   = rmap->getLocalSize(m);CHKERRQ(ierr);
     for (i=rstart; i<rstart+m; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"row %d:",i);CHKERRQ(ierr);
-      ierr = a->rmat->copyOutRow(i,values,cols,nz,nz);CHKERRQ(ierr);
+      ierr = a->rmat->copyOutRow(i,values,cols,100,nz);CHKERRQ(ierr);
       for (j=0; j<nz; j++) {
         ierr = PetscViewerASCIIPrintf(viewer," %d %g ",cols[j],values[j]);CHKERRQ(ierr);
       }

@@ -16,7 +16,7 @@ OBJSC    = mesi.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
-LOCDIR   = src/mat/impls/esi
+LOCDIR   = src/mat/impls/esi/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
