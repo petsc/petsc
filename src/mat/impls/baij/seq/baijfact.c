@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.11 1996/04/10 21:38:21 balay Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.12 1996/04/11 16:15:28 balay Exp $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -905,7 +905,7 @@ static int MatSolveAdd_SeqBAIJ_Private(Mat A,Vec bb,Vec yy,Vec xx)
         while (nz--) {
           sum1 -= (*v++)*tmp[*vi++];
         }
-        x[*c--] = tmp[i] = aa[a->diag[i]]*sum1;
+        x[*c--] += tmp[i] = aa[a->diag[i]]*sum1;
       }
       break;
     case 2: 
@@ -944,8 +944,8 @@ static int MatSolveAdd_SeqBAIJ_Private(Mat A,Vec bb,Vec yy,Vec xx)
         }
         idc = 2*(*c--);
         v   = aa + 4*a->diag[i];
-        x[idc]   = tmp[idt]   = v[0]*sum1 + v[2]*sum2;
-        x[1+idc] = tmp[1+idt] = v[1]*sum1 + v[3]*sum2;
+        x[idc]   += tmp[idt]   = v[0]*sum1 + v[2]*sum2;
+        x[1+idc] += tmp[1+idt] = v[1]*sum1 + v[3]*sum2;
       }
       break;
     case 3: 
@@ -986,9 +986,9 @@ static int MatSolveAdd_SeqBAIJ_Private(Mat A,Vec bb,Vec yy,Vec xx)
         }
         idc = 3*(*c--);
         v   = aa + 9*a->diag[i];
-        x[idc]   = tmp[idt]   = v[0]*sum1 + v[3]*sum2 + v[6]*sum3;
-        x[1+idc] = tmp[1+idt] = v[1]*sum1 + v[4]*sum2 + v[7]*sum3;
-        x[2+idc] = tmp[2+idt] = v[2]*sum1 + v[5]*sum2 + v[8]*sum3;
+        x[idc]   += tmp[idt]   = v[0]*sum1 + v[3]*sum2 + v[6]*sum3;
+        x[1+idc] += tmp[1+idt] = v[1]*sum1 + v[4]*sum2 + v[7]*sum3;
+        x[2+idc] += tmp[2+idt] = v[2]*sum1 + v[5]*sum2 + v[8]*sum3;
       }
       break;
     case 4: 
@@ -1035,10 +1035,10 @@ static int MatSolveAdd_SeqBAIJ_Private(Mat A,Vec bb,Vec yy,Vec xx)
         }
         idc = 4*(*c--);
         v   = aa + 16*a->diag[i];
-        x[idc]   = tmp[idt]   = v[0]*sum1+v[4]*sum2+v[8]*sum3+v[12]*sum4;
-        x[1+idc] = tmp[1+idt] = v[1]*sum1+v[5]*sum2+v[9]*sum3+v[13]*sum4;
-        x[2+idc] = tmp[2+idt] = v[2]*sum1+v[6]*sum2+v[10]*sum3+v[14]*sum4;
-        x[3+idc] = tmp[3+idt] = v[3]*sum1+v[7]*sum2+v[11]*sum3+v[15]*sum4;
+        x[idc]   += tmp[idt]   = v[0]*sum1+v[4]*sum2+v[8]*sum3+v[12]*sum4;
+        x[1+idc] += tmp[1+idt] = v[1]*sum1+v[5]*sum2+v[9]*sum3+v[13]*sum4;
+        x[2+idc] += tmp[2+idt] = v[2]*sum1+v[6]*sum2+v[10]*sum3+v[14]*sum4;
+        x[3+idc] += tmp[3+idt] = v[3]*sum1+v[7]*sum2+v[11]*sum3+v[15]*sum4;
       }
       break;
     case 5: 
@@ -1089,16 +1089,16 @@ static int MatSolveAdd_SeqBAIJ_Private(Mat A,Vec bb,Vec yy,Vec xx)
         }
         idc = 5*(*c--);
         v   = aa + 25*a->diag[i];
-        x[idc]   = tmp[idt]   = v[0]*sum1+v[5]*sum2+v[10]*sum3+
-                                v[15]*sum4+v[20]*sum5;
-        x[1+idc] = tmp[1+idt] = v[1]*sum1+v[6]*sum2+v[11]*sum3+
-                                v[16]*sum4+v[21]*sum5;
-        x[2+idc] = tmp[2+idt] = v[2]*sum1+v[7]*sum2+v[12]*sum3+
-                                v[17]*sum4+v[22]*sum5;
-        x[3+idc] = tmp[3+idt] = v[3]*sum1+v[8]*sum2+v[13]*sum3+
-                                v[18]*sum4+v[23]*sum5;
-        x[4+idc] = tmp[4+idt] = v[4]*sum1+v[9]*sum2+v[14]*sum3+
-                                v[19]*sum4+v[24]*sum5;
+        x[idc]   += tmp[idt]   = v[0]*sum1+v[5]*sum2+v[10]*sum3+
+                                 v[15]*sum4+v[20]*sum5;
+        x[1+idc] += tmp[1+idt] = v[1]*sum1+v[6]*sum2+v[11]*sum3+
+                                 v[16]*sum4+v[21]*sum5;
+        x[2+idc] += tmp[2+idt] = v[2]*sum1+v[7]*sum2+v[12]*sum3+
+                                 v[17]*sum4+v[22]*sum5;
+        x[3+idc] += tmp[3+idt] = v[3]*sum1+v[8]*sum2+v[13]*sum3+
+                                 v[18]*sum4+v[23]*sum5;
+        x[4+idc] += tmp[4+idt] = v[4]*sum1+v[9]*sum2+v[14]*sum3+
+                                 v[19]*sum4+v[24]*sum5;
       }
       break;
     default: {
