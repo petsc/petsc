@@ -310,6 +310,9 @@ int VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
   SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
 #endif
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecLoadIntoVector_Binary"
 int VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
 {
   int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;
