@@ -356,10 +356,22 @@ alladic:
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adic  tree 
 	-@cd src/inline ; \
             $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adic
+	-@cd src/adic/blas ; \
+            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adic
+	-@cd src/adic/lapack ; \
+            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adic
+	-@cd src/adic/src ; \
+            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adic
 
 alladiclib:
 	-@$(RM) -f  $(PDIR)/*adic.a
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adiclib  tree
+	-@cd src/adic/blas ; \
+            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adiclib
+	-@cd src/adic/lapack ; \
+            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adiclib
+	-@cd src/adic/src ; \
+            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adiclib
 
 
 
