@@ -37,6 +37,7 @@ class Configure:
     self.setupCCompiler()
     self.setupCXXCompiler()
     self.setupF77Compiler()
+    self.setupLinker()
     self.pushLanguage('C')
     return
 
@@ -103,6 +104,12 @@ class Configure:
       self.framework.log.write('not found\n')
     return found
 
+  def getExecutables(self, names, path = '', getFullPath = 0, comment = '', resultName = ''):
+    for name in names:
+      if self.getExecutable(name, path, getFullPath, comment, resultName):
+        return name
+    return None
+
   ###############################################
   # Preprocessor, Compiler, and Linker Operations
   def pushLanguage(self, language):
@@ -126,17 +133,29 @@ class Configure:
 
   def setupCCompiler(self):
     if not self.framework.argDB.has_key('CC'):
-      self.framework.argDB['CC'] = 'gcc'
+      if not self.getExecutables(['gcc', 'cc', 'xlC', 'xlc', 'pgcc'], resultName = 'CC'):
+        raise RuntimeError('Could not find a C compiler. Please set with the option -CC')
+      self.framework.argDB['CC'] = self.CC
+    if not self.framework.argDB.has_key('CFLAGS'):
+      self.framework.argDB['CFLAGS'] = '-g -Wall'
     return self.framework.argDB['CC']
 
   def setupCXXCompiler(self):
     if not self.framework.argDB.has_key('CXX'):
-      self.framework.argDB['CXX'] = 'g++'
+      if not self.getExecutables(['g++', 'c++', 'CC', 'xlC', 'pgCC', 'cxx', 'cc++', 'cl'], resultName = 'CXX'):
+        raise RuntimeError('Could not find a C++ compiler. Please set with the option -CXX')
+      self.framework.argDB['CXX'] = self.CXX
+    if not self.framework.argDB.has_key('CXXFLAGS'):
+      self.framework.argDB['CXXFLAGS'] = '-g -Wall'
     return self.framework.argDB['CXX']
 
   def setupF77Compiler(self):
     if not self.framework.argDB.has_key('FC'):
-      self.framework.argDB['FC'] = 'g77'
+      if not self.getExecutables(['g77', 'f77', 'pgf77'], resultName = 'FC'):
+        raise RuntimeError('Could not find a Fortran 77 compiler. Please set with the option -FC')
+      self.framework.argDB['FC'] = self.FC
+    if not self.framework.argDB.has_key('FFLAGS'):
+      self.framework.argDB['FFLAGS'] = '-g'
     return self.framework.argDB['FC']
 
   def setupPreprocessor(self):
@@ -144,7 +163,14 @@ class Configure:
       self.framework.argDB['CPP'] = self.setupCCompiler()+' -E'
     if not self.framework.argDB.has_key('CXXCPP'):
       self.framework.argDB['CXXCPP'] = self.setupCXXCompiler()+' -E'
+    if not self.framework.argDB.has_key('CPPFLAGS'):
+      self.framework.argDB['CPPFLAGS'] = ''
     return self.framework.argDB['CPP']
+
+  def setupLinker(self):
+    if not self.framework.argDB.has_key('LDFLAGS'):
+      self.framework.argDB['LDFLAGS'] = ''
+    return
 
   def getCompiler(self):
     language = self.language[-1]
@@ -493,6 +519,10 @@ class Framework(Configure):
     return nargs.ArgDict('ArgDict', clArgs)
 
   def setFromOptions(self):
+    if not self.argDB.has_key('configModules'):
+      self.argDB['configModules'] = ['PETSc.Configure']
+    if not isinstance(self.argDB['configModules'], list):
+      self.argDB['configModules'] = [self.argDB['configModules']]
     for moduleName in self.argDB['configModules']:
       self.children.append(__import__(moduleName, globals(), locals(), ['Configure']).Configure(self))
 
@@ -678,6 +708,21 @@ class Framework(Configure):
 
   def configure(self):
     '''Configure the system'''
+    if self.argDB.has_key('clear') and int(self.argDB['clear']):
+      del self.argDB['CC']
+      del self.argDB['CFLAGS']
+      del self.argDB['CXX']
+      del self.argDB['CXXFLAGS']
+      del self.argDB['FC']
+      del self.argDB['FFLAGS']
+      del self.argDB['CPP']
+      del self.argDB['CXXCPP']
+      del self.argDB['CPPFLAGS']
+      del self.argDB['LDFLAGS']
+      del self.argDB['LIBS']
+      del self.argDB['configModules']
+      del self.argDB['clear']
+      return
     if self.argDB.has_key('help') and int(self.argDB['help']):
       help = Help(self)
       help.setTitle('Python Configure Help')
