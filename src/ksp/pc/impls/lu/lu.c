@@ -8,7 +8,7 @@
 typedef struct {
   Mat             fact;             /* factored matrix */
   PetscReal       actualfill;       /* actual fill in factor */
-  int             inplace;          /* flag indicating in-place factorization */
+  PetscTruth      inplace;          /* flag indicating in-place factorization */
   IS              row,col;          /* index sets used for reordering */
   MatOrderingType ordering;         /* matrix ordering */
   PetscTruth      reuseordering;    /* reuses previous reordering computed */
@@ -322,7 +322,7 @@ PetscErrorCode PCLUSetUseInPlace_LU(PC pc)
 
   PetscFunctionBegin;
   dir = (PC_LU*)pc->data;
-  dir->inplace = 1;
+  dir->inplace = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -767,24 +767,25 @@ EXTERN_C_BEGIN
 PetscErrorCode PCCreate_LU(PC pc)
 {
   PetscErrorCode ierr;
-  int size;
-  PC_LU *dir;
+  PetscMPIInt    size;
+  PC_LU          *dir;
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_LU,&dir);CHKERRQ(ierr);
   PetscLogObjectMemory(pc,sizeof(PC_LU));
 
-  dir->fact               = 0;
-  dir->inplace            = 0;
-  dir->info.fill          = 5.0;
-  dir->info.dtcol         = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
-  dir->info.damping       = 0.0;
-  dir->info.zeropivot     = 1.e-12;
-  dir->info.pivotinblocks = 1.0;
-  dir->info.shift              = PETSC_FALSE;
-  dir->info.shift_fraction     = 0.0;
-  dir->col                = 0;
-  dir->row                = 0;
+  ierr = MatFactorInfoInitialize(&dir->info);CHKERRQ(ierr);
+  dir->fact                = 0;
+  dir->inplace             = PETSC_FALSE;
+  dir->info.fill           = 5.0;
+  dir->info.dtcol          = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
+  dir->info.damping        = 0.0;
+  dir->info.zeropivot      = 1.e-12;
+  dir->info.pivotinblocks  = 1.0;
+  dir->info.shift          = PETSC_FALSE;
+  dir->info.shift_fraction = 0.0;
+  dir->col                 = 0;
+  dir->row                 = 0;
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);

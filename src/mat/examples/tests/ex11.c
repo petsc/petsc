@@ -7,11 +7,12 @@ static char help[] = "Tests the use of MatZeroRows() for uniprocessor matrices.\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C; 
-  int         i,j,m = 5,n = 5,I,J,ierr;
-  PetscScalar v,five = 5.0;
-  IS          isrow;
-  PetscTruth  keepzeroedrows;
+  Mat            C; 
+  PetscInt       i,j,m = 5,n = 5,I,J;
+  PetscErrorCode ierr;
+  PetscScalar    v,five = 5.0;
+  IS             isrow;
+  PetscTruth     keepzeroedrows;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

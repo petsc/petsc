@@ -30,20 +30,20 @@
 /******************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKqmdupd"
-PetscErrorCode SPARSEPACKqmdupd(int *xadj, int *adjncy, int *nlist, 
-	int *list, int *deg, int *qsize, int *qlink, int *
-	marker, int *rchset, int *nbrhd)
+PetscErrorCode SPARSEPACKqmdupd(PetscInt *xadj, PetscInt *adjncy, PetscInt *nlist, 
+	PetscInt *list, PetscInt *deg, PetscInt *qsize, PetscInt *qlink, PetscInt *
+	marker, PetscInt *rchset, PetscInt *nbrhd)
 {
     /* System generated locals */
-    int i__1, i__2;
+    PetscInt i__1, i__2;
 
     /* Local variables */
-    int inhd, irch, node, mark, j, inode, nabor, jstop, jstrt, il;
-    EXTERN PetscErrorCode SPARSEPACKqmdrch(int*, int *, int *, 
-	    int *, int *, int *, int *, int *, int *),
-	     SPARSEPACKqmdmrg(int*, int *, int *, int *, int *, 
-	    int *, int *, int *, int *, int *, int *);
-    int nhdsze, rchsze, deg0, deg1;
+    PetscInt inhd, irch, node, mark, j, inode, nabor, jstop, jstrt, il;
+    EXTERN PetscErrorCode SPARSEPACKqmdrch(PetscInt*, PetscInt *, PetscInt *, 
+	    PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *),
+	     SPARSEPACKqmdmrg(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, 
+	    PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+    PetscInt nhdsze, rchsze, deg0, deg1;
 
 /*       FIND ALL ELIMINATED SUPERNODES THAT ARE ADJACENT*/
 /*       TO SOME NODES IN THE GIVEN LIST. PUT THEM INTO.*/

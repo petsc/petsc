@@ -5693,3 +5693,32 @@ PetscErrorCode MatGetVecs(Mat mat,Vec *right,Vec *left)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorInfoInitialize"
+/*@C
+   MatFactorInfoInitialize - Initializes a MatFactorInfo data structure
+     with default values.
+
+   Not Collective
+
+   Input Parameters:
+.    info - the MatFactorInfo data structure
+
+
+   Notes: The solvers are generally used through the KSP and PC objects, for example
+          PCLU, PCILU, PCCHOLESKY, PCICC
+
+   Level: developer
+
+.seealso: MatFactorInfo
+@*/
+
+PetscErrorCode MatFactorInfoInitialize(MatFactorInfo *info)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMemzero(info,sizeof(MatFactorInfo));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -285,6 +285,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   MPI_Status           *status;
   Mat_Merge_SeqsToMPI  *merge;
   PetscInt             *ptdi,*ptdj,*cdi,*cdj;
+  PetscInt             *ptoi,*ptoj,*coi,*coj;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)P,"MatPtAPMPI",(PetscObject *)&container);CHKERRQ(ierr);
@@ -326,11 +327,16 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MatGetSymbolicTranspose_SeqAIJ(P_loc,&pti,&ptj);CHKERRQ(ierr);
   ierr = MatPtAPSymbolicLocal_Private(pN,pti,ptj,ci,cj);CHKERRQ(ierr);
 
-  /* Pt = Pd^T -- only diagonal portion of P_loc */
+  /* Pt = Pd^T - diagonal portion of P_loc */
   ierr = MatGetSymbolicTranspose_SeqAIJ(p->A,&ptdi,&ptdj);CHKERRQ(ierr);
   ierr = MatPtAPSymbolicLocal_Private(pn,ptdi,ptdj,cdi,cdj);CHKERRQ(ierr); 
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->A,&ptdi,&ptdj);CHKERRQ(ierr);
-
+#ifdef NEW
+  /* Pt = Po^T - off-diagonal portion of P_loc */
+  ierr = MatGetSymbolicTranspose_SeqAIJ(p->B,&ptoi,&ptoj);CHKERRQ(ierr);
+  ierr = MatPtAPSymbolicLocal_Private(tnrows,ptoi,ptoj,coi,coj);CHKERRQ(ierr); 
+  ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->A,&ptoi,&ptoj);CHKERRQ(ierr);
+#endif
   /* clean up */
   ierr = PetscFree(ptadenserow_loc);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
@@ -533,7 +539,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   
   ierr = PetscFree(cdi);CHKERRQ(ierr);
   ierr = PetscFree(cdj);CHKERRQ(ierr);
- 
+#ifdef NEW
+  ierr = PetscFree(coi);CHKERRQ(ierr);
+  ierr = PetscFree(coj);CHKERRQ(ierr);
+#endif 
   PetscFunctionReturn(0);
 }
 
@@ -563,8 +572,13 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   MPI_Request          *s_waits,*r_waits; 
   MPI_Status           *status;
   PetscInt             *cseqi,*cseqj,col;
+  PetscInt             stages[3];
  
   PetscFunctionBegin;
+  ierr = PetscLogStageRegister(&stages[0],"NumAP_local");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister(&stages[1],"NumPtAP_local");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister(&stages[2],"NumPtAP_Comm");CHKERRQ(ierr);
+
   ierr = PetscObjectQuery((PetscObject)C,"MatMergeSeqsToMPI",(PetscObject *)&cont_merge);CHKERRQ(ierr);
   if (cont_merge) { 
     ierr  = PetscObjectContainerGetPointer(cont_merge,(void **)&merge);CHKERRQ(ierr); 
@@ -601,6 +615,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = PetscMemzero(co->a,co->i[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
   for (i=0;i<am;i++) {
+    ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
     /* Form i-th sparse row of A*P */
      apnzj = 0;
     /* diagonal portion of A */
@@ -656,6 +671,8 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     /* Sort the j index array for quick sparse axpy. */
     ierr = PetscSortInt(apnzj,apj);CHKERRQ(ierr);
 
+    ierr = PetscLogStagePop();
+    ierr = PetscLogStagePush(stages[1]);
     /* Compute P_loc[i,:]^T*AP[i,:] using outer product */
     /* diagonal portion of P -- gives matrix value of local C */
     pnzi = pd->i[i+1] - pd->i[i];
@@ -691,10 +708,12 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       apa[apj[j]]      = 0.;
       apjdense[apj[j]] = 0;
     }
+    ierr = PetscLogStagePop();
   }
   
   /* send and recv matrix values */
   /*-----------------------------*/
+  ierr = PetscLogStagePush(stages[2]);CHKERRQ(ierr);
   bi     = merge->bi;
   bj     = merge->bj;
   buf_ri = merge->buf_ri;
@@ -763,6 +782,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   } 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree(buf_ri_k);CHKERRQ(ierr);

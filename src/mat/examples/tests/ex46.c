@@ -8,11 +8,12 @@ static char help[] = "Tests generating a nonsymmetric BlockSolve95 (MATMPIROWBS)
 int main(int argc,char **args)
 {
 #if !defined(PETSC_USE_COMPLEX)
-  Mat         C,A;
-  PetscScalar v;
-  int         i,j,I,J,Istart,Iend,N,m = 4,n = 4,rank,size;
+  Mat            C,A;
+  PetscScalar    v;
+  PetscInt       i,j,I,J,Istart,Iend,N,m = 4,n = 4;
+  PetscMPIInt    rank,size;
 #endif
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscInitialize(&argc,&args,0,help);
 #if defined(PETSC_USE_COMPLEX)

@@ -9,14 +9,15 @@ routines directly.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C,LU; 
-  MatInfo     info;
-  int         i,j,m = 3,n = 3,I,J,ierr;
-  PetscScalar v,mone = -1.0,one = 1.0;
-  IS          perm,iperm;
-  Vec         x,u,b;
-  PetscReal   norm;
-  MatFactorInfo   luinfo;
+  Mat            C,LU; 
+  MatInfo        info;
+  PetscInt       i,j,m = 3,n = 3,I,J;
+  PetscErrorCode ierr;
+  PetscScalar    v,mone = -1.0,one = 1.0;
+  IS             perm,iperm;
+  Vec            x,u,b;
+  PetscReal      norm;
+  MatFactorInfo  luinfo;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

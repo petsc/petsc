@@ -7,10 +7,11 @@ static char help[] = "Tests MatSetValues() for column oriented storage.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C; 
-  int         i,n = 5,midx[3],nidx[2],ierr;
-  PetscTruth  flg;
-  PetscScalar v[6];
+  Mat            C; 
+  PetscInt       i,n = 5,midx[3],nidx[2];
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscScalar    v[6];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

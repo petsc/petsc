@@ -9,8 +9,10 @@ static char help[] = "Tests converting a parallel AIJ formatted matrix to the pa
 int main(int argc,char **args)
 {
   Mat               C,A;
-  int               i,j,m = 3,n = 2,rank,size,I,J,ierr,rstart,rend,nz;
-  const int         *idx;
+  PetscInt          i,j,m = 3,n = 2,I,J,rstart,rend,nz;
+  PetscMPIInt       rank,size;
+  PetscErrorCode    ierr;
+  const PetscInt    *idx;
   PetscScalar       v;
   const PetscScalar *values;
 

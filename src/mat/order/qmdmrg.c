@@ -32,15 +32,15 @@
 /*****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKqmdmrg" 
-PetscErrorCode SPARSEPACKqmdmrg(int *xadj, int *adjncy, int *deg, 
-	int *qsize, int *qlink, int *marker, int *deg0, 
-	int *nhdsze, int *nbrhd, int *rchset, int *ovrlp)
+PetscErrorCode SPARSEPACKqmdmrg(PetscInt *xadj, PetscInt *adjncy, PetscInt *deg, 
+	PetscInt *qsize, PetscInt *qlink, PetscInt *marker, PetscInt *deg0, 
+	PetscInt *nhdsze, PetscInt *nbrhd, PetscInt *rchset, PetscInt *ovrlp)
 {
     /* System generated locals */
-    int i__1, i__2, i__3;
+    PetscInt i__1, i__2, i__3;
 
     /* Local variables */
-    int head, inhd, irch, node, mark, link, root, j, lnode, nabor, 
+    PetscInt head, inhd, irch, node, mark, link, root, j, lnode, nabor, 
 	    jstop, jstrt, rchsze, mrgsze, novrlp, iov, deg1;
 
     PetscFunctionBegin;
@@ -75,7 +75,7 @@ PetscErrorCode SPARSEPACKqmdmrg(int *xadj, int *adjncy, int *deg,
 L200:
 	jstrt = xadj[root];
 	jstop = xadj[root + 1] - 1;
-/*          DETERMINE THE REACHABLE SET AND ITS INTERSECT-     */
+/*          DETERMINE THE REACHABLE SET AND ITS PETSCINTERSECT-     */
 /*          ION WITH THE INPUT REACHABLE SET.                  */
 	i__2 = jstop;
 	for (j = jstrt; j <= i__2; ++j) {

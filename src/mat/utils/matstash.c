@@ -38,7 +38,7 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   ierr = MPI_Comm_rank(stash->comm,&stash->rank);CHKERRQ(ierr);
 
   nopt = stash->size;
-  ierr = PetscMalloc(nopt*sizeof(int),&opt);CHKERRQ(ierr);
+  ierr = PetscMalloc(nopt*sizeof(PetscInt),&opt);CHKERRQ(ierr);
   ierr = PetscOptionsGetIntArray(PETSC_NULL,"-matstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
   if (flg) {
     if (nopt == 1)                max = opt[0];
@@ -470,8 +470,7 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
   rindices = (PetscInt*)(rvalues + bs2*nreceives*nmax);
   ierr     = PetscMalloc((nreceives+1)*2*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
   for (i=0,count=0; i<nreceives; i++) {
-    ierr = MPI_Irecv(rvalues+bs2*nmax*i,bs2*nmax,MPIU_MATSCALAR,MPI_ANY_SOURCE,tag1,comm,
-                     recv_waits+count++);CHKERRQ(ierr);
+    ierr = MPI_Irecv(rvalues+bs2*nmax*i,bs2*nmax,MPIU_MATSCALAR,MPI_ANY_SOURCE,tag1,comm,recv_waits+count++);CHKERRQ(ierr);
     ierr = MPI_Irecv(rindices+2*nmax*i,2*nmax,MPIU_INT,MPI_ANY_SOURCE,tag2,comm,recv_waits+count++);CHKERRQ(ierr);
   }
 
@@ -510,10 +509,8 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
   for (i=1; i<size; i++) { startv[i] = startv[i-1] + nprocs[2*i-2];} 
   for (i=0,count=0; i<size; i++) {
     if (nprocs[2*i+1]) {
-      ierr = MPI_Isend(svalues+bs2*startv[i],bs2*nprocs[2*i],MPIU_MATSCALAR,i,tag1,comm,
-                       send_waits+count++);CHKERRQ(ierr);
-      ierr = MPI_Isend(sindices+2*startv[i],2*nprocs[2*i],MPI_INT,i,tag2,comm,
-                       send_waits+count++);CHKERRQ(ierr);
+      ierr = MPI_Isend(svalues+bs2*startv[i],bs2*nprocs[2*i],MPIU_MATSCALAR,i,tag1,comm,send_waits+count++);CHKERRQ(ierr);
+      ierr = MPI_Isend(sindices+2*startv[i],2*nprocs[2*i],MPIU_INT,i,tag2,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(owner);CHKERRQ(ierr);
@@ -571,7 +568,7 @@ PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals
     ierr = MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status);CHKERRQ(ierr);
     /* Now pack the received message into a structure which is useable by others */
     if (i % 2) { 
-      ierr = MPI_Get_count(&recv_status,MPI_INT,nvals);CHKERRQ(ierr);
+      ierr = MPI_Get_count(&recv_status,MPIU_INT,nvals);CHKERRQ(ierr);
       flg_v[2*recv_status.MPI_SOURCE+1] = i/2; 
       *nvals = *nvals/2; /* This message has both row indices and col indices */
     } else { 

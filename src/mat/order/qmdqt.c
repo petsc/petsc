@@ -24,14 +24,14 @@
 /***************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKqmdqt" 
-PetscErrorCode SPARSEPACKqmdqt(int *root, int *xadj, int *adjncy, 
-	int *marker, int *rchsze, int *rchset, int *nbrhd)
+PetscErrorCode SPARSEPACKqmdqt(PetscInt *root, PetscInt *xadj, PetscInt *adjncy, 
+	PetscInt *marker, PetscInt *rchsze, PetscInt *rchset, PetscInt *nbrhd)
 {
     /* System generated locals */
-    int i__1, i__2;
+    PetscInt i__1, i__2;
 
     /* Local variables */
-    int inhd, irch, node, link, j, nabor, jstop, jstrt;
+    PetscInt inhd, irch, node, link, j, nabor, jstop, jstrt;
 
     PetscFunctionBegin;
     /* Parameter adjustments */

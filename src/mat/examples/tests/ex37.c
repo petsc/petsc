@@ -7,10 +7,11 @@ static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C,A; 
-  int         i, n = 10,midx[3],ierr;
-  PetscScalar v[3];
-  PetscTruth  flg;
+  Mat            C,A; 
+  PetscInt       i, n = 10,midx[3];
+  PetscErrorCode ierr;
+  PetscScalar    v[3];
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

@@ -266,7 +266,7 @@ PetscErrorCode VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
   PetscFunctionBegin;
 
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
   dims[0] = da->M;
   dims[1] = da->N;

@@ -381,7 +381,7 @@ PetscErrorCode DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nlevels)
 +   dmmg - the context
 .   func - function to compute linear system matrix on each grid level
 -   rhs - function to compute right hand side on each level (need only work on the finest grid
-          if you do not use grid sequencing
+          if you do not use grid sequencing)
 
     Level: advanced
 

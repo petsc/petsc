@@ -7,14 +7,15 @@ static char help[] = "Tests the vatious routines in MatBAIJ format.\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         A,B;
-  Vec         xx,s1,s2,yy;
-  int         m=45,ierr,rows[2],cols[2],bs=1,i,row,col,*idx,M;
-  PetscScalar rval,vals1[4],vals2[4],zero=0.0,neg_one=-1.0;
-  PetscRandom rand;
-  IS          is1,is2;
-  PetscReal   s1norm,s2norm,rnorm,tol = 1.e-8;
-  PetscTruth  flg;
+  Mat             A,B;
+  Vec             xx,s1,s2,yy;
+  PetscErrorCode ierr;
+  PetscInt        m=45,rows[2],cols[2],bs=1,i,row,col,*idx,M;
+  PetscScalar     rval,vals1[4],vals2[4],zero=0.0,neg_one=-1.0;
+  PetscRandom     rand;
+  IS              is1,is2;
+  PetscReal       s1norm,s2norm,rnorm,tol = 1.e-8;
+  PetscTruth      flg;
   MatFactorInfo   info;
   
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -35,7 +36,7 @@ int main(int argc,char **args)
   for (row=0; row<M; row++) {
     for (i=0; i<25*bs; i++) {
       ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-      col  = (int)(PetscRealPart(rval)*M);
+      col  = (PetscInt)(PetscRealPart(rval)*M);
       ierr = MatSetValues(A,1,&row,1,&col,&rval,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatSetValues(B,1,&row,1,&col,&rval,ADD_VALUES);CHKERRQ(ierr);
     }
@@ -44,16 +45,16 @@ int main(int argc,char **args)
   /* Now set blocks of values */
   for (i=0; i<20*bs; i++) {
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-    cols[0] = (int)(PetscRealPart(rval)*M);
+    cols[0] = (PetscInt)(PetscRealPart(rval)*M);
     vals1[0] = rval;
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-    cols[1] = (int)(PetscRealPart(rval)*M);
+    cols[1] = (PetscInt)(PetscRealPart(rval)*M);
     vals1[1] = rval;
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-    rows[0] = (int)(PetscRealPart(rval)*M);
+    rows[0] = (PetscInt)(PetscRealPart(rval)*M);
     vals1[2] = rval;
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-    rows[1] = (int)(PetscRealPart(rval)*M);
+    rows[1] = (PetscInt)(PetscRealPart(rval)*M);
     vals1[3] = rval;
     ierr = MatSetValues(A,2,rows,2,cols,vals1,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatSetValues(B,2,rows,2,cols,vals1,ADD_VALUES);CHKERRQ(ierr);
@@ -84,13 +85,13 @@ int main(int argc,char **args)
   /* Now do MatGetValues()  */
   for (i=0; i<30; i++) {
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-    cols[0] = (int)(PetscRealPart(rval)*M);
+    cols[0] = (PetscInt)(PetscRealPart(rval)*M);
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-    cols[1] = (int)(PetscRealPart(rval)*M);
+    cols[1] = (PetscInt)(PetscRealPart(rval)*M);
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-    rows[0] = (int)(PetscRealPart(rval)*M);
+    rows[0] = (PetscInt)(PetscRealPart(rval)*M);
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-    rows[1] = (int)(PetscRealPart(rval)*M);
+    rows[1] = (PetscInt)(PetscRealPart(rval)*M);
     ierr = MatGetValues(A,2,rows,2,cols,vals1);CHKERRQ(ierr);
     ierr = MatGetValues(B,2,rows,2,cols,vals2);CHKERRQ(ierr);
     ierr = PetscMemcmp(vals1,vals2,4*sizeof(PetscScalar),&flg);CHKERRQ(ierr);
@@ -181,7 +182,7 @@ int main(int argc,char **args)
   
   
   /* Do LUFactor() on both the matrices */
-  ierr = PetscMalloc(M*sizeof(int),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc(M*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   for (i=0; i<M; i++) idx[i] = i;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,&is1);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,&is2);CHKERRQ(ierr);
@@ -189,6 +190,7 @@ int main(int argc,char **args)
   ierr = ISSetPermutation(is1);CHKERRQ(ierr);
   ierr = ISSetPermutation(is2);CHKERRQ(ierr);
 
+  ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);   
   info.fill = 2.0;
   info.dtcol = 0.0; 
   info.damping = 0.0; 

@@ -7,14 +7,16 @@ static char help[] = "Tests MPI parallel matrix creation.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat          C; 
-  MatInfo      info;
-  int          i,j,m = 3,n = 2,rank,size,low,high,iglobal;
-  int          I,J,ierr,ldim;
-  PetscTruth   flg;
-  PetscScalar  v,one = 1.0;
-  Vec          u,b;
-  int          bs,ndiag,diag[7];  bs = 1,ndiag = 5;
+  Mat            C; 
+  MatInfo        info;
+  PetscMPIInt    rank,size;
+  PetscInt       i,j,m = 3,n = 2,low,high,iglobal;
+  PetscInt       I,J,ldim;
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscScalar    v,one = 1.0;
+  Vec            u,b;
+  PetscInt       bs,ndiag,diag[7];  bs = 1,ndiag = 5;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

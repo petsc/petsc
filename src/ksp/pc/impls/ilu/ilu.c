@@ -25,7 +25,7 @@ EXTERN_C_END
 #define __FUNCT__ "PCDestroy_ILU_Internal"
 PetscErrorCode PCDestroy_ILU_Internal(PC pc)
 {
-  PC_ILU *ilu = (PC_ILU*)pc->data;
+  PC_ILU         *ilu = (PC_ILU*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -73,7 +73,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCILUSetUseDropTolerance_ILU"
 PetscErrorCode PCILUSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,int dtcount)
 {
-  PC_ILU *ilu;
+  PC_ILU         *ilu;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -118,9 +118,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCILUSetMatOrdering_ILU"
 PetscErrorCode PCILUSetMatOrdering_ILU(PC pc,MatOrderingType ordering)
 {
-  PC_ILU *dir = (PC_ILU*)pc->data;
+  PC_ILU         *dir = (PC_ILU*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg;
  
   PetscFunctionBegin;
   if (!pc->setupcalled) {
@@ -172,9 +172,9 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetLevels_ILU"
-PetscErrorCode PCILUSetLevels_ILU(PC pc,int levels)
+PetscErrorCode PCILUSetLevels_ILU(PC pc,PetscInt levels)
 {
-  PC_ILU *ilu;
+  PC_ILU         *ilu;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -351,9 +351,9 @@ PetscErrorCode PCILUSetShift(PC pc,PetscTruth shifting)
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 @*/
-PetscErrorCode PCILUSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,int maxrowcount)
+PetscErrorCode PCILUSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt maxrowcount)
 {
-  PetscErrorCode ierr,(*f)(PC,PetscReal,PetscReal,int);
+  PetscErrorCode ierr,(*f)(PC,PetscReal,PetscReal,PetscInt);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -529,9 +529,9 @@ PetscErrorCode PCILUDTSetReuseFill(PC pc,PetscTruth flag)
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
 @*/
-PetscErrorCode PCILUSetLevels(PC pc,int levels)
+PetscErrorCode PCILUSetLevels(PC pc,PetscInt levels)
 {
-  PetscErrorCode ierr,(*f)(PC,int);
+  PetscErrorCode ierr,(*f)(PC,PetscInt);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -669,18 +669,18 @@ EXTERN_C_END
 static PetscErrorCode PCSetFromOptions_ILU(PC pc)
 {
   PetscErrorCode ierr;
-  int dtmax = 3,itmp;
-  PetscTruth flg,set;
-  PetscReal  dt[3];
-  char       tname[256];
-  PC_ILU     *ilu = (PC_ILU*)pc->data;
-  PetscFList ordlist;
-  PetscReal  tol;
+  PetscInt       dtmax = 3,itmp;
+  PetscTruth     flg,set;
+  PetscReal      dt[3];
+  char           tname[256];
+  PC_ILU         *ilu = (PC_ILU*)pc->data;
+  PetscFList     ordlist;
+  PetscReal      tol;
 
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHead("ILU Options");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-pc_ilu_levels","levels of fill","PCILUSetLevels",(int)ilu->info.levels,&itmp,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_ilu_levels","levels of fill","PCILUSetLevels",(PetscInt)ilu->info.levels,&itmp,&flg);CHKERRQ(ierr);
     if (flg) ilu->info.levels = itmp;
     ierr = PetscOptionsName("-pc_ilu_in_place","do factorization in place","PCILUSetUseInPlace",&ilu->inplace);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_ilu_diagonal_fill","Allow fill into empty diagonal entry","PCILUSetAllowDiagonalFill",&flg);CHKERRQ(ierr);
@@ -703,7 +703,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     dt[2] = ilu->info.dtcount;
     ierr = PetscOptionsRealArray("-pc_ilu_use_drop_tolerance","<dt,dtcol,maxrowcount>","PCILUSetUseDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCILUSetUseDropTolerance(pc,dt[0],dt[1],(int)dt[2]);CHKERRQ(ierr);
+      ierr = PCILUSetUseDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_ilu_fill","Expected fill in factorization","PCILUSetFill",ilu->info.fill,&ilu->info.fill,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_ilu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,&tol,0);CHKERRQ(ierr);
@@ -726,9 +726,9 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
 #define __FUNCT__ "PCView_ILU"
 static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
 {
-  PC_ILU     *ilu = (PC_ILU*)pc->data;
+  PC_ILU         *ilu = (PC_ILU*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth isstring,iascii;
+  PetscTruth     isstring,iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
@@ -772,8 +772,8 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetUp_ILU(PC pc)
 {
   PetscErrorCode ierr;
-  PetscTruth flg;
-  PC_ILU     *ilu = (PC_ILU*)pc->data;
+  PetscTruth     flg;
+  PC_ILU         *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
   if (ilu->inplace) {
@@ -862,7 +862,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
 #define __FUNCT__ "PCDestroy_ILU"
 static PetscErrorCode PCDestroy_ILU(PC pc)
 {
-  PC_ILU *ilu = (PC_ILU*)pc->data;
+  PC_ILU         *ilu = (PC_ILU*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -876,7 +876,7 @@ static PetscErrorCode PCDestroy_ILU(PC pc)
 #define __FUNCT__ "PCApply_ILU"
 static PetscErrorCode PCApply_ILU(PC pc,Vec x,Vec y)
 {
-  PC_ILU *ilu = (PC_ILU*)pc->data;
+  PC_ILU         *ilu = (PC_ILU*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -888,7 +888,7 @@ static PetscErrorCode PCApply_ILU(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplyTranspose_ILU"
 static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 {
-  PC_ILU *ilu = (PC_ILU*)pc->data;
+  PC_ILU         *ilu = (PC_ILU*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -950,13 +950,14 @@ EXTERN_C_BEGIN
 PetscErrorCode PCCreate_ILU(PC pc)
 {
   PetscErrorCode ierr;
-  PC_ILU *ilu;
+  PC_ILU         *ilu;
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_ILU,&ilu);CHKERRQ(ierr);
   PetscLogObjectMemory(pc,sizeof(PC_ILU));
 
   ilu->fact                    = 0;
+  ierr = MatFactorInfoInitialize(&ilu->info);CHKERRQ(ierr);
   ilu->info.levels             = 0;
   ilu->info.fill               = 1.0; 
   ilu->col                     = 0;
