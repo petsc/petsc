@@ -75,7 +75,7 @@ To unsubscribe a person from petsc-users use
 
 
 To add an object to the PETSc logging:
-  - Add object to plog.h, plog.c, petscsim.cfg ... anything else?
+  - Add object to plog.h, plog.c, petscview, petscview.cfg ... anything else?
 
 
 Delete (or "outdate") range of versions from RCS file:

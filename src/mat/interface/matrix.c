@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.134 1996/01/26 21:35:02 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.135 1996/02/01 18:53:50 curfman Exp balay $";
 #endif
 
 /*
@@ -1640,7 +1640,9 @@ int MatIncreaseOverlap(Mat mat,int n, IS *is, int ov)
 
   if (ov == 0) return 0;
   if (!mat->ops.increaseoverlap) SETERRQ(PETSC_ERR_SUP,"MatIncreaseOverlap");
+  PLogEventBegin(MAT_IncreaseOverlap,mat,0,0,0);
   ierr = (*mat->ops.increaseoverlap)(mat,n,is,ov); CHKERRQ(ierr);
+  PLogEventEnd(MAT_IncreaseOverlap,mat,0,0,0);
   return 0;
 }
 
