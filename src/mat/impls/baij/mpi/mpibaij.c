@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.159 1999/03/11 23:21:46 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.160 1999/03/12 22:03:12 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -271,14 +271,11 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
         }
       }
     } else {
-      if (roworiented && !baij->donotstash) {
-        ierr = StashValues_Private(&baij->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
-      } else {
-        if (!baij->donotstash) {
-          row = im[i];
-	  for ( j=0; j<n; j++ ) {
-	    ierr = StashValues_Private(&baij->stash,row,1,in+j,v+i+j*m);CHKERRQ(ierr);
-          }
+      if ( !baij->donotstash) {
+        if (roworiented) {
+          ierr = StashValuesRoworiented_Private(&baij->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
+        } else {
+          ierr = StashValuesColumnoriented_Private(&baij->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
         }
       }
     }
@@ -375,10 +372,13 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
       }
     } else {
       if (!baij->donotstash) {
-        /*        ierr = StashValuesBlocked_Private(&baij->bstash,im[i],n,in,v+i*bs2*n,
-                                          roworiented,stepval,addv);CHKERRQ(ierr); */
-        ierr = StashValuesBlocked_Private(&baij->bstash,im[i],n,in,v,m,n,
-                                          roworiented,i);CHKERRQ(ierr);
+        if (roworiented) {
+          ierr = StashValuesRoworientedBlocked_Private(
+                    &baij->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
+        } else {
+          ierr = StashValuesColumnorientedBlocked_Private(
+                    &baij->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -449,14 +449,11 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
         else                    *(HD[idx]+ (col % bs)*bs + (row % bs))  = value;
       }
     } else {
-      if (roworiented && !baij->donotstash) {
-        ierr = StashValues_Private(&baij->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
-      } else {
-        if (!baij->donotstash) {
-          row = im[i];
-	  for ( j=0; j<n; j++ ) {
-	    ierr = StashValues_Private(&baij->stash,row,1,in+j,v+i+j*m);CHKERRQ(ierr);
-          }
+      if (!baij->donotstash) {
+        if (roworiented) {
+          ierr = StashValuesRoworiented_Private(&baij->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
+        } else {
+          ierr = StashValuesColumnoriented_Private(&baij->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
         }
       }
     }
@@ -573,7 +570,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
           for ( j=0; j<bs; j++,row++ ) {
             for ( k=0; k<n; k++ ) {
               for ( col=in[k]*bs,l=0; l<bs; l++,col++) {
-                ierr = StashValues_Private(&baij->stash,row,1,&col,value++);CHKERRQ(ierr);
+                ierr = StashValuesRoworiented_Private(&baij->stash,row,1,&col,value++);CHKERRQ(ierr);
               }
             }
           }
@@ -583,7 +580,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
             col   = in[j]*bs;
             for ( k=0; k<bs; k++,col++,value+=stepval) {
               for ( row = im[i]*bs,l=0; l<bs; l++,row++) {
-                ierr = StashValues_Private(&baij->stash,row,1,&col,value++);CHKERRQ(ierr);
+                ierr = StashValuesRoworiented_Private(&baij->stash,row,1,&col,value++);CHKERRQ(ierr);
               }
             }
           }
@@ -788,7 +785,7 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
 int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
-  int         ierr;
+  int         ierr,nstash,reallocs;
   InsertMode  addv;
 
   PetscFunctionBegin;
@@ -803,11 +800,14 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   }
   mat->insertmode = addv; /* in case this processor had no cache */
 
-  ierr =  StashScatterBegin_Private(&baij->stash,baij->rowners); CHKERRQ(ierr);
+  ierr =  StashScatterBegin_Private(&baij->stash,baij->rowners_bs); CHKERRQ(ierr);
   ierr =  StashScatterBegin_Private(&baij->bstash,baij->rowners); CHKERRQ(ierr);
-
-  /* Free cache space */
-  PLogInfo(baij->A,"MatAssemblyBegin_MPIBAIJ:Number of off-processor values %d\n",baij->stash.n);
+  ierr = StashGetInfo(&baij->stash,&nstash,&reallocs); CHKERRQ(ierr);
+  PLogInfo(0,"MatAssemblyBegin_MPIBAIJ:Stash has %d entries, uses %d mallocs.\n",
+           nstash,reallocs);
+  ierr = StashGetInfo(&baij->stash,&nstash,&reallocs); CHKERRQ(ierr);
+  PLogInfo(0,"MatAssemblyBegin_MPIBAIJ:Block-Stash has %d entries, uses %d mallocs.\n",
+           nstash,reallocs);
   PetscFunctionReturn(0);
 }
 
@@ -2006,13 +2006,17 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   ierr = MapCreateMPI(comm,n,N,&B->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
-  b->rowners = (int *) PetscMalloc(2*(b->size+2)*sizeof(int)); CHKPTRQ(b->rowners);
-  PLogObjectMemory(B,2*(b->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIBAIJ));
-  b->cowners = b->rowners + b->size + 2;
+  b->rowners = (int *) PetscMalloc(3*(b->size+2)*sizeof(int)); CHKPTRQ(b->rowners);
+  PLogObjectMemory(B,3*(b->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIBAIJ));
+  b->cowners    = b->rowners + b->size + 2;
+  b->rowners_bs = b->cowners + b->size + 2;
   ierr = MPI_Allgather(&mbs,1,MPI_INT,b->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
-  b->rowners[0] = 0;
+  b->rowners[0]    = 0;
   for ( i=2; i<=b->size; i++ ) {
     b->rowners[i] += b->rowners[i-1];
+  }
+  for ( i=0; i<=b->size; i++ ) {
+    b->rowners_bs[i] = b->rowners[i]*bs;
   }
   b->rstart    = b->rowners[b->rank]; 
   b->rend      = b->rowners[b->rank+1]; 
@@ -2038,8 +2042,8 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   PLogObjectParent(B,b->B);
 
   /* build cache for off array entries formed */
-  ierr = StashCreate_Private(comm,1,bs,&b->stash); CHKERRQ(ierr);
-  ierr = StashCreate_Private(comm,bs,bs,&b->bstash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(comm,1,&b->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(comm,bs,&b->bstash); CHKERRQ(ierr);
   b->donotstash  = 0;
   b->colmap      = 0;
   b->garray      = 0;
@@ -2141,12 +2145,13 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   a->ht_insert_ct = 0;
 
 
-  a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);
-  PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIBAIJ));
-  a->cowners = a->rowners + a->size + 2;
-  PetscMemcpy(a->rowners,oldmat->rowners,2*(a->size+2)*sizeof(int));
-  ierr = StashCreate_Private(matin->comm,1,oldmat->bs,&a->stash); CHKERRQ(ierr);
-  ierr = StashCreate_Private(matin->comm,oldmat->bs,oldmat->bs,&a->bstash); CHKERRQ(ierr);
+  a->rowners = (int *) PetscMalloc(3*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);
+  PLogObjectMemory(mat,3*(a->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIBAIJ));
+  a->cowners    = a->rowners + a->size + 2;
+  a->rowners_bs = a->cowners + a->size + 2;
+  PetscMemcpy(a->rowners,oldmat->rowners,3*(a->size+2)*sizeof(int));
+  ierr = StashCreate_Private(matin->comm,1,&a->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(matin->comm,oldmat->bs,&a->bstash); CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined (USE_CTABLE)
   ierr = TableCreateCopy(oldmat->colmap,&a->colmap); CHKERRQ(ierr); 

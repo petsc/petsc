@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.64 1999/01/12 23:15:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.65 1999/03/01 04:53:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -198,6 +198,8 @@ static struct _MatOps MatOps_Values = {0,
 
    Output Parameter:
 .  A - the matrix
+
+   Level: advanced
 
   Usage:
 $    extern int mult(Mat,Vec,Vec);
