@@ -1,4 +1,4 @@
-/* $Id: dot.h,v 1.9 1998/07/13 19:07:51 balay Exp balay $ */
+/* $Id: dot.h,v 1.10 1998/07/13 19:10:11 balay Exp bsmith $ */
 
 #ifndef DOT
 
@@ -62,6 +62,21 @@ extern void fortranmultaddaij_(int *,void*,int *,int *,void *,void*,void*);
 #define fortransolveaij_   fortransolveaij
 #endif
 extern void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
+#endif
+
+#if defined(USE_FORTRAN_KERNEL_SOLVEBAIJ)
+#if defined(HAVE_FORTRAN_CAPS)
+#define fortransolvebaij4_         FORTRANSOLVEBAIJ4_
+#define fortransolvebaij4blas_     FORTRANSOLVEBAIJ4BLAS_
+#define fortransolvebaij4unroll_   FORTRANSOLVEBAIJ4UNROLL_
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define fortransolveaij4_          fortransolveaij4
+#define fortransolveaij4blas_      fortransolveaij4blas
+#define fortransolveaij4unroll_    fortransolveaij4unroll
+#endif
+extern void fortransolveaij4_(int *,void*,int *,int *,int*,void *,void*,void *);
+extern void fortransolveaij4unroll_(int *,void*,int *,int *,int*,void *,void*);
+extern void fortransolveaij4blas_(int *,void*,int *,int *,int*,void *,void*,void *);
 #endif
 
 #if defined(__cplusplus)
