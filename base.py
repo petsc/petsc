@@ -6,31 +6,47 @@ import sys
 
 class Base(logging.Logger):
   '''The Base class handles the argument database and shell commands'''
-  defaultDB = None
+  defaultDB  = None
+  defaultLog = None
 
   def __init__(self, clArgs = None, argDB = None):
     '''Setup the argument database'''
     self.argDB = self.createArgDB(argDB)
-    # SHOULD BE JUST self.setupArgDB(self.argDB) here, but this way preserves logging.Logger for now
-    logging.Logger.__init__(self, self.argDB)
+    self.log   = self.createLog(None)
+    # SHOULD BE JUST self.setupArgDB(self.argDB, clArgs) here, but this way preserves logging.Logger for now
+    logging.Logger.__init__(self, self.argDB, self.log)
     self.setupArgDB(self.argDB, clArgs)
 
     self.getRoot()
     return
 
   def __getstate__(self):
-    '''We do not want to pickle the default RDict'''
+    '''We do not want to pickle the default RDict or log stream'''
     d = self.__dict__.copy()
     if 'argDB' in d and d['argDB'] is Base.defaultDB:
       del d['argDB']
+    if 'log' in d and d['log'] is Base.defaultLog:
+      del d['log']
     return d
 
   def __setstate__(self, d):
-    '''We must create the default RDict'''
+    '''We must create the default RDict and log stream'''
     if not 'argDB' in d:
       self.argDB = self.createArgDB(None)
+    if not 'log' in d:
+      self.log   = self.createLog(None)
     self.__dict__.update(d)
     return
+
+  def createLog(self, initLog):
+    '''Create a default log stream, unless initLog is given, which accepts all messages'''
+    if not initLog is None:
+      log = initLog
+    else:
+      if Base.defaultLog is None:
+        Base.defaultLog = file('make.log', 'w')
+      log = Base.defaultLog
+    return log
 
   def createArgDB(self, initDB):
     '''Create an argument database unless initDB is provided, and insert the command line arguments'''

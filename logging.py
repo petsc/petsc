@@ -4,7 +4,7 @@ class Logger(object):
   debugSections = None
   debugIndent   = '  '
 
-  def __init__(self, argDB = None):
+  def __init__(self, argDB = None, log = None):
     self.setFromArgs(argDB)
     if Logger.debugLevel is None:
       Logger.debugLevel    = argDB['debugLevel']
@@ -13,6 +13,7 @@ class Logger(object):
       Logger.debugSections = argDB['debugSections']
     self.debugSections     = Logger.debugSections
     self.debugIndent       = Logger.debugIndent
+    self.log               = log
     return
 
   def setFromArgs(self, argDB):
@@ -55,6 +56,11 @@ class Logger(object):
 
     if not isinstance(level, int): raise RuntimeError('Debug level must be an integer')
     indentLevel = len(traceback.extract_stack())-4
+    if not self.log is None:
+      for i in range(indentLevel):
+        self.log.write(self.debugIndent)
+      self.log.write(msg)
+      self.log.write('\n')
     if self.debugLevel >= level:
       if (not section) or (not self.debugSections) or (section in self.debugSections):
         for i in range(indentLevel):
