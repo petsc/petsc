@@ -1,4 +1,4 @@
-/* $Id: petscviewer.h,v 1.77 2000/07/27 15:46:05 bsmith Exp bsmith $ */
+/* $Id: petscviewer.h,v 1.78 2001/01/15 21:43:05 bsmith Exp bsmith $ */
 /*
      PetscViewers are objects where other objects can be looked at or stored.
 */
@@ -73,11 +73,11 @@ EXTERN int PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);
 
 #define PETSC_VIEWER_FORMAT_NATIVE              14
 
-EXTERN int    PetscViewerSetFormat(PetscViewer,int,char[]);
-EXTERN int    PetscViewerPushFormat(PetscViewer,int,char[]);
-EXTERN int    PetscViewerPopFormat(PetscViewer);
-EXTERN int    PetscViewerGetFormat(PetscViewer,int*);
-EXTERN int    PetscViewerFlush(PetscViewer);
+EXTERN int PetscViewerSetFormat(PetscViewer,int,char[]);
+EXTERN int PetscViewerPushFormat(PetscViewer,int,char[]);
+EXTERN int PetscViewerPopFormat(PetscViewer);
+EXTERN int PetscViewerGetFormat(PetscViewer,int*);
+EXTERN int PetscViewerFlush(PetscViewer);
 
 /*
    Operations explicit to a particular class of viewers
