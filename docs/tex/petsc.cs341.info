@@ -21,10 +21,10 @@ you write to one of us individually.
 Single processor jobs:
 -----------------------
 
-  - When using a single processor, you need not employ the "mpirun"
-    command to run the executable.  So, to initiate a 1 processor run
-    of the executable "ex5", any of the following could be used on the 
-    IRIX machines:
+  - When using a single processor with MPICH, you need not employ the 
+    "mpirun" command to run the executable.  So, to initiate a 1 processor 
+    run of the executable "ex5", any of the following could be used on the 
+    IRIX machines when using MPICH:
         ex5 
         mpirun ex5 
         mpirun -np 1 ex5 
