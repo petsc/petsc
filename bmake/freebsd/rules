@@ -7,24 +7,8 @@ libf: $(OBJSF)
 
 #########
 #
-#  .F.f: target is nolonger required, but retained, as it is
-#  useful to check what the preprocessor output.
 #
-.F.f:
-	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${FCPPFLAGS} $*.F  > __$*.f
-.F.o:
-	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${FCPPFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
-	-${RM} __$*.f
-
-.F.a:
-	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${FCPPFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} __$*.f $*.o
+include ${PETSC_DIR}/bmake/common/rules.fortran.nocpp
 
 shared_arch: shared_freebsd
 

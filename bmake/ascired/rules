@@ -5,5 +5,7 @@ libadic: ${LIBNAME}(${OBJSADIC})
 libf: ${LIBNAME}(${OBJSF})
 
 #############
+include ${PETSC_DIR}/bmake/common/rules.fortran.cpp
+
 shared_arch:
 oshared:
