@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.137 1999/06/08 22:53:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.138 1999/06/08 22:54:40 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -242,15 +242,13 @@ int SNESNoLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, Vec w,
   PetscFunctionBegin;
   *flag = 0; 
   PLogEventBegin(SNES_LineSearch,snes,x,f,g);
+  ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);  /* ynorm = || y || */
   ierr = VecAYPX(&mone,x,y);CHKERRQ(ierr);            /* y <- y - x      */
   if (neP->CheckStep) {
    ierr = (*neP->CheckStep)(snes,neP->checkP,y,&change_y);CHKERRQ(ierr);
   }
   ierr = SNESComputeFunction(snes,y,g);CHKERRQ(ierr); /* Compute F(y)    */
-  ierr = VecNormBegin(y,NORM_2,ynorm);CHKERRQ(ierr);  /* ynorm = || y || */
-  ierr = VecNormBegin(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
-  ierr = VecNormEnd(y,NORM_2,ynorm);CHKERRQ(ierr);
-  ierr = VecNormEnd(g,NORM_2,gnorm);CHKERRQ(ierr);
+  ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   PetscFunctionReturn(0);
 }
