@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.85 1997/05/23 18:35:44 balay Exp balay $";
+static char vcid[] = "$Id: sles.c,v 1.86 1997/07/09 20:56:55 balay Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -347,9 +347,10 @@ $        KSPSetInitialGuessNonzero(ksp);
 @*/
 int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 {
-  int ierr, flg;
-  KSP ksp;
-  PC  pc;
+  int        ierr, flg;
+  static int doublecount = 0;
+  KSP        ksp;
+  PC         pc;
 
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   if (b == x) SETERRQ(PETSC_ERR_ARG_IDN,0,"b and x must be different vectors");
@@ -361,11 +362,11 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
     ierr = SLESSetUp(sles,b,x); CHKERRQ(ierr);
   }
   ierr = PCSetUpOnBlocks(pc); CHKERRQ(ierr);
-  PLogEventBegin(SLES_Solve,sles,b,x,0);
+  if (!doublecount) {PLogEventBegin(SLES_Solve,sles,b,x,0);} doublecount++;
   ierr = PCPreSolve(pc,ksp); CHKERRQ(ierr);
   ierr = KSPSolve(ksp,its); CHKERRQ(ierr);
   ierr = PCPostSolve(pc,ksp); CHKERRQ(ierr);
-  PLogEventEnd(SLES_Solve,sles,b,x,0);
+  if (doublecount == 1) {PLogEventEnd(SLES_Solve,sles,b,x,0);} doublecount--;
   ierr = OptionsHasName(sles->prefix,"-sles_view", &flg); CHKERRQ(ierr); 
   if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRQ(ierr); }
   return 0;

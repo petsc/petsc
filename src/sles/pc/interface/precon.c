@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.127 1997/06/06 21:15:57 bsmith Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.128 1997/07/09 20:52:24 balay Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -136,14 +136,16 @@ int PCCreate(MPI_Comm comm,PC *newpc)
 @*/
 int PCApply(PC pc,Vec x,Vec y)
 {
-  int ierr;
+  int        ierr;
+  static int doublecount = 0;  
+
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
-  PLogEventBegin(PC_Apply,pc,x,y,0);
+  if (!doublecount) {PLogEventBegin(PC_Apply,pc,x,y,0);} doublecount++;
   ierr = (*pc->apply)(pc,x,y); CHKERRQ(ierr);
-  PLogEventEnd(PC_Apply,pc,x,y,0);
+  if (doublecount == 1) {PLogEventEnd(PC_Apply,pc,x,y,0);} doublecount--;
   return 0;
 }
 
