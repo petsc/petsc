@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.41 1995/10/12 20:06:30 curfman Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.42 1995/10/19 22:26:52 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -100,7 +100,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   int     ict, nz, base, r1, r2, N, *rowkeep, nstart, ierr;
   IS      iskeep;
   double  **K, norm;
-  Mat     mat, submat;
+  Mat     mat, submat = 0;
 
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
