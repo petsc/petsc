@@ -1,8 +1,7 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.31 1999/06/08 22:56:26 balay Exp balay $";
+static char vcid[] = "$Id: partition.c,v 1.32 1999/06/30 23:52:09 balay Exp bsmith $";
 #endif
  
-#include "petsc.h"
 #include "src/mat/matimpl.h"               /*I "mat.h" I*/
 
 /*
