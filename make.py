@@ -11,10 +11,11 @@ import nargs
 
 class PetscMake(bs.BS):
   def __init__(self, args = None):
-    bs.BS.__init__(self, 'bs', args)
+    bs.BS.__init__(self, bs.Project('bs', 'bk://sidl.bkbits.net/BuildSystem', self.getRoot()), args)
     self.defineDirectories()
     self.defineFileSets()
     self.defineBuild()
+    return
 
   def install(self):
     if not bs.argDB.has_key('install'): return
@@ -29,9 +30,11 @@ class PetscMake(bs.BS):
       pass
     (status, output) = commands.getstatusoutput('cp -f *.py '+bs.argDB['installlib'])
     (status, output) = commands.getstatusoutput('cp -f lib/*.so '+bs.argDB['installlib'])
-    
+    return
+
   def defineDirectories(self):
-    self.directories['sidl'] = os.path.abspath('sidl')
+    self.directories['main'] = self.getRoot()
+    self.directories['sidl'] = os.path.join(self.directories['main'], 'sidl')
     return
 
   def defineFileSets(self):
