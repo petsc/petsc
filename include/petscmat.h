@@ -1,4 +1,4 @@
-14/* $Id: mat.h,v 1.172 1999/04/01 21:18:31 bsmith Exp balay $ */
+/* $Id: mat.h,v 1.173 1999/04/01 21:24:29 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */

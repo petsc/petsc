@@ -1,12 +1,9 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.20 1999/03/11 16:19:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.21 1999/03/17 23:23:28 bsmith Exp bsmith $";
 #endif
  
-
 #include "petsc.h"
 #include "src/mat/matimpl.h"               /*I "mat.h" I*/
-
 
 /*
    Simplest partitioning, keeps the current partitioning.
@@ -38,7 +35,6 @@ int MatPartitioningCreate_Current(MatPartitioning part)
   part->apply   = MatPartitioningApply_Current;
   part->view    = 0;
   part->destroy = 0;
-  part->type    = MATPARTITIONING_CURRENT;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -48,14 +44,14 @@ EXTERN_C_END
 #include "src/sys/nreg.h"
 #include "sys.h"
 
-static NRList *__MatPartitioningList = 0;
-int MatPartitioningRegisterAllCalled = 0;
+FList MatPartitioningList = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningRegister" 
-/*@C
+/*MC
    MatPartitioningRegister - Adds a new sparse matrix partitioning to the 
    matrix package. 
+
+   Synopsis:
+   MatPartitioningRegister(char *name_partitioning,char *path,char *name_create,int (*routine_create)(MatPartitioning))
 
    Not Collective
 
@@ -72,22 +68,18 @@ int MatPartitioningRegisterAllCalled = 0;
 .keywords: matrix, partitioning, register
 
 .seealso: MatPartitioningRegisterDestroy(), MatPartitioningRegisterAll()
-@*/
-int MatPartitioningRegister(MatPartitioningType name,MatPartitioningType *oname,char *sname,int (*part)(MatPartitioning))
+M*/
+
+#undef __FUNC__  
+#define __FUNC__ "MatPartitioningRegister_Private" 
+int MatPartitioningRegister_Private(char *sname,char *path,char *name,int (*function)(MatPartitioning))
 {
-  int         ierr;
-  static int  numberregistered = 0;
+  int  ierr;
+  char fullname[256];
 
   PetscFunctionBegin;
-  if (!__MatPartitioningList) {
-    ierr = NRCreate(&__MatPartitioningList); CHKERRQ(ierr);
-  }
-
-  if (name == MATPARTITIONING_NEW) {
-    name = (MatPartitioningType) ((int) MATPARTITIONING_NEW + numberregistered++);
-  }
-  if (oname) *oname = name;
-  ierr = NRRegister(__MatPartitioningList,(int)name,sname,(int (*)(void*))part);CHKERRQ(ierr);
+  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = FListAdd_Private(&MatPartitioningList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -106,12 +98,13 @@ int MatPartitioningRegister(MatPartitioningType name,MatPartitioningType *oname,
 @*/
 int MatPartitioningRegisterDestroy(void)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  if (__MatPartitioningList) {
-    NRDestroy( __MatPartitioningList );
-    __MatPartitioningList = 0;
+  if (MatPartitioningList) {
+    ierr = FListDestroy( MatPartitioningList );CHKERRQ(ierr);
+    MatPartitioningList = 0;
   }
-  MatPartitioningRegisterAllCalled = 0;
   PetscFunctionReturn(0);
 }
 
@@ -121,12 +114,13 @@ int MatPartitioningRegisterDestroy(void)
    MatPartitioningGetType - Gets the Partitioning method type and name (as a string) 
         from the partitioning context.
 
+   Not collective
+
    Input Parameter:
 .  partitioning - the partitioning context
 
    Output Parameter:
-.  meth - partitioner type (or use PETSC_NULL)
-.  name - name of partitioner (or use PETSC_NULL)
+.  type - partitioner type
 
    Level: intermediate
 
@@ -134,14 +128,12 @@ int MatPartitioningRegisterDestroy(void)
 
 .keywords: Partitioning, get, method, name, type
 @*/
-int MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *meth,char **name)
+int MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *type)
 {
   int ierr;
 
   PetscFunctionBegin;
-  if (!__MatPartitioningList) {ierr = MatPartitioningRegisterAll(); CHKERRQ(ierr);}
-  if (meth) *meth = (MatPartitioningType) partitioning->type;
-  if (name)  *name = NRFindName( __MatPartitioningList, (int)partitioning->type );
+  *type = partitioning->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -278,20 +270,17 @@ int MatPartitioningDestroy(MatPartitioning part)
 int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 {
   MatPartitioning     part;
-  MatPartitioningType initialtype = MATPARTITIONING_CURRENT;
-  int              ierr;
+  int                 ierr;
 
   PetscFunctionBegin;
   *newp          = 0;
 
-  PetscHeaderCreate(part,_p_MatPartitioning,int,MATPARTITIONING_COOKIE,initialtype,"MatPartitioning",comm,MatPartitioningDestroy,
+  PetscHeaderCreate(part,_p_MatPartitioning,int,MATPARTITIONING_COOKIE,-1,"MatPartitioning",comm,MatPartitioningDestroy,
                     MatPartitioningView);
   PLogObjectCreate(part);
   part->type               = -1;
   MPI_Comm_size(comm,&part->n);
 
-  /* this violates rule about seperating abstract from implementions*/
-  ierr = MatPartitioningSetType(part,initialtype);CHKERRQ(ierr);
   *newp = part;
   PetscFunctionReturn(0);
 }
@@ -374,10 +363,9 @@ int MatPartitioningPrintHelp(MatPartitioning  part)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
-  if (!MatPartitioningRegisterAllCalled) {ierr = MatPartitioningRegisterAll(); CHKERRQ(ierr);}
 
   (*PetscHelpPrintf)(part->comm,"MatPartitioning options ----------------------------------------------\n");
-  NRPrintTypes(part->comm,stdout,part->prefix,"mat_partitioning_type",__MatPartitioningList);
+  ierr = FListPrintTypes(part->comm,stdout,part->prefix,"mat_partioning_type",MatPartitioningList);CHKERRQ(ierr);
 
   if (part->printhelp) {
     ierr = (*part->printhelp)(part);CHKERRQ(ierr);
@@ -415,23 +403,27 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
-  if (part->type == (int) type) PetscFunctionReturn(0);
+
+  if (PetscTypeCompare(part->type_name,type)) PetscFunctionReturn(0);
 
   if (part->setupcalled) {
-    if (part->destroy) ierr =  (*part->destroy)(part);
-    else {if (part->data) PetscFree(part->data);}
+    ierr =  (*part->destroy)(part);CHKERRQ(ierr);
     part->data        = 0;
     part->setupcalled = 0;
   }
+
   /* Get the function pointers for the method requested */
-  if (!MatPartitioningRegisterAllCalled) {ierr = MatPartitioningRegisterAll(); CHKERRQ(ierr);}
-  r =  (int (*)(MatPartitioning))NRFindRoutine( __MatPartitioningList, (int)type, (char *)0 );
-  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");}
-  if (part->data) PetscFree(part->data);
+  ierr =  FListFind(part->comm, MatPartitioningList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
+
+  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown partitioning type %s",type);}
 
   part->destroy      = ( int (*)(MatPartitioning )) 0;
   part->view         = ( int (*)(MatPartitioning,Viewer) ) 0;
   ierr = (*r)(part);CHKERRQ(ierr);
+
+  if (part->type_name) PetscFree(part->type_name);
+  part->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(part->type_name);
+  PetscStrcpy(part->type_name,type);
   PetscFunctionReturn(0);
 }
 
@@ -457,16 +449,22 @@ $      (for instance, parmetis)
 @*/
 int MatPartitioningSetFromOptions(MatPartitioning part)
 {
-  int              ierr,flag;
-  MatPartitioningType type;
+  int  ierr,flag;
+  char method[256];
 
   PetscFunctionBegin;
 
-  if (!__MatPartitioningList) {ierr = MatPartitioningRegisterAll();CHKERRQ(ierr);}
-  ierr = NRGetTypeFromOptions(part->prefix,"-mat_partitioning_type",__MatPartitioningList,&type,&flag);CHKERRQ(ierr);
+  ierr = OptionsGetString(part->prefix,"-mat_partitioning_type",method,256,&flag);
   if (flag) {
-    ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
+    ierr = MatPartitioningSetType(part,method); CHKERRQ(ierr);
   }
+  /*
+    Set the type if it was never set.
+  */
+  if (!part->type_name) {
+    ierr = MatPartitioningSetType(part,MATPARTITIONING_CURRENT);CHKERRQ(ierr);
+  }
+
   if (part->setfromoptions) {
     ierr = (*part->setfromoptions)(part);CHKERRQ(ierr);
   }

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.15 1999/03/11 16:19:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.16 1999/03/17 23:23:28 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -171,7 +171,6 @@ int MatPartitioningCreate_Parmetis(MatPartitioning part)
   part->destroy        = MatPartitioningDestroy_Parmetis;
   part->printhelp      = MatPartitioningPrintHelp_Parmetis;
   part->setfromoptions = MatPartitioningSetFromOptions_Parmetis;
-  part->type           = MATPARTITIONING_PARMETIS;
   part->data           = (void *) parmetis;
   PetscFunctionReturn(0);
 }
