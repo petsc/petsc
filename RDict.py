@@ -67,7 +67,8 @@ Arg class, which wraps the usual value.'''
     import atexit
     import xdrlib
 
-    self.logFile         = file('RDict.log', 'a')
+    self.logFile         = None
+    self.setupLogFile()
     self.target          = ['default']
     self.parent          = None
     self.saveTimer       = None
@@ -105,6 +106,12 @@ Arg class, which wraps the usual value.'''
     self.packer   = xdrlib.Packer()
     self.unpacker = xdrlib.Unpacker('')
     self.connectParent(self.parentAddr, self.parentDirectory)
+    return
+
+  def setupLogFile(self, filename = 'RDict.log'):
+    if not self.logFile is None:
+      self.logFile.close()
+    self.logFile = file('RDict.log', 'a')
     return
 
   def writeLogLine(self, message):
@@ -305,24 +312,17 @@ Arg class, which wraps the usual value.'''
     '''Read the server socket address (in pickled form) from a file, usually RDict.loc
        - If we fail to connect to the server specified in the file, we spawn it using startServer()'''
     filename = os.path.join(dir, self.addrFilename)
-    for i in range(10):
-      try:
-        if not os.path.exists(filename):
-          self.startServer(filename)
-        f    = open(filename, 'r')
-        addr = cPickle.load(f)
-        f.close()
-        # Check if server is running
-        #   This must provide the address, not the directory to prevent an infinite loop
-        rdict     = RDict(parentAddr = addr)
-        hasParent = rdict.hasParent()
-        del rdict
-        if not hasParent:
-          os.remove(filename)
-          self.startServer(filename)
-        return addr
-      except Exception:
-        self.startServer(filename)
+    if not os.path.exists(filename):
+      self.startServer(filename)
+    if not os.path.exists(filename):
+      raise RuntimeError('Server address file does not exist: '+filename)
+    try:
+      f    = open(filename, 'r')
+      addr = cPickle.load(f)
+      f.close()
+      return addr
+    except Exception, e:
+      self.writeLogLine('CLIENT: Exception during server address determination: '+str(e.__class__)+': '+str(e))
     raise RuntimeError('Could not get server address in '+filename)
 
   def writeServerAddr(self, server):
@@ -339,17 +339,23 @@ Arg class, which wraps the usual value.'''
     import sys
     import time
 
-    try: os.remove(addrFilename)
-    except: pass
+    self.writeLogLine('CLIENT: Spawning a new server with lock file '+os.path.abspath(addrFilename))
+    if os.path.exists(addrFilename):
+      os.remove(addrFilename)
     oldDir = os.getcwd()
     source = os.path.join(os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)), 'RDict.py')
     os.chdir(os.path.dirname(addrFilename))
+    self.writeLogLine('CLIENT: Executing "python '+source+' server"')
     os.spawnvp(os.P_NOWAIT, 'python', ['python', source, 'server'])
     os.chdir(oldDir)
+    timeout = 1
     for i in range(10):
-      time.sleep(1)
+      time.sleep(timeout)
+      timeout *= 2
+      if timeout > 100: timeout = 100
       if os.path.exists(addrFilename): return
-    raise RuntimeError('No running server: Could not start it')
+    self.writeLogLine('CLIENT: Could not start server')
+    return
 
   def connectParent(self, addr, dir):
     '''Try to connect to a parent RDict server
@@ -360,12 +366,33 @@ Arg class, which wraps the usual value.'''
       addr = self.getServerAddr(dir)
 
     import socket
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-      self.writeLogLine('CLIENT: Trying to connect to '+str(addr))
-      s.connect(addr)
-    except Exception, e:
-      self.writeLogLine('CLIENT: Failed to connect: '+str(e))
+    connected = 0
+    s         = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    timeout   = 1
+    for i in range(10):
+      try:
+        self.writeLogLine('CLIENT: Trying to connect to '+str(addr))
+        s.connect(addr)
+        connected = 1
+        break
+      except socket.error, e:
+        self.writeLogLine('CLIENT: Failed to connect: '+str(e))
+        if e.errno == 111:
+          import time
+          time.sleep(timeout)
+          timeout *= 2
+          if timeout > 100: timeout = 100
+          continue
+      except Exception, e:
+        self.writeLogLine('CLIENT: Failed to connect: '+str(e.__class__)+': '+str(e))
+      # Try to spawn parent
+      if dir:
+        filename = os.path.join(dir, self.addrFilename)
+        if os.path.isfile(filename):
+          os.remove(filename)
+        self.startServer(filename)
+    if not connected:
+      self.writeLogLine('CLIENT: Failed to connect to parent')
       return 0
     self.parent = s
     self.writeLogLine('CLIENT: Connected to '+str(self.parent))
@@ -478,7 +505,22 @@ Arg class, which wraps the usual value.'''
         self.writeLogLine('SERVER: Another server is already running')
         raise RuntimeError('Server already running')
 
+    # Daemonize server
+    self.writeLogLine('SERVER: Daemonizing server')
+    if os.fork(): # Launch child
+      os._exit(0) # Kill off parent, so we are not a process group leader and get a new PID
+    os.setsid()   # Set session ID, so that we have no controlling terminal
+    # We choose to leave cwd at RDict.py: os.chdir('/') # Make sure root directory is not on a mounted drive
+    os.umask(077) # Fix creation mask
+    for i in range(3): # Crappy stopgap for closing descriptors
+      try:
+        os.close(i)
+      except OSError, e:
+        if e.errno != errno.EBADF:
+          raise RuntimeError('Could not close default descriptor '+str(i))
+
     # wish there was a better way to get a usable socket
+    self.writeLogLine('SERVER: Establishing socket server')
     basePort = 8000
     flag     = 'nosocket'
     p        = 1
@@ -497,7 +539,9 @@ Arg class, which wraps the usual value.'''
         except Exception, e:
           p = p + 1
     if flag == 'nosocket':
+      self.writeLogLine('SERVER: Could not established socket server on port '+str(basePort+p))
       raise RuntimeError,'Cannot get available socket'
+    self.writeLogLine('SERVER: Established socket server on port '+str(basePort+p))
 
     self.isServer = 1
     self.writeServerAddr(server)
