@@ -54,6 +54,9 @@ class BS (maker.Maker):
     else:
       sourceDB = SourceDB()
     atexit.register(self.cleanup)
+    if not argDB['restart']:
+      for source in sourceDB:
+        sourceDB.clearUpdateFlag(source)
 
   def setupDefaultTargets(self):
     import transform
@@ -112,7 +115,8 @@ class BS (maker.Maker):
         print 'FileSet '+setName+' not found for update'
 
   def cleanup(self):
-    if argDB.has_key('target'): del argDB['target']
+    if argDB.has_key('target'):  del argDB['target']
+    if argDB.has_key('restart'): del argDB['restart']
     self.saveSourceDB()
 
   def main(self):

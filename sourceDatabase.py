@@ -18,12 +18,13 @@ class SourceDB (dict, logging.Logger):
   def __str__(self):
     output = ''
     for source in self:
-      (checksum, mtime, timestamp, dependencies) = self[source]
+      (checksum, mtime, timestamp, dependencies, updated) = self[source]
       output += source+'\n'
       output += '  Checksum:  '+str(checksum)+'\n'
       output += '  Mod Time:  '+str(mtime)+'\n'
       output += '  Timestamp: '+str(timestamp)+'\n'
       output += '  Deps: '+str(dependencies)+'\n'
+      output += '  Updated: '+str(updated)+'\n'
     return output
 
   def getChecksum(self, source):
@@ -41,17 +42,22 @@ class SourceDB (dict, logging.Logger):
   def updateSource(self, source):
     dependencies = ()
     try:
-      (checksum, mtime, timestamp, dependencies) = self[source]
+      (checksum, mtime, timestamp, dependencies, updated) = self[source]
     except KeyError:
       pass
     self.debugPrint('Updating '+source+' in source database', 3, 'sourceDB')
-    self[source] = (self.getChecksum(source), os.path.getmtime(source), time.time(), dependencies)
+    self[source] = (self.getChecksum(source), os.path.getmtime(source), time.time(), dependencies, 1)
+
+  def clearUpdateFlag(self, source):
+    self.debugPrint('Clearing update flag for '+source+' in source database', 4, 'sourceDB')
+    (checksum, mtime, timestamp, dependencies, updated) = self[source]
+    self[source] = (checksum, mtime, timestamp, dependencies, 0)
 
   def calculateDependencies(self):
     self.debugPrint('Recalculating dependencies', 1, 'sourceDB')
     for source in self:
       self.debugPrint('Calculating '+source, 3, 'sourceDB')
-      (checksum, mtime, timestamp, dependencies) = self[source]
+      (checksum, mtime, timestamp, dependencies, updated) = self[source]
       newDep = []
       try:
         file = open(source, 'r')
@@ -80,7 +86,7 @@ class SourceDB (dict, logging.Logger):
                 matchNum  = i
           newDep.append(matchName)
       # Grep for #include, then put these files in a tuple, we can be recursive later in a fixpoint algorithm
-      self[source] = (checksum, mtime, timestamp, tuple(newDep))
+      self[source] = (checksum, mtime, timestamp, tuple(newDep), updated)
 
 if __name__ == '__main__':
   if os.path.exists(sys.argv[1]):
@@ -89,11 +95,11 @@ if __name__ == '__main__':
     dbFile.close()
   else:
     sys.exit(0)
-  if not isinstance(sourceDB, SourceDB):
-    newDB = SourceDB()
-    newDB.update(sourceDB)
-    sourceDB = newDB
-  print sourceDB
+  newDB = SourceDB()
+  for key in sourceDB:
+    (checksum, mtime, timestamp, dependencies) = sourceDB[key]
+    newDB[key] = (checksum, mtime, timestamp, dependencies, 0)
+  sourceDB = newDB
   if len(sys.argv) > 2:
     dbFile = open(sys.argv[2], 'w')
     cPickle.dump(sourceDB, dbFile)

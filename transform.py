@@ -87,18 +87,23 @@ class SetFilter (Transform):
 class FileChanged (Transform):
   def __init__(self, sources = None):
     Transform.__init__(self, sources)
-    self.changed   = fileset.FileSet(tag = 'changed')
-    self.unchanged = fileset.FileSet(tag = 'unchanged')
-    self.products  = [self.changed, self.unchanged]
+    self.changed       = fileset.FileSet(tag = 'changed')
+    self.unchanged     = fileset.FileSet(tag = 'unchanged')
+    self.products      = [self.changed, self.unchanged]
+    self.useUpdateFlag = bs.argDB['restart']
 
   def compare(self, source, sourceEntry):
-    self.debugPrint('Checking for '+source+' in the source database', 3, 'sourceDB')
-    checksum = self.getChecksum(source)
-    if sourceEntry[0] == checksum:
+    if sourceEntry[4] and self.useUpdateFlag:
+      self.debugPrint('Update flag indicates '+source+' did not change', 3, 'sourceDB')
       return 0
     else:
-      self.debugPrint(source+' has changed relative to the source database: '+str(sourceEntry[0])+' <> '+str(checksum), 3, 'sourceDB')
-      return 1
+      self.debugPrint('Checking for '+source+' in the source database', 3, 'sourceDB')
+      checksum = bs.sourceDB.getChecksum(source)
+      if sourceEntry[0] == checksum:
+        return 0
+      else:
+        self.debugPrint(source+' has changed relative to the source database: '+str(sourceEntry[0])+' <> '+str(checksum), 3, 'sourceDB')
+        return 1
 
   def fileExecute(self, source):
     try:
