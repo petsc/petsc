@@ -8,7 +8,7 @@
 #include "petscbt.h"
 
 static int MatIncreaseOverlap_MPISBAIJ_Once(Mat,int,IS *);
-static int MatIncreaseOverlap_MPISBAIJ_Local(Mat,int,char **,int*,int**);
+static int MatIncreaseOverlap_MPISBAIJ_Local(Mat,int *,int **);
 static int MatIncreaseOverlap_MPISBAIJ_Receive(Mat,int,int **,int**,int*);
  
 /* this function is sasme as MatCompressIndicesGeneral_MPIBAIJ -- should be removed! */
@@ -210,8 +210,8 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
 {
   Mat_MPISBAIJ  *c = (Mat_MPISBAIJ*)C->data;
   int         **idx,*n,len,*idx_i;
-  int         size,rank,Mbs,i,j,k,ierr,**rbuf,nrqs,msz,*outdat,*indat;
-  int         *onodes1,*olengths1,tag1,tag2,*onodes2,*olengths2,flag,proc_id;
+  int         size,rank,Mbs,i,j,k,ierr,nrqs,msz,*outdat,*indat;
+  int         tag1,tag2,flag,proc_id;
   MPI_Comm    comm;
   MPI_Request *s_waits1,*s_waits2,r_req;
   MPI_Status  *s_status,r_status;
@@ -232,7 +232,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
        outdat[is_max]     = n[is_max-1], size of is[is_max-1]
        outdat[is_max + 1] = data(is[0])
         ...
-       outdat[is_max + i] = data(is[i])
+       outdat[is_max+1+sum(n[k]), k=0,...,i-1] = data(is[i])
         ...
   */
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
@@ -281,88 +281,15 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
     }
   }
 
-  /* 2. Do local work */
-  /*------------------*/
-  Mat          A = c->A, B = c->B;
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  Mat_SeqBAIJ  *b = (Mat_SeqBAIJ*)B->data;
-  int          row,mbs, *nidx,*nidx_i,col,isz,isz0,*ai,*aj,bs,*bi,*bj,*garray,rstart,l;
-  int          a_start,a_end,b_start,b_end;
-  PetscBT      table;
-  PetscBT      table0; 
+  /* 2. Do local work on this processor's is[] */
+  /*-------------------------------------------*/
+  int *nidx,*nidx_i;
+  ierr = MatIncreaseOverlap_MPISBAIJ_Local(C,outdat,&nidx);CHKERRQ(ierr);
 
-  mbs    = a->mbs;
-  bs     = a->bs;
-  ai     = a->i;
-  aj     = a->j;
-  bi     = b->i;
-  bj     = b->j;
-  garray = c->garray;
-  rstart = c->rstart;
-
-  ierr = PetscBTCreate(Mbs,table);CHKERRQ(ierr);
-  ierr = PetscMalloc(is_max*Mbs*sizeof(int),&nidx);CHKERRQ(ierr); 
-  ierr = PetscBTCreate(Mbs,table0);CHKERRQ(ierr);
-
-  for (i=0; i<is_max; i++) { /* for each is */
-    isz  = 0;
-    ierr = PetscBTMemzero(Mbs,table);CHKERRQ(ierr);
-    idx_i = idx[i];  
-    nidx_i = nidx+i*Mbs;  /*  holds new is[i] array */
- 
-    /* Enter these into the temp arrays i.e mark table[row], enter row into new index */
-    for (j=0; j<n[i]; j++){
-      col = idx_i[j]; 
-      if (col >= Mbs) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"[%d] index col %d >= Mbs %d",rank,col,Mbs);
-      if(!PetscBTLookupSet(table,col)) { nidx_i[isz++] = col;}
-    }    
-  
-    k = 0;
-    /* set table0 for lookup */
-    ierr = PetscBTMemzero(mbs,table0);CHKERRQ(ierr);
-    for (l=k; l<isz; l++) PetscBTSet(table0,nidx_i[l]);
-
-    isz0 = isz; /* length of nidx_i[] before updating */
-    for (row=0; row<mbs; row++){ 
-      a_start = ai[row]; a_end = ai[row+1];
-      b_start = bi[row]; b_end = bi[row+1];
-      if (PetscBTLookup(table0,row+rstart)){ /* row is on nidx_i - row search: collect all col in this row */
-        /* printf(" [%d] is[%d] row %d is on nidx_i\n",rank,i,row+rstart); */
-        for (l = a_start; l<a_end ; l++){ /* Amat */
-          col = aj[l] + rstart;
-          if (!PetscBTLookupSet(table,col)) {nidx_i[isz++] = col;}
-        }
-        for (l = b_start; l<b_end ; l++){ /* Bmat */
-          col = garray[bj[l]];
-          if (!PetscBTLookupSet(table,col)) {nidx_i[isz++] = col;}
-        }
-        k++;
-        if (k >= isz0) break; /* for (row=0; row<mbs; row++) */
-      } else { /* row is not on nidx_i - col serach: add row onto nidx_i if there is a col in nidx_i */
-        for (l = a_start; l<a_end ; l++){ /* Amat */
-          col = aj[l] + rstart;
-          if (PetscBTLookup(table0,col)){
-            if (!PetscBTLookupSet(table,row+rstart)) {nidx_i[isz++] = row+rstart;}
-            break; /* for l = start; l<end ; l++) */
-          }
-        } 
-        for (l = b_start; l<b_end ; l++){ /* Bmat */
-          col = garray[bj[l]];
-          if (PetscBTLookup(table0,col)){
-            if (!PetscBTLookupSet(table,row+rstart)) {nidx_i[isz++] = row+rstart;}
-            break; /* for l = start; l<end ; l++) */
-          }
-        } 
-      }
-    } /* for (row=0; row<mbs; row++) */
-
+  for (i=0; i<is_max; i++){
     ierr = ISRestoreIndices(is[i],idx+i);CHKERRQ(ierr);
-    ierr = ISDestroy(is[i]);CHKERRQ(ierr);   
-    n[i] = isz;
-  } /* /* for each is */
-  ierr = PetscBTDestroy(table);CHKERRQ(ierr);
-  ierr = PetscBTDestroy(table0);CHKERRQ(ierr); 
-
+    ierr = ISDestroy(is[i]);CHKERRQ(ierr); 
+  }
 
   /* 3. Receive other's is[] and process. Then send back */
   /*----------------------------------------------------*/
@@ -370,6 +297,11 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   nrqs = size-1;
   ierr = PetscMalloc(size*sizeof(MPI_Status),&s_status);CHKERRQ(ierr);
   ierr = MPI_Waitall(nrqs,s_waits1,s_status);CHKERRQ(ierr);
+
+  /* save n[i] */
+  for (i=0; i<is_max; i++){
+    n[i] = outdat[1+i];
+  }
   ierr = PetscFree(outdat);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(MPI_Request),&s_waits2);CHKERRQ(ierr);
   k = 0;
@@ -427,19 +359,6 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n[i],nidx_i,is+i);CHKERRQ(ierr);
   }
   ierr = PetscFree(nidx);CHKERRQ(ierr); 
-  
-#ifdef OLD    
-  ierr = PetscFree(onodes2);CHKERRQ(ierr);
-  ierr = PetscFree(olengths2);CHKERRQ(ierr);
-  ierr = PetscFree(rbuf2);CHKERRQ(ierr);
- 
-  ierr = PetscFree(table);CHKERRQ(ierr);
-  ierr = PetscFree(s_status);CHKERRQ(ierr);
-  ierr = PetscFree(recv_status);CHKERRQ(ierr);
-  ierr = PetscFree(xdata[0]);CHKERRQ(ierr);
-  ierr = PetscFree(xdata);CHKERRQ(ierr);
-  ierr = PetscFree(isz1);CHKERRQ(ierr);
-#endif /* OLD */
   ierr = PetscFree(idx);CHKERRQ(ierr);
   ierr = PetscFree(s_waits1);CHKERRQ(ierr);
   ierr = PetscFree(s_waits2);CHKERRQ(ierr);
@@ -450,60 +369,107 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ_Local"
 /*  
-   MatIncreaseOverlap_MPISBAIJ_Local - Called by MatincreaseOverlap, to do 
+   MatIncreaseOverlap_MPISBAIJ_Local - Called by MatIncreaseOverlap, to do 
        the work on the local processor.
 
      Inputs:
       C      - MAT_MPISBAIJ;
-      imax - total no of index sets processed at a time;
-      table  - an array of char - size = Mbs bits.
+      data   - holds is[] in the format:
+        data[0]          = is_max, no of is 
+        data[1]          = size of is[0]
+        ...
+        data[is_max]     = size of is[is_max-1]
+        data[is_max + 1] = is[0] array
+        ...
+        data[is_max+1+sum(n[k]), k=0,...,i-1] = is[i] array
+        ...
       
-     Output:
-      isz    - array containing the count of the solution elements correspondign
-               to each index set;
-      data   - pointer to the solutions
+     Output:  
+       data_new   - holds new is[] in the same format as data
 */
-static int MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int imax,PetscBT *table,int *isz,int **data)
+static int MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int *data,int **data_new)
 {
   Mat_MPISBAIJ *c = (Mat_MPISBAIJ*)C->data;
-  Mat         A = c->A,B = c->B;
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  Mat_SeqBAIJ  *b = (Mat_SeqBAIJ*)B->data;
-  int         start,end,val,max,rstart,cstart,*ai,*aj;
-  int         *bi,*bj,*garray,i,j,k,row,*data_i,isz_i;
-  PetscBT     table_i;
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)(c->A)->data;
+  Mat_SeqBAIJ  *b = (Mat_SeqBAIJ*)(c->B)->data;
+  int          ierr,row,mbs,Mbs,*nidx,*nidx_i,col,isz,isz0,*ai,*aj,bs,*bi,*bj,*garray,rstart,l;
+  int          a_start,a_end,b_start,b_end,i,j,k,is_max,*idx_i,n;
+  PetscBT      table;
+  PetscBT      table0; 
 
   PetscFunctionBegin;
-  rstart = c->rstart;
-  cstart = c->cstart;
-  ai     = a->i;
-  aj     = a->j;
-  bi     = b->i;
-  bj     = b->j;
+  Mbs = c->Mbs; mbs = a->mbs; bs = a->bs;
+  ai = a->i; aj = a->j;
+  bi = b->i; bj = b->j;
   garray = c->garray;
+  rstart = c->rstart;
+  is_max = data[0];
 
+  ierr = PetscMalloc(is_max*Mbs*sizeof(int),&nidx);CHKERRQ(ierr); 
+  ierr = PetscBTCreate(Mbs,table0);CHKERRQ(ierr);
+  ierr = PetscBTCreate(Mbs,table);CHKERRQ(ierr);
+
+  idx_i  = data + is_max + 1; /* ptr to is[0] array */
+  for (i=0; i<is_max; i++) { /* for each is */
+    isz  = 0;
+    ierr = PetscBTMemzero(Mbs,table);CHKERRQ(ierr);
+    nidx_i = nidx+i*Mbs;  /*  holds new is[i] array */
+    n = data[1+i]; /* size of is[i] */
+ 
+    /* Enter these into the temp arrays i.e mark table[row], enter row into new index */
+    for (j=0; j<n; j++){
+      col = idx_i[j]; 
+      if (col >= Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"index col %d >= Mbs %d",col,Mbs);
+      if(!PetscBTLookupSet(table,col)) { nidx_i[isz++] = col;}
+    }    
   
-  for (i=0; i<imax; i++) {
-    data_i  = data[i];
-    table_i = table[i];
-    isz_i   = isz[i];
-    for (j=0,max=isz[i]; j<max; j++) {
-      row   = data_i[j] - rstart;
-      start = ai[row];
-      end   = ai[row+1];
-      for (k=start; k<end; k++) { /* Amat */
-        val = aj[k] + cstart;
-        if (!PetscBTLookupSet(table_i,val)) { data_i[isz_i++] = val;}  
+    k = 0;
+    /* set table0 for lookup */
+    ierr = PetscBTMemzero(mbs,table0);CHKERRQ(ierr);
+    for (l=k; l<isz; l++) PetscBTSet(table0,nidx_i[l]);
+
+    isz0 = isz; /* length of nidx_i[] before updating */
+    for (row=0; row<mbs; row++){ 
+      a_start = ai[row]; a_end = ai[row+1];
+      b_start = bi[row]; b_end = bi[row+1];
+      if (PetscBTLookup(table0,row+rstart)){ /* row is on nidx_i - row search: collect all col in this row */
+        /* printf(" [%d] is[%d] row %d is on nidx_i\n",rank,i,row+rstart); */
+        for (l = a_start; l<a_end ; l++){ /* Amat */
+          col = aj[l] + rstart;
+          if (!PetscBTLookupSet(table,col)) {nidx_i[isz++] = col;}
+        }
+        for (l = b_start; l<b_end ; l++){ /* Bmat */
+          col = garray[bj[l]];
+          if (!PetscBTLookupSet(table,col)) {nidx_i[isz++] = col;}
+        }
+        k++;
+        if (k >= isz0) break; /* for (row=0; row<mbs; row++) */
+      } else { /* row is not on nidx_i - col serach: add row onto nidx_i if there is a col in nidx_i */
+        for (l = a_start; l<a_end ; l++){ /* Amat */
+          col = aj[l] + rstart;
+          if (PetscBTLookup(table0,col)){
+            if (!PetscBTLookupSet(table,row+rstart)) {nidx_i[isz++] = row+rstart;}
+            break; /* for l = start; l<end ; l++) */
+          }
+        } 
+        for (l = b_start; l<b_end ; l++){ /* Bmat */
+          col = garray[bj[l]];
+          if (PetscBTLookup(table0,col)){
+            if (!PetscBTLookupSet(table,row+rstart)) {nidx_i[isz++] = row+rstart;}
+            break; /* for l = start; l<end ; l++) */
+          }
+        } 
       }
-      start = bi[row];
-      end   = bi[row+1];
-      for (k=start; k<end; k++) { /* Bmat */
-        val = garray[bj[k]]; 
-        if (!PetscBTLookupSet(table_i,val)) { data_i[isz_i++] = val;}  
-      } 
+    } /* for (row=0; row<mbs; row++) */
+
+    if (i < is_max - 1){
+      idx_i  += n; /* ptr to is[i+1] array */
     }
-    isz[i] = isz_i;
-  }
+    data[1+i] = isz;
+  } /* /* for each is */
+  *data_new = nidx;
+  ierr = PetscBTDestroy(table);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(table0);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
