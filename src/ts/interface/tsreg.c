@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: tsreg.c,v 1.9 1996/09/14 03:37:44 curfman Exp balay $";
+static char vcid[] = "$Id: tsreg.c,v 1.10 1996/10/15 18:48:05 balay Exp curfman $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -12,11 +12,16 @@ static char vcid[] = "$Id: tsreg.c,v 1.9 1996/09/14 03:37:44 curfman Exp balay $
 static NRList *__TSList = 0;
 
 /*@
-   TSSetType - Sets the method for the nonlinear solver.  
+   TSSetType - Sets the method for the timestepping solver.  
 
    Input Parameters:
 .  ts - the TS context
 .  method - a known method
+
+  Options Database Command:
+$ -ts_type  <method>
+$    Use -help for a list of available methods
+$    (for instance, euler)
 
    Notes:
    See "petsc/include/ts.h" for available methods (for instance)
@@ -24,12 +29,19 @@ $   TS_EULER
 $   TS_BEULER
 $   TS_PSEUDO
 
-  Options Database Command:
-$ -ts_type  <method>
-$    Use -help for a list of available methods
-$    (for instance, euler)
+  Normally, it is best to use the TSSetFromOptions() command and
+  then set the TS type from the options database rather than by using
+  this routine.  Using the options database provides the user with
+  maximum flexibility in evaluating the many different solvers.
+  The TSSetType() routine is provided for those situations where it
+  is necessary to set the timestepping solver independently of the
+  command line or options database.  This might be the case, for example,
+  when the choice of solver changes during the execution of the
+  program, and the user's application is taking responsibility for
+  choosing the appropriate method.  In other words, this routine is
+  for the advanced user.
 
-.keywords: TS, set, method
+.keywords: TS, set, type
 @*/
 int TSSetType(TS ts,TSType method)
 {

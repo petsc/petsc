@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.94 1996/10/15 21:58:38 balay Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.95 1996/11/07 15:11:28 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1412,6 +1412,11 @@ static NRList *__SNESList = 0;
 .  snes - the SNES context
 .  method - a known method
 
+  Options Database Command:
+$ -snes_type  <method>
+$    Use -help for a list of available methods
+$    (for instance, ls or tr)
+
    Notes:
    See "petsc/include/snes.h" for available methods (for instance)
 $  Systems of nonlinear equations:
@@ -1421,10 +1426,16 @@ $  Unconstrained minimization:
 $    SNES_UM_TR - Newton's method with trust region 
 $    SNES_UM_LS - Newton's method with line search
 
-  Options Database Command:
-$ -snes_type  <method>
-$    Use -help for a list of available methods
-$    (for instance, ls or tr)
+  Normally, it is best to use the SNESSetFromOptions() command and then
+  set the SNES solver type from the options database rather than by using
+  this routine.  Using the options database provides the user with
+  maximum flexibility in evaluating the many nonlinear solvers.
+  The SNESSetType() routine is provided for those situations where it
+  is necessary to set the nonlinear solver independently of the command
+  line or options database.  This might be the case, for example, when
+  the choice of solver changes during the execution of the program,
+  and the user's application is taking responsibility for choosing the
+  appropriate method.  In other words, this routine is for the advanced user.
 
 .keywords: SNES, set, method
 @*/

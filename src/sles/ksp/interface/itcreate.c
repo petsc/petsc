@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.88 1996/09/14 03:37:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.89 1996/11/07 15:08:01 bsmith Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -146,8 +146,20 @@ $      Use -help for a list of available methods
 $      (for instance, cg or gmres)
 
    Notes:  
-   See "petsc/include/ksp.h" for available methods (for instance KSPCG 
-   or KSPGMRES).
+   See "petsc/include/ksp.h" for available methods (for instance,
+   KSPCG or KSPGMRES).
+
+  Normally, it is best to use the SLESSetFromOptions() command and
+  then set the KSP type from the options database rather than by using
+  this routine.  Using the options database provides the user with
+  maximum flexibility in evaluating the many different Krylov methods.
+  The KSPSetType() routine is provided for those situations where it
+  is necessary to set the iterative solver independently of the command
+  line or options database.  This might be the case, for example, when
+  the choice of iterative solver changes during the execution of the
+  program, and the user's application is taking responsibility for
+  choosing the appropriate method.  In other words, this routine is
+  for the advanced user.
 
 .keywords: KSP, set, method
 @*/
