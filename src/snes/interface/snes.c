@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.168 1999/02/02 02:47:20 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.169 1999/02/03 23:58:06 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -244,12 +244,11 @@ int SNESSetFromOptions(SNES snes)
     if (rank) MPI_Comm_rank(snes->comm,&rank);
     if (!rank) {
       ierr = SNESLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); CHKERRQ(ierr);
-      ierr = SNESSetMonitor(snes,SNESLGMonitor,(void *)lg); CHKERRQ(ierr);
+      ierr = SNESSetMonitor(snes,SNESLGMonitor,(void *)lg); CHKERRQ(ierr);  
       snes->xmonitor = lg;
       PLogObjectParent(snes,lg);
     }
   }
-
 
   ierr = OptionsHasName(snes->prefix,"-snes_fd", &flg);  CHKERRQ(ierr);
   if (flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
@@ -1548,6 +1547,17 @@ int SNESSetMinimizationFunctionTolerance(SNES snes,double ftol)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   snes->fmin = ftol;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESLGMonitor"
+int SNESLGMonitor(SNES snes,int it,double norm,void *ctx)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPLGMonitor((KSP)snes,it,norm,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
