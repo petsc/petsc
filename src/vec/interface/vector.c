@@ -1,11 +1,15 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.174 1999/03/18 22:50:32 bsmith Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.175 1999/03/19 01:08:25 balay Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
 */
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
+
+/* Use this macro to check if the vector type is set or not */
+#define PetscVecTypeAssert(vec) \
+  if (!(vec)->type_name) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Vector Type not set");
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetBlockSize"
@@ -138,6 +142,7 @@ int VecDot(Vec x, Vec y, Scalar *val)
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidScalarPointer(val);
   PetscCheckSameType(x,y);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_Dot,x,y,0,0);
   ierr = (*x->ops->dot)(x,y,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_Dot,x,y,0,0);
@@ -188,6 +193,7 @@ int VecNorm(Vec x,NormType type,double *val)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_Norm,x,0,0,0);
   ierr = (*x->ops->norm)(x,type,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_Norm,x,0,0,0);
@@ -234,6 +240,7 @@ int VecMax(Vec x,int *p,double *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidScalarPointer(val);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_Max,x,0,0,0);
   ierr = (*x->ops->max)(x,p,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_Max,x,0,0,0);
@@ -270,6 +277,7 @@ int VecMin(Vec x,int *p,double *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidScalarPointer(val);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_Min,x,0,0,0);
   ierr = (*x->ops->min)(x,p,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_Min,x,0,0,0);
@@ -314,6 +322,7 @@ int VecTDot(Vec x,Vec y,Scalar *val)
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidScalarPointer(val);
   PetscCheckSameType(x,y);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_TDot,x,y,0,0);
   ierr = (*x->ops->tdot)(x,y,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_TDot,x,y,0,0);
@@ -349,6 +358,7 @@ int VecScale(const Scalar *alpha,Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidScalarPointer(alpha);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_Scale,x,0,0,0);
   ierr = (*x->ops->scale)(alpha,x); CHKERRQ(ierr);
   PLogEventEnd(VEC_Scale,x,0,0,0);
@@ -385,6 +395,7 @@ int VecCopy(Vec x,Vec y)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE); 
   PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_Copy,x,y,0,0);
   ierr = (*x->ops->copy)(x,y); CHKERRQ(ierr);
   PLogEventEnd(VEC_Copy,x,y,0,0);
@@ -425,6 +436,7 @@ int VecSet(const Scalar *alpha,Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidScalarPointer(alpha);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_Set,x,0,0,0);
   ierr = (*x->ops->set)(alpha,x); CHKERRQ(ierr);
   PLogEventEnd(VEC_Set,x,0,0,0);
@@ -465,6 +477,7 @@ int VecSetRandom(PetscRandom rctx,Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(rctx,PETSCRANDOM_COOKIE);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_SetRandom,x,rctx,0,0);
   ierr = (*x->ops->setrandom)(rctx,x); CHKERRQ(ierr);
   PLogEventEnd(VEC_SetRandom,x,rctx,0,0);
@@ -499,6 +512,7 @@ int VecAXPY(const Scalar *alpha,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidScalarPointer(alpha);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_AXPY,x,y,0,0);
   ierr = (*x->ops->axpy)(alpha,x,y); CHKERRQ(ierr);
   PLogEventEnd(VEC_AXPY,x,y,0,0);
@@ -534,6 +548,7 @@ int VecAXPBY(const Scalar *alpha,const Scalar *beta,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidScalarPointer(alpha);
   PetscValidScalarPointer(beta);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_AXPY,x,y,0,0);
   ierr = (*x->ops->axpby)(alpha,beta,x,y); CHKERRQ(ierr);
   PLogEventEnd(VEC_AXPY,x,y,0,0);
@@ -568,6 +583,7 @@ int VecAYPX(const Scalar *alpha,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_COOKIE); 
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidScalarPointer(alpha);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_AYPX,x,y,0,0);
   ierr =  (*x->ops->aypx)(alpha,x,y); CHKERRQ(ierr);
   PLogEventEnd(VEC_AYPX,x,y,0,0);
@@ -596,6 +612,7 @@ int VecSwap(Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_COOKIE);  
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscCheckSameType(x,y);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_Swap,x,y,0,0);
   ierr = (*x->ops->swap)(x,y); CHKERRQ(ierr);
   PLogEventEnd(VEC_Swap,x,y,0,0);
@@ -631,6 +648,7 @@ int VecWAXPY(const Scalar *alpha,Vec x,Vec y,Vec w)
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(w,VEC_COOKIE);
   PetscValidScalarPointer(alpha);
+  PetscVecTypeAssert(x);
   PetscCheckSameType(x,y); PetscCheckSameType(y,w);
   PLogEventBegin(VEC_WAXPY,x,y,w,0);
   ierr =  (*x->ops->waxpy)(alpha,x,y,w); CHKERRQ(ierr);
@@ -665,6 +683,7 @@ int VecPointwiseMult(Vec x,Vec y,Vec w)
   PetscValidHeaderSpecific(x,VEC_COOKIE); 
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(w,VEC_COOKIE);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_PMult,x,y,w,0);
   ierr = (*x->ops->pointwisemult)(x,y,w); CHKERRQ(ierr);
   PLogEventEnd(VEC_PMult,x,y,w,0);
@@ -698,6 +717,7 @@ int VecPointwiseDivide(Vec x,Vec y,Vec w)
   PetscValidHeaderSpecific(x,VEC_COOKIE); 
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(w,VEC_COOKIE);
+  PetscVecTypeAssert(x);
   ierr = (*x->ops->pointwisedivide)(x,y,w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -728,14 +748,15 @@ int VecPointwiseDivide(Vec x,Vec y,Vec w)
 
 .seealso: VecDestroy(), VecDuplicateVecs(), VecCreate(), VecCopy()
 @*/
-int VecDuplicate(Vec v,Vec *newv) 
+int VecDuplicate(Vec x,Vec *newv) 
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidPointer(newv);
-  ierr = (*v->ops->duplicate)(v,newv);CHKERRQ(ierr);
+  PetscVecTypeAssert(x);
+  ierr = (*x->ops->duplicate)(x,newv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -761,6 +782,7 @@ int VecDestroy(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscVecTypeAssert(v);
   if (--v->refct > 0) PetscFunctionReturn(0);
   /* destroy the internal part */
   ierr = (*v->ops->destroy)(v);CHKERRQ(ierr);
@@ -812,6 +834,7 @@ int VecDuplicateVecs(Vec v,int m,Vec *V[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   PetscValidPointer(V);
+  PetscVecTypeAssert(v);
   ierr = (*v->ops->duplicatevecs)( v, m,V );CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -845,6 +868,7 @@ int VecDestroyVecs(const Vec vv[],int m)
   PetscFunctionBegin;
   if (!vv) SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null vectors");
   PetscValidHeaderSpecific(*vv,VEC_COOKIE);
+  PetscVecTypeAssert(*vv);
   ierr = (*(*vv)->ops->destroyvecs)( vv, m );CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -897,6 +921,7 @@ int VecSetValues(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidIntPointer(ix);
   PetscValidScalarPointer(y);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_SetValues,x,0,0,0);
   ierr = (*x->ops->setvalues)( x, ni,ix, y,iora ); CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
@@ -952,6 +977,7 @@ int VecSetValuesBlocked(Vec x,int ni,const int ix[],const Scalar y[],InsertMode 
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidIntPointer(ix);
   PetscValidScalarPointer(y);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_SetValues,x,0,0,0);
   ierr = (*x->ops->setvaluesblocked)( x, ni,ix, y,iora ); CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
@@ -1103,6 +1129,7 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode io
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidIntPointer(ix);
   PetscValidScalarPointer(y);
+  PetscVecTypeAssert(x);
   if (!x->mapping) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with VecSetLocalToGlobalMapping()");
   }
@@ -1166,6 +1193,7 @@ int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const Scalar y[],Insert
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidIntPointer(ix);
   PetscValidScalarPointer(y);
+  PetscVecTypeAssert(x);
   if (!x->bmapping) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with VecSetLocalToGlobalMappingBlocked()");
   }
@@ -1206,6 +1234,7 @@ int VecAssemblyBegin(Vec vec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  PetscVecTypeAssert(vec);
   PLogEventBegin(VEC_AssemblyBegin,vec,0,0,0);
   if (vec->ops->assemblybegin) {
     ierr = (*vec->ops->assemblybegin)(vec); CHKERRQ(ierr);
@@ -1247,6 +1276,7 @@ int VecAssemblyEnd(Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
   PLogEventBegin(VEC_AssemblyEnd,vec,0,0,0);
+  PetscVecTypeAssert(vec);
   if (vec->ops->assemblyend) {
     ierr = (*vec->ops->assemblyend)(vec); CHKERRQ(ierr);
   }
@@ -1327,6 +1357,7 @@ int VecMTDot(int nv,Vec x,const Vec y[],Scalar *val)
   PetscValidHeaderSpecific(*y,VEC_COOKIE);
   PetscValidScalarPointer(val);
   PetscCheckSameType(x,*y);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_MTDot,x,*y,0,0);
   ierr = (*x->ops->mtdot)(nv,x,y,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_MTDot,x,*y,0,0);
@@ -1372,6 +1403,7 @@ int VecMDot(int nv,Vec x,const Vec y[],Scalar *val)
   PetscValidHeaderSpecific(*y,VEC_COOKIE);
   PetscValidScalarPointer(val);
   PetscCheckSameType(x,*y);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_MDot,x,*y,0,0);
   ierr = (*x->ops->mdot)(nv,x,y,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_MDot,x,*y,0,0);
@@ -1409,6 +1441,7 @@ int  VecMAXPY(int nv,const Scalar *alpha,Vec x,Vec *y)
   PetscValidHeaderSpecific(*y,VEC_COOKIE);
   PetscValidScalarPointer(alpha);
   PetscCheckSameType(x,*y);
+  PetscVecTypeAssert(x);
   PLogEventBegin(VEC_MAXPY,x,*y,0,0);
   ierr = (*x->ops->maxpy)(nv,alpha,x,y); CHKERRQ(ierr);
   PLogEventEnd(VEC_MAXPY,x,*y,0,0);
@@ -1464,7 +1497,7 @@ int VecGetArray(Vec x,Scalar *a[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidPointer(a);
-
+  PetscVecTypeAssert(x);
   ierr = (*x->ops->getarray)(x,a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1602,6 +1635,7 @@ int VecRestoreArray(Vec x,Scalar *a[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidPointer(a);
+  PetscVecTypeAssert(x);
   if (x->ops->restorearray) {
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
   }
@@ -1663,6 +1697,7 @@ int VecView(Vec v,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscVecTypeAssert(v);
   if (!viewer) {viewer = VIEWER_STDOUT_SELF;}
   else { PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);}
   ierr = (*v->ops->view)(v,viewer);CHKERRQ(ierr);
@@ -1695,6 +1730,7 @@ int VecGetSize(Vec x,int *size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidIntPointer(size);
+  PetscVecTypeAssert(x);
   ierr = (*x->ops->getsize)(x,size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1727,6 +1763,7 @@ int VecGetLocalSize(Vec x,int *size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidIntPointer(size);
+  PetscVecTypeAssert(x);
   ierr = (*x->ops->getlocalsize)(x,size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1763,6 +1800,7 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscVecTypeAssert(x);
   if (low) PetscValidIntPointer(low);
   if (high) PetscValidIntPointer(high);
   ierr = (*x->ops->getmap)(x,&map);CHKERRQ(ierr);
@@ -1793,6 +1831,7 @@ int VecGetMap(Vec x,Map *map)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscVecTypeAssert(x);
   ierr = (*x->ops->getmap)(x,map);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1823,6 +1862,7 @@ int VecSetOption(Vec x,VecOption op)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscVecTypeAssert(x);
   if (x->ops->setoption) {
     ierr = (*x->ops->setoption)(x,op); CHKERRQ(ierr);
   }
@@ -1891,6 +1931,7 @@ int VecPlaceArray(Vec vec,const Scalar array[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  PetscVecTypeAssert(vec);
   if (vec->ops->placearray) {
     ierr = (*vec->ops->placearray)(vec,array);CHKERRQ(ierr);
   } else {
@@ -1930,6 +1971,7 @@ int VecReplaceArray(Vec vec,const Scalar array[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  PetscVecTypeAssert(vec);
   if (vec->ops->replacearray) {
     ierr = (*vec->ops->replacearray)(vec,array);CHKERRQ(ierr);
   } else {
@@ -2129,6 +2171,7 @@ int VecLoadIntoVector(Viewer viewer,Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  PetscVecTypeAssert(vec);
   if (!vec->ops->loadintovector) {
     SETERRQ(1,1,"Vector does not support load");
   }
@@ -2157,6 +2200,7 @@ int VecReciprocal(Vec vec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  PetscVecTypeAssert(vec);
   if (!vec->ops->reciprocal) {
     SETERRQ(1,1,"Vector does not support reciprocal operation");
   }
