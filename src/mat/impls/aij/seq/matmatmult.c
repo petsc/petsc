@@ -146,7 +146,6 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   int            an=A->N,am=A->M,bn=B->N,bm=B->M;
   int            i,j,k,anzi,brow,bnzj,cnzi;
   MatScalar      *ca;
-  PetscLogDouble t0,t1,etime=0.0;
 
   PetscFunctionBegin;
   /* some error checking which could be moved into interface layer */
