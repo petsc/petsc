@@ -21,14 +21,14 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 	-${RM} __$*.f __$*.c
 	-${CP} $*.F __$*.c
 	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
 	-${RM} __$*.f __$*.c
 
 .F.a:
 	-${RM} __$*.f __$*.c
 	-${CP} $*.F __$*.c
 	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} __$*.f __$*.c
 
