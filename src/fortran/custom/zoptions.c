@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.9 1995/11/27 23:44:02 curfman Exp curfman $";
+static char vcid[] = "$Id: zoptions.c,v 1.10 1995/11/28 19:42:25 curfman Exp curfman $";
 #endif
 
 /*
@@ -51,7 +51,7 @@ int OptionsCheckInitial_Private(),
    I DO NOT understand why they put a __ in. It seems nuts
    and TOTALLY unneeded!
 */
-#if defined(PARCH_freebsd)
+#if defined(PARCH_freebsd) | defined(PARCH_linux)
 #define mpi_init        mpi_init__
 #define petscinitialize petscinitialize_
 #define iargc           iargc_
@@ -308,7 +308,7 @@ int  optionsgetstring_(char *pre,char *name,char *string,
 */
        void   *PetscNull_Fortran;
 
-int PetscIntAddressToFortran(int *addr)
+int PetscIntAddressToFortran(int *base,int *addr)
 {
   return (((int)addr) - (int)base)/sizeof(int);
 }
@@ -332,12 +332,8 @@ double *PetscDoubleAddressFromFortran(double *base,int addr)
 #if defined(__cplusplus)
 extern "C" {
 #endif
-void petscsetfortranbasepointers_(int *PetscIntIn,double *PetscDoubleIn, void *fnull)
+void petscsetfortranbasepointers_(void *fnull)
 {
-  PetscInt           = (int) PetscIntIn;
-  PetscIntAddress    = PetscIntIn;
-  PetscDouble        = (int) PetscDoubleIn;
-  PetscDoubleAddress = PetscDoubleIn;
   PetscNull_Fortran  = fnull;
 }
 #if defined(__cplusplus)

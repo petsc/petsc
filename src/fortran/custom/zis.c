@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zis.c,v 1.2 1995/10/26 22:01:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zis.c,v 1.3 1995/11/27 19:02:45 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -18,19 +18,19 @@ static char vcid[] = "$Id: zis.c,v 1.2 1995/10/26 22:01:47 bsmith Exp bsmith $";
 #define isrestoreindices    isrestoreindices
 #endif
 
-void isgetindices_(IS x,int *a,int *__ierr)
+void isgetindices_(IS x,int *fa,int *ia,int *__ierr)
 {
   IS    xin = (IS)MPIR_ToPointer( *(int*)(x) );
   int   *lx;
 
   *__ierr = ISGetIndices(xin,&lx); if (*__ierr) return;
-  *a      = PetscIntAddressToFortran(lx);
+  *ia      = PetscIntAddressToFortran(fa,lx);
 }
 
-void isrestoreindices_(IS x,int *a,int *__ierr)
+void isrestoreindices_(IS x,int *fa,int *ia,int *__ierr)
 {
   IS    xin = (IS)MPIR_ToPointer( *(int*)(x) );
-  int *lx = PetscIntAddressFromFortran(*a);
+  int *lx = PetscIntAddressFromFortran(fa,*ia);
 
   *__ierr = ISRestoreIndices(xin,&lx);
 }
