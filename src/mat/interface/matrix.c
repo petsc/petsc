@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.402 2001/04/10 22:35:02 balay Exp bsmith $*/
+/*$Id: matrix.c,v 1.403 2001/05/17 19:34:34 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -209,7 +209,11 @@ int MatView(Mat mat,PetscViewer viewer)
   if (isascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Matrix Object:\n");CHKERRQ(ierr);
+      if (mat->prefix) {
+        ierr = PetscViewerASCIIPrintf(viewer,"Matrix Object:(%s)\n",mat->prefix);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"Matrix Object:\n");CHKERRQ(ierr);
+      }
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = MatGetType(mat,&cstr);CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
