@@ -3,7 +3,7 @@
 # we default to xlC since it generates faster code.
 #
 PARCH    = rs6000
-CC       = gcc -DPARCH_rs6000 
+CC       = /usr/local/gcc-2.7.2/bin/gcc -DPARCH_rs6000 
 FC       = xlf 
 AR       = ar
 RM       = rm -f
