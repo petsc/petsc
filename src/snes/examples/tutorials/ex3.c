@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.74 2001/01/23 20:57:12 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.75 2001/03/13 04:35:04 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -304,7 +304,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   DA             da = user->da;
   Scalar         *xx,*ff,*FF,d;
-  int            i,ierr,N,xs,xm,gxs,gxm,xsi,xei,ilg,ilr;
+  int            i,ierr,N,xs,xm,gxs,gxm,xsi,xei;
   Vec            xlocal;
 
   PetscFunctionBegin;
@@ -320,16 +320,13 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 
   /*
      Get pointers to vector data.
-       - For default PETSc vectors, VecGetArray() returns a pointer to
-         the data array.  Otherwise, the routine is implementation dependent.
-       - You MUST call VecRestoreArray() when you no longer need access to
-         the array.
        - The vector xlocal includes ghost point; the vectors x and f do
          NOT include ghost points.
+       - Using DAVecGetArray() allows accessing the values using global ordering
   */
-  ierr = VecGetArray(xlocal,&xx);CHKERRQ(ierr);
-  ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
-  ierr = VecGetArray(user->F,&FF);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,xlocal,(void**)&xx);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,f,(void**)&ff);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,user->F,(void**)&FF);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries (for 1-dimensional DA):
@@ -352,7 +349,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
     xsi = xs;
   }
   if (xs+xm == N) {  /* right boundary */
-    ff[xs+xm-1-xs] = xx[xs+xm-1-gxs] - 1.0;
+    ff[xs+xm-1] = xx[xs+xm-1] - 1.0;
     xei = N-1;
   } else {
     xei = xs+xm;
@@ -363,18 +360,16 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   */
   d = 1.0/(user->h*user->h);
   for (i=xsi; i<xei; i++) {
-    ilg = i-gxs;
-    ilr = i-xs;
-    ff[ilr] = d*(xx[ilg-1] - 2.0*xx[ilg] + xx[ilg+1]) + xx[ilg]*xx[ilg] - FF[ilr];
+    ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
   }
 
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(xlocal,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->F,&FF);CHKERRQ(ierr);
-  ierr = DAGetLocalVector(da,&xlocal);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,xlocal,(void**)&xx);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,f,(void**)&ff);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,user->F,(void**)&FF);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&xlocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
