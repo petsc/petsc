@@ -81,6 +81,7 @@ int DALoad(PetscViewer viewer,int M,int N,int P,DA *da)
                         3,0,0,0,0,&dac);CHKERRQ(ierr);
     }
     ierr = DACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,"coor_");CHKERRQ(ierr);
     ierr = VecLoadIntoVector(viewer,natural);CHKERRQ(ierr);
     ierr = VecGetLocalSize(natural,&mlocal);CHKERRQ(ierr);
     ierr = VecCreateMPI(comm,mlocal,PETSC_DETERMINE,&global);CHKERRQ(ierr);

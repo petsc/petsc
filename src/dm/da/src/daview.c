@@ -259,6 +259,7 @@ int DAView_Binary(DA da,PetscViewer viewer)
       SETERRQ1(1,"Dimension is not 1 2 or 3: %d\n",dim);
     }
     ierr = DACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,"coor_");CHKERRQ(ierr);
     ierr = DAGlobalToNaturalBegin(dac,da->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = DAGlobalToNaturalEnd(dac,da->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = VecView(natural,viewer);CHKERRQ(ierr);

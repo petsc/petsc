@@ -202,7 +202,11 @@ int VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     ierr = PetscFree(values);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
     if (file && xin->bs > 1) {
-      fprintf(file,"-vecload_block_size %d\n",xin->bs);
+      if (xin->prefix) {
+	fprintf(file,"-%svecload_block_size %d\n",xin->prefix,xin->bs);
+      } else {
+	fprintf(file,"-vecload_block_size %d\n",xin->bs);
+      }
     }
   } else {
     /* send values */

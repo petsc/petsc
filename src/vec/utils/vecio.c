@@ -156,6 +156,7 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
   MPI_Status  status;
   PetscMap    map;
   PetscTruth  isbinary,flag;
+  char        *prefix;
 
   PetscFunctionBegin;
 
@@ -177,7 +178,8 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
     if (n != rows) SETERRQ(1,"Vector in file different length then input vector");
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
 
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)vec,&prefix);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(prefix,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
     }
