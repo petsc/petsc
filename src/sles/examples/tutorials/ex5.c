@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.33 1995/09/30 19:30:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.34 1995/10/12 04:18:22 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
@@ -8,7 +8,6 @@ method but different matrices (having the same nonzero structure).  Input\n\
 arguments are\n\
   -m <size> : problem size\n\n";
 
-#include "petsc.h"
 #include "sles.h"
 #include  <stdio.h>
 

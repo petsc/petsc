@@ -1,12 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.29 1995/09/30 19:30:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.30 1995/10/12 04:18:22 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "petsc.h"
 #include "sles.h"
 #include  <stdio.h>
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.32 1995/09/30 19:30:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.33 1995/10/12 04:18:22 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -9,7 +9,6 @@ matrix assembly, the matrix is intentionally laid out across processors\n\
 differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "petsc.h"
 #include "sles.h"
 #include  <stdio.h>
 
