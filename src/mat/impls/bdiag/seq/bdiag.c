@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.42 1995/09/03 22:21:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.43 1995/09/04 17:24:56 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -591,6 +591,189 @@ static int MatRestoreRow_BDiag(Mat matin,int row,int *ncols,int **cols,
      when matrix is destroyed */
   return 0;
 }
+
+static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
+{
+  Mat_BDiag *mat= (Mat_BDiag *) matin->data;
+  double    sum = 0.0, *tmp;
+  int       d, i, j, k, nd = mat->nd, nb = mat->nb, diag, kshift, kloc, len;
+  Scalar    *dv;
+
+  if (!mat->assembled) 
+    SETERRQ(1,"MatNorm_BDiag: Cannot compute norm of unassembled mat");
+
+  if (type == NORM_FROBENIUS) {
+    for (d=0; d<nd; d++) {
+      dv   = mat->diagv[d];
+      len  = mat->bdlen[d]*nb*nb;
+      for (i=0; i<len; i++) {
+#if defined(PETSC_COMPLEX)
+        sum += real(conj(dv[i])*dv[i]);
+#else
+        sum += dv[i]*dv[i];
+#endif
+      }
+    }
+    *norm = sqrt(sum);
+  }
+  else if (type == NORM_1) { /* max column norm */
+    tmp = (double *) PETSCMALLOC( mat->n*sizeof(double) ); CHKPTRQ(tmp);
+    PETSCMEMSET(tmp,0,mat->n*sizeof(double));
+    *norm = 0.0;
+    if (nb == 1) {
+      for (d=0; d<nd; d++) {
+        dv   = mat->diagv[d];
+        diag = mat->diag[d];
+        len  = mat->bdlen[d];
+        if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
+          for (i=0; i<len; j++) {
+#if defined(PETSC_COMPLEX)
+            tmp[i] += abs(dv[i]); 
+#else
+            tmp[i] += fabs(dv[i]); 
+#endif
+          }
+        } else {	/* upper triangle: row = loc, col = loc-diag */
+          for (i=0; i<len; j++) {
+#if defined(PETSC_COMPLEX)
+            tmp[i-diag] += abs(dv[i]); 
+#else
+            tmp[i-diag] += fabs(dv[i]); 
+#endif
+          }
+        }
+      }
+    } else { 
+      for (d=0; d<nd; d++) {
+        dv   = mat->diagv[d];
+        diag = mat->diag[d];
+        len  = mat->bdlen[d];
+        if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
+          for (k=0; k<len; k++) {
+            kloc = k*nb; kshift = kloc*nb; 
+            for (i=0; i<nb; i++) {	/* i = local row */
+              for (j=0; j<nb; j++) {	/* j = local column */
+#if defined(PETSC_COMPLEX)
+                tmp[kloc + i] += abs(dv[kshift + j*nb + i]);
+#else
+                tmp[kloc + i] += fabs(dv[kshift + j*nb + i]);
+#endif
+              }
+            }
+          }
+        } else {	/* upper triangle: row = loc, col = loc-diag */
+          for (k=0; k<len; k++) {
+            kloc = k*nb; kshift = kloc*nb; 
+            for (i=0; i<nb; i++) {	/* i = local row */
+              for (j=0; j<nb; j++) {	/* j = local column */
+#if defined(PETSC_COMPLEX)
+                tmp[kloc + i - nb*diag] += abs(dv[kshift + j*nb + i]);
+#else
+                tmp[kloc + i - nb*diag] += fabs(dv[kshift + j*nb + i]);
+#endif
+              }
+            }
+          }
+        }
+      }
+    }
+    for ( j=0; j<mat->n; j++ ) {
+      if (tmp[j] > *norm) *norm = tmp[j];
+    }
+    PETSCFREE(tmp);
+  }
+  else if (type == NORM_INFINITY) { /* max row norm */
+    tmp = (double *) PETSCMALLOC( mat->n*sizeof(double) ); CHKPTRQ(tmp);
+    PETSCMEMSET(tmp,0,mat->n*sizeof(double));
+    *norm = 0.0;
+    if (nb == 1) {
+      for (d=0; d<nd; d++) {
+        dv   = mat->diagv[d];
+        diag = mat->diag[d];
+        len  = mat->bdlen[d];
+        if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
+          for (i=0; i<len; j++) {
+#if defined(PETSC_COMPLEX)
+            tmp[i+diag] += abs(dv[i]); 
+#else
+            tmp[i+diag] += fabs(dv[i]); 
+#endif
+          }
+        } else {	/* upper triangle: row = loc, col = loc-diag */
+          for (i=0; i<len; j++) {
+#if defined(PETSC_COMPLEX)
+            tmp[i] += abs(dv[i]); 
+#else
+            tmp[i] += fabs(dv[i]); 
+#endif
+          }
+        }
+      }
+    } else { 
+      for (d=0; d<nd; d++) {
+        dv   = mat->diagv[d];
+        diag = mat->diag[d];
+        len  = mat->bdlen[d];
+        if (diag > 0) {	/* lower triangle */
+          for (k=0; k<len; k++) {
+            kloc = k*nb; kshift = kloc*nb; 
+            for (i=0; i<nb; i++) {	/* i = local row */
+              for (j=0; j<nb; j++) {	/* j = local column */
+#if defined(PETSC_COMPLEX)
+                tmp[kloc + i + nb*diag] += abs(dv[kshift + j*nb + i]);
+#else
+                tmp[kloc + i + nb*diag] += fabs(dv[kshift + j*nb + i]);
+#endif
+              }
+            }
+          }
+        } else {	/* upper triangle, including main diagonal */
+          for (k=0; k<len; k++) {
+            kloc = k*nb; kshift = kloc*nb; 
+            for (i=0; i<nb; i++) {	/* i = local row */
+              for (j=0; j<nb; j++) {	/* j = local column */
+#if defined(PETSC_COMPLEX)
+                tmp[kloc + i] += abs(dv[kshift + j*nb + i]);
+#else
+                tmp[kloc + i] += fabs(dv[kshift + j*nb + i]);
+#endif
+              }
+            }
+          }
+        }
+      }
+    }
+    for ( j=0; j<mat->n; j++ ) {
+      if (tmp[j] > *norm) *norm = tmp[j];
+    }
+    PETSCFREE(tmp);
+  }
+  else {
+    SETERRQ(1,"MatNorm_BDiag: No support for the two norm");
+  }
+  return 0;
+}
+
+/* static int MatTranspose_BDiag(Mat A,Mat *Bin)
+{ 
+  Mat_BDiag *mbd = (Mat_BDiag *) A->data;
+  Mat     tmat;
+  int     i, ierr, nz, m = mbd->m, *cwork;
+  Scalar  *vwork;
+
+   Should make this more efficient by working directly with the diagonals
+  ierr = MatCreateSequentialBDiag(A->comm,mbd->n,m,0,0,&tmat); CHKERRQ(ierr);
+  for ( i=0; i<nd; i++ ) {
+    ierr = MatGetRow(A,i,&nz,&cwork,&vwork): CHKERRQ(ierr);
+    ierr = MatSetValues(tmat,nz,cwork,1,&i,vwork,INSERTVALUES); CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork): CHKERRQ(ierr);
+  } 
+  ierr = MatAssemblyBegin(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  *Bin = tmat;
+  return 0;
+} */
+
 /* ----------------------------------------------------------------*/
 #include "draw.h"
 #include "pinclude/pviewer.h"
@@ -920,7 +1103,7 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
        MatLUFactor_BDiag, 0,
        MatRelax_BDiag, 0,
        MatGetInfo_BDiag, 0,
-       MatGetDiagonal_BDiag, 0, 0,
+       MatGetDiagonal_BDiag, 0, MatNorm_BDiag,
        0,MatAssemblyEnd_BDiag,
        0, 0, MatZeroEntries_BDiag,MatZeroRows_BDiag, 0,
        MatLUFactorSymbolic_BDiag,MatLUFactorNumeric_BDiag, 0, 0,
