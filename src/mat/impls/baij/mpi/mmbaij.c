@@ -1,4 +1,4 @@
-/*$Id: mmbaij.c,v 1.43 2001/08/07 03:02:58 balay Exp balay $*/
+/*$Id: mmbaij.c,v 1.44 2001/09/22 05:49:31 balay Exp balay $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply
@@ -169,9 +169,6 @@ int DisAssemble_MPIBAIJ(Mat A)
   int          k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m = A->m;
   MatScalar    *a = Bbaij->a;
   PetscScalar  *atmp;
-#if defined(PETSC_USE_MAT_SINGLE)
-  int          l;
-#endif
 
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
