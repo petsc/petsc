@@ -1,10 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.27 1996/04/26 17:42:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.28 1996/04/26 19:07:57 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
 
 #include "bdiag.h"
+#include "src/inline/ilu.h"
 #include "pinclude/plapack.h"
 
 /* 
@@ -131,41 +132,30 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
     for ( k=0; k<mblock; k++ ) { /* k = block pivot_row */
       knb = k*nb; knb2 = knb*nb;
       /* invert the diagonal block */
-printf("block"); DoubleView(nb*nb,&(dd[knb2]),0);
-      
-/* LAgetf2_(&nb,&nb,&(dd[knb2]),&nb,&(a->pivot[knb]),&info); CHKERRQ(info);*/
-      ierr = Linpack_DGEFA(dd+knb2,nb,a->pivot+knb); CHKERRQ(ierr); 
-printf("factored block");DoubleView(nb*nb,&(dd[knb2]),0);
-      ierr = Linpack_DGEDI(dd+knb2,nb,a->pivot+knb,v_work); CHKERRQ(ierr);
-printf("inverted block");DoubleView(nb*nb,&(dd[knb2]),0);
+      Kernel_A_gets_inverse_A(nb,dd+knb2,a->pivot+knb,v_work);
       for ( d=mainbd-1; d>=0; d-- ) {
         elim_row = k + diag[d];
         if (elim_row < mblock) { /* sweep down */
           /* dv[d][knb2]: test if entire block is zero? */
-printf("lower block");DoubleView(nb*nb,&(dv[d][knb2]),0);
-/* LAgetrs_("N",&nb,&nb,&dd[knb2],&nb,&(a->pivot[knb]),
-                     &(dv[d][knb2]),&nb,&info); */
-
-        BLgemm_("N","N",&nb,&nb,&nb,&one,&(dv[d][knb2]),&nb,&dd[knb2],&nb,&zero,
+          BLgemm_("N","N",&nb,&nb,&nb,&one,&(dv[d][knb2]),&nb,&dd[knb2],&nb,&zero,
                 multiplier,&nb);
-        PetscMemcpy(&(dv[d][knb2]),multiplier,nb*nb*sizeof(Scalar));
+          PetscMemcpy(&(dv[d][knb2]),multiplier,nb*nb*sizeof(Scalar));
 
 printf("lower fixed block");DoubleView(nb*nb,&(dv[d][knb2]),0);
-/*            if (info) SETERRQ(1,"MatLUFactorNumeric_SeqBDiag:Bad subblock triangular solve"); */
-            for ( d2=d+1; d2<nd; d2++ ) {
-              elim_col = elim_row - diag[d2];
-              if (elim_col >=0 && elim_col < nblock) {
-                dgk = k - elim_col;
-                if (dgk > 0) SETERRQ(1,
-                   "MatLUFactorNumeric_SeqBDiag:Bad elimination column");
-                if ((dnum = dgptr[dgk+mblock])) {
-                  if (diag[d2] > 0) BMatMult(nb,nb,&(dv[d][knb2]),
-                            &(dv[dnum-1][knb2]),&(dv[d2][elim_col*nb2]));
-                  else              BMatMult(nb,nb,&(dv[d][knb2]),
-                            &(dv[dnum-1][knb2]),&(dv[d2][elim_row*nb2]));
-                }
+          for ( d2=d+1; d2<nd; d2++ ) {
+            elim_col = elim_row - diag[d2];
+            if (elim_col >=0 && elim_col < nblock) {
+              dgk = k - elim_col;
+              if (dgk > 0) SETERRQ(1,
+                 "MatLUFactorNumeric_SeqBDiag:Bad elimination column");
+              if ((dnum = dgptr[dgk+mblock])) {
+                if (diag[d2] > 0) BMatMult(nb,nb,&(dv[d][knb2]),
+                          &(dv[dnum-1][knb2]),&(dv[d2][elim_col*nb2]));
+                else              BMatMult(nb,nb,&(dv[d][knb2]),
+                          &(dv[dnum-1][knb2]),&(dv[d2][elim_row*nb2]));
               }
             }
+          }
         }
       }
     }
@@ -246,8 +236,7 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
         inb = i*nb;
         for (d=0; d<mainbd; d++) {
           loc = i - diag[d];
-          if (loc >= 0) BMatMult(nb,1,&(dv[d][loc*nb*nb]),
-                                 &(y[loc*nb]),&(y[inb]));
+          if (loc >= 0) BMatMult(nb,1,&(dv[d][loc*nb*nb]),&(y[loc*nb]),&(y[inb]));
         }
       }
     }
@@ -259,13 +248,9 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
         if (col < nblock) BMatMult(nb,1,&(dv[d][inb2]),
                                    &(y[col*nb]),&(y[inb]));
       }
-      /* LAgetrs_("N",&nb,&one,&(dd[inb2]),&nb,&(a->pivot[inb]),
-               &(y[inb]),&nb,&info); */
-        LAgemv_("N",&nb,&nb,&_DOne,&(dd[inb2]),&nb,&(y[inb]),&_One,&_DZero,
-                work,&_One);
-        PetscMemcpy(&(y[inb]),work,nb*sizeof(Scalar));
-
-/*if (info) SETERRQ(1,"MatSolve_SeqBDiag:Bad subblock triangular solve");*/
+      LAgemv_("N",&nb,&nb,&_DOne,&(dd[inb2]),&nb,&(y[inb]),&_One,&_DZero,
+               work,&_One);
+      PetscMemcpy(&(y[inb]),work,nb*sizeof(Scalar));
     }
   }
   return 0;
