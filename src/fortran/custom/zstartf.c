@@ -1,4 +1,4 @@
-/*$Id: zstartf.c,v 1.26 1999/11/24 21:55:52 bsmith Exp bsmith $*/
+/*$Id: zstartf.c,v 1.27 2000/01/11 21:03:48 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
@@ -24,7 +24,7 @@ extern void PETSC_STDCALL petscsetcommonblock_(Viewer*,Viewer*,Viewer*,int*,int*
 EXTERN_C_END
 
 /*@C
-   PetscInitializeFortran - Routine that should be called from C after
+   PetscInitializeFortran - Routine that should be called from C AFTER
    the call to PetscInitialize() if one is using a C main program
    that calls Fortran routines that in turn call PETSc routines.
 
