@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.18 1995/05/18 22:48:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.19 1995/05/25 22:48:47 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -122,7 +122,12 @@ int SNESDestroy_LS(PetscObject obj)
 @*/
 int SNESDefaultMonitor(SNES snes,int its, double fnorm,void *dummy)
 {
-  MPIU_printf(snes->comm, "iter = %d, Function norm %g \n",its,fnorm);
+  if (fnorm > 1.e-9 || fnorm < -1.e-9 || fnorm == 0.0) {
+    MPIU_printf(snes->comm, "iter = %d, Function norm %g \n",its,fnorm);
+  }
+  else {
+    MPIU_printf(snes->comm, "iter = %d, Function norm %5.3e \n",its,fnorm);
+  }
   return 0;
 }
 
