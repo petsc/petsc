@@ -34,6 +34,8 @@ int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat A,IS r,MatFactorInfo *info,Ma
   lu->options.useQR        = PETSC_FALSE;
   lu->options.symflag      = SPOOLES_SYMMETRIC;  /* default */
 
+  ierr = MPI_Comm_dup(A->comm,&(lu->comm_spooles));CHKERRQ(ierr);
+
   PetscFunctionReturn(0); 
 }
 
