@@ -269,7 +269,11 @@ extern "C" {
 }
 
 #else
-
+extern void   *malloc(long unsigned int );
+extern int    free(void *);
+extern char   *getenv( char *);
+extern double atof(char *);
+extern int    atoi(char*);
 #endif
 #endif
 

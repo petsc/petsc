@@ -10,15 +10,13 @@
 # The extra -lm is needed to force the C version of libm.a to 
 # be searched before the Fortran 77 version.
 #
-FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a 
+FC_LIB         = c:/users/balay/clapack/f2clibs/libF77.a -lm
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
 #
-BLAS_LIB       =  /home/bsmith/lapack/blas_nt_gnu_double.a \
-                  /home/bsmith/lapack/blas_nt_gnu_complex.a
-LAPACK_LIB     =  /home/bsmith/lapack/lapack_nt_gnu_double.a \
-                  /home/bsmith/lapack/lapack_nt_gnu_complex.a
+BLAS_LIB       = c:/users/balay/clapack/blas_alpha.a
+LAPACK_LIB     = c:/users/balay/clapack/lapack_alpha.a
 #
 # Location of X-windows software
 #
