@@ -46,6 +46,5 @@
 
 #define PETSC_USE_DYNAMIC_LIBRARIES 1
 #define PETSC_MISSING_DREAL
-#define PETSC_PRINTF_FORMAT_CHECK(a,b) __attribute__ ((format (printf, a,b)))
 
 #endif
