@@ -62,6 +62,8 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
 
   Make all KSP (if possible) use either preocnditioned or unpreconditioned norms for monitoring & convergence (e.g. BCGSL)
 
+  Configure: Look for classes in libraries instead of just functions
+
   ------------
   Cleaner code
   ------------

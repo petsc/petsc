@@ -5,6 +5,8 @@
 T*/
 
 /*
+Added at the request of Marc Garbey.
+
 Inhomogeneous Laplacian in 2D. Modeled by the partial differential equation
 
    div \kappa grad u = f,  0 < x,y < 1,
