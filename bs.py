@@ -240,6 +240,7 @@ class BS (maker.Maker):
 
   def cleanup(self):
     self.saveSourceDB()
+    return
 
   def executeTarget(self, target):
     if self.targets.has_key(target):
@@ -251,7 +252,13 @@ class BS (maker.Maker):
       output = ''
     return output
 
+  def setupBuild(self):
+    return
+
   def main(self, target = None):
+    # Hook for user setup after creation
+    self.setupBuild()
+
     # add to database list of packages in current project
     try:
       import SIDL.Loader
