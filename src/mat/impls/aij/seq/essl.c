@@ -66,14 +66,10 @@ int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
   int             i,ierr,one = 1;
 
   PetscFunctionBegin;
-  /* copy matrix data into silly ESSL data structure */
-  if (!a->indexshift) {
-    for (i=0; i<A->m+1; i++) essl->ia[i] = aa->i[i] + 1;
-    for (i=0; i<aa->nz; i++) essl->ja[i]  = aa->j[i] + 1;
-  } else {
-    ierr = PetscMemcpy(essl->ia,aa->i,(A->m+1)*sizeof(int));CHKERRQ(ierr);
-    ierr = PetscMemcpy(essl->ja,aa->j,(aa->nz)*sizeof(int));CHKERRQ(ierr);
-  }
+  /* copy matrix data into silly ESSL data structure (1-based Frotran style) */
+  for (i=0; i<A->m+1; i++) essl->ia[i] = aa->i[i] + 1;
+  for (i=0; i<aa->nz; i++) essl->ja[i]  = aa->j[i] + 1;
+ 
   ierr = PetscMemcpy(essl->a,aa->a,(aa->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
   
   /* set Essl options */

@@ -244,17 +244,16 @@ static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,int **iia,int **jja,int i
 static int MatGetRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        ierr,ishift;
+  int        ierr;
 
   PetscFunctionBegin;  
   *n     = a->inode.node_count;
   if (!ia) PetscFunctionReturn(0);
 
-  ishift = a->indexshift;
   if (symmetric) {
-    ierr = MatGetRowIJ_SeqAIJ_Inode_Symmetric(A,ia,ja,ishift,oshift);CHKERRQ(ierr);
+    ierr = MatGetRowIJ_SeqAIJ_Inode_Symmetric(A,ia,ja,0,oshift);CHKERRQ(ierr);
   } else {
-    ierr = MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(A,ia,ja,ishift,oshift);CHKERRQ(ierr);
+    ierr = MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(A,ia,ja,0,oshift);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -360,18 +359,17 @@ static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,int **iia,int **jja,in
 static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        ierr,ishift;
+  int        ierr;
 
   PetscFunctionBegin;  
   ierr = Mat_AIJ_CreateColInode(A,n,PETSC_NULL);CHKERRQ(ierr);
   if (!ia) PetscFunctionReturn(0);
 
-  ishift = a->indexshift;
   if (symmetric) {
     /* Since the indices are symmetric it does'nt matter */
-    ierr = MatGetRowIJ_SeqAIJ_Inode_Symmetric(A,ia,ja,ishift,oshift);CHKERRQ(ierr);
+    ierr = MatGetRowIJ_SeqAIJ_Inode_Symmetric(A,ia,ja,0,oshift);CHKERRQ(ierr);
   } else {
-    ierr = MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(A,ia,ja,ishift,oshift);CHKERRQ(ierr);
+    ierr = MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(A,ia,ja,0,oshift);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -399,7 +397,6 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   PetscScalar  sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
   PetscScalar  *v1,*v2,*v3,*v4,*v5,*x,*y;
   int          ierr,*idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz;
-  int          shift = a->indexshift;
   
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*v1,*v2,*v3,*v4,*v5)
@@ -411,7 +408,6 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   ns       = a->inode.size;     /* Node Size array */
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  x    = x + shift;             /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v1   = a->a;
   ii   = a->i;
@@ -586,7 +582,6 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   PetscScalar  sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
   PetscScalar  *v1,*v2,*v3,*v4,*v5,*x,*y,*z,*zt;
   int          ierr,*idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz;
-  int          shift = a->indexshift;
   
   PetscFunctionBegin;  
   if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
@@ -601,7 +596,6 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   }
   zt = z;
 
-  x    = x + shift;             /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v1   = a->a;
   ii   = a->i;
@@ -858,7 +852,7 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;
   IS          iscol = a->col,isrow = a->row;
-  int         *r,*c,ierr,i,j,n = A->m,*ai = a->i,nz,shift = a->indexshift,*a_j = a->j;
+  int         *r,*c,ierr,i,j,n = A->m,*ai = a->i,nz,*a_j = a->j;
   int         node_max,*ns,row,nsz,aii,*vi,*ad,*aj,i0,i1,*rout,*cout;
   PetscScalar *x,*b,*a_a = a->a,*tmp,*tmps,*aa,tmp0,tmp1;
   PetscScalar sum1,sum2,sum3,sum4,sum5,*v1,*v2,*v3,*v4,*v5;
@@ -877,9 +871,9 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout + (n-1);
   
   /* forward solve the lower triangular */
-  tmps = tmp + shift;
-  aa   = a_a +shift;
-  aj   = a_j + shift;
+  tmps = tmp ;
+  aa   = a_a ;
+  aj   = a_j ;
   ad   = a->diag;
 
   for (i = 0,row = 0; i< node_max; ++i){
@@ -1076,7 +1070,7 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
         tmp0  = tmps[*vi--];
         sum1 -= *v1-- * tmp0;
       }
-      x[*c--] = tmp[row] = sum1*a_a[ad[row]+shift]; row--;
+      x[*c--] = tmp[row] = sum1*a_a[ad[row]]; row--;
       break;
     case 2 :
       sum1 = tmp[row];
@@ -1097,9 +1091,9 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
         sum2 -= *v2-- * tmp0;
       }
       
-      tmp0    = x[*c--] = tmp[row] = sum1*a_a[ad[row]+shift]; row--;
+      tmp0    = x[*c--] = tmp[row] = sum1*a_a[ad[row]]; row--;
       sum2   -= *v2-- * tmp0;
-      x[*c--] = tmp[row] = sum2*a_a[ad[row]+shift]; row--;
+      x[*c--] = tmp[row] = sum2*a_a[ad[row]]; row--;
       break;
     case 3 :
       sum1 = tmp[row];
@@ -1123,12 +1117,12 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
         sum2 -= *v2-- * tmp0;
         sum3 -= *v3-- * tmp0;
       }
-      tmp0    = x[*c--] = tmp[row] = sum1*a_a[ad[row]+shift]; row--;
+      tmp0    = x[*c--] = tmp[row] = sum1*a_a[ad[row]]; row--;
       sum2   -= *v2-- * tmp0;
       sum3   -= *v3-- * tmp0;
-      tmp0    = x[*c--] = tmp[row] = sum2*a_a[ad[row]+shift]; row--;
+      tmp0    = x[*c--] = tmp[row] = sum2*a_a[ad[row]]; row--;
       sum3   -= *v3-- * tmp0;
-      x[*c--] = tmp[row] = sum3*a_a[ad[row]+shift]; row--;
+      x[*c--] = tmp[row] = sum3*a_a[ad[row]]; row--;
       
       break;
     case 4 :
@@ -1159,16 +1153,16 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
         sum4 -= *v4-- * tmp0;
       }
 
-      tmp0    = x[*c--] = tmp[row] = sum1*a_a[ad[row]+shift]; row--;
+      tmp0    = x[*c--] = tmp[row] = sum1*a_a[ad[row]]; row--;
       sum2   -= *v2-- * tmp0;
       sum3   -= *v3-- * tmp0;
       sum4   -= *v4-- * tmp0;
-      tmp0    = x[*c--] = tmp[row] = sum2*a_a[ad[row]+shift]; row--;
+      tmp0    = x[*c--] = tmp[row] = sum2*a_a[ad[row]]; row--;
       sum3   -= *v3-- * tmp0;
       sum4   -= *v4-- * tmp0;
-      tmp0    = x[*c--] = tmp[row] = sum3*a_a[ad[row]+shift]; row--;
+      tmp0    = x[*c--] = tmp[row] = sum3*a_a[ad[row]]; row--;
       sum4   -= *v4-- * tmp0;
-      x[*c--] = tmp[row] = sum4*a_a[ad[row]+shift]; row--;
+      x[*c--] = tmp[row] = sum4*a_a[ad[row]]; row--;
       break;
     case 5 :
       sum1 = tmp[row];
@@ -1201,21 +1195,21 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
         sum5 -= *v5-- * tmp0;
       }
 
-      tmp0    = x[*c--] = tmp[row] = sum1*a_a[ad[row]+shift]; row--;
+      tmp0    = x[*c--] = tmp[row] = sum1*a_a[ad[row]]; row--;
       sum2   -= *v2-- * tmp0;
       sum3   -= *v3-- * tmp0;
       sum4   -= *v4-- * tmp0;
       sum5   -= *v5-- * tmp0;
-      tmp0    = x[*c--] = tmp[row] = sum2*a_a[ad[row]+shift]; row--;
+      tmp0    = x[*c--] = tmp[row] = sum2*a_a[ad[row]]; row--;
       sum3   -= *v3-- * tmp0;
       sum4   -= *v4-- * tmp0;
       sum5   -= *v5-- * tmp0;
-      tmp0    = x[*c--] = tmp[row] = sum3*a_a[ad[row]+shift]; row--;
+      tmp0    = x[*c--] = tmp[row] = sum3*a_a[ad[row]]; row--;
       sum4   -= *v4-- * tmp0;
       sum5   -= *v5-- * tmp0;
-      tmp0    = x[*c--] = tmp[row] = sum4*a_a[ad[row]+shift]; row--;
+      tmp0    = x[*c--] = tmp[row] = sum4*a_a[ad[row]]; row--;
       sum5   -= *v5-- * tmp0;
-      x[*c--] = tmp[row] = sum5*a_a[ad[row]+shift]; row--;
+      x[*c--] = tmp[row] = sum5*a_a[ad[row]]; row--;
       break;
     default:
       SETERRQ(PETSC_ERR_COR,"Node size not yet supported \n");
@@ -1237,12 +1231,12 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   Mat          C = *B;
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ *)C->data;
   IS           iscol = b->col,isrow = b->row,isicol = b->icol;
-  int          shift = a->indexshift,*r,*ic,*c,ierr,n = A->m,*bi = b->i; 
-  int          *bj = b->j+shift,*nbj=b->j +(!shift),*ajtmp,*bjtmp,nz,row,prow;
-  int          *ics,i,j,idx,*ai = a->i,*aj = a->j+shift,*bd = b->diag,node_max,nsz;
+  int          *r,*ic,*c,ierr,n = A->m,*bi = b->i; 
+  int          *bj = b->j,*nbj=b->j +1,*ajtmp,*bjtmp,nz,row,prow;
+  int          *ics,i,j,idx,*ai = a->i,*aj = a->j,*bd = b->diag,node_max,nsz;
   int          *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj,ndamp = 0;
   PetscScalar  *rtmp1,*rtmp2,*rtmp3,*v1,*v2,*v3,*pc1,*pc2,*pc3,mul1,mul2,mul3;
-  PetscScalar  tmp,*ba = b->a+shift,*aa = a->a+shift,*pv,*rtmps1,*rtmps2,*rtmps3;
+  PetscScalar  tmp,*ba = b->a,*aa = a->a,*pv,*rtmps1,*rtmps2,*rtmps3;
   PetscReal    damping = b->lu_damping,zeropivot = b->lu_zeropivot;
   PetscTruth   damp;
 
@@ -1252,9 +1246,9 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   ierr   = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = PetscMalloc((3*n+1)*sizeof(PetscScalar),&rtmp1);CHKERRQ(ierr);
   ierr   = PetscMemzero(rtmp1,(3*n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  ics    = ic + shift; rtmps1 = rtmp1 + shift; 
-  rtmp2  = rtmp1 + n;  rtmps2 = rtmp2 + shift; 
-  rtmp3  = rtmp2 + n;  rtmps3 = rtmp3 + shift; 
+  ics    = ic ; rtmps1 = rtmp1 ; 
+  rtmp2  = rtmp1 + n;  rtmps2 = rtmp2 ; 
+  rtmp3  = rtmp2 + n;  rtmps3 = rtmp3 ; 
   
   node_max = a->inode.node_count; 
   ns       = a->inode.size ;
@@ -1327,7 +1321,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
             rtmp1[idx] += damping;
           }          
         }
-        prow = *bjtmp++ + shift;
+        prow = *bjtmp++ ;
         while (prow < row) {
           pc1 = rtmp1 + prow;
           if (*pc1 != 0.0){
@@ -1343,7 +1337,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
               rtmps1[idx] -= mul1 * tmp;
             }
           }
-          prow = *bjtmp++ + shift;
+          prow = *bjtmp++ ;
         }
         nz  = bi[row+1] - bi[row];
         pj  = bj + bi[row];
@@ -1390,7 +1384,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
             rtmp2[idx] += damping;
           }
         }
-        prow = *bjtmp++ + shift;
+        prow = *bjtmp++ ;
         while (prow < row) {
           pc1 = rtmp1 + prow;
           pc2 = rtmp2 + prow;
@@ -1412,7 +1406,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
               rtmps2[idx] -= mul2 * tmp;
             }
           }
-          prow = *bjtmp++ + shift;
+          prow = *bjtmp++ ;
         }
         /* Now take care of the odd element*/
         pc1 = rtmp1 + prow;
@@ -1434,7 +1428,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
           nz   = bi[prow+1] - bd[prow] - 1;
           PetscLogFlops(2*nz);
           for (j=0; j<nz; j++) {
-            idx = pj[j] + shift;
+            idx = pj[j] ;
             tmp = rtmp1[idx];
             rtmp2[idx] -= mul2 * tmp;
           }
@@ -1495,7 +1489,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
           }
         }
         /* loop over all pivot row blocks above this row block */
-        prow = *bjtmp++ + shift;
+        prow = *bjtmp++ ;
         while (prow < row) {
           pc1 = rtmp1 + prow;
           pc2 = rtmp2 + prow;
@@ -1522,7 +1516,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
               rtmps3[idx] -= mul3 * tmp;
             }
           }
-          prow = *bjtmp++ + shift;
+          prow = *bjtmp++ ;
         }
         /* Now take care of diagonal block in this set of rows */
         pc1 = rtmp1 + prow;
@@ -1547,7 +1541,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
           nz   = bi[prow+1] - bd[prow] - 1;
           PetscLogFlops(2*2*nz);
           for (j=0; j<nz; j++) {
-            idx = pj[j] + shift;
+            idx = pj[j] ;
             tmp = rtmp1[idx];
             rtmp2[idx] -= mul2 * tmp;
             rtmp3[idx] -= mul3 * tmp;
@@ -1574,7 +1568,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
           nz   = bi[prow+1] - bd[prow] - 1;
           PetscLogFlops(2*2*nz);
           for (j=0; j<nz; j++) {
-            idx = pj[j] + shift;
+            idx = pj[j] ;
             tmp = rtmp2[idx];
             rtmp3[idx] -= mul3 * tmp;
           }

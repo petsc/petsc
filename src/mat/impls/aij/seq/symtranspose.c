@@ -22,13 +22,12 @@ static int logkey_mattranspose          = 0;
 int MatGetSymbolicTranspose_SeqAIJ(Mat A,int *Ati[],int *Atj[]) {
   int        ierr,i,j,anzj;
   Mat_SeqAIJ *a=(Mat_SeqAIJ *)A->data;
-  int        aishift = a->indexshift,an=A->N,am=A->M;
+  int        an=A->N,am=A->M;
   int        *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
 
   PetscFunctionBegin;
 
   ierr = PetscLogInfo(A,"Getting Symbolic Transpose.\n");CHKERRQ(ierr);
-  if (aishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
 
   /* Set up timers */
   if (!logkey_matgetsymtranspose) {
@@ -79,12 +78,10 @@ int MatTranspose_SeqAIJ_FAST(Mat A,Mat *B) {
   int        ierr,i,j,anzj;
   Mat        At;
   Mat_SeqAIJ *a=(Mat_SeqAIJ *)A->data,*at;
-  int        aishift = a->indexshift,an=A->N,am=A->M;
+  int        an=A->N,am=A->M;
   int        *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
   MatScalar  *ata,*aa=a->a;
   PetscFunctionBegin;
-
-  if (aishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
 
   /* Set up timers */
   if (!logkey_mattranspose) {

@@ -2685,9 +2685,7 @@ int MatCreate_SeqAIJ(Mat B)
   b->col              = 0;
   b->icol             = 0;
   b->reallocs         = 0;
-  /* ierr = PetscOptionsHasName(B->prefix,"-mat_aij_oneindex",&flg);CHKERRQ(ierr);
-     if (flg) b->indexshift = -1; */
-  
+ 
   ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
   ierr = PetscMapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
 

@@ -291,49 +291,27 @@ int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
 	  }
 
 	  /*******************************************************************/
-	  /* Fill in the data for the problem.                               */
+	  /* Fill in the data for the problem.      (1-based Fortran style)  */
 	  /*******************************************************************/
 
 	  nz = 0;
-	  if (a->indexshift)
-	  {
-	       for (i = 0; i < n; i++)
-	       {
-		    rs = a->i[i] - 1;
-		    re = a->i[i+1] - 1;
+          for (i = 0; i < n; i++)
+            {
+              rs = a->i[i];
+              re = a->i[i+1];
 
-		    while (rs < re)
-		    {
-		    	 if (a->a[rs] != 0.0)
-			 {
-			     lusol->indc[nz] = i + 1;
-			     lusol->indr[nz] = a->j[rs];
-			     lusol->data[nz] = a->a[rs];
-			     nz++;
-			 }
-			 rs++;
-		    }
-	       }
-	  } else
-	  {
-	       for (i = 0; i < n; i++)
-	       {
-		    rs = a->i[i];
-		    re = a->i[i+1];
-
-		    while (rs < re)
-		    {
-		    	 if (a->a[rs] != 0.0)
-			 {
-			     lusol->indc[nz] = i + 1;
-			     lusol->indr[nz] = a->j[rs] + 1;
-			     lusol->data[nz] = a->a[rs];
-			     nz++;
-			 }
-			 rs++;
-		    }
-	       }
-	  }
+              while (rs < re)
+                {
+                  if (a->a[rs] != 0.0)
+                    {
+                      lusol->indc[nz] = i + 1;
+                      lusol->indr[nz] = a->j[rs] + 1;
+                      lusol->data[nz] = a->a[rs];
+                      nz++;
+                    }
+                  rs++;
+                }
+            }
 
 	  /*******************************************************************/
 	  /* Do the factorization.                                           */

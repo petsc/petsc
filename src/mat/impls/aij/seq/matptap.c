@@ -95,7 +95,6 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
   int            ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
-  int            aishift=a->indexshift,pishift=p->indexshift;
   int            *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj;
   int            *ci,*cj,*denserow,*sparserow,*ptadenserow,*ptasparserow,*ptaj;
   int            an=A->N,am=A->M,pn=P->N,pm=P->M;
@@ -104,9 +103,6 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
 
   PetscFunctionBegin;
 
-  /* some error checking which could be moved into interface layer */
-  if (aishift || pishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
-  
   /* Start timer */
   ierr = PetscLogEventBegin(MATSeqAIJ_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
 
@@ -224,18 +220,13 @@ int MatApplyPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat *C) {
   Mat_SeqMAIJ    *pp=(Mat_SeqMAIJ*)PP->data;
   Mat            P=pp->AIJ;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
-  int            aishift=a->indexshift,pishift=p->indexshift;
   int            *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj;
   int            *ci,*cj,*denserow,*sparserow,*ptadenserow,*ptasparserow,*ptaj;
   int            an=A->N,am=A->M,pn=P->N,pm=P->M,ppdof=pp->dof;
   int            i,j,k,dof,pdof,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi;
   MatScalar      *ca;
 
-  PetscFunctionBegin;
-
-  /* some error checking which could be moved into interface layer */
-  if (aishift || pishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
-  
+  PetscFunctionBegin;  
   /* Start timer */
   ierr = PetscLogEventBegin(MATSeqAIJ_PtAPSymbolic,A,PP,0,0);CHKERRQ(ierr);
 
@@ -399,7 +390,6 @@ int MatApplyPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
   Mat_SeqAIJ *a  = (Mat_SeqAIJ *) A->data;
   Mat_SeqAIJ *p  = (Mat_SeqAIJ *) P->data;
   Mat_SeqAIJ *c  = (Mat_SeqAIJ *) C->data;
-  int        aishift=a->indexshift,pishift=p->indexshift,cishift=c->indexshift;
   int        *ai=a->i,*aj=a->j,*apj,*apjdense,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj;
   int        *ci=c->i,*cj=c->j,*cjj;
   int        am=A->M,cn=C->N,cm=C->M;
@@ -407,10 +397,6 @@ int MatApplyPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
   MatScalar  *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
 
   PetscFunctionBegin;
-
-  /* Currently not for shifted matrices! */ 
-  if (aishift || pishift || cishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
-
   ierr = PetscLogEventBegin(MATSeqAIJ_PtAPNumeric,A,P,C,0);CHKERRQ(ierr);
 
   /* Allocate temporary array for storage of one row of A*P */

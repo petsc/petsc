@@ -37,7 +37,6 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   int            ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
-  int            aishift=a->indexshift,bishift=b->indexshift;
   int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj;
   int            *ci,*cj,*denserow,*sparserow;
   int            an=A->N,am=A->M,bn=B->N,bm=B->M;
@@ -140,7 +139,6 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   int            ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
-  int            aishift=a->indexshift,bishift=b->indexshift;
   int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj;
   int            *ci,*cj,*lnk,idx0,idx,bcol;
   int            an=A->N,am=A->M,bn=B->N,bm=B->M;
@@ -149,7 +147,6 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
 
   PetscFunctionBegin;
   /* some error checking which could be moved into interface layer */
-  if (aishift || bishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
   if (an!=bm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",an,bm);
   
   /* Set up timers */
@@ -256,7 +253,6 @@ int MatMatMult_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJ *b = (Mat_SeqAIJ *)B->data;
   Mat_SeqAIJ *c = (Mat_SeqAIJ *)C->data;
-  int        aishift=a->indexshift,bishift=b->indexshift,cishift=c->indexshift;
   int        *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
   int        an=A->N,am=A->M,bn=B->N,bm=B->M,cn=C->N,cm=C->M;
   int        i,j,k,anzi,bnzi,cnzi,brow;
@@ -265,7 +261,6 @@ int MatMatMult_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscFunctionBegin;  
 
   /* This error checking should be unnecessary if the symbolic was performed */ 
-  if (aishift || bishift || cishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
   if (am!=cm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",am,cm);
   if (an!=bm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",an,bm);
   if (bn!=cn) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",bn,cn);
@@ -346,7 +341,6 @@ int MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
   int            ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
-  int            aishift=a->indexshift,pishift=p->indexshift;
   int            *ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pti,*ptj,*ptjj;
   int            *ci,*cj,*paj,*padenserow,*pasparserow,*denserow,*sparserow;
   int            an=A->N,am=A->M,pn=P->N,pm=P->M;
@@ -356,7 +350,6 @@ int MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
   PetscFunctionBegin;
 
   /* some error checking which could be moved into interface layer */
-  if (aishift || pishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
   if (pn!=am) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",pn,am);
   if (am!=an) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %d != %d",am, an);
 
@@ -478,7 +471,6 @@ int MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
   Mat_SeqAIJ *a  = (Mat_SeqAIJ *) A->data;
   Mat_SeqAIJ *p  = (Mat_SeqAIJ *) P->data;
   Mat_SeqAIJ *c  = (Mat_SeqAIJ *) C->data;
-  int        aishift=a->indexshift,pishift=p->indexshift,cishift=c->indexshift;
   int        *ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj=p->j,*paj,*pajdense,*ptj;
   int        *ci=c->i,*cj=c->j;
   int        an=A->N,am=A->M,pn=P->N,pm=P->M,cn=C->N,cm=C->M;
@@ -488,7 +480,6 @@ int MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
   PetscFunctionBegin;
 
   /* This error checking should be unnecessary if the symbolic was performed */ 
-  if (aishift || pishift || cishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
   if (pm!=cm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",pm,cm);
   if (pn!=am) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",pn,am);
   if (am!=an) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %d != %d",am, an);

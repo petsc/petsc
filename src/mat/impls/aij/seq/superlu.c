@@ -199,12 +199,6 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
   lu->store->nzval  = aa->a; 
   lu->A.Store       = lu->store; 
   
-  /* Shift indices down */
-  if (aa->indexshift) {
-    for(i = 0; i < A->m+1; i++) aa->i[i]--;
-    for(i = 0; i < aa->nz; i++) aa->j[i]--;
-  }
-  
   /* Set SuperLU options */
   lu->relax      = sp_ienv(2);
   lu->panel_size = sp_ienv(1);
@@ -240,12 +234,6 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
     } else {
       SETERRQ1(PETSC_ERR_ARG_WRONG,"Memory allocation failure after %d bytes were allocated",ierr-A->m);
     }
-  }
-
-  /* Shift indices up */
-  if (aa->indexshift) {
-    for (i = 0; i < A->n+1; i++)  aa->i[i]++;
-    for (i = 0; i < aa->nz; i++)  aa->j[i]++;
   }
 
   /* Cleanup */
