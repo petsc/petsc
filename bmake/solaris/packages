@@ -1,0 +1,50 @@
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# FCLIB contains the libraries for a CLINKER to use for code containing
+# FORTRAN code (such as I/O or special Fortran runtimes).  
+#
+FC_LIB         = /opt/SUNWspro/SC3.0/lib/libF77.a \
+                 /opt/SUNWspro/SC3.0/lib/libM77.a \
+                 /opt/SUNWspro/SC3.0/lib/libsunmath.a
+#
+# Location of BLAS and LAPACK.  These libraries are available via Netlib,
+# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+#
+BLAS_LIB       =  /c2/poplar/fa/bsmith/lapack/solaris/blas.a $(FC_LIB)
+LAPACK_LIB     =  /c2/poplar/fa/bsmith/lapack/solaris/liblapack.a
+#
+# Location of X-windows software
+#
+X11_INCLUDE    = 
+X11_LIB        = -L/usr/openwin/lib -lX11
+#
+# Location of MPI (Message Passing Interface) software
+#
+MPI_LIB        = /c2/poplar/fa/bsmith/mpich/lib/solaris/ch_p4/libmpi.a \
+                 -lnsl -lsocket -lgen
+MPI_INCLUDE    = -I/c2/poplar/fa/bsmith/mpich/include 
+MPIRUN         = /c2/poplar/fa/bsmith/mpich/bin/mpirun.solaris
+#
+# Optional location of BlockSolve (MPI version), if you do not have
+# BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
+# below if it is there.
+#
+BS_INCLUDE = 
+BS_LIB     = 
+#
+# Optional Matlab location, remove if not needed.
+#
+MATLAB_LIB     = 
+MATLAB_INCLUDE = 
+CMEX           = 
+#  
+# PCONF - indicates which external packages are available at your site
+#
+#    Make sure that -DHAVE_BLOCKSOLVE is not listed below
+PCONF         = 
+#

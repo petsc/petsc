@@ -1,0 +1,45 @@
+
+CC       = cc -DPARCH_solaris
+FC       = f77
+AR       = ar
+RM       = rm -f
+OMAKE    = make
+RANLIB   = true
+SHELL    = /bin/sh
+CLINKER  = cc $(BASEOPT)
+FLINKER  = f77 $(BASEOPTF)
+CONF     = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STRING_H \
+           -DHAVE_MALLOC_H -DHAVE_STDLIB_H -DHAVE_X11 \
+           -DHAVE_FORTRAN_UNDERSCORE -DHAVE_DRAND48
+
+SYS_LIB  = -lnsl -lsocket -lgen
+
+include $(PETSC_DIR)/bmake/common
+
+libc: $(LIBNAME)($(OBJSC))
+libf: $(LIBNAME)($(OBJSF))
+
+ 
+#
+#############
+.PRECIOUS: $(LIBNAME)
+.c.a:
+	$(CC)  -c $(CFLAGS) $(BASEOPT) $*.c
+	$(AR) cr $(LIBNAME) $*.o
+	$(RM) $*.o
+.c.o:
+	$(CC)  -c $(CFLAGS) $(BASEOPT) $*.c
+.f.o: 
+	$(FC)  -c $(FFLAGS) $(BASEOPTF) $*.f
+.f.a: 
+	$(FC)  -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(AR) cr $(LIBNAME) $*.o
+	$(RM) $*.o
+
+.F.o: 
+	$(FC) -c $(FFLAGS) $(PETSC_INCLUDE) $(BASEOPTF) $*.F
+.F.a: 
+	$(FC) -c $(FFLAGS) $(PETSC_INCLUDE) $(BASEOPTF) $*.F
+	$(AR) cr $(LIBNAME) $*.o
+	$(RM) $*.o
+

@@ -1,0 +1,42 @@
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+#  FC_LIB contains the libraries for a CLINKER to use for code containing
+#  FORTRAN code (such as I/O or special Fortran runtimes).  
+#  The extra -lm is needed to force the C version of libm.a to 
+#  be searched before the Fortran 77 version.
+#
+FC_LIB         =  -lf2c -lm
+#
+# Location of BLAS and LAPACK.  These libraries are available via Netlib,
+# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+#
+BLAS_LIB       = /home/bsmith/lapack/blas_freebsd.a $(FC_LIB)
+LAPACK_LIB     = /home/bsmith/lapack/lapack_freebsd.a
+#
+# Location of X-windows software
+#
+X11_INCLUDE    =
+X11_LIB        = /usr/local/X11R6/lib/libX11.a
+#
+# Location of MPI (Message Passing Interface) software
+#
+MPI_LIB        = /usr/local/mpi/lib/freebsd/ch_p4/libmpi.a
+MPI_INCLUDE    = -I/usr/local/mpi/include 
+MPIRUN         = /usr/local/mpi/bin/mpirun
+#
+# Optional location of BlockSolve, if you do not have BlockSolve, then
+# remove -DHAVE_BLOCKSOLVE from the PCONF definition below if it is there.
+#
+BS_INCLUDE     = 
+BS_LIB         = 
+#
+# PCONF - indicates which external packages are available at your site
+#
+#    Make sure that -DHAVE_BLOCKSOLVE is not listed below
+PCONF          = 
+#

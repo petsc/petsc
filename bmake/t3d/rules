@@ -1,0 +1,53 @@
+CC       = cc -T cray-t3d -DPARCH_t3d
+FC       = /mpp/bin/cf77 -C cray-t3d
+AR       = ar
+RM       = rm
+RANLIB   = true
+OMAKE    = make
+SHELL    = /bin/sh
+CLINKER  = $(CC) $(BASEOPT)
+FLINKER  = $(FC) $(BASEOPTF)
+SYS_LIB  =
+
+CPPFLAGS = $(PETSC_INCLUDE) -DPARCH_t3d
+
+
+CONF    = -DHAVE_64BITS -DHAVE_PWD_H -DHAVE_STRING_H -DHAVE_MALLOC_H \
+          -DHAVE_FORTRAN_CAPS -DHAVE_64BIT_INT -DHAVE_DRAND48
+
+SHELL   = /bin/sh
+
+include $(PETSC_DIR)/bmake/common
+
+libc:
+	 for i in $(OBJSC); do $(OMAKE) libmember LIBMEMBER=$$i ; done
+
+libf:
+	for i in $(OBJSF); do $(OMAKE) libmember LIBMEMBER=$$i ; done
+
+libmember:    $(LIBNAME)($(LIBMEMBER))
+
+.c.a: 
+	$(CC) -c $(CFLAGS) $(BASEOPT) $*.c
+	$(AR) cr $(LIBNAME) $*.o
+	$(RM) -f $*.o
+.c.o: 
+	$(CC) -c  $(CFLAGS) $(BASEOPT) $*.c
+.f.o: 
+	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+
+.f.a: 
+	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(AR) cr $(LIBNAME) $*.o
+	$(RM) -f $*.o
+
+.F.o:
+	/lib/cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
+	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(RM) -f $*.f
+
+.F.a: 
+	/lib/cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
+	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(AR) cr $(LIBNAME) $*.o
+	$(RM) -f $*.o $*.f

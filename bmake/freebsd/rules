@@ -1,0 +1,51 @@
+
+CC       = gcc  -DPARCH_freebsd
+FC       = f77
+AR       = ar
+RM       = rm -f *.c.*
+#
+#  We've found that we have to use gnumake on FreeBSD since
+# the native make is non-standard. On your machine gmake may 
+# be named gnumake.
+OMAKE    = gmake  --no-print-directory
+RANLIB   = ranlib
+SHELL    = /bin/sh
+CLINKER  = gcc $(BASEOPT)
+FLINKER  = f77 $(BASEOPTF)
+CONF     = -DHAVE_PWD_H -DHAVE_STDLIB_H -DHAVE_STRING_H \
+           -DHAVE_SWAPPED_BYTES -DHAVE_X11 -DHAVE_FORTRAN_UNDERSCORE \
+           -DHAVE_DRAND48
+SYS_LIB  = 
+
+include $(PETSC_DIR)/bmake/common
+
+libc: $(LIBNAME)($(OBJSC))
+libf: $(LIBNAME)($(OBJSF))
+
+#############
+.PRECIOUS: $(LIBNAME)
+.c.a:
+	$(CC) -pipe -c $(CFLAGS) $(BASEOPT) $*.c
+	$(AR) clr $(LIBNAME) $*.o
+	$(RM) $*.o
+.c.o:
+	$(CC) -pipe -c $(CFLAGS) $(BASEOPT) $*.c
+.f.o: 
+	$(FC) -pipe -c $(FFLAGS) $(BASEOPTF) $*.f
+.f.a: 
+	$(FC) -pipe -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(AR) clr $(LIBNAME) $*.o
+	$(RM) $*.o
+.F.o:
+	$(RM) $*.f
+	-cpp $(PETSC_INCLUDE) $(BASEOPT) $*.F > $*.f 
+	-$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(RM) $*.f
+
+.F.a: 
+	$(RM) $*.f
+	-cpp $(PETSC_INCLUDE) $(BASEOPT) $*.F  > $*.f
+	-$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
+	$(RM) $*.f
+	$(AR) cr $(LIBNAME) $*.o
+	$(RM) -f $*.o

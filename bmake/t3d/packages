@@ -1,0 +1,43 @@
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# FCLIB contains the libraries for a CLINKER to use for code containing
+# FORTRAN code (such as I/O or special Fortran runtimes). 
+#
+FC_LIB         = 
+#
+# Location of BLAS and LAPACK.  These libraries are available via Netlib,
+# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+#
+BLAS_LIB       = /mpp/lib/libsci.a $(FC_LIB)
+LAPACK_LIB     = 
+#
+# Location of X-windows software (couldn't find on NERSc T3D)
+#
+X11_INCLUDE    = 
+X11_LIB        = 
+#
+# Location of MPI (Message Passing Interface) software
+#
+MPI_LIB        = /mpp/lib/libmpi.a
+MPI_INCLUDE    = -I/usr/include/mpp
+MPIRUN         = /usr/local/mpi/bin/mpirun
+#
+BS_INCLUDE = -I/u/ddscf/bsmith/BlockSolve95/include
+BS_LIB     = /u/ddscf/bsmith/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+#
+# PCONF - indicates which external packages are available at your site
+#
+# I couldn't find X windows at NERSC so left this blank
+# if you have X-windows on your T3D put -DHAVE_X11 below.
+#
+PCONF         =  -DHAVE_BLOCKSOLVE
+#
+
+
+
+
