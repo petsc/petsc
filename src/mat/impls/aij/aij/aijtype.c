@@ -89,19 +89,13 @@ PetscErrorCode MatDestroy_AIJ(Mat A)
 PetscErrorCode MatConvertFrom_AIJviaSeqAIJ(Mat A, const MatType type, Mat *newmat)
 {
   PetscErrorCode ierr;
-  Mat            B=*newmat;
-  PetscTruth     inplace=PETSC_TRUE;
 
   PetscFunctionBegin;
   ierr = MatConvert_AIJ_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
-  ierr = MatConvert(A,type,&B);CHKERRQ(ierr);
-  if (B != A) {
-    inplace = PETSC_FALSE;
-  }
-  if (!inplace) {
+  ierr = MatConvert(A,type,newmat);CHKERRQ(ierr);
+  if (*newmat != A) { /* !inplace */
     ierr = MatConvert_SeqAIJ_AIJ(A,MATAIJ,&A);CHKERRQ(ierr);
   }
-  *newmat = B;
   PetscFunctionReturn(0);
 }
 
@@ -110,13 +104,11 @@ PetscErrorCode MatConvertFrom_AIJviaSeqAIJ(Mat A, const MatType type, Mat *newma
 PetscErrorCode MatConvertFrom_AIJviaMPIAIJ(Mat A, const MatType type, Mat *newmat)
 {
   PetscErrorCode ierr;
-  Mat            B;
 
   PetscFunctionBegin;
   ierr = MatConvert_AIJ_MPIAIJ(A,PETSC_NULL,&A);CHKERRQ(ierr);
   ierr = MatConvert(A,type,newmat);CHKERRQ(ierr);
-  B    = *newmat;
-  if (B != A) { /* !inplace */
+  if (*newmat != A) { /* !inplace */
     ierr = MatConvert_MPIAIJ_AIJ(A,MATAIJ,&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

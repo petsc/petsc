@@ -53,7 +53,7 @@ PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat
   B->bs = A->bs;
 
   /* Fake support for "inplace" convert. */
-  if (B == A) {
+  if (newmat == &A) {
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
   *newmat = B;
@@ -101,7 +101,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Fake support for "inplace" convert. */
-  if (B == A) {
+  if (newmat == &A) {
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
   *newmat = B;
