@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.15 1995/03/22 22:44:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.16 1995/03/23 05:01:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -592,7 +592,7 @@ int MatCreateSequentialDense(int m,int n,Mat *newmat)
   Mat mat;
   MatiSD    *l;
   *newmat        = 0;
-  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATDENSESEQ,MPI_COMM_SELF);
+  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATDENSE,MPI_COMM_SELF);
   PLogObjectCreate(mat);
   l              = (MatiSD *) MALLOC(size); CHKPTR(l);
   mat->ops       = &MatOps;
