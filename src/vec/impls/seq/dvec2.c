@@ -1,4 +1,4 @@
-/*$Id: dvec2.c,v 1.79 2000/04/09 04:35:28 bsmith Exp bsmith $*/
+/*$Id: dvec2.c,v 1.80 2000/04/12 04:22:20 bsmith Exp buschelm $*/
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -778,7 +778,20 @@ int VecGetSize_Seq(Vec vin,int *size)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__
+#define __FUNC__ /*<a name=""></a>*/"VecConjugate_Seq"
+int VecConjugate_Seq(Vec xin)
+{
+  Scalar *x = ((Vec_Seq *)xin->data)->array;
+  int     n = xin->n;
 
+  PetscFunctionBegin;
+  while (n-->0) {
+    *x = PetscConj(*x);
+    x++;
+  }
+  PetscFunctionReturn(0);
+}
  
 
 
