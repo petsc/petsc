@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.4 2000/07/10 21:57:16 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.5 2000/07/24 19:04:56 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1373,8 +1373,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        0,
        0,
-       MatLUFactor_SeqSBAIJ,
        0,
+       MatCholeskyFactor_SeqSBAIJ,
        0,
        MatTranspose_SeqSBAIJ,
        MatGetInfo_SeqSBAIJ,
@@ -1388,22 +1388,22 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatSetOption_SeqSBAIJ,
        MatZeroEntries_SeqSBAIJ,
        MatZeroRows_SeqSBAIJ,
-       MatLUFactorSymbolic_SeqSBAIJ,
-       MatLUFactorNumeric_SeqSBAIJ_N,
        0,
        0,
+       MatCholeskyFactorSymbolic_SeqSBAIJ,
+       MatCholeskyFactorNumeric_SeqSBAIJ_N,
        MatGetSize_SeqSBAIJ,
-       MatGetSize_SeqSBAIJ,
+       MatGetLocalSize_SeqSBAIJ,
        MatGetOwnershipRange_SeqSBAIJ,
-       MatILUFactorSymbolic_SeqSBAIJ,
        0,
+       MatIncompleteCholeskyFactorSymbolic_SeqSBAIJ,
        0,
        0,
        MatDuplicate_SeqSBAIJ,
        0,
        0,
-       MatILUFactor_SeqSBAIJ,
        0,
+       MatIncompleteCholeskyFactor_SeqSBAIJ,
        0,
        MatGetSubMatrices_SeqSBAIJ,
        MatIncreaseOverlap_SeqSBAIJ,
@@ -1554,43 +1554,42 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   if (!flg) {
     switch (bs) {
     case 1:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqSBAIJ_1;  
-      /* B->ops->choleskyfactornumeric = MatCholeskyNumeric_SeqSBAIJ_1; */
+      B->ops->choleskyfactornumeric = MatCholeskyNumeric_SeqSBAIJ_1; 
       B->ops->solve           = MatSolve_SeqSBAIJ_1;
       B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_1;
       B->ops->mult            = MatMult_SeqSBAIJ_1;
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_1;
       break;
     case 2:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqSBAIJ_2;  
+      B->ops->choleskyfactornumeric = MatCholeskyNumeric_SeqSBAIJ_2;  
       B->ops->solve           = MatSolve_SeqSBAIJ_2;
       B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_2;
       B->ops->mult            = MatMult_SeqSBAIJ_2;
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_2;
       break;
     case 3:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqSBAIJ_3;  
+      B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_3;  
       B->ops->solve           = MatSolve_SeqSBAIJ_3;
       B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_3;
       B->ops->mult            = MatMult_SeqSBAIJ_3;
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_3;
       break;
     case 4:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqSBAIJ_4;  
+      B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_4;  
       B->ops->solve           = MatSolve_SeqSBAIJ_4;
       B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_4;
       B->ops->mult            = MatMult_SeqSBAIJ_4;
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_4;
       break;
     case 5:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqSBAIJ_5;  
+      B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_5;  
       B->ops->solve           = MatSolve_SeqSBAIJ_5; 
       B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_5;
       B->ops->mult            = MatMult_SeqSBAIJ_5;
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_5;
       break;
     case 6:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqSBAIJ_6;  
+      B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_6;  
       B->ops->solve           = MatSolve_SeqSBAIJ_6; 
       B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_6;
       B->ops->mult            = MatMult_SeqSBAIJ_6;
@@ -1615,8 +1614,9 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   b->reallocs         = 0;
   b->saved_values     = 0;
   
-  b->m       = m; B->m = m; B->M = m;
-  /* b->n       = n;*/ 
+  b->m       = m; 
+  B->m = m; B->M = m;
+  b->n       = m; 
   B->n = m; B->N = m;
 
   ierr = MapCreateMPI(comm,m,m,&B->rmap);CHKERRQ(ierr);
