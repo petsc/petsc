@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.62 2001/05/02 17:36:38 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.63 2001/05/02 19:42:25 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -198,6 +198,7 @@
          write(6,100) its
       endif
   100 format('Number of Newton iterations = ',i5)
+
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they
@@ -422,6 +423,8 @@
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
+!     Process adifor: FormFunctionLocal
+!
       subroutine FormFunctionLocal(info,x,f,ierr)
 
       implicit none
@@ -438,6 +441,7 @@
       Scalar   two,one,hx,hy,hxdhy,hydhx,sc
       Scalar   u,uxx,uyy
       integer  i,j,xs,xe,ys,ye,mx,my
+
 
       xs     = info(DA_LOCAL_INFO_XS)+1
       xe     = xs+info(DA_LOCAL_INFO_XM)-1
@@ -470,6 +474,8 @@
             endif
  10      continue
  20   continue
+
+      print*,'local function',f
 
       return
       end
@@ -647,6 +653,15 @@
 !  Local variables:
       integer  row,col(5),i,j
       Scalar   two,one,hx,hy,hxdhy,hydhx,sc,v(5)
+
+      Scalar   g_x(36,4,4),g_f(36,4,4),f(4,4)
+      integer info(20)
+
+      call dagetlocalinfo(da,info,ierr)
+
+      call g_formfunctionlocal(36, info, x, g_x, 36, f, g_f,               &
+     &36, ierr)
+      print*,'ad function',f
 
 !  Set parameters
 
