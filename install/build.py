@@ -107,5 +107,5 @@ class Builder(install.urlMapping.UrlMapping):
     if not ignoreDependencies:
       # We must install project dependencies since the "install" target is purely local
       self.executeOverDependencies(maker.project, ['install'])
-      self.purgeCheckpoint()
+      self.purgeCheckpoint(maker.project)
     return ret
