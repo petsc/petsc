@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.37 1995/08/18 20:39:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.38 1995/08/24 22:27:16 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -405,6 +405,10 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
     FILE *fd = fopen(file,"r"); 
     if (fd) {
       while (fgets(string,128,fd)) {
+        /* Comments are indicated by #, ! or % in the first column */
+        if (string[0] == '#') continue;
+        if (string[0] == '!') continue;
+        if (string[0] == '%') continue;
         first = strtok(string," ");
         second = strtok(0," ");
         if (first && first[0] == '-') {
