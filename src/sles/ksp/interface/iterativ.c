@@ -1,4 +1,4 @@
-/*$Id: iterativ.c,v 1.105 2001/04/04 18:19:34 bsmith Exp bsmith $*/
+/*$Id: iterativ.c,v 1.106 2001/07/04 02:54:29 bsmith Exp bsmith $*/
 
 /*
    This file contains some simple default routines.  
@@ -383,7 +383,7 @@ int KSPDefaultConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason
       PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than absolute tolerance %g at iteration %d\n",rnorm,ksp->atol,n);
       *reason = KSP_CONVERGED_ATOL;
     } else {
-      PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than relative tolerance %g times initial residual norm at iteration %d\n",rnorm,ksp->rtol,ksp->rnorm0,n);
+      PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than relative tolerance %g times initial residual norm %g at iteration %d\n",rnorm,ksp->rtol,ksp->rnorm0,n);
       *reason = KSP_CONVERGED_RTOL;
     }
   } else if (rnorm >= ksp->divtol*ksp->rnorm0) {
