@@ -62,6 +62,9 @@ extern void   twalk(char *,void (*)(void*,VISIT,int));
 #if defined(PARCH_solaris)
 #include <sys/utsname.h>
 #include <sys/systeminfo.h>
+extern char   *getenv( char *);
+extern char   *mktemp(char *);
+extern double atof(const char*);
 #endif
 
 /* ----------------------IBM RS6000 ----------------------------------------*/
