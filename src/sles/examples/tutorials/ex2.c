@@ -1,20 +1,23 @@
 /*
-   Tests MPI parallel AIJ  creation.
+   Tests MPI parallel AIJ  solve with SLES. This examples intentionally 
+  lays the matrix out across processors differently then the way it 
+  is assembled, this is to test parallel matrix assembly.
 */
 #include "comm.h"
 #include "vec.h"
 #include "mat.h"
 #include "options.h"
-#include "stdio.h"
+#include  <stdio.h>
+#include "sles.h"
 
 int main(int argc,char **args)
 {
-  Mat         C, LU; 
+  Mat         C; 
   int         i,j, m = 3, n = 2, mytid,numtids;
-  Scalar      v, mone = -1.0,norm, one = 1.0;
+  Scalar      v, zero = 0.0,norm, one = 1.0, none = -1.0;
   int         I, J, ierr;
-  IS          perm, iperm;
   Vec         x,u,b;
+  SLES        sles;
 
   PetscInitialize(&argc,&args,0,0);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
@@ -25,7 +28,6 @@ int main(int argc,char **args)
   ierr = MatCreateSequentialAIJMPI(MPI_COMM_WORLD,-1,-1,m*n,m*n,5,0,5,0,&C); 
   CHKERR(ierr);
 
-/*  for ( i=2*mytid; i<2*mytid+2; i++ ) { */
   for ( i=0; i<m; i++ ) { 
     for ( j=2*mytid; j<2*mytid+2; j++ ) {
       v = -1.0;  I = j + n*i;
@@ -41,15 +43,26 @@ int main(int argc,char **args)
 
   ierr = VecCreateMPI(MPI_COMM_WORLD,-1,m*n,&u); CHKERR(ierr);
   ierr = VecCreate(u,&b); CHKERR(ierr);
-  VecSet(&one,u);
+  ierr = VecCreate(b,&x); CHKERR(ierr);
+  VecSet(&one,u); VecSet(&zero,x);
 
+  /* compute right hand side */
   ierr = MatMult(C,u,b); CHKERR(ierr);
 
-  VecView(b,0); 
+  if (ierr = SLESCreate(&sles)) SETERR(ierr,0);
+  if (ierr = SLESSetMat(sles,C)) SETERR(ierr,0);
+  if (ierr = SLESSetFromOptions(sles)) SETERR(ierr,0);
+  if (ierr = SLESSolve(sles,b,x)) SETERR(ierr,0);
 
+  /* check error */
+  if (ierr = VecAXPY(&none,u,x)) SETERR(ierr,0);
+  if (ierr = VecNorm(x,&norm)) SETERR(ierr,0);
+  printf("Norm of error %g\n",norm);
+
+  ierr = SLESDestroy(sles); CHKERR(ierr);
   ierr = VecDestroy(u); CHKERR(ierr);
+  ierr = VecDestroy(x); CHKERR(ierr);
   ierr = VecDestroy(b); CHKERR(ierr);
-  ierr = MatView(C,0); CHKERR(ierr);
   ierr = MatDestroy(C); CHKERR(ierr);
   PetscFinalize();
   return 0;
