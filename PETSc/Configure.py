@@ -147,7 +147,7 @@ class Configure(configure.Configure):
     '''Checks for --enable-shared, and defines PETSC_USE_DYNAMIC_LIBRARIES if it is given
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
     self.getArgument('shared', 0, '-enable-', int, comment = 'Dynamic libraries flag')
-    self.addDefine('USE_DYNAMIC_LIBRARIES', self.shared and self.frameworks.libraries.haveLib('dl'))
+    self.addDefine('USE_DYNAMIC_LIBRARIES', self.shared and self.framework.libraries.haveLib('dl'))
     if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
       self.addDefine('HAVE_RTLD_GLOBAL', 1)
     return
