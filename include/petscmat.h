@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.153 1998/02/18 20:07:52 bsmith Exp balay $ */
+/* $Id: mat.h,v 1.154 1998/02/18 20:19:04 balay Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -384,6 +384,7 @@ extern int MatCreateSeqCSNIndices(MPI_Comm,MatAIJIndices,int,Mat *);
 extern int MatCreateSeqCSNIndices_Single(MPI_Comm,MatAIJIndices,int,Mat *);
 extern int MatCreateSeqCSNIndicesWithPrecision(MPI_Comm,MatAIJIndices,int,ScalarPrecision,Mat *);
 
+extern int MatMPIBAIJSetHashTableFactor(Mat,double);
 
 #endif
 
