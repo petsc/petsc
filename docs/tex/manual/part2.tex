@@ -4554,9 +4554,10 @@ or
   MatView(B,PETSC\_VIEWER\_STDOUT\_WORLD);
 \end{tabbing}
 The name of each PETSc variable printed for Matlab may be set with
-\begin{tabbing}
+\begin{tabbing}\sindex{PetscObjectSetName}\sindex{PetscObjectName}
 PetscObjectSetName((PetscObject)A,''name'');
 \end{tabbing}
+If no name is specified, the object is given a default name using\trl{PetscObjectName}.
 
 \section{Sending Data to Interactive Running Matlab Session}
 
@@ -4593,7 +4594,7 @@ One creates access to the Matlab engine via
 \begin{tabbing}
   PetscMatlabEngineCreate(MPI\_Comm comm,char *machine,PetscMatlabEngine *e);
 \end{tabbing}
-(\trl{machine} may be \trl{PETSC_NULL}).
+where \trl{machine} is the name of the machine hosting Matlab (\trl{PETSC_NULL} may be used for localhost).
 One can send objects to Matlab via 
 \begin{tabbing}
   PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);
