@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.9 2000/07/17 19:09:00 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.10 2000/07/18 16:47:47 hzhang Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -18,7 +18,7 @@ int main(int argc,char **args)
   int         i,j,i1,i2,j1,j2,I,J,Istart,Iend,ierr,its,m,m1;
 
   PetscTruth  flg;
-  Scalar      v, one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*diag;
+  Scalar      v, one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*diag,zero=0.0;
   int         bs=1, d_nz=3, o_nz=3, n = 16, prob=1;
   int         rank,size,col[3],n1,mbs,block,row;
   int         flg_A = 0, flg_sA = 1;
@@ -192,7 +192,7 @@ int main(int argc,char **args)
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRA(ierr);
   ierr = VecSetRandom(rctx,x);CHKERRA(ierr);
-  ierr = VecSet(&one,u);CHKERRA(ierr);
+  ierr = VecSet(&zero,u);CHKERRA(ierr);
 
   /* Test MatNorm() */
   ierr = MatNorm(A,NORM_FROBENIUS,&r1);CHKERRA(ierr); 
@@ -213,10 +213,8 @@ int main(int argc,char **args)
   }    
  
   /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
-  /*
   ierr = MatDiagonalScale(A,x,x);CHKERRA(ierr);
   ierr = MatDiagonalScale(sA,x,x);CHKERRA(ierr);
-  */
   ierr = MatGetDiagonal(A,s1); CHKERRA(ierr);  
   ierr = MatGetDiagonal(sA,s2); CHKERRA(ierr);
   ierr = VecNorm(s1,NORM_1,&r1);CHKERRA(ierr);
@@ -226,21 +224,19 @@ int main(int argc,char **args)
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDiagonalScale() or MatGetDiagonal(), r1=%g \n",rank,r1);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
   }
-  /*
+ 
   ierr = MatScale(&alpha,A);CHKERRA(ierr);
   ierr = MatScale(&alpha,sA);CHKERRA(ierr);
-  */
+  
   /* Test MatMult(), MatMultAdd() */
-  MatView(sA, VIEWER_STDOUT_WORLD);
-
-#ifndef MatMult
-  for (i=0; i<1; i++) {
+  for (i=0; i<10; i++) {
     ierr = VecSetRandom(rctx,x);CHKERRA(ierr);
     ierr = MatMult(A,x,s1);CHKERRA(ierr);
     ierr = MatMult(sA,x,s2);CHKERRA(ierr);
+    /*
     VecView(s1,VIEWER_STDOUT_WORLD);
     VecView(s2,VIEWER_STDOUT_WORLD);
-    /* MatView(sA,VIEWER_DRAW_WORLD); */
+    MatView(sA,VIEWER_DRAW_WORLD); */
     ierr = VecNorm(s1,NORM_1,&r1);CHKERRA(ierr);
     ierr = VecNorm(s2,NORM_1,&r2);CHKERRA(ierr);
     r1 -= r2;
@@ -249,9 +245,10 @@ int main(int argc,char **args)
       PetscSynchronizedFlush(PETSC_COMM_WORLD);
     }
   }
-#endif
-#ifdef MatMultAdd
-  for (i=0; i<20; i++) {
+
+#ifndef MatMultAdd
+  /* VecView(u, VIEWER_STDOUT_WORLD); */
+  for (i=0; i<1; i++) {
     ierr = VecSetRandom(rctx,x);CHKERRA(ierr);
     ierr = VecSetRandom(rctx,y);CHKERRA(ierr);
     ierr = MatMultAdd(A,x,y,s1);CHKERRA(ierr);
@@ -260,7 +257,7 @@ int main(int argc,char **args)
     ierr = VecNorm(s2,NORM_1,&r2);CHKERRA(ierr);
     r1 -= r2;
     if (r1<-tol || r1>tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd() or MatScale() \n");CHKERRA(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d], Error:MatMultAdd(), err=%g\n",rank,r1);CHKERRA(ierr);
     }
   }                
 #endif
