@@ -142,19 +142,19 @@ int BCScatterSetUp(Euler *app)
   ierr = AOApplicationToPetsc(ao,ict,is1); CHKERRQ(ierr);
 
   /* Create index sets for use in scatter context.  Note that we use the
-     communicator MPI_COMM_SELF for these index sets.  I.e., each processor
+     communicator PETSC_COMM_SELF for these index sets.  I.e., each processor
      specifies it's own separate index set when creating the scatter context. */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,ict,is1,&from); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,ict,is0,&to); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ict,is1,&from); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ict,is0,&to); CHKERRQ(ierr);
 
   /* Print debugging info */
   if (app->print_debug) {
     sprintf(filename,"fromP.%d",app->rank);
-    ierr = ViewerFileOpenASCII(MPI_COMM_SELF,filename,&view); CHKERRQ(ierr);
+    ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,filename,&view); CHKERRQ(ierr);
     ierr = ISView(from,view); CHKERRQ(ierr);
     ierr = ViewerDestroy(view); CHKERRQ(ierr);
     sprintf(filename,"toP.%d",app->rank);
-    ierr = ViewerFileOpenASCII(MPI_COMM_SELF,filename,&view); CHKERRQ(ierr);
+    ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,filename,&view); CHKERRQ(ierr);
     ierr = ISView(to,view); CHKERRQ(ierr);
     ierr = ViewerDestroy(view); CHKERRQ(ierr);
   }
@@ -201,17 +201,17 @@ int BCScatterSetUp(Euler *app)
   }
 
   /* Create scatter context */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,ict,is1,&from); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,ict,is0,&to); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ict,is1,&from); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,ict,is0,&to); CHKERRQ(ierr);
 
   /* Print debugging info */
   if (app->print_debug) {
     sprintf(filename,"fromX.%d",app->rank);
-    ierr = ViewerFileOpenASCII(MPI_COMM_SELF,filename,&view); CHKERRQ(ierr);
+    ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,filename,&view); CHKERRQ(ierr);
     ierr = ISView(from,view); CHKERRQ(ierr);
     ierr = ViewerDestroy(view); CHKERRQ(ierr);
     sprintf(filename,"toX.%d",app->rank);
-    ierr = ViewerFileOpenASCII(MPI_COMM_SELF,filename,&view); CHKERRQ(ierr);
+    ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,filename,&view); CHKERRQ(ierr);
     ierr = ISView(to,view); CHKERRQ(ierr);
     ierr = ViewerDestroy(view); CHKERRQ(ierr);
   }
