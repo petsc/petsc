@@ -177,8 +177,8 @@ PetscErrorCode MatConvert_MUMPS_Base(Mat A,const MatType type,Mat *newmat) {
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_aijmumps_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_aijmumps_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_aijmumps_mpiaij_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction(PetscObject)B,"MatConvert_seqsbaij_sbaijmumps_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction(PetscObject)B,"MatConvert_sbaijmumps_seqsbaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_sbaijmumps_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_sbaijmumps_seqsbaij_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_sbaijmumps_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_sbaijmumps_mpisbaij_C","",PETSC_NULL);CHKERRQ(ierr);
 
