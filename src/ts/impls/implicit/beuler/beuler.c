@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.21 1997/03/01 15:56:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.22 1997/05/03 15:31:00 bsmith Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -218,12 +218,12 @@ int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
   MatType mtype;
 
 
-  /* construct users Jacobian */
+  /* construct user's Jacobian */
   if (ts->rhsjacobian) {
     ierr = (*ts->rhsjacobian)(ts,ts->ptime,x,AA,BB,str,ts->jacP);CHKERRQ(ierr);
   }
 
-  /* shift and scale Jacobian, if not a matrix free */
+  /* shift and scale Jacobian, if not matrix-free */
   ierr = MatGetType(*AA,&mtype,PETSC_NULL); CHKERRQ(ierr);
   if (mtype != MATSHELL) {
     ierr = MatScale(&mone,*AA); CHKERRQ(ierr);
