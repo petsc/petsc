@@ -230,7 +230,7 @@ int KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
   PetscValidHeaderSpecific(Amat,MAT_COOKIE);
   PetscValidHeaderSpecific(Pmat,MAT_COOKIE);
   PCSetOperators(ksp->B,Amat,Pmat,flag);
-  ksp->setupcalled = 0;  /* so that next solve call will call setup */
+  if (ksp->setupcalled > 1) ksp->setupcalled = 1;  /* so that next solve call will call setup */
   PetscFunctionReturn(0);
 }
 

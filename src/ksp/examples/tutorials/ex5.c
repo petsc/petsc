@@ -277,7 +277,7 @@ int main(int argc,char **args)
   ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
   ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr); 
 
   /* 
      Check the error

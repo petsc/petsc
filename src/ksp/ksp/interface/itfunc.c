@@ -189,13 +189,14 @@ int KSPSetUp(KSP ksp)
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
 
-  if (ksp->setupcalled) PetscFunctionReturn(0);
+  if (ksp->setupcalled == 2) PetscFunctionReturn(0);
 
   ierr = PetscLogEventBegin(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
-  ksp->setupcalled = 1;
   ierr = PCSetVector(ksp->B,ksp->vec_rhs);CHKERRQ(ierr);
 
-  ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
+  if (ksp->setupcalled == 0) {
+    ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
+  }
 
   /* scale the matrix if requested */
   if (ksp->dscale) {
@@ -231,6 +232,7 @@ int KSPSetUp(KSP ksp)
   }
   ierr = PetscLogEventEnd(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   ierr = PCSetUp(ksp->B);CHKERRQ(ierr);
+  ksp->setupcalled = 2;
   PetscFunctionReturn(0);
 }
 
@@ -330,7 +332,7 @@ int KSPSolve(KSP ksp)
     }
   }
 
-  if (!ksp->setupcalled){ ierr = KSPSetUp(ksp);CHKERRQ(ierr);}
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   if (ksp->guess_knoll) {
     ierr            = PCApply(ksp->B,ksp->vec_rhs,ksp->vec_sol,PC_LEFT);CHKERRQ(ierr);
@@ -506,7 +508,7 @@ int KSPSolveTranspose(KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
 
-  if (!ksp->setupcalled){ ierr = KSPSetUp(ksp);CHKERRQ(ierr);}
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   ksp->transpose_solve = PETSC_TRUE;
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);

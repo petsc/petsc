@@ -21,10 +21,14 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  KSP solver; KSP itmeth; PC prec; Mat A,M; Vec X,B,D;
-  MPI_Comm comm;
-  PetscScalar v; KSPConvergedReason reason;
-  int i,j,its,ierr;
+  KSP                solver; 
+  PC                 prec; 
+  Mat                A,M;
+  Vec                X,B,D;
+  MPI_Comm           comm;
+  PetscScalar        v; 
+  KSPConvergedReason reason;
+  int                i,j,its,ierr;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,0,0); CHKERRQ(ierr);
@@ -70,14 +74,14 @@ int main(int argc,char **argv)
   ierr = KSPCreate(comm,&solver); CHKERRQ(ierr);
   ierr = KSPSetOperators(solver,A,A,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
 
-  ierr = KSPSetType(itmeth,KSPCG); CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(itmeth,PETSC_TRUE); CHKERRQ(ierr);
+  ierr = KSPSetType(solver,KSPCG); CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(solver,PETSC_TRUE); CHKERRQ(ierr);
 
   /*
    * ILU preconditioner;
    * this will break down unless you add the Shift line,
    * or use the -pc_ilu_shift option */
-  ierr = KSPGetPC(itmeth,&prec); CHKERRQ(ierr);
+  ierr = KSPGetPC(solver,&prec); CHKERRQ(ierr);
   ierr = PCSetType(prec,PCILU); CHKERRQ(ierr);
   /*  ierr = PCILUSetShift(prec,PETSC_TRUE); CHKERRQ(ierr); */
 
@@ -102,18 +106,23 @@ int main(int argc,char **argv)
    * an indefinite preconditioner
    */
   ierr = KSPSolve(solver); CHKERRQ(ierr);
-  ierr = KSPGetConvergedReason(itmeth,&reason); CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(solver,&reason); CHKERRQ(ierr);
   if (reason==KSP_DIVERGED_INDEFINITE_PC) {
     printf("\nDivergence because of indefinite preconditioner;\n");
     printf("Run the executable again but with -pc_ilu_shift option.\n");
   } else if (reason<0) {
     printf("\nOther kind of divergence: this should not happen.\n");
   } else {
-    ierr = KSPGetIterationNumber(itmeth,&its);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(solver,&its);CHKERRQ(ierr);
     printf("\nConvergence in %d iterations.\n",its);
   }
   printf("\n");
 
+  ierr = VecDestroy(X);CHKERRQ(ierr);
+  ierr = VecDestroy(B);CHKERRQ(ierr);
+  ierr = VecDestroy(D);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = KSPDestroy(solver);CHKERRQ(ierr);
   PetscFinalize();
   PetscFunctionReturn(0);
 }
