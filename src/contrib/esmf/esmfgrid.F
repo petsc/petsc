@@ -1,7 +1,7 @@
 
 
 !
-!    "$Id: esmfgrid.F,v 1.3 2000/09/07 16:42:16 bsmith Exp bsmith $"
+!    "$Id: esmfgrid.F,v 1.4 2000/09/09 17:33:11 bsmith Exp bsmith $"
 !
       module esmfg
         use esmf
@@ -72,18 +72,18 @@
 !--------------------------------------------------------------
       contains
 
-      function ESMFGridView_Base(grid) result (ierr)
+      subroutine ESMFGridView_Base(grid,ierr)
         implicit none
         type (esmfgrid), pointer :: grid
         integer         ierr
 
         call CESMFGridView(grid)
         ierr = 0
-      end function ESMFGridView_Base
+      end subroutine ESMFGridView_Base
 
 !--------------------------------------------------------------
 
-      function ESMFGridView_SR(grid) result (ierr)
+      subroutine ESMFGridView_SR(grid,ierr)
         implicit none
         type (esmfgridstructuredrectangular), pointer :: grid
         integer         ierr
@@ -91,18 +91,18 @@
         call CESMFGridView(grid)
         call CESMFGridViewSR(grid)
         ierr = 0
-      end function ESMFGridView_SR
+      end subroutine ESMFGridView_SR
 
 !--------------------------------------------------------------
 
-      function ESMFGridView_UQ(grid) result (ierr)
+      subroutine ESMFGridView_UQ(grid,ierr)
         implicit none
         type (esmfgridunstructuredquads), pointer :: grid
         integer         ierr
 
         call CESMFGridView(grid)
         ierr = 0
-      end function ESMFGridView_UQ
+      end subroutine ESMFGridView_UQ
 
 !--------------------------------------------------------------
 !
@@ -114,16 +114,18 @@
 !        sw - stencil width
 !        nx,ny - number of grid points in each direction
 !
-      function ESMFGridCreate_SR(comm,nx,ny,coors,nc,sw) result (grid)
+      function ESMFGridCreate_SR(comm,nx,ny,coors,nc,sw,ierr)           &
+     &                           result (grid)
         implicit none
         type (esmfgridstructuredrectangular), pointer :: grid
         MPI_Comm                              comm
-        integer                               nx,ny,nc,sw
+        integer                               nx,ny,nc,sw,ierr
         double precision                      coors(2,2)
 
         integer                                          ierr
         type (esmfgridstructuredrectangular), pointer :: g
 
+        ierr = 0
         allocate(g)
         g%grid%base%comm        = comm
         g%grid%base%refcount    = 0
@@ -172,15 +174,17 @@
 
 !--------------------------------------------------------------
 
-      function ESMFGridCreate_UQ(comm,file) result (grid)
+      function ESMFGridCreate_UQ(comm,file,ierr) result (grid)
         implicit none
         type (esmfgridunstructuredquads), pointer :: grid
         character*(*)                                file
         MPI_Comm                                     comm
+        integer ierr
 
         type (esmfgridunstructuredquads), pointer :: g
         integer                                      ierr
 
+        ierr = 0
         allocate(g)
         g%grid%base%comm        = comm
         g%grid%base%refcount    = 0
@@ -192,7 +196,7 @@
 
 !--------------------------------------------------------------
 
-      function ESMFGridDestroy_SR(grid) result (ierr)
+      subroutine ESMFGridDestroy_SR(grid,ierr)
         implicit none
         integer  ierr
         type (esmfgridstructuredrectangular), pointer :: grid
@@ -204,11 +208,11 @@
         endif
         call DADestroy(grid%da,ierr)
         deallocate(grid)
-      end function ESMFGridDestroy_SR
+      end subroutine ESMFGridDestroy_SR
 
 !--------------------------------------------------------------
 
-      function ESMFGridDestroy_UQ(grid) result (ierr)
+      subroutine ESMFGridDestroy_UQ(grid,ierr)
         implicit none
         integer ierr
         type (esmfgridunstructuredquads), pointer :: grid
@@ -219,7 +223,7 @@
           return
         endif
         deallocate(grid)
-      end function ESMFGridDestroy_UQ
+      end subroutine ESMFGridDestroy_UQ
 
       end module esmfg
 
