@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: update-docs.py,v 1.1 2000/03/25 00:21:13 balay Exp balay $ 
+# $Id: update-docs.py,v 1.2 2000/03/26 07:12:32 balay Exp balay $ 
 #
 # update-docs.py DOCS_DIR
 import os
@@ -34,6 +34,10 @@ def modifyfile(filename):
     w = re.compile(r'http://www-unix.mcs.anl.gov/petsc/include/')
     outbuf = w.sub('',outbuf)
 
+    # now revert all the links to the splitmanuals back to the website
+    w = re.compile(r'docs/splitmanual')
+    outbuf = w.sub('http://www-unix.mcs.anl.gov/petsc/docs/splitmanual',outbuf)
+    
     # Now overwrite the original file 
     outfilename = filename
     try:
