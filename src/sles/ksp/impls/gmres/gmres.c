@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.14 1995/03/25 01:25:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.15 1995/03/30 21:17:35 bsmith Exp curfman $";
 #endif
 
 /*
@@ -476,6 +476,12 @@ static int GMRESGetNewVectors( KSP itP,int it )
     Input Parameters:
 .   itP - the iterative context
 .   max_k - the number of directions
+
+    Options Database Key:
+$   -kspgmres_restart  max_k
+
+    Note:
+    The default value of max_k = 10.
 @*/
 int KSPGMRESSetRestart(KSP itP,int max_k )
 {
