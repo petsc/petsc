@@ -66,14 +66,45 @@ typedef struct {
   double                  *val;
 #endif
 
+  MatType basetype;
   /* A few function pointers for inheritance */
   int (*MatView)(Mat,PetscViewer);
   int (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
   int (*MatDestroy)(Mat);
 
   /* Flag to clean up (non-global) SuperLU objects during Destroy */
   PetscTruth CleanUpSuperLUDist;
 } Mat_MPIAIJ_SuperLU_DIST;
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_SuperLU_DIST_Base"
+int MatConvert_SuperLU_DIST_Base(Mat A,MatType type,Mat *newmat) {
+  /* This routine is only called to convert an unfactored PETSc-SuperLU matrix */
+  /* to its base PETSc type, so we will ignore 'MatType type'. */
+  int                     ierr;
+  Mat                     B=*newmat;
+  Mat_MPIAIJ_SuperLU_DIST *lu=(Mat_MPIAIJ_SuperLU_DIST *)A->spptr;
+
+  PetscFunctionBegin;
+  if (B != A) {
+    /* This routine was inherited from SeqAIJ. */
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  } else {
+    /* Reset the original function pointers */
+    B->ops->view             = lu->MatView;
+    B->ops->assemblyend      = lu->MatAssemblyEnd;
+    B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
+    B->ops->destroy          = lu->MatDestroy;
+
+    ierr = PetscObjectChangeTypeName((PetscObject)B,lu->basetype);CHKERRQ(ierr);
+    ierr = PetscFree(lu);CHKERRQ(ierr); 
+  }
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_SuperLU_DIST"
@@ -81,7 +112,6 @@ int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
 {
   int                     ierr;
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)A->spptr; 
-  int                     (*destroy)(Mat)=lu->MatDestroy;
     
   PetscFunctionBegin;
   if (lu->CleanUpSuperLUDist) {
@@ -107,45 +137,10 @@ int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
     
     ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
   }
-  ierr = PetscFree(lu);CHKERRQ(ierr); 
-  ierr = (*destroy)(A);CHKERRQ(ierr);
+
+  ierr = MatConvert_SuperLU_DIST_Base(A,lu->basetype,&A);CHKERRQ(ierr);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   
-  PetscFunctionReturn(0);
-}
-
-extern int MatMPIAIJFactorInfo_SuperLu(Mat A,PetscViewer viewer);
-
-#undef __FUNCT__
-#define __FUNCT__ "MatView_MPIAIJ_Spooles_DIST"
-int MatView_MPIAIJ_SuperLU_DIST(Mat A,PetscViewer viewer)
-{
-  int                     ierr;
-  PetscTruth              isascii;
-  PetscViewerFormat       format;
-  Mat_MPIAIJ_SuperLU_DIST *lu=(Mat_MPIAIJ_SuperLU_DIST*)(A->spptr);
-
-  PetscFunctionBegin;
-  ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
-
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
-      ierr = MatMPIAIJFactorInfo_SuperLu(A,viewer);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_MPIAIJ_SuperLU_DIST"
-int MatAssemblyEnd_MPIAIJ_SuperLU_DIST(Mat A,MatAssemblyType mode) {
-  int                     ierr;
-  Mat_MPIAIJ_SuperLU_DIST *lu=(Mat_MPIAIJ_SuperLU_DIST*)(A->spptr);
-
-  PetscFunctionBegin;
-  ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-  ierr = MatUseSuperLU_DIST_MPIAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -453,6 +448,7 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
+  B->ops->lufactornumeric  = MatLUFactorNumeric_MPIAIJ_SuperLU_DIST;
   B->ops->solve            = MatSolve_MPIAIJ_SuperLU_DIST;
   B->factor                = FACTOR_LU;  
 
@@ -556,13 +552,16 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
   PetscFunctionReturn(0); 
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseSuperLU_DIST_MPIAIJ"
-int MatUseSuperLU_DIST_MPIAIJ(Mat A)
-{
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_MPIAIJ_SuperLU_DIST"
+int MatAssemblyEnd_MPIAIJ_SuperLU_DIST(Mat A,MatAssemblyType mode) {
+  int                     ierr;
+  Mat_MPIAIJ_SuperLU_DIST *lu=(Mat_MPIAIJ_SuperLU_DIST*)(A->spptr);
+
   PetscFunctionBegin;
+  ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
+  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST;
-  A->ops->lufactornumeric  = MatLUFactorNumeric_MPIAIJ_SuperLU_DIST;
   PetscFunctionReturn(0);
 }
 
@@ -601,13 +600,85 @@ int MatMPIAIJFactorInfo_SuperLu(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatView_MPIAIJ_Spooles_DIST"
+int MatView_MPIAIJ_SuperLU_DIST(Mat A,PetscViewer viewer)
+{
+  int                     ierr;
+  PetscTruth              isascii;
+  PetscViewerFormat       format;
+  Mat_MPIAIJ_SuperLU_DIST *lu=(Mat_MPIAIJ_SuperLU_DIST*)(A->spptr);
+
+  PetscFunctionBegin;
+  ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
+
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+      ierr = MatMPIAIJFactorInfo_SuperLu(A,viewer);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_Base_SuperLU_DIST"
+int MatConvert_Base_SuperLU_DIST(Mat A,MatType type,Mat *newmat) {
+  /* This routine is only called to convert to MATSUPERLU_DIST */
+  /* from MATSEQAIJ if A has a single process communicator */
+  /* or MATMPIAIJ otherwise, so we will ignore 'MatType type'. */
+  int                     ierr,size;
+  MPI_Comm                comm;
+  Mat                     B=*newmat;
+  Mat_MPIAIJ_SuperLU_DIST *lu;
+
+  PetscFunctionBegin;
+  if (B != A) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
+
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = PetscNew(Mat_MPIAIJ_SuperLU_DIST,&lu);CHKERRQ(ierr);
+
+  lu->MatView              = A->ops->view;
+  lu->MatAssemblyEnd       = A->ops->assemblyend;
+  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
+  lu->MatDestroy           = A->ops->destroy;
+  lu->CleanUpSuperLUDist   = PETSC_FALSE;
+
+  B->spptr                 = (void*)lu;
+  B->ops->view             = MatView_MPIAIJ_SuperLU_DIST;
+  B->ops->assemblyend      = MatAssemblyEnd_MPIAIJ_SuperLU_DIST;
+  B->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST;
+  B->ops->destroy          = MatDestroy_MPIAIJ_SuperLU_DIST;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_superlu_dist_C",
+                                             "MatConvert_Base_SuperLU_DIST",MatConvert_Base_SuperLU_DIST);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_dist_seqaij_C",
+                                             "MatConvert_SuperLU_DIST_Base",MatConvert_SuperLU_DIST_Base);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_superlu_dist_C",
+                                             "MatConvert_Base_SuperLU_DIST",MatConvert_Base_SuperLU_DIST);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_dist_mpiaij_C",
+                                             "MatConvert_SuperLU_DIST_Base",MatConvert_SuperLU_DIST_Base);CHKERRQ(ierr);
+  }
+  PetscLogInfo(0,"Using SuperLU_DIST for SeqAIJ LU factorization and solves.");
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSUPERLU_DIST);CHKERRQ(ierr);
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAIJ_SuperLU_DIST"
 int MatCreate_MPIAIJ_SuperLU_DIST(Mat A) {
   int                     ierr,size;
   MPI_Comm                comm;
-  Mat_MPIAIJ_SuperLU_DIST *lu;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -617,17 +688,7 @@ int MatCreate_MPIAIJ_SuperLU_DIST(Mat A) {
   } else {
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   }
-  ierr = MatUseSuperLU_DIST_MPIAIJ(A);CHKERRQ(ierr);
-
-  ierr                   = PetscNew(Mat_MPIAIJ_SuperLU_DIST,&lu);CHKERRQ(ierr);
-  lu->MatView            = A->ops->view;
-  lu->MatAssemblyEnd     = A->ops->assemblyend;
-  lu->MatDestroy         = A->ops->destroy;
-  lu->CleanUpSuperLUDist = PETSC_FALSE;
-  A->spptr               = (void*)lu;
-  A->ops->view           = MatView_MPIAIJ_SuperLU_DIST;
-  A->ops->assemblyend    = MatAssemblyEnd_MPIAIJ_SuperLU_DIST;
-  A->ops->destroy        = MatDestroy_MPIAIJ_SuperLU_DIST;
+  ierr = MatConvert_Base_SuperLU_DIST(A,MATSUPERLU_DIST,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
