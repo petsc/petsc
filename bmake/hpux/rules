@@ -1,73 +1,7 @@
-# $Id: base,v 1.49 1998/12/04 23:43:18 balay Exp bsmith $ 
-
-# $Id: base,v 1.49 1998/12/04 23:43:18 balay Exp bsmith $ 
-#
-#     See the file .... for a complete explanation of all these fields
-#
-AR               = ar
-RM               = rm -f
-RANLIB           = true
-OMAKE            = /bin/make
-SHELL            = /bin/sh
-# ######################### C and Fortran compiler ########################
-#
-C_CC             = cc -Aa +z -Ae
-C_FC             = f90 ${COPTFLAGS} 
-C_CLINKER        = cc
-C_FLINKER        = f90 ${FOPTFLAGS} 
-C_CCV            = unknown
-C_SYS_LIB        = -lV3 -lU77 -lail -lcnx_syscall \
-	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
-
-# ---------------------------- BOPT=g options ----------------------------
-G_COPTFLAGS      = -g 
-G_FOPTFLAGS      = -g
-# ----------------------------- BOPT=O options -----------------------------
-O_COPTFLAGS      = -O
-O_FOPTFLAGS      = -O
-# ########################## C++ compiler ##################################
-#
-CXX_CC           = CC -Aa +z -ext +eh 
-CXX_FC           = f90
-CXX_CLINKER      = CC ${COPTFLAGS} 
-CXX_FLINKER      = f90 ${FOPTFLAGS} 
-CXX_CCV          = unknown
-CXX_SYS_LIB      = -lV3 -lU77 -lail -lcnx_syscall -lcomplex -lC \
-	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
-# ------------------------- BOPT=g_c++ options ------------------------------
-GCXX_COPTFLAGS   = -g
-GCXX_FOPTFLAGS   = -g
-# ------------------------- BOPT=O_c++ options ------------------------------
-OCXX_COPTFLAGS   = -O 
-OCXX_FOPTFLAGS   = -O 
-# -------------------------- BOPT=g_complex options ------------------------
-GCOMP_COPTFLAGS  = -g 
-GCOMP_FOPTFLAGS  = -g
-# --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  = -O
-OCOMP_FOPTFLAGS  = -O
-# ########################### PETSc install options ###########################
-#
-G_PETSCFLAGS     = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_g \
-                   -DUSE_PETSC_STACK
-O_PETSCFLAGS     = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_O
-GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_g \
-                   -DUSE_PETSC_STACK
-OCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_O
-GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_g \
-                   -DUSE_PETSC_STACK -DUSE_PETSC_COMPLEX -DUSE_FORTRAN_KERNELS
-OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_O \
-                   -DUSE_PETSC_COMPLEX -DUSE_FORTRAN_KERNELS
-
-##################################################################################
-#
-#   PETSc installers should very rarely ever need to edit anything below this 
-#
-##################################################################################
-
-PARCH    = hpux
+# $Id: base,v 1.50 1999/01/25 22:11:29 bsmith Exp balay $ 
 
 include ${PETSC_DIR}/bmake/common
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 
 libc:
 	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
@@ -89,7 +23,7 @@ shared: chkopts_basic
 	for LIBNAME in ${SHLIBS} ; \
 	do \
           if [ -f ${LDIR}/$$LIBNAME.a ]; then \
-  	    flag=""; \
+	    flag=""; \
 	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
               flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
 	    else \

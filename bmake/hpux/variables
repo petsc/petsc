@@ -1,6 +1,6 @@
-# $Id: base,v 1.50 1999/01/25 22:11:29 bsmith Exp $ 
+# $Id: base_variables,v 1.1 1999/02/08 23:44:31 balay Exp balay $ 
 
-# $Id: base,v 1.50 1999/01/25 22:11:29 bsmith Exp $ 
+# $Id: base_variables,v 1.1 1999/02/08 23:44:31 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -67,63 +67,4 @@ OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_O \
 
 PARCH    = hpux
 
-include ${PETSC_DIR}/bmake/common
-
-libc:
-	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
-
-libf:
-	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
-
-libmember:    ${LIBNAME}(${LIBMEMBER})
-
-##############
-SLSUFFIX = sl
-
-shared: chkopts_basic
-	-@echo making shared libraries in ${LDIR} ;\
-	cd ${LDIR}; \
-	${RM} -rf tmp; \
-	mkdir tmp; \
-	cd tmp; \
-	for LIBNAME in ${SHLIBS} ; \
-	do \
-          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
-  	    flag=""; \
-	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	    else \
-	      flag="true"; \
-	    fi; \
-	    if [ "$$flag" != "" ]; then \
-	      echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${AR} x ../$$LIBNAME.a ;\
-	      ${LD} -b  *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
-	      ${RM} -f * ; \
-	    fi; \
-	  fi; \
-	done ;\
-	cd ../ ; \
-	${RM} -rf tmp 
-
-
-#
-# Notes:
-#
-#  The name of the C compiler to use, the -Aa option is mandatory
-#  and indicates the we are compiling with ANSI C.
-#
-# For HPUX 9.* use the following instead
-# C_SYS_LIB  =  -lV3 -lU77 
-#
-# On some HP 10.20 Machines use
-# C_SYS_LIB  =  -lV3 -lU77 
-#
-# Alternative FC_LIB which worked for some users
-#
-# FC_LIB = -L/opt/fortran90/lib/pa2.0 -L/opt/fortran90/lib \
-# -L/opt/langtools/lib -lF90 -lcl -lc -lisamstub
-#
-# Use this if using f77 instead of f90 compiler
-#FC_LIB		=  -lf -L/opt/fortran/lib  -lU77
-#
+include ${PETSC_DIR}/bmake/common_variables
