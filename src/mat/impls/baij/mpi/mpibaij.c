@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.7 1996/07/01 23:20:26 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.8 1996/07/02 19:50:37 balay Exp balay $";
 #endif
 
 #include "mpibaij.h"
@@ -10,6 +10,8 @@ static char vcid[] = "$Id: mpibaij.c,v 1.7 1996/07/01 23:20:26 balay Exp balay $
 
 extern int MatSetUpMultiply_MPIBAIJ(Mat); 
 extern int DisAssemble_MPIBAIJ(Mat);
+extern int MatIncreaseOverlap_MPIBAIJ(Mat,int,IS *,int);
+extern int MatGetSubMatrices_MPIBAIJ(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **);
 
 /* local utility routine that creates a mapping from the global column 
 number to the local number in the off-diagonal part of the local 
@@ -695,7 +697,10 @@ int MatGetRow_MPIBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
         for ( i=imark; i<nzB; i++ ) idx_p[nzA+i]   = cmap[cworkB[i]/bs]*bs + cworkB[i]%bs ;
       } 
     } 
-    else {*idx = 0; *v=0;}
+    else {
+      if (idx) *idx = 0;
+      if (v)   *v   = 0;
+    }
   }
   *nz = nztot;
   ierr = (*mat->A->ops.restorerow)(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
@@ -726,8 +731,8 @@ static struct _MatOps MatOps = {
   MatGetLocalSize_MPIBAIJ,MatGetOwnershipRange_MPIBAIJ,0,0,
   0,0,0,0,
   0,0,0,0,
-  0,0,0,0,
-  0,MatGetValues_MPIBAIJ,0,0,
+  0,0,0,MatGetSubMatrices_MPIBAIJ,
+  MatIncreaseOverlap_MPIBAIJ,MatGetValues_MPIBAIJ,0,0,
   MatScale_MPIBAIJ,0,0};
                                 
 
