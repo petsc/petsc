@@ -10,14 +10,14 @@ OBJSC	        =
 OBJSF	        =
 LIBBASE	        = libpetscsles
 LOCDIR          = src/sles/examples/tutorials/
-TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 runex1_5\
+TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_3 runex1_5\
 		  ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_5 \
 		  ex2.rm ex5.PETSc runex5 ex5.rm \
                   ex8.PETSc runex8 runex8_2 ex8.rm\
 		  ex19.PETSc runex19 ex19.rm clean
 TESTEXAMPLES_2  = ex11.PETSc ex11.rm ex14.PETSc ex14.rm clean
-TESTEXAMPLES_3  = ex7.PETSc runex7 ex7.rm ex20.PETSc clean
-TESTEXAMPLES_9  = ex20.PETSc runex20 ex20.rm clean
+TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm ex3f.PETSc runex3f ex3f.rm ex20.PETSc clean
+TESTEXAMPLES_9  = ex1f.PETSc runex1f ex1f.rm ex20.PETSc runex20 ex20.rm clean
 TESTEXAMPLES_4  = ex1.PETSc runex1 runex1_3 runex1_5 ex1.rm ex2.PETSc runex2\
 		  runex2_3 runex2_5 ex2.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm ex11.PETSc \
 		  ex11.rm ex19.PETSc runex19 ex19.rm clean
@@ -25,12 +25,11 @@ TESTEXAMPLES_5  = ex22.PETSc runex22 runex22_2 runex22_3 ex22.rm clean
 TESTEXAMPLES_6  = 
 TESTEXAMPLES_7  = ex8.PETSc runex8_3 runex8_4 ex8.rm clean
 TESTEXAMPLES_8  = 
-BUILDEXAMPLES_9 = ex20.PETSc runex20 ex20.rm clean
 
 BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex5.PETSc ex5.rm \
 		  ex8.PETSc ex8.rm ex19.PETSc ex19.rm clean
 BUILDEXAMPLES_2 = ex11.PETSc ex11.rm ex14.PETSc ex14.rm clean
-BUILDEXAMPLES_3 = ex7.PETSc ex7.rm ex20.PETSc ex20.rm clean
+BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm ex3f.PETSc ex3f.rm ex20.PETSc ex20.rm clean
 BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex5.PETSc ex5.rm \
 		  ex8.PETSc ex8.rm ex11.PETSc \
 		  ex11.rm ex19.PETSc ex19.rm clean
@@ -38,21 +37,26 @@ BUILDEXAMPLES_5 = ex22.PETSc ex22.rm clean
 BUILDEXAMPLES_6 = ex8.PETSc ex8.rm clean
 BUILDEXAMPLES_7 = ex8.PETSc ex8.rm clean
 BUILDEXAMPLES_8 = 
+BUILDEXAMPLES_9 = ex1f.PETSc runex1f ex1f.rm ex20.PETSc runex20 ex20.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex5.c ex8.c ex11.c ex14.c ex19.c ex22.c
-EXAMPLESF       = ex7.F ex20.F
+EXAMPLESF       = ex1f.F ex7.F ex20.F
 
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
 	$(RM) ex1.o
 
+ex1f: ex1f.o  chkopts
+	-$(FLINKER) -o ex1f ex1f.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex1f.o
+
 ex2: ex2.o  chkopts
 	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
 	$(RM) ex2.o
 
-ex3: ex3.o  chkopts
-	-$(CLINKER) -o ex3 ex3.o  $(PETSC_LIB)
-	$(RM) ex3.o
+ex3f: ex3f.o  chkopts
+	-$(FLINKER) -o ex3f ex3f.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex3f.o
 
 ex4: ex4.o  chkopts
 	-$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
@@ -65,10 +69,6 @@ ex5: ex5.o  chkopts
 ex6: ex6.o  chkopts
 	-$(CLINKER) -o ex6 ex6.o  $(PETSC_LIB)
 	$(RM) ex6.o
-
-ex7: ex7.o  chkopts
-	-$(FLINKER) -o ex7 ex7.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-	$(RM) ex7.o
 
 ex8: ex8.o  chkopts
 	-$(CLINKER) -o ex8 ex8.o  $(PETSC_LIB)
@@ -131,15 +131,10 @@ ex22: ex22.o  chkopts
 	$(RM) ex22.o
 
 runex1:
-	-@$(MPIRUN) ex1 -pc_type jacobi -ksp_smonitor > ex1_1.tmp 2>&1;	  \
+	-@$(MPIRUN) ex1 -ksp_smonitor > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   $(RM) -f ex1_1.tmp
-runex1_2:
-	-@$(MPIRUN) -np 2 ex1 -pc_type jacobi -ksp_smonitor > ex1_2.tmp 2>&1;	 \
-	   if (diff output/ex1_2.out ex1_2.tmp) then true; \
-	   else echo "Possible problem with ex1_2, diffs above"; fi; \
-	   $(RM) -f ex1_2.tmp
 runex1_3:
 	-@$(MPIRUN) ex1 -pc_type sor -pc_sor_symmetric -ksp_smonitor >\
 	   ex1_3.tmp 2>&1;   \
@@ -152,6 +147,13 @@ runex1_5:
 	   if (diff output/ex1_5.out ex1_5.tmp) then true; \
 	   else echo "Possible problem with ex1_5, diffs above"; fi; \
 	   $(RM) -f ex1_5.tmp
+
+runex1f:
+	-@$(MPIRUN) ex1f -ksp_smonitor > ex1f_1.tmp 2>&1;	  \
+	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
+	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
+	   $(RM) -f ex1f_1.tmp
+
 runex2:
 	-@$(MPIRUN) ex2 -pc_type jacobi -ksp_smonitor -m 5 > ex2_1.tmp 2>&1; \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
@@ -174,16 +176,11 @@ runex2_5:
 	   if (diff output/ex2_5.out ex2_5.tmp) then true; \
 	   else echo "Possible problem with ex2_5, diffs above"; fi; \
 	   $(RM) -f ex2_5.tmp
-runex3:
-	-@$(MPIRUN) ex3 -pc_type jacobi -ksp_smonitor -m 5 > ex3_1.tmp 2>&1;   \
-	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
-	   else echo "Possible problem with ex3_1, diffs above"; fi; \
-	   $(RM) -f ex3_1.tmp
-runex3_2:
-	-@$(MPIRUN) -np 2 ex3 -pc_type jacobi -ksp_smonitor -m 5 > ex3_2.tmp 2>&1;   \
-	   if (diff output/ex3_2.out ex3_2.tmp) then true; \
-	   else echo "Possible problem with ex3_2, diffs above"; fi; \
-	   $(RM) -f ex3_2.tmp
+runex3f:
+	-@$(MPIRUN) -np 2 ex3f -pc_type jacobi -ksp_smonitor > ex3f_1.tmp 2>&1; \
+	   if (diff output/ex3f_1.out ex3f_1.tmp) then true; \
+	   else echo "Possible problem with ex3f_1, diffs above"; fi; \
+	   $(RM) -f ex3f_1.tmp
 runex4:
 	-@$(MPIRUN) ex4 -ksp_smonitor -m 5 -pc_type jacobi > ex4_1.tmp 2>&1;\
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
@@ -258,11 +255,6 @@ runex6_7:
 	   if (diff output/ex6_7.out ex6_7.tmp) then true; \
 	   else echo "Possible problem with ex6_7, diffs above"; fi; \
 	   $(RM) -f ex6_7.tmp
-runex7:
-	-@$(MPIRUN) -np 2 ex7 -pc_type jacobi -ksp_smonitor > ex7_1.tmp 2>&1; \
-	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
-	   else echo "Possible problem with ex7_1, diffs above"; fi; \
-	   $(RM) -f ex7_1.tmp
 runex8:
 	-@$(MPIRUN) ex8 -pc_type jacobi -ksp_smonitor > ex8_1.tmp 2>&1; \
 	   if (diff output/ex8_1.out ex8_1.tmp) then true; \
