@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.156 1998/09/22 15:07:25 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.157 1998/10/28 16:07:24 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -22,7 +22,7 @@ TESTEXAMPLES_11 = ex17.PETSc runex17 ex17.rm clean
 TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 runex6_4 runex6_5 \
 		  ex6.rm clean
 TESTEXAMPLES_7  = ex6.PETSc runex6_6 ex6.rm clean
-TESTEXAMPLES_8  = ex16.PETSc runex16 ex16.rm clean
+TESTEXAMPLES_8  = ex16.PETSc ex16.rm clean
 
 BUILDEXAMPLES_1 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm clean
 BUILDEXAMPLES_2 = ex10.PETSc ex10.rm ex15.PETSc ex15.rm clean
@@ -309,14 +309,6 @@ runex13:
 	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Possible problem with ex13_1, diffs above"; fi; \
 	   ${RM} -f ex13_1.tmp
-runex16:
-	-@${MPIRUN} -np 1 ex16 -optionsleft_off -f ${PETSC_DIR}/src/mat/examples/matbinary.ex \
-	   -a_pc_type bgs -a_pc_bgs_blocks 5 -a_sub_pc_type ilu \
-	   -b_pc_type bjacobi -b_pc_bjacobi_blocks 5 -b_ksp_max_it 10 \
-	   -b_sub_pc_type bgs -b_sub_pc_bgs_blocks 2  > ex16_1.tmp 2>&1; \
-	   if (diff output/ex16_1.out ex16_1.tmp) then true; \
-	   else echo "Possible problem with ex16_1, diffs above"; fi; \
-	   ${RM} -f ex16_1.tmp
 runex17:
 	-@${MPIRUN} -np 1 ex17 -n 6 -ksp_smonitor -p 5 -norandom -ksp_type gmres \
 	   -pc_type jacobi > ex17_1.tmp 2>&1; \
