@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.123 1997/10/19 03:25:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.124 1997/10/28 14:23:02 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -19,6 +19,7 @@ int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
   int          ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
   int          roworiented = mbd->roworiented;
 
+  PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
     if (idxm[i] < 0) SETERRQ(1,0,"Negative row");
     if (idxm[i] >= mbd->M) SETERRQ(1,0,"Row too large");
@@ -87,10 +88,11 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   InsertMode   addv;
   Scalar       *rvalues,*svalues;
 
+  PetscFunctionBegin;
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
-  if (addv == (ADD_VALUES|INSERT_VALUES)) { SETERRQ(1,0,
-    "Cannot mix adds/inserts on different procs");
+  if (addv == (ADD_VALUES|INSERT_VALUES)) { 
+    SETERRQ(1,0,"Cannot mix adds/inserts on different procs");
   }
   mat->insertmode = addv; /* in case this processor had no cache */
 
@@ -126,23 +128,18 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 
        This could be done better.
   */
-  rvalues = (Scalar *) PetscMalloc(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));
-  CHKPTRQ(rvalues);
-  recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));
-  CHKPTRQ(recv_waits);
+  rvalues    = (Scalar *) PetscMalloc(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));CHKPTRQ(rvalues);
+  recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
-    MPI_Irecv(rvalues+3*nmax*i,3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,
-              comm,recv_waits+i);
+    MPI_Irecv(rvalues+3*nmax*i,3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,comm,recv_waits+i);
   }
 
   /* do sends:
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  svalues = (Scalar *) PetscMalloc( 3*(mbd->stash.n+1)*sizeof(Scalar) );
-  CHKPTRQ(svalues);
-  send_waits = (MPI_Request *) PetscMalloc( (nsends+1)*sizeof(MPI_Request));
-  CHKPTRQ(send_waits);
+  svalues = (Scalar *) PetscMalloc(3*(mbd->stash.n+1)*sizeof(Scalar));CHKPTRQ(svalues);
+  send_waits = (MPI_Request *) PetscMalloc( (nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
   starts = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
   for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
@@ -157,8 +154,7 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   count = 0;
   for ( i=0; i<size; i++ ) {
     if (procs[i]) {
-      MPI_Isend(svalues+3*starts[i],3*nprocs[i],MPIU_SCALAR,i,tag,
-                comm,send_waits+count++);
+      MPI_Isend(svalues+3*starts[i],3*nprocs[i],MPIU_SCALAR,i,tag,comm,send_waits+count++);
     }
   }
   PetscFree(starts); PetscFree(nprocs);
@@ -188,6 +184,7 @@ int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   Scalar       *values, val;
   InsertMode   addv = mat->insertmode;
 
+  PetscFunctionBegin;
   /*  wait on receives */
   while (count) {
     MPI_Waitany(nrecvs,mbd->recv_waits,&imdex,&recv_status);
@@ -210,8 +207,7 @@ int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
  
   /* wait on sends */
   if (mbd->nsends) {
-    send_status = (MPI_Status *) PetscMalloc( mbd->nsends*sizeof(MPI_Status) );
-    CHKPTRQ(send_status);
+    send_status = (MPI_Status *) PetscMalloc(mbd->nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     MPI_Waitall(mbd->nsends,mbd->send_waits,send_status);
     PetscFree(send_status);
   }
@@ -255,6 +251,8 @@ int MatGetBlockSize_MPIBDiag(Mat mat,int *bs)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) mbd->A->data;
+
+  PetscFunctionBegin;
   *bs = dmat->bs;
   PetscFunctionReturn(0);
 }
@@ -265,6 +263,8 @@ int MatZeroEntries_MPIBDiag(Mat A)
 {
   Mat_MPIBDiag *l = (Mat_MPIBDiag *) A->data;
   int          ierr;
+
+  PetscFunctionBegin;
   ierr = MatZeroEntries(l->A);CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }
@@ -295,6 +295,7 @@ int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   MPI_Status     recv_status,*send_status;
   IS             istmp;
 
+  PetscFunctionBegin;
   ierr = ISGetSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
 
@@ -323,13 +324,10 @@ int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   PetscFree(work);
 
   /* post receives:   */
-  rvalues = (int *) PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int)); /*see note */
-  CHKPTRQ(rvalues);
-  recv_waits = (MPI_Request *) PetscMalloc((nrecvs+1)*sizeof(MPI_Request));
-  CHKPTRQ(recv_waits);
+  rvalues = (int *) PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(rvalues);
+  recv_waits = (MPI_Request *) PetscMalloc((nrecvs+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
   for ( i=0; i<nrecvs; i++ ) {
-    MPI_Irecv(rvalues+nmax*i,nmax,MPI_INT,MPI_ANY_SOURCE,tag,
-              comm,recv_waits+i);
+    MPI_Irecv(rvalues+nmax*i,nmax,MPI_INT,MPI_ANY_SOURCE,tag,comm,recv_waits+i);
   }
 
   /* do sends:
@@ -337,8 +335,7 @@ int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
          the ith processor
   */
   svalues = (int *) PetscMalloc( (N+1)*sizeof(int) ); CHKPTRQ(svalues);
-  send_waits = (MPI_Request *) PetscMalloc( (nsends+1)*sizeof(MPI_Request));
-  CHKPTRQ(send_waits);
+  send_waits = (MPI_Request *) PetscMalloc( (nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
   starts = (int *) PetscMalloc( (size+1)*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
   for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
@@ -352,8 +349,7 @@ int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   count = 0;
   for ( i=0; i<size; i++ ) {
     if (procs[i]) {
-      MPI_Isend(svalues+starts[i],nprocs[i],MPI_INT,i,tag,
-                comm,send_waits+count++);
+      MPI_Isend(svalues+starts[i],nprocs[i],MPI_INT,i,tag,comm,send_waits+count++);
     }
   }
   PetscFree(starts);
@@ -412,6 +408,7 @@ int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
 
+  PetscFunctionBegin;
   ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
   ierr = (*mbd->A->ops.mult)(mbd->A,mbd->lvec,yy); CHKERRQ(ierr);
@@ -425,6 +422,7 @@ int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
 
+  PetscFunctionBegin;
   ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
   ierr = (*mbd->A->ops.multadd)(mbd->A,mbd->lvec,yy,zz); CHKERRQ(ierr);
@@ -439,6 +437,7 @@ int MatMultTrans_MPIBDiag(Mat A,Vec xx,Vec yy)
   int          ierr;
   Scalar       zero = 0.0;
 
+  PetscFunctionBegin;
   ierr = VecSet(&zero,yy); CHKERRQ(ierr);
   ierr = (*a->A->ops.multtrans)(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
@@ -453,6 +452,7 @@ int MatMultTransAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_MPIBDiag *a = (Mat_MPIBDiag *) A->data;
   int          ierr;
 
+  PetscFunctionBegin;
   ierr = VecCopy(yy,zz); CHKERRQ(ierr);
   ierr = (*a->A->ops.multtrans)(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx); CHKERRQ(ierr);
@@ -469,6 +469,7 @@ int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
   int          ierr;
   double       isend[5], irecv[5];
 
+  PetscFunctionBegin;
   info->rows_global    = (double)mat->M;
   info->columns_global = (double)mat->N;
   info->rows_local     = (double)mat->m;
@@ -507,6 +508,8 @@ int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 {
   int          ierr;
   Mat_MPIBDiag *A = (Mat_MPIBDiag *) mat->data;
+
+  PetscFunctionBegin;
   ierr = MatGetDiagonal(A->A,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -518,12 +521,15 @@ int MatDestroy_MPIBDiag(PetscObject obj)
   Mat          mat = (Mat) obj;
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
-
 #if defined(USE_PETSC_LOG)
   Mat_SeqBDiag *ms = (Mat_SeqBDiag *) mbd->A->data;
-  PLogObjectState(obj,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",
-                  mbd->M,mbd->N,ms->bs,ms->nd);
+
+  PetscFunctionBegin;
+  PLogObjectState(obj,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",mbd->M,mbd->N,ms->bs,ms->nd);
+#else
+  PetscFunctionBegin;
 #endif
+
   ierr = StashDestroy_Private(&mbd->stash); CHKERRQ(ierr);
   PetscFree(mbd->rowners); 
   PetscFree(mbd->gdiag);
@@ -547,6 +553,7 @@ static int MatView_MPIBDiag_Binary(Mat mat,Viewer viewer)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
 
+  PetscFunctionBegin;
   if (mbd->size == 1) {
     ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
   }
@@ -564,6 +571,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
   FILE         *fd;
   ViewerType   vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
@@ -576,8 +584,9 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
       for (k=0; k<nk; k++) {
         PetscFPrintf(mat->comm,fd,"  global diag numbers:");
         np = PetscMin(nline,mbd->gnd - nline*k);
-        for (i=0; i<np; i++) 
+        for (i=0; i<np; i++) {
           PetscFPrintf(mat->comm,fd,"  %d",mbd->gdiag[i+nline*k]);
+        }
         PetscFPrintf(mat->comm,fd,"\n");        
       }
       if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
@@ -610,13 +619,11 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
     ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
     fflush(fd);
     PetscSequentialPhaseEnd(mat->comm,1);
-  }
-  else {
+  } else {
     int size = mbd->size, rank = mbd->rank; 
     if (size == 1) { 
       ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
-    }
-    else {
+    } else {
       /* assemble the entire matrix onto first processor. */
       Mat       A;
       int       M = mbd->M, N = mbd->N, m, row, nz, *cols;
@@ -626,8 +633,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
       if (!rank) {
         ierr = MatCreateMPIBDiag(mat->comm,M,M,N,mbd->gnd,Ambd->bs,
                mbd->gdiag,PETSC_NULL,&A); CHKERRQ(ierr);
-      }
-      else {
+      } else {
         ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,Ambd->bs,PETSC_NULL,PETSC_NULL,&A);
                CHKERRQ(ierr);
       }
@@ -661,12 +667,11 @@ int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
   int          ierr;
   ViewerType   vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype == ASCII_FILE_VIEWER  ||  vtype == ASCII_FILES_VIEWER ||
-      vtype == DRAW_VIEWER) {
+  if (vtype == ASCII_FILE_VIEWER  ||  vtype == ASCII_FILES_VIEWER || vtype == DRAW_VIEWER) {
     ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
-  }
-  else if (vtype == BINARY_FILE_VIEWER) {
+  } else if (vtype == BINARY_FILE_VIEWER) {
     ierr = MatView_MPIBDiag_Binary(mat,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -685,24 +690,21 @@ int MatSetOption_MPIBDiag(Mat A,MatOption op)
       op == MAT_NO_NEW_DIAGONALS ||
       op == MAT_YES_NEW_DIAGONALS) {
         MatSetOption(mbd->A,op);
-  }
-  else if (op == MAT_ROW_ORIENTED) {
+  } else if (op == MAT_ROW_ORIENTED) {
     mbd->roworiented = 1;
     MatSetOption(mbd->A,op);
-  }
-  else if (op == MAT_COLUMN_ORIENTED) {
+  } else if (op == MAT_COLUMN_ORIENTED) {
     mbd->roworiented = 0;
     MatSetOption(mbd->A,op);
-  }
-  else if (op == MAT_ROWS_SORTED || 
+  } else if (op == MAT_ROWS_SORTED || 
            op == MAT_ROWS_UNSORTED || 
            op == MAT_COLUMNS_SORTED || 
            op == MAT_COLUMNS_UNSORTED || 
            op == MAT_SYMMETRIC ||
            op == MAT_STRUCTURALLY_SYMMETRIC ||
-           op == MAT_YES_NEW_DIAGONALS)
+           op == MAT_YES_NEW_DIAGONALS) {
     PLogInfo(A,"Info:MatSetOption_MPIBDiag:Option ignored\n");
-  else {
+  } else {
     SETERRQ(PETSC_ERR_SUP,0,"unknown option");
   }
   PetscFunctionReturn(0);
@@ -713,6 +715,8 @@ int MatSetOption_MPIBDiag(Mat A,MatOption op)
 int MatGetSize_MPIBDiag(Mat mat,int *m,int *n)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
+
+  PetscFunctionBegin;
   *m = mbd->M; *n = mbd->N;
   PetscFunctionReturn(0);
 }
@@ -722,6 +726,8 @@ int MatGetSize_MPIBDiag(Mat mat,int *m,int *n)
 int MatGetLocalSize_MPIBDiag(Mat mat,int *m,int *n)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
+
+  PetscFunctionBegin;
   *m = mbd->m; *n = mbd->N;
   PetscFunctionReturn(0);
 }
@@ -731,6 +737,8 @@ int MatGetLocalSize_MPIBDiag(Mat mat,int *m,int *n)
 int MatGetOwnershipRange_MPIBDiag(Mat matin,int *m,int *n)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
+
+  PetscFunctionBegin;
   *m = mat->rstart; *n = mat->rend;
   PetscFunctionReturn(0);
 }
@@ -742,6 +750,7 @@ int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
   int          lrow,ierr;
 
+  PetscFunctionBegin;
   if (row < mat->rstart || row >= mat->rend)SETERRQ(1,0,"only for local rows")
   lrow = row - mat->rstart;
   ierr = MatGetRow(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
@@ -755,6 +764,8 @@ int MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
   int          lrow,ierr;
+
+  PetscFunctionBegin;
   lrow = row - mat->rstart;
   ierr = MatRestoreRow(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -771,6 +782,7 @@ int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
   int          ierr, d, i, nd = a->nd, bs = a->bs, len;
   Scalar       *dv;
 
+  PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
     for (d=0; d<nd; d++) {
       dv   = a->diagv[d];
@@ -786,8 +798,7 @@ int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
     MPI_Allreduce(&sum,norm,1,MPI_DOUBLE,MPI_SUM,A->comm);
     *norm = sqrt(*norm);
     PLogFlops(2*mbd->n*mbd->m);
-  }
-  else if (type == NORM_1) { /* max column norm */
+  } else if (type == NORM_1) { /* max column norm */
     double *tmp, *tmp2;
     int    j;
     tmp  = (double *) PetscMalloc( (a->n+1)*sizeof(double) ); CHKPTRQ(tmp);
@@ -799,8 +810,7 @@ int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
       if (tmp2[j] > *norm) *norm = tmp2[j];
     }
     PetscFree(tmp); PetscFree(tmp2);
-  }
-  else if (type == NORM_INFINITY) { /* max row norm */
+  } else if (type == NORM_INFINITY) { /* max row norm */
     double normtemp;
     ierr = MatNorm(mbd->A,type,&normtemp); CHKERRQ(ierr);
     MPI_Allreduce(&normtemp,norm,1,MPI_DOUBLE,MPI_MAX,A->comm);
@@ -815,6 +825,8 @@ int MatPrintHelp_MPIBDiag(Mat A)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag*) A->data;
   int          ierr;
+
+  PetscFunctionBegin;
   if (!a->rank) {
     ierr = MatPrintHelp_SeqBDiag(a->A);CHKERRQ(ierr);
   }
@@ -828,6 +840,8 @@ int MatScale_MPIBDiag(Scalar *alpha,Mat A)
 {
   int          ierr;
   Mat_MPIBDiag *a = (Mat_MPIBDiag*) A->data;
+
+  PetscFunctionBegin;
   ierr = MatScale_SeqBDiag(alpha,a->A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -908,6 +922,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
   int          ierr, i, k, *ldiag, len, dset = 0, nd2,flg1,flg2;
   Scalar       **ldiagv = 0;
 
+  PetscFunctionBegin;
   *A = 0;
   if (bs == PETSC_DEFAULT) bs = 1;
   if (nd == PETSC_DEFAULT) nd = 0;
@@ -1058,6 +1073,7 @@ int MatBDiagGetData(Mat mat,int *nd,int *bs,int **diag,int **bdlen,Scalar ***dia
   Mat_MPIBDiag *pdmat;
   Mat_SeqBDiag *dmat;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (mat->type == MATSEQBDIAG) {
     dmat = (Mat_SeqBDiag *) mat->data;
@@ -1088,6 +1104,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
   int          *ourlens, *sndcounts = 0, *procsnz = 0, jj, *mycols, *smycols;
   int          tag = ((PetscObject)viewer)->tag,flg,extra_rows;
 
+  PetscFunctionBegin;
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {
     ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
@@ -1137,8 +1154,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
     for ( i=0; i<size; i++ ) sndcounts[i] = rowners[i+1] - rowners[i];
     MPI_Scatterv(rowlengths,sndcounts,rowners,MPI_INT,ourlens,rend-rstart,MPI_INT,0,comm);
     PetscFree(sndcounts);
-  }
-  else {
+  } else {
     MPI_Scatterv(0,0,0,MPI_INT,ourlens,rend-rstart,MPI_INT, 0,comm);
   }
 
@@ -1181,8 +1197,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
       MPI_Send(cols,nz+extra_rows,MPI_INT,size-1,tag,comm);
     }
     PetscFree(cols);
-  }
-  else {
+  } else {
     /* determine buffer space needed for message */
     nz = 0;
     for ( i=0; i<m; i++ ) {
@@ -1234,8 +1249,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
       MPI_Send(vals,nz+extra_rows,MPIU_SCALAR,size-1,A->tag,comm);
     }
     PetscFree(procsnz);
-  }
-  else {
+  } else {
     /* receive numeric values */
     vals = (Scalar*) PetscMalloc( nz*sizeof(Scalar) ); CHKPTRQ(vals);
 
