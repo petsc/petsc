@@ -6,6 +6,46 @@
 #include "src/mat/impls/aij/seq/aij.h" /*I "petscmat.h" I*/
 #include "src/mat/utils/freespace.h"
 
+/*
+  Add a index set into a sorted linked list
+  input:
+    nidx      - number of input indices
+    indices   - interger array
+    idx_head  - the header of the list
+    idx_unset - the value indicating the entry in the list is not set yet
+    lnk       - linked list(an integer array) that is created
+  output:
+    nlnk      - number of newly added indices
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+ */
+#undef __FUNCT__
+#define __FUNCT__ "LnklistAdd"
+int LnklistAdd(int nidx,int *indices,int idx_head,int idx_unset,int *nlnk,int *lnk)
+{
+  int i,idx,lidx,entry,n;
+
+  PetscFunctionBegin;
+  n    = 0;
+  lidx = idx_head;
+  i    = nidx;
+  while (i){
+    /* assume indices is almost in increasing order, starting from its end saves computation */
+    entry = indices[--i];
+    if (lnk[entry] == idx_unset) { /* new entry */   
+      do { 
+        idx = lidx;
+        lidx  = lnk[idx];
+      } while (entry > lidx);           
+      lnk[idx] = entry;
+      lnk[entry] = lidx;
+      n++;
+    }
+  }
+  *nlnk = n;
+  PetscFunctionReturn(0);
+}
+
+
 static int logkey_matmatmult          = 0;
 static int logkey_matmatmult_symbolic = 0;
 static int logkey_matmatmult_numeric  = 0;
@@ -170,9 +210,9 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
   int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj;
-  int            *ci,*cj,*lnk,idx0,idx,bcol;
+  int            *ci,*cj,*lnk,idx0,idx;
   int            am=A->M,bn=B->N,bm=B->M;
-  int            i,j,k,anzi,brow,bnzj,cnzi;
+  int            i,j,k,anzi,brow,bnzj,cnzi,nlnk;
   MatScalar      *ca;
 
   PetscFunctionBegin;
@@ -201,20 +241,9 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
       brow = *aj++;
       bnzj = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
-      idx  = bn;
-      for (k=0;k<bnzj;k++) {
-        bcol = bjj[k];
-        if (lnk[bcol] == -1) { /* new col */   
-          if (k>0) idx = bjj[k-1];   
-          do { 
-            idx0 = idx;
-            idx  = lnk[idx0];
-          } while (bcol > idx);           
-          lnk[idx0] = bcol;
-          lnk[bcol] = idx;
-          cnzi++;
-        }
-      }
+      /* add non-zero cols of B into the sorted linked list lnk */
+      ierr = LnklistAdd(bnzj,bjj,bn,-1,&nlnk,lnk);CHKERRQ(ierr);
+      cnzi += nlnk;
     }
 
     /* If free space is not available, make more free space */
