@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.100 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petscpc.h,v 1.101 2000/05/29 21:59:14 bsmith Exp balay $ */
 
 /*
       Preconditioner module. 
@@ -131,7 +131,7 @@ EXTERN int PCILUSetUseInPlace(PC);
 EXTERN int PCILUSetFill(PC,double);
 EXTERN int PCILUSetLevels(PC,int);
 EXTERN int PCILUSetReuseOrdering(PC,PetscTruth);
-EXTERN int PCILUSetUseDropTolerance(PC,double,double,int);
+EXTERN int PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,int);
 EXTERN int PCILUSetReuseFill(PC,PetscTruth);
 EXTERN int PCILUSetAllowDiagonalFill(PC);
 
