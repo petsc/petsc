@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.53 1996/08/31 15:32:37 curfman Exp $";
+static char vcid[] = "$Id: ex2.c,v 1.1 1996/09/14 15:32:43 curfman Exp balay $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -25,9 +25,7 @@ T*/
 
 int slesex(int,char**);
 
-int main( argc, argv )
-int argc;
-char **argv;
+int main( int argc, char **argv )
 {
     MPI_Init( &argc, &argv );
     slesex(argc,argv);
