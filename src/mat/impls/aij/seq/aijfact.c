@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.127 1999/11/24 21:53:47 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.128 1999/12/16 03:08:20 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -224,7 +224,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
     ierr = PetscFree(old_i2);CHKERRQ(ierr);
   }
 
-  /* get rid of the shift to incies statrting at 1 */
+  /* get rid of the shift to indices starting at 1 */
   for (i=0; i<n+1; i++) {
     old_i[i] = old_i[i]-ishift;
   }
