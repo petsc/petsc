@@ -557,6 +557,8 @@ PetscErrorCode PetscObjectContainerSetUserDestroy(PetscObjectContainer obj, Pets
   PetscFunctionReturn(0);
 }
 
+PetscCookie CONTAINER_COOKIE = 0;
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectContainerCreate"
 /*@C
@@ -579,10 +581,14 @@ PetscErrorCode PetscObjectContainerSetUserDestroy(PetscObjectContainer obj, Pets
 @*/
 PetscErrorCode PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
 {
+  PetscErrorCode       ierr;
   PetscObjectContainer contain;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(contain,_p_PetscObjectContainer,PetscInt,PETSC_COOKIE,0,"container",comm,PetscObjectContainerDestroy,0);
+  if (!CONTAINER_COOKIE) {
+    ierr = PetscLogClassRegister(&CONTAINER_COOKIE,          "Container");CHKERRQ(ierr);
+  }
+  PetscHeaderCreate(contain,_p_PetscObjectContainer,PetscInt,CONTAINER_COOKIE,0,"container",comm,PetscObjectContainerDestroy,0);
   *container = contain;
   PetscFunctionReturn(0);
 }
