@@ -108,17 +108,14 @@ libfast: chklib_dir ${SOURCEC} ${SOURCEF}
 	-@if [ "${SPECIALFASTLIB}" = "yes" ] ; then \
 	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} specialfastlib;  \
 	else \
-        if [ "${SOURCEC}" != "" ]; then \
+	if [ "${SOURCEC}" != "" ]; then \
 	        if test -n "${LIBTOOL}"; then \
-	            files="${SOURCEC} ${SSOURCE}"; \
-	            for filename in $$files; do \
-	                ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $$filename; \
-	            done; \
+                    ${PETSC_COMPILE_LIBTOOL} \
 	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
 	            ${AR} ${AR_FLAGS} ${LT_LIBNAME} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
 	            ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
 	        else \
-	            ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCEC} ${SSOURCE}; \
+                    ${PETSC_COMPILE} \
 	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
 	            ${RM} ${OBJSC} ${SOBJS}; \
 	        fi; \
@@ -363,15 +360,17 @@ fortranstubs:
 	        echo ${CC} -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
 	        ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
               else \
-	        echo ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $< ;\
-	        ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $< ;\
+	        filename=$<; \
+	        echo ${PETSC_COMPILE_SINGLE} \
+	        ${PETSC_COMPILE_SINGLE} \
               fi; \
         elif  [ `ls -t $**.c | head -1` = "$*.ad.c" ]; then \
           echo ${CC} -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
 	  ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
         else \
-	  echo ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $< ;\
-	  ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $< ;\
+	  filename=$<; \
+	  echo ${PETSC_COMPILE_SINGLE} \
+	  ${PETSC_COMPILE_SINGLE} \
         fi
 
 .c.a .cpp.a .cc.a .C.a: 
