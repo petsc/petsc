@@ -19,8 +19,8 @@ class Options(config.base.Configure):
         flags.append('-g3')
       elif bopt == 'O':
         if os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','balay','petsc']:
-          flags.extend(['-Wshadow', '-Wwrite-strings', '-Wno-strict-aliasing'])
-        flags.extend(['-O', '-fomit-frame-pointer'])
+          flags.extend(['-Wshadow', '-Wwrite-strings'])
+        flags.extend(['-O', '-fomit-frame-pointer', '-Wno-strict-aliasing'])
     # Alpha
     elif re.match(r'alphaev[5-9]', self.framework.host_cpu):
       # Compaq C
