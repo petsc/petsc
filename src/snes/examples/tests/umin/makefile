@@ -10,6 +10,8 @@ OBJSC         =
 WOBJS         = 
 OBJSF         =
 LIBBASE       = libpetscsnes
+EXAMPLES_1    = ex1
+RUNEXAMPLES_1 = runex2 runex2_2
 EXAMPLES_2    = ex1
 RUNEXAMPLES_2 = runex1 runex1_2
 EXAMPLESC     = ex1.c
@@ -19,10 +21,24 @@ FOBJ = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
        dmsabc.o dodcps.o dgl2co.o mpinter.o
 
 EX1 = ex1.o $(FOBJ)
+EX4 = ex4.o $(FOBJ)
 
 ex1: $(EX1) chkopts
 	-$(CLINKER) -o ex1 $(EX1) $(PETSC_LIB)
 	$(RM) $(EX1)
+
+ex2: ex2.o chkopts
+	-$(CLINKER) -o ex2 ex2.o $(PETSC_LIB)
+	$(RM) ex2.o
+
+ex3: ex3.o chkopts
+	-$(CLINKER) -o ex3 ex3.o $(PETSC_LIB)
+	$(RM) ex3.o
+
+# This is just for some experiments
+ex4: $(EX4) chkopts
+	-$(CLINKER) -o ex4 $(EX4) $(PETSC_LIB)
+	$(RM) ex4.o
 
 runex1:
 	-@$(MPIRUN) ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
@@ -30,7 +46,7 @@ runex1:
            else echo "Possible problem with ex1_1, diffs above"; fi; \
            $(RM) -f ex1_1.tmp
 runex1_2:
-	-@$(MPIRUN) ex1 -nox -snes_smonitor -snes_method umls > ex1_2.tmp 2>&1;   \
+	-@$(MPIRUN) ex1 -nox -snes_smonitor -snes_method umls > ex1_2.tmp 2>&1;\
            if (diff output/ex1_2.out ex1_2.tmp) then true; \
            else echo "Possible problem with ex1_2, diffs above"; fi; \
            $(RM) -f ex1_2.tmp
