@@ -809,7 +809,21 @@ acfindx:
       self.framework.log.write('Document files found\n')
     return
 
- 
+  def configureScript(self):
+    '''Output a script in the bmake directory which will reproduce the configuration'''
+    scriptName = os.path.join('bmake', self.arch, 'configure_'+self.arch+'.py')
+    f          = file(scriptName, 'w')
+    f.write('#!/usr/bin/env python\n')
+    f.write('if __name__ == \'__main__\':\n')
+    f.write('  import sys\n')
+    f.write('  sys.path.insert(0, '+repr(os.path.join(self.framework.argDB['PETSC_DIR'], 'config'))+')\n')
+    f.write('  import configure\n')
+    f.write('  configure_options = '+repr(self.framework.clArgs)+'\n')
+    f.write('  configure.petsc_configure(configure_options)\n')
+    f.close()
+    os.chmod(scriptName, 0775)
+    return
+
   def configure(self):
     self.executeTest(self.configureArchitecture)
     self.framework.header = 'bmake/'+self.arch+'/petscconf.h'
@@ -849,5 +863,6 @@ acfindx:
     self.executeTest(self.configureMisc)
     self.executeTest(self.configureETags)
     self.executeTest(self.configureDocs)
+    self.executeTest(self.configureScript)
     self.startLine()
     return
