@@ -17,12 +17,13 @@ extern int   RADestroy(RA);
 extern int   RAView(RA,Viewer);
 extern int   RAGlobalToLocal(RA,Vec, InsertMode,Vec);
 extern int   RALocalToGlobal(RA,Vec, InsertMode,Vec);
+
 extern int   RAGetDistributedVector(RA,Vec*);
 extern int   RAGetLocalVector(RA,Vec*);
 extern int   RAGetCorners(RA,int*,int*,int*,int*,int*,int*);
 extern int   RAGetGhostCorners(RA,int*,int*,int*,int*,int*,int*);
 
-extern int   RAGetOwnershipRange(RA,int*,int*,int*,int*);
+extern int   RAGetGlobalIndices(Ra,int*,int**);
 
 
 #endif
