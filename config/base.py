@@ -281,9 +281,12 @@ class Configure:
       for fd in ready[0]: fd.read()
     err.close()
     output.close()
+    ret = None
+    if pipe:
+      ret = pipe.wait()
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
-    return not len(out)
+    return not ret or not len(out)
 
   def outputCompile(self, includes = '', body = '', cleanup = 1):
     command = self.getCompilerCmd()
@@ -294,15 +297,20 @@ class Configure:
     self.framework.log.write('Executing: '+command+'\n')
     (input, output, err, pipe) = self.openPipe(command)
     input.close()
-    if pipe: pipe.wait()
+    ret = None
+    if pipe:
+      ret = pipe.wait()
     out   = ''
     ready = select.select([err], [], [], 0.1)
     if len(ready[0]):
       # Log failure of compiler
       out = ready[0][0].read()
-      if out:
-        self.framework.log.write('ERR (compiler): '+out)
-        self.framework.log.write('Source:\n'+self.getCode(includes, body))
+    if ret and not out:
+      out = str(ret)
+    if out:
+      self.framework.log.write('ERR (compiler): '+out)
+      self.framework.log.write('ret = '+str(ret))
+      self.framework.log.write('Source:\n'+self.getCode(includes, body))
     err.close()
     output.close()
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
@@ -322,15 +330,20 @@ class Configure:
     self.framework.log.write('Executing: '+command+'\n')
     (input, output, err, pipe) = self.openPipe(command)
     input.close()
-    if pipe: pipe.wait()
+    ret = None
+    if pipe:
+      ret = pipe.wait()
     out   = ''
     ready = select.select([err], [], [], 0.1)
     if len(ready[0]):
       # Log failure of linker
       out = ready[0][0].read()
-      if out:
-        self.framework.log.write('ERR (linker): '+out)
-        self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
+    if ret and not out:
+      out = str(ret)
+    if out:
+      self.framework.log.write('ERR (linker): '+out)
+      self.framework.log.write('ret = '+str(ret))
+      self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
     err.close()
     output.close()
     if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
