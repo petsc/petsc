@@ -5212,7 +5212,7 @@ int MatIsHermitian(Mat A,PetscTruth *flg)
     if (!A->ops->ishermitian) SETERRQ(1,"Matrix does not support checking for being Hermitian");
     ierr = (*A->ops->ishermitian)(A,&A->hermitian);CHKERRQ(ierr);
     A->hermitian_set = PETSC_TRUE;
-    if (A->symmetric) {
+    if (A->hermitian) {
       A->structurally_symmetric_set = PETSC_TRUE;
       A->structurally_symmetric     = PETSC_TRUE;
     }
