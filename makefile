@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.225 1998/04/13 17:38:55 balay Exp bsmith $ 
+# $Id: makefile,v 1.226 1998/04/13 17:49:02 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -334,6 +334,7 @@ ctags:
 # Deletes man pages (HTML version)
 deletemanualpages:
 	${RM} -f ${PETSC_DIR}/docs/manualpages/man*/* \
+                 ${PETSC_DIR}/docs/manualpages/man?.html \
                  ${PETSC_DIR}/docs/manualpages/manualpages.cit 
 
 # Deletes man pages (LaTeX version)
