@@ -79,53 +79,68 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
 
   PetscFunctionBegin;
   SIGNAME[0]       = "Unknown signal";
-#if !defined(PETSC_MISSING_SIGHUP)
-  SIGNAME[SIGHUP]  = "Hang up";
-#endif
-  SIGNAME[SIGINT]  = "INT";
-#if !defined(PETSC_MISSING_SIGQUIT)
-  SIGNAME[SIGQUIT] = "Quit";
-#endif
-  SIGNAME[SIGILL]  = "Illegal instruction";
-#if !defined(PETSC_MISSING_SIGTRAP)
-  SIGNAME[SIGTRAP] = "TRAP";
-#endif
+#if !defined(PETSC_MISSING_SIGABRT)
   SIGNAME[SIGABRT] = "Abort";
-  SIGNAME[SIGFPE]  = "FPE:\nPETSC ERROR: Floating Point Exception,probably divide by zero";
-#if !defined(PETSC_MISSING_SIGKILL)
-  SIGNAME[SIGKILL] = "Kill";
-#endif
-#if !defined(PETSC_MISSING_SIGBUS)
-  SIGNAME[SIGBUS]  = "BUS: \nPETSC ERROR: Bus Error, possibly illegal memory access";
-#endif
-  SIGNAME[SIGSEGV] = "SEGV:\nPETSC ERROR: Segmentation Violation, probably memory access out of range";
-#if !defined(PETSC_MISSING_SIGSYS)
-  SIGNAME[SIGSYS]  = "SYS";
-#endif
-#if !defined(PETSC_MISSING_SIGUSR1)
-  SIGNAME[SIGUSR1] = "User1";
-#endif
-#if !defined(PETSC_MISSING_SIGPIPE)
-  SIGNAME[SIGPIPE] = "Pipe";
 #endif
 #if !defined(PETSC_MISSING_SIGALRM)
   SIGNAME[SIGALRM] = "Alarm";
 #endif
-  SIGNAME[SIGTERM] = "Term";
-#if !defined(PETSC_MISSING_SIGURG)
-  SIGNAME[SIGURG]  = "URG";
+#if !defined(PETSC_MISSING_SIGBUS)
+  SIGNAME[SIGBUS]  = "BUS: \nPETSC ERROR: Bus Error, possibly illegal memory access";
 #endif
-#if !defined(PETSC_MISSING_SIGSTOP)
-  SIGNAME[SIGSTOP] = "STOP";
-#endif
-#if !defined(PETSC_MISSING_SIGTSTP)
-  SIGNAME[SIGTSTP] = "TSTP";
+#if !defined(PETSC_MISSING_SIGCHLD)
+  SIGNAME[SIGCHLD] = "CHLD";
 #endif
 #if !defined(PETSC_MISSING_SIGCONT)
   SIGNAME[SIGCONT] = "CONT";
 #endif
-#if !defined(PETSC_MISSING_SIGCHLD)
-  SIGNAME[SIGCHLD] = "CHLD";
+#if !defined(PETSC_MISSING_SIGFPE)
+  SIGNAME[SIGFPE]  = "FPE:\nPETSC ERROR: Floating Point Exception,probably divide by zero";
+#endif
+#if !defined(PETSC_MISSING_SIGHUP)
+  SIGNAME[SIGHUP]  = "Hang up";
+#endif
+#if !defined(PETSC_MISSING_SIGILL)
+  SIGNAME[SIGILL]  = "Illegal instruction";
+#endif
+#if !defined(PETSC_MISSING_SIGINT)
+  SIGNAME[SIGINT]  = "Interrupt";
+#endif
+#if !defined(PETSC_MISSING_SIGKILL)
+  SIGNAME[SIGKILL] = "Kill";
+#endif
+#if !defined(PETSC_MISSING_SIGPIPE)
+  SIGNAME[SIGPIPE] = "Broken Pipe";
+#endif
+#if !defined(PETSC_MISSING_SIGQUIT)
+  SIGNAME[SIGQUIT] = "Quit";
+#endif
+#if !defined(PETSC_MISSING_SIGSEGV)
+  SIGNAME[SIGSEGV] = "SEGV:\nPETSC ERROR: Segmentation Violation, probably memory access out of range";
+#endif
+#if !defined(PETSC_MISSING_SIGSTOP)
+  SIGNAME[SIGSTOP] = "STOP";
+#endif
+#if !defined(PETSC_MISSING_SIGSYS)
+  SIGNAME[SIGSYS]  = "SYS";
+#endif
+#if !defined(PETSC_MISSING_SIGTERM)
+  SIGNAME[SIGTERM] = "Terminate";
+#endif
+#if !defined(PETSC_MISSING_SIGTRAP)
+  SIGNAME[SIGTRAP] = "TRAP";
+#endif
+#if !defined(PETSC_MISSING_SIGTSTP)
+  SIGNAME[SIGTSTP] = "TSTP";
+#endif
+#if !defined(PETSC_MISSING_SIGURG)
+  SIGNAME[SIGURG]  = "URG";
+#endif
+#if !defined(PETSC_MISSING_SIGUSR1)
+  SIGNAME[SIGUSR1] = "User 1";
+#endif
+#if !defined(PETSC_MISSING_SIGUSR2)
+  SIGNAME[SIGUSR1] = "User 2";
 #endif
 
   signal(sig,SIG_DFL);
@@ -186,38 +201,117 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
 
   PetscFunctionBegin;
   if (!SignalSet && routine) {
-    signal(SIGILL,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
-    signal(SIGFPE,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
-    signal(SIGSEGV, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
-#if !defined(PETSC_MISSING_SIGUSR1)
-    signal(SIGUSR1, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
-#endif
-#if !defined(PETSC_MISSING_SIGSYS)
-    signal(SIGSYS,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+    /* Do not catch ABRT, CHLD, KILL */
+#if !defined(PETSC_MISSING_SIGALRM)
+    signal(SIGALRM, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
     signal(SIGBUS, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
+#if !defined(PETSC_MISSING_SIGCONT)
+    signal(SIGCONT, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGFPE)
+    signal(SIGFPE,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGHUP)
+    signal(SIGHUP, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGILL)
+    signal(SIGILL,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGINT)
+    signal(SIGINT, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGPIPE)
+    signal(SIGPIPE, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
 #if !defined(PETSC_MISSING_SIGQUIT)
     signal(SIGQUIT, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGSEGV)
+    signal(SIGSEGV, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGSTOP)
+    signal(SIGSTOP, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGSYS)
+    signal(SIGSYS,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGTERM)
+    signal(SIGTERM,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGTRAP)
+    signal(SIGTRAP,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGTSTP)
+    signal(SIGTSTP,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGURG)
+    signal(SIGURG,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGUSR1)
+    signal(SIGUSR1, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGUSR2)
+    signal(SIGUSR2, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
     SignalSet = PETSC_TRUE;
   }
   if (!routine) {
-    signal(SIGILL,  0);
-    signal(SIGFPE,  0);
-    signal(SIGSEGV, 0);
-#if !defined(PETSC_MISSING_SIGSYS)
-    signal(SIGUSR1, 0);
-#endif
-#if !defined(PETSC_MISSING_SIGSYS)
-    signal(SIGSYS,  0);
+#if !defined(PETSC_MISSING_SIGALRM)
+    signal(SIGALRM, 0);
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
     signal(SIGBUS,  0);
 #endif
+#if !defined(PETSC_MISSING_SIGCONT)
+    signal(SIGCONT, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGFPE)
+    signal(SIGFPE,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGHUP)
+    signal(SIGHUP,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGILL)
+    signal(SIGILL,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGINT)
+    signal(SIGINT,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGPIPE)
+    signal(SIGPIPE, 0);
+#endif
 #if !defined(PETSC_MISSING_SIGQUIT)
     signal(SIGQUIT, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGSEGV)
+    signal(SIGSEGV, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGSTOP)
+    signal(SIGSTOP, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGSYS)
+    signal(SIGSYS,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGTERM)
+    signal(SIGTERM, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGTRAP)
+    signal(SIGTRAP, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGTSTP)
+    signal(SIGTSTP, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGURG)
+    signal(SIGURG,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGUSR1)
+    signal(SIGUSR1, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGUSR2)
+    signal(SIGUSR2, 0);
 #endif
     SignalSet = PETSC_FALSE;
   }
@@ -243,20 +337,59 @@ int PetscPopSignalHandler(void)
   sh  = sh->previous;
   PetscFree(tmp);
   if (!sh || !sh->handler) {
-    signal(SIGILL,  0);
-    signal(SIGFPE,  0);
-    signal(SIGSEGV, 0);
-#if !defined(PETSC_MISSING_SIGUSR1)
-    signal(SIGUSR1, 0);
-#endif
-#if !defined(PETSC_MISSING_SIGSYS)
-    signal(SIGSYS,  0);
+#if !defined(PETSC_MISSING_SIGALRM)
+    signal(SIGALRM, 0);
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
     signal(SIGBUS,  0);
 #endif
+#if !defined(PETSC_MISSING_SIGCONT)
+    signal(SIGCONT, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGFPE)
+    signal(SIGFPE,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGHUP)
+    signal(SIGHUP,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGILL)
+    signal(SIGILL,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGINT)
+    signal(SIGINT,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGPIPE)
+    signal(SIGPIPE, 0);
+#endif
 #if !defined(PETSC_MISSING_SIGQUIT)
     signal(SIGQUIT, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGSEGV)
+    signal(SIGSEGV, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGSTOP)
+    signal(SIGSTOP, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGSYS)
+    signal(SIGSYS,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGTERM)
+    signal(SIGTERM, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGTRAP)
+    signal(SIGTRAP, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGTSTP)
+    signal(SIGTSTP, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGURG)
+    signal(SIGURG,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGUSR1)
+    signal(SIGUSR1, 0);
+#endif
+#if !defined(PETSC_MISSING_SIGUSR2)
+    signal(SIGUSR2, 0);
 #endif
     SignalSet = PETSC_FALSE;
   } else {

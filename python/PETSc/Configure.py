@@ -395,7 +395,8 @@ libf: ${OBJSF}
 
   def configureMissingSignals(self):
     '''Check for missing signals, and define MISSING_<signal name> if necessary'''
-    for signal in ['ALRM', 'BUS', 'CHLD', 'CONT', 'HUP', 'KILL', 'PIPE', 'QUIT', 'STOP', 'SYS', 'TRAP', 'TSTP', 'URG', 'USR1', 'USR2']:
+    for signal in ['ABRT', 'ALRM', 'BUS',  'CHLD', 'CONT', 'FPE',  'HUP',  'ILL', 'INT',  'KILL', 'PIPE', 'QUIT', 'SEGV',
+                   'STOP', 'SYS',  'TERM', 'TRAP', 'TSTP', 'URG',  'USR1', 'USR2']:
       if not self.checkCompile('#include <signal.h>\n', 'int i=SIG'+signal+';\n\nif (i);\n'):
         self.addDefine('MISSING_SIG'+signal, 1)
     return
