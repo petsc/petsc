@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.30 1996/01/02 20:17:39 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.31 1996/01/03 14:45:03 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -404,9 +404,10 @@ $      (for unconstrained minimization)
 @*/
 int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
 {
-  int  ierr;
-  SNES snes;
+  int                 ierr;
+  SNES                snes;
   SNES_KSP_EW_ConvCtx *kctx;
+
   *outsnes = 0;
   PetscHeaderCreate(snes,_SNES,SNES_COOKIE,SNES_UNKNOWN_METHOD,comm);
   PLogObjectCreate(snes);
@@ -826,18 +827,14 @@ int SNESSetUp(SNES snes)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
-  if (!snes->vec_sol)
-    SETERRQ(1,"SNESSetUp:Must call SNESSetSolution() first");
+  if (!snes->vec_sol) SETERRQ(1,"SNESSetUp:Must call SNESSetSolution() first");
 
   if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
     if (!snes->set_method_called)
       {ierr = SNESSetType(snes,SNES_EQ_NLS); CHKERRQ(ierr);}
-    if (!snes->vec_func) SETERRQ(1,
-      "SNESSetUp:Must call SNESSetFunction() first");
-    if (!snes->computefunction) SETERRQ(1,
-      "SNESSetUp:Must call SNESSetFunction() first");
-    if (!snes->jacobian) SETERRQ(1,
-      "SNESSetUp:Must call SNESSetJacobian() first");
+    if (!snes->vec_func) SETERRQ(1,"SNESSetUp:Must call SNESSetFunction() first");
+    if (!snes->computefunction) SETERRQ(1,"SNESSetUp:Must call SNESSetFunction() first");
+    if (!snes->jacobian) SETERRQ(1,"SNESSetUp:Must call SNESSetJacobian() first");
 
     /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
     if (snes->ksp_ewconv && snes->type != SNES_EQ_NTR) {
@@ -850,14 +847,11 @@ int SNESSetUp(SNES snes)
   } else if ((snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)) {
     if (!snes->set_method_called)
       {ierr = SNESSetType(snes,SNES_UM_NTR); CHKERRQ(ierr);}
-    if (!snes->vec_func) SETERRQ(1,
-     "SNESSetUp:Must call SNESSetGradient() first");
-    if (!snes->computefunction) SETERRQ(1,
-      "SNESSetUp:Must call SNESSetGradient() first");
-    if (!snes->computeumfunction) SETERRQ(1,
-      "SNESSetUp:Must call SNESSetMinimizationFunction() first");
-    if (!snes->jacobian) SETERRQ(1,
-      "SNESSetUp:Must call SNESSetHessian() first");
+    if (!snes->vec_func) SETERRQ(1,"SNESSetUp:Must call SNESSetGradient() first");
+    if (!snes->computefunction) SETERRQ(1,"SNESSetUp:Must call SNESSetGradient() first");
+    if (!snes->computeumfunction) 
+      SETERRQ(1,"SNESSetUp:Must call SNESSetMinimizationFunction() first");
+    if (!snes->jacobian) SETERRQ(1,"SNESSetUp:Must call SNESSetHessian() first");
   } else SETERRQ(1,"SNESSetUp:Unknown method class");
   if (snes->setup) {ierr = (*snes->setup)(snes); CHKERRQ(ierr);}
   snes->setup_called = 1;
@@ -1255,11 +1249,12 @@ int SNESScaleStep_Private(SNES snes,Vec y,double *fnorm,double *delta,
 int SNESSolve(SNES snes,int *its)
 {
   int ierr;
+  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   PLogEventBegin(SNES_Solve,snes,0,0,0);
   ierr = (*(snes)->solve)(snes,its); CHKERRQ(ierr);
   PLogEventEnd(SNES_Solve,snes,0,0,0);
   if (OptionsHasName(PETSC_NULL,"-snes_view")) {
-    SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
+    ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -1284,7 +1279,7 @@ int SNESComputeInitialGuess( SNES snes,Vec  x )
 
 /* ------------------------------------------------------------------ */
 
-NRList *__NLList;
+static NRList *__SNESList = 0;
 
 /*@
    SNESSetType - Sets the method for the nonlinear solver.  
@@ -1314,9 +1309,9 @@ int SNESSetType(SNES snes,SNESType method)
   int (*r)(SNES);
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   /* Get the function pointers for the iterative method requested */
-  if (!__NLList) {SNESRegisterAll();}
-  if (!__NLList) {SETERRQ(1,"SNESSetType:Could not get methods");}
-  r =  (int (*)(SNES))NRFindRoutine( __NLList, (int)method, (char *)0 );
+  if (!__SNESList) {SNESRegisterAll();}
+  if (!__SNESList) {SETERRQ(1,"SNESSetType:Could not get methods");}
+  r =  (int (*)(SNES))NRFindRoutine( __SNESList, (int)method, (char *)0 );
   if (!r) {SETERRQ(1,"SNESSetType:Unknown method");}
   if (snes->data) PetscFree(snes->data);
   snes->set_method_called = 1;
@@ -1340,8 +1335,8 @@ int SNESSetType(SNES snes,SNESType method)
 int SNESRegister(int name, char *sname, int (*create)(SNES))
 {
   int ierr;
-  if (!__NLList) {ierr = NRCreate(&__NLList); CHKERRQ(ierr);}
-  NRRegister( __NLList, name, sname, (int (*)(void*))create );
+  if (!__SNESList) {ierr = NRCreate(&__SNESList); CHKERRQ(ierr);}
+  NRRegister( __SNESList, name, sname, (int (*)(void*))create );
   return 0;
 }
 /* --------------------------------------------------------------------- */
@@ -1355,9 +1350,9 @@ int SNESRegister(int name, char *sname, int (*create)(SNES))
 @*/
 int SNESRegisterDestroy()
 {
-  if (__NLList) {
-    NRDestroy( __NLList );
-    __NLList = 0;
+  if (__SNESList) {
+    NRDestroy( __SNESList );
+    __SNESList = 0;
   }
   return 0;
 }
@@ -1382,8 +1377,8 @@ int SNESGetTypeFromOptions_Private(SNES ctx,SNESType *method)
 {
   char sbuf[50];
   if (OptionsGetString(ctx->prefix,"-snes_type", sbuf, 50 )) {
-    if (!__NLList) SNESRegisterAll();
-    *method = (SNESType)NRFindID( __NLList, sbuf );
+    if (!__SNESList) SNESRegisterAll();
+    *method = (SNESType)NRFindID( __SNESList, sbuf );
     return 1;
   }
   return 0;
@@ -1404,9 +1399,9 @@ int SNESGetTypeFromOptions_Private(SNES ctx,SNESType *method)
 int SNESGetType(SNES snes, SNESType *method,char **name)
 {
   int ierr;
-  if (!__NLList) {ierr = SNESRegisterAll(); CHKERRQ(ierr);}
+  if (!__SNESList) {ierr = SNESRegisterAll(); CHKERRQ(ierr);}
   if (method) *method = (SNESType) snes->type;
-  if (name)  *name = NRFindName( __NLList, (int) snes->type );
+  if (name)  *name = NRFindName( __SNESList, (int) snes->type );
   return 0;
 }
 
@@ -1422,8 +1417,8 @@ int SNESGetType(SNES snes, SNESType *method,char **name)
 int SNESPrintTypes_Private(char* prefix,char *name)
 {
   FuncList *entry;
-  if (!__NLList) {SNESRegisterAll();}
-  entry = __NLList->head;
+  if (!__SNESList) {SNESRegisterAll();}
+  entry = __SNESList->head;
   fprintf(stderr," %s%s (one of)",prefix,name);
   while (entry) {
     fprintf(stderr," %s",entry->name);
