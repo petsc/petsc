@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.25 1995/08/27 13:59:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.26 1995/08/31 16:39:49 bsmith Exp curfman $";
 #endif
 #include "petsc.h"           /*I "petsc.h" I*/
 #include <stdio.h>           /*I <stdio.h> I*/
@@ -120,6 +120,7 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
     else   {
       if (!message) fprintf(stderr,"%s%s %d %d\n",dir,file,line,number);
       else fprintf(stderr,"%s%s %d %s %d\n",dir,file,line,message,number);
+    }
   }
   return number;
 }
