@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.4 1999/08/04 20:35:11 balay Exp balay $ 
+# $Id: base_variables,v 1.5 1999/08/19 20:19:07 balay Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -17,6 +17,7 @@ C_CLINKER	   = cc_r -q64 -bmaxdata:0x70000000
 # you may need to add -bI:/usr/lpp/xlf/lib/lowsys.exp to C_LINKER
 C_FLINKER	   = cc_r -q64 -bmaxdata:0x70000000
 C_CCV		   = unknown
+C_FCV		   = unknown
 C_SYS_LIB	   = -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g  -qfullpath

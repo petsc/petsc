@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.9 1999/08/19 18:17:24 balay Exp balay $ 
+# $Id: base_variables,v 1.10 1999/08/19 18:17:45 balay Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -16,6 +16,7 @@ C_FLINKER_SLFLAG   = -L
 C_CLINKER	   = cc
 C_FLINKER	   = f90
 C_CCV		   = unknown
+C_FCV		   = unknown
 C_SYS_LIB	   = -lV3 -lU77 -lail -lcnx_syscall \
 	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
 

@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.1 1999/08/30 19:55:55 balay Exp balay $ 
+# $Id: base_variables,v 1.2 1999/08/31 03:35:42 balay Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -17,6 +17,7 @@ C_FLINKER_SLFLAG   = -Wl,-rpath,
 C_CLINKER	   = gcc
 C_FLINKER	   = f90
 C_CCV		   = ${C_CC} --version
+C_FCV              = unknown
 C_SYS_LIB	   = -ldl -lc -L/common/absoft/lib -lfio -lf90math -lf77math -lU77 -lV77 -lm
 
 # ---------------------------- BOPT - g options ----------------------------
