@@ -8,7 +8,9 @@
 # FCLIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes). 
 #
-FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
+FC_LIB         =  -lftn
+# For IRIX Release less than,6.2 the above should probably be replaced by
+# FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
@@ -34,11 +36,11 @@ X11_LIB        = -lX11
 # below. You cannot use blocksolve with oomplex
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a -lpetscmat
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpi
+MPI_LIB        = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpe -lpmpi -lmpi
 MPI_INCLUDE    = -I/home/petsc/mpich/include -I/home/petsc/mpich/mpe 
 MPIRUN         = //home/petsc/mpich/lib/IRIX/ch_shmem/mpirun.ch_shmem
 #MPIRUN         = /usr/local/mpi/lib/IRIX/ch_shmem/mpirun.ch_shmem
