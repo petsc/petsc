@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.90 1997/03/09 00:50:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.91 1997/03/09 17:56:59 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -282,6 +282,62 @@ static struct _VeOps DvOps = {VecDuplicate_Seq,
             VecGetArray_Seq, VecGetSize_Seq,VecGetSize_Seq,
             VecGetOwnershipRange_Seq,0,VecMax_Seq,VecMin_Seq,
             VecSetRandom_Seq};
+
+#undef __FUNC__  
+#define __FUNC__ "VecCreateSeqWithArray"
+/*@C
+   VecCreateSeqWithArray - Creates a standard, sequential array-style vector,
+        where the user provides the array space to store the vector values.
+
+   Input Parameter:
+.  comm - the communicator, should be MPI_COMM_SELF
+.  n - the vector length 
+.  array - memory where the vector elements are to be stored.
+
+   Output Parameter:
+.  V - the vector
+
+   Notes:
+   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+   same type as an existing vector.
+
+.keywords: vector, sequential, create, BLAS
+
+.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), 
+          VecCreateMPIGhost(), VecCreateSeq()
+@*/
+int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
+{
+  Vec     v;
+  Vec_Seq *s;
+  int     flag;
+
+  /* 
+        The code below is identical to that with VecCreateSeq(); it would
+      better to somehow reuse the code. The only difference is the line
+      s->array_allocated = 0;
+  */
+
+  *V             = 0;
+  MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
+  if (flag == MPI_UNEQUAL) SETERRQ(1,0,"Must call with MPI_COMM_SELF");
+  PetscHeaderCreate(v,_Vec,VEC_COOKIE,VECSEQ,comm);
+  PLogObjectCreate(v);
+  PLogObjectMemory(v,sizeof(struct _Vec)+n*sizeof(Scalar));
+  v->destroy         = VecDestroy_Seq;
+  v->view            = VecView_Seq;
+  s                  = (Vec_Seq *) PetscMalloc(sizeof(Vec_Seq)); CHKPTRQ(s);
+  PetscMemcpy(&v->ops,&DvOps,sizeof(DvOps));
+  v->data            = (void *) s;
+  s->n               = n;
+  v->n               = n; 
+  v->N               = n;
+  v->mapping         = 0;
+  s->array           = array;
+  s->array_allocated = 0;
+  PetscMemzero(s->array,n*sizeof(Scalar));
+  *V = v; return 0;
+}
 
 #undef __FUNC__  
 #define __FUNC__ "VecCreateSeq"

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.91 1997/02/21 14:52:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.92 1997/02/22 02:25:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -417,7 +417,8 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
           goto noinsert1;
         }
       } 
-      if (nonew) goto noinsert1;
+      if (nonew == 1) goto noinsert1;
+      else if (nonew == -1) SETERRQ(1,1,"Inserting a new nonzero in the matrix");
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
         int    new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
@@ -828,12 +829,13 @@ int MatDestroy_SeqBAIJ(PetscObject obj)
 static int MatSetOption_SeqBAIJ(Mat A,MatOption op)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  if      (op == MAT_ROW_ORIENTED)              a->roworiented = 1;
-  else if (op == MAT_COLUMN_ORIENTED)           a->roworiented = 0;
-  else if (op == MAT_COLUMNS_SORTED)            a->sorted      = 1;
-  else if (op == MAT_COLUMNS_UNSORTED)          a->sorted      = 0;
-  else if (op == MAT_NO_NEW_NONZERO_LOCATIONS)  a->nonew       = 1;
-  else if (op == MAT_YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
+  if      (op == MAT_ROW_ORIENTED)               a->roworiented = 1;
+  else if (op == MAT_COLUMN_ORIENTED)            a->roworiented = 0;
+  else if (op == MAT_COLUMNS_SORTED)             a->sorted      = 1;
+  else if (op == MAT_COLUMNS_UNSORTED)           a->sorted      = 0;
+  else if (op == MAT_NO_NEW_NONZERO_LOCATIONS)   a->nonew       = 1;
+  else if (op == MAT_NEW_NONZERO_LOCATION_ERROR) a->nonew       = -1;
+  else if (op == MAT_YES_NEW_NONZERO_LOCATIONS)  a->nonew       = 0;
   else if (op == MAT_ROWS_SORTED || 
            op == MAT_ROWS_UNSORTED ||
            op == MAT_SYMMETRIC ||
