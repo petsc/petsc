@@ -1,4 +1,4 @@
-/*$Id: select.c,v 1.7 2000/09/28 21:09:22 bsmith Exp bsmith $*/
+/*$Id: select.c,v 1.8 2001/01/15 21:44:00 bsmith Exp balay $*/
 #include "petsc.h"              /*I  "petsc.h"  I*/
 #include "petscsys.h"           /*I  "petscsys.h"  I*/
 
@@ -52,7 +52,7 @@ int PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choice
   }
   cols += 4;
   sprintf(geometry," -geometry %dx%d ",cols,rows);
-  ierr = PetscStrcpy(buffer,"xterm -bw 100 -bd blue +sb -display ");
+  ierr = PetscStrcpy(buffer,"xterm -bw 100 -bd blue +sb -display ");CHKERRQ(ierr);
   ierr = PetscGetDisplay(display,128);CHKERRQ(ierr);
   ierr = PetscStrcat(buffer,display);CHKERRQ(ierr);
   ierr = PetscStrcat(buffer,geometry);CHKERRQ(ierr);
