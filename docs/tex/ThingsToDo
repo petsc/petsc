@@ -29,15 +29,16 @@ Meta priorities:
 
 
 
-  - MatZeroRows() Add flag KEEP_ZEROS_AS_NONZERO ( petsc-maint 1565)
+  -  Are these the same thing?
+      MatZeroRows() Add flag KEEP_ZEROS_AS_NONZERO ( petsc-maint 1565)
+
+      add MAT_ZERO_ROWS_LEAVE_LOCATIONS option to keep the locations but zeroed
+         for AIJ and BAIJ matrices.
 
   - add Denis Vanderstaeten's version of block orthogonalization that does
     several vectors together; between unmodified and modified gram-schmidt
 
   -  a basic member function like viewpublic and destroypublic for object validation
-
-  - add MAT_ZERO_ROWS_LEAVE_LOCATIONS option to keep the locations but zeroed
-    for AIJ and BAIJ matrices.
 
   - make PETSc thread-safe
 
@@ -50,8 +51,6 @@ Meta priorities:
     a code segment from version 2.0.15 into her application because PETSc evolved
     to be out of sync with previous versions).
 
-  - add MatGetSubMatrix() for MPIBAIJ
-
   - Conceptual; when does SNESGetSLES() etc not increase reference count on SLES, note
                 we also have Get/Restore paradym which does not apply for GetSLES etc.
                 Is there another word we should use or some general principle?
@@ -63,12 +62,8 @@ Meta priorities:
     malloced on a machine and how much memory you can use before it 
     starts disk thrashing.
 
-
-  - Reduce executable sizes 
-
   - Change from function,ctx model to functoid model, i.e. function object.
 
-  - Change config stuff to use petscconf.h
 
   - Add RCS header to all makefiles and scripts in maint
 
@@ -78,23 +73,19 @@ Meta priorities:
 
   - add indenting to PLogInfo?
 
-
   - Make MatLUFactorNumeric_SeqAIJ_NaturalOrdering() for efficiency. Might
     buy a couple of MFlops.
 
   - Fix GMRESCycle() so that test for "happy breakdown" is actually
     used.  See petsc-maint message #282 from David. NOT SO EASY BUT IMPORTANT!
 
-
   - Change All Fortran interface routines that take function pointer 
     arguments to work like MatCreateShell() now works keeping the Fortran
     function pointers in the field fortran_func_pointers.
-
  
   - MatZeroRows_MPIAIJ/MPIUNI -> causes calls to MPI_Isend/recv
 
   - PetscSortIntAndPermute()/PetscSortIntAndGetPermutation()
-
     
   - Fix fortran stub generator so that it uses
         PetscToPointerComm() for communicators instead of
@@ -985,3 +976,9 @@ at the bottom of the screen.  I'd prefer a "screen reuse policy" that was
 closer to LRU: restarting from the top of the screen.  This really shows up
 with the contour plotters: once near the bottom of the screen, the legends
 are drawn on top of the contour plots (that's a separate problem).
+
+  X add MatGetSubMatrix() for MPIBAIJ
+
+  X Reduce executable sizes 
+
+  X Change config stuff to use petscconf.h

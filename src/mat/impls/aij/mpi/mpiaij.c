@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.235 1998/04/09 04:13:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.236 1998/04/13 17:37:04 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -234,8 +234,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
               bimax = b->imax; bi = b->i; bilen = b->ilen; bj = b->j;
               ba = b->a;
             }
-          }
-          else col = in[j];
+          } else col = in[j];
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
           MatSetValues_SeqAIJ_B_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqAIJ(aij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
@@ -2018,6 +2017,12 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCa
     ierr = MatGetLocalSize(M,&ml,&nl);CHKERRQ(ierr);
     if (ml != m) SETERRQ(PETSC_ERR_ARG_SIZ,1,"Previous matrix must be same size/layout as request");
     ierr = MatZeroEntries(M);CHKERRQ(ierr);
+    /*
+         The next two lines are needed so we may call MatSetValues_MPIAIJ() below directly,
+       rather than the slower MatSetValues().
+    */
+    M->was_assembled = PETSC_TRUE; 
+    M->assembled     = PETSC_FALSE;
   }
   ierr = MatGetOwnershipRange(M,&rstart,&rend); CHKERRQ(ierr);
   aij = (Mat_SeqAIJ *) (Mreuse)->data;
@@ -2033,14 +2038,9 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCa
     ierr = MatSetValues_MPIAIJ(M,1,&row,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
   }
 
-
-
-
   ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   *newmat = M;
-
-  MatView(M,VIEWER_STDOUT_SELF);
 
   /* save submatrix used in processor for next request */
   if (call ==  MAT_INITIAL_MATRIX) {
