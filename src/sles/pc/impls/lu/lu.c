@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.68 1996/08/22 20:08:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.69 1996/09/12 16:25:55 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -127,8 +127,8 @@ static int PCSetUp_LU(PC pc)
     }
     else if (pc->flag != SAME_NONZERO_PATTERN) { 
       ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
-      ierr = ISDestroy(dir->row); CHKERRQ(ierr);
-      ierr = ISDestroy(dir->col); CHKERRQ(ierr);
+      if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row); CHKERRQ(ierr);}
+      if (dir->col) {ierr = ISDestroy(dir->col); CHKERRQ(ierr);}
       ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
       if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact); CHKERRQ(ierr);
@@ -141,12 +141,13 @@ static int PCSetUp_LU(PC pc)
 
 static int PCDestroy_LU(PetscObject obj)
 {
-  PC        pc   = (PC) obj;
+  PC    pc   = (PC) obj;
   PC_LU *dir = (PC_LU*) pc->data;
+  int   ierr;
 
   if (!dir->inplace) MatDestroy(dir->fact);
-  if (dir->row && dir->col && dir->row != dir->col) ISDestroy(dir->row);
-  if (dir->col) ISDestroy(dir->col);
+  if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row); CHKERRQ(ierr);}
+  if (dir->col) {ierr = ISDestroy(dir->col); CHKERRQ(ierr);}
   PetscFree(dir); 
   return 0;
 }

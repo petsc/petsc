@@ -9,6 +9,11 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
  -----------------------------------------------------------------------
+  - Fix MatGetReordering for MATSEQDENSE format --- quick fix in
+    MatGetReordering() because dense LU factoriz was broken .... what's
+    the right fix though?
+
+  - Looks like MatRelax() is broken for shifts != 0??
 
   - Add feature to SNESDefatulComputeJacobian() for user to set differencing
     parameter (similar to matrix-free stuff)
