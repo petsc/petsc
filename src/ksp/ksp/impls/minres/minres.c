@@ -193,22 +193,20 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 }
 
 /*MC
-     KSPMINRES -     This code implements the MINRES (Minimum Residual) method. 
-                 Reference: Paige & Saunders, 1975.
+     KSPMINRES - This code implements the MINRES (Minimum Residual) method. 
 
    Options Database Keys:
 .   see KSPSolve()
 
    Level: beginner
 
-    Contributed by: Robert Scheichl: maprs@maths.bath.ac.uk
+   Contributed by: Robert Scheichl: maprs@maths.bath.ac.uk
 
    Notes: The operator and the preconditioner must be positive definite for this method
+          Reference: Paige & Saunders, 1975.
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
-
+.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
 M*/
-
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_MINRES"

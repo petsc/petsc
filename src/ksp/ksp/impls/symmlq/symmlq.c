@@ -197,17 +197,16 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 
 /*MC
      KSPSYMMLQ -  This code implements the SYMMLQ method. 
-                 Reference: Paige & Saunders, 1975.
 
    Options Database Keys:
 .   see KSPSolve()
 
    Level: beginner
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
+   Notes: Reference: Paige & Saunders, 1975.
 
+.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
 M*/
-
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_SYMMLQ"
