@@ -2670,6 +2670,7 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
   PetscErrorCode ierr;
   PetscTruth     sametype,issame,flg;
   char           convname[256],mtype[256];
+  Mat            B; 
   ISLocalToGlobalMapping ltog=0,ltogb;
 
   PetscFunctionBegin;
@@ -2712,7 +2713,6 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
     ltogb = mat->bmapping;
 
     if (!conv) {
-      Mat B;
       ierr = MatCreate(mat->comm,0,0,0,0,&B);CHKERRQ(ierr);
       ierr = MatSetType(B,newtype);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
@@ -2733,15 +2733,28 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
     }
     ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
   }
+  B = *M;
   if (ltog) {
-    ierr = MatSetLocalToGlobalMapping(*M,ltog);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(B,ltog);CHKERRQ(ierr);
     if (!ltogb){
-      ierr = ISLocalToGlobalMappingBlock(ltog,(*M)->bs,&ltogb);
+      ierr = ISLocalToGlobalMappingBlock(ltog,B->bs,&ltogb);
     } 
-    ierr = MatSetLocalToGlobalMappingBlock(*M,ltogb);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMappingBlock(B,ltogb);CHKERRQ(ierr);
+  }
+  if (mat->rmap){
+    if (!B->rmap){
+      ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+    }
+    ierr = PetscMemcpy(B->rmap,mat->rmap,sizeof(PetscMap));CHKERRQ(ierr);
+  }
+  if (mat->cmap){
+    if (!B->cmap){
+      ierr = PetscMapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
+    }
+    ierr = PetscMemcpy(B->cmap,mat->cmap,sizeof(PetscMap));CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)*M);CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2770,6 +2783,7 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
 PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 {
   PetscErrorCode ierr;
+  Mat            B;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2785,14 +2799,27 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
     SETERRQ(PETSC_ERR_SUP,"Not written for this matrix type");
   }
   ierr = (*mat->ops->duplicate)(mat,op,M);CHKERRQ(ierr);
+  B = *M;
   if (mat->mapping) {
-    ierr = MatSetLocalToGlobalMapping(*M,mat->mapping);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(B,mat->mapping);CHKERRQ(ierr);
   }
   if (mat->bmapping) {
-    ierr = MatSetLocalToGlobalMappingBlock(*M,mat->bmapping);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMappingBlock(B,mat->bmapping);CHKERRQ(ierr);
+  }
+  if (mat->rmap){
+    if (!B->rmap){
+      ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+    }
+    ierr = PetscMemcpy(B->rmap,mat->rmap,sizeof(PetscMap));CHKERRQ(ierr);
+  }
+  if (mat->cmap){
+    if (!B->cmap){
+      ierr = PetscMapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
+    }
+    ierr = PetscMemcpy(B->cmap,mat->cmap,sizeof(PetscMap));CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)*M);CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -9,10 +9,10 @@ int main(int argc,char **args)
 {
   Mat            C,A,B,D; 
   PetscErrorCode ierr;
-  PetscInt       i,j,ntypes = 3,bs,mbs,m,block,d_nz=3, o_nz=3,col[3],row,msglvl=1;
+  PetscInt       i,j,ntypes = 3,bs,mbs,m,block,d_nz=6, o_nz=3,col[3],row,msglvl=1;
   PetscMPIInt    size,rank;
   /* const MatType  type[9] = {MATMPIAIJ,MATMPIBAIJ,MATMPIROWBS};*/ /* BlockSolve95 is required for MATMPIROWBS */
-  const MatType  type[9] = {MATSEQAIJ,MATSEQBAIJ,MATSEQSBAIJ}; 
+  const MatType  type[9]; 
   char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
   PetscTruth     equal,flg_loadmat;
@@ -22,25 +22,41 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg_loadmat);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_ERR_SUP,"At present, this is a uniprocessor example!");
+  if (size == 1){
+    ntypes  = 3;
+    type[0] = MATSEQAIJ;
+    type[1] = MATSEQBAIJ;
+    type[2] = MATSEQSBAIJ;
+  } else {
+    ntypes  = 2;
+    type[0] = MATMPIAIJ;
+    type[1] = MATMPIBAIJ;
+    type[2] = MATMPISBAIJ;
+  }
 
   /* input matrix C */
   if (flg_loadmat){
-    /* Open binary file.  Note that we use PETSC_FILE_RDONLY to indicate
-       reading from this file. */
+    /* Open binary file. */
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
 
-    /* Load the matrix, then destroy the viewer. */
-    ierr = MatLoad(fd,MATAIJ,&C);CHKERRQ(ierr);
+    /* Load a baij matrix, then destroy the viewer. */
+    if (size == 1){
+      ierr = MatLoad(fd,MATSEQBAIJ,&C);CHKERRQ(ierr);
+    } else {
+      ierr = MatLoad(fd,MATMPIBAIJ,&C);CHKERRQ(ierr);
+    }
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
-    bs = 1;  /* assume the loaded matrix has block size 1 */
-  } else { /* Convert a baij mat with bs>1 to other formats */
+  } else { /* Create a baij mat with bs>1  */
     bs = 2; mbs=8;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);
     if (bs <= 1) SETERRQ(PETSC_ERR_ARG_WRONG," bs must be >1 in this case");
     m = mbs*bs;
-    ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,m,m,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&C);CHKERRQ(ierr);
+    if (size == 1){
+      ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m,m,d_nz,PETSC_NULL,&C);CHKERRQ(ierr); 
+    } else {
+      ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,m,m,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&C);CHKERRQ(ierr); 
+    }
     for (block=0; block<mbs; block++){
       /* diagonal blocks */
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
@@ -68,7 +84,7 @@ int main(int argc,char **args)
     ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  
+ 
   /* convert C to other formats */
   for (i=0; i<ntypes; i++) {
     ierr = MatConvert(C,type[i],&A);CHKERRQ(ierr);
