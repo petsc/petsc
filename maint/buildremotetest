@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildremotetest,v 1.42 1998/04/23 22:39:01 balay Exp balay $ 
+# $Id: buildremotetest,v 1.43 1998/10/07 19:01:31 balay Exp balay $ 
 
 # 
 # Builds and transports the petsc.tar.gz file for remote 
@@ -13,9 +13,9 @@ cd /home/bsmith/petsc/maint
 echo "ftp logging: `date` " > nightlylogs/ftp.log
 chmod 660 nightlylogs/ftp.log
 builddist >>& /dev/null
-#/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
-#autoftp joshua.math.ucla.edu bsmith put ~/petsc.tar.gz petsc.tar.gz >>& nightlylogs/ftp.log
-#/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
+/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
+autoftp shattered.disturbed.net petsc put ~/petsc.tar.gz petsc.tar.gz >>& nightlylogs/ftp.log
+/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
 #autoftp h4p.llnl.gov bsmith put ~/petsc.tar.gz petsc.tar.gz >>& nightlylogs/ftp.log
 #/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
 #autoftp ursula.cs.msstate.edu curfman put ~/petsc.tar.gz petsc.tar.gz >>& nightlylogs/ftp.log
@@ -26,8 +26,8 @@ builddist >>& /dev/null
 echo sleeping 30000 >> nightlylogs/ftp.log
 sleep 30000
 echo done sleeping >> nightlylogs/ftp.log
-#/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
-#autoftp joshua.math.ucla.edu bsmith get buildtest.log /home/bsmith/petsc/maint/nightlylogs/solaris.log >>& nightlylogs/ftp.log
+/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
+autoftp  shattered.disturbed.net get buildtest.log /home/bsmith/petsc/maint/nightlylogs/freebsd.log >>& nightlylogs/ftp.log
 #/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
 #autoftp h4p.llnl.gov bsmith get buildtest.log /home/bsmith/petsc/maint/nightlylogs/build_t3d.log >>& nightlylogs/ftp.log
 #/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
