@@ -1,7 +1,7 @@
 #!/bin/sh
 if [ $1 !=  "-np" ]
 then
-$*
+./$*
 exit 0
 fi
 
@@ -9,7 +9,7 @@ if [ $2 =  "1" ]
 then
 shift
 shift
-$*
+./$*
 exit 0
 fi
 
