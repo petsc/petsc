@@ -12,5 +12,4 @@ OBJSF    =
 LIBBASE  = libpetscksp
 LINCLUDE = 
 
-include $(ITOOLSDIR)/bmake/$(PARCH)
-
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

@@ -14,4 +14,4 @@ LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 DIRS     = cr bcgs cg cgs gmres cheby rich lsqr preonly tcqmr tfqmr 
 
-include $(ITOOLSDIR)/bmake/$(PARCH)
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

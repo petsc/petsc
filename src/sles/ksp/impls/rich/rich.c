@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.4 1994/10/31 22:11:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.5 1994/11/21 06:45:04 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -43,32 +43,6 @@ int KSPRichardsonSetScale(KSP itP,double scale)
   richardsonP->scale = scale;
   return 0;
 }
-/*@
-     KSPRichardsonSetFast - use this to provide a routine that 
-         applies Richardson fast for your particular preconditioner. 
-         This is mainly intended to be used for SOR (Gauss-Seidel)
-         type smoothers. 
-
-  Input Parameters:
-.   itP - the iterative context
-.   apply - the routine to use
-.   ctx - optional context for the routine
-
-  Calling Sequence of apply:
-.   apply(void *ctx,Vec x,Vec b, Vec work,int its);
-
-@*/
-int KSPRichardsonSetFast(KSP itP,int (*apply)(void *,Vec,Vec,
-                         Vec,int),void *ctx)
-{
-  KSPRichardsonCntx *richardsonP;
-  VALIDHEADER(itP,KSP_COOKIE);
-  if (itP->method != KSPRICHARDSON) return 0;
-  richardsonP = (KSPRichardsonCntx *) itP->MethodPrivate;
-  richardsonP->applyrich = apply;
-  richardsonP->ctx       = ctx;
-  return 0;
-}   
 
 int  KSPiRichardsonSolve(KSP itP,int *its)
 {
@@ -85,9 +59,9 @@ int  KSPiRichardsonSolve(KSP itP,int *its)
   maxit   = itP->max_it;
 
   /* if user has provided fast Richardson code use that */
-  if (richardsonP->applyrich){
+  if (PCApplyRichardsonExists(itP->B)) {
     *its = maxit;
-    return (*richardsonP->applyrich)(richardsonP->ctx,x,b,r,maxit);
+    return PCApplyRichardson(itP->B,x,b,r,maxit);
   }
 
   z       = itP->work[1];
@@ -97,13 +71,13 @@ int  KSPiRichardsonSolve(KSP itP,int *its)
   pres    = itP->use_pres;
 
   if (!itP->guess_zero) {                       /*   r <- b - A x     */
-    MM(itP,x,r);
+    MatMult(itP->A,x,r);
     VecAYPX(&mone,b,r);
   }
   else VecCopy(b,r);
 
   for ( i=0; i<maxit; i++ ) {
-     PRE(itP,r,z);                            /*   z <- B r         */
+     PCApply(itP->B,r,z);                       /*   z <- B r         */
      if (itP->calc_res) {
 	if (!pres) VecNorm(r,&rnorm);         /*   rnorm <- r'*r    */
 	else       VecNorm(z,&rnorm);         /*   rnorm <- z'*z    */
@@ -113,13 +87,13 @@ int  KSPiRichardsonSolve(KSP itP,int *its)
      }
    
      VecAXPY(&scale,z,x);                     /*   x  <- x + scale z */
-     MM(itP,x,r);                            /*   r  <- b - Ax      */
+     MatMult(itP->A,x,r);                     /*   r  <- b - Ax      */
      VecAYPX(&mone,b,r);
   }
   if (itP->calc_res && !brokeout) {
     if (!pres) VecNorm(r,&rnorm);             /*   rnorm <- r'*r    */
     else {
-      PRE(itP,r,z);                          /*   z <- B r         */
+      PCApply(itP->B,r,z);                    /*   z <- B r         */
       VecNorm(z,&rnorm);                      /*   rnorm <- z'*z    */
     }
     if (history && hist_len > i) history[i] = rnorm;
@@ -142,7 +116,6 @@ int KSPiRichardsonCreate(KSP itP)
   itP->MethodPrivate = (void *) richardsonP;
   itP->method               = KSPRICHARDSON;
   richardsonP->scale        = 1.0;
-  richardsonP->applyrich    = 0;
   itP->setup      = KSPiRichardsonSetUp;
   itP->solver     = KSPiRichardsonSolve;
   itP->adjustwork = KSPiDefaultAdjustWork;
