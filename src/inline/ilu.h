@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.10 1999/01/04 21:46:43 bsmith Exp balay $ */
+/* $Id: ilu.h,v 1.11 1999/01/06 16:00:43 balay Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -16,9 +16,12 @@
 
 extern int  LINPACKdgefa(MatScalar *,int, int *);
 extern int  LINPACKdgedi(MatScalar *,int, int *,MatScalar*);
+extern int  Kernel_A_gets_inverse_A_2(MatScalar *);
 extern int  Kernel_A_gets_inverse_A_3(MatScalar *);
 extern int  Kernel_A_gets_inverse_A_4(MatScalar *);
 extern int  Kernel_A_gets_inverse_A_5(MatScalar *);
+extern int  Kernel_A_gets_inverse_A_6(MatScalar *);
+extern int  Kernel_A_gets_inverse_A_7(MatScalar *);
 
 /*
      These are Fortran kernels: They replace certain BLAS routines but
