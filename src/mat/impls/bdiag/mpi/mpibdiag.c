@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.44 1995/10/17 03:15:45 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.45 1995/10/19 22:24:24 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -10,7 +10,7 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode addv)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  int        ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
+  int          ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
 
   if (mbd->insertmode != NOT_SET_VALUES && mbd->insertmode != addv) {
     SETERRQ(1,"MatSetValues_MPIBDiag:Cannot mix inserts and adds");
@@ -39,15 +39,14 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
 
 static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
-  Mat_MPIBDiag  *mbd = (Mat_MPIBDiag *) mat->data;
-  MPI_Comm    comm = mat->comm;
-  int         size = mbd->size, *owners = mbd->rowners;
-  int         rank = mbd->rank;
-  MPI_Request *send_waits,*recv_waits;
-  int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
-  int         tag = mat->tag, *owner,*starts,count,ierr;
-  InsertMode  addv;
-  Scalar      *rvalues,*svalues;
+  Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
+  MPI_Comm     comm = mat->comm;
+  int          size = mbd->size, *owners = mbd->rowners, rank = mbd->rank;
+  int          *nprocs, i, j, idx, *procs, nsends, nreceives, nmax, *work;
+  int          tag = mat->tag, *owner, *starts, count, ierr;
+  MPI_Request  *send_waits,*recv_waits;
+  InsertMode   addv;
+  Scalar       *rvalues,*svalues;
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce((void *) &mbd->insertmode,(void *) &addv,1,MPI_INT,
@@ -140,15 +139,13 @@ extern int MatSetUpMultiply_MPIBDiag(Mat);
 
 static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
-  int        ierr;
+  int          ierr;
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   Mat_SeqBDiag *mlocal;
-
-  MPI_Status  *send_status,recv_status;
-  int         imdex,nrecvs = mbd->nrecvs, count = nrecvs, i, n;
-  int         row,col;
-  Scalar      *values,val;
-  InsertMode  addv = mbd->insertmode;
+  MPI_Status   *send_status, recv_status;
+  int          imdex, nrecvs = mbd->nrecvs, count = nrecvs, i, n, row, col;
+  Scalar       *values, val;
+  InsertMode   addv = mbd->insertmode;
 
   /*  wait on receives */
   while (count) {
@@ -343,7 +340,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
 static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  int        ierr;
+  int          ierr;
   if (!mbd->assembled) 
     SETERRQ(1,"MatMult_MPIBDiag:Must assemble matrix first");
   ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
@@ -357,7 +354,7 @@ static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
 static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  int        ierr;
+  int          ierr;
   if (!mbd->assembled) 
     SETERRQ(1,"MatMultAdd_MPIBDiag:Must assemble matrix first");
   ierr = VecScatterBegin(xx,mbd->lvec,ADD_VALUES,SCATTER_ALL,mbd->Mvctx);
@@ -399,7 +396,7 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
 {
   Mat          mat = (Mat) obj;
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  Mat_SeqBDiag    *ms = (Mat_SeqBDiag *) mbd->A->data;
+  Mat_SeqBDiag *ms = (Mat_SeqBDiag *) mbd->A->data;
   int          ierr;
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",

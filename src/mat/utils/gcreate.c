@@ -1,6 +1,5 @@
-
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.47 1995/10/18 03:16:27 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.48 1995/10/19 22:26:28 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -12,13 +11,15 @@ static char vcid[] = "$Id: gcreate.c,v 1.47 1995/10/18 03:16:27 curfman Exp curf
 
    Input Parameter:
 .  comm - the MPI communicator
-.  type - the type of matrix desired, for example MATSEQAIJ
+.  type - the type of matrix desired, for example MATSEQAIJ, MATMPIAIJ
 
    Output Parameters:
 .  set - flag indicating whether user set matrix type option.
 
+.keywords: matrix, get, format, from, options
+
 .seealso: MatCreate()
- @*/
+@*/
 int MatGetFormatFromOptions(MPI_Comm comm,MatType *type,int *set)
 {
   int size;
@@ -26,7 +27,7 @@ int MatGetFormatFromOptions(MPI_Comm comm,MatType *type,int *set)
   if (OptionsHasName(0,"-help")) {
     MPIU_printf(comm,"Matrix format options: -mat_aij, -mat_seqaij, -mat_mpiaij\n");
     MPIU_printf(comm,"   -mat_row, -mat_seqrow, -mat_mpirow\n");
-    MPIU_printf(comm,"   -mat_mpirowbs, -mat_seqdense\n");
+    MPIU_printf(comm,"   -mat_mpirowbs, -mat_seqdense, -mat_mpidense\n");
     MPIU_printf(comm,"   -mat_bdiag, -mat_seqbdiag,-mat_mpibdiag\n"); 
     MPIU_printf(comm,"More matrix options: -mat_draw : draw nonzero structure of matrix\n");
     MPIU_printf(comm,"   at conclusion of MatAssemblyEnd().  Use -pause <sec> to set\n");
@@ -34,6 +35,10 @@ int MatGetFormatFromOptions(MPI_Comm comm,MatType *type,int *set)
   }
   if (OptionsHasName(0,"-mat_seqdense")) {
     *type = MATSEQDENSE;
+    *set = 1;
+  }
+  else if (OptionsHasName(0,"-mat_mpidense")) {
+    *type = MATMPIDENSE;
     *set = 1;
   }
   else if (OptionsHasName(0,"-mat_seqbdiag")) {
@@ -79,6 +84,11 @@ int MatGetFormatFromOptions(MPI_Comm comm,MatType *type,int *set)
     else *type = MATMPIBDIAG;
     *set = 1;
   }  
+  else if (OptionsHasName(0,"-mat_dense")){
+    if (size == 1) *type = MATSEQDENSE;
+    else *type = MATMPIDENSE;
+    *set = 1;
+  }  
   else {
     if (size == 1) *type = MATSEQAIJ;
     else *type = MATMPIAIJ;
@@ -114,7 +124,9 @@ $                  MatCreateMPIBDiag()
 $  -mat_bdiag    : block diagonal type, 
 $                  (Seq or MPI depending on comm)
 $  -mat_mpirowbs : rowbs type, uses MatCreateMPIRowbs()
-$  -mat_seqdense : dense type, uses MatCreateSeqDense()
+$  -mat_dense    : dense type, (Seq or MPI depending on comm)
+$  -mat_mpidense : dense type, uses MatCreateSeqDense()
+$  -mat_mpidense : dense type, uses MatCreateMPIDense()
 
    Notes:
    The default matrix type is AIJ, using MatCreateSeqAIJ() and
@@ -125,7 +137,8 @@ $  -mat_seqdense : dense type, uses MatCreateSeqDense()
 .seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
           MatCreateSeqRow(), MatCreateMPIRow(), 
           MatCreateSeqBDiag(),MatCreateMPIBDiag(),
-          MatCreateSeqDense(), MatCreateMPIRowbs(), MatConvert()
+          MatCreateSeqDense(), MatCreateMPIDense(), 
+          MatCreateMPIRowbs(), MatConvert()
           MatGetFormatFromOptions()
  @*/
 int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
@@ -174,6 +187,9 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
   if (type == MATSEQROW) {
     return MatCreateSeqRow(comm,m,n,10,0,V);
   }
+  if (type == MATMPIDENSE) {
+    return MatCreateMPIDense(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,V);
+  }
   if (type == MATMPIAIJ) { 
     return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);
   }
@@ -197,7 +213,7 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 int MatGetName(Mat mat,char **name)
 {
   int  itype = (int)mat->type;
-  char *matname[9];
+  char *matname[10];
   /* Note:  Be sure that this list corresponds to the enum in mat.h */
   matname[0] = "MATSEQDENSE";
   matname[1] = "MATSEQAIJ";
@@ -208,6 +224,7 @@ int MatGetName(Mat mat,char **name)
   matname[6] = "MATMPIROWBS";
   matname[7] = "MATSEQBDIAG";
   matname[8] = "MATMPIBDIAG";
+  matname[9] = "MATMPIDENSE";
   if (itype < 0 || itype > 8) *name = "Unknown matrix type";
   else                        *name = matname[itype];
   return 0;
