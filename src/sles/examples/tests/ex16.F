@@ -1,5 +1,5 @@
 !
-!      "$Id: ex16.F,v 1.19 1998/04/15 18:02:18 balay Exp bsmith $";
+!      "$Id: ex16.F,v 1.20 1998/12/03 04:02:35 bsmith Exp balay $";
 !
        implicit none
 
@@ -39,7 +39,7 @@
 
 ! Read in matrix and RHS
       call OptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
-      call ViewerBinaryOpen(PETSC_COMM_WORLD,f,BINARY_RDONLY,       &
+      call ViewerBinaryOpen(PETSC_COMM_WORLD,f,BINARY_RDONLY,            &
      &     fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f

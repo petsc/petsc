@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.28 1998/05/30 14:30:37 balay Exp bsmith $";
+! "$Id: ex1f.F,v 1.29 1998/12/03 04:04:09 bsmith Exp balay $";
 !
 !       Formatted test for TS routines.
 !
@@ -87,11 +87,11 @@
 
 !   Set up display to show wave graph 
 
-      call ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,       &
+      call ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
      &     PETSC_NULL_CHARACTER,80,380,400,160,viewer1,ierr)
       call ViewerDrawGetDraw(viewer1,0,draw,ierr) 
       call DrawSetDoubleBuffer(draw,ierr) 
-      call ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,       &
+      call ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,        &
      &     PETSC_NULL_CHARACTER,80,0,400,160,viewer2,ierr) 
       call ViewerDrawGetDraw(viewer2,0,draw,ierr) 
       call DrawSetDoubleBuffer(draw,ierr) 
