@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.12 2001/08/22 18:01:32 balay Exp bsmith $ 
+# $Id: makefile,v 1.13 2001/09/07 20:11:02 bsmith Exp $ 
 #
 #   SPAI_LIB should be defined in bmake/$PETSC_ARCH/packages
 #

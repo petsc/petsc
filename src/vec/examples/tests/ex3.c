@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.53 2001/08/07 03:02:26 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.54 2001/09/08 03:18:25 bsmith Exp $*/
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
   -n <length> : local vector length\n\n";

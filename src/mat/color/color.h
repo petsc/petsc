@@ -1,4 +1,4 @@
-/*$Id: color.h,v 1.4 2000/01/11 21:01:31 bsmith Exp bsmith $*/
+/*$Id: color.h,v 1.5 2000/05/10 16:41:33 bsmith Exp $*/
 
 #if !defined(_MINPACK_COLOR_H)
 #define _MINPACK_COLOR_H

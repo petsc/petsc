@@ -1,5 +1,5 @@
 !
-!    "$Id: ex8f.F,v 1.1 2000/12/13 20:56:02 bsmith Exp bsmith $";
+!    "$Id: ex8f.F,v 1.2 2001/01/15 21:47:06 bsmith Exp $";
 !
 !   Tests MGSetResidual
 !

@@ -1,4 +1,4 @@
-/* "$Id: snesmfj.h,v 1.18 2001/08/07 21:31:08 bsmith Exp bsmith $"; */
+/* "$Id: snesmfj.h,v 1.19 2001/09/07 20:11:34 bsmith Exp $"; */
 /*
     This file should be included in NEW routines that compute the
     differencing parameter for finite difference based matrix-free

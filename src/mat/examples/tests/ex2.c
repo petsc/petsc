@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.24 2001/08/07 03:03:07 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.25 2001/08/07 21:30:08 bsmith Exp $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 

@@ -1,4 +1,4 @@
-/* $Id: petscadic.h,v 1.4 1997/05/23 18:34:05 balay Exp balay $ */
+/* $Id: petscadic.h,v 1.5 1998/03/24 20:38:58 balay Exp bsmith $ */
 
 /*
         EXPERIMENTAL CODE - Use at your own risk.
@@ -7,8 +7,8 @@
   application codes.
 */
 
-#if !defined(__PETSCADIC_PACKAGE)
-#define __PETSCADIC_PACKAGE
+#if !defined(__PETSCADIC_H)
+#define __PETSCADIC_H
 
 #include "mat.h"  
 

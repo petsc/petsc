@@ -1,4 +1,4 @@
-/* $Id: inpututils.c,v 1.18 2001/08/06 21:18:48 bsmith Exp bsmith $ */
+/* $Id: inpututils.c,v 1.19 2001/08/07 21:31:52 bsmith Exp $ */
 
 /*
        Utilities for inputing, creating and managing simple two dimensional grids

@@ -1,4 +1,4 @@
-/* $Id: gmresp.h,v 1.17 2001/08/06 21:16:44 bsmith Exp balay $ */
+/* $Id: gmresp.h,v 1.18 2001/08/07 03:03:51 balay Exp $ */
 /*
    Private data structure used by the GMRES method.
 */

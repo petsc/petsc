@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.76 2001/08/07 21:28:54 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.77 2001/08/10 03:28:54 bsmith Exp $*/
 /*
 
    This file defines part of the initialization of PETSc

@@ -1,5 +1,5 @@
 #
-#     See the file bmake/base_variables.defs for a complete explanation of all these fields
+#     See the file bmake/variables.defs for a complete explanation of all these fields
 #
 AR               = @AR@
 AR_FLAGS         = @AR_FLAGS@

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f.F,v 1.15 2001/01/15 21:45:20 bsmith Exp balay $";
+!      "$Id: ex3f.F,v 1.16 2001/08/07 03:02:34 balay Exp $";
 !
 !  Description: Displays a vector visually.
 !

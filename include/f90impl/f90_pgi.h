@@ -1,4 +1,4 @@
-/* $Id: f90_solaris.h,v 1.2 2000/07/21 20:07:31 balay Exp balay $ */
+/* $Id: f90_pgi.h,v 1.1 2000/09/15 19:21:41 balay Exp $ */
 
 #if !defined (__F90_PGI_H)
 #define __F90_PGI_H

@@ -1,4 +1,4 @@
-/*$Id: iscomp.c,v 1.34 2001/01/15 21:44:35 bsmith Exp balay $*/
+/*$Id: iscomp.c,v 1.35 2001/03/23 23:21:16 balay Exp $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/

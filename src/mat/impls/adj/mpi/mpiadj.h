@@ -1,4 +1,4 @@
-/* $Id: mpiadj.h,v 1.7 2000/08/01 20:02:19 bsmith Exp bsmith $ */
+/* $Id: mpiadj.h,v 1.8 2000/10/11 17:49:33 bsmith Exp $ */
 
 #include "src/mat/matimpl.h"
 

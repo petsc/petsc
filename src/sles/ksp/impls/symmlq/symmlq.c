@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.15 2001/08/06 21:16:50 bsmith Exp balay $*/
+/*$Id: symmlq.c,v 1.16 2001/08/07 03:03:56 balay Exp $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.

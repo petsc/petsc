@@ -1,4 +1,4 @@
-/*$Id: pcregis.c,v 1.65 2001/06/21 21:17:38 bsmith Exp bsmith $*/
+/*$Id: pcregis.c,v 1.66 2001/08/10 03:32:21 bsmith Exp $*/
 
 #include "src/sles/pc/pcimpl.h"          /*I   "petscpc.h"   I*/
 

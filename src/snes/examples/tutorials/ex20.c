@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.19 2001/08/07 03:04:16 balay Exp bsmith $ */
+/* $Id: ex20.c,v 1.20 2001/08/07 21:31:17 bsmith Exp $ */
 
 
 static char help[] ="Nonlinear Radiative Transport PDE with multigrid in 3d.\n\

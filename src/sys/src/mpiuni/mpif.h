@@ -1,5 +1,5 @@
 !
-!     $Id: mpif.h,v 1.12 2000/01/14 23:56:20 balay Exp balay $
+!     $Id: mpif.h,v 1.13 2000/05/26 13:59:56 balay Exp $
 !
 
 !     Trying to provide as little support for fortran code in petsc as needed

@@ -1,4 +1,4 @@
-/* $Id: smatlab.c,v 1.11 2001/01/15 21:43:46 bsmith Exp balay $ */
+/* $Id: smatlab.c,v 1.12 2001/03/23 23:20:30 balay Exp $ */
 
 #include "petsc.h"
 #include "petscsys.h"

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex11f.F,v 1.30 2001/08/06 21:16:53 bsmith Exp balay $";
+!    "$Id: ex11f.F,v 1.31 2001/08/07 03:04:00 balay Exp $";
 !
 !/*T
 !  Concepts: SLES^solving a Helmholtz equation

@@ -1,4 +1,4 @@
-/*$Id: memc.c,v 1.68 2001/08/06 21:14:16 bsmith Exp bsmith $*/
+/*$Id: memc.c,v 1.69 2001/09/07 20:08:33 bsmith Exp $*/
 /*
     We define the memory operations here. The reason we just do not use 
   the standard memory routines in the PETSc code is that on some machines 

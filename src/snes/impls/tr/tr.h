@@ -1,4 +1,4 @@
-/* $Id: tr.h,v 1.8 1999/10/23 00:00:58 bsmith Exp bsmith $ */
+/* $Id: tr.h,v 1.9 2001/08/07 21:31:09 bsmith Exp $ */
 
 /*
    Context for a Newton trust region method for solving a system 

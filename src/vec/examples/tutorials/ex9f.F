@@ -1,5 +1,5 @@
 !
-!     "$Id: ex9f.F,v 1.10 2001/01/22 23:27:17 balay Exp balay $";
+!     "$Id: ex9f.F,v 1.11 2001/08/07 03:02:34 balay Exp $";
 !
 ! Description: Illustrates the use of VecCreateGhost()
 !

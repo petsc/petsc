@@ -1,5 +1,5 @@
 !
-!    "$Id: ex4f.F,v 1.7 2000/09/27 20:03:50 bsmith Exp bsmith $";
+!    "$Id: ex4f.F,v 1.8 2001/01/15 21:43:34 bsmith Exp $";
 !
 !
 !  This example demonstrates use of PetscDrawZoom()

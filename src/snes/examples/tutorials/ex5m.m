@@ -1,5 +1,5 @@
 function localF = ex5m(localX,hx,hy,lambda)
-% $Id: ex5m.m,v 1.2 2000/05/08 03:52:14 bsmith Exp bsmith $
+% $Id: ex5m.m,v 1.3 2000/05/08 03:54:05 bsmith Exp $
 %
 %  Matlab routine that does the FormFunction() for ex5m.c
 %

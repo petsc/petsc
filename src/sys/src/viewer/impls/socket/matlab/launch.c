@@ -1,4 +1,4 @@
-/*$Id: launch.c,v 1.14 2001/01/15 21:43:08 bsmith Exp balay $*/
+/*$Id: launch.c,v 1.15 2001/03/23 23:19:53 balay Exp $*/
 /* 
   Usage: A = launch(programname,number processors); 
  

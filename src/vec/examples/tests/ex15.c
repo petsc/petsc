@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.17 2001/04/10 19:35:02 bsmith Exp balay $*/
+/*$Id: ex15.c,v 1.18 2001/08/07 03:02:26 balay Exp $*/
 
 static char help[] = "Tests VecSetValuesBlocked() on sequential vectors.\n\n";
 

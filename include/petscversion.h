@@ -1,5 +1,5 @@
 
-/* $Id: petscversion.h,v 1.25 2001/04/10 22:37:51 balay Exp bsmith $ */
+/* $Id: petscversion.h,v 1.26 2001/06/21 21:20:02 bsmith Exp $ */
 #if !defined(__PETSCVERSION_H)
 #define __PETSCVERSION_H
 

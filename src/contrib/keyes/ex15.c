@@ -1,5 +1,5 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.10 1999/10/06 22:18:36 bsmith Exp bsmith $";
+c#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex15.c,v 1.11 1999/10/07 19:09:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -65,8 +65,7 @@ typedef struct {
    double      beta, bm1, coef;/* nonlinear diffusivity parameterizations */
 } AppCtx;
 
-#define COARSE_LEVEL 0
-#define FINE_LEVEL   1
+#define POWFLOP 5 /* assume a pow() takes five flops */
 
 extern int FormFunction(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
 extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -84,17 +83,13 @@ int main( int argc, char **argv )
   GridCtx       *finegrid;                      
   int           ierr, its, lits, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
   int           nlocal,i;
-  int	        maxit, maxf;
+  int	        maxit, maxf,flag;
   double	atol, rtol, stol, litspit;
   SLES          sles;
   PC            pc;
   PLogDouble    v1, v2, elapsed;
 
-  /*
-    Initialize PETSc, note that default options in ex15options can be 
-    overridden at the command line
-  */
-  PetscInitialize( &argc, &argv,"ex15options",help );
+  PetscInitialize( &argc, &argv,PETSC_NULL,help );
 
   /* set problem parameters */
   user.tleft  = 1.0; 
@@ -116,7 +111,8 @@ int main( int argc, char **argv )
   ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-nlevels",&user.nlevels,PETSC_NULL); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.grid[0].mx,PETSC_NULL); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.grid[0].my,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.grid[0].my,&flag); CHKERRA(ierr);
+  if (!flag) { user.grid[0].my = user.grid[0].mx;}
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.grid[0].mx,user.grid[0].my);CHKERRA(ierr);
 
   /* Set grid size for all finer levels */
@@ -191,6 +187,7 @@ int main( int argc, char **argv )
   ierr = PLogStagePush(1);CHKERRA(ierr);
   ierr = PetscGetTime(&v1); CHKERRA(ierr);
   ierr = SNESSolve(snes,finegrid->x,&its); CHKERRA(ierr);
+  ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = PetscGetTime(&v2); CHKERRA(ierr);
   ierr = PLogStagePop();CHKERRA(ierr);
   elapsed = v2 - v1;
@@ -437,7 +434,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
   /* Insert values into global vector */
   ierr = DALocalToGlobal(finegrid->da,localF,INSERT_VALUES,F); CHKERRQ(ierr);
-  PLogFlops(11*ym*xm);
+  PLogFlops((22 + 4*POWFLOP)*ym*xm);
   PetscFunctionReturn(0);
 } 
 /* --------------------  Evaluate Jacobian F(x) --------------------- */
@@ -761,6 +758,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
+  PLogFlops((41 + 8*POWFLOP)*xm*ym);
   PetscFunctionReturn(0);
 }
 
@@ -896,7 +894,7 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
   g_f->Rscale = Rscale;
   g_f->R      = mat;
 
-
+  PLogFlops(13*m*n);
   PetscFunctionReturn(0);;
 }
 

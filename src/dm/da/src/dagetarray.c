@@ -1,4 +1,4 @@
-/*$Id: dagetarray.c,v 1.12 2001/03/23 23:25:00 balay Exp bsmith $*/
+/*$Id: dagetarray.c,v 1.13 2001/08/06 21:18:33 bsmith Exp $*/
  
 #include "petscda.h"    /*I   "petscda.h"   I*/
 

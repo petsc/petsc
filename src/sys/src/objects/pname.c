@@ -1,4 +1,4 @@
-/*$Id: pname.c,v 1.41 2001/03/23 23:20:38 balay Exp bsmith $*/
+/*$Id: pname.c,v 1.42 2001/04/10 19:34:33 bsmith Exp $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 

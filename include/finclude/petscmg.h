@@ -1,5 +1,5 @@
 !
-!  $Id: petscmg.h,v 1.10 2000/09/25 18:01:01 balay Exp bsmith $;
+!  $Id: petscmg.h,v 1.11 2001/01/15 21:50:11 bsmith Exp $;
 !
 !  Include file for Fortran use of the MG preconditioner in PETSc
 !

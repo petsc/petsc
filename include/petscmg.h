@@ -1,4 +1,4 @@
-/* $Id: petscmg.h,v 1.20 2000/08/01 20:58:40 bsmith Exp bsmith $ */
+/* $Id: petscmg.h,v 1.21 2001/04/04 21:07:36 bsmith Exp $ */
 /*
       Structure used for Multigrid preconditioners 
 */

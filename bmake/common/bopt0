@@ -1,5 +1,0 @@
-# $Id: common_0,v 1.1 2000/10/03 19:33:04 bsmith Exp bsmith $ 
-
-#
-#  This file should never be included, PETSc will print an error
-# message reminding the user they should use an O not a zero

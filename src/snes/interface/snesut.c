@@ -1,4 +1,4 @@
-/*$Id: snesut.c,v 1.65 2001/06/21 21:18:37 bsmith Exp bsmith $*/
+/*$Id: snesut.c,v 1.66 2001/08/06 21:17:07 bsmith Exp $*/
 
 #include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
 

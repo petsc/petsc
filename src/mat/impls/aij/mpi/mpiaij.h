@@ -1,4 +1,4 @@
-/* $Id: mpiaij.h,v 1.22 2001/06/21 21:16:31 bsmith Exp balay $ */
+/* $Id: mpiaij.h,v 1.23 2001/08/07 03:02:49 balay Exp $ */
 
 #if !defined(__MPIAIJ_H)
 #define __MPIAIJ_H

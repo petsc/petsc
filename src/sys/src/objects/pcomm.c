@@ -1,4 +1,4 @@
-/*$Id: pcomm.c,v 1.23 2001/01/15 21:43:52 bsmith Exp balay $*/
+/*$Id: pcomm.c,v 1.24 2001/03/23 23:20:38 balay Exp $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 

@@ -1,4 +1,4 @@
-/*$Id: comb.c,v 1.39 2001/08/10 03:29:59 bsmith Exp bsmith $*/
+/*$Id: comb.c,v 1.40 2001/09/07 20:08:55 bsmith Exp $*/
 
 /*
       Split phase global vector reductions with support for combining the

@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.79 2001/08/07 03:04:16 balay Exp bsmith $";
+! "$Id: ex5f.F,v 1.80 2001/08/24 16:23:36 bsmith Exp $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !

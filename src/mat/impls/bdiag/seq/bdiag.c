@@ -1,4 +1,4 @@
-/*$Id: bdiag.c,v 1.197 2001/08/06 21:15:30 bsmith Exp balay $*/
+/*$Id: bdiag.c,v 1.198 2001/08/07 03:02:53 balay Exp $*/
 
 /* Block diagonal matrix format */
 

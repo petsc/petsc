@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.17 2001/06/21 21:16:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matreg.c,v 1.18 2001/07/20 21:19:21 bsmith Exp $";
 #endif
 /*
      Mechanism for register PETSc matrix types

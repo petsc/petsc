@@ -1,4 +1,4 @@
-/*$Id: cstringbase.c,v 1.1 2000/02/02 23:09:35 bsmith Exp bsmith $*/
+/*$Id: cstringbase.c,v 1.2 2000/02/04 21:37:18 bsmith Exp $*/
 #include "petsc.h"
 
 #define NOTLIKELY -1.234567890123

@@ -1,4 +1,4 @@
-/* $Id: tcqmrp.h,v 1.2 1995/11/05 18:51:25 bsmith Exp bsmith $
+/* $Id: tcqmrp.h,v 1.3 1996/03/10 17:27:22 bsmith Exp $
 
    Private include for tcqmr package
  */

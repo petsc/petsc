@@ -1,4 +1,4 @@
-/*$Id: PetscGetCPUTime.c,v 1.11 2001/03/23 23:25:45 balay Exp balay $*/
+/*$Id: PetscGetCPUTime.c,v 1.12 2001/08/29 20:59:41 balay Exp $*/
 
 #include "petsc.h"
 

@@ -9,7 +9,8 @@
 #define __FUNC__ "AppCxtCreate"
 int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
 {
-  int    ierr,flag;
+  int    ierr;
+  PetscTruth flag;
   Viewer binary;
   char   filename[256];
   AppEquations *equations;
@@ -27,7 +28,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
     ---------------------------------------------------------------------------*/
   ierr = OptionsGetString(0,"-f",filename,256,&flag);CHKERRQ(ierr);
   if (!flag) PetscStrcpy(filename,"gridfile");
-  ierr = ViewerFileOpenBinary((*appctx)->comm,filename,BINARY_RDONLY,&binary);CHKERRQ(ierr);
+  ierr = ViewerBinaryOpen((*appctx)->comm,filename,BINARY_RDONLY,&binary);CHKERRQ(ierr);
   ierr = AODataLoadBasic(binary,&(*appctx)->aodata); CHKERRQ(ierr);
   ierr = ViewerDestroy(binary); CHKERRQ(ierr);
 
@@ -39,8 +40,6 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   ierr = OptionsHasName(PETSC_NULL,"-show_matrix",&view->show_matrix); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-show_vector",&view->show_vector); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-monitor",&view->monitor); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-show_is",&view->show_is); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-show_ao",&view->show_ao); CHKERRQ(ierr);
 
   /*----------------------------------------------------
  setup the equations/ boundary conditions 
@@ -65,22 +64,22 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   /* choose the problem and  set the appropriate bc */
  ierr = OptionsHasName(0,"-parabolic",&equations->parabolic_flag);CHKERRQ(ierr);
  if(equations->parabolic_flag){
-   equations->vin_flag = 1; equations->wall_flag = 1;}
+   equations->vin_flag = PETSC_TRUE; equations->wall_flag = PETSC_TRUE;}
 
  ierr = OptionsHasName(0,"-cylinder",&equations->cylinder_flag);CHKERRQ(ierr);
  if(equations->cylinder_flag){
-   equations->vin_flag = 1; equations->ywall_flag = 1; equations->vout_flag = 1;}
+   equations->vin_flag = PETSC_TRUE; equations->ywall_flag = PETSC_TRUE; equations->vout_flag = PETSC_TRUE;}
 
  ierr = OptionsHasName(0,"-cavity",&equations->cavity_flag);CHKERRQ(ierr);
  if(equations->cavity_flag){
-      equations->vin_flag = 1; equations->wall_flag = 1; equations->vout_flag = 1;}
+      equations->vin_flag = PETSC_TRUE; equations->wall_flag = PETSC_TRUE; equations->vout_flag = PETSC_TRUE;}
 
  /* check for no bc set */
  if(equations->vin_flag == 0 && equations->vout_flag== 0){
-   printf("No velocity bc set, setting vin\n");   equations->vin_flag = 1;  }
+   printf("No velocity bc set, setting vin\n");   equations->vin_flag = PETSC_TRUE;  }
 
  if(equations->wall_flag == 0 && equations->ywall_flag== 0 && equations->dirichlet_flag == 0){
-   printf("No wall bc set, setting wall\n");   equations->wall_flag = 1;  }
+   printf("No wall bc set, setting wall\n");   equations->wall_flag = PETSC_TRUE;  }
 
  /*-------------------------------------------------------------------------
  setup the types of elements and the quadrature to be used
@@ -130,7 +129,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   double *df_coords;
   ISLocalToGlobalMapping ltogcell;
   
-  if(appctx->view.show_ao){printf("ao"); 
+  if(appctx->view.show_griddata){printf("ao"); 
   ierr = AODataView(ao, VIEWER_STDOUT_SELF );CHKERRA(ierr); }
  
    /* get the local cells and vertices, and the local to global mapping for vertices */
@@ -152,10 +151,10 @@ int AppCtxSetLocal(AppCtx *appctx)
 
  /* view */
 
- if(appctx->view.show_is){  printf("grid cell_df\n");   PetscIntView(grid->cell_n*22, grid->cell_df, VIEWER_STDOUT_SELF);}
-  if(appctx->view.show_is){ printf("the local to global mapping \n");  ierr = ISLocalToGlobalMappingView(grid->dfltog, VIEWER_STDOUT_SELF);}
-  if(appctx->view.show_is){ printf("the local cells  \n");  ierr = ISView(grid->cell_global, VIEWER_STDOUT_SELF);}
-  if(appctx->view.show_is){ printf("the local dfs  \n");  ierr = ISView(grid->df_global, VIEWER_STDOUT_SELF);}
+ if(appctx->view.show_griddata){  printf("grid cell_df\n");   PetscIntView(grid->cell_n*22, grid->cell_df, VIEWER_STDOUT_SELF);}
+  if(appctx->view.show_griddata){ printf("the local to global mapping \n");  ierr = ISLocalToGlobalMappingView(grid->dfltog, VIEWER_STDOUT_SELF);}
+  if(appctx->view.show_griddata){ printf("the local cells  \n");  ierr = ISView(grid->cell_global, VIEWER_STDOUT_SELF);}
+  if(appctx->view.show_griddata){ printf("the local dfs  \n");  ierr = ISView(grid->df_global, VIEWER_STDOUT_SELF);}
 
  /*    Get the  coords corresponding to each cell */
  ierr = AODataSegmentGetIS(ao, "cell", "vcoords", grid->cell_global, (void **)&grid->cell_vcoords);CHKERRQ(ierr);
@@ -175,7 +174,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   grid->inlet_coords = (double*)PetscMalloc(2*(grid->inlet_vcount+1)*sizeof(double)); CHKPTRQ(grid->inlet_coords);
 
  /* view */
- if(appctx->view.show_is){printf("isinlet_vdf\n"); ISView(grid->isinlet_vdf, VIEWER_STDOUT_SELF);}
+ if(appctx->view.show_griddata){printf("isinlet_vdf\n"); ISView(grid->isinlet_vdf, VIEWER_STDOUT_SELF);}
 
  }
 
@@ -193,7 +192,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   grid->outlet_coords = (double*)PetscMalloc(2*(grid->outlet_vcount+1)*sizeof(double)); CHKPTRQ(grid->outlet_coords);
 
 /* view */
- if(appctx->view.show_is){printf("isoutlet_vdf\n"); ISView(grid->isoutlet_vdf, VIEWER_STDOUT_SELF);}
+ if(appctx->view.show_griddata){printf("isoutlet_vdf\n"); ISView(grid->isoutlet_vdf, VIEWER_STDOUT_SELF);}
 
 }
 

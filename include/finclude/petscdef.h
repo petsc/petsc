@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.30 2001/08/30 19:38:29 balay Exp balay $;
+!  $Id: petscdef.h,v 1.31 2001/09/04 15:42:43 balay Exp $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and

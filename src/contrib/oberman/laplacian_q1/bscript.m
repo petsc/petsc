@@ -3,6 +3,9 @@ function bscript(np,options)
 %  Matlab graphics routine that may be used with the main program.  This uses
 %  sockets for faster visualization than writing intermediate output to a file.
 %
+%     If you run this script with np <= 0, it will not launch the MPI program,
+%   it will assume it is already running and just attach to it.
+%
 %  Usage Instructions:
 %  - Be sure to set the MATLABPATH environmental variable with a command such as
 %      setenv MATLABPATH $PETSC_DIR/src/sys/viewer/impls/socket/matlab
@@ -17,7 +20,9 @@ if (nargin < 2) options = ''; end;
 if (nargin < 1) np      = 1; end;
 
 % Start the parallel program
-launch(['main -matlab_graphics ' options],np);
+if (np > 0)
+  launch(['main -show_solution ' options],np);
+end
 
 % Open the connection to the MPI program
 p = openport;        

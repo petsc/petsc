@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.38 2001/01/19 23:22:13 balay Exp balay $";
+! "$Id: ex1f.F,v 1.39 2001/08/07 03:04:24 balay Exp $";
 !
 !       Formatted test for TS routines.
 !

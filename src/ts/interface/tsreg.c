@@ -1,4 +1,4 @@
-/*$Id: tsreg.c,v 1.70 2001/08/02 20:29:40 balay Exp bsmith $*/
+/*$Id: tsreg.c,v 1.71 2001/08/06 21:18:08 bsmith Exp $*/
 
 #include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 

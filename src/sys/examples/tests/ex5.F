@@ -1,4 +1,4 @@
-!    "$Id: ex5.F,v 1.12 2000/01/11 20:59:47 bsmith Exp bsmith $";
+!    "$Id: ex5.F,v 1.13 2000/09/27 20:04:20 bsmith Exp $";
 !
 !  Simple PETSc Program written in Fortran 77.
 !

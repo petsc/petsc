@@ -1,4 +1,4 @@
-/*$Id: scolor.c,v 1.23 2001/01/15 21:46:39 bsmith Exp balay $*/
+/*$Id: scolor.c,v 1.24 2001/03/23 23:22:57 balay Exp $*/
  
 #include "petscmat.h"
 #include "src/mat/color/color.h"

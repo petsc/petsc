@@ -1,4 +1,4 @@
-/*$Id: cgeig.c,v 1.54 2001/08/07 03:03:50 balay Exp bsmith $*/
+/*$Id: cgeig.c,v 1.55 2001/08/07 21:30:43 bsmith Exp $*/
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
    running with CG. Note this only works for symmetric real and Hermitian

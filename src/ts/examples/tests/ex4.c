@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.12 2001/08/07 03:04:24 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.13 2001/08/07 21:31:27 bsmith Exp $*/
 /*
        The Problem:
            Solve the convection-diffusion equation:

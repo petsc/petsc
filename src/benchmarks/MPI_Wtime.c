@@ -1,4 +1,4 @@
-/*$Id: MPI_Wtime.c,v 1.17 2001/08/29 20:23:41 balay Exp balay $*/
+/*$Id: MPI_Wtime.c,v 1.18 2001/08/29 20:59:42 balay Exp $*/
 
 #include "petsc.h"
 

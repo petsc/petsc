@@ -1,5 +1,5 @@
 !
-!  $Id: petscvec.h,v 1.35 2001/04/10 22:37:56 balay Exp bsmith $;
+!  $Id: petscvec.h,v 1.36 2001/07/20 21:27:44 bsmith Exp $;
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !

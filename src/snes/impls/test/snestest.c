@@ -1,4 +1,4 @@
-/*$Id: snestest.c,v 1.57 2001/08/06 21:17:17 bsmith Exp balay $*/
+/*$Id: snestest.c,v 1.58 2001/08/07 03:04:12 balay Exp $*/
 
 #include "src/snes/snesimpl.h"
 

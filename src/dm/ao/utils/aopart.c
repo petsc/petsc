@@ -1,4 +1,4 @@
-/*$Id: aopart.c,v 1.16 2001/01/17 22:27:36 bsmith Exp balay $*/
+/*$Id: aopart.c,v 1.17 2001/03/23 23:24:57 balay Exp $*/
 
 #include "petscao.h"       /*I  "petscao.h"  I*/
 

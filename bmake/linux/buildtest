@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.5 2001/04/05 15:38:04 balay Exp curfman $ 
+# $Id: buildtest,v 1.6 2001/04/05 15:41:00 curfman Exp $ 
 #
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #

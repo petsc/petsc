@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.1 1997/03/20 23:12:06 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex2func.c,v 1.1 1997/04/08 04:03:11 bsmith Exp bsmith $";
 #endif
 
 
@@ -11,7 +11,6 @@ static char vcid[] = "$Id: ex1.c,v 1.1 1997/03/20 23:12:06 bsmith Exp bsmith $";
 */
 
 #include "vec.h"
-#include <math.h>
 
  
 int Function(Vec x,Vec y)

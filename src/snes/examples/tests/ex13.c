@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.32 2001/08/07 03:04:13 balay Exp bsmith $*/
+/*$Id: ex13.c,v 1.33 2001/08/07 21:31:12 bsmith Exp $*/
 
 static char help[] = "This program is a replica of ex6.c except that it does 2 solves to avoid paging.\n\
 This program demonstrates use of the SNES package to solve systems of\n\

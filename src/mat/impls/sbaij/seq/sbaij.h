@@ -1,4 +1,4 @@
-/* $Id: sbaij.h,v 1.20 2001/04/10 22:35:39 balay Exp balay $ */
+/* $Id: sbaij.h,v 1.21 2001/08/07 03:03:01 balay Exp $ */
 
 #include "src/mat/matimpl.h"
 

@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.57 2001/08/07 03:04:00 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.58 2001/08/07 21:30:54 bsmith Exp $*/
 
 static char help[] = "Block Jacobi preconditioner for solving a linear system in parallel with SLES.\n\
 The code indicates the\n\

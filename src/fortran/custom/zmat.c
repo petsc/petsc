@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.99 2001/08/06 21:19:11 bsmith Exp balay $*/
+/*$Id: zmat.c,v 1.100 2001/08/07 03:05:11 balay Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"

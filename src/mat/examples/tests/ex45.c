@@ -1,4 +1,4 @@
-/*$Id: ex45.c,v 1.10 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex45.c,v 1.11 2001/08/07 21:30:08 bsmith Exp $*/
 
 #include <stdio.h>
 #include <fcntl.h>

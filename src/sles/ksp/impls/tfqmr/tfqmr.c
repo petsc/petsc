@@ -1,4 +1,4 @@
-/*$Id: tfqmr.c,v 1.60 2001/03/23 23:23:44 balay Exp balay $*/
+/*$Id: tfqmr.c,v 1.61 2001/08/07 03:03:54 balay Exp $*/
 
 /*                       
     This code implements the TFQMR (Transpose-free variant of Quasi-Minimal

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 2001/08/02 15:56:25 bsmith Exp balay $ 
+# $Id: makefile,v 1.5 2001/08/22 18:01:04 balay Exp $ 
 
 #requirespackage  'PETSC_HAVE_ADIC'
 #requiresscalar real 

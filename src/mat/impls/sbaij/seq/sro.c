@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.25 2001/04/24 14:12:07 bsmith Exp bsmith $*/
+/*$Id: sro.c,v 1.26 2001/06/21 21:17:00 bsmith Exp $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"

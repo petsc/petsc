@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.29 2001/08/07 03:04:42 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.30 2001/08/10 03:34:45 bsmith Exp $*/
 
 static char help[] = "Tests DALocalToLocal().\n\n";
 

@@ -1,4 +1,4 @@
-/*$Id: sda2.c,v 1.23 2001/08/06 21:18:49 bsmith Exp balay $*/
+/*$Id: sda2.c,v 1.24 2001/08/07 03:04:49 balay Exp $*/
 /*
     Simplified interface to PETSC DA (distributed array) object. 
    This is for a user who is not using PETSc Vecs (vectors).

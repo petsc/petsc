@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.154 2001/08/06 21:14:23 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.155 2001/09/06 14:51:20 bsmith Exp $ */
 
 /*
     Defines profile/logging in PETSc.

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex4f.F,v 1.27 2001/01/15 21:45:20 bsmith Exp balay $";
+!      "$Id: ex4f.F,v 1.28 2001/08/07 03:02:34 balay Exp $";
 !
 !  Description:  Illustrates the use of VecSetValues() to set
 !  multiple values at once; demonstrates VecGetArray().

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex6f.F,v 1.35 2001/06/21 21:18:27 bsmith Exp balay $";
+!    "$Id: ex6f.F,v 1.36 2001/08/07 03:04:00 balay Exp $";
 !
 !  Description: This example demonstrates repeated linear solves as
 !  well as the use of different preconditioner and linear system

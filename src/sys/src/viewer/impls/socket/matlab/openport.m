@@ -1,5 +1,5 @@
 function port = openport(number)
-% $Id: openport.m,v 1.6 2000/02/02 20:07:58 bsmith Exp bsmith $
+% $Id: openport.m,v 1.7 2001/02/09 19:30:37 bsmith Exp $
 %
 %  port = openport(number)
 %  Opens a port to receive matrices from Petsc.

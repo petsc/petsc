@@ -1,9 +1,0 @@
-#
-# These are the definitions for doc2lt and doctext HTML output (Table)
-#
-# Doc2lt single line entry
-preamble   <BODY><TABLE><TR><TH>Routine Name</TH><TH>Description</TH></TR>
-postamble  </TABLE></BODY>
-key        %n<TR><TD><CODE>%1</CODE></TD>
-definition <TD><B>%1</B></TD></TR>%n
-synopsis   

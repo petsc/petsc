@@ -1,4 +1,4 @@
-/*$Id: dgedi.c,v 1.17 2001/01/15 21:45:50 bsmith Exp balay $*/
+/*$Id: dgedi.c,v 1.18 2001/03/23 23:22:07 balay Exp $*/
 
 /*  
               This file creating by running f2c 

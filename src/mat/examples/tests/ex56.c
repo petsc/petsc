@@ -1,4 +1,4 @@
-/*$Id: ex56.c,v 1.31 2001/08/06 21:16:03 bsmith Exp balay $*/
+/*$Id: ex56.c,v 1.32 2001/08/07 03:03:07 balay Exp $*/
 static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for rectangular MatBAIJ matrix.";
 
 #include "petscmat.h"

@@ -1,4 +1,4 @@
-/*$Id: degree.c,v 1.20 2001/01/15 21:46:34 bsmith Exp balay $*/
+/*$Id: degree.c,v 1.21 2001/03/23 23:22:51 balay Exp $*/
 /* degree.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"

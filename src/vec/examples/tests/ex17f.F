@@ -1,5 +1,5 @@
 !
-! "$Id: ex17f.F,v 1.7 2001/01/15 21:45:13 bsmith Exp balay $";
+! "$Id: ex17f.F,v 1.8 2001/08/07 03:02:26 balay Exp $";
 !
 !
 !   "Scatters from a parallel vector to a sequential vector.  In

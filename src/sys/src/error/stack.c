@@ -1,4 +1,4 @@
-/*$Id: stack.c,v 1.34 2001/04/10 19:34:27 bsmith Exp bsmith $*/
+/*$Id: stack.c,v 1.35 2001/09/07 20:08:25 bsmith Exp $*/
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"

@@ -1,4 +1,4 @@
-/*$Id: none.c,v 1.29 2001/01/15 21:46:48 bsmith Exp balay $*/
+/*$Id: none.c,v 1.30 2001/03/23 23:23:06 balay Exp $*/
 /*
     Identity preconditioner, simply copies vector x to y.
 */

@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.85 1999/11/05 14:46:46 bsmith Exp bsmith $*/
+/*$Id: chebctx.h,v 1.4 1999/11/24 21:54:53 bsmith Exp $*/
 /*  
     Private data structure for Chebychev Iteration 
 */

@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.227 2001/08/07 21:29:29 bsmith Exp bsmith $ */
+/* $Id: petscmat.h,v 1.228 2001/09/07 20:09:08 bsmith Exp $ */
 /*
      Include file for the matrix component of PETSc
 */

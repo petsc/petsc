@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.43 2001/08/07 03:04:16 balay Exp bsmith $";
+! "$Id: ex5f90.F,v 1.44 2001/09/11 18:47:20 bsmith Exp $";
 !
 !  Description: Solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular

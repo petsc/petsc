@@ -1,4 +1,4 @@
-/* $Id: qcg.h,v 1.2 2000/01/11 21:02:12 bsmith Exp bsmith $ */
+/* $Id: qcg.h,v 1.3 2001/08/06 21:16:48 bsmith Exp $ */
 
 /*
     Context for using preconditioned CG to minimize a quadratic function 

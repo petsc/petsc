@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.43 2001/08/07 03:02:34 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.44 2001/09/07 20:09:05 bsmith Exp $*/
 
 static char help[] = "Builds a parallel vector with 1 component on the firstprocessor, 2 on the second, etc.\n\
   Then each processor adds one to all elements except the last rank.\n\n";

@@ -1,4 +1,4 @@
-/*$Id: mmsbaij.c,v 1.9 2001/08/06 21:15:59 bsmith Exp balay $*/
+/*$Id: mmsbaij.c,v 1.10 2001/08/07 03:03:05 balay Exp $*/
 
 /*
    Support for the parallel SBAIJ matrix vector multiply

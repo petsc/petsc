@@ -1,4 +1,4 @@
-/*$Id: dgefa2.c,v 1.9 2001/03/23 23:22:07 balay Exp bsmith $*/
+/*$Id: dgefa2.c,v 1.10 2001/04/07 15:47:07 bsmith Exp $*/
 /*
      Inverts 2 by 2 matrix using partial pivoting.
 

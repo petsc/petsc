@@ -1,4 +1,4 @@
-/*$Id: matstash.c,v 1.49 2001/03/09 19:38:14 balay Exp balay $*/
+/*$Id: matstash.c,v 1.50 2001/03/23 23:22:45 balay Exp $*/
 
 #include "src/mat/matimpl.h"
 

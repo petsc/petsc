@@ -1,4 +1,4 @@
-/*$Id: sbaijfact.c,v 1.60 2001/06/21 21:17:00 bsmith Exp bsmith $*/
+/*$Id: sbaijfact.c,v 1.61 2001/08/06 21:15:47 bsmith Exp $*/
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 

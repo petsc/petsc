@@ -1,4 +1,4 @@
-/*$Id: mhas.c,v 1.23 2001/01/15 21:45:27 bsmith Exp balay $*/
+/*$Id: mhas.c,v 1.24 2001/03/23 23:21:44 balay Exp $*/
 
 
 #include "petsc.h"

@@ -1,4 +1,4 @@
-/*$Id: sorti.c,v 1.29 2001/03/23 23:20:45 balay Exp bsmith $*/
+/*$Id: sorti.c,v 1.30 2001/08/06 21:14:16 bsmith Exp $*/
 /*
    This file contains routines for sorting integers. Values are sorted in place.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.26 1997/10/19 03:27:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.27 2000/05/13 20:57:34 bsmith Exp $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\

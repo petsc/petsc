@@ -1,4 +1,4 @@
-/*$Id: matadic.c,v 1.12 2001/08/06 21:16:02 bsmith Exp balay $*/
+/*$Id: matadic.c,v 1.13 2001/08/07 03:03:06 balay Exp $*/
 /*
     ADIC matrix-free matrix implementation
 */

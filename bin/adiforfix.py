@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adiforfix.py,v 1.2 2001/06/15 17:51:12 bsmith Exp bsmith $ 
+# $Id: adiforfix.py,v 1.3 2001/08/24 16:32:18 bsmith Exp $ 
 #
 # change python to whatever is needed on your system to invoke python
 #

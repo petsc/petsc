@@ -1,4 +1,4 @@
-/*$Id: snesregi.c,v 1.37 2001/01/15 21:47:49 bsmith Exp balay $*/
+/*$Id: snesregi.c,v 1.38 2001/03/23 23:24:07 balay Exp $*/
 
 #include "src/snes/snesimpl.h"     /*I  "petscsnes.h"  I*/
 

@@ -1,4 +1,4 @@
-/*$Id: amsopen.c,v 1.14 2001/01/15 21:43:14 bsmith Exp balay $*/
+/*$Id: amsopen.c,v 1.15 2001/03/23 23:20:01 balay Exp $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  */
 

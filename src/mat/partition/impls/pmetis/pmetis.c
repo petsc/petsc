@@ -1,4 +1,4 @@
-/*$Id: pmetis.c,v 1.45 2001/03/23 23:22:50 balay Exp bsmith $*/
+/*$Id: pmetis.c,v 1.46 2001/09/07 20:10:38 bsmith Exp $*/
  
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 

@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.42 2001/08/07 03:03:57 balay Exp bsmith $*/
+/*$Id: ex17.c,v 1.43 2001/08/07 21:30:50 bsmith Exp $*/
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";

@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.244 2001/08/06 21:15:36 bsmith Exp balay $*/
+/*$Id: baij.c,v 1.245 2001/08/07 03:02:55 balay Exp $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)

@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.24 2001/08/06 21:17:42 bsmith Exp balay $*/
+/*$Id: ex24.c,v 1.25 2001/08/07 03:04:16 balay Exp $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjoint.\n\n";
 

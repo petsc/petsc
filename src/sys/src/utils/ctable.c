@@ -1,4 +1,4 @@
-/*$Id: ctable.c,v 1.17 2001/01/15 21:44:00 bsmith Exp balay $*/
+/*$Id: ctable.c,v 1.18 2001/03/23 23:20:45 balay Exp $*/
 /* Contributed by - Mark Adams */
 
 #include "petsc.h"

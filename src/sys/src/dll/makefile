@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.10 2001/04/05 21:06:44 balay Exp balay $ 
+# $Id: makefile,v 1.11 2001/08/22 17:59:22 balay Exp $ 
 
 ALL: lib 
 CFLAGS    = -DPETSC_BOPT='"${BOPT}"' -DPETSC_LIB_DIR='"${PETSC_LIB_DIR}"' \

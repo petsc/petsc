@@ -1,5 +1,5 @@
 
-/*      "$Id: ex4.c,v 1.12 2001/01/23 20:53:47 balay Exp balay $"; */
+/*      "$Id: ex4.c,v 1.13 2001/03/23 23:21:14 balay Exp $"; */
 
 static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 

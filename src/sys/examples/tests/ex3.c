@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.17 2001/03/23 23:20:59 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.18 2001/08/07 21:29:12 bsmith Exp $*/
 
 static char help[] = "Tests catching of floating point exceptions.\n\n";
 

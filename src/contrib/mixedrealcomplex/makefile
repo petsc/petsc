@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.35 1999/03/25 23:41:40 balay Exp $ 
+# $Id: makefile,v 1.1 1999/04/22 21:25:55 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -9,28 +9,6 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/vec/examples/tutorials/
 
-TESTEXAMPLES_1	 = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc \
-		   runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm \
-                   ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
-                   ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 ex12.rm \
-                   ex9.PETSc runex9 runex9_2 ex9.rm clean 
-TESTEXAMPLES_2	 = ex3.PETSc runex3 ex3.rm clean
-TESTEXAMPLES_3	 = ex1f.PETSc runex1f runex1f_2 ex1f.rm ex2f.PETSc runex2f ex2f.rm \
-		   ex4f.PETSc runex4f ex4f.rm ex3f.PETSc ex3f.rm \
-		   ex7.PETSc runex7 ex7.rm ex9f.PETSc runex9f runex9f_2 ex9f.rm \
-                   ex11f.PETSc runex11f ex11f.rm clean
-TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm clean
-TESTEXAMPLES_9	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm \
-                   ex7.PETSc ex7.rm clean
-TESTEXAMPLES_12	 = ex1f90.PETSc runex1f90 ex1f90.rm ex4f90.PETSc runex4f90 ex4f90.rm clean
-TESTEXAMPLES_13  = ex10.PETSc ex10.rm clean
-BUILDEXAMPLES_1	 = ex1.PETSc ex1.rm ex6.PETSc ex6.rm ex5.PETSc ex5.rm clean
-BUILDEXAMPLES_2	 = ex3.PETSc ex3.rm clean
-BUILDEXAMPLES_3	 = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex3f.PETSc ex3f.rm \
-		   ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
-BUILDEXAMPLES_4	 = ex5.PETSc ex5.rm clean
-BUILDEXAMPLES_9	 = ex1f.PETSc ex1f.rm ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
-BUILDEXAMPLES_12 = ex1f90.PETSc ex1f90.rm ex4f90.PETSc ex4f90.rm clean
 
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c
 EXAMPLESF	 = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex1f90.F ex4f90.F ex9f.F ex11f.F

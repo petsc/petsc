@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.55 2001/08/07 03:02:34 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.56 2001/08/07 21:29:27 bsmith Exp $*/
 
 static char help[] = "Parallel vector layout.\n\n";
 

@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: petscrun,v 1.1 2000/10/26 15:51:30 bsmith Exp bsmith $ 
+# $Id: petscrun,v 1.2 2000/11/07 04:48:45 bsmith Exp bsmith $ 
 #
 # Remote shells to a remote machine and runs a program
 #
@@ -14,5 +14,5 @@ shift
 dir=$1
 shift
 echo "petscmpirun -np $np $*"
-rsh $machine "cd $pdir/$dir ; setenv BOPT g; setenv PETSC_DIR $pdir ; setenv PETSC_ARCH $arch; petscmpirun -np $np $*"
+rsh $machine "cd $pdir/$dir ; setenv BOPT g; setenv PETSC_DIR $pdir ; setenv PETSC_ARCH $arch; petscmpirun -np $np $* -error_output_stderr"
 

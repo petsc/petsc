@@ -1,10 +1,12 @@
+
+
 /*
-      Wrappers for esi::petsc::Matrix ESI implementation
+      Wrappers for PETSc_Matrix ESI implementation
 */
 
 #include "esi/petsc/matrix.h"
 
-esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSpace<int> *incmap)
+esi::petsc::Matrix<double,int>::Matrix(esi::MapPartition<int> *inrmap,esi::MapPartition<int> *incmap)
 {
   int      ierr,rn,rN,cn,cN;
   MPI_Comm *comm;
@@ -15,10 +17,9 @@ esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSp
   ierr = inrmap->getLocalSize(cn);
   ierr = inrmap->getGlobalSize(cN);
   ierr = MatCreate(*comm,rn,cn,rN,cN,&this->mat);if (ierr) return;
-  ierr = MatSetFromOptions(this->mat);
 
-  this->rmap = inrmap;
-  this->cmap = incmap;
+  this->rmap = (esi::MapPartition<int> *)inrmap;
+  this->cmap = (esi::MapPartition<int> *)incmap;
 
   this->pobject = (PetscObject)this->mat;
   PetscObjectGetComm((PetscObject)this->mat,&this->comm);
@@ -67,8 +68,13 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::apply( esi::Vector<double,int> &x
   int ierr;
   Vec py,px;
 
-  ierr = yy.getInterface("Vec",static_cast<void*>(py));
-  ierr = xx.getInterface("Vec",static_cast<void*>(px));
+  esi::petsc::Vector<double,int> *y;  ierr = yy.getInterface("esi::petsc::Vector",static_cast<void *>(y));CHKERRQ(ierr);
+  if (!y) return 1;
+  ierr = y->getPETScVec(&py);
+
+  esi::petsc::Vector<double,int> *x;  ierr = xx.getInterface("esi::petsc::Vector",static_cast<void *>(x));CHKERRQ(ierr);
+  if (!x) return 1;
+  ierr = x->getPETScVec(&py);
 
   return MatMult(this->mat,px,py);
 }
@@ -80,10 +86,10 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::setup()
   return MatAssemblyEnd(this->mat,MAT_FINAL_ASSEMBLY);
 }
 
-esi::ErrorCode esi::petsc::Matrix<double,int>::getIndexSpaces(esi::IndexSpace<int>*& rowIndexSpace, esi::IndexSpace<int>*& colIndexSpace)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getMaps(esi::Map<int>*& rowMap, esi::Map<int>*& colMap)
 {
-  rowIndexSpace = this->rmap;
-  colIndexSpace = this->cmap;
+  rowMap = (esi::Map<int>*) this->rmap;
+  colMap = (esi::Map<int>*)this->cmap;
   return 0;
 }
 
@@ -113,7 +119,9 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getDiagonal(esi::Vector<double,in
   int ierr;
   Vec py;
 
-  ierr = diagVector.getInterface("Vec",static_cast<void*>(py));
+  esi::petsc::Vector<double,int> *vec; ierr = diagVector.getInterface("esi::petsc::Vector<double,int>",static_cast<void *>(vec));CHKERRQ(ierr);
+  if (!vec) return 1;
+  ierr = vec->getPETScVec(&py);
   return MatGetDiagonal(this->mat,py);
 }
 
@@ -211,7 +219,9 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getRowSum(esi::Vector<double,int>
   PetscScalar *values,sum;
   Vec         py;
 
-  ierr = rowSumVector.getInterface("Vec",static_cast<void*>(py));
+  esi::petsc::Vector<double,int> *vec; ierr = rowSumVector.getInterface("esi::petsc::Vector",static_cast<void *>(vec));CHKERRQ(ierr);
+  if (!vec) return 1;
+  ierr = vec->getPETScVec(&py);
 
   ierr = MatGetOwnershipRange(this->mat,&rstart,&rend);CHKERRQ(ierr);
   for ( i=rstart; i<rend; i++) {

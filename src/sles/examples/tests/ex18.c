@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.26 2001/08/07 03:03:57 balay Exp bsmith $*/
+/*$Id: ex18.c,v 1.27 2001/08/07 21:30:50 bsmith Exp $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 

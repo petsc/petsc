@@ -1,4 +1,4 @@
-/*$Id: zf90mat.c,v 1.12 2001/08/07 03:05:21 balay Exp bsmith $*/
+/*$Id: zf90mat.c,v 1.13 2001/09/06 14:49:32 bsmith Exp $*/
 
 #include "petscmat.h"
 #include "petscf90.h"

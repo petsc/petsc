@@ -1,4 +1,4 @@
-/*$Id: baijfact5.c,v 1.4 2001/03/23 23:22:07 balay Exp bsmith $*/
+/*$Id: baijfact5.c,v 1.5 2001/04/10 19:35:34 bsmith Exp $*/
 /*
     Factorization code for BAIJ format. 
 */

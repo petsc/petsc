@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.64 2001/03/23 23:21:16 balay Exp bsmith $*/
+/*$Id: isltog.c,v 1.65 2001/05/21 14:16:29 bsmith Exp $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/

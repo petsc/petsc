@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.8 2001/04/10 19:37:27 bsmith Exp balay $*/
+/*$Id: ex17.c,v 1.9 2001/08/07 03:04:42 balay Exp $*/
 
 static char help[] = "Tests DA interpolation for coarse DA on a subset of processors.\n\n";
 

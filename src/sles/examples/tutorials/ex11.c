@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.36 2001/08/07 03:04:00 balay Exp bsmith $*/
+/*$Id: ex11.c,v 1.37 2001/08/07 21:30:54 bsmith Exp $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.31 2001/08/06 21:15:03 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.32 2001/08/07 03:02:34 balay Exp $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 

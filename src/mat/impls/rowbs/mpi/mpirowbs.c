@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.c,v 2.8 2001/08/07 03:02:51 balay Exp bsmith $*/
+/* $Id: mpirowbs.c,v 2.9 2001/08/10 03:30:53 bsmith Exp $*/
 
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 #include "src/vec/vecimpl.h"

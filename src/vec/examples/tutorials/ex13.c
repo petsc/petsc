@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.14 2001/03/23 23:21:37 balay Exp balay $*/
+/*$Id: ex13.c,v 1.15 2001/08/07 03:02:34 balay Exp $*/
 
 static char help[] = "Tests PetscObjectPublish().\n\n";
 

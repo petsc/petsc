@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.164 2001/09/07 20:08:55 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.165 2001/09/08 13:16:48 bsmith Exp $*/
 /*
     Defines parallel vector scatters.
 */

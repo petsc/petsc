@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.42 2001/08/06 21:18:08 bsmith Exp bsmith $ */
+/* $Id: ts.c,v 1.43 2001/09/07 20:12:01 bsmith Exp $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNCT__  

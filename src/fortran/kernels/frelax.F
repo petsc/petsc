@@ -1,5 +1,5 @@
 !
-!  "$Id: frelax.F,v 1.1 2001/08/11 03:21:47 bsmith Exp bsmith $";
+!  "$Id: frelax.F,v 1.2 2001/08/21 21:05:00 bsmith Exp $";
 !
 !    Fortran kernels for SOR relaxations
 !

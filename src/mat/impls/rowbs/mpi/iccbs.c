@@ -1,4 +1,4 @@
-/*$Id: iccbs.c,v 1.44 2001/08/06 21:15:29 bsmith Exp balay $*/
+/*$Id: iccbs.c,v 1.45 2001/08/07 03:02:51 balay Exp $*/
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
 

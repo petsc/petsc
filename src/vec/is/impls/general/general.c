@@ -1,4 +1,4 @@
-/*$Id: general.c,v 1.102 2001/01/15 21:44:26 bsmith Exp balay $*/
+/*$Id: general.c,v 1.103 2001/03/23 23:21:08 balay Exp $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */

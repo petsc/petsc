@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.29 2001/01/17 22:25:35 bsmith Exp balay $";
+!    "$Id: ex1f.F,v 1.30 2001/08/07 03:04:00 balay Exp $";
 !
 !   Description: Solves a tridiagonal linear system with SLES.
 !

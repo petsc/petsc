@@ -1,4 +1,4 @@
-/*$Id: prefix.c,v 1.29 2001/01/15 21:43:52 bsmith Exp balay $*/
+/*$Id: prefix.c,v 1.30 2001/03/23 23:20:38 balay Exp $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */

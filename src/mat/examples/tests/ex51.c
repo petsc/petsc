@@ -1,4 +1,4 @@
-/*$Id: ex51.c,v 1.21 2001/08/07 03:03:07 balay Exp bsmith $*/
+/*$Id: ex51.c,v 1.22 2001/08/07 21:30:08 bsmith Exp $*/
 
 static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for MatBAIJ format.\n";
 

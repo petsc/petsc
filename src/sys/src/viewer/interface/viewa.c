@@ -1,4 +1,4 @@
-/*$Id: viewa.c,v 1.22 2001/03/23 23:20:05 balay Exp bsmith $*/
+/*$Id: viewa.c,v 1.23 2001/04/10 19:34:10 bsmith Exp $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 

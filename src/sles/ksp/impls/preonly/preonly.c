@@ -1,4 +1,4 @@
-/*$Id: preonly.c,v 1.41 2001/03/23 23:23:42 balay Exp bsmith $*/
+/*$Id: preonly.c,v 1.42 2001/05/14 21:07:54 bsmith Exp $*/
 
 /*                       
        This implements a stub method that applies ONLY the preconditioner.

@@ -1,5 +1,5 @@
 #! /bin/sh -f
-# $Id: petscarch,v 1.27 2001/06/14 23:37:08 balay Exp balay $ 
+# $Id: petscarch,v 1.28 2001/06/14 23:41:02 balay Exp balay $ 
 #
 #   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
 #
@@ -75,6 +75,12 @@ elif [ "$LARCH" = "Rhapsody" ]; then
         LARCH="macx"
 elif [ "$LARCH" = "5000" ]; then
         LARCH="UXPV"
+else # maybe use a case statement instead of if test for the entire script?
+    case "$LARCH" in
+        CYGWIN*)
+        LARCH="win32_ms"
+        ;;
+    esac
 fi
 
 echo $LARCH

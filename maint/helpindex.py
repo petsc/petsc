@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 #!/bin/env python
-# $Id: helpindex.py,v 1.13 2001/03/21 17:29:47 bsmith Exp bsmith $ 
+# $Id: helpindex.py,v 1.14 2001/08/30 17:51:39 bsmith Exp $ 
 # 
 # reads in docs/tex/exampleconcepts,manconcepts, and create
 # the file help.html

@@ -1,4 +1,4 @@
-/*$Id: sortip.c,v 1.36 2001/08/06 21:14:16 bsmith Exp bsmith $*/
+/*$Id: sortip.c,v 1.37 2001/08/07 21:29:06 bsmith Exp $*/
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 

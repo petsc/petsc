@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.28 2001/08/06 21:13:26 bsmith Exp balay $ */
+/* $Id: ilu.h,v 1.29 2001/08/07 03:01:46 balay Exp $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 

@@ -1,4 +1,4 @@
-/*$Id: ex25.c,v 1.2 2000/11/14 20:52:07 hzhang Exp balay $*/
+/*$Id: ex25.c,v 1.3 2000/11/15 22:56:05 balay Exp $*/
 
 static char help[] = 
 "Tests CG, MINRES and SYMMLQ on the symmetric indefinite matrices: afiro and golan\n\

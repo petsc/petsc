@@ -1,4 +1,4 @@
-/*$Id: strgen.c,v 1.20 2001/01/15 21:44:26 bsmith Exp balay $*/
+/*$Id: strgen.c,v 1.21 2001/03/23 23:21:08 balay Exp $*/
 
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 

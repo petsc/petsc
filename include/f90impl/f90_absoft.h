@@ -1,4 +1,4 @@
-/* $Id: f90_absoft.h,v 1.1 2000/09/07 19:56:59 balay Exp balay $ */
+/* $Id: f90_absoft.h,v 1.2 2000/09/22 18:54:10 balay Exp $ */
 
 #if !defined(__F90_ABSOFT_H)
 #define __F90_ABSOFT_H

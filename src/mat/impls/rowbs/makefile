@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.18 2000/10/24 20:25:39 bsmith Exp balay $ 
+# $Id: makefile,v 1.19 2001/08/22 18:00:29 balay Exp $ 
 
 #requirespackage  'PETSC_HAVE_BLOCKSOLVE'
 #requiresscalar real 

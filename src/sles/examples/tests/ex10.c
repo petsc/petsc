@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.96 2001/08/07 21:30:50 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.97 2001/08/24 16:21:45 bsmith Exp $*/
 
 static char help[] = "This example calculates the stiffness matrix for a brick in three\n\
 dimensions using 20 node serendipity elements and the equations of linear\n\

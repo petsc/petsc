@@ -1,4 +1,4 @@
-/*$Id: snesj2.c,v 1.30 2001/05/29 15:39:07 bsmith Exp bsmith $*/
+/*$Id: snesj2.c,v 1.31 2001/06/21 21:18:37 bsmith Exp $*/
 
 #include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
 #include "src/snes/snesimpl.h"    /*I  "petscsnes.h"  I*/

@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.31 2001/08/10 18:59:16 balay Exp bsmith $ */
+/* $Id: petscmath.h,v 1.32 2001/08/30 20:37:06 bsmith Exp $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 

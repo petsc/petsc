@@ -1,4 +1,4 @@
-/*$Id: gtype.c,v 1.23 2001/01/15 21:43:52 bsmith Exp balay $*/
+/*$Id: gtype.c,v 1.24 2001/03/23 23:20:38 balay Exp $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */

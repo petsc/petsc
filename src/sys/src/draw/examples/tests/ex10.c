@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.15 2001/03/23 23:20:21 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.16 2001/04/10 19:34:20 bsmith Exp $*/
 static char help[] = "Tests repeatedly setting a window type.\n";
 
 #include "petsc.h"

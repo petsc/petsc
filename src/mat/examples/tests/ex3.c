@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.18 2001/08/07 03:03:07 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.19 2001/08/07 21:30:08 bsmith Exp $*/
 
 static char help[] = "Tests relaxation for dense matrices.\n\n"; 
 

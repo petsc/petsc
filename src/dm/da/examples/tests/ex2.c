@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.42 2001/04/10 19:37:27 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.43 2001/08/07 03:04:42 balay Exp $*/
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 

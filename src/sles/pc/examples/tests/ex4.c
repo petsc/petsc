@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.44 2001/04/10 19:36:22 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.45 2001/08/07 03:03:43 balay Exp $*/
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR. And tests\n\
 the MatRelax() routines.\n\n";

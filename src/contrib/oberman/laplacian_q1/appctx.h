@@ -70,8 +70,8 @@ typedef struct {
   PetscTruth show_griddata;       /* dumps grid database, orderings etc to screen */
   PetscTruth show_grid;           /* plots the grid with numbering of cells, vertices etc. */
 
-  Draw       drawlocal;           /* graphics window for drawing local per processor part of global grid */
-  Draw       drawglobal;          /* graphics window for drawing global (parallel grid) */
+  PetscDraw  drawlocal;           /* graphics window for drawing local per processor part of global grid */
+  PetscDraw  drawglobal;          /* graphics window for drawing global (parallel grid) */
 } AppView;
 
 
@@ -124,12 +124,12 @@ typedef struct {
 extern int AppCtxCreate(MPI_Comm,AppCtx **);
 extern int AppCtxDestroy(AppCtx *);
 
-extern int AppCtxViewGrid(Draw,void*);
+extern int AppCtxViewGrid(PetscDraw,void*);
 extern int AppCtxViewMatlab(AppCtx*);
 extern int AppCtxGraphics(AppCtx *appctx);
 
 extern int AppCtxSetLocal(AppCtx *);
-extern int AppCtxSolve(AppCtx*);
+extern int AppCtxSolve(AppCtx*,int*);
 
 extern int AppCtxCreateRhs(AppCtx*);
 extern int AppCtxCreateMatrix(AppCtx*);

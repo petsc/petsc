@@ -1,4 +1,4 @@
-/*$Id: richctx.h,v 1.4 1999/11/24 21:54:54 bsmith Exp bsmith $*/
+/*$Id: richctx.h,v 1.5 2001/08/06 21:16:46 bsmith Exp $*/
 /*
       Private data structure for Richardson Iteration 
 */

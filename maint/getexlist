@@ -48,6 +48,9 @@ $skip_cmdline = 1;
 # Make sure that this is consistent with the destdir argument
 $link_pattern  = "/.*/petsc/src";
 $link_replacement = "../../../src";
+
+#
+$locdir = "";
 #
 # Initialize hashes
 %Concepts = ();
@@ -244,6 +247,11 @@ while ($ARGV[0] ne "") {
 	shift;
 	next;
     }
+    elsif ($filename eq "-locdir") {
+	$locdir = $ARGV[0];
+	shift;
+	next;
+    }
     elsif ($filename eq "-noskipcmdline") {
 	$skip_cmdline = 0 ;
 	next;
@@ -333,7 +341,8 @@ foreach $name (sort {uc($a) cmp uc($b)} keys(%Concepts)) {
 		$label = $curheading;
 	    }
 	    $linkname = $filename;
-	    $linkname =~ s%$link_pattern%$link_replacement%o;
+#	    $linkname =~ s%$link_pattern%$link_replacement%o;
+            $linkname = "../../../$locdir$filename.html";
 	    print $OUTFILE $list_item . "<A HREF=\"$linkname\"><CONCEPT>$label</CONCEPT></A>\n";
 	    if ($add_help == 1 && $Help{$filename} ne "") {
 		print $OUTFILE $list_help_start . $Help{$filename} . $list_help_end;
@@ -359,3 +368,10 @@ if ($file_by_concept == 0) {
 #      print $Help{$item};
 
 #  }
+
+
+
+
+
+
+

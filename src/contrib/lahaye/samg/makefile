@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 2001/08/06 21:19:01 bsmith Exp balay $ 
+# $Id: makefile,v 1.4 2001/08/22 18:02:49 balay Exp $ 
 
 #requirespackage  'PETSC_HAVE_SAMG'
 #requireslanguage  CONLY

@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.385 2001/09/07 20:09:22 bsmith Exp $*/
+/*$Id: mesi.c,v 1.1 2001/09/12 03:30:08 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.

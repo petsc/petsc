@@ -1,4 +1,4 @@
-/*$Id: sendsparse.c,v 1.36 2001/04/12 13:32:45 balay Exp bsmith $*/
+/*$Id: sendsparse.c,v 1.37 2001/08/06 21:13:29 bsmith Exp $*/
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 

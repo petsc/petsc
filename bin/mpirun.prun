@@ -1,18 +1,17 @@
 #!/usr/local/bin/bash
-# $Id: mpirun.poe,v 1.4 1997/09/10 19:49:05 balay Exp $ 
+# $Id: mpirun.prun,v 1.1 2000/01/18 15:38:06 bsmith Exp bsmith $ 
 
 #
-# This script is for IBM SP machines running POE that do not 
-# have mpirun installed. 
+# This script is for Compaq systems that use prun instead of mpirun
 #
-# Usage: petsc/bin/mpirun.poe [-np n] programname programoptions
+# Usage: petsc/bin/mpirun.prun [-np n] programname programoptions
 #
 two=$2
 if [ $1 = "-np" ]; then
         shift
         shift
-        /usr/bin/poe $* -procs $two
+        prun -n $two $*
 else
-        /usr/bin/poe $*
+        prun -n 1 $*
 fi
 

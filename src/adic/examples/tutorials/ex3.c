@@ -1,14 +1,11 @@
-#ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.1 1997/03/20 23:12:06 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex3.c,v 1.2 1997/04/08 03:56:29 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates using ADIC to compute a derivative.\n\n";
 
 /*T
    Concepts: Vectors^Using basic vector routines;
-   Routines: VecCreate(); VecDuplicate(); VecSet();
-   Routines: VecScale(); VecNorm(); 
-   Routines: VecDestroy(); 
    Processors: n
 T*/
 
@@ -20,7 +17,6 @@ T*/
 */
 
 #include "vec.h"
-#include <math.h>
 #include "petscadic.h"
 
 extern int Function(Vec,Vec);
@@ -30,7 +26,7 @@ int main(int argc,char **argv)
 {
   Vec               x,y,z,Az;               /* vectors */
   int               n = 20, ierr, flg;
-  Scalar            one = 1.0, onethird = 1.0/3.0;
+  Scalar            one = 1.0;
   PetscADICFunction adicctx;
   Mat               grad,igrad;
 
@@ -42,7 +38,7 @@ int main(int argc,char **argv)
 
   /* 
      Create a vector, specifying only its global dimension.
-     When using VecCreate(), the vector format (currently parallel
+     When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel
      or sequential) is determined at runtime.  Also, the parallel
      partitioning of the vector is determined by PETSc at runtime.
 
@@ -52,6 +48,7 @@ int main(int argc,char **argv)
                          determine the parallel partitioning
   */
   ierr = VecCreate(PETSC_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecSetFromOptions(x);CHKERRA(ierr);
   ierr = VecDuplicate(x,&y); CHKERRA(ierr);
   ierr = VecDuplicate(x,&z); CHKERRA(ierr);
   ierr = VecDuplicate(z,&Az); CHKERRA(ierr);
@@ -66,21 +63,18 @@ int main(int argc,char **argv)
         Register a function that will be differentiated.
   */
   ierr = PetscADICFunctionCreate(x,y,ad_Function,0,&adicctx); CHKERRA(ierr);
-
+  ierr = PetscADICFunctionSetFunction(adicctx,Function,0); CHKERRQ(ierr);
 
   /*
      First evaluate the function itself 
   */
   ierr = Function(x,y); CHKERRA(ierr);
-  VecView(y,0);
+  VecView(y,0); VecView(x,0);
   
   /*
      Now evalute the function and its gradient
   */
   ierr = PetscADICFunctionEvaluateGradient(adicctx,x,y,grad); CHKERRA(ierr);
-  VecView(y,0); MatView(grad,0);
-  ierr = VecSet(&onethird,z); CHKERRA(ierr);
-  ierr = PetscADICFunctionEvaluateGradient(adicctx,z,y,grad); CHKERRA(ierr);
   VecView(y,0); MatView(grad,0);
 
   /*
@@ -90,10 +84,6 @@ int main(int argc,char **argv)
   ierr = MatMult(igrad,z,Az); CHKERRA(ierr);
   VecView(Az,0); 
   
-  ierr = PetscADICFunctionApplyGradientReset(igrad,z); CHKERRA(ierr);
-  ierr = MatMult(igrad,z,Az); CHKERRA(ierr);
-  VecView(Az,0); 
-
   /* 
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.

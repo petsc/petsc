@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
+/*$Id: functions.c,v 1.3 2000/01/06 20:43:22 bsmith Exp $*/
 /* functions.c */
 #include <math.h>
 

@@ -1,5 +1,5 @@
 !
-!  "$Id: ex2f.F,v 1.18 2000/10/24 20:24:53 bsmith Exp bsmith $"
+!  "$Id: ex2f.F,v 1.19 2001/01/17 22:20:50 bsmith Exp $"
 !
 !  Formatted Test for IS stride routines
 !

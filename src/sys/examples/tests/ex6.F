@@ -1,4 +1,4 @@
-!    "$Id: ex6.F,v 1.11 2000/09/27 20:04:29 bsmith Exp balay $";
+!    "$Id: ex6.F,v 1.12 2001/08/07 03:02:12 balay Exp $";
 !
 !  Progran to test random number generation routines from fortran.
 !

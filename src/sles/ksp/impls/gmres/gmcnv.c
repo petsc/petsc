@@ -1,12 +1,14 @@
-/*$Id: gmcnv.c,v 1.6 1999/01/31 16:08:49 bsmith Exp bsmith $*/
+/*$Id: gmcnv.c,v 1.7 1999/10/24 14:03:14 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ "KSPDefaultConverged_GMRES"
-int KSPDefaultConverged_GMRES(KSP ksp,int n,double rnorm,void *dummy)
+int KSPDefaultConverged_GMRES(KSP ksp,int n,double rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
-  if ( rnorm <= ksp->ttol || rnorm != rnorm) PetscFunctionReturn(1);
+  if ( rnorm <= ksp->ttol || rnorm != rnorm) {
+    *reason = KSP_CONVERGED_RTOL;
+  }
   PetscFunctionReturn(0);
 }

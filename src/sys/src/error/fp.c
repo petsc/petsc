@@ -1,4 +1,4 @@
-/*$Id: fp.c,v 1.78 2001/04/23 15:47:12 bsmith Exp balay $*/
+/*$Id: fp.c,v 1.79 2001/08/15 20:12:54 balay Exp $*/
 /*
 *	IEEE error handler for all machines. Since each machine has 
 *   enough slight differences we have completely separate codes for each one.

@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.207 2001/08/24 16:12:05 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.208 2001/09/07 20:09:16 bsmith Exp $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */

@@ -1,4 +1,4 @@
-/*$Id: flush.c,v 1.30 2001/03/23 23:20:05 balay Exp bsmith $*/
+/*$Id: flush.c,v 1.31 2001/04/10 19:34:10 bsmith Exp $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 

@@ -1,4 +1,4 @@
-# $Id: rules,v 1.53 2001/08/22 17:57:34 balay Exp $ 
+# $Id: rules,v 1.1 2001/08/25 17:23:49 balay Exp $ 
 #
 
 libc: ${LIBNAME}(${OBJSC})

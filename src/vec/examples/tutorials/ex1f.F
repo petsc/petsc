@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.32 2001/08/09 23:22:00 balay Exp balay $"
+!    "$Id: ex1f.F,v 1.33 2001/08/10 18:41:04 balay Exp $"
 !
 !   Program usage:  mpirun ex1f [-help] [all PETSc options] 
 !

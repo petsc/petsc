@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.22 2001/08/07 03:03:07 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.23 2001/08/07 21:30:08 bsmith Exp $*/
 
 static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\n";
 

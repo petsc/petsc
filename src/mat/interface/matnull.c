@@ -1,4 +1,4 @@
-/*$Id: matnull.c,v 1.39 2001/08/07 03:02:41 balay Exp bsmith $*/
+/*$Id: matnull.c,v 1.40 2001/09/07 20:09:09 bsmith Exp $*/
 /*
     Routines to project vectors out of null spaces.
 */

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.352 2001/08/22 17:58:22 balay Exp balay $ 
+# $Id: makefile,v 1.353 2001/08/28 19:43:38 balay Exp $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.

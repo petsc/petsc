@@ -1,4 +1,4 @@
-# $Id: bopt_O,v 1.1 2001/08/22 17:57:34 balay Exp bsmith $ 
+# $Id: bopt_O,v 1.2 2001/09/07 18:59:02 bsmith Exp $ 
 
 CC	       = ${C_CC}
 FC	       = ${C_FC}

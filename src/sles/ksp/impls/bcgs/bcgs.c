@@ -1,4 +1,4 @@
-/*$Id: bcgs.c,v 1.77 2001/03/23 23:23:33 balay Exp balay $*/
+/*$Id: bcgs.c,v 1.78 2001/08/07 03:03:49 balay Exp $*/
 
 /*                       
     This code implements the BiCGStab (Stabilized version of BiConjugate

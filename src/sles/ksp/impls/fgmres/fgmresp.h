@@ -1,4 +1,4 @@
-/*$Id: fgmresp.h,v 1.6 2001/08/06 21:16:49 bsmith Exp balay $*/
+/*$Id: fgmresp.h,v 1.7 2001/08/07 03:03:55 balay Exp $*/
 /*
    Private data structure used by the FGMRES method.
 */

@@ -1,5 +1,5 @@
 !
-!  "$Id: fnorm.F,v 1.8 2000/01/11 21:04:00 bsmith Exp balay $";
+!  "$Id: fnorm.F,v 1.9 2001/08/07 03:05:24 balay Exp $";
 !
 !    Fortran kernel for the Norm() vector routine
 !

@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.129 2001/08/07 03:01:58 balay Exp bsmith $*/
+/*$Id: err.c,v 1.130 2001/09/07 15:24:29 bsmith Exp $*/
 /*
       Code that allows one to set the error handlers
 */

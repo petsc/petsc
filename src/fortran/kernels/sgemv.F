@@ -1,5 +1,5 @@
 !
-!  "$Id: sgemv.F,v 1.3 1999/03/24 18:13:17 balay Exp balay $";
+!  "$Id: sgemv.F,v 1.4 2001/08/07 03:05:24 balay Exp $";
 !
 !    Fortran kernel for gemv() BLAS operation. This version supports
 !  matrix array stored in single precision but vectors in double

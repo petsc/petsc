@@ -1,4 +1,4 @@
-/*$Id: tsfd.c,v 1.24 2001/08/07 03:04:21 balay Exp bsmith $*/
+/*$Id: tsfd.c,v 1.25 2001/08/21 21:04:19 bsmith Exp $*/
 
 #include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
 #include "src/ts/tsimpl.h"        /*I  "petscts.h"  I*/

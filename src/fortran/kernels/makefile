@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.17 2001/08/21 21:05:00 bsmith Exp balay $ 
+# $Id: makefile,v 1.18 2001/08/22 18:03:08 balay Exp $ 
 
 # This directory contains some computational kernels written in
 # Fortran77.  These are mainly intended to provide high performance for

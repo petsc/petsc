@@ -1,4 +1,4 @@
-/*$Id: mpiaijpc.c,v 1.44 2001/01/15 21:45:38 bsmith Exp balay $*/
+/*$Id: mpiaijpc.c,v 1.45 2001/03/23 23:21:56 balay Exp $*/
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
 EXTERN_C_BEGIN

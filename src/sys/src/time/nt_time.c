@@ -1,4 +1,4 @@
-/*$Id: nt_time.c,v 1.24 2001/04/04 16:48:08 bsmith Exp balay $*/
+/*$Id: nt_time.c,v 1.25 2001/04/05 21:06:51 balay Exp $*/
 
 #include <petsc.h>
 #if defined (PARCH_win32_gnu) || defined (PARCH_win32)

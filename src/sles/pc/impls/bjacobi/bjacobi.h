@@ -1,4 +1,4 @@
-/* $Id: bjacobi.h,v 1.23 2000/05/05 22:17:09 balay Exp bsmith $ */
+/* $Id: bjacobi.h,v 1.24 2001/03/22 20:31:04 bsmith Exp $ */
 
 #if !defined(__BJACOBI_H)
 #define __BJACOBI_H

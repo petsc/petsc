@@ -1,4 +1,4 @@
-/*$Id: vinv.c,v 1.70 2001/08/10 03:29:59 bsmith Exp bsmith $*/
+/*$Id: vinv.c,v 1.71 2001/09/11 16:31:37 bsmith Exp $*/
 /*
      Some useful vector utility functions.
 */

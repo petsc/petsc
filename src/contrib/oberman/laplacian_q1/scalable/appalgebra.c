@@ -1,4 +1,4 @@
-/*$Id: appalgebra.c,v 1.8 2001/06/21 21:19:36 bsmith Exp balay $*/
+/*$Id: appalgebra.c,v 1.9 2001/08/07 03:04:50 balay Exp $*/
 #include "appctx.h"
 #include "math.h"
 

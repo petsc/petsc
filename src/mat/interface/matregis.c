@@ -1,4 +1,4 @@
-/*$Id: matregis.c,v 1.9 2001/05/11 03:14:08 bsmith Exp bsmith $*/
+/*$Id: matregis.c,v 1.10 2001/06/21 21:16:17 bsmith Exp $*/
 
 #include "petscmat.h"  /*I "petscmat.h" I*/
 

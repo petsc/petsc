@@ -1,14 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.2 1997/03/28 20:32:24 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.3 1997/07/09 21:39:49 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates using ADIC to compute a derivative.\n\n";
 
 /*T
    Concepts: Vectors^Using basic vector routines;
-   Routines: VecCreate(); VecDuplicate(); VecSet();
-   Routines: VecScale(); VecNorm(); 
-   Routines: VecDestroy(); 
    Processors: n
 T*/
 
@@ -20,7 +17,6 @@ T*/
 */
 
 #include "vec.h"
-#include <math.h>
 
 extern int Function(Vec,Scalar,double*);
 
@@ -44,7 +40,7 @@ int main(int argc,char **argv)
 
   /* 
      Create a vector, specifying only its global dimension.
-     When using VecCreate(), the vector format (currently parallel
+     When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel
      or sequential) is determined at runtime.  Also, the parallel
      partitioning of the vector is determined by PETSc at runtime.
 
@@ -53,7 +49,8 @@ int main(int argc,char **argv)
         VecCreateMPI() - distributed vector, where the user can
                          determine the parallel partitioning
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
+  ierr = VecSetFromOptions(x);CHKERRA(ierr);
 
   ierr = Function(x,input,&output); CHKERRA(ierr);
   

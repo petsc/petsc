@@ -1,4 +1,4 @@
-/*$Id: PETScView.java,v 1.8 2001/02/19 22:02:11 bsmith Exp bsmith $*/
+/*$Id: PETScView.java,v 1.9 2001/02/19 23:05:30 bsmith Exp bsmith $*/
 /*
      Accesses the PETSc published objects
 */
@@ -311,9 +311,15 @@ public class PETScView extends JApplet {
         System.out.println("User selected tree node"); 
 	System.out.println("node "+e.getPath().getLastPathComponent());
         Object obj = ((DefaultMutableTreeNode)(e.getPath().getLastPathComponent())).getUserObject();
-	AMS_Memory thisksp = (AMS_Memory) memories.get((String)obj);
-	System.out.println("thisksp "+thisksp);
-        JInternalFrame jp = new PETScViewKSP(thisksp);
+	AMS_Memory thismem = (AMS_Memory) memories.get((String)obj);
+	System.out.println("thismem "+thismem);
+        JInternalFrame jp;
+        String oclass = mem.get_field("Class").getStringData()[0];
+        if (oclass.equals("KSP")) {
+          jp = new PETScViewKSP(thismem);
+        } else if (oclass.equals("SNES")) {
+          jp = new PETScViewSNES(thismem);
+        } else return;
 
         rpanel.add(jp);
 	/*        jp.setLocation(50,50); */

@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.78 2001/04/10 19:35:59 bsmith Exp bsmith $*/
+/*$Id: matio.c,v 1.79 2001/08/06 21:16:10 bsmith Exp $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.

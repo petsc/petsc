@@ -3,7 +3,7 @@
 
   -mat_partitioning_type  square
 
-  -mat_type               nn
+  -mat_type               is
   -pc_type                nn
 
 #  -show_grid

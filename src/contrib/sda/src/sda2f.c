@@ -1,4 +1,4 @@
-/*$Id: sda2f.c,v 1.14 2000/01/11 21:03:35 bsmith Exp bsmith $*/
+/*$Id: sda2f.c,v 1.15 2001/08/06 21:18:49 bsmith Exp $*/
 /*
      Fortran interface for SDA routines.
 */

@@ -1,4 +1,4 @@
-/*$Id: vecstash.c,v 1.28 2001/08/07 03:02:17 balay Exp bsmith $*/
+/*$Id: vecstash.c,v 1.29 2001/09/07 20:08:55 bsmith Exp $*/
 
 #include "src/vec/vecimpl.h"
 

@@ -1,4 +1,4 @@
-/*$Id: dalocal.c,v 1.34 2001/08/06 21:18:33 bsmith Exp balay $*/
+/*$Id: dalocal.c,v 1.35 2001/08/07 03:04:39 balay Exp $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.

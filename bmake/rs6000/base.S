@@ -1,4 +1,4 @@
-# $Id: base.S,v 1.4 1997/09/10 18:16:10 balay Exp bsmith $ 
+# $Id: base.S,v 1.5 1997/10/19 03:20:08 bsmith Exp $ 
 
 #
 PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_O

@@ -1,4 +1,4 @@
-/*$Id: mmdense.c,v 1.39 2001/08/07 03:02:46 balay Exp bsmith $*/
+/*$Id: mmdense.c,v 1.40 2001/09/07 20:09:22 bsmith Exp $*/
 
 /*
    Support for the parallel dense matrix vector multiply

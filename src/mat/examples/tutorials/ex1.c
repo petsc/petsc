@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.27 2001/03/23 23:22:44 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.28 2001/04/10 19:35:58 bsmith Exp $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and reorders it.\n\
   -f0 <input_file> : first file to load (small system)\n\

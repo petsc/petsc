@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.12 2001/08/07 03:02:26 balay Exp bsmith $*/
+/*$Id: ex21.c,v 1.13 2001/09/11 16:32:10 bsmith Exp $*/
 
 static char help[] = "Tests VecMax() with index.\n\
   -n <length> : vector length\n\n";

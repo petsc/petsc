@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 2000/08/01 20:58:17 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.7 2000/08/17 04:53:29 bsmith Exp $ 
 
 DIRS     = 
 LOCDIR   = src/contrib/pc

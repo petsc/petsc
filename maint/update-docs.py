@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: update-docs.py,v 1.6 2001/04/11 17:41:42 balay Exp bsmith $ 
+# $Id: update-docs.py,v 1.7 2001/08/30 17:51:36 bsmith Exp $ 
 #
 # update-docs.py DOCS_DIR
 import os

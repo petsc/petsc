@@ -1,4 +1,4 @@
-/*$Id: cstring.c,v 1.16 2001/06/20 03:44:38 bsmith Exp bsmith $*/
+/*$Id: cstring.c,v 1.17 2001/08/06 21:19:09 bsmith Exp $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*

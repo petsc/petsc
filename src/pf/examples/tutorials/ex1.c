@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.10 2001/06/21 21:19:47 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.11 2001/08/06 21:19:10 bsmith Exp $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 

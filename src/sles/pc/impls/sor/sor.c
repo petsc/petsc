@@ -1,4 +1,4 @@
-/*$Id: sor.c,v 1.102 2001/08/06 21:16:23 bsmith Exp bsmith $*/
+/*$Id: sor.c,v 1.103 2001/08/21 21:03:17 bsmith Exp $*/
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation

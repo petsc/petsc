@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.14 2001/03/23 23:20:59 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.15 2001/04/10 19:34:46 bsmith Exp $*/
 
 /*
      Formatted test for PetscSetCommWorld()

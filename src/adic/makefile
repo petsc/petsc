@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.5 1998/06/12 22:18:26 balay Exp balay $ 
+# $Id: makefile,v 1.6 1998/06/15 15:43:54 balay Exp $ 
 
 ALL: lib
 

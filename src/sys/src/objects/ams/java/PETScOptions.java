@@ -1,4 +1,4 @@
-/*$Id: PETScOptions.java,v 1.5 2001/02/09 04:17:00 bsmith Exp bsmith $*/
+/*$Id: PETScOptions.java,v 1.6 2001/02/14 19:38:54 bsmith Exp bsmith $*/
 /*
      Accesses the PETSc published database options and allows the user to change them via a GUI
 */
@@ -229,6 +229,7 @@ public class PETScOptions extends JApplet {
     done.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         japplet.removeAll();
+        japplet.setVisible(false);
         System.out.println("User selected done");
         getserver();
       }

@@ -1,4 +1,4 @@
-/* $Id: mpibdiag.h,v 1.18 2000/10/24 20:25:50 bsmith Exp balay $ */
+/* $Id: mpibdiag.h,v 1.19 2001/08/07 03:02:55 balay Exp $ */
 
 #include "src/mat/impls/bdiag/seq/bdiag.h"
 

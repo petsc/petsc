@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 2001/08/10 03:29:05 bsmith Exp balay $ 
+# $Id: makefile,v 1.24 2001/08/22 17:59:28 balay Exp $ 
 
 #requirespackage  'PETSC_HAVE_JAVA'
 

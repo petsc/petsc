@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.128 2001/06/21 21:19:09 bsmith Exp bsmith $*/
+/*$Id: da1.c,v 1.129 2001/09/07 20:12:17 bsmith Exp $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.

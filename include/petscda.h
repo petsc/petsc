@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.76 2001/08/06 21:18:31 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.77 2001/09/11 16:34:35 bsmith Exp $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.52 2001/04/10 19:36:40 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.53 2001/08/07 03:04:00 balay Exp $*/
 
 static char help[] = "Uses a different preconditioner matrix and linear system matrix in the SLES solvers.\n\
 Note that different storage formats\n\

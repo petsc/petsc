@@ -1,4 +1,4 @@
-/*$Id: borthog.c,v 1.57 2001/03/23 23:23:37 balay Exp balay $*/
+/*$Id: borthog.c,v 1.58 2001/08/07 03:03:51 balay Exp $*/
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 

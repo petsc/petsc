@@ -1,4 +1,4 @@
-/*$Id: block.c,v 1.53 2001/01/15 21:44:30 bsmith Exp balay $*/
+/*$Id: block.c,v 1.54 2001/03/23 23:21:10 balay Exp $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.

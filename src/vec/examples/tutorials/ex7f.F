@@ -1,5 +1,5 @@
 !
-!    "$Id: ex7f.F,v 1.21 2001/08/07 03:02:34 balay Exp balay $";
+!    "$Id: ex7f.F,v 1.22 2001/08/22 18:00:07 balay Exp $";
 !
        subroutine ex7f(vec,comm)
 

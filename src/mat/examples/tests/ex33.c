@@ -1,4 +1,4 @@
-/*$Id: ex33.c,v 1.22 2001/08/07 03:03:07 balay Exp bsmith $*/
+/*$Id: ex33.c,v 1.23 2001/09/11 16:32:50 bsmith Exp $*/
 
 static char help[] = "Writes a matrix using the PETSc sparse format. Input arguments are:\n\
    -fout <file> : output file name\n\n";

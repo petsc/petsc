@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.52 2001/08/07 03:03:43 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.53 2001/08/07 21:30:37 bsmith Exp $*/
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
 users should employ the SLES interface instead of using PC directly.\n\n";

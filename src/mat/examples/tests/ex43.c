@@ -1,4 +1,4 @@
-/*$Id: ex43.c,v 1.18 2001/04/10 19:35:44 bsmith Exp balay $*/
+/*$Id: ex43.c,v 1.19 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 

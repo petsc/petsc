@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.71 2000/12/21 03:22:15 balay Exp bsmith $ */
+/* $Id: ptime.h,v 1.72 2001/01/15 21:44:04 bsmith Exp $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.

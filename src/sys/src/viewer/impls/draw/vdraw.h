@@ -1,4 +1,4 @@
-/* $Id: vdraw.h,v 1.3 1999/10/22 23:57:57 bsmith Exp bsmith $ */
+/* $Id: vdraw.h,v 1.4 2001/01/15 21:43:15 bsmith Exp $ */
 /*
      Data structure for the PetscDraw version of the viewer
 */

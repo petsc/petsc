@@ -1,4 +1,4 @@
-/*$Id: cputime.c,v 1.40 2001/04/10 19:34:38 bsmith Exp bsmith $*/
+/*$Id: cputime.c,v 1.41 2001/06/21 21:15:40 bsmith Exp $*/
 /*
   This is to allow one to measure CPU time usage of their job, 
   NOT real time usage. Do not use this for reported timings, speedup etc.

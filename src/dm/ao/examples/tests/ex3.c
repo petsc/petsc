@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.28 2001/08/07 21:31:36 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.29 2001/08/10 03:34:29 bsmith Exp $*/
 
 static char help[] = "Tests AOData.\n\n";
 

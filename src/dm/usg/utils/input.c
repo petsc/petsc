@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.7 2001/01/17 22:28:03 bsmith Exp balay $ */
+/* $Id: input.c,v 1.8 2001/01/23 20:58:13 balay Exp $ */
 static char help[] ="Allows inputing a 2d  grid into a AO database.\n";
 
 /*

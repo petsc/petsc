@@ -1,4 +1,4 @@
-/* $Id: f90_win32.h,v 1.4 2000/07/12 22:33:42 balay Exp balay $ */
+/* $Id: f90_win32.h,v 1.5 2000/09/22 18:54:10 balay Exp $ */
 
 #if !defined (__F90_WIN32_H)
 #define __F90_WIN32_H

@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.18 2001/08/07 03:04:00 balay Exp bsmith $*/
+/*$Id: ex22.c,v 1.19 2001/08/07 21:30:54 bsmith Exp $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 

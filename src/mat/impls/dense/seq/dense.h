@@ -1,4 +1,4 @@
-/* $Id: dense.h,v 1.9 2000/10/24 20:25:29 bsmith Exp balay $ */
+/* $Id: dense.h,v 1.10 2001/08/07 03:02:45 balay Exp $ */
 
 #include "src/mat/matimpl.h"
 

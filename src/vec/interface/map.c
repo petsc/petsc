@@ -1,4 +1,4 @@
-/*$Id: map.c,v 1.14 2001/03/23 23:21:22 balay Exp bsmith $*/
+/*$Id: map.c,v 1.15 2001/07/20 21:18:10 bsmith Exp $*/
 /*
      Provides the interface functions for all map operations.
    These are the map functions the user calls.

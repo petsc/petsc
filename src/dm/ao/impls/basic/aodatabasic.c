@@ -1,4 +1,4 @@
-/*$Id: aodatabasic.c,v 1.63 2001/08/06 21:18:26 bsmith Exp balay $*/
+/*$Id: aodatabasic.c,v 1.64 2001/08/07 03:04:35 balay Exp $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.

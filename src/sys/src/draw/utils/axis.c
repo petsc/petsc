@@ -1,4 +1,4 @@
-/*$Id: axis.c,v 1.75 2001/04/18 20:48:31 balay Exp bsmith $*/
+/*$Id: axis.c,v 1.76 2001/08/07 21:28:45 bsmith Exp $*/
 /*
    This file contains a simple routine for generating a 2-d axis.
 */

@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.41 2001/06/21 21:15:25 bsmith Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.42 2001/08/10 03:28:49 bsmith Exp $*/
 /*
       Code for opening and closing files.
 */

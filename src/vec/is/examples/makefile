@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.51 2000/08/17 19:12:02 balay Exp balay $ 
+# $Id: makefile,v 1.52 2001/08/22 17:59:49 balay Exp $ 
 
 LOCDIR   = src/vec/is/examples/
 DIRS     = tests tutorials

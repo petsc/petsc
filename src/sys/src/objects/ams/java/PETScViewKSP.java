@@ -1,4 +1,4 @@
-/*$Id: PETScViewKSP.java,v 1.1 2001/02/16 21:09:36 bsmith Exp bsmith $*/
+/*$Id: PETScViewKSP.java,v 1.2 2001/02/19 23:05:19 bsmith Exp $*/
 /*
      Accesses the PETSc published objects
 */

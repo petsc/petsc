@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.15 2001/01/17 22:20:38 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.16 2001/03/23 23:21:03 balay Exp $*/
 
 static char help[] = "Prints loadable objects from dynamic library.\n\n";
 

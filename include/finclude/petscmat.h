@@ -1,5 +1,5 @@
 !
-!  $Id: petscmat.h,v 1.72 2001/06/29 13:56:21 balay Exp bsmith $;
+!  $Id: petscmat.h,v 1.73 2001/08/06 21:19:26 bsmith Exp $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !

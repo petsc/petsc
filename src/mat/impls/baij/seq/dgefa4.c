@@ -1,4 +1,4 @@
-/*$Id: dgefa4.c,v 1.20 2001/06/20 22:28:51 buschelm Exp buschelm $*/
+/*$Id: dgefa4.c,v 1.21 2001/06/22 19:50:38 buschelm Exp $*/
 /*
        Inverts 4 by 4 matrix using partial pivoting.
 

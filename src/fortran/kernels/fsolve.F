@@ -1,5 +1,5 @@
 !
-!  "$Id: fsolve.F,v 1.12 2000/01/11 21:04:00 bsmith Exp balay $";
+!  "$Id: fsolve.F,v 1.13 2001/08/07 03:05:24 balay Exp $";
 !
 !    Fortran kernel for sparse triangular solve in the AIJ matrix format
 ! This ONLY works for factorizations in the NATURAL ORDERING, i.e.

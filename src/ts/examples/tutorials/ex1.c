@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.30 2001/08/07 03:04:27 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.31 2001/08/07 21:31:30 bsmith Exp $*/
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping.";
 

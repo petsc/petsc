@@ -1,5 +1,5 @@
 !
-!  $Id: petscsnes.h,v 1.31 2001/04/10 22:37:56 balay Exp bsmith $;
+!  $Id: petscsnes.h,v 1.32 2001/06/21 21:20:08 bsmith Exp $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !

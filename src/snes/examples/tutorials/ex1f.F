@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.32 2001/04/06 19:54:59 balay Exp balay $";
+! "$Id: ex1f.F,v 1.33 2001/08/07 03:04:16 balay Exp $";
 !
 !/*T
 !  Concepts: SNES^basic uniprocessor example

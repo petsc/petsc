@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.32 2001/08/06 21:15:03 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.33 2001/08/07 03:02:34 balay Exp $*/
 
 static char help[] = "Writes an array to a file, then reads an array from a file, then forms a vector.\n\n";
 

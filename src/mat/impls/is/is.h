@@ -1,4 +1,4 @@
-/*$Id: is.h,v 1.1 2000/06/05 16:59:44 bsmith Exp bsmith $*/
+/*$Id: is.h,v 1.3 2000/08/24 22:42:00 bsmith Exp $*/
 
 #if !defined(__is_h)
 #define __is_h

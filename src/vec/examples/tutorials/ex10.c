@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.18 2001/03/23 23:21:37 balay Exp balay $*/
+/*$Id: ex10.c,v 1.19 2001/08/07 03:02:34 balay Exp $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 

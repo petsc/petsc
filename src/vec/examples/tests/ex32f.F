@@ -1,5 +1,5 @@
 !
-!    "$Id: ex32f.F,v 1.4 2001/01/15 21:45:13 bsmith Exp balay $";
+!    "$Id: ex32f.F,v 1.5 2001/08/07 03:02:26 balay Exp $";
 !
 !  Tests PescOffsetFortran()
 !  duplicated

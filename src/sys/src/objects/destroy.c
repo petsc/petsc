@@ -1,4 +1,4 @@
-/*$Id: destroy.c,v 1.58 2001/03/22 20:29:03 bsmith Exp balay $*/
+/*$Id: destroy.c,v 1.59 2001/03/23 23:20:38 balay Exp $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */

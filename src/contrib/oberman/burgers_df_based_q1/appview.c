@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.10 2001/08/06 21:18:55 bsmith Exp balay $*/
+/*$Id: appview.c,v 1.11 2001/08/07 03:04:52 balay Exp $*/
 
 
 /*

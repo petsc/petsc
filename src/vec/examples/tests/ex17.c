@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.37 2001/08/07 03:02:26 balay Exp bsmith $*/
+/*$Id: ex17.c,v 1.38 2001/09/11 16:32:10 bsmith Exp $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
 this case each local vector is as long as the entire parallel vector.\n\n";

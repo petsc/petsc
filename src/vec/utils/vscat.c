@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.172 2001/08/07 03:02:17 balay Exp bsmith $*/
+/*$Id: vscat.c,v 1.173 2001/08/10 03:29:59 bsmith Exp $*/
 
 /*
      Code for creating scatters between vectors. This file 

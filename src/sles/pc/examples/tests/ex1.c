@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.35 2001/01/23 20:56:10 balay Exp balay $*/
+/*$Id: ex1.c,v 1.36 2001/03/23 23:23:25 balay Exp $*/
 
 static char help[] = "Tests the creation of a PC context.\n\n";
 

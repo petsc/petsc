@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.28 2001/08/07 03:04:13 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.29 2001/08/07 21:31:12 bsmith Exp $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the modified Bratu problem in a 2D rectangular domain,\n\

@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.17 2001/04/10 19:35:44 bsmith Exp balay $*/
+/*$Id: ex13.c,v 1.18 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Tests copying and ordering uniprocessor row-based sparse matrices.\n\n";
 

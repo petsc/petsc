@@ -1,4 +1,4 @@
-/* $Id: petscsnes.h,v 1.110 2001/08/02 20:29:34 balay Exp bsmith $ */
+/* $Id: petscsnes.h,v 1.111 2001/08/06 21:17:05 bsmith Exp $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */

@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.89 2001/04/10 19:36:03 bsmith Exp bsmith $*/
+/*$Id: sorder.c,v 1.90 2001/06/21 21:17:30 bsmith Exp $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.

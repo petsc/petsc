@@ -1,5 +1,0 @@
-#! /bin/csh
-#
-# finds PETSc ftps from ftp log
-#
-egrep -i '(petsc.tar|Beta.8.tar)' $1

@@ -1,4 +1,4 @@
-/*$Id: tone.c,v 1.35 2001/01/17 19:44:09 balay Exp balay $*/
+/*$Id: tone.c,v 1.36 2001/03/23 23:20:15 balay Exp $*/
 
 /*
     Code for drawing color interpolated triangles using X-windows.

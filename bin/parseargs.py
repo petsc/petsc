@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: parseargs.py,v 1.22 1999/11/02 16:46:38 balay Exp balay $ 
+# $Id: parseargs.py,v 1.1 1999/11/12 22:30:17 balay Exp $ 
 #
 #  Parses the argument list, and searches for the specified argument.
 #  It returns the argument list minus the parsed argument.

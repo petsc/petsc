@@ -1,4 +1,4 @@
-/*$Id: zf90snes.c,v 1.1 2000/09/28 14:59:34 bsmith Exp bsmith $*/
+/*$Id: zf90snes.c,v 1.2 2000/09/28 21:16:27 bsmith Exp $*/
 
 #include "petscsnes.h"
 #include "petscf90.h"

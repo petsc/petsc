@@ -1,7 +1,7 @@
 
   Mark,
 
-   We have determined the reasons for your low performance. There are two 
+   We have determined the reasons for your low performance numbers. There are two 
 main causes.
 
 1) You ran the code on the SP1 without the mpirun option -nopoll. The IBM
@@ -22,8 +22,7 @@ main causes.
    "preloading of the executable" essentially we first run the EXACT code that
    we will run on the large problem on a smaller set of data, then we run it on 
    the problem of interest. There is a section of the users manual where we
-   discuss this. I also include below the program we used to generate the timings
-   below.
+   discuss this. I also include below the program we used to generate the timings.
 
   A few notes:
 * The PowerChallenge has a 2 megabyte external cache and the Origin2000
@@ -36,7 +35,6 @@ main causes.
   numbers.
 * Once we get additional memory cards in our SP2 (in a few months) we'll see another
   jump of 20 to 30 percent (we hope :-)).
-* Note also the impressive numbers on the T3E. I myself, was stunned and amazed :-)
 * The 16 processor performance with BAIJ on the SP2, T3E, and SGI machines are 
   remarkably similar!
 * You can also find some efficiency numbers for a much larger problem, 1.1 million unknows,
@@ -75,6 +73,136 @@ ARCH      (SP2)              (SP1)           (T3E)   (PowerChallenge)   (Origin2
 
 
 
+
+
+#ifndef lint
+static char vcid[] = "$Id: ex10.c,v 1.15 1997/01/22 18:44:10 bsmith Exp $";
+#endif
+
+static char help[] = 
+"Reads a PETSc matrix and vector from a file and solves a linear system.\n\
+This version first preloads and solves a small system, then loads \n\
+another (larger) system and solves it as well.  This example illustrates\n\
+preloading of instructions with the smaller system so that more accurate\n\
+performance monitoring can be done with the larger one (that actually\n\
+is the system of interest).  See the 'Performance Hints' chapter of the\n\
+users manual for a discussion of preloading.  Input parameters include\n\
+  -f0 <input_file> : first file to load (small system)\n\
+  -f1 <input_file> : second file to load (larger system)\n\n";
+
+
+/* 
+  Include "sles.h" so that we can use SLES solvers.  Note that this file
+  automatically includes:
+     petsc.h  - base PETSc routines   vec.h - vectors
+     sys.h    - system routines       mat.h - matrices
+     is.h     - index sets            ksp.h - Krylov subspace methods
+     viewer.h - viewers               pc.h  - preconditioners
+*/
+#include "sles.h"
+#include <stdio.h>
+
+int main(int argc,char **args)
+{
+  MatType    mtype;            /* matrix format */
+  Mat        A;                /* matrix */
+  Vec        b, u;             /* approx solution, RHS, exact solution */
+  Viewer     fd;               /* viewer */
+  char       file[2][128];     /* input file name */
+  char       stagename[6][16]; /* names of profiling stages */
+  int        j,ierr, set, flg, i,loops  = 2;
+  Scalar     none = -1.0;
+  int        m,n;
+  PetscInitialize(&argc,&args,(char *)0,help);
+
+
+#if defined(PETSC_COMPLEX)
+  SETERRA(1,0,"This example does not work with complex numbers");
+#else
+
+  /* 
+     Determine files from which we read the two linear systems
+     (matrix and right-hand-side vector).
+  */
+  ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg); CHKERRA(ierr);
+  if (!flg) SETERRA(1,0,"Must indicate binary file with the -f0 option");
+  ierr = OptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg); CHKERRA(ierr);
+  if (!flg) {loops = 1;} /* don't bother with second system */
+
+  /* -----------------------------------------------------------
+                  Beginning of linear solver loop
+     ----------------------------------------------------------- */
+  /* 
+     Loop through the linear solve 2 times.  
+      - The intention here is to preload and solve a small system;
+        then load another (larger) system and solve it as well.
+        This process preloads the instructions with the smaller
+        system so that more accurate performance monitoring (via
+        -log_summary) can be done with the larger one (that actually
+        is the system of interest). 
+  */
+  for ( i=0; i<loops; i++ ) {
+
+    /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
+                           Load system i
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+    /*
+       Begin profiling next stage
+    */
+    PLogStagePush(2*i);
+    sprintf(stagename[2*i],"Load System %d",i);
+    PLogStageRegister(2*i,stagename[2*i]);
+
+    /* 
+       Open binary file.  Note that we use BINARY_RDONLY to indicate
+       reading from this file.
+    */
+    ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file[i],BINARY_RDONLY,&fd);
+           CHKERRA(ierr);
+
+    /* 
+       Determine matrix format to be used (specified at runtime).
+       See the manpage for MatLoad() for available formats.
+    */
+    ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
+
+    /*
+       Load the matrix and vector; then destroy the viewer.
+    */
+    ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);
+    /* ierr = VecLoad(fd,&b); CHKERRA(ierr); */
+    ierr = ViewerDestroy(fd); CHKERRA(ierr);
+    
+    /*
+      Create a Vector 
+    */
+    ierr = MatGetLocalSize(A,&m,&n); CHKERRA(ierr);
+    ierr = VecCreateMPI(MPI_COMM_WORLD,m,PETSC_DECIDE,&b);
+    VecSet(&none,b);
+    VecDuplicate(b,&u);
+
+    PLogStagePop();
+    PLogStagePush(2*i+1);
+    sprintf(stagename[2*i+1],"MatMult %d",i);
+    PLogStageRegister(2*i+1,stagename[2*i+1]);
+
+    for ( j=0; j< 20; j++ ) {
+      ierr = MatMult(A,b,u);
+    }
+    PLogStagePop();
+
+    ierr = MatDestroy(A); CHKERRA(ierr); ierr = VecDestroy(b); CHKERRA(ierr);
+    ierr = VecDestroy(u); CHKERRA(ierr); 
+  }
+  /* -----------------------------------------------------------
+                      End of linear solver loop
+     ----------------------------------------------------------- */
+
+  PetscFinalize();
+#endif
+  return 0;
+}
 
 
 

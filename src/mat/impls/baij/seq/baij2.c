@@ -1,4 +1,4 @@
-/*$Id: baij2.c,v 1.74 2001/08/07 03:02:55 balay Exp bsmith $*/
+/*$Id: baij2.c,v 1.75 2001/09/07 20:09:49 bsmith Exp $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"

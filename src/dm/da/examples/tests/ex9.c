@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.20 2001/04/10 19:37:27 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.21 2001/06/21 21:19:28 bsmith Exp $*/
       
 static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 

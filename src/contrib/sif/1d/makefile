@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.4 1998/04/23 22:52:12 balay Exp balay $ 
+# $Id: makefile,v 1.5 1998/06/13 05:26:09 balay Exp bsmith $ 
 
 ALL: sif
 
 CFLAGS	        =
-FFLAGS	        =
+FFLAGS	        = -O2
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/contrib/sif

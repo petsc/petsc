@@ -1,4 +1,4 @@
-/*$Id: lg.c,v 1.75 2001/03/23 23:20:24 balay Exp bsmith $*/
+/*$Id: lg.c,v 1.76 2001/04/10 19:34:23 bsmith Exp $*/
 /*
        Contains the data structure for plotting several line
     graphs in a window with an axis. This is intended for line 

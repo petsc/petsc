@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.57 2001/09/05 15:56:59 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.58 2001/09/11 16:33:29 bsmith Exp $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 This version first preloads and solves a small system, then loads \n\

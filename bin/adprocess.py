@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.11 2001/07/18 04:07:16 bsmith Exp bsmith $ 
+# $Id: adprocess.py,v 1.12 2001/08/24 18:26:15 bsmith Exp $ 
 #
 # change python to whatever is needed on your system to invoke python
 #

@@ -1,5 +1,0 @@
-#! /bin/csh
-#
-# finds PETSc ftps from ftp log
-#
-egrep -i '(mpich)' $1 | grep tar | grep -v test

@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.70 2001/08/06 21:17:42 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.71 2001/08/07 03:04:16 balay Exp $*/
 
 static char help[] = "u`` + u^{2} = f. Different matrices for the Jacobian and the preconditioner.\n\
 Demonstrates the use of matrix-free Newton-Krylov methods in conjunction\n\

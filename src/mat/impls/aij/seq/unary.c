@@ -1,4 +1,4 @@
-/*$Id: unary.c,v 1.3 2000/01/11 21:00:37 bsmith Exp bsmith $*/
+/*$Id: unary.c,v 1.4 2001/08/06 21:15:14 bsmith Exp $*/
 /* unary.f -- translated by f2c (version of 25 March 1992  12:58:56).
 
         This code is protected by the GNU copyright. See the file 

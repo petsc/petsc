@@ -1,4 +1,4 @@
-/* $Id: psimpl.h,v 1.4 2001/01/15 21:43:32 bsmith Exp bsmith $ */
+/* $Id: psimpl.h,v 1.5 2001/04/10 19:34:15 bsmith Exp $ */
 
 /*
       Defines the internal data structures for the Postscript

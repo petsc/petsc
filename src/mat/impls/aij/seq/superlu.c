@@ -1,4 +1,4 @@
-/*$Id: superlu.c,v 1.9 2001/08/07 21:29:40 bsmith Exp bsmith $*/
+/*$Id: superlu.c,v 1.10 2001/08/15 15:56:50 bsmith Exp $*/
 
 /* 
         Provides an interface to the SuperLU sparse solver

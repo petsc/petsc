@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.103 2001/03/23 23:21:09 balay Exp bsmith $*/
+/*$Id: stride.c,v 1.104 2001/06/21 21:15:53 bsmith Exp $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.

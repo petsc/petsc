@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.23 2001/08/07 03:02:34 balay Exp bsmith $*/
+/*$Id: ex8.c,v 1.24 2001/09/11 16:32:18 bsmith Exp $*/
 
 static char help[] = "Demonstrates using a local ordering to set values into a parallel vector.\n\n";
 

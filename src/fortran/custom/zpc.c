@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.50 2001/05/14 17:49:38 balay Exp bsmith $*/
+/*$Id: zpc.c,v 1.51 2001/08/06 21:19:11 bsmith Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"

@@ -1,4 +1,4 @@
-/*$Id: vecio.c,v 1.73 2001/08/06 21:14:36 bsmith Exp balay $*/
+/*$Id: vecio.c,v 1.74 2001/08/07 03:02:17 balay Exp $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The

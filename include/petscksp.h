@@ -1,4 +1,4 @@
-/* $Id: petscksp.h,v 1.106 2001/08/02 20:29:36 balay Exp bsmith $ */
+/* $Id: petscksp.h,v 1.107 2001/08/06 21:16:38 bsmith Exp $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */

@@ -1,4 +1,4 @@
-/*$Id: zstartf.c,v 1.33 2001/08/10 16:50:45 balay Exp bsmith $*/
+/*$Id: zstartf.c,v 1.34 2001/09/10 03:48:36 bsmith Exp $*/
 
 #include "src/fortran/custom/zpetsc.h" 
 #include "petscsys.h"

@@ -1,5 +1,5 @@
 
-/* static char vcid[] = "$Id: adpetsc.h,v 1.2 1997/05/23 17:20:26 balay Exp balay $"; */
+/* static char vcid[] = "$Id: adpetsc.h,v 1.3 1997/05/23 18:35:23 balay Exp $"; */
 
 #if !defined(__ADPETSC_H)
 #define __ADPETSC_H

@@ -1,4 +1,4 @@
-/* $Id: ramgfunc.h,v 1.2 2000/11/27 17:25:33 bsmith Exp bsmith $ */
+/* $Id: ramgfunc.h,v 1.3 2000/11/28 17:32:36 bsmith Exp $ */
 #ifndef RAMGFUNC_H
 #define RAMGFUNC_H
 #include "petsc.h"

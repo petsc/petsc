@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.13 2001/03/23 23:21:11 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.14 2001/04/10 19:34:49 bsmith Exp $*/
 
 static char help[] = "Tests ISStrideToGeneral().\n\n";
 

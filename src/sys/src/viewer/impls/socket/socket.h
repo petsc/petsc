@@ -1,4 +1,4 @@
-/* $Id: socket.h,v 1.17 2000/05/05 22:13:05 balay Exp bsmith $ */
+/* $Id: socket.h,v 1.18 2001/01/15 21:43:07 bsmith Exp $ */
 /* 
      This is the definition of the Matlab viewer structure. Note: 
   each viewer has a different data structure.

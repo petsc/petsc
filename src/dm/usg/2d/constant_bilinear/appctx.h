@@ -104,5 +104,6 @@ extern int AppCtxCreate(MPI_Comm,AppCtx **);
 extern int AppCtxDestroy(AppCtx *);
 extern int AppCtxSetLocal(AppCtx *);
 extern int AppCtxSolve(AppCtx*);
+extern int AppCtxGraphics(AppCtx *);
 
 #endif

@@ -1,4 +1,4 @@
-/*$Id: gcreate.c,v 1.130 2001/07/12 19:48:05 balay Exp bsmith $*/
+/*$Id: gcreate.c,v 1.131 2001/07/20 21:22:13 bsmith Exp $*/
 
 #include "petscsys.h"
 #include "src/mat/matimpl.h"       /*I "petscmat.h"  I*/

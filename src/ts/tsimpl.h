@@ -1,4 +1,4 @@
-  /* $Id: tsimpl.h,v 1.24 2001/08/06 21:18:07 bsmith Exp bsmith $ */
+  /* $Id: tsimpl.h,v 1.25 2001/09/07 20:12:01 bsmith Exp $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H

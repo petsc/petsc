@@ -1,4 +1,4 @@
-/*$Id: cookie.c,v 1.25 2001/01/15 21:43:52 bsmith Exp balay $*/
+/*$Id: cookie.c,v 1.26 2001/03/23 23:20:38 balay Exp $*/
 
 #include "petsc.h"  /*I "petsc.h" I*/
 int PETSC_LARGEST_COOKIE = PETSC_LARGEST_COOKIE_PREDEFINED;

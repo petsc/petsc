@@ -1,4 +1,4 @@
-/*$Id: pbjacobi.c,v 1.3 2001/08/06 21:16:36 bsmith Exp balay $*/
+/*$Id: pbjacobi.c,v 1.4 2001/08/07 03:03:42 balay Exp $*/
 
 /* 
    Include files needed for the PBJacobi preconditioner:

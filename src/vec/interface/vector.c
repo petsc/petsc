@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.237 2001/09/08 03:09:21 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.238 2001/09/11 16:31:48 bsmith Exp $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.

@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.96 2001/10/04 18:45:16 balay Exp balay $*/
+/*$Id: zsys.c,v 1.95 2001/08/07 03:05:11 balay Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
@@ -43,7 +43,6 @@
 #define petscbarrier_              PETSCBARRIER
 #define petscsynchronizedflush_    PETSCSYNCHRONIZEDFLUSH
 #define petscsplitownership_       PETSCSPLITOWNERSHIP
-#define petscsplitownershipblock_  PETSCSPLITOWNERSHIPBLOCK
 #define petscobjectgetnewtag_      PETSCOBJECTGETNEWTAG
 #define petsccommgetnewtag_        PETSCCOMMGETNEWTAG
 #define petscfptrap_               PETSCFPTRAP
@@ -79,7 +78,6 @@
 #define petscobjectgetnewtag_      petscobjectgetnewtag
 #define petsccommgetnewtag_        petsccommgetnewtag
 #define petscsplitownership_       petscsplitownership
-#define petscsplitownershipblock_  petscsplitownershipblock
 #define petscbarrier_              petscbarrier
 #define petscstrncpy_              petscstrncpy
 #define petscfixfilename_          petscfixfilename
@@ -212,10 +210,6 @@ void PETSC_STDCALL petsccommgetnewtag_(MPI_Comm *comm,int *tag,int *ierr)
   *ierr = PetscCommGetNewTag((MPI_Comm)PetscToPointerComm(*comm),tag);
 }
 
-void PETSC_STDCALL petscsplitownershipblock_(MPI_Comm *comm,int *bs,int *n,int *N,int *ierr)
-{
-  *ierr = PetscSplitOwnershipBlock((MPI_Comm)PetscToPointerComm(*comm),*bs,n,N);
-}
 void PETSC_STDCALL petscsplitownership_(MPI_Comm *comm,int *n,int *N,int *ierr)
 {
   *ierr = PetscSplitOwnership((MPI_Comm)PetscToPointerComm(*comm),n,N);

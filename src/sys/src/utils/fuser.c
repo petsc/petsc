@@ -1,4 +1,4 @@
-/*$Id: fuser.c,v 1.30 2001/01/15 21:44:00 bsmith Exp balay $*/
+/*$Id: fuser.c,v 1.31 2001/03/23 23:20:45 balay Exp $*/
 /*
       Code for manipulating files.
 */

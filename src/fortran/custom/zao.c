@@ -1,4 +1,4 @@
-/*$Id: zao.c,v 1.18 2001/01/15 21:49:49 bsmith Exp bsmith $*/
+/*$Id: zao.c,v 1.19 2001/04/30 15:03:46 bsmith Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscao.h"

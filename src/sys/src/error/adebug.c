@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.112 2001/03/09 15:49:43 balay Exp balay $*/
+/*$Id: adebug.c,v 1.113 2001/03/23 23:20:26 balay Exp $*/
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */

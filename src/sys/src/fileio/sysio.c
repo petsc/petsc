@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.80 2001/08/06 21:14:02 bsmith Exp balay $*/
+/*$Id: sysio.c,v 1.81 2001/08/10 17:39:07 balay Exp $*/
 
 /* 
    This file contains simple binary read/write routines.

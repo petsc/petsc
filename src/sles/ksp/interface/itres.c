@@ -1,4 +1,4 @@
-/*$Id: itres.c,v 1.53 2001/06/18 18:44:34 bsmith Exp balay $*/
+/*$Id: itres.c,v 1.54 2001/08/07 03:03:45 balay Exp $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 

@@ -23,24 +23,6 @@ int main( int argc, char **argv )
   PetscFunctionReturn(0);
 }
 
- #include "/home/petsc/petsc-2.0.22/src/mat/impls/aij/seq/aij.h" 
- #undef __FUNC__   
- #define __FUNC__ "MatCopy_SeqAIJ" 
- int MatCopy_SeqAIJ(Mat A,Mat B) 
- { 
-   int    ierr; 
-     Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;  
-     Mat_SeqAIJ *b = (Mat_SeqAIJ *) B->data;  
-   PetscFunctionBegin; 
-     if (a->i[a->m]+a->indexshift != b->i[b->m]+a->indexshift) { 
-       SETERRQ(1,1,"Number of nonzeros in two matrices are different"); 
-     } 
-     PetscMemcpy(b->a,a->a,(a->i[a->m]+a->indexshift)*sizeof(Scalar)); 
-    PetscFunctionReturn(0); 
- } 
-
-/*  extern int MatCopy_Basic(Mat , Mat);  */
-
 /*  Sets up the non-linear system associated with the PDE and solves it */
 #undef __FUNC__
 #define __FUNC__ "AppCxtSolve"
@@ -88,7 +70,7 @@ int AppCtxSolve(AppCtx* appctx)
   /*      Set Jacobian   */ 
   ierr = SNESSetJacobian(snes, algebra->J, algebra->J, FormStationaryJacobian,(void *)appctx);CHKERRQ(ierr);
   /* set monintor functions */
-  if(appctx->view.monitor) {ierr = SNESSetMonitor(snes, MonitorFunction, (void *)appctx);CHKERRQ(ierr);}
+  if(appctx->view.monitor) {ierr = SNESSetMonitor(snes, MonitorFunction, (void *)appctx,0);CHKERRQ(ierr);}
 
 /* Need this call, otherwise the defaults don't get set, and solve won't work */
  /*      Set Solver Options, could put internal options here      */
@@ -109,9 +91,9 @@ int AppCtxSolve(AppCtx* appctx)
 
   /* send solution to matlab */
   if (appctx->view.matlabgraphics){
-    ierr = VecView(appctx->algebra.g,VIEWER_MATLAB_WORLD); CHKERRQ(ierr);
+    ierr = VecView(appctx->algebra.g,VIEWER_SOCKET_WORLD); CHKERRQ(ierr);
     /* send the done signal */
-    ierr = PetscIntView(1, &zero, VIEWER_MATLAB_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(1, &zero, VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
   }
   /* show solution vector */
   if (appctx->view.show_vector ){ 
@@ -251,7 +233,7 @@ int FormStationaryJacobian(SNES snes, Vec g, Mat *jac, Mat *B, MatStructure *fla
 
 if( appctx->view.show_matrix ) {  
   printf("in jac, stiffness and pressure\n");
-  ierr = MatView(*jac, VIEWER_DRAWX_WORLD );CHKERRQ(ierr);
+  ierr = MatView(*jac, VIEWER_DRAW_WORLD );CHKERRQ(ierr);
 }
   /* the nonlinear part */
   if( appctx->equations.stokes_flag != 1 ){
@@ -262,7 +244,7 @@ if( appctx->view.show_matrix ) {
 if( appctx->view.show_matrix ) {  
 
   printf("set boundary conditions\n");
-  ierr = MatView(*jac, VIEWER_DRAWX_WORLD );CHKERRQ(ierr);
+  ierr = MatView(*jac, VIEWER_DRAW_WORLD );CHKERRQ(ierr);
 }
   /* Set flag */
   *flag = SAME_NONZERO_PATTERN;
@@ -270,8 +252,8 @@ if( appctx->view.show_matrix ) {
 
   if( 0 ) {  
  printf("about to send to the file\n");
-  ierr = MatView(*jac, VIEWER_DRAWX_WORLD );CHKERRQ(ierr);
-    ierr = ViewerFileOpenASCII(PETSC_COMM_WORLD,"mat.output",&viewer);CHKERRQ(ierr);
+  ierr = MatView(*jac, VIEWER_DRAW_WORLD );CHKERRQ(ierr);
+    ierr = ViewerASCIIOpen(PETSC_COMM_WORLD,"mat.output",&viewer);CHKERRQ(ierr);
     ierr = ViewerSetFormat(viewer ,   VIEWER_FORMAT_ASCII_MATLAB, 0);CHKERRQ(ierr);
     ierr = MatView(*jac, viewer);CHKERRQ(ierr);
   }
@@ -288,8 +270,8 @@ int MonitorFunction(SNES snes, int its, double norm, void *dappctx)
   Vec x;  
   if (appctx->view.matlabgraphics ){
     ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
-    ierr = VecView(x,VIEWER_MATLAB_WORLD); CHKERRQ(ierr);
-    ierr = PetscIntView(1, &one, VIEWER_MATLAB_WORLD);CHKERRQ(ierr);}
+    ierr = VecView(x,VIEWER_SOCKET_WORLD); CHKERRQ(ierr);
+    ierr = PetscIntView(1, &one, VIEWER_SOCKET_WORLD);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.30 2001/08/06 21:15:30 bsmith Exp balay $ */
+/* $Id: bdiag.h,v 1.31 2001/08/07 03:02:53 balay Exp $ */
 
 #include "src/mat/matimpl.h"
 

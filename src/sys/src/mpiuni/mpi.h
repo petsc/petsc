@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.86 2001/03/31 01:16:51 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.87 2001/04/10 19:34:44 bsmith Exp $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.

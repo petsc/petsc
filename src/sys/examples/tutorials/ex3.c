@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.38 2001/01/23 20:53:36 balay Exp balay $*/
+/*$Id: ex3.c,v 1.39 2001/03/23 23:21:03 balay Exp $*/
 
 static char help[] = "Augmenting PETSc profiling by add events.\n\
 Run this program with one of the\n\

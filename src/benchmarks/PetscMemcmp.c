@@ -1,4 +1,4 @@
-/*$Id: PetscMemcmp.c,v 1.22 2001/08/29 20:27:57 balay Exp balay $*/
+/*$Id: PetscMemcmp.c,v 1.23 2001/08/29 20:59:31 balay Exp $*/
 
 #include "petsc.h"
 

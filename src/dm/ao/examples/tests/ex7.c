@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.16 2001/03/23 23:24:54 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.17 2001/04/10 19:37:18 bsmith Exp $*/
 
 static char help[] = "Demonstrates constructing an application ordering.\n\n";
 

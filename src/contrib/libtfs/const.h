@@ -1,4 +1,4 @@
-/*$Id: const.h,v 1.3 2001/04/11 02:42:15 balay Exp balay $*/
+/*$Id: const.h,v 1.4 2001/04/11 03:22:17 balay Exp $*/
 /**********************************const.h*************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 

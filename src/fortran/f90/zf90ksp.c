@@ -1,4 +1,4 @@
-/*$Id: zf90ksp.c,v 1.1 2000/09/28 14:59:15 bsmith Exp bsmith $*/
+/*$Id: zf90ksp.c,v 1.2 2000/09/28 21:16:27 bsmith Exp $*/
 
 #include "petscksp.h"
 #include "petscf90.h"

@@ -1,4 +1,4 @@
-/*$Id: rs6000_time.c,v 1.10 2001/03/23 23:20:44 balay Exp bsmith $*/
+/*$Id: rs6000_time.c,v 1.11 2001/04/10 19:34:38 bsmith Exp $*/
 
 #include "petsc.h"
 #if defined (PETSC_USE_READ_REAL_TIME)

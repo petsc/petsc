@@ -1,4 +1,4 @@
-/*$Id: ploginfo.c,v 1.22 2001/03/23 23:20:50 balay Exp bsmith $*/
+/*$Id: ploginfo.c,v 1.22 2001/03/23 23:20:50 balay Exp $*/
 /*
       PetscLogInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.
@@ -62,7 +62,7 @@ int PetscLogInfo(void *vobj,const char message[],...)
   va_list     Argp;
   int         rank,urank,len,ierr;
   PetscObject obj = (PetscObject)vobj;
-  char        string[8*1024];
+  char        string[256];
 
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj);

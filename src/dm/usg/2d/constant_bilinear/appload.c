@@ -1,8 +1,8 @@
 
 
 /*
-       Demonstrates how to load a database from a file and set up the local 
-     data structures. See appctx.h for information on how this is to be used.
+     Loads the qquadrilateral grid database from a file  and sets up the local 
+     data structures. 
 */
 
 #include "appctx.h"
@@ -48,40 +48,52 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   ierr = AppCtxSetLocal(*appctx); CHKERRA(ierr);
 
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "AppCxtGraphics"
+int AppCtxGraphics(AppCtx *appctx)
+{
+  int    ierr,flag;
+  Viewer binary;
+  char   filename[256];
+  double maxs[2],mins[2],xmin,xmax,ymin,ymax,hx,hy;
+
   /*---------------------------------------------------------------------
      Setup  the graphics windows
      ------------------------------------------------------------------------*/
 
-  ierr = OptionsHasName(PETSC_NULL,"-show_numbers",&(*appctx)->view.shownumbers);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-show_elements",&(*appctx)->view.showelements);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-show_vertices",&(*appctx)->view.showvertices);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-show_boundary",&(*appctx)->view.showboundary);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-show_numbers",&appctx->view.shownumbers);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-show_elements",&appctx->view.showelements);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-show_vertices",&appctx->view.showvertices);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-show_boundary",&appctx->view.showboundary);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-show_boundary_vertices",
-         &(*appctx)->view.showboundaryvertices);CHKERRQ(ierr);
+         &appctx->view.showboundaryvertices);CHKERRQ(ierr);
 
-  (*appctx)->view.showsomething = (*appctx)->view.shownumbers + (*appctx)->view.showelements + 
-                                 (*appctx)->view.showvertices + (*appctx)->view.showboundary +
-                                 (*appctx)->view.showboundaryvertices;
+  (appctx)->view.showsomething = (appctx)->view.shownumbers + (appctx)->view.showelements + 
+                                 (appctx)->view.showvertices + (appctx)->view.showboundary +
+                                 (appctx)->view.showboundaryvertices;
 
-  if ((*appctx)->view.showsomething) {
+  if ((appctx)->view.showsomething) {
     ierr = DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,400,400,
-                     &(*appctx)->view.drawglobal); CHKERRQ(ierr);
+                     &appctx->view.drawglobal); CHKERRQ(ierr);
     ierr = DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,400,400,
-                     &(*appctx)->view.drawlocal);CHKERRQ(ierr);
-    ierr = DrawSplitViewPort((*appctx)->view.drawlocal);CHKERRQ(ierr);
+                     &appctx->view.drawlocal);CHKERRQ(ierr);
+    ierr = DrawSplitViewPort((appctx)->view.drawlocal);CHKERRQ(ierr);
 
     /*
        Set the window coordinates based on the values in vertices
     */
-    ierr = AODataSegmentGetExtrema((*appctx)->aodata,"vertex","values",maxs,mins);CHKERRQ(ierr);
+    ierr = AODataSegmentGetExtrema((appctx)->aodata,"vertex","values",maxs,mins);CHKERRQ(ierr);
     hx = maxs[0] - mins[0]; xmin = mins[0] - .1*hx; xmax = maxs[0] + .1*hx;
     hy = maxs[1] - mins[1]; ymin = mins[1] - .1*hy; ymax = maxs[1] + .1*hy;
-    ierr = DrawSetCoordinates((*appctx)->view.drawglobal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
-    ierr = DrawSetCoordinates((*appctx)->view.drawlocal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    ierr = DrawSetCoordinates((appctx)->view.drawglobal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    ierr = DrawSetCoordinates((appctx)->view.drawlocal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
     /*
        Visualize the grid 
     */
-    ierr = DrawZoom((*appctx)->view.drawglobal,AppCtxView,*appctx); CHKERRA(ierr);
+    ierr = DrawZoom((appctx)->view.drawglobal,AppCtxView,appctx); CHKERRA(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -191,7 +203,21 @@ int AppCtxDestroy(AppCtx *appctx)
 
   ierr = AODataSegmentRestoreIS(ao,"vertex","values",PETSC_NULL,(void **)&grid->vertex_value);CHKERRQ(ierr);
   ierr = AODataSegmentRestoreLocalIS(ao,"cell","vertex",PETSC_NULL,(void **)&grid->cell_vertex);CHKERRQ(ierr);
+  ierr = AODataSegmentRestoreIS(ao,"cell","cell",PETSC_NULL,(void **)&grid->cell_cell);CHKERRQ(ierr);
+  ierr = AODataSegmentRestoreIS(ao,"vertex","boundary",PETSC_NULL,(void **)&grid->vertex_boundary_flag);CHKERRQ(ierr);
   ierr = AODataDestroy(ao);CHKERRQ(ierr);
+
+  /*
+      Free the algebra 
+  */
+  ierr = MatDestroy(appctx->algebra.A);CHKERRQ(ierr);
+  ierr = VecDestroy(appctx->algebra.b);CHKERRQ(ierr);
+  ierr = VecDestroy(appctx->algebra.x);CHKERRQ(ierr);
+  ierr = VecDestroy(appctx->algebra.z);CHKERRQ(ierr);
+  ierr = VecDestroy(appctx->algebra.w_local);CHKERRQ(ierr);
+  ierr = VecDestroy(appctx->algebra.x_local);CHKERRQ(ierr);
+  ierr = VecDestroy(appctx->algebra.z_local);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(appctx->algebra.gtol);CHKERRQ(ierr);
 
   if (appctx->view.showsomething) {
     ierr = DrawDestroy(appctx->view.drawglobal); CHKERRQ(ierr);
@@ -199,6 +225,7 @@ int AppCtxDestroy(AppCtx *appctx)
   }
 
   ierr = ISDestroy(appctx->grid.vertex_global);CHKERRQ(ierr);
+  ierr = ISDestroy(appctx->grid.vertex_boundary);CHKERRQ(ierr);
   ierr = ISDestroy(appctx->grid.cell_global);CHKERRQ(ierr);
 
   ierr = ISLocalToGlobalMappingDestroy(appctx->grid.ltog);CHKERRQ(ierr);

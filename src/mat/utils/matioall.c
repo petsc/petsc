@@ -1,4 +1,4 @@
-/*$Id: matioall.c,v 1.22 2001/01/15 21:46:25 bsmith Exp balay $*/
+/*$Id: matioall.c,v 1.23 2001/03/23 23:22:45 balay Exp $*/
 
 #include "petscmat.h"
 

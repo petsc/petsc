@@ -1,4 +1,4 @@
-/*$Id: dxml.c,v 1.23 2001/08/06 21:15:14 bsmith Exp balay $*/
+/*$Id: dxml.c,v 1.24 2001/08/07 03:02:47 balay Exp $*/
 
 /* 
         Provides an interface to the DEC Alpha DXML library

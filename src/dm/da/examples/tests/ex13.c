@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.14 2001/03/23 23:25:07 balay Exp bsmith $*/
+/*$Id: ex13.c,v 1.15 2001/04/10 19:37:27 bsmith Exp $*/
 
 static char help[] = "Tests loading DA vector from file.\n\n";
 

@@ -1,4 +1,4 @@
-/*$Id: ex29.c,v 1.20 2001/08/07 03:02:26 balay Exp bsmith $*/
+/*$Id: ex29.c,v 1.21 2001/09/11 16:32:10 bsmith Exp $*/
 
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors.\n\
 Where atleast a couple of mallocs will occur in the stash code.\n\n";

@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.215 2001/08/07 03:03:26 balay Exp bsmith $*/
+/*$Id: precon.c,v 1.216 2001/08/21 21:03:13 bsmith Exp $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */

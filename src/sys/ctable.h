@@ -1,4 +1,4 @@
-/* $Id: ctable.h,v 1.7 2000/01/11 20:58:50 bsmith Exp bsmith $ */
+/* $Id: ctable.h,v 1.8 2000/05/10 16:38:35 bsmith Exp $ */
 /* Contributed by - Mark Adams */
 
 #if !defined(__CTABLE_H)

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.30 2001/04/04 18:24:11 balay Exp balay $ 
+# $Id: base.site,v 1.31 2001/05/10 01:10:11 balay Exp $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.

@@ -1,4 +1,4 @@
-/*$Id: tsregall.c,v 1.31 2001/01/15 21:48:25 bsmith Exp balay $*/
+/*$Id: tsregall.c,v 1.32 2001/03/23 23:24:34 balay Exp $*/
 
 #include "src/ts/tsimpl.h"     /*I  "petscts.h"  I*/
 EXTERN_C_BEGIN

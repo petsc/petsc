@@ -1,4 +1,4 @@
-/*$Id: setr.c,v 1.13 2001/01/15 21:46:39 bsmith Exp balay $*/
+/*$Id: setr.c,v 1.14 2001/03/23 23:22:57 balay Exp $*/
 
 /* setr.f -- translated by f2c (version of 25 March 1992  12:58:56). */
 

@@ -1,4 +1,4 @@
-/*$Id: appctx.h,v 1.8 2000/05/08 15:09:37 balay Exp bsmith $*/
+/*$Id: appctx.h,v 1.9 2001/01/15 21:49:29 bsmith Exp $*/
 /*
     Defines some simple data structures for writing cell (element) based PDE codes.
 

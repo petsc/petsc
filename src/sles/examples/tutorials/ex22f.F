@@ -1,4 +1,4 @@
-! $Id: ex22f.F,v 1.5 2001/08/10 16:44:04 balay Exp bsmith $
+! $Id: ex22f.F,v 1.6 2001/09/11 15:09:12 bsmith Exp $
 !
 !   Laplacian in 3D. Modeled by the partial differential equation
 !

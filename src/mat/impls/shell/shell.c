@@ -1,4 +1,4 @@
-/*$Id: shell.c,v 1.87 2001/07/20 21:20:12 bsmith Exp bsmith $*/
+/*$Id: shell.c,v 1.88 2001/09/07 20:09:41 bsmith Exp $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 

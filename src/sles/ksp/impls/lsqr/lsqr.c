@@ -1,4 +1,4 @@
-/*$Id: lsqr.c,v 1.68 2001/03/23 23:23:41 balay Exp balay $*/
+/*$Id: lsqr.c,v 1.69 2001/08/07 03:03:53 balay Exp $*/
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 

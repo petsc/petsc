@@ -1,4 +1,4 @@
-/* $Id: f90_hpux.h,v 1.5 2000/07/12 22:24:23 balay Exp balay $ */
+/* $Id: f90_hpux.h,v 1.6 2000/09/22 18:54:10 balay Exp $ */
 
 #if !defined (__F90_HPUX_H)
 #define __F90_HPUX_H

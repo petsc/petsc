@@ -1,4 +1,4 @@
-/*$Id: hists.c,v 1.25 2001/03/23 23:20:24 balay Exp bsmith $*/
+/*$Id: hists.c,v 1.26 2001/04/10 19:34:23 bsmith Exp $*/
 
 /*
   Contains the data structure for plotting a histogram in a window with an axis.

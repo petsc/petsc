@@ -1,4 +1,4 @@
-/*$Id: dupl.c,v 1.13 2001/03/23 23:20:05 balay Exp bsmith $*/
+/*$Id: dupl.c,v 1.14 2001/04/10 19:34:10 bsmith Exp $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 

@@ -1,4 +1,4 @@
-/* $Id: f90_rs6000.h,v 1.6 1999/11/11 16:46:16 balay Exp balay $ */
+/* $Id: f90_rs6000.h,v 1.7 2000/09/22 18:54:10 balay Exp $ */
 
 #if !defined (__F90_RS6000_H)
 #define __F90_RS6000_H

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.9 2001/03/23 23:20:05 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.10 2001/04/10 19:34:10 bsmith Exp $*/
 
 static char help[] = "Tests dynamic loading of viewer.\n\n";
 

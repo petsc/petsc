@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.75 2001/08/07 03:03:43 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.76 2001/08/07 21:30:37 bsmith Exp $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\

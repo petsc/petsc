@@ -1,4 +1,4 @@
-/*$Id: minres.c,v 1.17 2001/08/07 03:03:56 balay Exp bsmith $*/
+/*$Id: minres.c,v 1.18 2001/08/10 18:14:38 bsmith Exp $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.

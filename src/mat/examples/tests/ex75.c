@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.27 2001/08/07 03:03:07 balay Exp bsmith $*/
+/*$Id: ex75.c,v 1.28 2001/09/11 16:32:50 bsmith Exp $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 

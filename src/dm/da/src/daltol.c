@@ -1,4 +1,4 @@
-/*$Id: daltol.c,v 1.23 2001/01/15 21:48:51 bsmith Exp balay $*/
+/*$Id: daltol.c,v 1.24 2001/03/23 23:25:00 balay Exp $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.

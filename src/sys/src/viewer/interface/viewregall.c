@@ -1,4 +1,4 @@
-/*$Id: viewregall.c,v 1.18 2001/03/23 23:20:05 balay Exp bsmith $*/
+/*$Id: viewregall.c,v 1.19 2001/04/10 19:34:10 bsmith Exp $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex21f.F,v 1.8 2001/03/14 21:09:22 balay Exp balay $";
+!    "$Id: ex21f.F,v 1.9 2001/08/07 03:04:00 balay Exp $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:

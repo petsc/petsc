@@ -1,4 +1,4 @@
-/*$Id: receive.c,v 1.17 2000/05/10 16:38:39 bsmith Exp balay $*/
+/*$Id: receive.c,v 1.18 2001/03/23 23:19:53 balay Exp $*/
 /*
  
   This is a MATLAB Mex program which waits at a particular 

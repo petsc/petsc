@@ -1,10 +1,8 @@
-#ifndef lint
+#ifdef PETSC_RCS_HEADER
 static char vcid[] = "$Id: ex3func.c,v 1.1 1997/04/08 03:56:46 bsmith Exp bsmith $";
 #endif
 
-
 #include "snes.h"
-#include <math.h>
 
 /* 
    User-defined routines
@@ -39,7 +37,7 @@ int Function(Vec F, Vec x)
      Create nonlinear solver contex, norm;t
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -60,7 +58,7 @@ int Function(Vec F, Vec x)
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(MPI_COMM_WORLD,n,n,&J); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,n,n,&J); CHKERRA(ierr);
 
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -100,7 +98,7 @@ int Function(Vec F, Vec x)
      the option -snes_view
   */
   ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%d, maxf=%d\n",
+  PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%d, maxf=%d\n",
      atol,rtol,stol,maxit,maxf);
 
 
@@ -115,7 +113,7 @@ int Function(Vec F, Vec x)
   */
   ierr = FormInitialGuess(x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"number of Newton iterations = %d\n\n", its );
+  PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d\n\n", its );
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Check solution and clean up

@@ -1,4 +1,4 @@
-/*$Id: lsparams.c,v 1.11 2001/04/05 20:01:02 bsmith Exp bsmith $*/
+/*$Id: lsparams.c,v 1.12 2001/08/06 21:17:15 bsmith Exp $*/
 
 #include "src/snes/impls/ls/ls.h"
 

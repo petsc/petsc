@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f.F,v 1.23 2000/10/24 20:24:55 bsmith Exp bsmith $";
+!  "$Id: ex1f.F,v 1.24 2001/01/15 21:44:33 bsmith Exp $";
 !
 !/*T
 !    Concepts: index sets^manipulating a general index set;

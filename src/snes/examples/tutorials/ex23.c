@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.12 2001/08/10 16:59:37 balay Exp bsmith $*/
+/*$Id: ex23.c,v 1.13 2001/08/22 20:35:33 bsmith Exp $*/
 
 static char help[] = "Solves PDE problem from ex22.c\n\n";
 

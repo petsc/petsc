@@ -1,4 +1,4 @@
-/* $Id: viewerimpl.h,v 1.5 2001/01/19 23:19:27 balay Exp bsmith $ */
+/* $Id: viewerimpl.h,v 1.6 2001/01/20 03:33:35 bsmith Exp $ */
 
 #ifndef _VIEWERIMPL
 #define _VIEWERIMPL

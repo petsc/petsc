@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.201 2001/09/11 16:31:59 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.202 2001/09/12 03:26:24 bsmith Exp $*/
 /*
    Implements the sequential vectors.
 */

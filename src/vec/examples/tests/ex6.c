@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.47 2001/03/23 23:21:30 balay Exp balay $*/
+/*$Id: ex6.c,v 1.48 2001/08/07 03:02:26 balay Exp $*/
 
 static char help[] = "Demonstrates a scatter with a stride and general index set.\n\n";
 

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f90.F,v 1.26 2001/01/17 22:21:32 bsmith Exp balay $"
+!    "$Id: ex1f90.F,v 1.27 2001/08/07 03:02:34 balay Exp $"
 !
 !/*T
 !   Concepts: vectors^using basic vector routines;

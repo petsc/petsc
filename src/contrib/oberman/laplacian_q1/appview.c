@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.9 2001/08/06 21:18:51 bsmith Exp bsmith $*/
+/*$Id: appview.c,v 1.10 2001/08/07 21:31:55 bsmith Exp $*/
 #include "appctx.h"
 
 

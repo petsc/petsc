@@ -1,4 +1,4 @@
-/*$Id: PETScViewKSP.java,v 1.2 2001/02/19 23:05:19 bsmith Exp $*/
+/*$Id: PETScViewSNES.java,v 1.1 2001/02/28 16:32:53 bsmith Exp bsmith $*/
 /*
      Accesses the PETSc published objects
 */
@@ -32,14 +32,14 @@ import ptolemy.plot.*;
 /*
     This is the class that this file implements (must always be the same as
   the filename).
-           Panel that displays information about a KSP object
+           Panel that displays information about a SNES object
 */
-public class PETScViewKSP extends JInternalFrame {
+public class PETScViewSNES extends JInternalFrame {
 
   Container pane;
 
-  public PETScViewKSP(AMS_Memory mem) {
-    super("KSP",true,true,true);
+  public PETScViewSNES(AMS_Memory mem) {
+    super("SNES",true,true,true);
     this.setVisible(true);
     this.setSize(300,300);
 

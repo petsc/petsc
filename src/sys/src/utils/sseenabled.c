@@ -1,4 +1,4 @@
-/* $Id: sseenabled.c,v 1.14 2001/07/20 20:25:12 buschelm Exp buschelm $ */
+/* $Id: sseenabled.c,v 1.15 2001/07/20 21:03:24 buschelm Exp $ */
 #include "petscsys.h" /*I "petscsys.h" I*/
 
 #ifdef PETSC_HAVE_SSE

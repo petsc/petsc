@@ -1,4 +1,4 @@
-/*$Id: mpiuopen.c,v 1.37 2001/01/15 21:43:46 bsmith Exp balay $*/
+/*$Id: mpiuopen.c,v 1.38 2001/03/23 23:20:30 balay Exp $*/
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */

@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.34 2001/01/15 21:48:36 bsmith Exp balay $";
+! "$Id: ex2f.F,v 1.34 2001/01/15 21:48:36 bsmith Exp $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Processors: n
@@ -154,7 +154,6 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call MatCreate(comm,PETSC_DECIDE,PETSC_DECIDE,m,m,A,ierr)
-      call MatSetFromOptions(A,ierr)
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-fdjac',flg,ierr)
       if (flg .eq. 1) then
          call SetCRoutineFromFortran(ts,A,A,ierr)

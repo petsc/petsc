@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.12 2001/08/06 21:16:35 bsmith Exp balay $*/
+/*$Id: nn.c,v 1.13 2001/08/07 03:03:41 balay Exp $*/
 
 #include "src/sles/pc/impls/is/nn/nn.h"
 

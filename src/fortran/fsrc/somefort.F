@@ -1,5 +1,5 @@
 !
-!  "$Id: somefort.F,v 1.21 2000/05/04 16:27:10 bsmith Exp balay $";
+!  "$Id: somefort.F,v 1.22 2001/08/10 16:50:46 balay Exp $";
 !
 !  Utility routine used to set some values into a Fortran common block
 

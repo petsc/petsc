@@ -1,4 +1,4 @@
-/* $Id: ls.h,v 1.11 1999/10/23 00:00:57 bsmith Exp bsmith $ */
+/* $Id: ls.h,v 1.12 2001/08/06 21:17:15 bsmith Exp $ */
 
 /* 
    Private context for a Newton line search method for solving

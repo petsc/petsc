@@ -1,4 +1,4 @@
-/*$Id: sp1wd.c,v 1.38 2001/01/16 18:18:38 balay Exp balay $*/
+/*$Id: sp1wd.c,v 1.39 2001/03/23 23:22:51 balay Exp $*/
 
 #include "petscmat.h"
 #include "src/mat/order/order.h"

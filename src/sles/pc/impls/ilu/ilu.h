@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.12 2000/05/15 22:40:08 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.13 2001/07/11 20:06:23 bsmith Exp $ */
 
 /* 
    Private data structure for ILU preconditioner.

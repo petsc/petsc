@@ -15,7 +15,7 @@ int AppCtxView(Draw idraw,void *iappctx)
   AppCtx                 *appctx = (AppCtx *)iappctx;
   AppGrid                *grid = &appctx->grid;
 
-  int                    cell_n,vertex_n,ncell,*verts,nverts;
+  int                    cell_n,vertex_n,ncell = 4,*verts,nverts;
 
   /*
         These contain the  vertex lists in local numbering
@@ -43,9 +43,6 @@ int AppCtxView(Draw idraw,void *iappctx)
   double                 xl,yl,xr,yr,xm,ym,xp,yp;
   char                   num[5];
 
-  /* get number of vertices per cell */
-  ierr = AODataSegmentGetInfo(appctx->aodata,"cell","vertex",&ncell,0);CHKERRQ(ierr);
-
   ierr = DrawCheckResizedWindow(drawglobal); CHKERRQ(ierr);
   ierr = DrawCheckResizedWindow(drawlocal); CHKERRQ(ierr);
 
@@ -65,9 +62,7 @@ int AppCtxView(Draw idraw,void *iappctx)
 
   /*
         Draw edges of local cells and number them
-     First do ghost cells
   */
-  /* do the local cells */
   if (showelements) {
     for (i=0; i<cell_n; i++ ) {
       xp = 0.0; yp = 0.0;
@@ -80,11 +75,13 @@ int AppCtxView(Draw idraw,void *iappctx)
         xp += xl;         yp += yl;
         xl  = xr;         yl =  yr;
       }
-      xp /= ncell; yp /= ncell;
-      sprintf(num,"%d",i);
-      if (shownumbers) {ierr = DrawString(drawlocal,xp,yp,DRAW_GREEN,num);CHKERRQ(ierr);}
-      sprintf(num,"%d",cell_global[i]);
-      if (shownumbers) {ierr = DrawString(drawglobal,xp,yp,c,num);CHKERRQ(ierr);}
+      if (shownumbers) {
+        xp /= ncell; yp /= ncell;
+        sprintf(num,"%d",i);
+        ierr = DrawString(drawlocal,xp,yp,DRAW_GREEN,num);CHKERRQ(ierr);
+        sprintf(num,"%d",cell_global[i]);
+        ierr = DrawString(drawglobal,xp,yp,c,num);CHKERRQ(ierr);
+      }
     }
   }
 
@@ -107,11 +104,13 @@ int AppCtxView(Draw idraw,void *iappctx)
         xl  = xr;         yl =  yr;
         ijp = ij;
       }
-      xp /= ncell; yp /= ncell;
-      sprintf(num,"%d",i);
-      if (shownumbers) {ierr = DrawString(drawlocal,xp,yp,DRAW_GREEN,num);CHKERRQ(ierr);}
-      sprintf(num,"%d",cell_global[i]);
-      if (shownumbers) {ierr = DrawString(drawglobal,xp,yp,c,num);CHKERRQ(ierr);}
+      if (shownumbers) {
+        xp /= ncell; yp /= ncell;
+        sprintf(num,"%d",i);
+        ierr = DrawString(drawlocal,xp,yp,DRAW_GREEN,num);CHKERRQ(ierr);
+        sprintf(num,"%d",cell_global[i]);
+        ierr = DrawString(drawglobal,xp,yp,c,num);CHKERRQ(ierr);
+      }
     }
   }
 
@@ -124,18 +123,14 @@ int AppCtxView(Draw idraw,void *iappctx)
       ierr = DrawString(drawglobal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
       ierr = DrawPoint(drawglobal,xm,ym,DRAW_ORANGE);CHKERRQ(ierr);
       ierr = DrawPoint(drawlocal,xm,ym,DRAW_ORANGE);CHKERRQ(ierr);
+      if (shownumbers) {
+        sprintf(num,"%d",i);
+        ierr = DrawString(drawlocal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
+        sprintf(num,"%d",vertex_global[i]);
+        ierr = DrawString(drawglobal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
+      }
     }
   }
-  if (shownumbers) {
-    for (i=0; i<vertex_n; i++ ) {
-      xm = vertex_value[2*i]; ym = vertex_value[2*i + 1];
-      sprintf(num,"%d",i);
-      ierr = DrawString(drawlocal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
-      sprintf(num,"%d",vertex_global[i]);
-      ierr = DrawString(drawglobal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
-    }
-  }
-
   if (showboundaryvertices) {
     for ( i=0; i<nverts; i++ ) {
       xm = vertex_value[2*verts[i]]; ym = vertex_value[2*verts[i] + 1];
@@ -160,7 +155,7 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
   AppCtx                 *appctx = (AppCtx *)iappctx;
   AppGrid                *grid = &appctx->grid;
   AppAlgebra             *algebra = &appctx->algebra;
-  int                    cell_n,vertex_n,ncell;
+  int                    cell_n,vertex_n,ncell = 4;
 
   /*
         These contain the vertex lists in local numbering
@@ -183,12 +178,8 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
 
   Scalar                 *values;
 
-  /* get number of vertices per cell */
-  ierr = AODataSegmentGetInfo(appctx->aodata,"cell","vertex",&ncell,0);CHKERRQ(ierr);
-
   ierr = DrawCheckResizedWindow(drawglobal); CHKERRQ(ierr);
   ierr = DrawCheckResizedWindow(drawlocal); CHKERRQ(ierr);
-
 
   cell_n        = grid->cell_n;
   ierr = ISGetIndices(grid->cell_global,&cell_global); CHKERRQ(ierr);
@@ -208,74 +199,22 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
 
   ierr = VecGetArray(algebra->x_local,&values);CHKERRQ(ierr);
 
-  /*
-      Handle linear (triangular elements)
-  */
-  if (ncell == 3) {
-    for (i=0; i<cell_n; i++ ) {
-      x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+1]]; y1 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-      c0 = values[cell_vertex[ncell*i]];
-      c1 = values[cell_vertex[ncell*i+1]];
-      c2 = values[cell_vertex[ncell*i+2]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-    }
-  /*
-      Handle bilinear (quadrilateral elements)
-  */
-  } else if (ncell == 4) {
-    for (i=0; i<cell_n; i++ ) {
-      x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+1]]; y1 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-      c0 = values[cell_vertex[ncell*i]];
-      c1 = values[cell_vertex[ncell*i+1]];
-      c2 = values[cell_vertex[ncell*i+2]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-      x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+3]]; y1 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-      c0 = values[cell_vertex[ncell*i]];
-      c1 = values[cell_vertex[ncell*i+3]];
-      c2 = values[cell_vertex[ncell*i+2]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-    }
-  /*
-      Handle quadratic (triangular elements)
-  */
-  } else if (ncell == 6) {
-    for (i=0; i<cell_n; i++ ) {
-      x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+1]]; y1 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+5]]; y2 = vertex_value[2*cell_vertex[ncell*i+5] + 1];
-      c0 = values[cell_vertex[ncell*i]];
-      c1 = values[cell_vertex[ncell*i+1]];
-      c2 = values[cell_vertex[ncell*i+5]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-      x0 = vertex_value[2*cell_vertex[ncell*i+1]]; y0 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+2]]; y1 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+3]]; y2 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
-      c0 = values[cell_vertex[ncell*i+1]];
-      c1 = values[cell_vertex[ncell*i+2]];
-      c2 = values[cell_vertex[ncell*i+3]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-      x0 = vertex_value[2*cell_vertex[ncell*i+1]]; y0 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+5]]; y1 = vertex_value[2*cell_vertex[ncell*i+5] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+3]]; y2 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
-      c0 = values[cell_vertex[ncell*i+1]];
-      c1 = values[cell_vertex[ncell*i+5]];
-      c2 = values[cell_vertex[ncell*i+3]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-      x0 = vertex_value[2*cell_vertex[ncell*i+4]]; y0 = vertex_value[2*cell_vertex[ncell*i+4] + 1];
-      x1 = vertex_value[2*cell_vertex[ncell*i+5]]; y1 = vertex_value[2*cell_vertex[ncell*i+5] + 1];
-      x2 = vertex_value[2*cell_vertex[ncell*i+3]]; y2 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
-      c0 = values[cell_vertex[ncell*i+4]];
-      c1 = values[cell_vertex[ncell*i+5]];
-      c2 = values[cell_vertex[ncell*i+3]];
-      ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-    }
-  }   
+  for (i=0; i<cell_n; i++ ) {
+    x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
+    x1 = vertex_value[2*cell_vertex[ncell*i+1]]; y1 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
+    x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
+    c0 = values[cell_vertex[ncell*i]];
+    c1 = values[cell_vertex[ncell*i+1]];
+    c2 = values[cell_vertex[ncell*i+2]];
+    ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
+    x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
+    x1 = vertex_value[2*cell_vertex[ncell*i+3]]; y1 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
+    x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
+    c0 = values[cell_vertex[ncell*i]];
+    c1 = values[cell_vertex[ncell*i+3]];
+    c2 = values[cell_vertex[ncell*i+2]];
+    ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
+  }
 
   ierr = DrawSynchronizedFlush(drawglobal);CHKERRQ(ierr);
   ierr = DrawSynchronizedFlush(drawlocal);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.171 2001/08/06 21:17:15 bsmith Exp balay $*/
+/*$Id: ls.c,v 1.172 2001/08/07 03:04:11 balay Exp $*/
 
 #include "src/snes/impls/ls/ls.h"
 

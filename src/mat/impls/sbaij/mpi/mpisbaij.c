@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.60 2001/08/07 21:30:04 bsmith Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.61 2001/08/10 03:31:37 bsmith Exp $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"

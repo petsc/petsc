@@ -1,4 +1,4 @@
-/* $Id: mpisbaij.h,v 1.2 2000/10/24 20:26:02 bsmith Exp balay $ */
+/* $Id: mpisbaij.h,v 1.3 2001/08/07 03:03:05 balay Exp $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/sys/ctable.h"

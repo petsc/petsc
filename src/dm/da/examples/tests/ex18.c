@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.4 2001/04/10 19:37:27 bsmith Exp balay $*/
+/*$Id: ex18.c,v 1.5 2001/08/07 03:04:42 balay Exp $*/
 
 static char help[] = "Tests DAGetISLocalToGlobalMappingBlck().\n\n";
 

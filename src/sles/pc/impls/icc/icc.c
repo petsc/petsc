@@ -1,4 +1,4 @@
-/*$Id: icc.c,v 1.81 2001/06/21 21:17:53 bsmith Exp bsmith $*/
+/*$Id: icc.c,v 1.82 2001/08/06 21:16:31 bsmith Exp $*/
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).

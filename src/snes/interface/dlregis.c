@@ -1,4 +1,4 @@
-/*$Id: dlregis.c,v 1.17 2001/01/15 21:47:49 bsmith Exp balay $*/
+/*$Id: dlregis.c,v 1.18 2001/03/23 23:24:07 balay Exp $*/
 
 #include "petscsnes.h"
 

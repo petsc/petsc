@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.53 2001/03/23 23:21:30 balay Exp balay $*/
+/*$Id: ex2.c,v 1.54 2001/08/07 03:02:26 balay Exp $*/
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
   -n <length> : vector length\n\n";

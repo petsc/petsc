@@ -1,4 +1,4 @@
-/*$Id: ex50.c,v 1.26 2001/04/10 19:35:44 bsmith Exp balay $*/
+/*$Id: ex50.c,v 1.27 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII format. Writes\n\
 them using the PETSc sparse format. Input parameters are:\n\

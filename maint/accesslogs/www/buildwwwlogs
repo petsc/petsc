@@ -1,8 +1,0 @@
-#! /bin/csh
-# 
-#   Updates the logfile of PETSc www hits for the last day
-#
-set today = `date '+%d/%h/19%y'`
-
-grep petsc /nfs/logs/http/access_log | grep -v gif | grep -v xbm | grep $today >> /home/bsmith/petsc/maint/accesslogs/www/accesslog
-

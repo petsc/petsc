@@ -1,4 +1,4 @@
-/*$Id: random.c,v 1.59 2001/08/06 21:14:16 bsmith Exp balay $*/
+/*$Id: random.c,v 1.60 2001/08/07 03:02:06 balay Exp $*/
 /*
     This file contains routines for interfacing to random number generators.
     This provides more than just an interface to some system random number

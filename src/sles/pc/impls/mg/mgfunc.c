@@ -1,4 +1,4 @@
-/*$Id: mgfunc.c,v 1.40 2001/03/23 23:23:10 balay Exp balay $*/
+/*$Id: mgfunc.c,v 1.41 2001/08/07 03:03:36 balay Exp $*/
 
 #include "src/sles/pc/impls/mg/mgimpl.h"       /*I "petscsles.h" I*/
                           /*I "petscmg.h"   I*/

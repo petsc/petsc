@@ -1,4 +1,4 @@
-/*$Id: qmdrch.c,v 1.14 2001/01/15 21:46:34 bsmith Exp balay $*/
+/*$Id: qmdrch.c,v 1.15 2001/03/23 23:22:51 balay Exp $*/
 /* qmdrch.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex30f.F,v 1.5 2001/04/30 16:54:26 balay Exp balay $";
+!    "$Id: ex30f.F,v 1.6 2001/08/07 03:02:26 balay Exp $";
 !
 !  Tests parallel to parallel scatter where a to from index are 
 !  duplicated

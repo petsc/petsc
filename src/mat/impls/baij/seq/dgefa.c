@@ -1,4 +1,4 @@
-/*$Id: dgefa.c,v 1.21 2001/01/15 21:45:50 bsmith Exp balay $*/
+/*$Id: dgefa.c,v 1.22 2001/03/23 23:22:07 balay Exp $*/
 /*
        This routine was converted by f2c from Linpack source
              linpack. this version dated 08/14/78 

@@ -1,4 +1,4 @@
-/*$Id: sregis.c,v 1.38 2001/04/10 19:36:03 bsmith Exp bsmith $*/
+/*$Id: sregis.c,v 1.39 2001/08/06 21:16:14 bsmith Exp $*/
 
 #include "src/mat/matimpl.h"     /*I       "petscmat.h"   I*/
 

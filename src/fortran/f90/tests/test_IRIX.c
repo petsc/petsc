@@ -1,4 +1,4 @@
-/*$Id: f90_hpux.c,v 1.3 1999/10/24 14:04:23 bsmith Exp bsmith $*/
+/*$Id: test_IRIX.c,v 1.3 2000/01/11 21:03:59 bsmith Exp $*/
 
 #include <stdio.h>
 #include "../f90_IRIX.h"

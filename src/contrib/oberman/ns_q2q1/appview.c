@@ -16,7 +16,7 @@
 int AppCtxViewMatlab(AppCtx* appctx)
 {
   int    ierr;
-  Viewer viewer = VIEWER_MATLAB_WORLD;
+  Viewer viewer = VIEWER_SOCKET_WORLD;
   int one = 1;
   
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.72 2001/08/07 03:03:57 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.73 2001/08/07 21:30:50 bsmith Exp $*/
 
 static char help[] = "This example solves a linear system in parallel with SLES.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\

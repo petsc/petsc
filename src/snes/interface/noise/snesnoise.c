@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesnoise.c,v 1.5 2001/08/06 21:17:10 bsmith Exp balay $";
+static char vcid[] = "$Id: snesnoise.c,v 1.6 2001/08/07 03:04:09 balay Exp $";
 #endif
 
 

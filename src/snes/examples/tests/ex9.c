@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.51 2001/08/07 03:04:13 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.52 2001/08/07 21:31:12 bsmith Exp $*/
 
 static char help[] = "This program demonstrates use of the SNES package. Solve systems of\n\
 nonlinear equations in parallel.  This example uses matrix-free Krylov\n\

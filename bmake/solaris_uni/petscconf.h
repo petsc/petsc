@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.20 2000/10/31 17:33:56 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.21 2000/11/28 17:26:31 bsmith Exp $"
 "Defines the configuration for this machine"
 #endif
 

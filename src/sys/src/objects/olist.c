@@ -1,4 +1,4 @@
-/*$Id: olist.c,v 1.21 2001/01/15 21:43:52 bsmith Exp balay $*/
+/*$Id: olist.c,v 1.22 2001/03/23 23:20:38 balay Exp $*/
 /*
          Provides a general mechanism to maintain a linked list of PETSc objects.
      This is used to allow PETSc objects to carry a list of "composed" objects

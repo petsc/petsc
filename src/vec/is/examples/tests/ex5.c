@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.6 2001/03/23 23:21:11 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.7 2001/04/10 19:34:49 bsmith Exp $*/
 
 static char help[] = "Tests ISLocalToGlobalMappingGetInfo.()\n\n";
 

@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.81 2001/08/07 21:32:16 bsmith Exp balay $*/
+/*$Id: zoptions.c,v 1.82 2001/08/10 16:50:43 balay Exp $*/
 
 /*
   This file contains Fortran stubs for Options routines. 

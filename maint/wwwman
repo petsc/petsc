@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: wwwman,v 1.6 1998/01/03 22:36:10 bsmith Exp bsmith $ 
+# $Id: wwwman,v 1.7 1998/04/13 16:20:43 bsmith Exp $ 
 
 #
 # yet another HORRIBLE script we have to get rid of.

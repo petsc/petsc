@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.82 2001/08/07 03:04:16 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.83 2001/08/07 21:31:17 bsmith Exp $*/
 
 static char help[] = "Newton method to solve u'' + u^{2} = f, sequentially.\n\
 This example employs a user-defined monitoring routine.\n\n";

@@ -1,4 +1,4 @@
-/*$Id: zerodiag.c,v 1.43 2001/03/23 23:22:45 balay Exp bsmith $*/
+/*$Id: zerodiag.c,v 1.44 2001/08/06 21:16:10 bsmith Exp $*/
 
 /*
     This file contains routines to reorder a matrix so that the diagonal

@@ -1,4 +1,4 @@
-# $Id: rules,v 1.28 2001/06/21 21:14:27 bsmith Exp balay $ 
+# $Id: rules,v 1.29 2001/08/22 17:57:34 balay Exp $ 
 #
 
 libc:

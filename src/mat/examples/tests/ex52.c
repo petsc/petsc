@@ -1,4 +1,4 @@
-/*$Id: ex52.c,v 1.15 2001/04/10 19:35:44 bsmith Exp balay $*/
+/*$Id: ex52.c,v 1.16 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
 

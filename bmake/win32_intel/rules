@@ -1,4 +1,4 @@
-# $Id: rules,v 1.1 2001/03/22 18:59:10 balay Exp balay $
+# $Id: rules,v 1.2 2001/08/22 17:58:22 balay Exp $
 
 libc: ${OBJSC}
 	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}

@@ -1,4 +1,4 @@
-/*$Id: dm.c,v 1.5 2001/04/10 19:37:31 bsmith Exp bsmith $*/
+/*$Id: dm.c,v 1.6 2001/06/21 21:19:29 bsmith Exp $*/
  
 #include "src/dm/da/daimpl.h"     /*I      "petscda.h"     I*/
 

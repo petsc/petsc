@@ -1,4 +1,4 @@
-/*$Id: ex81.c,v 1.9 2001/04/18 20:48:09 balay Exp balay $*/
+/*$Id: ex81.c,v 1.10 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing format.\n\
   -fout <output_file> : file to load.\n\

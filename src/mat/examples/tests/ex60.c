@@ -1,4 +1,4 @@
-/*$Id: ex60.c,v 1.14 2001/08/07 03:03:07 balay Exp bsmith $*/
+/*$Id: ex60.c,v 1.15 2001/09/11 16:32:50 bsmith Exp $*/
 
 static char help[] = "Tests MatGetColumnVector().";
 

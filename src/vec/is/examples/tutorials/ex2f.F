@@ -1,5 +1,5 @@
 !
-!      "$Id: ex2f.F,v 1.18 2000/10/24 20:24:55 bsmith Exp bsmith $";
+!      "$Id: ex2f.F,v 1.19 2001/01/15 21:44:33 bsmith Exp $";
 !
 !/*T
 !    Concepts: index sets^manipulating a stride index set;

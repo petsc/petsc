@@ -1,3 +1,4 @@
+! "$Id: ex5f.F,v 1.59 2001/01/31 18:47:09 balay Exp $";
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !             Include file for program ex5f.F
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -51,8 +52,6 @@
 !     lambda   - nonlinearity parameter
 !
 !  common /pdata/  - contains some parallel data
-!     localX   - local work vector (including ghost points)
-!     localF   - local work vector (including ghost points)
 !     da       - distributed array
 !     rank     - processor rank within communicator
 !     size     - number of processors
@@ -61,7 +60,6 @@
 !     gxs, gys - local starting grid indices (including ghost points)
 !     gxm, gym - widths of local grid (including ghost points)
 
-      Vec     localX,localF
       DA      da
       integer xs,xe,xm,gxs,gxe,gxm
       integer ys,ye,ym,gys,gye,gym
@@ -69,7 +67,7 @@
       double precision lambda
 
       common /params/ lambda,mx,my
-      common /pdata/  localX,localF,da,rank,size
+      common /pdata/  da,rank,size
       common /pdata/  xs,xe,xm,gxs,gxe,gxm
       common /pdata/  ys,ye,ym,gys,gye,gym
 

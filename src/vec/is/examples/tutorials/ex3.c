@@ -1,5 +1,5 @@
 
-/*      "$Id: ex3.c,v 1.20 2001/01/23 20:53:47 balay Exp balay $"; */
+/*      "$Id: ex3.c,v 1.21 2001/03/23 23:21:14 balay Exp $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 

@@ -1,4 +1,4 @@
-/*$Id: ex37.c,v 1.21 2001/03/23 23:22:29 balay Exp balay $*/
+/*$Id: ex37.c,v 1.22 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n"; 
 

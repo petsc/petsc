@@ -1,10 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3func.c,v 1.3 1997/07/11 16:11:09 balay Exp balay $";
+static char vcid[] = "$Id: ex3func.c,v 1.4 1997/09/22 15:25:44 balay Exp bsmith $";
 #endif
 
-
 #include "snes.h"
-#include <math.h>
 
 /* 
    User-defined routines

@@ -1,4 +1,4 @@
-/*$Id: bicg.c,v 1.27 2001/06/21 21:18:24 bsmith Exp balay $*/
+/*$Id: bicg.c,v 1.28 2001/08/07 03:03:55 balay Exp $*/
 
 /*                       
     This code implements the BiCG (BiConjugate Gradient) method

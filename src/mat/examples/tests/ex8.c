@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.17 2001/03/23 23:22:29 balay Exp balay $*/
+/*$Id: ex8.c,v 1.18 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Tests automatic allocation of matrix storage space.\n\n";
 

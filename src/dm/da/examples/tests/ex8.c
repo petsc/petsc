@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.27 2001/03/23 23:25:07 balay Exp balay $*/
+/*$Id: ex8.c,v 1.28 2001/08/07 03:04:42 balay Exp $*/
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 

@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.12 2001/08/07 03:03:57 balay Exp bsmith $*/
+/*$Id: ex24.c,v 1.13 2001/08/07 21:30:50 bsmith Exp $*/
 
 static char help[] = "Tests CG, MINRES and SYMMLQ on symmetric matrices with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
 

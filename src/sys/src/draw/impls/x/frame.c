@@ -1,4 +1,4 @@
-/*$Id: frame.c,v 1.29 2001/01/15 21:43:29 bsmith Exp balay $*/
+/*$Id: frame.c,v 1.30 2001/03/23 23:20:15 balay Exp $*/
 
 /*
    This file contains routines to draw a 3-d like frame about a given 

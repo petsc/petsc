@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.46 2001/08/06 21:18:33 bsmith Exp balay $*/
+/*$Id: gr2.c,v 1.47 2001/08/07 03:04:39 balay Exp $*/
 
 /* 
    Plots vectors obtained with DACreate2d()

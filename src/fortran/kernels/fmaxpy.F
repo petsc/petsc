@@ -1,5 +1,5 @@
 !
-!  "$Id: fmaxpy.F,v 1.9 2000/01/11 21:04:00 bsmith Exp balay $";
+!  "$Id: fmaxpy.F,v 1.10 2001/08/07 03:05:24 balay Exp $";
 !
 !    Fortran kernel for the MAXPY() vector routine
 !

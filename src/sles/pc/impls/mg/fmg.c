@@ -1,4 +1,4 @@
-/*$Id: fmg.c,v 1.25 2001/08/07 03:03:36 balay Exp bsmith $*/
+/*$Id: fmg.c,v 1.26 2001/08/21 21:03:20 bsmith Exp $*/
 /*
      Full multigrid using either additive or multiplicative V or W cycle
 */

@@ -1,4 +1,4 @@
-/*$Id: iguess.c,v 1.37 2001/08/06 21:16:38 bsmith Exp balay $*/
+/*$Id: iguess.c,v 1.38 2001/08/07 03:03:45 balay Exp $*/
 
 #include "src/sles/ksp/kspimpl.h"  /*I "petscksp.h" I*/
 /* 

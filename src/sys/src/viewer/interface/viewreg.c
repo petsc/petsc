@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.35 2001/04/10 19:34:10 bsmith Exp bsmith $*/
+/*$Id: viewreg.c,v 1.36 2001/06/21 21:15:13 bsmith Exp $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 

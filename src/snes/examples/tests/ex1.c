@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.86 2001/08/24 16:13:20 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.87 2001/08/27 17:31:28 bsmith Exp $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 

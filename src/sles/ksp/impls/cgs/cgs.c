@@ -1,4 +1,4 @@
-/*$Id: cgs.c,v 1.63 2001/03/23 23:23:36 balay Exp balay $*/
+/*$Id: cgs.c,v 1.64 2001/08/07 03:03:51 balay Exp $*/
 
 /*                       
     This code implements the CGS (Conjugate Gradient Squared) method. 

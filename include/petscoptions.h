@@ -1,4 +1,4 @@
-/* $Id: petscoptions.h,v 1.45 2001/08/07 21:32:24 bsmith Exp bsmith $ */
+/* $Id: petscoptions.h,v 1.46 2001/09/07 20:13:16 bsmith Exp $ */
 /*
    Routines to determine options set in the options database.
 */

@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.1 2000/02/20 21:34:27 bsmith Exp bsmith $ 
+# $Id: buildtest,v 1.2 2000/04/09 03:08:30 bsmith Exp $ 
 #
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #

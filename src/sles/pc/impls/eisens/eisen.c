@@ -1,4 +1,4 @@
-/*$Id: eisen.c,v 1.112 2001/04/10 19:36:12 bsmith Exp bsmith $*/
+/*$Id: eisen.c,v 1.113 2001/08/06 21:16:28 bsmith Exp $*/
 
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 

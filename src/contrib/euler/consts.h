@@ -1,6 +1,0 @@
-
-      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
-      COMMON /CONST2/ PINIT
-
-      double precision GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,PINIT
-      integer          NCYC

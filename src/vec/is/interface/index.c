@@ -1,4 +1,4 @@
-/*$Id: index.c,v 1.84 2001/06/21 21:15:50 bsmith Exp bsmith $*/
+/*$Id: index.c,v 1.85 2001/08/06 21:14:32 bsmith Exp $*/
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */

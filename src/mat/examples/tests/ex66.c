@@ -1,4 +1,4 @@
-/*$Id: ex66.c,v 1.13 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex66.c,v 1.14 2001/04/10 19:35:44 bsmith Exp $*/
 
 static char help[] = "Reads in rectangular matrix from disk, stored from ex65.c\n\n";
 

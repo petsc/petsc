@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.40 2001/08/07 03:04:42 balay Exp bsmith $*/
+/*$Id: ex12.c,v 1.41 2001/08/07 21:31:49 bsmith Exp $*/
 
 /*
    Simple example to show how PETSc programs can be run from Matlab. 

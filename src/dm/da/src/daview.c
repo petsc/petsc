@@ -1,4 +1,4 @@
-/*$Id: daview.c,v 1.49 2001/03/30 16:27:15 bsmith Exp bsmith $*/
+/*$Id: daview.c,v 1.50 2001/06/21 21:19:09 bsmith Exp $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 2000/08/17 04:53:32 bsmith Exp balay $ 
+# $Id: makefile,v 1.7 2001/08/22 18:02:47 balay Exp $ 
 
 # -----------------------------------------------------------------------
 # Specify PETSc installation and user-defined compiler flags

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 2001/04/19 22:37:49 balay Exp balay $
+# $Id: makefile,v 1.5 2001/08/22 18:01:33 balay Exp $
 ALL: lib
 
 CFLAGS   =

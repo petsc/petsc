@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.20 2001/03/23 23:21:11 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.21 2001/04/10 19:34:49 bsmith Exp $*/
 
 /*
        Formatted test for ISStride routines.

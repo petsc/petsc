@@ -1,5 +1,5 @@
 
-/*$Id: dvec2.c,v 1.90 2001/09/10 03:57:06 bsmith Exp bsmith $*/
+/*$Id: dvec2.c,v 1.91 2001/09/11 18:14:31 bsmith Exp $*/
 
 /* 
    Defines some vector operation functions that are shared by 

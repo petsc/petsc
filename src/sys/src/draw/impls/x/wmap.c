@@ -1,4 +1,4 @@
-/*$Id: wmap.c,v 1.29 2001/01/15 21:43:29 bsmith Exp balay $*/
+/*$Id: wmap.c,v 1.30 2001/03/23 23:20:15 balay Exp $*/
 
 #include "src/sys/src/draw/impls/x/ximpl.h"
 

@@ -1,4 +1,4 @@
-# $Id: base,v 1.70 2001/06/21 21:14:27 bsmith Exp $ 
+# $Id: base,v 1.1 2001/08/22 17:57:34 balay Exp $ 
 
 include ${PETSC_DIR}/bmake/common/variables
 include ${PETSC_DIR}/bmake/common/rules

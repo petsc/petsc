@@ -1,4 +1,4 @@
-/*$Id: dlregis.c,v 1.18 2001/01/15 21:48:25 bsmith Exp balay $*/
+/*$Id: dlregis.c,v 1.19 2001/03/23 23:24:34 balay Exp $*/
 
 #include "petscts.h"
 

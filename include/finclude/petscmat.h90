@@ -1,5 +1,5 @@
 !
-!  $Id: petscmat.h90,v 1.3 1998/03/30 21:14:21 balay Exp balay $;
+!  $Id: petscmat.h90,v 1.4 2001/08/07 03:05:33 balay Exp $;
 !
 !  Additional Mat include file for use of PETSc with Fortran 90/HPF
 !

@@ -1,4 +1,4 @@
-/*$Id: ex80.c,v 1.9 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex80.c,v 1.10 2001/04/10 19:35:44 bsmith Exp $*/
 
 static char help[] = "Partition tiny grid.\n\n";
 

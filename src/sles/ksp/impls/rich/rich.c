@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.103 2001/08/07 03:03:53 balay Exp bsmith $*/
+/*$Id: rich.c,v 1.104 2001/08/21 21:03:36 bsmith Exp $*/
 /*          
             This implements Richardson Iteration.       
 */

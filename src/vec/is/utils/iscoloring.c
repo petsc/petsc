@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.69 2001/04/04 14:43:59 bsmith Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.70 2001/06/21 21:15:55 bsmith Exp $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/

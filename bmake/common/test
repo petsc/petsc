@@ -1,4 +1,4 @@
-# $Id: test,v 1.7 2001/07/06 14:33:14 bsmith Exp bsmith $ 
+# $Id: test,v 1.8 2001/09/07 18:59:02 bsmith Exp $ 
 #
 #  testexamples_X - Runs various PETSc test suites
 #    1 - basic C suite used in installation tests

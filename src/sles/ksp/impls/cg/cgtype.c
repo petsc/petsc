@@ -1,4 +1,4 @@
-/*$Id: cgtype.c,v 1.22 2001/03/23 23:23:34 balay Exp bsmith $*/
+/*$Id: cgtype.c,v 1.23 2001/04/10 19:36:31 bsmith Exp $*/
 
 #include "src/sles/ksp/impls/cg/cgctx.h"       /*I "petscksp.h" I*/
 

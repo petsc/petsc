@@ -1,4 +1,4 @@
-/*$Id: ramgpetsc.c,v 1.19 2001/08/09 18:30:22 bsmith Exp bsmith $*/
+/*$Id: ramgpetsc.c,v 1.20 2001/08/24 16:04:09 bsmith Exp $*/
 
 #include "ramgfunc.h"
 #include "petscfunc.h"

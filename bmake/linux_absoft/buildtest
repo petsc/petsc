@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.6 2000/10/13 16:06:11 balay Exp balay $ 
+# $Id: buildtest,v 1.7 2001/02/05 19:39:06 balay Exp $ 
 #
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #

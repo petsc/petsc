@@ -1,4 +1,4 @@
-/*$Id: sortd.c,v 1.28 2001/08/06 21:14:16 bsmith Exp bsmith $*/
+/*$Id: sortd.c,v 1.29 2001/08/07 21:29:06 bsmith Exp $*/
 /*
    This file contains routines for sorting doubles.  Values are sorted in place.
    These are provided because the general sort routines incur a great deal

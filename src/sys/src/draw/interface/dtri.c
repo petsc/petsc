@@ -1,4 +1,4 @@
-/*$Id: dtri.c,v 1.52 2001/08/07 21:28:42 bsmith Exp bsmith $*/
+/*$Id: dtri.c,v 1.53 2001/08/22 20:28:40 bsmith Exp $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */

@@ -1,4 +1,4 @@
-/*$Id: text.c,v 1.41 2001/04/10 19:34:14 bsmith Exp bsmith $*/
+/*$Id: text.c,v 1.42 2001/09/07 20:08:05 bsmith Exp $*/
 
 /*
    This file contains simple code to manage access to fonts, insuring that

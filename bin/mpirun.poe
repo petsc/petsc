@@ -1,5 +1,5 @@
 #!/usr/local/bin/bash
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: mpirun.poe,v 1.4 1997/09/10 19:49:05 balay Exp $ 
 
 #
 # This script is for IBM SP machines running POE that do not 

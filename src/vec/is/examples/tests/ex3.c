@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.17 2001/03/23 23:21:11 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.18 2001/04/10 19:34:49 bsmith Exp $*/
 /*
        Tests ISAllGather()
 */

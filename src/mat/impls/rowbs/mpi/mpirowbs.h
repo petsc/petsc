@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.49 2001/03/23 22:05:12 bsmith Exp balay $ */
+/* $Id: mpirowbs.h,v 1.50 2001/08/07 03:02:51 balay Exp $ */
 
 #if !defined(__MPIROWBS_H)
 #define __MPIROWBS_H

@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.18 2001/01/17 22:28:20 bsmith Exp balay $*/
+/*$Id: appload.c,v 1.19 2001/03/23 23:25:35 balay Exp $*/
 /*
      Loads the quadrilateral grid database from a file  and sets up the local 
      data structures. 

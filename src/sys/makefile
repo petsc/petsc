@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.43 2000/08/17 19:11:42 balay Exp balay $ 
+# $Id: makefile,v 1.44 2001/08/22 17:58:53 balay Exp $ 
 
 ALL: lib 
 SOURCEH   = ctable.h

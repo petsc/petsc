@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 2001/04/29 15:15:54 bsmith Exp balay $ 
+# $Id: makefile,v 1.24 2001/08/22 18:02:43 balay Exp $ 
 
 DIRS     = sda oberman fun3d lahaye libtfs
 LOCDIR   = src/contrib/

@@ -1,4 +1,4 @@
-/*$Id: mfregis.c,v 1.13 2001/01/15 21:47:52 bsmith Exp balay $*/
+/*$Id: mfregis.c,v 1.14 2001/03/23 23:24:10 balay Exp $*/
 
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 

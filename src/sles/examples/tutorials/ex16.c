@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.24 2001/08/07 03:04:00 balay Exp bsmith $*/
+/*$Id: ex16.c,v 1.25 2001/08/07 21:30:54 bsmith Exp $*/
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
 

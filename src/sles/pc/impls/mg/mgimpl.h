@@ -1,4 +1,4 @@
-/* $Id: mgimpl.h,v 1.13 2000/05/05 22:17:11 balay Exp bsmith $ */
+/* $Id: mgimpl.h,v 1.14 2001/08/21 21:03:20 bsmith Exp $ */
 
 /*
       Data structure used for Multigrid preconditioner.

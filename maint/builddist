@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.89 2001/08/22 17:57:34 balay Exp balay $ 
+# $Id: builddist,v 1.90 2001/08/25 01:39:37 balay Exp $ 
 
 # 
 #  Makes distribution version of Petsc 2.0

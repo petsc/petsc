@@ -1,4 +1,4 @@
-/*$Id: zis.c,v 1.40 2001/04/10 19:37:46 bsmith Exp bsmith $*/
+/*$Id: zis.c,v 1.41 2001/06/21 21:19:50 bsmith Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscis.h"

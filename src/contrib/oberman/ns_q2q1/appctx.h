@@ -72,13 +72,13 @@ typedef struct {
 
   Mat A,J;
 } AppAlgebra;
+
 typedef struct { 
-  int monitor;
-  int show_matrix;
-  int show_vector;
-  int matlabgraphics;
-  int show_is;
-  int show_ao;
+  PetscTruth monitor;
+  PetscTruth show_matrix;
+  PetscTruth show_vector;
+  PetscTruth matlabgraphics;
+  PetscTruth show_griddata;
 } AppView;
 
 
@@ -124,17 +124,17 @@ typedef struct {
   double eta; /* the viscosity */
   double tweak; /* mess up initial guess */
   /* flags for the boundary conditions */
-  int vin_flag, vout_flag, pin_flag, pout_flag, wall_flag, ywall_flag;
-  int dirichlet_flag;
+  PetscTruth vin_flag, vout_flag, pin_flag, pout_flag, wall_flag, ywall_flag;
+  PetscTruth dirichlet_flag;
   double penalty; /* penalty parameter */
-  int penalty_flag;
+  PetscTruth penalty_flag;
 
-  int nopartition_flag; /* mess with aodatapartition */
+  PetscTruth nopartition_flag; /* mess with aodatapartition */
 
-  int cylinder_flag;
-  int parabolic_flag;
-  int stokes_flag;
-  int cavity_flag;
+  PetscTruth cylinder_flag;
+  PetscTruth parabolic_flag;
+  PetscTruth stokes_flag;
+  PetscTruth cavity_flag;
   double xval, yval;
 }AppEquations;
 

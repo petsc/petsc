@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.19 2001/08/07 21:31:36 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.20 2001/08/10 03:34:29 bsmith Exp $*/
 
 static char help[] = "Tests removing entries from an AOData. \n\n";
 

@@ -1,4 +1,4 @@
-/*$Id: daindex.c,v 1.32 2001/03/23 23:25:00 balay Exp bsmith $*/
+/*$Id: daindex.c,v 1.33 2001/06/21 21:19:09 bsmith Exp $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.

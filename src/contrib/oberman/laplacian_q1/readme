@@ -10,7 +10,7 @@
   The solution technique is by the finite element method, using bilinear (Q1) elements.
 
 Reference:
-        The Finite Element Method Display, by Dhatt and Touzot
+        The Finite Element Method Displayed, by Dhatt and Touzot
 	
 -----------------------------------------------------------------------------------
 Usage:
@@ -18,8 +18,8 @@ Usage:
     solve the equation using the parallel MPI-PETSc program main 
 
   ++ Running the Grid Generator:
-        make BOPT=xxxx input
-	input -xintervals 9 -yintervals 9 -xmin 0.0 -xmax 1.0 -ymin 0.0 -ymax 1.0
+        make BOPT=xxxx finput
+	finput -xintervals 9 -yintervals 9 -xmin 0.0 -xmax 1.0 -ymin 0.0 -ymax 1.0
 
   ++ Running the Laplacian Solver:
         make BOPT=xxxx main
@@ -42,10 +42,6 @@ Directory  Contents
 
 	main.c
 	  -main part of the code.
-
-        functions.c
-          - function definitions for the boundary conditions and 
-            right hand side of the pde.
 
 	appload.c
 	  - get the information from the grid file using database calls.  

@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.27 2001/08/07 03:03:57 balay Exp bsmith $*/
+/*$Id: ex15.c,v 1.28 2001/08/07 21:30:50 bsmith Exp $*/
 
 static char help[] = "SLES on an operator with a null space.\n\n";
 

@@ -1,4 +1,4 @@
-/*$Id: readinvecs.c,v 1.7 2001/01/15 21:43:08 bsmith Exp balay $*/
+/*$Id: readinvecs.c,v 1.8 2001/03/23 23:19:53 balay Exp $*/
 
 /*    Reads in PETSc vectors from a PETSc binary file into matlab
 
