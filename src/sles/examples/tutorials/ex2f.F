@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.20 1996/08/12 14:11:27 bsmith Exp curfman $";
+C    "$Id: ex7.F,v 1.21 1996/08/16 14:35:28 curfman Exp curfman $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -80,7 +80,7 @@ C  processors.  Determine which rows of the matrix are locally owned.
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
-C  Assemble matrix for the 2-D, five-point stencil in parallel.
+C  Set matrix elements for the 2-D, five-point stencil in parallel.
 C   - Each processor needs to insert only elements that it owns
 C     locally (but any non-local elements will be sent to the
 C     appropriate processor during matrix assembly). 
@@ -137,8 +137,8 @@ C  Create solver context
 
       call SLESCreate(MPI_COMM_WORLD,sles,ierr)
 
-C  Set operators (linear system matrix and optionally different
-C  preconditioning matrix)
+C  Set operators. Here the matrix that defines the linear system
+C  also serves as the preconditioning matrix.
 
       call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
      *                      ierr)
