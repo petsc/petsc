@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: Index.c,v 1.17 1997/10/19 03:30:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: Index.c,v 1.18 1998/03/23 21:26:21 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -185,7 +185,7 @@ int test2(void)
   PetscFunctionReturn(0);
 }
 
-int BlastCache()
+int BlastCache(void)
 {
   int    i,n = 1000000;
   Scalar *x,*y,*z,*a, *b;
