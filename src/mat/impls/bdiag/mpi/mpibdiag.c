@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.2 1995/05/11 18:49:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.3 1995/05/11 22:54:01 bsmith Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -203,7 +203,6 @@ static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
   CHKERR(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERTVALUES,SCATTERALL,mbd->Mvctx);
   CHKERR(ierr);
-  VecView(mbd->lvec,STDOUT_VIEWER);
   ierr = MatMult(mbd->A,mbd->lvec,yy); CHKERR(ierr);
   return 0;
 }
@@ -463,7 +462,6 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   mat->destroy	= MatDestroy_MPIBDiag;
   mat->view	= MatView_MPIBDiag;
   mat->factor	= 0;
-  mat->comm	= comm;
 
   mbd->insertmode = NOTSETVALUES;
   MPI_Comm_rank(comm,&mbd->mytid);
