@@ -19,7 +19,8 @@
                                ordering cycles clockwise from left
   vertex_n             - number of unique vertices on this processor 
   vertex_n_ghosted     - number of vertices on this processor, including ghost ones
-  vertex_global        - global numbering of each vertex on this processor
+  vertex_global        - global numbering of vertices on this processor, 
+                                          including ghost pts
   vertex_value         - x,y coordinates of vertices on this processor
   vertex_boundary      - list of vertices (including ghosts)
                                that are on the boundary on this processor
