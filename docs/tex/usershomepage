@@ -1,19 +1,22 @@
 
-  PETSc users,
+PETSc users,
 
-    We're thinking of setting up a section of the PETSc homepage
-that points to PETSc user's homepages related to their projects that
-use PETSc. If you are interested in having your project's homepage
-represented, please let us know by sending email to petsc-maint@mcs.anl.gov . 
-You can help us by sending the HTML to include; an example is
+We're thinking of creating a section of the PETSc homepage,
+http://www.mcs.anl.gov/petsc/petsc.html, that points to PETSc users'
+homepages related to their projects that use PETSc. If you are
+interested in having your project's homepage represented, please let
+us know by sending email to petsc-maint@mcs.anl.gov .  You can help us
+by sending the HTML to include; an example is
 
   The <A HREF="http://www.myu.edu/projects/neat.html">NeAT Library</A>
   developed by <A HREF="http://www.myu.edu/home/doe">John Doe</A> solves 
   unified field equations with PETSc.
 
-This lists the home page of the project and the author, and gives a one-line
-description of what it is.  
+This lists the home page of the project and the author, and provides a
+one-line project description.
 
-  The PETSc Team,
+We are planning to add this section to the PETSc homepage at the
+time of our next release, expected in mid-January. 
 
-  Satish, Bill, Lois, and Barry
+The PETSc Team,
+Satish, Bill, Lois, and Barry
