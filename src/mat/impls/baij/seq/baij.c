@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.70 1996/11/13 21:20:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.71 1996/11/19 16:31:30 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1653,8 +1653,7 @@ static int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
   ierr = ISRestoreIndices(is,&is_idx); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is_local,&rows); CHKERRQ(ierr);
   ierr = ISDestroy(is_local); CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd_SeqBAIJ(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   return 0;
 }
