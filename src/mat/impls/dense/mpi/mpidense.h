@@ -1,4 +1,4 @@
-/* $Id: mpidense.h,v 1.13 1999/03/18 00:43:17 balay Exp balay $ */
+/* $Id: mpidense.h,v 1.14 1999/03/25 21:33:16 balay Exp bsmith $ */
 
 #include "src/mat/impls/dense/seq/dense.h"
 
@@ -34,6 +34,8 @@ typedef struct {
   int           *rowners, *cowners;     /* ranges owned by each processor */
   int           m, n;                   /* local rows and columns */
   int           M, N;                   /* global rows and columns */
+                                        /* note n == N */
+  int           nvec;                   /* this is the n size for the vector one multiplies with */
   int           rstart, rend;           /* starting and ending owned rows */
   Mat           A;                      /* local submatrix */
   int           size;                   /* size of communicator */
