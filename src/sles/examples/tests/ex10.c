@@ -45,8 +45,8 @@ int main(int argc,char **args)
     v = one*i;
     ierr = VecSetValues(u,1,&i,&v,InsertValues); CHKERR(ierr);
   } 
-  ierr = VecBeginAssembly(u); CHKERR(ierr);
-  ierr = VecEndAssembly(u); CHKERR(ierr);
+  ierr = VecAssemblyBegin(u); CHKERR(ierr);
+  ierr = VecAssemblyEnd(u); CHKERR(ierr);
   
   /* Compute right-hand-side */
   ierr = MatMult(mat,u,b); CHKERRA(ierr);
@@ -136,8 +136,8 @@ int GetElasticityMatrix(int m,Mat *newmat)
   }
   FREE(K);
 
-  ierr = MatBeginAssembly(mat,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatEndAssembly(mat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERR(ierr);
 
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
