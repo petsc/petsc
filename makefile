@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.321 2000/09/19 21:05:18 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.322 2000/09/20 16:08:31 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -279,6 +279,16 @@ DOCS	   = bmake/readme bmake/petscconf.defs
 SCRIPTS    = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
 	     maint/xclude maint/crontab  \
 	     maint/autoftp include/foldinclude/generateincludes
+
+updatewebdocs:
+	-chmod -R ug+w /mcs/tmp/petsc-tmp
+	-chgrp -R petsc /mcs/tmp/petsc-tmp
+	-/bin/rm -rf /mcs/tmp/petscdocs
+	-/bin/cp -r /mcs/tmp/petsc-tmp/docs /mcs/tmp/petscdocs
+	-maint/update-docs.py /mcs/tmp/petscdocs
+	-find /mcs/tmp/petscdocs -type d -name "*" -exec chmod g+w {} \;
+	-/bin/cp -r /mcs/tmp/petscdocs/* ${PETSC_DIR}/docs
+	-/bin/rm -rf /mcs/tmp/petscdocs
 
 # Builds all the documentation - should be done every night
 alldoc: allmanualpages
