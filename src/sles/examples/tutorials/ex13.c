@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.1 1996/10/29 19:14:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.2 1996/11/13 15:39:45 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
@@ -46,7 +46,8 @@ int main(int argc,char **args)
 {
   UserCtx userctx;
   int     ierr, m = 6, n = 7, t, tmax = 2,flg,i,I,j,N;
-  Scalar  *userx,*rho, *solution, *userb,hx,hy,x,y,enorm;
+  Scalar  *userx,*rho, *solution, *userb,hx,hy,x,y;
+  double  enorm;
 
   /*
       Initialize the PETSc libraries
@@ -120,11 +121,11 @@ int main(int argc,char **args)
         standard programming practices to show how they may be mixed with 
         PETSc.
     */
-    enorm = 0;
+    enorm = 0.0;
     for ( i=0; i<N; i++ ) {
-      enorm += (solution[i]-userx[i])*(solution[i]-userx[i]);
+      enorm += PetscReal(PetscConj(solution[i]-userx[i])*(solution[i]-userx[i]));
     }
-    enorm *= hx*hy;
+    enorm *= PetscReal(hx*hy);
     printf("m %d n %d error norm %g\n",m,n,enorm);
   }
 
