@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.11 1999/11/05 14:47:08 bsmith Exp bsmith $*/
+/*$Id: snesmfjdef.c,v 1.12 2000/01/11 21:02:32 bsmith Exp bsmith $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -76,8 +76,6 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
      This algorithm requires 2 norms and 1 inner product. Rather than
      use directly the VecNorm() and VecDot() routines (and thus have 
      three separate collective operations, we use the VecxxxBegin/End() routines
-     and manually call MPI for the collective phase.
-
     */
     ierr = VecDotBegin(U,a,&dot);CHKERRQ(ierr);
     ierr = VecNormBegin(a,NORM_1,&sum);CHKERRQ(ierr);
@@ -89,7 +87,7 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
     /* 
       Safeguard for step sizes that are "too small"
     */
-    if (sum == 0.0) {dot = 1.0; norm = 1.0;}
+    if (!sum) {dot = 1.0; norm = 1.0;}
 #if defined(PETSC_USE_COMPLEX)
     else if (PetscAbsScalar(dot) < umin*sum && PetscRealPart(dot) >= 0.0) dot = umin*sum;
     else if (PetscAbsScalar(dot) < 0.0 && PetscRealPart(dot) > -umin*sum) dot = -umin*sum;
@@ -101,6 +99,7 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
   } else {
     *h = ctx->currenth;
   }
+  if (*h != *h) SETERRQ(1,1,"Differencing parameter is not a number");
   ctx->count++;
   PetscFunctionReturn(0);
 } 
