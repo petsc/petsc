@@ -471,9 +471,14 @@ class ImportSharedLinker(SharedLinker):
   def __str__(self):
     return 'Import shared linker('+self.processor+') for '+str(self.inputTag)
 
-  def getLibrary(self, object):
-    '''Return the import library'''
-    return super(SharedLinker, self).getLibrary(object)+'.a'
+  def getLibExt(self):
+    if self._libExt is None:
+      if self.argDB['HAVE_CYGWIN']:
+        return 'dll.a'
+      else:
+        return 'a'
+    return self._libExt
+  libExt = property(getLibExt, Linker.setLibExt, doc = 'The library extension')
 
   def getOutputFlags(self, source):
     '''Return a list of the linker flags specifying the library'''
