@@ -8,30 +8,25 @@ SOURCEF	      =
 SOURCEH	      =
 OBJSC	      =
 OBJSF	      =
-LIBBASE	      = libpetscsnes
-EXAMPLES_1    = ex3 ex4 ex5 ex6
-RUNEXAMPLES_1 = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6 \
-		runex6_2 runex6_3
-EXAMPLES_2    = ex1 ex2 ex7 ex8 ex9
-RUNEXAMPLES_2 = runex1 runex2 runex7 runex8 runex9
-EXAMPLES_3    = ex12
-RUNEXAMPLES_3 = runex12
-EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9
-RUNEXAMPLES_4 = runex1 runex2 runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 \
-		runex7 
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c
-EXAMPLESF     = ex12.F
-DIRS	      = umin
+LIBBASE	      = libpetscts
+EXAMPLES_1    = 
+RUNEXAMPLES_1 = 
+EXAMPLES_2    = ex1
+RUNEXAMPLES_2 = runex1
+EXAMPLES_3    = 
+RUNEXAMPLES_3 = 
+EXAMPLES_4    = 
+RUNEXAMPLES_4 = 
+EXAMPLESC     = ex1.c
+EXAMPLESF     = 
 #
-#  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
-# they require too many processors
 #
 ex1: ex1.o  chkopts
-	-$(CLINKER) -o ex1 ex1.o $(PETSC_LIB)
+	-$(CLINKER) -o ex1 ex1.o -L$(LDIR) -lpetscts $(PETSC_LIB)
 	$(RM) ex1.o
 
 ex2: ex2.o  chkopts
-	-$(CLINKER) -o ex2 ex2.o $(PETSC_LIB)
+	-$(CLINKER) -o ex2 ex2.o -L$(LDIR) -lpetscts $(PETSC_LIB)
 	$(RM) ex2.o
 
 ex3: ex3.o  chkopts

@@ -3,15 +3,15 @@ PETSC_DIR = ../../..
 ALL: lib
 
 CFLAGS   = $(PETSC_INCLUDE) -I..  $(PCONF) \
-           $(CONF) -D__DIR__='"snes/interface/"'
-SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c
+           $(CONF) -D__DIR__='"ts/interface/"'
+SOURCEC  = ts.c tsreg.c tsregall.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = snesregi.o snes.o snesj.o snesmfj.o snesut.o
+OBJSC    = ts.o tsreg.o tsregall.o
 OBJSF    =
-LIBBASE  = libpetscsnes
-MANSEC   = n
-LOCDIR   = src/snes/interface/
+LIBBASE  = libpetscts
+MANSEC   = t
+LOCDIR   = src/ts/interface/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
