@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.122 1996/08/18 19:46:46 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.123 1996/08/19 23:02:46 curfman Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -895,7 +895,9 @@ extern char *PLogEventColor[];
 .   string - name associated with the event
 .   color - string giving a color for displaying event, and the
             display pattern (used by Upshot/Nupshot), 
-            e.g., - "red:", "green:vlines3"
+            e.g., - "red:", "green:vlines3" 
+          - PETSC_NULL to Let PETSc assign a color.
+            
 
     Output Parameter:
 .   e -  event id for use with PLogEventBegin() and PLogEventEnd().
@@ -944,7 +946,7 @@ int PLogEventRegister(int *e,char *string,char *color)
     int rank;
 
     PLogEventMPEFlags[*e]       = 1;
-    PLogEventColor[*e] = color;
+    if (color != PETSC_NULL) PLogEventColor[*e] = color;
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     if (!rank) {
       MPE_Describe_state(MPEBEGIN+2*(*e),MPEBEGIN+2*(*e)+1,string,color);
