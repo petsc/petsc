@@ -2,6 +2,7 @@
 
 configure_options = [
   '--with-batch=1',
+  '--with-memcmp-ok',   
   '--sizeof_void_p=4',
   '--sizeof_short=2',
   '--sizeof_int=4',
