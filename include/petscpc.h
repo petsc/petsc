@@ -42,7 +42,6 @@ E*/
 #define PCNONE       "none"
 #define PCJACOBI     "jacobi"
 #define PCSOR        "sor"
-#define PCPBSOR      "pbsor"
 #define PCLU         "lu"
 #define PCSHELL      "shell"
 #define PCBJACOBI    "bjacobi"

@@ -52,7 +52,7 @@ static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRea
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_SOR"
-static int PCSetFromOptions_SOR(PC pc)
+int PCSetFromOptions_SOR(PC pc)
 {
   PC_SOR     *jac = (PC_SOR*)pc->data;
   int        ierr;
@@ -79,7 +79,7 @@ static int PCSetFromOptions_SOR(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_SOR"
-static int PCView_SOR(PC pc,PetscViewer viewer)
+int PCView_SOR(PC pc,PetscViewer viewer)
 {
   PC_SOR     *jac = (PC_SOR*)pc->data;
   MatSORType sym = jac->sym;

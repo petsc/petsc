@@ -4,7 +4,7 @@ ALL: lib
 
 LIBBASE  = libpetscksp
 DIRS     = jacobi none sor lu shell bjacobi mg eisens ilu icc asm sles composite redundant milu spai is cholesky pbjacobi \
-           esi mat hypre ramg samg pbsor
+           esi mat hypre ramg samg
 LOCDIR   = src/ksp/pc/impls/
 
 include ${PETSC_DIR}/bmake/common/base
