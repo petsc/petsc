@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.9 1996/03/19 21:26:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.10 1996/03/31 16:50:59 bsmith Exp curfman $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve interface.
@@ -105,7 +105,8 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
    default residual monitor for PCICC with BlockSolve prints the scaled 
    residual.
 
-   Question: Should this routine really be here? 
+   Options Database Keys:
+$  -ksp_bsmonitor
  */
 int KSPMonitor_MPIRowbs(KSP ksp,int n,double rnorm,void *dummy)
 {
