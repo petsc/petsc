@@ -460,7 +460,7 @@ static int PetscDrawCheckResizedWindow_X(PetscDraw draw)
   ierr = MPI_Bcast(geo,2,MPI_INT,0,draw->comm);CHKERRQ(ierr);
   w = geo[0]; 
   h = geo[1];
-  if (w == win->w && h == win->h) PetscFunctionReturn(0);
+  if (w == (unsigned int) win->w && h == (unsigned int) win->h) PetscFunctionReturn(0);
 
   /* record new window sizes */
 

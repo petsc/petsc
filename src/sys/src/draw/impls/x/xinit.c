@@ -83,15 +83,15 @@ int XiDisplayWindow(PetscDraw_X* XiWin,char *label,int x,int y,
   wavail              = DisplayWidth(XiWin->disp,XiWin->screen);
   havail              = DisplayHeight(XiWin->disp,XiWin->screen);
   if (w <= 0 || h <= 0) PetscFunctionReturn(2);
-  if (w > wavail) w    = wavail;
-  if (h > havail)  h   = havail;
+  if ((unsigned int) w > wavail) w = wavail;
+  if ((unsigned int) h > havail) h = havail;
 
   /* changed the next line from xtools version */
   border_width   = 0;
   if (x < 0) x   = 0;
   if (y < 0) y   = 0;
-  x   = (x + w > wavail) ? wavail - w : x;
-  y   = (y + h > havail) ? havail - h : y;
+  x   = ((unsigned int) x + w > wavail) ? wavail - w : x;
+  y   = ((unsigned int) y + h > havail) ? havail - h : y;
 
   /* We need XCreateWindow since we may need an visual other than
    the default one */

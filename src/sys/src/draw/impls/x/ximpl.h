@@ -56,7 +56,7 @@ typedef struct {
   }}
 
 #define XiSetPixVal(Win,pix)\
-  {if ((Win)->gc.cur_pix != pix) { \
+  {if ((PixVal) (Win)->gc.cur_pix != pix) { \
      XSetForeground((Win)->disp,(Win)->gc.set,pix); \
      (Win)->gc.cur_pix   = pix;\
   }}

@@ -33,7 +33,7 @@ int PetscByteSwapInt(int *buff,int n)
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<sizeof(int); i++) {
+    for (i=0; i<(int) sizeof(int); i++) {
       ptr2[i] = ptr1[sizeof(int)-1-i];
     }
     buff[j] = *tptr;
@@ -56,7 +56,7 @@ int PetscByteSwapShort(short *buff,int n)
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<sizeof(short); i++) {
+    for (i=0; i<(int) sizeof(short); i++) {
       ptr2[i] = ptr1[sizeof(int)-1-i];
     }
     buff[j] = *tptr;
@@ -83,7 +83,7 @@ int PetscByteSwapScalar(PetscScalar *buff,int n)
 #endif
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff1 + j);
-    for (i=0; i<sizeof(PetscReal); i++) {
+    for (i=0; i<(int) sizeof(PetscReal); i++) {
       ptr2[i] = ptr1[sizeof(PetscReal)-1-i];
     }
     buff1[j] = *tptr;
@@ -106,7 +106,7 @@ int PetscByteSwapDouble(double *buff,int n)
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff1 + j);
-    for (i=0; i<sizeof(double); i++) {
+    for (i=0; i<(int) sizeof(double); i++) {
       ptr2[i] = ptr1[sizeof(double)-1-i];
     }
     buff1[j] = *tptr;
