@@ -1,5 +1,5 @@
 C
-C    "$Id: ex14f.F,v 1.5 1997/07/10 15:47:03 balay Exp balay $";
+C    "$Id: ex14f.F,v 1.6 1997/10/08 14:55:28 balay Exp bsmith $";
 C
 C  Solves a nonlinear system in parallel with a user-defined
 C  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -25,7 +25,7 @@ C/*T
 C   Concepts: SLES^Writing a user-defined nonlinear solver (parallel Bratu example)
 C   Concepts: DA^Using distributed arrays
 C   Routines: SLESCreate(); SLESSetOperators(); SLESSolve(); SLESSetFromOptions();
-C   Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
+C   Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
 C   Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
 C   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
 C   Processors: n
@@ -127,8 +127,8 @@ C
 C  Extract global and local vectors from DA then duplicate for remaining
 C  vectors that are the same types
 C  
-       call DAGetDistributedVector(user(5),X,ierr)
-       call DAGetLocalVector(user(5),user(3),ierr)
+       call DACreateGlobalVector(user(5),X,ierr)
+       call DACreateLocalVector(user(5),user(3),ierr)
        call VecDuplicate(X,F,ierr)
        call VecDuplicate(X,Y,ierr)
        call VecDuplicate(user(3),user(4),ierr)
@@ -268,7 +268,8 @@ C     viewer.h - viewers               pc.h  - preconditioners
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/sles.h"
 #include "include/FINCLUDE/da.h"
-      integer          user(6),ierr,idx
+      integer          user(6),ierr
+      PetscOffset      idx
       Vec              X,localX
       integer          i, j, row, mx, my,  xs, ys, xm
       integer          ym, gxm, gym, gxs, gys
@@ -359,7 +360,8 @@ C     viewer.h - viewers               pc.h  - preconditioners
 #include "include/FINCLUDE/da.h"
 
       Vec              X,F,localX, localF
-      integer          user(6), gys, gxm, gym,idx,idf
+      integer          user(6), gys, gxm, gym
+      PetscOffset      idx,idf
       integer          ierr, i, j, row, mx, my, xs,ys,xm,ym,gxs 
       double precision two, one, lambda,hx
       double precision hy, hxdhy, hydhx,sc
@@ -465,16 +467,17 @@ C     viewer.h - viewers               pc.h  - preconditioners
 #include "include/FINCLUDE/sles.h"
 #include "include/FINCLUDE/da.h"
 
-      integer user(6)
-      Vec     X
-      Mat     jac
-      Vec     localX
-      DA      da
-      integer ltog(1),idltog
-      integer ierr, i, j, row, mx, my, col(5),idx 
-      integer nloc, xs, ys, xm, ym, gxs, gys, gxm, gym, grow
-      Scalar  two, one, lambda, v(5), hx, hy, hxdhy
-      Scalar  hydhx, sc, xx(1)
+      integer     user(6)
+      Vec         X
+      Mat         jac
+      Vec         localX
+      DA          da
+      integer     ltog(1)
+      PetscOffset idltog,idx
+      integer     ierr, i, j, row, mx, my, col(5)
+      integer     nloc, xs, ys, xm, ym, gxs, gys, gxm, gym, grow
+      Scalar      two, one, lambda, v(5), hx, hy, hxdhy
+      Scalar      hydhx, sc, xx(1)
 
       da     = user(5)
       one    = 1.d0
