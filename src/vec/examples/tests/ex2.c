@@ -1,5 +1,6 @@
 
-static char help[] = "Tests vector scatter gathers\n";
+static char help[] = 
+"This example tests vector scatter-gather operations.\n\n";
 
 #include "petsc.h"
 #include "is.h"
@@ -29,28 +30,27 @@ int main(int argc,char **argv)
   ierr = ISCreateSequential(MPI_COMM_SELF,2,idx1,&is1); CHKERRA(ierr);
   ierr = ISCreateSequential(MPI_COMM_SELF,2,idx2,&is2); CHKERRA(ierr);
 
-
-  ierr = VecSet(&one,x);CHKERRA(ierr);
-  ierr = VecSet(&two,y);CHKERRA(ierr);
+  ierr = VecSet(&one,x); CHKERRA(ierr);
+  ierr = VecSet(&two,y); CHKERRA(ierr);
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(x,is1,y,is2,INSERTVALUES,SCATTERALL,ctx);
   CHKERRA(ierr);
   ierr = VecScatterEnd(x,is1,y,is2,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
   
-  VecView(y,STDOUT_VIEWER);
+  ierr = VecView(y,STDOUT_VIEWER); CHKERRA(ierr);
 
   ierr = VecScatterBegin(y,is1,x,is2,INSERTVALUES,SCATTERALL,ctx);
   CHKERRA(ierr);
   ierr = VecScatterEnd(y,is1,x,is2,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
 
-  printf("-------\n");VecView(x,STDOUT_VIEWER);
+  printf("-------\n"); ierr = VecView(x,STDOUT_VIEWER); CHKERRA(ierr);
 
   ierr = ISDestroy(is1); CHKERRA(ierr);
   ierr = ISDestroy(is2); CHKERRA(ierr);
 
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(y); CHKERRA(ierr);
 
   PetscFinalize();
   return 0;
