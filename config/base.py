@@ -427,7 +427,7 @@ class Configure:
   def preprocess(self, codeStr):
     def report(command, status, output, error):
       if error or status:
-        self.framework.log.write('ERR (preprocessor): '+error)
+        self.framework.log.write('ERROR while running preprocessor: '+error)
         self.framework.log.write('ret = '+str(status)+'\n')
         self.framework.log.write('Source:\n'+self.getCode(codeStr))
       return
@@ -459,7 +459,7 @@ class Configure:
     '''Return the error output from this compile and the return code'''
     def report(command, status, output, error):
       if error or status:
-        self.framework.log.write('ERR (compiler): '+output)
+        self.framework.log.write('ERROR while running compiler): '+output)
         self.framework.log.write('ret = '+str(status)+'\n')
         self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
       return
@@ -502,7 +502,7 @@ class Configure:
 
     def report(command, status, output, error):
       if error or status:
-        self.framework.log.write('ERR (linker): '+error)
+        self.framework.log.write('ERROR while running linker: '+error)
         self.framework.log.write(' output: '+output)
         self.framework.log.write('ret = '+str(status)+'\n')
         self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
@@ -533,13 +533,13 @@ class Configure:
   def outputRun(self, includes, body, cleanup = 1):
     if not self.checkLink(includes, body, cleanup = 0): return ('', 1)
     if not os.path.isfile(self.linkerObj) or not os.access(self.linkerObj, os.X_OK):
-      self.framework.log.write('ERR (executable): '+self.linkerObj+' is not executable')
+      self.framework.log.write('ERROR while running executable: '+self.linkerObj+' is not executable')
       return ('', 1)
     command = './'+self.linkerObj
     self.framework.log.write('Executing: '+command+'\n')
     (status, output) = commands.getstatusoutput(command)
     if status:
-      self.framework.log.write('ERR (executable): '+output+'\n')
+      self.framework.log.write('ERROR while running executable: '+output+'\n')
       self.framework.log.write('ret = '+str(status)+'\n')
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
