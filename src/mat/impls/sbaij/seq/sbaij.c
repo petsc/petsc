@@ -51,7 +51,7 @@ int MatMarkDiagonal_SeqSBAIJ(Mat A)
 static int MatGetRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,PetscTruth *done)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int         ierr,n = a->mbs,i;
+  int         n = a->mbs,i;
 
   PetscFunctionBegin;
   if (!ia) PetscFunctionReturn(0);
