@@ -2,7 +2,9 @@
 static char help[] = 
 "This example tests MPI parallel linear solves with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
-method but different matrices (having the same nonzero structure).\n";
+method but different matrices (having the same nonzero structure).  Input\n\
+arguments are\n\
+  -m <size> : problem size\n\n";
 
 #include "vec.h"
 #include "mat.h"
@@ -38,7 +40,7 @@ int main(int argc,char **args)
       if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
       if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
       if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
-      v = 4.0; MatSetValues(C,1,&I,1,&I,&v,InsertValues);
+      v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,InsertValues); CHKERRA(ierr);
     }
   }
   ierr = MatBeginAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
@@ -63,8 +65,7 @@ int main(int argc,char **args)
   
   /* Solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN)))
-    SETERRA(ierr,0);
+  ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -72,7 +73,7 @@ int main(int argc,char **args)
     PC pc; KSP ksp; PCMETHOD pcmethod;
     ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    ierr = PCGetMethodFromContext(pc,&pcmethod);
+    ierr = PCGetMethodFromContext(pc,&pcmethod); CHKERRA(ierr);
     if (pcmethod == PCICC) {
       ierr = KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)C); CHKERRA(ierr);
     }
@@ -87,8 +88,8 @@ int main(int argc,char **args)
   MPE_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
 
   /* Change matrix (keeping same nonzero structure) and solve again */
-  MatSetOption(C,NO_NEW_NONZERO_LOCATIONS);
-  MatZeroEntries(C);
+  ierr = MatSetOption(C,NO_NEW_NONZERO_LOCATIONS); CHKERRA(ierr);
+  ierr = MatZeroEntries(C); CHKERRA(ierr);
   /* Fill matrix again */
   for ( i=0; i<m; i++ ) { 
     for ( j=2*mytid; j<2*mytid+2; j++ ) {
@@ -97,7 +98,7 @@ int main(int argc,char **args)
       if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
       if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
       if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
-      v = 6.0; MatSetValues(C,1,&I,1,&I,&v,InsertValues);
+      v = 6.0; ierr = MatSetValues(C,1,&I,1,&I,&v,InsertValues); CHKERRA(ierr);
     }
   } 
   ierr = MatBeginAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
@@ -105,8 +106,7 @@ int main(int argc,char **args)
 
   /* Compute another right-hand-side; then solve */
   ierr = MatMult(C,u,b); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN)))
-    SETERRA(ierr,0);
+  ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
 
   /* Check error */

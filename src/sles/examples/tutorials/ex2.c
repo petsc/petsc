@@ -1,8 +1,9 @@
 
-static char help[] = "Tests MPI parallel AIJ solve with SLES. \n\
-  This examples intentionally lays the matrix out across processors\n\
-  differently then the way it is assembled, this is to test parallel\n\
-  matrix assembly.\n";
+static char help[] = 
+"This example solves a linear system in parallel with SLES.  To test the\n\
+parallel matrix assembly, the matrix is intentionally laid out across the\n\
+processors differently from the way it is assembled.  Input arguments are:\n\
+  -m <size> : problem size\n\n";
 
 #include "vec.h"
 #include "mat.h"
@@ -28,8 +29,7 @@ int main(int argc,char **args)
   n = 2*numtids;
 
   /* create the matrix for the five point stencil, YET AGAIN*/
-  ierr = MatCreateInitialMatrix(MPI_COMM_WORLD,m*n,m*n,&C); 
-  CHKERRA(ierr);
+  ierr = MatCreateInitialMatrix(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
 
   for ( i=0; i<m; i++ ) { 
     for ( j=2*mytid; j<2*mytid+2; j++ ) {
@@ -38,7 +38,7 @@ int main(int argc,char **args)
       if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
       if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
       if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
-      v = 4.0; MatSetValues(C,1,&I,1,&I,&v,InsertValues);
+      v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,InsertValues); CHKERRA(ierr);
     }
   }
   ierr = MatBeginAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
@@ -47,7 +47,8 @@ int main(int argc,char **args)
   ierr = VecCreateInitialVector(MPI_COMM_WORLD,m*n,&u); CHKERRA(ierr);
   ierr = VecCreate(u,&b); CHKERRA(ierr);
   ierr = VecCreate(b,&x); CHKERRA(ierr);
-  VecSet(&one,u); VecSet(&zero,x);
+  ierr = VecSet(&one,u); CHKERRA(ierr);
+  ierr = VecSet(&zero,x); CHKERRA(ierr);
 
   /* compute right hand side */
   ierr = MatMult(C,u,b); CHKERRA(ierr);

@@ -1,6 +1,8 @@
 
 static char help[] = 
-"This example solves tridiagonal linear system with SLES.\n";
+"This example solves a tridiagonal linear system with SLES.  Input\n\
+arguments are:\n\
+  -n <size> : problem size\n\n";
 
 #include "sles.h"
 #include "stdio.h"
@@ -49,8 +51,11 @@ int main(int argc,char **args)
   ierr  = VecNorm(x,&norm); CHKERRA(ierr);
   MPE_printf(MPI_COMM_WORLD,"Norm of error %g Iterations %d\n",norm,its);
  
-  VecDestroy(x); VecDestroy(u); VecDestroy(b);
-  MatDestroy(A); SLESDestroy(sles);
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(u); CHKERRA(ierr);
+  ierr = VecDestroy(b); CHKERRA(ierr);
+  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = SLESDestroy(sles); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }
