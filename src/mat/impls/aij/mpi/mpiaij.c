@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.126 1996/02/09 15:10:11 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.127 1996/02/23 23:06:31 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -292,6 +292,7 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(aij->B,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->B,mode); CHKERRQ(ierr);
 
+  if (aij->rowvalues) {PetscFree(aij->rowvalues); aij->rowvalues = 0;}
   return 0;
 }
 
@@ -530,6 +531,7 @@ static int MatDestroy_MPIAIJ(PetscObject obj)
   if (aij->garray) PetscFree(aij->garray);
   if (aij->lvec)   VecDestroy(aij->lvec);
   if (aij->Mvctx)  VecScatterDestroy(aij->Mvctx);
+  if (aij->rowvalues) PetscFree(aij->rowvalues);
   PetscFree(aij); 
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
@@ -1093,6 +1095,25 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   int        i, ierr, *cworkA, *cworkB, **pcA, **pcB, cstart = mat->cstart;
   int        nztot, nzA, nzB, lrow, rstart = mat->rstart, rend = mat->rend;
 
+  if (mat->getrowactive == PETSC_TRUE) SETERRQ(1,"MatGetRow_MPIAIJ:Already active");
+  mat->getrowactive = PETSC_TRUE;
+
+  if (!mat->rowvalues) {
+    /*
+        allocate enough space to hold information from the longest row.
+    */
+    Mat_SeqAIJ *Aa = (Mat_SeqAIJ *) mat->A->data,*Ba = (Mat_SeqAIJ *) mat->B->data; 
+    int     max = 1,n = mat->n,tmp;
+    for ( i=0; i<n; i++ ) {
+      tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i];
+      if (max < tmp) { max = tmp; }
+    }
+    mat->rowvalues = (Scalar *) PetscMalloc( max*(sizeof(int)+sizeof(Scalar))); 
+    CHKPTRQ(mat->rowvalues);
+    mat->rowindices = (int *) (mat->rowvalues + max);
+  }
+       
+
   if (row < rstart || row >= rend) SETERRQ(1,"MatGetRow_MPIAIJ:Only local rows")
   lrow = row - rstart;
 
@@ -1109,7 +1130,7 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
       int imark;
       for (i=0; i<nzB; i++) cworkB[i] = mat->garray[cworkB[i]];
       if (v) {
-        *v = (Scalar *) PetscMalloc( (nztot)*sizeof(Scalar) ); CHKPTRQ(*v);
+        *v = mat->rowvalues;
         for ( i=0; i<nzB; i++ ) {
           if (cworkB[i] < cstart)   (*v)[i] = vworkB[i];
           else break;
@@ -1119,7 +1140,7 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
         for ( i=imark; i<nzB; i++ ) (*v)[nzA+i] = vworkB[i];
       }
       if (idx) {
-        *idx = (int *) PetscMalloc( (nztot)*sizeof(int) ); CHKPTRQ(*idx);
+        *idx = mat->rowindices;
         for (i=0; i<nzA; i++) cworkA[i] += cstart;
         for ( i=0; i<nzB; i++ ) {
           if (cworkB[i] < cstart)   (*idx)[i] = cworkB[i];
@@ -1140,8 +1161,11 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
 
 static int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 {
-  if (idx) PetscFree(*idx);
-  if (v) PetscFree(*v);
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
+  if (aij->getrowactive == PETSC_FALSE) {
+    SETERRQ(1,"MatRestoreRow_MPIAIJ:MatGetRow not called");
+  }
+  aij->getrowactive = PETSC_FALSE;
   return 0;
 }
 
@@ -1474,6 +1498,11 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   /* stuff used for matrix vector multiply */
   a->lvec      = 0;
   a->Mvctx     = 0;
+
+  /* stuff for MatGetRow() */
+  a->rowindices   = 0;
+  a->rowvalues    = 0;
+  a->getrowactive = PETSC_FALSE;
 
   *newmat = mat;
   return 0;
