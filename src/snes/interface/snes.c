@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.40 1996/01/23 05:29:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.41 1996/01/23 17:23:29 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -437,6 +437,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
     snes->rtol		  = 1.e-08;
   else
     snes->rtol		  = 1.e-50;
+  snes->ttol              = 0.0;
   snes->atol		  = 1.e-10;
   snes->xtol		  = 1.e-8;
   snes->trunctol	  = 1.e-12;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.56 1996/01/12 23:03:12 balay Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.57 1996/01/23 00:19:56 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -47,6 +47,9 @@ int SNESSolve_LS(SNES snes,int *outits)
   snes->norm = fnorm;
   if (history && history_len > 0) history[0] = fnorm;
   if (snes->monitor) {ierr = (*snes->monitor)(snes,0,fnorm,snes->monP); CHKERRQ(ierr);}
+
+  /* set parameter for default relative tolerance convergence test */
+  snes->ttol = fnorm*snes->rtol;
 
   for ( i=0; i<maxits; i++ ) {
     snes->iter = i+1;

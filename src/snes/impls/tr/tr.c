@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.39 1996/01/16 22:00:15 balay Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.40 1996/01/23 00:20:00 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -82,6 +82,9 @@ static int SNESSolve_TR(SNES snes,int *its)
   delta = neP->delta0*fnorm;         
   neP->delta = delta;
   if (snes->monitor) {ierr = (*snes->monitor)(snes,0,fnorm,snes->monP); CHKERRQ(ierr);}
+
+  /* set parameter for default relative tolerance convergence test */
+  snes->ttol = fnorm*snes->rtol;
 
   /* Set the stopping criteria to use the More' trick. */
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);

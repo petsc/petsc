@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.7 1996/01/23 00:19:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.8 1996/01/23 18:27:04 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -105,7 +105,7 @@ int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,void *
     "SNESDefaultConverged:For SNES_NONLINEAR_EQUATIONS only");
   /* Note:  Reserve return code 1, -1 for compatibility with 
   SNESTrustRegionDefaultConverged */
-  if (snes->iter == 1) { /* first iteration so set ttol */
+  if (snes->iter == 1 && snes->ttol = 0.0) { /* first iteration so set ttol */
     snes->ttol = fnorm*snes->rtol;
   }
   else {
