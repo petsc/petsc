@@ -1,4 +1,4 @@
-/*$Id: fdate.c,v 1.36 2000/05/05 22:14:10 balay Exp balay $*/
+/*$Id: fdate.c,v 1.37 2000/08/16 15:12:15 balay Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -24,13 +24,23 @@
 #include <windows.h>
 #endif
 #include <fcntl.h>
-#include <time.h>  
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024
 #endif
+
+#if defined(PETSC_HAVE_SYS_TIME_H)
+#include <sys/types.h>
+#include <sys/time.h>
+#endif
+#if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
+EXTERN_C_BEGIN
+EXTERN int gettimeofday(struct timeval *,struct timezone *);
+EXTERN_C_END
+#endif
+
 
 static char starttime[64];
    
