@@ -10,6 +10,7 @@ set TEST=testexamples_
 set NICE=''
 set RSH=ssh
 set RCP='scp -q -B'
+set RSYNC_SSH='-z -e ssh'
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
