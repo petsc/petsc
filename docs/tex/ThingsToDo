@@ -21,6 +21,10 @@ Additional Capabilities that PETSc Needs:
 
    X Build wrapper for html manpages
 
+   - Incorporate SPARSKIT strategy of Saad for managing AIJ data structure.
+     (requested by Xiao Chuan Cai; this is supposedly much faster than
+     our current code).
+
  o Lower Priority issues:
 
    * Fortran interface
@@ -45,8 +49,7 @@ Possible projects for summer students:
  - Develop code to rebalance matrices (and vectors) for better 
    load balance during matrix vector multiplies.
 
- - Use ADIFOR with ACTI codes.  Help incorporate ADIFOR interface 
-   into PETSc.  
+ - Use ADIFOR with ACTI codes.  Help incorporate ADIFOR interface into PETSc.  
 
  - Develop additional test problems:
     - Develop utilities to create common matrices and vectors (for testing
