@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.75 1997/02/05 22:04:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.76 1997/03/26 01:38:02 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -87,7 +87,7 @@ int main( int argc, char **argv )
   int      Nx, Ny;              /* number of preocessors in x- and y- directions */
   int      matrix_free;         /* flag - 1 indicates matrix-free version */
   int      size;                /* number of processors */
-  int      m, flg, N, ierr;
+  int      m, flg, N, ierr, nloc, *ltog;
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
@@ -181,6 +181,13 @@ int main( int argc, char **argv )
       ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J); CHKERRA(ierr);
     }
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user); CHKERRA(ierr);
+
+    /*
+       Get the global node numbers for all local nodes, including ghost points.
+       Associate this mapping with the matrix for lat
+    */
+    ierr = DAGetGlobalIndices(user.da,&nloc,&ltog); CHKERRA(ierr);
+    ierr = MatSetLocalToGlobalMapping(J,nloc,ltog); CHKERRA(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -383,16 +390,32 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
    with the local grid points, and then transform them to the new
    global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
    We cannot work directly with the global numbers for the original
-   uniprocessor grid!
+   uniprocessor grid!  
+
+   Two methods are available for imposing this transformation
+   when setting matrix entries:
+     (A) MatSetValuesLocal(), using the local ordering (including
+         ghost points!)
+         - Use DAGetGlobalIndices() to extract the local-to-global map
+         - Associate this map with the matrix by calling
+           MatSetLocalToGlobalMapping() once
+         - Set matrix entries using the local ordering
+           by calling MatSetValuesLocal()
+     (B) MatSetValues(), using the global ordering 
+         - Use DAGetGlobalIndices() to extract the local-to-global map
+         - Then apply this map explicitly yourself
+         - Set matrix entries using the global ordering by calling
+           MatSetValues()
+   Option (A) seems cleaner/easier in many cases, and is the procedure
+   used in this example.
 */
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;  /* user-defined application context */
   Mat     jac = *J;                /* Jacobian matrix */
   Vec     localX = user->localX;   /* local vector */
-  int     *ltog;                   /* local-to-global mapping */
   int     ierr, i, j, row, mx, my, col[5];
-  int     nloc, xs, ys, xm, ym, gxs, gys, gxm, gym, grow;
+  int     xs, ys, xm, ym, gxs, gys, gxm, gym;
   Scalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
@@ -419,40 +442,33 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
   ierr = DAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(ierr);
 
-  /*
-     Get the global node numbers for all local nodes, including ghost points
-  */
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog); CHKERRQ(ierr);
-
   /* 
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
-        contiguous chunks of rows across the processors. The "grow"
-        parameter computed below specifies the global row number 
-        corresponding to each local grid point.
+        contiguous chunks of rows across the processors. 
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
         appropriate processor during matrix assembly). 
-      - Always specify global row and columns of matrix entries.
       - Here, we set all entries for a particular row at once.
+      - We can set matrix entries either using either
+        MatSetValuesLocal() or MatSetValues(), as discussed above.
   */
   for (j=ys; j<ys+ym; j++) {
     row = (j - gys)*gxm + xs - gxs - 1; 
     for (i=xs; i<xs+xm; i++) {
       row++;
-      grow = ltog[row];
       /* boundary points */
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        ierr = MatSetValues(jac,1,&grow,1,&grow,&one,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(jac,1,&row,1,&row,&one,INSERT_VALUES); CHKERRQ(ierr);
         continue;
       }
       /* interior grid points */
-      v[0] = -hxdhy; col[0] = ltog[row - gxm];
-      v[1] = -hydhx; col[1] = ltog[row - 1];
-      v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = grow;
-      v[3] = -hydhx; col[3] = ltog[row + 1];
-      v[4] = -hxdhy; col[4] = ltog[row + gxm];
-      ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
+      v[0] = -hxdhy; col[0] = row - gxm;
+      v[1] = -hydhx; col[1] = row - 1;
+      v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = row;
+      v[3] = -hydhx; col[3] = row + 1;
+      v[4] = -hxdhy; col[4] = row + gxm;
+      ierr = MatSetValuesLocal(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
     }
   }
 
