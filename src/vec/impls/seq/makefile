@@ -2,7 +2,7 @@ ITOOLSDIR = ../../../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I../../.. -I$(ITOOLSDIR) $(COPT)
+CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I../../.. -I$(ITOOLSDIR) $(CONF)
 SOURCEC  = dvec3.c bvec2.c 
 SOURCEF  =
 WSOURCEC = 
@@ -11,6 +11,9 @@ OBJSC    = dvec3.o bvec2.o
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
-SYSLIB   = $(LDIR)/system.a $(BLAS) $(SLIB) -lm 
-LOCAL_INCLUDE = $(SOURCEH)
+LINCLUDE = $(SOURCEH)
+
+include $(ITOOLSDIR)/bmake/$(PARCH).site
+include $(ITOOLSDIR)/bmake/$(PARCH).$(BOPT)
+include $(ITOOLSDIR)/bmake/$(PARCH)
 
