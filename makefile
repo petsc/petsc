@@ -259,7 +259,7 @@ etags_makefiles:
 allmanpages: deletemanpages allwwwpages alllatexpages
 	-make ACTION=manpages tree
 	-cd src/fortran/custom; make manpages
-
+	-cd docs/man; catman -W .
 allwwwpages: deletewwwpages
 	-make ACTION=wwwpages_buildcite tree
 	-cd src/fortran/custom; make wwwpages_buildcite
