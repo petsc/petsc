@@ -66,6 +66,7 @@ int PetscGetWorkingDirectory(char path[],int len)
   getwd(path);
   PetscFunctionReturn(0);
 #else
-  SETERR(PETSC_ERR_SUP, "Could not find getcwd() or getwd()");
+  SETERRQ(PETSC_ERR_SUP, "Could not find getcwd() or getwd()");
 #endif
 }
+
