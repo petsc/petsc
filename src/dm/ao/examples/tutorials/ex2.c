@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.34 2001/01/17 22:27:34 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.35 2001/01/23 18:44:44 balay Exp bsmith $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -176,7 +176,7 @@ int DataRead(GridData *gdata)
   int          mlocal_ele,*mmlocal_ele,*ele,*tmpele,n_ele,net,a1,a2,a3;
   int          *iatmp,*jatmp,ierr;
   char         msg[128];
-  double       *vert,*tmpvert;
+  Scalar       *vert,*tmpvert;
   MPI_Status   status;
 
   PetscFunctionBegin;
@@ -534,7 +534,7 @@ int DataMoveElements(GridData *gdata)
   ierr = PetscMalloc(3*gdata->mlocal_ele*sizeof(int),&gdata->ele);CHKERRQ(ierr);
   ierr = VecGetArray(vele,&array);CHKERRQ(ierr);
   for (i=0; i<3*gdata->mlocal_ele; i++) {
-    gdata->ele[i] = (int)PetscReal(array[i]);
+    gdata->ele[i] = (int)PetscRealPart(array[i]);
   }
   ierr = VecRestoreArray(vele,&array);CHKERRQ(ierr);
   ierr = VecDestroy(vele);CHKERRQ(ierr);
@@ -680,7 +680,7 @@ int DataMoveVertices(GridData *gdata)
   Vec        vert,overt;
   VecScatter vecscat;
   IS         isscat;
-  double     *avert;
+  Scalar     *avert;
 
   PetscFunctionBegin;
 
