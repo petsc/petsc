@@ -64,12 +64,13 @@ def petsc_configure(configure_options):
   sys.path.insert(0, bsDir)
   sys.path.insert(0, pythonDir)
   import config.framework
-
+  import cPickle
   
   framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options, loadArgDB = 0)
   try:
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
+    framework.argDB['configureCache'] = cPickle.dumps(framework)
     fixWin32Flinker('bmake/'+framework.argDB['PETSC_ARCH']+'/variables')
     return 0
   except RuntimeError, e:
