@@ -11,7 +11,7 @@ typedef struct _Mat*           Mat;
 typedef struct _MatScatterCtx* MatScatterCtx;
 
 typedef enum { MATDENSE, MATAIJ, MATMPIAIJ, MATSHELL, MATROW, 
-               MATMPIROW, MATMPIROW_BS } MATTYPE;
+               MATMPIROW, MATMPIROW_BS, MATBDIAG, MATMPIBDIAG } MATTYPE;
 
 extern int MatCreateSequentialDense(MPI_Comm,int,int,Mat*);
 extern int MatCreateSequentialAIJ(MPI_Comm,int,int,int,int *,Mat*);
@@ -19,6 +19,8 @@ extern int MatCreateMPIAIJ(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*);
 extern int MatCreateSequentialRow(MPI_Comm,int,int,int,int *,Mat*);
 extern int MatCreateMPIRow(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
 extern int MatCreateMPIRowbs(MPI_Comm,int,int,int,int*,void*,Mat*); 
+extern int MatCreateSequentialBDiag(MPI_Comm,int,int,int,int,int*,
+                                    Scalar**,Mat*); 
 
 extern int MatShellCreate(MPI_Comm,int,int,void *,Mat*);
 extern int MatShellSetMult(Mat,int (*)(void*,Vec,Vec));
