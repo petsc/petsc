@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.53 1996/08/20 16:04:48 curfman Exp bsmith $ */
+/* $Id: snes.h,v 1.54 1996/11/07 15:12:51 bsmith Exp curfman $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -53,6 +53,7 @@ extern int SNESSetTrustRegionTolerance(SNES,double);
 extern int SNESGetIterationNumber(SNES,int*);
 extern int SNESGetFunctionNorm(SNES,Scalar*);
 extern int SNESGetNumberUnsuccessfulSteps(SNES,int*);
+extern int SNESGetNumberLinearIterations(SNES,int*);
 extern int SNES_KSP_SetParametersEW(SNES,int,double,double,double,double,double,double);
 extern int SNES_KSP_SetConvergenceTestEW(SNES);
 
