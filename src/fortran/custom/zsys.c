@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.24 1996/10/03 19:57:00 balay Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.25 1996/10/03 20:25:39 balay Exp curfman $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -153,6 +153,15 @@ void petscintview_(int *n,int *d,int *viwer,int *__ierr)
   *__ierr = PetscIntView(*n,d,0);
 }
 
+void petscsequentialphasebegin_(MPI_Comm comm,int *ng, int *__ierr ){
+*__ierr = PetscSequentialPhaseBegin(
+	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*ng);
+}
+void petscsequentialphaseend_(MPI_Comm comm,int *ng, int *__ierr ){
+*__ierr = PetscSequentialPhaseEnd(
+	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*ng);
+}
+
 #if defined(__cplusplus)
 }
 #endif
@@ -266,15 +275,6 @@ PETSC ERROR:com instead of comm).\n",rank );
   PtrArray[idx].next = avail;
   PtrArray[idx].ptr  = 0;
   avail              = PtrArray + idx;
-}
-
-void petscsequentialphasebegin_(MPI_Comm comm,int *ng, int *__ierr ){
-*__ierr = PetscSequentialPhaseBegin(
-	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*ng);
-}
-void petscsequentialphaseend_(MPI_Comm comm,int *ng, int *__ierr ){
-*__ierr = PetscSequentialPhaseEnd(
-	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*ng);
 }
 
 #endif
