@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.37 2001/01/23 18:51:53 balay Exp bsmith $";
+! "$Id: ex5f90.F,v 1.38 2001/03/15 19:12:30 bsmith Exp bsmith $";
 !
 !  Description: Solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -43,7 +43,6 @@
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscda.h"
 #undef PETSC_AVOID_DECLARATIONS
-        Vec     localX,localF
         DA      da
         integer xs,xe,xm,gxs,gxe,gxm
         integer ys,ye,ym,gys,gye,gym
@@ -90,7 +89,7 @@
 
 !  Input/output variables:
       SNES           snes
-      Vec            X,F
+      Vec            X,F,localX,localF
       integer        ierr
       type (userctx) user
 
@@ -102,9 +101,11 @@
 !  By placing code between these two statements, computations can
 !  be done while messages are in transition.
 
+      call DAGetLocalVector(user%da,localX,ierr)
+      call DAGetLocalVector(user%da,localF,ierr)
       call DAGlobalToLocalBegin(user%da,X,INSERT_VALUES,                &
-     &     user%localX,ierr)
-      call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,user%localX,ierr)
+     &     localX,ierr)
+      call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr)
 
 !  Get a pointer to vector data.
 !    - For default PETSc vectors, VecGetArray90() returns a pointer to
@@ -114,8 +115,8 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call VecGetArrayF90(user%localX,lx_v,ierr)
-      call VecGetArrayF90(user%localF,lf_v,ierr)
+      call VecGetArrayF90(localX,lx_v,ierr)
+      call VecGetArrayF90(localF,lf_v,ierr)
 
 !  Compute function over the locally owned part of the grid
 
@@ -123,12 +124,14 @@
 
 !  Restore vectors
 
-      call VecRestoreArrayF90(user%localX,lx_v,ierr)
-      call VecRestoreArrayF90(user%localF,lf_v,ierr)
+      call VecRestoreArrayF90(localX,lx_v,ierr)
+      call VecRestoreArrayF90(localF,lf_v,ierr)
 
 !  Insert values into global vector
 
-      call DALocalToGlobal(user%da,user%localF,INSERT_VALUES,F,ierr)
+      call DALocalToGlobal(user%da,localF,INSERT_VALUES,F,ierr)
+      call DARestoreLocalVector(user%da,localX,ierr)
+      call DARestoreLocalVector(user%da,localF,ierr)
       call PetscLogFlops(11*user%ym*user%xm,ierr)
 
 !      call VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr)
@@ -253,9 +256,7 @@
 !  vectors that are the same types
 
       call DACreateGlobalVector(user%da,x,ierr)
-      call DACreateLocalVector(user%da,user%localX,ierr)
       call VecDuplicate(x,r,ierr)
-      call VecDuplicate(user%localX,user%localF,ierr)
 
 !  Get local grid boundaries (for 2-dimensional DA)
 
@@ -365,8 +366,6 @@
       if (matrix_free .eq. 0) call MatDestroy(J,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
-      call VecDestroy(user%localX,ierr)
-      call VecDestroy(user%localF,ierr)
       call SNESDestroy(snes,ierr)
       call DADestroy(user%da,ierr)
       call PetscFinalize(ierr)
@@ -407,9 +406,9 @@
 
 !  Input/output variables:
       type (userctx)         user
-      Vec      X
+      Vec      X,localX
       integer  ierr
-
+      
 !  Declarations for use with local arrays:
       Scalar,pointer :: lx_v(:)
 
@@ -423,7 +422,8 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call VecGetArrayF90(user%localX,lx_v,ierr)
+      call DAGetLocalVector(user%da,localX,ierr)
+      call VecGetArrayF90(localX,lx_v,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
 
@@ -431,11 +431,12 @@
 
 !  Restore vector
 
-      call VecRestoreArrayF90(user%localX,lx_v,ierr)
+      call VecRestoreArrayF90(localX,lx_v,ierr)
 
 !  Insert values into global vector
 
-      call DALocalToGlobal(user%da,user%localX,INSERT_VALUES,X,ierr)
+      call DALocalToGlobal(user%da,localX,INSERT_VALUES,X,ierr)
+      call DARestoreLocalVector(user%da,localX,ierr)
 
       return 
       end
@@ -629,7 +630,7 @@
 
 !  Input/output variables:
       SNES         snes
-      Vec          X
+      Vec          X,localX
       Mat          jac,jac_prec
       MatStructure flag
       type(userctx) user
@@ -643,13 +644,14 @@
 !  Computations can be done while messages are in transition,
 !  by placing code between these two statements.
 
-      call DAGlobalToLocalBegin(user%da,X,INSERT_VALUES,user%localX,    &
+      call DAGetLocalVector(user%da,localX,ierr)
+      call DAGlobalToLocalBegin(user%da,X,INSERT_VALUES,localX,            &
      &     ierr)
-      call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,user%localX,ierr)
+      call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr)
 
 !  Get a pointer to vector data
 
-      call VecGetArrayF90(user%localX,lx_v,ierr)
+      call VecGetArrayF90(localX,lx_v,ierr)
 
 !  Compute entries for the locally owned part of the Jacobian.
 
@@ -661,7 +663,8 @@
 !  by placing code between these two statements.
 
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
-      call VecRestoreArrayF90(user%localX,lx_v,ierr)
+      call VecRestoreArrayF90(localX,lx_v,ierr)
+      call DARestoreLocalVector(user%da,localX,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
 
 !  Set flag to indicate that the Jacobian matrix retains an identical

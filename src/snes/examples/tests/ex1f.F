@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.53 2001/01/17 22:26:26 bsmith Exp balay $";
+! "$Id: ex1f.F,v 1.54 2001/01/22 23:27:14 balay Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -178,7 +178,7 @@
 !    efficiently using a coloring of the columns of the matrix.
 !
       fd_coloring = 0
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,"-snes_fd_coloring",     &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_fd_coloring',     &
      &                    fd_coloring,ierr)
       if (fd_coloring .eq. 1) then
              
