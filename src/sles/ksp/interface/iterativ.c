@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.80 1999/01/31 16:08:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.81 1999/01/31 21:23:03 curfman Exp bsmith $";
 #endif
 
 /*
@@ -55,6 +55,37 @@ int KSPGetResidualNorm(KSP ksp,double *rnorm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   *rnorm = ksp->rnorm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPGetIterationNumber"
+/*@C
+   KSPGetIterationNumber - Gets the current iteration number (if the 
+         KSPSolve() (SLESSolve()) is complete, returns the number of iterations
+         used.
+ 
+   Not Collective
+
+   Input Parameters:
+.  ksp - the iterative context
+
+   Output Parameters:
+.  its - number of iterations
+
+   Level: intermediate
+
+   Notes:
+      During the ith iteration this returns i-1
+.keywords: KSP, get, residual norm
+
+.seealso: KSPComputeResidual(), KSPGetResidualNorm()
+@*/
+int KSPGetIterationNumber(KSP ksp,int *its)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 
