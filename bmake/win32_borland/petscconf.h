@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.1 2001/03/09 19:52:37 balay Exp balay $"
+"$Id: petscconf.h,v 1.2 2001/03/09 20:10:13 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -14,7 +14,7 @@
 #define PETSC_HAVE_SEARCH_H
 #define PETSC_HAVE_IO_H
 
-#define PETSC_HAVE_STD_COMPLEX
+#define PETSC_HAVE_TEMPLATED_COMPLEX
 #define PETSC_HAVE_FORTRAN_CAPS 
 
 #if !defined (PETSC_USE_COMPLEX)

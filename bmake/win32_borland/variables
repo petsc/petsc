@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.2 2001/03/09 21:02:02 balay Exp $ 
+# $Id: base_variables,v 1.4 2001/03/09 23:00:09 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -58,9 +58,9 @@ O_PETSCFLAGS	   = -DINLINE_FOR -DPETSC_USE_DEBUG  -DPETSC_USE_BOPT_O -DPETSC_USE
 GCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g -DPETSC_USE_STACK
 OCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O
 GCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
-                     -DPETSC_USE_STACK -DPETSC_USE_COMPLEX -DPETSC_HAVE_TEMPLATED_COMPLEX
+                     -DPETSC_USE_STACK -DPETSC_USE_COMPLEX 
 OCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O \
-                     -DPETSC_USE_COMPLEX -DPETSC_HAVE_TEMPLATED_COMPLEX
+                     -DPETSC_USE_COMPLEX
 
 ##################################################################################
 #
