@@ -23,7 +23,7 @@ EXTERN_C_BEGIN
 void cesmfgridview(ESMFGrid grid)
 {
   
-  PetscPrintf(grid->base.fcomm,"Base ESMFGrid grid viewer\n typename %s dimension %d\n",grid->base.typename,grid->dimension);
+  PetscPrintf(grid->base.fcomm,"Base ESMFGrid grid viewer\n typename %s dimension %d\n",grid->base.type_name,grid->dimension);
 }
 
 void cesmfgridviewsr(ESMFGridStructuredRectangular grid)
