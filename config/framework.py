@@ -411,7 +411,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def outputMakeRule(self, f, name, dependencies,rule):
     if rule:
-      f.write(name+': '+dependencies+'\n\t-@'+rule+'\n\n')
+      f.write(name+': '+dependencies+'\n')
+      for r in rule:
+        f.write('\t-@'+r+'\n')
+      f.write('\n')            
     else:
       f.write(name+': '+dependencies+'\n\n')
     return
