@@ -4,7 +4,7 @@
 #
 #  This creates .html pages for each PETSc man section
 #
-foreach dir (/home/bsmith/petsc/docs/www/man?)
+foreach dir (${PETSC_DIR}/docs/www/man?)
   pushd $dir
   ls > .tmp
     set REF = $dir:t
