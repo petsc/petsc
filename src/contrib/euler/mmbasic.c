@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbasic.c,v 1.4 1998/03/17 19:23:19 curfman Exp curfman $";
+static char vcid[] = "$Id: mmbasic.c,v 1.5 1998/04/15 22:51:48 curfman Exp curfman $";
 #endif
 
 /*
@@ -58,7 +58,7 @@ int MMDestroy(MM mm)
   PetscValidHeaderSpecific(mm,mm->MM_COOKIE);
   if (--mm->refct > 0) return 0;
 
-  if (mm->destroy) {ierr =  (*mm->destroy)((PetscObject)mm);CHKERRQ(ierr);}
+  if (mm->destroy) {ierr =  (*mm->destroy)(mm);CHKERRQ(ierr);}
   else {if (mm->data) PetscFree(mm->data);}
   PLogObjectDestroy(mm);
   PetscHeaderDestroy(mm);
@@ -90,21 +90,19 @@ $    ViewerFileOpenASCII() - output to a specified file
 int MMView(MM mm,Viewer viewer)
 {
   FILE        *fd;
-  char        *method;
+  MMType      method;
   int         ierr;
   ViewerType  vtype;
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  MMGetType(mm,&method);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(mm->comm,fd,"MM Object:\n");
-    MMGetType(mm,PETSC_NULL,&method);
     PetscFPrintf(mm->comm,fd,"  method: %s\n",method);
-    if (mm->view) (*mm->view)((PetscObject)mm,viewer);
+    if (mm->view) (*mm->view)(mm,viewer);
   } else if (vtype == STRING_VIEWER) {
-    MMType type;
-    MMGetType(mm,&type,&method);
     ierr = ViewerStringSPrintf(viewer," %-7.7s",method); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -154,14 +152,9 @@ int MMCreate(MPI_Comm comm,MM *newmm)
   MPI_Comm_size(comm,&size);
 
   ierr = PetscRegisterCookie(&MM_COOKIE); CHKERRQ(ierr);
-  PetscHeaderCreate(mm,_p_MM,MM_COOKIE,MMEULER,comm,MMDestroy,MMView); 
-  /*  PetscHeaderCreate(mm,_p_MM,int,MM_COOKIE,MMEULER,comm,MMDestroy,MMView); */
+  PetscHeaderCreate(mm,_p_MM,int,MM_COOKIE,-1,comm,MMDestroy,MMView);
   PLogObjectCreate(mm);
-  mm->MM_COOKIE = MM_COOKIE;
-  mm->type      = -1;
   mm->data      = 0;
   *newmm        = mm;
-  /* this violates rule about seperating abstract from implementions */
-  ierr = MMSetType(mm,MMEULER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp $";
+static char vcid[] = "$Id: mmmethods.c,v 1.4 1997/10/11 18:39:18 curfman Exp curfman $";
 #endif
 
 #include "mmimpl.h"
@@ -14,17 +14,19 @@ typedef struct {
 int MMCreate_Euler(MM mm)
 {
   MM_Euler *euler = PetscNew(MM_Euler); CHKPTRQ(euler);
+
+  PetscFunctionBegin;
+  PetscMemzero(mm,sizeof(MM_Euler));
   PLogObjectMemory(mm,sizeof(MM_Euler));
 
-  euler->stuff    = 0;
-  mm->data        = (void *) euler;
-  mm->ncomponents = 5;
-  mm->setupcalled = 0;
-  mm->printhelp   = 0;
-  mm->setfrom     = 0;
-  mm->type        = MMEULER;
+  euler->stuff       = 0;
+  mm->data           = (void *) euler;
+  mm->ncomponents    = 5;
+  mm->setupcalled    = 0;
+  mm->printhelp      = 0;
+  mm->setfromoptions = 0;
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------- */
@@ -42,21 +44,26 @@ int MMCreate_Hybrid_EF1(MM mm)
 {
   int flg, ierr;
   MM_Hybrid_EF *hybrid = PetscNew(MM_Hybrid_EF); CHKPTRQ(hybrid);
+
+  PetscFunctionBegin;
+  PetscMemzero(mm,sizeof(MM_Hybrid_EF));
   PLogObjectMemory(mm,sizeof(MM_Hybrid_EF));
 
-  hybrid->stuff     = 0;
-  mm->data          = (void *) hybrid;
-  mm->ncomponents   = 6;
-  mm->setupcalled   = 0;
-  mm->printhelp     = 0;
-  mm->setfrom       = 0;
+  hybrid->stuff      = 0;
+  mm->data           = (void *) hybrid;
+  mm->ncomponents    = 6;
+  mm->setupcalled    = 0;
+  mm->printhelp      = 0;
+  mm->setfromoptions = 0;
 
+  /*
   mm->type          = MMHYBRID_EF1;
   ierr = OptionsHasName(PETSC_NULL,"-mm_hybrid_euler",&flg); CHKERRQ(ierr);
   if (flg) mm->type = MMHYBRID_E;
   ierr = OptionsHasName(PETSC_NULL,"-mm_hybrid_fp",&flg); CHKERRQ(ierr);
   if (flg) mm->type = MMHYBRID_F;
-  return 0;
+  */
+  PetscFunctionReturn(0);
 }
 
 typedef struct {
@@ -69,14 +76,17 @@ typedef struct {
 int MMCreate_FullPotential(MM mm)
 {
   MM_FullPotential *fp = PetscNew(MM_FullPotential); CHKPTRQ(fp);
+
+  PetscFunctionBegin;
+  PetscMemzero(mm,sizeof(MM_FullPotential));
   PLogObjectMemory(mm,sizeof(MM_FullPotential));
 
-  fp->stuff   = 0;
-  mm->data        = (void *) fp;
-  mm->ncomponents = 1;
-  mm->setupcalled = 0;
-  mm->printhelp   = 0;
-  mm->setfrom     = 0;
-  mm->type        = MMFP;
-  return 0;
+  fp->stuff          = 0;
+  mm->data           = (void *) fp;
+  mm->ncomponents    = 1;
+  mm->setupcalled    = 0;
+  mm->printhelp      = 0;
+  mm->setfromoptions = 0;
+
+  PetscFunctionReturn(0);
 }
