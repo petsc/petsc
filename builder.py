@@ -306,9 +306,10 @@ class Builder(logging.Logger):
         if status: self.logWrite('ret = '+str(status)+'\n')
         if error: self.logWrite('error message = {'+error+'}\n')
         self.logWrite('Source:\n'+str(source)+'\n')
-        # This is a hack
-        if len(''.join(filter(lambda l: l.find('warning') < 0 and l.find('In function') < 0, error.split('\n')))):
-          raise CompileError(output+error)
+        if not self.argDB['ignoreCompileOutput']:
+          # This is a hack
+          if len(''.join(filter(lambda l: l.find('warning') < 0 and l.find('In function') < 0, error.split('\n')))):
+            raise CompileError(output+error)
       self.shouldCompile.update(source)
       return
 

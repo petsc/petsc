@@ -24,7 +24,7 @@
         regular expression.
 
 '''
-import base
+import logging
 
 import cPickle
 import errno
@@ -33,14 +33,14 @@ import os
 import re
 import time
 
-class SourceDB (dict, base.Base):
+class SourceDB (dict, logging.Logger):
   '''A SourceDB is a dictionary of file data used during the build process.'''
   includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
   isLoading = 0
 
   def __init__(self, root, filename = None):
     dict.__init__(self)
-    base.Base.__init__(self)
+    logging.Logger.__init__(self)
     self.root       = root
     self.filename   = filename
     if self.filename is None:
@@ -60,7 +60,7 @@ class SourceDB (dict, base.Base):
     return output
 
   def __setstate__(self, d):
-    base.Base.__setstate__(self, d)
+    logging.Logger.__setstate__(self, d)
     # We have to prevent recursive calls to this when the pickled database is loaded in load()
     #   This is to ensure that fresh copies of the database are obtained after unpickling
     if not SourceDB.isLoading:
@@ -165,7 +165,7 @@ class SourceDB (dict, base.Base):
       (checksum, mtime, timestamp, dependencies) = self[source]
     except KeyError:
       pass
-    self.debugPrint('Updating '+source+' in source database', 3, 'sourceDB')
+    self.logPrint('Updating '+source+' in source database', 3, 'sourceDB')
     if noChecksum:
       checksum   = ''
     else:
@@ -177,7 +177,7 @@ class SourceDB (dict, base.Base):
     '''This removes source information, but preserved dependencies'''
     if source in self:
       self.isDirty = 1
-      self.debugPrint('Clearing '+source+' from source database', 3, 'sourceDB')
+      self.logPrint('Clearing '+source+' from source database', 3, 'sourceDB')
       (checksum, mtime, timestamp, dependencies) = self[source]
       self[source] = ('', 0, time.time(), dependencies)
     return
@@ -198,15 +198,15 @@ class SourceDB (dict, base.Base):
       checksum = ''
       mtime    = 0
     if not dependency in dependencies:
-      self.debugPrint('Adding dependency '+dependency+' to source '+source+' in source database', 3, 'sourceDB')
+      self.logPrint('Adding dependency '+dependency+' to source '+source+' in source database', 3, 'sourceDB')
       dependencies = dependencies+(dependency,)
     self[source] = (checksum, mtime, time.time(), dependencies)
     return
 
   def calculateDependencies(self):
-    self.debugPrint('Recalculating dependencies', 1, 'sourceDB')
+    self.logPrint('Recalculating dependencies', 1, 'sourceDB')
     for source in self:
-      self.debugPrint('Calculating '+source, 3, 'sourceDB')
+      self.logPrint('Calculating '+source, 3, 'sourceDB')
       (checksum, mtime, timestamp, dependencies) = self[source]
       newDep = []
       try:
@@ -223,15 +223,15 @@ class SourceDB (dict, base.Base):
           filename  = m.group('includeFile')
           matchNum  = 0
           matchName = filename
-          self.debugPrint('  Includes '+filename, 3, 'sourceDB')
+          self.logPrint('  Includes '+filename, 3, 'sourceDB')
           for s in self:
             if s.find(filename) >= 0:
-              self.debugPrint('    Checking '+s, 3, 'sourceDB')
+              self.logPrint('    Checking '+s, 3, 'sourceDB')
               c = s.split('/')
               for i in range(len(c)):
                 if not comps[i] == c[i]: break
               if i > matchNum:
-                self.debugPrint('    Choosing '+s+'('+str(i)+')', 3, 'sourceDB')
+                self.logPrint('    Choosing '+s+'('+str(i)+')', 3, 'sourceDB')
                 matchName = s
                 matchNum  = i
           newDep.append(matchName)
@@ -244,34 +244,34 @@ class SourceDB (dict, base.Base):
     filename = str(self.filename)
     if os.path.exists(filename):
       self.clear()
-      self.debugPrint('Loading source database from '+filename, 2, 'sourceDB')
+      self.logPrint('Loading source database from '+filename, 2, 'sourceDB')
       dbFile = file(filename)
       newDB  = cPickle.load(dbFile)
       dbFile.close()
       self.update(newDB)
     else:
-      self.debugPrint('Could not load source database from '+filename, 1, 'sourceDB')
+      self.logPrint('Could not load source database from '+filename, 1, 'sourceDB')
     return
 
   def save(self, force = 0):
     '''Save the source database to a file. The saved database with have path names relative to the root.'''
     if not self.isDirty and not force:
-      self.debugPrint('No need to save source database in '+str(self.filename), 2, 'sourceDB')
+      self.logPrint('No need to save source database in '+str(self.filename), 2, 'sourceDB')
       return
     filename = str(self.filename)
     if os.path.exists(os.path.dirname(filename)):
-      self.debugPrint('Saving source database in '+filename, 2, 'sourceDB')
+      self.logPrint('Saving source database in '+filename, 2, 'sourceDB')
       dbFile = file(filename, 'w')
       cPickle.dump(self, dbFile)
       dbFile.close()
       self.isDirty = 0
     else:
-      self.debugPrint('Could not save source database in '+filename, 1, 'sourceDB')
+      self.logPrint('Could not save source database in '+filename, 1, 'sourceDB')
     return
 
-class DependencyAnalyzer (base.Base):
+class DependencyAnalyzer (logging.Logger):
   def __init__(self, sourceDB):
-    base.Base.__init__(self)
+    logging.Logger.__init__(self)
     self.sourceDB  = sourceDB
     self.includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
     return
@@ -284,15 +284,15 @@ class DependencyAnalyzer (base.Base):
     matchNum   = 0
     matchName  = dep
     components = source.split(os.sep)
-    self.debugPrint('  Includes '+filename, 3, 'sourceDB')
+    self.logPrint('  Includes '+filename, 3, 'sourceDB')
     for s in self.sourceDB:
       if s.find(dep) >= 0:
-        self.debugPrint('    Checking '+s, 3, 'sourceDB')
+        self.logPrint('    Checking '+s, 3, 'sourceDB')
         comp = s.split(os.sep)
         for i in range(len(comp)):
           if not components[i] == comp[i]: break
         if i > matchNum:
-          self.debugPrint('    Choosing '+s+'('+str(i)+')', 3, 'sourceDB')
+          self.logPrint('    Choosing '+s+'('+str(i)+')', 3, 'sourceDB')
           matchName = s
           matchNum  = i
     if not matchName in self.sourceDB: raise RuntimeError('Invalid #include '+matchName+' in '+source)
@@ -340,20 +340,20 @@ if __name__ == '__main__':
         sys.exit('Could not load source database from '+sys.argv[1])
       if sys.argv[2] == 'insert':
         if sys.argv[3] in sourceDB:
-          self.debugPrint('Updating '+sys.argv[3], 3, 'sourceDB')
+          self.logPrint('Updating '+sys.argv[3], 3, 'sourceDB')
         else:
-          self.debugPrint('Inserting '+sys.argv[3], 3, 'sourceDB')
+          self.logPrint('Inserting '+sys.argv[3], 3, 'sourceDB')
         self.sourceDB.updateSource(sys.argv[3])
       elif sys.argv[2] == 'remove':
         if sys.argv[3] in sourceDB:
-          sourceDB.debugPrint('Removing '+sys.argv[3], 3, 'sourceDB')
+          sourceDB.logPrint('Removing '+sys.argv[3], 3, 'sourceDB')
           del self.sourceDB[sys.argv[3]]
         else:
-          sourceDB.debugPrint('Matching regular expression '+sys.argv[3]+' over source database', 1, 'sourceDB')
+          sourceDB.logPrint('Matching regular expression '+sys.argv[3]+' over source database', 1, 'sourceDB')
           removeRE = re.compile(sys.argv[3])
           removes  = filter(removeRE.match, sourceDB.keys())
           for source in removes:
-            self.debugPrint('Removing '+source, 3, 'sourceDB')
+            self.logPrint('Removing '+source, 3, 'sourceDB')
             del self.sourceDB[source]
       else:
         sys.exit('Unknown source database action: '+sys.argv[2])

@@ -45,6 +45,16 @@ class Make(script.Script):
     help.addArgument('Make', 'prefix', nargs.ArgDir(None, None, 'Root for installation of libraries and binaries', mustExist = 0, isTemporary = 1))
     return help
 
+  def getPrefix(self):
+    if not hasattr(self, '_prefix'):
+      if 'prefix' in self.argDB:
+        return self.argDB['prefix']
+      return None
+    return self._prefix
+  def setPrefix(self, prefix):
+    self._prefix = prefix
+  prefix = property(getPrefix, setPrefix, doc = 'The installation root')
+
   def setupDependencies(self, sourceDB):
     '''Override this method to setup dependencies between source files'''
     return
@@ -91,6 +101,8 @@ class Make(script.Script):
   def loadConfigure(self):
     import cPickle
 
+    if not 'configureCache' in self.argDB:
+      return None
     try:
       cache           = self.argDB['configureCache']
       framework       = cPickle.loads(cache)
@@ -239,6 +251,7 @@ class SIDLMake(Make):
     framework = Make.configure(self, builder)
     if framework is None:
       for depMake, depSidlFiles in self.dependencies.values():
+        self.logWrite('Loading configure for '+depMake.getRoot())
         framework = depMake.loadConfigure()
         if not framework is None:
           self.framework         = framework
