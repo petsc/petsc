@@ -48,14 +48,15 @@ clean:
                           *.ilg *.idx *.ind sindex.tex findex.tex *.aus
 
 routines.red: routines.tex ../rsum/rsum1.tex ../rsum/rsum2.tex \
-              ../rsum/rsum3.tex \
-              ../rsum/rsum4.tex ../rsum/rsum5.tex ../rsum/rsum6.tex \
-              ../rsum/rsum7.tex \
-              ../rsum/rsumx.tex
-	rm -f ../rsum/ssum1.tex ../rsum/ssum2.tex ../rsum/ssum3.tex \
-              ../rsum/ssum4.tex \
-              ../rsum/ssum5.tex ../rsum/ssum6.tex ../rsum/ssum7.tex \
-              ../rsum/ssumx.tex
+              ../rsum/rsum3.tex ../rsum/rsum4.tex ../rsum/rsum5.tex \
+	      ../rsum/rsum6.tex ../rsum/rsum7.tex ../rsum/rsumx.tex \
+	      ../rsum/rsumn.tex ../rsum/rsump.tex ../rsum/rsumv.tex \
+	      ../rsum/rsumt.tex
+	rm -f ../rsum/ssum1.tex ../rsum/ssum2.tex \
+              ../rsum/ssum3.tex ../rsum/ssum4.tex ../rsum/ssum5.tex \
+	      ../rsum/ssum6.tex ../rsum/ssum7.tex ../rsum/ssumx.tex \
+	      ../rsum/ssumn.tex ../rsum/ssump.tex ../rsum/ssumv.tex \
+	      ../rsum/ssumt.tex
 	sort ../rsum/rsum1.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g' | \
                  sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssum1.tex
 	sort ../rsum/rsum2.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
@@ -74,6 +75,10 @@ routines.red: routines.tex ../rsum/rsum1.tex ../rsum/rsum2.tex \
                 sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumv.tex
 	sort ../rsum/rsump.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
                 sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssump.tex
+	sort ../rsum/rsumn.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumn.tex
+	sort ../rsum/rsumt.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumt.tex
 	sort ../rsum/rsumx.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
                 grep -v document | sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumx.tex
 	-@chmod g+w ../rsum/ssum*.tex
