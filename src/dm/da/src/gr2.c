@@ -119,7 +119,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
          create a special DA to handle one level of ghost points for graphics
       */
       ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac);CHKERRQ(ierr); 
-      PetscLogInfo(da,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics ghost points\n");
+      ierr = PetscLogInfo((da,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics ghost points\n"));CHKERRQ(ierr);
     } else {
       /* otherwise we can use the da we already have */
       dac = da;
@@ -168,7 +168,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = VecStrideMax(xcoor,1,PETSC_NULL,&ymax);CHKERRQ(ierr);
   coors[0] = xmin - .05*(xmax- xmin); coors[2] = xmax + .05*(xmax - xmin);
   coors[1] = ymin - .05*(ymax- ymin); coors[3] = ymax + .05*(ymax - ymin);
-  PetscLogInfo(da,"VecView_MPI_Draw_DA2d:Preparing DA 2d contour plot coordinates %g %g %g %g\n",coors[0],coors[1],coors[2],coors[3]);
+  ierr = PetscLogInfo((da,"VecView_MPI_Draw_DA2d:Preparing DA 2d contour plot coordinates %g %g %g %g\n",coors[0],coors[1],coors[2],coors[3]));CHKERRQ(ierr);
 
   /*
        get local ghosted version of coordinates 
@@ -177,7 +177,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   if (!xcoorl) {
     /* create DA to get local version of graphics */
     ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr); 
-    PetscLogInfo(dag,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics coordinates ghost points\n");
+    ierr = PetscLogInfo((dag,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics coordinates ghost points\n"));CHKERRQ(ierr);
     ierr = DACreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
     ierr = DADestroy(dag);CHKERRQ(ierr);/* dereference dag */
@@ -234,7 +234,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
       }
     }
     ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
-    PetscLogInfo(da,"VecView_MPI_Draw_DA2d:DA 2d contour plot min %g max %g\n",zctx.min,zctx.max);
+    ierr = PetscLogInfo((da,"VecView_MPI_Draw_DA2d:DA 2d contour plot min %g max %g\n",zctx.min,zctx.max));CHKERRQ(ierr);
 
     ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
     if (popup) {ierr = PetscDrawScalePopup(popup,zctx.min,zctx.max);CHKERRQ(ierr);}
@@ -446,7 +446,7 @@ PetscErrorCode VecLoadIntoVector_Binary_DA(PetscViewer viewer,Vec xin)
   ierr = DANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = DANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = VecDestroy(natural);CHKERRQ(ierr);
-  PetscLogInfo(xin,"VecLoadIntoVector_Binary_DA:Loading vector from natural ordering into DA\n");
+  ierr = PetscLogInfo((xin,"VecLoadIntoVector_Binary_DA:Loading vector from natural ordering into DA\n"));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

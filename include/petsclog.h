@@ -23,7 +23,12 @@ extern PetscEvent PETSC_Barrier;
 extern PetscLogDouble _TotalFlops;
 
 /* General logging of information; different from event logging */
-EXTERN PetscErrorCode        PetscLogInfo(void*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode        PetscLogInfo_Private(void*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+#if defined(PETSC_USE_DEBUG)
+#define PetscLogInfo(A)      PetscLogInfo_Private A
+#else 
+#define PetscLogInfo(A)   0
+#endif
 EXTERN PetscErrorCode        PetscLogInfoDeactivateClass(PetscCookie);
 EXTERN PetscErrorCode        PetscLogInfoActivateClass(PetscCookie);
 extern PetscTruth PetscLogPrintInfo;  /* if true, indicates PetscLogInfo() is turned on */

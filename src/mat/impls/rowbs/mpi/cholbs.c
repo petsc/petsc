@@ -38,8 +38,8 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat
     /* Increment the diagonal shift */
     mbs->alpha += 0.1;
     BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo);CHKERRBS(0);
-    PetscLogInfo(mat,"MatCholeskyFactorNumeric_MPIRowbs:BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
-                                 mbs->failures,mbs->ierr,mbs->alpha); 
+    ierr = PetscLogInfo((mat,"MatCholeskyFactorNumeric_MPIRowbs:BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
+                                 mbs->failures,mbs->ierr,mbs->alpha));CHKERRQ(ierr);
   }
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogFlops((int)(BSlocal_flops()-flop1));CHKERRQ(ierr);
@@ -75,8 +75,8 @@ PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat *fact
     /* Increment the diagonal shift */
     mbs->alpha += 0.1;
     BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo);CHKERRBS(0);
-    PetscLogInfo(mat,"MatLUFactorNumeric_MPIRowbs:BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
-                                       mbs->failures,mbs->ierr,mbs->alpha); 
+    ierr = PetscLogInfo((mat,"MatLUFactorNumeric_MPIRowbs:BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
+                                       mbs->failures,mbs->ierr,mbs->alpha));CHKERRQ(ierr);
   }
   mbs->factor = FACTOR_LU;
   (*factp)->assembled = PETSC_TRUE;

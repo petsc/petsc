@@ -160,15 +160,17 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInf
     }     
   } 
 
+#if defined(PETSC_USE_DEBUG)
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_cholesky_fill %g or use \n",af);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCCholeskySetFill(pc,%g);\n",af);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:for best performance.\n");
+    ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af));CHKERRQ(ierr);
+    ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_cholesky_fill %g or use \n",af));CHKERRQ(ierr);
+    ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCCholeskySetFill(pc,%g);\n",af));CHKERRQ(ierr);
+    ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:for best performance.\n"));CHKERRQ(ierr);
   } else {
-     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Empty matrix.\n");
+    ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Empty matrix.\n"));CHKERRQ(ierr);
   }
+#endif
 
   ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
   ierr = PetscFree(jl);CHKERRQ(ierr);
@@ -216,42 +218,42 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInf
       case 1:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
         (*B)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=1\n");
+        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=1\n"));CHKERRQ(ierr);
         break;
       case 2:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;
         (*B)->ops->solve           = MatSolve_SeqSBAIJ_2_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
+        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n"));CHKERRQ(ierr);
         break;
       case 3:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering;
         (*B)->ops->solve           = MatSolve_SeqSBAIJ_3_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:sing special in-place natural ordering factor and solve BS=3\n");
+        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:sing special in-place natural ordering factor and solve BS=3\n"));CHKERRQ(ierr);
         break; 
       case 4:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering;
         (*B)->ops->solve           = MatSolve_SeqSBAIJ_4_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
+        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"));CHKERRQ(ierr);
         break;
       case 5:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering;
         (*B)->ops->solve           = MatSolve_SeqSBAIJ_5_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
+        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"));CHKERRQ(ierr);
         break;
       case 6: 
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering;
         (*B)->ops->solve           = MatSolve_SeqSBAIJ_6_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
+        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n"));CHKERRQ(ierr);
         break; 
       case 7:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering;
         (*B)->ops->solve           = MatSolve_SeqSBAIJ_7_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
+        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n"));CHKERRQ(ierr);
       break; 
       default:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering; 
         (*B)->ops->solve           = MatSolve_SeqSBAIJ_N_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS>7\n");
+        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS>7\n"));CHKERRQ(ierr);
       break; 
     }
   } 
@@ -386,14 +388,16 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
     ui[k+1] = ui[k] + nzk;  
   } 
 
+#if defined(PETSC_USE_DEBUG)
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)ui[mbs])/((PetscReal)ai[mbs]);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,fill,af);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_cholesky_fill %g or use \n",af);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCCholeskySetFill(pc,%g) for best performance.\n",af);
+    ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,fill,af));CHKERRQ(ierr);
+    ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_cholesky_fill %g or use \n",af));CHKERRQ(ierr);
+    ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCCholeskySetFill(pc,%g) for best performance.\n",af));CHKERRQ(ierr);
   } else {
-     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Empty matrix.\n");
+    ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Empty matrix.\n"));CHKERRQ(ierr);
   }
+#endif
 
   ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
   ierr = PetscFree(jl);CHKERRQ(ierr);
@@ -444,42 +448,42 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
       case 1:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=1\n");
+        ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=1\n"));CHKERRQ(ierr);
         break;
       case 2:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_2_NaturalOrdering;
-        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
+        ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n"));CHKERRQ(ierr);
         break;
       case 3:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_3_NaturalOrdering;
-        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:sing special in-place natural ordering factor and solve BS=3\n");
+        ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:sing special in-place natural ordering factor and solve BS=3\n"));CHKERRQ(ierr);
         break; 
       case 4:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_4_NaturalOrdering;
-        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
+        ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"));CHKERRQ(ierr);
         break;
       case 5:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_5_NaturalOrdering;
-        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
+        ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"));CHKERRQ(ierr);
         break;
       case 6: 
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_6_NaturalOrdering;
-        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
+        ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n"));CHKERRQ(ierr);
         break; 
       case 7:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_7_NaturalOrdering;
-        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
+        ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n"));CHKERRQ(ierr);
       break; 
       default:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering; 
         B->ops->solve           = MatSolve_SeqSBAIJ_N_NaturalOrdering;
-        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS>7\n");
+        ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS>7\n"));CHKERRQ(ierr);
       break; 
     }
   } 
@@ -1218,9 +1222,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,MatFactorInfo *info,Mat
   ierr = PetscLogFlops(C->m);CHKERRQ(ierr);
     if (sctx.nshift){
     if (shiftnz) {
-      PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqSBAIJ_1: number of shiftnz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
+      ierr = PetscLogInfo((0,"MatCholeskyFactorNumeric_SeqSBAIJ_1: number of shiftnz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount));CHKERRQ(ierr);
     } else if (shiftpd) {
-      PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqSBAIJ_1: number of shiftpd tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
+      ierr = PetscLogInfo((0,"MatCholeskyFactorNumeric_SeqSBAIJ_1: number of shiftpd tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1359,9 +1363,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,MatFact
   ierr = PetscLogFlops(C->m);CHKERRQ(ierr);
   if (sctx.nshift){
     if (shiftnz) {
-      PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering: number of shiftnz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
+      ierr = PetscLogInfo((0,"MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering: number of shiftnz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount));CHKERRQ(ierr);
     } else if (shiftpd) {
-      PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering: number of shiftpd tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
+      ierr = PetscLogInfo((0,"MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering: number of shiftpd tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

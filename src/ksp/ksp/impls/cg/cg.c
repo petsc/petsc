@@ -168,12 +168,12 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*     beta <- r'z     */
      if (beta == 0.0) {
        ksp->reason = KSP_CONVERGED_ATOL;
-       PetscLogInfo(ksp,"KSPSolve_CG:converged due to beta = 0");
+       ierr = PetscLogInfo((ksp,"KSPSolve_CG:converged due to beta = 0\n"));CHKERRQ(ierr);
        break;
 #if !defined(PETSC_USE_COMPLEX)
      } else if (beta < 0.0) {
        ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-       PetscLogInfo(ksp,"KSPSolve_CG:diverging due to indefinite preconditioner");
+       ierr = PetscLogInfo((ksp,"KSPSolve_CG:diverging due to indefinite preconditioner\n"));CHKERRQ(ierr);
        break;
 #endif
      }

@@ -590,9 +590,9 @@ PetscErrorCode MatAssemblyBegin_MPISBAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatStashScatterBegin_Private(&mat->stash,baij->rowners_bs);CHKERRQ(ierr);
   ierr = MatStashScatterBegin_Private(&mat->bstash,baij->rowners);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  PetscLogInfo(0,"MatAssemblyBegin_MPISBAIJ:Stash has %D entries,uses %D mallocs.\n",nstash,reallocs);
+  ierr = PetscLogInfo((0,"MatAssemblyBegin_MPISBAIJ:Stash has %D entries,uses %D mallocs.\n",nstash,reallocs));CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  PetscLogInfo(0,"MatAssemblyBegin_MPISBAIJ:Block-Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);
+  ierr = PetscLogInfo((0,"MatAssemblyBegin_MPISBAIJ:Block-Stash has %D entries, uses %D mallocs.\n",nstash,reallocs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1169,7 +1169,7 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op)
   case MAT_ROWS_SORTED: 
   case MAT_ROWS_UNSORTED:
   case MAT_YES_NEW_DIAGONALS:
-    PetscLogInfo(A,"Info:MatSetOption_MPIBAIJ:Option ignored\n");
+    ierr = PetscLogInfo((A,"Info:MatSetOption_MPIBAIJ:Option ignored\n"));CHKERRQ(ierr);
     break;
   case MAT_COLUMN_ORIENTED:
     a->roworiented = PETSC_FALSE;
@@ -1620,7 +1620,7 @@ PetscErrorCode MatCreate_MPISBAIJ(Mat B)
     ierr = PetscOptionsGetReal(B->prefix,"-mat_use_hash_table",&fact,PETSC_NULL);CHKERRQ(ierr);
     if (fact <= 1.0) fact = 1.39;
     ierr = MatMPIBAIJSetHashTableFactor(B,fact);CHKERRQ(ierr);
-    PetscLogInfo(0,"MatCreateMPISBAIJ:Hash table Factor used %5.2f\n",fact);
+    ierr = PetscLogInfo((0,"MatCreateMPISBAIJ:Hash table Factor used %5.2f\n",fact));CHKERRQ(ierr);
   }
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPISBAIJ",
@@ -2047,7 +2047,7 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
   if (extra_rows == bs) extra_rows = 0;
   else                  Mbs++;
   if (extra_rows &&!rank) {
-    PetscLogInfo(0,"MatLoad_MPISBAIJ:Padding loaded matrix to match blocksize\n");
+    ierr = PetscLogInfo((0,"MatLoad_MPISBAIJ:Padding loaded matrix to match blocksize\n"));CHKERRQ(ierr);
   }
 
   /* determine ownership of all rows */

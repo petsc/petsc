@@ -148,7 +148,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
   if (!res) {
     if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
-    PetscLogInfo(ksp,"GMRESCycle: Converged due to zero residual norm on entry\n");
+    ierr = PetscLogInfo((ksp,"GMRESCycle: Converged due to zero residual norm on entry\n"));CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -175,7 +175,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
     hapbnd  = PetscAbsScalar(tt / *GRS(it));
     if (hapbnd > gmres->haptol) hapbnd = gmres->haptol;
     if (tt < hapbnd) {
-      PetscLogInfo(ksp,"GMREScycle:Detected happy breakdown, current hapbnd = %g tt = %g\n",hapbnd,tt);
+      ierr = PetscLogInfo((ksp,"GMREScycle:Detected happy breakdown, current hapbnd = %g tt = %g\n",hapbnd,tt));CHKERRQ(ierr);
       hapend = PETSC_TRUE;
     }
     ierr = GMRESUpdateHessenberg(ksp,it,hapend,&res);CHKERRQ(ierr);

@@ -128,12 +128,14 @@ $   KSP_NATURAL_NORM - supported  by cg, cr, and cgs
 @*/
 PetscErrorCode KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->normtype = normtype;
   if (normtype == KSP_NO_NORM) {
-    PetscLogInfo(ksp,"KSPSetNormType:Warning seting KSPNormType to skip computing the norm\n\
-  make sure you set the KSP convergence test to KSPSkipConvergence\n");
+    ierr = PetscLogInfo((ksp,"KSPSetNormType:Warning seting KSPNormType to skip computing the norm\n\
+  make sure you set the KSP convergence test to KSPSkipConvergence\n"));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

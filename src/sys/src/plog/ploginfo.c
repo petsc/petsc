@@ -141,11 +141,13 @@ extern FILE *petsc_history;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogInfo"
-/*@C
+/*@M
     PetscLogInfo - Logs informative data, which is printed to standard output
     or a file when the option -log_info <file> is specified.
 
     Collective over PetscObject argument
+
+       PetscErrorCode PetscLogInfo_Private(void *vobj, const char message[], ...)  
 
     Input Parameter:
 +   vobj - object most closely associated with the logging statement
@@ -156,6 +158,7 @@ $    -log_info : activates printing of PetscLogInfo() messages
 
     Level: intermediate
 
+    Note: Since this is a macro you must wrap the arguments in TWO sets of (())
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -163,14 +166,14 @@ $    -log_info : activates printing of PetscLogInfo() messages
 $
 $     Mat A
 $     double alpha
-$     PetscLogInfo(A,"Matrix uses parameter alpha=%g\n",alpha);
+$     PetscLogInfo((A,"Matrix uses parameter alpha=%g\n",alpha));
 $
 
    Concepts: runtime information
 
 .seealso: PetscLogInfoAllow()
 @*/
-PetscErrorCode PetscLogInfo(void *vobj, const char message[], ...)  
+PetscErrorCode PetscLogInfo_Private(void *vobj, const char message[], ...)  
 {
   va_list        Argp;
   PetscMPIInt    rank,urank;

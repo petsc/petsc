@@ -251,7 +251,7 @@ int Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscLogInfo(0,"Petsc_DelReduction:Deleting reduction data in an MPI_Comm %ld\n",(long)comm);
+  ierr = PetscLogInfo((0,"Petsc_DelReduction:Deleting reduction data in an MPI_Comm %ld\n",(long)comm));CHKERRQ(ierr);
   ierr = PetscSplitReductionDestroy((PetscSplitReduction *)attr_val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -284,7 +284,7 @@ PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
   if (!flag) {  /* doesn't exist yet so create it and put it in */
     ierr = PetscSplitReductionCreate(comm,sr);CHKERRQ(ierr);
     ierr = MPI_Attr_put(comm,Petsc_Reduction_keyval,*sr);CHKERRQ(ierr);
-    PetscLogInfo(0,"PetscSplitReductionGet:Putting reduction data in an MPI_Comm %ld\n",(long)comm);
+    ierr = PetscLogInfo((0,"PetscSplitReductionGet:Putting reduction data in an MPI_Comm %ld\n",(long)comm));CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

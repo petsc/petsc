@@ -945,7 +945,7 @@ PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
   for (i=0,j=0; i<size; i++) {
     if (HT[i]) {j++;}
   }
-  PetscLogInfo(0,"MatCreateHashTable_MPIBAIJ_Private: Average Search = %5.2f,max search = %D\n",(!j)? 0.0:((PetscReal)(ct+j))/j,max);
+  ierr = PetscLogInfo((0,"MatCreateHashTable_MPIBAIJ_Private: Average Search = %5.2f,max search = %D\n",(!j)? 0.0:((PetscReal)(ct+j))/j,max));CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -974,9 +974,9 @@ PetscErrorCode MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatStashScatterBegin_Private(&mat->stash,baij->rowners_bs);CHKERRQ(ierr);
   ierr = MatStashScatterBegin_Private(&mat->bstash,baij->rowners);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  PetscLogInfo(0,"MatAssemblyBegin_MPIBAIJ:Stash has %D entries,uses %D mallocs.\n",nstash,reallocs);
+  ierr = PetscLogInfo((0,"MatAssemblyBegin_MPIBAIJ:Stash has %D entries,uses %D mallocs.\n",nstash,reallocs));CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->bstash,&nstash,&reallocs);CHKERRQ(ierr);
-  PetscLogInfo(0,"MatAssemblyBegin_MPIBAIJ:Block-Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);
+  ierr = PetscLogInfo((0,"MatAssemblyBegin_MPIBAIJ:Block-Stash has %D entries, uses %D mallocs.\n",nstash,reallocs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1064,7 +1064,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   
 #if defined(PETSC_USE_DEBUG)
   if (baij->ht && mode== MAT_FINAL_ASSEMBLY) {
-    PetscLogInfo(0,"MatAssemblyEnd_MPIBAIJ:Average Hash Table Search in MatSetValues = %5.2f\n",((PetscReal)baij->ht_total_ct)/baij->ht_insert_ct);
+    ierr = PetscLogInfo((0,"MatAssemblyEnd_MPIBAIJ:Average Hash Table Search in MatSetValues = %5.2f\n",((PetscReal)baij->ht_total_ct)/baij->ht_insert_ct));CHKERRQ(ierr);
     baij->ht_total_ct  = 0;
     baij->ht_insert_ct = 0;
   }
@@ -1568,7 +1568,7 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op)
   case MAT_ROWS_SORTED:
   case MAT_ROWS_UNSORTED:
   case MAT_YES_NEW_DIAGONALS:
-    PetscLogInfo(A,"Info:MatSetOption_MPIBAIJ:Option ignored\n");
+    ierr = PetscLogInfo((A,"Info:MatSetOption_MPIBAIJ:Option ignored\n"));CHKERRQ(ierr);
     break;
   case MAT_COLUMN_ORIENTED:
     a->roworiented = PETSC_FALSE;
@@ -2301,7 +2301,7 @@ PetscErrorCode MatCreate_MPIBAIJ(Mat B)
     ierr = PetscOptionsGetReal(PETSC_NULL,"-mat_use_hash_table",&fact,PETSC_NULL);CHKERRQ(ierr);
     if (fact <= 1.0) fact = 1.39;
     ierr = MatMPIBAIJSetHashTableFactor(B,fact);CHKERRQ(ierr);
-    PetscLogInfo(0,"MatCreateMPIBAIJ:Hash table Factor used %5.2f\n",fact);
+    ierr = PetscLogInfo((0,"MatCreateMPIBAIJ:Hash table Factor used %5.2f\n",fact));CHKERRQ(ierr);
   }
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIBAIJ",
@@ -2698,7 +2698,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
   if (extra_rows == bs) extra_rows = 0;
   else                  Mbs++;
   if (extra_rows && !rank) {
-    PetscLogInfo(0,"MatLoad_MPIBAIJ:Padding loaded matrix to match blocksize\n");
+    ierr = PetscLogInfo((0,"MatLoad_MPIBAIJ:Padding loaded matrix to match blocksize\n"));CHKERRQ(ierr);
   }
 
   /* determine ownership of all rows */

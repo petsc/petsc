@@ -45,7 +45,7 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],PetscM
   ierr = PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_COOKIE,0,"MatlabEngine",comm,PetscMatlabEngineDestroy,0);CHKERRQ(ierr);
 
   if (!machine) machine = "\0";
-  PetscLogInfo(0,"PetscMatlabEngineCreate:Starting Matlab engine on %s\n",machine);
+  ierr = PetscLogInfo((0,"PetscMatlabEngineCreate:Starting Matlab engine on %s\n",machine));CHKERRQ(ierr);
   e->ep = engOpen(machine);
   if (!e->ep) SETERRQ1(PETSC_ERR_LIB,"Unable to start Matlab engine on %s\n",machine);
   engOutputBuffer(e->ep,e->buffer,1024);
@@ -54,7 +54,7 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],PetscM
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   sprintf(buffer,"MPI_Comm_rank = %d; MPI_Comm_size = %d;\n",rank,size);
   engEvalString(e->ep, buffer);
-  PetscLogInfo(0,"PetscMatlabEngineCreate:Started Matlab engine on %s\n",machine);
+  ierr = PetscLogInfo((0,"PetscMatlabEngineCreate:Started Matlab engine on %s\n",machine));CHKERRQ(ierr);
   
   *mengine = e;
   PetscFunctionReturn(0);
@@ -117,7 +117,7 @@ PetscErrorCode PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char st
   va_end(Argp);
   ierr = PetscStrcat(buffer,",flops");
 
-  PetscLogInfo(0,"PetscMatlabEngineEvaluate:Evaluating Matlab string: %s\n",buffer);
+  ierr = PetscLogInfo((0,"PetscMatlabEngineEvaluate:Evaluating Matlab string: %s\n",buffer));CHKERRQ(ierr);
   engEvalString(mengine->ep, buffer);
 
   /* 
@@ -146,7 +146,7 @@ PetscErrorCode PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char st
   len -= 14;
   mengine->buffer[len] = 0;
 
-  PetscLogInfo(0,"PetscMatlabEngineEvaluate:Done evaluating Matlab string: %s\n",buffer);
+  ierr = PetscLogInfo((0,"PetscMatlabEngineEvaluate:Done evaluating Matlab string: %s\n",buffer));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -232,9 +232,9 @@ PetscErrorCode PetscMatlabEnginePut(PetscMatlabEngine mengine,PetscObject obj)
   if (!put) {
     SETERRQ1(PETSC_ERR_SUP,"Object %s cannot be put into Matlab engine",obj->class_name);
   }
-  PetscLogInfo(0,"PetscMatlabEnginePut:Putting Matlab object\n");
+  ierr = PetscLogInfo((0,"PetscMatlabEnginePut:Putting Matlab object\n"));CHKERRQ(ierr);
   ierr = (*put)(obj,mengine->ep);CHKERRQ(ierr);
-  PetscLogInfo(0,"PetscMatlabEnginePut:Put Matlab object: %s\n",obj->name);
+  ierr = PetscLogInfo((0,"PetscMatlabEnginePut:Put Matlab object: %s\n",obj->name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -267,9 +267,9 @@ PetscErrorCode PetscMatlabEngineGet(PetscMatlabEngine mengine,PetscObject obj)
   if (!get) {
     SETERRQ1(PETSC_ERR_SUP,"Object %s cannot be gotten from Matlab engine",obj->class_name);
   }
-  PetscLogInfo(0,"PetscMatlabEngineGet:Getting Matlab object\n");
+  ierr = PetscLogInfo((0,"PetscMatlabEngineGet:Getting Matlab object\n"));CHKERRQ(ierr);
   ierr = (*get)(obj,mengine->ep);CHKERRQ(ierr);
-  PetscLogInfo(0,"PetscMatlabEngineGet:Got Matlab object: %s\n",obj->name);
+  ierr = PetscLogInfo((0,"PetscMatlabEngineGet:Got Matlab object: %s\n",obj->name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -359,7 +359,7 @@ PetscErrorCode PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,P
   mxArray *mat;
   
   PetscFunctionBegin;  
-  PetscLogInfo(0,"PetscMatlabEnginePutArray:Putting Matlab array %s\n",name);
+  ierr = PetscLogInfo((0,"PetscMatlabEnginePutArray:Putting Matlab array %s\n",name));CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   mat  = mxCreateDoubleMatrix(m,n,mxREAL);
 #else
@@ -368,7 +368,7 @@ PetscErrorCode PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,P
   ierr = PetscMemcpy(mxGetPr(mat),array,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   engPutVariable(mengine->ep,name,mat);
 
-  PetscLogInfo(0,"PetscMatlabEnginePutArray:Put Matlab array %s\n",name);
+  ierr = PetscLogInfo((0,"PetscMatlabEnginePutArray:Put Matlab array %s\n",name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -397,11 +397,11 @@ PetscErrorCode PetscMatlabEngineGetArray(PetscMatlabEngine mengine,int m,int n,P
   mxArray *mat;
   
   PetscFunctionBegin;  
-  PetscLogInfo(0,"PetscMatlabEngineGetArray:Getting Matlab array %s\n",name);
+  ierr = PetscLogInfo((0,"PetscMatlabEngineGetArray:Getting Matlab array %s\n",name));CHKERRQ(ierr);
   mat  = engGetVariable(mengine->ep,name);
   if (!mat) SETERRQ1(PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
   ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(PetscScalar));CHKERRQ(ierr);
-  PetscLogInfo(0,"PetscMatlabEngineGetArray:Got Matlab array %s\n",name);
+  ierr = PetscLogInfo((0,"PetscMatlabEngineGetArray:Got Matlab array %s\n",name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

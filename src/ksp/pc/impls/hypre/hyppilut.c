@@ -469,7 +469,7 @@ static PetscErrorCode PCApplyRichardson_BoomerAMG(PC pc,Vec b,Vec y,Vec w,PetscR
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscLogInfo(pc,"PCApplyRichardson_hypre_BoomerAMG: Warning, convergence critera ignored, using %D iterations\n",its);
+  ierr = PetscLogInfo((pc,"PCApplyRichardson_hypre_BoomerAMG: Warning, convergence critera ignored, using %D iterations\n",its));CHKERRQ(ierr);
   ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,its);CHKERRQ(ierr);
   ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,rtol);CHKERRQ(ierr);
   jac->applyrichardson = PETSC_TRUE;

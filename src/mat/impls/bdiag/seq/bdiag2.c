@@ -46,10 +46,10 @@ PetscErrorCode MatSetValues_SeqBDiag_1(Mat A,PetscInt m,const PetscInt im[],Pets
 #else
           if (a->user_alloc && PetscRealPart(value) || PetscImaginaryPart(value)) {
 #endif
-            PetscLogInfo(A,"MatSetValues_SeqBDiag:Nonzero in diagonal %D that user did not allocate\n",ldiag);
+            ierr = PetscLogInfo((A,"MatSetValues_SeqBDiag:Nonzero in diagonal %D that user did not allocate\n",ldiag));CHKERRQ(ierr);
           }
         } else {
-          PetscLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %D\n",ldiag);
+          ierr = PetscLogInfo((A,"MatSetValues_SeqBDiag: Allocating new diagonal: %D\n",ldiag));CHKERRQ(ierr);
           a->reallocs++;
           /* free old bdiag storage info and reallocate */
           ierr      = PetscMalloc(2*(a->nd+1)*sizeof(PetscInt),&diag_new);CHKERRQ(ierr);
@@ -135,10 +135,10 @@ PetscErrorCode MatSetValues_SeqBDiag_N(Mat A,PetscInt m,const PetscInt im[],Pets
 #else
           if (a->user_alloc && PetscRealPart(value) || PetscImaginaryPart(value)) {
 #endif
-            PetscLogInfo(A,"MatSetValues_SeqBDiag:Nonzero in diagonal %D that user did not allocate\n",ldiag);
+            ierr = PetscLogInfo((A,"MatSetValues_SeqBDiag:Nonzero in diagonal %D that user did not allocate\n",ldiag));CHKERRQ(ierr);
           }
         } else {
-          PetscLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %D\n",ldiag);
+          ierr = PetscLogInfo((A,"MatSetValues_SeqBDiag: Allocating new diagonal: %D\n",ldiag));CHKERRQ(ierr);
           a->reallocs++;
           /* free old bdiag storage info and reallocate */
           ierr      = PetscMalloc(2*(a->nd+1)*sizeof(PetscInt),&diag_new);CHKERRQ(ierr);

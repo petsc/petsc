@@ -1051,12 +1051,12 @@ PetscErrorCode DASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,MPI
     for (i=0; i<csize; i++) {
       groupies[i] = (rank/csize)*csize + i;
     }
-    ierr     = MPI_Group_incl(entire_group,csize,groupies,&sub_group);CHKERRQ(ierr);
-    ierr     = PetscFree(groupies);CHKERRQ(ierr);
-    ierr     = MPI_Comm_create(comm,sub_group,outcomm);CHKERRQ(ierr);
-    ierr     = MPI_Group_free(&entire_group);CHKERRQ(ierr);
-    ierr     = MPI_Group_free(&sub_group);CHKERRQ(ierr);
-    PetscLogInfo(0,"DASplitComm2d:Creating redundant coarse problems of size %d\n",csize);
+    ierr = MPI_Group_incl(entire_group,csize,groupies,&sub_group);CHKERRQ(ierr);
+    ierr = PetscFree(groupies);CHKERRQ(ierr);
+    ierr = MPI_Comm_create(comm,sub_group,outcomm);CHKERRQ(ierr);
+    ierr = MPI_Group_free(&entire_group);CHKERRQ(ierr);
+    ierr = MPI_Group_free(&sub_group);CHKERRQ(ierr);
+    ierr = PetscLogInfo((0,"DASplitComm2d:Creating redundant coarse problems of size %d\n",csize));CHKERRQ(ierr);
   } else {
     *outcomm = comm;
   }
