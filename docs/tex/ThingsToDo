@@ -7,7 +7,13 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-  - make a basic member function like viewpublic and destroypublic for object validation
+  - make        You could just stick it into the default behavior for
+VecGetLocalRepresentation(). I am not sure what it is now, but
+if it returned the vector itself for a sequential vector, and a
+vector of the local size for an unghosted vector then I could use
+it in every case. What do you think?
+
+  -  a basic member function like viewpublic and destroypublic for object validation
 
   - add MAT_ZERO_ROWS_LEAVE_LOCATIONS option to keep the locations but zeroed
     for AIJ and BAIJ matrices.
