@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa4.c,v 1.2 1997/06/10 04:06:56 bsmith Exp balay $";
+static char vcid[] = "$Id: dgefa4.c,v 1.3 1997/07/09 20:55:07 balay Exp balay $";
 #endif
 /*
     Inverts 4 by 4 matrix using partial pivoting.
@@ -117,7 +117,8 @@ int Kernel_A_gets_inverse_A_4(Scalar *a)
 	kp1 = k + 1;
         aa  = a + k3;
 	for (i = kp1; i <= 4; ++i) {
-	    work[i] = aa[i];
+            work_l[i-1] = aa[i];
+            /* work[i] = aa[i]; Fix for -O3 error on Origin 2000 */ 
 	    aa[i]   = 0.0;
 	}
 	for (j = kp1; j <= 4; ++j) {
