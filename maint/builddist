@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.70 1999/05/14 16:29:16 bsmith Exp balay $ 
+# $Id: builddist,v 1.71 1999/06/02 20:00:40 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -38,10 +38,10 @@ make ACTION=clean tree
 #/bin/rm -f ~/petsc
 #
 cd /home/bsmith
-tar cFFXf /home/bsmith/petsc/maint/xclude $tmpdir/petsc.tar petsc
+/bin/tar cFFXf /home/bsmith/petsc/maint/xclude $tmpdir/petsc.tar petsc
 #
 cd $tmpdir
-tar xf $tmpdir/petsc.tar
+/bin/tar xf $tmpdir/petsc.tar
 #
 # Before Creating the tarfile, make changes to the bmakefiles/makefiles,
 # create tagfiles etc. permissions etc.
@@ -93,7 +93,7 @@ if ($#argv == 1) then
 endif
 
 
-tar cf $tmpdir/petsc$version.tar petsc$version
+/bin/tar cf $tmpdir/petsc$version.tar petsc$version
 /bin/rm -r -f $tmpdir/petsc$version
 gzip -f $tmpdir/petsc$version.tar
 /bin/cp $tmpdir/petsc$version.tar.gz ~/
