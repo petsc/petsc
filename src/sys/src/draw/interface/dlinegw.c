@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dlinegw.c,v 1.8 1997/01/06 20:26:34 balay Exp bsmith $";
+static char vcid[] = "$Id: dlinegw.c,v 1.9 1997/02/22 02:27:05 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -19,6 +19,8 @@ static char vcid[] = "$Id: dlinegw.c,v 1.8 1997/01/06 20:26:34 balay Exp bsmith 
    Output Parameter:
 .  width - the width in user coordinates
 
+   Notes: Not currently implemented.
+
 .keywords:  draw, line, get, width
 
 .seealso:  DrawLineSetWidth()
@@ -27,6 +29,7 @@ int DrawLineGetWidth(Draw draw,double *width)
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (draw->type == DRAW_NULLWINDOW) return 0;
+  if (!draw->ops.linegetwidth) SETERRQ(PETSC_ERR_SUP,1,0);
   return (*draw->ops.linegetwidth)(draw,width);
 }
 
