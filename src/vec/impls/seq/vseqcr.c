@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vseqcr.c,v 1.2 1999/01/12 23:13:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: vseqcr.c,v 1.3 1999/03/07 14:14:35 curfman Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: vseqcr.c,v 1.2 1999/01/12 23:13:22 bsmith Exp curfman
    Collective on MPI_Comm
 
    Input Parameter:
-+  comm - the communicator, should be PETSC_COMM_SELF
++  comm - the communicator
 -  n - the vector length 
 
    Output Parameter:
