@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.51 1999/03/01 04:52:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.52 1999/03/01 19:25:15 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -23,6 +23,7 @@ extern int XiUniformHues(Draw_X *,int);
 extern int Xi_wait_map( Draw_X*);
 extern int XiInitColors(Draw_X*,Colormap);
 extern int XiFontFixed(Draw_X*,int,int,XiFont** );
+extern int XiInitCmap(Draw_X*);
 
 /*
   XiOpenDisplay - Open a display
@@ -55,6 +56,14 @@ int XiSetVisual(Draw_X* XiWin,Colormap colormap)
   PetscFunctionBegin;
 
 
+  /*
+       As a test due to problems on SGI reported in petsc-maint 1534 change
+    to always use default visual
+  */
+  XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
+  XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
+
+
   /* this is slow */
   ierr = OptionsHasName(PETSC_NULL,"-draw_x_shared_colormap",&flag); CHKERRQ(ierr);
   /*
@@ -68,12 +77,6 @@ int XiSetVisual(Draw_X* XiWin,Colormap colormap)
     flag = 1;
   }
 
-  /*
-       As a test due to problems on SGI reported in petsc-maint 1534 change
-    to always use default visual
-  */
-  XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
-  XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
   if (colormap) {
     XiWin->cmap = colormap;
   } else if (flag) XiWin->cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
@@ -87,8 +90,10 @@ int XiSetVisual(Draw_X* XiWin,Colormap colormap)
   }
   PLogInfo(0,"XiSetVisual:Always opening default visual X window\n");
 
+  XiWin->numcolors = 1 << DefaultDepth( XiWin->disp, XiWin->screen );
+
   /* reset the number of colors from info on the display, the colormap */
-  ierr = XiInitColors( XiWin, XiWin->cmap);CHKERRQ(ierr);
+  ierr = XiInitCmap( XiWin);CHKERRQ(ierr);
   ierr = XiUniformHues(XiWin,256-DRAW_BASIC_COLORS); CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
