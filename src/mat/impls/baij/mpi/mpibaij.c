@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.87 1997/11/03 04:46:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.88 1997/11/05 22:32:26 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -536,7 +536,7 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscFree(starts); PetscFree(nprocs);
 
   /* Free cache space */
-  PLogInfo(mat,"MatAssemblyBegin_MPIBAIJ:Number of off-processor values %d\n",baij->stash.n);
+  PLogInfo(0,"[%d]MatAssemblyBegin_MPIBAIJ:Number of off-processor values %d\n",rank,baij->stash.n);
   ierr = StashDestroy_Private(&baij->stash); CHKERRQ(ierr);
 
   baij->svalues    = svalues;    baij->rvalues    = rvalues;
