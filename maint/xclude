@@ -14,6 +14,8 @@ petsc/include/finclude/generateincludes
 petsc/include/finclude/RCS
 petsc/src/contrib/RCS
 petsc/src/contrib/ysmp
+petsc/src/contrib/pfull
+petsc/src/contrib/venkat
 petsc/src/dfvec/RCS
 petsc/src/dfvec/interface/RCS
 petsc/src/dfvec/impls/RCS
