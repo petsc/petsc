@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.18 1999/01/31 16:08:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: composite.c,v 1.19 1999/01/31 21:45:16 curfman Exp balay $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -381,6 +381,7 @@ int PCCompositeAddPC(PC pc,PCType type)
    Level: Developer
 
 .keywords: PC, get, composite preconditioner, sub preconditioner
+
 .seealso: PCCompositeAddPC()
 @*/
 int PCCompositeGetPC(PC pc,int n,PC *subpc)
@@ -462,6 +463,7 @@ int PCCreate_Composite(PC pc)
   jac->type              = PC_COMPOSITE_ADDITIVE;
   jac->work1             = 0;
   jac->work2             = 0;
+  jac->head              = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetType_C","PCCompositeSetType_Composite",
                     (void*)PCCompositeSetType_Composite);CHKERRQ(ierr);

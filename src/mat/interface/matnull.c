@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcnull.c,v 1.20 1999/01/31 16:08:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcnull.c,v 1.21 1999/01/31 21:14:38 curfman Exp balay $";
 #endif
 /*
     Routines to project vectors out of null spaces.
@@ -32,6 +32,7 @@ static char vcid[] = "$Id: pcnull.c,v 1.20 1999/01/31 16:08:03 bsmith Exp curfma
    Level: advanced
 
 .keywords: PC, null space, create
+
 .seealso: PCNullSpaceDestroy(), PCNullSpaceRemove()
 @*/
 int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace *SP)
@@ -65,6 +66,7 @@ int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace 
    Level: advanced
 
 .keywords: PC, null space, destroy
+
 .seealso: PCNullSpaceDestroy(), PCNullSpaceRemove()
 @*/
 int PCNullSpaceDestroy(PCNullSpace sp)
@@ -89,6 +91,7 @@ int PCNullSpaceDestroy(PCNullSpace sp)
    Level: advanced
 
 .keywords: PC, null space, remove
+
 .seealso: PCNullSpaceCreate(), PCNullSpaceDestroy()
 @*/
 int PCNullSpaceRemove(PCNullSpace sp,Vec vec)
