@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.19 1999/11/24 21:27:42 balay Exp $"
+"$Id: petscconf.h,v 1.1 2000/07/12 22:52:01 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -24,6 +24,9 @@
 #define PETSC_HAVE_SYS_TIME_H
 #define PETSC_HAVE_UNISTD_H 
 #define PETSC_HAVE_UNAME
+
+#define PETSC_HAVE_NONSTANDARD_COMPLEX_H "complex"
+#define PETSC_HAVE_TEMPLATED_COMPLEX
 
 #define PETSC_HAVE_READLINK
 #define PETSC_HAVE_MEMMOVE
