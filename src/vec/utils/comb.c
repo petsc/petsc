@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.6 1999/02/19 19:08:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: comb.c,v 1.7 1999/02/19 19:45:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -84,7 +84,7 @@ MPI_Op VecSplitReduction_Op = 0;
 void VecSplitReduction_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype)
 {
   Scalar *xin = (Scalar *)in, *xout = (Scalar *) out;
-  int    i,ierr, count = *cnt;
+  int    i, count = *cnt;
 
   if (*datatype != MPI_DOUBLE) {
     (*PetscErrorPrintf)("Can only handle MPI_DOUBLE data types");
@@ -247,6 +247,8 @@ int Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
         PETSc vector, creates if it does not exit.
 
 */
+#undef __FUNC__
+#define __FUNC__ "VecSplitReductionGet"
 int VecSplitReductionGet(Vec x,VecSplitReduction **sr)
 {
   MPI_Comm comm;
@@ -280,6 +282,8 @@ int VecSplitReductionGet(Vec x,VecSplitReduction **sr)
 
 /* ----------------------------------------------------------------------------------------------------*/
 
+#undef __FUNC__
+#define __FUNC__ "VecDotBegin"
 /*@
      VecDotBegin - Starts a split phase dot product
 
@@ -291,7 +295,7 @@ int VecSplitReductionGet(Vec x,VecSplitReduction **sr)
    Level: advanced
 
 seealso: VecDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
-         VecDotBegin(), VecDotEnd()
+         VecDotBegin(), VecDotEnd(), VecTDotBegin(), VecTDotEnd()
 
 @*/
 int VecDotBegin(Vec x, Vec y,Scalar *result) 
@@ -316,6 +320,8 @@ int VecDotBegin(Vec x, Vec y,Scalar *result)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__
+#define __FUNC__ "VecDotEnd"
 /*@
      VecDotEnd - Ends a split phase dot product
 
@@ -327,7 +333,7 @@ int VecDotBegin(Vec x, Vec y,Scalar *result)
    Level: advanced
 
 seealso: VecDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
-         VecDotBegin(), VecDotEnd()
+         VecDotBegin(), VecDotEnd(), VecTDotBegin(), VecTDotEnd()
 
 @*/
 int VecDotEnd(Vec x, Vec y,Scalar *result) 
@@ -365,8 +371,77 @@ int VecDotEnd(Vec x, Vec y,Scalar *result)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__
+#define __FUNC__ "VecTDotBegin"
+/*@
+     VecTDotBegin - Starts a split phase transpose dot product
+
+  Input Parameters:
++   x - the first vector
+.   y - the second vector
+-   result - where the result will go (can be PETSC_NULL)
+
+   Level: advanced
+
+seealso: VecTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+         VecDotBegin(), VecDotEnd(), VecDotBegin(), VecDotEnd()
+
+@*/
+int VecTDotBegin(Vec x, Vec y,Scalar *result) 
+{
+  int               ierr;
+  VecSplitReduction *sr;
+
+  PetscFunctionBegin;
+  ierr = VecSplitReductionGet(x,&sr);CHKERRQ(ierr);
+  if (sr->state == STATE_END) {
+    SETERRQ(1,1,"Called before all VecxxxEnd() called");
+  }
+  if (sr->numopsbegin >= sr->maxops) {
+    ierr = VecSplitReductionExtend(sr);CHKERRQ(ierr);
+  }
+  sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
+  sr->invecs[sr->numopsbegin]     = x;
+  if (!x->ops->tdot_local) SETERRQ(1,1,"Vector does not suppport local dots");
+  PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);
+  ierr = (*x->ops->dot_local)(x,y,sr->lvalues+sr->numopsbegin++);CHKERRQ(ierr);
+  PLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "VecTDotEnd"
+/*@
+     VecTDotEnd - Ends a split phase transpose dot product
+
+  Input Parameters:
++   x - the first vector (can be PETSC_NULL)
+.   y - the second vector (can be PETSC_NULL)
+-   result - where the result will go
+
+   Level: advanced
+
+seealso: VecTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+         VecDotBegin(), VecDotEnd(), VecDotBegin(), VecDotEnd()
+
+@*/
+int VecTDotEnd(Vec x, Vec y,Scalar *result) 
+{
+  int               ierr;
+  VecSplitReduction *sr;
+
+  PetscFunctionBegin;
+  /*
+      TDotEnd() is the same as DotEnd() so reuse the code
+  */
+  ierr = VecDotEnd(x,y,result);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------*/
 
+#undef __FUNC__
+#define __FUNC__ "VecNormBegin"
 /*@
      VecNormBegin - Starts a split phase norm
 
@@ -412,6 +487,8 @@ int VecNormBegin(Vec x, NormType ntype, double *result)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__
+#define __FUNC__ "VecNormBegin"
 /*@
      VecNormEnd - Ends a split phase norm
 
