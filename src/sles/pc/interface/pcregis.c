@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcregis.c,v 1.46 1998/10/19 22:17:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcregis.c,v 1.47 1999/01/13 23:41:39 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -17,7 +17,6 @@ extern int PCCreate_MG(PC);
 extern int PCCreate_Eisenstat(PC);
 extern int PCCreate_ICC(PC);
 extern int PCCreate_ASM(PC);
-extern int PCCreate_BGS(PC);
 extern int PCCreate_SLES(PC);
 extern int PCCreate_Composite(PC);
 EXTERN_C_END
@@ -56,7 +55,6 @@ int PCRegisterAll(char *path)
   ierr = PCRegister(PCILU          ,path,"PCCreate_ILU",PCCreate_ILU);CHKERRQ(ierr);
   ierr = PCRegister(PCICC          ,path,"PCCreate_ICC",PCCreate_ICC);CHKERRQ(ierr);
   ierr = PCRegister(PCASM          ,path,"PCCreate_ASM",PCCreate_ASM);CHKERRQ(ierr);
-  ierr = PCRegister(PCBGS          ,path,"PCCreate_BGS",PCCreate_BGS);CHKERRQ(ierr);
   ierr = PCRegister(PCSLES         ,path,"PCCreate_SLES",PCCreate_SLES);CHKERRQ(ierr);
   ierr = PCRegister(PCCOMPOSITE    ,path,"PCCreate_Composite",PCCreate_Composite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
