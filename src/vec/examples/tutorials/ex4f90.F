@@ -1,8 +1,8 @@
 
-C      "$Id: ex4f90.F,v 1.1 1997/01/16 04:14:41 bsmith Exp bsmith $";
+C      "$Id: ex4f90.F,v 1.2 1997/01/22 18:41:37 bsmith Exp bsmith $";
 
 C  Description:  Illustrates the use of VecSetValues() to set
-C  multiple values at once; demonstrates VecGetArray().
+C  multiple values at once; demonstrates VecGetArrayF90().
 C
 C/*T
 C   Concepts: Vectors^Assembling vectors; Using vector arrays;
@@ -77,7 +77,7 @@ C  View vector
        call VecCopy(x,y,ierr)
 
 C  Get a pointer to vector data.
-C    - For default PETSc vectors, VecGetArray() returns a pointer to
+C    - For default PETSc vectors, VecGetArrayF90() returns a pointer to
 C      the data array.  Otherwise, the routine is implementation dependent.
 C    - You MUST call VecRestoreArray() when you no longer need access to
 C      the array.
