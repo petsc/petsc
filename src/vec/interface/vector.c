@@ -1648,43 +1648,47 @@ int VecAssemblyEnd(Vec vec)
     ierr = (*vec->ops->assemblyend)(vec);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(vec->prefix,"-vec_view",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_matlab",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(vec->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_draw",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(vec->comm,vec->prefix,"Vector Options","Vec");CHKERRQ(ierr);
+    ierr = PetscOptionsName("-vec_view","Print vector to stdout","VecView",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsName("-vec_view_matlab","Print vector to stdout in a format Matlab can read","VecView",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(vec->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+      ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsName("-vec_view_socket","Send vector to socket (can be read from matlab)","VecView",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = VecView(vec,PETSC_VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);
+      ierr = PetscViewerFlush(PETSC_VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsName("-vec_view_binary","Save vector to file in binary format","VecView",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = VecView(vec,PETSC_VIEWER_BINARY_(vec->comm));CHKERRQ(ierr);
+      ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(vec->comm));CHKERRQ(ierr);
+    }
+#if defined(PETSC_HAVE_AMS)
+    ierr = PetscOptionsName("-vec_view_ams","View vector using AMS","VecView",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = VecView(vec,PETSC_VIEWER_AMS_(vec->comm));CHKERRQ(ierr);
+    }
+#endif
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  /* These invoke PetscDrawGetDraw which invokes PetscOptionsBegin/End, */
+  /* hence they should not be inside the above PetscOptionsBegin/End block. */
+  ierr = PetscOptionsHasName(vec->prefix,"-vec_view_draw",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = VecView(vec,PETSC_VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
     ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_draw_lg",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(vec->prefix,"-vec_view_draw_lg",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerSetFormat(PETSC_VIEWER_DRAW_(vec->comm),PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
     ierr = VecView(vec,PETSC_VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
     ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_socket",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = VecView(vec,PETSC_VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_binary",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = VecView(vec,PETSC_VIEWER_BINARY_(vec->comm));CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(vec->comm));CHKERRQ(ierr);
-  }
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_ams",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = VecView(vec,PETSC_VIEWER_AMS_(vec->comm));CHKERRQ(ierr);
-  }
-#endif
   vec->normvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
