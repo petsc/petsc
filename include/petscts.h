@@ -96,13 +96,13 @@ extern int TSSetRhsBC(TS, int (*)(TS, Vec, void *));
 extern int TSSetSystemMatrixBC(TS, int (*)(TS, Mat, Mat, void *));
 extern int TSSetSolutionBC(TS, int (*)(TS, Vec, void *));
 extern int TSSetPreStep(TS, int (*)(TS));
-extern int TSSetUpdate(TS, int (*)(TS, double, double *));
+extern int TSSetUpdate(TS, int (*)(TS, PetscReal, PetscReal *));
 extern int TSSetPostStep(TS, int (*)(TS));
 extern int TSDefaultRhsBC(TS, Vec, void *);
 extern int TSDefaultSystemMatrixBC(TS, Mat, Mat, void *);
 extern int TSDefaultSolutionBC(TS, Vec, void *);
 extern int TSDefaultPreStep(TS);
-extern int TSDefaultUpdate(TS, double, double *);
+extern int TSDefaultUpdate(TS, PetscReal, PetscReal *);
 extern int TSDefaultPostStep(TS);
 extern int TSSetIdentity(TS, int (*)(TS, double, Mat *, void *));
 
