@@ -12,13 +12,19 @@
 # usage: examplesindex.tcl                     #
 #                                              #
 # options:                                     #
-#    -www: also update the wwwmanpages         #
-#          with links to examples              #
+#    -www    : also update the wwwmanpages     #
+#              with links to examples          #
+#    -wwwhome: update the wwwmanpages with     #
+#              links to examples at petsc ftp  #
+#              site. These man pages can be    #
+#              placed at petsc home page       #
 #                                              #
 # purpose: To get cute tables which contain    #
 # information like Concept:XXX is demonstrated #
 # in ex1, ex2, ex3 etc..                       #
 #                                              #
+# NOTE: -wwwhome => -www.                      #
+#       Use either one or none                 #
 ################################################
 
 
@@ -241,11 +247,9 @@ proc write_access_tables { } {
 
 
 proc write_concepts_file { } {
-    global concepts  ConceptsFile Concepts Routines Processors Comment PETSC_DIR files html
-    global sub
+    global concepts  ConceptsFile Concepts Routines Processors 
+    global sub Comment PETSC_DIR files html
 
-    set PETSC_DIR ../..
-#    set PETSC_DIR ftp://info.mcs.anl.gov/pub/petsc/petsc
     exec /bin/rm -f docs/www/concepts.html
     set concepts_file [ open docs/www/concepts.html w ]
 
@@ -328,8 +332,6 @@ proc write_routines_file { } {
     global concepts  ConceptsFile Concepts routines Routines RoutinesFile 
     global Processors Comment PETSC_DIR files html
     
-    set PETSC_DIR ../..
-#    set PETSC_DIR ftp://info.mcs.anl.gov/pub/petsc/petsc
     exec /bin/rm -f docs/www/routines.html
     set routines_file [ open docs/www/routines.html w ]
 
@@ -394,15 +396,26 @@ proc write_routines_file { } {
 ####               main()                    #####    
 ##################################################
 # Initialise some global datastructures
-# change dir to PETSC_DIR
+# change dir to PETSC_HOME [/home/bsmith/petsc]
 proc main { }  {
     global  concepts ConceptsFile Concepts 
     global routines Routines RoutinesFile 
     global Processors Comment PETSC_DIR files html
     global sub argc argv
 
-    set PETSC_DIR /home/bsmith/petsc
-    cd $PETSC_DIR
+    set PETSC_HOME /home/bsmith/petsc
+    cd $PETSC_HOME
+
+    # Process the command line arguments
+    # Do the brute force way
+    set UPDATE_WWW false
+    if { $argc == 1  && ([lindex $argv 0 ] == "-www" || [lindex $argv 0 ] == "-wwwhome") } {
+        set UPDATE_WWW true
+    }
+    set PETSC_DIR ../../..
+    if { $argc == 1  &&  [lindex $argv 0 ] == "-wwwhome" } {
+        set PETSC_DIR ftp://info.mcs.anl.gov/pub/petsc/petsc
+    }   
     
     # All the tutorial files containg formated comments
     set files [ glob src/*/examples/{,tutorials}/{*.f,*.F,*.c} src/*/examples/tutorials/umin/{*.F,*.c}]
@@ -484,7 +497,7 @@ proc main { }  {
     # Modify the filename and make it hypertext 
     # Just a temporary test.. Must take it away....
     foreach filename $files {
-        set tmp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $filename ]
+        set tmp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_HOME $filename $filename ]
         set html($filename) $tmp
     }
     
@@ -495,14 +508,13 @@ proc main { }  {
     write_concepts_file
     write_routines_file
 
-    if { $argc == 0  || [lindex $argv 0 ] != "-www" } {
+    if { $UPDATE_WWW == "false" } {
         puts "returning early.. not updating wwwmanpages pages."
-    return 0
+        return 0
     }
+    puts  "$PETSC_DIR"
     # Update wwwmanpages
     puts  "updating wwwmanpages pages."
-    set PETSC_DIR ../../..
-#    set PETSC_DIR ftp://info.mcs.anl.gov/pub/petsc/petsc
 
     foreach routine $routines {
         set n [ llength $RoutinesFile($routine)  ]
