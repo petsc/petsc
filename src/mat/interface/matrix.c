@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.162 1996/04/02 04:24:50 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.163 1996/04/05 19:14:03 curfman Exp curfman $";
 #endif
 
 /*
@@ -1051,9 +1051,10 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
 
    Input Parameters:
 .  mat - the matrix
-
-   Output Parameters:
 .  v - the vector for storing the diagonal
+
+   Output Parameter:
+.  v - the diagonal of the matrix
 
 .keywords: matrix, get, diagonal
 @*/
@@ -1068,7 +1069,7 @@ int MatGetDiagonal(Mat mat,Vec v)
 /*@C
    MatTranspose - Computes an in-place or out-of-place transpose of a matrix.
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the matrix to transpose
 
    Output Parameters:
@@ -1113,10 +1114,10 @@ int MatEqual(Mat mat1,Mat mat2,PetscTruth *flg)
 
    Input Parameters:
 .  mat - the matrix to be scaled
-.  l - the left scaling vector
-.  r - the right scaling vector
+.  l - the left scaling vector (or PETSC_NULL)
+.  r - the right scaling vector (or PETSC_NULL)
 
-.keywords: matrix, scale
+.keywords: matrix, diagonal, scale
 
 .seealso: MatDiagonalScale()
 @*/
