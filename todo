@@ -14,9 +14,6 @@ PETSc configure
    Download sowing (take code from fortranStubs.py) for build docs if 
    requested with --with-sowing-if-needed
 
-Matrices
-   Add MatIncreaseOverlap() code for mpi sbaij matrices
-
 Vectors
    Move VecGet/RestoreArrayFast() -> VecGet/RestoreArray(), VecGetArray() -> Private
    and top part of Vec object to petscvec.h
