@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.159 1996/08/06 16:51:19 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.160 1996/08/08 14:42:52 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -521,6 +521,8 @@ static int MatGetDiagonal_MPIAIJ(Mat A,Vec v)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   if (a->M != a->N) 
     SETERRQ(1,"MatGetDiagonal_MPIAIJ:Supports only square matrix where A->A is diag block");
+  if (a->rstart != a->cstart || a->rend != a->cend) {
+    SETERRQ(1,"MatGetDiagonal_MPIAIJ:row partition must equal col partition");  }
   return MatGetDiagonal(a->A,v);
 }
 

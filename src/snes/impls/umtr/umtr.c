@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.42 1996/07/15 17:55:30 balay Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.43 1996/08/08 14:46:56 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -183,7 +183,7 @@ static int SNESSetUp_UM_TR(SNES snes)
   int ierr;
 
   snes->nwork = 4;
-  ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work); CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
   PLogObjectParents(snes,snes->nwork,snes->work);
   snes->vec_sol_update_always = snes->work[3];
   return 0;
@@ -193,7 +193,10 @@ static int SNESDestroy_UM_TR(PetscObject obj )
 {
   SNES snes = (SNES) obj;
   int  ierr;
-  ierr = VecDestroyVecs(snes->work,snes->nwork); CHKERRQ(ierr);
+
+  if (snes->nwork) {
+    ierr = VecDestroyVecs(snes->work,snes->nwork); CHKERRQ(ierr);
+  }
   PetscFree(snes->data);
   return 0;
 }
@@ -348,6 +351,8 @@ int SNESCreate_UM_TR(SNES snes)
   snes->printhelp       = SNESPrintHelp_UM_TR;
   snes->setfromoptions  = SNESSetFromOptions_UM_TR;
   snes->view            = SNESView_UM_TR;
+
+  snes->nwork           = 0;
 
   neP			= PetscNew(SNES_UMTR); CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_UM_TR));

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.68 1996/04/20 04:21:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.69 1996/08/08 14:46:50 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -94,7 +94,7 @@ int SNESSetUp_EQ_LS(SNES snes )
 {
   int ierr;
   snes->nwork = 4;
-  ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work); CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
   PLogObjectParents(snes,snes->nwork,snes->work);
   snes->vec_sol_update_always = snes->work[3];
   return 0;
@@ -104,7 +104,7 @@ int SNESDestroy_EQ_LS(PetscObject obj)
 {
   SNES snes = (SNES) obj;
   int  ierr;
-  if (snes->work) {
+  if (snes->nwork) {
     ierr = VecDestroyVecs(snes->work,snes->nwork); CHKERRQ(ierr);
   }
   PetscFree(snes->data);
@@ -559,6 +559,7 @@ int SNESCreate_EQ_LS(SNES  snes )
   snes->printhelp       = SNESPrintHelp_EQ_LS;
   snes->setfromoptions  = SNESSetFromOptions_EQ_LS;
   snes->view            = SNESView_EQ_LS;
+  snes->nwork           = 0;
 
   neP			= PetscNew(SNES_LS);   CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_LS));

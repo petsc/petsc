@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.41 1996/07/21 16:21:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.42 1996/08/08 14:46:58 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -119,8 +119,9 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
 static int SNESSetUp_UM_LS(SNES snes)
 {
   int ierr;
+
   snes->nwork = 4;
-  ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work); CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
   PLogObjectParents(snes,snes->nwork,snes->work);
   snes->vec_sol_update_always = snes->work[3];
   return 0;
@@ -129,7 +130,11 @@ static int SNESSetUp_UM_LS(SNES snes)
 static int SNESDestroy_UM_LS(PetscObject obj )
 {
   SNES snes = (SNES) obj;
-  VecDestroyVecs(snes->work,snes->nwork);
+  int  ierr;
+
+  if (snes->nwork) {
+    ierr =  VecDestroyVecs(snes->work,snes->nwork); CHKERRQ(ierr);
+  }
   PetscFree(snes->data);
   return 0;
 }
@@ -515,6 +520,7 @@ int SNESCreate_UM_LS(SNES snes)
   snes->printhelp         = SNESPrintHelp_UM_LS;
   snes->view              = SNESView_UM_LS;
   snes->setfromoptions    = SNESSetFromOptions_UM_LS;
+  snes->nwork             = 0;
 
   neP			  = PetscNew(SNES_UMLS); CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_UM_LS));

@@ -35,8 +35,10 @@ extern void    free(void *);
 extern void   *malloc(long unsigned int );
 #include <sys/time.h>
 extern int    gettimeofday(struct timeval *,struct timezone *);
-extern int    abort();
 extern void   exit(int);
+/* In g++ 2.7.2 abort went from not existing to being a built in function */
+/* Gotta love Gnu! */
+/* extern int    abort(); */
 }
 
 #else

@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.30 1996/08/04 23:12:40 bsmith Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.31 1996/08/08 14:43:05 bsmith Exp bsmith $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX) && \
     !defined(__MPIROWBS_H)
@@ -45,7 +45,7 @@ typedef struct {
   Scalar      *svalues, *rvalues; /* sending and receiving data */
   int         rmax;               /* maximum message length */
   int         vecs_permscale;     /* flag indicating permuted and scaled vectors */
-  int         fact_clone;
+  int         factor;
   int         mat_is_symmetric;   /* matrix is symmetric; hence use ICC */
 
   /* BlockSolve data */
@@ -70,6 +70,7 @@ typedef struct {
   int        blocksolveassembly;/* Indicates the matrix has been assembled 
                                    for block solve */
 } Mat_MPIRowbs;
+
 
 extern int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat);
 

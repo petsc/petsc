@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.53 1996/07/03 00:06:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.54 1996/07/08 22:23:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -107,7 +107,7 @@ int main( int argc, char **argv )
   /* Set options, then solve nonlinear system */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
   ierr = FormInitialGuess1(&user,x); CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr); 
   PetscPrintf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
   /* Free data structures */

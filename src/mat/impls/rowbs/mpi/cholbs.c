@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.35 1996/08/06 23:00:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.36 1996/08/08 14:43:05 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -12,83 +12,7 @@ static char vcid[] = "$Id: cholbs.c,v 1.35 1996/08/06 23:00:49 curfman Exp bsmit
 #include "src/pc/pcimpl.h"
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 
-int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,
-                                      double f,int fill,Mat *newfact)
-{
-  /* Note:  f is not currently used in BlockSolve */
-  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
-  int          ierr;
-  PetscTruth   idn;
 
-  if (isrow) {
-    ierr = ISIdentity(isrow,&idn); CHKERRQ(ierr);
-    if (!idn) SETERRQ(1,"MatIncompleteCholeskyFactorSymbolic_MPIRowbs:Only identity row permutation supported");
-  }
-  if (!mbs->blocksolveassembly) {
-    MatSetOption(mat,MAT_SYMMETRIC);
-    ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat); CHKERRQ(ierr);
-  }
-
-  if (!mbs->mat_is_symmetric) 
-    SETERRQ(1,"MatIncompleteCholeskySymbolic_MPIRowbs:To use incomplete Cholesky \n\
-        preconditioning with MatCreateMPIRowbs() matrix you must declare it to be \n\
-        a symmetric matrix using the option MatSetOption(A,MAT_SYMMETRIC)");
-
-  /* Copy permuted matrix */
-  if (mbs->fpA) {BSfree_copy_par_mat(mbs->fpA); CHKERRBS(0);}
-  mbs->fpA = BScopy_par_mat(mbs->pA); CHKERRBS(0);
-
-  /* Set up the communication for factorization */
-  if (mbs->comm_fpA) {BSfree_comm(mbs->comm_fpA); CHKERRBS(0);}
-  mbs->comm_fpA = BSsetup_factor(mbs->fpA,mbs->procinfo); CHKERRBS(0);
-
-  mbs->fact_clone = 1;
-  /* must set to be zero for repeated calls with different nonzero structure */
-  mat->factor = 0;
-  *newfact = mat; 
-  return 0; 
-}
-
-int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,
-                                      double f,int fill,Mat *newfact)
-{
-  /* Note:  f is not currently used in BlockSolve */
-  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
-  int          ierr;
-  PetscTruth   idn;
-
-  if (isrow) {
-    ierr = ISIdentity(isrow,&idn); CHKERRQ(ierr);
-    if (!idn) SETERRQ(1,"MatILUFactorSymbolic_MPIRowbs:Only identity row permutation supported");
-  }
-  if (iscol) {
-    ierr = ISIdentity(iscol,&idn); CHKERRQ(ierr);
-    if (!idn) SETERRQ(1,"MatILUFactorSymbolic_MPIRowbs:Only identity column permutation supported");
-  }
-
-  if (!mbs->blocksolveassembly) {
-    ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat); CHKERRQ(ierr);
-  }
- 
-  if (mbs->mat_is_symmetric) 
-    SETERRQ(1,"MatILUFactorSymbolic_MPIRowbs:To use ILU preconditioner with \n\
-        MatCreateMPIRowbs() matrix you CANNOT declare it to be a symmetric matrix\n\
-        using the option MatSetOption(A,MAT_SYMMETRIC)");
-
-  /* Copy permuted matrix */
-  if (mbs->fpA) {BSfree_copy_par_mat(mbs->fpA); CHKERRBS(0);}
-  mbs->fpA = BScopy_par_mat(mbs->pA); CHKERRBS(0); 
-
-  /* Set up the communication for factorization */
-  if (mbs->comm_fpA) {BSfree_comm(mbs->comm_fpA); CHKERRBS(0);}
-  mbs->comm_fpA = BSsetup_factor(mbs->fpA,mbs->procinfo); CHKERRBS(0);
-
-  mbs->fact_clone = 1;
-  /* must set to be zero for repeated calls with different nonzero structure */
-  mat->factor = 0;
-  *newfact = mat; 
-  return 0; 
-}
 
 int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
@@ -97,12 +21,9 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 #if defined(PETSC_LOG)
   double flop1 = BSlocal_flops();
 #endif
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat != *factp) SETERRQ(1,
-    "MatCholeskyFactorNumeric_MPIRowbs:factored matrix must be same context as mat");
 
   /* Do prep work if same nonzero structure as previously factored matrix */
-  if (mat->factor == FACTOR_CHOLESKY) {
+  if (mbs->factor == FACTOR_CHOLESKY) {
     /* Copy the nonzeros */
     BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
   }
@@ -122,7 +43,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
   PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
 
-  mat->factor = FACTOR_CHOLESKY;
+  mbs->factor = FACTOR_CHOLESKY;
   return 0;
 }
 
@@ -130,12 +51,8 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat != *factp) SETERRQ(1,"MatCholeskyFactorNumeric_MPIRowbs:factored\
-                                 matrix must be same context as mat");
-
   /* Do prep work if same nonzero structure as previously factored matrix */
-  if (mat->factor == FACTOR_LU) {
+  if (mbs->factor == FACTOR_LU) {
     /* Copy the nonzeros */
     BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
   }
@@ -151,13 +68,14 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
     PLogInfo(mat,"BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
                                        mbs->failures,mbs->ierr,mbs->alpha); 
   }
-  mat->factor = FACTOR_LU;
+  mbs->factor = FACTOR_LU;
   return 0;
 }
 /* ------------------------------------------------------------------- */
 int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
-  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
+  Mat          submat = (Mat) mat->data;
+  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) submat->data;
   int          ierr;
   Scalar       *ya, *xa, *xworka;
 
@@ -206,7 +124,8 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 /* ------------------------------------------------------------------- */
 int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
-  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
+  Mat          submat = (Mat) mat->data;
+  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) submat->data;
   int          ierr;
   Scalar       *ya, *xa, *xworka;
 
@@ -243,7 +162,8 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 /* ------------------------------------------------------------------- */
 int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
-  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
+  Mat          submat = (Mat) mat->data;
+  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) submat->data;
   int          ierr;
   Scalar       *ya, *xworka;
 

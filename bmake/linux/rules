@@ -11,7 +11,7 @@ FLINKER  = f77 $(FOPTFLAGS)
 CONF     = -DHAVE_PWD_H -DHAVE_MALLOC_H -DHAVE_STRING_H -DHAVE_X11 \
            -DHAVE_FORTRAN_UNDERSCORE  -DHAVE_GETDOMAINNAME \
            -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE  -DHAVE_DRAND48 \
-           -DHAVE_UNISTD_H
+           -DHAVE_UNISTD_H -DHAVE_SYS_TIME_H
 
 SYS_LIB  = -lc
 
@@ -32,6 +32,8 @@ libf: $(OBJSF)
 	$(CC) -E  $(CFLAGS) $*.c  > $*.f
 	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(RM) $*.f $*.c
+
+
 
 
 

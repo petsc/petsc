@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.78 1996/08/08 14:46:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.79 1996/08/09 20:08:46 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1385,9 +1385,10 @@ $  -snes_type  method
 */
 int SNESGetTypeFromOptions_Private(SNES ctx,SNESType *method,int *flg)
 {
-  int ierr;
+  int  ierr;
   char sbuf[50];
-  ierr = OptionsGetString(ctx->prefix,"-snes_type", sbuf, 50, flg); CHKERRQ(ierr);
+
+  ierr = OptionsGetString(ctx->prefix,"-snes_type",sbuf,50,flg);CHKERRQ(ierr);
   if (*flg) {
     if (!__SNESList) {ierr = SNESRegisterAll(); CHKERRQ(ierr);}
     *method = (SNESType)NRFindID( __SNESList, sbuf );

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.15 1996/06/08 21:10:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.16 1996/08/04 23:12:40 bsmith Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -37,6 +37,7 @@ static int PCDestroy_ICC_MPIRowbs(PetscObject obj)
   PC_ICC *icc = (PC_ICC *) pc->data;
   PCiBS  *iccbs = (PCiBS *) icc->implctx; 
   int    ierr;
+
   PetscFree(iccbs);
   ierr = MatDestroy(icc->fact); CHKERRQ(ierr);
   PetscFree(icc);

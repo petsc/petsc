@@ -31,7 +31,7 @@ SYS_LIB  =  -lV3 -lU77
 CONF     = -DHAVE_STDLIB_H -DHAVE_PWD_H -DHAVE_MALLOC_H \
            -DHAVE_STRING_H -DHAVE_X11 -D_POSIX_SOURCE \
            -DHAVE_DRAND48 -D_INCLUDE_XOPEN_SOURCE -D_INCLUDE_HPUX_SOURCE \
-           -DHAVE_GETDOMAINNAME \
+           -DHAVE_GETDOMAINNAME -DHAVE_SYS_TIME_H\
            -DUSES_V_V_V_V_TSEARCH  -DHAVE_UNISTD_H
 
 SHELL    = /bin/sh
@@ -54,3 +54,9 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
+
+
+
+
+
+
