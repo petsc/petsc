@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.27 1996/04/05 05:58:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.28 1996/08/08 14:41:22 bsmith Exp curfman $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -65,7 +65,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
   double       *history, dzero = 0.0, bsnrm;
   int          i, cerr, hist_len, maxit, ierr;
   PC           pc = ksp->B;
-  PCType       pctype;
+  PCSide       side;
 #if defined(PETSC_COMPLEX)
   Scalar       cstep1, cstep2, ctasp, cbstp, crtr, cwtasp, cptasp;
 #endif
@@ -86,9 +86,8 @@ int KSPSolve_QCG(KSP ksp,int *its)
   *its = 0;
   pcgP->info = 0;
   if (pcgP->delta <= dzero) SETERRQ(1,"KSPSolve_QCG:Input error: delta <= 0");
-  ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRQ(ierr);
-  if (pctype != PCICC && pctype != PCNONE && pctype != PCJACOBI)
-    SETERRQ(1,"KSPSolve_QCG: Currently supports only PCICC, PCNONE, PCJACOBI methods");
+  ierr = KSPGetPreconditionerSide(ksp,&side); CHKERRQ(ierr);
+  if (side != PC_SYMMETRIC) SETERRQ(1,"KSPSolve_QCG:Requires symmetric preconditioner!");
 
   /* Initialize variables */
   ierr = VecSet(&zero,W); CHKERRQ(ierr);	/* W = 0 */
