@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: f90_IRIX.c,v 1.5 1998/04/03 23:48:13 balay Exp balay $";
+static char vcid[] = "$Id: f90_IRIX.c,v 1.6 1998/04/03 23:49:30 balay Exp balay $";
 #endif
 
 /*
@@ -7,9 +7,7 @@ static char vcid[] = "$Id: f90_IRIX.c,v 1.5 1998/04/03 23:48:13 balay Exp balay 
   pointers and traditional C pointers for the NAG F90 compiler.
 */
 #if defined(HAVE_IRIXF90)
-
-#include "src/fortran/custom/zpetsc.h"
-#include "src/fortran/f90/f90_IRIX.h"
+#include "src/fortran/f90/zf90.h"
 
 /* --------------------------------------------------------*/
 /*
@@ -24,9 +22,9 @@ static char vcid[] = "$Id: f90_IRIX.c,v 1.5 1998/04/03 23:48:13 balay Exp balay 
   Output Parameters:
 .   ptr - Fortran 90 pointer
 */ 
-int PetscF90Create1dArrayScalar(void *array,int len, array1d *ptr)
+int PetscF90Create1dArrayScalar(Scalar *array,int len, array1d *ptr)
 {
-  ptr->addr          = array;
+  ptr->addr          = (void *)array;
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(Scalar)/sizeof(int);
   ptr->dim[0].lower  = 1;
@@ -44,7 +42,7 @@ int PetscF90Create1dArrayScalar(void *array,int len, array1d *ptr)
 .   array - regular C pointer (address)
 
 */ 
-int PetscF90Get1dArrayScalar(array1d *ptr,void **array)
+int PetscF90Get1dArrayScalar(array1d *ptr,Scalar **array)
 {
   *array = (void *) ptr->addr;
   return 0;
@@ -75,9 +73,9 @@ int PetscF90Destroy1dArrayScalar(array1d *ptr)
   Output Parameters:
 .   ptr - Fortran 90 pointer
 */ 
-int PetscF90Create2dArrayScalar(void *array,int m,int n, array2d *ptr)
+int PetscF90Create2dArrayScalar(Scalar *array,int m,int n, array2d *ptr)
 {
-  ptr->addr          = array;
+  ptr->addr          = (void *)array;
   ptr->dim[0].extent = m;
   ptr->dim[0].mult   = sizeof(Scalar)/sizeof(int);
   ptr->dim[0].lower  = 1;
@@ -98,7 +96,7 @@ int PetscF90Create2dArrayScalar(void *array,int m,int n, array2d *ptr)
 .   array - regular C pointer (address)
 
 */ 
-int PetscF90Get2dArrayScalar(array2d *ptr,void **array)
+int PetscF90Get2dArrayScalar(array2d *ptr,Scalar **array)
 {
   *array = (void *) ptr->addr;
   return 0;
@@ -129,9 +127,9 @@ int PetscF90Destroy2dArrayScalar(array2d *ptr)
   Output Parameters:
 .   ptr - Fortran 90 pointer
 */ 
-int PetscF90Create1dArrayInt(void *array,int len, array1d *ptr)
+int PetscF90Create1dArrayInt(int *array,int len, array1d *ptr)
 {
-  ptr->addr          = array;
+  ptr->addr          = (void *)array;
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(int)/sizeof(int);
   ptr->dim[0].lower  = 1;
@@ -149,7 +147,7 @@ int PetscF90Create1dArrayInt(void *array,int len, array1d *ptr)
 .   array - regular C pointer (address)
 
 */ 
-int PetscF90Get1dArrayInt(array1d *ptr,void **array)
+int PetscF90Get1dArrayInt(array1d *ptr,int **array)
 {
   *array = (void *) ptr->addr;
   return 0;
@@ -166,6 +164,68 @@ int PetscF90Destroy1dArrayInt(array1d *ptr)
   ptr->addr  = (void *)0;
   return 0;
 }
+/* -----------------------------------------------------------------*/
+
+/*
+    PetscF90Create1dPetscFortranAddr - Given a C pointer to a one dimensional
+  array and its length; this fills in the appropriate Fortran 90
+  pointer data structure.
+
+  Input Parameters:
+.   array - regular C pointer (address)
+.   len - length of array (in items)
+
+  Output Parameters:
+.   ptr - Fortran 90 pointer
+*/ 
+int PetscF90Create1dArrayPetscFortranAddr(PetscFortranAddr *array,int len, array1d *ptr)
+{
+  ptr->addr          = (void *)array;
+  ptr->dim[0].extent = len;
+  ptr->dim[0].mult   = sizeof(PetscFortranAddr)/sizeof(int);
+  ptr->dim[0].lower  = 1;
+  return 0;
+}
+
+/*
+    PetscF90Get1dPetscFortranAddr - Gets the address for the data 
+       stored in a Fortran pointer array.
+
+  Input Parameters:
+.   ptr - Fortran 90 pointer
+
+  Output Parameters:
+.   array - regular C pointer (address)
+
+*/ 
+int PetscF90Get1dArrayPetscFortranAddr(array1d *ptr,PetscFortranAddr **array)
+{
+  *array = (void *) ptr->addr;
+  return 0;
+}
+
+/*
+    PetscF90Destroy1dPetscFortranAddr - Deletes a Fortran pointer.
+
+  Input Parameters:
+.   ptr - Fortran 90 pointer
+*/ 
+int PetscF90Destroy1dArrayPetscFortranAddr(array1d *ptr)
+{
+  ptr->addr  = (void *)0;
+  return 0;
+}
+
+#else
+/*
+     Dummy function so that compilers won't complain about 
+  empty files.
+*/
+int F90_IRIX_Dummy(int dummy)
+{
+  return 0;
+}
+ 
 
 #endif
 

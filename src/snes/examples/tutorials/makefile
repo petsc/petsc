@@ -1,39 +1,40 @@
-# $Id: makefile,v 1.32 1998/03/24 16:42:36 balay Exp bsmith $ 
+# $Id: makefile,v 1.33 1998/04/03 23:18:11 bsmith Exp balay $ 
 
 ALL: ex1
 
-CFLAGS	        = ${CPPFLAGS} ${FCONF} -D__SDIR__='"${LOCDIR}"' 
-FFLAGS	        =	 
-SOURCEC	        = 
-SOURCEF	        =
-SOURCEH	        = 
-OBJSC	        =
-OBJSF	        =
-LIBBASE	        = libpetscsnes
-LOCDIR          = src/snes/examples/tutorials/
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
-		  ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex6.PETSc runex6 runex6_2 \
-		  ex6.rm ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc runex5\
-		  runex5_2 runex5_3 runex5_4 runex5_5 runex5_6 runex5_7 \
-                  ex5.rm ex8.PETSc runex8 runex8 ex8.rm clean 
-TESTEXAMPLES_2  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm clean
-TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm clean
-TESTEXAMPLES_8  = ex5f.PETSc runex5f runex5f_2 runex5f_3 ex5f.rm clean
-TESTEXAMPLES_9  = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm clean
-TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc\
-		  runex3 ex3.rm ex6.PETSc runex6 runex6_2 ex6.rm \
-		  ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc ex5.rm
-BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
-		  ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm clean 
-BUILDEXAMPLES_2 = ex3.PETSc ex3.rm clean
-BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm clean
-BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
-		  ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm clean
-BUILDEXAMPLES_8 = ex5f.PETSc ex5f.rm clean
-
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex5s.c ex9.c
-EXAMPLESF       = ex1f.F ex4f.F ex5f.F ex5f90.F ex5f.h  ex5fs.F
-DIRS	        = 
+CFLAGS		 = ${CPPFLAGS} ${FCONF} -D__SDIR__='"${LOCDIR}"' 
+FFLAGS		 = 
+SOURCEC		 = 
+SOURCEF		 = 
+SOURCEH		 = 
+OBJSC		 = 
+OBJSF		 = 
+LIBBASE		 = libpetscsnes
+LOCDIR		 = src/snes/examples/tutorials/
+TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
+		   ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex6.PETSc runex6 runex6_2 \
+		   ex6.rm ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc runex5\
+		   runex5_2 runex5_3 runex5_4 runex5_5 runex5_6 runex5_7 \
+                   ex5.rm ex8.PETSc runex8 runex8 ex8.rm clean 
+TESTEXAMPLES_2	 = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm clean
+TESTEXAMPLES_3	 = ex1f.PETSc runex1f ex1f.rm clean
+TESTEXAMPLES_8	 = ex5f.PETSc runex5f runex5f_2 runex5f_3 ex5f.rm clean
+TESTEXAMPLES_9	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm clean
+TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc\
+		   runex3 ex3.rm ex6.PETSc runex6 runex6_2 ex6.rm \
+		   ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc ex5.rm
+TESTEXAMPLES_12	 = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 ex5f90.rm clean
+BUILDEXAMPLES_1	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
+		   ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm clean 
+BUILDEXAMPLES_2	 = ex3.PETSc ex3.rm clean
+BUILDEXAMPLES_3	 = ex1f.PETSc ex1f.rm clean
+BUILDEXAMPLES_4	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
+		   ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm clean
+BUILDEXAMPLES_8	 = ex5f.PETSc ex5f.rm clean
+BUILDEXAMPLES_12 = ex5f90.PETSc ex5f90.rm clean
+EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex5s.c ex9.c
+EXAMPLESF	 = ex1f.F ex4f.F ex5f.F ex5f90.F ex5f.h  ex5fs.F
+DIRS		 = 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -205,7 +206,7 @@ runex5f:
 	   else echo "Possible problem with ex5f_1, diffs above"; fi; \
 	   ${RM} -f ex5f_1.tmp
 runex5f_2:
-	-@${MPIRUN} -np 4 ex5f -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor > ex5f_2.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ex5f  -Nx 2 -Ny 2 -snes_smonitor > ex5f_2.tmp 2>&1; \
 	   if (diff output/ex5f_2.out ex5f_2.tmp) then true; \
 	   else echo "Possible problem with ex5f_2, diffs above"; fi; \
 	   ${RM} -f ex5f_2.tmp
@@ -214,6 +215,21 @@ runex5f_3:
 	   if (diff output/ex5f_3.out ex5f_3.tmp) then true; \
 	   else echo "Possible problem with ex5f_3, diffs above"; fi; \
 	   ${RM} -f ex5f_3.tmp
+runex5f90:
+	-@${MPIRUN} -np 4 ex5f90 -snes_mf -Nx 4 -Ny 1 -snes_smonitor > ex5f90_1.tmp 2>&1; \
+	   if (diff output/ex5f_1.out ex5f90_1.tmp) then true; \
+	   else echo "Possible problem with ex5f90_1, diffs above"; fi; \
+	   ${RM} -f ex5f90_1.tmp
+runex5f90_2:
+	-@${MPIRUN} -np 4 ex5f90 -Nx 2 -Ny 2 -snes_smonitor > ex5f90_2.tmp 2>&1; \
+	   if (diff output/ex5f_2.out ex5f90_2.tmp) then true; \
+	   else echo "Possible problem with ex5f90_2, diffs above"; fi; \
+	   ${RM} -f ex5f90_2.tmp
+runex5f90_3:
+	-@${MPIRUN} -np 3 ex5f90 -snes_fd  -snes_smonitor > ex5f90_3.tmp 2>&1;\
+	   if (diff output/ex5f_3.out ex5f90_3.tmp) then true; \
+	   else echo "Possible problem with ex5f90_3, diffs above"; fi; \
+	   ${RM} -f ex5f90_3.tmp
 runex6:
 	-@${MPIRUN} -np 1 ex6 -snes_smonitor > ex6_1.tmp 2>&1;   \
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
