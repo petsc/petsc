@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zis.c,v 1.22 1998/03/25 03:42:50 bsmith Exp balay $";
+static char vcid[] = "$Id: zis.c,v 1.23 1998/03/30 22:22:03 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -56,125 +56,108 @@ extern "C" {
 
 void iscoloringdestroy_(ISColoring *iscoloring, int *__ierr )
 {
-  *__ierr = ISColoringDestroy((ISColoring)PetscToPointer(iscoloring));
-  PetscRmPointer(iscoloring);
+  *__ierr = ISColoringDestroy(*iscoloring);
 }
 
 void iscoloringview_(ISColoring *iscoloring,Viewer viewer, int *__ierr )
 {
-  *__ierr = ISColoringView((ISColoring)PetscToPointer(iscoloring),
-	                   (Viewer)PetscToPointer(viewer));
+  *__ierr = ISColoringView(*iscoloring,*viewer);
 }
 
-void isview_(IS is,Viewer viewer, int *__ierr )
+void isview_(IS *is,Viewer viewer, int *__ierr )
 {
   PetscPatchDefaultViewers_Fortran(viewer);
-  *__ierr = ISView((IS)PetscToPointer(is),viewer);
+  *__ierr = ISView(*is,viewer);
 }
 
-void isequal_(IS is1,IS is2,PetscTruth *flg, int *__ierr )
+void isequal_(IS *is1,IS *is2,PetscTruth *flg, int *__ierr )
 {
-  *__ierr = ISEqual((IS)PetscToPointer(is1),
-	          (IS)PetscToPointer(is2), flg);
+  *__ierr = ISEqual(*is1,*is2), flg);
 }
 
-void isidentity_(IS is,PetscTruth *ident, int *__ierr )
+void isidentity_(IS *is,PetscTruth *ident, int *__ierr )
 {
-  *__ierr = ISIdentity((IS)PetscToPointer(is),ident);
-}
-void issorted_(IS is,PetscTruth *flg, int *__ierr )
-{
-  *__ierr = ISSorted((IS)PetscToPointer(is),flg);
+  *__ierr = ISIdentity(*is,ident);
 }
 
-void ispermutation_(IS is,PetscTruth *perm, int *__ierr ){
-  *__ierr = ISPermutation((IS)PetscToPointer(is),perm);
+void issorted_(IS *is,PetscTruth *flg, int *__ierr )
+{
+  *__ierr = ISSorted(*is,flg);
 }
 
-void isstride_(IS is,PetscTruth *flag, int *__ierr )
-{
-  *__ierr = ISStride((IS)PetscToPointer(is),flag);
+void ispermutation_(IS *is,PetscTruth *perm, int *__ierr ){
+  *__ierr = ISPermutation(*is,perm);
 }
 
-void isblockgetindices_(IS x,int *fa,long *ia,int *__ierr)
+void isstride_(IS *is,PetscTruth *flag, int *__ierr )
 {
-  IS    xin = (IS)PetscToPointer(x);
+  *__ierr = ISStride(*is,flag);
+}
+
+void isblockgetindices_(IS *x,int *fa,long *ia,int *__ierr)
+{
   int   *lx;
 
-  *__ierr = ISGetIndices(xin,&lx); if (*__ierr) return;
+  *__ierr = ISGetIndices(*x,&lx); if (*__ierr) return;
   *ia      = PetscIntAddressToFortran(fa,lx);
 }
 
-void isblockrestoreindices_(IS x,int *fa,long *ia,int *__ierr)
+void isblockrestoreindices_(IS *x,int *fa,long *ia,int *__ierr)
 {
-  IS    xin = (IS)PetscToPointer(x);
   int *lx = PetscIntAddressFromFortran(fa,*ia);
 
-  *__ierr = ISRestoreIndices(xin,&lx);
+  *__ierr = ISRestoreIndices(*x,&lx);
 }
 
-void isblock_(IS is,PetscTruth *flag, int *__ierr )
+void isblock_(IS *is,PetscTruth *flag, int *__ierr )
 {
-  *__ierr = ISBlock((IS)PetscToPointer(is),flag);
+  *__ierr = ISBlock(*is,flag);
 }
 
-void isgetindices_(IS x,int *fa,long *ia,int *__ierr)
+void isgetindices_(IS *x,int *fa,long *ia,int *__ierr)
 {
-  IS    xin = (IS)PetscToPointer(x);
   int   *lx;
 
-  *__ierr = ISGetIndices(xin,&lx); if (*__ierr) return;
+  *__ierr = ISGetIndices(*x,&lx); if (*__ierr) return;
   *ia      = PetscIntAddressToFortran(fa,lx);
 }
 
-void isrestoreindices_(IS x,int *fa,long *ia,int *__ierr)
+void isrestoreindices_(IS *x,int *fa,long *ia,int *__ierr)
 {
-  IS    xin = (IS)PetscToPointer(x);
   int *lx = PetscIntAddressFromFortran(fa,*ia);
 
-  *__ierr = ISRestoreIndices(xin,&lx);
+  *__ierr = ISRestoreIndices(*x,&lx);
 }
 
-void iscreategeneral_(MPI_Comm *comm,int *n,int *idx,IS *is, int *__ierr ){
-  IS ii;
-  *__ierr = ISCreateGeneral(
-	(MPI_Comm)PetscToPointerComm( *comm ),*n,idx,&ii);
-  *(PetscFortranAddr*) is = PetscFromPointer(ii);
-}
-
-void isinvertpermutation_(IS is,IS *isout, int *__ierr )
+void iscreategeneral_(MPI_Comm *comm,int *n,int *idx,IS *is, int *__ierr )
 {
-  IS ii;
-  *__ierr = ISInvertPermutation((IS)PetscToPointer(is),&ii);
-  *(PetscFortranAddr*) isout = PetscFromPointer(ii);
+  *__ierr = ISCreateGeneral((MPI_Comm)PetscToPointerComm( *comm ),*n,idx,is);
 }
 
-void iscreateblock_(MPI_Comm *comm,int *bs,int *n,int *idx,IS *is, int *__ierr ){
-  IS ii;
-  *__ierr = ISCreateBlock(
-	(MPI_Comm)PetscToPointerComm( *comm ),*bs,*n,idx,&ii);
-  *(PetscFortranAddr*) is = PetscFromPointer(ii);
+void isinvertpermutation_(IS *is,IS *isout, int *__ierr )
+{
+  *__ierr = ISInvertPermutation(*is,isout);
+}
+
+void iscreateblock_(MPI_Comm *comm,int *bs,int *n,int *idx,IS *is, int *__ierr )
+{
+  *__ierr = ISCreateBlock((MPI_Comm)PetscToPointerComm(*comm),*bs,*n,idx,is);
 }
 
 void iscreatestride_(MPI_Comm *comm,int *n,int *first,int *step,
-                               IS *is, int *__ierr ){
-  IS ii;
-  *__ierr = ISCreateStride(
-	(MPI_Comm)PetscToPointerComm( *comm ),*n,*first,*step,&ii);
-  *(PetscFortranAddr*) is = PetscFromPointer(ii);
+                               IS *is, int *__ierr )
+{
+  *__ierr = ISCreateStride((MPI_Comm)PetscToPointerComm( *comm ),*n,*first,*step,is);
 }
 
-void isdestroy_(IS is, int *__ierr ){
-  *__ierr = ISDestroy((IS)PetscToPointer(is));
-  PetscRmPointer(is);
+void isdestroy_(IS *is, int *__ierr )
+{
+  *__ierr = ISDestroy(*is);
 }
 
 void iscoloringcreate_(MPI_Comm *comm,int *n,int *colors,ISColoring *iscoloring, int *__ierr )
 {
-  ISColoring ii;
-
-  *__ierr = ISColoringCreate((MPI_Comm)PetscToPointerComm( *comm ),*n,colors,&ii);
-  *(PetscFortranAddr*) iscoloring = PetscFromPointer(ii);
+  *__ierr = ISColoringCreate((MPI_Comm)PetscToPointerComm( *comm ),*n,colors,iscoloring);
 }
 
 void islocaltoglobalmappingcreate_(MPI_Comm *comm,int *n,int *indices,ISLocalToGlobalMapping 
