@@ -8,20 +8,28 @@
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 
-#if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE) 
 EXTERN_C_BEGIN 
+#if defined(PETSC_USE_COMPLEX)
+#include "zmumps_c.h"
+#else
 #include "dmumps_c.h" 
+#endif
 EXTERN_C_END 
 #define JOB_INIT -1
 #define JOB_END -2
-/* macro s.t. indices match MUMPS documentation */
+/* macros s.t. indices match MUMPS documentation */
 #define ICNTL(I) icntl[(I)-1] 
 #define CNTL(I) cntl[(I)-1] 
 #define INFOG(I) infog[(I)-1]
 #define RINFOG(I) rinfog[(I)-1]
 
 typedef struct {
+#if defined(PETSC_USE_COMPLEX)
+  ZMUMPS_STRUC_C id;
+#else
   DMUMPS_STRUC_C id;
+#endif
   MatStructure   matstruc;
   int            myid,size,*irn,*jcn,sym;
   PetscScalar    *val;
@@ -41,13 +49,10 @@ typedef struct {
  */
 int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int **c, PetscScalar **v)
 {
-  /* Mat_MPIAIJ   *mat =  (Mat_MPIAIJ*)A->data;  
-  Mat_SeqAIJ   *aa=(Mat_SeqAIJ*)(mat->A)->data;
-  Mat_SeqAIJ   *bb=(Mat_SeqAIJ*)(mat->B)->data; */
   int          *ai, *aj, *bi, *bj, rstart,
                nz, *garray;
   int          ierr,i,j,jj,jB,irow,m=A->m,*ajj,*bjj,countA,countB,colA_start,jcol;
-  int          *row,*col;
+  int          *row,*col,*diagA;
   PetscScalar  *av, *bv,*val;
   PetscTruth   isMPIAIJ;
 
@@ -61,8 +66,10 @@ int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int
     ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= mat->rstart;
     garray = mat->garray;
     av=aa->a; bv=bb->a;
+   
   } else {
     Mat_MPISBAIJ  *mat =  (Mat_MPISBAIJ*)A->data;
+    if (mat->bs > 1) SETERRQ1(PETSC_ERR_SUP," bs=%d is not supported yet\n", mat->bs);
     Mat_SeqSBAIJ  *aa=(Mat_SeqSBAIJ*)(mat->A)->data;
     Mat_SeqBAIJ    *bb=(Mat_SeqBAIJ*)(mat->B)->data;
     nz = aa->s_nz + bb->nz;
@@ -87,29 +94,32 @@ int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int
     countA = ai[i+1] - ai[i];
     countB = bi[i+1] - bi[i];
     bjj = bj + bi[i];  
-  
-    /* B part, smaller col index */   
+
+    /* get jB, the starting local col index for the 2nd B-part */
     colA_start = rstart + ajj[0]; /* the smallest col index for A */  
     for (j=0; j<countB; j++){
       jcol = garray[bjj[j]];
-      if (jcol > colA_start) {
-        jB = j;
-        break;
-      }
+      if (jcol > colA_start) { jB = j; break; }
+      if (j==countB-1) jB = countB;
+    }
+  
+    /* B-part, smaller col index */   
+    colA_start = rstart + ajj[0]; /* the smallest col index for A */  
+    for (j=0; j<jB; j++){
+      jcol = garray[bjj[j]];
       if (!valOnly){ 
         row[jj] = irow + shift; col[jj] = jcol + shift; 
       }
       val[jj++] = *bv++;
-      if (j==countB-1) jB = countB; 
     }
-    /* A part */
+    /* A-part */
     for (j=0; j<countA; j++){
       if (!valOnly){
         row[jj] = irow + shift; col[jj] = rstart + ajj[j] + shift; 
       }
       val[jj++] = *av++;
     }
-    /* B part, larger col index */      
+    /* B-part, larger col index */      
     for (j=jB; j<countB; j++){
       if (!valOnly){
         row[jj] = irow + shift; col[jj] = garray[bjj[j]] + shift;
@@ -134,7 +144,12 @@ int MatDestroy_MPIAIJ_MUMPS(Mat A)
 
   PetscFunctionBegin; 
   /* Terminate instance, deallocate memories */
-  lu->id.job=JOB_END; dmumps_c(&lu->id); 
+  lu->id.job=JOB_END; 
+#if defined(PETSC_USE_COMPLEX)
+  zmumps_c(&lu->id); 
+#else
+  dmumps_c(&lu->id); 
+#endif
   if (lu->irn) { ierr = PetscFree(lu->irn);CHKERRQ(ierr);}
   if (lu->jcn) { ierr = PetscFree(lu->jcn);CHKERRQ(ierr);}
   if (size>1 && lu->val) { ierr = PetscFree(lu->val);CHKERRQ(ierr);} 
@@ -181,12 +196,20 @@ int MatSolve_MPIAIJ_MUMPS(Mat A,Vec b,Vec x)
     ierr = VecGetArray(x,&array);CHKERRQ(ierr);
   }
   if (!lu->myid) { /* define rhs on the host */
+#if defined(PETSC_USE_COMPLEX)
+    lu->id.rhs = (mumps_double_complex*)array;
+#else
     lu->id.rhs = array;
+#endif
   }
 
   /* solve phase */
   lu->id.job=3;
-  dmumps_c(&lu->id);
+#if defined(PETSC_USE_COMPLEX)
+  zmumps_c(&lu->id); 
+#else
+  dmumps_c(&lu->id); 
+#endif
   if (lu->id.INFOG(1) < 0) {   
     SETERRQ1(1,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",lu->id.INFOG(1));
   }
@@ -213,8 +236,7 @@ int MatFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
 {
   Mat_MPIAIJ_MUMPS *lu = (Mat_MPIAIJ_MUMPS*)(*F)->spptr; 
   int              rnz,nnz,ierr,nz,i,M=A->M,*ai,*aj,icntl;
-  PetscTruth       valOnly,flg;
-  void             *aa;
+  PetscTruth       valOnly,flg,isAIJ;
 
   PetscFunctionBegin; 	
   if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ 
@@ -232,8 +254,15 @@ int MatFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
     ierr = PetscOptionsBegin(A->comm,A->prefix,"MUMPS Options","Mat");CHKERRQ(ierr);
     lu->id.par=1;  /* host participates factorizaton and solve */
     lu->id.sym=lu->sym; 
-    ierr = PetscOptionsInt("-mat_mumps_sym","SYM: (0,1,2)","None",lu->id.sym,&lu->id.sym,PETSC_NULL);CHKERRQ(ierr);
-    dmumps_c(&lu->id); 
+    if (lu->sym == 2){
+      ierr = PetscOptionsInt("-mat_mumps_sym","SYM: (1,2)","None",lu->id.sym,&icntl,&flg);CHKERRQ(ierr); 
+      if (flg && icntl == 1) lu->id.sym=icntl;  /* matrix is spd */
+    }
+#if defined(PETSC_USE_COMPLEX)
+  zmumps_c(&lu->id); 
+#else
+  dmumps_c(&lu->id); 
+#endif
  
     if (lu->size == 1){
       lu->id.ICNTL(18) = 0;   /* centralized assembled matrix input */
@@ -269,6 +298,15 @@ int MatFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
     ierr = PetscOptionsInt("-mat_mumps_icntl_14","ICNTL(14): efficiency control","None",lu->id.ICNTL(14),&lu->id.ICNTL(14),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_mumps_icntl_15","ICNTL(15): efficiency control","None",lu->id.ICNTL(15),&lu->id.ICNTL(15),PETSC_NULL);CHKERRQ(ierr);
 
+    ierr = PetscOptionsInt("-mat_mumps_icntl_16","ICNTL(16): 1: rank detection; 2: rank detection and nullspace","None",lu->id.ICNTL(16),&icntl,&flg);CHKERRQ(ierr);
+    if (flg){
+      if (icntl >-1 && icntl <3 ){
+        if (lu->myid==0) lu->id.ICNTL(16) = icntl;
+      } else {
+        SETERRQ1(PETSC_ERR_SUP,"ICNTL(16)=%d -- not supported\n",icntl);
+      }
+    }
+
     ierr = PetscOptionsReal("-mat_mumps_cntl_1","CNTL(1): relative pivoting threshold","None",lu->id.CNTL(1),&lu->id.CNTL(1),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_mumps_cntl_2","CNTL(2): stopping criterion of refinement","None",lu->id.CNTL(2),&lu->id.CNTL(2),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_mumps_cntl_3","CNTL(3): absolute pivoting threshold","None",lu->id.CNTL(3),&lu->id.CNTL(3),PETSC_NULL);CHKERRQ(ierr);
@@ -279,7 +317,8 @@ int MatFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
   switch (lu->id.ICNTL(18)){
   case 0:  /* centralized assembled matrix input (size=1) */
     if (!lu->myid) {
-      if (lu->id.sym == 0){
+      ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
+      if (isAIJ){
         Mat_SeqAIJ   *aa = (Mat_SeqAIJ*)A->data;
         nz               = aa->nz;
         ai = aa->i; aj = aa->j; lu->val = aa->a;
@@ -288,11 +327,9 @@ int MatFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
         nz                  =  aa->s_nz;
         ai = aa->i; aj = aa->j; lu->val = aa->a;
       }
-      /* lu->val = aa->a; */
       if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization, get irn and jcn */
         ierr = PetscMalloc(nz*sizeof(int),&lu->irn);CHKERRQ(ierr);
         ierr = PetscMalloc(nz*sizeof(int),&lu->jcn);CHKERRQ(ierr);
-        /* aj   = aa->j; */
         nz = 0;
         for (i=0; i<M; i++){
           rnz = ai[i+1] - ai[i];
@@ -309,7 +346,7 @@ int MatFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
     } else {
       valOnly = PETSC_TRUE; /* only update mat values, not row and col index */
     }
-    ierr = MatConvertToTriples(A, 1, valOnly, &nnz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
+    ierr = MatConvertToTriples(A,1,valOnly, &nnz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
     break;
   default: SETERRQ(PETSC_ERR_SUP,"Matrix input format is not supported by MUMPS.");
   }
@@ -321,17 +358,33 @@ int MatFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
     case 0:  /* centralized assembled matrix input */
       if (!lu->myid) {
         lu->id.nz =nz; lu->id.irn=lu->irn; lu->id.jcn=lu->jcn;
-        if (lu->id.ICNTL(6)>1) lu->id.a = lu->val; 
+        if (lu->id.ICNTL(6)>1){
+#if defined(PETSC_USE_COMPLEX)
+          lu->id.a = (mumps_double_complex*)lu->val; 
+#else
+          lu->id.a = lu->val; 
+#endif
+        }
       }
       break;
     case 3:  /* distributed assembled matrix input (size>1) */ 
       lu->id.nz_loc = nnz; 
       lu->id.irn_loc=lu->irn; lu->id.jcn_loc=lu->jcn;
-      if (lu->id.ICNTL(6)>1) lu->id.a_loc = lu->val;
+      if (lu->id.ICNTL(6)>1) {
+#if defined(PETSC_USE_COMPLEX)
+        lu->id.a_loc = (mumps_double_complex*)lu->val;
+#else
+        lu->id.a_loc = lu->val;
+#endif
+      }
       break;
     }    
     lu->id.job=1;
-    dmumps_c(&lu->id);
+#if defined(PETSC_USE_COMPLEX)
+  zmumps_c(&lu->id); 
+#else
+  dmumps_c(&lu->id); 
+#endif
     if (lu->id.INFOG(1) < 0) { 
       SETERRQ1(1,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
     }
@@ -339,14 +392,32 @@ int MatFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
 
   /* numerical factorization phase */
   if(lu->id.ICNTL(18) == 0) { 
-    if (lu->myid == 0) lu->id.a = lu->val; 
+    if (lu->myid == 0) {
+#if defined(PETSC_USE_COMPLEX)
+      lu->id.a = (mumps_double_complex*)lu->val; 
+#else
+      lu->id.a = lu->val; 
+#endif
+    }
   } else {
+#if defined(PETSC_USE_COMPLEX)
+    lu->id.a_loc = (mumps_double_complex*)lu->val; 
+#else
     lu->id.a_loc = lu->val; 
+#endif
   }
   lu->id.job=2;
-  dmumps_c(&lu->id);
+#if defined(PETSC_USE_COMPLEX)
+  zmumps_c(&lu->id); 
+#else
+  dmumps_c(&lu->id); 
+#endif
   if (lu->id.INFOG(1) < 0) {
     SETERRQ1(1,"1, Error reported by MUMPS in numerical factorization phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
+  }
+
+  if (lu->myid==0 && lu->id.ICNTL(16) > 0){
+    SETERRQ1(1,"  lu->id.ICNTL(16):=%d\n",lu->id.INFOG(16)); 
   }
   
   (*F)->assembled = PETSC_TRUE;
