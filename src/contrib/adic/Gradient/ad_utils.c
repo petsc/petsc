@@ -17,7 +17,7 @@ void PetscADSetValueAndColor(DERIV_TYPE *vars,int n,ISColoringValue *colors,doub
 
   for (i=0; i<n; i++) {
     DERIV_val(vars[i]) = values[i];
-    d = DERIV_grad(vars[i]);
+    d = (PetscReal*)DERIV_grad(vars[i]);
     for (j=0; j<ad_GRAD_MAX; j++) {
       d[j] = 0.0; 
     }
