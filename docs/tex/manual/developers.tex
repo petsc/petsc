@@ -1,4 +1,4 @@
-% $Id: developers.tex,v 1.7 1998/05/04 18:52:05 bsmith Exp bsmith $ 
+% $Id: developers.tex,v 1.8 1998/05/04 19:39:08 bsmith Exp bsmith $ 
 %
 % LATEX version of the PETSc users manual.
 %
@@ -59,7 +59,8 @@ This manual discusses the PETSc component library design and describes
 how to develop new library codes that are compatible with PETSc 2.0.
 The idea is not to develop one massive library that everyone shoves code 
 into; rather, to develop an architecture that allows many people
-to (as painlessly as possible) contribute their own libraries.
+to (as painlessly as possible) contribute (and maintain) their own libraries,
+in a distributed fashion.
 
 The text assumes
 that you are familar with PETSc, have a copy of the PETSc users
@@ -80,14 +81,15 @@ development to {\tt petsc-developers@mcs.anl.gov}.  Note that all {\em
 bug reports and questions regarding the use of PETSc} should continue
 to be directed to {\tt petsc-maint@mcs.anl.gov}.
 
-The PETSc team is part of a larger group (mostly at the DOE labs) funded by 
-the DOE2000 initiative to develop a Common Component Architecture (CCA). In 
-addition,
-we are involved in a related DOE lab initiative to develop a standard object 
-interface for scalable linear solvers.  Already as a result of these efforts
-we have modified the PETSc software design and will continue to evolve PETSc as
-these initiatives progress. Here we will list specific individuals and groups
-whose ideas have influenced our work. 
+The PETSc team is part of a larger group (mostly at the DOE labs)
+funded by the DOE2000 initiative to develop a Common Component
+Architecture (CCA), http://www.... In addition, we are involved in a
+related DOE lab initiative to develop a standard object interface for
+scalable linear solvers, the Equation Solver Interface, ESI
+http://www..  Already as a result of these efforts we have modified
+the PETSc software design and will continue to evolve PETSc as these
+initiatives progress. Here we will list specific individuals and
+groups whose ideas have influenced our work.
 
 %
 % NOTES:  
@@ -104,6 +106,166 @@ whose ideas have influenced our work.
 \hbox{ }
 \newpage
 
+% -----------------------------------------------------------------------------------
+\chapter{The ALICE Kernel}
+\label{chapter:kernel}
+PETSc provides a variety of basic services for writing scalable, component 
+based libraries; these are referred to as the ALICE kernel. The source
+code for the kernel is in {\tt src/sys/src}. It contains systematic support for
+\begin{itemize}
+  \item error handling
+  \item memory management
+  \item profiling
+  \item object management
+  \item file IO
+  \item options database
+\end{itemize}
+Each of these is discussed in a section below.
+
+% -------------------------------------------------------------------------------
+\section{Implementation of Error Handling}
+
+PETSc error handling uses a ``call error handler; then (depending on result) return
+error code'' model when problems are detected in the running code. 
+
+The simplified C/C++ macro-based interface consists of the following three calls
+\begin{itemize}
+\item SETERRQ(generic,specific,''Error message'');
+\item CHKERRQ(ierr);
+\item CHKPTRQ(ptr);
+\end{itemize}
+
+The macro {\tt SETERRQ()} is defined in {\tt include/petscerror.h} 
+\begin{verbatim}
+  {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,generic,specific,''Error message'');}
+\end{verbatim}
+it simply calls the error handler with the current function name and location: line number,
+file and directory.
+{\tt CHKERRQ()} is defined by
+\begin{verbatim}
+  {if (ierr) SETERRQ(ierr,0,(char *)0);}
+\end{verbatim}
+and {\tt CHKPTRQ()} by 
+\begin{verbatim}
+\end{verbatim}
+  if (!ptr) SETERRQ(PETSC_ERR_MEM,0,(char*)0);
+\end{verbatim}
+
+The error handling function {\tt PetscError()} calls the ``current'' error handler
+with the code
+\begin{verbatim}
+int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,n,p,mess,0);
+  else         ierr = (*eh->handler)(line,func,file,dir,n,p,mess,eh->ctx);
+  PetscFunctionReturn(ierr);
+}
+\end{verbatim}
+The variable {\tt eh} is the current error handler and is defined in 
+{\tt src/sys/src/error/err.c}
+
+One can set a new error handler with the command 
+\begin{verbatim}
+int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,void*),void *ctx )
+{
+  struct  EH *neweh = (struct EH*) PetscMalloc(sizeof(struct EH)); CHKPTRQ(neweh);
+
+  PetscFunctionBegin;
+  if (eh) {neweh->previous = eh;} 
+  else    {neweh->previous = 0;}
+  neweh->handler = handler;
+  neweh->ctx     = ctx;
+  eh = neweh;
+  PetscFunctionReturn(0);
+}
+\end{verbatim}
+which maintains a linked list of error handlers. The most recent error handler is removed
+via
+\begin{verbatim}
+int PetscPopErrorHandler(void)
+{
+  struct EH *tmp;
+
+  PetscFunctionBegin;
+  if (!eh) PetscFunctionReturn(0);
+  tmp = eh;
+  eh  = eh->previous;
+  PetscFree(tmp);
+
+  PetscFunctionReturn(0);
+}
+\end{verbatim}
+
+
+
+% -----------------------------------------------------------------------------------
+\section{Implementation of Profiling}
+\label{sec:profimpl}
+
+This section provides details about the implementation of event
+logging and profiling within PETSc.   
+The interface for profiling in PETSc is contained in the file 
+{\tt \$\{PETSC\_DIR\}/include/petsclog.h}. The source code for the profile logging
+is in {\tt src/sys/src/plog/}.
+
+\subsection{Profiling Object Create and Destruction}
+
+The creation of objects may be profiled with the command
+ \findex{PLogObjectCreate()}
+\begin{verbatim}
+   PLogObjectCreate(PetscObject h);
+\end{verbatim}
+which logs the creation of any PETSc object. 
+
+Just before an object is destroyed, it should be  logged with
+with \findex{PLogObjectDestroy()} 
+\begin{verbatim}
+   PLogObjectDestroy(PetscObject h);
+\end{verbatim}
+
+If an object has a clearly defined parent object (for instance, when 
+a work vector is generated for use in a Krylov solver), this information
+is logged with the command, \findex{PLogObjectParent()}
+\begin{verbatim}
+   PLogObjectParent(PetscObject parent,PetscObject child);
+\end{verbatim}
+It is also useful to log information about the state of an object, as can
+be done with the command \findex{PLogObjectState()}
+\begin{verbatim}
+   PLogObjectState(PetscObject h,char *format,...);
+\end{verbatim}
+For example, for sparse matrices we usually log the matrix 
+dimensions and number of nonzeros.
+
+\subsection{Profiling Events}
+
+Events are logged using the 
+pair \findex{PLogEventBegin()}
+\begin{verbatim}
+   PLogEventBegin(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
+   PLogEventEnd(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
+\end{verbatim}
+This logging is usually done in the abstract
+interface file for the operations, for example, {\tt src/mat/src/matrix.c}.
+
+\subsection{Controling Profiling}
+
+Several routines that will be used rarely by the 
+application programmer \findex{PLogPrintSummary()}
+are \findex{PLogBegin()} \findex{PLogDump()} \findex{PLogAllBegin()} 
+\begin{verbatim}
+   PLogBegin();
+   PLogAllBegin();
+   PLogDump(char *filename);
+   PLogPrintSummary(FILE *fd);
+\end{verbatim}
+These routines are normally called by the {\tt PetscInitialize()}
+and {\tt PetscFinalize()} routines when the option {\tt -log}, 
+{\tt -log\_summary}, or 
+{\tt -log\_all} is given.
 
 % -----------------------------------------------------------------------------------
 \chapter{Basic Object Design}
@@ -131,7 +293,7 @@ Each components consists of three parts:
 For example, all matrix (Mat) components shared a function table of operations that 
 may be performed on the matrix; all PETSc matrix implementations share some additional
 data fields,including matrix size; while a particular matrix implementation in PETSc
-(say compressed sparse row, called AIJ) has its own data fields for storing the actual
+(say compressed sparse row) has its own data fields for storing the actual
 matrix values and sparsity pattern. This will be explained in more detail in the following sections.
 
 We will use {\tt <component>\_<implementation>} to denote the actual source code and 
@@ -142,7 +304,7 @@ data structures used for a particular implementation of an object that has the
 
 Each component has
 \begin{itemize}
-\item Its own include file {\tt \$\{PETSC\_DIR\}/include/<component>.h} 
+\item Its own, application public, include file {\tt \$\{PETSC\_DIR\}/include/<component>.h} 
 \item Its own directory, {\tt \$\{PETSC\_DIR\}/src/<component>}
 \item A data structure defined in  the file
       {\tt \$\{PETSC\_DIR\}/src/<component>/<component>impl.h}.
@@ -196,6 +358,7 @@ All PETSc objects have the following common header structures.
 /* Function table common to all compatible components */
 
 typedef struct {
+   int (*getcomm)(PetscObject,MPI_Comm *);
    int (*view)(PetscObject,Viewer);
    int (*destroy)(PetscObject);
    int (*query)(PetscObject,char *,PetscObject *);
@@ -203,13 +366,13 @@ typedef struct {
    int (*reference)(PetscObject);
    int (*composefunction)(PetscObject,char *,char *,void *);
    int (*queryfunction)(PetscObject,char *, void **);
+   int (*querylanguage(PetscObject,PetscLanguage,void **);
 } PetscOps;
 
 /* Data structure header common to all compatible components */
 
 struct _p_<component> {
   int              cookie;                                  
-  MPI_Comm         comm;                                    
   PetscOps         *bops;                                   
   <component>Ops   *ops;       
   OTHER STUFF SPECIFIC TO THAT PARTICULAR LIBRARY
@@ -219,9 +382,9 @@ struct _p_<component> {
 
 struct _p_<component> {
   int              cookie;                                  
-  MPI_Comm         comm;                                    
   PetscOps         *bops;                                   
   <component>Ops   *ops;                                    
+  MPI_Comm         comm;                                    
   int              type;                                    
   PLogDouble       flops,time,mem;                          
   int              id;                                      
@@ -231,9 +394,10 @@ struct _p_<component> {
   OList            olist;                                   
   char             *type_name;                              
   PetscObject      parent;                                  
-  char*            name;                                    
+  char             *name;                                    
   char             *prefix;                                 
-  void**           fortran_func_pointers;       
+  void             *cpp;
+  void             **fortran_func_pointers;       
   COMPONENT-SPECIFIC DATASTRUCTURES
 }; 
 
@@ -290,6 +454,7 @@ typedef struct {
   MPI_Comm               comm;                                    
   PetscOps               *bops;                                   
   struct _VecOps         *ops;                                    
+  MPI_Comm               comm;
   int                    type;                                    
   PLogDouble             flops,time,mem;                          
   int                    id;                                      
@@ -323,6 +488,9 @@ specified object.
 We now discuss the specific functions in the common function table.
 
 \begin{itemize}
+\item {\tt getcomm(PetscObject,MPI_Comm *)} obtains the MPI communicator associated
+      with this object.
+
 \item {\tt view(PetscObject,Viewer)} allows one to store or visualize the data inside
       an object. If the {\tt Viewer} is null than should cause the object to print 
       information on the object to standard out. PETSc provides a variety of simple
@@ -364,11 +532,12 @@ We now discuss the specific functions in the common function table.
 
 \end{itemize}
 
-Since the object composition only allows one to compose PETSc objects with PETSc objects
-rather than any arbitrary pointer, PETsc provides the convenience object {\tt PetscObjectContainer},
-created with the routine {\tt PetscObjectContainerCreate(MPI\_Comm,PetscObjectContainer)} to 
-allow one to wrap any kind of data into a PETSc object that can then be composed with 
-any PETSc object.
+Since the object composition allows one to {\bf only} compose PETSc objects
+with PETSc objects rather than any arbitrary pointer, PETsc provides
+the convenience object {\tt PetscObjectContainer}, created with the
+routine {\tt PetscObjectContainerCreate(MPI\_Comm,PetscObjectContainer)}
+to allow one to wrap any kind of data into a PETSc object that can then be
+composed with any PETSc object.
 
 % --------------------------------------------------------------------------------------
 \section{PETSc Implementation of the  Object Functions}
@@ -426,13 +595,13 @@ PETSc allows one to compose functions by string name (to be loaded later from
 a dynamic library) or by function pointer. In {\tt src/sys/src/dll/reg.c}
 PETSc defines the C structs
 \begin{verbatim}
-typedef struct FuncList_struct FuncList;
+typedef struct _FuncList FuncList;
 struct FuncList_struct {
-  int                    (*routine)(void *);
-  char                   *path;
-  char                   *name;               
-  char                   *rname;            /* name of create function in link library */
-  struct FuncList_struct *next;
+  int              (*routine)(void *);
+  char             *path;
+  char             *name;               
+  char             *rname;            /* name of create function in link library */
+  struct _FuncList *next;
 };
 
 typedef struct DLList* DLList;
@@ -447,8 +616,8 @@ The {\tt DLList} object consists of a linked list of {\tt FuncList} objects; eac
 of which contains
 \begin{itemize}
 \item a function pointer (if it has already been loaded into memory from the dynamic library)
-\item the directory and library name where the function exists (if it is loaded from a 
-      dynamic library)
+\item the ``path'' (directory and library name) where the function exists (if it is 
+      loaded from a dynamic library)
 \item the ``short'' name of the function,
 \item the actual name of the function as a string (for dynamic libraries this string is used
       to load in the actual function pointer).
@@ -498,7 +667,10 @@ argument is removed from the code; otherwise it is retained.
 The {\tt DLRegister\_Private()} and all related routines can be found in the directory
 {\tt src/sys/src/dll}.
 
-SHOULD GIVE MORE DETAILS HERE!
+In addition to using the {\tt DLList} mechanism to compose functions into PETSc objects, it is
+also used to allow registration of new component implementations; for example, new
+preconditioners, see Section \ref{sec:registeringnewmethods}. 
+
 
 % -----------------------------------------------------------------------------------
 \chapter{PetscObjects}
@@ -512,7 +684,6 @@ header
 \begin{verbatim}
 struct _p_<component> {
   int              cookie;                                  
-  MPI_Comm         comm;                                    
   PetscOps         *bops;                                   
   <component>Ops   *ops;       
   OTHER STUFF SPECIFIC TO THAT PARTICULAR LIBRARY
@@ -531,78 +702,11 @@ A carefully commented implementation of a PC object can be found in
 \subsection{Krylov Solvers}
 
 \subsection{Registering New Methods}
+\label{sec:registeringnewmethods}
 
 See {\tt src/sles/examples/tutorials/ex12.c} for an example of registering a new
 preconditioning (PC) method.
 
-% -------------------------------------------------------------------------------
-\chapter{Implementation of Error Handling}
-
-% -----------------------------------------------------------------------------------
-\chapter{Implementation of Profiling}
-\label{sec:profimpl}
-
-This section provides details about the implementation of event
-logging and profiling within PETSc.   
-The interface for profiling in PETSc is contained in the file 
-{\tt \$\{PETSC\_DIR\}/include/petsclog.h}. The source code for the profile logging
-is in {\tt src/sys/src/plog/}.
-
-\section{Profiling Object Create and Destruction}
-
-The creation of objects may be profiled with the command
- \findex{PLogObjectCreate()}
-\begin{verbatim}
-   PLogObjectCreate(PetscObject h);
-\end{verbatim}
-which logs the creation of any PETSc object. 
-
-Just before an object is destroyed, it should be  logged with
-with \findex{PLogObjectDestroy()} 
-\begin{verbatim}
-   PLogObjectDestroy(PetscObject h);
-\end{verbatim}
-
-If an object has a clearly defined parent object (for instance, when 
-a work vector is generated for use in a Krylov solver), this information
-is logged with the command, \findex{PLogObjectParent()}
-\begin{verbatim}
-   PLogObjectParent(PetscObject parent,PetscObject child);
-\end{verbatim}
-It is also useful to log information about the state of an object, as can
-be done with the command \findex{PLogObjectState()}
-\begin{verbatim}
-   PLogObjectState(PetscObject h,char *format,...);
-\end{verbatim}
-For example, for sparse matrices we usually log the matrix 
-dimensions and number of nonzeros.
-
-\section{Profiling Events}
-
-Events are logged using the 
-pair \findex{PLogEventBegin()}
-\begin{verbatim}
-   PLogEventBegin(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
-   PLogEventEnd(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
-\end{verbatim}
-This logging is usually done in the abstract
-interface file for the operations, for example, {\tt src/mat/src/matrix.c}.
-
-\section{Controling Profiling}
-
-Several routines that will be used rarely by the 
-application programmer \findex{PLogPrintSummary()}
-are \findex{PLogBegin()} \findex{PLogDump()} \findex{PLogAllBegin()} 
-\begin{verbatim}
-   PLogBegin();
-   PLogAllBegin();
-   PLogDump(char *filename);
-   PLogPrintSummary(FILE *fd);
-\end{verbatim}
-These routines are normally called by the {\tt PetscInitialize()}
-and {\tt PetscFinalize()} routines when the option {\tt -log}, 
-{\tt -log\_summary}, or 
-{\tt -log\_all} is given.
 
 % -----------------------------------------------------------------------------------
 \chapter{Style Guide}
