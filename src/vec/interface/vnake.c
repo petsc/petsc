@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vnake.c,v 1.4 1999/02/02 03:25:25 curfman Exp curfman $";
+static char vcid[] = "$Id: vnake.c,v 1.5 1999/03/07 14:14:25 curfman Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: vnake.c,v 1.4 1999/02/02 03:25:25 curfman Exp curfman
    Collective on MPI_Comm
 
    Input Parameter:
-+  comm - the communicator, should be PETSC_COMM_SELF
++  comm - the communicator
 .  n - the local vector length 
 -  N - total vector length
 
