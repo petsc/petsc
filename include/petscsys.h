@@ -53,9 +53,9 @@ EXTERN PetscErrorCode PetscGetRealPath(char[],char[]);
 EXTERN PetscErrorCode PetscGetHomeDirectory(char[],size_t);
 EXTERN PetscErrorCode PetscTestFile(const char[],char,PetscTruth*);
 EXTERN PetscErrorCode PetscTestDirectory(const char[],char,PetscTruth*);
-EXTERN PetscErrorCode PetscBinaryRead(int,void*,int,PetscDataType);
-EXTERN PetscErrorCode PetscSynchronizedBinaryRead(MPI_Comm,int,void*,int,PetscDataType);
-EXTERN PetscErrorCode PetscBinaryWrite(int,void*,int,PetscDataType,int);
+EXTERN PetscErrorCode PetscBinaryRead(int,void*,PetscInt,PetscDataType);
+EXTERN PetscErrorCode PetscSynchronizedBinaryRead(MPI_Comm,int,void*,PetscInt,PetscDataType);
+EXTERN PetscErrorCode PetscBinaryWrite(int,void*,PetscInt,PetscDataType,PetscTruth);
 EXTERN PetscErrorCode PetscBinaryOpen(const char[],int,int *);
 EXTERN PetscErrorCode PetscBinaryClose(int);
 EXTERN PetscErrorCode PetscSharedTmp(MPI_Comm,PetscTruth *);
@@ -86,8 +86,8 @@ EXTERN PetscErrorCode PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibraryList*,const
 .seealso: PetscBinarySeek(), PetscSynchronizedBinarySeek()
 E*/
 typedef enum {PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1,PETSC_BINARY_SEEK_END = 2} PetscBinarySeekType;
-EXTERN PetscErrorCode PetscBinarySeek(int,int,PetscBinarySeekType,int*);
-EXTERN PetscErrorCode PetscSynchronizedBinarySeek(MPI_Comm,int,int,PetscBinarySeekType,int*);
+EXTERN PetscErrorCode PetscBinarySeek(int,off_t,PetscBinarySeekType,off_t*);
+EXTERN PetscErrorCode PetscSynchronizedBinarySeek(MPI_Comm,int,off_t,PetscBinarySeekType,off_t*);
 
 EXTERN PetscErrorCode PetscSetDebugger(const char[],PetscTruth);
 EXTERN PetscErrorCode PetscSetDefaultDebugger(void);

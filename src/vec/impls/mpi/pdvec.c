@@ -196,17 +196,17 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
 
   if (!rank) {
-    int cookie = VEC_FILE_COOKIE;
-    ierr = PetscBinaryWrite(fdes,&cookie,1,PETSC_INT,0);CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fdes,&xin->N,1,PETSC_INT,0);CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fdes,xarray,xin->n,PETSC_SCALAR,0);CHKERRQ(ierr);
+    PetscInt cookie = VEC_FILE_COOKIE;
+    ierr = PetscBinaryWrite(fdes,&cookie,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fdes,&xin->N,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fdes,xarray,xin->n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
 
     ierr = PetscMalloc((len+1)*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     /* receive and print messages */
     for (j=1; j<size; j++) {
       ierr = MPI_Recv(values,len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
       ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
-      ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,0);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);

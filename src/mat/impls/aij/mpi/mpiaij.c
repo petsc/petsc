@@ -757,8 +757,9 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   Mat_SeqAIJ*       B = (Mat_SeqAIJ*)aij->B->data;
   PetscErrorCode    ierr;
   PetscMPIInt       rank,size,tag = ((PetscObject)viewer)->tag;
-  int               nz,fd,header[4],*row_lengths,*range,rlen,i;
-  int               nzmax,*column_indices,j,k,col,*garray = aij->garray,cnt,cstart = aij->cstart,rnz;
+  int               fd;
+  PetscInt          nz,header[4],*row_lengths,*range,rlen,i;
+  PetscInt          nzmax,*column_indices,j,k,col,*garray = aij->garray,cnt,cstart = aij->cstart,rnz;
   PetscScalar       *column_values;
 
   PetscFunctionBegin;
@@ -771,7 +772,7 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
     header[2] = mat->N;
     ierr = MPI_Reduce(&nz,&header[3],1,MPI_INT,MPI_SUM,0,mat->comm);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,header,4,PETSC_INT,1);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,header,4,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     /* get largest number of rows any processor has */
     rlen = mat->m;
     ierr = PetscMapGetGlobalRange(mat->rmap,&range);CHKERRQ(ierr);
@@ -792,11 +793,11 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   /* store the row lengths to the file */
   if (!rank) {
     MPI_Status status;
-    ierr = PetscBinaryWrite(fd,row_lengths,mat->m,PETSC_INT,1);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,row_lengths,mat->m,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     for (i=1; i<size; i++) {
       rlen = range[i+1] - range[i];
       ierr = MPI_Recv(row_lengths,rlen,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
-      ierr = PetscBinaryWrite(fd,row_lengths,rlen,PETSC_INT,1);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,row_lengths,rlen,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     }
   } else {
     ierr = MPI_Send(row_lengths,mat->m,MPI_INT,0,tag,mat->comm);CHKERRQ(ierr);
@@ -825,12 +826,12 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   /* store the column indices to the file */
   if (!rank) {
     MPI_Status status;
-    ierr = PetscBinaryWrite(fd,column_indices,nz,PETSC_INT,1);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,column_indices,nz,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     for (i=1; i<size; i++) {
       ierr = MPI_Recv(&rnz,1,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
       if (rnz > nzmax) SETERRQ2(PETSC_ERR_LIB,"Internal PETSc error: nz = %d nzmax = %d",nz,nzmax);
       ierr = MPI_Recv(column_indices,rnz,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
-      ierr = PetscBinaryWrite(fd,column_indices,rnz,PETSC_INT,1);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,column_indices,rnz,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     }
   } else {
     ierr = MPI_Send(&nz,1,MPI_INT,0,tag,mat->comm);CHKERRQ(ierr);
@@ -858,12 +859,12 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   /* store the column values to the file */
   if (!rank) {
     MPI_Status status;
-    ierr = PetscBinaryWrite(fd,column_values,nz,PETSC_SCALAR,1);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,column_values,nz,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
     for (i=1; i<size; i++) {
       ierr = MPI_Recv(&rnz,1,MPI_INT,i,tag,mat->comm,&status);CHKERRQ(ierr);
       if (rnz > nzmax) SETERRQ2(PETSC_ERR_LIB,"Internal PETSc error: nz = %d nzmax = %d",nz,nzmax);
       ierr = MPI_Recv(column_values,rnz,MPIU_SCALAR,i,tag,mat->comm,&status);CHKERRQ(ierr);
-      ierr = PetscBinaryWrite(fd,column_values,rnz,PETSC_SCALAR,1);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,column_values,rnz,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
     }
   } else {
     ierr = MPI_Send(&nz,1,MPI_INT,0,tag,mat->comm);CHKERRQ(ierr);

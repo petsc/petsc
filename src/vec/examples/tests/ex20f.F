@@ -27,11 +27,11 @@
 !   Open binary file for writing
        call PetscBinaryOpen('testfile',PETSC_FILE_CREATE,fd,ierr)
 !   Write the Vec header
-       call PetscBinaryWrite(fd,veccookie,1,PETSC_INT,0,ierr)
+       call PetscBinaryWrite(fd,veccookie,1,PETSC_INT,PETSC_FALSE,ierr)
 !   Write the array length
-       call PetscBinaryWrite(fd,n,1,PETSC_INT,0,ierr)
+       call PetscBinaryWrite(fd,n,1,PETSC_INT,PETSC_FALSE,ierr)
 !   Write the array
-       call PetscBinaryWrite(fd,array,n,PETSC_DOUBLE,0,ierr)
+       call PetscBinaryWrite(fd,array,n,PETSC_DOUBLE,PETSC_FALSE,ierr)
 !   Close the file
        call PetscBinaryClose(fd,ierr)
 

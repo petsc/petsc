@@ -432,14 +432,14 @@ PetscErrorCode MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
   if (ict != a->maxnz) SETERRQ(PETSC_ERR_PLIB,"Error in nonzero count");
 
   /* Store lengths of each row and write (including header) to file */
-  ierr = PetscBinaryWrite(fd,col_lens,4+A->m,PETSC_INT,1);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,col_lens,4+A->m,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
   /* Store column indices (zero start index) */
-  ierr = PetscBinaryWrite(fd,cval,a->maxnz,PETSC_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,cval,a->maxnz,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Store nonzero values */
-  ierr = PetscBinaryWrite(fd,anonz,a->maxnz,PETSC_SCALAR,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,anonz,a->maxnz,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

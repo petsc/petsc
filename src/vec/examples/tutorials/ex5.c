@@ -11,11 +11,13 @@ static char help[] = "Tests binary I/O of vectors and illustrates the use of use
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int          i,m = 10,rank,size,low,high,ldim,iglobal,ierr;
-  PetscScalar  v;
-  Vec          u;
-  PetscViewer  viewer;
-  int          VECTOR_GENERATE,VECTOR_READ;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  PetscInt       i,m = 10,low,high,ldim,iglobal;
+  PetscScalar    v;
+  Vec            u;
+  PetscViewer    viewer;
+  PetscEvent     VECTOR_GENERATE,VECTOR_READ;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

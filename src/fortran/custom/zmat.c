@@ -5,6 +5,7 @@
 
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define matpartitioningsetvertexweights_ MATPARTITIONINGSETVERTEXWEIGHTS
 #define matsettype_                      MATSETTYPE
 #define matmpiaijgetseqaij_              MATMPIAIJGETSEQAIJ
 #define matmpibaijgetseqbaij_            MATMPIBAIJGETSEQBAIJ
@@ -77,6 +78,7 @@
 #define matpartitioningscotchsetarch_    MATPARTITIONINGSCOTCHSETARCH
 #define matpartitioningscotchsethostlist_ MATPARTITIONINGSCOTCHSETHOSTLIST
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matpartitioningsetvertexweights_ matpartitioningsetvertexweights
 #define matsettype_                      matsettype
 #define matmpiaijgetseqaij_              matmpiaijgetseqaij
 #define matmpibaijgetseqbaij_            matmpibaijgetseqbaij          
@@ -173,6 +175,17 @@ static PetscErrorCode ourmatfdcoloringfunctionsnes(SNES ts,Vec x,Vec y,void *ctx
 }
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL matpartitioningsetvertexweights_(MatPartitioning *part,const int weights[],PetscErrorCode *ierr)
+{
+  int len;
+  int *array;
+  *ierr = MatGetLocalSize((*part)->adj,&len,0); if (*ierr) return;
+  *ierr = PetscMalloc(len*sizeof(int),&array); if (*ierr) return;
+  *ierr = PetscMemcpy(array,weights,len*sizeof(int));if (*ierr) return;
+  *ierr = MatPartitioningSetVertexWeights(*part,array);
+}
+
 
 void PETSC_STDCALL matsettype_(Mat *x,CHAR type_name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {

@@ -11,7 +11,7 @@
 
 struct _PetscMapOps {
   PetscErrorCode (*setfromoptions)(PetscMap),
-      (*destroy)(PetscMap);
+                 (*destroy)(PetscMap);
 };
 
 struct _p_PetscMap {
@@ -97,22 +97,22 @@ typedef struct {
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   MPI_Status    *send_status;           /* array of send status */
-  PetscInt       nsends,nrecvs;          /* numbers of sends and receives */
+  PetscInt      nsends,nrecvs;          /* numbers of sends and receives */
   PetscScalar   *svalues,*rvalues;      /* sending and receiving data */
-  PetscInt           rmax;                   /* maximum message length */
-  PetscInt           *nprocs;                /* tmp data used both duiring scatterbegin and end */
-  PetscInt           nprocessed;             /* number of messages already processed */
+  PetscInt      rmax;                   /* maximum message length */
+  PetscInt      *nprocs;                /* tmp data used both during scatterbegin and end */
+  PetscInt      nprocessed;             /* number of messages already processed */
   PetscTruth    donotstash;
   InsertMode    insertmode;
-  PetscInt           *bowners;
+  PetscInt      *bowners;
 } VecStash;
 
 struct _p_Vec {
   PETSCHEADER(struct _VecOps)
   PetscMap               map;
   void                   *data;     /* implementation-specific data */
-  PetscInt                    N,n;      /* global, local vector size */
-  PetscInt                    bs;
+  PetscInt               N,n;      /* global, local vector size */
+  PetscInt               bs;
   ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
   PetscTruth             array_gotten;
@@ -151,8 +151,8 @@ typedef enum { VEC_SCATTER_SEQ_GENERAL,VEC_SCATTER_SEQ_STRIDE,
 */
 typedef struct {
   VecScatterType type;
-  PetscInt            n;                    /* number of components to scatter */
-  PetscInt            *slots;               /* locations of components */
+  PetscInt       n;                    /* number of components to scatter */
+  PetscInt       *slots;               /* locations of components */
   /*
        The next three fields are used in parallel scatters, they contain 
        optimization in the special case that the "to" vector and the "from" 
@@ -160,18 +160,18 @@ typedef struct {
        copies instead of just y[idx[i]] = y[jdx[i]] where idx[i] == jdx[i].
   */
   PetscTruth     nonmatching_computed;
-  PetscInt            n_nonmatching;        /* number of "from"s  != "to"s */
-  PetscInt            *slots_nonmatching;   /* locations of "from"s  != "to"s */
+  PetscInt       n_nonmatching;        /* number of "from"s  != "to"s */
+  PetscInt       *slots_nonmatching;   /* locations of "from"s  != "to"s */
   PetscTruth     is_copy;
-  PetscInt            copy_start;   /* local scatter is a copy starting at copy_start */
-  PetscInt            copy_length;
+  PetscInt       copy_start;   /* local scatter is a copy starting at copy_start */
+  PetscInt       copy_length;
 } VecScatter_Seq_General;
 
 typedef struct {
   VecScatterType type;
-  PetscInt            n;
-  PetscInt            first;
-  PetscInt            step;           
+  PetscInt       n;
+  PetscInt       first;
+  PetscInt       step;           
 } VecScatter_Seq_Stride;
 
 /*
@@ -179,7 +179,7 @@ typedef struct {
 */
 typedef struct {
   VecScatterType type;
-  PetscInt            *count;        /* elements of vector on each processor */
+  PetscInt       *count;        /* elements of vector on each processor */
   PetscScalar    *work1;
   PetscScalar    *work2;        
 } VecScatter_MPI_ToAll;

@@ -7,14 +7,17 @@ static char help[] = "Writes an array to a file, then reads an array from a file
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int         i,ierr,m = 10,fd,size,sz;
-  PetscScalar *avec,*array;
-  Vec         vec;
-  PetscViewer view_out,view_in;
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+  int            fd;
+  PetscInt       i,m = 10,sz;
+  PetscScalar    *avec,*array;
+  Vec            vec;
+  PetscViewer    view_out,view_in;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&sz);CHKERRQ(ierr);
-  if (sz != 1) SETERRQ(1,"This is a uniprocessor example only!");
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
   
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
 
@@ -33,8 +36,8 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryGetDescriptor(view_out,&fd);CHKERRQ(ierr);
 
   /* Write binary output */
-  ierr = PetscBinaryWrite(fd,&m,1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(fd,array,m,PETSC_SCALAR,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,&m,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,array,m,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Destroy the output viewer and work array */
   ierr = PetscViewerDestroy(view_out);CHKERRQ(ierr);
@@ -55,11 +58,11 @@ int main(int argc,char **args)
   ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
 
   /* Read data into vector */
-  ierr = PetscBinaryRead(fd,&size,1,PETSC_INT);CHKERRQ(ierr);
-  if (size <=0) SETERRQ(1,"Error: Must have array length > 0");
+  ierr = PetscBinaryRead(fd,&sz,1,PETSC_INT);CHKERRQ(ierr);
+  if (sz <=0) SETERRQ(1,"Error: Must have array length > 0");
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"reading data in binary from input.dat, size =%d ...\n",size);CHKERRQ(ierr); 
-  ierr = PetscBinaryRead(fd,avec,size,PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"reading data in binary from input.dat, sz =%d ...\n",sz);CHKERRQ(ierr); 
+  ierr = PetscBinaryRead(fd,avec,sz,PETSC_SCALAR);CHKERRQ(ierr);
 
   /* View vector */
   ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);

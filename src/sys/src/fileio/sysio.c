@@ -22,18 +22,20 @@
 #define __FUNCT__ "PetscByteSwapInt"
 /*
   PetscByteSwapInt - Swap bytes in an integer
+
+  Do not know if this is correct for 64 bit integers
 */
-PetscErrorCode PetscByteSwapInt(int *buff,int n)
+PetscErrorCode PetscByteSwapInt(PetscInt *buff,PetscInt n)
 {
-  int  i,j,tmp =0;
-  int  *tptr = &tmp;                /* Need to access tmp indirectly to get */
-  char *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
+  PetscInt  i,j,tmp =0;
+  PetscInt  *tptr = &tmp;                /* Need to access tmp indirectly to get */
+  char      *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
                                    
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<(int) sizeof(int); i++) {
-      ptr2[i] = ptr1[sizeof(int)-1-i];
+    for (i=0; i<(PetscInt) sizeof(PetscInt); i++) {
+      ptr2[i] = ptr1[sizeof(PetscInt)-1-i];
     }
     buff[j] = *tptr;
   }
@@ -45,9 +47,9 @@ PetscErrorCode PetscByteSwapInt(int *buff,int n)
 /*
   PetscByteSwapShort - Swap bytes in a short
 */
-PetscErrorCode PetscByteSwapShort(short *buff,int n)
+PetscErrorCode PetscByteSwapShort(short *buff,PetscInt n)
 {
-  int   i,j;
+  PetscInt   i,j;
   short tmp;
   short *tptr = &tmp;           /* take care pf bug in DEC-ALPHA g++ */
   char  *ptr1,*ptr2 = (char*)&tmp;
@@ -69,9 +71,9 @@ PetscErrorCode PetscByteSwapShort(short *buff,int n)
   PetscByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
 */
-PetscErrorCode PetscByteSwapScalar(PetscScalar *buff,int n)
+PetscErrorCode PetscByteSwapScalar(PetscScalar *buff,PetscInt n)
 {
-  int       i,j;
+  PetscInt  i,j;
   PetscReal tmp,*buff1 = (PetscReal*)buff;
   PetscReal *tptr = &tmp;          /* take care pf bug in DEC-ALPHA g++ */
   char      *ptr1,*ptr2 = (char*)&tmp;
@@ -95,12 +97,12 @@ PetscErrorCode PetscByteSwapScalar(PetscScalar *buff,int n)
 /*
   PetscByteSwapDouble - Swap bytes in a double
 */
-PetscErrorCode PetscByteSwapDouble(double *buff,int n)
+PetscErrorCode PetscByteSwapDouble(double *buff,PetscInt n)
 {
-  int    i,j;
-  double tmp,*buff1 = (double*)buff;
-  double *tptr = &tmp;          /* take care pf bug in DEC-ALPHA g++ */
-  char   *ptr1,*ptr2 = (char*)&tmp;
+  PetscInt i,j;
+  double   tmp,*buff1 = (double*)buff;
+  double   *tptr = &tmp;          /* take care pf bug in DEC-ALPHA g++ */
+  char     *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
@@ -129,10 +131,7 @@ PetscErrorCode PetscByteSwapDouble(double *buff,int n)
    Output Parameters:
 .  p - the buffer
 
-   Options Database Key:
-.   -binary_longints - indicates the file was generated on a Cray vector 
-         machine (not the T3E/D) and the ints are stored as 64 bit 
-         quantities, otherwise they are stored as 32 bit
+
 
    Level: developer
 
@@ -142,72 +141,41 @@ PetscErrorCode PetscByteSwapDouble(double *buff,int n)
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
 
-   Note that Cray C90 and similar machines cannot generate files with 
-   32 bit integers; use the flag -binary_longints to read files from the 
-   C90 on non-C90 machines. Cray T3E/T3D are the same as other Unix
-   machines, not the same as the C90.
-
    Concepts: files^reading binary
    Concepts: binary files^reading
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose()
 @*/
-PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
+PetscErrorCode PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 {
-  PetscErrorCode ierr;
-  int               maxblock = 65536,wsize,err,m = n;
-  static PetscTruth longintset = PETSC_FALSE,longintfile = PETSC_FALSE;
-  PetscTruth        flg;
+#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT)
+  PetscErrorCode    ierr;
+#endif
+  int               maxblock = 65536,wsize,err,m = (int) n;
   char              *pp = (char*)p;
-#if (PETSC_SIZEOF_SHORT != 8)
+#if (PETSC_SIZEOF_INT == 8) || !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_64BIT_INT)
   void              *ptmp = p; 
 #endif
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  if (!longintset) {
-    ierr = PetscOptionsHasName(PETSC_NULL,"-binary_longints",&longintfile);CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = (*PetscHelpPrintf)(PETSC_COMM_SELF,"-binary_longints - for binary file generated\n\
-   on a Cray vector machine (not T3E/T3D)\n");CHKERRQ(ierr);
-    }
-    longintset = PETSC_TRUE;
-  }
 
-#if (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 4)
   if (type == PETSC_INT){
-    if (longintfile) {
-      m *= sizeof(int);
-    } else {
-      /* read them in as shorts, later stretch into ints */
-      m   *= sizeof(short);
-      ierr = PetscMalloc(m,&pp);CHKERRQ(ierr);
-      ptmp = (void*)pp;
-    }
-  }
-#elif (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 8)
-  if (type == PETSC_INT){
-    if (longintfile) {
-      m *= sizeof(int);
-    } else {
-      SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Can only process data file generated on Cray vector machine;\n\
-      if this data WAS then run program with -binary_longints option");
-    }
-  }
+#if (PETSC_SIZEOF_INT == 8)
+    /* read them in as shorts, later stretch into ints */
+    m   *= sizeof(short);
+    ierr = PetscMalloc(m,&pp);CHKERRQ(ierr);
+    ptmp = (void*)pp;
+#elif defined(PETSC_USE_64BIT_INT)
+    /* read them in as int, later stretch into PetscInts */
+    m   *= sizeof(int);
+    ierr = PetscMalloc(m,&pp);CHKERRQ(ierr);
+    ptmp = (void*)pp;
 #else
-  if (type == PETSC_INT) {
-    if (longintfile) {
-       /* read in twice as many ints and later discard every other one */
-       m    *= 2*sizeof(int);
-       ierr = PetscMalloc(m,&pp);CHKERRQ(ierr);
-       ptmp =  (void*)pp;
-    } else {
-       m *= sizeof(int);
-    }
-  }
+    m *= sizeof(int);
 #endif
+  } 
   else if (type == PETSC_SCALAR)  m *= sizeof(PetscScalar);
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
@@ -231,31 +199,23 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif
 
-#if (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 4)
+#if (PETSC_SIZEOF_INT == 8)
   if (type == PETSC_INT){
-    if (!longintfile) {
-      int   *p_int = (int*)p,i;
-      short *p_short = (short *)ptmp;
-      for (i=0; i<n; i++) {
-        p_int[i] = (int)p_short[i];
-      }
-      ierr = PetscFree(ptmp);CHKERRQ(ierr);
+    int   *p_int = (int*)p,i;
+    short *p_short = (short *)ptmp;
+    for (i=0; i<n; i++) {
+      p_int[i] = (int)p_short[i];
     }
+    ierr = PetscFree(ptmp);CHKERRQ(ierr);
   }
-#elif (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 8)
-#else
+#elif defined(PETSC_USE_64BIT_INT)
   if (type == PETSC_INT){
-    if (longintfile) {
-    /* 
-       take the longs (treated as pair of ints) and convert them to ints
-    */
-      int   *p_int  = (int*)p,i;
-      int   *p_intl = (int*)ptmp;
-      for (i=0; i<n; i++) {
-        p_int[i] = (int)p_intl[2*i+1];
-      }
-      ierr = PetscFree(ptmp);CHKERRQ(ierr);
+    PetscInt   *p_int = (PetscInt*)p,i;
+    int       *p_short = (int *)ptmp;
+    for (i=0; i<n; i++) {
+      p_int[i] = (PetscInt)p_short[i];
     }
+    ierr = PetscFree(ptmp);CHKERRQ(ierr);
   }
 #endif
 
@@ -274,7 +234,7 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 .  p      - the buffer
 .  n      - the number of items to write
 .  type   - the type of items to read (PETSC_INT, PETSC_DOUBLE or PETSC_SCALAR)
--  istemp - 0 if buffer data should be preserved, 1 otherwise.
+-  istemp - PETSC_FALSE if buffer data should be preserved, PETSC_TRUE otherwise.
 
    Level: advanced
 
@@ -299,13 +259,13 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 
 .seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose()
 @*/
-PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
+PetscErrorCode PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
 {
-  char *pp = (char*)p;
-  int  err,maxblock,wsize,m = n;
-#if !defined(PETSC_WORDS_BIGENDIAN) || (PETSC_SIZEOF_INT == 8)
+  char           *pp = (char*)p;
+  int            err,maxblock,wsize,m = (int)n;
+#if !defined(PETSC_WORDS_BIGENDIAN) || (PETSC_SIZEOF_INT == 8) ||  defined(PETSC_USE_64BIT_INT)
   PetscErrorCode ierr;
-  void *ptmp = p; 
+  void           *ptmp = p; 
 #endif
 
   PetscFunctionBegin;
@@ -321,12 +281,8 @@ PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int iste
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif
 
-#if (PETSC_SIZEOF_INT == 8)
   if (type == PETSC_INT){
-    /* 
-      integers on the Cray T3d/e are 64 bits so we copy the big
-      integers into a short array and write those out.
-    */
+#if (PETSC_SIZEOF_INT == 8)
     int   *p_int = (int*)p,i;
     short *p_short;
     m       *= sizeof(short);
@@ -337,10 +293,21 @@ PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int iste
     for (i=0; i<n; i++) {
       p_short[i] = (short) p_int[i];
     }
-  }
+#elif defined(PETSC_USE_64BIT_INT)
+    PetscInt   *p_int = (PetscInt*)p,i;
+    int        *p_short;
+    m       *= sizeof(int);
+    ierr    = PetscMalloc(m,&pp);CHKERRQ(ierr);
+    ptmp    = (void*)pp;
+    p_short = (int*)pp;
+
+    for (i=0; i<n; i++) {
+      p_short[i] = (int) p_int[i];
+    }
 #else
-  if (type == PETSC_INT)          m *= sizeof(int);
+    m *= sizeof(int);
 #endif
+  }
   else if (type == PETSC_SCALAR)  m *= sizeof(PetscScalar);
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
@@ -365,7 +332,7 @@ PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int iste
   }
 #endif
 
-#if (PETSC_SIZEOF_INT == 8)
+#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT)
   if (type == PETSC_INT){
     ierr = PetscFree(ptmp);CHKERRQ(ierr);
   }
@@ -483,7 +450,7 @@ PetscErrorCode PetscBinaryClose(int fd)
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
 @*/
-PetscErrorCode PetscBinarySeek(int fd,int size,PetscBinarySeekType whence,int *offset)
+PetscErrorCode PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
 {
   int iwhence=0;
 
@@ -498,9 +465,9 @@ PetscErrorCode PetscBinarySeek(int fd,int size,PetscBinarySeekType whence,int *o
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown seek location");
   }
 #if defined(PARCH_win32)
-  *offset = _lseek(fd,(long)size,iwhence);
+  *offset = _lseek(fd,(long)off,iwhence);
 #else
-  *offset = lseek(fd,(off_t)size,iwhence);
+  *offset = lseek(fd,off,iwhence);
 #endif
 
   PetscFunctionReturn(0);
@@ -537,21 +504,16 @@ PetscErrorCode PetscBinarySeek(int fd,int size,PetscBinarySeekType whence,int *o
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
 
-   Note that Cray C90 and similar machines cannot generate files with 
-   32 bit integers; use the flag -binary_longints to read files from the 
-   C90 on non-C90 machines. Cray T3E/T3D are the same as other Unix
-   machines, not the same as the C90.
-
    Concepts: files^synchronized reading of binary files
    Concepts: binary files^reading, synchronized
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead()
 @*/
-PetscErrorCode PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,int n,PetscDataType type)
+PetscErrorCode PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type)
 {
   PetscErrorCode ierr;
-  int          rank;
-  MPI_Datatype mtype;
+  PetscMPIInt    rank;
+  MPI_Datatype   mtype;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -594,15 +556,15 @@ PetscErrorCode PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,int n,Pe
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
 @*/
-PetscErrorCode PetscSynchronizedBinarySeek(MPI_Comm comm,int fd,int size,PetscBinarySeekType whence,int *offset)
+PetscErrorCode PetscSynchronizedBinarySeek(MPI_Comm comm,int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
 {
   PetscErrorCode ierr;
-  int rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscBinarySeek(fd,size,whence,offset);CHKERRQ(ierr);
+    ierr = PetscBinarySeek(fd,off,whence,offset);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -94,7 +94,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
   if (!PetscOptionsPublishCount) {
     PetscOptionsAMS last;
     char            option[256],value[1024],tmp[32];
-    int             j;
+    PetscInt             j;
 
     if (amspub.amem < 0) SETERRQ(PETSC_ERR_ORDER,"Called without a call to PetscOptionsBegin()");
     ierr = AMS_Memory_publish(amspub.amem);CHKERRQ(ierr);
@@ -176,7 +176,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
 static PetscErrorCode PetscOptionsCreate_Private(const char opt[],const char text[],const char man[],PetscOptionsAMS *amsopt)
 {
   PetscErrorCode ierr;
-  static int      mancount = 0;
+  static PetscInt      mancount = 0;
   PetscOptionsAMS next;
   char            manname[16];
 
@@ -241,7 +241,7 @@ static PetscErrorCode PetscOptionsCreate_Private(const char opt[],const char tex
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PetscOptionsInt(const char opt[],const char text[],const char man[],int defaultv,int *value,PetscTruth *set)
+PetscErrorCode PetscOptionsInt(const char opt[],const char text[],const char man[],PetscInt defaultv,PetscInt *value,PetscTruth *set)
 {
   PetscErrorCode ierr;
 
@@ -296,7 +296,7 @@ PetscErrorCode PetscOptionsInt(const char opt[],const char text[],const char man
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PetscOptionsString(const char opt[],const char text[],const char man[],const char defaultv[],char value[],int len,PetscTruth *set)
+PetscErrorCode PetscOptionsString(const char opt[],const char text[],const char man[],const char defaultv[],char value[],size_t len,PetscTruth *set)
 {
   PetscErrorCode ierr;
 
@@ -517,7 +517,7 @@ PetscErrorCode PetscOptionsName(const char opt[],const char text[],const char ma
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PetscOptionsList(const char opt[],const char ltext[],const char man[],PetscFList list,const char defaultv[],char value[],int len,PetscTruth *set)
+PetscErrorCode PetscOptionsList(const char opt[],const char ltext[],const char man[],PetscFList list,const char defaultv[],char value[],PetscInt len,PetscTruth *set)
 {
   PetscErrorCode ierr;
 
@@ -584,13 +584,13 @@ PetscErrorCode PetscOptionsList(const char opt[],const char ltext[],const char m
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char *list[],int ntext,const char defaultv[],int *value,PetscTruth *set)
+PetscErrorCode PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char *list[],PetscInt ntext,const char defaultv[],PetscInt *value,PetscTruth *set)
 {
   PetscErrorCode ierr;
   size_t         alen,len = 0;
   char           *svalue;
   PetscTruth     aset,flg;
-  int            i;
+  PetscInt       i;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
@@ -912,10 +912,10 @@ PetscErrorCode PetscOptionsLogical(const char opt[],const char text[],const char
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PetscOptionsRealArray(const char opt[],const char text[],const char man[],PetscReal *value,int *n,PetscTruth *set)
+PetscErrorCode PetscOptionsRealArray(const char opt[],const char text[],const char man[],PetscReal *value,PetscInt *n,PetscTruth *set)
 {
   PetscErrorCode ierr;
-  int i;
+  PetscInt        i;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
@@ -979,10 +979,10 @@ PetscErrorCode PetscOptionsRealArray(const char opt[],const char text[],const ch
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList(), PetscOptionsRealArray()
 @*/
-PetscErrorCode PetscOptionsIntArray(const char opt[],const char text[],const char man[],int *value,int *n,PetscTruth *set)
+PetscErrorCode PetscOptionsIntArray(const char opt[],const char text[],const char man[],PetscInt *value,PetscInt *n,PetscTruth *set)
 {
   PetscErrorCode ierr;
-  int i;
+  PetscInt       i;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
@@ -1049,7 +1049,7 @@ PetscErrorCode PetscOptionsIntArray(const char opt[],const char text[],const cha
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PetscOptionsStringArray(const char opt[],const char text[],const char man[],char *value[],int *nmax,PetscTruth *set)
+PetscErrorCode PetscOptionsStringArray(const char opt[],const char text[],const char man[],char *value[],PetscInt *nmax,PetscTruth *set)
 {
   PetscErrorCode ierr;
 

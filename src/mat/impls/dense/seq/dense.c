@@ -824,8 +824,8 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
 static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
-  PetscErrorCode ierr;
-  int               ict,j,n = A->n,m = A->m,i,fd,*col_lens,nz = m*n;
+  PetscErrorCode    ierr;
+  PetscInt          ict,j,n = A->n,m = A->m,i,fd,*col_lens,nz = m*n;
   PetscScalar       *v,*anonz,*vals;
   PetscViewerFormat format;
   
@@ -840,7 +840,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
     col_lens[1] = m;
     col_lens[2] = n;
     col_lens[3] = MATRIX_BINARY_FORMAT_DENSE;
-    ierr = PetscBinaryWrite(fd,col_lens,4,PETSC_INT,1);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,col_lens,4,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
     /* write out matrix, by rows */
@@ -851,7 +851,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
         vals[i + j*m] = *v++;
       }
     }
-    ierr = PetscBinaryWrite(fd,vals,n*m,PETSC_SCALAR,0);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,vals,n*m,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscFree(vals);CHKERRQ(ierr);
   } else {
     ierr = PetscMalloc((4+nz)*sizeof(int),&col_lens);CHKERRQ(ierr);
@@ -862,7 +862,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
 
     /* store lengths of each row and write (including header) to file */
     for (i=0; i<m; i++) col_lens[4+i] = n;
-    ierr = PetscBinaryWrite(fd,col_lens,4+m,PETSC_INT,1);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,col_lens,4+m,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
 
     /* Possibly should write in smaller increments, not whole matrix at once? */
     /* store column indices (zero start index) */
@@ -870,7 +870,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
     for (i=0; i<m; i++) {
       for (j=0; j<n; j++) col_lens[ict++] = j;
     }
-    ierr = PetscBinaryWrite(fd,col_lens,nz,PETSC_INT,0);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,col_lens,nz,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
     /* store nonzero values */
@@ -882,7 +882,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
         anonz[ict++] = *v; v += a->lda;
       }
     }
-    ierr = PetscBinaryWrite(fd,anonz,nz,PETSC_SCALAR,0);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,anonz,nz,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscFree(anonz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

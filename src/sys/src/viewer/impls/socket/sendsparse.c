@@ -32,26 +32,26 @@ $     MatView(Mat matrix,PetscViewer viewer)
 
 .seealso: PetscViewerSocketOpen(), MatView()
 */
-PetscErrorCode PetscViewerSocketPutSparse_Private(PetscViewer vw,int m,int n,int nnz,PetscScalar *v,int *r,int *c)
+PetscErrorCode PetscViewerSocketPutSparse_Private(PetscViewer vw,PetscInt m,PetscInt n,PetscInt nnz,PetscScalar *v,PetscInt *r,PetscInt *c)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)vw->data;
   PetscErrorCode     ierr;
   int                t = vmatlab->port,type = SPARSEREAL,value;
 
   PetscFunctionBegin;
-  ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,&m,1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,&n,1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,&nnz,1,PETSC_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&m,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&nnz,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   value = 0;
 #else
   value = 1;
 #endif
-  ierr = PetscBinaryWrite(t,&value,1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,v,nnz,PETSC_REAL,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,r,m+1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,c,nnz,PETSC_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&value,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,v,nnz,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,r,m+1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,c,nnz,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

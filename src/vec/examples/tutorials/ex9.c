@@ -25,10 +25,12 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int          rank,nlocal = 6,nghost = 2,ifrom[2],size,ierr,i,rstart,rend;
-  PetscTruth   flg;
-  PetscScalar  value,*array,*tarray=0;
-  Vec          lx,gx,gxs;
+  PetscErrorCode rank,size;
+  PetscInt       nlocal = 6,nghost = 2,ifrom[2],i,rstart,rend;
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscScalar    value,*array,*tarray=0;
+  Vec            lx,gx,gxs;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

@@ -217,20 +217,20 @@ static PetscErrorCode VecView_Seq_Draw(Vec xin,PetscViewer v)
 #define __FUNCT__ "VecView_Seq_Binary"
 static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 {
-  Vec_Seq  *x = (Vec_Seq *)xin->data;
+  Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  int      fdes,cookie=VEC_FILE_COOKIE;
-  PetscInt n = xin->n;
-  FILE     *file;
+  int            fdes;
+  PetscInt       n = xin->n,cookie=VEC_FILE_COOKIE;
+  FILE           *file;
 
   PetscFunctionBegin;
   ierr  = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
   /* Write vector header */
-  ierr = PetscBinaryWrite(fdes,&cookie,1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(fdes,&n,1,PETSC_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fdes,&cookie,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fdes,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Write vector contents */
-  ierr = PetscBinaryWrite(fdes,x->array,n,PETSC_SCALAR,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fdes,x->array,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (file && xin->bs > 1) {

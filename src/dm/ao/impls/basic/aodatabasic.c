@@ -66,7 +66,7 @@ PetscErrorCode AODataView_Basic_Binary(AOData ao,PetscViewer viewer)
   ierr  = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
 
   /* write out number of keys */
-  ierr = PetscBinaryWrite(fd,&ao->nkeys,1,PETSC_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,&ao->nkeys,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 
   while (key) {
     N   = key->N;
@@ -76,11 +76,11 @@ PetscErrorCode AODataView_Basic_Binary(AOData ao,PetscViewer viewer)
     */
     ierr = PetscMemzero(paddedname,256*sizeof(char));CHKERRQ(ierr);
     ierr = PetscStrncpy(paddedname,key->name,255);CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,paddedname,256,PETSC_CHAR,0);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,paddedname,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
     /* write out the number of indices */
-    ierr = PetscBinaryWrite(fd,&key->N,1,PETSC_INT,0);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,&key->N,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     /* write out number of segments */
-    ierr = PetscBinaryWrite(fd,&key->nsegments,1,PETSC_INT,0);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,&key->nsegments,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
    
     /* loop over segments writing them out */
     segment = key->segments;
@@ -91,11 +91,11 @@ PetscErrorCode AODataView_Basic_Binary(AOData ao,PetscViewer viewer)
       */
       ierr = PetscMemzero(paddedname,256*sizeof(char));CHKERRQ(ierr);
       ierr = PetscStrncpy(paddedname,segment->name,255);CHKERRQ(ierr);
-      ierr = PetscBinaryWrite(fd,paddedname,256,PETSC_CHAR,0);CHKERRQ(ierr);
-      ierr = PetscBinaryWrite(fd,&segment->bs,1,PETSC_INT,0);CHKERRQ(ierr);
-      ierr = PetscBinaryWrite(fd,&segment->datatype,1,PETSC_INT,0);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,paddedname,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,&segment->bs,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,&segment->datatype,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
       /* write out the data */
-      ierr = PetscBinaryWrite(fd,segment->data,N*segment->bs,segment->datatype,0);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fd,segment->data,N*segment->bs,segment->datatype,PETSC_FALSE);CHKERRQ(ierr);
       segment = segment->next;
     }
     key = key->next;

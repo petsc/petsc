@@ -260,9 +260,10 @@ PetscErrorCode MatGetValues_SeqAIJ(Mat A,int m,const int im[],int n,const int in
 #define __FUNCT__ "MatView_SeqAIJ_Binary"
 PetscErrorCode MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  int        i,fd,*col_lens;
+  PetscInt       i,*col_lens;
+  int            fd;
 
   PetscFunctionBegin;  
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
@@ -276,14 +277,14 @@ PetscErrorCode MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
   for (i=0; i<A->m; i++) {
     col_lens[4+i] = a->i[i+1] - a->i[i];
   }
-  ierr = PetscBinaryWrite(fd,col_lens,4+A->m,PETSC_INT,1);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,col_lens,4+A->m,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
   /* store column indices (zero start index) */
-  ierr = PetscBinaryWrite(fd,a->j,a->nz,PETSC_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,a->j,a->nz,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 
   /* store nonzero values */
-  ierr = PetscBinaryWrite(fd,a->a,a->nz,PETSC_SCALAR,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,a->a,a->nz,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -21,9 +21,10 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Vec      x,y;
-  int      n = 20,ierr,i,row;
-  PetscScalar   value;
+  Vec            x,y;
+  PetscInt       n = 20,i,row;
+  PetscErrorCode ierr;
+  PetscScalar    value;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -70,9 +71,6 @@ int main(int argc,char **argv)
     ierr = VecSetValues(x,1,&row,&value,ADD_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-
-
-    ierr = PetscSleep(5);
   }
 
 

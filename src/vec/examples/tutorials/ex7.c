@@ -24,7 +24,8 @@ EXTERN_C_END
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int              ierr,m = 10;
+  PetscErrorCode   ierr;
+  PetscInt         m = 10;
   int              fcomm;
   Vec              vec;
 
@@ -60,7 +61,7 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,int* ierr)
 {
   MPI_Comm comm;
-  int size;
+  PetscInt vsize;
 
   /*
     Translate Fortran integer pointer back to C and
@@ -69,7 +70,7 @@ void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,int* ierr)
   *ierr = MPIFortranCommToCComm(*fcomm,&comm);
   
   /* Some PETSc/MPI operations on Vec/Communicator objects */
-  *ierr = VecGetSize(*fvec,&size);
+  *ierr = VecGetSize(*fvec,&vsize);
   *ierr = MPI_Barrier(comm);
 
 }
