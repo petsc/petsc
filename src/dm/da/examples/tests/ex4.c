@@ -1,5 +1,9 @@
+#ifndef lint
+static char vcid[] = "$Id: ex6.c,v 1.3 1995/08/22 02:35:32 curfman Exp $";
+#endif
   
-static char help[] = "This example tests various 2d DA routines.\n\n";
+static char help[] = 
+"This example tests various 2-dimensional DA routines.\n\n";
 
 #include "petsc.h"
 #include "da.h"
@@ -35,8 +39,7 @@ int main(int argc,char **argv)
   if (OptionsHasName(0,"-xywrap")) wrap = DA_XYPERIODIC;
   if (OptionsHasName(0,"-star")) st = DA_STENCIL_STAR;
 
-  ierr = DACreate2d(MPI_COMM_WORLD,wrap,st,M,N,m,n,w,s,&da); 
-  CHKERRA(ierr);
+  ierr = DACreate2d(MPI_COMM_WORLD,wrap,st,M,N,m,n,w,s,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
 
@@ -44,10 +47,8 @@ int main(int argc,char **argv)
   value = 1;
   ierr = VecSet(&value,global); CHKERRA(ierr);
 
-  ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); 
-  CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); 
-  CHKERRA(ierr);
+  ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
 
   value = mytid;
   ierr = VecScale(&value,local); CHKERRA(ierr);
@@ -57,15 +58,13 @@ int main(int argc,char **argv)
   ierr = VecView(global,SYNC_STDOUT_VIEWER); CHKERRA(ierr); 
   MPIU_printf (MPI_COMM_WORLD,"\n\n");
 
-  ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); 
-  CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); 
-  CHKERRA(ierr);
+  ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
 
   MPIU_printf (MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",mytid);
 
-  DAView(da,(Viewer) win);
-  DADestroy(da);
+  ierr = DAView(da,(Viewer) win); CHKERRA(ierr);
+  ierr = DADestroy(da); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

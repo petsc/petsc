@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.6 1995/08/02 01:59:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.7 1995/08/02 02:06:19 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -27,11 +27,11 @@ int main( int argc, char **argv )
 {
   SNES           snes;               /* SNES context */
   SNESMethod     method = SNES_NLS;  /* nonlinear solution method */
-  Vec            x,r,U,F;
   Mat            J;                  /* Jacobian matrix */
-  int            ierr, its, N = 5,i,start,end,n;
-  Scalar         xp,v,*FF,*UU;
-  ApplicationCtx ctx;
+  ApplicationCtx ctx;                /* user-defined contest */
+  Vec            x, r, U, F;
+  Scalar         xp, *FF, *UU;
+  int            ierr, its, N = 5, i, start, end, n;
 
   PetscInitialize( &argc, &argv, 0,0 );
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
@@ -144,11 +144,10 @@ int FormInitialGuess(SNES snes,Vec x,void *dummy)
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
   ApplicationCtx *ctx = (ApplicationCtx*) dummy;
-  DA             da = (DA) ctx->da;
-  Scalar         *xx, *ff,*FF,d, A, s;
-  int            i, j, ierr, n,mytid = ctx->mytid,numtid = ctx->numtid;
+  Scalar         *xx, d, A;
+  int            i, j, ierr, n, mytid = ctx->mytid, numtid = ctx->numtid;
   Vec            xl;
-  int            start,end,N,ii,istart,iend;
+  int            start, end, N, ii, istart, iend;
 
   xl = ctx->xl; 
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);

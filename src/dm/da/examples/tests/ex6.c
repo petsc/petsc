@@ -1,7 +1,11 @@
+#ifndef lint
+static char vcid[] = "$Id: ex1.c,v 1.28 1995/07/23 18:25:37 curfman Exp $";
+#endif
       
 /* Peter Mell created this file on 7/25/95 */
 
-static char help[] = "This example tests various 3d DA routines.\n\n";
+static char help[] = 
+"This example tests various 3-dimensional DA routines.\n\n";
 
 #include "petsc.h"
 #include "da.h"
@@ -67,8 +71,8 @@ int main(int argc,char **argv)
     ierr = VecView(local,SYNC_STDOUT_VIEWER); CHKERRA(ierr); 
   }
  
-  DAView(da,(Viewer) win);   
-  DADestroy(da);
+  ierr = DAView(da,(Viewer) win); CHKERRA(ierr);
+  ierr = DADestroy(da); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }
