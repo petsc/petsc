@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.11 2001/03/16 18:57:16 bsmith Exp bsmith $ */
+/* $Id: ex20.c,v 1.12 2001/03/16 20:20:35 bsmith Exp bsmith $ */
 
 
 static char help[] ="Solves nonlinear Radiative Transport PDE with multigrid.\n\
@@ -85,7 +85,7 @@ int main(int argc,char **argv)
   /*
       Create the multilevel DA data structure 
   */
-  ierr = DMMGCreate(PETSC_COMM_WORLD,3,&user,&dmmg);CHKERRQ(ierr);
+  ierr = DMMGCreate(PETSC_COMM_WORLD,2,&user,&dmmg);CHKERRQ(ierr);
 
   /*
       Set the DA (grid structure) for the grids.
@@ -141,7 +141,7 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   ierr = DAVecGetArray((DA)dmmg->dm,X,(void**)&x);CHKERRQ(ierr);
 
   /* Compute initial guess */
-  for (k=ys; k<ys+ym; k++) {
+  for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
         x[k][j][i] = tleft;
