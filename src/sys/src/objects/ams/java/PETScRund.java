@@ -1,6 +1,6 @@
-/*$Id: PETScRund.java,v 1.8 2001/02/15 17:17:51 bsmith Exp $*/
+/*$Id: PETScRund.java,v 1.6 2000/11/08 15:19:13 bsmith Exp $*/
 /*
-     Demon that serves requests to compile and run a PETSc program
+     Compiles and runs a PETSc program
 */
 
 import java.lang.Thread;
@@ -15,8 +15,7 @@ import java.util.*;
 public class PETScRund 
 {
   Hashtable        systems[];
-  static final int MACHINE = 0,DIRECTORY = 1,MAXNP = 2,EXAMPLES = 3, EXAMPLESHELP = 4;
-  String           LOC = null;
+  static final int MACHINE = 0,DIRECTORY = 1,MAXNP = 2,EXAMPLES = 3;
 
   public PETScRund() {
     try {
@@ -24,10 +23,8 @@ public class PETScRund
     } catch (java.io.IOException e) {;}
   }
   
-  public void start(String s[]) throws java.io.IOException
+  public void start() throws java.io.IOException
   {
-    if (s.length == 1) LOC = s[0];
-
     ServerSocket serve = new ServerSocket(2000);
     while (true) {
       Socket sock  = serve.accept();
@@ -52,7 +49,6 @@ public class PETScRund
           os.writeObject(systems[DIRECTORY]);
           os.writeObject(systems[MAXNP]);
           os.writeObject(systems[EXAMPLES]);
-          os.writeObject(systems[EXAMPLESHELP]);
           return;
         }
 
@@ -60,23 +56,21 @@ public class PETScRund
         String     bopt       = properties.getProperty("BOPT");
         int        np         = Integer.parseInt(properties.getProperty("NUMBERPROCESSORS"));
         String     directory  = properties.getProperty("DIRECTORY");
-
-        /*
-        if (!systems[EXAMPLES].containsKey(directory)) { 
+        if (!systems[EXAMPLES].containsKey(directory)) { /* bad directory sent from client */
           System.out.println("Requested example directory "+directory+" that does not exist");
           return;
-	  } */
+        }
         String     example    = properties.getProperty("EXAMPLE");
-        ArrayList  ex = (ArrayList) systems[EXAMPLES].get(directory);
+        ArrayList ex = (ArrayList) systems[EXAMPLES].get(directory);
         if (!ex.contains(example)) {
           System.out.println("Requested example "+example+" that does not exist");
           return;
         }
-
         String     command    = null,options = "";
         if (properties.getProperty("COMMAND").equals("make")) {
           command = "petscmake ";
-        } else if (properties.getProperty("COMMAND").equals("maketest")) {
+        }
+        if (properties.getProperty("COMMAND").equals("maketest")) {
           command = "petscmake ";
           example = "run"+example;
         } else {
@@ -85,7 +79,7 @@ public class PETScRund
 	  if (maxnp < np) np = maxnp;
           command = "petscrun "+np+" ";
           if (properties.getProperty("OPTIONS") != null) {
-	      options += properties.getProperty("OPTIONS");
+	      options = properties.getProperty("OPTIONS");
           }
           bopt = "";
         }
@@ -101,8 +95,8 @@ public class PETScRund
         PumpStream pump = new PumpStream(make,sock.getOutputStream());
         int len = pump.Pump();
         System.out.println("PETScRund: Done returning output, length = "+len);
-      } catch (java.io.IOException ex) {System.out.println("PETScRund: bad running program");}
-        catch (java.lang.ClassNotFoundException ex) {System.out.println("PETScRund: bad class running program");} 
+      } catch (java.io.IOException ex) {System.out.println("bad");}
+        catch (java.lang.ClassNotFoundException ex) {System.out.println("bad");} 
     }
   }
 
@@ -111,17 +105,16 @@ public class PETScRund
   */
   public Hashtable[] load() throws java.io.IOException
   {
+    LineNumberReader input = new LineNumberReader(new InputStreamReader(new FileInputStream("PETScRundrc")));
     String           edirectory = null;
-    ArrayList        examples = null,exampleshelp = null;
+    ArrayList        examples = null;
        
-    systems = new Hashtable[5];
-    systems[MACHINE]       = new Hashtable();
-    systems[DIRECTORY]     = new Hashtable();
-    systems[MAXNP]         = new Hashtable();
-    systems[EXAMPLES]      = new Hashtable();
-    systems[EXAMPLESHELP]  = new Hashtable();
+    systems = new Hashtable[4];
+    systems[MACHINE]   = new Hashtable();
+    systems[DIRECTORY] = new Hashtable();
+    systems[MAXNP]     = new Hashtable();
+    systems[EXAMPLES]  = new Hashtable();
 
-    LineNumberReader input = new LineNumberReader(new InputStreamReader(new FileInputStream("PETScRun.systems")));
     String line = null;
     while (true) {
       try {
@@ -138,64 +131,33 @@ public class PETScRund
         systems[MACHINE].put(arch,toke.nextToken());
         systems[DIRECTORY].put(arch,toke.nextToken());
         systems[MAXNP].put(arch,toke.nextToken());
+      } else if (cnt == 2) { /* found a new directory */
+        if (examples != null) {
+          System.out.println("putting directory "+edirectory);
+          systems[EXAMPLES].put(edirectory,examples);
+        };
+        examples = new ArrayList();
+        edirectory = toke.nextToken();
+        examples.add(toke.nextToken());
+      } else if (cnt == 1) { /* found a new example */
+        examples.add(toke.nextToken());
       }
     }
-
-    input = new LineNumberReader(new InputStreamReader(new FileInputStream("PETScRun.examples")));
-    line = null;
-    String dir = null,sec;
-    while (true) {
-      try {
-        line = input.readLine();
-      } catch (java.io.IOException e) {break;}
-      if (line == null) break;
-      if (line.length() == 0) continue;
-      if (line.charAt(0) == '#') continue;
-      System.out.println(line);
-      if (line.startsWith("src")) {
-        /* save information from previous directory */
-        if (dir != null) {
-          systems[EXAMPLES].put(dir,examples);
-          systems[EXAMPLESHELP].put(dir,exampleshelp);
-          dir = null;
-        }
-        /* we have a new directory */
-	int i = line.indexOf(' ');
-        dir = line.substring(0,i-1);
-        sec = line.substring(i+1);
-        examples     = new ArrayList();
-        exampleshelp = new ArrayList();
-      } else {
-          /* we have a new example */
-        examples.add(line.substring(0,line.indexOf('.')));
-	int i = line.indexOf(' ');
-        if (i > 0) {
-          sec = line.substring(i+1);
-        } else {
-	  sec = null;
-        }
-        exampleshelp.add(sec);
-      }
-    }
-    if (dir != null) {
-      systems[EXAMPLES].put(dir,examples);
-      systems[EXAMPLESHELP].put(dir,exampleshelp);
-    }
+    if (examples != null) {
+          System.out.println("putting directory "+edirectory);
+      systems[EXAMPLES].put(edirectory,examples);
+    } 
     return systems;
   }
 
-  public static void main(String[] args)
+  public static void main(String s[])
   {
     PETScRund prun = new PETScRund();
     try {
-      prun.start(args);
+      prun.start();
     } catch (java.io.IOException ex) {;}
   }
 }
-
-
-
-
 
 
 
