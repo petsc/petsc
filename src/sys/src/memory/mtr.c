@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.66 1997/01/01 03:36:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.67 1997/01/06 20:40:21 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -25,19 +25,21 @@ int  PetscTrFreeDefault( void *, int, char *,char *,char *);
   even then is suspicious.
 */
 void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEE;
-int  TrMallocUsed = 0;
+static int TrMallocUsed = 0;
+static int TrUseNan;   /* unitialize Scalar arrays with Nans */
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSetUseTrMalloc_Private"
-int PetscSetUseTrMalloc_Private()
+int PetscSetUseTrMalloc_Private(int usenan)
 {
   int ierr;
 #if !defined(PETSC_INSIGHT)
-  PetscLow  = (void *) 0xEEEEEEEE;
-  PetscHigh = (void *) 0x0;
+  PetscLow     = (void *) 0xEEEEEEEE;
+  PetscHigh    = (void *) 0x0;
 #endif
   ierr         = PetscSetMalloc(PetscTrMallocDefault,PetscTrFreeDefault); CHKERRQ(ierr);
   TrMallocUsed = 1;
+  TrUseNan     = usenan;
   return 0;
 }
 
@@ -279,6 +281,11 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
     TRMaxMemId = TRid;
   }
   frags     ++;
+
+  if (TrUseNan && sizeof(Scalar)*(nsize/sizeof(Scalar)) == nsize) {
+    ierr = PetscInitializeNans((Scalar*) inew,nsize/sizeof(Scalar)); 
+    if (ierr) return 0;
+  }
   return (void *)inew;
 }
 
@@ -452,6 +459,54 @@ int PetscTrDump( FILE *fp )
 int  PetscTrDebugLevel(int level )
 {
   TRdebugLevel = level;
+  return 0;
+}
+
+#if defined(PARCH_IRIX)
+static long nanval[2] = {0x7ff7ffff,0xffffffff }; /* Quiet nan */
+#elif defined(PARCH_sun4)
+#else
+static long nanval[2] = {-1,-1}; /* Probably a bad floating point value */
+#endif
+
+typedef union { long l[2]; double d; } NANDouble;
+
+#include <math.h>
+/*@
+     PetscInitializeNans - Intialize certain memory locations with NANs.
+           This routine is used to mark an array as unitialized so that
+           if values are used for computation, with out being set a 
+           floating point exception is generated.
+
+  Input parameters:
+. p   - pointer to data
+. n   - length of data (in doubles)
+
+  Options Database:
+.  -trmalloc_nan
+
+@*/
+int PetscInitializeNans(Scalar *p,int n )
+{
+  Scalar     nval;
+
+#if defined(PARCH_sun4) 
+#if defined(PETSC_COMPLEX)
+  nval = signaling_nan() + signaling_nan()*PETSC_i;
+#else
+  nval = signaling_nan();
+#endif
+#else
+  NANDouble  nd;
+  nd.l[0] = nanval[0];
+  nd.l[1] = nanval[1];
+#if defined(PETSC_COMPLEX)
+  nval = nd.d + nd.d*PETSC_i;
+#else
+  nval = nd.d;
+#endif
+#endif
+  while (n--) *p++   = nval;
   return 0;
 }
 
