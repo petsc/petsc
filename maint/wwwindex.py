@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.20 1999/03/15 23:26:14 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.21 1999/03/16 20:00:02 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -184,10 +184,10 @@ def main():
       mandirs   = getallmandirs(dirs)
 
       levels = ['beginner','intermediate','advanced','developer','none']
-      titles = ['Beginner: basic options',
-                'Intermediate: algorithmic customization',
-                'Advanced: more complex customization, including user-provided algorithms',
-                'Developer: primarily for developers',
+      titles = ['Beginner - Basic usage',
+                'Intermediate - Setting options for algorithms and data structures', 
+                'Advanced - Setting more advanced options and customization',
+                'Developer - Interfaces intended primarily for library developers, not for typical applications programmers',
                 'None: Not yet cataloged']
       for dirname in mandirs:
             table       = createtable(dirname,levels)
