@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.126 2001/01/23 20:57:12 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.127 2001/03/14 19:50:24 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -139,15 +139,14 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRQ(ierr);
   if (!matrix_free) {
-    int dims[2];
+    int dims[2],starts[2];
 
     ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,m,m,PETSC_DECIDE,PETSC_DECIDE,&J);CHKERRQ(ierr);
     ierr = MatSetFromOptions(J);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(J,5,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
-    ierr = DAGetInfo(user.da,PETSC_IGNORE,&dims[1],&dims[0],PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
-    ierr = MatSetStencil(J,2,dims,1);CHKERRQ(ierr);
+    ierr = DAGetGhostCorners(user.da,&starts[1],&starts[0],PETSC_IGNORE,&dims[1],&dims[0],PETSC_IGNORE);CHKERRQ(ierr);
+    ierr = MatSetStencil(J,2,dims,starts,1);CHKERRQ(ierr);
 
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
 
@@ -449,11 +448,11 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
         ierr = MatSetValuesStencil(jac,1,row,1,row,&one,INSERT_VALUES);CHKERRQ(ierr);
       } else {
       /* interior grid points */
-        v[0] = -hxdhy;                                                  col[0] = j - 1;  col[1] = i;
-        v[1] = -hydhx;                                                  col[2] = j;      col[3] = i-1;
-        v[2] = two*(hydhx + hxdhy) - sc*lambda*PetscExpScalar(x[j][i]); col[4] = row[0]; col[5] = row[1];
-        v[3] = -hydhx;                                                  col[6] = j;      col[7] = i+1;
-        v[4] = -hxdhy;                                                  col[8] = j + 1;  col[9] = i;
+        v[0] = -hxdhy;                                           col[0] = j - 1;  col[1] = i;
+        v[1] = -hydhx;                                           col[2] = j;      col[3] = i-1;
+        v[2] = two*(hydhx + hxdhy) - sc*PetscExpScalar(x[j][i]); col[4] = row[0]; col[5] = row[1];
+        v[3] = -hydhx;                                           col[6] = j;      col[7] = i+1;
+        v[4] = -hxdhy;                                           col[8] = j + 1;  col[9] = i;
         ierr = MatSetValuesStencil(jac,1,row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
