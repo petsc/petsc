@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.189 1998/04/30 17:35:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.190 1998/05/04 02:32:12 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -10,58 +10,17 @@ static char vcid[] = "$Id: options.c,v 1.189 1998/04/30 17:35:23 bsmith Exp bsmi
 */
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
-#include <math.h>
 #include "sys.h"
-#include "src/sys/nreg.h"
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
-#include "pinclude/pviewer.h"
-#include "petsc.h"
-#include "sys.h"
-#include "pinclude/ptime.h"
-#if defined(HAVE_PWD_H)
-#include <pwd.h>
-#endif
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if !defined(PARCH_nt)
-#include <sys/param.h>
-#include <sys/utsname.h>
-#endif
-#if defined(PARCH_nt)
-#include <windows.h>
-#include <io.h>
-#include <direct.h>
-#endif
-#if defined (PARCH_nt_gnu)
-#include <windows.h>
-#endif
-#include <fcntl.h>
-#include <time.h>  
-#if defined(HAVE_SYS_SYSTEMINFO_H)
-#include <sys/systeminfo.h>
-#endif
-#include "pinclude/petscfix.h"
-
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024
-#endif
-
 #include "pinclude/petscfix.h"
 
 /* 
-    For simplicity, we begin with a static size database
+    For simplicity, we use a static size database
 */
 #define MAXOPTIONS 256
 #define MAXALIASES 25
@@ -76,11 +35,6 @@ typedef struct {
 } OptionsTable;
 
 static OptionsTable *options = 0;
-
-int        OptionsCheckInitial_Private(),
-           OptionsCreate_Private(int*,char***,char*),
-           OptionsSetAlias_Private(char *,char *);
-
 
 #undef __FUNC__  
 #define __FUNC__ "PetscGetProgramName"
@@ -120,11 +74,11 @@ int PetscSetProgramName(char *name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsInsertFile_Private"
+#define __FUNC__ "OptionsInsertFile"
 /*
     Reads options from a file and adds to options database
 */
-static int OptionsInsertFile_Private(char *file)
+int OptionsInsertFile(char *file)
 {
   char  string[128],*first,*second,*third,*final;
   int   len,ierr,i;
@@ -155,13 +109,12 @@ static int OptionsInsertFile_Private(char *file)
           len--; final[len] = 0;
         }
         OptionsSetValue(first,second);
-      }
-      else if (first && !PetscStrcmp(first,"alias")) {
+      } else if (first && !PetscStrcmp(first,"alias")) {
         third = PetscStrtok(0," ");
         if (!third) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Error in options file:alias");
         len = PetscStrlen(third); 
         if (third[len-1] == '\n') third[len-1] = 0;
-        ierr = OptionsSetAlias_Private(second,third); CHKERRQ(ierr);
+        ierr = OptionsSetAlias(second,third); CHKERRQ(ierr);
       }
     }
     fclose(fd);
@@ -170,25 +123,26 @@ static int OptionsInsertFile_Private(char *file)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsCreate_Private"
+#define __FUNC__ "OptionsInsert"
 /*
-   OptionsCreate_Private - Creates a database of options.
+   OptionsInsert - Inserts into the options database from the command line,
+                   the environmental variable and a file.
 
    Input Parameters:
-.  argc - count of number of command line arguments
++  argc - count of number of command line arguments
 .  args - the command line arguments
-.  file - optional filename, defaults to ~username/.petscrc
+-  file - optional filename, defaults to ~username/.petscrc
 
    Note:
-   Since OptionsCreate_Private() is automatically called by PetscInitialize(),
-   the user does not typically need to call this routine. OptionsCreate_Private()
+   Since OptionsInsert() is automatically called by PetscInitialize(),
+   the user does not typically need to call this routine. OptionsInsert()
    can be called several times, adding additional entries into the database.
 
 .keywords: options, database, create
 
 .seealso: OptionsDestroy_Private(), OptionsPrint()
 */
-int OptionsCreate_Private(int *argc,char ***args,char* file)
+int OptionsInsert(int *argc,char ***args,char* file)
 {
   int  ierr,rank;
   char pfile[256];
@@ -206,7 +160,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
   options->argc     = (argc) ? *argc : 0;
   options->args     = (args) ? *args : 0;
 
-  ierr = OptionsInsertFile_Private(file); CHKERRQ(ierr);
+  ierr = OptionsInsertFile(file); CHKERRQ(ierr);
 
   /* insert environmental options */
   {
@@ -243,13 +197,13 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
 
   /* insert command line options */
   if (argc && args && *argc) {
-    int   left = *argc - 1;
+    int   left    = *argc - 1;
     char  **eargs = *args + 1;
     while (left) {
       if (eargs[0][0] != '-') {
         eargs++; left--;
       } else if (!PetscStrcmp(eargs[0],"-options_file")) {
-        ierr = OptionsInsertFile_Private(eargs[1]); CHKERRQ(ierr);
+        ierr = OptionsInsertFile(eargs[1]); CHKERRQ(ierr);
         eargs += 2; left -= 2;
 
       /*
@@ -259,9 +213,8 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
       } else if (!PetscStrcmp(eargs[0],"-p4pg")) {
         eargs += 2; left -= 2;
 
-       } else if (!PetscStrcmp(eargs[0],"-np")) {
+      } else if (!PetscStrcmp(eargs[0],"-np")) {
         eargs += 2; left -= 2;
-
       
       } else if ((left < 2) || ((eargs[1][0] == '-') && 
                ((eargs[1][1] > '9') || (eargs[1][1] < '0')))) {
@@ -300,7 +253,7 @@ int OptionsPrint(FILE *fd)
 
   PetscFunctionBegin;
   if (!fd) fd = stdout;
-  if (!options) OptionsCreate_Private(0,0,0);
+  if (!options) OptionsInsert(0,0,0);
   for ( i=0; i<options->N; i++ ) {
     if (options->values[i]) {
       PetscFPrintf(PETSC_COMM_WORLD,fd,"OptionTable: -%s %s\n",options->names[i],options->values[i]);
@@ -322,7 +275,7 @@ int OptionsPrint(FILE *fd)
 
 .keywords: options, database, destroy
 
-.seealso: OptionsCreate_Private()
+.seealso: OptionsInsert()
 */
 int OptionsDestroy(void)
 {
@@ -362,7 +315,7 @@ int OptionsDestroy(void)
 
 .keywords: options, database, set, value
 
-.seealso: OptionsCreate_Private()
+.seealso: OptionsInsert()
 @*/
 int OptionsSetValue(char *name,char *value)
 {
@@ -370,7 +323,7 @@ int OptionsSetValue(char *name,char *value)
   char **names;
 
   PetscFunctionBegin;
-  if (!options) OptionsCreate_Private(0,0,0);
+  if (!options) OptionsInsert(0,0,0);
 
   /* this is so that -h and -help are equivalent (p4 don't like -help)*/
   if (!PetscStrcmp(name,"-h")) name = "-help";
@@ -442,15 +395,15 @@ int OptionsSetValue(char *name,char *value)
 
 .keywords: options, database, set, value, clear
 
-.seealso: OptionsCreate_Private()
+.seealso: OptionsInsert()
 @*/
 int OptionsClearValue(char *name)
 {
-  int  N, n, i;
+  int  N, n, i,ierr;
   char **names;
 
   PetscFunctionBegin;
-  if (!options) OptionsCreate_Private(0,0,0);
+  if (!options) {ierr = OptionsInsert(0,0,0);CHKERRQ(ierr);}
 
   name++;
 
@@ -477,8 +430,8 @@ int OptionsClearValue(char *name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsSetAlias_Private"
-int OptionsSetAlias_Private(char *newname,char *oldname)
+#define __FUNC__ "OptionsSetAlias"
+int OptionsSetAlias(char *newname,char *oldname)
 {
   int len,n = options->Naliases;
 
@@ -506,7 +459,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
   char **names,tmp[128];
 
   PetscFunctionBegin;
-  if (!options) {ierr = OptionsCreate_Private(0,0,0); CHKERRQ(ierr);}
+  if (!options) {ierr = OptionsInsert(0,0,0); CHKERRQ(ierr);}
   N = options->N;
   names = options->names;
 
@@ -967,6 +920,10 @@ int OptionsLeft(void)
   PetscFunctionReturn(0);
 }
 
+/*
+    OptionsCreate - Creates the empty options database.
+
+*/
 #undef __FUNC__  
 #define __FUNC__ "OptionsCreate"
 int OptionsCreate(void)
@@ -977,3 +934,5 @@ int OptionsCreate(void)
   options->namegiven = 0;
   PetscFunctionReturn(0);
 }
+
+

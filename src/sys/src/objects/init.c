@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.2 1998/05/03 17:47:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.3 1998/05/04 02:31:57 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -67,8 +67,6 @@ static char vcid[] = "$Id: init.c,v 1.2 1998/05/03 17:47:47 bsmith Exp bsmith $"
 int          PetscBeganMPI = 0;
 
 extern int OptionsCheckInitial_Private();
-extern int OptionsCreate_Private(int*,char***,char*);
-extern int OptionsSetAlias_Private(char *,char *);
 extern int PLogEventRegisterDestroy_Private();
 
 #if defined(USE_PETSC_COMPLEX)
@@ -430,7 +428,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_COMPLEX);CHKERRQ(ierr);
 #endif
-  ierr = OptionsCreate_Private(argc,args,file); CHKERRQ(ierr);
+  ierr = OptionsInsert(argc,args,file); CHKERRQ(ierr);
   ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr); 
 
   /*
