@@ -15,10 +15,14 @@ typedef struct _MatScatterCtx* MatScatterCtx;
 #define MATAIJSEQ    1
 #define MATAIJMPI    2
 #define MATSHELL     3
+#define MATROWSEQ    4
+#define MATROWMPI    5
 
 extern int MatCreateSequentialDense(int,int,Mat*);
 extern int MatCreateSequentialAIJ(int,int,int,int *,Mat*);
 extern int MatCreateMPIAIJ(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
+extern int MatCreateSequentialRow(int,int,int,int *,Mat*);
+extern int MatCreateMPIRow(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
 
 extern int MatShellCreate(int,int,void *,Mat*);
 extern int MatShellSetMult(Mat,int (*)(void*,Vec,Vec));
