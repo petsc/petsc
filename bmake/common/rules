@@ -384,6 +384,21 @@ adicnotignore: chkpetsc_dir
           grep "ne __FUNC__" $$i | grep -v "ADIC Ignore" | cut -f2 -d\" >> $(PDIR)/adicnotignore; \
           fi; done ; \
         fi
+
+# -------------------------------------------------------------------------------
+#
+# Some macros to check if the fortran interface is up-to-date.
+#
+countfortranfunctions: chkpetsc_dir
+	-@cd $(PETSC_DIR)/src/fortran; egrep '^void' custom/*.c auto/*.c | \
+	cut -d'(' -f1 | tr -s' ' | cut -d' ' -f2 | uniq | egrep -v "(^$$|Petsc)" | \
+	sed "s/_$$//" | sort > $(PDIR)/countfortranfunctions
+
+difffortranfunctions: countfortranfunctions
+	-@cd $(PETSC_DIR); $(OMAKE) -f makefile BOPT=$(BOPT) ACTION=countfunctions tree
+	-@cd $(PDIR); cat countfunctions | tr 'A-Z' 'a-z'|sort >countfunctions.small ;\
+	diff countfunctions.small countfortranfunctions
+
 # -------------------------------------------------------------------------------
 
 SHLIBS = libmpiuni libpetsccontrib libpetscmat libpetscsles \
