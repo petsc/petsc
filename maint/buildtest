@@ -91,30 +91,35 @@ foreach i ($job)
   set job1    = $J1[$i]
   set job2    = $J2[$i]
   set job3    = $J3[$i]
+  if ($mach == ptera) then
+     set E = -e
+  else
+     set E = ""
+  endif
   echo "****************************************************" >> build.log
   echo "Build on $mach $bopt `date` " >> build.log
   rsh $mach -n "cd $H ; \
-    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt all >>& maint/build.log"
+    make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt all >>& maint/build.log"
   echo "****************************************************" >> build.log
   rsh $mach -n "cd $H; \
-    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt fortran >>& maint/build.log"
+    make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt fortran >>& maint/build.log"
   rsh $mach -n "cd $H; chmod -R g+w lib" >& /dev/null
   echo "Finished Build on $mach  $arch $bopt `date`" >> build.log
   echo "****************************************************">>examples.log
   echo "Build on $mach  $bopt `date` " >> examples.log
   if ( $job1 != 0 ) then 
     rsh $mach -n "cd $H ;  \
-      make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job1 tree >>& maint/examples.log"
+      make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job1 tree >>& maint/examples.log"
     echo "******************************************************" >> examples.log
   endif
   if ( $job2 != 0 ) then 
     rsh $mach -n "cd $H ;  \
-      make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job2 tree  >>& maint/examples.log"
+      make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job2 tree  >>& maint/examples.log"
     echo "******************************************************" >> examples.log
   endif
   if ( $job3 != 0 ) then 
     rsh $mach -n "cd $H ;  \
-      make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job3 tree  >>& maint/examples.log"
+      make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job3 tree  >>& maint/examples.log"
   endif
   echo "Finished Build on $mach $arch $bopt `date`" >> examples.log
   rsh $mach -n "cd $H ; \
