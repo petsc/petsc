@@ -10,9 +10,7 @@ diagonal data structure.\n\n";
 #include <stdio.h>
 
 /* This code is not intended as an efficient implementation, it is only
-   here to produce an interesting sparse matrix quickly.  As originally
-   written, this program was too complex for Microsoft C Version 7 to
-   handle.  It has been re-arranged to simplify the code. */
+   here to produce an interesting sparse matrix quickly.*/
 
 #define MAX(a,b)  ((a) > (b) ? (a) : (b))
 #define ABS(a)    ((a) < 0.0 ? -(a) : (a))
@@ -186,6 +184,10 @@ int AddElement(Mat mat,int r1,int r2,Scalar **K,int h1,int h2)
 
   for ( l1=0; l1<3; l1++ ) {
     for ( l2=0; l2<3; l2++ ) {
+/*
+   NOTE you should never do this! Inserting values 1 at a time is 
+   just too expensive!
+*/
       if (ABS(K[h1+l1][h2+l2]) != 0.0) {
         row = r1+l1; col = r2+l2; val = K[h1+l1][h2+l2]; 
 	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
