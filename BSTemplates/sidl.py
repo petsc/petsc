@@ -605,12 +605,14 @@ class CompileDefaults (Defaults):
     Defaults.__init__(self, project, sidlSources)
     self.etagsFile = etagsFile
 
-  def getClientCompileTargets(self):
-    targets = []
+  def getClientCompileTargets(self, doCompile = 1, doLink = 1):
+    targets  = []
     for lang in self.usingSIDL.clientLanguages:
+      compiler = []
+      linker   = []
       try:
-        compiler = self.getUsing(lang).getClientCompileTarget(self.project)
-        linker   = self.getUsing(lang).getClientLinkTarget(self.project, not self.project == 'bs')
+        if doCompile: compiler = self.getUsing(lang).getClientCompileTarget(self.project)
+        if doLink:    linker   = self.getUsing(lang).getClientLinkTarget(self.project, not self.project == 'bs')
       except AttributeError:
         raise RuntimeError('Unknown client language: '+lang)
 
@@ -619,16 +621,18 @@ class CompileDefaults (Defaults):
     targets.append(transform.Update())
     return targets
 
-  def getServerCompileTargets(self):
+  def getServerCompileTargets(self, doCompile = 1, doLink = 1):
     targets          = []
     bootstrapTargets = []
 
     for lang in self.usingSIDL.serverLanguages:
       for package in self.getPackages():
+        compiler = []
+        linker   = []
         try:
-          compiler = self.getUsing(lang).getServerCompileTarget(self.project, package)
-          linker   = self.getUsing(lang).getServerLinkTarget(self.project, package, not self.project == 'bs')
-          t        = target.Target(None, compiler + linker + [transform.Update()])
+          if doCompile: compiler = self.getUsing(lang).getServerCompileTarget(self.project, package)
+          if doLink:    linker   = self.getUsing(lang).getServerLinkTarget(self.project, package, not self.project == 'bs')
+          t = target.Target(None, compiler + linker + [transform.Update()])
         except AttributeError:
           raise RuntimeError('Unknown server language: '+lang)
 
@@ -642,14 +646,17 @@ class CompileDefaults (Defaults):
   def getEmacsTagsTargets(self):
     return [transform.FileFilter(self.isImpl), compile.TagEtags(), compile.CompileEtags(self.etagsFile)]
 
-  def getCompileTarget(self):
-    serverTargets  = self.getServerCompileTargets()
-    compileTargets = serverTargets[0]+self.getClientCompileTargets()+serverTargets[1]
+  def getCompileTargets(self, doCompile = 1, doLink = 1):
+    serverTargets  = self.getServerCompileTargets(doCompile, doLink)
+    compileTargets = serverTargets[0]+self.getClientCompileTargets(doCompile, doLink)+serverTargets[1]
 
     if self.etagsFile:
-      return target.Target(None, [self.getSIDLTarget(), (compileTargets, self.getEmacsTagsTargets()), transform.Update()])
+      return [(compileTargets, self.getEmacsTagsTargets()), transform.Update()]
     else:
-      return target.Target(None, [self.getSIDLTarget()]+compileTargets+[transform.Update()])
+      return compileTargets+[transform.Update()]
+
+  def getCompileTarget(self):
+    return target.Target(None, [self.getSIDLTarget()]+self.getCompileTargets(1, 1))
 
   def getExecutableDriverTargets(self, sources, lang, executable):
     try:
