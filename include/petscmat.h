@@ -410,6 +410,10 @@ EXTERN int MatGetSubMatrix(Mat,IS,IS,int,MatReuse,Mat *);
 
 EXTERN int MatIncreaseOverlap(Mat,int,IS[],int);
 
+EXTERN int MatMatMult(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN int MatMatMultSymbolic(Mat,Mat,Mat*);
+EXTERN int MatMatMultNumeric(Mat,Mat,Mat);
+
 EXTERN int MatAXPY(const PetscScalar *,Mat,Mat,MatStructure);
 EXTERN int MatAYPX(const PetscScalar *,Mat,Mat);
 EXTERN int MatCompress(Mat);
@@ -1248,13 +1252,10 @@ EXTERN int MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
 EXTERN int MatNullSpaceAttach(Mat,MatNullSpace);
 EXTERN int MatNullSpaceTest(MatNullSpace,Mat);
 
-EXTERN int MatReorderingSeqSBAIJ(Mat A,IS isp);
+EXTERN int MatReorderingSeqSBAIJ(Mat,IS);
 EXTERN int MatMPISBAIJSetHashTableFactor(Mat,PetscReal);
 EXTERN int MatSeqSBAIJSetColumnIndices(Mat,int *);
 
-EXTERN int MatMatMult(Mat A,Mat B, Mat *C);
-EXTERN int MatMatMultSymbolic(Mat A,Mat B,Mat *C);
-EXTERN int MatMatMultNumeric(Mat A,Mat B,Mat C);
 
 EXTERN int MatCreateMAIJ(Mat,int,Mat*);
 EXTERN int MatMAIJRedimension(Mat,int,Mat*);

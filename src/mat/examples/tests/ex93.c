@@ -10,6 +10,7 @@ int main(int argc,char **argv) {
   int ij[]={0,1,2};
   PetscScalar none=-1.;
   int ierr;
+  PetscReal fill=4;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MatCreate(PETSC_COMM_SELF,3,3,3,3,&A);CHKERRQ(ierr);
@@ -21,8 +22,8 @@ int main(int argc,char **argv) {
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = MatTranspose(A,&B);CHKERRQ(ierr);
-  ierr = MatMatMult(B,A,&C);CHKERRQ(ierr);
-  ierr = MatMatMult(C,A,&D);CHKERRQ(ierr);
+  ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+  ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
   ierr = MatDestroy(B);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
 
