@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sysio.c,v 1.5 1995/10/01 21:51:51 bsmith Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.6 1995/11/16 16:55:15 balay Exp balay $";
 #endif
 
 /* 
@@ -45,13 +45,14 @@ void SYByteSwapShort(short *buff,int n)
 {
   int   i,j;
   short tmp;
+  short *tptr = &tmp;           /* take care pf bug in DEC-ALPHA g++ */
   char  *ptr1,*ptr2 = (char *) &tmp;
   for ( j=0; j<n; j++ ) {
     ptr1 = (char *) (buff + j);
     for (i=0; i<sizeof(short); i++) {
       ptr2[i] = ptr1[sizeof(int)-1-i];
     }
-    buff[j] = tmp;
+    buff[j] = *tptr;
   }
 }
 /*
@@ -62,6 +63,7 @@ void SYByteSwapScalar(Scalar *buff,int n)
 {
   int    i,j;
   double tmp,*buff1 = (double *) buff;
+  double *tptr = &tmp;          /* take care pf bug in DEC-ALPHA g++ */
   char   *ptr1,*ptr2 = (char *) &tmp;
 #if defined(PETSC_COMPLEX)
   n *= 2;
@@ -71,7 +73,7 @@ void SYByteSwapScalar(Scalar *buff,int n)
     for (i=0; i<sizeof(double); i++) {
       ptr2[i] = ptr1[sizeof(double)-1-i];
     }
-    buff1[j] = tmp;
+    buff1[j] = *tptr;
   }
 }
 #endif
