@@ -111,6 +111,16 @@ class CursesInstallGUI(HTMLParser.HTMLParser):
     key = bootstrap.CursesInstall.SelectFromList(stdscr,list,my = 1,text = 'Select project to install')
     self.project = self.iprojects[key]
 
+  def cursesRunInstaller(self,stdscr):
+    stdscr.clear()
+    bootstrap.CursesInstall.CenterAddStr(stdscr,1,'Installing '+self.project.url)
+    bootstrap.CursesInstall.CenterAddStr(stdscr,3,'Complete log file: make.log    Error file: installer_err.log')
+    import install.installer
+    import logging
+    (y,x) = stdscr.getmaxyx()
+    logging.dW = bootstrap.ScrollingWindow(stdscr,4,3,y-7,x-6,'')
+    install.installer.runinstaller([self.project.url])
+
 #------------------------------------------------------------------
 
 if __name__ ==  '__main__':
@@ -121,9 +131,6 @@ if __name__ ==  '__main__':
   curses.wrapper(gui.InstalledProjects)
   gui.GetProjects()
   curses.wrapper(gui.SelectProject)
-  sys.stdout.write('Downloading and installing '+gui.project.url+'\n')
-  sys.stdout.flush()
-  
-  import installer
-  installer.runinstaller([gui.project.url])
+  curses.wrapper(gui.cursesRunInstaller)
+
       
