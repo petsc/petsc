@@ -26,4 +26,4 @@ review: review.o
 	-$(CLINKER) -o review review.o  $(SYSLIB)
 	$(RM) -f review.o
 
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
