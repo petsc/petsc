@@ -14,6 +14,8 @@ RUNEXAMPLES_2 =
 # RUNEXAMPLES_2 = runex1
 EXAMPLES_2    = ex1 ex2 ex3 ex4 ex5 ex6
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
+EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex6
+RUNEXAMPLES_4 =  
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
