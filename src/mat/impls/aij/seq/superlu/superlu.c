@@ -202,14 +202,17 @@ int MatSolve_SuperLU(Mat A,Vec b,Vec x)
   double        ferr,berr; 
 
   PetscFunctionBegin;
-  /* rhs vector */
   lu->B.ncol = 1;   /* Set the number of right-hand side */
   ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
-  ((DNformat*)lu->B.Store)->nzval = barray;
-
-  /* solution vector */
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_COMPLEX)
+  ((DNformat*)lu->B.Store)->nzval = (doublecomplex*)barray;
+  ((DNformat*)lu->X.Store)->nzval = (doublecomplex*)xarray;
+#else
+  ((DNformat*)lu->B.Store)->nzval = barray;
   ((DNformat*)lu->X.Store)->nzval = xarray;
+#endif
 
   /* Initialize the statistics variables. */
   StatInit(&stat);
@@ -282,7 +285,7 @@ int MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
        Since SuperLU likes column-oriented matrices,we pass it the transpose,
        and then solve A^T X = B in MatSolve(). */
 #if defined(PETSC_USE_COMPLEX)
-  zCreate_CompCol_Matrix(&lu->A,A->n,A->m,aa->nz,aa->a,aa->j,aa->i,
+  zCreate_CompCol_Matrix(&lu->A,A->n,A->m,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,
                            SLU_NC,SLU_Z,SLU_GE);
 #else
   dCreate_CompCol_Matrix(&lu->A,A->n,A->m,aa->nz,aa->a,aa->j,aa->i,
@@ -406,7 +409,9 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   ierr = PetscOptionsLogical("-mat_superlu_printstat","PrintStat","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
   if (flg) lu->options.PrintStat = YES; 
   ierr = PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,PETSC_NULL);CHKERRQ(ierr); 
-  if (lu->lwork != 0 && lu->lwork != -1){
+  if (lu->lwork > 0 ){
+    ierr = PetscMalloc(lu->lwork,&lu->work);CHKERRQ(ierr);
+  } else if (lu->lwork != 0 && lu->lwork != -1){
     ierr = PetscPrintf(PETSC_COMM_SELF,"   Warning: lwork %d is not supported by PETSc interface. The default lwork=0 is used.\n",lu->lwork);
     lu->lwork = 0;
   }
@@ -425,8 +430,13 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   ierr = PetscMalloc(m*sizeof(int),&lu->C);CHKERRQ(ierr);
  
   /* create rhs and solution x without allocate space for .Store */
+#if defined(PETSC_USE_COMPLEX)
+  zCreate_Dense_Matrix(&lu->B, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
+  zCreate_Dense_Matrix(&lu->X, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
+#else
   dCreate_Dense_Matrix(&lu->B, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
   dCreate_Dense_Matrix(&lu->X, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
+#endif
 
   lu->flg            = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpSuperLU = PETSC_TRUE;

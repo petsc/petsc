@@ -49,10 +49,9 @@ int main(int argc,char **args)
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   PetscScalar    zero = 0.0,none = -1.0;
-  PetscTruth     preload = PETSC_TRUE,diagonalscale,hasNullSpace,isSymmetric;
+  PetscTruth     preload = PETSC_TRUE,diagonalscale,hasNullSpace,isSymmetric,cknorm;
   int            num_numfac;
   PetscScalar    sigma;
-  KSP            ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -309,11 +308,12 @@ int main(int argc,char **args)
     } else {
       int  num_rhs=1;
       ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(PETSC_NULL,"-cknorm",&cknorm);CHKERRQ(ierr);
       while ( num_rhs-- ) {
         ierr = KSPSolve(ksp);CHKERRQ(ierr);
       }
       ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-      if (ckerror){   /* Check error for each rhs */
+      if (cknorm){   /* Check error for each rhs */
         if (trans) {
           ierr = MatMultTranspose(A,x,u);CHKERRQ(ierr);
         } else {
@@ -389,7 +389,6 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
     */
-    ierr = SLESDestroy(sles);CHKERRQ(ierr); 
     ierr = MatDestroy(A);CHKERRQ(ierr); ierr = VecDestroy(b);CHKERRQ(ierr);
     ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
     ierr = KSPDestroy(ksp);CHKERRQ(ierr); 
