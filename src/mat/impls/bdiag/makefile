@@ -12,7 +12,7 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscmat
 LINCLUDE = $(SOURCEH)
-DIRS     = seq
+DIRS     = seq mpi
 
 runexamples:
 
