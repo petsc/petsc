@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.9 2000/01/20 16:52:45 bsmith Exp bsmith $
+c  $Id: user.F,v 1.10 2000/01/21 16:05:37 bsmith Exp kaushik $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -37,11 +37,13 @@ c=====================================================================72
 
       implicit none
 #include "include/finclude/petscdef.h"
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
-     &       nstage,ncyct,iramp,nitfo
-      Scalar gtol,icycle,nsrch,ilu0,ifcn
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar  cfl1,cfl2
+      integer nsmoth,iflim,itran,nbtran,jupdate,
+     &        nstage,ncyct,iramp,nitfo
+      Scalar  gtol
+      integer icycle,nsrch,ilu0,ifcn
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
@@ -87,17 +89,17 @@ c=====================================================================72
       subroutine INIT(nnodes, qvec, turbre, amut,nvnode, ivnode,irank)
       implicit none
 #include "include/finclude/petscdef.h"
-      Scalar turbre(1),amut(1)
+      Scalar  turbre(1),amut(1)
       integer ivnode(1),nnodes,nvnode,irank
-
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar gamma,gm1,gp1,gm1g,gp1g,ggm1
-      Scalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      Scalar vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
-      Scalar cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
-      Scalar cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
-     &       nstage,ncyct,iramp,nitfo
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
+      Scalar  p0,rho0,c0,u0,v0,w0,et0,h0,pt0
+      Scalar  vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
+      Scalar  cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
+      Scalar  cfl1,cfl2
+      integer nsmoth,iflim,itran,nbtran,jupdate,
+     &        nstage,ncyct,iramp,nitfo
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
@@ -106,7 +108,7 @@ c=====================================================================72
       common/spalrt/cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo
-      Scalar pi,conv,rmu,chi,fv1
+      Scalar  pi,conv,rmu,chi,fv1
       Integer i,k,n
 #if defined(INTERLACING)
        Scalar qvec(4,nnodes)
@@ -227,17 +229,19 @@ c============================================================================
 
       implicit none
 #include "include/finclude/petscdef.h"
-      integer ileast, irank
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
-     &       nstage,ncyct,iramp,nitfo
-      Scalar gtol,icycle,nsrch,ilu0,ifcn
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar  cfl1,cfl2
+      integer nsmoth,iflim,itran,nbtran,jupdate,
+     &        nstage,ncyct,iramp,nitfo
+      Scalar  gtol
+      integer icycle,nsrch,ilu0,ifcn
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo
       common/gmcom/gtol,icycle,nsrch,ilu0,ifcn
+      integer ileast, irank
       integer i
 
       read(7,10)(title(i),i=1,20)
@@ -296,6 +300,10 @@ c=====================================================================72
 
       implicit none
 #include "include/finclude/petscdef.h"
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      common/info/title,beta,alpha,Re,dt,tot,res0,resc,
+     &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       integer nnodes,ncell,nedge, 
      &        ncolort,ncolore,
      &        nnbound,nvbound,nfbound,
@@ -303,10 +311,6 @@ c=====================================================================72
      &        nsnode,nvnode,nfnode,ntte,
      &        nsface,nvface,nfface,
      &        irank
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      common/info/title,beta,alpha,Re,dt,tot,res0,resc,
-     &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
 
       character*40 filename
 
@@ -370,8 +374,8 @@ c=====================================================================72
 
       implicit none
 #include "include/finclude/petscdef.h"
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     &       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       integer nnodes,ncell,nedge, 
@@ -542,8 +546,8 @@ c============================================================================
       subroutine PLLAN(nnodes,irank)
       implicit none
 #include "include/finclude/petscdef.h"
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       Scalar rms(3000),clw(3000),cdw(3000),
      &       cmw(3000),xres(3000)
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
@@ -555,7 +559,8 @@ c
 c Write out the residual history
 c
 c     tpnpi = (xres(ntt) - xres(1))/float(ntt*nnodes)
-      tpnpi = xres(ntt)/float(ntt*nnodes)
+      tpnpi = ntt*nnodes
+      tpnpi = xres(ntt)/tpnpi
       write(12,300) tpnpi
       ncolumn = 6
       write(12,100) ncolumn
@@ -603,8 +608,11 @@ c=====================================================================72
 c
       implicit none      
 #include "include/finclude/petscdef.h"
-      Scalar x(1),y(1),z(1),q(4,nnodes)
       Scalar pinf
+      Scalar gamma,gm1,gp1,gm1g,gp1g,ggm1
+      Scalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
+      common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
+      common/ivals/p0,rho0,c0,u0,v0,w0,et0,h0,pt0
       integer nnodes,nnbound,nvbound,nfbound,
      &        nnfacet,nvfacet,nffacet,
      &        nsnode,nvnode,nfnode,irank
@@ -613,10 +621,7 @@ c
       integer nftet(1),nfpts(1)
       integer f2ntn(nnfacet,4),f2ntv(nvfacet,4),f2ntf(nffacet,4)
       integer isnode(1),ivnode(1),ifnode(1)
-      Scalar gamma,gm1,gp1,gm1g,gp1g,ggm1
-      Scalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
-      common/ivals/p0,rho0,c0,u0,v0,w0,et0,h0,pt0
+      Scalar  x(1),y(1),z(1),q(4,nnodes)
       integer i,j,i1,i2,i3,ic,isp,ist
  
  
@@ -758,18 +763,17 @@ c=====================================================================72
 
       implicit none      
 #include "include/finclude/petsc.h"
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      integer isnode(1),f2ntn(nnfacet,1)
       integer nnodes,nsnode,nnfacet
+      integer isnode(1),f2ntn(nnfacet,1)
       Scalar qvec(4,nnodes)
       Scalar x(1),y(1),z(1)
       Scalar time
       integer i,j,nfaces,nx
-
+c
       nfaces=nnfacet
       time=1.0d0
 
@@ -803,12 +807,13 @@ c=====================================================================72
       subroutine L2NORM(res,nnodes,nnode_glo,x,y,z,vol,irank)
       implicit none
 #include "include/finclude/petsc.h"  
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar rms(3000),clw(3000),cdw(3000),
-     &       cmw(3000),xres(3000)
-      Scalar cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
-     &       nstage,ncyct,iramp,nitfo
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar  rms(3000),clw(3000),cdw(3000),
+     &        cmw(3000),xres(3000)
+      Scalar  cfl1,cfl2
+      integer nsmoth,iflim,itran,nbtran,jupdate,
+     &        nstage,ncyct,iramp,nitfo
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/history/rms,clw,cdw,cmw,xres
@@ -930,8 +935,8 @@ c=====================================================================72
      &                 clift, cdrag, cmom,irank,nvertices)
       implicit none      
 #include "include/finclude/petsc.h"
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       Scalar gamma,gm1,gp1,gm1g,gp1g,ggm1
       Scalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
       Scalar rms(3000),clw(3000),cdw(3000),
@@ -1200,24 +1205,21 @@ c=====================================================================72
 c
       implicit none      
 #include "include/finclude/petscdef.h"
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar gamma,gm1,gp1,gm1g,gp1g,ggm1
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
-
       integer nnodes,nedge,
      &        nsnode,nvnode,nfnode,
      &        irank,nvertices
-      Scalar vol(1)
-      Scalar sxn(1),syn(1),szn(1)
-      Scalar vxn(1),vyn(1),vzn(1)
-      Scalar fxn(1),fyn(1),fzn(1)
-      Scalar cdt(1)
-
+      Scalar  vol(1)
+      Scalar  sxn(1),syn(1),szn(1)
+      Scalar  vxn(1),vyn(1),vzn(1)
+      Scalar  fxn(1),fyn(1),fzn(1)
+      Scalar  cdt(1)
       integer isnode(1),ivnode(1),ifnode(1)
-
       integer n,i,node1,node2,inode
       integer flops
       Scalar xnorm,ynorm,znorm,area,
@@ -1426,30 +1428,15 @@ c=============================================================================
      &                fxn, fyn, fzn, phi, irank,nvertices)
       implicit none      
 #include "include/finclude/petscdef.h"
-      integer nnodes, ncell, nedge,
-     &        nsface, nvface, nfface,
-     &        nsnode, nvnode, nfnode,
-     &        nnfacet,nvfacet,nffacet,
-     &        nnbound,nvbound,nfbound,
-     &        irank,nvertices
-      Scalar sxn(1),syn(1),szn(1)
-      Scalar vxn(1),vyn(1),vzn(1)
-      Scalar fxn(1),fyn(1),fzn(1)
-      Scalar phi(nvertices,4)
-      integer isface(1),ivface(1),ifface(1)
-      integer isnode(1),ivnode(1),ifnode(1)
-      integer f2ntn(nnfacet,4)
-      integer f2ntv(nvfacet,4)
-      integer f2ntf(nffacet,4)
-c
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar gamma,gm1,gp1,gm1g,gp1g,ggm1
-      Scalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      Scalar rms(3000),clw(3000),cdw(3000),
-     &       cmw(3000),xres(3000)
-      Scalar cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
-     &       nstage,ncyct,iramp,nitfo
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
+      Scalar  p0,rho0,c0,u0,v0,w0,et0,h0,pt0
+      Scalar  rms(3000),clw(3000),cdw(3000),
+     &        cmw(3000),xres(3000)
+      Scalar  cfl1,cfl2
+      integer nsmoth,iflim,itran,nbtran,jupdate,
+     &        nstage,ncyct,iramp,nitfo
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
@@ -1457,26 +1444,41 @@ c
       common/history/rms,clw,cdw,cmw,xres
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo
+      integer nnodes, ncell, nedge,
+     &        nsface, nvface, nfface,
+     &        nsnode, nvnode, nfnode,
+     &        nnfacet,nvfacet,nffacet,
+     &        nnbound,nvbound,nfbound,
+     &        irank,nvertices
+      Scalar  sxn(1),syn(1),szn(1)
+      Scalar  vxn(1),vyn(1),vzn(1)
+      Scalar  fxn(1),fyn(1),fzn(1)
+      Scalar  phi(nvertices,4)
+      integer isface(1),ivface(1),ifface(1)
+      integer isnode(1),ivnode(1),ifnode(1)
+      integer f2ntn(nnfacet,4)
+      integer f2ntv(nvfacet,4)
+      integer f2ntf(nffacet,4)
       integer i,n,node1,node2,node3,inode      
       integer flops
-      Scalar xmean,ymean,zmean,xnorm,ynorm,znorm,
-     &       rlen,area,dot,size,
-     &       X1,Y1,Z1,X2,Y2,Z2,X3,Y3,Z3,p1,p2,p3,
-     &       rx,ry,rz,pL,uL,wL,vL,pR,uR,vR,wR,
-     &       ubarL,ubarR,ubar,p,u,v,w,c,c2,c20,
-     &       ubar0,pi,ui,vi,wi,unorm,
-     &       phi1,phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9,
-     &       eig1,eig2,eig3,eig4,dp,du,dv,dw,
-     &       ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4,
-     &       r11,r21,r31,r41,r12,r22,r32,r42,
-     &       r13,r23,r33,r43,r14,r24,r34,r44,
-     &       t1,t2,t3,t4,
-     &       t11,t21,t31,t41,t12,t22,t32,t42,
-     &       t13,t23,t33,t43,t14,t24,t34,t44,
-     &       fluxp1,fluxp2,fluxp3,fluxp4, 
-     &       fluxm1,fluxm2,fluxm3,fluxm4,
-     &       res1,res2,res3,res4,
-     &       rhs1,rhs2,rhs3,rhs4,   
+      Scalar  xmean,ymean,zmean,xnorm,ynorm,znorm,
+     &        rlen,area,dot,size,
+     &        X1,Y1,Z1,X2,Y2,Z2,X3,Y3,Z3,p1,p2,p3,
+     &        rx,ry,rz,pL,uL,wL,vL,pR,uR,vR,wR,
+     &        ubarL,ubarR,ubar,p,u,v,w,c,c2,c20,
+     &        ubar0,pi,ui,vi,wi,unorm,
+     &        phi1,phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9,
+     &        eig1,eig2,eig3,eig4,dp,du,dv,dw,
+     &        ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4,
+     &        r11,r21,r31,r41,r12,r22,r32,r42,
+     &        r13,r23,r33,r43,r14,r24,r34,r44,
+     &        t1,t2,t3,t4,
+     &        t11,t21,t31,t41,t12,t22,t32,t42,
+     &        t13,t23,t33,t43,t14,t24,t34,t44,
+     &        fluxp1,fluxp2,fluxp3,fluxp4, 
+     &        fluxm1,fluxm2,fluxm3,fluxm4,
+     &        res1,res2,res3,res4,
+     &        rhs1,rhs2,rhs3,rhs4,   
      &       c68,c18,second,
      &       ax,ay,az,bx,by,bz,
      &       pa,pb,pc,ub,vb,wb       
@@ -2392,20 +2394,21 @@ c
 #define r44(i) rxy(i,7)
 #define eptr(i,j) evec(i,j)
 #endif
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     &       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
-     &       nstage,ncyct,iramp,nitfo
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar  cfl1,cfl2
+      integer nsmoth,iflim,itran,nbtran,jupdate,
+     &        nstage,ncyct,iramp,nitfo
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo
       integer n,node1,node2,ierr
       integer flops
-      Scalar dx1,dy1,dz1,dx2,dy2,dz2,
-     &       dq1,dq2,dq3,dq4,
-     &       weight,w11,r12r11,r13r11,w22,r23r22,w33,rmess,
-     &       coef1,coef2,termx,termy,termz
+      Scalar  dx1,dy1,dz1,dx2,dy2,dz2,
+     &        dq1,dq2,dq3,dq4,
+     &        weight,w11,r12r11,r13r11,w22,r23r22,w33,rmess,
+     &        coef1,coef2,termx,termy,termz
 c     logging variables
 c     integer flag
 c     integer grad_event,node1_event,node2_event
@@ -2665,19 +2668,21 @@ c     real r22(nvertices),r23(nvertices),r33(nvertices)
       Scalar amut(nnodes)
 c
       integer i
-      Scalar title(20),beta,alpha,Re,dt,tot,res0,resc,
-     1       ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar rms(3000),clw(3000),cdw(3000),
-     &       cmw(3000),xres(3000)
-      Scalar gtol,icycle,nsrch,ilu0,ifcn
-      Scalar cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
-     &       nstage,ncyct,iramp,nitfo
+      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      Scalar  cfl1,cfl2
+      integer nsmoth,iflim,itran,nbtran,jupdate,
+     &        nstage,ncyct,iramp,nitfo
+      Scalar  gtol
+      integer icycle,nsrch,ilu0,ifcn
+      Scalar  rms(3000),clw(3000),cdw(3000),
+     &        cmw(3000),xres(3000)
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      common/history/rms,clw,cdw,cmw,xres
-      common/gmcom/gtol,icycle,nsrch,ilu0,ifcn
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo
+      common/gmcom/gtol,icycle,nsrch,ilu0,ifcn
+      common/history/rms,clw,cdw,cmw,xres
 C     logging variables
 c     integer flux_event, delta2_event, flag
 c     character * 16 flux_label, delta2_label
