@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.51 1996/04/09 23:07:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.52 1996/04/10 04:28:25 bsmith Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -9,14 +9,15 @@ static char vcid[] = "$Id: itfunc.c,v 1.51 1996/04/09 23:07:55 bsmith Exp bsmith
 #include "kspimpl.h"   /*I "ksp.h" I*/
 
 /*@
-   KSPComputeExtremeSingularValues - Computes the extreme Singular Values for 
-   the preconditioned operator. Called after or during KSPSolve() (SLESSolve()).
+   KSPComputeExtremeSingularValues - Computes the extreme singular values
+   for the preconditioned operator. Called after or during KSPSolve()
+   (SLESSolve()).
 
    Input Parameter:
 .  ksp - iterative context obtained from KSPCreate()
 
    Output Parameters:
-.  emin, emax - extreme Singular Values
+.  emin, emax - extreme singular values
 
    Notes:
    One must call KSPSetCalculateSingularValues() before calling KSPSetUp() 
@@ -24,7 +25,7 @@ static char vcid[] = "$Id: itfunc.c,v 1.51 1996/04/09 23:07:55 bsmith Exp bsmith
 
    Many users may just want to use the monitoring routine
    KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
-   to print the Singular Values at each iteration of the linear solve.
+   to print the singular values at each iteration of the linear solve.
 
 .keywords: KSP, compute, extreme, singular, values
 
@@ -307,8 +308,8 @@ int KSPSetInitialGuessNonzero(KSP ksp)
 }
 
 /*@
-   KSPSetCalculateSingularValues - Sets a flag so that the extreme Singular 
-   Values will be calculated via a Lanczos or Arnoldi process as the linear 
+   KSPSetCalculateSingularValues - Sets a flag so that the extreme singular 
+   values will be calculated via a Lanczos or Arnoldi process as the linear 
    system is solved.
 
    Input Parameters:
@@ -322,9 +323,9 @@ $  -ksp_singmonitor
 
    Many users may just want to use the monitoring routine
    KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
-   to print the Singular Values at each iteration of the linear solve.
+   to print the singular values at each iteration of the linear solve.
 
-.keywords: KSP, set, Singular Values, calculate
+.keywords: KSP, set, singular values, calculate
 
 .seealso: KSPComputeExtremeSingularValues(), KSPSingularValueMonitor()
 @*/
@@ -477,7 +478,16 @@ int KSPGetPC(KSP ksp, PC *B)
 .  rnorm - (estimated) 2-norm of (preconditioned) residual
 
    Options Database Keys:
-$  -ksp_monitor   : key for setting KSPDefaultMonitor()
+$    -ksp_monitor      : sets KSPDefaultMonitor()
+$    -ksp_truemonitor  : sets KSPTrueMonitor()
+$    -ksp_xmonitor     : sets line graph monitor,
+$                        uses KSPLGMonitorCreate()
+$    -ksp_xtruemonitor : sets line graph monitor,
+$                        uses KSPLGMonitorCreate()
+$    -ksp_singmonitor  : sets KSPSingularValueMonitor()
+$    -ksp_bsmonitor    : sets BlockSolve95 monitor that
+$                        prints both scaled and unscaled
+$                        residual norms
 
    Notes:  
    The default is to do nothing.  To print the residual, or preconditioned 
