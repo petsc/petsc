@@ -173,6 +173,15 @@ class SourceDB (dict, base.Base):
     self[source] = (checksum, SourceDB.getModificationTime(source), time.time(), dependencies)
     return
 
+  def clearSource(self, source):
+    '''This removes source information, but preserved dependencies'''
+    if source in self:
+      self.isDirty = 1
+      self.debugPrint('Clearing '+source+' from source database', 3, 'sourceDB')
+      (checksum, mtime, timestamp, dependencies) = self[source]
+      self[source] = ('', 0, time.time(), dependencies)
+    return
+
   def getDependencies(self, source):
     try:
       (checksum, mtime, timestamp, dependencies) = self[source]
