@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.73 1998/10/02 02:21:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.74 1998/10/02 03:42:38 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -249,7 +249,7 @@ Viewer VIEWER_MATLAB_WORLD_PRIVATE = 0;
 #define __FUNC__ "ViewerInitializeMatlabWorld_Private"
 int ViewerInitializeMatlabWorld_Private(void)
 {
-  int  ierr,flag;
+  int  ierr;
 
   PetscFunctionBegin;
   if (VIEWER_MATLAB_WORLD_PRIVATE) PetscFunctionReturn(0);

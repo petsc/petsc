@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zviewer.c,v 1.11 1998/09/20 03:06:39 bsmith Exp balay $";
+static char vcid[] = "$Id: zviewer.c,v 1.12 1998/10/05 20:43:29 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -54,11 +54,9 @@ void viewerfileopenbinary_(MPI_Comm *comm,CHAR name,ViewerBinaryType *type,
 void viewerfileopenascii_(MPI_Comm *comm,CHAR name,Viewer *lab, int *__ierr,
                           int len1 )
 {
-  Viewer vv;
   char   *c1;
   FIXCHAR(name,len1,c1);
-  *__ierr = ViewerFileOpenASCII((MPI_Comm)PetscToPointerComm(*comm),
-     c1,lab);
+  *__ierr = ViewerFileOpenASCII((MPI_Comm)PetscToPointerComm(*comm),c1,lab);
   FREECHAR(name,c1);
 }
 
@@ -94,7 +92,6 @@ void viewerdestroy_(Viewer *v, int *__ierr )
 
 void viewerstringopen_(MPI_Comm *comm,CHAR name,int *len, Viewer *str,int *__ierr,int len1)
 {
-  Viewer vv;
 #if defined(USES_CPTOFCD)
   *__ierr = ViewerStringOpen((MPI_Comm)PetscToPointerComm(*comm),_fcdtocp(name),*len,str);
 #else
@@ -106,7 +103,6 @@ void viewerdrawopenx_(MPI_Comm *comm,CHAR display,CHAR title, int *x,int*y,int*w
                       int *__ierr,int len1,int len2)
 {
   char   *c1,*c2;
-  Viewer vv;
 
   FIXCHAR(display,len1,c1);
   FIXCHAR(title,len2,c2);
