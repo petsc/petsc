@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.27 1997/01/12 04:31:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.28 1997/04/04 19:10:16 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -192,7 +192,7 @@ void petscsequentialphaseend_(MPI_Comm comm,int *ng, int *__ierr ){
    integers for the MPI objects, hence the PETSc objects require routines 
    provided here to do the conversion between C pointers and Fortran integers.
 */
-#if defined(HAVE_64BITS)
+#if defined(HAVE_64BITS) && !defined(PETSC_USING_MPIUNI)
 
 /* 
    This file contains routines to convert to and from C pointers to Fortran integers
