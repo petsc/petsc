@@ -1,7 +1,6 @@
 
 /*
-      Interfaces the ESI_IndexSpace and ESI_IndexSpace classes to the PETSc
-    Map object class.
+      Makes a PETSc Map look like an esi::IndexSpace
 */
 
 #include "esi/petsc/indexspace.h"
@@ -83,7 +82,6 @@ esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalSize(int &localSize)
   return PetscMapGetLocalSize(this->map,&localSize);
 }
 
-/* -------------- esi::IndexSpace methods --------------------------------------------*/
 esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalPartitionOffset(int &localoffset)
 { 
   return PetscMapGetLocalRange(this->map,&localoffset,PETSC_IGNORE);
@@ -112,3 +110,34 @@ esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionSizes(int *globals
   }
   return 0;
 }
+
+  /* -------------------------------------------------------------------------*/
+namespace esi{namespace petsc{
+
+template<class Ordinal> class IndexSpaceFactory 
+#if defined(PETSC_HAVE_CCA)
+           :  public virtual gov::cca::Port, public virtual gov::cca::Component
+#endif
+{
+  public:
+
+    // Destructor.
+  virtual ~IndexSpaceFactory(void){};
+
+    // Interface for gov::cca::Component
+#if defined(PETSC_HAVE_CCA)
+    virtual void setServices(gov::cca::Services *svc)
+    {
+      svc->addProvidesPort(this,svc->createPortInfo("getIndexSpace", "esi::IndexSpaceFactory", 0));
+    };
+#endif
+
+    // Construct a IndexSpace
+    virtual esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,,esi::IndexSpace<Ordinal>*&v)
+    {
+      v = new esi::petsc::IndexSpace<Ordinal>(*(MPI_Comm*)comm,m,PETSC_DETERMINE);
+      return 0;
+    };
+
+};
+}}

@@ -65,11 +65,11 @@ template<class Scalar,class Ordinal>
     virtual esi::ErrorCode setArrayPointer(Scalar* array, Ordinal length);
 
   private:
-    Vec                        vec;
+    Vec                      vec;
     esi::IndexSpace<Ordinal> *map;
-
 };
 
+}
   /* -------------------------------------------------------------------------*/
 
 template<class Scalar,class Ordinal> class VectorFactory 
@@ -79,24 +79,19 @@ template<class Scalar,class Ordinal> class VectorFactory
 {
   public:
 
-    // constructor
-    VectorFactory();
-  
     // Destructor.
-    virtual ~VectorFactory();
+  virtual ~VectorFactory(void){};
 
     // Interface for gov::cca::Component
 #if defined(PETSC_HAVE_CCA)
-    virtual void setServices(gov::cca::Services *);
+    virtual void setServices(gov::cca::Services *) = 0;
 #endif
 
-
     // Construct a Vector
-    virtual esi::ErrorCode getVector(esi::IndexSpace<int>&,esi::Vector<Scalar,Ordinal>*&v); 
+    virtual esi::ErrorCode getVector(esi::IndexSpace<Ordinal>&,esi::Vector<Scalar,Ordinal>*&v) = 0; 
 };
 
-
-}}
+}
 EXTERN int VecESIWrap(Vec,esi::Vector<double,int>**);
 
 #endif
