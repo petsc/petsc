@@ -230,8 +230,19 @@ c -------------------------------------------------------------------
      &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                       f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 c
-c jform - Forms the Jacobian matrix, J(x).  This routine is called by
-c         FormJacobian().
+c jform - Computes the Jacobian matrix, J(x) and stores it in the 
+c         (intermediate) Eagle format for later conversion to a PETSc
+c         matrix.  This version uses explicit boundary conditions.
+c
+c         This approach of using an intermediate storage space is
+c         inefficient in terms of both memory and time, but is a good
+c         place to get started with an existing code.  We retain this
+c         routine only to show an example of converting from an
+c         existing code that uses the Eagle format.  See jform2() 
+c         for the more efficient approach of directly assembling a
+c         PETSc matrix.
+c
+c         This routine is called by FormJacobian().
 c
 #include "param.h"
 #include "matrixb.h"
@@ -293,7 +304,7 @@ c      DO 21 I=2,NI
       dql=B1(L,M,I,J,K)+B2(L,M,I,J,K)+B3(L,M,I,J,K)
       dqr=B4(L,M,I-1,J,K)+B5(L,M,I,J-1,K)+B6(L,M,I,J,K-1)
       D(L,M,I,J,K)=dql-dqr
-      IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+1.0/DT(I,J,K)
+      IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+one/DT(I,J,K)
    21 CONTINUE
 
       return
@@ -307,8 +318,14 @@ c -------------------------------------------------------------------
      &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                       f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 c
-c jform - Forms the Jacobian matrix, J(x).  This routine is called by
-c         FormJacobian().
+c jform2 - Forms the Jacobian matrix, J(x), with direct assembly 
+c          of the matrix into the PETSc formats via calls to
+c          MatSetValues().  This version uses explicit boundary
+c          conditions.  This approach of direct matrix assembly 
+c          is recommended -- rather than the use of the intermediate
+c          Eagle format as in the routine jform().
+c
+c          This routine is called by FormJacobian().
 c
 #include "param.h"
 #include "dt.h"
@@ -383,14 +400,14 @@ c the PETSc default is row-oriented input.
 c      dql=B1(L,M,I,J,K)+B2(L,M,I,J,K)+B3(L,M,I,J,K)
 c      dqr=B4(L,M,I-1,J,K)+B5(L,M,I,J-1,K)+B6(L,M,I,J,K-1)
 c      D(L,M,I,J,K)=dql-dqr
-c      IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+1.0/DT(I,J,K)
+c      IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+one/DT(I,J,K)
        ijk = ltog(nc * (i-gxsf + jk))
        rc(1) = ijk
        rc(2) = ijk + 1
        rc(3) = ijk + 2
        rc(4) = ijk + 3
        rc(5) = ijk + 4
-       dti = 1.0/DT(I,J,K)
+       dti = one/DT(I,J,K)
        D(1,1,I,J,K)=D(1,1,I,J,K) + dti
        D(2,2,I,J,K)=D(2,2,I,J,K) + dti
        D(3,3,I,J,K)=D(3,3,I,J,K) + dti
@@ -442,12 +459,14 @@ c Update pressure through equation of state
       END
 
 c -------------------------------------------------------------------
-
-      integer function jmonitor(fnorm,cfl_new,work,r,ru,rv,rw,e,p,
+c
+      integer function jmonitor(xl2,cfl_new,work,
+     &                          r,ru,rv,rw,e,p,
      &                          dr,dru,drv,drw,de,
      &                          aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 c
-c jmonitor - Writes miscellaneous output information.
+c jmonitor - Writes miscellaneous output information.  Called by
+c            the MonitorEuler().
 c
 #include "param.h"
 #include "varbls.h"
@@ -473,23 +492,16 @@ c      COMMON /FREQ/ IFREQ,ISGS
 
       common /junkvar/ rtrmsr, etrmsr
 
-      Double  drecv(3),dsend(3),fnorm,rtmax,rtrms,etmax,etrms
+      Double  drecv(3),dsend(3),rtmax,rtrms,etmax,etrms
       Double  dsup,con,rt,et,rtrmsr,etrmsr,tcl,tcd,areas,cn,cc
       Double  area,pbody,cls,cds,xl2,work(*),cfl_new
-      integer i,j,k,ierr,nsup
+      integer i,j,k,ierr,nsup,no_monitor
 
       ncyc     = ncyc + 1
       jmonitor = 0
       cfl      = cfl_new
-      xl2      = log10(fnorm)
-      if (no_output .eq. 0) then
-         write(29,*) ncyc, xl2
-#ifdef PARCH_rs6000
-         call FLUSH_(29)
-#else
-         call flush(29)
-#endif
-      endif
+
+      if (no_output .ne. 0) return
       IF (NCYC.NE.1.AND.MOD(NCYC,5).NE.0) RETURN
 c Compute and tabulate norms and the number of supersonic points in flowfield
       RTMAX=zero
@@ -552,7 +564,7 @@ c        DO 41 K=2,KTIP
           AREA=zero
           DO 42 I=ITLP1,ITUP
 c          DO 42 I=ITL+1,ITU
-            AREA=AREA+ABS(AJY(I,1,K))*.5
+            AREA=AREA+ABS(AJY(I,1,K))*p5
             PBODY=p5*(P(I,1,K)+P(I,2,K))
             CN=CN-(PBODY-RGAM)*AJY(I,1,K)
    42       CC=CC-(PBODY-RGAM)*AJX(I,1,K)
@@ -578,9 +590,9 @@ c          DO 42 I=ITL+1,ITU
       TCD=TCD/AREAS*2./FSMACH**2
  1000 continue
 
-      if (no_output .eq. 0 .and. rank .eq. 0) then
-        WRITE (6,200) NCYC,RTMAX,RTRMS,ETRMS,XL2,TCL,TCD,NSUP
-      endif
+      if (rank .eq. 0)
+     &   WRITE (6,200) NCYC,RTMAX,RTRMS,ETRMS,XL2,TCL,TCD,NSUP
+
 
   200 FORMAT(I5,1P6E11.3,I5)
       RETURN

@@ -55,7 +55,6 @@ typedef struct {
     int    nc;		         /* DOF per node */
     int    nd;		         /* number of diagonals for interior of grid
                                     (are more for C-grid j=0 boundary condition) */
-    int    jfreq;		 /* frequency of computing Jacobian */
     char   **label;              /* labels for components */
     Scalar   angle;              /* flow parameter - angle of attack */
     BCType bctype;               /* flag - boundary condition type */
@@ -74,7 +73,14 @@ typedef struct {
     int    matrix_free;          /* flag - using matrix-free method */
     int    matrix_free_mult;     /* flag - doing matrix-free mult */
     int    mat_assemble_direct;  /* flag - indicates assembling matrix directly */
+    int    mf_adaptive;          /* flag - are we doing adaptive CFL advancement? */
     int    no_output;            /* flag - indicates no runtime output (use when timing code) */
+    int    iter;                 /* nonlinear iteration number */
+    int    jfreq;		 /* frequency of computing Jacobian */
+    Scalar jratio;		 /* ratio indicating when to form a new preconditioning Jacobian */
+    int    use_jratio;           /* flag - are we using the jratio test? */
+    Scalar fnorm_last_jac;       /* || F || - last iteration Jac precond was formed */
+    int    iter_last_jac;        /* iteration at which last Jac precond was formed */
 
   /* ----------------- Basic data structures ------------------- */
     DA       da;                /* distributed array for X, F */ 
@@ -84,6 +90,7 @@ typedef struct {
     Vec      localX, localDX;   /* local solution, dx vectors */
     Mat      J;                 /* Jacobian (preconditioner) matrix */
     Mat      Jmf;               /* matrix-free Jacobian context */
+    KSP      ksp;               /* Krylov context */
 
   /* ----------------- Parallel information ------------------- */
     MPI_Comm comm;              /* general communicator */
@@ -135,14 +142,15 @@ typedef struct {
     Scalar   f_reduction;                   /* reduce fnorm by this much before advancing CFL */
     CFLAdvanceType cfl_advance;             /* flag - indicates type of CFL advancement */
     Scalar   fstagnate_ratio;               /* counter for stagnation detection */
+    double   time_init;                     /* initial time */
     Scalar   *farray;                       /* array for use with SNESSetConvergenceHistory() */
     Scalar   *favg;                         /* array of average fnorm for the past 10 iterations */
-    double   time_init;                     /* initial time */
+
+   /* --- output data --- */
     double   *flog, *ftime, *fcfl, *lin_rtol;
-    int      *lin_its, last_its, mf_adaptive;
-    int      iter;                          /* nonlinear iteration number */
-    KSP      ksp;                           /* Krylov context */
-    FILE     *fp;
+    int      *lin_its, last_its;
+    FILE     *fp;                           /* file for stashing convergence info at each iteration */
+    int      check_solution;
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
@@ -182,6 +190,7 @@ typedef struct {
 #define bc_          BC
 #define bcpart_j1_   BCPART_J1
 #define readmesh_    READMESH
+#define jcfl_update_ JCFL_UPDATE
 
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define mdump_       mdump
@@ -218,6 +227,7 @@ typedef struct {
 #define bc_          bc
 #define bcpart_j1_   bcpart_j1
 #define readmesh_    readmesh
+#define jcfl_update_ jcfl_update
 #endif
 
 /* Basic routines */
@@ -245,6 +255,7 @@ int MatViewDFVec_MPIAIJ(Mat,DFVec,Viewer);
 int GridTest(Euler*);
 
 /* Monitoring routines */
+int CheckSolution(Euler*,Vec);
 int MonitorEuler(SNES,int,double,void*);
 int ConvergenceTestEuler(SNES,double,double,double,void*);
 int TECPLOTMonitor(SNES,Vec,Euler*);

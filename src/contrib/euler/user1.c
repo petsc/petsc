@@ -119,8 +119,8 @@ int main(int argc,char **argv)
   if (flg) {PetscPrintf(comm,help2);PetscPrintf(comm,help3);PetscPrintf(comm,help4);}
 
   /* Temporarily deactivate these events */
-  PLogEventDeactivate(VEC_SetValues);
-  PLogEventDeactivate(MAT_SetValues);
+  /* PLogEventDeactivate(VEC_SetValues); */
+  /* PLogEventDeactivate(MAT_SetValues); */
 
   /* -----------------------------------------------------------
                   Beginning of nonlinear solver loop
@@ -275,13 +275,17 @@ int main(int argc,char **argv)
   ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,PETSC_NULL,&maxsnes,
          PETSC_NULL); CHKERRA(ierr);
   len = maxsnes + 1;
-  app->farray = (Scalar *)PetscMalloc(6*len*sizeof(Scalar)); CHKPTRQ(app->farray);
-  PetscMemzero(app->farray,6*len*sizeof(Scalar));
+
+  /* temporarily omit rtol */
+  /*  app->farray = (Scalar *)PetscMalloc(6*len*sizeof(Scalar)); CHKPTRQ(app->farray);
+  PetscMemzero(app->farray,6*len*sizeof(Scalar)); */
+  app->farray = (Scalar *)PetscMalloc(5*len*sizeof(Scalar)); CHKPTRQ(app->farray);
+  PetscMemzero(app->farray,5*len*sizeof(Scalar));
   app->favg     = app->farray + len;
   app->flog     = app->favg   + len;
   app->ftime    = app->flog   + len;
   app->fcfl     = app->ftime  + len;
-  app->lin_rtol = app->fcfl   + len;
+  /* app->lin_rtol = app->fcfl   + len; */
   app->lin_its  = (int *)PetscMalloc(len*sizeof(int)); CHKPTRQ(app->lin_its);
   PetscMemzero(app->lin_its,len*sizeof(int));
   ierr = SNESSetConvergenceHistory(snes,app->farray,maxsnes); CHKERRA(ierr);
@@ -338,8 +342,10 @@ int main(int argc,char **argv)
       app->fp = fopen("fnorm.m","w"); 
       fprintf(app->fp,"zsnes = [\n");
       for (i=0; i<=its; i++)
-        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
-                i,app->flog[i],app->fcfl[i],app->ftime[i],app->lin_its[i],app->lin_rtol[i]);
+	/*        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
+                i,app->flog[i],app->fcfl[i],app->ftime[i],app->lin_its[i],app->lin_rtol[i]); */
+        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d\n",
+                i,app->flog[i],app->fcfl[i],app->ftime[i],app->lin_its[i]);
     }
   }
   fprintf(app->fp," ];\n");
@@ -486,8 +492,11 @@ int UserSetJacobian(SNES snes,Euler *app)
     /* Use matrix-free Jacobian to define Newton system; use finite difference
        approximation of Jacobian for preconditioner */
    if (app->bctype != IMPLICIT) SETERRQ(1,1,"Matrix-free method requires implicit BCs!");
-   ierr = UserMatrixFreeMatCreate(snes,app,app->X,&app->Jmf); CHKERRQ(ierr);
+   ierr = UserMatrixFreeMatCreate(snes,app,app->X,&app->Jmf); CHKERRQ(ierr); 
    ierr = SNESSetJacobian(snes,app->Jmf,J,ComputeJacobian,app); CHKERRQ(ierr);
+
+   /* Set matrix-free parameters and view matrix context */
+   ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_err",&app->eps_mf_default,&flg); CHKERRQ(ierr);
    ierr = UserSetMatrixFreeParameters(snes,app->eps_mf_default,PETSC_DEFAULT); CHKERRQ(ierr);
    ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0); CHKERRQ(ierr);
    PetscPrintf(comm,"Using matrix-free KSP method: linear system matrix:\n");
@@ -599,14 +608,28 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
   int     iter;                /* nonlinear solver iteration number */
   int     fortmat, flg, ierr;
 
-  /* For better efficiency, we recompute the Jacobian matrix only every few 
-     nonlinear iterations (as set by the option -jfreq).  The flag 
-     SAME_PRECONDITIONER indicates that in this case the current 
-     preconditioner should be retained */
   ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
-  if (iter>1 && (iter%app->jfreq)) {
-    *flag = SAME_PRECONDITIONER;
-    return 0;
+
+  /* For better efficiency, we hold the Jacobian matrix fixed over several
+     nonlinear iterations.  The flag SAME_PRECONDITIONER indicates that in
+     this case the current preconditioner should be retained. */
+  if (iter > 1) {
+    if (app->use_jratio) {
+      if (iter != 10) {  /* force Jacobian eval at iteration 10, since BCs change there */
+        if (app->fnorm_last_jac/app->fnorm_last < app->jratio) {
+          if (iter - app->iter_last_jac < app->jfreq) {
+            *flag = SAME_PRECONDITIONER;
+            return 0;
+          } 
+        } 
+      }
+    } else {
+      /* Form Jacobian every few nonlinear iterations (as set by -jfreq option) */
+      if (iter%app->jfreq) {
+        *flag = SAME_PRECONDITIONER;
+        return 0;
+      }
+    }
   }
 
   /* Convert vector.  If using explicit boundary conditions, this passes along
@@ -707,129 +730,136 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
      structure each time it is formed */
   *flag = SAME_NONZERO_PATTERN;
 
-  /* View matrix (for debugging only) */
-  if (app->print_vecs) {
-    char filename[64]; Viewer view; MatType mtype;
-    ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
-    sprintf(filename,"mat.%d.out",iter);
-    ierr = ViewerFileOpenASCII(app->comm,filename,&view); CHKERRQ(ierr);
-    ierr = ViewerSetFormat(view,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
-    ierr = MatGetType(*pjac,&mtype,PETSC_NULL); CHKERRQ(ierr);
+  if (!app->no_output) {
 
-    /*
-      if (mtype == MATSEQAIJ) {
-	ierr = MatViewSeqAIJ_Long(*pjac,view); CHKERRQ(ierr);
-      } else if (mtype == MATSEQBAIJ) {
-	ierr = MatViewSeqBAIJ_Long(*pjac,view); CHKERRQ(ierr);
-      }
+    /* View matrix (for debugging only) */
+    if (app->print_vecs) {
+      char filename[64]; Viewer view; MatType mtype;
+      sprintf(filename,"mat.%d.out",iter);
+      ierr = ViewerFileOpenASCII(app->comm,filename,&view); CHKERRQ(ierr);
+      ierr = ViewerSetFormat(view,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
+      ierr = MatGetType(*pjac,&mtype,PETSC_NULL); CHKERRQ(ierr);
+  
+      /*
+        if (mtype == MATSEQAIJ) {
+  	ierr = MatViewSeqAIJ_Long(*pjac,view); CHKERRQ(ierr);
+        } else if (mtype == MATSEQBAIJ) {
+  	ierr = MatViewSeqBAIJ_Long(*pjac,view); CHKERRQ(ierr);
+        }
+        */
+      /*
+      if (mtype == MATMPIAIJ) {ierr = MatViewDFVec_MPIAIJ(*pjac,X,view); CHKERRQ(ierr);}
+      else                    {ierr = MatView(*pjac,view); CHKERRQ(ierr);}
       */
-    /*
-    if (mtype == MATMPIAIJ) {ierr = MatViewDFVec_MPIAIJ(*pjac,X,view); CHKERRQ(ierr);}
-    else                    {ierr = MatView(*pjac,view); CHKERRQ(ierr);}
-    */
-    ierr = ViewerDestroy(view); CHKERRQ(ierr);
-    /*    PetscFinalize(); exit(0); */
-  }
-
-  /* Dump Jacobian and residual in binary format to file euler.dat 
-     (for use in separate experiments with linear system solves) */
-  ierr = OptionsHasName(PETSC_NULL,"-mat_dump",&flg); CHKERRQ(ierr);
-  if (flg && app->cfl_switch <= app->cfl) {
-    Viewer viewer;
-    PetscPrintf(app->comm,"writing matrix in binary to euler.dat ...\n"); 
-    ierr = ViewerFileOpenBinary(app->comm,"euler.dat",BINARY_CREATE,&viewer); 
-	   CHKERRQ(ierr);
-    ierr = MatView(*pjac,viewer); CHKERRQ(ierr);
-
-    ierr = ComputeFunction(snes,X,app->F,ptr); CHKERRQ(ierr);
-    PetscPrintf(app->comm,"writing vector in binary to euler.dat ...\n"); 
-    ierr = VecView(app->F,viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
-    PetscFinalize(); exit(0);
-  }
-
-  /* Check matrix-vector products, run with -matrix_free and -debug option */
-  if (app->matrix_free && app->print_debug) {
-    int    loc, i, m, j ,k, ijkx, jkx, ijkxl, jkxl, *ltog, dc[5];
-    Vec    yy1, yy2, xx1;
-    Viewer view2;
-    Scalar *yy1a, *yy2a, one = 1.0, di, diff, md[5];
-
-    ierr = DAGetGlobalIndices(app->da,&loc,&ltog); CHKERRQ(ierr);
-    ierr = VecDuplicate(X,&yy1); CHKERRQ(ierr);
-    ierr = VecDuplicate(X,&xx1); CHKERRQ(ierr);
-    ierr = VecDuplicate(X,&yy2); CHKERRQ(ierr);
-    for (k=app->zs; k<app->ze; k++) {
-      for (j=app->ys; j<app->ye; j++) {
-	jkx  = j*app->mx + k*app->mx*app->my;
-	jkxl = (j-app->gys)*app->gxm + (k-app->gzs)*app->gxm*app->gym;
-	for (i=app->xs; i<app->xe; i++) {
-	  ijkx  = (jkx + i)*app->nc;
-	  ijkxl = (jkxl + i-app->gxs)*app->nc;
-	  for (m=0;m<app->nc;m++) {
-	    di = one*ijkx;
-	    loc = ltog[ijkxl];
-	    ierr = VecSetValues(xx1,1,&loc,&di,INSERT_VALUES); CHKERRQ(ierr);
-	 printf("[%d] k=%d, j=%d, i=%d, ijkx=%d, ijkxl=%d\n",app->rank,k,j,i,ijkx,ijkxl);
-	    ijkx++; ijkxl++;
-	  }
-	}
-      }
+      ierr = ViewerDestroy(view); CHKERRQ(ierr);
+      /*    PetscFinalize(); exit(0); */
     }
-    ierr = VecAssemblyBegin(xx1); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(xx1); CHKERRQ(ierr);
-    ierr = ViewerFileOpenASCII(app->comm,"xx1.out",&view2); CHKERRQ(ierr);
-    ierr = ViewerSetFormat(view2,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
-    ierr = DFVecView(xx1,view2); CHKERRQ(ierr);
-    ierr = ViewerDestroy(view2); CHKERRQ(ierr);
-
-    ierr = MatMult(*pjac,xx1,yy1); CHKERRQ(ierr);
-    ierr = ViewerFileOpenASCII(app->comm,"v1.out",&view2); CHKERRQ(ierr);
-    ierr = ViewerSetFormat(view2,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
-    ierr = DFVecView(yy1,view2); CHKERRQ(ierr);
-    ierr = ViewerDestroy(view2); CHKERRQ(ierr);
-
-    ierr = MatMult(*jac,xx1,yy2); CHKERRQ(ierr);
-    ierr = ViewerFileOpenASCII(app->comm,"v2.out",&view2); CHKERRQ(ierr);
-    ierr = ViewerSetFormat(view2,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
-    ierr = DFVecView(yy2,view2); CHKERRQ(ierr);
-    ierr = ViewerDestroy(view2); CHKERRQ(ierr);
-
-    ierr = VecGetArray(yy1,&yy1a); CHKERRQ(ierr);
-    ierr = VecGetArray(yy2,&yy2a); CHKERRQ(ierr);
-
-    for (m=0;m<app->nc;m++) {
-      dc[m] = 0;
-      md[m] = 0;
+  
+    /* Dump Jacobian and residual in binary format to file euler.dat 
+       (for use in separate experiments with linear system solves) */
+    ierr = OptionsHasName(PETSC_NULL,"-mat_dump",&flg); CHKERRQ(ierr);
+    if (flg && app->cfl_switch <= app->cfl) {
+      Viewer viewer;
+      PetscPrintf(app->comm,"writing matrix in binary to euler.dat ...\n"); 
+      ierr = ViewerFileOpenBinary(app->comm,"euler.dat",BINARY_CREATE,&viewer); 
+  	   CHKERRQ(ierr);
+      ierr = MatView(*pjac,viewer); CHKERRQ(ierr);
+  
+      ierr = ComputeFunction(snes,X,app->F,ptr); CHKERRQ(ierr);
+      PetscPrintf(app->comm,"writing vector in binary to euler.dat ...\n"); 
+      ierr = VecView(app->F,viewer); CHKERRQ(ierr);
+      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+      PetscFinalize(); exit(0);
+    }
+  
+    /* Check matrix-vector products, run with -matrix_free and -debug option */
+    if (app->matrix_free && app->print_debug) {
+      int    loc, i, m, j ,k, ijkx, jkx, ijkxl, jkxl, *ltog, dc[5];
+      Vec    yy1, yy2, xx1;
+      Viewer view2;
+      Scalar *yy1a, *yy2a, one = 1.0, di, diff, md[5];
+  
+      ierr = DAGetGlobalIndices(app->da,&loc,&ltog); CHKERRQ(ierr);
+      ierr = VecDuplicate(X,&yy1); CHKERRQ(ierr);
+      ierr = VecDuplicate(X,&xx1); CHKERRQ(ierr);
+      ierr = VecDuplicate(X,&yy2); CHKERRQ(ierr);
       for (k=app->zs; k<app->ze; k++) {
-	for (j=app->ys; j<app->ye; j++) {
-	  jkx = (j-app->ys)*app->xm + (k-app->zs)*app->xm*app->ym;
-	  for (i=app->xs; i<app->xe; i++) {
-	    ijkx = (jkx + i-app->xs)*app->nc + m;
-	    diff = (PetscAbsScalar(yy1a[ijkx])-PetscAbsScalar(yy2a[ijkx])) /
-		  PetscAbsScalar(yy1a[ijkx]);
-	    if (diff > 0.1) {
-	      printf("k=%d, j=%d, i=%d, m=%d, ijkx=%d,     diff=%6.3e       yy1=%6.3e,   yy2=%6.3e\n",
-		      k,j,i,m,ijkx,diff,yy1a[ijkx],yy2a[ijkx]);
-	      if (diff > md[m]) md[m] = diff;
-	      dc[m]++;
-	    }
-	  }
-	}
+        for (j=app->ys; j<app->ye; j++) {
+  	jkx  = j*app->mx + k*app->mx*app->my;
+  	jkxl = (j-app->gys)*app->gxm + (k-app->gzs)*app->gxm*app->gym;
+  	for (i=app->xs; i<app->xe; i++) {
+  	  ijkx  = (jkx + i)*app->nc;
+  	  ijkxl = (jkxl + i-app->gxs)*app->nc;
+  	  for (m=0;m<app->nc;m++) {
+  	    di = one*ijkx;
+  	    loc = ltog[ijkxl];
+  	    ierr = VecSetValues(xx1,1,&loc,&di,INSERT_VALUES); CHKERRQ(ierr);
+  	 printf("[%d] k=%d, j=%d, i=%d, ijkx=%d, ijkxl=%d\n",app->rank,k,j,i,ijkx,ijkxl);
+  	    ijkx++; ijkxl++;
+  	  }
+  	}
+        }
       }
+      ierr = VecAssemblyBegin(xx1); CHKERRQ(ierr);
+      ierr = VecAssemblyEnd(xx1); CHKERRQ(ierr);
+      ierr = ViewerFileOpenASCII(app->comm,"xx1.out",&view2); CHKERRQ(ierr);
+      ierr = ViewerSetFormat(view2,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
+      ierr = DFVecView(xx1,view2); CHKERRQ(ierr);
+      ierr = ViewerDestroy(view2); CHKERRQ(ierr);
+  
+      ierr = MatMult(*pjac,xx1,yy1); CHKERRQ(ierr);
+      ierr = ViewerFileOpenASCII(app->comm,"v1.out",&view2); CHKERRQ(ierr);
+      ierr = ViewerSetFormat(view2,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
+      ierr = DFVecView(yy1,view2); CHKERRQ(ierr);
+      ierr = ViewerDestroy(view2); CHKERRQ(ierr);
+  
+      ierr = MatMult(*jac,xx1,yy2); CHKERRQ(ierr);
+      ierr = ViewerFileOpenASCII(app->comm,"v2.out",&view2); CHKERRQ(ierr);
+      ierr = ViewerSetFormat(view2,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
+      ierr = DFVecView(yy2,view2); CHKERRQ(ierr);
+      ierr = ViewerDestroy(view2); CHKERRQ(ierr);
+  
+      ierr = VecGetArray(yy1,&yy1a); CHKERRQ(ierr);
+      ierr = VecGetArray(yy2,&yy2a); CHKERRQ(ierr);
+  
+      for (m=0;m<app->nc;m++) {
+        dc[m] = 0;
+        md[m] = 0;
+        for (k=app->zs; k<app->ze; k++) {
+  	for (j=app->ys; j<app->ye; j++) {
+  	  jkx = (j-app->ys)*app->xm + (k-app->zs)*app->xm*app->ym;
+  	  for (i=app->xs; i<app->xe; i++) {
+  	    ijkx = (jkx + i-app->xs)*app->nc + m;
+  	    diff = (PetscAbsScalar(yy1a[ijkx])-PetscAbsScalar(yy2a[ijkx])) /
+  		  PetscAbsScalar(yy1a[ijkx]);
+  	    if (diff > 0.1) {
+  	      printf("k=%d, j=%d, i=%d, m=%d, ijkx=%d,     diff=%6.3e       yy1=%6.3e,   yy2=%6.3e\n",
+  		      k,j,i,m,ijkx,diff,yy1a[ijkx],yy2a[ijkx]);
+  	      if (diff > md[m]) md[m] = diff;
+  	      dc[m]++;
+  	    }
+  	  }
+  	}
+        }
+      }
+      printf("[%d] maxdiff = %g, %g, %g, %g, %g\n\
+      dcount = %d, %d, %d, %d, %d\n",
+  	   app->rank,md[0],md[1],md[2],md[3],md[4],dc[0],dc[1],dc[2],dc[3],dc[4]);
+  
+      ierr = VecDestroy(xx1); CHKERRQ(ierr);
+      ierr = VecDestroy(yy1); CHKERRQ(ierr);
+      ierr = VecDestroy(yy2); CHKERRQ(ierr);
+  
+      PetscFinalize(); exit(0);
     }
-    printf("[%d] maxdiff = %g, %g, %g, %g, %g\n\
-    dcount = %d, %d, %d, %d, %d\n",
-	   app->rank,md[0],md[1],md[2],md[3],md[4],dc[0],dc[1],dc[2],dc[3],dc[4]);
-
-    ierr = VecDestroy(xx1); CHKERRQ(ierr);
-    ierr = VecDestroy(yy1); CHKERRQ(ierr);
-    ierr = VecDestroy(yy2); CHKERRQ(ierr);
-
-    PetscFinalize(); exit(0);
+  
+    PetscPrintf(app->comm,
+       "Done building PETSc matrix: last Jac iter = %d, fnorm ratio = %g, tol = %g\n",
+       app->iter_last_jac,app->fnorm_last_jac/app->fnorm_last,app->jratio);
   }
+  app->iter_last_jac  = iter;
+  app->fnorm_last_jac = app->fnorm_last;
 
-  if (!app->no_output) PetscPrintf(app->comm,"Done building PETSc matrix.\n");
   return 0;
 }
 #undef __FUNC__
@@ -975,24 +1005,27 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
           Optional output for debugging and visualizing solution 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* Output various fields into a general-format file for later viewing */
-  if (app->dump_general) {
-    ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
-    if (!(iter%app->dump_freq)) ierr = MonitorDumpGeneral(snes,X,app);
-  }
+  if (!app->no_output) {
+    /* Output various fields into a general-format file for later viewing */
+    if (app->dump_general) {
+      ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
+      if (!(iter%app->dump_freq)) ierr = MonitorDumpGeneral(snes,X,app);
+    }
 
-  /* Output various fields directly into a VRML-format file */
-  if (app->dump_vrml) {
-    ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
-    if (!(iter%app->dump_freq)) ierr = MonitorDumpVRML(snes,X,F,app);
-    MonitorDumpIter(iter);
-  }
+    /* Output various fields directly into a VRML-format file */
+    if (app->dump_vrml) {
+      ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
+      if (!(iter%app->dump_freq)) ierr = MonitorDumpVRML(snes,X,F,app);
+      MonitorDumpIter(iter);
+    }
 
-  if (app->print_debug) { /* Print Fortran arrays */
-    base_unit = 60;
-    printgjul_(app->dr,app->dru,app->drv,app->drw,app->de,app->p,&base_unit);
-    base_unit = 70;
-    printgjul_(app->r,app->ru,app->rv,app->rw,app->e,app->p,&base_unit);
+    /* Print Fortran arrays (debugging) */
+    if (app->print_debug) {
+      base_unit = 60;
+      printgjul_(app->dr,app->dru,app->drv,app->drw,app->de,app->p,&base_unit);
+      base_unit = 70;
+      printgjul_(app->r,app->ru,app->rv,app->rw,app->e,app->p,&base_unit);
+    }
   }
 
   return 0;
@@ -1103,14 +1136,14 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       ni1 = 98; nj1 = 18; nk1 = 18;
       app->ktip = 9; app->itl = 17; app->itu = 77; app->ile = 47;   
       app->eps_jac        = 1.0e-7;
-      app->eps_mf_default = 1.0e-6;
+      app->eps_mf_default = 1.0e-5;
       break;
     case 3:
       /* from m6n: Fortran: itl=37, itu=157, ile=97, ktip=21 */
       ni1 = 194; nj1 = 34; nk1 = 34;
       app->ktip = 19; app->itl = 35; app->itu = 155; app->ile = 95;   
       app->eps_jac        = 1.0e-7;
-      app->eps_mf_default = 1.0e-6;
+      app->eps_mf_default = 1.0e-4;
       break;
     case 4:
       /* test case for PETSc grid manipulations only! */
@@ -1133,19 +1166,28 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->f_reduction           = 0.3;      /* fnorm reduction ratio before beginning to advance CFL */
   app->cfl_advance           = CONSTANT; /* flag - by default we don't advance CFL */
   app->angle                 = 3.06;     /* default angle of attack = 3.06 degrees */
-  app->mat_assemble_direct   = 1;        /* by default, we assemble Jacobian directly */
   app->mf_adaptive           = 0;        /* by default, we do not adapt mf param */
-  app->jfreq                 = 10;       /* default frequency of computing Jacobian matrix */
-  app->no_output             = 0;        /* flag - by default print some output as program runs */
-  app->use_vecsetvalues      = 0;        /* flag - by default assemble local vector data directly */
   app->fstagnate_ratio       = .01;      /* stagnation detection parameter */
+
+  app->mat_assemble_direct   = 1;        /* by default, we assemble Jacobian directly */
+  app->use_vecsetvalues      = 0;        /* flag - by default assemble local vector data directly */
+
+  /* control of forming new preconditioner matrices */
+  app->jfreq                 = 10;       /* default frequency of computing Jacobian matrix */
+  app->jratio                = 100;      /* default ration for computing new Jacobian */
+  app->use_jratio            = 0;        /* flag - are we using the Jacobian ratio test? */
+  app->check_solution        = 0;        /* flag - are we checking solution components? */
+  app->iter_last_jac         = 0;        /* iteration at which last Jacobian precond was formed */
+  app->fnorm_last_jac        = 0;        /* || F || - last time Jacobian precond was formed */
+
+  app->no_output             = 0;        /* flag - by default print some output as program runs */
   app->farray                = 0;        /* work array */
   app->favg                  = 0;        /* work array */
   app->flog                  = 0;        /* work array */
   app->ftime                 = 0;        /* work array */
   app->lin_rtol              = 0;        /* work array */
   app->lin_its               = 0;        /* work array */
-  app->last_its               = 0;
+  app->last_its              = 0;
 
   /* Override default with runtime options */
   ierr = OptionsHasName(PETSC_NULL,"-cfl_advance_local",&flg); CHKERRQ(ierr);
@@ -1160,6 +1202,9 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
     } else PetscPrintf(comm,"CFL remains constant\n");
   }
   ierr = OptionsHasName(PETSC_NULL,"-mf_adaptive",&app->mf_adaptive); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-use_jratio",&app->use_jratio); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-check_solution",&app->check_solution); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-jratio",&app->jratio,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-use_vecsetvalues",&app->use_vecsetvalues); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_switch",&app->cfl_switch,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max",&app->cfl_max,&flg); CHKERRQ(ierr);

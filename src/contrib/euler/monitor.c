@@ -32,18 +32,20 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
   MPI_Comm comm;
   Euler    *app = (Euler *)dummy;
   Scalar   negone = -1.0, mfeps;
-  Vec      DX;
+  Vec      DX, X;
   Viewer   view1;
   char     filename[64];
   int      ierr, lits;
 
   PetscObjectGetComm((PetscObject)snes,&comm);
 
+  /* Are we adaptively setting mfeps? */
   if (app->matrix_free && app->mf_adaptive) {
     mfeps = fnorm * 1.e-3;
     ierr = UserSetMatrixFreeParameters(snes,mfeps,PETSC_DEFAULT); CHKERRQ(ierr);
     if (!app->no_output) PetscPrintf(comm,"next mf_eps=%g\n",mfeps);
   }
+
   /* Print the vector F (intended for debugging) */
   if (app->print_vecs) {
     ierr = SNESGetFunction(snes,&app->F); CHKERRQ(ierr);
@@ -62,18 +64,19 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     app->fnorm_init  = app->fnorm_last = fnorm;
     app->cfl_init    = app->cfl;
     app->lin_its[0]  = 0;
-    app->lin_rtol[0] = 0;
+    /* app->lin_rtol[0] = 0; */
     if (!app->no_output) {
       if (app->cfl_advance != CONSTANT)
         PetscPrintf(comm,"iter = %d, Function norm = %g, fnorm reduction ratio = %g, CFL_init = %g\n",
            its,fnorm,app->f_reduction,app->cfl);
-      else PetscPrintf(comm,"iter = %d, Function norm = %g, CFL = %g\n",
-           its,fnorm,app->f_reduction,app->cfl);
+      else PetscPrintf(comm,"iter = %d, Function norm = %g, CFL = %g\n",its,fnorm,app->cfl);
       if (app->rank == 0) {
         app->fp = fopen("fnorm.m","w"); 
         fprintf(app->fp,"zsnes = [\n");
-        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
-                its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
+        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d\n",
+                its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its]);
+	/*        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
+                its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]); */
       }
     }
   } else {
@@ -83,14 +86,18 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     ierr = SNESGetNumberLinearIterations(snes,&lits); CHKERRQ(ierr);
     app->lin_its[its] = lits - app->last_its;
     app->last_its     = lits;
-    ierr = KSPGetTolerances(app->ksp,&(app->lin_rtol[its]),PETSC_NULL,PETSC_NULL,
-           PETSC_NULL); CHKERRQ(ierr);
+    /* ierr = KSPGetTolerances(app->ksp,&(app->lin_rtol[its]),PETSC_NULL,PETSC_NULL,
+           PETSC_NULL); CHKERRQ(ierr); */
     if (!app->no_output) {
-      PetscPrintf(comm,"iter = %d, Function norm %g, lin_rtol=%g, lin_its = %d\n",
-                  its,fnorm,app->lin_rtol[its],app->lin_its[its]);
+      PetscPrintf(comm,"iter = %d, Function norm %g, lin_its = %d\n",
+                  its,fnorm,app->lin_its[its]);
+      /* PetscPrintf(comm,"iter = %d, Function norm %g, lin_rtol=%g, lin_its = %d\n",
+                  its,fnorm,app->lin_rtol[its],app->lin_its[its]); */
       if (app->rank == 0) {
-        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
-                its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
+        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d\n",
+             its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its]);
+        /* fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
+             its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]); */
         fflush(app->fp);
       }
     }
@@ -116,7 +123,6 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         /* Modify the CFL if we are past the threshold ratio */
         if (app->cfl_advance == ADVANCE_GLOBAL) {
           app->cfl = app->cfl * app->fnorm_last / fnorm;
-          app->fnorm_last = fnorm;
         } else if (app->cfl_advance == ADVANCE_LOCAL) {
           app->cfl = app->cfl_init * app->fnorm_init / fnorm;
         } else SETERRQ(1,1,"Unsupported CFL advancement strategy");
@@ -125,6 +131,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         if (!app->no_output) PetscPrintf(comm,"CFL: cfl=%g\n",app->cfl);
       }
     }
+    app->fnorm_last = fnorm;
 
     /* Calculate new pseudo-transient continuation term, dt */
     /*    if (app->sctype == DT_MULT || next iteration forms Jacobian || matrix-free mult) */
@@ -137,31 +144,39 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     ierr = SNESGetSolutionUpdate(snes,&DX); CHKERRQ(ierr);
     ierr = VecScale(&negone,DX); CHKERRQ(ierr);
     ierr = PackWork(app,DX,app->localDX,
-                    app->dr,app->dru,app->drv,app->drw,app->de); CHKERRQ(ierr);
+                app->dr,app->dru,app->drv,app->drw,app->de); CHKERRQ(ierr);
 
-    /* Call Julianne monitoring routine */
+    /* Call Julianne monitoring routine and update CFL number */
     ierr = jmonitor_(&app->flog[its],&app->cfl,
-             app->work_p,app->r,app->ru,app->rv,app->rw,app->e,
-             app->p,app->dr,app->dru,app->drv,app->drw,app->de,
-             app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-             app->aiz,app->ajz,app->akz); CHKERRQ(ierr);
+           app->work_p,app->r,app->ru,app->rv,app->rw,app->e,
+           app->p,app->dr,app->dru,app->drv,app->drw,app->de,
+           app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+           app->aiz,app->ajz,app->akz); CHKERRQ(ierr);
 
-    /* Print factored matrix - intended for debugging */
-    if (app->print_vecs) {
-      SLES   sles;
-      PC     pc;
-      PCType pctype;
-      Mat    fmat;
-      Viewer view;
-      ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
-      ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
-      ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRQ(ierr);
-      if (pctype == PCILU) {
-        ierr = PCGetFactoredMatrix(pc,&fmat);
-        ierr = ViewerFileOpenASCII(app->comm,"factor.out",&view); CHKERRQ(ierr);
-        ierr = ViewerSetFormat(view,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
-        ierr = MatView(fmat,view); CHKERRQ(ierr);
-        ierr = ViewerDestroy(view); CHKERRQ(ierr);
+    if (!app->no_output) {
+      /* Check solution */
+      if (app->check_solution && app->bctype == IMPLICIT) {
+        ierr = SNESGetSolution(snes,&X); CHKERRQ(ierr);
+        ierr = CheckSolution(app,X); CHKERRQ(ierr);
+      }
+
+      /* Print factored matrix - intended for debugging */
+      if (app->print_vecs) {
+        SLES   sles;
+        PC     pc;
+        PCType pctype;
+        Mat    fmat;
+        Viewer view;
+        ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
+        ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
+        ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRQ(ierr);
+        if (pctype == PCILU) {
+          ierr = PCGetFactoredMatrix(pc,&fmat);
+          ierr = ViewerFileOpenASCII(app->comm,"factor.out",&view); CHKERRQ(ierr);
+          ierr = ViewerSetFormat(view,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
+          ierr = MatView(fmat,view); CHKERRQ(ierr);
+          ierr = ViewerDestroy(view); CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -561,10 +576,13 @@ int TECPLOTMonitor(SNES snes,Vec X,Euler *app)
       - stagnation has been detected
       - we're encountering NaNs
 
-   This is a simplistic test that we use only because we need to
-   compare timings for various methods, and we need a single stopping
-   criterion so that a fair comparison is possible.
+   Notes:
+   We usse this simplistic test because we need to compare timings for
+   various methods, and we need a single stopping criterion so that a
+   fair comparison is possible.
 
+   We test for stagnation and NaNs only for the matrix-free version,
+   since these haven't been a problem with the other variants.
  */
 int ConvergenceTestEuler(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
 {
@@ -572,58 +590,42 @@ int ConvergenceTestEuler(SNES snes,double xnorm,double pnorm,double fnorm,void *
   int    i, last_k, iter = snes->iter, fstagnate = 0;
   Scalar *favg = app->favg, *farray = app->farray;
   Scalar register tmp;
+
   if (fnorm <= snes->ttol) {
     PLogInfo(snes,
     "ConvergenceTestEuler:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
     return 1;
   }
-  /* Note that NaN != NaN */
-  if (fnorm != fnorm) {
-    PLogInfo(snes,"ConvergenceTestEuler:Function norm is NaN: %g\n",fnorm);
-    return 2;
-  }
-  if (iter >= 40) {
-    /* Computer average fnorm over the past 6 iterations */
-    last_k = 5;
-    tmp = 0.0;
-    for (i=iter-last_k; i<iter+1; i++) tmp += farray[i];
-    favg[iter] = tmp/(last_k+1);
-    /* printf("   iter = %d, f_avg = %g \n",iter,favg[iter]); */
-
-    /* Test for stagnation over the past 10 iterations */
-    if (iter >=50) {
-      last_k = 10;
-      for (i=iter-last_k; i<iter; i++) {
-        if (PetscAbsScalar(favg[i] - favg[iter])/favg[iter] < app->fstagnate_ratio) fstagnate++;
-        /* printf("iter = %d, i=%d, ratio = %g, fstg_ratio=%g, fstagnate = %d\n",iter,i,ratio,app->fstagnate_ratio,fstagnate); */
-      }
-      if (fstagnate > 5) {
-        PLogInfo(snes,"ConvergenceTestEuler: Stagnation at fnorm = %g\n",fnorm);
-        return 3;
+  /* Test for stagnation and NaNs for matrix-free version only */
+  if (app->matrix_free) {
+    /* Note that NaN != NaN */
+    if (fnorm != fnorm) {
+      PLogInfo(snes,"ConvergenceTestEuler:Function norm is NaN: %g\n",fnorm);
+      return 2;
+    }
+    if (iter >= 40) {
+      /* Computer average fnorm over the past 6 iterations */
+      last_k = 5;
+      tmp = 0.0;
+      for (i=iter-last_k; i<iter+1; i++) tmp += farray[i];
+      favg[iter] = tmp/(last_k+1);
+      /* printf("   iter = %d, f_avg = %g \n",iter,favg[iter]); */
+  
+      /* Test for stagnation over the past 10 iterations */
+      if (iter >=50) {
+        last_k = 10;
+        for (i=iter-last_k; i<iter; i++) {
+          if (PetscAbsScalar(favg[i] - favg[iter])/favg[iter] < app->fstagnate_ratio) fstagnate++;
+          /* printf("iter = %d, i=%d, ratio = %g, fstg_ratio=%g, fstagnate = %d\n",
+              iter,i,ratio,app->fstagnate_ratio,fstagnate); */
+        }
+        if (fstagnate > 5) {
+          PLogInfo(snes,"ConvergenceTestEuler: Stagnation at fnorm = %g\n",fnorm);
+          return 3;
+        }
       }
     }
   }
   return 0;
 }
 
-/* ------------------------------------------------------------------------------ */
-#include "src/ksp/impls/gmres/gmresp.h"
-/* 
-   UserConvergenceTestGMRES - 
- */
-#undef __FUNC__  
-#define __FUNC__ "UserConvergenceTest_GMRES"
-/* Nothing for now ... */
-/*
-int KSPDefaultConverged_GMRES(KSP ksp,int n,double rnorm,void *ptr)
-{
-  Euler *app = (Euler *)ptr;
-  printf("iter = %d\n",n);
-  if (!n) app->rinit = rnorm;
-  if ( rnorm <= ksp->ttol ) {
-    app->lin_rtol[app->iter] = 
-    return(1);
-  }
-  else return(0);
-}
-*/
