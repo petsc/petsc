@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog.c,v 1.42 1997/10/19 03:23:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.43 1998/01/06 20:09:17 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -55,7 +55,7 @@ int KSPGMRESDGKSOrthogonalization(KSP  ksp,int it )
   int        j, m, ncnt;
   Scalar    *hh, *hes, shh[100], *lhh;
   double     omega, theta, alpha, beta, mgamma, delta, epsilon;
-  double     sqrit, delta0, delta1, delta2, delta3, delta4, delta5, delta6;
+  double     sqrit, delta0, delta1, delta3, delta4, delta5, delta6;
   double     rho0, rho1, dnorm;
   int        ierr;
 
@@ -79,7 +79,7 @@ int KSPGMRESDGKSOrthogonalization(KSP  ksp,int it )
     sqrit   = sqrt(it);
     delta0  = 1.0e-16;
     delta1  = delta0 * pow(1.0 + 1.5*delta0, (double)it);
-    delta2  = delta0*delta0 * (1.0 + delta0) * pow(1.0 + 1.5*delta0*delta0, (double)it);
+    /* delta2  = delta0*delta0 * (1.0 + delta0) * pow(1.0 + 1.5*delta0*delta0, (double)it); */
     delta3  = delta0*delta0 * (1.0 + delta0) * pow(1.0 + 1.5*delta0*delta0, (double)m);
     delta4  = delta0 + (m + sqrit) * delta3*delta3 * (1 + 0.5*(3.0*it + 5.0*sqrit)*delta1) * (1.0 + epsilon);
     delta5  = delta0 * (1.0 + delta0) * pow(1.0 + 1.5*delta0, (double)it);

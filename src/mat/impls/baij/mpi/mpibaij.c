@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.111 1998/03/04 16:07:09 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.112 1998/03/12 23:19:24 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -1024,7 +1024,7 @@ static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
       /* assemble the entire matrix onto first processor. */
       Mat         A;
       Mat_SeqBAIJ *Aloc;
-      int         M = baij->M, N = baij->N,*ai,*aj,row,col,i,j,k,*rvals;
+      int         M = baij->M, N = baij->N,*ai,*aj,col,i,j,k,*rvals;
       int         mbs=baij->mbs;
       Scalar      *a;
 
@@ -1038,7 +1038,6 @@ static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
       /* copy over the A part */
       Aloc = (Mat_SeqBAIJ*) baij->A->data;
       ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-      row = baij->rstart;
       rvals = (int *) PetscMalloc(bs*sizeof(int)); CHKPTRQ(rvals);
 
       for ( i=0; i<mbs; i++ ) {
@@ -1055,7 +1054,6 @@ static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
       /* copy over the B part */
       Aloc = (Mat_SeqBAIJ*) baij->B->data;
       ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-      row = baij->rstart*bs;
       for ( i=0; i<mbs; i++ ) {
         rvals[0] = bs*(baij->rstart + i);
         for ( j=1; j<bs; j++ ) { rvals[j] = rvals[j-1] + 1; }
@@ -1497,7 +1495,7 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) A->data;
   Mat_SeqBAIJ *Aloc;
   Mat        B;
-  int        ierr,M=baij->M,N=baij->N,*ai,*aj,row,i,*rvals,j,k,col;
+  int        ierr,M=baij->M,N=baij->N,*ai,*aj,i,*rvals,j,k,col;
   int        bs=baij->bs,mbs=baij->mbs;
   Scalar     *a;
   
@@ -1509,7 +1507,6 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   /* copy over the A part */
   Aloc = (Mat_SeqBAIJ*) baij->A->data;
   ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-  row = baij->rstart;
   rvals = (int *) PetscMalloc(bs*sizeof(int)); CHKPTRQ(rvals);
   
   for ( i=0; i<mbs; i++ ) {
@@ -1526,7 +1523,6 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   /* copy over the B part */
   Aloc = (Mat_SeqBAIJ*) baij->B->data;
   ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-  row = baij->rstart*bs;
   for ( i=0; i<mbs; i++ ) {
     rvals[0] = bs*(baij->rstart + i);
     for ( j=1; j<bs; j++ ) { rvals[j] = rvals[j-1] + 1; }
@@ -2106,13 +2102,12 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
   MPI_Status   status;
   int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,*browners,maxnz,*cols;
   int          *locrowlens,*sndcounts = 0,*procsnz = 0, jj,*mycols,*ibuf;
-  int          flg,tag = ((PetscObject)viewer)->tag,bs=1,bs2,Mbs,mbs,extra_rows;
+  int          flg,tag = ((PetscObject)viewer)->tag,bs=1,Mbs,mbs,extra_rows;
   int          *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
   int          dcount,kmax,k,nzcount,tmp;
  
   PetscFunctionBegin;
   ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,&flg);CHKERRQ(ierr);
-  bs2  = bs*bs;
 
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {

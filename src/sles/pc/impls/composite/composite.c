@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.5 1998/01/14 02:40:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.6 1998/03/06 00:14:01 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -214,8 +214,6 @@ static int PCView_Composite(PetscObject obj,Viewer viewer)
 #define __FUNC__ "PCCompositeSetType_Composite"
 int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 {
-  PC_Composite     *jac;
-
   PetscFunctionBegin;
   if (type == PC_COMPOSITE_ADDITIVE) {
     pc->apply = PCApply_Composite_Additive;
@@ -224,7 +222,6 @@ int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
   } else {
     SETERRQ(1,1,"Unkown composite preconditioner type");
   }
-  jac = (PC_Composite *) type;
   PetscFunctionReturn(0);
 }
 

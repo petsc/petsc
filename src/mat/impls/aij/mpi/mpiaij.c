@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.231 1998/01/28 21:01:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.232 1998/03/12 23:18:35 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1393,7 +1393,6 @@ int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
   PetscFunctionBegin;
   ierr = MatGetLocalSize(mat,&s2,&s3); CHKERRQ(ierr);
   if (rr) {
-    s3 = aij->n;
     VecGetLocalSize_Fast(rr,s1);
     if (s1!=s3) SETERRQ(PETSC_ERR_ARG_SIZ,0,"right vector non-conforming local size");
     /* Overlap communication with computation. */

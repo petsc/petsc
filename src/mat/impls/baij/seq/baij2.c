@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.22 1998/01/28 21:02:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.23 1998/03/12 23:19:14 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -81,7 +81,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
 int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatGetSubMatrixCall scall,Mat *B)
 {
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ *) A->data,*c;
-  int          nznew, *smap, i, k, kstart, kend, ierr, oldcols = a->nbs,*lens;
+  int          *smap, i, k, kstart, kend, ierr, oldcols = a->nbs,*lens;
   int          row,mat_i,*mat_j,tcol,*mat_ilen;
   int          *irow, *icol, nrows, ncols,*ssmap,bs=a->bs, bs2=a->bs2;
   int          *aj = a->j, *ai = a->i;
@@ -129,7 +129,6 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatGetSubMatr
   c = (Mat_SeqBAIJ *)(C->data);
   for (i=0; i<nrows; i++) {
     row    = irow[i];
-    nznew  = 0;
     kstart = ai[row]; 
     kend   = kstart + a->ilen[row];
     mat_i  = c->i[i];

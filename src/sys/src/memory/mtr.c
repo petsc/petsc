@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.97 1998/01/06 16:12:54 balay Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.98 1998/03/13 16:57:35 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -23,7 +23,6 @@ int  PetscTrFreeDefault( void *, int, char *,char *,char *);
   even then is suspicious.
 */
 void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEE;
-static int TrMallocUsed = 0;
 static int TrUseNan;   /* unitialize Scalar arrays with Nans */
 
 #undef __FUNC__  
@@ -38,7 +37,6 @@ int PetscSetUseTrMalloc_Private(int usenan)
   PetscHigh    = (void *) 0x0;
 #endif
   ierr         = PetscSetMalloc(PetscTrMallocDefault,PetscTrFreeDefault); CHKERRQ(ierr);
-  TrMallocUsed = 1;
   TrUseNan     = usenan;
   PetscFunctionReturn(0);
 }
@@ -98,7 +96,6 @@ static TRSPACE *TRhead      = 0;
 static int     TRid         = 0;
 static int     TRdebugLevel = 0;
 static long    TRMaxMem     = 0;
-static long    TRMaxMemId   = 0;
 
 #if defined(PARCH_sun4) && defined(__cplusplus)
 extern "C" {
@@ -247,7 +244,6 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
   allocated += nsize;
   if (allocated > TRMaxMem) {
     TRMaxMem   = allocated;
-    TRMaxMemId = TRid;
   }
   frags++;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.147 1998/02/18 21:00:51 balay Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.148 1998/03/12 23:18:54 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -2362,7 +2362,6 @@ static int MatConvertSameType_SeqBDiag(Mat A,Mat *matout,int cpvalues)
 #define __FUNC__ "MatLoad_SeqBDiag"
 int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
 {
-  Mat_SeqBDiag *a;
   Mat          B;
   int          *scols, i, nz, ierr, fd, header[4], size,nd = 128;
   int          bs, *rowlengths = 0,M,N,*cols,flg,extra_rows,*diag = 0;
@@ -2411,7 +2410,6 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   ierr = MatCreateSeqBDiag(comm,M+extra_rows,M+extra_rows,nd,bs,diag,
                            PETSC_NULL,A); CHKERRQ(ierr);
   B = *A;
-  a = (Mat_SeqBDiag *) B->data;
 
   /* read column indices and nonzeros */
   cols = scols = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(cols);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.91 1998/01/28 21:00:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.92 1998/03/06 00:11:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -187,7 +187,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   double    res_norm, res, rtol;
   double    hapbnd,*nres = ksp->residual_history,tt;
   Scalar    tmp;
-  int       hist_len = ksp->res_hist_size, cerr, ierr, it, hapend;
+  int       hist_len = ksp->res_hist_size,  ierr, it;
   int       max_k = gmres->max_k, max_it = ksp->max_it;
 
   /* Note that hapend is ignored in the code */
@@ -219,7 +219,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   }
   rtol      = ksp->ttol;
   gmres->it = (it - 1);
-  while (!(*converged = cerr = (*ksp->converged)(ksp,it+itsSoFar,res,ksp->cnvP))
+  while (!(*converged = (*ksp->converged)(ksp,it+itsSoFar,res,ksp->cnvP))
            && it < max_k && it + itsSoFar < max_it) {
     ksp->rnorm = res;
     if (nres && hist_len > it + itsSoFar) nres[it+itsSoFar]   = res;
@@ -247,7 +247,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     } else {
         /* We SHOULD probably abort the gmres step
            here.  This happens when the solution is exactly reached. */
-      hapend = 1;  
+      ; /* hapend = 1;   */
     }
     ierr = GMRESUpdateHessenberg( ksp, it, &res ); CHKERRQ(ierr);
     it++;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.5 1997/10/19 03:26:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.6 1997/11/28 16:20:18 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\n";
@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   Mat        mat, fact;
   MatType    type;
   MatInfo    info;
-  int        m = 10, n = 10, i = 4, j = 6, ierr, rstart, rend;
+  int        m = 10, n = 10, i = 4, ierr, rstart, rend;
   PetscTruth set;
   Scalar     value = 1.0;
   Vec        x, y, b;
@@ -29,8 +29,7 @@ int main(int argc,char **argv)
   if (type == MATMPIDENSE) {
     ierr = MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,
            PETSC_NULL,&mat); CHKERRA(ierr);
-  }
-  else {
+  } else {
     ierr = MatCreateSeqDense(PETSC_COMM_WORLD,m,n,PETSC_NULL,&mat); CHKERRA(ierr);
   }
 
@@ -72,7 +71,7 @@ int main(int argc,char **argv)
     ierr = MatDestroy(fact); CHKERRA(ierr);
   }
 
-  i = m-1; j = 0; value = 1.0;
+  i = m-1; value = 1.0;
   ierr = MatSetValues(mat,1,&i,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);

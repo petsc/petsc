@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.96 1997/12/09 15:59:12 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.97 1998/01/06 20:08:50 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -457,7 +457,7 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
 {
   VecScatter_MPI_General *gen_to, *gen_from;
   Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
-  Scalar                 *xv = x->array, *yv = y->array, *val, *rvalues,*svalues;
+  Scalar                 *xv = x->array, *yv = y->array, *val, *svalues;
   MPI_Request            *rwaits, *swaits;
   int                    i,*indices,*sstarts,iend,j;
   int                    nrecvs, nsends,idx,ierr;
@@ -474,7 +474,6 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
     rwaits   = gen_from->requests;
     swaits   = gen_to->requests;
   }
-  rvalues  = gen_from->values;
   svalues  = gen_to->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
@@ -648,7 +647,7 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 {
   VecScatter_MPI_General *gen_to, *gen_from;
   Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
-  Scalar                 *xv = x->array, *yv = y->array, *val, *rvalues,*svalues;
+  Scalar                 *xv = x->array, *yv = y->array, *val, *svalues;
   MPI_Request            *rwaits, *swaits;
   int                    ierr,i,*indices,*sstarts,iend,j,nrecvs, nsends,idx;
 
@@ -664,7 +663,6 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
     rwaits   = gen_from->requests;
     swaits   = gen_to->requests;
   }
-  rvalues  = gen_from->values;
   svalues  = gen_to->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
@@ -819,7 +817,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 {
   VecScatter_MPI_General *gen_to, *gen_from;
   Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
-  Scalar                 *xv = x->array, *yv = y->array, *val, *rvalues,*svalues;
+  Scalar                 *xv = x->array, *yv = y->array, *val, *svalues;
   MPI_Request            *rwaits, *swaits;
   int                    ierr,i,*indices,*sstarts,iend,j,nrecvs, nsends,idx;
 
@@ -835,7 +833,6 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
     rwaits   = gen_from->requests;
     swaits   = gen_to->requests;
   }
-  rvalues  = gen_from->values;
   svalues  = gen_to->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
@@ -984,7 +981,7 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 {
   VecScatter_MPI_General *gen_to, *gen_from;
   Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
-  Scalar                 *xv = x->array, *yv = y->array, *val, *rvalues,*svalues;
+  Scalar                 *xv = x->array, *yv = y->array, *val, *svalues;
   MPI_Request            *rwaits, *swaits;
   int                    ierr,i,*indices,*sstarts,iend,j, nrecvs, nsends,idx;
 
@@ -1000,7 +997,6 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
     rwaits   = gen_from->requests;
     swaits   = gen_to->requests;
   }
-  rvalues  = gen_from->values;
   svalues  = gen_to->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
@@ -1145,7 +1141,7 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 {
   VecScatter_MPI_General *gen_to, *gen_from;
   Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
-  Scalar                 *xv = x->array, *yv = y->array, *val, *rvalues,*svalues;
+  Scalar                 *xv = x->array, *yv = y->array, *val, *svalues;
   MPI_Request            *rwaits, *swaits;
   int                    ierr,i,*indices,*sstarts,iend,j,nrecvs, nsends,idx;
 
@@ -1161,7 +1157,6 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
     rwaits   = gen_from->requests;
     swaits   = gen_to->requests;
   }
-  rvalues  = gen_from->values;
   svalues  = gen_to->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;

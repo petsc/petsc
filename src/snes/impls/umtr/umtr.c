@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.64 1998/01/14 02:44:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.65 1998/03/06 00:18:57 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -41,7 +41,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   double       *gnorm, xnorm, max_val, *history, ftrial, delta;
   double       zero = 0.0, *f, two = 2.0, four = 4.0;
   Scalar       one = 1.0;
-  Vec          X, G, Y, S, Xtrial;
+  Vec          X, G,  S, Xtrial;
   MatStructure flg = DIFFERENT_NONZERO_PATTERN;
   SLES         sles;
   KSP          ksp;
@@ -56,7 +56,6 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   G		= snes->vec_func;	 /* gradient vector */
   S		= snes->work[0]; 	 /* work vectors */
   Xtrial	= snes->work[1]; 
-  Y		= snes->work[2]; 
   delta	        = neP->delta;           /* trust region radius */
   f		= &(snes->fc);		/* function to minimize */
   gnorm		= &(snes->norm);	/* gradient norm */

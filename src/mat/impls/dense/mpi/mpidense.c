@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.79 1998/02/18 21:00:46 balay Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.80 1998/03/12 23:18:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1075,7 +1075,7 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
 #define __FUNC__ "MatLoad_MPIDense_DenseInFile"
 int MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M, int N, Mat *newmat)
 {
-  int        *rowners, i,size,rank,m,rstart,rend,ierr,nz,j;
+  int        *rowners, i,size,rank,m,ierr,nz,j;
   Scalar     *array,*vals,*vals_ptr;
   MPI_Status status;
 
@@ -1091,8 +1091,6 @@ int MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M, int N, Mat *newmat)
   for ( i=2; i<=size; i++ ) {
     rowners[i] += rowners[i-1];
   }
-  rstart = rowners[rank]; 
-  rend   = rowners[rank+1]; 
 
   ierr = MatCreateMPIDense(comm,m,PETSC_DECIDE,M,N,PETSC_NULL,newmat);CHKERRQ(ierr);
   ierr = MatGetArray(*newmat,&array); CHKERRQ(ierr);

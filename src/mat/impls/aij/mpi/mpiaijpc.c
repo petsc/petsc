@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaijpc.c,v 1.33 1997/10/19 03:25:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.34 1997/12/01 01:54:32 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the SeqAIJ/MPIAIJ format.
@@ -73,7 +73,7 @@ int PCApply_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
   VecGetArray_Fast(bjac->y,y_true_array);  
   VecPlaceArray_Fast(bjac->x,x_array); 
   VecPlaceArray_Fast(bjac->y,y_array); 
-  ierr = SLESSolve(jac->sles[0],bjac->x,bjac->y,&its); 
+  ierr = SLESSolve(jac->sles[0],bjac->x,bjac->y,&its); CHKERRQ(ierr); 
   VecPlaceArray_Fast(bjac->x,x_true_array); 
   VecPlaceArray_Fast(bjac->y,y_true_array); 
   PetscFunctionReturn(0);

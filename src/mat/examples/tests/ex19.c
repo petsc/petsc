@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex19.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex19.c,v 1.5 1997/11/28 16:20:18 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
@@ -26,7 +26,7 @@ int main(int argc,char **args)
   int    i, m = 5, rank, size, N, start, end, M, ierr, idx[4];
   int    j, nrsub, ncsub, *rsub, *csub, mystart, myend,flg;
   Scalar one = 1.0, Ke[16], *vals;
-  double x, y, h, norm;
+  double h, norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
@@ -47,7 +47,6 @@ int main(int argc,char **args)
   ierr = FormElementStiffness(h*h,Ke);
   for ( i=start; i<end; i++ ) {
      /* location of lower left corner of element */
-     x = h*(i % m); y = h*(i/m); 
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + ( i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
@@ -61,7 +60,6 @@ int main(int argc,char **args)
 
   for ( i=start; i<end; i++ ) {
      /* location of lower left corner of element */
-     x = h*(i % m); y = h*(i/m); 
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + ( i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;

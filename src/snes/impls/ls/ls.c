@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.99 1998/01/14 02:44:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.100 1998/03/06 00:18:48 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -443,7 +443,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
         min  z(x):  R^n -> R,
      where z(x) = .5 * fnorm*fnorm, and fnorm = || f ||_2.
    */
-  double  steptol,initslope,lambdaprev,gnormprev,maxstep,minlambda,alpha,lambda,lambdatemp;
+  double  steptol,initslope,maxstep,minlambda,alpha,lambda,lambdatemp;
 #if defined(USE_PETSC_COMPLEX)
   Scalar  cinitslope,clambda;
 #endif
@@ -504,8 +504,6 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
       *flag = -1; break;
     }
     lambdatemp = -initslope/((*gnorm)*(*gnorm) - fnorm*fnorm - 2.0*initslope);
-    lambdaprev = lambda;
-    gnormprev = *gnorm;
     if (lambdatemp <= .1*lambda) { 
       lambda = .1*lambda; 
     } else lambda = lambdatemp;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.83 1998/03/06 00:14:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.84 1998/03/12 23:18:23 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -16,12 +16,11 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat ,Mat * );
 #define __FUNC__ "Mat_AIJ_CreateColInode"
 static int Mat_AIJ_CreateColInode(Mat_SeqAIJ *A, int* size, int ** ns)
 {
-  int i,count,m,n,min_mn,*ns_row,*ns_col,limit;
+  int i,count,m,n,min_mn,*ns_row,*ns_col;
 
   PetscFunctionBegin;  
   n      = A->n;
   m      = A->m;
-  limit  = A->inode.limit;
   ns_row = A->inode.size;
   
   min_mn = (m < n) ? m : n;
@@ -156,12 +155,11 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **j
 static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int **jja,
                                                   int ishift,int oshift)
 {
-  int *work,*ia,*ja,*j, nz, nslim_row ,m, n, row, col, ierr, *ns_col,nslim_col;
+  int *work,*ia,*ja,*j, nz, nslim_row, n, row, col, ierr, *ns_col,nslim_col;
   int *tns, *tvc, *ns_row = A->inode.size, nsz, i1, i2, *ai= A->i, *aj = A->j;
 
   PetscFunctionBegin;  
   nslim_row = A->inode.node_count;
-  m         = A->m;
   n         = A->n;
 
   /* Create The column_inode for this matrix */
@@ -269,12 +267,11 @@ static int MatRestoreRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,in
 static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int **jja,
                                                int ishift,int oshift)
 {
-  int *work,*ia,*ja,*j, nz, nslim_row ,m, n, row, col, ierr, *ns_col,nslim_col;
+  int *work,*ia,*ja,*j, nz, nslim_row,  n, row, col, ierr, *ns_col,nslim_col;
   int *tns, *tvc, *ns_row = A->inode.size, nsz, i1, i2, *ai= A->i, *aj = A->j;
 
   PetscFunctionBegin;  
   nslim_row = A->inode.node_count;
-  m         = A->m;
   n         = A->n;
 
   /* Create The column_inode for this matrix */

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tone.c,v 1.17 1997/10/19 03:27:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tone.c,v 1.18 1997/12/04 19:37:13 bsmith Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -20,7 +20,7 @@ int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1,
                                 int x2,int y2,int t2,int x3,int y3,int t3)
 {
   double rfrac, lfrac;
-  int    lc, rc = 0, lx, rx = 0, xx, y, off,c;
+  int    lc, rc = 0, lx, rx = 0, xx, y, c;
   int    rc_lc, rx_lx, t2_t1, x2_x1, t3_t1, x3_x1, t3_t2, x3_x2;
   double R_y2_y1, R_y3_y1, R_y3_y2;
 
@@ -28,8 +28,6 @@ int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1,
   t1 = t1 << SHIFT_VAL;
   t2 = t2 << SHIFT_VAL;
   t3 = t3 << SHIFT_VAL;
-
-  off = 1 << (SHIFT_VAL - 1);
 
   /* Sort the vertices */
 #define SWAP(a,b) {int _a; _a=a; a=b; b=_a;}

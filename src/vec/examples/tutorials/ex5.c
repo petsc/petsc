@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.28 1997/10/28 14:21:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.29 1997/11/28 16:18:34 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -16,7 +16,6 @@ int main(int argc,char **args)
   int     i, m = 10, rank, size, low, high, ldim, iglobal, ierr,flg;
   Scalar  v;
   Vec     u;
-  VecType vtype;
   Viewer  viewer;
   int     VECTOR_GENERATE, VECTOR_READ;
 
@@ -61,7 +60,6 @@ int main(int argc,char **args)
   PLogEventBegin(VECTOR_READ,0,0,0,0);
   PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
   ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"vector.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
-  vtype = VECSEQ;
   ierr = VecLoad(viewer,&u); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   PLogEventEnd(VECTOR_READ,0,0,0,0);
