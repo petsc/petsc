@@ -8,7 +8,7 @@ import os
 
 class PetscMake(build.framework.Framework):
   def __init__(self, clArgs = None, argDB = None):
-    build.framework.Framework.__init__(self, project.Project('bs', 'bk://sidl.bkbits.net/BuildSystem', self.getRoot()), clArgs, argDB)
+    build.framework.Framework.__init__(self, project.Project('bk://sidl.bkbits.net/BuildSystem', self.getRoot()), clArgs, argDB)
     return
 
   def t_configure(self):
