@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.33 1996/01/31 21:05:38 balay Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.34 1996/02/13 17:13:39 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -42,6 +42,19 @@ int ViewerDestroy_Private()
   return 0;
 }
 
+/*@C
+    ViewerFileGetPointer - Extracts the file pointer from a viewer.
+
+.   viewer - viewer context
+.   fd - file pointer
+
+    Note:
+    This routine is not valid in Fortran.
+
+.keywords: Viewer, file, get, pointer
+
+.seealso: ViewerFileOpenASCII()
+@*/
 int ViewerFileGetPointer(Viewer viewer, FILE **fd)
 {
   *fd = viewer->fd;
@@ -89,7 +102,8 @@ $    MatView(matrix,viewer);
 
 .keywords: Viewer, file, open
 
-.seealso: MatView(), VecView(), ViewerDestroy(), ViewerFileOpenBinary()
+.seealso: MatView(), VecView(), ViewerDestroy(), ViewerFileOpenBinary(),
+          ViewerFileGetPointer()
 @*/
 int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 {
