@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.12 1999/09/04 19:20:12 bsmith Exp bsmith $ 
+# $Id: base_variables,v 1.13 1999/09/08 17:38:54 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -10,7 +10,7 @@ SHELL		   = /bin/sh
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = cc    -KPIC -dalign -xtarget=native
-C_FC		   = f77   -xpp=cpp
+C_FC		   = f77   -xpp=cpp -dalign
 C_CLINKER_SLFLAG   = -R
 C_FLINKER_SLFLAG   = -R
 C_CLINKER	   = cc 
@@ -40,13 +40,13 @@ GCXX_COPTFLAGS	   = -g  -xs
 GCXX_FOPTFLAGS	   = -g  -xs
 # ------------------------- BOPT - O_c++ options ------------------------------
 OCXX_COPTFLAGS	   = -O4  -fast -fsimple=2
-OCXX_FOPTFLAGS	   = -fast -dalign
+OCXX_FOPTFLAGS	   = -fast
 # -------------------------- BOPT - g_complex options ------------------------
 GCOMP_COPTFLAGS	   = -g -xs
 GCOMP_FOPTFLAGS	   = -g -xs
 # --------------------------- BOPT - O_complex options -------------------------
 OCOMP_COPTFLAGS	   = -fast -O2 -fsimple=2
-OCOMP_FOPTFLAGS	   = -fast -dalign
+OCOMP_FOPTFLAGS	   = -fast
 # ########################### PETSc install options ###########################
 G_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
                    -DPETSC_USE_STACK 
