@@ -227,6 +227,7 @@ class Framework(base.Base):
     framework.setupLogging()
     if not framework.logExists or self.argDB['forceConfigure']:
       framework.configure()
+      framework.storeSubstitutions(self.argDB)
     return
 
   def t_sidl(self):
@@ -421,10 +422,11 @@ class Framework(base.Base):
         self.argDB['clientLanguages']    = []
 
       self.setupProject()
-      # The activation target should happen before setup
-      if 'activate' in target:
-        self.executeTarget('activate')
-        target.remove('activate')
+      # The some targets should execute before setup
+      for t in ['activate', 'configure']:
+        if t in target:
+          self.executeTarget(t)
+          target.remove(t)
       self.setupBuild()
       map(self.executeTarget, target)
     except Exception, e:

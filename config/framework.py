@@ -192,6 +192,21 @@ class Framework(config.base.Configure):
           print pair[0]+'  --->  '+self.argDB[pair[1]]
     return
 
+  def storeSubstitutions(self, argDB):
+    '''Store all the substitutions in the argument database'''
+    argDB.update(self.subst)
+    argDB.update(dict(map(lambda k: (k, argDB[self.argSubst[k]]), self.argSubst)))
+    for child in self.children:
+      if not hasattr(child, 'subst') or not isinstance(child.subst, dict): continue
+      substPrefix = self.getSubstitutionPrefix(child)
+      if substPrefix:
+        argDB.update(dict(map(lambda k: (substPrefix+'_'+k, child.subst[k]), child.subst)))
+        argDB.update(dict(map(lambda k: (substPrefix+'_'+k, argDB[child.argSubst[k]]), child.argSubst)))
+      else:
+        argDB.update(child.subst)
+        argDB.update(dict(map(lambda k: (k, argDB[child.argSubst[k]]), child.argSubst)))
+    return
+
   def outputDefine(self, f, name, value = None, comment = ''):
     '''Define "name" to "value" in the configuration header'''
     guard = re.match(r'^(\w+)(\([\w,]+\))?', name).group(1)
@@ -230,6 +245,9 @@ class Framework(config.base.Configure):
 
   def outputHeader(self, name):
     '''Write the configuration header'''
+    dir = os.path.dirname(name)
+    if dir and not os.path.exists(dir):
+      os.makedirs(dir)
     f = file(name, 'w')
     guard = 'INCLUDED_'+os.path.basename(name).upper().replace('.', '_')
     f.write('#if !defined('+guard+')\n')
