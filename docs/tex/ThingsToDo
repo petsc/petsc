@@ -16,7 +16,7 @@ Additional Capabilities that PETSc Needs:
 
   - Section on ASM in users manual.
 
-  * Fix bfort so that it correctly deals with PetscRandom. 
+  - Fix bfort so that it correctly deals with PetscRandom. 
 
   X Fortran doesn't read aliases from .petscrc
 
