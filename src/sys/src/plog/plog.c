@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.173 1997/10/10 04:07:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.174 1997/10/19 03:30:56 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1464,7 +1464,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PetscFPrintf(comm,fd,"      #   This code was compiled with a debugging option,      #\n");
   PetscFPrintf(comm,fd,"      #   BOPT=<g,g_c++,g_complex>.   To get timing results    #\n");
   PetscFPrintf(comm,fd,"      #   ALWAYS compile your code with an optimized version,  #\n");
-  PetscFPrintf(comm,fd,"      #   BOPT=<O,O_c++,O_complex>;  the performance wil       #\n");
+  PetscFPrintf(comm,fd,"      #   BOPT=<O,O_c++,O_complex>;  the performance will      #\n");
   PetscFPrintf(comm,fd,"      #   be generally two or three times faster.              #\n");
   PetscFPrintf(comm,fd,"      #                                                        #\n");
   PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");
@@ -1477,8 +1477,8 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PetscFPrintf(comm,fd,"      #                                                        #\n");
   PetscFPrintf(comm,fd,"      #   The code for various complex numbers numerical       #\n");
   PetscFPrintf(comm,fd,"      #   kernels uses C++, which generally is not well        #\n");
-  PetscFPrintf(comm,fd,"      #   optimized.  For faster performance (about 4-5 times  #\n");
-  PetscFPrintf(comm,fd,"      #   faster), specify the flag -DUSE_FORTRAN_KERNELS in   #\n");
+  PetscFPrintf(comm,fd,"      #   optimized.  For performance that is about 4-5 times  #\n");
+  PetscFPrintf(comm,fd,"      #   faster, specify the flag -DUSE_FORTRAN_KERNELS in    #\n");
   PetscFPrintf(comm,fd,"      #   base.O_complex and recompile the PETSc libraries.    #\n");
   PetscFPrintf(comm,fd,"      #                                                        #\n");
   PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");
