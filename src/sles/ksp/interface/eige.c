@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eige.c,v 1.1 1997/01/25 03:33:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eige.c,v 1.2 1997/01/27 18:15:21 bsmith Exp curfman $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -7,16 +7,17 @@ static char vcid[] = "$Id: eige.c,v 1.1 1997/01/25 03:33:43 bsmith Exp bsmith $"
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeExplicitOperator"
 /*@
-       KSPComputeExplicitOperator - Computes as a dense matrix the explicit 
-          preconditioned operator. This is done by applying the operators to 
-          columns of the identity matrix.
+    KSPComputeExplicitOperator - Computes as a dense matrix the explicit 
+    preconditioned operator. This is done by applying the operators to 
+    columns of the identity matrix.
 
-  Input Parameter:
+    Input Parameter:
 .   ksp - the Krylov subspace context
 
-  Output Parameter:
+    Output Parameter:
 .   mat - the explict operator
 
+.keywords: ccompute, explicit, operator
 @*/
 int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
 {
@@ -78,10 +79,10 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
 #define __FUNC__ "KSPComputeEigenvaluesExplicitly"
 /*@
    KSPComputeEigenvaluesExplicitly - Computes all of the eigenvalues of the 
-          preconditioned operator using LAPACK. This is very slow but will generally
-          provide accurate eigenvalue estimates. It will only run for small 
-          problems, say n < 500. It explicitly forms a dense matrix representing 
-          the preconditioned operator.
+   preconditioned operator using LAPACK. This is very slow but will generally
+   provide accurate eigenvalue estimates. It will only run for small 
+   problems, say n < 500. It explicitly forms a dense matrix representing 
+   the preconditioned operator.
 
    Input Parameter:
 .  ksp - iterative context obtained from KSPCreate()
