@@ -179,7 +179,7 @@ class BitKeeper(script.Script, VersionControl):
 
   def push(self, parent = None):
     '''Update the parent repository from this one'''
-    VersionControl.clone(self, parent)
+    VersionControl.push(self, parent)
     cmd = self.bk+' push'
     if not parent is None:
       cmd += ' '+str(parent)
@@ -188,7 +188,7 @@ class BitKeeper(script.Script, VersionControl):
 
   def pull(self, parent = None):
     '''Update this repository from the parent'''
-    VersionControl.clone(self, parent)
+    VersionControl.pull(self, parent)
     cmd = self.bk+' pull'
     if not parent is None:
       cmd += ' '+str(parent)
