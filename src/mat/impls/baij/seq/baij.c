@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.117 1997/11/28 16:20:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.118 1997/12/01 01:55:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2341,7 +2341,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   bs2  = bs*bs;
 
   MPI_Comm_size(comm,&size);
-  if (size > 1) SETERRQ(PETSC_ERR_ARG,0,"view must have one processor");
+  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"not Mat object");
