@@ -32,7 +32,7 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} $*.f __$*.c
 
-shared:
+shared_arch:
 
 oshared:
 

@@ -12,5 +12,4 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 # Need to build libpetscfortran as a shared library as well, 
 # as-fast option produces bad .a files
 #
-shared: chkopts_basic
-
+shared_arch:

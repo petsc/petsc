@@ -6,24 +6,8 @@ libf: ${OBJSF}
 	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}
 
 #######
-shared: chkopts_basic
-	-@echo making shared libraries in ${INSTALL_LIB_DIR} ;\
-	cd ${INSTALL_LIB_DIR}; \
-	for LIBNAME in ${SHLIBS} ; \
-	do \
-          if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.a ]; then \
-	    flag=""; \
-	    if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.a -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	    else \
-	      flag="true"; \
-	    fi; \
-            if [ "$$flag" != "" ]; then \
-	      echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${LD} -shared  -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX}  > /dev/null 2>&1; \
-	    fi; \
-	  fi; \
-	done
+shared_arch: shared_alpha
+
 #
 #  Generates a shared library from any .a library; not just the PETSc ones
 #  This is to allow any user to generate his or her own shared library

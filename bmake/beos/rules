@@ -6,7 +6,7 @@ libf: ${OBJSF}
 
 #############
 
-shared: chkopts_basic
+shared_arch:
 
 #
 #  Generates a shared library from any .a library; not just the PETSc ones

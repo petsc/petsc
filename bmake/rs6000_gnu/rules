@@ -8,7 +8,7 @@ libf:
 
 libmember:    ${LIBNAME}(${LIBMEMBER})
 
-shared:
+shared_arch:
 
 oshared:
 
