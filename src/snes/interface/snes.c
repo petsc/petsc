@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.148 1998/04/22 14:14:26 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.149 1998/04/24 04:52:20 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -34,7 +34,7 @@ DLList SNESList = 0;
          data to the first processor to print. 
 
    The user can open an alternative vistualization context with
-   ViewerFileOpenASCII() - output to a specified file
+   ViewerFileOpenASCII() - output to a specified file.
 
 .keywords: SNES, view
 
