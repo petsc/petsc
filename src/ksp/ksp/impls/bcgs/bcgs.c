@@ -119,7 +119,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
     i++;
   } while (i<ksp->max_it);
 
-  if (i == ksp->max_it) {
+  if (i >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
 

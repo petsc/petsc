@@ -46,7 +46,7 @@ PetscErrorCode KSPDefaultFreeWork(KSP ksp)
 
 .keywords: KSP, get, residual norm
 
-.seealso: KSPComputeResidual()
+.seealso: KSPBuildResidual()
 @*/
 PetscErrorCode KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 {
@@ -78,7 +78,7 @@ PetscErrorCode KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
       During the ith iteration this returns i-1
 .keywords: KSP, get, residual norm
 
-.seealso: KSPComputeResidual(), KSPGetResidualNorm()
+.seealso: KSPBuildResidual(), KSPGetResidualNorm()
 @*/
 PetscErrorCode KSPGetIterationNumber(KSP ksp,PetscInt *its)
 {

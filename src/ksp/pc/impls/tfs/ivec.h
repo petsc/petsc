@@ -1,6 +1,5 @@
 /*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /**********************************ivec.h**************************************
-SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
 Author: Henry M. Tufo III
 
@@ -108,32 +107,32 @@ extern void ivec_fortran_index(int *arg1, int n);
 extern void ivec_sort_companion_hack(int *ar, int **ar2, int size);
 
 
-extern void rvec_dump(REAL *v, int n, int tag, int tag2, char * s);
-extern void rvec_zero(REAL *arg1, int n);
-extern void rvec_one(REAL *arg1, int n);
-extern void rvec_neg_one(REAL *arg1, int n);
-extern void rvec_set(REAL *arg1, REAL arg2, int n);
-extern void rvec_copy(REAL *arg1, REAL *arg2, int n);
-extern void rvec_lb_ub(REAL *arg1, int n, REAL *lb, REAL *ub);
-extern void rvec_scale(REAL *arg1, REAL arg2, int n);
+extern void rvec_dump(PetscScalar *v, int n, int tag, int tag2, char * s);
+extern void rvec_zero(PetscScalar *arg1, int n);
+extern void rvec_one(PetscScalar *arg1, int n);
+extern void rvec_neg_one(PetscScalar *arg1, int n);
+extern void rvec_set(PetscScalar *arg1, PetscScalar arg2, int n);
+extern void rvec_copy(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern void rvec_lb_ub(PetscScalar *arg1, int n, PetscScalar *lb, PetscScalar *ub);
+extern void rvec_scale(PetscScalar *arg1, PetscScalar arg2, int n);
 
 extern vfp rvec_fct_addr(int type);
-extern void rvec_add(REAL *arg1, REAL *arg2, int n);
-extern void rvec_mult(REAL *arg1, REAL *arg2, int n);
-extern void rvec_max(REAL *arg1, REAL *arg2, int n);
-extern void rvec_max_abs(REAL *arg1, REAL *arg2, int n);
-extern void rvec_min(REAL *arg1, REAL *arg2, int n);
-extern void rvec_min_abs(REAL *arg1, REAL *arg2, int n);
-extern void vec_exists(REAL *arg1, REAL *arg2, int n);
+extern void rvec_add(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern void rvec_mult(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern void rvec_max(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern void rvec_max_abs(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern void rvec_min(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern void rvec_min_abs(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern void vec_exists(PetscScalar *arg1, PetscScalar *arg2, int n);
 
 
-extern void rvec_sort(REAL *ar, int size);
-extern void rvec_sort_companion(REAL *ar, int *ar2, int size);
+extern void rvec_sort(PetscScalar *ar, int size);
+extern void rvec_sort_companion(PetscScalar *ar, int *ar2, int size);
 
-extern REAL rvec_dot(REAL *arg1, REAL *arg2, int n);
+extern PetscScalar rvec_dot(PetscScalar *arg1, PetscScalar *arg2, int n);
 
-extern void rvec_axpy(REAL *arg1, REAL *arg2, REAL scale, int n);
+extern void rvec_axpy(PetscScalar *arg1, PetscScalar *arg2, PetscScalar scale, int n);
 
-extern int  rvec_binary_search(REAL item, REAL *list, int rh);
+extern int  rvec_binary_search(PetscScalar item, PetscScalar *list, int rh);
 
 #endif

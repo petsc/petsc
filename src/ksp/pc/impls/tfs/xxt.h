@@ -2,7 +2,6 @@
 /*************************************xxt.h************************************
 Module Name: xxt
 Module Info: need xxt.{c,h} gs.{c,h} comm.{c,h} ivec.{c,h} error.{c,h} 
-             bss_malloc.{c,h} bit_mask.{c,h} queue.{c,h} stack.{c,h}
 
 author:  Henry M. Tufo III
 e-mail:  hmt@asci.uchicago.edu

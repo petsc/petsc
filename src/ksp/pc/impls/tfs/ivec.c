@@ -1,6 +1,5 @@
 
 /**********************************ivec.c**************************************
-SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
 Author: Henry M. Tufo III
 
@@ -40,7 +39,7 @@ File Description:
 /* allocate an address and size stack for sorter(s) */
 static void *offset_stack[2*SORT_STACK];
 static int   size_stack[SORT_STACK];
-static PTRINT psize_stack[SORT_STACK];
+static long psize_stack[SORT_STACK];
 
 
 
@@ -74,10 +73,10 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void
-ivec_lb_ub(register int *arg1, register int n, int *lb, int *ub)
+ivec_lb_ub( int *arg1,  int n, int *lb, int *ub)
 {
-  register int min = INT_MAX;
-  register int max = INT_MIN;
+   int min = INT_MAX;
+   int max = INT_MIN;
 
   while (n--)  
     {
@@ -100,7 +99,7 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-int *ivec_copy(register int *arg1, register int *arg2, register int n)
+int *ivec_copy( int *arg1,  int *arg2,  int n)
 {
   while (n--)  {*arg1++ = *arg2++;}
   return(arg1);
@@ -117,7 +116,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_zero(register int *arg1, register int n)
+ivec_zero( int *arg1,  int n)
 {
   while (n--)  {*arg1++ = 0;}
 }
@@ -133,7 +132,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_comp(register int *arg1, register int n)
+ivec_comp( int *arg1,  int n)
 {
   while (n--)  {*arg1 = ~*arg1; arg1++;}
 }
@@ -149,7 +148,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_neg_one(register int *arg1, register int n)
+ivec_neg_one( int *arg1,  int n)
 {
   while (n--)  {*arg1++ = -1;}
 }
@@ -165,7 +164,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_pos_one(register int *arg1, register int n)
+ivec_pos_one( int *arg1,  int n)
 {
   while (n--)  {*arg1++ = 1;}
 }
@@ -181,9 +180,9 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_c_index(register int *arg1, register int n)
+ivec_c_index( int *arg1,  int n)
 {
-  register int i=0;
+   int i=0;
 
 
   while (n--)  {*arg1++ = i++;}
@@ -200,9 +199,9 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_fortran_index(register int *arg1, register int n)
+ivec_fortran_index( int *arg1,  int n)
 {
-  register int i=0;
+   int i=0;
 
 
   while (n--)  {*arg1++ = ++i;}
@@ -219,7 +218,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_set(register int *arg1, register int arg2, register int n)
+ivec_set( int *arg1,  int arg2,  int n)
 {
   while (n--)  {*arg1++ = arg2;}
 }
@@ -235,7 +234,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 int
-ivec_cmp(register int *arg1, register int *arg2, register int n)
+ivec_cmp( int *arg1,  int *arg2,  int n)
 {
   while (n--)  {if (*arg1++ != *arg2++)  {return(FALSE);}}
   return(TRUE);
@@ -252,7 +251,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_max(register int *arg1, register int *arg2, register int n)
+ivec_max( int *arg1,  int *arg2,  int n)
 {
   while (n--)  {*arg1 = PetscMax(*arg1,*arg2); arg1++; arg2++;}
 }
@@ -268,7 +267,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_min(register int *arg1, register int *arg2, register int n)
+ivec_min( int *arg1,  int *arg2,  int n)
 {
   while (n--)  {*(arg1) = PetscMin(*arg1,*arg2); arg1++; arg2++;}
 }
@@ -284,7 +283,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_mult(register int *arg1, register int *arg2, register int n)
+ivec_mult( int *arg1,  int *arg2,  int n)
 {
   while (n--)  {*arg1++ *= *arg2++;}
 }
@@ -300,7 +299,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_add(register int *arg1, register int *arg2, register int n)
+ivec_add( int *arg1,  int *arg2,  int n)
 {
   while (n--)  {*arg1++ += *arg2++;}
 }
@@ -316,7 +315,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_lxor(register int *arg1, register int *arg2, register int n)
+ivec_lxor( int *arg1,  int *arg2,  int n)
 {
   while (n--) {*arg1=((*arg1 || *arg2) && !(*arg1 && *arg2)); arg1++; arg2++;}
 }
@@ -332,7 +331,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_xor(register int *arg1, register int *arg2, register int n)
+ivec_xor( int *arg1,  int *arg2,  int n)
 {
   while (n--)  {*arg1++ ^= *arg2++;}
 }
@@ -348,7 +347,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_or(register int *arg1, register int *arg2, register int n)
+ivec_or( int *arg1,  int *arg2,  int n)
 {
   while (n--)  {*arg1++ |= *arg2++;}
 }
@@ -364,7 +363,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_lor(register int *arg1, register int *arg2, register int n)
+ivec_lor( int *arg1,  int *arg2,  int n)
 {
   while (n--)  {*arg1 = (*arg1 || *arg2); arg1++; arg2++;} 
 }
@@ -380,8 +379,8 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_or3(register int *arg1, register int *arg2, register int *arg3, 
-	 register int n)
+ivec_or3( int *arg1,  int *arg2,  int *arg3, 
+	  int n)
 {
   while (n--)  {*arg1++ = (*arg2++ | *arg3++);}
 }
@@ -397,7 +396,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_and(register int *arg1, register int *arg2, register int n)
+ivec_and( int *arg1,  int *arg2,  int n)
 {
   while (n--)  {*arg1++ &= *arg2++;}
 }
@@ -413,7 +412,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_land(register int *arg1, register int *arg2, register int n)
+ivec_land( int *arg1,  int *arg2,  int n)
 {
   while (n--) {*arg1 = (*arg1 && *arg2); arg1++; arg2++;} 
 }
@@ -429,8 +428,8 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_and3(register int *arg1, register int *arg2, register int *arg3, 
-	  register int n)
+ivec_and3( int *arg1,  int *arg2,  int *arg3, 
+	   int n)
 {
   while (n--)  {*arg1++ = (*arg2++ & *arg3++);}
 }
@@ -445,9 +444,9 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-int ivec_sum(register int *arg1, register int n)
+int ivec_sum( int *arg1,  int n)
 {
-  register int tmp = 0;
+   int tmp = 0;
 
 
   while (n--) {tmp += *arg1++;}
@@ -464,9 +463,9 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-int ivec_reduce_and(register int *arg1, register int n)
+int ivec_reduce_and( int *arg1,  int n)
 {
-  register int tmp = ALL_ONES;
+   int tmp = ALL_ONES;
 
 
   while (n--) {tmp &= *arg1++;}
@@ -483,9 +482,9 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-int ivec_reduce_or(register int *arg1, register int n)
+int ivec_reduce_or( int *arg1,  int n)
 {
-  register int tmp = 0;
+   int tmp = 0;
 
 
   while (n--) {tmp |= *arg1++;}
@@ -502,9 +501,9 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-int ivec_prod(register int *arg1, register int n)
+int ivec_prod( int *arg1,  int n)
 {
-  register int tmp = 1;
+   int tmp = 1;
 
 
   while (n--)  {tmp *= *arg1++;}
@@ -521,9 +520,9 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-int ivec_u_sum(register unsigned *arg1, register int n)
+int ivec_u_sum( unsigned *arg1,  int n)
 {
-  register unsigned tmp = 0;
+   unsigned tmp = 0;
 
 
   while (n--)  {tmp += *arg1++;}
@@ -541,9 +540,9 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 int 
-ivec_lb(register int *arg1, register int n)
+ivec_lb( int *arg1,  int n)
 {
-  register int min = INT_MAX;
+   int min = INT_MAX;
 
 
   while (n--)  {min = PetscMin(min,*arg1); arg1++;}
@@ -561,9 +560,9 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 int 
-ivec_ub(register int *arg1, register int n)
+ivec_ub( int *arg1,  int n)
 {
-  register int max = INT_MIN;
+   int max = INT_MIN;
 
 
   while (n--)  {max = PetscMax(max,*arg1); arg1++;}
@@ -583,7 +582,7 @@ Description:
 assumes that sizeof(int) == 4bytes!!!
 ***********************************ivec.c*************************************/
 int
-ivec_split_buf(int *buf1, int **buf2, register int size)
+ivec_split_buf(int *buf1, int **buf2,  int size)
 {
   *buf2 = (buf1 + (size>>3));
   return(size);
@@ -600,9 +599,9 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-ivec_non_uniform(int *arg1, int *arg2, register int n, register int *arg3)
+ivec_non_uniform(int *arg1, int *arg2,  int n,  int *arg3)
 {
-  register int i, j, type;
+   int i, j, type;
 
 
   /* LATER: if we're really motivated we can sort and then unsort */
@@ -655,7 +654,7 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-vfp ivec_fct_addr(register int type)
+vfp ivec_fct_addr( int type)
 {
   if (type == NON_UNIFORM)
     {return((void (*)(void*, void *, int, ...))&ivec_non_uniform);}
@@ -696,9 +695,9 @@ Description: MUST FIX THIS!!!
 #if defined(notusing)
 static
 int 
-ivec_ct_bits(register int *ptr, register int n)
+ivec_ct_bits( int *ptr,  int n)
 {
-  register int tmp=0;
+   int tmp=0;
 
 
   /* should expand to full 32 bit */
@@ -729,11 +728,11 @@ Return: none.
 Description: stack based (nonrecursive) quicksort w/brute-shell bottom. 
 ******************************************************************************/
 void
-ivec_sort(register int *ar, register int size)
+ivec_sort( int *ar,  int size)
 {
-  register int *pi, *pj, temp;
-  register int **top_a = (int **) offset_stack;
-  register int *top_s = size_stack, *bottom_s = size_stack; 
+   int *pi, *pj, temp;
+   int **top_a = (int **) offset_stack;
+   int *top_s = size_stack, *bottom_s = size_stack; 
 
 
   /* we're really interested in the offset of the last element */
@@ -838,13 +837,13 @@ Return: none.
 Description: stack based (nonrecursive) quicksort w/brute-shell bottom. 
 ******************************************************************************/
 void
-ivec_sort_companion(register int *ar, register int *ar2, register int size)
+ivec_sort_companion( int *ar,  int *ar2,  int size)
 {
-  register int *pi, *pj, temp, temp2;
-  register int **top_a = (int **)offset_stack;
-  register int *top_s = size_stack, *bottom_s = size_stack; 
-  register int *pi2, *pj2;
-  register int mid;
+   int *pi, *pj, temp, temp2;
+   int **top_a = (int **)offset_stack;
+   int *top_s = size_stack, *bottom_s = size_stack; 
+   int *pi2, *pj2;
+   int mid;
 
 
   /* we're really interested in the offset of the last element */
@@ -963,14 +962,14 @@ Return: none.
 Description: stack based (nonrecursive) quicksort w/brute-shell bottom. 
 ******************************************************************************/
 void
-ivec_sort_companion_hack(register int *ar, register int **ar2, 
-			 register int size)
+ivec_sort_companion_hack( int *ar,  int **ar2, 
+			  int size)
 {
-  register int *pi, *pj, temp, *ptr;
-  register int **top_a = (int **)offset_stack;
-  register int *top_s = size_stack, *bottom_s = size_stack; 
-  register int **pi2, **pj2;
-  register int mid;
+   int *pi, *pj, temp, *ptr;
+   int **top_a = (int **)offset_stack;
+   int *top_s = size_stack, *bottom_s = size_stack; 
+   int **pi2, **pj2;
+   int mid;
 
 
   /* we're really interested in the offset of the last element */
@@ -1131,9 +1130,9 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 int
-ivec_linear_search(register int item, register int *list, register int n)
+ivec_linear_search( int item,  int *list,  int n)
 {
-  register int tmp = n-1;
+   int tmp = n-1;
 
   while (n--)  {if (*list++ == item) {return(tmp-n);}}
   return(-1);
@@ -1150,9 +1149,9 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 int
-ivec_binary_search(register int item, register int *list, register int rh)
+ivec_binary_search( int item,  int *list,  int rh)
 {
-  register int mid, lh=0;
+   int mid, lh=0;
 
   rh--;
   while (lh<=rh)
@@ -1179,7 +1178,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void
-rvec_dump(REAL *v, int n, int tag, int tag2, char * s)
+rvec_dump(PetscScalar *v, int n, int tag, int tag2, char * s)
 {
   int i;
   printf("%2d %2d %s %2d :: ",tag,tag2,s,my_id);
@@ -1200,10 +1199,10 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void
-rvec_lb_ub(register REAL *arg1, register int n, REAL *lb, REAL *ub)
+rvec_lb_ub( PetscScalar *arg1,  int n, PetscScalar *lb, PetscScalar *ub)
 {
-  register REAL min =  REAL_MAX;
-  register REAL max = -REAL_MAX;
+   PetscScalar min =  REAL_MAX;
+   PetscScalar max = -REAL_MAX;
 
   while (n--)  
     {
@@ -1227,7 +1226,7 @@ Return:
 Description: 
 *********************************ivec.c*************************************/
 void 
-rvec_copy(register REAL *arg1, register REAL *arg2, register int n)
+rvec_copy( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
   while (n--)  {*arg1++ = *arg2++;}
 }
@@ -1243,7 +1242,7 @@ Return:
 Description: 
 *********************************ivec.c*************************************/
 void 
-rvec_zero(register REAL *arg1, register int n)
+rvec_zero( PetscScalar *arg1,  int n)
 {
   while (n--)  {*arg1++ = 0.0;}
 }
@@ -1259,7 +1258,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-rvec_one(register REAL *arg1, register int n)
+rvec_one( PetscScalar *arg1,  int n)
 {
   while (n--)  {*arg1++ = 1.0;}
 }
@@ -1275,7 +1274,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-rvec_neg_one(register REAL *arg1, register int n)
+rvec_neg_one( PetscScalar *arg1,  int n)
 {
   while (n--)  {*arg1++ = -1.0;}
 }
@@ -1291,7 +1290,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void
-rvec_set(register REAL *arg1, register REAL arg2, register int n)
+rvec_set( PetscScalar *arg1,  PetscScalar arg2,  int n)
 {
   while (n--)  {*arg1++ = arg2;}
 }
@@ -1307,7 +1306,7 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void
-rvec_scale(register REAL *arg1, register REAL arg2, register int n)
+rvec_scale( PetscScalar *arg1,  PetscScalar arg2,  int n)
 {
   while (n--)  {*arg1++ *= arg2;}
 }
@@ -1323,7 +1322,7 @@ Return:
 Description: 
 *********************************ivec.c*************************************/
 void 
-rvec_add(register REAL *arg1, register REAL *arg2, register int n)
+rvec_add( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
   while (n--)  {*arg1++ += *arg2++;}
 }
@@ -1338,10 +1337,10 @@ Output:
 Return: 
 Description: 
 *********************************ivec.c*************************************/
-REAL
-rvec_dot(register REAL *arg1, register REAL *arg2, register int n)
+PetscScalar
+rvec_dot( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
-  REAL dot=0.0;
+  PetscScalar dot=0.0;
 
   while (n--)  {dot+= *arg1++ * *arg2++;}
 
@@ -1359,8 +1358,8 @@ Return:
 Description: 
 *********************************ivec.c*************************************/
 void
-rvec_axpy(register REAL *arg1, register REAL *arg2, register REAL scale, 
-	  register int n)
+rvec_axpy( PetscScalar *arg1,  PetscScalar *arg2,  PetscScalar scale, 
+	   int n)
 {
   while (n--)  {*arg1++ += scale * *arg2++;}
 }
@@ -1375,7 +1374,7 @@ Return:
 Description: 
 *********************************ivec.c*************************************/
 void 
-rvec_mult(register REAL *arg1, register REAL *arg2, register int n)
+rvec_mult( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
   while (n--)  {*arg1++ *= *arg2++;}
 }
@@ -1391,7 +1390,7 @@ Return:
 Description: 
 *********************************ivec.c*************************************/
 void 
-rvec_max(register REAL *arg1, register REAL *arg2, register int n)
+rvec_max( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
   while (n--)  {*arg1 = PetscMax(*arg1,*arg2); arg1++; arg2++;}
 }
@@ -1407,7 +1406,7 @@ Return:
 Description: 
 *********************************ivec.c*************************************/
 void 
-rvec_max_abs(register REAL *arg1, register REAL *arg2, register int n)
+rvec_max_abs( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
   while (n--)  {*arg1 = MAX_FABS(*arg1,*arg2); arg1++; arg2++;}
 }
@@ -1423,7 +1422,7 @@ Return:
 Description: 
 *********************************ivec.c*************************************/
 void 
-rvec_min(register REAL *arg1, register REAL *arg2, register int n)
+rvec_min( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
   while (n--)  {*arg1 = PetscMin(*arg1,*arg2); arg1++; arg2++;}
 }
@@ -1439,7 +1438,7 @@ Return:
 Description: 
 *********************************ivec.c*************************************/
 void 
-rvec_min_abs(register REAL *arg1, register REAL *arg2, register int n)
+rvec_min_abs( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
   while (n--)  {*arg1 = MIN_FABS(*arg1,*arg2); arg1++; arg2++;}
 }
@@ -1455,7 +1454,7 @@ Return:
 Description: 
 *********************************ivec.c*************************************/
 void 
-rvec_exists(register REAL *arg1, register REAL *arg2, register int n)
+rvec_exists( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
   while (n--)  {*arg1 = EXISTS(*arg1,*arg2); arg1++; arg2++;}
 }
@@ -1471,9 +1470,9 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 void 
-rvec_non_uniform(REAL *arg1, REAL *arg2, register int n, register int *arg3)
+rvec_non_uniform(PetscScalar *arg1, PetscScalar *arg2,  int n,  int *arg3)
 {
-  register int i, j, type;
+   int i, j, type;
 
 
   /* LATER: if we're really motivated we can sort and then unsort */
@@ -1520,7 +1519,7 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-vfp rvec_fct_addr(register int type)
+vfp rvec_fct_addr( int type)
 {
   if (type == NON_UNIFORM)
     {return((void (*)(void*, void *, int, ...))&rvec_non_uniform);}
@@ -1552,12 +1551,12 @@ Return: none.
 Description: stack based (nonrecursive) quicksort w/brute-shell bottom. 
 ******************************************************************************/
 void
-rvec_sort(register REAL *ar, register int Size)
+rvec_sort( PetscScalar *ar,  int Size)
 {
-  register REAL *pi, *pj, temp;
-  register REAL **top_a = (REAL **)offset_stack;
-  register PTRINT *top_s = psize_stack, *bottom_s = psize_stack; 
-  register PTRINT size = (PTRINT) Size;
+   PetscScalar *pi, *pj, temp;
+   PetscScalar **top_a = (PetscScalar **)offset_stack;
+   long *top_s = psize_stack, *bottom_s = psize_stack; 
+   long size = (long) Size;
 
   /* we're really interested in the offset of the last element */
   /* ==> length of the list is now size + 1                    */
@@ -1662,16 +1661,16 @@ Return: none.
 Description: stack based (nonrecursive) quicksort w/brute-shell bottom. 
 ******************************************************************************/
 void
-rvec_sort_companion(register REAL *ar, register int *ar2, register int Size)
+rvec_sort_companion( PetscScalar *ar,  int *ar2,  int Size)
 {
-  register REAL *pi, *pj, temp;
-  register REAL **top_a = (REAL **)offset_stack;
-  register PTRINT *top_s = psize_stack, *bottom_s = psize_stack; 
-  register PTRINT size = (PTRINT) Size;
+   PetscScalar *pi, *pj, temp;
+   PetscScalar **top_a = (PetscScalar **)offset_stack;
+   long *top_s = psize_stack, *bottom_s = psize_stack; 
+   long size = (long) Size;
 
-  register int *pi2, *pj2;
-  register int ptr;
-  register PTRINT mid;
+   int *pi2, *pj2;
+   int ptr;
+   long mid;
 
 
   /* we're really interested in the offset of the last element */
@@ -1734,7 +1733,7 @@ rvec_sort_companion(register REAL *ar, register int *ar2, register int Size)
 	  if ((*top_s = size-(pi-ar)))
 	    {
 	      *(top_a++) = pi;
-	      *(top_a++) = (REAL *) pi2;
+	      *(top_a++) = (PetscScalar *) pi2;
 	      size -= *top_s+2;  
 	      top_s++;
 	    }
@@ -1792,9 +1791,9 @@ Return:
 Description: 
 ***********************************ivec.c*************************************/
 int
-rvec_binary_search(register REAL item, register REAL *list, register int rh)
+rvec_binary_search( PetscScalar item,  PetscScalar *list,  int rh)
 {
-  register int mid, lh=0;
+  int mid, lh=0;
 
   rh--;
   while (lh<=rh)

@@ -1,6 +1,5 @@
 
 /***********************************comm.c*************************************
-SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
 Author: Henry M. Tufo III
 
@@ -26,7 +25,6 @@ File Description:
 #include "types.h"
 #include "error.h"
 #include "ivec.h"
-#include "bss_malloc.h"
 #include "comm.h"
 
 
@@ -41,7 +39,7 @@ static int p_init = 0;
 static int modfl_num_nodes;
 static int edge_not_pow_2;
 
-static unsigned int edge_node[INT_LEN*32];
+static unsigned int edge_node[sizeof(PetscInt)*32];
 
 /***********************************comm.c*************************************
 Function: giop()
@@ -54,9 +52,6 @@ Description:
 void
 comm_init (void)
 {
-#ifdef DEBUG  
-  error_msg_warning("c_init() :: start\n");
-#endif
 
   if (p_init++) return;
 
@@ -71,7 +66,7 @@ comm_init (void)
   if (num_nodes> (INT_MAX >> 1))
   {error_msg_fatal("Can't have more then MAX_INT/2 nodes!!!");}
 
-  ivec_zero((int*)edge_node,INT_LEN*32);
+  ivec_zero((int*)edge_node,sizeof(PetscInt)*32);
 
   floor_num_nodes = 1;
   i_log2_num_nodes = modfl_num_nodes = 0;
@@ -94,9 +89,6 @@ comm_init (void)
   else
     {edge_not_pow_2 = 0;}
 
-#ifdef DEBUG  
-  error_msg_warning("c_init() done :: my_id=%d, num_nodes=%D",my_id,num_nodes);
-#endif
 }
 
 
@@ -112,7 +104,7 @@ Description: fan-in/out version
 void
 giop(int *vals, int *work, int n, int *oprs)
 {
-  register int mask, edge;
+   int mask, edge;
   int type, dest;
   vfp fp;
   MPI_Status  status;
@@ -135,9 +127,6 @@ giop(int *vals, int *work, int n, int *oprs)
   /* if there's nothing to do return */
   if ((num_nodes<2)||(!n))
     {
-#ifdef DEBUG
-      error_msg_warning("giop() :: n=%D num_nodes=%d",n,num_nodes);
-#endif
       return;
     }
 
@@ -224,9 +213,9 @@ Return:
 Description: fan-in/out version
 ***********************************comm.c*************************************/
 void
-grop(REAL *vals, REAL *work, int n, int *oprs)
+grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs)
 {
-  register int mask, edge;
+   int mask, edge;
   int type, dest;
   vfp fp;
   MPI_Status  status;
@@ -268,11 +257,11 @@ grop(REAL *vals, REAL *work, int n, int *oprs)
   if (edge_not_pow_2)
     {
       if (my_id >= floor_num_nodes)
-	{MPI_Send(vals,n,REAL_TYPE,edge_not_pow_2,MSGTAG0+my_id,
+	{MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG0+my_id,
 		  MPI_COMM_WORLD);}
       else 
 	{
-	  MPI_Recv(work,n,REAL_TYPE,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,
+	  MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,
 		   MPI_COMM_WORLD,&status);
 	  (*fp)(vals,work,n,oprs);
 	}
@@ -285,10 +274,10 @@ grop(REAL *vals, REAL *work, int n, int *oprs)
 	{
 	  dest = my_id^mask;
 	  if (my_id > dest)
-	    {MPI_Send(vals,n,REAL_TYPE,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	    {MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
 	  else
 	    {
-	      MPI_Recv(work,n,REAL_TYPE,MPI_ANY_SOURCE,MSGTAG2+dest,
+	      MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,
 		       MPI_COMM_WORLD, &status);
 	      (*fp)(vals, work, n, oprs);
 	    }
@@ -302,10 +291,10 @@ grop(REAL *vals, REAL *work, int n, int *oprs)
       
 	  dest = my_id^mask;
 	  if (my_id < dest)
-	    {MPI_Send(vals,n,REAL_TYPE,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
+	    {MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
 	  else
 	    {
-	      MPI_Recv(vals,n,REAL_TYPE,MPI_ANY_SOURCE,MSGTAG4+dest,
+	      MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG4+dest,
 		       MPI_COMM_WORLD, &status);
 	    }
 	}
@@ -316,11 +305,11 @@ grop(REAL *vals, REAL *work, int n, int *oprs)
     {
       if (my_id >= floor_num_nodes)
 	{
-	  MPI_Recv(vals,n,REAL_TYPE,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2, 
+	  MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2, 
 		   MPI_COMM_WORLD,&status);
 	}
       else
-	{MPI_Send(vals,n,REAL_TYPE,edge_not_pow_2,MSGTAG5+my_id,
+	{MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG5+my_id,
 		  MPI_COMM_WORLD);}
     }
 }  
@@ -338,9 +327,9 @@ note good only for num_nodes=2^k!!!
 
 ***********************************comm.c*************************************/
 void
-grop_hc(REAL *vals, REAL *work, int n, int *oprs, int dim)
+grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim)
 {
-  register int mask, edge;
+   int mask, edge;
   int type, dest;
   vfp fp;
   MPI_Status  status;
@@ -387,10 +376,10 @@ grop_hc(REAL *vals, REAL *work, int n, int *oprs, int dim)
     {
       dest = my_id^mask;
       if (my_id > dest)
-	{MPI_Send(vals,n,REAL_TYPE,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	{MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
       else
 	{
-	  MPI_Recv(work,n,REAL_TYPE,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD,
+	  MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD,
 		   &status);
 	  (*fp)(vals, work, n, oprs);
 	}
@@ -408,10 +397,10 @@ grop_hc(REAL *vals, REAL *work, int n, int *oprs, int dim)
       
       dest = my_id^mask;
       if (my_id < dest)
-	{MPI_Send(vals,n,REAL_TYPE,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
+	{MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
       else
 	{
-	  MPI_Recv(vals,n,REAL_TYPE,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,
+	  MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,
 		   &status);
 	}
     }
@@ -426,9 +415,9 @@ Output:
 Return: 
 Description: fan-in/out version
 ***********************************comm.c*************************************/
-void gfop(void *vals, void *work, int n, vbfp fp, DATA_TYPE dt, int comm_type)
+void gfop(void *vals, void *work, int n, vbfp fp, MPI_Datatype dt, int comm_type)
 {
-  register int mask, edge;
+   int mask, edge;
   int dest;
   MPI_Status  status;
   MPI_Op op;
@@ -537,17 +526,12 @@ ii+1 entries in seg :: 0 .. ii
 
 ******************************************************************************/
 void 
-ssgl_radd(register REAL *vals, register REAL *work, register int level, 
-	  register int *segs)
+ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level, 
+	   int *segs)
 {
-  register int edge, type, dest, mask;
-  register int stage_n;
+   int edge, type, dest, mask;
+   int stage_n;
   MPI_Status  status;
-
-#ifdef DEBUG
-  if (level > i_log2_num_nodes)
-    {error_msg_fatal("sgl_add() :: level > log_2(P)!!!");}
-#endif
 
 #ifdef SAFE
   /* check to make sure comm package has been initialized */
@@ -566,17 +550,14 @@ ssgl_radd(register REAL *vals, register REAL *work, register int level,
 	  dest = edge_node[edge];
 	  type = MSGTAG3 + my_id + (num_nodes*edge);
 	  if (my_id>dest)
-/*	    {csend(type, vals+segs[edge],stage_n*REAL_LEN,dest,0);} */
-          {MPI_Send(vals+segs[edge],stage_n,REAL_TYPE,dest,type, 
+          {MPI_Send(vals+segs[edge],stage_n,MPIU_SCALAR,dest,type, 
                       MPI_COMM_WORLD);}
 	  else
 	    {
 	      type =  type - my_id + dest;
-/*	      crecv(type,work,stage_n*REAL_LEN); */
-              MPI_Recv(work,stage_n,REAL_TYPE,MPI_ANY_SOURCE,type,
+              MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type,
                        MPI_COMM_WORLD,&status);              
 	      rvec_add(vals+segs[edge], work, stage_n); 
-/*            daxpy(vals+segs[edge], work, stage_n); */
 	    }
 	}
       mask <<= 1;
@@ -590,14 +571,12 @@ ssgl_radd(register REAL *vals, register REAL *work, register int level,
 	  dest = edge_node[level-edge-1];
 	  type = MSGTAG6 + my_id + (num_nodes*edge);
 	  if (my_id<dest)
-/*	    {csend(type,vals+segs[level-1-edge],stage_n*REAL_LEN,dest,0);} */
-            {MPI_Send(vals+segs[level-1-edge],stage_n,REAL_TYPE,dest,type,
+            {MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,
                       MPI_COMM_WORLD);}
 	  else
 	    {
 	      type =  type - my_id + dest;
-/* 	      crecv(type,vals+segs[level-1-edge],stage_n*REAL_LEN); */
-              MPI_Recv(vals+segs[level-1-edge],stage_n,REAL_TYPE,
+              MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,
                        MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);              
 	    }
 	}
@@ -619,9 +598,9 @@ note good only for num_nodes=2^k!!!
 
 ***********************************comm.c*************************************/
 void
-grop_hc_vvl(REAL *vals, REAL *work, int *segs, int *oprs, int dim)
+grop_hc_vvl(PetscScalar *vals, PetscScalar *work, int *segs, int *oprs, int dim)
 {
-  register int mask, edge, n;
+   int mask, edge, n;
   int type, dest;
   vfp fp;
   MPI_Status  status;
@@ -634,10 +613,6 @@ grop_hc_vvl(REAL *vals, REAL *work, int *segs, int *oprs, int dim)
     {error_msg_fatal("grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
-#if defined(not_used)
-  if ((oprs[0] == NON_UNIFORM)&&(n<2))
-    {error_msg_fatal("grop_hc() :: non_uniform and n=0,1?");}    
-#endif
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
@@ -669,10 +644,10 @@ grop_hc_vvl(REAL *vals, REAL *work, int *segs, int *oprs, int dim)
       n = segs[dim]-segs[edge];
       dest = my_id^mask;
       if (my_id > dest)
-	{MPI_Send(vals+segs[edge],n,REAL_TYPE,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	{MPI_Send(vals+segs[edge],n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
       else
 	{
-	  MPI_Recv(work,n,REAL_TYPE,MPI_ANY_SOURCE,MSGTAG2+dest,
+	  MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,
 		   MPI_COMM_WORLD, &status);
 	  (*fp)(vals+segs[edge], work, n, oprs);
 	}
@@ -692,11 +667,11 @@ grop_hc_vvl(REAL *vals, REAL *work, int *segs, int *oprs, int dim)
       
       dest = my_id^mask;
       if (my_id < dest)
-	{MPI_Send(vals+segs[dim-1-edge],n,REAL_TYPE,dest,MSGTAG4+my_id,
+	{MPI_Send(vals+segs[dim-1-edge],n,MPIU_SCALAR,dest,MSGTAG4+my_id,
 		  MPI_COMM_WORLD);}
       else
 	{
-	  MPI_Recv(vals+segs[dim-1-edge],n,REAL_TYPE,MPI_ANY_SOURCE,
+	  MPI_Recv(vals+segs[dim-1-edge],n,MPIU_SCALAR,MPI_ANY_SOURCE,
 		   MSGTAG4+dest,MPI_COMM_WORLD, &status);
 	}
     }
@@ -713,17 +688,11 @@ Description:
 ii+1 entries in seg :: 0 .. ii
 
 ******************************************************************************/
-void new_ssgl_radd(register REAL *vals, register REAL *work, register int level,register int *segs)
+void new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level, int *segs)
 {
-  register int edge, type, dest, mask;
-  register int stage_n;
+   int edge, type, dest, mask;
+   int stage_n;
   MPI_Status  status;
-
-
-#ifdef DEBUG
-  if (level > i_log2_num_nodes)
-    {error_msg_fatal("sgl_add() :: level > log_2(P)!!!");}
-#endif
 
 #ifdef SAFE
   /* check to make sure comm package has been initialized */
@@ -741,17 +710,14 @@ void new_ssgl_radd(register REAL *vals, register REAL *work, register int level,
 	  dest = edge_node[edge];
 	  type = MSGTAG3 + my_id + (num_nodes*edge);
 	  if (my_id>dest)
-/*	    {csend(type, vals+segs[edge],stage_n*REAL_LEN,dest,0);} */
-          {MPI_Send(vals+segs[edge],stage_n,REAL_TYPE,dest,type, 
+          {MPI_Send(vals+segs[edge],stage_n,MPIU_SCALAR,dest,type, 
                       MPI_COMM_WORLD);}
 	  else
 	    {
 	      type =  type - my_id + dest;
-/*	      crecv(type,work,stage_n*REAL_LEN); */
-              MPI_Recv(work,stage_n,REAL_TYPE,MPI_ANY_SOURCE,type,
+              MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type,
                        MPI_COMM_WORLD,&status);              
 	      rvec_add(vals+segs[edge], work, stage_n); 
-/*            daxpy(vals+segs[edge], work, stage_n); */
 	    }
 	}
       mask <<= 1;
@@ -765,14 +731,12 @@ void new_ssgl_radd(register REAL *vals, register REAL *work, register int level,
 	  dest = edge_node[level-edge-1];
 	  type = MSGTAG6 + my_id + (num_nodes*edge);
 	  if (my_id<dest)
-/*	    {csend(type,vals+segs[level-1-edge],stage_n*REAL_LEN,dest,0);} */
-            {MPI_Send(vals+segs[level-1-edge],stage_n,REAL_TYPE,dest,type,
+            {MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,
                       MPI_COMM_WORLD);}
 	  else
 	    {
 	      type =  type - my_id + dest;
-/* 	      crecv(type,vals+segs[level-1-edge],stage_n*REAL_LEN); */
-              MPI_Recv(vals+segs[level-1-edge],stage_n,REAL_TYPE,
+              MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,
                        MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);              
 	    }
 	}
@@ -795,7 +759,7 @@ note good only for num_nodes=2^k!!!
 ***********************************comm.c*************************************/
 void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
 {
-  register int mask, edge;
+   int mask, edge;
   int type, dest;
   vfp fp;
   MPI_Status  status;
@@ -842,10 +806,10 @@ void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
     {
       dest = my_id^mask;
       if (my_id > dest)
-	{MPI_Send(vals,n,INT_TYPE,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	{MPI_Send(vals,n,MPIU_INT,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
       else
 	{
-	  MPI_Recv(work,n,INT_TYPE,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD,
+	  MPI_Recv(work,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD,
 		   &status);
 	  (*fp)(vals, work, n, oprs);
 	}
@@ -863,10 +827,10 @@ void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
       
       dest = my_id^mask;
       if (my_id < dest)
-	{MPI_Send(vals,n,INT_TYPE,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
+	{MPI_Send(vals,n,MPIU_INT,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
       else
 	{
-	  MPI_Recv(vals,n,INT_TYPE,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,
+	  MPI_Recv(vals,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,
 		   &status);
 	}
     }

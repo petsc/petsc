@@ -1,6 +1,5 @@
 
 /***********************************comm.h*************************************
-SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
 Author: Henry M. Tufo III
 
@@ -39,13 +38,13 @@ extern int floor_num_nodes;
 extern int i_log2_num_nodes;
 
 extern void giop(int *vals, int *work, int n, int *oprs);
-extern void grop(REAL *vals, REAL *work, int n, int *oprs);
-extern void gfop(void *vals, void *wk, int n, vbfp fp, DATA_TYPE dt, int comm_type);
+extern void grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs);
+extern void gfop(void *vals, void *wk, int n, vbfp fp, MPI_Datatype dt, int comm_type);
 extern void comm_init(void);
 extern void giop_hc(int *vals, int *work, int n, int *oprs, int dim);
-extern void grop_hc(REAL *vals, REAL *work, int n, int *oprs, int dim);
-extern void grop_hc_vvl(REAL *vals, REAL *work, int *n, int *oprs, int dim);
-extern void ssgl_radd(REAL *vals, REAL *work, int level, int *segs);
+extern void grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim);
+extern void grop_hc_vvl(PetscScalar *vals, PetscScalar *work, int *n, int *oprs, int dim);
+extern void ssgl_radd(PetscScalar *vals, PetscScalar *work, int level, int *segs);
 
 #if defined(_CRAY)
 #define MSGTAG0 101

@@ -189,7 +189,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   }
   ierr = VecAXPY(&ceta_bar,Wbar,X);CHKERRQ(ierr); /* x <- x + ceta_bar*w_bar */
 
-  if (i == ksp->max_it) {
+  if (i >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
   PetscFunctionReturn(0);

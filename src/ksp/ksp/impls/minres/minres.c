@@ -186,7 +186,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
      if (ksp->reason) break;
      i++;
   } while (i<ksp->max_it);
-  if (i == ksp->max_it) {
+  if (i >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
   PetscFunctionReturn(0);

@@ -1,6 +1,5 @@
 
 /********************************bit_mask.c************************************
-SPARSE GATHER-SCATTER PACKAGE: bit_mask bss_malloc ivec error comm gs queue
 
 Author: Henry M. Tufo III
 
@@ -36,9 +35,9 @@ Return:
 Description: 
 *********************************bit_mask.c***********************************/
 void 
-bm_to_proc(register char *ptr, int p_mask, register int *msg_list)
+bm_to_proc( char *ptr, int p_mask,  int *msg_list)
 {
-  register int i, tmp;
+   int i, tmp;
 
   if (msg_list)
     {
@@ -104,9 +103,9 @@ Output:
 Return: 
 Description: 
 *********************************bit_mask.c***********************************/
-int ct_bits(register char *ptr, int n)
+int ct_bits( char *ptr, int n)
 {
-  register int i, tmp=0;
+   int i, tmp=0;
 
 
   for(i=0;i<n;i++)
@@ -136,9 +135,9 @@ Return:
 Description:
 *********************************bit_mask.c***********************************/ 
 int
-div_ceil(register int numer, register int denom)
+div_ceil( int numer,  int denom)
 {
-  register int rt_val;
+   int rt_val;
 
   if ((numer<0)||(denom<=0))
     {error_msg_fatal("div_ceil() :: numer=%D ! >=0, denom=%D ! >0",numer,denom);}
@@ -162,9 +161,9 @@ Return:
 Description:
 *********************************bit_mask.c***********************************/ 
 int
-len_bit_mask(register int num_items)
+len_bit_mask( int num_items)
 {
-  register int rt_val, tmp;
+   int rt_val, tmp;
 
   if (num_items<0)
     {error_msg_fatal("Value Sent To len_bit_mask() Must be >= 0!");}
@@ -175,8 +174,8 @@ len_bit_mask(register int num_items)
     {rt_val++;}
   
   /* make mults of sizeof int */
-  if ((tmp=rt_val%INT_LEN)) 
-    {rt_val+=(INT_LEN-tmp);}
+  if ((tmp=rt_val%sizeof(PetscInt))) 
+    {rt_val+=(sizeof(PetscInt)-tmp);}
 
   return(rt_val);
 }
@@ -192,10 +191,10 @@ Return:
 Description: 
 *********************************bit_mask.c***********************************/
 void
-set_bit_mask(register int *bm, int len, int val)
+set_bit_mask( int *bm, int len, int val)
 {
-  register int i, offset;
-  register char mask = 1;
+   int i, offset;
+   char mask = 1;
   char *cptr;
 
 
@@ -204,7 +203,7 @@ set_bit_mask(register int *bm, int len, int val)
 
   cptr = (char *) bm;
 
-  offset = len/INT_LEN;
+  offset = len/sizeof(PetscInt);
   for (i=0;i<offset;i++)
     {*bm=0; bm++;}
 
@@ -229,7 +228,7 @@ Description:
 int
 len_buf(int item_size, int num_items)
 {
-  register int rt_val, tmp;
+   int rt_val, tmp;
 
   rt_val = item_size * num_items;
 

@@ -1,6 +1,5 @@
 
 /**********************************const.h*************************************
-SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
 Author: Henry M. Tufo III
 
@@ -20,8 +19,15 @@ File Description:
 -----------------
 
 ***********************************const.h************************************/
+#include "petsc.h"
 #include <limits.h>
-
+#include "petscblaslapack.h"
+#if defined(PETSC_HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
+#include <malloc.h>
+#endif
 
 #define X          0
 #define Y          1
@@ -72,63 +78,8 @@ File Description:
 #define LINE		12
 #define C_LINE		80
 
-
-
-
-
-#define PTR_LEN		(int)sizeof(void*)
-#define INT             int
-#define INT_PTR_LEN	(int)sizeof(int*)
-#define INT_LEN		(int)sizeof(int)
-#define CHAR_LEN        (int)sizeof(char)
-
-/* assuming LP64 for 64bit systems and standard sizeof(long) = 32 for
-   32bit systems as well as sizeof(int) = sizeof(long) = 64 on _CRAYMPP
-   we can assume sizeof(long) = sizeof(void*) and therefore pointer
-   arithmetic can always be done with longs with no loss of accuracy */
-#define PTRINT          long
-#define INT_TYPE	MPI_INT
-
-
-#if defined(r8)
-#define REAL_TYPE	MPI_DOUBLE
-#else 
-#define REAL_TYPE	MPI_FLOAT
-#endif
-
-#define DATA_TYPE	MPI_Datatype
-
-
-
-#define REAL 		float
-#define REAL_LEN	(int)sizeof(float)
-#define REAL_MAX	FLT_MAX
-#define REAL_MIN	FLT_MIN
-
-
-
-
-/* -Dr8 as compile line arg for c compiler */
-#ifdef  r8
-#undef  REAL
-#undef  REAL_LEN 
-#undef  REAL_MAX
-#undef  REAL_MIN
-#define REAL            double
-#define REAL_LEN	(int)sizeof(double)
 #define REAL_MAX	DBL_MAX
 #define REAL_MIN	DBL_MIN
-#endif
-
-/* ERROR has problem with intel compilers. Since these
-macros are not used, they are commented out
-
-#define   ERROR        -1
-#define   PASS	        1
-#define   FAIL	        0
-#define   SUCCESS       1
-#define   FAILURE       0
-*/
 
 #define   UT            5               /* dump upper 1/2 */
 #define   LT            6               /* dump lower 1/2 */
@@ -138,28 +89,20 @@ macros are not used, they are commented out
 #define   ROW          10
 #define   COL          11
 
-#ifdef r8
 #define EPS   1.0e-14
-#else
-#define EPS   1.0e-06
-#endif
-
-#ifdef r8
 #define EPS2  1.0e-07
-#else
-#define EPS2  1.0e-03
-#endif
+
 
 #define MPI   1
 #define NX    2
 
 
-#define LOG2(x)		(REAL)log((double)x)/log(2)
+#define LOG2(x)		(PetscScalar)log((double)x)/log(2)
 #define SWAP(a,b)       temp=(a); (a)=(b); (b)=temp;
 #define P_SWAP(a,b)     ptr=(a); (a)=(b); (b)=ptr;
 
-#define MAX_FABS(x,y)   ((double)fabs(x)>(double)fabs(y)) ? ((REAL)x) : ((REAL)y)
-#define MIN_FABS(x,y)   ((double)fabs(x)<(double)fabs(y)) ? ((REAL)x) : ((REAL)y)
+#define MAX_FABS(x,y)   ((double)fabs(x)>(double)fabs(y)) ? ((PetscScalar)x) : ((PetscScalar)y)
+#define MIN_FABS(x,y)   ((double)fabs(x)<(double)fabs(y)) ? ((PetscScalar)x) : ((PetscScalar)y)
 
 /* specer's existence ... can be done w/MAX_ABS */
 #define EXISTS(x,y)     ((x)==0.0) ? (y) : (x)

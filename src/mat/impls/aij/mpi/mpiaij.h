@@ -83,7 +83,7 @@ EXTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);
 EXTERN PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat);
-EXTERN PetscErrorCode PetscObjectContainerDestroy_Mat_MatMatMultMPI(PetscObject);
+EXTERN PetscErrorCode PetscObjectContainerDestroy_Mat_MatMatMultMPI(void*);
 
 
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)

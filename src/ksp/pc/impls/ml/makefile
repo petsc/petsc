@@ -1,0 +1,16 @@
+
+ALL: lib
+
+CFLAGS   = ${ML_INCLUDE}
+FFLAGS   =
+SOURCEC  = ml.c
+SOURCEF  =
+SOURCEH  = ../../../../../include/petscmg.h
+OBJSC    = ml.o
+OBJSF    =
+LIBBASE  = libpetscksp
+MANSEC   = PC
+LOCDIR   = src/ksp/pc/impls/ml/
+
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

@@ -110,6 +110,9 @@ ex24: ex24.o  chkopts
 ex25: ex25.o  chkopts
 	-${CLINKER} -o ex25 ex25.o  ${PETSC_KSP_LIB}
 	${RM} ex25.o
+ex26: ex26.o  chkopts
+	-${CLINKER} -o ex26 ex26.o  ${PETSC_KSP_LIB}
+	${RM} ex26.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -pc_type jacobi -ksp_smonitor -ksp_gmres_cgs_refinement_type always > ex1_1.tmp 2>&1;	  \
@@ -301,6 +304,11 @@ runex19:
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
+runex19_2:
+	-@${MPIRUN} -np 3 ex19 -ksp_smonitor > ex19_2.tmp 2>&1; \
+	if (${DIFF} output/ex19_2.out ex19_2.tmp) then true; \
+	   else echo "Possible problem with ex19_2, diffs above"; fi; \
+	   ${RM} -f ex19_2.tmp
 runex20:
 	-@${MPIRUN} -np 1 ex20 -ksp_gmres_cgs_refinement_type always -pc_type jacobi -mat_view -ksp_smonitor -ksp_atol 1.0e-13 > ex20_1.tmp 2>&1; \
 	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
@@ -349,11 +357,21 @@ runex25_2:
 		-pc_type jacobi -pc_jacobi_rowmax > ex25_2.tmp 2>&1; \
            if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
            else echo "Possible problem with ex25_2, diffs above"; fi; \
-           ${RM} -f ex25_2.tmp  
+           ${RM} -f ex25_2.tmp 
+runex26_1:
+	-@${MPIRUN} -np 1 ex26 -ksp_smonitor > ex26_1.tmp 2>&1; \
+	if (${DIFF} output/ex26_1.out ex26_1.tmp) then true; \
+	   else echo "Possible problem with ex26_1, diffs above"; fi; \
+	   ${RM} -f ex26_1.tmp
+runex26_2:
+	-@${MPIRUN} -np 3 ex26 -ksp_smonitor > ex26_2.tmp 2>&1; \
+	if (${DIFF} output/ex26_2.out ex26_2.tmp) then true; \
+	   else echo "Possible problem with ex26_2, diffs above"; fi; \
+	   ${RM} -f ex26_2.tmp
 
 TESTEXAMPLES_1  = ex1.PETSc ex1.rm \
                   ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
-		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc ex19.rm \
+		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19_2 ex19.rm \
                   ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm
 TESTEXAMPLES_2  = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_3  = ex5f.PETSc runex5f ex5f.rm

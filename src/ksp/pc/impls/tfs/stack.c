@@ -5,9 +5,9 @@ File: stack.c
   This file implements the stack abstraction via a linked list ...
 *****************************************************************************/ 
 #include <stdio.h>
+#include "const.h"
 #include "stack.h"
 #include "error.h"
-#include "bss_malloc.h"
 
 
 /******************************************************************************
@@ -41,7 +41,7 @@ stack_ADT new_stack(void)
   stack_ADT s;
 
 
-  s = (stack_ADT) bss_malloc(sizeof(struct stack_CDT));
+  s = (stack_ADT) malloc(sizeof(struct stack_CDT));
   s->len = 0;
   s->top = NULL;
   return(s);
@@ -62,35 +62,15 @@ void free_stack(stack_ADT s)
 {
   struct node *hold, *rremove;
 
-#ifdef DEBUG
-  if (!s->len)
-    {
-      if (s->top)
-	{error_msg_fatal("free_stack() :: len=0 but top NULL?");}
-    }
-
-  if (s->len)
-    {
-      if (!s->top)
-	{error_msg_fatal("free_stack() :: len!=0 but top is NULL?");}
-    }
-#endif
-
-#ifdef INFO
-  /* could be destroying the only pointer to prev malloced space!!! */
-  if (s->len)
-    {error_msg_warning("free_stack() :: prev malloced space?");}
-#endif
-
   /* should use while (s->len--) {pop();} but why waste the fct calls */
   hold = s->top;
   while ((rremove = hold))
     {
       hold = hold->next;
-      bss_free(rremove);
+      free(rremove);
     }
 
-  bss_free(s);
+  free(s);
 }
 
 
@@ -108,7 +88,7 @@ void push(stack_ADT s, void *obj)
   struct node *new_node;
 
 
-  new_node = (struct node *) bss_malloc(sizeof(struct node));
+  new_node = (struct node *) malloc(sizeof(struct node));
   new_node->next = s->top;
   new_node->obj  = obj;
 
@@ -139,13 +119,8 @@ void *pop(stack_ADT s)
   hold = s->top;
   s->top = s->top->next;
 
-#ifdef DEBUG
-  if (!hold) 
-    {error_msg_fatal("pop :: len > 0 but head NULL?");}
-#endif
-
   obj = hold->obj;
-  bss_free(hold);
+  free(hold);
   return(obj);
 }
 
