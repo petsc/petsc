@@ -1,5 +1,5 @@
 !
-!    "$Id: ex5.F,v 1.27 2001/01/19 23:19:43 balay Exp bsmith $";
+!    "$Id: ex5.F,v 1.28 2001/04/10 19:34:20 bsmith Exp balay $";
 !
       program main
 #include "include/finclude/petsc.h"
@@ -12,7 +12,7 @@
       PetscDrawLG       lg
       PetscDrawAxis     axis
       integer           n,i,ierr,x,y,width,height,flg
-      Scalar            xd,yd
+      PetscScalar       xd,yd
 
       n      = 20
       x      = 0

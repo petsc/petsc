@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.16 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex11.c,v 1.17 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests the use of MatZeroRows() for uniprocessor matrices.\n\n";
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat         C; 
   int         i,j,m = 5,n = 5,I,J,ierr;
-  Scalar      v,five = 5.0;
+  PetscScalar v,five = 5.0;
   IS          isrow;
   PetscTruth  keepzeroedrows;
 

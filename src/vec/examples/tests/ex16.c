@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.14 2001/03/23 23:21:30 balay Exp bsmith $*/
+/*$Id: ex16.c,v 1.15 2001/04/10 19:35:02 bsmith Exp balay $*/
 
 static char help[] = "Tests VecSetValuesBlocked() on MPI vectors.\n\n";
 
@@ -10,7 +10,7 @@ static char help[] = "Tests VecSetValuesBlocked() on MPI vectors.\n\n";
 int main(int argc,char **argv)
 {
   int          i,n = 8,ierr,size,rank,bs = 2,indices[2];
-  Scalar       values[4];
+  PetscScalar  values[4];
   Vec          x;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.49 2001/06/21 21:18:51 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.50 2001/08/06 21:17:24 bsmith Exp balay $*/
 
 static char help[] = "This program demonstrates use of the SNES package. Solve systems of\n\
 nonlinear equations in parallel.  This example uses matrix-free Krylov\n\
@@ -115,7 +115,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int     i,j,k,loc,mx,my,mz,ierr,xs,ys,zs,xm,ym,zm,Xm,Ym,Zm,Xs,Ys,Zs,base1;
   double  one = 1.0,lambda,temp1,temp,Hx,Hy;
-  Scalar  *x;
+  PetscScalar  *x;
   Vec     localX = user->localX;
 
   mx	 = user->mx; my	 = user->my; mz = user->mz; lambda = user->param;
@@ -154,7 +154,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   int     ierr,i,j,k,loc,mx,my,mz,xs,ys,zs,xm,ym,zm,Xs,Ys,Zs,Xm,Ym,Zm;
   int     base1,base2;
   double  two = 2.0,one = 1.0,lambda,Hx,Hy,Hz,HxHzdHy,HyHzdHx,HxHydHz;
-  Scalar  u,uxx,uyy,sc,*x,*f,uzz;
+  PetscScalar  u,uxx,uyy,sc,*x,*f,uzz;
   Vec     localX = user->localX,localF = user->localF; 
 
   mx      = user->mx; my = user->my; mz = user->mz; lambda = user->param;

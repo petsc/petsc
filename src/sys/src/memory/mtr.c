@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.155 2001/07/20 15:26:46 bsmith Exp bsmith $*/
+/*$Id: mtr.c,v 1.156 2001/08/06 21:14:03 bsmith Exp balay $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -14,7 +14,7 @@
 
 
 /*
-     These are defined in mal.c and ensure that malloced space is Scalar aligned
+     These are defined in mal.c and ensure that malloced space is PetscScalar aligned
 */
 EXTERN int   PetscMallocAlign(int,int,char*,char*,char*,void**);
 EXTERN int   PetscFreeAlign(void*,int,char*,char*,char*);

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.24 2001/03/22 20:32:01 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.25 2001/03/23 23:24:25 balay Exp balay $*/
 
 static char help[] = "Newton's method to solve a two-variable system, sequentially.\n\n";
 
@@ -30,15 +30,15 @@ extern int FormFunction2(SNES,Vec,Vec,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES       snes;         /* nonlinear solver context */
-  SLES       sles;         /* linear solver context */
-  PC         pc;           /* preconditioner context */
-  KSP        ksp;          /* Krylov subspace method context */
-  Vec        x,r;         /* solution, residual vectors */
-  Mat        J;            /* Jacobian matrix */
-  int        ierr,its,size;
-  Scalar     pfive = .5,*xx;
-  PetscTruth flg;
+  SNES         snes;         /* nonlinear solver context */
+  SLES         sles;         /* linear solver context */
+  PC           pc;           /* preconditioner context */
+  KSP          ksp;          /* Krylov subspace method context */
+  Vec          x,r;         /* solution, residual vectors */
+  Mat          J;            /* Jacobian matrix */
+  int          ierr,its,size;
+  PetscScalar  pfive = .5,*xx;
+  PetscTruth   flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ int main(int argc,char **argv)
 int FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
 {
   int    ierr;
-  Scalar *xx,*ff;
+  PetscScalar *xx,*ff;
 
   /*
      Get pointers to vector data.
@@ -205,7 +205,7 @@ int FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
 */
 int FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
-  Scalar *xx,A[4];
+  PetscScalar *xx,A[4];
   int    ierr,idx[2] = {0,1};
 
   /*
@@ -244,7 +244,7 @@ int FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy
 int FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
 {
   int    ierr;
-  Scalar *xx,*ff;
+  PetscScalar *xx,*ff;
 
   /*
      Get pointers to vector data.
@@ -275,7 +275,7 @@ int FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
 #define __FUNCT__ "FormJacobian2"
 int FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
-  Scalar *xx,A[4];
+  PetscScalar *xx,A[4];
   int    ierr,idx[2] = {0,1};
 
   /*

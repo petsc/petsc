@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.31 2001/01/17 22:26:26 bsmith Exp balay $";
+! "$Id: ex1f.F,v 1.32 2001/04/06 19:54:59 balay Exp balay $";
 !
 !/*T
 !  Concepts: SNES^basic uniprocessor example
@@ -59,7 +59,7 @@
       Vec      x,r
       Mat      J
       integer  ierr,its,size,rank
-      Scalar   pfive
+      PetscScalar   pfive
       double precision   tol
       PetscTruth  setls
 
@@ -210,7 +210,7 @@
 
 !  Declarations for use with local arrays
 
-      Scalar       lx_v(1),lf_v(1)
+      PetscScalar  lx_v(1),lf_v(1)
       PetscOffset  lx_i,lf_i 
 
 !  Get pointers to vector data.
@@ -266,12 +266,12 @@
       Vec          X
       Mat          jac,B
       MatStructure flag
-      Scalar       A(4)
+      PetscScalar  A(4)
       integer      ierr,idx(2),dummy(*)
 
 !  Declarations for use with local arrays
 
-      Scalar      lx_v(1)
+      PetscScalar lx_v(1)
       PetscOffset lx_i
 
 !  Get pointer to vector data
@@ -316,13 +316,13 @@
 #include "include/finclude/petscsles.h"
 #include "include/finclude/petscsnes.h"
 
-      SNES    snes
-      integer lctx
-      Vec     x, f,g, y, w
+      SNES              snes
+      integer           lctx
+      Vec               x, f,g, y, w
       double  precision fnorm,ynorm,gnorm
-      integer flag,ierr
+      integer           flag,ierr
 
-      Scalar     mone
+      PetscScalar       mone
 
       mone = -1.0d0
       flag = 0

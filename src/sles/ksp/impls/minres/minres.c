@@ -1,4 +1,4 @@
-/*$Id: minres.c,v 1.15 2001/03/23 23:23:48 balay Exp bsmith $*/
+/*$Id: minres.c,v 1.16 2001/06/21 21:18:24 bsmith Exp balay $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
@@ -37,8 +37,8 @@ int KSPSetUp_MINRES(KSP ksp)
 int  KSPSolve_MINRES(KSP ksp,int *its)
 {
   int          ierr,i,maxit;
-  Scalar       alpha,malpha,beta,mbeta,ibeta,betaold,eta,c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
-  Scalar       rho0,rho1,irho1,rho2,mrho2,rho3,mrho3,mone = -1.0,zero = 0.0,dp = 0.0;
+  PetscScalar  alpha,malpha,beta,mbeta,ibeta,betaold,eta,c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
+  PetscScalar  rho0,rho1,irho1,rho2,mrho2,rho3,mrho3,mone = -1.0,zero = 0.0,dp = 0.0;
   PetscReal    np;
   Vec          X,B,R,Z,U,V,W,UOLD,VOLD,WOLD,WOOLD;
   Mat          Amat,Pmat;

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.70 2001/06/21 21:18:25 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.71 2001/08/06 21:16:51 bsmith Exp balay $*/
 
 static char help[] = "This example solves a linear system in parallel with SLES.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
@@ -34,7 +34,7 @@ int main(int argc,char **args)
 {
   Mat         C; 
   int         i,m = 5,rank,size,N,start,end,M,its;
-  Scalar      val,zero = 0.0,one = 1.0,none = -1.0,Ke[16],r[4];
+  PetscScalar val,zero = 0.0,one = 1.0,none = -1.0,Ke[16],r[4];
   double      x,y,h,norm;
   int         ierr,idx[4],count,*rows;
   Vec         u,ustar,b;

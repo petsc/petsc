@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.139 2001/07/05 15:28:29 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.140 2001/08/06 21:17:42 bsmith Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -252,7 +252,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
 {
   int     i,j,Mx,My,ierr,xs,ys,xm,ym;
   double  lambda,temp1,temp,hx,hy;
-  Scalar  **x;
+  PetscScalar  **x;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -322,7 +322,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   AppCtx  *user = (AppCtx*)ptr;
   int     ierr,i,j,Mx,My,xs,ys,xm,ym;
   double  two = 2.0,lambda,hx,hy,hxdhy,hydhx,sc;
-  Scalar  u,uxx,uyy,**x,**f;
+  PetscScalar  u,uxx,uyy,**x,**f;
   Vec     localX;
 
   PetscFunctionBegin;
@@ -395,7 +395,7 @@ int FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *
 {
   int     ierr,i,j;
   double  two = 2.0,lambda,hx,hy,hxdhy,hydhx,sc;
-  Scalar  u,uxx,uyy;
+  PetscScalar  u,uxx,uyy;
 
   PetscFunctionBegin;
 
@@ -443,13 +443,13 @@ int FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *
 */
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx     *user = (AppCtx*)ptr;  /* user-defined application context */
-  Mat        jac = *B;                /* Jacobian matrix */
-  Vec        localX;
-  int        ierr,i,j;
-  MatStencil col[5],row;
-  int        xs,ys,xm,ym,Mx,My;
-  Scalar     lambda,v[5],hx,hy,hxdhy,hydhx,sc,**x;
+  AppCtx       *user = (AppCtx*)ptr;  /* user-defined application context */
+  Mat          jac = *B;                /* Jacobian matrix */
+  Vec          localX;
+  int          ierr,i,j;
+  MatStencil   col[5],row;
+  int          xs,ys,xm,ym,Mx,My;
+  PetscScalar  lambda,v[5],hx,hy,hxdhy,hydhx,sc,**x;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(user->da,&localX);CHKERRQ(ierr);
@@ -569,9 +569,9 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 */
 int FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
 {
-  int        ierr,i,j;
-  MatStencil col[5],row;
-  Scalar     lambda,v[5],hx,hy,hxdhy,hydhx,sc;
+  int          ierr,i,j;
+  MatStencil   col[5],row;
+  PetscScalar  lambda,v[5],hx,hy,hxdhy,hydhx,sc;
 
   PetscFunctionBegin;
   lambda = user->param;

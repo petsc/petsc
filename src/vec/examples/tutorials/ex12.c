@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.15 2001/01/23 20:54:12 balay Exp balay $*/
+/*$Id: ex12.c,v 1.16 2001/03/23 23:21:37 balay Exp balay $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -24,7 +24,7 @@ int main(int argc,char **argv)
 {
   Vec      v,s;               /* vectors */
   int      n = 20,ierr;
-  Scalar   one = 1.0;
+  PetscScalar   one = 1.0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

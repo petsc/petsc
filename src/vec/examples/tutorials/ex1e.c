@@ -1,4 +1,4 @@
-/*$Id: ex1e.c,v 1.9 2001/01/23 20:54:12 balay Exp balay $*/
+/*$Id: ex1e.c,v 1.10 2001/03/23 23:21:37 balay Exp balay $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -28,12 +28,12 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Vec        x, y, w;               /* vectors */
-  Vec        *z;                    /* array of vectors */
-  double     norm, v, v1, v2;
-  int        n = 20;
-  PetscTruth flg;
-  Scalar     one = 1.0, two = 2.0, three = 3.0, dots[3], dot;
+  Vec         x, y, w;               /* vectors */
+  Vec         *z;                    /* array of vectors */
+  double      norm, v, v1, v2;
+  int         n = 20;
+  PetscTruth  flg;
+  PetscScalar one = 1.0, two = 2.0, three = 3.0, dots[3], dot;
 
 _ PetscInitialize(&argc,&argv,(char*)0,help);___
 _ PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);___

@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.8 2001/01/23 20:56:41 balay Exp balay $*/
+/*$Id: ex23.c,v 1.9 2001/03/23 23:23:55 balay Exp balay $*/
 
 /* Program usage:  mpirun ex23 [-help] [all PETSc options] */
 
@@ -32,7 +32,7 @@ int main(int argc,char **args)
   KSP     ksp;          /* Krylov subspace method context */
   double  norm;         /* norm of solution error */
   int     ierr,i,n = 10,col[3],its,rstart,rend,nlocal;
-  Scalar  neg_one = -1.0,one = 1.0,value[3];
+  PetscScalar  neg_one = -1.0,one = 1.0,value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

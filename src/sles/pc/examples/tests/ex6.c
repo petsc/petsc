@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.16 2001/04/10 19:36:22 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.17 2001/08/06 21:16:37 bsmith Exp balay $*/
 
 static char help[] = "Creates a matrix using 9 pt stensil, and uses it to test MatIncreaseOverlap (needed for aditive schwarts preconditioner. \n\
   -m <size>       : problem size\n\
@@ -30,7 +30,7 @@ int main(int argc,char **args)
 {
   Mat         C; 
   int         i,m = 2,N,M,ierr,idx[4],Nsub1,Nsub2,ol=1,x1,x2;
-  Scalar      Ke[16];
+  PetscScalar Ke[16];
   double      x,y,h;
   IS          *is1,*is2;
   PetscTruth  flg;

@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.69 2001/06/21 21:19:01 bsmith Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.70 2001/08/06 21:18:13 bsmith Exp balay $*/
 
 #include "petsc.h"
 /*
@@ -28,7 +28,7 @@ int TSPrecond_PVode(integer N,real tn,N_Vector y,N_Vector fy,boole jok,
   int          ierr;
   Mat          Jac = ts->B;
   Vec          tmpy = cvode->w1;
-  Scalar       one = 1.0,gm;
+  PetscScalar  one = 1.0,gm;
   MatStructure str = DIFFERENT_NONZERO_PATTERN;
   
   PetscFunctionBegin;

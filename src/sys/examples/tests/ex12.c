@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.16 2001/01/23 20:53:32 balay Exp balay $*/
+/*$Id: ex12.c,v 1.17 2001/03/23 23:20:59 balay Exp balay $*/
 
 static char help[] = "Tests timing PetscSortInt().\n\n";
 
@@ -11,7 +11,7 @@ int main(int argc,char **argv)
 {
   int         ierr,i,n = 1000,*values,event;
   PetscRandom rand;
-  Scalar      value;
+  PetscScalar value;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

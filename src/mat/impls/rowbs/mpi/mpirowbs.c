@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.c,v 2.6 2001/07/20 21:20:14 bsmith Exp bsmith $*/
+/* $Id: mpirowbs.c,v 2.7 2001/08/06 21:15:29 bsmith Exp balay $*/
 
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 #include "src/vec/vecimpl.h"
@@ -47,7 +47,7 @@ int MatScale_MPIRowbs(PetscScalar *alphain,Mat inA)
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)inA->data;
   BSspmat      *A = a->A;
   BSsprow      *vs;
-  PetscScalar       *ap,alpha = *alphain;
+  PetscScalar  *ap,alpha = *alphain;
   int          i,m = inA->m,nrow,j;
 
   PetscFunctionBegin;
@@ -137,7 +137,7 @@ static int MatSetValues_MPIRowbs_local(Mat AA,int m,int *im,int n,int *in,PetscS
   BSsprow      *vs;
   int          *rp,k,a,b,t,ii,row,nrow,i,col,l,rmax,ierr;
   int          *imax = mat->imax,nonew = mat->nonew,sorted = mat->sorted;
-  PetscScalar       *ap,value;
+  PetscScalar  *ap,value;
 
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over added rows */
@@ -292,7 +292,7 @@ static int MatNorm_MPIRowbs_local(Mat A,NormType type,PetscReal *norm)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs*)A->data;
   BSsprow      *vs,**rs;
-  PetscScalar       *xv;
+  PetscScalar  *xv;
   PetscReal    sum = 0.0;
   int          *xi,nz,i,j,ierr;
 
@@ -480,7 +480,7 @@ static int MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
   BSsprow      **rs = A->rows;
   MPI_Comm     comm = mat->comm;
   MPI_Status   status;
-  PetscScalar       *vals;
+  PetscScalar  *vals;
   MatInfo      info;
 
   PetscFunctionBegin;
@@ -636,7 +636,7 @@ static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
   int          size,rank,M,rstart,tag,i,j,*rtable,*w1,*w2,*w3,*w4,len,proc,nrqs;
   int          msz,*pa,bsz,nrqr,**rbuf1,**sbuf1,**ptr,*tmp,*ctr,col,index,row;
   int          ctr_j,*sbuf1_j,k,ierr;
-  PetscScalar       val=0.0;
+  PetscScalar  val=0.0;
   MPI_Comm     comm;
   MPI_Request  *s_waits1,*r_waits1;
   MPI_Status   *s_status,*r_status;
@@ -848,7 +848,7 @@ int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat mat)
 { 
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   int          ierr,ldim,low,high,i;
-  PetscScalar       *diag;
+  PetscScalar  *diag;
 
   PetscFunctionBegin;
   if ((mat->was_assembled) && (!mat->same_nonzero)) {  /* Free the old info */
@@ -898,7 +898,7 @@ int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   int          i,n,row,col,*rows,*cols,ierr,rstart,nzcount,flg,j,ncols;
-  PetscScalar       *vals,val;
+  PetscScalar  *vals,val;
   InsertMode   addv = mat->insertmode;
 
   PetscFunctionBegin;
@@ -1095,7 +1095,7 @@ int MatNorm_MPIRowbs(Mat mat,NormType type,PetscReal *norm)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   BSsprow      *vs,**rs;
-  PetscScalar       *xv;
+  PetscScalar  *xv;
   PetscReal    sum = 0.0;
   int          *xi,nz,i,j,ierr;
 
@@ -1167,7 +1167,7 @@ int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs*)mat->data;
   BSprocinfo   *bspinfo = bsif->procinfo;
-  PetscScalar       *xxa,*xworka,*yya;
+  PetscScalar  *xxa,*xworka,*yya;
   int          ierr;
 
   PetscFunctionBegin;
@@ -1229,7 +1229,7 @@ int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 #define __FUNCT__ "MatMultAdd_MPIRowbs"
 int MatMultAdd_MPIRowbs(Mat mat,Vec xx,Vec yy,Vec zz)
 {
-  int     ierr;
+  int          ierr;
   PetscScalar  one = 1.0;
 
   PetscFunctionBegin;
@@ -1287,7 +1287,7 @@ int MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   BSsprow      **rs = a->A->rows;
   int          i,n,ierr;
-  PetscScalar       *x,zero = 0.0;
+  PetscScalar  *x,zero = 0.0;
 
   PetscFunctionBegin;
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
@@ -1745,7 +1745,7 @@ int MatLoad_MPIRowbs(PetscViewer viewer,MatType type,Mat *newmat)
   Mat          mat;
   int          i,nz,ierr,j,rstart,rend,fd,*ourlens,*sndcounts = 0,*procsnz;
   int          header[4],rank,size,*rowlengths = 0,M,m,*rowners,maxnz,*cols;
-  PetscScalar       *vals;
+  PetscScalar  *vals;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
 

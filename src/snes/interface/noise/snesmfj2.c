@@ -1,4 +1,4 @@
-/*$Id: snesmfj2.c,v 1.32 2001/03/28 19:42:18 balay Exp bsmith $*/
+/*$Id: snesmfj2.c,v 1.33 2001/08/06 21:17:10 bsmith Exp balay $*/
 
 #include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 
@@ -84,7 +84,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   MFCtx_Private *ctx;
   SNES          snes;
   PetscReal     h,norm,sum,umin,noise;
-  Scalar        hs,dot,mone = -1.0;
+  PetscScalar   hs,dot,mone = -1.0;
   Vec           w,U,F;
   int           ierr,iter,(*eval_fct)(SNES,Vec,Vec);
   MPI_Comm      comm;

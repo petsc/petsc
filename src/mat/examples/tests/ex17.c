@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.18 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex17.c,v 1.19 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat     C,A;
   int     i,j,m = 5,n = 5,I,J,ierr;
-  Scalar  v,five = 5.0,one = 1.0,mone = -1.0;
+  PetscScalar  v,five = 5.0,one = 1.0,mone = -1.0;
   IS      isrow,row,col;
   Vec     x,u,b;
   double  norm;

@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.21 2001/03/23 23:21:30 balay Exp bsmith $*/
+/*$Id: ex22.c,v 1.22 2001/08/06 21:14:55 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a parallel vector.\n\n";
 
@@ -11,7 +11,7 @@ int main(int argc,char **argv)
 {
   int           n = 5,ierr;
   int           size,rank,N;
-  Scalar        value,zero = 0.0;
+  PetscScalar   value,zero = 0.0;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesnoise.c,v 1.4 2001/03/23 23:24:10 balay Exp bsmith $";
+static char vcid[] = "$Id: snesnoise.c,v 1.5 2001/08/06 21:17:10 bsmith Exp balay $";
 #endif
 
 
@@ -241,7 +241,7 @@ int JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   double       h;        /* differencing parameter */
   Vec          f;
   MatStructure sparsity = DIFFERENT_NONZERO_PATTERN;
-  Scalar       alpha, yy1n, yy2n, enorm;
+  PetscScalar  alpha, yy1n, yy2n, enorm;
   int          i, ierr, printv;
   char         filename[32];
   MPI_Comm     comm = snes->comm;

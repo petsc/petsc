@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.7 2001/03/23 23:25:33 balay Exp bsmith $*/
+/*$Id: appview.c,v 1.8 2001/08/06 21:18:54 bsmith Exp balay $*/
 
 
 /*
@@ -210,7 +210,7 @@ int AppCtxViewSolution(PetscDraw idraw,void *iappctx)
   PetscDraw                   drawglobal = appctx->view.drawglobal,popup;
   double                 x0,x1,x2,y_0,y_1,y2,vmin,vmax;
   int                    c0,c1,c2;
-  Scalar                 *values;
+  PetscScalar            *values;
 
   ierr = PetscDrawCheckResizedWindow(drawglobal);CHKERRQ(ierr);
 

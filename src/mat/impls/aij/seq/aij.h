@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.44 2001/06/21 21:16:21 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.45 2001/08/06 21:15:14 bsmith Exp balay $ */
 
 #include "src/mat/matimpl.h"
 
@@ -36,9 +36,9 @@ typedef struct {
   int              *imax;            /* maximum space allocated for each row */
   int              *ilen;            /* actual length of each row */
   int              *j;               /* column values: j + i[k] - 1 is start of row k */
-  Scalar           *a;               /* nonzero elements */
+  PetscScalar      *a;               /* nonzero elements */
   IS               row,col,icol;   /* index sets, used for reorderings */
-  Scalar           *solve_work;      /* work space used in MatSolve */
+  PetscScalar      *solve_work;      /* work space used in MatSolve */
   void             *spptr;           /* pointer for special library like SuperLU */
   int              indexshift;       /* zero or -one for C or Fortran indexing */
   Mat_SeqAIJ_Inode inode;            /* identical node informaton */
@@ -50,8 +50,8 @@ typedef struct {
   PetscTruth       lu_damp;
   PetscReal        lu_damping;
   PetscReal        lu_zeropivot;
-  Scalar           *saved_values;    /* location for stashing nonzero values of matrix */
-  Scalar           *idiag,*ssor;     /* inverse of diagonal entries; space for eisen */
+  PetscScalar      *saved_values;    /* location for stashing nonzero values of matrix */
+  PetscScalar      *idiag,*ssor;     /* inverse of diagonal entries; space for eisen */
 
   PetscTruth       keepzeroedrows;   /* keeps matrix structure same in calls to MatZeroRows()*/
   PetscTruth       ignorezeroentries;

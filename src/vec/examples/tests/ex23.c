@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.17 2001/03/23 23:21:30 balay Exp bsmith $*/
+/*$Id: ex23.c,v 1.18 2001/04/10 19:35:02 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
   Using a blocked send and a strided receive.\n\n";
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
 {
   int           ierr,i;
   int           size,rank,blocks[2],nlocal;
-  Scalar        value;
+  PetscScalar   value;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;

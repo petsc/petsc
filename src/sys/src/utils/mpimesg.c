@@ -1,4 +1,4 @@
-/*$Id: mpimesg.c,v 1.12 2001/03/23 23:20:45 balay Exp bsmith $*/
+/*$Id: mpimesg.c,v 1.13 2001/08/06 21:14:16 bsmith Exp balay $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
@@ -191,7 +191,7 @@ int PetscPostIrecvInt(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths
 int PetscPostIrecvScalar(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths,PetscScalar ***rbuf,MPI_Request **r_waits)
 {
   int         len=0,i,ierr;
-  PetscScalar      **rbuf_t;
+  PetscScalar **rbuf_t;
   MPI_Request *r_waits_t;
 
   PetscFunctionBegin;

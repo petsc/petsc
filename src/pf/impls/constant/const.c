@@ -1,4 +1,4 @@
-/*$Id: const.c,v 1.18 2001/03/28 22:21:18 balay Exp bsmith $*/
+/*$Id: const.c,v 1.19 2001/08/06 21:19:09 bsmith Exp balay $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 #undef __FUNCT__  
@@ -6,7 +6,7 @@
 int PFApply_Constant(void *value,int n,PetscScalar *x,PetscScalar *y)
 {
   int    i;
-  Scalar v = ((PetscScalar*)value)[0];
+  PetscScalar v = ((PetscScalar*)value)[0];
 
   PetscFunctionBegin;
   n *= (int) PetscRealPart(((PetscScalar*)value)[1]);
@@ -57,8 +57,8 @@ int PFDestroy_Constant(void *value)
 #define __FUNCT__ "PFSetFromOptions_Constant"
 int PFSetFromOptions_Constant(PF pf)
 {
-  int        ierr;
-  Scalar     *value = (PetscScalar *)pf->data;
+  int          ierr;
+  PetscScalar  *value = (PetscScalar *)pf->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Constant function options");CHKERRQ(ierr);
@@ -73,7 +73,7 @@ EXTERN_C_BEGIN
 int PFCreate_Constant(PF pf,void *value)
 {
   int    ierr;
-  Scalar *loc;
+  PetscScalar *loc;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(2*sizeof(PetscScalar),&loc);CHKERRQ(ierr);

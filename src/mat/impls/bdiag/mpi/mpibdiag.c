@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.202 2001/07/20 21:20:20 bsmith Exp bsmith $*/
+/*$Id: mpibdiag.c,v 1.203 2001/08/06 21:15:35 bsmith Exp balay $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -97,7 +97,7 @@ int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   Mat_SeqBDiag *mlocal;
   int          i,n,*row,*col;
   int          *tmp1,*tmp2,ierr,len,ict,Mblock,Nblock,flg,j,rstart,ncols;
-  PetscScalar       *val;
+  PetscScalar  *val;
   InsertMode   addv = mat->insertmode;
 
   PetscFunctionBegin;
@@ -345,7 +345,7 @@ int MatMultTranspose_MPIBDiag(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag*)A->data;
   int          ierr;
-  PetscScalar       zero = 0.0;
+  PetscScalar  zero = 0.0;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,yy);CHKERRQ(ierr);
@@ -517,7 +517,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
     /* assemble the entire matrix onto first processor. */
     Mat          A;
     int          M = mat->M,N = mat->N,m,row,nz,*cols;
-    PetscScalar       *vals;
+    PetscScalar  *vals;
     Mat_SeqBDiag *Ambd = (Mat_SeqBDiag*)mbd->A->data;
 
     if (!rank) {
@@ -661,7 +661,7 @@ int MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *norm)
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)mbd->A->data;
   PetscReal    sum = 0.0;
   int          ierr,d,i,nd = a->nd,bs = a->bs,len;
-  PetscScalar       *dv;
+  PetscScalar  *dv;
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
@@ -923,7 +923,7 @@ int MatMPIBDiagSetPreallocation(Mat B,int nd,int bs,int *diag,PetscScalar **diag
 {
   Mat_MPIBDiag *b;
   int          ierr,i,k,*ldiag,len,nd2;
-  PetscScalar       **ldiagv = 0;
+  PetscScalar  **ldiagv = 0;
   PetscTruth   flg2;
 
   PetscFunctionBegin;
@@ -1158,7 +1158,7 @@ EXTERN_C_BEGIN
 int MatLoad_MPIBDiag(PetscViewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;
-  PetscScalar       *vals,*svals;
+  PetscScalar  *vals,*svals;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
   int          bs,i,nz,ierr,j,rstart,rend,fd,*rowners,maxnz,*cols;

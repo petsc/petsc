@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.3 2001/04/14 03:58:23 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.4 2001/06/21 21:19:03 bsmith Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -137,7 +137,7 @@ int FormFunction(TS ts,double time,Vec X,Vec F,void *ptr)
   DA      da = (DA)ptr;
   int     ierr,i,j,Mx,My,xs,ys,xm,ym;
   double  two = 2.0,hx,hy,hxdhy,hydhx,sx,sy;
-  Scalar  u,uxx,uyy,**x,**f;
+  PetscScalar  u,uxx,uyy,**x,**f;
   Vec     localX;
 
   PetscFunctionBegin;
@@ -204,7 +204,7 @@ int FormFunction(TS ts,double time,Vec X,Vec F,void *ptr)
 int FormInitialSolution(DA da,Vec U)
 {
   int     ierr,i,j,xs,ys,xm,ym,Mx,My;
-  Scalar  **u;
+  PetscScalar  **u;
   double  hx,hy,x,y,r;
 
   PetscFunctionBegin;

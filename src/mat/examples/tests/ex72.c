@@ -1,4 +1,4 @@
-/*$Id: ex72.c,v 1.16 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex72.c,v 1.17 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -18,7 +18,7 @@ int main(int argc,char **args)
   Vec         b;
   char        filein[128],fileout[128],buf[128];
   int         i,m,n,nnz,ierr,size,col,row;
-  Scalar      val;
+  PetscScalar val;
   FILE*       file;
   PetscViewer view;
   PetscRandom r;

@@ -1,4 +1,4 @@
-/*$Id: ex25.c,v 1.15 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex25.c,v 1.16 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Tests MatTranspose()\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests MatTranspose()\n\n";
 int main(int argc,char **args)
 {
   Mat     C,A; 
-  Scalar  v;
+  PetscScalar  v;
   int     i,j,m = 4,n = 4,rank,size,I,J,ierr,Istart,Iend;
 
   PetscInitialize(&argc,&args,(char *)0,help);

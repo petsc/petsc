@@ -1,4 +1,4 @@
-/*$Id: iterativ.c,v 1.106 2001/07/04 02:54:29 bsmith Exp bsmith $*/
+/*$Id: iterativ.c,v 1.107 2001/07/13 15:45:32 bsmith Exp balay $*/
 
 /*
    This file contains some simple default routines.  
@@ -466,7 +466,7 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   int          ierr;
   MatStructure pflag;
   Vec          T;
-  Scalar       mone = -1.0;
+  PetscScalar  mone = -1.0;
   Mat          Amat,Pmat;
 
   PetscFunctionBegin;

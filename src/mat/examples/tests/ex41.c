@@ -1,4 +1,4 @@
-/*$Id: ex41.c,v 1.23 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex41.c,v 1.24 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Tests MatIncreaseOverlap() - the parallel case. This example\n\
 is similar to ex40.c; here the index sets used are random. Input arguments are:\n\
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PetscViewer fd;
   IS          *is1,*is2;
   PetscRandom r;
-  Scalar      rand;
+  PetscScalar rand;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 #if defined(PETSC_USE_COMPLEX)

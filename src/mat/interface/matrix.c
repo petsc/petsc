@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.409 2001/07/31 03:47:39 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.410 2001/08/06 21:15:07 bsmith Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3494,7 +3494,7 @@ int MatICCFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat *fact)
    This routine is used differently from Fortran, e.g.,
 .vb
         Mat         mat
-        PetscScalar      mat_array(1)
+        PetscScalar mat_array(1)
         PetscOffset i_mat
         int         ierr
         call MatGetArray(mat,mat_array,i_mat,ierr)
@@ -3545,7 +3545,7 @@ int MatGetArray(Mat mat,PetscScalar **v)
    This routine is used differently from Fortran, e.g.,
 .vb
         Mat         mat
-        PetscScalar      mat_array(1)
+        PetscScalar mat_array(1)
         PetscOffset i_mat
         int         ierr
         call MatGetArray(mat,mat_array,i_mat,ierr)

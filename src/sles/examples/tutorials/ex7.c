@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.55 2001/03/23 23:23:55 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.56 2001/04/10 19:36:40 bsmith Exp balay $*/
 
 static char help[] = "Block Jacobi preconditioner for solving a linear system in parallel with SLES.\n\
 The code indicates the\n\
@@ -33,18 +33,18 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec        x,b,u;      /* approx solution, RHS, exact solution */
-  Mat        A;            /* linear system matrix */
-  SLES       sles;         /* SLES context */
-  SLES       *subsles;     /* array of local SLES contexts on this processor */
-  PC         pc;           /* PC context */
-  PC         subpc;        /* PC context for subdomain */
-  KSP        subksp;       /* KSP context for subdomain */
-  double     norm;         /* norm of solution error */
-  int        i,j,I,J,ierr,*blks,m = 8,n;
-  int        rank,size,its,nlocal,first,Istart,Iend;
-  Scalar     v,one = 1.0,none = -1.0;
-  PetscTruth isbjacobi,flg;
+  Vec          x,b,u;      /* approx solution, RHS, exact solution */
+  Mat          A;            /* linear system matrix */
+  SLES         sles;         /* SLES context */
+  SLES         *subsles;     /* array of local SLES contexts on this processor */
+  PC           pc;           /* PC context */
+  PC           subpc;        /* PC context for subdomain */
+  KSP          subksp;       /* KSP context for subdomain */
+  double       norm;         /* norm of solution error */
+  int          i,j,I,J,ierr,*blks,m = 8,n;
+  int          rank,size,its,nlocal,first,Istart,Iend;
+  PetscScalar  v,one = 1.0,none = -1.0;
+  PetscTruth   isbjacobi,flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

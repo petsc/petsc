@@ -1,5 +1,5 @@
 !
-! "$Id: ex11f.F,v 1.8 2000/09/27 20:14:32 bsmith Exp bsmith $";
+! "$Id: ex11f.F,v 1.9 2001/01/15 21:45:20 bsmith Exp balay $";
 !
 !
 ! Program usage:  mpirun ex1 [-help] [all PETSc options] 
@@ -30,7 +30,7 @@
       Vec      x
       double precision  norm
       integer           n,ierr,flg,rank
-      Scalar            one
+      PetscScalar       one
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)

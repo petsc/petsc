@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.13 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex24.c,v 1.14 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests copying an AIJ matrix.\n\n";
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat         C,A; 
   int         i,j,m = 5,n = 5,I,J,ierr;
-  Scalar      v;
+  PetscScalar v;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

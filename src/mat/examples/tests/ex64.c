@@ -1,4 +1,4 @@
-/*$Id: ex64.c,v 1.14 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex64.c,v 1.15 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Saves 4by4 block matrix.\n\n";
 
@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Mat         A;
   int         i,j,ierr,size;
   PetscViewer fd;
-  Scalar      values[16],one = 1.0;
+  PetscScalar values[16],one = 1.0;
   Vec         x;
 
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.13 2000/10/24 20:25:21 bsmith Exp bsmith $"
+!    "$Id: ex2f.F,v 1.14 2001/01/15 21:45:20 bsmith Exp balay $"
 !
 !  Description: Builds a parallel vector with 1 component on the first
 !               processor, 2 on the second, etc.  Then each processor adds
@@ -36,7 +36,7 @@
 
       Vec     x
       integer N,ierr,rank,i
-      Scalar  one
+      PetscScalar  one
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one   = 1.0

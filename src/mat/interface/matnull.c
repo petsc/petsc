@@ -1,4 +1,4 @@
-/*$Id: matnull.c,v 1.37 2001/03/23 23:21:44 balay Exp bsmith $*/
+/*$Id: matnull.c,v 1.38 2001/08/06 21:15:07 bsmith Exp balay $*/
 /*
     Routines to project vectors out of null spaces.
 */
@@ -148,12 +148,12 @@ int MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 @*/
 int MatNullSpaceTest(MatNullSpace sp,Mat mat)
 {
-  PetscScalar     sum;
-  PetscReal  nrm;
-  int        j,n = sp->n,N,ierr,m;
-  Vec        l,r;
-  MPI_Comm   comm = sp->comm;
-  PetscTruth flg1,flg2;
+  PetscScalar  sum;
+  PetscReal    nrm;
+  int          j,n = sp->n,N,ierr,m;
+  Vec          l,r;
+  MPI_Comm     comm = sp->comm;
+  PetscTruth   flg1,flg2;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_null_space_test_view",&flg1);CHKERRQ(ierr);

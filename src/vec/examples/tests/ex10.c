@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.17 2001/03/23 23:21:30 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.18 2001/08/06 21:14:55 bsmith Exp balay $*/
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
 uses block index sets\n\n";
@@ -14,7 +14,7 @@ int main(int argc,char **argv)
 {
   int           bs = 1,n = 5,ierr,ix0[3] = {5,7,9},ix1[3] = {2,3,4};
   int           size,rank,i,iy0[3] = {1,2,4},iy1[3] = {0,1,3};
-  Scalar        value;
+  PetscScalar   value;
   Vec           x,y;
   IS            isx,isy;
   VecScatter    ctx = 0,newctx;

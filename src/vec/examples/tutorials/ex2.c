@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.41 2001/03/23 23:21:37 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.42 2001/04/10 19:35:06 bsmith Exp balay $*/
 
 static char help[] = "Builds a parallel vector with 1 component on the firstprocessor, 2 on the second, etc.\n\
   Then each processor adds one to all elements except the last rank.\n\n";
@@ -21,7 +21,7 @@ T*/
 int main(int argc,char **argv)
 {
   int     i,N,ierr,rank;
-  Scalar  one = 1.0;
+  PetscScalar  one = 1.0;
   Vec     x;
 
   PetscInitialize(&argc,&argv,(char *)0,help);

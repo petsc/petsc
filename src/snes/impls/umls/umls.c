@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.109 2001/04/10 19:36:57 bsmith Exp bsmith $*/
+/*$Id: umls.c,v 1.110 2001/08/06 21:17:20 bsmith Exp balay $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
@@ -21,8 +21,8 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
 {
   SNES_UM_LS          *neP = (SNES_UM_LS*)snes->data;
   int                 maxits,success,iters,i,global_dim,ierr,kspmaxit;
-  PetscReal              snorm,*f,*gnorm,two = 2.0,tnorm;
-  Scalar              neg_one = -1.0;
+  PetscReal           snorm,*f,*gnorm,two = 2.0,tnorm;
+  PetscScalar         neg_one = -1.0;
   Vec                 G,X,RHS,S,W;
   SLES                sles;
   KSP                 ksp;
@@ -374,7 +374,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,PetscReal *f,
   PetscReal     dgx,dgy,dg,fx,fy,stx,sty,dgtest,ftest1;
   int        ierr,i,stage1;
 #if defined(PETSC_USE_COMPLEX)
-  Scalar    cdginit,cdg,cstep = 0.0;
+  PetscScalar    cdginit,cdg,cstep = 0.0;
 #endif
 
   PetscFunctionBegin;

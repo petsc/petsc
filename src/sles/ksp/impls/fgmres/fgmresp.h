@@ -1,4 +1,4 @@
-/*$Id: fgmresp.h,v 1.5 2000/08/01 20:57:05 bsmith Exp bsmith $*/
+/*$Id: fgmresp.h,v 1.6 2001/08/06 21:16:49 bsmith Exp balay $*/
 /*
    Private data structure used by the FGMRES method.
 */
@@ -10,18 +10,18 @@
 
   typedef struct {
     /* Hessenberg matrix and orthogonalization information. */ 
-    Scalar *hh_origin;   /* holds hessenburg matrix that has been
+    PetscScalar *hh_origin;   /* holds hessenburg matrix that has been
                             multiplied by plane rotations (upper tri) */
-    Scalar *hes_origin;  /* holds the original (unmodified) hessenberg matrix 
+    PetscScalar *hes_origin;  /* holds the original (unmodified) hessenberg matrix 
                             which may be used to estimate the Singular Values
                             of the matrix */
-    Scalar *cc_origin;   /* holds cosines for rotation matrices */
-    Scalar *ss_origin;   /* holds sines for rotation matrices */
-    Scalar *rs_origin;   /* holds the right-hand-side of the Hessenberg system */
+    PetscScalar *cc_origin;   /* holds cosines for rotation matrices */
+    PetscScalar *ss_origin;   /* holds sines for rotation matrices */
+    PetscScalar *rs_origin;   /* holds the right-hand-side of the Hessenberg system */
 
     /* Work space for computing eigenvalues/singular values */
     PetscReal *Dsvd;
-    Scalar *Rsvd;
+    PetscScalar *Rsvd;
       
     /* parameters */
     PetscReal haptol;            /* tolerance used for the "HAPPY BREAK DOWN"  */
@@ -56,7 +56,7 @@
        process, we need some additional information: */
 
     int    it;              /* Current iteration */
-    Scalar *nrs;            /* temp that holds the coefficients of the 
+    PetscScalar *nrs;            /* temp that holds the coefficients of the 
                                Krylov vectors that form the minimum residual
                                solution */
     Vec    sol_temp;        /* used to hold temporary solution */

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.48 2001/04/10 19:35:06 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.49 2001/08/06 21:15:03 bsmith Exp balay $*/
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of user-defined event logging.\n\n";
 
@@ -13,7 +13,7 @@ static char help[] = "Tests binary I/O of vectors and illustrates the use of use
 int main(int argc,char **args)
 {
   int          i,m = 10,rank,size,low,high,ldim,iglobal,ierr;
-  Scalar       v;
+  PetscScalar  v;
   Vec          u;
   PetscViewer  viewer;
   int          VECTOR_GENERATE,VECTOR_READ;

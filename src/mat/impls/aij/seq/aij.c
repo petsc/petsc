@@ -1,5 +1,5 @@
 
-/*$Id: aij.c,v 1.377 2001/07/20 21:19:42 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.378 2001/08/06 21:15:14 bsmith Exp balay $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -126,13 +126,13 @@ int MatRestoreColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int *
 #define __FUNCT__ "MatSetValues_SeqAIJ"
 int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertMode is)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted = a->sorted;
-  int        *imax = a->imax,*ai = a->i,*ailen = a->ilen;
-  int        *aj = a->j,nonew = a->nonew,shift = a->indexshift,ierr;
-  PetscScalar     *ap,value,*aa = a->a;
-  PetscTruth ignorezeroentries = ((a->ignorezeroentries && is == ADD_VALUES) ? PETSC_TRUE:PETSC_FALSE);
-  PetscTruth roworiented = a->roworiented;
+  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;
+  int         *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted = a->sorted;
+  int         *imax = a->imax,*ai = a->i,*ailen = a->ilen;
+  int         *aj = a->j,nonew = a->nonew,shift = a->indexshift,ierr;
+  PetscScalar *ap,value,*aa = a->a;
+  PetscTruth  ignorezeroentries = ((a->ignorezeroentries && is == ADD_VALUES) ? PETSC_TRUE:PETSC_FALSE);
+  PetscTruth  roworiented = a->roworiented;
 
   PetscFunctionBegin;  
   for (k=0; k<m; k++) { /* loop over added rows */
@@ -229,10 +229,10 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertM
 #define __FUNCT__ "MatGetValues_SeqAIJ"
 int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        *rp,k,low,high,t,row,nrow,i,col,l,*aj = a->j;
-  int        *ai = a->i,*ailen = a->ilen,shift = a->indexshift;
-  PetscScalar     *ap,*aa = a->a,zero = 0.0;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  int          *rp,k,low,high,t,row,nrow,i,col,l,*aj = a->j;
+  int          *ai = a->i,*ailen = a->ilen,shift = a->indexshift;
+  PetscScalar  *ap,*aa = a->a,zero = 0.0;
 
   PetscFunctionBegin;  
   for (k=0; k<m; k++) { /* loop over rows */
@@ -603,10 +603,10 @@ EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
 #define __FUNCT__ "MatAssemblyEnd_SeqAIJ"
 int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax,ierr;
-  int        m = A->m,*ip,N,*ailen = a->ilen,shift = a->indexshift,rmax = 0;
-  PetscScalar     *aa = a->a,*ap;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  int          fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax,ierr;
+  int          m = A->m,*ip,N,*ailen = a->ilen,shift = a->indexshift,rmax = 0;
+  PetscScalar  *aa = a->a,*ap;
 
   PetscFunctionBegin;  
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -793,9 +793,9 @@ int MatSetOption_SeqAIJ(Mat A,MatOption op)
 #define __FUNCT__ "MatGetDiagonal_SeqAIJ"
 int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        i,j,n,shift = a->indexshift,ierr;
-  PetscScalar     *x,zero = 0.0;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  int          i,j,n,shift = a->indexshift,ierr;
+  PetscScalar  *x,zero = 0.0;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
@@ -818,9 +818,9 @@ int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 #define __FUNCT__ "MatMultTranspose_SeqAIJ"
 int MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar     *x,*y,*v,alpha,zero = 0.0;
-  int        ierr,m = A->m,n,i,*idx,shift = a->indexshift;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar  *x,*y,*v,alpha,zero = 0.0;
+  int          ierr,m = A->m,n,i,*idx,shift = a->indexshift;
 
   PetscFunctionBegin; 
   ierr = VecSet(&zero,yy);CHKERRQ(ierr);
@@ -844,9 +844,9 @@ int MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMultTransposeAdd_SeqAIJ"
 int MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar     *x,*y,*v,alpha;
-  int        ierr,m = A->m,n,i,*idx,shift = a->indexshift;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar  *x,*y,*v,alpha;
+  int          ierr,m = A->m,n,i,*idx,shift = a->indexshift;
 
   PetscFunctionBegin;
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
@@ -870,11 +870,11 @@ int MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 #define __FUNCT__ "MatMult_SeqAIJ"
 int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar     *x,*y,*v,sum;
-  int        ierr,m = A->m,*idx,shift = a->indexshift,*ii;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar  *x,*y,*v,sum;
+  int          ierr,m = A->m,*idx,shift = a->indexshift,*ii;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
-  int        n,i,jrow,j;
+  int          n,i,jrow,j;
 #endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
@@ -913,11 +913,11 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMultAdd_SeqAIJ"
 int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar     *x,*y,*z,*v,sum;
-  int        ierr,m = A->m,*idx,shift = a->indexshift,*ii;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar  *x,*y,*z,*v,sum;
+  int          ierr,m = A->m,*idx,shift = a->indexshift,*ii;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
-  int        n,i,jrow,j;
+  int          n,i,jrow,j;
 #endif
 
   PetscFunctionBegin;
@@ -1009,9 +1009,9 @@ int MatMissingDiagonal_SeqAIJ(Mat A)
 #define __FUNCT__ "MatRelax_SeqAIJ"
 int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar     *x,*b,*bs, d,*xs,sum,*v = a->a,*t=0,scale,*ts,*xb,*idiag=0;
-  int        ierr,*idx,*diag,n = A->n,m = A->m,i,shift = a->indexshift;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar  *x,*b,*bs, d,*xs,sum,*v = a->a,*t=0,scale,*ts,*xb,*idiag=0;
+  int          ierr,*idx,*diag,n = A->n,m = A->m,i,shift = a->indexshift;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -1349,10 +1349,10 @@ int MatRestoreRow_SeqAIJ(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 #define __FUNCT__ "MatNorm_SeqAIJ"
 int MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *norm)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar     *v = a->a;
-  PetscReal  sum = 0.0;
-  int        i,j,shift = a->indexshift,ierr;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar  *v = a->a;
+  PetscReal    sum = 0.0;
+  int          i,j,shift = a->indexshift,ierr;
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
@@ -1397,11 +1397,11 @@ int MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *norm)
 #define __FUNCT__ "MatTranspose_SeqAIJ"
 int MatTranspose_SeqAIJ(Mat A,Mat *B)
 { 
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  Mat        C;
-  int        i,ierr,*aj = a->j,*ai = a->i,m = A->m,len,*col;
-  int        shift = a->indexshift;
-  PetscScalar     *array = a->a;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  Mat          C;
+  int          i,ierr,*aj = a->j,*ai = a->i,m = A->m,len,*col;
+  int          shift = a->indexshift;
+  PetscScalar  *array = a->a;
 
   PetscFunctionBegin;
   if (!B && m != A->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
@@ -1438,9 +1438,9 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
 #define __FUNCT__ "MatDiagonalScale_SeqAIJ"
 int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar     *l,*r,x,*v;
-  int        ierr,i,j,m = A->m,n = A->n,M,nz = a->nz,*jj,shift = a->indexshift;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar  *l,*r,x,*v;
+  int          ierr,i,j,m = A->m,n = A->n,M,nz = a->nz,*jj,shift = a->indexshift;
 
   PetscFunctionBegin;
   if (ll) {
@@ -1481,7 +1481,7 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatReuse scall,Mat 
   int          row,mat_i,*mat_j,tcol,first,step,*mat_ilen,sum,lensi;
   int          *irow,*icol,nrows,ncols,shift = a->indexshift,*ssmap;
   int          *starts,*j_new,*i_new,*aj = a->j,*ai = a->i,ii,*ailen = a->ilen;
-  PetscScalar       *a_new,*mat_a;
+  PetscScalar  *a_new,*mat_a;
   Mat          C;
   PetscTruth   stride;
 
@@ -1754,11 +1754,11 @@ int MatIncreaseOverlap_SeqAIJ(Mat A,int is_max,IS *is,int ov)
 #define __FUNCT__ "MatPermute_SeqAIJ"
 int MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
 { 
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar     *vwork;
-  int        i,ierr,nz,m = A->m,n = A->n,*cwork;
-  int        *row,*col,*cnew,j,*lens;
-  IS         icolp,irowp;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar  *vwork;
+  int          i,ierr,nz,m = A->m,n = A->n,*cwork;
+  int          *row,*col,*cnew,j,*lens;
+  IS           icolp,irowp;
 
   PetscFunctionBegin;
   ierr = ISInvertPermutation(rowp,PETSC_DECIDE,&irowp);CHKERRQ(ierr);
@@ -1878,8 +1878,8 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
 {
   int           (*f)(void *,Vec,Vec,void*) = (int (*)(void *,Vec,Vec,void *))coloring->f;
   int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow,m1,m2;
-  PetscScalar        dx,mone = -1.0,*y,*xx,*w3_array;
-  PetscScalar        *vscale_array;
+  PetscScalar   dx,mone = -1.0,*y,*xx,*w3_array;
+  PetscScalar   *vscale_array;
   PetscReal     epsilon = coloring->error_rel,umin = coloring->umin; 
   Vec           w1,w2,w3;
   void          *fctx = coloring->fctx;
@@ -2327,7 +2327,7 @@ int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
 {
   int        ierr,i,*ai,*aj;
   Mat        B = (Mat)obj;
-  PetscScalar     *array;
+  PetscScalar*array;
   mxArray    *mat; 
   Mat_SeqAIJ *aij = (Mat_SeqAIJ*)B->data;
 
@@ -2937,7 +2937,7 @@ int MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;  
   int        m = A->m,*ii = a->i,*jj = a->j,nz,i,*color,j,nlen;
-  PetscScalar     *v = a->a,*values;
+  PetscScalar*v = a->a,*values;
   char       *cadvalues = (char *)advalues;
 
   PetscFunctionBegin;
@@ -2973,9 +2973,9 @@ int MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
 #define __FUNCT__ "MatSetValuesAdifor_SeqAIJ"
 int MatSetValuesAdifor_SeqAIJ(Mat A,int nl,void *advalues)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;  
-  int        m = A->m,*ii = a->i,*jj = a->j,nz,i,*color,j;
-  PetscScalar     *v = a->a,*values = (PetscScalar *)advalues;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;  
+  int          m = A->m,*ii = a->i,*jj = a->j,nz,i,*color,j;
+  PetscScalar  *v = a->a,*values = (PetscScalar *)advalues;
 
   PetscFunctionBegin;
   if (!a->coloring) SETERRQ(1,"Coloring not set for matrix");

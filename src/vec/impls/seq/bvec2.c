@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.197 2001/07/20 21:18:14 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.198 2001/08/06 21:14:45 bsmith Exp balay $*/
 /*
    Implements the sequential vectors.
 */
@@ -36,9 +36,9 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 #endif
     PetscLogFlops(2*xin->n-1);
   } else if (type == NORM_INFINITY) {
-    int       i,n = xin->n;
-    PetscReal max = 0.0,tmp;
-    PetscScalar    *xx = x->array;
+    int          i,n = xin->n;
+    PetscReal    max = 0.0,tmp;
+    PetscScalar  *xx = x->array;
 
     for (i=0; i<n; i++) {
       if ((tmp = PetscAbsScalar(*xx)) > max) max = tmp;
@@ -247,9 +247,9 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecSetValues_Seq"
 int VecSetValues_Seq(Vec xin,int ni,const int ix[],const PetscScalar y[],InsertMode m)
 {
-  Vec_Seq  *x = (Vec_Seq *)xin->data;
-  PetscScalar   *xx = x->array;
-  int      i;
+  Vec_Seq     *x = (Vec_Seq *)xin->data;
+  PetscScalar *xx = x->array;
+  int         i;
 
   PetscFunctionBegin;
   if (m == INSERT_VALUES) {
@@ -276,9 +276,9 @@ int VecSetValues_Seq(Vec xin,int ni,const int ix[],const PetscScalar y[],InsertM
 #define __FUNCT__ "VecSetValuesBlocked_Seq"
 int VecSetValuesBlocked_Seq(Vec xin,int ni,const int ix[],const PetscScalar yin[],InsertMode m)
 {
-  Vec_Seq  *x = (Vec_Seq *)xin->data;
-  PetscScalar   *xx = x->array,*y = (PetscScalar*)yin;
-  int      i,bs = xin->bs,start,j;
+  Vec_Seq     *x = (Vec_Seq *)xin->data;
+  PetscScalar *xx = x->array,*y = (PetscScalar*)yin;
+  int         i,bs = xin->bs,start,j;
 
   /*
        For optimization could treat bs = 2, 3, 4, 5 as special cases with loop unrolling
@@ -495,9 +495,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecCreate_Seq"
 int VecCreate_Seq(Vec V)
 {
-  Vec_Seq *s;
+  Vec_Seq      *s;
   PetscScalar  *array;
-  int     ierr,n = PetscMax(V->n,V->N);
+  int          ierr,n = PetscMax(V->n,V->N);
 
   PetscFunctionBegin;
   ierr = PetscMalloc((n+1)*sizeof(PetscScalar),&array);CHKERRQ(ierr);

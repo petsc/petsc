@@ -1,4 +1,4 @@
-/*$Id: vecstash.c,v 1.26 2001/03/23 23:21:18 balay Exp bsmith $*/
+/*$Id: vecstash.c,v 1.27 2001/08/06 21:14:36 bsmith Exp balay $*/
 
 #include "src/vec/vecimpl.h"
 
@@ -257,7 +257,7 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
   int         *owner,*start,tag1=stash->tag1,tag2=stash->tag2;
   int         rank=stash->rank,size=stash->size,*nprocs,*procs,nsends,nreceives;
   int         nmax,*work,count,ierr,*sindices,*rindices,i,j,idx,bs=stash->bs;
-  PetscScalar      *rvalues,*svalues;
+  PetscScalar *rvalues,*svalues;
   MPI_Comm    comm = stash->comm;
   MPI_Request *send_waits,*recv_waits;
 

@@ -1,4 +1,4 @@
-/*$Id: aijbaij.c,v 1.7 2001/03/23 23:22:07 balay Exp bsmith $*/
+/*$Id: aijbaij.c,v 1.8 2001/08/06 21:15:36 bsmith Exp balay $*/
 
 #include "src/mat/impls/baij/seq/baij.h"
 
@@ -7,10 +7,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_SeqBAI_SeqAIJ"
 int MatConvert_SeqBAIJ_SeqAIJ(Mat A,MatType newtype,Mat *B)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; 
-  int         ierr,bs = a->bs,*ai = a->i,*aj = a->j,n = A->M/bs,i,j,k;
-  int         *rowlengths,*rows,*cols,maxlen = 0,ncols;
-  PetscScalar      *aa = a->a;
+  Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data; 
+  int          ierr,bs = a->bs,*ai = a->i,*aj = a->j,n = A->M/bs,i,j,k;
+  int          *rowlengths,*rows,*cols,maxlen = 0,ncols;
+  PetscScalar  *aa = a->a;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(n*bs*sizeof(int),&rowlengths);CHKERRQ(ierr);

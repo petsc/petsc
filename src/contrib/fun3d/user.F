@@ -1,4 +1,4 @@
-!  $Id: user.F,v 1.35 2001/03/08 20:09:27 bsmith Exp balay $
+!  $Id: user.F,v 1.36 2001/03/23 23:25:38 balay Exp balay $
 !---------------------------------------------------------------
 ! The following subroutines are from node2t.f in the original
 ! code - D. K. Kaushik (1/17/97)
@@ -18,12 +18,12 @@
 
       implicit none
 #include "include/finclude/petscdef.h"
-      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar  cfl1,cfl2
+      PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,                        &
      &        nstage,ncyct,iramp,nitfo
-      Scalar  gtol
+      PetscScalar  gtol
       integer icycle,nsrch,ilu0,ifcn
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,                 &
      &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -45,8 +45,8 @@
       block data Block_Initialization
       implicit none
 #include "include/finclude/petscdef.h"
-      Scalar vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
-      Scalar cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
+      PetscScalar vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
+      PetscScalar cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
       common/turb/vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
       common/spalrt/cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
       data vkar,cmu,ce1,ce2/0.41,0.09,1.2,2.0 /
@@ -70,15 +70,15 @@
       subroutine INIT(nnodes, qvec, turbre, amut,nvnode, ivnode,irank)
       implicit none
 #include "include/finclude/petscdef.h"
-      Scalar  turbre(1),amut(1)
+      PetscScalar  turbre(1),amut(1)
       integer ivnode(1),nnodes,nvnode,irank
-      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
-      Scalar  p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      Scalar  vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
-      Scalar  cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
-      Scalar  cfl1,cfl2
+      PetscScalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
+      PetscScalar  p0,rho0,c0,u0,v0,w0,et0,h0,pt0
+      PetscScalar  vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
+      PetscScalar  cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
+      PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,                          &
      &        nstage,ncyct,iramp,nitfo
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,                   &
@@ -89,13 +89,13 @@
       common/spalrt/cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,           &
      &             nstage,ncyct,iramp,nitfo
-      Scalar  pi,conv,rmu,chi,fv1
+      PetscScalar  pi,conv,rmu,chi,fv1
       Integer i,k,n
 #if defined(INTERLACING)
-       Scalar qvec(4,nnodes)
+       PetscScalar qvec(4,nnodes)
 #define qnode(i,j) qvec(i,j)
 #else
-       Scalar qvec(nnodes,4)
+       PetscScalar qvec(nnodes,4)
 #define qnode(i,j) qvec(j,i)
 #endif
 !
@@ -210,12 +210,12 @@
 
       implicit none
 #include "include/finclude/petscdef.h"
-      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar  cfl1,cfl2
+      PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,                                &
      &        nstage,ncyct,iramp,nitfo
-      Scalar  gtol
+      PetscScalar  gtol
       integer icycle,nsrch,ilu0,ifcn
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,                         &
      &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -282,9 +282,9 @@
 !
       implicit none      
 #include "include/finclude/petscdef.h"
-      Scalar pinf
-      Scalar gamma,gm1,gp1,gm1g,gp1g,ggm1
-      Scalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
+      PetscScalar pinf
+      PetscScalar gamma,gm1,gp1,gm1g,gp1g,ggm1
+      PetscScalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       common/ivals/p0,rho0,c0,u0,v0,w0,et0,h0,pt0
       integer nnodes,nnbound,nvbound,nfbound,                              &
@@ -295,7 +295,7 @@
       integer nftet(1),nfpts(1)
       integer f2ntn(nnfacet,4),f2ntv(nvfacet,4),f2ntf(nffacet,4)
       integer isnode(1),ivnode(1),ifnode(1)
-      Scalar  x(1),y(1),z(1),q(4,nnodes)
+      PetscScalar  x(1),y(1),z(1),q(4,nnodes)
       integer i,j,i1,i2,i3,ic,isp,ist
  
  
@@ -442,11 +442,11 @@
      &                 clift, cdrag, cmom,irank,nvertices)
       implicit none      
 #include "include/finclude/petsc.h"
-      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar gamma,gm1,gp1,gm1g,gp1g,ggm1
-      Scalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      Scalar rms(1001),clw(1001),cdw(1001),                             &
+      PetscScalar gamma,gm1,gp1,gm1g,gp1g,ggm1
+      PetscScalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
+      PetscScalar rms(1001),clw(1001),cdw(1001),                             &
      &       cmw(1001),xres(1001)
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,                 &
      &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -462,11 +462,11 @@
       integer f2ntv(nvfacet,4)
       integer sface_bit(nnfacet), vface_bit(nvfacet)
 
-      Scalar clift, cdrag, cmom
-      Scalar clloc,cdloc,cmloc,clglo,cdglo,cmglo
-      Scalar cl_ghost, cd_ghost, cm_ghost
-      Scalar coef_loc(3), coef_glo(3)
-      Scalar pi,conv,csa,sna,xr,yr,zr,                                  &
+      PetscScalar clift, cdrag, cmom
+      PetscScalar clloc,cdloc,cmloc,clglo,cdglo,cmglo
+      PetscScalar cl_ghost, cd_ghost, cm_ghost
+      PetscScalar coef_loc(3), coef_glo(3)
+      PetscScalar pi,conv,csa,sna,xr,yr,zr,                                  &
      &       x1,y1,z1,x2,y2,z2,x3,y3,z3,xmid,ymid,zmid,                 &
      &       p1,p2,p3,u1,u2,u3,v1,v2,v3,                                &
      &       w1,w2,w3,                                                  &
@@ -476,8 +476,8 @@
       integer icount,n,node1,node2,node3,ierr
       
 #if defined(INTERLACING)
-      Scalar qvec(4,nvertices)
-      Scalar xyz(3,nvertices)
+      PetscScalar qvec(4,nvertices)
+      PetscScalar xyz(3,nvertices)
       integer evec(2,nedge)
 #define qnode(i,j) qvec(i,j)
 #define x(i) xyz(1,i)
@@ -485,8 +485,8 @@
 #define z(i) xyz(3,i)
 #define eptr(j,i) evec(i,j)
 #else
-      Scalar qvec(nvertices,4)
-      Scalar xyz(nvertices,3)
+      PetscScalar qvec(nvertices,4)
+      PetscScalar xyz(nvertices,3)
       integer evec(nedge,2)
 #define qnode(i,j) qvec(j,i)
 #define x(i) xyz(i,1)
@@ -712,27 +712,27 @@
 !
       implicit none      
 #include "include/finclude/petscdef.h"
-      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
+      PetscScalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,                  &
      &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       integer nnodes,nedge,nsnode,nvnode,nfnode,LocalTS,irank,nvertices
-      Scalar  vol(1)
-      Scalar  sxn(1),syn(1),szn(1)
-      Scalar  vxn(1),vyn(1),vzn(1)
-      Scalar  fxn(1),fyn(1),fzn(1)
-      Scalar  cdt(1)
+      PetscScalar  vol(1)
+      PetscScalar  sxn(1),syn(1),szn(1)
+      PetscScalar  vxn(1),vyn(1),vzn(1)
+      PetscScalar  fxn(1),fyn(1),fzn(1)
+      PetscScalar  cdt(1)
       integer isnode(1),ivnode(1),ifnode(1)
       integer n,i,node1,node2,inode
       integer flops,ierr
-      Scalar xnorm,ynorm,znorm,area,u1,v1,w1,u2,v2,w2,u,v,c,w
-      Scalar ubar,Vn,term
+      PetscScalar xnorm,ynorm,znorm,area,u1,v1,w1,u2,v2,w2,u,v,c,w
+      PetscScalar ubar,Vn,term
 #if defined(INTERLACING)
-      Scalar qvec(4,nvertices)
-      Scalar xyz(3,nvertices)
-      Scalar xyzn(4,nedge)
+      PetscScalar qvec(4,nvertices)
+      PetscScalar xyz(3,nvertices)
+      PetscScalar xyzn(4,nedge)
       integer evec(2,nedge)
 #define qnode(i,j) qvec(i,j)
 #define x(i) xyz(1,i)
@@ -744,9 +744,9 @@
 #define rl(i) xyzn(4,i)
 #define eptr(j,i) evec(i,j)
 #else
-      Scalar qvec(nvertices,4)
-      Scalar xyz(nvertices,3)
-      Scalar xyzn(nedge,4)
+      PetscScalar qvec(nvertices,4)
+      PetscScalar xyz(nvertices,3)
+      PetscScalar xyzn(nedge,4)
       integer evec(nedge,2)
 #define qnode(i,j) qvec(j,i)
 #define x(i) xyz(i,1)
@@ -962,13 +962,13 @@
 #endif  
       implicit none      
 #include "include/finclude/petscdef.h"
-      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
-      Scalar  p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      Scalar  rms(1001),clw(1001),cdw(1001),                                    &
+      PetscScalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
+      PetscScalar  p0,rho0,c0,u0,v0,w0,et0,h0,pt0
+      PetscScalar  rms(1001),clw(1001),cdw(1001),                                    &
      &        cmw(1001),xres(1001)
-      Scalar  cfl1,cfl2
+      PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,                                &
      &        nstage,ncyct,iramp,nitfo
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,                         &
@@ -984,10 +984,10 @@
      &        nnfacet,nvfacet,nffacet,                                          &
      &        nnbound,nvbound,nfbound,                                          &
      &        irank,nvertices
-      Scalar  sxn(1),syn(1),szn(1)
-      Scalar  vxn(1),vyn(1),vzn(1)
-      Scalar  fxn(1),fyn(1),fzn(1)
-      Scalar  phi(nvertices,4)
+      PetscScalar  sxn(1),syn(1),szn(1)
+      PetscScalar  vxn(1),vyn(1),vzn(1)
+      PetscScalar  fxn(1),fyn(1),fzn(1)
+      PetscScalar  phi(nvertices,4)
       integer isface(1),ivface(1),ifface(1)
       integer isnode(1),ivnode(1),ifnode(1)
       integer f2ntn(nnfacet,4)
@@ -995,33 +995,33 @@
       integer f2ntf(nffacet,4)
       integer i,n,node1,node2,node3,inode      
       integer flops,ierr,first_edge,last_edge
-      Scalar  xmean,ymean,zmean,xnorm,ynorm,znorm
-      Scalar  rlen,area,dot,size
-      Scalar  X1,Y1,Z1,X2,Y2,Z2,X3,Y3,Z3,p1,p2,p3
-      Scalar  rx,ry,rz,pL,uL,wL,vL,pR,uR,vR,wR
-      Scalar  ubarL,ubarR,ubar,p,u,v,w,c,c2,c20
-      Scalar  ubar0,pi,ui,vi,wi,unorm
-      Scalar  phi1,phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9
-      Scalar  eig1,eig2,eig3,eig4,dp,du,dv,dw
-      Scalar  ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4
-      Scalar  r11,r21,r31,r41,r12,r22,r32,r42
-      Scalar  r13,r23,r33,r43,r14,r24,r34,r44
-      Scalar  t1,t2,t3,t4
-      Scalar  t11,t21,t31,t41,t12,t22,t32,t42
-      Scalar  t13,t23,t33,t43,t14,t24,t34,t44
-      Scalar  fluxp1,fluxp2,fluxp3,fluxp4
-      Scalar  fluxm1,fluxm2,fluxm3,fluxm4
-      Scalar  res1,res2,res3,res4
-      Scalar  rhs1,rhs2,rhs3,rhs4   
-      Scalar  c68,c18,second
-      Scalar  ax,ay,az,bx,by,bz
-      Scalar  pa,pb,pc,ub,vb,wb       
+      PetscScalar  xmean,ymean,zmean,xnorm,ynorm,znorm
+      PetscScalar  rlen,area,dot,size
+      PetscScalar  X1,Y1,Z1,X2,Y2,Z2,X3,Y3,Z3,p1,p2,p3
+      PetscScalar  rx,ry,rz,pL,uL,wL,vL,pR,uR,vR,wR
+      PetscScalar  ubarL,ubarR,ubar,p,u,v,w,c,c2,c20
+      PetscScalar  ubar0,pi,ui,vi,wi,unorm
+      PetscScalar  phi1,phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9
+      PetscScalar  eig1,eig2,eig3,eig4,dp,du,dv,dw
+      PetscScalar  ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4
+      PetscScalar  r11,r21,r31,r41,r12,r22,r32,r42
+      PetscScalar  r13,r23,r33,r43,r14,r24,r34,r44
+      PetscScalar  t1,t2,t3,t4
+      PetscScalar  t11,t21,t31,t41,t12,t22,t32,t42
+      PetscScalar  t13,t23,t33,t43,t14,t24,t34,t44
+      PetscScalar  fluxp1,fluxp2,fluxp3,fluxp4
+      PetscScalar  fluxm1,fluxm2,fluxm3,fluxm4
+      PetscScalar  res1,res2,res3,res4
+      PetscScalar  rhs1,rhs2,rhs3,rhs4   
+      PetscScalar  c68,c18,second
+      PetscScalar  ax,ay,az,bx,by,bz
+      PetscScalar  pa,pb,pc,ub,vb,wb       
 #if defined(INTERLACING)
-      Scalar qvec(4,nvertices) 
-      Scalar grad(3,4,nvertices) 
-      Scalar resvec(4,nnodes)
-      Scalar xyz(3,nvertices)
-      Scalar xyzn(4,nedge)
+      PetscScalar qvec(4,nvertices) 
+      PetscScalar grad(3,4,nvertices) 
+      PetscScalar resvec(4,nnodes)
+      PetscScalar xyz(3,nvertices)
+      PetscScalar xyzn(4,nedge)
       integer evec(2,nedge)
 #define qnode(i,j) qvec(i,j)
 #define res(i,j) resvec(i,j)
@@ -1037,11 +1037,11 @@
 #define ra(i) xyzn(4,i)
 #define eptr(j,i) evec(i,j)
 #else
-      Scalar qvec(nvertices,4) 
-      Scalar grad(nvertices,4,3) 
-      Scalar resvec(nnodes,4)
-      Scalar xyz(nvertices,3)
-      Scalar xyzn(nedge,4)
+      PetscScalar qvec(nvertices,4) 
+      PetscScalar grad(nvertices,4,3) 
+      PetscScalar resvec(nnodes,4)
+      PetscScalar xyz(nvertices,3)
+      PetscScalar xyzn(nedge,4)
       integer evec(nedge,2)
 #define qnode(i,j) qvec(j,i)
 #define res(i,j) resvec(j,i)
@@ -1064,13 +1064,13 @@
 #if defined(HAVE_EDGE_COLORING)
        integer ncolor,ncount(1)
 #elif defined(HAVE_REDUNDANT_WORK)
-       Scalar resd(4,nnodes)
+       PetscScalar resd(4,nnodes)
 #undef res
 #define res(a,b) resd(a,b)
 #else
        integer nedgeAllThr,part_thr(nnodes),nedge_thr(0:max_threads),         &
      &     edge_thr(2,nedgeAllThr)
-       Scalar xyzn_thr(4,nedgeAllThr)
+       PetscScalar xyzn_thr(4,nedgeAllThr)
 #undef eptr
 #define eptr(a,b) edge_thr(b,a)
 #undef xn
@@ -1768,8 +1768,8 @@
 #include "include/finclude/petscdef.h"
       integer nnodes,nedge,irank,nvertices
 #if defined(INTERLACING)
-      Scalar xyz(3,nvertices)
-      Scalar rxy(7,nnodes)
+      PetscScalar xyz(3,nvertices)
+      PetscScalar rxy(7,nnodes)
       integer evec(2,nedge)
 #define x(i) xyz(1,i)
 #define y(i) xyz(2,i)
@@ -1784,8 +1784,8 @@
 #undef eptr
 #define eptr(j,i) evec(i,j)
 #else
-      Scalar xyz(nvertices,3)
-      Scalar rxy(nnodes,7)
+      PetscScalar xyz(nvertices,3)
+      PetscScalar rxy(nnodes,7)
       integer evec(nedge,2)
 #define x(i) xyz(i,1)
 #define y(i) xyz(i,2)
@@ -1800,8 +1800,8 @@
 #define eptr(i,j) evec(i,j)
 #endif
       integer i,n,node1,node2,ierr
-      Scalar x1,y1,z1,x2,y2,z2,dx,dy,dz,dist,weight,w2,w11,w22,w33
-      Scalar r12r11,r13r11,r23r22,rmess
+      PetscScalar x1,y1,z1,x2,y2,z2,dx,dy,dz,dist,weight,w2,w11,w22,w33
+      PetscScalar r12r11,r13r11,r23r22,rmess
 
 !
 ! Initialize all the rij to 0.0 
@@ -2014,10 +2014,10 @@
       integer nnodes,nedge,irank,nvertices
 !
 #if defined(INTERLACING)
-      Scalar qvec(4,nvertices)
-      Scalar xyz(3,nvertices)
-      Scalar rxy(7,nnodes)
-      Scalar grad(3,4,nnodes)
+      PetscScalar qvec(4,nvertices)
+      PetscScalar xyz(3,nvertices)
+      PetscScalar rxy(7,nnodes)
+      PetscScalar grad(3,4,nnodes)
       integer evec(2,nedge)
 #define qnode(i,j) qvec(i,j)
 #define gradx(i,j) grad(1,i,j)
@@ -2035,10 +2035,10 @@
 #define r44(i) rxy(7,i)
 #define eptr(j,i) evec(i,j)
 #else
-      Scalar qvec(nvertices,4)
-      Scalar xyz(nvertices,3)
-      Scalar rxy(nnodes,7)
-      Scalar grad(nnodes,4,3)
+      PetscScalar qvec(nvertices,4)
+      PetscScalar xyz(nvertices,3)
+      PetscScalar rxy(nnodes,7)
+      PetscScalar grad(nnodes,4,3)
       integer evec(nedge,2)
 #define qnode(i,j) qvec(j,i)
 #define gradx(i,j) grad(j,i,1)
@@ -2056,9 +2056,9 @@
 #define r44(i) rxy(i,7)
 #define eptr(i,j) evec(i,j)
 #endif
-      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar  cfl1,cfl2
+      PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,                          &
      &        nstage,ncyct,iramp,nitfo
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,                   &
@@ -2067,7 +2067,7 @@
      &             nstage,ncyct,iramp,nitfo
       integer n,node1,node2,ierr
       integer flops
-      Scalar  dx1,dy1,dz1,dx2,dy2,dz2,                                    &
+      PetscScalar  dx1,dy1,dz1,dx2,dy2,dz2,                                    &
      &        dq1,dq2,dq3,dq4,                                            &
      &        weight,w11,r12r11,r13r11,w22,r23r22,w33,rmess,              &
      &        coef1,coef2,termx,termy,termz
@@ -2352,31 +2352,31 @@
       integer f2ntv(nvfacet,4)
       integer f2ntf(nffacet,4)
 !
-      Scalar us(nbface,3,4),vs(nbface,3,4),as(nbface,3,4)
-      Scalar sxn(1),syn(1),szn(1)
-      Scalar vxn(1),vyn(1),vzn(1)
-      Scalar fxn(1),fyn(1),fzn(1)
-      Scalar xyz(nvertices,3),area(nvertices)
-      Scalar xyzn(nedge,4)
-      Scalar turbre(1),slen(1)
-      Scalar qvec(nvertices,4)
-      Scalar phi(nvertices,4)
-      Scalar cdt(nvertices)
-      Scalar grad(3,4,nvertices)
+      PetscScalar us(nbface,3,4),vs(nbface,3,4),as(nbface,3,4)
+      PetscScalar sxn(1),syn(1),szn(1)
+      PetscScalar vxn(1),vyn(1),vzn(1)
+      PetscScalar fxn(1),fyn(1),fzn(1)
+      PetscScalar xyz(nvertices,3),area(nvertices)
+      PetscScalar xyzn(nedge,4)
+      PetscScalar turbre(1),slen(1)
+      PetscScalar qvec(nvertices,4)
+      PetscScalar phi(nvertices,4)
+      PetscScalar cdt(nvertices)
+      PetscScalar grad(3,4,nvertices)
 !     real dq(nnodes,4)
 !     real r11(nvertices),r12(nvertices),r13(nvertices)
 !     real r22(nvertices),r23(nvertices),r33(nvertices)
-      Scalar amut(nnodes)
+      PetscScalar amut(nnodes)
 !
       integer i
-      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar  cfl1,cfl2
+      PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,                             &
      &        nstage,ncyct,iramp,nitfo
-      Scalar  gtol
+      PetscScalar  gtol
       integer icycle,nsrch,ilu0,ifcn
-      Scalar  rms(1001),clw(1001),cdw(1001),                                 &
+      PetscScalar  rms(1001),clw(1001),cdw(1001),                                 &
      &        cmw(1001),xres(1001)
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,                      &
      &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -2394,11 +2394,11 @@
 !     save flux_event, flag, flux_label
 !     save delta2_event,delta2_label
 #if defined(INTERLACING)
-       Scalar resvec(4,nnodes)
+       PetscScalar resvec(4,nnodes)
 #undef res
 #define res(i,j) resvec(i,j)
 #else
-       Scalar resvec(nnodes,4)
+       PetscScalar resvec(nnodes,4)
 #define res(i,j) resvec(j,i)
 #endif
 #if defined(_OPENMP) 
@@ -2406,11 +2406,11 @@
 #if defined(HAVE_EDGE_COLORING)
        integer ncolor,ncount(1)
 #elif defined(HAVE_REDUNDANT_WORK)     
-       Scalar resd(4,nnodes)       
+       PetscScalar resd(4,nnodes)       
 #else
        integer nedgeAllThr,part_thr(nnodes),nedge_thr(0:max_threads),         &
      &         edge_thr(2,nedgeAllThr)
-       Scalar xyzn_thr(4,nedgeAllThr)
+       PetscScalar xyzn_thr(4,nedgeAllThr)
 #endif
 #endif  
 !

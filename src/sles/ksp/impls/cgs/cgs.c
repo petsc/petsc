@@ -1,4 +1,4 @@
-/*$Id: cgs.c,v 1.62 2001/03/22 20:31:25 bsmith Exp balay $*/
+/*$Id: cgs.c,v 1.63 2001/03/23 23:23:36 balay Exp balay $*/
 
 /*                       
     This code implements the CGS (Conjugate Gradient Squared) method. 
@@ -26,11 +26,11 @@ static int KSPSetUp_CGS(KSP ksp)
 #define __FUNCT__ "KSPSolve_CGS"
 static int  KSPSolve_CGS(KSP ksp,int *its)
 {
-  int        i,maxit,ierr;
-  Scalar     rho,rhoold,a,s,b,tmp,one = 1.0; 
-  Vec        X,B,V,P,R,RP,T,Q,U,BINVF,AUQ;
-  PetscReal  dp = 0.0;
-  PetscTruth diagonalscale;
+  int          i,maxit,ierr;
+  PetscScalar  rho,rhoold,a,s,b,tmp,one = 1.0; 
+  Vec          X,B,V,P,R,RP,T,Q,U,BINVF,AUQ;
+  PetscReal    dp = 0.0;
+  PetscTruth   diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);

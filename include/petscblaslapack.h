@@ -1,4 +1,4 @@
-/* $Id: petscblaslapack.h,v 1.45 2001/05/10 18:08:30 balay Exp bsmith $ */
+/* $Id: petscblaslapack.h,v 1.46 2001/08/06 21:19:20 bsmith Exp balay $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -322,11 +322,11 @@ EXTERN void   LAgeqrf_(int*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int
 #if defined(PETSC_USE_COMPLEX)
 EXTERN void   ZPOTRF(_fcd,int*,PetscScalar*,int*,int*);
 EXTERN void   ZGEMV(_fcd,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar *,int*,
-                    Scalar*,PetscScalar*,int*);
+                    PetscScalar*,PetscScalar*,int*);
 EXTERN void   ZPOTRS(_fcd,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
 EXTERN void   ZGETRS(_fcd,int*,int*,PetscScalar*,int*,int*,PetscScalar*,int*,int*);
 EXTERN void   ZGEMM(_fcd,_fcd,int*,int*,int*,PetscScalar*,PetscScalar*,int*,
-                    Scalar*,int*,PetscScalar*,PetscScalar*,int*);
+                    PetscScalar*,int*,PetscScalar*,PetscScalar*,int*);
 EXTERN void   ZGESVD(_fcd,_fcd,int *,int*,PetscScalar *,int*,double*,PetscScalar*,
                      int*,PetscScalar*,int*,PetscScalar*,int*,double*,int*);
 EXTERN void   ZGEEV(_fcd,_fcd,int *,PetscScalar *,int*,PetscScalar*,PetscScalar*,
@@ -334,11 +334,11 @@ EXTERN void   ZGEEV(_fcd,_fcd,int *,PetscScalar *,int*,PetscScalar*,PetscScalar*
 #else
 EXTERN void   DPOTRF(_fcd,int*,PetscScalar*,int*,int*);
 EXTERN void   DGEMV(_fcd,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar *,int*,
-                    Scalar*,PetscScalar*,int*);
+                    PetscScalar*,PetscScalar*,int*);
 EXTERN void   DPOTRS(_fcd,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
 EXTERN void   DGETRS(_fcd,int*,int*,PetscScalar*,int*,int*,PetscScalar*,int*,int*);
 EXTERN void   DGEMM(_fcd,_fcd,int*,int*,int*,PetscScalar*,PetscScalar*,int*,
-                    Scalar*,int*,PetscScalar*,PetscScalar*,int*);
+                    PetscScalar*,int*,PetscScalar*,PetscScalar*,int*);
 EXTERN void   DGESVD(_fcd,_fcd,int *,int*,PetscScalar *,int*,PetscScalar*,PetscScalar*,
                      int*,PetscScalar*,int*,PetscScalar*,int*,int*);
 EXTERN void   DGEEV(_fcd,_fcd,int *,PetscScalar *,int*,PetscScalar*,PetscScalar*,PetscScalar*,
@@ -352,11 +352,11 @@ EXTERN void   LAtrtrs_(char*,char*,char*,int*,int*,PetscScalar*,int*,PetscScalar
                        int*);
 EXTERN void   LApotrf_(char*,int*,PetscScalar*,int*,int*);
 EXTERN void   LAgemv_(char*,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar *,int*,
-                      Scalar*,PetscScalar*,int*);
+                      PetscScalar*,PetscScalar*,int*);
 EXTERN void   LApotrs_(char*,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
 EXTERN void   LAgetrs_(char*,int*,int*,PetscScalar*,int*,int*,PetscScalar*,int*,int*);
 EXTERN void   BLgemm_(char *,char*,int*,int*,int*,PetscScalar*,PetscScalar*,int*,
-                      Scalar*,int*,PetscScalar*,PetscScalar*,int*);
+                      PetscScalar*,int*,PetscScalar*,PetscScalar*,int*);
 
 /* ESSL uses a different calling sequence for dgeev(), zgeev() than LAPACK; */
 #if defined(PETSC_HAVE_ESSL) && defined(PETSC_USE_COMPLEX)

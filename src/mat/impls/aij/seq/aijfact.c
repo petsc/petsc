@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.163 2001/06/21 21:16:21 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.164 2001/08/06 21:15:14 bsmith Exp balay $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -52,16 +52,16 @@ EXTERN int SPARSEKIT2msrcsr(int*,PetscScalar*,int*,PetscScalar*,int*,int*,PetscS
 
 int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
-  IS         iscolf,isicol,isirow;
-  PetscTruth reorder;
-  int        *c,*r,*ic,ierr,i,n = A->m;
-  int        *old_i = a->i,*old_j = a->j,*new_i,*old_i2 = 0,*old_j2 = 0,*new_j;
-  int        *ordcol,*iwk,*iperm,*jw;
-  int        ishift = !a->indexshift;
-  int        jmax,lfill,job,*o_i,*o_j;
-  PetscScalar     *old_a = a->a,*w,*new_a,*old_a2 = 0,*wk,*o_a;
-  PetscReal  permtol,af;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data,*b;
+  IS           iscolf,isicol,isirow;
+  PetscTruth   reorder;
+  int          *c,*r,*ic,ierr,i,n = A->m;
+  int          *old_i = a->i,*old_j = a->j,*new_i,*old_i2 = 0,*old_j2 = 0,*new_j;
+  int          *ordcol,*iwk,*iperm,*jw;
+  int          ishift = !a->indexshift;
+  int          jmax,lfill,job,*o_i,*o_j;
+  PetscScalar  *old_a = a->a,*w,*new_a,*old_a2 = 0,*wk,*o_a;
+  PetscReal    permtol,af;
 
   PetscFunctionBegin;
 
@@ -433,16 +433,16 @@ EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
 int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 {
-  Mat        C = *B;
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ *)C->data;
-  IS         isrow = b->row,isicol = b->icol;
-  int        *r,*ic,ierr,i,j,n = A->m,*ai = b->i,*aj = b->j;
-  int        *ajtmpold,*ajtmp,nz,row,*ics,shift = a->indexshift;
-  int        *diag_offset = b->diag,diag;
-  int        *pj,ndamp = 0;
-  PetscScalar     *rtmp,*v,*pc,multiplier,*pv,*rtmps;
-  PetscReal  damping = b->lu_damping, zeropivot = b->lu_zeropivot;
-  PetscTruth damp;
+  Mat          C = *B;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ *)C->data;
+  IS           isrow = b->row,isicol = b->icol;
+  int          *r,*ic,ierr,i,j,n = A->m,*ai = b->i,*aj = b->j;
+  int          *ajtmpold,*ajtmp,nz,row,*ics,shift = a->indexshift;
+  int          *diag_offset = b->diag,diag;
+  int          *pj,ndamp = 0;
+  PetscScalar  *rtmp,*v,*pc,multiplier,*pv,*rtmps;
+  PetscReal    damping = b->lu_damping, zeropivot = b->lu_zeropivot;
+  PetscTruth   damp;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -539,11 +539,11 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatLUInfo *info)
 #define __FUNCT__ "MatSolve_SeqAIJ"
 int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  IS         iscol = a->col,isrow = a->row;
-  int        *r,*c,ierr,i, n = A->m,*vi,*ai = a->i,*aj = a->j;
-  int        nz,shift = a->indexshift,*rout,*cout;
-  PetscScalar     *x,*b,*tmp,*tmps,*aa = a->a,sum,*v;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  IS           iscol = a->col,isrow = a->row;
+  int          *r,*c,ierr,i, n = A->m,*vi,*ai = a->i,*aj = a->j;
+  int          nz,shift = a->indexshift,*rout,*cout;
+  PetscScalar  *x,*b,*tmp,*tmps,*aa = a->a,sum,*v;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
@@ -590,12 +590,12 @@ int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering"
 int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        n = A->m,*ai = a->i,*aj = a->j,*adiag = a->diag,ierr;
-  PetscScalar     *x,*b,*aa = a->a,sum;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  int          n = A->m,*ai = a->i,*aj = a->j,*adiag = a->diag,ierr;
+  PetscScalar  *x,*b,*aa = a->a,sum;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
-  int        adiag_i,i,*vi,nz,ai_i;
-  PetscScalar     *v;
+  int          adiag_i,i,*vi,nz,ai_i;
+  PetscScalar  *v;
 #endif
 
   PetscFunctionBegin;
@@ -644,11 +644,11 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolveAdd_SeqAIJ"
 int MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  IS         iscol = a->col,isrow = a->row;
-  int        *r,*c,ierr,i, n = A->m,*vi,*ai = a->i,*aj = a->j;
-  int        nz,shift = a->indexshift,*rout,*cout;
-  PetscScalar     *x,*b,*tmp,*aa = a->a,sum,*v;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  IS           iscol = a->col,isrow = a->row;
+  int          *r,*c,ierr,i, n = A->m,*vi,*ai = a->i,*aj = a->j;
+  int          nz,shift = a->indexshift,*rout,*cout;
+  PetscScalar  *x,*b,*tmp,*aa = a->a,sum,*v;
 
   PetscFunctionBegin;
   if (yy != xx) {ierr = VecCopy(yy,xx);CHKERRQ(ierr);}
@@ -695,11 +695,11 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 #define __FUNCT__ "MatSolveTranspose_SeqAIJ"
 int MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  IS         iscol = a->col,isrow = a->row;
-  int        *r,*c,ierr,i,n = A->m,*vi,*ai = a->i,*aj = a->j;
-  int        nz,shift = a->indexshift,*rout,*cout,*diag = a->diag;
-  PetscScalar     *x,*b,*tmp,*aa = a->a,*v,s1;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  IS           iscol = a->col,isrow = a->row;
+  int          *r,*c,ierr,i,n = A->m,*vi,*ai = a->i,*aj = a->j;
+  int          nz,shift = a->indexshift,*rout,*cout,*diag = a->diag;
+  PetscScalar  *x,*b,*tmp,*aa = a->a,*v,s1;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
@@ -752,11 +752,11 @@ int MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolveTransposeAdd_SeqAIJ"
 int MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  IS         iscol = a->col,isrow = a->row;
-  int        *r,*c,ierr,i,n = A->m,*vi,*ai = a->i,*aj = a->j;
-  int        nz,shift = a->indexshift,*rout,*cout,*diag = a->diag;
-  PetscScalar     *x,*b,*tmp,*aa = a->a,*v;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
+  IS           iscol = a->col,isrow = a->row;
+  int          *r,*c,ierr,i,n = A->m,*vi,*ai = a->i,*aj = a->j;
+  int          nz,shift = a->indexshift,*rout,*cout,*diag = a->diag;
+  PetscScalar  *x,*b,*tmp,*aa = a->a,*v;
 
   PetscFunctionBegin;
   if (zz != xx) VecCopy(zz,xx);

@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.93 2001/04/25 14:57:23 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.94 2001/08/06 21:19:11 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
@@ -118,7 +118,7 @@ EXTERN_C_BEGIN
 /*
     integer i_x,i_y,shift
     Vec     x,y
-    Scalar  v_x(1),v_y(1)
+    PetscScalar  v_x(1),v_y(1)
 
     call VecGetArray(x,v_x,i_x,ierr)
     if (x .eq. y) then

@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.14 2001/04/17 02:54:34 bsmith Exp bsmith $*/
+/*$Id: symmlq.c,v 1.15 2001/08/06 21:16:50 bsmith Exp balay $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
@@ -32,9 +32,9 @@ int KSPSetUp_SYMMLQ(KSP ksp)
 int  KSPSolve_SYMMLQ(KSP ksp,int *its)
 {
   int          ierr,i,maxit;
-  Scalar       alpha,malpha,beta,mbeta,ibeta,betaold,beta1,ceta,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
-  Scalar       c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,ms,rho0,rho1,rho2,rho3;
-  Scalar       mone = -1.0,zero = 0.0,dp = 0.0;
+  PetscScalar  alpha,malpha,beta,mbeta,ibeta,betaold,beta1,ceta,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
+  PetscScalar  c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,ms,rho0,rho1,rho2,rho3;
+  PetscScalar  mone = -1.0,zero = 0.0,dp = 0.0;
   PetscReal    np,s_prod;
   Vec          X,B,R,Z,U,V,W,UOLD,VOLD,Wbar;
   Mat          Amat,Pmat;

@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.27 2001/07/26 20:10:22 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.28 2001/08/06 21:17:42 bsmith Exp balay $*/
 
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
   \n\
@@ -69,7 +69,7 @@ T*/
    User-defined routines and data structures
 */
 typedef struct {
-  Scalar u,v,omega,temp;
+  PetscScalar u,v,omega,temp;
 } Field;
 
 extern int FormInitialGuess(SNES,Vec,void*);
@@ -277,7 +277,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   int     xints,xinte,yints,yinte;
   double  two = 2.0,one = 1.0,p5 = 0.5,hx,hy,dhx,dhy,hxdhy,hydhx;
   double  grashof,prandtl,lid;
-  Scalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
+  PetscScalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
   Field   **x,**f;
   Vec     localX;
   DA      da = (DA)dmmg->dm;
@@ -446,7 +446,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   int     xints,xinte,yints,yinte;
   double  hx,hy,dhx,dhy,hxdhy,hydhx;
   double  grashof,prandtl,lid;
-  Scalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
+  PetscScalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
 
   PetscFunctionBegin;
   grashof = user->grashof;  
@@ -576,7 +576,7 @@ int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f
   int         i,j,c;
   PassiveReal hx,hy,dhx,dhy,hxdhy,hydhx;
   PassiveReal grashof,prandtl,lid;
-  Scalar      u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
+  PetscScalar u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
 
   PetscFunctionBegin;
   grashof = user->grashof;  

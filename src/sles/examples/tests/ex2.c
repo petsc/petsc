@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.23 2001/01/23 20:56:37 balay Exp balay $*/
+/*$Id: ex2.c,v 1.24 2001/03/23 23:23:50 balay Exp balay $*/
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
 
@@ -46,7 +46,7 @@ int slesex(int argc,char **args)
   KSP     ksp;          /* Krylov subspace method context */
   double  norm;         /* norm of solution error */
   int     i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
-  Scalar  v,one = 1.0,none = -1.0;
+  PetscScalar  v,one = 1.0,none = -1.0;
 
   ierr = PetscSetCommWorld(PETSC_COMM_SELF);CHKERRQ(ierr);
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.27 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex12.c,v 1.28 2001/08/06 21:16:03 bsmith Exp balay $*/
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\
 This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ matrices";
@@ -14,7 +14,7 @@ int main(int argc,char **args)
 {
   Mat         A;
   int         i,j,m = 3,n,rank,size,I,J,ierr,Imax;
-  Scalar      v,diag=-4.0;
+  PetscScalar v,diag=-4.0;
   IS          is;
 
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.127 2001/07/20 21:25:24 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.128 2001/08/06 21:17:13 bsmith Exp balay $*/
 
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 #include "src/mat/matimpl.h"
@@ -255,7 +255,7 @@ int MatMult_MFFD(Mat mat,Vec a,Vec y)
 {
   MatSNESMFCtx    ctx = (MatSNESMFCtx)mat->data;
   SNES            snes;
-  Scalar          h,mone = -1.0;
+  PetscScalar     h,mone = -1.0;
   Vec             w,U,F;
   int             ierr,(*eval_fct)(SNES,Vec,Vec)=0;
   SNESProblemType type;
@@ -336,7 +336,7 @@ int MatMult_MFFD(Mat mat,Vec a,Vec y)
 int MatGetDiagonal_MFFD(Mat mat,Vec a)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
-  Scalar       h,*aa,*ww,v;
+  PetscScalar  h,*aa,*ww,v;
   PetscReal    epsilon = 1.e-8,umin = 1.e-6;
   Vec          w,U;
   int          i,ierr,rstart,rend;

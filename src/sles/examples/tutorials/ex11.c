@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.34 2001/03/23 23:23:55 balay Exp bsmith $*/
+/*$Id: ex11.c,v 1.35 2001/08/06 21:16:53 bsmith Exp balay $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 
@@ -47,7 +47,7 @@ int main(int argc,char **args)
   SLES        sles;         /* linear solver context */
   double      norm;         /* norm of solution error */
   int         dim,i,j,I,J,Istart,Iend,ierr,n = 6,its,use_random;
-  Scalar      v,none = -1.0,sigma2,pfive = 0.5,*xa;
+  PetscScalar v,none = -1.0,sigma2,pfive = 0.5,*xa;
   PetscRandom rctx;
   double      h2,sigma1 = 100.0;
   PetscTruth  flg;

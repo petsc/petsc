@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.48 2001/03/23 23:21:30 balay Exp bsmith $*/
+/*$Id: ex12.c,v 1.49 2001/08/06 21:14:55 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
 This does case when we are merely selecting the local part of the\n\
@@ -12,7 +12,7 @@ parallel vector.\n";
 int main(int argc,char **argv)
 {
   int           n = 5,ierr,size,rank,i;
-  Scalar        value;
+  PetscScalar   value;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;

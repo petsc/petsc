@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.75 2001/04/04 18:13:53 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.76 2001/08/06 21:18:56 bsmith Exp balay $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver.\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -94,13 +94,13 @@ int main(int argc,char **args)
   TstepCtx      tsCtx ;
   SNES          snes;                  /* nonlinear solver context */
   Mat           Jpc;                   /* Jacobian and Preconditioner matrices */
-  Scalar        *qnode;
+  PetscScalar   *qnode;
   int 		ierr;
   PetscTruth    flg;
   MPI_Comm      comm;
 #ifdef PETSC_HAVE_AMS
   int           fdes,i, *itmp;
-  Scalar        *qsc;
+  PetscScalar   *qsc;
 #endif  
   ierr = PetscInitialize(&argc,&args,"petsc.opt",help);CHKERRQ(ierr);
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
@@ -421,7 +421,7 @@ int FormInitialGuess(SNES snes,GRID *grid)
 /*---------------------------------------------------------------------*/
 {
   int    ierr;
-  Scalar *qnode;
+  PetscScalar *qnode;
 
   PetscFunctionBegin;
   ierr = VecGetArray(grid->qnode,&qnode);CHKERRQ(ierr);
@@ -440,16 +440,16 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    AppCtx       *user = (AppCtx *) dummy;
    GRID         *grid = user->grid;
    TstepCtx     *tsCtx = user->tsCtx;
-   Scalar       *qnode,*res,*qold;
-   Scalar       *grad;
-   Scalar       temp;
+   PetscScalar  *qnode,*res,*qold;
+   PetscScalar  *grad;
+   PetscScalar  temp;
    VecScatter   scatter = grid->scatter;
    VecScatter   gradScatter = grid->gradScatter;
    Vec          localX = grid->qnodeLoc;
    Vec          localGrad = grid->gradLoc;
    int          i,j,in,ierr;
    int          nbface,ires;
-   Scalar	time_ini,time_fin;
+   PetscScalar	time_ini,time_fin;
  
    PetscFunctionBegin;
    /* Get X into the local work vector */
@@ -552,7 +552,7 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
   Mat          pc_mat = *B;
   VecScatter   scatter = grid->scatter;
   Vec          localX = grid->qnodeLoc;
-  Scalar       *qnode;
+  PetscScalar  *qnode;
   int          ierr;
  
   PetscFunctionBegin;
@@ -599,18 +599,18 @@ int Update(SNES snes,void *ctx)
  TstepCtx 	*tsCtx = user->tsCtx;
  VecScatter   	scatter = grid->scatter;
  Vec          	localX = grid->qnodeLoc;
- Scalar 	*qnode,*res;
- Scalar 	clift,cdrag,cmom;
+ PetscScalar 	*qnode,*res;
+ PetscScalar 	clift,cdrag,cmom;
  int 		ierr,its;
- Scalar 	fratio;
- Scalar 	time1,time2,cpuloc,cpuglo;
+ PetscScalar 	fratio;
+ PetscScalar 	time1,time2,cpuloc,cpuglo;
  int 		max_steps;
  PetscTruth     print_flag = PETSC_FALSE;
  FILE 		*fptr = 0;
  int		nfailsCum = 0,nfails = 0;
  /*Scalar         cpu_ini,cpu_fin,cpu_time;*/
  /*int 		event0 = 14,event1 = 25,gen_start,gen_read;
- Scalar		time_start_counters,time_read_counters;
+ PetscScalar		time_start_counters,time_read_counters;
  long long      counter0,counter1;*/
 
   PetscFunctionBegin;
@@ -759,8 +759,8 @@ int ComputeTimeStep(SNES snes,int iter,void *ctx)
   AppCtx    *user = (AppCtx *) ctx;
   TstepCtx  *tsCtx = user->tsCtx;
   Vec	    func = tsCtx->func;
-  Scalar    inc = 1.1;
-  Scalar    newcfl;
+  PetscScalar    inc = 1.1;
+  PetscScalar    newcfl;
   int       ierr;
   /*int	    iramp = tsCtx->iramp;*/
  
@@ -800,28 +800,28 @@ int GetLocalOrdering(GRID *grid)
 /*---------------------------------------------------------------------*/
 {
 
-  int        ierr,i,j,k,inode,isurf,nte,nb,node1,node2,node3;
-  int 	     nnodes,nedge,nnz,jstart,jend;
-  int	     nnodesLoc,nvertices,nedgeLoc,nnodesLocEst;
-  int        nedgeLocEst,remEdges,readEdges,remNodes,readNodes;
-  int 	     nnfacet,nvfacet,nffacet;
-  int 	     nnfacetLoc,nvfacetLoc,nffacetLoc;
-  int	     nsnode,nvnode,nfnode;
-  int	     nsnodeLoc,nvnodeLoc,nfnodeLoc;
-  int        nnbound,nvbound,nfbound;
-  int        fdes,currentPos = 0,newPos = 0;
-  int        grid_param = 13;
-  int        cross_edges = 0;
-  int        *edge_bit,*pordering;
-  int	     *l2p,*l2a,*p2l,*a2l,*v2p,*eperm;
-  int	     *tmp,*tmp1,*tmp2;
-  Scalar     time_ini,time_fin;
-  Scalar     *ftmp,*ftmp1;
-  char       mesh_file[256];
-  AO         ao;
-  FILE       *fptr,*fptr1;
-  PetscTruth flg;
-  MPI_Comm   comm = PETSC_COMM_WORLD;
+  int          ierr,i,j,k,inode,isurf,nte,nb,node1,node2,node3;
+  int 	       nnodes,nedge,nnz,jstart,jend;
+  int	       nnodesLoc,nvertices,nedgeLoc,nnodesLocEst;
+  int          nedgeLocEst,remEdges,readEdges,remNodes,readNodes;
+  int 	       nnfacet,nvfacet,nffacet;
+  int 	       nnfacetLoc,nvfacetLoc,nffacetLoc;
+  int  	       nsnode,nvnode,nfnode;
+  int	       nsnodeLoc,nvnodeLoc,nfnodeLoc;
+  int          nnbound,nvbound,nfbound;
+  int          fdes,currentPos = 0,newPos = 0;
+  int          grid_param = 13;
+  int          cross_edges = 0;
+  int          *edge_bit,*pordering;
+  int	       *l2p,*l2a,*p2l,*a2l,*v2p,*eperm;
+  int	       *tmp,*tmp1,*tmp2;
+  PetscScalar  time_ini,time_fin;
+  PetscScalar  *ftmp,*ftmp1;
+  char         mesh_file[256];
+  AO           ao;
+  FILE         *fptr,*fptr1;
+  PetscTruth   flg;
+  MPI_Comm     comm = PETSC_COMM_WORLD;
 
   PetscFunctionBegin;
   /* Read the integer grid parameters */ 
@@ -2501,7 +2501,7 @@ int EventCountersBegin(int *gen_start,PetscScalar* time_start_counters)
 int EventCountersEnd(int gen_start,PetscScalar time_start_counters) 
 {
  int gen_read,ierr;
- Scalar time_read_counters;
+ PetscScalar time_read_counters;
  long long _counter0,_counter1;
 
  if ((gen_read = read_counters(event0,&_counter0,event1,&_counter1)) < 0)

@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.73 2001/06/21 21:15:31 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.74 2001/08/06 21:14:10 bsmith Exp balay $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -30,9 +30,9 @@ MPI_Comm   PETSC_COMM_SELF  = 0;
 
 #if defined(PETSC_USE_COMPLEX)
 MPI_Datatype  MPIU_COMPLEX;
-Scalar        PETSC_i; 
+PetscScalar   PETSC_i; 
 #else
-Scalar        PETSC_i = 0.0; 
+PetscScalar   PETSC_i = 0.0; 
 #endif
 
 /*
@@ -203,7 +203,7 @@ int PetscCompareDouble(double d)
 int PetscCompareScalar(PetscScalar d)
 {
   PetscScalar work = d;
-  int    ierr;
+  int         ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Bcast(&work,2,MPI_DOUBLE,0,MPI_COMM_WORLD);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.72 2001/05/29 17:19:06 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.73 2001/08/06 21:18:46 bsmith Exp balay $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -444,7 +444,7 @@ int DAGetMatrix2d_MPIAIJ(DA da,Mat *J)
   int                    lstart,lend,pstart,pend,*dnz,*onz,size;
   int                    dims[2],starts[2];
   MPI_Comm               comm;
-  Scalar                 *values;
+  PetscScalar            *values;
   DAPeriodicType         wrap;
   ISLocalToGlobalMapping ltog;
   DAStencilType          st;
@@ -570,7 +570,7 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat *J)
   int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk,size;
   int                    dims[3],starts[3];
   MPI_Comm               comm;
-  Scalar                 *values;
+  PetscScalar            *values;
   DAPeriodicType         wrap;
   ISLocalToGlobalMapping ltog;
   DAStencilType          st;
@@ -710,7 +710,7 @@ int DAGetMatrix1d_MPIAIJ(DA da,Mat *J)
   int                    istart,iend,size;
   int                    dims[1],starts[1];
   MPI_Comm               comm;
-  Scalar                 *values;
+  PetscScalar            *values;
   DAPeriodicType         wrap;
   ISLocalToGlobalMapping ltog;
 
@@ -792,7 +792,7 @@ int DAGetMatrix3d_MPIBAIJ(DA da,Mat *J)
   int                    m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
   int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
-  Scalar                 *values;
+  PetscScalar            *values;
   DAPeriodicType         wrap;
   DAStencilType          st;
   ISLocalToGlobalMapping ltog;

@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.85 1999/11/05 14:46:46 bsmith Exp bsmith $*/
+/*$Id: umls.h,v 1.8 1999/11/23 18:10:43 bsmith Exp balay $*/
 /*
     Context for a Newton line search method (unconstrained minimization)
  */
@@ -10,7 +10,7 @@
 typedef struct {
 
 /* --------------- Parameters used by line search method ----------------- */
-  Scalar gamma;		     /* damping parameter */
+  PetscScalar gamma;		     /* damping parameter */
   double maxstep;	     /* maximum step size */
   double gamma_factor;	     /* damping parameter */
   double rtol;		     /* relative tol for acceptable step (rtol>0) */

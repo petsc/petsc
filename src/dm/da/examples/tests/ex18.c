@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.3 2001/03/23 23:25:07 balay Exp bsmith $*/
+/*$Id: ex18.c,v 1.4 2001/04/10 19:37:27 bsmith Exp balay $*/
 
 static char help[] = "Tests DAGetISLocalToGlobalMappingBlck().\n\n";
 
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   DA          da;
   PetscViewer viewer;
   Vec         local,global;
-  Scalar      value;
+  PetscScalar value;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);

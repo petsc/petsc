@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.170 2001/07/20 21:17:57 bsmith Exp bsmith $*/
+/*$Id: vscat.c,v 1.171 2001/08/06 21:14:36 bsmith Exp balay $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -37,9 +37,9 @@ static int VecScatterCheckIndices_Private(int nmax,int n,int *idx)
 #define __FUNCT__ "VecScatterBegin_MPI_ToAll"
 int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
-  int      ierr,yy_n,xx_n,*range;
-  PetscScalar   *xv,*yv;
-  PetscMap map;
+  int          ierr,yy_n,xx_n,*range;
+  PetscScalar  *xv,*yv;
+  PetscMap     map;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(y,&yy_n);CHKERRQ(ierr);
@@ -48,7 +48,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
   if (x != y) {ierr = VecGetArray(x,&xv);CHKERRQ(ierr);}
 
   if (mode & SCATTER_REVERSE) {
-    PetscScalar               *xvt,*xvt2;
+    PetscScalar          *xvt,*xvt2;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     int                  i;
 
@@ -112,7 +112,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
       }
     }
   } else {
-    PetscScalar               *yvt;
+    PetscScalar          *yvt;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     int                  i;
 
@@ -155,10 +155,10 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
 #define __FUNCT__ "VecScatterBegin_MPI_ToOne"
 int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
-  int      rank,ierr,yy_n,xx_n,*range;
-  PetscScalar   *xv,*yv;
-  MPI_Comm comm;
-  PetscMap map;
+  int          rank,ierr,yy_n,xx_n,*range;
+  PetscScalar  *xv,*yv;
+  MPI_Comm     comm;
+  PetscMap     map;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(y,&yy_n);CHKERRQ(ierr);
@@ -171,7 +171,7 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
 
   /* --------  Reverse scatter; spread from processor 0 to other processors */
   if (mode & SCATTER_REVERSE) {
-    PetscScalar               *yvt;
+    PetscScalar          *yvt;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     int                  i;
 
@@ -201,7 +201,7 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
     }
   /* ---------  Forward scatter; gather all values onto processor 0 */
   } else { 
-    PetscScalar               *yvt = 0;
+    PetscScalar          *yvt  = 0;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     int                  i;
 
@@ -301,7 +301,7 @@ int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   VecScatter_Seq_General *gen_to = (VecScatter_Seq_General*)ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
   int                    i,n = gen_from->n,*fslots,*tslots,ierr;
-  PetscScalar                 *xv,*yv;
+  PetscScalar            *xv,*yv;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
@@ -338,7 +338,7 @@ int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
   int                    i,n = gen_from->n,*fslots = gen_from->slots;
   int                    first = gen_to->first,ierr;
-  PetscScalar                 *xv,*yv;
+  PetscScalar            *xv,*yv;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
@@ -382,7 +382,7 @@ int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
   int                    i,n = gen_from->n,*fslots = gen_from->slots;
   int                    first = gen_to->first,step = gen_to->step,ierr;
-  PetscScalar                 *xv,*yv;
+  PetscScalar            *xv,*yv;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
@@ -425,7 +425,7 @@ int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
   VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General*)ctx->todata;
   int                    i,n = gen_from->n,*fslots = gen_to->slots;
   int                    first = gen_from->first,ierr;
-  PetscScalar                 *xv,*yv;
+  PetscScalar            *xv,*yv;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
@@ -470,7 +470,7 @@ int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General*)ctx->todata;
   int                    i,n = gen_from->n,*fslots = gen_to->slots;
   int                    first = gen_from->first,step = gen_from->step,ierr;
-  PetscScalar                 *xv,*yv;
+  PetscScalar            *xv,*yv;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
@@ -513,7 +513,7 @@ int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   VecScatter_Seq_Stride *gen_from = (VecScatter_Seq_Stride*)ctx->fromdata;
   int                   i,n = gen_from->n,to_first = gen_to->first,to_step = gen_to->step;
   int                   from_first = gen_from->first,from_step = gen_from->step,ierr;
-  PetscScalar                *xv,*yv;
+  PetscScalar           *xv,*yv;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);

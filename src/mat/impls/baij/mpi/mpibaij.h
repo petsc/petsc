@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.28 2000/10/14 21:07:41 bsmith Exp bsmith $ */
+/* $Id: mpibaij.h,v 1.29 2000/10/24 20:25:55 bsmith Exp balay $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/sys/ctable.h"
@@ -46,7 +46,7 @@ typedef struct {
   /* The following variables are for MatGetRow() */
 
   int           *rowindices;       /* column indices for row */
-  Scalar        *rowvalues;        /* nonzero values in row */
+  PetscScalar   *rowvalues;        /* nonzero values in row */
   PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
 
   /* Some variables to make MatSetValues and others more efficient */

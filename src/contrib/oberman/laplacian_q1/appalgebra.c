@@ -1,4 +1,4 @@
-/*$Id: appalgebra.c,v 1.19 2001/03/23 23:25:29 balay Exp bsmith $*/
+/*$Id: appalgebra.c,v 1.20 2001/06/21 21:19:35 bsmith Exp balay $*/
 #include "appctx.h"
 #include "math.h"
 
@@ -287,9 +287,9 @@ int SetBoundaryConditions(AppCtx *appctx)
   AppGrid    *grid = &appctx->grid;
 
   /****** Local Variables ***********/
-  int        ierr,i;
-  int        *vertex_ptr; 
-  Scalar     zero = 0.0;
+  int          ierr,i;
+  int          *vertex_ptr; 
+  PetscScalar  zero = 0.0;
 
   PetscFunctionBegin;
 

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex15f.F,v 1.15 2000/10/24 20:26:55 bsmith Exp bsmith $";
+!    "$Id: ex15f.F,v 1.16 2001/01/15 21:47:36 bsmith Exp balay $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -52,7 +52,7 @@
       SLES             sles   
       PC               pc     
       KSP              ksp   
-      Scalar           v,one,neg_one
+      PetscScalar      v,one,neg_one
       double precision norm,tol
       integer          i,j,II,JJ,Istart,Iend,ierr,m,n
       integer          user_defined_pc,its,flg,rank

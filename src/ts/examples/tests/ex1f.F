@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.37 2001/01/15 21:48:34 bsmith Exp balay $";
+! "$Id: ex1f.F,v 1.38 2001/01/19 23:22:13 balay Exp balay $";
 !
 !       Formatted test for TS routines.
 !
@@ -280,7 +280,7 @@
       Vec         global
       integer     ctx
 
-      Scalar      localptr(1)
+      PetscScalar localptr(1)
       integer     i,mybase,myend,ierr
       PetscOffset idx
 
@@ -330,7 +330,7 @@
       Vec               sol
       integer           ctx
 
-      Scalar            localptr(1),ex1,ex2,sc1,sc2
+      PetscScalar       localptr(1),ex1,ex2,sc1,sc2
       integer           i,mybase,myend,ierr
       PetscOffset       idx
 
@@ -381,7 +381,7 @@
       integer           step,ctx,ierr
       double precision  time,lnrm_2,lnrm_max
       Vec               global
-      Scalar            mone
+      PetscScalar       mone
 
 !
 !    Application context data, stored in common block
@@ -461,7 +461,7 @@
       Vec              local
       integer          ierr,i,localsize
       PetscOffset      ldx,cdx 
-      Scalar           copyptr(1),localptr(1),sc
+      PetscScalar      copyptr(1),localptr(1),sc
 !
 !    Application context data, stored in common block
 !
@@ -528,7 +528,7 @@
 
       Mat              A
       integer          i,mstart,mend,rank,size,idx(3)
-      Scalar           v(3),stwo,sone
+      PetscScalar      v(3),stwo,sone
 
 !
 !    Application context data, stored in common block

@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.98 2001/06/21 21:19:50 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.99 2001/08/06 21:19:11 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -249,12 +249,12 @@ void PETSC_STDCALL matfdcoloringcreate_(Mat *mat,ISColoring *iscoloring,MatFDCol
   at a time.
 */
 static int    matgetrowactive = 0,*my_ocols = 0;
-static Scalar *my_ovals = 0;
+static PetscScalar *my_ovals = 0;
 
 void PETSC_STDCALL matgetrow_(Mat *mat,int *row,int *ncols,int *cols,PetscScalar *vals,int *ierr)
 {
   int    **oocols = &my_ocols;
-  Scalar **oovals = &my_ovals;
+  PetscScalar **oovals = &my_ovals;
 
   if (matgetrowactive) {
      PetscError(__LINE__,"MatGetRow_Fortran",__FILE__,__SDIR__,1,0,
@@ -277,7 +277,7 @@ void PETSC_STDCALL matgetrow_(Mat *mat,int *row,int *ncols,int *cols,PetscScalar
 void PETSC_STDCALL matrestorerow_(Mat *mat,int *row,int *ncols,int *cols,PetscScalar *vals,int *ierr)
 {
   int    **oocols = &my_ocols;
-  Scalar **oovals = &my_ovals;
+  PetscScalar **oovals = &my_ovals;
   if (!matgetrowactive) {
      PetscError(__LINE__,"MatRestoreRow_Fortran",__FILE__,__SDIR__,1,0,
                "Must call MatGetRow() first");
@@ -309,7 +309,7 @@ void PETSC_STDCALL matgetinfo_(Mat *mat,MatInfoType *flag,double *finfo,int *ier
 
 void PETSC_STDCALL matgetarray_(Mat *mat,PetscScalar *fa,long *ia,int *ierr)
 {
-  Scalar *mm;
+  PetscScalar *mm;
   int    m,n;
 
   *ierr = MatGetArray(*mat,&mm); if (*ierr) return;
@@ -319,7 +319,7 @@ void PETSC_STDCALL matgetarray_(Mat *mat,PetscScalar *fa,long *ia,int *ierr)
 
 void PETSC_STDCALL matrestorearray_(Mat *mat,PetscScalar *fa,long *ia,int *ierr)
 {
-  Scalar               *lx;
+  PetscScalar          *lx;
   int                  m,n;
 
   *ierr = MatGetSize(*mat,&m,&n); if (*ierr) return;

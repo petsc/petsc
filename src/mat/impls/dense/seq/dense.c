@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.204 2001/07/20 21:19:29 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.205 2001/08/06 21:15:12 bsmith Exp balay $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -25,7 +25,7 @@ int MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
   int          i,N = A->m*A->n,count = 0;
-  PetscScalar       *v = a->v;
+  PetscScalar  *v = a->v;
 
   PetscFunctionBegin;
   for (i=0; i<N; i++) {if (*v != 0.0) count++; v++;}
@@ -188,7 +188,7 @@ int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   int          one = 1,info,ierr;
-  PetscScalar       *x,*y;
+  PetscScalar  *x,*y;
   
   PetscFunctionBegin;
   if (!A->m || !A->n) PetscFunctionReturn(0);
@@ -222,7 +222,7 @@ int MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   int          ierr,one = 1,info;
-  PetscScalar       *x,*y;
+  PetscScalar  *x,*y;
   
   PetscFunctionBegin;
   if (!A->m || !A->n) PetscFunctionReturn(0);
@@ -256,7 +256,7 @@ int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   int          ierr,one = 1,info;
-  PetscScalar       *x,*y,sone = 1.0;
+  PetscScalar  *x,*y,sone = 1.0;
   Vec          tmp = 0;
   
   PetscFunctionBegin;
@@ -298,7 +298,7 @@ int MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense  *mat = (Mat_SeqDense*)A->data;
   int           one = 1,info,ierr;
-  PetscScalar        *x,*y,sone = 1.0;
+  PetscScalar   *x,*y,sone = 1.0;
   Vec           tmp;
   
   PetscFunctionBegin;
@@ -344,7 +344,7 @@ int MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,
                           PetscReal shift,int its,Vec xx)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
-  PetscScalar       *x,*b,*v = mat->v,zero = 0.0,xt;
+  PetscScalar  *x,*b,*v = mat->v,zero = 0.0,xt;
   int          ierr,m = A->m,i;
 #if !defined(PETSC_USE_COMPLEX)
   int          o = 1;
@@ -404,8 +404,9 @@ int MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 int MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
-  PetscScalar       *v = mat->v,*x,*y;
-  int          ierr,_One=1;Scalar _DOne=1.0,_DZero=0.0;
+  PetscScalar  *v = mat->v,*x,*y;
+  int          ierr,_One=1;
+  PetscScalar  _DOne=1.0,_DZero=0.0;
 
   PetscFunctionBegin;
   if (!A->m || !A->n) PetscFunctionReturn(0);
@@ -423,7 +424,7 @@ int MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 int MatMult_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
-  PetscScalar       *v = mat->v,*x,*y,_DOne=1.0,_DZero=0.0;
+  PetscScalar  *v = mat->v,*x,*y,_DOne=1.0,_DZero=0.0;
   int          ierr,_One=1;
 
   PetscFunctionBegin;
@@ -442,7 +443,7 @@ int MatMult_SeqDense(Mat A,Vec xx,Vec yy)
 int MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
-  PetscScalar       *v = mat->v,*x,*y,_DOne=1.0;
+  PetscScalar  *v = mat->v,*x,*y,_DOne=1.0;
   int          ierr,_One=1;
 
   PetscFunctionBegin;
@@ -462,9 +463,9 @@ int MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 int MatMultTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
-  PetscScalar       *v = mat->v,*x,*y;
+  PetscScalar  *v = mat->v,*x,*y;
   int          ierr,_One=1;
-  PetscScalar       _DOne=1.0;
+  PetscScalar  _DOne=1.0;
 
   PetscFunctionBegin;
   if (!A->m || !A->n) PetscFunctionReturn(0);
@@ -484,7 +485,7 @@ int MatMultTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 int MatGetRow_SeqDense(Mat A,int row,int *ncols,int **cols,PetscScalar **vals)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
-  PetscScalar       *v;
+  PetscScalar  *v;
   int          i,ierr;
   
   PetscFunctionBegin;
@@ -591,7 +592,7 @@ int MatGetValues_SeqDense(Mat A,int m,int *indexm,int n,int *indexn,PetscScalar 
 { 
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   int          i,j;
-  PetscScalar       *vpt = v;
+  PetscScalar  *vpt = v;
 
   PetscFunctionBegin;
   /* row-oriented output */ 
@@ -616,7 +617,7 @@ int MatLoad_SeqDense(PetscViewer viewer,MatType type,Mat *A)
   Mat          B;
   int          *scols,i,j,nz,ierr,fd,header[4],size;
   int          *rowlengths = 0,M,N,*cols;
-  PetscScalar       *vals,*svals,*v,*w;
+  PetscScalar  *vals,*svals,*v,*w;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
 
   PetscFunctionBegin;
@@ -690,7 +691,7 @@ static int MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
   Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
   int               ierr,i,j;
   char              *name;
-  PetscScalar            *v;
+  PetscScalar       *v;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -767,7 +768,7 @@ static int MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
   int               ict,j,n = A->n,m = A->m,i,fd,*col_lens,ierr,nz = m*n;
-  PetscScalar            *v,*anonz,*vals;
+  PetscScalar       *v,*anonz,*vals;
   PetscViewerFormat format;
   
   PetscFunctionBegin;
@@ -836,7 +837,7 @@ int MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
   Mat               A = (Mat) Aa;
   Mat_SeqDense      *a = (Mat_SeqDense*)A->data;
   int               m = A->m,n = A->n,color,i,j,ierr;
-  PetscScalar            *v = a->v;
+  PetscScalar       *v = a->v;
   PetscViewer       viewer;
   PetscDraw         popup;
   PetscReal         xl,yl,xr,yr,x_l,x_r,y_l,y_r,scale,maxv = 0.0;
@@ -975,7 +976,7 @@ int MatTranspose_SeqDense(Mat A,Mat *matout)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   int          k,j,m,n,ierr;
-  PetscScalar       *v,tmp;
+  PetscScalar  *v,tmp;
 
   PetscFunctionBegin;
   v = mat->v; m = A->m; n = A->n;
@@ -1002,7 +1003,8 @@ int MatTranspose_SeqDense(Mat A,Mat *matout)
   } else { /* out-of-place transpose */
     Mat          tmat;
     Mat_SeqDense *tmatd;
-    PetscScalar       *v2;
+    PetscScalar  *v2;
+
     ierr  = MatCreateSeqDense(A->comm,A->n,A->m,PETSC_NULL,&tmat);CHKERRQ(ierr);
     tmatd = (Mat_SeqDense*)tmat->data;
     v = mat->v; v2 = tmatd->v;
@@ -1023,7 +1025,7 @@ int MatEqual_SeqDense(Mat A1,Mat A2,PetscTruth *flg)
   Mat_SeqDense *mat1 = (Mat_SeqDense*)A1->data;
   Mat_SeqDense *mat2 = (Mat_SeqDense*)A2->data;
   int          ierr,i;
-  PetscScalar       *v1 = mat1->v,*v2 = mat2->v;
+  PetscScalar  *v1 = mat1->v,*v2 = mat2->v;
   PetscTruth   flag;
 
   PetscFunctionBegin;
@@ -1045,7 +1047,7 @@ int MatGetDiagonal_SeqDense(Mat A,Vec v)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   int          ierr,i,n,len;
-  PetscScalar       *x,zero = 0.0;
+  PetscScalar  *x,zero = 0.0;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
@@ -1065,7 +1067,7 @@ int MatGetDiagonal_SeqDense(Mat A,Vec v)
 int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
-  PetscScalar       *l,*r,x,*v;
+  PetscScalar  *l,*r,x,*v;
   int          ierr,i,j,m = A->m,n = A->n;
 
   PetscFunctionBegin;
@@ -1101,7 +1103,7 @@ int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
 int MatNorm_SeqDense(Mat A,NormType type,PetscReal *norm)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
-  PetscScalar       *v = mat->v;
+  PetscScalar  *v = mat->v;
   PetscReal    sum = 0.0;
   int          i,j;
 
@@ -1204,7 +1206,7 @@ int MatZeroRows_SeqDense(Mat A,IS is,PetscScalar *diag)
 {
   Mat_SeqDense *l = (Mat_SeqDense*)A->data;
   int          n = A->n,i,j,ierr,N,*rows;
-  PetscScalar       *slot;
+  PetscScalar  *slot;
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
@@ -1259,7 +1261,7 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   int          i,j,ierr,m = A->m,*irow,*icol,nrows,ncols;
-  PetscScalar       *av,*bv,*v = mat->v;
+  PetscScalar  *av,*bv,*v = mat->v;
   Mat          newmat;
 
   PetscFunctionBegin;

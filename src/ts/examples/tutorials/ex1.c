@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.28 2001/04/10 19:37:12 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.29 2001/08/06 21:18:18 bsmith Exp balay $*/
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping.";
 
@@ -188,7 +188,7 @@ int FormInitialGuess(Vec X,AppCtx *user)
   int     i,j,row,mx,my,ierr;
   double  one = 1.0,lambda;
   double  temp1,temp,hx,hy;
-  Scalar  *x;
+  PetscScalar  *x;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -223,7 +223,7 @@ int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
   int     ierr,i,j,row,mx,my;
   double  two = 2.0,one = 1.0,lambda;
   double  hx,hy,hxdhy,hydhx;
-  Scalar  ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
+  PetscScalar  ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -267,7 +267,7 @@ int FormJacobian(TS ts,double t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr
   AppCtx *user = (AppCtx*)ptr;
   Mat     jac = *B;
   int     i,j,row,mx,my,col[5],ierr;
-  Scalar  two = 2.0,one = 1.0,lambda,v[5],sc,*x;
+  PetscScalar  two = 2.0,one = 1.0,lambda,v[5],sc,*x;
   double  hx,hy,hxdhy,hydhx;
 
 

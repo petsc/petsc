@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.46 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex14.c,v 1.47 2001/03/23 23:21:30 balay Exp balay $*/
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
 This does the tricky case.\n\n";
@@ -12,7 +12,7 @@ int main(int argc,char **argv)
 {
   int           n = 5,ierr;
   int           size,rank,N;
-  Scalar        value,zero = 0.0;
+  PetscScalar   value,zero = 0.0;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;

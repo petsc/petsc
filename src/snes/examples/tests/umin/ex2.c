@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.69 2001/04/10 19:37:04 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.70 2001/08/06 21:17:36 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained minimization problems on a single processor.  These examples are based on\n\
 problems from the MINPACK-2 test suite.  The command line options are:\n\
@@ -20,9 +20,9 @@ problems from the MINPACK-2 test suite.  The command line options are:\n\
       int     my;         /* discretization in y-direction */
       int     ndim;       /* problem dimension */
       int     number;     /* test problem number */
-      Scalar  *work;      /* work space */
+      PetscScalar  *work;      /* work space */
       Vec     s,y,xvec; /* work space for computing Hessian */
-      Scalar  hx,hy;
+      PetscScalar  hx,hy;
    } AppCtx;
 
 /* Flag to indicate evaluation of function and/or gradient */
@@ -195,9 +195,9 @@ int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
 */
 int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void *ptr)
 {
-  AppCtx     *user = (AppCtx*)ptr;
-  int        i,j,ierr,ndim;
-  Scalar     *y,zero = 0.0,one = 1.0;
+  AppCtx       *user = (AppCtx*)ptr;
+  int          i,j,ierr,ndim;
+  PetscScalar  *y,zero = 0.0,one = 1.0;
 
   ndim = user->ndim;
   ierr = VecSet(&zero,user->s);CHKERRQ(ierr);
@@ -263,8 +263,8 @@ int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void 
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int    ierr,i,j,k,nx = user->mx,ny = user->my;
-  Scalar hx = user->hx,hy = user->hy,temp;
-  Scalar *x;
+  PetscScalar hx = user->hx,hy = user->hy,temp;
+  PetscScalar *x;
 
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   for (j=0; j<ny; j++) {
@@ -288,9 +288,9 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppCtx *user)
 {
   int    ierr,nx = user->mx,ny = user->my,ind,i,j,k;
-  Scalar hx = user->hx,hy = user->hy,area,three = 3.0,p5 = 0.5,cdiv3;
-  Scalar zero = 0.0,vb,vl,vr,vt,dvdx,dvdy,flin = 0.0,fquad = 0.0;
-  Scalar val,v,*x;
+  PetscScalar hx = user->hx,hy = user->hy,area,three = 3.0,p5 = 0.5,cdiv3;
+  PetscScalar zero = 0.0,vb,vl,vr,vt,dvdx,dvdy,flin = 0.0,fquad = 0.0;
+  PetscScalar val,v,*x;
 
   cdiv3 = user->param/three;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -399,9 +399,9 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
 {
   AppCtx *user = (AppCtx *)ptr;
   int    nx,ny,i,j,k,ierr,ind;
-  Scalar p5 = 0.5,one = 1.0,hx,hy;
-  Scalar v,vb,vl,vr,vt,hxhx,hyhy,zero = 0.0;
-  Scalar val,area,*x,*s,szero = 0.0;
+  PetscScalar p5 = 0.5,one = 1.0,hx,hy;
+  PetscScalar v,vb,vl,vr,vt,hxhx,hyhy,zero = 0.0;
+  PetscScalar val,area,*x,*s,szero = 0.0;
 
   nx = user->mx;
   ny = user->my;
@@ -486,9 +486,9 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
 int FormInitialGuess2(AppCtx *user,Vec X)
 {
   int    ierr,i,j,k,nx = user->mx,ny = user->my;
-  Scalar one = 1.0,p5 = 0.5,alphaj,betai;
-  Scalar hx = user->hx,hy = user->hy,*x;
-  Scalar *bottom,*top,*left,*right,xline,yline;
+  PetscScalar one = 1.0,p5 = 0.5,alphaj,betai;
+  PetscScalar hx = user->hx,hy = user->hy,*x;
+  PetscScalar *bottom,*top,*left,*right,xline,yline;
 
   bottom = user->work;
   top    = &user->work[nx+2];
@@ -519,10 +519,10 @@ int FormInitialGuess2(AppCtx *user,Vec X)
 int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppCtx *user)
 {
   int    ierr,nx = user->mx,ny = user->my,ind,i,j,k;
-  Scalar one = 1.0,p5 = 0.5,hx = user->hx,hy = user->hy,fl,fu,area;
-  Scalar *bottom,*top,*left,*right;
-  Scalar v=0.0,vb=0.0,vl=0.0,vr=0.0,vt=0.0,dvdx,dvdy;
-  Scalar zero = 0.0,val,*x;
+  PetscScalar one = 1.0,p5 = 0.5,hx = user->hx,hy = user->hy,fl,fu,area;
+  PetscScalar *bottom,*top,*left,*right;
+  PetscScalar v=0.0,vb=0.0,vl=0.0,vr=0.0,vt=0.0,dvdx,dvdy;
+  PetscScalar zero = 0.0,val,*x;
 
   bottom = user->work;
   top    = &user->work[nx+2];
@@ -668,12 +668,12 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
 {
   AppCtx *user = (AppCtx*)ptr;
   int    nx,ny,i,j,k,ierr,ind;
-  Scalar one = 1.0,p5 = 0.5,hx,hy;
-  Scalar dzdy,dzdyhy,fl,fl3,fu,fu3,tl,tu,z,zb,zl,zr,zt;
-  Scalar *bottom,*top,*left,*right;
-  Scalar dvdx,dvdxhx,dvdy,dvdyhy,dzdx,dzdxhx;
-  Scalar v=0.0,vb=0.0,vl=0.0,vr=0.0,vt=0.0,zerod = 0.0;
-  Scalar val,area,zero = 0.0,*s,*x;
+  PetscScalar one = 1.0,p5 = 0.5,hx,hy;
+  PetscScalar dzdy,dzdyhy,fl,fl3,fu,fu3,tl,tu,z,zb,zl,zr,zt;
+  PetscScalar *bottom,*top,*left,*right;
+  PetscScalar dvdx,dvdxhx,dvdy,dvdyhy,dzdx,dzdxhx;
+  PetscScalar v=0.0,vb=0.0,vl=0.0,vr=0.0,vt=0.0,zerod = 0.0;
+  PetscScalar val,area,zero = 0.0,*s,*x;
 
   nx = user->mx;
   ny = user->my;
@@ -826,10 +826,10 @@ int BoundaryValues(AppCtx *user)
 {
   int    maxit=5,i,j,k,limit=0,nx = user->mx,ny = user->my;
   double three=3.0,tol=1.0e-10;
-  Scalar one=1.0,two=2.0;
-  Scalar b=-.50,t=.50,l=-.50,r=.50,det,fnorm,xt=0.0,yt=0.0;
-  Scalar nf[2],njac[2][2],u[2],hx = user->hx,hy = user->hy;
-  Scalar *bottom,*top,*left,*right;
+  PetscScalar one=1.0,two=2.0;
+  PetscScalar b=-.50,t=.50,l=-.50,r=.50,det,fnorm,xt=0.0,yt=0.0;
+  PetscScalar nf[2],njac[2][2],u[2],hx = user->hx,hy = user->hy;
+  PetscScalar *bottom,*top,*left,*right;
 
   bottom = user->work;
   top    = &user->work[nx+2];

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex13f90.F,v 1.22 2001/01/15 21:47:36 bsmith Exp bsmith $";
+!    "$Id: ex13f90.F,v 1.23 2001/01/17 22:25:35 bsmith Exp balay $";
 !
 !
 !/*T
@@ -58,13 +58,13 @@
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      Scalar  hx,hy,x,y
+      PetscScalar  hx,hy,x,y
       PetscFortranAddr userctx(6)
       integer ierr,m,n,t,tmax,flg,i,j,Ntot
       integer size,rank
       double precision  enorm
-      Scalar,ALLOCATABLE :: userx(:,:),userb(:,:)
-      Scalar,ALLOCATABLE :: solution(:,:),rho(:,:)
+      PetscScalar,ALLOCATABLE :: userx(:,:),userb(:,:)
+      PetscScalar,ALLOCATABLE :: solution(:,:),rho(:,:)
 
       double precision hx2,hy2
       common /param/ hx2,hy2
@@ -244,7 +244,7 @@
 
       integer ierr
       PetscFortranAddr userctx(*)
-      Scalar rho(*),userb(*),userx(*)
+      PetscScalar rho(*),userb(*),userx(*)
 
 
       common /param/ hx2,hy2
@@ -257,9 +257,9 @@
       integer m,n
 
       integer i,j,II,JJ,its
-      Scalar  v
+      PetscScalar  v
 
-!      Scalar tmpx(*),tmpb(*)
+!      PetscScalar tmpx(*),tmpb(*)
 
       x    = userctx(1)
       b    = userctx(2)

@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.157 2001/06/21 21:18:09 bsmith Exp balay $*/
+/*$Id: itfunc.c,v 1.158 2001/08/02 20:29:45 balay Exp balay $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -201,9 +201,9 @@ int KSPSetUp(KSP ksp)
 @*/
 int KSPSolve(KSP ksp,int *its) 
 {
-  int        ierr,rank,nits;
-  PetscTruth flag1,flag2;
-  Scalar     zero = 0.0;
+  int          ierr,rank,nits;
+  PetscTruth   flag1,flag2;
+  PetscScalar  zero = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -339,8 +339,8 @@ int KSPSolve(KSP ksp,int *its)
 @*/
 int KSPSolveTranspose(KSP ksp,int *its) 
 {
-  int        ierr;
-  Scalar     zero = 0.0;
+  int           ierr;
+  PetscScalar   zero = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);

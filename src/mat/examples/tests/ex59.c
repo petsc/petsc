@@ -1,4 +1,4 @@
-/*$Id: ex59.c,v 1.18 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex59.c,v 1.19 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Tests MatGetSubmatrix() in parallel.";
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat         C,A;
   int         i,j,m = 3,n = 2,rank,size,ierr,rstart,rend;
-  Scalar      v;
+  PetscScalar v;
   IS          isrow,iscol;
   PetscTruth  flg;
   char        type[256];

@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.122 2001/03/23 23:23:10 balay Exp bsmith $*/
+/*$Id: mg.c,v 1.123 2001/06/21 21:17:52 bsmith Exp balay $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -19,7 +19,7 @@ int MGMCycle_Private(MG *mglevels)
 {
   MG     mg = *mglevels,mgc = *(mglevels - 1);
   int    cycles = mg->cycles,ierr,its;
-  Scalar zero = 0.0;
+  PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
   if (!mg->level) {  /* coarse grid */
@@ -137,7 +137,7 @@ EXTERN int MGKCycle_Private(MG*);
 static int PCApply_MG(PC pc,Vec b,Vec x)
 {
   MG     *mg = (MG*)pc->data;
-  Scalar zero = 0.0;
+  PetscScalar zero = 0.0;
   int    levels = mg[0]->levels,ierr;
 
   PetscFunctionBegin;

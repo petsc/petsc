@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.24 2001/04/10 19:36:37 bsmith Exp bsmith $*/
+/*$Id: ex18.c,v 1.25 2001/08/06 21:16:51 bsmith Exp balay $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -17,7 +17,7 @@ int main(int argc,char **args)
   int            ierr,its,m,n,mvec;
   PetscLogDouble time1,time2,time;
   double         norm;
-  Scalar         zero = 0.0,none = -1.0;
+  PetscScalar    zero = 0.0,none = -1.0;
   Vec            x,b,u;
   Mat            A;
   SLES           sles;
@@ -41,7 +41,7 @@ int main(int argc,char **args)
   ierr = VecGetSize(b,&mvec);CHKERRQ(ierr);
   if (m > mvec) {
     Vec    tmp;
-    Scalar *bold,*bnew;
+    PetscScalar *bold,*bnew;
     /* create a new vector b by padding the old one */
     ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&tmp);CHKERRQ(ierr);
     ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);

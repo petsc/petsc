@@ -1,4 +1,4 @@
-/*$Id: composite.c,v 1.43 2001/04/10 19:36:17 bsmith Exp bsmith $*/
+/*$Id: composite.c,v 1.44 2001/08/06 21:16:32 bsmith Exp balay $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
@@ -16,7 +16,7 @@ typedef struct {
   PCCompositeType  type;
   Vec              work1;
   Vec              work2;
-  Scalar           alpha;
+  PetscScalar      alpha;
   PetscTruth       use_true_matrix;
 } PC_Composite;
 
@@ -27,7 +27,7 @@ static int PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
   int              ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
-  Scalar           one = 1.0,mone = -1.0;
+  PetscScalar      one = 1.0,mone = -1.0;
   Mat              mat = pc->pmat;
 
   PetscFunctionBegin;
@@ -83,7 +83,7 @@ static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
   int              ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
-  Scalar           one = 1.0;
+  PetscScalar      one = 1.0;
 
   PetscFunctionBegin;
   if (!next) {

@@ -1,4 +1,4 @@
-/*$Id: bdiag.c,v 1.196 2001/07/20 21:20:17 bsmith Exp bsmith $*/
+/*$Id: bdiag.c,v 1.197 2001/08/06 21:15:30 bsmith Exp balay $*/
 
 /* Block diagonal matrix format */
 
@@ -72,7 +72,7 @@ int MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          i,k,temp,*diag = a->diag,*bdlen = a->bdlen;
-  PetscScalar       *dtemp,**dv = a->diagv;
+  PetscScalar  *dtemp,**dv = a->diagv;
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -169,7 +169,7 @@ static int MatGetDiagonal_SeqBDiag_N(Mat A,Vec v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          ierr,i,j,n,len,ibase,bs = a->bs,iloc;
-  PetscScalar       *x,*dd,zero = 0.0;
+  PetscScalar  *x,*dd,zero = 0.0;
 
   PetscFunctionBegin;
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
@@ -194,7 +194,7 @@ static int MatGetDiagonal_SeqBDiag_1(Mat A,Vec v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          ierr,i,n,len;
-  PetscScalar       *x,*dd,zero = 0.0;
+  PetscScalar  *x,*dd,zero = 0.0;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
@@ -215,7 +215,7 @@ int MatZeroEntries_SeqBDiag(Mat A)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          d,i,len,bs = a->bs;
-  PetscScalar       *dv;
+  PetscScalar  *dv;
 
   PetscFunctionBegin;
   for (d=0; d<a->nd; d++) {
@@ -246,7 +246,7 @@ int MatZeroRows_SeqBDiag(Mat A,IS is,PetscScalar *diag)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          i,ierr,N,*rows,m = A->m - 1,nz,*col;
-  PetscScalar       *dd,*val;
+  PetscScalar  *dd,*val;
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
@@ -276,7 +276,7 @@ int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          nznew,*smap,i,j,ierr,oldcols = A->n;
   int          *irow,*icol,newr,newc,*cwork,*col,nz,bs;
-  PetscScalar       *vwork,*val;
+  PetscScalar  *vwork,*val;
   Mat          newmat;
 
   PetscFunctionBegin;
@@ -367,7 +367,7 @@ int MatScale_SeqBDiag(PetscScalar *alpha,Mat inA)
 int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  PetscScalar       *l,*r,*dv;
+  PetscScalar  *l,*r,*dv;
   int          d,j,len,ierr;
   int          nd = a->nd,bs = a->bs,diag,m,n;
 
@@ -693,13 +693,13 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatLoad_SeqBDiag"
 int MatLoad_SeqBDiag(PetscViewer viewer,MatType type,Mat *A)
 {
-  Mat        B;
-  int        *scols,i,nz,ierr,fd,header[4],size,nd = 128;
-  int        bs,*rowlengths = 0,M,N,*cols,extra_rows,*diag = 0;
-  int        idiag[128];
-  PetscScalar     *vals,*svals;
-  MPI_Comm   comm;
-  PetscTruth flg;
+  Mat          B;
+  int          *scols,i,nz,ierr,fd,header[4],size,nd = 128;
+  int          bs,*rowlengths = 0,M,N,*cols,extra_rows,*diag = 0;
+  int          idiag[128];
+  PetscScalar  *vals,*svals;
+  MPI_Comm     comm;
+  PetscTruth   flg;
   
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);

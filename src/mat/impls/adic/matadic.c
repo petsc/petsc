@@ -1,4 +1,4 @@
-/*$Id: matadic.c,v 1.11 2001/07/27 17:58:05 bsmith Exp bsmith $*/
+/*$Id: matadic.c,v 1.12 2001/08/06 21:16:02 bsmith Exp balay $*/
 /*
     ADIC matrix-free matrix implementation
 */
@@ -61,12 +61,12 @@ int MatMult_DAAD(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatGetDiagonal_DAD"
 int MatGetDiagonal_DAAD(Mat A,Vec dd)
 {
-  Mat_DAAD    *a = (Mat_DAAD*)A->data;
-  int         ierr,j,nI,gI,gtdof;
-  PetscScalar      *avu,*ad_vustart,ad_f[2],*d;
-  DALocalInfo info;
-  MatStencil  stencil;
-  void*       *ad_vu;
+  Mat_DAAD      *a = (Mat_DAAD*)A->data;
+  int           ierr,j,nI,gI,gtdof;
+  PetscScalar   *avu,*ad_vustart,ad_f[2],*d;
+  DALocalInfo   info;
+  MatStencil    stencil;
+  void*         *ad_vu;
 
   PetscFunctionBegin;
 
@@ -114,13 +114,13 @@ int MatGetDiagonal_DAAD(Mat A,Vec dd)
 #define __FUNCT__ "MatRelax_DAD"
 int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
 {
-  Mat_DAAD    *a = (Mat_DAAD*)A->data;
-  int         ierr,j,gtdof,nI,gI;
-  PetscScalar      *avu,*av,*ad_vustart,ad_f[2],zero = 0.0,*d,*b;
-  Vec         localxx,dd;
-  DALocalInfo info;
-  MatStencil  stencil;
-  void*       *ad_vu;
+  Mat_DAAD      *a = (Mat_DAAD*)A->data;
+  int           ierr,j,gtdof,nI,gI;
+  PetscScalar   *avu,*av,*ad_vustart,ad_f[2],zero = 0.0,*d,*b;
+  Vec           localxx,dd;
+  DALocalInfo   info;
+  MatStencil    stencil;
+  void*         *ad_vu;
 
   PetscFunctionBegin;
   if (!a->diagonal) {

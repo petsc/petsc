@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.170 2001/04/10 19:36:55 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.171 2001/08/06 21:17:15 bsmith Exp balay $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -27,7 +27,7 @@ int SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *is
     if (a1/fnorm < 1.e-4) *ismin = PETSC_TRUE;
   } else {
     Vec       work;
-    Scalar    result;
+    PetscScalar    result;
     PetscReal wnorm;
 
     ierr = VecSetRandom(PETSC_NULL,W);CHKERRQ(ierr);
@@ -50,10 +50,10 @@ int SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *is
 #define __FUNCT__ "SNESLSCheckResidual_Private"
 int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
 {
-  PetscReal  a1,a2;
-  int        ierr;
-  PetscTruth hastranspose;
-  Scalar     mone = -1.0;
+  PetscReal     a1,a2;
+  int           ierr;
+  PetscTruth    hastranspose;
+  PetscScalar   mone = -1.0;
 
   PetscFunctionBegin;
   ierr = MatHasOperation(A,MATOP_MULT_TRANSPOSE,&hastranspose);CHKERRQ(ierr);
@@ -325,10 +325,10 @@ int SNESDestroy_EQ_LS(SNES snes)
 @*/
 int SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
 {
-  int        ierr;
-  Scalar     mone = -1.0;
-  SNES_EQ_LS *neP = (SNES_EQ_LS*)snes->data;
-  PetscTruth change_y = PETSC_FALSE;
+  int           ierr;
+  PetscScalar   mone = -1.0;
+  SNES_EQ_LS    *neP = (SNES_EQ_LS*)snes->data;
+  PetscTruth    change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   *flag = 0; 
@@ -400,10 +400,10 @@ $     -snes_no_convergence_test -snes_max_it <its>
 @*/
 int SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
 {
-  int        ierr;
-  Scalar     mone = -1.0;
-  SNES_EQ_LS *neP = (SNES_EQ_LS*)snes->data;
-  PetscTruth change_y = PETSC_FALSE;
+  int           ierr;
+  PetscScalar   mone = -1.0;
+  SNES_EQ_LS    *neP = (SNES_EQ_LS*)snes->data;
+  PetscTruth    change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   *flag = 0; 
@@ -466,15 +466,15 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
      where z(x) = .5 * fnorm*fnorm, and fnorm = || f ||_2.
    */
         
-  PetscReal  steptol,initslope,lambdaprev,gnormprev,a,b,d,t1,t2;
-  PetscReal  maxstep,minlambda,alpha,lambda,lambdatemp,lambdaneg;
+  PetscReal     steptol,initslope,lambdaprev,gnormprev,a,b,d,t1,t2;
+  PetscReal     maxstep,minlambda,alpha,lambda,lambdatemp,lambdaneg;
 #if defined(PETSC_USE_COMPLEX)
-  Scalar     cinitslope,clambda;
+  PetscScalar   cinitslope,clambda;
 #endif
-  int        ierr,count;
-  SNES_EQ_LS *neP = (SNES_EQ_LS*)snes->data;
-  Scalar     mone = -1.0,scale;
-  PetscTruth change_y = PETSC_FALSE;
+  int           ierr,count;
+  SNES_EQ_LS    *neP = (SNES_EQ_LS*)snes->data;
+  PetscScalar   mone = -1.0,scale;
+  PetscTruth    change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
@@ -650,12 +650,12 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
    */
   PetscReal  steptol,initslope,maxstep,minlambda,alpha,lambda,lambdatemp,lambdaneg;
 #if defined(PETSC_USE_COMPLEX)
-  Scalar     cinitslope,clambda;
+  PetscScalar    cinitslope,clambda;
 #endif
   int        ierr,count;
-  SNES_EQ_LS *neP = (SNES_EQ_LS*)snes->data;
-  Scalar     mone = -1.0,scale;
-  PetscTruth change_y = PETSC_FALSE;
+  SNES_EQ_LS     *neP = (SNES_EQ_LS*)snes->data;
+  PetscScalar    mone = -1.0,scale;
+  PetscTruth     change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);

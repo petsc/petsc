@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.29 2001/01/15 21:45:20 bsmith Exp bsmith $"
+!    "$Id: ex1f.F,v 1.30 2001/01/17 22:21:32 bsmith Exp balay $"
 !
 !   Program usage:  mpirun ex1f [-help] [all PETSc options] 
 !
@@ -40,7 +40,7 @@
       Vec              x,y,w,z(5)
       double precision norm,v,v1,v2
       integer          n,ierr,flg,rank
-      Scalar           one,two,three,dots(3),dot
+      PetscScalar      one,two,three,dots(3),dot
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

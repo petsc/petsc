@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.48 2000/10/24 20:25:39 bsmith Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.49 2001/03/23 22:05:12 bsmith Exp balay $ */
 
 #if !defined(__MPIROWBS_H)
 #define __MPIROWBS_H
@@ -31,7 +31,7 @@ typedef struct {
   MPI_Request *send_waits;        /* array of send requests */
   MPI_Request *recv_waits;        /* array of receive requests */
   int         nsends,nrecvs;     /* numbers of sends and receives */
-  Scalar      *svalues,*rvalues; /* sending and receiving data */
+  PetscScalar *svalues,*rvalues; /* sending and receiving data */
   int         rmax;               /* maximum message length */
   PetscTruth  vecs_permscale;     /* flag indicating permuted and scaled vectors */
   int         factor;

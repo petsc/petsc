@@ -1,5 +1,5 @@
 !
-!    "$Id: ex32f.F,v 1.3 2000/09/27 20:06:55 bsmith Exp bsmith $";
+!    "$Id: ex32f.F,v 1.4 2001/01/15 21:45:13 bsmith Exp balay $";
 !
 !  Tests PescOffsetFortran()
 !  duplicated
@@ -12,7 +12,7 @@
 
       integer ierr, n, size
 
-      Scalar  v_v1(1),v_v2(1)
+      PetscScalar  v_v1(1),v_v2(1)
       Vec     v
       integer i,i_v1,i_v2
       

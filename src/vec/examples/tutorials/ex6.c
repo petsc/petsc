@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.31 2001/04/10 19:35:06 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.32 2001/08/06 21:15:03 bsmith Exp balay $*/
 
 static char help[] = "Writes an array to a file, then reads an array from a file, then forms a vector.\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Writes an array to a file, then reads an array from a file
 int main(int argc,char **args)
 {
   int         i,ierr,m = 10,fd,size,sz;
-  Scalar      *avec,*array;
+  PetscScalar *avec,*array;
   Vec         vec;
   PetscViewer view_out,view_in;
 

@@ -1,4 +1,4 @@
-/*$Id: util2.c,v 1.16 2000/01/11 21:03:05 bsmith Exp balay $*/
+/*$Id: util2.c,v 1.17 2000/11/10 19:38:34 balay Exp balay $*/
 
 /*
    This file contains utility routines for finite difference
@@ -59,7 +59,7 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
 {
   Vec      jj1,jj2,xx2;
   int      i,ierr,N,start,end,j;
-  Scalar   dx,mone = -1.0,*y,scale,*xx,wscale;
+  PetscScalar   dx,mone = -1.0,*y,scale,*xx,wscale;
   double   amax,epsilon = 1.e-8; /* assumes double precision */
   double   dx_min = 1.e-16,dx_par = 1.e-1;
   MPI_Comm comm;

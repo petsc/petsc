@@ -1,4 +1,4 @@
-/*$Id: user.h,v 1.17 2001/03/23 23:25:38 balay Exp bsmith $*/
+/*$Id: user.h,v 1.18 2001/08/06 21:18:56 bsmith Exp balay $*/
 #include "petsc.h" 
                   
 #define max_colors  200
@@ -288,8 +288,8 @@ EXTERN_C_BEGIN
 extern void PETSC_STDCALL f77FORLINK(void);
 extern void PETSC_STDCALL f77OPENM(int*);
 extern void PETSC_STDCALL f77FILLA(int*,int*,int*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,
-                     Scalar*,int*,int*,int*,int*,int*,int*,PetscScalar*,Mat*,PetscScalar*,PetscScalar*,PetscScalar*,
-                     Scalar*,int*,int*);
+                     PetscScalar*,int*,int*,int*,int*,int*,int*,PetscScalar*,Mat*,PetscScalar*,PetscScalar*,PetscScalar*,
+                     PetscScalar*,int*,int*);
 extern void PETSC_STDCALL f77READR1(int*,int*);
 extern void PETSC_STDCALL f77SUMGS(int*,int*,int*,PetscScalar*,PetscScalar*,int*,int*);
 extern void PETSC_STDCALL f77INIT(int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*,int*);
@@ -297,15 +297,15 @@ extern void PETSC_STDCALL f77LSTGS(int*,int*,int*,PetscScalar*,PetscScalar*,Pets
 extern void PETSC_STDCALL f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,
-                      Scalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*, 
-                      Scalar*,PetscScalar*,PetscScalar*,int*,int*,
-                      Scalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,
+                      PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*, 
+                      PetscScalar*,PetscScalar*,PetscScalar*,int*,int*,
+                      PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,
 #if defined(_OPENMP) 
                       int*,
 #if defined(HAVE_EDGE_COLORING)
                       int*, int*,
 #elif defined(HAVE_REDUNDANT_WORK)     
-                      Scalar*,       
+                      PetscScalar*,       
 #else
                       int*,
                       int*,int*,int*,PetscScalar*,
@@ -313,7 +313,7 @@ extern void PETSC_STDCALL f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*
 #endif  
                       int*,int*,int*);
 extern void PETSC_STDCALL f77FORCE(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,PetscScalar*,
-                     Scalar*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
+                     PetscScalar*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
 extern void PETSC_STDCALL f77GETIA(int*,int*,int*,int*,int*,int*);
 extern void PETSC_STDCALL f77GETJA(int*,int*,int*,int*,int*,int*,int*);
 EXTERN_C_END

@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.34 2001/07/20 21:18:16 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.35 2001/08/06 21:14:47 bsmith Exp balay $ */
 /* 
  */
 
@@ -16,7 +16,7 @@ typedef struct {
   int         *browners;                /* block-row-ownership,used for assembly */
   MPI_Request *send_waits,*recv_waits;  /* for communication during VecAssembly() */
   int         nsends,nrecvs;
-  Scalar      *svalues,*rvalues;
+  PetscScalar *svalues,*rvalues;
   int         rmax;
   
   int         nghost;                   /* length of local portion including ghost padding */
@@ -40,12 +40,12 @@ EXTERN int VecView_MPI_Draw_LG(Vec,PetscViewer);
 EXTERN int VecView_MPI_Socket(Vec,PetscViewer);
 EXTERN int VecView_MPI(Vec,PetscViewer);
 EXTERN int VecGetSize_MPI(Vec,int *);
-EXTERN int VecSetValues_MPI(Vec,int,const int [],const Scalar[],InsertMode);
-EXTERN int VecSetValuesBlocked_MPI(Vec,int,const int [],const Scalar[],InsertMode);
+EXTERN int VecSetValues_MPI(Vec,int,const int [],const PetscScalar[],InsertMode);
+EXTERN int VecSetValuesBlocked_MPI(Vec,int,const int [],const PetscScalar[],InsertMode);
 EXTERN int VecAssemblyBegin_MPI(Vec);
 EXTERN int VecAssemblyEnd_MPI(Vec);
 
-EXTERN int VecCreate_MPI_Private(Vec,int,const Scalar[],PetscMap);
+EXTERN int VecCreate_MPI_Private(Vec,int,const PetscScalar[],PetscMap);
 
 #endif
 

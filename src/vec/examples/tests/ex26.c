@@ -1,4 +1,4 @@
-/*$Id: ex26.c,v 1.9 2001/01/17 22:21:24 bsmith Exp balay $*/
+/*$Id: ex26.c,v 1.10 2001/03/23 23:21:30 balay Exp balay $*/
 /*
 
 Test program follows. Writing it I realised that 
@@ -29,7 +29,7 @@ int main(int Argc,char **Args)
   VecPipeline pipe;
   MPI_Comm    comm;
   int         size,rank,src_loc,tar_loc,ierr,zero_loc=0;
-  Scalar      zero=0,my_value,*vec_values,*loc_ar;
+  PetscScalar zero=0,my_value,*vec_values,*loc_ar;
 
   PetscInitialize(&Argc,&Args,PETSC_NULL,PETSC_NULL);
 

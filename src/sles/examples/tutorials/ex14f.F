@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.22 2001/01/15 21:47:36 bsmith Exp balay $";
+!    "$Id: ex14f.F,v 1.23 2001/01/19 23:21:44 balay Exp balay $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -86,7 +86,7 @@
       integer            max_nonlin_its
       integer            lin_its
       integer            i,m
-      Scalar             mone
+      PetscScalar        mone
 
       mone           = -1.d0
       rtol           = 1.d-8
@@ -313,7 +313,7 @@
       integer          ym,gxm,gym,gxs,gys
       double precision one,lambda,temp1,temp,hx,hy
       double precision hxdhy,hydhx,sc
-      Scalar           xx(1)
+      PetscScalar      xx(1)
       DA               da
       Mat              B
       common   /mycommon/ B,mx,my,localX,localF,da
@@ -401,7 +401,7 @@
       integer          ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs 
       double precision two,one,lambda,hx
       double precision hy,hxdhy,hydhx,sc
-      Scalar           u,uxx,uyy,xx(1),ff(1)
+      PetscScalar      u,uxx,uyy,xx(1),ff(1)
       DA               da
       Mat              B
       common   /mycommon/ B,mx,my,localX,localF,da
@@ -509,8 +509,8 @@
       PetscOffset idltog,idx
       integer     ierr,i,j,row,mx,my,col(5)
       integer     nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow
-      Scalar      two,one,lambda,v(5),hx,hy,hxdhy
-      Scalar      hydhx,sc,xx(1)
+      PetscScalar two,one,lambda,v(5),hx,hy,hxdhy
+      PetscScalar hydhx,sc,xx(1)
       Mat         B
       common   /mycommon/ B,mx,my,localX,localF,da
 

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex16.F,v 1.27 2001/01/15 21:47:31 bsmith Exp bsmith $";
+!      "$Id: ex16.F,v 1.28 2001/01/17 22:25:27 bsmith Exp balay $";
 !
       program main
        implicit none
@@ -25,7 +25,7 @@
 !                       use the file petsc/src/mat/examples/mat.ex.binary
 
       integer          ierr,its,flg
-      Scalar           norm,none,five
+      PetscScalar      norm,none,five
       Vec              x,b,u
       Mat              A
       SLES             sles1,sles2

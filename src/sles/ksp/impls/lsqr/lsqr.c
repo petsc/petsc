@@ -1,4 +1,4 @@
-/*$Id: lsqr.c,v 1.67 2001/03/22 20:31:34 bsmith Exp balay $*/
+/*$Id: lsqr.c,v 1.68 2001/03/23 23:23:41 balay Exp balay $*/
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
@@ -52,7 +52,7 @@ static int KSPSetUp_LSQR(KSP ksp)
 static int KSPSolve_LSQR(KSP ksp,int *its)
 {
   int          i,maxit,ierr;
-  Scalar       rho,rhobar,phi,phibar,theta,c,s,tmp,zero = 0.0,mone=-1.0;
+  PetscScalar  rho,rhobar,phi,phibar,theta,c,s,tmp,zero = 0.0,mone=-1.0;
   PetscReal    beta,alpha,rnorm;
   Vec          X,B,V,V1,U,U1,TMP,W;
   Mat          Amat,Pmat;

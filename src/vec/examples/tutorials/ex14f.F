@@ -1,5 +1,5 @@
 !
-!     "$Id: ex14f.F,v 1.7 2001/01/15 21:45:20 bsmith Exp bsmith $";
+!     "$Id: ex14f.F,v 1.8 2001/01/17 22:21:32 bsmith Exp balay $";
 !
 ! Description: Illustrates the use of VecCreateGhost()
 !
@@ -27,10 +27,10 @@
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 
-      integer    rank,nlocal,nghost,ifrom(2),size,ierr,i,rstart,rend
-      integer    flag,bs
-      Scalar     value,tarray(20)
-      Vec        lx,gx,gxs
+      integer      rank,nlocal,nghost,ifrom(2),size,ierr,i,rstart,rend
+      integer      flag,bs
+      PetscScalar  value,tarray(20)
+      Vec          lx,gx,gxs
 
       nlocal = 6
       nghost = 2

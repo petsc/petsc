@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.161 2001/07/20 21:17:57 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.162 2001/08/06 21:14:36 bsmith Exp balay $*/
 /*
     Defines parallel vector scatters.
 */
@@ -251,7 +251,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 {
   VecScatter_MPI_General *gen_to,*gen_from;
   MPI_Comm               comm = ctx->comm;
-  PetscScalar                 *xv,*yv,*val,*rvalues,*svalues;
+  PetscScalar            *xv,*yv,*val,*rvalues,*svalues;
   MPI_Request            *rwaits,*swaits;
   int                    tag = ctx->tag,i,j,*indices,*rstarts,*sstarts,*rprocs,*sprocs;
   int                    nrecvs,nsends,iend,ierr;
@@ -354,7 +354,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  PetscScalar                 *rvalues,*yv,*val;
+  PetscScalar            *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             rstatus,*sstatus;
@@ -572,7 +572,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
     PetscTruth  flg;
     MPI_Request *swaits  = out_to->requests,*rwaits  = out_from->requests;
     MPI_Request *rev_swaits,*rev_rwaits;
-    PetscScalar      *Ssvalues = out_to->values, *Srvalues = out_from->values;
+    PetscScalar *Ssvalues = out_to->values, *Srvalues = out_from->values;
 
     ierr = PetscMalloc((in_to->n+1)*sizeof(MPI_Request),&out_to->rev_requests);CHKERRQ(ierr);
     ierr = PetscMalloc((in_from->n+1)*sizeof(MPI_Request),&out_from->rev_requests);CHKERRQ(ierr);
@@ -639,7 +639,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
 int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  PetscScalar                 *xv,*yv,*val,*svalues;
+  PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   int                    *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,ierr,len;
 
@@ -795,7 +795,7 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
 int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  PetscScalar                 *rvalues,*yv,*val;
+  PetscScalar            *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             *rstatus,*sstatus;
@@ -965,7 +965,7 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
 int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  PetscScalar                 *xv,*yv,*val,*svalues;
+  PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   int                    ierr,i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
 
@@ -1102,7 +1102,7 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  PetscScalar                 *rvalues,*yv,*val;
+  PetscScalar            *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             rstatus,*sstatus;
@@ -1188,7 +1188,7 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  PetscScalar                 *xv,*yv,*val,*svalues;
+  PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   int                    *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,ierr,len;
 
@@ -1305,7 +1305,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  PetscScalar                 *rvalues,*yv,*val;
+  PetscScalar            *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             *rstatus,*sstatus;
@@ -1428,7 +1428,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  PetscScalar                 *xv,*yv,*val,*svalues;
+  PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   int                    ierr,i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
 
@@ -1557,7 +1557,7 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  PetscScalar                 *rvalues,*yv,*val;
+  PetscScalar            *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             rstatus,*sstatus;
@@ -1637,7 +1637,7 @@ int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  PetscScalar                 *xv,*yv,*val,*svalues;
+  PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   int                    ierr,i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
 
@@ -1756,7 +1756,7 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 int VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  PetscScalar                 *rvalues,*yv,*val;
+  PetscScalar            *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             rstatus,*sstatus;
@@ -2120,7 +2120,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
     int         *sprocs  = to->procs,   *rprocs  = from->procs;
     MPI_Request *swaits  = to->requests,*rwaits  = from->requests;
     MPI_Request *rev_swaits,*rev_rwaits;
-    PetscScalar      *Ssvalues = to->values, *Srvalues = from->values;
+    PetscScalar *Ssvalues = to->values, *Srvalues = from->values;
 
     ctx->destroy   = VecScatterDestroy_PtoP_X;
     ctx->copy      = VecScatterCopy_PtoP_X;

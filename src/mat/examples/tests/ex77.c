@@ -1,4 +1,4 @@
-/*$Id: ex77.c,v 1.9 2001/04/25 15:12:38 bsmith Exp bsmith $*/
+/*$Id: ex77.c,v 1.10 2001/08/06 21:16:03 bsmith Exp balay $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format. Same as ex74.c except diagonal entries of the matrices are zeros.\n";
 
@@ -15,13 +15,13 @@ int main(int argc,char **args)
   Mat     sA,sC;         /* symmetric part of the matrices */ 
 
   int     n,mbs=16,bs=1,nz=3,prob=2;
-  Scalar  neg_one = -1.0,value[3],alpha=0.1;
+  PetscScalar  neg_one = -1.0,value[3],alpha=0.1;
   int     ierr,i,j,col[3],size,row,I,J,n1,*ip_ptr;
   IS      ip, isrow, iscol;
   PetscRandom rand;
   PetscTruth       reorder=PETSC_FALSE,getrow=PETSC_FALSE;
   MatInfo          minfo1,minfo2;
-  Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
+  PetscScalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
   int      *cols1,*cols2;
   double   norm1,norm2,tol=1.e-10;
 

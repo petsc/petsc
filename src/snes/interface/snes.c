@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.232 2001/08/02 20:29:42 balay Exp bsmith $*/
+/*$Id: snes.c,v 1.233 2001/08/06 21:17:07 bsmith Exp balay $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -1913,7 +1913,7 @@ int SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal *delta,
                           PetscReal *gpnorm,PetscReal *ynorm)
 {
   PetscReal norm;
-  Scalar cnorm;
+  PetscScalar cnorm;
   int    ierr;
 
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.8 2001/03/23 23:25:07 balay Exp bsmith $*/
+/*$Id: ex15.c,v 1.9 2001/04/10 19:37:27 bsmith Exp balay $*/
 
 static char help[] = "Tests DA interpolation.\n\n";
 
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   DA             da_c,da_f;
   Vec            v_c,v_f;
   Mat            I;
-  Scalar         one = 1.0;
+  PetscScalar    one = 1.0;
   DAPeriodicType pt = DA_NONPERIODIC;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

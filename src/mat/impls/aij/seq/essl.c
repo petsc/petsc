@@ -1,4 +1,4 @@
-/*$Id: essl.c,v 1.47 2001/03/27 22:18:56 balay Exp bsmith $*/
+/*$Id: essl.c,v 1.48 2001/08/06 21:15:14 bsmith Exp balay $*/
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver
@@ -10,16 +10,16 @@
 /* #include <essl.h> This doesn't work!  */
 
 typedef struct {
-   int       n,nz;
-   PetscScalar    *a;
-   int       *ia;
-   int       *ja;
-   int       lna;
-   int       iparm[5];
-   PetscReal rparm[5];
-   PetscReal oparm[5];
-   PetscScalar    *aux;
-   int       naux;
+   int         n,nz;
+   PetscScalar *a;
+   int         *ia;
+   int         *ja;
+   int         lna;
+   int         iparm[5];
+   PetscReal   rparm[5];
+   PetscReal   oparm[5];
+   PetscScalar *aux;
+   int         naux;
 } Mat_SeqAIJ_Essl;
 
 
@@ -46,7 +46,7 @@ int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)a->spptr;
-  PetscScalar          *xx;
+  PetscScalar     *xx;
   int             ierr,m,zero = 0;
 
   PetscFunctionBegin;

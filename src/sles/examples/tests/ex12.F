@@ -1,5 +1,5 @@
 !
-!      "$Id: ex12.F,v 1.35 2001/01/15 21:47:31 bsmith Exp balay $";
+!      "$Id: ex12.F,v 1.36 2001/01/19 23:21:41 balay Exp balay $";
 !
       program main
        implicit none
@@ -18,7 +18,7 @@
 !
 
       integer          ierr,its,flg
-      Scalar           norm,none
+      PetscScalar      norm,none
       Vec              x,b,u
       Mat              A
       SLES             sles

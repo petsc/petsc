@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.57 2001/07/20 21:21:19 bsmith Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.58 2001/08/06 21:15:59 bsmith Exp balay $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -972,11 +972,11 @@ int MatGetOwnershipRange_MPISBAIJ(Mat matin,int *m,int *n)
 #define __FUNCT__ "MatGetRow_MPISBAIJ"
 int MatGetRow_MPISBAIJ(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
 {
-  Mat_MPISBAIJ *mat = (Mat_MPISBAIJ*)matin->data;
-  PetscScalar     *vworkA,*vworkB,**pvA,**pvB,*v_p;
-  int        bs = mat->bs,bs2 = mat->bs2,i,ierr,*cworkA,*cworkB,**pcA,**pcB;
-  int        nztot,nzA,nzB,lrow,brstart = mat->rstart*bs,brend = mat->rend*bs;
-  int        *cmap,*idx_p,cstart = mat->cstart;
+  Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
+  PetscScalar    *vworkA,*vworkB,**pvA,**pvB,*v_p;
+  int            bs = mat->bs,bs2 = mat->bs2,i,ierr,*cworkA,*cworkB,**pcA,**pcB;
+  int            nztot,nzA,nzB,lrow,brstart = mat->rstart*bs,brend = mat->rend*bs;
+  int            *cmap,*idx_p,cstart = mat->cstart;
 
   PetscFunctionBegin;
   if (mat->getrowactive == PETSC_TRUE) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Already active");
@@ -1987,7 +1987,7 @@ int MatLoad_MPISBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;
   int          i,nz,ierr,j,rstart,rend,fd;
-  PetscScalar       *vals,*buf;
+  PetscScalar  *vals,*buf;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
   int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,*browners,maxnz,*cols;
@@ -2251,7 +2251,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   PetscReal    *work,*svalues,*rvalues;
   int          ierr,i,bs,mbs,*bi,*bj,brow,j,ncols,krow,kcol,col,row,Mbs,bcol;
   int          rank,size,*rowners_bs,dest,count,source;
-  PetscScalar       *va;
+  PetscScalar  *va;
   MatScalar    *ba;
   MPI_Status   stat;
 

@@ -1,4 +1,4 @@
-/*$Id: ex43.c,v 1.17 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex43.c,v 1.18 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 int main(int argc,char **args)
 {
   Mat         C;
-  Scalar      v;
+  PetscScalar v;
   int         i,j,ierr,m = 4,n = 4,rank,size;
   PetscViewer viewer;
 

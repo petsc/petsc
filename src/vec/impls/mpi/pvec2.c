@@ -1,4 +1,4 @@
-/*$Id: pvec2.c,v 1.52 2001/03/23 23:21:26 balay Exp bsmith $*/
+/*$Id: pvec2.c,v 1.53 2001/08/06 21:14:47 bsmith Exp balay $*/
 
 /*
      Code for some of the parallel vector primatives.
@@ -79,7 +79,7 @@ int VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 {
   Vec_MPI      *x = (Vec_MPI*)xin->data;
   PetscReal    sum,work = 0.0;
-  PetscScalar       *xx = x->array;
+  PetscScalar  *xx = x->array;
   int          n = xin->n,ierr;
 
   PetscFunctionBegin;

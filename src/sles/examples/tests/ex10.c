@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.93 2001/04/10 19:36:37 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.94 2001/08/06 21:16:51 bsmith Exp balay $*/
 
 static char help[] = "This example calculates the stiffness matrix for a brick in three\n\
 dimensions using 20 node serendipity elements and the equations of linear\n\
@@ -26,7 +26,7 @@ int main(int argc,char **args)
 {
   Mat     mat;
   int     ierr,i,its,m = 3,rdim,cdim,rstart,rend,rank,size;
-  Scalar  v,neg1 = -1.0;
+  PetscScalar  v,neg1 = -1.0;
   Vec     u,x,b;
   SLES    sles;
   KSP     ksp;
@@ -182,7 +182,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
 #define __FUNCT__ "AddElment"
 int AddElement(Mat mat,int r1,int r2,double **K,int h1,int h2)
 {
-  Scalar val;
+  PetscScalar val;
   int    l1,l2,row,col,ierr;
 
   for (l1=0; l1<3; l1++) {

@@ -1,5 +1,5 @@
 !
-!  "$Id: fmult.F,v 1.8 1999/03/24 18:13:01 balay Exp bsmith $";
+!  "$Id: fmult.F,v 1.9 2000/01/11 21:04:00 bsmith Exp balay $";
 !
 !    Fortran kernel for sparse matrix-vector product in the AIJ matrix format
 !
@@ -7,11 +7,11 @@
 !
       subroutine FortranMultAIJ(n,x,ii,jj,a,y)
       implicit none
-      Scalar           x(0:*),a(0:*),y(*)
+      PetscScalar      x(0:*),a(0:*),y(*)
       integer          n,ii(*),jj(0:*)
 
       integer i,j,jstart,jend
-      Scalar  sum
+      PetscScalar  sum
 
       jend  = ii(1)
       do 10,i=1,n

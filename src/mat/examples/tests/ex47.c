@@ -1,4 +1,4 @@
-/*$Id: ex47.c,v 1.21 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex47.c,v 1.22 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Tests the various routines in MatBAIJ format.\n\
 Input arguments are:\n\
@@ -17,7 +17,7 @@ int main(int argc,char **args)
   int         ierr,i,j,row,m,n,ncols1,ncols2,*cols1,*cols2,ct,m2,n2;
   char        file[128];
   PetscTruth  tflg;
-  Scalar      rval,*vals1,*vals2;
+  PetscScalar rval,*vals1,*vals2;
   double      norm1,norm2,rnorm;
   PetscRandom r;
 

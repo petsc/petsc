@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.80 2001/03/22 20:32:01 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.81 2001/03/23 23:24:25 balay Exp balay $*/
 
 static char help[] = "Newton method to solve u'' + u^{2} = f, sequentially.\n\
 This example employs a user-defined monitoring routine.\n\n";
@@ -41,13 +41,13 @@ typedef struct {
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES       snes;                   /* SNES context */
-  Vec        x,r,F,U;             /* vectors */
-  Mat        J;                      /* Jacobian matrix */
-  MonitorCtx monP;                   /* monitoring context */
-  int        ierr,its,n = 5,i,maxit,maxf,size;
-  Scalar     h,xp,v,none = -1.0;
-  double     atol,rtol,stol,norm;
+  SNES         snes;                   /* SNES context */
+  Vec          x,r,F,U;             /* vectors */
+  Mat          J;                      /* Jacobian matrix */
+  MonitorCtx   monP;                   /* monitoring context */
+  int          ierr,its,n = 5,i,maxit,maxf,size;
+  PetscScalar  h,xp,v,none = -1.0;
+  double       atol,rtol,stol,norm;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -192,7 +192,7 @@ int main(int argc,char **argv)
 int FormInitialGuess(Vec x)
 {
    int    ierr;
-   Scalar pfive = .50;
+   PetscScalar pfive = .50;
    ierr = VecSet(&pfive,x);CHKERRQ(ierr);
    return 0;
 }
@@ -220,7 +220,7 @@ int FormInitialGuess(Vec x)
 int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
    Vec    g = (Vec)ctx;
-   Scalar *xx,*ff,*gg,d;
+   PetscScalar *xx,*ff,*gg,d;
    int    i,ierr,n;
 
   /*
@@ -272,7 +272,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
-  Scalar *xx,A[3],d;
+  PetscScalar *xx,A[3],d;
   int    i,n,j[3],ierr;
 
   /*

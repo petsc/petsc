@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.51 2001/03/23 23:23:55 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.52 2001/04/10 19:36:40 bsmith Exp balay $*/
 
 static char help[] = "Uses a different preconditioner matrix and linear system matrix in the SLES solvers.\n\
 Note that different storage formats\n\
@@ -28,7 +28,7 @@ int main(int argc,char **args)
   PetscRandom rctx;      /* random number generator context */
   Vec         x,b,u;   /* approx solution, RHS, exact solution */
   Vec         tmp;       /* work vector */
-  Scalar      v,one = 1.0,scale = 0.0;
+  PetscScalar v,one = 1.0,scale = 0.0;
   int         i,j,m = 15,n = 17,its,I,J,ierr,Istart,Iend;
 
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -1,4 +1,4 @@
-/*$Id: vinv.c,v 1.67 2001/03/23 23:21:18 balay Exp bsmith $*/
+/*$Id: vinv.c,v 1.68 2001/08/06 21:14:36 bsmith Exp balay $*/
 /*
      Some useful vector utility functions.
 */
@@ -42,10 +42,10 @@
 @*/
 int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *norm)
 {
-  int       i,n,ierr,bs;
-  PetscScalar    *x;
-  PetscReal tnorm;
-  MPI_Comm  comm;
+  int         i,n,ierr,bs;
+  PetscScalar *x;
+  PetscReal   tnorm;
+  MPI_Comm    comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
@@ -129,10 +129,10 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *norm)
 @*/
 int VecStrideMax(Vec v,int start,int *index,PetscReal *norm)
 {
-  int       i,n,ierr,bs;
-  PetscScalar    *x;
-  PetscReal max,tmp;
-  MPI_Comm  comm;
+  int         i,n,ierr,bs;
+  PetscScalar *x;
+  PetscReal   max,tmp;
+  MPI_Comm    comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
@@ -209,10 +209,10 @@ int VecStrideMax(Vec v,int start,int *index,PetscReal *norm)
 @*/
 int VecStrideMin(Vec v,int start,int *index,PetscReal *norm)
 {
-  int       i,n,ierr,bs;
-  PetscScalar    *x;
-  PetscReal min,tmp;
-  MPI_Comm  comm;
+  int         i,n,ierr,bs;
+  PetscScalar *x;
+  PetscReal   min,tmp;
+  MPI_Comm    comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
@@ -287,8 +287,8 @@ int VecStrideMin(Vec v,int start,int *index,PetscReal *norm)
 @*/
 int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 {
-  int      i,n,ierr,bs,ns,j;
-  PetscScalar   *x,**y;
+  int          i,n,ierr,bs,ns,j;
+  PetscScalar  *x,**y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
@@ -370,8 +370,8 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 @*/
 int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 {
-  int      i,n,ierr,bs,ns,j;
-  PetscScalar   *x,**y;
+  int          i,n,ierr,bs,ns,j;
+  PetscScalar  *x,**y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
@@ -458,8 +458,8 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 @*/
 int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 {
-  int      i,n,ierr,bs,ns;
-  PetscScalar   *x,*y;
+  int          i,n,ierr,bs,ns;
+  PetscScalar  *x,*y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
@@ -534,8 +534,8 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 @*/
 int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 {
-  int      i,n,ierr,bs,ns;
-  PetscScalar   *x,*y;
+  int          i,n,ierr,bs,ns;
+  PetscScalar  *x,*y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
@@ -585,7 +585,7 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 #define __FUNCT__ "VecReciprocal_Default"
 int VecReciprocal_Default(Vec v)
 {
-  int    i,n,ierr;
+  int         i,n,ierr;
   PetscScalar *x;
 
   PetscFunctionBegin;
@@ -619,7 +619,7 @@ int VecReciprocal_Default(Vec v)
 @*/
 int VecSum(Vec v,PetscScalar *sum)
 {
-  int    i,n,ierr;
+  int         i,n,ierr;
   PetscScalar *x,lsum = 0.0;
 
   PetscFunctionBegin;
@@ -656,7 +656,7 @@ int VecSum(Vec v,PetscScalar *sum)
 @*/
 int VecShift(const PetscScalar *shift,Vec v)
 {
-  int    i,n,ierr;
+  int         i,n,ierr;
   PetscScalar *x,lsum = *shift;
 
   PetscFunctionBegin;
@@ -687,7 +687,7 @@ int VecShift(const PetscScalar *shift,Vec v)
 @*/
 int VecAbs(Vec v)
 {
-  int    i,n,ierr;
+  int         i,n,ierr;
   PetscScalar *x;
 
   PetscFunctionBegin;
@@ -724,9 +724,9 @@ int VecAbs(Vec v)
 @*/
 int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
 {
-  PetscScalar *   v1,*v2;
-  int        n1,n2,ierr;
-  PetscTruth flg1;
+  PetscScalar  *v1,*v2;
+  int          n1,n2,ierr;
+  PetscTruth   flg1;
 
   PetscFunctionBegin;
   ierr = VecGetSize(vec1,&n1);CHKERRQ(ierr);

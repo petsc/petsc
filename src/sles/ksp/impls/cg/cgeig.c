@@ -1,4 +1,4 @@
-/*$Id: cgeig.c,v 1.52 2001/03/23 23:23:34 balay Exp bsmith $*/
+/*$Id: cgeig.c,v 1.53 2001/08/06 21:16:43 bsmith Exp balay $*/
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
    running with CG. Note this only works for symmetric real and Hermitian
@@ -12,7 +12,7 @@ static int LINPACKcgtql1(int *,PetscReal *,PetscReal *,int *);
 int KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
   KSP_CG    *cgP = (KSP_CG*)ksp->data;
-  Scalar    *d,*e;
+  PetscScalar    *d,*e;
   PetscReal *ee;
   int       j,n = ksp->its,ierr;
 
@@ -44,7 +44,7 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *nei
 int KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
   KSP_CG    *cgP = (KSP_CG*)ksp->data;
-  Scalar    *d,*e;
+  PetscScalar    *d,*e;
   PetscReal *dd,*ee;
   int       j,n = ksp->its;
 

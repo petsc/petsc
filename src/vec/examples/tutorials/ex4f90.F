@@ -1,5 +1,5 @@
 !
-!      "$Id: ex4f90.F,v 1.11 2000/09/27 20:14:21 bsmith Exp bsmith $";
+!      "$Id: ex4f90.F,v 1.12 2001/01/15 21:45:20 bsmith Exp balay $";
 !
 !  Description:  Illustrates the use of VecSetValues() to set
 !  multiple values at once; demonstrates VecGetArrayF90().
@@ -33,8 +33,8 @@
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-       Scalar  xwork(6)
-       Scalar, pointer ::  xx_v(:),yy_v(:)
+       PetscScalar  xwork(6)
+       PetscScalar, pointer ::  xx_v(:),yy_v(:)
        integer i,n,ierr,loc(6)
        Vec     x,y
 

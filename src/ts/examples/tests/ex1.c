@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.45 2001/03/28 19:42:35 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.46 2001/04/10 19:37:11 bsmith Exp balay $*/
 /*
        Formatted test for TS routines.
 
@@ -223,7 +223,7 @@ int main(int argc,char **argv)
 int Initial(Vec global,void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
-  Scalar *localptr,h = appctx->h;
+  PetscScalar *localptr,h = appctx->h;
   int    i,mybase,myend,ierr;
 
   /* determine starting point of each processor */
@@ -246,7 +246,7 @@ int Initial(Vec global,void *ctx)
 int Solution(double t,Vec solution,void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
-  Scalar *localptr,h = appctx->h,ex1,ex2,sc1,sc2;
+  PetscScalar *localptr,h = appctx->h,ex1,ex2,sc1,sc2;
   int    i,mybase,myend,ierr;
 
   /* determine starting point of each processor */
@@ -270,7 +270,7 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
   AppCtx   *appctx = (AppCtx*) ctx;
   int      ierr;
   double   norm_2,norm_max;
-  Scalar   mone = -1.0;
+  PetscScalar   mone = -1.0;
   MPI_Comm comm;
 
   ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
@@ -316,7 +316,7 @@ int RHSFunctionHeat(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
   DA     da = appctx->da;
   Vec    local = appctx->local,localwork = appctx->localwork;
   int    ierr,i,localsize; 
-  Scalar *copyptr,*localptr,sc;
+  PetscScalar *copyptr,*localptr,sc;
 
   /*Extract local array */ 
   ierr = DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local);CHKERRQ(ierr);
@@ -352,7 +352,7 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
   Mat    A = *AA;
   AppCtx *appctx = (AppCtx*) ctx;
   int    ierr,i,mstart,mend,rank,size,idx[3];
-  Scalar v[3],stwo = -2./(appctx->h*appctx->h),sone = -.5*stwo;
+  PetscScalar v[3],stwo = -2./(appctx->h*appctx->h),sone = -.5*stwo;
 
   *str = SAME_NONZERO_PATTERN;
 

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex21f.F,v 1.7 2001/02/28 18:40:24 balay Exp balay $";
+!    "$Id: ex21f.F,v 1.8 2001/03/14 21:09:22 balay Exp balay $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -51,7 +51,7 @@
       SLES             sles   
       PC               pc     
       KSP              ksp   
-      Scalar           v,one,neg_one
+      PetscScalar      v,one,neg_one
       double precision norm,tol
       integer          i,j,II,JJ,Istart,Iend,ierr,m,n
       integer          its,flg,rank
@@ -336,7 +336,7 @@
 
       Vec     x,y
       integer dummy,ierr
-      Scalar  one
+      PetscScalar  one
       
 !  Common block to store data for user-provided preconditioner 
       common /mypcs/ jacobi,sor,work

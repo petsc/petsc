@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.27 2001/03/23 23:25:07 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.28 2001/04/10 19:37:27 bsmith Exp balay $*/
 
 static char help[] = "Tests DALocalToLocal().\n\n";
 
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   DAStencilType  stencil_type;
   DA             da;
   Vec            local,global,local_copy;
-  Scalar         value,mone = -1.0;
+  PetscScalar    value,mone = -1.0;
   double         norm,work;
   PetscViewer    viewer;
   char           filename[64];

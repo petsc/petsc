@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.233 2001/07/20 21:18:10 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.234 2001/08/06 21:14:41 bsmith Exp balay $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1610,7 +1610,7 @@ int  VecMAXPY(int nv,const PetscScalar *alpha,Vec y,Vec *x)
    Fortran Note:
    This routine is used differently from Fortran 77
 $    Vec         x
-$    Scalar      x_array(1)
+$    PetscScalar x_array(1)
 $    PetscOffset i_x
 $    int         ierr
 $       call VecGetArray(x,x_array,i_x,ierr)
@@ -1669,7 +1669,7 @@ int VecGetArray(Vec x,PetscScalar *a[])
 @*/
 int VecGetArrays(const Vec x[],int n,PetscScalar **a[])
 {
-  int    i,ierr;
+  int         i,ierr;
   PetscScalar **q;
 
   PetscFunctionBegin;
@@ -1752,7 +1752,7 @@ int VecRestoreArrays(const Vec x[],int n,PetscScalar **a[])
    Fortran Note:
    This routine is used differently from Fortran 77
 $    Vec         x
-$    PetscScalar      x_array(1)
+$    PetscScalar x_array(1)
 $    PetscOffset i_x
 $    int         ierr
 $       call VecGetArray(x,x_array,i_x,ierr)
@@ -2471,10 +2471,10 @@ int VecSetStashInitialSize(Vec vec,int size,int bsize)
 @*/
 int VecStashView(Vec v,PetscViewer viewer)
 {
-  int        ierr,rank,i,j;
-  PetscTruth match;
-  VecStash   *s;
-  PetscScalar     val;
+  int          ierr,rank,i,j;
+  PetscTruth   match;
+  VecStash     *s;
+  PetscScalar  val;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);

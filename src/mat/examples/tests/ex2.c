@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.22 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex2.c,v 1.23 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 
@@ -8,11 +8,11 @@ static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY()
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat        mat,tmat = 0;
-  int        m = 7,n,i,j,ierr,size,rank,rstart,rend,rect = 0;
-  PetscTruth flg;
-  Scalar     v;
-  double     normf,normi,norm1;
+  Mat          mat,tmat = 0;
+  int          m = 7,n,i,j,ierr,size,rank,rstart,rend,rect = 0;
+  PetscTruth   flg;
+  PetscScalar  v;
+  double       normf,normi,norm1;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   /* ----------------- Test MatAXPY()  ----------------- */
 
   if (mat && !rect) {
-    Scalar alpha = 1.0;
+    PetscScalar alpha = 1.0;
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");CHKERRQ(ierr);
     ierr = MatAXPY(&alpha,mat,tmat);CHKERRQ(ierr); 

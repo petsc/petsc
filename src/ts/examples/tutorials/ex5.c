@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.21 2001/03/23 23:24:45 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.22 2001/04/10 19:37:12 bsmith Exp balay $*/
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
 
@@ -253,7 +253,7 @@ int main(int argc,char **argv)
 */ 
 int InitialConditions(Vec u,AppCtx *appctx)
 {
-  Scalar *u_localptr,h = appctx->h;
+  PetscScalar *u_localptr,h = appctx->h;
   int    i,ierr;
 
   /* 
@@ -307,7 +307,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
 */
 int ExactSolution(double t,Vec solution,AppCtx *appctx)
 {
-  Scalar *s_localptr,h = appctx->h,ex1,ex2,sc1,sc2;
+  PetscScalar *s_localptr,h = appctx->h,ex1,ex2,sc1,sc2;
   int    i,ierr;
 
   /*
@@ -355,7 +355,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   AppCtx   *appctx = (AppCtx*) ctx;   /* user-defined application context */
   int      ierr;
   double   norm_2,norm_max;
-  Scalar   mone = -1.0;
+  PetscScalar   mone = -1.0;
 
   /* 
      View a graph of the current iterate
@@ -434,7 +434,7 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
   int    mstart = 0;
   int    mend = appctx->m;
   int    ierr,i,idx[3];
-  Scalar v[3],stwo = -2./(appctx->h*appctx->h),sone = -.5*stwo;
+  PetscScalar v[3],stwo = -2./(appctx->h*appctx->h),sone = -.5*stwo;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute entries for the locally owned part of the matrix

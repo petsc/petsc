@@ -1,4 +1,4 @@
-/*$Id: ex28.c,v 1.16 2001/03/23 23:21:30 balay Exp bsmith $*/
+/*$Id: ex28.c,v 1.17 2001/04/10 19:35:02 bsmith Exp balay $*/
 
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 
@@ -10,8 +10,8 @@ static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 int main(int argc,char **argv)
 {
   int           ierr,n = 25,i,row0 = 0;
-  Scalar        one = 1.0,two = 2.0,result1,result2,results[40],value,ten = 10.0;
-  Scalar        result1a,result2a;
+  PetscScalar   one = 1.0,two = 2.0,result1,result2,results[40],value,ten = 10.0;
+  PetscScalar   result1a,result2a;
   double        result3,result4,result[2],result3a,result4a,resulta[2];
   Vec           x,y,vecs[40];
 

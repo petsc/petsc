@@ -1,4 +1,4 @@
-/*$Id: zf90mat.c,v 1.10 2000/09/22 18:53:58 balay Exp bsmith $*/
+/*$Id: zf90mat.c,v 1.11 2000/09/28 21:16:27 bsmith Exp balay $*/
 
 #include "petscmat.h"
 #include "petscf90.h"
@@ -14,7 +14,7 @@
 EXTERN_C_BEGIN
 void PETSC_STDCALL matgetarrayf90_(Mat *mat,F90Array2d *ptr,int *__ierr)
 {
-  Scalar *fa;
+  PetscScalar *fa;
   int    m,n;
   *__ierr = MatGetArray(*mat,&fa);       if (*__ierr) return;
   *__ierr = MatGetLocalSize(*mat,&m,&n); if (*__ierr) return;
@@ -22,7 +22,7 @@ void PETSC_STDCALL matgetarrayf90_(Mat *mat,F90Array2d *ptr,int *__ierr)
 }
 void PETSC_STDCALL matrestorearrayf90_(Mat *mat,F90Array2d *ptr,int *__ierr)
 {
-  Scalar *fa;
+  PetscScalar *fa;
   *__ierr = F90Array2dAccess(ptr,(void **)&fa);if (*__ierr) return;
   *__ierr = F90Array2dDestroy(ptr);if (*__ierr) return;
   *__ierr = MatRestoreArray(*mat,&fa);

@@ -1,4 +1,4 @@
-/*$Id: ex46.c,v 1.15 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex46.c,v 1.16 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests generating a nonsymmetric BlockSolve95 (MATMPIROWBS) matrix.\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests generating a nonsymmetric BlockSolve95 (MATMPIROWBS)
 int main(int argc,char **args)
 {
   Mat     C,A;
-  Scalar  v;
+  PetscScalar  v;
   int     i,j,I,J,ierr,Istart,Iend,N,m = 4,n = 4,rank,size;
 
   PetscInitialize(&argc,&args,0,help);

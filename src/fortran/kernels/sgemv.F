@@ -1,5 +1,5 @@
 !
-!  "$Id: sgemv.F,v 1.2 1998/12/23 21:18:39 bsmith Exp balay $";
+!  "$Id: sgemv.F,v 1.3 1999/03/24 18:13:17 balay Exp balay $";
 !
 !    Fortran kernel for gemv() BLAS operation. This version supports
 !  matrix array stored in single precision but vectors in double
@@ -10,7 +10,7 @@
       implicit none
       integer          bs,ncols
       MatScalar        a(bs,ncols)
-      Scalar           x(ncols),y(bs)
+      PetscScalar      x(ncols),y(bs)
 
       integer          i,j
 
@@ -31,7 +31,7 @@
       implicit none
       integer          bs,ncols
       MatScalar        a(bs,ncols)
-      Scalar           x(ncols),y(bs)
+      PetscScalar      x(ncols),y(bs)
 
       integer          i,j
 
@@ -48,7 +48,7 @@
       implicit none
       integer          bs,ncols
       MatScalar        a(bs,ncols)
-      Scalar           x(ncols),y(bs)
+      PetscScalar      x(ncols),y(bs)
 
       integer          i,j
 
@@ -65,10 +65,10 @@
       implicit none
       integer          bs,ncols
       MatScalar        a(bs,ncols)
-      Scalar           x(bs),y(ncols)
+      PetscScalar      x(bs),y(ncols)
 
       integer          i,j
-      Scalar           sum
+      PetscScalar      sum
 
       do 10, i=1,ncols
         sum = y(i)
@@ -85,7 +85,7 @@
       implicit none
       integer          bs
       MatScalar        A(bs,bs),B(bs,bs),C(bs,bs)
-      Scalar           sum
+      PetscScalar      sum
 
       integer          i,j,k
 
@@ -106,7 +106,7 @@
       implicit none
       integer          bs
       MatScalar        A(bs,bs),B(bs,bs),C(bs,bs)
-      Scalar           sum
+      PetscScalar      sum
 
       integer          i,j,k
 

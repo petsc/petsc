@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.16 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex10.c,v 1.17 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests repeated use of assembly for matrices.\n\n";
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat         C; 
   int         i,j,m = 5,n = 2,I,J,ierr,rank,size;
-  Scalar      v;
+  PetscScalar v;
 
 
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -1,5 +1,5 @@
 !
-! "$Id: ex17f.F,v 1.6 2000/05/05 22:15:11 balay Exp bsmith $";
+! "$Id: ex17f.F,v 1.7 2001/01/15 21:45:13 bsmith Exp balay $";
 !
 !
 !   "Scatters from a parallel vector to a sequential vector.  In
@@ -11,12 +11,12 @@
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscsys.h"
 
-      integer    n,ierr
-      integer    size,rank,NN,low,high,iglobal,i
-      Scalar     value,zero
-      Vec        x,y
-      IS         is1,is2
-      VecScatter ctx
+      integer      n,ierr
+      integer      size,rank,NN,low,high,iglobal,i
+      PetscScalar  value,zero
+      Vec          x,y
+      IS           is1,is2
+      VecScatter   ctx
 
       n    = 5
       zero = 0.d0

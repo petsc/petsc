@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.20 2001/06/21 21:18:53 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.21 2001/08/06 21:17:42 bsmith Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -209,7 +209,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
 {
   int     i,j,k,Mx,My,Mz,ierr,xs,ys,zs,xm,ym,zm;
   double  lambda,temp1,hx,hy,hz,tempk,tempj;
-  Scalar  ***x;
+  PetscScalar  ***x;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,
@@ -281,7 +281,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   AppCtx  *user = (AppCtx*)ptr;
   int     ierr,i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
   double  two = 2.0,lambda,hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc;
-  Scalar  u_north,u_south,u_east,u_west,u_up,u_down,u,u_xx,u_yy,u_zz,***x,***f;
+  PetscScalar  u_north,u_south,u_east,u_west,u_up,u_down,u,u_xx,u_yy,u_zz,***x,***f;
   Vec     localX;
 
   PetscFunctionBegin;
@@ -371,13 +371,13 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx     *user = (AppCtx*)ptr;  /* user-defined application context */
-  Mat        jac = *B;                /* Jacobian matrix */
-  Vec        localX;
-  int        ierr,i,j,k,Mx,My,Mz;
-  MatStencil col[7],row;
-  int        xs,ys,zs,xm,ym,zm;
-  Scalar     lambda,v[7],hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc,***x;
+  AppCtx       *user = (AppCtx*)ptr;  /* user-defined application context */
+  Mat          jac = *B;                /* Jacobian matrix */
+  Vec          localX;
+  int          ierr,i,j,k,Mx,My,Mz;
+  MatStencil   col[7],row;
+  int          xs,ys,zs,xm,ym,zm;
+  PetscScalar  lambda,v[7],hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc,***x;
 
   PetscFunctionBegin;
 

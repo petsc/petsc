@@ -1,4 +1,4 @@
-/*$Id: ex56.c,v 1.30 2001/04/10 19:35:44 bsmith Exp bsmith $*/
+/*$Id: ex56.c,v 1.31 2001/08/06 21:16:03 bsmith Exp balay $*/
 static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for rectangular MatBAIJ matrix.";
 
 #include "petscmat.h"
@@ -9,7 +9,7 @@ int main(int argc,char **args)
 {
   Mat         A;
   int         bs=3,m=4,n=6,i,j,val = 10,ierr,size,rank,rstart;
-  Scalar      x[6][9],y[3][3],one=1.0;
+  PetscScalar x[6][9],y[3][3],one=1.0;
   int         row[2],col[3],eval;
   IS          is;
   PetscTruth  flg;

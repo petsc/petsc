@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.15 2001/01/23 20:58:17 balay Exp balay $*/
+/*$Id: ex1.c,v 1.16 2001/03/23 23:25:25 balay Exp balay $*/
 
 static char help[] = "Tests SDALocalToLocal().\n\n";
 
@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   DA             da;
   SDA            sda;
   Vec            local,global,local_copy;
-  Scalar         value,mone = -1.0,*in,*out;
+  PetscScalar    value,mone = -1.0,*in,*out;
   double         norm,work;
   PetscViewer         viewer;
   char           filename[64];

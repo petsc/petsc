@@ -1,5 +1,5 @@
 !
-!    "$Id: ex12.F,v 1.58 2000/11/28 17:31:06 bsmith Exp bsmith $";
+!    "$Id: ex12.F,v 1.59 2001/01/15 21:48:01 bsmith Exp balay $";
 !
 !  This example demonstrates basic use of the SNES Fortran interface.
 !  
@@ -37,7 +37,7 @@
       SNES             snes
       Mat              J
       Vec              x,r,u
-      Scalar           xp,FF,UU,h
+      PetscScalar      xp,FF,UU,h
       character*(10)   matrixname
       external         FormJacobian,FormFunction
 
@@ -130,7 +130,7 @@
       PetscFortranAddr ctx(*)
       integer          rank,size,i,s,n,ierr
       PetscOffset      ixx,iff,iF2
-      Scalar           h,d,vf2(1),vxx(1),vff(1)
+      PetscScalar      h,d,vf2(1),vxx(1),vff(1)
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscda.h"
@@ -209,7 +209,7 @@
       integer          ierr
       Vec              x
       SNES             snes
-      Scalar           five 
+      PetscScalar      five 
 
       five = 5.d-1
       call VecSet(five,x,ierr)
@@ -232,7 +232,7 @@
       integer          flag,ii,istart
       PetscOffset      ixx
       integer          iend,i,j,n,rank,size,end,start,ierr
-      Scalar           d,A,h,vxx(1)
+      PetscScalar      d,A,h,vxx(1)
 
 
       h = 1.d0/(ctx(6) - 1.d0)

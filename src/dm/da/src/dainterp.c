@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.23 2001/06/21 21:19:09 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.24 2001/08/06 21:18:33 bsmith Exp balay $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -13,7 +13,7 @@ int DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 {
   int    ierr;
   Vec    fine;
-  Scalar one = 1.0;
+  PetscScalar one = 1.0;
 
   PetscFunctionBegin;
   ierr = DMCreateGlobalVector(daf,&fine);CHKERRQ(ierr);
@@ -33,7 +33,7 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   int            m_ghost,*idx_c,m_ghost_c;
   int            row,col,i_start_ghost,mx,m_c,nc,ratio;
   int            i_c,i_start_c,i_start_ghost_c,cols[2],dof;
-  Scalar         v[2],x;
+  PetscScalar    v[2],x;
   Mat            mat;
   DAPeriodicType pt;
 
@@ -104,7 +104,7 @@ int DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
   int            m_ghost,*idx_c,m_ghost_c;
   int            row,col,i_start_ghost,mx,m_c,nc,ratio;
   int            i_c,i_start_c,i_start_ghost_c,cols[2],dof;
-  Scalar         v[2],x;
+  PetscScalar    v[2],x;
   Mat            mat;
   DAPeriodicType pt;
 
@@ -176,7 +176,7 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   int            row,col,i_start_ghost,j_start_ghost,cols[4],mx,m_c,my,nc,ratioi,ratioj;
   int            i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   int            size_c,size_f,rank_f,col_shift,col_scale;
-  Scalar         v[4],x,y;
+  PetscScalar    v[4],x,y;
   Mat            mat;
   DAPeriodicType pt;
 
@@ -326,7 +326,7 @@ int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
   int            i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   int            l_start,p_f,l_start_ghost,p_ghost,l_start_c,p_c;
   int            l_start_ghost_c,p_ghost_c,l_c,*dnz,*onz;
-  Scalar         v[8],x,y,z;
+  PetscScalar    v[8],x,y,z;
   Mat            mat;
   DAPeriodicType pt;
 

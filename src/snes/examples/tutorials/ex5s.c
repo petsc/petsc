@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.26 2001/04/04 20:58:02 bsmith Exp bsmith $*/
+/*$Id: ex5s.c,v 1.27 2001/08/06 21:17:42 bsmith Exp balay $*/
 
 static char help[] = "2d Bratu problem in shared memory parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -116,7 +116,7 @@ int main(int argc,char **argv)
   MatFDColoring  fdcoloring;           
   ISColoring     iscoloring;
   Mat            J;
-  Scalar         zero = 0.0;
+  PetscScalar    zero = 0.0;
   PetscTruth     flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -287,7 +287,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
 {
   int     i,j,row,mx,my,ierr;
   double  one = 1.0,lambda,temp1,temp,hx,hy,hxdhy,hydhx,sc;
-  Scalar  *x;
+  PetscScalar  *x;
 
   /*
       Process 0 has to wait for all other processes to get here 
@@ -363,7 +363,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   AppCtx  *user = (AppCtx*)ptr;
   int     ierr,i,j,row,mx,my;
   double  two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
-  Scalar  u,uxx,uyy,*x,*f;
+  PetscScalar  u,uxx,uyy,*x,*f;
 
   /*
       Process 0 has to wait for all other processes to get here 
@@ -444,7 +444,7 @@ int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx  *user = (AppCtx*)ptr;
   int     ierr;
-  Scalar  *x,*f;
+  PetscScalar  *x,*f;
 
   /*
       Process 0 has to wait for all other processes to get here 

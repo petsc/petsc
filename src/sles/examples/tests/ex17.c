@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.40 2001/03/23 23:23:50 balay Exp bsmith $*/
+/*$Id: ex17.c,v 1.41 2001/08/06 21:16:51 bsmith Exp balay $*/
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
@@ -16,7 +16,7 @@ int main(int argc,char **args)
   Mat         A;            /* linear system matrix */
   SLES        sles;         /* SLES context */
   int         ierr,n = 10,its, dim,p = 1,use_random;
-  Scalar      none = -1.0,pfive = 0.5;
+  PetscScalar none = -1.0,pfive = 0.5;
   double      norm;
   PetscRandom rctx;
   TestType    type;
@@ -92,7 +92,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
   SETERRQ(1,"FormTestMatrix: These problems require complex numbers.");
 #else
 
-  Scalar val[5],h;
+  PetscScalar val[5],h;
   int    i,j,I,J,ierr,col[5],Istart,Iend;
 
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
@@ -145,7 +145,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
      */
     PetscRandom rctx;
     double      h2,sigma1 = 5.0;
-    Scalar      sigma2;
+    PetscScalar sigma2;
     ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
@@ -174,7 +174,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
        du/dn = i*alpha*u on (1,y), 0<y<1
      */
     double  h2,sigma1 = 200.0;
-    Scalar alpha_h;
+    PetscScalar alpha_h;
     ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
     alpha_h = (PETSC_i * 10.0) / (double)(n+1);  /* alpha_h = alpha * h */

@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.30 2001/04/10 19:37:00 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.31 2001/08/06 21:17:24 bsmith Exp balay $*/
 
 static char help[] = "This program is a replica of ex6.c except that it does 2 solves to avoid paging.\n\
 This program demonstrates use of the SNES package to solve systems of\n\
@@ -130,7 +130,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int     i,j,row,mx,my,ierr,xs,ys,xm,ym,Xm,Ym,Xs,Ys;
   double  one = 1.0,lambda,temp1,temp,hx,hy;
-  Scalar  *x;
+  PetscScalar  *x;
   Vec     localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
@@ -167,7 +167,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   AppCtx  *user = (AppCtx*)ptr;
   int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym;
   double  two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
-  Scalar  u,uxx,uyy,*x,*f;
+  PetscScalar  u,uxx,uyy,*x,*f;
   Vec     localX = user->localX,localF = user->localF; 
 
   mx = user->mx;            my = user->my;            lambda = user->param;
@@ -213,7 +213,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   Mat     jac = *J;
   int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
   int     nloc,*ltog,grow;
-  Scalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
+  PetscScalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
   Vec     localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;

@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.11 2001/04/25 14:54:33 bsmith Exp bsmith $*/
+/*$Id: nn.c,v 1.12 2001/08/06 21:16:35 bsmith Exp balay $*/
 
 #include "src/sles/pc/impls/is/nn/nn.h"
 
@@ -53,7 +53,7 @@ static int PCApply_NN(PC pc,Vec r,Vec z)
 {
   PC_IS *pcis = (PC_IS*)(pc->data);
   int ierr,its;
-  Scalar m_one = -1.0;
+  PetscScalar m_one = -1.0;
   Vec w = pcis->vec1_global;
 
   PetscFunctionBegin;
@@ -216,8 +216,8 @@ int PCNNCreateCoarseMatrix (PC pc)
   MPI_Request *send_request, *recv_request;
   int i, j, k, ierr;
 
-  Scalar*   mat;    /* Sub-matrix with this subdomain's contribution to the coarse matrix             */
-  Scalar**  DZ_OUT; /* proc[k].DZ_OUT[i][] = bit of vector to be sent from processor k to processor i */
+  PetscScalar*   mat;    /* Sub-matrix with this subdomain's contribution to the coarse matrix             */
+  PetscScalar**  DZ_OUT; /* proc[k].DZ_OUT[i][] = bit of vector to be sent from processor k to processor i */
 
   /* aliasing some names */
   PC_IS*  pcis     = (PC_IS*)(pc->data);
@@ -226,7 +226,7 @@ int PCNNCreateCoarseMatrix (PC pc)
   int*         neigh    = pcis->neigh;
   int*         n_shared = pcis->n_shared;
   int**        shared   = pcis->shared;  
-  Scalar**     DZ_IN;   /* Must be initialized after memory allocation. */
+  PetscScalar**     DZ_IN;   /* Must be initialized after memory allocation. */
 
   PetscFunctionBegin;
 
@@ -344,7 +344,7 @@ int PCNNCreateCoarseMatrix (PC pc)
 
   {
     int rank;
-    Scalar one = 1.0; 
+    PetscScalar one = 1.0; 
     IS is;
     ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
     /* "Zero out" rows of not-purely-Neumann subdomains */
@@ -419,7 +419,7 @@ int PCNNCreateCoarseMatrix (PC pc)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCNNApplySchurToChunk"
-int PCNNApplySchurToChunk(PC pc, int n, int* idx, Scalar *chunk, Scalar* array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
+int PCNNApplySchurToChunk(PC pc, int n, int* idx, PetscScalar *chunk, PetscScalar* array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   int i, ierr;
 
@@ -460,7 +460,7 @@ int PCNNApplySchurToChunk(PC pc, int n, int* idx, Scalar *chunk, Scalar* array_N
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCNNApplyInterfacePreconditioner"
-int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, Scalar* work_N, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D,
+int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScalar* work_N, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D,
                                       Vec vec2_D, Vec vec1_N, Vec vec2_N)
 {
   int ierr;
@@ -501,7 +501,7 @@ int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, Scalar* work_N, Vec v
     if (!flg) {
       ierr = PCNNBalancing(pc,r,vec1_B,z,vec2_B,vec3_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {
-      Scalar zero = 0.0;
+      PetscScalar zero = 0.0;
       ierr = VecPointwiseMult(pcis->D,vec1_B,vec2_B);CHKERRQ(ierr);
       ierr = VecSet(&zero,z);CHKERRQ(ierr);
       ierr = VecScatterBegin(vec2_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
@@ -538,15 +538,15 @@ int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, Scalar* work_N, Vec v
 #undef __FUNCT__  
 #define __FUNCT__ "PCNNBalancing"
 int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B,
-                   Vec vec1_D, Vec vec2_D, Scalar *work_N)
+                   Vec vec1_D, Vec vec2_D, PetscScalar *work_N)
 {
-  int         k, ierr, its;
-  Scalar      zero     =  0.0;
-  Scalar      m_one    = -1.0;
-  Scalar      value;
-  Scalar*     lambda;
-  PC_NN*      pcnn     = (PC_NN*)(pc->data);
-  PC_IS* pcis = (PC_IS*)(pc->data);
+  int            k, ierr, its;
+  PetscScalar    zero     =  0.0;
+  PetscScalar    m_one    = -1.0;
+  PetscScalar    value;
+  PetscScalar*   lambda;
+  PC_NN*         pcnn     = (PC_NN*)(pc->data);
+  PC_IS*         pcis     = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
@@ -639,7 +639,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
       ierr = PetscOptionsHasName(PETSC_NULL,"-pcnn_new_scaling",&flg);CHKERRQ(ierr);
       if (flg) {
         Vec    counter;
-        Scalar one=1.0, zero=0.0;
+        PetscScalar one=1.0, zero=0.0;
         ierr = VecDuplicate(pc->vec,&counter);CHKERRQ(ierr);
         ierr = VecSet(&zero,counter);CHKERRQ(ierr);
         if (pcnn->pure_neumann) {
@@ -676,7 +676,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
     ierr = PetscOptionsHasName(PETSC_NULL,"-enforce_preserving_constants",&flg);CHKERRQ(ierr);
     if (!flg) { pcnn->factor_coarse_rhs = (pcnn->pure_neumann) ? 1.0 : 0.0; }
     else {
-      Scalar zero = 0.0, one = 1.0;
+      PetscScalar zero = 0.0, one = 1.0;
       ierr = VecSet(&one,pcnn->vec1_B);
       ierr = ApplySchurComplement(pcnn,pcnn->vec1_B,pcnn->vec2_B,(Vec)0,pcnn->vec1_D,pcnn->vec2_D);CHKERRQ(ierr);
       ierr = VecSet(&zero,pcnn->vec1_global);CHKERRQ(ierr);

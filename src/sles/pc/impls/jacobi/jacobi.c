@@ -1,4 +1,4 @@
-/*$Id: jacobi.c,v 1.73 2001/03/23 23:23:05 balay Exp bsmith $*/
+/*$Id: jacobi.c,v 1.74 2001/04/10 19:36:07 bsmith Exp balay $*/
 
 /*  -------------------------------------------------------------------- 
 
@@ -95,10 +95,10 @@ EXTERN_C_END
 #define __FUNCT__ "PCSetUp_Jacobi"
 static int PCSetUp_Jacobi(PC pc)
 {
-  PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
-  Vec        diag,diagsqrt;
-  int        ierr,n,i,zeroflag=0;
-  Scalar     *x;
+  PC_Jacobi     *jac = (PC_Jacobi*)pc->data;
+  Vec           diag,diagsqrt;
+  int           ierr,n,i,zeroflag=0;
+  PetscScalar   *x;
 
   PetscFunctionBegin;
 

@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.60 2001/07/20 21:20:55 bsmith Exp bsmith $*/
+/*$Id: sbaij.c,v 1.61 2001/08/06 21:15:47 bsmith Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -201,7 +201,7 @@ int MatGetRow_SeqSBAIJ(Mat A,int row,int *ncols,int **cols,PetscScalar **v)
   Mat_SeqSBAIJ  *a = (Mat_SeqSBAIJ*)A->data;
   int          itmp,i,j,k,M,*ai,*aj,bs,bn,bp,*cols_i,bs2,ierr;
   MatScalar    *aa,*aa_i;
-  PetscScalar       *v_i;
+  PetscScalar  *v_i;
 
   PetscFunctionBegin;
   bs  = a->bs;
@@ -293,7 +293,7 @@ static int MatView_SeqSBAIJ_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   int          i,fd,*col_lens,ierr,bs = a->bs,count,*jj,j,k,l,bs2=a->bs2;
-  PetscScalar       *aa;
+  PetscScalar  *aa;
   FILE         *file;
 
   PetscFunctionBegin;
@@ -708,11 +708,11 @@ static int MatZeroRows_SeqSBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[],
 #define __FUNCT__ "MatZeroRows_SeqSBAIJ"
 int MatZeroRows_SeqSBAIJ(Mat A,IS is,PetscScalar *diag)
 {
-  Mat_SeqSBAIJ *sbaij=(Mat_SeqSBAIJ*)A->data;
-  int         ierr,i,j,k,count,is_n,*is_idx,*rows;
-  int         bs=sbaij->bs,bs2=sbaij->bs2,*sizes,row,bs_max;
-  PetscScalar      zero = 0.0;
-  MatScalar   *aa;
+  Mat_SeqSBAIJ  *sbaij=(Mat_SeqSBAIJ*)A->data;
+  int           ierr,i,j,k,count,is_n,*is_idx,*rows;
+  int           bs=sbaij->bs,bs2=sbaij->bs2,*sizes,row,bs_max;
+  PetscScalar   zero = 0.0;
+  MatScalar     *aa;
 
   PetscFunctionBegin;
   /* Make a copy of the IS and  sort it */
@@ -1647,7 +1647,7 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
   int          *mask,mbs,*jj,j,rowcount,nzcount,k,*browlengths,*s_browlengths,maskcount;
   int          kmax,jcount,block,idx,point,nzcountb,extra_rows;
   int          *masked,nmask,tmp,bs2,ishift;
-  PetscScalar       *aa;
+  PetscScalar  *aa;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
 
   PetscFunctionBegin;

@@ -1,5 +1,5 @@
 
-!      "$Id: ex79f.F,v 1.1 2001/03/13 21:41:47 bsmith Exp bsmith $";
+!      "$Id: ex79f.F,v 1.2 2001/03/22 20:30:40 bsmith Exp balay $";
 !
 !   This program demonstrates use of MatGetRowIJ() from Fortran
 !
@@ -16,7 +16,7 @@
       integer     i,j,ia(1),ja(1),n,icol(1),rstart,rend
       PetscTruth  done
       PetscOffset iia,jja,aaa,iicol
-      Scalar      aa(1)
+      PetscScalar aa(1)
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)

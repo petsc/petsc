@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.340 2001/07/20 21:20:03 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.341 2001/08/06 21:15:22 bsmith Exp balay $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -193,26 +193,26 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
 #define __FUNCT__ "MatSetValues_MPIAIJ"
 int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
 {
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
-  PetscScalar     value;
-  int        ierr,i,j,rstart = aij->rstart,rend = aij->rend;
-  int        cstart = aij->cstart,cend = aij->cend,row,col;
-  PetscTruth roworiented = aij->roworiented;
+  Mat_MPIAIJ   *aij = (Mat_MPIAIJ*)mat->data;
+  PetscScalar  value;
+  int          ierr,i,j,rstart = aij->rstart,rend = aij->rend;
+  int          cstart = aij->cstart,cend = aij->cend,row,col;
+  PetscTruth   roworiented = aij->roworiented;
 
   /* Some Variables required in the macro */
-  Mat        A = aij->A;
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data; 
-  int        *aimax = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
-  PetscScalar     *aa = a->a;
-  PetscTruth ignorezeroentries = (((a->ignorezeroentries)&&(addv==ADD_VALUES))?PETSC_TRUE:PETSC_FALSE); 
-  Mat        B = aij->B;
-  Mat_SeqAIJ *b = (Mat_SeqAIJ*)B->data; 
-  int        *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->m,am = aij->A->m;
-  PetscScalar     *ba = b->a;
+  Mat          A = aij->A;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data; 
+  int          *aimax = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
+  PetscScalar  *aa = a->a;
+  PetscTruth   ignorezeroentries = (((a->ignorezeroentries)&&(addv==ADD_VALUES))?PETSC_TRUE:PETSC_FALSE); 
+  Mat          B = aij->B;
+  Mat_SeqAIJ   *b = (Mat_SeqAIJ*)B->data; 
+  int          *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->m,am = aij->A->m;
+  PetscScalar  *ba = b->a;
 
-  int        *rp,ii,nrow,_i,rmax,N,col1,low,high,t; 
-  int        nonew = a->nonew,shift = a->indexshift; 
-  PetscScalar     *ap;
+  int          *rp,ii,nrow,_i,rmax,N,col1,low,high,t; 
+  int          nonew = a->nonew,shift = a->indexshift; 
+  PetscScalar  *ap;
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
@@ -352,7 +352,7 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
   int         i,j,rstart,ncols,n,ierr,flg;
   int         *row,*col,other_disassembled;
-  PetscScalar      *val;
+  PetscScalar *val;
   InsertMode  addv = mat->insertmode;
 
   PetscFunctionBegin;
@@ -758,7 +758,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     Mat         A;
     Mat_SeqAIJ *Aloc;
     int         M = mat->M,N = mat->N,m,*ai,*aj,row,*cols,i,*ct;
-    PetscScalar      *a;
+    PetscScalar *a;
 
     if (!rank) {
       ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
@@ -839,12 +839,12 @@ int MatView_MPIAIJ(Mat mat,PetscViewer viewer)
 #define __FUNCT__ "MatRelax_MPIAIJ"
 int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
 {
-  Mat_MPIAIJ *mat = (Mat_MPIAIJ*)matin->data;
-  Mat        AA = mat->A,BB = mat->B;
-  Mat_SeqAIJ *A = (Mat_SeqAIJ*)AA->data,*B = (Mat_SeqAIJ *)BB->data;
-  PetscScalar     *b,*x,*xs,*ls,d,*v,sum;
-  int        ierr,*idx,*diag;
-  int        n = matin->n,m = matin->m,i,shift = A->indexshift;
+  Mat_MPIAIJ   *mat = (Mat_MPIAIJ*)matin->data;
+  Mat          AA = mat->A,BB = mat->B;
+  Mat_SeqAIJ   *A = (Mat_SeqAIJ*)AA->data,*B = (Mat_SeqAIJ *)BB->data;
+  PetscScalar  *b,*x,*xs,*ls,d,*v,sum;
+  int          ierr,*idx,*diag;
+  int          n = matin->n,m = matin->m,i,shift = A->indexshift;
 
   PetscFunctionBegin;
   if (!A->diag) {ierr = MatMarkDiagonal_SeqAIJ(AA);CHKERRQ(ierr);}
@@ -1092,11 +1092,11 @@ int MatGetOwnershipRange_MPIAIJ(Mat matin,int *m,int *n)
 #define __FUNCT__ "MatGetRow_MPIAIJ"
 int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
 {
-  Mat_MPIAIJ *mat = (Mat_MPIAIJ*)matin->data;
-  PetscScalar     *vworkA,*vworkB,**pvA,**pvB,*v_p;
-  int        i,ierr,*cworkA,*cworkB,**pcA,**pcB,cstart = mat->cstart;
-  int        nztot,nzA,nzB,lrow,rstart = mat->rstart,rend = mat->rend;
-  int        *cmap,*idx_p;
+  Mat_MPIAIJ   *mat = (Mat_MPIAIJ*)matin->data;
+  PetscScalar  *vworkA,*vworkB,**pvA,**pvB,*v_p;
+  int          i,ierr,*cworkA,*cworkB,**pcA,**pcB,cstart = mat->cstart;
+  int          nztot,nzA,nzB,lrow,rstart = mat->rstart,rend = mat->rend;
+  int          *cmap,*idx_p;
 
   PetscFunctionBegin;
   if (mat->getrowactive == PETSC_TRUE) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Already active");
@@ -1186,11 +1186,11 @@ int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,PetscScalar **v)
 #define __FUNCT__ "MatNorm_MPIAIJ"
 int MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
 {
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
-  Mat_SeqAIJ *amat = (Mat_SeqAIJ*)aij->A->data,*bmat = (Mat_SeqAIJ*)aij->B->data;
-  int        ierr,i,j,cstart = aij->cstart,shift = amat->indexshift;
-  PetscReal  sum = 0.0;
-  PetscScalar     *v;
+  Mat_MPIAIJ   *aij = (Mat_MPIAIJ*)mat->data;
+  Mat_SeqAIJ   *amat = (Mat_SeqAIJ*)aij->A->data,*bmat = (Mat_SeqAIJ*)aij->B->data;
+  int          ierr,i,j,cstart = aij->cstart,shift = amat->indexshift;
+  PetscReal    sum = 0.0;
+  PetscScalar  *v;
 
   PetscFunctionBegin;
   if (aij->size == 1) {
@@ -1262,12 +1262,12 @@ int MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
 #define __FUNCT__ "MatTranspose_MPIAIJ"
 int MatTranspose_MPIAIJ(Mat A,Mat *matout)
 { 
-  Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ *Aloc = (Mat_SeqAIJ*)a->A->data;
-  int        ierr,shift = Aloc->indexshift;
-  int        M = A->M,N = A->N,m,*ai,*aj,row,*cols,i,*ct;
-  Mat        B;
-  PetscScalar     *array;
+  Mat_MPIAIJ   *a = (Mat_MPIAIJ*)A->data;
+  Mat_SeqAIJ   *Aloc = (Mat_SeqAIJ*)a->A->data;
+  int          ierr,shift = Aloc->indexshift;
+  int          M = A->M,N = A->N,m,*ai,*aj,row,*cols,i,*ct;
+  Mat          B;
+  PetscScalar  *array;
 
   PetscFunctionBegin;
   if (!matout && M != N) {
@@ -1717,7 +1717,7 @@ EXTERN_C_BEGIN
 int MatLoad_MPIAIJ(PetscViewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;
-  PetscScalar       *vals,*svals;
+  PetscScalar  *vals,*svals;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
   int          i,nz,ierr,j,rstart,rend,fd;
@@ -1905,12 +1905,12 @@ EXTERN_C_END
 */
 int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat *newmat)
 {
-  int        ierr,i,m,n,rstart,row,rend,nz,*cwork,size,rank,j;
-  int        *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend;
-  Mat        *local,M,Mreuse;
-  PetscScalar     *vwork,*aa;
-  MPI_Comm   comm = mat->comm;
-  Mat_SeqAIJ *aij;
+  int          ierr,i,m,n,rstart,row,rend,nz,*cwork,size,rank,j;
+  int          *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend;
+  Mat          *local,M,Mreuse;
+  PetscScalar  *vwork,*aa;
+  MPI_Comm     comm = mat->comm;
+  Mat_SeqAIJ   *aij;
 
 
   PetscFunctionBegin;

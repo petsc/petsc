@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.53 2001/03/23 23:21:37 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.54 2001/04/10 19:35:06 bsmith Exp balay $*/
 
 static char help[] = "Parallel vector layout.\n\n";
 
@@ -22,7 +22,7 @@ T*/
 int main(int argc,char **argv)
 {
   int         i,istart,iend,n = 6,ierr,rank,nlocal;
-  Scalar      v,*array;
+  PetscScalar v,*array;
   Vec         x;
   PetscViewer viewer;
 

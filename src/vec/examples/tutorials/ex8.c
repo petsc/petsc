@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.21 2001/03/23 23:21:37 balay Exp bsmith $*/
+/*$Id: ex8.c,v 1.22 2001/04/10 19:35:06 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates using a local ordering to set values into a parallel vector.\n\n";
 
@@ -20,7 +20,7 @@ T*/
 int main(int argc,char **argv)
 {
   int     i,N,ierr,rank,ng,*gindices,rstart,rend,M;
-  Scalar  one = 1.0;
+  PetscScalar  one = 1.0;
   Vec     x;
 
   PetscInitialize(&argc,&argv,(char *)0,help);

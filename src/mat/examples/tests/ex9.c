@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.21 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex9.c,v 1.22 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
@@ -8,14 +8,14 @@ static char help[] = "Tests MPI parallel matrix creation.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat        C; 
-  MatInfo    info;
-  int        i,j,m = 3,n = 2,rank,size,low,high,iglobal;
-  int        I,J,ierr,ldim;
-  PetscTruth flg;
-  Scalar     v,one = 1.0;
-  Vec        u,b;
-  int        bs,ndiag,diag[7];  bs = 1,ndiag = 5;
+  Mat          C; 
+  MatInfo      info;
+  int          i,j,m = 3,n = 2,rank,size,low,high,iglobal;
+  int          I,J,ierr,ldim;
+  PetscTruth   flg;
+  PetscScalar  v,one = 1.0;
+  Vec          u,b;
+  int          bs,ndiag,diag[7];  bs = 1,ndiag = 5;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

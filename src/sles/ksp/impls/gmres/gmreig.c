@@ -1,4 +1,4 @@
-/*$Id: gmreig.c,v 1.26 2001/03/23 23:23:37 balay Exp bsmith $*/
+/*$Id: gmreig.c,v 1.27 2001/08/06 21:16:44 bsmith Exp balay $*/
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"
 #include "petscblaslapack.h"
@@ -9,7 +9,7 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emi
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
   int       n = gmres->it + 1,N = gmres->max_k + 2,ierr,lwork = 5*N,idummy = N,i;
-  Scalar    *R = gmres->Rsvd,*work = R + N*N,sdummy;
+  PetscScalar    *R = gmres->Rsvd,*work = R + N*N,sdummy;
   PetscReal *realpart = gmres->Dsvd;
 
   PetscFunctionBegin;
@@ -56,8 +56,8 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
   int       n = gmres->it + 1,N = gmres->max_k + 1,ierr,lwork = 5*N;
   int       idummy = N,i,*perm,clen,zero;
-  Scalar    *R = gmres->Rsvd;
-  Scalar    *cwork = R + N*N,sdummy;
+  PetscScalar    *R = gmres->Rsvd;
+  PetscScalar    *cwork = R + N*N,sdummy;
   PetscReal *work,*realpart = gmres->Dsvd,*imagpart = realpart + N ;
 
   PetscFunctionBegin;
@@ -115,8 +115,8 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
   int       n = gmres->it + 1,N = gmres->max_k + 1,ierr,lwork = 5*N,idummy = N,i,*perm;
-  Scalar    *R = gmres->Rsvd,*work = R + N*N;
-  Scalar    *realpart = gmres->Dsvd,*imagpart = realpart + N,sdummy;
+  PetscScalar    *R = gmres->Rsvd,*work = R + N*N;
+  PetscScalar    *realpart = gmres->Dsvd,*imagpart = realpart + N,sdummy;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
@@ -153,7 +153,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
   int       n = gmres->it + 1,N = gmres->max_k + 1,ierr,lwork = 5*N,idummy = N,i,*perm;
-  Scalar    *R = gmres->Rsvd,*work = R + N*N,*eigs = work + 5*N,sdummy;
+  PetscScalar    *R = gmres->Rsvd,*work = R + N*N,*eigs = work + 5*N,sdummy;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");

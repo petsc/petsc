@@ -1,4 +1,4 @@
-/*$Id: ex31.c,v 1.25 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex31.c,v 1.26 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";
 
@@ -13,7 +13,7 @@ static char help[] = "Tests binary I/O of matrices and illustrates user-defined 
 int main(int argc,char **args)
 {
   Mat         C;
-  Scalar      v;
+  PetscScalar v;
   int         i,j,I,J,ierr,Istart,Iend,N,m = 4,n = 4,rank,size;
   PetscViewer viewer;
   int         MATRIX_GENERATE,MATRIX_READ;

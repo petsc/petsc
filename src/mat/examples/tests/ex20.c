@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.21 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex20.c,v 1.22 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Tests converting a matrix to another format with MatConvert().\n\n";
 
@@ -8,10 +8,10 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat        C,A; 
-  int        i,j,m = 5,n = 4,I,J,ierr,rank,size;
-  Scalar     v;
-  char       mtype[256];
+  Mat          C,A; 
+  int          i,j,m = 5,n = 4,I,J,ierr,rank,size;
+  PetscScalar  v;
+  char         mtype[256];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

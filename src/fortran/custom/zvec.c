@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.67 2001/07/20 21:27:22 bsmith Exp bsmith $*/
+/*$Id: zvec.c,v 1.68 2001/08/06 21:19:11 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -195,7 +195,7 @@ void PETSC_STDCALL vecload_(PetscViewer *viewer,Vec *newvec,int *ierr)
 void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,long *ia,int *ierr)
 {
   int    m;
-  Scalar *lx;
+  PetscScalar *lx;
 
   *ierr = VecGetLocalSize(*x,&m);if (*ierr) return;
   *ierr = PetscScalarAddressFromFortran((PetscObject)*x,fa,*ia,m,&lx);if (*ierr) return;
@@ -204,7 +204,7 @@ void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,long *ia,int *ierr)
 
 void PETSC_STDCALL vecgetarray_(Vec *x,PetscScalar *fa,long *ia,int *ierr)
 {
-  Scalar *lx;
+  PetscScalar *lx;
   int    m;
 
   *ierr = VecGetArray(*x,&lx); if (*ierr) return;
@@ -322,7 +322,7 @@ void PETSC_STDCALL vecstridenorm_(Vec *x,int *start,NormType *type,double *val,i
 
 /* ----------------------------------------------------------------------------------------------*/
 void PETSC_STDCALL veccreateghostblockwitharray_(MPI_Comm *comm,int *bs,int *n,int *N,int *nghost,int *ghosts,
-                              Scalar *array,Vec *vv,int *ierr)
+                              PetscScalar *array,Vec *vv,int *ierr)
 {
   if (FORTRANNULLSCALAR(array)) array = PETSC_NULL;
   *ierr = VecCreateGhostBlockWithArray((MPI_Comm)PetscToPointerComm(*comm),*bs,*n,*N,*nghost,

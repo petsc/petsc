@@ -1,4 +1,4 @@
-/*$Id: ex68.c,v 1.15 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex68.c,v 1.16 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal().\n\n";
 
@@ -10,7 +10,7 @@ int main(int argc,char **argv)
 {
   Mat     mat,B;
   int     ierr,i,j;
-  Scalar  v;
+  PetscScalar  v;
   IS      isrow,iscol;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

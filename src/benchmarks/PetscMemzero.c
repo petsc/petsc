@@ -1,4 +1,4 @@
-/*$Id: PetscMemzero.c,v 1.19 2001/03/23 23:25:45 balay Exp bsmith $*/
+/*$Id: PetscMemzero.c,v 1.20 2001/08/06 21:19:06 bsmith Exp balay $*/
 
 #include "petsc.h"
 
@@ -7,8 +7,8 @@
 int main(int argc,char **argv)
 {
   PetscLogDouble x,y,z;
-  Scalar     A[10000];
-  int        ierr;
+  PetscScalar    A[10000];
+  int            ierr;
 
   PetscInitialize(&argc,&argv,0,0);
   /* To take care of paging effects */
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
 
   fprintf(stdout,"%s : \n","PetscMemzero");
   fprintf(stdout,"    %-11s : %e sec\n","Latency",(z-y)/10.0);
-  fprintf(stdout,"    %-11s : %e sec\n","Per Scalar",(2*y-x-z)/100000.0);
+  fprintf(stdout,"    %-11s : %e sec\n","Per PetscScalar",(2*y-x-z)/100000.0);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);

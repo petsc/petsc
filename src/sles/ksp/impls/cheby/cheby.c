@@ -1,4 +1,4 @@
-/*$Id: cheby.c,v 1.92 2001/03/23 23:23:39 balay Exp bsmith $*/
+/*$Id: cheby.c,v 1.93 2001/04/10 19:36:33 bsmith Exp balay $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
@@ -66,7 +66,7 @@ int KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 int KSPSolve_Chebychev(KSP ksp,int *its)
 {
   int              k,kp1,km1,maxit,ktmp,i,ierr;
-  Scalar           alpha,omegaprod,mu,omega,Gamma,c[3],scale,mone = -1.0,tmp;
+  PetscScalar      alpha,omegaprod,mu,omega,Gamma,c[3],scale,mone = -1.0,tmp;
   PetscReal        rnorm;
   Vec              x,b,p[3],r;
   KSP_Chebychev    *chebychevP = (KSP_Chebychev*)ksp->data;

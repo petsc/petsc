@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.61 2001/04/10 19:37:00 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.62 2001/08/06 21:17:24 bsmith Exp balay $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
@@ -53,16 +53,16 @@ extern int  FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  SNES       snes;                 /* SNES context */
-  SNESType   method = SNESEQLS;    /* default nonlinear solution method */
-  Vec        x, r;                 /* solution, residual vectors */
-  Mat        J;                    /* Jacobian matrix */
-  AppCtx     user;                 /* user-defined application context */
-  PetscDraw  draw;                 /* drawing context */
-  int        ierr, its, N, nfails;
-  PetscTruth flg,cavity; 
-  double     bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
-  Scalar     *xvalues;
+  SNES         snes;                 /* SNES context */
+  SNESType     method = SNESEQLS;    /* default nonlinear solution method */
+  Vec          x, r;                 /* solution, residual vectors */
+  Mat          J;                    /* Jacobian matrix */
+  AppCtx       user;                 /* user-defined application context */
+  PetscDraw    draw;                 /* drawing context */
+  int          ierr, its, N, nfails;
+  PetscTruth   flg,cavity; 
+  double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  PetscScalar  *xvalues;
 
   PetscInitialize(&argc, &argv,(char *)0,help);
   /* ierr = PetscDrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRQ(ierr); */
@@ -133,7 +133,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int     i, j, row, mx, my, ierr;
   double  lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
-  Scalar  *x;
+  PetscScalar  *x;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -170,7 +170,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   AppCtx *user = (AppCtx*)ptr;
   int     ierr, i, j, row, mx, my;
   double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx;
-  Scalar  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
+  PetscScalar  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -214,7 +214,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   AppCtx *user = (AppCtx*)ptr;
   Mat     jac = *J;
   int     i, j, row, mx, my, col[5], ierr;
-  Scalar  two = 2.0, one = 1.0, lambda, v[5],sc, *x;
+  PetscScalar  two = 2.0, one = 1.0, lambda, v[5],sc, *x;
   double  hx, hy, hxdhy, hydhx;
 
 
@@ -261,7 +261,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 int FormInitialGuess2(AppCtx *user,Vec X)
 {
   int     ierr, i, j, row, mx, my;
-  Scalar  xx,yy,*x;
+  PetscScalar  xx,yy,*x;
   double  hx, hy;
 
   mx	 = user->mx; 
@@ -300,9 +300,9 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
 {
   AppCtx *user = (AppCtx*)pptr;
   int     i, j, row, mx, my, ierr;
-  Scalar  two = 2.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
-  Scalar  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
-  Scalar  *x,*f, hx2, hy2, hxhy2;
+  PetscScalar  two = 2.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
+  PetscScalar  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
+  PetscScalar  *x,*f, hx2, hy2, hxhy2;
   double  hx, hy;
 
   mx	 = user->mx; 
@@ -425,9 +425,9 @@ int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
 {
   AppCtx *user = (AppCtx*)pptr;
   int     i, j, row, mx, my, col, ierr;
-  Scalar  two = 2.0, one = 1.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
-  Scalar  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
-  Scalar  val,four = 4.0, three = 3.0,*x;
+  PetscScalar  two = 2.0, one = 1.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
+  PetscScalar  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
+  PetscScalar  val,four = 4.0, three = 3.0,*x;
   double  hx, hy,hx2, hy2, hxhy2;
 
   mx	 = user->mx; 

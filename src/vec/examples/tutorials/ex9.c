@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.30 2001/03/23 23:21:37 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.31 2001/08/06 21:15:03 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
@@ -25,10 +25,10 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int        rank,nlocal = 6,nghost = 2,ifrom[2],size,ierr,i,rstart,rend;
-  PetscTruth flg;
-  Scalar     value,*array,*tarray=0;
-  Vec        lx,gx,gxs;
+  int          rank,nlocal = 6,nghost = 2,ifrom[2],size,ierr,i,rstart,rend;
+  PetscTruth   flg;
+  PetscScalar  value,*array,*tarray=0;
+  Vec          lx,gx,gxs;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.20 2001/03/23 23:24:25 balay Exp bsmith $ */
+/* $Id: ex18.c,v 1.21 2001/08/06 21:17:42 bsmith Exp balay $ */
 
 
 static char help[] ="Nonlinear Radiative Transport PDE with multigrid in 2d.\n\
@@ -132,7 +132,7 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   AppCtx  *user = (AppCtx*)dmmg->user;
   int     i,j,ierr,xs,ys,xm,ym;
   double  tleft = user->tleft;
-  Scalar  **x;
+  PetscScalar  **x;
 
   PetscFunctionBegin;
 
@@ -157,11 +157,11 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
   DMMG    dmmg = (DMMG)ptr;
   AppCtx  *user = (AppCtx*)dmmg->user;
   int     ierr,i,j,mx,my,xs,ys,xm,ym;
-  Scalar  zero = 0.0,one = 1.0;
-  Scalar  hx,hy,hxdhy,hydhx;
-  Scalar  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
-  Scalar  tleft,tright,beta;
-  Scalar  **x,**f;
+  PetscScalar  zero = 0.0,one = 1.0;
+  PetscScalar  hx,hy,hxdhy,hydhx;
+  PetscScalar  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
+  PetscScalar  tleft,tright,beta;
+  PetscScalar  **x,**f;
   Vec     localX;
 
   PetscFunctionBegin;
@@ -327,16 +327,16 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 #define __FUNCT__ "FormJacobian"
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 {
-  DMMG       dmmg = (DMMG)ptr;
-  AppCtx     *user = (AppCtx*)dmmg->user;
-  Mat        jac = *J;
-  int        ierr,i,j,mx,my,xs,ys,xm,ym;
-  Scalar     one = 1.0,hx,hy,hxdhy,hydhx,t0,tn,ts,te,tw; 
-  Scalar     dn,ds,de,dw,an,as,ae,aw,bn,bs,be,bw,gn,gs,ge,gw;
-  Scalar     tleft,tright,beta,bm1,coef;
-  Scalar     v[5],**x;
-  Vec        localX;
-  MatStencil col[5],row;
+  DMMG         dmmg = (DMMG)ptr;
+  AppCtx       *user = (AppCtx*)dmmg->user;
+  Mat          jac = *J;
+  int          ierr,i,j,mx,my,xs,ys,xm,ym;
+  PetscScalar  one = 1.0,hx,hy,hxdhy,hydhx,t0,tn,ts,te,tw; 
+  PetscScalar  dn,ds,de,dw,an,as,ae,aw,bn,bs,be,bw,gn,gs,ge,gw;
+  PetscScalar  tleft,tright,beta,bm1,coef;
+  PetscScalar  v[5],**x;
+  Vec          localX;
+  MatStencil   col[5],row;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.292 2001/06/21 21:20:02 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.293 2001/08/06 21:19:20 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -594,7 +594,7 @@ M*/
 M*/
 
 /*M
-    Scalar - PETSc type that represents either a double precision real number or 
+    PetscScalar - PETSc type that represents either a double precision real number or 
        a double precision complex number if the code is compiled with BOPT=g_complex or O_complex
 
    Level: beginner

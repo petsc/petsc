@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.91 2001/01/23 20:56:41 balay Exp balay $*/
+/*$Id: ex2.c,v 1.92 2001/03/23 23:23:55 balay Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
 
@@ -37,7 +37,7 @@ int main(int argc,char **args)
   double      norm;     /* norm of solution error */
   int         i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
   PetscTruth  flg;
-  Scalar      v,one = 1.0,neg_one = -1.0;
+  PetscScalar v,one = 1.0,neg_one = -1.0;
   KSP         ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex4f.F,v 1.26 2000/10/24 20:25:21 bsmith Exp bsmith $";
+!      "$Id: ex4f.F,v 1.27 2001/01/15 21:45:20 bsmith Exp balay $";
 !
 !  Description:  Illustrates the use of VecSetValues() to set
 !  multiple values at once; demonstrates VecGetArray().
@@ -44,8 +44,8 @@
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-       Scalar      xwork(6)
-       Scalar      xx_v(1),yy_v(1)
+       PetscScalar xwork(6)
+       PetscScalar xx_v(1),yy_v(1)
        integer     i,n,ierr,loc(6)
        PetscOffset xx_i,yy_i
        Vec         x,y

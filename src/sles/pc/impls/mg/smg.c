@@ -1,4 +1,4 @@
-/*$Id: smg.c,v 1.22 2001/01/15 21:46:52 bsmith Exp balay $*/
+/*$Id: smg.c,v 1.23 2001/03/23 23:23:10 balay Exp balay $*/
 /*
      Additive Multigrid V Cycle routine    
 */
@@ -18,7 +18,7 @@
 int MGACycle_Private(MG *mg)
 {
   int    i,l = mg[0]->levels,its,ierr;
-  Scalar zero = 0.0;
+  PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
   /* compute RHS on each level */

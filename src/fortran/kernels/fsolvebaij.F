@@ -1,5 +1,5 @@
 !
-!  "$Id: fsolvebaij.F,v 1.7 1999/03/24 18:13:09 balay Exp bsmith $";
+!  "$Id: fsolvebaij.F,v 1.8 2000/01/11 21:04:00 bsmith Exp balay $";
 !
 !    Fortran kernel for sparse triangular solve in the BAIJ matrix format
 ! This ONLY works for factorizations in the NATURAL ORDERING, i.e.
@@ -10,12 +10,12 @@
       subroutine FortranSolveBAIJ4Unroll(n,x,ai,aj,adiag,a,b)
       implicit none
       MatScalar        a(0:*)
-      Scalar           x(0:*),b(0:*)
+      PetscScalar      x(0:*),b(0:*)
       integer          n,ai(0:*),aj(0:*),adiag(0:*)
 
       integer          i,j,jstart,jend,idx,ax,jdx
-      Scalar           s1,s2,s3,s4
-      Scalar           x1,x2,x3,x4
+      PetscScalar      s1,s2,s3,s4
+      PetscScalar      x1,x2,x3,x4
 !     
 !     Forward Solve
 !
@@ -92,11 +92,11 @@
       subroutine FortranSolveBAIJ4BLAS(n,x,ai,aj,adiag,a,b,w)
       implicit none
       MatScalar        a(0:*)
-      Scalar           x(0:*),b(0:*),w(0:*)
+      PetscScalar      x(0:*),b(0:*),w(0:*)
       integer          n,ai(0:*),aj(0:*),adiag(0:*)
 
       integer          i,j,jstart,jend,idx,ax,jdx,kdx
-      Scalar           s(0:3)
+      PetscScalar      s(0:3)
 !     
 !     Forward Solve
 !
@@ -189,11 +189,11 @@
       subroutine FortranSolveBAIJ4(n,x,ai,aj,adiag,a,b,w)
       implicit none
       MatScalar        a(0:*)
-      Scalar           x(0:*),b(0:*),w(0:*)
+      PetscScalar      x(0:*),b(0:*),w(0:*)
       integer          n,ai(0:*),aj(0:*),adiag(0:*),ii,jj
 
       integer          i,j,jstart,jend,idx,ax,jdx,kdx,nn
-      Scalar           s(0:3)
+      PetscScalar      s(0:3)
 !     
 !     Forward Solve
 !

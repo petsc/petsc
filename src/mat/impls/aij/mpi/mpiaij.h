@@ -1,4 +1,4 @@
-/* $Id: mpiaij.h,v 1.21 2001/01/15 21:45:38 bsmith Exp bsmith $ */
+/* $Id: mpiaij.h,v 1.22 2001/06/21 21:16:31 bsmith Exp balay $ */
 
 #if !defined(__MPIAIJ_H)
 #define __MPIAIJ_H
@@ -21,7 +21,7 @@ typedef struct {
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   int           nsends,nrecvs;         /* numbers of sends and receives */
-  Scalar        *svalues,*rvalues;     /* sending and receiving data */
+  PetscScalar   *svalues,*rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
 #if defined (PETSC_USE_CTABLE)
   PetscTable    colmap;
@@ -39,7 +39,7 @@ typedef struct {
   /* The following variables are for MatGetRow() */
 
   int           *rowindices;       /* column indices for row */
-  Scalar        *rowvalues;        /* nonzero values in row */
+  PetscScalar   *rowvalues;        /* nonzero values in row */
   PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
 
   /* for factorization codes to hide stuff */

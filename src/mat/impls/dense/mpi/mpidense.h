@@ -1,4 +1,4 @@
-/* $Id: mpidense.h,v 1.16 2000/01/11 21:00:35 bsmith Exp bsmith $ */
+/* $Id: mpidense.h,v 1.17 2000/10/24 20:25:30 bsmith Exp balay $ */
 
 #include "src/mat/impls/dense/seq/dense.h"
 
@@ -21,7 +21,7 @@ typedef struct {
   /* data initially in matrix context */
   int    k;           /* Blocking factor (unused as yet) */
   int    k2;          /* Blocking factor for solves */
-  Scalar *temp;
+  PetscScalar *temp;
   int    nlptr;
   int    *lrows;
   int    *nlrows;
@@ -43,7 +43,7 @@ typedef struct {
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   int           nsends,nrecvs;         /* numbers of sends and receives */
-  Scalar        *svalues,*rvalues;     /* sending and receiving data */
+  PetscScalar   *svalues,*rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
 
   /* The following variables are used for matrix-vector products */

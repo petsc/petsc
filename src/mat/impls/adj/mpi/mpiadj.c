@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.64 2001/07/20 21:20:46 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.65 2001/08/06 21:15:45 bsmith Exp balay $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -447,9 +447,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvertTo_MPIAdj"
 int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *B)
 {
-  int      i,ierr,m,N,nzeros = 0,*ia,*ja,*rj,len,rstart,cnt,j,*a;
-  PetscScalar   *ra;
-  MPI_Comm comm;
+  int          i,ierr,m,N,nzeros = 0,*ia,*ja,*rj,len,rstart,cnt,j,*a;
+  PetscScalar  *ra;
+  MPI_Comm     comm;
 
   PetscFunctionBegin;
   ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: cr.c,v 1.62 2001/03/22 20:31:22 bsmith Exp balay $*/
+/*$Id: cr.c,v 1.63 2001/03/23 23:23:33 balay Exp balay $*/
 
 /*                       
            This implements Preconditioned Conjugate Residuals.       
@@ -25,7 +25,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   int          i,maxit,pres,ierr;
   MatStructure pflag;
   PetscReal    dp;
-  Scalar       lambda,alpha0,alpha1,btop,bbot,bbotold,tmp,zero = 0.0,mone = -1.0;
+  PetscScalar  lambda,alpha0,alpha1,btop,bbot,bbotold,tmp,zero = 0.0,mone = -1.0;
   Vec          X,B,R,Pm1,P,Pp1,Sm1,S,Qm1,Q,Qp1,T,Tmp;
   Mat          Amat,Pmat;
   PetscTruth   diagonalscale;

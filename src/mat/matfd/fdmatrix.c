@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.89 2001/07/23 17:48:49 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.90 2001/08/06 21:16:12 bsmith Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -491,8 +491,8 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 {
   int           (*f)(void *,Vec,Vec,void*) = (int (*)(void *,Vec,Vec,void *))coloring->f;
   int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow,m1,m2;
-  Scalar        dx,mone = -1.0,*y,*xx,*w3_array;
-  Scalar        *vscale_array;
+  PetscScalar   dx,mone = -1.0,*y,*xx,*w3_array;
+  PetscScalar   *vscale_array;
   PetscReal     epsilon = coloring->error_rel,umin = coloring->umin; 
   Vec           w1,w2,w3;
   void          *fctx = coloring->fctx;
@@ -683,8 +683,8 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
 {
   int           (*f)(void *,PetscReal,Vec,Vec,void*)=(int (*)(void *,PetscReal,Vec,Vec,void *))coloring->f;
   int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow;
-  Scalar        dx,mone = -1.0,*y,*xx,*w3_array;
-  Scalar        *vscale_array;
+  PetscScalar   dx,mone = -1.0,*y,*xx,*w3_array;
+  PetscScalar   *vscale_array;
   PetscReal     epsilon = coloring->error_rel,umin = coloring->umin; 
   Vec           w1,w2,w3;
   void          *fctx = coloring->fctx;

@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.27 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex18.c,v 1.28 2001/03/23 23:21:30 balay Exp balay $*/
 
 /* np = 1 */
 
@@ -14,7 +14,7 @@ arguments are\n\
 int main(int argc,char **argv)
 {
   int          n = 15,ierr,i;
-  Scalar       v;
+  PetscScalar  v;
   Vec          x,y;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

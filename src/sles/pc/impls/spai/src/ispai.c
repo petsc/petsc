@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.26 2001/07/27 15:58:34 bsmith Exp bsmith $*/
+/* $Id: ispai.c,v 1.27 2001/08/06 21:16:34 bsmith Exp balay $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -709,7 +709,7 @@ int ConvertMatrixToMat(matrix *B,Mat *PB)
   int    d_nz,o_nz;
   int    *d_nnz,*o_nnz;
   int    i,k,global_row,global_col,first_diag_col,last_diag_col;
-  Scalar val;
+  PetscScalar val;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

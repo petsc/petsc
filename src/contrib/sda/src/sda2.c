@@ -1,4 +1,4 @@
-/*$Id: sda2.c,v 1.22 2001/03/23 23:25:26 balay Exp bsmith $*/
+/*$Id: sda2.c,v 1.23 2001/08/06 21:18:49 bsmith Exp balay $*/
 /*
     Simplified interface to PETSC DA (distributed array) object. 
    This is for a user who is not using PETSc Vecs (vectors).
@@ -36,12 +36,12 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 @*/
 int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA *sda)
 {
-  int        ierr,ntmp,*idx;
-  DA         da;
-  Scalar     *array;
-  VecScatter scat1,scat2;
-  char       **args;
-  int        argc = 0;
+  int           ierr,ntmp,*idx;
+  DA            da;
+  PetscScalar   *array;
+  VecScatter    scat1,scat2;
+  char          **args;
+  int           argc = 0;
 
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
@@ -104,13 +104,13 @@ $           the x and y coordinates, or PETSC_NULL
 int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                 int M,int N,int m,int n,int w,int s,int *lx,int *ly,SDA *sda)
 {
-  int        ierr,ntmp,*idx;
-  DA         da;
-  Scalar     *array;
-  Vec        vec;
-  VecScatter scat1,scat2;
-  char       **args;
-  int        argc = 0;
+  int           ierr,ntmp,*idx;
+  DA            da;
+  PetscScalar   *array;
+  Vec           vec;
+  VecScatter    scat1,scat2;
+  char          **args;
+  int           argc = 0;
 
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
@@ -177,13 +177,13 @@ $           the x, y, and z coordinates, or PETSC_NUL
 int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
                 int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,SDA *sda)
 {
-  int        ierr,ntmp,*idx;
-  DA         da;
-  Scalar     *array;
-  Vec        vec;
-  VecScatter scat1,scat2;
-  char       **args;
-  int        argc = 0;
+  int           ierr,ntmp,*idx;
+  DA            da;
+  PetscScalar   *array;
+  Vec           vec;
+  VecScatter    scat1,scat2;
+  char          **args;
+  int           argc = 0;
 
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;

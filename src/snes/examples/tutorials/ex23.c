@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.9 2001/07/20 21:25:39 bsmith Exp bsmith $*/
+/*$Id: ex23.c,v 1.10 2001/08/06 21:17:42 bsmith Exp balay $*/
 
 static char help[] = "Solves PDE problem from ex22.c\n\n";
 
@@ -90,7 +90,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
   DMMG    dmmg = (DMMG)dummy;
   int     ierr,xs,xm,i,N;
-  Scalar  *u,*fu,d,h;
+  PetscScalar  *u,*fu,d,h;
   Vec     vu;
   DA      da = (DA) dmmg->dm;
 
@@ -122,7 +122,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 int FormFunctionLocali(DALocalInfo *info,MatStencil *pt,PetscScalar *u,PetscScalar *fu,void* dummy)
 {
   int     ierr,i,N = info->mx;
-  Scalar  d,h;
+  PetscScalar  d,h;
 
   PetscFunctionBegin;
   d    = N-1.0;

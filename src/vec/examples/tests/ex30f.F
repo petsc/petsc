@@ -1,5 +1,5 @@
 !
-!    "$Id: ex30f.F,v 1.4 2001/01/15 21:45:13 bsmith Exp balay $";
+!    "$Id: ex30f.F,v 1.5 2001/04/30 16:54:26 balay Exp balay $";
 !
 !  Tests parallel to parallel scatter where a to from index are 
 !  duplicated
@@ -13,7 +13,7 @@
       integer ierr, nlocal, n, irank, iprocs
       integer from(10), to(10)
 
-      Scalar num
+      PetscScalar num
       Vec v1, v2, v3
       VecScatter scat1, scat2
       IS fromis, tois

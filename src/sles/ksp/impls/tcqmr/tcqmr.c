@@ -1,4 +1,4 @@
-/*$Id: tcqmr.c,v 1.57 2001/03/22 20:31:35 bsmith Exp balay $*/
+/*$Id: tcqmr.c,v 1.58 2001/03/23 23:23:43 balay Exp balay $*/
 
 /*
     This file contains an implementation of Tony Chan's transpose-free QMR.
@@ -15,9 +15,9 @@
 static int KSPSolve_TCQMR(KSP ksp,int *its)
 {
   PetscReal   rnorm0,rnorm,dp1,Gamma;
-  Scalar      theta,ep,cl1,sl1,cl,sl,sprod,tau_n1,f; 
-  Scalar      deltmp,rho,beta,eptmp,ta,s,c,tau_n,delta;
-  Scalar      dp11,dp2,rhom1,alpha,tmp,zero = 0.0;
+  PetscScalar theta,ep,cl1,sl1,cl,sl,sprod,tau_n1,f; 
+  PetscScalar deltmp,rho,beta,eptmp,ta,s,c,tau_n,delta;
+  PetscScalar dp11,dp2,rhom1,alpha,tmp,zero = 0.0;
   int         ierr;
 
   PetscFunctionBegin;

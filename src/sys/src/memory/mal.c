@@ -1,4 +1,4 @@
-/*$Id: mal.c,v 1.55 2001/06/21 21:15:26 bsmith Exp bsmith $*/
+/*$Id: mal.c,v 1.56 2001/08/06 21:14:03 bsmith Exp balay $*/
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
@@ -17,7 +17,7 @@
     1) on systems with memalign() we call that routine to get an aligned memory location
     2) on systems without memalign() we 
        - allocate one sizeof(PetscScalar) extra space
-       - we shift the pointer up slightly if needed to get Scalar aligned
+       - we shift the pointer up slightly if needed to get PetscScalar aligned
        - if shifted we store at ptr[-1] the amount of shift (plus a cookie)
 */
 #define SHIFT_COOKIE 456123
@@ -43,7 +43,7 @@ int PetscMallocAlign(int mem,int line,char *func,char *file,char *dir,void** res
   {
     int *ptr,shift;
     /*
-      malloc space for two extra chunks and shift ptr 1 + enough to get it Scalar aligned
+      malloc space for two extra chunks and shift ptr 1 + enough to get it PetscScalar aligned
     */
     ptr = (int*)malloc(mem + 2*PETSC_MEMALIGN);
     if (ptr) {

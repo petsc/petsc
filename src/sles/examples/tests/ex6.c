@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.70 2001/03/23 23:23:50 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.71 2001/04/10 19:36:37 bsmith Exp balay $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 Input arguments are:\n\
@@ -15,7 +15,7 @@ int main(int argc,char **args)
   int            ierr,its;
   double         norm;
   PetscLogDouble tsetup1,tsetup2,tsetup,tsolve1,tsolve2,tsolve;
-  Scalar         zero = 0.0,none = -1.0;
+  PetscScalar    zero = 0.0,none = -1.0;
   Vec            x,b,u;
   Mat            A;
   SLES           sles;
@@ -47,7 +47,7 @@ int main(int argc,char **args)
   { 
     int    m,n,j,mvec,start,end,index;
     Vec    tmp;
-    Scalar *bold;
+    PetscScalar *bold;
 
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
     ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&tmp);

@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.17 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex14.c,v 1.18 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests MatGetRow() and MatRestoreRow().\n";
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat    C; 
   int    i,j,m = 5,n = 5,I,J,ierr,*idx,nz;
-  Scalar v,*values;
+  PetscScalar v,*values;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

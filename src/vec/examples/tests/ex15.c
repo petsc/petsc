@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.16 2001/03/23 23:21:30 balay Exp bsmith $*/
+/*$Id: ex15.c,v 1.17 2001/04/10 19:35:02 bsmith Exp balay $*/
 
 static char help[] = "Tests VecSetValuesBlocked() on sequential vectors.\n\n";
 
@@ -10,7 +10,7 @@ static char help[] = "Tests VecSetValuesBlocked() on sequential vectors.\n\n";
 int main(int argc,char **argv)
 {
   int          n = 9,ierr,size,bs = 3,indices[2],i;
-  Scalar       values[6];
+  PetscScalar  values[6];
   Vec          x;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

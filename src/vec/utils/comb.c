@@ -1,4 +1,4 @@
-/*$Id: comb.c,v 1.36 2001/03/23 23:21:18 balay Exp bsmith $*/
+/*$Id: comb.c,v 1.37 2001/08/06 21:14:36 bsmith Exp balay $*/
 
 /*
       Split phase global vector reductions with support for combining the
@@ -30,15 +30,15 @@
 #define REDUCE_MIN  2
 
 typedef struct {
-  MPI_Comm comm;
-  PetscScalar   *lvalues;    /* this are the reduced values before call to MPI_Allreduce() */
-  PetscScalar   *gvalues;    /* values after call to MPI_Allreduce() */
-  void     **invecs;     /* for debugging only, vector/memory used with each op */
-  int      *reducetype; /* is particular value to be summed or maxed? */
-  int      state;       /* are we calling xxxBegin() or xxxEnd()? */
-  int      maxops;      /* total amount of space we have for requests */
-  int      numopsbegin; /* number of requests that have been queued in */
-  int      numopsend;   /* number of requests that have been gotten by user */
+  MPI_Comm     comm;
+  PetscScalar  *lvalues;    /* this are the reduced values before call to MPI_Allreduce() */
+  PetscScalar  *gvalues;    /* values after call to MPI_Allreduce() */
+  void         **invecs;    /* for debugging only, vector/memory used with each op */
+  int          *reducetype; /* is particular value to be summed or maxed? */
+  int          state;       /* are we calling xxxBegin() or xxxEnd()? */
+  int          maxops;      /* total amount of space we have for requests */
+  int          numopsbegin; /* number of requests that have been queued in */
+  int          numopsend;   /* number of requests that have been gotten by user */
 } PetscSplitReduction;
 /*
    Note: the lvalues and gvalues are twice as long as maxops, this is to allow the second half of
@@ -119,10 +119,10 @@ EXTERN_C_END
 */
 int PetscSplitReductionApply(PetscSplitReduction *sr)
 {
-  int        size,ierr,i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
-  PetscScalar     *lvalues = sr->lvalues,*gvalues = sr->gvalues;
-  int        sum_flg = 0,max_flg = 0, min_flg = 0;
-  MPI_Comm   comm = sr->comm;
+  int         size,ierr,i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
+  PetscScalar *lvalues = sr->lvalues,*gvalues = sr->gvalues;
+  int         sum_flg = 0,max_flg = 0, min_flg = 0;
+  MPI_Comm    comm = sr->comm;
 
   PetscFunctionBegin;
   if (sr->numopsend > 0) {

@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.11 2001/01/23 20:56:10 balay Exp balay $*/
+/*$Id: ex7.c,v 1.12 2001/03/23 23:23:25 balay Exp balay $*/
 
 static char help[] = "Tests MatILUFactorSymbolic() on matrix with missing diagonal.\n\n"; 
 
@@ -11,7 +11,7 @@ int main(int argc,char **args)
 {
   Mat         C,A; 
   int         i,j,ierr;
-  Scalar      v;
+  PetscScalar v;
   PC          pc;
   Vec         xtmp;
 

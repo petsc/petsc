@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.19 2001/04/10 19:35:02 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.20 2001/08/06 21:14:55 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 Tests where the local part of the scatter is a copy.\n\n";
@@ -11,7 +11,7 @@ Tests where the local part of the scatter is a copy.\n\n";
 int main(int argc,char **argv)
 {
   int           n = 5,ierr,size,rank,i,*blks,bs = 1,m = 2;
-  Scalar        value;
+  PetscScalar   value;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;

@@ -1,4 +1,4 @@
-/*$Id: tsfd.c,v 1.22 2001/03/23 23:24:34 balay Exp bsmith $*/
+/*$Id: tsfd.c,v 1.23 2001/08/06 21:18:08 bsmith Exp balay $*/
 
 #include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
 #include "src/ts/tsimpl.h"        /*I  "petscts.h"  I*/
@@ -89,7 +89,7 @@ int TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructur
 {
   Vec       jj1,jj2,xx2;
   int       i,ierr,N,start,end,j;
-  Scalar    dx,mone = -1.0,*y,scale,*xx,wscale;
+  PetscScalar    dx,mone = -1.0,*y,scale,*xx,wscale;
   PetscReal amax,epsilon = 1.e-8; /* assumes double precision */
   PetscReal dx_min = 1.e-16,dx_par = 1.e-1;
   MPI_Comm  comm;

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.50 2001/03/23 23:21:30 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.51 2001/08/06 21:14:55 bsmith Exp balay $*/
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\n";
 
@@ -11,7 +11,7 @@ int main(int argc,char **argv)
 {
   int           n = 5,ierr,idx2[3] = {0,2,3},idx1[3] = {0,1,2};
   int           size,rank,i;
-  Scalar        mone = -1.0,value;
+  PetscScalar   mone = -1.0,value;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;

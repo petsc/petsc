@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.84 2001/07/17 19:25:56 balay Exp bsmith $*/
+/*$Id: qcg.c,v 1.85 2001/08/06 21:16:48 bsmith Exp balay $*/
 /*
    Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -161,14 +161,14 @@ int KSPSolve_QCG(KSP ksp,int *its)
   MatStructure pflag;
   Mat          Amat,Pmat;
   Vec          W,WA,WA2,R,P,ASP,BS,X,B;
-  Scalar       zero = 0.0,negone = -1.0,scal,nstep,btx,xtax,beta,rntrn,step;
+  PetscScalar  zero = 0.0,negone = -1.0,scal,nstep,btx,xtax,beta,rntrn,step;
   PetscReal    ptasp,q1,q2,wtasp,bstp,rtr,xnorm,step1,step2,rnrm,p5 = 0.5;
   PetscReal    dzero = 0.0,bsnrm;
   int          i,maxit,ierr;
   PC           pc = ksp->B;
   PCSide       side;
 #if defined(PETSC_USE_COMPLEX)
-  Scalar       cstep1,cstep2,ctasp,cbstp,crtr,cwtasp,cptasp;
+  PetscScalar  cstep1,cstep2,ctasp,cbstp,crtr,cwtasp,cptasp;
 #endif
   PetscTruth   diagonalscale;
 
@@ -530,7 +530,7 @@ static int QuadraticRoots_Private(Vec s,Vec p,PetscReal *delta,PetscReal *step1,
   PetscReal zero = 0.0,dsq,ptp,pts,rad,sts;
   int       ierr;
 #if defined(PETSC_USE_COMPLEX)
-  Scalar    cptp,cpts,csts;
+  PetscScalar    cptp,cpts,csts;
 #endif
 
   PetscFunctionBegin;

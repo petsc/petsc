@@ -1,4 +1,4 @@
-/*$Id: ex61.c,v 1.11 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex61.c,v 1.12 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Tests MatSeq(B)AIJSetColumnIndices().\n\n";
 
@@ -16,7 +16,7 @@ static char help[] = "Tests MatSeq(B)AIJSetColumnIndices().\n\n";
 int main(int argc,char **args)
 {
   Mat         A;
-  Scalar      v;
+  PetscScalar v;
   int         ierr,i,j,rowlens[] = {2,3,1},cols[] = {0,2,0,1,2,2};
   PetscTruth  flg;
 

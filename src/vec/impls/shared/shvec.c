@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.50 2001/03/23 23:21:29 balay Exp bsmith $*/
+/*$Id: shvec.c,v 1.51 2001/08/06 21:14:54 bsmith Exp balay $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -17,8 +17,8 @@ EXTERN int PetscSharedMalloc(MPI_Comm,int,int,void**);
 #define __FUNCT__ "VecDuplicate_Shared"
 int VecDuplicate_Shared(Vec win,Vec *v)
 {
-  int     ierr;
-  Vec_MPI *vw,*w = (Vec_MPI *)win->data;
+  int          ierr;
+  Vec_MPI      *vw,*w = (Vec_MPI *)win->data;
   PetscScalar  *array;
 
   PetscFunctionBegin;
@@ -52,7 +52,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecCreate_Shared"
 int VecCreate_Shared(Vec vv)
 {
-  int     ierr;
+  int          ierr;
   PetscScalar  *array;
 
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: zf90vec.c,v 1.17 2001/01/15 21:49:58 bsmith Exp balay $*/
+/*$Id: zf90vec.c,v 1.18 2001/01/16 18:22:09 balay Exp balay $*/
 
 #include "petscis.h"
 #include "petscvec.h"
@@ -93,7 +93,7 @@ void PETSC_STDCALL iscoloringrestoreisf90_(ISColoring *iscoloring,F90Array1d *pt
 
 void PETSC_STDCALL vecgetarrayf90_(Vec *x,F90Array1d *ptr,int *__ierr)
 {
-  Scalar *fa;
+  PetscScalar *fa;
   int    len;
   *__ierr = VecGetArray(*x,&fa);      if (*__ierr) return;
   *__ierr = VecGetLocalSize(*x,&len); if (*__ierr) return;
@@ -101,7 +101,7 @@ void PETSC_STDCALL vecgetarrayf90_(Vec *x,F90Array1d *ptr,int *__ierr)
 }
 void PETSC_STDCALL vecrestorearrayf90_(Vec *x,F90Array1d *ptr,int *__ierr)
 {
-  Scalar *fa;
+  PetscScalar *fa;
   *__ierr = F90Array1dAccess(ptr,(void**)&fa);if (*__ierr) return;
   *__ierr = F90Array1dDestroy(ptr);if (*__ierr) return;
   *__ierr = VecRestoreArray(*x,&fa);

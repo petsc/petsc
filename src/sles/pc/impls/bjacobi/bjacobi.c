@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.158 2001/04/10 19:36:10 bsmith Exp bsmith $*/
+/*$Id: bjacobi.c,v 1.159 2001/08/06 21:16:24 bsmith Exp balay $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -617,7 +617,7 @@ int PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   int                    ierr,its;
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
-  Scalar                 *x_array,*y_array;
+  PetscScalar            *x_array,*y_array;
 
   PetscFunctionBegin;
   /* 
@@ -643,7 +643,7 @@ int PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   int                    ierr;
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
-  Scalar                 *x_array,*y_array;
+  PetscScalar            *x_array,*y_array;
   PC                     subpc;
 
   PetscFunctionBegin;
@@ -676,7 +676,7 @@ int PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   int                    ierr;
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
-  Scalar                 *x_array,*y_array;
+  PetscScalar            *x_array,*y_array;
   PC                     subpc;
 
   PetscFunctionBegin;
@@ -709,7 +709,7 @@ int PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   int                    ierr,its;
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
-  Scalar                 *x_array,*y_array;
+  PetscScalar            *x_array,*y_array;
 
   PetscFunctionBegin;
   /* 
@@ -864,7 +864,7 @@ int PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
   int                   ierr,its,i,n_local = jac->n_local;
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
-  Scalar                *xin,*yin;
+  PetscScalar           *xin,*yin;
   static PetscTruth     flag = PETSC_TRUE;
   static int            SUBSlesSolve;
 
@@ -903,7 +903,7 @@ int PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
   int                   ierr,its,i,n_local = jac->n_local;
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
-  Scalar                *xin,*yin;
+  PetscScalar           *xin,*yin;
   static PetscTruth     flag = PETSC_TRUE;
   static int            SUBSlesSolve;
 

@@ -1,4 +1,4 @@
-/*$Id: convert.c,v 1.74 2001/03/23 23:22:45 balay Exp bsmith $*/
+/*$Id: convert.c,v 1.75 2001/08/06 21:16:10 bsmith Exp balay $*/
 
 #include "src/mat/matimpl.h"
 
@@ -12,8 +12,8 @@
  */
 int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
 {
-  PetscScalar     *vwork;
-  int        ierr,i,nz,m,n,*cwork,rstart,rend,lm,ln;
+  PetscScalar  *vwork;
+  int          ierr,i,nz,m,n,*cwork,rstart,rend,lm,ln;
 
   PetscFunctionBegin;
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);

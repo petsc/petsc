@@ -1,4 +1,4 @@
-/* "$Id: snesmfj.h,v 1.15 2001/07/20 21:25:24 bsmith Exp bsmith $"; */
+/* "$Id: snesmfj.h,v 1.16 2001/08/06 21:17:13 bsmith Exp balay $"; */
 /*
     This file should be included in NEW routines that compute the
     differencing parameter for finite difference based matrix-free
@@ -32,8 +32,8 @@ struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
   Vec              w;                      /* work vector */
   MatNullSpace     sp;                     /* null space context */
   double           error_rel;              /* square root of relative error in computing function */
-  Scalar           currenth;               /* last differencing parameter h used */
-  Scalar           *historyh;              /* history of differencing parameter h */
+  PetscScalar      currenth;               /* last differencing parameter h used */
+  PetscScalar      *historyh;              /* history of differencing parameter h */
   int              ncurrenth,maxcurrenth; 
   void             *hctx;
   Mat              mat;                    /* back reference to shell matrix that contains this */

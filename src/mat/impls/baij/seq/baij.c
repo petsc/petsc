@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.243 2001/07/20 21:10:11 buschelm Exp bsmith $*/
+/*$Id: baij.c,v 1.244 2001/08/06 21:15:36 bsmith Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -258,7 +258,7 @@ int MatGetRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,PetscScalar **v)
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data;
   int          itmp,i,j,k,M,*ai,*aj,bs,bn,bp,*idx_i,bs2,ierr;
   MatScalar    *aa,*aa_i;
-  PetscScalar       *v_i;
+  PetscScalar  *v_i;
 
   PetscFunctionBegin;
   bs  = a->bs;
@@ -320,7 +320,7 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
   Mat         C;
   int         i,j,k,ierr,*aj=a->j,*ai=a->i,bs=a->bs,mbs=a->mbs,nbs=a->nbs,len,*col;
   int         *rows,*cols,bs2=a->bs2;
-  PetscScalar      *array;
+  PetscScalar *array;
 
   PetscFunctionBegin;
   if (!B && mbs!=nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Square matrix only for in-place");
@@ -372,7 +372,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   int         i,fd,*col_lens,ierr,bs = a->bs,count,*jj,j,k,l,bs2=a->bs2;
-  PetscScalar      *aa;
+  PetscScalar *aa;
   FILE        *file;
 
   PetscFunctionBegin;
@@ -950,7 +950,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is,PetscScalar *diag)
   Mat_SeqBAIJ *baij=(Mat_SeqBAIJ*)A->data;
   int         ierr,i,j,k,count,is_n,*is_idx,*rows;
   int         bs=baij->bs,bs2=baij->bs2,*sizes,row,bs_max;
-  PetscScalar      zero = 0.0;
+  PetscScalar zero = 0.0;
   MatScalar   *aa;
 
   PetscFunctionBegin;
@@ -1255,7 +1255,7 @@ int MatGetRowMax_SeqBAIJ(Mat A,Vec v)
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data;
   int          ierr,i,j,n,row,bs,*ai,*aj,mbs;
   PetscReal    atmp;
-  PetscScalar       *x,zero = 0.0;
+  PetscScalar  *x,zero = 0.0;
   MatScalar    *aa;
   int          ncols,brow,krow,kcol; 
 
@@ -1588,7 +1588,7 @@ int MatLoad_SeqBAIJ(PetscViewer viewer,MatType type,Mat *A)
   int          *mask,mbs,*jj,j,rowcount,nzcount,k,*browlengths,maskcount;
   int          kmax,jcount,block,idx,point,nzcountb,extra_rows;
   int          *masked,nmask,tmp,bs2,ishift;
-  PetscScalar       *aa;
+  PetscScalar  *aa;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
 
   PetscFunctionBegin;

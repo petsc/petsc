@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.83 2001/03/28 19:43:21 balay Exp bsmith $ */
+/* $Id: petschead.h,v 1.84 2001/04/10 19:37:48 bsmith Exp balay $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -169,13 +169,13 @@ valid
 #define PetscValidScalarPointer(h)                                  \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
   if ((unsigned long)h & (unsigned long)3) {                        \
-    SETERRQ(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to Scalar");    \
+    SETERRQ(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscScalar");    \
   }}
 #else
 #define PetscValidScalarPointer(h)                                  \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
   if ((unsigned long)h & (unsigned long)7) {                        \
-    SETERRQ(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to Scalar");    \
+    SETERRQ(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscScalar");    \
   }}
 #endif
 

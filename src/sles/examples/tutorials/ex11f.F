@@ -1,5 +1,5 @@
 !
-!    "$Id: ex11f.F,v 1.29 2001/01/23 18:44:49 balay Exp bsmith $";
+!    "$Id: ex11f.F,v 1.30 2001/08/06 21:16:53 bsmith Exp balay $";
 !
 !/*T
 !  Concepts: SLES^solving a Helmholtz equation
@@ -73,7 +73,7 @@
       Vec              x,b,u
       PetscRandom      rctx
       double precision norm,h2,sigma1
-      Scalar           none,sigma2,v,pfive
+      PetscScalar      none,sigma2,v,pfive
       integer          dim,flg,its,ierr,n,rank
       integer          Istart,Iend,i,j,II,JJ
       logical          use_random

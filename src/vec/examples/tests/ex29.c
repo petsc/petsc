@@ -1,4 +1,4 @@
-/*$Id: ex29.c,v 1.18 2001/04/10 19:35:02 bsmith Exp bsmith $*/
+/*$Id: ex29.c,v 1.19 2001/08/06 21:14:55 bsmith Exp balay $*/
 
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors.\n\
 Where atleast a couple of mallocs will occur in the stash code.\n\n";
@@ -11,7 +11,7 @@ Where atleast a couple of mallocs will occur in the stash code.\n\n";
 int main(int argc,char **argv)
 {
   int          i,j,n = 50,ierr,bs,size;
-  Scalar       val,*vals,zero=0.0;
+  PetscScalar  val,*vals,zero=0.0;
   Vec          x;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

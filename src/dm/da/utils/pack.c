@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.17 2001/06/21 21:19:29 bsmith Exp bsmith $*/
+/*$Id: pack.c,v 1.18 2001/08/06 21:18:46 bsmith Exp balay $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -124,7 +124,7 @@ int VecPackDestroy(VecPack packer)
 int VecPackGetAccess_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar **array)
 {
   int    ierr;
-  Scalar *varray;
+  PetscScalar *varray;
 
   PetscFunctionBegin;
   if (array) {
@@ -144,7 +144,7 @@ int VecPackGetAccess_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Petsc
 int VecPackGetAccess_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec *global)
 {
   int    ierr;
-  Scalar *array;
+  PetscScalar *array;
 
   PetscFunctionBegin;
   if (global) {
@@ -183,7 +183,7 @@ int VecPackRestoreAccess_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec 
 int VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar *array)
 {
   int    ierr;
-  Scalar *varray;
+  PetscScalar *varray;
 
   PetscFunctionBegin;
 
@@ -201,7 +201,7 @@ int VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscSc
 int VecPackScatter_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
 {
   int    ierr;
-  Scalar *array;
+  PetscScalar *array;
   Vec    global;
 
   PetscFunctionBegin;
@@ -221,7 +221,7 @@ int VecPackScatter_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
 int VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar *array)
 {
   int    ierr;
-  Scalar *varray;
+  PetscScalar *varray;
 
   PetscFunctionBegin;
   if (!packer->rank) {
@@ -238,7 +238,7 @@ int VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscSca
 int VecPackGather_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
 {
   int    ierr;
-  Scalar *array;
+  PetscScalar *array;
   Vec    global;
 
   PetscFunctionBegin;
@@ -291,8 +291,8 @@ int VecPackGetAccess(VecPack packer,Vec gvec,...)
   va_start(Argp,gvec);
   while (next) {
     if (next->type == VECPACK_ARRAY) {
-      Scalar **array;
-      array = va_arg(Argp, Scalar**);
+      PetscScalar **array;
+      array = va_arg(Argp, PetscScalar**);
       ierr  = VecPackGetAccess_Array(packer,next,gvec,array);CHKERRQ(ierr);
     } else if (next->type == VECPACK_DA) {
       Vec *vec;
@@ -342,8 +342,8 @@ int VecPackRestoreAccess(VecPack packer,Vec gvec,...)
   va_start(Argp,gvec);
   while (next) {
     if (next->type == VECPACK_ARRAY) {
-      Scalar **array;
-      array = va_arg(Argp, Scalar**);
+      PetscScalar **array;
+      array = va_arg(Argp, PetscScalar**);
       ierr  = VecPackRestoreAccess_Array(packer,next,gvec,array);CHKERRQ(ierr);
     } else if (next->type == VECPACK_DA) {
       Vec *vec;
@@ -391,8 +391,8 @@ int VecPackScatter(VecPack packer,Vec gvec,...)
   va_start(Argp,gvec);
   while (next) {
     if (next->type == VECPACK_ARRAY) {
-      Scalar *array;
-      array = va_arg(Argp, Scalar*);
+      PetscScalar *array;
+      array = va_arg(Argp, PetscScalar*);
       ierr = VecPackScatter_Array(packer,next,gvec,array);CHKERRQ(ierr);
     } else if (next->type == VECPACK_DA) {
       Vec vec;
@@ -441,8 +441,8 @@ int VecPackGather(VecPack packer,Vec gvec,...)
   va_start(Argp,gvec);
   while (next) {
     if (next->type == VECPACK_ARRAY) {
-      Scalar *array;
-      array = va_arg(Argp, Scalar*);
+      PetscScalar *array;
+      array = va_arg(Argp, PetscScalar*);
       ierr  = VecPackGather_Array(packer,next,gvec,array);CHKERRQ(ierr);
     } else if (next->type == VECPACK_DA) {
       Vec vec;
@@ -635,7 +635,7 @@ int VecPackGetGlobalIndices(VecPack packer,...)
   struct VecPackLink *next = packer->next;
   Vec                global,dglobal;
   PF                 pf;
-  Scalar             *array;
+  PetscScalar        *array;
 
   PetscFunctionBegin;
   ierr = VecPackCreateGlobalVector(packer,&global);CHKERRQ(ierr);
@@ -770,8 +770,8 @@ int VecPackGetLocalVectors(VecPack packer,...)
   va_start(Argp,packer);
   while (next) {
     if (next->type == VECPACK_ARRAY) {
-      Scalar **array;
-      array = va_arg(Argp, Scalar**);
+      PetscScalar **array;
+      array = va_arg(Argp, PetscScalar**);
       ierr = VecPackGetLocalVectors_Array(packer,next,array);CHKERRQ(ierr);
     } else if (next->type == VECPACK_DA) {
       Vec *vec;
@@ -819,8 +819,8 @@ int VecPackRestoreLocalVectors(VecPack packer,...)
   va_start(Argp,packer);
   while (next) {
     if (next->type == VECPACK_ARRAY) {
-      Scalar **array;
-      array = va_arg(Argp, Scalar**);
+      PetscScalar **array;
+      array = va_arg(Argp, PetscScalar**);
       ierr = VecPackRestoreLocalVectors_Array(packer,next,array);CHKERRQ(ierr);
     } else if (next->type == VECPACK_DA) {
       Vec *vec;
@@ -967,7 +967,7 @@ int MatMultBoth_Shell_Pack(Mat A,Vec x,Vec y,PetscTruth add)
   struct MatPack     *mpack;
   struct VecPackLink *xnext,*ynext;
   struct MatPackLink *anext;
-  Scalar             *xarray,*yarray;
+  PetscScalar        *xarray,*yarray;
   int                ierr,i;
   Vec                xglobal,yglobal;
 
@@ -1048,7 +1048,7 @@ int MatMultTranspose_Shell_Pack(Mat A,Vec x,Vec y)
   struct MatPack     *mpack;
   struct VecPackLink *xnext,*ynext;
   struct MatPackLink *anext;
-  Scalar             *xarray,*yarray;
+  PetscScalar        *xarray,*yarray;
   int                ierr;
   Vec                xglobal,yglobal;
 

@@ -1,4 +1,4 @@
-/* $Id: axpy.h,v 1.17 2000/05/10 16:38:34 bsmith Exp balay $ */
+/* $Id: axpy.h,v 1.18 2000/08/16 15:17:59 balay Exp balay $ */
 
 /* 
    These are macros for daxpy like operations.  The format is
@@ -105,7 +105,7 @@ aa[0]=a1;aa[1]=a2;\
 
 #elif defined(PETSC_USE_FOR_KERNELS)
 
-#define APXY(U,a1,p1,n)  {int __i;Scalar __s1,__s2; \
+#define APXY(U,a1,p1,n)  {int __i;PetscScalar __s1,__s2; \
   for(__i=0;__i<n-1;__i+=2){__s1=a1*p1[__i];__s2=a1*p1[__i+1];\
   __s1+=U[__i];__s2+=U[__i+1];U[__i]=__s1;U[__i+1]=__s2;}\
   if (n & 0x1) U[__i] += a1 * p1[__i];}
@@ -118,7 +118,7 @@ aa[0]=a1;aa[1]=a2;\
 
 #else
 
-#define APXY(U,a1,p1,n)  {int __i;Scalar _a1=a1;\
+#define APXY(U,a1,p1,n)  {int __i;PetscScalar _a1=a1;\
   for(__i=0;__i<n;__i++)U[__i]+=_a1 * p1[__i];}
 #define APXY2(U,a1,a2,p1,p2,n) {int __i;\
   for(__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
@@ -206,7 +206,7 @@ U += 4; P += 4; n -= 4;}}
 while (n--) {*U = *p1++ + a1 * *U;U++;}
 
 #elif defined(PETSC_USE_FOR_KERNELS)
-#define AYPX(U,a1,p1,n)  {int __i;Scalar __s1,__s2; \
+#define AYPX(U,a1,p1,n)  {int __i;PetscScalar __s1,__s2; \
 for(__i=0;__i<n-1;__i+=2){__s1=p1[__i];__s2=p1[__i+1];\
 __s1+=a1*U[__i];__s2+=a1*U[__i+1];\
 U[__i]=__s1;U[__i+1]=__s2;}\

@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.55 2001/04/04 18:04:13 balay Exp bsmith $*/
+/*$Id: posindep.c,v 1.56 2001/08/06 21:18:14 bsmith Exp balay $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -201,7 +201,7 @@ static int TSDestroy_Pseudo(TS ts)
 int TSPseudoMatMult(Mat mat,Vec x,Vec y)
 {
   TS     ts;
-  Scalar mdt,mone = -1.0;
+  PetscScalar mdt,mone = -1.0;
   int    ierr;
 
   PetscFunctionBegin;
@@ -225,7 +225,7 @@ int TSPseudoMatMult(Mat mat,Vec x,Vec y)
 int TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
 {
   TS     ts = (TS) ctx;
-  Scalar mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
+  PetscScalar mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
   int    ierr,i,n;
 
   PetscFunctionBegin;
@@ -255,10 +255,10 @@ int TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
 #define __FUNCT__ "TSPseudoJacobian"
 int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  TS         ts = (TS) ctx;
-  int        ierr;
-  Scalar     mone = -1.0,mdt = 1.0/ts->time_step;
-  PetscTruth isshell;
+  TS            ts = (TS) ctx;
+  int           ierr;
+  PetscScalar   mone = -1.0,mdt = 1.0/ts->time_step;
+  PetscTruth    isshell;
 
   PetscFunctionBegin;
   /* construct users Jacobian */

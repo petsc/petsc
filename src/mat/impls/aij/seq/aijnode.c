@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.126 2001/06/21 21:16:21 bsmith Exp bsmith $*/
+/*$Id: aijnode.c,v 1.127 2001/08/06 21:15:14 bsmith Exp balay $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -395,11 +395,11 @@ static int MatRestoreColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric
 #define __FUNCT__ "MatMult_SeqAIJ_Inode"
 static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data; 
-  PetscScalar     sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
-  PetscScalar     *v1,*v2,*v3,*v4,*v5,*x,*y;
-  int        ierr,*idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz;
-  int        shift = a->indexshift;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data; 
+  PetscScalar  sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
+  PetscScalar  *v1,*v2,*v3,*v4,*v5,*x,*y;
+  int          ierr,*idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz;
+  int          shift = a->indexshift;
   
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*v1,*v2,*v3,*v4,*v5)
@@ -582,11 +582,11 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMultAdd_SeqAIJ_Inode"
 static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data; 
-  PetscScalar     sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
-  PetscScalar     *v1,*v2,*v3,*v4,*v5,*x,*y,*z;
-  int        ierr,*idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz;
-  int        shift = a->indexshift;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data; 
+  PetscScalar  sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
+  PetscScalar  *v1,*v2,*v3,*v4,*v5,*x,*y,*z;
+  int          ierr,*idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz;
+  int          shift = a->indexshift;
   
   PetscFunctionBegin;  
   if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
@@ -859,8 +859,8 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   IS          iscol = a->col,isrow = a->row;
   int         *r,*c,ierr,i,j,n = A->m,*ai = a->i,nz,shift = a->indexshift,*a_j = a->j;
   int         node_max,*ns,row,nsz,aii,*vi,*ad,*aj,i0,i1,*rout,*cout;
-  PetscScalar      *x,*b,*a_a = a->a,*tmp,*tmps,*aa,tmp0,tmp1;
-  PetscScalar      sum1,sum2,sum3,sum4,sum5,*v1,*v2,*v3,*v4,*v5;
+  PetscScalar *x,*b,*a_a = a->a,*tmp,*tmps,*aa,tmp0,tmp1;
+  PetscScalar sum1,sum2,sum3,sum4,sum5,*v1,*v2,*v3,*v4,*v5;
 
   PetscFunctionBegin;  
   if (A->factor!=FACTOR_LU) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unfactored matrix");
@@ -1233,17 +1233,17 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Inode"
 int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
 {
-  Mat        C = *B;
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ *)C->data;
-  IS         iscol = b->col,isrow = b->row,isicol = b->icol;
-  int        shift = a->indexshift,*r,*ic,*c,ierr,n = A->m,*bi = b->i; 
-  int        *bj = b->j+shift,*nbj=b->j +(!shift),*ajtmp,*bjtmp,nz,row,prow;
-  int        *ics,i,j,idx,*ai = a->i,*aj = a->j+shift,*bd = b->diag,node_max,nsz;
-  int        *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj,ndamp = 0;
-  PetscScalar     *rtmp1,*rtmp2,*rtmp3,*v1,*v2,*v3,*pc1,*pc2,*pc3,mul1,mul2,mul3;
-  PetscScalar     tmp,*ba = b->a+shift,*aa = a->a+shift,*pv,*rtmps1,*rtmps2,*rtmps3;
-  PetscTruth damp;
-  PetscReal  damping = b->lu_damping,zeropivot = b->lu_zeropivot;
+  Mat          C = *B;
+  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ *)C->data;
+  IS           iscol = b->col,isrow = b->row,isicol = b->icol;
+  int          shift = a->indexshift,*r,*ic,*c,ierr,n = A->m,*bi = b->i; 
+  int          *bj = b->j+shift,*nbj=b->j +(!shift),*ajtmp,*bjtmp,nz,row,prow;
+  int          *ics,i,j,idx,*ai = a->i,*aj = a->j+shift,*bd = b->diag,node_max,nsz;
+  int          *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj,ndamp = 0;
+  PetscScalar  *rtmp1,*rtmp2,*rtmp3,*v1,*v2,*v3,*pc1,*pc2,*pc3,mul1,mul2,mul3;
+  PetscScalar  tmp,*ba = b->a+shift,*aa = a->a+shift,*pv,*rtmps1,*rtmps2,*rtmps3;
+  PetscTruth   damp;
+  PetscReal    damping = b->lu_damping,zeropivot = b->lu_zeropivot;
 
   PetscFunctionBegin;  
   ierr   = ISGetIndices(isrow,&r);CHKERRQ(ierr);

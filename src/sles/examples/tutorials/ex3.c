@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.30 2001/06/21 21:18:27 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.31 2001/08/06 21:16:53 bsmith Exp balay $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
@@ -39,12 +39,12 @@ int main(int argc,char **args)
   int     M;           /* number of elements (global) */
   int     rank;        /* processor rank */
   int     size;        /* size of communicator */
-  Scalar  Ke[16];      /* element matrix */
-  Scalar  r[4];        /* element vector */
+  PetscScalar  Ke[16];      /* element matrix */
+  PetscScalar  r[4];        /* element vector */
   double  h;           /* mesh width */
   double  norm;        /* norm of solution error */
   double  x,y;
-  Scalar  val,zero = 0.0,one = 1.0,none = -1.0;
+  PetscScalar  val,zero = 0.0,one = 1.0,none = -1.0;
   int     ierr,idx[4],count,*rows,i,m = 5,start,end,its;
 
   PetscInitialize(&argc,&args,(char *)0,help);

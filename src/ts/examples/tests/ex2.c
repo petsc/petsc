@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.33 2001/03/23 23:24:43 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.34 2001/04/10 19:37:11 bsmith Exp balay $*/
 /*
        Formatted test for TS routines.
 
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
 /* this test problem has initial values (1,1,1).                      */
 int Initial(Vec global,void *ctx)
 {
-  Scalar *localptr;
+  PetscScalar *localptr;
   int    i,mybase,myend,ierr,locsize;
 
   /* determine starting point of each processor */
@@ -114,12 +114,12 @@ int Initial(Vec global,void *ctx)
 #define __FUNCT__ "Monitor"
 int Monitor(TS ts,int step,double time,Vec global,void *ctx)
 {
-  VecScatter scatter;
-  IS         from,to;
-  int        i,n,*idx;
-  Vec        tmp_vec;
-  int        ierr;
-  Scalar     *tmp;
+  VecScatter   scatter;
+  IS           from,to;
+  int          i,n,*idx;
+  Vec          tmp_vec;
+  int          ierr;
+  PetscScalar  *tmp;
 
   /* Get the size of the vector */
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
@@ -156,11 +156,11 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
 #define __FUNCT__ "RHSFunction"
 int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
 {
-  Scalar     *inptr,*outptr;
-  int        i,n,ierr,*idx;
-  IS         from,to;
-  VecScatter scatter;
-  Vec        tmp_in,tmp_out;
+  PetscScalar  *inptr,*outptr;
+  int          i,n,ierr,*idx;
+  IS           from,to;
+  VecScatter   scatter;
+  Vec          tmp_in,tmp_out;
 
   /* Get the length of parallel vector */
   ierr = VecGetSize(globalin,&n);CHKERRQ(ierr);
@@ -213,7 +213,7 @@ int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
 int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   Mat    A = *AA;
-  Scalar v[3],*tmp;
+  PetscScalar v[3],*tmp;
   int    idx[3],i,ierr;
  
   *str = SAME_NONZERO_PATTERN;

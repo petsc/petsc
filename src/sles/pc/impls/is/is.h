@@ -1,4 +1,4 @@
-/*$Id: is.h,v 1.2 2000/08/24 22:42:38 bsmith Exp bsmith $*/
+/*$Id: is.h,v 1.3 2001/08/06 21:16:34 bsmith Exp balay $*/
 #if !defined(__pcis_h)
 #define __pcis_h
 
@@ -41,7 +41,7 @@ typedef struct {
              vec2_B,
              vec3_B,
              vec1_global;
-  Scalar*    work_N;
+  PetscScalar*    work_N;
   VecScatter global_to_D;    /* scattering context from global to local interior nodes */
   VecScatter N_to_B     ;    /* scattering context from all local nodes to local interface nodes */
   VecScatter global_to_B;    /* scattering context from global to local interface nodes */

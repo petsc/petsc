@@ -1,11 +1,11 @@
-/* $Id: ilu.h,v 1.27 2001/06/22 19:49:57 buschelm Exp bsmith $ */
+/* $Id: ilu.h,v 1.28 2001/08/06 21:13:26 bsmith Exp balay $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
  the order of 2-6+.
 
     There are TWO versions of the macros below. 
-    1) standard for MatScalar == Scalar use the standard BLAS for 
+    1) standard for MatScalar == PetscScalar use the standard BLAS for 
        block size larger than 7 and
     2) handcoded Fortran single precision for the matrices, since BLAS
        does not have some arguments in single and some in double.
@@ -141,7 +141,7 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 */
 #define Kernel_A_gets_A_times_B(bs,A,B,W) \
 { \
-  Scalar _one = 1.0,_zero = 0.0; \
+  PetscScalar _one = 1.0,_zero = 0.0; \
   int    _ierr; \
   _ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(_ierr); \
   BLgemm_("N","N",&(bs),&(bs),&(bs),&_one,(W),&(bs),(B),&(bs),&_zero,(A),&(bs));\
@@ -155,7 +155,7 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 */ 
 #define Kernel_A_gets_A_minus_B_times_C(bs,A,B,C) \
 { \
-  Scalar _mone = -1.0,_one = 1.0; \
+  PetscScalar _mone = -1.0,_one = 1.0; \
   BLgemm_("N","N",&(bs),&(bs),&(bs),&_mone,(B),&(bs),(C),&(bs),&_one,(A),&(bs));\
 }
 
@@ -167,7 +167,7 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 */ 
 #define Kernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C) \
 { \
-  Scalar _one = 1.0; \
+  PetscScalar _one = 1.0; \
   BLgemm_("T","N",&(bs),&(bs),&(bs),&_one,(B),&(bs),(C),&(bs),&_one,(A),&(bs));\
 }
 
@@ -180,7 +180,7 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 */
 #define  Kernel_v_gets_v_plus_Atranspose_times_w(bs,v,A,w) \
 {  \
-  Scalar _one = 1.0; \
+  PetscScalar _one = 1.0; \
   int    _ione = 1; \
   LAgemv_("T",&(bs),&(bs),&_one,A,&(bs),w,&_ione,&_one,v,&_ione); \
 } 
@@ -194,7 +194,7 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 */
 #define  Kernel_v_gets_v_minus_A_times_w(bs,v,A,w) \
 {  \
-  Scalar _mone = -1.0,_one = 1.0; \
+  PetscScalar _mone = -1.0,_one = 1.0; \
   int    _ione = 1; \
   LAgemv_("N",&(bs),&(bs),&_mone,A,&(bs),w,&_ione,&_one,v,&_ione); \
 }
@@ -208,7 +208,7 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 */
 #define  Kernel_v_gets_v_plus_A_times_w(bs,v,A,w) \
 {  \
-  Scalar _one = 1.0; \
+  PetscScalar _one = 1.0; \
   int    _ione = 1; \
   LAgemv_("N",&(bs),&(bs),&_one,A,&(bs),w,&_ione,&_one,v,&_ione); \
 }
@@ -222,7 +222,7 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 */
 #define  Kernel_w_gets_w_plus_Ar_times_v(bs,ncols,v,A,w) \
 {  \
-  Scalar _one = 1.0; \
+  PetscScalar _one = 1.0; \
   int    _ione = 1; \
   LAgemv_("N",&(bs),&(ncols),&_one,A,&(bs),v,&_ione,&_one,w,&_ione); \
 }
@@ -236,7 +236,7 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 */
 #define Kernel_w_gets_A_times_v(bs,v,A,w) \
 {  \
-  Scalar _zero = 0.0,_one = 1.0; \
+  PetscScalar _zero = 0.0,_one = 1.0; \
   int    _ione = 1; \
   LAgemv_("N",&(bs),&(bs),&_one,A,&(bs),v,&_ione,&_zero,w,&_ione); \
 }
@@ -246,7 +246,7 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 */
 #define Kernel_w_gets_Ar_times_v(bs,ncols,x,A,z) \
 { \
-  Scalar _one = 1.0,_zero = 0.0; \
+  PetscScalar _one = 1.0,_zero = 0.0; \
   int    _ione = 1; \
   LAgemv_("N",&bs,&ncols,&_one,A,&bs,x,&_ione,&_zero,z,&_ione); \
 }
@@ -256,7 +256,7 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 */
 #define Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,A,z) \
 { \
-  Scalar _one = 1.0; \
+  PetscScalar _one = 1.0; \
   int    _ione = 1; \
   LAgemv_("T",&bs,&ncols,&_one,A,&bs,x,&_ione,&_one,z,&_ione); \
 }

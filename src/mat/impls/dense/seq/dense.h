@@ -1,4 +1,4 @@
-/* $Id: dense.h,v 1.8 2000/05/10 16:40:32 bsmith Exp bsmith $ */
+/* $Id: dense.h,v 1.9 2000/10/24 20:25:29 bsmith Exp balay $ */
 
 #include "src/mat/matimpl.h"
 
@@ -10,11 +10,11 @@
 */
 
 typedef struct {
-  Scalar     *v;                /* matrix elements */
-  PetscTruth roworiented;       /* if true, row oriented input (default) */
-  int        pad;               /* padding */        
-  int        *pivots;           /* pivots in LU factorization */
-  PetscTruth user_alloc;        /* true if the user provided the dense data */
+  PetscScalar  *v;                /* matrix elements */
+  PetscTruth   roworiented;       /* if true, row oriented input (default) */
+  int          pad;               /* padding */        
+  int          *pivots;           /* pivots in LU factorization */
+  PetscTruth   user_alloc;        /* true if the user provided the dense data */
 } Mat_SeqDense;
 
 EXTERN int MatMult_SeqDense(Mat A,Vec,Vec);

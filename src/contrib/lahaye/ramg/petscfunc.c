@@ -1,4 +1,4 @@
-/*$Id: petscfunc.c,v 1.9 2001/07/05 14:38:56 bsmith Exp bsmith $*/
+/*$Id: petscfunc.c,v 1.10 2001/08/06 21:19:01 bsmith Exp balay $*/
 
 #include "petscfunc.h"
 #include "ramgfunc.h"
@@ -102,7 +102,7 @@ int KSPMonitorAmg(KSP ksp,int n,double rnorm,void* ctx)
 */ 
 int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
 {
-  Scalar      *values; 
+  PetscScalar *values; 
   Vec         t, v, V; 
   PetscViewer viewer; 
   char        filename[161];
@@ -270,7 +270,7 @@ int PrintMatrix(Mat mat, char* path, char* base)
    int         ierr,numrows, numcols, numnonzero, I, j, ncols_getrow, *cols_getrow;
    PetscViewer viewer; 
    char        filename[80]; 
-   Scalar      *vals_getrow; 
+   PetscScalar *vals_getrow; 
    MatInfo     info;
 
    /*..Get size and number of unknowns of matrix..*/ 
@@ -324,7 +324,7 @@ int PrintVector(Vec vec, char* path, char* base)
    int         ierr,size,i;
    PetscViewer viewer; 
    char        filename[80]; 
-   Scalar      *values; 
+   PetscScalar *values; 
 
    sprintf(filename, "%s%s%s", path, base, ".m");
    printf("   [PrintVector]::Generating file %s ...\n", filename); 

@@ -1,4 +1,4 @@
-/*$Id: iguess.c,v 1.36 2001/03/23 23:23:29 balay Exp bsmith $*/
+/*$Id: iguess.c,v 1.37 2001/08/06 21:16:38 bsmith Exp balay $*/
 
 #include "src/sles/ksp/kspimpl.h"  /*I "petscksp.h" I*/
 /* 
@@ -9,7 +9,7 @@
 typedef struct {
     int      curl,     /* Current number of basis vectors */
              maxl;     /* Maximum number of basis vectors */
-    Scalar   *alpha;   /* */
+    PetscScalar   *alpha;   /* */
     Vec      *xtilde,  /* Saved x vectors */
              *btilde;  /* Saved b vectors */
 } KSPIGUESS;
@@ -57,7 +57,7 @@ int KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 int KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 {
   int    i,ierr;
-  Scalar tmp;
+  PetscScalar tmp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -89,7 +89,7 @@ int KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
 int  KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
 {
   PetscReal    normax,norm;
-  Scalar       tmp;
+  PetscScalar  tmp;
   MatStructure pflag;
   int          curl = itg->curl,i,ierr;
   Mat          Amat,Pmat;

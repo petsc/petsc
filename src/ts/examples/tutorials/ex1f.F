@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.26 2001/01/19 23:22:15 balay Exp bsmith $"
+! "$Id: ex1f.F,v 1.27 2001/08/06 21:18:18 bsmith Exp balay $"
 !
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !
@@ -207,7 +207,7 @@
       double precision two,one,lambda
       double precision temp1,temp,hx,hy,hxdhy,hydhx
       double precision sc
-      Scalar           xx(1)
+      PetscScalar      xx(1)
       integer          param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
 
@@ -260,8 +260,8 @@
       PetscOffset       xidx,fidx
       double precision  two,one,lambda
       double precision  hx,hy,hxdhy,hydhx
-      Scalar            ut,ub,ul,ur,u,uxx,uyy,sc
-      Scalar            xx(1),ff(1)
+      PetscScalar       ut,ub,ul,ur,u,uxx,uyy,sc
+      PetscScalar       xx(1),ff(1)
       integer           param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
 
@@ -322,7 +322,7 @@
       Mat              jac
       integer          i,j,row,mx,my,col(5),ierr
       PetscOffset      xidx
-      Scalar           two,one,lambda,v(5),sc,xx(1)
+      PetscScalar      two,one,lambda,v(5),sc,xx(1)
       double precision hx,hy,hxdhy,hydhx
 
       integer   param,lmx,lmy

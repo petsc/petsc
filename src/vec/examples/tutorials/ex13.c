@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.13 2001/01/23 20:54:12 balay Exp balay $*/
+/*$Id: ex13.c,v 1.14 2001/03/23 23:21:37 balay Exp balay $*/
 
 static char help[] = "Tests PetscObjectPublish().\n\n";
 
@@ -20,7 +20,7 @@ T*/
 int main(int argc,char **argv)
 {
   int     i,n,ierr,rank;
-  Scalar  one = 1.0,*array;
+  PetscScalar  one = 1.0,*array;
   Vec     x,xlocal;
 
   PetscInitialize(&argc,&argv,(char *)0,help);

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.20 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.21 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Creates a matrix, inserts some values, and tests MatGetSubMatrices() and MatZeroEntries().\n\n";
 
@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   Mat         mat,submat,*submatrices;
   int         m = 10,n = 10,i = 4,tmp,ierr;
   IS          irkeep,ickeep;
-  Scalar      value = 1.0;
+  PetscScalar value = 1.0;
   PetscViewer sviewer;
 
   PetscInitialize(&argc,&argv,(char *)0,help);

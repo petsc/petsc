@@ -1,4 +1,4 @@
-/*$Id: pbjacobi.c,v 1.2 2001/06/21 21:18:01 bsmith Exp bsmith $*/
+/*$Id: pbjacobi.c,v 1.3 2001/08/06 21:16:36 bsmith Exp balay $*/
 
 /* 
    Include files needed for the PBJacobi preconditioner:
@@ -11,7 +11,7 @@
    Private context (data structure) for the PBJacobi preconditioner.  
 */
 typedef struct {
-  Scalar *diag;
+  PetscScalar *diag;
   int    bs,mbs;
 } PC_PBJacobi;
 
@@ -28,7 +28,7 @@ static int PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
   int         ierr,i,m = jac->mbs;
-  Scalar      *diag = jac->diag,x0,x1,*xx,*yy;
+  PetscScalar *diag = jac->diag,x0,x1,*xx,*yy;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -50,7 +50,7 @@ static int PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
   int         ierr,i,m = jac->mbs;
-  Scalar      *diag = jac->diag,x0,x1,x2,*xx,*yy;
+  PetscScalar *diag = jac->diag,x0,x1,x2,*xx,*yy;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -73,7 +73,7 @@ static int PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
   int         ierr,i,m = jac->mbs;
-  Scalar      *diag = jac->diag,x0,x1,x2,x3,*xx,*yy;
+  PetscScalar *diag = jac->diag,x0,x1,x2,x3,*xx,*yy;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ static int PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
   int         ierr,i,m = jac->mbs;
-  Scalar      *diag = jac->diag,x0,x1,x2,x3,x4,*xx,*yy;
+  PetscScalar *diag = jac->diag,x0,x1,x2,x3,x4,*xx,*yy;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -125,7 +125,7 @@ static int PCSetUp_PBJacobi(PC pc)
   int         ierr,i,*diag_offset,bs2;
   PetscTruth  seqbaij,mpibaij;
   Mat         A = pc->pmat;
-  Scalar      *diag,*odiag,*v;
+  PetscScalar *diag,*odiag,*v;
   Mat_SeqBAIJ *a;
 
   PetscFunctionBegin;

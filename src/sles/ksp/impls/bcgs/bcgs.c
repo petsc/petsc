@@ -1,4 +1,4 @@
-/*$Id: bcgs.c,v 1.76 2001/03/22 20:31:23 bsmith Exp balay $*/
+/*$Id: bcgs.c,v 1.77 2001/03/23 23:23:33 balay Exp balay $*/
 
 /*                       
     This code implements the BiCGStab (Stabilized version of BiConjugate
@@ -29,7 +29,7 @@ static int KSPSetUp_BCGS(KSP ksp)
 static int  KSPSolve_BCGS(KSP ksp,int *its)
 {
   int       i,maxit,ierr;
-  Scalar    rho,rhoold,alpha,beta,omega,omegaold,d1,d2,zero = 0.0,tmp;
+  PetscScalar    rho,rhoold,alpha,beta,omega,omegaold,d1,d2,zero = 0.0,tmp;
   Vec       X,B,V,P,R,RP,T,S,BINVF;
   PetscReal dp = 0.0;
 

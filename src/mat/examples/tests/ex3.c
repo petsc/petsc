@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.16 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.17 2001/08/06 21:16:03 bsmith Exp balay $*/
 
 static char help[] = "Tests relaxation for dense matrices.\n\n"; 
 
@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Mat         C; 
   Vec         u,x,b,e;
   int         i,n = 10,midx[3],ierr;
-  Scalar      v[3],one = 1.0,zero = 0.0,mone = -1.0;
+  PetscScalar v[3],one = 1.0,zero = 0.0,mone = -1.0;
   double      omega = 1.0,norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);

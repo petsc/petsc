@@ -1,5 +1,5 @@
 !
-!    "$Id: ex7f.F,v 1.19 2001/01/15 21:45:20 bsmith Exp balay $";
+!    "$Id: ex7f.F,v 1.20 2001/03/06 20:23:56 balay Exp balay $";
 !
        subroutine ex7f(vec,comm)
 
@@ -10,7 +10,7 @@
 !  in Fortran and called from a C routine, passing down PETSc objects.
 !
 
-       Scalar           two
+       PetscScalar      two
        Vec              vec
        MPI_Comm         comm
        integer          ierr,rank

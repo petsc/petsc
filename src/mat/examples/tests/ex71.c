@@ -1,4 +1,4 @@
-/*$Id: ex71.c,v 1.43 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex71.c,v 1.44 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 int main(int argc,char **args)
 {
   int         ierr,m = 4,n = 5,i,j,I,J;
-  Scalar      one = 1.0,v;
+  PetscScalar one = 1.0,v;
   Vec         x;
   Mat         A;
   PetscViewer viewer;

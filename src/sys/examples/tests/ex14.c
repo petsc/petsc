@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.9 2001/01/23 20:53:32 balay Exp balay $*/
+/*$Id: ex14.c,v 1.10 2001/03/23 23:20:59 balay Exp balay $*/
 
 /* 
    Tests PetscOptionsGetScalar() for complex numbers
@@ -12,7 +12,7 @@
 int main(int argc,char **argv)
 {
   int    ierr;
-  Scalar a;
+  PetscScalar a;
 
   PetscInitialize(&argc,&argv,(char *)0,0);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-a",&a,PETSC_NULL);CHKERRQ(ierr);

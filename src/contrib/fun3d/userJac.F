@@ -1,4 +1,4 @@
-!  $Id: userJac.F,v 1.12 2001/01/15 21:49:32 bsmith Exp balay $
+!  $Id: userJac.F,v 1.13 2001/03/23 23:25:38 balay Exp balay $
 !---------------------------------------------------------------
 ! The following subroutines are from node6t.f in the original
 ! code.
@@ -30,10 +30,10 @@
 
       integer isface(1)
       integer isnode(1),ivnode(1),ifnode(1)
-      Scalar cfl
+      PetscScalar cfl
 #if defined(INTERLACING)
-      Scalar qvec(4,nvertices)
-      Scalar xyzn(4,nedge)
+      PetscScalar qvec(4,nvertices)
+      PetscScalar xyzn(4,nedge)
       integer evec(2,nedge)
 #define qnode(i,j) qvec(i,j)
 #define dfp(a,b) val1(b,a)
@@ -44,8 +44,8 @@
 #define rl(i) xyzn(4,i)
 #define eptr(j,i) evec(i,j)
 #else
-      Scalar qvec(nvertices,4)
-      Scalar xyzn(nedge,4)
+      PetscScalar qvec(nvertices,4)
+      PetscScalar xyzn(nedge,4)
       integer evec(nedge,2)
 #define qnode(i,j) qvec(j,i)
 #define dfp(a,b) val1(b,a)
@@ -56,20 +56,20 @@
 #define rl(i) xyzn(i,4)
 #define eptr(i,j) evec(i,j)
 #endif
-      Scalar vol(1)
-      Scalar sxn(1),syn(1),szn(1)
-      Scalar fxn(1),fyn(1),fzn(1)
-      Scalar cdt(1)
-!     Scalar A(nnz,4,4)
+      PetscScalar vol(1)
+      PetscScalar sxn(1),syn(1),szn(1)
+      PetscScalar fxn(1),fyn(1),fzn(1)
+      PetscScalar cdt(1)
+!     PetscScalar A(nnz,4,4)
       Mat  A
       MatStructure flag
 
 !     integer ia(1),ja(1),iau(1),fhelp(nedge,2)
-      Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      Scalar gamma,gm1,gp1,gm1g,gp1g,ggm1
-      Scalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      Scalar  cfl1,cfl2
+      PetscScalar gamma,gm1,gp1,gm1g,gp1g,ggm1
+      PetscScalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
+      PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,nstage,ncyct,iramp,nitfo
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,                 &
      &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -80,30 +80,30 @@
       integer irow(16), icol(16)
       integer i,j,k,n,ic,ierr,ir,node1,node2,inode
       integer flops
-      Scalar val(32), val1(8,4)
-      Scalar xnorm,ynorm,znorm,rlen,dot,temp
-      Scalar X1,Y1,Z1,X2,Y2,Z2,size,area
-      Scalar pL,uL,vL,wL,ubarL,c2L,cL
-      Scalar pR,uR,vR,wR,ubarR,c2R,cR
-      Scalar pi,ui,vi,wi,unorm,c20,ubar0
-      Scalar prp,uru,vrv,wrw
-      Scalar p,u,v,w,ubar,c2,c,eig1,eig2,eig3,eig4,eigeps
-      Scalar phi1,phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9
-      Scalar rhs1,rhs1p,rhs1u,rhs1v,rhs1w
-      Scalar rhs2,rhs2p,rhs2u,rhs2v,rhs2w
-      Scalar rhs3,rhs3p,rhs3u,rhs3v,rhs3w
-      Scalar rhs4,rhs4p,rhs4u,rhs4v,rhs4w,c2inv
-      Scalar y11,y21,y31,y41,y12,y22,y32,y42
-      Scalar y13,y23,y33,y43,y14,y24,y34,y44
-      Scalar t11,t21,t31,t41,t12,t22,t32,t42
-      Scalar t13,t23,t33,t43,t14,t24,t34,t44
-      Scalar ti11,ti21,ti31,ti41,ti12,ti22,ti32,ti42
-      Scalar ti13,ti23,ti33,ti43,ti14,ti24,ti34,ti44
-      Scalar a11,a21,a31,a41,a12,a22,a32,a42
-      Scalar a13,a23,a33,a43,a14,a24,a34,a44
-      Scalar pb,pbp,pbu,pbv,pbw,ub,ubp,ubu,ubv,ubw
-      Scalar vb,vbp,vbu,vbv,vbw,wb,wbp,wbu,wbv,wbw
-      Scalar unormb,unormbp,unormbu,unormbv,unormbw
+      PetscScalar val(32), val1(8,4)
+      PetscScalar xnorm,ynorm,znorm,rlen,dot,temp
+      PetscScalar X1,Y1,Z1,X2,Y2,Z2,size,area
+      PetscScalar pL,uL,vL,wL,ubarL,c2L,cL
+      PetscScalar pR,uR,vR,wR,ubarR,c2R,cR
+      PetscScalar pi,ui,vi,wi,unorm,c20,ubar0
+      PetscScalar prp,uru,vrv,wrw
+      PetscScalar p,u,v,w,ubar,c2,c,eig1,eig2,eig3,eig4,eigeps
+      PetscScalar phi1,phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9
+      PetscScalar rhs1,rhs1p,rhs1u,rhs1v,rhs1w
+      PetscScalar rhs2,rhs2p,rhs2u,rhs2v,rhs2w
+      PetscScalar rhs3,rhs3p,rhs3u,rhs3v,rhs3w
+      PetscScalar rhs4,rhs4p,rhs4u,rhs4v,rhs4w,c2inv
+      PetscScalar y11,y21,y31,y41,y12,y22,y32,y42
+      PetscScalar y13,y23,y33,y43,y14,y24,y34,y44
+      PetscScalar t11,t21,t31,t41,t12,t22,t32,t42
+      PetscScalar t13,t23,t33,t43,t14,t24,t34,t44
+      PetscScalar ti11,ti21,ti31,ti41,ti12,ti22,ti32,ti42
+      PetscScalar ti13,ti23,ti33,ti43,ti14,ti24,ti34,ti44
+      PetscScalar a11,a21,a31,a41,a12,a22,a32,a42
+      PetscScalar a13,a23,a33,a43,a14,a24,a34,a44
+      PetscScalar pb,pbp,pbu,pbv,pbw,ub,ubp,ubu,ubv,ubw
+      PetscScalar vb,vbp,vbu,vbv,vbw,wb,wbp,wbu,wbv,wbw
+      PetscScalar unormb,unormbp,unormbu,unormbv,unormbw
      
 
 ! 

@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.213 2001/04/10 19:36:06 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.214 2001/06/21 21:17:38 bsmith Exp balay $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -1534,7 +1534,7 @@ int PCComputeExplicitOperator(PC pc,Mat *mat)
   Vec      in,out;
   int      ierr,i,M,m,size,*rows,start,end;
   MPI_Comm comm;
-  Scalar   *array,zero = 0.0,one = 1.0;
+  PetscScalar   *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);

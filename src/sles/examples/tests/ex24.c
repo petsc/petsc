@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.10 2001/03/23 23:23:50 balay Exp bsmith $*/
+/*$Id: ex24.c,v 1.11 2001/04/10 19:36:37 bsmith Exp balay $*/
 
 static char help[] = "Tests CG, MINRES and SYMMLQ on symmetric matrices with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
 
@@ -10,7 +10,7 @@ static char help[] = "Tests CG, MINRES and SYMMLQ on symmetric matrices with SBA
 int main(int argc,char **args)
 {
   Mat         C;
-  Scalar      v,none = -1.0;
+  PetscScalar v,none = -1.0;
   int         i,j,I,J,ierr,Istart,Iend,N,m = 4,n = 4,rank,size,its,k;
   double      err_norm,res_norm;
   Vec         x,b,u,u_tmp;

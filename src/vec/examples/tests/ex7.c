@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.45 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex7.c,v 1.46 2001/03/23 23:21:30 balay Exp balay $*/
 
 static char help[] = "Demonstrates a scatter with a stride and general index set.\n\n";
 
@@ -10,7 +10,7 @@ static char help[] = "Demonstrates a scatter with a stride and general index set
 int main(int argc,char **argv)
 {
   int           n = 6,ierr,idx1[3] = {0,1,2},loc[6] = {0,1,2,3,4,5};
-  Scalar        two = 2.0,vals[6] = {10,11,12,13,14,15};
+  PetscScalar   two = 2.0,vals[6] = {10,11,12,13,14,15};
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;

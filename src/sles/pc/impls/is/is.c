@@ -1,4 +1,4 @@
-/*$Id: is.c,v 1.7 2001/03/23 23:23:21 balay Exp bsmith $*/
+/*$Id: is.c,v 1.8 2001/08/06 21:16:34 bsmith Exp balay $*/
 #include "src/sles/pc/impls/is/is.h"
 
 /* -------------------------------------------------------------------------- */
@@ -26,7 +26,7 @@ int PCISSetUp(PC pc)
   */
   {
     Vec    counter;
-    Scalar one=1.0, zero=0.0;
+    PetscScalar one=1.0, zero=0.0;
     ierr = VecDuplicate(matis->x,&pcis->vec1_N);CHKERRQ(ierr);
     ierr = VecDuplicate(pc->vec,&counter);CHKERRQ(ierr); /* temporary auxiliar vector */
     ierr = VecSet(&zero,counter);CHKERRQ(ierr);
@@ -44,7 +44,7 @@ int PCISSetUp(PC pc)
   {
     int     n_I;
     int    *idx_I_local,*idx_B_local,*idx_I_global,*idx_B_global;
-    Scalar *array;
+    PetscScalar *array;
     /* Identifying interior and interface nodes, in local numbering */
     ierr = VecGetSize(pcis->vec1_N,&pcis->n);CHKERRQ(ierr);
     ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
@@ -308,7 +308,7 @@ int PCISCreate(PC pc)
 int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   int    ierr, its;
-  Scalar m_one = -1.0;
+  PetscScalar m_one = -1.0;
   PC_IS  *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
@@ -347,7 +347,7 @@ int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 int PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
 {
   int    i, ierr, *index;
-  Scalar *array_B;
+  PetscScalar *array_B;
   PC_IS  *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
@@ -400,7 +400,7 @@ int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 {
   int    ierr, its;
   PC_IS  *pcis = (PC_IS*)(pc->data);
-  Scalar zero  = 0.0;
+  PetscScalar zero  = 0.0;
 
   PetscFunctionBegin;
 
@@ -420,7 +420,7 @@ int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
     PetscTruth flg;
     ierr = PetscOptionsHasName(PETSC_NULL,"-check_consistency",&flg);CHKERRQ(ierr);
     if (flg) {
-      Scalar average;
+      PetscScalar average;
       ierr = VecSum(vec1_N,&average);CHKERRQ(ierr);
       average = average / ((PetscReal)pcis->n);
       if (pcis->pure_neumann) {

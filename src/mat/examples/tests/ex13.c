@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.16 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex13.c,v 1.17 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Tests copying and ordering uniprocessor row-based sparse matrices.\n\n";
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat     C,A;
   int     i,j,m = 5,n = 5,I,J,ierr;
-  Scalar  v;
+  PetscScalar  v;
   IS      perm,iperm;
 
   PetscInitialize(&argc,&args,(char *)0,help);

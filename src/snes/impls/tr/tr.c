@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.126 2001/06/30 18:48:47 curfman Exp bsmith $*/
+/*$Id: tr.c,v 1.127 2001/08/06 21:17:16 bsmith Exp balay $*/
  
 #include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
@@ -60,7 +60,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   int                 maxits,i,ierr,lits,breakout = 0;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal           rho,fnorm,gnorm,gpnorm,xnorm,delta,norm,ynorm,norm1;
-  Scalar              mone = -1.0,cnorm;
+  PetscScalar         mone = -1.0,cnorm;
   KSP                 ksp;
   SLES                sles;
   SNESConvergedReason reason;

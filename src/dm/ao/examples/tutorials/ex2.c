@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.40 2001/04/10 19:37:19 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.41 2001/06/21 21:19:06 bsmith Exp balay $*/
 
 static char help[] = "Reads a a simple unstructured grid from a file. Partitions it,\n\
 and distributes the grid data accordingly\n\n";
@@ -74,7 +74,7 @@ typedef struct {
   int    n_vert,n_ele;
   int    mlocal_vert,mlocal_ele;
   int    *ele;
-  Scalar *vert;
+  PetscScalar *vert;
   int    *ia,*ja;
   IS     isnewproc;
   int    *localvert,nlocal; /* used to stash temporarily old global vertex number of new vertex */
@@ -175,7 +175,7 @@ int DataRead(GridData *gdata)
   int          mlocal_ele,*mmlocal_ele,*ele,*tmpele,n_ele,net,a1,a2,a3;
   int          *iatmp,*jatmp,ierr;
   char         msg[128];
-  Scalar       *vert,*tmpvert;
+  PetscScalar  *vert,*tmpvert;
   MPI_Status   status;
 
   PetscFunctionBegin;
@@ -458,11 +458,11 @@ int DataPartitionElements(GridData *gdata)
 */
 int DataMoveElements(GridData *gdata)
 {
-  int        ierr,*counts,rank,size,i,*idx;
-  Vec        vele,veleold;
-  Scalar     *array;
-  IS         isscat,isnum;
-  VecScatter vecscat;
+  int          ierr,*counts,rank,size,i,*idx;
+  Vec          vele,veleold;
+  PetscScalar  *array;
+  IS           isscat,isnum;
+  VecScatter   vecscat;
 
   PetscFunctionBegin;
 
@@ -674,12 +674,12 @@ int DataPartitionVertices(GridData *gdata)
 */
 int DataMoveVertices(GridData *gdata)
 {
-  AO         ao;
-  int        ierr,rank,i;
-  Vec        vert,overt;
-  VecScatter vecscat;
-  IS         isscat;
-  Scalar     *avert;
+  AO           ao;
+  int          ierr,rank,i;
+  Vec          vert,overt;
+  VecScatter   vecscat;
+  IS           isscat;
+  PetscScalar  *avert;
 
   PetscFunctionBegin;
 

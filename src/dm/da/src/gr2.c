@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.45 2001/03/23 23:25:00 balay Exp bsmith $*/
+/*$Id: gr2.c,v 1.46 2001/08/06 21:18:33 bsmith Exp balay $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
@@ -10,10 +10,10 @@
         The data that is passed into the graphics callback
 */
 typedef struct {
-  int        m,n,step,k;
-  PetscReal     min,max,scale;
-  Scalar     *xy,*v;
-  PetscTruth showgrid;
+  int          m,n,step,k;
+  PetscReal    min,max,scale;
+  PetscScalar  *xy,*v;
+  PetscTruth   showgrid;
 } ZoomCtx;
 
 /*
@@ -28,7 +28,7 @@ int VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   ZoomCtx *zctx = (ZoomCtx*)ctx;
   int     ierr,m,n,i,j,k,step,id,c1,c2,c3,c4;
   PetscReal  s,min,x1,x2,x3,x4,y_1,y2,y3,y4;
-  Scalar  *v,*xy;
+  PetscScalar  *v,*xy;
 
   PetscFunctionBegin; 
   m    = zctx->m;

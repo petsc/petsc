@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.20 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.21 2001/04/25 15:04:44 bsmith Exp balay $*/
 
 static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\n";
 
@@ -8,13 +8,13 @@ static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat        mat,fact;
-  MatInfo    info;
-  int        m = 10,n = 10,i = 4,ierr,rstart,rend;
-  Scalar     value = 1.0;
-  Vec        x,y,b;
-  double     norm;
-  IS         perm;
+  Mat          mat,fact;
+  MatInfo      info;
+  int          m = 10,n = 10,i = 4,ierr,rstart,rend;
+  PetscScalar  value = 1.0;
+  Vec          x,y,b;
+  double       norm;
+  IS           perm;
 
   PetscInitialize(&argc,&argv,(char*) 0,help);
 

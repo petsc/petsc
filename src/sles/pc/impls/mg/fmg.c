@@ -1,4 +1,4 @@
-/*$Id: fmg.c,v 1.23 2001/01/15 21:46:52 bsmith Exp balay $*/
+/*$Id: fmg.c,v 1.24 2001/03/23 23:23:10 balay Exp balay $*/
 /*
      Full multigrid using either additive or multiplicative V or W cycle
 */
@@ -24,7 +24,7 @@ EXTERN int MGMCycle_Private(MG *);
 int MGFCycle_Private(MG *mg)
 {
   int    i,l = mg[0]->levels,ierr;
-  Scalar zero = 0.0;
+  PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
@@ -56,7 +56,7 @@ int MGFCycle_Private(MG *mg)
 int MGKCycle_Private(MG *mg)
 {
   int    i,l = mg[0]->levels,its,ierr;
-  Scalar zero = 0.0;
+  PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */

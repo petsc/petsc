@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.18 2001/01/23 20:56:41 balay Exp balay $*/
+/*$Id: ex17.c,v 1.19 2001/03/23 23:23:55 balay Exp balay $*/
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
 
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   PetscRandom rctx;     /* random number generator context */
   double      norm;     /* norm of solution error */
   int         i,I,Istart,Iend,ierr,m = 5,n = 5,its,*cols;
-  Scalar      neg_one = -1.0,*ua;
+  PetscScalar neg_one = -1.0,*ua;
   PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);

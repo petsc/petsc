@@ -1,4 +1,4 @@
-/*$Id: vecio.c,v 1.72 2001/07/20 21:17:57 bsmith Exp bsmith $*/
+/*$Id: vecio.c,v 1.73 2001/08/06 21:14:36 bsmith Exp balay $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The
@@ -62,7 +62,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
 {
   int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;
   Vec         vec;
-  PetscScalar      *avec;
+  PetscScalar *avec;
   MPI_Comm    comm;
   MPI_Request request;
   MPI_Status  status;
@@ -137,7 +137,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
 int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
 {
   int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;
-  PetscScalar      *avec;
+  PetscScalar *avec;
   MPI_Comm    comm;
   MPI_Request request;
   MPI_Status  status;

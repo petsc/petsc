@@ -1,4 +1,4 @@
-/*$Id: PetscMemcpy.c,v 1.21 2001/03/23 23:25:45 balay Exp bsmith $*/
+/*$Id: PetscMemcpy.c,v 1.22 2001/08/06 21:19:06 bsmith Exp balay $*/
 
 #include "petsc.h"
 
@@ -6,9 +6,9 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscLogDouble x,y,z;
-  int        i,ierr;
-  Scalar     *A,*B;
+  PetscLogDouble  x,y,z;
+  int             i,ierr;
+  PetscScalar     *A,*B;
 
   PetscInitialize(&argc,&argv,0,0);
 
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   fprintf(stdout,"%s : \n","PetscMemcpy");
   fprintf(stdout,"    %-11s : %e MB/s\n","Bandwidth",10.0*8*8/(y-x));
   fprintf(stdout,"    %-11s : %e sec\n","Latency",(z-y)/10.0);
-  fprintf(stdout,"    %-11s : %e sec\n","Per Scalar",(2*y-x-z)/8000000.0);
+  fprintf(stdout,"    %-11s : %e sec\n","Per PetscScalar",(2*y-x-z)/8000000.0);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);

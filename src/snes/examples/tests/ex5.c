@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.26 2001/03/23 23:24:20 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.27 2001/08/06 21:17:24 bsmith Exp balay $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the modified Bratu problem in a 2D rectangular domain,\n\
@@ -239,7 +239,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
 {
   int     i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
   double  one = 1.0,lambda,temp1,temp,hx,hy,hxdhy,hydhx,sc;
-  Scalar  *x;
+  PetscScalar  *x;
   Vec     localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
@@ -312,7 +312,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   int     ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
   double  two = 2.0,one = 1.0,half = 0.5;
   double  lambda,hx,hy,hxdhy,hydhx,sc;
-  Scalar  u,ux,uxx,uyy,*x,*f,kappa;
+  PetscScalar  u,ux,uxx,uyy,*x,*f,kappa;
   Vec     localX = user->localX,localF = user->localF; 
 
   mx = user->mx;            my = user->my;            lambda = user->param;
@@ -404,7 +404,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   int     *ltog;                   /* local-to-global mapping */
   int     ierr,i,j,row,mx,my,col[5];
   int     nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
-  Scalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
+  PetscScalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);

@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.127 2001/04/10 19:34:27 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.128 2001/08/06 21:14:00 bsmith Exp balay $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -455,7 +455,7 @@ int PetscScalarView(int N,PetscScalar idx[],PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (issocket) {
-    int    *sizes,rank,size,Ntotal,*displs;
+    int         *sizes,rank,size,Ntotal,*displs;
     PetscScalar *array;
 
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

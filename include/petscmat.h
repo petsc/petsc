@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.224 2001/08/04 02:50:19 bsmith Exp bsmith $ */
+/* $Id: petscmat.h,v 1.225 2001/08/06 21:15:05 bsmith Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -123,7 +123,7 @@ EXTERN int MatAssemblyEnd(Mat,MatAssemblyType);
 EXTERN int MatAssembled(Mat,PetscTruth*);
 
 #define MatSetValue(v,i,j,va,mode) \
-0; {int _ierr,_row = i,_col = j; Scalar _va = va; \
+0; {int _ierr,_row = i,_col = j; PetscScalar _va = va; \
   _ierr = MatSetValues(v,1,&_row,1,&_col,&_va,mode);CHKERRQ(_ierr); \
 }
 #define MatGetValue(v,i,j,va) \
@@ -131,7 +131,7 @@ EXTERN int MatAssembled(Mat,PetscTruth*);
   _ierr = MatGetValues(v,1,&_row,1,&_col,&va);CHKERRQ(_ierr); \
 }
 #define MatSetValueLocal(v,i,j,va,mode) \
-0; {int _ierr,_row = i,_col = j; Scalar _va = va; \
+0; {int _ierr,_row = i,_col = j; PetscScalar _va = va; \
   _ierr = MatSetValuesLocal(v,1,&_row,1,&_col,&_va,mode);CHKERRQ(_ierr); \
 }
 /*E

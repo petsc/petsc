@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.63 2001/01/15 21:47:36 bsmith Exp balay $";
+!    "$Id: ex2f.F,v 1.64 2001/01/19 23:21:44 balay Exp balay $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -84,7 +84,7 @@
       integer     i,j,II,JJ,ierr,m,n
       integer     rank,size,its,Istart,Iend
       PetscTruth  flg
-      Scalar      v,one,neg_one
+      PetscScalar v,one,neg_one
       Vec         x,b,u
       Mat         A 
       SLES        sles

@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.28 2001/03/23 23:23:19 balay Exp bsmith $*/
+/*$Id: milu.c,v 1.29 2001/08/06 21:16:33 bsmith Exp balay $*/
 
 /*
     Contributed by  Victor Eijkhout <eijkhout@cs.utk.edu>, September 1998
@@ -65,7 +65,7 @@ static int PCSetup_mILU(PC pc)
   PC        base_pc = (PC) pc->data;
   Mat       omat = pc->pmat,pmat;
   Vec       diag;
-  Scalar    *dia;
+  PetscScalar    *dia;
   PetscReal *mprop;
   int       lsize,first,last,ierr;
 
@@ -76,7 +76,7 @@ static int PCSetup_mILU(PC pc)
   {
     int irow;
     for (irow=first; irow<last; irow++) {
-      int icol,ncols,*cols; Scalar *vals; PetscReal mp=0.;
+      int icol,ncols,*cols; PetscScalar *vals; PetscReal mp=0.;
       ierr = MatGetRow(omat,irow,&ncols,&cols,&vals);CHKERRQ(ierr);
       for (icol=0; icol<ncols; icol++) {
 	if (cols[icol]==irow) {
@@ -99,7 +99,7 @@ static int PCSetup_mILU(PC pc)
 #define ATTEMPTS 5
   {
     Mat    lu; Vec piv;
-    Scalar *elt;
+    PetscScalar *elt;
     int    bd,t,try1 = 0;
     ierr = VecDuplicate(diag,&piv);CHKERRQ(ierr);
     do {
@@ -113,7 +113,7 @@ static int PCSetup_mILU(PC pc)
 	/*printf("negative pivots %d\n",bd);*/
 	try1++;
 	for (t=0; t<lsize; t++) {
-	  Scalar v = dia[t]+(mprop[t]*try1)/ATTEMPTS;
+	  PetscScalar v = dia[t]+(mprop[t]*try1)/ATTEMPTS;
 	  int row  = first+t;
 	  ierr = MatSetValues(pmat,1,&row,1,&row,&v,INSERT_VALUES);CHKERRQ(ierr);
 	}

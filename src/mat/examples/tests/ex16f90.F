@@ -1,5 +1,5 @@
 !
-!  "$Id: ex16f90.F,v 1.15 2000/11/01 17:59:59 balay Exp bsmith $";
+!  "$Id: ex16f90.F,v 1.16 2001/01/15 21:46:09 bsmith Exp balay $";
 !
 !
 !  Tests MatGetArray() on a dense matrix
@@ -28,8 +28,8 @@
       Mat A
       integer i,j,m,n,ierr
       integer rstart,rend
-      Scalar  v
-      Scalar, pointer :: array(:,:)
+      PetscScalar  v
+      PetscScalar, pointer :: array(:,:)
 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

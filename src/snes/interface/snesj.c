@@ -1,4 +1,4 @@
-/*$Id: snesj.c,v 1.71 2001/03/23 23:24:07 balay Exp bsmith $*/
+/*$Id: snesj.c,v 1.72 2001/08/06 21:17:07 bsmith Exp balay $*/
 
 #include "src/snes/snesimpl.h"    /*I  "petscsnes.h"  I*/
 
@@ -42,7 +42,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
 {
   Vec       j1a,j2a,x2;
   int       i,ierr,N,start,end,j;
-  Scalar    dx,mone = -1.0,*y,scale,*xx,wscale;
+  PetscScalar    dx,mone = -1.0,*y,scale,*xx,wscale;
   PetscReal amax,epsilon = 1.e-8; /* assumes PetscReal precision */
   PetscReal dx_min = 1.e-16,dx_par = 1.e-1;
   MPI_Comm  comm;

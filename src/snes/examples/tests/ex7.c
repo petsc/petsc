@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.56 2001/03/23 23:24:20 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.57 2001/04/10 19:37:00 bsmith Exp balay $*/
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods. Using\n\
  matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   Mat          J,B;                  /* Jacobian matrix-free, explicit preconditioner */
   MonitorCtx   monP;                 /* monitoring context */
   AppCtx       user;                 /* user-defined work context */
-  Scalar       h,xp = 0.0,v;
+  PetscScalar  h,xp = 0.0,v;
   int          ierr,its,n = 5,i;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
 
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
-  Scalar *xx,*ff,*FF,d;
+  PetscScalar *xx,*ff,*FF,d;
   int    i,ierr,n;
 
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -125,7 +125,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 int FormInitialGuess(SNES snes,Vec x)
 {
   int    ierr;
-  Scalar pfive = .50;
+  PetscScalar pfive = .50;
   ierr = VecSet(&pfive,x);CHKERRQ(ierr);
   return 0;
 }
@@ -139,7 +139,7 @@ int FormInitialGuess(SNES snes,Vec x)
 
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
-  Scalar *xx,A[3],d;
+  PetscScalar *xx,A[3],d;
   int    i,n,j[3],ierr,iter;
   AppCtx *user = (AppCtx*) dummy;
 

@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.22 2001/03/23 23:23:55 balay Exp bsmith $*/
+/*$Id: ex16.c,v 1.23 2001/04/10 19:36:40 bsmith Exp balay $*/
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
 
@@ -37,7 +37,7 @@ int main(int argc,char **args)
   int         ntimes,i,j,k,I,J,Istart,Iend,ierr;
   int         m = 8,n = 7,its;
   PetscTruth  flg;
-  Scalar      v,one = 1.0,neg_one = -1.0,rhs;
+  PetscScalar v,one = 1.0,neg_one = -1.0,rhs;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

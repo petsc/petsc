@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.18 2001/03/23 23:25:07 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.19 2001/04/10 19:37:27 bsmith Exp balay $*/
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   DA          da;
   PetscViewer viewer;
   Vec         local,locala,global,coors;
-  Scalar      *x,*alocal;
+  PetscScalar *x,*alocal;
   PetscDraw   draw;
   char        fname[16];
 

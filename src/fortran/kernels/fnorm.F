@@ -1,5 +1,5 @@
 !
-!  "$Id: fnorm.F,v 1.7 1999/03/24 18:13:06 balay Exp bsmith $";
+!  "$Id: fnorm.F,v 1.8 2000/01/11 21:04:00 bsmith Exp balay $";
 !
 !    Fortran kernel for the Norm() vector routine
 !
@@ -7,7 +7,7 @@
 !
       subroutine FortranNormSqr(x,n,sum1)
       implicit none
-      Scalar           x(*)
+      PetscScalar      x(*)
       double precision sum1
       integer n
 

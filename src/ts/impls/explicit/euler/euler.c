@@ -1,4 +1,4 @@
-/*$Id: euler.c,v 1.28 2001/04/04 18:04:11 balay Exp bsmith $*/
+/*$Id: euler.c,v 1.29 2001/08/06 21:18:10 bsmith Exp balay $*/
 /*
        Code for Timestepping with explicit Euler.
 */
@@ -27,7 +27,7 @@ static int TSStep_Euler(TS ts,int *steps,PetscReal *ptime)
   TS_Euler *euler = (TS_Euler*)ts->data;
   Vec      sol = ts->vec_sol,update = euler->update;
   int      ierr,i,max_steps = ts->max_steps;
-  Scalar   dt = ts->time_step;
+  PetscScalar   dt = ts->time_step;
   
   PetscFunctionBegin;
   *steps = -ts->steps;

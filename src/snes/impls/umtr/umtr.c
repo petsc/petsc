@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.110 2001/08/06 14:49:08 bsmith Exp bsmith $*/
+/*$Id: umtr.c,v 1.111 2001/08/06 21:17:20 bsmith Exp balay $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 
@@ -35,7 +35,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   PetscTruth          newton;
   PetscReal           xnorm,max_val,ftrial,delta,ltsnrm,quadratic;
   PetscReal           zero = 0.0,two = 2.0,four = 4.0;
-  Scalar              one = 1.0;
+  PetscScalar         one = 1.0;
   Vec                 X,G,S,Xtrial;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   SLES                sles;

@@ -1,4 +1,4 @@
-/*$Id: tfqmr.c,v 1.59 2001/03/22 20:31:36 bsmith Exp balay $*/
+/*$Id: tfqmr.c,v 1.60 2001/03/23 23:23:44 balay Exp balay $*/
 
 /*                       
     This code implements the TFQMR (Transpose-free variant of Quasi-Minimal
@@ -30,7 +30,7 @@ static int KSPSetUp_TFQMR(KSP ksp)
 static int  KSPSolve_TFQMR(KSP ksp,int *its)
 {
   int       i,maxit,m, ierr;
-  Scalar    rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
+  PetscScalar    rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
   PetscReal dp,dpold,w,dpest,tau,psi,cm;
   Vec       X,B,V,P,R,RP,T,T1,Q,U,D,BINVF,AUQ;
 

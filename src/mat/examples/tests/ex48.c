@@ -1,4 +1,4 @@
-/*$Id: ex48.c,v 1.22 2001/04/10 19:35:44 bsmith Exp bsmith $*/
+/*$Id: ex48.c,v 1.23 2001/08/06 21:16:03 bsmith Exp balay $*/
 
 static char help[] = "Tests the vatious routines in MatBAIJ format.\n";
 
@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Mat         A,B;
   Vec         xx,s1,s2,yy;
   int         m=45,ierr,rows[2],cols[2],bs=1,i,row,col,*idx,M;
-  Scalar      rval,vals1[4],vals2[4],zero=0.0;
+  PetscScalar rval,vals1[4],vals2[4],zero=0.0;
   PetscRandom rand;
   IS          is1,is2;
   double      s1norm,s2norm,rnorm,tol = 1.e-10;

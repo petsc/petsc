@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.20 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex21.c,v 1.21 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the parallel Row format.\n\
  This also tests MatGetRow() and MatRestoreRow() for the parallel case.\n\n";
@@ -11,7 +11,7 @@ int main(int argc,char **args)
 {
   Mat         C,A;
   int         i,j,m = 3,n = 2,rank,size,I,J,ierr,rstart,rend,nz,*idx;
-  Scalar      v,*values;
+  PetscScalar v,*values;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

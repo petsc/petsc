@@ -1,4 +1,4 @@
-/*$Id: ex37.c,v 1.20 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex37.c,v 1.21 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n"; 
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat         C,A; 
   int         i, n = 10,midx[3],ierr;
-  Scalar      v[3];
+  PetscScalar v[3];
   PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -1,4 +1,4 @@
-/*$Id: mmdense.c,v 1.37 2001/03/23 23:21:49 balay Exp bsmith $*/
+/*$Id: mmdense.c,v 1.38 2001/08/06 21:15:13 bsmith Exp balay $*/
 
 /*
    Support for the parallel dense matrix vector multiply
@@ -90,7 +90,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   MPI_Request   *s_waits1,*r_waits1,*s_waits2,*r_waits2;
   MPI_Status    *r_status1,*r_status2,*s_status1,*s_status2;
   MPI_Comm      comm;
-  PetscScalar        **rbuf2,**sbuf2;
+  PetscScalar   **rbuf2,**sbuf2;
 
   PetscFunctionBegin;
   comm   = C->comm;

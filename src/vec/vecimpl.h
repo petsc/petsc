@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.85 2001/08/06 16:29:19 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.86 2001/08/06 21:14:30 bsmith Exp balay $ */
 
 /* 
    This private file should not be included in users' code.
@@ -37,18 +37,18 @@ struct _VecOps {
        (*norm)(Vec,NormType,PetscReal*),        /* z = sqrt(x^H * x) */
        (*tdot)(Vec,Vec,PetscScalar*),             /* x'*y */
        (*mtdot)(int,Vec,const Vec[],PetscScalar*),/* z[j] = x dot y[j] */
-       (*scale)(const Scalar*,Vec),          /* x = alpha * x   */
+       (*scale)(const PetscScalar*,Vec),          /* x = alpha * x   */
        (*copy)(Vec,Vec),                     /* y = x */
-       (*set)(const Scalar*,Vec),            /* y = alpha  */
+       (*set)(const PetscScalar*,Vec),            /* y = alpha  */
        (*swap)(Vec,Vec),                     /* exchange x and y */
-       (*axpy)(const Scalar*,Vec,Vec),       /* y = y + alpha * x */
-       (*axpby)(const Scalar*,const Scalar*,Vec,Vec), /* y = y + alpha * x + beta * y*/
-       (*maxpy)(int,const Scalar*,Vec,Vec*), /* y = y + alpha[j] x[j] */
-       (*aypx)(const Scalar*,Vec,Vec),       /* y = x + alpha * y */
-       (*waxpy)(const Scalar*,Vec,Vec,Vec),  /* w = y + alpha * x */
+       (*axpy)(const PetscScalar*,Vec,Vec),       /* y = y + alpha * x */
+       (*axpby)(const PetscScalar*,const PetscScalar*,Vec,Vec), /* y = y + alpha * x + beta * y*/
+       (*maxpy)(int,const PetscScalar*,Vec,Vec*), /* y = y + alpha[j] x[j] */
+       (*aypx)(const PetscScalar*,Vec,Vec),       /* y = x + alpha * y */
+       (*waxpy)(const PetscScalar*,Vec,Vec,Vec),  /* w = y + alpha * x */
        (*pointwisemult)(Vec,Vec,Vec),        /* w = x .* y */
        (*pointwisedivide)(Vec,Vec,Vec),      /* w = x ./ y */
-       (*setvalues)(Vec,int,const int[],const Scalar[],InsertMode),
+       (*setvalues)(Vec,int,const int[],const PetscScalar[],InsertMode),
        (*assemblybegin)(Vec),                /* start global assembly */
        (*assemblyend)(Vec),                  /* end global assembly */
        (*getarray)(Vec,PetscScalar**),            /* get data array */
@@ -60,11 +60,11 @@ struct _VecOps {
        (*min)(Vec,int*,PetscReal*),      /* z = min(x); idx=index of min(x) */
        (*setrandom)(PetscRandom,Vec),        /* set y[j] = random numbers */
        (*setoption)(Vec,VecOption),
-       (*setvaluesblocked)(Vec,int,const int[],const Scalar[],InsertMode),
+       (*setvaluesblocked)(Vec,int,const int[],const PetscScalar[],InsertMode),
        (*destroy)(Vec),
        (*view)(Vec,PetscViewer),
-       (*placearray)(Vec,const Scalar*),     /* place data array */
-       (*replacearray)(Vec,const Scalar*),     /* replace data array */
+       (*placearray)(Vec,const PetscScalar*),     /* place data array */
+       (*replacearray)(Vec,const PetscScalar*),     /* replace data array */
        (*getmap)(Vec,PetscMap*),
        (*dot_local)(Vec,Vec,PetscScalar*),
        (*tdot_local)(Vec,Vec,PetscScalar*),
@@ -74,7 +74,7 @@ struct _VecOps {
        (*viewnative)(Vec,PetscViewer),
        (*conjugate)(Vec),
        (*setlocaltoglobalmapping)(Vec,ISLocalToGlobalMapping),
-       (*setvalueslocal)(Vec,int,const int *,const Scalar *,InsertMode),
+       (*setvalueslocal)(Vec,int,const int *,const PetscScalar *,InsertMode),
        (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
 };
 
@@ -92,7 +92,7 @@ typedef struct {
   int           bs;                     /* block size of the stash */
   int           reallocs;               /* preserve the no of mallocs invoked */           
   int           *idx;                   /* global row numbers in stash */
-  Scalar        *array;                 /* array to hold stashed values */
+  PetscScalar   *array;                 /* array to hold stashed values */
   /* The following variables are used for communication */
   MPI_Comm      comm;
   int           size,rank;
@@ -101,7 +101,7 @@ typedef struct {
   MPI_Request   *recv_waits;            /* array of receive requests */
   MPI_Status    *send_status;           /* array of send status */
   int           nsends,nrecvs;          /* numbers of sends and receives */
-  Scalar        *svalues,*rvalues;      /* sending and receiving data */
+  PetscScalar   *svalues,*rvalues;      /* sending and receiving data */
   int           rmax;                   /* maximum message length */
   int           *nprocs;                /* tmp data used both duiring scatterbegin and end */
   int           nprocessed;             /* number of messages already processed */
@@ -124,8 +124,8 @@ struct _p_Vec {
    currently Vec_Seq and Vec_MPI
 */
 #define VECHEADER                         \
-  Scalar *array;                          \
-  Scalar *array_allocated;            
+  PetscScalar *array;                          \
+  PetscScalar *array_allocated;            
 
 /* Default obtain and release vectors; can be used by any implementation */
 EXTERN int VecDuplicateVecs_Default(Vec,int,Vec *[]);
@@ -175,8 +175,8 @@ typedef struct {
 typedef struct {
   VecScatterType type;
   int            *count;        /* elements of vector on each processor */
-  Scalar         *work1;
-  Scalar         *work2;        
+  PetscScalar    *work1;
+  PetscScalar    *work2;        
 } VecScatter_MPI_ToAll;
 
 /*
@@ -189,7 +189,7 @@ typedef struct {
   int                    *indices; /* list of all components sent or received */
   int                    *procs;   /* processors we are communicating with in scatter */
   MPI_Request            *requests,*rev_requests;
-  Scalar                 *values;  /* buffer for all sends or receives */
+  PetscScalar            *values;  /* buffer for all sends or receives */
   VecScatter_Seq_General local;    /* any part that happens to be local */
   MPI_Status             *sstatus,*rstatus;
   PetscTruth             use_readyreceiver;
@@ -261,7 +261,7 @@ EXTERN int VecStashScatterGetMesg_Private(VecStash*,int*,int**,PetscScalar**,int
 #define VecStashValuesBlocked_Private(stash,row,values) \
 { \
   int    jj,stash_bs=(stash)->bs; \
-  Scalar *array; \
+  PetscScalar *array; \
   if (((stash)->n+1) > (stash)->nmax) { \
     ierr = VecStashExpand_Private(stash,1);CHKERRQ(ierr); \
   } \

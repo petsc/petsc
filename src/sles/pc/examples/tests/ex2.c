@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.50 2001/01/23 20:56:10 balay Exp balay $*/
+/*$Id: ex2.c,v 1.51 2001/03/23 23:23:25 balay Exp balay $*/
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
 users should employ the SLES interface instead of using PC directly.\n\n";
@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PC      pc;           /* PC context */
   KSP     ksp;          /* KSP context */
   int     ierr,n = 10,i,its,col[3];
-  Scalar  value[3],mone = -1.0,one = 1.0,zero = 0.0;
+  PetscScalar  value[3],mone = -1.0,one = 1.0,zero = 0.0;
   PCType  pcname;
   KSPType kspname;
   double  norm;

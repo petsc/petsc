@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.26 2001/01/17 22:29:15 bsmith Exp bsmith $;
+!  $Id: petscdef.h,v 1.27 2001/06/21 21:20:08 bsmith Exp balay $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
@@ -64,7 +64,7 @@
 !     Macro for templating between real and complex
 !
 #if defined(PETSC_USE_COMPLEX)
-#define Scalar PetscFortranComplex
+#define PetscScalar PetscFortranComplex
 !
 ! F90 uses real(), conjg() when KIND parameter is used.
 !
@@ -77,7 +77,7 @@
 #endif
 #define MPIU_SCALAR MPI_DOUBLE_COMPLEX
 #else
-#define Scalar PetscFortranDouble
+#define PetscScalar PetscFortranDouble
 #define PetscRealPart(a) a
 #define PetscConj(a) a
 #define MPIU_SCALAR MPI_DOUBLE_PRECISION
@@ -87,11 +87,11 @@
 !    matrix data structures
 !
 #if defined(PETSC_USE_COMPLEX)
-#define MatScalar Scalar 
+#define MatScalar PetscScalar 
 #elif defined(PETSC_USE_MAT_SINGLE)
 #define MatScalar real*4
 #else
-#define MatScalar Scalar
+#define MatScalar PetscScalar
 #endif
 !
 !     Declare PETSC_NULL_OBJECT

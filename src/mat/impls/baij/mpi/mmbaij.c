@@ -1,4 +1,4 @@
-/*$Id: mmbaij.c,v 1.41 2001/04/09 15:12:35 bsmith Exp bsmith $*/
+/*$Id: mmbaij.c,v 1.42 2001/08/06 21:15:42 bsmith Exp balay $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply
@@ -162,15 +162,15 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
 #define __FUNCT__ "DisAssemble_MPIBAIJ"
 int DisAssemble_MPIBAIJ(Mat A)
 {
-  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)A->data;
-  Mat         B = baij->B,Bnew;
-  Mat_SeqBAIJ *Bbaij = (Mat_SeqBAIJ*)B->data;
-  int         ierr,i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
-  int         k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m = A->m;
-  MatScalar   *a = Bbaij->a;
-  PetscScalar      *atmp;
+  Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ*)A->data;
+  Mat          B = baij->B,Bnew;
+  Mat_SeqBAIJ  *Bbaij = (Mat_SeqBAIJ*)B->data;
+  int          ierr,i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
+  int          k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m = A->m;
+  MatScalar    *a = Bbaij->a;
+  PetscScalar  *atmp;
 #if defined(PETSC_USE_MAT_SINGLE)
-  int         l;
+  int          l;
 #endif
 
   PetscFunctionBegin;

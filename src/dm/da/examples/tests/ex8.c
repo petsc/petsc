@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.26 2001/01/23 20:58:05 balay Exp balay $*/
+/*$Id: ex8.c,v 1.27 2001/03/23 23:25:07 balay Exp balay $*/
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   PetscTruth     flg;
   DA             da;
   Vec            local,global,vslice;
-  Scalar         value;
+  PetscScalar    value;
   DAPeriodicType wrap = DA_XYPERIODIC;
   DAStencilType  stencil_type = DA_STENCIL_BOX;
   VecScatter     scatter;

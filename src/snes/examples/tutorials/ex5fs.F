@@ -1,5 +1,5 @@
 !
-! "$Id: ex5fs.F,v 1.6 1998/04/15 18:01:02 balay Exp bsmith $";
+! "$Id: ex5fs.F,v 1.7 2000/01/11 21:02:45 bsmith Exp balay $";
 !
 
 ! ---------------------------------------------------------------------
@@ -27,12 +27,12 @@
       integer  ierr,mx,my
 
 !  Input/output variables:
-      Scalar   x(mx,my),f(mx,my),lambda
+      PetscScalar   x(mx,my),f(mx,my),lambda
 
 
 !  Local variables:
-      Scalar   two,one,hx,hy,hxdhy,hydhx,sc
-      Scalar   u,uxx,uyy
+      PetscScalar   two,one,hx,hy,hxdhy,hydhx,sc
+      PetscScalar   u,uxx,uyy
       integer  i,j
 
       one    = 1.0

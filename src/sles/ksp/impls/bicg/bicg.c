@@ -1,4 +1,4 @@
-/*$Id: bicg.c,v 1.26 2001/03/23 23:23:46 balay Exp bsmith $*/
+/*$Id: bicg.c,v 1.27 2001/06/21 21:18:24 bsmith Exp balay $*/
 
 /*                       
     This code implements the BiCG (BiConjugate Gradient) method
@@ -34,7 +34,7 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
 {
   int          ierr,i,maxit;
   PetscTruth   pres,diagonalscale;
-  Scalar       dpi,a=1.0,beta,betaold=1.0,b,mone=-1.0,ma; 
+  PetscScalar  dpi,a=1.0,beta,betaold=1.0,b,mone=-1.0,ma; 
   PetscReal    dp;
   Vec          X,B,Zl,Zr,Rl,Rr,Pl,Pr;
   Mat          Amat,Pmat;

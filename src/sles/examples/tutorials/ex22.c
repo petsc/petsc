@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.16 2001/03/30 15:50:05 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.17 2001/03/30 16:09:10 bsmith Exp balay $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
 {
   int       ierr;
   DMMG      *dmmg;
-  Scalar    mone = -1.0;
+  PetscScalar    mone = -1.0;
   PetscReal norm;
   DA        da;
 
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
 int ComputeRHS(DMMG dmmg,Vec b)
 {
   int    ierr,mx,my,mz;
-  Scalar h;
+  PetscScalar h;
 
   PetscFunctionBegin;
   ierr = DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -71,10 +71,10 @@ int ComputeRHS(DMMG dmmg,Vec b)
 #define __FUNCT__ "ComputeJacobian"
 int ComputeJacobian(DMMG dmmg,Mat jac)
 {
-  DA         da = (DA)dmmg->dm;
-  int        ierr,i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
-  Scalar     v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
-  MatStencil row,col[7];
+  DA           da = (DA)dmmg->dm;
+  int          ierr,i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
+  PetscScalar  v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
+  MatStencil   row,col[7];
 
   ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx = 1.0 / (double)(mx-1); Hy = 1.0 / (double)(my-1); Hz = 1.0 / (double)(mz-1);

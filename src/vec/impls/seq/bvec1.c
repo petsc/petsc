@@ -1,4 +1,4 @@
-/*$Id: bvec1.c,v 1.39 2001/03/23 23:21:25 balay Exp bsmith $*/
+/*$Id: bvec1.c,v 1.40 2001/08/06 21:14:45 bsmith Exp balay $*/
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -106,9 +106,9 @@ int VecSwap_Seq(Vec xin,Vec yin)
 #define __FUNCT__ "VecAXPY_Seq"
 int VecAXPY_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 {
-  Vec_Seq  *x = (Vec_Seq *)xin->data;
-  int      one = 1,ierr;
-  PetscScalar   *yarray;
+  Vec_Seq      *x = (Vec_Seq *)xin->data;
+  int          one = 1,ierr;
+  PetscScalar  *yarray;
 
   PetscFunctionBegin;
   ierr = VecGetArray(yin,&yarray);CHKERRQ(ierr);
@@ -122,9 +122,9 @@ int VecAXPY_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 #define __FUNCT__ "VecAXPBY_Seq"
 int VecAXPBY_Seq(const PetscScalar *alpha,const PetscScalar *beta,Vec xin,Vec yin)
 {
-  Vec_Seq  *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
-  int      n = xin->n,i;
-  PetscScalar   *xx = x->array,*yy = y->array,a = *alpha,b = *beta;
+  Vec_Seq      *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
+  int          n = xin->n,i;
+  PetscScalar  *xx = x->array,*yy = y->array,a = *alpha,b = *beta;
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {

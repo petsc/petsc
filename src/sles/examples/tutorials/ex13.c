@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.26 2001/03/23 23:23:55 balay Exp bsmith $*/
+/*$Id: ex13.c,v 1.27 2001/08/06 21:16:53 bsmith Exp balay $*/
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
 
@@ -28,7 +28,7 @@ typedef struct {
    Mat    A;         /* sparse matrix */
    SLES   sles;      /* linear solver context */
    int    m,n;      /* grid dimensions */
-   Scalar hx2,hy2;  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
+   PetscScalar hx2,hy2;  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
 } UserCtx;
 
 extern int UserInitializeLinearSolver(int,int,UserCtx *);
@@ -41,7 +41,7 @@ int main(int argc,char **args)
 {
   UserCtx userctx;
   int     ierr,m = 6,n = 7,t,tmax = 2,i,I,j,N;
-  Scalar  *userx,*rho,*solution,*userb,hx,hy,x,y;
+  PetscScalar  *userx,*rho,*solution,*userb,hx,hy,x,y;
   double  enorm;
 
   /*
@@ -192,7 +192,7 @@ int UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,Pets
   int    ierr,i,j,I,J,m = userctx->m,n = userctx->n,its;
   Mat    A = userctx->A;
   PC     pc;
-  Scalar v,hx2 = userctx->hx2,hy2 = userctx->hy2;
+  PetscScalar v,hx2 = userctx->hx2,hy2 = userctx->hy2;
 
   /*
      This is not the most efficient way of generating the matrix 

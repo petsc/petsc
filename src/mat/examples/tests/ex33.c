@@ -1,4 +1,4 @@
-/*$Id: ex33.c,v 1.20 2001/04/10 19:35:44 bsmith Exp bsmith $*/
+/*$Id: ex33.c,v 1.21 2001/08/06 21:16:03 bsmith Exp balay $*/
 
 static char help[] = "Writes a matrix using the PETSc sparse format. Input arguments are:\n\
    -fout <file> : output file name\n\n";
@@ -14,7 +14,7 @@ int main(int argc,char **args)
   char        fileout[128];
   int         i,j,m = 6,n = 6,N = 36,ierr,I,J;
   PetscTruth  flg;
-  Scalar      val,v;
+  PetscScalar val,v;
   PetscViewer view;
 
   PetscInitialize(&argc,&args,(char *)0,help);

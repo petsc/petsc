@@ -13,7 +13,7 @@ foreach i (*.h *.h90)
   sed "s/PetscFortranAddr/integer*4/g" | sed "s/PetscOffset/integer*4/g" | \
   sed "s/PetscFortranDouble/real*8/g" | sed "s/DoubleComplex/double complex/g"| \
   sed "s/PetscFortranInt/integer*4/g"| sed "s/PetscFortranComplex/complex*16/g" | \
-  sed "s/Scalar/real*8/g"  | sed "s/MPI_Comm/integer/g" > ../foldinclude/$i
+  sed "s/PetscScalar/real*8/g"  | sed "s/MPI_Comm/integer/g" > ../foldinclude/$i
 end
 cd /home/bsmith/petsc/include/foldinclude
 echo "!   You will have to adjust this line for your site" >> petsc.h

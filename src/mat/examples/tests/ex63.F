@@ -1,5 +1,5 @@
 !
-!      "$Id: ex63.F,v 1.9 2001/01/19 23:20:49 balay Exp balay $";
+!      "$Id: ex63.F,v 1.10 2001/01/22 23:27:16 balay Exp balay $";
 !
 !   This program tests storage of PETSc Dense matrix. 
 !   It Creates a Dense matrix, and stores it into a file,
@@ -13,7 +13,7 @@
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscviewer.h"
       integer ierr,row,col,rank
-      Scalar  v
+      PetscScalar  v
       Mat     A
       PetscViewer  view
 

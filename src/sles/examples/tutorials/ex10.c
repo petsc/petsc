@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.52 2001/04/25 15:19:34 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.53 2001/06/21 21:18:27 bsmith Exp balay $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 This version first preloads and solves a small system, then loads \n\
@@ -39,7 +39,7 @@ int main(int argc,char **args)
   int            ierr,its,ierrp;
   double         norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
-  Scalar         zero = 0.0,none = -1.0;
+  PetscScalar    zero = 0.0,none = -1.0;
   PetscTruth     preload = PETSC_TRUE,diagonalscale;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -94,7 +94,7 @@ int main(int argc,char **args)
     ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
     if (ierrp) { /* if file contains no RHS, then use a vector of all ones */
       int    m;
-      Scalar one = 1.0;
+      PetscScalar one = 1.0;
       ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
       ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&b);CHKERRQ(ierr);
       ierr = VecSet(&one,b);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ int main(int argc,char **args)
     { 
       int    m,n,j,mvec,start,end,index;
       Vec    tmp;
-      Scalar *bold;
+      PetscScalar *bold;
 
       /* Create a new vector b by padding the old one */
       ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);

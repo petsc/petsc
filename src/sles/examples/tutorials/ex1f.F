@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.28 2001/01/15 21:47:36 bsmith Exp bsmith $";
+!    "$Id: ex1f.F,v 1.29 2001/01/17 22:25:35 bsmith Exp balay $";
 !
 !   Description: Solves a tridiagonal linear system with SLES.
 !
@@ -71,7 +71,7 @@
       SLES             sles
       double precision norm,tol
       integer          ierr,i,n,col(3),its,flg,size,rank
-      Scalar           none,one,value(3)
+      PetscScalar      none,one,value(3)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

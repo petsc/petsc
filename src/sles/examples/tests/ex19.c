@@ -1,4 +1,4 @@
-/* "$Id: ex19.c,v 1.9 2001/03/23 23:23:50 balay Exp bsmith $" */
+/* "$Id: ex19.c,v 1.10 2001/04/10 19:36:37 bsmith Exp balay $" */
 
 static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   int           size,nlocal,Nlocal;
   SLES          sles,sles_fine;
   PC            pc;
-  Scalar        one = 1.0;
+  PetscScalar   one = 1.0;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -180,7 +180,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
   Mat     jac = *J;
   int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
   int     nloc,*ltog,grow;
-  Scalar  two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
+  PetscScalar  two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
 
   mx = grid->mx;            my = grid->my;            
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);

@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.81 2001/04/18 20:48:16 balay Exp bsmith $*/
+/*$Id: zstart.c,v 1.82 2001/06/14 15:48:36 bsmith Exp balay $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -231,7 +231,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
      are not called; at least on IRIX.
   */
   {
-    Scalar ic(0.0,1.0);
+    PetscScalar ic(0.0,1.0);
     PETSC_i = ic;
   }
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);

@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.30 2001/06/21 21:19:00 bsmith Exp bsmith $*/
+/*$Id: cn.c,v 1.31 2001/08/06 21:18:12 bsmith Exp balay $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -23,7 +23,7 @@ typedef struct {
 int TSComputeRHSFunctionEuler(TS ts,PetscReal t,Vec x,Vec y)
 {
   int    ierr;
-  Scalar neg_two = -2.0,neg_mdt = -1.0/ts->time_step;
+  PetscScalar neg_two = -2.0,neg_mdt = -1.0/ts->time_step;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -66,7 +66,7 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
   Vec       sol = ts->vec_sol,update = cn->update;
   Vec       rhs = cn->rhs;
   int       ierr,i,max_steps = ts->max_steps,its;
-  Scalar    dt = ts->time_step,two = 2.0;
+  PetscScalar    dt = ts->time_step,two = 2.0;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -109,7 +109,7 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
   TS_CN        *cn = (TS_CN*)ts->data;
   Vec          sol = ts->vec_sol,update = cn->update,rhs = cn->rhs;
   int          ierr,i,max_steps = ts->max_steps,its;
-  Scalar       dt = ts->time_step,two = 2.0,neg_dt = -1.0*ts->time_step;
+  PetscScalar  dt = ts->time_step,two = 2.0,neg_dt = -1.0*ts->time_step;
   MatStructure str;
 
   PetscFunctionBegin;
@@ -217,7 +217,7 @@ static int TSDestroy_CN(TS ts)
 int TSCnMatMult(Mat mat,Vec x,Vec y)
 {
   TS     ts;
-  Scalar two = 2.0,neg_dt;
+  PetscScalar two = 2.0,neg_dt;
   int    ierr;
 
   PetscFunctionBegin;
@@ -241,7 +241,7 @@ int TSCnMatMult(Mat mat,Vec x,Vec y)
 int TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
 {
   TS     ts = (TS) ctx;
-  Scalar mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
+  PetscScalar mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
   int    ierr,i,n;
 
   PetscFunctionBegin;
@@ -271,10 +271,10 @@ int TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
 #define __FUNCT__ "TSCnJacobian"
 int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  TS         ts = (TS) ctx;
-  int        ierr;
-  Scalar     mone = -1.0,mdt = 1.0/ts->time_step;
-  PetscTruth isshell;
+  TS           ts = (TS) ctx;
+  int          ierr;
+  PetscScalar  mone = -1.0,mdt = 1.0/ts->time_step;
+  PetscTruth   isshell;
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
@@ -302,7 +302,7 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 {
   TS_CN   *cn = (TS_CN*)ts->data;
   int     ierr,M,m;
-  Scalar  two = 2.0,neg_dt = -1.0*ts->time_step;
+  PetscScalar  two = 2.0,neg_dt = -1.0*ts->time_step;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  

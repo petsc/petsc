@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.17 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex7.c,v 1.18 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests matrix factorization.  Note that most users should\n\
 employ the SLES interface to the linear solvers instead of using the factorization\n\
@@ -13,7 +13,7 @@ int main(int argc,char **args)
   Mat         C,LU; 
   MatInfo     info;
   int         i,j,m = 3,n = 3,I,J,ierr;
-  Scalar      v,mone = -1.0,one = 1.0;
+  PetscScalar v,mone = -1.0,one = 1.0;
   IS          perm,iperm;
   Vec         x,u,b;
   double      norm;

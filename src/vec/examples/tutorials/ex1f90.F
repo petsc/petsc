@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f90.F,v 1.25 2001/01/15 21:45:20 bsmith Exp bsmith $"
+!    "$Id: ex1f90.F,v 1.26 2001/01/17 22:21:32 bsmith Exp balay $"
 !
 !/*T
 !   Concepts: vectors^using basic vector routines;
@@ -43,7 +43,7 @@
       Vec, pointer :: z(:)
       double precision norm,v,v1,v2
       integer          n,ierr,flg,rank
-      Scalar           one,two,three,dots(3),dot
+      PetscScalar      one,two,three,dots(3),dot
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

@@ -1,4 +1,4 @@
-/*$Id: ex28.c,v 1.19 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex28.c,v 1.20 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal()\n\n";
 
@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Mat    A,LU;
   Vec    x,y;
   int    nnz[4]={2,1,1,1},col[4],i,ierr;
-  Scalar values[4];
+  PetscScalar values[4];
   IS     rowperm,colperm;
 
   PetscInitialize(&argc,&args,(char *)0,help);

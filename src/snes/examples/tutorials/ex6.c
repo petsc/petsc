@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.69 2001/03/22 20:32:01 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.70 2001/08/06 21:17:42 bsmith Exp balay $*/
 
 static char help[] = "u`` + u^{2} = f. Different matrices for the Jacobian and the preconditioner.\n\
 Demonstrates the use of matrix-free Newton-Krylov methods in conjunction\n\
@@ -36,17 +36,17 @@ int MatrixFreePreconditioner(void*,Vec,Vec);
 
 int main(int argc,char **argv)
 {
-  SNES       snes;                /* SNES context */
-  SLES       sles;                /* SLES context */
-  PC         pc;                  /* PC context */
-  KSP        ksp;                 /* KSP context */
-  Vec        x,r,F;               /* vectors */
-  Mat        J,JPrec;             /* Jacobian,preconditioner matrices */
-  int        ierr,it,n = 5,i,size;
-  int        *Shistit = 0,Khistl = 200,Shistl = 10;
-  PetscReal     h,xp = 0.0,*Khist = 0,*Shist = 0;
-  Scalar     v,pfive = .5;
-  PetscTruth flg;
+  SNES         snes;                /* SNES context */
+  SLES         sles;                /* SLES context */
+  PC           pc;                  /* PC context */
+  KSP          ksp;                 /* KSP context */
+  Vec          x,r,F;               /* vectors */
+  Mat          J,JPrec;             /* Jacobian,preconditioner matrices */
+  int          ierr,it,n = 5,i,size;
+  int          *Shistit = 0,Khistl = 200,Shistl = 10;
+  PetscReal    h,xp = 0.0,*Khist = 0,*Shist = 0;
+  PetscScalar  v,pfive = .5;
+  PetscTruth   flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -181,7 +181,7 @@ int main(int argc,char **argv)
  */
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
-  Scalar *xx,*ff,*FF,d;
+  PetscScalar *xx,*ff,*FF,d;
   int    i,ierr,n;
 
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -216,7 +216,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 */
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,void *dummy)
 {
-  Scalar *xx,A[3],d;
+  PetscScalar *xx,A[3],d;
   int    i,n,j[3],ierr;
 
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.48 2001/03/23 23:23:55 balay Exp bsmith $*/
+/*$Id: ex8.c,v 1.49 2001/04/10 19:36:40 bsmith Exp balay $*/
 
 static char help[] = "Illustrates use of the preconditioner ASM.\n\
 The Additive Schwarz Method for solving a linear system in parallel with SLES.  The\n\
@@ -42,19 +42,19 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec        x,b,u;                 /* approx solution, RHS, exact solution */
-  Mat        A;                       /* linear system matrix */
-  SLES       sles;                    /* linear solver context */
-  PC         pc;                      /* PC context */
-  IS         *is;                     /* array of index sets that define the subdomains */
-  int        overlap = 1;             /* width of subdomain overlap */
-  int        Nsub;                    /* number of subdomains */
-  int        m = 15,n = 17;          /* mesh dimensions in x- and y- directions */
-  int        M = 2,N = 1;            /* number of subdomains in x- and y- directions */
-  int        i,j,its,I,J,ierr,Istart,Iend,size;
-  PetscTruth flg;
-  PetscTruth user_subdomains;         /* flag - 1 indicates user-defined subdomains */
-  Scalar     v, one = 1.0;
+  Vec          x,b,u;                 /* approx solution, RHS, exact solution */
+  Mat          A;                       /* linear system matrix */
+  SLES         sles;                    /* linear solver context */
+  PC           pc;                      /* PC context */
+  IS           *is;                     /* array of index sets that define the subdomains */
+  int          overlap = 1;             /* width of subdomain overlap */
+  int          Nsub;                    /* number of subdomains */
+  int          m = 15,n = 17;          /* mesh dimensions in x- and y- directions */
+  int          M = 2,N = 1;            /* number of subdomains in x- and y- directions */
+  int          i,j,its,I,J,ierr,Istart,Iend,size;
+  PetscTruth   flg;
+  PetscTruth   user_subdomains;         /* flag - 1 indicates user-defined subdomains */
+  PetscScalar  v, one = 1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

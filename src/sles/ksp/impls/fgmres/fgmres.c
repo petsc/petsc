@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.26 2001/03/23 23:23:47 balay Exp bsmith $ */
+/* $Id: fgmres.c,v 1.27 2001/08/06 21:16:49 bsmith Exp balay $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -119,7 +119,7 @@ int    KSPSetUp_FGMRES(KSP ksp)
 static int FGMRESResidual(KSP ksp)
 {
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)(ksp->data);
-  Scalar       mone = -1.0;
+  PetscScalar  mone = -1.0;
   Mat          Amat,Pmat;
   MatStructure pflag;
   int          ierr;
@@ -161,8 +161,8 @@ int FGMREScycle(int *itcount,KSP ksp)
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)(ksp->data);
   PetscReal    res_norm;             
   PetscReal    hapbnd,tt;
-  Scalar       zero = 0.0;
-  Scalar       tmp;
+  PetscScalar  zero = 0.0;
+  PetscScalar  tmp;
   PetscTruth   hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
   int          ierr;
   int          loc_it;                /* local count of # of dir. in Krylov space */ 
@@ -433,9 +433,9 @@ int KSPDestroy_FGMRES(KSP ksp)
 #define __FUNCT__ "BuildFgmresSoln"
 static int BuildFgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
 {
-  Scalar     tt,zero = 0.0,one = 1.0;
-  int        ierr,ii,k,j;
-  KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
+  PetscScalar  tt,zero = 0.0,one = 1.0;
+  int          ierr,ii,k,j;
+  KSP_FGMRES   *fgmres = (KSP_FGMRES *)(ksp->data);
 
   PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */
@@ -495,9 +495,9 @@ static int BuildFgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
 #define __FUNCT__ "FGMRESUpdateHessenberg"
 static int FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
 {
-  Scalar     *hh,*cc,*ss,tt;
-  int        j;
-  KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
+  PetscScalar   *hh,*cc,*ss,tt;
+  int           j;
+  KSP_FGMRES    *fgmres = (KSP_FGMRES *)(ksp->data);
 
   PetscFunctionBegin;
   hh  = HH(0,it);  /* pointer to beginning of column to update - so 

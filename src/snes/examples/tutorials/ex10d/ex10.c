@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.25 2001/04/10 19:37:07 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.26 2001/08/06 21:17:56 bsmith Exp balay $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -106,13 +106,13 @@ int main(int argc,char **argv)
   int      *tmp;
   int      i,j,jstart,inode,nb,nbrs,Nvneighborstotal = 0;
   int      ierr,its,N;
-  Scalar   *xx;
+  PetscScalar   *xx;
   char     str[256],form[256],part_name[256];
   FILE     *fptr,*fptr1;
   ISLocalToGlobalMapping isl2g;
 #if defined (UNUSED_VARIABLES)
   PetscDraw    draw;                 /* drawing context */
-  Scalar  *ff,*gg;
+  PetscScalar  *ff,*gg;
   double  tiny = 1.0e-10,zero = 0.0,one = 1.0,big = 1.0e+10;
   int     *tmp1,*tmp2;
 #endif
@@ -477,7 +477,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
 {
   int     i,Nvlocal,ierr;
   int     *gloInd;
-  Scalar  *x;
+  PetscScalar  *x;
 #if defined (UNUSED_VARIABLES)
   double  temp1,temp,hx,hy,hxdhy,hydhx,sc;
   int     Neglobal,Nvglobal,j,row;
@@ -530,18 +530,18 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx     *user = (AppCtx*)ptr;
-  int        ierr,i,j,Nvlocal;
-  double     alpha,lambda;
-  Scalar      *x,*f;
-  VecScatter scatter;
-  Vec        localX = user->localX;
+  AppCtx       *user = (AppCtx*)ptr;
+  int          ierr,i,j,Nvlocal;
+  double       alpha,lambda;
+  PetscScalar   *x,*f;
+  VecScatter   scatter;
+  Vec          localX = user->localX;
 #if defined (UNUSED_VARIABLES)
-  Scalar     ut,ub,ul,ur,u,*g,sc,uyy,uxx;
-  double     hx,hy,hxdhy,hydhx;
-  double     two = 2.0,one = 1.0;
-  int        Nvglobal,Neglobal,row;
-  int        *gloInd;
+  PetscScalar  ut,ub,ul,ur,u,*g,sc,uyy,uxx;
+  double       hx,hy,hxdhy,hydhx;
+  double       two = 2.0,one = 1.0;
+  int          Nvglobal,Neglobal,row;
+  int          *gloInd;
 
   Nvglobal = user->Nvglobal;
   Neglobal = user->Neglobal;
@@ -616,12 +616,12 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   AppCtx *user = (AppCtx*)ptr;
   Mat     jac = *B;
   int     i,j,Nvlocal,col[50],ierr;
-  Scalar  alpha,lambda,value[50];
+  PetscScalar  alpha,lambda,value[50];
   Vec     localX = user->localX;
   VecScatter scatter;
-  Scalar  *x;
+  PetscScalar  *x;
 #if defined (UNUSED_VARIABLES)
-  Scalar  two = 2.0,one = 1.0;
+  PetscScalar  two = 2.0,one = 1.0;
   int     row,Nvglobal,Neglobal;
   int     *gloInd;
 

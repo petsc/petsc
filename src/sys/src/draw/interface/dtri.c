@@ -1,4 +1,4 @@
-/*$Id: dtri.c,v 1.49 2001/03/23 23:20:08 balay Exp bsmith $*/
+/*$Id: dtri.c,v 1.50 2001/08/06 21:13:41 bsmith Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -87,8 +87,7 @@ int PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
 
 typedef struct {
   int        m,n;
-  PetscReal  *x,*y,min,max;
-  PetscScalar     *v;
+  PetscReal  *x,*y,min,max,*v;
   PetscTruth showgrid;
 } ZoomCtx;
 

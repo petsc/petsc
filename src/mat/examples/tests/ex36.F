@@ -1,5 +1,5 @@
 !
-!      "$Id: ex36.F,v 1.28 2000/09/27 20:08:07 bsmith Exp bsmith $";
+!      "$Id: ex36.F,v 1.29 2001/01/15 21:46:09 bsmith Exp balay $";
 !
 !   This program demonstrates use of PETSc dense matrices.
 !
@@ -40,7 +40,7 @@
 
       Mat         A
       integer     n,m,err
-      Scalar      aa(1)
+      PetscScalar aa(1)
       PetscOffset ia
 
       n = 4
@@ -85,7 +85,7 @@
       integer   n,m,err
       parameter (m=5,n=4)
       Mat       A
-      Scalar    aa(m,n)
+      PetscScalar    aa(m,n)
 
 !  Create matrix
       call MatCreateSeqDense(PETSC_COMM_SELF,m,n,aa,A,err)
@@ -109,7 +109,7 @@
 
       subroutine FillUpMatrix(m,n,X)
       integer          m,n,i,j
-      Scalar           X(m,n)
+      PetscScalar      X(m,n)
 
       do 10, j=1,n
         do 20, i=1,m

@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.55 2001/07/17 00:53:11 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.56 2001/08/06 21:14:10 bsmith Exp balay $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -182,7 +182,7 @@ EXTERN_C_BEGIN
 void PetscSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
-  int    i,count = *cnt;
+  int         i,count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_SCALAR) {

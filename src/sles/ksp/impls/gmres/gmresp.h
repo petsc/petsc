@@ -1,4 +1,4 @@
-/* $Id: gmresp.h,v 1.16 2000/09/27 20:39:48 bsmith Exp bsmith $ */
+/* $Id: gmresp.h,v 1.17 2001/08/06 21:16:44 bsmith Exp balay $ */
 /*
    Private data structure used by the GMRES method.
 */
@@ -11,10 +11,10 @@ typedef struct {
     /* Hessenberg matrix and orthogonalization information.  Hes holds
        the original (unmodified) hessenberg matrix which may be used
        to estimate the Singular Values of the matrix */
-    Scalar *hh_origin,*hes_origin,*cc_origin,*ss_origin,*rs_origin;
+    PetscScalar *hh_origin,*hes_origin,*cc_origin,*ss_origin,*rs_origin;
     /* Work space for computing eigenvalues/singular values */
     PetscReal *Dsvd;
-    Scalar *Rsvd;
+    PetscScalar *Rsvd;
       
     /* parameters */
     PetscReal haptol;
@@ -41,7 +41,7 @@ typedef struct {
        process, we need some additional information: */
 
     int    it;              /* Current iteration: inside restart */
-    Scalar *nrs;            /* temp that holds the coefficients of the 
+    PetscScalar *nrs;            /* temp that holds the coefficients of the 
                                Krylov vectors that form the minimum residual
                                solution */
     Vec    sol_temp;        /* used to hold temporary solution */

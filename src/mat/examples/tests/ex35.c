@@ -1,4 +1,4 @@
-/*$Id: ex35.c,v 1.15 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex35.c,v 1.16 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests MatGetSubMatrices().\n\n";
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat    A,B,*Bsub;
   int    i,j,m = 6,n = 6,N = 36,ierr,I,J;
-  Scalar v;
+  PetscScalar v;
   IS     isrow;
 
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -1,4 +1,4 @@
-/*$Id: borthog.c,v 1.56 2001/01/15 21:47:19 bsmith Exp balay $*/
+/*$Id: borthog.c,v 1.57 2001/03/23 23:23:37 balay Exp balay $*/
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 
@@ -17,7 +17,7 @@ int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,int it)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
   int       ierr,j;
-  Scalar    *hh,*hes,tmp;
+  PetscScalar    *hh,*hes,tmp;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);

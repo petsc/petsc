@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.51 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex3.c,v 1.52 2001/03/23 23:21:30 balay Exp balay $*/
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
   -n <length> : local vector length\n\n";
@@ -11,7 +11,7 @@ static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
 int main(int argc,char **argv)
 {
   int          n = 5,ierr,size,rank;
-  Scalar       one = 1.0,two = 2.0,three = 3.0;
+  PetscScalar  one = 1.0,two = 2.0,three = 3.0;
   Vec          x,y;
   int          idx;
 

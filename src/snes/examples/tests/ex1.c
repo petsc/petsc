@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.82 2001/04/10 19:37:00 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.83 2001/08/06 21:17:24 bsmith Exp balay $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 
@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   int            i,ierr,its,N,size,hist_its[50]; 
   double         bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
   MatFDColoring  fdcoloring;           
-  Scalar         *array;
+  PetscScalar    *array;
   PetscTruth     matrix_free,flg,fd_coloring;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -279,7 +279,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
 {
   int     i,j,row,mx,my,ierr;
   double  lambda,temp1,temp,hx,hy;
-  Scalar  *x;
+  PetscScalar  *x;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -334,7 +334,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   AppCtx *user = (AppCtx*)ptr;
   int     ierr,i,j,row,mx,my;
   double  two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx;
-  Scalar  ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
+  PetscScalar  ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -400,7 +400,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   AppCtx *user = (AppCtx*)ptr;   /* user-defined applicatin context */
   Mat     jac = *J;                /* Jacobian matrix */
   int     i,j,row,mx,my,col[5],ierr;
-  Scalar  two = 2.0,one = 1.0,lambda,v[5],sc,*x;
+  PetscScalar  two = 2.0,one = 1.0,lambda,v[5],sc,*x;
   double  hx,hy,hxdhy,hydhx;
 
   mx	 = user->mx; 

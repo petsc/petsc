@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.25 2001/01/23 20:56:37 balay Exp balay $*/
+/*$Id: ex15.c,v 1.26 2001/03/23 23:23:50 balay Exp balay $*/
 
 static char help[] = "SLES on an operator with a null space.\n\n";
 
@@ -12,7 +12,7 @@ int main(int argc,char **args)
   Mat     A;            /* linear system matrix */
   SLES    sles;         /* SLES context */
   int     ierr,i,n = 10,col[3],its,i1,i2;
-  Scalar  none = -1.0,value[3],avalue;
+  PetscScalar  none = -1.0,value[3],avalue;
   double  norm;
   PC      pc;
 

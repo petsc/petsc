@@ -1,4 +1,4 @@
-/*$Id: appalgebra.c,v 1.7 2001/03/23 23:25:31 balay Exp bsmith $*/
+/*$Id: appalgebra.c,v 1.8 2001/06/21 21:19:36 bsmith Exp balay $*/
 #include "appctx.h"
 #include "math.h"
 
@@ -267,12 +267,12 @@ int SetBoundaryConditions(AppCtx *appctx)
   AppPartition *part    = &appctx->part;
 
   /****** Local Variables ***********/
-  int        ierr,i;
-  int        *vertex_ptr; 
-  double     *coord_ptr;
-  double     *values;
-  int        n;
-  Scalar     zero = 0.0;
+  int          ierr,i;
+  int          *vertex_ptr; 
+  double       *coord_ptr;
+  double       *values;
+  int          n;
+  PetscScalar  zero = 0.0;
 
   PetscFunctionBegin;
 

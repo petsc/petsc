@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.115 2001/03/23 23:23:34 balay Exp bsmith $*/
+/*$Id: cg.c,v 1.116 2001/08/06 21:16:43 bsmith Exp balay $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -108,7 +108,7 @@ int KSPSetUp_CG(KSP ksp)
 int  KSPSolve_CG(KSP ksp,int *its)
 {
   int          ierr,i,maxit,eigs,pres;
-  Scalar       dpi,a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0,mone = -1.0,ma; 
+  PetscScalar  dpi,a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0,mone = -1.0,ma; 
   PetscReal    dp = 0.0;
   Vec          X,B,Z,R,P;
   KSP_CG       *cg;

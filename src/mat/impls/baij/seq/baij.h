@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.33 2001/07/13 14:50:51 buschelm Exp bsmith $ */
+/* $Id: baij.h,v 1.34 2001/08/06 21:15:36 bsmith Exp balay $ */
 
 #include "src/mat/matimpl.h"
 
@@ -26,12 +26,12 @@ typedef struct {
   int              *j;           /* column values: j + i[k] - 1 is start of row k */
   MatScalar        *a;           /* nonzero elements */
   IS               row,col,icol; /* index sets, used for reorderings */
-  Scalar           *solve_work;  /* work space used in MatSolve */
+  PetscScalar      *solve_work;  /* work space used in MatSolve */
   void             *spptr;       /* pointer for special library like SuperLU */
   int              reallocs;     /* number of mallocs done during MatSetValues() 
                                     as more values are set then were preallocated */
-  Scalar           *mult_work;   /* work array for matrix vector product*/
-  Scalar           *saved_values; 
+  PetscScalar      *mult_work;   /* work array for matrix vector product*/
+  PetscScalar      *saved_values; 
 
   PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */
   PetscTruth       single_precision_solves; /* if true, use single precision for triangular solves */

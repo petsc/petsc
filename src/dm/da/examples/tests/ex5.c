@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.41 2001/03/23 23:25:07 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.42 2001/04/10 19:37:27 bsmith Exp balay $*/
 
 /* This file created by Peter Mell   6/30/95 */ 
 
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   PetscViewer viewer;
   PetscDraw   draw;
   Vec         local,global,copy;
-  Scalar      *localptr,*copyptr;
+  PetscScalar *localptr,*copyptr;
   double      h,k;
   int         localsize,j,i,mybase,myend;
  

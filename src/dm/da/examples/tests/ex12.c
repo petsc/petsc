@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.38 2001/03/23 23:25:07 balay Exp bsmith $*/
+/*$Id: ex12.c,v 1.39 2001/04/10 19:37:27 bsmith Exp balay $*/
 
 /*
    Simple example to show how PETSc programs can be run from Matlab. 
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   DA          da;
   PetscViewer viewer;
   Vec         local,global,copy;
-  Scalar      *localptr,*copyptr;
+  PetscScalar *localptr,*copyptr;
   double      h,k;
   int         localsize,j,i,mybase,myend;
  

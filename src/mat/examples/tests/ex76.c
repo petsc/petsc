@@ -1,4 +1,4 @@
-/*$Id: ex76.c,v 1.15 2001/03/23 23:22:29 balay Exp balay $*/
+/*$Id: ex76.c,v 1.16 2001/04/10 22:35:49 balay Exp balay $*/
 
 static char help[] = "Tests matrix permutation for factorization and solve on matrix with MatSBAIJ format. Modified from ex74.c\n";
 
@@ -15,7 +15,7 @@ int main(int argc,char **args)
   int         ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
   int         lf;          /* level of fill for icc */
   double      norm1,norm2,tol=1.e-10,fill;
-  Scalar      neg_one = -1.0,four=4.0,value[3];  
+  PetscScalar neg_one = -1.0,four=4.0,value[3];  
   IS          perm;
   PetscRandom rand;
   PetscTruth  reorder=PETSC_TRUE;

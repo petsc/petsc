@@ -1,4 +1,4 @@
-/*$Id: iccbs.c,v 1.43 2001/03/23 23:22:00 balay Exp bsmith $*/
+/*$Id: iccbs.c,v 1.44 2001/08/06 21:15:29 bsmith Exp balay $*/
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
 
@@ -29,7 +29,7 @@ int MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 {
   Mat_MPIRowbs *bsif  = (Mat_MPIRowbs*)mat->data;
   Vec          v = bsif->xwork;
-  PetscScalar       *xa,*rhsa,*va;
+  PetscScalar  *xa,*rhsa,*va;
   int          ierr;
 
   PetscFunctionBegin;  
@@ -60,7 +60,7 @@ int MatUnScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 {
   Mat_MPIRowbs *bsif  = (Mat_MPIRowbs*)mat->data;
   Vec          v = bsif->xwork;
-  PetscScalar       *xa,*va,*rhsa;
+  PetscScalar  *xa,*va,*rhsa;
   int          ierr;
 
   PetscFunctionBegin;  

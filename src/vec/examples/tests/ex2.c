@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.52 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex2.c,v 1.53 2001/03/23 23:21:30 balay Exp balay $*/
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
   -n <length> : vector length\n\n";
@@ -11,7 +11,7 @@ static char help[] = "Tests vector scatter-gather operations.  Input arguments a
 int main(int argc,char **argv)
 {
   int           n = 5,ierr,idx1[2] = {0,3},idx2[2] = {1,4};
-  Scalar        one = 1.0,two = 2.0;
+  PetscScalar   one = 1.0,two = 2.0;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;

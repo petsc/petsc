@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.57 2001/06/21 21:18:59 bsmith Exp bsmith $*/
+/*$Id: beuler.c,v 1.58 2001/08/06 21:18:11 bsmith Exp balay $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -24,7 +24,7 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptim
   Vec       sol = ts->vec_sol,update = beuler->update;
   Vec       rhs = beuler->rhs;
   int       ierr,i,max_steps = ts->max_steps,its;
-  Scalar    mdt = 1.0/ts->time_step;
+  PetscScalar    mdt = 1.0/ts->time_step;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -62,7 +62,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptim
   TS_BEuler    *beuler = (TS_BEuler*)ts->data;
   Vec          sol = ts->vec_sol,update = beuler->update,rhs = beuler->rhs;
   int          ierr,i,max_steps = ts->max_steps,its;
-  Scalar       mdt = 1.0/ts->time_step,mone = -1.0;
+  PetscScalar  mdt = 1.0/ts->time_step,mone = -1.0;
   MatStructure str;
 
   PetscFunctionBegin;
@@ -164,7 +164,7 @@ static int TSDestroy_BEuler(TS ts)
 int TSBEulerMatMult(Mat mat,Vec x,Vec y)
 {
   TS     ts;
-  Scalar mdt,mone = -1.0;
+  PetscScalar mdt,mone = -1.0;
   int    ierr;
 
   PetscFunctionBegin;
@@ -188,7 +188,7 @@ int TSBEulerMatMult(Mat mat,Vec x,Vec y)
 int TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
 {
   TS     ts = (TS) ctx;
-  Scalar mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
+  PetscScalar mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
   int    ierr,i,n;
 
   PetscFunctionBegin;
@@ -218,10 +218,10 @@ int TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
 #define __FUNCT__ "TSBEulerJacobian"
 int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  TS         ts = (TS) ctx;
-  int        ierr;
-  Scalar     mone = -1.0,mdt = 1.0/ts->time_step;
-  PetscTruth isshell;
+  TS           ts = (TS) ctx;
+  int          ierr;
+  PetscScalar  mone = -1.0,mdt = 1.0/ts->time_step;
+  PetscTruth   isshell;
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
@@ -249,7 +249,7 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
 {
   TS_BEuler *beuler = (TS_BEuler*)ts->data;
   int       ierr,M,m;
-  Scalar    mdt = 1.0/ts->time_step,mone = -1.0;
+  PetscScalar    mdt = 1.0/ts->time_step,mone = -1.0;
 
   PetscFunctionBegin;
   ierr = SLESSetFromOptions(ts->sles);CHKERRQ(ierr);

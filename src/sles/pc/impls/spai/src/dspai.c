@@ -1,4 +1,4 @@
-/* $Id: dspai.c,v 1.5 2000/05/08 15:09:34 balay Exp bsmith $*/
+/* $Id: dspai.c,v 1.6 2000/09/28 21:12:59 bsmith Exp balay $*/
 
 #include "petscmat.h"
 
@@ -11,7 +11,7 @@
 */
 int MatDumpSPAI(Mat A,FILE *file)
 {
-  Scalar   *vals;
+  PetscScalar   *vals;
   int      i,j,ierr,*cols,n,size,nz;
   MPI_Comm comm;
 
@@ -38,7 +38,7 @@ int MatDumpSPAI(Mat A,FILE *file)
 int VecDumpSPAI(Vec b,FILE *file)
 {
   int    n,i,ierr;
-  Scalar *array;
+  PetscScalar *array;
 
   ierr = VecGetSize(b,&n);CHKERRQ(ierr);
   ierr = VecGetArray(b,&array);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex20.F,v 1.11 2000/09/27 20:06:30 bsmith Exp bsmith $";
+!    "$Id: ex20.F,v 1.12 2001/01/15 21:45:13 bsmith Exp balay $";
 !
       program main
       implicit none
@@ -12,7 +12,7 @@
 !  that may be read in by PETSc's VecLoad() routine.
 !
        integer          n,ierr,i,fd,veccookie
-       Scalar           array(5)
+       PetscScalar      array(5)
        Vec              x
        PetscViewer           v
 

@@ -1,4 +1,4 @@
-/*$Id: gr1.c,v 1.27 2001/04/10 19:37:23 bsmith Exp bsmith $*/
+/*$Id: gr1.c,v 1.28 2001/08/06 21:18:33 bsmith Exp balay $*/
 
 /* 
    Plots vectors obtained with DACreate1d()
@@ -30,7 +30,7 @@ int DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,PetscReal ymin,P
   PetscReal      hx,hy,hz_;
   Vec            xcoor;
   DAPeriodicType periodic;
-  Scalar         *coors;
+  PetscScalar    *coors;
 
   PetscFunctionBegin;
   if (xmax <= xmin) SETERRQ2(1,"Xmax must be larger than xmin %g %g",xmin,xmax);
@@ -104,8 +104,8 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   int            i,rank,size,ierr,n,tag1,tag2,N,step;
   int            istart,isize,j;
   MPI_Status     status;
-  PetscReal         coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;
-  Scalar         *array,*xg;
+  PetscReal      coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;
+  PetscScalar    *array,*xg;
   PetscDraw      draw;
   PetscTruth     isnull;
   MPI_Comm       comm;

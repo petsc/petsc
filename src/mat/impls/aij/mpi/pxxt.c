@@ -1,4 +1,4 @@
-/*$Id: pxxt.c,v 1.6 2001/04/10 19:35:25 bsmith Exp bsmith $*/
+/*$Id: pxxt.c,v 1.7 2001/08/06 21:15:22 bsmith Exp balay $*/
 
 /* 
         Provides an interface to the Tufo-Fischer parallel direct solver
@@ -40,7 +40,7 @@ int MatSolve_MPIAIJ_XXT(Mat A,Vec b,Vec x)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJ_XXT *xxt = (Mat_MPIAIJ_XXT*)a->spptr;
-  PetscScalar         *bb,*xx;
+  PetscScalar    *bb,*xx;
   int            ierr;
 
   PetscFunctionBegin;
@@ -165,7 +165,7 @@ int MatSolve_MPIAIJ_XYT(Mat A,Vec b,Vec x)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJ_XYT *xyt = (Mat_MPIAIJ_XYT*)a->spptr;
-  PetscScalar         *bb,*xx;
+  PetscScalar    *bb,*xx;
   int            ierr;
 
   PetscFunctionBegin;

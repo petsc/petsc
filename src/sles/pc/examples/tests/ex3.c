@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.51 2001/03/23 23:23:25 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.52 2001/04/10 19:36:22 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR. And\n\
 also tests the MatRelax() routines.  Input parameters are:\n\
@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PC      pc;           /* PC context */
   KSP     ksp;          /* KSP context */
   int     ierr,n = 10,i,its,col[3];
-  Scalar  value[3],one = 1.0,zero = 0.0;
+  PetscScalar  value[3],one = 1.0,zero = 0.0;
   KSPType kspname;
   PCType  pcname;
 

@@ -1,4 +1,4 @@
-/*$Id: aodatabasic.c,v 1.62 2001/03/23 23:24:52 balay Exp bsmith $*/
+/*$Id: aodatabasic.c,v 1.63 2001/08/06 21:18:26 bsmith Exp balay $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.
@@ -173,14 +173,14 @@ int AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
             ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
           }
         } else if (segment->datatype == PETSC_SCALAR) {
-          Scalar *mdata = (PetscScalar*)segment->data;
+          PetscScalar *mdata = (PetscScalar*)segment->data;
           for (k=0; k<key->N; k++) {
             ierr = PetscViewerASCIIPrintf(viewer," %d: ",k);CHKERRQ(ierr);
             for (l=0; l<segment->bs; l++) {
 #if !defined(PETSC_USE_COMPLEX)
               ierr = PetscViewerASCIIPrintf(viewer,"   %18.16e ",mdata[k*segment->bs + l]);CHKERRQ(ierr);
 #else
-              Scalar x = mdata[k*segment->bs + l];
+              PetscScalar x = mdata[k*segment->bs + l];
               if (PetscImaginaryPart(x) > 0.0) {
                 ierr = PetscViewerASCIIPrintf(viewer," %18.16e + %18.16e i \n",PetscRealPart(x),PetscImaginaryPart(x));CHKERRQ(ierr);
               } else if (PetscImaginaryPart(x) < 0.0) {

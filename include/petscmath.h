@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.24 2001/07/17 18:30:20 balay Exp bsmith $ */
+/* $Id: petscmath.h,v 1.25 2001/08/06 21:19:20 bsmith Exp balay $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -18,7 +18,7 @@
      Defines operations that are different for complex and real numbers;
    note that one cannot really mix the use of complex and real in the same 
    PETSc program. All PETSc objects in one program are built around the object
-   Scalar which is either always a double or a complex.
+   PetscScalar which is either always a double or a complex.
 
 */
 #if defined(PETSC_USE_COMPLEX)
@@ -65,11 +65,11 @@ extern  MPI_Datatype        MPIU_COMPLEX;
   compatible with all previous complex class libraries.
 */
 #if defined(PETSC_HAVE_STD_COMPLEX)
-  typedef std::complex<double> Scalar;
+  typedef std::complex<double> PetscScalar;
 #elif defined(PETSC_HAVE_TEMPLATED_COMPLEX)
-  typedef complex<double> Scalar;
+  typedef complex<double> PetscScalar;
 #else
-  typedef complex Scalar;
+  typedef complex PetscScalar;
 #endif
 
 /* Compiling for real numbers only */
@@ -95,9 +95,9 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 #  define PetscCosScalar(a)     cos(a)
 
 #  if defined(PETSC_USE_SINGLE)
-  typedef float Scalar;
+  typedef float PetscScalar;
 #  else
-  typedef double Scalar;
+  typedef double PetscScalar;
 #  endif
 #endif
 
@@ -111,7 +111,7 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 */
 #if defined(PETSC_USE_COMPLEX)
 
-typedef Scalar MatScalar;
+typedef PetscScalar MatScalar;
 typedef double MatReal;
 
 #elif defined(PETSC_USE_MAT_SINGLE) || defined(PETSC_USE_SINGLE)
@@ -121,7 +121,7 @@ typedef float MatReal;
 
 #else
 
-typedef Scalar MatScalar;
+typedef PetscScalar MatScalar;
 typedef double MatReal;
 
 #endif
@@ -138,10 +138,10 @@ typedef double MatReal;
    Certain objects may be created using either single
   or double precision.
 */
-typedef enum { SCALAR_DOUBLE,SCALAR_SINGLE } ScalarPrecision;
+typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE } PetscScalarPrecision;
 
 /* PETSC_i is the imaginary number, i */
-extern  Scalar            PETSC_i;
+extern  PetscScalar       PETSC_i;
 
 #define PetscMin(a,b)      (((a)<(b)) ? (a) : (b))
 #define PetscMax(a,b)      (((a)<(b)) ? (b) : (a))
@@ -179,7 +179,7 @@ typedef double PetscLogDouble;
 #endif
 
 #define PassiveReal PetscReal
-#define PassiveScalar Scalar
+#define PassiveScalar PetscScalar
 
 #define PETSCMAP1_a(a,b)  a ## _ ## b
 #define PETSCMAP1_b(a,b)  PETSCMAP1_a(a,b)

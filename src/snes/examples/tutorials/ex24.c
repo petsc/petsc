@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.23 2001/06/21 21:18:53 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.24 2001/08/06 21:17:42 bsmith Exp balay $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjoint.\n\n";
 
@@ -61,7 +61,7 @@ typedef struct {
 int myPCApply(DMMG dmmg,Vec x,Vec y)
 {
   Vec     xu,xlambda,yu,ylambda;
-  Scalar  *xw,*yw;
+  PetscScalar  *xw,*yw;
   int     ierr;
   VecPack packer = (VecPack)dmmg->dm;
   AppCtx  *appctx = (AppCtx*)dmmg->user;
@@ -204,7 +204,7 @@ int main(int argc,char **argv)
 int PDEFormFunctionLocal(DALocalInfo *info,PetscScalar *u,PetscScalar *fu,PassiveScalar *w)
 {
   int     xs = info->xs,xm = info->xm,i,mx = info->mx;
-  Scalar  d,h;
+  PetscScalar  d,h;
 
   d    = mx-1.0;
   h    = 1.0/d;
@@ -236,14 +236,14 @@ int PDEFormFunctionLocal(DALocalInfo *info,PetscScalar *u,PetscScalar *fu,Passiv
 #define __FUNCT__ "FormFunction"
 int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
-  DMMG       dmmg = (DMMG)dummy;
-  int        ierr,xs,xm,i,N,nredundant;
-  Scalar     *u,*w,*fw,*fu,*lambda,*flambda,d,h,h2;
-  Vec        vu,vlambda,vfu,vflambda,vglambda;
-  DA         da;
-  VecPack    packer = (VecPack)dmmg->dm;
-  AppCtx     *appctx = (AppCtx*)dmmg->user;
-  PetscTruth skipadic;
+  DMMG         dmmg = (DMMG)dummy;
+  int          ierr,xs,xm,i,N,nredundant;
+  PetscScalar  *u,*w,*fw,*fu,*lambda,*flambda,d,h,h2;
+  Vec          vu,vlambda,vfu,vflambda,vglambda;
+  DA           da;
+  VecPack      packer = (VecPack)dmmg->dm;
+  AppCtx       *appctx = (AppCtx*)dmmg->user;
+  PetscTruth   skipadic;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(0,"-skipadic",&skipadic);CHKERRQ(ierr);

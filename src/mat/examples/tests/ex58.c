@@ -1,4 +1,4 @@
-/*$Id: ex58.c,v 1.15 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex58.c,v 1.16 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n\n";
 
@@ -9,11 +9,11 @@ static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat        A,B;
-  int        m = 7,n,i,ierr,rstart,rend,cols[3];
-  Scalar     v[3];
-  PetscTruth equal;
-  char       *eq[2];
+  Mat          A,B;
+  int          m = 7,n,i,ierr,rstart,rend,cols[3];
+  PetscScalar  v[3];
+  PetscTruth   equal;
+  char         *eq[2];
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);

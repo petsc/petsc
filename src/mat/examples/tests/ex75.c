@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.25 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex75.c,v 1.26 2001/03/23 23:22:29 balay Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscRandom rctx;         
   double      r1,r2,tol=1.e-10;
   int         i,j,i2,j2,I,J,ierr;
-  Scalar      one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*vr;
+  PetscScalar one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*vr;
   int         n,rank,size,col[3],n1,block,row;
   int         ncols,*cols,rstart,rend;
   IS          isrow;

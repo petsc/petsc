@@ -1,4 +1,4 @@
-/*$Id: ex60.c,v 1.12 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex60.c,v 1.13 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Tests MatGetColumnVector().";
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat         C;
   int         i,j,m = 3,n = 2,rank,size,I,J,ierr,col = 0;
-  Scalar      v;
+  PetscScalar v;
   Vec         yy;
 
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.129 2001/04/10 22:35:59 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.130 2001/06/14 14:50:43 bsmith Exp balay $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -235,7 +235,7 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM      *osm = (PC_ASM*)pc->data;
   int         i,n_local = osm->n_local,n_local_true = osm->n_local_true,ierr,its;
-  Scalar      zero = 0.0;
+  PetscScalar zero = 0.0;
   ScatterMode forward = SCATTER_FORWARD,reverse = SCATTER_REVERSE;
 
   PetscFunctionBegin;
@@ -281,7 +281,7 @@ static int PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM      *osm = (PC_ASM*)pc->data;
   int         i,n_local = osm->n_local,n_local_true = osm->n_local_true,ierr,its;
-  Scalar      zero = 0.0;
+  PetscScalar zero = 0.0;
   ScatterMode forward = SCATTER_FORWARD,reverse = SCATTER_REVERSE;
 
   PetscFunctionBegin;

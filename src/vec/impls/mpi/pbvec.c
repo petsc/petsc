@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.168 2001/07/20 21:18:16 bsmith Exp bsmith $*/
+/*$Id: pbvec.c,v 1.169 2001/08/06 21:14:47 bsmith Exp balay $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -44,8 +44,8 @@ static int VecPublish_MPI(PetscObject obj)
 #define __FUNCT__ "VecDot_MPI"
 int VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
-  PetscScalar    sum,work;
-  int       ierr;
+  PetscScalar  sum,work;
+  int          ierr;
 
   PetscFunctionBegin;
   ierr = VecDot_Seq(xin,yin,&work);CHKERRQ(ierr);
@@ -58,8 +58,8 @@ int VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 #define __FUNCT__ "VecTDot_MPI"
 int VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
-  PetscScalar    sum,work;
-  int       ierr;
+  PetscScalar  sum,work;
+  int          ierr;
 
   PetscFunctionBegin;
   ierr = VecTDot_Seq(xin,yin,&work);CHKERRQ(ierr);
@@ -505,8 +505,8 @@ int VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
 @*/ 
 int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],const PetscScalar array[],Vec *vv)
 {
-  int     ierr;
-  Vec_MPI *w;
+  int          ierr;
+  Vec_MPI      *w;
   PetscScalar  *larray;
 
   PetscFunctionBegin;
@@ -586,11 +586,11 @@ int VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],Vec *
 #define __FUNCT__ "VecDuplicate_MPI"
 int VecDuplicate_MPI(Vec win,Vec *v)
 {
-  int     ierr;
-  Vec_MPI *vw,*w = (Vec_MPI *)win->data;
+  int          ierr;
+  Vec_MPI      *vw,*w = (Vec_MPI *)win->data;
   PetscScalar  *array;
 #if defined(PETSC_HAVE_AMS)
-  int     (*f)(AMS_Memory,char *,Vec);
+  int          (*f)(AMS_Memory,char *,Vec);
 #endif
 
   PetscFunctionBegin;
@@ -682,8 +682,8 @@ int VecDuplicate_MPI(Vec win,Vec *v)
 @*/ 
 int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,const int ghosts[],const PetscScalar array[],Vec *vv)
 {
-  int     ierr;
-  Vec_MPI *w;
+  int          ierr;
+  Vec_MPI      *w;
   PetscScalar  *larray;
 
   PetscFunctionBegin;

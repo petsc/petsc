@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.149 2001/06/21 21:16:01 bsmith Exp bsmith $*/
+/* $Id: pdvec.c,v 1.150 2001/08/06 21:14:47 bsmith Exp balay $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -51,7 +51,7 @@ int VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   Vec_MPI           *x = (Vec_MPI*)xin->data;
   int               i,rank,len,work = xin->n,n,j,size,ierr,cnt,tag = ((PetscObject)viewer)->tag;
   MPI_Status        status;
-  PetscScalar            *values;
+  PetscScalar       *values;
   char              *name;
   PetscViewerFormat format;
 
@@ -185,7 +185,7 @@ int VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   Vec_MPI     *x = (Vec_MPI*)xin->data;
   int         rank,ierr,len,work = xin->n,n,j,size,fdes,tag = ((PetscObject)viewer)->tag;
   MPI_Status  status;
-  PetscScalar      *values;
+  PetscScalar *values;
   FILE        *file;
 
   PetscFunctionBegin;
@@ -367,7 +367,7 @@ int VecView_MPI_Socket(Vec xin,PetscViewer viewer)
 {
   Vec_MPI     *x = (Vec_MPI*)xin->data;
   int         i,rank,size,N = xin->N,*lens,ierr;
-  PetscScalar      *xx;
+  PetscScalar *xx;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
@@ -434,9 +434,9 @@ int VecGetSize_MPI(Vec xin,int *N)
 #define __FUNCT__ "VecSetValues_MPI"
 int VecSetValues_MPI(Vec xin,int ni,const int ix[],const PetscScalar y[],InsertMode addv)
 {
-  Vec_MPI  *x = (Vec_MPI *)xin->data;
-  int      rank = x->rank,*owners = xin->map->range,start = owners[rank];
-  int      end = owners[rank+1],i,row,ierr;
+  Vec_MPI       *x = (Vec_MPI *)xin->data;
+  int           rank = x->rank,*owners = xin->map->range,start = owners[rank];
+  int           end = owners[rank+1],i,row,ierr;
   PetscScalar   *xx = x->array;
 
   PetscFunctionBegin;
@@ -481,9 +481,9 @@ int VecSetValues_MPI(Vec xin,int ni,const int ix[],const PetscScalar y[],InsertM
 #define __FUNCT__ "VecSetValuesBlocked_MPI"
 int VecSetValuesBlocked_MPI(Vec xin,int ni,const int ix[],const PetscScalar yin[],InsertMode addv)
 {
-  Vec_MPI  *x = (Vec_MPI *)xin->data;
-  int      rank = x->rank,*owners = xin->map->range,start = owners[rank];
-  int      end = owners[rank+1],i,row,bs = xin->bs,j,ierr;
+  Vec_MPI       *x = (Vec_MPI *)xin->data;
+  int           rank = x->rank,*owners = xin->map->range,start = owners[rank];
+  int           end = owners[rank+1],i,row,bs = xin->bs,j,ierr;
   PetscScalar   *xx = x->array,*y = (PetscScalar*)yin;
 
   PetscFunctionBegin;
@@ -580,7 +580,7 @@ int VecAssemblyEnd_MPI(Vec vec)
 {
   Vec_MPI     *x = (Vec_MPI *)vec->data;
   int         ierr,base,i,j,n,*row,flg,bs;
-  PetscScalar      *val,*vv,*array;
+  PetscScalar *val,*vv,*array;
 
    PetscFunctionBegin;
   if (!x->donotstash) {

@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.149 2001/06/21 21:17:34 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.150 2001/07/17 20:49:12 bsmith Exp balay $*/
 
 #include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
@@ -352,9 +352,9 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
     if (sles->dscale) {
       ierr = PCGetOperators(pc,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
       if (mat == pmat) {
-        Scalar     *xx;
-        int        i,n;
-        PetscTruth zeroflag = PETSC_FALSE;
+        PetscScalar  *xx;
+        int          i,n;
+        PetscTruth   zeroflag = PETSC_FALSE;
 
 
         if (!sles->diagonal) { /* allocate vector to hold diagonal */

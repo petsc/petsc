@@ -1,4 +1,4 @@
-/*$Id: itres.c,v 1.52 2001/03/23 23:23:29 balay Exp bsmith $*/
+/*$Id: itres.c,v 1.53 2001/06/18 18:44:34 bsmith Exp balay $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
@@ -31,7 +31,7 @@ $     CA x = Cf (left preconditioning).
 @*/
 int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec vb)
 {
-  Scalar        mone = -1.0;
+  PetscScalar   mone = -1.0;
   MatStructure  pflag;
   Mat           Amat,Pmat;
   int           ierr;

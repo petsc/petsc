@@ -1,4 +1,4 @@
-/*$Id: appelement.c,v 1.3 2000/08/24 22:43:38 bsmith Exp balay $*/
+/*$Id: appelement.c,v 1.4 2001/03/23 23:25:29 balay Exp balay $*/
 #include "appctx.h"
 
 /*
@@ -163,7 +163,7 @@ int ComputeRHSElement(AppElement *phi)
 {
   int    i,j,ierr; 
   int    bn = 4,qn = 4; /* number of basis functions, number of quadrature points */
-  Scalar f;
+  PetscScalar f;
 
   PetscFunctionBegin;
 

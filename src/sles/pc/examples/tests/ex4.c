@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.43 2001/03/23 23:23:25 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.44 2001/04/10 19:36:22 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR. And tests\n\
 the MatRelax() routines.\n\n";
@@ -13,7 +13,7 @@ int main(int argc,char **args)
   Vec       b,u;
   PC        pc;
   int       ierr,n = 5,i,col[3];
-  Scalar    value[3],zero = 0.0;
+  PetscScalar    value[3],zero = 0.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

@@ -1,4 +1,4 @@
-/*$Id: cholbs.c,v 1.62 2001/03/23 23:22:00 balay Exp bsmith $*/
+/*$Id: cholbs.c,v 1.63 2001/08/06 21:15:29 bsmith Exp balay $*/
 
 #include "petsc.h"
 
@@ -88,7 +88,7 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   Mat          submat = (Mat) mat->data;
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)submat->data;
   int          ierr;
-  PetscScalar       *ya,*xa,*xworka;
+  PetscScalar  *ya,*xa,*xworka;
 
 #if defined(PETSC_USE_LOG)
   PetscReal flop1 = BSlocal_flops();
@@ -141,7 +141,7 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   Mat          submat = (Mat) mat->data;
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)submat->data;
   int          ierr;
-  PetscScalar       *ya,*xa,*xworka;
+  PetscScalar  *ya,*xa,*xworka;
 
 #if defined(PETSC_USE_LOG)
   PetscReal flop1 = BSlocal_flops();
@@ -184,7 +184,7 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   Mat          submat = (Mat) mat->data;
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)submat->data;
   int          ierr;
-  PetscScalar       *ya,*xworka;
+  PetscScalar  *ya,*xworka;
 
 #if defined (PETSC_USE_LOG)
   PetscReal flop1 = BSlocal_flops();

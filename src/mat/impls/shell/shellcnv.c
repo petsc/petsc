@@ -1,4 +1,4 @@
-/*$Id: shellcnv.c,v 1.18 2001/03/23 23:21:59 balay Exp bsmith $*/
+/*$Id: shellcnv.c,v 1.19 2001/08/06 21:15:28 bsmith Exp balay $*/
 
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"  
@@ -7,9 +7,9 @@
 #define __FUNCT__ "MatConvert_Shell"
 int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *mat)
 {
-  Vec      in,out;
-  int      ierr,i,M,m,*rows,start,end;
-  MPI_Comm comm;
+  Vec           in,out;
+  int           ierr,i,M,m,*rows,start,end;
+  MPI_Comm      comm;
   PetscScalar   *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;

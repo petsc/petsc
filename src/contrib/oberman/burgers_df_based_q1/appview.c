@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.9 2001/03/23 23:25:35 balay Exp bsmith $*/
+/*$Id: appview.c,v 1.10 2001/08/06 21:18:55 bsmith Exp balay $*/
 
 
 /*
@@ -135,7 +135,7 @@ int AppCtxViewSolution(PetscDraw idraw,void *iappctx)
   PetscDraw                   drawlocal = appctx->view.drawlocal,popup;
   double                 x0,x1,x2,y_0,y_1,y2,vmin,vmax;
 
-  Scalar                 *values;
+  PetscScalar            *values;
 
   cell_n        = grid->cell_n;
   ierr = ISGetIndices(grid->cell_global,&cell_global);CHKERRQ(ierr);

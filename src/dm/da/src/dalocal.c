@@ -1,4 +1,4 @@
-/*$Id: dalocal.c,v 1.33 2001/08/06 16:31:20 curfman Exp bsmith $*/
+/*$Id: dalocal.c,v 1.34 2001/08/06 21:18:33 bsmith Exp balay $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -255,7 +255,7 @@ EXTERN_C_END
 -    tdof - total number of degrees of freedom represented in array_start (may be null)
 
      Notes: Returns the same type of object as the DAVecGetArray() except its elements are 
-           derivative types instead of Scalars
+           derivative types instead of PetscScalars
 
      Level: advanced
 
@@ -670,7 +670,7 @@ int DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 
      Notes: 
      This routine returns the same type of object as the DAVecGetArray(), except its
-     elements are derivative types instead of Scalars.
+     elements are derivative types instead of PetscScalars.
 
      Level: advanced
 

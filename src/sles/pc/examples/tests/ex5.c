@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.73 2001/03/28 19:41:57 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.74 2001/06/21 21:18:07 bsmith Exp balay $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -39,7 +39,7 @@ int main(int Argc,char **Args)
   double      e[3]; /* l_2 error,max error, residual */
   char        *shellname;
   Vec         x,solution,X[20],R[20],B[20];
-  Scalar      zero = 0.0;
+  PetscScalar zero = 0.0;
   KSP         ksp,kspmg;
   PC          pcmg,pc;
   PetscTruth  flg;
@@ -180,7 +180,7 @@ int main(int Argc,char **Args)
 int residual(Mat mat,Vec bb,Vec xx,Vec rr)
 {
   int    i,n1,ierr;
-  Scalar *b,*x,*r;
+  PetscScalar *b,*x,*r;
 
   ierr = VecGetSize(bb,&n1);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
@@ -202,7 +202,7 @@ int residual(Mat mat,Vec bb,Vec xx,Vec rr)
 int amult(Mat mat,Vec xx,Vec yy)
 {
   int    i,n1,ierr;
-  Scalar *y,*x;
+  PetscScalar *y,*x;
 
   ierr = VecGetSize(xx,&n1);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -223,7 +223,7 @@ int amult(Mat mat,Vec xx,Vec yy)
 int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,int m)
 {
   int    i,n1,ierr;
-  Scalar *x,*b;
+  PetscScalar *x,*b;
 
   ierr = VecGetSize(bb,&n1);CHKERRQ(ierr); n1--;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
@@ -249,7 +249,7 @@ int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,int m)
 int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
 {
   int      i,n,n1,ierr;
-  Scalar   *r,*b,*x;
+  PetscScalar   *r,*b,*x;
 
   ierr = VecGetSize(bb,&n);CHKERRQ(ierr); n1 = n - 1;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
@@ -278,7 +278,7 @@ int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
 int interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 {
   int    i,n,N,i2,ierr;
-  Scalar *x,*y;
+  PetscScalar *x,*y;
 
   ierr = VecGetSize(yy,&N);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -300,7 +300,7 @@ int interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 int restrct(Mat mat,Vec rr,Vec bb)
 {
   int    i,n,N,i2,ierr;
-  Scalar *r,*b;
+  PetscScalar *r,*b;
 
   ierr = VecGetSize(rr,&N);CHKERRQ(ierr);
   ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
@@ -320,7 +320,7 @@ int restrct(Mat mat,Vec rr,Vec bb)
 #define __FUNCT__ "Create2dLaplacian"
 int Create1dLaplacian(int n,Mat *mat)
 {
-  Scalar mone = -1.0,two = 2.0;
+  PetscScalar mone = -1.0,two = 2.0;
   int    ierr,i,idx;
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,mat);CHKERRQ(ierr);
@@ -344,7 +344,7 @@ int CalculateRhs(Vec u)
 {
   int    i,n,ierr;
   double h,x = 0.0;
-  Scalar uu;
+  PetscScalar uu;
   ierr = VecGetSize(u,&n);CHKERRQ(ierr);
   h = 1.0/((double)(n+1));
   for (i=0; i<n; i++) {
@@ -361,7 +361,7 @@ int CalculateSolution(int n,Vec *solution)
 {
   int    i,ierr;
   double h,x = 0.0;
-  Scalar uu;
+  PetscScalar uu;
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,solution);CHKERRQ(ierr);
   h = 1.0/((double)(n+1));
   for (i=0; i<n; i++) {
@@ -375,7 +375,7 @@ int CalculateSolution(int n,Vec *solution)
 #define __FUNCT__ "CalculateError"
 int CalculateError(Vec solution,Vec u,Vec r,double *e)
 {
-  Scalar mone = -1.0;
+  PetscScalar mone = -1.0;
   int    ierr;
 
   ierr = VecNorm(r,NORM_2,e+2);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.24 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.25 2001/04/10 19:35:44 bsmith Exp balay $*/
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose().\n\
 Also MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
@@ -9,12 +9,12 @@ Also MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale()
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat        C; 
-  Vec        s,u,w,x,y,z;
-  int        ierr,i,j,m = 8,n,rstart,rend,vstart,vend;
-  Scalar     one = 1.0,negone = -1.0,v,alpha=0.1;
-  double     norm;
-  PetscTruth flg;
+  Mat          C; 
+  Vec          s,u,w,x,y,z;
+  int          ierr,i,j,m = 8,n,rstart,rend,vstart,vend;
+  PetscScalar  one = 1.0,negone = -1.0,v,alpha=0.1;
+  double       norm;
+  PetscTruth   flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);

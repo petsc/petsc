@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2.F,v 1.15 2000/09/27 20:11:33 bsmith Exp bsmith $"
+!    "$Id: ex2.F,v 1.16 2001/01/15 21:49:19 bsmith Exp balay $"
 !
       program main
 #include "include/finclude/petsc.h"
@@ -19,8 +19,8 @@
       DA             da
       integer        sda
       Vec            local,global,local_copy
-      Scalar         value,mone,in(1),out(1)
-      Scalar         norm,work
+      PetscScalar    value,mone,in(1),out(1)
+      PetscScalar    norm,work
  
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 

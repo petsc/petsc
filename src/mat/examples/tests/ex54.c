@@ -1,4 +1,4 @@
-/*$Id: ex54.c,v 1.19 2001/04/10 19:35:44 bsmith Exp bsmith $*/
+/*$Id: ex54.c,v 1.20 2001/08/06 21:16:03 bsmith Exp balay $*/
 
 static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for MatBAIJ format.\n";
 
@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Mat         A,B,*submatA,*submatB;
   int         bs=1,m=11,ov=1,i,j,k,*rows,*cols,ierr,nd=5,*idx,size;
   int         rank,rstart,rend,sz,mm,nn,M,N,Mbs;
-  Scalar      *vals,rval;
+  PetscScalar *vals,rval;
   IS          *is1,*is2;
   PetscRandom rand;
   Vec         xx,s1,s2;

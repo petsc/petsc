@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.92 2001/03/27 22:17:30 balay Exp bsmith $ 
+# $Id: base.site,v 1.93 2001/04/14 19:03:01 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -137,3 +137,7 @@ PETSC_PYTHON    = -DPETSC_PYTHON="python1.5"
 DSCPACK_INCLUDE     = -I/home/petsc/software/DSCPACK-S/DSC_LIB -DDBL_R_NUM
 DSCPACK_LIB         = /home/petsc/software/DSCPACK-S/DSC_LIB/dsclibdbl.a
 PETSC_HAVE_DSCPACK  = -DPETSC_HAVE_DSCPACK
+
+
+RAMG_LIB        = /home/petsc/software/ramg/libramg_solaris.a
+PETSC_HAVE_RAMG = -DPETSC_HAVE_RAMG

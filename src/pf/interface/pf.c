@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.23 2001/06/05 20:48:27 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.24 2001/08/06 21:19:08 bsmith Exp balay $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -184,7 +184,7 @@ int PFApplyVec(PF pf,Vec x,Vec y)
     PetscValidHeaderSpecific(x,VEC_COOKIE);
     if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   } else {
-    Scalar *xx;
+    PetscScalar *xx;
 
     ierr = VecDuplicate(y,&x);CHKERRQ(ierr);
     nox  = PETSC_TRUE;
@@ -199,7 +199,7 @@ int PFApplyVec(PF pf,Vec x,Vec y)
   if (pf->ops->applyvec) {
     ierr = (*pf->ops->applyvec)(pf->data,x,y);CHKERRQ(ierr);
   } else {
-    Scalar *xx,*yy;
+    PetscScalar *xx,*yy;
     int    n;
 
     ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.87 2001/06/21 21:15:56 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.88 2001/08/06 21:14:36 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "petsc.h"
@@ -184,10 +184,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecMatlabEnginePut_Default"
 int VecMatlabEnginePut_Default(PetscObject obj,void *engine)
 {
-  int     ierr,n;
-  Vec     vec = (Vec)obj;
-  PetscScalar  *array;
-  mxArray *mat;
+  int         ierr,n;
+  Vec         vec = (Vec)obj;
+  PetscScalar *array;
+  mxArray     *mat;
 
   PetscFunctionBegin;
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
@@ -212,10 +212,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecMatlabEngineGet_Default"
 int VecMatlabEngineGet_Default(PetscObject obj,void *engine)
 {
-  int     ierr,n;
-  Vec     vec = (Vec)obj;
-  PetscScalar  *array;
-  mxArray *mat;
+  int         ierr,n;
+  Vec         vec = (Vec)obj;
+  PetscScalar *array;
+  mxArray     *mat;
 
   PetscFunctionBegin;
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);

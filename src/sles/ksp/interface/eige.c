@@ -1,4 +1,4 @@
-/*$Id: eige.c,v 1.33 2001/03/23 23:23:29 balay Exp bsmith $*/
+/*$Id: eige.c,v 1.34 2001/08/06 21:16:38 bsmith Exp balay $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
@@ -35,7 +35,7 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   int      ierr,i,M,m,size,*rows,start,end;
   Mat      A;
   MPI_Comm comm;
-  Scalar   *array,zero = 0.0,one = 1.0;
+  PetscScalar   *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -123,10 +123,10 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
   Mat          BA;
   int          i,n,ierr,size,rank,dummy;
   MPI_Comm     comm = ksp->comm;
-  Scalar       *array;
+  PetscScalar  *array;
   Mat          A;
   int          m,row,nz,*cols;
-  Scalar       *vals;
+  PetscScalar  *vals;
 
   PetscFunctionBegin;
   ierr =  KSPComputeExplicitOperator(ksp,&BA);CHKERRQ(ierr);
@@ -162,7 +162,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
 #if defined(PETSC_HAVE_ESSL)
   /* ESSL has a different calling sequence for dgeev() and zgeev() than standard LAPACK */
   if (!rank) {
-    Scalar    sdummy,*cwork;
+    PetscScalar    sdummy,*cwork;
     PetscReal *work,*realpart;
     int       clen,idummy,lwork,*perm,zero;
 
@@ -211,7 +211,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
   }
 #elif !defined(PETSC_USE_COMPLEX)
   if (!rank) {
-    Scalar    *work,sdummy;
+    PetscScalar    *work,sdummy;
     PetscReal *realpart,*imagpart;
     int       idummy,lwork,*perm;
 
@@ -239,7 +239,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
   }
 #else
   if (!rank) {
-    Scalar *work,sdummy,*eigs;
+    PetscScalar *work,sdummy,*eigs;
     PetscReal *rwork;
     int    idummy,lwork,*perm;
 

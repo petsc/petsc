@@ -1,5 +1,5 @@
 !
-!      "$Id: ex58f.F,v 1.10 2000/09/27 20:08:18 bsmith Exp bsmith $";
+!      "$Id: ex58f.F,v 1.11 2001/01/15 21:46:09 bsmith Exp balay $";
 !
 !   This program demonstrates use of MatGetRow() from Fortran
 !
@@ -10,7 +10,7 @@
 
       Mat      A
       integer  err,i,cols(500),ncols
-      Scalar   values(500)
+      PetscScalar   values(500)
       PetscViewer   v    
 
       call PetscInitialize(PETSC_NULL_CHARACTER,err)

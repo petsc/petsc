@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.77 2001/07/06 14:30:43 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.78 2001/08/06 21:17:42 bsmith Exp balay $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -268,7 +268,7 @@
       integer  ierr
 
 !  Declarations for use with local arrays:
-      Scalar      lx_v(0:1)
+      PetscScalar lx_v(0:1)
       PetscOffset lx_i
       Vec         localX
 
@@ -321,12 +321,12 @@
 #include "ex5f.h"
 
 !  Input/output variables:
-      Scalar  x(gxs:gxe,gys:gye)
+      PetscScalar  x(gxs:gxe,gys:gye)
       integer ierr
 
 !  Local variables:
       integer  i,j,hxdhy,hydhx
-      Scalar   temp1,temp,hx,hy,sc,one
+      PetscScalar   temp1,temp,hx,hy,sc,one
 
 !  Set parameters
 
@@ -380,14 +380,14 @@
 
 !  Input/output variables:
       DALocalInfo info(DA_LOCAL_INFO_SIZE)
-      Scalar x(gxs:gxe,gys:gye)
-      Scalar f(xs:xe,ys:ye)
+      PetscScalar x(gxs:gxe,gys:gye)
+      PetscScalar f(xs:xe,ys:ye)
       integer     ierr
       PetscObject dummy
 
 !  Local variables:
-      Scalar   two,one,hx,hy,hxdhy,hydhx,sc
-      Scalar   u,uxx,uyy
+      PetscScalar   two,one,hx,hy,hxdhy,hydhx,sc
+      PetscScalar   u,uxx,uyy
       integer  i,j
 
 
@@ -474,7 +474,7 @@
 #include "ex5f.h"
 
 !  Input/output variables:
-      Scalar      x(gxs:gxe,gys:gye)
+      PetscScalar x(gxs:gxe,gys:gye)
       Mat         jac
       integer     ierr,ctx
       DALocalInfo info(DA_LOCAL_INFO_SIZE)
@@ -482,7 +482,7 @@
 
 !  Local variables:
       integer  row,col(5),i,j
-      Scalar   two,one,hx,hy,hxdhy,hydhx,sc,v(5)
+      PetscScalar   two,one,hx,hy,hxdhy,hydhx,sc,v(5)
 
 !  Set parameters
 

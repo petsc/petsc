@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.84 2001/03/23 23:24:25 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.85 2001/08/06 21:17:42 bsmith Exp balay $*/
 
 static char help[] = "Newton methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -85,7 +85,7 @@ int main(int argc,char **argv)
   StepCheckCtx   checkP;               /* step-checking context */
   PetscTruth     step_check;           /* flag indicating whether we're checking
                                           candidate iterates */
-  Scalar         xp,*FF,*UU,none = -1.0;
+  PetscScalar    xp,*FF,*UU,none = -1.0;
   int            ierr,its,N = 5,i,maxit,maxf,xs,xm;
   double         atol,rtol,stol,norm;
 
@@ -277,7 +277,7 @@ int main(int argc,char **argv)
 int FormInitialGuess(Vec x)
 {
    int    ierr;
-   Scalar pfive = .50;
+   PetscScalar pfive = .50;
 
    PetscFunctionBegin;
    ierr = VecSet(&pfive,x);CHKERRQ(ierr);
@@ -305,7 +305,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   DA             da = user->da;
-  Scalar         *xx,*ff,*FF,d;
+  PetscScalar    *xx,*ff,*FF,d;
   int            i,ierr,M,xs,xm;
   Vec            xlocal;
 
@@ -388,7 +388,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
-  Scalar         *xx,d,A[3];
+  PetscScalar    *xx,d,A[3];
   int            i,j[3],ierr,M,xs,xm;
   DA             da = user->da;
 
@@ -502,7 +502,7 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
   int            ierr,i,iter,xs,xm;
   ApplicationCtx *user;
   StepCheckCtx   *check = (StepCheckCtx*) ctx;
-  Scalar         *xa,*xa_last,tmp;
+  PetscScalar    *xa,*xa_last,tmp;
   double         rdiff;
   DA             da;
 

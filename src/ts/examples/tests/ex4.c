@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.10 2001/03/23 23:24:43 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.11 2001/04/10 19:37:11 bsmith Exp balay $*/
 /*
        The Problem:
            Solve the convection-diffusion equation:
@@ -182,7 +182,7 @@ int Initial(Vec global,void *ctx)
   int m;
   int row,col;
   double x,y,dx,dy;
-  Scalar *localptr;
+  PetscScalar *localptr;
   int    i,mybase,myend,ierr,locsize;
 
   /* make the local  copies of parameters */
@@ -218,7 +218,7 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
   int i,n,*idx;
   Vec tmp_vec;
   int      ierr;
-  Scalar   *tmp;
+  PetscScalar   *tmp;
 
   /* Get the size of the vector */
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
@@ -255,7 +255,7 @@ int FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   double dx,dy;
   double xc,xl,xr,yl,yr;
   double a,epsilon;
-  Scalar *inptr,*outptr;
+  PetscScalar *inptr,*outptr;
   int i,j,len,ierr;
 
   IS from,to;
@@ -355,7 +355,7 @@ int FormJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
 {  
   Data *data = (Data*)ptr;
   Mat A = *AA;
-  Scalar v[1],one = 1.0;
+  PetscScalar v[1],one = 1.0;
   int idx[1],i,j,row,ierr;
   int m,n,mn;
 
@@ -413,7 +413,7 @@ int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *pt
 {
   Data *data = (Data*)ptr;
   Mat A = *AA;
-  Scalar v[5];
+  PetscScalar v[5];
   int idx[5],i,j,row,ierr;
   int m,n,mn;
   double dx,dy,a,epsilon,xc,xl,xr,yl,yr;

@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.30 2001/04/10 19:36:37 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.31 2001/08/06 21:16:51 bsmith Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   int          i;                   /* nonlinear solve iteration number */
   MatStructure mat_flag;        /* flag indicating structure of preconditioner matrix */
   PetscTruth   no_output;           /* flag indicating whether to surpress output */
-  Scalar       mone = -1.0;       
+  PetscScalar  mone = -1.0;       
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -307,7 +307,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
 {
   int     i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
   double  one = 1.0,lambda,temp1,temp,hx,hy;
-  Scalar  *x;
+  PetscScalar  *x;
   Vec     localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
@@ -376,7 +376,7 @@ int ComputeFunction(AppCtx *user,Vec X,Vec F)
 {
   int     ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
   double  two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
-  Scalar  u,uxx,uyy,*x,*f;
+  PetscScalar  u,uxx,uyy,*x,*f;
   Vec     localX = user->localX,localF = user->localF; 
 
   mx = user->mx;            my = user->my;            lambda = user->param;
@@ -462,7 +462,7 @@ int ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
   int     *ltog;                   /* local-to-global mapping */
   int     ierr,i,j,row,mx,my,col[5];
   int     nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
-  Scalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
+  PetscScalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);

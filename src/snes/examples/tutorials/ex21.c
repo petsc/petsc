@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.9 2001/04/10 19:37:05 bsmith Exp bsmith $*/
+/*$Id: ex21.c,v 1.10 2001/06/21 21:18:53 bsmith Exp balay $*/
 
 static char help[] = "Solves PDE optimization problem.\n\n";
 
@@ -105,7 +105,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
   UserCtx *user = (UserCtx*)dummy;
   int     ierr,xs,xm,i,N;
-  Scalar  *u,*lambda,*w,*fu,*fw,*flambda,d,h;
+  PetscScalar  *u,*lambda,*w,*fu,*fw,*flambda,d,h;
   Vec     vu,vlambda,vfu,vflambda;
 
   PetscFunctionBegin;
@@ -158,7 +158,7 @@ int Monitor(SNES snes,int its,PetscReal rnorm,void *dummy)
 {
   UserCtx *user = (UserCtx*)dummy;
   int     ierr;
-  Scalar  *w;
+  PetscScalar  *w;
   Vec     u,lambda,U,F;
 
   PetscFunctionBegin;

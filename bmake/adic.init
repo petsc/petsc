@@ -19,7 +19,7 @@
 	DAStencilType  = "typedef int DAStencilType;"
         ISColoring     = "typedef int ISColoring;"
 	PetscTruth     = "typedef int PetscTruth;"
-	Scalar         = "typedef double Scalar;"
+	PetscScalar    = "typedef double PetscScalar;"
         DALocalInfo    = "typedef struct {int dim,dof,sw;DAPeriodicType pt;DAStencilType st;int mx,my,mz;int xs,ys,zs;int xm,ym,zm;int gxs,gys,gzs;int gxm,gym,gzm; DA da;} DALocalInfo;"
         MatStencil     = "typedef struct {int k,j,i,c;} MatStencil;"
         PassiveReal    = "typedef double PassiveReal;"

@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.10 2001/04/10 19:37:27 bsmith Exp bsmith $*/
+/*$Id: ex16.c,v 1.11 2001/08/06 21:18:43 bsmith Exp balay $*/
 
 static char help[] = "Tests VecPack routines.\n\n";
 
@@ -10,7 +10,7 @@ static char help[] = "Tests VecPack routines.\n\n";
 int main(int argc,char **argv)
 {
   int         ierr,nredundant1 = 5,nredundant2 = 2,rank,i,*ridx1,*ridx2,*lidx1,*lidx2,nlocal;
-  Scalar      *redundant1,*redundant2;
+  PetscScalar *redundant1,*redundant2;
   VecPack     packer;
   Vec         global,local1,local2;
   PF          pf;

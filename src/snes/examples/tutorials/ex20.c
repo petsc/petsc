@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.17 2001/06/21 21:18:53 bsmith Exp bsmith $ */
+/* $Id: ex20.c,v 1.18 2001/08/06 21:17:42 bsmith Exp balay $ */
 
 
 static char help[] ="Nonlinear Radiative Transport PDE with multigrid in 3d.\n\
@@ -132,7 +132,7 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   AppCtx  *user = (AppCtx*)dmmg->user;
   int     i,j,k,ierr,xs,ys,xm,ym,zs,zm;
   double  tleft = user->tleft;
-  Scalar  ***x;
+  PetscScalar  ***x;
 
   PetscFunctionBegin;
 
@@ -159,11 +159,11 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
   DMMG    dmmg = (DMMG)ptr;
   AppCtx  *user = (AppCtx*)dmmg->user;
   int     ierr,i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
-  Scalar  zero = 0.0,one = 1.0;
-  Scalar  hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
-  Scalar  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
-  Scalar  tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu;
-  Scalar  ***x,***f;
+  PetscScalar  zero = 0.0,one = 1.0;
+  PetscScalar  hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
+  PetscScalar  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
+  PetscScalar  tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu;
+  PetscScalar  ***x,***f;
   Vec     localX;
 
   PetscFunctionBegin;
@@ -471,17 +471,17 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 #define __FUNCT__ "FormJacobian"
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 {
-  DMMG       dmmg = (DMMG)ptr;
-  AppCtx     *user = (AppCtx*)dmmg->user;
-  int        ierr,i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
-  Scalar     zero = 0.0,one = 1.0;
-  Scalar     hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
-  Scalar     t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
-  Scalar     tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu,v[7],bm1,coef;
-  Scalar     ***x,bn,bs,be,bw,bu,bd,gn,gs,ge,gw,gu,gd;
-  Vec        localX;
-  MatStencil c[7],row;
-  Mat        jac = *B;
+  DMMG         dmmg = (DMMG)ptr;
+  AppCtx       *user = (AppCtx*)dmmg->user;
+  int          ierr,i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
+  PetscScalar   zero = 0.0,one = 1.0;
+  PetscScalar   hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
+  PetscScalar   t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
+  PetscScalar   tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu,v[7],bm1,coef;
+  PetscScalar   ***x,bn,bs,be,bw,bu,bd,gn,gs,ge,gw,gu,gd;
+  Vec          localX;
+  MatStencil   c[7],row;
+  Mat          jac = *B;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex70.c,v 1.11 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex70.c,v 1.12 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests Vec/MatSetValues() with negative row and column indices.\n\n"; 
 
@@ -11,7 +11,7 @@ int main(int argc,char **args)
 {
   Mat         C; 
   int         i[2],j[2],ierr;
-  Scalar      v[] = {1.0,2.0,3.0,4.0};
+  PetscScalar v[] = {1.0,2.0,3.0,4.0};
   Vec         x;
 
   PetscInitialize(&argc,&args,(char *)0,help);

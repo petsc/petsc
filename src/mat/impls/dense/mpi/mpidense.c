@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.156 2001/07/20 21:19:32 bsmith Exp bsmith $*/
+/*$Id: mpidense.c,v 1.157 2001/08/06 21:15:13 bsmith Exp balay $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -14,7 +14,7 @@ int MatGetDiagonalBlock_MPIDense(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *B)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense*)A->data;
   int          m = A->m,rstart = mdn->rstart,ierr;
-  PetscScalar       *array;
+  PetscScalar  *array;
   MPI_Comm     comm;
 
   PetscFunctionBegin;
@@ -119,7 +119,7 @@ static int MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
   Mat_MPIDense *mat = (Mat_MPIDense*)A->data,*newmatd;
   Mat_SeqDense *lmat = (Mat_SeqDense*)mat->A->data;
   int          i,j,ierr,*irow,*icol,rstart,rend,nrows,ncols,nlrows,nlcols;
-  PetscScalar       *av,*bv,*v = lmat->v;
+  PetscScalar  *av,*bv,*v = lmat->v;
   Mat          newmat;
 
   PetscFunctionBegin;
@@ -204,7 +204,7 @@ int MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIDense *mdn=(Mat_MPIDense*)mat->data;
   int          i,n,ierr,*row,*col,flg,j,rstart,ncols;
-  PetscScalar       *val;
+  PetscScalar  *val;
   InsertMode   addv=mat->insertmode;
 
   PetscFunctionBegin;
@@ -420,7 +420,7 @@ int MatMultTranspose_MPIDense(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIDense *a = (Mat_MPIDense*)A->data;
   int          ierr;
-  PetscScalar       zero = 0.0;
+  PetscScalar  zero = 0.0;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,yy);CHKERRQ(ierr);
@@ -452,7 +452,7 @@ int MatGetDiagonal_MPIDense(Mat A,Vec v)
   Mat_MPIDense *a = (Mat_MPIDense*)A->data;
   Mat_SeqDense *aloc = (Mat_SeqDense*)a->A->data;
   int          ierr,len,i,n,m = A->m,radd;
-  PetscScalar       *x,zero = 0.0;
+  PetscScalar  *x,zero = 0.0;
   
   PetscFunctionBegin;
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
@@ -553,7 +553,7 @@ static int MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     /* assemble the entire matrix onto first processor. */
     Mat          A;
     int          M = mat->M,N = mat->N,m,row,i,nz,*cols;
-    PetscScalar       *vals;
+    PetscScalar  *vals;
 
     if (!rank) {
       ierr = MatCreateMPIDense(mat->comm,M,N,M,N,PETSC_NULL,&A);CHKERRQ(ierr);
@@ -743,7 +743,7 @@ int MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense*)A->data;
   Mat_SeqDense *mat = (Mat_SeqDense*)mdn->A->data;
-  PetscScalar       *l,*r,x,*v;
+  PetscScalar  *l,*r,x,*v;
   int          ierr,i,j,s2a,s3a,s2,s3,m=mdn->A->m,n=mdn->A->n;
 
   PetscFunctionBegin;
@@ -785,7 +785,7 @@ int MatNorm_MPIDense(Mat A,NormType type,PetscReal *norm)
   Mat_SeqDense *mat = (Mat_SeqDense*)mdn->A->data;
   int          ierr,i,j;
   PetscReal    sum = 0.0;
-  PetscScalar       *v = mat->v;
+  PetscScalar  *v = mat->v;
 
   PetscFunctionBegin;
   if (mdn->size == 1) {
@@ -840,7 +840,7 @@ int MatTranspose_MPIDense(Mat A,Mat *matout)
   Mat          B;
   int          M = A->M,N = A->N,m,n,*rwork,rstart = a->rstart;
   int          j,i,ierr;
-  PetscScalar       *v;
+  PetscScalar  *v;
 
   PetscFunctionBegin;
   if (!matout && M != N) {
@@ -1167,9 +1167,9 @@ static int MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
 #define __FUNCT__ "MatLoad_MPIDense_DenseInFile"
 int MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M,int N,Mat *newmat)
 {
-  int        *rowners,i,size,rank,m,ierr,nz,j;
-  PetscScalar     *array,*vals,*vals_ptr;
-  MPI_Status status;
+  int          *rowners,i,size,rank,m,ierr,nz,j;
+  PetscScalar  *array,*vals,*vals_ptr;
+  MPI_Status   status;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -1235,7 +1235,7 @@ EXTERN_C_BEGIN
 int MatLoad_MPIDense(PetscViewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;
-  PetscScalar       *vals,*svals;
+  PetscScalar  *vals,*svals;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
   int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;

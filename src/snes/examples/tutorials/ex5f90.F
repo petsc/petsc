@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.41 2001/06/21 21:18:53 bsmith Exp bsmith $";
+! "$Id: ex5f90.F,v 1.42 2001/08/06 21:17:42 bsmith Exp balay $";
 !
 !  Description: Solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -94,7 +94,7 @@
       type (userctx) user
 
 !  Declarations for use with local arrays:
-      Scalar,pointer :: lx_v(:),lf_v(:)
+      PetscScalar,pointer :: lx_v(:),lf_v(:)
       Vec            localX
 
 !  Scatter ghost points to local vector, using the 2-step process
@@ -372,7 +372,7 @@
       integer  ierr
       
 !  Declarations for use with local arrays:
-      Scalar,pointer :: lx_v(:)
+      PetscScalar,pointer :: lx_v(:)
       Vec               localX
 
       ierr = 0
@@ -435,12 +435,12 @@
 
 !  Input/output variables:
       type (userctx)         user
-      Scalar  x(user%gxs:user%gxe,user%gys:user%gye)
+      PetscScalar  x(user%gxs:user%gxe,user%gys:user%gye)
       integer ierr
 
 !  Local variables:
       integer  i,j,hxdhy,hydhx
-      Scalar   temp1,temp,hx,hy,sc,one
+      PetscScalar   temp1,temp,hx,hy,sc,one
 
 !  Set parameters
 
@@ -491,13 +491,13 @@
 
 !  Input/output variables:
       type (userctx) user
-      Scalar   x(user%gxs:user%gxe,user%gys:user%gye)
-      Scalar   f(user%xs:user%xe,user%ys:user%ye)
+      PetscScalar   x(user%gxs:user%gxe,user%gys:user%gye)
+      PetscScalar   f(user%xs:user%xe,user%ys:user%ye)
       integer  ierr
 
 !  Local variables:
-      Scalar   two,one,hx,hy,hxdhy,hydhx,sc
-      Scalar   u,uxx,uyy
+      PetscScalar   two,one,hx,hy,hxdhy,hydhx,sc
+      PetscScalar   u,uxx,uyy
       integer  i,j
 
       one    = 1.0
@@ -600,7 +600,7 @@
       integer      ierr
 
 !  Declarations for use with local arrays:
-      Scalar,pointer :: lx_v(:)
+      PetscScalar,pointer :: lx_v(:)
       Vec            localX
 
 !  Scatter ghost points to local vector, using the 2-step process
@@ -713,13 +713,13 @@
 
 !  Input/output variables:
       type (userctx) user
-      Scalar   x(user%gxs:user%gxe,user%gys:user%gye)
+      PetscScalar   x(user%gxs:user%gxe,user%gys:user%gye)
       Mat      jac,jac_prec
       integer  ierr
 
 !  Local variables:
       integer  row,col(5),i,j
-      Scalar   two,one,hx,hy,hxdhy,hydhx,sc,v(5)
+      PetscScalar   two,one,hx,hy,hxdhy,hydhx,sc,v(5)
 
 !  Set parameters
 

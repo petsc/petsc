@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.175 2001/07/26 18:23:36 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.176 2001/08/06 21:18:33 bsmith Exp balay $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -194,7 +194,7 @@ int VecMatlabEnginePut_DA2d(PetscObject obj,void *engine)
 {
   int     ierr,n,m;
   Vec     vec = (Vec)obj;
-  Scalar  *array;
+  PetscScalar  *array;
   mxArray *mat;
   DA      da;
 
@@ -1465,7 +1465,7 @@ int DAFormFunctioniTest1(DA da,void *w)
 {
   Vec         vu,fu,fui;
   int         ierr,i,n;
-  Scalar      *ui,mone = -1.0;
+  PetscScalar *ui,mone = -1.0;
   PetscRandom rnd;
   PetscReal   norm;
 
@@ -1556,7 +1556,7 @@ int DAFormFunctioni1(DA da,int i,Vec vu,PetscScalar *vfu,void *w)
 */
 int DAGetDiagonal_MFFD(DA da,Vec U,Vec a)
 {
-  Scalar       h,*aa,*ww,v;
+  PetscScalar  h,*aa,*ww,v;
   PetscReal    epsilon = 1.e-8,umin = 1.e-6;
   int          ierr,gI,nI;
   MatStencil   stencil;
@@ -1620,7 +1620,7 @@ EXTERN_C_END
 int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 {
   int         ierr,gtdof,tdof;
-  Scalar      *ustart;
+  PetscScalar *ustart;
   DALocalInfo info;
   void        *ad_u,*ad_f,*ad_ustart,*ad_fstart;
   ISColoring  iscoloring;
@@ -1677,7 +1677,7 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 int DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
 {
   int         ierr,i,gtdof,tdof;
-  Scalar      *avu,*av,*af,*ad_vustart,*ad_fstart;
+  PetscScalar *avu,*av,*af,*ad_vustart,*ad_fstart;
   DALocalInfo info;
   void        *ad_vu,*ad_f;
 
@@ -1793,7 +1793,7 @@ int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
 {
   int         i,ierr,Nc,*color,N;
   DALocalInfo info;
-  Scalar      *u,*g_u,*g_f,*f,*p_u;
+  PetscScalar *u,*g_u,*g_f,*f,*p_u;
   ISColoring  iscoloring;
   void        (*lf)(int *,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*) = 
               (void (*)(int *,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*))*da->adifor_lf;
@@ -1901,7 +1901,7 @@ int DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,Vec f,void *w)
 int DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec v,Vec f,void *w)
 {
   int         ierr;
-  Scalar      *au,*av,*af,*awork;
+  PetscScalar *au,*av,*af,*awork;
   Vec         work;
   DALocalInfo info;
   void        (*lf)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,int*) = 

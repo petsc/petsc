@@ -1,4 +1,4 @@
-/*$Id: ex81.c,v 1.8 2001/04/10 19:35:44 bsmith Exp balay $*/
+/*$Id: ex81.c,v 1.9 2001/04/18 20:48:09 balay Exp balay $*/
 
 static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing format.\n\
   -fout <output_file> : file to load.\n\
@@ -22,7 +22,7 @@ int main(int argc,char **args)
   char        bfile[512],hbfile[512]; 
   PetscViewer fd;
   Mat_SeqAIJ  *a;
-  Scalar      *aa,*xx;
+  PetscScalar *aa,*xx;
   FILE        *file;
   char        head[81];
 

@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.28 2001/07/20 21:25:24 bsmith Exp bsmith $*/
+/*$Id: snesmfjdef.c,v 1.29 2001/08/06 21:17:13 bsmith Exp balay $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -65,7 +65,7 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
 {
   MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
   PetscReal        norm,sum,umin = hctx->umin;
-  Scalar           dot;
+  PetscScalar      dot;
   int              ierr;
 
   PetscFunctionBegin;

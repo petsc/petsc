@@ -1,5 +1,5 @@
 !
-!    "$Id: ex19.F,v 1.35 2000/09/27 20:06:18 bsmith Exp bsmith $";
+!    "$Id: ex19.F,v 1.36 2001/01/15 21:45:13 bsmith Exp balay $";
 !
       program main
 #include "include/finclude/petsc.h"
@@ -9,7 +9,7 @@
 !  to vectors.
 !
        integer          n,ierr,flg
-       Scalar           one,two,three,dot
+       PetscScalar      one,two,three,dot
        double precision norm,rdot
        Vec              x,y,w
 

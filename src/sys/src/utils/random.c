@@ -1,4 +1,4 @@
-/*$Id: random.c,v 1.58 2001/04/06 19:24:30 balay Exp bsmith $*/
+/*$Id: random.c,v 1.59 2001/08/06 21:14:16 bsmith Exp balay $*/
 /*
     This file contains routines for interfacing to random number generators.
     This provides more than just an interface to some system random number
@@ -19,10 +19,10 @@
 /* Private data */
 struct _p_PetscRandom {
   PETSCHEADER(int)
-  unsigned long seed;
-  PetscScalar        low,width;       /* lower bound and width of the interval over
-                                     which the random numbers are distributed */
-  PetscTruth    iset;             /* if true, indicates that the user has set the interval */
+  unsigned    long seed;
+  PetscScalar low,width;       /* lower bound and width of the interval over
+                                  which the random numbers are distributed */
+  PetscTruth  iset;             /* if true, indicates that the user has set the interval */
   /* array for shuffling ??? */
 };
 

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.13 2001/03/23 23:25:13 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.14 2001/04/10 19:37:31 bsmith Exp balay $*/
 
 static char help[] = "Tests DAGlobalToNaturalAllCreate() using contour plotting for 2d DAs.\n\n";
 
@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   DA             da;
   PetscViewer    viewer;
   Vec            localall,global;
-  Scalar         value,*vlocal;
+  PetscScalar    value,*vlocal;
   DAPeriodicType ptype = DA_NONPERIODIC;
   DAStencilType  stype = DA_STENCIL_BOX;
   VecScatter     tolocalall,fromlocalall;

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.37 2001/03/08 21:43:02 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.38 2001/03/23 23:24:45 balay Exp balay $*/
 static char help[] ="Solves a time-dependent nonlinear PDE. Uses implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
@@ -230,7 +230,7 @@ int main(int argc,char **argv)
 */ 
 int InitialConditions(Vec u,AppCtx *appctx)
 {
-  Scalar *u_localptr,h = appctx->h,x;
+  PetscScalar *u_localptr,h = appctx->h,x;
   int    i,mybase,myend,ierr;
 
   /* 
@@ -291,7 +291,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
 */
 int ExactSolution(double t,Vec solution,AppCtx *appctx)
 {
-  Scalar *s_localptr,h = appctx->h,x;
+  PetscScalar *s_localptr,h = appctx->h,x;
   int    i,mybase,myend,ierr;
 
   /* 
@@ -344,7 +344,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   AppCtx   *appctx = (AppCtx*) ctx;   /* user-defined application context */
   int      ierr;
   double   en2,en2s,enmax;
-  Scalar   mone = -1.0;
+  PetscScalar   mone = -1.0;
   PetscDraw     draw;
 
   /*
@@ -427,7 +427,7 @@ int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
   Vec    local_in = appctx->u_local;    /* local ghosted input vector */
   Vec    localwork = appctx->localwork; /* local ghosted work vector */
   int    ierr,i,localsize,rank,size; 
-  Scalar *copyptr,*localptr,sc;
+  PetscScalar *copyptr,*localptr,sc;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Get ready for local function computations
@@ -541,7 +541,7 @@ int RHSJacobian(TS ts,double t,Vec global_in,Mat *AA,Mat *BB,MatStructure *str,v
   AppCtx *appctx = (AppCtx*)ctx;     /* user-defined application context */
   Vec    local_in = appctx->u_local;   /* local ghosted input vector */
   DA     da = appctx->da;              /* distributed array */
-  Scalar v[3],*localptr,sc;
+  PetscScalar v[3],*localptr,sc;
   int    ierr,i,mstart,mend,mstarts,mends,idx[3],is;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

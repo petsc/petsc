@@ -1,4 +1,4 @@
-/*$Id: ex38.c,v 1.15 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex38.c,v 1.16 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests MatSetValues() for column oriented storage.\n\n"; 
 
@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Mat         C; 
   int         i,n = 5,midx[3],nidx[2],ierr;
   PetscTruth  flg;
-  Scalar      v[6];
+  PetscScalar v[6];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.10 2001/03/23 23:21:30 balay Exp bsmith $*/
+/*$Id: ex21.c,v 1.11 2001/04/10 19:35:02 bsmith Exp balay $*/
 
 static char help[] = "Tests VecMax() with index.\n\
   -n <length> : vector length\n\n";
@@ -11,7 +11,7 @@ static char help[] = "Tests VecMax() with index.\n\
 int main(int argc,char **argv)
 {
   int           n = 5,ierr,idx;
-  Scalar        value;
+  PetscScalar   value;
   Vec           x;
   PetscRandom   rand;
 

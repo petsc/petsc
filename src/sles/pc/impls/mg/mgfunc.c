@@ -1,4 +1,4 @@
-/*$Id: mgfunc.c,v 1.39 2001/01/15 21:46:52 bsmith Exp balay $*/
+/*$Id: mgfunc.c,v 1.40 2001/03/23 23:23:10 balay Exp balay $*/
 
 #include "src/sles/pc/impls/mg/mgimpl.h"       /*I "petscsles.h" I*/
                           /*I "petscmg.h"   I*/
@@ -27,7 +27,7 @@
 int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 {
   int    ierr;
-  Scalar mone = -1.0;
+  PetscScalar mone = -1.0;
 
   PetscFunctionBegin;
   ierr = MatMult(mat,x,r);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.44 2001/04/25 15:12:21 bsmith Exp bsmith $*/
+/*$Id: ex74.c,v 1.45 2001/08/06 21:16:03 bsmith Exp balay $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format.\n";
 
@@ -16,8 +16,8 @@ int main(int argc,char **args)
   int     lf;           /* level of fill for icc */
   int     *cols1,*cols2;
   double  norm1,norm2,tol=1.e-10,fill;
-  Scalar  neg_one = -1.0,four=4.0,value[3],alpha=0.1;  
-  Scalar  *vr1,*vr2,*vr1_wk,*vr2_wk;
+  PetscScalar  neg_one = -1.0,four=4.0,value[3],alpha=0.1;  
+  PetscScalar  *vr1,*vr2,*vr1_wk,*vr2_wk;
   IS      perm, isrow, iscol;
   PetscRandom      rand;
   PetscTruth       getrow=PETSC_FALSE;

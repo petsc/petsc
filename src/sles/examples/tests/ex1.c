@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.15 2001/01/23 20:56:37 balay Exp balay $*/
+/*$Id: ex1.c,v 1.16 2001/03/23 23:23:50 balay Exp balay $*/
 
 static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
 
@@ -12,7 +12,7 @@ int main(int argc,char **args)
   int         ierr,N = 0,its;
   Vec         u,b,x;
   SLES        sles;
-  Scalar      zero = 0.0,mone = -1.0;
+  PetscScalar zero = 0.0,mone = -1.0;
   double      norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);

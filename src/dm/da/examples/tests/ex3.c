@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.46 2001/01/23 20:58:05 balay Exp balay $*/
+/*$Id: ex3.c,v 1.47 2001/03/23 23:25:07 balay Exp balay $*/
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscViewer viewer,viewer_private;
   PetscDraw   draw;
   Vec         local,global,copy;
-  Scalar      *localptr,*copyptr;
+  PetscScalar *localptr,*copyptr;
   double      a,h,k;
   PetscTruth  flg;
  

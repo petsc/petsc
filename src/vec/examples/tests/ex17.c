@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.35 2001/03/23 23:21:30 balay Exp bsmith $*/
+/*$Id: ex17.c,v 1.36 2001/08/06 21:14:55 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
 this case each local vector is as long as the entire parallel vector.\n\n";
@@ -12,7 +12,7 @@ int main(int argc,char **argv)
 {
   int           n = 5,ierr;
   int           size,rank,N,low,high,iglobal,i;
-  Scalar        value,zero = 0.0;
+  PetscScalar   value,zero = 0.0;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx;

@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.46 2001/03/23 23:25:07 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.47 2001/04/10 19:37:27 bsmith Exp balay $*/
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   DA             da;
   PetscViewer    viewer;
   Vec            local,global;
-  Scalar         value;
+  PetscScalar    value;
   DAPeriodicType wrap = DA_XYPERIODIC;
   DAStencilType  stencil_type = DA_STENCIL_BOX;
   AO             ao;

@@ -1,4 +1,4 @@
-/*$Id: ex65.c,v 1.12 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex65.c,v 1.13 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Saves a rectangular sparse matrix to disk.\n\n";
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat         A;
   int         m = 100,n = 11,ierr,js[11],i,j,cnt;
-  Scalar      values[11];
+  PetscScalar values[11];
   PetscViewer view;
 
   PetscInitialize(&argc,&args,(char *)0,help);

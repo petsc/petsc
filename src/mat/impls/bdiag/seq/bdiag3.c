@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.31 2001/04/10 19:35:32 bsmith Exp bsmith $*/
+/*$Id: bdiag3.c,v 1.32 2001/08/06 21:15:30 bsmith Exp balay $*/
 
 /* Block diagonal matrix format */
 
@@ -212,7 +212,7 @@ int MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          d,i,j,k,nd = a->nd,bs = a->bs,diag,kshift,kloc,len,ierr;
-  PetscScalar       *dv;
+  PetscScalar  *dv;
 
   PetscFunctionBegin;
   ierr = PetscMemzero(tmp,A->n*sizeof(PetscReal));CHKERRQ(ierr);
@@ -268,7 +268,7 @@ int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *norm)
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscReal    sum = 0.0,*tmp;
   int          ierr,d,i,j,k,nd = a->nd,bs = a->bs,diag,kshift,kloc,len;
-  PetscScalar       *dv;
+  PetscScalar  *dv;
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
@@ -366,7 +366,7 @@ int MatTranspose_SeqBDiag(Mat A,Mat *matout)
   Mat          tmat;
   int          i,j,k,d,ierr,nd = a->nd,*diag = a->diag,*diagnew;
   int          bs = a->bs,kshift,shifto,shiftn;
-  PetscScalar       *dwork,*dvnew;
+  PetscScalar  *dwork,*dvnew;
 
   PetscFunctionBegin;
   ierr = PetscMalloc((nd+1)*sizeof(int),&diagnew);CHKERRQ(ierr);
@@ -434,7 +434,7 @@ int MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          i,ict,fd,*col_lens,*cval,*col,ierr,nz;
-  PetscScalar       *anonz,*val;
+  PetscScalar  *anonz,*val;
 
   PetscFunctionBegin;
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
@@ -480,7 +480,7 @@ int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
   Mat_SeqBDiag      *a = (Mat_SeqBDiag*)A->data;
   char              *name;
   int               ierr,*col,i,j,len,diag,nr = A->m,bs = a->bs,iprint,nz;
-  PetscScalar            *val,*dv,zero = 0.0;
+  PetscScalar       *val,*dv,zero = 0.0;
   PetscViewerFormat format;
 
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.20 2001/06/21 21:18:53 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.21 2001/08/06 21:17:42 bsmith Exp balay $*/
 
 static char help[] = "Solves PDE optimization problem.\n\n";
 
@@ -105,8 +105,8 @@ int main(int argc,char **argv)
 }
 
 typedef struct {
-  Scalar u;
-  Scalar lambda;
+  PetscScalar u;
+  PetscScalar lambda;
 } ULambda;
  
 /*
@@ -121,7 +121,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   DMMG    dmmg = (DMMG)dummy;
   int     ierr,xs,xm,i,N,nredundant;
   ULambda *u_lambda,*fu_lambda;
-  Scalar  d,h,*w,*fw;
+  PetscScalar  d,h,*w,*fw;
   Vec     vu_lambda,vfu_lambda;
   DA      da;
   VecPack packer = (VecPack)dmmg->dm;
@@ -186,7 +186,7 @@ int ExactSolution(VecPack packer,Vec U)
   PF      pf;
   Vec     x;
   Vec     u_global;
-  Scalar  *w;
+  PetscScalar  *w;
   DA      da;
   int     m,ierr;
 
@@ -214,7 +214,7 @@ int Monitor(SNES snes,int its,PetscReal rnorm,void *dummy)
   DMMG      dmmg = (DMMG)dummy;
   UserCtx   *user = (UserCtx*)dmmg->user;
   int       ierr,m,N;
-  Scalar    mone = -1.0,*w,*dw;
+  PetscScalar    mone = -1.0,*w,*dw;
   Vec       u_lambda,U,F,Uexact;
   VecPack   packer = (VecPack)dmmg->dm;
   PetscReal norm;

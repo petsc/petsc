@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.50 2001/06/21 21:18:27 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.51 2001/08/06 21:16:53 bsmith Exp balay $*/
 
 static char help[] = "The solution of 2 different linear systems with different linear solvers.\n\
 Also, this example illustrates the repeated\n\
@@ -32,17 +32,17 @@ extern int MyKSPMonitor(KSP,int,double,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec        x1,b1,x2,b2; /* solution and RHS vectors for systems #1 and #2 */
-  Vec        u;              /* exact solution vector */
-  Mat        C1,C2;         /* matrices for systems #1 and #2 */
-  SLES       sles1,sles2;   /* SLES contexts for systems #1 and #2 */
-  KSP        ksp1;           /* KSP context for system #1 */
-  int        ntimes = 3;     /* number of times to solve the linear systems */
-  int        CHECK_ERROR;    /* event number for error checking */
-  int        ldim,ierr,low,high,iglobal,Istart,Iend,Istart2,Iend2;
-  int        I,J,i,j,m = 3,n = 2,rank,size,its,t;
-  PetscTruth flg;
-  Scalar     v;
+  Vec          x1,b1,x2,b2; /* solution and RHS vectors for systems #1 and #2 */
+  Vec          u;              /* exact solution vector */
+  Mat          C1,C2;         /* matrices for systems #1 and #2 */
+  SLES         sles1,sles2;   /* SLES contexts for systems #1 and #2 */
+  KSP          ksp1;           /* KSP context for system #1 */
+  int          ntimes = 3;     /* number of times to solve the linear systems */
+  int          CHECK_ERROR;    /* event number for error checking */
+  int          ldim,ierr,low,high,iglobal,Istart,Iend,Istart2,Iend2;
+  int          I,J,i,j,m = 3,n = 2,rank,size,its,t;
+  PetscTruth   flg;
+  PetscScalar  v;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -384,7 +384,7 @@ int main(int argc,char **args)
 */
 int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
 {
-  Scalar none = -1.0;
+  PetscScalar none = -1.0;
   double norm;
   int    ierr;
 

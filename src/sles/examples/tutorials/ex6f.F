@@ -1,5 +1,5 @@
 !
-!    "$Id: ex6f.F,v 1.34 2001/01/19 23:21:44 balay Exp bsmith $";
+!    "$Id: ex6f.F,v 1.35 2001/06/21 21:18:27 bsmith Exp balay $";
 !
 !  Description: This example demonstrates repeated linear solves as
 !  well as the use of different preconditioner and linear system
@@ -44,7 +44,7 @@
       SLES    sles
       integer i,j,II,JJ,ierr,m,n
       integer Istart,Iend,flg,nsteps
-      Scalar  v
+      PetscScalar  v
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       m      = 3
@@ -162,7 +162,7 @@
 !      A - linear system matrix
 !      A2 - preconditioning matrix
 !
-      Scalar  v,val
+      PetscScalar  v,val
       integer II,ierr,Istart,Iend,count,nsteps,its
       Mat     A
       SLES    sles

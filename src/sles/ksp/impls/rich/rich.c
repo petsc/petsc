@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.101 2001/03/23 23:23:40 balay Exp bsmith $*/
+/*$Id: rich.c,v 1.102 2001/08/06 21:16:46 bsmith Exp balay $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -25,7 +25,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   int             i,maxit,ierr;
   MatStructure    pflag;
   PetscReal       rnorm = 0.0;
-  Scalar          scale,mone = -1.0;
+  PetscScalar     scale,mone = -1.0;
   Vec             x,b,r,z;
   Mat             Amat,Pmat;
   KSP_Richardson  *richardsonP = (KSP_Richardson*)ksp->data;

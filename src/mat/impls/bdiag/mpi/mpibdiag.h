@@ -1,4 +1,4 @@
-/* $Id: mpibdiag.h,v 1.17 2000/01/11 21:00:50 bsmith Exp bsmith $ */
+/* $Id: mpibdiag.h,v 1.18 2000/10/24 20:25:50 bsmith Exp balay $ */
 
 #include "src/mat/impls/bdiag/seq/bdiag.h"
 
@@ -26,7 +26,7 @@ typedef struct {
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   int           nsends,nrecvs;         /* numbers of sends and receives */
-  Scalar        *svalues,*rvalues;     /* sending and receiving data */
+  PetscScalar   *svalues,*rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
   int           *garray;                /* work array */
   PetscTruth    roworiented;            /* indicates MatSetValues() input default 1*/

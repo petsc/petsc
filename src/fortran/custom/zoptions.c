@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.78 2001/06/21 21:19:50 bsmith Exp bsmith $*/
+/*$Id: zoptions.c,v 1.79 2001/08/06 21:19:11 bsmith Exp balay $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -109,7 +109,7 @@ void PETSC_STDCALL petscoptionsgetlogical_(CHAR pre PETSC_MIXED_LEN(len1),CHAR n
 }
 
 void PETSC_STDCALL petscoptionsgetreal_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    real *dvalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                    double *dvalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -121,7 +121,7 @@ void PETSC_STDCALL petscoptionsgetreal_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name
 }
 
 void PETSC_STDCALL petscoptionsgetrealarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                real *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                double *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -283,11 +283,11 @@ int PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *a
   
   if (shift) { 
     /* 
-        Fortran and C not Scalar aligned,recover by copying values into
+        Fortran and C not PetscScalar aligned,recover by copying values into
         memory that is aligned with the Fortran
     */
     int                  ierr;
-    Scalar               *work;
+    PetscScalar          *work;
     PetscObjectContainer container;
 
     ierr = PetscMalloc((N+1)*sizeof(PetscScalar),&work);CHKERRQ(ierr); 
@@ -340,7 +340,7 @@ int PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,long addr,in
 {
   int                  ierr,shift;
   PetscObjectContainer container;
-  Scalar               *tlx;
+  PetscScalar          *tlx;
 
   ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {

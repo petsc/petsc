@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.68 2001/04/10 19:37:04 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.69 2001/08/06 21:17:36 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained minimization problems in parallel.  This example is based on the\n\
 Elastic-Plastic Torsion (dept) problem from the MINPACK-2 test suite.\n\
@@ -20,7 +20,7 @@ The command line options are:\n\
       int     ndim;           /* problem dimension */
       int     number;         /* test problem number */
       Vec     s,y,xvec;       /* work space for computing Hessian */
-      Scalar  hx,hy;    
+      PetscScalar  hx,hy;    
       Vec     localX,localS; /* ghosted local vector */
       DA      da;             /* distributed array data structure */
    } AppCtx;
@@ -169,7 +169,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 {
   AppCtx   *user = (AppCtx*)ptr;
   int      i,j,ierr,ndim,xs,ys, xm,ym,rstart,rend,ldim,iglob;
-  Scalar   *y,zero = 0.0,one = 1.0;
+  PetscScalar   *y,zero = 0.0,one = 1.0;
 
   ierr = MatZeroEntries(*H);CHKERRQ(ierr);
   ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
@@ -234,7 +234,7 @@ int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 int FormInitialGuess(AppCtx *user,Vec X)
 {
   int    ierr,i,j,k,nx = user->mx,ny = user->my;
-  Scalar hx = user->hx,hy = user->hy,temp,*x;
+  PetscScalar hx = user->hx,hy = user->hy,temp,*x;
   int    xs,ys,xm,ym,Xm,Ym,Xs,Ys,xe,ye;
 
   /* Get local vector (including ghost points) */
@@ -267,9 +267,9 @@ int FormInitialGuess(AppCtx *user,Vec X)
 #define __FUNCT__ "EvalFunctionGradient"
 int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppCtx *user)
 {
-  Scalar hx = user->hx,hy = user->hy,area,three = 3.0,p5 = 0.5,cdiv3;
-  Scalar zero = 0.0,v,vb,vl,vr,vt,dvdx,dvdy,flin = 0.0,fquad = 0.0;
-  Scalar val,*x,szero = 0.0,floc;
+  PetscScalar hx = user->hx,hy = user->hy,area,three = 3.0,p5 = 0.5,cdiv3;
+  PetscScalar zero = 0.0,v,vb,vl,vr,vt,dvdx,dvdy,flin = 0.0,fquad = 0.0;
+  PetscScalar val,*x,szero = 0.0,floc;
   Vec    localX = user->localX;
   int    xs,ys,xm,ym,Xm,Ym,Xs,Ys,xe,ye,xsm,ysm,xep,yep;
   int    ierr,nx = user->mx,ny = user->my,ind,i,j,k,*ltog,nloc; 
@@ -396,8 +396,8 @@ int HessianProductMat(Mat mat,Vec svec,Vec y)
 int HessianProduct(void *ptr,Vec svec,Vec y)
 {
   AppCtx *user = (AppCtx*)ptr;
-  Scalar p5 = 0.5,one = 1.0,zero = 0.0,hx,hy;
-  Scalar val,area,*x,*s,szero = 0.0,v,vb,vl,vr,vt,hxhx,hyhy;
+  PetscScalar p5 = 0.5,one = 1.0,zero = 0.0,hx,hy;
+  PetscScalar val,area,*x,*s,szero = 0.0,v,vb,vl,vr,vt,hxhx,hyhy;
   Vec    localX,localS;
   int    xs,ys,xm,ym,Xm,Ym,Xs,Ys,xe,ye,xsm,ysm,xep,yep;
   int    nx,ny,i,j,k,ierr,ind,nloc,*ltog;

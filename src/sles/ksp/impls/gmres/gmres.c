@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.174 2001/07/03 03:34:41 curfman Exp bsmith $*/
+/*$Id: gmres.c,v 1.175 2001/08/06 21:16:44 bsmith Exp balay $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -122,11 +122,11 @@ int    KSPSetUp_GMRES(KSP ksp)
 #define __FUNCT__ "GMREScycle"
 int GMREScycle(int *itcount,KSP ksp)
 {
-  KSP_GMRES  *gmres = (KSP_GMRES *)(ksp->data);
-  PetscReal  res_norm,res,hapbnd,tt;
-  Scalar     tmp;
-  int        ierr,it = 0, max_k = gmres->max_k,max_it = ksp->max_it;
-  PetscTruth hapend = PETSC_FALSE;
+  KSP_GMRES    *gmres = (KSP_GMRES *)(ksp->data);
+  PetscReal    res_norm,res,hapbnd,tt;
+  PetscScalar  tmp;
+  int          ierr,it = 0, max_k = gmres->max_k,max_it = ksp->max_it;
+  PetscTruth   hapend = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr    = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
@@ -294,7 +294,7 @@ int KSPDestroy_GMRES(KSP ksp)
 #define __FUNCT__ "BuildGmresSoln"
 static int BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
 {
-  Scalar    tt,zero = 0.0,one = 1.0;
+  PetscScalar    tt,zero = 0.0,one = 1.0;
   int       ierr,ii,k,j;
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
 
@@ -340,7 +340,7 @@ static int BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
 #define __FUNCT__ "GMRESUpdateHessenberg"
 static int GMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
 {
-  Scalar    *hh,*cc,*ss,tt;
+  PetscScalar    *hh,*cc,*ss,tt;
   int       j;
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
 

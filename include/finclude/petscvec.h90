@@ -1,11 +1,11 @@
 !
-!  $Id: vec.h90,v 1.3 1997/05/02 13:33:40 curfman Exp balay $;
+!  $Id: petscvec.h90,v 1.4 1998/03/30 21:14:18 balay Exp balay $;
 !
 !  Additional Vec include file for use of PETSc with Fortran 90/HPF
 !
       Interface 
         Subroutine VecGetArrayF90(v,array,ierr)
-          Scalar, pointer :: array(:)
+          PetscScalar, pointer :: array(:)
           integer ierr
           Vec     v
         End Subroutine
@@ -13,7 +13,7 @@
 
       Interface 
         Subroutine VecRestoreArrayF90(v,array,ierr)
-          Scalar, pointer :: array(:)
+          PetscScalar, pointer :: array(:)
           integer ierr
           Vec     v
         End Subroutine
