@@ -160,8 +160,6 @@ int VecPrintHelp(Vec vec)
 @*/
 int VecSetSizes(Vec v, int n, int N)
 {
-  int ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_COOKIE); 
   v->n = n;

@@ -1756,7 +1756,7 @@ int MatGetBlockSize_SeqAIJ(Mat A,int *bs)
 int MatIncreaseOverlap_SeqAIJ(Mat A,int is_max,IS *is,int ov)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        shift,row,i,j,k,l,m,n,*idx,ierr,*nidx,isz,val;
+  int        row,i,j,k,l,m,n,*idx,ierr,*nidx,isz,val;
   int        start,end,*ai,*aj;
   PetscBT    table;
 
@@ -1794,7 +1794,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A,int is_max,IS *is,int ov)
         start = ai[row];
         end   = ai[row+1];
         for (l = start; l<end ; l++){
-          val = aj[l] + shift;
+          val = aj[l] ;
           if (!PetscBTLookupSet(table,val)) {nidx[isz++] = val;}
         }
       }
@@ -2721,8 +2721,7 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscOptionsHasName(B->prefix,"-mat_aij_matlab",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatUseMatlab_SeqAIJ(B);CHKERRQ(ierr);}
   ierr = PetscOptionsHasName(B->prefix,"-mat_aij_dxml",&flg);CHKERRQ(ierr);
-  if (flg) {
-    /* if (!b->indexshift) SETERRQ(PETSC_ERR_LIB,"need -mat_aij_oneindex with -mat_aij_dxml"); */
+  if (flg){
     ierr = MatUseDXML_SeqAIJ(B);CHKERRQ(ierr);
   }
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetColumnIndices_C",
@@ -2847,7 +2846,7 @@ int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
 {
   Mat_SeqAIJ   *a;
   Mat          B;
-  int          i,nz,ierr,fd,header[4],size,*rowlengths = 0,M,N,shift;
+  int          i,nz,ierr,fd,header[4],size,*rowlengths = 0,M,N;
   MPI_Comm     comm;
 #if defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_UMFPACK) || defined(PETSC_HAVE_MUMPS)
   PetscTruth   flag;
@@ -2882,7 +2881,7 @@ int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
   ierr = PetscBinaryRead(fd,a->a,nz,PETSC_SCALAR);CHKERRQ(ierr);
 
   /* set matrix "i" values */
-  a->i[0] = -shift;
+  a->i[0] = 0;
   for (i=1; i<= M; i++) {
     a->i[i]      = a->i[i-1] + rowlengths[i-1];
     a->ilen[i-1] = rowlengths[i-1];

@@ -3,6 +3,7 @@
 /* 
         Provides an interface to the DEC Alpha DXML library
      At the moment the DXNL library only offers sparse matrix vector product.
+     Note: matrix i,j index must be 1-based (Fortran style)!
 */
 #include "src/mat/impls/aij/seq/aij.h"
 
@@ -18,7 +19,7 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
 
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  Vierr = ecGetArray(y,&yy);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
   dmatvec_genr_(&zero,a->a,a->i,a->j,&a->nz,0,xx,yy,&a->m);
   PetscLogFlops(2*a->nz - a->m);
   PetscFunctionReturn(0);
@@ -30,6 +31,7 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
 int MatUseDXML_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"Presently not being supported");
   A->ops->mult = MatMult_SeqAIJ_DXML;
   PetscFunctionReturn(0);
 }
