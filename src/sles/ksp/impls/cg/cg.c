@@ -105,7 +105,7 @@ int KSPSetUp_CG(KSP ksp)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_CG"
-int  KSPSolve_CG(KSP ksp,int *its)
+int  KSPSolve_CG(KSP ksp)
 {
   int          ierr,i,stored_max_it,eigs;
   PetscScalar  dpi,a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0,mone = -1.0,ma;
@@ -155,7 +155,8 @@ int  KSPSolve_CG(KSP ksp,int *its)
     dp = sqrt(PetscAbsScalar(beta));
   } else dp = 0.0;
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
-  if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
+  if (ksp->reason) PetscFunctionReturn(0);
+
   KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);                              /* call any registered monitor routines */
   ksp->rnorm = dp;
@@ -219,7 +220,6 @@ int  KSPSolve_CG(KSP ksp,int *its)
   if (i == ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
-  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 /*

@@ -81,7 +81,7 @@ int KSPSetFromOptions_Chebychev(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_Chebychev"
-int KSPSolve_Chebychev(KSP ksp,int *its)
+int KSPSolve_Chebychev(KSP ksp)
 {
   int              k,kp1,km1,maxit,ktmp,i,ierr;
   PetscScalar      alpha,omegaprod,mu,omega,Gamma,c[3],scale,mone = -1.0,tmp;
@@ -190,7 +190,6 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   if (k) {
     ierr = VecCopy(p[k],x);CHKERRQ(ierr);
   }
-  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

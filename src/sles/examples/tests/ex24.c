@@ -99,8 +99,9 @@ int main(int argc,char **args)
     ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);   
 
     /* Solve linear system; */ 
-    ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
-   
+    ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
+
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /* Check error */
     ierr = VecCopy(u,u_tmp);CHKERRQ(ierr); 
     ierr = VecAXPY(&none,x,u_tmp);CHKERRQ(ierr);

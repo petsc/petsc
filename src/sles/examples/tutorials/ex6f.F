@@ -164,7 +164,7 @@
 !      A2 - preconditioning matrix
 !
       PetscScalar  v,val
-      integer II,ierr,Istart,Iend,count,nsteps,its
+      integer II,ierr,Istart,Iend,count,nsteps
       Mat     A
       SLES    sles
       KSP     ksp
@@ -214,7 +214,7 @@
       call SLESSetOperators(sles,A,A2,SAME_PRECONDITIONER,ierr)
 
 ! Solve linear system
-      call SLESSolve(sles,b,x,its,ierr)
+      call SLESSolve(sles,b,x,ierr)
 
 ! Destroy the preconditioner matrix on the last time through
       if (count .eq. nsteps) call MatDestroy(A2,ierr)

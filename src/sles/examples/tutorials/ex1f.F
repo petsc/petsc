@@ -183,7 +183,7 @@
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call SLESSolve(sles,b,x,its,ierr)
+      call SLESSolve(sles,b,x,ierr)
 
 !  View solver info; we could instead use the option -sles_view
 
@@ -197,6 +197,8 @@
 
       call VecAXPY(none,u,x,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
+      call SLESGetKSP(sles,ksp,ierr)
+      call KSPGetIterationNumber(ksp,its,ierr)
       if (norm .gt. 1.e-12) then
         write(6,100) norm,its
       else

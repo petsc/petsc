@@ -20,7 +20,7 @@ EXTERN_C_END
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            ierr,its,rank;
+  int            ierr,rank;
   AppCtx         *appctx;     /* contains all the data used by this PDE solver */
 
   /* ---------------------------------------------------------------------
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = AppCtxGraphics(appctx);CHKERRQ(ierr);
  
   /*   Setup the linear system and solve it -- in appalgebra.c */
-  ierr = AppCtxSolve(appctx,&its);CHKERRQ(ierr);
+  ierr = AppCtxSolve(appctx);CHKERRQ(ierr);
 
   /*   Send solution to  matlab viewer -- in appview.c */
   if (appctx->view.show_solution) {
@@ -53,8 +53,6 @@ int main(int argc,char **argv)
 
   /* Close down PETSc and stop the program */
   ierr = PetscFinalize();CHKERRQ(ierr);
-
-  if (!rank) { printf("\n\nNumber of Iterations: %d\n\n",its); }
 
   PetscFunctionReturn(0);
 }

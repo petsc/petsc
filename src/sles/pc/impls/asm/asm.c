@@ -234,7 +234,7 @@ static int PCSetUpOnBlocks_ASM(PC pc)
 static int PCApply_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM      *osm = (PC_ASM*)pc->data;
-  int         i,n_local = osm->n_local,n_local_true = osm->n_local_true,ierr,its;
+  int         i,n_local = osm->n_local,n_local_true = osm->n_local_true,ierr;
   PetscScalar zero = 0.0;
   ScatterMode forward = SCATTER_FORWARD,reverse = SCATTER_REVERSE;
 
@@ -261,7 +261,7 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
-    ierr = SLESSolve(osm->sles[i],osm->x[i],osm->y[i],&its);CHKERRQ(ierr); 
+    ierr = SLESSolve(osm->sles[i],osm->x[i],osm->y[i]);CHKERRQ(ierr); 
     ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
   }
   /* handle the rest of the scatters that do not have local solves */
@@ -280,7 +280,7 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
 static int PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM      *osm = (PC_ASM*)pc->data;
-  int         i,n_local = osm->n_local,n_local_true = osm->n_local_true,ierr,its;
+  int         i,n_local = osm->n_local,n_local_true = osm->n_local_true,ierr;
   PetscScalar zero = 0.0;
   ScatterMode forward = SCATTER_FORWARD,reverse = SCATTER_REVERSE;
 
@@ -310,7 +310,7 @@ static int PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
-    ierr = SLESSolveTranspose(osm->sles[i],osm->x[i],osm->y[i],&its);CHKERRQ(ierr); 
+    ierr = SLESSolveTranspose(osm->sles[i],osm->x[i],osm->y[i]);CHKERRQ(ierr); 
     ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
   }
   /* handle the rest of the scatters that do not have local solves */

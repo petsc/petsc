@@ -333,7 +333,7 @@ int FGMREScycle(int *itcount,KSP ksp)
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_FGMRES"
 
-int KSPSolve_FGMRES(KSP ksp,int *outits)
+int KSPSolve_FGMRES(KSP ksp)
 {
   int        ierr;
   int        cycle_its; /* iterations done in a call to FGMREScycle */
@@ -372,7 +372,6 @@ int KSPSolve_FGMRES(KSP ksp,int *outits)
   /* mark lack of convergence */
   if (itcount >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
 
-  *outits = itcount;
   PetscFunctionReturn(0);
 }
 

@@ -137,8 +137,10 @@ int SNESSolve_LS(SNES snes,int *outits)
   MatStructure flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal    fnorm,gnorm,xnorm,ynorm;
   Vec          Y,X,F,G,W,TMP;
+  KSP          ksp;
 
   PetscFunctionBegin;
+  ierr = SLESGetKSP(snes->sles,&ksp);CHKERRQ(ierr);
   snes->reason  = SNES_CONVERGED_ITERATING;
 
   maxits	= snes->max_its;	/* maximum number of iterations */
@@ -174,7 +176,8 @@ int SNESSolve_LS(SNES snes,int *outits)
     /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
-    ierr = SLESSolve(snes->sles,F,Y,&lits);CHKERRQ(ierr);
+    ierr = SLESSolve(snes->sles,F,Y);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&lits);CHKERRQ(ierr);
 
     if (PetscLogPrintInfo){
       ierr = SNESLSCheckResidual_Private(snes->jacobian,F,Y,G,W);CHKERRQ(ierr);

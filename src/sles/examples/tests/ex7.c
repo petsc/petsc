@@ -33,6 +33,7 @@ int main(int argc,char **args)
   PetscTruth  flg;
   PetscReal   norm;
   PetscScalar zero = 0.0,none = -1.0;
+  KSP         ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -105,7 +106,7 @@ int main(int argc,char **args)
   ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
   ierr = SLESSetUpOnBlocks(sles);CHKERRQ(ierr);
 
-  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
 
   /*
             Check error, print output, free data structures.
@@ -118,7 +119,8 @@ int main(int argc,char **args)
   ierr = MatMult(A,x,u);
   ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %A\n",norm);CHKERRQ(ierr);
 

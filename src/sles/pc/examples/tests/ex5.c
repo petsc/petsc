@@ -148,7 +148,9 @@ int main(int Argc,char **Args)
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);CHKERRQ(ierr);
 
-  ierr = SLESSolve(slesmg,B[levels-1],X[levels-1],&its);CHKERRQ(ierr);
+  ierr = SLESSolve(slesmg,B[levels-1],X[levels-1]);CHKERRQ(ierr);
+  ierr = SLESGetKSP(slesmq,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);CHKERRQ(ierr);

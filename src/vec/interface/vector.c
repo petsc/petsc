@@ -848,7 +848,7 @@ int VecSet(const PetscScalar *alpha,Vec x)
   ierr = VecNormComposedDataID(NORM_INFINITY,&type_id); CHKERRQ(ierr);
   PetscObjectSetRealComposedData((PetscObject)x,type_id,val);
   /* 2 */
-  val = sqrt(x->N * val);
+  val = sqrt(x->N) * val;
   ierr = VecNormComposedDataID(NORM_2,&type_id); CHKERRQ(ierr);
   PetscObjectSetRealComposedData((PetscObject)x,type_id,val);
   /* frobenius */

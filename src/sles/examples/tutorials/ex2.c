@@ -192,7 +192,7 @@ int main(int argc,char **args)
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up
@@ -203,7 +203,7 @@ int main(int argc,char **args)
   */
   ierr = VecAXPY(&neg_one,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /* Scale the norm */
   /*  norm *= sqrt(1.0/((m+1)*(n+1))); */
 

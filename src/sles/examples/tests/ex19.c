@@ -61,6 +61,7 @@ int main(int argc,char **argv)
   SLES          sles,sles_fine;
   PC            pc;
   PetscScalar   one = 1.0;
+  KSP           ksp;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -147,7 +148,9 @@ int main(int argc,char **argv)
   /* Set options, then solve nonlinear system */
   ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
 
-  ierr = SLESSolve(sles,user.fine.b,user.fine.x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,user.fine.b,user.fine.x);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %d\n",its);CHKERRQ(ierr);
 
   /* Free data structures */

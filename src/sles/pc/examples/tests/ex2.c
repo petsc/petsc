@@ -70,9 +70,10 @@ int main(int argc,char **args)
   ierr = KSPGetType(ksp,&kspname);CHKERRQ(ierr);
   ierr = PCGetType(pc,&pcname);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,&its);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp);CHKERRQ(ierr);
   ierr = VecAXPY(&mone,ustar,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %A Number of iterations %d\n",norm,its);
 
   /* Free data structures */

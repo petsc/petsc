@@ -14,7 +14,7 @@ struct _KSPOps {
   int  (*buildresidual)(KSP,Vec,Vec,Vec*);   /* Returns a pointer to the residual, or
 				                calculates the residual in a 
 				                user-provided area.  */
-  int  (*solve)(KSP,int*);                   /* actual solver */
+  int  (*solve)(KSP);                        /* actual solver */
   int  (*setup)(KSP);
   int  (*setfromoptions)(KSP);
   int  (*publishoptions)(KSP);

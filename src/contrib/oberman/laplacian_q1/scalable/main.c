@@ -16,7 +16,7 @@ static char help[] = "Solves 2d-laplacian on quadrilateral grid.\n\
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            ierr,its,rank;
+  int            ierr,rank;
   double         norm;
   AppCtx         *appctx;     /* contains all the data used by this PDE solver */
 
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx);CHKERRQ(ierr);
 
   /* Setup the linear system and solve it -- in appalgebra.c */
-  ierr = AppCtxSolve(appctx,&its);CHKERRQ(ierr);
+  ierr = AppCtxSolve(appctx);CHKERRQ(ierr);
 
   /* Save the solution, if this is the case. */ 
   {
@@ -67,7 +67,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();CHKERRQ(ierr);
 
   if (!rank) { printf("\nFinal residual norm: %e\n",norm); }
-  if (!rank) { printf("\nNumber of Iterations: %d\n\n",its); }
 
   PetscFunctionReturn(0);
 }

@@ -50,7 +50,7 @@ static int PCSetUp_NN(PC pc)
 static int PCApply_NN(PC pc,Vec r,Vec z)
 {
   PC_IS       *pcis = (PC_IS*)(pc->data);
-  int         ierr,its;
+  int         ierr;
   PetscScalar m_one = -1.0;
   Vec         w = pcis->vec1_global;
 
@@ -63,7 +63,7 @@ static int PCApply_NN(PC pc,Vec r,Vec z)
   */
   ierr = VecScatterBegin(r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_D);CHKERRQ(ierr);
   ierr = VecScatterEnd  (r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_D);CHKERRQ(ierr);
-  ierr = SLESSolve(pcis->sles_D,pcis->vec1_D,pcis->vec2_D,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(pcis->sles_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
   
   /*
     Computing $ r_B - \sum_j \tilde R_j^T A_{BI}^{(j)} (B_I^{(j)}r_I^{(j)}) $ .
@@ -96,7 +96,7 @@ static int PCApply_NN(PC pc,Vec r,Vec z)
   */
   ierr = VecScatterBegin(pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
-  ierr = SLESSolve(pcis->sles_D,pcis->vec1_D,pcis->vec2_D,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(pcis->sles_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
   ierr = VecScale(&m_one,pcis->vec2_D);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->vec2_D,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->vec2_D,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
@@ -535,7 +535,7 @@ int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScalar* work_N, 
 int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B,
                    Vec vec1_D, Vec vec2_D, PetscScalar *work_N)
 {
-  int            k, ierr, its;
+  int            k, ierr;
   PetscScalar    zero     =  0.0;
   PetscScalar    m_one    = -1.0;
   PetscScalar    value;
@@ -578,7 +578,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
        ierr = VecAssemblyEnd  (pcnn->coarse_b);CHKERRQ(ierr);
     */
   }
-  ierr = SLESSolve(pcnn->sles_coarse,pcnn->coarse_b,pcnn->coarse_x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(pcnn->sles_coarse,pcnn->coarse_b,pcnn->coarse_x);CHKERRQ(ierr);
   if (!u) { ierr = VecScale(&m_one,pcnn->coarse_x);CHKERRQ(ierr); }
   ierr = VecGetArray(pcnn->coarse_x,&lambda);CHKERRQ(ierr);
   for (k=0; k<pcis->n_shared[0]; k++) { work_N[pcis->shared[0][k]] = *lambda * pcnn->DZ_IN[0][k]; }

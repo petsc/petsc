@@ -71,6 +71,8 @@
       Vec      X,Y,F,localX,localF
       Mat      J,B
       DA       da
+      KSP      ksp
+
       integer  Nx,Ny,flg,N,ierr,mx,my
       integer  usemf,nooutput
       common   /mycommon/ B,mx,my,localX,localF,da
@@ -227,7 +229,7 @@
 !    - Then solve the Newton system.
 
          call SLESSetOperators(sles,J,B,SAME_NONZERO_PATTERN,ierr)
-         call SLESSolve(sles,F,Y,lin_its,ierr)
+         call SLESSolve(sles,F,Y,ierr)
 
 !  Compute updated iterate
 
@@ -235,6 +237,8 @@
          call VecAYPX(mone,X,Y,ierr)
          call VecCopy(Y,X,ierr)
          call VecNorm(X,NORM_2,xnorm,ierr)
+         call SLESGetKSP(sles,ksp,ierr)
+         call KSPGetIterationNumber(ksp,lin_its,ierr)
          if (nooutput .eq. 0) then
            print*,'linear solve iterations = ',lin_its,' xnorm = ',     &
      &         xnorm,' ynorm = ',ynorm

@@ -30,6 +30,7 @@ int main(int argc,char **args)
   int            ierr,its,ierrp,n,m;
   PetscReal      norm;
   PetscScalar    zero = 0.0,none = -1.0;
+  KSP            ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -153,7 +154,7 @@ int main(int argc,char **args)
     /*
        Solve linear system
     */
-    ierr = SLESSolve(sles,Ab,x,&its);CHKERRQ(ierr);
+    ierr = SLESSolve(sles,Ab,x);CHKERRQ(ierr);
 
    /* 
        Conclude profiling this stage
@@ -170,7 +171,8 @@ int main(int argc,char **args)
     ierr = MatMult(A,x,u);CHKERRQ(ierr);
     ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
     ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-
+    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
 

@@ -212,9 +212,9 @@ static char *convergedreasons[] = {"preconditioner is indefinite",              
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
           SLESSolve(), KSPSolveTranspose(), SLESGetKSP()
 @*/
-int KSPSolve(KSP ksp,int *its) 
+int KSPSolve(KSP ksp) 
 {
-  int          ierr,rank,nits;
+  int          ierr,rank;
   PetscTruth   flag1,flag2;
   PetscScalar  zero = 0.0;
 
@@ -232,7 +232,7 @@ int KSPSolve(KSP ksp,int *its)
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
 
   ksp->transpose_solve = PETSC_FALSE;
-  ierr = (*ksp->ops->solve)(ksp,&nits);CHKERRQ(ierr);
+  ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
   if (!ksp->reason) {
     SETERRQ(1,"Internal error, solver returned without setting converged reason");
   }
@@ -243,15 +243,17 @@ int KSPSolve(KSP ksp,int *its)
       ierr = PetscPrintf(ksp->comm,"Linear solve did not converge due to %s\n",convergedreasons[ksp->reason+8]);CHKERRQ(ierr);
     }
   }
-  if (its) *its = nits;
 
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flag1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues",&flag2);CHKERRQ(ierr);
   if (flag1 || flag2) {
-    int       n = nits + 2,i,neig;
+    int       nits,n,i,neig;
     PetscReal *r,*c;
+   
+    ierr = KSPGetIterationNumber(ksp,&nits);CHKERRQ(ierr);
+    n = nits+2;
 
     if (!n) {
       ierr = PetscPrintf(ksp->comm,"Zero iterations in solver, cannot approximate any eigenvalues\n");CHKERRQ(ierr);
@@ -359,9 +361,6 @@ int KSPSolve(KSP ksp,int *its)
    Input Parameter:
 .  ksp - iterative context obtained from KSPCreate()
 
-   Output Parameter:
-.  its - number of iterations required
-
    Notes:
    On return, the parameter "its" contains either the iteration
    number at which convergence was successfully reached, or the
@@ -377,7 +376,7 @@ int KSPSolve(KSP ksp,int *its)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
           SLESSolve(), SLESGetKSP()
 @*/
-int KSPSolveTranspose(KSP ksp,int *its) 
+int KSPSolveTranspose(KSP ksp)
 {
   int           ierr;
   PetscScalar   zero = 0.0;
@@ -388,7 +387,7 @@ int KSPSolveTranspose(KSP ksp,int *its)
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp);CHKERRQ(ierr);}
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   ksp->transpose_solve = PETSC_TRUE;
-  ierr = (*ksp->ops->solve)(ksp,its);CHKERRQ(ierr);
+  ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

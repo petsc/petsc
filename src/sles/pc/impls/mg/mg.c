@@ -18,14 +18,14 @@
 int MGMCycle_Private(MG *mglevels,PetscTruth *converged)
 {
   MG          mg = *mglevels,mgc;
-  int         cycles = mg->cycles,ierr,its;
+  int         cycles = mg->cycles,ierr;
   PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
   if (converged) *converged = PETSC_FALSE;
 
   if (mg->eventsolve) {ierr = PetscLogEventBegin(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
-  ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(mg->smoothd,mg->b,mg->x);CHKERRQ(ierr);
   if (mg->eventsolve) {ierr = PetscLogEventEnd(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
   if (mg->level) {  /* not the coarsest grid */
     ierr = (*mg->residual)(mg->A,mg->b,mg->x,mg->r);CHKERRQ(ierr);
@@ -53,7 +53,7 @@ int MGMCycle_Private(MG *mglevels,PetscTruth *converged)
     }
     ierr = MatInterpolateAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
     if (mg->eventsolve) {ierr = PetscLogEventBegin(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
-    ierr = SLESSolve(mg->smoothu,mg->b,mg->x,&its);CHKERRQ(ierr); 
+    ierr = SLESSolve(mg->smoothu,mg->b,mg->x);CHKERRQ(ierr); 
     if (mg->eventsolve) {ierr = PetscLogEventEnd(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);

@@ -45,6 +45,7 @@ int main(int argc,char **args)
   int          rank,size,its,nlocal,first,Istart,Iend;
   PetscScalar  v,one = 1.0,none = -1.0;
   PetscTruth   isbjacobi,flg;
+  KSP          ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -204,7 +205,7 @@ int main(int argc,char **args)
   /*
      Solve the linear system
   */
-  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
 
   /*
      View info about the solver
@@ -223,6 +224,8 @@ int main(int argc,char **args)
   */
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRQ(ierr);
 
   /* 

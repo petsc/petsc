@@ -212,7 +212,7 @@ int GMREScycle(int *itcount,KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_GMRES"
-int KSPSolve_GMRES(KSP ksp,int *outits)
+int KSPSolve_GMRES(KSP ksp)
 {
   int        ierr,its,itcount;
   KSP_GMRES  *gmres = (KSP_GMRES *)ksp->data;
@@ -240,7 +240,6 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
-  if (outits) *outits = itcount;
   PetscFunctionReturn(0);
 }
 

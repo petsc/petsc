@@ -51,7 +51,7 @@ int main(int argc,char **args)
   int          Nsub;                    /* number of subdomains */
   int          m = 15,n = 17;          /* mesh dimensions in x- and y- directions */
   int          M = 2,N = 1;            /* number of subdomains in x- and y- directions */
-  int          i,j,its,I,J,ierr,Istart,Iend,size;
+  int          i,j,I,J,ierr,Istart,Iend,size;
   PetscTruth   flg;
   PetscTruth   user_subdomains;         /* flag - 1 indicates user-defined subdomains */
   PetscScalar  v, one = 1.0;
@@ -239,7 +239,7 @@ int main(int argc,char **args)
                       Solve the linear system
      ------------------------------------------------------------------- */
 
-  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

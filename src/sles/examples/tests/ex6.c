@@ -23,6 +23,7 @@ int main(int argc,char **args)
   char           file[128];
   PetscViewer    fd;
   PetscTruth     table,flg;
+  KSP            ksp;
 #endif
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -90,7 +91,7 @@ int main(int argc,char **args)
   PetscLogStageRegister(&stage2,"mystage 2");
   PetscLogStagePush(stage2);
   ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
   ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
   tsolve = tsolve2 - tsolve1;
   PetscLogStagePop();
@@ -99,6 +100,8 @@ int main(int argc,char **args)
   ierr = MatMult(A,x,u);
   ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   /*  matrix PC   KSP   Options       its    residual setuptime solvetime  */
   if (table) {
     char   *matrixname,slesinfo[120];

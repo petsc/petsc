@@ -9,7 +9,7 @@ static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         ierr,N = 0,its;
+  int         ierr,N = 0;
   Vec         u,b,x;
   SLES        sles;
   PetscScalar zero = 0.0,mone = -1.0;
@@ -39,7 +39,7 @@ int main(int argc,char **args)
   ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
   ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,b,u,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,u);CHKERRQ(ierr);
 
   ierr = MatMult(C,u,x);CHKERRQ(ierr);
   ierr = VecAXPY(&mone,b,x);CHKERRQ(ierr);

@@ -285,7 +285,7 @@ int DMMGSolveSLES(DMMG *dmmg,int level)
     ierr = SLESSetOperators(dmmg[level]->sles,dmmg[level]->J,dmmg[level]->J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     dmmg[level]->matricesset = PETSC_FALSE;
   }
-  ierr = SLESSolve(dmmg[level]->sles,dmmg[level]->b,dmmg[level]->x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(dmmg[level]->sles,dmmg[level]->b,dmmg[level]->x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

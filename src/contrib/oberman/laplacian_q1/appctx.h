@@ -129,7 +129,7 @@ extern int AppCtxViewMatlab(AppCtx*);
 extern int AppCtxGraphics(AppCtx *appctx);
 
 extern int AppCtxSetLocal(AppCtx *);
-extern int AppCtxSolve(AppCtx*,int*);
+extern int AppCtxSolve(AppCtx*);
 
 extern int AppCtxCreateRhs(AppCtx*);
 extern int AppCtxCreateMatrix(AppCtx*);

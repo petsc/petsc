@@ -49,7 +49,7 @@ static int KSPSetUp_LSQR(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_LSQR"
-static int KSPSolve_LSQR(KSP ksp,int *its)
+static int KSPSolve_LSQR(KSP ksp)
 {
   int          i,ierr;
   PetscScalar  rho,rhobar,phi,phibar,theta,c,s,tmp,zero = 0.0,mone=-1.0;
@@ -92,7 +92,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   ksp->rnorm = rnorm;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  if (ksp->reason) {*its = 0; PetscFunctionReturn(0);}
+  if (ksp->reason) PetscFunctionReturn(0);
   KSPLogResidualHistory(ksp,rnorm);
   KSPMonitor(ksp,0,rnorm);
 
@@ -159,7 +159,6 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
 
   /* ierr = KSPUnwindPreconditioner(ksp,X,W);CHKERRQ(ierr); */
 
-  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

@@ -17,7 +17,7 @@ static int KSPSetUp_PREONLY(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_PREONLY"
-static int  KSPSolve_PREONLY(KSP ksp,int *its)
+static int  KSPSolve_PREONLY(KSP ksp)
 {
   int        ierr;
   Vec        X,B;
@@ -35,7 +35,6 @@ static int  KSPSolve_PREONLY(KSP ksp,int *its)
   X           = ksp->vec_sol;
   B           = ksp->vec_rhs;
   ierr        = KSP_PCApply(ksp,ksp->B,B,X);CHKERRQ(ierr);
-  *its        = 1;
   ksp->its    = 1;
   ksp->reason = KSP_CONVERGED_ITS;
   PetscFunctionReturn(0);

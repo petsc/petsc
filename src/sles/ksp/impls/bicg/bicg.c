@@ -30,7 +30,7 @@ int KSPSetUp_BiCG(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_BiCG"
-int  KSPSolve_BiCG(KSP ksp,int *its)
+int  KSPSolve_BiCG(KSP ksp)
 {
   int          ierr,i;
   PetscTruth   diagonalscale;
@@ -73,7 +73,7 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
     ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
   }
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
+  if (ksp->reason) PetscFunctionReturn(0);
   KSPMonitor(ksp,0,dp);
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its   = 0;
@@ -87,7 +87,6 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
      if (!i) {
        if (beta == 0.0) {
          ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
-         *its        = 0;
          PetscFunctionReturn(0);
        }
        ierr = VecCopy(Zr,Pr);CHKERRQ(ierr);       /*     p <- z          */
@@ -141,7 +140,6 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
   if (i == ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
-  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

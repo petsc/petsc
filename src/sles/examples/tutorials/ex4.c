@@ -29,7 +29,7 @@ int main(int argc,char **args)
   Vec         x,b,u;   /* approx solution, RHS, exact solution */
   Vec         tmp;       /* work vector */
   PetscScalar v,one = 1.0,scale = 0.0;
-  int         i,j,m = 15,n = 17,its,I,J,ierr,Istart,Iend;
+  int         i,j,m = 15,n = 17,I,J,ierr,Istart,Iend;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -171,7 +171,7 @@ int main(int argc,char **args)
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+  ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
