@@ -8,8 +8,7 @@ set dir=`dirname $0`
 
 foreach CONF ($*)
   set SCP=scp
-  set CONF=$1
-  source $dir/confignightly/$1
+  source $dir/confignightly/${CONF}
 
   $SCP $USR@${MACH}:$LOC/build.log /home/petsc/logs/nightly/build_$CONF.$MACH.log &
   $SCP $USR@${MACH}:$LOC/examples.log /home/petsc/logs/nightly/examples_$CONF.$MACH.log &

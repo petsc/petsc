@@ -9,7 +9,7 @@ foreach CONF ($*)
   set SSH=ssh
   set SCP=scp
   set DASHN=-n
-  source $dir/confignightly/$1
+  source $dir/confignightly/${CONF}
 
   echo "start build at `date`:$SSH $USR@$MACH $DASHN $LOC/maint/buildtest $CONF" 
 #  $SSH $USR@$MACH $DASHN "$LOC/maint/buildtest $CONF" &
