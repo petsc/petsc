@@ -65,7 +65,7 @@ c      COMMON /WING/ ITL,ITU,ILE,KTIP
       CC=0.
       AREA=0.
       DO 42 I=ITL+1,ITU
-      AREA  = AREA+DABS(AJY(I,1,K))*.5
+      AREA  = AREA+ABS(AJY(I,1,K))*.5
       CN    = CN-CP2(I,K)*AJY(I,1,K)
    42 CC    = CC-CP2(I,K)*AJX(I,1,K)
       CLS   = CN*DCOS(-BETA)-CC*DSIN(-BETA)
@@ -78,7 +78,7 @@ c      COMMON /WING/ ITL,ITU,ILE,KTIP
       TCL   = TCL/AREAS
       TCD   = TCD/AREAS
       WRITE (6,43)
-   43 FORMAT (//,20X,'SPANWISE LIFT DISTRIBUTION',//)
+   43 FORMAT (/ /,20X,'SPANWISE LIFT DISTRIBUTION',/ /)
       WRITE (6,44)
    44 FORMAT (5X,'Z',12X,'CL',12X,'CD',/)
       WRITE (6,45) (ZLOC(K),CL(K),CD(K),K=2,KTIP)
@@ -369,8 +369,8 @@ c Set up negative of nonlinear residual as the right-hand side
       res(5,i,j,k)=-de(i,j,k)
    12 CONTINUE
 c Original form of norm printout
-      XL2A=dSQRT(XL2A)
-      XL2=dLOG10(XL2A)
+      XL2A=SQRT(XL2A)
+      XL2=LOG10(XL2A)
 
 c "Solve" for Newton correction with SGS iteration
       do 16 i=1,isgs
@@ -430,15 +430,15 @@ c Compute and tabulate norms and the number of supersonic points in flowfield
       RTRMS=RTRMS+RT**2
       ET=DE(I,J,K)
       ETRMS=ETRMS+ET**2
-      IF (DABS(RT).GT.DABS(RTMAX)) RTMAX=RT
-      IF (DABS(ET).GT.DABS(ETMAX)) ETMAX=ET
+      IF (ABS(RT).GT.ABS(RTMAX)) RTMAX=RT
+      IF (ABS(ET).GT.ABS(ETMAX)) ETMAX=ET
    20 CONTINUE
       IF (NCYC.EQ.1) RTRMSR=RTRMS
       IF (NCYC.EQ.1) ETRMSR=ETRMS
-      RTRMS=DSQRT(RTRMS/RTRMSR)
-      ETRMS=DSQRT(ETRMS/ETRMSR)
-      RTRMS=DLOG10(RTRMS)
-      ETRMS=DLOG10(ETRMS)
+      RTRMS=SQRT(RTRMS/RTRMSR)
+      ETRMS=SQRT(ETRMS/ETRMSR)
+      RTRMS=LOG10(RTRMS)
+      ETRMS=LOG10(ETRMS)
       TCL=0.
       TCD=0.
       AREAS=0.
@@ -447,7 +447,7 @@ c Compute and tabulate norms and the number of supersonic points in flowfield
       CC=0.
       AREA=0.
       DO 42 I=ITL+1,ITU
-      AREA=AREA+DABS(AJY(I,1,K))*.5
+      AREA=AREA+ABS(AJY(I,1,K))*.5
       PBODY=0.5*(P(I,1,K)+P(I,2,K))
       CN=CN-(PBODY-RGAM)*AJY(I,1,K)
    42 CC=CC-(PBODY-RGAM)*AJX(I,1,K)

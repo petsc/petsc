@@ -316,7 +316,7 @@ C   LIMIT=3 (VAN LEER)
    21   FORMAT (5X,'LIMIT       PSI   ORDER')
    31   FORMAT (I10,F10.4,F8.2,/)
       endif
-      CONV=DACOS(-1.0D0)/180.
+      CONV=DACOS(PetscDoubleExp(-1.0,0))/180.
       ALPHA=ALPHA*CONV
       BETA=BETA*CONV
       PHI=PHI*CONV
@@ -402,7 +402,7 @@ C   THESE ARE CHARACTERISTIC VARIABLE IMPERMEABLE WALL B.C.s
      *     +RW(I,2,K)*AJZ(I,1,K))/R(I,2,K)
         P0=0.5*(P(I,1,K)+P(I,2,K))
         R0=0.5*(R(I,1,K)+R(I,2,K))
-        C0=DSQRT(GAM*P0/R0)
+        C0=SQRT(GAM*P0/R0)
         PB=P(I,2,K)-R0*C0*QDA/SADAJ(I,1,K)
         P(I,1,K)=2.*PB-P(I,2,K)
         R(I,1,K)=R(I,2,K)+2.*(PB-P(I,2,K))/C0**2
@@ -477,7 +477,7 @@ c        DO 20 I=2,NI
 C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC INFLOW B.C.s
         R0=0.5*(R(I,NJ,K)+R(I,NJ1,K))
         P0=0.5*(P(I,NJ,K)+P(I,NJ1,K))
-        C0=DSQRT(GAM*P0/R0)
+        C0=SQRT(GAM*P0/R0)
         R0C0=R0*C0
         U2=RU(I,NJ,K)/R(I,NJ,K)
         V2=RV(I,NJ,K)/R(I,NJ,K)
@@ -544,7 +544,7 @@ c        DO 8 K=2,NK
 c        DO 8 J=2,NJ
 C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC OUTFLOW B.C.s
          R0=0.5*(R(NI1,J,K)+R(NI,J,K))
-        C0=DSQRT(GAM*PINIT/R0)
+        C0=SQRT(GAM*PINIT/R0)
         R(NI1,J,K)=R(NI,J,K)+2.*(PINIT-P(NI,J,K))/C0**2
         CON=-2.*(PINIT-P(NI,J,K))/(SADAI(NI,J,K)*R0*C0)
         U=RU(NI,J,K)/R(NI,J,K)+AIX(NI,J,K)*CON
@@ -560,7 +560,7 @@ C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC OUTFLOW B.C.s
         do 9 k=gzsf2,gzef01
         do 9 j=gysf2,gyef01
         R0=0.5*(R(1,J,K)+R(2,J,K))
-        C0=DSQRT(GAM*PINIT/R0)
+        C0=SQRT(GAM*PINIT/R0)
         R(1,J,K)=R(2,J,K)+2.*(PINIT-P(2,J,K))/C0**2
         CON=+2.*(PINIT-P(2,J,K))/(SADAI(1,J,K)*R0*C0)
         U=RU(2,J,K)/R(2,J,K)+AIX(1,J,K)*CON
@@ -613,22 +613,22 @@ c      COMMON /TSTEP/ DT(NI,NJ,NK)
 c      DO 2 K=2,NK
 c      DO 2 J=2,NJ
 c      DO 2 I=2,NI
-      C=DSQRT(GAM*P(I,J,K)/R(I,J,K))
+      C=SQRT(GAM*P(I,J,K)/R(I,J,K))
       AIXA=AIX(I,J,K)+AIX(I-1,J,K)
       AIYA=AIY(I,J,K)+AIY(I-1,J,K)
       AIZA=AIZ(I,J,K)+AIZ(I-1,J,K)
       CONU=(RU(I,J,K)*AIXA+RV(I,J,K)*AIYA+RW(I,J,K)*AIZA)/R(I,J,K)
-      EI=DABS(CONU)+C*(SADAI(I,J,K)+SADAI(I-1,J,K))
+      EI=ABS(CONU)+C*(SADAI(I,J,K)+SADAI(I-1,J,K))
       AJXA=AJX(I,J,K)+AJX(I,J-1,K)
       AJYA=AJY(I,J,K)+AJY(I,J-1,K)
       AJZA=AJZ(I,J,K)+AJZ(I,J-1,K)
       CONV=(RU(I,J,K)*AJXA+RV(I,J,K)*AJYA+RW(I,J,K)*AJZA)/R(I,J,K)
-      EJ=DABS(CONV)+C*(SADAJ(I,J,K)+SADAJ(I,J-1,K))
+      EJ=ABS(CONV)+C*(SADAJ(I,J,K)+SADAJ(I,J-1,K))
       AKXA=AKX(I,J,K)+AKX(I,J,K-1)
       AKYA=AKY(I,J,K)+AKY(I,J,K-1)
       AKZA=AKZ(I,J,K)+AKZ(I,J,K-1)
       CONW=(RU(I,J,K)*AKXA+RV(I,J,K)*AKYA+RW(I,J,K)*AKZA)/R(I,J,K)
-      EK=DABS(CONW)+C*(SADAK(I,J,K)+SADAK(I,J,K-1))
+      EK=ABS(CONW)+C*(SADAK(I,J,K)+SADAK(I,J,K-1))
       DT(I,J,K)=CFL*2.0/(EI+EJ+EK)
     2 CONTINUE
       RETURN
@@ -673,7 +673,7 @@ c      DO 2 I=1,NI
       AIX(I,J,K)=(DY1*DZ2-DZ1*DY2)*0.5
       AIY(I,J,K)=(DZ1*DX2-DX1*DZ2)*0.5
       AIZ(I,J,K)=(DX1*DY2-DY1*DX2)*0.5
-      SADAI(I,J,K)=DSQRT(AIX(I,J,K)**2+AIY(I,J,K)**2+AIZ(I,J,K)**2)
+      SADAI(I,J,K)=SQRT(AIX(I,J,K)**2+AIY(I,J,K)**2+AIZ(I,J,K)**2)
     2 CONTINUE
       DO 3 I=gxsf2,gxef01
       DO 3 K=gzsf2,gzef01
@@ -690,7 +690,7 @@ c      DO 3 J=1,NJ
       AJX(I,J,K)=(DY1*DZ2-DZ1*DY2)*0.5
       AJY(I,J,K)=(DZ1*DX2-DX1*DZ2)*0.5
       AJZ(I,J,K)=(DX1*DY2-DY1*DX2)*0.5
-      SADAJ(I,J,K)=DSQRT(AJX(I,J,K)**2+AJY(I,J,K)**2+AJZ(I,J,K)**2)
+      SADAJ(I,J,K)=SQRT(AJX(I,J,K)**2+AJY(I,J,K)**2+AJZ(I,J,K)**2)
     3 CONTINUE
       DO 4 I=gxsf2,gxef01
       DO 4 J=gysf2,gyef01
@@ -707,7 +707,7 @@ c      DO 4 K=1,NK
       AKX(I,J,K)=(DY1*DZ2-DZ1*DY2)*0.5
       AKY(I,J,K)=(DZ1*DX2-DX1*DZ2)*0.5
       AKZ(I,J,K)=(DX1*DY2-DY1*DX2)*0.5
-      SADAK(I,J,K)=DSQRT(AKX(I,J,K)**2+AKY(I,J,K)**2+AKZ(I,J,K)**2)
+      SADAK(I,J,K)=SQRT(AKX(I,J,K)**2+AKY(I,J,K)**2+AKZ(I,J,K)**2)
     4 CONTINUE
       RETURN
       END
@@ -763,7 +763,8 @@ c      DO 2 K=KB,NK
       DO 2 J=JB,gyefw
 c      DO 2 J=JB,NJ
       JPJ1=J+J1
-      DO 10 I=IB,gxefw
+      DO 10 I=IB,gxef01
+c      DO 10 I=IB,gxefw
 c      DO 10 I=IB,NI
       AXT(I)=0.
       AYT(I)=0.
@@ -773,7 +774,8 @@ c      DO 10 I=IB,NI
       AYT(I)=AY(I,J,K)/SADA(I,J,K)
       AZT(I)=AZ(I,J,K)/SADA(I,J,K)
    10 CONTINUE
-      DO 22 I=IB,gxefw
+      DO 22 I=IB,gxef01
+c      DO 22 I=IB,gxefw
 c      DO 22 I=IB,NI
       IPI1=I+I1
       rl=r(i,j,k)+qel(1)
@@ -786,7 +788,7 @@ c      DO 22 I=IB,NI
       rvr=rv(ipi1,jpj1,kpk1)+qer(3)
       rwr=rw(ipi1,jpj1,kpk1)+qer(4)
       er=e(ipi1,jpj1,kpk1)+qer(5)
-      RA=DSQRT(rl/rr)
+      RA=SQRT(rl/rr)
       RRA1=1./(1.+RA)
       ur=rur/rr
       vr=rvr/rr
@@ -804,7 +806,7 @@ c      DO 22 I=IB,NI
       hr=0.5*(ur**2+vr**2+wr**2)+gam*rgm1*pr/rr
       HROE=(hr+hl*ra)*rra1
       RQRQ(I)=Q2(I)**2+Q3(I)**2+Q4(I)**2
-      C(I)=DSQRT((HROE-0.5*RQRQ(I))*GM1)
+      C(I)=SQRT((HROE-0.5*RQRQ(I))*GM1)
       Q6(I)=1.0/Q1(I)
       TT(I)=Q2(I)*AXT(I)+Q3(I)*AYT(I)+Q4(I)*AZT(I)
       RC(I)=Q1(I)*C(I)
@@ -812,18 +814,18 @@ c      DO 22 I=IB,NI
       E1=TT(I)*SADA(I,J,K)
       E4=E1+CSAD
       E5=E1-CSAD
-      BE(1,1,I,J,K)=0.5*(E1+DABS(E1))
+      BE(1,1,I,J,K)=0.5*(E1+ABS(E1))
       BE(1,2,I,J,K)=BE(1,1,I,J,K)
       BE(1,3,I,J,K)=BE(1,1,I,J,K)
-      BE(1,4,I,J,K)=0.5*(E4+DABS(E4))
-      BE(1,5,I,J,K)=0.5*(E5+DABS(E5))
-      BE(2,1,I,J,K)=0.5*(E1-DABS(E1))
+      BE(1,4,I,J,K)=0.5*(E4+ABS(E4))
+      BE(1,5,I,J,K)=0.5*(E5+ABS(E5))
+      BE(2,1,I,J,K)=0.5*(E1-ABS(E1))
       BE(2,2,I,J,K)=BE(2,1,I,J,K)
       BE(2,3,I,J,K)=BE(2,1,I,J,K)
-      BE(2,4,I,J,K)=0.5*(E4-DABS(E4))
-      BE(2,5,I,J,K)=0.5*(E5-DABS(E5))
+      BE(2,4,I,J,K)=0.5*(E4-ABS(E4))
+      BE(2,5,I,J,K)=0.5*(E5-ABS(E5))
    22 CONTINUE
-      RR2=1./DSQRT(2.0D0)
+      RR2=1./SQRT(PetscDoubleExp(2.0,0))
       DO 23 I=IB,gxef01
 c      DO 23 I=IB,gxefw
 c      DO 23 I=IB,NI

@@ -487,6 +487,8 @@ c      COMMON /ANG/ ALPHA,BETA,PHI
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /FREQ/ IFREQ,ISGS
 
+      common /junkvar/ rtrmsr, etrmsr
+
       Double drecv(3),dsend(3),fnorm,rtmax,rtrms,etmax,etrms
       Double dsup,con,rt,et,rtrmsr,etrmsr,tcl,tcd,areas,cn,cc
       Double area,pbody,cls,cds,xl2,one,work(*),cfl_new
@@ -494,7 +496,7 @@ c      COMMON /FREQ/ IFREQ,ISGS
 
       jmonitor = 0
       cfl = cfl_new
-      xl2=dlog10(fnorm)
+      xl2=log10(fnorm)
       if (no_output .eq. 0) write(29,*) ncyc, xl2
       IF (NCYC.NE.1.AND.MOD(NCYC,5).NE.0) RETURN
 c Compute and tabulate norms and the number of supersonic points in flowfield
@@ -517,8 +519,8 @@ c      DO 20 I=2,NI
       RTRMS=RTRMS+RT**2
       ET=DE(I,J,K)
       ETRMS=ETRMS+ET**2
-      IF (DABS(RT).GT.DABS(RTMAX)) RTMAX=RT
-      IF (DABS(ET).GT.DABS(ETMAX)) ETMAX=ET
+      IF (ABS(RT).GT.ABS(RTMAX)) RTMAX=RT
+      IF (ABS(ET).GT.ABS(ETMAX)) ETMAX=ET
    20 CONTINUE
 
       dsend(1) = rtmax
@@ -528,8 +530,8 @@ c      DO 20 I=2,NI
       rtmax = work(1)
       etmax = work(2)
       do 30 i=2,size
-        if (dabs(work(2*i-1)) .gt. dabs(rtmax)) rtmax = work(2*i-1)
-        if (dabs(work(2*i)) .gt. dabs(etmax)) etmax = work(2*i)
+        if (abs(work(2*i-1)) .gt. abs(rtmax)) rtmax = work(2*i-1)
+        if (abs(work(2*i)) .gt. abs(etmax)) etmax = work(2*i)
   30  continue
       dsend(1) = rtrms
       dsend(2) = etrms
@@ -543,10 +545,10 @@ c      DO 20 I=2,NI
 
       IF (NCYC.EQ.1) RTRMSR=RTRMS
       IF (NCYC.EQ.1) ETRMSR=ETRMS
-      RTRMS=DSQRT(RTRMS/RTRMSR)
-      ETRMS=DSQRT(ETRMS/ETRMSR)
-      RTRMS=DLOG10(RTRMS)
-      ETRMS=DLOG10(ETRMS)
+      RTRMS=SQRT(RTRMS/RTRMSR)
+      ETRMS=SQRT(ETRMS/ETRMSR)
+      RTRMS=LOG10(RTRMS)
+      ETRMS=LOG10(ETRMS)
       TCL=0.
       TCD=0.
       AREAS=0.
@@ -559,7 +561,7 @@ c        DO 41 K=2,KTIP
           AREA=0.
           DO 42 I=ITLP1,ITUP
 c          DO 42 I=ITL+1,ITU
-            AREA=AREA+DABS(AJY(I,1,K))*.5
+            AREA=AREA+ABS(AJY(I,1,K))*.5
             PBODY=0.5*(P(I,1,K)+P(I,2,K))
             CN=CN-(PBODY-RGAM)*AJY(I,1,K)
    42       CC=CC-(PBODY-RGAM)*AJX(I,1,K)
