@@ -1,7 +1,7 @@
-# $Id: base,v 1.29 1997/09/17 04:31:45 bsmith Exp balay $ 
+# $Id: base,v 1.30 1997/09/17 17:44:49 balay Exp balay $ 
 
-PARCH    = IRIX
-CC       = cc -32 -DPARCH_IRIX
+PARCH    = IRIX5
+CC       = cc -32 -DPARCH_IRIX5
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown
@@ -22,10 +22,8 @@ SHELL    = /bin/sh
 # -rpath is required to specify the location of any dynamic libraries
 # which are not found in the standard locations (/lib:/usr/lib:) etc
 #
-# On IRIX 5.3 remove the flags '-Wl,-woff,84,-woff,85'
-#
-CLINKER  = cc  -32 $(COPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
-FLINKER  = f77 -32 $(FOPTFLAGS) -Wl,-woff,84,-woff,85  -rpath $(LDIR):$(DYLIBPATH)
+CLINKER  = cc  -32 $(COPTFLAGS) -rpath $(LDIR):$(DYLIBPATH)
+FLINKER  = f77 -32 $(FOPTFLAGS)   -rpath $(LDIR):$(DYLIBPATH)
 
 SYS_LIB  = -lfpe -lsun 
 #
