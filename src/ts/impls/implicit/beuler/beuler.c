@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.59 2001/08/07 03:04:22 balay Exp bsmith $*/
+/*$Id: beuler.c,v 1.60 2001/09/07 20:12:07 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -217,7 +217,7 @@ int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
 static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
 {
   TS_BEuler *beuler = (TS_BEuler*)ts->data;
-  int       ierr,M,m;
+  int       ierr;
   PetscScalar    mdt = 1.0/ts->time_step,mone = -1.0;
 
   PetscFunctionBegin;
@@ -241,7 +241,7 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
 static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
 {
   TS_BEuler *beuler = (TS_BEuler*)ts->data;
-  int       ierr,M,m;
+  int       ierr;
 
   PetscFunctionBegin;
   ierr = SLESSetFromOptions(ts->sles);CHKERRQ(ierr);
@@ -255,7 +255,7 @@ static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
 static int TSSetUp_BEuler_Nonlinear(TS ts)
 {
   TS_BEuler *beuler = (TS_BEuler*)ts->data;
-  int       ierr,M,m;
+  int       ierr;
 
   PetscFunctionBegin;
   ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);

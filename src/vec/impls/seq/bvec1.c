@@ -1,4 +1,4 @@
-/*$Id: bvec1.c,v 1.41 2001/08/07 03:02:21 balay Exp bsmith $*/
+/*$Id: bvec1.c,v 1.42 2001/09/07 20:08:59 bsmith Exp bsmith $*/
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -13,30 +13,32 @@
 #define __FUNCT__ "VecDot_Seq"
 int VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
-  Vec_Seq     *x = (Vec_Seq *)xin->data;
-  PetscScalar *ya;
+  PetscScalar *ya,*xa;
   int         ierr;
 #if !defined(PETSC_USE_COMPLEX)
   int         one = 1;
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(yin,&ya);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(xin,&xa);CHKERRQ(ierr);
+  if (xin != yin) {ierr = VecGetArrayFast(yin,&ya);CHKERRQ(ierr);}
+  else ya = xa;
 #if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
   {
     int         i;
-    PetscScalar sum = 0.0,*xa = x->array;
+    PetscScalar sum = 0.0;
     for (i=0; i<xin->n; i++) {
       sum += xa[i]*PetscConj(ya[i]);
     }
     *z = sum;
   }
 #else
-  *z = BLdot_(&xin->n,x->array,&one,ya,&one);
+  *z = BLdot_(&xin->n,xa,&one,ya,&one);
 #endif
-  ierr = VecRestoreArrayFast(yin,&ya);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xin,&xa);CHKERRQ(ierr);
+  if (xin != yin) {ierr = VecRestoreArrayFast(yin,&ya);CHKERRQ(ierr);}
   PetscLogFlops(2*xin->n-1);
   PetscFunctionReturn(0);
 }
@@ -45,28 +47,30 @@ int VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #define __FUNCT__ "VecTDot_Seq"
 int VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
-  Vec_Seq *x = (Vec_Seq *)xin->data;
-  PetscScalar *ya;
+  PetscScalar *ya,*xa;
   int         ierr;
 #if !defined(PETSC_USE_COMPLEX)
  int     one = 1;
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArrayFast(yin,&ya);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(xin,&xa);CHKERRQ(ierr);
+  if (xin != yin) {ierr = VecGetArrayFast(yin,&ya);CHKERRQ(ierr);}
+  else ya = xa;
 #if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
   int         i;
-  PetscScalar sum = 0.0,*xa = x->array;
+  PetscScalar sum = 0.0;
   for (i=0; i<xin->n; i++) {
     sum += xa[i]*ya[i];
   }
   *z = sum;
 #else
-  *z = BLdot_(&xin->n,x->array,&one,ya,&one);
+  *z = BLdot_(&xin->n,xa,&one,ya,&one);
 #endif
-  ierr = VecRestoreArrayFast(yin,&ya);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xin,&xa);CHKERRQ(ierr);
+  if (xin != yin) {ierr = VecRestoreArrayFast(yin,&ya);CHKERRQ(ierr);}
   PetscLogFlops(2*xin->n-1);
   PetscFunctionReturn(0);
 }

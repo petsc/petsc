@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.152 2001/08/10 03:30:12 bsmith Exp bsmith $*/
+/* $Id: pdvec.c,v 1.153 2001/09/07 20:09:01 bsmith Exp bsmith $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -174,7 +174,7 @@ int VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 {
   int         rank,ierr,len,work = xin->n,n,j,size,fdes,tag = ((PetscObject)viewer)->tag;
   MPI_Status  status;
-  PetscScalar *values,*xarray;;
+  PetscScalar *values,*xarray;
   FILE        *file;
 
   PetscFunctionBegin;
@@ -478,12 +478,12 @@ int VecSetValues_MPI(Vec xin,int ni,const int ix[],const PetscScalar y[],InsertM
 #define __FUNCT__ "VecSetValuesBlocked_MPI"
 int VecSetValuesBlocked_MPI(Vec xin,int ni,const int ix[],const PetscScalar yin[],InsertMode addv)
 {
-  Vec_MPI       *x = (Vec_MPI *)xin->data;
   int           rank = xin->stash.rank,*owners = xin->map->range,start = owners[rank];
   int           end = owners[rank+1],i,row,bs = xin->bs,j,ierr;
-  PetscScalar   *xx = x->array,*y = (PetscScalar*)yin;
+  PetscScalar   *xx,*y = (PetscScalar*)yin;
 
   PetscFunctionBegin;
+  ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
 #if defined(PETSC_USE_BOPT_g)
   if (xin->stash.insertmode == INSERT_VALUES && addv == ADD_VALUES) { 
    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You have already inserted values; you cannot now add");
@@ -525,6 +525,7 @@ int VecSetValuesBlocked_MPI(Vec xin,int ni,const int ix[],const PetscScalar yin[
       y += bs;
     }
   }
+  ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.23 2001/08/07 03:03:07 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.24 2001/08/07 21:30:08 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
@@ -56,7 +56,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Form vectors */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecGetLocalSize(u,&ldim);
   ierr = VecGetOwnershipRange(u,&low,&high);CHKERRQ(ierr);

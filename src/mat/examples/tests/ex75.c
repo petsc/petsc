@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.26 2001/03/23 23:22:29 balay Exp balay $*/
+/*$Id: ex75.c,v 1.27 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -178,8 +178,8 @@ int main(int argc,char **args)
 
   /* vectors */
   /*--------------------*/
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,i,PETSC_DECIDE,&x); /* i is obtained from MatGetLocalSize() */
- CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,i,PETSC_DECIDE,&x); /* i is obtained from MatGetLocalSize() */CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr); 
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr);  
   ierr = VecDuplicate(x,&s1);CHKERRQ(ierr);

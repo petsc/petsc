@@ -1,4 +1,4 @@
-/*$Id: ex53.c,v 1.23 2001/08/07 03:03:07 balay Exp bsmith $*/
+/*$Id: ex53.c,v 1.24 2001/08/07 21:30:08 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
 
@@ -38,7 +38,8 @@ int main(int argc,char **args)
  
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&xx);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,m,PETSC_DECIDE,&xx);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(xx);CHKERRQ(ierr);
   ierr = VecDuplicate(xx,&s1);CHKERRQ(ierr);
   ierr = VecDuplicate(xx,&s2);CHKERRQ(ierr);
   ierr = VecDuplicate(xx,&yy);CHKERRQ(ierr);

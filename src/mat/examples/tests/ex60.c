@@ -1,4 +1,4 @@
-/*$Id: ex60.c,v 1.13 2001/04/10 19:35:44 bsmith Exp balay $*/
+/*$Id: ex60.c,v 1.14 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Tests MatGetColumnVector().";
 
@@ -37,7 +37,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&yy);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&yy);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(yy);CHKERRQ(ierr);
 
   ierr = MatGetColumnVector(C,yy,col);CHKERRQ(ierr);
 

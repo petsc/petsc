@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.11 2001/04/10 19:35:02 bsmith Exp balay $*/
+/*$Id: ex21.c,v 1.12 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 static char help[] = "Tests VecMax() with index.\n\
   -n <length> : vector length\n\n";
@@ -19,7 +19,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   /* create vector */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_REAL,&rand);CHKERRQ(ierr);
   ierr = VecSetRandom(rand,x);CHKERRQ(ierr);

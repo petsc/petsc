@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.18 2001/04/10 19:35:02 bsmith Exp balay $*/
+/*$Id: ex23.c,v 1.19 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
   Using a blocked send and a strided receive.\n\n";
@@ -32,7 +32,8 @@ int main(int argc,char **argv)
   /* create two vectors */
   if (!rank) nlocal = 8;
   else nlocal = 4;
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,nlocal,12,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,nlocal,12,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,8,&y);CHKERRQ(ierr);
 
   /* create two index sets */

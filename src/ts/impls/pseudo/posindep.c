@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.58 2001/08/07 17:20:38 balay Exp bsmith $*/
+/*$Id: posindep.c,v 1.59 2001/09/06 03:31:46 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -257,7 +257,7 @@ int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
 static int TSSetUp_Pseudo(TS ts)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
-  int       ierr,M,m;
+  int       ierr;
 
   PetscFunctionBegin;
   ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex33.c,v 1.21 2001/08/06 21:16:03 bsmith Exp balay $*/
+/*$Id: ex33.c,v 1.22 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Writes a matrix using the PETSc sparse format. Input arguments are:\n\
    -fout <file> : output file name\n\n";
@@ -42,7 +42,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&b);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&b);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     val = i + 1;
     ierr = VecSetValues(b,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);

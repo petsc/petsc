@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.15 2001/04/10 19:35:02 bsmith Exp balay $*/
+/*$Id: ex16.c,v 1.16 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 static char help[] = "Tests VecSetValuesBlocked() on MPI vectors.\n\n";
 
@@ -21,6 +21,7 @@ int main(int argc,char **argv)
 
   /* create vector */
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);
 
   if (!rank) {

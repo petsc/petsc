@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.165 2001/08/07 03:02:47 balay Exp bsmith $*/
+/*$Id: aijfact.c,v 1.166 2001/09/07 20:09:22 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -994,7 +994,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:PCILUSetFill([sub]pc,%g);\n",af);
     PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:for best performance.\n");
     if (diagonal_fill) {
-      PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Detected and replace %d missing diagonals",dcount);
+      PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Detected and replaced %d missing diagonals",dcount);
     }
   }
 

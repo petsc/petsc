@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.20 2001/08/06 21:14:55 bsmith Exp balay $*/
+/*$Id: ex24.c,v 1.21 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 Tests where the local part of the scatter is a copy.\n\n";
@@ -26,7 +26,8 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* create two vectors */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,size*bs*n,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,size*bs*n,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   /* create two index sets */
   if (rank < size-1) {

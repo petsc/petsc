@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.199 2001/08/07 03:02:21 balay Exp bsmith $*/
+/*$Id: bvec2.c,v 1.200 2001/09/07 20:08:59 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -14,11 +14,12 @@ EXTERN int PetscViewerAMSGetAMSComm(PetscViewer,AMS_Comm *);
 #define __FUNCT__ "VecNorm_Seq"
 int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 {
-  Vec_Seq *x = (Vec_Seq*)xin->data;
-  int     ierr,one = 1;
+  PetscScalar *xa;
+  int         ierr,one = 1;
 
   PetscFunctionBegin;
   if (type == NORM_2) {
+    ierr = VecGetArrayFast(xin,&xa);CHKERRQ(ierr);
     /*
       This is because the Fortran BLAS 1 Norm is very slow! 
     */
@@ -27,28 +28,32 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
       int         i;
       PetscScalar sum=0.0;
       for (i=0; i<xin->n; i++) {
-        sum += (x->array[i])*(PetscConj(x->array[i]));
+        sum += (xa[i])*(PetscConj(xa[i]));
       }
       *z = sqrt(PetscRealPart(sum));
     }
 #else
-    *z = BLnrm2_(&xin->n,x->array,&one);
+    *z = BLnrm2_(&xin->n,xa,&one);
 #endif
+    ierr = VecRestoreArrayFast(xin,&xa);CHKERRQ(ierr);
     PetscLogFlops(2*xin->n-1);
   } else if (type == NORM_INFINITY) {
     int          i,n = xin->n;
     PetscReal    max = 0.0,tmp;
-    PetscScalar  *xx = x->array;
 
+    ierr = VecGetArrayFast(xin,&xa);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      if ((tmp = PetscAbsScalar(*xx)) > max) max = tmp;
+      if ((tmp = PetscAbsScalar(*xa)) > max) max = tmp;
       /* check special case of tmp == NaN */
       if (tmp != tmp) {max = tmp; break;}
-      xx++;
+      xa++;
     }
+    ierr = VecRestoreArrayFast(xin,&xa);CHKERRQ(ierr);
     *z   = max;
   } else if (type == NORM_1) {
-    *z = BLasum_(&xin->n,x->array,&one);
+    ierr = VecGetArrayFast(xin,&xa);CHKERRQ(ierr);
+    *z = BLasum_(&xin->n,xa,&one);
+    ierr = VecRestoreArrayFast(xin,&xa);CHKERRQ(ierr);
     PetscLogFlops(xin->n-1);
   } else if (type == NORM_1_AND_2) {
     ierr = VecNorm_Seq(xin,NORM_1,z);CHKERRQ(ierr);

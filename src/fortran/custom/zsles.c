@@ -1,4 +1,4 @@
-/*$Id: zsles.c,v 1.35 2001/04/02 15:10:29 bsmith Exp bsmith $*/
+/*$Id: zsles.c,v 1.36 2001/06/21 21:19:50 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -21,7 +21,9 @@
 #define dmmgsolve_               DMMGSOLVE
 #define dmmggetda_               DMMGGETDA
 #define dmmgsetsles_             DMMGSETSLES
+#define dmmggetx_                DMMGGETX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define dmmggetx_                dmmggetx
 #define dmmgsetsles_             dmmgsetsles
 #define dmmgdestroy_             dmmgdestroy
 #define dmmgcreate_              dmmgcreate
@@ -41,6 +43,13 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL dmmggetx_(DMMG **dmmg,Vec *x,int *ierr)
+{
+  *ierr = 0;
+  *x    = DMMGGetx(*dmmg);
+}
+
 
 /* ----------------------------------------------------------------------------------------------------------*/
 static int ourrhs(DMMG dmmg,Vec vec)

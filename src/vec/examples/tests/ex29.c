@@ -1,4 +1,4 @@
-/*$Id: ex29.c,v 1.19 2001/08/06 21:14:55 bsmith Exp balay $*/
+/*$Id: ex29.c,v 1.20 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors.\n\
 Where atleast a couple of mallocs will occur in the stash code.\n\n";
@@ -19,8 +19,9 @@ int main(int argc,char **argv)
   bs = size;
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n*bs,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n*bs,&x);CHKERRQ(ierr);
   ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   for (i=0; i<n*bs; i++) {
     val  = i*1.0;

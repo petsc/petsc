@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.170 2001/08/07 03:02:22 balay Exp bsmith $*/
+/*$Id: pbvec.c,v 1.171 2001/09/07 20:09:01 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -72,8 +72,6 @@ int VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 #define __FUNCT__ "VecSetOption_MPI"
 int VecSetOption_MPI(Vec v,VecOption op)
 {
-  Vec_MPI *w = (Vec_MPI*)v->data;
-
   PetscFunctionBegin;
   if (op == VEC_IGNORE_OFF_PROC_ENTRIES) {
     v->stash.donotstash = PETSC_TRUE;
@@ -114,7 +112,8 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecGetSize_MPI,
             VecGetSize_Seq,
             VecRestoreArray_Seq,
-            VecMax_MPI,VecMin_MPI,
+            VecMax_MPI,
+            VecMin_MPI,
             VecSetRandom_Seq,
             VecSetOption_MPI,
             VecSetValuesBlocked_MPI,
@@ -158,7 +157,6 @@ int VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap ma
   s->nghost    = nghost;
   v->mapping   = 0;
   v->bmapping  = 0;
-  v->bs        = -1;
 
   if (array) {
     s->array           = (PetscScalar *)array;
@@ -187,7 +185,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap ma
      VecSetValuesBlocked is called.
   */
   ierr = VecStashCreate_Private(v->comm,1,&v->stash);CHKERRQ(ierr);
-  ierr = VecStashCreate_Private(v->comm,1,&v->bstash);CHKERRQ(ierr); 
+  ierr = VecStashCreate_Private(v->comm,v->bs,&v->bstash);CHKERRQ(ierr); 
                                                         
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
@@ -206,7 +204,11 @@ int VecCreate_MPI(Vec vv)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSplitOwnership(vv->comm,&vv->n,&vv->N);CHKERRQ(ierr);
+  if (vv->bs > 0) {
+    ierr = PetscSplitOwnershipBlock(vv->comm,vv->bs,&vv->n,&vv->N);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSplitOwnership(vv->comm,&vv->n,&vv->N);CHKERRQ(ierr);
+  }
   ierr = VecCreate_MPI_Private(vv,0,0,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

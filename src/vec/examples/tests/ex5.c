@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.51 2001/08/06 21:14:55 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.52 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 This does case when we are merely selecting the local part of the\n\
@@ -22,7 +22,8 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* create two vectors */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,size*n,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,size*n,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
 
   /* create two index sets */

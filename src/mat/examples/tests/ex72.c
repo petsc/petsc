@@ -1,4 +1,4 @@
-/*$Id: ex72.c,v 1.17 2001/04/10 19:35:44 bsmith Exp balay $*/
+/*$Id: ex72.c,v 1.18 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -40,7 +40,8 @@ int main(int argc,char **args)
   printf ("m = %d, n = %d, nnz = %d\n",m,n,nnz);
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,20,0,&A);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
   ierr = VecSetRandom(r,b);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.70 2001/08/07 03:02:55 balay Exp bsmith $*/
+/*$Id: baijfact2.c,v 1.71 2001/09/07 20:09:49 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2825,7 +2825,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
       PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:PCILUSetFill(pc,%g);\n",af);
       PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:for best performance.\n");
       if (diagonal_fill) {
-	PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Detected and replace %d missing diagonals",dcount);
+	PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Detected and replaced %d missing diagonals",dcount);
       }
     }
 

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.56 2001/09/05 15:19:18 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.57 2001/09/05 15:56:59 bsmith Exp bsmith $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 This version first preloads and solves a small system, then loads \n\
@@ -99,7 +99,8 @@ int main(int argc,char **args)
       int    m;
       PetscScalar one = 1.0;
       ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
-      ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&b);CHKERRQ(ierr);
+      ierr = VecCreate(PETSC_COMM_WORLD,m,PETSC_DECIDE,&b);CHKERRQ(ierr);
+      ierr = VecSetFromOptions(b);CHKERRQ(ierr);
       ierr = VecSet(&one,b);CHKERRQ(ierr);
     }
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
@@ -115,7 +116,8 @@ int main(int argc,char **args)
 
       /* Create a new vector b by padding the old one */
       ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-      ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&tmp);CHKERRQ(ierr);
+      ierr = VecCreate(PETSC_COMM_WORLD,m,PETSC_DECIDE,&tmp);CHKERRQ(ierr);
+      ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
       ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
       ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
       ierr = VecGetArray(b,&bold);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex26.c,v 1.11 2001/08/07 03:02:26 balay Exp bsmith $*/
+/*$Id: ex26.c,v 1.12 2001/08/07 21:29:25 bsmith Exp bsmith $*/
 /*
 
 Test program follows. Writing it I realised that 
@@ -38,9 +38,11 @@ int main(int Argc,char **Args)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
   /* Create the necessary vectors; one element per processor */
-  ierr = VecCreateMPI(comm,1,PETSC_DECIDE,&tar_v);CHKERRQ(ierr);
+  ierr = VecCreate(comm,1,PETSC_DECIDE,&tar_v);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(tar_v);CHKERRQ(ierr);
   ierr = VecSet(&zero,tar_v);CHKERRQ(ierr);
-  ierr = VecCreateMPI(comm,1,PETSC_DECIDE,&src_v);CHKERRQ(ierr);
+  ierr = VecCreate(comm,1,PETSC_DECIDE,&src_v);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(src_v);CHKERRQ(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,1,&loc_v);CHKERRQ(ierr);
   /* -- little trick: we need a distributed and a local vector
      that share each other's data; see below for application */

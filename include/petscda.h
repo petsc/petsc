@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.75 2001/07/20 21:26:10 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.76 2001/08/06 21:18:31 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -322,7 +322,28 @@ EXTERN int DMMGSetSNESLocali_Private(DMMG*,int (*)(DALocalInfo*,MatStencil*,void
 
 #define DMMGGetb(ctx)              (ctx)[(ctx)[0]->nlevels-1]->b
 #define DMMGGetr(ctx)              (ctx)[(ctx)[0]->nlevels-1]->r
+
+/*MC
+   DMMGGetx - Returns the solution vector from a DMMG solve on the finest grid
+
+   Synopsis:
+   Vec DMMGGetx(DMMG *dmmg)
+
+   Not Collective, but resulting vector is parallel
+
+   Input Parameters:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+   Fortran Usage:
+.     DMMGGetx(DMMG dmmg,Vec x,int ierr)
+
+.seealso: DMMGCreate(), DMMGSetSNES(), DMMGSetSLES(), DMMGSetSNESLocal()
+
+M*/
 #define DMMGGetx(ctx)              (ctx)[(ctx)[0]->nlevels-1]->x
+
 #define DMMGGetJ(ctx)              (ctx)[(ctx)[0]->nlevels-1]->J
 #define DMMGGetB(ctx)              (ctx)[(ctx)[0]->nlevels-1]->B
 #define DMMGGetFine(ctx)           (ctx)[(ctx)[0]->nlevels-1]

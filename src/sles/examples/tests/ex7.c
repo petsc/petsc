@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.18 2001/08/07 03:03:57 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.19 2001/08/07 21:30:50 bsmith Exp bsmith $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
  Tests inplace factorization for SeqBAIJ. Input parameters include\n\
@@ -69,7 +69,8 @@ int main(int argc,char **args)
 
       /* Create a new vector b by padding the old one */
       ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-      ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&tmp);
+      ierr = VecCreate(PETSC_COMM_WORLD,m,PETSC_DECIDE,&tmp);
+      ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
       ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
       ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
       ierr = VecGetArray(b,&bold);CHKERRQ(ierr);

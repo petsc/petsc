@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.22 2001/08/06 21:14:55 bsmith Exp balay $*/
+/*$Id: ex22.c,v 1.23 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a parallel vector.\n\n";
 
@@ -22,9 +22,10 @@ int main(int argc,char **argv)
 
   /* create two vectors */
   N = size*n;
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&y);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);CHKERRQ(ierr);
-
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&y);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   /* create two index sets */
   ierr = ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&is1);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_WORLD,n,(n*(rank+1))%N,1,&is2);CHKERRQ(ierr);

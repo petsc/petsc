@@ -1,5 +1,4 @@
-
-/*$Id: vector.c,v 1.236 2001/09/07 20:08:58 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.237 2001/09/08 03:09:21 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1982,8 +1981,6 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
 @*/
 int VecGetPetscMap(Vec x,PetscMap *map)
 {
-  int ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidType(x);
@@ -2140,11 +2137,14 @@ int VecResetArray(Vec vec)
    This permanently replaces the array and frees the memory associated
    with the old array.
 
+   The memory passed in MUST be obtained with PetscMalloc() and CANNOT be
+   freed by the user. It will be freed when the vector is destroy. 
+
    Not supported from Fortran
 
    Level: developer
 
-.seealso: VecGetArray(), VecRestoreArray(), VecPlaceArray()
+.seealso: VecGetArray(), VecRestoreArray(), VecPlaceArray(), VecResetArray()
 
 @*/
 int VecReplaceArray(Vec vec,const PetscScalar array[])

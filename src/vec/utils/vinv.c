@@ -1,4 +1,4 @@
-/*$Id: vinv.c,v 1.69 2001/08/07 03:02:17 balay Exp bsmith $*/
+/*$Id: vinv.c,v 1.70 2001/08/10 03:29:59 bsmith Exp bsmith $*/
 /*
      Some useful vector utility functions.
 */
@@ -590,11 +590,11 @@ int VecReciprocal_Default(Vec v)
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (x[i] != 0.0) x[i] = 1.0/x[i];
   }
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

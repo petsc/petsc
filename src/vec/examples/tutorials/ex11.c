@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.18 2001/08/07 03:02:34 balay Exp bsmith $*/
+/*$Id: ex11.c,v 1.19 2001/08/07 21:29:27 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -49,6 +49,7 @@ int main(int argc,char **argv)
 
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(x,2);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   /*
@@ -59,7 +60,6 @@ int main(int argc,char **argv)
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of entire vector %g\n",norm);CHKERRQ(ierr);
 
-  ierr = VecSetBlockSize(x,2);CHKERRQ(ierr);
   ierr = VecStrideNorm(x,0,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %g\n",norm);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: ex32.c,v 1.28 2001/08/06 21:16:03 bsmith Exp balay $*/
+/*$Id: ex32.c,v 1.29 2001/08/07 03:03:07 balay Exp bsmith $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format. Writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
@@ -32,7 +32,8 @@ int main(int argc,char **args)
   fscanf(file,"  JA POINTER IN SLAPSV\n");
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,n,n,20,0,&A);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
   ierr = PetscMalloc((n+1)*sizeof(int),&col);CHKERRQ(ierr);
   for (i=0; i<n+1; i++)

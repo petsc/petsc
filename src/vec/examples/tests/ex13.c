@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.49 2001/08/06 21:14:55 bsmith Exp balay $*/
+/*$Id: ex13.c,v 1.50 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.  In\n\
 this case each local vector is as long as the entire parallel vector.\n";
@@ -23,7 +23,8 @@ int main(int argc,char **argv)
 
   /* create two vectors */
   N = size*n;
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&y);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&y);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
 
   /* create two index sets */

@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.16 2001/03/23 23:21:37 balay Exp balay $*/
+/*$Id: ex12.c,v 1.17 2001/08/07 03:02:34 balay Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -33,8 +33,8 @@ int main(int argc,char **argv)
       Create multi-component vector with 2 components
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&v);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
   ierr = VecSetBlockSize(v,2);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
 
   /* 
       Create single-component vector

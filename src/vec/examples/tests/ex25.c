@@ -1,4 +1,4 @@
-/*$Id: ex25.c,v 1.15 2001/08/06 21:14:55 bsmith Exp balay $*/
+/*$Id: ex25.c,v 1.16 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
 this case processor zero is as long as the entire parallel vector; rest are zero length.\n\n";
@@ -23,7 +23,8 @@ int main(int argc,char **argv)
 
   /* create two vectors */
   N = size*n;
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&y);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&y);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
   if (!rank) {
     ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
   } else {

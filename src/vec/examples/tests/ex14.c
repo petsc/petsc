@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.47 2001/03/23 23:21:30 balay Exp balay $*/
+/*$Id: ex14.c,v 1.48 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
 This does the tricky case.\n\n";
@@ -23,7 +23,8 @@ int main(int argc,char **argv)
 
   /* create two vectors */
   N = size*n;
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&y);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&y);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
 
   /* create two index sets */

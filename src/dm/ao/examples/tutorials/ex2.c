@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.44 2001/08/10 03:34:31 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.45 2001/08/24 16:22:31 bsmith Exp bsmith $*/
 
 static char help[] = "Reads a a simple unstructured grid from a file. Partitions it,\n\
 and distributes the grid data accordingly\n\n";
@@ -484,7 +484,8 @@ int DataMoveElements(GridData *gdata)
      but since this is just a setup phase in the entire numerical computation that 
      is only called once it is not a measureable performance bottleneck.
   */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,3*counts[rank],PETSC_DECIDE,&vele);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,3*counts[rank],PETSC_DECIDE,&vele);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(vele);CHKERRQ(ierr);
 
   /* 
       Create an index set from the isnewproc index set to indicate the mapping TO 

@@ -1,4 +1,4 @@
-/*$Id: pvec2.c,v 1.55 2001/08/10 03:30:12 bsmith Exp bsmith $*/
+/*$Id: pvec2.c,v 1.56 2001/09/07 20:09:01 bsmith Exp bsmith $*/
 
 /*
      Code for some of the parallel vector primatives.
@@ -200,7 +200,7 @@ EXTERN_C_END
 #define __FUNCT__ "VecMax_MPI"
 int VecMax_MPI(Vec xin,int *idx,PetscReal *z)
 {
-  int    ierr;
+  int       ierr;
   PetscReal work;
 
   PetscFunctionBegin;
@@ -212,7 +212,7 @@ int VecMax_MPI(Vec xin,int *idx,PetscReal *z)
     ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MAX,xin->comm);CHKERRQ(ierr);
   } else {
     PetscReal work2[2],z2[2];
-    int    rstart;
+    int       rstart;
 
     if (!VecMax_Local_Op) {
       ierr = MPI_Op_create(VecMax_Local,1,&VecMax_Local_Op);CHKERRQ(ierr);
@@ -224,7 +224,6 @@ int VecMax_MPI(Vec xin,int *idx,PetscReal *z)
     ierr = MPI_Allreduce(work2,z2,2,MPIU_REAL,VecMax_Local_Op,xin->comm);CHKERRQ(ierr);
     *z   = z2[0];
     *idx = (int)z2[1];
-
   }
   PetscFunctionReturn(0);
 }
@@ -245,7 +244,7 @@ int VecMin_MPI(Vec xin,int *idx,PetscReal *z)
     ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MIN,xin->comm);CHKERRQ(ierr);
   } else {
     PetscReal work2[2],z2[2];
-    int    rstart;
+    int       rstart;
 
     if (!VecMin_Local_Op) {
       ierr = MPI_Op_create(VecMin_Local,1,&VecMin_Local_Op);CHKERRQ(ierr);
@@ -257,7 +256,6 @@ int VecMin_MPI(Vec xin,int *idx,PetscReal *z)
     ierr = MPI_Allreduce(work2,z2,2,MPIU_REAL,VecMin_Local_Op,xin->comm);CHKERRQ(ierr);
     *z   = z2[0];
     *idx = (int)z2[1];
-
   }
   PetscFunctionReturn(0);
 }

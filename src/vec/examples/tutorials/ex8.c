@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.22 2001/04/10 19:35:06 bsmith Exp balay $*/
+/*$Id: ex8.c,v 1.23 2001/08/07 03:02:34 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates using a local ordering to set values into a parallel vector.\n\n";
 
@@ -33,7 +33,8 @@ int main(int argc,char **argv)
         PETSc could determine the vector's distribution if we specify
         just the global size.
   */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecGetSize(x,&N);CHKERRQ(ierr);
   ierr = VecSet(&one,x);CHKERRQ(ierr);
 

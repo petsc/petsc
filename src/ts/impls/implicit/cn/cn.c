@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.33 2001/08/29 03:31:25 bsmith Exp bsmith $*/
+/*$Id: cn.c,v 1.34 2001/09/07 20:12:08 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -268,7 +268,7 @@ int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 {
   TS_CN        *cn = (TS_CN*)ts->data;
-  int          ierr,M,m;
+  int          ierr;
   PetscScalar  two = 2.0,neg_dt = -1.0*ts->time_step;
 
   PetscFunctionBegin;
@@ -291,7 +291,7 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
-  int   ierr,M,m;
+  int   ierr;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
@@ -304,7 +304,7 @@ static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
 static int TSSetUp_CN_Nonlinear(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
-  int   ierr,M,m;
+  int   ierr;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  

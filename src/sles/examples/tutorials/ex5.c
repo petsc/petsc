@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.91 2001/08/07 03:04:00 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.92 2001/08/07 21:30:54 bsmith Exp bsmith $*/
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
@@ -120,7 +120,7 @@ int main(int argc,char **args)
         dimension; the parallel partitioning is determined at runtime. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRQ(ierr);
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);

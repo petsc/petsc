@@ -1,8 +1,9 @@
 
-/*$Id: ebvec1.c,v 1.3 2001/09/07 20:09:03 bsmith Exp bsmith $*/
+/*$Id: ebvec1.c,v 1.4 2001/09/08 23:32:00 bsmith Exp bsmith $*/
 
 
 #include "src/vec/vecimpl.h" 
+#include "src/vec/impls/dvecimpl.h" 
 #include "esi/ESI.h"
 #include "esi/petsc/vector.h"
 
@@ -42,12 +43,26 @@ int VecESISetVector(Vec xin,esi::Vector<double,int> *v)
     v->addReference();
     ierr = PetscMapCreateMPI(xin->comm,n,N,&xin->map);CHKERRQ(ierr);
     ierr = VecStashCreate_Private(xin->comm,1,&xin->stash);CHKERRQ(ierr);
-    ierr = VecStashCreate_Private(xin->comm,1,&xin->bstash);CHKERRQ(ierr); 
+    ierr = VecStashCreate_Private(xin->comm,xin->bs,&xin->bstash);CHKERRQ(ierr); 
   }
   PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------------------*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecPlaceArray_ESI"
+int VecPlaceArray_ESI(Vec vin,const PetscScalar *a)
+{
+  Vec_ESI                              *v = (Vec_ESI *)vin->data;
+  esi::VectorReplaceAccess<double,int> *vr;
+  int                                  ierr;
+
+  PetscFunctionBegin;
+  v->evec->getInterface("esi::VectorReplaceAccess",static_cast<void *>(vr));CHKERRQ(ierr);
+  vr->setArrayPointer((PetscScalar*)a,vin->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSet_ESI"
@@ -348,6 +363,11 @@ extern int VecSetValues_MPI(Vec,int,const int[],const PetscScalar[],InsertMode);
 extern int VecAssemblyBegin_MPI(Vec);
 extern int VecAssemblyEnd_MPI(Vec);
 extern int VecView_MPI(Vec,PetscViewer);
+extern int VecReciprocal_Default(Vec);
+extern int VecSetRandom_Seq(PetscRandom,Vec);
+extern int VecSetValuesBlocked_MPI(Vec,int,const int[],const PetscScalar[],InsertMode);
+extern int VecMax_MPI(Vec,int*,PetscReal*);
+extern int VecMin_MPI(Vec,int*,PetscReal*);
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -416,18 +436,20 @@ static struct _VecOps EvOps = {VecDuplicate_ESI,
 			       VecGetSize_ESI,
 			       VecGetLocalSize_ESI,
 			       VecRestoreArray_ESI,
+			       VecMax_MPI,
+			       VecMin_MPI,
+			       VecSetRandom_Seq,
 			       0,
-			       0,
-			       0,
-			       0,
-			       0,
+			       VecSetValuesBlocked_MPI,
 			       VecDestroy_ESI,
 			       VecView_MPI,
+			       VecPlaceArray_ESI,
 			       0,
-			       0,
-			       0,
-			       0,
-                               0};
+			       VecDot_Seq,
+			       VecTDot_Seq,
+			       VecNorm_Seq,
+                               0,
+                               VecReciprocal_Default};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

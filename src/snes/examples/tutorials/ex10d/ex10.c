@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.27 2001/08/07 03:04:20 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.28 2001/08/07 21:31:24 bsmith Exp bsmith $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -352,7 +352,8 @@ int main(int argc,char **argv)
   /* 
     Create vector data structures 
   */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,user.Nvlocal,N,&x);CHKERRQ(ierr);
+  ierr = VecCreate(MPI_COMM_WORLD,user.Nvlocal,N,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,bs*nvertices,&user.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
