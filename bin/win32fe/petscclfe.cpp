@@ -12,10 +12,7 @@ cl::cl() {
 void cl::GetArgs(int argc,char *argv[]) {
   compiler::GetArgs(argc,argv);
   if (!verbose) {
-    string temp = compilearg.front();
-    compilearg.pop_front();
     compilearg.push_front("-nologo");
-    compilearg.push_front(temp);
   }
   linkarg.push_front("-link");
 }

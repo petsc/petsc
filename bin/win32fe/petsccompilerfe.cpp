@@ -21,14 +21,13 @@ compiler::compiler() {
 
 void compiler::GetArgs(int argc,char *argv[]) {
   tool::GetArgs(argc,argv);
-  LI i = arg.begin();
-  compilearg.push_front(*i);
-  arg.pop_front();
 }
 
 void compiler::Parse(void) {
   tool::Parse();
   LI i = arg.begin();
+  compilearg.push_front(*i++);
+  arg.pop_front();
   while (i != arg.end()) {
     string temp = *i;
     if (temp[0]!='-') {
@@ -49,7 +48,45 @@ void compiler::Parse(void) {
 void compiler::Execute(void) {
   tool::Execute();
   if (!helpfound) {
-    LI i=linkarg.begin();
+    /* Find location of system libraries and headers */
+    string dir = compilearg.front();
+
+    /* First check if a full path was specified with --use */
+    int n = dir.find(":");
+    if (n==string::npos) {
+      char tmppath[MAX_PATH],*tmp;
+      int length = MAX_PATH*sizeof(char);
+      string extension = ".exe";
+      if (SearchPath(NULL,dir.c_str(),extension.c_str(),length,tmppath,&tmp)) {
+        dir = (string)tmppath;
+      } else {
+        string compiler=compilearg.front();
+        cerr << endl << "win32fe: Error Compiler Not Found: ";
+        cerr << compiler << endl;
+        cerr << "\tSpecify the complete path to ";
+        cerr << compiler;
+        cerr << " with --use" << endl;
+        cerr << "\tUse --help for more information on win32fe options." << endl << endl;
+        return;
+      }
+    }
+
+    /* Compiler is located in dir/bin/compiler.exe */
+    dir = dir.substr(0,dir.find_last_of("\\",dir.find_last_of("\\")-1)+1);
+    /* System headers are in dir/include */
+    arg.push_back("-I" + dir + "include");
+    LI i = arg.end();
+    FoundI(--i);
+    arg.pop_back();
+
+    /* System libraries are in dir/lib */ 
+    arg.push_back("-L" + dir + "lib");
+    i = arg.end();
+    FoundL(--i);
+    arg.pop_back();
+
+    /* Determine if we are compiling, or linking */ 
+    i=linkarg.begin();
     string temp = *i;
     if (temp == "-c") {
       Compile();
@@ -75,21 +112,21 @@ void compiler::Help(void) {
 }
 
 void compiler::Compile(void) {
+  int n;
   LI i = compilearg.begin();
   string compile = *i++;
   Merge(compile,compilearg,i);
 
   /* Get the current working directory */
   string cwd;
-  char directory[256];
-  int length=256*sizeof(char);
+  char directory[MAX_PATH];
+  int length=MAX_PATH*sizeof(char);
   GetCurrentDirectory(length,directory);
   cwd=(string)directory + "\\";
-  
+
   /* Execute each compilation one at a time */ 
   for (i=file.begin();i!=file.end();i++) {
     string outfile = *i;
-    int n;
 
     if (OutputFlag==compilearg.end()) {
       /* Make default output a .o not a .obj */
@@ -103,28 +140,28 @@ void compiler::Compile(void) {
       LI ii = compilearg.begin();
       compile = *ii++;
       Merge(compile,compilearg,ii);
-      outfile = outfile;
     }
-      
+
     /* outfile is to be specified by the short form of directory and long name */
     n = outfile.find_last_of("\\");
     if (n != string::npos) {
       string path = outfile.substr(0,n);
       if (GetShortPath(path)) {
         outfile = path + outfile.substr(n);
-        /* Concatenate the current directory with the file name if the file is local */
-        string filename = cwd + *i;
-        if (GetShortPath(filename)) {
-          string compileeach = compile + " " + compileoutflag + outfile + " " + filename;
-          if (verbose) cout << compileeach << endl;
-          system(compileeach.c_str());
-        } else {
-          cerr << "Error: win32fe Input File Not Found: " << *i << endl;
-        }
       } else {
         cerr << "Error: win32fe Output Directory Not Found: ";
         cerr << outfile.substr(0,n) << endl;
+        return;
       }
+    }
+    /* Concatenate the current directory with the file name if the file is local */
+    string filename = cwd + *i;
+    if (GetShortPath(filename)) {
+      string compileeach = compile + " " + compileoutflag + outfile + " " + filename;
+      if (verbose) cout << compileeach << endl;
+      system(compileeach.c_str());
+    } else {
+      cerr << "Error: win32fe Input File Not Found: " << *i << endl;
     }
   }
 }
