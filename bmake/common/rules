@@ -7,6 +7,16 @@ OBJS        = $(OBJSC) $(OBJSF)
 INCLUDEDIRS = -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include $(MPI_INCLUDE) \
               $(X11_INCLUDE) -I$(ITOOLSDIR)/src
 
+PETSC_LIB   = -L$(LDIR) -lpetscstencil -lpetscgrid \
+                -lpetscsnes -lpetscsles -lpetscksp -lpetscmat \
+                -lpetscvec -lpetscsys -lpetscdraw \
+                $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
+                $(MPI_LIB) $(SYS_LIB) $(FC_LIB)
+SLES_LIB    = -L$(LDIR) -lpetscsles -lpetscksp -lpetscmat \
+                -lpetscvec -lpetscsys -lpetscdraw \
+                $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
+                $(MPI_LIB) $(SYS_LIB) $(FC_LIB)
+
 include $(ITOOLSDIR)/bmake/common.$(COMPLEX) 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).site
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).$(BOPT)

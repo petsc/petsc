@@ -12,11 +12,7 @@ OBJSF     =
 LIBBASE   = libpetscsles
 EXAMPLES  = ex1 ex2 ex3 ex4 ex5 ex6 ex7
 EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
-SYSLIB    = -L$(LDIR) -lpetscstencil -lpetscgrid \
-            -lpetscsles -lpetscksp -lpetscmat \
-           -lpetscvec -lpetscsys -lpetscdraw \
-           $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
-           $(MPI_LIB) $(SYS_LIB) $(FC_LIB) -lm 
+SYSLIB    = $(PETSC_LIB) -lm 
 LINCLUDE  = $(SOURCEH)
 
 runexamples:
