@@ -95,5 +95,5 @@ class PythonModuleFixup (transform.Transform):
     os.symlink(self.libName, moduleName)
 
   def execute(self):
-    self.copySIDLInterface()
+    #self.copySIDLInterface()
     return transform.Transform.execute(self)
