@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tsreg.c,v 1.2 1996/01/31 03:59:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.3 1996/03/07 20:28:24 bsmith Exp balay $";
 #endif
 
 #include "tsimpl.h"      /*I "ts.h"  I*/
@@ -110,20 +110,21 @@ int TSGetType(TS ts, TSType *method,char **name)
    options database.
 
    Input Parameters:
+.  comm   - The communicator ( usually MPI_COMM_WORLD)
 .  prefix - prefix (usually "-")
-.  name - the options database name (by default "ts_type") 
+.  name   - the options database name (by default "ts_type") 
 */
-int TSPrintTypes_Private(char* prefix,char *name)
+int TSPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
 {
   FuncList *entry;
   if (!__TSList) {TSRegisterAll();}
   entry = __TSList->head;
-  fprintf(stderr," %s%s (one of)",prefix,name);
+  MPIU_printf(comm," %s%s (one of)",prefix,name);
   while (entry) {
-    fprintf(stderr," %s",entry->name);
+    MPIU_printf(comm," %s",entry->name);
     entry = entry->next;
   }
-  fprintf(stderr,"\n");
+  MPIU_printf(comm,"\n");
   return 0;
 }
 

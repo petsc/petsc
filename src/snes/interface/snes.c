@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.57 1996/03/04 16:44:34 curfman Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.58 1996/03/07 20:08:39 balay Exp balay $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1527,6 +1527,7 @@ int SNESPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
     MPIU_printf(comm," %s",entry->name);
     entry = entry->next;
   }
+  MPIU_printf(comm,"\n");
   return 0;
 }
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.37 1996/03/04 05:15:19 bsmith Exp balay $";
+static char vcid[] = "$Id: pcset.c,v 1.38 1996/03/07 20:09:26 balay Exp balay $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -166,7 +166,7 @@ int PCPrintTypes_Private(MPI_Comm comm,char *prefix,char *name)
     MPIU_printf(comm," %s",entry->name);
     entry = entry->next;
   }
-  MPIU_printf(MPI_COMM_WORLD,"\n");
+  MPIU_printf(comm,"\n");
   return 0;
 }
 
