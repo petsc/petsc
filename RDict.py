@@ -109,7 +109,7 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
         if dargs.data[name].writepw == writepw:
           try:
             del dargs.data[name].data[key]
-          except:
+          except KeyError:
             dargs.logfile.write("Rejected, missing key\n");
             dargs.logfile.flush()
         else:
@@ -140,8 +140,7 @@ class DArgs:
     cPickle.dump(self.data, dbFile)
     dbFile.close()
     filename = os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.loc')
-    try: os.unlink(filename)
-    except: pass
+    if os.path.isfile(filename): os.unlink(filename)
     self.logfile.write("Shutting down\n")
     self.logfile.flush()
     self.logfile.close()
@@ -209,30 +208,30 @@ class RArgs (UserDict.UserDict):
   def __setitem__(self,key,value):
     try:
       self.send(("__setitem__",self.name,key,self.readpw,self.dictpw,self.addpw,self.writepw,value))
-    except:
-      raise RuntimeError
+    except Exception, e:
+      raise RuntimeError(str(e))
     
   def __getitem__(self, key):
     try:
       obj = self.send(("__getitem__",self.name,key,self.readpw,self.dictpw,self.addpw,self.writepw))
-    except:
-      raise RuntimeError
+    except Exception, e:
+      raise RuntimeError(str(e))
     if obj[0] == 1:
       return obj[1]
     else:
-      raise KeyError
+      raise KeyError('Could not find '+key)
     
   def __delitem__(self, key):
     try:
       obj = self.send(("__delitem__",self.name,key,self.readpw,self.dictpw,self.addpw,self.writepw))
-    except:
-      raise RuntimeError
+    except Exception, e:
+      raise RuntimeError(str(e))
 
   def has_key(self, key):
     try:
       obj = self.send(("has_key",self.name,key,self.readpw,self.dictpw,self.addpw,self.writepw))
-    except:
-      raise RuntimeError
+    except Exception, e:
+      raise RuntimeError(str(e))
     if obj[0] == 1:
       return 1
     else:
@@ -241,28 +240,28 @@ class RArgs (UserDict.UserDict):
   def clear(self):
     try:
       obj = self.send(("clear",self.name,"dummykey",self.readpw,self.dictpw,self.addpw,self.writepw))
-    except:
-      raise RuntimeError
+    except Exception, e:
+      raise RuntimeError(str(e))
 
   def keys(self):
     try:
       obj = self.send(("keys",self.name,"dummykey",self.readpw,self.dictpw,self.addpw,self.writepw))
-    except:
-      raise RuntimeError
+    except Exception, e:
+      raise RuntimeError(str(e))
     return obj[1]
 
   def dicts(self):
     try:
       obj = self.send(("dicts",self.name,"dummykey",self.readpw,self.dictpw,self.addpw,self.writepw))
-    except:
-      raise RuntimeError
+    except Exception, e:
+      raise RuntimeError(str(e))
     return obj[1]
 
   def __len__(self):
     try:
       obj = self.send(("__len__",self.name,"dummykey",self.readpw,self.dictpw,self.addpw,self.writepw))
-    except:
-      raise RuntimeError
+    except Exception, e:
+      raise RuntimeError(str(e))
     return obj[0]
 
 
@@ -275,8 +274,8 @@ class RArgs (UserDict.UserDict):
       self.addr = self.getServerAddr()
       try:
         s.connect(self.addr)
-      except:
-        raise RuntimeError,"Cannot connect to server"
+      except Exception, e:
+        raise RuntimeError('Cannot connect to server: '+str(e))
               
     try:
       f = s.makefile("w")
@@ -286,8 +285,8 @@ class RArgs (UserDict.UserDict):
       object = cPickle.load(f)
       f.close()
       s.close()
-    except:
-      raise RuntimeError,"Unable to get results from server"
+    except Exception, e:
+      raise RuntimeError('Unable to get results from server: '+str(e))
     return object
 
 #  support pickling of nargs objects
@@ -312,7 +311,7 @@ if __name__ ==  '__main__':
         print 'Clearing remote dictionary database'
         RArgs('ArgDict').clear()
       else:
-        raise SystemExit('Unknown action: '+sys.argv[1])
+        sys.exit('Unknown action: '+sys.argv[1])
   except Exception, e:
     sys.exit('ERROR: '+str(e))
   sys.exit(0)
