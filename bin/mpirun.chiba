@@ -7,7 +7,6 @@ infiles=""
 outfiles=""
 verbose="no"
 shared="no"
-nolocal=""
 local="no"
 showtimes="yes"
 ctransin="parin"
@@ -16,6 +15,7 @@ showoutput="no"
 keeptmp="no"
 #
 # Process arguments
+#
 while [ $# -gt 0 ] ; do
     arg=$1
     shift
@@ -32,7 +32,6 @@ while [ $# -gt 0 ] ; do
     ;;
     -shared) 
     shared="yes"
-    nolocal="-nolocal"
     ;;
     -maxtime)
     maxtime=$1
@@ -87,9 +86,6 @@ while [ $# -gt 0 ] ; do
     break
     esac
 done
-if [ $np -gt 32 ] ; then
-  shared="no"
-fi
 #
 # Now process program options looking for possible input files
 # stage the file directly into the rundir directory so we need to generate new
@@ -103,7 +99,6 @@ while [ $# -gt 0 ] ; do
     case $arg in 
     -start_in_debugger|-on_error_attach_debugger) 
       shared="yes"
-      nolocal=""
       local="no"
       newprogargs="$newprogargs $arg"
     ;;
@@ -203,8 +198,11 @@ if [ $usemyrinet = "yes" ] ; then
   pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
   /soft/apps/packages/mpich-gmpg-1.2.1..6/bin/mpirun.ch_gm -np $np --gm-f \${pbsfile} $programbase -display $DISPLAY $newprogargs
   cat \${pbsfile} | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget  urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
+elif [ $shared = "yes" ]; then
+  rsh \$masternode "cd $rundir; /soft/apps/packages/mpich-pg-1.2.2.1/bin/mpirun -np $np $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs"
+  cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget  urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
 else
-  /soft/apps/packages/mpich-pg-1.2.2.1/bin/mpirun -np $np $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
+  /soft/apps/packages/mpich-pg-1.2.2.1/bin/mpirun -np $np -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
   cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget  urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
 fi
 
@@ -225,8 +223,9 @@ EOF
 # 
 if [ $shared = "yes" ] ; then
   head -$np ${PETSC_DIR}/bin/hostnames.chiba > ./.pbsnodefile.$$
-  PBS_NODEFILE=`pwd`/.pbsnodefile.$$
-  export PBS_NODEFILE
+  export masternode=`tail -1 ./.pbsnodefile.$$`
+  export PBS_NODEFILE=.pbsnodefile.$$
+  cp  ./.pbsnodefile.$$ $rundir
   chmod u+x ./.mpirun$$
   ./.mpirun$$
 #
