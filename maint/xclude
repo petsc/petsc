@@ -1,3 +1,5 @@
+docs/exercises
+docs/html
 docs/manualpages/logfile.txt
 docs/manualpages/manualpages.cit
 petsc/bmake/common_win32
