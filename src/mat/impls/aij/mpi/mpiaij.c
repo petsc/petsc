@@ -3251,7 +3251,11 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
 
   /* create symbolic parallel matrix B_mpi */
   /*---------------------------------------*/
-  ierr = MatCreate(comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,&B_mpi);CHKERRQ(ierr);
+  if (n==PETSC_DECIDE) {
+    ierr = MatCreate(comm,m,n,PETSC_DETERMINE,N,&B_mpi);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreate(comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,&B_mpi);CHKERRQ(ierr);
+  }
   ierr = MatSetType(B_mpi,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B_mpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -3346,6 +3350,7 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
   } else if (scall == MAT_REUSE_MATRIX){
     Aw = *A_loc;
     mat=(Mat_SeqAIJ*)Aw->data; 
+    nnz_max = 0;
     for (i=0; i<am; i++){
       j = mat->i[i+1] - mat->i[i];
       if (j > nnz_max) nnz_max = j;
