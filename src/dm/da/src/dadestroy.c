@@ -1,4 +1,4 @@
-/*$Id: dadestroy.c,v 1.35 2000/04/12 04:26:20 bsmith Exp balay $*/
+/*$Id: dadestroy.c,v 1.36 2000/05/05 22:19:22 balay Exp balay $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -57,7 +57,9 @@ int DADestroy(DA da)
     ierr = VecScatterDestroy(da->gton);CHKERRQ(ierr);
   }
 
-  ierr = AODestroy(da->ao);CHKERRQ(ierr);
+  if (da->ao) {
+    ierr = AODestroy(da->ao);CHKERRQ(ierr);
+  }
   ierr = ISLocalToGlobalMappingDestroy(da->ltogmap);CHKERRQ(ierr);
 
   if (da->lx) {ierr = PetscFree(da->lx);CHKERRQ(ierr);}
