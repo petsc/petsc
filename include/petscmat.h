@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.124 1997/01/27 18:19:37 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.125 1997/02/03 06:03:27 bsmith Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -38,6 +38,7 @@ extern int MatPrintHelp(Mat);
 
 /* ------------------------------------------------------------*/
 extern int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
+extern int MatSetValuesBlocked(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
 typedef enum {MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0} MatAssemblyType;
 extern int MatAssemblyBegin(Mat,MatAssemblyType);
