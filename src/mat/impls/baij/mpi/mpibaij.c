@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.66 1997/04/10 00:03:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.67 1997/05/03 21:11:02 curfman Exp curfman $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -92,11 +92,14 @@ static int MatRestoreRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n
           goto a_noinsert; \
         } \
       } \
-      if (a->nonew) goto a_noinsert; \
+      if (a->nonew == 1) goto a_noinsert; \
+      else if (a->nonew == -1) SETERRQ(1,1,"Inserting a new nonzero in the matrix"); \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
         int    new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j; \
         Scalar *new_a; \
+ \
+        if (a->nonew == -2) SETERRQ(1,1,"Inserting a new nonzero in the matrix"); \
  \
         /* malloc new storage space */ \
         len     = new_nz*(sizeof(int)+bs2*sizeof(Scalar))+(a->mbs+1)*sizeof(int); \
@@ -164,11 +167,14 @@ static int MatRestoreRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n
           goto b_noinsert; \
         } \
       } \
-      if (b->nonew) goto b_noinsert; \
+      if (b->nonew == 1) goto b_noinsert; \
+      else if (b->nonew == -1) SETERRQ(1,1,"Inserting a new nonzero in the matrix"); \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
         int    new_nz = bi[b->mbs] + CHUNKSIZE,len,*new_i,*new_j; \
         Scalar *new_a; \
+ \
+        if (b->nonew == -2) SETERRQ(1,1,"Inserting a new nonzero in the matrix"); \
  \
         /* malloc new storage space */ \
         len     = new_nz*(sizeof(int)+bs2*sizeof(Scalar))+(b->mbs+1)*sizeof(int); \
