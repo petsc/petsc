@@ -73,7 +73,6 @@
 
       PetscInt  Nx,Ny,N,mx,my,ifive,ithree
       PetscTruth flg,nooutput,usemf
-      PetscMPIInt rank
       common   /mycommon/ mx,my,B,localX,localF,da
 !
 !

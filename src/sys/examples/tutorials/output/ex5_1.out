@@ -3,7 +3,8 @@ PetscBag Object:  ParameterBag contains parameters for simulations of top-secret
   rho = 44; Density, kg/m^3
   W = 5; Vertical velocity, m/sec
   modes_x = 2; Number of modes in x-direction
-  do_output = True; Write output file (yes/no)
+  do_output = TRUE; (PetscTruth) Write output file (yes/no)
+  dt = INT; (PetscDataType) meaningless datatype
   x1 = 1; x position
   x2 = 1.9; y position
 PetscBag Object:  ParameterBag contains parameters for simulations of top-secret, dangerous physics
@@ -11,7 +12,8 @@ PetscBag Object:  ParameterBag contains parameters for simulations of top-secret
   rho = 44; Density, kg/m^3
   W = 5; Vertical velocity, m/sec
   modes_x = 2; Number of modes in x-direction
-  do_output = True; Write output file (yes/no)
+  do_output = TRUE; (PetscTruth) Write output file (yes/no)
+  dt = INT; (PetscDataType) meaningless datatype
   x1 = 1; x position
   x2 = 1.9; y position
 The value of rho after loading is: 44.000000
