@@ -298,7 +298,7 @@ wwwpages:
 #   Rule for generating ADIC derivatives from PETSc .c files
 #
 adic:
-	adiC.new -avud gradient.new $(CFLAGS) $(SOURCEC)
+	for i in $(SOURCE); do adiC.new -avud gradient.new $(CFLAGS) $$i ; done
 
 SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
 	libpetscsnes libpetscsys libpetscts libpetscvec libpetscts libpetscgvec
