@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.63 1997/10/19 03:29:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.64 1997/12/01 01:56:33 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -61,12 +61,16 @@ extern int close(int);
 extern int socket(int,int,int);
 #if !defined(PARCH_hpux) && !defined(PARCH_alpha) && !defined(PARCH_solaris)
 /*
-    Some IBM rs6000 machines running 4.1 remove the prototype 
+    Some IBM rs6000 machines running AIX 3.2 please uncomment the prototype 
    below for connect()
 */
+/*
 #if defined(PARCH_rs6000) && !defined(__cplusplus)
 extern int connect(int,const struct sockaddr *,size_t);
-#elif !defined(PARCH_rs6000)
+#endif
+*/
+
+#if !defined(PARCH_rs6000)
 extern int connect(int,struct sockaddr *,int);
 #endif
 #endif
