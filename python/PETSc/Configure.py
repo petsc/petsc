@@ -143,15 +143,15 @@ class Configure(config.base.Configure):
             self.framework.argDB[versionName]  = options.getCompilerVersion(language, self.getCompiler())
           self.addArgumentSubstitution(versionName, versionName)
           # Check normal compiler flags
-          self.addCompilerFlag(options.getCompilerFlags(language, self.getCompiler(), ''))
+          map(self.addCompilerFlag, options.getCompilerFlags(language, self.getCompiler(), ''))
           # Check special compiler flags
           for bopt in ['g', 'O']:
             flagsName = flags+'_'+bopt
             if self.framework.argDB[flagsName] == 'Unknown':
-              self.framework.argDB[flagsName] = options.getCompilerFlags(language, self.getCompiler(), bopt)
+              self.framework.argDB[flagsName] = ' '.join([flag for flag in options.getCompilerFlags(language, self.getCompiler(), bopt) if self.checkCompilerFlag(flag)])
             testFlags = self.framework.argDB[flagsName]
             if not self.checkCompilerFlag(testFlags):
-              raise RuntimeError('Invalid '+language+' compiler flags for bopt '+bopt+': '+flags)
+              raise RuntimeError('Invalid '+language+' compiler flags for bopt '+bopt+': '+testFlags)
             self.addArgumentSubstitution(flagsName, flagsName)
         except RuntimeError: pass
         self.popLanguage()

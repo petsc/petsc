@@ -1,6 +1,3 @@
-in Options.py add checking each flag before shoving
-into list of flags
-
 Add support for requesting 32 bit or 64 bit code
 
 Put in crazy windows compiler flags
