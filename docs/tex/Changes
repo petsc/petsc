@@ -79,6 +79,9 @@ have the error flag as the final argument.
 
   Added additional final argument to SNESSetMonitor() an optional destroy routine for the 
     monitor context.
+
+  Changed calling sequence of MatSNESMFAddNullSpace() to take PCNullSpace object rather than 
+  array of vectors.
     
 
   DA
