@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.1 1998/04/01 19:27:01 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.1 1997/09/22 21:58:04 bsmith Exp bsmith $ 
 
 # -----------------------------------------------------------------------
 # Specify PETSc installation and user-defined compiler flags
 # -----------------------------------------------------------------------
-CFLAGS    = $(CPPFLAGS)  -D__SDIR__='"$(LOCDIR)"'
+CFLAGS    = ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
 # -----------------------------------------------------------------------
 # Define application source and examples
 # -----------------------------------------------------------------------
@@ -13,24 +13,19 @@ CFLAGS    = $(CPPFLAGS)  -D__SDIR__='"$(LOCDIR)"'
 #    CLEANFILES - variable to specify other files to delete via "make clean"
 #    
 
-ALL: ex1
+ALL: input
 
-SOURCEC    = 
+SOURCEC    = input.c
 SOURCEF    =
 SOURCEH    = 
 OBJSC      = 
 CLEANFILES = 
-LOCDIR     = src/apps/1/
+LOCDIR     = src/contrib/flash/
 
-ex1: chkopts ex1.o
-	-$(CLINKER) -o ex1 ex1.o $(PETSC_LIB)
-	-$(RM) ex1.o
+input: chkopts input.o
+	-${CLINKER} -o input input.o ${PETSC_LIB}
 
-ex2: chkopts ex2.o appview.o appload.o
-	-$(CLINKER) -o ex2 ex2.o appview.o appload.o $(PETSC_LIB)
-	-$(RM) ex2.o appview.o appload.o
-
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 1998/04/24 01:04:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 1998/04/30 15:16:58 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    =
 OBJSF    =
 LIBBASE  = 
-DIRS     = src  examples blas lapack makefile
+DIRS     = src  examples makefile
 LOCDIR   = src/adic/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
