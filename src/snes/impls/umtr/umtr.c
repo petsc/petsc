@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.112 2001/08/07 03:04:12 balay Exp bsmith $*/
+/*$Id: umtr.c,v 1.113 2001/08/07 21:31:10 bsmith Exp buschelm $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 
@@ -86,12 +86,14 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       if (delta <= 0) {
         if (xnorm > zero) delta = neP->factor1*xnorm;
         else delta = neP->delta0;
-        ierr = MatNorm(snes->jacobian,NORM_1,&max_val);CHKERRQ(ierr);
+        ierr = MatNorm(snes->jacobian,NORM_1,&max_val);
         if (ierr == PETSC_ERR_SUP) {
           PetscLogInfo(snes,"SNESSolve_UM_TR: Initial delta computed without matrix norm info\n");
-        } else {
+        } else if (ierr == 0) {
           if (PetscAbsReal(max_val)<1.e-14)SETERRQ(PETSC_ERR_PLIB,"Hessian norm is too small");
           delta = PetscMax(delta,snes->norm/max_val);
+        } else {
+          CHKERRQ(ierr);
         }
       } else { 
         delta = neP->delta0;
