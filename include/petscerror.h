@@ -406,7 +406,7 @@ M*/
 
 #define PetscFunctionBegin 
 #define PetscFunctionReturn(a)  return(a)
-#define PetscFunctionReturnVoid() return()
+#define PetscFunctionReturnVoid() return
 #define PetscStackPop 
 #define PetscStackPush(f) 
 #define PetscStackActive        0
