@@ -53,13 +53,19 @@
 @*/
 int PetscGetWorkingDirectory(char path[],int len)
 {
+#if defined(HAVE_GETCWD)
   PetscFunctionBegin;
-#if defined(HAVE_GETWD)
-  getwd(path);
-#elif defined(HAVE__GETCWD)
-  _getcwd(path,len);
-#else
   getcwd(path,len);
-#endif
   PetscFunctionReturn(0);
+#elif defined(HAVE__GETCWD)
+  PetscFunctionBegin;
+  _getcwd(path,len);
+  PetscFunctionReturn(0);
+#elif defined(HAVE_GETWD)
+  PetscFunctionBegin;
+  getwd(path);
+  PetscFunctionReturn(0);
+#else
+  SETERR(PETSC_ERR_SUP, "Could not find getcwd() or getwd()");
+#endif
 }
