@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.44 1995/07/16 17:37:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.45 1995/07/17 20:41:24 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -237,7 +237,7 @@ static int MatZeroRows_MPIRowbs_local(Mat mat,IS is,Scalar *diag)
   if (diag) {
     for ( i=0; i<N; i++ ) {
       if (rz[i] < 0 || rz[i] > m) 
-        SETERRQ(1,"MatZeroRows_MPIRowbs_local:Index out of range.");
+        SETERRQ(1,"MatZeroRows_MPIRowbs_local:Index out of range");
       if (l->rows[rz[i]]->length > 0) { /* in case row was completely empty */
         l->rows[rz[i]]->length = 1;
         l->rows[rz[i]]->nz[0] = *diag;
@@ -252,13 +252,85 @@ static int MatZeroRows_MPIRowbs_local(Mat mat,IS is,Scalar *diag)
   else {
     for ( i=0; i<N; i++ ) {
       if (rz[i] < 0 || rz[i] > m) 
-        SETERRQ(1,"MatZeroRows_MPIRowbs_local:Index out of range.");
+        SETERRQ(1,"MatZeroRows_MPIRowbs_local:Index out of range");
       l->rows[rz[i]]->length = 0;
     }
   }
   ISRestoreIndices(is,&rz);
   ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  return 0;
+}
+
+static int MatNorm_Rowbs_local(Mat matin,MatNormType type,double *norm)
+{
+  Mat_MPIRowbs *mat = (Mat_MPIRowbs *) matin->data;
+  BSsprow   *vs, **rs;
+  Scalar  *xv;
+  double  sum = 0.0;
+  int     *xi, nz, i, j;
+  if (!mat->assembled) 
+    SETERRQ(1,"MatNorm_Rowbs_local:Cannot compute norm of unassembled mat");
+  rs = mat->A->rows;
+  if (type == NORM_FROBENIUS) {
+    for (i=0; i<mat->m; i++ ) {
+      vs = *rs++;
+      nz = vs->length;
+      xv = vs->nz;
+      while (nz--) {
+#if defined(PETSC_COMPLEX)
+        sum += real(conj(*xv)*(*xv)); xv++;
+#else
+        sum += (*xv)*(*xv); xv++;
+#endif
+      }
+    }
+    *norm = sqrt(sum);
+  }
+  else if (type == NORM_1) { /* max column norm */
+    double *tmp;
+    tmp = (double *) PETSCMALLOC( mat->n*sizeof(double) ); CHKPTRQ(tmp);
+    PETSCMEMSET(tmp,0,mat->n*sizeof(double));
+    *norm = 0.0;
+    for (i=0; i<mat->m; i++) {
+      vs = *rs++;
+      nz = vs->length;
+      xi = vs->col;
+      xv = vs->nz;
+      while (nz--) {
+#if defined(PETSC_COMPLEX)
+        tmp[*xi] += abs(*xv); 
+#else
+        tmp[*xi] += fabs(*xv); 
+#endif
+        xi++; xv++;
+      }
+    }
+    for ( j=0; j<mat->n; j++ ) {
+      if (tmp[j] > *norm) *norm = tmp[j];
+    }
+    PETSCFREE(tmp);
+  }
+  else if (type == NORM_INFINITY) { /* max row norm */
+    *norm = 0.0;
+    for ( i=0; i<mat->m; i++ ) {
+      vs = *rs++;
+      nz = vs->length;
+      xv = vs->nz;
+      sum = 0.0;
+      while (nz--) {
+#if defined(PETSC_COMPLEX)
+        sum += abs(*xv); xv++;
+#else
+        sum += fabs(*xv); xv++;
+#endif
+      }
+      if (sum > *norm) *norm = sum;
+    }
+  }
+  else {
+    SETERRQ(1,"MatNorm_Rowbs_local:No support for the two norm");
+  }
   return 0;
 }
 
@@ -331,7 +403,7 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   MPI_Allreduce((void *) &mrow->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
   if (addv == (ADDVALUES|INSERTVALUES)) {
-    SETERRQ(1,"MatAssemblyBegin_MPIRowbs:Some procs inserted others added");
+    SETERRQ(1,"MatAssemblyBegin_MPIRowbs:Some procs inserted; others added");
   }
   mrow->insertmode = addv; /* in case this processor had no cache */
 
@@ -577,7 +649,7 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"MatZeroRows_MPIRowbs:row out of range");
+    if (!found) SETERRQ(1,"MatZeroRows_MPIRowbs:Row out of range");
   }
   nsends = 0;  for ( i=0; i<numtids; i++ ) {nsends += procs[i];} 
 
@@ -672,6 +744,17 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
+static int MatNorm_MPIRowbs(Mat mat,MatNormType type,double *norm)
+{
+  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
+  int ierr;
+  if (mrow->numtids == 1) {
+    ierr = MatNorm_Rowbs_local(mat,type,norm); CHKERRQ(ierr);
+  } else 
+    SETERRQ(1,"MatNorm_MPIRowbs:Not supported in parallel");
+  return 0; 
+}
+
 static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) mat->data;
@@ -739,10 +822,10 @@ static int MatRelax_MPIRowbs(Mat mat,Vec bb,double omega,MatSORType flag,
   VecGetArray(bb,&b);
   if (flag & SOR_ZERO_INITIAL_GUESS) {
       /* do nothing */ 
-  } else SETERRQ(1,"Not done yet.");
+  } else SETERRQ(1,"MatRelax_MPIRowbs:Zero initial guess not coded yet");
   if (shift) SETERRQ(1,"MatRelax_MPIRowbs:shift != 0 : Not done.");
-  if (omega != 1.0) SETERRQ(1,"MatRelax_MPIRowbs:omega != 1.0 : Not done.");
-  if (its != 1) SETERRQ(1,"MatRelax_MPIRowbs:its != 1 : Not done.");
+  if (omega != 1.0) SETERRQ(1,"MatRelax_MPIRowbs:omega != 1.0: Not coded yet");
+  if (its != 1) SETERRQ(1,"MatRelax_MPIRowbs:its != 1 : Not coded yet");
 
   if (flag == SOR_APPLY_UPPER) {
     SETERRQ(1,"MatRelax_MPIRowbs:Not done");
@@ -952,7 +1035,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
        MatRelax_MPIRowbs,
        0,
        MatGetInfo_MPIRowbs,0,
-       MatGetDiagonal_MPIRowbs,0,0,
+       MatGetDiagonal_MPIRowbs,0,MatNorm_MPIRowbs,
        MatAssemblyBegin_MPIRowbs,MatAssemblyEnd_MPIRowbs,
        0,
        MatSetOption_MPIRowbs,MatZeroEntries_MPIRowbs,MatZeroRows_MPIRowbs,0,
