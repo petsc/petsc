@@ -1332,6 +1332,7 @@ int MatDestroy_MPIRowbs(Mat mat)
   if (a->comm_pA)  {BSfree_comm(a->comm_pA);CHKERRBS(0);}
   if (a->comm_fpA) {BSfree_comm(a->comm_fpA);CHKERRBS(0);}
   if (a->imax)     {ierr = PetscFree(a->imax);CHKERRQ(ierr);}
+  ierr = MPI_Comm_free(&(a->comm_mpirowbs));CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1592,6 +1593,7 @@ int MatCreate_MPIRowbs(Mat A)
   a->alpha    = 1.0;
   a->ierr     = 0;
   a->failures = 0;
+  ierr = MPI_Comm_dup(A->comm,&(a->comm_mpirowbs));CHKERRQ(ierr);
   ierr = VecCreateMPI(A->comm,A->m,A->M,&(a->diag));CHKERRQ(ierr);
   ierr = VecDuplicate(a->diag,&(a->xwork));CHKERRQ(ierr);
   PetscLogObjectParent(A,a->diag);  PetscLogObjectParent(A,a->xwork);
@@ -1600,7 +1602,7 @@ int MatCreate_MPIRowbs(Mat A)
   a->procinfo = bspinfo;
   BSctx_set_id(bspinfo,a->rank);CHKERRBS(0);
   BSctx_set_np(bspinfo,a->size);CHKERRBS(0);
-  BSctx_set_ps(bspinfo,comm);CHKERRBS(0);
+  BSctx_set_ps(bspinfo,a->comm_mpirowbs);CHKERRBS(0);
   BSctx_set_cs(bspinfo,INT_MAX);CHKERRBS(0);
   BSctx_set_is(bspinfo,INT_MAX);CHKERRBS(0);
   BSctx_set_ct(bspinfo,IDO);CHKERRBS(0);

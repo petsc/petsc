@@ -39,6 +39,7 @@ typedef struct {
   int         reallocs;           /* number of mallocs during MatSetValues() */
 
   /* BlockSolve data */
+  MPI_Comm   comm_mpirowbs;     /* use a different communicator for BlockSolve */
   BSprocinfo *procinfo;         /* BlockSolve processor context */
   BSmapping  *bsmap;            /* BlockSolve mapping context */
   BSspmat    *A;                /* initial matrix */
