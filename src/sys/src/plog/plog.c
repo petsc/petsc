@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.3 1995/06/14 14:49:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.4 1995/06/18 16:23:36 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -363,6 +363,60 @@ int PLogDump(char* name)
   return 0;
 }
 
+static char *(name[]) = {"MatMult         ",
+                         "MatBeginAssembly",
+                         "MatEndAssembly  ",
+                         "MatGetReordering",
+                         "MatMultTrans    ",
+                         "MatMultAdd      ",
+                         "MatMultTransAdd ",
+                         "MatLUFactor     ",
+                         "MatCholeskyFacto",
+                         "MatLUFactorSymbo",
+                         "MatILUFactorSymb",
+                         "MatCholeskyFacto",
+                         "MatIncompleteCho",
+                         "MatLUFactorNumer",
+                         "MatCholeskyFacto",
+                         "MatRelax        ",
+                         "MatCopy         ",
+                         "MatConvert      ",
+                         "MatScale        ",
+                         "MatZeroEntries  ",
+                         "MatSolve        ",
+                         "MatSolveAdd     ",
+                         "MatSolveTrans   ",
+                         "MatSolveTransAdd",
+                         "MatInsertions   ",
+                         " "," "," "," "," ",
+                         "VecDot          ",
+                         "VecNorm         ",
+                         "VecASum         ",
+                         "VecAMax         ",
+                         "VecMax          ",
+                         "VecMin          ",
+                         "VecTDot         ",
+                         "VecScale        ",
+                         "VecCopy         ",
+                         "VecSet          ",
+                         "VecAXPY         ",
+                         "VecAYPX         ",
+                         "VecSwap         ",
+                         "VecWAXPY        ",
+                         "VecBeginAssembly",
+                         "VecEndAssembly  ",
+                         "VecMTDot        ",
+                         "VecMDot         ",
+                         "VecMAXPY        ",
+                         "VecPMult        ",
+                         " "," "," "," "," ",
+                         "SLESSolve       ",
+                         "PCSetUp         ",
+                         " "," "," ",
+                         "SNESSolve       ",
+                         "SNESLineSearch  ",
+                         "SNESFunctionEval",
+                         "SNESJacobianEval"};
 /*@
    PLogPrint - Prints a summary of the logging.
 
@@ -379,14 +433,64 @@ $  -logsummary : Prints summary of log information
 @*/
 int PLogPrint(MPI_Comm comm,FILE *fd)
 {
-  int    maxo,mino,aveo;
-  double _TotalTime,maxt,mint,avet;
+  double maxo,mino,aveo;
+  int    numtid,i;
+  double maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott;
+  double fmin,fmax,ftot,wdou,flops,totts;
+
+  MPI_Comm_size(comm,&numtid);
 
   PetscTime(_TotalTime);  _TotalTime -= BaseTime;
 
-  MPIU_fprintf(comm,fd,"Time: Max %g Min %g Avg %g\n",maxt,mint,avet);
-  MPIU_fprintf(comm,fd,"Objects created: Max %d Min %d Avg %d\n",
-                                                      maxo,mino,aveo);
+  wdou = _TotalFlops; 
+  MPI_Reduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,0,comm);
+  MPI_Reduce(&wdou,&maxf,1,MPI_DOUBLE,MPI_MAX,0,comm);
+  MPI_Reduce(&wdou,&totf,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  avef = (totf)/((double) numtid);
+  wdou = nobjects;
+  MPI_Reduce(&wdou,&mino,1,MPI_DOUBLE,MPI_MIN,0,comm);
+  MPI_Reduce(&wdou,&maxo,1,MPI_DOUBLE,MPI_MAX,0,comm);
+  MPI_Reduce(&wdou,&aveo,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  aveo = (aveo)/((double) numtid);
+  wdou = _TotalTime;
+  MPI_Reduce(&wdou,&mint,1,MPI_DOUBLE,MPI_MIN,0,comm);
+  MPI_Reduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
+  MPI_Reduce(&wdou,&tott,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  avet = (tott)/((double) numtid);
+
+  MPIU_fprintf(comm,fd,"             Max        Min        Avg      Total \n");
+  MPIU_fprintf(comm,fd,"Time:      %5.3e %5.3e   %5.3e\n",maxt,mint,avet);
+  MPIU_fprintf(comm,fd,"Objects:   %5.3e %5.3e   %5.3e\n",maxo,mino,aveo);
+  MPIU_fprintf(comm,fd,"Flops:     %5.3e %5.3e   %5.3e  %5.3e\n",
+                                                 maxf,minf,avef,totf);
+
+  fmin = minf/mint; fmax = maxf/maxt; ftot = totf/maxt;
+  MPIU_fprintf(comm,fd,"Flop rate: %5.3e %5.3e              %5.3e\n",
+                                               fmin,fmax,ftot);
+  MPIU_fprintf(comm,fd,"------------------------------------------\n"); 
+
+  /* loop over operations looking for interesting ones */
+  MPIU_fprintf(comm,fd,"                    Count        Time         Floprate\
+  %%Time\n");
+  MPIU_fprintf(comm,fd,"                               Min    Max    Min   Max\
+  \n");
+  for ( i=0; i<100; i++ ) {
+    if (EventsType[i][TIME]) {
+      wdou = EventsType[i][FLOPS]/EventsType[i][TIME];
+    }
+    else wdou = 0.0;
+    MPI_Reduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,0,comm);
+    MPI_Reduce(&wdou,&maxf,1,MPI_DOUBLE,MPI_MAX,0,comm);
+    wdou = EventsType[i][TIME];
+    MPI_Reduce(&wdou,&mint,1,MPI_DOUBLE,MPI_MIN,0,comm);
+    MPI_Reduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
+    MPI_Reduce(&wdou,&totts,1,MPI_DOUBLE,MPI_SUM,0,comm);
+    if (EventsType[i][COUNT]) {
+      MPIU_fprintf(comm,fd,"%s  %4d  %3.2e  %3.2e  %3.2e %3.2e %3.2f\n",
+                   name[i],(int)EventsType[i][COUNT],mint,maxt,minf,maxf,
+                   100.*totts/tott);
+    }
+  }
 
   return 0;
 }
