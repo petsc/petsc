@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.172 1998/03/24 20:39:04 balay Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.173 1998/03/24 20:59:14 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -639,6 +639,7 @@ int PetscFinalize(void)
     PetscSequentialPhaseBegin_Private(local_comm,1);
       printf("[%d] Maximum memory used %g\n",rank,maxm);
     PetscSequentialPhaseEnd_Private(local_comm,1);
+    ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
   }
   /* Can be dumped only after all the Objects are destroyed */
   if (flg3) {

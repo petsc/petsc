@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.42 1998/03/12 23:23:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.43 1998/03/23 21:26:09 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -100,7 +100,7 @@ int MPI_Comm_free(MPI_Comm *comm)
 {
   int i;
 
-  if (dups--) return MPI_SUCCESS;
+  if (--dups) return MPI_SUCCESS;
   for ( i=0; i<num_attr; i++ ) {
     if (attr[i].active && attr[i].del) {
       (*attr[i].del)(*comm,i,attr[i].attribute_val,attr[i].extra_state);
