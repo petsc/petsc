@@ -356,8 +356,21 @@ typedef struct {
   PetscReal      rs;  /* active row sum of abs(offdiagonals) */
   PetscScalar    pv;  /* pivot of the active row */
 } LUShift_Ctx;
-EXTERN PetscErrorCode Mat_LUFactorCheckShift(MatFactorInfo*,LUShift_Ctx*,PetscInt*);
+EXTERN PetscErrorCode Mat_LUCheckShift(MatFactorInfo*,LUShift_Ctx*,PetscInt*);
+
+/* 
+   Checking zero pivot for Cholesky, ICC preconditioners.
+*/
+typedef struct {
+  PetscInt       nshift;
+  PetscReal      shift_amount;
+  PetscTruth     chshift;
+  PetscReal      rs;  /* active row sum of abs(offdiagonals) */
+  PetscScalar    pv;  /* pivot of the active row */
+} ChShift_Ctx;
+EXTERN PetscErrorCode Mat_CholeskyCheckShift(MatFactorInfo*,ChShift_Ctx*,PetscInt*);
 #endif
+
 
 
 

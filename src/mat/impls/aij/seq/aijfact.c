@@ -432,16 +432,16 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       *ajtmp,*bjtmp,nz,row,*ics;
   PetscInt       *diag_offset = b->diag,diag,*pj;
   PetscScalar    *rtmp,*v,*pc,multiplier,*pv,*rtmps;
-  PetscReal      zeropivot,rs,d,shift_nonzero;
+  PetscReal      zeropivot,rs,d,shift_nz;
   PetscReal      row_shift,shift_top=0.;
   PetscTruth     shift_pd;
   LUShift_Ctx    sctx;
   PetscInt       newshift;
 
   PetscFunctionBegin;
-  shift_nonzero  = info->shiftnz;
-  shift_pd       = info->shiftpd;
-  zeropivot      = info->zeropivot;
+  shift_nz  = info->shiftnz;
+  shift_pd  = info->shiftpd;
+  zeropivot = info->zeropivot;
 
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
@@ -453,7 +453,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
     ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   }
   /* if both shift schemes are chosen by user, only use shift_pd */
-  if (shift_pd && shift_nonzero) shift_nonzero = 0.0; 
+  if (shift_pd && shift_nz) shift_nz = 0.0; 
   if (shift_pd) { /* set shift_top=max{row_shift} */
     PetscInt *aai = a->i,*ddiag = a->diag;
     shift_top = 0;
@@ -523,8 +523,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
       sctx.rs  = rs;
       sctx.pv  = pv[diag];
-      newshift = 0;
-      ierr = Mat_LUFactorCheckShift(info,&sctx,&newshift);CHKERRQ(ierr);
+      ierr = Mat_LUCheckShift(info,&sctx,&newshift);CHKERRQ(ierr);
       if (newshift == 1){
         break;    /* sctx.shift_amount is updated */
       } else if (newshift == -1){
@@ -558,8 +557,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   C->assembled = PETSC_TRUE;
   PetscLogFlops(C->n);
   if (sctx.nshift){
-    if (shift_nonzero) {
-      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_nonzero tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
+    if (shift_nz) {
+      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_nz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
     } else if (shift_pd) {
       b->lu_shift_fraction = info->shift_fraction;
       PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: diagonal shifted up by %e fraction top_value %e number shifts %D\n",info->shift_fraction,shift_top,sctx.nshift);
@@ -1097,14 +1096,15 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       *ai=a->i,*aj=a->j;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
-  PetscReal      zeropivot,shift_amount,rs,shift_nonzero;
-  PetscTruth     chshift,shift_pd;
-  PetscInt       nshift=0;
+  PetscReal      zeropivot,rs,shiftnz;
+  PetscTruth     shiftpd;
+  ChShift_Ctx    sctx;
+  PetscInt       newshift;
 
   PetscFunctionBegin;
-  shift_nonzero  = info->shiftnz;
-  shift_pd       = info->shiftpd;
-  zeropivot      = info->zeropivot; 
+  shiftnz   = info->shiftnz;
+  shiftpd   = info->shiftpd;
+  zeropivot = info->zeropivot; 
 
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
   
@@ -1114,9 +1114,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   jl   = il + mbs;
   rtmp = (MatScalar*)(jl + mbs);
 
-  shift_amount = 0;
+  sctx.shift_amount = 0;
+  sctx.nshift       = 0;
   do {
-    chshift = PETSC_FALSE;
+    sctx.chshift = PETSC_FALSE;
     for (i=0; i<mbs; i++) {
       rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
     } 
@@ -1133,7 +1134,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
         }
       } 
       /* shift the diagonal of the matrix */
-      if (nshift) rtmp[k] += shift_amount; 
+      if (sctx.nshift) rtmp[k] += sctx.shift_amount; 
 
       /* modify k-th row by adding in those rows i with U(i,k)!=0 */
       dk = rtmp[k];
@@ -1170,27 +1171,13 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
           rs += PetscAbsScalar(rtmp[*bcol++]);
         }
       }
-      if (PetscAbsScalar(dk) <= zeropivot*rs && shift_nonzero){
-        /* force |diag(*B)| > zeropivot*rs */
-        if (!nshift){
-          shift_amount = shift_nonzero;
-        } else {
-          shift_amount *= 2.0;
-        }
-        chshift = PETSC_TRUE;
-        nshift++;
-        break; 
-      } else if (PetscRealPart(dk) <= zeropivot*rs && shift_pd){ 
-        /* calculate a shift that would make this row diagonally dominant */
-	shift_amount = PetscMax(rs+PetscAbs(PetscRealPart(dk)),1.1*shift_amount);
-	chshift      = PETSC_TRUE;
-	/* Unlike in the ILU case there is no exit condition on nshift:
-	   we increase the shift until it converges. There is no guarantee that
-	   this algorithm converges faster or slower, or is better or worse
-	   than the ILU algorithm. */
-	nshift++;
-	break;
-      } else if (PetscAbsScalar(dk) <= zeropivot*rs){
+
+      sctx.rs = rs;
+      sctx.pv = dk;
+      ierr = Mat_CholeskyCheckShift(info,&sctx,&newshift);CHKERRQ(ierr);
+      if (newshift == 1){
+        break;    /* sctx.shift_amount is updated */
+      } else if (newshift == -1){
         SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",k,PetscAbsScalar(dk),zeropivot,rs);
       }
    
@@ -1206,7 +1193,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
         i = bj[jmin]; jl[k] = jl[i]; jl[i] = k;
       }        
     } 
-  } while (chshift);
+  } while (sctx.chshift);
   ierr = PetscFree(il);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
@@ -1214,11 +1201,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
   PetscLogFlops(C->m);
-  if (nshift){
-    if (shift_nonzero) {
-      PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqAIJ: number of shift_nonzero tries %D, shift_amount %g\n",nshift,shift_amount);
-    } else if (shift_pd) {
-      PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqAIJ: number of shift_pd tries %D, shift_amount %g\n",nshift,shift_amount);
+  if (sctx.nshift){
+    if (shiftnz) {
+      PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqAIJ: number of shiftnz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
+    } else if (shiftpd) {
+      PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqAIJ: number of shiftpd tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
     }
   }
   PetscFunctionReturn(0); 
