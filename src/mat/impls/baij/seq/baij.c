@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.18 1996/03/25 23:39:02 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.19 1996/03/26 18:56:10 bsmith Exp balay $";
 #endif
 
 /*
@@ -221,6 +221,56 @@ static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
   return 0;
 }
 
+int MatGetRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int          itmp,i,j,k,M,*ai,*aj,bs,bn,bp,*idx_i;
+  Scalar      *aa,*v_i,*aa_i;
+
+  bs = a->bs;
+  ai = a->i;
+  aj = a->j;
+  aa = a->a;
+  
+  if (row < 0 || row >= a->m) SETERRQ(1,"MatGetRow_SeqBAIJ:Row out of range");
+  
+  bn  = row/bs;   /* Block number */
+  bp  = row % bs; /* Block Position */
+  M   = ai[bn+1] - ai[bn];
+  *nz = bs*M;
+  
+  if (v) {
+    *v = 0;
+    if (*nz) {
+      *v = (Scalar *) PetscMalloc( (*nz)*sizeof(Scalar) ); CHKPTRQ(*v);
+      for ( i=0; i<M; i++ ) { /* for each block in the block row */
+        v_i  = *v + i*bs;
+        aa_i = aa + bs*bs*(ai[bn] + i);
+        for ( j=bp,k=0; j<bs*bs; j+=bs,k++ ) {v_i[k] = aa_i[j];}
+      }
+    }
+  }
+
+  if (idx) {
+    *idx = 0;
+    if (*nz) {
+      *idx = (int *) PetscMalloc( (*nz)*sizeof(int) ); CHKPTRQ(*idx);
+      for ( i=0; i<M; i++ ) { /* for each block in the block row */
+        idx_i = *idx + i*bs;
+        itmp  = bs*aj[ai[bn] + i];
+        for ( j=0; j<bs; j++ ) {idx_i[j] = itmp++;}
+      }
+    }
+  }
+  return 0;
+}
+
+int MatRestoreRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
+{
+  if (idx) {if (*idx) PetscFree(*idx);}
+  if (v)   {if (*v)   PetscFree(*v);}
+  return 0;
+}
 
 static int MatZeroEntries_SeqBAIJ(Mat A)
 {
@@ -433,8 +483,8 @@ static int MatEqual_SeqBAIJ(Mat A,Mat B, PetscTruth* flg)
 static int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int        i,j,k,n,row,bs,*ai,*aj,ambs;
-  Scalar     *x, zero = 0.0,*aa,*aa_j;
+  int         i,j,k,n,row,bs,*ai,*aj,ambs;
+  Scalar      *x, zero = 0.0,*aa,*aa_j;
 
   bs  = a->bs;
   aa   = a->a;
@@ -444,7 +494,7 @@ static int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
 
   VecSet(&zero,v);
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
-  if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqAIJ:Nonconforming matrix and vector");
+  if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqBAIJ:Nonconforming matrix and vector");
   for ( i=0; i<ambs; i++ ) {
     for ( j=ai[i]; j<ai[i+1]; j++ ) {
       if (aj[j] == i) {
@@ -457,6 +507,54 @@ static int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
   }
   return 0;
 }
+
+static int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  Scalar      *l,*r,x,*v,*aa,*li,*ri;
+  int         i,j,k,lm,rn,M,m,n,*ai,*aj,mbs,tmp,bs;
+
+  ai  = a->i;
+  aj  = a->j;
+  aa  = a->a;
+  m   = a->m;
+  n   = a->n;
+  bs  = a->bs;
+  mbs = a->mbs;
+
+  if (ll) {
+    VecGetArray(ll,&l); VecGetSize(ll,&lm);
+    if (lm != m) SETERRQ(1,"MatDiagonalScale_SeqBAIJ:Left scaling vector wrong length");
+    for ( i=0; i<mbs; i++ ) { /* for each block row */
+      M  = ai[i+1] - ai[i];
+      li = l + i*bs;
+      v  = aa + bs*bs*ai[i];
+      for ( j=0; j<M; j++ ) { /* for each block */
+        for ( k=0; k<bs*bs; k++ ) {
+          (*v++) *= li[k%bs];
+        } 
+      }  
+    }
+  }
+  
+  if (rr) {
+    VecGetArray(rr,&r); VecGetSize(rr,&rn);
+    if (rn != n) SETERRQ(1,"MatDiagonalScale_SeqBAIJ:Right scaling vector wrong length");
+    for ( i=0; i<mbs; i++ ) { /* for each block row */
+      M  = ai[i+1] - ai[i];
+      v  = aa + bs*bs*ai[i];
+      for ( j=0; j<M; j++ ) { /* for each block */
+        ri = r + bs*aj[ai[i]+j];
+        for ( k=0; k<bs; k++ ) {
+          x = ri[k];
+          for ( tmp=0; tmp<bs; tmp++ ) (*v++) *= x;
+        } 
+      }  
+    }
+  }
+  return 0;
+}
+
 
 extern int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,double,Mat*);
 extern int MatLUFactor_SeqBAIJ(Mat,IS,IS,double);
@@ -549,7 +647,7 @@ int MatPrintHelp_SeqBAIJ(Mat A)
 }
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {0,
-       0,0,
+       MatGetRow_SeqBAIJ,MatRestoreRow_SeqBAIJ,
        MatMult_SeqBAIJ,0,
        0,0,
        MatSolve_SeqBAIJ,0,
@@ -558,7 +656,7 @@ static struct _MatOps MatOps = {0,
        0,
        0,
        MatGetInfo_SeqBAIJ,MatEqual_SeqBAIJ,
-       MatGetDiagonal_SeqBAIJ,0,MatNorm_SeqBAIJ,
+       MatGetDiagonal_SeqBAIJ,MatDiagonalScale_SeqBAIJ,MatNorm_SeqBAIJ,
        0,0,
        0,
        MatSetOption_SeqBAIJ,MatZeroEntries_SeqBAIJ,0,
@@ -845,7 +943,8 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
     a->i[i]      = a->i[i-1] + browlengths[i-1];
     a->ilen[i-1] = browlengths[i-1];
   }
-  a->nz = 0;
+  a->indexshift = 0;
+  a->nz         = 0;
   for ( i=0; i<mbs; i++ ) a->nz += browlengths[i];
 
   /* read in nonzero values */
