@@ -37,10 +37,12 @@ class Configure(config.base.Configure):
     return output
 
   def checkLib(self, libraries):
-    '''Check for MPI_Init in libraries, which can be a list of libraries or a single library'''
+    '''Check for MPI_Init and MPI_Comm_create in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.framework.argDB['LIBS']
     found   = self.libraries.check(libraries, 'MPI_Init', otherLibs = self.compilers.flibs)
+    if found:
+      found = self.libraries.check(libraries, 'MPI_Comm_create',otherLibs=self.compilers.flibs)
     self.framework.argDB['LIBS'] = oldLibs
     return found
 
