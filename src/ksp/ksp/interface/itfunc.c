@@ -567,7 +567,7 @@ PetscErrorCode KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 PetscErrorCode KSPDestroy(KSP ksp)
 {
   PetscErrorCode ierr;
-  int i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -586,6 +586,7 @@ PetscErrorCode KSPDestroy(KSP ksp)
   }
   ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
+  if (ksp->nullsp) {ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);}
   PetscLogObjectDestroy(ksp);
   PetscHeaderDestroy(ksp);
   PetscFunctionReturn(0);
