@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.15 1997/05/05 04:09:55 curfman Exp curfman $";
+C "$Id: ex4f.F,v 1.16 1997/05/05 04:25:28 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -242,9 +242,10 @@ C
 C  Notes:
 C  This routine serves as a wrapper for the lower-level routine
 C  "ApplicationInitialGuess", where the actual computations are 
-C  done using standard Fortran-style computations over a 2-dim array.
-C  This routine merely accesses the local vector data via VecGetArray()
-C  and VecRestoreArray().
+C  done using the standard Fortran style of treating the local
+C  vector data as a multidimensional array over the local mesh.
+C  This routine merely accesses the local vector data via
+C  VecGetArray() and VecRestoreArray().
 C
       subroutine FormInitialGuess(X,ierr)
       implicit none
@@ -360,10 +361,11 @@ C  F     - vector with newly computed function
 C
 C  Notes:
 C  This routine serves as a wrapper for the lower-level routine
-C  "ApplicationFunction", where the actual computations are done
-C  using standard Fortran-style computations over a 2-dim array.
-C  This routine merely accesses the local vector data via VecGetArray()
-C  and VecRestoreArray().
+C  "ApplicationFunction", where the actual computations are 
+C  done using the standard Fortran style of treating the local
+C  vector data as a multidimensional array over the local mesh.
+C  This routine merely accesses the local vector data via
+C  VecGetArray() and VecRestoreArray().
 C
       subroutine FormFunction(snes,X,F,dummy)
       implicit none
@@ -421,10 +423,10 @@ C  ApplicationFunction - Computes nonlinear function, called by
 C  the higher level routine FormFunction().
 C
 C  Input Parameter:
-C  x - local vector data
+C  x    - local vector data
 C
 C  Output Parameters:
-C  x - local vector data
+C  f    - local vector data, f(x)
 C  ierr - error code 
 C
 C  Notes:
@@ -482,29 +484,25 @@ C
 C  FormJacobian - Evaluates Jacobian matrix.
 C
 C  Input Parameters:
-C  snes  - the SNES context
-C  x     - input vector
-C  dummy - optional user-defined context, as set by SNESSetJacobian()
-C         (not used here)
+C  snes    - the SNES context
+C  x       - input vector
+C  dummy   - optional user-defined context, as set by SNESSetJacobian()
+C            (not used here)
 C
 C  Output Parameters:
-C  A     - Jacobian matrix
-C  B     - optionally different preconditioning matrix
-C  flag  - flag indicating matrix structure
+C  jac      - Jacobian matrix
+C  jac_prec - optionally different preconditioning matrix (not used here)
+C  flag     - flag indicating matrix structure
 C
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                   Macro definitions
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+C  Notes:
+C  This routine serves as a wrapper for the lower-level routine
+C  "ApplicationFunction", where the actual computations are 
+C  done using the standard Fortran style of treating the local
+C  vector data as a multidimensional array over the local mesh.
+C  This routine merely accesses the local vector data via
+C  VecGetArray() and VecRestoreArray().
 C
-C  Macros to make clearer the process of getting values from vectors.
-C
-C   - The element lx_a(ib) is element ib+1 in the vector, x
-C   - Here we add 1 to the base array index to facilitate the use of
-C     conventional Fortran 1-based array indexing.
-C
-#define lx_a(ib) lx_v(lx_i + (ib) + 1)
-
-      subroutine FormJacobian(snes,X,jac,B,flag,dummy)
+      subroutine FormJacobian(snes,X,jac,jac_prec,flag,dummy)
       implicit none
 
 #include "include/FINCLUDE/petsc.h"
@@ -516,7 +514,7 @@ C
 C  Input/output variables:
       SNES         snes
       Vec          X
-      Mat          jac, B
+      Mat          jac, jac_prec
       MatStructure flag
       integer      dummy
 
@@ -526,60 +524,20 @@ C  Common blocks:
       common /params/ lambda, mx, my
 
 C  Local variables:
-      integer      ierr, i, j, row, col(5)
-      Scalar       two, one,  hx, hy, hxdhy, hydhx, sc, v(5)
+      integer      ierr
 
 C  Declarations for use with local array:
-      Scalar   lx_v(1)
+      Scalar   lx_v(0:1)
       common   lx_v
       integer  lx_i
-
-C  Set parameters
-
-      one    = 1.0
-      two    = 2.0
-      hx     = one/DBLE(mx-1)
-      hy     = one/DBLE(my-1)
-      sc     = hx*hy
-      hxdhy  = hx/hy
-      hydhx  = hy/hx
 
 C  Get a pointer to vector data
 
       call VecGetArray(X,lx_v,lx_i,ierr)
 
-C  Compute entries of the Jacobian matrix
-C   - Here, we set all entries for a particular row at once.
-C   - Note that MatSetValues() uses 0-based row and column numbers
-C     in Fortran as well as in C.
+C  Compute Jacobian entries
 
-      do 20 j=1,my
-         row = (j-1)*mx - 1
-         do 10 i=1,mx
-            row = row + 1
-C           boundary points
-            if (i .eq. 1 .or. j .eq. 1
-     &             .or. i .eq. mx .or. j .eq. my) then
-               call MatSetValues(jac,1,row,1,row,one,
-     &                           INSERT_VALUES,ierr)
-C           interior grid points
-            else
-               v(1) = -hxdhy
-               v(2) = -hydhx
-               v(3) = two*(hydhx + hxdhy) 
-     &                  - sc*lambda*exp(lx_a(row))
-               v(4) = -hydhx
-               v(5) = -hxdhy
-               col(1) = row - mx
-               col(2) = row - 1
-               col(3) = row
-               col(4) = row + 1
-               col(5) = row + mx
-               call MatSetValues(jac,1,row,5,col,v,
-     &                           INSERT_VALUES,ierr)
-            endif
- 10      continue
- 20   continue
+      call ApplicationJacobian(lx_v(lx_i),jac,jac_prec,ierr)
 
 C  Restore vector
 
@@ -607,6 +565,91 @@ C     will not function correctly.  Thus, use this optimization
 C     feature with caution!
 
       flag = SAME_NONZERO_PATTERN
+
+      return
+      end
+
+C ---------------------------------------------------------------------
+C
+C  ApplicationJacobian - Computes Jacobian matrix, called by
+C  the higher level routine FormJacobian().
+C
+C  Input Parameters:
+C  x        - local vector data
+C
+C  Output Parameters:
+C  jac      - Jacobian matrix
+C  jac_prec - optionally different preconditioning matrix (not used here)
+C  ierr     - error code 
+C
+C  Notes:
+C  This routine uses standard Fortran-style computations over a 2-dim array.
+C
+      subroutine ApplicationJacobian(x,jac,jac_prec,ierr)
+      implicit none
+
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/mat.h"
+#include "include/FINCLUDE/pc.h"
+#include "include/FINCLUDE/snes.h"
+
+C  Input/output variables:
+      Scalar   x(mx,my)
+      Mat      jac, jac_prec
+      integer  ierr
+
+C  Common blocks:
+      Double   lambda
+      integer  mx, my
+      common /params/ lambda, mx, my
+
+C  Local variables:
+      integer      ierr, i, j, row, col(5)
+      Scalar       two, one,  hx, hy, hxdhy, hydhx, sc, v(5)
+
+C  Set parameters
+
+      one    = 1.0
+      two    = 2.0
+      hx     = one/DBLE(mx-1)
+      hy     = one/DBLE(my-1)
+      sc     = hx*hy
+      hxdhy  = hx/hy
+      hydhx  = hy/hx
+
+C  Compute entries of the Jacobian matrix
+C   - Here, we set all entries for a particular row at once.
+C   - Note that MatSetValues() uses 0-based row and column numbers
+C     in Fortran as well as in C.
+
+      do 20 j=1,my
+         row = (j-1)*mx - 1
+         do 10 i=1,mx
+            row = row + 1
+C           boundary points
+            if (i .eq. 1 .or. j .eq. 1
+     &             .or. i .eq. mx .or. j .eq. my) then
+               call MatSetValues(jac,1,row,1,row,one,
+     &                           INSERT_VALUES,ierr)
+C           interior grid points
+            else
+               v(1) = -hxdhy
+               v(2) = -hydhx
+               v(3) = two*(hydhx + hxdhy) 
+     &                  - sc*lambda*exp(x(i,j))
+               v(4) = -hydhx
+               v(5) = -hxdhy
+               col(1) = row - mx
+               col(2) = row - 1
+               col(3) = row
+               col(4) = row + 1
+               col(5) = row + mx
+               call MatSetValues(jac,1,row,5,col,v,
+     &                           INSERT_VALUES,ierr)
+            endif
+ 10      continue
+ 20   continue
 
       return
       end
