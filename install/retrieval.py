@@ -16,12 +16,9 @@ class Retriever(install.base.Base):
   def getInstallRoot(self, url):
     '''Guess the install root from the project URL'''
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
-    print 'PATH'+path
     path = path[1:]
-    print 'PATH'+path
     if self.base:
       path = os.path.join(self.base, path)
-    print 'PATH'+path
     return os.path.abspath(path)
 
   def removeRoot(self,root,canExist,force = 0):
@@ -95,42 +92,34 @@ class Retriever(install.base.Base):
     return root
 
   def retrieve(self, url, root = None, canExist = 0, force = 0):
-    remapurls = {'bk://sidl.bkbits.net/Compiler' : 'bk:///home/web/Compiler',
-                 'bk://sidl.bkbits.net/Runtime' : 'bk:///home/web/Runtime',
-                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/Compiler.tgz' : 'file:///home/web/Compiler.tgz',
-                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/Runtime.tgz' : 'file:///home/web/Runtime.tgz',
-                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/ply.tgz' : 'file:///home/web/ply.tgz',
-                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/Compiler.tgz' : 'file:///home/web/Compiler.tgz',
-                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/Runtime.tgz' : 'file:///home/web/Runtime.tgz',
-                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/ply.tgz' : 'file:///home/web/ply.tgz'}
-    remaproot = {'bk://sidl.bkbits.net/Compiler' : 'Compiler',
-                 'bk://sidl.bkbits.net/Runtime' : 'Runtime',
-                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/Compiler.tgz' : 'Compiler',
-                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/Runtime.tgz' : 'Runtime',
-                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/ply.tgz' : 'ply-dev',
-                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/Compiler.tgz' : 'Compiler',
-                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/Runtime.tgz' : 'Runtime',
-                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/ply.tgz' : 'ply-dev'}
-    print 'URL in '+url
-    if remaproot.has_key(url):
-      root = remaproot[url]
-      print 'Remapped root '+root
-    if remapurls.has_key(url):
-      url = remapurls[url]
-      print 'Remapped url '+url
+#    remapurls = {'bk://sidl.bkbits.net/Compiler' : 'bk:///home/web/Compiler',
+#                 'bk://sidl.bkbits.net/Runtime' : 'bk:///home/web/Runtime',
+#                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/Compiler.tgz' : 'file:///home/web/Compiler.tgz',
+#                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/Runtime.tgz' : 'file:///home/web/Runtime.tgz',
+#                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/ply.tgz' : 'file:///home/web/ply.tgz',
+#                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/Compiler.tgz' : 'file:///home/web/Compiler.tgz',
+#                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/Runtime.tgz' : 'file:///home/web/Runtime.tgz',
+#                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/ply.tgz' : 'file:///home/web/ply.tgz'}
+#    remaproot = {'bk://sidl.bkbits.net/Compiler' : 'Compiler',
+#                 'bk://sidl.bkbits.net/Runtime' : 'Runtime',
+#                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/Compiler.tgz' : 'Compiler',
+#                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/Runtime.tgz' : 'Runtime',
+#                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/ply.tgz' : 'ply-dev',
+#                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/Compiler.tgz' : 'Compiler',
+#                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/Runtime.tgz' : 'Runtime',
+#                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/ply.tgz' : 'ply-dev'}
+#    if remaproot.has_key(url):
+#      root = remaproot[url]
+#    if remapurls.has_key(url):
+#      url = remapurls[url]
 
     project = self.getInstalledProject(url)
     if not project is None:
       root     = project.getRoot()
       canExist = 1
-    print 'url'+url
     if root is None:
       root = self.getInstallRoot(url)
-    print 'root'+root
-    print 'url'+url
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
-    print 'location'+location
-    print 'path'+path
     try:
       if self.argDB['retrievalCanExist']:
         canExist = 1
