@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.26 1999/03/19 21:24:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.27 1999/04/05 00:10:39 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -31,6 +31,7 @@ static char vcid[] = "$Id: zsnes.c,v 1.26 1999/03/19 21:24:42 bsmith Exp bsmith 
 #define snesdefaultcomputejacobian_  SNESDEFAULTCOMPUTEJACOBIAN
 #define snesdefaultcomputejacobiancolor_ SNESDEFAULTCOMPUTEJACOBIANCOLOR
 #define matsnesmfsettype_                MATSNESMFSETTYPE
+#define snesgetoptionsprefix_            SNESGETOPTIONSPREFIX
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define snesregisterdestroy_         snesregisterdestroy
 #define snessetjacobian_             snessetjacobian
@@ -57,6 +58,7 @@ static char vcid[] = "$Id: zsnes.c,v 1.26 1999/03/19 21:24:42 bsmith Exp bsmith 
 #define snesdefaultcomputejacobian_  snesdefaultcomputejacobian
 #define snesdefaultcomputejacobiancolor_ snesdefaultcomputejacobiancolor
 #define matsnesmfsettype_                matsnesmfsettype
+#define snesgetoptionsprefix_            snesgetoptionsprefix
 #endif
 
 EXTERN_C_BEGIN
@@ -280,6 +282,21 @@ void snesgettype_(SNES *snes,CHAR name,int *__ierr,int len)
   }
 #else
   PetscStrncpy(name,tname,len);
+#endif
+}
+
+void snesgetoptionsprefix_(SNES *snes, CHAR prefix,int *__ierr,int len)
+{
+  char *tname;
+
+  *__ierr = SNESGetOptionsPrefix(*snes,&tname);
+#if defined(USES_CPTOFCD)
+  {
+    char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
+    PetscStrncpy(t,tname,len1);
+  }
+#else
+  PetscStrncpy(prefix,tname,len);
 #endif
 }
 

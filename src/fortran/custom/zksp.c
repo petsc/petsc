@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.26 1999/02/27 04:46:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.27 1999/04/05 18:25:24 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -25,6 +25,7 @@ static char vcid[] = "$Id: zksp.c,v 1.26 1999/02/27 04:46:51 bsmith Exp bsmith $
 #define kspbuildsolution_         KSPBUILDSOLUTION
 #define kspsettype_               KSPSETTYPE           
 #define kspgetresidualhistory_    KSPGETRESIDUALHISTORY
+#define kspgetoptionsprefix_      KSPGETOPTIONSPREFIX
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define kspgetresidualhistory_    kspgetresidualhistory
 #define kspsettype_               kspsettype
@@ -43,6 +44,7 @@ static char vcid[] = "$Id: zksp.c,v 1.26 1999/02/27 04:46:51 bsmith Exp bsmith $
 #define kspgettype_               kspgettype
 #define kspgetpreconditionerside_ kspgetpreconditionerside
 #define kspbuildsolution_         kspbuildsolution
+#define kspgetoptionsprefix_      kspgetoptionsprefix
 #endif
 
 EXTERN_C_BEGIN
@@ -180,4 +182,18 @@ void kspbuildresidual_(KSP *ctx,Vec *t,Vec *v,Vec *V, int *__ierr )
   *__ierr = KSPBuildResidual(*ctx,*t,*v,V);
 }
 
+void kspgetoptionsprefix_(KSP *ksp, CHAR prefix,int *__ierr,int len)
+{
+  char *tname;
+
+  *__ierr = KSPGetOptionsPrefix(*ksp,&tname);
+#if defined(USES_CPTOFCD)
+  {
+    char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
+    PetscStrncpy(t,tname,len1);
+  }
+#else
+  PetscStrncpy(prefix,tname,len);
+#endif
+}
 EXTERN_C_END

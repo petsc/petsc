@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.180 1999/04/02 15:11:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.181 1999/04/05 18:18:42 bsmith Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -2273,7 +2273,7 @@ int SNESAppendOptionsPrefix(SNES snes,char *prefix)
 
 #undef __FUNC__  
 #define __FUNC__ "SNESGetOptionsPrefix"
-/*@
+/*@C
    SNESGetOptionsPrefix - Sets the prefix used for searching for all 
    SNES options in the database.
 
@@ -2284,6 +2284,9 @@ int SNESAppendOptionsPrefix(SNES snes,char *prefix)
 
    Output Parameter:
 .  prefix - pointer to the prefix string used
+
+   Notes: On the fortran side, the user should pass in a string 'prifix' of
+   sufficient length to hold the prefix.
 
    Level: advanced
 
