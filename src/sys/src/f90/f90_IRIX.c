@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: f90_IRIX.c,v 1.2 1998/03/12 19:14:23 balay Exp balay $";
+static char vcid[] = "$Id: f90_IRIX.c,v 1.3 1998/03/12 19:27:47 balay Exp balay $";
 #endif
 
 /*
@@ -58,7 +58,7 @@ int PetscF90Get1dArrayScalar(array1d *ptr,void **array)
 */ 
 int PetscF90Destroy1dArrayScalar(array1d *ptr)
 {
-  ptr->addr  = (void *);
+  ptr->addr  = (void *)0;
   return 0;
 }
 /* --------------------------------------------------------*/
