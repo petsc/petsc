@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: drawv.c,v 1.7 1996/08/08 14:44:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: drawv.c,v 1.8 1996/09/27 19:38:38 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -22,7 +22,7 @@ int ViewerFlush_Draw(Viewer v)
   return DrawSyncFlush(v->draw);
 }
 
-/*@
+/*@C
     ViewerDrawGetDraw - Returns Draw object from Viewer object.
     This Draw object may then be used to perform graphics using 
     DrawXXX() commands.
@@ -45,7 +45,7 @@ int ViewerDrawGetDraw(Viewer v, Draw *draw)
   return 0;
 }
 
-/*@
+/*@C
     ViewerDrawGetDrawLG - Returns DrawLG object from Viewer object.
     This DrawLG object may then be used to perform graphics using 
     DrawLGXXX() commands.
