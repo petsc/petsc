@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.17 1995/12/06 00:25:54 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.18 1995/12/21 18:34:15 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -9,9 +9,9 @@ C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  In this example the application context is a Fortran integer array:
 C
-C      ctx(1) = da
-C          2  = F
-C          3  = xl
+C      ctx(1) = da    - the distributed array
+C          2  = F     - the global vector where the evaluated function is stored
+C          3  = xl    - local work vector
 C          4  = rank
 C          5  = size
 C          6  = N
@@ -50,7 +50,6 @@ C Set up data structures
      *                     N,3,PETSC_NULL,0,PETSC_NULL,J,ierr)
 
       call MatGetName(J,matrixname,ierr)
-C     print*, 'Matrix name ',matrixname
 
 C Store right-hand-side of PDE and exact solution
       call VecGetOwnershipRange(x,start,end,ierr)
@@ -83,6 +82,8 @@ C Set up nonlinear solver; then execute it
       call SNESSetFromOptions(snes,ierr)
       call SNESSetUp(snes,ierr)
       call SNESSolve(snes,its,ierr)
+
+C Write results if first processor
       if (ctx(4) .eq. 0) then
         write(6,100) its
       endif
@@ -105,8 +106,8 @@ C Free data structures
 C --------------------  Evaluate Function F(x) --------------------- 
 
       subroutine FormFunction(snes,x,f,ctx)
-      integer snes, x, f, ctx(*)
-      integer rank, size, i, s, n, ierr, ixx, iff, iF2
+      integer          snes, x, f, ctx(*)
+      integer          rank, size, i, s, n, ierr, ixx, iff, iF2
       double precision h, d, vf2(1), vxx(1), vff(1)
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -114,13 +115,10 @@ C --------------------  Evaluate Function F(x) ---------------------
 #include "include/finclude/mat.h"
 #include "include/finclude/snes.h"
 
-#define ff(ib)  vff(iff + (ib))
-#define F2(ib)  vF2(iF2 + (ib))
-#define xx(ib)  vxx(ixx + (ib))
 
       rank  = ctx(4)
-      size = ctx(5)
-      h = 1.d0/(ctx(6) - 1.d0)
+      size  = ctx(5)
+      h     = 1.d0/(ctx(6) - 1.d0)
       call DAGlobalToLocalBegin(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
       call DAGlobalToLocalEnd(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
 
@@ -130,9 +128,19 @@ C --------------------  Evaluate Function F(x) ---------------------
         call MPI_Abort(MPI_COMM_WORLD,0,ierr)
       endif
 
+C
+C This sets the index ixx so that vxx(ixx+1) is the first local
+C element in the vector indicated by ctx(3).
+C
       call VecGetArray(ctx(3),vxx,ixx,ierr)
       call VecGetArray(f,vff,iff,ierr)
       call VecGetArray(ctx(2),vF2,iF2,ierr)
+C
+C Macros to make setting/getting  values into vector clearer.
+C The element xx(ib) is the ibth element in the vector indicated by ctx(3)
+#define xx(ib)  vxx(ixx + (ib))
+#define ff(ib)  vff(iff + (ib))
+#define F2(ib)  vF2(iF2 + (ib))
 
       d = h*h
 
@@ -164,7 +172,7 @@ C --------------------  Evaluate Function F(x) ---------------------
 C --------------------  Form initial approximation ----------------- 
 
       subroutine FormInitialGuess(snes,x,dummy,ierr)
-      integer snes,x,dummy(*),ierr
+      integer          snes,x,dummy(*),ierr
       double precision five 
 #include "include/finclude/petsc.h"
 
