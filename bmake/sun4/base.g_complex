@@ -1,4 +1,4 @@
-# $Id: base.g_complex,v 1.16 1998/04/23 21:22:25 balay Exp balay $ 
+# $Id: base.g_complex,v 1.17 1998/04/23 21:22:32 balay Exp balay $ 
 
 CLINKER    = g++ ${COPTFLAGS}
 FLINKER    = g++ ${COPTFLAGS}
@@ -8,12 +8,10 @@ CC         = g++ -fPIC
 # -DUSE_FORTRAN_KERNELS) for several low-level computational kernels for
 # complex numbers rather than using the potentially slower C++ versions.
 # To instead use the C++ routines, remove -DUSE_FORTRAN_KERNELS from this
-# list and do not specify the kernel library variable, i.e., use
-#   KERNEL_LIB =
+# list
 #
 PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g -DUSE_PETSC_COMPLEX  \
              -DUSES_TEMPLATED_COMPLEX -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
-KERNEL_LIB = -lpetsckernels
 #
 COPTFLAGS  = -g 
 FOPTFLAGS  = -g -dalign
