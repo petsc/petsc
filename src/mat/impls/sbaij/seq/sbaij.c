@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.42 2000/10/31 17:34:15 balay Exp hzhang $*/
+/*$Id: sbaij.c,v 1.43 2000/11/01 17:34:45 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1423,9 +1423,10 @@ int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_6;
       break;
     case 7:
-      B->ops->mult            = MatMult_SeqSBAIJ_7; 
+      B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_7;
       B->ops->solve           = MatSolve_SeqSBAIJ_7;
       B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_7;
+      B->ops->mult            = MatMult_SeqSBAIJ_7; 
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_7;
       break;
     }
