@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.25 1995/09/04 17:25:52 bsmith Exp $";
+static char vcid[] = "$Id: ex6.c,v 1.26 1995/09/12 03:01:25 curfman Exp curfman $";
 #endif
 
 static char help[] =
@@ -14,7 +14,7 @@ options are:\n\
   -my <yg>, where <yg> = number of grid points in the y-direction\n\
   -Nx <npx>, where <npx> = number of processors in the x-direction\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\
-  -matrix-freeJ: use matrix-free Newton method with no preconditioning\n\
+  -matrix_freeJ: use matrix-free Newton method with no preconditioning\n\
   -defaultJ: use default finite difference approximation of Jacobian\n\n";
 
 /*  
@@ -77,6 +77,8 @@ int main( int argc, char **argv )
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   OptionsGetInt(0,"-Nx",&Nx);
   OptionsGetInt(0,"-Ny",&Ny);
+  if (Nx*Ny != numtids && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
+    SETERRQ(1,"Incompatible number of processors:  Nx * Ny != numtids");
  
   /* Set up distributed array */
   ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,stencil,user.mx,
@@ -99,16 +101,14 @@ int main( int argc, char **argv )
 
   /* Set Jacobian evaluation routine */
   if (OptionsHasName(0,"-defaultJ")) { /* default finite differences */
-    ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,0,0,
-                       0,0,&J); CHKERRA(ierr);
+    ierr = MatCreate(MPI_COMM_WORLD,N,N,&J); CHKERRA(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,
                        (void *)&user); CHKERRA(ierr);
   } else if (OptionsHasName(0,"-matrix_freeJ")) { /* default matrix-free */
     ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
     ierr = SNESSetJacobian(snes,J,J,0,(void *)&user); CHKERRA(ierr);
   } else { /* explicit analytic formation */
-    ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,0,0,
-                       0,0,&J); CHKERRA(ierr);
+    ierr = MatCreate(MPI_COMM_WORLD,N,N,&J); CHKERRA(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void *)&user); CHKERRA(ierr);
   }
 
