@@ -147,8 +147,7 @@ AMS_DIRS           = src
 SPAI_DIRS          = src/sles/pc/impls/spai src/sles/pc/interface 
 DSCPACK_DIRS       = src/mat/impls/baij src/mat/impls/aij/seq
 PARMETIS_DIRS      = src/mat/partition src/mesh/impls/triangular/2d/
-MATLAB_ENGINE_DIRS = src/vec/utils src/vec/impls/seq src/vec/impls/mpi src/mat/impls/aij/seq src/dm/da/src \
-                     src/pf/interface src/fortran/custom
+MATLAB_ENGINE_DIRS = src/vec/utils src/vec/impls/seq src/vec/impls/mpi src/mat/impls/aij/seq src/dm/da/src src/pf/interface src/fortran/custom
 LUSOL_DIRS         = src/mat/impls/aij/seq
 RAMG_DIRS          = src/contrib/lahaye/ramg src/sles/pc/interface
 ADIFOR_DIRS        = 
