@@ -92,6 +92,9 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
     DenseMtx_writeForHumanEye(lu->mtxY, lu->options.msgFile) ;
    fflush(lu->options.msgFile) ;
   }
+
+  MPI_Barrier(MPI_COMM_WORLD) ; /* for initializing firsttag, because the num. of tags used
+                                   by FrontMtx_MPI_split() is unknown */
   lu->firsttag = 0;
   newY = DenseMtx_MPI_splitByRows(lu->mtxY, lu->vtxmapIV, lu->stats, lu->options.msglvl, 
                                 lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
@@ -174,7 +177,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   PetscScalar     *av, *bv; 
   int             *ai, *aj, *bi,*bj, nz, *ajj, *bjj, *garray,
                   i,j,irow,jcol,countA,countB,jB,*row,*col,colA_start,jj;
-  int             M=A->M,m=A->m,root,nedges;
+  int             M=A->M,m=A->m,root,nedges,tagbound,lasttag;
   
   PetscFunctionBegin;	
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -400,6 +403,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
 
     /* redistribute the matrix */
+    MPI_Barrier(MPI_COMM_WORLD) ;
     lu->firsttag = 0;
     newA = InpMtx_MPI_split(lu->mtxA, lu->vtxmapIV, lu->stats, 
                         lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
@@ -434,11 +438,19 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   /* numerical factorization */
   chvmanager = ChvManager_new() ;
   ChvManager_init(chvmanager, NO_LOCK, 0) ;  
+
+  tagbound = maxTagMPI(MPI_COMM_WORLD) ;
+  lasttag  = lu->firsttag + 3*lu->frontETree->nfront + 3;
+  /* if(!rank) PetscPrintf(PETSC_COMM_SELF,"\n firsttag: %d, nfront: %d\n",lu->firsttag, lu->frontETree->nfront);*/
+  if ( lasttag > tagbound ) {
+      SETERRQ3(1,"fatal error in FrontMtx_MPI_factorInpMtx(), tag range is [%d,%d], tag_bound = %d",\
+               lu->firsttag, lasttag, tagbound) ; 
+  }
   rootchv = FrontMtx_MPI_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, droptol,
                      chvmanager, lu->ownersIV, lookahead, &ierr, lu->cpus, 
                      lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
   ChvManager_free(chvmanager) ;
-  lu->firsttag += 3*lu->frontETree->nfront + 3;
+  lu->firsttag = lasttag;
   if ( lu->options.msglvl > 2 ) {
     fprintf(lu->options.msgFile, "\n\n numeric factorization") ;
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile) ;
@@ -472,6 +484,11 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
  
   /*  post-process the factorization and split 
       the factor matrices into submatrices */
+  lasttag  = lu->firsttag + 5*size;
+  if ( lasttag > tagbound ) {
+      SETERRQ3(1,"fatal error in FrontMtx_MPI_postProcess(), tag range is [%d,%d], tag_bound = %d",\
+               lu->firsttag, lasttag, tagbound) ; 
+  }
   FrontMtx_MPI_postProcess(lu->frontmtx, lu->ownersIV, lu->stats, lu->options.msglvl,
                          lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
   lu->firsttag += 5*size ;
