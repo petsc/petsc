@@ -18,6 +18,22 @@ def getarch():
   if os.path.basename(sys.argv[0]).startswith('configure'): return ''
   else: return os.path.basename(sys.argv[0])[:-3]
 
+def rhl9():
+  try:
+    file = open("/etc/redhat-release")
+  except:
+    return 0
+  try:
+    buf = file.read()
+    file.close()
+  except:
+    # can't read file - assume dangerous RHL9
+    return 1
+  if buf.find('Shrike') > -1:
+    return 1
+  else:
+    return 0
+
 def fixWin32Flinker(filename):
     '''Change CXX_FLINKER back to f90 for win32 (from cl)'''
     import fileinput
@@ -38,6 +54,11 @@ def fixWin32Flinker(filename):
 def petsc_configure(configure_options):
   # use the name of the config/configure_arch.py to determine the arch
   if getarch(): configure_options.append('-PETSC_ARCH='+getarch())
+
+  # Disable threads on RHL9
+  if rhl9():
+    configure_options.append('--useThreads=0')
+    print ' *** RHL9 detected. Disabling threads in configure *****'
   
   # Should be run from the toplevel
   pythonDir = os.path.abspath(os.path.join('python'))
