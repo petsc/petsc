@@ -69,7 +69,7 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
       output = output + error
-      if output.find('www.gnu.org') >= 0 or output.find('developer.apple.com') >= 0 or output.find('bugzilla.redhat.com') >= 0 or output.find('gcc.gnu.org') >= 0:
+      if output.find('www.gnu.org') >= 0 or output.find('developer.apple.com') >= 0 or output.find('bugzilla.redhat.com') >= 0 or output.find('gcc.gnu.org') >= 0 or output.find('gcc version') >= 0:
         return 1
     except RuntimeError:
       pass
@@ -395,13 +395,13 @@ class Configure(config.base.Configure):
       if (not vendor or vendor == '0') and self.framework.argDB['with-gnu-compilers']:
         yield 'g77'
       if not vendor == '0':
+        if vendor == 'ibm' or not vendor:
+          yield 'xlf'
+          yield 'xlf90'
         if not vendor:
           yield 'f90'
         if vendor == 'lahaye' or not vendor:
           yield 'lf95'
-        if vendor == 'ibm' or not vendor:
-          yield 'xlf90'
-          yield 'xlf'
         if vendor == 'intel' or not vendor:
           yield 'win32fe ifort'
           yield 'win32fe ifl'
