@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.99 1998/04/25 03:08:53 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.100 1998/05/13 18:45:35 curfman Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -24,11 +24,11 @@ static char vcid[] = "$Id: itfunc.c,v 1.99 1998/04/25 03:08:53 curfman Exp curfm
 
    Notes:
    One must call KSPSetComputeSingularValues() before calling KSPSetUp() 
-   (or use the option -ksp_eigen) in order for this routine to work correctly.
+   (or use the option -ksp_compute_eigenvalues) in order for this routine to work correctly.
 
    Many users may just want to use the monitoring routine
    KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
-   to print the singular values at each iteration of the linear solve.
+   to print the extreme singular values at each iteration of the linear solve.
 
 .keywords: KSP, compute, extreme, singular, values
 
@@ -66,13 +66,20 @@ int KSPComputeExtremeSingularValues(KSP ksp,double *emax,double *emin)
 
    Output Parameters:
 +  r - real part of computed eigenvalues
--  c - complex part of computed eigenvalues
-
+.  c - complex part of computed eigenvalues
+-  neig - number of eigenvalues computed (will be less than or equal to n)
+   
    Options Database Keys:
 +  -ksp_compute_eigenvalues - Prints eigenvalues to stdout
 -  -ksp_plot_eigenvalues - Plots eigenvalues in an x-window display
 
    Notes:
+   The number of eigenvalues estimated depends on the size of the Krylov space
+   generated during the KSPSolve() (that is the SLESSolve); for example, with 
+   CG it corresponds to the number of CG iterations, for GMRES it is the number 
+   of GMRES iterations SINCE the last restart. Any extra space in r[] and c[]
+   will be ignored.
+
    KSPComputeEigenvalues() does not usually provide accurate estimates; it is
    intended only for assistance in understanding the convergence of iterative 
    methods, not for eigenanalysis. 
@@ -88,7 +95,7 @@ int KSPComputeExtremeSingularValues(KSP ksp,double *emax,double *emin)
 
 .seealso: KSPSetComputeSingularValues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues()
 @*/
-int KSPComputeEigenvalues(KSP ksp,int n,double *r,double *c)
+int KSPComputeEigenvalues(KSP ksp,int n,double *r,double *c,int *neig)
 {
   int ierr;
 
@@ -101,7 +108,7 @@ int KSPComputeEigenvalues(KSP ksp,int n,double *r,double *c)
   }
 
   if (ksp->computeeigenvalues) {
-    ierr = (*ksp->computeeigenvalues)(ksp,n,r,c);CHKERRQ(ierr);
+    ierr = (*ksp->computeeigenvalues)(ksp,n,r,c,neig);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -190,14 +197,14 @@ int KSPSolve(KSP ksp, int *its)
   ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flag1);CHKERRQ(ierr);
   ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues",&flag2);CHKERRQ(ierr);
   if (flag1 || flag2) {
-    int    n = *its, i;
+    int    n = *its, i, neig;
     double *r,*c;
     r = (double *) PetscMalloc( 2*n*sizeof(double) ); CHKPTRQ(r);
     c = r + n;
-    ierr = KSPComputeEigenvalues(ksp,n,r,c); CHKERRQ(ierr);
+    ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig); CHKERRQ(ierr);
     if (flag1) {
       PetscPrintf(ksp->comm,"Iteratively computed eigenvalues\n");
-      for ( i=0; i<n; i++ ) {
+      for ( i=0; i<neig; i++ ) {
         if (c[i] >= 0.0) PetscPrintf(ksp->comm,"%g + %gi\n",r[i],c[i]);
         else             PetscPrintf(ksp->comm,"%g - %gi\n",r[i],-c[i]);
       }
@@ -208,11 +215,10 @@ int KSPSolve(KSP ksp, int *its)
       DrawSP    drawsp;
 
       ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",
-                             PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);
-             CHKERRQ(ierr);
+                             PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);CHKERRQ(ierr);
       ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
       ierr = DrawSPCreate(draw,1,&drawsp); CHKERRQ(ierr);
-      for ( i=0; i<n; i++ ) {
+      for ( i=0; i<neig; i++ ) {
         ierr = DrawSPAddPoint(drawsp,r+i,c+i); CHKERRQ(ierr);
       }
       ierr = DrawSPDraw(drawsp); CHKERRQ(ierr);

@@ -32,6 +32,10 @@ add to it).
     of iterations you set with KSPSetTolerances(). This is useful when using the 
     Krylov method as a smoother with a fixed, say 3, iterations.
 
+    Changed the calling sequence of KSPComputeEigenvalues(KSP,int,double*,double*,int *neig);
+    to return as the final value the number of eigenvalues computed; see the manual
+    page for more details.
+
   AO
 
     AOPetscToApplicationIS() and AOApplicationToPetscIS(), that use to crash
