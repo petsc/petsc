@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.66 1996/01/12 22:06:31 bsmith Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.67 1996/01/15 15:17:23 balay Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -50,12 +50,12 @@ static int PCSetFromOptions_BJacobi(PC pc)
   int        blocks,flg,ierr;
 
   ierr = OptionsGetInt(pc->prefix,"-pc_bjacobi_blocks",&blocks,&flg); CHKERRQ(ierr);
-  if (ierr) {
-    PCBJacobiSetTotalBlocks(pc,blocks,PETSC_NULL,PETSC_NULL);
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_bjacobi_truelocal",&flg);  CHKERRQ(ierr);
   if (flg) {
-    PCBJacobiSetUseTrueLocal(pc);
+    ierr = PCBJacobiSetTotalBlocks(pc,blocks,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr); 
+  }
+  ierr = OptionsHasName(pc->prefix,"-pc_bjacobi_truelocal",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCBJacobiSetUseTrueLocal(pc); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -66,15 +66,15 @@ static int PCSetFromOptions_BGS(PC pc)
 
   ierr = OptionsGetInt(pc->prefix,"-pc_bgs_blocks",&blocks,&flg);  CHKERRQ(ierr);
   if (flg) {
-    PCBGSSetTotalBlocks(pc,blocks,PETSC_NULL,PETSC_NULL);
+    ierr = PCBGSSetTotalBlocks(pc,blocks,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(pc->prefix,"-pc_bgs_truelocal",&flg);  CHKERRQ(ierr);
   if (flg) {
-    PCBGSSetUseTrueLocal(pc);
+    ierr = PCBGSSetUseTrueLocal(pc); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(pc->prefix,"-pc_bgs_symmetric",&flg);  CHKERRQ(ierr);
   if (flg) {
-    PCBGSSetSymmetric(pc,BGS_SYMMETRIC_SWEEP);
+    ierr = PCBGSSetSymmetric(pc,BGS_SYMMETRIC_SWEEP); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -248,7 +248,7 @@ static int PCPrintHelp_BGS(PC pc,char *p)
  system matrix \n      instead of the preconditioning matrix\n",p);
   MPIU_printf(pc->comm, " %spc_bgs_symmetric: use both, a forward and backward sweep\n",p);
   MPIU_printf(pc->comm," %ssub : prefix to control options for individual blocks.\
- Add before the \n      usual KSP and PC option names (i.e., %sksp_type\
+ Add before the \n      usual KSP and PC option names (i.e., %ssub_ksp_type\
  <meth>)\n",p,p);
   return 0;
 }
