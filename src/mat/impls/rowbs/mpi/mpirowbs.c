@@ -633,7 +633,7 @@ static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   BSspmat      *A = a->A;
   BSsprow      *vs;
-  int          size,rank,M,rstart,tag,i,j,*rtable,*w1,*w2,*w3,*w4,len,proc,nrqs;
+  int          size,rank,M,rstart,tag,i,j,*rtable,*w1,*w3,*w4,len,proc,nrqs;
   int          msz,*pa,bsz,nrqr,**rbuf1,**sbuf1,**ptr,*tmp,*ctr,col,index,row;
   int          ctr_j,*sbuf1_j,k,ierr;
   PetscScalar  val=0.0;
@@ -661,9 +661,8 @@ static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
   /* Evaluate communication - mesg to whom, length of mesg, and buffer space
      required. Based on this, buffers are allocated, and data copied into them. */
   ierr = PetscMalloc(size*4*sizeof(int),&w1);CHKERRQ(ierr);/*  mesg size */
-  w2   = w1 + size;       /* if w2[i] marked, then a message to proc i*/
-  w3   = w2 + size;       /* no of IS that needs to be sent to proc i */
-  w4   = w3 + size;       /* temp work space used in determining w1, w2, w3 */
+  w3   = w1 + 2*size;       /* no of IS that needs to be sent to proc i */
+  w4   = w3 + size;       /* temp work space used in determining w1,  w3 */
   ierr = PetscMemzero(w1,size*3*sizeof(int));CHKERRQ(ierr); /* initialize work vector */
 
   for (i=0;  i<mat->m; i++) { 
@@ -674,39 +673,32 @@ static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
       w4[proc]++;
     }
     for (j=0; j<size; j++) { 
-      if (w4[j]) { w1[j] += w4[j]; w3[j]++;} 
+      if (w4[j]) { w1[2*j] += w4[j]; w3[j]++;} 
     }
   }
   
-  nrqs     = 0;              /* number of outgoing messages */
-  msz      = 0;              /* total mesg length (for all proc */
-  w1[rank] = 0;              /* no mesg sent to itself */
-  w3[rank] = 0;
+  nrqs       = 0;              /* number of outgoing messages */
+  msz        = 0;              /* total mesg length (for all proc */
+  w1[2*rank] = 0;              /* no mesg sent to itself */
+  w3[rank]   = 0;
   for (i=0; i<size; i++) {
-    if (w1[i])  {w2[i] = 1; nrqs++;} /* there exists a message to proc i */
+    if (w1[2*i])  {w1[2*i+1] = 1; nrqs++;} /* there exists a message to proc i */
   }
   /* pa - is list of processors to communicate with */
   ierr = PetscMalloc((nrqs+1)*sizeof(int),&pa);CHKERRQ(ierr);
   for (i=0,j=0; i<size; i++) {
-    if (w1[i]) {pa[j] = i; j++;}
+    if (w1[2*i]) {pa[j] = i; j++;}
   } 
 
   /* Each message would have a header = 1 + 2*(no of ROWS) + data */
   for (i=0; i<nrqs; i++) {
-    j     = pa[i];
-    w1[j] += w2[j] + 2*w3[j];   
-    msz   += w1[j];  
+    j       = pa[i];
+    w1[2*j] += w1[2*j+1] + 2*w3[j];   
+    msz     += w1[2*j];  
   }
   
   /* Do a global reduction to determine how many messages to expect */
-  {
-    int *rw1;
-    ierr = PetscMalloc(2*size*sizeof(int),&rw1);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(w1,rw1,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
-    bsz  = rw1[rank];
-    nrqr = rw1[size+rank];
-    ierr = PetscFree(rw1);CHKERRQ(ierr);
-  }
+  ierr = PetscMaxSum(comm,w1,&bsz,&nrqr);CHKERRQ(ierr);
 
   /* Allocate memory for recv buffers . Prob none if nrqr = 0 ???? */
   len      = (nrqr+1)*sizeof(int*) + nrqr*bsz*sizeof(int);
@@ -734,7 +726,7 @@ static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
       j        = pa[i];
       iptr    += ict;
       sbuf1[j] = iptr;
-      ict      = w1[j];
+      ict      = w1[2*j];
     }
   }
 
@@ -786,7 +778,7 @@ static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
       j = pa[i];
       sum = 1;
       for (k = 1; k <= w3[j]; k++) sum += sbuf1[j][2*k]+2;
-      if (sum != w1[j]) { SETERRQ(PETSC_ERR_PLIB,"Blew it! Header[2-n] mismatch!\n"); }
+      if (sum != w1[2*j]) { SETERRQ(PETSC_ERR_PLIB,"Blew it! Header[2-n] mismatch!\n"); }
     }
   }
  
@@ -794,7 +786,7 @@ static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
   ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Request),&s_waits1);CHKERRQ(ierr);
   for (i=0; i<nrqs; ++i) {
     j    = pa[i];
-    ierr = MPI_Isend(sbuf1[j],w1[j],MPI_INT,j,tag,comm,s_waits1+i);CHKERRQ(ierr);
+    ierr = MPI_Isend(sbuf1[j],w1[2*j],MPI_INT,j,tag,comm,s_waits1+i);CHKERRQ(ierr);
   }
    
   /* Receive messages*/
@@ -970,7 +962,7 @@ int MatZeroRows_MPIRowbs(Mat A,IS is,PetscScalar *diag)
 {
   Mat_MPIRowbs   *l = (Mat_MPIRowbs*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
-  int            *procs,*nprocs,j,idx,nsends,*work;
+  int            *nprocs,j,idx,nsends;
   int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
   int            *lens,imdex,*lrows,*values;
@@ -987,26 +979,21 @@ int MatZeroRows_MPIRowbs(Mat A,IS is,PetscScalar *diag)
   /*  first count number of contributors to each processor */
   ierr   = PetscMalloc(2*size*sizeof(int),&nprocs);CHKERRQ(ierr);
   ierr   = PetscMemzero(nprocs,2*size*sizeof(int));CHKERRQ(ierr);
-  procs  = nprocs + size;
   ierr   = PetscMalloc((N+1)*sizeof(int),&owner);CHKERRQ(ierr); /* see note*/
   for (i=0; i<N; i++) {
     idx = rows[i];
     found = PETSC_FALSE;
     for (j=0; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; found = PETSC_TRUE; break;
+        nprocs[2*j]++; nprocs[2*j] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
     if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
   }
-  nsends = 0;  for (i=0; i<size; i++) {nsends += procs[i];} 
+  nsends = 0;  for (i=0; i<size; i++) {nsends += nprocs[2*i+1];} 
 
   /* inform other processors of number of messages and max length*/
-  ierr   = PetscMalloc(2*size*sizeof(int),&work);CHKERRQ(ierr);
-  ierr   = MPI_Allreduce(nprocs,work,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
-  nmax   = work[rank];
-  nrecvs = work[size+rank]; 
-  ierr   = PetscFree(work);CHKERRQ(ierr);
+  ierr = PetscMaxSum(comm,nprocs,&nmax,&nrecvs);CHKERRQ(ierr);
 
   /* post receives:   */
   ierr = PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int),&rvalues);CHKERRQ(ierr);
@@ -1023,18 +1010,18 @@ int MatZeroRows_MPIRowbs(Mat A,IS is,PetscScalar *diag)
   ierr = PetscMalloc((nsends+1)*sizeof(MPI_Request),&send_waits);CHKERRQ(ierr);
   ierr = PetscMalloc((size+1)*sizeof(int),&starts);CHKERRQ(ierr);
   starts[0] = 0; 
-  for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[2*i-2];} 
   for (i=0; i<N; i++) {
     svalues[starts[owner[i]]++] = rows[i];
   }
   ierr = ISRestoreIndices(is,&rows);CHKERRQ(ierr);
 
   starts[0] = 0;
-  for (i=1; i<size+1; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for (i=1; i<size+1; i++) { starts[i] = starts[i-1] + nprocs[2*i-2];} 
   count = 0;
   for (i=0; i<size; i++) {
-    if (procs[i]) {
-      ierr = MPI_Isend(svalues+starts[i],nprocs[i],MPI_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
+    if (nprocs[2*i+1]) {
+      ierr = MPI_Isend(svalues+starts[i],nprocs[2*i],MPI_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(starts);CHKERRQ(ierr);
