@@ -1,14 +1,14 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.49 1998/04/27 18:52:22 balay Exp curfman $";
+static char vcid[] = "$Id: fp.c,v 1.50 1998/04/27 19:48:45 curfman Exp balay $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
 *   enough slight differences we have completely separate codes for each one.
 *
 */
-#include <signal.h>
 #include "petsc.h"           /*I  "petsc.h"  I*/
 #include "sys.h"
+#include <signal.h>
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
