@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.83 1999/03/17 23:25:44 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.84 1999/03/19 21:25:01 bsmith Exp balay $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -11,8 +11,6 @@ typedef struct _p_SNES* SNES;
 
 #define SNES_EQ_LS          "ls"
 #define SNES_EQ_TR          "tr"
-#define SNES_EQ_TR_DOG_LEG  
-#define SNES_EQ_TR2_LIN
 #define SNES_EQ_TEST        "test"
 #define SNES_UM_LS          "umls"
 #define SNES_UM_TR          "umtr"

@@ -1,5 +1,5 @@
 !
-!  $Id: snes.h,v 1.20 1999/03/07 17:30:40 bsmith Exp balay $;
+!  $Id: snes.h,v 1.21 1999/03/24 18:10:30 balay Exp balay $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
@@ -14,12 +14,9 @@
 !
 #define SNES_EQ_LS          'ls'
 #define SNES_EQ_TR          'tr'
-#define SNES_EQ_TR_DOG_LEG  
-#define SNES_EQ_TR2_LIN
 #define SNES_EQ_TEST        'test'
 #define SNES_UM_LS          'umls'
 #define SNES_UM_TR          'umtr'
-#define SNES_LS_LM          'lslm'
 
 #endif
 !
@@ -27,10 +24,11 @@
 !
       integer SNES_NONLINEAR_EQUATIONS
       integer SNES_UNCONSTRAINED_MINIMIZATION
+      integer SNES_LEAST_SQUARES
 
       parameter (SNES_NONLINEAR_EQUATIONS = 0)
       parameter (SNES_UNCONSTRAINED_MINIMIZATION = 1)
-
+      parameter (SNES_LEAST_SQUARES = 2)
 !
 !  Some PETSc fortran functions that the user might pass as arguments
 !
