@@ -215,6 +215,7 @@ class Configure(config.base.Configure):
       self.logPrint("Configuring and compiling ParMetis; this may take several minutes\n", debugSection='screen')
       try:
         import logging
+        import sys
         # Split Graphs into its own repository
         oldDir = os.getcwd()
         os.chdir(parmetisDir)
@@ -228,7 +229,8 @@ class Configure(config.base.Configure):
           os.remove('RDict.db')
         if os.path.exists('bsSource.db'):
           os.remove('bsSource.db')
-        make = self.getModule(parmetisDir, 'make').Make(Args=map(lambda s: s.replace('"', ''), args))
+        make = self.getModule(parmetisDir, 'make').Make(clArgs = sys.argv[1:]+map(lambda s: s.replace('"', ''), args))
+        make.prefix = installDir
         make.run()
         self.argDB['ignoreCompileOutput'] = oldIgnore
         self.argDB['debugLevel'] = oldLevel
