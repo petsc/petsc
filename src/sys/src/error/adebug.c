@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.74 1998/04/09 04:10:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.75 1998/04/13 17:30:26 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -97,18 +97,19 @@ int PetscAttachDebugger(void)
     PetscFunctionReturn(-11);
   }
 
-  /* Swap role the parent and child. */
-#if !defined(PARCH_solaris)
-  if (child) { child=0; }
-  else {    child = getppid(); }
-#endif
-
+  /*
+      Swap role the parent and child. This is (I think) so that control c typed
+    in the debugger go to the correct process.
+  */
+  if (child) { child = 0; }
+  else       { child = getppid(); }
 
   if (child) { /* I am the parent will run the debugger */
     char  *args[9],pid[9];
+
     /*
-      This kill does not seem to be needed and causes trouble on most machines
-      so let's try removing it.    kill(child,SIGSTOP);
+         We need to send a continue signal to the "child" process on the 
+       alpha, otherwise it just stays off forever
     */
 #if defined (PARCH_alpha)
     kill(child,SIGCONT);
@@ -173,8 +174,7 @@ int PetscAttachDebugger(void)
         perror("Unable to start debugger");
         exit(0);
       }
-    }
-    else {
+    } else {
       if (!Display) {
         args[0] = "xterm";  args[1] = "-e"; 
         args[2] = Debugger; args[3] = program; 
@@ -208,8 +208,7 @@ int PetscAttachDebugger(void)
       }
 #endif
         (*PetscErrorPrintf)("PETSC: Attaching %s to %s on pid %s\n",Debugger,program,pid);
-      }
-      else {
+      } else {
         args[0] = "xterm";  args[1] = "-d";
         args[2] = Display;  args[3] = "-e";
         args[4] = Debugger; args[5] = program;
@@ -251,18 +250,23 @@ int PetscAttachDebugger(void)
         exit(0);
       }
     }
-  }
-  else { /* I am the child, continue with user code */
-  sleeptime = 10; /* default to sleep for eight seconds waiting for debugger */
-  ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,&flg); CHKERRQ(ierr);
-  if (sleeptime < 0) sleeptime = -sleeptime;
+  } else {   /* I am the child, continue with user code */
+    sleeptime = 10; /* default to sleep waiting for debugger */
+    ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,&flg); CHKERRQ(ierr);
+    if (sleeptime < 0) sleeptime = -sleeptime;
 #if defined(PARCH_hpux)
+    /*
+        HP cannot attach process to sleeping debugger, hence count instead
+    */
     { 
       double x = 1.0;
       int i=10000000;
-        while (i--) x++ ; /* cannot attach to sleeper */
+      while (i--) x++ ; /* cannot attach to sleeper */
     }
 #elif defined(PARCH_rs6000)
+    /*
+        IBM sleep may return at anytime, hence must see if there is more time to sleep
+    */
     {
       int left = sleeptime;
       while (left > 0) {left = sleep(left) - 1;}
@@ -270,7 +274,6 @@ int PetscAttachDebugger(void)
 #else
     sleep(sleeptime);
 #endif
-    PetscFunctionReturn(0);
   }
 #endif
   PetscFunctionReturn(0);
