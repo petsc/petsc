@@ -172,6 +172,28 @@ int main(int argc,char **argv)
   ierr = SetParams(&param,&grid);CHKERRQ(ierr);
   ierr = ReportParams(&param,&grid);CHKERRQ(ierr);
 
+#if 0
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create user context, set problem data, create vector data structures.
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */   
+  ierr = PetscMalloc(sizeof(AppCtx),&user); CHKERRQ(ierr);
+  user->param = &param;
+  user->grid  = &grid;
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
+     for principal unknowns (x) and governing residuals (f)
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
+  ierr = DMMGCreate(comm,grid.mglevels,user,&dmmg);CHKERRQ(ierr); 
+  ierr = DACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
+  ierr = DADestroy(da);CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDA(dmmg),2,"pressure");CHKERRQ(ierr);
+  ierr = DASetFieldName(DMMGGetDA(dmmg),3,"temperature");CHKERRQ(ierr);
+  ierr = VecDuplicate(dmmg[0]->x, &(user->Xguess)); CHKERRQ(ierr);
+#else
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
      for principal unknowns (x) and governing residuals (f)
@@ -193,6 +215,7 @@ int main(int argc,char **argv)
   user->grid    = &grid;
   dmmg[0]->user = user; 
   ierr = VecDuplicate(dmmg[0]->x, &(user->Xguess)); CHKERRQ(ierr);
+#endif
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up the SNES solver with callback functions.
