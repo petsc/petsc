@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.247 2000/09/28 21:09:28 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.248 2000/10/03 21:19:03 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -1617,7 +1617,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
     ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"      #                          WARNING!!!                    #\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      #   This code was run with the PreLoadinBegin() macros   #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      #   This code was run without the PreLoadinBegin() macros   #\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"      #   To get timing results we always recommend preloading #\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"      #   otherwise timing numbers may be meaningless.         #\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");CHKERRQ(ierr);
