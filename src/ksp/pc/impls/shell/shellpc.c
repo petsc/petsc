@@ -60,7 +60,7 @@ static PetscErrorCode PCPreSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (!shell->apply) SETERRQ(PETSC_ERR_USER,"No presolve() routine provided to Shell PC");
+  if (!shell->presolve) SETERRQ(PETSC_ERR_USER,"No presolve() routine provided to Shell PC");
   ierr  = (*shell->presolve)(shell->ctx,ksp,b,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -74,8 +74,8 @@ static PetscErrorCode PCPostSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (!shell->apply) SETERRQ(PETSC_ERR_USER,"No presolve() routine provided to Shell PC");
-  ierr  = (*shell->presolve)(shell->ctx,ksp,b,x);CHKERRQ(ierr);
+  if (!shell->postsolve) SETERRQ(PETSC_ERR_USER,"No postsolve() routine provided to Shell PC");
+  ierr  = (*shell->postsolve)(shell->ctx,ksp,b,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
