@@ -383,9 +383,9 @@ int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScala
             }
 #if defined (PETSC_USE_CTABLE)
             ierr = PetscTableFind(baij->colmap,in[j]/bs + 1,&col);CHKERRQ(ierr);
-            col  = col - 1 + in[j]%bs;
+            col  = col - 1;
 #else
-            col = baij->colmap[in[j]/bs] - 1 + in[j]%bs;
+            col = baij->colmap[in[j]/bs] - 1;
 #endif
             if (col < 0 && !((Mat_SeqSBAIJ*)(baij->A->data))->nonew) {
               ierr = DisAssemble_MPISBAIJ(mat);CHKERRQ(ierr); 
@@ -395,7 +395,7 @@ int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScala
               b = (Mat_SeqBAIJ*)(B)->data; 
               bimax=b->imax;bi=b->i;bilen=b->ilen;bj=b->j; 
               ba=b->a;
-            }
+            } else col += in[j]%bs;
           } else col = in[j];
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
           MatSetValues_SeqSBAIJ_B_Private(row,col,value,addv);

@@ -221,7 +221,7 @@ int DisAssemble_MPISBAIJ(Mat A)
 #if defined(PETSC_USE_MAT_SINGLE)
         for (l=0; l<bs; l++) atmp[l] = a[j*bs2+l];
 #else
-        atmp = a+j*bs2;
+        atmp = a+j*bs2 + k*bs;
 #endif
         ierr = MatSetValues_SeqSBAIJ(Bnew,bs,rvals,1,&col,atmp,B->insertmode);CHKERRQ(ierr);
         col++;
