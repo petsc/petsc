@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.26 1999/05/12 03:27:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pname.c,v 1.27 1999/09/02 14:52:56 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -80,14 +80,17 @@ int PetscObjectPublishBaseBegin(PetscObject obj)
   int        ierr;
   static int counter = 0;
   char       name[16];
+#endif
 
+  PetscFunctionBegin;
+
+#if defined(PETSC_HAVE_AMS)
   if (obj->name) {
     ierr = PetscStrncpy(name,obj->name,16);CHKERRQ(ierr);
   } else {
     sprintf(name,"n_%d",counter++);
   }
 
-  PetscFunctionBegin;
   ierr      = ViewerAMSGetAMSComm(VIEWER_AMS_(obj->comm),&acomm);CHKERRQ(ierr);
   ierr      = AMS_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
   obj->amem = (int) amem;
@@ -103,8 +106,6 @@ int PetscObjectPublishBaseBegin(PetscObject obj)
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amem,"Name",&obj->name,1,AMS_STRING,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-#else
-  PetscFunctionBegin;
 #endif
   PetscFunctionReturn(0);
 }
@@ -116,15 +117,14 @@ int PetscObjectPublishBaseEnd(PetscObject obj)
 #if defined(PETSC_HAVE_AMS)
   AMS_Memory amem = (AMS_Memory) obj->amem;
   int        ierr;
+#endif
 
   PetscFunctionBegin;
 
+#if defined(PETSC_HAVE_AMS)
   if (amem < 0) SETERRQ(1,1,"Called without a call to PetscObjectPublishBaseBegin()");
   ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
   ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
-
-#else
-  PetscFunctionBegin;
 #endif
   PetscFunctionReturn(0);
 }
