@@ -801,9 +801,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(const PetscScalar *alpha,Vec x)
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
 #if defined (PETSC_USE_DEBUG)
  {
-   PetscScalar alpha_max;
-   ierr = MPI_Allreduce((PetscScalar*)alpha,&alpha_max,1,MPIU_SCALAR,MPI_MAX,x->comm);CHKERRQ(ierr);
-   if (*alpha != alpha_max) SETERRQ(PETSC_ERR_ARG_WRONG,"Same value should be used across all processors");
+   PetscReal alpha_local,alpha_max;
+   alpha_local = PetscAbsScalar(*alpha);
+   ierr = MPI_Allreduce(&alpha_local,&alpha_max,1,MPIU_REAL,MPI_MAX,x->comm);CHKERRQ(ierr);
+   if (alpha_local != alpha_max) SETERRQ(PETSC_ERR_ARG_WRONG,"Same value should be used across all processors");
  }
 #endif
 
