@@ -1,4 +1,4 @@
-/*$Id: fp.c,v 1.77 2001/04/23 15:45:52 bsmith Exp bsmith $*/
+/*$Id: fp.c,v 1.78 2001/04/23 15:47:12 bsmith Exp balay $*/
 /*
 *	IEEE error handler for all machines. Since each machine has 
 *   enough slight differences we have completely separate codes for each one.
@@ -167,7 +167,7 @@ int PetscSetFPTrap(PetscFPTrap flag)
 
 /* ------------------------------------------------------------------------------------------*/
 
-#elif defined (PETSC_HAVE_IRIX_STYPE_FPTRAP)
+#elif defined (PETSC_HAVE_IRIX_STYLE_FPTRAP)
 #include <sigfpe.h>
 struct { int code_no; char *name; } error_codes[] = {
        { _INVALID   ,"IEEE operand error" },
