@@ -181,15 +181,14 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         }
       }
     }
-  }
-
-  /* Set our own adaptive relative convergence tolerance for the next linear solve */
-  if (app->adaptive_ksp_rtol) {
-    ksprtol = 0.2 * fnorm;
-    ksprtol = PetscMin(app->ksp_rtol_max,ksprtol);
-    ksprtol = app->ksp_rtol_max;
-    ierr = KSPSetTolerances(app->ksp,ksprtol,PETSC_NULL,PETSC_NULL,
-           PETSC_NULL); CHKERRQ(ierr);
+    /* Set our own adaptive relative convergence tolerance for the next linear solve */
+    if (app->adaptive_ksp_rtol) {
+      ksprtol = 0.2 * fnorm;
+      ksprtol = PetscMin(app->ksp_rtol_max,ksprtol);
+      ksprtol = app->ksp_rtol_max;
+      ierr = KSPSetTolerances(app->ksp,ksprtol,PETSC_DEFAULT,PETSC_DEFAULT,
+             PETSC_DEFAULT); CHKERRQ(ierr);
+    }
   }
 
   app->iter = its+1;
