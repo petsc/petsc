@@ -4,9 +4,8 @@ import os
 import sys
 
 def runinstaller():
-  import setuprc
-  print sys.modules
-  setuprc.setupRC(os.path.split(os.path.abspath(os.path.dirname(sys.modules['setuprc'].__file__)))[0])
+  import install.setuprc
+  setuprc.setupRC(os.path.split(os.path.abspath(os.path.dirname(sys.modules['install.setuprc'].__file__)))[0])
 
   import installerclass
   installer   = installerclass.Installer(sys.argv[1:])

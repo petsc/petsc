@@ -4,7 +4,6 @@
 #  BitKeeper and then does the bk clone bk://sidl.bkbits.net/BuildSystem
 #  and then calls the installer in BuildSystem/install
 #
-import user
 import curses
 import curses.textpad
 import os
@@ -125,7 +124,6 @@ if __name__ ==  '__main__':
       sys.exit()
 
   sys.path.insert(0,os.path.join(installer.installpath,'BuildSystem'))
-  sys.path.insert(0,os.path.join(installer.installpath,'BuildSystem','install'))
   import install.installer
   install.installer.runinstaller()
       
