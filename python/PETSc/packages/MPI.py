@@ -473,11 +473,20 @@ class Configure(config.base.Configure):
       return
     mpiruns = ['mpirun', 'mpiexec']
     if 'with-mpi-dir' in self.framework.argDB:
-      if self.getExecutables(mpiruns, path = [os.path.join(os.path.abspath(self.framework.argDB['with-mpi-dir']), 'bin')], resultName = 'mpirun'):
+      mpirundirs=[os.path.join(os.path.abspath(self.framework.argDB['with-mpi-dir']), 'bin')]
+      # MPICH-NT-1.2.5 installs MPIRun.exe in mpich-nt-1.2.5/mpd/bin
+      mpdbin=os.path.join(os.path.abspath(self.framework.argDB['with-mpi-dir']), 'mpd','bin')
+      if os.path.isdir(mpdbin):
+        mpirundirs.append(mpdbin)
+      if self.getExecutables(mpiruns, path = mpirundirs, resultName = 'mpirun'):
         return
     path = []
     for inc in self.include:
       path.append(os.path.join(os.path.dirname(inc), 'bin'))
+      # MPICH-NT-1.2.5 installs MPIRun.exe in mpich-nt-1.2.5/SDK/include/../../mpd/bin
+      mpdbin=os.path.join(os.path.dirname(os.path.dirname(inc)),'mpd','bin')
+      if os.path.isdir(mpdbin):
+        path.append(mpdbin)
     for lib in self.lib:
       path.append(os.path.join(os.path.dirname(os.path.dirname(lib)), 'bin'))
     self.pushLanguage('C')
