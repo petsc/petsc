@@ -12,15 +12,15 @@
  #                -bI:/usr/lpp/xlf/lib/lowsys.exp
 
 #FC_LIB         = -lbsd -lc /usr/lib/libxlf.a /usr/lib/libxlfutil.a
-FC_LIB = -lbsd -lc /usr/lib/libxlf.a /usr/lib/libxlf90.a /usr/lib/libxlfutil.a -bI:/usr/lpp/xlf/lib/lowsys.exp 
+FC_LIB = -lbsd -lc /usr/lib/libxlf.a /usr/lib/libxlf90.a /usr/lib/libxlfutil.a -bI:/usr/lpp/xlf/lib/lowsys.exp /usr/local/gcc-2.5.8/lib/gcc-lib/rs6000/2.5.8/libgcc.a
 
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
 # Important: If you use the IBM version of lapack you must include 
 #  -lessl at the end of the line defining the BLAS libraries.
 #
-BLAS_LIB       = /tmp/blaslapack/blas.a $(FC_LIB)
-LAPACK_LIB     = /tmp/blaslapack/lapack.a
+BLAS_LIB       = -lblas
+LAPACK_LIB     = /usr/local/lapack/lib/lapack.a $(FC_LIB)
 #
 # Location of MPI (Message Passing Interface) software
 #
