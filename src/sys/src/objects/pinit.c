@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.33 2000/05/05 22:14:00 balay Exp bsmith $*/
+/*$Id: pinit.c,v 1.34 2000/05/10 16:39:22 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -237,6 +237,7 @@ EXTERN_C_END
 .  -shared_tmp - indicates /tmp directory is shared by all processors
 .  -not_shared_tmp - each processor has own /tmp
 .  -tmp - alternative name of /tmp directory
+.  -get_total_flops - returns total flops done by all processors
 -  -get_resident_set_size - Print memory usage at end of run
 
    Options Database Keys for Profiling:
@@ -446,6 +447,13 @@ int PetscFinalize(void)
   if (flg1) {
     ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Size of entire process memory %d\n",rank,(int)rss);CHKERRQ(ierr);
+  }
+
+  ierr = OptionsHasName(PETSC_NULL,"-get_total_flops",&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    PLogDouble flops = 0;
+    ierr = MPI_Reduce(&_TotalFlops,&flops,1,MPI_SUM,MPI_DOUBLE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Total flops over all processors %d\n",rank,flops);CHKERRQ(ierr);
   }
 
   /*
