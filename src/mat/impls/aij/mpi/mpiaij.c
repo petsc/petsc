@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.21 1995/03/28 19:11:57 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.22 1995/03/29 23:43:15 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -509,7 +509,7 @@ static int MatMultTransAdd_MPIAIJ(Mat aijin,Vec xx,Vec yy,Vec zz)
   This only works correctly for square matrices where the subblock A->A is the 
    diagonal block
 */
-static int MatGetDiag_MPIAIJ(Mat Ain,Vec v)
+static int MatGetDiagonal_MPIAIJ(Mat Ain,Vec v)
 {
   Mat_MPIAIJ *A = (Mat_MPIAIJ *) Ain->data;
   if (!A->assembled) SETERR(1,"MatGetDiag_MPIAIJ: must assemble matrix first");
@@ -964,7 +964,7 @@ static int MatGetInfo_MPIAIJ(Mat matin,int flag,int *nz,int *nzalloc,int *mem)
   return 0;
 }
 
-static int MatInsOpt_MPIAIJ(Mat aijin,int op)
+static int MatSetOption_MPIAIJ(Mat aijin,int op)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) aijin->data;
 
@@ -980,21 +980,21 @@ static int MatInsOpt_MPIAIJ(Mat aijin,int op)
   return 0;
 }
 
-static int MatSize_MPIAIJ(Mat matin,int *m,int *n)
+static int MatGetSize_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
   *m = mat->M; *n = mat->N;
   return 0;
 }
 
-static int MatLocalSize_MPIAIJ(Mat matin,int *m,int *n)
+static int MatGetLocalSize_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
   *m = mat->m; *n = mat->n;
   return 0;
 }
 
-static int MatRange_MPIAIJ(Mat matin,int *m,int *n)
+static int MatGetOwnershipRange_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
   *m = mat->rstart; *n = mat->rend;
@@ -1079,12 +1079,12 @@ static struct _MatOps MatOps = {MatInsertValues_MPIAIJ,
        0,
        MatGetInfo_MPIAIJ,0,
        MatCopy_MPIAIJ,
-       MatGetDiag_MPIAIJ,0,0,
+       MatGetDiagonal_MPIAIJ,0,0,
        MatBeginAssemble_MPIAIJ,MatEndAssemble_MPIAIJ,
        0,
-       MatInsOpt_MPIAIJ,MatZero_MPIAIJ,MatZeroRows_MPIAIJ,0,
+       MatSetOption_MPIAIJ,MatZero_MPIAIJ,MatZeroRows_MPIAIJ,0,
        0,0,0,0,
-       MatSize_MPIAIJ,MatLocalSize_MPIAIJ,MatRange_MPIAIJ,
+       MatGetSize_MPIAIJ,MatGetLocalSize_MPIAIJ,MatGetOwnershipRange_MPIAIJ,
        0,0,
        0,MatConvert_MPIAIJ };
 
