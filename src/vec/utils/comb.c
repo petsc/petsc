@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.13 1999/04/06 03:03:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: comb.c,v 1.14 1999/04/06 03:04:38 bsmith Exp balay $";
 #endif
 
 /*
@@ -95,9 +95,9 @@ void VecSplitReduction_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype
 #endif
   count = count/2; 
   for ( i=0; i<count; i++ ) {
-    if (((int) PetscReal(xin[count+i])) == REDUCE_SUM) { /* second half of xin[] is flags for reduction type */
+    if (((int)PetscReal(xin[count+i])) == REDUCE_SUM) { /* second half of xin[] is flags for reduction type */
       xout[i] += xin[i]; 
-    } else if (xin[count+i] == REDUCE_MAX) {
+    } else if ((int)PetscReal(xin[count+i]) == REDUCE_MAX) {
       xout[i] = PetscMax(*(double *)(xout+i),*(double *)(xin+i));
     } else {
       (*PetscErrorPrintf)("Reduction type input is not REDUCE_SUM or REDUCE_MAX");
