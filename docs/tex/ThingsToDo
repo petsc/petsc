@@ -9,12 +9,13 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
+   get SPAI  http://lovelace.nas.nasa.gov/NAS/SPAI/download.html
 
   - Thorougly test PetscRandomSetInterval().
 
-  - fix breakdown error message in KSP BCGS.
+  - change KSP to not return -it on error but instead use error handling.
 
-  - fix error return codes; have a seperate petscerror.h? file
+  * fix error return codes; have a seperate petscerror.h? file
 
   - Try using Isaac's trick for VecGetArray(), ISGetIndices(), etc:
       common /xxx/ v(1),i(1)
@@ -626,3 +627,6 @@ Additional Capabilities that PETSc Needs:
 
   X Add the following to MatSetOption():  MAT_ROWS_UNSORTED, MAT_COLUMNS_UNSORTED
     to enable switching among sorted/unsorted input.
+
+  X fix breakdown error message in KSP BCGS.
+
