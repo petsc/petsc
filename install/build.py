@@ -79,7 +79,7 @@ class Builder(install.urlMapping.UrlMapping):
         continue
       self.buildDependenceGraph(m)
     self.debugPrint('Activating '+maker.project.getUrl(), 2, 'install')
-    maker.main(['activate'])
+    maker.mainBuild(['activate'])
     return maker.setupDependencies()
 
   def executeOverDependencies(self, proj, target):
@@ -93,7 +93,7 @@ class Builder(install.urlMapping.UrlMapping):
       except ImportError:
         self.debugPrint('  No make module present in '+proj.getRoot(), 2, 'install')
         continue
-      maker.main(target)
+      maker.mainBuild(target)
     return
 
   def build(self, root, target = ['default'], ignoreDependencies = 0):
@@ -109,7 +109,7 @@ class Builder(install.urlMapping.UrlMapping):
     self.debugPrint('Compiling in '+root, 2, 'install')
     root               = maker.getRoot()
     localDict, oldKeys = self.loadLocalDict(root)
-    ret                = maker.main(target)
+    ret                = maker.mainBuild(target)
     self.unloadLocalDict(localDict, oldKeys)
     if not ignoreDependencies:
       # We must install project dependencies since the "install" target is purely local
