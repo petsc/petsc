@@ -125,7 +125,6 @@ class Configure(config.base.Configure):
     elif self.functions.check('GETARG@16', libraries = self.compilers.flibs): 
       self.addDefine('USE_NARGS',1)
       self.addDefine('HAVE_IARG_COUNT_PROGNAME',1)
-    self.popLanguage()
     return
 
   def configureDynamicLibraries(self):
