@@ -1,3 +1,4 @@
+
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -1782,11 +1783,12 @@ int MatIncreaseOverlap_SeqAIJ(Mat A,int is_max,IS is[],int ov)
 #define __FUNCT__ "MatPermute_SeqAIJ"
 int MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
 { 
-  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar  *vwork;
-  int          i,ierr,nz,m = A->m,n = A->n,*cwork;
-  int          *row,*col,*cnew,j,*lens;
-  IS           icolp,irowp;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  int               i,ierr,nz,m = A->m,n = A->n,*col;
+  int               *row,*cnew,j,*lens;
+  IS                icolp,irowp;
+  const int         *cwork;
+  const PetscScalar *vwork;
 
   PetscFunctionBegin;
   ierr = ISInvertPermutation(rowp,PETSC_DECIDE,&irowp);CHKERRQ(ierr);

@@ -545,9 +545,10 @@ static int MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     ierr = MatView(mdn->A,viewer);CHKERRQ(ierr);
   } else {
     /* assemble the entire matrix onto first processor. */
-    Mat          A;
-    int          M = mat->M,N = mat->N,m,row,i,nz,*cols;
-    PetscScalar  *vals;
+    Mat               A;
+    int               M = mat->M,N = mat->N,m,row,i,nz;
+    const int         *cols;
+    const PetscScalar *vals;
 
     if (!rank) {
       ierr = MatCreate(mat->comm,M,N,M,N,&A);CHKERRQ(ierr);
@@ -712,7 +713,7 @@ int MatGetRow_MPIDense(Mat A,int row,int *nz,int **idx,PetscScalar **v)
   PetscFunctionBegin;
   if (row < rstart || row >= rend) SETERRQ(PETSC_ERR_SUP,"only local rows")
   lrow = row - rstart;
-  ierr = MatGetRow(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
+  ierr = MatGetRow(mat->A,lrow,nz,(const int **)idx,(const PetscScalar **)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

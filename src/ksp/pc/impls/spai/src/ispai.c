@@ -690,15 +690,16 @@ EXTERN_C_END
 #define __FUNCT__ "ConvertMatToMatrix"
 int ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 {
-  matrix   *M;
-  int      i,j,col;
-  int      row_indx;
-  int      len,pe,local_indx,start_indx;
-  int      *mapping;
-  int      ierr,*cols;
-  double   *vals;
-  int      *num_ptr,n,mnl,nnl,rank,size,nz,rstart,rend;
-  struct   compressed_lines *rows;
+  matrix                  *M;
+  int                     i,j,col;
+  int                     row_indx;
+  int                     len,pe,local_indx,start_indx;
+  int                     *mapping;
+  int                     ierr;
+  const int               *cols;
+  const double            *vals;
+  int                     *num_ptr,n,mnl,nnl,rank,size,nz,rstart,rend;
+  struct compressed_lines *rows;
 
   PetscFunctionBegin;
  

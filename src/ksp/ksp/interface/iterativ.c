@@ -586,7 +586,7 @@ int KSPDefaultDestroy(KSP ksp)
 .  KSP_DIVERGED_DTOL (residual norm increased by a factor of divtol)
 .  KSP_DIVERGED_BREAKDOWN (generic breakdown in method)
 -  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned initial
-                                residual. Try a different preconditioner, or a different initial guess.
+                                residual. Try a different preconditioner, or a different initial guess.)
  
 
    Level: beginner

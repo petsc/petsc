@@ -251,11 +251,12 @@ int MyMatView(Mat mat,void *dummy)
 #define __FUNCT__ "PrintMatrix"
 int PrintMatrix(Mat mat, char* path, char* base)
 {
-   int         ierr,numrows, numcols, numnonzero, I, j, ncols_getrow, *cols_getrow;
-   PetscViewer viewer; 
-   char        filename[80]; 
-   PetscScalar *vals_getrow; 
-   MatInfo     info;
+   int               ierr,numrows, numcols, numnonzero, I, j, ncols_getrow;
+   const int         *cols_getrow;
+   PetscViewer       viewer; 
+   char              filename[80]; 
+   const PetscScalar *vals_getrow; 
+   MatInfo           info;
 
    /*..Get size and number of unknowns of matrix..*/ 
    ierr = MatGetSize(mat, &numrows, &numcols);CHKERRQ(ierr);

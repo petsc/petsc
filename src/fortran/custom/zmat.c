@@ -308,13 +308,14 @@ void PETSC_STDCALL matfdcoloringcreate_(Mat *mat,ISColoring *iscoloring,MatFDCol
   Fortran programmers can only have one outstanding MatGetRows()
   at a time.
 */
-static int    matgetrowactive = 0,*my_ocols = 0;
-static PetscScalar *my_ovals = 0;
+static int               matgetrowactive = 0;
+static const int         *my_ocols = 0;
+static const PetscScalar *my_ovals = 0;
 
 void PETSC_STDCALL matgetrow_(Mat *mat,int *row,int *ncols,int *cols,PetscScalar *vals,int *ierr)
 {
-  int         **oocols = &my_ocols;
-  PetscScalar **oovals = &my_ovals;
+  const int         **oocols = &my_ocols;
+  const PetscScalar **oovals = &my_ovals;
 
   if (matgetrowactive) {
      PetscError(__LINE__,"MatGetRow_Fortran",__FILE__,__SDIR__,1,0,
@@ -337,8 +338,8 @@ void PETSC_STDCALL matgetrow_(Mat *mat,int *row,int *ncols,int *cols,PetscScalar
 
 void PETSC_STDCALL matrestorerow_(Mat *mat,int *row,int *ncols,int *cols,PetscScalar *vals,int *ierr)
 {
-  int    **oocols = &my_ocols;
-  PetscScalar **oovals = &my_ovals;
+  const int         **oocols = &my_ocols;
+  const PetscScalar **oovals = &my_ovals;
   if (!matgetrowactive) {
      PetscError(__LINE__,"MatRestoreRow_Fortran",__FILE__,__SDIR__,1,0,
                "Must call MatGetRow() first");

@@ -74,5 +74,7 @@ EXTERN int MatSolve_SeqBDiag_4(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBDiag_5(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBDiag_N(Mat,Vec,Vec);
 EXTERN int MatLoad_SeqBDiag(PetscViewer,const MatType,Mat*);
+EXTERN int MatGetRow_MPIBDiag(Mat,int,int*,int**,PetscScalar**);
+EXTERN int MatRestoreRow_MPIBDiag(Mat,int,int*,int**,PetscScalar**);
 
 #endif

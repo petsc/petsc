@@ -7,29 +7,26 @@ static char help[] = "Tests the various sequential routines in MatSBAIJ format.\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec          x,y,b,s1,s2;      
-  Mat          A;             /* linear system matrix */ 
-  Mat          sA,sB,sC;         /* symmetric part of the matrices */ 
-  int          n,mbs=16,bs=1,nz=3,prob=1;
-  int          ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr,inc; 
-  int          lf;           /* level of fill for icc */
-  int          *cols1,*cols2;
-  PetscReal    norm1,norm2,tol=1.e-10;
-  PetscScalar  neg_one = -1.0,four=4.0,value[3],alpha=0.1;  
-  PetscScalar  *vr1,*vr2,*vr1_wk,*vr2_wk;
-  IS           perm, isrow, iscol;
-  PetscRandom  rand;
-  PetscTruth   getrow=PETSC_FALSE, doIcc=PETSC_TRUE;
-  MatInfo      minfo1,minfo2;
-  MatFactorInfo   factinfo;
-  MatType         type;
+  Vec                x,y,b,s1,s2;      
+  Mat                A;             /* linear system matrix */ 
+  Mat                sA,sB,sC;         /* symmetric part of the matrices */ 
+  int                n,mbs=16,bs=1,nz=3,prob=1;
+  int                ierr,i,j,col[3],size,block, row,I,J,n1,inc; 
+  int                lf;           /* level of fill for icc */
+  PetscReal          norm1,norm2,tol=1.e-10;
+  PetscScalar        neg_one = -1.0,four=4.0,value[3],alpha=0.1;  
+  IS                 perm, iscol;
+  PetscRandom        rand;
+  PetscTruth         doIcc=PETSC_TRUE;
+  MatInfo            minfo1,minfo2;
+  MatFactorInfo      factinfo;
+  MatType            type;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-testMatGetRow",&getrow);CHKERRQ(ierr);
 
   n = mbs*bs;
   ierr=MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,n,n,nz,PETSC_NULL, &A);CHKERRQ(ierr);
@@ -184,55 +181,6 @@ int main(int argc,char **args)
   if (i-I){
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetBlockSize()\n");CHKERRQ(ierr);
   }
-
-  /* Test MatGetRow() */
-  if (getrow){
-    row = n/2; 
-    ierr = PetscMalloc(n*sizeof(PetscScalar),&vr1);CHKERRQ(ierr); 
-    vr1_wk = vr1;  
-    ierr = PetscMalloc(n*sizeof(PetscScalar),&vr2);CHKERRQ(ierr); 
-    vr2_wk = vr2;
-    ierr = MatGetRow(A,row,&J,&cols1,&vr1);CHKERRQ(ierr); 
-    vr1_wk += J-1;
-    ierr = MatGetRow(sB,row,&j,&cols2,&vr2);CHKERRQ(ierr); 
-    vr2_wk += j-1;
-    ierr = VecCreateSeq(PETSC_COMM_SELF,j,&x);CHKERRQ(ierr);
- 
-    for (i=j-1; i>-1; i--){
-      ierr = VecSetValue(x,i,*vr2_wk - *vr1_wk,INSERT_VALUES);CHKERRQ(ierr);
-      vr2_wk--; vr1_wk--;
-    }  
-    ierr = VecNorm(x,NORM_1,&norm2);CHKERRQ(ierr);
-    if (norm2<-tol || norm2>tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRow()\n");CHKERRQ(ierr);
-    } 
-    ierr = VecDestroy(x);CHKERRQ(ierr);  
-    ierr = MatRestoreRow(A,row,&J,&cols1,&vr1);CHKERRQ(ierr);
-    ierr = MatRestoreRow(sB,row,&j,&cols2,&vr2);CHKERRQ(ierr);
-    ierr = PetscFree(vr1);CHKERRQ(ierr); 
-    ierr = PetscFree(vr2);CHKERRQ(ierr);
-
-    /* Test GetSubMatrix() */
-    /* get a submatrix consisting of every next block row and column of the original matrix */
-    /* for symm. matrix, iscol=isrow. */
-    ierr = PetscMalloc(n*sizeof(IS),&isrow);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(int),&ip_ptr);CHKERRQ(ierr);
-    j = 0;
-    for (n1=0; n1<mbs; n1 += 2){ /* n1: block row */
-      for (i=0; i<bs; i++) ip_ptr[j++] = n1*bs + i;  
-    }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, j, ip_ptr, &isrow);CHKERRQ(ierr);
-    /* ISView(isrow, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
-    
-    ierr = MatGetSubMatrix(sB,isrow,isrow,PETSC_DECIDE,MAT_INITIAL_MATRIX,&sC);CHKERRQ(ierr);
-    ierr = ISDestroy(isrow);CHKERRQ(ierr);
-    ierr = PetscFree(ip_ptr);CHKERRQ(ierr);
-    printf("sB =\n");
-    ierr = MatView(sB,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    printf("submatrix of sB =\n");
-    ierr = MatView(sC,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = MatDestroy(sC);CHKERRQ(ierr);
-  }  
 
   /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);

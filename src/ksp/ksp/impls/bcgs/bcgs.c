@@ -63,7 +63,10 @@ static int  KSPSolve_BCGS(KSP ksp)
   i=0;
   do {
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);       /*   rho <- (r,rp)      */
-    if (rho == 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,"Breakdown, rho = r . rp = 0");
+    if (rho == 0.0) {
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      break;
+    }
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
     ierr = VecAYPX(&beta,R,P);CHKERRQ(ierr);      /*   p <- r + p beta    */
@@ -78,7 +81,10 @@ static int  KSPSolve_BCGS(KSP ksp)
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
 	 may be our solution.  Give it a try? */
       ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
-      if (d1 != 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,"Breakdown, da = s . s != 0");
+      if (d1 != 0.0) {
+        ksp->reason = KSP_DIVERGED_BREAKDOWN;
+        break;
+      }
       ierr = VecAXPY(&alpha,P,X);CHKERRQ(ierr);   /*   x <- x + a p       */
       ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->its++;

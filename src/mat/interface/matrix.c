@@ -74,6 +74,7 @@ PetscScalar MatSetValue_Value = 0.0;
 .ve
    where maxcols >= maximum nonzeros in any row of the matrix.
 
+
    Caution:
    Do not try to change the contents of the output arrays (cols and vals).
    In some cases, this may corrupt the matrix.
@@ -84,7 +85,8 @@ PetscScalar MatSetValue_Value = 0.0;
 
 .seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatGetSubmatrices(), MatGetDiagonal()
 @*/
-int MatGetRow(Mat mat,int row,int *ncols,int *cols[],PetscScalar *vals[])
+
+int MatGetRow(Mat mat,int row,int *ncols,const int *cols[],const PetscScalar *vals[])
 {
   int   incols,ierr;
 
@@ -96,7 +98,7 @@ int MatGetRow(Mat mat,int row,int *ncols,int *cols[],PetscScalar *vals[])
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->getrow) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = PetscLogEventBegin(MAT_GetRow,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getrow)(mat,row,&incols,cols,vals);CHKERRQ(ierr);
+  ierr = (*mat->ops->getrow)(mat,row,&incols,(int **)cols,(PetscScalar **)vals);CHKERRQ(ierr);
   if (ncols) *ncols = incols;
   ierr = PetscLogEventEnd(MAT_GetRow,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -137,7 +139,7 @@ int MatGetRow(Mat mat,int row,int *ncols,int *cols[],PetscScalar *vals[])
 
 .seealso:  MatGetRow()
 @*/
-int MatRestoreRow(Mat mat,int row,int *ncols,int *cols[],PetscScalar *vals[])
+int MatRestoreRow(Mat mat,int row,int *ncols,const int *cols[],const PetscScalar *vals[])
 {
   int ierr;
 
@@ -146,8 +148,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int *cols[],PetscScalar *vals[])
   PetscValidIntPointer(ncols,3);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->restorerow) PetscFunctionReturn(0);
-  ierr = (*mat->ops->restorerow)(mat,row,ncols,cols,vals);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
+  ierr = (*mat->ops->restorerow)(mat,row,ncols,(int **)cols,(PetscScalar **)vals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2511,8 +2512,9 @@ int MatPBRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int
 */
 int MatCopy_Basic(Mat A,Mat B,MatStructure str)
 {
-  int         ierr,i,rstart,rend,nz,*cwork;
-  PetscScalar *vwork;
+  int               ierr,i,rstart,rend,nz;
+  const int         *cwork;
+  const PetscScalar *vwork;
 
   PetscFunctionBegin;
   ierr = MatZeroEntries(B);CHKERRQ(ierr);
@@ -3009,15 +3011,17 @@ int MatPermute(Mat mat,IS row,IS col,Mat *B)
 @*/
 int MatPermuteSparsify(Mat A, int band, PetscReal frac, PetscReal tol, IS rowp, IS colp, Mat *B)
 {
-  IS           irowp, icolp;
-  int         *rows, *cols;
-  int          M, N, locRowStart, locRowEnd;
-  int          nz, newNz;
-  int         *cwork, *cnew;
-  PetscScalar *vwork, *vnew;
-  int          bw, size;
-  int          row, locRow, newRow, col, newCol;
-  int          ierr;
+  IS                irowp, icolp;
+  int               *rows, *cols;
+  int               M, N, locRowStart, locRowEnd;
+  int               nz, newNz;
+  const int         *cwork;
+  int               *cnew;
+  const PetscScalar *vwork;
+  PetscScalar       *vnew;
+  int               bw, size;
+  int               row, locRow, newRow, col, newCol;
+  int               ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,    MAT_COOKIE,1);
@@ -4787,8 +4791,8 @@ M*/
 
       The first time this is called you should use a cll of MAT_INITIAL_MATRIX,
    the MatGetSubMatrix() routine will create the newmat for you. Any additional calls
-   to this routine with a mat of the same nonzero structure will reuse the matrix
-   generated the first time.
+   to this routine with a mat of the same nonzero structure and with a cll of MAT_REUSE_MATRIX  
+   will reuse the matrix generated the first time.
 
     Concepts: matrices^submatrices
 
@@ -4808,6 +4812,8 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
   PetscValidType(mat,1);
   MatPreallocated(mat);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (mat->N != mat->M) SETERRQ(PETSC_ERR_SUP,"Only works for square matrices");
+
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
 
   /* if original matrix is on just one processor then use submatrix generated */

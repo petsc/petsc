@@ -218,19 +218,19 @@ int MatGetBlockSize_SeqBDiag(Mat A,int *bs)
 #define __FUNCT__ "MatZeroRows_SeqBDiag"
 int MatZeroRows_SeqBDiag(Mat A,IS is,const PetscScalar *diag)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          i,ierr,N,*rows,m = A->m - 1,nz,*col;
-  PetscScalar  *dd,*val;
+  Mat_SeqBDiag      *a = (Mat_SeqBDiag*)A->data;
+  int               i,ierr,N,*rows,m = A->m - 1,nz;
+  PetscScalar       *dd;
+  const PetscScalar *val;
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     if (rows[i]<0 || rows[i]>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"row out of range");
-    ierr = MatGetRow(A,rows[i],&nz,&col,&val);CHKERRQ(ierr);
-    ierr = PetscMemzero(val,nz*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = MatSetValues(A,1,&rows[i],nz,col,val,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,rows[i],&nz,&col,&val);CHKERRQ(ierr);
+    ierr = MatGetRow(A,rows[i],&nz,PETSC_NULL,&val);CHKERRQ(ierr);
+    ierr = PetscMemzero((void*)val,nz*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,rows[i],&nz,PETSC_NULL,&val);CHKERRQ(ierr);
   }
   if (diag) {
     if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Main diagonal does not exist");
@@ -247,11 +247,13 @@ int MatZeroRows_SeqBDiag(Mat A,IS is,const PetscScalar *diag)
 #define __FUNCT__ "MatGetSubMatrix_SeqBDiag"
 int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          nznew,*smap,i,j,ierr,oldcols = A->n;
-  int          *irow,*icol,newr,newc,*cwork,*col,nz,bs;
-  PetscScalar  *vwork,*val;
-  Mat          newmat;
+  Mat_SeqBDiag      *a = (Mat_SeqBDiag*)A->data;
+  int               nznew,*smap,i,j,ierr,oldcols = A->n;
+  int               *irow,*icol,newr,newc,*cwork,nz,bs;
+  const int         *col;
+  PetscScalar       *vwork;
+  const PetscScalar *val;
+  Mat               newmat;
 
   PetscFunctionBegin;
   if (scall == MAT_REUSE_MATRIX) { /* no support for reuse so simply destroy all */

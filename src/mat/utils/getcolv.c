@@ -32,9 +32,11 @@
 @*/
 int MatGetColumnVector(Mat A,Vec yy,int col)
 {
-  PetscScalar   *y,*v,zero = 0.0;
-  int      ierr,i,j,nz,*idx,N,Rs,Re,rs,re;
-  MPI_Comm comm;
+  PetscScalar       *y,zero = 0.0;
+  const PetscScalar *v;
+  int               ierr,i,j,nz,N,Rs,Re,rs,re;
+  const int         *idx;
+  MPI_Comm          comm;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1); 

@@ -8,9 +8,11 @@ static char help[] = "Tests converting a parallel AIJ formatted matrix to the pa
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C,A;
-  int         i,j,m = 3,n = 2,rank,size,I,J,ierr,rstart,rend,nz,*idx;
-  PetscScalar v,*values;
+  Mat               C,A;
+  int               i,j,m = 3,n = 2,rank,size,I,J,ierr,rstart,rend,nz;
+  const int         *idx;
+  PetscScalar       v;
+  const PetscScalar *values;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

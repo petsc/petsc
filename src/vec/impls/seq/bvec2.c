@@ -612,9 +612,13 @@ int VecCreate_Seq(Vec V)
 {
   Vec_Seq      *s;
   PetscScalar  *array;
-  int          ierr,n = PetscMax(V->n,V->N);
+  int          ierr,n = PetscMax(V->n,V->N),size;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(V->comm,&size);CHKERRQ(ierr);
+  if (size > 1) {
+    SETERRQ(1,"Cannot create VECSEQ on more than one process");
+  }
   ierr = PetscMalloc( ( n > 0 ? n : 1)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   ierr = PetscMemzero(array,( n > 0 ? n : 1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecCreate_Seq_Private(V,array);CHKERRQ(ierr);

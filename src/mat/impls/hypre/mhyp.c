@@ -29,8 +29,9 @@ the conversion efficient
 
 int MatHYPRE_IJMatrixCopy(Mat v,HYPRE_IJMatrix ij)
 {
-  int         i,ierr,rstart,rend,*cols,ncols;
-  PetscScalar *values;
+  int               i,ierr,rstart,rend,ncols;
+  const PetscScalar *values;
+  const int         *cols;
 
   PetscFunctionBegin;
   ierr = HYPRE_IJMatrixInitialize(ij);CHKERRQ(ierr);

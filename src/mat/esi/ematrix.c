@@ -165,8 +165,8 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::setRowLength(int row,int length)
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::copyOutRow(int row, double* coefs, int* colIndices,int alength,int &length)
 {
-  int         *col;
-  PetscScalar *values;
+  const int         *col;
+  const PetscScalar *values;
   
   int ierr = MatGetRow(this->mat,row,&length,&col,&values);CHKERRQ(ierr);
   if (length > alength) SETERRQ(1,"Not enough room for values");
@@ -178,27 +178,27 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::copyOutRow(int row, double* coefs
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getRow(int row, int& length, double*& coefs, int*& colIndices)
 {
-  return MatGetRow(this->mat,row,&length,&colIndices,&coefs);
+  return MatGetRow(this->mat,row,&length,(const int **)&colIndices,(const PetscScalar**)&coefs);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getRowCoefs(int row, int& length, double*& coefs)
 {
-  return MatGetRow(this->mat,row,&length,PETSC_NULL,&coefs);
+  return MatGetRow(this->mat,row,&length,PETSC_NULL,(const PetscScalar **)&coefs);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getRowIndices(int row, int& length, int*& colIndices)
 {
-  return MatGetRow(this->mat,row,&length,&colIndices,PETSC_NULL);
+  return MatGetRow(this->mat,row,&length,(const int **)&colIndices,PETSC_NULL);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRow(int row, int& length, double*& coefs, int*& colIndices)
 {
-  return MatRestoreRow(this->mat,row,&length,&colIndices,&coefs);
+  return MatRestoreRow(this->mat,row,&length,(const int **)&colIndices,&coefs);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRowCoefs(int row, int& length, double*& coefs)
 {
-  return MatRestoreRow(this->mat,row,&length,PETSC_NULL,&coefs);
+  return MatRestoreRow(this->mat,row,&length,PETSC_NULL,(const PetscScalar**)&coefs);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRowIndices(int row, int& length, int*& colIndices)
@@ -218,8 +218,8 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::sumIntoRow(int row, double* coefs
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::rowMax(int row, double &result)
 {
-  int         ierr,length,i;
-  PetscScalar *values;
+  int               ierr,length,i;
+  const PetscScalar *values;
 
   ierr = MatGetRow(this->mat,row,&length,PETSC_NULL,&values);CHKERRQ(ierr);
   if (values) {
@@ -232,8 +232,8 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::rowMax(int row, double &result)
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::rowMin(int row, double &result)
 {
-  int         ierr,length,i;
-  PetscScalar *values;
+  int               ierr,length,i;
+  const PetscScalar *values;
 
   ierr = MatGetRow(this->mat,row,&length,PETSC_NULL,&values);CHKERRQ(ierr);
   if (values) {
@@ -246,9 +246,10 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::rowMin(int row, double &result)
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getRowSum(esi::Vector<double,int>& rowSumVector)
 {
-  int         i,ierr,rstart,rend,length,j;
-  PetscScalar *values,sum;
-  Vec         py;
+  int               i,ierr,rstart,rend,length,j;
+  const PetscScalar *values;
+  PetscScalar       sum;
+  Vec               py;
 
   ierr = rowSumVector.getInterface("Vec",reinterpret_cast<void*&>(py));
 

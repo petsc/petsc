@@ -268,6 +268,10 @@ int DMMGSolve(DMMG *dmmg)
   if (flg && !PetscPreLoadingOn) {
     ierr = DMMGView(dmmg,PETSC_VIEWER_STDOUT_(dmmg[0]->comm));CHKERRQ(ierr);
   }
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_view_binary",&flg);CHKERRQ(ierr);
+  if (flg && !PetscPreLoadingOn) {
+    ierr = DMMGView(dmmg,PETSC_VIEWER_BINARY_(dmmg[0]->comm));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -460,7 +464,7 @@ int DMMGView(DMMG *dmmg,PetscViewer viewer)
 {
   int            ierr,i,nlevels = dmmg[0]->nlevels,flag;
   MPI_Comm       comm;
-  PetscTruth     iascii;
+  PetscTruth     iascii,isbinary;
 
   PetscFunctionBegin;
   PetscValidPointer(dmmg,1);
@@ -472,25 +476,35 @@ int DMMGView(DMMG *dmmg,PetscViewer viewer)
   }
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"DMMG Object with %d levels\n",nlevels);CHKERRQ(ierr);
-  }
-  for (i=0; i<nlevels; i++) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = DMView(dmmg[i]->dm,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  }
-  if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%s Object on finest level\n",dmmg[nlevels-1]->ksp ? "KSP" : "SNES");CHKERRQ(ierr);
-    if (dmmg[nlevels-1]->galerkin) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Using Galerkin R^T*A*R process to compute coarser matrices");CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+  if (isbinary) {
+    for (i=0; i<nlevels; i++) {
+      ierr = MatView(dmmg[i]->J,viewer);CHKERRQ(ierr);
     }
-  }
-  if (dmmg[nlevels-1]->ksp) {
-    ierr = KSPView(dmmg[nlevels-1]->ksp,viewer);CHKERRQ(ierr);
+    for (i=1; i<nlevels; i++) {
+      ierr = MatView(dmmg[i]->R,viewer);CHKERRQ(ierr);
+    }
   } else {
-    /* use of PetscObjectView() means we do not have to link with libpetscsnes if SNES is not being used */
-    ierr = PetscObjectView((PetscObject)dmmg[nlevels-1]->snes,viewer);CHKERRQ(ierr);
+    if (iascii) {
+      ierr = PetscViewerASCIIPrintf(viewer,"DMMG Object with %d levels\n",nlevels);CHKERRQ(ierr);
+    }
+    for (i=0; i<nlevels; i++) {
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = DMView(dmmg[i]->dm,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
+    if (iascii) {
+      ierr = PetscViewerASCIIPrintf(viewer,"%s Object on finest level\n",dmmg[nlevels-1]->ksp ? "KSP" : "SNES");CHKERRQ(ierr);
+      if (dmmg[nlevels-1]->galerkin) {
+	ierr = PetscViewerASCIIPrintf(viewer,"Using Galerkin R^T*A*R process to compute coarser matrices");CHKERRQ(ierr);
+      }
+    }
+    if (dmmg[nlevels-1]->ksp) {
+      ierr = KSPView(dmmg[nlevels-1]->ksp,viewer);CHKERRQ(ierr);
+    } else {
+      /* use of PetscObjectView() means we do not have to link with libpetscsnes if SNES is not being used */
+      ierr = PetscObjectView((PetscObject)dmmg[nlevels-1]->snes,viewer);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

@@ -2693,9 +2693,10 @@ int MatSetValuesAdifor_MPIAIJ(Mat A,int nl,void *advalues)
 @*/
 int MatMerge(MPI_Comm comm,Mat inmat, Mat *outmat)
 {
-  int         ierr,m,n,i,rstart,*indx,nnz,I,*dnz,*onz;
-  PetscScalar *values;
-  PetscMap    columnmap,rowmap;
+  int               ierr,m,n,i,rstart,nnz,I,*dnz,*onz;
+  const int         *indx;
+  const PetscScalar *values;
+  PetscMap          columnmap,rowmap;
 
   PetscFunctionBegin;
   
@@ -2743,11 +2744,12 @@ int MatMerge(MPI_Comm comm,Mat inmat, Mat *outmat)
 #define __FUNCT__ "MatFileSplit"
 int MatFileSplit(Mat A,char *outfile)
 {
-  int         ierr,rank,len,m,N,i,rstart,*indx,nnz;
-  PetscViewer out;
-  char        *name;
-  Mat         B;
-  PetscScalar *values;
+  int               ierr,rank,len,m,N,i,rstart,nnz;
+  const int         *indx;
+  PetscViewer       out;
+  char              *name;
+  Mat               B;
+  const PetscScalar *values;
 
   PetscFunctionBegin;
   
