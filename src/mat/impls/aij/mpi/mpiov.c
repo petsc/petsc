@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.110 1996/01/12 22:31:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiov.c,v 1.2 1996/01/23 00:44:57 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -14,9 +14,9 @@ int MatIncreaseOverlap_MPIAIJ(Mat A, int is_max, IS *is, int ov)
   size   = a->size;
   rank   = a->rank;
   m      = a->M;
-  idx    = PetscMalloc((is_max)*sizeof(int *));
-  n      = PetscMalloc((is_max)*sizeof(int ));
-  rtable = PetscMalloc((m+1)*sizeof(int )); /* Hash table for maping row ->proc */
+  idx    = (int **)PetscMalloc((is_max)*sizeof(int *));
+  n      = (int *)PetscMalloc((is_max)*sizeof(int ));
+  rtable = (int *)PetscMalloc((m+1)*sizeof(int )); /* Hash table for maping row ->proc */
   
   for ( i=0 ; i<is_max ; ++i) {
     ierr = ISGetIndices(is[i],&idx[i]);  CHKERRQ(ierr);
@@ -32,7 +32,7 @@ int MatIncreaseOverlap_MPIAIJ(Mat A, int is_max, IS *is, int ov)
 
   /* evaluate communication - mesg to who, length of mesg, and buffer space
      required. Based on this, buffers are allocated, and data copied into them*/
-  w1     = PetscMalloc((size)*2*sizeof(int ));  /* foreach proc mesg size */
+  w1     = (int *)PetscMalloc((size)*2*sizeof(int ));  /* foreach proc mesg size */
   w2     = w1 + size;         /* if w2[i] marked, then a message to proc i*/
   w3     = w2 + size;         /* no of IS that needs to be sent to proc i */
   w4     = w3 + size;         /* temp work space used in determining w1, w2, w3 */
@@ -64,10 +64,10 @@ int MatIncreaseOverlap_MPIAIJ(Mat A, int is_max, IS *is, int ov)
   /*  MPI_Allreduce */
 
   /* Allocate Memory for outgoing messages */
-  outdat    = PetscMalloc( 2*size*sizeof(int*));
-  outdat[0] = PetscMalloc(msz *sizeof (int));
+  outdat    = (int **)PetscMalloc( 2*size*sizeof(int*));
+  outdat[0] = (int *)PetscMalloc(msz *sizeof (int));
   ptr       = outdat +size;     /* Pointers to the data in outgoing buffers */
-  ctr       = PetscMalloc( size*sizeof(int));  
+  ctr       = (int *)PetscMalloc( size*sizeof(int));  
 
   for (i = 1; i < size ; ++i) {
     if ( w1[i]) { outdat[i] = outdat[i-1] + w1[ i-1];}
