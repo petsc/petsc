@@ -1366,11 +1366,11 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;  
   int         *rip,ierr,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
   int         *jutmp,bs = a->bs,bs2=a->bs2;
-  int         m,realloc = 0,*levtmp,levels = info->levels;
+  int         m,realloc = 0,*levtmp;
   int         *prowl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd,*jl;
   int         incrlev,*lev,shift,prow,nz;
   int         *il,ili,nextprow;
-  PetscReal   f = info->fill; 
+  PetscReal   f = info->fill,levels = info->levels; 
   PetscTruth  perm_identity;
 
   PetscFunctionBegin;
