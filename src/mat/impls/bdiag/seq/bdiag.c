@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.18 1995/06/08 03:09:57 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.19 1995/06/09 19:33:26 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -234,21 +234,17 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
                         double shift,int its,Vec xx)
 {
   Mat_BDiag  *mat = (Mat_BDiag *) matin->data;
-  Scalar     *x, *b, *xb, *dvmain;
+  Scalar     *x, *b, *xb, *dvmain, *dv;
   int        m = mat->m, i, j, k, d, kbase, nb = mat->nb, loc, kloc;
-  int        mainbd = mat->mainbd, diag, mblock = mat->mblock;
+  int        mainbd = mat->mainbd, diag, mblock = mat->mblock, bloc;
   register Scalar sum;
-  Scalar     *swork = 0, *bin, *dv;
 
   VecGetArray(xx,&x); VecGetArray(bb,&b);
   if (mainbd == -1) SETERRQ(1,"Main diagonal not set.");
   dvmain = mat->diagv[mainbd];
-  if (nb > 1) {
-    swork = (Scalar *) PETSCMALLOC( nb*sizeof(Scalar) ); CHKPTRQ(swork); 
-  }
   if (flag == SOR_APPLY_UPPER) {
     /* apply ( U + D/omega) to the vector */
-    if (nb == 1) {
+/*    if (nb == 1) {
       for ( i=0; i<m; i++ ) {
         sum = b[i] * (shift + dvmain[i]) / omega;
         for (d=mainbd+1; d<mat->nd; d++) {
@@ -261,56 +257,110 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
       for ( k=0; k<mblock; k++ ) {
         kloc = k*nb; kbase = kloc*nb;
         for (i=0; i<nb; i++) {
-          swork[i] = b[i+kloc] * (shift + dvmain[i*(nb+1)+kbase]) / omega;
+          sum = b[i+kloc] * (shift + dvmain[i*(nb+1)+kbase]) / omega;
+          for (j=i+1; j<nb; j++)
+            sum += dvmain[kbase + j*nb + i] * b[kloc + j];
           for (d=mainbd+1; d<mat->nd; d++) {
             diag = mat->diag[d];
-            bin = b - nb*diag;
-            dv = mat->diagv[d];
-            for (j=0; j<nb; j++) {
-              if (k-diag < mblock) swork[i] += 
-                 dv[kbase + j*nb + i] * b[(k-diag)*nb + i];
+            dv   = mat->diagv[d];
+            if (k-diag < mblock) {
+              for (j=0; j<nb; j++)
+                sum += dv[kbase + j*nb + i] * b[(k-diag)*nb + j];
             }
 	  }
-          x[kloc+i] = swork[i];
+          x[kloc+i] = sum;
         }
       }
-    }
+    } */
     return 0;
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
-      for (i=0; i<m; i++) {
-        sum  = b[i];
-        for (d=0; d<mainbd; d++) {
-          loc = i - mat->diag[d];
-          if (loc >= 0) sum -= mat->diagv[d][loc] * x[loc];
+/*    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
+      if (nb == 1) {
+        for (i=0; i<m; i++) {
+          sum  = b[i];
+          for (d=0; d<mainbd; d++) {
+            loc = i - mat->diag[d];
+            if (loc >= 0) sum -= mat->diagv[d][loc] * x[loc];
+          }
+          x[i] = omega*(sum/(shift + dvmain[i]));
         }
-        x[i] = omega*(sum/(shift + dvmain[i]));
+        xb = x;
+      } else {
+        for ( k=0; k<mblock; k++ ) {
+          kloc = k*nb; kbase = kloc*nb;
+          for (i=0; i<nb; i++) {
+            sum = b[i+kloc];
+            for (j=i+1; j<nb; j++)
+              sum += dvmain[kbase + j*nb + i] * b[kloc + j];
+            for (d=mainbd+1; d<mat->nd; d++) {
+              diag = mat->diag[d];
+              dv   = mat->diagv[d];
+              bloc = k - diag;
+              if (bloc >= 0) {
+                for (j=0; j<nb; j++)
+                  sum -= dv[kbase + j*nb + i] * b[kloc*nb + j];
+              }
+	    }
+            x[kloc+i] = sum;
+          }
+        }
       }
-      xb = x;
     }
     else xb = b;
+/*
     if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
-      for ( i=0; i<m; i++ ) x[i] *= dvmain[i];
-    }
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
-      for ( i=m-1; i>=0; i-- ) {
-        sum = xb[i];
-        for (d=mainbd+1; d<mat->nd; d++) {
-          diag = mat->diag[d];
-          if (i-diag <= m) sum -= mat->diagv[d][i] * x[i-diag];
+      if (nb == 1) for ( i=0; i<m; i++ ) x[i] *= dvmain[i];
+      else {
+        for ( k=0; k<mblock; k++ ) {
+          kloc = k*nb; kbase = kloc*nb;
+          for (i=0; i<nb; i++)
+            x[kloc+i] *= dvmain[i*(nb+1)+kbase];
         }
-        x[i] = omega*(sum/(shift + dvmain[i]));
       }
     }
+*/
+/*    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
+      if (nb == 1) {
+        for ( i=m-1; i>=0; i-- ) {
+          sum = xb[i];
+          for (d=mainbd+1; d<mat->nd; d++) {
+            diag = mat->diag[d];
+            if (i-diag < m) sum -= mat->diagv[d][i] * x[i-diag];
+          }
+          x[i] = omega*(sum/(shift + dvmain[i]));
+        }
+      } 
+      else {
+        for ( k=mblock-1; k>=0; k-- ) {
+          kloc = k*nb; kbase = kloc*nb;
+          for ( i=nb-1; i>=0; i-- ) {
+            sum = xb[i+kloc];
+            for ( j=0; j<i; j++ )
+              sum -= dvmain[kbase + j*nb + i] * x[kloc + j];
+            x[kloc+i] = sum;
+            for (d=mainbd+1; d<mat->nd; d++) {
+              diag = mat->diag[d];
+              dv   = mat->diagv[d];
+              bloc = k - diag;
+              if (bloc >= 0) {
+                for (j=0; j<nb; j++) {
+                  sum -= dv[kbase + j*nb + i] * b[(k-diag)nb + j];
+                }
+              }
+	    }
+            x[kloc+i] = sum;
+          }
+        }
+      }
     its--;
   }
-  while (its--) {
+*/
+/*  while (its--) {
     SETERRQ(1, "This section not done.");
     SETERRQ(1,"This option not yet supported for MATBDiag format.");
-  }
-  if (swork) PETSCFREE(swork);
+  } */
   return 0;
 } 
 
