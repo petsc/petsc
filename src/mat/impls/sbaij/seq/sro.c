@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.15 2000/09/20 14:46:08 bsmith Exp bsmith $*/
+/*$Id: sro.c,v 1.16 2000/09/20 14:52:19 bsmith Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -54,20 +54,16 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = ISRestoreIndices(iperm,&riip);CHKERRA(ierr);
   ierr = ISDestroy(iperm);CHKERRA(ierr);
   
-  len = (mbs+1 + 2*(a->i[mbs]))*sizeof(int);
-  ai  = (int*)PetscMalloc(len); CHKPTRQ(ai);
-  aj  = ai + mbs+1;
-  
-  /*
-  ai = (int*)PetscMalloc((mbs+1)*sizeof(int));CHKPTRQ(ai);
-  aj = (int*)PetscMalloc((a->i[mbs])*sizeof(int));CHKPTRQ(aj);
-  */
+  if (!a->inew){ 
+    len = (mbs+1 + 2*(a->i[mbs]))*sizeof(int);
+    ai  = (int*)PetscMalloc(len); CHKPTRQ(ai);
+    aj  = ai + mbs+1;    
+  } else {
+    ai = a->inew; aj = a->jnew;
+  }  
   ierr  = PetscMemcpy(ai,a->i,(mbs+1)*sizeof(int));CHKERRQ(ierr);
   ierr  = PetscMemcpy(aj,a->j,(a->i[mbs])*sizeof(int));CHKERRQ(ierr);
-  /*
-  printf("ainew= %d %d %d\n",ai[0],ai[mbs-1],ai[mbs]);
-  printf("ajnew=%d %d\n",aj[0],aj[a->i[mbs]-1]);
-  */
+  
   /* 
      Phase 1: Find row index r in which to store each nonzero. 
 	      Initialize count of nonzeros to be stored in each row (nzr).
@@ -122,7 +118,7 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
     }
     j--;
   }         
-  /* a->a2anew = (int*)PetscMalloc(ai[mbs]*sizeof(int));CHKPTRQ(a->a2anew); */
+  
   a->a2anew = aj + ai[mbs];
   ierr  = PetscMemcpy(a->a2anew,r,ai[mbs]*sizeof(int));CHKERRQ(ierr);
                                          
@@ -149,7 +145,6 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   a->icol = perm;
   ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-
 
   ierr = PetscFree(nzr);CHKERRA(ierr); 
   ierr = PetscFree(r);CHKERRA(ierr); 
