@@ -161,5 +161,5 @@ class RootedExtensionFileSet (RootedFileSet, ExtensionFileSet):
     if not isinstance(self.exts, list): self.exts = [self.exts]
     base.Base.__init__(self)
     self.projectUrl = projectUrl
-    TreeFileSet.__init__(self, roots, self.extTest, tag = tag)
+    TreeFileSet.__init__(self, map(lambda d: os.path.join(self.projectRoot, d), roots), self.extTest, tag = tag)
     return
