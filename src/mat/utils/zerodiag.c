@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.19 1997/12/01 01:55:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.20 1998/04/13 17:43:46 bsmith Exp curfman $";
 #endif
 
 /*
@@ -71,9 +71,9 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
     after a call to MatGetReordering(), this routine changes the column 
     ordering defined in cis.
 
-    Options Database Keys: (When using SLES)
-.      -pc_ilu_nonzeros_along_diagonal
-.      -pc_lu_nonzeros_along_diagonal
+    Options Database Keys (When using SLES):
+$      -pc_ilu_nonzeros_along_diagonal
+$      -pc_lu_nonzeros_along_diagonal
 
     Algorithm:
     Column pivoting is used.  Choice of column is made by looking at the

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.29 1998/03/23 21:21:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.30 1998/04/13 17:40:46 bsmith Exp curfman $";
 #endif
  
 /*
@@ -279,8 +279,6 @@ int MatColoringRegisterDestroy(void)
    Not Collective
 
    Options Database Keys:
-   To specify the coloringing through the options database, use one of
-   the following 
 $    -mat_coloring natural, -mat_coloring sl, -mat_coloring id, 
 $    -mat_coloring lf
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.142 1998/04/03 23:14:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.143 1998/04/13 17:32:59 bsmith Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -457,7 +457,7 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 /*@
    PCSetUp - Prepares for the use of a preconditioner.
 
-   Input parameters:
+   Input Parameter:
 .  pc - the preconditioner context
 
    Collective on PC

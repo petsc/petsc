@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.85 1998/04/15 19:42:20 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.86 1998/04/15 19:42:57 curfman Exp curfman $";
 #endif
 
 /*
@@ -925,9 +925,9 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
    Output Parameter:
 .  A - the matrix
 
-   Notes:
-   This routine is collective over all processes in the communicator, comm.  
+   Collective on MPI_Comm
 
+   Notes:
    The dense format is fully compatible with standard Fortran 77
    storage by columns.
 

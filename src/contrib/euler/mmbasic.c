@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbasic.c,v 1.2 1997/10/11 18:39:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: mmbasic.c,v 1.4 1998/03/17 19:23:19 curfman Exp curfman $";
 #endif
 
 /*
@@ -154,7 +154,8 @@ int MMCreate(MPI_Comm comm,MM *newmm)
   MPI_Comm_size(comm,&size);
 
   ierr = PetscRegisterCookie(&MM_COOKIE); CHKERRQ(ierr);
-  PetscHeaderCreate(mm,_p_MM,int,MM_COOKIE,MMEULER,comm,MMDestroy,MMView); 
+  PetscHeaderCreate(mm,_p_MM,MM_COOKIE,MMEULER,comm,MMDestroy,MMView); 
+  /*  PetscHeaderCreate(mm,_p_MM,int,MM_COOKIE,MMEULER,comm,MMDestroy,MMView); */
   PLogObjectCreate(mm);
   mm->MM_COOKIE = MM_COOKIE;
   mm->type      = -1;

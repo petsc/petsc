@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.50 1998/03/23 21:21:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.51 1998/04/13 17:38:58 bsmith Exp curfman $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -156,7 +156,8 @@ int  MatReorderingRegister(MatReorderingType name,MatReorderingType *out,char *s
 /*@C
    MatReorderingRegisterDestroy - Frees the list of ordering routines.
 
-   Not Collective
+   Notes:
+   This routine is NOT collective.
 
 .keywords: matrix, register, destroy
 
@@ -185,13 +186,14 @@ int MatReorderingRegisterDestroy(void)
    Output Parameter:
 .  type - reordering method
 
-   Not Collective
-
    Options Database Keys:
    To specify the ordering through the options database, use one of
    the following 
 $    -mat_order natural, -mat_order nd, -mat_order 1wd, 
 $    -mat_order rcm, -mat_order qmd
+
+   Notes:
+   This routine is NOT collective.
 
 .keywords: matrix, set, ordering, factorization, direct, ILU, LU,
            fill, reordering, natural, Nested Dissection,

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.180 1998/04/13 17:30:26 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.181 1998/04/14 20:38:22 balay Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -142,7 +142,7 @@ double PetscCompareTolerance = 1.e-10;
    Collective on PETSC_COMM_WORLD
 
    Options Database Key:
-.  -compare
+$   -compare
 
    Note:
    This routine is activated with the -compare option.
@@ -173,7 +173,7 @@ int PetscCompareInt(int d)
    Collective on PETSC_COMM_WORLD
 
    Options Database Key:
-.  -compare
+$   -compare
 
    Note:
    This routine is activated with the -compare option.
@@ -207,7 +207,7 @@ int PetscCompareDouble(double d)
    Collective on PETSC_COMM_WORLD
 
    Options Database Key:
-.  -compare
+$   -compare
 
    Note:
    This routine is activated with the -compare option.

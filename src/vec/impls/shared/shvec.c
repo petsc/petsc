@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.10 1998/04/15 04:11:44 curfman Exp curfman $";
+static char vcid[] = "$Id: shvec.c,v 1.11 1998/04/15 19:39:19 curfman Exp curfman $";
 #endif
 
 /*
@@ -62,10 +62,10 @@ int VecDuplicate_Shared( Vec win, Vec *v)
 
    Output Parameter:
 .  vv - the vector
+
+   Collective on MPI_Comm
  
    Notes:
-   This routine is collective over all processes in the communicator, comm.  
-
    Currently VecCreateShared() is available only on the SGI; otherwise,
    this routine is the same as VecCreateMPI().
 

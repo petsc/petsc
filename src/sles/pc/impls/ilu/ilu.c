@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.103 1998/04/09 04:11:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.104 1998/04/13 17:34:23 bsmith Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -159,7 +159,7 @@ int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
 
    Collective on PC
 
-   Options Database:
+   Options Database Key:
 $  -pc_ilu_fill <fill>
 
    Note:
@@ -198,7 +198,7 @@ int PCILUSetFill(PC pc,double fill)
 
    Collective on PC
 
-   Options Database:
+   Options Database Key:
 .   -mat_order <nd,rcm,...>
 
 .seealso: PCLUSetMatReordering()

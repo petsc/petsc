@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.116 1998/04/13 17:40:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.117 1998/04/15 19:37:22 curfman Exp curfman $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -1808,9 +1808,9 @@ static struct _MatOps MatOps = {
    Output Parameter:
 .  A - the matrix 
 
-   Notes:
-   This routine is collective over all processes in the communicator, comm.  
+   Collective on MPI_Comm
 
+   Notes:
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 
