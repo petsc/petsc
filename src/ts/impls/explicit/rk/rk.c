@@ -205,7 +205,7 @@ static int TSStep_Rk(TS ts,int *steps,PetscReal *ptime)
   TS_Rk		*rk = (TS_Rk*)ts->data;
   int		ierr;
   PetscReal	dt = 0.001; /* fixed first step guess */
-  PetscReal	norm=0.0,dt_fac=0.0,fac = 0.0,ttmp=0.0;
+  PetscReal	norm=0.0,dt_fac=0.0,fac = 0.0/*,ttmp=0.0*/;
 
   PetscFunctionBegin;
   rk->start=clock();
@@ -400,7 +400,7 @@ static int TSView_Rk(TS ts,PetscViewer viewer)
 {
    TS_Rk *rk = (TS_Rk*)ts->data;
    int ierr;
-   double elapsed;
+   /*double elapsed;*/
    
    PetscFunctionBegin;
    ierr = PetscPrintf(PETSC_COMM_WORLD,"  number of ok steps: %d\n",rk->nok);CHKERRQ(ierr);
