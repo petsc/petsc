@@ -279,7 +279,7 @@ class Configure(PETSc.package.Package):
       envs += ' CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"'
       self.framework.popLanguage()
     else:
-      args.append('--disable-c++')
+      args.append('--disable-cxx')
     if 'FC' in self.framework.argDB:
       self.framework.pushLanguage('FC')      
       fc = self.framework.getCompiler()
