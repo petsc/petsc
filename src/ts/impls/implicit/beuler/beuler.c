@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.10 1996/09/11 02:54:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.11 1996/09/14 12:37:13 bsmith Exp curfman $";
 #endif
 /*
        Code for Time Stepping with implicit backwards Euler.
@@ -239,7 +239,7 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
     ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MAT_MULT,(void *)TSBEulerMatMult); CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSBEulerMatMult); CHKERRQ(ierr);
   }
   if (ts->A != ts->B && ts->Ashell != ts->B) {
     ierr = MatScale(&mone,ts->B); CHKERRQ(ierr);
@@ -260,7 +260,7 @@ static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
     ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MAT_MULT,(void *)TSBEulerMatMult); CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSBEulerMatMult); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -277,7 +277,7 @@ static int TSSetUp_BEuler_Nonlinear(TS ts)
     ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MAT_MULT,(void *)TSBEulerMatMult); CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void *)TSBEulerMatMult); CHKERRQ(ierr);
   }
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSBEulerJacobian,ts);CHKERRQ(ierr);
   return 0;

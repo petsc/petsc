@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.10 1996/07/08 22:22:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.11 1996/09/27 02:43:51 bsmith Exp curfman $";
 #endif
 /*
        Formatted test for TS routines.
@@ -137,7 +137,7 @@ int main(int argc,char **argv)
          The user provides the RHS as a Shell matrix.
     */
     ierr = MatCreateShell(PETSC_COMM_WORLD,m,appctx.M,appctx.M,appctx.M,&appctx,&A);CHKERRA(ierr);
-    ierr = MatShellSetOperation(A,MAT_MULT,(void*)RHSMatrixFree);CHKERRA(ierr);
+    ierr = MatShellSetOperation(A,MATOP_MULT,(void*)RHSMatrixFree);CHKERRA(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);
   } else if (problem == linear_no_time) {
     /*
@@ -159,7 +159,7 @@ int main(int argc,char **argv)
     */
     ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx); CHKERRA(ierr);
     ierr = MatCreateShell(PETSC_COMM_WORLD,m,appctx.M,appctx.M,appctx.M,&appctx,&A);CHKERRA(ierr);
-    ierr = MatShellSetOperation(A,MAT_MULT,(void*)RHSMatrixFree);CHKERRA(ierr);
+    ierr = MatShellSetOperation(A,MATOP_MULT,(void*)RHSMatrixFree);CHKERRA(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);  
   } else if (problem == nonlinear) {
     /*

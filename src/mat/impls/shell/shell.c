@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.38 1996/08/08 14:43:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.39 1996/09/14 03:08:09 bsmith Exp curfman $";
 #endif
 
 /*
@@ -106,7 +106,7 @@ static struct _MatOps MatOps = {0,0,
 
    Usage:
 $    MatCreateShell(comm,m,n,M,N,ctx,&mat);
-$    MatShellSetOperation(mat,MAT_MULT,mult);
+$    MatShellSetOperation(mat,MATOP_MULT,mult);
 $    [ Use matrix for operations that have been set ]
 $    MatDestroy(mat);
 
@@ -133,7 +133,7 @@ $     VecCreate(comm,M,&y);
 $     VecCreate(comm,N,&x);
 $     VecGetLocalSize(y,&m);
 $     MatCreateShell(comm,m,N,M,N,ctx,&A);
-$     MatShellSetOperation(mat,MAT_MULT,mult);
+$     MatShellSetOperation(mat,MATOP_MULT,mult);
 $     MatMult(A,x,y);
 $     MatDestroy(A);
 $     VecDestroy(y); VecDestroy(x);
@@ -179,13 +179,13 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
     Usage:
 $      extern int usermult(Mat,Vec,Vec);
 $      ierr = MatCreateShell(comm,m,n,M,N,ctx,&A);
-$      ierr = MatShellSetOperation(A,MAT_MULT,usermult);
+$      ierr = MatShellSetOperation(A,MATOP_MULT,usermult);
 
     Notes:
     See the file petsc/include/mat.h for a complete list of matrix
-    operations, which all have the form MAT_<OPERATION>, where
+    operations, which all have the form MATOP_<OPERATION>, where
     <OPERATION> is the name (in all capital letters) of the
-    user interface routine (e.g., MatMult() -> MAT_MULT).
+    user interface routine (e.g., MatMult() -> MATOP_MULT).
 
     All user-provided functions should have the same calling
     sequence as the usual matrix interface routines, since they
@@ -205,14 +205,14 @@ int MatShellSetOperation(Mat mat,MatOperation op, void *f)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
 
-  if (op == MAT_DESTROY) {
+  if (op == MATOP_DESTROY) {
     if (mat->type == MATSHELL) {
        Mat_Shell *shell = (Mat_Shell *) mat->data;
        shell->destroy                 = (int (*)(Mat)) f;
     } 
     else mat->destroy                 = (int (*)(PetscObject)) f;
   } 
-  else if (op == MAT_VIEW) mat->view  = (int (*)(PetscObject,Viewer)) f;
+  else if (op == MATOP_VIEW) mat->view  = (int (*)(PetscObject,Viewer)) f;
   else      (((void**)&mat->ops)[op]) = f;
 
   return 0;
