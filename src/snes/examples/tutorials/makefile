@@ -328,13 +328,13 @@ runex23:
 	   ${RM} -f ex23_1.tmp
 
 runex25:
-	-@${MPIRUN} -np 1 ex25 > ex25_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ex25 -preload off > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo "Possible problem with ex25_1, diffs above"; fi; \
 	   ${RM} -f ex25_1.tmp
 
 runex25_2:
-	-@${MPIRUN} -np 2 ex25 > ex25_2.tmp 2>&1;	  \
+	-@${MPIRUN} -np 2 ex25 -preload off > ex25_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
 	   else echo "Possible problem with ex25_2, diffs above"; fi; \
 	   ${RM} -f ex25_2.tmp
