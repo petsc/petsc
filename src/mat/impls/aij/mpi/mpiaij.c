@@ -648,7 +648,6 @@ int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
 {
   Mat_MPIAIJ *Aij = (Mat_MPIAIJ *) Amat->data, *Bij;
   Mat        Adia = Aij->A, Bdia, Aoff,Boff,*Aoffs,*Boffs;
-  MatType    type;
   IS         Me,Notme;
   int        M,N,first,last,*notme,i, ierr;
 

@@ -1442,7 +1442,6 @@ EXTERN_C_BEGIN
 int MatIsSymmetric_SeqAIJ(Mat A,Mat B,PetscTruth *f)
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *) A->data,*bij = (Mat_SeqAIJ*) A->data;
-  MatType type; PetscTruth flg;
   int *adx,*bdx,*aii,*bii,*aptr,*bptr; PetscScalar *va,*vb;
   int ma,na,mb,nb, i,ierr;
 
