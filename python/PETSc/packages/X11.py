@@ -199,6 +199,8 @@ acfindx:
       self.addSubstitution('X_LIBS',       self.lib)
       self.addSubstitution('X_PRE_LIBS',   '')
       self.addSubstitution('X_EXTRA_LIBS', '')
+      self.addSubstitution('X11_INCLUDE',  self.include)
+      self.addSubstitution('X11_LIB',      self.lib)
     return
 
   def emptySubstitutions(self):
@@ -208,6 +210,8 @@ acfindx:
     self.addSubstitution('X_PRE_LIBS',   '')
     self.addSubstitution('X_LIBS',       '')
     self.addSubstitution('X_EXTRA_LIBS', '')
+    self.addSubstitution('X11_INCLUDE',  '')
+    self.addSubstitution('X11_LIB',      '')
     return
 
   def configure(self):
