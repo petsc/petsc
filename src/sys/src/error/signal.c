@@ -83,7 +83,7 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
   SIGNAME[SIGABRT] = "Abort";
 #endif
 #if !defined(PETSC_MISSING_SIGALRM)
-  SIGNAME[SIGALRM] = "Alarm";
+  /* SIGNAME[SIGALRM] = "Alarm"; */
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
   SIGNAME[SIGBUS]  = "BUS: \nPETSC ERROR: Bus Error, possibly illegal memory access";
@@ -203,7 +203,7 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
   if (!SignalSet && routine) {
     /* Do not catch ABRT, CHLD, KILL */
 #if !defined(PETSC_MISSING_SIGALRM)
-    signal(SIGALRM, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+    /* signal(SIGALRM, PETSC_SIGNAL_CAST PetscSignalHandler_Private); */
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
     signal(SIGBUS, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
@@ -260,7 +260,7 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
   }
   if (!routine) {
 #if !defined(PETSC_MISSING_SIGALRM)
-    signal(SIGALRM, 0);
+    /* signal(SIGALRM, 0); */
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
     signal(SIGBUS,  0);
@@ -338,7 +338,7 @@ int PetscPopSignalHandler(void)
   PetscFree(tmp);
   if (!sh || !sh->handler) {
 #if !defined(PETSC_MISSING_SIGALRM)
-    signal(SIGALRM, 0);
+    /* signal(SIGALRM, 0); */
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
     signal(SIGBUS,  0);
