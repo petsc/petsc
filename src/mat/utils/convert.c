@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.42 1996/01/12 22:31:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.43 1996/01/24 05:46:49 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -137,6 +137,7 @@ int MatConvert_MPIAIJ(Mat A, MatType newtype, Mat *B)
   SETERRQ(1,"MatConvert_MPIAIJ:Not currently suported");
 
   /* Each processor converts its local rows */
+/* ----------------------------------------------------
   for (i=0; i<m; i++) {
     ig   = i + rstart;
     ierr = MatGetRow(A,ig,&nz,&cwork,&vwork); CHKERRQ(ierr);
@@ -146,6 +147,7 @@ int MatConvert_MPIAIJ(Mat A, MatType newtype, Mat *B)
   ierr = MatAssemblyBegin(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
+---------------------------------------------------------*/
 }
 /* ------------------------------------------------------------------ */
 /* 
