@@ -241,7 +241,7 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 { \
   PetscScalar _one = 1.0,_zero = 0.0; \
   PetscBLASInt _bbs = (PetscBLASInt)bs,_bncols = (PetscBLASInt)ncols,_ione = 1; \
-  LAgemv_("N",&bs,&_bncols,&_one,A,&bs,x,&_ione,&_zero,z,&_ione); \
+  LAgemv_("N",&(_bbs),&_bncols,&_one,A,&(_bbs),x,&_ione,&_zero,z,&_ione); \
 }
 
 /*
@@ -250,8 +250,8 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 #define Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,A,z) \
 { \
   PetscScalar _one = 1.0; \
-  PetscBLASInt __bbs = (PetscBLASInt)bs,_bncols = (PetscBLASInt)ncols,_ione = 1; \
-  LAgemv_("T",&_bbs,&_bncols,&_one,A,&__bbs,x,&_ione,&_one,z,&_ione); \
+  PetscBLASInt _bbs = (PetscBLASInt)bs,_bncols = (PetscBLASInt)ncols,_ione = 1; \
+  LAgemv_("T",&_bbs,&_bncols,&_one,A,&_bbs,x,&_ione,&_one,z,&_ione); \
 }
 
 #else 
@@ -387,7 +387,3 @@ EXTERN_C_END
 #endif
 
 #endif
-
-
-
-
