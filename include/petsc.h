@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.35 1995/06/21 20:34:37 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.36 1995/07/06 01:58:41 bsmith Exp curfman $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -119,6 +119,30 @@ extern double _TotalFlops;
 #else
 #define PLogFlops(n)
 #endif 
+
+/*M
+   PLogFlops - Adds floating point operations to the global counter.
+
+   Input Parameter:
+.  f - flop counter
+
+   Synopsis:
+   PLogFlops(int f)
+
+   Notes:
+   A global counter logs all PETSc flop counts.  The user can use
+   PLogFlops() to increment this counter to include flops for the 
+   application code.  Since the PETSc libraries incorporate timing 
+   of phases and operations, PLogFlops() is intended only for monitoring 
+   of application codes.  The options database commands -log, 
+   -log_summary, and -log_all activate PETSc library operation counts.  
+   See the users manual for further details.
+
+.seealso:  PetscTime()
+
+.keywords:  Petsc, log, flops, floating point operations
+M*/
+
 extern int PLogPrint(MPI_Comm,FILE *);
 extern int PLogBegin();
 extern int PLogAllBegin();
