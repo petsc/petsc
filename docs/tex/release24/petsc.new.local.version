@@ -22,6 +22,11 @@ quickly.  Also, let us know if you need to use a variant of
 PETSc-2.0.21 that hasn't been built (by specifying the needed
 PETSC_ARCH and BOPT).
 
+
+Notes:  
+  - No longer build libs for the old SP;
+    Changed PETSC_ARCH rs6000_quad to rs6000
+
 Thanks for your support.  
 Satish, Barry, Lois, and Bill
 
