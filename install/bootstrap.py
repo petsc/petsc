@@ -526,7 +526,7 @@ if __name__ ==  '__main__':
 
     sys.path.insert(0, os.path.join(installer.installPath, 'sidl','BuildSystem'))
 
-    args = ['-debugSections=[install,compile,bk]','-debugLevel=0','-installedprojects=[]']
+    args = ['-debugSections=[install,compile,bk,shell,build]','-debugLevel=4','-installedprojects=[]']
     installer.runInstaller(args)
 
   except Exception, e:
