@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.4 1996/03/25 23:11:18 balay Exp balay $ */
+/* $Id: baij.h,v 1.5 1996/03/25 23:12:36 balay Exp balay $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -18,20 +18,19 @@ typedef struct {
   int              nonew;        /* if true, don't allow new elements to be added */
   int              singlemalloc; /* if true a, i, and j have been obtained with
                                         one big malloc */
-  int              m, n;         /* rows, columns */
-  int              bs;           /* block size */
+  int              m,n;         /* rows, columns */
+  int              bs,bs2;       /* block size, square of block size */
   int              mbs,nbs;      /* rows/bs, columns/bs */
-  int              nz, maxnz;    /* nonzeros, allocated nonzeros */
+  int              nz,maxnz;    /* nonzeros, allocated nonzeros */
   int              *diag;        /* pointers to diagonal elements */
   int              *i;           /* pointer to beginning of each row */
   int              *imax;        /* maximum space allocated for each row */
   int              *ilen;        /* actual length of each row */
   int              *j;           /* column values: j + i[k] - 1 is start of row k */
   Scalar           *a;           /* nonzero elements */
-  IS               row, col;     /* index sets, used for reorderings */
+  IS               row,col;     /* index sets, used for reorderings */
   Scalar           *solve_work;  /* work space used in MatSolve */
   void             *spptr;       /* pointer for special library like SuperLU */
-  int              indexshift;   /* zero or -one for C or Fortran indexing */
   int              reallocs;     /* number of mallocs done during MatSetValues() 
                                   as more values are set then were prealloced for */
   Scalar           *mult_work;   /* work array for matrix vector product*/
