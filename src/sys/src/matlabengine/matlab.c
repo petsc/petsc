@@ -107,7 +107,8 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char string[],...)
 {
   va_list           Argp;
   char              buffer[1024];
-  int               ierr,len,flops;
+  int               ierr,flops;
+  size_t            len;
 
   PetscFunctionBegin;  
   ierr = PetscStrcpy(buffer,"flops(0);");

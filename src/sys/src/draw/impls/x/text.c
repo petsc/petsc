@@ -104,7 +104,8 @@ int XiInitFonts(PetscDraw_X *XBWin)
     names   = XListFontsWithInfo(XBWin->disp,"?x",NFONTS,&cnt,&info);
     j       = 0;
     for (i=0; i<cnt; i++) {
-        int ierr,len;
+        int    ierr;
+        size_t len;
 
         ierr = PetscStrlen(names[i],&len);CHKERRQ(ierr);
         if (len != 2) continue;

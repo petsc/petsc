@@ -152,7 +152,8 @@ EXTERN_C_END
 /* These are not extern C because they are passed into non-extern C user level functions */
 static int ourerrorhandler(int line,const char *fun,const char *file,const char *dir,int n,int p,const char *mess,void *ctx)
 {
-  int ierr = 0,len1,len2,len3,len4;
+  int    ierr = 0;
+  size_t len1,len2,len3,len4;
   
   PetscStrlen(fun,&len1);
   PetscStrlen(file,&len2);

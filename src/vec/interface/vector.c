@@ -2256,7 +2256,7 @@ int VecViewFromOptions(Vec vec, char *title)
   char       *titleStr;
   char        typeName[1024];
   char        fileName[PETSC_MAX_PATH_LEN];
-  int         len;
+  size_t      len;
   int         ierr;
 
   PetscFunctionBegin;

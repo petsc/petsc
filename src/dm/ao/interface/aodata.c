@@ -1417,7 +1417,8 @@ int AODataSegmentRemove(AOData aodata,const char name[],const char segname[])
 @*/
 int AODataKeyAdd(AOData aodata,const char name[],int nlocal,int N)
 {
-  int        ierr,size,rank,i,len;
+  int        ierr,size,rank,i;
+  size_t     len;
   AODataKey  *key,*oldkey;
   MPI_Comm   comm = aodata->comm;
   PetscTruth flag;

@@ -301,7 +301,8 @@ int PetscViewerBinaryLoadInfo(PetscViewer viewer)
 {
   FILE       *file;
   char       string[256],*first,*second,*final;
-  int        len,ierr;
+  size_t     len;
+  int        ierr;
   PetscTruth flg;
   PetscToken *token;  
 
@@ -358,7 +359,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscViewerSetFilename_Binary" 
 int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
 {
-  int                 rank,ierr,len;
+  int                 rank,ierr;
+  size_t              len;
   PetscViewer_Binary  *vbinary = (PetscViewer_Binary*)viewer->data;
   const char          *fname;
   char                bname[PETSC_MAX_PATH_LEN],*gz;

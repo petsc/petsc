@@ -143,7 +143,8 @@ int MatSolve_Matlab(Mat A,Vec b,Vec x)
 int MatLUFactorNumeric_Matlab(Mat A,Mat *F)
 {
   Mat_SeqAIJ      *f = (Mat_SeqAIJ*)(*F)->data;
-  int             ierr,len;
+  int             ierr;
+  size_t          len;
   char            *_A,*name;
 
   PetscFunctionBegin;
@@ -207,7 +208,8 @@ int MatSolve_Matlab_QR(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatLUFactorNumeric_Matlab_QR"
 int MatLUFactorNumeric_Matlab_QR(Mat A,Mat *F)
 {
-  int             ierr,len;
+  int             ierr;
+  size_t          len;
   char            *_A,*name;
 
   PetscFunctionBegin;
@@ -246,7 +248,8 @@ int MatLUFactorSymbolic_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 #define __FUNCT__ "MatILUDTFactor_Matlab"
 int MatILUDTFactor_Matlab(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *F)
 {
-  int        ierr,len;
+  int        ierr;
+  size_t     len;
   char       *_A,*name;
 
   PetscFunctionBegin;

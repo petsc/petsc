@@ -37,7 +37,7 @@
   Concepts: string length
   
 @*/
-int PetscStrlen(const char s[],int *len)
+int PetscStrlen(const char s[],size_t *len)
 {
   PetscFunctionBegin;
   if (!s) {
@@ -71,7 +71,8 @@ int PetscStrlen(const char s[],int *len)
 @*/
 int PetscStrallocpy(const char s[],char *t[])
 {
-  int ierr,len;
+  int    ierr;
+  size_t len;
 
   PetscFunctionBegin;
   if (s) {
@@ -142,7 +143,7 @@ int PetscStrcpy(char s[],const char t[])
 .seealso: PetscStrcpy(), PetscStrcat(), PetscStrncat()
   
 @*/
-int PetscStrncpy(char s[],const char t[],int n)
+int PetscStrncpy(char s[],const char t[],size_t n)
 {
   PetscFunctionBegin;
   strncpy(s,t,n);
@@ -193,7 +194,7 @@ int PetscStrcat(char s[],const char t[])
 .seealso: PetscStrcpy(), PetscStrncpy(), PetscStrcat()
   
 @*/
-int PetscStrncat(char s[],const char t[],int n)
+int PetscStrncat(char s[],const char t[],size_t n)
 {
   PetscFunctionBegin;
   strncat(s,t,n);
@@ -338,7 +339,7 @@ int PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
 .seealso: PetscStrgrt(), PetscStrcmp(), PetscStrcasecmp()
 
 @*/
-int PetscStrncmp(const char a[],const char b[],int n,PetscTruth *t)
+int PetscStrncmp(const char a[],const char b[],size_t n,PetscTruth *t)
 {
   int c;
 
@@ -492,7 +493,8 @@ int PetscTokenFind(PetscToken *a,char *result[])
 @*/
 int PetscTokenCreate(const char a[],const char b,PetscToken **t)
 {
-  int         ierr,len;
+  int    ierr;
+  size_t len;
 
   PetscFunctionBegin;
   ierr = PetscNew(PetscToken,t);CHKERRQ(ierr);
@@ -592,16 +594,16 @@ int PetscGetPetscDir(const char *dir[])
    Level: intermediate
 
 @*/
-int PetscStrreplace(MPI_Comm comm,const char a[],char b[],int len)
+int PetscStrreplace(MPI_Comm comm,const char a[],char b[],size_t len)
 {
-  int        ierr,i = 0,l,l1,l2,l3;
+  int        ierr,i = 0;
+  size_t     l,l1,l2,l3;
   char       *work,*par,*epar,env[1024];
   const char *s[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
   const char *r[] = {PETSC_ARCH,PETSC_BOPT,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
   PetscTruth flag;
 
   PetscFunctionBegin;
-  if (len <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Length of b must be greater than 0");
   if (!a || !b) SETERRQ(PETSC_ERR_ARG_NULL,"a and b strings must be nonnull");
   ierr = PetscMalloc(len*sizeof(char*),&work);CHKERRQ(ierr);
 

@@ -165,10 +165,11 @@ int PetscPClose(MPI_Comm comm,FILE *fd)
 @*/
 int PetscPOpen(MPI_Comm comm,const char machine[],const char program[],const char mode[],FILE **fp)
 {
-  int  ierr,rank,i,len,cnt;
-  char commandt[PETSC_MAX_PATH_LEN],command[PETSC_MAX_PATH_LEN];
+  int    ierr,rank,i;
+  size_t len,cnt;
+  char   commandt[PETSC_MAX_PATH_LEN],command[PETSC_MAX_PATH_LEN];
 #if defined(PETSC_HAVE_POPEN)
-  FILE *fd;
+  FILE   *fd;
 #endif
 
   PetscFunctionBegin;

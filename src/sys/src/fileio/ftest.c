@@ -189,9 +189,10 @@ int PetscTestDirectory(const char fname[],char mode,PetscTruth *flg)
 #define __FUNCT__ "PetscLs"
 int PetscLs(MPI_Comm comm,const char libname[],char *found,int tlen,PetscTruth *flg)
 {
-  int   ierr,len;
-  char  *f,program[PETSC_MAX_PATH_LEN];
-  FILE  *fp;
+  int    ierr;
+  size_t len;
+  char   *f,program[PETSC_MAX_PATH_LEN];
+  FILE   *fp;
 
   PetscFunctionBegin;
   ierr   = PetscStrcpy(program,"ls ");CHKERRQ(ierr);

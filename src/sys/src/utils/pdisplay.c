@@ -89,7 +89,8 @@ static char PetscDisplay[256];
 #define __FUNCT__ "PetscSetDisplay" 
 int PetscSetDisplay(void)
 {
-  int        size,rank,len,ierr;
+  int        size,rank,ierr;
+  size_t     len;
   PetscTruth flag;
   char       *str,display[256];
 

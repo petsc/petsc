@@ -35,14 +35,15 @@ typedef struct {
 #define __FUNCT__ "MatPartitioningApply_Scotch"
 static int MatPartitioningApply_Scotch(MatPartitioning part, IS * partitioning)
 {
-    int ierr, *parttab, *locals = NULL, rank, i, size, j;
-    Mat mat = part->adj, matMPI, matSeq;
-    int nb_locals = mat->m;
-    Mat_MPIAdj *adj = (Mat_MPIAdj *) mat->data;
+    int                    ierr, *parttab, *locals = PETSC_NULL, rank, i, size;
+    size_t                 j;
+    Mat                    mat = part->adj, matMPI, matSeq;
+    int                    nb_locals = mat->m;
+    Mat_MPIAdj             *adj = (Mat_MPIAdj *) mat->data;
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-    PetscTruth flg;
+    PetscTruth             flg;
 #ifdef PETSC_HAVE_UNISTD_H
-    int fd_stdout, fd_pipe[2], count;
+    int                    fd_stdout, fd_pipe[2], count;
 #endif
 
     PetscFunctionBegin;

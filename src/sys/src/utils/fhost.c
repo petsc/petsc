@@ -72,7 +72,7 @@ int PetscGetHostName(char name[],int nlen)
   /* See if this name includes the domain */
   ierr = PetscStrchr(name,'.',&domain);CHKERRQ(ierr);
   if (!domain) {
-    int  l,ll;
+    size_t  l,ll;
     ierr = PetscStrlen(name,&l);CHKERRQ(ierr);
     if (l == nlen) {name[nlen-1] = 0; PetscFunctionReturn(0);}
     name[l++] = '.';

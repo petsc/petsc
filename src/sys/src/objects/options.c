@@ -40,7 +40,8 @@ static PetscOptionsTable *options = 0;
 #define __FUNCT__ "PetscOptionsAtoi"
 int PetscOptionsAtoi(const char name[],int *a)
 {
-  int        i,ierr,len;
+  int        i,ierr;
+  size_t     len;
   PetscTruth decide,tdefault,mouse;
 
   PetscFunctionBegin;
@@ -81,7 +82,8 @@ int PetscOptionsAtoi(const char name[],int *a)
 #define __FUNCT__ "PetscOptionsAtod"
 int PetscOptionsAtod(const char name[],PetscReal *a)
 {
-  int        ierr,len;
+  int        ierr;
+  size_t     len;
   PetscTruth decide,tdefault;
 
   PetscFunctionBegin;
@@ -180,7 +182,8 @@ int PetscSetProgramName(const char name[])
 int PetscOptionsInsertString(const char in_str[])
 {
   char       *str,*first,*second,*third,*final;
-  int        len,ierr;
+  size_t     len;
+  int        ierr;
   PetscToken *token;
 
   PetscFunctionBegin;
@@ -241,7 +244,8 @@ int PetscOptionsInsertString(const char in_str[])
 int PetscOptionsInsertFile(const char file[])
 {
   char       string[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*final;
-  int        len,ierr,i,startIndex;
+  int        ierr,i,startIndex;
+  size_t     len;
   FILE       *fd;
   PetscToken *token;
 
@@ -343,8 +347,8 @@ int PetscOptionsInsert(int *argc,char ***args,const char file[])
 
   /* insert environmental options */
   {
-    char *eoptions = 0,*second,*first;
-    int  len=0;
+    char   *eoptions = 0,*second,*first;
+    size_t len=0;
     if (!rank) {
       eoptions = (char*)getenv("PETSC_OPTIONS");
       ierr     = PetscStrlen(eoptions,&len);CHKERRQ(ierr);
@@ -475,8 +479,9 @@ int PetscOptionsPrint(FILE *fd)
 @*/
 int PetscOptionsGetAll(char *copts[])
 {
-  int  i,ierr,len = 1,lent;
-  char *coptions;
+  int    i,ierr;
+  size_t len = 1,lent;
+  char   *coptions;
 
   PetscFunctionBegin;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -562,7 +567,8 @@ int PetscOptionsDestroy(void)
 @*/
 int PetscOptionsSetValue(const char iname[],const char value[])
 {
-  int        len,N,n,i,ierr;
+  size_t     len;
+  int        N,n,i,ierr;
   char       **names;
   const char *name = (char*)iname;
   PetscTruth gt,match;
@@ -708,8 +714,9 @@ int PetscOptionsClearValue(const char iname[])
 @*/
 int PetscOptionsSetAlias(const char inewname[],const char ioldname[])
 {
-  int  ierr,len,n = options->Naliases;
-  char *newname = (char *)inewname,*oldname = (char*)ioldname;
+  int    ierr,n = options->Naliases;
+  size_t len;
+  char   *newname = (char *)inewname,*oldname = (char*)ioldname;
 
   PetscFunctionBegin;
   if (newname[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,"aliased must have -: Instead %s",newname);
@@ -733,7 +740,8 @@ int PetscOptionsSetAlias(const char inewname[],const char ioldname[])
 #define __FUNCT__ "PetscOptionsFindPair_Private"
 static int PetscOptionsFindPair_Private(const char pre[],const char name[],char *value[],PetscTruth *flg)
 {
-  int        i,N,ierr,len;
+  int        i,N,ierr;
+  size_t     len;
   char       **names,tmp[256];
   PetscTruth match;
 
@@ -1330,7 +1338,8 @@ int PetscOptionsGetString(const char pre[],const char name[],char string[],int l
 int PetscOptionsGetStringArray(const char pre[],const char name[],char *strings[],int *nmax,PetscTruth *flg)
 {
   char       *value;
-  int        len,n,ierr;
+  size_t     len;
+  int        n,ierr;
   PetscTruth flag;
   PetscToken *token;
  
