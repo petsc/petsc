@@ -251,6 +251,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     cputotal = lu->cpus[8] ;
     if ( cputotal > 0.0 ) {
       PetscPrintf(PETSC_COMM_SELF,
+           "\n                               cpus   cpus/totaltime"
            "\n    initialize fronts       %8.3f %6.2f"
            "\n    load original entries   %8.3f %6.2f"
            "\n    update fronts           %8.3f %6.2f"
