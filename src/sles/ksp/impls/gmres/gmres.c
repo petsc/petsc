@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.160 2001/01/16 18:19:33 balay Exp balay $*/
+/*$Id: gmres.c,v 1.161 2001/01/19 23:21:32 balay Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -265,27 +265,12 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
   itcount  = 0;
-  /* Save binv*f */
-  if (ksp->pc_side == PC_LEFT) {
-    /* inv(b)*f */
-    ierr = KSP_PCApply(ksp,ksp->B,VEC_RHS,VEC_BINVF);CHKERRQ(ierr);
-  } else if (ksp->pc_side == PC_RIGHT) {
-    ierr = VecCopy(VEC_RHS,VEC_BINVF);CHKERRQ(ierr);
-  }
-  /* Compute the initial (preconditioned) residual */
-  if (!ksp->guess_zero) {
-    ierr = GMRESResidual(ksp);CHKERRQ(ierr);
-  } else {
-    ierr = VecCopy(VEC_BINVF,VEC_VV(0));CHKERRQ(ierr);
-  }
-    
-  ierr    = GMREScycle(&its,ksp);CHKERRQ(ierr);
+  ierr     = KSPInitialResidual(ksp,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),VEC_BINVF,VEC_RHS);CHKERRQ(ierr);
+  ierr     = GMREScycle(&its,ksp);CHKERRQ(ierr);
   itcount += its;
   while (!ksp->reason) {
     ierr     = GMRESResidual(ksp);CHKERRQ(ierr);
     if (itcount >= ksp->max_it) break;
-    /* need another check to make sure that gmres breaks out 
-       at precisely the number of iterations chosen */
     ierr     = GMREScycle(&its,ksp);CHKERRQ(ierr);
     itcount += its;  
   }

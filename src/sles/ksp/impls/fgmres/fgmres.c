@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.22 2001/01/15 21:47:28 bsmith Exp balay $ */
+/* $Id: fgmres.c,v 1.23 2001/01/16 18:19:46 balay Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -112,11 +112,7 @@ int    KSPSetUp_FGMRES(KSP ksp)
 }
 
 /* 
-
-    FGMRESResidual - This routine computes the initial residual (NOT 
-                     PRECONDITIONED) without
-                     making any assumptions about the solution.  
-
+    FGMRESResidual - This routine computes the initial residual (NOT PRECONDITIONED) 
 */
 #undef __FUNC__  
 #define __FUNC__ "FGMRESResidual"
@@ -133,7 +129,7 @@ static int FGMRESResidual(KSP ksp)
 
   /* put A*x into VEC_TEMP */
   ierr = MatMult(Amat,VEC_SOLN,VEC_TEMP);CHKERRQ(ierr);
-  /* now put residual (-a*x + f) into vec_vv(0) */
+  /* now put residual (-A*x + f) into vec_vv(0) */
   ierr = VecWAXPY(&mone,VEC_TEMP,VEC_RHS,VEC_VV(0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -364,12 +360,10 @@ int KSPSolve_FGMRES(KSP ksp,int *outits)
   while (!ksp->reason) {
     ierr     = FGMRESResidual(ksp);CHKERRQ(ierr);
     if (itcount >= ksp->max_it) break;
-    /* need another check to make sure that fgmres breaks out 
-       at precisely the number of iterations chosen */
     ierr     = FGMREScycle(&cycle_its,ksp);CHKERRQ(ierr);
     itcount += cycle_its;  
   }
-  /* mark lack of convergence with negative the number of iterations */
+  /* mark lack of convergence */
   if (itcount >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
 
   *outits = itcount;
