@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.19 2000/04/30 17:00:00 kaushik Exp kaushik $
+c  $Id: user.F,v 1.20 2000/05/01 05:59:25 kaushik Exp kaushik $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -1441,7 +1441,7 @@ c=============================================================================
       integer f2ntv(nvfacet,4)
       integer f2ntf(nffacet,4)
       integer i,n,node1,node2,node3,inode      
-      integer flops
+      integer flops,ierr
       Scalar  xmean,ymean,zmean,xnorm,ynorm,znorm,
      &        rlen,area,dot,size,
      &        X1,Y1,Z1,X2,Y2,Z2,X3,Y3,Z3,p1,p2,p3,
@@ -1510,7 +1510,7 @@ c=============================================================================
        integer my_thread_id,omp_get_thread_num
 #undef res(a,b)
 #define res(a,b) resd(a,b)
-       call PetscMemzero(resd,8*4*nnodes)
+       call PetscMemzero(resd,8*4*nnodes,ierr)
 #endif
 
        flops = 0
@@ -1526,7 +1526,11 @@ c
 !$omp4 eig4,dp,du,dv,dw,ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4,r11,r21,
 !$omp5 r31,r41,r12,r22,r32,r42,r13,r23,r33,r43,r14,r24,r34,r44,t1,t2,
 !$omp6 t3,t4,fluxp1,fluxp2,fluxp3,fluxp4,fluxm1,fluxm2,fluxm3,fluxm4,
-!$omp7 res1,res2,res3,res4) firstprivate(resd)
+!$omp7 res1,res2,res3,res4,c68,c18,inode) firstprivate(resd)
+!$omp8 private(x3,y3,z3,p1,p2,p3,ax,ay,az,bx,by,bz,pa,pb,pc,area,c20,
+!$omp9 c0,ubar0,t11,t21,t31,t41,t12,t22,t32,t42,t13,t23,t33,t43,t14,
+!$omp1 t24,t34,t44,pi,ui,vi,wi,unorm,rhs1,rhs2,rhs3,rhs4,ub,vb,wb,node3)
+!$omp2 reduction(+:flops)
 c!$omp8 private(my_thread_id)
 c!$omp1 shared(evec,qvec,resvec,xyz,xyzn,grad,nedge,nnodes,second,flops,
 c!$omp2 title,beta,alpha,Re,dt,tot,res0,resc,ntt,mseq,ivisc,irest,icyc,
@@ -1537,7 +1541,7 @@ c!$      my_thread_id = omp_get_thread_num()
 c!$omp   critical
 c!$      print *, 'My thread id on processor ',irank,' is ',my_thread_id
 c!$omp   end critical
-!$omp   do reduction(+:flops)
+!$omp   do 
        do n = 1, nedge
         node1 = eptr(n,1)
         node2 = eptr(n,2)
@@ -1754,21 +1758,6 @@ c          call PLogFlops(4)
 c
       enddo
 !$omp enddo
-!$omp critical (residual_update)
-#if defined(_OPENMP)
-       do n = 1,nnodes
-          resvec(1,n)=resvec(1,n)+res(1,n)
-          resvec(2,n)=resvec(2,n)+res(2,n)
-          resvec(3,n)=resvec(3,n)+res(3,n)
-          resvec(4,n)=resvec(4,n)+res(4,n)
-       enddo
-       flops = flops + 4*nnodes
-c      print *, 'For thread ', omp_get_thread_num(),', n is',n
-#endif
-!$omp end critical (residual_update)
-!$omp end parallel  
-#undef res(a,b)
-#define res(a,b) resvec(a,b)
   
 c     c68 = 6./8.
 c     c18 = 1./8.
@@ -1778,7 +1767,8 @@ c
 c Close contour over the boundaries 
 c First do inviscid faces
 c
-      do 2020 n = 1, nnfacet
+!$omp do
+      do n = 1, nnfacet
                node1 = isnode(f2ntn(n,1))
                node2 = isnode(f2ntn(n,2))
                node3 = isnode(f2ntn(n,3)) 
@@ -1843,11 +1833,13 @@ c               call PLogFlops(6)
 	        flops = flops + 6
                endif
 
- 2020 continue
+      enddo
+!$omp enddo
 c
 c Now viscous faces
 c
-      do 3020 n = 1, nvfacet
+!$omp do
+      do n = 1, nvfacet
                node1 = ivnode(f2ntv(n,1))
                node2 = ivnode(f2ntv(n,2))
                node3 = ivnode(f2ntv(n,3)) 
@@ -1914,7 +1906,8 @@ c               call PLogFlops(6)
                 flops = flops + 6
                endif
 
- 3020 continue
+      enddo
+!$omp enddo
 c
 c The next section of code is for when you dont care about
 c preserving linear data on boundary. Also, doing this 
@@ -1966,8 +1959,8 @@ c
 c
 c Now do far-field
 c
-CDIR$ IVDEP
-       do 1040 i = 1,nfnode
+!$omp do
+       do i = 1,nfnode
          inode   = ifnode(i)
 c
 c Get normal and "other" 2 vectors. Remember that fxn,fyn and fzn 
@@ -2102,7 +2095,21 @@ c         call PLogFlops(18)
           flops = flops + 18
          endif
 c
- 1040  continue
+       enddo
+!$omp enddo
+!$omp critical (residual_update)
+#if defined(_OPENMP)
+       do n = 1,nnodes
+          resvec(1,n)=resvec(1,n)+res(1,n)
+          resvec(2,n)=resvec(2,n)+res(2,n)
+          resvec(3,n)=resvec(3,n)+res(3,n)
+          resvec(4,n)=resvec(4,n)+res(4,n)
+       enddo
+       flops = flops + 4*nnodes
+c      print *, 'For thread ', omp_get_thread_num(),', n is',n
+#endif
+!$omp end critical (residual_update)
+!$omp end parallel  
        call PLogFlops(flops)
 c
 c End of subroutine FLUX
@@ -2715,6 +2722,7 @@ c     data delta2_label/'DELTA2          '/
 c     save flux_event,delta2_event,flag, flux_label,delta2_label
 #if defined(INTERLACING)
        Scalar resvec(4,nnodes)
+#undef res(a,b)
 #define res(i,j) resvec(i,j)
 #else
        Scalar resvec(nnodes,4)
