@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.4 1995/05/11 22:12:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.5 1995/05/15 17:50:17 curfman Exp curfman $";
 #endif
 
 /*
@@ -43,28 +43,10 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   ierr = ISDestroy(from); CHKERR(ierr);
   ierr = ISDestroy(to); CHKERR(ierr);
 
-  MPI_Comm_rank(mat->comm,&mytid);
-  ierr = VecSet(&zero,mbd->lvec); CHKERRA(ierr);
-  ierr = VecGetOwnershipRange(gvec,&low,&high); CHKERRA(ierr);
-  ierr = VecGetLocalSize(gvec,&lsize); CHKERRA(ierr);
-  printf("[%d] low=%d, high=%d, mbd->n=%d, mbd->N=%d \n", 
-           mytid, low, high,mbd->n,mbd->N);
-  for ( i=0; i<lsize; i++ ) {
-    iglobal = i + low; value = (Scalar) (i + 100*mytid);
-    printf("[%d] i=%d, ig=%d, val=%g\n",mytid,i,iglobal,value);
-    ierr = VecSetValues(gvec,1,&iglobal,&value,INSERTVALUES); CHKERRA(ierr);
-  }
-
   ierr = VecScatterBegin(gvec,mbd->lvec,ADDVALUES,SCATTERALL,mbd->Mvctx);
   CHKERR(ierr);
   ierr = VecScatterEnd(gvec,mbd->lvec,ADDVALUES,SCATTERALL,mbd->Mvctx);
   CHKERR(ierr);
-
-  printf("processor %d\n", mytid);
-  ierr = VecView(mbd->lvec,STDOUT_VIEWER); CHKERR(ierr);
-  MPI_Barrier(MPI_COMM_WORLD);
-  PetscFinalize();
-  exit(0);
 
   ierr = VecDestroy(gvec); CHKERR(ierr);
 

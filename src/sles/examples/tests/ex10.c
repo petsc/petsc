@@ -5,11 +5,8 @@ dimensions using 20 node serendipity elements and the equations of linear\n\
 elasticity. This demonstrates use of MatGetSubMatrix() and the block\n\
 diagonal data structure.\n\n";
 
-#include "draw.h"
-#include "vec.h"
-#include "mat.h"
 #include "sles.h"
-#include "options.h"
+#include "petsc.h"
 #include <stdio.h>
 
 /* This code is not intended as an efficient implementation, it is only
@@ -86,8 +83,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   int     ict, nz, base, r1, r2, N, *rows, *rowkeep, nstart, ierr, mem;
   IS      iskeep;
   double  **K;
-  Mat     mat, submat;
-  DrawCtx win; 
+  Mat     mat, submat, *newmat1;
 
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
@@ -155,19 +151,44 @@ int GetElasticityMatrix(int m,Mat *newmat)
   /* Convert storage formats -- just to demonstrate block diagonal format */
   { MatType type = MATBDIAG;
   if (OptionsHasName(0,0,"-mat_row")) type = MATROW; 
-  ierr = MatConvert(submat,type,newmat); CHKERR(ierr);}
+  ierr = MatConvert(submat,type,newmat1); CHKERR(ierr);
   ierr = MatDestroy(submat); CHKERR(ierr);
+
+    {  
+      int    nz, nd, nb, *diag, rows, cols, rstart, rend, *cval;
+      Scalar **diagv, *val;
+      MatGetSize(*newmat1,&rows,&cols);
+      if (type == MATBDIAG) {
+        MatGetBDiagData(*newmat1,&nd,&nb,&diag,&diagv);
+        MatCreateSequentialBDiag(MPI_COMM_SELF,rows,cols,nd,nb,diag,0,
+                          newmat);
+/*        MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,rows,cols,nd,nb,diag,0,
+                          newmat); */
+      } else {
+        MatCreateSequentialRow(MPI_COMM_SELF,rows,cols,
+                    0,0,newmat);
+/*        MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,rows,cols,
+                    0,0,0,0,newmat); */
+      }
+      MatGetOwnershipRange(*newmat,&rstart,&rend);
+      for (i=rstart; i<rend; i++) {
+        ierr = MatGetRow(*newmat1,i,&nz,&cval,&val); CHKERR(ierr);
+        ierr = MatSetValues(*newmat,1,&i,nz,cval,val,INSERTVALUES); 
+               CHKERR(ierr);
+        ierr = MatRestoreRow(*newmat1,i,&nz,&cval,&val); CHKERR(ierr);
+      }
+      ierr = MatAssemblyBegin(*newmat,FINAL_ASSEMBLY);
+      ierr = MatAssemblyEnd(*newmat,FINAL_ASSEMBLY);
+      ierr = MatDestroy(*newmat1); CHKERR(ierr);
+    }
+  }
+
 
   /* Display matrix information and nonzero structure */
   MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRA(ierr);
   printf("matrix nonzeros = %d, allocated nonzeros = %d, memory = %d bytes\n",
           nz,nzalloc,mem);
   
-  /* Dump matrix to file compatible with Matlab */
-/*  { Viewer fileviewer; ViewerFileOpen("MAT",&fileviewer);
-  ViewerFileSetFormat(fileviewer,FILE_FORMAT_MATLAB,"mmat");
-  MatView(*newmat,fileviewer); CHKERRA(ierr); } */
-
   return 0;
 }
 /* -------------------------------------------------------------------- */
