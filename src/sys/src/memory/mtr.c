@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.118 1999/02/01 15:28:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.119 1999/02/03 16:21:05 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -47,7 +47,7 @@ int PetscSetUseTrMalloc_Private(void)
 #else
   PetscLow     = (void *) 0xEEEEEEEE; 
 #endif
-  /*  PetscHigh    = (void *) 0x0; */
+  PetscHigh    = (void *) 0x0; 
   ierr         = PetscSetMalloc(PetscTrMallocDefault,PetscTrFreeDefault); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -225,8 +225,9 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
    Keep track of range of memory locations we have malloced in 
   */
   if (PetscLow > (void *) inew) PetscLow = (void *) inew;
-  if (PetscHigh < (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long)))
-      PetscHigh = (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long)); 
+  if (PetscHigh < (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long))) {
+    PetscHigh = (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long)); 
+  }
 
   head   = (TRSPACE *)inew;
   inew  += sizeof(TrSPACE);
