@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.73 1996/01/12 22:05:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.74 1996/01/26 04:32:35 bsmith Exp balay $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -273,5 +273,6 @@ int KSPPrintTypes_Private(char* prefix,char *name)
     entry = entry->next;
   }
   fprintf(stdout,"\n");
+  fflush(stdout);
   return 1;
 }
