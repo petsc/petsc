@@ -93,11 +93,11 @@ PetscErrorCode MatConvertFrom_AIJviaSeqAIJ(Mat A, const MatType type, Mat *newma
   PetscTruth     inplace=PETSC_TRUE;
 
   PetscFunctionBegin;
+  ierr = MatConvert_AIJ_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
+  ierr = MatConvert(A,type,&B);CHKERRQ(ierr);
   if (B != A) {
     inplace = PETSC_FALSE;
   }
-  ierr = MatConvert_AIJ_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
-  ierr = MatConvert(A,type,&B);CHKERRQ(ierr);
   if (!inplace) {
     ierr = MatConvert_SeqAIJ_AIJ(A,MATAIJ,&A);CHKERRQ(ierr);
   }
@@ -110,19 +110,15 @@ PetscErrorCode MatConvertFrom_AIJviaSeqAIJ(Mat A, const MatType type, Mat *newma
 PetscErrorCode MatConvertFrom_AIJviaMPIAIJ(Mat A, const MatType type, Mat *newmat)
 {
   PetscErrorCode ierr;
-  Mat            B=*newmat;
-  PetscTruth     inplace=PETSC_TRUE;
+  Mat            B;
 
   PetscFunctionBegin;
-  if (B != A) {
-    inplace = PETSC_FALSE;
-  }
-  ierr = MatConvert_AIJ_MPIAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
-  ierr = MatConvert(A,type,&B);CHKERRQ(ierr);
-  if (!inplace) {
+  ierr = MatConvert_AIJ_MPIAIJ(A,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatConvert(A,type,newmat);CHKERRQ(ierr);
+  B    = *newmat;
+  if (B != A) { /* !inplace */
     ierr = MatConvert_MPIAIJ_AIJ(A,MATAIJ,&A);CHKERRQ(ierr);
   }
-  *newmat = B;
   PetscFunctionReturn(0);
 }
 
