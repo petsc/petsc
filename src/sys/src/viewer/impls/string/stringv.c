@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.24 1998/08/26 22:03:57 balay Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.25 1998/12/03 04:05:01 bsmith Exp bsmith $";
 #endif
 
 #include "src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
@@ -101,7 +101,7 @@ int ViewerStringOpen(MPI_Comm comm,char string[],int len, Viewer *lab)
   Viewer_String *vstr;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,comm,ViewerDestroy,0);
+  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
   PLogObjectCreate(v);
   v->ops->destroy = ViewerDestroy_String;
   v->ops->view    = 0;
