@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.7 1997/01/22 18:46:23 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.8 1997/01/27 18:19:37 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -45,6 +45,7 @@
 #define PETSC_ERR_ARG_OUTOFRANGE  63   /* input argument, out of range */
 #define PETSC_ERR_ARG_BADPTR      68   /* invalid pointer argument */
 #define PETSC_ERR_ARG_NOTSAMETYPE 69   /* two args must be same object type */
+#define PETSC_ERR_ARG_WRONGSTATE  73   /* object in argument is in wrong state, e.g. unassembled mat */
 
 #define PETSC_ERR_FILE_OPEN       65   /* unable to open file */
 #define PETSC_ERR_FILE_READ       66   /* unable to read from file */

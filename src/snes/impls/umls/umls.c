@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.54 1997/01/14 22:58:18 curfman Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.55 1997/01/21 21:50:43 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -243,13 +243,16 @@ $  max_func - maximum number of function evaluations,
 $             set with SNESSetTolerances()
 $  nfunc    - number of function evaluations
 @*/
-int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,
-                       void *dummy)
+int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,void *dummy)
 {
   SNES_UMLS *neP = (SNES_UMLS *) snes->data;
   double    epsmch = 1.0e-14;   /* This must be fixed */
 
   /* Test for successful convergence */
+  if (f != f) {
+    PLogInfo(snes,"SNES:Failed to converged, function is NaN\n");
+    return -3;
+  }
   if (f < snes->fmin) {
     PLogInfo(snes,
       "SNESConverged_UM_LS: Converged due to function value %g < minimum function value %g\n",f,snes->fmin);

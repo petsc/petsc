@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.52 1997/01/01 03:41:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.53 1997/01/06 20:43:20 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -104,6 +104,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 .  M - global dimension of the array
 .  w - number of degrees of freedom per node
 .  s - stencil width  
+.  lc - number of nodes in the X direction on this processor, or PETSC_DECIDE
 
    Output Parameter:
 .  inra - the resulting distributed array object
@@ -115,7 +116,7 @@ $  -da_view : call DAView() at the conclusion of DACreate1d()
 
 .seealso: DADestroy(), DAView(), DACreate2d(), DACreate3d()
 @*/
-int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
+int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int lc,DA *inra)
 {
   int        rank, size,xs,xe,x,Xs,Xe,ierr,start,end,m;
   int        i,*idx,nn,j,count,left,flg1,flg2,gdim;
@@ -126,8 +127,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   DF         df_local;
   *inra = 0;
 
-  if (w < 1) SETERRQ(1,0,"Must have 1 or more degrees of freedom per node");
-  if (s < 0) SETERRQ(1,0,"Stencil width cannot be negative");
+  if (w < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node");
+  if (s < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative");
 
   PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);
@@ -140,36 +141,40 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 
   m = size;
 
-  if (M < m)     SETERRQ(1,0,"More processors than data points!");
-  if ((M-1) < s) SETERRQ(1,0,"Array is too small for stencil!");
+  if (M < m)     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"More processors than data points!");
+  if ((M-1) < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Array is too small for stencil!");
 
-
-  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2);CHKERRQ(ierr);
-  if (flg1) {  /* Block Comm type Distribution */
-    xs = rank*M/m;
-    x = (rank + 1)*M/m - xs;
-  }
-  else if (flg2) { /* The odd nodes are evenly distributed across last nodes */
-    x = (M + rank)/m;
-    
-    if (M/m == x) { xs = rank*x; }
-    else { xs = rank*(x-1) + (M+rank)%(x*m); }
-  }
-  else { /* The odd nodes are evenly distriuted across the first k nodes */
-    /* Regular PETSc Distribution */
-    /* determine locally owned region */
-    x = M/m + ((M % m) > (rank));
-
-    if (rank >= (M % m)) {xs = (rank * (int) (M/m) + M % m);}
-    else {xs = rank * (int)(M/m) + rank;}
+  /* 
+     Determine locally owned region 
+     xs is the first local node number, x is the number of local nodes 
+  */
+  if (lc == PETSC_DECIDE) {
+    ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1);CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2);CHKERRQ(ierr);
+    if (flg1) {      /* Block Comm type Distribution */
+      xs = rank*M/m;
+      x  = (rank + 1)*M/m - xs;
+    }
+    else if (flg2) { /* The odd nodes are evenly distributed across last nodes */
+      x = (M + rank)/m;
+      if (M/m == x) { xs = rank*x; }
+      else          { xs = rank*(x-1) + (M+rank)%(x*m); }
+    }
+    else { /* The odd nodes are evenly distributed across the first k nodes */
+      /* Regular PETSc Distribution */
+      x = M/m + ((M % m) > rank);
+      if (rank >= (M % m)) {xs = (rank * (int) (M/m) + M % m);}
+      else                 {xs = rank * (int)(M/m) + rank;}
+    }
+  } else {
+     x  =  lc;
+     MPI_Scan(&x,&xs,1,MPI_INT,MPI_SUM,comm);
+     xs -= lc;
   }
 
   /* From now on x,s,xs,xe,Xs,Xe are the exact location in the array */
-
   x  *= w;
-
-  s  *= w;  /* NOTE: I change s to be absolute stencil distance */
+  s  *= w;  /* NOTE: here change s to be absolute stencil distance */
   xs *= w;
   xe = xs + x;
 
@@ -274,7 +279,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   ierr = VecScatterCopy(gtol,&da->ltol); CHKERRQ(ierr);
   PLogObjectParent(da,da->ltol);
   left  = xs - Xs;
-  idx = (int *) PetscMalloc( x*sizeof(int) ); CHKPTRQ(idx);
+  idx   = (int *) PetscMalloc( x*sizeof(int) ); CHKPTRQ(idx);
   count = 0;
   for ( j=0; j<x; j++ ) {
     idx[count++] = left + j;
@@ -329,3 +334,5 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   *inra = da;
   return 0;
 }
+
+

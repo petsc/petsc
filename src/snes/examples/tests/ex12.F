@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.37 1996/10/02 20:56:20 bsmith Exp balay $";
+C    "$Id: ex12.F,v 1.38 1996/11/25 23:39:05 balay Exp bsmith $";
 C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  
@@ -43,7 +43,8 @@ C
       call MPI_Comm_size(MPI_COMM_WORLD,ctx(5),ierr)
 
 C Set up data structures
-      call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,N,1,1,ctx(1),ierr)
+      call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_DECIDE,
+     &                ctx(1),ierr)
 
       call DAGetDistributedVector(ctx(1),x,ierr)
       call DAGetLocalVector(ctx(1),ctx(3),ierr)

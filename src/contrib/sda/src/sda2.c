@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: sda2.c,v 1.4 1996/04/17 22:05:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sda2.c,v 1.5 1996/08/08 14:47:41 bsmith Exp bsmith $";
 #endif
 /*
     Simplified interface to PETSC DA (distributed array) object. 
@@ -26,6 +26,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 .  M - global dimension of the array
 .  w - number of degress of freedom per node
 .  s - stencil width
+.  lc - number of nodes in X direction on this processor
 
    Output Parameter:
 .  sda - the resulting array object
@@ -34,7 +35,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 
 .seealso: SDADestroy(), SDACreate2d(), SDACreate3d()
 @*/
-int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,SDA *sda)
+int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int lc,SDA *sda)
 {
   int        ierr,ntmp,*idx;
   DA         da;
@@ -47,7 +48,7 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,SDA *sda)
   PetscInitialize(&argc,&args,0,0);
 
   *sda = PetscNew(struct _SDA); CHKPTRQ(*sda);
-  ierr = DACreate1d(comm,wrap,M,w,s,&da);CHKERRQ(ierr);
+  ierr = DACreate1d(comm,wrap,M,w,s,lc,&da);CHKERRQ(ierr);
   (*sda)->da = da;
 
   /* set up two dummy work vectors for the vector scatter */

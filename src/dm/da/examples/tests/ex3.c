@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.22 1996/07/02 18:09:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.23 1996/07/04 13:04:35 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
@@ -20,20 +20,30 @@ int main(int argc,char **argv)
   Draw      draw;
   Vec       local, global, copy;
   Scalar    *localptr, *copyptr;
-  double    a, h, k;
+  double    a, h, k, localnodes = PETSC_DECIDE;
   int       localsize, j, i, mybase, myend, width, xbase;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size); 
 
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg); CHKERRA(ierr);
+  /*
+      Test putting two nodes on each processor, exact last processor gets the rest
+  */
+  ierr = OptionsHasName(PETSC_NULL,"-distribute",&flg); CHKERRA(ierr);
+  if (flg) {
+    localnodes = 2;
+    if (rank == size - 1) {
+      localnodes = M - 2*(size-1);
+    }
+  }
     
   /* Set up the array */ 
-  ierr = DACreate1d(MPI_COMM_WORLD,DA_XPERIODIC,M,1,1,&da); CHKERRA(ierr);
+  ierr = DACreate1d(MPI_COMM_WORLD,DA_XPERIODIC,M,1,1,PETSC_DECIDE,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size); 
 
   /* Set up display to show combined wave graph */
   ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"Entire Solution",20,480,1000,200,

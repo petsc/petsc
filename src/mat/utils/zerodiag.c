@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zerodiag.c,v 1.12 1997/01/01 03:38:57 bsmith Exp balay $";
+static char vcid[] = "$Id: zerodiag.c,v 1.13 1997/01/06 20:26:03 balay Exp bsmith $";
 #endif
 
 /*
@@ -58,12 +58,18 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
 
     Notes:
     This is not intended as a replacement for pivoting for matrices that
-    have ``bad'' structure. It is only a stop-gap measure.
+    have ``bad'' structure. It is only a stop-gap measure. Should be called
+    after a call to MatGetReordering(), this routine changes the column 
+    ordering defined in cis.
+
+    Options Database: (When using SLES)
+.      -pc_ilu_nonzeros_along_diagonal
+.      -pc_lu_nonzeros_along_diagonal
 
     Algorithm:
     Column pivoting is used.  Choice of column is made by looking at the
     non-zero elements in the row.  This algorithm is simple and fast but
-    does NOT guarentee that a non-singular or well conditioned
+    does NOT guarantee that a non-singular or well conditioned
     principle submatrix will be produced.
 @*/
 int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )

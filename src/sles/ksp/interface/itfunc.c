@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.78 1997/01/22 18:41:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.79 1997/01/27 18:15:21 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -108,9 +108,6 @@ int KSPSetUp(KSP ksp)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->setupcalled) return 0;
-  if (ksp->type == -1) {
-    SETERRQ(1,0,"Type must be set first");
-  }
   ksp->setupcalled = 1;
   return (*ksp->setup)(ksp);
 }
@@ -871,7 +868,7 @@ $    KSPBuildSolution(ctx,v,PETSC_NULL);
 int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
 {
   PetscValidHeaderSpecific(ctx,KSP_COOKIE);
-  if (!V && !v) SETERRQ(1,0,"Must provide either v or V");
+  if (!V && !v) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must provide either v or V");
   if (!V) V = &v;
   return (*ctx->buildsolution)(ctx,v,V);
 }

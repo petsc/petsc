@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.95 1997/02/03 05:55:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.96 1997/02/03 15:55:27 curfman Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -223,7 +223,7 @@ int  KSPRegister(KSPType name, KSPType *oname,char *sname, int  (*create)(KSP))
   int ierr;
   static int numberregistered = 0;
 
-  if (name == KSPNEW) name = KSPNEW + numberregistered++;
+  if (name == KSPNEW) name = (KSPType) ((int) KSPNEW + numberregistered++);
 
   if (oname) *oname = name;
   if (!__KSPList) {ierr = NRCreate(&__KSPList); CHKERRQ(ierr);}

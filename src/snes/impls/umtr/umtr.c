@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.55 1997/01/14 22:58:13 curfman Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.56 1997/01/21 21:50:39 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -247,16 +247,19 @@ $    pred     - predicted reduction
 $    rtol     - relative function tolerance, 
 $               set with SNESSetTolerances()
 @*/
-int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,
-                       void *dummy)
+int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,void *dummy)
 {
   SNES_UMTR *neP = (SNES_UMTR *) snes->data;
   double    rtol = snes->rtol, delta = neP->delta,ared = neP->actred, pred = neP->prered;
   double    epsmch = 1.0e-14;   /* This must be fixed */
 
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,0,
-    "For SNES_UNCONSTRAINED_MINIMIZATION only");
+  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION)
+    SETERRQ(1,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
 
+  if (f != f) {
+    PLogInfo(snes,"SNES:Failed to converged, function is NaN\n");
+    return -3;
+  }
   /* Test for successful convergence */
   if ((!neP->success || neP->sflag) && (delta <= snes->deltatol * xnorm)) {
     neP->sflag = 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.42 1996/10/01 01:08:00 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.43 1997/01/24 04:02:57 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -100,7 +100,7 @@ int main( int argc, char **argv )
   /*
      Create distributed array (DA) to manage parallel grid and vectors
   */
-  ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,N,1,1,&ctx.da);CHKERRA(ierr);
+  ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_DECIDE,&ctx.da);CHKERRA(ierr);
 
   /*
      Extract global and local vectors from DA; then duplicate for remaining

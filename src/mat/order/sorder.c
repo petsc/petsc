@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.37 1997/01/22 18:43:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.38 1997/02/03 05:58:45 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -212,7 +212,7 @@ int MatGetReorderingTypeFromOptions(char *prefix,MatReordering *type)
 int MatReorderingGetName(MatReordering meth,char **name)
 {
   int ierr;
-  if (!__MatReorderingList) {ierr = MatReorderingRegisterAll(); CHKERRQ(ierr);}
+  if (!MatReorderingRegisterAllCalled) {ierr = MatReorderingRegisterAll(); CHKERRQ(ierr);}
    *name = NRFindName( __MatReorderingList, (int)meth );
   return 0;
 }
@@ -249,7 +249,7 @@ $    -mat_order rcm, -mat_order qmd
 
 .keywords: matrix, set, ordering, factorization, direct, ILU, LU,
            fill, reordering, natural, Nested Dissection,
-           One-way Dissection, Cholesky, Reverse Cuthill-McGee, 
+           One-way Dissection, Cholesky, Reverse Cuthill-McKee, 
            Quotient Minimum Degree
 
 .seealso:  MatGetReorderingTypeFromOptions(), MatReorderingRegister()
@@ -281,7 +281,7 @@ int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
   }
 
 
-  if (!__MatReorderingList) {
+  if (!MatReorderingRegisterAllCalled) {
     ierr = MatReorderingRegisterAll();CHKERRQ(ierr);
   }
 

@@ -1,5 +1,5 @@
 #ifndef lint
- static char vcid[] = "$Id: vpscat.c,v 1.70 1997/01/01 03:35:22 bsmith Exp balay $";
+ static char vcid[] = "$Id: vpscat.c,v 1.71 1997/01/06 20:21:47 balay Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -64,8 +64,8 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 */
 #undef __FUNC__  
 #define __FUNC__ "VecScatterLocalOptimize_Private"
- int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,
-                                           VecScatter_Seq_General *gen_from)
+int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,
+                                     VecScatter_Seq_General *gen_from)
 {
   int n = gen_to->n,n_nonmatching = 0,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
   int *nto_slots, *nfrom_slots,j = 0;
@@ -97,7 +97,6 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
     }
     PLogInfo(0,"VecScatterLocalOptimize_Private:Reduced %d to %d\n",n,n_nonmatching);
   } 
-
   return 0;
 }
 
@@ -113,7 +112,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 */
 #undef __FUNC__  
 #define __FUNC__ "VecScatterBegin_PtoP"
- int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
   Vec_MPI                *x = (Vec_MPI *)xin->data,*y = (Vec_MPI*) yin->data;
@@ -123,7 +122,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   int                    tag = ctx->tag, i,j,*indices,*rstarts,*sstarts,*rprocs, *sprocs;
   int                    nrecvs, nsends,iend,ierr;
 
-  if (mode == SCATTER_REVERSE ){
+  if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
   }
@@ -142,22 +141,25 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   sstarts  = gen_to->starts;
   rprocs   = gen_from->procs;
   sprocs   = gen_to->procs;
-  
-  /* post receives:   */
-  for ( i=0; i<nrecvs; i++ ) {
-    MPI_Irecv(rvalues+rstarts[i],rstarts[i+1]-rstarts[i],MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
+
+  if (!(mode & SCATTER_LOCAL)) {  
+    /* post receives:   */
+    for ( i=0; i<nrecvs; i++ ) {
+      MPI_Irecv(rvalues+rstarts[i],rstarts[i+1]-rstarts[i],MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
+    }
+
+    /* do sends:  */
+    for ( i=0; i<nsends; i++ ) {
+      val  = svalues + sstarts[i];
+      iend = sstarts[i+1]-sstarts[i];
+
+      for ( j=0; j<iend; j++ ) {
+        val[j] = xv[*indices++];
+      } 
+      MPI_Isend(val,iend, MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
+    }
   }
 
-  /* do sends:  */
-  for ( i=0; i<nsends; i++ ) {
-    val  = svalues + sstarts[i];
-    iend = sstarts[i+1]-sstarts[i];
-
-    for ( j=0; j<iend; j++ ) {
-      val[j] = xv[*indices++];
-    } 
-    MPI_Isend(val,iend, MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
-  }
   /* take care of local scatters */
   if (gen_to->local.n && addv == INSERT_VALUES) {
     if (yv == xv && !gen_to->local.nonmatching_computed) {
@@ -169,7 +171,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[tslots[i]];}
     } else {
       /* 
-        In this case, it is copying the values into their old  locations, thus we can skip those  
+        In this case, it is copying the values into their old locations, thus we can skip those  
       */
       int *tslots = gen_to->local.slots_nonmatching, *fslots = gen_from->local.slots_nonmatching;
       int n       = gen_to->local.n_nonmatching;
@@ -187,7 +189,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "VecScatterEnd_PtoP"
- int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
   Vec_MPI                *y = (Vec_MPI *)yin->data;
@@ -196,7 +198,9 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
-  if (mode == SCATTER_REVERSE ){
+  if (mode & SCATTER_LOCAL) return 0;
+
+  if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
     sstatus  = gen_from->sstatus;
@@ -233,6 +237,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
     }
     count--;
   }
+
   /* wait on sends */
   if (nsends) {
     MPI_Waitall(nsends,swaits,sstatus);
@@ -241,11 +246,13 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 }
 /* -------------------------------------------------------------------------------*/
 /*
-    Special scatters for fixed block sizes
+    Special scatters for fixed block sizes. These provide better performance
+    because the local copying and packing and unpacking are done with loop 
+    unrolling to the size of the block.
 */
 #undef __FUNC__  
 #define __FUNC__ "VecScatterPostRecvs_PtoP_5"
- int VecScatterPostRecvs_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+int VecScatterPostRecvs_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_from;
 
@@ -254,7 +261,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
     another set of MPI_Request buffers required for the MPI_Startall_irecv() 
     and MPI_Startall_isend().
   */
-  if (mode == SCATTER_REVERSE ) SETERRQ(1,0,"No reverse currently");
+  if (mode & SCATTER_REVERSE ) SETERRQ(PETSC_ERR_SUP,0,"No reverse currently");
 
   gen_from = (VecScatter_MPI_General *) ctx->fromdata;
 
@@ -264,7 +271,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "VecScatterBegin_PtoP_5"
- int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
   Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
@@ -278,7 +285,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
     another set of MPI_Request buffers required for the MPI_Startall_irecv() 
     and MPI_Startall_isend().
   */
-  if (mode == SCATTER_REVERSE ) SETERRQ(1,0,"No reverse currently");
+  if (mode & SCATTER_REVERSE ) SETERRQ(PETSC_ERR_SUP,0,"No reverse currently");
 
   gen_to   = (VecScatter_MPI_General *) ctx->todata;
   gen_from = (VecScatter_MPI_General *) ctx->fromdata;
@@ -292,42 +299,44 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   indices  = gen_to->indices;
   sstarts  = gen_to->starts;
 
-  if (!gen_from->use_readyreceiver) {  
-    /* post receives since they were not posted in VecScatterPostRecvs()   */
-    MPI_Startall_irecv(gen_from->starts[nrecvs],nrecvs,rwaits); 
-  }
+  if (!(mode & SCATTER_LOCAL)) {
+    if (!gen_from->use_readyreceiver) {  
+      /* post receives since they were not posted in VecScatterPostRecvs()   */
+      MPI_Startall_irecv(gen_from->starts[nrecvs],nrecvs,rwaits); 
+    }
 
-  /* this version packs all the messages together and sends */
-  /*
-  len  = 5*sstarts[nsends];
-  val  = svalues;
-  for ( i=0; i<len; i += 5 ) {
-    idx     = *indices++;
-    val[0] = xv[idx];
-    val[1] = xv[idx+1];
-    val[2] = xv[idx+2];
-    val[3] = xv[idx+3];
-    val[4] = xv[idx+4];
-    val      += 5;
-  }
-  MPI_Startall_isend(len,nsends,swaits);
-  */
-
-  /* this version packs and sends one at a time */
-  val  = svalues;
-  for ( i=0; i<nsends; i++ ) {
-    iend = sstarts[i+1]-sstarts[i];
-
-    for ( j=0; j<iend; j++ ) {
+    /* this version packs all the messages together and sends */
+    /*
+    len  = 5*sstarts[nsends];
+    val  = svalues;
+    for ( i=0; i<len; i += 5 ) {
       idx     = *indices++;
       val[0] = xv[idx];
       val[1] = xv[idx+1];
       val[2] = xv[idx+2];
       val[3] = xv[idx+3];
       val[4] = xv[idx+4];
-      val    += 5;
-    } 
-    MPI_Start_isend(5*iend,swaits+i);
+      val      += 5;
+    }
+    MPI_Startall_isend(len,nsends,swaits);
+    */
+
+    /* this version packs and sends one at a time */
+    val  = svalues;
+    for ( i=0; i<nsends; i++ ) {
+      iend = sstarts[i+1]-sstarts[i];
+
+      for ( j=0; j<iend; j++ ) {
+        idx     = *indices++;
+        val[0] = xv[idx];
+        val[1] = xv[idx+1];
+        val[2] = xv[idx+2];
+        val[3] = xv[idx+3];
+        val[4] = xv[idx+4];
+        val    += 5;
+      } 
+      MPI_Start_isend(5*iend,swaits+i);
+    }
   }
 
   /* take care of local scatters */
@@ -368,6 +377,8 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   int                    idx;
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
+
+  if (mode & SCATTER_LOCAL) return 0;
 
   gen_to   = (VecScatter_MPI_General *) ctx->todata;
   gen_from = (VecScatter_MPI_General *) ctx->fromdata;
@@ -577,7 +588,7 @@ int VecScatterDestroy_PtoP(PetscObject obj)
 }
 
 /* -------------------------------------------------------------------------------------*/
-/* create parallel to sequential scatter context                                        */
+/*              create parallel to sequential scatter context                           */
 /*
    bs indicates how many elements there are in each block. Normally
    this would be 1.
@@ -609,7 +620,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,Vec
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,0,"Index out of range");
+    if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Index out of range");
   }
   nprocslocal  = nprocs[rank]; 
   nprocs[rank] = procs[rank] = 0; 
@@ -836,8 +847,8 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,Vec
 
 /* ------------------------------------------------------------------------------------*/
 /*
-    Scatter from local Seq vectors to a parallel vector. 
- */
+         Scatter from local Seq vectors to a parallel vector. 
+*/
 #undef __FUNC__  
 #define __FUNC__ "VecScatterCreate_StoP"
 int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter ctx)
@@ -865,7 +876,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,0,"Index out of range");
+    if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Index out of range");
   }
   nprocslocal  = nprocs[rank];
   nprocs[rank] = procs[rank] = 0; 
@@ -1071,7 +1082,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,0,"Index out of range");
+    if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Index out of range");
   }
   nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 

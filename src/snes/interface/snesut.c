@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.25 1997/01/01 03:40:47 bsmith Exp balay $";
+static char vcid[] = "$Id: snesut.c,v 1.26 1997/01/06 20:29:45 balay Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -107,9 +107,14 @@ $           set with SNESSetTolerances()
 @*/
 int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
 {
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,0,
-    "For SNES_NONLINEAR_EQUATIONS only");
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
+     SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
+  }
   /* Note:  Reserve return code 1, -1 for compatibility with SNESConverged_EQ_TR */
+  if (fnorm != fnorm) {
+    PLogInfo(snes,"SNES:Failed to converged, function norm is NaN\n");
+    return -3;
+  }
   if (fnorm <= snes->ttol) {
     PLogInfo(snes,
     "SNES:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
@@ -128,8 +133,7 @@ int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *d
     return 3;
   }
   if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo(snes,
-      "SNES: Exceeded maximum number of function evaluations: %d > %d\n",
+    PLogInfo(snes,"SNES: Exceeded maximum number of function evaluations: %d > %d\n",
       snes->nfuncs, snes->max_funcs );
     return -2;
   }  

@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.5 1996/11/07 15:10:49 bsmith Exp balay $";
+C "$Id: ex1f.F,v 1.6 1996/11/25 23:39:51 balay Exp bsmith $";
 C
 C       Formatted test for TS routines.
 C
@@ -79,7 +79,7 @@ C
 
 C   Set up the ghost point communication pattern                       
 
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,1,1,da,ierr)
+      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,1,1,PETSC_DECIDE,da,ierr)
       call DAGetDistributedVector(da,global,ierr) 
       call VecGetLocalSize(global,m,ierr) 
       call DAGetLocalVector(da,local,ierr) 

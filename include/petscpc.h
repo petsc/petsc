@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.64 1997/01/12 20:34:21 curfman Exp bsmith $ */
+/* $Id: pc.h,v 1.65 1997/02/03 06:03:27 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -98,6 +98,8 @@ extern int PCEisenstatUseDiagonalScaling(PC);
 extern int PCASMSetLocalSubdomains(PC, int, IS *);
 extern int PCASMSetTotalSubdomains(PC, int, IS *);
 extern int PCASMSetOverlap(PC, int);
+typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0} PCASMType;
+extern int PCASMSetType(PC,PCASMType);
 
 extern int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.114 1997/02/03 06:01:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.115 1997/02/03 15:50:35 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -403,7 +403,7 @@ int SNESGetFunctionNorm(SNES snes,Scalar *fnorm)
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidScalarPointer(fnorm);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
   *fnorm = snes->norm;
   return 0;
@@ -435,7 +435,7 @@ int SNESGetGradientNorm(SNES snes,Scalar *gnorm)
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidScalarPointer(gnorm);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(1,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
   *gnorm = snes->norm;
   return 0;
@@ -554,7 +554,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
 
   *outsnes = 0;
   if (type != SNES_UNCONSTRAINED_MINIMIZATION && type != SNES_NONLINEAR_EQUATIONS)
-    SETERRQ(1,0,"incorrect method type"); 
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"incorrect method type"); 
   PetscHeaderCreate(snes,_SNES,SNES_COOKIE,SNES_UNKNOWN_METHOD,comm);
   PLogObjectCreate(snes);
   snes->max_its           = 50;
@@ -1642,7 +1642,7 @@ int SNESRegister(SNESType name,SNESType *oname, char *sname, int (*create)(SNES)
   int ierr;
   static int numberregistered = 0;
 
-  if (name == SNES_NEW) name = SNES_NEW + numberregistered++;
+  if (name == SNES_NEW) name = (SNESType) ((int) SNES_NEW + numberregistered++);
 
   if (oname) *oname = name;
   if (!__SNESList) {ierr = NRCreate(&__SNESList); CHKERRQ(ierr);}

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.11 1997/01/06 20:25:36 balay Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.12 1997/02/03 05:59:15 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -223,7 +223,7 @@ int MatColoringRegister(MatColoring name,MatColoring *oname,char *sname,int (*co
     ierr = NRCreate(&__MatColoringList); CHKERRQ(ierr);
   }
 
-  if (name == COLORING_NEW) name = COLORING_NEW + numberregistered++;
+  if (name == COLORING_NEW) name = (MatColoring) ((int) COLORING_NEW + numberregistered++);
   if (oname) *oname = name;
   ierr = NRRegister(__MatColoringList,(int)name,sname,(int (*)(void*))color);CHKERRQ(ierr);
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.55 1997/01/12 04:36:13 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.56 1997/02/03 06:03:27 bsmith Exp bsmith $ */
 /* 
    This defines the abstract vector component of PETSc. Vectors generally
   represent degrees of freedom for finite element/finite difference functions
@@ -63,7 +63,8 @@ extern int VecAssemblyEnd(Vec);
   _ierr = VecSetValues(v,1,&_row,&_va,mode);CHKERRQ(_ierr); \
 }
 
-typedef enum {SCATTER_REVERSE=1,SCATTER_FORWARD=8} ScatterMode;
+typedef enum {SCATTER_FORWARD=0,SCATTER_REVERSE=1,SCATTER_FORWARD_LOCAL=2,
+              SCATTER_REVERSE_LOCAL=3,SCATTER_LOCAL=2} ScatterMode;
 extern int VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
 extern int VecScatterPostRecvs(Vec,Vec,InsertMode,ScatterMode,VecScatter);
 extern int VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatter);

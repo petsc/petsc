@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.51 1997/02/03 05:57:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.52 1997/02/03 15:50:30 curfman Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -102,7 +102,7 @@ int  PCRegister(PCType name,PCType *oname,char *sname,int (*create)(PC))
   int ierr;
   static int numberregistered = 0;
 
-  if (name == PCNEW) name = PCNEW + numberregistered++;
+  if (name == PCNEW) name = (PCType) ((int) PCNEW + numberregistered++);
 
   if (oname) *oname = name;
   if (!__PCList) {ierr = NRCreate(&__PCList); CHKERRQ(ierr);}

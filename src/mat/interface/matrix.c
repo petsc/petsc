@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.221 1997/01/27 18:16:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.222 1997/02/03 05:57:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -143,7 +143,7 @@ int MatView(Mat mat,Viewer viewer)
 
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (viewer) PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
 
   if (!viewer) {
     viewer = VIEWER_STDOUT_SELF;
@@ -251,7 +251,7 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
   PetscValidIntPointer(idxm);
   PetscValidIntPointer(idxn);
   PetscValidScalarPointer(v);
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE; 
@@ -300,7 +300,7 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
   PetscValidIntPointer(idxm);
   PetscValidIntPointer(idxn);
   PetscValidScalarPointer(v);
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE; 
@@ -362,8 +362,8 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
   PetscValidIntPointer(idxm);
   PetscValidIntPointer(idxn);
   PetscValidScalarPointer(v);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.getvalues) SETERRQ(PETSC_ERR_SUP,0,"");
 
   PLogEventBegin(MAT_GetValues,mat,0,0,0);
@@ -437,12 +437,12 @@ int MatSetValuesLocal(Mat x,int nrow,int *irow,int ncol, int *icol,Scalar *y,Ins
   PetscValidIntPointer(icol);
   PetscValidScalarPointer(y);
   if (!x->mapping) {
-    SETERRQ(1,0,"Local to global never set with MatSetLocalToGlobalMapping");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMapping");
   }
   if (nrow > 128 || ncol > 128) {
-    SETERRQ(1,0,"Number indices must be <= 128");
+    SETERRQ(PETSC_ERR_SUP,0,"Number indices must be <= 128");
   }
-  if (x->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (x->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
   if (x->assembled) {
     x->was_assembled = PETSC_TRUE; 
@@ -482,9 +482,9 @@ int MatMult(Mat mat,Vec x,Vec y)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);PetscValidHeaderSpecific(y,VEC_COOKIE); 
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
-  if (x == y) SETERRQ(1,0,"x and y must be different vectors");
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+  if (x == y) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"x and y must be different vectors");
   if (mat->N != x->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec x: global dim"); 
   if (mat->M != y->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec y: global dim"); 
   if (mat->m != y->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec y: local dim"); 
@@ -521,9 +521,9 @@ int MatMultTrans(Mat mat,Vec x,Vec y)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
-  if (x == y) SETERRQ(1,0,"x and y must be different vectors");
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+  if (x == y) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"x and y must be different vectors");
   if (mat->M != x->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec x: global dim"); 
   if (mat->N != y->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec y: global dim"); 
   PLogEventBegin(MAT_MultTrans,mat,x,y,0);
@@ -557,14 +557,14 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);PetscValidHeaderSpecific(v1,VEC_COOKIE);
   PetscValidHeaderSpecific(v2,VEC_COOKIE); PetscValidHeaderSpecific(v3,VEC_COOKIE);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix");
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix");
   if (mat->N != v1->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec v1: global dim");
   if (mat->M != v2->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec v2: global dim");
   if (mat->M != v3->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec v3: global dim");
   if (mat->m != v3->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec v3: local dim"); 
   if (mat->m != v2->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec v2: local dim"); 
-  if (v1 == v3) SETERRQ(1,0,"v1 and v3 must be different vectors");
+  if (v1 == v3) SETERRQ(PETSC_ERR_ARG_IDN,0,"v1 and v3 must be different vectors");
 
   PLogEventBegin(MAT_MultAdd,mat,v1,v2,v3);
   ierr = (*mat->ops.multadd)(mat,v1,v2,v3); CHKERRQ(ierr);
@@ -597,10 +597,10 @@ int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);PetscValidHeaderSpecific(v1,VEC_COOKIE);
   PetscValidHeaderSpecific(v2,VEC_COOKIE);PetscValidHeaderSpecific(v3,VEC_COOKIE);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.multtransadd) SETERRQ(PETSC_ERR_SUP,0,"");
-  if (v1 == v3) SETERRQ(1,0,"v1 and v3 must be different vectors");
+  if (v1 == v3) SETERRQ(PETSC_ERR_ARG_IDN,0,"v1 and v3 must be different vectors");
   if (mat->M != v1->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec v1: global dim");
   if (mat->N != v2->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec v2: global dim");
   if (mat->N != v3->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec v3: global dim");
@@ -700,8 +700,8 @@ int MatILUDTFactor(Mat mat,double dt,int maxnz,IS row,IS col,Mat *fact)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidPointer(fact);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.iludtfactor) SETERRQ(PETSC_ERR_SUP,0,"");
 
   PLogEventBegin(MAT_ILUFactor,mat,row,col,0); 
@@ -731,8 +731,8 @@ int MatLUFactor(Mat mat,IS row,IS col,double f)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (mat->M != mat->N) SETERRQ(1,0,"matrix must be square");
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.lufactor) SETERRQ(PETSC_ERR_SUP,0,"");
 
   PLogEventBegin(MAT_LUFactor,mat,row,col,0); 
@@ -763,8 +763,8 @@ int MatILUFactor(Mat mat,IS row,IS col,double f,int level)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (mat->M != mat->N) SETERRQ(1,0,"matrix must be square");
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.ilufactor) SETERRQ(PETSC_ERR_SUP,0,"");
 
   PLogEventBegin(MAT_ILUFactor,mat,row,col,0); 
@@ -805,9 +805,9 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
   int ierr,flg;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (mat->M != mat->N) SETERRQ(1,0,"matrix must be square");
-  if (!fact) SETERRQ(1,0,"Missing factor matrix argument");
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  PetscValidPointer(fact);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.lufactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"");
 
   ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_fill",&f,&flg); CHKERRQ(ierr);
@@ -844,9 +844,9 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   int ierr,flg;
 
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!fact) SETERRQ(1,0,"Missing factor matrix argument");
+  PetscValidPointer(fact);
   PetscValidHeaderSpecific(*fact,MAT_COOKIE);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->M != (*fact)->M || mat->N != (*fact)->N)
     SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Mat *fact: global dim");
   if (!mat->ops.lufactornumeric) SETERRQ(PETSC_ERR_SUP,0,"");
@@ -893,8 +893,8 @@ int MatCholeskyFactor(Mat mat,IS perm,double f)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (mat->M != mat->N) SETERRQ(1,0,"matrix must be square");
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.choleskyfactor) SETERRQ(PETSC_ERR_SUP,0,"");
 
   PLogEventBegin(MAT_CholeskyFactor,mat,perm,0,0); 
@@ -931,8 +931,8 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,double f,Mat *fact)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidPointer(fact);
   if (mat->M != mat->N) SETERRQ(1,0,"matrix must be square");
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.choleskyfactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"");
 
   PLogEventBegin(MAT_CholeskyFactorSymbolic,mat,perm,0,0);
@@ -962,9 +962,9 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!fact) SETERRQ(1,0,"Missing factor matrix argument");
+  PetscValidPointer(fact);
   if (!mat->ops.choleskyfactornumeric) SETERRQ(PETSC_ERR_SUP,0,"");
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->M != (*fact)->M || mat->N != (*fact)->N)
     SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Mat *fact: global dim");
 
@@ -1000,8 +1000,8 @@ int MatSolve(Mat mat,Vec b,Vec x)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE); PetscValidHeaderSpecific(x,VEC_COOKIE);
-  if (x == b) SETERRQ(1,0,"x and b must be different vectors");
-  if (!mat->factor) SETERRQ(1,0,"Unfactored matrix");
+  if (x == b) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and b must be different vectors");
+  if (!mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Unfactored matrix");
   if (mat->N != x->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec x: global dim");
   if (mat->M != b->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec b: global dim");
   if (mat->m != b->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec b: local dim"); 
@@ -1041,8 +1041,8 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  if (x == b) SETERRQ(1,0,"x and b must be different vectors");
-  if (!mat->factor) SETERRQ(1,0,"Unfactored matrix");
+  if (x == b) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and b must be different vectors");
+  if (!mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Unfactored matrix");
   if (!mat->ops.forwardsolve) SETERRQ(PETSC_ERR_SUP,0,"");
   if (mat->N != x->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec x: global dim");
   if (mat->M != b->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec b: global dim");
@@ -1082,8 +1082,8 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  if (x == b) SETERRQ(1,0,"x and b must be different vectors");
-  if (!mat->factor) SETERRQ(1,0,"Unfactored matrix");
+  if (x == b) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and b must be different vectors");
+  if (!mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Unfactored matrix");
   if (!mat->ops.backwardsolve) SETERRQ(PETSC_ERR_SUP,0,"");
   if (mat->N != x->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec x: global dim");
   if (mat->M != b->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec b: global dim");
@@ -1123,8 +1123,8 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
   int    ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  if (x == b) SETERRQ(1,0,"x and b must be different vectors");
-  if (!mat->factor) SETERRQ(1,0,"Unfactored matrix");
+  if (x == b) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and b must be different vectors");
+  if (!mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Unfactored matrix");
   if (mat->N != x->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec x: global dim");
   if (mat->M != b->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec b: global dim");
   if (mat->M != y->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec y: global dim");
@@ -1179,8 +1179,8 @@ int MatSolveTrans(Mat mat,Vec b,Vec x)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  if (!mat->factor) SETERRQ(1,0,"Unfactored matrix");
-  if (x == b) SETERRQ(1,0,"x and b must be different vectors");
+  if (!mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Unfactored matrix");
+  if (x == b) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and b must be different vectors");
   if (!mat->ops.solvetrans) SETERRQ(PETSC_ERR_SUP,0,"");
   if (mat->M != x->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec x: global dim");
   if (mat->N != b->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec b: global dim");
@@ -1220,8 +1220,8 @@ int MatSolveTransAdd(Mat mat,Vec b,Vec y,Vec x)
   Vec    tmp;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  if (x == b) SETERRQ(1,0,"x and b must be different vectors");
-  if (!mat->factor) SETERRQ(1,0,"Unfactored matrix");
+  if (x == b) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and b must be different vectors");
+  if (!mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Unfactored matrix");
   if (mat->M != x->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec x: global dim");
   if (mat->N != b->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec b: global dim");
   if (mat->N != y->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec y: global dim");
@@ -1299,8 +1299,8 @@ int MatRelax(Mat mat,Vec b,double omega,MatSORType flag,double shift,
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
   if (!mat->ops.relax) SETERRQ(PETSC_ERR_SUP,0,"");
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (mat->N != x->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec x: global dim");
   if (mat->M != b->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec b: global dim");
   if (mat->m != b->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec b: local dim");
@@ -1357,8 +1357,8 @@ int MatCopy(Mat A,Mat B)
 {
   int ierr;
   PetscValidHeaderSpecific(A,MAT_COOKIE); PetscValidHeaderSpecific(B,MAT_COOKIE);
-  if (!A->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (A->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (A->M != B->M || A->N != B->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat A,Mat B: global dim");
 
   PLogEventBegin(MAT_Copy,A,B,0,0); 
@@ -1428,9 +1428,9 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!M) SETERRQ(1,0,"Bad new matrix address");
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  PetscValidPointer(M);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
   if (newtype > MAX_MATRIX_TYPES || newtype < -1) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Not a valid matrix type");
@@ -1479,13 +1479,13 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
 int MatGetDiagonal(Mat mat,Vec v)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);PetscValidHeaderSpecific(v,VEC_COOKIE);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   /*
      The error checking for a factored matrix is handled inside 
     each matrix type, since MatGetDiagonal() is supported by 
     factored AIJ matrices
   */
-  /* if (mat->factor) SETERRQ(1,0,"Not for factored matrix");  */
+  /* if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix");  */
   if (!mat->ops.getdiagonal) SETERRQ(PETSC_ERR_SUP,0,"");
   return (*mat->ops.getdiagonal)(mat,v);
 }
@@ -1508,8 +1508,8 @@ int MatGetDiagonal(Mat mat,Vec v)
 int MatTranspose(Mat mat,Mat *B)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.transpose) SETERRQ(PETSC_ERR_SUP,0,""); 
   return (*mat->ops.transpose)(mat,B);
 }
@@ -1537,8 +1537,8 @@ int MatPermute(Mat mat,IS row,IS col,Mat *B)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(row,IS_COOKIE);
   PetscValidHeaderSpecific(col,IS_COOKIE);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.permute) SETERRQ(PETSC_ERR_SUP,0,""); 
   return (*mat->ops.permute)(mat,row,col,B);
 }
@@ -1562,8 +1562,8 @@ int MatEqual(Mat A,Mat B,PetscTruth *flg)
 {
   PetscValidHeaderSpecific(A,MAT_COOKIE); PetscValidHeaderSpecific(B,MAT_COOKIE);
   PetscValidIntPointer(flg);
-  if (!A->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (!B->assembled) SETERRQ(1,0,"Not for unassembled matrix");
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (A->M != B->M || A->N != B->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat A,Mat B: global dim");
   if (!A->ops.equal) SETERRQ(PETSC_ERR_SUP,0,"");
   return (*A->ops.equal)(A,B,flg);
@@ -1597,8 +1597,8 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
   if (!mat->ops.diagonalscale) SETERRQ(PETSC_ERR_SUP,0,"");
   if (l) PetscValidHeaderSpecific(l,VEC_COOKIE); 
   if (r) PetscValidHeaderSpecific(r,VEC_COOKIE);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
   PLogEventBegin(MAT_Scale,mat,0,0,0);
   ierr = (*mat->ops.diagonalscale)(mat,l,r); CHKERRQ(ierr);
@@ -1628,8 +1628,8 @@ int MatScale(Scalar *a,Mat mat)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidScalarPointer(a);
   if (!mat->ops.scale) SETERRQ(PETSC_ERR_SUP,0,"");
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
   PLogEventBegin(MAT_Scale,mat,0,0,0);
   ierr = (*mat->ops.scale)(a,mat); CHKERRQ(ierr);
@@ -1656,9 +1656,8 @@ int MatNorm(Mat mat,NormType type,double *norm)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidScalarPointer(norm);
 
-  if (!norm) SETERRQ(1,0,"bad addess for value");
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.norm) SETERRQ(PETSC_ERR_SUP,0,"Not for this matrix type");
   return (*mat->ops.norm)(mat,type,norm);
 }
@@ -1693,7 +1692,7 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE; 
     mat->assembled     = PETSC_FALSE;
@@ -1896,7 +1895,7 @@ int MatZeroEntries(Mat mat)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.zeroentries) SETERRQ(PETSC_ERR_SUP,0,"");
 
   PLogEventBegin(MAT_ZeroEntries,mat,0,0,0);
@@ -1939,8 +1938,8 @@ int MatZeroRows(Mat mat,IS is, Scalar *diag)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(is,IS_COOKIE);
   if (diag) PetscValidScalarPointer(diag);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.zerorows) SETERRQ(PETSC_ERR_SUP,0,"");
 
   ierr = (*mat->ops.zerorows)(mat,is,diag); CHKERRQ(ierr);
@@ -1982,8 +1981,8 @@ int MatZeroRowsLocal(Mat mat,IS is, Scalar *diag)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(is,IS_COOKIE);
   if (diag) PetscValidScalarPointer(diag);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.zerorows) SETERRQ(PETSC_ERR_SUP,0,"");
 
   ierr = ISLocalToGlobalMappingApplyIS(mat->mapping,is,&newis); CHKERRQ(ierr);
@@ -2103,11 +2102,11 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,double f,int fill,Mat *fact)
   int ierr,flg;
 
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (fill < 0) SETERRQ(1,0,"Levels of fill negative");
-  if (!fact) SETERRQ(1,0,"Fact argument is missing");
+  PetscValidPointer(fact);
+  if (fill < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Levels of fill negative");
   if (!mat->ops.ilufactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"");
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
   ierr = OptionsGetDouble(PETSC_NULL,"-mat_ilu_fill",&f,&flg); CHKERRQ(ierr);
   PLogEventBegin(MAT_ILUFactorSymbolic,mat,row,col,0);
@@ -2143,13 +2142,11 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
-  if (fill < 0) SETERRQ(1,0,"Fill negative");
-  if (!fact) SETERRQ(1,0,"Missing fact argument");
-  if (!mat->ops.incompletecholeskyfactorsymbolic) 
-     SETERRQ(PETSC_ERR_SUP,0,"");
-  if (!mat->assembled)
-     SETERRQ(1,0,"Not for unassembled matrix");
+  PetscValidPointer(fact);
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+  if (fill < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Fill negative");
+  if (!mat->ops.incompletecholeskyfactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"");
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
 
   PLogEventBegin(MAT_IncompleteCholeskyFactorSymbolic,mat,perm,0,0);
   ierr = (*mat->ops.incompletecholeskyfactorsymbolic)(mat,perm,f,fill,fact);CHKERRQ(ierr);
@@ -2183,7 +2180,7 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,
 int MatGetArray(Mat mat,Scalar **v)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!v) SETERRQ(1,0,"Bad input, array pointer location");
+  PetscValidPointer(v);
   if (!mat->ops.getarray) SETERRQ(PETSC_ERR_SUP,0,"");
   return (*mat->ops.getarray)(mat,v);
 }
@@ -2208,7 +2205,7 @@ int MatGetArray(Mat mat,Scalar **v)
 int MatRestoreArray(Mat mat,Scalar **v)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!v) SETERRQ(1,0,"Bad input, array pointer location");
+  PetscValidPointer(v);
   if (!mat->ops.restorearray) SETERRQ(PETSC_ERR_SUP,0,"");
   return (*mat->ops.restorearray)(mat,v);
 }
@@ -2249,7 +2246,7 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatGetSubMatrixCall scall,
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->ops.getsubmatrices) SETERRQ(PETSC_ERR_SUP,0,"");
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
 
   PLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);
   ierr = (*mat->ops.getsubmatrices)(mat,n,irow,icol,scall,submat); CHKERRQ(ierr);
@@ -2305,8 +2302,8 @@ int MatIncreaseOverlap(Mat mat,int n, IS *is,int ov)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor)     SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor)     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
   if (ov == 0) return 0;
   if (!mat->ops.increaseoverlap) SETERRQ(PETSC_ERR_SUP,0,"");

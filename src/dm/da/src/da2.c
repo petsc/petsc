@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.65 1997/01/06 20:43:20 bsmith Exp gropp $";
+static char vcid[] = "$Id: da2.c,v 1.66 1997/01/08 19:10:12 gropp Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -152,8 +152,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   DF            df_local;
   *inra = 0;
 
-  if (w < 1) SETERRQ(1,0,"Must have 1 or more degrees of freedom per node");
-  if (s < 0) SETERRQ(1,0,"Stencil width cannot be negative");
+  if (w < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node");
+  if (s < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative");
 
   PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);
@@ -174,48 +174,54 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       m--;
     }
     if (M > N && m < n) {int _m = m; m = n; n = _m;}
-    if (m*n != size)SETERRQ(1,0,"Internally Created Bad Partition");
+    if (m*n != size) SETERRQ(1,0,"Internally Created Bad Partition");
   }
-  else if (m*n != size) SETERRQ(1,0,"Given Bad partition"); 
+  else if (m*n != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Given Bad partition"); 
 
-  if (M < m) SETERRQ(1,0,"Partition in x direction is too fine!");
-  if (N < n) SETERRQ(1,0,"Partition in y direction is too fine!");
+  if (M < m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in x direction is too fine!");
+  if (N < n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in y direction is too fine!");
 
-  /* We should create an MPI Cartesian topology here, with reorder
+  /*
+     We should create an MPI Cartesian topology here, with reorder
      set to true.  That would create a NEW communicator that we would
-     need to use for operations on this distributed array */
+     need to use for operations on this distributed array 
+  */
   ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2); CHKERRQ(ierr);
+
+  /* 
+     Determine locally owned region 
+     [x or y]s is the first local node number, [x or y] is the number of local nodes 
+  */
   if (flg1) {  /* Block Comm type Distribution */
     xs = (rank%m)*M/m;
-    x = (rank%m + 1)*M/m - xs;
+    x  = (rank%m + 1)*M/m - xs;
     ys = (rank/m)*N/n;
-    y = (rank/m + 1)*N/n - ys;
-    if (x < s) SETERRQ(1,0,"Column width is too thin for stencil!");
-    if (y < s) SETERRQ(1,0,"Row width is too thin for stencil!");      
+    y  = (rank/m + 1)*N/n - ys;
+    if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
+    if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");      
   }
   else if (flg2) { 
     x = (M + rank%m)/m;
     y = (N + rank/m)/n;
     
-    if (x < s) SETERRQ(1,0,"Column width is too thin for stencil!");
-    if (y < s) SETERRQ(1,0,"Row width is too thin for stencil!");
+    if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
+    if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");
     if (M/m == x) { xs = (rank % m)*x; }
-    else { xs = (rank % m)*(x-1) + (M+(rank % m))%(x*m); }
+    else          { xs = (rank % m)*(x-1) + (M+(rank % m))%(x*m); }
     if (N/n == y) { ys = (rank/m)*y;  }
-    else { ys = (rank/m)*(y-1) + (N+(rank/m))%(y*n); }
+    else          { ys = (rank/m)*(y-1) + (N+(rank/m))%(y*n); }
   }
   else { /* Normal PETSc distribution */
-    /* determine locally owned region */
     x = M/m + ((M % m) > (rank % m));
     y = N/n + ((N % n) > (rank/m));
     
-    if (x < s) SETERRQ(1,0,"Column width is too thin for stencil!");
-    if (y < s) SETERRQ(1,0,"Row width is too thin for stencil!");
+    if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
+    if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");
     if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
-    else { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
+    else                      { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
     if ((N % n) > (rank/m)) { ys = (rank/m)*y; }
-    else { ys = (N % n)*(y+1) + ((rank/m)-(N % n))*y; }
+    else                    { ys = (N % n)*(y+1) + ((rank/m)-(N % n))*y; }
   }
   xe = xs + x;
   ye = ys + y;
@@ -790,7 +796,7 @@ int DARefine(DA da, DA *daref)
 
   M = 2*da->M - 1; N = 2*da->N - 1; P = 2*da->P - 1;
   if (da->dim == 1) {
-    ierr = DACreate1d(da->comm,da->wrap,M,da->w,da->s,&da2); CHKERRQ(ierr);
+    ierr = DACreate1d(da->comm,da->wrap,M,da->w,da->s,PETSC_DECIDE,&da2); CHKERRQ(ierr);
   }
   else if (da->dim == 2) {
     ierr = DACreate2d(da->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,&da2); CHKERRQ(ierr);

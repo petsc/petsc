@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: tsreg.c,v 1.16 1997/02/03 06:00:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: tsreg.c,v 1.17 1997/02/03 15:55:15 curfman Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -91,7 +91,7 @@ int TSRegister(TSType name,TSType *oname, char *sname, int (*create)(TS))
   int ierr;
   static int numberregistered = 0;
 
-  if (name == TS_NEW) name = TS_NEW + numberregistered++;
+  if (name == TS_NEW) name = (TSType) ((int) TS_NEW + numberregistered++);
 
   if (oname) *oname = name;
   if (!__TSList) {ierr = NRCreate(&__TSList); CHKERRQ(ierr);}

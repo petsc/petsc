@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.82 1997/01/27 18:16:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.83 1997/02/03 05:57:25 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -213,6 +213,8 @@ static int PCPrintHelp_ILU(PC pc,char *p)
   PetscPrintf(pc->comm," %spc_ilu_use_drop_tolerance dt,maxrowcount:   \n",p);
   PetscPrintf(pc->comm," %spc_ilu_reuse_reordering:                    \n",p);
   PetscPrintf(pc->comm," %spc_ilu_reuse_fill:                    \n",p);
+  PetscPrintf(pc->comm," %spc_ilu_nonzeros_along_diagonal: changes column ordering to \n",p);
+  PetscPrintf(pc->comm,"    reduce the change of obtaining zero pivot during ILU.\n");
   return 0;
 }
 

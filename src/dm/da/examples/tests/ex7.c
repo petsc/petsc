@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.4 1996/03/18 00:43:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.5 1996/03/19 21:29:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests DALocalToLocal().\n\n";
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
     CHKERRA(ierr);
   }
   else {
-    ierr = DACreate1d(MPI_COMM_WORLD,periodic,M,dof,stencil_width,&da);CHKERRA(ierr);
+    ierr = DACreate1d(MPI_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_DECIDE,&da);CHKERRA(ierr);
   }
 
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
