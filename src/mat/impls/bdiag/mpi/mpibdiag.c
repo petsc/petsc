@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.96 1996/10/03 17:31:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.97 1996/11/19 16:31:23 bsmith Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -649,8 +649,14 @@ static int MatSetOption_MPIBDiag(Mat A,MatOption op)
       op == MAT_YES_NEW_DIAGONALS) {
         MatSetOption(mbd->A,op);
   }
-  else if (op == MAT_ROW_ORIENTED)    mbd->roworiented = 1;
-  else if (op == MAT_COLUMN_ORIENTED) mbd->roworiented = 0;
+  else if (op == MAT_ROW_ORIENTED) {
+    mbd->roworiented = 1;
+    MatSetOption(mbd->A,op);
+  }
+  else if (op == MAT_COLUMN_ORIENTED) {
+    mbd->roworiented = 0;
+    MatSetOption(mbd->A,op);
+  }
   else if (op == MAT_ROWS_SORTED || 
            op == MAT_COLUMNS_SORTED || 
            op == MAT_SYMMETRIC ||
