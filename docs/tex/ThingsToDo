@@ -10,6 +10,7 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+
   - Add feature in nightly builds to remove old libraries (maybe?)
 
   - Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
@@ -30,8 +31,6 @@ Additional Capabilities that PETSc Needs:
 
   - fix PetscView so that with scrolling in horizontal direction and click on icon
     it pops up detailed information in correct location.
-
-  - Add some indication to window indicating that it is awaiting input.
 
   - Maybe, like, say, test one or two BDiag routines before making a release?
 
@@ -330,6 +329,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
                 Accomplishments!  :) :)
 -----------------------------------------------------------------------
+
+  X Add some indication to window indicating that it is awaiting input.
 
   X Fix FortranInitialization().
 
