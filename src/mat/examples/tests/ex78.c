@@ -1,4 +1,4 @@
-/*$Id: ex78.c,v 1.4 2000/11/14 15:47:50 hzhang Exp hzhang $*/
+/*$Id: ex78.c,v 1.5 2000/11/14 15:57:58 hzhang Exp hzhang $*/
 
 static char help[] =
 "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format, then writes them using the PETSc sparse format.\n\
@@ -19,7 +19,7 @@ int main(int argc,char **args)
   Vec    b,u,u_tmp;
   char   Ain[128],bin[128],uin[128]; 
   int    i,m,n,nz,ierr,*ib=0,col_i,row_i;
-  Scalar val_i,*work,mone=-1.0;
+  Scalar val_i,*work=0,mone=-1.0;
   double *col=0,*row=0,res_norm,*val=0,*bval=0,*uval=0;
   FILE   *Afile,*bfile,*ufile;
   Viewer view;
@@ -115,7 +115,7 @@ int main(int argc,char **args)
   
   if(flg_b) {
     ierr = PetscFree(ib);CHKERRA(ierr);
-    ierr = PetscFree(work);CHKERRA(ierr)
+    ierr = PetscFree(work);CHKERRA(ierr);
   }
   /* Check accuracy of the data */
   if (flg_A & flg_b & flg_u){
