@@ -59,34 +59,41 @@ class Configure:
 
   def printLine(self,msg):
     if not hasattr(self.framework,'linewidth'):
-      if not sys.stdout.isatty():
-        self.framework.linewidth = -1
-        return
-      try:
-        import curses
-        try:
-          curses.setupterm()
-          stdscr = curses.initscr()
-          (y,x) = stdscr.getmaxyx()
-          curses.endwin()
-
-          self.framework.linewidth = x
-          self.framework.cwd       = os.getcwd()+'/'
-        except curses.error:
+      self.framework.cwd       = os.getcwd()+'/'
+      if 'with-scroll-output' in self.framework.argDB:
+        self.framework.linewidth = -2
+      else:
+        if not sys.stdout.isatty():
           self.framework.linewidth = -1
           return
-      except ImportError:
-        self.framework.linewidth = -1
-        return
-    elif self.framework.linewidth < 0:
+        try:
+          import curses
+          try:
+            curses.setupterm()
+            stdscr = curses.initscr()
+            (y,x) = stdscr.getmaxyx()
+            curses.endwin()
+
+            self.framework.linewidth = x
+          except curses.error:
+            self.framework.linewidth = -1
+            return
+        except ImportError:
+          self.framework.linewidth = -1
+          return
+    elif self.framework.linewidth == -1:
       return
-    else:
+    elif self.framework.linewidth > 0:
       for i in range(0,self.framework.linewidth):
         sys.stdout.write('\b')
-    msg = msg.replace(self.framework.cwd,'')
-    msg = msg+'                                                                                                                       '
-    sys.stdout.write(msg[0:self.framework.linewidth])
-    sys.stdout.flush()
+      msg = msg.replace(self.framework.cwd,'')
+      msg = msg+'                                                                                                                       '
+      sys.stdout.write(msg[0:self.framework.linewidth])
+      sys.stdout.flush()
+    else:
+      msg = msg.replace(self.framework.cwd,'')
+      print msg      
+
     return
 
   def defaultCheckCommand(command, status, output, error):
