@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xmon.c,v 1.12 1995/08/15 20:26:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.13 1995/09/04 17:23:33 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -27,9 +27,9 @@ static char vcid[] = "$Id: xmon.c,v 1.12 1995/08/15 20:26:43 bsmith Exp bsmith $
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
 int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
-                       int n, DrawLGCtx *ctx)
+                       int n, DrawLG *ctx)
 {
-  DrawCtx win;
+  Draw win;
   int     ierr;
   ierr = DrawOpenX(MPI_COMM_SELF,host,label,x,y,m,n,&win); CHKERRQ(ierr);
   ierr = DrawLGCreate(win,1,ctx); CHKERRQ(ierr);
@@ -39,7 +39,7 @@ int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
 
 int KSPLGMonitor(KSP itP,int n,double rnorm,void *monctx)
 {
-  DrawLGCtx lg = (DrawLGCtx) monctx;
+  DrawLG lg = (DrawLG) monctx;
   double    x, y;
 
   if (!n) DrawLGReset(lg);
@@ -47,7 +47,7 @@ int KSPLGMonitor(KSP itP,int n,double rnorm,void *monctx)
   if (rnorm > 0.0) y = log10(rnorm); else y = -15.0;
   DrawLGAddPoint(lg,&x,&y);
   if (n < 20 || (n % 5)) {
-    DrawLG(lg);
+    DrawLGDraw(lg);
   }
   return 0;
 } 
@@ -63,10 +63,10 @@ int KSPLGMonitor(KSP itP,int n,double rnorm,void *monctx)
 
 .seealso: KSPLGMonitorCreate(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
-int KSPLGMonitorDestroy(DrawLGCtx ctx)
+int KSPLGMonitorDestroy(DrawLG ctx)
 {
-  DrawCtx win;
-  DrawLGGetDrawCtx(ctx,&win);
+  Draw win;
+  DrawLGGetDraw(ctx,&win);
   DrawDestroy(win);
   DrawLGDestroy(ctx);
   return 0;

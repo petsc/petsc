@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.12 1995/10/19 22:30:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.13 1995/10/24 21:54:50 bsmith Exp bsmith $";
 #endif
 
 /* This file was created by Peter Mell  6/30/95 */
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
 {
   int      rank, M = 13, ierr, w=1, s=1, wrap=1;
   DA       da;
-  DrawCtx  win1,win2;
+  Draw  win1,win2;
   Vec      local,global;
   Scalar   value;
 

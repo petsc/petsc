@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.112 1995/11/06 21:07:08 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.113 1995/11/08 00:10:34 balay Exp bsmith $";
 #endif
 
 /*
@@ -226,7 +226,7 @@ static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
   int         ierr, i,j, m = a->m, shift = a->indexshift,pause,color;
   double      xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r;
-  DrawCtx     draw = (DrawCtx) viewer;
+  Draw     draw = (Draw) viewer;
   DrawButton  button;
 
   xr  = a->n; yr = a->m; h = yr/10.0; w = xr/10.0; 

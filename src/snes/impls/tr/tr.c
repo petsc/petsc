@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.31 1995/11/01 19:12:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.32 1995/11/01 23:21:23 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -177,7 +177,7 @@ static int SNESSetUp_TR( SNES snes )
 {
   int ierr;
   snes->nwork = 4;
-  ierr = VecGetVecs(snes->vec_sol,snes->nwork,&snes->work ); CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work ); CHKERRQ(ierr);
   PLogObjectParents(snes,snes->nwork,snes->work);
   snes->vec_sol_update_always = snes->work[3];
   return 0;

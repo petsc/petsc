@@ -1,9 +1,9 @@
 C
 C      Include file for Fortran use of the Draw package in PETSc
 C
-#define DrawCtx     integer
-#define DrawLGCtx   integer
-#define DrawAxisCtx integer
+#define Draw     integer
+#define DrawLG   integer
+#define DrawAxis integer
 C
       integer draw_white,draw_black,draw_red,draw_yellow,draw_green,
      *        draw_cyan,draw_blue

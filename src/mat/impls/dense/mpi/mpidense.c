@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.9 1995/11/03 02:49:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.10 1995/11/03 02:59:17 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -781,16 +781,17 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Mat *newmat)
 
   /* each row stores all columns */
   if (N == PETSC_DECIDE) N = n;
-  if (n == PETSC_DECIDE) n = N;
-  if (n != N) SETERRQ(1,"MatCreateMPIDense:For now, only n=N is supported");
+  if (n == PETSC_DECIDE) {n = N/a->size + ((N % a->size) > a->rank);}
+  /*  if (n != N) SETERRQ(1,"MatCreateMPIDense:For now, only n=N is supported"); */
   a->N = N;
   a->M = M;
   a->m = m;
   a->n = n;
 
   /* build local table of row and column ownerships */
-  a->rowners = (int *) PetscMalloc((a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);
-  PLogObjectMemory(mat,(a->size+2)*sizeof(int)+sizeof(struct _Mat)+ 
+  a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);
+  a->cowners = a->rowners + a->size + 1;
+  PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _Mat)+ 
                        sizeof(Mat_MPIDense));
   MPI_Allgather(&m,1,MPI_INT,a->rowners+1,1,MPI_INT,comm);
   a->rowners[0] = 0;
@@ -799,6 +800,11 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Mat *newmat)
   }
   a->rstart = a->rowners[a->rank]; 
   a->rend   = a->rowners[a->rank+1]; 
+  MPI_Allgather(&n,1,MPI_INT,a->cowners+1,1,MPI_INT,comm);
+  a->cowners[0] = 0;
+  for ( i=2; i<=a->size; i++ ) {
+    a->cowners[i] += a->cowners[i-1];
+  }
 
   ierr = MatCreateSeqDense(MPI_COMM_SELF,m,N,&a->A); CHKERRQ(ierr);
   PLogObjectParent(mat,a->A);

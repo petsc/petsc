@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.24 1995/11/01 19:11:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.25 1995/11/01 23:20:30 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -11,11 +11,11 @@ static char vcid[] = "$Id: lg.c,v 1.24 1995/11/01 19:11:53 bsmith Exp bsmith $";
 #include "petsc.h"
 #include "draw.h"         /*I "draw.h" I*/
 
-struct _DrawLGCtx {
+struct _DrawLG {
   PETSCHEADER 
   int         len,loc;
-  DrawCtx     win;
-  DrawAxisCtx axis;
+  Draw     win;
+  DrawAxis axis;
   double      xmin, xmax, ymin, ymax, *x, *y;
   int         nopts, dim;
   int         use_dots;
@@ -32,16 +32,16 @@ struct _DrawLGCtx {
   Output Parameters:
 .   outctx - the line graph context
 @*/
-int DrawLGCreate(DrawCtx win,int dim,DrawLGCtx *outctx)
+int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
 {
   int         ierr;
   PetscObject vobj = (PetscObject) win;
-  DrawLGCtx   lg;
+  DrawLG   lg;
 
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) {
-     return DrawOpenNull(vobj->comm,(DrawCtx*)outctx);
+     return DrawOpenNull(vobj->comm,(Draw*)outctx);
   }
-  PetscHeaderCreate(lg,_DrawLGCtx,LG_COOKIE,0,vobj->comm);
+  PetscHeaderCreate(lg,_DrawLG,LG_COOKIE,0,vobj->comm);
   lg->view    = 0;
   lg->destroy = 0;
   lg->nopts   = 0;
@@ -69,7 +69,7 @@ int DrawLGCreate(DrawCtx win,int dim,DrawLGCtx *outctx)
   Input Parameter:
 .   lg - the line graph context.
 @*/
-int DrawLGReset(DrawLGCtx lg)
+int DrawLGReset(DrawLG lg)
 {
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
   lg->xmin  = 1.e20;
@@ -88,7 +88,7 @@ int DrawLGReset(DrawLGCtx lg)
   Input Parameter:
 .  lg - the line graph context
 @*/
-int DrawLGDestroy(DrawLGCtx lg)
+int DrawLGDestroy(DrawLG lg)
 {
   if (lg && lg->cookie == DRAW_COOKIE && lg->type == NULLWINDOW) {
     return PetscObjectDestroy((PetscObject) lg);
@@ -112,7 +112,7 @@ int DrawLGDestroy(DrawLGCtx lg)
            point for each curve.
 
 @*/
-int DrawLGAddPoint(DrawLGCtx lg,double *x,double *y)
+int DrawLGAddPoint(DrawLG lg,double *x,double *y)
 {
   int i;
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
@@ -145,7 +145,7 @@ int DrawLGAddPoint(DrawLGCtx lg,double *x,double *y)
   Input Parameters:
 .   lg - the linegraph context
 @*/
-int DrawLGIndicateDataPoints(DrawLGCtx lg)
+int DrawLGIndicateDataPoints(DrawLG lg)
 {
   lg->use_dots = 1;
   return 0;
@@ -163,7 +163,7 @@ int DrawLGIndicateDataPoints(DrawLGCtx lg)
 .   n - number of points being added
 
 @*/
-int DrawLGAddPoints(DrawLGCtx lg,int n,double **xx,double **yy)
+int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
 {
   int    i, j, k;
   double *x,*y;
@@ -206,18 +206,18 @@ int DrawLGAddPoints(DrawLGCtx lg,int n,double **xx,double **yy)
   Input Parameter:
 .  lg - the line graph context
 @*/
-int DrawLG(DrawLGCtx lg)
+int DrawLGDraw(DrawLG lg)
 {
   double   xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
   int      i, j, dim = lg->dim,nopts = lg->nopts;
-  DrawCtx  win = lg->win;
+  Draw  win = lg->win;
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
 
   if (nopts < 2) return 0;
   if (xmin > xmax || ymin > ymax) return 0;
   DrawClear(win);
   DrawAxisSetLimits(lg->axis, xmin, xmax, ymin, ymax);
-  DrawAxis(lg->axis);
+  DrawAxisDraw(lg->axis);
   for ( i=0; i<dim; i++ ) {
     for ( j=1; j<nopts; j++ ) {
       DrawLine(win,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
@@ -243,7 +243,7 @@ int DrawLG(DrawLGCtx lg)
 .   x_min,x_max,y_min,y_max - the limits
 
 @*/
-int DrawLGSetLimits( DrawLGCtx lg,double x_min,double x_max,double y_min,
+int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
                                   double y_max) 
 {
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
@@ -255,7 +255,7 @@ int DrawLGSetLimits( DrawLGCtx lg,double x_min,double x_max,double y_min,
 }
  
 /*@C
-    DrawLGGetAxisCtx - Gets the axis context associated with a line graph.
+    DrawLGGetAxis - Gets the axis context associated with a line graph.
            This is useful if one wants to change some axis property, like
            labels, color, etc. The axis context should not be destroyed
            by the application code.
@@ -267,7 +267,7 @@ int DrawLGSetLimits( DrawLGCtx lg,double x_min,double x_max,double y_min,
 .  axis - the axis context
 
 @*/
-int DrawLGGetAxisCtx(DrawLGCtx lg,DrawAxisCtx *axis)
+int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 {
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
   *axis = lg->axis;
@@ -275,7 +275,7 @@ int DrawLGGetAxisCtx(DrawLGCtx lg,DrawAxisCtx *axis)
 }
 
 /*@C
-    DrawLGGetDrawCtx - Gets the draw context associated with a line graph.
+    DrawLGGetDraw - Gets the draw context associated with a line graph.
 
   Input Parameter:
 .  lg - the line graph context
@@ -283,7 +283,7 @@ int DrawLGGetAxisCtx(DrawLGCtx lg,DrawAxisCtx *axis)
   Output Parameter:
 .  win - the draw context
 @*/
-int DrawLGGetDrawCtx(DrawLGCtx lg,DrawCtx *win)
+int DrawLGGetDraw(DrawLG lg,Draw *win)
 {
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
   *win = lg->win;

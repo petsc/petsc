@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.13 1995/09/30 19:30:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.14 1995/11/01 23:20:13 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -10,9 +10,9 @@ static char *(colornames[]) = { "white", "black", "red", "yellow", "green",
                                 "forestgreen", "orange", "violet", "brown",
                                 "pink", "coral", "gray" };
 
-extern int XiInitCmap( DrawCtx_X* );
-extern int XiAllocBW( DrawCtx_X*, PixVal*,PixVal*);
-extern int XiGetVisualClass( DrawCtx_X * );
+extern int XiInitCmap( Draw_X* );
+extern int XiAllocBW( Draw_X*, PixVal*,PixVal*);
+extern int XiGetVisualClass( Draw_X * );
 extern int XiHlsToRgb(int,int,int,unsigned char*,unsigned char*,unsigned char*);
 Colormap XiCreateColormap(Display*,int,Visual *);
 
@@ -23,7 +23,7 @@ Colormap XiCreateColormap(Display*,int,Visual *);
 */
 #include <X11/Xatom.h>
 
-int XiInitColors(DrawCtx_X* XiWin,Colormap cmap,int nc )
+int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
 {
   PixVal   white_pixel, black_pixel;
 
@@ -56,7 +56,7 @@ int XiInitColors(DrawCtx_X* XiWin,Colormap cmap,int nc )
 /*
     Set the initial color map
  */
-int XiInitCmap(DrawCtx_X* XiWin )
+int XiInitCmap(Draw_X* XiWin )
 {
   XColor  colordef;
   int     i;
@@ -83,7 +83,7 @@ int XiInitCmap(DrawCtx_X* XiWin )
  * X colors are 16 bits, not 8, so we have to shift the input by 8.
  */
 int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue, 
-            int mapsize, DrawCtx_X *XiWin )
+            int mapsize, Draw_X *XiWin )
 {
   int         i, err;
   XColor      colordef;
@@ -184,7 +184,7 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
 	GrayScale
 	StaticGray
  */
-int XiSetVisualClass(DrawCtx_X* XiWin )
+int XiSetVisualClass(Draw_X* XiWin )
 {
   XVisualInfo vinfo;
   if (XMatchVisualInfo( XiWin->disp, XiWin->screen, 24, DirectColor, &vinfo)) {
@@ -204,7 +204,7 @@ int XiSetVisualClass(DrawCtx_X* XiWin )
   return 0;
 }
 
-int XiGetVisualClass(DrawCtx_X* XiWin )
+int XiGetVisualClass(Draw_X* XiWin )
 {
 #if defined(__cplusplus)
   return XiWin->vis->c_class;
@@ -225,13 +225,13 @@ Colormap XiCreateColormap(Display* display,int screen,Visual *visual )
   return Cmap;
 }
 
-int XiSetColormap(DrawCtx_X* XiWin )
+int XiSetColormap(Draw_X* XiWin )
 {
   XSetWindowColormap( XiWin->disp, XiWin->win, XiWin->cmap );
   return 0;
 }
 
-int XiAllocBW(DrawCtx_X* XiWin,PixVal* white,PixVal* black )
+int XiAllocBW(Draw_X* XiWin,PixVal* white,PixVal* black )
 {
   XColor  bcolor, wcolor;
   XParseColor( XiWin->disp, XiWin->cmap, "black", &bcolor );
@@ -249,7 +249,7 @@ int XiAllocBW(DrawCtx_X* XiWin,PixVal* white,PixVal* black )
   return 0;
 }
 
-int XiGetBaseColor(DrawCtx_X* XiWin,PixVal* white_pix,PixVal* black_pix )
+int XiGetBaseColor(Draw_X* XiWin,PixVal* white_pix,PixVal* black_pix )
 {
   *white_pix  = XiWin->cmapping[DRAW_WHITE];
   *black_pix  = XiWin->cmapping[DRAW_BLACK];
@@ -345,7 +345,7 @@ int XiHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,
     This routine returns the pixel value for the specified color
     Returns 0 on failure, <>0 otherwise.
  */
-int XiFindColor( DrawCtx_X *XiWin, char *name, PixVal *pixval )
+int XiFindColor( Draw_X *XiWin, char *name, PixVal *pixval )
 {
   XColor   colordef;
   int      st;
@@ -372,7 +372,7 @@ int XiFindColor( DrawCtx_X *XiWin, char *name, PixVal *pixval )
  * colormap.
  */
 int XiAddCmap( unsigned char *red, unsigned char *green, unsigned char *blue,
-               int mapsize, DrawCtx_X *XiWin )
+               int mapsize, Draw_X *XiWin )
 {
   int      i, err;
   XColor   colordef;
@@ -405,7 +405,7 @@ int XiAddCmap( unsigned char *red, unsigned char *green, unsigned char *blue,
     In the monchrome case (or if the color is otherwise unavailable),
     the "background" or "foreground" colors will be chosen
  */
-PixVal XiGetColor(DrawCtx_X* XiWin, char *name, int is_fore )
+PixVal XiGetColor(Draw_X* XiWin, char *name, int is_fore )
 {
   PixVal pixval;
   if (XiWin->numcolors == 2 || !XiFindColor( XiWin, name, &pixval ))
@@ -418,7 +418,7 @@ PixVal XiGetColor(DrawCtx_X* XiWin, char *name, int is_fore )
    This routine takes a named color and returns a color that is either
    lighter or darker
  */
-PixVal XiSimColor(DrawCtx_X *XiWin,PixVal pixel, int intensity, int is_fore)
+PixVal XiSimColor(Draw_X *XiWin,PixVal pixel, int intensity, int is_fore)
 {
   XColor   colordef, colorsdef;
   char     RGBcolor[20];
@@ -457,7 +457,7 @@ PixVal XiSimColor(DrawCtx_X *XiWin,PixVal pixel, int intensity, int is_fore)
   colormap is used.  The Pixel values chosen are in the cmapping 
   structure; this is used by routines such as the Xi contour plotter.
 */  
-int XiUniformHues( DrawCtx_X *Xiwin, int ncolors )
+int XiUniformHues( Draw_X *Xiwin, int ncolors )
 {
   unsigned char *red, *green, *blue;
 
@@ -490,7 +490,7 @@ int XiSetCmapLight(unsigned char *red, unsigned char *green,
   return 0;
 }
 
-int XiGetNumcolors( DrawCtx_X *XiWin )
+int XiGetNumcolors( Draw_X *XiWin )
 {
   return XiWin->numcolors;
 }

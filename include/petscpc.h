@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.35 1995/10/12 18:55:35 curfman Exp bsmith $ */
+/* $Id: pc.h,v 1.36 1995/11/01 19:12:32 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module.
@@ -66,8 +66,8 @@ extern int PCILUSetUseInPlace(PC);
 extern int PCILUSetLevels(PC,int);
 extern int PCEisenstatUseDiagonalScaling(PC);
 
-extern int PCSPAISetParameters(PC,int,int,double);
-extern int PCSPAIGetApproximateInverse(PC,Mat*);
+extern int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
+extern int PCASMSetSubdomains(PC, int, IS *);
 
 #endif
 

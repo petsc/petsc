@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: text.c,v 1.14 1995/11/01 19:11:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.15 1995/11/01 23:20:13 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -10,16 +10,16 @@ static char vcid[] = "$Id: text.c,v 1.14 1995/11/01 19:11:41 bsmith Exp bsmith $
 
 #include "ximpl.h"
 
-int XiInitFonts(DrawCtx_X *);
+int XiInitFonts(Draw_X *);
 int XiMatchFontSize(XiFont*,int,int);
-int XiLoadFont(DrawCtx_X*,XiFont*);
+int XiLoadFont(Draw_X*,XiFont*);
 /*
     XiFontFixed - Return a pointer to the selected font.
 
     Warning: these fonts are never freeded because they can possibly 
   be shared by several windows 
 */
-int XiFontFixed( DrawCtx_X *XBWin,int w, int h,XiFont **outfont )
+int XiFontFixed( Draw_X *XBWin,int w, int h,XiFont **outfont )
 {
   static XiFont *curfont = 0,*font = 0;
   static int    fw = 0, fh = 0;
@@ -49,7 +49,7 @@ static int act_nfonts = 0;
   and load it if necessary
 */
 
-int XiLoadFont( DrawCtx_X *XBWin, XiFont *font )
+int XiLoadFont( Draw_X *XBWin, XiFont *font )
 {
   char        font_name[100];
   XFontStruct *FontInfo;
@@ -73,7 +73,7 @@ int XiLoadFont( DrawCtx_X *XBWin, XiFont *font )
 }
 
 /* Code to find fonts and their characteristics */
-int XiInitFonts( DrawCtx_X *XBWin )
+int XiInitFonts( Draw_X *XBWin )
 {
   char         **names;
   int          cnt, i, j;

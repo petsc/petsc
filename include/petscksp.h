@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.26 1995/10/24 21:55:05 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.27 1995/11/01 19:12:32 bsmith Exp bsmith $ */
 
 #ifndef __KSP_PACKAGE
 #define __KSP_PACKAGE
@@ -83,9 +83,9 @@ extern int KSPSetOptionsPrefix(KSP,char*);
 extern int KSPView(KSP,Viewer);
 
 #if defined(__DRAW_PACKAGE)
-extern int KSPLGMonitorCreate(char*,char*,int,int,int,int,DrawLGCtx*);
+extern int KSPLGMonitorCreate(char*,char*,int,int,int,int,DrawLG*);
 extern int KSPLGMonitor(KSP,int,double,void*);
-extern int KSPLGMonitorDestroy(DrawLGCtx);
+extern int KSPLGMonitorDestroy(DrawLG);
 #endif 
 
 #endif

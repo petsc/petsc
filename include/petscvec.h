@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.37 1995/11/01 19:12:32 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.38 1995/11/05 14:00:41 bsmith Exp bsmith $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -98,7 +98,7 @@ extern int VecReciprocal(Vec);
 extern int VecAbs(Vec);
 
 #if defined(__DRAW_PACKAGE)
-extern int DrawTensorContour(DrawCtx,int,int,double *,double *,Vec);
+extern int DrawTensorContour(Draw,int,int,double *,double *,Vec);
 #endif
 
 #endif

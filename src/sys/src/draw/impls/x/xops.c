@@ -1,6 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.32 1995/11/01 19:11:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.33 1995/11/01 23:20:13 bsmith Exp bsmith $";
 #endif
+/*
+    Defines the operations for the X Draw implementation.
+*/
 
 #include <stdio.h>
 #if defined(HAVE_X11)
@@ -15,13 +18,9 @@ static char vcid[] = "$Id: xops.c,v 1.32 1995/11/01 19:11:41 bsmith Exp bsmith $
                                        ((win)->port_yr - (win)->port_yl))/\
                                        ((win)->coor_yr - (win)->coor_yl))))
 
-/*
-    Defines the operations for the X Draw implementation.
-*/
-
-int DrawLine_X(DrawCtx Win, double xl, double yl, double xr, double yr,int cl)
+int DrawLine_X(Draw Win, double xl, double yl, double xr, double yr,int cl)
 {
-  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
+  Draw_X* XiWin = (Draw_X*) Win->data;
   int       x1,y1,x2,y2;
 
   XiSetColor( XiWin, cl );
@@ -31,10 +30,10 @@ int DrawLine_X(DrawCtx Win, double xl, double yl, double xr, double yr,int cl)
   return 0;
 }
 
-static int DrawPoint_X(DrawCtx Win,double x,double  y,int c)
+static int DrawPoint_X(Draw Win,double x,double  y,int c)
 {
   int        xx,yy;
-  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
+  Draw_X* XiWin = (Draw_X*) Win->data;
 
   xx = XTRANS(Win,XiWin,x);  yy = YTRANS(Win,XiWin,y);
   XiSetColor( XiWin, c );
@@ -42,10 +41,10 @@ static int DrawPoint_X(DrawCtx Win,double x,double  y,int c)
   return 0;
 }
 
-static int DrawRectangle_X(DrawCtx Win, double xl, double yl, double xr, double yr,
+static int DrawRectangle_X(Draw Win, double xl, double yl, double xr, double yr,
                            int c1, int c2,int c3,int c4)
 {
-  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
+  Draw_X* XiWin = (Draw_X*) Win->data;
   int        x1,y1,w,h, c = (c1 + c2 + c3 + c4)/4;
 
   XiSetColor( XiWin, c );
@@ -56,12 +55,12 @@ static int DrawRectangle_X(DrawCtx Win, double xl, double yl, double xr, double 
   return 0;
 }
 
-extern int XiDrawInterpolatedTriangle(DrawCtx_X*,int,int,int,int,int,int,int,int,int);
+extern int XiDrawInterpolatedTriangle(Draw_X*,int,int,int,int,int,int,int,int,int);
 
-static int DrawTriangle_X(DrawCtx Win, double X1, double Y1, double X2, 
+static int DrawTriangle_X(Draw Win, double X1, double Y1, double X2, 
                           double Y2,double X3,double Y3, int c1, int c2,int c3)
 {
-  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
+  Draw_X* XiWin = (Draw_X*) Win->data;
 
   if (c1 == c2 && c2 == c3) {
     XPoint pt[3];
@@ -88,10 +87,10 @@ static int DrawTriangle_X(DrawCtx Win, double X1, double Y1, double X2,
   return 0;
 }
 
-static int DrawText_X(DrawCtx Win,double x,double  y,int c,char *chrs )
+static int DrawText_X(Draw Win,double x,double  y,int c,char *chrs )
 {
   int        xx,yy;
-  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
+  Draw_X* XiWin = (Draw_X*) Win->data;
 
   xx = XTRANS(Win,XiWin,x);  yy = YTRANS(Win,XiWin,y);
   XiSetColor( XiWin, c );
@@ -100,11 +99,11 @@ static int DrawText_X(DrawCtx Win,double x,double  y,int c,char *chrs )
   return 0;
 }
 
-int XiFontFixed( DrawCtx_X*,int, int,XiFont **);
+int XiFontFixed( Draw_X*,int, int,XiFont **);
 
-static int DrawTextSetSize_X(DrawCtx Win,double x,double  y)
+static int DrawTextSetSize_X(Draw Win,double x,double  y)
 {
-  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
+  Draw_X* XiWin = (Draw_X*) Win->data;
   int        w,h;
 
   w = (int)((XiWin->w)*x*(Win->port_xr - Win->port_xl)/(Win->coor_xr - Win->coor_xl));
@@ -112,9 +111,9 @@ static int DrawTextSetSize_X(DrawCtx Win,double x,double  y)
   return XiFontFixed( XiWin,w, h, &XiWin->font);
 }
 
-int DrawTextGetSize_X(DrawCtx Win,double *x,double  *y)
+int DrawTextGetSize_X(Draw Win,double *x,double  *y)
 {
-  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
+  Draw_X* XiWin = (Draw_X*) Win->data;
   double     w,h;
 
   w = XiWin->font->font_w; h = XiWin->font->font_h;
@@ -123,10 +122,10 @@ int DrawTextGetSize_X(DrawCtx Win,double *x,double  *y)
   return 0;
 }
 
-int DrawTextVertical_X(DrawCtx Win,double x,double  y,int c,char *chrs )
+int DrawTextVertical_X(Draw Win,double x,double  y,int c,char *chrs )
 {
   int        xx,yy,n = PetscStrlen(chrs),i;
-  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
+  Draw_X* XiWin = (Draw_X*) Win->data;
   char       tmp[2];
   double     tw,th;
   
@@ -143,17 +142,17 @@ int DrawTextVertical_X(DrawCtx Win,double x,double  y,int c,char *chrs )
   return 0;
 }
 
-static int DrawFlush_X(DrawCtx Win )
+static int DrawFlush_X(Draw Win )
 {
-  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
+  Draw_X* XiWin = (Draw_X*) Win->data;
   XFlush( XiWin->disp ); XSync(XiWin->disp,False);
   return 0;
 }
 
-static int DrawSyncFlush_X(DrawCtx Win )
+static int DrawSyncFlush_X(Draw Win )
 {
   int        rank;
-  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
+  Draw_X* XiWin = (Draw_X*) Win->data;
 
   XFlush( XiWin->disp );
   if (XiWin->drw) {
@@ -170,9 +169,9 @@ static int DrawSyncFlush_X(DrawCtx Win )
   return 0;
 }
 
-static int DrawSetViewport_X(DrawCtx Win,double xl,double yl,double xr,double yr)
+static int DrawSetViewport_X(Draw Win,double xl,double yl,double xr,double yr)
 {
-  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
+  Draw_X* XiWin = (Draw_X*) Win->data;
   XRectangle box;
 
   box.x = (int) (xl*XiWin->w);   box.y = (int) ((1.0-yr)*XiWin->h);
@@ -181,9 +180,9 @@ static int DrawSetViewport_X(DrawCtx Win,double xl,double yl,double xr,double yr
   return 0;
 }
 
-static int DrawClear_X(DrawCtx Win)
+static int DrawClear_X(Draw Win)
 {
-  DrawCtx_X*  XiWin = (DrawCtx_X*) Win->data;
+  Draw_X*  XiWin = (Draw_X*) Win->data;
   int         x,  y,  w,  h;
 
   x = (int) (Win->port_xl*XiWin->w);
@@ -195,9 +194,9 @@ static int DrawClear_X(DrawCtx Win)
   return 0;
 }
 
-static int DrawSetDoubleBuffer_X(DrawCtx Win)
+static int DrawSetDoubleBuffer_X(Draw Win)
 {
-  DrawCtx_X*  win = (DrawCtx_X*) Win->data;
+  Draw_X*  win = (Draw_X*) Win->data;
   int         rank;
   if (win->drw) return 0;
 
@@ -211,11 +210,11 @@ static int DrawSetDoubleBuffer_X(DrawCtx Win)
   return 0;
 }
 
-static int DrawGetMouseButton_X(DrawCtx draw,DrawButton *button,double* x_user,
+static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
                                 double *y_user,double *x_phys,double *y_phys)
 {
   XEvent       report;
-  DrawCtx_X*   win = (DrawCtx_X*) draw->data;
+  Draw_X*   win = (Draw_X*) draw->data;
   Window       root, child;
   int          root_x, root_y,px,py;
   unsigned int keys_button;
@@ -243,7 +242,7 @@ static int DrawGetMouseButton_X(DrawCtx draw,DrawButton *button,double* x_user,
   return 0;
 }
 
-static int DrawPause_X(DrawCtx draw)
+static int DrawPause_X(Draw draw)
 {
   int ierr;
   if (draw->pause > 0) PetscSleep(draw->pause);
@@ -258,7 +257,7 @@ static int DrawPause_X(DrawCtx draw)
 }
 
 static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
-                                 DrawFlush_X,DrawLine_X,0,DrawPoint_X,0,
+                                 DrawFlush_X,DrawLine_X,0,0,DrawPoint_X,0,
                                  DrawText_X,DrawTextVertical_X,
                                  DrawTextSetSize_X,DrawTextGetSize_X,
                                  DrawSetViewport_X,DrawClear_X,
@@ -270,16 +269,16 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
 
 int DrawDestroy_X(PetscObject obj)
 {
-  DrawCtx   ctx = (DrawCtx) obj;
-  DrawCtx_X *win = (DrawCtx_X *) ctx->data;
+  Draw   ctx = (Draw) obj;
+  Draw_X *win = (Draw_X *) ctx->data;
   PetscFree(win);
   PLogObjectDestroy(ctx);
   PetscHeaderDestroy(ctx);
   return 0;
 }
 
-extern int XiQuickWindow(DrawCtx_X*,char*,char*,int,int,int,int,int);
-extern int XiQuickWindowFromWindow(DrawCtx_X*,char*,Window,int);
+extern int XiQuickWindow(Draw_X*,char*,char*,int,int,int,int,int);
+extern int XiQuickWindowFromWindow(Draw_X*,char*,Window,int);
 
 /*@C
    DrawOpenX - Opens an X window for use with the Draw routines.
@@ -303,10 +302,10 @@ $  -display <name> : name of machine for the X display
 .seealso: DrawSyncFlush()
 @*/
 int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
-              DrawCtx* inctx)
+              Draw* inctx)
 {
-  DrawCtx   ctx;
-  DrawCtx_X *Xwin;
+  Draw   ctx;
+  Draw_X *Xwin;
   int       ierr,size,rank;
   char      string[128];
 
@@ -315,7 +314,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   }
 
   *inctx = 0;
-  PetscHeaderCreate(ctx,_DrawCtx,DRAW_COOKIE,XWINDOW,comm);
+  PetscHeaderCreate(ctx,_Draw,DRAW_COOKIE,XWINDOW,comm);
   PLogObjectCreate(ctx);
   PetscMemcpy(&ctx->ops,&DvOps,sizeof(DvOps));
   ctx->destroy = DrawDestroy_X;
@@ -329,9 +328,9 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   OptionsGetInt(0,"-pause",&ctx->pause);
 
   /* actually create and open the window */
-  Xwin         = (DrawCtx_X *) PetscMalloc( sizeof(DrawCtx_X) ); CHKPTRQ(Xwin);
-  PLogObjectMemory(ctx,sizeof(DrawCtx_X)+sizeof(struct _DrawCtx));
-  PetscMemzero(Xwin,sizeof(DrawCtx_X));
+  Xwin         = (Draw_X *) PetscMalloc( sizeof(Draw_X) ); CHKPTRQ(Xwin);
+  PLogObjectMemory(ctx,sizeof(Draw_X)+sizeof(struct _Draw));
+  PetscMemzero(Xwin,sizeof(Draw_X));
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
   if (rank == 0) {
@@ -368,7 +367,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
 #else
 
 #include "draw.h"
-int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,DrawCtx* ctx)
+int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* ctx)
 {
   return DrawOpenNull(comm,ctx);
 }

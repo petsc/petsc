@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.23 1995/11/01 19:12:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.24 1995/11/01 23:21:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -60,7 +60,7 @@ int main( int argc, char **argv )
   Mat          J;
   int          ierr, its, N, nfails; 
   AppCtx       user;
-  DrawCtx      win;
+  Draw      win;
   double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv, 0,0,help );

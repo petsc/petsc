@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.20 1995/11/01 19:12:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.21 1995/11/01 23:21:56 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -47,7 +47,7 @@ int DAView_3d(PetscObject dain,Viewer ptr)
     }
   }
   else if (vobj->cookie == DRAW_COOKIE) {
-    DrawCtx win = (DrawCtx) ptr;
+    Draw win = (Draw) ptr;
     double  ymin = -1.0,ymax = (double) da->N;
     double  xmin = -1.0,xmax = (double) ((da->M+2)*da->P),x,y;
     int     k, plane;

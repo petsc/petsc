@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.27 1995/11/01 19:12:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.28 1995/11/01 23:21:56 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -47,7 +47,7 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
     }
   }
   else if (vobj->cookie == DRAW_COOKIE) {
-    DrawCtx win = (DrawCtx) ptr;
+    Draw win = (Draw) ptr;
     double  ymin = -1*da->s-1, ymax = da->N+da->s;
     double  xmin = -1*da->s-1, xmax = da->M+da->s;
     double  x,y;

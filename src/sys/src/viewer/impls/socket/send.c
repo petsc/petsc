@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.27 1995/11/01 19:11:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.28 1995/11/01 23:20:36 bsmith Exp bsmith $";
 #endif
 /* 
  
@@ -149,6 +149,7 @@ int SOCKCall_Private(char *hostname,int portnum)
    ViewerMatlabOpen - Opens a connection to a Matlab server.
 
    Input Parameters:
+.  comm - the MPI communicator
 .  machine - the machine the server is running on
 .  port - the port to connect to, use -1 for the default
 
@@ -159,27 +160,31 @@ int SOCKCall_Private(char *hostname,int portnum)
    Most users should employ the following commands to access the 
    Matlab viewers
 $
-$    ViewerMatlabOpen(char *machine,int port,Viewer &viewer)
+$    ViewerMatlabOpen(MPI_Comm comm, char *machine,int port,Viewer &viewer)
 $    MatView(Mat matrix,Viewer viewer)
 $
 $                or
 $
-$    ViewerMatlabOpen(char *machine,int port,Viewer &viewer)
+$    ViewerMatlabOpen(MPI_Comm comm, char *machine,int port,Viewer &viewer)
 $    VecView(Vec vector,Viewer viewer)
 
 .keywords: Viewer, Matlab, open
 
 .seealso: MatView(), VecView()
 @*/
-int ViewerMatlabOpen(char *machine,int port,Viewer *lab)
+int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
 {
   Viewer v;
-  int    t;
+  int    t,rank;
+
   if (port <= 0) port = DEFAULTPORT;
-  t = SOCKCall_Private(machine,port);
-  PetscHeaderCreate(v,_Viewer,VIEWER_COOKIE,MATLAB_VIEWER,MPI_COMM_SELF);
+  PetscHeaderCreate(v,_Viewer,VIEWER_COOKIE,MATLAB_VIEWER,comm);
   PLogObjectCreate(v);
-  v->port        = t;
+  MPI_Comm_rank(comm,&rank);
+  if (!rank) {
+    t = SOCKCall_Private(machine,port);
+    v->port        = t;
+  }
   v->destroy     = ViewerDestroy_Matlab;
   *lab           = v;
   return 0;

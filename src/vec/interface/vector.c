@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.54 1995/11/01 23:14:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.55 1995/11/02 04:06:51 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -351,12 +351,12 @@ int VecPDiv(Vec x,Vec y,Vec w)
    VecDuplicate() does not copy the vector, but rather allocates storage
    for the new vector.  Use VecCopy() to copy a vector.
 
-   Use VecDestroy() to free the space. Use VecGetVecs() to get several
+   Use VecDestroy() to free the space. Use VecDuplicateVecs() to get several
    vectors. 
 
 .keywords: vector, duplicate, create
 
-.seealso: VecDestroy(), VecGetVecs(), VecCreate(), VecCopy()
+.seealso: VecDestroy(), VecDuplicateVecs(), VecCreate(), VecCopy()
 @*/
 int VecDuplicate(Vec v,Vec *newv) 
 {
@@ -380,7 +380,7 @@ int VecDestroy(Vec v)
 }
 
 /*@C
-   VecGetVecs - Creates several vectors of the same type as an existing vector.
+   VecDuplicateVecs - Creates several vectors of the same type as an existing vector.
 
    Input Parameters:
 .  m - the number of vectors to obtain
@@ -397,14 +397,14 @@ int VecDestroy(Vec v)
 
 .seealso:  VecFreeVecs(), VecDuplicate(), VecCreate()
 @*/
-int VecGetVecs(Vec v,int m,Vec **V)  
+int VecDuplicateVecs(Vec v,int m,Vec **V)  
 {
   PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
   return (*v->ops.getvecs)( v, m,V );
 }
 
 /*@C
-   VecFreeVecs - Frees a block of vectors obtained with VecGetVecs().
+   VecFreeVecs - Frees a block of vectors obtained with VecDuplicateVecs().
 
    Input Parameters:
 .  vv - pointer to array of vector pointers
@@ -412,7 +412,7 @@ int VecGetVecs(Vec v,int m,Vec **V)
 
 .keywords: vector, free
 
-.seealso: VecGetVecs()
+.seealso: VecDuplicateVecs()
 @*/
 int VecFreeVecs(Vec *vv,int m)
 {
@@ -608,7 +608,7 @@ int VecGetArray(Vec x,Scalar **a)
 /*@C
    VecGetArrays - Returns a pointer to the arrays in a set of vectors.
        You MUST call VecRestoreArrays() when you no longer need access
-       to the array. x must have been obtained by a call to VecGetVecs().
+       to the array. x must have been obtained by a call to VecDuplicateVecs().
 
    Input Parameter:
 .  x - the vectors

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: wmap.c,v 1.7 1995/07/17 20:42:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: wmap.c,v 1.8 1995/09/30 19:30:30 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: wmap.c,v 1.7 1995/07/17 20:42:05 bsmith Exp bsmith $"
     This routine waits until the window is actually created or destroyed
     Returns 0 if window is mapped; 1 if window is destroyed.
  */
-int Xi_wait_map( DrawCtx_X *XiWin)
+int Xi_wait_map( Draw_X *XiWin)
 {
   XEvent  event;
   int     w, h;

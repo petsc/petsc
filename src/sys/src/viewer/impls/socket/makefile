@@ -15,15 +15,19 @@ LIBBASE   = libpetscsys
 DIRS      = 
 
 receive: chkopts openport closeport receive.o receivesparse.o receivedense.o
-	$(CMEX) receive.o receivesparse.o  receivedense.o $(MATLABLIB)
+	$(CMEX) receive.o receivesparse.o  receivedense.o 
 	$(RM) -f receive.o receivesparse.o  receivedense.o 
 
 openport: chkopts openport.o 
-	$(CMEX)  openport.o $(MATLABLIB)
+	$(CMEX)  openport.o 
 	$(RM) -f  openport.o 
   
 closeport: chkopts closeport.o 
-	$(CMEX)  closeport.o $(MATLABLIB)
+	$(CMEX)  closeport.o
 	$(RM) -f  closeport.o 
+  
+launch: chkopts launch.o 
+	$(CMEX)  launch.o
+	$(RM) -f  launch.o 
   
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

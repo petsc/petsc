@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.97 1995/11/01 23:18:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.98 1995/11/06 21:31:33 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -504,7 +504,7 @@ static int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
   return 0;
 }
 
-static int MatView_MPIAIJ_ASCIIorDraw(Mat mat,Viewer viewer)
+static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
 {
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   Mat_SeqAIJ* C = (Mat_SeqAIJ*)aij->A->data;
@@ -616,13 +616,16 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   }
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
   else if (vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILE_VIEWER) {
-    ierr = MatView_MPIAIJ_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
+    ierr = MatView_MPIAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
   }
   else if (vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILES_VIEWER) {
-    ierr = MatView_MPIAIJ_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
+    ierr = MatView_MPIAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
+  }
+  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
+    ierr = MatView_MPIAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
   }
   else if (vobj->cookie == DRAW_COOKIE) {
-    ierr = MatView_MPIAIJ_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
+    ierr = MatView_MPIAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
   }
   else if (vobj->type == BINARY_FILE_VIEWER) {
     return MatView_MPIAIJ_Binary(mat,viewer);

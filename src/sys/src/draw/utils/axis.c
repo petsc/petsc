@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.22 1995/10/06 22:25:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.23 1995/11/01 23:20:30 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -17,7 +17,7 @@ extern double   rint(double);
 #endif
 
 
-struct _DrawAxisCtx {
+struct _DrawAxis {
     PETSCHEADER
     double  xlow, ylow, xhigh, yhigh;     /* User - coord limits */
     char    *(*ylabelstr)(double,double), /* routines to generate labels */ 
@@ -26,7 +26,7 @@ struct _DrawAxisCtx {
             (*xticks)(double,double,int,int*,double*,int),
             (*yticks)(double,double,int,int*,double*,int);  
                                           /* location and size of ticks */
-    DrawCtx win;
+    Draw win;
     int     ac,tc,cc;                     /* axis, tick, charactor color */
     char    *xlabel,*ylabel,*toplabel;
 };
@@ -55,15 +55,15 @@ static double rint(double x )
 .   axis - the axis datastructure
 
 @*/
-int DrawAxisCreate(DrawCtx win,DrawAxisCtx *ctx)
+int DrawAxisCreate(Draw win,DrawAxis *ctx)
 {
-  DrawAxisCtx ad;
+  DrawAxis ad;
   PetscObject vobj = (PetscObject) win;
 
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) {
-     return DrawOpenNull(vobj->comm,(DrawCtx*)ctx);
+     return DrawOpenNull(vobj->comm,(Draw*)ctx);
   }
-  PetscHeaderCreate(ad,_DrawAxisCtx,AXIS_COOKIE,0,vobj->comm);
+  PetscHeaderCreate(ad,_DrawAxis,AXIS_COOKIE,0,vobj->comm);
   PLogObjectCreate(ad);
   PLogObjectParent(win,ad);
   ad->xticks    = XiADefTicks;
@@ -88,7 +88,7 @@ int DrawAxisCreate(DrawCtx win,DrawAxisCtx *ctx)
   Input Parameters:
 .   axis - the axis context
 @*/
-int DrawAxisDestroy(DrawAxisCtx axis)
+int DrawAxisDestroy(DrawAxis axis)
 {
   PLogObjectDestroy(axis);
   PetscHeaderDestroy(axis);
@@ -105,7 +105,7 @@ int DrawAxisDestroy(DrawAxisCtx axis)
 .   tc - the color of the tick marks
 .   cc - the color of the text strings
 @*/
-int DrawAxisSetColors(DrawAxisCtx axis,int ac,int tc,int cc)
+int DrawAxisSetColors(DrawAxis axis,int ac,int tc,int cc)
 {
   axis->ac = ac; axis->tc = tc; axis->cc = cc;
   return 0;
@@ -120,7 +120,7 @@ int DrawAxisSetColors(DrawAxisCtx axis,int ac,int tc,int cc)
 .   top - the label at the top of the image
 .   xlabel,ylabel - the labes for the x and y axis
 @*/
-int DrawAxisSetLabels(DrawAxisCtx axis,char* top,char *xlabel,char *ylabel)
+int DrawAxisSetLabels(DrawAxis axis,char* top,char *xlabel,char *ylabel)
 {
   axis->xlabel   = xlabel;
   axis->ylabel   = ylabel;
@@ -136,7 +136,7 @@ int DrawAxisSetLabels(DrawAxisCtx axis,char* top,char *xlabel,char *ylabel)
 .   xmin,xmax - limits in x
 .   ymin,ymax - limits in y
 @*/
-int DrawAxisSetLimits(DrawAxisCtx ad,double xmin,double xmax,double ymin,
+int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,
                       double ymax)
 {
   ad->xlow = xmin;
@@ -147,7 +147,7 @@ int DrawAxisSetLimits(DrawAxisCtx ad,double xmin,double xmax,double ymin,
 }
 
 /*@
-    DrawAxis - Draws an axis.
+    DrawAxisDraw - Draws an axis.
 
     Input Parameter:
 .   ad - Axis structure
@@ -158,13 +158,13 @@ int DrawAxisSetLimits(DrawAxisCtx ad,double xmin,double xmax,double ymin,
     effects may be generated.  These routines are part of the Axis
     structure (ad).
 @*/
-int DrawAxis(DrawAxisCtx ad )
+int DrawAxisDraw(DrawAxis ad )
 {
   int       i,  ntick, numx, numy, ac = ad->ac, tc = ad->tc;
   int       cc = ad->cc;
   double    tickloc[MAXSEGS], sep;
   char      *p;
-  DrawCtx   awin = ad->win;
+  Draw   awin = ad->win;
   double    h,w,tw,th,xl,xr,yl,yr;
 
   if (ad->xlow == ad->xhigh) {ad->xlow -= .5; ad->xhigh += .5;}

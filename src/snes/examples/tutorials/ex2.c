@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.34 1995/09/30 19:31:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.35 1995/10/12 04:20:45 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
@@ -14,7 +14,7 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      Monitor(SNES,int,double,void *);
 
 typedef struct {
-   DrawCtx win1;
+   Draw win1;
 } MonitorCtx;
 
 int main( int argc, char **argv )

@@ -1,4 +1,7 @@
-/* $Id: drawimpl.h,v 1.6 1995/09/30 19:30:24 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.7 1995/11/01 19:11:34 bsmith Exp bsmith $ */
+/*
+       Abstract data structure and functions for graphics.
+*/
 
 #if !defined(_DRAWIMPL_H)
 #define _DRAWIMPL_H
@@ -6,26 +9,27 @@
 #include "draw.h"
 
 struct _DrawOps {
-  int (*doublebuff)(DrawCtx);
-  int (*flush)(DrawCtx);
-  int (*drawline)(DrawCtx,double,double,double,double,int);
-  int (*drawlinewidth)(DrawCtx,double);
-  int (*drawpoint)(DrawCtx,double,double,int);
-  int (*drawpointsize)(DrawCtx,double);
-  int (*drawtext)(DrawCtx,double,double,int,char*);
-  int (*drawtextvert)(DrawCtx,double,double,int,char*);
-  int (*drawtextsize)(DrawCtx,double,double);
-  int (*drawtextgetsize)(DrawCtx,double*,double*);
-  int (*viewport)(DrawCtx,double,double,double,double);
-  int (*clear)(DrawCtx);
-  int (*sflush)(DrawCtx);
-  int (*rectangle)(DrawCtx,double,double,double,double,int,int,int,int);
-  int (*triangle)(DrawCtx,double,double,double,double,double,double,int,int,int);
-  int (*getmousebutton)(DrawCtx,DrawButton*,double *,double *,double*,double*);
-  int (*pause)(DrawCtx);
+  int (*setdoublebuffer)(Draw);
+  int (*flush)(Draw);
+  int (*line)(Draw,double,double,double,double,int);
+  int (*linesetwidth)(Draw,double);
+  int (*linegetwidth)(Draw,double*);
+  int (*point)(Draw,double,double,int);
+  int (*pointsetsize)(Draw,double);
+  int (*text)(Draw,double,double,int,char*);
+  int (*textvertical)(Draw,double,double,int,char*);
+  int (*textsetsize)(Draw,double,double);
+  int (*textgetsize)(Draw,double*,double*);
+  int (*setviewport)(Draw,double,double,double,double);
+  int (*clear)(Draw);
+  int (*syncflush)(Draw);
+  int (*rectangle)(Draw,double,double,double,double,int,int,int,int);
+  int (*triangle)(Draw,double,double,double,double,double,double,int,int,int);
+  int (*getmousebutton)(Draw,DrawButton*,double *,double *,double*,double*);
+  int (*pause)(Draw);
 };
 
-struct _DrawCtx {
+struct _Draw {
   PETSCHEADER
   struct _DrawOps ops;
   int             pause;       /* sleep time after a sync flush */

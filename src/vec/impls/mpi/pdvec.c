@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.33 1995/11/02 04:13:14 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.34 1995/11/02 04:16:00 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -150,7 +150,7 @@ static int VecView_MPI_Binary(Vec xin, Viewer ptr )
   return 0;
 }
 
-static int VecView_MPI_DrawCtx(Vec xin, DrawCtx win )
+static int VecView_MPI_Draw(Vec xin, Draw win )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,size,ierr,start,end;
@@ -173,12 +173,12 @@ static int VecView_MPI_DrawCtx(Vec xin, DrawCtx win )
   MPI_Reduce(&xmax,&ymax,1,MPI_DOUBLE,MPI_MAX,0,xin->comm);
   MPI_Comm_rank(xin->comm,&rank);
   if (!rank) {
-    DrawAxisCtx axis;
+    DrawAxis axis;
     DrawClear(win); DrawFlush(win);
     ierr = DrawAxisCreate(win,&axis); CHKERRQ(ierr);
     PLogObjectParent(win,axis);
     ierr = DrawAxisSetLimits(axis,0.0,(double) x->N,ymin,ymax); CHKERRQ(ierr);
-    ierr = DrawAxis(axis); CHKERRQ(ierr);
+    ierr = DrawAxisDraw(axis); CHKERRQ(ierr);
     DrawAxisDestroy(axis);
     DrawGetCoordinates(win,coors,coors+1,coors+2,coors+3);
   }
@@ -211,11 +211,11 @@ static int VecView_MPI_DrawCtx(Vec xin, DrawCtx win )
   return 0;
 }
 
-static int VecView_MPI_LG(Vec xin, DrawLGCtx lg )
+static int VecView_MPI_LG(Vec xin, DrawLG lg )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,size, N = x->N,*lens;
-  DrawCtx     win;
+  Draw     win;
   double      *xx,*yy;
 
   MPI_Comm_rank(xin->comm,&rank);
@@ -231,29 +231,56 @@ static int VecView_MPI_LG(Vec xin, DrawLGCtx lg )
     }
     /* The next line is wrong for complex, one should stride out the 
          real part of x->array and Gatherv that */
-    MPI_Gatherv(x->array,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,
-                  0,xin->comm);
+    MPI_Gatherv(x->array,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,0,xin->comm);
     PetscFree(lens);
     DrawLGAddPoints(lg,N,&xx,&yy);
     PetscFree(xx);
-    DrawLG(lg);
+    DrawLGDraw(lg);
   }
   else {
     /* The next line is wrong for complex, one should stride out the 
          real part of x->array and Gatherv that */
     MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);
   }
-  DrawLGGetDrawCtx(lg,&win);
+  DrawLGGetDraw(lg,&win);
   DrawSyncFlush(win);
   DrawPause(win);
   return 0;
+}
+
+static int VecView_MPI_Matlab(Vec xin, Viewer viewer )
+{
+  Vec_MPI     *x = (Vec_MPI *) xin->data;
+  int         i,rank,size, N = x->N,*lens;
+  double      *xx;
+
+#if defined(PETSC_COMPLEX)
+  SETERRQ(1,"VecView_MPI_Matlab:Complex not done");
+#else
+  MPI_Comm_rank(xin->comm,&rank);
+  MPI_Comm_size(xin->comm,&size);
+  if (!rank) {
+    xx = (double *) PetscMalloc( N*sizeof(double) ); CHKPTRQ(xx);
+    lens = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(lens);
+    for (i=0; i<size; i++ ) {
+      lens[i] = x->ownership[i+1] - x->ownership[i];
+    }
+    MPI_Gatherv(x->array,x->n,MPI_DOUBLE,xx,lens,x->ownership,MPI_DOUBLE,0,xin->comm);
+    PetscFree(lens);
+    ViewerMatlabPutArray_Private(viewer,N,1,xx);
+    PetscFree(xx);
+  }
+  else {
+    MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);
+  }
+  return 0;
+#endif
 }
 
 static int VecView_MPI(PetscObject obj,Viewer ptr)
 {
   Vec         xin = (Vec) obj;
   PetscObject vobj = (PetscObject) ptr;
-  Vec_MPI     *x = (Vec_MPI*) xin->data;
 
   if (!ptr) { /* so that viewers may be used from debuggers */
     ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
@@ -267,7 +294,7 @@ static int VecView_MPI(PetscObject obj,Viewer ptr)
       return VecView_MPI_Files(xin,ptr);
     }
     else if (vobj->type == MATLAB_VIEWER) {
-      return ViewerMatlabPutArray_Private(ptr,x->n,1,x->array);
+      return VecView_MPI_Matlab(xin,ptr);
     } 
     else if (vobj->type==BINARY_FILE_VIEWER) {
       return VecView_MPI_Binary(xin,ptr);
@@ -275,14 +302,14 @@ static int VecView_MPI(PetscObject obj,Viewer ptr)
   }
 #if !defined(PETSC_COMPLEX)
   else if (vobj->cookie == LG_COOKIE){
-    return VecView_MPI_LG(xin,(DrawLGCtx) ptr);
+    return VecView_MPI_LG(xin,(DrawLG) ptr);
   }
   else if (vobj->cookie == DRAW_COOKIE) {
     if (vobj->type == NULLWINDOW){ 
       return 0;
     }
     else {
-      return VecView_MPI_DrawCtx(xin,(DrawCtx) ptr);
+      return VecView_MPI_Draw(xin,(Draw) ptr);
     }
   }
 #endif

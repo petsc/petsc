@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.12 1995/10/19 22:30:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.13 1995/10/24 21:54:50 bsmith Exp bsmith $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   int            s=2, w=2,n = PETSC_DECIDE ;
   DAPeriodicType wrap = DA_NONPERIODIC;
   DA             da;
-  DrawCtx        win;
+  Draw        win;
   Vec            local,global;
   Scalar         value;
   DAStencilType  st = DA_STENCIL_BOX;

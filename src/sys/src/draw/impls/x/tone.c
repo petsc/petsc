@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tone.c,v 1.4 1995/05/05 03:49:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tone.c,v 1.5 1995/06/23 12:41:11 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: tone.c,v 1.4 1995/05/05 03:49:54 bsmith Exp bsmith $"
 .       t1,t2,t3 - colors of corners
 
  */
-int XiDrawInterpolatedTriangle(DrawCtx_X* win, int x1, int y1, int t1, 
+int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1, 
                                 int x2,int y2,int t2,int x3,int y3,int t3)
 {
   double rfrac, lfrac;

@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.16 1995/09/21 20:13:13 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.17 1995/10/24 21:55:05 bsmith Exp bsmith $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -24,7 +24,7 @@ typedef enum { BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE} ViewerBinaryType;
 extern int ViewerFileOpenASCII(MPI_Comm,char*,Viewer *);
 extern int ViewerFileOpenBinary(MPI_Comm,char*,ViewerBinaryType,Viewer *);
 extern int ViewerFileSetFormat(Viewer,int,char *);
-extern int ViewerMatlabOpen(char*,int,Viewer *);
+extern int ViewerMatlabOpen(MPI_Comm,char*,int,Viewer *);
 extern int ViewerDestroy(Viewer);
 
 extern Viewer STDOUT_VIEWER_SELF;  

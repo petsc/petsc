@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.22 1995/09/30 19:26:45 bsmith Exp $";
+static char vcid[] = "$Id: ex1.c,v 1.14 1995/10/12 04:19:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Example demonstrating opening and drawing a window\n";
@@ -14,7 +14,7 @@ static char help[] = "Example demonstrating opening and drawing a window\n";
 
 int main(int argc,char **argv)
 {
-  DrawCtx draw;
+  Draw draw;
   int     ierr, x = 0, y = 0, width = 300, height = 300;
  
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);

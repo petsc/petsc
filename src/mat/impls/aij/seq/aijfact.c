@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.45 1995/11/02 04:27:24 bsmith Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.46 1995/11/08 00:10:48 balay Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -486,7 +486,6 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
   /* dloc is location of diagonal in factor */
   dloc = (int *) PetscMalloc( (n+1)*sizeof(int)); CHKPTRQ(dloc);
   dloc[0]  = 0;
-
   for ( prow=0; prow<n; prow++ ) {
     /* first copy previous fill into linked list */
     nzf     = nz  = ai[r[prow]+1] - ai[r[prow]];
@@ -542,7 +541,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
     }
     /* copy new filled row into permanent storage */
     ainew[prow+1] = ainew[prow] + nzf;
-    if (ainew[prow+1] > jmax+1) {
+    if (ainew[prow+1] > jmax-shift) {
       /* allocate a longer ajnew */
       int maxadd;
       maxadd = (int) ((f*(ai[n]+!shift)*(n-prow+5))/n);

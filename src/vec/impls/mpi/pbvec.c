@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.47 1995/11/01 23:14:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.48 1995/11/02 04:12:36 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -104,12 +104,12 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,
 .  vv - the vector
  
    Notes:
-   Use VecDuplicate() or VecGetVecs() to form additional vectors of the
+   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
 
 .keywords: vector, create, MPI
 
-.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecGetVecs()
+.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs()
 @*/ 
 int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 {

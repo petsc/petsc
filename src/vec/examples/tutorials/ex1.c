@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.23 1995/10/12 04:13:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.24 1995/11/01 19:08:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests various vector routines\n\n";
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&y); CHKERRA(ierr);
   ierr = VecDuplicate(x,&w); CHKERRA(ierr);
-  ierr = VecGetVecs(x,3,&z); CHKERRA(ierr); 
+  ierr = VecDuplicateVecs(x,3,&z); CHKERRA(ierr); 
   ierr = VecSet(&one,x); CHKERRA(ierr);
   ierr = VecSet(&two,y); CHKERRA(ierr);
   ierr = VecSet(&one,z[0]); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.109 1995/10/28 21:10:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.110 1995/11/01 19:09:56 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -52,6 +52,7 @@ int MatGetReordering(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
 {
   int         ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+
   if (!mat->ops.getreordering) {*rperm = 0; *cperm = 0; return 0;}
   PLogEventBegin(MAT_GetReordering,mat,0,0,0);
   ierr = MatGetReorderingTypeFromOptions(0,&type); CHKERRQ(ierr);
@@ -478,7 +479,7 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   ierr = (*mat->ops.lufactornumeric)(mat,fact); CHKERRQ(ierr);
   PLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0); 
   if (OptionsHasName(0,"-mat_view_draw")) {
-    DrawCtx    win;
+    Draw    win;
     ierr = DrawOpenX((*fact)->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
     ierr = MatView(*fact,(Viewer)win); CHKERRQ(ierr);
     ierr = DrawSyncFlush(win); CHKERRQ(ierr);
@@ -1052,7 +1053,7 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
       ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     }
     if (OptionsHasName(0,"-mat_view_draw")) {
-      DrawCtx    win;
+      Draw    win;
       ierr = DrawOpenX(mat->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
       ierr = MatView(mat,(Viewer)win); CHKERRQ(ierr);
       ierr = DrawSyncFlush(win); CHKERRQ(ierr);

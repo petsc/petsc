@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.18 1995/11/01 19:08:33 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.19 1995/11/02 04:11:03 bsmith Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -78,7 +78,12 @@ static int VecSet_Seq(Scalar* alpha,Vec xin )
   register int n = x->n;
   Scalar       *xx = x->array;
 
-  SET(xx,n,*alpha);
+  if (*alpha == 0.0) {
+    PetscMemzero(xx,n*sizeof(Scalar));
+  }
+  else {
+    SET(xx,n,*alpha);
+  }
   return 0;
 }
 

@@ -1,6 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.22 1995/11/01 19:11:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.23 1995/11/01 23:20:07 bsmith Exp bsmith $";
 #endif
+/*
+       Provides the calling sequences for all the basic Draw routines.
+*/
 #include "drawimpl.h"  /*I "draw.h" I*/
   
 /*@
@@ -13,11 +16,11 @@ static char vcid[] = "$Id: draw.c,v 1.22 1995/11/01 19:11:36 bsmith Exp bsmith $
 
 .keywords:  draw, line
 @*/
-int DrawLine(DrawCtx ctx,double xl,double yl,double xr,double yr,int cl)
+int DrawLine(Draw ctx,double xl,double yl,double xr,double yr,int cl)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
-  return (*ctx->ops.drawline)(ctx,xl,yl,xr,yr,cl);
+  return (*ctx->ops.line)(ctx,xl,yl,xr,yr,cl);
 }
 
 /*@
@@ -31,12 +34,33 @@ int DrawLine(DrawCtx ctx,double xl,double yl,double xr,double yr,int cl)
 
 .keywords:  draw, line, set, width
 @*/
-int DrawLineSetWidth(DrawCtx ctx,double width)
+int DrawLineSetWidth(Draw ctx,double width)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
-  return (*ctx->ops.drawlinewidth)(ctx,width);
+  return (*ctx->ops.linesetwidth)(ctx,width);
 }
+
+/*@
+   DrawLineGetWidth - Gets the line width for future draws.  The width is
+   relative to the user coordinates of the window; 0.0 denotes the natural
+   width; 1.0 denotes the interior viewport. 
+
+   Input Parameter:
+.  ctx - the drawing context
+
+   Output Parameter:
+.  width - the width in user coordinates
+
+.keywords:  draw, line, set, width
+@*/
+int DrawLineGetWidth(Draw ctx,double *width)
+{
+  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
+  return (*ctx->ops.linegetwidth)(ctx,width);
+}
+
 
 /*@C
    DrawText - Draws text onto a drawable.
@@ -49,11 +73,11 @@ int DrawLineSetWidth(DrawCtx ctx,double width)
 
 .keywords:  draw, text
 @*/
-int DrawText(DrawCtx ctx,double xl,double yl,int cl,char *text)
+int DrawText(Draw ctx,double xl,double yl,int cl,char *text)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
-  return (*ctx->ops.drawtext)(ctx,xl,yl,cl,text);
+  return (*ctx->ops.text)(ctx,xl,yl,cl,text);
 }
 
 /*@C
@@ -67,11 +91,11 @@ int DrawText(DrawCtx ctx,double xl,double yl,int cl,char *text)
 
 .keywords: draw, text, vertical
 @*/
-int DrawTextVertical(DrawCtx ctx,double xl,double yl,int cl,char *text)
+int DrawTextVertical(Draw ctx,double xl,double yl,int cl,char *text)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
-  return (*ctx->ops.drawtextvert)(ctx,xl,yl,cl,text);
+  return (*ctx->ops.textvertical)(ctx,xl,yl,cl,text);
 }
 
 /*@
@@ -89,11 +113,11 @@ int DrawTextVertical(DrawCtx ctx,double xl,double yl,int cl,char *text)
 
 .keywords: draw, text, set, size
 @*/
-int DrawTextSetSize(DrawCtx ctx,double width,double height)
+int DrawTextSetSize(Draw ctx,double width,double height)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
-  return (*ctx->ops.drawtextsize)(ctx,width,height);
+  return (*ctx->ops.textsetsize)(ctx,width,height);
 }
 /*@
    DrawTextGetSize - Gets the size for charactor text.  The width is 
@@ -107,11 +131,11 @@ int DrawTextSetSize(DrawCtx ctx,double width,double height)
 
 .keywords: draw, text, get, size
 @*/
-int DrawTextGetSize(DrawCtx ctx,double *width,double *height)
+int DrawTextGetSize(Draw ctx,double *width,double *height)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
-  return (*ctx->ops.drawtextgetsize)(ctx,width,height);
+  return (*ctx->ops.textgetsize)(ctx,width,height);
 }
 
 /*@
@@ -124,11 +148,11 @@ int DrawTextGetSize(DrawCtx ctx,double *width,double *height)
 
 .keywords:  draw, point
 @*/
-int DrawPoint(DrawCtx ctx,double xl,double yl,int cl)
+int DrawPoint(Draw ctx,double xl,double yl,int cl)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
-  return (*ctx->ops.drawpoint)(ctx,xl,yl,cl);
+  return (*ctx->ops.point)(ctx,xl,yl,cl);
 }
 
 /*@
@@ -145,12 +169,12 @@ int DrawPoint(DrawCtx ctx,double xl,double yl,int cl)
 
 .keywords: draw, point, set, size
 @*/
-int DrawPointSetSize(DrawCtx ctx,double width)
+int DrawPointSetSize(Draw ctx,double width)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
   if (width < 0.0 || width > 1.0) SETERRQ(1,"DrawPointSetSize: Bad size");
-  return (*ctx->ops.drawpointsize)(ctx,width);
+  return (*ctx->ops.pointsetsize)(ctx,width);
 }
 
 /*@
@@ -165,7 +189,7 @@ int DrawPointSetSize(DrawCtx ctx,double width)
 
 .keywords:  draw, set, view, port
 @*/
-int DrawSetViewPort(DrawCtx ctx,double xl,double yl,double xr,double yr)
+int DrawSetViewPort(Draw ctx,double xl,double yl,double xr,double yr)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
@@ -173,7 +197,7 @@ int DrawSetViewPort(DrawCtx ctx,double xl,double yl,double xr,double yr)
     SETERRQ(1,"DrawSetViewPort: Bad values"); 
   ctx->port_xl = xl; ctx->port_yl = yl;
   ctx->port_xr = xr; ctx->port_yr = yr;
-  if (ctx->ops.viewport) return (*ctx->ops.viewport)(ctx,xl,yl,xr,yr);
+  if (ctx->ops.setviewport) return (*ctx->ops.setviewport)(ctx,xl,yl,xr,yr);
   return 0;
 }
 
@@ -188,7 +212,7 @@ int DrawSetViewPort(DrawCtx ctx,double xl,double yl,double xr,double yr)
 
 .keywords:  draw, set, coordinates
 @*/
-int DrawSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
+int DrawSetCoordinates(Draw ctx,double xl,double yl,double xr, double yr)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
@@ -213,7 +237,7 @@ int DrawSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
 
 .seealso: DrawGetPause(), DrawPause()
 @*/
-int DrawSetPause(DrawCtx ctx,int pause)
+int DrawSetPause(Draw ctx,int pause)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
@@ -237,7 +261,7 @@ int DrawSetPause(DrawCtx ctx,int pause)
 
 .seealso: DrawSetPause(), DrawPause()
 @*/
-int DrawGetPause(DrawCtx ctx,int *pause)
+int DrawGetPause(Draw ctx,int *pause)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (!pause) SETERRQ(1,"DrawGetPause:Null address to store pause");
@@ -259,7 +283,7 @@ int DrawGetPause(DrawCtx ctx,int *pause)
 
 .keywords:  draw, get, coordinates
 @*/
-int DrawGetCoordinates(DrawCtx ctx,double *xl,double *yl,double *xr,double *yr)
+int DrawGetCoordinates(Draw ctx,double *xl,double *yl,double *xr,double *yr)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (!xl || !xr || !yl || !yr) SETERRQ(1,"DrawGetCoordinates:Bad pointer");
@@ -277,11 +301,11 @@ int DrawGetCoordinates(DrawCtx ctx,double *xl,double *yl,double *xr,double *yr)
 
 .keywords:  draw, set, double, buffer
 @*/
-int DrawSetDoubleBuffer(DrawCtx ctx)
+int DrawSetDoubleBuffer(Draw ctx)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
-  if (ctx->ops.doublebuff) return (*ctx->ops.doublebuff)(ctx);
+  if (ctx->ops.setdoublebuffer) return (*ctx->ops.setdoublebuffer)(ctx);
   return 0;
 }
 
@@ -295,7 +319,7 @@ int DrawSetDoubleBuffer(DrawCtx ctx)
 
 .keywords: 
 @*/
-int DrawPause(DrawCtx ctx)
+int DrawPause(Draw ctx)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
@@ -311,7 +335,7 @@ int DrawPause(DrawCtx ctx)
 
 .keywords:  draw, flush
 @*/
-int DrawFlush(DrawCtx ctx)
+int DrawFlush(Draw ctx)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
@@ -330,11 +354,11 @@ int DrawFlush(DrawCtx ctx)
 .keywords: draw, sync, flush
 
 @*/
-int DrawSyncFlush(DrawCtx ctx)
+int DrawSyncFlush(Draw ctx)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
-  if (ctx->ops.flush) return (*ctx->ops.sflush)(ctx);
+  if (ctx->ops.syncflush) return (*ctx->ops.syncflush)(ctx);
   return 0;
 }
 
@@ -346,7 +370,7 @@ int DrawSyncFlush(DrawCtx ctx)
 
 .keywords: draw, clear
 @*/
-int DrawClear(DrawCtx ctx)
+int DrawClear(Draw ctx)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
@@ -361,7 +385,7 @@ int DrawClear(DrawCtx ctx)
 
 .keywords: draw, destroy
 @*/
-int DrawDestroy(DrawCtx ctx)
+int DrawDestroy(Draw ctx)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->destroy) return (*ctx->destroy)((PetscObject)ctx);
@@ -377,7 +401,7 @@ int DrawDestroy(DrawCtx ctx)
 
 .keywords: draw, rectangle
 @*/
-int DrawRectangle(DrawCtx c,double xl,double yl,double xr,double yr,
+int DrawRectangle(Draw c,double xl,double yl,double xr,double yr,
                               int c1, int c2,int c3,int c4)
 {
   PETSCVALIDHEADERSPECIFIC(c,DRAW_COOKIE);
@@ -395,7 +419,7 @@ int DrawRectangle(DrawCtx c,double xl,double yl,double xr,double yr,
 
 .keywords: draw, triangle
 @*/
-int DrawTriangle(DrawCtx ctx,double x1,double y1,double x2,double y2,
+int DrawTriangle(Draw ctx,double x1,double y1,double x2,double y2,
                  double x3,double y3,int c1, int c2,int c3)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
@@ -417,11 +441,11 @@ int DrawDestroy_Null(PetscObject obj)
   Output Parameter:
 . win - the drawing context
 */
-int DrawOpenNull(MPI_Comm comm,DrawCtx *win)
+int DrawOpenNull(MPI_Comm comm,Draw *win)
 {
-  DrawCtx ctx;
+  Draw ctx;
   *win = 0;
-  PetscHeaderCreate(ctx,_DrawCtx,DRAW_COOKIE,NULLWINDOW,comm);
+  PetscHeaderCreate(ctx,_Draw,DRAW_COOKIE,NULLWINDOW,comm);
   PLogObjectCreate(ctx);
   PetscMemzero(&ctx->ops,sizeof(struct _DrawOps));
   ctx->destroy = DrawDestroy_Null;
@@ -448,7 +472,7 @@ int DrawOpenNull(MPI_Comm comm,DrawCtx *win)
 .   x_phys, y_phys - window coordinates (user may pass in 0).
 
 @*/
-int DrawGetMouseButton(DrawCtx draw,DrawButton *button,double* x_user,double *y_user,
+int DrawGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_user,
                        double *x_phys,double *y_phys)
 {
   PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);

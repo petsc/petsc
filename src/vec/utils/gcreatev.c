@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreatev.c,v 1.22 1995/09/11 18:45:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreatev.c,v 1.23 1995/10/19 22:15:56 curfman Exp bsmith $";
 #endif
 
 
@@ -25,12 +25,12 @@ static char vcid[] = "$Id: gcreatev.c,v 1.22 1995/09/11 18:45:33 bsmith Exp curf
 $   -vec_mpi : use MPI vectors, even for the uniprocessor case
 
     Notes:
-    Use VecDuplicate() or VecGetVecs() to form additional vectors
+    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors
     of the same type as an existing vector.
 
 .keywords: vector, create, initial
 
-.seealso: VecCreateSeq(), VecCreateMPI(), VecDuplicate(), VecGetVecs()
+.seealso: VecCreateSeq(), VecCreateMPI(), VecDuplicate(), VecDuplicateVecs()
 @*/
 int VecCreate(MPI_Comm comm,int n,Vec *V)
 {

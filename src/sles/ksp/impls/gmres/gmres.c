@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.46 1995/11/01 19:08:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.47 1995/11/01 23:15:25 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -98,7 +98,7 @@ static int    KSPSetUp_GMRES(KSP itP )
 
   if (gmresP->q_preallocate) {
     gmresP->vv_allocated   = VEC_OFFSET + 2 + max_k;
-    ierr = VecGetVecs(itP->vec_rhs,gmresP->vv_allocated,&gmresP->user_work[0]);
+    ierr = VecDuplicateVecs(itP->vec_rhs,gmresP->vv_allocated,&gmresP->user_work[0]);
     CHKERRQ(ierr);
     PLogObjectParents(itP,gmresP->vv_allocated,gmresP->user_work[0]);
     gmresP->mwork_alloc[0] = gmresP->vv_allocated;
@@ -108,7 +108,7 @@ static int    KSPSetUp_GMRES(KSP itP )
   }
   else {
     gmresP->vv_allocated    = 5;
-    ierr = VecGetVecs(itP->vec_rhs, 5,    &gmresP->user_work[0]); CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(itP->vec_rhs, 5,    &gmresP->user_work[0]); CHKERRQ(ierr);
     PLogObjectParents(itP,5,gmresP->user_work[0]);
     gmresP->mwork_alloc[0]  = 5;
     gmresP->nwork_alloc     = 1;
@@ -458,7 +458,7 @@ static int GMRESGetNewVectors( KSP itP,int it )
   if (nalloc == 0) return 0;
 
   gmresP->vv_allocated += nalloc;
-  VecGetVecs(itP->vec_rhs, nalloc,&gmresP->user_work[nwork] );
+  VecDuplicateVecs(itP->vec_rhs, nalloc,&gmresP->user_work[nwork] );
   PLogObjectParents(itP,nalloc,gmresP->user_work[nwork]);CHKPTRQ(gmresP->user_work[nwork]);
   gmresP->mwork_alloc[nwork] = nalloc;
   for (k=0; k<nalloc; k++)

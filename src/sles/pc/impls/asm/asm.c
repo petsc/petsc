@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.2 1995/11/01 19:09:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.3 1995/11/01 23:17:09 bsmith Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -110,20 +110,21 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM *osm = (PC_ASM *) pc->data;
   int    i,n_local = osm->n_local,ierr,its;
+  Scalar zero = 0.0;
 
   for ( i=0; i<n_local; i++ ) {
     ierr = VecScatterBegin(x,osm->x[i],INSERT_VALUES,SCATTER_ALL,osm->scat[i]);CHKERRQ(ierr);
   }
+  ierr = VecSet(&zero,y); CHKERRQ(ierr);
   for ( i=0; i<n_local; i++ ) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,SCATTER_ALL,osm->scat[i]);CHKERRQ(ierr);
     ierr = SLESSolve(osm->sles[i],osm->x[i],osm->y[i],&its);CHKERRQ(ierr); 
+    ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,(ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),
+                           osm->scat[i]);CHKERRQ(ierr);
   }
   for ( i=0; i<n_local; i++ ) {
-    ierr = VecScatterBegin(osm->y[i],y,INSERT_VALUES,SCATTER_REVERSE,osm->scat[i]);
-           CHKERRQ(ierr);
-  }
-  for ( i=0; i<n_local; i++ ) {
-    ierr = VecScatterEnd(osm->y[i],y,INSERT_VALUES,SCATTER_REVERSE,osm->scat[i]);CHKERRQ(ierr);
+    ierr = VecScatterEnd(osm->y[i],y,ADD_VALUES,(ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),
+                         osm->scat[i]);CHKERRQ(ierr);
   }
   return 0;
 }
@@ -178,7 +179,7 @@ int PCCreate_ASM(PC pc)
 .   is - the index sets that define the subdomains for this processor
 
 @*/
-int PCASMSetSubDomains(PC pc, int n, IS *is)
+int PCASMSetSubdomains(PC pc, int n, IS *is)
 {
   PC_ASM *osm;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
@@ -187,5 +188,67 @@ int PCASMSetSubDomains(PC pc, int n, IS *is)
   osm               = (PC_ASM *) pc->data;
   osm->n_local_true = n;
   osm->is           = is;
+  return 0;
+}
+
+/*@
+     PCASMCreateSubdomains2D - Creates the index set for overlapping Schwarz 
+       preconditioner for a two dimensional problem on a regular grid.
+
+  Presently this is only good for sequential preconditioners.
+
+  Input Parameters:
+.   m, n - the number of mesh points in x and y direction
+.   M, N - the number of subdomains in the x and y direction
+.   dof - degrees of freedome per node
+.   overlap - overlap in mesh lines
+
+  Output Paramters:
+.   Nsub - the number of subdomains created
+.   is - the array of index sets defining the subdomains
+
+@*/
+int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsub,IS **is)
+{
+  int i,j, height,width,ystart,xstart,yleft,yright,xleft,xright,loc_outter;
+  int nidx,*idx,loc,ii,jj,ierr,count;
+
+  if (dof != 1) SETERRQ(PETSC_ERR_SUP,"PCASMCreateSubdomains2D");
+
+  *Nsub = N*M;
+  *is = (IS *) PetscMalloc( (*Nsub)*sizeof(IS **) ); CHKPTRQ(is);
+  ystart = 0;
+  loc_outter = 0;
+  for ( i=0; i<N; i++ ) {
+    height = n/N + ((n % N) > i); /* height of subdomain */
+    if (height < 2) SETERRA(1,"Too many M subdomains for m mesh");
+    yleft  = ystart - overlap; if (yleft < 0) yleft = 0;
+    yright = ystart + height + overlap; if (yright > n) yright = n;
+    xstart = 0;
+    for ( j=0; j<M; j++ ) {
+      width = m/M + ((m % M) > j); /* width of subdomain */
+      if (width < 2) SETERRA(1,"Too many M subdomains for m mesh");
+      xleft  = xstart - overlap; if (xleft < 0) xleft = 0;
+      xright = xstart + width + overlap; if (xright > m) xright = m;
+      /*            
+       printf("subdomain %d %d xstart %d end %d ystart %d end %d\n",i,j,xleft,xright,
+              yleft,yright);
+      */
+      nidx   = (xright - xleft)*(yright - yleft);
+      idx    = (int *) PetscMalloc( nidx*sizeof(int) ); CHKPTRQ(idx);
+      loc    = 0;
+      for ( ii=yleft; ii<yright; ii++ ) {
+        count = m*ii + xleft;
+        for ( jj=xleft; jj<xright; jj++ ) {
+          idx[loc++] = count++;
+        }
+      }
+      ierr = ISCreateSeq(MPI_COMM_SELF,nidx,idx,(*is)+loc_outter++); CHKERRQ(ierr);
+      PetscFree(idx);
+      /* ISView((*is)[loc_outter-1],0); */
+      xstart += width;
+    }
+    ystart += height;
+  }
   return 0;
 }

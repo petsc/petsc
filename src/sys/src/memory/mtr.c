@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.39 1995/10/19 22:19:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.40 1995/11/06 02:30:25 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -140,7 +140,7 @@ int TrValid(int line,char *file )
     if (head->cookie != COOKIE_VALUE) {
       if (!errs) fprintf( stderr, "called from %s line %d \n",file,line );
       fprintf( stderr, "Block at address %p is corrupted\n", head );
-      return errs;
+      SETERRQ(1,"TrValid");
     }
     a    = (char *)(((TrSPACE*)head) + 1);
     nend = (unsigned long *)(a + head->size);
@@ -149,10 +149,11 @@ int TrValid(int line,char *file )
       errs++;
       head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
       fprintf( stderr, 
-  "Block [id=%d(%lx)] at address %p is corrupted (probably write past end)\n", 
+             "Block [id=%d(%lx)] at address %p is corrupted (probably write past end)\n", 
 	     head->id, head->size, a );
       fprintf( stderr, 
 		"Block allocated in %s[%d]\n", head->fname, head->lineno );
+      SETERRQ(1,"TrValid");
     }
     head = head->next;
   }

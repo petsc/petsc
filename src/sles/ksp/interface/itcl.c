@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.41 1995/11/01 19:08:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.42 1995/11/04 23:23:14 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -60,7 +60,7 @@ int KSPSetFromOptions(KSP ctx)
   int loc[4] = {0,0,300,300},nmax = 4;
   if (OptionsGetIntArray(ctx->prefix,"-ksp_xmonitor",loc,&nmax)){
     int       ierr,rank = 0;
-    DrawLGCtx lg;
+    DrawLG lg;
     MPI_Initialized(&rank);
     if (rank) MPI_Comm_rank(ctx->comm,&rank);
     if (!rank) {

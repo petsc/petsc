@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.37 1995/11/02 04:09:28 bsmith Exp $";
+static char vcid[] = "$Id: cmesh.c,v 1.19 1995/11/02 04:10:07 bsmith Exp bsmith $";
 #endif
 
 #include "drawimpl.h"   /*I "draw.h" I*/
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: vpscat.c,v 1.37 1995/11/02 04:09:28 bsmith Exp $";
 
 .keywords: Draw, tensor, contour, vector
 @*/
-int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
+int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
 {
   int           xin = 1, yin = 1, c1, c2, c3, c4, i, N, rank, ierr;
   double        h,x1,x2,x3,x4,y1,y2,y3,y4,*v,min,max;

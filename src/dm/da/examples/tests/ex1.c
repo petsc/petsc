@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.18 1995/10/19 22:30:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.19 1995/10/24 21:54:50 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests various DA routines.\n\n";
@@ -15,7 +15,7 @@ int main(int argc,char **argv)
 {
   int      rank, M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr;
   DA       da;
-  DrawCtx  win;
+  Draw  win;
   Vec      local, global;
   Scalar   value;
 

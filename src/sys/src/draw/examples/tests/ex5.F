@@ -1,5 +1,5 @@
 
-C    "$Id: ex5.F,v 1.4 1995/09/30 19:30:41 bsmith Exp curfman $";
+C    "$Id: ex5.F,v 1.5 1995/10/10 01:22:43 curfman Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/draw.h"
@@ -7,9 +7,9 @@ C
 C  This example demonstrates basic use of the Fortran interface for
 C  Draw routines.
 C
-      DrawCtx           draw
-      DrawLGCtx         lg
-      DrawAxisCtx       axis
+      Draw              draw
+      DrawLG            lg
+      DrawAxis          axis
       integer           n,i, ierr, x, y, width, height
       double precision  xd,yd
 
@@ -28,7 +28,7 @@ C
       call DrawOpenX(MPI_COMM_SELF,' ',' ',x,y,width,height,draw,ierr)
 
       call DrawLGCreate(draw,1,lg,ierr)
-      call DrawLGGetAxisCtx(lg,axis,ierr)
+      call DrawLGGetAxis(lg,axis,ierr)
       call DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE,ierr)
       call DrawAxisSetLabels(axis,'toplabel','xlabel','ylabel',ierr)
 
@@ -39,7 +39,7 @@ C
  10   continue
 
       call DrawLGIndicateDataPoints(lg,ierr)
-      call DrawLG(lg,ierr)
+      call DrawLGDraw(lg,ierr)
       call DrawFlush(draw,ierr)
 
       call PetscSleep(10)

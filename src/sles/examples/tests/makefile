@@ -15,7 +15,7 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
                 runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex5\
                 runex8 runex8_2
 EXAMPLES_2    = ex10 ex11 ex6 ex13 ex14
-RUNEXAMPLES_2 = runex11 runex6
+RUNEXAMPLES_2 = runex11 runex6 runex6_2 runex6_3
 EXAMPLES_3    = ex7 ex12
 RUNEXAMPLES_3 = runex7
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c\
@@ -195,6 +195,23 @@ runex6:
            if (diff output/ex6_1.out ex6_1.tmp) then true; \
            else echo "Possible problem with ex6_1, diffs above"; fi; \
            $(RM) -f ex6_1.tmp
+runex6_2:
+	-@$(MPIRUN) ex6 -sub_pc_method ilu \
+           -f $(PETSC_DIR)/src/mat/examples/matrices/arco4 \
+           -ksp_gmres_restart 100 -sub_ksp_method preonly -pc_method bjacobi \
+           -pc_bjacobi_blocks 8 -sub_pc_ilu_in_place -ksp_smonitor \
+           > ex6_2.tmp 2>&1; \
+           if (diff output/ex6_2.out ex6_2.tmp) then true; \
+           else echo "Possible problem with ex6_2, diffs above"; fi; \
+           $(RM) -f ex6_2.tmp
+runex6_3:
+	-@$(MPIRUN) ex6 -pc_method ilu \
+           -f $(PETSC_DIR)/src/mat/examples/matrices/arco4 \
+           -ksp_gmres_restart 100  -ksp_smonitor  > ex6_3.tmp 2>&1; \
+           if (diff output/ex6_3.out ex6_3.tmp) then true; \
+           else echo "Possible problem with ex6_3, diffs above"; fi; \
+           $(RM) -f ex6_3.tmp
+
 runex7:
 	-@$(MPIRUN) -np 2 ex7 -ksp_smonitor > ex7_1.tmp 2>&1; \
            if (diff output/ex7_1.out ex7_1.tmp) then true; \

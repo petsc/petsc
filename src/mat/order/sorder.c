@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.14 1995/11/03 03:02:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.15 1995/11/03 03:04:44 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -34,7 +34,6 @@ int MatGetReordering_IJ(int n,int *ia,int* ja,MatOrdering type,IS *rperm, IS *cp
   ierr = ISCreateSeq(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
   ISSetPermutation(*cperm);
   PetscFree(permr); 
-
   /* 
      this is tacky: In the future when we have written special factorization
      and solve routines for the identity permutation we should use a 

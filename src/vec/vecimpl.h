@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.17 1995/10/22 04:17:00 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.18 1995/11/01 19:08:23 bsmith Exp bsmith $ */
 /* 
    This should not be included in users code.
 */
@@ -56,6 +56,15 @@ typedef struct {
 } VecScatter_Stride;
 
 /*
+   This scatter is for a global vector copied (completely) to each processor
+*/
+
+typedef struct {
+  int    *count;              /* elements of vector on each processor */
+  Scalar *work,*work2;        
+} VecScatter_MPIToAll;
+
+/*
    This is the parallel scatter
 */
 typedef struct { 
@@ -67,7 +76,7 @@ typedef struct {
   int                *procs;    /* Processors we are communicating with in scatter */
   MPI_Request        *requests;
   Scalar             *values;   /* buffer for all sends or receives */
-                               /* note that we pack/unpack ourself,do not use MPI packing */
+                                /* note that we pack/unpack ourself,do not use MPI packing */
   VecScatter_General local;     /* any part that happens to be local */
   MPI_Status         *sstatus;
 } VecScatter_MPI;

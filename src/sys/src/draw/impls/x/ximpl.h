@@ -36,7 +36,7 @@ typedef struct {
     PixVal   cmapping[256];
     int      x, y, w, h;      /* Size and location of window */
     Drawable drw;
-} DrawCtx_X;
+} Draw_X;
 
 #define XiDrawable(w) ((w)->drw ? (w)->drw : (w)->win)
 

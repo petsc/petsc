@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.69 1995/11/01 19:10:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.70 1995/11/01 23:18:56 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1079,7 +1079,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
 static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
 {
   Mat_SeqBDiag  *a = (Mat_SeqBDiag *) A->data;
-  DrawCtx draw = (DrawCtx) viewer;
+  Draw draw = (Draw) viewer;
   double  xl, yl, xr, yr, w, h;
   int     ierr, nz, *col, i, j, nr = a->m;
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.4 1995/09/30 19:31:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.18 1995/10/12 04:19:45 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
@@ -19,7 +19,7 @@ int main(int argc,char **args)
   OptionsGetInt(0,"-m",&m);
   OptionsGetInt(0,"-n",&n);
 
-  ierr = ViewerMatlabOpen("eagle",-1,&viewer); CHKERRA(ierr);
+  ierr = ViewerMatlabOpen(MPI_COMM_WORLD,"eagle",-1,&viewer); CHKERRA(ierr);
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
 
   for ( i=0; i<m; i++ ) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.24 1995/11/01 19:12:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.25 1995/11/01 23:20:55 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -150,7 +150,7 @@ int SNESSetFromOptions(SNES snes)
   }
   if (OptionsHasName(snes->prefix,"-snes_xmonitor")){
     int       rank = 0;
-    DrawLGCtx lg;
+    DrawLG lg;
     MPI_Initialized(&rank);
     if (rank) MPI_Comm_rank(snes->comm,&rank);
     if (!rank) {

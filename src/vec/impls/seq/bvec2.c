@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.52 1995/11/01 19:08:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.53 1995/11/01 23:14:37 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -84,13 +85,13 @@ static int VecView_Seq_File(Vec xin,Viewer ptr)
 }
 
 #if !defined(PETSC_COMPLEX)
-static int VecView_Seq_LG(Vec xin,DrawLGCtx lg)
+static int VecView_Seq_LG(Vec xin,DrawLG lg)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   int      i, n = x->n;
-  DrawCtx  win;
+  Draw  win;
   double   *xx;
-  DrawLGGetDrawCtx(lg,&win);
+  DrawLGGetDraw(lg,&win);
   DrawLGReset(lg);
   xx = (double *) PetscMalloc( (n+1)*sizeof(double) ); CHKPTRQ(xx);
   for ( i=0; i<n; i++ ) {
@@ -98,16 +99,16 @@ static int VecView_Seq_LG(Vec xin,DrawLGCtx lg)
   }
   DrawLGAddPoints(lg,n,&xx,&x->array);
   PetscFree(xx);
-  DrawLG(lg);
+  DrawLGDraw(lg);
   DrawSyncFlush(win);
   DrawPause(win);
   return 0;
 }
 
-static int VecView_Seq_DrawCtx(Vec xin,DrawCtx win)
+static int VecView_Seq_Draw(Vec xin,Draw win)
 {
   int       ierr;
-  DrawLGCtx lg;
+  DrawLG lg;
   ierr = DrawLGCreate(win,1,&lg); CHKERRQ(ierr);
   PLogObjectParent(win,lg);
   ierr = VecView(xin,(Viewer) lg); CHKERRQ(ierr);
@@ -156,14 +157,14 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
   }
 #if !defined(PETSC_COMPLEX)
   else if (vobj->cookie == LG_COOKIE){
-    return VecView_Seq_LG(xin,(DrawLGCtx) ptr);
+    return VecView_Seq_LG(xin,(DrawLG) ptr);
   }
   else if (vobj->cookie == DRAW_COOKIE) {
     if (vobj->type == NULLWINDOW){ 
       return 0;
     }
     else {
-      return VecView_Seq_DrawCtx(xin,(DrawCtx) ptr);
+      return VecView_Seq_Draw(xin,(Draw) ptr);
     }
   }
 #endif
@@ -227,12 +228,12 @@ static struct _VeOps DvOps = {VecDuplicate_Seq,
 .  V - the vector
 
    Notes:
-   Use VecDuplicate() or VecGetVecs() to form additional vectors of the
+   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
 
 .keywords: vector, sequential, create, BLAS
 
-.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecGetVecs()
+.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs()
 @*/
 int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
 {
