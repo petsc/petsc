@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.57 1996/01/09 03:32:09 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.58 1996/01/09 21:09:05 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -173,9 +173,12 @@ $     }
 $     PetscFinalize();
 $
 
+   Notes:  
+   Use PLogStageRegister() to register a stage.
+
 .keywords: log, push, stage
 
-.seealso: PLogStagePop()
+.seealso: PLogStagePop(), PLogStageRegister()
 @*/
 int PLogStagePush(int stage)
 {
@@ -213,9 +216,12 @@ $     [more stage 0 of code]
 $     PetscFinalize();
 $
 
+   Notes:  
+   Use PLogStageRegister() to register a stage.
+
 .keywords: log, pop, stage
 
-.seealso: PLogStagePush()
+.seealso: PLogStagePush(), PLogStageRegister()
 @*/
 int PLogStagePop()
 {
