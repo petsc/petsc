@@ -1,6 +1,12 @@
 
 This is a list of PETSc application users.
 
+PETSc use in grand challenge projects:
+ - Keyes et al.
+ - Matt Knepley's et al.
+ - Colliding black holes (based at UIUC)
+ - Joe Flarhety, Mark Shephard, et al.
+
 Argonne
   disk brake analysis
   superconductivity modeling
