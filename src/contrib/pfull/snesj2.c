@@ -1,13 +1,34 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj2.c,v 1.1 1996/08/06 21:19:43 curfman Exp curfman $";
+static char vcid[] = "$Id: snesj2.c,v 1.1 1996/08/20 23:02:41 curfman Exp curfman $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
 #include "snesimpl.h"    /*I  "snes.h"  I*/
+#include "color.h"
 
-#include "puser.h"
+/*@
+   MatCreateColoring - Creates a matrix coloring context.
 
+   Input Parameters:
+.  dim - number of rows in matrix
+.  nis - number of index sets
+.  isa - array of index sets, each specifying a set of columns
+         of the Jacobian that can be computed at one time.
+         Each column should be specified in exactly 1 index set.
+   
+   Output Parameter:
+.  color - the new coloring context
+   
+   Questions:
+     - Should the coloring be associated with a particular matrix context?
+         - maybe associated with a matrix (or several matrices) via
+           PetscObjectInherit()
+     - Should the coloring be a "real" PETSc object instead of just a
+       structure?
+
+.seealso: MatDestroyColoring()
+@*/
 int MatCreateColoring(int dim,int nis,IS *isa,Coloring **color)
 {
   Coloring *c;
@@ -21,9 +42,19 @@ int MatCreateColoring(int dim,int nis,IS *isa,Coloring **color)
   return 0;
 }
 
+/*@
+    MatDestroyColoring - Destroys a matrix coloring context that was created
+    via MatCreateColoring().
+
+    Input Paramter:
+.   c - coloring context
+
+.seealso: MatCreateColoring()
+@*/
 int MatDestroyColoring(Coloring *c)
 {
   PetscFree(c->wscale);
+  PetscFree(c);
   return 0;
 }
 
@@ -33,7 +64,7 @@ int MatDestroyColoring(Coloring *c)
 
    Input Parameters:
 .  x1 - compute Jacobian at this point
-.  ctx - application's function context, as set with SNESSetFunction()
+.  ctx - coloring context
 
    Output Parameters:
 .  J - Jacobian
@@ -53,13 +84,9 @@ int SNESSparseComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,
   MPI_Comm comm;
   int      (*eval_fct)(SNES,Vec,Vec);
   Coloring *color = (Coloring *)ctx;
-  /*  int      Xm, Ys, Xs; */
 
   wscale = color->wscale;
   scale  = color->scale;
-  /*  Xm     = color->Xm;
-      Xs     = color->Xs;
-      Ys     = color->Ys; */
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS)
     eval_fct = SNESComputeFunction;
   else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
@@ -80,7 +107,7 @@ int SNESSparseComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,
   VecGetArray(x1,&xx);
   ierr = eval_fct(snes,x1,jj1); CHKERRQ(ierr);
 
-  /* Compute Jacobian approximation, 1 column at a time. 
+  /* Compute Jacobian approximation
       x1 = current iterate, jj1 = F(x1)
       x2 = perturbed iterate, jj2 = F(x2)
    */

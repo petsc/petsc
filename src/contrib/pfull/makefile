@@ -3,7 +3,8 @@
 # Specify PETSc installation and user-defined compiler flags
 # -----------------------------------------------------------------------
 
-PETSC_DIR = /home/petsc/petsc-2.0.14
+PETSC_DIR = /tmp/petsc/
+# PETSC_DIR = /home/petsc/petsc-2.0.14
 CFLAGS    = $(CPPFLAGS) -I$(PETSC_DIR)/src/snes
 # CFLAGS    = $(CPPFLAGS)
 
@@ -30,8 +31,9 @@ ALL: pfull
 PFULL    = pfull.o pdsfi.o formjac.o
 PFULL_C  = pfull.c pdsfi.c formjac.c
 EX6      = ex6.o snesj2.o
+EX6_C    = ex6.c snesj2.c
 
-SOURCEC    = $(PFULL_C)
+SOURCEC    = $(PFULL_C) $(EX6_C)
 SOURCEF    =
 SOURCEH    = puser.h
 CLEANFILES = pfull

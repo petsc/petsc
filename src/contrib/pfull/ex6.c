@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.54 1996/07/08 22:23:15 bsmith Exp $";
+static char vcid[] = "$Id: ex6.c,v 1.1 1996/08/20 23:02:46 curfman Exp curfman $";
 #endif
 
 static char help[] =
@@ -32,8 +32,8 @@ options are:\n\
 
 #include "draw.h"
 #include "snes.h"
-#include "puser.h"
 #include "da.h"
+#include "color.h"
 #include <math.h>
 #include <stdio.h>
 
@@ -54,16 +54,19 @@ int main( int argc, char **argv )
   SNESType      method = SNES_EQ_LS;       /* nonlinear solution method */
   Vec           x, r;                      /* solution, residual vectors */
   Mat           J;                         /* Jacobian matrix */
-  AppCtx1        user;                      /* user-defined work context */
+  AppCtx1        user;                     /* user-defined work context */
+  Coloring      *coloring;                 /* coloring context */
+  int           color;                     /* flag - 1 indicates use of coloring */
+  IS            *isa;
   int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
   int           matrix_free, size, flg,m, nis, i; 
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
-  IS            *isa;
-  Coloring      *color;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
+  PetscMemzero(&user,sizeof(AppCtx1));
 
   user.mx = 4; user.my = 4; user.param = 6.0;
+  ierr = OptionsHasName(PETSC_NULL,"-color",&color); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
@@ -97,15 +100,17 @@ int main( int argc, char **argv )
      -snes_fd : default finite differencing approximation of Jacobian
   */
 
-  ierr = OptionsHasName(PETSC_NULL,"-color",&flg); CHKERRA(ierr);
-  if (flg) {
+  if (color) {
+    PetscPrintf(MPI_COMM_WORLD,"Using coloring for finite-difference Jacobian evaluation\n");
     nis = N;
     isa = (IS*)PetscMalloc(nis*sizeof(IS*)); CHKPTRQ(isa);
     for (i=0; i<nis; i++) {
-      ierr = ISCreateSeq(MPI_COMM_SELF,1,&i,&isa[i]); CHKERRQ(ierr);
+      ierr = ISCreateGeneral(MPI_COMM_SELF,1,&i,&isa[i]); CHKERRQ(ierr);
       ierr = ISView(isa[i],VIEWER_STDOUT_SELF); CHKERRQ(ierr);
     }
-    ierr = MatCreateColoring(N,nis,isa,&color); CHKERRQ(ierr);
+    ierr = MatCreateColoring(N,nis,isa,&coloring); CHKERRQ(ierr);
+  } else {
+    PetscPrintf(MPI_COMM_WORLD,"Using dense finite-difference Jacobian evaluation\n");
   }
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free); CHKERRA(ierr);
   if (!matrix_free) {
@@ -115,11 +120,10 @@ int main( int argc, char **argv )
       ierr = VecGetLocalSize(x,&m);
       ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,m,m,N,N,5,0,3,0,&J); CHKERRA(ierr);
     }
-    ierr = OptionsHasName(PETSC_NULL,"-color",&flg); CHKERRA(ierr);
-    if (flg) {
-      ierr = SNESSetJacobian(snes,J,J,SNESSparseComputeJacobian,&user); CHKERRA(ierr);
+    if (color) {
+      ierr = SNESSetJacobian(snes,J,J,SNESSparseComputeJacobian,coloring); CHKERRA(ierr);
     } else {
-      ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,&user); CHKERRA(ierr);
+      ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,0); CHKERRA(ierr);
     }
   }
 
@@ -132,6 +136,13 @@ int main( int argc, char **argv )
   /* Free data structures */
   if (!matrix_free) {
     ierr = MatDestroy(J); CHKERRA(ierr);
+  }
+  if (color) {
+    ierr = MatDestroyColoring(coloring); CHKERRA(ierr);
+    for (i=0; i<nis; i++) {
+      ierr = ISDestroy(isa[i]); CHKERRA(ierr);
+    }
+    PetscFree(isa);
   }
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(r); CHKERRA(ierr);
