@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.18 2000/08/25 16:58:08 balay Exp bsmith $*/
+/*$Id: aoptions.c,v 1.19 2000/09/02 02:47:00 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -149,6 +149,7 @@ int OptionsEnd_Private(void)
       }
       ierr   = PetscStrfree(amspub.next->text);CHKERRQ(ierr);
       ierr   = PetscStrfree(amspub.next->option);CHKERRQ(ierr);
+      ierr   = PetscFree(amspub.next->man);CHKERRQ(ierr);
       if (amspub.next->data)  {ierr = PetscFree(amspub.next->data);CHKERRQ(ierr);}
       if (amspub.next->edata) {ierr = PetscFree(amspub.next->edata);CHKERRQ(ierr);}
       last        = amspub.next;
@@ -188,8 +189,9 @@ static int OptionsCreate_Private(char *opt,char *text,char *man,OptionsAMS *amso
   ierr             = PetscStrallocpy(opt,&(*amsopt)->option);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amspub.amem,opt,&(*amsopt)->set,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   sprintf(manname,"man_%d",mancount++);
-  ierr = PetscStrallocpy(man,&(*amsopt)->man);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amspub.amem,manname,&(*amsopt)->man,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  (*amsopt)->man           = (void*) PetscMalloc(sizeof(char*));CHKPTRQ((*amsopt)->man);
+  *(char **)(*amsopt)->man = man;
+  ierr = AMS_Memory_add_field(amspub.amem,manname,(*amsopt)->man,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
   if (!amspub.next) {
     amspub.next = *amsopt;
