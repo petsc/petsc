@@ -167,7 +167,6 @@ PetscErrorCode FACreate(FA *infa)
       v1, v2, v3 represent the local vector for a single DA
   */
   Vec            vl1 = 0,vl2 = 0,vl3 = 0, vg1 = 0, vg2 = 0,vg3 = 0;
-  PetscScalar    **avl1,**avl2,**avl3;
 
   /*
      globalvec and friends represent the global vectors that are used for the PETSc solvers 
@@ -232,19 +231,16 @@ PetscErrorCode FACreate(FA *infa)
     ierr = DACreate2d(fa->comm[1],DA_XPERIODIC,DA_STENCIL_BOX,fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da2);CHKERRQ(ierr);
     ierr = DAGetLocalVector(da2,&vl2);CHKERRQ(ierr);
     ierr = DAGetGlobalVector(da2,&vg2);CHKERRQ(ierr);
-    ierr = DAVecGetArray(da2,vl2,&avl2);CHKERRQ(ierr);
   }
   if (fa->comm[2]) {
     ierr = DACreate2d(fa->comm[2],DA_NONPERIODIC,DA_STENCIL_BOX,fa->p1-fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da3);CHKERRQ(ierr);
     ierr = DAGetLocalVector(da3,&vl3);CHKERRQ(ierr);
     ierr = DAGetGlobalVector(da3,&vg3);CHKERRQ(ierr);
-    ierr = DAVecGetArray(da3,vl3,&avl3);CHKERRQ(ierr);
   }
   if (fa->comm[0]) {
     ierr = DACreate2d(fa->comm[0],DA_NONPERIODIC,DA_STENCIL_BOX,fa->p1,fa->r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da1);CHKERRQ(ierr);
     ierr = DAGetLocalVector(da1,&vl1);CHKERRQ(ierr);
     ierr = DAGetGlobalVector(da1,&vg1);CHKERRQ(ierr);
-    ierr = DAVecGetArray(da1,vl1,&avl1);CHKERRQ(ierr);
   }
 
   /* count the number of unknowns owned on each processor and determine the starting point of each processors ownership 
@@ -505,17 +501,14 @@ PetscErrorCode FACreate(FA *infa)
   ierr = VecDestroy(globalvec);CHKERRQ(ierr);
   ierr = VecDestroy(localvec);CHKERRQ(ierr);
   if (fa->comm[0]) {
-    ierr = DAVecRestoreArray(da1,vl1,&avl1);CHKERRQ(ierr);
     ierr = DARestoreLocalVector(da1,&vl1);CHKERRQ(ierr);
     ierr = DADestroy(da1);CHKERRQ(ierr);
   }
   if (fa->comm[1]) {
-    ierr = DAVecRestoreArray(da2,vl2,&avl2);CHKERRQ(ierr);
     ierr = DARestoreLocalVector(da2,&vl2);CHKERRQ(ierr);
     ierr = DADestroy(da2);CHKERRQ(ierr);
   }
   if (fa->comm[2]) {
-    ierr = DAVecRestoreArray(da3,vl3,&avl3);CHKERRQ(ierr);
     ierr = DARestoreLocalVector(da3,&vl3);CHKERRQ(ierr);
     ierr = DADestroy(da3);CHKERRQ(ierr);
   }
@@ -711,7 +704,7 @@ PetscErrorCode FATest(FA fa)
   /* fill up global vector of one region at a time with ITS logical coordinates, then update LOCAL
      vector; print local vectors to confirm they are correctly filled */
   for (j=0; j<3; j++) {
-    ierr = VecSet(&zero,g);CHKERRQ(ierr);
+    ierr = VecSet(g,zero);CHKERRQ(ierr);
     ierr = FAGetGlobalCorners(fa,j,&x,&y,&m,&n);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\nFilling global region %d, showing local results \n",j+1);CHKERRQ(ierr);
     ierr = FAGetGlobalArray(fa,g,j,&la);CHKERRQ(ierr);
