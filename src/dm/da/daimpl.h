@@ -63,6 +63,8 @@ struct _p_DA {
 
   ISLocalToGlobalMapping ltogmap,ltogmapb;   /* local to global mapping for associated vectors */
   Vec                    coordinates;        /* coordinates (x,y,x) of local nodes, not including ghosts*/
+  DA                     da_coordinates;     /* da for getting ghost values of coordinates */
+  Vec                    ghosted_coordinates;/* coordinates with ghost nodes */
   char                   **fieldname;        /* names of individual components in vectors */
 
   int                    *lx,*ly,*lz;        /* number of nodes in each partition block along 3 axis */

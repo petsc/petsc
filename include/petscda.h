@@ -132,6 +132,8 @@ EXTERN int   DAGetScatter(DA,VecScatter*,VecScatter*,VecScatter*);
 EXTERN int   DAGetAO(DA,AO*);
 EXTERN int   DASetCoordinates(DA,Vec); 
 EXTERN int   DAGetCoordinates(DA,Vec *);
+EXTERN int   DAGetGhostedCoordinates(DA,Vec *);
+EXTERN int   DAGetCoordinateDA(DA,DA *);
 EXTERN int   DASetUniformCoordinates(DA,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 EXTERN int   DASetFieldName(DA,int,const char[]);
 EXTERN int   DAGetFieldName(DA,int,char **);

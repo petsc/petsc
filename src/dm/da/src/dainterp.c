@@ -33,10 +33,10 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   int            m_ghost,*idx_c,m_ghost_c;
   int            row,col,i_start_ghost,mx,m_c,nc,ratio;
   int            i_c,i_start_c,i_start_ghost_c,cols[2],dof;
-  PetscScalar    v[2],x,*coors = 0;
+  PetscScalar    v[2],x,*coors = 0,*ccoors;
   Mat            mat;
   DAPeriodicType pt;
-  Vec            vcoors;
+  Vec            vcoors,cvcoors;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
@@ -65,8 +65,10 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   if (!DAXPeriodic(pt)){ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
+  ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
   if (vcoors) {
     ierr = VecGetArray(vcoors,&coors);CHKERRQ(ierr);
+    ierr = VecGetArray(cvcoors,&ccoors);CHKERRQ(ierr);
   }
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i=i_start; i<i_start+m_f; i++) {
@@ -83,7 +85,7 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
          in x direction; since they have no right neighbor
     */
     if (coors) {
-      x = coors[i-i_start] - coors[i_c*ratio-i_start];
+      x = (coors[i-i_start] - ccoors[i_c-i_start_ghost_c])/(ccoors[i_c+1-i_start_ghost_c] - ccoors[i_c-i_start_ghost_c]);
     } else {
       x  = ((double)(i - i_c*ratio))/((double)ratio);
     }
@@ -102,6 +104,7 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   }
   if (vcoors) {
     ierr = VecRestoreArray(vcoors,&coors);CHKERRQ(ierr);
+    ierr = VecRestoreArray(cvcoors,&ccoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
