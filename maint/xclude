@@ -1,9 +1,9 @@
 petsc/surplus
-petsc/src/pc/impls/icc
-petsc/src/mat/impls/rowbs
 petsc/src/mat/impls/bdiag/mpi
 petsc/TAGS
 petsc/maint
+petsc/docs/petsc.html
+petsc/docs/onepager.html
 petsc/lib
 petsc/wrappers
 petsc/RCS
