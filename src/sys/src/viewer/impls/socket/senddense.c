@@ -33,9 +33,14 @@ PetscErrorCode PetscViewerSocketPutScalar(PetscViewer viewer,PetscInt m,PetscInt
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
   PetscErrorCode     ierr;
+  PetscMPIInt        rank;
   int                t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(viewer->comm, &rank); CHKERRQ(ierr);
+  if (rank) {
+    SETERRQ(PETSC_ERR_ARG_WRONG, "Socket viewers may only write from process 0");
+  }
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,&m,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr); 
@@ -82,9 +87,14 @@ PetscErrorCode PetscViewerSocketPutReal(PetscViewer viewer,PetscInt m,PetscInt n
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
   PetscErrorCode     ierr;
+  PetscMPIInt        rank;
   int                t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(viewer->comm, &rank); CHKERRQ(ierr);
+  if (rank) {
+    SETERRQ(PETSC_ERR_ARG_WRONG, "Socket viewers may only write from process 0");
+  }
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,&m,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr); 
@@ -125,9 +135,14 @@ PetscErrorCode PetscViewerSocketPutInt(PetscViewer viewer,PetscInt m,PetscInt *a
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
   PetscErrorCode     ierr;
+  PetscMPIInt        rank;
   int                t = vmatlab->port,type = DENSEINT;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(viewer->comm, &rank); CHKERRQ(ierr);
+  if (rank) {
+    SETERRQ(PETSC_ERR_ARG_WRONG, "Socket viewers may only write from process 0");
+  }
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,&m,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,array,m,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
