@@ -22,20 +22,10 @@ int SLESPrintHelp(SLES sles)
   Input Parameter:
 .   sles - the linear equation solver context
 
-  Options:
-.  -slesiterative * use an iterative method
-.  -slesdirect    * use a direct solver
-
   Also takes all KSP and PC options.
 @*/
 int SLESSetFromOptions(SLES sles)
 {
-  if (OptionsHasName(0,"-slesiterative")) {
-    SLESSetSolverType(sles,SLES_ITERATIVE);
-  }
-  else if (OptionsHasName(0,"-slesdirect")) {
-    SLESSetSolverType(sles,SLES_DIRECT);
-  }
   KSPSetFromOptions(sles->ksp);
   PCSetFromOptions(sles->pc);
   return 0;
@@ -55,7 +45,7 @@ int SLESCreate(SLES *outsles)
   if (ierr = KSPCreate(&sles->ksp)) SETERR(ierr,0);
   if (ierr = PCCreate(&sles->pc)) SETERR(ierr,0);
   sles->cookie      = SLES_COOKIE;
-  sles->type        = SLES_DIRECT;
+  sles->type        = 0;
   sles->setupcalled = 0;
   *outsles = sles;
   return 0;
@@ -72,31 +62,24 @@ int SLESCreate(SLES *outsles)
 int SLESSolve(SLES sles,Vec b,Vec x)
 {
   int ierr;
-  if (sles->type == SLES_DIRECT) {
-    if (!sles->setupcalled) {
-      if (ierr = MatLUFactor(sles->mat)) SETERR(ierr,0);
-    }
-    if (ierr = MatSolve(sles->mat,b,x)) SETERR(ierr,0);
-  }
-  if (sles->type == SLES_ITERATIVE) {
-    KSP ksp; PC pc;Mat mat; int its;
-    SLESGetKSP(sles,&ksp);
-    if (ierr = SLESGetPC(sles,&pc)) SETERR(ierr,0);
-    KSPSetRhs(ksp,b);
-    KSPSetSolution(ksp,x);
-    KSPSetAmult(ksp,(int (*)(void *,Vec,Vec))MatMult,(void *)sles->mat);
-    KSPSetBinv(ksp,(int (*)(void*,Vec,Vec))PCApply,(void*)pc);
-    if (!sles->setupcalled) {
+  KSP ksp; PC pc;Mat mat; int its;
+  SLESGetKSP(sles,&ksp);
+  if (ierr = SLESGetPC(sles,&pc)) SETERR(ierr,0);
+  KSPSetRhs(ksp,b);
+  KSPSetSolution(ksp,x);
+  KSPSetAmult(ksp,(int (*)(void *,Vec,Vec))MatMult,(void *)sles->mat);
+  KSPSetBinv(ksp,(int (*)(void*,Vec,Vec))PCApply,(void*)pc);
+  if (!sles->setupcalled) {
 
       if (ierr = PCSetVector(pc,b)) SETERR(ierr,0);
       if (ierr = PCGetMatrix(pc,&mat)) SETERR(ierr,0);
       if (!mat) {if (ierr = PCSetMatrix(pc,sles->mat)) SETERR(ierr,0);}
       if (ierr = KSPSetUp(sles->ksp)) SETERR(ierr,0);
       if (ierr = PCSetUp(sles->pc)) SETERR(ierr,0);
-    }
-    KSPSolve(ksp,&its);
-printf("number of its %d\n",its);
   }
+  KSPSolve(ksp,&its);
+printf("number of its %d\n",its);
+
   sles->setupcalled = 1;
   return 0;
 }
