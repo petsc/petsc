@@ -15,6 +15,7 @@ with a user-provided preconditioner.  Input arguments are:\n\
 
 int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(SNES,Vec,Vec,void*),
+     FormInitialGuess(SNES,Vec,void*),
      MatrixFreePreconditioner(void *ctx,Vec x,Vec y);
 
 int main( int argc, char **argv )
@@ -52,7 +53,7 @@ int main( int argc, char **argv )
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  ierr = SNESSetSolution(snes,x,0,0); CHKERRA(ierr);
+  ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F,1); CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,JPrec,FormJacobian,0); CHKERRA(ierr);
 
@@ -100,6 +101,15 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
      ff[i] = -d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) - xx[i]*xx[i] + FF[i];
    }
    ff[n-1] = -xx[n-1] + 1.0;
+   return 0;
+}
+/* --------------------  Form initial approximation ----------------- */
+
+int FormInitialGuess(SNES snes,Vec x,void *dummy)
+{
+   int    ierr;
+   Scalar pfive = .50;
+   ierr = VecSet(&pfive,x); CHKERR(ierr);
    return 0;
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
