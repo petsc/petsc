@@ -131,6 +131,7 @@ class Maker:
 class BS (Maker):
   includeRE   = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
   targets     = {}
+  batchArgs   = 0
   args        = {}
   defaultArgs = {}
   directories = {}
@@ -149,7 +150,7 @@ class BS (Maker):
       self.debugPrint('Set '+key+' to '+str(argDB[key]), 3, 'argDB')
 
   def setupDefaultArgs(self):
-    self.defaultArgs['target']       = 'default'
+    self.defaultArgs['target']       = ['default']
     self.defaultArgs['TMPDIR']       = '/tmp'
     self.defaultArgs['checksumType'] = 'md5'
 
@@ -175,7 +176,10 @@ class BS (Maker):
     args = {}
     for arg in argList:
       if not arg[0] == '-':
-        args['target'] = arg
+        if args.has_key('target'):
+          args['target'].append[arg]
+        else:
+          args['target'] = [arg]
       else:
         # Could try just using eval() on val, but we would need to quote lots of stuff
         (key, val) = string.split(arg[1:], '=')
@@ -257,29 +261,40 @@ class BS (Maker):
     if not os.path.isdir(self.directories[dirname]):
       raise RuntimeError('Directory '+dirname+' ==> '+self.directories[dirname]+' does not exist')
 
+  def consistencyChecks(self):
+    if int(argDB['checkDir']): map(self.checkDirectory, self.directories.keys())
+
   def main(self):
-    map(self.checkDirectory, self.directories.keys())
+    self.consistencyChecks()
     if argDB.has_key('target'):
-      if self.targets.has_key(argDB['target']):
-        self.targets[argDB['target']].execute()
-      elif argDB['target'] == 'recalc':
-        self.calculateDependencies()
-      elif argDB['target'] == 'purge':
-        self.purge()
-      else:
-        print 'Invalid target: '+argDB['target']
+      for target in argDB['target']:
+        if self.targets.has_key(target):
+          self.targets[target].execute()
+        elif target == 'recalc':
+          self.calculateDependencies()
+        elif target == 'purge':
+          self.purge()
+        else:
+          print 'Invalid target: '+target
     if argDB.has_key('target'): del argDB['target']
     self.cleanupDir(self.tmpDir)
 
 class ArgDict (UserDict.UserDict):
+  interactive = 1
+  help        = {}
+
   def __getitem__(self, key):
-    if not self.data.has_key(key):
+    if self.interactive and not self.data.has_key(key):
       try:
+        if self.help.has_key(key): print self.help[key]
         self[key] = raw_input('Please enter value for '+key+':')
       except KeyboardInterrupt:
         print
         sys.exit('Unable to get argument \''+key+'\'')
     return self.data[key]
+
+  def setHelp(self, key, docString):
+    self.help[key] = docString
 
 class ChecksumError (RuntimeError):
   def __init__(self, value):

@@ -25,17 +25,17 @@ class CompileSIDL (compile.Process):
 
   def constructArgs(self):
     if self.outputDir:
-      self.compilerFlags += ' --output-directory='+self.outputDir
+      self.flags += ' --output-directory='+self.outputDir
     if self.repositoryDirs:
-      self.compilerFlags += ' --repository-path='
+      self.flags += ' --repository-path='
       for dir in self.repositoryDirs:
         if not os.path.exists(dir): raise RuntimeError('Invalid SIDL repository directory: '+dir)
-        self.compilerFlags += dir
-        if not dir == self.repositoryDirs[-1]: self.compilerFlags += ';'
+        self.flags += dir
+        if not dir == self.repositoryDirs[-1]: self.flags += ';'
 
   def execute(self):
     self.constructArgs()
-    compile.Process.execute(self)
+    return compile.Process.execute(self)
 
 class CompileSIDLRepository (CompileSIDL):
   def __init__(self, sources = None, compiler = 'babel', compilerFlags = ''):
@@ -49,7 +49,7 @@ class CompileSIDLServer (CompileSIDL):
 
   def constructArgs(self):
     if self.language:
-      self.compilerFlags += ' --server='+self.language
+      self.flags += ' --server='+self.language
     else:
       raise RuntimeError('No language specified for SIDL server compilation')
     CompileSIDL.constructArgs(self)
@@ -61,7 +61,7 @@ class CompileSIDLClient (CompileSIDL):
 
   def constructArgs(self):
     if self.language:
-      self.compilerFlags += ' --client='+self.language
+      self.flags += ' --client='+self.language
     else:
       raise RuntimeError('No language specified for SIDL client compilation')
     CompileSIDL.constructArgs(self)
