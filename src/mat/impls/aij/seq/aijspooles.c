@@ -29,7 +29,7 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   lu->options.pivotingflag  = SPOOLES_PIVOTING;
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
 
-  if (info && info->dtcol == 0.0) {
+  if (info->dtcol == 0.0) {
     lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
   }
  

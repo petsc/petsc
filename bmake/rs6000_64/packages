@@ -5,13 +5,15 @@
 # Important: If you use the IBM version of lapack you must include 
 #  -lessl at the end of the line defining the BLAS libraries.
 #
-BLASLAPACK_LIB  =  -L/u0/kaushik/software/fblaslapack/rs6000_64 -lflapack -lfblas
+BLASLAPACK_LIB  =  -lessl_r
+PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_ESSL_ONLY
+#-L/u0/kaushik/software/fblaslapack/rs6000_64 -lflapack -lfblas
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
-MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
+MPI_LIB        = /usr/lpp/ppe.poe/lib/libmpi_r.a
+MPI_INCLUDE    = -I/usr/lpp/ppe.poe/include
+MPIRUN         = mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
@@ -22,4 +24,20 @@ MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 X11_INCLUDE    = 
 X11_LIB        = -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+# ESSL: IBM math library -
+# The library location should be given in BLASLAPACK_LIB above
+#
+PETSC_HAVE_ESSL = -DPETSC_HAVE_ESSL
+# Location of PVODE; Alan Hindmarsh's parallel ODE solver
+#
+#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
+#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/rs6000/libpvode.a
+#PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
+#
+# Location of ParMetis
+#
+#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
+#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a
+#PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #

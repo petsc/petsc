@@ -23,7 +23,7 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *
     ierr = ISIdentity(iscol,&idn);CHKERRQ(ierr);
     if (!idn) SETERRQ(PETSC_ERR_SUP,"Only identity column permutation supported");
   }
-  if (info && info->levels != 0) {
+  if (info->levels != 0) {
     SETERRQ(PETSC_ERR_SUP,"Only ILU(0) is supported");
   }
   ierr = MatConvert(A,MATSAME,B);CHKERRQ(ierr);
@@ -52,7 +52,7 @@ int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info)
     ierr = ISIdentity(iscol,&idn);CHKERRQ(ierr);
     if (!idn) SETERRQ(PETSC_ERR_SUP,"Only identity column permutation supported");
   }
-  if (info && info->levels != 0) SETERRQ(PETSC_ERR_SUP,"Only ILU(0) is supported");
+  if (info->levels != 0) SETERRQ(PETSC_ERR_SUP,"Only ILU(0) is supported");
   ierr = MatLUFactorNumeric(A,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -113,7 +113,7 @@ int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   B->spptr                = (void*)essl;
 
   /* allocate the work arrays required by ESSL */
-  if (info) f = info->fill;
+  f = info->fill;
   essl->nz   = a->nz;
   essl->lna  = (int)a->nz*f;
   essl->naux = 100 + 10*A->m;

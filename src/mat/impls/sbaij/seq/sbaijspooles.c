@@ -7,6 +7,20 @@
 
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
 #include "src/mat/impls/aij/seq/spooles.h"
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetInertia_SeqSBAIJ_Spooles"
+int MatGetInertia_SeqSBAIJ_Spooles(Mat F,int *nneg,int *nzero,int *npos)
+{ 
+  Mat_Spooles          *lu= (Mat_Spooles*)F->spptr;
+  
+  PetscFunctionBegin;
+  *nneg  = lu->inertia.nneg;
+  *nzero = lu->inertia.nzero;
+  *npos  = lu->inertia.npos;
+  PetscFunctionReturn(0);
+}
+
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles"

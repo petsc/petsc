@@ -284,7 +284,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   ierr = PetscMalloc((n+1)*sizeof(int),&ainew);CHKERRQ(ierr);
   ainew[0] = -shift;
   /* don't know how many column pointers are needed so estimate */
-  if (info) f = info->fill; else f = 1.0;
+  f = info->fill;
   jmax  = (int)(f*ai[n]+(!shift));
   ierr = PetscMalloc((jmax)*sizeof(int),&ajnew);CHKERRQ(ierr);
   /* fill is a linked list of nonzeros in active row */
@@ -395,15 +395,8 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
-  if (info) {
-    b->lu_damp      = (PetscTruth) ((int)info->damp);
-    b->lu_damping   = info->damping;
-    b->lu_zeropivot = info->zeropivot;
-  } else {
-    b->lu_damp      = PETSC_FALSE;
-    b->lu_damping   = 0.0;
-    b->lu_zeropivot = 1.e-12;
-  }
+  b->lu_damping   = info->damping;
+  b->lu_zeropivot = info->zeropivot;
   ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
   ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol       = isicol;
@@ -441,8 +434,8 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   int          *diag_offset = b->diag,diag;
   int          *pj,ndamp = 0;
   PetscScalar  *rtmp,*v,*pc,multiplier,*pv,*rtmps;
-  PetscReal    damping = b->lu_damping, zeropivot = b->lu_zeropivot;
-  PetscTruth   damp;
+  PetscReal    damping = b->lu_damping, zeropivot = b->lu_zeropivot,rs;
+  PetscTruth   damp = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -452,7 +445,6 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   rtmps = rtmp + shift; ics = ic + shift;
 
   do {
-    damp = PETSC_FALSE;
     for (i=0; i<n; i++) {
       nz    = ai[i+1] - ai[i];
       ajtmp = aj + ai[i] + shift;
@@ -464,7 +456,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
       v        = a->a + a->i[r[i]] + shift;
       for (j=0; j<nz; j++) {
         rtmp[ics[ajtmpold[j]]] = v[j];
-        if (ajtmpold[j] == r[i]) { /* damp the diagonal of the matrix */
+        if (damp && ajtmpold[j] == r[i]) { /* damp the diagonal of the matrix */
           rtmp[ics[ajtmpold[j]]] += damping;
         }
       }
@@ -484,16 +476,20 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
         row = *ajtmp++ + shift;
       }
       /* finished row so stick it into b->a */
-      pv = b->a + ai[i] + shift;
-      pj = b->j + ai[i] + shift;
-      nz = ai[i+1] - ai[i];
-      for (j=0; j<nz; j++) {pv[j] = rtmps[pj[j]];}
+      pv   = b->a + ai[i] + shift;
+      pj   = b->j + ai[i] + shift;
+      nz   = ai[i+1] - ai[i];
       diag = diag_offset[i] - ai[i];
-      if (PetscAbsScalar(pv[diag]) < zeropivot) {
-        if (b->lu_damp) {
+      /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
+      rs   = 0.0;
+      for (j=0; j<nz; j++) {
+        pv[j] = rtmps[pj[j]];
+        if (j != diag) rs += PetscAbsScalar(pv[j]);
+      }
+      if (PetscAbsScalar(pv[diag]) < zeropivot*rs) {
+        if (damping) {
+          if (damp) damping *= 2.0;
           damp = PETSC_TRUE;
-          if (damping) damping *= 2.0;
-          else damping = 1.e-12;
           ndamp++;
           break;
         } else {
@@ -515,7 +511,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
   C->assembled = PETSC_TRUE;
   PetscLogFlops(C->n);
-  if (ndamp || b->lu_damping) {
+  if (ndamp) {
     PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of damping tries %d damping value %g\n",ndamp,damping);
   }
   PetscFunctionReturn(0);
@@ -821,15 +817,9 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
   PetscReal  f;
  
   PetscFunctionBegin;
-  if (info) {
-    f             = info->fill;
-    levels        = (int)info->levels;
-    diagonal_fill = (int)info->diagonal_fill;
-  } else {
-    f             = 1.0;
-    levels        = 0;
-    diagonal_fill = 0;
-  }
+  f             = info->fill;
+  levels        = (int)info->levels;
+  diagonal_fill = (int)info->diagonal_fill;
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
 
   /* special case that simply copies fill pattern */
@@ -846,15 +836,8 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     b->row              = isrow;
     b->col              = iscol;
     b->icol             = isicol;
-    if (info) {
-      b->lu_damp      = (PetscTruth)((int)info->damp);
-      b->lu_damping   = info->damping;
-      b->lu_zeropivot = info->zeropivot;
-    } else {
-      b->lu_damp      = PETSC_FALSE;
-      b->lu_damping   = 0.0;
-      b->lu_zeropivot = 1.e-12;
-    }
+    b->lu_damping       = info->damping;
+    b->lu_zeropivot     = info->zeropivot;
     ierr                = PetscMalloc(((*fact)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
     (*fact)->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
     ierr                = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
@@ -1026,15 +1009,8 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
      Allocate dloc, solve_work, new a, new j */
   PetscLogObjectMemory(*fact,(ainew[n]+shift-n) * (sizeof(int)+sizeof(PetscScalar)));
   b->maxnz          = b->nz = ainew[n] + shift;
-  if (info) {
-    b->lu_damp      = (PetscTruth)((int)info->damp);
-    b->lu_damping   = info->damping;
-    b->lu_zeropivot = info->zeropivot;
-  } else {
-    b->lu_damp      = PETSC_FALSE;
-    b->lu_damping   = 0.0;
-    b->lu_zeropivot = 1.e-12;
-  }
+  b->lu_damping   = info->damping;
+  b->lu_zeropivot = info->zeropivot;
   (*fact)->factor   = FACTOR_LU;
   ierr = Mat_AIJ_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
   (*fact)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */

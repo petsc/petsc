@@ -258,12 +258,7 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   ierr = ISRestoreIndices(c,&ca);CHKERRQ(ierr);
   lu->SuperluMatOdering = PETSC_FALSE;
 
-  if (info) {
-    lu->pivot_threshold = info->dtcol; 
-  } else {  
-    lu->pivot_threshold = 0.0;   /* no pivoting */
-  }
-
+  lu->pivot_threshold = info->dtcol; 
   PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SeqAIJ_SuperLU));
 
   lu->flg = DIFFERENT_NONZERO_PATTERN;
