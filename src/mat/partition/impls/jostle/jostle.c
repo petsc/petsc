@@ -204,7 +204,7 @@ int MatPartitioningJostleSetCoarseLevel(MatPartitioning part, PetscReal level)
         SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,
             "Jostle: level of coarsening out of range [0.0-1.0]");
     } else
-        jostle_struct->nbvtxcoarsed = part->adj->N * level;
+        jostle_struct->nbvtxcoarsed = (int)(part->adj->N * level);
 
     if (jostle_struct->nbvtxcoarsed < 20)
         jostle_struct->nbvtxcoarsed = 20;

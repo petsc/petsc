@@ -269,7 +269,7 @@ int MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscReal level)
         SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,
             "Party: level of coarsening out of range [0.01-1.0]");
     } else
-        party->nbvtxcoarsed = part->adj->N * level;
+        party->nbvtxcoarsed = (int)(part->adj->N * level);
 
     if (party->nbvtxcoarsed < 20)
         party->nbvtxcoarsed = 20;

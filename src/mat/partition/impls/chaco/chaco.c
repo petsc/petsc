@@ -328,7 +328,7 @@ int MatPartitioningChacoSetCoarseLevel(MatPartitioning part, PetscReal level)
         SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,
             "Chaco: level of coarsening out of range [0.01-1.0]");
     } else
-        chaco->nbvtxcoarsed = part->adj->N * level;
+        chaco->nbvtxcoarsed = (int)(part->adj->N * level);
 
     if (chaco->nbvtxcoarsed < 20)
         chaco->nbvtxcoarsed = 20;
@@ -440,13 +440,13 @@ int MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
         "Global method to use", "MatPartitioningChacoSetGlobal", global, 5,
         global[0], &i, &flag);CHKERRQ(ierr);
     if (flag)
-        ierr = MatPartitioningChacoSetGlobal(part, i);CHKERRQ(ierr);
+        ierr = MatPartitioningChacoSetGlobal(part, (MPChacoGlobalType)i);CHKERRQ(ierr);
 
     ierr = PetscOptionsEList("-mat_partitioning_chaco_local",
         "Local method to use", "MatPartitioningChacoSetLocal", local, 2,
         local[0], &i, &flag);CHKERRQ(ierr);
     if (flag)
-        ierr = MatPartitioningChacoSetLocal(part, i);CHKERRQ(ierr);
+        ierr = MatPartitioningChacoSetLocal(part, (MPChacoLocalType)i);CHKERRQ(ierr);
 
     ierr = PetscOptionsReal("-mat_partitioning_chaco_coarse_level",
         "Coarse level", "MatPartitioningChacoSetCoarseLevel", 0, &r,
@@ -458,7 +458,7 @@ int MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
         "Eigensolver to use in spectral method", "MatPartitioningChacoSetEigenSolver",
         eigen, 2, eigen[0], &i, &flag);CHKERRQ(ierr);
     if (flag)
-        ierr = MatPartitioningChacoSetEigenSolver(part, i);CHKERRQ(ierr);
+        ierr = MatPartitioningChacoSetEigenSolver(part, (MPChacoEigenType)i);CHKERRQ(ierr);
 
     ierr = PetscOptionsReal("-mat_partitioning_chaco_eigen_tol",
         "Tolerance for eigensolver", "MatPartitioningChacoSetEigenTol", 0.001, 

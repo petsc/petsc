@@ -202,7 +202,7 @@ static int MatPartitioningApply_Scotch(MatPartitioning part, IS * partitioning)
                 SETERRQ1(1, "Scotch: unable to open host list file %s", scotch->host_list);
 
             i = -1;
-            flg = 0;
+            flg = PETSC_FALSE;
             while (!feof(file2) && !flg) {
                 i++;
                 fgets(buf, 256, file2);
@@ -376,7 +376,7 @@ int MatPartitioningScotchSetCoarseLevel(MatPartitioning part, PetscReal level)
         SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,
             "Scocth: level of coarsening out of range [0.0-1.0]");
     } else
-        scotch->nbvtxcoarsed = part->adj->N * level;
+        scotch->nbvtxcoarsed = (int)(part->adj->N * level);
 
     if (scotch->nbvtxcoarsed < 20)
         scotch->nbvtxcoarsed = 20;
@@ -568,13 +568,13 @@ int MatPartitioningSetFromOptions_Scotch(MatPartitioning part)
         "Global method to use", "MatPartitioningScotchSetGlobal", global, 3,
         global[0], &i, &flag);CHKERRQ(ierr);
     if (flag)
-        ierr = MatPartitioningScotchSetGlobal(part, i);CHKERRQ(ierr);
+        ierr = MatPartitioningScotchSetGlobal(part, (MPScotchGlobalType)i);CHKERRQ(ierr);
 
     ierr = PetscOptionsEList("-mat_partitioning_scotch_local",
         "Local method to use", "MatPartitioningScotchSetLocal", local, 2,
         local[0], &i, &flag);CHKERRQ(ierr);
     if (flag)
-        ierr = MatPartitioningScotchSetLocal(part, i);CHKERRQ(ierr);
+        ierr = MatPartitioningScotchSetLocal(part, (MPScotchLocalType)i);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-mat_partitioning_scotch_mapping", "Use mapping",
         "MatPartitioningScotchSetMapping", &flag);CHKERRQ(ierr);
