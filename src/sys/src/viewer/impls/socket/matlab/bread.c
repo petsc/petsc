@@ -109,7 +109,9 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
     err = read(fd,pp,wsize);
+#if !defined(PETSC_MISSING_ERRNO_EINTR)
     if (err < 0 && errno == EINTR) continue;
+#endif
     if (!err && wsize > 0) return 1;
     if (err < 0) {
       perror("error reading");

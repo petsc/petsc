@@ -342,6 +342,13 @@ class Configure(config.base.Configure):
         self.addDefine('HAVE_NO_GETRUSAGE', 1)
     return
 
+  def configureMissingErrnos(self):
+    '''Check for missing errno values, and define MISSING_<errno value> if necessary'''
+    for errnoval in ['EINTR']:
+      if not self.checkCompile('#include <errno.h>','int i='+errnoval+';\n\nif (i);\n'):
+        self.addDefine('MISSING_ERRNO_'+errnoval, 1)
+    return
+  
   def configureFPTrap(self):
     '''Checking the handling of floating point traps'''
     if self.headers.check('sigfpe.h'):
