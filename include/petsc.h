@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.200 1998/03/20 22:54:24 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.201 1998/03/23 21:27:32 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -75,6 +75,14 @@
     Defines some elementary mathematics functions and constants.
 */
 #include "petscmath.h"
+/*
+    This shouuld be in petscmath.h?
+*/
+#if defined(HAVE_64BITS) && !defined(USE_POINTER_CONVERSION)
+#define PetscFortranAddr   long
+#else
+#define PetscFortranAddr   integer
+#endif
 
 extern MPI_Comm PETSC_COMM_WORLD;
 extern MPI_Comm PETSC_COMM_SELF;
