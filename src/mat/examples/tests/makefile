@@ -17,7 +17,7 @@ RUNEXAMPLES_1 = runex1	runex3	runex5 runex6  runex8 runex9\
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex19 ex24 ex25 ex27 ex28 ex29 \
 		ex30 ex31 ex32 ex33 ex34 ex35 ex37 ex38 ex40 ex41 ex42
 RUNEXAMPLES_2 = runex2 runex2_2 runex4 runex7 runex12 runex13 runex19 \
-		runex35 runex40 
+		runex35 runex40 runex42
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
 		ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
@@ -341,17 +341,21 @@ runex39:
 	   else echo "Possible problem with ex39_1, diffs above"; fi; \
 	   $(RM) -f ex39_1.tmp
 runex40:
-	-@$(MPIRUN)  -np 3 ex40 -f matrices/arco1 -nd 7	 -ov 2 > ex40_1.tmp 2>&1; \
-	   sort -n ex40_1.tmp > ex40_1.tmp2 ; \
-	   if (diff output/ex40_1.out ex40_1.tmp2) then true; \
+	-@$(MPIRUN) -np 3 ex40 -f matrices/arco1 -nd 7 -ov 2 | \
+	   sort -n > ex40_1.tmp 2>&1; \
+	   if (diff output/ex40_1.out ex40_1.tmp) then true; \
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
-	   $(RM) -f ex40_1.tmp ex40_1.tmp2
+	   $(RM) -f ex40_1.tmp
 runex41:
-	-@$(MPIRUN) -np 3 ex41 -f matrices/arco1 -nd 3	-ov 1 > ex41_1.tmp  2>&1; \
+	-@$(MPIRUN) -np 3 ex41 -f matrices/arco1 -nd 3 -ov 1 |
+	   sort -n > ex41_1.tmp 2>&1; \
 	   if (diff output/ex41_1.out ex41_1.tmp) then true; \
 	   else echo "Possible problem with ex41_1, diffs above"; fi; \
 	   $(RM) -f ex41_1.tmp
+runex42:
+	-@$(MPIRUN) -np 3 ex42 -f matrices/arco1 -mat_aij_oneindex 
+	   -nd 5 -ov 2 | sort -n > ex42_1.tmp 2>&1; \
+	   if (diff output/ex42_1.out ex42_1.tmp) then true; \
+	   else echo "Possible problem with ex41_1, diffs above"; fi; \
+#	   $(RM) -f ex42_1.tmp
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
-
-
-
