@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.42 1998/07/23 22:18:42 bsmith Exp balay $";
+static char vcid[] = "$Id: zvec.c,v 1.43 1998/07/27 15:20:23 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -143,15 +143,14 @@ void vecload_(Viewer *viewer,Vec *newvec, int *__ierr )
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
-void vecrestorearray_(Vec x,Scalar *fa,long *ia,int *__ierr)
+void vecrestorearray_(Vec *x,Scalar *fa,long *ia,int *__ierr)
 {
-  Vec    xin = (Vec)PetscToPointer(x);
   int    m;
   Scalar *lx;
 
-  *__ierr = VecGetLocalSize(xin,&m);if (*__ierr) return;
-  *__ierr = PetscScalarAddressFromFortran((PetscObject)xin,fa,*ia,m,&lx);if (*__ierr) return;
-  *__ierr = VecRestoreArray(xin,&lx);if (*__ierr) return;
+  *__ierr = VecGetLocalSize(*x,&m);if (*__ierr) return;
+  *__ierr = PetscScalarAddressFromFortran((PetscObject)*x,fa,*ia,m,&lx);if (*__ierr) return;
+  *__ierr = VecRestoreArray(*x,&lx);if (*__ierr) return;
 }
 
 void vecgetarray_(Vec *x,Scalar *fa,long *ia,int *__ierr)
@@ -291,9 +290,10 @@ void vecghostrestorelocalform_(Vec *g,Vec *l, int *__ierr )
   *__ierr = VecGhostRestoreLocalForm(*g,l);
 }
 
-void vecmax_(Vec x,int *p,double *val, int *__ierr ){
+void vecmax_(Vec *x,int *p,double *val, int *__ierr )
+{
   if (FORTRANNULLINTEGER(p)) p = PETSC_NULL;
-  *__ierr = VecMax((Vec)PetscToPointer( (x) ),p,val);
+  *__ierr = VecMax(*x,p,val);
 }
 
 #if defined(__cplusplus)

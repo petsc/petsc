@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zviewer.c,v 1.9 1997/07/09 20:55:52 balay Exp balay $";
+static char vcid[] = "$Id: zviewer.c,v 1.10 1998/03/30 22:23:25 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -89,10 +89,9 @@ void viewerpopformat_(Viewer v,int *__ierr)
   *__ierr = ViewerPopFormat(v);
 }
 
-void viewerdestroy_(Viewer v, int *__ierr )
+void viewerdestroy_(Viewer *v, int *__ierr )
 {
-  *__ierr = ViewerDestroy((Viewer)PetscToPointer(v));
-  PetscRmPointer(v);
+  *__ierr = ViewerDestroy(*v);
 }
 
 void viewerstringopen_(MPI_Comm *comm,CHAR name,int *len, Viewer *str,int *__ierr,int len1)
