@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.198 2000/06/01 22:26:28 bsmith Exp bsmith $ */
+/* $Id: petscmat.h,v 1.199 2000/07/13 22:21:25 balay Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -40,6 +40,7 @@ EXTERN int MatCreateSeqSBAIJ(MPI_Comm,int,int,int,int,int*,Mat*);
 EXTERN int MatCreateMPISBAIJ(MPI_Comm,int,int,int,int,int,int,int*,int,int*,Mat*);
 
 
+EXTERN int MatSetTypeFromOptions(Mat);
 EXTERN int MatDestroy(Mat);
 
 EXTERN int MatCreateShell(MPI_Comm,int,int,int,int,void *,Mat*);
@@ -516,7 +517,7 @@ EXTERN int MatCreateMAIJ(Mat,int,Mat*);
 EXTERN int MatMAIJRedimension(Mat,int,Mat*);
 EXTERN int MatMAIJGetAIJ(Mat,Mat*);
 
-EXTERN int MatSetTypeFromOptions(Mat);
+EXTERN int MatReorderingSeqSBAIJ(Mat A,IS isp);
 
 #define MATSEQMAIJ "seqmaij"
 #define MATMPIMAIJ "mpimaij"
