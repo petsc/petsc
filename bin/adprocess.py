@@ -32,6 +32,7 @@ from parseargs import *
 def setupfunctionC(filename):
         import re
         regtypedef  = re.compile('typedef [ ]*struct')
+        reginclude  = re.compile('#include [ ]*"([a-zA-Z_0-9]*.h)"')
         regdefine   = re.compile('#define')
         regdefine__ = re.compile('#define [ ]*__FUNCT__')
         regextern   = re.compile('extern')
@@ -85,6 +86,10 @@ def setupfunctionC(filename):
 		if regextern.search(line) or regEXTERN.search(line):
                         g.write(line)
 			
+		if reginclude.search(line):
+			print reginclude.find(line)
+                        g.write(line)
+
                 fl = regif.search(line)
                 if fl:
                         g.write(line)
