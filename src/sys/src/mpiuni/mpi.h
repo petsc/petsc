@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.55 1997/10/28 14:25:11 bsmith Exp bsmith $ */
+/* $Id: mpi.h,v 1.56 1997/10/29 15:32:18 bsmith Exp balay $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -29,7 +29,7 @@ extern void *MPIUNI_TMP;
 #define MPI_ERR_INTERN      21
 #define MPI_ERR_OTHER        1
 #define MPI_TAG_UB           0
-
+#define MPI_ERRORS_RETURN    0
 
 /* External types */
 typedef long    MPI_Comm;   /* On Dec alpha sizeof(long) = size of( pointer) */      
