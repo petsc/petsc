@@ -1,4 +1,4 @@
-/* $Id: petscsnes.h,v 1.103 2000/08/01 20:58:40 bsmith Exp bsmith $ */
+/* $Id: petscsnes.h,v 1.104 2000/08/17 04:53:46 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -45,7 +45,6 @@ EXTERN int SNESGetSLES(SNES,SLES*);
 EXTERN int SNESGetSolution(SNES,Vec*);
 EXTERN int SNESGetSolutionUpdate(SNES,Vec*);
 EXTERN int SNESGetFunction(SNES,Vec*,void**,int(**)(SNES,Vec,Vec,void*));
-EXTERN int SNESPrintHelp(SNES);
 EXTERN int SNESView(SNES,Viewer);
 
 EXTERN int SNESSetOptionsPrefix(SNES,char*);
@@ -53,7 +52,6 @@ EXTERN int SNESAppendOptionsPrefix(SNES,char*);
 EXTERN int SNESGetOptionsPrefix(SNES,char**);
 EXTERN int SNESSetFromOptions(SNES);
 EXTERN int SNESSetTypeFromOptions(SNES);
-EXTERN int SNESAddOptionsChecker(int (*)(SNES));
 
 #define MATSNESMF_DEFAULT "default"
 #define MATSNESMF_WP      "wp"

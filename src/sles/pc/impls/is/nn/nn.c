@@ -1,3 +1,5 @@
+/*$Id: is.c,v 1.7 2000/08/18 19:38:31 bsmith Exp $*/
+
 #include "src/sles/pc/impls/is/nn/nn.h"
 
 /* -------------------------------------------------------------------------- */
@@ -18,9 +20,7 @@
 #define __FUNC__ /*<a name=""></a>*/"PCSetUp_NN"
 static int PCSetUp_NN(PC pc)
 {
-  PC_NN  *pcnn  = (PC_NN*)pc->data;
-  Mat_IS *matnn = (Mat_IS*)pc->mat->data; 
-  int    i,ierr;
+  int ierr;
   
   PetscFunctionBegin;
 
@@ -53,7 +53,7 @@ static int PCApply_NN(PC pc,Vec r,Vec z)
 {
   PC_IS *pcis = (PC_IS*)(pc->data);
   int ierr,its;
-  Scalar m_one = -1.0, zero = 0.0;
+  Scalar m_one = -1.0;
   Vec w = pcis->vec1_global;
 
   PetscFunctionBegin;
@@ -68,7 +68,7 @@ static int PCApply_NN(PC pc,Vec r,Vec z)
   ierr = SLESSolve(pcis->sles_D,pcis->vec1_D,pcis->vec2_D,&its);CHKERRQ(ierr);
   
   /*
-    Computing $ r_B - \sum_j \tilde R_j^T A_{BI}^{(j)} ( B_I^{(j)}r_I^{(j)} ) $ .
+    Computing $ r_B - \sum_j \tilde R_j^T A_{BI}^{(j)} (B_I^{(j)}r_I^{(j)}) $ .
     Storing the result in the interface portion of the global vector w.
   */
   ierr = MatMult(pcis->A_BI,pcis->vec2_D,pcis->vec1_B);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ static int PCDestroy_NN(PC pc)
   if (pcnn->coarse_b)    {ierr = VecDestroy(pcnn->coarse_b);CHKERRQ(ierr);}
   if (pcnn->sles_coarse) {ierr = SLESDestroy(pcnn->sles_coarse);CHKERRQ(ierr);}
   if (pcnn->DZ_IN) {
-    if (pcnn->DZ_IN[0]) {ierr = PetscFree(pcnn->DZ_IN[0] );CHKERRQ(ierr);}
+    if (pcnn->DZ_IN[0]) {ierr = PetscFree(pcnn->DZ_IN[0]);CHKERRQ(ierr);}
     ierr = PetscFree(pcnn->DZ_IN);CHKERRQ(ierr);
   }
 
@@ -222,8 +222,6 @@ int PCNNCreateCoarseMatrix (PC pc)
   /* aliasing some names */
   PC_IS*  pcis     = (PC_IS*)(pc->data);
   PC_NN*       pcnn     = (PC_NN*)pc->data;
-  int          n        = pcis->n;
-  int          n_B      = pcis->n_B;
   int          n_neigh  = pcis->n_neigh;
   int*         neigh    = pcis->neigh;
   int*         n_shared = pcis->n_shared;
@@ -233,7 +231,7 @@ int PCNNCreateCoarseMatrix (PC pc)
   PetscFunctionBegin;
 
   /* Allocate memory for mat (the +1 is to handle the case n_neigh equal to zero) */
-  mat = (Scalar*) PetscMalloc((n_neigh*n_neigh+1)*sizeof(Scalar)); CHKPTRQ(mat);
+  mat = (Scalar*) PetscMalloc((n_neigh*n_neigh+1)*sizeof(Scalar));CHKPTRQ(mat);
 
   /* Allocate memory for DZ */
   /* Notice that DZ_OUT[0] is allocated some space that is never used. */
@@ -245,7 +243,7 @@ int PCNNCreateCoarseMatrix (PC pc)
     for (i=0; i<n_neigh; i++) {
       size_of_Z += n_shared[i];
     }
-    DZ_IN[0]  = (Scalar*) PetscMalloc ((size_of_Z+1)*sizeof(Scalar));CHKPTRQ(DZ_IN[0] );
+    DZ_IN[0]  = (Scalar*) PetscMalloc ((size_of_Z+1)*sizeof(Scalar));CHKPTRQ(DZ_IN[0]);
     DZ_OUT[0] = (Scalar*) PetscMalloc ((size_of_Z+1)*sizeof(Scalar));CHKPTRQ(DZ_OUT[0]);
   }
   for (i=1; i<n_neigh; i++) {
@@ -314,7 +312,7 @@ int PCNNCreateCoarseMatrix (PC pc)
 
   /* Complete the sending. */
   if (n_neigh>1) {
-    MPI_Status *stat = (MPI_Status*) PetscMalloc((n_neigh-1)*sizeof(MPI_Status)); CHKPTRQ(stat);
+    MPI_Status *stat = (MPI_Status*) PetscMalloc((n_neigh-1)*sizeof(MPI_Status));CHKPTRQ(stat);
     ierr = MPI_Waitall(n_neigh-1,&(send_request[1]),stat);CHKERRQ(ierr);
     ierr = PetscFree(stat);CHKERRQ(ierr);
   }
@@ -466,7 +464,6 @@ int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, Scalar* work_N, Vec v
   int ierr;
 
   PC_IS*  pcis = (PC_IS*)(pc->data);
-  PC_NN*       pcnn = (PC_NN*     )(pc->data);
 
   PetscFunctionBegin;
 
@@ -541,10 +538,9 @@ int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, Scalar* work_N, Vec v
 int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B,
                    Vec vec1_D, Vec vec2_D, Scalar *work_N)
 {
-  int         i, k, ierr, its;
+  int         k, ierr, its;
   Scalar      zero     =  0.0;
   Scalar      m_one    = -1.0;
-  PetscTruth  flg;
   Scalar      value;
   Scalar*     lambda;
   PC_NN*      pcnn     = (PC_NN*)(pc->data);
@@ -653,7 +649,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
         ierr = VecScatterEnd  (pcnn->D,counter,ADD_VALUES,SCATTER_REVERSE,pcnn->global_to_B);CHKERRQ(ierr);
         ierr = VecScatterBegin(counter,pcnn->D,INSERT_VALUES,SCATTER_FORWARD,pcnn->global_to_B);CHKERRQ(ierr);
         ierr = VecScatterEnd  (counter,pcnn->D,INSERT_VALUES,SCATTER_FORWARD,pcnn->global_to_B);CHKERRQ(ierr);
-        ierr = VecDestroy(counter); CHKERRQ(ierr);
+        ierr = VecDestroy(counter);CHKERRQ(ierr);
         if (pcnn->pure_neumann) {
           ierr = VecReciprocal(pcnn->D);CHKERRQ(ierr);
         } else {

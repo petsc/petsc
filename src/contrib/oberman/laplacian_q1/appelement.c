@@ -1,4 +1,4 @@
-/*$Id: appelement.c,v 1.1 2000/01/17 00:18:05 bsmith Exp bsmith $*/
+/*$Id: appelement.c,v 1.2 2000/02/02 21:21:08 bsmith Exp $*/
 #include "appctx.h"
 
 /*
@@ -11,31 +11,37 @@
    element.
 */
 
-static double InterpolatingFunctionsElement(int partial,int node,double xi,double eta)
-{
 
+#undef __FUNC__
+#define __FUNC__ "InterpolatingFunctionsElement"
+static int InterpolatingFunctionsElement(int partial,int node,double xi,double eta, double *value)
+{
   /* 4 node bilinear interpolation functions */
-  if (partial == 0){
-    if(node == 0){return 0.25 *(1-xi)*          (1-eta)         ;}
-    if(node == 1){return 0.25 *         (1+xi)*(1-eta)         ;}
-    if(node == 2){return 0.25 *         (1+xi)         *(1+eta);}
-    if(node == 3){return 0.25 *(1-xi)*                   (1+eta);}
+  PetscFunctionBegin;
+  switch (partial) {
+  case 0:  /*  function itself  */
+    switch (node) {
+    case 0: *value = 0.25 * (1-xi) *          (1-eta)          ; break;
+    case 1: *value = 0.25 *          (1+xi) * (1-eta)          ; break;
+    case 2: *value = 0.25 *          (1+xi) *           (1+eta); break;
+    case 3: *value = 0.25 * (1-xi) *                    (1+eta); break;
+    } break;
+  case 1:  /*  d() / d(xi)  */
+    switch (node) {
+    case 0: *value = 0.25 * (  -1) *          (1-eta)          ; break;
+    case 1: *value = 0.25 *          (  1) *  (1-eta)          ; break;
+    case 2: *value = 0.25 *          (  1) *            (1+eta); break;
+    case 3: *value = 0.25 * (  -1) *                    (1+eta); break;
+    } break;
+  case 2:  /*  d() / d(eta)  */
+    switch (node) {
+    case 0: *value = 0.25 * (1-xi) *          (   -1)          ; break;
+    case 1: *value = 0.25 *          (1+xi) * (   -1)          ; break;
+    case 2: *value = 0.25 *          (1+xi) *           (    1); break;
+    case 3: *value = 0.25 * (1-xi) *                    (    1); break;
+    } break;
   }
-  /*d/dxi */
-  if (partial == 1){
-    if(node == 0){return 0.25 *(-1)*          (1-eta)         ;}
-    if(node == 1){return 0.25 *                 1*(1-eta)         ;}
-    if(node == 2){return 0.25 *                 1         *(1+eta);}
-    if(node == 3){return 0.25 *(-1)*                   (1+eta);}
-  }
-  /*d/deta*/
-  if (partial == 2){
-    if(node == 0){return 0.25 *(1-xi)*          (-1)         ;}
-    if(node == 1){return 0.25 *         (1+xi)*(-1)         ;}
-    if(node == 2){return 0.25 *         (1+xi)         *(1);}
-    if(node == 3){return 0.25 *(1-xi)*                   (1);}
-  }
-  return 0.0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__
@@ -73,9 +79,9 @@ int SetReferenceElement(AppCtx* appctx)
      i.e., the values of the basis functions at the Gauss points  */
   for(i=0;i<bn;i++){  /* loop over functions*/
     for(j=0;j<qn;j++){/* loop over Gauss points */
-      appctx->element.RefVal[i][j] =  InterpolatingFunctionsElement(0,i,gx[j],gy[j]);
-      appctx->element.RefDx[i][j]  =  InterpolatingFunctionsElement(1,i,gx[j],gy[j]);
-      appctx->element.RefDy[i][j]  =  InterpolatingFunctionsElement(2,i,gx[j],gy[j]);
+      InterpolatingFunctionsElement(0,i,gx[j],gy[j],&(appctx->element.RefVal[i][j]));
+      InterpolatingFunctionsElement(1,i,gx[j],gy[j],&(appctx->element.RefDx[i][j]));
+      InterpolatingFunctionsElement(2,i,gx[j],gy[j],&(appctx->element.RefDy[i][j]));
     }
   }
   PetscFunctionReturn(0);
@@ -213,7 +219,3 @@ int ComputeStiffnessElement(AppElement *phi)
   }
   PetscFunctionReturn(0);
 }
-
-
-
-

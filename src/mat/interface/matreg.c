@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.4 2000/07/10 03:39:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matreg.c,v 1.5 2000/08/17 04:51:22 bsmith Exp bsmith $";
 #endif
 /*
      Mechanism for register PETSc matrix types
@@ -131,8 +131,7 @@ int MATGetType(Mat mat,MATType *type)
 
 .keywords: Mat, set, from, options, database
 
-.seealso: MatPrintHelp(), MatSetFromOptions(), SLESSetFromOptions(),
-          SLESSetTypeFromOptions()
+.seealso: MatPrintHelp(), MatSetFromOptions(), SLESSetFromOptions()
 @*/
 int MatSetTypeFromOptions(Mat mat)
 {

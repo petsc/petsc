@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.5 2000/01/16 02:37:09 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.6 2000/01/16 03:29:05 bsmith Exp $*/
 static char help[] =
 "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
@@ -12,16 +12,29 @@ static char help[] =
 */
 #include "appctx.h"
 
+EXTERN_C_BEGIN
+extern int PCCreate_NN (PC);
+extern int MatPartitioningCreate_Square (MatPartitioning);
+EXTERN_C_END
+
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int            ierr;
+  int            ierr,its,rank;
   AppCtx         *appctx;     /* contains all the data used by this PDE solver */
 
   /* ---------------------------------------------------------------------
      Initialize PETSc
-     ----------------- ---------------------------------------------------*/
-  PetscInitialize(&argc,&argv,(char *)0,help);
+     --------------------------------------------------------------------- */
 
+  PetscFunctionBegin;
+
+  PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  PCRegisterDynamic("nn",PETSC_NULL,"PCCreate_NN",PCCreate_NN);
+  MatPartitioningRegisterDynamic("square",PETSC_NULL,"MatPartitioningCreate_Square",MatPartitioningCreate_Square);
+                                                      
   /*  Load the grid database -- in appload.c              */
   ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx);CHKERRA(ierr);
 
@@ -29,7 +42,7 @@ int main(int argc,char **argv)
   ierr = AppCtxGraphics(appctx);CHKERRA(ierr);
  
   /*   Setup the linear system and solve it -- in appalgebra.c */
-  ierr = AppCtxSolve(appctx);CHKERRA(ierr);
+  ierr = AppCtxSolve(appctx,&its);CHKERRA(ierr);
 
   /*   Send solution to  matlab viewer -- in appview.c */
   if (appctx->view.show_solution) {
@@ -41,7 +54,10 @@ int main(int argc,char **argv)
 
   /* Close down PETSc and stop the program */
   PetscFinalize();
-  return 0;
+
+  if (!rank) { printf("\n\nNumber of Iterations: %d\n\n",its); }
+
+  PetscFunctionReturn(0);
 }
 
 

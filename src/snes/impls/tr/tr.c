@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.116 2000/04/18 23:07:54 bsmith Exp balay $*/
+/*$Id: tr.c,v 1.117 2000/05/05 22:18:21 balay Exp bsmith $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
@@ -229,45 +229,19 @@ static int SNESDestroy_EQ_TR(SNES snes)
 static int SNESSetFromOptions_EQ_TR(SNES snes)
 {
   SNES_EQ_TR *ctx = (SNES_EQ_TR *)snes->data;
-  double     tmp;
   int        ierr;
-  PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_mu",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->mu = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_eta",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->eta = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_sigma",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->sigma = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta0",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->delta0 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta1",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->delta1 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta2",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->delta2 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta3",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->delta3 = tmp;}
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESPrintHelp_EQ_TR"
-static int SNESPrintHelp_EQ_TR(SNES snes,char *p)
-{
-  SNES_EQ_TR *ctx = (SNES_EQ_TR *)snes->data;
-  int        ierr;
-  MPI_Comm   comm = snes->comm;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(comm," method SNESEQTR (tr) for systems of nonlinear equations:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_mu <mu> (default %g)\n",p,ctx->mu);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_eta <eta> (default %g)\n",p,ctx->eta);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_sigma <sigma> (default %g)\n",p,ctx->sigma);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_delta0 <delta0> (default %g)\n",p,ctx->delta0);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_delta1 <delta1> (default %g)\n",p,ctx->delta1);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_delta2 <delta2> (default %g)\n",p,ctx->delta2);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"   %ssnes_eq_tr_delta3 <delta3> (default %g)\n",p,ctx->delta3);CHKERRQ(ierr);
+  ierr = OptionsBegin(snes->comm,snes->prefix,"SNES trust region options for nonlinear equations");CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_eq_tr_mu","mu","None",ctx->mu,&ctx->mu,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_eq_tr_eta","eta","None",ctx->eta,&ctx->eta,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_eq_tr_sigma","sigma","None",ctx->sigma,&ctx->sigma,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_eq_tr_delta0","delta0","None",ctx->delta0,&ctx->delta0,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_eq_tr_delta1","delta1","None",ctx->delta1,&ctx->delta1,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_eq_tr_delta2","delta2","None",ctx->delta2,&ctx->delta2,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_eq_tr_delta3","delta3","None",ctx->delta3,&ctx->delta3,0);CHKERRQ(ierr);
+  ierr = OptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -376,7 +350,6 @@ int SNESCreate_EQ_TR(SNES snes)
   snes->solve		= SNESSolve_EQ_TR;
   snes->destroy		= SNESDestroy_EQ_TR;
   snes->converged	= SNESConverged_EQ_TR;
-  snes->printhelp       = SNESPrintHelp_EQ_TR;
   snes->setfromoptions  = SNESSetFromOptions_EQ_TR;
   snes->view            = SNESView_EQ_TR;
   snes->nwork           = 0;

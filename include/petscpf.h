@@ -1,4 +1,4 @@
-/* $Id: petscpf.h,v 1.6 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petscpf.h,v 1.7 2000/08/01 20:58:40 bsmith Exp bsmith $ */
 
 /*
       mathematical function module. 
@@ -51,7 +51,6 @@ EXTERN int PFSetTypeFromOptions(PF);
 EXTERN int PFGetType(PF,PFType*);
 
 EXTERN int PFView(PF,Viewer);
-EXTERN int PFPrintHelp(PF);
 
 #define PFSetOptionsPrefix(a,s) PetscObjectSetOptionsPrefix((PetscObject)(a),s)
 #endif

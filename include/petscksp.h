@@ -1,4 +1,4 @@
-/* $Id: petscksp.h,v 1.92 2000/08/01 20:58:40 bsmith Exp balay $ */
+/* $Id: petscksp.h,v 1.93 2000/08/18 20:03:00 balay Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -113,8 +113,6 @@ EXTERN int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
 EXTERN int KSPUnwindPreconditioner(KSP,Vec,Vec);
 EXTERN int KSPDefaultBuildSolution(KSP,Vec,Vec*);
 EXTERN int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
-
-EXTERN int KSPPrintHelp(KSP);
 
 EXTERN int KSPSetOptionsPrefix(KSP,char*);
 EXTERN int KSPAppendOptionsPrefix(KSP,char*);

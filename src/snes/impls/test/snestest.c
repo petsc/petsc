@@ -1,4 +1,4 @@
-/*$Id: snestest.c,v 1.49 2000/04/12 04:25:35 bsmith Exp bsmith $*/
+/*$Id: snestest.c,v 1.50 2000/08/14 20:02:01 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 
@@ -71,30 +71,17 @@ int SNESDestroy_Test(SNES snes)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESPrintHelp_Test"
-static int SNESPrintHelp_Test(SNES snes,char *p)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(snes->comm,"Test code to compute Jacobian\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"-snes_test_display - display difference between\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"SNESSetFromOptions_Test"
 static int SNESSetFromOptions_Test(SNES snes)
 {
   SNES_Test  *ls = (SNES_Test *)snes->data;
   int        ierr;
-  PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(PETSC_NULL,"-snes_test_display",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ls->complete_print = PETSC_TRUE;
-  }
+
+  ierr = OptionsBegin(snes->comm,snes->prefix,"Hand-coded Jacobian tester");CHKERRQ(ierr);
+    ierr = OptionsName("-snes_test_display","Display difference between approximate and handcoded Jacobian","None",&ls->complete_print);CHKERRQ(ierr);
+  ierr = OptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -114,7 +101,6 @@ int SNESCreate_Test(SNES  snes)
   snes->solve		= SNESSolve_Test;
   snes->destroy		= SNESDestroy_Test;
   snes->converged	= SNESConverged_EQ_LS;
-  snes->printhelp       = SNESPrintHelp_Test;
   snes->setfromoptions  = SNESSetFromOptions_Test;
 
   neP			= PetscNew(SNES_Test);CHKPTRQ(neP);

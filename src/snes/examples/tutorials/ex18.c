@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.2 2000/07/13 02:54:35 bsmith Exp bsmith $ */
+/* $Id: ex18.c,v 1.3 2000/08/01 20:57:32 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -26,7 +26,7 @@ options are:\n\
    Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
    Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
    Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetISLocalToGlobalMapping();
-   Routines: DAMGCreate(); DAMGDestroy(); DAMGSetCoarseDA(); DAMGSetSNES();
+   Routines: DAMGCreate(); DAMGDestroy();  DAMGSetSNES();
    Routines: PreLoadBegin(); PreLoadEnd();
    Processors: n
 T*/

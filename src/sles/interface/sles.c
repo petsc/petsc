@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.138 2000/05/05 22:16:56 balay Exp bsmith $*/
+/*$Id: sles.c,v 1.139 2000/07/10 03:40:08 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
@@ -95,7 +95,6 @@ int SLESPrintHelp(SLES sles)
   ierr = (*PetscHelpPrintf)(sles->comm," %ssles_view: view SLES info after each linear solve\n",prefix);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(sles->comm," %ssles_diagonal_scale: diagonally scale matrix before solving\n",prefix);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(sles->comm," %ssles_diagonal_scale_fix: fixes diagonally scale matrix after solve\n",prefix);CHKERRQ(ierr);
-  ierr = KSPPrintHelp(sles->ksp);CHKERRQ(ierr);
   ierr = PCPrintHelp(sles->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -217,35 +216,6 @@ int SLESGetOptionsPrefix(SLES sles,char **prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESSetTypesFromOptions"
-/*@
-   SLESSetTypesFromOptions - Sets KSP and PC types from options database, sets defaults
-        if not given.
-
-   Collective on SLES
-
-   Input Parameter:
-.  sles - the SLES context
-
-   Level: beginner
-
-.keywords: SLES, set, options, database
-
-.seealso: SLESPrintHelp(), SLESSetFromOptions(), KSPSetTypeFromOptions(),
-          PCSetTypeFromOptions(), SLESGetPC(), SLESGetKSP()
-@*/
-int SLESSetTypesFromOptions(SLES sles)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = KSPSetTypeFromOptions(sles->ksp);CHKERRQ(ierr);
-  ierr = PCSetTypeFromOptions(sles->pc);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"SLESSetFromOptions"
 /*@
    SLESSetFromOptions - Sets various SLES parameters from user options.
@@ -270,17 +240,19 @@ int SLESSetFromOptions(SLES sles)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
+  ierr = OptionsBegin(sles->comm,sles->prefix,"Linear solver (SLES) options");CHKERRQ(ierr);
+    ierr = OptionsName("-sles_diagonal_scale","Diagonal scale matrix before building preconditioner","SLESSetDiagonalScale",&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = SLESSetDiagonalScale(sles,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    ierr = OptionsName("-sles_diagonal_scale_fix","Fix diagonaled scaled matrix after solve","SLESSetDiagonalScaleFix",&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = SLESSetDiagonalScaleFix(sles);CHKERRQ(ierr);
+    }
+  ierr = OptionsEnd();CHKERRQ(ierr);
   ierr = KSPSetPC(sles->ksp,sles->pc);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(sles->ksp);CHKERRQ(ierr);
   ierr = PCSetFromOptions(sles->pc);CHKERRQ(ierr);
-  ierr = OptionsHasName(sles->prefix,"-sles_diagonal_scale",&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = SLESSetDiagonalScale(sles,PETSC_TRUE);CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(sles->prefix,"-sles_diagonal_scale_fix",&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = SLESSetDiagonalScaleFix(sles);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.14 2000/08/23 17:11:02 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.15 2000/08/23 18:01:27 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -20,32 +20,32 @@
 
     Eventually we'll attach this beast to a MPI_Comm
 */
-typedef enum {PETSC_OPTION_INT,PETSC_OPTION_LOGICAL,PETSC_OPTION_DOUBLE,PETSC_OPTION_LIST,
-              PETSC_OPTION_STRING} PetscOptionType;
-typedef struct _p_PetscOptionsAMS* PetscOptionsAMS;
-struct _p_PetscOptionsAMS {
-  char            *option;
-  char            *text;
-  void            *data;
-  void            *edata;
-  PetscTruth      set;
-  PetscOptionType type;
-  PetscOptionsAMS next;
-  char            manname[16],man[128];
+typedef enum {OPTION_INT,OPTION_LOGICAL,OPTION_DOUBLE,OPTION_LIST,OPTION_STRING} OptionType;
+typedef struct _p_OptionsAMS* OptionsAMS;
+struct _p_OptionsAMS {
+  char       *option;
+  char       *text;
+  void       *data;
+  void       *edata;
+  PetscTruth set;
+  OptionType type;
+  OptionsAMS next;
+  char       *man;
 };
 #endif
 
 typedef struct {
 #if defined(PETSC_HAVE_AMS)
-  AMS_Memory      amem;
-  PetscOptionsAMS next;
+  AMS_Memory amem;
+  OptionsAMS next;
 #endif
-  char            *prefix;
-  char            *title;
-  MPI_Comm        comm;
-} PetscOptionsPublish;
-static PetscOptionsPublish amspub;
-int PetscOptionsPublishCount;
+  char       *prefix;
+  char       *title;
+  MPI_Comm   comm;
+  PetscTruth printhelp;
+} OptionsPublishObject;
+static OptionsPublishObject amspub;
+int OptionsPublishCount;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"OptionsBegin_Private"
@@ -57,9 +57,13 @@ int OptionsBegin_Private(MPI_Comm comm,char *prefix,char *title)
   ierr = PetscStrallocpy(prefix,&amspub.prefix);CHKERRQ(ierr);
   ierr = PetscStrallocpy(prefix,&amspub.title);CHKERRQ(ierr);
   amspub.comm = comm;
-
+  ierr = OptionsHasName(PETSC_NULL,"-help",&amspub.printhelp);CHKERRQ(ierr);
+  if (amspub.printhelp && OptionsPublishCount) {
+    ierr = (*PetscHelpPrintf)(comm,"%s -------------------------------------------------\n",title);CHKERRQ(ierr);
+  }
+ 
 #if defined(PETSC_HAVE_AMS)
-  if (!PetscOptionsPublishCount) {
+  if (!OptionsPublishCount) {
     AMS_Comm   acomm;
     static int count = 0;
     char       options[16];
@@ -81,8 +85,8 @@ int OptionsEnd_Private(void)
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
-  if (!PetscOptionsPublishCount) {
-    PetscOptionsAMS last;
+  if (!OptionsPublishCount) {
+    OptionsAMS last;
     char            option[256],value[256];
     if (amspub.amem < 0) SETERRQ(1,1,"Called without a call to OptionsBegin()");
     ierr = AMS_Memory_publish(amspub.amem);CHKERRQ(ierr);
@@ -105,19 +109,19 @@ int OptionsEnd_Private(void)
         }
 
         switch (amspub.next->type) {
-          case PETSC_OPTION_INT: 
+          case OPTION_INT: 
             sprintf(value,"%d",*(int*)amspub.next->data);
             break;
-          case PETSC_OPTION_DOUBLE:
+          case OPTION_DOUBLE:
             sprintf(value,"%g",*(double*)amspub.next->data);
             break;
-          case PETSC_OPTION_LOGICAL:
+          case OPTION_LOGICAL:
             sprintf(value,"%d",*(int*)amspub.next->data);
             break;
-          case PETSC_OPTION_LIST:
+          case OPTION_LIST:
             ierr = PetscStrcpy(value,*(char**)amspub.next->data);CHKERRQ(ierr);
             break;
-          case PETSC_OPTION_STRING:
+          case OPTION_STRING:
             ierr = PetscStrcpy(value,*(char**)amspub.next->data);CHKERRQ(ierr);
             break;
         }
@@ -147,14 +151,15 @@ int OptionsEnd_Private(void)
 */
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"OptionsCreate_Private"
-static int OptionsCreate_Private(char *opt,char *text,char *man,PetscOptionsAMS *amsopt)
+static int OptionsCreate_Private(char *opt,char *text,char *man,OptionsAMS *amsopt)
 {
   int             ierr;
   static int      mancount = 0;
-  PetscOptionsAMS next;
+  OptionsAMS next;
+  char            manname[16];
 
   PetscFunctionBegin;
-  *amsopt          = PetscNew(struct _p_PetscOptionsAMS);CHKPTRQ(amsopt);
+  *amsopt          = PetscNew(struct _p_OptionsAMS);CHKPTRQ(amsopt);
   (*amsopt)->next  = 0;
   (*amsopt)->set   = PETSC_FALSE;
   (*amsopt)->data  = 0;
@@ -162,9 +167,9 @@ static int OptionsCreate_Private(char *opt,char *text,char *man,PetscOptionsAMS 
   ierr             = PetscStrallocpy(text,&(*amsopt)->text);CHKERRQ(ierr);
   ierr             = PetscStrallocpy(opt,&(*amsopt)->option);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amspub.amem,opt,&(*amsopt)->set,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  sprintf((*amsopt)->manname,"man_%d",mancount++);
-  ierr = PetscStrcpy((*amsopt)->man,man);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amspub.amem,(*amsopt)->manname,&(*amsopt)->man,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  sprintf(manname,"man_%d",mancount++);
+  ierr = PetscStrallocpy(man,&(*amsopt)->man);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amspub.amem,manname,&(*amsopt)->man,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
   if (!amspub.next) {
     amspub.next = *amsopt;
@@ -190,10 +195,10 @@ int OptionsInt(char *opt,char *text,char *man,int defaultv,int *value,PetscTruth
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
-  if (!PetscOptionsPublishCount) {
-    PetscOptionsAMS amsopt;
+  if (!OptionsPublishCount) {
+    OptionsAMS amsopt;
     ierr = OptionsCreate_Private(opt,text,man,&amsopt);CHKERRQ(ierr);
-    amsopt->type        = PETSC_OPTION_INT;
+    amsopt->type        = OPTION_INT;
     amsopt->data        = (void *)PetscMalloc(sizeof(int));CHKERRQ(ierr);
     *(int*)amsopt->data = defaultv;
     ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
@@ -202,6 +207,35 @@ int OptionsInt(char *opt,char *text,char *man,int defaultv,int *value,PetscTruth
   }
 #endif
   ierr = OptionsGetInt(amspub.prefix,opt,value,set);CHKERRQ(ierr);
+  if (amspub.printhelp) {
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  %s%s <%d>: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,defaultv,text,man);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"OptionsString"
+int OptionsString(char *opt,char *text,char *man,char *defaultv,char *value,int len,PetscTruth *set)
+{
+  int             ierr;
+
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_AMS)
+  if (!OptionsPublishCount) {
+    OptionsAMS amsopt;
+    ierr = OptionsCreate_Private(opt,text,man,&amsopt);CHKERRQ(ierr);
+    amsopt->type          = OPTION_STRING;
+    amsopt->data          = (void *)PetscMalloc(sizeof(char*));CHKERRQ(ierr);
+    *(char**)amsopt->data = defaultv;
+    ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    if (set) *set = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+#endif
+  ierr = OptionsGetString(amspub.prefix,opt,value,len,set);CHKERRQ(ierr);
+  if (amspub.printhelp) {
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  %s%s <%s>: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,defaultv,text,man);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -217,10 +251,10 @@ int OptionsDouble(char *opt,char *text,char *man,double defaultv,double *value,P
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
-  if (!PetscOptionsPublishCount) {
-    PetscOptionsAMS amsopt;
+  if (!OptionsPublishCount) {
+    OptionsAMS amsopt;
     ierr = OptionsCreate_Private(opt,text,man,&amsopt);CHKERRQ(ierr);
-    amsopt->type           = PETSC_OPTION_DOUBLE;
+    amsopt->type           = OPTION_DOUBLE;
     amsopt->data           = (void *)PetscMalloc(sizeof(double));CHKERRQ(ierr);
     *(double*)amsopt->data = defaultv;
     ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_DOUBLE,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
@@ -229,7 +263,24 @@ int OptionsDouble(char *opt,char *text,char *man,double defaultv,double *value,P
   }
 #endif
   ierr = OptionsGetDouble(amspub.prefix,opt,value,set);CHKERRQ(ierr);
+  if (amspub.printhelp) {
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  %s%s <%g>: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,defaultv,text,man);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"OptionsScalar"
+int OptionsScalar(char *opt,char *text,char *man,Scalar defaultv,Scalar *value,PetscTruth *set)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+#if !defined(PETSC_USE_COMPLEX)
+  ierr = OptionsDouble(opt,text,man,defaultv,value,set);CHKERRQ(ierr);
+#else
+  ierr = OptionsGetScalar(amspub.prefix,opt,value,set);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -245,10 +296,10 @@ int OptionsName(char *opt,char *text,char *man,PetscTruth *flg)
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
-  if (!PetscOptionsPublishCount) {
-    PetscOptionsAMS amsopt;
+  if (!OptionsPublishCount) {
+    OptionsAMS amsopt;
     ierr = OptionsCreate_Private(opt,text,man,&amsopt);CHKERRQ(ierr);
-    amsopt->type        = PETSC_OPTION_LOGICAL;
+    amsopt->type        = OPTION_LOGICAL;
     amsopt->data        = (void *)PetscMalloc(sizeof(int));CHKERRQ(ierr);
     *(int*)amsopt->data = 0;
     ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
@@ -257,6 +308,9 @@ int OptionsName(char *opt,char *text,char *man,PetscTruth *flg)
   }
 #endif
   ierr = OptionsHasName(amspub.prefix,opt,flg);CHKERRQ(ierr);
+  if (amspub.printhelp) {
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  %s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,text,man);CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -268,46 +322,80 @@ int OptionsName(char *opt,char *text,char *man,PetscTruth *flg)
 */
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"OptionsList"
-int OptionsList(char *opt,char *ltext,char *man,char **text,int ntext,char *defaultv,char *value,int len,PetscTruth *set)
+int OptionsList(char *opt,char *ltext,char *man,FList list,char *defaultv,char *value,int len,PetscTruth *set)
 {
-  int ierr;
+  int   ierr;
+  FList next = list;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
-  if (!PetscOptionsPublishCount) {
-    PetscOptionsAMS amsopt;
-    int             mlen,tlen,i;
-    char            ldefault[128],*mtext,**vtext;
+  if (!OptionsPublishCount) {
+    OptionsAMS amsopt;
+    int        ntext,i;
+    char       ldefault[128],**vtext;
 
     ierr = OptionsCreate_Private(opt,ltext,man,&amsopt);CHKERRQ(ierr);
-    amsopt->type             = PETSC_OPTION_LIST;
+    amsopt->type             = OPTION_LIST;
     amsopt->data             = (void *)PetscMalloc(sizeof(char*));CHKERRQ(ierr);
     *(char **)(amsopt->data) = defaultv;
     ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
     ierr = PetscStrcat(ldefault,ltext);CHKERRQ(ierr);
     ierr = AMS_Memory_add_field(amspub.amem,ldefault,amsopt->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
-    /* need to copy text array so they are not freed before AMS uses them */
-    tlen = 0;
-    for (i=0; i<ntext; i++) {
-      ierr = PetscStrlen(text[i],&mlen);CHKERRQ(ierr);
-      tlen += mlen + 1;
-    }
-    amsopt->edata = (void *)PetscMalloc(tlen*sizeof(char)+ntext*sizeof(char*));CHKPTRQ(amsopt->edata);
-    vtext         = (char**)amsopt->edata;
-    mtext         = (char*)(vtext+ntext);
-    for (i=0; i<ntext; i++) {
-      vtext[i]    = mtext;
-      ierr        = PetscStrlen(text[i],&mlen);CHKERRQ(ierr);
-      ierr        = PetscStrcpy(mtext,text[i]);CHKERRQ(ierr);
-      mtext      += mlen+1;
-    }
-    ierr = AMS_Memory_add_field(amspub.amem,ltext,vtext,ntext,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    ierr = FListGet(list,(char***)&amsopt->edata,&ntext);CHKERRQ(ierr);
+    ierr = AMS_Memory_add_field(amspub.amem,ltext,amsopt->edata,ntext,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
     if (set) *set = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 #endif
   ierr = OptionsGetString(amspub.prefix,opt,value,len,set);CHKERRQ(ierr);
+  if (amspub.printhelp) {
+    ierr = FListPrintTypes(amspub.comm,stdout,amspub.prefix,ltext,list);CHKERRQ(ierr);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+/*
+     Publishes a single string (the default) with a name given by the DEFAULT: + text
+  and an AMS array of strings which are to be ed from with a name given by the text
+
+*/
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"OptionsList"
+int OptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char *defaultv,char *value,int len,PetscTruth *set)
+{
+  int i,ierr;
+
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_AMS)
+  if (!OptionsPublishCount) {
+    OptionsAMS amsopt;
+    char       ldefault[128],**vtext;
+
+    ierr = OptionsCreate_Private(opt,ltext,man,&amsopt);CHKERRQ(ierr);
+    amsopt->type             = OPTION_LIST;
+    amsopt->data             = (void *)PetscMalloc(sizeof(char*));CHKERRQ(ierr);
+    *(char **)(amsopt->data) = defaultv;
+    ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
+    ierr = PetscStrcat(ldefault,ltext);CHKERRQ(ierr);
+    ierr = AMS_Memory_add_field(amspub.amem,ldefault,amsopt->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+
+    amsopt->edata = (void*)PetscMalloc((ntext+1)*sizeof(char**));CHKERRQ(ierr);
+    ierr = PetscMemcpy(amsopt->edata,list,ntext*sizeof(char*));CHKERRQ(ierr);
+    ierr = AMS_Memory_add_field(amspub.amem,ltext,amsopt->edata,ntext,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    if (set) *set = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+#endif
+  ierr = OptionsGetString(amspub.prefix,opt,value,len,set);CHKERRQ(ierr);
+  if (amspub.printhelp) {
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  %s%s <%s> (one of)",amspub.prefix?amspub.prefix:"",opt,defaultv);CHKERRQ(ierr);
+    for (i=0; i<ntext; i++){
+      ierr = (*PetscHelpPrintf)(amspub.comm," %s",list[i]);CHKERRQ(ierr);
+    }
+    ierr = (*PetscHelpPrintf)(amspub.comm,"\n");CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -323,10 +411,10 @@ int OptionsLogicalGroupBegin(char *opt,char *text,char *man,PetscTruth *flg)
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
-  if (!PetscOptionsPublishCount) {
-    PetscOptionsAMS amsopt;
+  if (!OptionsPublishCount) {
+    OptionsAMS amsopt;
     ierr = OptionsCreate_Private(opt,text,man,&amsopt);CHKERRQ(ierr);
-    amsopt->type        = PETSC_OPTION_LOGICAL;
+    amsopt->type        = OPTION_LOGICAL;
     amsopt->data        = (void *)PetscMalloc(sizeof(int));CHKERRQ(ierr);
     *(int*)amsopt->data = 1; /* the first one listed is always the default */
     ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
@@ -335,6 +423,10 @@ int OptionsLogicalGroupBegin(char *opt,char *text,char *man,PetscTruth *flg)
   }
 #endif
   ierr = OptionsHasName(amspub.prefix,opt,flg);CHKERRQ(ierr);
+  if (amspub.printhelp) {
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  Pick at most one of -------------\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"    %s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,text,man);CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -347,10 +439,10 @@ int OptionsLogicalGroup(char *opt,char *text,char *man,PetscTruth *flg)
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
-  if (!PetscOptionsPublishCount) {
-    PetscOptionsAMS amsopt;
+  if (!OptionsPublishCount) {
+    OptionsAMS amsopt;
     ierr = OptionsCreate_Private(opt,text,man,&amsopt);CHKERRQ(ierr);
-    amsopt->type        = PETSC_OPTION_LOGICAL;
+    amsopt->type        = OPTION_LOGICAL;
     amsopt->data        = (void *)PetscMalloc(sizeof(int));CHKERRQ(ierr);
     *(int*)amsopt->data = 0;
     ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
@@ -359,6 +451,9 @@ int OptionsLogicalGroup(char *opt,char *text,char *man,PetscTruth *flg)
   }
 #endif
   ierr = OptionsHasName(amspub.prefix,opt,flg);CHKERRQ(ierr);
+  if (amspub.printhelp) {
+    ierr = (*PetscHelpPrintf)(amspub.comm,"    %s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,text,man);CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -371,10 +466,10 @@ int OptionsLogicalGroupEnd(char *opt,char *text,char *man,PetscTruth *flg)
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
-  if (!PetscOptionsPublishCount) {
-    PetscOptionsAMS amsopt;
+  if (!OptionsPublishCount) {
+    OptionsAMS amsopt;
     ierr = OptionsCreate_Private(opt,text,man,&amsopt);CHKERRQ(ierr);
-    amsopt->type        = PETSC_OPTION_LOGICAL;
+    amsopt->type        = OPTION_LOGICAL;
     amsopt->data        = (void *)PetscMalloc(sizeof(int));CHKERRQ(ierr);
     *(int*)amsopt->data = 0;
     ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
@@ -383,10 +478,40 @@ int OptionsLogicalGroupEnd(char *opt,char *text,char *man,PetscTruth *flg)
   }
 #endif
   ierr = OptionsHasName(amspub.prefix,opt,flg);CHKERRQ(ierr);
+  if (amspub.printhelp) {
+    ierr = (*PetscHelpPrintf)(amspub.comm,"    %s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,text,man);CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"OptionsLogical"
+int OptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTruth *flg,PetscTruth *set)
+{
+  int             ierr;
+
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_AMS)
+  if (!OptionsPublishCount) {
+    OptionsAMS amsopt;
+    ierr = OptionsCreate_Private(opt,text,man,&amsopt);CHKERRQ(ierr);
+    amsopt->type        = OPTION_LOGICAL;
+    amsopt->data        = (void *)PetscMalloc(sizeof(int));CHKERRQ(ierr);
+    *(int*)amsopt->data = (int)deflt;
+    ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    *flg = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+#endif
+  ierr = OptionsGetLogical(amspub.prefix,opt,flg,set);CHKERRQ(ierr);
+  if (amspub.printhelp) {
+    char *v = (deflt ? "true" : "false");
+    ierr = (*PetscHelpPrintf)(amspub.comm,"    %s%s: <%s> %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,v,text,man);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
 
 
 

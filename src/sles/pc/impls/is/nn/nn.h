@@ -1,7 +1,8 @@
+/*$Id: is.c,v 1.7 2000/08/18 19:38:31 bsmith Exp $*/
 #if !defined(__pcnn_h)
 #define __pcnn_h
 
-#include "src/sles/pc/impls/is/itersub.h"
+#include "src/sles/pc/impls/is/is.h"
 
 /* 
    Private context (data structure) for the NN preconditioner.  

@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.95 2000/04/12 04:25:36 bsmith Exp balay $*/
+/*$Id: umtr.c,v 1.96 2000/05/05 22:18:25 balay Exp bsmith $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
@@ -307,48 +307,21 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,SNESConverg
 static int SNESSetFromOptions_UM_TR(SNES snes)
 {
   SNES_UM_TR *ctx = (SNES_UM_TR *)snes->data;
-  double     tmp;
-  int        ierr;
-  PetscTruth flg;
-
-  PetscFunctionBegin;
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta1",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->eta1 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta2",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->eta2 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta3",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->eta3 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta4",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->eta4 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_delta0",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->delta0 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_factor1",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->factor1 = tmp;}
-
-  PetscFunctionReturn(0);
-}
-/*------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESPrintHelp_UM_TR"
-static int SNESPrintHelp_UM_TR(SNES snes,char *p)
-{
-  SNES_UM_TR *ctx = (SNES_UM_TR *)snes->data;
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(snes->comm," method SNESUMTR (umtr) for unconstrained minimization:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta1 <eta1> (default %g)\n",p,ctx->eta1);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta2 <eta2> (default %g)\n",p,ctx->eta2);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta3 <eta3> (default %g)\n",p,ctx->eta3);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta4 <eta4> (default %g)\n",p,ctx->eta4);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_delta0 <delta0> (default %g)\n",p,ctx->delta0);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_factor1 <factor1> (default %g)\n",p,ctx->factor1);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   delta0, factor1: used to initialize trust region parameter\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   eta2, eta3, eta4: used to compute trust region parameter\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   eta1: step is unsuccessful if actred < eta1 * prered, where\n");CHKERRQ(ierr); 
-  ierr = (*PetscHelpPrintf)(snes->comm,"         pred = predicted reduction, actred = actual reduction\n");CHKERRQ(ierr);
+  ierr = OptionsBegin(snes->comm,snes->prefix,"SNES trust region options for minimization");CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_um_eta1","eta1","None",ctx->eta1,&ctx->eta1,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_um_eta2","step unsuccessful if reduction < eta1 * predicted reduction","None",ctx->eta2,&ctx->eta2,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_um_eta3","eta3","None",ctx->eta3,&ctx->eta3,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_um_eta4","eta4","None",ctx->eta4,&ctx->eta4,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_um_delta0","delta0","None",ctx->delta,&ctx->delta,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_um_factor1","factor1","None",ctx->factor1,&ctx->factor1,0);CHKERRQ(ierr);
+  ierr = OptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /*------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"SNESView_UM_TR"
@@ -387,7 +360,6 @@ int SNESCreate_UM_TR(SNES snes)
   snes->solve		= SNESSolve_UM_TR;
   snes->destroy		= SNESDestroy_UM_TR;
   snes->converged	= SNESConverged_UM_TR;
-  snes->printhelp       = SNESPrintHelp_UM_TR;
   snes->setfromoptions  = SNESSetFromOptions_UM_TR;
   snes->view            = SNESView_UM_TR;
 

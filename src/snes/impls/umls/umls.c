@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.97 2000/05/10 16:42:47 bsmith Exp bsmith $*/
+/*$Id: umls.c,v 1.98 2000/06/09 14:53:32 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
@@ -167,48 +167,21 @@ static int SNESDestroy_UM_LS(SNES snes)
 static int SNESSetFromOptions_UM_LS(SNES snes)
 {
   SNES_UM_LS *ctx = (SNES_UM_LS *)snes->data;
-  double     tmp;
-  int        itmp,ierr;
-  PetscTruth flg;
-
-  PetscFunctionBegin;
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gamma_factor",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->gamma_factor = tmp;}
-  ierr = OptionsGetInt(snes->prefix,"-snes_um_ls_maxfev",&itmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->maxfev = itmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_ftol",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->ftol = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gtol",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->gtol = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_rtol",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->rtol = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_stepmin",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->stepmin = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_stepmax",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {ctx->stepmax = tmp;}
-  PetscFunctionReturn(0);
-}
-/*------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESPrintHelp_UM_LS"
-static int SNESPrintHelp_UM_LS(SNES snes,char *p)
-{
-  SNES_UM_LS *ctx = (SNES_UM_LS *)snes->data;
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(snes->comm," method SNESUMLS (umls) for unconstrained minimization:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_gamma_f gamma_f (default %g) damping parameter\n",
-    p,ctx->gamma_factor);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_maxf <maxf> (default %d) max function evals in line search\n",p,ctx->maxfev);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_maxkspf (default %d) computes max KSP iters\n",p,ctx->max_kspiter_factor);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_ftol <ftol> (default %g) tol for sufficient decrease\n",p,ctx->ftol);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_rtol <rtol> (default %g) relative tol for acceptable step\n",p,ctx->rtol);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_gtol <gtol> (default %g) tol for curvature condition\n",p,ctx->gtol);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_stepmin <stepmin> (default %g) lower bound for step\n",p,ctx->stepmin);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_stepmax <stepmax> (default %g) upper bound for step\n",p,ctx->stepmax);CHKERRQ(ierr);
+  ierr = OptionsBegin(snes->comm,snes->prefix,"SNES trust region options for minimization");CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_um_ls_gamma_factor","Damping parameter","None",ctx->gamma_factor,&ctx->gamma_factor,0);CHKERRQ(ierr);
+    ierr = OptionsInt("-snes_um_ls_maxfev","Max function evaluation in line search","None",ctx->maxfev,&ctx->maxfev,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_um_ls_ftol","Tolerance for sufficient decrease","None",ctx->ftol,&ctx->ftol,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_um_ls_gtol","Tolerance for curvature condition","None",ctx->gtol,&ctx->gtol,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_um_ls_rtol","Relative tolerance for acceptable step","None",ctx->rtol,&ctx->rtol,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_um_ls_stepmin","Lower bound for step","None",ctx->stepmin,&ctx->stepmin,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_um_ls_stepmax","upper bound for step","None",ctx->stepmax,&ctx->stepmax,0);CHKERRQ(ierr);
+  ierr = OptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /*------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"SNESView_UM_LS"
@@ -566,7 +539,6 @@ int SNESCreate_UM_LS(SNES snes)
   snes->solve		  = SNESSolve_UM_LS;
   snes->destroy		  = SNESDestroy_UM_LS;
   snes->converged	  = SNESConverged_UM_LS;
-  snes->printhelp         = SNESPrintHelp_UM_LS;
   snes->view              = SNESView_UM_LS;
   snes->setfromoptions    = SNESSetFromOptions_UM_LS;
   snes->nwork             = 0;

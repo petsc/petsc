@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.6 2000/01/16 03:29:05 bsmith Exp $*/
+/*$Id: main.c,v 1.1 2000/08/17 15:47:45 bsmith Exp bsmith $*/
 static char help[] =
 "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
@@ -12,11 +12,6 @@ static char help[] =
 */
 #include "appctx.h"
 
-EXTERN_C_BEGIN
-extern int PCCreate_NN (PC);
-extern int PCCreate_FETI (PC);
-extern int MatPartitioningCreate_Square (MatPartitioning);
-EXTERN_C_END
 
 #undef __FUNC__
 #define __FUNC__ "main"
@@ -34,9 +29,6 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  PCRegisterDynamic("nn",PETSC_NULL,"PCCreate_NN",PCCreate_NN);
-  PCRegisterDynamic("feti",PETSC_NULL,"PCCreate_FETI",PCCreate_FETI);
-  MatPartitioningRegisterDynamic("square",PETSC_NULL,"MatPartitioningCreate_Square",MatPartitioningCreate_Square);
                                                       
   /* Load the grid database -- in appload.c              */
   ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/* $Id: petscoptions.h,v 1.38 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: Options.h,v 1.39 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 /*
    Routines to determine options set in the options database.
 */
@@ -36,11 +36,24 @@ EXTERN int  OptionsGetenv(MPI_Comm,const char *,char[],int,PetscTruth *);
 EXTERN int  OptionsAtoi(const char[],int*);
 EXTERN int  OptionsAtod(const char[],double*);
 
-extern PetscTruth PetscPublishOptions;
-EXTERN int        OptionsSelectBegin(MPI_Comm,char*,char*);
-EXTERN int        OptionsSelectInt(MPI_Comm,char*,char*,int);
-EXTERN int        OptionsSelectDouble(MPI_Comm,char*,char*,double);
-EXTERN int        OptionsSelectName(MPI_Comm,char*,char*);
-EXTERN int        OptionsSelectList(MPI_Comm,char*,char*,char**,int,char*);
-EXTERN int        OptionsSelectEnd(MPI_Comm);
+extern PetscTruth OptionsPublish;
+extern int        OptionsPublishCount;
+#define    OptionsBegin(comm,prefix,mess) 0; {\
+             for (OptionsPublishCount=(int)!OptionsPublish; OptionsPublishCount<2; OptionsPublishCount++) {\
+             int __ierr = OptionsBegin_Private(comm,prefix,mess);CHKERRQ(__ierr);
+#define    OptionsEnd() __ierr = OptionsEnd_Private();CHKERRQ(__ierr);}}
+EXTERN int OptionsBegin_Private(MPI_Comm,char*,char*);
+EXTERN int OptionsEnd_Private(void);
+
+EXTERN int OptionsInt(char*,char*,char*,int,int*,PetscTruth*);
+EXTERN int OptionsDouble(char*,char*,char*,double,double*,PetscTruth*);
+EXTERN int OptionsScalar(char*,char*,char*,Scalar,Scalar*,PetscTruth*);
+EXTERN int OptionsName(char*,char*,char*,PetscTruth*);
+EXTERN int OptionsString(char*,char*,char*,char*,char*,int,PetscTruth*);
+EXTERN int OptionsLogical(char*,char*,char*,PetscTruth,PetscTruth*,PetscTruth*);
+EXTERN int OptionsLogicalGroupBegin(char*,char*,char*,PetscTruth*);
+EXTERN int OptionsLogicalGroup(char*,char*,char*,PetscTruth*);
+EXTERN int OptionsLogicalGroupEnd(char*,char*,char*,PetscTruth*);
+EXTERN int OptionsList(char*,char*,char*,FList,char*,char*,int,PetscTruth*);
+EXTERN int OptionsEList(char*,char*,char*,char**,int,char*,char *,int,PetscTruth*);
 #endif

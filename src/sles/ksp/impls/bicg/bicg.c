@@ -1,4 +1,4 @@
-/*$Id: bicg.c,v 1.20 2000/04/15 03:53:50 bsmith Exp buschelm $*/
+/*$Id: bicg.c,v 1.21 2000/06/23 15:23:12 buschelm Exp bsmith $*/
 
 /*                       
     This code implements the BiCG (BiConjugate Gradient) method
@@ -164,7 +164,6 @@ int KSPCreate_BiCG(KSP ksp)
   ksp->ops->solve                = KSPSolve_BiCG;
   ksp->ops->destroy              = KSPDestroy_BiCG;
   ksp->ops->view                 = 0;
-  ksp->ops->printhelp            = 0;
   ksp->ops->setfromoptions       = 0;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;

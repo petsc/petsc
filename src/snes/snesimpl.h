@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.52 2000/05/05 22:18:10 balay Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.53 2000/05/17 18:50:28 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -98,17 +98,17 @@ struct _p_SNES {
    These are REALLY ugly and don't belong here, but since they must 
   be destroyed at the conclusion we have to put them somewhere.
  */
-  int      ksp_ewconv;        /* flag indicating use of Eisenstat-Walker
-                                 KSP convergence criteria */
-  void     *kspconvctx;       /* KSP convergence context */
-  Mat      mfshell;           /* MatShell for runtime matrix-free option */
+  PetscTruth  ksp_ewconv;        /* flag indicating use of Eisenstat-Walker KSP convergence criteria */
+  void        *kspconvctx;       /* KSP convergence context */
 
-  double   ttol;              /* used by default convergence test routine */
+  Mat         mfshell;           /* MatShell for runtime matrix-free option */
 
-  Vec      *vwork;            /* more work vectors for Jacobian/Hessian approx */
-  int      nvwork;
-  int      (*destroy)(SNES);
-  int      (*view)(SNES,Viewer);
+  double      ttol;              /* used by default convergence test routine */
+
+  Vec         *vwork;            /* more work vectors for Jacobian/Hessian approx */
+  int         nvwork;
+  int        (*destroy)(SNES);
+  int        (*view)(SNES,Viewer);
 };
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */

@@ -1,6 +1,8 @@
-/*$Id: vnake.c,v 1.18 2000/05/05 22:14:59 balay Exp bsmith $*/
+/*$Id: vnake.c,v 1.19 2000/08/01 20:01:33 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
+
+extern FList VecList;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="VecCreate"></a>*/"VecCreate"
@@ -87,24 +89,24 @@ int VecSetFromOptions(Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
 
-  if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = OptionsGetString(vec->prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = VecSetType(vec,vtype);CHKERRQ(ierr);
-  }
-
-  /* type has not been set? */
-  if (!vec->type_name) {
-    ierr = MPI_Comm_size(vec->comm,&size);CHKERRQ(ierr);
-    if (size > 1) {
-      ierr = VecSetType(vec,VEC_MPI);CHKERRQ(ierr);
-    } else {
-      ierr = VecSetType(vec,VEC_SEQ);CHKERRQ(ierr);
+  ierr = OptionsBegin(vec->comm,vec->prefix,"Vector options");CHKERRQ(ierr);
+    if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+    ierr = OptionsList("-vec_type","Type of vector","VecSetType",VecList,(char*)(vec->type_name?vec->type_name:VEC_MPI),vtype,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = VecSetType(vec,vtype);CHKERRQ(ierr);
     }
-  }
 
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = VecPrintHelp(vec);CHKERRQ(ierr);  }
+    /* type has not been set? */
+    if (!vec->type_name) {
+      ierr = MPI_Comm_size(vec->comm,&size);CHKERRQ(ierr);
+      if (size > 1) {
+        ierr = VecSetType(vec,VEC_MPI);CHKERRQ(ierr);
+      } else {
+        ierr = VecSetType(vec,VEC_SEQ);CHKERRQ(ierr);
+      }
+    }
+
+  ierr = OptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

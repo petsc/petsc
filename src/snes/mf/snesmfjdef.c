@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.17 2000/05/05 22:18:16 balay Exp bsmith $*/
+/*$Id: snesmfjdef.c,v 1.18 2000/08/17 04:52:42 bsmith Exp bsmith $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -138,29 +138,6 @@ static int MatSNESMFView_Default(MatSNESMFCtx ctx,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFPrintHelp_Default"
-/*
-   MatSNESMFPrintHelp_Default - Prints a list of all the options 
-   this particular method supports.
-
-   Input Parameter:
-.  ctx - the matrix free context
-
-*/
-static int MatSNESMFPrintHelp_Default(MatSNESMFCtx ctx)
-{
-  char*            p;
-  MatSNESMFDefault *hctx = (MatSNESMFDefault *)ctx->hctx;
-  int              ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx,&p);CHKERRQ(ierr);
-  if (!p) p = "";
-  ierr = (*PetscHelpPrintf)(ctx->comm,"   -%ssnes_mf_umin <umin> see users manual (default %g)\n",p,hctx->umin);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatSNESMFSetFromOptions_Default"
 /*
    MatSNESMFSetFromOptions_Default - Looks in the options database for 
@@ -172,17 +149,13 @@ static int MatSNESMFPrintHelp_Default(MatSNESMFCtx ctx)
 */
 static int MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
 {
-  char*      p;
-  int        ierr;
-  PetscTruth flag;
-  PetscReal  umin;
+  int              ierr;
+  MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx,&p);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(p,"-snes_mf_umin",&umin,&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = MatSNESMFDefaultSetUmin(ctx->mat,umin);CHKERRQ(ierr);
-  }
+  ierr = OptionsBegin(ctx->comm,ctx->prefix,"Default matrix free parameters");CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_mf_umin","umin","MatSNESMFDefaultSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
+  ierr = OptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -293,7 +266,6 @@ int MatSNESMFCreate_Default(MatSNESMFCtx ctx)
   ctx->ops->compute        = MatSNESMFCompute_Default;
   ctx->ops->destroy        = MatSNESMFDestroy_Default;
   ctx->ops->view           = MatSNESMFView_Default;  
-  ctx->ops->printhelp      = MatSNESMFPrintHelp_Default;  
   ctx->ops->setfromoptions = MatSNESMFSetFromOptions_Default;  
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatSNESMFDefaultSetUmin_C",

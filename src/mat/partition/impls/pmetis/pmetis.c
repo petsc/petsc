@@ -1,4 +1,4 @@
-/*$Id: pmetis.c,v 1.34 2000/04/12 04:24:20 bsmith Exp balay $*/
+/*$Id: pmetis.c,v 1.35 2000/05/05 22:16:43 balay Exp bsmith $*/
  
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 
@@ -130,19 +130,6 @@ int MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
   parmetis->parallel = 1;
   PetscFunctionReturn(0);
 }
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatPartitioningPrintHelp_Parmetis" 
-int MatPartitioningPrintHelp_Parmetis(MatPartitioning part)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(part->comm,"ParMETIS options\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(part->comm,"  -mat_partitioning_parmetis_coarse_sequential\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatPartitioningSetFromOptions_Parmetis" 
 int MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
@@ -151,10 +138,12 @@ int MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
   PetscTruth flag;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(part->prefix,"-mat_partitioning_parmetis_coarse_sequential",&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = MatPartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);
-  }
+  ierr = OptionsBegin(part->comm,part->prefix,"Set ParMeTiS partitioning options");CHKERRQ(ierr);
+    ierr = OptionsName("-mat_partitioning_parmetis_coarse_sequential","Use sequential coarse partitioner","MatPartitioningParmetisSetCoarseSequential",&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = MatPartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);
+    }
+  ierr = OptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -191,7 +180,6 @@ int MatPartitioningCreate_Parmetis(MatPartitioning part)
   part->ops->apply          = MatPartitioningApply_Parmetis;
   part->ops->view           = MatPartitioningView_Parmetis;
   part->ops->destroy        = MatPartitioningDestroy_Parmetis;
-  part->ops->printhelp      = MatPartitioningPrintHelp_Parmetis;
   part->ops->setfromoptions = MatPartitioningSetFromOptions_Parmetis;
   part->data                = (void*)parmetis;
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.216 2000/08/01 20:57:16 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.217 2000/08/17 04:52:40 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -92,85 +92,6 @@ int SNESView(SNES snes,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*
-       We retain a list of functions that also take SNES command 
-    line options. These are called at the end SNESSetFromOptions()
-*/
-#define MAXSETFROMOPTIONS 5
-static int numberofsetfromoptions;
-static int (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESAddOptionsChecker"
-/*@
-    SNESAddOptionsChecker - Adds an additional function to check for SNES options.
-
-    Not Collective
-
-    Input Parameter:
-.   snescheck - function that checks for options
-
-    Level: developer
-
-.seealso: SNESSetFromOptions()
-@*/
-int SNESAddOptionsChecker(int (*snescheck)(SNES))
-{
-  PetscFunctionBegin;
-  if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many options checkers, only 5 allowed");
-  }
-
-  othersetfromoptions[numberofsetfromoptions++] = snescheck;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESSetTypeFromOptions"
-/*@
-   SNESSetTypeFromOptions - Sets the SNES solver type from the options database,
-        or sets a default if none is give.
-
-   Collective on SNES
-
-   Input Parameter:
-.  snes - the SNES context
-
-   Options Database Keys:
-.  -snes_type <type> - ls, tr, umls, umtr, test
-
-   Level: beginner
-
-.keywords: SNES, nonlinear, set, options, database
-
-.seealso: SNESPrintHelp(), SNESSetOptionsPrefix(), SNESSetFromOptions()
-@*/
-int SNESSetTypeFromOptions(SNES snes)
-{
-  char       type[256];
-  int        ierr;
-  PetscTruth flg;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to SNESSetUp()");
-  ierr = OptionsGetString(snes->prefix,"-snes_type",type,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = SNESSetType(snes,(SNESType) type);CHKERRQ(ierr);
-  }
-  /*
-      If SNES type has not yet been set, set it now
-  */
-  if (!snes->type_name) {
-    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-      ierr = SNESSetType(snes,SNESEQLS);CHKERRQ(ierr);
-    } else {
-      ierr = SNESSetType(snes,SNESUMTR);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"SNESSetFromOptions"
 /*@
@@ -219,107 +140,88 @@ int SNESSetTypeFromOptions(SNES snes)
 
 .keywords: SNES, nonlinear, set, options, database
 
-.seealso: SNESPrintHelp(), SNESSetOptionsPrefix(), SNESSetTypeFromOptions()
+.seealso: SNESSetOptionsPrefix(), SNESSetTypeFromOptions()
 @*/
 int SNESSetFromOptions(SNES snes)
 {
-  PetscReal  tmp;
-  SLES       sles;
-  PetscTruth flg;
-  int        ierr,i,loc[4],nmax = 4;
-  int        version   = PETSC_DEFAULT;
-  PetscReal  rtol_0    = PETSC_DEFAULT;
-  PetscReal  rtol_max  = PETSC_DEFAULT;
-  PetscReal  gamma2    = PETSC_DEFAULT;
-  PetscReal  alpha     = PETSC_DEFAULT;
-  PetscReal  alpha2    = PETSC_DEFAULT;
-  PetscReal  threshold = PETSC_DEFAULT;
+  SLES                sles;
+  SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
+  PetscTruth          flg;
+  int                 ierr;
+  char                *deft,type[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  ierr = SNESSetTypeFromOptions(snes);CHKERRQ(ierr);
 
-  loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
-  ierr = OptionsGetDouble(snes->prefix,"-snes_stol",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,tmp,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_atol",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = SNESSetTolerances(snes,tmp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_rtol",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = SNESSetTolerances(snes,PETSC_DEFAULT,tmp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetInt(snes->prefix,"-snes_max_it",&snes->max_its,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetInt(snes->prefix,"-snes_max_funcs",&snes->max_funcs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_trtol",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = SNESSetTrustRegionTolerance(snes,tmp);CHKERRQ(ierr); }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = SNESSetMinimizationFunctionTolerance(snes,tmp);CHKERRQ(ierr);}
-  ierr = OptionsHasName(snes->prefix,"-snes_ksp_ew_conv",&flg);CHKERRQ(ierr);
-  if (flg) { snes->ksp_ewconv = 1; }
-  ierr = OptionsGetInt(snes->prefix,"-snes_ksp_ew_version",&version,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtol0",&rtol_0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtolmax",&rtol_max,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_gamma",&gamma2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha",&alpha,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha2",&alpha2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_threshold",&threshold,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsBegin(snes->comm,snes->prefix,"Nonlinear solver (SNES) options");CHKERRQ(ierr);
+    if (snes->type_name) {
+      deft = snes->type_name;
+    } else {  
+      if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+        deft = SNESEQLS;
+      } else {
+        deft = SNESUMTR;
+      }
+    }
+    if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+    ierr = OptionsList("-snes_type","Nonlinear solver method","SNESSetType",SNESList,deft,type,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SNESSetType(snes,type);CHKERRQ(ierr);
+    } else if (!snes->type_name) {
+      ierr = SNESSetType(snes,deft);CHKERRQ(ierr);
+    }
 
-  ierr = OptionsHasName(snes->prefix,"-snes_no_convergence_test",&flg);CHKERRQ(ierr);
-  if (flg) {snes->converged = 0;}
+    ierr = OptionsDouble("-snes_stol","Stop if step length less then","SNESSetTolerances",snes->xtol,&snes->xtol,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_atol","Stop if function norm less then","SNESSetTolerances",snes->atol,&snes->atol,0);CHKERRQ(ierr);
 
-  ierr = SNES_KSP_SetParametersEW(snes,version,rtol_0,rtol_max,gamma2,alpha,
-                                  alpha2,threshold);CHKERRQ(ierr);
-  ierr = OptionsHasName(snes->prefix,"-snes_cancelmonitors",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = SNESClearMonitor(snes);CHKERRQ(ierr);}
-  ierr = OptionsHasName(snes->prefix,"-snes_monitor",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultMonitor,0,0);CHKERRQ(ierr);}
-  ierr = OptionsHasName(snes->prefix,"-snes_smonitor",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,0,0);CHKERRQ(ierr);}
-  ierr = OptionsHasName(snes->prefix,"-snes_vecmonitor",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitor,0,0);CHKERRQ(ierr);}
-  ierr = OptionsHasName(snes->prefix,"-snes_vecmonitor_update",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewUpdateMonitor,0,0);CHKERRQ(ierr);}
-  ierr = OptionsGetIntArray(snes->prefix,"-snes_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = SNESSetMonitor(snes,SNESLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);  
-  }
+    ierr = OptionsDouble("-snes_rtol","Stop if decrease in function norm less then","SNESSetTolerances",snes->rtol,&snes->rtol,0);CHKERRQ(ierr);
+    ierr = OptionsInt("-snes_max_it","Maximum iterations","SNESSetTolerances",snes->max_its,&snes->max_its,PETSC_NULL);CHKERRQ(ierr);
+    ierr = OptionsInt("-snes_max_funcs","Maximum function evaluations","SNESSetTolerances",snes->max_funcs,&snes->max_funcs,PETSC_NULL);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_fmin","Minimization function tolerance","SNESSetMinimizationFunctionTolerance",snes->fmin,&snes->fmin,0);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(snes->prefix,"-snes_fd",&flg);CHKERRQ(ierr);
-  if (flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-    ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,
-                 SNESDefaultComputeJacobian,snes->funP);CHKERRQ(ierr);
-    PLogInfo(snes,"SNESSetFromOptions: Setting default finite difference Jacobian matrix\n");
-  } else if (flg && snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-    ierr = SNESSetHessian(snes,snes->jacobian,snes->jacobian_pre,
-                 SNESDefaultComputeHessian,snes->funP);CHKERRQ(ierr);
-    PLogInfo(snes,"SNESSetFromOptions: Setting default finite difference Hessian matrix\n");
-  }
+    ierr = OptionsName("-snes_ksp_ew_conv","Use Eisentat-Walker linear system convergence test","SNES_KSP_SetParametersEW",&snes->ksp_ewconv);CHKERRQ(ierr);
 
-  for (i=0; i<numberofsetfromoptions; i++) {
-    ierr = (*othersetfromoptions[i])(snes);CHKERRQ(ierr);
+    ierr = OptionsInt("-snes_ksp_ew_version","Version 1 or 2","SNES_KSP_SetParametersEW",kctx->version,&kctx->version,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_ksp_ew_rtol0","0 <= rtol0 < 1","SNES_KSP_SetParametersEW",kctx->rtol_0,&kctx->rtol_0,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_ksp_ew_rtolmax","0 <= rtolmax < 1","SNES_KSP_SetParametersEW",kctx->rtol_max,&kctx->rtol_max,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_ksp_ew_gamma","0 <= gamma <= 1","SNES_KSP_SetParametersEW",kctx->gamma,&kctx->gamma,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_ksp_ew_alpha","1 < alpha <= 2","SNES_KSP_SetParametersEW",kctx->alpha,&kctx->alpha,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_ksp_ew_alpha2","alpha2","SNES_KSP_SetParametersEW",kctx->alpha2,&kctx->alpha2,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_ksp_ew_threshold","0 < threshold < 1","SNES_KSP_SetParametersEW",kctx->threshold,&kctx->threshold,0);CHKERRQ(ierr);
+
+    ierr = OptionsName("-snes_no_convergence_test","Don't test for convergence","None",&flg);CHKERRQ(ierr);
+    if (flg) {snes->converged = 0;}
+    ierr = OptionsName("-snes_cancelmonitors","Remove all monitors","SNESClearMonitor",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESClearMonitor(snes);CHKERRQ(ierr);}
+    ierr = OptionsName("-snes_monitor","Monitor norm of function","SNESDefaultMonitor",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultMonitor,0,0);CHKERRQ(ierr);}
+    ierr = OptionsName("-snes_smonitor","Monitor norm of function (fewer digits)","SNESDefaultSMonitor",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,0,0);CHKERRQ(ierr);}
+    ierr = OptionsName("-snes_vecmonitor","Plot solution at each iteration","SNESVecViewMonitor",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitor,0,0);CHKERRQ(ierr);}
+    ierr = OptionsName("-snes_vecmonitor_update","Plot correction at each iteration","SNESVecViewUpdateMonitor",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewUpdateMonitor,0,0);CHKERRQ(ierr);}
+    ierr = OptionsName("-snes_xmonitor","Plot function norm at each iteration","SNESLGMonitor",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESSetMonitor(snes,SNESLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
+
+    ierr = OptionsName("-snes_fd","Use finite differences (slow) to compute Jacobian","SNESDefaultComputeJacobian",&flg);CHKERRQ(ierr);
+    if (flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+      ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESDefaultComputeJacobian,snes->funP);CHKERRQ(ierr);
+      PLogInfo(snes,"SNESSetFromOptions: Setting default finite difference Jacobian matrix\n");
+    } else if (flg && snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
+      ierr = SNESSetHessian(snes,snes->jacobian,snes->jacobian_pre,SNESDefaultComputeHessian,snes->funP);CHKERRQ(ierr);
+      PLogInfo(snes,"SNESSetFromOptions: Setting default finite difference Hessian matrix\n");
+    }
+
+  ierr = OptionsEnd();CHKERRQ(ierr);
+
+  if (snes->setfromoptions) {
+    ierr = (*snes->setfromoptions)(snes);CHKERRQ(ierr);
   }
 
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
   ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
 
-  /* set the special KSP monitor for matrix-free application */
-  ierr = OptionsHasName(snes->prefix,"-snes_mf_ksp_monitor",&flg);CHKERRQ(ierr);
-  if (flg) {
-    KSP ksp;
-    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);
-  }
-
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = SNESPrintHelp(snes);CHKERRQ(ierr);} 
-
-  if (snes->setfromoptions) {
-    ierr = (*snes->setfromoptions)(snes);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0); 
 }
 
@@ -682,8 +584,8 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->fmin              = -1.e30;
   snes->method_class      = type;
   snes->set_method_called = 0;
-  snes->setupcalled      = 0;
-  snes->ksp_ewconv        = 0;
+  snes->setupcalled       = 0;
+  snes->ksp_ewconv        = PETSC_FALSE;
   snes->vwork             = 0;
   snes->nwork             = 0;
   snes->conv_hist_len     = 0;
@@ -1429,7 +1331,7 @@ int SNESSetUp(SNES snes,Vec x)
       SLES sles; KSP ksp;
       ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
       ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,(void *)snes);CHKERRQ(ierr);
+      ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,snes);CHKERRQ(ierr);
     }
   } else if ((snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)) {
     if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetGradient() first");
@@ -2432,97 +2334,6 @@ int SNESGetOptionsPrefix(SNES snes,char **prefix)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESPrintHelp"
-/*@
-   SNESPrintHelp - Prints all options for the SNES component.
-
-   Collective on SNES
-
-   Input Parameter:
-.  snes - the SNES context
-
-   Options Database Keys:
-+  -help - Prints SNES options
--  -h - Prints SNES options
-
-   Level: beginner
-
-.keywords: SNES, nonlinear, help
-
-.seealso: SNESSetFromOptions()
-@*/
-int SNESPrintHelp(SNES snes)
-{
-  char                p[64];
-  SNES_KSP_EW_ConvCtx *kctx;
-  int                 ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-
-  ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
-  if (snes->prefix) PetscStrcat(p,snes->prefix);
-
-  kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
-
-  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = (*PetscHelpPrintf)(snes->comm,"SNES options ------------------------------------------------\n");CHKERRQ(ierr);
-  ierr = FListPrintTypes(snes->comm,stdout,snes->prefix,"snes_type",SNESList);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm," %ssnes_max_it <its>: max iterations (default %d)\n",p,snes->max_its);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm," %ssnes_max_funcs <maxf>: max function evals (default %d)\n",p,snes->max_funcs);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm," %ssnes_stol <stol>: successive step tolerance (default %g)\n",p,snes->xtol);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm," %ssnes_atol <atol>: absolute tolerance (default %g)\n",p,snes->atol);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm," %ssnes_rtol <rtol>: relative tolerance (default %g)\n",p,snes->rtol);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm," %ssnes_trtol <trtol>: trust region parameter tolerance (default %g)\n",p,snes->deltatol);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm," SNES Monitoring Options: Choose any of the following\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_cancelmonitors: cancels all monitors hardwired in code\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_monitor: use default SNES convergence monitor, prints\n\
-    residual norm at each iteration.\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_smonitor: same as the above, but prints fewer digits of the\n\
-    residual norm for small residual norms. This is useful to conceal\n\
-    meaningless digits that may be different on different machines.\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_xmonitor [x,y,w,h]: use X graphics convergence monitor\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_vecmonitor: plots solution at each iteration \n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_vecmonitor_update: plots update to solution at each iteration \n",p);CHKERRQ(ierr);
-  if (snes->type == SNES_NONLINEAR_EQUATIONS) {
-    ierr = (*PetscHelpPrintf)(snes->comm,
-     " Options for solving systems of nonlinear equations only:\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_mf_operator:use matrix-free Jacobian and user-provided preconditioning matrix\n",p);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_mf_ksp_monitor - if using matrix-free multiply then prints h at each KSP iteration\n",p);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_no_convergence_test: Do not test for convergence, always run to SNES max its\n",p);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",p);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,
-     "     %ssnes_ksp_ew_version <version> (1 or 2, default is %d)\n",p,kctx->version);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,
-     "     %ssnes_ksp_ew_rtol0 <rtol0> (0 <= rtol0 < 1, default %g)\n",p,kctx->rtol_0);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,
-     "     %ssnes_ksp_ew_rtolmax <rtolmax> (0 <= rtolmax < 1, default %g)\n",p,kctx->rtol_max);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,
-     "     %ssnes_ksp_ew_gamma <gamma> (0 <= gamma <= 1, default %g)\n",p,kctx->gamma);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,
-     "     %ssnes_ksp_ew_alpha <alpha> (1 < alpha <= 2, default %g)\n",p,kctx->alpha);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,
-     "     %ssnes_ksp_ew_alpha2 <alpha2> (default %g)\n",p,kctx->alpha2);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,
-     "     %ssnes_ksp_ew_threshold <threshold> (0 < threshold < 1, default %g)\n",p,kctx->threshold);CHKERRQ(ierr);
-  } else if (snes->type == SNES_UNCONSTRAINED_MINIMIZATION) {
-    ierr = (*PetscHelpPrintf)(snes->comm," Options for solving unconstrained minimization problems only:\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_fmin <ftol>: minimum function tolerance (default %g)\n",p,snes->fmin);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_fd: use finite differences for Hessian\n",p);CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_mf: use matrix-free Hessian\n",p);CHKERRQ(ierr);
-  }
-  ierr = (*PetscHelpPrintf)(snes->comm," Run program with -help %ssnes_type <type> for help on ",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"a particular method\n");CHKERRQ(ierr);
-  if (snes->printhelp) {
-    ierr = (*snes->printhelp)(snes,p);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

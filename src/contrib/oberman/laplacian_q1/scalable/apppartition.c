@@ -1,3 +1,4 @@
+/*$Id: main.c,v 1.6 2000/01/16 03:29:05 bsmith Exp $*/
 #include "appctx.h"
 
 int AppPartitionGetOwnedSize(AppPartition *part, int *m);
@@ -15,13 +16,13 @@ int AppPartitionSetUp(AppPartition *part, MPI_Comm comm, int Nelx, int Nely, int
   ierr = MPI_Comm_rank(comm,&part->rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&part->size);CHKERRQ(ierr);
 
-  if ( (Nelx<=0) || (Nely<=0) || (nsdx<=0) || (nsdy<=0) ) {
+  if ((Nelx<=0) || (Nely<=0) || (nsdx<=0) || (nsdy<=0)) {
     SETERRQ(PETSC_ERR_ARG_SIZ,1,"The number of subdomains and the number of elements must be strictly positive!");
   }
-  if ( ( Nelx % nsdx ) || ( Nely % nsdy ) ) {
+  if ((Nelx % nsdx) || (Nely % nsdy)) {
     SETERRQ(PETSC_ERR_ARG_SIZ,1,"The number of subdomains must divide the number of elements in each direction!");
   }
-  if ( part->size != (nsdx*nsdy) ) {
+  if (part->size != (nsdx*nsdy)) {
     SETERRQ(PETSC_ERR_ARG_SIZ,1,"The number of processors doesn't match the number of subdomains!");
   }
 
@@ -61,10 +62,10 @@ int AppPartitionGetNodes(AppPartition *part, int el, int **nodes)
   i = el / part->nely;
   j = el % part->nely;
 
-  part->local_nodes[0] = (i  )*(part->nely+1)+(j  );
-  part->local_nodes[1] = (i  )*(part->nely+1)+(j+1);
+  part->local_nodes[0] = (i)*(part->nely+1)+(j);
+  part->local_nodes[1] = (i)*(part->nely+1)+(j+1);
   part->local_nodes[2] = (i+1)*(part->nely+1)+(j+1);
-  part->local_nodes[3] = (i+1)*(part->nely+1)+(j  );
+  part->local_nodes[3] = (i+1)*(part->nely+1)+(j);
 
   *nodes = part->local_nodes;
 
@@ -91,16 +92,16 @@ int AppPartitionGetCoords(AppPartition *part, int el, double **coords)
 
   PetscFunctionBegin;
 
-  offsetx = part->xmin + ( part->rank / part->nsdy ) * part->nelx * part->delx;
-  offsety = part->ymin + ( part->rank % part->nsdy ) * part->nely * part->dely;
+  offsetx = part->xmin + (part->rank / part->nsdy) * part->nelx * part->delx;
+  offsety = part->ymin + (part->rank % part->nsdy) * part->nely * part->dely;
 
   i = el / part->nely;
   j = el % part->nely;
 
-  part->coords[0] = (i  )*(part->delx) + offsetx; part->coords[1] = (j  )*(part->dely) + offsety;
-  part->coords[2] = (i  )*(part->delx) + offsetx; part->coords[3] = (j+1)*(part->dely) + offsety;
+  part->coords[0] = (i)*(part->delx) + offsetx; part->coords[1] = (j)*(part->dely) + offsety;
+  part->coords[2] = (i)*(part->delx) + offsetx; part->coords[3] = (j+1)*(part->dely) + offsety;
   part->coords[4] = (i+1)*(part->delx) + offsetx; part->coords[5] = (j+1)*(part->dely) + offsety;
-  part->coords[6] = (i+1)*(part->delx) + offsetx; part->coords[7] = (j  )*(part->dely) + offsety;
+  part->coords[6] = (i+1)*(part->delx) + offsetx; part->coords[7] = (j)*(part->dely) + offsety;
 
   *coords = part->coords;
 
@@ -125,18 +126,18 @@ int AppPartitionGetOwnedSize(AppPartition *part, int *m)
 
   PetscFunctionBegin;
 
-  I = ( part->rank / part->nsdy );
-  J = ( part->rank % part->nsdy );
+  I = (part->rank / part->nsdy);
+  J = (part->rank % part->nsdy);
 
-  if ( I != (part->nsdx-1) ) {
-    if ( J != (part->nsdy-1) ) {
-      *m = (part->nelx  ) * (part->nely  );
+  if (I != (part->nsdx-1)) {
+    if (J != (part->nsdy-1)) {
+      *m = (part->nelx) * (part->nely);
     } else {
-      *m = (part->nelx  ) * (part->nely+1);
+      *m = (part->nelx) * (part->nely+1);
     }
   } else {
-    if ( J != (part->nsdy-1) ) {
-      *m = (part->nelx+1) * (part->nely  );
+    if (J != (part->nsdy-1)) {
+      *m = (part->nelx+1) * (part->nely);
     } else {
       *m = (part->nelx+1) * (part->nely+1);
     }
@@ -166,19 +167,19 @@ int AppPartitionCreateLocalToGlobalMapping(AppPartition *part, ISLocalToGlobalMa
 
   p = indices = (int*)PetscMalloc((part->nelx+1)*(part->nely+1)*sizeof(int));CHKPTRQ(indices);
 
-  I = ( part->rank / part->nsdy );
-  J = ( part->rank % part->nsdy );
+  I = (part->rank / part->nsdy);
+  J = (part->rank % part->nsdy);
 
   typ_sd  = part->nelx * part->nely;
   typ_col = part->nsdy * typ_sd + part->nelx;
 
-  if ( I != (part->nsdx-1) ) {
-    if ( J != (part->nsdy-1) ) {
+  if (I != (part->nsdx-1)) {
+    if (J != (part->nsdy-1)) {
       for (i=0; i<part->nelx; i++) {
         for (j=0; j<part->nely; j++) {
           *(p++) = offset(I,J) + i*(part->nely) + j;
         }
-        if ( J != (part->nsdy-2) ) {
+        if (J != (part->nsdy-2)) {
           *(p++) = offset(I,J+1) + i*(part->nely);
         } else {
           *(p++) = offset(I,J+1) + i*(part->nely+1);
@@ -192,7 +193,7 @@ int AppPartitionCreateLocalToGlobalMapping(AppPartition *part, ISLocalToGlobalMa
           *(p++) = offset(I+1,J+1);
 	}
       }
-    } else { /* ( I != (part->nsdx-1) ) && ( J == (part->nsdy-1) ) */
+    } else { /* (I != (part->nsdx-1)) && (J == (part->nsdy-1)) */
       for (i=0; i<part->nelx; i++) {
         for (j=0; j<=part->nely; j++) {
           *(p++) = offset(I,J) + i*(part->nely+1) + j;
@@ -204,19 +205,19 @@ int AppPartitionCreateLocalToGlobalMapping(AppPartition *part, ISLocalToGlobalMa
 	}
       }      
     }
-  } else { /* ( I == (part->nsdx-1) ) && ( J != (part->nsdy-1) ) */
-    if ( J != (part->nsdy-1) ) {
+  } else { /* (I == (part->nsdx-1)) && (J != (part->nsdy-1)) */
+    if (J != (part->nsdy-1)) {
       for (i=0; i<=part->nelx; i++) {
         for (j=0; j<part->nely; j++) {
           *(p++) = offset(I,J) + i*(part->nely) + j;   /* FIX HERE!!! */
         }
-        if ( J != (part->nsdy-2) ) {
+        if (J != (part->nsdy-2)) {
           *(p++) = offset(I,J+1) + i*(part->nely);
 	} else {
           *(p++) = offset(I,J+1) + i*(part->nely+1);
 	}
       }
-    } else { /* ( I == (part->nsdx-1) ) && ( J == (part->nsdy-1) ) */
+    } else { /* (I == (part->nsdx-1)) && (J == (part->nsdy-1)) */
       for (i=0; i<=part->nelx; i++) {
         for (j=0; j<=part->nely; j++) {
           *(p++) = offset(I,J) + i*(part->nely+1) + j;
@@ -256,8 +257,8 @@ int AppPartitionGetBoundaryNodesAndCoords(AppPartition *part, int *n, int **boun
 
   PetscFunctionBegin;
 
-  I = ( part->rank / part->nsdy );
-  J = ( part->rank % part->nsdy );
+  I = (part->rank / part->nsdy);
+  J = (part->rank % part->nsdy);
 
   offsetx = part->xmin + I * part->nelx * part->delx;
   offsety = part->ymin + J * part->nely * part->dely;
@@ -282,8 +283,8 @@ int AppPartitionGetBoundaryNodesAndCoords(AppPartition *part, int *n, int **boun
     *n = counter;
 
     counter++; /* This is to avoid zero-length allocations. */
-    pb = *boundary = (int*   ) PetscMalloc(  counter*sizeof(int   ));CHKPTRQ(boundary);
-    pc = *coords   = (double*) PetscMalloc(2*counter*sizeof(double));CHKPTRQ(coords  );
+    pb = *boundary = (int*)PetscMalloc(counter*sizeof(int));CHKPTRQ(boundary);
+    pc = *coords   = (double*)PetscMalloc(2*counter*sizeof(double));CHKPTRQ(coords);
   }
 
   if (I==0) {
@@ -302,7 +303,7 @@ int AppPartitionGetBoundaryNodesAndCoords(AppPartition *part, int *n, int **boun
       }
       for(i=1; i<part->nelx; i++) {
         *(pb++) = i*(part->nely+1) + part->nely;
-        *(pc++) = offsetx + (i         )*(part->delx);
+        *(pc++) = offsetx + i*(part->delx);
         *(pc++) = offsety + (part->nely)*(part->dely);
       }
       if (I != (part->nsdx-1)) {
@@ -315,7 +316,7 @@ int AppPartitionGetBoundaryNodesAndCoords(AppPartition *part, int *n, int **boun
       for(j=part->nely; j>=0; j--) {
         *(pb++) = part->nelx*(part->nely+1)+j;
         *(pc++) = offsetx + (part->nelx)*(part->delx);
-        *(pc++) = offsety + (j         )*(part->dely);
+        *(pc++) = offsety + j*(part->dely);
       }
     }
     if (J==0) {
@@ -326,7 +327,7 @@ int AppPartitionGetBoundaryNodesAndCoords(AppPartition *part, int *n, int **boun
       }
       for (i=part->nelx-1; i>=1; i--) {
         *(pb++) = i*(part->nely+1);
-        *(pc++) = offsetx + (i         )*(part->delx);
+        *(pc++) = offsetx + i*(part->delx);
         *(pc++) = offsety;
       }
       if (I != 0) {

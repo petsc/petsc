@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.33 2000/08/04 15:56:10 bsmith Exp balay $*/
+/*$Id: drawreg.c,v 1.34 2000/08/04 15:56:24 balay Exp bsmith $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
@@ -272,34 +272,37 @@ int DrawRegister(char *sname,char *path,char *name,int (*function)(Draw))
 int DrawSetFromOptions(Draw draw)
 {
   int        ierr;
-  PetscTruth flg;
-  char       vtype[256];
+  PetscTruth flg,nox,warn;
+  char       vtype[256],*def;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
 
   if (!DrawList) SETERRQ(1,1,"No draw implementations registered");
-  ierr = OptionsGetString(draw->prefix,"-draw_type",vtype,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = DrawSetType(draw,vtype);CHKERRQ(ierr);
-  }
-
-  /* type has not been set? */
-  if (!draw->type_name) {
+  if (draw->type_name) {
+    def = draw->type_name;
+  } else {
+    ierr = OptionsHasName(PETSC_NULL,"-nox",&nox);CHKERRQ(ierr);
+    def  = DRAW_NULL;
 #if defined(PARCH_win32)
-    ierr = DrawSetType(draw,DRAW_WIN32);CHKERRQ(ierr);
+    if (!nox) def = DRAW_WIN32;
 #elif defined(PETSC_HAVE_X11)
-    ierr = DrawSetType(draw,DRAW_X);CHKERRQ(ierr);
+    if (!nox) def = DRAW_X;
 #else
-    PetscTruth warn;
-    ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-nox_warning",&warn);CHKERRQ(ierr);
-    if (!flg && !warn) {
+    if (!nox && !warn) {
       (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
     }
-    ierr = DrawSetType(draw,DRAW_NULL);CHKERRQ(ierr);
 #endif
   }
-
+  ierr = OptionsBegin(draw->comm,draw->prefix,"Graphics (Draw) Options");CHKERRQ(ierr);
+    ierr = OptionsList("-draw_type","Type of graphical output","DrawSetType",DrawList,def,vtype,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = DrawSetType(draw,vtype);CHKERRQ(ierr);
+    } else if (!draw->type_name) {
+      ierr = DrawSetType(draw,def);CHKERRQ(ierr);
+    }
+    ierr = OptionsName("-nox","Run without graphics","None",&nox);CHKERRQ(ierr);
+  ierr = OptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

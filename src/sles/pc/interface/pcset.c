@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.104 2000/05/05 22:16:59 balay Exp bsmith $*/
+/*$Id: pcset.c,v 1.105 2000/08/17 04:52:04 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -215,8 +215,7 @@ int PCGetType(PC pc,PCType *meth)
 
 .keywords: PC, set, from, options, database
 
-.seealso: PCPrintHelp(), PCSetFromOptions(), SLESSetFromOptions(),
-          SLESSetTypeFromOptions()
+.seealso: PCPrintHelp(), PCSetFromOptions(), SLESSetFromOptions()
 @*/
 int PCSetTypeFromOptions(PC pc)
 {

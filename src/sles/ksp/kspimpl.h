@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.45 2000/05/05 22:17:26 balay Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.46 2000/05/10 16:41:59 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -18,7 +18,6 @@ struct _KSPOps {
   int  (*setup)(KSP);
   int  (*setfromoptions)(KSP);
   int  (*publishoptions)(KSP);
-  int  (*printhelp)(KSP,char*);
   int  (*computeextremesingularvalues)(KSP,double*,double*);
   int  (*computeeigenvalues)(KSP,int,double*,double*,int *);
   int  (*destroy)(KSP);

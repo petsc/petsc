@@ -1,10 +1,10 @@
-/*$Id: matregis.c,v 1.2 2000/07/08 16:33:24 bsmith Exp bsmith $*/
+/*$Id: matregis.c,v 1.3 2000/07/10 03:39:27 bsmith Exp bsmith $*/
 
 #include "petscmat.h"  /*I "petscmat.h" I*/
 
 EXTERN_C_BEGIN
 EXTERN int MatCreate_MAIJ(Mat);
-EXTERN int MatCreate_NN(Mat);
+EXTERN int MatCreate_IS(Mat);
 EXTERN_C_END
   
 /*
@@ -36,7 +36,7 @@ int MatRegisterAll(char *path)
 
   ierr = MatRegisterDynamic(MATMPIMAIJ, path,"MatCreate_MAIJ",   MatCreate_MAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQMAIJ, path,"MatCreate_MAIJ",   MatCreate_MAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATNN,      path,"MatCreate_NN",     MatCreate_NN);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATIS,      path,"MatCreate_IS",     MatCreate_IS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.150 2000/07/25 20:57:53 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.151 2000/08/23 16:14:39 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -548,24 +548,6 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPPrintHelp_GMRES"
-static int KSPPrintHelp_GMRES(KSP ksp,char *p)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(ksp->comm," Options for GMRES method:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_haptol <num>: GMRES happy breakdown tolerance\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_modifiedgramschmidt: use alternative orthogonalization\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_irorthog: (default) use iterative refinement in orthogonalization\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_preallocate: preallocate GMRES work vectors\n",p);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPGMRESKrylovMonitor"
 /*@C
    KSPGMRESKrylovMonitor - Calls VecView() for each direction in the 
@@ -603,54 +585,36 @@ int KSPGMRESKrylovMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_AMS)
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPOptionsPublish_GMRES"
-int KSPOptionsPublish_GMRES(KSP ksp)
-{
-  int       ierr;
-  KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
-
-  PetscFunctionBegin;
-  ierr = OptionsBegin(ksp->comm,ksp->prefix,"KSP GMRES Options");CHKERRQ(ierr);
-    ierr = OptionsInt("-ksp_gmres_restart","Number of Krylov search directions",gmres->max_k,0,0);CHKERRQ(ierr);
-    ierr = OptionsName("-ksp_gmres_preallocate","Preallocate all Krylov vectors",0);CHKERRQ(ierr);
-    ierr = OptionsName("-ksp_gmres_unmodifiedgramschmidt","Use classical (unmodified) Gram-Schmidt (fast)",0);CHKERRQ(ierr);
-    ierr = OptionsName("-ksp_gmres_modifiedgramschmidt","Use modified Gram-Schmidt (slow but more stable)",0);CHKERRQ(ierr);
-    ierr = OptionsName("-ksp_gmres_irorthog","Use classical Gram-Schmidt with iterative refinement",0);CHKERRQ(ierr);
-    ierr = OptionsName("-ksp_gmres_krylov_monitor","Graphically plot the Krylov directions",0);CHKERRQ(ierr);
-    ierr = OptionsEnd();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPSetFromOptions_GMRES"
 int KSPSetFromOptions_GMRES(KSP ksp)
 {
   int        ierr,restart;
   double     haptol;
+  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetInt(ksp->prefix,"-ksp_gmres_restart",&restart,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
-  ierr = OptionsGetDouble(ksp->prefix,"-ksp_gmres_haptol",&haptol,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPGMRESSetHapTol(ksp,haptol);CHKERRQ(ierr); }
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_preallocate",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);}
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_modifiedgramschmidt",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESIROrthogonalization);CHKERRQ(ierr);}
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_krylov_monitor",&flg);CHKERRQ(ierr);
-  if (flg) {
-    Viewers viewers;
-    ierr = ViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
-    ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(int (*)(void*))ViewersDestroy);CHKERRQ(ierr);
-  }
+  ierr = OptionsBegin(ksp->comm,ksp->prefix,"KSP GMRES Options");CHKERRQ(ierr);
+    ierr = OptionsInt("-ksp_gmres_restart","Number of Krylov search directions","KSPGMRESSetRestart",gmres->max_k,&restart,&flg);CHKERRQ(ierr);
+    if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
+    ierr = OptionsDouble("-ksp_gmres_haptol","Tolerance for declaring exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg);CHKERRQ(ierr);
+    if (flg) { ierr = KSPGMRESSetHapTol(ksp,haptol);CHKERRQ(ierr); }
+    ierr = OptionsName("-ksp_gmres_preallocate","Preallocate all Krylov vectors","KSPGMRESSetPreAllocateVectors",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);}
+    ierr = OptionsLogicalGroupBegin("-ksp_gmres_unmodifiedgramschmidt","Use classical (unmodified) Gram-Schmidt (fast)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
+    ierr = OptionsLogicalGroup("-ksp_gmres_modifiedgramschmidt","Use modified Gram-Schmidt (slow but more stable)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
+    ierr = OptionsLogicalGroupEnd("-ksp_gmres_irorthog","Use classical Gram-Schmidt with iterative refinement","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESIROrthogonalization);CHKERRQ(ierr);}
+    ierr = OptionsName("-ksp_gmres_krylov_monitor","Graphically plot the Krylov directions","KSPSetMonitor",&flg);CHKERRQ(ierr);
+    if (flg) {
+      Viewers viewers;
+      ierr = ViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
+      ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(int (*)(void*))ViewersDestroy);CHKERRQ(ierr);
+    }
+  ierr = OptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -730,13 +694,9 @@ int KSPCreate_GMRES(KSP ksp)
   ksp->ops->solve                        = KSPSolve_GMRES;
   ksp->ops->destroy                      = KSPDestroy_GMRES;
   ksp->ops->view                         = KSPView_GMRES;
-  ksp->ops->printhelp                    = KSPPrintHelp_GMRES;
   ksp->ops->setfromoptions               = KSPSetFromOptions_GMRES;
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
-#if defined(PETSC_HAVE_AMS)
-  ksp->ops->publishoptions               = KSPOptionsPublish_GMRES;
-#endif
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
                                     "KSPGMRESSetPreAllocateVectors_GMRES",

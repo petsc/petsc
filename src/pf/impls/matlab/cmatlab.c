@@ -1,4 +1,4 @@
-/*$Id: cmatlab.c,v 1.1 2000/05/18 17:24:55 bsmith Exp bsmith $*/
+/*$Id: cmatlab.c,v 1.2 2000/05/20 20:29:56 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
@@ -65,10 +65,12 @@ int PFSetFromOptions_Matlab(PF pf)
   PF_Matlab  *matlab = (PF_Matlab*)pf->data;
 
   PetscFunctionBegin;
-  ierr = OptionsGetString(pf->prefix,"-pf_matlab",value,256,&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = PetscStrallocpy((char*)value,&matlab->string);CHKERRQ(ierr);
-  }
+  ierr = OptionsBegin(pf->comm,pf->prefix,"Matlab function options");CHKERRQ(ierr);
+    ierr = OptionsString("-pf_matlab","Matlab function","None","",value,256,&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = PetscStrallocpy((char*)value,&matlab->string);CHKERRQ(ierr);
+    }
+  ierr = OptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);    
 }
 

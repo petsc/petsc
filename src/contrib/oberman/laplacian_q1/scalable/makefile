@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.8 2000/08/01 20:58:18 bsmith Exp $ 
+# $Id: makefile,v 1.1 2000/08/17 15:47:45 bsmith Exp bsmith $ 
 
 # -----------------------------------------------------------------------
 # Specify  user-defined compiler flags
@@ -24,3 +24,4 @@ main.$(BOPT): chkopts ${EXAMPLESO}
 	-$(RM) ${EXAMPLESO}
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include $(PETSC_DIR)/bmake/common_test

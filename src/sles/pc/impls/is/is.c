@@ -1,3 +1,4 @@
+/*$Id: matrix.c,v 1.378 2000/08/17 04:51:22 bsmith Exp $*/
 #include "src/sles/pc/impls/is/is.h"
 
 /* -------------------------------------------------------------------------- */
@@ -34,7 +35,7 @@ int PCISSetUp(PC pc)
     ierr = VecScatterEnd  (pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE,matis->ctx);CHKERRQ(ierr);
     ierr = VecScatterBegin(counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD,matis->ctx);CHKERRQ(ierr);
     ierr = VecScatterEnd  (counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD,matis->ctx);CHKERRQ(ierr);
-    ierr = VecDestroy(counter); CHKERRQ(ierr);
+    ierr = VecDestroy(counter);CHKERRQ(ierr);
   }
   /*
     Creating local and global index sets for interior and
@@ -59,9 +60,9 @@ int PCISSetUp(PC pc)
     ierr = ISLocalToGlobalMappingApply(matis->mapping,pcis->n_B,idx_B_local,idx_B_global);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApply(matis->mapping,n_I,      idx_I_local,idx_I_global);CHKERRQ(ierr);
     /* Creating the index sets. */
-    ierr = ISCreateGeneral(MPI_COMM_SELF,pcis->n_B,idx_B_local, &pcis->is_B_local );CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,pcis->n_B,idx_B_local, &pcis->is_B_local);CHKERRQ(ierr);
     ierr = ISCreateGeneral(MPI_COMM_SELF,pcis->n_B,idx_B_global,&pcis->is_B_global);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,n_I      ,idx_I_local, &pcis->is_I_local );CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,n_I      ,idx_I_local, &pcis->is_I_local);CHKERRQ(ierr);
     ierr = ISCreateGeneral(MPI_COMM_SELF,n_I      ,idx_I_global,&pcis->is_I_global);CHKERRQ(ierr);
     /* Freeing memory and restoring arrays */
     ierr = PetscFree(idx_B_local);CHKERRQ(ierr);
@@ -421,7 +422,7 @@ int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
     if (flg) {
       Scalar average;
       ierr = VecSum(vec1_N,&average);CHKERRQ(ierr);
-      average = average / pcis->n;
+      average = average / ((PetscReal)pcis->n);
       if (pcis->pure_neumann) {
         ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_(pc->comm),"Subdomain %04d is floating. Average = % 1.14e\n",
                                              PetscGlobalRank,average);CHKERRQ(ierr);

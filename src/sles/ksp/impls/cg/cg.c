@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.106 2000/08/18 17:38:50 bsmith Exp bsmith $*/
+/*$Id: cg.c,v 1.107 2000/08/18 20:32:08 bsmith Exp bsmith $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -19,7 +19,6 @@
 
     Other basic routines for the KSP objects include
         KSPSetUp_XXX()
-        KSPPrintHelp_XXX()        - Prints details of runtime options
         KSPView_XXX()             - Prints details of solver being used.
 
     Detailed notes:                         
@@ -268,45 +267,27 @@ int KSPView_CG(KSP ksp,Viewer viewer)
 }
 
 /*
-    KSPPrint_Help - Prints a help message that indicates what run time options are
-                    available for this solver
-*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPPrintHelp_CG"
-static int KSPPrintHelp_CG(KSP ksp,char *p)
-{
-#if defined(PETSC_USE_COMPLEX)
-  int ierr;
-#endif
-
-  PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  ierr = (*PetscHelpPrintf)(ksp->comm," Options for CG method:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_cg_Hermitian: use CG for complex, Hermitian matrix (default)\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_cg_symmetric: use CG for complex, symmetric matrix\n",p);CHKERRQ(ierr);
-#endif
-
-  PetscFunctionReturn(0);
-}
-
-/*
     KSPSetFromOptions_CG - Checks the options database for options related to the 
-                           conjugate gradient method. Any options checked here should
-                           also be indicated with the KSPPrintHelp_XXX() routine.
+                           conjugate gradient method.
 */ 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPSetFromOptions_CG"
 int KSPSetFromOptions_CG(KSP ksp)
 {
+#if defined(PETSC_USE_COMPLEX)
   int        ierr;
   PetscTruth flg;
+#endif
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(ksp->prefix,"-ksp_cg_Hermitian",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_HERMITIAN);CHKERRQ(ierr); }
-  ierr = OptionsHasName(ksp->prefix,"-ksp_cg_symmetric",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_SYMMETRIC);CHKERRQ(ierr); }
-
+#if defined(PETSC_USE_COMPLEX)
+  ierr = OptionsBegin(ksp->comm,ksp->prefix,"KSP CG options");CHKERRQ(ierr);
+    ierr = OptionsLogicalGroupBegin("-ksp_cg_Hermitian","Matrix is Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
+    if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_HERMITIAN);CHKERRQ(ierr); }
+    ierr = OptionsLogicalGroupEnd("-ksp_cg_symmetric","Matrix is complex symmetric, not Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
+    if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_SYMMETRIC);CHKERRQ(ierr); }
+  ierr = OptionsEnd();CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -365,7 +346,6 @@ int KSPCreate_CG(KSP ksp)
   ksp->ops->solve                = KSPSolve_CG;
   ksp->ops->destroy              = KSPDestroy_CG;
   ksp->ops->view                 = KSPView_CG;
-  ksp->ops->printhelp            = KSPPrintHelp_CG;
   ksp->ops->setfromoptions       = KSPSetFromOptions_CG;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;

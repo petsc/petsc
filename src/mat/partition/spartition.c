@@ -1,10 +1,11 @@
-/*$Id: spartition.c,v 1.19 2000/05/05 22:16:41 balay Exp bsmith $*/
+/*$Id: spartition.c,v 1.20 2000/05/10 16:41:25 bsmith Exp bsmith $*/
  
 #include "petsc.h"
 #include "petscmat.h"
 
 EXTERN_C_BEGIN
 EXTERN int MatPartitioningCreate_Current(MatPartitioning);
+EXTERN int MatPartitioningCreate_Square(MatPartitioning);
 EXTERN int MatPartitioningCreate_Parmetis(MatPartitioning);
 EXTERN_C_END
 
@@ -38,6 +39,7 @@ int MatPartitioningRegisterAll(char *path)
 
   PetscFunctionBegin;
   ierr = MatPartitioningRegisterDynamic(MATPARTITIONING_CURRENT,path,"MatPartitioningCreate_Current",MatPartitioningCreate_Current);CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterDynamic("square",path,"MatPartitioningCreate_Square",MatPartitioningCreate_Square);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PARMETIS)
   ierr = MatPartitioningRegisterDynamic(MATPARTITIONING_PARMETIS,path,"MatPartitioningCreate_Parmetis",MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
 #endif

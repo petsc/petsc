@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.25 2000/07/10 03:38:34 bsmith Exp bsmith $*/
+/*$Id: viewreg.c,v 1.26 2000/08/17 04:50:26 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -187,7 +187,7 @@ int ViewerRegister(char *sname,char *path,char *name,int (*function)(Viewer))
    Level: intermediate
 
    Notes: 
-    Must be called after ViewerCreate() before the Viewertor is used.
+    Must be called after ViewerCreate() before the Viewer is used.
 
 .keywords: viewer
 
@@ -204,15 +204,16 @@ int ViewerSetFromOptions(Viewer viewer)
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
   if (!ViewerList) SETERRQ(1,1,"No viewer implementations registered");
-  ierr = OptionsGetString(viewer->prefix,"-viewer_type",vtype,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = ViewerSetType(viewer,vtype);CHKERRQ(ierr);
-  }
-
-  /* type has not been set? */
-  if (!viewer->type_name) {
-    ierr = ViewerSetType(viewer,ASCII_VIEWER);CHKERRQ(ierr);
-  }
+  ierr = OptionsBegin(viewer->comm,viewer->prefix,"Viewer options");CHKERRQ(ierr);
+    ierr = OptionsList("-viewer_type","Type of viewer","None",ViewerList,viewer->type_name?viewer->type_name:ASCII_VIEWER,vtype,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = ViewerSetType(viewer,vtype);CHKERRQ(ierr);
+    }
+    /* type has not been set? */
+    if (!viewer->type_name) {
+      ierr = ViewerSetType(viewer,ASCII_VIEWER);CHKERRQ(ierr);
+    }
+  ierr = OptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

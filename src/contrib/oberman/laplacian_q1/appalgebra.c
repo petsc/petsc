@@ -1,5 +1,6 @@
-/*$Id: appalgebra.c,v 1.11 2000/06/05 03:52:08 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.6 2000/01/16 03:29:05 bsmith Exp $*/
 #include "appctx.h"
+#include "math.h"
 
 /*
          Sample right hand side and boundary conditions
@@ -7,8 +8,8 @@
 #undef __FUNC__
 #define __FUNC__ "pde_rhs"
 int pde_rhs(void *dummy,int n,double *xx,double *f)
-{  
-  double pi = 3.1415927, x = xx[0], y = xx[1];
+{
+  double pi = M_PI, x = xx[0], y = xx[1];
   PetscFunctionBegin;
   *f = 8*pi*pi*sin(2*pi*x)*sin(2*pi*y)-20*pi*cos(2*pi*x)*sin(2*pi*y);
   PetscFunctionReturn(0);
@@ -29,12 +30,12 @@ int pde_bc(void *dummy,int n,double *xx,double *f)
 */
 #undef __FUNC__
 #define __FUNC__ "AppCxtSolve"
-int AppCtxSolve(AppCtx* appctx)
+int AppCtxSolve(AppCtx* appctx, int *its)
 {
   AppAlgebra  *algebra = &appctx->algebra;
   MPI_Comm    comm = appctx->comm;
   SLES        sles;
-  int         ierr,its;
+  int         ierr;
 
   PetscFunctionBegin;
 
@@ -70,8 +71,6 @@ int AppCtxSolve(AppCtx* appctx)
     ierr = MatView(appctx->algebra.A,VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
 
-  /*     5) Set the rhs boundary conditions */
-  ierr = SetBoundaryConditions(appctx);CHKERRQ(ierr);
 
   /*     6) Set the matrix boundary conditions */
   ierr = SetMatrixBoundaryConditions(appctx);CHKERRQ(ierr);
@@ -81,15 +80,51 @@ int AppCtxSolve(AppCtx* appctx)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The stiffness matrix, after bc applied\n");CHKERRQ(ierr);
     ierr = MatView(appctx->algebra.A,VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
-  
-  /*      Solve the linear system  */
-  ierr = SLESCreate(comm,&sles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles,algebra->A,algebra->A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,algebra->b,algebra->x,&its);CHKERRQ(ierr);
 
-  /*      Free the solver data structures */
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  PreLoadBegin(PETSC_TRUE,"Solver setup");  
+
+    /*     5) Set the rhs boundary conditions - this also creates initial guess that satisfies boundary conditions */
+    ierr = SetBoundaryConditions(appctx);CHKERRQ(ierr);
+
+    ierr = SLESCreate(comm,&sles);CHKERRQ(ierr);
+    ierr = SLESSetOperators(sles,algebra->A,algebra->A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    {
+      KSP ksp;
+      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+    }
+    ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+    ierr = SLESSetUp(sles,appctx->algebra.b,appctx->algebra.b);CHKERRQ(ierr);
+
+    PreLoadStage("Solve");  
+    ierr = SLESSolve(sles,algebra->b,algebra->x,its);CHKERRQ(ierr);
+
+    {
+      PetscTruth flg;
+      ierr = OptionsHasName(PETSC_NULL,"-save_global_preconditioner",&flg);CHKERRQ(ierr);
+      if (flg) {
+	PC pc;
+	KSP ksp;
+	Mat mat,mat2;
+	Viewer viewer;
+	ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+	ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+	ierr = PCComputeExplicitOperator(pc,&mat);CHKERRQ(ierr);
+	ierr = KSPComputeExplicitOperator(ksp,&mat2);CHKERRQ(ierr);
+	ierr = ViewerASCIIOpen(PETSC_COMM_WORLD,"pc.m",&viewer);CHKERRQ(ierr);
+	ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,"pc");
+	ierr = MatView(mat,viewer);CHKERRQ(ierr);
+	ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,"BA");
+	ierr = MatView(mat2,viewer);CHKERRQ(ierr);
+	ierr = MatDestroy(mat);CHKERRQ(ierr);
+	ierr = MatDestroy(mat2);CHKERRQ(ierr);
+	ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
+      }
+    }
+
+    /*      Free the solver data structures */
+    ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  PreLoadEnd();
 
   ierr = PFDestroy(appctx->bc);CHKERRQ(ierr);
   ierr = PFDestroy(appctx->element.rhs);CHKERRQ(ierr);
@@ -261,6 +296,7 @@ int SetBoundaryConditions(AppCtx *appctx)
   /****** Local Variables ***********/
   int        ierr,i;
   int        *vertex_ptr; 
+  Scalar     zero = 0.0;
 
   PetscFunctionBegin;
 
@@ -280,6 +316,13 @@ int SetBoundaryConditions(AppCtx *appctx)
 
   /* set the right hand side values at those points */
   ierr = VecSetValuesLocal(algebra->b,grid->boundary_n,vertex_ptr,grid->boundary_values,INSERT_VALUES);CHKERRQ(ierr);
+
+  /* set initial guess satisfying boundary conditions */
+  ierr = VecSet(&zero,algebra->x);CHKERRQ(ierr);
+  ierr = VecSetValuesLocal(algebra->x,grid->boundary_n,vertex_ptr,grid->boundary_values,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(algebra->x);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(algebra->x);CHKERRQ(ierr);
+
   ierr = ISRestoreIndices(grid->vertex_boundary,&vertex_ptr);CHKERRQ(ierr);
  
   ierr = VecAssemblyBegin(algebra->b);CHKERRQ(ierr);
@@ -308,4 +351,27 @@ int SetMatrixBoundaryConditions(AppCtx *appctx)
   ierr = MatZeroRowsLocal(algebra->A,grid->vertex_boundary,&one);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

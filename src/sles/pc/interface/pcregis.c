@@ -1,4 +1,4 @@
-/*$Id: pcregis.c,v 1.57 2000/05/10 16:41:38 bsmith Exp bsmith $*/
+/*$Id: pcregis.c,v 1.58 2000/05/20 20:33:21 bsmith Exp bsmith $*/
 
 #include "src/sles/pc/pcimpl.h"          /*I   "petscpc.h"   I*/
 
@@ -17,6 +17,7 @@ EXTERN int PCCreate_ASM(PC);
 EXTERN int PCCreate_SLES(PC);
 EXTERN int PCCreate_Composite(PC);
 EXTERN int PCCreate_Redundant(PC);
+EXTERN int PCCreate_NN(PC);
 #if defined(PETSC_HAVE_SPAI)
 EXTERN int PCCreate_SPAI(PC);
 #endif
@@ -60,6 +61,7 @@ int PCRegisterAll(char *path)
   ierr = PCRegisterDynamic(PCSLES         ,path,"PCCreate_SLES",PCCreate_SLES);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCCOMPOSITE    ,path,"PCCreate_Composite",PCCreate_Composite);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCREDUNDANT    ,path,"PCCreate_Redundant",PCCreate_Redundant);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCNN           ,path,"PCCreate_NN",PCCreate_NN);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SPAI)
   ierr = PCRegisterDynamic(PCSPAI         ,path,"PCCreate_SPAI",PCCreate_SPAI);CHKERRQ(ierr);
 #endif

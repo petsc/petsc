@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.202 2000/08/03 15:10:22 bsmith Exp balay $ */
+/* $Id: petscmat.h,v 1.203 2000/08/03 15:16:53 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -383,7 +383,6 @@ EXTERN int        MatPartitioningRegisterDestroy(void);
 
 EXTERN int MatPartitioningView(MatPartitioning,Viewer);
 EXTERN int MatPartitioningSetFromOptions(MatPartitioning);
-EXTERN int MatPartitioningPrintHelp(MatPartitioning);
 EXTERN int MatPartitioningGetType(MatPartitioning,MatPartitioningType*);
 
 EXTERN int MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
@@ -533,7 +532,7 @@ EXTERN int MatSeqSBAIJSetColumnIndices(Mat,int *);
 
 #define MATSEQMAIJ "seqmaij"
 #define MATMPIMAIJ "mpimaij"
-#define MATNN   "nn"
+#define MATIS      "is"
 #endif
 
 

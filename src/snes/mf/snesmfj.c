@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.107 2000/08/01 20:57:20 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.108 2000/08/17 04:52:42 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -445,7 +445,6 @@ int MatCreateMF(Vec x,Mat *J)
   mfctx->ops->compute        = 0;
   mfctx->ops->destroy        = 0;
   mfctx->ops->view           = 0;
-  mfctx->ops->printhelp      = 0;
   mfctx->ops->setfromoptions = 0;
   mfctx->hctx                = 0;
 
@@ -495,35 +494,35 @@ int MatSNESMFSetFromOptions(Mat mat)
   MatSNESMFCtx mfctx;
   int          ierr;
   PetscTruth   flg;
-  char         ftype[256],p[64],*prefix;
-  MPI_Comm     comm;
+  char         ftype[256];
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&mfctx);CHKERRQ(ierr);
   if (mfctx) {
-    comm   = mfctx->comm;
-    prefix = mfctx->prefix;
-    /* allow user to set the type */
-    ierr = OptionsGetString(prefix,"-snes_mf_type",ftype,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = MatSNESMFSetType(mat,ftype);CHKERRQ(ierr);
-    }
+    if (!MatSNESMFRegisterAllCalled) {ierr = MatSNESMFRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  
+    ierr = OptionsBegin(mfctx->comm,mfctx->prefix,"Set matrix free computation parameters");CHKERRQ(ierr);
+      ierr = OptionsList("-snes_mf_type","Matrix free type","MatSNESMFSetType",MatSNESMFList,mfctx->type_name,ftype,256,&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = MatSNESMFSetType(mat,ftype);CHKERRQ(ierr);
+      }
 
-    ierr = OptionsGetDouble(prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
-    ierr = OptionsGetInt(prefix,"-snes_mf_period",&mfctx->recomputeperiod,PETSC_NULL);CHKERRQ(ierr);
+      ierr = OptionsDouble("-snes_mf_err","set sqrt relative error in function","MatSNESMFSetFunctionError",mfctx->error_rel,&mfctx->error_rel,0);CHKERRQ(ierr);
+      ierr = OptionsInt("-snes_mf_period","how often h is recomputed","MatSNESMFSetPeriod",mfctx->recomputeperiod,&mfctx->recomputeperiod,0);CHKERRQ(ierr);
+      if (mfctx->snes) {
+        ierr = OptionsName("-snes_mf_ksp_monitor","Monitor matrix-free parameters","MatSNESMFKSPMonitor",&flg);CHKERRQ(ierr);
+        if (flg) {
+          SLES sles;
+          KSP  ksp;
+          ierr = SNESGetSLES(mfctx->snes,&sles);CHKERRQ(ierr);
+          ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+          ierr = KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);
+        }
+      }
+    ierr = OptionsEnd();CHKERRQ(ierr);
+
     if (mfctx->ops->setfromoptions) {
       ierr = (*mfctx->ops->setfromoptions)(mfctx);CHKERRQ(ierr);
-    }
-
-    ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
-    ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
-    if (prefix) {ierr = PetscStrcat(p,prefix);CHKERRQ(ierr);}
-    if (flg) {
-      ierr = (*PetscHelpPrintf)(comm,"   %ssnes_mf_err <err>: set sqrt rel error in function (default %g)\n",p,mfctx->error_rel);CHKERRQ(ierr);
-      ierr = (*PetscHelpPrintf)(comm,"   %ssnes_mf_period <p>: how often h is recomputed (default 1, everytime)\n",p);CHKERRQ(ierr);
-      if (mfctx->ops->printhelp) {
-        ierr = (*mfctx->ops->printhelp)(mfctx);CHKERRQ(ierr);
-      }
     }
   }
   PetscFunctionReturn(0);

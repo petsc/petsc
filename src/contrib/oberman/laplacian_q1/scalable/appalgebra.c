@@ -1,3 +1,4 @@
+/*$Id: main.c,v 1.6 2000/01/16 03:29:05 bsmith Exp $*/
 #include "appctx.h"
 #include "math.h"
 

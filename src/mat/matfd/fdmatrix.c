@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.72 2000/08/01 20:02:45 bsmith Exp balay $*/
+/*$Id: fdmatrix.c,v 1.73 2000/08/04 14:11:13 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -302,53 +302,21 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 @*/
 int MatFDColoringSetFromOptions(MatFDColoring matfd)
 {
-  int        ierr,freq = 1;
-  PetscReal  error = PETSC_DEFAULT,umin = PETSC_DEFAULT;
+  int        ierr;
   PetscTruth flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
 
-  ierr = OptionsGetDouble(matfd->prefix,"-mat_fd_coloring_err",&error,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(matfd->prefix,"-mat_fd_coloring_umin",&umin,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatFDColoringSetParameters(matfd,error,umin);CHKERRQ(ierr);
-  ierr = OptionsGetInt(matfd->prefix,"-mat_fd_coloring_freq",&freq,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFrequency(matfd,freq);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = MatFDColoringPrintHelp(matfd);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatFDColoringPrintHelp"
-/*@
-    MatFDColoringPrintHelp - Prints help message for matrix finite difference calculations 
-    using coloring.
-
-    Collective on MatFDColoring
-
-    Input Parameter:
-.   fdcoloring - the MatFDColoring context
-
-    Level: intermediate
-
-.seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringSetFromOptions()
-@*/
-int MatFDColoringPrintHelp(MatFDColoring fd)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(fd,MAT_FDCOLORING_COOKIE);
-
-  ierr = (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_err <err>: set sqrt rel tol in function, defaults to %g\n",fd->error_rel);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_umin <umin>: see users manual, defaults to %d\n",fd->umin);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_freq <freq>: frequency that Jacobian is recomputed, defaults to %d\n",fd->freq);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_view\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_view_draw\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_view_info\n");CHKERRQ(ierr);
+  ierr = OptionsBegin(matfd->comm,matfd->prefix,"Jacobian computation via finite differences option");CHKERRQ(ierr);
+    ierr = OptionsDouble("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
+    ierr = OptionsInt("-mat_fd_coloring_freq","How often Jacobian is recomputed","MatFDColoringSetFrequency",matfd->freq,&matfd->freq,0);CHKERRQ(ierr);
+    /* not used here; but so they are presented in the GUI */
+    ierr = OptionsName("-mat_fd_coloring_view","Print entire datastructure used for Jacobian","None",0);CHKERRQ(ierr);
+    ierr = OptionsName("-mat_fd_coloring_view_info","Print number of colors etc for Jacobian","None",0);CHKERRQ(ierr);
+    ierr = OptionsName("-mat_fd_coloring_view_draw","Plot nonzero structure ofJacobian","None",0);CHKERRQ(ierr);
+  OptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

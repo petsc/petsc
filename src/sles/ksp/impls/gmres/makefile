@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.38 2000/01/11 21:02:05 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.39 2000/08/17 04:52:27 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -16,4 +16,4 @@ MANSEC   = KSP
 LOCDIR   = src/sles/ksp/impls/gmres/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test\
+include ${PETSC_DIR}/bmake/common_test

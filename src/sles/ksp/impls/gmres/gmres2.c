@@ -1,4 +1,4 @@
-/*$Id: gmres2.c,v 1.28 2000/05/05 22:17:37 balay Exp bsmith $*/
+/*$Id: gmres2.c,v 1.29 2000/08/01 20:56:55 bsmith Exp bsmith $*/
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 
 #undef __FUNC__  
@@ -100,11 +100,11 @@ $    i.e. the size of Krylov space minus one
    KSPGMRESUnmodifiedGramSchmidtOrthogonalization() - 
        NOT recommended; however, for some problems, particularly
        when using parallel distributed vectors, this may be
-       significantly faster.
+       significantly faster. Default.
 
    KSPGMRESIROrthogonalization() - iterative refinement
        version of KSPGMRESUnmodifiedGramSchmidtOrthogonalization(),
-       which may be more numerically stable. Default
+       which may be more numerically stable.
 
    Options Database Keys:
 

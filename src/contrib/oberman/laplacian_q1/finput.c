@@ -1,160 +1,285 @@
-
 static char help[] ="Generation of a rectangular 2d quadrilateral grid.\n\
-  Command line parameters -m m -n n indicate number grid lines\n\
+  Command line parameters -nx nx -ny ny indicate number of elements\n\
   -xmin xmin, -xmax xmax, -ymin ymin -ymax ymax.\n";
 
 #include "petscao.h"
 #include "src/dm/ao/aoimpl.h"  /* need direct access to AOData2dGrid structure */
 #include "petscdraw.h"
+#include <string.h>
+#include <stdlib.h>
 
-double xmin,xmax,ymin,ymax;
-int    xintervals,yintervals; 
-extern int InputGrid(AOData2dGrid);
+double x_min,x_max,y_min,y_max;
+int    n_x, n_y; 
+static int InputGrid(AOData *aodata);
 
+#undef  __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv )
 {
-  int          size, ierr;
-  AOData2dGrid agrid;
-  AOData       aodata;
-  Viewer       binary;
-  Draw         draw;
-  /* ---------------------------------------------------------------------
-     Initialize PETSc
-     ------------------------------------------------------------------------*/
+  int      size, ierr;
+  char     filename[513] = "gridfile";
+  AOData   aodata;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size > 1) {
     SETERRQ(1,1,"Must run input program with exactly one processor");
   }
-  xmin = 0.0; xmax = 1.0;
-  ymin = 0.0; ymax = 1.0;
-  ierr = OptionsGetDouble(0,"-xmin",&xmin,0);CHKERRA(ierr);
-  ierr = OptionsGetDouble(0,"-xmax",&xmax,0);CHKERRA(ierr);
-  ierr = OptionsGetDouble(0,"-ymin",&ymin,0);CHKERRA(ierr);
-  ierr = OptionsGetDouble(0,"-ymax",&ymax,0);CHKERRA(ierr);
-  xintervals = 5; yintervals = 5;
-  ierr = OptionsGetInt(0,"-xintervals",&xintervals ,0);CHKERRA(ierr);
-  ierr = OptionsGetInt(0,"-yintervals",&yintervals,0);CHKERRA(ierr);
-
-
- /*---------------------------------------------------------------------
-     Open the graphics window
-     ------------------------------------------------------------------------*/
-  ierr = DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL,"Grid",PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&draw);CHKERRQ(ierr);
-
-  ierr = AOData2dGridCreate(&agrid);CHKERRA(ierr);
+  x_min = 0.0; x_max = 1.0;
+  y_min = 0.0; y_max = 1.0;
+  ierr = OptionsGetDouble(0,"-xmin",&x_min,0);CHKERRA(ierr);
+  ierr = OptionsGetDouble(0,"-xmax",&x_max,0);CHKERRA(ierr);
+  ierr = OptionsGetDouble(0,"-ymin",&y_min,0);CHKERRA(ierr);
+  ierr = OptionsGetDouble(0,"-ymax",&y_max,0);CHKERRA(ierr);
+  n_x = 5; n_y = 5;
+  ierr = OptionsGetInt(0,"-nx",&n_x,0);CHKERRA(ierr);
+  ierr = OptionsGetInt(0,"-ny",&n_y,0);CHKERRA(ierr);
+  ierr = OptionsGetString(0,"-f",filename,512,0);CHKERRA(ierr)
 
   /*
-    Create grid
+     Create the grid database.
   */
-  ierr = InputGrid(agrid);CHKERRA(ierr);
-
-  /* 
-     Flip vertex in cell to make sure they are all clockwise
-  */
-  ierr = AOData2dGridFlipCells(agrid);CHKERRA(ierr);
-  
-  /*
-     Generate edge and neighor information
-  */
-  ierr = AOData2dGridComputeNeighbors(agrid);CHKERRA(ierr);
-
-  ierr = AOData2dGridComputeVertexBoundary(agrid);CHKERRA(ierr);
+  ierr = InputGrid(&aodata);CHKERRA(ierr);
 
   /*
-     Show the numbering of the vertex, cell and edge
+     Save the grid database to a file.
   */
-  ierr = AOData2dGridDraw(agrid,draw);CHKERRA(ierr);
-
-  ierr = DrawPause(draw);CHKERRA(ierr);
-
-  /*
-      Create the database 
-  */
-  ierr = AOData2dGridToAOData(agrid,&aodata);CHKERRA(ierr);
-
-  /*
-      Save the grid database to a file
-  */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"gridfile",BINARY_CREATE,&binary);CHKERRA(ierr);
-  ierr = AODataView(aodata,binary);CHKERRA(ierr);
-  ierr = ViewerDestroy(binary);CHKERRA(ierr);
-
-  /*
-     Close the graphics window and cleanup
-  */
-  ierr = DrawDestroy(draw);CHKERRA(ierr);
+  {
+    Viewer binary;
+    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,filename,BINARY_CREATE,&binary);CHKERRA(ierr);
+    ierr = AODataView(aodata,binary);CHKERRA(ierr);
+    ierr = ViewerDestroy(binary);CHKERRA(ierr);
+  }
 
   ierr = AODataDestroy(aodata);CHKERRA(ierr);
 
-  ierr = AOData2dGridDestroy(agrid);CHKERRA(ierr); 
-
-  PetscFinalize();
-
-  return 0;
-}
-
-#undef __FUNC__
-#define __FUNC__ "InputGrid"
-/*
-       input the cells in a rectilinear grid
-*/
-int InputGrid(AOData2dGrid agrid)
-{
-  int        cn, i,j,ierr,*cells;
-  double     *vertex,cx,cy;
-  char       title[120];
-
-  PetscFunctionBegin;
-  /*
-  double xmin = 0.0, xmax = 1.0;
-  double ymin = 0.0, ymax = 1.0;
-  */
-
-  double deltax = (xmax - xmin)/(xintervals);
-  double deltay = (ymax - ymin)/(yintervals);
-
-  int ycnt = (ymax - ymin)/deltay;
-  int xcnt = (xmax - xmin)/deltax;
-
-  agrid->cell_max = 1e5;
-  agrid->cell_n   = 0;
-  agrid->vertex_max    = 1e5;
-  agrid->vertex_n      = 0;
-  agrid->xmin      = PETSC_MAX;
-  agrid->xmax      = PETSC_MIN;
-  agrid->ymin      = PETSC_MAX;
-  agrid->ymax      = PETSC_MIN;
-
-
-  /*
-     Allocate large arrays to hold the nodes and cellrilateral lists 
-  */
-  vertex = agrid->vertex = (double *) PetscMalloc(2*agrid->vertex_max*sizeof(double)); CHKPTRQ(vertex);
-  cells = agrid->cell_vertex = (int *) PetscMalloc(4*agrid->cell_max*sizeof(int)); CHKPTRQ(cells);
-
-  for(i=0;i<xcnt;i++){
-    for(j=0;j<ycnt;j++){
-      cx = xmin + i*deltax; cy = ymin + j*deltay;
-      ierr = AOData2dGridAddNode(agrid,cx,cy,&cn); CHKERRQ(ierr);
-      cells[4*agrid->cell_n] = cn;
-      cx += deltax;
-      ierr = AOData2dGridAddNode(agrid,cx,cy,&cn); CHKERRQ(ierr);
-       cells[4*agrid->cell_n+1] = cn;
-      
-      cy += deltay;
-      ierr = AOData2dGridAddNode(agrid,cx,cy,&cn); CHKERRQ(ierr);
-      cells[4*agrid->cell_n+2] = cn; 
-
-      cx -= deltax;
-      ierr = AOData2dGridAddNode(agrid,cx,cy,&cn); CHKERRQ(ierr);
-      cells[4*agrid->cell_n+3] = cn; 
-
-      agrid->cell_n++;
-    }
+  {
+    char command[530] = "\\rm -f ";
+    strcat(command,filename);
+    strcat(command,".info");
+    system(command);
   }
 
+  PetscFinalize();
+  return 0;
+}
+#undef  __FUNC__
+#define __FUNC__ "InputGrid"
+int InputGrid (AOData *aodata)
+{
+  int i, j, ierr;
+  int *indices;
+  const int n_cells    = n_x * n_y;
+  const int n_vertices = (n_x + 1) * (n_y + 1);
+  const int n_edges    = 2 * n_x * n_y + n_x + n_y;
+
+  PetscFunctionBegin;
+
+  indices = (int*) PetscMalloc (n_edges * sizeof(int)); CHKPTRQ(indices);
+  for (i=0; i<n_edges; i++) { indices[i] = i; }
+
+  ierr = AODataCreateBasic(PETSC_COMM_SELF,aodata);           CHKERRQ(ierr);
+  ierr = AODataKeyAdd(*aodata,"cell",  n_cells,   n_cells);   CHKERRQ(ierr);
+  ierr = AODataKeyAdd(*aodata,"edge",  n_edges,   n_edges);   CHKERRQ(ierr);
+  ierr = AODataKeyAdd(*aodata,"vertex",n_vertices,n_vertices);CHKERRQ(ierr);
+
+  /* Create list of vertices and mark the boundary ones. */
+  {
+    PetscTruth flg;
+    const double del_x = (x_max - x_min) / n_x;
+    const double del_y = (y_max - y_min) / n_y;
+    PetscBT boundary;
+    double *coords, *p;
+    ierr = OptionsHasName(PETSC_NULL,"-dirichlet_on_left",&flg);CHKERRQ(ierr);
+    ierr = PetscBTCreate(n_vertices,boundary);CHKERRQ(ierr);
+    p = coords = (double*) PetscMalloc (2 * n_vertices * sizeof(double)); CHKPTRQ(coords);
+    if (!flg) { /* All the boundary is Dirichlet */
+      for (i=0; i<=n_x; i++) {
+        for (j=0; j<=n_y; j++) {
+	  *(p++) = x_min + i * del_x;
+          *(p++) = y_min + j * del_y;
+	  if ( (!(i%n_x)) || (!(j%n_y)) ) { PetscBTSet(boundary,i*(n_y+1)+j); }
+        }
+      }
+    } else { /* Only left boundary is Dirichlet. */
+      for (i=0; i<=n_x; i++) {
+        for (j=0; j<=n_y; j++) {
+	  *(p++) = x_min + i * del_x;
+          *(p++) = y_min + j * del_y;
+        }
+      }
+      for (j=0; j<=n_y; j++) { PetscBTSet(boundary,j); }
+    }
+    ierr = AODataSegmentAdd(*aodata,"vertex","values"  ,2,n_vertices,indices,coords  ,PETSC_DOUBLE );CHKERRQ(ierr);
+    ierr = AODataSegmentAdd(*aodata,"vertex","boundary",1,n_vertices,indices,boundary,PETSC_LOGICAL);CHKERRQ(ierr);
+    ierr = PetscFree(coords);CHKERRQ(ierr);
+    ierr = PetscFree(boundary);CHKERRQ(ierr);
+  }
+
+  /* Create list of edges. Each edge contains 2 vertices. Each non-boundary edge is shared by 2 cells. */
+  {
+    int *edge_vertices, *edge_cells, *p, *q;
+    p = edge_vertices = (int*) PetscMalloc (2 * n_edges * sizeof(int)); CHKPTRQ(edge_vertices);
+    q = edge_cells    = (int*) PetscMalloc (2 * n_edges * sizeof(int)); CHKPTRQ(edge_cells);
+    {/* i = 0 */
+      for (j=0; j<n_y; j++) {
+        *(p++) =                 (j  );  *(q++) =             (j-1); /* when j==0, boundary */
+        *(p++) =       (n_y+1) + (j  );  *(q++) =             (j  );
+        *(p++) =                 (j  );  *(q++) =                -1; /* boundary */
+        *(p++) =                 (j+1);  *(q++) =             (j  );
+      }
+    }
+    for (i=1; i<n_x; i++) {
+      {/* j = 0 */
+        *(p++) = (i  )*(n_y+1)        ;  *(q++) =                -1; /* boundary */ 
+        *(p++) = (i+1)*(n_y+1)        ;  *(q++) = (i  )*n_y        ;
+        *(p++) = (i  )*(n_y+1)        ;  *(q++) = (i-1)*n_y        ;
+        *(p++) = (i  )*(n_y+1) + (  1);  *(q++) = (i  )*n_y        ;
+      }
+      for (j=1; j<n_y; j++) {
+        *(p++) = (i  )*(n_y+1) + (j  );  *(q++) = (i  )*n_y + (j-1); 
+        *(p++) = (i+1)*(n_y+1) + (j  );  *(q++) = (i  )*n_y + (j  );
+        *(p++) = (i  )*(n_y+1) + (j  );  *(q++) = (i-1)*n_y + (j  );
+        *(p++) = (i  )*(n_y+1) + (j+1);  *(q++) = (i  )*n_y + (j  );
+      }
+    }
+    for (i=0; i<n_x; i++) {
+      {/* j = n_y; */
+        *(p++) = (i  )*(n_y+1) + (n_y);  *(q++) = (i  )*n_y + n_y-1;
+        *(p++) = (i+1)*(n_y+1) + (n_y);  *(q++) = -1; /* boundary */
+      }
+    }
+    {/* i = n_x; */
+      for (i=n_x, j=0; j<n_y; j++) {
+        *(p++) = (n_x)*(n_y+1) + (j  );  *(q++) = (n_x-1)*n_y + (j  );
+        *(p++) = (n_x)*(n_y+1) + (j+1);  *(q++) = -1; /* boundary */
+      }
+    }
+    ierr = AODataSegmentAdd(*aodata,"edge","vertex",2,n_edges,indices,edge_vertices,PETSC_INT);CHKERRQ(ierr);
+    ierr = AODataSegmentAdd(*aodata,"edge","cell"  ,2,n_edges,indices,edge_cells   ,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscFree(edge_cells);CHKERRQ(ierr);
+    ierr = PetscFree(edge_vertices);CHKERRQ(ierr);
+  }
+
+  /* Create list of cells. */
+  /* First, each non-boundary cell has 4 neighbours: west, north, east and south. */
+  {
+    int *cell_cells, *p;
+    p = cell_cells    = (int*) PetscMalloc (4 * n_cells * sizeof(int)); CHKPTRQ(cell_cells);
+    {/* i = 0 */
+      {/* j = 0; */
+        *(p++) =                -1; /* boundary */
+        *(p++) =             (  1);
+        *(p++) = (  1)*n_y        ;
+        *(p++) =                -1; /* boundary */
+      }
+      for (j=1; j<(n_y-1); j++) {
+        *(p++) =                -1; /* boundary */
+        *(p++) =             (j+1);
+        *(p++) = (  1)*n_y + (  j);
+        *(p++) =             (j-1);
+      }
+      {/* j = n_y-1; */
+        *(p++) =                -1; /* boundary */
+        *(p++) =                -1; /* boundary */
+        *(p++) = (  1)*n_y + n_y-1;
+        *(p++) =             n_y-2;
+      }
+    }
+    for (i=1; i<(n_x-1); i++) {
+      {/* j = 0 */
+        *(p++) = (i-1)*n_y        ;
+        *(p++) = (i  )*n_y + (  1);
+        *(p++) = (i+1)*n_y        ;
+        *(p++) =               -1; /* boundary */
+      }
+      for (j=1; j<(n_y-1); j++) {
+        *(p++) = (i-1)*n_y + (  j);
+        *(p++) = (i  )*n_y + (j+1);
+        *(p++) = (i+1)*n_y + (  j);
+        *(p++) = (i  )*n_y + (j-1);
+      }
+      {/* j = n_y-1 */
+        *(p++) = (i-1)*n_y + n_y-1;
+        *(p++) =               -1; /* boundary */
+        *(p++) = (i+1)*n_y + n_y-1;
+        *(p++) = (i  )*n_y + n_y-2;
+      }
+    }
+    {/* i = n_x-1 */
+      {/* j = 0 */
+        *(p++) = (n_x-2)*n_y        ;
+        *(p++) = (n_x-1)*n_y + (  1);
+        *(p++) =                 -1; /* boundary */
+        *(p++) =                 -1; /* boundary */
+      }
+      for (j=1; j<(n_y-1); j++) {
+        *(p++) = (n_x-2)*n_y + (  j);
+        *(p++) = (n_x-1)*n_y + (j+1);
+        *(p++) =                 -1; /* boundary */
+        *(p++) = (n_x-1)*n_y + (j-1);
+      }
+      {/* j = n_y-1 */
+        *(p++) = (n_x-2)*n_y + n_y-1;
+        *(p++) =                 -1; /* boundary */
+        *(p++) =                 -1; /* boundary */
+        *(p++) = (n_x-1)*n_y + n_y-2;
+      }
+    }
+
+    ierr = AODataSegmentAdd(*aodata,"cell","cell",4,n_cells,indices,cell_cells,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscFree(cell_cells   );CHKERRQ(ierr);
+  }
+  /* Then, each cell has 4 vertices: SW, NW, NE, SE. */
+  {
+    int *cell_vertices, *p;
+    p = cell_vertices = (int*) PetscMalloc (4 * n_cells * sizeof(int)); CHKPTRQ(cell_vertices);
+    for (i=0; i<n_x; i++) {
+      for (j=0; j<n_y; j++) {
+        *(p++) = (  i)*(n_y+1) + (  j);
+        *(p++) = (  i)*(n_y+1) + (j+1);
+        *(p++) = (i+1)*(n_y+1) + (j+1);
+        *(p++) = (i+1)*(n_y+1) + (  j);
+      }
+    }
+    ierr = AODataSegmentAdd(*aodata,"cell","vertex",4,n_cells,indices,cell_vertices,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscFree(cell_vertices);CHKERRQ(ierr);
+  }
+  /* Finally, each cell has 4 edges: west, north, east, south. */
+  {
+    int *cell_edges, *p;
+    p = cell_edges = (int*) PetscMalloc (4 * n_cells * sizeof(int)); CHKPTRQ(cell_edges);
+    for (i=0; i<(n_x-1); i++) {
+      for (j=0; j<(n_y-1); j++) {
+        *(p++) = 2*((i  )*n_y + (j  )) + 1;
+        *(p++) = 2*((i  )*n_y + (j+1))    ;
+        *(p++) = 2*((i+1)*n_y + (j  )) + 1;
+        *(p++) = 2*((i  )*n_y + (j  ))    ;
+      }
+      {/* j = n_y-1 */
+        *(p++) = 2*((i  )*n_y + n_y-1) + 1;
+        *(p++) = 2*n_x*n_y + i            ; /* north boundary */          
+        *(p++) = 2*((i+1)*n_y + n_y-1) + 1;
+        *(p++) = 2*((i  )*n_y + n_y-1)    ;
+      }
+    }
+    {/* i = n_x-1 */
+      for (j=0; j<(n_y-1); j++) {
+        *(p++) = 2*((n_x-1)*n_y + (j  )) + 1;
+        *(p++) = 2*((n_x-1)*n_y + (j+1))    ;
+        *(p++) = 2*n_x*n_y + n_x + j        ; /* east  boundary */
+        *(p++) = 2*((n_x-1)*n_y + (j  ))    ;
+      }
+      {/* j = n_y-1 */
+        *(p++) = 2*((n_x-1)*n_y + n_y-1) + 1;
+        *(p++) = 2*n_x*n_y + n_x       - 1; /* north boundary */
+        *(p++) = 2*n_x*n_y + n_x + n_y - 1; /* east  boundary */
+        *(p++) = 2*((n_x-1)*n_y + n_y-1)    ;
+      }
+    }
+    ierr = AODataSegmentAdd(*aodata,"cell","edge",4,n_cells,indices,cell_edges,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscFree(cell_edges);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

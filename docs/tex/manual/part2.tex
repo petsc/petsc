@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.342 2000/08/01 20:58:56 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.343 2000/08/08 12:32:43 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2499,12 +2499,12 @@ Some of the options for ILU preconditioner are
    ierr = PCILUSetLevels(PC pc,int levels);
    ierr = PCILUSetReuseOrdering(PC pc,PetscTruth flag);
    ierr = PCILUSetUseDropTolerance(PC pc,double dt,int dtcount);
-   ierr = PCILUSetReuseFill(PC pc,PetscTruth flag);
+   ierr = PCILUDTSetReuseFill(PC pc,PetscTruth flag);
    ierr = PCILUSetUseInPlace(PC pc); 
    ierr = PCILUSetAllowDiagonalFill(PC pc);
 \end{verbatim}
 \findex{PCILUSetLevels()} \findex{PCILUSetReuseOrdering}
-\findex{PCILUSetUseDropTolerance()} \findex{PCILUSetReuseFill()}
+\findex{PCILUSetUseDropTolerance()} \findex{PCILUDTSetReuseFill()}
 \findex{PCILUSetUseInPlace()} \findex{PCILUSetAllowDiagonalFill()}
 
 When repeatedly solving linear systems with the same SLES
@@ -2513,7 +2513,7 @@ during the first linear solve.
 In particular, \url{PCILUSetReuseOrdering()} causes the ordering  (for example, set with 
 \url{-mat_order order}) computed in the first factorization to be reused
 for later factorizations. \sindex{orderings} 
-The \url{ PCILUSetReuseFill()} causes the 
+The \url{ PCILUDTSetReuseFill()} causes the 
 fill computed during the first drop tolerance factorization to be reused
 in later factorizations. \url{PCILUSetUseInPlace()} is often used with 
 \url{PCASM} or \url{PCBJACOBI} when zero fill is used, since it reuses the 

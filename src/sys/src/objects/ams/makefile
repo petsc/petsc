@@ -1,6 +1,4 @@
-# $Id: makefile,v 1.5 2000/04/09 03:09:16 bsmith Exp bsmith $ 
-
-#requirespackage  '-DPETSC_HAVE_AMS'
+# $Id: makefile,v 1.6 2000/08/17 04:50:46 bsmith Exp bsmith $ 
 
 ALL: lib 
 

@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.12 2000/08/01 20:58:26 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.13 2000/08/03 03:03:38 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -478,7 +478,7 @@ int PFSetType(PF pf,PFType type,void *ctx)
 
 .keywords: PF, set, from, options, database
 
-.seealso: PFPrintHelp()
+.seealso:
 @*/
 int PFSetFromOptions(PF pf)
 {
@@ -489,59 +489,17 @@ int PFSetFromOptions(PF pf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE);
 
-  ierr = OptionsGetString(pf->prefix,"-pf_type",type,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);
-  }
+  if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
+  ierr = OptionsBegin(pf->comm,pf->prefix,"Mathematical functions options");CHKERRQ(ierr);
+    ierr = OptionsList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);
+    }
+  ierr = OptionsEnd();CHKERRQ(ierr);
 
   if (pf->ops->setfromoptions) {
     ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
   }
-  
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PFPrintHelp(pf);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="PFPrintHelp"></a>*/"PFPrintHelp"
-/*@
-   PFPrintHelp - Prints all the options for the PF component.
-
-   Collective on PF
-
-   Input Parameter:
-.  pf - the mathematical function context
-
-   Options Database Keys:
-+  -help - Prints PF options
--  -h - Prints PF options
-
-   Level: developer
-
-.keywords: PF, help
-
-.seealso: PFSetFromOptions()
-
-@*/
-int PFPrintHelp(PF pf)
-{
-  char p[64]; 
-  int  ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pf,PF_COOKIE);
-  ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
-  if (pf->prefix) {ierr = PetscStrcat(p,pf->prefix);CHKERRQ(ierr);}
-  if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
-  ierr = (*PetscHelpPrintf)(pf->comm,"PF options --------------------------------------------------\n");CHKERRQ(ierr);
-  ierr = FListPrintTypes(pf->comm,stdout,pf->prefix,"pf_type",PFList);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pf->comm,"Run program with -help %spf_type <type> for help on ",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pf->comm,"a particular function\n");CHKERRQ(ierr);
-  if (pf->ops->printhelp) {
-    ierr = (*pf->ops->printhelp)(pf,p);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}

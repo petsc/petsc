@@ -1,4 +1,4 @@
-/*$Id: snesut.c,v 1.57 2000/05/31 22:27:24 balay Exp bsmith $*/
+/*$Id: snesut.c,v 1.58 2000/08/01 20:57:16 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
 
@@ -250,7 +250,7 @@ int SNESConverged_EQ_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnor
 int SNES_KSP_SetConvergenceTestEW(SNES snes)
 {
   PetscFunctionBegin;
-  snes->ksp_ewconv = 1;
+  snes->ksp_ewconv = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

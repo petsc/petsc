@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.64 2000/05/10 16:39:22 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.65 2000/07/10 03:38:52 bsmith Exp bsmith $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -308,7 +308,7 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,int *flag)
   }
 }
 
-PetscTruth        PetscPublishOptions = PETSC_FALSE;
+PetscTruth        OptionsPublish = PETSC_FALSE;
 EXTERN int        PLogInfoAllow(PetscTruth,char *);
 EXTERN int        PetscSetUseTrMalloc_Private(void);
 extern PetscTruth petscsetmallocvisited;
@@ -354,7 +354,7 @@ int OptionsCheckInitial(void)
 
 #if defined(PETSC_HAVE_AMS)
   ierr = OptionsHasName(PETSC_NULL,"-ams_publish_options",&flg3);CHKERRQ(ierr);
-  if (flg3) PetscPublishOptions = PETSC_TRUE;
+  if (flg3) OptionsPublish = PETSC_TRUE;
 #endif
 
   /*

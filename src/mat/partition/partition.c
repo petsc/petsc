@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.49 2000/06/05 03:47:41 bsmith Exp bsmith $*/
+/*$Id: partition.c,v 1.49 2000/06/05 03:47:41 bsmith Exp $*/
  
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
@@ -23,6 +23,41 @@ static int MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatPartitioningApply_Square" 
+static int MatPartitioningApply_Square(MatPartitioning part,IS *partitioning)
+{
+  int   cell,ierr,n,N,p,rstart,rend,*color,size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(part->comm,&size);CHKERRQ(ierr);
+  if (part->n != size) {
+    SETERRQ(PETSC_ERR_SUP,1,"Currently only supports one domain per processor");
+  }
+  p = (int)sqrt((double)part->n);
+  if (p*p != part->n) {
+    SETERRQ(PETSC_ERR_SUP,1,"Square partitioning requires \"perfect square\" number of domains");
+  }
+  ierr = MatGetSize(part->adj,&N,PETSC_NULL);CHKERRQ(ierr);
+  n = (int)sqrt((double)N);
+  if (n*n != N) {  /* This condition is NECESSARY, but NOT SUFFICIENT in order to the domain be square */
+    SETERRQ(PETSC_ERR_SUP,1,"Square partitioning requires square domain");
+  }
+  if (n%p != 0) {
+    SETERRQ(PETSC_ERR_SUP,1,"Square partitioning requires p to divide n"); 
+  }
+  ierr = MatGetOwnershipRange(part->adj,&rstart,&rend);CHKERRQ(ierr);
+  color = (int*)PetscMalloc((rend-rstart)*sizeof(int));CHKPTRQ(color);
+  /* for (int cell=rstart; cell<rend; cell++) { color[cell-rstart] = ((cell%n) < (n/2)) + 2 * ((cell/n) < (n/2)); } */
+  for (cell=rstart; cell<rend; cell++) {
+    color[cell-rstart] = ((cell%n) / (n/p)) + p * ((cell/n) / (n/p));
+  }
+  ierr = ISCreateGeneral(part->comm,rend-rstart,color,partitioning);CHKERRQ(ierr);
+  ierr = PetscFree(color);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN  
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatPartitioningCreate_Current" 
@@ -30,6 +65,19 @@ int MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Current;
+  part->ops->view    = 0;
+  part->ops->destroy = 0;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN  
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatPartitioningCreate_Square" 
+int MatPartitioningCreate_Square(MatPartitioning part)
+{
+  PetscFunctionBegin;
+  part->ops->apply   = MatPartitioningApply_Square;
   part->ops->view    = 0;
   part->ops->destroy = 0;
   PetscFunctionReturn(0);
@@ -397,40 +445,6 @@ int MatPartitioningView(MatPartitioning part,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatPartitioningPrintHelp"
-/*@ 
-   MatPartitioningPrintHelp - Prints all options to the partitioning object.
-
-   Collective on MatPartitioning
-
-   Input Parameters:
-.  part - the partitioning context
-
-   Level: intermediate
-
-.keywords: Partitioning, help
-
-.seealso: 
-@*/
-int MatPartitioningPrintHelp(MatPartitioning  part)
-{
-  int         ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
-
-  if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
-  ierr = (*PetscHelpPrintf)(part->comm,"MatPartitioning options ----------------------------------------------\n");CHKERRQ(ierr);
-  ierr = FListPrintTypes(part->comm,stdout,part->prefix,"mat_partioning_type",MatPartitioningList);CHKERRQ(ierr);CHKERRQ(ierr);
-
-  if (part->ops->printhelp) {
-    ierr = (*part->ops->printhelp)(part);CHKERRQ(ierr);
-  }
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatPartitioningSetType"
 /*@C
    MatPartitioningSetType - Sets the type of partitioner to use
@@ -510,32 +524,34 @@ int MatPartitioningSetFromOptions(MatPartitioning part)
 {
   int        ierr;
   PetscTruth flag;
-  char       type[256];
+  char       type[256],*def;
 
   PetscFunctionBegin;
-
-  ierr = OptionsGetString(part->prefix,"-mat_partitioning_type",type,256,&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
-  }
-  /*
-    Set the type if it was never set.
-  */
   if (!part->type_name) {
 #if defined(PETSC_HAVE_PARMETIS)
-    ierr = MatPartitioningSetType(part,MATPARTITIONING_PARMETIS);CHKERRQ(ierr);
+    def = MATPARTITIONING_PARMETIS;
 #else
-    ierr = MatPartitioningSetType(part,MATPARTITIONING_CURRENT);CHKERRQ(ierr);
+    def = MATPARTITIONING_CURRENT;
 #endif
+  } else {
+    def = part->type_name;
   }
+  if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
+  ierr = OptionsBegin(part->comm,part->prefix,"Partitioning options");CHKERRQ(ierr);
+    ierr = OptionsList("-mat_partitioning_type","Type of partitioner","MatPartitioningSetType",MatPartitioningList,def,type,256,&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
+    }
+    /*
+      Set the type if it was never set.
+    */
+    if (!part->type_name) {
+      ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
+    }
+  ierr = OptionsEnd();CHKERRQ(ierr);
 
   if (part->ops->setfromoptions) {
     ierr = (*part->ops->setfromoptions)(part);CHKERRQ(ierr);
-  }
-
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = MatPartitioningPrintHelp(part);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.93 2000/07/06 15:30:13 bsmith Exp bsmith $*/
+/*$Id: rich.c,v 1.94 2000/07/29 23:19:39 bsmith Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -136,29 +136,19 @@ int KSPView_Richardson(KSP ksp,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPPrintHelp_Richardson"
-static int KSPPrintHelp_Richardson(KSP ksp,char *p)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(ksp->comm," Options for Richardson method:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_richardson_scale <scale> : damping factor\n",p);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPSetFromOptions_Richardson"
 int KSPSetFromOptions_Richardson(KSP ksp)
 {
-  int        ierr;
-  PetscReal  tmp;
-  PetscTruth flg;
+  KSP_Richardson *rich = (KSP_Richardson*)ksp->data;
+  int            ierr;
+  PetscReal      tmp;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
-
-  ierr = OptionsGetDouble(ksp->prefix,"-ksp_richardson_scale",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPRichardsonSetScale(ksp,tmp);CHKERRQ(ierr); }
+  ierr = OptionsBegin(ksp->comm,ksp->prefix,"KSP Richardson Options");CHKERRQ(ierr);
+    ierr = OptionsDouble("-ksp_richardson_scale","damping factor","KSPRichardsonSetScale",rich->scale,&tmp,&flg);CHKERRQ(ierr);
+    if (flg) { ierr = KSPRichardsonSetScale(ksp,tmp);CHKERRQ(ierr); }
+  ierr = OptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -196,7 +186,6 @@ int KSPCreate_Richardson(KSP ksp)
   ksp->ops->buildsolution          = KSPDefaultBuildSolution;
   ksp->ops->buildresidual          = KSPDefaultBuildResidual;
   ksp->ops->view                   = KSPView_Richardson;
-  ksp->ops->printhelp              = KSPPrintHelp_Richardson;
   ksp->ops->setfromoptions         = KSPSetFromOptions_Richardson;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPRichardsonSetScale_C",

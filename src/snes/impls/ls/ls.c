@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.160 2000/08/01 20:57:22 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.161 2000/08/14 02:40:42 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -99,11 +99,10 @@ int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
      SNESSolve() if necessary.
 
      Additional basic routines are:
-          SNESPrintHelp_XXX()       - Prints nonlinear solver runtime options
           SNESView_XXX()            - Prints details of runtime options that
                                       have actually been used.
      These are called by application codes via the interface routines
-     SNESPrintHelp() and SNESView().
+     SNESView().
 
      The various types of solvers (preconditioners, Krylov subspace methods,
      nonlinear solvers, timesteppers) are all organized similarly, so the
@@ -901,30 +900,6 @@ int SNESSetLineSearchCheck_LS(SNES snes,int (*func)(SNES,void*,Vec,PetscTruth*),
 EXTERN_C_END
 /* -------------------------------------------------------------------------- */
 /*
-   SNESPrintHelp_EQ_LS - Prints all options for the SNESEQLS method.
-
-   Input Parameter:
-.  snes - the SNES context
-
-   Application Interface Routine: SNESPrintHelp()
-*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SNESPrintHelp_EQ_LS"
-static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
-{
-  SNES_EQ_LS *ls = (SNES_EQ_LS *)snes->data;
-  int     ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(snes->comm," method SNESEQLS (ls) for systems of nonlinear equations:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls [cubic,quadratic,basic,basicnonorms,...]\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_alpha <alpha> (default %g)\n",p,ls->alpha);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_maxstep <max> (default %g)\n",p,ls->maxstep);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_steptol <tol> (default %g)\n",p,ls->steptol);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-/* -------------------------------------------------------------------------- */
-/*
    SNESView_EQ_LS - Prints info from the SNESEQLS data structure.
 
    Input Parameters:
@@ -970,44 +945,37 @@ static int SNESView_EQ_LS(SNES snes,Viewer viewer)
 static int SNESSetFromOptions_EQ_LS(SNES snes)
 {
   SNES_EQ_LS *ls = (SNES_EQ_LS *)snes->data;
-  char       ver[16];
-  double     tmp;
+  char       ver[16],*lses[] = {"basic","basicnonorms","quadratic","cubic"};
   int        ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_ls_alpha",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ls->alpha = tmp;
-  }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_ls_maxstep",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ls->maxstep = tmp;
-  }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_ls_steptol",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ls->steptol = tmp;
-  }
-  ierr = OptionsGetString(snes->prefix,"-snes_eq_ls",ver,16,&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscTruth isbasic,isnonorms,isquad,iscubic;
+  ierr = OptionsBegin(snes->comm,snes->prefix,"SNES Line search options");CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_eq_ls_alpha","Function norm must decrease by","None",ls->alpha,&ls->alpha,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_eq_ls_maxstep","Step must be less than","None",ls->maxstep,&ls->maxstep,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-snes_eq_ls_steptol","Step must be greater than","None",ls->steptol,&ls->steptol,0);CHKERRQ(ierr);
 
-    ierr = PetscStrcmp(ver,"basic",&isbasic);CHKERRQ(ierr);
-    ierr = PetscStrcmp(ver,"basicnonorms",&isnonorms);CHKERRQ(ierr);
-    ierr = PetscStrcmp(ver,"quadratic",&isquad);CHKERRQ(ierr);
-    ierr = PetscStrcmp(ver,"cubic",&iscubic);CHKERRQ(ierr);
+    ierr = OptionsEList("-snes_eq_ls","Line search used","SNESSetLineSearch",lses,4,"cubic",ver,16,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscTruth isbasic,isnonorms,isquad,iscubic;
 
-    if (isbasic) {
-      ierr = SNESSetLineSearch(snes,SNESNoLineSearch,PETSC_NULL);CHKERRQ(ierr);
-    } else if (isnonorms) {
-      ierr = SNESSetLineSearch(snes,SNESNoLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
-    } else if (isquad) {
-      ierr = SNESSetLineSearch(snes,SNESQuadraticLineSearch,PETSC_NULL);CHKERRQ(ierr);
-    } else if (iscubic) {
-      ierr = SNESSetLineSearch(snes,SNESCubicLineSearch,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscStrcmp(ver,lses[0],&isbasic);CHKERRQ(ierr);
+      ierr = PetscStrcmp(ver,lses[1],&isnonorms);CHKERRQ(ierr);
+      ierr = PetscStrcmp(ver,lses[2],&isquad);CHKERRQ(ierr);
+      ierr = PetscStrcmp(ver,lses[3],&iscubic);CHKERRQ(ierr);
+
+      if (isbasic) {
+        ierr = SNESSetLineSearch(snes,SNESNoLineSearch,PETSC_NULL);CHKERRQ(ierr);
+      } else if (isnonorms) {
+        ierr = SNESSetLineSearch(snes,SNESNoLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
+      } else if (isquad) {
+        ierr = SNESSetLineSearch(snes,SNESQuadraticLineSearch,PETSC_NULL);CHKERRQ(ierr);
+      } else if (iscubic) {
+        ierr = SNESSetLineSearch(snes,SNESCubicLineSearch,PETSC_NULL);CHKERRQ(ierr);
+      }
+      else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown line search");}
     }
-    else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown line search");}
-  }
+  ierr = OptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -1039,7 +1007,6 @@ int SNESCreate_EQ_LS(SNES snes)
   snes->solve		= SNESSolve_EQ_LS;
   snes->destroy		= SNESDestroy_EQ_LS;
   snes->converged	= SNESConverged_EQ_LS;
-  snes->printhelp       = SNESPrintHelp_EQ_LS;
   snes->setfromoptions  = SNESSetFromOptions_EQ_LS;
   snes->view            = SNESView_EQ_LS;
   snes->nwork           = 0;

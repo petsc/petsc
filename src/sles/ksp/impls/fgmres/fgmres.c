@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.17 2000/05/10 16:42:19 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.18 2000/06/24 00:40:13 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -698,59 +698,43 @@ int KSPView_FGMRES(KSP ksp,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*
-
-   KSPPrint_Help_FGMRES - Prints a help message that indicates what run time 
-                          options are available for this solver
-
-*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPPrintHelp_FGMRES"
-static int KSPPrintHelp_FGMRES(KSP ksp,char *p)
-{
-  PetscFunctionBegin;
-  (*PetscHelpPrintf)(ksp->comm," Options for FGMRES method:\n");
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_restart <num>: FGMRES restart, defaults to 30\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_mres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_modifiedgramschmidt: use alternative orthogonalization\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_irorthog: (default) use iterative refinement in orthogonalization\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_preallocate: preallocate FGMRES work vectors\n",p);
-  
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_modifypcnochange: (default) do not vary the preconditioner\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_modifypcsles: vary the SLES based preconditioner (example)\n",p);
-
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPSetFromOptions_FGMRES"
 int KSPSetFromOptions_FGMRES(KSP ksp)
 {
-  int        ierr,restart;
-  PetscTruth flg;
+  int         ierr,restart;
+  double      haptol;
+  KSP_FGMRES *gmres = (KSP_FGMRES*)ksp->data;
+  PetscTruth  flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetInt(ksp->prefix,"-ksp_gmres_restart",&restart,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_preallocate",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);}
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_modifiedgramschmidt",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESIROrthogonalization);CHKERRQ(ierr);}
-  
-  ierr = OptionsHasName(ksp->prefix,"-ksp_fgmres_modifypcnochange",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,0,0);CHKERRQ(ierr);} 
-  ierr = OptionsHasName(ksp->prefix,"-ksp_fgmres_modifypcsles",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCSLES,0,0);CHKERRQ(ierr);} 
+  ierr = OptionsBegin(ksp->comm,ksp->prefix,"KSP flexible GMRES Options");CHKERRQ(ierr);
+    ierr = OptionsInt("-ksp_gmres_restart","Number of Krylov search directions","KSPGMRESSetRestart",gmres->max_k,&restart,&flg);CHKERRQ(ierr);
+    if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
+    ierr = OptionsDouble("-ksp_gmres_haptol","Tolerance for declaring exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg);CHKERRQ(ierr);
+    if (flg) { ierr = KSPGMRESSetHapTol(ksp,haptol);CHKERRQ(ierr); }
+    ierr = OptionsName("-ksp_gmres_preallocate","Preallocate all Krylov vectors","KSPGMRESSetPreAllocateVectors",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);}
+    ierr = OptionsLogicalGroupBegin("-ksp_gmres_unmodifiedgramschmidt","Use classical (unmodified) Gram-Schmidt (fast)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
+    ierr = OptionsLogicalGroup("-ksp_gmres_modifiedgramschmidt","Use modified Gram-Schmidt (slow but more stable)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
+    ierr = OptionsLogicalGroupEnd("-ksp_gmres_irorthog","Use classical Gram-Schmidt with iterative refinement","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESIROrthogonalization);CHKERRQ(ierr);}
+    ierr = OptionsName("-ksp_gmres_krylov_monitor","Graphically plot the Krylov directions","KSPSetMonitor",&flg);CHKERRQ(ierr);
+    if (flg) {
+      Viewers viewers;
+      ierr = ViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
+      ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(int (*)(void*))ViewersDestroy);CHKERRQ(ierr);
+    }
+    ierr = OptionsLogicalGroupBegin("-ksp_fgmres_modifypcnochange","do not vary the preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,0,0);CHKERRQ(ierr);} 
+    ierr = OptionsLogicalGroupEnd("-ksp_fgmres_modifypcsles","vary the SLES based preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCSLES,0,0);CHKERRQ(ierr);} 
+  ierr = OptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
-
-EXTERN int KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
-EXTERN int KSPComputeEigenvalues_GMRES(KSP,int,PetscReal *,PetscReal *,int *);
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -791,10 +775,9 @@ int KSPCreate_FGMRES(KSP ksp)
   ksp->ops->solve                        = KSPSolve_FGMRES;
   ksp->ops->destroy                      = KSPDestroy_FGMRES;
   ksp->ops->view                         = KSPView_FGMRES;
-  ksp->ops->printhelp                    = KSPPrintHelp_FGMRES;
   ksp->ops->setfromoptions               = KSPSetFromOptions_FGMRES;
-  ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
-  ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
+  ksp->ops->computeextremesingularvalues = 0;
+  ksp->ops->computeeigenvalues           = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
                                     "KSPGMRESSetPreAllocateVectors_GMRES",

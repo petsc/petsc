@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.134 2000/07/06 01:03:36 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.135 2000/08/17 04:52:07 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -353,7 +353,7 @@ EXTERN_C_END
 
 .keywords: PC, levels, reordering, factorization, incomplete, LU
 
-.seealso: PCLUSetReuseFill(), PCILUSetReuseOrdering(), PCILUSetReuseFill()
+.seealso: PCLUSetReuseFill(), PCILUSetReuseOrdering(), PCILUDTSetReuseFill()
 @*/
 int PCLUSetReuseOrdering(PC pc,PetscTruth flag)
 {
@@ -387,7 +387,7 @@ int PCLUSetReuseOrdering(PC pc,PetscTruth flag)
 
 .keywords: PC, levels, reordering, factorization, incomplete, LU
 
-.seealso: PCILUSetReuseOrdering(), PCLUSetReuseOrdering(), PCILUSetReuseFill()
+.seealso: PCILUSetReuseOrdering(), PCLUSetReuseOrdering(), PCILUDTSetReuseFill()
 @*/
 int PCLUSetReuseFill(PC pc,PetscTruth flag)
 {

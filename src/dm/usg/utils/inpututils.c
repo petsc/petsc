@@ -1,4 +1,4 @@
-/* $Id: inpututils.c,v 1.8 2000/05/08 15:09:28 balay Exp $ */
+/* $Id: inpututils.c,v 1.9 2000/08/17 15:36:11 bsmith Exp bsmith $ */
 
 /*
        Utilities for inputing, creating and managing simple two dimensional grids
@@ -355,7 +355,7 @@ int AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
     PetscTruth neumann_bc;
     ierr = OptionsHasName(PETSC_NULL,"-dirichlet_on_left",&neumann_bc);CHKERRQ(ierr);
     if (neumann_bc) {
-      if ( (count[i] < 4) && (agrid->vertex[2*i] == agrid->xmin) ) {
+      if ((count[i] < 4) && (agrid->vertex[2*i] == agrid->xmin)) {
         PetscBTSet(agrid->vertex_boundary,i);
       }
     } else {

@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.105 2000/08/01 20:58:40 bsmith Exp bsmith $ */
+/* $Id: petscpc.h,v 1.106 2000/08/17 04:53:46 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -33,6 +33,7 @@ typedef char *PCType;
 #define PCREDUNDANT "redundant"
 #define PCSPAI      "spai"
 #define PCMILU      "milu"
+#define PCNN        "nn"
 
 typedef struct _p_PC* PC;
 #define PC_COOKIE     PETSC_COOKIE+9
@@ -127,7 +128,7 @@ EXTERN int PCILUSetFill(PC,double);
 EXTERN int PCILUSetLevels(PC,int);
 EXTERN int PCILUSetReuseOrdering(PC,PetscTruth);
 EXTERN int PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,int);
-EXTERN int PCILUSetReuseFill(PC,PetscTruth);
+EXTERN int PCILUDTSetReuseFill(PC,PetscTruth);
 EXTERN int PCILUSetAllowDiagonalFill(PC);
 EXTERN int PCILUSetDamping(PC,double);
 
