@@ -70,6 +70,7 @@ EXTERN int TSSetSolution(TS,Vec);
 EXTERN int TSGetSolution(TS,Vec*);
 
 EXTERN int TSSetDuration(TS,int,PetscReal);
+EXTERN int TSGetDuration(TS,int*,PetscReal*);
 
 EXTERN int TSDefaultMonitor(TS,int,PetscReal,Vec,void*);
 EXTERN int TSVecViewMonitor(TS,int,PetscReal,Vec,void*);
