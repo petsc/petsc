@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.55 1996/01/15 21:54:49 balay Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.56 1996/02/08 18:25:47 bsmith Exp curfman $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -63,7 +63,7 @@ int KSPSetFromOptions(KSP ctx)
   */
   {
   int loc[4], nmax = 4;
-  loc[0] = 0; loc[1] = 0; loc[2] = 300; loc[4] = 300;
+  loc[0] = 0; loc[1] = 0; loc[2] = 300; loc[3] = 300;
   ierr = OptionsGetIntArray(ctx->prefix,"-ksp_xmonitor",loc,&nmax, &flg); CHKERRQ(ierr);
   if (flg){
     int    rank = 0;
