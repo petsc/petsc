@@ -1,7 +1,9 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex18.c,v 1.8 1999/01/12 23:16:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex18.c,v 1.9 1999/03/19 21:22:03 bsmith Exp balay $";
 #endif
+
+#if !defined(USE_PETSC_COMPLEX)
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -29,10 +31,6 @@ int main(int argc,char **args)
   Viewer     fd;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-
-#if defined(USE_PETSC_COMPLEX)
-  SETERRA(1,0,"This example does not work with complex numbers");
-#else
 
   /* Read matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
@@ -97,7 +95,14 @@ int main(int argc,char **args)
   ierr = MatDestroy(A); CHKERRA(ierr);
 
   PetscFinalize();
-#endif
   return 0;
 }
 
+#else
+#include <stdio.h>
+int main(int argc,char **args)
+{
+  fprintf(stdout,"This example does not work for complex numbers.\n");
+  return 0;
+}
+#endif
