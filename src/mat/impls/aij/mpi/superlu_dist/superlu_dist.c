@@ -79,7 +79,6 @@ typedef struct {
 #define __FUNCT__ "MatDestroy_MPIAIJ_SuperLU_DIST"
 int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
 {
-  Mat_MPIAIJ              *a  = (Mat_MPIAIJ*)A->data; 
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)A->spptr; 
   int                     ierr,(*destroy)(Mat);
     
