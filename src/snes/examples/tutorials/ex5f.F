@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.23 1997/05/04 00:23:47 curfman Exp curfman $";
+C "$Id: ex5f.F,v 1.24 1997/05/04 00:31:14 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -44,51 +44,42 @@ C  --------------------------------------------------------------------------
 
       program main
       implicit none
-
+C
+C  We place common blocks, variable declarations, and other include files
+C  needed for this code in the single file ex5f.h.  We then need to include
+C  only this file throughout the various routines in this program.  See
+C  additional comments in the file ex5f.h.
+C
 #include "ex5f.h"
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                   Variable declarations
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C
-C  The application context to contain data needed by the 
-C  application-provided call-back routines, FormJacobian() and
-C  FormFunction().  In this example the application context is
-C  a Fortran common block.  Note that we can store (pointers to)
-C  PETSc objects within this common block.
-C              mx     - discretization in x-direction
-C              my     - discretization in y-direction
-C              da     - distributed array
-C              localX - local work vector (including ghost points)
-C              localF - local work vector (including ghost points)
-C              rank   - processor rank within communicator
-C
 C  Variables:
 C     snes        - nonlinear solver
 C     x, r        - solution, residual vectors
 C     J           - Jacobian matrix
-C     user        - user-defined work context
 C     its         - iterations for convergence
 C     Nx, Ny      - number of preocessors in x- and y- directions
 C     matrix_free - flag - 1 indicates matrix-free version
-C     size        - number of processors
-C     rank        - processor rank
-C     lambda      - nonlinearity parameter
+C
+C  See additional variable declarations in the file ex5f.h
 C
       SNES     snes
       Vec      x, r
       Mat      J
-      integer  its, Nx, Ny, matrix_free, size, flg, N, ierr, m
-      Double   lambda_max, lambda_min, lambda
+      integer  its, Nx, Ny, matrix_free, flg, N, ierr, m
+      Double   lambda_max, lambda_min
       integer  ltog_a(0:1), ltog_i, nloc
 
 C  Note: Any user-defined Fortran routines (such as FormJacobian)
 C  MUST be declared as external.
 
       external FormFunction, FormInitialGuess, FormJacobian
-C
+
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                 Beginning of program
+C  Initialize program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -149,15 +140,15 @@ C  vectors that are the same types
       call VecDuplicate(x,r,ierr)
       call VecDuplicate(localX,localF,ierr)
 
-C  Get local grid boundaries (for 2-dimensional DA):
-C       xs, ys   - starting grid indices (no ghost points)
-C       xm, ym   - widths of local grid (no ghost points)
-C       gxs, gys - starting grid indices (including ghost points)
-C       gxm, gym - widths of local grid (including ghost points)
+C  Get local grid boundaries (for 2-dimensional DA)
 
       call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
       call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
      &                                         PETSC_NULL,ierr)
+
+C  Here we shift the starting indices up by one so that we can easily
+C  use the Fortran convention of 1-based indices (rather 0-based indices).
+
       xs  = xs+1
       ys  = ys+1
       gxs = gxs+1
@@ -282,15 +273,16 @@ C
 
 #include "ex5f.h"
 
-      Vec      X, localX
+C  Input/output variables:
+      Vec      X
       integer  ierr
 
-C  Declarations for use with local arrays
+C  Declarations for use with local arrays:
       Scalar   lx_v(0:1)
       common   lx_v
       integer  lx_i
 
-C  Set parameters
+      ierr = 0
 
 C  Get a pointer to vector data.
 C    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -333,14 +325,13 @@ C  Notes:
 C  This routine uses standard Fortran-style computations over a 2-dim array.
 C
       subroutine ApplicationInitialGuess(x,ierr)
-
       implicit none
+
+#include "ex5f.h"
 
 C  Input/output variables:
       Scalar  x(gxs:gxe,gys:gye)
       integer ierr
-
-#include "ex5f.h"
 
 C  Local variables:
       integer  i, j, hxdhy, hydhx
@@ -398,16 +389,18 @@ C
 
 #include "ex5f.h"
 
+C  Input/output variables:
       SNES     snes
       Vec      X, F
-      integer  dummy,ierr
+      integer  dummy
 
-C  Declarations for use with local arrays
+C  Local variables:
+      integer  ierr
 
+C  Declarations for use with local arrays:
       Scalar   lx_v(0:1), lf_v(0:1)
       common   lx_v, lf_v
       integer  lx_i, lf_i 
-
 
 C  Scatter ghost points to local vector, using the 2-step process
 C     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
@@ -442,8 +435,8 @@ C  Insert values into global vector
       call DALocalToGlobal(da,localF,INSERT_VALUES,F,ierr)
       call PLogFlops(11*ym*xm,ierr)
 
-c      call VecView(X,VIEWER_STDOUT_WORLD)
-c      call VecView(F,VIEWER_STDOUT_WORLD)
+c      call VecView(X,VIEWER_STDOUT_WORLD,ierr)
+c      call VecView(F,VIEWER_STDOUT_WORLD,ierr)
 
       return 
       end
@@ -467,18 +460,16 @@ C
 
       implicit none
 
-C  Input/output variables:
+#include "ex5f.h"
 
+C  Input/output variables:
       Scalar   x(gxs:gxe,gys:gye), f(gxs:gxe,gys:gye)
       integer  ierr
 
-#include "ex5f.h"
-
 C  Local variables:
-
       Scalar   two, one, hx, hy, hxdhy, hydhx, sc
       Scalar   u, uxx, uyy
-      integer  ierr, i, j
+      integer  i, j
 
       one    = 1.0
       two    = 2.0
@@ -513,15 +504,15 @@ C
 C  FormJacobian - Evaluates Jacobian matrix.
 C
 C  Input Parameters:
-C  snes - the SNES context
-C  x - input vector
+C  snes  - the SNES context
+C  x     - input vector
 C  dummy - optional user-defined context, as set by SNESSetJacobian()
 C          (not used here)
 C
 C  Output Parameters:
-C  A - Jacobian matrix
-C  B - optionally different preconditioning matrix
-C  flag - flag indicating matrix structure
+C  A     - Jacobian matrix
+C  B     - optionally different preconditioning matrix
+C  flag  - flag indicating matrix structure
 C
 C  Notes:
 C  Due to grid point reordering with DAs, we must always work
@@ -560,16 +551,18 @@ C
 
 #include "ex5f.h"
 
+C  Input/output variables:
       SNES         snes
       Vec          X
       Mat          jac, B
       MatStructure flag
-      integer      dummy, ierr, row, col(5), i, j
-      Scalar       two, one, hx, hy, hxdhy, hydhx
-      Scalar       sc, v(5)
+      integer      dummy
 
-C  Declarations for use with local arrays
+C  Local variables:
+      integer      ierr, row, col(5), i, j
+      Scalar       two, one, hx, hy, hxdhy, hydhx, sc, v(5)
 
+C  Declarations for use with local arrays:
       Scalar   lx_v(0:1)
       common   lx_v
       integer  lx_i
