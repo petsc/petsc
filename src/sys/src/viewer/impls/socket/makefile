@@ -7,7 +7,7 @@ CFLAGS    = $(OPT) -I../.. $(INCLUDEDIRS) -I$(IPETSCDIR)/pinclude \
             $(MATLAB_INCLUDE)
 SOURCEC   = senddense.c send.c  sendsparse.c
 SOURCEF   =
-SOURCEH   =
+SOURCEH   = matlab.h
 OBJSC     = senddense.o send.o  sendsparse.o
 OBJSF     =
 WSOURCEC  =   

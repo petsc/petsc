@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.4 1995/04/25 16:24:29 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.5 1995/05/02 16:06:24 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -21,7 +21,7 @@ struct _SNES {
   void  *gusP;
 
   int   (*ComputeFunction)(SNES,Vec,Vec,void *);
-  Vec   vec_res;                    /* Pointer to function or gradient */
+  Vec   vec_func;                    /* Pointer to function or gradient */
   void  *resP;
   int   rsign;                      /* sign (+/-)  of residual */
 
