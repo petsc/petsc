@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.162 2000/08/24 22:43:06 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.163 2000/09/02 02:49:38 bsmith Exp balay $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -65,7 +65,7 @@ int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
     ierr = MatMultTranspose(A,W1,W2);CHKERRQ(ierr);
     ierr = VecNorm(W1,NORM_2,&a1);CHKERRQ(ierr);
     ierr = VecNorm(W2,NORM_2,&a2);CHKERRQ(ierr);
-    if (PetscAbsScalar(a1) != 0) {
+    if (a1 != 0) {
       PLogInfo(0,"SNESSolve_EQ_LS: ||J^T(F-Ax)||/||F-AX|| %g near zero implies inconsistent rhs\n",a2/a1);
     }
   }
