@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.29 2001/08/09 23:22:04 balay Exp balay $;
+!  $Id: petscdef.h,v 1.30 2001/08/30 19:38:29 balay Exp balay $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
@@ -56,7 +56,7 @@
 #define PetscFortranFloat real*4
 #define PetscFortranDouble real*8
 #define PetscFortranComplex complex*16
-#define PetscChar(a) character(a)
+#define PetscChar(a) character*(a)
 #endif
 
 #if defined(PETSC_USE_COMPLEX)
