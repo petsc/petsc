@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.223 2001/01/20 03:34:25 bsmith Exp balay $*/
+/*$Id: vector.c,v 1.224 2001/02/15 23:02:38 balay Exp balay $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1718,7 +1718,7 @@ int VecRestoreArrays(const Vec x[],int n,Scalar **a[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(*x,VEC_COOKIE);
   PetscValidPointer(a);
-  q = *a;
+
   for(i=0;i<n;++i) {
     ierr = VecRestoreArray(x[i],&q[i]);CHKERRQ(ierr);
   }
@@ -2514,7 +2514,7 @@ int VecStashView(Vec v,PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element % (%18.16e %18.16e) ",rank,s->idx[i],PetscRealPart(val),PetscImaginaryPart(val));CHKERRQ(ierr);
 #else
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d %18.16e\n",rank,s->idx[i],s->array[i]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d %18.16e\n",rank,s->idx[i],val);CHKERRQ(ierr);
 #endif
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

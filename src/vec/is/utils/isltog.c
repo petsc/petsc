@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.61 2001/01/17 19:44:07 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.62 2001/01/26 05:04:04 bsmith Exp balay $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -457,7 +457,7 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMa
 @*/
 int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int **procs,int **numprocs,int ***indices)
 {
-  int         i,n = mapping->n,ierr,Ng,ng = PETSC_DECIDE,max = 0,*lindices = mapping->indices;
+  int         i,n = mapping->n,ierr,Ng,ng,max = 0,*lindices = mapping->indices;
   int         size,rank,*nprocs,*owner,nsends,*sends,j,*starts,*work,nmax,nrecvs,*recvs,proc;
   int         tag1,tag2,tag3,cnt,*len,*source,imdex,scale,*ownedsenders,*nownedsenders,rstart,nowned;
   int         node,nownedm,nt,*sends2,nsends2,*starts2,*lens2,*dest,nrecvs2,*starts3,*recvs2,k,*bprocs,*tmp;
@@ -647,7 +647,6 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   }
   nsends2 = nrecvs;
   ierr    = PetscMalloc((nsends2+1)*sizeof(int),&nprocs);CHKERRQ(ierr); /* length of each message */
-  cnt     = 0;
   for (i=0; i<nrecvs; i++) {
     nprocs[i] = 1;
     for (j=0; j<len[i]; j++) {

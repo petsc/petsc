@@ -1,4 +1,4 @@
-/* $Id: petscbt.h,v 1.17 2001/01/15 21:50:04 bsmith Exp balay $ */
+/* $Id: petscbt.h,v 1.18 2001/01/16 18:22:14 balay Exp balay $ */
 
 /*    
 
@@ -64,13 +64,13 @@ extern int  _BT_idx;
 #define PetscBTSet(array,index)         (_BT_idx          = (index)/BITSPERBYTE, \
                                         _BT_c           = array[_BT_idx], \
                                         _BT_mask        = (char)1 << ((index)%BITSPERBYTE), \
-                                        array[_BT_idx]  = _BT_c | _BT_mask,0)
+                                        array[_BT_idx]  = _BT_c | _BT_mask)
 
 
 #define PetscBTClear(array,index)  (_BT_idx          = (index)/BITSPERBYTE, \
                                    _BT_c           = array[_BT_idx], \
                                    _BT_mask        = (char)1 << ((index)%BITSPERBYTE), \
-                                   array[_BT_idx]  = _BT_c & (~_BT_mask),0)
+                                   array[_BT_idx]  = _BT_c & (~_BT_mask))
 
 #define PetscBTLookup(array,index) (_BT_idx          = (index)/BITSPERBYTE, \
                                    _BT_c           = array[_BT_idx], \

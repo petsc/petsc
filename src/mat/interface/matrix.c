@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.391 2001/02/01 22:09:20 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.392 2001/02/05 15:45:05 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3329,8 +3329,6 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat
    Output Parameter:
 .  v - the location of the values
 
-   Currently returns an array only for the dense formats, giving access to
-   the local portion of the matrix in the usual Fortran column-oriented format.
 
    Fortran Note:
    This routine is used differently from Fortran, e.g.,

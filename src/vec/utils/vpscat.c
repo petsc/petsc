@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.155 2001/01/19 23:20:08 balay Exp bsmith $*/
+/*$Id: vpscat.c,v 1.156 2001/01/20 03:34:23 bsmith Exp balay $*/
 /*
     Defines parallel vector scatters.
 */
@@ -2362,7 +2362,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   len  = slen*(sizeof(int) + sizeof(Scalar)) + (nrecvs+1)*sizeof(int) +
           nrecvs*(sizeof(int) + sizeof(MPI_Request));
   from->n        = nrecvs; 
-  ierr = PetscMalloc(len,&from->values);
+  ierr = PetscMalloc(len,&from->values);CHKERRQ(ierr);
   PetscLogObjectMemory(ctx,len);
   from->requests = (MPI_Request*)(from->values + slen);
   from->indices  = (int*)(from->requests + nrecvs); 
