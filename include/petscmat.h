@@ -116,6 +116,8 @@ extern int MatGetSubMatrix(Mat,IS,IS,Mat*);
 extern int MatGetSubMatrixInPlace(Mat,IS,IS);
 
 extern int MatAXPY(Scalar *,Mat,Mat);
+extern int MatPrintHelp();
+
 #endif
 
 

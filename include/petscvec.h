@@ -86,6 +86,8 @@ extern int VecGetOwnershipRange(Vec,int*,int*);
 /* utility routines */
 extern int VecReciprocal(Vec);
 
+extern int VecPrintHelp();
+
 #endif
 
 
