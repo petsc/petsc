@@ -597,8 +597,154 @@ int MatGetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v)
 #define __FUNCT__ "MatSetValuesBlocked_SeqSBAIJ"
 int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertMode is)
 {
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+  int         *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
+  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen;
+  int         *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=a->bs,stepval,ierr;
+  PetscTruth  roworiented=a->roworiented; 
+  MatScalar   *value = v,*ap,*aa = a->a,*bap;
+  
   PetscFunctionBegin;
-  SETERRQ(1,"Function not yet written for SBAIJ format");
+  if (roworiented) { 
+    stepval = (n-1)*bs;
+  } else {
+    stepval = (m-1)*bs;
+  }
+  for (k=0; k<m; k++) { /* loop over added rows */
+    row  = im[k]; 
+    if (row < 0) continue;
+#if defined(PETSC_USE_BOPT_g)  
+    if (row >= a->mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+#endif
+    rp   = aj + ai[row]; 
+    ap   = aa + bs2*ai[row];
+    rmax = imax[row]; 
+    nrow = ailen[row]; 
+    low  = 0;
+    for (l=0; l<n; l++) { /* loop over added columns */
+      if (in[l] < 0) continue;
+#if defined(PETSC_USE_BOPT_g)  
+      if (in[l] >= a->nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+#endif
+      col = in[l]; 
+      if (col < row) continue; /* ignore lower triangular block */
+      if (roworiented) { 
+        value = v + k*(stepval+bs)*bs + l*bs;
+      } else {
+        value = v + l*(stepval+bs)*bs + k*bs;
+      }
+      if (!sorted) low = 0; high = nrow;
+      while (high-low > 7) {
+        t = (low+high)/2;
+        if (rp[t] > col) high = t;
+        else             low  = t;
+      }
+      for (i=low; i<high; i++) {
+        if (rp[i] > col) break;
+        if (rp[i] == col) {
+          bap  = ap +  bs2*i;
+          if (roworiented) { 
+            if (is == ADD_VALUES) {
+              for (ii=0; ii<bs; ii++,value+=stepval) {
+                for (jj=ii; jj<bs2; jj+=bs) {
+                  bap[jj] += *value++; 
+                }
+              }
+            } else {
+              for (ii=0; ii<bs; ii++,value+=stepval) {
+                for (jj=ii; jj<bs2; jj+=bs) {
+                  bap[jj] = *value++; 
+                }
+              }
+            }
+          } else {
+            if (is == ADD_VALUES) {
+              for (ii=0; ii<bs; ii++,value+=stepval) {
+                for (jj=0; jj<bs; jj++) {
+                  *bap++ += *value++; 
+                }
+              }
+            } else {
+              for (ii=0; ii<bs; ii++,value+=stepval) {
+                for (jj=0; jj<bs; jj++) {
+                  *bap++  = *value++; 
+                }
+              }
+            }
+          }
+          goto noinsert2;
+        }
+      } 
+      if (nonew == 1) goto noinsert2;
+      else if (nonew == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix");
+      if (nrow >= rmax) {
+        /* there is no extra room in row, therefore enlarge */
+        int       new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
+        MatScalar *new_a;
+
+        if (nonew == -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix");
+
+        /* malloc new storage space */
+        len     = new_nz*(sizeof(int)+bs2*sizeof(MatScalar))+(a->mbs+1)*sizeof(int);
+	ierr    = PetscMalloc(len,&new_a);CHKERRQ(ierr);
+        new_j   = (int*)(new_a + bs2*new_nz);
+        new_i   = new_j + new_nz;
+
+        /* copy over old data into new slots */
+        for (ii=0; ii<row+1; ii++) {new_i[ii] = ai[ii];}
+        for (ii=row+1; ii<a->mbs+1; ii++) {new_i[ii] = ai[ii]+CHUNKSIZE;}
+        ierr = PetscMemcpy(new_j,aj,(ai[row]+nrow)*sizeof(int));CHKERRQ(ierr);
+        len  = (new_nz - CHUNKSIZE - ai[row] - nrow);
+        ierr = PetscMemcpy(new_j+ai[row]+nrow+CHUNKSIZE,aj+ai[row]+nrow,len*sizeof(int));CHKERRQ(ierr);
+        ierr = PetscMemcpy(new_a,aa,(ai[row]+nrow)*bs2*sizeof(MatScalar));CHKERRQ(ierr);
+        ierr = PetscMemzero(new_a+bs2*(ai[row]+nrow),bs2*CHUNKSIZE*sizeof(MatScalar));CHKERRQ(ierr);
+        ierr = PetscMemcpy(new_a+bs2*(ai[row]+nrow+CHUNKSIZE),aa+bs2*(ai[row]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);
+        /* free up old matrix storage */
+        ierr = PetscFree(a->a);CHKERRQ(ierr);
+        if (!a->singlemalloc) {
+          ierr = PetscFree(a->i);CHKERRQ(ierr);
+          ierr = PetscFree(a->j);CHKERRQ(ierr);
+        }
+        aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j; 
+        a->singlemalloc = PETSC_TRUE;
+
+        rp   = aj + ai[row]; ap = aa + bs2*ai[row];
+        rmax = imax[row] = imax[row] + CHUNKSIZE;
+        PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + bs2*sizeof(MatScalar)));
+        a->s_maxnz += bs2*CHUNKSIZE;
+        a->reallocs++;
+        a->s_nz++;
+      }
+      N = nrow++ - 1; 
+      /* shift up all the later entries in this row */
+      for (ii=N; ii>=i; ii--) {
+        rp[ii+1] = rp[ii];
+        ierr = PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      }
+      if (N >= i) {
+        ierr = PetscMemzero(ap+bs2*i,bs2*sizeof(MatScalar));CHKERRQ(ierr);
+      }
+      rp[i] = col; 
+      bap   = ap +  bs2*i;
+      if (roworiented) { 
+        for (ii=0; ii<bs; ii++,value+=stepval) {
+          for (jj=ii; jj<bs2; jj+=bs) {
+            bap[jj] = *value++; 
+          }
+        }
+      } else {
+        for (ii=0; ii<bs; ii++,value+=stepval) {
+          for (jj=0; jj<bs; jj++) {
+            *bap++  = *value++; 
+          }
+        }
+      }
+      noinsert2:;
+      low = i;
+    }
+    ailen[row] = nrow;
+  }
+  PetscFunctionReturn(0);
 } 
 
 #undef __FUNCT__  

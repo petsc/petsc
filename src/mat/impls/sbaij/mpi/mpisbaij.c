@@ -430,11 +430,103 @@ int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScala
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ"
-int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
+int MatSetValuesBlocked_MPISBAIJ(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
 {
-  PetscFunctionBegin;
-  SETERRQ(1,"Function not yet written for SBAIJ format"); 
-  /* PetscFunctionReturn(0); */
+  Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
+  MatScalar    *value,*barray=baij->barray;
+  PetscTruth   roworiented = baij->roworiented;
+  int          ierr,i,j,ii,jj,row,col,rstart=baij->rstart;
+  int          rend=baij->rend,cstart=baij->cstart,stepval;
+  int          cend=baij->cend,bs=baij->bs,bs2=baij->bs2;
+
+  PetscFunctionBegin;  
+  if(!barray) {
+    ierr         = PetscMalloc(bs2*sizeof(MatScalar),&barray);CHKERRQ(ierr);
+    baij->barray = barray;
+  }
+
+  if (roworiented) { 
+    stepval = (n-1)*bs;
+  } else {
+    stepval = (m-1)*bs;
+  }
+  for (i=0; i<m; i++) {
+    if (im[i] < 0) continue;
+#if defined(PETSC_USE_BOPT_g)
+    if (im[i] >= baij->Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large, row %d max %d",im[i],baij->Mbs);
+#endif
+    if (im[i] >= rstart && im[i] < rend) {
+      row = im[i] - rstart;
+      for (j=0; j<n; j++) {
+        /* If NumCol = 1 then a copy is not required */
+        if ((roworiented) && (n == 1)) {
+          barray = v + i*bs2;
+        } else if((!roworiented) && (m == 1)) {
+          barray = v + j*bs2;
+        } else { /* Here a copy is required */
+          if (roworiented) { 
+            value = v + i*(stepval+bs)*bs + j*bs;
+          } else {
+            value = v + j*(stepval+bs)*bs + i*bs;
+          }
+          for (ii=0; ii<bs; ii++,value+=stepval) {
+            for (jj=0; jj<bs; jj++) {
+              *barray++  = *value++; 
+            }
+          }
+          barray -=bs2;
+        }
+          
+        if (in[j] >= cstart && in[j] < cend){
+          col  = in[j] - cstart;
+          ierr = MatSetValuesBlocked_SeqSBAIJ(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
+        }
+        else if (in[j] < 0) continue;
+#if defined(PETSC_USE_BOPT_g)
+        else if (in[j] >= baij->Nbs) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %d max %d",in[j],baij->Nbs);}
+#endif
+        else {
+          if (mat->was_assembled) {
+            if (!baij->colmap) {
+              ierr = CreateColmap_MPISBAIJ_Private(mat);CHKERRQ(ierr);
+            }
+
+#if defined(PETSC_USE_BOPT_g)
+#if defined (PETSC_USE_CTABLE)
+            { int data;
+              ierr = PetscTableFind(baij->colmap,in[j]+1,&data);CHKERRQ(ierr);
+              if ((data - 1) % bs) SETERRQ(PETSC_ERR_PLIB,"Incorrect colmap");
+            }
+#else
+            if ((baij->colmap[in[j]] - 1) % bs) SETERRQ(PETSC_ERR_PLIB,"Incorrect colmap");
+#endif
+#endif
+#if defined (PETSC_USE_CTABLE)
+	    ierr = PetscTableFind(baij->colmap,in[j]+1,&col);CHKERRQ(ierr);
+            col  = (col - 1)/bs;
+#else
+            col = (baij->colmap[in[j]] - 1)/bs;
+#endif
+            if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
+              ierr = DisAssemble_MPISBAIJ(mat);CHKERRQ(ierr); 
+              col =  in[j];              
+            }
+          }
+          else col = in[j];
+          ierr = MatSetValuesBlocked_SeqSBAIJ(baij->B,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
+        }
+      }
+    } else {
+      if (!baij->donotstash) {
+        if (roworiented) {
+          ierr = MatStashValuesRowBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
+        } else {
+          ierr = MatStashValuesColBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+  PetscFunctionReturn(0); 
 }
 
 #define HASH_KEY 0.6180339887

@@ -1,5 +1,5 @@
 /*$Id: ex56.c,v 1.32 2001/08/07 03:03:07 balay Exp $*/
-static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for rectangular MatBAIJ matrix.";
+static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for rectangular MatBAIJ matrix, test MatSetValuesBlocked() for MatSBAIJ matrix (-test_mat_sbaij).";
 
 #include "petscmat.h"
 
@@ -12,20 +12,30 @@ int main(int argc,char **args)
   PetscScalar x[6][9],y[3][3],one=1.0;
   int         row[2],col[3],eval;
   IS          is;
-  PetscTruth  flg;
+  PetscTruth  flg,testsbaij=PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  
-  if (size == 1) {
-    ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m*bs,n*bs,1,PETSC_NULL,&A);CHKERRQ(ierr);
-  } else {
-    ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,
-                            PETSC_NULL,1,PETSC_NULL,&A);CHKERRQ(ierr);
-  }
 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-test_mat_sbaij",&testsbaij);CHKERRQ(ierr);
+  
+  if (testsbaij){
+    if (size == 1) {
+      ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,bs,m*bs,n*bs,1,PETSC_NULL,&A);CHKERRQ(ierr);
+    } else {
+      ierr = MatCreateMPISBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,
+                            PETSC_NULL,1,PETSC_NULL,&A);CHKERRQ(ierr);
+    }
+  } else {
+    if (size == 1) {
+      ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m*bs,n*bs,1,PETSC_NULL,&A);CHKERRQ(ierr);
+    } else {
+      ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,
+                            PETSC_NULL,1,PETSC_NULL,&A);CHKERRQ(ierr);
+    }
+  }
   ierr = PetscOptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRQ(ierr);
   if (flg) { 
     ierr = MatSetOption(A,MAT_COLUMN_ORIENTED);CHKERRQ(ierr); 
