@@ -6,6 +6,16 @@ import sys
 import re
 import cPickle
 
+def setSIDL(splicedimpls,dir,file):
+  if file in splicedimpls['.sidl']:
+    print 'Replacing sidl file '+os.path.join(dir,file)
+    fd = open(os.path.join(dir,file),'w')
+    fd.write(splicedimpls['.sidl'][file])
+    fd.close()
+  else:
+    print 'WARNING: Found sidl file that is not in spliced database'
+    print os.path.join(dir,file)    
+  
 def setSplicersDir(splicedimpls,dir,names):
 
   reg = re.compile('splicer.begin\(([A-Za-z0-9._]*)\)')
@@ -15,6 +25,9 @@ def setSplicersDir(splicedimpls,dir,names):
   if 'docs' in names: del names[names.index('docs')]
   for f in names:
     ext = os.path.splitext(f)[1]
+    if ext == '.sidl':
+      setSIDL(splicedimpls,dir,f)
+      continue
     if not ext in splicedimpls: continue
     if f == '__init__.py': continue
     if not os.path.isfile(os.path.join(dir,f)): continue
@@ -37,10 +50,10 @@ def setSplicersDir(splicedimpls,dir,names):
         # replace body with saved splicer block
         if name in splicedimpls[ext] and not body == splicedimpls[ext][name]:          
           foundreplacement = 1
-          print 'Replacing -------'+name
-          print body
-          print 'with ------------'
-          print splicedimpls[ext][name]
+#          print 'Replacing -------'+name
+#          print body
+#          print 'with ------------'
+#          print splicedimpls[ext][name]
           body = splicedimpls[ext][name]
 
         text = text+body
@@ -50,6 +63,9 @@ def setSplicersDir(splicedimpls,dir,names):
 
     if foundreplacement:
       print 'Replaced blocks in '+os.path.join(dir,f)
+      fd = open(os.path.join(dir,f),'w')
+      fd.write(body)
+      fd.close()
 
 #    print text
   
