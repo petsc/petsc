@@ -1,15 +1,16 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: urlget.py,v 1.24 1999/11/17 18:48:04 balay Exp bsmith $ 
+# $Id: urlget.py,v 1.25 2000/03/25 03:54:43 bsmith Exp bsmith $ 
 #
 # change python1.5 to whatever is needed on your system to invoke python
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
 #  Calling sequence: 
-#      urlget.py [-tmp tmpdir] [-] [http,ftp][://hostname][/]directoryname/file [local_filename]
+#      urlget.py [-v] [-tmp tmpdir] [-] [http,ftp][://hostname][/]directoryname/file [local_filename]
 #
 #  Options:
+#       -v             - Print version number and exit
 #       -tmp           - Uses tmpdir if one is provided, else, uses /tmp
 #       -              - use store the file in current dir, with the same filename as the url
 #       local_filename - if provided, store the url in the specified  file [relative to CWD]
@@ -266,11 +267,16 @@ def main():
     # Parse for known options.
     flg_tmp,val_tmp = parseargs('-tmp',1,argv)
     flg_hyp,val_hyp = parseargs('-',0,argv)
-    
+    flg_v,val_v = parseargs('-v',0,argv)
+
+    if flg_v:
+        print 'Version 1.0'
+        exit()
+
     arg_len = len(argv)
     if arg_len < 2: 
         print 'Error! Insufficient arguments.'
-        print 'Usage:', argv[0], '[-tmp tmpdir] [-]  url-filename [local-filename]' 
+        print 'Usage:', argv[0], '[-v] [-tmp tmpdir] [-]  url-filename [local-filename]' 
         sys.exit()
 
     #Default Values
