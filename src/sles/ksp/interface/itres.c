@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itres.c,v 1.34 1999/01/04 20:34:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: itres.c,v 1.35 1999/01/04 20:36:00 bsmith Exp curfman $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -18,6 +18,8 @@ static char vcid[] = "$Id: itres.c,v 1.34 1999/01/04 20:34:18 curfman Exp bsmith
 .  vbinvf   - the result of binv^{-1} b.  If null, don't do it.
 -  vb       - right-hand-side vector
 
+   Level: intermediate
+
    Notes:
    This routine assumes that an iterative method, designed for
 $     A x = b
@@ -26,6 +28,8 @@ $     M u = f
    where M = AC (right preconditioning) or CA (left preconditioning).
 
 .keywords: KSP, residual
+
+.seealso:  KSPMonitor()
 @*/
 int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 {
@@ -80,6 +84,8 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 
    Output Parameter:
 .  vsoln - contains solution on output  
+
+   Level: advanced
 
    Notes:
    If preconditioning either symmetrically or on the right, this routine solves 
