@@ -16,7 +16,6 @@ class Configure(config.base.Configure):
     self.types          = self.framework.require('config.types',     self)
     self.headers        = self.framework.require('config.headers',   self)
     self.libraries      = self.framework.require('config.libraries', self)
-    self.mpiCompilers   = self.framework.require('PETSc.packages.MPICompilers', self.compilers)
     self.headers.headers.append('dlfcn.h')
     self.libraries.libraries.append(('dl', 'dlopen'))
     return
@@ -253,10 +252,8 @@ int checkInit(void) {
     return
 
   def generateGuesses(self):
-    # Try MPI compilers
-    if self.mpiCompilers.foundCompilers:
-      yield ('Default compiler locations', self.libraryGuesses(), [[]])
-      return
+    # May not need to list anything
+    yield ('Default compiler locations', [''], [[]])
     # Try specified library and include
     if 'with-mpi-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-mpi-lib']
@@ -400,13 +397,13 @@ int checkInit(void) {
        - MPI_LIBRARY is the list of MPI libraries'''
     if self.foundMPI:
       self.addDefine('HAVE_MPI', 1)
-      if self.include and not self.mpiCompilers.foundCompilers:
+      if self.include:
         self.addSubstitution('MPI_INCLUDE',     ' '.join(['-I'+inc for inc in self.include]))
         self.addSubstitution('MPI_INCLUDE_DIR', self.include[0])
       else:
         self.addSubstitution('MPI_INCLUDE',     '')
         self.addSubstitution('MPI_INCLUDE_DIR', '')
-      if not self.mpiCompilers.foundCompilers:
+      if self.lib:
         self.addSubstitution('MPI_LIB',     ' '.join(map(self.libraries.getLibArgument, self.lib)))
         self.addSubstitution('MPI_LIBRARY', self.lib)
       else:
