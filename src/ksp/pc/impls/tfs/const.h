@@ -92,7 +92,7 @@ File Description:
 
 #if defined(r8)
 #define REAL_TYPE	MPI_DOUBLE
-#elif 
+#else 
 #define REAL_TYPE	MPI_FLOAT
 #endif
 
