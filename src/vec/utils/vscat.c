@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.83 1997/02/22 02:22:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.84 1997/03/26 01:34:23 bsmith Exp curfman $";
 #endif
 
 /*
@@ -973,7 +973,7 @@ int VecScatterView(VecScatter ctx, Viewer viewer)
   if (!viewer) { viewer = VIEWER_STDOUT_SELF;}
   else {PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);}
   if (ctx->view) return (*ctx->view)((PetscObject)ctx,viewer);
-  else return 0;
+  else SETERRQ(PETSC_ERR_SUP,0,"Cannot view this type of scatter context yet");
 }
 
 #undef __FUNC__  
