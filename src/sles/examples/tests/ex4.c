@@ -42,7 +42,7 @@ int main(int argc,char **args)
   h = 1.0/m;       /* mesh width */
 
   /* create stiffness matrix */
-  ierr = MatCreateSequentialAIJ(N,N,9,0,&C); 
+  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,N,N,9,0,&C); 
   CHKERRA(ierr);
 
   /* forms the element stiffness for the Laplacian */
@@ -91,7 +91,7 @@ int main(int argc,char **args)
   for ( i=2*m+1; i<m*(m+1); i+= m+1 ) {
     rows[count++] = i;
   }
-  ierr = ISCreateSequential(4*m,rows,&is); CHKERRA(ierr);
+  ierr = ISCreateSequential(MPI_COMM_SELF,4*m,rows,&is); CHKERRA(ierr);
   for ( i=0; i<4*m; i++ ) {
      x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
      val = y;
@@ -106,7 +106,7 @@ int main(int argc,char **args)
   ISDestroy(is);
 
   /* solve linear system */
-  if ((ierr = SLESCreate(&sles))) SETERRA(ierr,0);
+  if ((ierr = SLESCreate(MPI_COMM_WORLD,&sles))) SETERRA(ierr,0);
   if ((ierr = SLESSetOperators(sles,C,C,0))) SETERRA(ierr,0);
   if ((ierr = SLESSetFromOptions(sles))) SETERRA(ierr,0);
   SLESGetKSP(sles,&ksp);

@@ -28,7 +28,7 @@ int main(int argc,char **args)
   n = 2*numtids;
 
   /* create the matrix for the five point stencil, YET AGAIN*/
-  ierr = MatCreateInitialMatrix(m*n,m*n,&C); 
+  ierr = MatCreateInitialMatrix(MPI_COMM_WORLD,m*n,m*n,&C); 
   CHKERRA(ierr);
 
   for ( i=0; i<m; i++ ) { 
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = MatBeginAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatEndAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  ierr = VecCreateInitialVector(m*n,&u); CHKERRA(ierr);
+  ierr = VecCreateInitialVector(MPI_COMM_WORLD,m*n,&u); CHKERRA(ierr);
   ierr = VecCreate(u,&b); CHKERRA(ierr);
   ierr = VecCreate(b,&x); CHKERRA(ierr);
   VecSet(&one,u); VecSet(&zero,x);
@@ -52,7 +52,7 @@ int main(int argc,char **args)
   /* compute right hand side */
   ierr = MatMult(C,u,b); CHKERRA(ierr);
 
-  if ((ierr = SLESCreate(&sles))) SETERRA(ierr,0);
+  if ((ierr = SLESCreate(MPI_COMM_WORLD,&sles))) SETERRA(ierr,0);
   if ((ierr = SLESSetOperators(sles,C,C,0))) SETERRA(ierr,0);
   if ((ierr = SLESSetFromOptions(sles))) SETERRA(ierr,0);
   if ((ierr = SLESSolve(sles,b,x,&its))) SETERRA(ierr,0);

@@ -48,7 +48,7 @@ int main(int argc,char **args)
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
 
   /* create stiffness matrix */
-  ierr = MatCreateInitialMatrix(N,N,&C); 
+  ierr = MatCreateInitialMatrix(MPI_COMM_WORLD,N,N,&C); 
   CHKERRA(ierr);
 
   start = mytid*(M/numtids) + ((M%numtids) < mytid ? (M%numtids) : mytid);
@@ -68,7 +68,7 @@ int main(int argc,char **args)
 
   /* create right hand side and solution */
 
-  ierr = VecCreateInitialVector(N,&u); CHKERRA(ierr); 
+  ierr = VecCreateInitialVector(MPI_COMM_WORLD,N,&u); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)u,"Approx. Solution");
   ierr = VecCreate(u,&b); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)b,"Right hand side");
@@ -101,7 +101,7 @@ int main(int argc,char **args)
   for ( i=2*m+1; i<m*(m+1); i+= m+1 ) {
     rows[count++] = i;
   }
-  ierr = ISCreateSequential(4*m,rows,&is); CHKERRA(ierr);
+  ierr = ISCreateSequential(MPI_COMM_SELF,4*m,rows,&is); CHKERRA(ierr);
   for ( i=0; i<4*m; i++ ) {
      x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
      val = y;
@@ -125,7 +125,7 @@ int main(int argc,char **args)
   }
 
   /* solve linear system */
-  if ((ierr = SLESCreate(&sles))) SETERRA(ierr,0);
+  if ((ierr = SLESCreate(MPI_COMM_WORLD,&sles))) SETERRA(ierr,0);
   if ((ierr = SLESSetOperators(sles,C,C,0))) SETERRA(ierr,0);
   if ((ierr = SLESSetFromOptions(sles))) SETERRA(ierr,0);
   SLESGetKSP(sles,&ksp);
