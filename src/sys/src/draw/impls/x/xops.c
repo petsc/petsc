@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.79 1997/05/16 19:22:50 balay Exp balay $";
+static char vcid[] = "$Id: xops.c,v 1.80 1997/05/16 19:33:23 balay Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -792,7 +792,7 @@ static int Petsc_Viewer_Drawx_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
 #define __FUNC__ "VIEWER_DRAWX_" /* ADIC Ignore */
-/*@
+/*@C
      VIEWER_DRAWX_ - Creates a window viewer shared by all processors 
                      in a communicator.
 
@@ -804,7 +804,7 @@ static int Petsc_Viewer_Drawx_keyval = MPI_KEYVAL_INVALID;
 $      XXXView(XXX object,VIEWER_DRAWX_(comm));
 
 .seealso: VIEWER_DRAWX_WORLD, VIEWER_DRAWX_SELF, ViewerDrawOpenX(), 
-@*/
+C@*/
 Viewer VIEWER_DRAWX_(MPI_Comm comm)
 {
   int    ierr,flag;

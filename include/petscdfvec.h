@@ -1,5 +1,5 @@
 
-/* $Id: dfvec.h,v 1.18 1996/09/28 14:08:05 curfman Exp bsmith $ */
+/* $Id: dfvec.h,v 1.19 1997/03/01 16:00:14 bsmith Exp balay $ */
 
 /* This file declares some utility routines for manipulating discrete functions,
    or vectors that are associated with grids, possibly with multiple degrees of
@@ -19,7 +19,7 @@ typedef enum {ORDER_1,ORDER_2} DFComponentOrdering;
 
 #define DF_COOKIE PETSC_COOKIE+15
 
-typedef struct _DF* DF;
+typedef struct _p_DF* DF;
 #define DFVec Vec
 
 /* These routines manipulate the DFVec objects (vectors that are discrete functions). */

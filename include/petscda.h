@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.32 1997/02/07 23:32:18 bsmith Exp curfman $ */
+/* $Id: da.h,v 1.33 1997/03/04 20:55:00 curfman Exp balay $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -12,7 +12,7 @@
 
 #define DA_COOKIE PETSC_COOKIE+14
 
-typedef struct _DA* DA;
+typedef struct _p_DA* DA;
 typedef enum { DA_STENCIL_STAR, DA_STENCIL_BOX } DAStencilType;
 typedef enum { DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC,
                DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC,DA_ZPERIODIC} 
