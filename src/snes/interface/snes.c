@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.191 1999/06/30 23:54:03 balay Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.192 1999/09/02 14:54:01 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -2142,7 +2142,8 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
 .  snes - the SNES context
 
    Output Parameter:
-.  r - the function
++  r - the function (or PETSC_NULL)
+-  ctx - the function context (or PETSC_NULL)
 
    Notes:
    SNESGetFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only
@@ -2155,15 +2156,17 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
 
 .seealso: SNESSetFunction(), SNESGetSolution(), SNESGetMinimizationFunction(),
           SNESGetGradient()
+
 @*/
-int SNESGetFunction(SNES snes,Vec *r)
+int SNESGetFunction(SNES snes,Vec *r,void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
-  *r = snes->vec_func_always;
+  if (r)   *r = snes->vec_func_always;
+  if (ctx) *ctx = snes->funP;
   PetscFunctionReturn(0);
 }  
 
@@ -2178,7 +2181,8 @@ int SNESGetFunction(SNES snes,Vec *r)
 .  snes - the SNES context
 
    Output Parameter:
-.  r - the gradient
++  r - the gradient (or PETSC_NULL)
+-  ctx - the gradient context (or PETSC_NULL)
 
    Notes:
    SNESGetGradient() is valid for SNES_UNCONSTRAINED_MINIMIZATION methods 
@@ -2189,22 +2193,25 @@ int SNESGetFunction(SNES snes,Vec *r)
 
 .keywords: SNES, nonlinear, get, gradient
 
-.seealso: SNESGetMinimizationFunction(), SNESGetSolution(), SNESGetFunction()
+.seealso: SNESGetMinimizationFunction(), SNESGetSolution(), SNESGetFunction(),
+          SNESSetGradient(), SNESSetFunction()
+
 @*/
-int SNESGetGradient(SNES snes,Vec *r)
+int SNESGetGradient(SNES snes,Vec *r,void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
-  *r = snes->vec_func_always;
+  if (r)   *r = snes->vec_func_always;
+  if (ctx) *ctx = snes->funP;
   PetscFunctionReturn(0);
 }  
 
 #undef __FUNC__  
 #define __FUNC__ "SNESGetMinimizationFunction"
-/*@
+/*@C
    SNESGetMinimizationFunction - Returns the scalar function value for 
    unconstrained minimization problems.
 
@@ -2214,7 +2221,8 @@ int SNESGetGradient(SNES snes,Vec *r)
 .  snes - the SNES context
 
    Output Parameter:
-.  r - the function
++  r - the function (or PETSC_NULL)
+-  ctx - the function context (or PETSC_NULL)
 
    Notes:
    SNESGetMinimizationFunction() is valid for SNES_UNCONSTRAINED_MINIMIZATION
@@ -2225,9 +2233,10 @@ int SNESGetGradient(SNES snes,Vec *r)
 
 .keywords: SNES, nonlinear, get, function
 
-.seealso: SNESGetGradient(), SNESGetSolution(), SNESGetFunction()
+.seealso: SNESGetGradient(), SNESGetSolution(), SNESGetFunction(), SNESSetFunction()
+
 @*/
-int SNESGetMinimizationFunction(SNES snes,double *r)
+int SNESGetMinimizationFunction(SNES snes,double *r,void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
@@ -2235,7 +2244,8 @@ int SNESGetMinimizationFunction(SNES snes,double *r)
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
-  *r = snes->fc;
+  if (r)   *r = snes->fc;
+  if (ctx) *ctx = snes->umfunP;
   PetscFunctionReturn(0);
 }  
 

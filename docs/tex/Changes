@@ -90,6 +90,8 @@ have the error flag as the final argument.
 
   Added SNESSetLineSearchParams() and  SNESGetLineSearchParams(), contributed by Matt Knepley.
 
+  Added final ctx argument to SNESGetFunction(), SNESGetGradient() and SNESGetMinimizationFunction()
+
   DA
 
     

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.33 1999/05/24 17:28:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.34 1999/06/08 23:08:59 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -20,6 +20,7 @@ static char vcid[] = "$Id: zsnes.c,v 1.33 1999/05/24 17:28:12 bsmith Exp bsmith 
 #define snesgetsolution_             SNESGETSOLUTION
 #define snesgetsolutionupdate_       SNESGETSOLUTIONUPDATE
 #define snesgetfunction_             SNESGETFUNCTION
+#define snesgetminimizationfunction_ SNESGETMINIMIZATIONFUNCTION
 #define snesgetgradient_             SNESGETGRADIENT
 #define snesdestroy_                 SNESDESTROY
 #define snesgettype_                 SNESGETTYPE
@@ -53,6 +54,7 @@ static char vcid[] = "$Id: zsnes.c,v 1.33 1999/05/24 17:28:12 bsmith Exp bsmith 
 #define snesgetsolution_             snesgetsolution
 #define snesgetsolutionupdate_       snesgetsolutionupdate
 #define snesgetfunction_             snesgetfunction
+#define snesgetminimizationfunction_ snesgetminimizationfunction
 #define snesgetgradient_             snesgetgradient
 #define snesgettype_                 snesgettype
 #define snessetoptionsprefix_        snessetoptionsprefix 
@@ -128,7 +130,7 @@ void matcreatesnewsmf_(SNES *snes,Vec *x,Mat *J, int *__ierr )
   *__ierr = MatCreateSNESMF(*snes,*x,J);
 }
 
-static int (*f7)(SNES*,int*,double*,void*,int*);
+static void (*f7)(SNES*,int*,double*,void*,int*);
 static int oursnesmonitor(SNES snes,int i,double d,void*ctx)
 {
   int              ierr = 0;
@@ -136,14 +138,14 @@ static int oursnesmonitor(SNES snes,int i,double d,void*ctx)
   (*f7)(&snes,&i,&d,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
-void snessetmonitor_(SNES *snes,int (*func)(SNES*,int*,double*,void*,int*),
+void snessetmonitor_(SNES *snes,void (*func)(SNES*,int*,double*,void*,int*),
                     void *mctx, int (*mondestroy)(void *,int *),int *__ierr )
 {
   f7 = func;
   *__ierr = SNESSetMonitor(*snes,oursnesmonitor,mctx,0);
 }
 
-static int (*f8)(SNES*,double*,double*,double*,void*,int*);
+static void (*f8)(SNES*,double*,double*,double*,void*,int*);
 static int oursnestest(SNES snes,double a,double d,double c,void*ctx)
 {
   int              ierr = 0;
@@ -153,7 +155,7 @@ static int oursnestest(SNES snes,double a,double d,double c,void*ctx)
 }
 
 void snessetconvergencetest_(SNES *snes,
-       int (*func)(SNES*,double*,double*,double*,void*,int*),
+       void (*func)(SNES*,double*,double*,double*,void*,int*),
        void *cctx, int *__ierr )
 {
   f8 = func;
@@ -170,14 +172,25 @@ void snesgetsolutionupdate_(SNES *snes,Vec *x, int *__ierr )
   *__ierr = SNESGetSolutionUpdate(*snes,x);
 }
 
-void snesgetfunction_(SNES *snes,Vec *r, int *__ierr )
+void snesgetfunction_(SNES *snes,Vec *r, void **ctx,int *__ierr )
 {
-  *__ierr = SNESGetFunction(*snes,r);
+  if (FORTRANNULLINTEGER(ctx)) ctx = PETSC_NULL;
+  if (FORTRANNULLINTEGER(r))   r   = PETSC_NULL;
+  *__ierr = SNESGetFunction(*snes,r,ctx);
 }
 
-void snesgetgradient_(SNES *snes,Vec *r, int *__ierr )
+void snesgetminimizationfunction_(SNES *snes,double *r, void **ctx,int *__ierr )
 {
-  *__ierr = SNESGetGradient(*snes,r);
+  if (FORTRANNULLINTEGER(ctx)) ctx = PETSC_NULL;
+  if (FORTRANNULLDOUBLE(r))    r   = PETSC_NULL;
+  *__ierr = SNESGetMinimizationFunction(*snes,r,ctx);
+}
+
+void snesgetgradient_(SNES *snes,Vec *r,void **ctx, int *__ierr )
+{
+  if (FORTRANNULLINTEGER(ctx)) ctx = PETSC_NULL;
+  if (FORTRANNULLINTEGER(r))   r   = PETSC_NULL;
+  *__ierr = SNESGetGradient(*snes,r,ctx);
 }
 
 void snesdestroy_(SNES *snes, int *__ierr )
@@ -190,7 +203,7 @@ void snesgetsles_(SNES *snes,SLES *sles, int *__ierr )
   *__ierr = SNESGetSLES(*snes,sles);
 }
 
-static int (*f6)(SNES *,Vec *,Mat *,Mat *,int*,void*,int*);
+static void (*f6)(SNES *,Vec *,Mat *,Mat *,int*,void*,int*);
 static int oursneshessianfunction(SNES snes,Vec x,Mat* mat,Mat* pmat,
                                   MatStructure* st,void *ctx)
 {
@@ -201,14 +214,14 @@ static int oursneshessianfunction(SNES snes,Vec x,Mat* mat,Mat* pmat,
   return 0;
 }
 
-void snessethessian_(SNES *snes,Mat *A,Mat *B,int (*func)(SNES*,Vec*,Mat*,Mat*,int*,void*,int*),
+void snessethessian_(SNES *snes,Mat *A,Mat *B,void (*func)(SNES*,Vec*,Mat*,Mat*,int*,void*,int*),
                      void *ctx, int *__ierr )
 {
   f6 = func;
   *__ierr = SNESSetHessian(*snes,*A,*B,oursneshessianfunction,ctx);
 }
 
-static int (*f5)(SNES*,Vec*,Vec *,void*,int*);
+static void (*f5)(SNES*,Vec*,Vec *,void*,int*);
 static int oursnesgradientfunction(SNES snes,Vec x,Vec d,void *ctx)
 {
   int ierr = 0;
@@ -216,12 +229,12 @@ static int oursnesgradientfunction(SNES snes,Vec x,Vec d,void *ctx)
   return 0;
 }
 
-void snessetgradient_(SNES *snes,Vec *r,int (*func)(SNES*,Vec*,Vec*,void*,int*),void *ctx, int *__ierr ){
+void snessetgradient_(SNES *snes,Vec *r,void (*func)(SNES*,Vec*,Vec*,void*,int*),void *ctx, int *__ierr ){
   f5 = func;
   *__ierr = SNESSetGradient(*snes,*r,oursnesgradientfunction,ctx);
 }
 
-static int (*f4)(SNES*,Vec*,double*,void*,int*);
+static void (*f4)(SNES*,Vec*,double*,void*,int*);
 static int oursnesminfunction(SNES snes,Vec x,double* d,void *ctx)
 {
   int ierr = 0;
@@ -230,21 +243,21 @@ static int oursnesminfunction(SNES snes,Vec x,double* d,void *ctx)
 }
 
 void snessetminimizationfunction_(SNES *snes,
-          int (*func)(SNES*,Vec*,double*,void*,int*),void *ctx, int *__ierr ){
+          void (*func)(SNES*,Vec*,double*,void*,int*),void *ctx, int *__ierr ){
   f4 = func;
   *__ierr = SNESSetMinimizationFunction(*snes,oursnesminfunction,ctx);
 }
 
 /* ---------------------------------------------------------*/
 
-static int (*f2)(SNES*,Vec*,Vec*,void*,int*);
+static void (*f2)(SNES*,Vec*,Vec*,void*,int*);
 static int oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   int ierr = 0;
   (*f2)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
-void snessetfunction_(SNES *snes,Vec *r,int (*func)(SNES*,Vec*,Vec*,void*,int*),
+void snessetfunction_(SNES *snes,Vec *r,void (*func)(SNES*,Vec*,Vec*,void*,int*),
                       void *ctx, int *__ierr ){
    f2 = func;
    *__ierr = SNESSetFunction(*snes,*r,oursnesfunction,ctx);
@@ -252,14 +265,14 @@ void snessetfunction_(SNES *snes,Vec *r,int (*func)(SNES*,Vec*,Vec*,void*,int*),
 
 /* ---------------------------------------------------------*/
 
-static int (*f11)(SNES*,Vec*,Vec*,void*,int*);
+static void (*f11)(SNES*,Vec*,Vec*,void*,int*);
 static int ourmatsnesmffunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   int ierr = 0;
   (*f11)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
-void matsnesmfsetfunction_(Mat *mat,Vec *r,int (*func)(SNES*,Vec*,Vec*,void*,int*),
+void matsnesmfsetfunction_(Mat *mat,Vec *r,void (*func)(SNES*,Vec*,Vec*,void*,int*),
                       void *ctx, int *__ierr ){
    f11 = func;
    *__ierr = MatSNESMFSetFunction(*mat,*r,ourmatsnesmffunction,ctx);
