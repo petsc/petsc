@@ -11,6 +11,7 @@
 typedef void DERIV_TYPE;
 
 ADUTILS_EXTERN void PetscADResetIndep(void);
+ADUTILS_EXTERN void PetscADSetValueAndColor(DERIV_TYPE *,int,int*,double *);
 ADUTILS_EXTERN void PetscADSetValArray(DERIV_TYPE *,int,double *);
 ADUTILS_EXTERN void PetscADSetIndepVector(DERIV_TYPE *,int,double *);
 ADUTILS_EXTERN void PetscADSetIndepArrayColored(DERIV_TYPE *,int,int *);

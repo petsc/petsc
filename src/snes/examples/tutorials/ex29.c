@@ -8,7 +8,7 @@
 
 static char help[] = "XXXXX with multigrid and timestepping in 2 dimensions.\n\
   \n\
--da_grid_x 6 -dmmg_nlevels 3 -da_grid_y 6 -mg_coarse_pc_type lu -mg_coarse_pc_lu_damping -mg_levels_pc_ilu_damping -mat_aij_no_inode \n\
+-da_grid_x 5 -da_grid_y 5 -dmmg_nlevels 3 lu -mg_coarse_pc_lu_damping -mg_levels_pc_ilu_damping \n\
   -viscosity <nu>\n\
   -skin_depth <d_e>\n\
   -larmor_radius <rho_s>\n\

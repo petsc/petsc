@@ -28,8 +28,8 @@ G_COPTFLAGS	   = -g -use_msasm
 G_FOPTFLAGS	   = -g
 # ----------------------------- BOPT - O options -----------------------------
 # Note: -xW generates Pentium 4 specific code.  Use -xK for Pentium III.
-O_COPTFLAGS	   = -O2 -use_msasm -xK
-O_FOPTFLAGS	   = -O2 -xK
+O_COPTFLAGS	   = -O3 -use_msasm -xW
+O_FOPTFLAGS	   = -O3 -xW
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = icc -Kc++ -Kc++eh
