@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.43 1999/02/03 04:32:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.44 1999/03/07 17:20:44 bsmith Exp bsmith $";
 #endif
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
@@ -62,6 +62,7 @@ int main( int argc, char **argv )
   Draw     draw;                 /* drawing context */
   int      ierr, its, N, nfails,flg,cavity; 
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  Scalar   *xvalues;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
@@ -108,7 +109,9 @@ int main( int argc, char **argv )
 
   PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);
   PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
-  DrawTensorContour(draw,user.mx,user.my,0,0,x);
+  ierr = VecGetArray(x,&xvalues);CHKERRA(ierr);
+  ierr = DrawTensorContour(draw,user.mx,user.my,0,0,xvalues);CHKERRA(ierr);
+  ierr = VecRestoreArray(x,&xvalues);CHKERRA(ierr);
 
   /* Free data structures */
   ierr = VecDestroy(x); CHKERRA(ierr);  ierr = VecDestroy(r); CHKERRA(ierr);

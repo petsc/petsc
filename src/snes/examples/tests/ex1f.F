@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.37 1999/03/04 16:05:06 balay Exp bsmith $";
+! "$Id: ex4f.F,v 1.38 1999/03/07 17:19:45 bsmith Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -12,7 +12,9 @@
 !  Concepts: SNES^Solving a system of nonlinear equations (sequential Bratu example);
 !  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
 !  Routines: SNESSolve(); SNESSetFromOptions();
-!  Routines: DrawOpenX();
+!  Routines: MatGetColoring(); MatFDColoringCreate(); MatFDColoringSetFromOptions();
+!  Routines: MatFDColoringDestroy(); ISColoringDestroy(); SNESDefaultComputeJacobianColor();
+!  Routines: DrawOpenX(); DrawTensorContour(); DrawDestroy();
 !  Processors: 1
 !T*/
 !
@@ -93,6 +95,9 @@
       ISColoring         iscoloring
       MatStructure       str
  
+      Scalar      lx_v(0:1)
+      PetscOffset lx_i
+
 !  Store parameters in common block
 
       common /params/ lambda, mx, my
@@ -257,8 +262,10 @@
 
       call DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',  &
      &               300,0,300,300,draw,ierr)
+      call VecGetArray(x,lx_v,lx_i,ierr)
       call DrawTensorContour(draw,mx,my,PETSC_NULL_DOUBLE,              &
-     &     PETSC_NULL_DOUBLE,x,ierr)
+     &     PETSC_NULL_DOUBLE,lx_v(lx_i+1),ierr)
+      call VecRestoreArray(x,lx_v,lx_i,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.62 1999/03/07 17:20:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.63 1999/03/10 19:27:40 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
@@ -17,7 +17,7 @@ This example also illustrates the use of matrix coloring.  Runtime options inclu
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
    Routines: SNESSolve(); SNESSetFromOptions(); SNESSetConvergenceHistory();
    Routines: MatGetColoring(); MatFDColoringCreate(); MatFDColoringSetFromOptions();
-   Routines: MatFDColoringDestroy(); ISColoringDestroy();
+   Routines: MatFDColoringDestroy(); ISColoringDestroy();SNESDefaultComputeJacobianColor();
    Routines: DrawOpenX(); DrawTensorContour(); DrawDestroy();
    Processors: 1
 T*/
