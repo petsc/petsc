@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.190 2000/04/09 04:37:19 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.191 2000/04/12 04:24:31 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -1163,7 +1163,7 @@ int PCPostSolve(PC pc,KSP ksp)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCView"
-/*@ 
+/*@C
    PCView - Prints the PC data structure.
 
    Collective on PC

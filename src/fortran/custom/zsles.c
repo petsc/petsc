@@ -1,4 +1,4 @@
-/*$Id: zsles.c,v 1.22 1999/11/05 14:48:14 bsmith Exp bsmith $*/
+/*$Id: zsles.c,v 1.23 2000/01/11 21:03:48 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sles.h"
@@ -11,6 +11,7 @@
 #define slesappendoptionsprefix_ SLESAPPENDOPTIONSPREFIX
 #define slesgetksp_              SLESGETKSP
 #define slesgetoptionsprefix_    SLESGETOPTIONSPREFIX
+#define slesview_                SLESVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define slessetoptionsprefix_    slessetoptionsprefix
 #define slesappendoptionsprefix_ slesappendoptionsprefix
@@ -19,9 +20,17 @@
 #define slesgetpc_               slesgetpc
 #define slesgetksp_              slesgetksp
 #define slesgetoptionsprefix_    slesgetoptionsprefix
+#define slesview_                slesview
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL slesview_(SLES *sles,Viewer *viewer, int *__ierr )
+{
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *__ierr = SLESView(*sles,v);
+}
 
 void PETSC_STDCALL slessetoptionsprefix_(SLES *sles,CHAR prefix PETSC_MIXED_LEN(len),
                                          int *ierr PETSC_END_LEN(len))

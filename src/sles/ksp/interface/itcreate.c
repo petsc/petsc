@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.183 2000/04/09 04:37:45 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.184 2000/04/12 04:24:52 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -9,7 +9,7 @@ PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"KSPView"
-/*@ 
+/*@C 
    KSPView - Prints the KSP data structure.
 
    Collective on KSP
