@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.165 1996/11/06 22:32:55 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.166 1996/11/08 05:43:43 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -170,27 +170,27 @@ as described in Section~\ref{sec:fortvecd}.
 \begin{tabular}{ll}
 {\bf Function Name} & {\bf Operation} \\
 \hline
-VecAXPY(Scalar *a,Vec x, Vec y); & $y = y + a*x$ \\
-VecAYPX(Scalar *a,Vec x, Vec y); & $y = x + a*y$ \\
-VecWAXPY(Scalar *a,Vec x,Vec y, Vec w); & $w = a*x + y$ \\
-VecAXPBY(Scalar *a,Scalar *,Vec x,Vec y); & $y = a*x + b*y$\\
-VecScale(Scalar *a, Vec x); & $ x = a*x $\\
-VecDot(Vec x, Vec y, Scalar *r); & $ r = \bar{x}'*y$\\
-VecTDot(Vec x, Vec y, Scalar *r); & $ r = x'*y$\\
-VecNorm(Vec x,NormType type,  double *r); & $ r = ||x||_{type}$\\
-VecSum(Vec x,   Scalar *r); & $ r = \sum x_{i}$\\
-VecCopy(Vec x, Vec y); & $ y = x $\\
-VecSwap(Vec x, Vec y); & $ y = x $ while $ x = y$\\
+VecAXPY(Scalar *a,Vec x, Vec y); & $ y = y + a*x$ \\
+VecAYPX(Scalar *a,Vec x, Vec y); & $ y = x + a*y$ \\
+VecWAXPY(Scalar *a,Vec x,Vec y, Vec w); & $ w = a*x + y$ \\
+VecAXPBY(Scalar *a,Scalar *,Vec x,Vec y); & $ y = a*x + b*y$ \\
+VecScale(Scalar *a, Vec x); & $ x = a*x $ \\
+VecDot(Vec x, Vec y, Scalar *r); & $ r = \bar{x}'*y$ \\
+VecTDot(Vec x, Vec y, Scalar *r); & $ r = x'*y$ \\
+VecNorm(Vec x,NormType type,  double *r); & $ r = ||x||_{type}$ \\
+VecSum(Vec x,   Scalar *r); & $ r = \sum x_{i}$ \\
+VecCopy(Vec x, Vec y); & $ y = x $ \\
+VecSwap(Vec x, Vec y); & $ y = x $ while $ x = y$ \\
 VecPointwiseMult(Vec x,Vec y, Vec w); & $ w_{i} = x_{i}*y_{i} $ \\
 VecPointwiseDivide(Vec x,Vec y, Vec w); & $ w_{i} = x_{i}/y_{i} $ \\
-VecMDot(int n,Vec x, Vec *y,Scalar *r); & $ r[i] = \bar{x}'*y[i]$\\
-VecMTDot(int n,Vec x, Vec *y,Scalar *r); & $ r[i] = x'*y[i]$\\
+VecMDot(int n,Vec x, Vec *y,Scalar *r); & $ r[i] = \bar{x}'*y[i]$ \\
+VecMTDot(int n,Vec x, Vec *y,Scalar *r); & $ r[i] = x'*y[i]$ \\
 VecMAXPY(int n, Scalar *a,Vec x, Vec *y); \hspace{1cm} & $ y[i] = a_{i}*x + y[i] $ \\
-VecMax(Vec x,  int *idx, double *r); & $ r = \max x_{i}$\\
-VecMin(Vec x,  int *idx, double *r); & $ r = \min x_{i}$\\
-VecAbs(Vec x); & $ x_i = |x_{i}|$\\
-VecReciprocal(Vec x); & $ x_i = 1/x_{i}$\\
-VecShift(Scalar *s,Vec x); & $ x_i = s + x_{i}$\\
+VecMax(Vec x,  int *idx, double *r); & $ r = \max x_{i}$ \\
+VecMin(Vec x,  int *idx, double *r); & $ r = \min x_{i}$ \\
+VecAbs(Vec x); & $ x_i = |x_{i}|$ \\
+VecReciprocal(Vec x); & $ x_i = 1/x_{i}$ \\
+VecShift(Scalar *s,Vec x); & $ x_i = s + x_{i}$ \\
 \hline 
 \end{tabular}
 \end{center}
@@ -420,7 +420,9 @@ elements it needed, or none by creating an index set with no entries.
    VecScatterBegin(p,x,INSERT_VALUES,SCATTER_ALL,scatter);
    VecScatterEnd(p,x,INSERT_VALUES,SCATTER_ALL,scatter);
    VecGetArray(x,&values);
-   ISDestroy(from); ISDestroy(to); VecScatterDestroy(scatter);
+   ISDestroy(from);
+   ISDestroy(to); 
+   VecScatterDestroy(scatter);
 \end{verbatim}
 \caption{Example Code for Vector Scatters}
 \label{fig:vecscatter}
@@ -1009,13 +1011,13 @@ Thus, if different rows have very different numbers of nonzeros, one
 should attempt to indicate (nearly) the exact number of elements
 intended for the various rows with the optional array, {\tt nzz} of
 length {\tt m}, where {\tt m} is the number of rows, for example
-  \begin{verbatim}
-    int nnz[m];
-    nnz[0] = <nonzeros in row 0>
-    nnz[1] = <nonzeros in row 1>
-    ....
-    nnz[m-1] = <nonzeros in row m-1>
-  \end{verbatim}
+\begin{verbatim}
+   int nnz[m];
+   nnz[0] = <nonzeros in row 0>
+   nnz[1] = <nonzeros in row 1>
+   ....
+   nnz[m-1] = <nonzeros in row m-1>
+\end{verbatim}
 In this case, the assembly process will require no additional memory
 allocations if the {\tt nnz} estimates are correct. If, however,
 the {\tt nnz} estimates are incorrect, PETSc will automatically
@@ -1292,7 +1294,7 @@ to another vector: \findex{MatMultAdd()} \findex{MatMultTransAdd()}
    ierr = MatMultAdd(Mat A,Vec x,Vec y,Vec w);
    ierr = MatMultTransAdd(Mat A,Vec x,Vec y,Vec w);
 \end{verbatim}
-These routines, respectively, produce $w = A*x + y$ and $w = A^{T}*x + y$. 
+These routines, respectively, produce $ w = A*x + y $ and $ w = A^{T}*x + y$ . 
 In C it is legal for the vectors {\tt y} and {\tt w} to be identical.
 In Fortran 77, this situation is forbidden by the language standard, 
 but we allow it anyway.
@@ -1327,14 +1329,14 @@ MatMult(Mat A,Vec x, Vec y); & $ y = A*x $ \\
 MatMultAdd(Mat A,Vec x, Vec y,Vec z); & $ z = y + A*x $ \\
 MatMultTrans(Mat A,Vec x, Vec y); & $ y = A^{T}*x $ \\
 MatMultTransAdd(Mat A,Vec x, Vec y,Vec z); & $ z = y + A^{T}*x $ \\
-MatNorm(Mat A,NormType type,  double *r); & $ r = ||A||_{type}$\\
-MatDiagonalScale(Mat A,Vec l,Vec r); & $ A = \hbox{diag}(l)*A*\hbox{diag}(r) $\\
-MatScale(Scalar *a,Mat A); & $ A = a*A $\\
-MatConvert(Mat A,MatType type,Mat *B); & $ B = A $\\
-MatCopy(Mat A,Mat B); &  $ B = A $\\
+MatNorm(Mat A,NormType type,  double *r); & $ r = ||A||_{type}$ \\
+MatDiagonalScale(Mat A,Vec l,Vec r); & $ A = \hbox{diag}(l)*A*\hbox{diag}(r) $ \\
+MatScale(Scalar *a,Mat A); & $ A = a*A $ \\
+MatConvert(Mat A,MatType type,Mat *B); & $ B = A $ \\
+MatCopy(Mat A,Mat B); &  $ B = A $ \\
 MatGetDiagonal(Mat A,Vec x); & $ x = \hbox{diag}(A)$ \\
 MatTranspose(Mat A,Mat* B); & $ B = A^{T} $ \\
-MatZeroEntries(Mat A); & $ A = 0 $\\
+MatZeroEntries(Mat A); & $ A = 0 $ \\
 \hline 
 \end{tabular}
 \end{center}
@@ -1383,11 +1385,11 @@ shell matrix operations as well.  The file
 {\tt \$(PETSC\_DIR)/include/mat.h} provides a complete list of matrix
 operations, which have the form {\tt MATOP\_<OPERATION>}, where {\tt
 <OPERATION>} is the name (in all capital letters) of the user
-interface routine (for example, {\tt MatMult()} $\rightarrow$ {\tt MATOP\_MULT}).  All
+interface routine (for example, {\tt MatMult()} $ \rightarrow $ {\tt MATOP\_MULT}).  All
 user-provided functions have the same calling sequence as the
 usual matrix interface routines, since the user-defined functions are
 intended to be accessed through interface, e.g., 
-{\tt MatMult(Mat,Vec,Vec)} $\rightarrow$ {\tt UserMult(Mat,Vec,Vec)}.
+{\tt MatMult(Mat,Vec,Vec)} $ \rightarrow$ {\tt UserMult(Mat,Vec,Vec)}.
 
 Note that {\tt MatShellSetOperation()} can also be used as a
 ``backdoor'' means of introducing user-defined changes in matrix
@@ -1516,8 +1518,8 @@ SLES is intended for solving nonsingular systems of the form
    A x = b,
 \label{eq:Ax=b}
 \end{equation}
-where $A$ denotes the matrix representation of a linear operator, $b$
-is the right-hand-side vector, and $x$ is the solution vector.  SLES
+where $ A$ denotes the matrix representation of a linear operator, $b$
+is the right-hand-side vector, and $ x $ is the solution vector.  SLES
 uses the same calling sequence for both direct and iterative solution
 of a linear system.  In addition, particular solution techniques and
 their associated options can be selected at runtime.
@@ -1739,12 +1741,12 @@ Preconditioning can be applied to the system (\ref{eq:Ax=b}) by
    (M_L^{-1} A M_R^{-1}) \, (M_R x) = M_L^{-1} b,
 \label{eq:prec}
 \end{equation}
-where $M_L$ and $M_R$ indicate preconditioning matrices.  If $M_L = I$
+where $ M_L$ and $ M_R $ indicate preconditioning matrices.  If $ M_L = I $
 in (\ref{eq:prec}), right preconditioning results, and the
 residual of (\ref{eq:Ax=b}),
   \[ r \equiv b - Ax = b - A M_R^{-1} \, M_R x, \]
 is preserved.  In contrast, the residual is altered for left 
-($M_R = I$) and symmetric preconditioning, as given by
+($ M_R = I $ ) and symmetric preconditioning, as given by
   \[ r_L \equiv M_L^{-1} b - M_L^{-1} A x = M_L^{-1} r. \]
 By default, all KSP implementations use left preconditioning.  
 % Not really, KSPQCG uses symmetric preconditioning.
@@ -1778,23 +1780,23 @@ the options database command {\tt ksp\_preres} or by calling the routine
 \begin{tabular}{llll}
 & & {\bf Options}	& {\bf Default}\\
 & & {\bf Database}	& {\bf Convergence}\\
-{\bf Method}	&{\bf KSPType}	& {\bf Name}	& {\bf Monitor $\dagger$}\\
+{\bf Method}	&{\bf KSPType}	& {\bf Name}	& {\bf Monitor $ \dagger $}\\
 \hline
-Richardson			& KSPRICHARDSON	& richardson	& true\\
-Chebychev			& KSPCHEBYCHEV	& chebychev	& true\\
-Conjugate Gradient \cite{hs:52}		& KSPCG		& cg		& true\\
-Generalized Minimal Residual \cite{ss:86}	& KSPGMRES	& gmres		& precond\\
-BiCGSTAB \cite{v:92} 			& KSPBCGS	& bcgs		& precond \\
-Conjugate Gradient Squared \cite{so:89}	& KSPCGS	& cgs		& precond \\
-Transpose-Free Quasi-Minimal Residual (var. 1) \cite{f:93}	& KSPTFQMR	& tfqmr	& precond \\
-Transpose-Free Quasi-Minimal Residual (var. 2)	& KSPTCQMR	& tcqmr		& precond \\
-Conjugate Residual		& KSPCR		& cr		& precond \\
-Least Squares Method		& KSPLSQR	& lsqr		& precond \\
-Shell for no KSP method		& KSPPREONLY	& preonly	& precond \\
+Richardson			          & KSPRICHARDSON & richardson	& true\\
+Chebychev			          & KSPCHEBYCHEV  & chebychev	& true\\
+Conjugate Gradient \cite{hs:52}		  & KSPCG         & cg	        & true\\
+Generalized Minimal Residual \cite{ss:86} & KSPGMRES      & gmres       & precond\\
+BiCGSTAB \cite{v:92}                      & KSPBCGS       & bcgs        & precond \\
+Conjugate Gradient Squared \cite{so:89}   & KSPCGS        & cgs	        & precond \\
+Transpose-Free Quasi-Minimal Residual (1) \cite{f:93} & KSPTFQMR & tfqmr & precond \\
+Transpose-Free Quasi-Minimal Residual (2) & KSPTCQMR & tcqmr & precond \\
+Conjugate Residual                        & KSPCR         & cr          & precond \\
+Least Squares Method                      & KSPLSQR       & lsqr        & precond \\
+Shell for no KSP method	                  & KSPPREONLY    & preonly     & precond \\
 \hline
 \end{tabular}
 \medskip \medskip
-$\dagger$ true - denotes true residual norm, precond - denotes preconditioned residual norm
+$ \dagger $ true - denotes true residual norm, precond - denotes preconditioned residual norm
 \end{center}
 \caption{KSP Defaults.  All methods use left preconditioning by default.}
 \label{tab:kspdefaults}
@@ -1808,7 +1810,7 @@ based on the $l_2$-norm of the residual. Convergence
 (or divergence) is decided by three quantities:
 the relative decrease of the residual norm, {\tt rtol}, the absolute 
 size of the residual norm, {\tt atol}, and the relative increase in the 
-residual, {\tt dtol}.  Convergence is detected at iteration $k$ if
+residual, {\tt dtol}.  Convergence is detected at iteration $ k $ if
 \[  \| r_k \|_2 < {\rm max} ( rtol * \| r_0 \|_2, atol ), \]
 where $r_k = b - A x_k$.  Divergence is detected if
 \[  \| r_k \|_2 > dtol * \| r_0 \|_2. \]
@@ -1839,7 +1841,7 @@ routine with the command \findex{KSPSetConvergenceTest()}
 The final routine argument, {\tt ctx}, is an optional context for private
 data for the user-defined convergence routine, {\tt test}.  Other
 {\tt test} routine arguments are the iteration
-number, {\tt it}, and the residual's $l_2$ norm, {\tt rnorm}.
+number, {\tt it}, and the residual's $ l_2 $ norm, {\tt rnorm}.
 The routine for detecting convergence, {\tt test}, should return the 
 integer 1 for convergence, 0 for no convergence, and minus 1 (-1) on error or 
 failure to converge.  
@@ -1863,7 +1865,7 @@ the monitoring by using the command \findex{KSPSetMonitor()}
 The final routine argument, {\tt ctx}, is an optional context for private
 data for the user-defined monitoring routine, {\tt mon}.  Other
 {\tt mon} routine arguments are the iteration
-number ({\tt it}) and the residual's $l_2$ norm ({\tt rnorm}).
+number ({\tt it}) and the residual's $ l_2 $ norm ({\tt rnorm}).
 A helpful routine within user-defined monitors is 
 {\tt PetscObjectGetComm((PetscObject)ksp,MPI\_Comm *comm)}, which returns
 in {\tt comm} \findex{PetscObjectGetComm()} \sindex{communicator} the
@@ -1884,7 +1886,7 @@ gradient method or GMRES, since it prints estimates of the extreme singular
 values of the preconditioned operator at each iteration. Since
 {\tt KSPTrueMonitor()} prints \findex{KSPTrueMonitor()}
 the true residual at each iteration by 
-actually computing the residual using the formula $ r = b - Ax$, the routine
+actually computing the residual using the formula $ r = b - Ax $, the routine
 is slow and should be used only for testing or convergence studies,
 not for timing. These monitors may be accessed with the command line options
 {\tt -ksp\_monitor, -ksp\_singmonitor}, and {\tt -ksp\_truemonitor}.
@@ -2120,20 +2122,20 @@ considered to be symmetric in terms of their sparsity structure; this
 format is required for use of the parallel communication routines
 within BlockSolve95. In particular, if the matrix element $A[i,j]$
 exists, then PETSc will internally allocate a 0 value for the element
-$A[j,i]$ during {\tt MatAssemblyEnd()} if the user has not already set
-a value for the matrix element $A[j,i]$.
+$ A[j,i] $ during {\tt MatAssemblyEnd()} if the user has not already set
+a value for the matrix element $ A[j,i] $ .
 
-When manipulating a preconditioning matrix, $A$, BlockSolve95
-internally works with a scaled and permuted matrix, $\hat{A} = P
-D^{-1/2} A D^{-1/2},$ where $D$ is the diagonal of $A$, and $P$ is a
+When manipulating a preconditioning matrix, $ A $ , BlockSolve95
+internally works with a scaled and permuted matrix, $ \hat{A} = P
+D^{-1/2} A D^{-1/2},$ where $ D $ is the diagonal of $ A $ , and $ P $ is a
 permutation matrix determined by a graph coloring for efficient
-parallel computation.  Thus, when solving a linear system, $Ax=b$,
+parallel computation.  Thus, when solving a linear system, $ Ax=b $,
 using ILU/ICC preconditioning and the matrix format {\tt MATMPIROWBS}
 for {\em both} the linear system matrix and the preconditioning
-matrix, one actually solves the scaled and permuted system $\hat{A}
-\hat{x} = \hat{b}$, where $\hat{x} = P D^{1/2} x$ and $\hat{b} = P
-D^{-1/2} b$.  PETSc handles the internal scaling and permutation of
-$x$ and $b$, so the user does {\em not} deal with these conversions, 
+matrix, one actually solves the scaled and permuted system $ \hat{A}
+\hat{x} = \hat{b} $ , where $ \hat{x} = P D^{1/2} x $ and $\hat{b} = P
+D^{-1/2} b$ .  PETSc handles the internal scaling and permutation of
+$ x $ and $ b $ , so the user does {\em not} deal with these conversions, 
 but instead always works with the original linear system.  In
 this case, by default the scaled residual norm is monitored; one must use the
 option {\tt -ksp\_bsmonitor} \findex{-ksp_bsmonitor} to print both the
@@ -2272,8 +2274,8 @@ extract the \findex{PCBJacobiGetSubSLES()} SLES context for each local
 block.  The argument {\tt n\_local} is the number of blocks on the 
 calling processor, and {\tt first\_local} indicates the global number 
 of the first block on the processor. The blocks are numbered 
-successively by processors from zero through $gb-1$, 
-where $gb$ is the number of global blocks.  
+successively by processors from zero through $ gb-1$ , 
+where $ gb $ is the number of global blocks.  
 The array of SLES contexts for the local blocks is given by {\tt subsles}. 
 This mechanism enables the user to set completely different solvers for the 
 various blocks.  To set the appropriate data structures, the 
@@ -2421,7 +2423,7 @@ compute the residual.  The following command suffices: \findex{MGSetResidual()}
 \begin{verbatim}
    MGSetResidual(PC pc,int level,int (*residual)(Mat,Vec,Vec,Vec),Mat mat);
 \end{verbatim}
-The {\tt residual()} function can be set to be {\tt MGDefaultResidual}
+The {\tt residual()} function can be set to be {\tt MGDefaultResidual()}
 if \findex{MGDefaultResidual()}
 one's operator is stored in a {\tt Mat} format.  In certain circumstances, 
 where it is much cheaper to calculate the residual directly, rather 
@@ -2484,8 +2486,8 @@ The general form of the $n$-dimensional Newton's method for solving
      \x_{k+1} = \x_k - [ \F'(\x_k)]^{-1} \F(\x_k), \;\; k=0,1, \ldots, 
 \label{eq:n1}
 \end{equation}
-where $\x_0$ is an initial approximation to the solution and   
-$\F'(\x_k)$ is nonsingular.  
+where $ \x_0 $ is an initial approximation to the solution and   
+$ \F'(\x_k) $ is nonsingular.  
 In practice, the Newton iteration (\ref{eq:n1}) is implemented by
 the following two steps:
 \begin{eqnarray}
@@ -2499,8 +2501,8 @@ Similarly, the general form of Newton's method for solving (\ref{eq:minF}) is
           k=0,1, \ldots,
 \label{eq:n2}
 \end{equation}
-where $\x_0 \in \, \Re^n$ is an initial approximation
-to the solution, and $\nabla^2 f(\x_k)$ is positive definite.
+where $ \x_0 \in \, \Re^n $ is an initial approximation
+to the solution, and $ \nabla^2 f(\x_k) $ is positive definite.
 The iteration (\ref{eq:n2}) is usually implemented by
 \begin{eqnarray}
   1. & {\rm (Approximately) \;solve\;\;\;} \nabla^2 f(\x_k) \Delta \x_k = -\nabla f(\x_k).\\
@@ -2540,8 +2542,8 @@ problems in Sections~\ref{sec:sneseq} and \ref{sec:sums}.
 To create a SNES solver, one must first call {\tt SNESCreate()} and indicate
 the class of problem being solved, using one of the following:
 \begin{verbatim}
-  ierr = SNESCreate(MPI_Comm comm,SNES_NONLINEAR_EQUATIONS,SNES *snes);
-  ierr = SNESCreate(MPI_Comm comm,SNES_UNCONSTRAINED_MINIMIZATION,SNES *snes);
+   ierr = SNESCreate(MPI_Comm comm,SNES_NONLINEAR_EQUATIONS,SNES *snes);
+   ierr = SNESCreate(MPI_Comm comm,SNES_UNCONSTRAINED_MINIMIZATION,SNES *snes);
 \end{verbatim}
 When solving a system of nonlinear equations, the user must then set
 routines for evaluating the function of equation~(\ref{eq:F=0}) and its
@@ -2728,7 +2730,7 @@ few in the sections below.
 \begin{table}
 \begin{center}
 \begin{tabular}{llll}
-{\bf Method}	&{\bf SNES Type}& {\bf Options Database Name}	&{\bf Default Convergence Test}\\
+{\bf Method}	&{\bf SNES Type}& {\bf Options Name}	&{\bf Default Convergence Test}\\
 \hline
 Line search     & SNES\_EQ\_LS   & ls	& SNESConverged\_EQ\_LS()\\
 Trust region    & SNES\_EQ\_TR   & tr	& SNESConverged\_EQ\_TR()\\
@@ -2785,7 +2787,7 @@ radius, computed by
 \[
   \Delta = \Delta_0 \| F_0 \|_2,
 \]
-by setting $\Delta_0$ via the option 
+by setting $ \Delta_0 $ via the option 
 {\tt -snes\_trust\_region\_delta0 <delta0>}.
 
 The default trust region method for unconstrained minimization, 
@@ -2960,13 +2962,13 @@ inner iterations determine the asymptotic convergence rate for
 inexact Newton techniques.
 While the Newton systems must be solved well enough to retain
 fast local convergence of the Newton's iterates, use of excessive
-inner iterations, particularly when $\| \x_k - \x_* \|$ is large,
+inner iterations, particularly when $ \| \x_k - \x_* \| $ is large,
 is neither necessary nor economical.
 Thus, the number of required inner iterations typically increases
 as the Newton process progresses, so that the truncated iterates
 approach the true Newton iterates.
 
-A sequence of nonnegative numbers $\{\eta_k\}$ can be used to 
+A sequence of nonnegative numbers $ \{\eta_k\} $ can be used to 
 indicate the variable convergence criterion.
 In this case, when solving a system of nonlinear equations, the 
 update step of the Newton process remains unchanged, and direct 
@@ -2975,14 +2977,14 @@ system until the residuals
 \[  \rr_k^{(i)} =  \F'(\x_k) \Delta \x_k + \F(\x_k) \]
 satisfy
 \[  \frac{ \| \rr_k^{(i)} \| }{ \| \F(\x_k) \| } \leq \eta_k \leq \eta < 1. \]
-Here $\x_0$ is an initial approximation of the solution, and
-$\| \cdot \|$ denotes an arbitrary norm in $\Re^n$.  
+Here $ \x_0 $ is an initial approximation of the solution, and
+$ \| \cdot \| $ denotes an arbitrary norm in $ \Re^n $ .  
 
 By default a constant relative convergence tolerance is used for
 solving the subsidiary linear systems within the Newton-like methods
 of SNES.  When solving a system of nonlinear equations, one can
 instead employ the techniques of Eisenstat and Walker \cite{ew94}
-to compute $\eta_k$ at each step of the nonlinear solver by using the
+to compute $ \eta_k $ at each step of the nonlinear solver by using the
 option {\tt -snes\_ksp\_ew\_conv} \findex{-snes_ksp_ew_conv}. In addition,
 by adding one's own KSP convergence test (see Section 
 \ref{section:convergencetests}), one can easily create one's own,
@@ -3025,14 +3027,14 @@ product is computed. They are set with the command
 \end{verbatim}
 The parameter {\tt rerror} is the square root of 
 the \findex{SNESSetMatrixFreeParameters()}
-relative error in the function evaluations; the default is $ 1.0e-8$, which assumes
+relative error in the function evaluations; the default is $ 1.0e-8 $ , which assumes
 that the functions are evaluated to full double precision accuracy. The 
 second parameter, {\tt umin}, is a bit more involved, it's default is 
-$ 1.0e-8$. The Jacobian matrix vector product is via the formula
+$ 1.0e-8 $ . The Jacobian matrix vector product is via the formula
 \[
     \frac{J(u + h*a) - J(u)}{h}
 \]
-where $ h$ is computed via 
+where $ h $ is computed via 
 \begin{eqnarray*}
         h = rerror*u^{T}a/||a||^2                       &    \hbox{if}  |u'a| > umin*||a||_{1} \\
           = rerror*umin*sign(u^{T}a)*||a||_{1}/||a||^2  &    \hbox{otherwise}.
@@ -3068,22 +3070,22 @@ possible, as demonstrated by the example,
 {\bf Matrix Use}      & {\bf Conventional Matrix Formats}          & {\bf Matrix-Free Versions}\\ 
 & & \\ \hline
 & & \\
-Jacobian	& Create matrix with MatCreate(). $^*$ & Create matrix with MatCreateShell().\\
+Jacobian	& Create matrix with MatCreate(). $ ^* $ & Create matrix with MatCreateShell().\\
 (or Hessian)	& Assemble matrix with user-defined	& Use MatShellSetOperation() to set\\
-Matrix		& routine. $^\dagger$ 			& various matrix actions.\\
+Matrix		& routine. $ ^\dagger $ 			& various matrix actions.\\
 & & \\ \hline
 & & \\
-Preconditioning	 & Create matrix with MatCreate(). $^*$ & Create PC with PCShellCreate().\\
+Preconditioning	 & Create matrix with MatCreate(). $ ^* $ & Create PC with PCShellCreate().\\
 Matrix		 & Assemble matrix with user-defined & Use SNESGetSLES() and SLESGetPC()\\
-		& routine. $^\dagger$		& to set the preconditioner.\\ 
+		& routine. $ ^\dagger $		& to set the preconditioner.\\ 
 
 & & \\ \hline
 \end{tabular}
 
 \medskip
-$^*$ Use either the generic {\tt MatCreate()} or a format-specific variant
+$ ^* $ Use either the generic {\tt MatCreate()} or a format-specific variant
    such as {\tt MatCreateMPIAIJ()}.\\
-$^\dagger$ Set user-defined matrix formation routine with {\tt SNESSetJacobian()} or
+$ ^\dagger $ Set user-defined matrix formation routine with {\tt SNESSetJacobian()} or
    {\tt SNESSetHessian()}.
 \medskip
 \caption{Jacobian and Hessian Matrix Options}
@@ -3178,14 +3180,14 @@ They are set with the command
 \end{verbatim}
 The parameter {\tt rerror} is the square root of 
 the \findex{MatFDColoringSetParameters()}
-relative error in the function evaluations; the default is $ 1.0e-8$, which assumes
+relative error in the function evaluations; the default is $ 1.0e-8 $ , which assumes
 that the functions are evaluated to full double precision accuracy. The 
 second parameter, {\tt umin}, is a bit more involved, it's default is 
-$ 1.0e-8$. The Jacobian matrix vector product is via the formula
+$ 1.0e-8 $ . The Jacobian matrix vector product is via the formula
 \[
     J_{:i} = \frac{J(u + h*dx_{i}) - J(u)}{h}
 \]
-where $ h$ is computed via 
+where $ h $ is computed via 
 \begin{eqnarray*}
         h = rerror*u_{i}             &    \hbox{if}  u_{i} > umin \\
           = rerror*umin*sign(u_{i})  &    \hbox{otherwise}.
@@ -3236,7 +3238,7 @@ with centered finite differences results in
 \]
 The TS component provides code to solve these equations (currently 
 using the forward or backward Euler method), in a clean and easy manner,
-where the user need only provide code for the evaluation of $F(u,t)$ and 
+where the user need only provide code for the evaluation of $ F(u,t) $ and 
 (optionally) its associated Jacobian matrix.
 
 \vspace{.2cm}
@@ -3262,9 +3264,9 @@ pseudo-timestep for each node point to obtain the series of nonlinear equations
 \[
         Dt^{n^{-1}}(u^{n+1} - u^{n}) =  F(u^{n+1}).
 \]
-For this problem the user must provide $ F(u)$ and the diagonal 
-matrix $ Dt^{n}$, (or optionally, if the timestep is position independent,
-a scalar timestep) as well as optionally the Jacobian of $ F(u)$.
+For this problem the user must provide $ F(u) $ and the diagonal 
+matrix $ Dt^{n} $ , (or optionally, if the timestep is position independent,
+a scalar timestep) as well as optionally the Jacobian of $ F(u) .$ 
 
 \section{Basic Usage}
 
@@ -3274,8 +3276,8 @@ The user first creates a TS object with the command
 \end{verbatim}
 \findex{TSCreate()} The {\tt TSProblemType} \findex{TSProblemType}
 is one of {\tt TS\_LINEAR} or {\tt TS\_NONLINEAR},
-to indicate whether $ F(u,t) $ is given by a matrix $ A$, or $ A(t) $, or a
-function $ F(u,t).$
+to indicate whether $ F(u,t) $ is given by a matrix $ A $ , or $ A(t) $ , or a
+function $ F(u,t). $
 
 One can set the solution method (currently Euler, backward Euler
 and backward Euler for pseudo-timestepping) with the routine
@@ -3304,7 +3306,7 @@ can \findex{TSGetTimeStep()} determine the current timestep with the routine
   ierr = TSGetTimeStep(TS ts,double* dt);
 \end{verbatim}
 Here, ``current'' refers to the timestep being used to attempt to
-promote the solution form $ u^n $ to $ u^{n+1}$.
+promote the solution form $ u^n $ to $ u^{n+1}. $
 
 One sets the total number of timesteps to run or the total time to run 
 (whatever is first) with the command \findex{TSSetDuration()}
@@ -3336,7 +3338,7 @@ The vector {\tt initialsolution} should contain the ``initial conditions''
 for the PDE. \findex{TSSetSolution()}
 
 \item Function: \\
-\subitem $\bullet$ For linear functions (solved with implicit timestepping),
+\subitem $ \bullet $ For linear functions (solved with implicit timestepping),
  the user must call 
 \begin{verbatim}
   ierr = TSSetRHSMatrix(TS ts,Mat A, Mat B,int (*f)(TS,double,Mat*,Mat*,
@@ -3355,7 +3357,7 @@ whenever it is called, as the final argument. The user must provide the matrices
 function, they must construct a {\tt MatShell} matrix. Note that this is 
 the same interface as that for {\tt SNESSetJacobian()}. \findex{SNESSetJacobian()}
 
-\subitem $\bullet$  For nonlinear problems (or linear problems solved using
+\subitem $ \bullet $  For nonlinear problems (or linear problems solved using
 explicit timestepping methods) the user  passes the function with 
 the routine
 
@@ -3782,7 +3784,7 @@ use the command \findex{DrawSetViewPort()}
 \end{verbatim}
 These arguments, which indicate the fraction of the window in which the 
 drawing should be done, must satisfy 
-$0 \le {\tt xl} \le {\tt xr} \le 1 $ and $ 0 \le {\tt yl} \le {\tt yr} \le 1.$ 
+$ 0 \le {\tt xl} \le {\tt xr} \le 1 $ and $ 0 \le {\tt yl} \le {\tt yr} \le 1.$ 
 
 To draw a line, one uses
  the command \findex{DrawLine()} \sindex{lines, drawing}
@@ -3994,17 +3996,17 @@ In addition, the user must declare all PETSc objects as {\tt integer}
 rather than by their name. For example, declarations within Fortran
 {\tt .F} files have the form
 \begin{verbatim}
-     SLES    solver
-     Mat     A, B
-     Vec     x, y
-     integer i
+   SLES    solver
+   Mat     A, B
+   Vec     x, y
+   integer i
 \end{verbatim}
 while the analogous statements within {\tt .f} files are
 \begin{verbatim}
-     integer solver
-     integer A, B
-     integer x, y
-     integer i
+   integer solver
+   integer A, B
+   integer x, y
+   integer i
 \end{verbatim}
 
 \subsection{Error Checking}
@@ -4079,17 +4081,17 @@ VecSetValues()}.  Note the (optional) use of the preprocessor
 {\tt \#define} statement to enable array manipulations in the conventional
 Fortran manner.
 \begin{verbatim}
-#define xx_a(ib)  xx_v(xx_i + (ib))
+   #define xx_a(ib)  xx_v(xx_i + (ib))
 
-      double precision xx_v(1)
-      integer          xx_i, i, ierr, n
-      Vec              x
-      call VecGetArray(x,xx_v,xx_i,ierr)
-      call VecGetLocalSize(x,n,ierr)
-      do 10, i=1,n
-         xx_a(i) = 3*i + 1
- 10   continue
-      call VecRestoreArray(x,xx_v,xx_i,ierr)
+    double precision xx_v(1)
+    integer          xx_i, i, ierr, n
+    Vec              x
+    call VecGetArray(x,xx_v,xx_i,ierr)
+    call VecGetLocalSize(x,n,ierr)
+    do 10, i=1,n
+       xx_a(i) = 3*i + 1
+ 10 continue
+    call VecRestoreArray(x,xx_v,xx_i,ierr)
 \end{verbatim}
 Figure \ref{fig:vec2-Fortran} contains an example of using {\tt VecGetArray()}
 within a Fortran routine.
@@ -4114,11 +4116,11 @@ To pass a PETSc object from a C routine to a Fortran routine, one must
 first convert the C pointer to a Fortran integer with {\tt
 PetscCObjectToFortranObject(PetscObject,int *)}, for example,
 \begin{verbatim}
-    int fmat;
-    Mat mat;
-     ....
-    ierr = PetscCObjectToFortranObject(mat,&fmat);
-    fortranroutine(&fmat,...other arguments);
+   int fmat;
+   Mat mat;
+    ....
+   ierr = PetscCObjectToFortranObject(mat,&fmat);
+   fortranroutine(&fmat,...other arguments);
 \end{verbatim}
 \findex{PetscCObjectToFortranObject()} 
 The Fortran routine can then directly use the received object.
@@ -4127,9 +4129,9 @@ pointer conversion within the C routine using
 {\tt PetscFortranObjectToCObject(int,PetscObject *)}, for example,
 \findex{PetscFortranObjectToCObject()}
 \begin{verbatim}
-    int cfunction(int *fmat,....)
-    Mat mat;
-    ierr = PetscFortranObjectToCObject(*fmat,&mat);
+   int cfunction(int *fmat,....)
+   Mat mat;
+   ierr = PetscFortranObjectToCObject(*fmat,&mat);
 \end{verbatim}
 See {\tt \$(PETSC\_DIR)/src/vec/examples/tests/ex24.c} for a complete
 example demonstrating this interface.  Note that the pointer
@@ -4691,7 +4693,7 @@ performance monitoring.  This code organization (solving a small
 linear system followed by a larger system) enables generation of more
 accurate profiling statistics for the second system by overcoming the
 often considerable overhead of paging, as discussed in
-Section~\ref{profaccuracy}.
+Section~\ref{sec:profaccuracy}.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \section{Restricting Event Logging}
@@ -4713,17 +4715,17 @@ components that support such logging (de)activation are {\tt Mat} (matrices),
 {\tt Vec} (vectors), {\tt SLES} (linear solvers, including {\tt KSP} 
 and {\tt PC} components), and {\tt SNES} (nonlinear solvers):
 \begin{verbatim}
-    PLogEventDeactivateClass(MAT_COOKIE);
-    PLogEventDeactivateClass(SLES_COOKIE); /* includes PC and KSP */
-    PLogEventDeactivateClass(VEC_COOKIE);
-    PLogEventDeactivateClass(SNES_COOKIE);
+   PLogEventDeactivateClass(MAT_COOKIE);
+   PLogEventDeactivateClass(SLES_COOKIE); /* includes PC and KSP */
+   PLogEventDeactivateClass(VEC_COOKIE);
+   PLogEventDeactivateClass(SNES_COOKIE);
 \end{verbatim}
 and 
 \begin{verbatim}
-    PLogEventActivateClass(MAT_COOKIE);
-    PLogEventActivateClass(SLES_COOKIE);   /* includes PC and KSP */
-    PLogEventActivateClass(VEC_COOKIE);
-    PLogEventActivateClass(SNES_COOKIE);
+   PLogEventActivateClass(MAT_COOKIE);
+   PLogEventActivateClass(SLES_COOKIE);   /* includes PC and KSP */
+   PLogEventActivateClass(VEC_COOKIE);
+   PLogEventActivateClass(SNES_COOKIE);
 \end{verbatim}
 
 Recall that the option {\tt -log\_all} produces extensive profile
@@ -5314,8 +5316,8 @@ where {\tt matrixfilename} is the name of the file containing the matrix.
 The format of the optional file is the same as the {\tt .petscrc} file 
 and can (currently) contain the following:
 \begin{verbatim}
-    -matload_block_size <bs>
-    -matload_bdiag_diags <s1,s2,s3,...>
+   -matload_block_size <bs>
+   -matload_bdiag_diags <s1,s2,s3,...>
 \end{verbatim}
 The block size indicates the size of blocks to use if the matrix is
 read into a block oriented data structure (for example, 
@@ -5672,46 +5674,45 @@ The first controls the generation of several example programs.
 \begin{figure}[H]
 {\small
 \begin{verbatim}
-PETSC_DIR     = ../../../
-CFLAGS        =  $(CONF) $(PETSC_INCLUDE)
-SOURCEC       = 
-SOURCEF       =
-SOURCEH       =
-OBJSC         =
-OBJSF         =
-LIBBASE       = libpetscsles
-RUNEXAMPLES_1 = runex1 runex2
-RUNEXAMPLES_2 = runex4
-RUNEXAMPLES_3 = runex3
-EXAMPLESC     = ex1.c ex2.c ex4.c
-EXAMPLESF     = ex3.F
-EXAMPLES_1    = ex1 ex2
-EXAMPLES_2    = ex4
-EXAMPLES_3    = ex3
+   CFLAGS        =  $(CONF) $(PETSC_INCLUDE)
+   SOURCEC       = 
+   SOURCEF       =
+   SOURCEH       =
+   OBJSC         =
+   OBJSF         =
+   LIBBASE       = libpetscsles
+   RUNEXAMPLES_1 = runex1 runex2
+   RUNEXAMPLES_2 = runex4
+   RUNEXAMPLES_3 = runex3
+   EXAMPLESC     = ex1.c ex2.c ex4.c
+   EXAMPLESF     = ex3.F
+   EXAMPLES_1    = ex1 ex2
+   EXAMPLES_2    = ex4
+   EXAMPLES_3    = ex3
 
-ex1: ex1.o 
+   ex1: ex1.o 
         -$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
         $(RM) ex1.o
-ex2: ex2.o 
+   ex2: ex2.o 
         -$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
         $(RM) ex2.o
-ex3: ex3.o 
+   ex3: ex3.o 
         -$(FLINKER) -o ex3 ex3.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
         $(RM) ex3.o
-ex4: ex4.o 
+   ex4: ex4.o 
         -$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
         $(RM) ex4.o
 
-runex1:
+   runex1:
         -@$(MPIRUN) ex1
-runex2:
+   runex2:
         -@$(MPIRUN) -np 2 ex2 -mat_seqdense -optionsleft
-runex3:
+   runex3:
         -@$(MPIRUN) ex3 -v -log_summary
-runex4:
+   runex4:
         -@$(MPIRUN) -np 4 ex4 -trdump
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+   include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Example Programs}
@@ -5781,22 +5782,20 @@ makefiles, they are also easily used.
 \begin{figure}[H]
 {\small
 \begin{verbatim}
-PETSC_DIR = ../../../../../..
+   ALL: lib
 
-ALL: lib
+   CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I$(PETSC_DIR)/pinclude $(CONF)
+   SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c
+   SOURCEF  = degree.f  fnroot.f genqmd.f qmdqt.f rcm.f fn1wd.f gen1wd.f \
+              genrcm.f qmdrch.f rootls.f fndsep.f gennd.f qmdmrg.f qmdupd.f
+   SOURCEH  = 
+   OBJSC    = sp1wd.o spinver.o spnd.o spqmd.o sprcm.o
+   OBJSF    = degree.o  fnroot.o genqmd.o qmdqt.o rcm.o fn1wd.o gen1wd.o \
+              genrcm.o qmdrch.o rootls.o fndsep.o gennd.o qmdmrg.o qmdupd.o
+   LIBBASE  = libpetscmat
+   MANSEC   = 2
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I$(PETSC_DIR)/pinclude $(CONF)
-SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c
-SOURCEF  = degree.f  fnroot.f genqmd.f qmdqt.f rcm.f fn1wd.f gen1wd.f \
-           genrcm.f qmdrch.f rootls.f fndsep.f gennd.f qmdmrg.f qmdupd.f
-SOURCEH  = 
-OBJSC    = sp1wd.o spinver.o spnd.o spqmd.o sprcm.o
-OBJSF    = degree.o  fnroot.o genqmd.o qmdqt.o rcm.o fn1wd.o gen1wd.o \
-           genrcm.o qmdrch.o rootls.o fndsep.o gennd.o qmdmrg.o qmdupd.o
-LIBBASE  = libpetscmat
-MANSEC   = 2
-
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+   include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Library Maintenance}
@@ -6328,11 +6327,11 @@ included. Generally, this information includes a pointer to data used
 by a particular implementation.  For example, the {\tt \_Vec}
 structure is given by
 \begin{verbatim}
-struct _Vec {
-  PETSCHEADER
-  struct _VeOps ops;
-  void          *data;
-};
+   struct _Vec {
+      PETSCHEADER
+      struct _VeOps ops;
+      void          *data;
+   };
 \end{verbatim}
 
 \section{Names}
@@ -6400,20 +6399,20 @@ instead of
       between the local variable declarations and the body of the function.
 \item Indentation for {\tt if} statements should be done either as
 \begin{verbatim}
-  if (  ) {
-    ....
-  }
-  else {
-    ....
-  }
+   if (  ) {
+     ....
+   }
+   else {
+     ....
+   }
 \end{verbatim}
 or as
 \begin{verbatim}
-  if (  ) {
-    ....
-  } else {
-    ....
-  }
+   if (  ) {
+     ....
+   } else {
+     ....
+   }
 \end{verbatim}
 \item {\em No} tabs are allowed in {\em any} of the source code.
 \end{itemize}

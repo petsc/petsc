@@ -38,9 +38,28 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	       -mapref ../../www/petsc.cit -nobottomnav
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv manual.html manual_html.html
-	cat manual_html.html | grep -v Up: | grep -v Next: | grep -v Previous: |sed 's/H1/H2/g' | sed 's/H0/H1/g' | sed 's/<pre><tt>ierr/<pre><tt>   ierr/g' | sed 's/<pre><tt>call/<pre><tt>   call/g' > manual.html
+	cat manual_html.html \
+            | grep -v Up: \
+            | grep -v Next: \
+            | grep -v Previous: \
+            |sed 's/H1/H2/g' \
+            | sed 's/H0/H1/g' \
+            | sed 's/<pre><tt>/<pre><tt>   /g' \
+            | sed 's/&amp;gt;/   /g' \
+            | sed 's/bullet://g' \
+            | sed 's/$$ //g' \
+            | sed 's?<H2>PETSc 2.0 Users Manual</H2>?<center><H2>PETSc 2.0 Users Manual</H2>?g' \
+            | sed 's?Argonne National Laboratory<BR><BR></b><P>?Argonne National Laboratory<BR><BR></b><P></center>?g' \
+            | sed 's/<pre><tt>   #ifndef/<pre><tt>#ifndef/g' \
+            | sed 's?<b>Figure 1: </b><A NAME="Figure1">Organization of the PETSc Library</a><P>?<P> <center><IMG WIDTH=452 HEIGHT=392 ALIGN=BOTTOM SRC="petsc.gif"></center><BR><P><center><b>Figure 1: </b><A NAME="Figure1">Organization of the PETSc Library</a><P></center>?g' \
+            | sed 's?<b>Figure 2: </b><A NAME="Figure2">Numerical Components of PETSc</a><P>?<P> <center><IMG WIDTH=452 HEIGHT=392 ALIGN=BOTTOM SRC="components.gif"></center><BR><P><center><b>Figure 2: </b><A NAME="Figure2">Numerical Components of PETSc</a><P></center>?g' \
+            | sed 's?<b>Figure 8: </b><A NAME="Figure8">Schematic of the PETSc Directory Structure</a><P>?<P> <center><IMG WIDTH=452 HEIGHT=392 ALIGN=BOTTOM SRC="directories.gif"></center><BR><P><center><b>Figure 8: </b><A NAME="Figure8">Schematic of the PETSc Directory Structure</a><P></center>?g' \
+            | awk '{if ($$1 == "<b>Figure") {print "<center>" $$0 "</center>"} else {print $$0} }' \
+            | awk '{if ($$1 == "<b>Table") {print "<center>" $$0 "</center>"} else {print $$0} }' \
+            > manual.html
 	-mv manual.html ../..
-	-@chmod g+w ../../manual.html www.cit
+	-cp petsc.gif components.gif directories.gif ../..
+	-@chmod ug+w ../../manual.html www.cit ../../*.gif
 	rm -f  *.xbm latex.err findex.tex sindex.tex tmp.html manual_html.html
 
 clean:
