@@ -1,4 +1,4 @@
-/*$Id: ex76.c,v 1.7 2000/10/26 15:01:15 hzhang Exp hzhang $*/
+/*$Id: ex76.c,v 1.8 2000/11/01 15:13:40 hzhang Exp hzhang $*/
 
 static char help[] = "Tests matrix permutation for factorization and solve on matrix with MatSBAIJ format. Modified from ex74.c\n";
 
@@ -8,20 +8,17 @@ static char help[] = "Tests matrix permutation for factorization and solve on ma
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec     x,y,b;
-  Mat     A;           /* linear system matrix */ 
-  Mat     sA,sC;         /* symmetric part of the matrices */ 
-
-  int     n,mbs=16,bs=1,nz=3,prob=1;
-  Scalar  neg_one = -1.0,four=4.0,value[3];
-  int     ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
-  IS      perm, iscol;
+  Vec         x,y,b,s1;      
+  Mat         A;           /* linear system matrix */ 
+  Mat         sA,sC;       /* symmetric part of the matrices */ 
+  int         n,mbs=16,bs=1,nz=3,prob=1;
+  int         ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
+  int         lf;          /* level of fill for icc */
+  double      norm1,norm2,tol=1.e-10,fill;
+  Scalar      neg_one = -1.0,four=4.0,value[3];  
+  IS          perm;
   PetscRandom rand;
-
-  PetscTruth       reorder=PETSC_TRUE;
-  
-  int      lf; /* level of fill for icc */
-  double   norm1,norm2,tol=1.e-10,fill;
+  PetscTruth  reorder=PETSC_TRUE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -121,6 +118,15 @@ int main(int argc,char **args)
       ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES);CHKERRA(ierr);
       ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES);CHKERRA(ierr);
     }
+    if (bs == 2){
+      /* insert a value to off-diag blocks */
+      row = 2; col[0] = 5; value[0] = 0.01;
+      ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES);CHKERRA(ierr);
+      row = 0; col[0] = 3; value[0] = 0.01;
+      ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES);CHKERRA(ierr);
+    }
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
@@ -130,10 +136,10 @@ int main(int argc,char **args)
 
   ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);  
-  /* PetscPrintf(PETSC_COMM_SELF,"\n Symmetric Part of Matrix: \n");
-  MatView(sA, VIEWER_DRAW_WORLD); 
-  MatView(sA, VIEWER_STDOUT_WORLD); 
-  */
+  /* PetscPrintf(PETSC_COMM_SELF,"\n Symmetric Part of Matrix: \n"); */
+  /* MatView(sA, VIEWER_DRAW_WORLD); */
+  /* MatView(sA, VIEWER_STDOUT_WORLD); */
+
   /* Vectors */
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);
@@ -142,48 +148,47 @@ int main(int argc,char **args)
   ierr = VecSetRandom(rand,x);CHKERRA(ierr);
 
   /* Test MatReordering() */
-  ierr = MatGetOrdering(A,MATORDERING_NATURAL,&perm,&iscol);CHKERRA(ierr); 
-  ierr = ISDestroy(iscol);CHKERRA(ierr); 
-
+  ip_ptr = (int*)PetscMalloc(mbs*sizeof(int)); CHKERRA(ierr);
+  for (i=0; i<mbs; i++) ip_ptr[i] = i;
   if(reorder){
-    /* MatView(sA, VIEWER_STDOUT_SELF); */
-    ISGetIndices(perm,&ip_ptr);      
     i = ip_ptr[1]; ip_ptr[1] = ip_ptr[mbs-2]; ip_ptr[mbs-2] = i; 
-    i = ip_ptr[0]; ip_ptr[0] = ip_ptr[mbs-1]; ip_ptr[mbs-1] = i;
-    /* i = ip_ptr[2]; ip_ptr[2] = ip_ptr[mbs-3]; ip_ptr[mbs-3] = i; */    
-    ierr= ISRestoreIndices(perm,&ip_ptr);CHKERRA(ierr);    
-  }    
-
+    /* i = ip_ptr[0]; ip_ptr[0] = ip_ptr[mbs-1]; ip_ptr[mbs-1] = i; */
+    /* i = ip_ptr[2]; ip_ptr[2] = ip_ptr[mbs-3]; ip_ptr[mbs-3] = i; */
+  }  
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,mbs,ip_ptr,&perm);CHKERRA(ierr);
+  ierr = ISSetPermutation(perm);CHKERRA(ierr);
+  
   /* Test MatCholeskyFactor(), MatIncompleteCholeskyFactor() */
   norm1 = tol;
-  if (bs == 1) {
-    for (lf=-1; lf<16; lf += 2){   
-      if (lf==-1) {  /* Cholesky factor */
-        fill = 5.0;
-        ierr = MatCholeskyFactorSymbolic(sA,perm,fill,&sC);CHKERRA(ierr);
-      } else {       /* incomplete Cholesky factor */
-        fill          = 5.0;
-        ierr = MatIncompleteCholeskyFactorSymbolic(sA,perm,fill,lf,&sC);CHKERRA(ierr);
-      }
-      ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRA(ierr);
-      /* MatView(sC, VIEWER_DRAW_WORLD); */  /* view factored matrix */
-      
-      ierr = MatMult(sA,x,b);CHKERRA(ierr);
-      ierr = MatSolve(sC,b,y);CHKERRA(ierr);
-      ierr = MatDestroy(sC);CHKERRA(ierr);
-      
-      /* Check the error */
-      ierr = VecAXPY(&neg_one,x,y);CHKERRA(ierr);
-      ierr = VecNorm(y,NORM_2,&norm2);CHKERRA(ierr);
-      if (10*norm1 < norm2 && lf != 1){ 
-        ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, %d, Norm of error=%g, %g\n",lf-2,lf,norm1,norm2);CHKERRA(ierr); 
-      }  
-      norm1 = norm2;
-    } 
-  }
+  for (lf=-1; lf<10*bs; lf += bs){ 
+    if (lf==-1) {  /* Cholesky factor */
+      fill = 5.0;
+      ierr = MatCholeskyFactorSymbolic(sA,perm,fill,&sC);CHKERRA(ierr);
+    } else {       /* incomplete Cholesky factor */
+      fill          = 5.0;
+      ierr = MatIncompleteCholeskyFactorSymbolic(sA,perm,fill,lf,&sC);CHKERRA(ierr);
+    }      
+    ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRA(ierr);  
+    /* MatView(sC, VIEWER_DRAW_WORLD);  */ /* view factored matrix */
+    /* MatView(sC, VIEWER_STDOUT_WORLD); */
+       
+    ierr = MatMult(sA,x,b);CHKERRA(ierr);
+    ierr = MatSolve(sC,b,y);CHKERRA(ierr); 
+    ierr = MatDestroy(sC);CHKERRA(ierr);
 
+    /* Check the error */
+    ierr = VecAXPY(&neg_one,x,y);CHKERRA(ierr);
+    ierr = VecNorm(y,NORM_2,&norm2);CHKERRA(ierr);
+    /* printf("lf: %d, error: %g\n", lf,norm2); */
+    if (10*norm1 < norm2 && lf-bs != -1){ 
+      ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, %d, Norm of error=%g, %g\n",lf-bs,lf,norm1,norm2);CHKERRA(ierr); 
+    }
+    norm1 = norm2;
+    if (norm2 < tol && lf != -1) break;
+  } 
 
   ierr = ISDestroy(perm);CHKERRA(ierr);
+  ierr = PetscFree(ip_ptr); CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(sA);CHKERRA(ierr);
   ierr = VecDestroy(x);CHKERRA(ierr);

@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.43 2000/11/02 21:13:53 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.44 2000/11/03 18:01:19 hzhang Exp hzhang $*/
 /*
     Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -2676,7 +2676,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
 
   PetscFunctionBegin;
-
+  /* printf("called Numeric_SeqSBAIJ_2\n"); */
   /* initialization */
   /* il and jl record the first nonzero element in each row of the accessing 
      window U(0:k, k:mbs-1).
@@ -2850,7 +2850,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
 
   PetscFunctionBegin;
-  
+  /* printf("called Numeric_SeqSBAIJ_2_NaturalOrdering\n"); */
   /* initialization */
   /* il and jl record the first nonzero element in each row of the accessing 
      window U(0:k, k:mbs-1).
