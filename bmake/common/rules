@@ -104,13 +104,13 @@ clean:
 	       output/*~ .mpirtmp mon.out *.aus
 
 #
-#   testexamples - runs various PETSc test suites
-#  1 basic C suite used in installation tests
-#  2 additional C suite including graphics
-#  3 basic Fortran .F suite
-#  4 subset of 1 and 2 that runs on only a single processor
-#  5 examples that require complex
-#  6 examples that don't work with complex 
+#  testexamples_X - Runs various PETSc test suites
+#    1 - basic C suite used in installation tests
+#    2 - additional C suite including graphics
+#    3 - basic Fortran .F suite
+#    4 - subset of 1 and 2 that runs on only a single processor
+#    5 - examples that require complex numbers
+#    6 - examples that don't work with complex numbers 
 #
 testexamples_1: $(TESTEXAMPLES_1)
 testexamples_2: $(TESTEXAMPLES_2)
