@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.280 2000/11/29 21:44:12 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.281 2001/01/15 21:50:04 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -180,7 +180,23 @@ EXTERN MPI_Op PetscSum_Op;
 #define PETSC_LARGEST_COOKIE_ALLOWED    PETSC_COOKIE + PETSC_MAX_COOKIES
 extern int PETSC_LARGEST_COOKIE;
 
+/*S
+     PetscObject - any PETSc object, PetscViewer, Mat, Vec, SLES etc
+
+   Level: beginner
+
+.seealso:  PetscObjectDestroy(), PetscObjectView(), PetscObjectGetName(), PetscObjectSetName()
+S*/
 typedef struct _p_PetscObject* PetscObject;
+
+/*S
+     PetscFList - Linked list of functions, possibly stored in dynamic libraries, accessed
+      by string name
+
+   Level: advanced
+
+.seealso:  PetscFListAdd(), PetscFListDestroy()
+S*/
 typedef struct _PetscFList *PetscFList;
 
 #include "petscviewer.h"
@@ -240,11 +256,15 @@ EXTERN int PetscTypeCompare(PetscObject,char*,PetscTruth*);
 */
 #include "petscerror.h"
 
-/*
-    Mechanism for managing lists of objects attached (composed) with 
-   a PETSc object.
-*/
+/*S
+     PetscOList - Linked list of PETSc objects, accessable by string name
+
+   Level: advanced
+
+.seealso:  PetscOListAdd(), PetscOListDestroy(), PetscOListFind()
+S*/
 typedef struct _PetscOList *PetscOList;
+
 EXTERN int PetscOListDestroy(PetscOList *);
 EXTERN int PetscOListFind(PetscOList,const char[],PetscObject*);
 EXTERN int PetscOListReverseFind(PetscOList,PetscObject,char**);
@@ -269,11 +289,15 @@ EXTERN int PetscFListView(PetscFList,PetscViewer);
 EXTERN int PetscFListConcat(const char [],const char [],char []);
 EXTERN int PetscFListGet(PetscFList,char ***,int*);
 
-/*
-   Routines for handling dynamic libraries. PETSc uses dynamic libraries
-  by default on most machines (except IBM). This is controlled by the
-  flag PETSC_USE_DYNAMIC_LIBRARIES in petscconf.h
-*/
+/*S
+     PetscDLLibraryList - Linked list of dynamics libraries to search for functions
+
+   Level: advanced
+
+   PETSC_USE_DYNAMIC_LIBRARIES must be defined in petscconf.h to use dynamic libraries
+
+.seealso:  PetscDLLibraryOpen()
+S*/
 typedef struct _PetscDLLibraryList *PetscDLLibraryList;
 extern PetscDLLibraryList DLLibrariesLoaded;
 EXTERN int PetscDLLibraryRetrieve(MPI_Comm,const char[],char *,int,PetscTruth *);
@@ -373,9 +397,13 @@ EXTERN int  PetscStartMatlab(MPI_Comm,char *,char*,FILE**);
 EXTERN int  PetscStartJava(MPI_Comm,char *,char*,FILE**);
 
 EXTERN int  PetscPopUpSelect(MPI_Comm,char*,char*,int,char**,int*);
-/*
-    Simple PETSc object that contains a pointer to any required data
-*/
+/*S
+     PetscObjectContainer - Simple PETSc object that contains a pointer to any required data
+
+   Level: advanced
+
+.seealso:  PetscObject, PetscObjectContainerCreate()
+S*/
 typedef struct _p_PetscObjectContainer*  PetscObjectContainer;
 EXTERN int PetscObjectContainerGetPointer(PetscObjectContainer,void **);
 EXTERN int PetscObjectContainerSetPointer(PetscObjectContainer,void *);
