@@ -1,5 +1,5 @@
 !
-!      "$Id: ex2f.F,v 1.10 1998/03/12 23:15:05 bsmith Exp balay $";
+!      "$Id: ex2f.F,v 1.11 1998/03/24 16:46:29 balay Exp balay $";
 !
 !/*T
 !    Concepts: Index sets^Manipulating a stride index set;
@@ -17,7 +17,7 @@
 #include "FINCLUDE/petsc.h"
 #include "FINCLUDE/is.h"
 
-      integer     i, n, ierr,  index(1), first, step
+      integer     i, n, ierr,  index(1), first, step, val
       IS          set
       PetscOffset iss
 
@@ -43,7 +43,9 @@
       call ISGetIndices(set,index,iss,ierr)
       write(6,20)
       do 10 i=1,n
-         write(6,30) indices(i)
+!  Bug in IRIX64 f90 compiler - write cannot handle integer(integer*8) correctly
+         val = indices(i)
+         write(6,30) val
  10   continue
  20   format('Printing indices directly')
  30   format(i3)
