@@ -93,7 +93,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
   SETERRQ(1,"FormTestMatrix: These problems require complex numbers.");
 #else
 
-  PetscScalar val[5],h;
+  PetscScalar val[5];
   int    i,j,I,J,ierr,col[5],Istart,Iend;
 
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);

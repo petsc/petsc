@@ -239,7 +239,7 @@ int Monitor(SNES snes,int its,PetscReal rnorm,void *dummy)
   ierr = VecPackGetAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecStrideNorm(u_lambda,0,NORM_2,&norm);CHKERRQ(ierr);
   norm = norm/sqrt(N-1.);
-  if (dw) ierr = PetscPrintf(dmmg->comm,"Norm of error %g Error at x = 0 %g\n",norm,dw[0]);CHKERRQ(ierr);
+  if (dw) ierr = PetscPrintf(dmmg->comm,"Norm of error %g Error at x = 0 %g\n",norm,PetscReal(dw[0]));CHKERRQ(ierr);
   ierr = VecView(u_lambda,user->fu_lambda_viewer);
   ierr = VecPackRestoreAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecDestroy(Uexact);CHKERRQ(ierr);
