@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.20 1998/12/03 03:58:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.21 1998/12/04 23:25:28 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -792,7 +792,7 @@ int AliceInitialize(int *argc,char ***args,const char file[],const char help[])
 .  -trdebug - Calls malloc_debug(2) to activate memory
         allocation diagnostics (used by PETSC_ARCH=sun4, 
         BOPT=[g,g_c++,g_complex] only!)
--  -trmalloc_log - Prints summary of memory usage
+-  -trmalloc_log <optional filename> - Prints summary of memory usage
 
    Options Database Keys for Profiling:
    See the 'Profiling' chapter of the users manual for details.
@@ -962,7 +962,19 @@ int AliceFinalize(void)
   }
   /* Can be dumped only after all the Objects are destroyed */
   if (flg3) {
-    ierr = PetscTrLogDump(stdout);CHKERRQ(ierr); 
+    char fname[256],sname[256];
+    FILE *fd;
+    
+    fname[0] = 0;
+    ierr = OptionsGetString(PETSC_NULL,"-trmalloc_log",fname,250,&flg1);CHKERRQ(ierr);
+    if (flg1 && fname[0]) {
+      sprintf(sname,"%s_%d",fname,rank);
+      fd   = fopen(sname,"w"); if (!fd) SETERRQ(1,1,"Cannot open log file");
+      ierr = PetscTrLogDump(fd);CHKERRQ(ierr); 
+      fclose(fd);
+    } else {
+      ierr = PetscTrLogDump(stdout);CHKERRQ(ierr); 
+    }
   }
   /* Can be destroyed only after all the options are used */
   ierr = OptionsDestroy();CHKERRQ(ierr);
