@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mfj.c,v 1.18 1997/10/17 03:31:21 curfman Exp curfman $";
+static char vcid[] = "$Id: mfj.c,v 1.19 1997/10/17 03:48:10 curfman Exp curfman $";
 #endif
 
 /* 
@@ -410,6 +410,15 @@ int UserMatrixFreeMatCreate(SNES snes,Euler *user,Vec x,Mat *J)
 /*
     FixJacobian - Fixes Jacobian diagonal for pseudo-transient continuation
     and fixes dummy edges for null equations.
+   
+    Input Parameters:
+    user - user-defined application context
+    mat - Jacobian matrix
+
+    Notes:
+    We assume that the basic Jacobian matrix has already been computed
+    via finite difference coloring.  This routine merely fixes the edges
+    and handles pseudo-transient continuation.
  */
 int FixJacobian(Euler *user,Mat mat)
 {
@@ -418,6 +427,7 @@ int FixJacobian(Euler *user,Mat mat)
   int           xm, ym, zm, xs, ys, zs, xe, ye, ze, ijx, mx, my, mz;
   int           gxm, gym, gzm, gxs, gys, gzs, gxe, gye, gze, *ltog = user->ltog;
   int           xsi, xei, ysi, yei, zsi, zei;
+  int           ndof_e = 5;
 
   ndof = user->ndof;
   if (user->bctype != IMPLICIT) 
@@ -439,7 +449,29 @@ int FixJacobian(Euler *user,Mat mat)
   /* edges of grid */
   mx = user->mx; my = user->my; mz = user->mz;
 
-  if (user->mmtype != MMEULER) SETERRQ(1,0,"Unsupported model type");
+  if (user->mmtype == MMHYBRID_F) {
+    /* Set all Jacobian rows corresponding to Euler equations to 1 on diagonal
+       and zeros elsewhere.  This assumes that no other values have been set
+       already for these rows, so we need not explicitly call MatZeroRows(). */
+    for (k=zs; k<ze; k++) {
+      for (j=ys; j<ye; j++) {
+        jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+        for (i=xs; i<xe; i++) {
+          ijkv = jkx + i-gxs;
+          ijkx = ltog[ndof * ijkv];
+          for (m=0; m<ndof_e; m++) {
+            diag = ijkx + m;
+            ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
+          }
+        }
+      }
+    }
+    return 0;
+  }
+  else if (user->mmtype == MMFP) {
+    /* Do nothing for this case */
+    return 0;
+  } else if (user->mmtype == MMEULER || user->mmtype == MMHYBRID_E || user->mmtype == MMHYBRID_EF1) {
 
   /* Boundary edges of brick: rows of Jacobian are identity;
      corresponding residual values are 0.  So, we modify the
@@ -452,7 +484,7 @@ int FixJacobian(Euler *user,Mat mat)
             jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
             for (i=xs; i<xe; i++) {
               ijkx = ltog[ndof * (jkx + i-gxs)];
-              for (m=0; m<ndof; m++) {
+              for (m=0; m<ndof_e; m++) {
                 diag = ijkx + m;
                 ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
               }
@@ -464,7 +496,7 @@ int FixJacobian(Euler *user,Mat mat)
             ikx = i-gxs + (k-gzs)*gxm*gym;
             for (j=ys; j<ye; j++) {
               ijkx = ltog[ndof * (ikx + (j-gys)*gxm)];
-              for (m=0; m<ndof; m++) {
+              for (m=0; m<ndof_e; m++) {
                 diag = ijkx + m;
                 ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
               }
@@ -480,7 +512,7 @@ int FixJacobian(Euler *user,Mat mat)
             ijx = (j-gys)*gxm + i-gxs;
             for (k=zs; k<ze; k++) {
               ijkx = ltog[ndof * (ijx + (k-gzs)*gxm*gym)];
-              for (m=0; m<ndof; m++) {
+              for (m=0; m<ndof_e; m++) {
                 diag = ijkx + m;
                 ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
               }
@@ -491,7 +523,7 @@ int FixJacobian(Euler *user,Mat mat)
     }
 
     /* Modify certain Jacobian rows corresponding to wake BC (which we ignore in the
-       preconditioner because it destroys sparsity */
+       preconditioner because it destroys sparsity) */
     j = 0;         
     if (user->problem == 1 || user->problem == 2 || user->problem ==3) {
       for (k=zsi; k<zei; k++) {
@@ -501,7 +533,7 @@ int FixJacobian(Euler *user,Mat mat)
             ijkv = jkx + i-gxs;
             ijkx = ltog[ndof * ijkv];
             dti = one/user->dt[ijkv];
-            for (m=0; m<ndof; m++) {
+            for (m=0; m<ndof_e; m++) {
               diag = ijkx + m;
               ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
             }
@@ -515,7 +547,7 @@ int FixJacobian(Euler *user,Mat mat)
             ijkv = jkx + i-gxs;
             ijkx = ltog[ndof * ijkv];
             dti = one/user->dt[ijkv];
-            for (m=0; m<ndof; m++) {
+            for (m=0; m<ndof_e; m++) {
               diag = ijkx + m;
               ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
             }
@@ -539,7 +571,7 @@ int FixJacobian(Euler *user,Mat mat)
           ijkv = jkx + i-gxs;
           ijkx = ltog[ndof * ijkv];
           dti = one/user->dt[ijkv];
-          for (m=0; m<ndof; m++) {
+          for (m=0; m<ndof_e; m++) {
             diag = ijkx + m;
             /* We add this to the existing values */
             ierr = MatSetValues(mat,1,&diag,1,&diag,&dti,ADD_VALUES); CHKERRQ(ierr);
@@ -547,7 +579,23 @@ int FixJacobian(Euler *user,Mat mat)
         }
       }
     }
+  } else SETERRQ(1,0,"Unsupported model type");
 
+  if (user->mmtype == MMHYBRID_E) {
+    /* Set all Jacobian rows corresponding to full potential equations to 1 on diagonal
+       and zeros elsewhere.  This assumes that no other values have been set
+       already for these rows, so we need not explicitly call MatZeroRows(). */
+    for (k=zs; k<ze; k++) {
+      for (j=ys; j<ye; j++) {
+        jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+        for (i=xs; i<xe; i++) {
+          ijkv = jkx + i-gxs;
+          diag = ltog[ndof * ijkv] + 5;
+          ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
+        }
+      }
+    }
+  }
   return 0;
 }
 
