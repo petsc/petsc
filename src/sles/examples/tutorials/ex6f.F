@@ -1,11 +1,12 @@
 
-C    "$Id: ex20.F,v 1.1 1996/04/12 00:30:59 curfman Exp curfman $";
+C    "$Id: ex20.F,v 1.2 1996/04/12 00:57:56 curfman Exp curfman $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/sles.h"
+#include "include/FINCLUDE/pc.h"
+#include "include/FINCLUDE/ksp.h"
 C
 C  This example demonstrates repeated linear solves as well as the use of
 C  different preconditioner and linear system matrices.  This example also
@@ -16,19 +17,21 @@ C
       SLES             sles
 c      PetscRandom      rctx
       integer          i, j, II, JJ, ierr, m, n
-      integer          Istart, Iend
+      integer          Istart, Iend, flg, nsteps
       double precision v, zero, one
 
-      zero = 0.0
-      one  = 1.0
-      call PetscInitialize(ierr)
-      m = 3
-      n = 3
-      call OptionsGetInt(PETSC_NULL_CHAR,'-m',m,ierr)
-      call OptionsGetInt(PETSC_NULL_CHAR,'-n',n,ierr)
+      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+      m      = 3
+      n      = 3
+      zero   = 0.0
+      one    = 1.0
+      nsteps = 2
+      call OptionsGetInt(PETSC_NULL_CHAR,'-m',m,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHAR,'-n',n,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHAR,'-nsteps',nsteps,flg,ierr)
 
 C Create and assemble initial matrix
-      call MatCreate(MPI_COMM_WORLD,m*n,m*n,,A,ierr)
+      call MatCreate(MPI_COMM_WORLD,m*n,m*n,A,ierr)
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
       do 10, II=Istart,Iend-1
         v = -1.0
@@ -76,7 +79,7 @@ C Solve several linear systems in succession
  100  continue
 
 C Free data structures
-      call PetscRandomDestroy(rctx,ierr)
+c      call PetscRandomDestroy(rctx,ierr)
       call VecDestroy(u,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)
@@ -90,6 +93,14 @@ C Free data structures
 C -----------------------------------------------------------------------
 C
       subroutine solve1(A,x,b,u,count,nsteps,ierr)
+
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/mat.h"
+#include "include/FINCLUDE/sles.h"
+#include "include/FINCLUDE/pc.h"
+#include "include/FINCLUDE/ksp.h"
+
 C
 C   solve1 - This routine is used for repeated linear system solves.
 C   We update the linear system matrix each time, but retain the same
@@ -98,28 +109,28 @@ C
 C      A - linear system matrix
 C      A2 - preconditioning matrix
 C
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/sles.h"
-
       double precision v
       integer          II, ierr, Istart, Iend, count, nsteps
       Mat              A
       SLES             sles
+      KSP              ksp
 
 C Use common block to retain matrix between successive subroutine calls
       Mat              A2
       integer          rank, printflag
       common /my_data/ A2, printflag, rank
 
-C First time thorough, create a new matrix to use as the preconditioner
+C First time thorough, create a new matrix to use as the preconditioner;
+C all other times set the previous solution as the initial guess for
+C the next linear solve.
       if (count .eq. 1) then
         printflag = 0
         call OptionsHasName(PETSC_NULL_CHAR,"-mat_view",printflag,ierr)
         if (rank .eq. 0) write(6,*) 'Preconditioning matrix'
         call MatConvert(A,MATSAME,A2,ierr)
+      else
+        call SLESGetKSP(sles,ksp,ierr)
+        call KSPSetInitialGuessNonzero(ksp,ierr)
       endif
 
 C Alter the matrix A a bit
