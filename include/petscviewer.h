@@ -376,10 +376,10 @@ EXTERN PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer,const char*,void*
     PetscViewer utility routines used by PETSc that are not normally used
    by users.
 */
-EXTERN PetscErrorCode  PetscViewerSocketPutScalar(PetscViewer,int,int,PetscScalar*);
-EXTERN PetscErrorCode  PetscViewerSocketPutReal(PetscViewer,int,int,PetscReal*);
-EXTERN PetscErrorCode  PetscViewerSocketPutInt(PetscViewer,int,int*);
-EXTERN PetscErrorCode  PetscViewerSocketPutSparse_Private(PetscViewer,int,int,int,PetscScalar*,int*,int *);
+EXTERN PetscErrorCode  PetscViewerSocketPutScalar(PetscViewer,PetscInt,PetscInt,PetscScalar*);
+EXTERN PetscErrorCode  PetscViewerSocketPutReal(PetscViewer,PetscInt,PetscInt,PetscReal*);
+EXTERN PetscErrorCode  PetscViewerSocketPutInt(PetscViewer,PetscInt,PetscInt*);
+EXTERN PetscErrorCode  PetscViewerSocketPutSparse_Private(PetscViewer,PetscInt,PetscInt,PetscInt,PetscScalar*,PetscInt*,PetscInt *);
 EXTERN PetscErrorCode  PetscViewerDestroyAMS_Private(void);
 
 /*S

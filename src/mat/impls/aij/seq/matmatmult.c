@@ -529,9 +529,9 @@ PetscErrorCode MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
 #define __FUNCT__ "MatMatMultTranspose_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
   PetscErrorCode ierr;
+  int rank;
 
   PetscFunctionBegin;
-  int rank;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   printf(" [%d] MatMatMultTranspose_SeqAIJ_SeqAIJ is called\n",rank);
   if (scall == MAT_INITIAL_MATRIX){

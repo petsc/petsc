@@ -11,7 +11,7 @@ static char help[] = "Tests IS stride routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int        i,n,*ii,start,stride;
+  PetscInt   i,n,*ii,start,stride;
   IS         is;
   PetscTruth flg;
   PetscErrorCode ierr;

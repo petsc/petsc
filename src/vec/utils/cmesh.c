@@ -22,10 +22,10 @@
 @*/
 PetscErrorCode VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
 {
-  PetscScalar *values;
+  PetscScalar    *values;
   PetscErrorCode ierr;
-  int         n,i;
-  PetscReal   scale;
+  PetscInt       n,i;
+  PetscReal      scale;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);

@@ -13,7 +13,7 @@ OBJSC    = cmatlab.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/pf/impls/matlab/
+LOCDIR   = src/vec/pf/impls/matlab/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
