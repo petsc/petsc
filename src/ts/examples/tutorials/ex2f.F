@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.30 2000/09/22 20:46:37 bsmith Exp curfman $";
+! "$Id: ex2f.F,v 1.31 2000/09/28 17:27:13 curfman Exp balay $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Processors: n
@@ -347,7 +347,7 @@
 !   dummy  - optional user-provided context for this monitoring
 !            routine (not used here)
 !
-      subroutine Monitor(ts,step,time,u,dummy)
+      subroutine Monitor(ts,step,time,u,dummy,ierr)
       implicit none
 #include "ex2f.h"
 
@@ -356,9 +356,9 @@
       integer          step,dummy
       double precision time
       Vec              u
+      integer          ierr
 
 !  Local variables:
-      integer          ierr
       double precision en2,en2s,enmax
       double precision mone
       Draw             draw
