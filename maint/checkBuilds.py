@@ -57,9 +57,10 @@ class BuildChecker(object):
     ## IBM AIX xlc compiler
     ##   "src/swapping.c", line 30.34: 1506-342 (W) "/*" detected in comment.
     'ibm': [r'[^\n]*"(?P<filename>[^,"\s]+)", line (?P<line>[0-9]+)\.(?P<column>[0-9]+): (?P<subtype>[0-9]+-[0-9]+):? \((?P<type>\w)\)'],
-    ## Intel C/C++
-    ##   ??? (Using gcc)
-    'intel': [r'(?P<filename>[^:\s]+):(?P<line>[0-9]+):((?P<column>[0-9]+):)? (?P<type>error|warning):'],
+    ## Intel C/C++ 8.0
+    ##   matptapf.c(81): error: incomplete type is not allowed
+    ##   matptapf.c(99): warning #12: parsing restarts here after previous syntax error
+    'intel': [r'(?P<filename>[^\(]+)\((?P<line>[0-9]+)\): (?P<type>error|warning)( #(?P<num>[0-9]+))?:'],
     ## Intel Fortran 90
     ##   ??? (Using gcc)
     'intelF90': [r'(?P<filename>[^:\s]+):(?P<line>[0-9]+):((?P<column>[0-9]+):)? (?P<type>error|warning):'],
@@ -69,7 +70,9 @@ class BuildChecker(object):
     ##   /usr/lib/cmplrs/cc/cfe: Error: foo.c: 1: blah blah
     ## Tru64 UNIX Compiler Driver 5.0, Compaq C V6.1-019 on Compaq Tru64 UNIX V5.0A (Rev. 1094)
     ##   cxx: Warning: gs.c, line 668: statement either is unreachable or causes unreachable code
-    'mipsUltrix': [r'[^\n]*(?P<type>Error|Warning): (?P<filename>[^,"\s]+)[,:] (line )?(?P<line>[0-9]+):'],
+    ##   cc: Error: matptapf.c, line 81: Missing ";". (nosemi)
+    ##   cc: Severe: /usr/sandbox/petsc/petsc-dev/include/petscmath.h, line 33: Cannot find file <complex> specified in #include directive. (noinclfile)
+    'mipsUltrix': [r'[^\n]*(?P<type>Error|Warning|Severe): (?P<filename>[^,"\s]+)[,:] (line )?(?P<line>[0-9]+):'],
     ## Microsoft C/C++:
     ##   keyboard.c(537) : warning C4005: 'min' : macro redefinition
     ##   d:\tmp\test.c(23) : error C2143: syntax error : missing ';' before 'if'
@@ -120,11 +123,13 @@ class BuildChecker(object):
       m = re.match(logRE, os.path.basename(filename))
       if not m:
         raise RuntimeError('Invalid filename '+filename)
-    print m.group('arch'),m.group('machine')
+    arch    = m.group('arch')
+    machine = m.group('machine')
+    print arch,machine
     try:
-      compilers = self.compilers[m.group('arch')]
+      compilers = self.compilers[arch]
     except KeyError:
-      raise RuntimeError('No compilers for architecture '+m.group('arch'))
+      raise RuntimeError('No compilers for architecture '+arch)
     try:
       # Why doesn't Python have a fucking flatten
       regExps = map(re.compile, self.flatten([self.compileErrorRE[compiler] for compiler in compilers]))

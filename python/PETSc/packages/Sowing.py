@@ -9,6 +9,7 @@ class Configure(config.base.Configure):
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
     self.argDB        = framework.argDB
+    self.compilers    = self.framework.require('config.compilers', self)
     return
 
   def getDir(self):
@@ -53,7 +54,7 @@ class Configure(config.base.Configure):
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build sowing
-    args = ['--prefix='+installDir]
+    args = ['--prefix='+installDir, '--with-cc='+self.framework.argDB['CC']]
     args = ' '.join(args)
     try:
       fd      = file(os.path.join(installDir,'config.args'))
