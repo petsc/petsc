@@ -1,4 +1,4 @@
-/*$Id: AMSPETScOptions.java,v 1.17 2000/11/07 20:44:03 bsmith Exp bsmith $*/
+/*$Id: PETScOptions.java,v 1.1 2001/02/06 16:26:34 bsmith Exp bsmith $*/
 /*
      Accesses the PETSc published database options and allows the user to change them via a GUI
 */
@@ -21,6 +21,7 @@ import java.lang.Thread;
 import gov.anl.mcs.ams.*;
 
 import java.net.*;
+import java.awt.print.*;
 
 /*
     This is the class that this file implements (must always be the same as
@@ -54,6 +55,7 @@ public class PETScOptions extends JApplet {
   boolean    waiting = false; /* indicates choices have been presented on screen, waiting for user input */
 
   java.applet.AppletContext appletcontext;
+  PETScOptions applet;
 
   JTextField inputport;
   JTextField inputserver;
@@ -67,12 +69,13 @@ public class PETScOptions extends JApplet {
   }
 
   public void init(){
-    System.out.println("PETScOptions: codebase"+this.getDocumentBase());
+    applet = this;
+    System.out.println("PETScOptions: codebase:"+this.getDocumentBase()+":");
     try { 
       new PutAMSACC();
     } catch (java.lang.SecurityException oops) {
       try {
-        this.getAppletContext().showDocument(new URL("http://www.mcs.anl.gov/petsc/plugins.html"));
+        this.getAppletContext().showDocument(new URL("http://www.mcs.anl.gov/petsc/plugins-security.html"));
       } catch (java.net.MalformedURLException ex) {;}
     }
     System.out.println("done checking on amsacc");
@@ -292,11 +295,11 @@ public class PETScOptions extends JApplet {
           }
           int len = flist[i+2].length();
           label = new JLabel(flist[i+2].substring(0,1+len/2));
-          /* label.setAlignment(JLabel.RIGHT); */
+          label.setHorizontalAlignment(SwingConstants.RIGHT); 
           label.setForeground(Color.red);
           panel.add(label);
           label = new JLabel(flist[i+2].substring(1+len/2));
-          /* label.setAlignment(JLabel.LEFT); */
+          label.setHorizontalAlignment(SwingConstants.LEFT); 
           label.setForeground(Color.red);
           panel.add(label);
         } else {
@@ -322,6 +325,8 @@ public class PETScOptions extends JApplet {
           AMS_Field lfld    = mem.get_field(flist[i+3]);
           String    llist[] = lfld.getStringData();
           MyChoice  choice = new MyChoice(flist[i],flist[i+2]);
+
+    System.out.println("flist[i]"+flist[i]+"flist[i+1]"+flist[i+1]+"flist[i+3]"+flist[i+3]);    
 
           choice.addItem(value[0]);
           for (j=0; j<llist.length-1; j++) {
@@ -362,7 +367,7 @@ public class PETScOptions extends JApplet {
   /* callback for the continue button */
   class ContinueActionListener implements ActionListener {/*--------------------*/
     public void actionPerformed(ActionEvent e) {
-      panel.removeAll();
+       panel.removeAll();
       System.out.println("User selected continue");
       (tupdate = new ThreadOptionUpdate()).start();
     }
@@ -391,11 +396,11 @@ public class PETScOptions extends JApplet {
   class MyChoiceItemListener implements ItemListener {/*--------------------*/
     public void itemStateChanged(ItemEvent e) {
       MyChoice choice = (MyChoice) e.getItemSelectable();
-      String   oldata = mem.get_field(choice.vName).getStringData()[0];
 
-      if (!oldata.equals((String)choice.getSelectedItem())) {
+      if (e.getStateChange() == ItemEvent.SELECTED) {
+        System.out.println("User changing Choice "+choice.vName+"changed to"+(String)choice.getSelectedItem());
         mem.get_field(choice.vName).setData((String)choice.getSelectedItem(),0);
-        System.out.println("User changed Choice");
+        System.out.println("User changed Choice "+choice.vName+"changed to"+(String)choice.getSelectedItem());
         mem.get_field(choice.vLock).setData(true,0);
 
         /* tell publisher that I changed a method so it can send me a new screen of data */
@@ -407,7 +412,7 @@ public class PETScOptions extends JApplet {
     }
   }
 
-  class MyChoice extends Choice { /*----------------------------------------*/
+  class MyChoice extends JComboBox { /*----------------------------------------*/
     String vLock,vName;
     public MyChoice(String vlock,String vname) {
       super();
@@ -544,6 +549,8 @@ public class PETScOptions extends JApplet {
 
   class ThreadOptionUpdate extends Thread {/*-----------------------------------*/
     public void run() {
+
+
       displayoptionsupdate(); /* update options on PETSc program */
       displayoptionsset(); /* wait for next set of options from PETSc program */
       tupdate = null;
@@ -619,6 +626,7 @@ public class PETScOptions extends JApplet {
       layout.setConstraints(c2,constraints);
     }
   }
+
 }
 
 

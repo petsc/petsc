@@ -1,4 +1,4 @@
-/*$Id: PETScRun.java,v 1.10 2000/11/13 19:18:07 bsmith Exp bsmith $*/
+/*$Id: PETScRun.java,v 1.11 2001/01/31 22:41:54 bsmith Exp bsmith $*/
 /*
      Compiles and runs a PETSc program
 */
@@ -13,14 +13,14 @@ import java.awt.event.*;
 import javax.swing.*;
 import java.awt.print.*;
 
-public class PETScRun extends java.applet.Applet implements Pageable, Printable
+public class PETScRun extends JApplet implements Pageable, Printable
 {
   static final int MACHINE = 0,DIRECTORY = 1,MAXNP = 2,EXAMPLES = 3,EXAMPLESHELP = 4;
   Hashtable        systems[];
   Socket csock = null;
 
   java.applet.AppletContext appletcontext;
-  java.applet.Applet applet;
+  PETScRun applet;
 
   JPanel     tpanel;
   JTextField options,help;
@@ -29,18 +29,21 @@ public class PETScRun extends java.applet.Applet implements Pageable, Printable
   JCheckBox tbopt;
   JCheckBox snoop;
 
-    Choice    arch;
-    Choice    dir;
-    Choice    example;
-    Choice    np;
+    JComboBox    arch;
+    JComboBox    dir;
+    JComboBox    example;
+    JComboBox    np;
 
   JTextArea   opanel,epanel;
 
   boolean isviewsource = false;
+    Container japplet;
 
   public void init() {
     appletcontext = getAppletContext();
-    applet = this;
+    applet        = this;
+    japplet       = this.getContentPane();
+
     System.out.println("Codebase"+this.getDocumentBase());
 
     try {
@@ -70,78 +73,86 @@ public class PETScRun extends java.applet.Applet implements Pageable, Printable
     } catch (java.io.IOException ex) {ex.printStackTrace(); System.out.println("no systems");}
       catch (ClassNotFoundException ex) {    System.out.println("no class");}
  
-    this.setLayout(new FlowLayout());
+    japplet.setLayout(new FlowLayout());
 
     tpanel = new JPanel(new GridLayout(3,4));
-    this.add(tpanel, BorderLayout.NORTH);
+    japplet.add(tpanel, BorderLayout.NORTH);
       
     help = new JTextField(50);
-    this.add(help, BorderLayout.NORTH);
+    japplet.add(help, BorderLayout.NORTH);
 
     JPanel grid = new JPanel(new GridBagLayout());
-    this.add(grid,BorderLayout.NORTH);
+    japplet.add(grid,BorderLayout.NORTH);
     options = new JTextField(50);
     grid.add(new JLabel("Options"));
     grid.add(options);
 
 
-      arch = new Choice();
-      arch.addItemListener(new ItemListener() {
-                            public void itemStateChanged(ItemEvent e) {
-                              Choice choice = (Choice) e.getItemSelectable();
-                              setnp(np,choice.getSelectedItem());}
-	                  });
+      arch = new JComboBox();
       Enumeration keys = systems[MAXNP].keys();
       while (keys.hasMoreElements()) {
-        arch.add((String)keys.nextElement());
+        arch.addItem((String)keys.nextElement());
       }
+      arch.addItemListener(new ItemListener() {
+                            public void itemStateChanged(ItemEvent e) {
+                              if (e.getStateChange() == ItemEvent.SELECTED) {
+                                JComboBox choice = (JComboBox) e.getItemSelectable();
+                                setnp(np,(String)choice.getSelectedItem());}}
+			      }); 
       tpanel.add(arch);
         
-      dir = new Choice();
+      dir = new JComboBox();
       String pexampled = this.getParameter("EXAMPLEDIRECTORY");
       if (pexampled == null) {
-        dir.addItemListener(new ItemListener() {
-                            public void itemStateChanged(ItemEvent e) {
-                              Choice choice = (Choice) e.getItemSelectable();
-                              setexamples(example,choice.getSelectedItem());}
-	                  });
         keys = systems[EXAMPLES].keys();
         while (keys.hasMoreElements()) {
-          dir.add((String)keys.nextElement());
+          dir.addItem((String)keys.nextElement());
         }
+        dir.addItemListener(new ItemListener() {
+                            public void itemStateChanged(ItemEvent e) {
+                              if (e.getStateChange() == ItemEvent.SELECTED) {
+                                JComboBox choice = (JComboBox) e.getItemSelectable();
+                                setexamples(example,(String)choice.getSelectedItem());
+			      }
+                            }
+	                  });
       } else { /* .html file indicates which example to run */
-        dir.add(pexampled);
+        dir.addItem((String)pexampled);
       }
       tpanel.add(dir);
-
-      example = new Choice();
-      String pexample = this.getParameter("EXAMPLE");
-      if (pexample == null) {
-        example.addItemListener(new ItemListener() {
-                            public void itemStateChanged(ItemEvent e) {
-                              Choice choice = (Choice) e.getItemSelectable();
-                              String directory = dir.getSelectedItem();
-                              ArrayList ehelp = (ArrayList)systems[EXAMPLESHELP].get(directory);
-                              ArrayList ex = (ArrayList)systems[EXAMPLES].get(directory);
-                              int index = ex.indexOf(choice.getSelectedItem());
-                              help.setText((String)ehelp.get(index));}
-	                  });
-        setexamples(example,(String)systems[EXAMPLES].keys().nextElement());
-      } else {  /* .html file indicates which example to run */
-        example.add(pexample);
-      }
-      tpanel.add(example);
 
       String phelp = this.getParameter("HELP"); /* .html file indicates help message */
       if (phelp != null) {
         this.help.setText(phelp);
       }
 
-      np = new Choice();
+      np = new JComboBox();
       setnp(np,(String)systems[MAXNP].keys().nextElement());
       tpanel.add(np);
 
-      JButton mbutton = new JButton("Make");
+      example = new JComboBox();
+      String pexample = this.getParameter("EXAMPLE");
+      if (pexample == null) {
+        setexamples(example,(String)systems[EXAMPLES].keys().nextElement());
+        example.addItemListener(new ItemListener() {
+                            public void itemStateChanged(ItemEvent e) {
+                              if (e.getStateChange() == ItemEvent.SELECTED) {
+                                JComboBox choice = (JComboBox) e.getItemSelectable();
+                                String directory = (String)dir.getSelectedItem();
+                                ArrayList ehelp = (ArrayList)systems[EXAMPLESHELP].get(directory);
+                                ArrayList ex = (ArrayList)systems[EXAMPLES].get(directory);
+                                int index = ex.indexOf(choice.getSelectedItem());
+                                help.setText((String)ehelp.get(index));
+                              }
+			    }
+	                  });
+      } else {  /* .html file indicates which example to run */
+        example.addItem((String)pexample);
+      }
+      tpanel.add(example);
+
+
+      JButton mbutton = new JButton("Compile");
       tpanel.add(mbutton);
       mbutton.addActionListener(new ActionListener(){
         public void actionPerformed(ActionEvent e) { 
@@ -177,7 +188,7 @@ public class PETScRun extends java.applet.Applet implements Pageable, Printable
       toptions = new JCheckBox("Set options graphically");
       tpanel.add(toptions);
 
-      snoop = new JCheckBox("Snoop on running program");
+      snoop = new JCheckBox("Snoop on program");
       tpanel.add(snoop);
 
       tbopt = new JCheckBox("Compile debug version");
@@ -185,12 +196,12 @@ public class PETScRun extends java.applet.Applet implements Pageable, Printable
 
 
     epanel = new JTextArea(4,60);
-    this.add(new JScrollPane(epanel), BorderLayout.NORTH); 
+    japplet.add(new JScrollPane(epanel), BorderLayout.NORTH); 
     epanel.setLineWrap(true);
     epanel.setWrapStyleWord(true);
 
     opanel = new JTextArea(20,60);
-    this.add(new JScrollPane(opanel), BorderLayout.NORTH); 
+    japplet.add(new JScrollPane(opanel), BorderLayout.NORTH); 
     opanel.setLineWrap(true);
     opanel.setWrapStyleWord(true);
   }
@@ -198,12 +209,12 @@ public class PETScRun extends java.applet.Applet implements Pageable, Printable
   /*
       Fills in the examples pull down menu based on the directory selected
   */
-  public void setexamples(Choice example,String dir) {
+  public void setexamples(JComboBox example,String dir) {
     ArrayList ex = (ArrayList)systems[EXAMPLES].get(dir);
     Iterator its = ex.iterator();
-    example.removeAll();
+    example.removeAllItems();
     while (its.hasNext()) {
-      example.add((String)its.next());
+      example.addItem(""+its.next());
     }
     ArrayList ehelp = (ArrayList)systems[EXAMPLESHELP].get(dir);
     System.out.println("ehelp"+ehelp+(String)ehelp.get(0));
@@ -213,11 +224,11 @@ public class PETScRun extends java.applet.Applet implements Pageable, Printable
   /*
      Fills in the number processors pull down menu based on the arch selected
   */
-  public void setnp(Choice np,String arch){
+  public void setnp(JComboBox np,String arch){
     int onp = Integer.parseInt((String)systems[MAXNP].get(arch)),i;
-    np.removeAll();
+    np.removeAllItems();
     for (i=1; i<=onp;i++) {
-      np.add(""+i);
+      np.addItem(""+i);
     }
   }
 
@@ -235,10 +246,10 @@ public class PETScRun extends java.applet.Applet implements Pageable, Printable
 
       /* construct properties to send to server */
       final Properties   properties = new Properties();
-      properties.setProperty("PETSC_ARCH",arch.getSelectedItem());
-      properties.setProperty("DIRECTORY",dir.getSelectedItem());
-      properties.setProperty("EXAMPLE",example.getSelectedItem());
-      properties.setProperty("NUMBERPROCESSORS",np.getSelectedItem());
+      properties.setProperty("PETSC_ARCH",(String)arch.getSelectedItem());
+      properties.setProperty("DIRECTORY",(String)dir.getSelectedItem());
+      properties.setProperty("EXAMPLE",(String)example.getSelectedItem());
+      properties.setProperty("NUMBERPROCESSORS",(String)np.getSelectedItem());
       properties.setProperty("COMMAND",what);
       if (tbopt.isSelected()) {
         properties.setProperty("BOPT","g");
@@ -329,21 +340,21 @@ public class PETScRun extends java.applet.Applet implements Pageable, Printable
     } catch (java.io.IOException ex) {;}
   }
 
-  PageFormat format;
 
   public void donerun() 
   {
-    System.out.println("done run");
+    /* Uncomment this to print the applet screen dump
     PrinterJob job = PrinterJob.getPrinterJob();
     format = job.pageDialog(job.defaultPage());
-    job.setPageable(this);
+    job.setPageable(applet);
     job.printDialog();
     try {
       job.print();
-    } catch (java.awt.print.PrinterException e) {System.out.println("problem printing");;}
+    } catch (java.awt.print.PrinterException e) {System.out.println("problem printing");}
+    */
 
     if (isviewsource) {
-      String ex = example.getSelectedItem();
+      String ex = (String)example.getSelectedItem();
       URL    urlb = applet.getDocumentBase();
   
       try {
@@ -358,6 +369,7 @@ public class PETScRun extends java.applet.Applet implements Pageable, Printable
     isviewsource = false;
   }
 
+  PageFormat        format;
   public int        getNumberOfPages()         {return 1;}
   public PageFormat getPageFormat(int pagenum) {return format;}
   public Printable  getPrintable(int pagenum)  {return this;}
@@ -365,10 +377,9 @@ public class PETScRun extends java.applet.Applet implements Pageable, Printable
   public int print(Graphics g,PageFormat format,int pagenum) {
     Graphics2D g2 = (Graphics2D) g;
     g2.translate(format.getImageableX(),format.getImageableY());
-        System.out.println("about to paint");
-    this.paint(g2);
-        System.out.println("done painting");
-    return 1;
+    g2.scale(.6,.6);
+    japplet.printComponents(g2);
+    return Printable.PAGE_EXISTS;
   }
 }
 
