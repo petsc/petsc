@@ -24,8 +24,12 @@ X11_LIB        =
 # Location of MPI (Message Passing Interface) software
 #
 MPI_LIB        = /mpp/lib/libmpi.a
-MPI_INCLUDE    = -I/usr/include/mpp
+MPI_INCLUDE    = -I/usr/include -I/usr/include/mpp
 MPIRUN         = /usr/local/mpi/bin/mpirun
+#
+# the -I/usr/include above is to insure that the C++ compiler with 
+# complex finds the /usr/include/complex.h not /usr/include/mpp/complex.h
+# which appears to be for C NOT c++.
 #
 BS_INCLUDE = -I/u/ddscf/bsmith/BlockSolve95/include
 BS_LIB     = /u/ddscf/bsmith/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
