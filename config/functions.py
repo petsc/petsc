@@ -49,9 +49,9 @@ class Configure(config.base.Configure):
     if libraries:
       oldLibs = self.framework.argDB['LIBS']
       if not isinstance(libraries, list):
-        libraries = list(libraries)
+        libraries = [libraries]
       for library in libraries:
-        if not library[0] == '-':
+        if not library.strip()[0] == '-':
           self.framework.argDB['LIBS'] += ' -l'+library
         else:
           self.framework.argDB['LIBS'] += library
