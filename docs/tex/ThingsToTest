@@ -1,5 +1,7 @@
 
- - Start in debugger on all machines, with C and C++ and all possible debuggers
+ - Start in debugger on all machines, with Fortran, C and C++ and all possible debuggers
+
+ - Correctly uses .petscrc for Fortran, C, C++
 
  - Basic, C++ and complex (and Fortran)
 
@@ -13,3 +15,5 @@
 
  - All viewers work with all matrices properly (for example -draw_pause on all matrix types)
    those that don't work have good error messages.
+
+ - Fortran include files match C.
