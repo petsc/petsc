@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.39 1999/06/30 22:49:21 bsmith Exp balay $";
+static char vcid[] = "$Id: reg.c,v 1.40 1999/06/30 23:49:30 balay Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -350,8 +350,11 @@ int FListDestroyAll(void)
 int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 {
   FList        entry = fl;
-  char          *function, *path, *newpath;
-  int           ierr;
+  int          ierr;
+  char         *function, *path;
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  char         *newpath;
+#endif
  
   PetscFunctionBegin;
   *r = 0;
