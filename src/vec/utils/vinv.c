@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.43 1998/07/23 21:18:33 bsmith Exp balay $";
+static char vcid[] = "$Id: vinv.c,v 1.44 1999/01/27 21:20:26 balay Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -86,6 +86,162 @@ int VecStrideNorm(Vec v,int start,NormType ntype,double *norm)
   } else {
     SETERRQ(1,1,"Unknown norm type");
   }
+
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecStrideMax"
+/*@C
+   VecStrideMax - Computes the maximum of subvector of a vector defined 
+       by a starting point and a stride and optionally its location.
+
+   Collective on Vec
+
+   Input Parameter:
++  v - the vector 
+-  start - starting point of the subvector (defined by a stride)
+
+   Output Parameter:
++  index - the location where the maximum occurred (not supported, pass PETSC_NULL)
+-  norm - the max
+
+   Notes:
+     One must call VecSetBlockSize() before this routine to set the stride 
+     information; or use a vector associated with a DA.
+
+     If x is the array representing the vector x then this computes the max
+     of the array (x[start],x[start+stride],x[start+2*stride], ....)
+
+     This is useful for computing, say the max of the pressure variable when
+     the pressure is stored (interlaced) with other variables, say density etc.
+
+     This will only work if the desire subvector is a stride subvector
+
+.keywords: vector, subvector norm, norm
+
+.seealso: VecNorm(), VecMax(), VecMin(), VecStrideNorm(), VecStrideGather(),
+          VecStrideScatter(), VecStrideMin()
+@*/
+int VecStrideMax(Vec v,int start,int *index,double *norm)
+{
+  int      i,n,ierr,bs;
+  Scalar   *x;
+  double   max,tmp;
+  MPI_Comm comm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  if (index) {
+    SETERRQ(1,1,"No support yet for returning index");
+  }
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
+
+  bs   = v->bs;
+  if (start >= bs) {
+    SETERRQ(1,1,"Start of stride subvector is too large for stride\n\
+            Have you set the vector blocksize correctly with VecSetBlockSize()?");
+  }
+  x += start;
+
+  if (!n) {
+    max = PETSC_MIN;
+  } else {
+#if defined(USE_PETSC_COMPLEX)
+    max = PetscReal(x[0]);
+#else
+    max = x[0];
+#endif
+    for ( i=bs; i<n; i+=bs ) {
+#if defined(USE_PETSC_COMPLEX)
+      if ((tmp = PetscReal(x[i])) > max) { max = tmp;}
+#else
+      if ((tmp = x[i]) > max) { max = tmp; } 
+#endif
+    }
+  }
+  ierr   = MPI_Allreduce(&max,norm,1,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecStrideMin"
+/*@C
+   VecStrideMin - Computes the minimum of subvector of a vector defined 
+       by a starting point and a stride and optionally its location.
+
+   Collective on Vec
+
+   Input Parameter:
++  v - the vector 
+-  start - starting point of the subvector (defined by a stride)
+
+   Output Parameter:
++  index - the location where the minimum occurred (not supported, pass PETSC_NULL)
+-  norm - the min
+
+   Notes:
+     One must call VecSetBlockSize() before this routine to set the stride 
+     information; or use a vector associated with a DA.
+
+     If x is the array representing the vector x then this computes the min
+     of the array (x[start],x[start+stride],x[start+2*stride], ....)
+
+     This is useful for computing, say the min of the pressure variable when
+     the pressure is stored (interlaced) with other variables, say density etc.
+
+     This will only work if the desire subvector is a stride subvector
+
+.keywords: vector, subvector norm, norm
+
+.seealso: VecNorm(), VecMin(), VecMin(), VecStrideNorm(), VecStrideGather(),
+          VecStrideScatter(), VecStrideMin()
+@*/
+int VecStrideMin(Vec v,int start,int *index,double *norm)
+{
+  int      i,n,ierr,bs;
+  Scalar   *x;
+  double   min,tmp;
+  MPI_Comm comm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  if (index) {
+    SETERRQ(1,1,"No support yet for returning index");
+  }
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
+
+  bs   = v->bs;
+  if (start >= bs) {
+    SETERRQ(1,1,"Start of stride subvector is too large for stride\n\
+            Have you set the vector blocksize correctly with VecSetBlockSize()?");
+  }
+  x += start;
+
+  if (!n) {
+    min = PETSC_MAX;
+  } else {
+#if defined(USE_PETSC_COMPLEX)
+    min = PetscReal(x[0]);
+#else
+    min = x[0];
+#endif
+    for ( i=bs; i<n; i+=bs ) {
+#if defined(USE_PETSC_COMPLEX)
+      if ((tmp = PetscReal(x[i])) < min) { min = tmp;}
+#else
+      if ((tmp = x[i]) < min) { min = tmp; } 
+#endif
+    }
+  }
+  ierr   = MPI_Allreduce(&min,norm,1,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
