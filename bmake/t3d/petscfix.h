@@ -221,6 +221,7 @@ extern int    getpagesize();
 extern "C" {
 #include <sys/time.h>
 #include <unistd.h>
+extern void   *memalign(int,int);
 extern int    gettimeofday(struct timeval *,struct timezone *);
 /* The following are suspicious. Not sure if they really exist */
 extern int    readlink(const char *, char *, int);
