@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.99 2000/01/25 00:47:08 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.100 2000/01/26 13:35:51 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -158,7 +158,7 @@ int PCPrintHelp(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
-  if (pc->prefix) PetscStrcat(p,pc->prefix);
+  if (pc->prefix) {ierr = PetscStrcat(p,pc->prefix);CHKERRQ(ierr);}
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
   ierr = (*PetscHelpPrintf)(pc->comm,"PC options --------------------------------------------------\n");CHKERRQ(ierr);
   ierr = FListPrintTypes(pc->comm,stdout,pc->prefix,"pc_type",PCList);CHKERRQ(ierr);

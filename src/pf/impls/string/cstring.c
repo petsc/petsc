@@ -1,4 +1,4 @@
-/*$Id: cstring.c,v 1.1 2000/02/02 21:28:09 bsmith Exp bsmith $*/
+/*$Id: cstring.c,v 1.2 2000/02/04 21:37:26 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "pf.h" I*/
 
 /*
@@ -38,13 +38,14 @@ int PFStringCreateFunction(PF pf,char *string,void **f)
 {
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   int        ierr;
-  void       *handle;
   char       task[1024],tmp[256],lib[256];
   FILE       *fd;
   PetscTruth tmpshared,wdshared;
   MPI_Comm   comm;
+#endif
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscStrfree((char*)pf->data);CHKERRQ(ierr);
   ierr = PetscStrallocpy(string,(char**)&pf->data);CHKERRQ(ierr);
 
@@ -70,9 +71,6 @@ int PFStringCreateFunction(PF pf,char *string,void **f)
   /* load the apply function from the dynamic library */
   sprintf(lib,"%s/libpetscdlib",tmp);
   ierr = DLLibrarySym(comm,PETSC_NULL,lib,"PFApply_String",f);CHKERRQ(ierr);
-  
-#else
-  PetscFunctionBegin;
 #endif
   PetscFunctionReturn(0);    
 }
@@ -102,7 +100,6 @@ EXTERN_C_BEGIN
 int PFCreate_String(PF pf,void *value)
 {
   int        ierr;
-  Scalar     *loc;
   int        (*f)(void *,int,Scalar*,Scalar*) = 0;
 
   PetscFunctionBegin;
@@ -110,7 +107,7 @@ int PFCreate_String(PF pf,void *value)
   if (value) {
     ierr = PFStringCreateFunction(pf,(char*)value,(void**)&f);CHKERRQ(ierr);
   }
-  ierr   = PFSet(pf,f,PETSC_NULL,PFView_String,PFDestroy_String,loc);CHKERRQ(ierr);
+  ierr   = PFSet(pf,f,PETSC_NULL,PFView_String,PFDestroy_String,PETSC_NULL);CHKERRQ(ierr);
 
   pf->ops->setfromoptions = PFSetFromOptions_String;
   PetscFunctionReturn(0);

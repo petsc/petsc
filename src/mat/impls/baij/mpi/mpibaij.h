@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.22 1999/11/24 21:54:03 bsmith Exp bsmith $ */
+/* $Id: mpibaij.h,v 1.23 2000/01/11 21:00:57 bsmith Exp bsmith $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/sys/ctable.h"
@@ -27,7 +27,7 @@ typedef struct {
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   int           nsends,nrecvs;         /* numbers of sends and receives */
-  Scalar        *svalues,*rvalues;     /* sending and receiving data */
+  MatScalar     *svalues,*rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
 #if defined (PETSC_USE_CTABLE)
   PetscTable    colmap;
@@ -55,7 +55,7 @@ typedef struct {
   int           rstart_bs,rend_bs; 
   int           cstart_bs,cend_bs;
   int           *ht;                      /* Hash table to speed up matrix assembly */
-  Scalar        **hd;                     /* Hash table data */
+  MatScalar     **hd;                     /* Hash table data */
   int           ht_size;
   int           ht_total_ct,ht_insert_ct; /* Hash table statistics */
   PetscTruth    ht_flag;                  /* Flag to indicate if hash tables are used */

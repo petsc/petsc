@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.79 2000/02/24 04:11:46 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.80 2000/03/25 03:48:47 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -67,6 +67,7 @@ CMEX              = /software/solaris-2/com/packages/matlab-r11.1/bin/mex
 #CMEX             = mex
 MCC               = cc
 MATLABCOMMAND     = matlab
+MATLAB_INCLUDE    = /software/solaris-2/com/packages/matlab-r11.1/extern/include/
 PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 # Location where adiC is installed
@@ -92,7 +93,8 @@ PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
 AMS_HOME       = /home/ibrahba/alice/ams
 AMS_INCLUDE    = -I${AMS_HOME}/include
-AMS_LIB        =  -L${AMS_HOME}/lib/libg/solaris -lamspub -lamsutilmt -lamsutil -lthread -lldap
+AMS_LIBDIR     = ${AMS_HOME}/lib/lib/solaris
+AMS_LIB        = -L${AMS_LIBDIR} -lamspub -lamsutilmt -lamsutil -lthread -lldap
 PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 #
 # Location of SPAI;

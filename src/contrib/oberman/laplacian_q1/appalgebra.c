@@ -1,5 +1,28 @@
-/*$Id: appalgebra.c,v 1.8 2000/01/17 00:09:27 bsmith Exp bsmith $*/
+/*$Id: appalgebra.c,v 1.9 2000/02/02 21:21:08 bsmith Exp bsmith $*/
 #include "appctx.h"
+
+/*
+         Sample right hand side and boundary conditions
+*/
+#undef __FUNC__
+#define __FUNC__ "pde_rhs"
+double pde_rhs(void *dummy,int n,double *xx,double *f)
+{  
+  double pi = 3.1415927, x = xx[0], y = xx[1];
+  PetscFunctionBegin;
+  *f = 8*pi*pi*sin(2*pi*x)*sin(2*pi*y)-20*pi*cos(2*pi*x)*sin(2*pi*y);
+  PetscFunctionReturn(0);
+}
+#undef __FUNC__
+#define __FUNC__ "pde_bc"
+double pde_bc(void *dummy,int n,double *xx,double *f)
+{
+  double pi = 3.1415927, x = xx[0], y = xx[1];
+  PetscFunctionBegin;
+  *f = sin(2*pi*x)*sin(2*pi*y);
+  PetscFunctionReturn(0);
+}
+
 
 /*
          Sets up the linear system associated with the PDE and solves it
@@ -16,10 +39,15 @@ int AppCtxSolve(AppCtx* appctx)
   PetscFunctionBegin;
 
   /*  Set the functions to use for the right hand side and Dirichlet boundary */
-  ierr = PFCreate(comm,2,1,&appctx->bc);CHKERRQ(ierr);
   ierr = PFCreate(comm,2,1,&appctx->element.rhs);CHKERRQ(ierr);
-  ierr = PFSetFromOptions(appctx->bc);CHKERRQ(ierr);
+  ierr = PFSetOptionsPrefix(appctx->element.rhs,"rhs_");CHKERRQ(ierr);
+  ierr = PFSetType(appctx->element.rhs,PFQUICK,(void*)pde_rhs);CHKERRQ(ierr);
   ierr = PFSetFromOptions(appctx->element.rhs);CHKERRQ(ierr);
+
+  ierr = PFCreate(comm,2,1,&appctx->bc);CHKERRQ(ierr);
+  ierr = PFSetOptionsPrefix(appctx->bc,"bc_");CHKERRQ(ierr);
+  ierr = PFSetType(appctx->bc,PFQUICK,(void*)pde_bc);CHKERRQ(ierr);
+  ierr = PFSetFromOptions(appctx->bc);CHKERRQ(ierr);
 
   /*     A) Set the quadrature values for the reference element  */
   ierr = SetReferenceElement(appctx);CHKERRQ(ierr);

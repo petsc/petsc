@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.25 2000/02/02 20:08:17 bsmith Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.26 2000/03/25 03:50:42 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -159,16 +159,20 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 
   ierr = MPI_Attr_get(comm,Petsc_Tmp_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
   if (!iflg) {
-    char       filename[256];
+    char       filename[256],tmpname[256];
+;
 
     /* This communicator does not yet have a shared tmp attribute */
     tagvalp    = (int*)PetscMalloc(sizeof(int));CHKPTRQ(tagvalp);
     ierr       = MPI_Attr_put(comm,Petsc_Tmp_keyval,tagvalp);CHKERRQ(ierr);
 
-    ierr = OptionsGetenv(comm,"PETSC_TMP",filename,238,&iflg);CHKERRQ(ierr);
+    ierr = OptionsGetenv(comm,"PETSC_TMP",tmpname,238,&iflg);CHKERRQ(ierr);
     if (!iflg) {
       ierr = PetscStrcpy(filename,"/tmp");CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrcpy(filename,tmpname);CHKERRQ(ierr);
     }
+
     ierr = PetscStrcat(filename,"/petsctestshared");CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     
@@ -206,10 +210,10 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
       }
     }
     *tagvalp = (int)*shared;
+    PLogInfo(0,"PetscSharedTmp: processors %s %s\n",(*shared == PETSC_TRUE) ? "share":"do NOT share",(iflg ? tmpname:"/tmp"));
   } else {
     *shared = (PetscTruth) *tagvalp;
   }
-  PLogInfo(0,"PetscSharedTmp: processors %s /tmp\n",(*shared == PETSC_TRUE) ? "shared" : "do NOT share");
   PetscFunctionReturn(0);
 }
 
@@ -379,6 +383,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
 
   /* Determine if all processors share a common /tmp */
   ierr = PetscSharedTmp(comm,&sharedtmp);CHKERRQ(ierr);
+  ierr = OptionsGetenv(comm,"PETSC_TMP",tmpdir,256,&flg1);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank || !sharedtmp) {
@@ -394,7 +399,6 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
     ierr = PetscStrcat(par,"/bin/urlget.py ");CHKERRQ(ierr);
 
     /* are we using an alternative /tmp? */
-    ierr = OptionsGetenv(comm,"PETSC_TMP",tmpdir,256,&flg1);CHKERRQ(ierr);
     if (flg1) {
       ierr = PetscStrcat(par,"-tmp ");CHKERRQ(ierr);
       ierr = PetscStrcat(par,tmpdir);CHKERRQ(ierr);

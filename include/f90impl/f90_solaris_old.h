@@ -1,4 +1,4 @@
-/* $Id: f90_solaris.h,v 1.2 1998/06/25 22:15:54 balay Exp balay $ */
+/* $Id: f90_solaris.h,v 1.3 1998/09/25 00:09:49 balay Exp bsmith $ */
 
 #if !defined (__F90_SOLARIS_H)
 #define __F90_SOLARIS_H
@@ -31,8 +31,8 @@ typedef struct {
 #define f90_header() \
 void*          addr;    /* Pointer to the data */ \
 int            sd;      /* sizeof(DataType) in bits */  \
-unsigned short cookie;  /* a wiered f90 cookie */ \
-unsigned short ndim;    /* No of dimentions */          \
+unsigned short cookie;  /* a wierd f90 cookie */ \
+unsigned short ndim;    /* No of dimensions */          \
 int            id;      /* integer id representing the datatype */ \
 int            a,b;     /* unknown stuff - always zero. */
 

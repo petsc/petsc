@@ -1,4 +1,4 @@
-/*$Id: tagm.c,v 1.18 2000/01/11 20:59:32 bsmith Exp bsmith $*/
+/*$Id: tagm.c,v 1.19 2000/02/02 20:08:20 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites
 */
@@ -204,7 +204,7 @@ int PetscCommRestoreNewTag(MPI_Comm comm,int *tag)
 #undef __FUNC__  
 #define __FUNC__ "PetscCommDuplicate_Private" 
 /*
-  PetscCommDuplicate_Private - Duplicates the communicator only if it is not already PETSc 
+  PetscCommDuplicate_Private - Duplicates the communicator only if it is not already a PETSc 
                          communicator.
 
   Input Parameters:

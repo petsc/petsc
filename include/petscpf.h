@@ -1,4 +1,4 @@
-/* $Id: pf.h,v 1.2 2000/01/24 04:05:37 bsmith Exp bsmith $ */
+/* $Id: pf.h,v 1.3 2000/01/25 00:48:27 bsmith Exp bsmith $ */
 
 /*
       mathematical function module. 
@@ -19,6 +19,8 @@ typedef char *PFType;
 */
 #define PFCONSTANT      "constant"
 #define PFMAT           "mat"
+#define PFSTRING        "string"
+#define PFQUICK         "quick"
 
 typedef struct _p_PF* PF;
 #define PF_COOKIE     PETSC_COOKIE+9
@@ -30,9 +32,9 @@ extern int PFSet(PF,int(*)(void*,int,Scalar*,Scalar*),int(*)(void*,Vec,Vec),int(
 extern int PFApply(PF,int,Scalar*,Scalar*);
 extern int PFApplyVec(PF,Vec,Vec);
 
-extern int PFRegisterDestroy(void);
-extern int PFRegisterAll(char*);
-extern int PFRegisterAllCalled;
+extern int        PFRegisterDestroy(void);
+extern int        PFRegisterAll(char*);
+extern PetscTruth PFRegisterAllCalled;
 
 extern int PFRegister(char*,char*,char*,int(*)(PF,void*));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
@@ -47,7 +49,9 @@ extern int PFSetTypeFromOptions(PF);
 extern int PFGetType(PF,PFType*);
 
 extern int PFView(PF,Viewer);
+extern int PFPrintHelp(PF);
 
+#define PFSetOptionsPrefix(a,s) PetscObjectSetOptionsPrefix((PetscObject)(a),s)
 #endif
 
 

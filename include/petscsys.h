@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.44 2000/02/02 21:21:25 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.45 2000/02/03 22:03:49 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -48,6 +48,7 @@ extern int PetscBinaryWrite(int,void*,int,PetscDataType,int);
 extern int PetscBinaryOpen(const char[],int,int *);
 extern int PetscBinaryClose(int);
 extern int PetscSharedTmp(MPI_Comm,PetscTruth *);
+extern int PetscSharedWorkingDirectory(MPI_Comm,PetscTruth *);
 extern int PetscGetTmp(MPI_Comm,char *,int);
 extern int PetscFileRetrieve(MPI_Comm,const char *,char *,int,PetscTruth*);
 

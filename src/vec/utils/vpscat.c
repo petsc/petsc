@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.126 2000/01/11 21:00:05 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.127 2000/02/27 02:21:44 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -19,10 +19,6 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
   PetscTruth             isascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
-  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
-
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = MPI_Comm_rank(ctx->comm,&rank);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.109 2000/01/21 18:34:24 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.110 2000/02/02 20:08:13 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -191,6 +191,7 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
   va_list     Argp;
   int         ierr;
   char        buf[2048],*lbuf = 0;
+  PetscTruth  ismain;
 
   PetscFunctionBegin;
   /* Compose the message evaluating the print format */
@@ -203,6 +204,18 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
 
   if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,n,p,lbuf,0);
   else         ierr = (*eh->handler)(line,func,file,dir,n,p,lbuf,eh->ctx);
+
+  /* 
+      If this is called from the main() routine we call MPI_Abort() instead of 
+    return to allow the parallel program to be properly shutdown.
+
+    Since this is in the error handler we don't check the errors below. Of course,
+    PetscStrncmp() does its own error checking which is problamatic
+  */
+  PetscStrncmp(func,"main",4,&ismain);
+  if (ismain) {
+    MPI_Abort(PETSC_COMM_WORLD,ierr);
+  }
   PetscFunctionReturn(ierr);
 }
 

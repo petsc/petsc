@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.35 1999/11/05 14:44:45 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.36 2000/01/11 21:00:03 bsmith Exp bsmith $*/
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "is.h"  I*/
@@ -27,7 +27,7 @@ int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(mapping->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscCheckSameComm(mapping,viewer);
 

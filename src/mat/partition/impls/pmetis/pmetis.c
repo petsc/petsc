@@ -1,6 +1,6 @@
-/*$Id: pmetis.c,v 1.30 2000/01/30 03:41:04 bsmith Exp bsmith $*/
+/*$Id: pmetis.c,v 1.31 2000/01/30 15:27:49 bsmith Exp bsmith $*/
  
-#include "src/mat/impls/csr/mpi/mpicsr.h"    /*I "mat.h" I*/
+#include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "mat.h" I*/
 
 /* 
    Currently using ParMetis-2.0. The following include file has
@@ -31,7 +31,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   int                      ierr,*locals,size,rank;
   int                      *vtxdist,*xadj,*adjncy,itmp = 0;
   Mat                      mat = part->adj,newmat;
-  Mat_MPICSR               *adj = (Mat_MPICSR *)mat->data;
+  Mat_MPIAdj               *adj = (Mat_MPIAdj *)mat->data;
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
 
   PetscFunctionBegin;
@@ -40,9 +40,9 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
     SETERRQ(PETSC_ERR_SUP,1,"Supports exactly one domain per processor");
   }
 
-  if (mat->type != MATMPICSR) {
-    ierr = MatConvert(mat,MATMPICSR,&newmat);CHKERRQ(ierr);
-    adj = (Mat_MPICSR *)newmat->data;
+  if (mat->type != MATMPIADJ) {
+    ierr = MatConvert(mat,MATMPIADJ,&newmat);CHKERRQ(ierr);
+    adj  = (Mat_MPIAdj *)newmat->data;
   }
 
   vtxdist = adj->rowners;
@@ -74,7 +74,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   ierr = ISCreateGeneral(part->comm,adj->m,locals,partitioning);CHKERRQ(ierr);
   ierr = PetscFree(locals);CHKERRQ(ierr);
 
-  if (mat->type != MATMPICSR) {
+  if (mat->type != MATMPIADJ) {
     ierr = MatDestroy(newmat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

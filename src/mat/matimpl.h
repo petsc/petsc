@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.104 2000/01/11 21:00:30 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.105 2000/01/30 15:26:31 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -101,7 +101,7 @@ typedef struct {
   int           reallocs;               /* preserve the no of mallocs invoked */           
   int           *idx;                   /* global row numbers in stash */
   int           *idy;                   /* global column numbers in stash */
-  Scalar        *array;                 /* array to hold stashed values */
+  MatScalar     *array;                 /* array to hold stashed values */
   /* The following variables are used for communication */
   MPI_Comm      comm;
   int           size,rank;
@@ -110,7 +110,7 @@ typedef struct {
   MPI_Request   *recv_waits;            /* array of receive requests */
   MPI_Status    *send_status;           /* array of send status */
   int           nsends,nrecvs;         /* numbers of sends and receives */
-  Scalar        *svalues,*rvalues;     /* sending and receiving data */
+  MatScalar     *svalues,*rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
   int           *nprocs;                /* tmp data used both duiring scatterbegin and end */
   int           nprocessed;             /* number of messages already processed */
@@ -225,7 +225,7 @@ extern int MatStashValuesCol_Private(MatStash*,int,int,int*,Scalar*,int);
 extern int MatStashValuesRowBlocked_Private(MatStash*,int,int,int*,Scalar*,int,int,int);
 extern int MatStashValuesColBlocked_Private(MatStash*,int,int,int*,Scalar*,int,int,int);
 extern int MatStashScatterBegin_Private(MatStash*,int*);
-extern int MatStashScatterGetMesg_Private(MatStash*,int*,int**,int**,Scalar**,int*);
+extern int MatStashScatterGetMesg_Private(MatStash*,int*,int**,int**,MatScalar**,int*);
 
 extern int MatConvert_Basic(Mat,MatType,Mat*);
 extern int MatCopy_Basic(Mat,Mat,MatStructure);
@@ -233,5 +233,9 @@ extern int MatView_Private(Mat);
 extern int MatGetMaps_Petsc(Mat,Map *,Map *);
 
 #endif
+
+
+
+
 
 

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.24 1999/11/05 14:47:48 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.25 2000/01/11 21:03:15 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -424,7 +424,7 @@ int DataPartitionElements(GridData *gdata)
   /*
       Create the adjacency graph matrix
   */
-  ierr = MatCreateMPICSR(PETSC_COMM_WORLD,mlocal_ele,n_ele,ia,ja,PETSC_NULL,&Adj);CHKERRQ(ierr);
+  ierr = MatCreateMPIAdj(PETSC_COMM_WORLD,mlocal_ele,n_ele,ia,ja,PETSC_NULL,&Adj);CHKERRQ(ierr);
 
   /*
       Create the partioning object

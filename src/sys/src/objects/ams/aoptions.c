@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.3 2000/01/16 23:59:32 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.4 2000/02/10 21:11:53 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -19,7 +19,7 @@
 
     Eventually we'll attach this beast to a MPI_Comm
 */
-typedef enum {PETSC_OPTION_INT, PETSC_OPTION_LOGICAL, PETSC_OPTION_DOUBLE, PETSC_OPTION_LIST} PetscOptionType;
+typedef enum {PETSC_OPTION_INT,PETSC_OPTION_LOGICAL,PETSC_OPTION_DOUBLE,PETSC_OPTION_LIST} PetscOptionType;
 typedef struct _p_PetscOptionsAMS* PetscOptionsAMS;
 struct _p_PetscOptionsAMS {
   char            *option;
@@ -34,7 +34,6 @@ struct _p_PetscOptionsAMS {
 typedef struct {
   AMS_Memory      amem;
   PetscOptionsAMS next;
-  int             lock;
   char            *prefix;
   char            *title;
 } PetscOptionsPublish;
@@ -46,20 +45,20 @@ int OptionsSelectBegin(MPI_Comm comm,char *prefix,char *title)
 {
   AMS_Comm   acomm;
   int        ierr;
+  static int count = 0;
+  char       options[16];
 
   PetscFunctionBegin;
   ierr = ViewerAMSGetAMSComm(VIEWER_AMS_(comm),&acomm);CHKERRQ(ierr);
   
-  amspub.lock = 1;
   ierr = PetscStrallocpy(prefix,&amspub.prefix);CHKERRQ(ierr);
   ierr = PetscStrallocpy(prefix,&amspub.title);CHKERRQ(ierr);
 
-  ierr = AMS_Memory_create(acomm,"Options",&amspub.amem);CHKERRQ(ierr);
+  sprintf(options,"Options_%d",count++);
+  ierr = AMS_Memory_create(acomm,options,&amspub.amem);CHKERRQ(ierr);
   ierr = AMS_Memory_take_access(amspub.amem);CHKERRQ(ierr); 
 
-  ierr = AMS_Memory_add_field(amspub.amem,title,&amspub.lock,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amspub.amem,"lock",&amspub.lock,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-
+  ierr = AMS_Memory_add_field(amspub.amem,title,&amspub.title,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -74,12 +73,11 @@ int OptionsSelectEnd(MPI_Comm comm)
   PetscFunctionBegin;
   if (amspub.amem < 0) SETERRQ(1,1,"Called without a call to OptionsSelectBegin()");
   ierr = AMS_Memory_publish(amspub.amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_grant_access(amspub.amem);CHKERRQ(ierr);
 
-  while (amspub.lock) {
-    ierr = AMS_Memory_grant_access(amspub.amem);CHKERRQ(ierr);
-    ierr = PetscSleep(10);CHKERRQ(ierr);
-    ierr = AMS_Memory_take_access(amspub.amem);CHKERRQ(ierr);
-  }
+  /* wait until accessor has unlocked the memory */
+  ierr = AMS_Memory_lock(amspub.amem,0);CHKERRQ(ierr);
+  ierr = AMS_Memory_take_access(amspub.amem);CHKERRQ(ierr);
 
   /*
         Free all the options in the linked list

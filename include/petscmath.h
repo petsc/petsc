@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.17 1999/09/27 21:33:07 bsmith Exp bsmith $ */
+/* $Id: petscmath.h,v 1.18 2000/01/11 21:04:04 bsmith Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -33,6 +33,12 @@
 
 extern  MPI_Datatype        MPIU_COMPLEX;
 #define MPIU_SCALAR         MPIU_COMPLEX
+#if defined(PETSC_USE_MAT_SINGLE)
+#define MPIU_MATSCALAR        ??Notdone
+#else
+#define MPIU_MATSCALAR      MPIU_COMPLEX
+#endif
+
 #if defined (PETSC_HAVE_STD_COMPLEX)
 #define PetscRealPart(a)        (a).real()
 #define PetscImaginaryPart(a)   (a).imag()
@@ -69,6 +75,11 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 /* Compiling for real numbers only */
 #else
 #define MPIU_SCALAR           MPI_DOUBLE
+#if defined(PETSC_USE_MAT_SINGLE)
+#define MPIU_MATSCALAR        MPI_FLOAT
+#else
+#define MPIU_MATSCALAR        MPI_DOUBLE
+#endif
 #define PetscRealPart(a)      (a)
 #define PetscImaginaryPart(a) (a)
 #define PetscAbsScalar(a)     (((a)<0.0)   ? -(a) : (a))

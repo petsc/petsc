@@ -1,17 +1,17 @@
-# $Id: makefile,v 1.8 1999/02/02 21:27:13 balay Exp bsmith $ 
+# $Id: makefile,v 1.9 2000/01/11 21:01:00 bsmith Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = mpicsr.c
+SOURCEC  = mpiadj.c
 SOURCEF  =
-SOURCEH  = mpicsr.h
-OBJSC    = mpicsr.o
+SOURCEH  = mpiadj.h
+OBJSC    = mpiadj.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/csr/mpi/
+LOCDIR   = src/mat/impls/adj/mpi/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,14 +1,21 @@
-/* $Id: ilu.h,v 1.15 1999/05/12 03:25:57 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.16 2000/01/11 20:58:48 bsmith Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
- the order of 3-6+.
+ the order of 2-6+.
+
+    There are TWO versions of the macros below. 
+    1) standard for MatScalar == Scalar use the standard BLAS for 
+       block size larger than 7 and
+    2) handcoded Fortran single precision for the matrices, since BLAS
+       does not have some arguments in single and some in double.
 
 */
 #if !defined(__ILU_H)
 #define __ILU_H
 
 #include "pinclude/blaslapack.h"
+
 /*
       These are C kernels,they are contained in 
    src/mat/impls/baij/seq
@@ -23,37 +30,6 @@ extern int  Kernel_A_gets_inverse_A_5(MatScalar *);
 extern int  Kernel_A_gets_inverse_A_6(MatScalar *);
 extern int  Kernel_A_gets_inverse_A_7(MatScalar *);
 
-/*
-     These are Fortran kernels: They replace certain BLAS routines but
-   have some arguments that may be single precision,rather than double
-   These routines are provided in src/fortran/kernels/sgemv.F 
-   They are pretty pitiful but get the job done. The intention is 
-   that for important block sizes (currently 3,4,5) custom inlined 
-   code is used.
-*/
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define msgemv_  MSGEMV
-#define msgemvp_ MSGEMVP
-#define msgemvm_ MSGEMVM
-#define msgemvt_ MSGEMVT
-#define msgemmi_ MSGEMMI
-#define msgemm_  MSGEMM
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define msgemv_  msgemv
-#define msgemvp_ msgemvp
-#define msgemvm_ msgemvm
-#define msgemvt_ msgemvt
-#define msgemmi_ msgemmi
-#define msgemm_  msgemm
-#endif
-EXTERN_C_BEGIN
-extern void msgemv_(int *,int *,MatScalar*,Scalar*,Scalar*);
-extern void msgemvp_(int *,int *,MatScalar*,Scalar*,Scalar*);
-extern void msgemvm_(int *,int *,MatScalar*,Scalar*,Scalar*);
-extern void msgemvt_(int *,int *,MatScalar*,Scalar*,Scalar*);
-extern void msgemmi_(int *,MatScalar*,MatScalar*,MatScalar*);
-extern void msgemm_(int *,MatScalar*,MatScalar*,MatScalar*);
-EXTERN_C_END
 
 /*
     A = inv(A)    A_gets_inverse_A
@@ -183,6 +159,38 @@ EXTERN_C_END
    of matrix (array) and vectors
 */
 /*
+     These are Fortran kernels: They replace certain BLAS routines but
+   have some arguments that may be single precision,rather than double
+   These routines are provided in src/fortran/kernels/sgemv.F 
+   They are pretty pitiful but get the job done. The intention is 
+   that for important block sizes (currently 1,2,3,4,5,6,7) custom inlined 
+   code is used.
+*/
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define msgemv_  MSGEMV
+#define msgemvp_ MSGEMVP
+#define msgemvm_ MSGEMVM
+#define msgemvt_ MSGEMVT
+#define msgemmi_ MSGEMMI
+#define msgemm_  MSGEMM
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define msgemv_  msgemv
+#define msgemvp_ msgemvp
+#define msgemvm_ msgemvm
+#define msgemvt_ msgemvt
+#define msgemmi_ msgemmi
+#define msgemm_  msgemm
+#endif
+EXTERN_C_BEGIN
+extern void msgemv_(int *,int *,MatScalar*,Scalar*,Scalar*);
+extern void msgemvp_(int *,int *,MatScalar*,Scalar*,Scalar*);
+extern void msgemvm_(int *,int *,MatScalar*,Scalar*,Scalar*);
+extern void msgemvt_(int *,int *,MatScalar*,Scalar*,Scalar*);
+extern void msgemmi_(int *,MatScalar*,MatScalar*,MatScalar*);
+extern void msgemm_(int *,MatScalar*,MatScalar*,MatScalar*);
+EXTERN_C_END
+
+/*
       A = A * B   A_gets_A_times_B
 
    A, B - square bs by bs arrays stored in column major order
@@ -274,5 +282,7 @@ EXTERN_C_END
 #endif
 
 #endif
+
+
 
 

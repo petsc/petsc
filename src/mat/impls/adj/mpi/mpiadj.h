@@ -1,12 +1,12 @@
-/* $Id: mpicsr.h,v 1.4 2000/01/11 21:01:00 bsmith Exp bsmith $ */
+/* $Id: mpicsr.h,v 1.5 2000/02/02 20:09:14 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
-#if !defined(__CSR_H)
-#define __CSR_H
+#if !defined(__ADJ_H)
+#define __ADJ_H
 
 /*  
-  MATMPICSR format - Compressed row storage for storing adjacency lists, and possibly weights
+  MATMPIAdj format - Compressed row storage for storing adjacency lists, and possibly weights
                      This is for grid reorderings (to reduce bandwidth)
                      grid partitionings, etc. This is NOT currently a dynamic data-structure.
                      
@@ -22,6 +22,6 @@ typedef struct {
   int              *j;               /* column values: j + i[k] - 1 is start of row k */
   int              *values;          /* numerical values */
   PetscTruth       symmetric;        /* user indicates the nonzero structure is symmetric */
-} Mat_MPICSR;
+} Mat_MPIAdj;
 
 #endif

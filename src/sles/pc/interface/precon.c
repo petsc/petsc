@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.187 2000/01/11 21:01:36 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.188 2000/02/02 20:09:33 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -1197,7 +1197,7 @@ int PCView(PC pc,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(pc->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE); 
   PetscCheckSameComm(pc,viewer);
 

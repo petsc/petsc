@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.152 2000/02/02 20:08:39 bsmith Exp bsmith $*/
+/*$Id: vscat.c,v 1.153 2000/02/24 03:56:02 bsmith Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -1582,7 +1582,7 @@ int VecScatterView(VecScatter ctx,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(ctx->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   if (!ctx->view) SETERRQ(PETSC_ERR_SUP,0,"Cannot view this type of scatter context yet");
 

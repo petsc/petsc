@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 2000/02/01 19:33:32 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 2000/02/02 21:21:18 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = const.o
 OBJSF    =
-LIBBASE  = libpetscsles
+LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/pf/impls/constant/
 

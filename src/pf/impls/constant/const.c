@@ -1,4 +1,4 @@
-/*$Id: const.c,v 1.1 2000/02/01 19:34:49 bsmith Exp bsmith $*/
+/*$Id: const.c,v 1.2 2000/02/02 21:21:18 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "pf.h" I*/
 
 #undef __FUNC__  
@@ -66,7 +66,6 @@ int PFSetFromOptions_Constant(PF pf)
   PetscFunctionReturn(0);    
 }
 
-
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PFCreate_Constant"
@@ -82,6 +81,20 @@ int PFCreate_Constant(PF pf,void *value)
   ierr   = PFSet(pf,PFApply_Constant,PFApplyVec_Constant,PFView_Constant,PFDestroy_Constant,loc);CHKERRQ(ierr);
 
   pf->ops->setfromoptions = PFSetFromOptions_Constant;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "PFCreate_Quick"
+int PFCreate_Quick(PF pf,void* function)
+{
+  int  ierr;
+
+  PetscFunctionBegin;
+
+  ierr = PFSet(pf,(int (*)(void*,int,Scalar*,Scalar*))function,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

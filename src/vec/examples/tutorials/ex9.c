@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.19 1999/11/05 14:45:05 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.20 2000/01/11 21:00:24 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
@@ -8,7 +8,7 @@ static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
    Routines: VecView(); VecDestroy(); PetscSynchronizedPrintf();
    Routines: VecGhostGetLocalForm(); VecGhostUpdateEnd();
    Routines: VecGhostRestoreLocalForm(); VecGhostUpdateBegin();
-   Routines: PetscSynchronizedFlush();
+   Routines: PetscSynchronizedFlush(); VecGetArray(); VecRestoreArray();
    Processors: n
 
    Comment: Ghost padding is one way to handle local calculations that

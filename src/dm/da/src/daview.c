@@ -1,4 +1,4 @@
-/*$Id: daview.c,v 1.39 2000/01/11 21:03:19 bsmith Exp bsmith $*/
+/*$Id: daview.c,v 1.40 2000/02/02 20:10:29 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -69,7 +69,7 @@ int DAView(DA da,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_WORLD;
+  if (!viewer) viewer = VIEWER_STDOUT_(da->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = (*da->view)(da,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

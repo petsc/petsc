@@ -1,4 +1,4 @@
-/*$Id: index.c,v 1.70 2000/01/11 20:59:54 bsmith Exp bsmith $*/
+/*$Id: index.c,v 1.71 2000/02/02 20:08:32 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
@@ -329,7 +329,7 @@ int ISView(IS is,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF; 
+  if (!viewer) viewer = VIEWER_STDOUT_(is->comm); 
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscCheckSameComm(is,viewer);
   

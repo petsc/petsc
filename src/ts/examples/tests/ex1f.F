@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.32 1999/05/11 19:16:33 bsmith Exp bsmith $";
+! "$Id: ex1f.F,v 1.33 2000/01/11 21:03:03 bsmith Exp bsmith $";
 !
 !       Formatted test for TS routines.
 !
@@ -48,8 +48,8 @@
       Viewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,  &
-     &               nrm_max,nox
+      common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
+     &               ,viewer2,M
 
       external Monitor,RHSFunctionHeat,RHSMatrixFree,Initial
       external RHSMatrixHeat,RHSJacobianHeat
@@ -289,8 +289,8 @@
       Viewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,  &
-     &               nrm_max,nox
+      common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
+     &               ,viewer2,M
 
 !   determine starting point of each processor 
 
@@ -339,8 +339,8 @@
       Viewer            viewer1,viewer2
       integer           M
       double precision  h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,  &
-     &               nrm_max,nox
+      common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
+     &               ,viewer2,M
 
 !   determine starting point of each processor 
 
@@ -388,9 +388,8 @@
       Viewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,  &
-     &               nrm_max,nox
-
+      common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
+     &               ,viewer2,M
 
       call VecView(global,viewer1,ierr) 
 
@@ -468,8 +467,8 @@
       Viewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,  &
-     &               nrm_max,nox
+      common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
+     &               ,viewer2,M
 
 !  Extract local array  
 
@@ -536,8 +535,8 @@
       Viewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,  &
-     &               nrm_max,nox
+      common /tsctx/ h,nrm_2,nrm_max,nox,localwork,csolution,da,viewer1 &
+     &               ,viewer2,M
 
       A    = AA
       stwo = -2./(h*h)

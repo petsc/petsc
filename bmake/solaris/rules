@@ -1,4 +1,4 @@
-# $Id: base,v 1.65 2000/02/02 22:35:27 bsmith Exp bsmith $ 
+# $Id: base,v 1.66 2000/02/02 22:45:10 bsmith Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -45,15 +45,9 @@ shared: chkopts_basic
 #  Since there is no .so version of the libC.a it must be done this way.
 
 oshared: 
-	-@${RM} -rf tmp; \
-	mkdir tmp; \
-	ln -s ${LIBNAME}.a tmp/libtmp.a; \
-	cd tmp; \
-        echo "building ${LIBNAME}.${SLSUFFIX} with ${NEEDED_A_LIBS} ${C_SYS_LIB} "; \
-	${AR} x libtmp.a ;\
-	${LD} -G  -h ${LIBNAME}.${SLSUFFIX} *.o  -o libtmp.${SLSUFFIX} \
-               ${NEEDED_A_LIBS} ${C_SYS_LIB} ; \
-	cd ../ ; \
-	mv tmp/libtmp.${SLSUFFIX} ${LIBNAME}.${SLSUFFIX} ;\
-	${RM} -rf tmp
+	-@echo "building ${LIBNAME}.${SLSUFFIX} with ${NEEDED_A_LIBS} ${C_SYS_LIB} "
+	-@${RM} -rf *.o
+	-@${AR} x ${LIBNAME}.a 
+	-@${LD} -G  -h ${LIBNAME}.${SLSUFFIX} *.o  -o ${LIBNAME}.${SLSUFFIX} ${NEEDED_A_LIBS} ${C_SYS_LIB} 
+	-@${RM} -rf *.o
 

@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.56 2000/01/11 20:59:26 bsmith Exp bsmith $*/
+/*$Id: dl.c,v 1.57 2000/02/02 20:08:15 bsmith Exp bsmith $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -129,8 +129,6 @@ int DLLibraryGetInfo(void *handle,char *type,char **mess)
 int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)
 {
   char       *par2,buff[10],*en,*gz;
-  char       *r[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LDIR}",0};
-  char       *s[] = {PETSC_ARCH_NAME,PETSC_BOPT,PETSC_DIR,PETSC_LDIR,0};
   int        ierr,len1,len2,len;
   PetscTruth tflg,flg;
 
@@ -144,7 +142,7 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
   len    = PetscMax(4*len,1024);
   par2   = (char*)PetscMalloc(len*sizeof(char));CHKPTRQ(par2);
 
-  ierr = PetscStrreplace(comm,libname,par2,len,r,s);CHKERRQ(ierr);
+  ierr = PetscStrreplace(comm,libname,par2,len);CHKERRQ(ierr);
 
   /* 
      Remove any file: header
@@ -212,7 +210,7 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
    Notes:
    [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
 
-   $PETSC_ARCH and $BOPT occuring in directoryname and filename 
+   ${PETSC_ARCH} and ${BOPT} occuring in directoryname and filename 
    will be replaced with appropriate values.
 @*/
 int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
@@ -307,14 +305,14 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
         Will attempt to (retrieve and) open the library if it is not yet been opened.
 
 @*/
-int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
-                 const char insymbol[],void **value)
+int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],const char insymbol[],void **value)
 {
   char          *par1,*symbol;
   int           ierr,len;
-  DLLibraryList nlist,prev,list = *inlist;
+  DLLibraryList nlist,prev,list;
 
   PetscFunctionBegin;
+  if (inlist) list = *inlist; else list = PETSC_NULL;
   *value = 0;
 
   /* make copy of symbol so we can edit it in place */
@@ -349,12 +347,12 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
         handle = nlist->handle;
         goto done;
       }
-      prev = nlist;
+      prev  = nlist;
       nlist = nlist->next;
     }
     ierr = DLLibraryOpen(comm,path,&handle);CHKERRQ(ierr);
 
-    nlist = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
+    nlist = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(nlist);
     nlist->next   = 0;
     nlist->handle = handle;
     ierr = PetscStrcpy(nlist->libname,path);CHKERRQ(ierr);
@@ -362,7 +360,8 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
     if (prev) {
       prev->next = nlist;
     } else {
-      *inlist    = list;
+      if (inlist) *inlist = nlist;
+      else {ierr = DLLibraryClose(nlist);CHKERRQ(ierr);}
     }
     PLogInfo(0,"DLLibraryAppend:Appending %s to dynamic library search path\n",symbol);
 

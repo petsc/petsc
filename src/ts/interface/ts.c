@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.23 2000/03/06 03:23:54 bsmith Exp curfman $ */
+/* $Id: ts.c,v 1.24 2000/03/09 14:34:45 curfman Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "ts.h"  I*/
 
 #undef __FUNC__  
@@ -375,7 +375,7 @@ int TSView(TS ts,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(ts->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscCheckSameComm(ts,viewer);
 

@@ -1,9 +1,9 @@
-/*$Id: vnake.c,v 1.12 1999/10/24 13:47:11 bsmith Exp bsmith $*/
+/*$Id: vnake.c,v 1.13 1999/11/05 14:44:51 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecCreate"
+#define __FUNC__ "VecCreate" /*<a name="VecCreate"><\a>*/
 /*@C
    VecCreate - Creates an empty vector object. The type can then
    be set with VecSetType().

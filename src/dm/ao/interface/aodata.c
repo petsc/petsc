@@ -1,4 +1,4 @@
-/*$Id: aodata.c,v 1.43 2000/01/11 21:03:09 bsmith Exp bsmith $*/
+/*$Id: aodata.c,v 1.44 2000/02/02 20:10:24 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AOData
 */
@@ -1112,7 +1112,7 @@ int AODataView(AOData aodata,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(aodata->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = (*aodata->ops->view)(aodata,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.5 2000/02/02 21:21:16 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.6 2000/02/07 20:33:22 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -269,7 +269,7 @@ int PFView(PF pf,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(pf->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE); 
   PetscCheckSameComm(pf,viewer);
 

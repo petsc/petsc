@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.10 1999/02/02 23:41:39 bsmith Exp $ 
+# $Id: makefile,v 1.1 2000/02/06 15:52:02 bsmith Exp bsmith $ 
 
 ALL:
 
-LOCDIR	 = src/vec/examples/
-DIRS	 = tests tutorials
+LOCDIR	 = src/pf/examples/
+DIRS	 = tutorials
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

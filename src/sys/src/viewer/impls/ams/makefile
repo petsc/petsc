@@ -1,10 +1,10 @@
-# $Id: makefile,v 1.6 1999/02/02 21:21:44 balay Exp bsmith $ 
+# $Id: makefile,v 1.7 2000/01/11 20:59:00 bsmith Exp bsmith $ 
 
 #requirespackage  '-DPETSC_HAVE_AMS'
 
 ALL: lib 
 
-CFLAGS   = ${AMS_INCLUDE} -DAMS_DIR='"${AMS_DIR}"'
+CFLAGS   = ${AMS_INCLUDE} -DAMS_HOME='"${AMS_HOME}"'
 FFLAGS   =
 SOURCEC  = ams.c amsopen.c
 SOURCEF  =

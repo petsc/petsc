@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.131 2000/01/11 21:01:35 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.132 2000/02/02 20:09:31 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
 
@@ -57,7 +57,7 @@ int SLESView(SLES sles,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(sles->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
   ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);

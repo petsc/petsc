@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.180 2000/02/02 20:09:44 bsmith Exp curfman $*/
+/*$Id: itcreate.c,v 1.181 2000/03/09 14:33:37 curfman Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -43,7 +43,7 @@ int KSPView(KSP ksp,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(ksp->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscCheckSameComm(ksp,viewer);
 

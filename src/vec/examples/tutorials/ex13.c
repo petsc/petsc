@@ -1,11 +1,11 @@
-/*$Id: ex13.c,v 1.7 1999/10/24 14:02:04 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.8 2000/01/11 21:00:24 bsmith Exp bsmith $*/
 
 static char help[] = "Tests PetscObjectPublish().\n\n";
 
 /*T
    Concepts: Vectors^Assembling vectors;
    Routines: VecCreateMPI(); VecGetSize(); VecSet(); VecSetValues();
-   Routines: VecView(); VecDestroy();
+   Routines: VecView(); VecDestroy(); VecGetArray(); VecRestoreArray();
    Processors: n
 T*/
 

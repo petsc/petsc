@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.115 1999/11/05 14:47:20 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.116 2000/01/11 21:02:45 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -21,7 +21,7 @@ The command line options include:\n\
    Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
    Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
    Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetISLocalToGlobalMapping();
-   Routines: MatSetLocalToGlobalMapping();
+   Routines: MatSetLocalToGlobalMapping(); VecGetArray(); VecRestoreArray();
    Processors: n
 T*/
 

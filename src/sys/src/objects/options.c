@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.228 1999/12/18 00:59:27 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.229 2000/01/11 20:59:32 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -719,11 +719,26 @@ int OptionsReject(const char name[],const char mess[])
 @*/
 int OptionsHasName(const char pre[],const char name[],PetscTruth *flg)
 {
-  char *value;
-  int  ierr;
+  char       *value;
+  int        ierr;
+  PetscTruth isfalse;
 
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,flg);CHKERRQ(ierr);
+
+  /* remove if turned off */
+  if (*flg) {    
+    ierr = PetscStrcmp(value,"FALSE",&isfalse);CHKERRQ(ierr);
+    if (isfalse) *flg = PETSC_FALSE;
+    ierr = PetscStrcmp(value,"NO",&isfalse);CHKERRQ(ierr);
+    if (isfalse) *flg = PETSC_FALSE;
+    ierr = PetscStrcmp(value,"0",&isfalse);CHKERRQ(ierr);
+    if (isfalse) *flg = PETSC_FALSE;
+    ierr = PetscStrcmp(value,"false",&isfalse);CHKERRQ(ierr);
+    if (isfalse) *flg = PETSC_FALSE;
+    ierr = PetscStrcmp(value,"no",&isfalse);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 

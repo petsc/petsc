@@ -1,4 +1,4 @@
-/*$Id: baij2.c,v 1.54 1999/11/24 21:53:59 bsmith Exp bsmith $*/
+/*$Id: baij2.c,v 1.55 2000/01/11 21:00:52 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -1204,9 +1204,16 @@ int MatScale_SeqBAIJ(Scalar *alpha,Mat inA)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)inA->data;
   int         one = 1,totalnz = a->bs2*a->nz;
+#if defined(PETSC_USE_MAT_SINGLE)
+  int         i;
+#endif
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_MAT_SINGLE)
+  for (i=0; i<totalnz; i++) a->a[i] *= *alpha;
+#else
   BLscal_(&totalnz,alpha,a->a,&one);
+#endif
   PLogFlops(totalnz);
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.199 2000/02/02 20:09:09 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.200 2000/04/07 18:44:11 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -302,7 +302,7 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
   array = (Scalar *)PetscMalloc(a->bs2*a->nz*sizeof(Scalar));CHKPTRQ(array);
   for (i=0; i<a->bs2*a->nz; i++) array[i] = (Scalar)a->a[i];
 #else
-  *array = a->a;
+  array = a->a;
 #endif
 
   for (i=0; i<ai[mbs]; i++) col[aj[i]] += 1;

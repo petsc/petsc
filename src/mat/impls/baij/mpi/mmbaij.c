@@ -1,4 +1,4 @@
-/*$Id: mmbaij.c,v 1.28 1999/10/24 14:02:31 bsmith Exp bsmith $*/
+/*$Id: mmbaij.c,v 1.29 2000/01/11 21:00:57 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply
@@ -170,11 +170,15 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
 int DisAssemble_MPIBAIJ(Mat A)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)A->data;
-  Mat        B = baij->B,Bnew;
+  Mat         B = baij->B,Bnew;
   Mat_SeqBAIJ *Bbaij = (Mat_SeqBAIJ*)B->data;
-  int        ierr,i,j,mbs=Bbaij->mbs,n = baij->N,col,*garray=baij->garray;
-  int        k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m=Bbaij->m;
-  Scalar     *a=Bbaij->a;
+  int         ierr,i,j,mbs=Bbaij->mbs,n = baij->N,col,*garray=baij->garray;
+  int         k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m=Bbaij->m;
+  MatScalar   *a = Bbaij->a;
+#if defined(PETSC_USE_MAT_SINGLE)
+  Scalar      *atmp = (Scalar*)PetscMalloc(baij->bs*sizeof(Scalar));
+  int         l;
+#endif
 
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
@@ -193,7 +197,7 @@ int DisAssemble_MPIBAIJ(Mat A)
 
   /* make sure that B is assembled so we can access its values */
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* invent new B and copy stuff over */
   nz = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(nz);
@@ -210,11 +214,19 @@ int DisAssemble_MPIBAIJ(Mat A)
     for (j=Bbaij->i[i]; j<Bbaij->i[i+1]; j++) {
       col = garray[Bbaij->j[j]]*bs;
       for (k=0; k<bs; k++) {
-        ierr = MatSetValues(Bnew,bs,rvals,1,&col,a+j*bs2,B->insertmode);CHKERRQ(ierr);
+#if defined(PETSC_USE_MAT_SINGLE)
+        for (l=0; l<bs; l++) atmp[l] = a[j*bs2+l];
+#else
+        atmp = a+j*bs2;
+#endif
+        ierr = MatSetValues(Bnew,bs,rvals,1,&col,atmp,B->insertmode);CHKERRQ(ierr);
         col++;
       }
     }
   }
+#if defined(PETSC_USE_MAT_SINGLE)
+  ierr = PetscFree(atmp);CHKERRQ(ierr);
+#endif
   ierr = PetscFree(baij->garray);CHKERRQ(ierr);
   baij->garray = 0;
   ierr = PetscFree(rvals);CHKERRQ(ierr);
@@ -225,5 +237,6 @@ int DisAssemble_MPIBAIJ(Mat A)
   A->was_assembled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
 
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.22 1999/04/01 17:11:43 balay Exp curfman $ 
+# $Id: makefile,v 1.23 1999/07/26 18:47:48 curfman Exp bsmith $ 
 
 ALL: ex1
 
@@ -56,13 +56,13 @@ ex6: ex6.o  chkopts
 	${RM} ex6.o
 
 runex1:
-	-@${MPIRUN} -np 1 ex1  > ex1_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ex1 -ksp_gmres_irorthog  > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 
 runex1f:
-	-@${MPIRUN} -np 1 ex1f  > ex1f_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ex1f -ksp_gmres_irorthog > ex1f_1.tmp 2>&1;	  \
 	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp

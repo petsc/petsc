@@ -1,4 +1,4 @@
-/*$Id: inherit.c,v 1.56 1999/11/24 21:53:05 bsmith Exp bsmith $*/
+/*$Id: inherit.c,v 1.57 2000/01/11 20:59:32 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -237,8 +237,7 @@ int PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob
 
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectComposeFunction_Petsc"
-int PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],
-                                     const char fname[],void *ptr)
+int PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],const char fname[],void *ptr)
 {
   int ierr;
 
@@ -397,8 +396,7 @@ int PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,void *ptr)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectComposeFunction"
-int PetscObjectComposeFunction(PetscObject obj,const char name[],
-                                       const char fname[],void *ptr)
+int PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void *ptr)
 {
   int ierr;
 
@@ -611,9 +609,7 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
   PetscObjectContainer contain;
 
   PetscFunctionBegin;
-
-  PetscHeaderCreate(contain, _p_PetscObjectContainer,int,PETSC_COOKIE,0,"container",
-                    comm,PetscObjectContainerDestroy,0);
+  PetscHeaderCreate(contain,_p_PetscObjectContainer,int,PETSC_COOKIE,0,"container",comm,PetscObjectContainerDestroy,0);
   *container = contain;
   PetscFunctionReturn(0);
 }

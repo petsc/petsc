@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.56 2000/01/11 21:01:22 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.57 2000/02/02 20:09:24 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -99,7 +99,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(c->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE); 
   PetscCheckSameComm(c,viewer);
 

@@ -1,4 +1,4 @@
-/*$Id: aodatabasic.c,v 1.48 2000/01/11 21:03:11 bsmith Exp bsmith $*/
+/*$Id: aodatabasic.c,v 1.49 2000/02/02 20:10:25 bsmith Exp bsmith $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.
@@ -697,7 +697,7 @@ int AODataKeyGetAdjacency_Basic(AOData aodata,char *keyname,Mat *adj)
     ii[i+1] = cnt;
   }
 
-  ierr = MatCreateMPICSR(aodata->comm,nlocal,n,ii,jj,PETSC_NULL,adj);CHKERRQ(ierr);
+  ierr = MatCreateMPIAdj(aodata->comm,nlocal,n,ii,jj,PETSC_NULL,adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

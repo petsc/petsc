@@ -1,4 +1,4 @@
-/*$Id: ao.c,v 1.29 1999/10/24 14:03:58 bsmith Exp bsmith $*/
+/*$Id: ao.c,v 1.30 2000/01/11 21:03:09 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
@@ -38,7 +38,7 @@ int AOView(AO ao,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(ao->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = (*ao->ops->view)(ao,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

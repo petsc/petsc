@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.137 2000/02/24 22:23:48 balay Exp balay $ */
+/* $Id: petsclog.h,v 1.138 2000/02/24 22:46:16 balay Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -186,7 +186,7 @@ extern int (*_PLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 extern int (*_PLogPHC)(PetscObject);
 extern int (*_PLogPHD)(PetscObject);
 
-extern PetscTruth PLogEventDepth[];
+extern int PLogEventDepth[];
 
 #if defined(PETSC_HAVE_MPE)
 #define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
@@ -206,8 +206,7 @@ extern PetscTruth PLogEventDepth[];
   }
 #define PLogEventBegin(e,o1,o2,o3,o4)  \
   {  \
-   if (_PLogPLB && PLogEventFlags[(e)] && !PLogEventDepth[e]) {\
-      PLogEventDepth[e] = PETSC_TRUE;  \
+   if (_PLogPLB && PLogEventFlags[(e)] && !PLogEventDepth[e]++) {\
      (*_PLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
    if (UseMPE && PLogEventMPEFlags[(e)])\
      MPE_Log_event(MPEBEGIN+2*(e),0,"");\
@@ -224,8 +223,7 @@ extern PetscTruth PLogEventDepth[];
   }
 #define PLogEventBegin(e,o1,o2,o3,o4)  \
   {  \
-   if (_PLogPLB && PLogEventFlags[(e)] && !PLogEventDepth[e]) {\
-      PLogEventDepth[e] = PETSC_TRUE;  \
+   if (_PLogPLB && PLogEventFlags[(e)] && !PLogEventDepth[e]++) {\
      (*_PLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   }
 #endif
@@ -238,9 +236,8 @@ extern PetscTruth PLogEventDepth[];
      MPE_Log_event(MPEBEGIN+2*((e)+1)+1,0,"");\
   }  
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
-  if (_PLogPLE && PLogEventFlags[(e)]) {\
-    (*_PLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
-    PLogEventDepth[e] = PETSC_FALSE;  }\
+  if (_PLogPLE && PLogEventFlags[(e)] && !--PLogEventDepth[e]) {\
+    (*_PLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   if (UseMPE && PLogEventMPEFlags[(e)])\
      MPE_Log_event(MPEBEGIN+2*(e)+1,0,"");\
   }  
@@ -250,9 +247,8 @@ extern PetscTruth PLogEventDepth[];
     (*_PLogPLE)((e)+1,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));} \
   } 
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
-  if (_PLogPLE && PLogEventFlags[(e)]) {\
-    (*_PLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
-    PLogEventDepth[e] = PETSC_FALSE;  }\
+  if (_PLogPLE && PLogEventFlags[(e)] && !--PLogEventDepth[e]) {\
+    (*_PLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   } 
 #endif
 

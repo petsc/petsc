@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.43 2000/01/31 18:51:09 bsmith Exp bsmith $*/
+/*$Id: partition.c,v 1.44 2000/02/02 20:09:25 bsmith Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "mat.h" I*/
 
@@ -364,7 +364,7 @@ int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 
 .seealso: ViewerASCIIOpen()
 @*/
-int MatPartitioningView(MatPartitioning  part,Viewer viewer)
+int MatPartitioningView(MatPartitioning part,Viewer viewer)
 {
   int                 ierr;
   PetscTruth          isascii;
@@ -372,7 +372,7 @@ int MatPartitioningView(MatPartitioning  part,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(part->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscCheckSameComm(part,viewer);
 

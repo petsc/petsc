@@ -1,37 +1,36 @@
 #! /bin/csh
-# $Id: buildtest,v 1.1 2000/02/19 16:46:20 bsmith Exp bsmith $ 
+# $Id: buildtest,v 1.1 2000/02/20 21:08:59 bsmith Exp bsmith $ 
 #
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
-set TMP=/sandbox/balay/petsc
-set MACH=fire
-set ARCH=solaris
+set TMP=/tmp/petsc/petsc
+set MACH=violet
+set ARCH=IRIX
 set TEST=testexamples_
 set NICE=''
-set MATLAB=matlab
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
-  set BOPT=O_complex
-  set JOBS=(1 2 3 5 10 13 15 16)        
+  set BOPT=g
+  set JOBS=(1 2 3 6 7 8)
 else if ($day == Mon) then
-  set BOPT=O_c++    
-  set JOBS=(1 2 8 13 15 16)        
+  set BOPT=O_c++
+  set JOBS=(1 2 3 6 13)
 else if ($day == Tue) then
-  set BOPT=g        
-  set JOBS=(1 2 3 6 7 13 14 16)        
+  set BOPT=O_complex
+  set JOBS=(1 2 3 5 10 13)
 else if ($day == Wed) then
-  set BOPT=g_c++ 
-  set JOBS=(1 2 3 6 8 14 15 16)       
+  set BOPT=O
+  set JOBS=(1 2 3 6 7 8)
 else if ($day == Thu) then
-  set BOPT=g_complex
-  set JOBS=(1 2 3 5 10 13 15 16)       
+  set BOPT=g_c++
+  set JOBS=(1 2 3 6 8 13)
 else if ($day == Fri) then
-  set BOPT=O_c++    
-  set JOBS=(1 2 3 6 8 14 15 16)        
+  set BOPT=g_complex
+  set JOBS=(1 2 3 5 10 13)
 else if ($day == Sat) then
-  set BOPT=O        
-  set JOBS=(1 2 3 6 7 8 14 15)        
+  set BOPT=g
+  set JOBS=(1 2 3 6 7 13)
 endif
 
 

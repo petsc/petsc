@@ -1,8 +1,9 @@
-# $Id: makefile,v 1.12 1999/04/16 16:03:41 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.13 1999/10/22 23:58:30 bsmith Exp bsmith $ 
 
 ALL: lib 
 
-CFLAGS    =
+CFLAGS    = -DPETSC_BOPT='"${BOPT}"' -DPETSC_LDIR='"${LDIR}"' \
+            -DPETSC_DIR='"${PETSC_DIR}"' -DPETSC_SLSUFFIX='"${SLSUFFIX}"'
 FFLAGS    =
 SOURCEC	  = arch.c fhost.c fuser.c memc.c mpiu.c psleep.c random.c sortd.c sorti.c \
             str.c sortip.c pbarrier.c pdisplay.c ctable.c psplit.c asciredstubs.c

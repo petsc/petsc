@@ -1,4 +1,4 @@
-/*$Id: str.c,v 1.39 2000/01/11 20:59:39 bsmith Exp bsmith $*/
+/*$Id: str.c,v 1.40 2000/02/02 20:08:24 bsmith Exp bsmith $*/
 /*
     We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 
@@ -6,6 +6,7 @@
 
 */
 #include "petsc.h"                   /*I  "petsc.h"   I*/
+#include "sys.h"
 #if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
 #endif
@@ -247,25 +248,33 @@ int PetscStrstr(const char a[],const char b[],char **tmp)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNC__  
 #define __FUNC__ "PetscStrreplace"
 /*
-      Finds any of the substrings in s and replaces with corresponding 
-    one in r.
 
       No proper error checking yet
 */
-int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len,char **s,char **r)
+int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len)
 {
   int        ierr,i = 0,l,l1,l2,l3;
   char       *work,*par,*epar,env[256];
+  char       *s[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LDIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}",0};
+  char       *r[] = {PETSC_ARCH_NAME,PETSC_BOPT,PETSC_DIR,PETSC_LDIR,0,0,0,0};
   PetscTruth flag;
 
   PetscFunctionBegin;
   if (len <= 0) SETERRQ(1,1,"Length of b must be greater than 0");
   if (!a || !b) SETERRQ(1,1,"a and b strings must be nonnull");
-  if (!s || !r) SETERRQ(1,1,"s and r arrays must be nonull");
   work = (char*)PetscMalloc(len*sizeof(char*));CHKPTRQ(work);
+
+  /* get values for replaced variables */
+  r[4] = (char*)PetscMalloc(256*sizeof(char));CHKPTRQ(r[4]);
+  r[5] = (char*)PetscMalloc(256*sizeof(char));CHKPTRQ(r[5]);
+  r[6] = (char*)PetscMalloc(256*sizeof(char));CHKPTRQ(r[6]);
+  ierr = PetscGetDisplay(r[4],256);CHKERRQ(ierr);
+  ierr = PetscGetHomeDirectory(r[5],256);CHKERRQ(ierr);
+  ierr = PetscGetWorkingDirectory(r[6],256);CHKERRQ(ierr);
 
   /* replace the requested strings */
   ierr = PetscStrncpy(b,a,len);CHKERRQ(ierr);  
@@ -290,6 +299,9 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len,char **s,char *
     }
     i++;
   }
+  ierr = PetscFree(r[4]);CHKERRQ(ierr);
+  ierr = PetscFree(r[5]);CHKERRQ(ierr);
+  ierr = PetscFree(r[6]);CHKERRQ(ierr);
 
   /* look for any other ${xxx} strings to replace from environmental variables */
   ierr = PetscStrstr(b,"${",&par);CHKERRQ(ierr);

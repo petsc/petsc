@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.208 2000/03/05 16:08:01 curfman Exp curfman $*/
+/*$Id: snes.c,v 1.209 2000/03/09 14:34:21 curfman Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
 
@@ -46,7 +46,7 @@ int SNESView(SNES snes,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF; 
+  if (!viewer) viewer = VIEWER_STDOUT_(snes->comm); 
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscCheckSameComm(snes,viewer);
 
