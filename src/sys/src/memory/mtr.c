@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.143 2000/05/04 16:24:44 bsmith Exp bsmith $*/
+/*$Id: mtr.c,v 1.144 2000/05/10 16:39:21 bsmith Exp balay $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -573,7 +573,7 @@ int PetscTrLogDump(FILE *fp)
 
   if (!fp) fp = stdout;
   ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,fp,"[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);CHKERRQ(ierr);
+  ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);CHKERRQ(ierr);
 
   shortlength   = (int*)malloc(PetscLogMalloc*sizeof(int));CHKPTRQ(shortlength);
   shortfunction = (char**)malloc(PetscLogMalloc*sizeof(char *));CHKPTRQ(shortfunction);
@@ -594,9 +594,9 @@ int PetscTrLogDump(FILE *fp)
     foundit:;
   }
 
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,fp,"[%d] Memory usage sorted by function\n",rank);CHKERRQ(ierr);
+  ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Memory usage sorted by function\n",rank);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,fp,"[%d] %d %s()\n",rank,shortlength[i],shortfunction[i]);CHKERRQ(ierr);
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] %d %s()\n",rank,shortlength[i],shortfunction[i]);CHKERRQ(ierr);
   }
   free(shortlength);
   free(shortfunction);
