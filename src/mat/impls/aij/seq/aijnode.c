@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.116 2000/07/31 22:39:35 bsmith Exp bsmith $*/
+/*$Id: aijnode.c,v 1.117 2000/08/01 20:02:01 bsmith Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -428,7 +428,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
         sum1 += v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
        }
      
-      if(n   == sz-1){          /* Take care of the last nonzero  */
+      if (n == sz-1){          /* Take care of the last nonzero  */
         tmp0  = x[*idx++];
         sum1 += *v1++ * tmp0;
       }
@@ -439,7 +439,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       sum2  = 0;
       v2    = v1 + n;
       
-      for(n = 0; n< sz-1; n+=2) {
+      for (n = 0; n< sz-1; n+=2) {
         i1   = idx[0];
         i2   = idx[1];
         idx += 2;
@@ -448,7 +448,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
         sum1 += v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
         sum2 += v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
       }
-      if(n   == sz-1){
+      if (n == sz-1){
         tmp0  = x[*idx++];
         sum1 += *v1++ * tmp0;
         sum2 += *v2++ * tmp0;
@@ -544,7 +544,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
         sum4 += v4[0] * tmp0 + v4[1] *tmp1; v4 += 2;
         sum5 += v5[0] * tmp0 + v5[1] *tmp1; v5 += 2;
       }
-      if(n   == sz-1){
+      if (n == sz-1){
         tmp0  = x[*idx++];
         sum1 += *v1++ * tmp0;
         sum2 += *v2++ * tmp0;
