@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.144 1999/01/12 23:13:22 bsmith Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.145 1999/01/19 16:05:10 balay Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -252,15 +252,17 @@ int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
   PetscFunctionBegin;
   if (m == INSERT_VALUES) {
     for ( i=0; i<ni; i++ ) {
+      if (ix[i] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
+      if (ix[i] >= x->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
 #endif
       xx[ix[i]] = y[i];
     }
   } else {
     for ( i=0; i<ni; i++ ) {
+      if (ix[i] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
+      if (ix[i] >= x->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
 #endif
       xx[ix[i]] += y[i];
     }  
@@ -283,8 +285,9 @@ int VecSetValuesBlocked_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
   if (m == INSERT_VALUES) {
     for ( i=0; i<ni; i++ ) {
       start = bs*ix[i];
+      if (start < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-      if (start < 0 || start >= x->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
+      if (start >= x->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
 #endif
       for (j=0; j<bs; j++) {
         xx[start+j] = y[j];
@@ -294,8 +297,9 @@ int VecSetValuesBlocked_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
   } else {
     for ( i=0; i<ni; i++ ) {
       start = bs*ix[i];
+      if (start < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
-      if (start < 0 || start >= x->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
+      if (start >= x->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
 #endif
       for (j=0; j<bs; j++) {
         xx[start+j] += y[j];
