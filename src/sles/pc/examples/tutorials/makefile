@@ -5,6 +5,7 @@ FFLAGS          =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sles/pc/examples/tutorials/
+MANSEC          = PC
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
