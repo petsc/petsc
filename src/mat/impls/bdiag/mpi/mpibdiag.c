@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.60 1995/11/30 22:34:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.61 1995/12/12 22:55:00 curfman Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -888,7 +888,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   return 0;
 }
 
-/*@
+/*@C
    MatBDiagGetData - Gets the data for the block diagonal matrix format.
    For the parallel case, this returns information for the local submatrix.
 
