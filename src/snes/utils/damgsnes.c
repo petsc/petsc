@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.22 2001/04/20 03:56:36 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.23 2001/04/20 15:11:15 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -420,10 +420,12 @@ void ad_AD_Final();
 #define __FUNCT__ "PetscGetStructArray2d"
 static int PetscGetStructArray2d(int xs,int ys,int xm,int ym,int structsize,void ***ptr,void **array_start)
 {
-  int  ierr,j;
+  int  ierr,j,deriv_type_size;
   void *tmpptr;
 
   PetscFunctionBegin;
+  deriv_type_size = my_AD_GetDerivTypeSize();
+
   ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*structsize,(void **)array_start);CHKERRQ(ierr);
   *ptr  = (void**)(*array_start + xm*ym*structsize - ys*sizeof(void*));
 
