@@ -81,6 +81,11 @@ PETScView info:
 
 
 ------------Accounts (around the world and around the block) -----
+Dec Alpha:
+        Machine: marathon.cpge.utexas.edu
+        userid: bsmith
+        passwd: petsc-passwd
+
 Power3:
         Machine: temp4.msi.umn.edu
         userid:  petsc
