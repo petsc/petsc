@@ -435,11 +435,11 @@ static int MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int *data,int whose,int *nidx
     isz0 = 0; col_max = 0;
     for (j=0; j<n; j++){
       col = idx_i[j]; 
-      if (col_max < col) col_max = col;
       if (col >= Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"index col %d >= Mbs %d",col,Mbs);
       if(!PetscBTLookupSet(table_i,col)) { 
         ierr = PetscBTSet(table0,col);CHKERRQ(ierr);
         if (whose == MINE) {nidx_i[isz0] = col;}
+        if (col_max < col) col_max = col;
         isz0++;
       }
     }

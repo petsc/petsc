@@ -11,7 +11,7 @@
 int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS is[],int ov)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int          brow,i,j,k,l,mbs,n,*idx,ierr,*nidx,isz,bcol,
+  int          brow,i,j,k,l,mbs,n,*idx,ierr,*nidx,isz,bcol,bcol_max,
                start,end,*ai,*aj,bs,*nidx2;
   PetscBT      table;
   PetscBT      table0; 
@@ -38,10 +38,14 @@ int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS is[],int ov)
     ierr = ISGetLocalSize(is[i],&n);CHKERRQ(ierr);
 
     /* Enter these into the temp arrays i.e mark table[brow], enter brow into new index */
+    bcol_max = 0;
     for (j=0; j<n ; ++j){
       brow = idx[j]/bs; /* convert the indices into block indices */
       if (brow >= mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
-      if(!PetscBTLookupSet(table,brow)) { nidx[isz++] = brow;}
+      if(!PetscBTLookupSet(table,brow)) { 
+        nidx[isz++] = brow;
+        if (bcol_max < brow) bcol_max = brow;
+      }
     }
     ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
     ierr = ISDestroy(is[i]);CHKERRQ(ierr);
@@ -65,6 +69,7 @@ int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS is[],int ov)
         } else { /* brow is not on nidx - col serach: add brow onto nidx if there is a bcol in nidx */
           for (l = start; l<end ; l++){
             bcol = aj[l];
+            if (bcol > bcol_max) break; 
             if (PetscBTLookup(table0,bcol)){
               if (!PetscBTLookupSet(table,brow)) {nidx[isz++] = brow;}
               break; /* for l = start; l<end ; l++) */
