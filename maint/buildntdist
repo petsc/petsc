@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.29 1999/01/29 20:47:30 balay Exp balay $ 
+# $Id: buildntdist,v 1.30 1999/02/03 22:25:18 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -52,8 +52,6 @@ chmod -R u+w petsc
 # Build the tag files
 #
 cd /mcs/tmp/petscnt/petsc
-echo $PWD
-exit
 
 make -f /home/bsmith/petsc/makefile etags etags_examples TAGSDIR=`pwd`
 
