@@ -42,6 +42,9 @@ X11_LIB        = -lX11
 MPI_LIB        = /home/petsc/mpich/lib/alpha/ch_p4/libmpi.a 
 MPI_INCLUDE    = -I/home/petsc/mpich/include -DUSES_INT_MPI_COMM
 MPIRUN         = /home/petsc/mpich/bin/mpirun
+#
+# The following lines can be uncommented if MPIUNI is used
+#
 #MPI_LIB         =$(LDIR)/libmpiuni.a
 #MPI_INCLUDE     = -I$(PETSC_DIR)/src/mpiuni -DUSES_INT_MPI_COMM
 #MPIRUN          = $(PETSC_DIR)/src/mpiuni/mpirun

@@ -45,6 +45,12 @@ MPI_LIB        = -lmpi
 MPI_INCLUDE    = -DUSES_INT_MPI_COMM
 MPIRUN         =  /usr/bin/mpirun
 #
+# The following lines can be uncommented if MPIUNI is used
+#
+#MPI_LIB         =$(LDIR)/libmpiuni.a
+#MPI_INCLUDE     = -I$(PETSC_DIR)/src/mpiuni -DUSES_INT_MPI_COMM
+#MPIRUN          = $(PETSC_DIR)/src/mpiuni/mpirun
+#
 # PCONF - indicates which external packages are available at your site
 #    Make sure that -DHAVE_BLOCKSOLVE is listed below if BlockSolve95 
 #    has been installed.
