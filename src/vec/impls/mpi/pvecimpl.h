@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.11 1997/02/22 02:22:33 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.12 1997/03/09 17:57:02 bsmith Exp balay $ */
 /* 
  */
 
@@ -23,6 +23,7 @@ typedef struct {
 
 extern int VecNorm_Seq(Vec, NormType, double *work );
 extern int VecMDot_MPI(int, Vec, Vec *, Scalar *);
+extern int VecMTDot_MPI(int, Vec, Vec *, Scalar *);
 extern int VecNorm_MPI(Vec,NormType, double *);
 extern int VecMax_MPI(Vec, int *, double *);
 extern int VecMin_MPI(Vec, int *, double *);

@@ -1,4 +1,4 @@
-/* $Id: dvecimpl.h,v 1.6 1996/08/08 14:40:17 bsmith Exp bsmith $ */
+/* $Id: dvecimpl.h,v 1.7 1997/02/22 02:22:29 bsmith Exp balay $ */
 /* 
    This should not be included in users code.
 
@@ -18,6 +18,7 @@ typedef struct {
 } Vec_Seq;
 
 extern int VecMDot_Seq(int ,Vec ,Vec *, Scalar *);
+extern int VecMTDot_Seq(int ,Vec ,Vec *, Scalar *);
 extern int VecMin_Seq(Vec ,int* ,double * );
 extern int VecSet_Seq(Scalar* ,Vec );
 extern int VecSetRandom_Seq(PetscRandom ,Vec );
@@ -29,6 +30,7 @@ extern int VecPointwiseDivide_Seq(Vec,Vec,Vec);
 extern int VecGetArray_Seq(Vec,Scalar **);
 extern int VecGetSize_Seq(Vec,int *);
 extern int VecDot_Seq(Vec, Vec,Scalar *);
+extern int VecTDot_Seq(Vec, Vec,Scalar *);
 extern int VecScale_Seq(Scalar *,Vec);
 extern int VecCopy_Seq(Vec, Vec);
 extern int VecSwap_Seq(Vec,Vec);

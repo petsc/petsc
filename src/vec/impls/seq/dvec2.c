@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.39 1997/02/22 02:22:30 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.40 1997/03/26 01:34:27 bsmith Exp balay $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -31,6 +31,192 @@ int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
 #undef __FUNC__  
 #define __FUNC__ "VecMDot_Seq"
 int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
+{
+  Vec_Seq *xv = (Vec_Seq *)xin->data;
+  register int n = xv->n,i,j,nv_rem,j_rem;
+  Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
+  Vec      *yy;
+  
+  sum0 = 0;
+  sum1 = 0;
+  sum2 = 0;
+
+  i      = nv;
+  nv_rem = nv&0x3;
+  yy     = yin;
+  j    = n;
+  x    = xv->array;
+
+  switch (nv_rem) {
+  case 3:
+  yy0   = ((Vec_Seq *)(yy[0]->data))->array;
+  yy1   = ((Vec_Seq *)(yy[1]->data))->array;
+  yy2   = ((Vec_Seq *)(yy[2]->data))->array;
+    switch (j_rem=j&0x3) {
+    case 3: 
+      x2 = PetscConj(x[2]); 
+      sum0 += x2*yy0[2]; sum1 += x2*yy1[2]; 
+      sum2 += x2*yy2[2]; 
+    case 2: 
+      x1 = PetscConj(x[1]); 
+      sum0 += x1*yy0[1]; sum1 += x1*yy1[1]; 
+      sum2 += x1*yy2[1]; 
+    case 1: 
+      x0 = PetscConj(x[0]); 
+      sum0 += x0*yy0[0]; sum1 += x0*yy1[0]; 
+      sum2 += x0*yy2[0]; 
+    case 0: 
+      x  += j_rem;
+      yy0 += j_rem;
+      yy1 += j_rem;
+      yy2 += j_rem;
+      j  -= j_rem;
+      break;
+    }
+    while (j>0) {
+      x0 = PetscConj(x[0]);
+      x1 = PetscConj(x[1]);
+      x2 = PetscConj(x[2]);
+      x3 = PetscConj(x[3]);
+      x += 4;
+      
+      sum0 += x0*yy0[0] + x1*yy0[1] + x2*yy0[2] + x3*yy0[3]; yy0+=4;
+      sum1 += x0*yy1[0] + x1*yy1[1] + x2*yy1[2] + x3*yy1[3]; yy1+=4;
+      sum2 += x0*yy2[0] + x1*yy2[1] + x2*yy2[2] + x3*yy2[3]; yy2+=4;
+      j -= 4;
+    }
+    z[0] = sum0;
+    z[1] = sum1;
+    z[2] = sum2;
+    break;
+  case 2:
+  yy0   = ((Vec_Seq *)(yy[0]->data))->array;
+  yy1   = ((Vec_Seq *)(yy[1]->data))->array;
+    switch (j_rem=j&0x3) {
+    case 3: 
+      x2 = PetscConj(x[2]); 
+      sum0 += x2*yy0[2]; sum1 += x2*yy1[2]; 
+    case 2: 
+      x1 = PetscConj(x[1]); 
+      sum0 += x1*yy0[1]; sum1 += x1*yy1[1]; 
+    case 1: 
+      x0 = PetscConj(x[0]); 
+      sum0 += x0*yy0[0]; sum1 += x0*yy1[0]; 
+    case 0: 
+      x  += j_rem;
+      yy0 += j_rem;
+      yy1 += j_rem;
+      j  -= j_rem;
+      break;
+    }
+    while (j>0) {
+      x0 = PetscConj(x[0]);
+      x1 = PetscConj(x[1]);
+      x2 = PetscConj(x[2]);
+      x3 = PetscConj(x[3]);
+      x += 4;
+      
+      sum0 += x0*yy0[0] + x1*yy0[1] + x2*yy0[2] + x3*yy0[3]; yy0+=4;
+      sum1 += x0*yy1[0] + x1*yy1[1] + x2*yy1[2] + x3*yy1[3]; yy1+=4;
+      j -= 4;
+    }
+    z[0] = sum0;
+    z[1] = sum1;
+ 
+    break;
+  case 1:
+  yy0   = ((Vec_Seq *)(yy[0]->data))->array;
+    switch (j_rem=j&0x3) {
+    case 3: 
+      x2 = PetscConj(x[2]); sum0 += x2*yy0[2];
+    case 2: 
+      x1 = PetscConj(x[1]); sum0 += x1*yy0[1];
+    case 1: 
+      x0 = PetscConj(x[0]); sum0 += x0*yy0[0];
+    case 0: 
+      x  += j_rem;
+      yy0 += j_rem;
+      j  -= j_rem;
+      break;
+    }
+    while (j>0) {
+      sum0 += PetscConj(x[0])*yy0[0] + PetscConj(x[1])*yy0[1]
+            + PetscConj(x[2])*yy0[2] + PetscConj(x[3])*yy0[3]; 
+      yy0+=4;
+      j -= 4; x+=4;
+    }
+    z[0] = sum0;
+
+    break;
+  case 0:
+    break;
+  }
+  z  += nv_rem;
+  i  -= nv_rem;
+  yy += nv_rem;
+
+  while (i >0) {
+    sum0 = 0;
+    sum1 = 0;
+    sum2 = 0;
+    sum3 = 0;
+    yy0   = ((Vec_Seq *)(yy[0]->data))->array;
+    yy1   = ((Vec_Seq *)(yy[1]->data))->array;
+    yy2   = ((Vec_Seq *)(yy[2]->data))->array;
+    yy3   = ((Vec_Seq *)(yy[3]->data))->array;
+    yy  += 4;
+
+    j = n;
+    x = xv->array;
+    switch (j_rem=j&0x3) {
+    case 3: 
+      x2 = PetscConj(x[2]); 
+      sum0 += x2*yy0[2]; sum1 += x2*yy1[2]; 
+      sum2 += x2*yy2[2]; sum3 += x2*yy3[2];
+    case 2: 
+      x1 = PetscConj(x[1]); 
+      sum0 += x1*yy0[1]; sum1 += x1*yy1[1]; 
+      sum2 += x1*yy2[1]; sum3 += x1*yy3[1];
+    case 1: 
+      x0 = PetscConj(x[0]); 
+      sum0 += x0*yy0[0]; sum1 += x0*yy1[0]; 
+      sum2 += x0*yy2[0]; sum3 += x0*yy3[0];
+    case 0: 
+      x  += j_rem;
+      yy0 += j_rem;
+      yy1 += j_rem;
+      yy2 += j_rem;
+      yy3 += j_rem;
+      j  -= j_rem;
+      break;
+    }
+    while (j>0) {
+      x0 = PetscConj(x[0]);
+      x1 = PetscConj(x[1]);
+      x2 = PetscConj(x[2]);
+      x3 = PetscConj(x[3]);
+      x += 4;
+      
+      sum0 += x0*yy0[0] + x1*yy0[1] + x2*yy0[2] + x3*yy0[3]; yy0+=4;
+      sum1 += x0*yy1[0] + x1*yy1[1] + x2*yy1[2] + x3*yy1[3]; yy1+=4;
+      sum2 += x0*yy2[0] + x1*yy2[1] + x2*yy2[2] + x3*yy2[3]; yy2+=4;
+      sum3 += x0*yy3[0] + x1*yy3[1] + x2*yy3[2] + x3*yy3[3]; yy3+=4;
+      j -= 4;
+    }
+    z[0] = sum0;
+    z[1] = sum1;
+    z[2] = sum2;
+    z[3] = sum3;
+    z   += 4;
+    i   -= 4;
+  }
+  PLogFlops(nv*(2*xv->n-1));
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecMTDot_Seq"
+int VecMTDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
   register int n = xv->n,i,j,nv_rem,j_rem;

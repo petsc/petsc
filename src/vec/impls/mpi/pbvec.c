@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.79 1997/05/23 18:34:32 balay Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.80 1997/06/05 12:51:17 bsmith Exp balay $";
 #endif
 
 /*
@@ -31,6 +31,24 @@ int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
 }
 
 #undef __FUNC__  
+#define __FUNC__ "VecTDot_MPI"
+int VecTDot_MPI( Vec xin, Vec yin, Scalar *z )
+{
+  Scalar    sum, work;
+  VecTDot_Seq(  xin, yin, &work );
+/*
+   This is a ugly hack. But to do it right is kind of silly.
+*/
+#if defined(PETSC_COMPLEX)
+  MPI_Allreduce( &work, &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm );
+#else
+  MPI_Allreduce( &work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+#endif
+  *z = sum;
+  return 0;
+}
+
+#undef __FUNC__  
 #define __FUNC__ "VecSetOption_MPI" /* ADIC Ignore */
 int VecSetOption_MPI(Vec v,VecOption op)
 {
@@ -47,8 +65,8 @@ int VecDuplicate_MPI(Vec,Vec *);
 static struct _VeOps DvOps = { VecDuplicate_MPI, 
             VecDuplicateVecs_Default, VecDestroyVecs_Default, VecDot_MPI, 
             VecMDot_MPI,
-            VecNorm_MPI, VecDot_MPI, 
-            VecMDot_MPI,
+            VecNorm_MPI, VecTDot_MPI, 
+            VecMTDot_MPI,
             VecScale_Seq, VecCopy_Seq,
             VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecAXPBY_Seq,
             VecMAXPY_Seq, VecAYPX_Seq,

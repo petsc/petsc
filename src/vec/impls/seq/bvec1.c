@@ -1,5 +1,5 @@
 
-/* $Id: bvec1.c,v 1.17 1997/01/06 20:21:55 balay Exp bsmith $ */
+/* $Id: bvec1.c,v 1.18 1997/02/22 02:22:30 bsmith Exp balay $ */
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -24,6 +24,28 @@ int VecDot_Seq(Vec xin, Vec yin,Scalar *z )
   Scalar sum = 0.0, *xa = x->array, *ya = y->array;
   for ( i=0; i<x->n; i++ ) {
     sum += xa[i]*conj(ya[i]);
+  }
+  *z = sum;
+#else
+  *z = BLdot_( &x->n, x->array, &one, y->array, &one );
+#endif
+  PLogFlops(2*x->n-1);
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecTDot_Seq"
+int VecTDot_Seq(Vec xin, Vec yin,Scalar *z )
+{
+  Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
+  int     one = 1;
+#if defined(PETSC_COMPLEX)
+  /* cannot use BLAS dot for complex because compiler/linker is 
+     not happy about returning a double complex */
+  int    i;
+  Scalar sum = 0.0, *xa = x->array, *ya = y->array;
+  for ( i=0; i<x->n; i++ ) {
+    sum += xa[i]*ya[i];
   }
   *z = sum;
 #else
