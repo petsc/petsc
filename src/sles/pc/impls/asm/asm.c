@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.46 1997/01/12 04:33:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.47 1997/02/04 15:40:57 bsmith Exp curfman $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -43,10 +43,10 @@ static int PCView_ASM(PetscObject obj,Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"    Additive Schwarz: number of blocks = %d\n", jac->n);
-    if (jac->type == 0) typename = "limited restriction and interpolation";
-    else if (jac->type == 1) typename = "full restriction";
-    else if (jac->type == 2) typename = "full interpolation";
-    else if (jac->type == 3) typename = "full restriction and interpolation";
+    if (jac->type == PC_ASM_NONE) typename = "limited restriction and interpolation (PC_ASM_NONE)";
+    else if (jac->type == PC_ASM_RESTRICT) typename = "full restriction (PC_ASM_RESTRICT)";
+    else if (jac->type == PC_ASM_INTERPOLATE) typename = "full interpolation (PC_ASM_INTERPOLATE)";
+    else if (jac->type == PC_ASM_BASIC) typename = "full restriction and interpolation (PC_ASM_BASIC)";
     PetscFPrintf(pc->comm,fd,"    Additive Schwarz: type - %s\n",typename);
     MPI_Comm_rank(pc->comm,&rank);
     if (jac->sles) {ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
@@ -267,7 +267,7 @@ static int PCPrintHelp_ASM(PC pc,char *p)
   PetscPrintf(pc->comm," Options for PCASM preconditioner:\n");
   PetscPrintf(pc->comm," %spc_asm_blocks <blks>: total subdomain blocks\n",p);
   PetscPrintf(pc->comm, " %spc_asm_overlap <ovl>: amount of overlap between subdomains\n",p); 
-  PetscPrintf(pc->comm, " %spc_asm_type <0,1,2,3>: type of restriction/interpolation\n",p); 
+  PetscPrintf(pc->comm, " %spc_asm_type <basic,restrict,interpolate,none>: type of restriction/interpolation\n",p); 
   PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
  <method>)\n",p,p);
@@ -279,15 +279,22 @@ static int PCPrintHelp_ASM(PC pc,char *p)
 static int PCSetFromOptions_ASM(PC pc)
 {
   int       blocks,flg, ovl,ierr;
-  PCASMType type;
+  char      buff[16];
 
   ierr = OptionsGetInt(pc->prefix,"-pc_asm_blocks",&blocks,&flg); CHKERRQ(ierr);
   if (flg) {ierr = PCASMSetTotalSubdomains(pc,blocks,PETSC_NULL); CHKERRQ(ierr); }
   ierr = OptionsGetInt(pc->prefix,"-pc_asm_overlap", &ovl, &flg); CHKERRQ(ierr);
   if (flg) {ierr = PCASMSetOverlap( pc, ovl); CHKERRQ(ierr); }
-  ierr = OptionsGetInt(pc->prefix,"-pc_asm_type",(int*) &type, &flg); CHKERRQ(ierr);
-  if (flg) {ierr = PCASMSetType( pc, type); CHKERRQ(ierr); }
-
+  ierr = OptionsGetString(pc->prefix,"-pc_asm_type",buff,15,&flg);CHKERRQ(ierr);
+  if (flg) {
+    PCASMType type = PC_ASM_RESTRICT;
+    if (!PetscStrcmp(buff,"basic"))            type = PC_ASM_BASIC;
+    else if (!PetscStrcmp(buff,"restrict"))    type = PC_ASM_RESTRICT;
+    else if (!PetscStrcmp(buff,"interpolate")) type = PC_ASM_INTERPOLATE;
+    else if (!PetscStrcmp(buff,"none"))        type = PC_ASM_NONE;
+    else SETERRQ(1,0,"Unknown type");
+    ierr = PCASMSetType(pc,type); CHKERRQ(ierr);
+  }
   return 0;
 }
 
@@ -436,24 +443,25 @@ int PCASMSetOverlap(PC pc, int ovl)
 #define __FUNC__ "PCASMSetOverlap"
 /*@
     PCASMSetType - Sets the type of restriction and interpolation used
-          for local problems.
+    for local problems in the additive Schwarz method.
 
     Input Parameters:
 .   pc  - the preconditioner context
-.   type -  3 - full interpolation and restriction
-$           2 - full interpolation, local processor restriction
-$           1 - full restriction, local processor interpolation
-$           0 - local processor restriction and interpolation
+.   type - variant of ASM
+$      PC_ASM_BASIC       - full interpolation and restriction
+$      PC_ASM_RESTRICT    - full restriction, local processor interpolation
+$      PC_ASM_INTERPOLATE - full interpolation, local processor restriction
+$      PC_ASM_NONE        - local processor restriction and interpolation
 
     Options Database Key:
-$   -pc_asm_type 0, 1, 2, 3
+$   -pc_asm_type [basic,restrict,interpolate,none]
 
-.keywords: PC, ASM, set, overlap
+.keywords: PC, ASM, set, type
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubSLES(),
           PCASMCreateSubdomains2D()
 @*/
-int PCASMSetType(PC pc, PCASMType type)
+int PCASMSetType(PC pc,PCASMType type)
 {
   PC_ASM *osm;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
