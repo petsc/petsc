@@ -107,9 +107,9 @@ class SharedLinker(config.compile.processor.Processor):
         flagsName.extend(self.compiler.flagsName)
       if hasattr(self, 'configCompilers'):
         flags = [getattr(self.configCompilers, name) for name in flagsName]
+        flags.extend(self.configCompilers.setCompilers.sharedLibraryFlags)
       else:
         flags = [self.argDB[name] for name in flagsName]
-      flags.extend(self.configCompilers.setCompilers.sharedLibraryFlags)
       return ' '.join(flags)
     return self._flags
   flags = property(getFlags, config.compile.processor.Processor.setFlags, doc = 'The flags for the executable')
@@ -127,4 +127,7 @@ class SharedLinker(config.compile.processor.Processor):
     import sys
 
     base, ext = os.path.splitext(source)
-    return base+'.'+self.configCompilers.setCompilers.sharedLibraryExt
+    name = base
+    if hasattr(self, 'configCompilers'):
+      name += '.'+self.configCompilers.setCompilers.sharedLibraryExt
+    return name
