@@ -1,19 +1,10 @@
-# $Id: base.site,v 1.40 1998/12/03 03:53:44 bsmith Exp curfman $ 
+# $Id: base.site,v 1.41 1998/12/04 19:06:27 curfman Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
 #  The following naming convention is used:
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
-#
-# FCLIB contains the libraries for a CLINKER to use for code containing
-# FORTRAN code (such as I/O or special Fortran runtimes).  
-# Note: -lfortran is a f90 library, and toalview has problems processing it.
-#
-FC_LIB         =  -lfortran -lftn -lfastm
-# For IRIX Release less than,6.2 the above should probably be replaced by
-# FC_LIB         = -lsun -lF77 -lU77 -lI77 -lisam
-# FC_LIB         = -lF77 -lU77 -lI77 -lisam
 #
 # Location of BLAS and LAPACK. See ${BS_DIR}/docs/installation.html for
 # information on retrieving them.
