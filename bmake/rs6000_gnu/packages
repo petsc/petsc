@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.20 1999/02/08 22:22:33 bsmith Exp balay $ 
+# $Id: base.site,v 1.21 1999/02/25 00:59:34 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -42,11 +42,12 @@ X11_LIB        =
 #
 #
 # MPE Libraries
+# If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
 #
-#MPE_LIB      = -lmpe -lpmpich
 #MPE_INCLUDE  = -I/home/petsc/mpich-1.1.1/mpe
-MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+#MPE_LIB      = -lmpe -lpmpich
 MPE_INCLUDE   = -I${MPI_HOME}/mpe
+MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
 
 # Optional Matlab location, remove if not needed.
 #

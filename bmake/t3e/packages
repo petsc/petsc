@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.16 1998/12/04 23:22:05 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.17 1999/02/08 22:22:33 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -37,9 +37,10 @@ MPIRUN         = /opt/ctl/mpt/mpt/bin/mpirun
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
+# If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
 #
-#MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
 #MPE_INCLUDE   = -I/usr/local/mpi/include
+#MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
 #
 # Optional location of BlockSolve (MPI version)
 #
