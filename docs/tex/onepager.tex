@@ -1,9 +1,9 @@
-% $Id: onepager.tex,v 1.25 2000/04/14 15:02:11 curfman Exp curfman $ 
+% $Id: onepager.tex,v 1.26 2000/04/14 15:06:34 curfman Exp bsmith $ 
 \documentstyle[epsf,sty/handpage,/home/gropp/hyper/style/anlhtext]{article}
 \pagestyle{empty}
 \begin{document}
 \pagestyle{empty}
-\title{PETSc 2.0 for MPI}
+\title{PETSc 2.1}
 \thanks{Mathematics and Computer Science Division,
 Argonne National Laboratory,
 Argonne, IL 60439-4801.
@@ -24,27 +24,21 @@ This work was supported by the Mathematical,
 \section*{Description}
 
 \code{PETSc}, the Portable, Extensible Toolkit for Scientific Computation,
-is a suite of uni- and parallel-processor codes that are intended for
+is a suite of libraries for
 the solution of large-scale problems modeled by partial differential
 equations.  \code{PETSc} employs the MPI standard for all
-message-passing communication.  The code is written in a
-data-structure-neutral manner to enable easy reuse and flexibility.
+message-passing communication. 
 
-\code{PETSc} integrates a hierarchy of components, thus
-enabling the user to employ the level of abstraction that is most
-natural for a particular problem.  Some of the components are
+\code{PETSc} integrates a hierarchy of components including
 \vspace{-.4cm}
 \begin{itemize}
 \item \code{Mat} - a suite of data structures and code
       for the manipulation of parallel sparse matrices,
 \vsp
-\item \code{PC} - a collection of preconditioners,
+\item \code{PC} - a large collection of preconditioners, including support for multigrid,
 \vsp
 \item \code{KSP} - data-structure-neutral implementations of
       many popular Krylov subspace iterative methods,
-\vsp
-\item \code{SLES} - a higher-level interface for the solution of
-      large-scale linear systems,
 \vsp
 \item \code{SNES} - data-structure-neutral implementations of Newton-like
       methods for nonlinear systems, and
@@ -54,6 +48,10 @@ natural for a particular problem.  Some of the components are
       techniques to time-dependent PDEs. Includes support for 
       pseudo-timestepping. 
 \end{itemize}
+\vsp
+
+\code{ PETSc} integrates with (uses some of the functionality of) over a dozen other packages including: ParMeTiS, PVODE, ADIC, ADIFOR,
+Matlab, SuperLU, and AMG. 
 \vsp
 
 \code{ PETSc} is easy to use for beginners.  Moreover, its careful
@@ -68,18 +66,17 @@ that allow the overlap of communication and computation.  In addition,
 unstructured grid data.
 \vsp
 
+
 \section*{Applications}
 \code{PETSc} is intended for use in large-scale application projects,
 and several ongoing computational science projects at Argonne and
 other institutions are built around these tools.  
 One such application for a fully unstructured, fully implicit Euler
-solver was a "special catagory" winner in the 1999 Gordon Bell
+solver was a "special category" winner in the 1999 Gordon Bell
 competition at SC99 with a rate of over 225 Gflops on the ASCI
-Red machine. 
-With strict attention to component interoperability, \code{PETSc}
-facilitates the integration of independently developed application
-modules, which often most naturally employ different coding styles and
-data structures. 
+Red machine. Other applications include structural mechanics, multiphase flow, electromagnetics,
+control of Navier-Stokes, wave propagation, biomechanical simulations, plasticity, and econometrics.
+
 
 % This code also achieved a 95\% efficiency in going from
 % 256 to 2048 processors and over 70 Gflops on 1280 processors of the
@@ -87,17 +84,18 @@ data structures.
 
 \section*{Availability}
 
-\code{PETSc} package is freely available and supported.
+\code{PETSc} package is freely available and supported (via email at petsc-maint@mcs.anl.gov).
 The \code{PETSc} distribution contains all source code, 
 a users guide, manual pages, and a
-collection of examples. There are over 250 members of the \code{PETSc}-users mailing list.
+collection of examples. There are over 300 members of the \code{PETSc}-users mailing list and
+over 4000 downloads of the software.
 
 \section*{Computational Environment}
-\code{PETSc} is available for Linux, Sun, DEC Alpha, Silicon Graphics, HP-UX, Windows NT/9X, 
+\code{PETSc} is available for Linux, Sun, DEC Alpha, Silicon Graphics, HP-UX, Windows, 
 and IBM workstations; the Cray T3E; the IBM SP; the SGI Origin; and the HP Exemplar.
 
 \vspace{-.1cm}
-\contact{Satish Balay, William Gropp, Lois Curfman McInnes, Barry Smith}
+\contact{Satish Balay, Kris Buschelman, Dinesh Kaushik, Matt Knepley, William Gropp, \\ Lois Curfman McInnes, Barry Smith, Hong Zhang}
 \email{\bf{http://www.mcs.anl.gov/petsc}}
 \phone{http://www.mcs.anl.gov/petsc}
 \makeinfo
