@@ -1,4 +1,4 @@
-# $Id: common,v 1.187 1997/08/13 22:21:12 bsmith Exp bsmith $ 
+# $Id: common,v 1.188 1997/08/19 15:46:31 bsmith Exp balay $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -21,6 +21,8 @@ SOURCE	      = $(SOURCEC) $(SOURCEF)
 OBJS	      = $(OBJSC) $(OBJSF)
 PETSC_INCLUDE = -I$(PETSC_DIR) -I$(PETSC_DIR)/include $(MPI_INCLUDE)
 CPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS) $(PETSC_PARCH)
+
+BOPT          = none
 #
 # Defines all libraries needed for using linear and nonlinear solvers, 
 # and all lower level PETSc components (such as vectors and matrices).
@@ -74,7 +76,7 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base.$(BOPT)
 # Checks that PETSC_DIR variable is set and creates library directory
 # if it does not exist
 chkpetsc_dir:
-	@if [ Holder = Holder$(BOPT) ] ; then \
+	@if [ $(BOPT) = none ] ; then \
 	  echo "You must set the variable BOPT=[g,O,Opg,O_c++,O_complex,...]" ; \
           echo "Remove all .o files and rerun make with appropriate BOPT"; false; fi
 	-@if [ ! -d $(PDIR) ]; then \
@@ -83,7 +85,7 @@ chkpetsc_dir:
 # 1. Checks that user has set BOPT variable
 # 2. Check if the $(LDIR) exists
 chkopts_basic: 
-	@if [ Holder = Holder$(BOPT) ] ; then \
+	@if [ $(BOPT) = none ] ; then \
 	  echo "You must set the variable BOPT=[g,O,Opg,O_c++,O_complex,...]" ; \
           echo "Remove all .o files and rerun make with appropriate BOPT"; false; fi
 	@if [ ! -d $(LDIR) ]; then \
