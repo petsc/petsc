@@ -260,7 +260,7 @@ runex6_6:
 	-@$(MPIRUN) -np 3 ex6  -ksp_gmres_restart 100 \
 	   -f $(PETSC_DIR)/src/mat/examples/matrices/arco1_ns \
 	   -mat_mpirowbs -pc_type ilu -pc_ilu_factorpointwise 
-	-@echo "This program tested the ILU preconditioner in BlockSolve95."
+	-@echo "ex6_6: This program tested the ILU preconditioner in BlockSolve95."
 runex7:
 	-@$(MPIRUN) -np 2 ex7 -ksp_smonitor > ex7_1.tmp 2>&1; \
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
@@ -283,11 +283,11 @@ runex8_2:
 # may differ slightly on various architectures.
 runex8_3:
 	-@$(MPIRUN) -np 2 ex8 -pc_type icc -mat_mpirowbs -ksp_rtol .000001;\
-	echo "This program tested the ICC preconditioner in BlockSolve95."
+	echo "ex8_3: This program tested the ICC preconditioner in BlockSolve95."
 runex8_4:
 	-@$(MPIRUN) -np 2 ex8 -pc_type ilu -mat_nonsym -mat_mpirowbs \
 	   -ksp_rtol .000001;\
-	echo "This program tested the ILU preconditioner in BlockSolve95."
+	echo "ex8_4: This program tested the ILU preconditioner in BlockSolve95."
 runex10:
 	-@$(MPIRUN) ex10 -mat_bdiag -ksp_smonitor > ex10_1.tmp 2>&1; \
 	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
