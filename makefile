@@ -354,13 +354,18 @@ updatewebdocs:
 alldoc: allmanualpages
 	cd docs/tex/manual; ${OMAKE} manual.pdf
 
+chk_loc:
+	@if [ ${LOC}foo = foo ] ; then \
+	  echo "*********************** ERROR ************************" ; \
+	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc"; \
+	  echo "******************************************************";  false; fi
 # Deletes man pages (HTML version)
-deletemanualpages:
+deletemanualpages: chk_loc
 	find ${LOC}/docs/manualpages -type f -name "*.html" -exec ${RM} {} \;
 	${RM} ${LOC}/docs/manualpages/manualpages.cit
 
 # Builds all versions of the man pages
-allmanualpages: deletemanualpages chk_concepts_dir
+allmanualpages: chk_loc deletemanualpages chk_concepts_dir
 	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
 	-${OMAKE} ACTION=manualpages tree_basic  LOC=${LOC}
 	-maint/wwwindex.py ${PETSC_DIR} ${LOC}
@@ -371,13 +376,13 @@ allmanualpages: deletemanualpages chk_concepts_dir
 	-maint/helpindex.py ${PETSC_DIR} ${LOC}
 
 # Builds .html versions of the source
-allhtml: 
+allhtml: chk_loc
 	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} tree LOC=${LOC}
 
 allcleanhtml: 
 	-${OMAKE} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} tree
 
-chk_concepts_dir:
+chk_concepts_dir: chk_loc
 	@if [ ! -d "${LOC}/docs/manualpages/concepts}" ]; then \
 	  echo Making directory ${LOC}/docs/manualpages/concepts for library; ${MKDIR} ${LOC}/docs/manualpages/concepts; fi
 # Builds Fortran stub files
