@@ -1,4 +1,4 @@
-/*$Id: dalocal.c,v 1.26 2000/09/13 03:13:00 bsmith Exp bsmith $*/
+/*$Id: dalocal.c,v 1.27 2001/01/15 21:48:51 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -61,7 +61,7 @@ int DACreateLocalVector(DA da,Vec* g)
 
    Note:
    The output parameter, g, is a regular PETSc vector that should be returned with 
-   DAVecRestoreArray() DO NOT call VecDestroy() on it.
+   DARestoreLocalVector() DO NOT call VecDestroy() on it.
 
 .keywords: distributed array, create, local, vector
 
@@ -156,7 +156,7 @@ int DARestoreLocalVector(DA da,Vec* g)
 
    Note:
    The output parameter, g, is a regular PETSc vector that should be returned with 
-   DAVecRestoreArray() DO NOT call VecDestroy() on it.
+   DARestoreGlobalVector() DO NOT call VecDestroy() on it.
 
 .keywords: distributed array, create, Global, vector
 
