@@ -1,0 +1,75 @@
+# $Id: base,v 1.36 1999/01/27 22:34:16 balay Exp $ 
+#
+#     See the file .... for a complete explanation of all these fields
+#
+AR               = ar
+RM               = rm -f
+OMAKE            = make
+RANLIB           = ranlib
+SHELL            = /bin/sh
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = gcc
+C_FC             = g77
+C_CLINKER        = gcc ${COPTFLAGS} -Wl,-bbigtoc
+C_FLINKER        = g77 ${FOPTFLAGS} -Wl,-bbigtoc
+C_CCV            = gcc -V
+C_SYS_LIB        = -lg2c -lisode
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g
+G_FOPTFLAGS      = -g
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O
+O_FOPTFLAGS      = -O
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = g++
+CXX_FC           = g77
+CXX_CLINKER      = g++ ${COPTFLAGS}
+CXX_FLINKER      = g++ ${COPTFLAGS}
+CXX_CCV          = g++ -V
+CXX_SYS_LIB      = -lg2c -lcomplex -lisode
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g
+GCXX_FOPTFLAGS   = -g
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O
+OCXX_FOPTFLAGS   = -O
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g
+GCOMP_FOPTFLAGS  = -g
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O
+OCOMP_FOPTFLAGS  = -O
+# ########################### PETSc install options ###########################
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK 
+O_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+OCXX_PETSCFLAGS  =  -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS
+
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
+#
+PARCH    = rs6000
+
+include ${PETSC_DIR}/bmake/common
+
+libc:
+	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
+
+libf:
+	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
+
+libmember:    ${LIBNAME}(${LIBMEMBER})
+
+shared:
