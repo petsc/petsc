@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.32 1996/07/10 01:52:20 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.33 1996/09/12 16:28:47 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -123,5 +123,8 @@ extern int ViewerDrawGetDrawLG(Viewer, DrawLG*);
 #if defined(__VEC_PACKAGE)
 int DrawTensorContour(Draw,int,int,double*,double*,Vec);
 #endif
+
+int DrawTensorSurfaceContour_VRML(Draw,double*,int,double*,int,double *z,int);
+int DrawTensorSurface_VRML(Draw,double*,int,double*,int,double *z,int);
 
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.21 1996/08/08 14:40:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itres.c,v 1.22 1996/09/12 16:25:09 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -130,7 +130,7 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
   ierr = VecGetSize(in,&M); CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(in,&start,&end);
-  rows = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(rows);
+  rows = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(rows);
   for ( i=0; i<m; i++ ) {rows[i] = start + i;}
 
   if (size == 1) {
@@ -167,7 +167,6 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
 
 
 #include "pinclude/plapack.h"
-#include "src/mat/impls/dense/mpi/mpidense.h"
 
 /*@
    KSPComputeEigenvaluesExplicitly - Computes all of the eigenvalues of the 
