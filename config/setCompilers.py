@@ -486,7 +486,7 @@ class Configure(config.base.Configure):
   def generateArchiverFlags(self,archiver):
     flag = ''
     if 'AR_FLAGS' in self.framework.argDB: flag = self.framework.argDB['AR_FLAGS']
-    elif archiver == 'ar': flag = 'cr'
+    elif os.path.basename(archiver) == 'ar': flag = 'cr'
     elif archiver == 'win32fe lib': flag = '-a'
     elif archiver == 'win32fe tlib': flag = '-a -P512'
     return flag
@@ -602,7 +602,7 @@ class Configure(config.base.Configure):
       self.framework.argDB['LD_SHARED'] = ''
       language = self.framework.normalizeLanguage(self.language[-1])
       linker = self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
-      yield (self.AR, [], 'a')
+      yield (self.AR, [self.AR_FLAGS], 'a')
       raise RuntimeError('Archiver failed static link check')
     if 'with-shared-ld' in self.framework.argDB:
       yield (self.framework.argDB['with-shared-ld'], [], 'so')

@@ -10,6 +10,7 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     self.setCompilers = self.framework.require('config.setCompilers', self)
     self.libraries = self.framework.require('config.libraries', self)
+    self.fortranMangling = 'unchanged'
     return
 
   def __str__(self):
