@@ -531,6 +531,9 @@ EXTERN int PetscScalarView(int,PetscScalar[],PetscViewer);
 #if defined(PETSC_HAVE_RESTRICT) && !defined(__cplusplus)
 #define restrict _Restrict
 #else
+#if defined(restrict)
+#undef restrict
+#endif
 #define restrict
 #endif
 
