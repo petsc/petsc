@@ -14,7 +14,7 @@ class Configure(PETSc.package.Package):
     self.deps         = [self.mpi,self.blasLapack]
     self.functions    = ['InpMtx_init']
     self.includes     = ['MPI/spoolesMPI.h']
-    self.liblist      = [os.path.join('MPI','src','spoolesMPI.a'),'spooles']
+    self.liblist      = [os.path.join('MPI','src','spoolesMPI.a'),'spooles.a']
     self.libdir       = ''
     self.includedir   = ''
     return

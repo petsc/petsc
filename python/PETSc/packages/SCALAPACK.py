@@ -16,7 +16,7 @@ class Configure(PETSc.package.Package):
     self.functions     = ['ssytrd']
     self.includes      = []
     self.libdir        = ''
-    self.lib           = ['libscalapack.a']
+    self.liblist       = ['libscalapack.a']
     return
 
   def Install(self):
@@ -119,7 +119,6 @@ framework.log)[0]
       if not isinstance(lib, list): lib = [lib]
       if not isinstance(incl, list): incl = [incl]
       self.framework.log.write('Checking for library '+location+': '+str(lib)+'\n')
-      #if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs}):
       if self.executeTest(self.checkLib,[lib,self.functions,1]):     
         self.lib = lib
         self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
