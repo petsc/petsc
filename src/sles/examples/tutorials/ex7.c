@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.26 1996/08/26 22:27:28 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.27 1996/08/27 18:14:21 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -60,7 +60,7 @@ int main(int argc,char **args)
   n = m+2;
 
   /* -------------------------------------------------------------------
-                    Phase 1: Set up the linear system
+                     Set up the linear system
      ------------------------------------------------------------------- */
 
   /* 
@@ -113,7 +113,7 @@ int main(int argc,char **args)
 
 
   /* -------------------------------------------------------------------
-            Phase 2:  Define the problem decomposition
+                   Define the problem decomposition
      ------------------------------------------------------------------- */
 
   /* 
@@ -133,7 +133,7 @@ int main(int argc,char **args)
 
 
   /* -------------------------------------------------------------------
-            Phase 3: Set the linear solvers for the subblocks
+               Set the linear solvers for the subblocks
      ------------------------------------------------------------------- */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -198,7 +198,7 @@ int main(int argc,char **args)
   }
 
   /* -------------------------------------------------------------------
-            Phase 3: Solve the linear system
+                      Solve the linear system
      ------------------------------------------------------------------- */
 
   /* 
@@ -218,6 +218,10 @@ int main(int argc,char **args)
   if (!flg) {
     ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
   }
+
+  /* -------------------------------------------------------------------
+                      Check solution and clean up
+     ------------------------------------------------------------------- */
 
   /*
      Check the error
