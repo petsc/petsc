@@ -123,11 +123,6 @@ Additional Capabilities that PETSc Needs:
 
   - interface to Tom Coleman's post-docs Cholesky code
 
-  - try to set up Fortran error checking with
-          forcheck (http://132.229.167.66:80/forcheck/) or 
-          ftnchek (http://dv.go.dlr.de:8081/pdinfo_dv/ftnchek.html)
-          lintfor (http://www.doc.ic.ac.uk/~mac/manuals/hpux-manual-pages
-                   /hpux/usr/man/man1/lintfor.1.html).
 
 
   - MatSetBlockValues()
@@ -591,3 +586,9 @@ Additional Capabilities that PETSc Needs:
 
  X Have option for MatSetValues() and VecSetValues() to ignore data inserted
     that belongs to other processors.
+
+ NO GOOD  try to set up Fortran error checking with
+          forcheck (http://132.229.167.66:80/forcheck/) or 
+          ftnchek (http://dv.go.dlr.de:8081/pdinfo_dv/ftnchek.html)
+          lintfor (http://www.doc.ic.ac.uk/~mac/manuals/hpux-manual-pages
+                   /hpux/usr/man/man1/lintfor.1.html).
