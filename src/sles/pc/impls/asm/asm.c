@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.115 2000/06/03 14:37:09 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.116 2000/07/07 20:33:31 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -498,7 +498,7 @@ int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
 
   PetscFunctionBegin;
   if (jac->n_local_true < 0) {
-    SETERRQ(1,1,"Need to call PCSetUP() on PC before calling here");
+    SETERRQ(1,1,"Need to call PCSetUP() on PC (or SLESSetUp() on the outter SLES object) before calling here");
   }
 
   if (n_local)     *n_local     = jac->n_local_true;
