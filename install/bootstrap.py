@@ -124,7 +124,8 @@ if __name__ ==  '__main__':
       curses.wrapper(installer.CannotClone,output)
       sys.exit()
 
- sys.path.insert(0,os.path.join(installer.installpath,'BuildSystem','install')
- import installer
- runinstaller()
+  sys.path.insert(0,os.path.join(installer.installpath,'BuildSystem'))
+  sys.path.insert(0,os.path.join(installer.installpath,'BuildSystem','install'))
+  import install.installer
+  install.installer.runinstaller()
       
