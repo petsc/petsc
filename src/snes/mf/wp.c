@@ -36,6 +36,7 @@
 
 M*/
 
+/*
    See snesmfjdef.c for  a full set of comments on the routines below.
 */
 
