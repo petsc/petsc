@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.279 1998/07/23 22:47:53 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.280 1998/08/03 14:58:58 balay Exp bsmith $";
 #endif
 
 /*
@@ -912,6 +912,7 @@ int MatMarkDiag_SeqAIJ(Mat A)
   diag = (int *) PetscMalloc( (m+1)*sizeof(int)); CHKPTRQ(diag);
   PLogObjectMemory(A,(m+1)*sizeof(int));
   for ( i=0; i<a->m; i++ ) {
+    diag[i] = a->i[i+1];
     for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
       if (a->j[j]+shift == i) {
         diag[i] = j - shift;
