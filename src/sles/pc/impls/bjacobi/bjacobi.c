@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.56 1995/12/21 18:31:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.57 1996/01/01 01:02:42 bsmith Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -224,7 +224,7 @@ int PCCreate_BGS(PC pc)
 .  pc - the preconditioner context
 .  blocks - the number of blocks
 .  lens - [optional] integer array containing the size of each block
-.  true - [optiona] integer array whose entries are USE_PRECONDITIONER_MATRIX
+.  true - [optional] integer array whose entries are USE_PRECONDITIONER_MATRIX
 .          or USE_TRUE_MATRIX can only be provided if lens is provided.
 
    Options Database Key:
