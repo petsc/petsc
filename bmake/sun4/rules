@@ -1,4 +1,4 @@
-# $Id: base,v 1.30 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: base,v 1.31 1998/03/26 19:38:15 balay Exp balay $ 
 
 #
 #
@@ -37,11 +37,11 @@ libf: ${LIBNAME}(${OBJSF})
 #############
 
 .F.o: 
-	${FC}  -c ${FFLAGS}  ${FOPTFLAGS} ${CFLAGS} $*.F
+	-${FC}  -c ${FFLAGS}  ${FOPTFLAGS} ${CFLAGS} $*.F
 .F.a: 
-	${FC}  -c ${FFLAGS}  ${FOPTFLAGS} ${CFLAGS} $*.F
-	${AR} clr ${LIBNAME} $*.o
-	${RM} $*.o
+	-${FC}  -c ${FFLAGS}  ${FOPTFLAGS} ${CFLAGS} $*.F
+	-${AR} clr ${LIBNAME} $*.o
+	-${RM} $*.o
 #
 #   These are alternative rules for Fortran compilers that 
 #  do not understand the .F suffix
@@ -55,12 +55,12 @@ libf: ${LIBNAME}(${OBJSF})
 #
 #.F.o:
 #	-${RM} $*.f
-#	-cpp ${CFLAGS} $< | grep -v '^ *#' > $*.f
+#	-cpp ${CFLAGS} $< | grep -v '^ *#' |grep -v '^C'  > $*.f
 #	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
 #	-${RM} $*.f
 #.F.a:
 #	-${RM} $*.f
-#	-cpp ${CFLAGS}  $< | grep -v '^ *#' > $*.f
+#	-cpp ${CFLAGS}  $< | grep -v '^ *#' |grep -v '^C'  > $*.f
 #	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
 #	-${AR} cr ${LIBNAME} $*.o
 #	-${RM} $*.o	$*.f

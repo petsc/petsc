@@ -1,4 +1,4 @@
-# $Id: base,v 1.25 1998/04/02 00:15:37 balay Exp balay $ 
+# $Id: base,v 1.26 1998/04/07 16:15:24 balay Exp balay $ 
 
 PARCH    = linux
 CC       = gcc  -DPARCH_linux -fPIC
@@ -37,25 +37,25 @@ libf: ${OBJSF}
 #  We ignore error messages from FC since they seem to be bogus
 #
 .F.f:
-	${RM} $*.f __$*.c
-	cp $*.F __$*.c
-	${CC} -E  ${CFLAGS} __$*.c  > $*.f
-	${RM}  __$*.c
+	-${RM} $*.f __$*.c
+	-cp $*.F __$*.c
+	-${CC} -E  ${CFLAGS} __$*.c  > $*.f
+	-${RM}  __$*.c
 
 .F.o:
-	${RM} $*.f __$*.c
-	cp $*.F __$*.c
-	${CC} -E  ${CFLAGS} __$*.c  > $*.f
+	-${RM} $*.f __$*.c
+	-cp $*.F __$*.c
+	-${CC} -E  ${CFLAGS} __$*.c  > $*.f
 	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
-	${RM} $*.f __$*.c
+	-${RM} $*.f __$*.c
 
 .F.a:
-	${RM} $*.f __$*.c
-	cp $*.F __$*.c
-	${CC} -E  ${CFLAGS} __$*.c  > $*.f
+	-${RM} $*.f __$*.c
+	-cp $*.F __$*.c
+	-${CC} -E  ${CFLAGS} __$*.c  > $*.f
 	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
-	${AR} cr ${LIBNAME} $*.o
-	${RM} $*.f __$*.c
+	-${AR} cr ${LIBNAME} $*.o
+	-${RM} $*.f __$*.c
 
 SLSUFFIX = so.1.0
 shared: chkopts_basic

@@ -37,15 +37,15 @@ libf: ${OBJSF}
 #############
 
 .F.f:
-	${RM} __$*.f __$*.c
-	cp $*.F __$*.c
-	${CC} -E  ${CFLAGS} __$*.c  > __$*.f
-	${RM} __$*.c
+	-${RM} __$*.f __$*.c
+	-cp $*.F __$*.c
+	-${CC} -E  ${CFLAGS} __$*.c  > __$*.f
+	-${RM} __$*.c
 
 .F.o:
-	${RM} __$*.f __$*.c
-	cp $*.F __$*.c
-	${CC} -E  ${CFLAGS} __$*.c  > __$*.f
+	-${RM} __$*.f __$*.c
+	-cp $*.F __$*.c
+	-${CC} -E  ${CFLAGS} __$*.c  > __$*.f
 	-${FC} -c ${FFLAGS} ${FOPTFLAGS} __$*.f
-	mv __$*.o $*.o
-	${RM} __$*.f __$*.c
+	-mv __$*.o $*.o
+	-${RM} __$*.f __$*.c

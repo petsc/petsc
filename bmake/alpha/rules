@@ -1,4 +1,4 @@
-# $Id: base,v 1.23 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: base,v 1.24 1998/03/26 19:47:25 balay Exp balay $ 
 
 PARCH    = alpha
 CC       = cc -DPARCH_alpha
@@ -33,18 +33,18 @@ libf: ${OBJSF}
 
 #######
 .F.o:
-	${RM} $*.f
-	cpp ${CFLAGS} -E $< | grep -v '^ *#' > $*.f
-	${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
-	${RM} $*.f
+	-${RM} $*.f
+	-cpp ${CFLAGS} -E $< | grep -v '^ *#' > $*.f
+	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
+	-${RM} $*.f
 
 .F.a: 
-	${RM} $*.f
-	cpp  ${CFLAGS} -E $< | grep -v '^ *#' > $*.f
-	${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
-	${RM} $*.f
-	${AR} cr ${LIBNAME} $*.o
-	${RM} -f $*.o
+	-${RM} $*.f
+	-cpp  ${CFLAGS} -E $< | grep -v '^ *#' > $*.f
+	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
+	-${RM} $*.f
+	-${AR} cr ${LIBNAME} $*.o
+	-${RM} -f $*.o
 
 shared: chkopts_basic
 	-@echo making shared libraries in ${LDIR} ;\

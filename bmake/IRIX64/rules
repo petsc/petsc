@@ -1,4 +1,4 @@
-# $Id: base,v 1.35 1998/04/03 22:36:59 balay Exp balay $ 
+# $Id: base,v 1.36 1998/04/03 23:57:47 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
@@ -41,12 +41,12 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 
 ###################
 .F.o:
-	${FC} -c ${FFLAGS} ${FCONF} ${FOPTFLAGS} ${CFLAGS} $*.F
+	-${FC} -c ${FFLAGS} ${FCONF} ${FOPTFLAGS} ${CFLAGS} $*.F
 
 .F.a: 
-	${FC} -c ${FFLAGS} ${FCONF} ${FOPTFLAGS} ${CFLAGS} $*.F
-	${AR} cr ${LIBNAME} $*.o
-	${RM} $*.o
+	-${FC} -c ${FFLAGS} ${FCONF} ${FOPTFLAGS} ${CFLAGS} $*.F
+	-${AR} cr ${LIBNAME} $*.o
+	-${RM} $*.o
 
 
 shared: chkopts_basic
