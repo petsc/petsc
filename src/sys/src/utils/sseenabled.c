@@ -93,8 +93,8 @@ int PetscSSEOSEnabledTest_TRUE(PetscTruth *flag) {
 #endif 
 #else  /* Not defined PETSC_HAVE_SSE */
 
-#define PetscSSEHardwareTest(arg) 0
-#define PetscSSEOSEnabledTest(arg) 0
+#define PetscSSEHardwareTest(arg) PETSC_FALSE
+#define PetscSSEOSEnabledTest(arg) PETSC_FALSE
 
 #endif /* defined PETSC_HAVE_SSE */
 
@@ -135,14 +135,14 @@ int PetscSSEIsEnabled(MPI_Comm comm,PetscTruth *lflag,PetscTruth *gflag) {
     if (local_flag) {
       ierr = PetscSSEOSEnabledTest(local_flag);CHKERRQ(ierr);
     }
-    if (!gflag) {
+    if (gflag) {
       ierr = MPI_Allreduce(&local_flag,&global_flag,1,MPI_INT,MPI_LAND,comm);CHKERRQ(ierr);
     }
   }
-  if (!lflag) {
+  if (lflag) {
     *lflag = local_flag;
   }
-  if (!gflag) {
+  if (gflag) {
     *gflag = global_flag;
   }
   PetscFunctionReturn(0);
