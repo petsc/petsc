@@ -40,6 +40,8 @@ class Configure(config.base.Configure):
     help.addArgument('MPI', '-with-mpi-shared=<bool>',            nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Install MPICH to provide MPI'))
+    help.addArgument('MPI', '-download-mpich-machines=[machine1,machine2...]',  nargs.Arg(None, ['localhost','localhost'], 'Machines for MPI to use'))
+    help.addArgument('MPI', '-download-mpich-device=ch_p4 or ch_shmem',         nargs.Arg(None, 'ch_p4', 'Device for MPI'))    
     return
 
   def checkLib(self, libraries):
@@ -338,6 +340,7 @@ class Configure(config.base.Configure):
       args.append('--disable-f77 --disable-f90')
     args.append('--without-mpe')
     args.append('-rsh=ssh')
+    args.append('--with-device='+self.argDB['download-mpich-device'])
     args = ' '.join(args)
     try:
       fd      = file(os.path.join(installDir,'config.args'))
@@ -354,6 +357,15 @@ class Configure(config.base.Configure):
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on MPICH: '+str(e))
+
+      # put the list of machines in 
+      ls = os.listdir(os.path.join(installDir,'share'))
+      for l in ls:
+        if l.startswith('machines.') and not l.endswith('.sample'):
+          fd = file(os.path.join(installDir,'share',l),'w')
+          for i in self.argDB['download-mpich-machines']:
+            fd.write(i+'\n')
+          fd.close()
       fd = file(os.path.join(installDir,'config.args'), 'w')
       fd.write(args)
       fd.close()
