@@ -28,8 +28,6 @@ LOCDIR   = src/docs/
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
 
-BIB2HTML = bib2html
-
 # petscapps* get built with 'builddist' and 'rsync'ed over to www-fp via the crontab
 bib2html:
 	${RM} website/publications/petscapps.html website/publications/petscapps-bib.html

@@ -79,7 +79,11 @@ class Configure(config.base.Configure):
     self.bfort    = os.path.join(self.binDir, 'bfort')
     self.doctext  = os.path.join(self.binDir, 'doctext')
     self.mapnames = os.path.join(self.binDir, 'mapnames')
-    self.bib2html = os.path.join(self.binDir, 'bib2html')    
+    # Bill's bug he does not install bib2html so use original location if needed
+    if os.path.isfile(os.path.join(self.binDir, 'bib2html')):
+      self.bib2html = os.path.join(self.binDir, 'bib2html')
+    else:
+      self.bib2html = os.path.join(sowingDir,'bin', 'bib2html')
     for prog in [self.bfort, self.doctext, self.mapnames]:
       if not (os.path.isfile(prog) and os.access(prog, os.X_OK)):
         raise RuntimeError('Error in Sowing installation: Could not find '+prog)

@@ -77,7 +77,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 #define __FUNCT__ "SOCKCall_Private" 
 PetscErrorCode SOCKCall_Private(char *hostname,int portnum,int *t)
 {
-#if defined(PETSC_HAVE_SOCKETS)
+#if defined(PETSC_HAVE_SOCKET)
   struct sockaddr_in sa;
   struct hostent     *hp;
   int                s = 0;
@@ -86,7 +86,7 @@ PetscErrorCode SOCKCall_Private(char *hostname,int portnum,int *t)
 #endif
 
   PetscFunctionBegin;
-#if !defined(PETSC_HAVE_SOCKETS)
+#if !defined(PETSC_HAVE_SOCKET)
   SETERRQ(PETSC_ERR_SUP_SYS,"This system does not support Unix tcp/ip");
 #else
   if (!(hp=gethostbyname(hostname))) {
