@@ -61,9 +61,17 @@ static int MatiAIJInsertValues(Mat mat,int m,int *idxm,int n,
   }
   aij->insertmode = addv;
   for ( i=0; i<m; i++ ) {
+    if (idxm[i] < 0 || idxm[i] >= aij->M) {
+      if (aij->outofrange) continue;
+      else SETERR(1,"row index out of range");
+    }
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
+        if (idxn[i] < 0 || idxn[i] >= aij->N) {
+          if (aij->outofrange) continue;
+          else SETERR(1,"column index out of range");
+        }   
         if (idxn[j] >= cstart && idxn[j] < cend){
           col = idxn[j] - cstart;
           ierr = MatSetValues(aij->A,1,&row,1,&col,v+i*n+j,addv);CHKERR(ierr);
@@ -467,6 +475,44 @@ static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,IS is,
   /* smooth locally */
   return 0;
 } 
+static int MatiAIJinsopt(Mat aijin,int op)
+{
+  Matimpiaij *aij = (Matimpiaij *) aijin->data;
+
+  if      (op == NO_NEW_NONZERO_LOCATIONS)  {
+    MatSetOption(aij->A,op);
+    MatSetOption(aij->B,op);
+  }
+  else if (op == YES_NEW_NONZERO_LOCATIONS) {
+    MatSetOption(aij->A,op);
+    MatSetOption(aij->B,op);
+  }
+  else if (op == ALLOW_OUT_OF_RANGE)  aij->outofrange  = 1;
+  else if (op == COLUMN_ORIENTED) SETERR(1,"Column oriented not supported");
+  return 0;
+}
+
+static int MatiAIJsize(Mat matin,int *m,int *n)
+{
+  Matimpiaij *mat = (Matimpiaij *) matin->data;
+  *m = mat->M; *n = mat->N;
+  return 0;
+}
+
+static int MatiAIJlocalsize(Mat matin,int *m,int *n)
+{
+  Matimpiaij *mat = (Matimpiaij *) matin->data;
+  *m = mat->m; *n = mat->n;
+  return 0;
+}
+
+static int MatiAIJrange(Mat matin,int *m,int *n)
+{
+  Matimpiaij *mat = (Matimpiaij *) matin->data;
+  *m = mat->rstart; *n = mat->rend;
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatiAIJInsertValues,
        0, 0,
@@ -480,8 +526,9 @@ static struct _MatOps MatOps = {MatiAIJInsertValues,
        MatiAIJgetdiag,0,0,
        MatiAIJBeginAssemble,MatiAIJEndAssemble,
        0,
-       0,MatiZero,MatiZerorows,0,
-       0,0,0,0 };
+       MatiAIJinsopt,MatiZero,MatiZerorows,0,
+       0,0,0,0,
+       MatiAIJsize,MatiAIJlocalsize,MatiAIJrange };
 
 
 
@@ -575,6 +622,8 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   /* stuff used for matrix vector multiply */
   aij->lvec      = 0;
   aij->Mvctx     = 0;
+
+  aij->outofrange = 0;
 
   *newmat = mat;
   return 0;
