@@ -50,6 +50,7 @@ typedef struct {
      Variables used by PVode 
   */
 
+  MPI_Comm comm_pvode;
   long int iopt[OPT_SIZE];
   double   ropt[OPT_SIZE];
   double   reltol;

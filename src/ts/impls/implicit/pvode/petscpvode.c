@@ -228,6 +228,7 @@ int TSDestroy_PVode(TS ts)
   if (cvode->rhs)    {ierr = VecDestroy(cvode->rhs);CHKERRQ(ierr);}
   if (cvode->w1)     {ierr = VecDestroy(cvode->w1);CHKERRQ(ierr);}
   if (cvode->w2)     {ierr = VecDestroy(cvode->w2);CHKERRQ(ierr);}
+  ierr = MPI_Comm_free(&(cvode->comm_pvode));CHKERRQ(ierr);
   ierr = PetscFree(cvode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -252,8 +253,8 @@ int TSSetUp_PVode_Nonlinear(TS ts)
   ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
 
   /* allocate the memory for machEnv */
-  /* machEnv = PVInitMPI(ts->comm,locsize,M);  */
-  machEnv = M_EnvInit_Parallel(ts->comm, locsize, M, 0, 0);
+  /* machEnv = PVInitMPI(cvode->>comm_pvode,locsize,M);  */
+  machEnv = M_EnvInit_Parallel(cvode->comm_pvode, locsize, M, 0, 0);
 
 
   /* allocate the memory for N_Vec y */
@@ -843,6 +844,7 @@ int TSCreate_PVode(TS ts)
 
   cvode->exact_final_time = PETSC_TRUE;
 
+  ierr = MPI_Comm_dup(ts->comm,&(cvode->comm_pvode));CHKERRQ(ierr);
   /* set tolerance for PVode */
   cvode->abstol = 1e-6;
   cvode->reltol = 1e-6;
