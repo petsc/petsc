@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.24 1996/04/16 04:48:03 bsmith Exp bsmith $ */
+/* $Id: is.h,v 1.25 1996/04/16 04:48:46 bsmith Exp bsmith $ */
 
 /*
       An index set is essentially a subset of the integers. They are used
@@ -34,4 +34,4 @@ extern int   ISView(IS,Viewer);
 extern int   ISEqual(IS, IS, PetscTruth *);
 extern int   ISSort(IS);
 extern int   ISSorted(IS, PetscTruth *);
-#endif
+
