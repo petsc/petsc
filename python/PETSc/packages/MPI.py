@@ -96,7 +96,7 @@ class Configure(config.base.Configure):
       self.framework.log.write('MPI cannot link, which indicates a problem with the MPI installation\n')
       return 0
 
-    if 'CXX' in self.framework.argDB and self.framework.argDB['CXX']:
+    if 'CXX' in self.framework.argDB:
       self.pushLanguage('C++')
       self.sourceExtension = '.C'
       if not self.checkMPILink('#include <mpi.h>\n', 'MPI_Comm comm = MPI_COMM_WORLD;\nint size;\n\nMPI_Comm_size(comm, &size);\n'):
