@@ -15,7 +15,7 @@ int main(int argc,char **args)
   int          ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr,inc; 
   int          lf;           /* level of fill for icc */
   int          *cols1,*cols2;
-  PetscReal    norm1,norm2,tol=1.e-10,fill;
+  PetscReal    norm1,norm2,tol=1.e-10;
   PetscScalar  neg_one = -1.0,four=4.0,value[3],alpha=0.1;  
   PetscScalar  *vr1,*vr2,*vr1_wk,*vr2_wk;
   IS           perm, isrow, iscol;

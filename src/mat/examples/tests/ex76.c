@@ -14,7 +14,7 @@ int main(int argc,char **args)
   int         n,mbs=16,bs=1,nz=3,prob=1;
   int         ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
   int         lf;          /* level of fill for icc */
-  PetscReal   norm1,norm2,tol=1.e-10,fill;
+  PetscReal   norm1,norm2,tol=1.e-10;
   PetscScalar neg_one = -1.0,four=4.0,value[3];  
   IS          perm;
   PetscRandom rand;
