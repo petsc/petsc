@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.11 1995/05/18 22:44:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.12 1995/06/08 03:07:39 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -13,9 +13,8 @@ static char vcid[] = "$Id: cgs.c,v 1.11 1995/05/18 22:44:17 bsmith Exp bsmith $"
 static int KSPSetUp_CGS(KSP itP)
 {
   int ierr;
-  if ((ierr = KSPCheckDef( itP ))) return ierr;
-  if ((ierr = KSPiDefaultGetWork( itP, 8 ))) return ierr;
-  return 0;
+  ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
+  return KSPiDefaultGetWork( itP, 8 );
 }
 
 
@@ -51,12 +50,12 @@ MONITOR(itP,dp,0);
 if (history) history[0] = dp;
 
 /* Make the initial Rp == R */
-if ((ierr = VecCopy(R,RP))) SETERRQ(ierr,0);
+ierr = VecCopy(R,RP); CHKERRQ(ierr);
 
 /* Set the initial conditions */
-VecDot(RP,R,&rhoold);
-if ((ierr = VecCopy(R,U))) SETERRQ(ierr,0);
-if ((ierr = VecCopy(R,P))) SETERRQ(ierr,0);
+ierr = VecDot(RP,R,&rhoold); CHKERRQ(ierr);
+ierr = VecCopy(R,U); CHKERRQ(ierr);
+ierr = VecCopy(R,P); CHKERRQ(ierr);
 PCApplyBAorAB(itP->B,itP->right_pre,P,V,T);
 
 for (i=0; i<maxit; i++) {
@@ -64,9 +63,9 @@ for (i=0; i<maxit; i++) {
     a = rhoold / s;                        /* a <- rho / s        */
     tmp = -a;VecWAXPY(&tmp,V,U,Q);          /* q <- u - a v        */
     VecWAXPY(&one,U,Q,T);                   /* t <- u + q          */
-    if ((ierr = VecAXPY(&a,T,X))) SETERRQ(ierr,0);  /* x <- x + a (u + q)  */
+    ierr = VecAXPY(&a,T,X); CHKERRQ(ierr);  /* x <- x + a (u + q)  */
     PCApplyBAorAB(itP->B,itP->right_pre,T,AUQ,U);
-    if ((ierr = VecAXPY(&tmp,AUQ,R))) SETERRQ(ierr,0);/* r <- r - a K (u + q) */
+    ierr = VecAXPY(&tmp,AUQ,R); CHKERRQ(ierr);/* r <- r - a K (u + q) */
     VecNorm(R,&dp);
 
     if (history && hist_len > i + 1) history[i+1] = dp;
@@ -76,7 +75,7 @@ for (i=0; i<maxit; i++) {
     VecDot(RP,R,&rho);                      /* newrho <- rp' r       */
     b = rho / rhoold;                      /* b <- rho / rhoold     */
     VecWAXPY(&b,Q,R,U);                     /* u <- r + b q          */
-    if ((ierr = VecAXPY(&b,P,Q))) SETERRQ(ierr,0);
+    ierr = VecAXPY(&b,P,Q); CHKERRQ(ierr);
     VecWAXPY(&b,Q,U,P);                     /* p <- u + b(q + b p)   */
     PCApplyBAorAB(itP->B,itP->right_pre,P,V,Q);    /* v <- K p              */
     rhoold = rho;

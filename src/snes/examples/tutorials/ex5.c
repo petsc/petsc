@@ -65,7 +65,7 @@ int main( int argc, char **argv )
   OptionsGetInt(0,"-my",&user.my);
   OptionsGetDouble(0,"-par",&user.param);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRQ(1,"Lambda is out of range");
+    SETERRA(1,"Lambda is out of range");
   }
   N          = user.mx*user.my;
   
@@ -138,7 +138,7 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   for (j=ys; j<ys+ym; j++) {
     temp = (double)(MIN(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
-      row = i - Xs + (j - Ys)*Ym; 
+      row = i - Xs + (j - Ys)*Xm; 
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
         x[row] = 0.0; 
         continue;
@@ -179,7 +179,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
-      row = i - Xs + (j - Ys)*Ym; 
+      row = i - Xs + (j - Ys)*Xm; 
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
         f[row] = x[row];
         continue;

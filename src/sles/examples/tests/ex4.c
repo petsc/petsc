@@ -127,8 +127,10 @@ int main(int argc,char **args)
 
   ierr = VecAXPY(&none,ustar,u); CHKERRA(ierr);
   ierr = VecNorm(u,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"Norm of error %g Number iterations %d\n",
-      norm*h,its);
+  if (norm*h > 1.e-12)
+    MPIU_printf(MPI_COMM_WORLD,"Norm of error %g Iterations %d\n",norm*h,its);
+  else
+    MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
 
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(ustar); CHKERRA(ierr);

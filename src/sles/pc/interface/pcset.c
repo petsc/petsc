@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.15 1995/05/20 19:42:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.16 1995/06/08 03:08:19 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -33,15 +33,15 @@ int PCSetMethod(PC ctx,PCMethod method)
   int (*r)(PC);
   VALIDHEADER(ctx,PC_COOKIE);
   if (ctx->setupcalled) {
-    SETERRQ(1,"Method cannot be called after PCSetUp");
+    SETERRQ(1,"PCSetMethod: cannot be called after PCSetUp");
   }
   /* Get the function pointers for the method requested */
   if (!__PCList) {PCRegisterAll();}
   if (!__PCList) {
-    SETERRQ(1,"Could not acquire list of preconditioner methods"); 
+    SETERRQ(1,"PCSetMethod: Could not acquire list of PC methods"); 
   }
   r =  (int (*)(PC))NRFindRoutine( __PCList, (int)method, (char *)0 );
-  if (!r) {SETERRQ(1,"Unknown preconditioner method");}
+  if (!r) {SETERRQ(1,"PCSetMethod: Unknown preconditioner method");}
   if (ctx->data) PETSCFREE(ctx->data);
   ctx->setfrom     = ( int (*)(PC) ) 0;
   ctx->printhelp   = ( int (*)(PC) ) 0;

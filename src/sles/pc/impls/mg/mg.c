@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.21 1995/06/08 03:08:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.22 1995/06/14 17:23:47 bsmith Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -291,7 +291,7 @@ static int PCSetFromOptions_MG(PC pc)
 
   if (pc->type != PCMG) return 0;
   if (!pc->data) {
-    SETERRQ(1,"For multigrid PCSetFromOptions() must be after MGSetLevels");
+    SETERRQ(1,"PCSetFromOptions_MG: must be after MGSetLevels");
   }
   if (OptionsGetInt(pc->prefix,"-pc_mg_cycles",&m)) {
     MGSetCycles(pc,m);
@@ -308,7 +308,7 @@ static int PCSetFromOptions_MG(PC pc)
     else if (!strcmp(buff,"multiplicative")) mg = MGMULTIPLICATIVE;
     else if (!strcmp(buff,"full")) mg = MGFULL;
     else if (!strcmp(buff,"kaskade")) mg = MGKASKADE;
-    else SETERRQ(1,"Unknown MG method");
+    else SETERRQ(1,"PCSetFromOptions_MG: Unknown MG method");
     MGSetMethod(pc,mg);
   }
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.35 1995/06/08 03:07:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.36 1995/06/09 19:17:36 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -464,7 +464,7 @@ int VecGetVecs(Vec v,int m,Vec **V)
 @*/
 int VecFreeVecs(Vec *vv,int m)
 {
-  if (!vv) SETERRQ(1,"Null vectors");
+  if (!vv) SETERRQ(1,"VecFreeVecs: Null vectors");
   VALIDHEADER(*vv,VEC_COOKIE);
   return (*(*vv)->ops->freevecs)( vv, m );
 }

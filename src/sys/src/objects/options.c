@@ -38,7 +38,7 @@ typedef struct {
   char *aliases1[MAXALIASES],*aliases2[MAXALIASES];
   int  used[MAXOPTIONS];
   int  namegiven;
-  char programname[64];
+  char programname[256]; /* HP includes entire path in name */
 } OptionsTable;
 
 static OptionsTable *options = 0;
@@ -233,7 +233,11 @@ static int OptionsCheckInitial_Private()
     char *debugger = 0, *display = 0;
     int  xterm     = 1, sfree = 0;
     if (strstr(string,"noxterm")) xterm = 0;
+#if defined(PARCH_hpux)
+    if (strstr(string,"xdb"))     debugger = "xdb";
+#else
     if (strstr(string,"dbx"))     debugger = "dbx";
+#endif
     if (strstr(string,"xxgdb"))   debugger = "xxgdb";
     if (OptionsGetString(0,"-display",string,64)){
       display = string;
@@ -268,7 +272,11 @@ static int OptionsCheckInitial_Private()
       }
     }
     if (strstr(string,"noxterm")) xterm = 0;
+#if defined(PARCH_hpux)
+    if (strstr(string,"xdb"))     debugger = "xdb";
+#else
     if (strstr(string,"dbx"))     debugger = "dbx";
+#endif
     if (strstr(string,"xxgdb"))   debugger = "xxgdb";
     if (OptionsGetString(0,"-display",string,64)){
       display = string;
@@ -389,7 +397,8 @@ static int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
         }
         else if (first && !strcmp(first,"alias")) {
           third = strtok(0," ");
-          if (!third) SETERRQ(1,"Error in options file after alias");
+          if (!third)
+            SETERRQ(1,"OptionsCreate_Private: Error in options file on alias");
           len = strlen(third); third[len-1] = 0;
           ierr = OptionsSetAlias_Private(second,third); CHKERRQ(ierr);
         }
@@ -573,7 +582,7 @@ static int OptionsSetAlias_Private(char *newname,char *oldname)
   int len,n = options->Naliases;
 
   if (n >= MAXALIASES) {
-    SETERRQ(1,"You have to many option aliases defined");
+    SETERRQ(1,"OptionsSetAlias_Private: Too many option aliases defined");
   }
   len = (strlen(newname)+1)*sizeof(char);
   options->aliases1[n] = (char *) malloc( len ); CHKPTRQ(options->aliases1[n]);
@@ -651,7 +660,7 @@ int OptionsGetInt(char*pre,char *name,int *ivalue)
 {
   char *value;
   if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
-  if (!value) SETERRQ(1,"Missing value for option");
+  if (!value) SETERRQ(1,"OptionsGetInt: Missing value for option");
   *ivalue = atoi(value);
   return 1; 
 } 
@@ -772,7 +781,7 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue)
 {
   char *value;
   if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
-  if (!value) SETERRQ(1,"Missing value for option");
+  if (!value) SETERRQ(1,"OptionsGetScalar: Missing value for option");
   *dvalue = atof(value);
   return 1; 
 } 

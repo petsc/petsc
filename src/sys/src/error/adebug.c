@@ -1,7 +1,7 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.13 1995/06/08 03:08:02 bsmith Exp bsmith $";
-#endif/*
-*/
+static char vcid[] = "$Id: adebug.c,v 1.14 1995/06/14 14:49:10 bsmith Exp bsmith $";
+#endif
+
 #include "petsc.h"
 #include <signal.h> 
 #include <stdio.h>
@@ -15,7 +15,8 @@ static int   Xterm     = 1;
 
    Input Parameters:
 .  debugger - name of debugger, which should be in your path,
-              usually either "dbx", "gdb" or "xxgdb"
+              usually either "dbx", "gdb" or "xxgdb" or "xdb" on the HP-UX
+
 .   xterm - flag to indicate debugger window, set to one of:
 $     1 to indicate debugger should be started in a new xterm
 $     0 to start debugger in initial window (zero makes no 
@@ -90,8 +91,15 @@ int PetscAttachDebugger()
         args[3] = program;
         args[4] = 0;
       }
+#elif defined(PARCH_hpux)
+      if (!strcmp(Debugger,"xdb")) {
+        args[3] = program;
+        args[1] = "-P";
+        args[2] = pid;
+        args[4] = 0;
+      }
 #endif
-      fprintf(stderr,"Attaching %s to %s %s\n",args[0],args[1],pid);
+      fprintf(stderr,"Attaching %s to %s of pid %s\n",Debugger,program,pid);
       if (execvp(args[0], args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
@@ -102,7 +110,22 @@ int PetscAttachDebugger()
         args[0] = "xterm";  args[1] = "-e"; 
         args[2] = Debugger; args[3] = program; 
         args[4] = pid;      args[5] = 0;
-        fprintf(stderr,"Attaching %s to %s %s\n",args[2],args[3],pid);
+#if defined(PARCH_IRIX)
+        if (!strcmp(Debugger,"dbx")) {
+          args[3] = "-p";
+          args[4] = pid;
+          args[5] = program;
+          args[6] = 0;
+        }
+#elif defined(PARCH_hpux)
+        if (!strcmp(Debugger,"xdb")) {
+          args[5] = program;
+          args[3] = "-P";
+          args[4] = pid;
+          args[6] = 0;
+        }
+#endif
+        fprintf(stderr,"Attaching %s to %s on pid %s\n",Debugger,program,pid);
       }
       else {
         args[0] = "xterm";  args[1] = "-d";
@@ -116,9 +139,16 @@ int PetscAttachDebugger()
           args[7] = program;
           args[8] = 0;
         }
+#elif defined(PARCH_hpux)
+        if (!strcmp(Debugger,"xdb")) {
+          args[7] = program;
+          args[5] = "-P";
+          args[6] = pid;
+          args[8] = 0;
+        }
 #endif
-        fprintf(stderr,"Attaching %s to %s %s on %s\n",args[4],args[5],pid,
-                       Display);  
+      fprintf(stderr,"Attaching %s to %s of pid %s on display %s\n",
+              Debugger,program,pid,Display);
       }
 
       if (execvp("xterm", args)  < 0) {
@@ -128,7 +158,11 @@ int PetscAttachDebugger()
     }
   }
   else { /* I am the child, continue with user code */
+#if defined(PARCH_hpux)
+    while (1) ; /* HP cannot attach to sleeper */
+#else
     sleep(10);
+#endif
     return 0;
   }
 #endif

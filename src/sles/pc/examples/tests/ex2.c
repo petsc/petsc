@@ -70,7 +70,12 @@ int main(int argc,char **args)
   ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
   ierr = VecAXPY(&mone,ustar,u); CHKERRA(ierr);
   ierr = VecNorm(u,&norm);
-  fprintf(stdout,"Number of iterations %d 2 norm error %g\n",its,norm);
+  if (norm < 1.e-11) {
+    fprintf(stdout,"Number of iterations %d 2 norm error < 1.e-11\n",its);
+  }
+  else {
+    fprintf(stdout,"Number of iterations %d 2 norm error %g\n",its,norm);
+  }
 
   ierr = KSPDestroy(ksp); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);

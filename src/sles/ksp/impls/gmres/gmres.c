@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.24 1995/05/18 22:44:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.25 1995/06/08 03:07:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -309,9 +309,9 @@ static int KSPAdjustWork_GMRES(KSP itP )
   if ( itP->adjust_work_vectors ) {
    gmresP = (KSP_GMRES *) itP->MethodPrivate;
    for (i=0; i<gmresP->vv_allocated; i++) 
-       if ( (*itP->adjust_work_vectors)(itP,gmresP->user_work[i],
-					     gmresP->mwork_alloc[i] ) ) 
-	   SETERRQ(1,"Could not allocate work vectors in GMRES");
+     if ( (*itP->adjust_work_vectors)(itP,gmresP->user_work[i],
+					     gmresP->mwork_alloc[i])) 
+       SETERRQ(1,"KSPAdjustWork_GMRES: Could not allocate work vectors");
  }
   return 0;
 }

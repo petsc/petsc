@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.22 1995/05/20 21:16:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.23 1995/06/08 03:10:29 bsmith Exp bsmith $";
 #endif
 
 #include "slesimpl.h"
@@ -84,8 +84,8 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   *outsles = 0;
   PETSCHEADERCREATE(sles,_SLES,SLES_COOKIE,0,comm);
   PLogObjectCreate(sles);
-  if ((ierr = KSPCreate(comm,&sles->ksp))) SETERRQ(ierr,0);
-  if ((ierr = PCCreate(comm,&sles->pc))) SETERRQ(ierr,0);
+  ierr = KSPCreate(comm,&sles->ksp); CHKERRQ(ierr);
+  ierr = PCCreate(comm,&sles->pc); CHKERRQ(ierr);
   PLogObjectParent(sles,sles->ksp);
   PLogObjectParent(sles,sles->pc);
   sles->setupcalled = 0;
@@ -141,9 +141,9 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   KSPSetSolution(ksp,x);
   KSPSetBinv(ksp,pc);
   if (!sles->setupcalled) {
-    if ((ierr = PCSetVector(pc,b))) SETERRQ(ierr,0);
-    if ((ierr = KSPSetUp(sles->ksp))) SETERRQ(ierr,0);
-    if ((ierr = PCSetUp(sles->pc))) SETERRQ(ierr,0);
+    ierr = PCSetVector(pc,b); CHKERRQ(ierr);
+    ierr = KSPSetUp(sles->ksp); CHKERRQ(ierr);
+    ierr = PCSetUp(sles->pc); CHKERRQ(ierr);
     sles->setupcalled = 1;
   }
   ierr = PCPreSolve(pc,ksp); CHKERRQ(ierr);

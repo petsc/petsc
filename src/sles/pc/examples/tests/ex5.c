@@ -60,7 +60,7 @@ int main(int Argc, char **Args)
   N[0] = x_mesh;
   for ( i=1; i<levels; i++ ) {
     N[i] = N[i-1]/2;
-    if (N[i] < 1) {SETERRQ(1,"Too many levels");}
+    if (N[i] < 1) {SETERRA(1,"Too many levels");}
   }
 
   Create1dLaplacian(N[levels-1],&cmat);
@@ -124,7 +124,7 @@ int main(int Argc, char **Args)
   CalculateRhs(B[levels-1]);
   VecSet(&zero,X[levels-1]);
 
-  if (MGCheck(pcmg)) {SETERRQ(1,0);}
+  if (MGCheck(pcmg)) {SETERRA(1,0);}
      
   residual((void*)0,B[levels-1],X[levels-1],R[levels-1]);
   CalculateError(solution,X[levels-1],R[levels-1],e);

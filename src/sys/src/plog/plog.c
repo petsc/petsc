@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.2 1995/06/08 03:08:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.3 1995/06/14 14:49:10 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: plog.c,v 1.2 1995/06/08 03:08:02 bsmith Exp bsmith $"
 @*/
 int PetscObjectSetName(PetscObject obj,char *name)
 {
-  if (!obj) SETERRQ(1,"Null object");
+  if (!obj) SETERRQ(1,"PetscObjectSetName: Null object");
   obj->name = name;
   return 0;
 }
@@ -42,8 +42,8 @@ int PetscObjectSetName(PetscObject obj,char *name)
 @*/
 int PetscObjectGetName(PetscObject obj,char **name)
 {
-  if (!obj) SETERRQ(1,"Null object");
-  if (!name) SETERRQ(1,"Void location for name");
+  if (!obj) SETERRQ(1,"PetscObjectGetName: Null object");
+  if (!name) SETERRQ(1,"PetscObjectGetName: Void location for name");
   *name = obj->name;
   return 0;
 }
@@ -333,7 +333,7 @@ int PLogDump(char* name)
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   if (name) sprintf(file,"%s.%d",name,mytid);
   else  sprintf(file,"Log.%d",mytid);
-  fd = fopen(file,"w"); if (!fd) SETERRQ(1,0);
+  fd = fopen(file,"w"); if (!fd) SETERRQ(1,"PlogDump: cannot open file");
 
   fprintf(fd,"Objects created %d Destroyed %d\n",nobjects,
                                                  ObjectsDestroyed);

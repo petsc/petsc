@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.15 1995/05/18 22:44:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.16 1995/06/08 03:07:45 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -15,10 +15,7 @@ static char vcid[] = "$Id: cheby.c,v 1.15 1995/05/18 22:44:23 bsmith Exp bsmith 
 int KSPSetUp_Chebychev(KSP itP)
 {
   int ierr;
-  if (itP->type != KSPCHEBYCHEV) {
-     SETERRQ(1,"Attempt to use Chebychev Setup on wrong context");
-  }
-  if ((ierr = KSPCheckDef(itP))) return ierr;
+  ierr = KSPCheckDef(itP); CHKERRQ(ierr);
   return KSPiDefaultGetWork( itP, 3 );
 }
 /*@

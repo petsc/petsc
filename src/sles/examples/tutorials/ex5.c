@@ -83,7 +83,10 @@ int main(int argc,char **args)
   /* Check error */
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
+  if (norm > 1.e-12) 
+    MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
+  else 
+    MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
   MatView(C,SYNC_STDOUT_VIEWER);
 
@@ -112,7 +115,10 @@ int main(int argc,char **args)
   /* Check error */
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
+  if (norm > 1.e-12)
+    MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
+  else 
+    MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
   /* Free work space */
   ierr = SLESDestroy(sles); CHKERRA(ierr);

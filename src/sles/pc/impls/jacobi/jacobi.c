@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.11 1995/05/03 13:17:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.12 1995/06/08 03:08:23 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -16,14 +16,14 @@ int PCSetUp_Jacobi(PC pc)
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
   Vec       diag;
   if (pc->setupcalled == 0) {
-    if ((ierr = VecDuplicate(pc->vec,&diag))) SETERRQ(ierr,0);
+    ierr = VecDuplicate(pc->vec,&diag); CHKERRQ(ierr);
     PLogObjectParent(pc,diag);
   }
   else {
     diag = jac->diag;
   }
-  if ((ierr = MatGetDiagonal(pc->pmat,diag))) SETERRQ(ierr,0);
-  if ((ierr = VecReciprocal(diag))) SETERRQ(ierr,0);
+  ierr = MatGetDiagonal(pc->pmat,diag); CHKERRQ(ierr);
+  ierr = VecReciprocal(diag); CHKERRQ(ierr);
   jac->diag = diag;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.36 1995/05/20 19:42:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.37 1995/06/08 03:07:27 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -125,15 +125,15 @@ int KSPSetMethod(KSP ctx,KSPMethod itmethod)
   int (*r)(KSP);
   VALIDHEADER(ctx,KSP_COOKIE);
   if (ctx->setupcalled) {
-    SETERRQ(1,"Method cannot be called after KSPSetUp");
+    SETERRQ(1,"KSPSetMethod: Method cannot be called after KSPSetUp");
   }
   /* Get the function pointers for the iterative method requested */
   if (!__ITList) {KSPRegisterAll();}
   if (!__ITList) {
-    SETERRQ(1,"Could not acquire list of KSP methods"); 
+    SETERRQ(1,"KSPSetMethod: Could not acquire list of KSP methods"); 
   }
   r =  (int (*)(KSP))NRFindRoutine( __ITList, (int)itmethod, (char *)0 );
-  if (!r) {SETERRQ(1,"Unknown KSP method");}
+  if (!r) {SETERRQ(1,"KSPSetMethod: Unknown KSP method");}
   if (ctx->MethodPrivate) PETSCFREE(ctx->MethodPrivate);
   ctx->MethodPrivate = 0;
   return (*r)(ctx);

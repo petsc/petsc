@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.24 1995/06/13 02:24:27 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.25 1995/06/14 20:41:14 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -592,7 +592,7 @@ static int SNESSetFromOptions_LS(SNES snes)
     else if (!strcmp(ver,"cubic")) {
       SNESSetLineSearchRoutine(snes,SNESCubicLineSearch);
     }
-    else {SETERRQ(1,"Unknown line search?");}
+    else {SETERRQ(1,"SNESSetFromOptions_LS: Unknown line search");}
   }
   return 0;
 }

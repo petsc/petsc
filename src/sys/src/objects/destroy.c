@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.3 1995/05/05 11:42:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: destroy.c,v 1.4 1995/06/08 03:08:02 bsmith Exp bsmith $";
 #endif
 #include "ptscimpl.h"
 
@@ -20,7 +20,7 @@ int PetscDestroy(PetscObject obj)
 @*/
 int PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
 {
-  if (!obj) SETERRQ(1,"Null PETSc object");
+  if (!obj) SETERRQ(1,"PetscObjectGetComm: Null PETSc object");
   *comm = obj->comm;
   return 0;
 }

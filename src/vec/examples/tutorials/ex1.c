@@ -12,7 +12,7 @@ int main(int argc,char **argv)
 {
   int      n = 20, ierr;
   Scalar   one = 1.0, two = 2.0, three = 3.0, dots[3],dot;
-  double   norm;
+  double   norm,v;
   Vec      x,y,w,*z;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
@@ -45,37 +45,46 @@ int main(int argc,char **argv)
   MPIU_printf(MPI_COMM_WORLD,"All other values should be near zero\n");
   ierr = VecScale(&two,x); CHKERRA(ierr);
   ierr = VecNorm(x,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"VecScale %g\n",norm-2.0*sqrt((double) n));
+  v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  MPIU_printf(MPI_COMM_WORLD,"VecScale %g\n",v);
 
   ierr = VecCopy(x,w); CHKERRA(ierr);
   ierr = VecNorm(w,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"VecCopy  %g\n",norm-2.0*sqrt((double) n));
+  v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  MPIU_printf(MPI_COMM_WORLD,"VecCopy  %g\n",v);
 
   ierr = VecAXPY(&three,x,y); CHKERRA(ierr);
   ierr = VecNorm(y,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"VecAXPY %g\n",norm-8.0*sqrt((double) n));
+  v = norm-8.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  MPIU_printf(MPI_COMM_WORLD,"VecAXPY %g\n",v);
 
   ierr = VecAYPX(&two,x,y); CHKERRA(ierr);
   ierr = VecNorm(y,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"VecAXPY %g\n",norm-18.0*sqrt((double) n));
+  v = norm-18.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  MPIU_printf(MPI_COMM_WORLD,"VecAXPY %g\n",v);
 
   ierr = VecSwap(x,y); CHKERRA(ierr);
   ierr = VecNorm(y,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"VecSwap  %g\n",norm-2.0*sqrt((double) n));
+  v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  MPIU_printf(MPI_COMM_WORLD,"VecSwap  %g\n",v);
   ierr = VecNorm(x,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"VecSwap  %g\n",norm-18.0*sqrt((double) n));
+  v = norm-18.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  MPIU_printf(MPI_COMM_WORLD,"VecSwap  %g\n",v);
 
   ierr = VecWAXPY(&two,x,y,w); CHKERRA(ierr);
   ierr = VecNorm(w,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"VecWAXPY %g\n",norm-38.*sqrt((double) n));
+  v = norm-38.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  MPIU_printf(MPI_COMM_WORLD,"VecWAXPY %g\n",v);
 
   ierr = VecPMult(y,x,w); CHKERRA(ierr);
   ierr = VecNorm(w,&norm); CHKERRA(ierr); 
-  MPIU_printf(MPI_COMM_WORLD,"VecPMult %g\n",norm-36.0*sqrt((double) n));
+  v = norm-36.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  MPIU_printf(MPI_COMM_WORLD,"VecPMult %g\n",v);
 
   ierr = VecPDiv(x,y,w); CHKERRA(ierr);
   ierr = VecNorm(w,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"VecPDiv  %g\n",norm-9.0*sqrt((double) n));
+  v = norm-9.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
+  MPIU_printf(MPI_COMM_WORLD,"VecPDiv  %g\n",v);
   
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(y); CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: ksp.h,v 1.17 1995/06/07 16:31:37 bsmith Exp bsmith $ */
 
 #ifndef __KSP_PACKAGE
 #define __KSP_PACKAGE
@@ -66,6 +66,7 @@ extern int KSPSetFromOptions(KSP);
 extern int KSPDefaultCGMonitor(KSP,int,double, void * );
 extern int KSPDefaultCGConverged(KSP,int,double, void *);
 extern int KSPDefaultMonitor(KSP,int,double, void *);
+extern int KSPDefaultSMonitor(KSP,int,double, void *);
 extern int KSPDefaultConverged(KSP,int,double, void *);
 
 extern int KSPPrintHelp(KSP);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.13 1995/05/18 22:44:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.14 1995/06/08 03:07:34 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -14,9 +14,9 @@ static int KSPSetUp_CR(KSP itP)
 {
   int    ierr;
   if ( itP->right_pre ) {
-      SETERRQ(2,"Right-inverse preconditioning not supported for CR");
+    SETERRQ(2,"KSPSetUp_CR: no right-inverse preconditioning for CR");
   }
-  if ((ierr = KSPCheckDef( itP ))) return ierr;
+  ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
   ierr = KSPiDefaultGetWork( itP, 9  );
   return ierr;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.20 1995/05/25 23:04:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.21 1995/06/08 03:08:35 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -23,7 +23,7 @@ static int PCSetUp_BJacobi(PC pc)
   if (mat->type == MATMPIAIJ)        return PCSetUp_BJacobiMPIAIJ(pc);
   else if (mat->type == MATMPIROW)   return PCSetUp_BJacobiMPIRow(pc);
   else if (mat->type == MATMPIBDIAG) return PCSetUp_BJacobiMPIBDiag(pc);
-  SETERRQ(1,"Cannot use block Jacobi on this matrix type\n");
+  SETERRQ(1,"PCSetUp_BJacobi: Cannot use block Jacobi on this matrix type\n");
 }
 
 /* Default destroy, if it has never been setup */

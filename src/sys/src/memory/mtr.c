@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.20 1995/06/08 03:08:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.21 1995/06/14 14:49:10 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_STRING_H)
@@ -253,7 +253,10 @@ int TrFree( void *aa, int line, char *file )
   int ierr;
 
   /* Don't try to handle empty blocks */
-  if (!a) return 0;
+  if (!a) {
+    fprintf(stderr,"TrFree called from line %d in %s\n",line,file);
+    SETERRQ(1,"TrFree: trying to free null block");
+  }
 
   if (TRdebugLevel > 0) {
     if ((ierr = Trvalid(line,file))) return ierr;
@@ -266,7 +269,7 @@ int TrFree( void *aa, int line, char *file )
     /* Damaged header */
     fprintf( stderr, "Block at address %p is corrupted; cannot free;\n\
 may be block not allocated with TrMalloc or MALLOC\n", a );
-    SETERRQ(1,0);
+    SETERRQ(1,"TrFree: bad location or corrupted memory");
   }
   nend = (unsigned long *)(ahead + head->size);
   if (*nend != COOKIE_VALUE) {
@@ -281,7 +284,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 	else
 	    fprintf( stderr, 
 	         "Block allocated at %s[%d]\n", head->fname, - head->lineno );
-	SETERRQ(1,0);
+	  SETERRQ(1,"TrFree: memory already freed");
     }
     else {
 	/* Damaged tail */
@@ -291,7 +294,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 	head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
 	fprintf( stderr, 
 		"Block allocated in %s[%d]\n", head->fname, head->lineno );
-	SETERRQ(1,0);
+	SETERRQ(1,"TrFree: corrupted memory");
     }
   }
   /* Mark the location freed */

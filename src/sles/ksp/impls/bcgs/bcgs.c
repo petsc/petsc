@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.13 1995/06/08 03:07:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.14 1995/06/17 22:59:23 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -13,9 +13,8 @@ static char vcid[] = "$Id: bcgs.c,v 1.13 1995/06/08 03:07:35 bsmith Exp bsmith $
 static int KSPSetUp_BCGS(KSP itP)
 {
   int ierr;
-  if ((ierr = KSPCheckDef( itP ))) return ierr;
-  if (KSPiDefaultGetWork( itP, 7 )) return ierr;
-  return 0;;
+  ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
+  return KSPiDefaultGetWork( itP, 7 );
 }
 
 static int  KSPSolve_BCGS(KSP itP,int *its)
@@ -74,14 +73,12 @@ for (i=0; i<maxit; i++) {
 	/* t is 0.  if s is 0, then alpha v == r, and hence alpha p
 	   may be our solution.  Give it a try? */
 	VecDot(S,S,&d1);
-	if (d1 != 0.0) {
-	    SETERRQ(1,"KSPSolve_BCGS: Breakdown");
-	}
+	if (d1 != 0.0) {SETERRQ(1,"KSPSolve_BCGS: Breakdown");}
 	VecAXPY(&alpha,P,X);                     /*     x <- x + a p   */
 	if (history && hist_len > i+1) history[i+1] = 0.0;
 	MONITOR(itP,0.0,i+1);
 	break;
-	}
+    }
     omega = d1 / d2;                      /*     w <- (s't) / (t't) */
     VecAXPY(&alpha,P,X);                     /*     x <- x + a p   */
     VecAXPY(&omega,S,X);                     /*     x <- x + w s   */
@@ -94,12 +91,12 @@ for (i=0; i<maxit; i++) {
     if (history && hist_len > i + 1) history[i+1] = dp;
     MONITOR(itP,dp,i+1);
     if (CONVERGED(itP,dp,i+1)) break;
-    }
-if (i == maxit) i--;
-if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
+  }
+  if (i == maxit) i--;
+  if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
-KSPUnwindPre( itP, X, T );
-*its = RCONV(itP,i+1); return 0;
+  KSPUnwindPre( itP, X, T );
+  *its = RCONV(itP,i+1); return 0;
 }
 
 int KSPCreate_BCGS(KSP itP)

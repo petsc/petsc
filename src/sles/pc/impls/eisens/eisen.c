@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.19 1995/05/18 22:45:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.20 1995/06/08 03:08:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -39,7 +39,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
   int     ierr;
 
   if (pc->mat != pc->pmat) {
-    SETERRQ(1,"Eisenstat preconditioner cannot have different mat from pmat"); 
+    SETERRQ(1,"PCPre_Eisenstat: cannot have different mat from pmat"); 
   }
  
   /* swap shell matrix and true matrix */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.10 1995/05/29 19:59:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.11 1995/06/08 03:06:38 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -19,8 +19,8 @@ static char vcid[] = "$Id: index.c,v 1.10 1995/05/29 19:59:33 bsmith Exp bsmith 
 @*/
 int ISIsPermutation(IS is)
 {
-  if (!is) {SETERRQ(-1,"Null pointer");}
-  if (is->cookie != IS_COOKIE) {SETERRQ(-1,"Not indexset");}
+  if (!is) {SETERRQ(-1,"ISIsPermutation: Null pointer");}
+  if (is->cookie != IS_COOKIE) {SETERRQ(-1,"ISIsPermutation: Not indexset");}
   return is->isperm;
 }
 /*@
@@ -71,7 +71,7 @@ int ISDestroy(IS is)
 int ISInvertPermutation(IS is,IS *isout)
 {
   VALIDHEADER(is,IS_COOKIE);
-  if (!is->isperm) SETERRQ(1,"Cannot invert nonpermutation");
+  if (!is->isperm) SETERRQ(1,"ISInvertPermutation: not permutation");
   return (*is->ops->invertpermutation)(is,isout);
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.20 1995/05/25 22:46:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.21 1995/06/08 03:07:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -40,13 +40,13 @@ int KSPCheckDef( KSP itP )
 {
   VALIDHEADER(itP,KSP_COOKIE);
   if (!itP->vec_sol) {
-    SETERRQ(1,"Solution vector not specified for iterative method"); 
+    SETERRQ(1,"KSPCheckDef: Solution vector not specified"); 
   }
   if (!itP->vec_rhs) {
-    SETERRQ(2,"RHS vector not specified for iterative method"); 
+    SETERRQ(2,"KSPCheckDef: SRHS vector not specified"); 
   }
   if (!itP->B)   {
-    SETERRQ(4,"Preconditioner routine not specified"); 
+    SETERRQ(4,"KSPCheckDef: SPreconditioner routine not specified"); 
   }
   return 0;
 }
@@ -69,6 +69,20 @@ int KSPCheckDef( KSP itP )
 int KSPDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
 {
   MPIU_printf(itP->comm,"%d %14.12e \n",n,rnorm); return 0;
+}
+
+int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
+{
+  if (fnorm > 1.e-9 || fnorm == 0.0) {
+    MPIU_printf(ksp->comm, "iter = %d, Function norm %g \n",its,fnorm);
+  }
+  else if (fnorm > 1.e-11){
+    MPIU_printf(ksp->comm, "iter = %d, Function norm %5.3e \n",its,fnorm);
+  }
+  else {
+    MPIU_printf(ksp->comm, "iter = %d, Function norm < 1.e-11\n",its);
+  }
+  return 0;
 }
 
 /*ARGSUSED*/

@@ -75,7 +75,7 @@ int main( int argc, char **argv )
   OptionsGetDouble(0,"-par",&user.param);
   if (!OptionsHasName(0,"-cavity") && 
       (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
-    SETERRQ(1,"Lambda is out of range");
+    SETERRA(1,"Lambda is out of range");
   }
   N          = user.mx*user.my;
   
