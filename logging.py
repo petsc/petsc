@@ -1,10 +1,13 @@
 import args
 import sys
+import os
 
 # Ugly stuff to have curses called ONLY once, instead of for each
 # new Configure object created (and flashing the screen)
 global LineWidth
+global RemoveDirectory
 LineWidth = -1
+RemoveDirectory = os.path.join(os.getcwd(),'')
 
 # Compatibility fixes
 try:
@@ -199,8 +202,9 @@ class Logger(args.ArgumentProcessor):
     for writeAll, f in enumerate([self.out, self.log]):
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
         if not forceScroll and not writeAll and self.linewidth > 0:
+          global RemoveDirectory
           self.logBack()
-          f.write(msg[0:self.linewidth])
+          f.write(msg.replace(RemoveDirectory,'')[0:self.linewidth])
           f.write(''.join([' '] * (self.linewidth - len(msg))))
         else:
           if not debugSection is None and not debugSection == 'screen' and len(msg):

@@ -60,8 +60,15 @@ class Configure(config.base.Configure):
     lib = os.path.join(distutils.sysconfig.get_config_var('LIBDIR'), distutils.sysconfig.get_config_var('LDLIBRARY'))
     if not os.path.isfile(lib):
       lib = os.path.join(distutils.sysconfig.get_config_var('LIBPL'), distutils.sysconfig.get_config_var('LDLIBRARY'))
+      if not os.path.isfile(lib):
+        lib = os.path.join('/System','Library','Frameworks',distutils.sysconfig.get_config_var('LDLIBRARY'))
+        if not os.path.isfile(lib):
+          lib = os.path.join('/Library','Frameworks',distutils.sysconfig.get_config_var('LDLIBRARY'))
+          if not os.path.isfile(lib):
+            raise RuntimeError("Cannot locate Python dynamic libraries");
+        
     ext = distutils.sysconfig.get_config_var('SO')
-    lib = lib.split(ext)[0]+ext
+    if os.path.isfile(lib.split(ext)[0]+ext): lib = lib.split(ext)[0]+ext
 
     self.lib = [lib]
     if distutils.sysconfig.get_config_var('LIBS'):

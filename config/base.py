@@ -405,11 +405,20 @@ class Configure(script.Script):
   def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
     import sys
 
+    
     (out, err, ret) = self.outputCompile(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd)
     out = self.filterCompileOutput(out+'\n'+err)
     if ret or len(out):
       return (out, ret)
 
+
+
+    cleanup = cleanup and self.framework.cleanup
+    if shared:
+      cmd = self.getSharedLinkerCmd()
+    else:
+      cmd = self.getLinkerCmd()
+    linkerObj = self.linkerObj
     def report(command, status, output, error):
       if error or status:
         self.framework.log.write('Possible ERROR while running linker: '+error)
@@ -419,13 +428,8 @@ class Configure(script.Script):
         self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
         self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
       return
-
-    cleanup = cleanup and self.framework.cleanup
-    if shared:
-      cmd = self.getSharedLinkerCmd()
-    else:
-      cmd = self.getLinkerCmd()
     (out, err, ret) = Configure.executeShellCommand(cmd, checkCommand = report, log = self.framework.log)
+    self.linkerObj = linkerObj
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup:
       if os.path.isfile(self.linkerObj):os.remove(self.linkerObj)
@@ -526,7 +530,7 @@ class Configure(script.Script):
         for dir in dirs:
           if added:
 	    break
-	  for ext in ['a', 'so']:
+	  for ext in ['a', 'so','dylib']:
             filename = os.path.join(dir, 'lib'+lib+'.'+ext)
             if os.path.isfile(filename):
               libArgs.append(filename)
