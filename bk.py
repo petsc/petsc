@@ -8,12 +8,9 @@ import os
 import string
 import distutils.sysconfig
 
-def cygwinFix(file):
-  #  bad check for using cygwin!!
-  if distutils.sysconfig.get_config_var('SO') == '.so': return file
-  else:
-    if not file[0:6] == '/cygwin': return '/cygwin'+file
-    else:                          return file
+def convertPath(file):
+  import cygwinpath
+  return cygwinpath.convertToFullWin32Path(file)
 
 class TagBK (transform.Transform):
   def __init__(self, mode, sources = None, roots = None):
@@ -23,18 +20,19 @@ class TagBK (transform.Transform):
       self.roots = roots
     else:
       self.roots = fileset.FileSet([os.getcwd()])
+    return
 
   def getExistingFiles(self, set):
     files = []
     for root in self.roots:
       if not os.path.isdir(root): raise RuntimeError("Invalid BK source root directory: "+root)
-      files.extend(string.split(self.executeShellCommand('bk sfiles -g '+root)))
+      files.extend(string.split(self.executeShellCommand('bk sfiles -g '+convertPath(root))))
     return files
 
   def getNewFiles(self, set):
     newFiles = []
     for root in self.roots:
-      fileList = string.split(self.executeShellCommand('bk sfiles -ax '+root))
+      fileList = string.split(self.executeShellCommand('bk sfiles -ax '+convertPath(root)))
       for file in fileList:
         if (file[-1] == '~'): continue
         if (file[-1] == '#'): continue
@@ -45,8 +43,8 @@ class TagBK (transform.Transform):
     lockedFiles  = []
     changedFiles = []
     for root in self.roots:
-      lockedFiles.extend(string.split(self.executeShellCommand('bk sfiles -lg '+root)))
-      changedFiles.extend(string.split(self.executeShellCommand('bk sfiles -cg '+root)))
+      lockedFiles.extend(string.split(self.executeShellCommand('bk sfiles -lg '+convertPath(root))))
+      changedFiles.extend(string.split(self.executeShellCommand('bk sfiles -cg '+convertPath(root))))
     map(lockedFiles.remove, changedFiles)
     return lockedFiles
 
@@ -83,8 +81,7 @@ class BKOpen (action.Action):
     command = 'bk edit '
     for file in set.getFiles():
       self.debugPrint('Opening '+file, 4, 'bk')
-      file = cygwinFix(file)
-      command += ' '+file
+      command += ' '+convertPath(file)
     output = self.executeShellCommand(command, self.checkEdit)
     return output
 
@@ -125,13 +122,11 @@ class BKClose (action.Action):
     command = 'bk add '
     for file in set.getFiles():
       self.debugPrint('Adding '+file+' to version control', 3, 'bk')
-      file = cygwinFix(file)
-      command += ' '+file
+      command += ' '+convertPath(file)
     output = self.executeShellCommand(command, self.errorHandler)
     command = 'bk co -q '
     for file in set.getFiles(): 
-      file = cygwinFix(file)
-      command += ' '+file
+      command += ' '+convertPath(file)
     output = self.executeShellCommand(command, self.errorHandler)
     return output
 
@@ -141,13 +136,11 @@ class BKClose (action.Action):
     command = 'bk unedit '
     for file in set.getFiles():
       self.debugPrint('Reverting '+file, 4, 'bk')
-      file = cygwinFix(file)
-      command += ' '+file
+      command += ' '+convertPath(file)
     output = self.executeShellCommand(command, self.errorHandler)
     command = 'bk co -q '
     for file in set.getFiles(): 
-      file = cygwinFix(file)
-      command += ' '+file
+      command += ' '+convertPath(file)
     output = self.executeShellCommand(command, self.errorHandler)
     return output
 

@@ -1,19 +1,7 @@
 #!/usr/bin/env python
-import nargs
-import install.base
-import sourceDatabase
-import BSTemplates.sidlTargets
-import BSTemplates.compileTargets
-
-import atexit
-import cPickle
-import os
-import sys
-import traceback
-import re
-
 class Project:
   def __init__(self, name, url, root = None):
+    import os
     if root is None: root = os.path.abspath(os.getcwd())
     # Read-only variables
     self.name = name # Needs to be immutable since it is the hash key
@@ -66,6 +54,20 @@ class Project:
 
   def getPythonPath(self):
     return self.pythonPath
+
+import nargs
+import importer
+import install.base
+import sourceDatabase
+import BSTemplates.sidlTargets
+import BSTemplates.compileTargets
+
+import atexit
+import cPickle
+import os
+import sys
+import traceback
+import re
 
 class BS (install.base.Base):
   targets     = {}
