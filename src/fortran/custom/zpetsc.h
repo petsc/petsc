@@ -89,13 +89,16 @@ extern int   MPIR_FromPointer(void*);
 #define PetscToPointerComm(a)    MPIR_ToPointer(a)
 #define PetscFromPointerComm(a)  MPIR_FromPointer(a)
 
+#elif defined(HP_MPI)
+/* 
+  For HPUX with HP-MPI
+*/
+#define PetscToPointerComm(a)        MPI_Comm_f2c(*(MPI_Fint *)(&a))
+#define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
+
 #else
 #define PetscToPointerComm(a)        (a)
 #define PetscFromPointerComm(a) (int)(a)
-/* For HPUX with HP-MPI
-#define PetscToPointerComm(a)        MPI_Comm_f2c(*(MPI_Fint *)(&a))
-#define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
-*/
 #endif
 
 /* --------------------------------------------------------------------*/
