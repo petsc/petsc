@@ -885,22 +885,27 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
 
   if (!rank) {
-    char       spart_file[256],part_file[256];
-    PetscTruth exists;
-   
-    ierr = PetscOptionsGetString(PETSC_NULL,"-partition",spart_file,256,&flg);CHKERRQ(ierr);
-    ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
-    if (!exists) { /* try appending the number of processors */
-      sprintf(part_file,"part_vec.part.%d",size);
-      ierr = PetscStrcpy(spart_file,part_file);CHKERRQ(ierr);
+    if (size == 1) {
+      ierr = PetscMemzero(v2p,nnodes*sizeof(int));CHKERRQ(ierr);
     }
-    fptr = fopen(spart_file,"r");
-    if (!fptr) SETERRQ1(1,"Cannot open file %s\n",part_file);
-    for (inode = 0; inode < nnodes; inode++) {
-      fscanf(fptr,"%d\n",&node1); 
-      v2p[inode] = node1;
+    else {
+      char       spart_file[256],part_file[256];
+      PetscTruth exists;
+      
+      ierr = PetscOptionsGetString(PETSC_NULL,"-partition",spart_file,256,&flg);CHKERRQ(ierr);
+      ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
+      if (!exists) { /* try appending the number of processors */
+	sprintf(part_file,"part_vec.part.%d",size);
+	ierr = PetscStrcpy(spart_file,part_file);CHKERRQ(ierr);
+      }
+      fptr = fopen(spart_file,"r");
+      if (!fptr) SETERRQ1(1,"Cannot open file %s\n",part_file);
+      for (inode = 0; inode < nnodes; inode++) {
+	fscanf(fptr,"%d\n",&node1); 
+	v2p[inode] = node1;
+      }
+      fclose(fptr);
     }
-    fclose(fptr);
   }
   ierr = MPI_Bcast(v2p,nnodes,MPI_INT,0,comm);CHKERRQ(ierr);
   for (inode = 0; inode < nnodes; inode++) {

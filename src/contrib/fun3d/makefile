@@ -5,6 +5,9 @@
 ALL: flow
 
 USERCPPFLAGS     =   -DINTERLACING -DBLOCKING 
+
+# To run the benchmark case on the mesh called BigSample, uncomment
+# the following line and compile with BOPT=O_matsingle.
 #USERCPPFLAGS     =  -DCFL3D_AXIS -DINTERLACING -DBLOCKING 
 CFLAGS	         =
 FFLAGS	         =	 
@@ -23,6 +26,7 @@ EXAMPLESF        = user.F userJac.F
 FLOW_OBJSF       = user.o userJac.o
 #
 include $(PETSC_DIR)/bmake/common/base
+include $(PETSC_DIR)/bmake/common/test
 
 flow: flow.o $(FLOW_OBJSF) chkopts
 	-$(CLINKER) -o flow flow.o $(FLOW_OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_SNES_LIB)
@@ -45,9 +49,15 @@ runflow64:
 
 TESTEXAMPLES_8	 = flow.PETSc runflow1 runflow4 flow.rm
 
-include $(PETSC_DIR)/bmake/common/test
+DATAFILESPATH    = /homes/kaushik/FUN3DGrids/BigSample
 
+runbm1:
+	-@echo "Using datafiles from" ${DATAFILESPATH}
+	-@${MPIRUN} -np 1 flow -options_file ${DATAFILESPATH}/petsc.opt -mesh ${DATAFILESPATH}/uns3d.msh >  out.1.${HOST}
 
+runbm2:
+	-@echo "Using datafiles from" ${DATAFILESPATH}
+	-@${MPIRUN} -np 2 flow -options_file ${DATAFILESPATH}/petsc.opt -mesh ${DATAFILESPATH}/uns3d.msh -partition ${DATAFILESPATH}/part_vec.part.2 > out.2.${HOST}
 
-
-
+runbm4:
+	-@${MPIRUN} -np 4 flow -options_file ${DATAFILESPATH}/petsc.opt -mesh ${DATAFILESPATH}/uns3d.msh -partition ${DATAFILESPATH}/part_vec.part.4 > out.4.${HOST}
