@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.122 1998/04/26 02:16:58 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.123 1998/04/27 16:55:41 curfman Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -77,7 +77,7 @@ DLList KSPList = 0;
 /*@C
    KSPCreate - Creates the default KSP context.
 
-   Collective on KSP
+   Collective on MPI_Comm
 
    Input Parameter:
 .  comm - MPI communicator
@@ -112,6 +112,8 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->atol          = 1.e-50;
   ctx->divtol        = 1.e4;
 
+  ctx->rnorm               = 0.0;
+  ctx->its                 = 0;
   ctx->guess_zero          = 1;
   ctx->calc_sings          = 0;
   ctx->calc_res            = 0;
