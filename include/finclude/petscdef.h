@@ -132,7 +132,7 @@
 #define CHKMEMQ call chkmemfortran(__LINE__,__FILE__)
 #define CHKMEMA CHKMEMQ
 #else
-#define SETERRQ(n,s)
+#define SETERRQ(n,s,ierr)
 #define CHKERRQ(n)
 #define CHKMEMQ
 #define CHKMEMA
