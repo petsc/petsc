@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.14 1996/03/23 16:56:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: zsys.c,v 1.15 1996/03/23 17:15:03 curfman Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -53,18 +53,21 @@ extern "C" {
 #endif
 
 void plogdump_(CHAR name, int *__ierr,int len ){
+#if defined(PETSC_LOG)
   char *t1;
-
   FIXCHAR(name,len,t1);
   *__ierr = PLogDump(t1);
   FREECHAR(name,t1);
+#endif
 }
 void plogeventregister_(int *e,CHAR string,CHAR color,int *__ierr,int len1,
                         int len2){
+#if defined(PETSC_LOG)
   char *t1,*t2;
   FIXCHAR(string,len1,t1);
   FIXCHAR(color,len2,t2);
   *__ierr = PLogEventRegister(e,t1,t2);
+#endif
 }
 
 void petscobjectgetname(PetscObject obj, CHAR name, int *__ierr, int len)
@@ -98,25 +101,31 @@ void petscattachdebugger_(int *__ierr){
 }
 
 void plogallbegin_(int *__ierr){
+#if defined(PETSC_LOG)
   *__ierr = PLogAllBegin();
+#endif
 }
 
 void plogdestroy_(int *__ierr){
+#if defined(PETSC_LOG)
   *__ierr = PLogDestroy();
+#endif
 }
 
 void plogbegin_(int *__ierr){
+#if defined(PETSC_LOG)
   *__ierr = PLogBegin();
+#endif
 }
 
 void plogeventbegin_(int e,int o1,int o2,int o3,int o4){
+#if defined(PETSC_LOG)
   PetscObject t1,t2,t3,t4;
   if (o1) t1 = (PetscObject) MPIR_ToPointer(*(int*)(o1)); else t1 = 0;
   if (o2) t2 = (PetscObject) MPIR_ToPointer(*(int*)(o2)); else t2 = 0;
   if (o3) t3 = (PetscObject) MPIR_ToPointer(*(int*)(o3)); else t3 = 0;
   if (o4) t4 = (PetscObject) MPIR_ToPointer(*(int*)(o4)); else t4 = 0;
 
-#if defined(PETSC_LOG)
   if (_PLB) (*_PLB)(e,1,t1,t2,t3,t4);
 #if defined(HAVE_MPE)
   if (UseMPE && MPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e,0,"");
@@ -125,12 +134,12 @@ void plogeventbegin_(int e,int o1,int o2,int o3,int o4){
 }
 
 void plogeventend_(int e,int o1,int o2,int o3,int o4){
+#if defined(PETSC_LOG)
   PetscObject t1,t2,t3,t4;
   if (o1) t1 = (PetscObject) MPIR_ToPointer(*(int*)(o1)); else t1 = 0;
   if (o2) t2 = (PetscObject) MPIR_ToPointer(*(int*)(o2)); else t2 = 0;
   if (o3) t3 = (PetscObject) MPIR_ToPointer(*(int*)(o3)); else t3 = 0;
   if (o4) t4 = (PetscObject) MPIR_ToPointer(*(int*)(o4)); else t4 = 0;
-#if defined(PETSC_LOG)
   if (_PLE) (*_PLE)(e,1,t1,t2,t3,t4);
 #if defined(HAVE_MPE)
   if (UseMPE && MPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e+1,0,"");
@@ -162,7 +171,9 @@ void petscerror_(int *number,CHAR message,int *__ierr,int len)
 
 void plogstagepop_(int *__ierr )
 {
+#if defined(PETSC_LOG)
   *__ierr = PLogStagePop();
+#endif
 }
 double petscgettime_()
 { 
@@ -202,7 +213,7 @@ void petscrandomdestroy_(PetscRandom *r, int *__ierr ){
 /* ----------------------------------------------------------------*/
 /*    This code was taken from the MPICH implementation of MPI.    */
 /*
- *  $Id: zsys.c,v 1.14 1996/03/23 16:56:55 bsmith Exp curfman $
+ *  $Id: zsys.c,v 1.15 1996/03/23 17:15:03 curfman Exp curfman $
  *
  *  (C) 1994 by Argonne National Laboratory and Mississipi State University.
  *      See COPYRIGHT in top-level directory.
