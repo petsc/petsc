@@ -2,6 +2,8 @@
 
 ALL: lib 
 
+CFLAGS    =
+FFLAGS    =
 SOURCEC   = vsilo.c
 SOURCEH   = vsilo.h
 OBJSC     = ${SOURCEC:.c=.o}
