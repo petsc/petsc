@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isdiff.c,v 1.4 1997/10/19 03:22:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isdiff.c,v 1.5 1998/04/13 17:25:58 bsmith Exp curfman $";
 #endif
 
 #include "is.h"                    /*I "is.h"  I*/
@@ -10,25 +10,25 @@ static char vcid[] = "$Id: isdiff.c,v 1.4 1997/10/19 03:22:23 bsmith Exp bsmith 
 #undef __FUNC__  
 #define __FUNC__ "ISDifference"
 /*@
-     ISDifference - Computes the difference between two index sets.
+   ISDifference - Computes the difference between two index sets.
 
-  Input Parameter:
-.   is1 - first index, to have items removed from it
-.   is2 - index values to be removed
+   Collective on IS
 
-  Output Parameters:
-.   isout - is1 - is2
+   Input Parameter:
++  is1 - first index, to have items removed from it
+-  is2 - index values to be removed
 
-  Collective over IS
+   Output Parameters:
+.  isout - is1 - is2
 
-  Notes: Negative values are removed from the lists. is2 may have values
-         that are not in is1. This requires O(imax-imin) memory and 
-         O(imax-imin) work, where imin and imax are the bounds on the 
-         indices in is1.
+  Notes:
+  Negative values are removed from the lists. is2 may have values
+  that are not in is1. This requires O(imax-imin) memory and O(imax-imin)
+  work, where imin and imax are the bounds on the indices in is1.
 
 .seealso: ISDestroy(), ISView(), ISSum()
 
-.keywords: Index set difference
+.keywords: Index set, difference
 @*/
 int ISDifference(IS is1,IS is2, IS *isout)
 {
@@ -95,20 +95,21 @@ int ISDifference(IS is1,IS is2, IS *isout)
 #undef __FUNC__  
 #define __FUNC__ "ISSum"
 /*@
-     ISSum - Computes the sum (union) of two index sets.
+   ISSum - Computes the sum (union) of two index sets.
 
-  Input Parameter:
-.   is1 - first index set
-.   is2 - index values to be added
+   Collective on IS
 
-  Output Parameters:
-.   isout - is1 + is2 The index set is2 is appended to is1 removing duplicates
+   Input Parameter:
++  is1 - first index set
+-  is2 - index values to be added
 
-  Collective over IS
+   Output Parameters:
+.  isout - is1 + is2 The index set is2 is appended to is1 removing duplicates
 
-  Notes: Negative values are removed from the lists. This requires O(imax-imin) 
-         memory and O(imax-imin) work, where imin and imax are the bounds on the 
-         indices in is1 and is2.
+   Notes:
+   Negative values are removed from the lists. This requires O(imax-imin) 
+   memory and O(imax-imin) work, where imin and imax are the bounds on the 
+   indices in is1 and is2.
 
 .seealso: ISDestroy(), ISView(), ISDifference()
 

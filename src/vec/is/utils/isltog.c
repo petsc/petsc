@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.20 1998/03/12 23:15:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.21 1998/04/13 17:25:58 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -11,10 +11,11 @@ static char vcid[] = "$Id: isltog.c,v 1.20 1998/03/12 23:15:10 bsmith Exp bsmith
 /*@C
     ISLocalToGlobalMappingView - View a local to global mapping
 
+    Not Collective
+
     Input Parameters:
 .   ltog - local to global mapping
-
-   Not Collective
+.   viewer - viewer
 
 .keywords: IS, local-to-global mapping, create
 
@@ -39,13 +40,13 @@ int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,Viewer viewer)
     ISLocalToGlobalMappingCreateIS - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
 
+    Collective on IS
+
     Input Parameters:
 .   is - index set containing the global numbers for each local
 
     Output Parameters:
 .   mapping - new mapping data structure
-
-   Collective on IS
 
 .keywords: IS, local-to-global mapping, create
 
@@ -74,15 +75,15 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
     ISLocalToGlobalMappingCreate - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
 
+    Collective on MPI_Comm
+
     Input Parameters:
-.   comm - MPI communicator of size 1.
++   comm - MPI communicator of size 1.
 .   n - the number of local elements
-.   indices - the global index for each local element
+-   indices - the global index for each local element
 
     Output Parameters:
 .   mapping - new mapping data structure
-
-    Collective on MPI_Comm
 
 .keywords: IS, local-to-global mapping, create
 
@@ -117,10 +118,10 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n, int *indices,ISLocalToGlobal
    ISLocalToGlobalMappingDestroy - Destroys a mapping between a local (0 to n)
    ordering and a global parallel ordering.
 
+   Collective on ISLocalToGlobalMapping
+
    Input Parameters:
 .  mapping - mapping data structure
-
-   Collective on ISLocalToGlobalMapping
 
 .keywords: IS, local-to-global mapping, destroy
 
@@ -146,14 +147,14 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
     a new index set using the global numbering defined in an ISLocalToGlobalMapping
     context.
 
+    Not collective
+
     Input Parameters:
-.   mapping - mapping between local and global numbering
-.   is - index set in local numbering
++   mapping - mapping between local and global numbering
+-   is - index set in local numbering
 
     Output Parameters:
 .   newis - index set in global numbering
-
-    Not collective
 
 .keywords: IS, local-to-global mapping, apply
 
@@ -188,17 +189,18 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
    ISLocalToGlobalMappingApply - Takes a list of integers in a local numbering
    and converts them to the global numbering.
 
+   Not collective
+
    Input Parameters:
-.  mapping - the local to global mapping context
++  mapping - the local to global mapping context
 .  N - number of integers
-.  in - input indices in local numbering
+-  in - input indices in local numbering
 
    Output Parameter:
 .  out - indices in global numbering
 
-   Not collective
-
-   Notes: The in and out array may be identical
+   Notes: 
+   The in and out array parameters may be identical.
 
 .seealso: ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy(), 
           ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc(),
@@ -263,24 +265,25 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
     ISGlobalToLocalMappingApply - Takes a list of integers in global numbering
       and returns the local numbering.
 
+    Not collective
+
     Input Parameters:
-.   mapping - mapping between local and global numbering
++   mapping - mapping between local and global numbering
 .   type - IS_GTOLM_MASK - replaces global indices with no local value with -1
            IS_GTOLM_DROP - drops the indices with no local value from the output list
 .   n - number of global indices to map
-.   idx - global indices to map
+-   idx - global indices to map
 
     Output Parameters:
-.   nout - number of indices in output array (if type == IS_GTOLM_MASK then nout = n)
-.   idxout - local index of each global index, one must pass in an array long enough 
++   nout - number of indices in output array (if type == IS_GTOLM_MASK then nout = n)
+-   idxout - local index of each global index, one must pass in an array long enough 
              to hold all the indices. You can call ISGlobalToLocalMappingApply() with 
              idxout == PETSC_NULL to determine the required length (returned in nout)
              and then allocate the required space and call ISGlobalToLocalMappingApply()
              a second time to set the values.
 
-    Not collective
-
-    Notes: Either nout or idxout may be PETSC_NULL. idx and idxout may be identical.
+    Notes:
+    Either nout or idxout may be PETSC_NULL. idx and idxout may be identical.
 
 .keywords: IS, global-to-local mapping, apply
 

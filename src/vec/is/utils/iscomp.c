@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscomp.c,v 1.14 1997/10/19 03:22:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscomp.c,v 1.15 1998/04/13 17:25:58 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -8,18 +8,17 @@ static char vcid[] = "$Id: iscomp.c,v 1.14 1997/10/19 03:22:23 bsmith Exp bsmith
 #undef __FUNC__  
 #define __FUNC__ "ISEqual"
 /*@C
-  ISEqual  - Compares if two index sets have the same set of indices.
+   ISEqual  - Compares if two index sets have the same set of indices.
+
+   Not Collective (Hmmm, that is a little strange, some processors may return true, others false)
 
    Input Parameters:
 .  is1, is2 - The index sets being compared
 
    Output Parameters:
-.  flg - output flag, either
-$     PETSC_TRUE if both index sets have the same indices;
-$     PETSC_FALSE if either the index sets differ by size or 
-$          by the set of indices.
-
-   Not Collective (Hmmm, that is a little strange, some processors may return true others false)
+.  flg - output flag, either PETSC_TRUE (if both index sets have the
+         same indices), or PETSC_FALSE if the index sets differ by size 
+         or by the set of indices)
 
    Note: 
    This routine sorts the contents of the index sets before
