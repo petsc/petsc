@@ -30,7 +30,7 @@ int MatGetInertia_SeqSBAIJ(Mat A,Mat *F,int *nneig,int *nzero,int *npos)
   dd       = fact_ptr->a;
   *nneig = 0;
   for (i=0; i<m; i++){
-    if (dd[i] < 0.0) (*nneig)++;
+    if (PetscRealPart(dd[i]) < 0.0) (*nneig)++;
   }
   
   PetscFunctionReturn(0);
