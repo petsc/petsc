@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.289 1998/09/25 03:16:56 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.290 1998/10/05 19:05:44 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3596,9 +3596,9 @@ be employed. \sindex{matrix-free Jacobians} \findex{PCSHELL}
 The user can create a matrix-free context for use within SNES with 
 the routine
 \begin{verbatim}
-   ierr = SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *mat);
+   ierr = MatCreateSNESFDMF(SNES snes,Vec x, Mat *mat);
 \end{verbatim}
-\findex{SNESDefaultMatrixFreeMatCreate()}
+\findex{MatCreateSNESFDMF()}
 This routine creates the data structures needed for the matrix-vector 
 products that arise within Krylov space iterative methods~\cite{brownsaad:90}
 by employing the matrix type {\tt MATSHELL}, \findex{MATSHELL}
@@ -3611,11 +3611,12 @@ option {\tt -snes\_mf\_operator}. \findex{-snes_mf_operator}
 The user can set two parameters to control the Jacobian-vector
 product approximation with the command
 \begin{verbatim}
-   ierr = SNESSetMatrixFreeParameters(SNES snes,double rerror,double umin);
+   ierr = MatSNESFDMFSetParameters(Mat mat,double rerror,double umin);
 \end{verbatim}
-\findex{SNESSetMatrixFreeParameters()}
+\findex{SNESMatrixFreeSetParameters()}
 The parameter {\tt rerror} should be set to the square root of the 
-relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $ , which assumes
+relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $ , 
+which assumes
 that the functions are evaluated to full double precision accuracy. 
 The 
 second parameter, {\tt umin} (or $u_{min}$), is a bit more involved; its default is 
@@ -3664,7 +3665,7 @@ possible, as demonstrated by the example,
 Jacobian        & Create matrix with MatCreate(). $ ^* $ & Create matrix with MatCreateShell().\\
 (or Hessian)    & Assemble matrix with user-defined     & Use MatShellSetOperation() to set\\
 Matrix          & routine. $ ^\dagger $                         & various matrix actions.\\
-                &                                    & Or use SNESDefaultMatrixFreeMatCreate().\\
+                &                                    & Or use MatCreateSNESFDMF().\\
 & & \\ \hline
 & & \\
 Preconditioning  & Create matrix with MatCreate(). $ ^* $ & Use SNESGetSLES() and SLESGetPC() \\
