@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.6 1995/10/26 22:38:53 curfman Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.7 1995/11/21 03:01:50 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -129,10 +129,10 @@ void matconvert_(Mat mat,MatType *newtype,Mat *M, int *__ierr )
   *(int*) M = MPIR_FromPointer(mm);
 }
 
-void matcreateseqdense_(MPI_Comm comm,int *m,int *n,Mat *newmat, int *__ierr )
+void matcreateseqdense_(MPI_Comm comm,int *m,int *n,Scalar *data,Mat *newmat,int *__ierr )
 {
   Mat mm;
-  *__ierr = MatCreateSeqDense((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*m,*n,&mm);
+  *__ierr = MatCreateSeqDense((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*m,*n,data,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
