@@ -1,5 +1,5 @@
 !
-!  "$Id: fsolvebaij.F,v 1.4 1998/10/07 22:04:14 bsmith Exp bsmith $";
+!  "$Id: fsolvebaij.F,v 1.5 1998/10/08 17:55:35 bsmith Exp bsmith $";
 !
 !    Fortran kernel for sparse triangular solve in the BAIJ matrix format
 ! This ONLY works for factorizations in the NATURAL ORDERING, i.e.
@@ -9,7 +9,8 @@
       implicit none
 #include "include/finclude/petscdef.h"
 
-      Scalar           x(0:*),a(0:*),b(0:*)
+      MatScalar        a(0:*)
+      Scalar           x(0:*),b(0:*)
       integer          n, ai(0:*),aj(0:*),adiag(0:*)
 
       integer          i,j,jstart,jend,idx,ax,jdx
@@ -92,7 +93,8 @@
       implicit none
 #include "include/finclude/petscdef.h"
 
-      Scalar           x(0:*),a(0:*),b(0:*),w(0:*)
+      MatScalar        a(0:*)
+      Scalar           x(0:*),b(0:*),w(0:*)
       integer          n, ai(0:*),aj(0:*),adiag(0:*)
 
       integer          i,j,jstart,jend,idx,ax,jdx,kdx
@@ -190,7 +192,8 @@
       implicit none
 #include "include/finclude/petscdef.h"
 
-      Scalar           x(0:*),a(0:*),b(0:*),w(0:*)
+      MatScalar        a(0:*)
+      Scalar           x(0:*),b(0:*),w(0:*)
       integer          n, ai(0:*),aj(0:*),adiag(0:*),ii,jj
 
       integer          i,j,jstart,jend,idx,ax,jdx,kdx,nn

@@ -1,8 +1,9 @@
 !
-!  "$Id: fsolve.F,v 1.8 1998/04/15 18:03:16 balay Exp balay $";
+!  "$Id: fsolve.F,v 1.9 1998/07/13 18:15:00 balay Exp bsmith $";
 !
 !    Fortran kernel for sparse triangular solve in the AIJ matrix format
-!
+! This ONLY works for factorizations in the NATURAL ORDERING, i.e.
+! with MatSolve_SeqAIJ_NaturalOrdering()
 !
       subroutine FortranSolveAIJ(n,x,ai,aj,adiag,aa,b)
       implicit none
