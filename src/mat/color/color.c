@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.22 1997/08/22 15:14:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.23 1997/09/24 21:44:27 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -308,7 +308,6 @@ int MatColoringGetName(MatColoring meth,char **name)
   return 0;
 }
 
-#include "src/mat/matimpl.h"
 extern int MatAdjustForInodes(Mat,IS *,IS *);
 
 #undef __FUNC__  
