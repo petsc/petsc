@@ -409,6 +409,9 @@ class Configure(config.base.Configure):
        - There needs to be a test that checks that the functionality is actually working'''
     if (self.framework.argDB['PETSC_ARCH_BASE'].startswith('osf')  or self.framework.argDB['PETSC_ARCH_BASE'].startswith('hpux') or self.framework.argDB['PETSC_ARCH_BASE'].startswith('aix')) and not config.setCompilers.Configure.isGNU(self.framework.argDB['CC']):
       return
+    if not self.framework.argDB['with-shared']:
+      self.framework.logPrint("Skipping checking PIC options since shared libraries are turned off")
+      return
     languages = ['C']
     if 'CXX' in self.framework.argDB:
       languages.append('C++')
