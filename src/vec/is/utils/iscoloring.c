@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iscoloring.c,v 1.7 1997/04/10 00:00:07 bsmith Exp balay $";
+static char vcid[] = "$Id: iscoloring.c,v 1.8 1997/05/23 18:39:57 balay Exp curfman $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -62,17 +62,17 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "ISColoringCreate" /* ADIC Ignore */
-/*@
+/*@C
     ISColoringCreate - From lists (provided by each processor) of
-        colors for each node, generate a ISColoring
+    colors for each node, generate a ISColoring
 
-  Input Parameters:
+    Input Parameters:
 .   comm - communicator for the processors creating the coloring
 .   n - number of nodes on this processor
 .   colors - array containing the colors for this processor, color
              numbers begin at 0.
 
-  Output Parameter:
+    Output Parameter:
 .   iscoloring - the resulting coloring data structure
 
 .seealso: MatColoringCreate(), ISColoringView(),ISColoringDestroy()

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zis.c,v 1.8 1996/10/03 19:50:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zis.c,v 1.9 1997/01/12 04:31:37 bsmith Exp curfman $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -21,6 +21,8 @@ static char vcid[] = "$Id: zis.c,v 1.8 1996/10/03 19:50:57 bsmith Exp bsmith $";
 #define isequal_               ISEQUAL
 #define isinvertpermutation_   ISINVERTPERMUTATION
 #define isview_                ISVIEW
+#define iscoloringcreate_      ISCOLORINGCREATE
+
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define isview_                isview
 #define isinvertpermutation_   isinvertpermutation
@@ -38,6 +40,7 @@ static char vcid[] = "$Id: zis.c,v 1.8 1996/10/03 19:50:57 bsmith Exp bsmith $";
 #define isidentity_            isidentity
 #define issorted_              issorted
 #define isequal_               isequal
+#define iscoloringcreate_      iscoloringcreate
 #endif
 
 #if defined(__cplusplus)
@@ -145,6 +148,12 @@ void iscreatestride_(MPI_Comm comm,int *n,int *first,int *step,
 void isdestroy_(IS is, int *__ierr ){
   *__ierr = ISDestroy((IS)PetscToPointer( *(int*)(is) ));
   PetscRmPointer(*(int*)(is) );
+}
+
+void iscoloringcreate_(MPI_Comm comm,int *n,int *colors,ISColoring *iscoloring, int *__ierr ){
+*__ierr = ISColoringCreate(
+	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*n,colors,
+	(ISColoring* )PetscToPointer( *(int*)(iscoloring) ));
 }
 
 #if defined(__cplusplus)
