@@ -178,7 +178,7 @@ class Configure(config.base.Configure):
     import time
     self.addMakeMacro('CONFIGURE_RUN_TIME',time.ctime(time.time()))
     args = filter(lambda a: not a.endswith('-configModules=PETSc.Configure') , self.framework.clArgs)
-    self.addMakeMacro('CONFIGURE_OPTIONS',str(args))    
+    self.addMakeMacro('CONFIGURE_OPTIONS',str(args).replace('\'',''))    
       
 #-----------------------------------------------------------------------------------------------------
 
