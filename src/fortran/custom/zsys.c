@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.90 2001/04/19 15:44:42 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.91 2001/04/19 17:27:08 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
@@ -56,6 +56,8 @@
 #define petscmatlabengineget_         PETSCMATLABENGINEGET
 #define petscmatlabengineputarray_    PETSCMATLABENGINEPUTARRAY
 #define petscmatlabenginegetarray_    PETSCMATLABENGINEGETARRAY
+#define petscgetresidentsetsize_      PETSCGETRESIDENTSETSIZE
+#define petsctrspace_                 PETSCTRSPACE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscfopen_                   petscfopen
 #define petscfclose_                  petscfclose
@@ -108,6 +110,8 @@
 #define petscfptrap_               petscfptrap
 #define petscgetcputime_           petscgetcputime
 #define petscgettime_              petscgettime
+#define petscgetresidentsetsize_   petscgetresidentsetsize
+#define petsctrspace_              petsctrspace
 #endif
 
 EXTERN_C_BEGIN
@@ -124,6 +128,17 @@ EXTERN_C_BEGIN
       call VecGetArray(y,v_y,i_y,ierr)
     endif
 */
+
+void PETSC_STDCALL petsctrspace_(PetscLogDouble *space,PetscLogDouble *fr,PetscLogDouble *maxs, int *ierr )
+{
+  *ierr = PetscTrSpace(space,fr,maxs);
+}
+
+void PETSC_STDCALL petscgetresidentsetsize_(PetscLogDouble *foo, int *ierr )
+{
+  *ierr = PetscGetResidentSetSize(foo);
+}
+
 void PETSC_STDCALL petscoffsetfortran_(Scalar *x,Scalar *y,int *shift,int *ierr)
 {
   *ierr = 0;
