@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.20 1995/07/29 02:11:02 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.21 1995/07/29 04:09:45 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -26,14 +26,18 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
     kctx->lresid_last = rnorm;
   }
   convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
-  if (convinfo) return convinfo;
+  if (convinfo) {
+    PLogInfo((PetscObject)snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
+    return convinfo;
+  }
 
   /* Determine norm of solution */
   ierr = KSPBuildSolution(ksp,0,&x); CHKERRQ(ierr);
   ierr = VecNorm(x,&norm); CHKERRQ(ierr);
   if (norm >= neP->delta) {
+    PLogInfo((PetscObject)snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
     PLogInfo((PetscObject)snes,
-      "Ending linear iteration early, delta %g length %g\n",neP->delta,norm);
+      "SNES: Ending linear iteration early, delta %g length %g\n",neP->delta,norm);
     return 1; 
   }
   return(0);
