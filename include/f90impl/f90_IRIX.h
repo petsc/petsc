@@ -1,4 +1,4 @@
-/* $Id: f90_IRIX.h,v 1.6 2000/07/27 20:02:53 balay Exp balay $ */
+/* $Id: f90_IRIX.h,v 1.7 2000/07/27 20:15:52 balay Exp balay $ */
 
 #if !defined(__F90_IRIX_H)
 #define __F90_IRIX_H
@@ -10,9 +10,8 @@ typedef struct {
 } tripple;
  
 /* this might not be used in older version of compilers */
-#define F90_COOKIE   -1744830464
+#define F90_COOKIE     -1744830464
 #define F90_INT_ID     33562624
-#define F90_LONG_ID    35667976
 #define F90_DOUBLE_ID  52445192
 #define F90_COMPLEX_ID 69238800
 
