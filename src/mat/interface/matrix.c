@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.363 2000/05/05 22:15:29 balay Exp bsmith $*/
+/*$Id: matrix.c,v 1.364 2000/05/12 16:43:02 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -1370,12 +1370,12 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   if (flg) {
     ierr = OptionsHasName(PETSC_NULL,"-mat_view_contour",&flg);CHKERRQ(ierr);
     if (flg) {
-      ViewerPushFormat(VIEWER_DRAW_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+      ierr = ViewerPushFormat(VIEWER_DRAW_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
     }
     ierr = MatView(*fact,VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     ierr = ViewerFlush(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     if (flg) {
-      ViewerPopFormat(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+      ierr = ViewerPopFormat(VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
