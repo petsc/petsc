@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.20 1999/01/15 19:59:44 balay Exp balay $ 
+# $Id: base.site,v 1.21 1999/01/15 20:47:06 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -25,7 +25,7 @@ LAPACK_LIB     = -lessl /home/bsmith/libraries/blaslapack/lapack_rs6000_p4.a
 #MPI_LIB        = -L/home/petsc/mpich-1.1.1/lib/rs6000/ch_p4 -lmpich
 #MPI_INCLUDE    = -I/home/petsc/mpich-1.1.1/include -I/home/petsc/mpich-1.1.1/lib/rs6000/ch_p4
 #MPIRUN         = /home/petsc/mpich-1.1.1/lib/rs6000/ch_p4/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
-MPI_HOME       = /home/MPI/releases/mpich-1.1.2
+MPI_HOME       = /home/petsc/mpich-1.1.2-beta
 MPI_BUILD_HOME = ${MPI_HOME}/build/rs6000/ch_p4
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich -lbsd
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
