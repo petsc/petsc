@@ -640,22 +640,20 @@ PetscErrorCode MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],Pe
 
   for (i=0; i<m; i++) {
     for (j=0; j<3-sdim; j++) dxm++;  
-    if (*dxm++ < 0) tmp = PETSC_MIN_INT;
-    else            tmp = dxm[-1] - starts[0];
+    tmp = *dxm++ - starts[0];
     for (j=0; j<dim-1; j++) {
-      if (*dxm++ < 0 || tmp < 0) tmp = PETSC_MIN_INT;
-      else              tmp = tmp*dims[j] + dxm[-1] - starts[j+1];
+      if ((*dxm++ - starts[j+1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
+      else                                       tmp = tmp*dims[j] + dxm[-1] - starts[j+1];
     }
     if (mat->stencil.noc) dxm++;
     jdxm[i] = tmp;
   }
   for (i=0; i<n; i++) {
     for (j=0; j<3-sdim; j++) dxn++;  
-    if (*dxn++ < 0) tmp = PETSC_MIN_INT;
-    else            tmp = dxn[-1] - starts[0];
+    tmp = *dxn++ - starts[0];
     for (j=0; j<dim-1; j++) {
-      if (*dxn++ < 0 || tmp < 0) tmp = PETSC_MIN_INT;
-      else                       tmp = tmp*dims[j] + dxn[-1] - starts[j+1];
+      if ((*dxn++ - starts[j+1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
+      else                                       tmp = tmp*dims[j] + dxn[-1] - starts[j+1];
     }
     if (mat->stencil.noc) dxn++;
     jdxn[i] = tmp;
@@ -751,7 +749,8 @@ PetscErrorCode MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil id
     for (j=0; j<3-sdim; j++) dxm++;  
     tmp = *dxm++ - starts[0];
     for (j=0; j<sdim-1; j++) {
-      tmp = tmp*dims[j] + *dxm++ - starts[j+1];
+      if ((*dxm++ - starts[j+1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
+      else                                      tmp = tmp*dims[j] + dxm[-1] - starts[j+1];
     }
     dxm++;
     jdxm[i] = tmp;
@@ -760,7 +759,8 @@ PetscErrorCode MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil id
     for (j=0; j<3-sdim; j++) dxn++;  
     tmp = *dxn++ - starts[0];
     for (j=0; j<sdim-1; j++) {
-      tmp = tmp*dims[j] + *dxn++ - starts[j+1];
+      if ((*dxn++ - starts[j+1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
+      else                                       tmp = tmp*dims[j] + dxn[-1] - starts[j+1];
     }
     dxn++;
     jdxn[i] = tmp;
