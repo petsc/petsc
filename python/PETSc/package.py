@@ -3,7 +3,7 @@ import config.base
 import os
 import re
 import sys
-
+import md5
 
 class Package(config.base.Configure):
   def __init__(self, framework):
@@ -45,6 +45,23 @@ class Package(config.base.Configure):
     # location of libraries and includes in packages directory tree
     self.libdir       = 'lib'
     self.includedir   = 'include'
+    return
+
+  def getChecksum(self,source, chunkSize = 1024*1024):  
+    '''Return the md5 checksum for a given file, which may also be specified by its filename
+       - The chunkSize argument specifies the size of blocks read from the file'''
+    if isinstance(source, file):
+      f = source
+    else:
+      f = file(source)
+    m = md5.new()
+    size = chunkSize
+    buf  = f.read(size)
+    while buf:
+      m.update(buf)
+      buf = f.read(size)
+    f.close()
+    return m.hexdigest()
     
   def __str__(self):
     '''Prints the location of the packages includes and libraries'''
@@ -171,7 +188,7 @@ class Package(config.base.Configure):
     incls        = []
     for l in self.deps:
       if hasattr(l,'dlib'):    libs  += l.dlib
-      if hasattr(l,self.includedir): incls += l.include
+      if hasattr(l,'include'): incls += l.include
       
     for location, lib,incl in self.generateGuesses():
       if not isinstance(lib, list): lib = [lib]

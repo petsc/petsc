@@ -4,7 +4,6 @@ import user
 import config.base
 import os
 import PETSc.package
-import md5
 
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
@@ -18,22 +17,6 @@ class Configure(PETSc.package.Package):
     self.libdir        = ''
     return
 
-  def getChecksum(self,source, chunkSize = 1024*1024):  
-    '''Return the md5 checksum for a given file, which may also be specified by its filename
-       - The chunkSize argument specifies the size of blocks read from the file'''
-    if isinstance(source, file):
-      f = source
-    else:
-      f = file(source)
-    m = md5.new()
-    size = chunkSize
-    buf  = f.read(size)
-    while buf:
-      m.update(buf)
-      buf = f.read(size)
-    f.close()
-    return m.hexdigest()
-
   def generateLibList(self,dir):
     alllibs = []
     alllibs.append(os.path.join(dir,'libblacs.a'))
@@ -45,6 +28,8 @@ class Configure(PETSc.package.Package):
     installDir = os.path.join(blacsDir, self.arch.arch)
 
     # Configure and build BLACS
+    if os.path.isfile(os.path.join(blacsDir,'Bmake.Inc')):
+      output  = config.base.Configure.executeShellCommand('cd '+blacsDir+'; rm -f Bmake.Inc', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(blacsDir,'Bmake.Inc'),'w')
     g.write('SHELL     = /bin/sh\n')
     g.write('COMMLIB   = MPI\n')

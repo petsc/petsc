@@ -58,13 +58,14 @@ class Configure(PETSc.package.Package):
     
     (mpiDir,dummy) = os.path.split(self.mpi.lib[0])
     (mpiDir,dummy) = os.path.split(mpiDir)
-    args.append('--with-mpi="'+mpiDir+'"')    
+    args.append('--with-mpi="'+mpiDir+'"') #better way to get mpiDir?
     libs = []
     for l in self.mpi.lib:
       ll = os.path.basename(l)
       libs.append('-l'+ll[3:-2])
     libs = ' '.join(libs) # '-lmpich -lpmpich'
     args.append('--with-mpi-libs="'+libs+'"')
+    args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"') 
     
     args = ' '.join(args)
     try:
