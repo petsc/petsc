@@ -14,7 +14,13 @@ Input parameters include:\n\
 T*/
 
 /* 
-  Include "esi/petsc/solveriterative.h" so that we can use the PETSc ESI interface.
+   Currently includes the PETSc specific versions of the include file. 
+This is only because that is where the ESI factories are defined. If the 
+abstract factory classes are moved to ESI then one would include no
+PETSc specific header files except petsc.h
+
+   Note the usual PETSc objects all work. Those related to vec, mat, pc, ksp, and sles
+are prefixed with esi_
 
 */
 #include "esi/petsc/solveriterative.h"
@@ -25,17 +31,17 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  ::esi::IndexSpace<int>                  *indexspace;
-  ::esi::Vector<double,int>               *x,*b;      
-  ::esi::Operator<double,int>             *op;  
-  ::esi::SolverIterative<double,int>      *solver;    
-  ::esi::MatrixRowWriteAccess<double,int> *A;
-  int                                     ierr,i,n = 3,Istart,Iend,c[3],N;
-  double                                  v[3];
-  ::esi::IndexSpaceFactory<int>           *ifactory;
-  ::esi::VectorFactory<double,int>        *vfactory;
-  ::esi::OperatorFactory<double,int>      *ofactory;
-  ::esi::SolverIterative<double,int>      *osolver;     /* linear solver context */
+  ::esi::IndexSpace<int>                    *indexspace;
+  ::esi::Vector<double,int>                 *x,*b;      
+  ::esi::Operator<double,int>               *op;  
+  ::esi::SolverIterative<double,int>        *solver;    
+  ::esi::MatrixRowWriteAccess<double,int>   *A;
+  int                                       ierr,i,n = 3,Istart,Iend,c[3],N;
+  double                                    v[3],*barray;
+  ::esi::IndexSpaceFactory<int>             *ifactory;
+  ::esi::VectorFactory<double,int>          *vfactory;
+  ::esi::OperatorFactory<double,int>        *ofactory;
+  ::esi::SolverIterativeFactory<double,int> *sfactory;     /* linear solver context */
 
   PetscInitialize(&argc,&args,(char *)0,help);
   /*
@@ -44,7 +50,7 @@ int main(int argc,char **args)
   ierr = ESILoadFactory("MPI",(void*)&PETSC_COMM_WORLD,"esi::petsc::IndexSpace",reinterpret_cast<void *&>(ifactory));CHKERRQ(ierr);
   ierr = ESILoadFactory("MPI",(void*)&PETSC_COMM_WORLD,"esi::petsc::Matrix",reinterpret_cast<void *&>(ofactory));CHKERRQ(ierr);
   ierr = ESILoadFactory("MPI",(void*)&PETSC_COMM_WORLD,"esi::petsc::Vector",reinterpret_cast<void *&>(vfactory));CHKERRQ(ierr);
-  ierr = ESILoadFactory("MPI",(void*)&PETSC_COMM_WORLD,"esi::petsc::SolverIterative",reinterpret_cast<void *&>(osolver));CHKERRQ(ierr);
+  ierr = ESILoadFactory("MPI",(void*)&PETSC_COMM_WORLD,"esi::petsc::SolverIterative",reinterpret_cast<void *&>(sfactory));CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
@@ -87,32 +93,30 @@ int main(int argc,char **args)
    */
   ierr = op->getInterface("esi::MatrixRowWriteAccess",reinterpret_cast<void *&>(A));CHKERRQ(ierr);
   if (Istart == 0) {
+    v[0] = 1.0;
+    ierr = A->copyIntoRow(Istart,v,&Istart,1);CHKERRQ(ierr);
     Istart++;
   }
   if (Iend == N) {
     Iend--;
+    v[0] = 1.0;
+    ierr = A->copyIntoRow(Iend,v,&Iend,1);CHKERRQ(ierr);
   }
   v[0] = -1.0; v[1] = 2.0; v[2] = -1.0;
   for (i=Istart; i<Iend; i++) {
     c[0] = i-1; c[1] = i; c[2] = i+1;
     ierr = A->copyIntoRow(i,v,c,3);CHKERRQ(ierr);
   }
-  ierr = A->loadComplete();CHKERRQ(ierr);
 
   /* 
      Assemble matrix, using the 2-step process:
-       MatAssemblyBegin(), MatAssemblyEnd()
-     Computations can be done while messages are in transition
-     by placing code between these two statements.
   */
+  ierr = A->loadComplete();CHKERRQ(ierr);
+
 
   /* 
-     Create parallel vectors.
+     Create parallel vectors.i
       - We form 1 vector from scratch and then duplicate as needed.
-      - When using VecCreate(), VecSetSizes and VecSetFromOptions()
-        in this example, we specify only the
-        vector's global dimension; the parallel partitioning is determined
-        at runtime. 
       - When solving a linear system, the vectors and matrices MUST
         be partitioned accordingly.  PETSc automatically generates
         appropriately partitioned matrices and vectors when MatCreate()
@@ -122,33 +126,34 @@ int main(int argc,char **args)
         (replacing the PETSC_DECIDE argument in the VecSetSizes() statement
         below).
   */
+  ierr = vfactory->getVector(*indexspace,x);CHKERRQ(ierr);
+  ierr = x->clone(b);CHKERRQ(ierr);
 
-  /* 
-     Set exact solution; then compute right-hand-side vector.
-     By default we use an exact solution of a vector with all
-     elements of 1.0;  Alternatively, using the runtime option
-     -random_sol forms a solution vector with random components.
-  */
-
+  ierr = b->getCoefPtrReadWriteLock(barray);CHKERRQ(ierr);
+  for (i=Istart; i<Iend; i++) {
+    barray[i-Istart] = i;
+  }
+  ierr = b->releaseCoefPtrLock(barray);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-                Create the linear solver and set various options
+                Create the linear solver
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* 
      Create linear solver context
   */
+  ierr = sfactory->getSolverIterative("MPI",(void*)PETSC_COMM_WORLD,solver);CHKERRQ(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-
+  ierr = solver->setOperator(*op);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
+  ierr = solver->solve(*b,*x);CHKERRQ(ierr);
 
 
   /*
@@ -157,6 +162,15 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_summary). 
   */
+  indexspace->deleteReference();
+  op->deleteReference();
+  x->deleteReference();
+  b->deleteReference();
+  solver->deleteReference();
+  delete ifactory;
+  delete vfactory;
+  delete ofactory;
+  delete sfactory;
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

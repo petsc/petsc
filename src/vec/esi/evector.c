@@ -21,7 +21,6 @@ esi::petsc::Vector<double,int>::Vector( ::esi::IndexSpace<int> *inmap)
   ierr = VecSetSizes(this->vec,n,N);if (ierr) return;
   ierr = PetscObjectSetOptionsPrefix((PetscObject)this->vec,"esi_");if (ierr) return;
   ierr = VecSetFromOptions(this->vec);if (ierr) return;
-  this->pobject = (PetscObject)this->vec;
   this->map = (::esi::IndexSpace<int> *)inmap;
   this->map->addReference();
   ierr = PetscObjectGetComm((PetscObject)this->vec,&this->comm);if (ierr) return;
@@ -33,7 +32,6 @@ esi::petsc::Vector<double,int>::Vector( Vec pvec)
   int               n,N;
   
   this->vec     = pvec;
-  this->pobject = (PetscObject)this->vec;
   ierr = PetscObjectReference((PetscObject)pvec);if (ierr) return;
   ierr = PetscObjectGetComm((PetscObject)this->vec,&this->comm);if (ierr) return;
 

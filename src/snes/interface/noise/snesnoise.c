@@ -17,15 +17,8 @@ typedef struct {
   int    hopt_resets;     /* number of times we've reset the hopt estimate */
 } DIFFPAR_MORE;
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dnest_ DNEST
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define dnest_ dnest
-#endif
 
-EXTERN_C_BEGIN
 extern void dnest_(int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,PetscScalar*);
-EXTERN_C_END
 extern int JacMatMultCompare(SNES,Vec,Vec,double);
 extern int SNESDefaultMatrixFreeSetParameters2(Mat,double,double,double);
 extern int SNESUnSetMatrixFreeParameter(SNES snes);

@@ -38,7 +38,6 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
     virtual esi::ErrorCode getInterface(const char* name, void*& iface) ;
     virtual esi::ErrorCode getInterfacesSupported(esi::Argv * list);
 
-
     //  Interface for esi::Operator  ---------------
 
     virtual esi::ErrorCode setup();

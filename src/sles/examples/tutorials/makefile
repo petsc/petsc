@@ -439,6 +439,12 @@ runex25_2:
 	   else echo "Possible problem with ex25_2, diffs above"; fi; \
 	   ${RM} -f ex25_1.tmp
 
+runex26:
+	-@${MPIRUN} -np 1 ex26 -esi_sles_view -esi_mat_type seqbaij > ex26_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex26_1.out ex26_1.tmp) then true; \
+	   else echo "Possible problem with ex26_1, diffs above"; fi; \
+	   ${RM} -f ex26_1.tmp
+
 TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
 		   ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 \
@@ -470,7 +476,7 @@ TESTEXAMPLES_12  = ex13f90.PETSc runex13f90 ex13f90.rm
 TESTEXAMPLES_13  = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm
 TESTEXAMPLES_MATLAB_ENGINE  = ex10.PETSc runex10_12  ex10.rm
 TESTEXAMPLES_17  = ex10.PETSc runex10_11 ex10.rm
-TESTEXAMPLES_18  = ex2.PETSc runex2_6 ex2.rm
+TESTEXAMPLES_18  = ex2.PETSc runex2_6 ex2.rm ex26.PETSc runex26 ex26.rm
 TESTEXAMPLES_SPAI  = ex10.PETSc runex10_14 ex10.rm
 
 include ${PETSC_DIR}/bmake/common/test

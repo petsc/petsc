@@ -6,7 +6,7 @@
 #    3 - basic Fortran .F suite
 #    4 - uniprocessor version of 1 and 2
 #    5 - C examples that require complex numbers
-#    6 - C examples that don't work with complex numbers 
+#    6 - C examples that don't work with complex numbers, require PETSc matrices
 #    7 - C examples that require BlockSolve
 #    8 - Fortran .F examples that don't work with complex numbers
 #    9 - uniprocessor version of 3
@@ -15,7 +15,7 @@
 #   12 - basic f90 examples
 #   13 - Examples that should only be compiled.
 #   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
-#   18 - requires C++ and dynamic libraries (for ESI)
+#   18 - requires C++, namespaces and dynamic libraries (for ESI)
 
 testexamples_1: ${TESTEXAMPLES_1} clean
 testexamples_2: ${TESTEXAMPLES_2} clean

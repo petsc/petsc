@@ -5,6 +5,8 @@
 	PetscLogFlops
 	CHKERRQ
         PetscFunctionReturn
+        DAVecGetArray
+        DAVecRestoreArray
 
 [NO_PREFIX_FUNCTIONS]
 
@@ -29,6 +31,7 @@
         MPI_COMM_SELF  = "static int MPI_COMM_SELF;"
         PETSC_COMM_WORLD = "static int PETSC_COMM_WORLD;"
         PETSC_COMM_SELF  = "static int PETSC_COMM_SELF;"
+        CHKMEMQ          = "CHKMEMQ;"
 
 
 [DEFINES]
@@ -58,3 +61,4 @@
         PC
         SLES
         SNES
+        CHKMEMQ

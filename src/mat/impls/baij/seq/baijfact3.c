@@ -144,7 +144,8 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
-  b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
+  if (info) b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
+  else      b->pivotinblocks = PETSC_TRUE;
   ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
   ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol       = isicol;

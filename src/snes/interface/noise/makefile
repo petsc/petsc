@@ -7,12 +7,12 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = snesmfj2.c snesnoise.c
+SOURCEC  = snesmfj2.c snesnoise.c snesdnest.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = snesmfj2.o snesnoise.o
+OBJSC    = snesmfj2.o snesnoise.o snesdnest.o
 OBJSF    =
-DIRS     = fnoise
+DIRS     = 
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 LOCDIR   = src/snes/interface/noise
