@@ -2,8 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I..  \
-           $(CONF) $(PCONF) -D__DIR__='"viewer/interface/"'
+CFLAGS   = $(CPPFLAGS) -I.. $(CONF)  -D__DIR__='"$(LOCDIR)"'
 SOURCEC  = view.c 
 SOURCEF  =
 SOURCEH  = 

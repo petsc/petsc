@@ -2,7 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   = -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF) $(PCONF)
+CFLAGS   = 
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = 
@@ -10,5 +10,6 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = cr bcgs cg cgs gmres cheby rich lsqr preonly tcqmr tfqmr qcg
+LOCDIR   = src/ksp/impls/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

@@ -1,7 +1,7 @@
 PETSC_DIR = ../../..
 
 ALL: lib 
-CFLAGS	  =  $(PETSC_INCLUDE) $(CONF) $(PCONF) -D__DIR__='"sys/src/"'
+CFLAGS	  = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC	  = adebug.c err.c signal.c fp.c mtr.c arch.c nreg.c \
 	    mpiu.c sorti.c destroy.c options.c mal.c \
 	    sysio.c str.c memc.c random.c sortd.c sortip.c \

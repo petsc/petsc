@@ -10,7 +10,7 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = seq mpi
-LOCDIR   = src/vec/impls
+LOCDIR   = src/vec/impls/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

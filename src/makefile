@@ -1,6 +1,6 @@
 PETSC_DIR = ..
 
-CFLAGS   = -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF) $(PCONF)
+CFLAGS   = 
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = 
@@ -9,6 +9,7 @@ OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = inline is vec ksp sys pc mat sles draw ts dfvec \
            viewer snes da mpiuni contrib benchmarks plog
+LOCDIR   = src/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

@@ -3,8 +3,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(PETSC_INCLUDE) -I..  $(CONF) -D__DIR__='"vec/interface/"' \
-           $(PCONF)
+CFLAGS   = $(CPPFLAGS) -I.. $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC  = vector.c 
 SOURCEF  =
 SOURCEH  = 
