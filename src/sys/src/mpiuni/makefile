@@ -1,11 +1,14 @@
-ALL: libmpi
+PETSC_DIR = ../..
 
-CC	= gcc
+ALL: lib
 
-libmpi: mpi.o mpif.o
-	ar r libmpi.a mpi.o mpif.o
-	ranlib libmpi.a
-	$(RM) *.o
+CFLAGS	 = 
+SOURCEC	 = mpi.c mpif.F
+SOURCEF	 = 
+SOURCEH	 = 
+OBJSC	 = mpi.o mpif.o
+OBJSF	 =
+LIBBASE	 = libmpiuni
+MANSEC	 = 3
 
-clean:
-	$(RM) *.o
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
