@@ -15,15 +15,15 @@ FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
 #
-BLAS_LIB       =  /home/bsmith/lapack/blas_sun4_double.a \
-                  /home/bsmith/lapack/blas_sun4_complex.a
-LAPACK_LIB     =  /home/bsmith/lapack/lapack_sun4_double.a \
-                  /home/bsmith/lapack/lapack_sun4_complex.a
+BLAS_LIB       =  /home/bsmith/lapack/blas_nt_gnu_double.a \
+                  /home/bsmith/lapack/blas_nt_gnu_complex.a
+LAPACK_LIB     =  /home/bsmith/lapack/lapack_nt_gnu_double.a \
+                  /home/bsmith/lapack/lapack_nt_gnu_complex.a
 #
 # Location of X-windows software
 #
-X11_INCLUDE    = -I/usr/local/X11R5/include
-X11_LIB        = -lX11
+#X11_INCLUDE    = -I/usr/local/X11R5/include
+#X11_LIB        = -lX11
 #
 # Location of MPI (Message Passing Interface) software  
 #
@@ -40,9 +40,9 @@ BS_LIB     =
 #
 # Optional Matlab location, remove if not needed.
 #
-MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
-MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
-CMEX           = /usr/local/bin/cmex 
+#MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
+#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
+#CMEX           = /usr/local/bin/cmex 
 #  
 # PCONF - indicates which external packages are available at your site
 #  Make sure that -DHAVE_BLOCKSOLVE is not listed below unless you have
