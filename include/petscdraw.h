@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.34 1996/10/02 18:07:22 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.35 1996/11/01 23:36:27 bsmith Exp curfman $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -135,5 +135,6 @@ int DrawTensorContour(Draw,int,int,double*,double*,Vec);
 
 int DrawTensorSurfaceContour_VRML(Draw,double*,int,double*,int,double *z,int);
 int DrawTensorSurface_VRML(Draw,double*,int,double*,int,double *z,int);
+/*int DrawTensorMapSurfaceContourAndMesh_VRML(Draw,double*,int,double*,int,double *z,int); */
 
 #endif
