@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.40 2000/09/26 16:13:39 balay Exp bsmith $*/
+/*$Id: ams.c,v 1.41 2000/09/28 21:08:15 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -244,7 +244,7 @@ static int ViewerDestroy_AMS(Viewer viewer)
   if (ierr) {
     char *err;
     AMS_Explain_error(ierr,&err);
-    SETERRQ(ierr,0,err);
+    SETERRQ(ierr,err);
   }
   ierr = PetscFree(vams);CHKERRQ(ierr);
   PetscFunctionReturn(0);
