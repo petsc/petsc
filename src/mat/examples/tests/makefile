@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.246 2001/01/17 19:45:37 bsmith Exp balay $ 
+# $Id: makefile,v 1.247 2001/02/22 22:49:43 balay Exp bsmith $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -14,7 +14,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c ex61.c \
 		   ex62.c ex64.c ex65.c ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c \
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c
-EXAMPLESF	 = ex36.F ex16f90.F ex58f.F ex63.F ex67f.F
+EXAMPLESF	 = ex36.F ex16f90.F ex58f.F ex63.F ex67f.F ex79f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -321,6 +321,9 @@ ex81: ex81.o chkopts
 	-${CLINKER} -o ex81 ex81.o ${PETSC_MAT_LIB}
 	${RM} ex81.o
 
+ex79f: ex79f.o chkopts
+	-${FLINKER} -o ex79f ex79f.o  ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	${RM} ex79f.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -796,7 +799,7 @@ TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.P
 		   ex76.PETSc runex76 ex76.rm ex77.PETSc runex77 ex77.rm \
 		  ex78.PETSc ex78.rm
 TESTEXAMPLES_3	 = ex36.PETSc runex36 ex36.rm ex63.PETSc runex63 ex63.rm \
-                   ex67f.PETSc ex67f.rm
+                   ex67f.PETSc ex67f.rm ex79f.PETSc ex79f.rm
 TESTEXAMPLES_9	 = ex36.PETSc runex36 ex36.rm
 TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		   runex4 ex4.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 ex6.rm\
