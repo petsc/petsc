@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.153 2001/04/10 19:34:33 bsmith Exp bsmith $*/
+/*$Id: mtr.c,v 1.154 2001/06/21 21:15:26 bsmith Exp bsmith $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -571,13 +571,12 @@ int PetscTrLogDump(FILE *fp)
     ierr = MPI_Recv(&dummy,1,MPI_INT,rank-1,tag,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
   }
 
-
   if (!fp) fp = stdout;
   ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
   ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);CHKERRQ(ierr);
 
-  shortlength   = (int*)malloc(PetscLogMalloc*sizeof(int));
-  shortfunction = (char**)malloc(PetscLogMalloc*sizeof(char *));
+  shortlength      = (int*)malloc(PetscLogMalloc*sizeof(int));
+  shortfunction    = (char**)malloc(PetscLogMalloc*sizeof(char *));
   shortfunction[0] = PetscLogMallocFunction[0];
   shortlength[0]   = PetscLogMallocLength[0]; 
   n = 1;
@@ -602,7 +601,7 @@ int PetscTrLogDump(FILE *fp)
   free(shortlength);
   free(shortfunction);
   fflush(fp);
-  if (size > 1 && rank != size-1) {
+  if (rank != size-1) {
     ierr = MPI_Send(&dummy,1,MPI_INT,rank+1,tag,MPI_COMM_WORLD);CHKERRQ(ierr);
   }
 
