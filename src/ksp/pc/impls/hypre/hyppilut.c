@@ -78,8 +78,11 @@ static int PCSetUp_HYPRE(PC pc)
     ierr = MatHYPRE_IJMatrixCreate(pc->pmat,&jac->ij);CHKERRQ(ierr);
   }
   if (!jac->b) {
-    ierr = VecHYPRE_IJVectorCreate(pc->vec,&jac->b);CHKERRQ(ierr);
-    ierr = VecHYPRE_IJVectorCreate(pc->vec,&jac->x);CHKERRQ(ierr);
+    Vec vec;
+    ierr = MatGetVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
+    ierr = VecHYPRE_IJVectorCreate(vec,&jac->b);CHKERRQ(ierr);
+    ierr = VecHYPRE_IJVectorCreate(vec,&jac->x);CHKERRQ(ierr);
+    ierr = VecDestroy(vec);CHKERRQ(ierr);
   }
   ierr = MatHYPRE_IJMatrixCopy(pc->pmat,jac->ij);CHKERRQ(ierr);
   ierr = HYPRE_IJMatrixGetObject(jac->ij,(void**)&hmat);CHKERRQ(ierr);

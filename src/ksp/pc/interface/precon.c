@@ -353,7 +353,6 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_COOKIE,-1,"PC",comm,PCDestroy,PCView);
   PetscLogObjectCreate(pc);
   pc->bops->publish      = PCPublish_Petsc;
-  pc->vec                = 0;
   pc->mat                = 0;
   pc->setupcalled        = 0;
   pc->nullsp             = 0;
@@ -867,7 +866,6 @@ int PCSetUp(PC pc)
   }
 
   ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
-  if (!pc->vec) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Vector must be set first");}
   if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");}
 
   if (!pc->type_name) {
@@ -1145,67 +1143,6 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetVector"
-/*@
-   PCSetVector - Sets a vector associated with the preconditioner.
-
-   Collective on PC and Vec
-
-   Input Parameters:
-+  pc - the preconditioner context
--  vec - the vector
-
-   Notes:
-   The vector must be set so that the preconditioner knows what type
-   of vector to allocate if necessary.
-
-   Level: intermediate
-
-.keywords: PC, set, vector
-
-.seealso: PCGetVector()
-
-@*/
-int PCSetVector(PC pc,Vec vec)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  PetscValidHeaderSpecific(vec,VEC_COOKIE,2);
-  PetscCheckSameComm(pc,1,vec,2);
-  pc->vec = vec;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCGetVector"
-/*@
-   PCGetVector - Gets a vector associated with the preconditioner; if the 
-   vector was not get set it will return a 0 pointer.
-
-   Not collective, but vector is shared by all processors that share the PC
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Output Parameter:
-.  vec - the vector
-
-   Level: intermediate
-
-.keywords: PC, get, vector
-
-.seealso: PCSetVector()
-
-@*/
-int PCGetVector(PC pc,Vec *vec)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  *vec = pc->vec;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "PCGetFactoredMatrix"
 /*@C 
    PCGetFactoredMatrix - Gets the factored matrix from the
@@ -1355,7 +1292,7 @@ int PCGetOptionsPrefix(PC pc,char *prefix[])
    Sample of Usage:
 .vb
     PCPreSolve(pc,ksp);
-    KSPSolve(ksp,its);
+    KSPSolve(ksp,b,x);
     PCPostSolve(pc,ksp);
 .ve
 
@@ -1412,7 +1349,7 @@ int PCPreSolve(PC pc,KSP ksp)
    Sample of Usage:
 .vb
     PCPreSolve(pc,ksp);
-    KSPSolve(ksp,its);
+    KSPSolve(ksp,b,x);
     PCPostSolve(pc,ksp);
 .ve
 
@@ -1605,7 +1542,7 @@ int PCComputeExplicitOperator(PC pc,Mat *mat)
   comm = pc->comm;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  ierr = PCGetVector(pc,&in);CHKERRQ(ierr);
+  ierr = MatGetVecs(pc->pmat,&in,0);CHKERRQ(ierr);
   ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);

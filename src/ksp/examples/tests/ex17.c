@@ -67,9 +67,7 @@ int main(int argc,char **args)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Check error */

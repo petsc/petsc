@@ -102,11 +102,9 @@ int main(int argc,char **args)
        These calls are optional, since both will be called within
        KSPSolve() if they haven't been called already.
   */
-  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /*
             Check error, print output, free data structures.

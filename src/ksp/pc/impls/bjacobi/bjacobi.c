@@ -738,11 +738,8 @@ int PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
 {
   int                    ierr;
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
-  PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
 
   PetscFunctionBegin;
-  ierr = KSPSetRhs(jac->ksp[0],bjac->x);CHKERRQ(ierr);
-  ierr = KSPSetSolution(jac->ksp[0],bjac->y);CHKERRQ(ierr);
   ierr = KSPSetUp(jac->ksp[0]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -767,7 +764,7 @@ int PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr); 
-  ierr = KSPSolve(jac->ksp[0]);CHKERRQ(ierr); 
+  ierr = KSPSolve(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr); 
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr); 
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
@@ -859,7 +856,7 @@ int PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr); 
-  ierr = KSPSolveTranspose(jac->ksp[0]);CHKERRQ(ierr); 
+  ierr = KSPSolveTranspose(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr); 
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr); 
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
@@ -979,12 +976,9 @@ int PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
   int                   ierr,i,n_local = jac->n_local;
-  PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
 
   PetscFunctionBegin;
   for (i=0; i<n_local; i++) {
-    ierr = KSPSetRhs(jac->ksp[i],bjac->x[i]);CHKERRQ(ierr);
-    ierr = KSPSetSolution(jac->ksp[i],bjac->y[i]);CHKERRQ(ierr);
     ierr = KSPSetUp(jac->ksp[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1021,7 +1015,7 @@ int PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
     ierr = VecPlaceArray(bjac->y[i],yin+bjac->starts[i]);CHKERRQ(ierr);
 
     ierr = PetscLogEventBegin(SUBKspSolve,jac->ksp[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
-    ierr = KSPSolve(jac->ksp[i]);CHKERRQ(ierr);
+    ierr = KSPSolve(jac->ksp[i],bjac->x[i],bjac->y[i]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(SUBKspSolve,jac->ksp[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(x,&xin);CHKERRQ(ierr);
@@ -1060,7 +1054,7 @@ int PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
     ierr = VecPlaceArray(bjac->y[i],yin+bjac->starts[i]);CHKERRQ(ierr);
 
     ierr = PetscLogEventBegin(SUBKspSolve,jac->ksp[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
-    ierr = KSPSolveTranspose(jac->ksp[i]);CHKERRQ(ierr);
+    ierr = KSPSolveTranspose(jac->ksp[i],bjac->x[i],bjac->y[i]);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(SUBKspSolve,jac->ksp[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(x,&xin);CHKERRQ(ierr);

@@ -29,9 +29,7 @@ int MGACycle_Private(MG *mg)
   for (i=0; i<l; i++) {
     ierr = VecSet(&zero,mg[i]->x);CHKERRQ(ierr); 
     if (mg[i]->eventsolve) {ierr = PetscLogEventBegin(mg[i]->eventsolve,0,0,0,0);CHKERRQ(ierr);}
-    ierr = KSPSetRhs(mg[i]->smoothd,mg[i]->b);CHKERRQ(ierr); 
-    ierr = KSPSetSolution(mg[i]->smoothd,mg[i]->x);CHKERRQ(ierr); 
-    ierr = KSPSolve(mg[i]->smoothd);CHKERRQ(ierr); 
+    ierr = KSPSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x);CHKERRQ(ierr); 
     if (mg[i]->eventsolve) {ierr = PetscLogEventEnd(mg[i]->eventsolve,0,0,0,0);CHKERRQ(ierr);}
   }
   for (i=1; i<l; i++) {  

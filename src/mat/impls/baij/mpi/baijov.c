@@ -600,19 +600,19 @@ int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,const IS isrow[],const IS iscol[],
 #if defined (PETSC_USE_CTABLE)
 #undef __FUNCT__    
 #define __FUNCT__ "PetscGetProc" 
-int PetscGetProc(const int gid, const int numprocs, const int proc_gnode[], int *proc)
+int PetscGetProc(const int gid, const int size, const int proc_gnode[], int *proc)
 {
-  int nGlobalNd = proc_gnode[numprocs];
-  int fproc = (int) ((float)gid * (float)numprocs / (float)nGlobalNd + 0.5);
+  int nGlobalNd = proc_gnode[size];
+  int fproc = (int) ((float)gid * (float)size / (float)nGlobalNd + 0.5);
   
   PetscFunctionBegin;
   /* if(fproc < 0) SETERRQ(1,"fproc < 0");*/
-  if (fproc > numprocs) fproc = numprocs;
+  if (fproc > size) fproc = size;
   while (gid < proc_gnode[fproc] || gid >= proc_gnode[fproc+1]) {
     if (gid < proc_gnode[fproc]) fproc--;
     else                         fproc++;
   }
-  /* if(fproc<0 || fproc>=numprocs) { SETERRQ(1,"fproc < 0 || fproc >= numprocs"); }*/ 
+  /* if(fproc<0 || fproc>=size) { SETERRQ(1,"fproc < 0 || fproc >= size"); }*/ 
   *proc = fproc;
   PetscFunctionReturn(0);
 }

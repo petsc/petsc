@@ -67,9 +67,7 @@
       call KSPSetOperators(ksp1,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
       call KSPSetFromOptions(ksp1,ierr)
       call PetscGetTime(time1,ierr)
-      call KSPSetRhs(ksp1,b,ierr)
-      call KSPSetSolution(ksp1,x,ierr)
-      call KSPSolve(ksp1,ierr)
+      call KSPSolve(ksp1,b,x,ierr)
       call PetscGetTime(time2,ierr)
 
 ! Show result
@@ -94,9 +92,7 @@
       call KSPSetOperators(ksp2,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
       call KSPSetFromOptions(ksp2,ierr)
       call PetscGetTime(time1,ierr)
-      call KSPSetRhs(ksp1,b,ierr)
-      call KSPSetSolution(ksp1,x,ierr)
-      call KSPSolve(ksp2,ierr)
+      call KSPSolve(ksp2,b,x,ierr)
       call PetscGetTime(time2,ierr)
 
 ! Show result

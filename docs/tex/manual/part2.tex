@@ -2052,12 +2052,10 @@ This \findex{KSPSetFromOptions()}
 routine accepts the options \trl{-h} and \trl{-help} as well as 
 any of the KSP and PC options discussed below. 
 To solve a linear system, one sets the rhs and solution vectors using
-\findex{KSPSetRhs()} and \findex{KSPSetSolution()}, and executes the
+and executes the
 command \findex{KSPSolve()}
 \begin{tabbing}
-  KSPSetRhs(KSP ksp, Vec b);
-  KSPSetSolution(KSP ksp, Vec x);
-  KSPSolve(KSP ksp);
+  KSPSolve(KSP ksp,Vec b,Vec x);
 \end{tabbing}
 where \trl{b} and \trl{x} respectively denote the right-hand-side and
 solution vectors.  On return, the iteration number at which convergence
@@ -2470,7 +2468,7 @@ context, one uses \findex{KSPGetSolution()} \findex{KSPGetRhs()}
   KSPGetSolution(KSP ksp,Vec *x);\\
   KSPGetRhs(KSP ksp,Vec *rhs);
 \end{tabbing}
-During \findex{KSPSetRhs()} \findex{KSPSetSolution()} the iterative process
+During the iterative process
 the solution may not yet have been calculated or it may be stored in 
 a different location. To access the approximate solution during the 
 iterative process, one uses the command \findex{KSPBuildSolution()}
@@ -4839,8 +4837,8 @@ code is set to be nonzero if an error has been detected; otherwise, it
 is zero.  For example, the Fortran and C variants of KSPSolve() are
 given, respectively, below, where \trl{ierr} denotes the error variable:
 \begin{tabbing}
-   call KSPSolve(KSP ksp,int ierr)\\
-  KSPSolve(KSP ksp);
+   call KSPSolve(KSP ksp,Vec b,Vec x,int ierr)\\
+  KSPSolve(KSP ksp,Vec b,Vec x);
 \end{tabbing}
 
 Fortran programmers
@@ -4856,7 +4854,7 @@ Fortran routines; however, Fortran programmers can easily use the
 error codes in writing their own tracebacks.  For example, one could
 use code such as the following:
 \begin{tabbing}
-   call KSPSolve(ksp,ierr)\\
+   call KSPSolve(ksp,b,x,ierr)\\
    if ( ierr .ne. 0) then\\
        print*, 'Error in routine ...'\\
        return\\
@@ -7298,7 +7296,7 @@ In addition, the KSP solver must be initialized with \findex{KSPSetUp()}
 \end{tabbing}
 Solving a linear system is done with the command \findex{KSPSolve()}
 \begin{tabbing}
-  KSPSolve(KSP ksp,int *its);
+  KSPSolve(KSP ksp,Vec b,Vec x);
 \end{tabbing}
 Finally, the KSP context should be destroyed with \findex{KSPDestroy()}
 \begin{tabbing}
@@ -7347,14 +7345,12 @@ The routine \findex{PCSetType()}
   PCSetType(PC pc,PCType method);
 \end{tabbing}
 sets the preconditioner method to be used. 
-The two routines \findex{PCSetOperators()} \findex{PCSetVector()}
+The routine \findex{PCSetOperators()}
 \begin{tabbing}
   PCSetOperators(PC pc,Mat mat,Mat pmat,MatStructure flag);\\
-  PCSetVector(PC pc,Vec vec);
 \end{tabbing}
-set the matrices and type of vector that are to be used with 
-the preconditioner.  The \trl{vec} argument is needed by the PC routines 
-to determine the format of the vectors. 
+set the matrices that are to be used with 
+the preconditioner.  
 The routine \findex{PCGetOperators()}
 \begin{tabbing}
   PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag);

@@ -158,8 +158,6 @@ EXTERN int PCModifySubMatrices(PC,int,const IS[],const IS[],Mat[],void*);
 EXTERN int PCSetOperators(PC,Mat,Mat,MatStructure);
 EXTERN int PCGetOperators(PC,Mat*,Mat*,MatStructure*);
 
-EXTERN int PCSetVector(PC,Vec);
-EXTERN int PCGetVector(PC,Vec*);
 EXTERN int PCView(PC,PetscViewer);
 
 EXTERN int PCSetOptionsPrefix(PC,const char[]);

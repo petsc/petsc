@@ -134,9 +134,7 @@ int main(int argc,char **args)
   /* 
      Solve linear system
   */
-  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr); 
-  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr); 
-  ierr = KSPSolve(ksp);CHKERRQ(ierr); 
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr); 
 
   /* 
      View solver info; we could instead use the option -ksp_view to

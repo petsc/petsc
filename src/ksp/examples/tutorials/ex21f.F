@@ -205,9 +205,7 @@
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call KSPSetRhs(ksp,b,ierr)
-      call KSPSetSolution(ksp,x,ierr)
-      call KSPSolve(ksp,ierr)
+      call KSPSolve(ksp,b,x,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                     Check solution and clean up
@@ -290,14 +288,12 @@
 
       call PCCreate(PETSC_COMM_WORLD,jacobi,ierr)
       call PCSetType(jacobi,PCJACOBI,ierr)
-      call PCSetVector(jacobi,x,ierr)
       call PCSetOperators(jacobi,pmat,pmat,DIFFERENT_NONZERO_PATTERN,    &
      &                     ierr)
       call PCSetUp(jacobi,ierr)
 
       call PCCreate(PETSC_COMM_WORLD,sor,ierr)
       call PCSetType(sor,PCSOR,ierr)
-      call PCSetVector(sor,x,ierr)
       call PCSetOperators(sor,pmat,pmat,DIFFERENT_NONZERO_PATTERN,       &
      &                     ierr)
 !      call PCSORSetSymmetric(sor,SOR_LOCAL_SYMMETRIC_SWEEP,ierr)

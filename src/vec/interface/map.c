@@ -29,15 +29,15 @@ static int PetscMapSetTypeFromOptions_Private(PetscMap map)
   PetscTruth opt;
   const char *defaultType;
   char       typeName[256];
-  int        numProcs;
+  int        size;
   int        ierr;
 
   PetscFunctionBegin;
   if (map->type_name != PETSC_NULL) {
     defaultType = map->type_name;
   } else {
-    ierr = MPI_Comm_size(map->comm, &numProcs);                                                           CHKERRQ(ierr);
-    if (numProcs > 1) {
+    ierr = MPI_Comm_size(map->comm, &size);                                                           CHKERRQ(ierr);
+    if (size > 1) {
       defaultType = MAP_MPI;
     } else {
       defaultType = MAP_MPI;

@@ -116,13 +116,13 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
    The preconditoner operator, rhs vector, solution vectors should be
    set before this routine is called. i.e use KSPSetOperators(),KSPSolve() or
-   KSPSetOperators(),KSPSetRhs(),KSPSetSolution()
+   KSPSetOperators()
 
    Level: advanced
 
 .keywords: KSP, compute, eigenvalues, explicitly
 
-.seealso: KSPComputeEigenvalues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve(), KSPSetRhs(), KSPSetSolution()
+.seealso: KSPComputeEigenvalues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve()
 @*/
 int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c) 
 {

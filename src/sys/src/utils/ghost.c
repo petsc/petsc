@@ -55,24 +55,24 @@ int PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs, int *ghost
 #ifdef PETSC_USE_BOPT_g
   int          numLocVars;
 #endif
-  int          numProcs, rank;
+  int          size, rank;
   int          proc, ghost, locIndex, byte;
   int          ierr;
 
   PetscFunctionBegin;
   /* Initialize communication */
-  ierr = MPI_Comm_size(comm, &numProcs);                                                                  CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);                                                                  CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);                                                                      CHKERRQ(ierr);
-  ierr = PetscMalloc(numProcs * sizeof(int), &numSendGhosts);                                             CHKERRQ(ierr);
-  ierr = PetscMalloc(numProcs * sizeof(int), &numRecvGhosts);                                             CHKERRQ(ierr);
-  ierr = PetscMalloc(numProcs * sizeof(int), &sumSendGhosts);                                             CHKERRQ(ierr);
-  ierr = PetscMalloc(numProcs * sizeof(int), &sumRecvGhosts);                                             CHKERRQ(ierr);
-  ierr = PetscMalloc(numProcs * sizeof(int), &offsets);                                                   CHKERRQ(ierr);
-  ierr = PetscMemzero(numSendGhosts,  numProcs * sizeof(int));                                            CHKERRQ(ierr);
-  ierr = PetscMemzero(numRecvGhosts,  numProcs * sizeof(int));                                            CHKERRQ(ierr);
-  ierr = PetscMemzero(sumSendGhosts,  numProcs * sizeof(int));                                            CHKERRQ(ierr);
-  ierr = PetscMemzero(sumRecvGhosts,  numProcs * sizeof(int));                                            CHKERRQ(ierr);
-  ierr = PetscMemzero(offsets,        numProcs * sizeof(int));                                            CHKERRQ(ierr);
+  ierr = PetscMalloc(size * sizeof(int), &numSendGhosts);                                             CHKERRQ(ierr);
+  ierr = PetscMalloc(size * sizeof(int), &numRecvGhosts);                                             CHKERRQ(ierr);
+  ierr = PetscMalloc(size * sizeof(int), &sumSendGhosts);                                             CHKERRQ(ierr);
+  ierr = PetscMalloc(size * sizeof(int), &sumRecvGhosts);                                             CHKERRQ(ierr);
+  ierr = PetscMalloc(size * sizeof(int), &offsets);                                                   CHKERRQ(ierr);
+  ierr = PetscMemzero(numSendGhosts,  size * sizeof(int));                                            CHKERRQ(ierr);
+  ierr = PetscMemzero(numRecvGhosts,  size * sizeof(int));                                            CHKERRQ(ierr);
+  ierr = PetscMemzero(sumSendGhosts,  size * sizeof(int));                                            CHKERRQ(ierr);
+  ierr = PetscMemzero(sumRecvGhosts,  size * sizeof(int));                                            CHKERRQ(ierr);
+  ierr = PetscMemzero(offsets,        size * sizeof(int));                                            CHKERRQ(ierr);
 #ifdef PETSC_USE_BOPT_g
   numLocVars = firstVar[rank+1] - firstVar[rank];
 #endif
@@ -84,13 +84,13 @@ int PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs, int *ghost
 
   /* Get number of ghosts to provide variables for */
   ierr = MPI_Alltoall(numSendGhosts, 1, MPI_INT, numRecvGhosts, 1, MPI_INT, comm);                        CHKERRQ(ierr);
-  for(proc = 1; proc < numProcs; proc++) {
+  for(proc = 1; proc < size; proc++) {
     sumSendGhosts[proc] = sumSendGhosts[proc-1] + numSendGhosts[proc-1];
     sumRecvGhosts[proc] = sumRecvGhosts[proc-1] + numRecvGhosts[proc-1];
     offsets[proc]       = sumSendGhosts[proc];
   }
-  totSendGhosts = sumSendGhosts[numProcs-1] + numSendGhosts[numProcs-1];
-  totRecvGhosts = sumRecvGhosts[numProcs-1] + numRecvGhosts[numProcs-1];
+  totSendGhosts = sumSendGhosts[size-1] + numSendGhosts[size-1];
+  totRecvGhosts = sumRecvGhosts[size-1] + numRecvGhosts[size-1];
   if (numGhosts != totSendGhosts) {
     SETERRQ2(PETSC_ERR_PLIB, "Invalid number of ghosts %d in send, should be %d", totSendGhosts, numGhosts);
   }

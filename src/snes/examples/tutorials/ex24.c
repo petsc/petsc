@@ -72,13 +72,9 @@ int myPCApply(DMMG dmmg,Vec x,Vec y)
   if (yw && xw) {
     yw[0] = xw[0];
   }
-  ierr = KSPSetRhs(appctx->ksp,xu);CHKERRQ(ierr);
-  ierr = KSPSetSolution(appctx->ksp,yu);CHKERRQ(ierr);
-  ierr = KSPSolve(appctx->ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(appctx->ksp,xu,yu);CHKERRQ(ierr);
 
-  ierr = KSPSetRhs(appctx->ksp,xlambda);CHKERRQ(ierr);
-  ierr = KSPSetSolution(appctx->ksp,ylambda);CHKERRQ(ierr);
-  ierr = KSPSolveTranspose(appctx->ksp);CHKERRQ(ierr);
+  ierr = KSPSolveTranspose(appctx->ksp,xlambda,ylambda);CHKERRQ(ierr);
   /*  ierr = VecCopy(xu,yu);CHKERRQ(ierr);
       ierr = VecCopy(xlambda,ylambda);CHKERRQ(ierr); */
   ierr = VecPackRestoreAccess(packer,x,&xw,&xu,&xlambda);CHKERRQ(ierr);

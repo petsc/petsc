@@ -244,8 +244,6 @@ int main(int argc,char **args)
        These calls are optional, since both will be called within
        KSPSolve() if they haven't been called already.
     */
-    ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
-    ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
     ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
     ierr = PetscGetTime(&tsetup2);CHKERRQ(ierr);
@@ -319,13 +317,13 @@ int main(int argc,char **args)
     */
     ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
     if (trans) {
-      ierr = KSPSolveTranspose(ksp);CHKERRQ(ierr);
+      ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);
     } else {
       int  num_rhs=1;
       ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsHasName(PETSC_NULL,"-cknorm",&cknorm);CHKERRQ(ierr);
       while ( num_rhs-- ) {
-        ierr = KSPSolve(ksp);CHKERRQ(ierr);
+        ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
       }
       ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
       if (cknorm){   /* Check error for each rhs */

@@ -158,9 +158,7 @@ int main(int argc,char **args)
     ierr = PetscOptionsHasName(PETSC_NULL,"-view_exact_sol",&flg);CHKERRQ(ierr);
     if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
-    ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
-    ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
     /* 
        Check the error

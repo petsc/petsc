@@ -209,9 +209,7 @@
       call KSPSetOperators(ksp,A,A2,SAME_PRECONDITIONER,ierr)
 
 ! Solve linear system
-      call KSPSetRhs(ksp,b,ierr)
-      call KSPSetSolution(ksp,x,ierr)
-      call KSPSolve(ksp,ierr)
+      call KSPSolve(ksp,b,x,ierr)
 
 ! Destroy the preconditioner matrix on the last time through
       if (count .eq. nsteps) call MatDestroy(A2,ierr)

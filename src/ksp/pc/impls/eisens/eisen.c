@@ -171,7 +171,7 @@ static int PCSetUp_Eisenstat(PC pc)
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (!pc->setupcalled) {
-    ierr = VecDuplicate(pc->vec,&eis->diag);CHKERRQ(ierr);
+    ierr = MatGetVecs(pc->pmat,&eis->diag,0);CHKERRQ(ierr);
     PetscLogObjectParent(pc,eis->diag);
   }
   ierr = MatGetDiagonal(pc->pmat,eis->diag);CHKERRQ(ierr);

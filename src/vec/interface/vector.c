@@ -37,15 +37,15 @@ static int VecSetTypeFromOptions_Private(Vec vec)
   PetscTruth opt;
   const char *defaultType;
   char       typeName[256];
-  int        numProcs;
+  int        size;
   int        ierr;
 
   PetscFunctionBegin;
-  if (vec->type_name != PETSC_NULL) {
+  if (vec->type_name) {
     defaultType = vec->type_name;
   } else {
-    ierr = MPI_Comm_size(vec->comm, &numProcs);                                                           CHKERRQ(ierr);
-    if (numProcs > 1) {
+    ierr = MPI_Comm_size(vec->comm, &size);                                                           CHKERRQ(ierr);
+    if (size > 1) {
       defaultType = VECMPI;
     } else {
       defaultType = VECSEQ;
@@ -55,9 +55,8 @@ static int VecSetTypeFromOptions_Private(Vec vec)
   if (!VecRegisterAllCalled) {
     ierr = VecRegisterAll(PETSC_NULL);                                                                    CHKERRQ(ierr);
   }
-  ierr = PetscOptionsList("-vec_type", "Vector type"," VecSetType", VecList, defaultType, typeName, 256, &opt);
-  CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  ierr = PetscOptionsList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
+  if (opt) {
     ierr = VecSetType(vec, typeName);                                                                     CHKERRQ(ierr);
   } else {
     ierr = VecSetType(vec, defaultType);                                                                  CHKERRQ(ierr);
@@ -98,7 +97,7 @@ int VecSetFromOptions(Vec vec)
 
   /* Handle generic vector options */
   ierr = PetscOptionsHasName(PETSC_NULL, "-help", &opt);                                                  CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = VecPrintHelp(vec);                                                                             CHKERRQ(ierr);
   }
 
@@ -106,7 +105,7 @@ int VecSetFromOptions(Vec vec)
   ierr = VecSetTypeFromOptions_Private(vec);                                                              CHKERRQ(ierr);
 
   /* Handle specific vector options */
-  if (vec->ops->setfromoptions != PETSC_NULL) {
+  if (vec->ops->setfromoptions) {
     ierr = (*vec->ops->setfromoptions)(vec);                                                              CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();                                                                               CHKERRQ(ierr);

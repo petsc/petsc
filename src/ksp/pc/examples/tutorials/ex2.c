@@ -89,8 +89,6 @@ int main(int argc,char **argv)
   /*  ierr = PCICCSetShift(prec,PETSC_TRUE); CHKERRQ(ierr); */
 
   ierr = KSPSetFromOptions(solver); CHKERRQ(ierr);
-  ierr = KSPSetRhs(solver,B); CHKERRQ(ierr);
-  ierr = KSPSetSolution(solver,X); CHKERRQ(ierr);
   ierr = KSPSetUp(solver); CHKERRQ(ierr);
 
   /*
@@ -108,7 +106,7 @@ int main(int argc,char **argv)
    * without the shift this will diverge with
    * an indefinite preconditioner
    */
-  ierr = KSPSolve(solver); CHKERRQ(ierr);
+  ierr = KSPSolve(solver,B,X); CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(solver,&reason); CHKERRQ(ierr);
   if (reason==KSP_DIVERGED_INDEFINITE_PC) {
     printf("\nDivergence because of indefinite preconditioner;\n");

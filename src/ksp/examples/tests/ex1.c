@@ -39,9 +39,7 @@ int main(int argc,char **args)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(ksp,u);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
 
   ierr = MatMult(C,u,x);CHKERRQ(ierr);
   ierr = VecAXPY(&mone,b,x);CHKERRQ(ierr);

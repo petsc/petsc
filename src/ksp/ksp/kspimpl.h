@@ -108,6 +108,7 @@ struct _p_KSP {
 EXTERN int KSPDefaultBuildSolution(KSP,Vec,Vec*);
 EXTERN int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 EXTERN int KSPDefaultDestroy(KSP);
+EXTERN int KSPGetVecs(KSP,int,Vec**);
 EXTERN int KSPDefaultGetWork(KSP,int);
 EXTERN int KSPDefaultFreeWork(KSP);
 EXTERN int KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,Vec);
@@ -119,7 +120,7 @@ EXTERN int KSPUnwindPreconditioner(KSP,Vec,Vec);
 */
 #define KSP_MatMult(ksp,A,x,y)               (!ksp->transpose_solve) ?  MatMult(A,x,y)               : MatMultTranspose(A,x,y) 
 #define KSP_MatMultTranspose(ksp,A,x,y)      (!ksp->transpose_solve) ?  MatMultTranspose(A,x,y)      : MatMult(A,x,y) 
-#define KSP_PCApply(ksp,B,x,y)               (!ksp->transpose_solve) ?  PCApply(B,x,y,ksp->pc_side)               : PCApplyTranspose(B,x,y) 
+#define KSP_PCApply(ksp,B,x,y)               (!ksp->transpose_solve) ?  PCApply(B,x,y,ksp->pc_side)  : PCApplyTranspose(B,x,y) 
 #define KSP_PCApplyTranspose(ksp,B,x,y)      (!ksp->transpose_solve) ?  PCApplyTranspose(B,x,y)      : PCApply(B,x,y,ksp->pc_side) 
 #define KSP_PCApplyBAorAB(ksp,pc,side,x,y,w) (!ksp->transpose_solve) ?  PCApplyBAorAB(pc,side,x,y,w) : PCApplyBAorABTranspose(pc,side,x,y,w)
 

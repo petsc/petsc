@@ -232,9 +232,7 @@ int main(int argc,char **argv)
           - Then solve the Newton system.
      */
     ierr = KSPSetOperators(ksp,J,J,mat_flag);CHKERRQ(ierr);
-    ierr = KSPSetRhs(ksp,F);CHKERRQ(ierr);
-    ierr = KSPSetSolution(ksp,Y);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp,F,Y);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&lin_its);CHKERRQ(ierr);
 
     /* 

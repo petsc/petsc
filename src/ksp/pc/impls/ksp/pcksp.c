@@ -18,9 +18,7 @@ static int PCApply_KSP(PC pc,Vec x,Vec y)
   PC_KSP *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
-  ierr      = KSPSetRhs(jac->ksp,x);CHKERRQ(ierr);
-  ierr      = KSPSetSolution(jac->ksp,y);CHKERRQ(ierr);
-  ierr      = KSPSolve(jac->ksp);CHKERRQ(ierr);
+  ierr      = KSPSolve(jac->ksp,x,y);CHKERRQ(ierr);
   ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;
   PetscFunctionReturn(0);
@@ -34,9 +32,7 @@ static int PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
   PC_KSP *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
-  ierr      = KSPSetRhs(jac->ksp,x);CHKERRQ(ierr);
-  ierr      = KSPSetSolution(jac->ksp,y);CHKERRQ(ierr);
-  ierr      = KSPSolveTranspose(jac->ksp);CHKERRQ(ierr);
+  ierr      = KSPSolveTranspose(jac->ksp,x,y);CHKERRQ(ierr);
   ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;
   PetscFunctionReturn(0);
@@ -56,8 +52,6 @@ static int PCSetUp_KSP(PC pc)
   else                      mat = pc->pmat;
 
   ierr = KSPSetOperators(jac->ksp,mat,pc->pmat,pc->flag);CHKERRQ(ierr);
-  ierr = KSPSetRhs(jac->ksp,pc->vec);CHKERRQ(ierr);
-  ierr = KSPSetSolution(jac->ksp,pc->vec);CHKERRQ(ierr);
   ierr = KSPSetUp(jac->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

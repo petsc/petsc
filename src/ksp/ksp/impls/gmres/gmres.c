@@ -43,6 +43,8 @@ int    KSPSetUp_GMRES(KSP ksp)
   unsigned  int size,hh,hes,rs,cc;
   int       ierr,max_k,k;
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
+  Vec       vec;
+  Mat       pmat;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
@@ -80,9 +82,11 @@ int    KSPSetUp_GMRES(KSP ksp)
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(int),&gmres->mwork_alloc);CHKERRQ(ierr);
   PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)+sizeof(int)));
 
+  ierr = PCGetOperators(ksp->B,0,&pmat,0);CHKERRQ(ierr);
+  ierr = MatGetVecs(pmat,&vec,0);CHKERRQ(ierr);
   if (gmres->q_preallocate) {
     gmres->vv_allocated   = VEC_OFFSET + 2 + max_k;
-    ierr = VecDuplicateVecs(VEC_RHS,gmres->vv_allocated,&gmres->user_work[0]);CHKERRQ(ierr);
+    ierr = KSPGetVecs(ksp,gmres->vv_allocated,&gmres->user_work[0]);CHKERRQ(ierr);
     PetscLogObjectParents(ksp,gmres->vv_allocated,gmres->user_work[0]);
     gmres->mwork_alloc[0] = gmres->vv_allocated;
     gmres->nwork_alloc    = 1;
@@ -91,7 +95,7 @@ int    KSPSetUp_GMRES(KSP ksp)
     }
   } else {
     gmres->vv_allocated    = 5;
-    ierr = VecDuplicateVecs(ksp->vec_rhs,5,&gmres->user_work[0]);CHKERRQ(ierr);
+    ierr = KSPGetVecs(ksp,5,&gmres->user_work[0]);CHKERRQ(ierr);
     PetscLogObjectParents(ksp,5,gmres->user_work[0]);
     gmres->mwork_alloc[0]  = 5;
     gmres->nwork_alloc     = 1;
@@ -99,6 +103,7 @@ int    KSPSetUp_GMRES(KSP ksp)
       gmres->vecs[k] = gmres->user_work[0][k];
     }
   }
+  ierr = VecDestroy(vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -206,7 +211,7 @@ int GMREScycle(int *itcount,KSP ksp)
     preconditioning from the solution
    */
   /* Form the solution (or the solution so far) */
-  ierr = BuildGmresSoln(GRS(0),VEC_SOLN,VEC_SOLN,ksp,it-1);CHKERRQ(ierr);
+  ierr = BuildGmresSoln(GRS(0),ksp->vec_sol,ksp->vec_sol,ksp,it-1);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -231,7 +236,7 @@ int KSPSolve_GMRES(KSP ksp)
   itcount     = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
   while (!ksp->reason) {
-    ierr     = KSPInitialResidual(ksp,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),VEC_RHS);CHKERRQ(ierr);
+    ierr     = KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs);CHKERRQ(ierr);
     ierr     = GMREScycle(&its,ksp);CHKERRQ(ierr);
     itcount += its;  
     if (itcount >= ksp->max_it) {
@@ -424,7 +429,7 @@ static int GMRESGetNewVectors(KSP ksp,int it)
   if (!nalloc) PetscFunctionReturn(0);
 
   gmres->vv_allocated += nalloc;
-  ierr = VecDuplicateVecs(ksp->vec_rhs,nalloc,&gmres->user_work[nwork]);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nalloc,&gmres->user_work[nwork]);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,nalloc,gmres->user_work[nwork]);CHKERRQ(ierr);
   gmres->mwork_alloc[nwork] = nalloc;
   for (k=0; k<nalloc; k++) {
@@ -455,7 +460,7 @@ int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result)
     PetscLogObjectMemory(ksp,gmres->max_k*sizeof(PetscScalar));
   }
 
-  ierr = BuildGmresSoln(gmres->nrs,VEC_SOLN,ptr,ksp,gmres->it);CHKERRQ(ierr);
+  ierr = BuildGmresSoln(gmres->nrs,ksp->vec_sol,ptr,ksp,gmres->it);CHKERRQ(ierr);
   *result = ptr;
   PetscFunctionReturn(0);
 }

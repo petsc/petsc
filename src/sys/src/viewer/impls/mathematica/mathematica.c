@@ -1771,13 +1771,13 @@ int PetscViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D(PetscView
   iCtx.order       = grid->order;
   iCtx.ghostVec    = grid->ghostVec;
   iCtx.field       = grid->viewField;
-  iCtx.numProcs    = mesh->part->numProcs;
+  iCtx.size        = mesh->part->size;
   iCtx.rank        = mesh->part->rank;
-  ierr = PetscMalloc(iCtx.numProcs   * sizeof(int),      &iCtx.activeProcs);                              CHKERRQ(ierr);
-  ierr = PetscMalloc(iCtx.numProcs   * sizeof(int),      &iCtx.calcProcs);                                CHKERRQ(ierr);
-  ierr = PetscMalloc(iCtx.numProcs*3 * sizeof(PetscScalar),   &iCtx.coords);                              CHKERRQ(ierr);
-  ierr = PetscMalloc(iCtx.numProcs   * sizeof(PetscScalar *), &iCtx.values);                              CHKERRQ(ierr);
-  for(proc = 0; proc < iCtx.numProcs; proc++) {
+  ierr = PetscMalloc(iCtx.size   * sizeof(int),      &iCtx.activeProcs);                              CHKERRQ(ierr);
+  ierr = PetscMalloc(iCtx.size   * sizeof(int),      &iCtx.calcProcs);                                CHKERRQ(ierr);
+  ierr = PetscMalloc(iCtx.size*3 * sizeof(PetscScalar),   &iCtx.coords);                              CHKERRQ(ierr);
+  ierr = PetscMalloc(iCtx.size   * sizeof(PetscScalar *), &iCtx.values);                              CHKERRQ(ierr);
+  for(proc = 0; proc < iCtx.size; proc++) {
     ierr = PetscMalloc(comp * sizeof(PetscScalar), &iCtx.values[proc]);                                   CHKERRQ(ierr);
   }
 
@@ -1839,7 +1839,7 @@ int PetscViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D(PetscView
   ierr = PetscFree(iCtx.activeProcs);                                                                    CHKERRQ(ierr);
   ierr = PetscFree(iCtx.calcProcs);                                                                      CHKERRQ(ierr);
   ierr = PetscFree(iCtx.coords);                                                                         CHKERRQ(ierr);
-  for(proc = 0; proc < iCtx.numProcs; proc++) {
+  for(proc = 0; proc < iCtx.size; proc++) {
     ierr = PetscFree(iCtx.values[proc]);                                                                 CHKERRQ(ierr);
   }
   ierr = PetscFree(iCtx.values);                                                                         CHKERRQ(ierr);

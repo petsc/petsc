@@ -155,9 +155,7 @@ int main(int argc,char **args)
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(ksp,u);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up

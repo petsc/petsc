@@ -81,12 +81,10 @@ int AppCtxSolve(AppCtx* appctx)
       }
     }
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-    ierr = KSPSetRhs(ksp,appctx->algebra.b);CHKERRQ(ierr);
-    ierr = KSPSetSolution(ksp,appctx->algebra.x);CHKERRQ(ierr);
     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
     PreLoadStage("Solve");  
-    ierr = KSPSolve(ksp);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp,appctx->algebra.b,appctx->algebra.x);CHKERRQ(ierr);
 
     {
       PetscTruth flg;

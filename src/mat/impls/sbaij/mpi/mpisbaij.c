@@ -1781,6 +1781,10 @@ int MatCreate_MPISBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPISBAIJSetPreallocation_C",
                                      "MatMPISBAIJSetPreallocation_MPISBAIJ",
                                      MatMPISBAIJSetPreallocation_MPISBAIJ);CHKERRQ(ierr);
+  B->symmetric                  = PETSC_TRUE;
+  B->structurally_symmetric     = PETSC_TRUE;
+  B->symmetric_set              = PETSC_TRUE;
+  B->structurally_symmetric_set = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -64,9 +64,7 @@ int main(int argc,char **args)
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = PetscGetTime(&time1);CHKERRQ(ierr);
-  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   ierr = PetscGetTime(&time2);CHKERRQ(ierr);
   time = time2 - time1;
   PetscLogStagePop();

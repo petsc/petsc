@@ -228,9 +228,7 @@
 !    - Then solve the Newton system.
 
          call KSPSetOperators(ksp,J,B,SAME_NONZERO_PATTERN,ierr)
-         call KSPSetRhs(ksp,F,ierr)
-         call KSPSetSolution(ksp,Y,ierr)
-         call KSPSolve(ksp,ierr)
+         call KSPSolve(ksp,F,Y,ierr)
 
 !  Compute updated iterate
 

@@ -176,9 +176,7 @@ int SNESSolve_LS(SNES snes)
     /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
-    ierr = KSPSetRhs(snes->ksp,F);CHKERRQ(ierr);
-    ierr = KSPSetSolution(snes->ksp,Y);CHKERRQ(ierr);
-    ierr = KSPSolve(snes->ksp);CHKERRQ(ierr);
+    ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&lits);CHKERRQ(ierr);
 
     if (PetscLogPrintInfo){

@@ -1619,7 +1619,11 @@ int MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqSBAIJSetPreallocation_C",
                                      "MatSeqSBAIJSetPreallocation_SeqSBAIJ",
                                      MatSeqSBAIJSetPreallocation_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_SYMMETRIC);CHKERRQ(ierr);
+
+  B->symmetric                  = PETSC_TRUE;
+  B->structurally_symmetric     = PETSC_TRUE;
+  B->symmetric_set              = PETSC_TRUE;
+  B->structurally_symmetric_set = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

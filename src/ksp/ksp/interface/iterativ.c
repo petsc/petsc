@@ -483,6 +483,38 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPGetVecs"
+/*
+  KSPDefaultGetWork - Gets a number of work vectors.
+
+  Input Parameters:
+. ksp  - iterative context
+. nw   - number of work vectors to allocate
+
+  Output Parameter:
+.  work - the array of vectors created
+
+ */
+int  KSPGetVecs(KSP ksp,int nw,Vec **work)
+{
+  int ierr;
+  Vec vec;
+
+  PetscFunctionBegin;
+  if (ksp->vec_rhs) vec = ksp->vec_rhs;
+  else {
+    Mat pmat;
+    ierr = PCGetOperators(ksp->B,0,&pmat,0);CHKERRQ(ierr);
+    ierr = MatGetVecs(pmat,&vec,0);CHKERRQ(ierr);
+  }
+  ierr = VecDuplicateVecs(vec,nw,work);CHKERRQ(ierr);
+  if (!ksp->vec_rhs) {
+    ierr = VecDestroy(vec);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPDefaultGetWork"
 /*
   KSPDefaultGetWork - Gets a number of work vectors.
@@ -501,7 +533,7 @@ int  KSPDefaultGetWork(KSP ksp,int nw)
   PetscFunctionBegin;
   if (ksp->work) {ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);}
   ksp->nwork = nw;
-  ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&ksp->work);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nw,&ksp->work);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,nw,ksp->work);
   PetscFunctionReturn(0);
 }

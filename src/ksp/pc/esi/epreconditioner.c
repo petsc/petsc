@@ -71,7 +71,6 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::apply( esi::Vector<double
   ierr = yy.getInterface("Vec",reinterpret_cast<void*&>(py));
   ierr = xx.getInterface("Vec",reinterpret_cast<void*&>(px));
 
-  ierr = PCSetVector(this->pc,px);CHKERRQ(ierr);
   return PCApply(this->pc,px,py,PC_LEFT);
 }
 

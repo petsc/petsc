@@ -25,9 +25,7 @@ int MGMCycle_Private(MG *mglevels,PetscTruth *converged)
   if (converged) *converged = PETSC_FALSE;
 
   if (mg->eventsolve) {ierr = PetscLogEventBegin(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
-  ierr = KSPSetRhs(mg->smoothd,mg->b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(mg->smoothd,mg->x);CHKERRQ(ierr);
-  ierr = KSPSolve(mg->smoothd);CHKERRQ(ierr);
+  ierr = KSPSolve(mg->smoothd,mg->b,mg->x);CHKERRQ(ierr);
   if (mg->eventsolve) {ierr = PetscLogEventEnd(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
   if (mg->level) {  /* not the coarsest grid */
     ierr = (*mg->residual)(mg->A,mg->b,mg->x,mg->r);CHKERRQ(ierr);
@@ -55,9 +53,7 @@ int MGMCycle_Private(MG *mglevels,PetscTruth *converged)
     }
     ierr = MatInterpolateAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
     if (mg->eventsolve) {ierr = PetscLogEventBegin(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
-    ierr = KSPSetRhs(mg->smoothu,mg->b);CHKERRQ(ierr); 
-    ierr = KSPSetSolution(mg->smoothu,mg->x);CHKERRQ(ierr); 
-    ierr = KSPSolve(mg->smoothu);CHKERRQ(ierr); 
+    ierr = KSPSolve(mg->smoothu,mg->b,mg->x);CHKERRQ(ierr); 
     if (mg->eventsolve) {ierr = PetscLogEventEnd(mg->eventsolve,0,0,0,0);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
@@ -341,13 +337,6 @@ static int PCSetUp_MG(PC pc)
   MPI_Comm    comm;
 
   PetscFunctionBegin;
-  /*
-     temporarily stick pc->vec into mg[0]->b and x so that 
-   KSPSetUp is happy. Since currently those slots are empty.
-  */
-  mg[n-1]->x = pc->vec;
-  mg[n-1]->b = pc->vec;
-
   if (pc->setupcalled == 0) {
     ierr = PetscOptionsHasName(0,"-pc_mg_monitor",&monitor);CHKERRQ(ierr);
      
@@ -379,8 +368,6 @@ static int PCSetUp_MG(PC pc)
     if (mg[i]->smoothd) {
       ierr = KSPSetInitialGuessNonzero(mg[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
       if (mg[i]->eventsetup) {ierr = PetscLogEventBegin(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
-      ierr = KSPSetRhs(mg[i]->smoothd,mg[i]->b);CHKERRQ(ierr);
-      ierr = KSPSetSolution(mg[i]->smoothd,mg[i]->x);CHKERRQ(ierr);
       ierr = KSPSetUp(mg[i]->smoothd);CHKERRQ(ierr);
       if (mg[i]->eventsetup) {ierr = PetscLogEventEnd(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
     }
@@ -389,8 +376,6 @@ static int PCSetUp_MG(PC pc)
     if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
       ierr = KSPSetInitialGuessNonzero(mg[i]->smoothu,PETSC_TRUE);CHKERRQ(ierr);
       if (mg[i]->eventsetup) {ierr = PetscLogEventBegin(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
-      ierr = KSPSetRhs(mg[i]->smoothu,mg[i]->b);CHKERRQ(ierr);
-      ierr = KSPSetSolution(mg[i]->smoothu,mg[i]->x);CHKERRQ(ierr);
       ierr = KSPSetUp(mg[i]->smoothu);CHKERRQ(ierr);
       if (mg[i]->eventsetup) {ierr = PetscLogEventEnd(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
     }
@@ -420,8 +405,6 @@ static int PCSetUp_MG(PC pc)
   }
 
   if (mg[0]->eventsetup) {ierr = PetscLogEventBegin(mg[0]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
-  ierr = KSPSetRhs(mg[0]->smoothd,mg[0]->b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(mg[0]->smoothd,mg[0]->x);CHKERRQ(ierr);
   ierr = KSPSetUp(mg[0]->smoothd);CHKERRQ(ierr);
   if (mg[0]->eventsetup) {ierr = PetscLogEventEnd(mg[0]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
 

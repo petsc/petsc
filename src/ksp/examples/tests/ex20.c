@@ -85,10 +85,7 @@ int main(int argc,char **args)
     ierr = PCNullSpaceAttach(pc,nullsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
   }
-
-  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(ksp,u);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
 
 
   /* Free work space */

@@ -41,16 +41,16 @@ int VecSetType(Vec vec, const VecType method)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject) vec, method, &match);                                             CHKERRQ(ierr);
-  if (match == PETSC_TRUE) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(0);
 
   /* Get the function pointers for the vector requested */
-  if (VecRegisterAllCalled == PETSC_FALSE) {
+  if (!VecRegisterAllCalled) {
     ierr = VecRegisterAll(PETSC_NULL);                                                                    CHKERRQ(ierr);
   }
   ierr = PetscFListFind(vec->comm, VecList, method,(void (**)(void)) &r);                                 CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_WRONG, "Unknown vector type: %s", method);
 
-  if (vec->ops->destroy != PETSC_NULL) {
+  if (vec->ops->destroy) {
     ierr = (*vec->ops->destroy)(vec);                                                                     CHKERRQ(ierr);
   }
   ierr = (*r)(vec);                                                                                       CHKERRQ(ierr);
