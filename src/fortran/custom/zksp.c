@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zksp.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.3 1995/10/09 21:58:54 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -40,7 +40,7 @@ static char vcid[] = "$Id: zksp.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $"
 void kspsetoptionsprefix_(KSP ksp,char *prefix, int *__ierr,int len ){
   char *t;
   if (prefix[len] != 0) {
-    t = (char *) PETSCMALLOC( (len+1)*sizeof(char) ); 
+    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
     PetscStrncpy(t,prefix,len);
     t[len] = 0;
   }
@@ -106,17 +106,17 @@ void kspgetrhs_(KSP itP,Vec *r, int *__ierr ){
    Possible bleeds memory but cannot be helped.
 */
 void ksplgmonitorcreate_(char *host,char *label,int *x,int *y,int *m,
-                       int *n,DrawLGCtx *ctx, int *__ierr,int len1,int len2){
+                       int *n,DrawLG *ctx, int *__ierr,int len1,int len2){
   char *t1,*t2;
-  DrawLGCtx lg;
+  DrawLG lg;
   if (host[len1] != 0) {
-    t1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char) ); 
+    t1 = (char *) PetscMalloc( (len1+1)*sizeof(char) ); 
     PetscStrncpy(t1,host,len1);
     t1[len1] = 0;
   }
   else t1 = host;
   if (label[len2] != 0) {
-    t2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char) ); 
+    t2 = (char *) PetscMalloc( (len2+1)*sizeof(char) ); 
     PetscStrncpy(t2,label,len2);
     t2[len2] = 0;
   }
@@ -124,8 +124,8 @@ void ksplgmonitorcreate_(char *host,char *label,int *x,int *y,int *m,
   *__ierr = KSPLGMonitorCreate(t1,t2,*x,*y,*m,*n,&lg);
   *(int*) ctx = MPIR_FromPointer(lg);
 }
-void ksplgmonitordestroy_(DrawLGCtx ctx, int *__ierr ){
-  *__ierr = KSPLGMonitorDestroy((DrawLGCtx)MPIR_ToPointer( *(int*)(ctx) ));
+void ksplgmonitordestroy_(DrawLG ctx, int *__ierr ){
+  *__ierr = KSPLGMonitorDestroy((DrawLG)MPIR_ToPointer( *(int*)(ctx) ));
   MPIR_RmPointer(*(int*)(ctx) );
 }
 

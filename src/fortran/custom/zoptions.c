@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.3 1995/10/09 21:58:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: zoptions.c,v 1.4 1995/10/26 22:39:24 curfman Exp bsmith $";
 #endif
 /*
     Fortran stub for PetscInitialize and Options routines. 
@@ -19,7 +19,9 @@ extern int          PetscBeganMPI;
 extern MPI_Datatype  MPIU_COMPLEX;
 #endif
 
+
 #ifdef FORTRANCAPS
+#define optionsgetintarray_    OPTIONSGETINTARRAY
 #define optionssetvalue_       OPTIONSSETVALUE
 #define optionshasname_        OPTIONSHASNAME
 #define optionsgetint_         OPTIONSGETINT
@@ -27,6 +29,8 @@ extern MPI_Datatype  MPIU_COMPLEX;
 #define optionsgetdoublearray_ OPTIONSGETDOUBLEARRAY
 #define petscfinalize_         PETSCFINALIZE
 #define petscsetcommonblock_   PETSCSETCOMMONBLOCK
+#define petscsetbasepointers_  PETSCSETBASEPOINTERS
+#define optionsgetstring_      OPTIONSGETSTRING
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define optionssetvalue_       optionssetvalue
 #define optionshasname_        optionshasname
@@ -35,7 +39,11 @@ extern MPI_Datatype  MPIU_COMPLEX;
 #define optionsgetdoublearray_ optionsgetdoublearray
 #define petscfinalize_         petscfinalize
 #define petscsetcommonblock_   petscsetcommonblock
+#define petscsetbasepointers_  petscsetbasepointers
+#define optionsgetstring_      optionsgetstring
+#define optionsgetintarray_    optionsgetintarray
 #endif
+
 
 int OptionsCheckInitial_Private(),
     OptionsCreate_Private(int*,char***,char*,char*),
@@ -93,12 +101,12 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   }
   MPI_Bcast(argc,1,MPI_INT,0,MPI_COMM_WORLD);
 
-  *argv = (char **) PETSCMALLOC((*argc+1)*(warg*sizeof(char)+sizeof(char*))); 
+  *argv = (char **) PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*))); 
   CHKPTRQ(*argv);
   (*argv)[0] = (char*) (*argv + *argc + 1);
 
   if (!rank) {
-    PetscZero((*argv)[0],(*argc)*warg*sizeof(char));
+    PetscMemzero((*argv)[0],(*argc)*warg*sizeof(char));
     for ( i=0; i<*argc; i++ ) {
       (*argv)[i+1] = (*argv)[i] + warg;
       getarg_( &i, (*argv)[i], warg );
@@ -136,7 +144,7 @@ int petscinitialize(int *err)
 #endif
   PETScParseFortranArgs_Private(&argc,&args);
   ierr = OptionsCreate_Private(&argc,&args,0,0); CHKERRQ(ierr);
-  PETSCFREE(args);
+  PetscFree(args);
   ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr);
   ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
 
@@ -163,18 +171,18 @@ int  optionssetvalue_(char *name,char *value,int *err, int len1,int len2)
   char *c1,*c2;
   int  ierr;
   if (!name[len1] == 0) {
-    c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
+    c1 = (char *) PetscMalloc( (len1+1)*sizeof(char)); 
     PetscStrncpy(c1,name,len1);
     c1[len1] = 0;
   } else c1 = name;
   if (!value[len2] == 0) {
-    c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
+    c2 = (char *) PetscMalloc( (len2+1)*sizeof(char)); 
     PetscStrncpy(c2,value,len2);
     c2[len2] = 0;
   } else c2 = value;
   ierr = OptionsSetValue(c1,c2);
-  if (c1 != name) PETSCFREE(c1);
-  if (c2 != value) PETSCFREE(c2);
+  if (c1 != name) PetscFree(c1);
+  if (c2 != value) PetscFree(c2);
   return *err = ierr;
 }
 
@@ -182,18 +190,18 @@ int  optionshasname_(char* pre,char *name,int *err,int len1,int len2){
   char *c1,*c2;
   int  ierr;
   if (!pre[len1] == 0) {
-    c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
+    c1 = (char *) PetscMalloc( (len1+1)*sizeof(char)); 
     PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
   } else c1 = pre;
   if (!name[len2] == 0) {
-    c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
+    c2 = (char *) PetscMalloc( (len2+1)*sizeof(char)); 
     PetscStrncpy(c2,name,len2);
     c2[len2] = 0;
   } else c2 = name;
   ierr = OptionsHasName(c1,c2);
-  if (c1 != pre) PETSCFREE(c1);
-  if (c2 != name) PETSCFREE(c2);
+  if (c1 != pre) PetscFree(c1);
+  if (c2 != name) PetscFree(c2);
   return *err = ierr;
 }
 
@@ -202,18 +210,18 @@ int  optionsgetint_(char*pre,char *name,int *ivalue,int *err,
   char *c1,*c2;
   int  ierr;
   if (!pre[len1] == 0) {
-    c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
+    c1 = (char *) PetscMalloc( (len1+1)*sizeof(char)); 
     PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
   } else c1 = pre;
   if (!name[len2] == 0) {
-    c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
+    c2 = (char *) PetscMalloc( (len2+1)*sizeof(char)); 
     PetscStrncpy(c2,name,len2);
     c2[len2] = 0;
   } else c2 = name;
   ierr = OptionsGetInt(c1,c2,ivalue);
-  if (c1 != pre) PETSCFREE(c1);
-  if (c2 != name) PETSCFREE(c2);
+  if (c1 != pre) PetscFree(c1);
+  if (c2 != name) PetscFree(c2);
   return *err = ierr;
 }
 
@@ -222,18 +230,18 @@ int  optionsgetdouble_(char* pre,char *name,double *dvalue,int *err,
   char *c1,*c2;
   int  ierr;
   if (!pre[len1] == 0) {
-    c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
+    c1 = (char *) PetscMalloc( (len1+1)*sizeof(char)); 
     PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
   } else c1 = pre;
   if (!name[len2] == 0) {
-    c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
+    c2 = (char *) PetscMalloc( (len2+1)*sizeof(char)); 
     PetscStrncpy(c2,name,len2);
     c2[len2] = 0;
   } else c2 = name;
   ierr = OptionsGetDouble(c1,c2,dvalue);
-  if (c1 != pre) PETSCFREE(c1);
-  if (c2 != name) PETSCFREE(c2);
+  if (c1 != pre) PetscFree(c1);
+  if (c2 != name) PetscFree(c2);
   return *err = ierr;
 }
 
@@ -242,65 +250,88 @@ int  optionsgetdoublearray_(char* pre,char *name,
   char *c1,*c2;
   int  ierr;
   if (!pre[len1] == 0) {
-    c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
+    c1 = (char *) PetscMalloc( (len1+1)*sizeof(char)); 
     PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
   } else c1 = pre;
   if (!name[len2] == 0) {
-    c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
+    c2 = (char *) PetscMalloc( (len2+1)*sizeof(char)); 
     PetscStrncpy(c2,name,len2);
     c2[len2] = 0;
   } else c2 = name;
   ierr = OptionsGetDoubleArray(c1,c2,dvalue,nmax);
-  if (c1 != pre) PETSCFREE(c1);
-  if (c2 != name) PETSCFREE(c2);
+  if (c1 != pre) PetscFree(c1);
+  if (c2 != name) PetscFree(c2);
   return *err = ierr;
 }
-#ifdef FORTRANCAPS
-#define optionsgetintarray_ OPTIONSGETINTARRAY
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define optionsgetintarray_ optionsgetintarray
-#endif
+
 int  optionsgetintarray_(char* pre,char *name,int *dvalue,int *nmax,int *err,
                          int len1,int len2){
   char *c1,*c2;
   int  ierr;
   if (!pre[len1] == 0) {
-    c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
+    c1 = (char *) PetscMalloc( (len1+1)*sizeof(char)); 
     PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
   } else c1 = pre;
   if (!name[len2] == 0) {
-    c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
+    c2 = (char *) PetscMalloc( (len2+1)*sizeof(char)); 
     PetscStrncpy(c2,name,len2);
     c2[len2] = 0;
   } else c2 = name;
   ierr = OptionsGetIntArray(c1,c2,dvalue,nmax);
-  if (c1 != pre) PETSCFREE(c1);
-  if (c2 != name) PETSCFREE(c2);
+  if (c1 != pre) PetscFree(c1);
+  if (c2 != name) PetscFree(c2);
   return *err = ierr;
 }
-#ifdef FORTRANCAPS
-#define optionsgetstring_ OPTIONSGETSTRING
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define optionsgetstring_ optionsgetstring
-#endif
+
 int  optionsgetstring_(char *pre,char *name,char *string,
                        int *err, int len1, int len2,int len){
   char *c1,*c2;
   int  ierr;
   if (!pre[len1] == 0) {
-    c1 = (char *) PETSCMALLOC( (len1+1)*sizeof(char)); 
+    c1 = (char *) PetscMalloc( (len1+1)*sizeof(char)); 
     PetscStrncpy(c1,pre,len1);
     c1[len1] = 0;
   } else c1 = pre;
   if (!name[len2] == 0) {
-    c2 = (char *) PETSCMALLOC( (len2+1)*sizeof(char)); 
+    c2 = (char *) PetscMalloc( (len2+1)*sizeof(char)); 
     PetscStrncpy(c2,name,len2);
     c2[len2] = 0;
   } else c2 = name;
   ierr = OptionsGetString(c1,c2,string,len);
-  if (c1 != pre) PETSCFREE(c1);
-  if (c2 != name) PETSCFREE(c2);
+  if (c1 != pre) PetscFree(c1);
+  if (c2 != name) PetscFree(c2);
   return *err = ierr;
 }
+
+/*
+       This is code for translating PETSc memory addresses to integer offsets 
+    for Fortran.
+*/
+static int  PetscInt, PetscDouble;
+       void *PetscNull_Fortran;
+
+int PetscIntAddressToFortran(void *addr)
+{
+  return 1 + (((int)addr) - PetscInt)/sizeof(int);
+}
+
+
+int PetscDoubleAddressToFortran(void *addr)
+{
+  return 1 + (((int)addr) - PetscDouble)/sizeof(double);
+}
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+void petscsetfortranbasepointers_(int *PetscIntIn,double *PetscDoubleIn, void *fnull)
+{
+  PetscInt          = (int) PetscIntIn;
+  PetscDouble       = (int) PetscDoubleIn;
+  PetscNull_Fortran = fnull;
+}
+#if defined(__cplusplus)
+}
+#endif

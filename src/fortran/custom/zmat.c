@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.7 1995/11/21 03:01:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: zmat.c,v 1.8 1995/11/22 03:18:59 curfman Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -32,6 +32,7 @@ static char vcid[] = "$Id: zmat.c,v 1.7 1995/11/21 03:01:50 bsmith Exp curfman $
 #define matgetsubmatrix_              MATGETSUBMATRIX
 #define matload_                      MATLOAD
 #define mattranspose_                 MATTRANSPOSE
+#define matgetarray_                  MATGETARRAY
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define matgetformatfromoptions_      matgetformatfromoptions
 #define matreorderingregisterall_     matreorderingregisterall
@@ -57,6 +58,7 @@ static char vcid[] = "$Id: zmat.c,v 1.7 1995/11/21 03:01:50 bsmith Exp curfman $
 #define matgetsubmatrix_              matgetsubmatrix
 #define matload_                      matload
 #define mattranspose_                 mattranspose
+#define matgetarray_                  matgetarray
 #endif
 
 void matgetformatfromoptions_(MPI_Comm comm,char *prefix,MatType *type,int *set,int *__ierr,int len){
@@ -70,6 +72,13 @@ void matgetformatfromoptions_(MPI_Comm comm,char *prefix,MatType *type,int *set,
   *__ierr = MatGetFormatFromOptions(
 	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),t,
 	(MatType* )MPIR_ToPointer( *(int*)(type) ),set);
+}
+
+void matgetarray_(Mat mat,int *array,int *__ierr)
+{
+  Scalar *mm;
+  *__ierr = MatGetArray((Mat)MPIR_ToPointer( *(int*)(mat) ),&mm);
+  *array = PetscDoubleAddressToFortran(mm);
 }
 
 void mattranspose_(Mat mat,Mat *B, int *__ierr )
@@ -132,6 +141,7 @@ void matconvert_(Mat mat,MatType *newtype,Mat *M, int *__ierr )
 void matcreateseqdense_(MPI_Comm comm,int *m,int *n,Scalar *data,Mat *newmat,int *__ierr )
 {
   Mat mm;
+  if (data == PetscNull_Fortran) data = 0;
   *__ierr = MatCreateSeqDense((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*m,*n,data,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
@@ -161,13 +171,9 @@ void matcreatempirowbs_(MPI_Comm comm,int *m,int *M,int *nz,int *nnz,
                        void *procinfo,Mat *newmat, int *__ierr )
 {
   Mat mm;
-/*
-   The p1 is because Fortran cannot pass in a null pointer 
-*/
-  int *p1 = 0;
-  if (*nnz) p1 = nnz; 
+  if (nnz == PetscNull_Fortran) nnz = 0;
   *__ierr = MatCreateMPIRowbs((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),
-                               *m,*M,*nz,p1,0,&mm);
+                               *m,*M,*nz,nnz,0,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
@@ -175,27 +181,18 @@ void matcreateseqrow_(MPI_Comm comm,int *m,int *n,int *nz,
                            int *nnz,Mat *newmat, int *__ierr )
 {
   Mat mm;
-/*
-   The p1 is because Fortran cannot pass in a null pointer 
-*/
-  int *p1 = 0;
-  if (*nnz) p1 = nnz; 
-  *__ierr = MatCreateSeqRow(
-	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*m,*n,*nz,p1,&mm);
+  if (nnz == PetscNull_Fortran) nnz = 0;
+  *__ierr = MatCreateSeqRow((MPI_Comm)MPIR_ToPointer(*(int*)(comm)),*m,*n,*nz,nnz,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 void matcreatempirow_(MPI_Comm comm,int *m,int *n,int *M,int *N,
        int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat, int *__ierr )
 {
   Mat mm;
-/*
-   The p1, p2 are because Fortran cannot pass in a null pointer 
-*/
-  int *p1 = 0, *p2 = 0;
-  if (*d_nnz) p1 = d_nnz; 
-  if (*o_nnz) p2 = o_nnz; 
+  if (d_nnz == PetscNull_Fortran) d_nnz = 0;
+  if (o_nnz == PetscNull_Fortran) o_nnz = 0;
   *__ierr = MatCreateMPIRow((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),
-                            *m,*n,*M,*N,*d_nz,p1,*o_nz,p2,&mm);
+                            *m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
@@ -291,12 +288,8 @@ void matcreateseqaij_(MPI_Comm comm,int *m,int *n,int *nz,
                            int *nnz,Mat *newmat, int *__ierr )
 {
   Mat mm;
-/*
-   The p1 is because Fortran cannot pass in a null pointer 
-*/
-  int *p1 = 0;
-  if (*nnz) p1 = nnz; 
-  *__ierr = MatCreateSeqAIJ((MPI_Comm)MPIR_ToPointer(*(int*)(comm)),*m,*n,*nz,p1,&mm);
+  if (nnz == PetscNull_Fortran) nnz = 0;
+  *__ierr = MatCreateSeqAIJ((MPI_Comm)MPIR_ToPointer(*(int*)(comm)),*m,*n,*nz,nnz,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
@@ -315,13 +308,9 @@ void matcreatempiaij_(MPI_Comm comm,int *m,int *n,int *M,int *N,
          int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat, int *__ierr )
 {
   Mat mm;
-/*
-   The p1 and p2 are because Fortran cannot pass in a null pointer 
-*/
-  int *p1 = 0,*p2 = 0;
-  if (*d_nnz) p1 = d_nnz; 
-  if (*o_nnz) p2 = o_nnz; 
-  *__ierr = MatCreateMPIAIJ((MPI_Comm)MPIR_ToPointer(*(int*)(comm)),*m,*n,*M,*N,*d_nz,p1,
-                             *o_nz,p2,&mm);
+  if (d_nnz == PetscNull_Fortran) d_nnz = 0;
+  if (o_nnz == PetscNull_Fortran) o_nnz = 0;
+  *__ierr = MatCreateMPIAIJ((MPI_Comm)MPIR_ToPointer(*(int*)(comm)),*m,*n,*M,*N,*d_nz,
+                             d_nnz,*o_nz,o_nnz,&mm);
   *(int*)newmat = MPIR_FromPointer(mm);
 }

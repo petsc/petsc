@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zpc.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zpc.c,v 1.3 1995/10/09 21:58:54 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -128,7 +128,7 @@ void pcgetfactoredmatrix_(PC pc,Mat *mat, int *__ierr ){
 void pcsetoptionsprefix_(PC pc,char *prefix, int *__ierr,int len ){
   char *t;
   if (prefix[len] != 0) {
-    t = (char *) PETSCMALLOC( (len+1)*sizeof(char) ); 
+    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
     PetscStrncpy(t,prefix,len);
     t[len] = 0;
   }
