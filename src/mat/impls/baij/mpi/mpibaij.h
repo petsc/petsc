@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.5 1996/12/03 15:50:02 balay Exp bsmith $ */
+/* $Id: mpibaij.h,v 1.6 1997/03/09 17:58:43 bsmith Exp balay $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 
@@ -30,6 +30,9 @@ typedef struct {
   int           rmax;                   /* maximum message length */
   int           *colmap;                /* local col number of off-diag col */
   int           *garray;                /* work array */
+
+  /* The following variable is used by blocked matrix assembly */
+  Scalar        *barray;                /* Block array of size bs2 */
 
   /* The following variables are used for matrix-vector products */
 
