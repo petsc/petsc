@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.302 2000/02/22 14:38:21 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.303 2000/02/24 04:01:10 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -128,7 +128,7 @@ petscblas: info chkpetsc_dir
 	-${RM} -f ${PDIR}/libpetscblas.*
 	-@echo "BEGINNING TO COMPILE C VERSION OF BLAS AND LAPACK"
 	-@echo "========================================="
-	-@cd src/blaslapack; \
+	-@cd src/blaslapack/c; \
 	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=libfast tree
 	${RANLIB} ${PDIR}/libpetscblas.a
 	-@chmod g+w  ${PDIR}/*.a
