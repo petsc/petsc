@@ -13,13 +13,6 @@ c  Uniprocessor array sizes:
 c      COMMON /DVRBLS/ DR(NI1,NJ1,NK1),DRU(NI1,NJ1,NK1),DRV(NI1,NJ1,NK1)
 c      COMMON /DVRBLS/ DRW(NI1,NJ1,NK1),DE(NI1,NJ1,NK1)
 
-
-#define dr(i,j,k)  dxx(1,i,j,k)
-#define dru(i,j,k) dxx(2,i,j,k)
-#define drv(i,j,k) dxx(3,i,j,k)
-#define drw(i,j,k) dxx(4,i,j,k)
-#define de(i,j,k)  dxx(5,i,j,k)
-
 #define DR(i,j,k) dxx(1,i,j,k)
 #define DRU(i,j,k) dxx(2,i,j,k)
 #define DRV(i,j,k) dxx(3,i,j,k)
