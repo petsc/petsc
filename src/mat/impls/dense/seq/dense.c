@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.21 1995/04/15 03:28:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.22 1995/04/16 16:09:24 curfman Exp curfman $";
 #endif
 
 /*
@@ -575,8 +575,8 @@ static struct _MatOps MatOps = {MatInsert_Dense,
 };
 /*@
    MatCreateSequentialDense - Creates a sequential dense matrix that 
-   is stored in the usual Fortran 77 manner. Many of the matrix
-   operations use the BLAS and LAPACK routines.
+   is stored in column major order (the usual Fortran 77 manner). Many 
+   of the matrix operations use the BLAS and LAPACK routines.
 
    Input Parameters:
 .  comm - MPI communicator, set to MPI_COMM_SELF
@@ -586,7 +586,9 @@ static struct _MatOps MatOps = {MatInsert_Dense,
    Output Parameter:
 .  newmat - the matrix
 
-  Keywords: Mat, dense, matrix, LAPACK, BLAS
+.keywords: Mat, dense, matrix, LAPACK, BLAS
+
+.seealso: MatCreateSequentialAIJ()
 @*/
 int MatCreateSequentialDense(MPI_Comm comm,int m,int n,Mat *newmat)
 {
