@@ -5,6 +5,10 @@ import sourceDatabase
 import atexit
 import cPickle
 import os
+import sys
+
+if not hasattr(sys, 'version_info'):
+  raise RuntimeError('You must have Python version 2.2 or higher to run the build system')
 
 class Framework(base.Base):
   '''This is the base class for all user make modules'''
@@ -210,7 +214,6 @@ class Framework(base.Base):
     '''Runs configure.py if it is present, and either configure.log is missing or -forceConfigure is given'''
     if self.argDB['noConfigure']: return
     import config.framework
-    import sys
 
     root      = self.project.getRoot()
     framework = config.framework.Framework(sys.argv[1:])
@@ -596,6 +599,5 @@ class Framework(base.Base):
       print str(e)
       if not self.argDB['noStackTrace']:
         import traceback
-        import sys
         self.debugPrint(str(traceback.print_tb(sys.exc_info()[2])), 1, 'build')
         print traceback.print_tb(sys.exc_info()[2])
