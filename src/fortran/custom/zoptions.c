@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.17 1996/03/05 04:29:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.18 1996/03/05 04:44:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -17,12 +17,14 @@ static char vcid[] = "$Id: zoptions.c,v 1.17 1996/03/05 04:29:59 bsmith Exp bsmi
 */
 #define T3DMPI_FORTRAN
 #include "zpetsc.h" 
+#include "sys.h"
 #include <stdio.h>
 #include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
 extern int          PetscBeganMPI;
 
 #ifdef HAVE_FORTRAN_CAPS
+#define petscarchgettype_             PETSCARCHGETTYPE
 #define optionsgetintarray_           OPTIONSGETINTARRAY
 #define optionssetvalue_              OPTIONSSETVALUE
 #define optionshasname_               OPTIONSHASNAME
@@ -38,6 +40,7 @@ extern int          PetscBeganMPI;
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define petscarchgettype_             petscarchgettype
 #define optionssetvalue_              optionssetvalue
 #define optionshasname_               optionshasname
 #define optionsgetint_                optionsgetint
@@ -63,7 +66,7 @@ extern int          PetscBeganMPI;
 #endif
 
 int OptionsCheckInitial_Private(),
-    OptionsCreate_Private(int*,char***,char*,char*),
+    OptionsCreate_Private(int*,char***,char*),
     OptionsSetAlias_Private(char *,char *);
 
 /*
@@ -145,10 +148,10 @@ extern "C" {
 
 extern int PetscInitializedCalled;
 
-void petscinitialize_(int *err)
+void petscinitialize_(char *filename,int *err,int len)
 {
   int  flag,argc = 0,s1,s2,s3;
-  char **args = 0;
+  char **args = 0,*t1;
   *err = 1;
 
   if (PetscInitializedCalled) {*err = 0; return;}
@@ -165,7 +168,9 @@ void petscinitialize_(int *err)
   MPI_Type_commit(&MPIU_COMPLEX);
 #endif
   PETScParseFortranArgs_Private(&argc,&args);
-  *err = OptionsCreate_Private(&argc,&args,0,0); 
+  FIXCHAR(filename,len,t1);
+  *err = OptionsCreate_Private(&argc,&args,t1); 
+  FREECHAR(filename,t1);
   if (*err) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
   PetscFree(args);
   *err = OptionsCheckInitial_Private(); 
@@ -311,6 +316,16 @@ void petscsetfortranbasepointers_(void *fnull,char *fcnull)
 
 #endif  /* end of !defined(PARCH_t3d) */
 
+void petscgetarchtype_(char *str,int *__ierr,int len)
+{
+#if defined(PARCH_t3d)
+  char *tstr = _fcdtocp(str); int len1 = _fcdlen(str);
+  *__ierr = PetscGetArchType(tstr,len1);
+#else
+  *__ierr = PetscGetArchType(str,len);
+#endif
+}
+
 #if defined(__cplusplus)
 }
 #endif
@@ -364,8 +379,46 @@ Scalar *PetscScalarAddressFromFortran(Scalar *base,int addr)
   return base + addr;
 }
 
+/*@
+    PetscCObjectToFortranObject - Converts a PETSc object represented
+       in C to one appropriate to pass to Fortran.
 
+  Input Parameter:
+.   cobj - the PETSc C object
 
+  Output Parameter:
+.   fobj - the PETSc Fortran object
+
+  Notes: Must be called in a C/C++ routine.
+
+.seealso: PetscFortranObjectToCObject()
+@*/
+int PetscCObjectToFortranObject(void *cobj,int *fobj)
+{
+  PetscValidHeader(cobj);
+  *fobj = MPIR_FromPointer(cobj);
+  return 0;
+}
+
+/*@
+    PetscFortranObjectToCObject - Converts a PETSc object represented
+       in Fortran to one appropriate for C.
+
+  Input Parameter:
+.   fobj - the PETSc Fortran object
+
+  Output Parameter:
+.   cobj - the PETSc C object
+
+  Notes: Must be called in a C/C++ routine.
+
+.seealso: PetscCObjectToFortranObject()
+@*/
+int PetscFortranObjectToCObject(int fobj,void *cobj)
+{
+  (*(void **) cobj) = (void *) MPIR_ToPointer(fobj);
+  return 0;
+}
 
 
 
