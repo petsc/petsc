@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.66 1996/08/15 12:45:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.67 1996/08/17 14:35:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -737,7 +737,8 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE);
   if (inctx->inuse) SETERRQ(1,"VecScatterBegin: Scatter ctx already in use");
-#if defined(PETSC_DEBUG)
+  if (x == y) SETERRQ(PETSC_ERR_IDN,"VecScatterBegin:y cannot be x");
+#if defined(PETSC_BOPT_g)
   VecGetLocalSize_Fast(x,to_n);
   VecGetLocalSize_Fast(y,from_n);
   if (mode == SCATTER_REVERSE) {
@@ -785,6 +786,7 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
   int ierr;
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
+  if (x == y) SETERRQ(PETSC_ERR_IDN,"VecScatterEnd:y cannot be x");
   ctx->inuse = 0;
   if (!(ctx)->scatterend) return 0;
   PLogEventBegin(VEC_ScatterEnd,ctx,x,y,0);
