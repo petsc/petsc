@@ -99,8 +99,10 @@ class Configure(config.base.Configure):
 
     if self.framework.argDB.has_key('CC'):
       yield self.framework.argDB['CC']
+      raise RuntimeError('C compiler you provided with -CC='+self.framework.argDB['CC']+' does not work')
     elif self.framework.argDB.has_key('with-cc'):
       yield self.framework.argDB['with-cc']
+      raise RuntimeError('C compiler you provided with -with-cc='+self.framework.argDB['with-cc']+' does not work')
     elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers']:
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicc')
     else:
@@ -136,9 +138,8 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         import os
 
-        print str(e)+' You may specify another compiler with --with-cc.'
         if os.path.basename(self.framework.argDB['CC']) == 'mpicc':
-          print '  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.'
+          self.framework.log.write(' MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
         self.popLanguage()
         self.framework.argDB['CC'] = None
     if 'CC' in self.framework.argDB and not self.framework.argDB['CC'] is None:
@@ -229,8 +230,10 @@ class Configure(config.base.Configure):
 
     if self.framework.argDB.has_key('CXX'):
       yield self.framework.argDB['CXX']
+      raise RuntimeError('C++ compiler you provided with -CXX='+self.framework.argDB['CXX']+' does not work')
     elif self.framework.argDB.has_key('with-cxx'):
       yield self.framework.argDB['with-cxx']
+      raise RuntimeError('C++ compiler you provided with -with-cxx='+self.framework.argDB['with-cxx']+' does not work')
     elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers']:
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicxx')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpiCC')
@@ -276,9 +279,8 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         import os
 
-        print str(e)+' You may specify another compiler with --with-cxx.'
         if os.path.basename(self.framework.argDB['CXX']) in ['mpicxx', 'mpiCC']:
-          print '  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.'
+          self.framework.log.write('  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
         self.popLanguage()
         self.framework.argDB['CXX'] = None
     if 'CXX' in self.framework.argDB and not self.framework.argDB['CXX'] is None:
@@ -317,9 +319,8 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         import os
 
-        print str(e)+' You may specify another preprocessor with --with-cxxcpp.'
         if os.path.basename(self.framework.argDB['CXXCPP']) in ['mpicxx', 'mpiCC']:
-          print '  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.'
+          self.framework.log.write('MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI\n')
         self.popLanguage()
         self.framework.argDB['CXXCPP'] = None
     if 'CXXCPP' in self.framework.argDB and not self.framework.argDB['CXXCPP'] is None:
@@ -359,11 +360,11 @@ class Configure(config.base.Configure):
     if self.framework.argDB.has_key('FC'):
       if self.framework.argDB['FC'] == '0': return
       yield self.framework.argDB['FC']
-      raise RuntimeError('Fortran compiler you provided with -FC='+self.framework.argDB['FC']+'does not work')
+      raise RuntimeError('Fortran compiler you provided with -FC='+self.framework.argDB['FC']+' does not work')
     elif self.framework.argDB.has_key('with-fc'):
       if self.framework.argDB['with-fc'] == '0': return
       yield self.framework.argDB['with-fc']
-      raise RuntimeError('Fortran compiler you provided with --with-fc='+self.framework.argDB['with-fc']+'does not work')
+      raise RuntimeError('Fortran compiler you provided with --with-fc='+self.framework.argDB['with-fc']+' does not work')
     elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers']:
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77')
@@ -406,9 +407,8 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         import os
 
-        print str(e)+' You may specify another compiler with --with-fc.'
         if os.path.basename(self.framework.argDB['FC']) in ['mpif90', 'mpif77']:
-          print '  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.'
+         self.framework.log.write(' MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
         self.popLanguage()
         self.framework.argDB['FC'] = None
     if 'FC' in self.framework.argDB and not self.framework.argDB['FC'] is None:
