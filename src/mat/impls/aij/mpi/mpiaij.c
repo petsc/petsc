@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.146 1996/07/01 15:33:56 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.147 1996/07/01 23:20:49 balay Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -441,8 +441,16 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
 static int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
-  int        ierr;
+  int        ierr,nt;
 
+  ierr = VecGetLocalSize(xx,nt);  CHKERRQ(ierr);
+  if (nt != a->n) {
+    SETERRQ(1,"MatMult_MPIAIJ:Incompatiable parition of A and xx");
+  }
+  ierr = VecGetLocalSize(yy,nt);  CHKERRQ(ierr);
+  if (nt != a->m) {
+    SETERRQ(1,"MatMult_MPIAIJ:Incompatiable parition of A and yy");
+  }
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx); CHKERRQ(ierr);
   ierr = (*a->A->ops.mult)(a->A,xx,yy); CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx); CHKERRQ(ierr);
@@ -1369,8 +1377,12 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    Input Parameters:
 .  comm - MPI communicator
 .  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
+.      This should be the same as the local size used in creating the 
+.      y vector in y = Ax
 .  n - number of local columns (or PETSC_DECIDE to have calculated 
            if N is given)
+.      This should be the same as the local size used in creating the 
+.      x vector in y = Ax
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DECIDE to have calculated 
            if n is given)
