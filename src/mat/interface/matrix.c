@@ -189,9 +189,22 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)
          format (which is in many cases the same as the default)
 .    PETSC_VIEWER_ASCII_INFO - prints basic information about the matrix
          size and structure (not the matrix entries)
--    PETSC_VIEWER_ASCII_INFO_LONG - prints more detailed information about
+.    PETSC_VIEWER_ASCII_INFO_DETAIL - prints more detailed information about
          the matrix structure
 
+   Options Database Keys:
++  -mat_view_info - Prints info on matrix at conclusion of MatEndAssembly()
+.  -mat_view_info_detailed - Prints more detailed info
+.  -mat_view - Prints matrix in ASCII format
+.  -mat_view_matlab - Prints matrix in Matlab format
+.  -mat_view_draw - PetscDraws nonzero structure of matrix, using MatView() and PetscDrawOpenX().
+.  -display <name> - Sets display name (default is host)
+.  -draw_pause <sec> - Sets number of seconds to pause after display
+.  -mat_view_socket - Sends matrix to socket, can be accessed from Matlab (see users manual)
+.  -viewer_socket_machine <machine>
+.  -viewer_socket_port <port>
+.  -mat_view_binary - save matrix to file in binary format
+-  -viewer_binary_filename <name>
    Level: beginner
 
    Concepts: matrices^viewing
@@ -220,7 +233,7 @@ int MatView(Mat mat,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
-    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
+    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       if (mat->prefix) {
         ierr = PetscViewerASCIIPrintf(viewer,"Matrix Object:(%s)\n",mat->prefix);CHKERRQ(ierr);
       } else {
@@ -247,7 +260,7 @@ int MatView(Mat mat,PetscViewer viewer)
   }
   if (isascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
-    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
+    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }
@@ -3081,50 +3094,52 @@ int MatView_Private(Mat mat)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_info",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_info_detailed",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_INFO_LONG);CHKERRQ(ierr);
-    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsHasName(mat->prefix,"-mat_view",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_matlab",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_draw",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscOptionsHasName(mat->prefix,"-mat_view_contour",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(mat->comm,mat->prefix,"Matrix Options","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsName("-mat_view_info","Information on matrix size","MatView",&flg);CHKERRQ(ierr);
     if (flg) {
-      PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+      ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
     }
-    ierr = MatView(mat,PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscOptionsName("-mat_view_info_detailed","Nonzeros in the matrix","MatView",&flg);CHKERRQ(ierr);
     if (flg) {
-      PetscViewerPopFormat(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
+      ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
     }
-  }
-  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_socket",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatView(mat,PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_binary",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatView(mat,PETSC_VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
-  }
+    ierr = PetscOptionsName("-mat_view","Print matrix to stdout","MatView",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsName("-mat_view_matlab","Print matrix to stdout in a format Matlab can read","MatView",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+      ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsName("-mat_view_draw","Plot nonzero pattern of matrix","MatView",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscOptionsName("-mat_view_contour","Use colors to indicate size of matrix elements","MatView",&flg);CHKERRQ(ierr);
+      if (flg) {
+	PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
+      }
+      ierr = MatView(mat,PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+      ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+      if (flg) {
+	PetscViewerPopFormat(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscOptionsName("-mat_view_socket","Send matrix to socket (can be read from matlab)","MatView",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatView(mat,PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
+      ierr = PetscViewerFlush(PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsName("-mat_view_binary","Save matrix to file in binary format","MatView",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatView(mat,PETSC_VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
+      ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
+    }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3147,7 +3162,12 @@ int MatView_Private(Mat mat)
 .  -mat_view_matlab - Prints matrix in Matlab format
 .  -mat_view_draw - PetscDraws nonzero structure of matrix, using MatView() and PetscDrawOpenX().
 .  -display <name> - Sets display name (default is host)
--  -draw_pause <sec> - Sets number of seconds to pause after display
+.  -draw_pause <sec> - Sets number of seconds to pause after display
+.  -mat_view_socket - Sends matrix to socket, can be accessed from Matlab (see users manual)
+.  -viewer_socket_machine <machine>
+.  -viewer_socket_port <port>
+.  -mat_view_binary - save matrix to file in binary format
+-  -viewer_binary_filename <name>
 
    Notes: 
    MatSetValues() generally caches the values.  The matrix is ready to
@@ -3158,12 +3178,13 @@ int MatView_Private(Mat mat)
 
    Level: beginner
 
-.seealso: MatAssemblyBegin(), MatSetValues(), PetscDrawOpenX(), MatView(), MatAssembled()
+.seealso: MatAssemblyBegin(), MatSetValues(), PetscDrawOpenX(), MatView(), MatAssembled(), PetscViewerSocketOpen()
 @*/
 int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
   int        ierr;
   static int inassm = 0;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -3195,6 +3216,10 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
     ierr = MatView_Private(mat);CHKERRQ(ierr);
   }
   inassm--;
+  ierr = PetscOptionsHasName(mat->prefix,"-help",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatPrintHelp(mat);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -3997,16 +4022,10 @@ int MatPrintHelp(Mat mat)
 
   comm = mat->comm;
   if (!called) {
-    ierr = (*PetscHelpPrintf)(comm,"General matrix options:\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"  -mat_view_info: view basic matrix info during MatAssemblyEnd()\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"  -mat_view_info_detailed: view detailed matrix info during MatAssemblyEnd()\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"  -mat_view_draw: draw nonzero matrix structure during MatAssemblyEnd()\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"      -draw_pause <sec>: set seconds of display pause\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"      -display <name>: set alternate display\n");CHKERRQ(ierr);
+    if (mat->ops->printhelp) {
+      ierr = (*mat->ops->printhelp)(mat);CHKERRQ(ierr);
+    }
     called = PETSC_TRUE;
-  }
-  if (mat->ops->printhelp) {
-    ierr = (*mat->ops->printhelp)(mat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

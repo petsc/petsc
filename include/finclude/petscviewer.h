@@ -38,7 +38,7 @@
       integer  PETSC_VIEWER_ASCII_MATLAB
       integer  PETSC_VIEWER_ASCII_IMPL
       integer  PETSC_VIEWER_ASCII_INFO
-      integer  PETSC_VIEWER_ASCII_INFO_LONG
+      integer  PETSC_VIEWER_ASCII_INFO_DETAIL 
       integer  PETSC_VIEWER_ASCII_COMMON
       integer  PETSC_VIEWER_ASCII_SYMMODU
       integer  PETSC_VIEWER_ASCII_INDEX
@@ -48,7 +48,7 @@
       parameter (PETSC_VIEWER_ASCII_MATLAB = 1)
       parameter (PETSC_VIEWER_ASCII_IMPL = 2)
       parameter (PETSC_VIEWER_ASCII_INFO = 3)
-      parameter (PETSC_VIEWER_ASCII_INFO_LONG = 4)
+      parameter (PETSC_VIEWER_ASCII_INFO_DETAIL = 4)
       parameter (PETSC_VIEWER_ASCII_COMMON = 5)
       parameter (PETSC_VIEWER_ASCII_SYMMODU = 6)
       parameter (PETSC_VIEWER_ASCII_INDEX = 7)

@@ -527,7 +527,7 @@ static int MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   if (isascii) {
     ierr = PetscViewerGetType(viewer,&vtype);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_INFO_LONG) {
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       MatInfo info;
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mat->m,

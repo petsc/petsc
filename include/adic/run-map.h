@@ -24,7 +24,7 @@ extern "C" {
         Pair* cache;
         Pair* next;
     } MapEntry;
-    static MapEntry* map = 0;
+    static MapEntry* map_def = 0;
 
     typedef struct genlist {
         struct genlist *next;

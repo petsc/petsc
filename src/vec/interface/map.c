@@ -40,7 +40,7 @@ static int PetscMapSetTypeFromOptions_Private(PetscMap map)
     if (numProcs > 1) {
       defaultType = MAP_MPI;
     } else {
-      defaultType = MAP_SEQ;
+      defaultType = MAP_MPI;
     }
   }
 

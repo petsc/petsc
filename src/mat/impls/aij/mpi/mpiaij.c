@@ -10,8 +10,6 @@ EXTERN int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
 EXTERN int MatGetRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
 EXTERN int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
 EXTERN int MatPrintHelp_SeqAIJ(Mat);
-EXTERN int MatUseSuperLU_DIST_MPIAIJ(Mat);
-EXTERN int MatUseSpooles_MPIAIJ(Mat);
 
 /* 
   Local utility routine that creates a mapping from the global column 
@@ -406,12 +404,12 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     aij->rowvalues = 0;
   }
 #if defined(PETSC_HAVE_SUPERLUDIST) 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(mat->prefix,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSuperLU_DIST_MPIAIJ(mat);CHKERRQ(ierr); }
 #endif 
 
 #if defined(PETSC_HAVE_SPOOLES) 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_spooles",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(mat->prefix,"-mat_aij_spooles",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSpooles_MPIAIJ(mat);CHKERRQ(ierr); }
 #endif 
   PetscFunctionReturn(0);
@@ -738,7 +736,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) { 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_INFO_LONG) {
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       MatInfo info;
       ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);

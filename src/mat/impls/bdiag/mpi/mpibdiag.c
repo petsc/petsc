@@ -479,7 +479,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
+    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       int nline = PetscMin(10,mbd->gnd),k,nk,np;
       ierr = PetscViewerASCIIPrintf(viewer,"  block size=%d, total number of diagonals=%d\n",dmat->bs,mbd->gnd);CHKERRQ(ierr);
       nk = (mbd->gnd-1)/nline + 1;
@@ -491,7 +491,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
         }
         ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);        
       }
-      if (format == PETSC_VIEWER_ASCII_INFO_LONG) {
+      if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
         MatInfo info;
         ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
         ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);

@@ -111,12 +111,12 @@ libfast: chklib_dir ${SOURCEC} ${SOURCEF}
 	else \
 	if [ "${SOURCEC}" != "" ]; then \
 	        if test -n "${LIBTOOL}"; then \
-                    ${PETSC_COMPILE_LIBTOOL} \
+                    ${PETSC_COMPILE_LIBTOOL}; \
 	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
 	            ${AR} ${AR_FLAGS} ${LT_LIBNAME} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
 	            ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
 	        else \
-                    ${PETSC_COMPILE} \
+                    ${PETSC_COMPILE}; \
 	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
 	            ${RM} ${OBJSC} ${SOBJS}; \
 	        fi; \
@@ -277,6 +277,9 @@ alltree: ${ACTION}
 getlinklibs:
 	-@echo  ${C_SH_LIB_PATH} ${PETSC_TS_LIB}
 
+getincludedirs:
+	-@echo  ${PETSC_INCLUDE}
+
 etags_sourcec:
 	-@if [ "${SOURCEC}" != "" ]; then \
 		etags -a -f ${TAGSFILE} ${SOURCEC} ; fi
@@ -364,21 +367,19 @@ fortranstubs:
 	        echo ${CC} -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
 	        ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
               else \
-	        filename=$<; \
-	        echo ${PETSC_COMPILE_SINGLE} \
-	        ${PETSC_COMPILE_SINGLE} \
+	        echo ${PETSC_COMPILE_SINGLE} $<; \
+	        ${PETSC_COMPILE_SINGLE} $<; \
               fi; \
         elif  [ `ls -t $**.c | head -1` = "$*.ad.c" ]; then \
           echo ${CC} -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
 	  ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
         else \
-	  filename=$<; \
-	  echo ${PETSC_COMPILE_SINGLE} \
-	  ${PETSC_COMPILE_SINGLE} \
+	  echo ${PETSC_COMPILE_SINGLE} $<; \
+	  ${PETSC_COMPILE_SINGLE} $<; \
         fi
 
 .c.a .cpp.a .cc.a .C.a: 
-	-filename=$<; ${PETSC_COMPILE_SINGLE}
+	-${PETSC_COMPILE_SINGLE} $<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo

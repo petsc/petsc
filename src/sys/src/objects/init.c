@@ -394,10 +394,8 @@ int PetscOptionsCheckInitial_Private(void)
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3);CHKERRQ(ierr);
 #if defined(PETSC_USE_BOPT_g)
-  /* always does trmalloc with BOPT=g, just check so does not reported never checked */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-trmalloc",&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-trmalloc_off",&flg1);CHKERRQ(ierr);
-  if (!flg1 && !petscsetmallocvisited) {
+  ierr = PetscOptionsGetLogical(PETSC_NULL,"-trmalloc",&flg1,&flg2);CHKERRQ(ierr);
+  if ((flg1 || !flg2) && !petscsetmallocvisited) {
     ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); 
   }
 #else
@@ -626,7 +624,7 @@ int PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm,"           note on IBM RS6000 this slows run greatly\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -trdump <optional filename>: dump list of unfreed memory at conclusion\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -trmalloc: use our error checking malloc\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -trmalloc_off: don't use error checking malloc\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -trmalloc no: don't use error checking malloc\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -trinfo: prints total memory usage\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -trdebug: enables extended checking for memory corruption\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_table: dump list of options inputted\n");CHKERRQ(ierr);

@@ -476,7 +476,7 @@ int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     int nline = PetscMin(10,a->nd),k,nk,np;
     if (a->user_alloc) {
       ierr = PetscViewerASCIIPrintf(viewer,"block size=%d, number of diagonals=%d, user-allocated storage\n",bs,a->nd);CHKERRQ(ierr);

@@ -8,9 +8,6 @@
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 #include "src/mat/impls/sbaij/seq/sbaij.h"
-#if defined(PETSC_HAVE_SPOOLES)
-EXTERN int MatUseSpooles_SeqSBAIJ(Mat); 
-#endif
 
 #define CHUNKSIZE  10
 
@@ -343,7 +340,7 @@ static int MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     ierr = PetscViewerASCIIPrintf(viewer,"  block size is %d\n",bs);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
     SETERRQ(PETSC_ERR_SUP,"Matlab format not supported");
@@ -638,7 +635,7 @@ int MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
   
 #if defined(PETSC_HAVE_SPOOLES) 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(A,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSpooles_SeqSBAIJ(A);CHKERRQ(ierr); }
 #endif   
 
@@ -1381,7 +1378,7 @@ int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
 
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(B->prefix,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
   mbs  = B->m/bs;
   bs2  = bs*bs;
 
@@ -1398,7 +1395,7 @@ int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
     }
   }
 
-  ierr    = PetscOptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg);CHKERRQ(ierr);
+  ierr    = PetscOptionsHasName(B->prefix,"-mat_no_unroll",&flg);CHKERRQ(ierr);
   if (!flg) {
     switch (bs) {
     case 1:

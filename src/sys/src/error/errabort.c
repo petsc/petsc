@@ -40,7 +40,9 @@
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERRQ, which
    has the calling sequence
-$     SETERRQ(number,p,mess)
+$     SETERRQ(number,mess)
+   or its variants, SETERRQ1(number,formatstring,arg1), SETERRQ2(), ... that
+   allow including arguments in the message.
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
