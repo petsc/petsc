@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.17 1998/10/02 14:53:16 balay Exp balay $ 
+# $Id: solid.make,v 1.18 1999/04/06 22:36:15 balay Exp balay $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.24"
@@ -85,13 +85,13 @@ rsh -n denali "cd $hme/$src_dir; $make BOPT=O_complex"
 
 # yukon uses a different ARCH as binaries are not
 # compatible between yukon and denali
-arch=IRIX64_yukon
-make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh -n yukon "cd $hme/$src_dir; $make BOPT=g"
-rsh -n yukon "cd $hme/$src_dir; $make BOPT=O"
+###arch=IRIX64_yukon
+###make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
+###rsh -n yukon "cd $hme/$src_dir; $make BOPT=g"
+###rsh -n yukon "cd $hme/$src_dir; $make BOPT=O"
 
-# rs6000
-arch=rs6000
+# rs6000_sp
+arch=rs6000_sp
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 rsh -n ico09 "cd $hme/$src_dir; $make BOPT=g"
 rsh -n ico09 "cd $hme/$src_dir; $make BOPT=O"
@@ -108,21 +108,21 @@ rsh -n violet "cd $hme/$src_dir; $make BOPT=g"
 rsh -n violet "cd $hme/$src_dir; $make BOPT=O"
 
 # rs6000_shmem is used by Tom Canfeild on octa nodes
-arch=rs6000_shmem
-make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh -n octa01 "cd $hme/$src_dir; $make BOPT=O"
+##arch=rs6000_shmem
+##make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
+##rsh -n octa01 "cd $hme/$src_dir; $make BOPT=O"
 
 # sun4
 arch=sun4
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-#rsh -n merlin "cd $hme/$src_dir; $make BOPT=g"
-#rsh -n merlin "cd $hme/$src_dir; $make BOPT=O"
+rsh -n merlin "cd $hme/$src_dir; $make BOPT=g"
+rsh -n merlin "cd $hme/$src_dir; $make BOPT=O"
 #rsh -n merlin "cd $hme/$src_dir; $make BOPT=g_c++"
 
 
-# rs6000_p4
-arch=rs6000_p4
+# rs6000
+arch=rs6000
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-#rsh -n doc "cd $hme/$src_dir; $make BOPT=g"
-#rsh -n doc "cd $hme/$src_dir; $make BOPT=O"
+rsh -n doc "cd $hme/$src_dir; $make BOPT=g"
+rsh -n doc "cd $hme/$src_dir; $make BOPT=O"
 
