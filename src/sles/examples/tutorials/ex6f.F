@@ -1,9 +1,29 @@
 
-C    "$Id: ex20.F,v 1.6 1996/06/22 14:16:24 curfman Exp bsmith $";
+C    "$Id: ex20.F,v 1.7 1996/07/08 22:20:55 bsmith Exp curfman $";
 C
-C  This example demonstrates repeated linear solves as well as the use of
-C  different preconditioner and linear system matrices.  This example also
-C  illustrates how to save PETSc objects in common blocks.
+C  Description: This example demonstrates repeated linear solves as
+C  well as the use of different preconditioner and linear system
+C  matrices.  This example also illustrates how to save PETSc objects
+C  in common blocks.
+C
+C  Concepts: SLES, solving linear systems
+C  Routines: SLESCreate(), SLESSetOperators(), SLESSetFromOptions()
+C  Routines: SLESSolve(), SLESView(), SLESGetKSP(), KSPSetMonitor()
+C  Routines: KSPBuildSolution()
+C  Multiprocessor code
+C
+C  The following include statements are required for all SLES Fortran 
+C  programs:
+C     petsc.h  - base PETSc routines
+C     vec.h    - vectors
+C     mat.h    - matrices
+C     pc.h     - preconditioners
+C     ksp.h    - Krylov subspace methods
+C     sles.h   - SLES interface
+C  Additional include statements may be needed if using additional
+C  PETSc routines in a Fortran program, e.g.,
+C     viewer.h - viewers
+C     is.h     - index sets
 C
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -27,9 +47,24 @@ C
       call OptionsGetInt(PETSC_NULL_CHAR,'-n',n,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHAR,'-nsteps',nsteps,flg,ierr)
 
-C Create and assemble initial matrix
+C  Create parallel matrix, specifying only its global dimensions.
+C  When using MatCreate(), the matrix format can be specified at
+C  runtime. Also, the parallel partioning of the matrix is
+C  determined by PETSc at runtime.
+
       call MatCreate(MPI_COMM_WORLD,m*n,m*n,A,ierr)
+
+C  The matrix is partitioned by contiguous chunks of rows across the
+C  processors.  Determine which rows of the matrix are locally owned. 
+
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
+
+C  Set matrix elements. 
+C   - Each processor needs to insert only elements that it owns
+C     locally (but any non-local elements will be sent to the
+C     appropriate processor during matrix assembly). 
+C   - Always specify global row and columns of matrix entries.
+
       do 10, II=Istart,Iend-1
         v = -1.0
         i = II/n
@@ -53,26 +88,41 @@ C Create and assemble initial matrix
         v = 4.0
         call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
  10   continue
+
+C  Assemble matrix, using the 2-step process:
+C       MatAssemblyBegin(), MatAssemblyEnd()
+C  Computations can be done while messages are in transition,
+C  by placing code between these two statements.
+
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
-C Create vectors for exact solution, approx solution, and RHS
-      call VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
+C  Create parallel vectors.
+C   - When using VecCreate(), the parallel partitioning of the vector
+C     is determined by PETSc at runtime.
+C   - Note: We form 1 vector from scratch and then duplicate as needed.
+
+      call VecCreate(MPI_COMM_WORLD,m*n,u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 
-C Create SLES context and set initial operators
+C  Create linear solver context
+
       call SLESCreate(MPI_COMM_WORLD,sles,ierr)
 
-C Set options
+C  Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
+
       call SLESSetFromOptions(sles,ierr)
 
-C Solve several linear systems in succession
+C  Solve several linear systems in succession
+
       do 100 i=1,nsteps
          call solve1(sles,A,x,b,u,i,nsteps,ierr)
  100  continue
 
-C Free data structures
+C  Free work space.  All PETSc objects should be destroyed when they
+C  are no longer needed.
+
       call VecDestroy(u,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.62 1996/08/20 15:12:23 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.63 1996/08/22 15:34:35 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
@@ -267,7 +267,7 @@ int main(int argc,char **args)
         will not function correctly.  Thus, use this optimization
         feature with caution!
   */
-  ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,C,C,SAME_NONZERO_PATTERN); CHKERRA(ierr);
 
   /* 
      Solve linear system
