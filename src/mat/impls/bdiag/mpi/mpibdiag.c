@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.158 1999/02/19 16:29:13 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.159 1999/03/09 21:33:04 balay Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -34,11 +34,11 @@ int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
       }
     } else {
       if (roworiented) {
-        ierr = StashValues_Private(&mbd->stash,idxm[i],n,idxn,v+i*n,addv); CHKERRQ(ierr);
+        ierr = StashValues_Private(&mbd->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
       } else {
         row = idxm[i];
         for ( j=0; j<n; j++ ) {
-          ierr = StashValues_Private(&mbd->stash,row,1,idxn+j,v+i+j*m,addv);CHKERRQ(ierr);
+          ierr = StashValues_Private(&mbd->stash,row,1,idxn+j,v+i+j*m);CHKERRQ(ierr);
         }
       }
     }
@@ -155,7 +155,7 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 
   /* Free cache space */
   PLogInfo(0,"MatAssemblyBegin_MPIBDiag:Number of off-processor values %d\n",mbd->stash.n);
-  ierr = StashReset_Private(&mbd->stash); CHKERRQ(ierr);
+  ierr = StashScatterEnd_Private(&mbd->stash); CHKERRQ(ierr);
 
   mbd->svalues    = svalues;    mbd->rvalues = rvalues;
   mbd->nsends     = nsends;     mbd->nrecvs = nreceives;
@@ -1093,7 +1093,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   PetscFree(ldiag); if (ldiagv) PetscFree(ldiagv);
 
   /* build cache for off array entries formed */
-  ierr = StashCreate_Private(comm,1,&b->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(comm,1,1,&b->stash); CHKERRQ(ierr);
 
   /* stuff used for matrix-vector multiply */
   b->lvec        = 0;

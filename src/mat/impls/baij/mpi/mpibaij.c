@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.156 1999/03/08 21:25:42 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.157 1999/03/08 21:27:40 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -273,12 +273,12 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
       }
     } else {
       if (roworiented && !baij->donotstash) {
-        ierr = StashValues_Private(&baij->stash,im[i],n,in,v+i*n,addv);CHKERRQ(ierr);
+        ierr = StashValues_Private(&baij->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
       } else {
         if (!baij->donotstash) {
           row = im[i];
 	  for ( j=0; j<n; j++ ) {
-	    ierr = StashValues_Private(&baij->stash,row,1,in+j,v+i+j*m,addv);CHKERRQ(ierr);
+	    ierr = StashValues_Private(&baij->stash,row,1,in+j,v+i+j*m);CHKERRQ(ierr);
           }
         }
       }
@@ -376,27 +376,10 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
       }
     } else {
       if (!baij->donotstash) {
-        if (roworiented ) {
-          row   = im[i]*bs;
-          value = v + i*(stepval+bs)*bs;
-          for ( j=0; j<bs; j++,row++ ) {
-            for ( k=0; k<n; k++ ) {
-              for ( col=in[k]*bs,l=0; l<bs; l++,col++) {
-                ierr = StashValues_Private(&baij->stash,row,1,&col,value++,addv);CHKERRQ(ierr);
-              }
-            }
-          }
-        } else {
-          for ( j=0; j<n; j++ ) {
-            value = v + j*(stepval+bs)*bs + i*bs;
-            col   = in[j]*bs;
-            for ( k=0; k<bs; k++,col++,value+=stepval) {
-              for ( row = im[i]*bs,l=0; l<bs; l++,row++) {
-                ierr = StashValues_Private(&baij->stash,row,1,&col,value++,addv);CHKERRQ(ierr);
-              }
-            }
-          }
-        }
+        /*        ierr = StashValuesBlocked_Private(&baij->bstash,im[i],n,in,v+i*bs2*n,
+                                          roworiented,stepval,addv);CHKERRQ(ierr); */
+        ierr = StashValuesBlocked_Private(&baij->bstash,im[i],n,in,v,m,n,
+                                          roworiented,i);CHKERRQ(ierr);
       }
     }
   }
@@ -468,12 +451,12 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
       }
     } else {
       if (roworiented && !baij->donotstash) {
-        ierr = StashValues_Private(&baij->stash,im[i],n,in,v+i*n,addv);CHKERRQ(ierr);
+        ierr = StashValues_Private(&baij->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
       } else {
         if (!baij->donotstash) {
           row = im[i];
 	  for ( j=0; j<n; j++ ) {
-	    ierr = StashValues_Private(&baij->stash,row,1,in+j,v+i+j*m,addv);CHKERRQ(ierr);
+	    ierr = StashValues_Private(&baij->stash,row,1,in+j,v+i+j*m);CHKERRQ(ierr);
           }
         }
       }
@@ -591,7 +574,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
           for ( j=0; j<bs; j++,row++ ) {
             for ( k=0; k<n; k++ ) {
               for ( col=in[k]*bs,l=0; l<bs; l++,col++) {
-                ierr = StashValues_Private(&baij->stash,row,1,&col,value++,addv);CHKERRQ(ierr);
+                ierr = StashValues_Private(&baij->stash,row,1,&col,value++);CHKERRQ(ierr);
               }
             }
           }
@@ -601,7 +584,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
             col   = in[j]*bs;
             for ( k=0; k<bs; k++,col++,value+=stepval) {
               for ( row = im[i]*bs,l=0; l<bs; l++,row++) {
-                ierr = StashValues_Private(&baij->stash,row,1,&col,value++,addv);CHKERRQ(ierr);
+                ierr = StashValues_Private(&baij->stash,row,1,&col,value++);CHKERRQ(ierr);
               }
             }
           }
@@ -801,211 +784,6 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
   PetscFunctionReturn(0);
 }
 
-#if defined (__JUNK__)
-#undef __FUNC__  
-#define __FUNC__ "MatAssemblyBegin_MPIBAIJ"
-int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
-{ 
-  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
-  MPI_Comm    comm = mat->comm;
-  int         size = baij->size, *owners = baij->rowners,bs=baij->bs;
-  int         rank = baij->rank,tag = mat->tag, *owner,*starts,count,ierr;
-  MPI_Request *send_waits,*recv_waits;
-  int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
-  InsertMode  addv;
-  Scalar      *rvalues,*svalues;
-
-  PetscFunctionBegin;
-  if (baij->donotstash) {
-    baij->svalues    = 0; baij->rvalues    = 0;
-    baij->nsends     = 0; baij->nrecvs     = 0;
-    baij->send_waits = 0; baij->recv_waits = 0;
-    baij->rmax       = 0;
-    PetscFunctionReturn(0);
-  }
-
-  /* make sure all processors are either in INSERTMODE or ADDMODE */
-  ierr = MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
-  if (addv == (ADD_VALUES|INSERT_VALUES)) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Some processors inserted others added");
-  }
-  mat->insertmode = addv; /* in case this processor had no cache */
-
-  /*  first count number of contributors to each processor */
-  nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
-  owner = (int *) PetscMalloc( (baij->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
-  for ( i=0; i<baij->stash.n; i++ ) {
-    idx = baij->stash.idx[i];
-    for ( j=0; j<size; j++ ) {
-      if (idx >= owners[j]*bs && idx < owners[j+1]*bs) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; break;
-      }
-    }
-  }
-  nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
-
-  /* inform other processors of number of messages and max length*/
-  work      = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(work);
-  ierr      = MPI_Allreduce(procs, work,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  nreceives = work[rank]; 
-  ierr      = MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-  nmax      = work[rank];
-  PetscFree(work);
-
-  /* post receives: 
-       1) each message will consist of ordered pairs 
-     (global index,value) we store the global index as a double 
-     to simplify the message passing. 
-       2) since we don't know how long each individual message is we 
-     allocate the largest needed buffer for each receive. Potentially 
-     this is a lot of wasted space.
-
-
-       This could be done better.
-  */
-  rvalues    = (Scalar *) PetscMalloc(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));CHKPTRQ(rvalues);
-  recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
-  for ( i=0; i<nreceives; i++ ) {
-    ierr = MPI_Irecv(rvalues+3*nmax*i,3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,comm,recv_waits+i);CHKERRQ(ierr);
-  }
-
-  /* do sends:
-      1) starts[i] gives the starting index in svalues for stuff going to 
-         the ith processor
-  */
-  svalues    = (Scalar *) PetscMalloc(3*(baij->stash.n+1)*sizeof(Scalar));CHKPTRQ(svalues);
-  send_waits = (MPI_Request *) PetscMalloc((nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
-  starts     = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(starts);
-  starts[0] = 0; 
-  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
-  for ( i=0; i<baij->stash.n; i++ ) {
-    svalues[3*starts[owner[i]]]       = (Scalar)  baij->stash.idx[i];
-    svalues[3*starts[owner[i]]+1]     = (Scalar)  baij->stash.idy[i];
-    svalues[3*(starts[owner[i]]++)+2] =  baij->stash.array[i];
-  }
-  PetscFree(owner);
-  starts[0] = 0;
-  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
-  count = 0;
-  for ( i=0; i<size; i++ ) {
-    if (procs[i]) {
-      ierr = MPI_Isend(svalues+3*starts[i],3*nprocs[i],MPIU_SCALAR,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
-    }
-  }
-  PetscFree(starts); PetscFree(nprocs);
-
-  /* Free cache space */
-  PLogInfo(baij->A,"MatAssemblyBegin_MPIBAIJ:Number of off-processor values %d\n",baij->stash.n);
-  ierr = StashReset_Private(&baij->stash); CHKERRQ(ierr);
-
-  baij->svalues    = svalues;    baij->rvalues    = rvalues;
-  baij->nsends     = nsends;     baij->nrecvs     = nreceives;
-  baij->send_waits = send_waits; baij->recv_waits = recv_waits;
-  baij->rmax       = nmax;
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MatAssemblyEnd_MPIBAIJ"
-int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
-{ 
-  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
-  MPI_Status  *send_status,recv_status;
-  int         imdex,count = nrecvs, i, n, ierr;
-  int         bs=baij->bs,row,col,other_disassembled;
-  Scalar      val;
-  InsertMode  addv = mat->insertmode;
-
-  PetscFunctionBegin;
-  /*  wait on receives */
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,baij->recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    values = baij->rvalues + 3*imdex*baij->rmax;
-    ierr = MPI_Get_count(&recv_status,MPIU_SCALAR,&n);CHKERRQ(ierr);
-    n = n/3;
-    for ( i=0; i<n; i++ ) {
-      row = (int) PetscReal(values[3*i]) - baij->rstart*bs;
-      col = (int) PetscReal(values[3*i+1]);
-      val = values[3*i+2];
-      if (col >= baij->cstart*bs && col < baij->cend*bs) {
-        col -= baij->cstart*bs;
-        ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&val,addv); CHKERRQ(ierr)
-      } else {
-        if (mat->was_assembled) {
-          if (!baij->colmap) {
-            ierr = CreateColmap_MPIBAIJ_Private(mat); CHKERRQ(ierr);
-          }
-#if defined (USE_CTABLE)
-	  ierr = TableFind(baij->colmap,col/bs+1,&col); CHKERRQ(ierr);
-          col  = col - 1 + col%bs;
-#else
-          col = (baij->colmap[col/bs]) - 1 + col%bs;
-#endif
-          if (col < 0  && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
-            ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr); 
-            col = (int) PetscReal(values[3*i+1]);
-          }
-        }
-        ierr = MatSetValues_SeqBAIJ(baij->B,1,&row,1,&col,&val,addv); CHKERRQ(ierr)
-      }
-    }
-    count--;
-  }
-  if (baij->recv_waits) PetscFree(baij->recv_waits); 
-  if (baij->rvalues)    PetscFree(baij->rvalues);
- 
-  /* wait on sends */
-  if (baij->nsends) {
-    send_status = (MPI_Status *) PetscMalloc(baij->nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
-    ierr        = MPI_Waitall(baij->nsends,baij->send_waits,send_status);CHKERRQ(ierr);
-    PetscFree(send_status);
-  }
-  if (baij->send_waits) PetscFree(baij->send_waits); 
-  if (baij->svalues)    PetscFree(baij->svalues);
-
-  ierr = MatAssemblyBegin(baij->A,mode); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(baij->A,mode); CHKERRQ(ierr);
-
-  /* determine if any processor has disassembled, if so we must 
-     also disassemble ourselfs, in order that we may reassemble. */
-  /*
-     if nonzero structure of submatrix B cannot change then we know that
-     no processor disassembled thus we can skip this stuff
-  */
-  if (!((Mat_SeqBAIJ*) baij->B->data)->nonew)  {
-    ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,mat->comm);CHKERRQ(ierr);
-    if (mat->was_assembled && !other_disassembled) {
-      ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr);
-    }
-  }
-
-  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
-    ierr = MatSetUpMultiply_MPIBAIJ(mat); CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(baij->B,mode); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(baij->B,mode); CHKERRQ(ierr);
-  
-#if defined(USE_PETSC_BOPT_g)
-  if (baij->ht && mode== MAT_FINAL_ASSEMBLY) {
-    PLogInfo(0,"MatAssemblyEnd_MPIBAIJ:Average Hash Table Search in MatSetValues = %5.2f\n",
-             ((double)baij->ht_total_ct)/baij->ht_insert_ct);
-    baij->ht_total_ct  = 0;
-    baij->ht_insert_ct = 0;
-  }
-#endif
-  if (baij->ht_flag && !baij->ht && mode == MAT_FINAL_ASSEMBLY) {
-    ierr = MatCreateHashTable_MPIBAIJ_Private(mat,baij->ht_fact); CHKERRQ(ierr);
-    mat->ops->setvalues        = MatSetValues_MPIBAIJ_HT;
-    mat->ops->setvaluesblocked = MatSetValuesBlocked_MPIBAIJ_HT;
-  }
-
-  if (baij->rowvalues) {PetscFree(baij->rowvalues); baij->rowvalues = 0;}
-  PetscFunctionReturn(0);
-}
-#endif
 #undef __FUNC__  
 #define __FUNC__ "MatAssemblyBegin_MPIBAIJ"
 int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
@@ -1027,6 +805,7 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   mat->insertmode = addv; /* in case this processor had no cache */
 
   ierr =  StashScatterBegin_Private(&baij->stash,baij->rowners); CHKERRQ(ierr);
+  ierr =  StashScatterBegin_Private(&baij->bstash,baij->rowners); CHKERRQ(ierr);
 
   /* Free cache space */
   PLogInfo(baij->A,"MatAssemblyBegin_MPIBAIJ:Number of off-processor values %d\n",baij->stash.n);
@@ -1037,20 +816,19 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
 #define __FUNC__ "MatAssemblyEnd_MPIBAIJ"
 int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
 { 
-  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
-  int         imdex,i,j,rstart,ncols,n,ierr;
-  int         *row,*col,other_disassembled;
+  Mat_MPIBAIJ *baij=(Mat_MPIBAIJ *) mat->data;
+  Mat_SeqBAIJ *a=(Mat_SeqBAIJ*)baij->A->data,*b=(Mat_SeqBAIJ*)baij->B->data;
+  int         i,j,rstart,ncols,n,ierr,flg,bs2=baij->bs2;
+  int         *row,*col,other_disassembled,r1,r2,r3;
   Scalar      *val;
   InsertMode  addv = mat->insertmode;
 
   PetscFunctionBegin;
   if (!baij->donotstash) {
-    ierr = StashScatterEnd_Private(&baij->stash); CHKERRQ(ierr);
-    for (imdex=0; imdex<baij->stash.nrecvs; imdex++ ) {
-      n   = baij->stash.rdata[imdex].n;
-      row = baij->stash.rdata[imdex].i;
-      col = baij->stash.rdata[imdex].j;
-      val = baij->stash.rdata[imdex].a;
+    while (1) {
+      ierr = StashScatterGetMesg_Private(&baij->stash,&n,&row,&col,&val,&flg); CHKERRQ(ierr);
+      if (!flg) break;
+
       for ( i=0; i<n; ) {
         /* Now identify the consecutive vals belonging to the same row */
         for ( j=i,rstart=row[j]; j<n; j++ ) { if (row[j] != rstart) break; }
@@ -1061,7 +839,33 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
         i = j;
       }
     }
-  ierr = StashReset_Private(&baij->stash); CHKERRQ(ierr);
+    ierr = StashScatterEnd_Private(&baij->stash); CHKERRQ(ierr);
+    /* Now process the block-stash. Since the values are stashed column-oriented,
+       set the roworiented flag to column oriented, and after MatSetValues() 
+       restore the original flags */
+    r1 = baij->roworiented;
+    r2 = a->roworiented;
+    r3 = b->roworiented;
+    baij->roworiented = 0;
+    a->roworiented    = 0;
+    b->roworiented    = 0;
+    while (1) {
+      ierr = StashScatterGetMesg_Private(&baij->bstash,&n,&row,&col,&val,&flg); CHKERRQ(ierr);
+      if (!flg) break;
+      
+      for ( i=0; i<n; ) {
+        /* Now identify the consecutive vals belonging to the same row */
+        for ( j=i,rstart=row[j]; j<n; j++ ) { if (row[j] != rstart) break; }
+        if (j < n) ncols = j-i;
+        else       ncols = n-i;
+        ierr = MatSetValuesBlocked_MPIBAIJ(mat,1,row+i,ncols,col+i,val+i*bs2,addv); CHKERRQ(ierr);
+        i = j;
+      }
+    }
+    ierr = StashScatterEnd_Private(&baij->bstash); CHKERRQ(ierr);
+    baij->roworiented = r1;
+    a->roworiented    = r2;
+    b->roworiented    = r3;
   }
 
   ierr = MatAssemblyBegin(baij->A,mode); CHKERRQ(ierr);
@@ -1272,6 +1076,7 @@ int MatDestroy_MPIBAIJ(Mat mat)
 #endif
 
   ierr = StashDestroy_Private(&baij->stash); CHKERRQ(ierr);
+  ierr = StashDestroy_Private(&baij->bstash); CHKERRQ(ierr);
   PetscFree(baij->rowners); 
   ierr = MatDestroy(baij->A); CHKERRQ(ierr);
   ierr = MatDestroy(baij->B); CHKERRQ(ierr);
@@ -2234,7 +2039,8 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   PLogObjectParent(B,b->B);
 
   /* build cache for off array entries formed */
-  ierr = StashCreate_Private(comm,bs,&b->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(comm,1,bs,&b->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(comm,bs,bs,&b->bstash); CHKERRQ(ierr);
   b->donotstash  = 0;
   b->colmap      = 0;
   b->garray      = 0;
@@ -2340,7 +2146,8 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIBAIJ));
   a->cowners = a->rowners + a->size + 2;
   PetscMemcpy(a->rowners,oldmat->rowners,2*(a->size+2)*sizeof(int));
-  ierr = StashCreate_Private(matin->comm,oldmat->bs,&a->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(matin->comm,1,oldmat->bs,&a->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(matin->comm,oldmat->bs,oldmat->bs,&a->bstash); CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined (USE_CTABLE)
   ierr = TableCreateCopy(oldmat->colmap,&a->colmap); CHKERRQ(ierr); 

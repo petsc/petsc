@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.105 1999/02/15 21:55:24 balay Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.106 1999/03/09 21:32:41 balay Exp balay $";
 #endif
 
 /*
@@ -34,11 +34,11 @@ int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Inse
       }
     } else {
       if (roworiented) {
-        ierr = StashValues_Private(&A->stash,idxm[i],n,idxn,v+i*n,addv); CHKERRQ(ierr);
+        ierr = StashValues_Private(&A->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
       } else { /* must stash each seperately */
         row = idxm[i];
         for ( j=0; j<n; j++ ) {
-          ierr = StashValues_Private(&A->stash,row,1,&idxn[j],v+i+j*m,addv);CHKERRQ(ierr);
+          ierr = StashValues_Private(&A->stash,row,1,&idxn[j],v+i+j*m);CHKERRQ(ierr);
         }
       }
     }
@@ -180,7 +180,7 @@ int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
 
   /* Free cache space */
   PLogInfo(mat,"MatAssemblyBegin_MPIDense:Number of off-processor values %d\n",mdn->stash.n);
-  ierr = StashReset_Private(&mdn->stash); CHKERRQ(ierr);
+  ierr = StashScatterEnd_Private(&mdn->stash); CHKERRQ(ierr);
 
   mdn->svalues    = svalues;    mdn->rvalues = rvalues;
   mdn->nsends     = nsends;     mdn->nrecvs = nreceives;
@@ -1052,7 +1052,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   PLogObjectParent(mat,a->A);
 
   /* build cache for off array entries formed */
-  ierr = StashCreate_Private(comm,1,&a->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(comm,1,1,&a->stash); CHKERRQ(ierr);
 
   /* stuff used for matrix vector multiply */
   a->lvec        = 0;
@@ -1105,7 +1105,7 @@ static int MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
   a->rowners = (int *) PetscMalloc((a->size+1)*sizeof(int)); CHKPTRQ(a->rowners);
   PLogObjectMemory(mat,(a->size+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIDense));
   PetscMemcpy(a->rowners,oldmat->rowners,(a->size+1)*sizeof(int));
-  ierr = StashCreate_Private(A->comm,1,&a->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(A->comm,1,1,&a->stash); CHKERRQ(ierr);
 
   ierr =  VecDuplicate(oldmat->lvec,&a->lvec); CHKERRQ(ierr);
   PLogObjectParent(mat,a->lvec);

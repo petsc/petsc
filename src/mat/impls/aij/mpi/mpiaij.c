@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.285 1999/02/26 17:08:13 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.286 1999/03/09 21:32:49 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -259,12 +259,12 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
       }
     } else {
       if (roworiented && !aij->donotstash) {
-        ierr = StashValues_Private(&aij->stash,im[i],n,in,v+i*n,addv);CHKERRQ(ierr);
+        ierr = StashValues_Private(&aij->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
       } else {
         if (!aij->donotstash) {
           row = im[i];
           for ( j=0; j<n; j++ ) {
-            ierr = StashValues_Private(&aij->stash,row,1,in+j,v+i+j*m,addv);CHKERRQ(ierr);
+            ierr = StashValues_Private(&aij->stash,row,1,in+j,v+i+j*m);CHKERRQ(ierr);
           }
         }
       }
@@ -315,202 +315,6 @@ int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
   }
   PetscFunctionReturn(0);
 }
-#if defined (__JUNK__)
-
-#undef __FUNC__  
-#define __FUNC__ "MatAssemblyBegin_MPIAIJ"
-int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
-{ 
-  Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
-  MPI_Comm    comm = mat->comm;
-  int         size = aij->size, *owners = aij->rowners;
-  int         rank = aij->rank,tag = mat->tag, *owner,*starts,count,ierr;
-  MPI_Request *send_waits,*recv_waits;
-  int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
-  InsertMode  addv;
-  Scalar      *rvalues,*svalues;
-
-  PetscFunctionBegin;
-  if (aij->donotstash) {
-    aij->svalues    = 0; aij->rvalues    = 0;
-    aij->nsends     = 0; aij->nrecvs     = 0;
-    aij->send_waits = 0; aij->recv_waits = 0;
-    aij->rmax       = 0;
-    PetscFunctionReturn(0);
-  }
-
-  /* make sure all processors are either in INSERTMODE or ADDMODE */
-  ierr = MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
-  if (addv == (ADD_VALUES|INSERT_VALUES)) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Some processors inserted others added");
-  }
-  mat->insertmode = addv; /* in case this processor had no cache */
-
-  /*  first count number of contributors to each processor */
-  nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
-  owner = (int *) PetscMalloc( (aij->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
-  for ( i=0; i<aij->stash.n; i++ ) {
-    idx = aij->stash.idx[i];
-    for ( j=0; j<size; j++ ) {
-      if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; break;
-      }
-    }
-  }
-  nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
-
-  /* inform other processors of number of messages and max length*/
-  work = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(work);
-  ierr = MPI_Allreduce(procs, work,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  nreceives = work[rank]; 
-  ierr = MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-  nmax = work[rank];
-  PetscFree(work);
-
-  /* post receives: 
-       1) each message will consist of ordered pairs 
-     (global index,value) we store the global index as a double 
-     to simplify the message passing. 
-       2) since we don't know how long each individual message is we 
-     allocate the largest needed buffer for each receive. Potentially 
-     this is a lot of wasted space.
-
-
-       This could be done better.
-  */
-  rvalues    = (Scalar *) PetscMalloc(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));CHKPTRQ(rvalues);
-  recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
-  for ( i=0; i<nreceives; i++ ) {
-    ierr = MPI_Irecv(rvalues+3*nmax*i,3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,
-              comm,recv_waits+i);CHKERRQ(ierr);
-  }
-
-  /* do sends:
-      1) starts[i] gives the starting index in svalues for stuff going to 
-         the ith processor
-  */
-  svalues    = (Scalar *) PetscMalloc(3*(aij->stash.n+1)*sizeof(Scalar));CHKPTRQ(svalues);
-  send_waits = (MPI_Request *) PetscMalloc( (nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
-  starts     = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(starts);
-  starts[0]  = 0; 
-  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
-  for ( i=0; i<aij->stash.n; i++ ) {
-    svalues[3*starts[owner[i]]]       = (Scalar)  aij->stash.idx[i];
-    svalues[3*starts[owner[i]]+1]     = (Scalar)  aij->stash.idy[i];
-    svalues[3*(starts[owner[i]]++)+2] =  aij->stash.array[i];
-  }
-  PetscFree(owner);
-  starts[0] = 0;
-  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
-  count = 0;
-  for ( i=0; i<size; i++ ) {
-    if (procs[i]) {
-      ierr = MPI_Isend(svalues+3*starts[i],3*nprocs[i],MPIU_SCALAR,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
-    }
-  }
-  PetscFree(starts); 
-  PetscFree(nprocs);
-
-  /* Free cache space */
-  PLogInfo(aij->A,"MatAssemblyBegin_MPIAIJ:Number of off-processor values %d\n",aij->stash.n);
-  ierr = StashReset_Private(&aij->stash); CHKERRQ(ierr);
-
-  aij->svalues    = svalues;    aij->rvalues    = rvalues;
-  aij->nsends     = nsends;     aij->nrecvs     = nreceives;
-  aij->send_waits = send_waits; aij->recv_waits = recv_waits;
-  aij->rmax       = nmax;
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MatAssemblyEnd_MPIAIJ"
-int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
-{ 
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  MPI_Status  *send_status,recv_status;
-  int         imdex,nrecvs = aij->nrecvs, count = nrecvs, i, n, ierr;
-  int         row,col,other_disassembled;
-  Scalar      *values,val;
-  InsertMode  addv = mat->insertmode;
-
-  PetscFunctionBegin;
-
-  /*  wait on receives */
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,aij->recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    values = aij->rvalues + 3*imdex*aij->rmax;
-    ierr = MPI_Get_count(&recv_status,MPIU_SCALAR,&n);CHKERRQ(ierr);
-    n = n/3;
-    for ( i=0; i<n; i++ ) {
-      row = (int) PetscReal(values[3*i]) - aij->rstart;
-      col = (int) PetscReal(values[3*i+1]);
-      val = values[3*i+2];
-      if (col >= aij->cstart && col < aij->cend) {
-        col -= aij->cstart;
-        ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&val,addv); CHKERRQ(ierr);
-      } else {
-        if (mat->was_assembled || mat->assembled) {
-          if (!aij->colmap) {
-            ierr = CreateColmap_MPIAIJ_Private(mat); CHKERRQ(ierr);
-          }
-#if defined (USE_CTABLE)
-            ierr = TableFind(aij->colmap,col+1,&col); CHKERRQ(ierr);
-	    col --;
-#else
-          col = aij->colmap[col] - 1;
-#endif
-          if (col < 0  && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
-            ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
-            col = (int) PetscReal(values[3*i+1]);
-          }
-        }
-        ierr = MatSetValues_SeqAIJ(aij->B,1,&row,1,&col,&val,addv); CHKERRQ(ierr);
-      }
-    }
-    count--;
-  }
-  if (aij->recv_waits) PetscFree(aij->recv_waits); 
-  if (aij->rvalues)    PetscFree(aij->rvalues);
- 
-  /* wait on sends */
-  if (aij->nsends) {
-    send_status = (MPI_Status *) PetscMalloc(aij->nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
-    ierr        = MPI_Waitall(aij->nsends,aij->send_waits,send_status);CHKERRQ(ierr);
-    PetscFree(send_status);
-  }
-  if (aij->send_waits) PetscFree(aij->send_waits); 
-  if (aij->svalues)    PetscFree(aij->svalues);
-
-  ierr = MatAssemblyBegin(aij->A,mode); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(aij->A,mode); CHKERRQ(ierr);
-
-  /* determine if any processor has disassembled, if so we must 
-     also disassemble ourselfs, in order that we may reassemble. */
-  /*
-     if nonzero structure of submatrix B cannot change then we know that
-     no processor disassembled thus we can skip this stuff
-  */
-  if (!((Mat_SeqAIJ*) aij->B->data)->nonew)  {
-    ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,mat->comm);CHKERRQ(ierr);
-    if (mat->was_assembled && !other_disassembled) {
-      ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
-    }
-  }
-
-  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
-    ierr = MatSetUpMultiply_MPIAIJ(mat); CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(aij->B,mode); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(aij->B,mode); CHKERRQ(ierr);
-
-  if (aij->rowvalues) {PetscFree(aij->rowvalues); aij->rowvalues = 0;}
-  PetscFunctionReturn(0);
-}
-
-#else
 
 #undef __FUNC__  
 #define __FUNC__ "MatAssemblyBegin_MPIAIJ"
@@ -544,19 +348,17 @@ int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  int         imdex,i,j,rstart,ncols,n,ierr;
+  int         i,j,rstart,ncols,n,ierr,flg;
   int         *row,*col,other_disassembled;
   Scalar      *val;
   InsertMode  addv = mat->insertmode;
 
   PetscFunctionBegin;
   if (!aij->donotstash) {
-    ierr = StashScatterEnd_Private(&aij->stash); CHKERRQ(ierr);
-    for (imdex=0; imdex<aij->stash.nrecvs; imdex++ ) {
-      n   = aij->stash.rdata[imdex].n;
-      row = aij->stash.rdata[imdex].i;
-      col = aij->stash.rdata[imdex].j;
-      val = aij->stash.rdata[imdex].a;
+    while (1) {
+      ierr = StashScatterGetMesg_Private(&aij->stash,&n,&row,&col,&val,&flg); CHKERRQ(ierr);
+      if (!flg) break;
+
       for ( i=0; i<n; ) {
         /* Now identify the consecutive vals belonging to the same row */
         for ( j=i,rstart=row[j]; j<n; j++ ) { if (row[j] != rstart) break; }
@@ -567,7 +369,7 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
         i = j;
       }
     }
-    ierr = StashReset_Private(&aij->stash); CHKERRQ(ierr);
+    ierr = StashScatterEnd_Private(&aij->stash); CHKERRQ(ierr);
   }
  
   ierr = MatAssemblyBegin(aij->A,mode); CHKERRQ(ierr);
@@ -595,8 +397,6 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   if (aij->rowvalues) {PetscFree(aij->rowvalues); aij->rowvalues = 0;}
   PetscFunctionReturn(0);
 }
-
-#endif
 
 #undef __FUNC__  
 #define __FUNC__ "MatZeroEntries_MPIAIJ"
@@ -2006,7 +1806,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   PLogObjectParent(B,b->B);
 
   /* build cache for off array entries formed */
-  ierr = StashCreate_Private(comm,1,&b->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(comm,1,1,&b->stash); CHKERRQ(ierr);
   b->donotstash  = 0;
   b->colmap      = 0;
   b->garray      = 0;
@@ -2075,7 +1875,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAIJ));
   a->cowners = a->rowners + a->size + 2;
   PetscMemcpy(a->rowners,oldmat->rowners,2*(a->size+2)*sizeof(int));
-  ierr = StashCreate_Private(matin->comm,1,&a->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(matin->comm,1,1,&a->stash); CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined (USE_CTABLE)
     ierr = TableCreateCopy(oldmat->colmap,&a->colmap); CHKERRQ(ierr);

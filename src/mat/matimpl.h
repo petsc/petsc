@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.97 1999/03/10 23:33:31 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.98 1999/03/11 16:18:39 bsmith Exp balay $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -140,9 +140,10 @@ typedef struct {
 extern int StashCreate_Private(MPI_Comm,int,int,Stash*);
 extern int StashDestroy_Private(Stash*);
 extern int StashScatterEnd_Private(Stash*);
-extern int StashSetInitialSize_Private(Stash *,int);
+extern int StashSetInitialSize_Private(Stash*,int);
 extern int StashInfo_Private(Stash*);
-extern int StashValues_Private(Stash*,int,int,int*,Scalar*,InsertMode);
+extern int StashValues_Private(Stash*,int,int,int*,Scalar*);
+extern int StashValuesBlocked_Private(Stash*,int,int,int*,Scalar*,int,int,int,int);
 extern int StashScatterBegin_Private(Stash*,int*);
 extern int StashScatterGetMesg_Private(Stash*,int*,int**,int**,Scalar**,int*);
 
