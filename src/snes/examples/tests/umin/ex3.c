@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.25 1996/02/06 16:17:42 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.26 1996/02/20 18:54:55 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -81,7 +81,6 @@ int main(int argc,char **argv)
   /* Set up distributed array and vectors */
   ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,user.mx,
          user.my,Nx,Ny,1,1,&user.da); CHKERRA(ierr);
-  /* ierr = DAView(user.da,STDOUT_VIEWER_SELF); CHKERRA(ierr); */
   ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
   ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);
   ierr = VecDuplicate(x,&user.s); CHKERRA(ierr);
