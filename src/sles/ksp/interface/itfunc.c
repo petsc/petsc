@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.67 1996/09/28 16:25:10 curfman Exp balay $";
+static char vcid[] = "$Id: itfunc.c,v 1.68 1996/10/15 21:05:57 balay Exp balay $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -315,7 +315,7 @@ int KSPGetPreconditionerSide(KSP ksp, PCSide *side)
    The user can specify PETSC_NULL for any parameter that is not needed.
 
 .keywords: KSP, get, tolerance, absolute, relative, divergence, convergence,
-maximum, iterations
+           maximum, iterations
 
 .seealso: KSPSetTolerances()
 @*/
