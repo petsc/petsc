@@ -1,24 +1,23 @@
-/* $Id: ecimpl.h,v 1.2 1997/01/22 18:46:07 bsmith Exp balay $ */
+/* $Id: ecimpl.h,v 1.3 1997/05/23 18:40:12 balay Exp curfman $ */
 
 #ifndef _ECIMPL
 #define _ECIMPL
 
 #include "ec.h"
 
-
 /*
-     Maximum number of monitors you can run with a single EC
+     Maximum number of monitors that can be run with a single EC
 */
 #define MAXECMONITORS 5 
 
 /*
-   Defines the KSP data structure.
+   Defines the EC data structure.
 */
 struct _p_EC {
   PETSCHEADER
 
   ECProblemType     problemtype;       /* generalized or plain eigenvalue problem */
-  ECSpectrumPortion spectrumportion;   /* largest, smallest etc */
+  ECSpectrumPortion spectrumportion;   /* largest, smallest, etc. */
   Scalar            location;
 
   /* --------Monitor routines (most return -1 on error) --------*/
@@ -34,8 +33,7 @@ struct _p_EC {
   int (*converged)(EC,int,double,void*);
   void *cnvP; 
 
-
-  /*------------ Major routines which act on EC-----------------*/
+  /*------------ Major routines that act on EC-----------------*/
   int  (*setup)(EC);
   int  (*solve)(EC);   
   int  (*solveeigenvectors)(EC);   
