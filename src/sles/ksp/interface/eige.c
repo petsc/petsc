@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eige.c,v 1.12 1999/01/13 22:38:01 curfman Exp curfman $";
+static char vcid[] = "$Id: eige.c,v 1.13 1999/01/28 17:45:19 bsmith Exp bsmith $";
 #endif
 
-#include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeExplicitOperator"

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.82 1999/01/14 00:22:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.83 1999/01/18 21:00:06 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -35,7 +35,7 @@ typedef unsigned long   u_long;
 #include <stropts.h>
 #endif
 
-#include "src/viewer/impls/socket/socket.h"
+#include "src/sys/src/viewer/impls/socket/socket.h"
 #include "pinclude/petscfix.h"
 
 /*

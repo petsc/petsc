@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.25 1999/01/13 21:46:16 bsmith Exp bsmith $
+# $Id: makefile,v 1.26 1999/01/27 19:49:10 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -11,7 +11,7 @@ OBJSC    = view.o flush.o viewregall.o viewreg.o viewa.o dlregis.o
 OBJSF    =
 LIBBASE  = libpetsc
 MANSEC   = v
-LOCDIR   = src/viewer/interface/
+LOCDIR   = src/sys/src/viewer/interface/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

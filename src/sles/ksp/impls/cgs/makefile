@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.28 1998/06/12 21:19:10 balay Exp balay $
+# $Id: makefile,v 1.29 1998/06/15 15:56:15 balay Exp bsmith $
 
 ALL: lib 
 
@@ -9,6 +9,6 @@ SOURCEF  =
 OBJSC    = cgs.o
 OBJSF    = 
 LIBBASE  = libpetscsles
-LOCDIR   = src/ksp/impls/cgs/
+LOCDIR   = src/sles/ksp/impls/cgs/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

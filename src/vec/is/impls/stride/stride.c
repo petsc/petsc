@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.76 1998/12/17 22:08:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: stride.c,v 1.77 1999/01/13 16:25:09 curfman Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
 */
-#include "src/is/isimpl.h"             /*I   "is.h"   I*/
+#include "src/vec/is/isimpl.h"             /*I   "is.h"   I*/
 
 typedef struct {
   int n,first,step;

@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dsetpause.c,v 1.14 1998/04/27 13:59:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: dsetpause.c,v 1.15 1999/01/12 23:16:28 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
-#include "src/draw/drawimpl.h"  /*I "draw.h" I*/
+#include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "DrawSetPause" 

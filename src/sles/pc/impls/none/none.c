@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: none.c,v 1.19 1998/07/27 03:14:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: none.c,v 1.20 1998/10/19 22:17:21 bsmith Exp bsmith $";
 #endif
 /*
     Identity preconditioner, simply copies vector x to y.
 */
-#include "src/pc/pcimpl.h"          /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"          /*I "pc.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "PCApply_None"

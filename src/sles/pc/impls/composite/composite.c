@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.16 1998/12/17 22:09:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.17 1998/12/21 00:59:35 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
-#include "src/pc/pcimpl.h"   /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"   /*I "pc.h" I*/
 #include "sles.h"            /*I "sles.h" I*/
 
 typedef struct _PC_CompositeLink *PC_CompositeLink;

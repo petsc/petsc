@@ -1,4 +1,4 @@
-/* "$Id: cg.c,v 1.77 1998/10/19 22:16:39 bsmith Exp bsmith $"; */
+/* "$Id: cgctx.h,v 1.8 1998/10/20 18:18:46 bsmith Exp bsmith $"; */
 
 /*  
     Private Krylov Context Structure (KSP) for Conjugate Gradient 
@@ -15,7 +15,7 @@
 /*
         Defines the basic KSP object
 */
-#include "src/ksp/kspimpl.h"
+#include "src/sles/ksp/kspimpl.h"
 
 /*
     The field should remain the same since it is shared by the BiCG code

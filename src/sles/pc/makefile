@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.26 1998/06/15 15:45:53 balay Exp bsmith $ 
+# $Id: makefile,v 1.27 1999/01/27 19:46:43 bsmith Exp bsmith $ 
 
 ALL: lib
 
 SOURCEH  = pcimpl.h
 DIRS     = interface impls  examples
-LOCDIR   = src/pc/
+LOCDIR   = src/sles/pc/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

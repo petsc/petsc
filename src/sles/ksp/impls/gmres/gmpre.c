@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmpre.c,v 1.16 1999/01/13 22:53:52 curfman Exp curfman $";
+static char vcid[] = "$Id: gmpre.c,v 1.17 1999/01/13 23:07:56 curfman Exp bsmith $";
 #endif
 
-#include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
+#include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGMRESSetPreAllocateVectors" 

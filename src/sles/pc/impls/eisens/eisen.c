@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.82 1999/01/26 21:44:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.83 1999/01/27 19:46:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: eisen.c,v 1.82 1999/01/26 21:44:51 bsmith Exp bsmith 
  method. But it requires actually solving the preconditioned problem 
  with both left and right preconditioning. 
 */
-#include "src/pc/pcimpl.h"           /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"           /*I "pc.h" I*/
 
 typedef struct {
   Mat    shell,A;

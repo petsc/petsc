@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tfqmr.c,v 1.39 1998/10/19 22:16:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.40 1998/12/03 03:58:01 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: tfqmr.c,v 1.39 1998/10/19 22:16:57 bsmith Exp bsmith 
     of inner products.
 */
 
-#include "src/ksp/kspimpl.h"
+#include "src/sles/ksp/kspimpl.h"
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSetUp_TFQMR"

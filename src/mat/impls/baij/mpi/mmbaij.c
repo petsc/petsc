@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbaij.c,v 1.19 1999/01/08 21:03:17 balay Exp balay $";
+static char vcid[] = "$Id: mmbaij.c,v 1.20 1999/01/11 17:18:50 balay Exp bsmith $";
 #endif
 
 
@@ -210,7 +210,7 @@ int DisAssemble_MPIBAIJ(Mat A)
     for ( j=Bbaij->i[i]; j<Bbaij->i[i+1]; j++ ) {
       col = garray[Bbaij->j[j]]*bs;
       for (k=0; k<bs; k++ ) {
-        ierr = MatSetValues(Bnew,bs,rvals,1,&col,a+j*bs2,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(Bnew,bs,rvals,1,&col,a+j*bs2,B->insertmode);CHKERRQ(ierr);
         col++;
       }
     }

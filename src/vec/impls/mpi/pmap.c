@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmap.c,v 1.5 1998/12/17 22:08:41 bsmith Exp balay $";
+static char vcid[] = "$Id: pmap.c,v 1.6 1999/01/27 21:20:35 balay Exp bsmith $";
 #endif
 
 /*
@@ -19,8 +19,8 @@ int MapGetLocalSize_MPI(Map m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MapGetGlobalSize_MPI"
-int MapGetGlobalSize_MPI(Map m,int *N)
+#define __FUNC__ "MapGetSize_MPI"
+int MapGetSize_MPI(Map m,int *N)
 {
   PetscFunctionBegin;
   *N = m->N;
@@ -32,8 +32,8 @@ int MapGetGlobalSize_MPI(Map m,int *N)
 int MapGetLocalRange_MPI(Map m,int *rstart,int *rend)
 {
   PetscFunctionBegin;
-  *rstart = m->rstart;
-  *rend   = m->rend;
+  if (rstart) *rstart = m->rstart;
+  if (rend)   *rend   = m->rend;
   PetscFunctionReturn(0);
 }
 
@@ -60,7 +60,7 @@ int MapDestroy_MPI(Map m)
 
 static struct _MapOps DvOps = { 
             MapGetLocalSize_MPI,
-            MapGetGlobalSize_MPI,
+            MapGetSize_MPI,
             MapGetLocalRange_MPI,
             MapGetGlobalRange_MPI,
             MapDestroy_MPI};
@@ -85,7 +85,7 @@ static struct _MapOps DvOps = {
 
 .keywords: create, MPI
 
-.seealso: MapDestroy(), MapGetLocalSize(), MapGetGlobalSize(), MapGetGlobalRange(),
+.seealso: MapDestroy(), MapGetLocalSize(), MapGetSize(), MapGetGlobalRange(),
           MapGetLocalRange()
 
 @*/ 
@@ -124,3 +124,10 @@ int MapCreateMPI(MPI_Comm comm,int n,int N,Map *mm)
 
   PetscFunctionReturn(0);
 }
+
+
+
+
+
+
+

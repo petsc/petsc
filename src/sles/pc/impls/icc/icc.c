@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: icc.c,v 1.54 1999/01/26 23:02:01 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.55 1999/01/27 19:46:54 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
 */
 
-#include "src/pc/impls/icc/icc.h"   /*I "icc.h" I*/
+#include "src/sles/pc/impls/icc/icc.h"   /*I "pc.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "PCSetup_ICC"

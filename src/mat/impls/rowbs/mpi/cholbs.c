@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cholbs.c,v 1.48 1998/03/24 20:58:47 balay Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.49 1998/10/13 15:34:19 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -11,7 +11,6 @@ static char vcid[] = "$Id: cholbs.c,v 1.48 1998/03/24 20:58:47 balay Exp bsmith 
 #define MLOG
 #endif
 
-#include "src/pc/pcimpl.h"
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 
 #undef __FUNC__  

@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewreg.c,v 1.2 1999/01/12 23:17:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewreg.c,v 1.3 1999/01/13 21:46:16 bsmith Exp bsmith $";
 #endif
 
-#include "src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
+#include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 int   ViewerRegisterAllCalled = 0;
 FList ViewerList              = 0;

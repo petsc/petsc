@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawopenx.c,v 1.1 1999/01/11 04:49:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawopenx.c,v 1.2 1999/01/12 23:16:44 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
 */
 
-#include "src/draw/impls/x/ximpl.h"         /*I  "petsc.h" I*/
+#include "src/sys/src/draw/impls/x/ximpl.h"         /*I  "petsc.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "DrawOpenX" 

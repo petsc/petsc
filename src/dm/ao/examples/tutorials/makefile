@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.14 1999/01/26 02:21:02 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.15 1999/01/27 19:49:59 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -6,18 +6,20 @@ CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =	 
-LOCDIR          = src/ao/examples/tutorials/
+LOCDIR          = src/dm/ao/examples/tutorials/
 
 TESTEXAMPLES_1  =
 TESTEXAMPLES_2  =
 TESTEXAMPLES_3  =
 TESTEXAMPLES_4  =
+TESTEXAMPLES_6  = ex2.PETSc runex2 runex2_2 ex2.rm 
 BUILDEXAMPLES_1 =
 BUILDEXAMPLES_2 = 
 BUILDEXAMPLES_3 = 
 BUILDEXAMPLES_4 = 
+BUILDEXAMPLES_6 = ex2.PETSc ex2.rm 
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c
+EXAMPLESC       = ex1.c ex2.c
 EXAMPLESF       = 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -54,19 +56,16 @@ runex1_3:
 	   else echo "Possible problem with ex1_3, diffs above"; fi ;\
 	   ${RM} -f ex1_3.tmp
 runex2:
-	-@${MPIRUN} -np 1  ex2 > ex2_1.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex2  >\
+	   ex2_1.tmp 2>&1;   \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
-	   else echo "Possible problem with ex2_1, diffs above"; fi;\
+	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
-runex2_2:
-	-@${MPIRUN}  -np 2 ex2 > ex2_2.tmp 2>&1;\
-	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
-	   else echo "Possible problem with ex2_2, diffs above"; fi;\
-	   ${RM} -f ex2_2.tmp
-runex2_3:
-	-@${MPIRUN} -np 3 ex2 > ex2_3.tmp 2>&1;\
-	   if (diff output/ex2_3.out ex2_3.tmp) then true; \
-	   else echo "Possible problem with ex2_3, diffs above"; fi;\
-	   ${RM} -f ex2_3.tmp
 
+runex2_2:
+	-@${MPIRUN} -np 2 ex2  >\
+	   ex2_2.tmp 2>&1;   \
+	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
+	   else echo "Possible problem with ex2_2, diffs above"; fi; \
+	   ${RM} -f ex2_2.tmp
 

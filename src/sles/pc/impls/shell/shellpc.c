@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.52 1998/12/23 22:51:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: shellpc.c,v 1.53 1999/01/14 00:00:27 curfman Exp bsmith $";
 #endif
 
 /*
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: shellpc.c,v 1.52 1998/12/23 22:51:11 bsmith Exp curfm
   create their own preconditioner without writing much interface code.
 */
 
-#include "src/pc/pcimpl.h"        /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"        /*I "pc.h" I*/
 #include "src/vec/vecimpl.h"  
 
 typedef struct {

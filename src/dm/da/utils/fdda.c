@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.33 1999/01/20 20:05:29 curfman Exp curfman $";
+static char vcid[] = "$Id: fdda.c,v 1.34 1999/01/21 18:25:00 curfman Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
 #include "mat.h"    /*I      "mat.h"    I*/
-#include "src/da/daimpl.h" 
+#include "src/dm/da/daimpl.h" 
 
 extern int DAGetColoring1d(DA,ISColoring *,Mat *);
 extern int DAGetColoring2d_1(DA,ISColoring *,Mat *);

@@ -1,4 +1,4 @@
-/* $Id: bjacobi.h,v 1.19 1996/08/15 12:46:48 bsmith Exp bsmith $ */
+/* $Id: bjacobi.h,v 1.20 1999/01/27 19:46:50 bsmith Exp bsmith $ */
 
 #if !defined(__BJACOBI_H)
 #define __BJACOBI_H
@@ -6,7 +6,7 @@
     Private data for block Jacobi and block Gauss-Seidel preconditioner.
 */
 #include "sles.h"
-#include "src/pc/pcimpl.h"
+#include "src/sles/pc/pcimpl.h"
 
 /*
        This data is general for all implementations

@@ -1,10 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex45.c,v 1.1 1996/12/10 13:57:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex45.c,v 1.2 1997/07/09 20:55:45 balay Exp bsmith $";
 #endif
 
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 /*
   Demonstrates dumping matrix/vector from heritage code for PETSc.

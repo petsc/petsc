@@ -1,11 +1,11 @@
-/* $Id: ximpl.h,v 1.8 1996/08/08 14:45:12 bsmith Exp bsmith $ */
+/* $Id: ximpl.h,v 1.9 1997/12/04 19:37:13 bsmith Exp bsmith $ */
 
 /*
       Defines the internal data structures for the X-windows 
    implementation of the graphics functionality in PETSc.
 */
 
-#include "src/draw/drawimpl.h"
+#include "src/sys/src/draw/drawimpl.h"
 #include "sys.h"
 
 #if !defined(_XIMPL_H) && defined(HAVE_X11)

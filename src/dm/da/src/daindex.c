@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daindex.c,v 1.20 1998/05/20 13:48:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: daindex.c,v 1.21 1998/06/15 20:10:15 curfman Exp bsmith $";
 #endif
  
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "src/da/daimpl.h"    /*I   "da.h"   I*/
+#include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
 #define __FUNC__ "DAGetGlobalIndices"

@@ -1,17 +1,13 @@
-# $Id: makefile,v 1.25 1998/06/12 21:16:23 balay Exp balay $ 
+# $Id: makefile,v 1.26 1998/06/15 15:45:32 balay Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC	 =
-SOURCEF	 =
 SOURCEH	 = isimpl.h
 OBJSC	 =
 OBJSF	 =
 LIBBASE	 = libpetscvec
 DIRS	 = interface impls  examples utils
-LOCDIR   = src/is/
+LOCDIR   = src/vec/is/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

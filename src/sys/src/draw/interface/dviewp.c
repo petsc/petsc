@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dviewp.c,v 1.21 1999/01/04 21:52:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dviewp.c,v 1.22 1999/01/12 23:16:28 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
-#include "src/draw/drawimpl.h"  /*I "draw.h" I*/
+#include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "DrawSetViewPort" 

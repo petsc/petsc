@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.55 1998/10/19 22:15:08 bsmith Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.56 1998/12/17 21:55:59 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
-#include "vec.h"
 #include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
@@ -18,7 +17,6 @@ static char vcid[] = "$Id: zsys.c,v 1.55 1998/10/19 22:15:08 bsmith Exp balay $"
 #define petscrandomcreate_         PETSCRANDOMCREATE
 #define petscrandomdestroy_        PETSCRANDOMDESTROY
 #define petscrandomgetvalue_       PETSCRANDOMGETVALUE
-#define vecsetrandom_              VECSETRANDOM
 #define petsctrvalid_              PETSCTRVALID
 #define petscdoubleview_           PETSCDOUBLEVIEW
 #define petscintview_              PETSCINTVIEW
@@ -54,7 +52,6 @@ static char vcid[] = "$Id: zsys.c,v 1.55 1998/10/19 22:15:08 bsmith Exp balay $"
 #define petscrandomcreate_         petscrandomcreate
 #define petscrandomdestroy_        petscrandomdestroy
 #define petscrandomgetvalue_       petscrandomgetvalue
-#define vecsetrandom_              vecsetrandom
 #define petsctrvalid_              petsctrvalid
 #define petscdoubleview_           petscdoubleview
 #define petscintview_              petscintview
@@ -187,10 +184,6 @@ void petscrandomgetvalue_(PetscRandom *r,Scalar *val, int *__ierr )
   *__ierr = PetscRandomGetValue(*r,val);
 }
 
-void vecsetrandom_(PetscRandom *r,Vec *x, int *__ierr )
-{
-  *__ierr = VecSetRandom(*r,*x);
-}
 
 void petscobjectgetname(PetscObject *obj, CHAR name, int *__ierr, int len)
 {

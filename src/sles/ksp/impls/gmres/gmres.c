@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.114 1998/12/21 00:57:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.115 1998/12/23 22:50:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -55,7 +55,7 @@ static char vcid[] = "$Id: gmres.c,v 1.114 1998/12/21 00:57:44 bsmith Exp bsmith
     of a unsuccessful gmres iteration always be the solution x.
  */
 
-#include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
+#include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
 static int    GMRESGetNewVectors( KSP ,int );

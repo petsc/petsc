@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mgfunc.c,v 1.27 1998/04/27 14:28:33 curfman Exp curfman $";
+static char vcid[] = "$Id: mgfunc.c,v 1.28 1999/01/13 23:54:30 curfman Exp bsmith $";
 #endif
 
-#include "src/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
+#include "src/sles/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
                           /*I "mg.h"   I*/
 
 #undef __FUNC__  

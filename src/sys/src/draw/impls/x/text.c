@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: text.c,v 1.26 1997/10/19 03:27:52 bsmith Exp balay $";
+static char vcid[] = "$Id: text.c,v 1.27 1998/03/24 21:00:11 balay Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: text.c,v 1.26 1997/10/19 03:27:52 bsmith Exp balay $"
    library routines access/load fonts only once
  */
 
-#include "src/draw/impls/x/ximpl.h"
+#include "src/sys/src/draw/impls/x/ximpl.h"
 
 
 int XiInitFonts(Draw_X *);

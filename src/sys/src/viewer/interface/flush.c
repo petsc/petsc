@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: flush.c,v 1.16 1998/04/20 19:31:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: flush.c,v 1.17 1998/12/03 04:05:16 bsmith Exp bsmith $";
 #endif
 
-#include "src/viewer/viewerimpl.h"  /*I "viewer.h" I*/
+#include "src/sys/src/viewer/viewerimpl.h"  /*I "viewer.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerFlush"

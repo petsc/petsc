@@ -1,6 +1,9 @@
-static char help[] = 
-"Reads in a binary file, extracts a submatrix from it, and writes to another 
-binary file.\n\
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex56.c,v 1.14 1998/01/12 17:14:14 balay Exp $";
+#endif
+
+static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another\
+ binary file.\n\
 Options:\n\
   -fin  <mat>  : input matrix file\n\
   -fout <mat>  : output marrix file\n\

@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.78 1998/12/23 22:51:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.79 1999/01/13 23:47:48 curfman Exp bsmith $";
 #endif
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
 */
-#include "src/pc/pcimpl.h"               /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"               /*I "pc.h" I*/
 
 typedef struct {
   int        its;        /* inner iterations, number of sweeps */

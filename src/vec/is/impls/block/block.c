@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.32 1998/12/17 22:08:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: block.c,v 1.33 1999/01/13 16:25:05 curfman Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
 */
-#include "src/is/isimpl.h"               /*I  "is.h"     I*/
+#include "src/vec/is/isimpl.h"               /*I  "is.h"     I*/
 #include "sys.h"
 
 typedef struct {

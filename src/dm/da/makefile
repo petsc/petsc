@@ -1,10 +1,10 @@
-# $Id: makefile,v 1.19 1998/06/15 15:44:37 balay Exp bsmith $ 
+# $Id: makefile,v 1.20 1999/01/26 02:30:23 bsmith Exp bsmith $ 
 
 ALL: lib
 
 SOURCEH  = daimpl.h
 DIRS     = src  examples utils
-LOCDIR   = src/da/
+LOCDIR   = src/dm/da/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

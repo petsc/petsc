@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.29 1998/12/03 04:06:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.30 1999/01/04 21:55:25 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
 */
-#include "src/ao/aoimpl.h"      /*I "ao.h" I*/
+#include "src/dm/ao/aoimpl.h"      /*I "ao.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "AODataGetInfo" 

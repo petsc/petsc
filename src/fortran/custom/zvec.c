@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.47 1998/12/14 17:06:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.48 1999/01/12 23:12:34 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -29,7 +29,7 @@ static char vcid[] = "$Id: zvec.c,v 1.47 1998/12/14 17:06:15 bsmith Exp bsmith $
 #define vecduplicatevecs_         VECDUPLICATEVECS
 #define vecview_                  VECVIEW
 #define mapgetlocalsize_          MAPGETLOCALSIZE
-#define mapgetglobalsize_         MAPGETGLOBALSIZE
+#define mapgetsize_               MAPGETSIZE
 #define mapgetlocalrange_         MAPGETLOCALRANGE
 #define mapgetglobalrange_        MAPGETGLOBALRANGE
 #define mapdestroy_               MAPDESTROY
@@ -41,7 +41,10 @@ static char vcid[] = "$Id: zvec.c,v 1.47 1998/12/14 17:06:15 bsmith Exp bsmith $
 #define veccreateghost_           VECCREATEGHOST
 #define vecstridenorm_            VECSTRIDENORM
 #define vecmax_                   VECMAX
+#define drawtensorcontour_        DRAWTENSORCONTOUR
+#define vecsetrandom_              VECSETRANDOM
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define drawtensorcontour_        drawtensorcontour
 #define vecsetfromoptions_        vecsetfromoptions
 #define vecsettype_               vecsettype
 #define vecstridenorm_            vecstridenorm
@@ -52,7 +55,7 @@ static char vcid[] = "$Id: zvec.c,v 1.47 1998/12/14 17:06:15 bsmith Exp bsmith $
 #define vecgetmap_                vecgetmap
 #define mapcreatempi_             mapcreatempi
 #define mapgetglobalrange_        mapgetglobalrange
-#define mapgetglobalsize_         mapgetglobalsize
+#define mapgetsize_               mapgetsize
 #define mapgetlocalsize_          mapgetlocalsize
 #define mapgetlocalrange_         mapgetlocalrange
 #define mapdestroy_               mapdestroy
@@ -78,9 +81,26 @@ static char vcid[] = "$Id: zvec.c,v 1.47 1998/12/14 17:06:15 bsmith Exp bsmith $
 #define vecgettype_               vecgettype
 #define vecduplicatevecs_         vecduplicatevecs
 #define vecmax_                   vecmax
+#define vecsetrandom_              vecsetrandom
 #endif
 
 EXTERN_C_BEGIN
+
+void vecsetrandom_(PetscRandom *r,Vec *x, int *__ierr )
+{
+  *__ierr = VecSetRandom(*r,*x);
+}
+
+void drawtensorcontour_(Draw *win,int *m,int *n,double *x,double *y,Vec *V, int *__ierr )
+{
+  double *xx,*yy;
+  if (FORTRANNULLDOUBLE(x)) xx = PETSC_NULL; 
+  else xx = x;
+  if (FORTRANNULLDOUBLE(y)) yy = PETSC_NULL; 
+  else yy = y;
+
+  *__ierr = DrawTensorContour(*win,*m,*n,xx,yy,*V);
+}
 
 void vecsetfromoptions_(Vec *x,int *__ierr)
 {
@@ -106,9 +126,9 @@ void mapgetlocalsize_(Map *m,int *n, int *__ierr )
   *__ierr = MapGetLocalSize(*m,n);
 }
 
-void mapgetglobalsize_(Map *m,int *N, int *__ierr )
+void mapgetsize_(Map *m,int *N, int *__ierr )
 {
-  *__ierr = MapGetGlobalSize(*m,N);
+  *__ierr = MapGetSize(*m,N);
 }
 
 void mapgetlocalrange_(Map *m,int *rstart,int *rend, int *__ierr )

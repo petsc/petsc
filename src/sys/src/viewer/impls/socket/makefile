@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.41 1998/10/09 19:25:23 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.42 1999/01/12 23:17:16 bsmith Exp bsmith $ 
 
 #
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
@@ -21,7 +21,7 @@ OBJSF     =
 MANSEC    = v
 LIBBASE   = libpetsc
 DIRS      = 
-LOCDIR    = src/viewer/impls/socket/
+LOCDIR    = src/sys/src/viewer/impls/socket/
 NOADIC    = true
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

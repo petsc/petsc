@@ -1,9 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.31 1999/01/14 00:23:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.32 1999/01/18 21:01:57 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
-#include "src/viewer/impls/draw/vdraw.h" /*I "draw.h" I*/
+#include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "draw.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy_Draw" 

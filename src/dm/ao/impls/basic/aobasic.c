@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.39 1998/12/17 22:13:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.40 1998/12/21 01:05:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: aobasic.c,v 1.39 1998/12/17 22:13:15 bsmith Exp bsmit
   entire orderings on each processor.
 */
 
-#include "src/ao/aoimpl.h"          /*I  "ao.h"   I*/
+#include "src/dm/ao/aoimpl.h"          /*I  "ao.h"   I*/
 #include "sys.h"
 
 typedef struct {

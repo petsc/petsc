@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.122 1999/01/04 21:52:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.123 1999/01/12 23:16:44 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
 */
 
-#include "src/draw/impls/x/ximpl.h"         /*I  "petsc.h" I*/
+#include "src/sys/src/draw/impls/x/ximpl.h"         /*I  "petsc.h" I*/
 
 #if defined(HAVE_X11)
 

@@ -1,8 +1,7 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.56 1999/01/12 23:13:10 bsmith Exp balay $";
+static char vcid[] = "$Id: cmesh.c,v 1.57 1999/01/27 21:20:04 balay Exp bsmith $";
 #endif
 
-#include "src/draw/drawimpl.h"   /*I "draw.h" I*/
 #include "vec.h"        /*I "vec.h" I*/
 
 #undef __FUNC__  
@@ -70,6 +69,7 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],V
   PetscObject   vobj = (PetscObject) win;
   Draw          popup;
   double        *x,*y;
+  MPI_Comm      comm;
 #if !defined(USE_PETSC_COMPLEX)
   int           xin=1,yin=1,i,pause,showgrid;
   double        h, min, *v,max, scale = 1.0;
@@ -77,7 +77,8 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],V
 
   PetscFunctionBegin;
   if (vobj->cookie == DRAW_COOKIE && PetscTypeCompare(vobj->type_name,DRAW_NULL)) PetscFunctionReturn(0);
-  MPI_Comm_rank(win->comm,&rank);
+  ierr = PetscObjectGetComm((PetscObject)win,&comm);CHKERRQ(ierr);
+  MPI_Comm_rank(comm,&rank);
 
   /* move entire vector to first processor */
   if (rank == 0) {
@@ -95,7 +96,9 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],V
   PLogObjectParent(win,ctx);
   ierr = VecScatterBegin(V,W,INSERT_VALUES,SCATTER_FORWARD,ctx); CHKERRQ(ierr);
   ierr = VecScatterEnd(V,W,INSERT_VALUES,SCATTER_FORWARD,ctx); CHKERRQ(ierr);
-  ISDestroy(from); ISDestroy(to); VecScatterDestroy(ctx);
+  ierr = ISDestroy(from); CHKERRQ(ierr);
+  ierr = ISDestroy(to); CHKERRQ(ierr);
+  ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
 
   /* create scale window */
   ierr = DrawCheckResizedWindow(win); CHKERRQ(ierr);

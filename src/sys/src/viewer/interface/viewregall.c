@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewregall.c,v 1.3 1999/01/13 21:46:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewregall.c,v 1.4 1999/01/19 16:27:39 bsmith Exp bsmith $";
 #endif
 
-#include "src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
+#include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 EXTERN_C_BEGIN
 extern int ViewerCreate_Socket(Viewer);

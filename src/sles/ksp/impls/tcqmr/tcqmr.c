@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tcqmr.c,v 1.42 1998/10/19 22:16:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tcqmr.c,v 1.43 1998/12/03 03:57:59 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -9,8 +9,8 @@ static char vcid[] = "$Id: tcqmr.c,v 1.42 1998/10/19 22:16:56 bsmith Exp bsmith 
     complex numbers version, so most probably some are incorrect.
 */
 
-#include "src/ksp/kspimpl.h"
-#include "src/ksp/impls/tcqmr/tcqmrp.h"
+#include "src/sles/ksp/kspimpl.h"
+#include "src/sles/ksp/impls/tcqmr/tcqmrp.h"
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSolve_TCQMR"

@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.301 1999/01/19 22:21:12 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.302 1999/01/22 00:39:44 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2548,13 +2548,12 @@ D^{-1/2} b$ .  PETSc handles the internal scaling and permutation of
 $ x $ and $ b $ , so the user does {\em not} deal with these conversions, 
 but instead always works with the original linear system.  In
 this case, by default the scaled residual norm is monitored; one must use the
-option {\tt -ksp\_bsmonitor} \findex{-ksp_bsmonitor} to print both the
+option {\tt -ksp\_truemonitor} \findex{-ksp_truemonitor} to print both the
 scaled and unscaled residual norms. {\em Note}: If one is using ILU/ICC via
 BlockSolve95 and the {\tt MATMPIROWBS} matrix format for the 
 preconditioner matrix, but using a different format for a different
 linear system matrix, then this scaling and permuting is done only
-internally during the application of the preconditioner; 
-{\tt ksp\_bsmonitor} should not be used in this case.
+internally during the application of the preconditioner.
 
 
 % --------------------------------------------------------------------

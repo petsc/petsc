@@ -1,6 +1,7 @@
 !
-!    "$Id: ex20.F,v 1.6 1998/04/15 18:00:29 balay Exp bsmith $";
+!    "$Id: ex20.F,v 1.7 1998/12/03 03:57:07 bsmith Exp bsmith $";
 !
+       implicit none
 #include "include/finclude/petsc.h"
 #include "include/finclude/sys.h"
 #include "include/finclude/vec.h"
@@ -9,7 +10,6 @@
 !  This example demonstrates writing an array to a file in binary format
 !  that may be read in by PETSc's VecLoad() routine.
 !
-       implicit none
        integer          n, ierr,i,fd,veccookie
        Scalar           array(5)
        Vec              x
@@ -38,8 +38,8 @@
 !
 !  Open the file for reading by PETSc
 !
-       call ViewerBinaryOpen(PETSC_COMM_SELF,'testfile',            &
-     &                           PETSC_RDONLY,v,ierr)
+       call ViewerBinaryOpen(PETSC_COMM_SELF,'testfile',                &
+     &                       BINARY_RDONLY,v,ierr)
 !
 !  Load the vector
 !

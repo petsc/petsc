@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.108 1999/01/13 22:29:35 curfman Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.109 1999/01/28 04:20:44 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
 */
 
-#include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"  /*I "ksp.h" I*/
 #include "sys.h"
 
 /*

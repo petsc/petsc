@@ -1,11 +1,11 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.52 1998/12/17 22:11:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.53 1999/01/12 23:16:28 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
-#include "src/draw/drawimpl.h"  /*I "draw.h" I*/
+#include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "DrawResizeWindow"

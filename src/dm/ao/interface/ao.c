@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.22 1998/06/03 19:18:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.23 1998/12/03 04:06:44 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
-#include "src/ao/aoimpl.h"      /*I "ao.h" I*/
+#include "src/dm/ao/aoimpl.h"      /*I "ao.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "AOView" 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: map.c,v 1.2 1998/05/24 20:18:39 bsmith Exp balay $";
+static char vcid[] = "$Id: map.c,v 1.3 1999/01/27 21:20:33 balay Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all map operations.
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: map.c,v 1.2 1998/05/24 20:18:39 bsmith Exp balay $";
 .  n - the local size
 
 
-.seealso: MapGetGlobalSize(), MapGetLocalRange(), MapGetGlobalRange()
+.seealso: MapGetSize(), MapGetLocalRange(), MapGetGlobalRange()
 
 .keywords: 
 @*/
@@ -36,9 +36,9 @@ int MapGetLocalSize(Map m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MapGetGlobalSize"
+#define __FUNC__ "MapGetSize"
 /*@C
-   MapGetGlobalSize - Gets the total number of elements associated with this map.
+   MapGetSize - Gets the total number of elements associated with this map.
 
    Not Collective
 
@@ -52,7 +52,7 @@ int MapGetLocalSize(Map m,int *n)
 
 .keywords: 
 @*/
-int MapGetGlobalSize(Map m,int *N)
+int MapGetSize(Map m,int *N)
 {
   int ierr;
 
@@ -76,7 +76,7 @@ int MapGetGlobalSize(Map m,int *N)
 +  rstart - the first local index
 -  rend   - the last local index + 1
 
-.seealso: MapGetLocalSize(), MapGetGlobalSize(), MapGetGlobalRange()
+.seealso: MapGetLocalSize(), MapGetSize(), MapGetGlobalRange()
 
 .keywords: 
 @*/
@@ -105,7 +105,7 @@ int MapGetLocalRange(Map m,int *rstart,int *rend)
            associated with the map. range[rank], range[rank+1] is the 
            range for processor 
 
-.seealso: MapGetLocalSize(), MapGetGlobalSize(), MapGetLocalRange()
+.seealso: MapGetLocalSize(), MapGetSize(), MapGetLocalRange()
 
 .keywords: 
 @*/
@@ -129,7 +129,7 @@ int MapGetGlobalRange(Map m,int *range[])
    Input Parameter:
 .  m - the map object
 
-.seealso: MapGetLocalSize(), MapGetGlobalSize(), MapGetLocalRange()
+.seealso: MapGetLocalSize(), MapGetSize(), MapGetLocalRange()
 
 .keywords: 
 @*/

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.38 1999/01/12 23:13:58 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.39 1999/01/27 19:46:01 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -13,6 +13,6 @@ OBJSC    = itcl.o itfunc.o iguess.o itcreate.o iterativ.o itres.o itregis.o \
 LIBBASE  = libpetscsles
 DIRS     =
 MANSEC   = 5
-LOCDIR   = src/ksp/interface/
+LOCDIR   = src/sles/ksp/interface/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

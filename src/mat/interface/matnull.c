@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcnull.c,v 1.18 1998/12/17 22:09:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcnull.c,v 1.19 1999/01/13 23:42:13 curfman Exp bsmith $";
 #endif
 /*
     Routines to project vectors out of null spaces.
 */
 
 #include "petsc.h"
-#include "src/pc/pcimpl.h"      /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"      /*I "pc.h" I*/
 #include "src/sys/nreg.h"
 #include "sys.h"
 

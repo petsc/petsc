@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.13 1998/12/17 22:09:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.14 1998/12/21 00:59:34 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
     This allows embedding a Krylov method inside a preconditioner.
 */
-#include "src/pc/pcimpl.h"   /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"   /*I "pc.h" I*/
 #include "sles.h"            /*I "sles.h" I*/
 
 typedef struct {

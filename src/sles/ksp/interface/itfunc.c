@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.110 1999/01/14 19:49:46 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.111 1999/01/27 23:01:22 curfman Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
 */
 
-#include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeExtremeSingularValues"
@@ -899,9 +899,6 @@ $     monitor (KSP ksp, int it, double rnorm, void *mctx)
 .    -ksp_xtruemonitor   - sets line graph monitor,
                            uses KSPLGMonitorCreate()
 .    -ksp_singmonitor    - sets KSPSingularValueMonitor()
-.    -ksp_bsmonitor      - sets BlockSolve95 monitor that
-                          prints both scaled and unscaled
-                          residual norms
 -    -ksp_cancelmonitors - cancels all monitors that have
                           been hardwired into a code by 
                           calls to KSPSetMonitor(), but
@@ -931,7 +928,6 @@ int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx)
   if (ksp->numbermonitors >= MAXKSPMONITORS) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many KSP monitors set");
   }
-
   ksp->monitor[ksp->numbermonitors]           = monitor;
   ksp->monitorcontext[ksp->numbermonitors++]  = (void*)mctx;
   PetscFunctionReturn(0);

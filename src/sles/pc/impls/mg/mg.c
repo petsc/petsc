@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.85 1998/12/23 22:51:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.86 1999/01/13 23:54:33 curfman Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
 */
-#include "src/pc/impls/mg/mgimpl.h"                    /*I "mg.h" I*/
+#include "src/sles/pc/impls/mg/mgimpl.h"                    /*I "mg.h" I*/
 
 /*
        MGMCycle_Private - Given an MG structure created with MGCreate() runs 

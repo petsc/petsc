@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: frame.c,v 1.16 1997/10/19 03:27:52 bsmith Exp balay $";
+static char vcid[] = "$Id: frame.c,v 1.17 1998/03/24 21:00:15 balay Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: frame.c,v 1.16 1997/10/19 03:27:52 bsmith Exp balay $
    The region has 6 parameters.  These are the dimensions of the actual frame.
  */
 
-#include "src/draw/impls/x/ximpl.h"
+#include "src/sys/src/draw/impls/x/ximpl.h"
 
 extern int   XiGetColor( Draw_X *, char *, int );
 

@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgtype.c,v 1.12 1998/05/29 20:35:46 bsmith Exp curfman $";
+static char vcid[] = "$Id: cgtype.c,v 1.13 1999/01/13 23:19:36 curfman Exp bsmith $";
 #endif
 
-#include "src/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
+#include "src/sles/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "KSPCGSetType" 

@@ -1,9 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: strgen.c,v 1.1 1998/06/03 16:04:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: strgen.c,v 1.2 1998/06/11 19:54:35 bsmith Exp bsmith $";
 #endif
 
-
-#include "src/is/impls/general/general.h" /*I  "is.h"  I*/
+#include "src/vec/is/impls/general/general.h" /*I  "is.h"  I*/
 
 extern int ISDuplicate_General(IS, IS *);
 extern int ISDestroy_General(IS);

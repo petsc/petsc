@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.147 1999/01/26 23:29:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.148 1999/01/27 19:46:01 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
 */
 #include "petsc.h"
-#include "src/ksp/kspimpl.h"      /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"      /*I "ksp.h" I*/
 #include "sys.h"
 #include "viewer.h"               /*I "viewer.h" I*/
 
@@ -392,9 +392,6 @@ int KSPPrintHelp(KSP ksp)
   (*PetscHelpPrintf)(ksp->comm,"                                 residual norm\n");
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_singmonitor: calculate singular values during linear solve\n",p);
   (*PetscHelpPrintf)(ksp->comm,"       (only for CG and GMRES)\n");
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_bsmonitor: at each iteration print the unscaled and \n",p);
-
-  (*PetscHelpPrintf)(ksp->comm,"       (only for ICC and ILU in BlockSolve95)\n");
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues_explicitly\n",p);
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues\n",p);
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_compute_eigenvalues\n",p);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.89 1999/01/04 21:54:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.90 1999/01/13 21:47:46 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: da3.c,v 1.89 1999/01/04 21:54:52 bsmith Exp bsmith $"
    File created by Peter Mell  7/14/95
  */
 
-#include "src/da/daimpl.h"     /*I   "da.h"    I*/
+#include "src/dm/da/daimpl.h"     /*I   "da.h"    I*/
 
 #if defined (HAVE_AMS)
 EXTERN_C_BEGIN

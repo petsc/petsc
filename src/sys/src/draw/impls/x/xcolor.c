@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.40 1998/11/22 19:43:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.41 1998/12/03 04:03:22 bsmith Exp bsmith $";
 #endif
 
 
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: xcolor.c,v 1.40 1998/11/22 19:43:31 bsmith Exp bsmith
 */
 #include "petsc.h"
 #if defined(HAVE_X11)
-#include "src/draw/impls/x/ximpl.h"
+#include "src/sys/src/draw/impls/x/ximpl.h"
 #include <X11/Xatom.h>
 
 static char *(colornames[DRAW_BASIC_COLORS]) = { "white", 

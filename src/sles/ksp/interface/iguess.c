@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iguess.c,v 1.23 1997/11/28 16:18:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.24 1998/10/09 19:19:57 bsmith Exp bsmith $";
 #endif
 
-#include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"  /*I "ksp.h" I*/
 /* 
   This code inplements Paul Fischer's initial guess code for situations where
   a linear system is solved repeatedly 

@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.121 1999/01/25 19:03:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.122 1999/01/25 19:05:59 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
 */
 #include "src/mat/matimpl.h"
-#include "src/pc/pcimpl.h"              /*I "pc.h" I*/
-#include "src/pc/impls/bjacobi/bjacobi.h"
+#include "src/sles/pc/pcimpl.h"              /*I "pc.h" I*/
+#include "src/sles/pc/impls/bjacobi/bjacobi.h"
 
 static int PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);
 static int PCSetUp_BJacobi_Multiblock(PC,Mat,Mat);

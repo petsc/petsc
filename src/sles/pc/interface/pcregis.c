@@ -1,9 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcregis.c,v 1.47 1999/01/13 23:41:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.48 1999/01/19 21:41:27 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
-#include "src/pc/pcimpl.h"          /*I   "pc.h"   I*/
+#include "src/sles/pc/pcimpl.h"          /*I   "pc.h"   I*/
 
 EXTERN_C_BEGIN
 extern int PCCreate_Jacobi(PC);

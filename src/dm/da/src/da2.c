@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.110 1999/01/04 21:54:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.111 1999/01/13 21:47:46 bsmith Exp bsmith $";
 #endif
  
-#include "src/da/daimpl.h"    /*I   "da.h"   I*/
+#include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
 EXTERN_C_BEGIN
 extern int VecView_MPI_Draw_DA2d(Vec,Viewer);

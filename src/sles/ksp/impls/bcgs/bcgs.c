@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.51 1998/10/19 22:16:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.52 1998/12/03 03:57:36 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: bcgs.c,v 1.51 1998/10/19 22:16:37 bsmith Exp bsmith $
     of inner products.
 */
 #include "petsc.h"
-#include "src/ksp/kspimpl.h"
+#include "src/sles/ksp/kspimpl.h"
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSetUp_BCGS"

@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itres.c,v 1.36 1999/01/13 22:31:19 curfman Exp curfman $";
+static char vcid[] = "$Id: itres.c,v 1.37 1999/01/28 04:21:59 bsmith Exp bsmith $";
 #endif
 
-#include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "KSPResidual"

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.30 1998/06/12 21:20:08 balay Exp balay $ 
+# $Id: makefile,v 1.31 1998/06/15 15:56:51 balay Exp bsmith $ 
 
 ALL: lib 
 
@@ -9,6 +9,6 @@ SOURCEF  =
 OBJSC    = tfqmr.o
 OBJSF    =
 LIBBASE  = libpetscsles
-LOCDIR   = src/ksp/impls/tfqmr/
+LOCDIR   = src/sles/ksp/impls/tfqmr/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

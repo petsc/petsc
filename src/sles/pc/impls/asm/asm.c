@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.91 1999/01/12 23:14:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.92 1999/01/13 23:46:25 curfman Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: asm.c,v 1.91 1999/01/12 23:14:53 bsmith Exp curfman $
        n_local_true - actual number of subdomains on this processor
        n_local = maximum over all processors of n_local_true
 */
-#include "src/pc/pcimpl.h"     /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"     /*I "pc.h" I*/
 #include "sles.h"
 
 typedef struct {

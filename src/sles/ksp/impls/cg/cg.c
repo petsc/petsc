@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.81 1998/12/21 00:57:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.82 1998/12/23 22:50:30 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -45,7 +45,7 @@ static char vcid[] = "$Id: cg.c,v 1.81 1998/12/21 00:57:40 bsmith Exp bsmith $";
     related to the type of matrix (e.g. complex symmetric) being solved and
     data used during the optional Lanczo process used to compute eigenvalues
 */
-#include "src/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
+#include "src/sles/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
 extern int KSPComputeExtremeSingularValues_CG(KSP,double *,double *);
 extern int KSPComputeEigenvalues_CG(KSP,int,double *,double *,int *);
 

@@ -1,10 +1,10 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.24 1998/12/17 22:08:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.25 1999/01/04 21:47:10 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
-#include "src/is/isimpl.h"    /*I "is.h"  I*/
+#include "src/vec/is/isimpl.h"    /*I "is.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ "ISLocalToGlobalMappingView"

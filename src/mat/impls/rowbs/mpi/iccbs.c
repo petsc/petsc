@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iccbs.c,v 1.32 1999/01/26 17:13:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.33 1999/01/27 19:47:31 bsmith Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -17,12 +17,8 @@ static char vcid[] = "$Id: iccbs.c,v 1.32 1999/01/26 17:13:30 bsmith Exp bsmith 
    In this case, we use pre-solve and post-solve phases to handle scaling and
    permutation, and by default the scaled residual norm is monitored for the
    ILU/ICC preconditioners.  Use the option
-     -ksp_bsmonitor
+     -ksp_truemonitor
    to print both the scaled and unscaled residual norms.
-
-   If the preconditioning matrix differs from the linear system matrix, then we
-   work directly ith the original linear system, and just do the scaling and
-   permutation within PCApply().
 */
 
 #include "petsc.h"
@@ -41,18 +37,23 @@ int MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 
   PetscFunctionBegin;  
   /* Permute and scale RHS and solution vectors */
-  ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
-  ierr = VecGetArray(v,&va); CHKERRQ(ierr);
-  BSperm_dvec(xa,va,bsif->pA->perm); CHKERRBS(0);
-  ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
-  ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
-  ierr = VecPointwiseDivide(v,bsif->diag,x); CHKERRQ(ierr);
-  ierr = VecGetArray(rhs,&rhsa); CHKERRQ(ierr);
-  ierr = VecGetArray(v,&va); CHKERRQ(ierr);
-  BSperm_dvec(rhsa,va,bsif->pA->perm); CHKERRBS(0);
-  ierr = VecRestoreArray(rhs,&rhsa); CHKERRQ(ierr);
-  ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
-  ierr = VecPointwiseMult(v,bsif->diag,rhs); CHKERRQ(ierr);
+  if (x) {
+    ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
+    ierr = VecGetArray(v,&va); CHKERRQ(ierr);
+    BSperm_dvec(xa,va,bsif->pA->perm); CHKERRBS(0);
+    ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
+    ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
+    ierr = VecPointwiseDivide(v,bsif->diag,x); CHKERRQ(ierr);
+  }
+
+  if (rhs) {
+    ierr = VecGetArray(rhs,&rhsa); CHKERRQ(ierr);
+    ierr = VecGetArray(v,&va); CHKERRQ(ierr);
+    BSperm_dvec(rhsa,va,bsif->pA->perm); CHKERRBS(0);
+    ierr = VecRestoreArray(rhs,&rhsa); CHKERRQ(ierr);
+    ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
+    ierr = VecPointwiseMult(v,bsif->diag,rhs); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -67,19 +68,22 @@ int MatUnScaleSystem_MPIRowbs(Mat mat,Vec x, Vec rhs)
 
   PetscFunctionBegin;  
   /* Unpermute and unscale the solution and RHS vectors */
-  ierr = VecPointwiseMult(x,bsif->diag,v); CHKERRQ(ierr);
-
-  ierr = VecGetArray(v,&va); CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
-  BSiperm_dvec(va,xa,bsif->pA->perm); CHKERRBS(0);
-  ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
-  ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
-  ierr = VecPointwiseDivide(rhs,bsif->diag,v); CHKERRQ(ierr);
-  ierr = VecGetArray(rhs,&rhsa); CHKERRQ(ierr);
-  ierr = VecGetArray(v,&va); CHKERRQ(ierr);
-  BSiperm_dvec(va,rhsa,bsif->pA->perm); CHKERRBS(0);
-  ierr = VecRestoreArray(rhs,&rhsa); CHKERRQ(ierr);
-  ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
+  if (x) {
+    ierr = VecPointwiseMult(x,bsif->diag,v); CHKERRQ(ierr);
+    ierr = VecGetArray(v,&va); CHKERRQ(ierr);
+    ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
+    BSiperm_dvec(va,xa,bsif->pA->perm); CHKERRBS(0);
+    ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
+    ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
+  }
+  if (rhs) {
+    ierr = VecPointwiseDivide(rhs,bsif->diag,v); CHKERRQ(ierr);
+    ierr = VecGetArray(rhs,&rhsa); CHKERRQ(ierr);
+    ierr = VecGetArray(v,&va); CHKERRQ(ierr);
+    BSiperm_dvec(va,rhsa,bsif->pA->perm); CHKERRBS(0);
+    ierr = VecRestoreArray(rhs,&rhsa); CHKERRQ(ierr);
+    ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -91,40 +95,6 @@ int MatUseScaledForm_MPIRowbs(Mat mat,PetscTruth scale)
 
   PetscFunctionBegin;
   bsif->vecs_permscale = scale;
-  PetscFunctionReturn(0);
-}
-
-#include "sles.h"
-
-/* 
-   KSPMonitor_MPIRowbs - Prints the actual (unscaled) residual norm as
-   well as the scaled residual norm.  The default residual monitor for 
-   ICC/ILU with BlockSolve95 prints only the scaled residual norm.
-
-   Options Database Keys:
-$  -ksp_bsmonitor
- */
-#undef __FUNC__  
-#define __FUNC__ "KSPMonitor_MPIRowbs"
-int KSPMonitor_MPIRowbs(KSP ksp,int n,double rnorm,void *dummy)
-{
-  Mat_MPIRowbs *bsif;
-  int          ierr;
-  Vec          resid;
-  double       scnorm;
-  PC           pc;
-  Mat          mat;
-  MPI_Comm     comm;
-
-  PetscFunctionBegin;  
-  ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
-  ierr = PCGetOperators(pc,&mat,0,0); CHKERRQ(ierr);
-  bsif = (Mat_MPIRowbs *) mat->data;
-  ierr = KSPBuildResidual(ksp,0,bsif->xwork,&resid); CHKERRQ(ierr);
-  ierr = VecPointwiseDivide(resid,bsif->diag,resid); CHKERRQ(ierr); 
-  ierr = VecNorm(resid,NORM_2,&scnorm); CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-  PetscPrintf(comm,"%d Preconditioned %14.12e True %14.12e\n",n,rnorm,scnorm); 
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.26 1999/01/12 23:18:21 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.27 1999/01/26 02:21:30 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -6,7 +6,7 @@ CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =	 
-LOCDIR          = src/ao/examples/tests/
+LOCDIR          = src/dm/ao/examples/tests/
 
 TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm \
                   ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm \
@@ -26,31 +26,31 @@ EXAMPLESF       =
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o  chkopts 
-	-${CLINKER} -o ex1 ex1.o ${PETSC_VEC_LIB}
+	-${CLINKER} -o ex1 ex1.o ${PETSC_DM_LIB}
 	${RM} -f ex1.o
 
 ex2: ex2.o  chkopts
-	-${CLINKER} -o ex2 ex2.o ${PETSC_VEC_LIB}
+	-${CLINKER} -o ex2 ex2.o ${PETSC_DM_LIB}
 	${RM} -f ex2.o
 
 ex3: ex3.o  chkopts
-	-${CLINKER} -o ex3 ex3.o  ${PETSC_VEC_LIB}
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_DM_LIB}
 	${RM} -f ex3.o
 
 ex4: ex4.o  chkopts
-	-${CLINKER} -o ex4 ex4.o  ${PETSC_VEC_LIB}
+	-${CLINKER} -o ex4 ex4.o  ${PETSC_DM_LIB}
 	${RM} -f ex4.o
 
 ex5: ex5.o  chkopts
-	-${CLINKER} -o ex5 ex5.o  ${PETSC_VEC_LIB}
+	-${CLINKER} -o ex5 ex5.o  ${PETSC_DM_LIB}
 	${RM} -f ex5.o
 
 ex6: ex6.o  chkopts
-	-${CLINKER} -o ex6 ex6.o  ${PETSC_VEC_LIB}
+	-${CLINKER} -o ex6 ex6.o  ${PETSC_DM_LIB}
 	${RM} -f ex6.o
 
 ex7: ex7.o  chkopts
-	-${CLINKER} -o ex7 ex7.o  ${PETSC_VEC_LIB}
+	-${CLINKER} -o ex7 ex7.o  ${PETSC_DM_LIB}
 	${RM} -f ex7.o
 
 runex1:

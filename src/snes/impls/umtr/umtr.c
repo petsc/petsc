@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.75 1998/12/21 01:04:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.76 1998/12/23 22:53:21 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
-#include "src/ksp/kspimpl.h"
-#include "src/ksp/impls/qcg/qcg.h"
+#include "src/sles/ksp/kspimpl.h"
+#include "src/sles/ksp/impls/qcg/qcg.h"
 
 /*
     SNESSolve_UM_TR - Implements Newton's Method with a trust region approach 

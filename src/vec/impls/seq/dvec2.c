@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.56 1998/12/03 03:56:57 bsmith Exp balay $"
+static char vcid[] =  "$Id: dvec2.c,v 1.57 1999/01/27 21:20:13 balay Exp bsmith $"
 #endif
 
 /* 
@@ -29,7 +29,7 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
 
   i      = nv;
   nv_rem = nv&0x3;
-  yy     = yin;
+  yy     = (Vec *) yin;
   x      = xv->array;
 
   switch (nv_rem) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.78 1999/01/27 19:46:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.79 1999/01/27 23:12:46 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: iterativ.c,v 1.78 1999/01/27 19:46:01 bsmith Exp bsmi
    the registry system, we provide a way to load only the truely necessary
    files) 
  */
-#include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "KSPDefaultFreeWork"

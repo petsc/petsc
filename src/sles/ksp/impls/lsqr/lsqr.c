@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.45 1998/10/19 22:16:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.46 1998/12/03 03:57:56 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: lsqr.c,v 1.45 1998/10/19 22:16:54 bsmith Exp bsmith $
        any preconditioner arguments specified.
 */
 #include "petsc.h"
-#include "src/ksp/kspimpl.h"
+#include "src/sles/ksp/kspimpl.h"
 
 
 typedef struct {

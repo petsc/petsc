@@ -1,9 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zdraw.c,v 1.24 1998/12/03 03:53:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zdraw.c,v 1.25 1998/12/04 23:21:06 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
-#include "vec.h"
 #include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
@@ -20,7 +19,6 @@ static char vcid[] = "$Id: zdraw.c,v 1.24 1998/12/03 03:53:28 bsmith Exp bsmith 
 #define drawdestroy_         DRAWDESTROY
 #define viewerdrawgetdraw_   VIEWERDRAWGETDRAW
 #define viewerdrawgetdrawlg_ VIEWERDRAWGETDRAWLG
-#define drawtensorcontour_   DRAWTENSORCONTOUR
 #define drawgettitle_        DRAWGETTITLE
 #define drawsettitle_        DRAWSETTITLE
 #define drawappendtitle_     DRAWAPPENDTITLE
@@ -39,7 +37,6 @@ static char vcid[] = "$Id: zdraw.c,v 1.24 1998/12/03 03:53:28 bsmith Exp bsmith 
 #define drawdestroy_         drawdestroy
 #define viewerdrawgetdraw_   viewerdrawgetdraw
 #define viewerdrawgetdrawlg_ viewerdrawgetdrawlg
-#define drawtensorcontour_   drawtensorcontour
 #define drawgettitle_        drawgettitle
 #define drawsettitle_        drawsettitle
 #define drawappendtitle_     drawappendtitle
@@ -47,17 +44,6 @@ static char vcid[] = "$Id: zdraw.c,v 1.24 1998/12/03 03:53:28 bsmith Exp bsmith 
 #endif
 
 EXTERN_C_BEGIN
-
-void drawtensorcontour_(Draw *win,int *m,int *n,double *x,double *y,Vec *V, int *__ierr )
-{
-  double *xx,*yy;
-  if (FORTRANNULLDOUBLE(x)) xx = PETSC_NULL; 
-  else xx = x;
-  if (FORTRANNULLDOUBLE(y)) yy = PETSC_NULL; 
-  else yy = y;
-
-  *__ierr = DrawTensorContour(*win,*m,*n,xx,yy,*V);
-}
 
 void viewerdrawgetdraw_(Viewer *vin,int *win,Draw *draw, int *__ierr )
 {

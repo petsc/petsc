@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.20 1998/12/03 04:05:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.21 1999/01/12 23:17:35 bsmith Exp bsmith $";
 #endif
 
 /*
    Simple example to show how PETSc programs can be run from Matlab. 
-  See ex1.m. This is the same program as src/da/examples/ex5.c
+  See ex12.m.
 */
 
 static char help[] = "Solves the one dimensional heat equation.\n\n";

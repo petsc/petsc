@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.11 1999/01/13 21:46:13 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.12 1999/01/26 01:27:23 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -9,10 +9,10 @@ FPPFLAGS        =
 LOCDIR          = src/viewer/examples/tests/
 
 TESTEXAMPLES_2  = 
-TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean
-BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm clean
+TESTEXAMPLES_4  = ex3.PETSc ex3.rm clean
+BUILDEXAMPLES_4 = ex3.PETSc ex3.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex1.m ex3.c
+EXAMPLESC       = ex3.c
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.81 1999/01/12 23:17:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.82 1999/01/13 21:46:02 bsmith Exp bsmith $";
 #endif
 
-#include "src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
+#include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "pinclude/petscfix.h"
 #include <stdarg.h>
 

@@ -1,15 +1,8 @@
-# $Id: makefile,v 1.38 1998/06/13 05:06:14 balay Exp balay $ 
+# $Id: makefile,v 1.39 1998/06/15 16:20:20 balay Exp bsmith $ 
 
 ALL: ex1
 
-CFLAGS   = 
-FFLAGS	 = 
-SOURCEC	 = 
-SOURCEF	 = 
-SOURCEH	 = 
-OBJSC	 = 
-OBJSF	 = 
-LOCDIR	 = src/viewer/examples/
+LOCDIR	 = src/sys/src/viewer/examples/
 LIBBASE	 = libpetscvec
 DIRS	 = tutorials tests
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bicg.c,v 1.4 1998/10/09 19:20:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bicg.c,v 1.5 1998/10/19 22:16:59 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: bicg.c,v 1.4 1998/10/09 19:20:27 bsmith Exp bsmith $"
     Contibuted by: Victor Eijkhout
 
 */
-#include "src/ksp/kspimpl.h"
+#include "src/sles/ksp/kspimpl.h"
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSetUp_BiCG"

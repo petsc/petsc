@@ -1,9 +1,9 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itregis.c,v 1.40 1999/01/13 22:18:03 curfman Exp curfman $";
+static char vcid[] = "$Id: itregis.c,v 1.41 1999/01/28 04:21:28 bsmith Exp bsmith $";
 #endif
 
-#include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
+#include "src/sles/ksp/kspimpl.h"  /*I "ksp.h" I*/
 
 EXTERN_C_BEGIN
 extern int KSPCreate_Richardson(KSP);

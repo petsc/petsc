@@ -1,11 +1,11 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.3 1999/01/18 22:15:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawreg.c,v 1.4 1999/01/27 19:48:25 bsmith Exp bsmith $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
 */
-#include "src/draw/drawimpl.h"  /*I "draw.h" I*/
+#include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 /*
    Contains the list of registered Draw routines

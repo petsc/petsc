@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.80 1999/01/12 23:18:23 bsmith Exp balay $ */
+/* $Id: vec.h,v 1.81 1999/01/27 21:20:10 balay Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -36,7 +36,7 @@ extern int VecDestroy(Vec);
 
 extern int MapDestroy(Map);
 extern int MapGetLocalSize(Map,int *);
-extern int MapGetGlobalSize(Map,int *);
+extern int MapGetSize(Map,int *);
 extern int MapGetLocalRange(Map,int *,int *);
 extern int MapGetGlobalRange(Map,int *[]);
 

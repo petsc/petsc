@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: milu.c,v 1.6 1998/12/21 01:05:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: milu.c,v 1.7 1998/12/23 22:53:57 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: milu.c,v 1.6 1998/12/21 01:05:47 bsmith Exp bsmith $"
 */
 
 #include <stdlib.h>
-#include "src/pc/pcimpl.h"
+#include "src/sles/pc/pcimpl.h"
 
 /*
   Manteuffel variant of ILU

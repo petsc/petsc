@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.163 1999/01/27 04:22:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.164 1999/01/27 23:08:04 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
-#include "src/pc/pcimpl.h"            /*I "sles.h" I*/
+#include "src/sles/pc/pcimpl.h"            /*I "sles.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy"

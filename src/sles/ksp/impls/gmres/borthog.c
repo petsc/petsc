@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog.c,v 1.46 1998/12/03 03:57:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.47 1999/01/13 23:13:24 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: borthog.c,v 1.46 1998/12/03 03:57:42 bsmith Exp bsmit
     VecMDot() arguments within the code MUST remain in the order
     given for correct computation of inner products.
 */
-#include "src/ksp/impls/gmres/gmresp.h"
+#include "src/sles/ksp/impls/gmres/gmresp.h"
 
 /*
     This is the basic orthogonalization routine using modified Gram-Schmidt.

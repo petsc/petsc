@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawregall.c,v 1.2 1999/01/12 23:16:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawregall.c,v 1.3 1999/01/13 22:34:25 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
-#include "src/draw/drawimpl.h"  /*I "draw.h" I*/
+#include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 EXTERN_C_BEGIN
 extern int DrawCreate_X(Draw);

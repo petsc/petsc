@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dsclear.c,v 1.16 1998/04/27 14:40:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: dsclear.c,v 1.17 1999/01/12 23:16:28 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
-#include "src/draw/drawimpl.h"  /*I "draw.h" I*/
+#include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "DrawSynchronizedClear" 

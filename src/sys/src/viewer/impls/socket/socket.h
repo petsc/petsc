@@ -1,10 +1,10 @@
-/* $Id: matlab.h,v 1.14 1998/12/03 04:04:50 bsmith Exp bsmith $ */
+/* $Id: socket.h,v 1.15 1999/01/12 21:57:10 bsmith Exp bsmith $ */
 /* 
      This is the definition of the Matlab viewer structure. Note: 
   each viewer has a different data structure.
 */
 
-#include "src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
+#include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
 #include "sys.h" 
 
 typedef struct {

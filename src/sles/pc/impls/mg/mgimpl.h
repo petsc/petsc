@@ -1,11 +1,11 @@
-/* $Id: mgimpl.h,v 1.9 1996/11/07 15:08:56 bsmith Exp bsmith $ */
+/* $Id: mgimpl.h,v 1.10 1997/07/10 03:44:04 bsmith Exp bsmith $ */
 
 /*
       Data structure used for Multigrid preconditioner.
 */
 #if !defined(__MG_IMPL)
 #define __MG_IMPL
-#include "src/pc/pcimpl.h"
+#include "src/sles/pc/pcimpl.h"
 #include "mg.h"
 #include "sles.h"
 

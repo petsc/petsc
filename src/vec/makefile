@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.23 1998/06/15 15:46:46 balay Exp bsmith $ 
+# $Id: makefile,v 1.24 1999/01/27 19:45:38 bsmith Exp bsmith $ 
 
 ALL: lib
 
 SOURCEH  = vecimpl.h
-DIRS     = utils interface impls  examples
+DIRS     = is utils interface impls  examples 
 LOCDIR   = src/vec/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.66 1998/12/23 22:50:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: cheby.c,v 1.67 1999/01/13 23:20:42 curfman Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
 */
-#include "src/ksp/kspimpl.h"                    /*I "ksp.h" I*/
-#include "src/ksp/impls/cheby/chebctx.h"
+#include "src/sles/ksp/kspimpl.h"                    /*I "ksp.h" I*/
+#include "src/sles/ksp/impls/cheby/chebctx.h"
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSetUp_Chebychev"

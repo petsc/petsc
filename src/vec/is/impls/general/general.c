@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.75 1998/12/17 22:08:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: general.c,v 1.76 1999/01/13 16:25:14 curfman Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
-#include "src/is/impls/general/general.h" /*I  "is.h"  I*/
+#include "src/vec/is/impls/general/general.h" /*I  "is.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ "ISDuplicate_General" 

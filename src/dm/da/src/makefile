@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.31 1999/01/12 23:18:00 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.32 1999/01/26 02:30:53 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -12,6 +12,6 @@ OBJSC    = da2.o da1.o da3.o daghost.o dacorn.o dagtol.o daltol.o \
            dadist.o daview.o dasub.o gr1.o gr2.o
 LIBBASE  = libpetscdm
 MANSEC   = 6
-LOCDIR   = src/da/src/
+LOCDIR   = src/dm/da/src/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

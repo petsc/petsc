@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wmap.c,v 1.19 1997/10/19 03:27:52 bsmith Exp balay $";
+static char vcid[] = "$Id: wmap.c,v 1.20 1998/03/24 21:00:08 balay Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
 #include "petsc.h"
 
 #if defined(HAVE_X11)
-#include "src/draw/impls/x/ximpl.h"
+#include "src/sys/src/draw/impls/x/ximpl.h"
 
 /*
     This routine waits until the window is actually created or destroyed

@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fmg.c,v 1.10 1997/07/09 20:52:58 balay Exp bsmith $";
+static char vcid[] = "$Id: fmg.c,v 1.11 1997/10/19 03:24:36 bsmith Exp bsmith $";
 #endif
 /*
      Full multigrid using either additive or multiplicative V or W cycle
 */
-#include "src/pc/impls/mg/mgimpl.h"
+#include "src/sles/pc/impls/mg/mgimpl.h"
 
 extern int MGMCycle_Private(MG *);
 

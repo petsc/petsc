@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.129 1998/12/09 23:22:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.130 1998/12/17 22:08:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: vscat.c,v 1.129 1998/12/09 23:22:34 bsmith Exp bsmith
   some special cases for parallel scatters.
 */
 
-#include "src/is/isimpl.h"
+#include "src/vec/is/isimpl.h"
 #include "src/vec/vecimpl.h"                     /*I "vec.h" I*/
 
 /*

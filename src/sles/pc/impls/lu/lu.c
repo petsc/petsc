@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.108 1999/01/13 23:50:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.109 1999/01/27 19:46:48 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
          a direct solver.
 */
-#include "src/pc/pcimpl.h"                /*I "pc.h" I*/
+#include "src/sles/pc/pcimpl.h"                /*I "pc.h" I*/
 
 typedef struct {
   Mat               fact;             /* factored matrix */

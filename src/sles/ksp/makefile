@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.25 1998/06/15 15:45:40 balay Exp bsmith $ 
+# $Id: makefile,v 1.26 1999/01/27 19:46:00 bsmith Exp bsmith $ 
 
 ALL: lib
 
 SOURCEH  = kspimpl.h
 DIRS     = interface impls
-LOCDIR   = src/ksp/
+LOCDIR   = src/sles/ksp/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

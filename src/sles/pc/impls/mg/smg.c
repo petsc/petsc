@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: smg.c,v 1.13 1997/10/19 03:24:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: smg.c,v 1.14 1998/03/06 00:13:43 bsmith Exp bsmith $";
 #endif
 /*
      Additive Multigrid V Cycle routine    
 */
-#include "src/pc/impls/mg/mgimpl.h"
+#include "src/sles/pc/impls/mg/mgimpl.h"
 
 /*
        MGACycle_Private - Given an MG structure created with MGCreate() runs 

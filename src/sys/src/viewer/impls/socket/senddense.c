@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: senddense.c,v 1.30 1998/12/03 04:04:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: senddense.c,v 1.31 1999/01/12 23:17:16 bsmith Exp bsmith $";
 #endif
 
-#include "src/viewer/impls/socket/socket.h"
+#include "src/sys/src/viewer/impls/socket/socket.h"
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerSocketPutScalar_Private"

@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.34 1999/01/13 22:38:37 curfman Exp curfman $";
+static char vcid[] = "$Id: xmon.c,v 1.35 1999/01/21 14:49:44 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
-#include "src/draw/drawimpl.h"  /*I  "draw.h"  I*/
-#include "src/ksp/kspimpl.h"              /*I  "ksp.h"   I*/
+#include "src/sys/src/draw/drawimpl.h"  /*I  "draw.h"  I*/
+#include "src/sles/ksp/kspimpl.h"              /*I  "ksp.h"   I*/
 
 #undef __FUNC__  
 #define __FUNC__ "KSPLGMonitorCreate"
@@ -156,7 +156,7 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
   PetscFunctionBegin;
   MPI_Comm_rank(ksp->comm,&rank);
   if (!rank) { 
-    if (!n) DrawLGReset(lg);
+    if (!n) {ierr = DrawLGReset(lg);CHKERRQ(ierr);}
     x[0] = x[1] = (double) n;
     if (rnorm > 0.0) y[0] = log10(rnorm); else y[0] = -15.0;
   }
@@ -164,13 +164,13 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
   ierr = VecDuplicate(ksp->vec_rhs,&work); CHKERRQ(ierr);
   ierr = KSPBuildResidual(ksp,0,work,&resid); CHKERRQ(ierr);
   ierr = VecNorm(resid,NORM_2,&scnorm); CHKERRQ(ierr);
-  VecDestroy(work);
+  ierr = VecDestroy(work);CHKERRQ(ierr);
 
   if (!rank) {
     if (scnorm > 0.0) y[1] = log10(scnorm); else y[1] = -15.0;
-    DrawLGAddPoint(lg,x,y);
+    ierr = DrawLGAddPoint(lg,x,y);CHKERRQ(ierr);
     if (n <= 20 || (n % 3)) {
-      DrawLGDraw(lg);
+      ierr = DrawLGDraw(lg);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -195,12 +195,13 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
 @*/
 int KSPLGTrueMonitorDestroy(DrawLG drawlg)
 {
+  int  ierr;
   Draw draw;
 
   PetscFunctionBegin;
-  DrawLGGetDraw(drawlg,&draw);
-  DrawDestroy(draw);
-  DrawLGDestroy(drawlg);
+  ierr = DrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
+  ierr = DrawDestroy(draw);CHKERRQ(ierr);
+  ierr = DrawLGDestroy(drawlg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
