@@ -340,6 +340,17 @@ int ComputeMach(Euler *app,Scalar *x,Scalar *smach)
   if (app->reorder) SETERRQ(1,0,"Reordering not currently supported");
   if (app->bctype == EXPLICIT) SETERRQ(1,0,"Explicit BC not currently supported");
 
+  kstart = 0;
+  kend   = app->ktip+1;
+  istart = app->itl;
+  iend   = app->itu+1;
+
+  /* temporarily just use grid boundaries even though we only care about values on the surface */
+  istart = app->xs;
+  iend   = app->xe;
+  kstart = app->zs;
+  kend   = app->ze;
+
   gamma = 1.4;
   gm1   = gamma - 1.0;
   j     = 0;  /* wing surface is j=0 */
