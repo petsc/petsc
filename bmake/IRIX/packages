@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.29 2000/05/12 19:19:30 balay Exp balay $ 
+# $Id: base.site,v 1.30 2000/05/15 22:26:11 balay Exp balay $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -27,7 +27,7 @@ LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX.a ${FC_LIB}
 
 # Location of MPI (Message Passing Interface) software  
 MPI_HOME       = /home/petsc/software/mpich-1.2.0/IRIX
-MPI_LIB        = -L${MPI_HOME}/lib -L/usr/lib32 -lmpich
+MPI_LIB        = -L${MPI_HOME}/lib  -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 
@@ -48,7 +48,7 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #MPE_INCLUDE   = -I/home/petsc/mpich/mpe 
 #MPE_LIB       = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpe -lpmpi
 MPE_INCLUDE   = -I${MPI_HOME}/mpe 
-MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+MPE_LIB       = -L/usr/lib32 -L${MPI_BUILD_HOME}/lib -lmpe
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Location of BlockSolve (MPI version)
