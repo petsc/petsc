@@ -300,7 +300,7 @@ class Configure(config.base.Configure):
     returnx
 
   def configure(self):
-    if self.framework.argDB['down-'+self.package]: self.framework.argDB['with-'+self.package] = 1
+    if self.framework.argDB['download-'+self.package]: self.framework.argDB['with-'+self.package] = 1
     if not self.framework.argDB['with-'+self.package] or self.framework.argDB['with-64-bit-ints']:
       self.setEmptyOutput()
       return
