@@ -8,6 +8,7 @@
 #include "draw.h"
 #include "da.h"
 #include "dfvec.h"
+#include "color.h"
 #include <math.h>
 #include <stdio.h>
 #define Min(a,b) ( ((a)<=(b)) ? a : b )
@@ -19,19 +20,6 @@
 #define pr_infty 1
 #define Pinf     1
 #define gama     1.6666666667
-
-/* 
-    Coloring structure and routines
-    Only temporarily defined here; should eventually move to PETSc proper
- */
-typedef struct {
-  int    nis;              /* number of index sets */
-  IS     *isa;             /* array of index sets */
-  Scalar *wscale, *scale;  /* arrays to hold scaling parameters */
-} Coloring;
-int MatCreateColoring(int,int,IS*,Coloring**);
-int MatDestroyColoring(Coloring*);
-int SNESSparseComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 /* Application-specific structure */
 typedef struct {
@@ -67,6 +55,7 @@ typedef struct {
       int         Xe, Ye;         /* local ending grid points (including ghost points) */
       int         Xm, Ym;         /* local widths (including ghost points) */
       int         ldim, gdim;     /* local and global vector dimensions */
+      Coloring    *color;         /* coloring context */
 
   /* These parameters are NOT currently used, intended for multigrid version */
       int         jacobi_count;   /* count for fine Jacobian */
@@ -75,7 +64,7 @@ typedef struct {
       int         cmx;            /* coarse grid size in in x-direction */
       int         cmy;            /* coarse grid size in y-direction */
       Vec         CX;             /* coarse grid points */
-      Vec         CF;             /* coarse function */       
+      Vec         CF;             /* coarse function */
 } AppCtx;
 
 /* User-defined routines */
