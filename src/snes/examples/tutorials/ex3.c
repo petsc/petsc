@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.58 1999/03/15 22:20:00 balay Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.59 1999/03/25 16:15:56 curfman Exp balay $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -551,7 +551,8 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
         tmp = xa[i];
         xa[i] = (xa[i] + xa_last[i])/2.0;
         *flag = PETSC_TRUE;
-        PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %d: x=%g, x_last=%g, diff=%g, x_new=%g\n",i,tmp,xa_last[i],rdiff,xa[i]);
+        PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %d: x=%g, x_last=%g, diff=%g, x_new=%g\n",
+                    i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));
       }
     }
     ierr = VecRestoreArray(check->last_step,&xa_last); CHKERRQ(ierr);
