@@ -398,49 +398,6 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 }
 
 /* ---------------------------------------------------------------------------------------*/
-/*MC
-    PetscErrorPrintf - Prints error messages.
-
-    Not Collective
-
-   Synopsis:
-     int (*PetscErrorPrintf)(const char format[],...);
-
-    Input Parameters:
-.   format - the usual printf() format string 
-
-   Level: developer
-
-    Fortran Note:
-    This routine is not supported in Fortran.
-
-    Concepts: error messages^printing
-    Concepts: printing^error messages
-
-.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf()
-M*/
-
-/*MC
-    PetscHelpPrintf - Prints help messages.
-
-    Not Collective
-
-   Synopsis:
-     int (*PetscHelpPrintf)(const char format[],...);
-
-    Input Parameters:
-.   format - the usual printf() format string 
-
-   Level: developer
-
-    Fortran Note:
-    This routine is not supported in Fortran.
-
-    Concepts: help messages^printing
-    Concepts: printing^help messages
-
-.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscErrorPrintf()
-M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorPrintfDefault" 

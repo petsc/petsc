@@ -120,44 +120,6 @@ int PetscViewerRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-/*MC
-   PetscViewerRegisterDynamic - Adds a method to the Krylov subspace solver package.
-
-   Synopsis:
-   int PetscViewerRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PetscViewer))
-
-   Not Collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Level: developer
-
-   Notes:
-   PetscViewerRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   PetscViewerRegisterDynamic("my_viewer_type",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyViewerCreate",MyViewerCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     PetscViewerSetType(ksp,"my_viewer_type")
-   or at runtime via the option
-$     -viewer_type my_viewer_type
-
-  Concepts: registering^Viewers
-
-.seealso: PetscViewerRegisterAll(), PetscViewerRegisterDestroy()
-M*/
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerRegister" 
 int PetscViewerRegister(char *sname,char *path,char *name,int (*function)(PetscViewer))

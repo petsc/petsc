@@ -62,6 +62,50 @@ EXTERN int SNESRegisterDestroy(void);
 EXTERN int SNESRegisterAll(char *);
 
 EXTERN int SNESRegister(char*,char*,char*,int(*)(SNES));
+
+/*MC
+   SNESRegisterDynamic - Adds a method to the nonlinear solver package.
+
+   Synopsis:
+   int SNESRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(SNES))
+
+   Not collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   SNESRegisterDynamic() may be called multiple times to add several user-defined solvers.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT},
+   and others of the form ${any_environmental_variable} occuring in pathname will be 
+   replaced with appropriate values.
+
+   Sample usage:
+.vb
+   SNESRegisterDynamic("my_solver",/home/username/my_lib/lib/libg/solaris/mylib.a,
+                "MySolverCreate",MySolverCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     SNESSetType(snes,"my_solver")
+   or at runtime via the option
+$     -snes_type my_solver
+
+   Level: advanced
+
+    Note: If your function is not being put into a shared library then use SNESRegister() instead
+
+.keywords: SNES, nonlinear, register
+
+.seealso: SNESRegisterAll(), SNESRegisterDestroy()
+M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define SNESRegisterDynamic(a,b,c,d) SNESRegister(a,b,c,0)
 #else
@@ -104,11 +148,50 @@ typedef struct _p_MatSNESMFCtx   *MatSNESMFCtx;
 typedef char* MatSNESMFType;
 EXTERN int MatSNESMFSetType(Mat,MatSNESMFType);
 EXTERN int MatSNESMFRegister(char *,char *,char *,int (*)(MatSNESMFCtx));
+
+/*MC
+   MatSNESMFRegisterDynamic - Adds a method to the MatSNESMF registry.
+
+   Synopsis:
+   int MatSNESMFRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(MatSNESMF))
+
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined compute-h module
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Level: developer
+
+   Notes:
+   MatSNESMFRegisterDynamic) may be called multiple times to add several user-defined solvers.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   MatSNESMFRegisterDynamic"my_h",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyHCreate",MyHCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     MatSNESMFSetType(mfctx,"my_h")
+   or at runtime via the option
+$     -snes_mf_type my_h
+
+.keywords: MatSNESMF, register
+
+.seealso: MatSNESMFRegisterAll(), MatSNESMFRegisterDestroy()
+M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatSNESMFRegisterDynamic(a,b,c,d) MatSNESMFRegister(a,b,c,0)
 #else
 #define MatSNESMFRegisterDynamic(a,b,c,d) MatSNESMFRegister(a,b,c,d)
 #endif
+
 EXTERN int MatSNESMFRegisterAll(char *);
 EXTERN int MatSNESMFRegisterDestroy(void);
 EXTERN int MatSNESMFDefaultSetUmin(Mat,PetscReal);

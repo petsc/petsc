@@ -171,11 +171,32 @@ EXTERN int DASetLocalFunction(DA,DALocalFunction1);
 EXTERN int DASetLocalFunctioni(DA,int (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
 EXTERN int DASetLocalJacobian(DA,DALocalFunction1);
 EXTERN int DASetLocalAdicFunction_Private(DA,DALocalFunction1);
+
+/*MC
+       DASetLocalAdicFunction - Caches in a DA a local function computed by ADIC/ADIFOR
+
+   Collective on DA
+
+   Synopsis:
+   int int DASetLocalAdicFunction(DA da,DALocalFunction1 ad_lf)
+   
+   Input Parameter:
++  da - initial distributed array
+-  ad_lf - the local function as computed by ADIC/ADIFOR
+
+   Level: intermediate
+
+.keywords:  distributed array, refine
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunction(),
+          DASetLocalJacobian()
+M*/
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #  define DASetLocalAdicFunction(a,d) DASetLocalAdicFunction_Private(a,(DALocalFunction1)d)
 #else
 #  define DASetLocalAdicFunction(a,d) DASetLocalAdicFunction_Private(a,0)
 #endif
+
 EXTERN int DASetLocalAdicMFFunction_Private(DA,DALocalFunction1);
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #  define DASetLocalAdicMFFunction(a,d) DASetLocalAdicMFFunction_Private(a,(DALocalFunction1)d)

@@ -769,33 +769,6 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v,I
   PetscFunctionReturn(0);
 }
 
-/*MC
-   MatSetValue - Set a single entry into a matrix.
-
-   Synopsis:
-   int MatSetValue(Mat m,int row,int col,PetscScalar value,InsertMode mode);
-
-   Not collective
-
-   Input Parameters:
-+  m - the matrix
-.  row - the row location of the entry
-.  col - the column location of the entry
-.  value - the value to insert
--  mode - either INSERT_VALUES or ADD_VALUES
-
-   Notes: 
-   For efficiency one should use MatSetValues() and set several or many
-   values simultaneously if possible.
-
-   Note that MatSetValue() does NOT return an error code (since this
-   is checked internally).
-
-   Level: beginner
-
-.seealso: MatSetValues()
-M*/
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues"
 /*@ 

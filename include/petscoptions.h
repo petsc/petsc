@@ -39,13 +39,90 @@ EXTERN int  PetscOptionsAtod(const char[],PetscReal*);
 
 extern PetscTruth PetscOptionsPublish;
 extern int        PetscOptionsPublishCount;
+
+/*MC
+    PetscOptionsBegin - Begins a set of queries on the options database that are related and should be
+     displayed on the same window of a GUI that allows the user to set the options interactively.
+
+   Synopsis: int PetscOptionsBegin(MPI_Comm comm,char *prefix,char *title,char *mansec)
+
+    Collective on MPI_Comm
+
+  Input Parameters:
++   comm - communicator that shares GUI
+.   prefix - options prefix for all options displayed on window
+.   title - short descriptive text, for example "Krylov Solver Options"
+-   mansec - section of manual pages for options, for example KSP
+
+  Level: intermediate
+
+  Notes: Needs to be ended by a call the PetscOptionsEnd()
+
+         Can add subheadings with PetscOptionsHead()
+
+.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsLogical()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+
+M*/
 #define    PetscOptionsBegin(comm,prefix,mess,sec) 0; {\
              for (PetscOptionsPublishCount=(PetscOptionsPublish?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) {\
              int _5_ierr = PetscOptionsBegin_Private(comm,prefix,mess,sec);CHKERRQ(_5_ierr);
+
+/*MC
+    PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
+     displayed on the same window of a GUI that allows the user to set the options interactively.
+
+    Collective on the MPI_Comm used in PetscOptionsBegin()
+
+   Synopsis: int PetscOptionsEnd(void)
+
+  Level: intermediate
+
+  Notes: Needs to be preceded by a call to PetscOptionsBegin()
+
+.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsLogical()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+
+M*/
 #define    PetscOptionsEnd() _5_ierr = PetscOptionsEnd_Private();CHKERRQ(_5_ierr);}}
+
 EXTERN int PetscOptionsBegin_Private(MPI_Comm,char*,char*,char*);
 EXTERN int PetscOptionsEnd_Private(void);
 EXTERN int PetscOptionsHead(char*);
+
+/*MC
+     PetscOptionsTail - Ends a section of options begun with PetscOptionsHead()
+            See, for example, KSPSetFromOptions_GMRES().
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Synopsis: int PetscOptionsTail(void)
+
+  Level: intermediate
+
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+          Must be preceded by a call to PetscOptionsHead() in the same function.
+
+   Concepts: options database^subheading
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+M*/
 #define    PetscOptionsTail() 0; {if (PetscOptionsPublishCount != 1) PetscFunctionReturn(0);}
 
 EXTERN int PetscOptionsInt(char*,char*,char*,int,int*,PetscTruth*);

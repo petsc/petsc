@@ -530,19 +530,6 @@ EXTERN_C_END
 */
 static int Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
 
-/*MC
-  PETSC_VIEWER_BINARY_WORLD  - same as PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD)
-
-  Level: intermediate
-M*/
-
-/*MC
-  PETSC_VIEWER_BINARY_SELF  - same as PETSC_VIEWER_BINARY_(PETSC_COMM_SELF)
-
-  Level: intermediate
-M*/
-
-
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_BINARY_"  
 /*@C

@@ -79,13 +79,60 @@ EXTERN int MatSetUpPreallocation(Mat);
 EXTERN int MatRegisterAll(char*);
 EXTERN int MatRegister(char*,char*,char*,int(*)(Mat));
 EXTERN int MatSerializeRegister(const char [], const char [], const char [], int (*)(MPI_Comm, Mat *, PetscViewer, PetscTruth));
+
+/*MC
+   MatRegisterDynamic - Adds a new matrix type
+
+   Synopsis:
+   int MatRegisterDynamic(char *name,char *path,char *name_create,int (*routine_create)(Mat))
+
+   Not Collective
+
+   Input Parameters:
++  name - name of a new user-defined matrix type
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   MatRegisterDynamic() may be called multiple times to add several user-defined solvers.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   MatRegisterDynamic("my_mat",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyMatCreate",MyMatCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     MatSetType(Mat,"my_mat")
+   or at runtime via the option
+$     -mat_type my_mat
+
+   Level: advanced
+
+   Notes: ${PETSC_ARCH} and ${BOPT} occuring in pathname will be replaced with appropriate values.
+         If your function is not being put into a shared library then use VecRegister() instead
+
+.keywords: Mat, register
+
+.seealso: MatRegisterAll(), MatRegisterDestroy()
+
+M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,0)
-#define MatSerializeRegisterDynamic(a,b,c,d) MatSerializeRegister(a,b,c,0)
 #else
 #define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
+#endif
+
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define MatSerializeRegisterDynamic(a,b,c,d) MatSerializeRegister(a,b,c,0)
+#else
 #define MatSerializeRegisterDynamic(a,b,c,d) MatSerializeRegister(a,b,c,d)
 #endif
+
 extern PetscTruth MatRegisterAllCalled;
 extern PetscFList MatList;
 
@@ -155,18 +202,47 @@ EXTERN int MatAssemblyBegin(Mat,MatAssemblyType);
 EXTERN int MatAssemblyEnd(Mat,MatAssemblyType);
 EXTERN int MatAssembled(Mat,PetscTruth*);
 
+/*MC
+   MatSetValue - Set a single entry into a matrix.
+
+   Synopsis:
+   int MatSetValue(Mat m,int row,int col,PetscScalar value,InsertMode mode);
+
+   Not collective
+
+   Input Parameters:
++  m - the matrix
+.  row - the row location of the entry
+.  col - the column location of the entry
+.  value - the value to insert
+-  mode - either INSERT_VALUES or ADD_VALUES
+
+   Notes: 
+   For efficiency one should use MatSetValues() and set several or many
+   values simultaneously if possible.
+
+   Note that MatSetValue() does NOT return an error code (since this
+   is checked internally).
+
+   Level: beginner
+
+.seealso: MatSetValues(), MatSetValueLocal()
+M*/
 #define MatSetValue(v,i,j,va,mode) \
 0; {int _ierr,_row = i,_col = j; PetscScalar _va = va; \
   _ierr = MatSetValues(v,1,&_row,1,&_col,&_va,mode);CHKERRQ(_ierr); \
 }
+
 #define MatGetValue(v,i,j,va) \
 0; {int _ierr,_row = i,_col = j; \
   _ierr = MatGetValues(v,1,&_row,1,&_col,&va);CHKERRQ(_ierr); \
 }
+
 #define MatSetValueLocal(v,i,j,va,mode) \
 0; {int _ierr,_row = i,_col = j; PetscScalar _va = va; \
   _ierr = MatSetValuesLocal(v,1,&_row,1,&_col,&_va,mode);CHKERRQ(_ierr); \
 }
+
 /*E
     MatOption - Options that may be set for a matrix and its behavior or storage
 
@@ -692,11 +768,51 @@ typedef char* MatOrderingType;
 
 EXTERN int MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
 EXTERN int MatOrderingRegister(char*,char*,char*,int(*)(Mat,MatOrderingType,IS*,IS*));
+
+/*MC
+   MatOrderingRegisterDynamic - Adds a new sparse matrix ordering to the 
+                               matrix package. 
+
+   Synopsis:
+   int MatOrderingRegisterDynamic(char *name_ordering,char *path,char *name_create,int (*routine_create)(MatOrdering))
+
+   Not Collective
+
+   Input Parameters:
++  sname - name of ordering (for example MATORDERING_ND)
+.  path - location of library where creation routine is 
+.  name - name of function that creates the ordering type,a string
+-  function - function pointer that creates the ordering
+
+   Level: developer
+
+   If dynamic libraries are used, then the fourth input argument (function)
+   is ignored.
+
+   Sample usage:
+.vb
+   MatOrderingRegisterDynamic("my_order",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyOrder",MyOrder);
+.ve
+
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatOrderingSetType(part,"my_order)
+   or at runtime via the option
+$     -pc_ilu_mat_ordering_type my_order
+$     -pc_lu_mat_ordering_type my_order
+
+   ${PETSC_ARCH} and ${BOPT} occuring in pathname will be replaced with appropriate values.
+
+.keywords: matrix, ordering, register
+
+.seealso: MatOrderingRegisterDestroy(), MatOrderingRegisterAll()
+M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatOrderingRegisterDynamic(a,b,c,d) MatOrderingRegister(a,b,c,0)
 #else
 #define MatOrderingRegisterDynamic(a,b,c,d) MatOrderingRegister(a,b,c,d)
 #endif
+
 EXTERN int        MatOrderingRegisterDestroy(void);
 EXTERN int        MatOrderingRegisterAll(char*);
 extern PetscTruth MatOrderingRegisterAllCalled;
@@ -792,11 +908,50 @@ typedef char* MatColoringType;
 
 EXTERN int MatGetColoring(Mat,MatColoringType,ISColoring*);
 EXTERN int MatColoringRegister(char*,char*,char*,int(*)(Mat,MatColoringType,ISColoring *));
+
+/*MC
+   MatColoringRegisterDynamic - Adds a new sparse matrix coloring to the 
+                               matrix package. 
+
+   Synopsis:
+   int MatColoringRegisterDynamic(char *name_coloring,char *path,char *name_create,int (*routine_create)(MatColoring))
+
+   Not Collective
+
+   Input Parameters:
++  sname - name of Coloring (for example MATCOLORING_SL)
+.  path - location of library where creation routine is 
+.  name - name of function that creates the Coloring type, a string
+-  function - function pointer that creates the coloring
+
+   Level: developer
+
+   If dynamic libraries are used, then the fourth input argument (function)
+   is ignored.
+
+   Sample usage:
+.vb
+   MatColoringRegisterDynamic("my_color",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyColor",MyColor);
+.ve
+
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatColoringSetType(part,"my_color")
+   or at runtime via the option
+$     -mat_coloring_type my_color
+
+   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+
+.keywords: matrix, Coloring, register
+
+.seealso: MatColoringRegisterDestroy(), MatColoringRegisterAll()
+M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatColoringRegisterDynamic(a,b,c,d) MatColoringRegister(a,b,c,0)
 #else
 #define MatColoringRegisterDynamic(a,b,c,d) MatColoringRegister(a,b,c,d)
 #endif
+
 EXTERN int        MatColoringRegisterAll(char *);
 extern PetscTruth MatColoringRegisterAllCalled;
 EXTERN int        MatColoringRegisterDestroy(void);
@@ -865,6 +1020,44 @@ EXTERN int MatPartitioningApply(MatPartitioning,IS*);
 EXTERN int MatPartitioningDestroy(MatPartitioning);
 
 EXTERN int MatPartitioningRegister(char*,char*,char*,int(*)(MatPartitioning));
+
+/*MC
+   MatPartitioningRegisterDynamic - Adds a new sparse matrix partitioning to the 
+   matrix package. 
+
+   Synopsis:
+   int MatPartitioningRegisterDynamic(char *name_partitioning,char *path,char *name_create,int (*routine_create)(MatPartitioning))
+
+   Not Collective
+
+   Input Parameters:
++  sname - name of partitioning (for example MAT_PARTITIONING_CURRENT) or parmetis
+.  path - location of library where creation routine is 
+.  name - name of function that creates the partitioning type, a string
+-  function - function pointer that creates the partitioning type
+
+   Level: developer
+
+   If dynamic libraries are used, then the fourth input argument (function)
+   is ignored.
+
+   Sample usage:
+.vb
+   MatPartitioningRegisterDynamic("my_part",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyPartCreate",MyPartCreate);
+.ve
+
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatPartitioningSetType(part,"my_part")
+   or at runtime via the option
+$     -mat_partitioning_type my_part
+
+   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+
+.keywords: matrix, partitioning, register
+
+.seealso: MatPartitioningRegisterDestroy(), MatPartitioningRegisterAll()
+M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatPartitioningRegisterDynamic(a,b,c,d) MatPartitioningRegister(a,b,c,0)
 #else

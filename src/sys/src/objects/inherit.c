@@ -599,36 +599,3 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
   PetscFunctionReturn(0);
 }
 
-/*MC
-   PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object. 
-                       
-   Collective on PetscObject
-
-   Input Parameters:
-+  obj - the PETSc object; this must be cast with a (PetscObject), for example, 
-         PetscObjectCompose((PetscObject)mat,...);
-.  name - name associated with the child function
-.  fname - name of the function
--  ptr - function pointer (or PETSC_NULL if using dynamic libraries)
-
-   Level: advanced
-
-    Synopsis:
-    int PetscObjectComposeFunctionDynamic(PetscObject obj,char *name,char *fname,void *ptr)
-
-   Notes:
-   PetscObjectComposeFunctionDynamic() can be used with any PETSc object (such as
-   Mat, Vec, KSP, SNES, etc.) or any user-provided object. 
-
-   The composed function must be wrapped in a EXTERN_C_BEGIN/END for this to
-   work in C++/complex with dynamic link libraries (PETSC_USE_DYNAMIC_LIBRARIES)
-   enabled.
-
-   Concepts: objects^composing functions
-   Concepts: composing functions
-   Concepts: functions^querying
-   Concepts: objects^querying
-   Concepts: querying objects
-
-.seealso: PetscObjectQueryFunction()
-M*/
