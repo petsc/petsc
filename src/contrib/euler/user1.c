@@ -948,13 +948,10 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
            app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
            app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
     } else {
-      /* Transform F to a Fortran vector */
-      ierr = PetscCObjectToFortranObject(F,&fortvec); CHKERRQ(ierr);
-
       /* Build F(X) directly, without using VecSetValues() */
       ierr = VecGetArray(F,&farray); CHKERRQ(ierr);
-      ierr = rbuild_direct_(&fortvec, farray, &app->sctype, app->dt, app->dr, app->dru, app->drv,
-           app->drw, app->de, app->ltog, &app->nloc,
+      ierr = rbuild_direct_(farray, &app->sctype, app->dt, app->dr, app->dru, app->drv,
+           app->drw, app->de,
 	   app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
            app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
            app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,

@@ -6,6 +6,8 @@
  */
 #include "user.h"
 
+#undef __FUNC__
+#define __FUNC__ "BCScatterSetUp"
 /***************************************************************************/
 /*
    BCScatterSetUp - Sets up scatter contexts for certain boundary conditions.
@@ -220,6 +222,8 @@ int BCScatterSetUp(Euler *app)
   ierr = ISDestroy(to); CHKERRQ(ierr);
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "BoundaryConditionsExplicit"
 /***************************************************************************/
 /*
    BoundaryConditionsExplicit - Applies all boundary conditions explicitly.
@@ -303,6 +307,8 @@ int BoundaryConditionsExplicit(Euler *app,Vec X)
 
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "BoundaryConditionsImplicit"
 /***************************************************************************/
 /*
    BoundaryConditionImplicit - Performs scatters needed for computing the
