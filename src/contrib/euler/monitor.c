@@ -4,9 +4,9 @@
 #include "user.h"
 
 #undef __FUNC__
-#define __FUNC__ "JulianneMonitor"
+#define __FUNC__ "MonitorEuler"
 /* 
-   JulianneMonitor - Routine that is called at the conclusion
+   MonitorEuler - Routine that is called at the conclusion
    of each successful step of the nonlinear solver.  The user
    sets this routine by calling SNESSetMonitor().
 
@@ -27,18 +27,25 @@
    Additional monitoring (such as dumping fields for VRML viewing)
    is done within the routine ComputeFunction().
  */
-int JulianneMonitor(SNES snes,int its,double fnorm,void *dummy)
+int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 {
   MPI_Comm comm;
   Euler  *app = (Euler *)dummy;
-  Scalar   negone = -1.0, ratio, cfl_min = 7.5;
+  Scalar   negone = -1.0, ratio, cfl_min = 7.5, cfl_current, mfeps;
   Vec      DX;
   int      ierr;
   Viewer   view1;
   char     filename[64];
 
   PetscObjectGetComm((PetscObject)snes,&comm);
-  if (!app->no_output) PetscPrintf(comm,"iter = %d, Function norm %g\n",its,fnorm);
+
+  if (app->matrix_free && app->mf_adaptive) {
+    mfeps = fnorm * 1.e-3;
+    ierr = UserSetMatrixFreeParameters(snes,mfeps,PETSC_DEFAULT); CHKERRQ(ierr);
+    if (!app->no_output) PetscPrintf(comm,"iter = %d, Function norm=%g, mf_eps=%g\n",its,fnorm,mfeps);
+  } else {
+    if (!app->no_output) PetscPrintf(comm,"iter = %d, Function norm %g\n",its,fnorm);
+  }
 
   /* Print the vector F (intended for debugging) */
   if (app->print_vecs) {
@@ -50,9 +57,12 @@ int JulianneMonitor(SNES snes,int its,double fnorm,void *dummy)
     ierr = ViewerDestroy(view1); CHKERRQ(ierr);
   }
 
+  cfl_current = app->cfl;
   if (its) {
-    /* Compute new CFL number (if we are past iteration 12, where BCs are changed) */
-    if (app->cfl_advance && its > 12) {
+    /* Compute new CFL number 
+       Note: BCs change at iter 10.  Should we defer CFL increase until after this point? */
+    if (app->cfl_advance) {
+      /*    if (app->cfl_advance && its > 11) { */
       /* Modify the CFL (increase or decrease) if we are past the threshold ratio
          or cfl > cfl_min and fnorm is increasing */
       ratio = app->fnorm_last / fnorm;
@@ -86,16 +96,20 @@ int JulianneMonitor(SNES snes,int its,double fnorm,void *dummy)
                     app->dr,app->dru,app->drv,app->drw,app->de); CHKERRQ(ierr);
 
     /* Call Julianne monitoring routine */
-    ierr = jmonitor_(&fnorm,&app->cfl,app->work_p,app->r,app->ru,app->rv,app->rw,app->e,
+    ierr = jmonitor_(&app->time_init,&fnorm,&app->cfl,&cfl_current,
+             app->work_p,app->r,app->ru,app->rv,app->rw,app->e,
              app->p,app->dr,app->dru,app->drv,app->drw,app->de,
              app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-             app->aiz,app->ajz,app->akz); CHKERRQ(ierr);
-  } else {
+             app->aiz,app->ajz,app->akz,app->flog,app->ftime,app->fcfl); CHKERRQ(ierr);
+  } else { /* Do this only during the initial call to this routine */
     app->fnorm0 = app->fnorm_last = fnorm;
     if (!app->no_output) {
       if (app->cfl_advance) PetscPrintf(comm,"fnorm0 = %g, fnorm reduction = %g\n",
-                             app->fnorm0,app->f_reduction);
+                             fnorm,app->f_reduction);
       else                   PetscPrintf(comm,"Not advancing CFL.\n");
+    } else {
+      app->flog[0] = log10(fnorm); app->fcfl[0] = app->cfl; 
+      app->ftime[0] = PetscGetTime() - app->time_init;
     }
   }
 
@@ -144,7 +158,7 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
   ierr = jpressure_(app->r,app->ru,app->rv,app->rw,app->e,app->p); CHKERRQ(ierr);
   */
 
-  if (app->size != 1) SETERRQ(1,1,"MonitorDumpGeneral: Currently supports uniprocessor use only!")
+  if (app->size != 1) SETERRQ(1,1,"Currently supports uniprocessor use only!")
   ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
   sprintf(filename,"euler.%d.out",iter);
   fp = fopen(filename,"w"); 
@@ -504,9 +518,9 @@ int TECPLOTMonitor(SNES snes,Vec X,Euler *app)
 /* ------------------------------------------------------------------------------ */
 #include "src/snes/snesimpl.h"
 #undef __FUNC__
-#define __FUNC__ "JulianneConvergenceTest"
+#define __FUNC__ "ConvergenceTestEuler"
 /*
-   JulianneConvergenceTest - We define a convergence test for the Euler code
+   ConvergenceTestEuler - We define a convergence test for the Euler code
    that stops only for the following:
       - the function norm satisfies the specified relative decrease
       - stagnation has been detected
@@ -517,43 +531,39 @@ int TECPLOTMonitor(SNES snes,Vec X,Euler *app)
    criterion so that a fair comparison is possible.
 
  */
-int JulianneConvergenceTest(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
+int ConvergenceTestEuler(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
 {
   Euler  *app = (Euler *)dummy;
   int    i, last_k, iter = snes->iter, fstagnate = 0;
-  Scalar *favg = app->favg, *farray = app->farray, ratio;
+  Scalar *favg = app->favg, *farray = app->farray;
   Scalar register tmp;
   if (fnorm <= snes->ttol) {
     PLogInfo(snes,
-    "JulianneConvergenceTest:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
+    "ConvergenceTestEuler:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
     return 1;
   }
   /* Note that NaN != NaN */
   if (fnorm != fnorm) {
-    PLogInfo(snes,"JulianneConvergenceTest:Function norm is NaN: %g\n",fnorm);
+    PLogInfo(snes,"ConvergenceTestEuler:Function norm is NaN: %g\n",fnorm);
     return 2;
   }
-  if (iter >= 6) {
+  if (iter >= 40) {
     /* Computer average fnorm over the past 6 iterations */
     last_k = 5;
     tmp = 0.0;
-    for (i=iter-last_k; i<iter+1; i++) {
-      tmp += farray[i];
-      printf("   iter = %d, i=%d, farray = %g, tmp=%g \n",iter,i,farray[i],tmp);
-    }
+    for (i=iter-last_k; i<iter+1; i++) tmp += farray[i];
     favg[iter] = tmp/(last_k+1);
-    printf("   iter = %d, f_avg = %g \n",iter,favg[iter]);
+    /* printf("   iter = %d, f_avg = %g \n",iter,favg[iter]); */
 
     /* Test for stagnation over the past 10 iterations */
-    if (iter >= 16) {
+    if (iter >=50) {
       last_k = 10;
       for (i=iter-last_k; i<iter; i++) {
-        ratio=PetscAbsScalar(favg[i] - favg[iter])/favg[iter];
-        if (ratio < app->fstagnate_ratio) fstagnate++;
-        printf("iter = %d, i=%d, ratio = %g, fstg_ratio=%g, fstagnate = %d\n",iter,i,ratio,app->fstagnate_ratio,fstagnate);
+        if (PetscAbsScalar(favg[i] - favg[iter])/favg[iter] < app->fstagnate_ratio) fstagnate++;
+        /* printf("iter = %d, i=%d, ratio = %g, fstg_ratio=%g, fstagnate = %d\n",iter,i,ratio,app->fstagnate_ratio,fstagnate); */
       }
-      if (fstagnate > last_k-4) {
-        PLogInfo(snes,"JulianneConvergenceTest: Stagnation at fnorm = %g\n",fnorm);
+      if (fstagnate > 5) {
+        PLogInfo(snes,"ConvergenceTestEuler: Stagnation at fnorm = %g\n",fnorm);
         return 3;
       }
     }
