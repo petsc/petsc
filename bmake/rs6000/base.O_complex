@@ -1,7 +1,18 @@
-# $Id: base.O_complex,v 1.7 1997/10/19 03:20:08 bsmith Exp balay $ 
+# $Id: base.O_complex,v 1.8 1997/10/19 13:45:44 balay Exp curfman $ 
 
 CC         = xlC -+ -DPARCH_rs6000
-PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_COMPLEX 
+#
+# This version of PETSCFLAGS specifies the use of Fortran kernels (via
+# -DUSE_FORTRAN_KERNELS) for several low-level computational kernels for
+# complex numbers rather than using the potentially slower C++ versions.
+# To instead use the C++ routines, remove -DUSE_FORTRAN_KERNELS from this
+# list and do not specify the kernel library variable, i.e., use
+#   KERNEL_LIB =
+#
+PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_O \
+             -DUSE_PETSC_COMPLEX -DUSE_FORTRAN_KERNELS
+KERNEL_LIB = -lpetsckernels
+#
 COPTFLAGS  = -O  -qmaxmem=2400
 FOPTFLAGS  = -O
 CLINKER    = xlC $(COPTFLAGS)
