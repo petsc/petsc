@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.28 1995/07/29 03:43:57 curfman Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.29 1995/08/04 19:16:06 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -20,7 +20,7 @@ diagonal data structure.\n\n";
 
 extern int GetElasticityMatrix(int,Mat*);
 extern int Elastic20Stiff(double**);
-extern int AddElement(Mat,int,int,Scalar**,int,int);
+extern int AddElement(Mat,int,int,double**,int,int);
 extern int paulsetup20();
 extern int paulintegrate20(double K[60][60]);
 
@@ -28,10 +28,11 @@ int main(int argc,char **args)
 {
   Mat     mat;
   int     ierr, i, its, m = 3, rdim, cdim, rstart, rend, mytid, numtids;
-  Scalar  norm, v, neg1 = -1.0;
+  Scalar  v, neg1 = -1.0;
   Vec     u, x, b;
   SLES    sles;
   KSP     ksp;
+  double  norm;
 
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stdout,help);
@@ -182,7 +183,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-int AddElement(Mat mat,int r1,int r2,Scalar **K,int h1,int h2)
+int AddElement(Mat mat,int r1,int r2,double **K,int h1,int h2)
 {
   Scalar val;
   int    l1, l2, row, col, ierr;
@@ -228,8 +229,8 @@ int     rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
  */
 int Elastic20Stiff(double **Ke)
 {
-  double                 K[60][60],x,y,z,dx,dy,dz,m,v;
-  int                    i,j,k,l,I,J;
+  double K[60][60],x,y,z,dx,dy,dz,m,v;
+  int    i,j,k,l,I,J;
 
   paulsetup20();
 
