@@ -1,5 +1,5 @@
-#! /bin/csh -f
-# $Id: petscarch,v 1.23 2000/12/15 15:04:13 bsmith Exp balay $ 
+#! /bin/sh -f
+# $Id: petscarch,v 1.24 2001/05/23 15:58:51 balay Exp balay $ 
 #
 #   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
 #
@@ -9,73 +9,73 @@
 #   machines of different types that share the same filesystem, then when 
 #   you log into any of them, the PETSC_ARCH will always be set correctly.
 # 
-if (-e /bin/uname) then
-    set LARCH = `/bin/uname -s`
-    set MARCH = `/bin/uname -m`
-    set VARCH = `/bin/uname -r`
-else  if (-e /usr/bin/uname) then
-    set LARCH = `/usr/bin/uname -s`
-    set MARCH = `/usr/bin/uname -m`
-    set VARCH = `/usr/bin/uname -r`
+if [ -e /bin/uname ]; then
+    LARCH=`/bin/uname -s`
+    MARCH=`/bin/uname -m`
+    VARCH=`/bin/uname -r`
+elif [ -e /usr/bin/uname ]; then
+    LARCH=`/usr/bin/uname -s`
+    MARCH=`/usr/bin/uname -m`
+    VARCH=`/usr/bin/uname -r`
 else
     echo "Unable to determine architecture"
-    set LARCH = "unknown"
-    set MARCH = "unknown"
-    set VARCH = "unknown"
-endif
+    LARCH="unknown"
+    MARCH="unknown"
+    VARCH="unknown"
+fi
 
 # change B.10.01 -> 10.01
-set VARCH = `echo $VARCH | sed 's/[A-Z,.]*//'`
+VARCH=`echo $VARCH | sed 's/[A-Z,.]*//'`
 # grab 10 from 10.01
-set MajorVersion = `expr "$VARCH" : "\([0-9]*\)"`
+MajorVersion=`expr "$VARCH" : "\([0-9]*\)"`
 
-if ("$LARCH" == "AIX") then
-    set LARCH = "rs6000"
-else if ("$LARCH" == "RIOS") then
-    set LARCH = "rs6000"
-else if ("$LARCH" == "HP-UX") then
-    if ("$MajorVersion" ==  11) then
-        set LARCH = "hpux64"
+if [ "$LARCH" == "AIX" ]; then
+    LARCH="rs6000"
+elif [ "$LARCH" == "RIOS" ]; then
+    LARCH="rs6000"
+elif [ "$LARCH" == "HP-UX" ]; then
+    if [ "$MajorVersion" ==  11 ]; then
+        LARCH="hpux64"
     else
-        set LARCH = "hpux"
-    endif
-else if ("$LARCH" == "FreeBSD") then
-    set LARCH = "freebsd"
-else if ("$MARCH" == "CRAY Y-MP" ) then  # Crays are funny - using MARCH
-    set LARCH = "t3d"
-else if ("$MARCH" == "CRAY T3E" ) then
-    set LARCH = "t3e"
-else if ("$LARCH" == "i86pc" ) then
-    set LARCH = "solaris_x86"
-else if ("$LARCH" == "iris4d" || "$LARCH" == "IRIX") then
-    if ("$MajorVersion" ==  5) then
-        set LARCH = "IRIX5"
+        LARCH="hpux"
+    fi
+elif [ "$LARCH" == "FreeBSD" ]; then
+    LARCH="freebsd"
+elif [ "$MARCH" == "CRAY Y-MP" ]; then  # Crays are funny - using MARCH
+    LARCH="t3d"
+elif [ "$MARCH" == "CRAY T3E" ]; then
+    LARCH="t3e"
+elif [ "$LARCH" == "i86pc" ]; then
+    LARCH="solaris_x86"
+elif [[ "$LARCH" == "iris4d" || "$LARCH" == "IRIX" ]]; then
+    if [ "$MajorVersion" ==  5 ]; then
+        LARCH="IRIX5"
     else
-        set LARCH = "IRIX"
-    endif
-else if ("$LARCH" == "SunOS") then
-    if ("$MajorVersion" ==  4) then
-        set LARCH = "sun4"
+        LARCH="IRIX"
+    fi
+elif [ "$LARCH" == "SunOS" ]; then
+    if [ "$MajorVersion" ==  4 ]; then
+        LARCH="sun4"
     else
-        set LARCH = "solaris"
-    endif
-else if ("$LARCH" == "Linux") then
-    if ("$MARCH" == "alpha") then
-        set LARCH = "linux_alpha"
-    else if ("$MARCH" == "ppc") then
-        set LARCH = "linux_ppc"
+        LARCH="solaris"
+    fi
+elif [ "$LARCH" == "Linux" ]; then
+    if [ "$MARCH" == "alpha" ]; then
+        setLARCH="linux_alpha"
+    elif [ "$MARCH" == "ppc" ]; then
+        LARCH="linux_ppc"
     else
-        set LARCH = "linux"
-    endif
-else if ("$LARCH" == "OSF1") then
-    set LARCH = "alpha"
-else if ("$LARCH" == "Hurd") then
-        set LARCH = "hurd"
-else if ("$LARCH" == "Rhapsody") then
-        set LARCH = "macx"
-else if ("$LARCH" == "5000") then
-        set LARCH = "UXPV"
-endif
+        LARCH="linux"
+    fi
+elif [ "$LARCH" == "OSF1" ]; then
+    LARCH="alpha"
+elif [ "$LARCH" == "Hurd" ]; then
+        LARCH="hurd"
+elif [ "$LARCH" == "Rhapsody" ]; then
+        LARCH="macx"
+elif [ "$LARCH" == "5000" ]; then
+        LARCH="UXPV"
+fi
 
 echo $LARCH
 exit 0
