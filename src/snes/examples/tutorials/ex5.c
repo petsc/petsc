@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.67 1996/09/28 14:10:16 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.68 1996/09/30 20:11:04 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -38,6 +38,8 @@ T*/
     A finite difference approximation with the usual 5-point stencil
     is used to discretize the boundary value problem to obtain a nonlinear 
     system of equations.
+
+    The uniprocessor version of this code is snes/examples/tutorials/ex4.c
 
   ------------------------------------------------------------------------- */
 
@@ -159,6 +161,10 @@ int main( int argc, char **argv )
      specify the local matrix dimensions upon its creation for compatibility
      with the vector distribution.  Thus, the generic MatCreate() routine
      is NOT sufficient when working with distributed arrays.
+
+     Note: Here we only approximately preallocate storage space for the
+     Jacobian.  See the users manual for a discussion of better techniques
+     for preallocating matrix memory.
   */
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free); CHKERRA(ierr);
   if (!matrix_free) {
