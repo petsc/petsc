@@ -77,6 +77,7 @@ fi
 #
 #
 #
+URLGET=""
 if [ "$URLGET" != "" ]; then
   $URLGET $*
   exit
@@ -84,14 +85,28 @@ fi
 #
 #  Try to use wget
 #
+#   Does wget exist and seem to work?
+#
 wget -help > /dev/null 2>&1
 if [ $? -eq 0 ]; then
   if [ "$1" = "-v" ]; then
     exit 0
   fi
+#
+#  Get the requested file
+#
   wget $* > /dev/null 2>&1
   if [ $? -eq 0 ]; then
-    basename $*
+    file=`basename $*`
+#
+#  uncompress it if it is gziped
+#
+    flag=`echo $file | sed -e "s/[a-zA-Z_0-9.]*.gz/yes/g"`
+    if [ "$flag" = "yes" ] ; then
+      gunzip $file > /dev/null 2>&1
+      file=`echo $file | sed -e "s/\([a-zA-Z_0-9.]*\).gz/\1/g"`
+    fi
+    echo $file
     exit 0
   fi
 fi
