@@ -6,6 +6,7 @@ import logging
 import transform
 
 import os
+import tempfile
 
 class TagLibrary (transform.GenericTag):
   def __init__(self, sourceDB, tag = 'lib', ext = 'a', sources = None, extraExt = ''):
@@ -47,7 +48,7 @@ class LinkSharedLibrary (action.Action):
       self.debugPrint('Did not check shared library '+source, 3, 'link')
 
   def link(self, source):
-    linkDir = os.path.join(self.tmpDir, 'link')
+    linkDir = tempfile.mktemp('link')
     oldDir  = os.getcwd()
     self.cleanupDir(linkDir)
     os.chdir(linkDir)

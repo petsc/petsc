@@ -4,9 +4,10 @@ import nargs
 
 import commands
 import os
+import pwd
 import string
 import sys
-import pwd
+import tempfile
 
 class ChecksumError (RuntimeError):
   def __init__(self, value):
@@ -81,6 +82,8 @@ class Maker (logging.Logger):
     while not self.checkTmpDir(mainTmp):
       mainTmp = self.argDB['TMPDIR']
     self.tmpDir = os.path.join(mainTmp, 'bs')
+    tempfile.tempdir = self.tmpDir
+    return
 
   def forceRemove(self, file):
     if (os.path.exists(file)):
