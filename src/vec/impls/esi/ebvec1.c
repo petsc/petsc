@@ -36,12 +36,12 @@ int VecESIWrap(Vec xin,esi::Vector<double,int> **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecESISetVector"
-/*@C
+/*
      VecESISetVector - Takes a PETSc vector sets it to type ESI and 
        provides the ESI vector that it wraps to look like a PETSc vector.
 
-@*/
- int VecESISetVector(Vec xin,esi::Vector<double,int> *v)
+*/
+int VecESISetVector(Vec xin,esi::Vector<double,int> *v)
 {
   Vec_ESI    *x;
   PetscTruth tesi;
@@ -553,10 +553,10 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,esi::IndexSpace<i
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecESISetType"
-/*@
+/*
     VecESISetType - Given a PETSc vector of type ESI loads the ESI constructor
           by name and wraps the ESI vector to look like a PETSc vector.
-@*/
+*/
 int VecESISetType(Vec V,char *name)
 {
   int                            ierr;
