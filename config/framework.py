@@ -7,14 +7,16 @@ class Framework(config.base.Configure):
   def __init__(self, clArgs = None, argDB = None, loadArgDB = 1):
     self.argDB = self.setupArgDB(clArgs, argDB, loadArgDB)
     config.base.Configure.__init__(self, self)
-    self.children   = []
-    self.substRE    = re.compile(r'@(?P<name>[^@]+)@')
-    self.substFiles = {}
-    self.header     = 'matt_config.h'
+    self.children     = []
+    self.substRE      = re.compile(r'@(?P<name>[^@]+)@')
+    self.substFiles   = {}
+    self.header       = 'matt_config.h'
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.warningRE    = re.compile('warning', re.I)
     self.setupChildren()
+    # Universal language data
+    self.cxxExt       = None
     # Perhaps these initializations should just be local temporary arguments
     self.argDB['CPPFLAGS']   = ''
     self.argDB['LIBS']       = ''

@@ -202,7 +202,7 @@ class Configure:
       self.sourceExtension = '.c'
     elif language in ['C++', 'Cxx']:
       self.compilerDefines = 'confdefs.h'
-      self.sourceExtension = '.cc'
+      self.sourceExtension = self.framework.cxxExt
     elif language == 'F77':
       self.compilerDefines = 'confdefs.h'
       self.sourceExtension = '.F'
@@ -343,12 +343,9 @@ class Configure:
 
   def getLinkerCmd(self):
     language = self.language[-1]
-    #  need to save linker flags because getLinker() overwrites them
-    if hasattr(self,'linkerFlags'): lf = self.linkerFlags
-    else:                           lf = ''
     self.getLinker()
     if language in ['C', 'C++', 'Cxx', 'F77']:
-      self.linkerCmd = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+lf+' '+self.linkerSource+' '+self.framework.argDB['LIBS']
+      self.linkerCmd = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' '+self.linkerSource+' '+self.framework.argDB['LIBS']
     else:
       raise RuntimeError('Unknown language: '+language)
     return self.linkerCmd
@@ -484,27 +481,36 @@ class Configure:
     output = self.filterCompileOutput(output)
     return not (returnCode or len(output))
 
+  def getCompilerFlagsArg(self):
+    '''Return the name of the argument which holds the compiler flags for the current language'''
+    language = self.language[-1]
+    if language == 'C':
+      flagsArg = 'CFLAGS'
+    elif language in ['C++', 'Cxx']:
+      flagsArg = 'CXXFLAGS'
+    elif language == 'F77':
+      flagsArg = 'FFLAGS'
+    else:
+      raise RuntimeError('Unknown language: '+language)
+    return flagsArg
+
   def checkCompilerFlag(self, flag, includes = '', body = ''):
     '''Determine whether the compiler accepts the given flag'''
-    self.getCompiler()
-    self.compilerFlags += ' '+flag
-    (output, error, status) = self.outputCompile(includes, body)
-    output += error
+    flagsArg = self.getCompilerFlagsArg()
+    oldFlags = self.framework.argDB[flagsArg]
+    self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
+    (output, error, status)        = self.outputCompile(includes, body)
+    output  += error
+    valid    = 1
     if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0:
-      return 0
-    return 1
+      valid = 0
+    self.framework.argDB[flagsArg] = oldFlags
+    return valid
 
   def addCompilerFlag(self, flag, includes = '', body = ''):
+    '''Determine whether the compiler accepts the given flag, and add it if valid'''
     if self.checkCompilerFlag(flag, includes, body):
-      language = self.language[-1]
-      if language == 'C':
-        flagsArg = 'CFLAGS'
-      elif language in ['C++', 'Cxx']:
-        flagsArg = 'CXXFLAGS'
-      elif language == 'F77':
-        flagsArg = 'FFLAGS'
-      else:
-        raise RuntimeError('Unknown language: '+language)
+      flagsArg = self.getCompilerFlagsArg()
       self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
       return
     raise RuntimeError('Bad compiler flag: '+flag)
@@ -539,26 +545,35 @@ class Configure:
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
 
+  def getLinkerFlagsArg(self):
+    '''Return the name of the argument which holds the linker flags for the current language'''
+    language = self.language[-1]
+    if language == 'C':
+      flagsArg = 'LDFLAGS'
+    elif language in ['C++', 'Cxx']:
+      flagsArg = 'LDFLAGS'
+    elif language == 'F77':
+      flagsArg = 'LDFLAGS'
+    else:
+      raise RuntimeError('Unknown language: '+language)
+    return flagsArg
+
   def checkLinkerFlag(self, flag):
     '''Determine whether the linker accepts the given flag'''
-    self.getLinker()
-    self.linkerFlags += ' '+flag
-    (output, status) = self.outputLink('', '')
+    flagsArg = self.getLinkerFlagsArg()
+    oldFlags = self.framework.argDB[flagsArg]
+    valid    = 1
+    self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
+    (output, status)               = self.outputLink('', '')
     if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0:
-      return 0
-    return 1
+      valid = 0
+    self.framework.argDB[flagsArg] = oldFlags
+    return valid
 
   def addLinkerFlag(self, flag):
+    '''Determine whether the linker accepts the given flag, and add it if valid'''
     if self.checkLinkerFlag(flag):
-      language = self.language[-1]
-      if language == 'C':
-        flagsArg = 'LDFLAGS'
-      elif language in ['C++', 'Cxx']:
-        flagsArg = 'LDFLAGS'
-      elif language == 'F77':
-        flagsArg = 'LDFLAGS'
-      else:
-        raise RuntimeError('Unknown language: '+language)
+      flagsArg = self.getLinkerFlagsArg()
       self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
       return
     raise RuntimeError('Bad linker flag: '+flag)
