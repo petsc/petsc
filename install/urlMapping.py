@@ -114,9 +114,11 @@ class UrlMappingNew(logging.Logger):
   checkBootstrap = staticmethod(checkBootstrap)
 
   def bootstrapUrlMap(url):
-    if UrlMappingNew.checkBootstrap():
-      (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
-      if scheme == 'bk':
+    ## if UrlMappingNew.checkBootstrap():
+    ##  (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
+    ##  if scheme == 'bk':
+    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
+    if scheme == 'bk' and path.endswith('_bootstrap'):
         path = os.path.join('/pub', 'petsc', UrlMappingNew.getRepositoryPath(url))
         return (1, urlparse.urlunparse(('ftp', 'ftp.mcs.anl.gov', path, parameters, query, fragment)))
     return (0, url)
