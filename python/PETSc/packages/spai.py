@@ -47,7 +47,7 @@ class Configure(PETSc.package.Package):
       output  = config.base.Configure.executeShellCommand('cd '+os.path.join(spaiDir,'lib')+'; make ; mv libspai.a '+os.path.join(installDir,'lib','libspai.a'),timeout=250, log = self.framework.log)[0]
       output  = config.base.Configure.executeShellCommand('cd '+os.path.join(spaiDir,'lib')+'; cp *.h '+os.path.join(installDir,'lib'),timeout=250, log = self.framework.log)[0]      
       try:
-        output  = config.base.Configure.executeShellCommand(self.setcompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/libspai.a', timeout=250, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/libspai.a', timeout=250, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on SPAI libraries: '+str(e))
         

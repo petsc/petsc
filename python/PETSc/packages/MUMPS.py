@@ -37,17 +37,17 @@ class Configure(PETSc.package.Package):
     g.write('LORDERINGS = $(LMETIS) $(LPORD) $(LSCOTCH)\n')
     g.write('IORDERINGS = $(IMETIS) $(IPORD) $(ISCOTCH)\n')
     g.write('RM = /bin/rm -f\n')
-    self.setcompilers.pushLanguage('C')
-    g.write('CC = '+self.setcompilers.getCompiler()+'\n')
-    g.write('OPTC    = ' + self.setcompilers.getCompilerFlags() +'\n')
-    self.setcompilers.popLanguage()
+    self.setCompilers.pushLanguage('C')
+    g.write('CC = '+self.setCompilers.getCompiler()+'\n')
+    g.write('OPTC    = ' + self.setCompilers.getCompilerFlags() +'\n')
+    self.setCompilers.popLanguage()
     if not self.compiler.fortranIsF90:
       raise RuntimeError('Invalid F90 compiler') 
-    self.setcompilers.pushLanguage('FC') 
-    g.write('FC = '+self.setcompilers.getCompiler()+'\n')
-    g.write('FL = '+self.setcompilers.getCompiler()+'\n')
-    g.write('OPTF    = ' + self.setcompilers.getCompilerFlags() +'\n')
-    self.setcompilers.popLanguage()
+    self.setCompilers.pushLanguage('FC') 
+    g.write('FC = '+self.setCompilers.getCompiler()+'\n')
+    g.write('FL = '+self.setCompilers.getCompiler()+'\n')
+    g.write('OPTF    = ' + self.setCompilers.getCompilerFlags() +'\n')
+    self.setCompilers.popLanguage()
 
     # set fortran name mangling
     if self.compiler.fortranManglingDoubleUnderscore:
@@ -58,7 +58,7 @@ class Configure(PETSc.package.Package):
       g.write('CDEFS   = -DUPPPER\n')
 
     g.write('AR      = ar vr\n')
-    g.write('RANLIB  = '+self.setcompilers.RANLIB+'\n') 
+    g.write('RANLIB  = '+self.setCompilers.RANLIB+'\n') 
     g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+' '+self.libraries.toString(self.blacs.lib)+'\n')
     g.write('INCPAR  = -I'+self.libraries.toString(self.mpi.include)+'\n')
     g.write('LIBPAR  = $(SCALAP) '+self.libraries.toString(self.mpi.lib)+'\n') #PARALLE LIBRARIES USED by MUMPS
