@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: index.c,v 1.6 1995/03/06 04:10:56 bsmith Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -33,7 +33,7 @@ int ISSetPermutation(IS is)
 }
 
 /*@
-    ISDestroy - Destroy an index set.
+    ISDestroy - Destroys an index set.
 
   Input Parameters:
 .  is - the index set
@@ -46,7 +46,7 @@ int ISDestroy(IS is)
 }
 
 /*@
-    ISInvertPermutation - Create a new permutation that is the inverse of 
+    ISInvertPermutation - Creates a new permutation that is the inverse of 
                           a given permutation.
 
   Input Parameters:
@@ -104,13 +104,15 @@ int ISGetLocalSize(IS is,int *size)
                    You should not change the indices.
 
   Input Parameters:
-,  is - the index set
+.  is - the index set
 
   Output Parameters:
 .  ptr - the location to put the pointer to the indices
 
   Keywords: index set, indices
-    Note: in a parallel enviroment this probably points to 
+
+  Note:
+  In a parallel enviroment this probably points to 
           only the local indices to that processor.
 @*/
 int ISGetIndices(IS is,int **ptr)
@@ -121,7 +123,7 @@ int ISGetIndices(IS is,int **ptr)
 
 /*@ 
 
-    ISRestoreIndices - See ISGetIndices. Restores index to usable
+    ISRestoreIndices - See ISGetIndices(). Restores index set to a usable
                        state after call to ISGetIndices().
 
   Input Parameters:
@@ -139,7 +141,7 @@ int ISRestoreIndices(IS is,int **ptr)
 /*@
    ISView - Displays an index set.
 
-  InputParameters:
+  Input Parameters:
 .  is - the index set
 .  viewer - location to display set
 @*/
