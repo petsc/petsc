@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.79 1996/08/09 20:08:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.80 1996/08/12 03:42:55 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -101,7 +101,7 @@ int SNESSetFromOptions(SNES snes)
   SNESType method;
   double   tmp;
   SLES     sles;
-  int      ierr, flg;
+  int      ierr, flg, mset = 0;
   int      version   = PETSC_DEFAULT;
   double   rtol_0    = PETSC_DEFAULT;
   double   rtol_max  = PETSC_DEFAULT;
@@ -150,14 +150,18 @@ int SNESSetFromOptions(SNES snes)
   ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_threshold",&threshold,&flg);CHKERRQ(ierr);
   ierr = SNES_KSP_SetParametersEW(snes,version,rtol_0,rtol_max,gamma2,alpha,
                                   alpha2,threshold); CHKERRQ(ierr);
-  ierr = OptionsHasName(snes->prefix,"-snes_monitor", &flg);  CHKERRQ(ierr);
-  if (flg) { SNESSetMonitor(snes,SNESDefaultMonitor,0); }
-  ierr = OptionsHasName(snes->prefix,"-snes_smonitor", &flg);  CHKERRQ(ierr);
-   if (flg) { SNESSetMonitor(snes,SNESDefaultSMonitor,0); }
-  ierr = OptionsHasName(snes->prefix,"-snes_xmonitor", &flg);  CHKERRQ(ierr);
+  ierr = OptionsHasName(snes->prefix,"-snes_monitor",&flg); CHKERRQ(ierr);
+  if (flg) {SNESSetMonitor(snes,SNESDefaultMonitor,0); mset = 1;}
+  ierr = OptionsHasName(snes->prefix,"-snes_smonitor",&flg); CHKERRQ(ierr);
   if (flg) {
-    int       rank = 0;
+   if (mset) SETERRQ(1,"SNESSetFromOptions:Monitor for SNES is already set");
+   SNESSetMonitor(snes,SNESDefaultSMonitor,0); mset = 1;
+  }
+  ierr = OptionsHasName(snes->prefix,"-snes_xmonitor",&flg); CHKERRQ(ierr);
+  if (flg) {
+    int    rank = 0;
     DrawLG lg;
+    if (mset) SETERRQ(1,"SNESSetFromOptions:Monitor for SNES is already set");
     MPI_Initialized(&rank);
     if (rank) MPI_Comm_rank(snes->comm,&rank);
     if (!rank) {
@@ -166,6 +170,7 @@ int SNESSetFromOptions(SNES snes)
       snes->xmonitor = lg;
       PLogObjectParent(snes,lg);
     }
+    mset = 1;
   }
   ierr = OptionsHasName(snes->prefix,"-snes_fd", &flg);  CHKERRQ(ierr);
   if (flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
@@ -211,9 +216,8 @@ int SNESPrintHelp(SNES snes)
 
   kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
 
-  PetscPrintf(snes->comm,"SNES options ----------------------------\n");
+  PetscPrintf(snes->comm,"SNES options ------------------------------------------------\n");
   SNESPrintTypes_Private(snes->comm,p,"snes_type");
-  PetscPrintf(snes->comm," %ssnes_monitor: use default SNES monitor\n",p);
   PetscPrintf(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",p);
   PetscPrintf(snes->comm," %ssnes_max_it <its>: max iterations (default %d)\n",p,snes->max_its);
   PetscPrintf(snes->comm," %ssnes_max_funcs <maxf>: max function evals (default %d)\n",p,snes->max_funcs);
@@ -221,9 +225,12 @@ int SNESPrintHelp(SNES snes)
   PetscPrintf(snes->comm," %ssnes_atol <atol>: absolute tolerance (default %g)\n",p,snes->atol);
   PetscPrintf(snes->comm," %ssnes_rtol <rtol>: relative tolerance (default %g)\n",p,snes->rtol);
   PetscPrintf(snes->comm," %ssnes_trtol <trtol>: trust region parameter tolerance (default %g)\n",p,snes->deltatol);
+  PetscPrintf(snes->comm," SNES Monitoring Options: Choose 1 of the following\n");
+  PetscPrintf(snes->comm,"   %ssnes_monitor: use default SNES convergence monitor\n",p);
+  PetscPrintf(snes->comm,"   %ssnes_xmonitor [x,y,w,h]: use X graphics convergence monitor\n",p);
   if (snes->type == SNES_NONLINEAR_EQUATIONS) {
     PetscPrintf(snes->comm,
-     " options for solving systems of nonlinear equations only:\n");
+     " Options for solving systems of nonlinear equations only:\n");
     PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf_err: relative error in function evaluation for matrix-free Jacobian\n",p);
@@ -246,10 +253,12 @@ int SNESPrintHelp(SNES snes)
   }
   else if (snes->type == SNES_UNCONSTRAINED_MINIMIZATION) {
     PetscPrintf(snes->comm,
-     " options for solving unconstrained minimization problems only:\n");
+     " Options for solving unconstrained minimization problems only:\n");
     PetscPrintf(snes->comm,"   %ssnes_fmin <ftol>: minimum function tolerance (default %g)\n",p,snes->fmin);
     PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Hessian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Hessian\n",p);
+    PetscPrintf(snes->comm,"   %ssnes_mf_err: relative error in gradient evaluation for matrix-free Hessian\n",p);
+     PetscPrintf(snes->comm,"   %ssnes_mf_umin: minimum iterate parameter for matrix-free Hessian\n",p);
   }
   PetscPrintf(snes->comm," Run program with -help %ssnes_type <method> for help on ",p);
   PetscPrintf(snes->comm,"a particular method\n");

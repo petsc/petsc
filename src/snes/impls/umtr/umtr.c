@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.43 1996/08/08 14:46:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.44 1996/08/12 03:43:04 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -294,6 +294,7 @@ static int SNESSetFromOptions_UM_TR(SNES snes)
   if (flg) {ctx->delta0 = tmp;}
   ierr = OptionsGetDouble(snes->prefix,"-factor1",&tmp,&flg); CHKERRQ(ierr);
   if (flg) {ctx->factor1 = tmp;}
+
   return 0;
 }
 /*------------------------------------------------------------*/
@@ -340,6 +341,9 @@ static int SNESView_UM_TR(PetscObject obj,Viewer viewer)
 int SNESCreate_UM_TR(SNES snes)
 {
   SNES_UMTR *neP;
+  SLES      sles;
+  PC        pc;
+  int       ierr;
 
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) 
     SETERRQ(1,"SNESCreate_UM_TR:For SNES_UNCONSTRAINED_MINIMIZATION only");
@@ -368,5 +372,12 @@ int SNESCreate_UM_TR(SNES snes)
   neP->prered		= 0.0;
   neP->success		= 0;
   neP->sflag		= 0;
+ 
+  /* Set default preconditioner to be Jacobi, to override SLES default. */
+  /* This implementation currently requires a symmetric preconditioner. */
+  ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCJACOBI); CHKERRQ(ierr);
+
   return 0;
 }
