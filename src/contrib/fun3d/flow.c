@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.7 2000/01/18 16:54:24 bsmith Exp kaushik $";*/
+/* "$Id: flow.c,v 1.8 2000/01/18 23:43:09 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -10,7 +10,12 @@ and ported into PETSc framework by D. K. Kaushik, ODU and ICASE.\n\n";
 #include "ao.h"
 #include "is.h"
 #include "user.h"
-
+#if PETSC_VERSION_SUBMINOR >= 26  
+#define PETSCTRUTH PetscTruth
+#else
+#define PETSCTRUTH int
+#define MatSetLocalToGlobalMappingBlock MatSetLocalToGlobalMappingBlocked
+#endif
 typedef struct {
    Viewer viewer;
 } MonitorCtx;
@@ -81,7 +86,6 @@ int main(int argc,char **args)
   GRID 		f_pntr;
   TstepCtx      tsCtx ;
   SNES          snes;                  /* SNES context */
-  SNESType      method = SNESEQLS;     /* default nonlinear solution method */
   SLES          sles;                  /* SLES context */
   Vec           q, res, f ;            /* Unknown Vector, Residual,
                                           forcing function on RHS of pde */
@@ -101,7 +105,7 @@ int main(int argc,char **args)
   Scalar	totMem;
   int		*iwork;
   FILE          *fptr, *fptr1;
-  PetscTruth    flg;
+  PETSCTRUTH    flg;
 
   int  *miterj;
   int  *nsrchj, *icyclej, *ilu0j;
@@ -136,7 +140,7 @@ int main(int argc,char **args)
   MPI_Comm_size(MPI_COMM_WORLD,&CommSize);
 
   /*PetscPrintf(MPI_COMM_WORLD, " Program name is %s\n",OptionsGetProgramName());*/
-  ierr = PetscInitializeFortran();CHKERRA(ierr);
+  /*ierr =*/ PetscInitializeFortran();CHKERRA(ierr);
   
   /*======================================================================*/
   /* Initilize stuff related to time stepping */
@@ -233,7 +237,7 @@ int main(int argc,char **args)
   /* Create nonlinear solver */
   ierr = SetPetscDS(&f_pntr, &tsCtx);CHKERRA(ierr);
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = SNESSetType(snes,method);CHKERRA(ierr);
+  ierr = SNESSetType(snes,"ls");CHKERRA(ierr);
  
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRA(ierr);
@@ -673,7 +677,7 @@ int Update(SNES snes, void *ctx)
  int 		max_steps;
  Scalar	 	max_time;
  int		vecSize;
- PetscTruth     print_flag = PETSC_FALSE, flg;
+ PETSCTRUTH     print_flag = PETSC_FALSE, flg;
  FILE 		*fptr;
  static int     PreLoadFlag = 1;
  int		nfailsCum = 0, nfails = 0;
@@ -902,7 +906,7 @@ int GetLocalOrdering(GRID *grid)
   IS       isglobal,islocal, isrow, iscol;
   Mat      Adj;
   FILE     *fptr, *fptr1;
-  PetscTruth flg;
+  PETSCTRUTH flg;
 
   /* Read the integer grid parameters */ 
   icalloc(grid_param, &tmp);
@@ -1955,7 +1959,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
    int      *val_diag, *val_offd, *svertices, *loc2pet, *loc2glo;
    IS      isglobal,islocal;
    ISLocalToGlobalMapping isl2g;
-   PetscTruth flg;
+   PETSCTRUTH flg;
 
    nnodes = grid->nnodes;
    nnodesLoc = grid->nnodesLoc;
