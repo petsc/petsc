@@ -20,7 +20,7 @@ CPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS)
 # and all lower level PETSc components (such as vectors and matrices).
 # The order of listing these libraries is important!
 #
-PETSC_LIB   = -L$(LDIR) -lpetscts -lpetscsnes  -lpetscsles -lpetscksp \
+PETSC_LIB   = -L$(LDIR)  -lpetscts -lpetscsnes  -lpetscsles -lpetscksp \
 		-lpetscmat  -lpetscvec \
 		-lpetscsys $(X11_LIB) \
 		$(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
@@ -118,7 +118,7 @@ clean:
 	       $(CLEANFILES) $(TESTS) \
 	       PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
 	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
-	       output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg
+	       output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c
 
 #
 #  testexamples_X - Runs various PETSc test suites
