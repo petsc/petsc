@@ -84,7 +84,8 @@ void dCompRow_to_CompCol(int m, int n, int nnz,
 
     SUPERLU_FREE(marker);
 }
-
+#else
+extern void dCompRow_to_CompCol(int,int,int,double*,int*,int*,double**,int**,int**);
 #endif /* PETSC_HAVE_SUPERLU*/
 
 #undef __FUNCT__  
@@ -167,8 +168,6 @@ extern int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 
   PetscFunctionReturn(0);
 }
-
-extern int dCompRow_to_CompCol(int,int,int,double,int,int,double*,int_t*,int_t);
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatLUFactorNumeric_MPIAIJ_SuperLU_DIST"
