@@ -44,8 +44,8 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 # Location of MPE
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
-#MPE_INCLUDE   = -I${MPI_HOME}/mpe 
-#MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+#MPE_INCLUDE   =
+#MPE_LIB       = -L${MPI_HOME}/lib -lmpe
 #PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Location of BlockSolve (MPI version)

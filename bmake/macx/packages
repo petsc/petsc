@@ -25,6 +25,6 @@ MPIRUN         =  ${MPI_HOME}/bin/mpirun
 #  Locations of OPTIONAL packages. Comment out those you do not have.
 # ----------------------------------------------------------------------------------------  
 #
-MPE_INCLUDE   = -I${MPI_HOME}/mpe
-MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+MPE_INCLUDE   =
+MPE_LIB       = -L${MPI_HOME}/lib -lmpe
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE

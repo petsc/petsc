@@ -17,17 +17,6 @@ MPI_HOME       = /home/petsc/software/mpich-1.2.0/freebsd
 MPI_LIB        = -L${MPI_HOME}/lib -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun
-#MPI_HOME       = /home/petsc/mpich
-#MPI_BUILD_HOME = ${MPI_HOME}/build/freebsd/ch_p4
-#MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
-#MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
-#MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
-# Unless you are using the p4 secure server you should remove the -p4ssport 1861 
-# from below. If you are using the secure server you should put in the appropriate
-# port number below instead of 1861
-#
-#MPIRUN         = /home/petsc/mpich/lib/freebsd/ch_p4/mpirun -p4ssport 4132 \
-#                  -machinefile ${PETSC_DIR}/maint/hosts.local
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
