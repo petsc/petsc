@@ -1,4 +1,4 @@
-/* $Id: matlab.c,v 1.14 2001/03/23 23:20:54 balay Exp bsmith $ #include "petsc.h" */
+/* $Id: matlab.c,v 1.15 2001/04/10 19:34:44 bsmith Exp balay $ #include "petsc.h" */
 
 #include "engine.h"   /* Matlab include file */
 #include "petsc.h" 
@@ -122,7 +122,7 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine engine,char *string,...)
   engEvalString(engine->ep, buffer);
 
   /* 
-     Check for error in Matlab: indicated by ? as first charactor in engine->buffer
+     Check for error in Matlab: indicated by ? as first character in engine->buffer
   */
 
   if (engine->buffer[4] == '?') {

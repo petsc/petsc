@@ -1,10 +1,10 @@
-/* $Id: petscblaslapack.h,v 1.41 2001/03/26 19:28:22 balay Exp balay $ */
+/* $Id: petscblaslapack.h,v 1.42 2001/03/27 22:21:08 balay Exp balay $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
 This file also deals with different Fortran 77 naming conventions on machines.
 
-   Another problem is charactor strings are represented differently on 
+   Another problem is character strings are represented differently on 
 on some machines in C and Fortran 77. This problem comes up on the 
 Cray T3D/T3E.
 
@@ -30,7 +30,7 @@ Cray T3D/T3E.
 
 /*
    This include file on the Cray T3D/T3E defines the interface between 
-  Fortran and C representations of charactor strings.
+  Fortran and C representations of character strings.
 */
 #if defined(PETSC_USES_CPTOFCD)
 #include <fortran.h>

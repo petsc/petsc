@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.79 2001/03/23 23:25:54 balay Exp balay $*/
+/*$Id: zstart.c,v 1.80 2001/03/24 04:39:33 balay Exp balay $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -247,7 +247,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
 
   /*
      PetscInitializeFortran() is called twice. Here it initializes
-     PETSC_NULLCHARACTOR_Fortran. Below it initializes the PETSC_VIEWERs.
+     PETSC_NULLCHARACTER_Fortran. Below it initializes the PETSC_VIEWERs.
      The PETSC_VIEWERs have not been created yet, so they must be initialized
      below.
   */

@@ -1,4 +1,4 @@
-/*$Id: zpetsc.h,v 1.60 2001/03/28 19:43:08 balay Exp balay $*/
+/*$Id: zpetsc.h,v 1.61 2001/04/10 22:37:42 balay Exp balay $*/
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
@@ -97,8 +97,8 @@ Fortran.
 
 /* --------------------------------------------------------------------*/
 /*
-    This defines the mappings from Fortran charactor strings 
-  to C charactor strings on the Cray T3D.
+    This defines the mappings from Fortran character strings 
+  to C character strings on the Cray T3D.
 */
 #if defined(PETSC_USES_CPTOFCD)
 #include <fortran.h>

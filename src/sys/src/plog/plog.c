@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.258 2001/04/10 19:34:39 bsmith Exp balay $*/
+/*$Id: plog.c,v 1.259 2001/04/10 22:34:32 balay Exp balay $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -454,7 +454,7 @@ static int             EventsStagePrevious = 0;
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogStageRegister"
 /*@C
-    PetscLogStageRegister - Attaches a charactor string name to a logging stage.
+    PetscLogStageRegister - Attaches a character string name to a logging stage.
 
     Not Collective
 

@@ -1,4 +1,4 @@
-/*$Id: axis.c,v 1.73 2001/03/23 23:20:24 balay Exp bsmith $*/
+/*$Id: axis.c,v 1.74 2001/04/10 19:34:23 bsmith Exp balay $*/
 /*
    This file contains a simple routine for generating a 2-d axis.
 */
@@ -14,7 +14,7 @@ struct _p_DrawAxis {
             (*yticks)(PetscReal,PetscReal,int,int*,PetscReal*,int);  
                                           /* location and size of ticks */
     PetscDraw    win;
-    int     ac,tc,cc;                     /* axis,tick, charactor color */
+    int     ac,tc,cc;                     /* axis,tick, character color */
     char    *xlabel,*ylabel,*toplabel;
 };
 

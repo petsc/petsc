@@ -1,4 +1,4 @@
-/*$Id: ex81.c,v 1.7 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex81.c,v 1.8 2001/04/10 19:35:44 bsmith Exp balay $*/
 
 static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing format.\n\
   -fout <output_file> : file to load.\n\
@@ -51,7 +51,7 @@ int main(int argc,char **args)
   if (n != m) SETERRQ(1,"Only for square matrices");
 
   /* charrage returns \n may not belong below
-    depends on what 80 charactor fixed format means to Fortran */
+    depends on what 80 character fixed format means to Fortran */
 
   file = fopen(hbfile,"w"); if (!file) SETERRQ(1,"Cannot open HB file");
   sprintf(head,"%-72s%-8s\n","Title","Key");

@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.59 2001/03/23 23:20:30 balay Exp balay $*/
+/*$Id: mprint.c,v 1.60 2001/04/05 21:06:46 balay Exp balay $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -33,7 +33,7 @@ FILE        *queuefile  = PETSC_NULL;
     REQUIRES a intervening call to PetscSynchronizedFlush() for the information 
     from all the processors to be printed.
 
-    The length of the formatted message cannot exceed QUEUESTRINGSIZE charactors.
+    The length of the formatted message cannot exceed QUEUESTRINGSIZE characters.
 
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
           PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
@@ -107,7 +107,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     REQUIRES a intervening call to PetscSynchronizedFlush() for the information 
     from all the processors to be printed.
 
-    The length of the formatted message cannot exceed QUEUESTRINGSIZE charactors.
+    The length of the formatted message cannot exceed QUEUESTRINGSIZE characters.
 
     Contributed by: Matthew Knepley
 
