@@ -12,7 +12,7 @@ class Builder(install.base.Base):
   def build(self, root, target = 'default', setupTarget = ''):
     self.debugPrint('Building '+str(target)+' in '+root, 1, 'install')
     try:
-      maker = self.getMakeModule(root).PetscMake(sys.argv[1:])
+      maker = self.getMakeModule(root).PetscMake(sys.argv[1:], self.argDB)
     except ImportError:
       self.debugPrint('  No make module present in '+root, 2, 'install')
       return

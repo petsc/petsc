@@ -60,16 +60,19 @@ class BS (install.base.Base):
   directories = {}
   filesets    = {}
 
-  def __init__(self, project, clArgs = None):
-    install.base.Base.__init__(self, self.setupArgDB(clArgs))
+  def __init__(self, project, clArgs = None, argDB = None):
+    install.base.Base.__init__(self, self.setupArgDB(clArgs, argDB))
     self.project          = project
     self.sourceDBFilename = os.path.join(self.project.getRoot(), 'bsSource.db')
     self.setupSourceDB()
     return
 
-  def setupArgDB(self, clArgs):
+  def setupArgDB(self, clArgs, initDB):
     global argDB
-    argDB = nargs.ArgDict('ArgDict')
+    if not initDB is None:
+      argDB = initDB
+    else:
+      argDB = nargs.ArgDict('ArgDict')
 
     argDB.setLocalType('help', nargs.ArgBool('Print help message'))
 
