@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.31 1996/06/08 20:08:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.32 1996/07/08 22:19:28 bsmith Exp bsmith $";
 #endif
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
+#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
 
 /* We must define both BSMAINLOG and MLOG for BlockSolve logging */ 
 #if defined(PETSC_LOG)
@@ -10,10 +10,8 @@ static char vcid[] = "$Id: cholbs.c,v 1.31 1996/06/08 20:08:20 curfman Exp bsmit
 #define MLOG
 #endif
 
-#include "matimpl.h"
 #include "src/pc/pcimpl.h"
 #include "mpirowbs.h"
-#include "BSprivate.h"
 
 int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS perm,
                                       double f,int fill,Mat *newfact)
