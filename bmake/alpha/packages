@@ -19,10 +19,10 @@ FC_LIB         =  -lutil -lFutil -lots -lUfor -lfor
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
 # If you are lucky, you may have the DEC Alpha math library installed on 
-# your machine. The library name is dxml as indicated below, it contains
-# both BLAS and Lapack.
+# your machine. The library name is dxml, and it contains both BLAS and Lapack.
 #
-BLAS_LIB        = -ldxml
+#
+BLAS_LIB        = -lpetscblas
 LAPACK_LIB      = 
 #
 #BLAS_LIB       = /home/bsmith/lapack/blas_alpha.a $(FC_LIB)
@@ -60,7 +60,7 @@ MPIRUN         = /home/petsc/mpich/bin/mpirun
 # machine and -ldxml in the BLAS_LIB line above if you define 
 # HAVE_DXML below.
 #
-PCONF      =  -DHAVE_DXML -DHAVE_BLOCKSOLVE
+PCONF      =   -DHAVE_BLOCKSOLVE
 #
 #   If you are not using BlockSolve then comment out or remove the next
 #  two lines and make sure -DHAVE_BLOCKSOLVE is not defined above
