@@ -65,7 +65,7 @@ int PetscMallocAlign(size_t mem,int line,const char func[],const char file[],con
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFreeAlign"
-int PetscFreeAlign(void *ptr,int line,char *func,char *file,char *dir)
+int PetscFreeAlign(void *ptr,int line,const char func[],const char file[],const char dir[])
 {
   int ierr = 0;
 

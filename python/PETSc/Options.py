@@ -17,8 +17,13 @@ class Options(config.base.Configure):
         flags.append('-g3')
       elif bopt == 'O':
         try:
-          if os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm']:
-            flags.append('-Wshadow')
+          if os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','balay','petsc']:
+            try:
+              self.pushLanguage('C')
+              self.framework.checkCompilerFlag('-Wshadow')
+              self.popLanguage()
+              flags.append('-Wshadow')
+            except: pass
         except:
           pass
         flags.extend(['-O', '-fomit-frame-pointer'])
@@ -56,7 +61,7 @@ class Options(config.base.Configure):
         flags.append('-g3')
       elif bopt == 'O':
         try:
-          if os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm']:
+          if os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','petsc','balay']:
             flags.append('-Wshadow')
         except:
           pass
