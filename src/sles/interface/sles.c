@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.86 1997/07/09 20:56:55 balay Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.87 1997/07/22 04:24:20 bsmith Exp balay $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -373,7 +373,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESSetOperators" /* ADIC Ignore */
+#define __FUNC__ "SLESGetKSP" /* ADIC Ignore */
 /*@C
    SLESGetKSP - Returns the KSP context for a SLES solver.
 
@@ -399,7 +399,7 @@ int SLESGetKSP(SLES sles,KSP *ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESSetOperators" /* ADIC Ignore */
+#define __FUNC__ "SLESGetPC" /* ADIC Ignore */
 /*@C
    SLESGetPC - Returns the preconditioner (PC) context for a SLES solver.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.81 1997/06/05 12:58:01 bsmith Exp balay $";
+static char vcid[] = "$Id: da2.c,v 1.82 1997/07/09 21:00:44 balay Exp balay $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -868,7 +868,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   
   return 0; 
 }
-
+#undef __FUNC__  
+#define __FUNC__ "DAPrintHelp"
 /*@
      DAPrintHelp - Prints command line options for DA.
 

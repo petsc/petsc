@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: posindep.c,v 1.17 1997/06/05 12:56:21 bsmith Exp balay $";
+static char vcid[] = "$Id: posindep.c,v 1.18 1997/07/09 20:58:32 balay Exp balay $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -172,6 +172,8 @@ int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,double *newdt,int
   return 0;
 }
 
+#undef __FUNC__  
+#define __FUNC__ "TSPseudoSetVerifyTimeStep"
 /*@
    TSPseudoSetVerifyTimeStep - Sets a user-defined routine to verify the quality of the 
    last timestep.

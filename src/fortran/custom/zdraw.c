@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zdraw.c,v 1.13 1997/07/01 19:32:56 bsmith Exp balay $";
+static char vcid[] = "$Id: zdraw.c,v 1.14 1997/07/09 20:55:52 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -111,7 +111,7 @@ void drawlggetaxis_(DrawLG lg,DrawAxis *axis, int *__ierr )
 	(DrawLG)PetscToPointer( *(int*)(lg) ),&a);
   *(int*)axis = PetscFromPointer(a);
 }
-void drawlggetDraw_(DrawLG lg,Draw *win, int *__ierr )
+void drawlggetdraw_(DrawLG lg,Draw *win, int *__ierr )
 {
   Draw a;
   *__ierr = DrawLGGetDraw(

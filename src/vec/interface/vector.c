@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.112 1997/06/12 21:53:20 bsmith Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.113 1997/07/09 20:49:38 balay Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -235,7 +235,7 @@ int VecScale(Scalar *alpha,Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSet"
+#define __FUNC__ "VecCopy"
 /*@
    VecCopy - Copies a vector. 
 
