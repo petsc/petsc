@@ -141,7 +141,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapp
 PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscInt indices[],ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
-  PetscInt *in;
+  PetscInt       *in;
 
   PetscFunctionBegin;
   PetscValidIntPointer(indices,3);

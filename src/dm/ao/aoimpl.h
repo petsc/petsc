@@ -19,14 +19,14 @@ struct _AOOps {
                       (*applicationtopetsc)(AO, PetscInt, PetscInt[]),
                       (*petsctoapplicationpermuteint)(AO, PetscInt, PetscInt[]),
                       (*applicationtopetscpermuteint)(AO, PetscInt, PetscInt[]),
-                      (*petsctoapplicationpermutereal)(AO, PetscInt, double[]),
-                      (*applicationtopetscpermutereal)(AO, PetscInt, double[]);
+                      (*petsctoapplicationpermutereal)(AO, PetscInt, PetscReal[]),
+                      (*applicationtopetscpermutereal)(AO, PetscInt, PetscReal[]);
 };
 
 struct _p_AO {
   PETSCHEADER(struct _AOOps)
   void          *data;                   /* implementation-specific data */
-  PetscInt           N,n;                    /* global, local vector size */
+  PetscInt      N,n;                    /* global, local vector size */
 };
 
 /*

@@ -46,7 +46,7 @@ int main(int argc,char **args)
   ierr = VecSetRandom(r,b);CHKERRQ(ierr);
 
   for (i=0; i<nnz; i++) {
-    fscanf(file,"%d %d %le\n",&row,&col,&val);
+    fscanf(file,"%d %d %le\n",&row,&col,(double*)&val);
     row = row-1; col = col-1 ;
     ierr = MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
     if (row != col) {
