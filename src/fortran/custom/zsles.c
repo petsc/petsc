@@ -1,4 +1,4 @@
-/*$Id: zsles.c,v 1.29 2001/03/28 03:58:51 bsmith Exp bsmith $*/
+/*$Id: zsles.c,v 1.30 2001/03/28 04:09:01 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -44,7 +44,7 @@ void PETSC_STDCALL dmmgdestroy_(DMMG **dmmg,int *ierr)
 
 void PETSC_STDCALL dmmgsetup_(DMMG **dmmg,int *ierr)
 {
-  *ierr = DMMGSetup(*dmmg);
+  *ierr = DMMGSetUp(*dmmg);
 }
 
 void PETSC_STDCALL slesview_(SLES *sles,PetscViewer *viewer, int *ierr)
