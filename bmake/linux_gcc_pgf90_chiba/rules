@@ -1,0 +1,13 @@
+# $Id: base,v 1.1 2001/03/23 22:01:51 bsmith Exp $ 
+#
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
+include ${PETSC_DIR}/bmake/common
+
+libc: ${LIBNAME}(${OBJSC})
+libf: ${OBJSF}
+	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}
+
+#############
+
+shared: 
+oshared:
