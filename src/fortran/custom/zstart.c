@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.43 1998/05/18 14:08:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.44 1998/05/21 16:13:20 bsmith Exp balay $";
 #endif
 
 /*
@@ -31,6 +31,7 @@ extern int          PetscBeganMPI;
 #define petscfinalize_                PETSCFINALIZE
 #define aliceinitialize_              ALICEINITIALIZE
 #define alicefinalize_                ALICEFINALIZE
+#define petscsetcommworld_            PETSCSETCOMMWORLD
 #define iargc_                        IARGC
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
@@ -43,6 +44,7 @@ extern int          PetscBeganMPI;
 #define petscfinalize_                petscfinalize
 #define aliceinitialize_              aliceinitialize
 #define alicefinalize_                alicefinalize
+#define petscsetcommworld_            petscsetcommworld
 #define mpi_init_                     mpi_init
 /*
     HP-UX does not have Fortran underscore but iargc and getarg 
