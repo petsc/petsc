@@ -96,7 +96,8 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(global,&x);CHKERRQ(ierr);
  
   /* make timestep context */
-  ierr = TSCreate(PETSC_COMM_WORLD,tsproblem,&ts);CHKERRQ(ierr);
+  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
+  ierr = TSSetProblemType(ts,tsproblem);CHKERRQ(ierr);
   ierr = TSSetMonitor(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   dt = 0.1;

@@ -136,7 +136,8 @@
 !  right-hand-side function evaluation.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call TSCreate(comm,TS_NONLINEAR,ts,ierr)
+      call TSCreate(comm,ts,ierr)
+      call TSSetProblemType(ts,TS_NONLINEAR,ierr)
       call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL_OBJECT,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

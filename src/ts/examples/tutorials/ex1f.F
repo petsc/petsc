@@ -108,7 +108,8 @@
 !     Create timestepper context 
 !
 
-      call TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,ts,ierr) 
+      call TSCreate(PETSC_COMM_WORLD,ts,ierr) 
+      call TSSetProblemType(ts,TS_NONLINEAR,ierr) 
 
 !
 !     Tell the timestepper context where to compute solutions
