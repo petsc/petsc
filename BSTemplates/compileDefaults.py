@@ -232,16 +232,23 @@ class UsingPython(UsingCompiler):
     return self.includeDirs
 
   def setupExtraLibraries(self):
-    try:
-      if not self.argDB.has_key('PYTHON_LIB'):
+    if not 'PYTHON_LIB' in self.argDB:
+      SO = distutils.sysconfig.get_config_var('SO')
+      try:
+        # Look for the shared library
         lib = os.path.join(distutils.sysconfig.get_config_var('LIBPL'), distutils.sysconfig.get_config_var('LDLIBRARY'))
         # if .so was not built then need to strip .a off of end
         if lib[-2:] == '.a': lib = lib[0:-2]
         # may be stuff after .so like .0, so cannot use splitext()
-        SO  = distutils.sysconfig.get_config_var('SO')
         lib = lib.split(SO)[0]+SO
         self.argDB['PYTHON_LIB'] = lib
-    except: pass
+      except TypeError:
+        try:
+          # Try the archive instead
+          lib = lib.split(SO)[0]+'.a'
+          self.argDB['PYTHON_LIB'] = lib
+        except: pass
+      except: pass
 
     extraLibraries = [self.argDB['PYTHON_LIB']]
     if not distutils.sysconfig.get_config_var('LIBS') is None:

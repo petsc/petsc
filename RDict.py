@@ -338,7 +338,7 @@ Arg class, which wraps the usual value.'''
         raise response
       else:
         self.writeLogLine('CLIENT: Received value '+str(response)+' '+str(type(response)))
-    except AttributeError:
+    except UnboundLocalError:
       self.writeLogLine('CLIENT: Could not unpickle response')
       response  = None
     return response
@@ -362,8 +362,13 @@ Arg class, which wraps the usual value.'''
             self.server.rdict.sendPacket(self.wfile, e, source = 'SERVER')
             continue
           if value[0] == 'stop': break
-          response = getattr(self.server.rdict, value[0])(*value[1:])
-          self.server.rdict.sendPacket(self.wfile, response, source = 'SERVER')
+          try:
+            response = getattr(self.server.rdict, value[0])(*value[1:])
+          except Exception, e:
+            self.server.rdict.writeLogLine('SERVER: Error executing operation '+str(e)+' '+str(e.__class__))
+            self.server.rdict.sendPacket(self.wfile, e, source = 'SERVER')
+          else:
+            self.server.rdict.sendPacket(self.wfile, response, source = 'SERVER')
         return
 
     # check if server is running
