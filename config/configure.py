@@ -9,7 +9,7 @@ if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2:
   print '* Python is easy to install for end users or sys-admin. We urge you to upgrade  *'
   print '*                   http://www.python.org/download/                             *'
   print '*                                                                               *'
-  print '* You can configure PETSc manually BUT please, please consider upgrading python *'
+  print '*                  You CANNOT configure PETSc manually                          *'
   print '* http://www.mcs.anl.gov/petsc/petsc-2/documentation/installation.html#Manual   *'
   print '*********************************************************************************'
   sys.exit(4)
@@ -98,14 +98,18 @@ def petsc_configure(configure_options):
   # Disable threads on RHL9
   if rhl9():
     sys.argv.append('--useThreads=0')
+    print '================================================================================='
     print ' *** RHL9 detected. Threads do not work correctly with this distribution ***'
     print ' ******** Disabling thread usage for this run of config/configure.py *****'
+    print '================================================================================='
 
   # Check for broken cygwin
   if chkcygwin():
+    print '================================================================================='
     print ' *** cygwin-1.5.11-1 detected. config/configure.py fails with this version   ***'
     print ' *** Please upgrade to cygwin-1.5.12-1 or newer version. This can  ***'
     print ' *** be done by running cygwin-setup, selecting "next" all the way.***'
+    print '================================================================================='
     sys.exit(3)
           
   # Should be run from the toplevel
@@ -114,19 +118,27 @@ def petsc_configure(configure_options):
   if not os.path.isdir(pythonDir):
     raise RuntimeError('Run configure from $PETSC_DIR, not '+os.path.abspath('.'))
   if not os.path.isdir(bsDir):
+    print '================================================================================='
     print '''++ Could not locate BuildSystem in $PETSC_DIR/python.'''
     print '''++ Downloading it using "bk clone bk://sidl.bkbits.net/BuildSystem $PETSC_DIR/python/BuildSystem"'''
+    print '================================================================================='
     (status,output) = commands.getstatusoutput('bk clone bk://sidl.bkbits.net/BuildSystem python/BuildSystem')
     if status:
       if output.find('ommand not found') >= 0:
+        print '================================================================================='
         print '''** Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path'''
         print '''** or manually copy BuildSystem to $PETSC_DIR/python/BuildSystem from a machine where'''
         print '''** you do have bk installed and can clone BuildSystem. '''
+       print '================================================================================='
       elif output.find('Cannot resolve host') >= 0:
+        print '================================================================================='
         print '''** Unable to download BuildSystem. You must be off the network.'''
         print '''** Connect to the internet and run config/configure.py again.'''
+        print '================================================================================='
       else:
+        print '================================================================================='
         print '''** Unable to download BuildSystem. Please send this message to petsc-maint@mcs.anl.gov'''
+        print '================================================================================='
       print output
       sys.exit(3)
       
