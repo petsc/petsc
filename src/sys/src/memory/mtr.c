@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.72 1997/01/24 04:53:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.73 1997/02/03 05:56:36 bsmith Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -567,7 +567,8 @@ int  PetscTrDebugLevel(int level )
 }
 
 #if defined(PARCH_IRIX)
-static long nanval[2] = {0x7ff7ffff,0xffffffff }; /* Quiet nan */
+static long nanval[2] = {0x7fffffff,0xffffffff };  /* Signaling nan */
+/* static long nanval[2] = {0x7ff7ffff,0xffffffff };  Quiet nan */
 #elif defined(PARCH_sun4)
 #elif defined(PARCH_rs6000)
 struct sigcontext;
