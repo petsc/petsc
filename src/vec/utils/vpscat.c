@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.46 1996/04/25 23:31:05 balay Exp balay $";
+static char vcid[] = "$Id: vpscat.c,v 1.47 1996/05/08 23:52:44 balay Exp balay $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -115,9 +115,14 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
     for ( i=0; i<nsends; i++ ) {
       val  = svalues + sstarts[i];
       iend = sstarts[i+1]-sstarts[i];
+#if defined(HAVE_ESSLTMP) && !defined(__cplusplus)
+      PetscPrintf(MPI_COMM_SELF,"%d\n",iend);
+      dgthr(iend,xv,val,indices); indices +=iend;
+#else
       for ( j=0; j<iend; j++ ) {
         val[j] = xv[*indices++];
       }
+#endif
       MPI_Isend(val,iend, MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
     /* take care of local scatters */
@@ -145,32 +150,10 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
     for ( i=0; i<gen_to->nbelow; i++ ) {
       val  = svalues + sstarts[i];
       jmax = sstarts[i+1]-sstarts[i];
-      /*
+
       for ( j=0; j<jmax; j++ ) {
         val[j] = xv[*indices++];
       }
-      */
-      /* unroll the above loop*/
-      {
-        Scalar *vv;
-        int j_rem;
-        vv = val;
-        switch ( j_rem = jmax& 0x3) {
-        case 3: vv[2] = xv[indices[2]];
-        case 2: vv[1] = xv[indices[1]];
-        case 1: vv[0] = xv[indices[0]]; 
-          j -= j_rem; vv += j_rem; indices += j_rem ;
-        case 0:break;
-        }
-        while (j>0) {
-          vv[0] = xv[indices[0]];
-          vv[1] = xv[indices[1]];
-          vv[2] = xv[indices[2]];
-          vv[3] = xv[indices[3]];
-          j -=4; vv +=4; indices +=4;
-        }
-      }
-
       MPI_Isend(val,sstarts[i+1] - sstarts[i],
                  MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
@@ -238,62 +221,21 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ct
 
       lindices = indices + rstarts[imdex];
       if (addv == INSERT_VALUES) {
-        /* for ( i=0; i<n; i++ ) {
+#if defined(HAVE_ESSLTMP) && !defined(__cplusplus)
+        dsctr(n,val,indices,yv); val += n;
+#else
+        for ( i=0; i<n; i++ ) {
           yv[lindices[i]] = *val++;
-        } */
-        /* unroll the above loop*/
-        {
-          Scalar *vv;
-          int i_rem, *idx;
-          idx = lindices;
-          vv = val;
-          i = n;
-          switch ( i_rem = i& 0x3) {
-          case 3: yv[idx[2]] = vv[2];
-          case 2: yv[idx[1]] = vv[1];
-          case 1: yv[idx[0]] = vv[0];
-            i -= i_rem; vv += i_rem; idx += i_rem ;
-          case 0:break;
-          }
-          while (i>0) {
-            yv[idx[0]] = vv[0];
-            yv[idx[1]] = vv[1];
-            yv[idx[2]] = vv[2];
-            yv[idx[3]] = vv[3];
-            i -=4; vv +=4; idx +=4;
-          }
         }
+#endif
       }
       else {
-        /* for ( i=0; i<n; i++ ) {
-           yv[lindices[i]] += *val++;
-           } */
-        /* unroll the above loop*/
-        {
-          Scalar *vv;
-          int i_rem, *idx;
-          idx = lindices;
-          vv = val;
-          i = n;
-          switch ( i_rem = i& 0x3) {
-          case 3: yv[idx[2]] += vv[2];
-          case 2: yv[idx[1]] += vv[1];
-          case 1: yv[idx[0]] += vv[0];
-            i -= i_rem; vv += i_rem; idx += i_rem ;
-          case 0:break;
-          }
-          while (i>0) {
-            yv[idx[0]] += vv[0];
-            yv[idx[1]] += vv[1];
-            yv[idx[2]] += vv[2];
-            yv[idx[3]] += vv[3];
-            i -=4; vv +=4; idx +=4;
-          }
+        for ( i=0; i<n; i++ ) {
+          yv[lindices[i]] += *val++;
         }
       }
     count--;
     }
- 
     /* wait on sends */
     if (nsends) {
       sstatus = gen_to->sstatus;
@@ -583,6 +525,14 @@ static int PtoPScatterDestroy(PetscObject obj)
   PetscHeaderDestroy(ctx);
   return 0;
 }
+#if defined(HAVE_ESSLTMP) && !defined(__cplusplus)
+static int IncrementScatterIndices(int *idx,int count)
+{
+  int i;
+  for ( i=0; i<count; i++ ) *idx++;
+  return 0;
+}
+#endif
 
 /* --------------------------------------------------------------*/
 /* create parallel to sequential scatter context */
@@ -790,6 +740,11 @@ int PtoSScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter ctx
   ctx->pipelineend    = PtoPPipelineend;
   ctx->copy           = PtoPCopy;
   ctx->view           = VecScatterView_MPI;
+
+#if defined(HAVE_ESSLTMP) && !defined(__cplusplus)
+  IncrementScatterIndices(to->indices,to->starts[to->n]);
+  IncrementScatterIndices(from->indices,from->starts[from->n]);
+#endif
   return 0;
 }
 
@@ -986,6 +941,11 @@ int StoPScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter ctx
   ctx->pipelineend       = 0;
   ctx->copy              = 0;
   ctx->view              = VecScatterView_MPI;
+
+#if defined(HAVE_ESSLTMP) && !defined(__cplusplus)
+  IncrementScatterIndices(to->indices,to->starts[to->n]);
+  IncrementScatterIndices(from->indices,from->starts[from->n]);
+#endif
   return 0;
 }
 
