@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.60 1996/08/23 14:39:27 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.61 1996/08/23 23:52:57 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -160,7 +160,7 @@ int main( int argc, char **argv )
   /*
      Evaluate initial guess; then solve nonlinear system.
      - The user should initialize the vector, x, with the initial guess
-       for the nonlinear solve prior to calling SNESSolve.  In particular,
+       for the nonlinear solver prior to calling SNESSolve.  In particular,
        to employ an initial guess of zero, the user should explicitly set
        this vector to zero by calling VecSet().
   */
@@ -218,13 +218,17 @@ int FormInitialGuess(AppCtx *user,Vec X)
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
 
   /*
-     Get local grid boundaries
+     Get local grid boundaries (for 2-dimensional DA):
+       xs, ys - starting grid indices (no ghost points)
+       xm, ym - widths of local grid (no ghost points)
+       Xs, Ys - starting grid indices (including ghost points)
+       Xm, Ym - widths of local grid (including ghost points)
   */
   ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
   ierr = DAGetGhostCorners(user->da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL); CHKERRQ(ierr);
 
   /*
-     Compute initial guess
+     Compute initial guess over the locally owned part of the grid
   */
   for (j=ys; j<ys+ym; j++) {
     temp = (double)(PetscMin(j,my-j-1))*hy;
@@ -295,7 +299,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DAGetGhostCorners(user->da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL); CHKERRQ(ierr);
 
   /*
-     Compute function over the locally owned part of the grid.
+     Compute function over the locally owned part of the grid
   */
   for (j=ys; j<ys+ym; j++) {
     row = (j - Ys)*Xm + xs - Xs - 1; 
