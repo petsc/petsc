@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.20 2000/03/01 03:02:42 bsmith Exp bsmith $ */
+/* $Id: ts.c,v 1.21 2000/03/01 16:15:30 bsmith Exp curfman $ */
 #include "src/ts/tsimpl.h"        /*I "ts.h"  I*/
 
 #undef __FUNC__  
@@ -910,8 +910,9 @@ int TSSetSolution(TS ts,Vec x)
 +  ts - the TS context obtained from TSCreate()
 .  func - monitoring routine
 .  mctx - [optional] user-defined context for private data for the 
-          monitor routine (may be PETSC_NULL)
--  mdestroy - [optional] routine to destroy the context when no longer needed.
+             monitor routine (use PETSC_NULL if no context is desired)
+-  monitordestroy - [optional] routine that frees monitor context
+          (may be PETSC_NULL)
 
    Calling sequence of func:
 $    int func(TS ts,int steps,double time,Vec x,void *mctx)

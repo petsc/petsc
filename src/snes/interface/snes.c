@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.206 2000/02/02 20:09:59 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.207 2000/03/01 02:59:15 bsmith Exp curfman $*/
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
 
@@ -1685,8 +1685,9 @@ int SNESLGMonitorDestroy(DrawLG draw)
 +  snes - the SNES context
 .  func - monitoring routine
 .  mctx - [optional] user-defined context for private data for the 
-          monitor routine (may be PETSC_NULL)
--  monitordestroy - options routine that frees monitor context
+          monitor routine (use PETSC_NULL if no context is desitre)
+-  monitordestroy - [optional] routine that frees monitor context
+          (may be PETSC_NULL)
 
    Calling sequence of func:
 $     int func(SNES snes,int its, PetscReal norm,void *mctx)

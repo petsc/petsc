@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.139 1999/12/08 22:17:29 balay Exp bsmith $*/
+/*$Id: itfunc.c,v 1.140 2000/01/11 21:01:56 bsmith Exp curfman $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -904,7 +904,8 @@ int KSPGetPC(KSP ksp,PC *B)
 .  monitor - pointer to function (if this is PETSC_NULL, it turns off monitoring
 .  mctx    - [optional] context for private data for the
              monitor routine (use PETSC_NULL if no context is desired)
--  monitordestroy - optional pointer to function to free mctx space
+-  monitordestroy - [optional] routine that frees monitor context
+          (may be PETSC_NULL)
 
    Calling Sequence of monitor:
 $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
