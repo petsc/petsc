@@ -1,18 +1,44 @@
+[GENERAL]
+	type_prefix = ad_
+
 [INACTIVE_FUNCTIONS]
 	PetscLogFlops
 	CHKERRQ
+        PetscFunctionReturn
 
 [NO_PREFIX_FUNCTIONS]
 
 [UNEXPANDED_MACROS]
-	Vec = "typedef int Vec;"
-	DA = "typedef int DA;"
-	PetscTruth = "typedef int PetscTruth;"
-	Scalar = "typedef double Scalar;"
+	Vec            = "typedef int Vec;"
+	Mat            = "typedef int Mat;"
+	DA             = "typedef int DA;"
+	DAPeriodicType = "typedef int DAPeriodicType;"
+	DAStencilType  = "typedef int DAStencilType;"
+	DA             = "typedef int DA;"
+        ISColoring     = "typedef int ISColoring;"
+	PetscTruth     = "typedef int PetscTruth;"
+	Scalar         = "typedef double Scalar;"
+        DALocalInfo    = "typedef struct {int dim,dof,sw;DAPeriodicType pt;DAStencilType st;int mx,my,mz;int xs,ys,zs;int xm,ym,zm;DA da;} DALocalInfo;"
+        PassiveDouble  = "typedef double PassiveDouble;"
+        PassiveScalar  = "typedef double PassiveScalar;"
 
 [DEFINES]
 	PetscAbsScalar = fabs
+	PetscExpScalar = exp
+        PetscFunctionBegin = 
+        PETSC_TRUE         = 1
+        PETSC_FALSE        = 0
 
 [ACTIVE_FUNCTIONS]
 
 [INACTIVE_VARIABLES]
+
+[INACTIVE_TYPES]
+        PassiveDouble
+	PassiveScalar
+        PetscTruth
+        DALocalInfo
+        Mat
+        Vec
+        ISColoring
+        DA
