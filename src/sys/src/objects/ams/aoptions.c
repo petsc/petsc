@@ -888,9 +888,10 @@ int PetscOptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTru
   }
 #endif
   ierr = PetscOptionsGetLogical(amspub.prefix,opt,flg,&iset);CHKERRQ(ierr);
-  if (deflt && !iset && flg) *flg = PETSC_TRUE;
-  if (!deflt && !iset && flg) *flg = PETSC_FALSE;
-  if (set && iset) *set = PETSC_TRUE;
+  if (iset == PETSC_FALSE) {
+    if (flg != PETSC_NULL) *flg = deflt;
+  }
+  if (set != PETSC_NULL) *set = iset;
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
     const char *v = (deflt ? "true" : "false");
     ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s: <%s> %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,v,text,man);CHKERRQ(ierr);
