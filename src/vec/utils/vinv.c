@@ -612,7 +612,7 @@ int VecStrideMinAll(Vec v,int *idex,PetscReal *nrm)
 
    Input Parameter:
 +  v - the vector 
--  addv - one of ADD_VALUES,SET_VALUES,MAX_VALUES
+-  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
 
    Output Parameter:
 .  s - the location where the subvectors are stored
@@ -717,7 +717,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 
    Input Parameter:
 +  s - the location where the subvectors are stored
--  addv - one of ADD_VALUES,SET_VALUES,MAX_VALUES
+-  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
 
    Output Parameter:
 .  v - the multicomponent vector 
@@ -819,7 +819,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
    Input Parameter:
 +  v - the vector 
 .  start - starting point of the subvector (defined by a stride)
--  addv - one of ADD_VALUES,SET_VALUES,MAX_VALUES
+-  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
 
    Output Parameter:
 .  s - the location where the subvector is stored
@@ -900,7 +900,7 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
    Input Parameter:
 +  s - the single-component vector 
 .  start - starting point of the subvector (defined by a stride)
--  addv - one of ADD_VALUES,SET_VALUES,MAX_VALUES
+-  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
 
    Output Parameter:
 .  v - the location where the subvector is scattered (the multi-component vector)

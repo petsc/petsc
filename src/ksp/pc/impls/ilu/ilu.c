@@ -908,6 +908,40 @@ static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
   PetscFunctionReturn(0);
 }
 
+/*MC
+     PCILU - Incomplete factorization preconditioners.
+
+   Options Database Keys:
++  -pc_ilu_levels <k> - number of levels of fill for ILU(k)
+.  -pc_ilu_in_place - only for ILU(0) with natural ordering, reuses the space of the matrix for
+                      its factorization (overwrites original matrix)
+.  -pc_ilu_diagonal_fill - fill in a zero diagonal even if levels of fill indicate it wouldn't be fill
+.  -pc_ilu_reuse_ordering - reuse ordering of factorized matrix from previous factorization
+.  -pc_ilu_damping - add damping to diagonal to prevent zero (or very small) pivots
+.  -pc_ilu_shift - apply Manteuffel shift to diagonal to force positive definite preconditioner
+.  -pc_ilu_zeropivot <tol> - set tolerance for what is considered a zero pivot
+.  -pc_ilu_use_drop_tolerance <dt,dtcol,maxrowcount> - use Saad's drop tolerance ILUdt
+.  -pc_ilu_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
+.  -pc_ilu_nonzeros_along_diagonal - reorder the matrix before factorization to remove zeros from the diagonal,
+                                   this decreases the chance of getting a zero pivot
+.  -pc_ilu_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
+-  -pc_ilu_pivot_in_blocks - for block ILU(k) factorization, i.e. with BAIJ matrices with block size larger
+                             than 1 the diagonal blocks are factored with partial pivoting (this increases the 
+                             stability of the ILU factorization
+
+   Level: beginner
+
+  Concepts: incomplete factorization
+
+   Notes: Only implemented for some matrix formats. Not implemented in parallel
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
+           PCILUSetSetZeroPivot(), PCILUSetDamping(), PCILUSetShift(), PCILUSetUseDropTolerance(),
+           PCILUSetFill(), PCILUSetMatOrdering(), PCILUSetReuseOrdering(), PCILUDTSetReuseFill(),
+           PCILUSetLevels(), PCILUSetUseInPlace(), PCILUSetAllowDiagonalFill(), PCILUSetPivotInBlocks(),
+
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ILU"
