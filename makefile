@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.292 1999/11/05 14:42:55 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.293 1999/11/24 21:52:17 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -57,7 +57,38 @@ info:
 	-@echo "Using Fortran linker: ${FLINKER}"
 	-@echo "Using libraries: ${PETSC_LIB}"
 	-@echo "=========================================="
-
+#
+#
+MINFO = ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscmachineinfo.h
+info_h:
+	-@$(RM) -f ${MINFO}
+	-@echo  "petscmachineinfo = \" \\ " >> ${MINFO}
+	-@echo  On `date` on `hostname` "\\" >> ${MINFO}
+	-@echo  Machine characteristics: `uname -a` "\\" >> ${MINFO}
+	-@echo  "-----------------------------------------\\" >> ${MINFO}
+	-@echo  "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS} \\" >> ${MINFO}
+	-@if [  "${C_CCV}" -a "${C_CCV}" != "unknown" ] ; then \
+	  echo  "C Compiler version:\\"  >> ${MINFO} ; ${C_CCV} >> ${MINFO} 2>&1; fi
+	-@if [  "${CXX_CCV}" -a "${CXX_CCV}" != "unknown" ] ; then \
+	  echo  "C++ Compiler version:\\"  >> ${MINFO}; ${CXX_CCV} >> ${MINFO} 2>&1 ; fi
+	-@echo  "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}\\" >> ${MINFO}
+	-@if [  "${C_FCV}" -a "${C_FCV}" != "unknown" ] ; then \
+	  echo  "Fortran Compiler version:\\" >> ${MINFO} ; ${C_FCV} >> ${MINFO} 2>&1 ; fi
+	-@echo  "-----------------------------------------\\" >> ${MINFO}
+	-@echo  "Using PETSc flags: ${PETSCFLAGS} ${PCONF}\\" >> ${MINFO}
+	-@echo  "-----------------------------------------\\" >> ${MINFO}
+	-@echo  "Using configuration flags:\\" >> ${MINFO}
+	-@grep "define " bmake/${PETSC_ARCH}/petscconf.h | grep -v PETSC_ARCH_NAME >> ${MINFO}
+	-@echo  "-----------------------------------------\\" >> ${MINFO}
+	-@echo  "Using include paths: ${PETSC_INCLUDE}\\" >> ${MINFO}
+	-@echo  "-----------------------------------------\\" >> ${MINFO}
+	-@echo  "Using PETSc directory: ${PETSC_DIR}\\" >> ${MINFO}
+	-@echo  "Using PETSc arch: ${PETSC_ARCH}\\" >> ${MINFO}
+	-@echo  "------------------------------------------\\" >> ${MINFO}
+	-@echo  "Using C linker: ${CLINKER}\\" >> ${MINFO}
+	-@echo  "Using Fortran linker: ${FLINKER}\\" >> ${MINFO}
+	-@echo  "Using libraries: ${PETSC_LIB} \\ " >> ${MINFO}
+	-@echo "==========================================\"" >> ${MINFO} 
 #
 # Builds the PETSc libraries
 # This target also builds fortran77 and f90 interface
