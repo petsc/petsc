@@ -1,4 +1,4 @@
-/*$Id: pcregis.c,v 1.58 2000/05/20 20:33:21 bsmith Exp bsmith $*/
+/*$Id: pcregis.c,v 1.59 2000/08/24 22:42:28 bsmith Exp curfman $*/
 
 #include "src/sles/pc/pcimpl.h"          /*I   "petscpc.h"   I*/
 
@@ -18,6 +18,7 @@ EXTERN int PCCreate_SLES(PC);
 EXTERN int PCCreate_Composite(PC);
 EXTERN int PCCreate_Redundant(PC);
 EXTERN int PCCreate_NN(PC);
+EXTERN int PCCreate_Cholesky(PC);
 #if defined(PETSC_HAVE_SPAI)
 EXTERN int PCCreate_SPAI(PC);
 #endif
@@ -57,6 +58,7 @@ int PCRegisterAll(char *path)
   ierr = PCRegisterDynamic(PCEISENSTAT    ,path,"PCCreate_Eisenstat",PCCreate_Eisenstat);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCILU          ,path,"PCCreate_ILU",PCCreate_ILU);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCICC          ,path,"PCCreate_ICC",PCCreate_ICC);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCCHOLESKY     ,path,"PCCreate_Cholesky",PCCreate_Cholesky);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCASM          ,path,"PCCreate_ASM",PCCreate_ASM);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCSLES         ,path,"PCCreate_SLES",PCCreate_SLES);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCCOMPOSITE    ,path,"PCCreate_Composite",PCCreate_Composite);CHKERRQ(ierr);
@@ -68,5 +70,7 @@ int PCRegisterAll(char *path)
   ierr = PCRegisterDynamic(PCMILU          ,path,"PCCreate_mILU",PCCreate_mILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
 
 

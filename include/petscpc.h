@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.110 2000/09/25 17:29:31 balay Exp curfman $ */
+/* $Id: petscpc.h,v 1.111 2000/09/25 18:50:22 curfman Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -35,6 +35,7 @@ typedef char *PCType;
 #define PCMILU      "milu"
 #define PCNN        "nn"
 #define PCCHOLESKY  "cholesky"
+#define PCRAMG      "ramg"
 
 typedef struct _p_PC* PC;
 #define PC_COOKIE     PETSC_COOKIE+9
@@ -92,6 +93,7 @@ EXTERN int PCComputeExplicitOperator(PC,Mat*);
 
 /* ------------- options specific to particular preconditioners --------- */
 
+EXTERN int PCJacobiSetUseRowMax(PC);
 EXTERN int PCSORSetSymmetric(PC,MatSORType);
 EXTERN int PCSORSetOmega(PC,double);
 EXTERN int PCSORSetIterations(PC,int);
