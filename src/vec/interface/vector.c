@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.106 1997/04/02 22:27:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.107 1997/04/02 22:36:57 bsmith Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -742,7 +742,7 @@ int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
     SETERRQ(1,0,"Local to global never set with VecSetLocalToGlobalMapping");
   }
   if (ni > 128) {
-    lix = (int *) PetscMalloc( ni*sizeof(int) );CHKPTRQ(lixp);
+    lix = (int *) PetscMalloc( ni*sizeof(int) );CHKPTRQ(lix);
   }
 
   PLogEventBegin(VEC_SetValues,x,0,0,0);
