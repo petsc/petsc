@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.15 2000/07/15 03:19:57 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.16 2000/07/17 03:51:29 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -101,30 +101,29 @@ int DAMGDestroy(DAMG *damg)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="DAMGSetCoarseDA"></a>*/"DAMGSetCoarseDA"
+#define __FUNC__ /*<a name="DAMGSetGrid"></a>*/"DAMGSetGrid"
 /*@C
-    DAMGSetCoarseDA - Sets the grid information for the coarsest grid
+    DAMGSetGrid - Sets the grid information for the grids
 
-    Collective on DAMG and DA
+    Collective on DAMG
 
     Input Parameter:
 +   damg - the context
--   da - the DA for the coarsest grid (this routine creates all the other ones)
-
-    Notes:
-      This keeps the passed in DA object (in damg[0]->da) (without increasing the reference count)
-    so you should not destroy the da passed in later in your code (the DAMGDestroy() will 
-    handle that.
-
-      If the user wants a different B (preconditioner matrix) from the Jacobian matrix 
-    they need to create it and set it into the DAMG structure after calling this routine
+.   dim - 1, 2, or 3
+.   pt - DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC, DA_XYZPERIODIC, DA_XZPERIODIC, or DA_YZPERIODIC
+.   st - DA_STENCIL_STAR or DA_STENCIL_BOX
+.   mx - grid points in x
+.   my - grid points in y
+.   mz - grid points in z
+.   sw - stencil width, often 1
++   dof - number of degrees of freedom per node
 
     Level: advanced
 
 .seealso DAMGCreate(), DAMGDestroy
 
 @*/
-int DAMGSetCoarseDA(DAMG *damg,DA da)
+int DAMGSetGrid(DAMG *damg,
 {
   int            ierr,i,j,nlevels = damg[0]->nlevels,M,N,P,m,n,p,sw,dof,dim,flag,Nt;
   MPI_Comm       comm;
@@ -280,7 +279,7 @@ int DAMGSolveSLES(DAMG *damg,int level)
 
     Level: advanced
 
-.seealso DAMGCreate(), DAMGDestroy, DAMGSetCoarseDA()
+.seealso DAMGCreate(), DAMGDestroy, DAMGSetGrid()
 
 @*/
 int DAMGSetSLES(DAMG *damg,int (*rhs)(DAMG,Vec),int (*func)(DAMG,Mat))
