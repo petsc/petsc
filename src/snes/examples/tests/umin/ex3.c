@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.4 1995/09/11 01:12:23 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.5 1995/09/11 01:53:02 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -53,8 +53,9 @@ int main(int argc,char **argv)
   AppCtx     user;                  /* application context */
   int        mx=10;                 /* discretization in x-direction */
   int        my=10;                 /* discretization in y-direction */
-  int        Nx, Ny;                /* processors in x, y directions */
-  int        ierr, its, nfails, numtids, lsize;
+  int        Nx=PETSC_DECIDE;       /* processors in x-direction */
+  int        Ny=PETSC_DECIDE;       /* processors in y-direction */
+  int        ierr, its, nfails, numtids;
   double     one = 1.0;
   SLES       sles;
   PC         pc;
@@ -65,8 +66,6 @@ int main(int argc,char **argv)
   Ny = numtids; Nx = 1;
   OptionsGetInt(0,"-Nx",&Nx);
   OptionsGetInt(0,"-Ny",&Ny);
-  if (numtids != Nx*Ny) 
-    SETERRA(1,"Incompatible number of processors: Nx * Ny != numtids");
 
   /* Set up user-defined work space */
   user.param = 5.0;
@@ -87,8 +86,6 @@ int main(int argc,char **argv)
   ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);
   ierr = VecDuplicate(x,&user.s); CHKERRA(ierr);
   ierr = VecDuplicate(user.localX,&user.localS); CHKERRA(ierr);
-/*  ierr = VecGetLocalSize(x,&lsize); CHKERRA(ierr);
-  ierr = VecCreateMPI(MPI_COMM_WORLD,lsize,user.ndim,&g); CHKERRA(ierr); */
   ierr = VecDuplicate(x,&g); CHKERRA(ierr);
   ierr = VecDuplicate(g,&user.y); CHKERRA(ierr);
 
@@ -285,7 +282,7 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   double zero = 0.0, v, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;
   Scalar val, *x, szero = 0.0, floc;
   Vec    localX = user->localX;
-  int    xs, ys, xm, ym, Xm, Ym, Xs, Ys, xe, ye, xsm, ysm, xep, yep, mytid;
+  int    xs, ys, xm, ym, Xm, Ym, Xs, Ys, xe, ye, xsm, ysm, xep, yep;
   int    ierr, nx = user->mx, ny = user->my, ind, i, j, k, *ltog, nloc; 
 
   cdiv3 = user->param/three;
@@ -308,13 +305,6 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   if (ye == ny) yep = ye+1;
   else          yep = ye;
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-/*  MPIU_Seq_begin(MPI_COMM_WORLD,1);
-  printf("[%d] xs=%d, ys=%d, xm=%d ym=%d, xe=%d, ye=%d, Xs=%d, Ys=%d, Xm=%d, Ym=%d\n",
-            mytid,xs,ys,xm,ym,xe,ye,Xs,Ys,Xm,Ym);
-  printf("[%d] xsm=%d, ysm=%d, xep=%d yep=%d\n",mytid,xsm,ysm,xep,yep);
-  MPIU_Seq_end(MPI_COMM_WORLD,1); */
-
   if (fg & GradientEval) {
     ierr = VecSet(&szero,gvec); CHKERRQ(ierr);
   }
@@ -328,7 +318,7 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       vt = zero;
       if (i >= 0 && j >= 0) v = x[k];
       if (i < nx-1 && j > -1) vr = x[k+1];
-      if (i > -1 && j < ny-1) vt = x[k+nx];
+      if (i > -1 && j < ny-1) vt = x[k+Xm];
       dvdx = (vr-v)/hx;
       dvdy = (vt-v)/hy;
       if (fg & FunctionEval) {
@@ -345,7 +335,7 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i != -1 && j != ny-1) {
-          ind = ltog[k+nx]; val = dvdy/hy - cdiv3;
+          ind = ltog[k+Xm]; val = dvdy/hy - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
       }
@@ -359,7 +349,7 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       vb = zero;
       vl = zero;
       v = zero;
-      if (i < nx && j > 0) vb = x[k-nx];
+      if (i < nx && j > 0) vb = x[k-Xm];
       if (i > 0 && j < ny) vl = x[k-1];
       if (i < nx && j < ny) v = x[k];
       dvdx = (v-vl)/hx;
@@ -369,7 +359,7 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
         flin = flin - cdiv3*(vb+vl+v);
       } if (fg & GradientEval) {
         if (i != nx && j != 0) {
-          ind = ltog[k-nx]; val = - dvdy/hy - cdiv3;
+          ind = ltog[k-Xm]; val = - dvdy/hy - cdiv3;
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i != 0 && j != ny) {
@@ -449,8 +439,8 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i != -1 && j != ny-1) {
-        vt = s[k+nx];
-        ind = ltog[k+nx]; val = hyhy*(vt-v);
+        vt = s[k+Xm];
+        ind = ltog[k+Xm]; val = hyhy*(vt-v);
         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i != -1 && j != -1) {
@@ -469,8 +459,8 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
       vb = zero;
       if (i != nx && j != ny) v = s[k];
       if (i != nx && j != 0) {
-        vb = s[k-nx];
-        ind = ltog[k-nx]; val = hyhy*(vb-v);
+        vb = s[k-Xm];
+        ind = ltog[k-Xm]; val = hyhy*(vb-v);
         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i != 0 && j != ny) {
