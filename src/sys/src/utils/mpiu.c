@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.24 1995/12/04 19:03:01 balay Exp balay $";
+static char vcid[] = "$Id: mpiu.c,v 1.25 1995/12/05 23:16:16 balay Exp balay $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -282,8 +282,7 @@ int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     MPI_Keyval_create(MPI_NULL_COPY_FN, MPIU_DelTag,&MPIU_Tag_keyval,(void *)0);
   }
 
-  if (ierr = MPI_Attr_get(comm_in,MPIU_Tag_keyval,(void**)&tagvalp,&flag))
-    return ierr;
+  ierr = MPI_Attr_get(comm_in,MPIU_Tag_keyval,(void**)&tagvalp,&flag); CHKERRQ(ierr);
 
   if (!flag) {
     /* This communicator is not yet known to this system, so we
