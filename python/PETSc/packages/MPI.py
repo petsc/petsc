@@ -203,7 +203,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('You set a value for --with-mpi-lib, but '+self.framework.argDB['with-mpi-lib']+' cannot be used.\n It could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
     # Try specified installation root
     if 'with-mpi-dir' in self.framework.argDB:
-      dir = self.framework.argDB['with-mpi-dir']
+      dir = os.path.abspath(self.framework.argDB['with-mpi-dir'])
       yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
       yield ('User specified installation root for cygwin', self.libraryGuesses(os.path.join(dir,'SDK.gcc')),[[os.path.join(dir,'SDK.gcc','include')]])
       yield ('User specified installation root for MS Windows', self.libraryGuesses(os.path.join(dir,'SDK')),[[os.path.join(dir,'SDK','include')]])
@@ -213,6 +213,7 @@ class Configure(config.base.Configure):
     # Try configure package directories
     dirExp = re.compile(r'mpi(ch)?(-.*)?')
     for packageDir in self.framework.argDB['package-dirs']:
+      packageDir = os.path.abspath(packageDir)
       if not os.path.isdir(packageDir):
         raise RuntimeError('Invalid package directory: '+packageDir)
       for f in os.listdir(packageDir):
@@ -451,7 +452,7 @@ class Configure(config.base.Configure):
     if os.path.dirname(mpirun):
       path.append(os.path.dirname(mpirun))
     if 'with-mpi-dir' in self.framework.argDB:
-      path.append(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin'))
+      path.append(os.path.join(os.path.abspath(self.framework.argDB['with-mpi-dir']), 'bin'))
     for inc in self.include:
       path.append(os.path.join(os.path.dirname(inc), 'bin'))
     for lib in self.lib:

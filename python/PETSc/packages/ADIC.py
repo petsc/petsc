@@ -23,7 +23,7 @@ class Configure(config.base.Configure):
   def generateGuesses(self):
     '''Generate list of possible locations of ADIC'''
     if 'with-adic-path' in self.framework.argDB:
-      yield self.framework.argDB['with-adic-path']
+      yield os.path.abspath(self.framework.argDB['with-adic-path'])
       raise RuntimeError('You set a value for --with-adic-path, but '+self.framework.argDB['with-adic-path']+' cannot be used\n')
     if self.getExecutable('adiC', getFullPath = 1):
       # follow any symbolic link of this path

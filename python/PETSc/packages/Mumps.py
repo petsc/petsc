@@ -56,7 +56,7 @@ class Configure(config.base.Configure):
           (incl,dummy) = os.path.split(incl)
         yield('based on found library location',os.path.join(incl,'include'))
       elif 'with-'+package+'-dir' in self.framework.argDB:
-        dir = self.framework.argDB['with-'+package+'-dir']
+        dir = os.path.abspath(self.framework.argDB['with-'+package+'-dir'])
         yield('based on found root directory',os.path.join(dir,'include'))
 
   def checkInclude(self,incl,hfile):
@@ -81,7 +81,7 @@ class Configure(config.base.Configure):
         (dir,dummy) = os.path.split(dir)
         yield('User specified '+PACKAGE+'/Include',os.path.join(dir,'lib/libdmumps.a'))
       elif 'with-'+package+'-dir' in self.framework.argDB: 
-        dir = self.framework.argDB['with-'+package+'-dir']
+        dir = os.path.abspath(self.framework.argDB['with-'+package+'-dir'])
         dir = os.path.join(dir,'lib')
         libs = []
         libs.append(os.path.join(dir,'libdmumps.a'))
@@ -96,7 +96,7 @@ class Configure(config.base.Configure):
       if 'with-scalapack-lib' in self.framework.argDB: 
         yield ('User specified SCALAPACK library',self.framework.argDB['with-scalapack-lib'])
       elif 'with-scalapack-dir' in self.framework.argDB:
-        dir = self.framework.argDB['with-scalapack-dir']
+        dir = os.path.abspath(self.framework.argDB['with-scalapack-dir'])
         libs = []
         libs.append(os.path.join(dir,'libscalapack.a'))
         yield('User specified SCALAPACK root directory',libs)
@@ -108,7 +108,7 @@ class Configure(config.base.Configure):
       if 'with-blacs-lib' in self.framework.argDB: 
         yield ('User specified BLACS library',self.framework.argDB['with-blacs-lib'])
       elif 'with-blacs-dir' in self.framework.argDB:
-        dir = self.framework.argDB['with-blacs-dir']
+        dir = os.path.abspath(self.framework.argDB['with-blacs-dir'])
         dir = os.path.join(dir,'LIB')
         libs = []
         libs.append(os.path.join(dir,'libblacs_MPI-LINUX-0.a'))

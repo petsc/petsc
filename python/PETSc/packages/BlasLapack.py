@@ -118,7 +118,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('You set a value for --with-blas-lib=<lib> and --with-lapack-lib=<lib>, but '+str(self.framework.argDB['with-blas-lib'])+' and '+str(self.framework.argDB['with-lapack-lib'])+' cannot be used\n')
     # Try specified installation root
     if 'with-blas-lapack-dir' in self.framework.argDB:
-      dir = self.framework.argDB['with-blas-lapack-dir']
+      dir = os.path.abspath(self.framework.argDB['with-blas-lapack-dir'])
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'))      
       yield ('User specified installation root (F2C)', os.path.join(dir, 'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'))
       yield ('User specified installation root', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'))

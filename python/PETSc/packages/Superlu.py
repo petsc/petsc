@@ -49,7 +49,7 @@ class Configure(config.base.Configure):
         (incl,dummy) = os.path.split(incl)
         yield('based on found library location',os.path.join(incl,'SRC'))
       elif 'with-'+package+'-dir' in self.framework.argDB:
-        dir = self.framework.argDB['with-'+package+'-dir']
+        dir = os.path.abspath(self.framework.argDB['with-'+package+'-dir'])
         yield('based on found root directory',os.path.join(dir,'SRC'))
 
   def checkInclude(self,incl,hfile):
@@ -74,7 +74,7 @@ class Configure(config.base.Configure):
         (dir,dummy) = os.path.split(dir)
         yield('User specified '+PACKAGE+'/Include',os.path.join(dir,'superlu_linux_g.a'))
       elif 'with-'+package+'-dir' in self.framework.argDB: 
-        dir = self.framework.argDB['with-'+package+'-dir']
+        dir = os.path.abspath(self.framework.argDB['with-'+package+'-dir'])
         yield('User specified '+PACKAGE+' root directory',os.path.join(dir,'superlu_linux_g.a'))
       else:
         self.framework.log.write('Must specify either a library or installation root directory for '+PACKAGE+'\n')

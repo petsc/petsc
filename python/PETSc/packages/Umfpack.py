@@ -55,7 +55,7 @@ class Configure(config.base.Configure):
           (incl_amd,dummy) = os.path.split(incl_amd)
         yield('based on found library location',os.path.join(incl,'Include'),os.path.join(incl_amd,'Include'))
       elif 'with-'+package+'-dir' in self.framework.argDB:
-        dir = self.framework.argDB['with-'+package+'-dir']
+        dir = os.path.abspath(self.framework.argDB['with-'+package+'-dir'])
         (dir_amd,dummy) = os.path.split(dir)
         yield('based on found root directory',os.path.join(dir,'Include'),os.path.join(dir_amd,'AMD/Include'))
 
@@ -90,7 +90,7 @@ class Configure(config.base.Configure):
         dir = os.path.join(dir,'Lib')
         yield('User specified '+PACKAGE+'/Include',os.path.join(dir,'libumfpack.a'),os.path.join(dir_amd,'libamd.a'))
       elif 'with-'+package+'-dir' in self.framework.argDB:
-        dir = self.framework.argDB['with-'+package+'-dir']
+        dir = os.path.abspath(self.framework.argDB['with-'+package+'-dir'])
         (dir_amd,dummy) = os.path.split(dir)
         dir_amd = os.path.join(dir_amd,'AMD/Lib')
         dir = os.path.join(dir,'Lib')

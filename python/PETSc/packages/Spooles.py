@@ -50,7 +50,7 @@ class Configure(config.base.Configure):
         (incl,dummy) = os.path.split(incl)
         yield('based on found library location',incl)
       elif 'with-'+package+'-dir' in self.framework.argDB:
-        incl = self.framework.argDB['with-'+package+'-dir']
+        incl = os.path.abspath(self.framework.argDB['with-'+package+'-dir'])
         yield('based on found root directory',incl)
 
   def checkInclude(self,incl,hfile):
@@ -83,7 +83,7 @@ class Configure(config.base.Configure):
         lib_mpi = os.path.join(dir,'MPI/src/spoolesMPI.a')
         yield('User specified '+PACKAGE+' directory of header files',lib_mpi,lib)
       elif 'with-'+package+'-dir' in self.framework.argDB: 
-        dir = self.framework.argDB['with-'+package+'-dir'] #~spooles-2.2
+        dir = os.path.abspath(self.framework.argDB['with-'+package+'-dir']) #~spooles-2.2
         lib = os.path.join(dir,'spooles.a')
         lib_mpi = os.path.join(dir,'MPI/src/spoolesMPI.a')
         yield('User specified '+PACKAGE+' root directory',lib_mpi,lib)

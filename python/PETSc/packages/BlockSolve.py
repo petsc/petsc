@@ -69,7 +69,7 @@ class Configure(config.base.Configure):
       elif not 'with-blocksolve95-arch' in self.framework.argDB:
         self.framework.log.write('Missing ARCH for specified BlockSolve root directory\n')
       else:
-        dir    = self.framework.argDB['with-blocksolve95-dir']
+        dir    = os.path.abspath(self.framework.argDB['with-blocksolve95-dir'])
         bopt   = self.framework.argDB['with-blocksolve95-bopt']
         bsarch = self.framework.argDB['with-blocksolve95-arch']
         yield('User specified BLOCKSOLVE95 installation',os.path.join(dir,'lib','lib'+bopt,bsarch,'libBS95.a'))
