@@ -2,7 +2,7 @@
 import os
 import sys
 
-def runinstaller(opts):
+def runinstaller(opts = []):
   import setuprc
   setuprc.setupRC(os.path.dirname(os.path.abspath(os.path.dirname(sys.modules['setuprc'].__file__))))
 

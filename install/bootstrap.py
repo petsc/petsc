@@ -241,5 +241,5 @@ if __name__ ==  '__main__':
 
   sys.path.insert(0,os.path.join(installer.installpath,'BuildSystem','install'))
   import installer
-  installer.runinstaller(['-debugSections','[]','-debugLevel','0'])
+  installer.runinstaller(['-debugSections=[]','-debugLevel=0'])
       
