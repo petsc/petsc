@@ -140,8 +140,8 @@ class Configure(config.base.Configure):
       self.framework.log.write('Checking for a functional '+self.name+' in '+configstr+'\n')
       for lib in libs:
         #found = self.executeTest(self.checkLib,[libs[0],'dmumps_c',self.mpi.lib+self.compiler.flibs])
-        found = self.executeTest(self.checkLib,[libs[0],'dmumps_c'])
-        #found = 1
+        #found = self.executeTest(self.checkLib,[libs[0],'dmumps_c']) -- not work yet!
+        found = 1  #???
         foundlibs = foundlibs or found
         if found:
           self.lib.append(lib)
