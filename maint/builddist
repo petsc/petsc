@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.78 2000/09/22 20:16:54 balay Exp bsmith $ 
+# $Id: builddist,v 1.79 2000/09/26 17:57:07 bsmith Exp bsmith $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -86,7 +86,7 @@ foreach i (bmake/*/base.site)
     sed "s/^SPAI_INCLUDE/#SPAI_INCLUDE/g" | sed "s/^SPAI_LIB/#SPAI_LIB/g" | \
     sed "s/^PETSC_HAVE_SPAI/#PETSC_HAVE_SPAI/g" | \
     sed "s/^PETSC_HAVE_LUSOL/#PETSC_HAVE_LUSOL/g" | \
-    sed "s/^PETSC_LUSOL/#PETSC_LUSOL/g" | \
+    sed "s/^LUSOL_LIB/#LUSOL_LIB/g" | \
     sed "s/^JAVA/#JAVA/g" | sed "s/^JAVAC/#JAVAC/g" | sed "s/^PETSC_HAVE_JAVA/#PETSC_HAVE_JAVA/g" | \
     sed "s/^PCONF/#PCONF/g" > $i.tmp
   /bin/mv -f $i.tmp $i
