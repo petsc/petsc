@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.223 1997/10/29 14:07:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.224 1997/11/03 04:45:30 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -830,11 +830,9 @@ extern int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
       Scalar      *a;
 
       if (!rank) {
-        ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);
-               CHKERRQ(ierr);
+        ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
       } else {
-        ierr = MatCreateMPIAIJ(mat->comm,0,0,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);
-               CHKERRQ(ierr);
+        ierr = MatCreateMPIAIJ(mat->comm,0,0,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
       }
       PLogObjectParent(mat,A);
 
@@ -863,7 +861,11 @@ extern int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
       PetscFree(ct);
       ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
       ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-      if (!rank) {
+      /* 
+         Everyone has to call to draw the matrix since the graphics waits are
+         synchronized across all processors that share the Draw object
+      */
+      if (!rank || vtype == DRAW_VIEWER) {
         ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,viewer); CHKERRQ(ierr);
       }
       ierr = MatDestroy(A); CHKERRQ(ierr);

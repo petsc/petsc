@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.240 1997/10/19 03:25:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.241 1997/10/28 14:22:30 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -467,7 +467,7 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
 
   PetscFunctionBegin;  
   ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
-  ierr = DrawClear(draw); CHKERRQ(ierr);
+  ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
   ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
@@ -535,15 +535,15 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
       } 
     }
   }
-  DrawFlush(draw); 
+  DrawSynchronizedFlush(draw); 
   DrawGetPause(draw,&pause);
   if (pause >= 0) { PetscSleep(pause); PetscFunctionReturn(0);}
 
   /* allow the matrix to zoom or shrink */
   ierr = DrawCheckResizedWindow(draw);
-  ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0); 
+  ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0); 
   while (button != BUTTON_RIGHT) {
-    DrawClear(draw);
+    DrawSynchronizedClear(draw);
     if (button == BUTTON_LEFT) scale = .5;
     else if (button == BUTTON_CENTER) scale = 2.;
     xl = scale*(xl + w - xc) + xc - w*scale;
@@ -604,7 +604,7 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
     }
 
     ierr = DrawCheckResizedWindow(draw); CHKERRQ(ierr);
-    ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0);  CHKERRQ(ierr);
+    ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);  CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

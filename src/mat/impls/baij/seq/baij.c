@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.114 1997/10/19 03:26:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.115 1997/10/28 14:23:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -291,14 +291,14 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
     } 
   }
 
-  DrawFlush(draw); 
+  DrawSynchronizedFlush(draw); 
   DrawGetPause(draw,&pause);
   if (pause >= 0) { PetscSleep(pause); PetscFunctionReturn(0);}
 
   /* allow the matrix to zoom or shrink */
-  ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0); 
+  ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0); 
   while (button != BUTTON_RIGHT) {
-    DrawClear(draw);
+    DrawSynchronizedClear(draw);
     if (button == BUTTON_LEFT) scale = .5;
     else if (button == BUTTON_CENTER) scale = 2.;
     xl = scale*(xl + w - xc) + xc - w*scale;
@@ -350,7 +350,7 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
         }
       } 
     }
-    ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0); 
+    ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0); 
   }
   PetscFunctionReturn(0);
 }
