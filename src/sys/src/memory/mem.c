@@ -76,7 +76,6 @@
 @*/
 int PetscGetResidentSetSize(PetscLogDouble *mem)
 {
-#define PETSC_USE_PROC_FOR_SIZE
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
   FILE            *file;
   int             fd;

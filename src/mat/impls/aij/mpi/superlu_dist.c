@@ -83,7 +83,7 @@ void zCompRow_to_CompCol(int m, int n, int nnz,
     *at = (doublecomplex *) doublecomplexMalloc_dist(nnz);
     *rowind = (int *) intMalloc_dist(nnz);
     *colptr = (int *) intMalloc_dist(n+1);
-    marker = (int *) intCalloc_(n);
+    marker = (int *) intCalloc_dist(n);
  
     /* Get counts of each column of A, and set up column pointers */
     for (i = 0; i < m; ++i)

@@ -651,10 +651,12 @@ acfindx:
   def configureMPIUNI(self):
     '''If MPI was not found, setup MPIUNI, our uniprocessor version of MPI'''
     if self.mpi.foundInclude and self.mpi.foundLib: return
-    raise RuntimeError('Could not find MPI!')
-##    if self.mpiuni:
-##      print '********** Warning: Using uniprocessor MPI (mpiuni) from Petsc **********'
-##      print '**********     Use --with-mpi option to specify a full MPI     **********'
+    print '********** Warning: Using uniprocessor MPI (mpiuni) from Petsc **********'
+    print '**********     Use --with-mpi options to specify a full MPI    **********'
+    self.framework.addDefine('HAVE_MPI', 1)
+    self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/src/sys/src/mpiuni')
+    self.framework.addSubstitution('MPI_LIB',     '${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a')
+    self.framework.addSubstitution('MPI_RUN',     '${PETSC_DIR}/src/sys/src/mpiuni/mpirun')
     return
 
   def configureMisc(self):
