@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.57 1996/11/19 16:29:42 bsmith Exp curfman $ */
+/* $Id: pdvec.c,v 1.58 1996/11/30 21:36:25 curfman Exp curfman $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -503,7 +503,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
   PetscFree(starts); PetscFree(nprocs);
 
   /* Free cache space */
-  PLogInfo(0,"[%d]VecAssemblyBegin_MPI:Number of off processor values %d\n",rank,x->stash.n);
+  PLogInfo(0,"[%d]VecAssemblyBegin_MPI:Number of off-processor values %d\n",rank,x->stash.n);
   x->stash.nmax = x->stash.n = 0;
   if (x->stash.array){ PetscFree(x->stash.array); x->stash.array = 0;}
 

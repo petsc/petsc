@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.35 1996/11/27 22:53:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.36 1996/11/29 22:26:37 curfman Exp curfman $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -295,7 +295,7 @@ static int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscFree(starts); PetscFree(nprocs);
 
   /* Free cache space */
-  PLogInfo(0,"[%d]MatAssemblyBegin_MPIBAIJ:Number of off processor values %d\n",rank,baij->stash.n);
+  PLogInfo(0,"[%d]MatAssemblyBegin_MPIBAIJ:Number of off-processor values %d\n",rank,baij->stash.n);
   ierr = StashDestroy_Private(&baij->stash); CHKERRQ(ierr);
 
   baij->svalues    = svalues;    baij->rvalues    = rvalues;
