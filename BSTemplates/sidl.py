@@ -322,7 +322,7 @@ class UsingPython(UsingCompiler):
   def setupExtraLibraries(self):
     # This is not quite right
     for package in self.usingSIDL.getPackages():
-      self.extraLibraries[package].extend([bs.argDB['PYTHON_LIB'], 'libpthread.so', 'libutil.so'])
+      self.extraLibraries[package].extend([bs.argDB['PYTHON_LIB'], 'libpthread.so', 'libutil.so', 'libdl.so'])
     return self.extraLibraries
 
   def getLanguage(self):
