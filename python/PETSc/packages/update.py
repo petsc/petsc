@@ -18,7 +18,9 @@ class Configure(config.base.Configure):
   def configureHelp(self, help):
     import nargs
     help.addArgument('Update', '-enable-update',             nargs.ArgBool(None, 1, 'Update source code from PETSc website'))
-    help.addArgument('Update', '-with-patch',                nargs.Arg(None, None, 'Location of GNU patch'))
+    help.addArgument('Update', '-with-patch',                nargs.Arg(None, None, 'Location of GNU patch program'))
+    help.addArgument('Update', '-with-patch-petsc',          nargs.Arg(None, None, 'Location of a patch for the PETSc source'))
+    help.addArgument('Update', '-with-patch-buildsystem',    nargs.Arg(None, None, 'Location of a patch for the BuildSystem'))
     return
 
   def configureArchitecture(self):
@@ -229,7 +231,23 @@ class Configure(config.base.Configure):
       except: pass
       raise RuntimeError('Error applying source update.\nRun with --enable-update=0 to configure anyways')
     self.strmsg = 'Updated source code from PETSc website (using latest patches)'
-    return 
+
+    if self.framework.argDB.has_key('with-patch-petsc'):
+      try:
+        output1 = self.executeShellCommand(patch+' -Np1 < '+self.framework.argDB['with-patch-petsc'])
+      except:
+        raise RuntimeError('Unable to apply patch from '+self.framework.argDB['with-patch-petsc']+'with '+patch) 
+      if output1.find('error') >= 0:
+        self.framework.log.write(output1+'\n')
+        raise RuntimeError('Error applying '+self.framework.argDB['with-patch-petsc']+' update.\n')
+    if self.framework.argDB.has_key('with-patch-buildsystem'):
+      try:
+        output1 = self.executeShellCommand('cd python/BuildSystem; '+patch+' -Np1 < '+self.framework.argDB['with-patch-buildsystem'])
+      except:
+        raise RuntimeError('Unable to apply patch from '+self.framework.argDB['with-patch-buildsystem']+'with '+patch) 
+      if output1.find('error') >= 0:
+        self.framework.log.write(output1+'\n')
+        raise RuntimeError('Error applying '+self.framework.argDB['with-patch-buildsystem']+' update.\n')
 
   def configure(self):
     self.executeTest(self.configureDirectories)
