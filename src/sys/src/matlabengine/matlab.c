@@ -112,11 +112,7 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char string[],...)
   PetscFunctionBegin;  
   ierr = PetscStrcpy(buffer,"flops(0);");
   va_start(Argp,string);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-  vsprintf(buffer+9,string,(char *)Argp);
-#else
-  vsprintf(buffer+9,string,Argp);
-#endif
+  ierr = PetscVSNPrintf(buffer+9,1024-9-5,string,Argp);CHKERRQ(ierr);
   va_end(Argp);
   ierr = PetscStrcat(buffer,",flops");
 

@@ -195,11 +195,7 @@ int PetscLogInfo(void *vobj, const char message[], ...)
   va_start(Argp, message);
   sprintf(string, "[%d]", urank); 
   ierr = PetscStrlen(string, &len);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-  vsprintf(string+len, message, (char *) Argp);
-#else
-  vsprintf(string+len, message, Argp);
-#endif
+  ierr = PetscVSNPrintf(string+len, 8*1024-len,message, Argp);
   fprintf(PetscLogInfoFile, "%s", string);
   fflush(PetscLogInfoFile);
   if (petsc_history) {

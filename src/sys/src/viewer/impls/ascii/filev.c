@@ -382,23 +382,19 @@ int PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
     }
     va_end(Argp);
   } else if (ascii->bviewer) { /* this is a singleton PetscViewer that is not on process 0 */
-    int         len;
     va_list     Argp;
+    char        *string;
 
     PrintfQueue next;
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
     if (queue) {queue->next = next; queue = next;}
     else       {queuebase   = queue = next;}
     queuelength++;
+    string = next->string;
+    while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vsprintf(next->string,format,(char *)Argp);
-#else
-    vsprintf(next->string,format,Argp);
-#endif
+    ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-ascii->tab,format,Argp);CHKERRQ(ierr);
     va_end(Argp);
-    ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
   }
   PetscFunctionReturn(0);
 }
@@ -716,7 +712,6 @@ int PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],..
     }
     va_end(Argp);
   } else { /* other processors add to local queue */
-    int         len;
     char        *string;
     va_list     Argp;
     PrintfQueue next;
@@ -728,14 +723,8 @@ int PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],..
     string = next->string;
     while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vsprintf(string,format,(char *)Argp);
-#else
-    vsprintf(string,format,Argp);
-#endif
+    ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-vascii->tab,format,(char *)Argp);
     va_end(Argp);
-    ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
   }
   PetscFunctionReturn(0);
 }

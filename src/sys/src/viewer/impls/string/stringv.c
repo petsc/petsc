@@ -59,16 +59,10 @@ int PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
   if (!vstr->string) SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerStringSetString() before using");
 
   va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-  vsprintf(tmp,format,(char *)Argp);
-#else
-  vsprintf(tmp,format,Argp);
-#endif
+  ierr = PetscVSNPrintf(tmp,4096,format,Argp);CHKERRQ(ierr);
   va_end(Argp);
 
   ierr = PetscStrlen(tmp,&shift);CHKERRQ(ierr);
-  if (shift > 4096) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"String too long");
-  
   if (shift >= vstr->maxlen - vstr->curlen - 1) shift = vstr->maxlen - vstr->curlen - 1;
   ierr = PetscStrncpy(vstr->head,tmp,shift);CHKERRQ(ierr);
 

@@ -6,6 +6,21 @@
    If petsc_history is on, then all Petsc*Printf() results are saved
    if the appropriate (usually .petschistory) file.
 */
+#undef __FUNCT__  
+#define __FUNCT__ "PetscVSNPrintf"
+/* 
+   No error handling because may be called by error handler
+*/
+int PetscVSNPrintf(char *str,size_t len,const char *format,va_list Argp)
+{
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
+  vsprintf(str,format,(char *)Argp);
+#else
+  vsprintf(str,format,Argp);
+#endif
+  return 0;
+}
+
 extern FILE *petsc_history;
 
 /* ----------------------------------------------------------------------- */
@@ -68,7 +83,6 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     }
     va_end(Argp);
   } else { /* other processors add to local queue */
-    int         len;
     va_list     Argp;
     PrintfQueue next;
 
@@ -77,14 +91,8 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vsprintf(next->string,format,(char *)Argp);
-#else
-    vsprintf(next->string,format,Argp);
-#endif
+    ierr = PetscVSNPrintf(next->string,QUEUESTRINGSIZE,format,Argp);CHKERRQ(ierr);
     va_end(Argp);
-    ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Formatted string longer than %d bytes",QUEUESTRINGSIZE);
   }
     
   PetscFunctionReturn(0);
@@ -146,7 +154,6 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
     }
     va_end(Argp);
   } else { /* other processors add to local queue */
-    int         len;
     va_list     Argp;
     PrintfQueue next;
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
@@ -154,16 +161,9 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vsprintf(next->string,format,(char *)Argp);
-#else
-    vsprintf(next->string,format,Argp);
-#endif
+    ierr = PetscVSNPrintf(next->string,QUEUESTRINGSIZE,format,Argp);CHKERRQ(ierr);
     va_end(Argp);
-    ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
   }
-    
   PetscFunctionReturn(0);
 }
 

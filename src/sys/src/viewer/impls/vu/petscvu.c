@@ -290,7 +290,6 @@ int PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
   va_list        Argp;
   PrintfQueue    next;
-  int            len;
   int            ierr;
 
   PetscFunctionBegin;
@@ -305,14 +304,8 @@ int PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
   vu->queueLength++;
 
   va_start(Argp, format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-  vsprintf(next->string, format, (char *) Argp);
-#else
-  vsprintf(next->string, format, Argp);
-#endif
+  ierr = PetscVSNPrintf(next->string, QUEUESTRINGSIZE,format, Argp);CHKERRQ(ierr);
   va_end(Argp);
-  ierr = PetscStrlen(next->string, &len);CHKERRQ(ierr);
-  if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Formatted string longer than %d bytes", QUEUESTRINGSIZE);
   PetscFunctionReturn(0);
 }
 

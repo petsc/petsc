@@ -276,11 +276,7 @@ int PetscError(int line,const char *func,const char* file,const char *dir,int n,
   /* Compose the message evaluating the print format */
   if (mess) {
     va_start(Argp,mess);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vsprintf(buf,mess,(char *)Argp);
-#else
-    vsprintf(buf,mess,Argp);
-#endif
+    PetscVSNPrintf(buf,2048,mess,Argp);
     va_end(Argp);
     lbuf = buf;
     if (p == 1) {
