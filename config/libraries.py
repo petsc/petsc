@@ -96,7 +96,8 @@ class Configure(config.base.Configure):
 
   def checkMath(self):
     '''Check for sin() in libm, the math library'''
-    self.check('m', 'sin', prototype = 'double sin(double);', call = 'sin(1.0);\n')
+    if not self.check('','sin', prototype = 'double sin(double);', call = 'sin(1.0);\n'):
+      self.check('m', 'sin', prototype = 'double sin(double);', call = 'sin(1.0);\n')
     return
 
   def configure(self):
