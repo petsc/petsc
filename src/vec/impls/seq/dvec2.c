@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.29 1996/05/08 01:02:35 balay Exp balay $ */
+/* $Id: dvec2.c,v 1.30 1996/05/08 14:38:39 balay Exp balay $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -218,7 +218,7 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
     z   += 4;
     i   -= 4;
   }
-  PLogFlops(nv*(2*x->n-1));
+  PLogFlops(nv*(2*xv->n-1));
   return 0;
 }
     
