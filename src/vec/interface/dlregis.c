@@ -1,6 +1,7 @@
 /*$Id: dlregis.c,v 1.19 2001/03/23 23:24:34 balay Exp $*/
 
 #include "petscvec.h"
+#include "petscpf.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecInitializePackage"
@@ -32,9 +33,11 @@ int VecInitializePackage(char *path) {
   ierr = PetscLogClassRegister(&MAP_COOKIE,         "Map");                                               CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&VEC_COOKIE,         "Vec");                                               CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&VEC_SCATTER_COOKIE, "Vec Scatter");                                       CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&PF_COOKIE,          "PointFunction");                                     CHKERRQ(ierr);
   /* Register Constructors and Serializers */
   ierr = PetscMapRegisterAll(path);                                                                       CHKERRQ(ierr);
   ierr = VecRegisterAll(path);                                                                            CHKERRQ(ierr);
+  ierr = PFRegisterAll(path);                                                                             CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister(&VEC_View,                "VecView",          VEC_COOKIE);                 CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_Max,                 "VecMax",           VEC_COOKIE);                 CHKERRQ(ierr);
