@@ -9,20 +9,21 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.libraries    = libraries
-    self.compilers    = self.framework.require('config.compilers', self)
-    self.headers      = self.framework.require('config.headers',   self)
+    self.setCompilers = self.framework.require('config.setCompilers', self)
+    self.compilers    = self.framework.require('config.compilers',    self)
+    self.headers      = self.framework.require('config.headers',      self)
     self.headers.headers.append('dlfcn.h')
     self.libraries.append(('dl', 'dlopen'))
     return
 
   def getLibArgument(self, library):
-    '''Return the proper link line argument for the given library
-       - If the path ends in ".lib" return it unchanged
+    '''Return the proper link line argument for the given filename library
        - If the path is empty, return it unchanged
+       - If the path ends in ".lib" return it unchanged
        - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name>
        - If the filename is "lib"<name>, return -l<name>
        - If the path is absolute, return it unchanged
-       - Otherwise return -l<filename>'''
+       - Otherwise return -l<library>'''
     if not library:
       return ''
     if len(library) > 3 and library[-4:] == '.lib':
@@ -30,7 +31,10 @@ class Configure(config.base.Configure):
     if os.path.basename(library).startswith('lib'):
       name = self.getLibName(library)
       if os.path.isabs(library):
-        return '-L'+os.path.dirname(library)+' -l'+name
+        if self.setCompilers.slpath:
+          return self.setCompilers.slpath+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
+        else:
+          return '-L'+os.path.dirname(library)+' -l'+name
       else:
         return '-l'+name
     if os.path.isabs(library):
