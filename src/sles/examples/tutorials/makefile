@@ -449,13 +449,13 @@ runex21f:
 	   else echo "Possible problem with ex21f_1, diffs above"; fi; \
 	   ${RM} -f ex21f_1.tmp
 runex22:
-	-@${MPIRUN} -np 1 ex22 -pc_mg_type full -dmmg_ksp_monitor > ex22_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ex22 -pc_mg_type full -dmmg_ksp_monitor -mat_type seqaij > ex22_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
 
 runex22f:
-	-@${MPIRUN} -np 1 ex22f -pc_mg_type full -dmmg_ksp_monitor > ex22_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ex22f -pc_mg_type full -dmmg_ksp_monitor -mat_type seqaij > ex22_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo "Possible problem with ex22f_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
@@ -473,7 +473,7 @@ runex23_2:
 	   ${RM} -f ex23_2.tmp
 
 runex25:
-	-@${MPIRUN} -np 1 ex25 > ex25_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ex25 -mat_type seqaij > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo "Possible problem with ex25_1, diffs above"; fi; \
 	   ${RM} -f ex25_1.tmp
