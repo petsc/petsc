@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.53 1998/10/19 22:18:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.54 1998/12/03 04:02:25 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -106,7 +106,7 @@ static int MatLoadPrintHelp_Private(Mat A)
    MatLoad() automatically loads into the options database any options
    given in the file filename.info where filename is the name of the file
    that was passed to the ViewerBinaryOpen(). The options in the info
-   file will be ignored if you use the -mat_ignore_info option.
+   file will be ignored if you use the -matload_ignore_info option.
 
    In parallel, each processor can load a subset of rows (or the
    entire matrix).  This routine is especially useful when a large
