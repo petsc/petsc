@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.49 1997/10/17 19:46:47 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.50 1997/10/30 16:53:02 curfman Exp curfman $";
 #endif
 
 /*
@@ -327,7 +327,6 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
     gamma1 = 1.4;
     gm1    = gamma1 - 1.0;
 
-    /* These dimensions should work for the 98x18x18 grid */
     if (app->problem == 1) {
       kstart = 0;
       kend   = app->ktip + 3;
@@ -344,11 +343,11 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
       jend   = app->nj - 10;
     } else if (app->problem == 3) {
       kstart = 0;
-      kend   = app->ktip + 5;
-      istart = app->itl - 5;
-      iend   = app->itu + 5;
+      kend   = app->ktip + 8;
+      istart = app->itl - 10;
+      iend   = app->itu + 10;
       jstart = 0;
-      jend   = app->nj - 10;
+      jend   = app->nj - 15;
     } else SETERRQ(1,0,"Unsupported problem");
 
     fprintf(fp,"istart=%d, iend=%d, jstart=%d, jend=%d, kstart=%d, kend=%d\n",
@@ -382,8 +381,16 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
     }
     fprintf(fp,"\nxmin=%g, xmax=%g, ymin=%g, ymax=%g, zmin=%g, zmax=%g\n",
                 xmin, xmax, ymin, ymax, zmin, zmax);
+    fclose(fp); 
+    if (app->size != 1) {
+      ierr = VecRestoreArray(P_uni,&pp); CHKERRQ(ierr);
+      ierr = VecRestoreArray(X_uni,&xx); CHKERRQ(ierr);
+    } 
   }
-  fclose(fp); 
+  if (app->size != 1) {
+    ierr = VecDestroy(P_uni); CHKERRQ(ierr);
+    ierr = VecDestroy(X_uni); CHKERRQ(ierr);
+  }
   return 0;
 }
 /* --------------------------------------------------------------- */
