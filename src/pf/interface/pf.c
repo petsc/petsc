@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.4 2000/02/01 19:01:02 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.5 2000/02/02 21:21:16 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -60,11 +60,17 @@ int PFSet(PF pf,int(*apply)(void*,int,Scalar*,Scalar*),int(*applyvec)(void*,Vec,
 @*/
 int PFDestroy(PF pf)
 {
-  int ierr = 0;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE);
   if (--pf->refct > 0) PetscFunctionReturn(0);
+
+  ierr = OptionsHasName(pf->prefix,"-pf_view",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PFView(pf,VIEWER_STDOUT_(pf->comm));CHKERRQ(ierr);
+  }
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(pf);CHKERRQ(ierr);
@@ -343,6 +349,8 @@ int PFRegister(char *sname,char *path,char *name,int (*function)(PF,void*))
   PetscFunctionReturn(0);
 }
 
+
+
 #undef __FUNC__  
 #define __FUNC__ "PFGetType"
 /*@C
@@ -449,7 +457,7 @@ int PFSetType(PF pf,PFType type,void *ctx)
    To see all options, run your program with the -help option
    or consult the users manual.
 
-   Level: developerintermediate
+   Level: intermediate
 
 .keywords: PF, set, from, options, database
 
@@ -457,7 +465,7 @@ int PFSetType(PF pf,PFType type,void *ctx)
 @*/
 int PFSetFromOptions(PF pf)
 {
-  int        ierr,i;
+  int        ierr;
   char       type[256];
   PetscTruth flg;
 
@@ -472,8 +480,51 @@ int PFSetFromOptions(PF pf)
   if (pf->ops->setfromoptions) {
     ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
   }
-
+  
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PFPrintHelp(pf);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PFPrintHelp"
+/*@
+   PFPrintHelp - Prints all the options for the PF component.
 
+   Collective on PF
+
+   Input Parameter:
+.  pf - the mathematical function context
+
+   Options Database Keys:
++  -help - Prints PF options
+-  -h - Prints PF options
+
+   Level: developer
+
+.keywords: PF, help
+
+.seealso: PFSetFromOptions()
+
+@*/
+int PFPrintHelp(PF pf)
+{
+  char p[64]; 
+  int  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pf,PF_COOKIE);
+  ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
+  if (pf->prefix) {ierr = PetscStrcat(p,pf->prefix);CHKERRQ(ierr);}
+  if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
+  ierr = (*PetscHelpPrintf)(pf->comm,"PF options --------------------------------------------------\n");CHKERRQ(ierr);
+  ierr = FListPrintTypes(pf->comm,stdout,pf->prefix,"pf_type",PFList);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pf->comm,"Run program with -help %spf_type <type> for help on ",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pf->comm,"a particular function\n");CHKERRQ(ierr);
+  if (pf->ops->printhelp) {
+    ierr = (*pf->ops->printhelp)(pf,p);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
