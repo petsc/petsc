@@ -1,3 +1,4 @@
+petsc/bmake/common_win32
 petsc/bmake/win32
 petsc/bmake/win32_borland_old
 petsc/bmake/linux_gcc_pgf90_chiba
