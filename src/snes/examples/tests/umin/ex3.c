@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.31 1996/03/25 23:42:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.32 1996/03/26 04:48:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&flg); CHKERRA(ierr);
   if (flg) {
     ierr = MatCreateShell(MPI_COMM_WORLD,user.ndim,user.ndim,(void*)&user,&H); CHKERRA(ierr);
-    ierr = MatShellSetOperation(H,MAT_MULT,HessianProductMat); CHKERRA(ierr);
+    ierr = MatShellSetOperation(H,MAT_MULT,(void*)HessianProductMat); CHKERRA(ierr);
     ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); CHKERRA(ierr);
 
     /* Set null preconditioner.  Alternatively, set user-provided 

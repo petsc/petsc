@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.30 1996/03/25 23:41:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.31 1996/03/26 04:48:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -110,9 +110,11 @@ int main(int argc,char **argv)
   if (flg) {
     ierr = MatCreateShell(MPI_COMM_SELF,user.ndim,user.ndim,(void*)&user,&H);CHKERRA(ierr);
     if (user.problem == 1) {
-      ierr = MatShellSetOperation(H,MAT_MULT,HessianProductMat1);CHKERRA(ierr);
+      ierr = MatShellSetOperation(H,MAT_MULT,(void *)HessianProductMat1);
+      CHKERRA(ierr);
     } else if (user.problem == 2) {
-      ierr = MatShellSetOperation(H,MAT_MULT,HessianProductMat2);CHKERRA(ierr);
+      ierr = MatShellSetOperation(H,MAT_MULT,(void*)HessianProductMat2);
+      CHKERRA(ierr);
     }
     ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); CHKERRA(ierr);
 
