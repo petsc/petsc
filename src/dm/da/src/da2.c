@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.97 1998/04/13 17:58:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.98 1998/04/27 15:58:33 curfman Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -142,7 +142,8 @@ int DAView_2d(DA da,Viewer viewer)
 .keywords: distributed array, create, two-dimensional
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d(), DAGlobalToLocalBegin(),
-          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd()
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(),
+          DAGetInfo()
 
 @*/
 int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.10 1998/04/16 03:51:52 curfman Exp curfman $";
+static char vcid[] = "$Id: ex14.c,v 1.11 1998/04/16 04:02:44 curfman Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
@@ -242,7 +242,7 @@ int main( int argc, char **argv )
        Compute updated iterate
      */
     ierr = VecNorm(Y,NORM_2,&ynorm); CHKERRA(ierr);       /* ynorm = || Y || */
-    ierr = VecAYPX(&mone,X,Y); CHKERRA(ierr);             /* Y <- Y - X      */
+    ierr = VecAYPX(&mone,X,Y); CHKERRA(ierr);             /* Y <- X - Y      */
     ierr = VecCopy(Y,X); CHKERRA(ierr);                   /* X <- Y          */
     ierr = VecNorm(X,NORM_2,&xnorm); CHKERRA(ierr);       /* xnorm = || X || */
     if (!no_output) PetscPrintf(comm,"   linear solve iterations = %d, xnorm=%g, ynorm=%g\n",

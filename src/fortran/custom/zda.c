@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.20 1998/03/30 22:21:56 balay Exp balay $";
+static char vcid[] = "$Id: zda.c,v 1.21 1998/04/21 18:23:47 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -121,10 +121,10 @@ void dacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
   *(PetscFortranAddr*) inra = PetscFromPointer(da);
 }
 
-void dagetinfo_(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,
+void dagetinfo_(DA *da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,
                 DAPeriodicType *wrap, int *__ierr )
 {
-  *__ierr = DAGetInfo((DA)PetscToPointer(da),dim,M,N,P,m,n,p,w,s,wrap);
+  *__ierr = DAGetInfo(*da,dim,M,N,P,m,n,p,w,s,wrap);
 }
 
 #if defined(__cplusplus)

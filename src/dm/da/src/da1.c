@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.77 1998/04/13 17:58:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: da1.c,v 1.78 1998/04/27 15:58:33 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -122,7 +122,8 @@ int DAView_1d(DA da,Viewer viewer)
 .keywords: distributed array, create, one-dimensional
 
 .seealso: DADestroy(), DAView(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
-          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd()
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(),
+          DAGetInfo()
 
 @*/
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra)
