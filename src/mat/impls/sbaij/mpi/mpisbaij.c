@@ -614,13 +614,13 @@ int MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
       ierr =  MatNorm(baij->B,type,lnorm2);CHKERRQ(ierr);
       *lnorm2 = (*lnorm2)*(*lnorm2); lnorm2--;             /* squar power of norm(B) */
       /*
-      ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], lnorm2=%g, %g\n",rank,lnorm2[0],lnorm2[1]);
+      ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
+      PetscSynchronizedPrintf(mat->comm,"[%d], lnorm2=%g, %g\n",rank,lnorm2[0],lnorm2[1]);
       */
       ierr = MPI_Allreduce(lnorm2,&sum,2,MPIU_REAL,MPI_SUM,mat->comm);CHKERRQ(ierr);
       /*
-      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], sum=%g, %g\n",rank,sum[0],sum[1]);
-      PetscSynchronizedFlush(PETSC_COMM_WORLD); */
+      PetscSynchronizedPrintf(mat->comm,"[%d], sum=%g, %g\n",rank,sum[0],sum[1]);
+      PetscSynchronizedFlush(mat->comm); */
       
       *norm = sqrt(sum[0] + 2*sum[1]);
       ierr = PetscFree(lnorm2);CHKERRQ(ierr);
@@ -698,8 +698,8 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
     while (1) {
       ierr = MatStashScatterGetMesg_Private(&mat->stash,&n,&row,&col,&val,&flg);CHKERRQ(ierr);
       /*
-      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]: in AssemblyEnd, stash, flg=%d\n",rank,flg);
-      PetscSynchronizedFlush(PETSC_COMM_WORLD); 
+      PetscSynchronizedPrintf(mat->comm,"[%d]: in AssemblyEnd, stash, flg=%d\n",rank,flg);
+      PetscSynchronizedFlush(mat->comm); 
       */
       if (!flg) break;
 
@@ -971,8 +971,8 @@ int MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
  
   PetscFunctionBegin;
   /*
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD," _1comm is called ...\n");
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  PetscSynchronizedPrintf(A->comm," _1comm is called ...\n");
+  PetscSynchronizedFlush(A->comm);
   */
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
   if (nt != A->n) {
@@ -1047,8 +1047,8 @@ int MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
  
   PetscFunctionBegin;
   /*
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD," MatMultAdd is called ...\n");
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  PetscSynchronizedPrintf(A->comm," MatMultAdd is called ...\n");
+  PetscSynchronizedFlush(A->comm);
   */
   /* diagonal part */
   ierr = (*a->A->ops->multadd)(a->A,xx,yy,a->slvec1a);CHKERRQ(ierr); 
@@ -2309,8 +2309,8 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   ierr = MatGetRowMax(a->A,v);CHKERRQ(ierr); 
   ierr = VecGetArray(v,&va);CHKERRQ(ierr);  
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
 
   bs   = a->bs;
   mbs  = a->mbs;
@@ -2319,8 +2319,8 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   bi   = b->i;
   bj   = b->j;
   /*
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] M: %d, bs: %d, mbs: %d \n",rank,bs*Mbs,bs,mbs); 
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  PetscSynchronizedPrintf(A->comm,"[%d] M: %d, bs: %d, mbs: %d \n",rank,bs*Mbs,bs,mbs); 
+  PetscSynchronizedFlush(A->comm);
   */
 
   /* find ownerships */
@@ -2367,10 +2367,10 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
     for (dest=rank+1; dest<size; dest++){
       svalues = work + rowners_bs[dest];
       count   = rowners_bs[dest+1]-rowners_bs[dest];
-      ierr    = MPI_Send(svalues,count,MPIU_REAL,dest,rank,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr    = MPI_Send(svalues,count,MPIU_REAL,dest,rank,A->comm);CHKERRQ(ierr);
       /*
-      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] sends %d values to [%d]: %g, %g, %g, %g\n",rank,count,dest,svalues[0],svalues[1],svalues[2],svalues[3]); 
-      PetscSynchronizedFlush(PETSC_COMM_WORLD);
+      PetscSynchronizedPrintf(A->comm,"[%d] sends %d values to [%d]: %g, %g, %g, %g\n",rank,count,dest,svalues[0],svalues[1],svalues[2],svalues[3]); 
+      PetscSynchronizedFlush(A->comm);
       */
     }
   }
@@ -2380,14 +2380,14 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
     rvalues = work;
     count   = rowners_bs[rank+1]-rowners_bs[rank];
     for (source=0; source<rank; source++){     
-      ierr = MPI_Recv(rvalues,count,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&stat);CHKERRQ(ierr);
+      ierr = MPI_Recv(rvalues,count,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,A->comm,&stat);CHKERRQ(ierr);
       /* process values */     
       for (i=0; i<count; i++){
         if (PetscRealPart(va[i]) < rvalues[i]) va[i] = rvalues[i];
       }   
       /*
-      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] received %d values from [%d]: %g, %g, %g, %g \n",rank,count,stat.MPI_SOURCE,rvalues[0],rvalues[1],rvalues[2],rvalues[3]);  
-      PetscSynchronizedFlush(PETSC_COMM_WORLD);
+      PetscSynchronizedPrintf(A->comm,"[%d] received %d values from [%d]: %g, %g, %g, %g \n",rank,count,stat.MPI_SOURCE,rvalues[0],rvalues[1],rvalues[2],rvalues[3]);  
+      PetscSynchronizedFlush(A->comm);
       */
     } 
   }
