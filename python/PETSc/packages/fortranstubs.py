@@ -79,8 +79,20 @@ class Configure(config.base.Configure):
       self.framework.getExecutable('bfort', getFullPath = 1)
 
       # try to download bfort if not found
-      if not hasattr(self.framework, 'bfort') and self.framework.argDB['with-bfort-if-needed']:
-        self.downLoadbfort()
+      if not hasattr(self.framework, 'bfort'):
+        if self.framework.argDB['with-bfort-if-needed']:
+          self.downLoadbfort()
+        elif not hasattr(self.framework, 'bfort'):
+          # check if the SOWING directory exists and has bfort
+          sowingDir = None
+          for dir in os.listdir(self.framework.argDB['PETSC_DIR']):
+            if dir.startswith('sowing') and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'], dir)):
+              sowingDir = dir
+          if sowingDir:
+            bfort = os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.arch,'bin','bfort')
+            if os.path.isfile(bfort):
+              self.framework.log.write('Found downloaded Sowing installed, will use this')
+              self.framework.addSubstitution('BFORT', bfort)
         
       if hasattr(self.framework, 'bfort'):
         self.framework.addSubstitution('BFORT', self.framework.bfort)
@@ -89,17 +101,6 @@ class Configure(config.base.Configure):
         self.framework.log.write(message)
         raise RuntimeError('You have a Fortran compiler but the PETSc Fortran stubs are not built and cannot be built.\n'+message+'or run with with --with-fc=0 to turn off the Fortran compiler')
     else:
-      # check if the SOWING directory exists and has bfort
-      sowingDir = None
-      for dir in os.listdir(self.framework.argDB['PETSC_DIR']):
-        if dir.startswith('sowing') and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'], dir)):
-          sowingDir = dir
-      if sowingDir:
-        bfort = os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.arch,'bin','bfort')
-        if os.path.isfile(bfort):
-          self.framework.log.write('Found downloaded Sowing installed, will use this')
-          self.framework.addSubstitution('BFORT', bfort)
-    
       self.framework.log.write('Not BitKeeper clone of PETSc, assuming Fortran stubs already built')
     return
 
