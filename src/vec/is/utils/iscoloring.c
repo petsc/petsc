@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.52 2000/01/11 21:00:03 bsmith Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.53 2000/02/02 20:08:38 bsmith Exp bsmith $*/
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
@@ -55,9 +55,8 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidPointer(iscoloring);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(iscoloring->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
-  PetscCheckSameComm(iscoloring,viewer);
 
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
