@@ -1,22 +1,27 @@
 #! /bin/csh
-# $Id: buildconfigtest,v 1.3 2001/02/09 21:07:24 balay Exp balay $ 
+# $Id: buildconfigtest,v 1.4 2001/02/09 21:07:30 balay Exp bsmith $ 
 # 
 ## Compiles and tests PETSc using configure in our nightly builds.
 
 source /home/bsmith/petsc/bmake/$1/buildconfigtest
 
-rsh $MACH -n /home/bsmith/petsc/maint/buildlinks $TMP >& /dev/null
-rsh $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
+if (${MACH} != `hostname`) then
+  rsh ${MACH} $TMP/maint/buildconfigtest $1
+else 
+  cd $TMP
 
-rsh $MACH -n "cd $TMP/maint;rm -f buildconfig_$ARCH.$MACH.log"
-rsh $MACH -n "cd $TMP/maint;touch buildconfig_$ARCH.$MACH.log"
-rsh $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH `date` ' >> maint/buildconfig_$ARCH.$MACH.log"
-rsh $MACH -n "cd $TMP;echo 'bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI $WITH_CC $WITH_FC $WITH_CXX' >>& maint/buildconfig_$ARCH.$MACH.log"
-rsh $MACH -n "cd $TMP;bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI $WITH_CC $WITH_FC $WITH_CXX >>& maint/buildconfig_$ARCH.$MACH.log"
-rsh $MACH -n "cd $TMP;echo '===========================================================================' >>& maint/buildconfig_$ARCH.$MACH.log"
-rsh $MACH -n "cd $TMP;cat config.log >>& maint/buildconfig_$ARCH.$MACH.log"
+# /home/bsmith/petsc/maint/buildlinks $TMP >& /dev/null
+  echo Buildconfigtest on $MACH $ARCH `date`                                          > buildconfig.log
+  echo bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI $WITH_CC $WITH_FC $WITH_CXX   >>& buildconfig.log
+  echo '===========================================================================' >>& buildconfig.log
+  bin/configure $WITH_BLAS $WITH_LAPACK $WITH_MPI $WITH_CC $WITH_FC $WITH_CXX        >>& buildconfig.log
+  echo '===========================================================================' >>& buildconfig.log
+  cat config.log                                                                     >>& buildconfig.log
+  /bin/rm -f config.log /home/bsmith/petsc/maint/nightlylogs/buildconfig_$ARCH.$MACH.log
+#  mv buildconfig.log /home/bsmith/petsc/maint/nightlylogs
+#  chmod g+rw /home/bsmith/petsc/maint/nightlylogs/buildconfig_$ARCH.$MACH.log
 
-rsh $MACH -n "cd $TMP;/bin/cp maint/buildconfig_$ARCH.$MACH.log /home/bsmith/petsc/maint/nightlylogs;chmod g+rw /home/bsmith/petsc/maint/nightlylogs/buildconfig_$ARCH.$MACH.log"
+#  /bin/rm -f lib/lib*/${ARCH}/*" >& /dev/null
 
-
+endif
 
