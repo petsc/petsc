@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.106 2000/05/04 14:04:55 balay Exp bsmith $ */
+/* $Id: filev.c,v 1.107 2000/05/10 16:38:42 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -323,7 +323,7 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
 #endif
     va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then 256 bytes");
+    if (len > QUEUESTRINGSIZE) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
   }
   PetscFunctionReturn(0);
 }
@@ -501,7 +501,7 @@ int ViewerRestoreSingleton_ASCII(Viewer viewer,Viewer *outviewer)
   vascii->fd                 = stdout;
   (*outviewer)->ops->destroy = ViewerDestroy_ASCII;
   ierr                       = ViewerDestroy(*outviewer);CHKERRQ(ierr);
-
+  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -579,6 +579,7 @@ int ViewerASCIISynchronizedPrintf(Viewer viewer,const char format[],...)
   comm = viewer->comm;
   fp   = vascii->fd;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (vascii->bviewer) {ierr = MPI_Comm_rank(vascii->bviewer->comm,&rank);CHKERRQ(ierr);}
   
   /* First processor prints immediately to fp */
   if (!rank) {
