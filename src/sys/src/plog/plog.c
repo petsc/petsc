@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.72 1996/02/22 23:44:20 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.73 1996/02/23 14:58:12 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -446,7 +446,7 @@ int PLogAllBegin()
   PetscTime(BaseTime);
   PLogStagePush(0);
 #if defined(HAVE_MPE)
-  MPE_Init_Log();
+  MPE_Init_log();
 #endif
   return 0;
 }
@@ -492,7 +492,7 @@ int PLogDestroy()
   nevents          = 0;
   ObjectsDestroyed = 0;
 #if defined(HAVE_MPE)
-  MPE_Finish_Log("upshot.log");
+  MPE_Finish_log("upshot.log");
 #endif
   return 0;
 }
@@ -525,7 +525,7 @@ int PLogBegin()
   PetscTime(BaseTime);
   PLogStagePush(0);
 #if defined(HAVE_MPE)
-  MPE_Init_Log();
+  MPE_Init_log();
 #endif
   return 0;
 }
