@@ -1,4 +1,4 @@
-import fileset
+import build.fileset
 import build.transform
 
 import os
@@ -10,22 +10,19 @@ class FileChanged (build.transform.Transform):
     self.sourceDB      = sourceDB
     self.inputTag      = inputTag
     if isinstance(self.inputTag, str): self.inputTag = [self.inputTag]
-    self.changed       = fileset.FileSet(tag = changedTag)
-    self.unchanged     = fileset.FileSet(tag = unchangedTag)
+    self.changed       = build.fileset.FileSet(tag = changedTag)
+    self.unchanged     = build.fileset.FileSet(tag = unchangedTag)
     self.output.children.append(self.changed)
     self.output.children.append(self.unchanged)
     return
 
   def compare(self, source, sourceEntry):
     '''Return True if the checksum for "source" has changed since "sourceEntry" was recorded'''
-    if sourceEntry[4]:
-      self.debugPrint('Update flag indicates '+source+' did not change', 3, 'sourceDB')
-    else:
-      self.debugPrint('Checking for '+source+' in the source database', 3, 'sourceDB')
-      checksum = self.sourceDB.getChecksum(source)
-      if not sourceEntry[0] == checksum:
-        self.debugPrint(source+' has changed relative to the source database: '+str(sourceEntry[0])+' <> '+str(checksum), 3, 'sourceDB')
-        return 1
+    self.debugPrint('Checking for '+source+' in the source database', 3, 'sourceDB')
+    checksum = self.sourceDB.getChecksum(source)
+    if not sourceEntry[0] == checksum:
+      self.debugPrint(source+' has changed relative to the source database: '+str(sourceEntry[0])+' <> '+str(checksum), 3, 'sourceDB')
+      return 1
     return 0
 
   def hasChanged(self, source):

@@ -97,13 +97,8 @@ class SourceDB (dict, base.Base):
     return dict.__setitem__(self, self.getRelativePath(key), self.checkValue(value))
 
   def __delitem__(self, key):
-    '''Checks for the key locally, and if not found consults the parent. Deletes the Arg completely.'''
-    if dict.has_key(self, key):
-      dict.__delitem__(self, key)
-      self.save()
-    elif not self.parent is None:
-      self.send(key)
-    return
+    '''Converts the key to a relative source file path using the root'''
+    return dict.__delitem__(self, self.getRelativePath(key))
 
   def __contains__(self, key):
     '''Converts the key to a relative source file path using the root'''
