@@ -1,20 +1,19 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.2 1995/08/29 20:32:10 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.3 1995/08/29 21:52:28 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
 ex2:\n\
 This program demonstrates use of the SNES package to solve an unconstrained\n\
-minimization problem on a single processor.  This example is a translation\n\
-of the Minimal Surface Area problem (dmsa) from the MINPACK-2 test suite.
-The command line options are:\n\
+minimization problem on a single processor.  This example is based on the\n\
+Minimal Surface Area problem (dmsa) from the MINPACK-2 test suite.  The\n\
+command line options are:\n\
   -mx xg, where xg = number of grid points in the 1st coordinate direction\n\
   -my yg, where yg = number of grid points in the 2nd coordinate direction\n";
 
 #include "petsc.h"
 #include "snes.h"
 #include <string.h>
-#include "viewer.h"
 #include <math.h>
 
 /* User-defined application context */
@@ -31,6 +30,7 @@ The command line options are:\n\
 typedef enum {FunctionEval=1, GradientEval=2} FctGradFlag;
 
 int FormHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+int MatrixFreeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int FormMinimizationFunction(SNES,Vec,Scalar*,void*);
 int FormGradient(SNES,Vec,Vec,void*);
 int FormInitialGuess(SNES,Vec,void*);
@@ -49,6 +49,8 @@ int main(int argc,char **argv)
   int        mx=10;   /* discretization of problem in x-direction */
   int        my=10;   /* discretization of problem in y-direction */
   double     one = 1.0;
+  SLES       sles;
+  PC         pc;
 
   PetscInitialize(&argc,&argv,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
@@ -62,17 +64,19 @@ int main(int argc,char **argv)
   user.hx = one/(double)(mx+1);
   user.hy = one/(double)(my+1);
   user.work = (Scalar*)PETSCMALLOC(2*(mx+my+4)*sizeof(Scalar)); CHKPTRQ(user.work);
+
+  /* Allocate vectors */
   ierr = VecCreate(MPI_COMM_SELF,user.ndim,&user.y); CHKERRA(ierr);
-  ierr = VecDuplicate(x,&user.s); CHKERRA(ierr);
+  ierr = VecDuplicate(user.y,&user.s); CHKERRA(ierr);
+  ierr = VecDuplicate(user.y,&g); CHKERRA(ierr);
+  ierr = VecDuplicate(user.y,&x); CHKERRA(ierr);
 
   /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_SELF,SNES_UNCONSTRAINED_MINIMIZATION,&snes);
          CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
-  /* Set up data structures, set various routines */
-  ierr = VecDuplicate(x,&g); CHKERRA(ierr);
-  ierr = VecDuplicate(x,&x); CHKERRA(ierr);
+  /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess,(void *)&user); CHKERRA(ierr);
   ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,
          (void *)&user); CHKERRA(ierr);
@@ -82,8 +86,15 @@ int main(int argc,char **argv)
   if (OptionsHasName(0,"-snes_mf")) {
     ierr = MatShellCreate(MPI_COMM_SELF,user.ndim,user.ndim,(void*)&user,&H);
            CHKERRA(ierr);
-    ierr = MatShellSetMult(H,HessianProduct); CHKERRQ(ierr);
-    ierr = SNESSetHessian(snes,H,H,0,(void *)&user); CHKERRA(ierr);
+    ierr = MatShellSetMult(H,HessianProduct); CHKERRA(ierr);
+    ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); 
+           CHKERRA(ierr);
+
+    /* Set null preconditioner.  Alternatively, set user-provided 
+       preconditioner or explicitly form preconditioning matrix */
+    ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
+    ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+    ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
   } else {
     ierr = MatCreate(MPI_COMM_SELF,user.ndim,user.ndim,&H); CHKERRA(ierr);
     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user); CHKERRA(ierr);
@@ -114,37 +125,33 @@ int main(int argc,char **argv)
 /*
     Form initial guess for nonlinear solver
  */
-int FormInitialGuess(SNES snes,Vec x,void *ptr)
+int FormInitialGuess(SNES snes,Vec xvec,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
-  int    ierr, i, j, *k, nx = user->mx, ny = user->my;
-  double one = 1.0, p5 = 0.5, alphaj, betai, xline, yline;
+  int    ierr, i, j, k, nx = user->mx, ny = user->my;
+  double one = 1.0, p5 = 0.5, alphaj, betai;
   double hx = user->hx, hy = user->hy;
-  Scalar *bottom, *top, *left, *right, *val;
+  Scalar *bottom, *top, *left, *right, *x, xline, yline;
 
   bottom = user->work;
   top    = &user->work[nx+2];
   left   = &user->work[2*nx+4];
   right  = &user->work[2*nx+ny+6];
-  k      = (int*)PETSCMALLOC(nx*sizeof(int)); CHKPTRQ(k);
-  val    = (Scalar*)PETSCMALLOC(nx*sizeof(Scalar)); CHKPTRQ(val);
 
   /* Compute the boundary values once only */
   ierr = BoundaryValues(user); CHKERRQ(ierr);
+  ierr = VecGetArray(xvec,&x); CHKERRQ(ierr);
   for (j=1; j<=ny; j++) {
     alphaj = j*hy;
     for (i=1; i<=nx; i++) {
       betai = i*hx;
       yline = alphaj*top[i] + (one-alphaj)*bottom[i];
       xline = betai*right[j] + (one-betai)*left[j];
-      k[i-1] = nx*(j-1) + i-1;
-      val[i-1] = (yline+xline)*p5;
+      k = nx*(j-1) + i-1;
+      x[k] = (yline+xline)*p5;
     }
-    ierr = VecSetValues(x,nx,k,val,INSERTVALUES); CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(x); CHKERRQ(ierr);
-  PETSCFREE(k); PETSCFREE(val);
-  ierr = VecAssemblyEnd(x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xvec,&x); CHKERRQ(ierr);
   return 0;
 }
 /* -------------------------------------------------------------------- */
@@ -177,9 +184,9 @@ int FunctionGradient(SNES snes,Vec xvec,Scalar *f,Vec gvec,FctGradFlag fg,
 {
   int    ierr, nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
   int    ind, i, j, k;
-  double zero = 0.0, one = 1.0, p5 = 0.5, area, dvdx, dvdy, fl, fu;
-  double v, vb, vl, vr, vt, hx = user->hx, hy = user->hy;
-  Scalar *bottom, *top, *left, *right, *x, val;
+  double one = 1.0, p5 = 0.5, hx = user->hx, hy = user->hy;
+  Scalar *bottom, *top, *left, *right, *x, val, v, vb, vl, vr, vt;
+  Scalar dvdx, dvdy, fl, fu, zero = 0.0, area;
 
   bottom = user->work;
   top    = &user->work[nx+2];
@@ -301,9 +308,9 @@ int FormHessian(SNES snes,Vec xvec,Mat *H,Mat *PrecH,MatStructure *flag,
                 void *ptr)
 {
   AppCtx     *user = (AppCtx *) ptr;
-  double     gamma1, zero = 0.0, one = 1.0;
   int        i, j, ierr, ndim;
-  Scalar     *y;
+  Scalar     *y, zero = 0.0, one = 1.0;
+  double     gamma1;
   SNESMethod method;
 
   ndim = user->ndim;
@@ -337,11 +344,23 @@ int FormHessian(SNES snes,Vec xvec,Mat *H,Mat *PrecH,MatStructure *flag,
     SNESGetLineSearchDampingParameter(snes,&gamma1);
     printf("  gamma1 = %g\n",gamma1);
     for (i=0; i<ndim; i++) {
-      ierr = MatSetValues(*H,1,&i,1,&i,&gamma1,ADDVALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(*H,1,&i,1,&i,(Scalar*)&gamma1,ADDVALUES); CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  return 0;
+}
+/* -------------------------------------------------------------------- */
+/*
+   FormHessian - Forms Hessian matrix by computing a column at a time.
+ */
+int MatrixFreeHessian(SNES snes,Vec xvec,Mat *H,Mat *PrecH,MatStructure *flag,
+                      void *ptr)
+{
+  AppCtx     *user = (AppCtx *) ptr;
+
+  user->xvec = xvec; /* Set location of vector */
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -353,11 +372,11 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
   AppCtx *user = (AppCtx *) ptr;
   int    nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
   int    i, j, k, ierr, ind;
-  double area, dvdx, dvdxhx, dvdy, dvdyhy, dzdx, dzdxhx;
-  double one = 1.0, p5 = 0.5, zero = 0.0;
-  double dzdy, dzdyhy, fl, fl3, fu, fu3, tl, tu;
-  double v, vb, vl, vr, vt, z, zb, zl, zr, zt, hx = user->hx, hy = user->hy;
+  double one = 1.0, p5 = 0.5, hx = user->hx, hy = user->hy;
+  Scalar dzdy, dzdyhy, fl, fl3, fu, fu3, tl, tu, zero = 0.0;
+  Scalar area, v, vb, vl, vr, vt, z, zb, zl, zr, zt;
   Scalar *bottom, *top, *left, *right, *s, *x, val;
+  Scalar dvdx, dvdxhx, dvdy, dvdyhy, dzdx, dzdxhx;
 
   bottom = user->work;
   top    = &user->work[nx+2];

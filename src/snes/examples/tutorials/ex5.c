@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.22 1995/08/30 01:45:23 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.23 1995/08/30 02:56:05 curfman Exp curfman $";
 #endif
 
 static char help[] =
@@ -132,7 +132,7 @@ int main( int argc, char **argv )
 int FormInitialGuess1(SNES snes,Vec X,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
-  int     i, j, row, mx, my, ierr,xs,ys,xm,ym,Xm,Ym,Xs,Ys;
+  int     i, j, row, mx, my, ierr, xs, ys, xm, ym, Xm, Ym, Xs, Ys;
   double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
   Scalar  *x;
   Vec     localX = user->localX;
