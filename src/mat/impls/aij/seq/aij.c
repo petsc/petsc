@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.265 1998/05/13 14:17:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.266 1998/05/13 18:06:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -461,8 +461,6 @@ int MatView_SeqAIJ_Draw_Zoom(Draw draw,void *Aa)
   int         ierr, i,j, m = a->m, shift = a->indexshift,color;
   int         format;
   double      xl,yl,xr,yr,x_l,x_r,y_l,y_r,maxv = 0.0;
-  DrawButton  button;
-  PetscTruth  isnull;
   Viewer      viewer;
 
   PetscFunctionBegin; 
