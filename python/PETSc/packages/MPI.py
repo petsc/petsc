@@ -37,6 +37,8 @@ class Configure(config.base.Configure):
     help.addArgument('MPI', '-with-mpi-shared',         nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
     help.addArgument('MPI', '-with-mpi-compilers',      nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-with-mpich',              nargs.ArgBool(None, 0, 'Install MPICH to provide MPI'))
+    help.addArgument('MPI', '-with-mpich-if-needed',    nargs.ArgBool(None, 0, 'Install MPICH to provide MPI if cannot find any MPI'))
+    
     return
 
   def checkLib(self, libraries):
@@ -267,7 +269,11 @@ class Configure(config.base.Configure):
     except:
       raise RuntimeError('Error running configure on MPICH')
     
-    return libdir;
+    self.foundMPI = 1
+    self.lib      = [os.path.join(libdir, 'lib', 'libmpich.a'), os.path.join(libdir, 'lib', 'libpmpich.a')]
+    self.include  = [os.path.join(libdir, 'include')]
+    self.addDefine('HAVE_MPI_COMM_F2C', 1)
+    self.addDefine('HAVE_MPI_COMM_C2F', 1)
   
       
   def configureLibrary(self):
@@ -276,14 +282,8 @@ class Configure(config.base.Configure):
     nonsharedMPI  = []
 
     if self.framework.argDB['with-mpich']:
-      root          = self.downLoadMPICH()
-      self.foundMPI = 1
-      self.lib      = [os.path.join(root, 'lib', 'libmpich.a'), os.path.join(root, 'lib', 'libpmpich.a')]
-      self.include  = [os.path.join(root, 'include')]
+      self.downLoadMPICH()
       functionalMPI.append(('Downloaded MPICH', self.lib, self.include, '1.2'))
-
-      self.addDefine('HAVE_MPI_COMM_F2C', 1)
-      self.addDefine('HAVE_MPI_COMM_C2F', 1)
     else:
       for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
         self.framework.log.write('================================================================================\n')
@@ -311,6 +311,10 @@ class Configure(config.base.Configure):
         if not self.framework.argDB['with-alternatives']:
           break
       
+    if not self.foundMPI and self.framework.argDB['with-mpich-if-needed']:
+      self.downLoadMPICH()
+      functionalMPI.append(('Downloaded MPICH', self.lib, self.include, '1.2'))
+
     # User chooses one or take first (sort by version)
     if self.foundMPI:
       self.name, self.lib, self.include, self.version = functionalMPI[0]
