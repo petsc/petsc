@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.149 1999/02/17 17:43:23 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.150 1999/02/17 19:09:54 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -1766,6 +1766,10 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
     ierr      = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
   } else if (diag) {
     ierr = MatZeroRows(l->A,istmp,0); CHKERRQ(ierr);
+    if (!((Mat_SeqBAIJ*)l->A->data)->nonew) {
+      SETERRQ(PETSC_ERR_SUP,0,"MatZeroRows() on rectangular matrices cannot be used with \n\
+the Mat options MAT_NO_NEW_NONZERO_LOCATIONS, MAT_NEW_NONZERO_LOCATION_ERR");
+    }
     for ( i = 0; i < slen; i++ ) {
       row  = lrows[i] + rstart_bs;
       ierr = MatSetValues(A,1,&row,1,&row,diag,INSERT_VALUES);CHKERRQ(ierr);

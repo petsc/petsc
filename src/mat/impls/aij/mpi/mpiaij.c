@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.280 1999/02/15 21:54:55 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.281 1999/02/17 17:34:43 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -637,6 +637,10 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
     ierr      = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
   } else if (diag) {
     ierr = MatZeroRows(l->A,istmp,0); CHKERRQ(ierr);
+    if (!((Mat_SeqAIJ*)l->A->data)->nonew) {
+      SETERRQ(PETSC_ERR_SUP,0,"MatZeroRows() on rectangular matrices cannot be used with \n\
+the Mat options MAT_NO_NEW_NONZERO_LOCATIONS, MAT_NEW_NONZERO_LOCATION_ERR");
+    }
     for ( i = 0; i < slen; i++ ) {
       row  = lrows[i] + rstart;
       ierr = MatSetValues(A,1,&row,1,&row,diag,INSERT_VALUES);CHKERRQ(ierr);
