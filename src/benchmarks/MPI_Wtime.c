@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: MPI_Wtime.c,v 1.3 1996/03/06 17:40:32 balay Exp bsmith $";
+static char vcid[] = "$Id: MPI_Wtime.c,v 1.4 1996/03/19 21:30:13 bsmith Exp balay $";
 #endif
 
 #include "stdio.h"
@@ -26,6 +26,10 @@ int main( int argc, char **argv)
   y = MPI_Wtime();
 
   fprintf(stderr,"%-15s : %e sec\n","MPI_Wtime",(y-x)/10.0);
+  y = MPI_Wtick();
+  fprintf(stderr,"%-15s : %e sec\n","MPI_Wtick",y);
+
+
   PetscFinalize();
   return 0;
 }
