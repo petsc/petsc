@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.284 1998/10/09 19:22:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.285 1998/10/19 22:17:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -381,8 +381,7 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
       }
       fprintf(fd,"\n");
     }
-  } 
-  else if (format == VIEWER_FORMAT_ASCII_SYMMODU) {
+  } else if (format == VIEWER_FORMAT_ASCII_SYMMODU) {
     int nzd=0, fshift=1, *sptr;
     sptr = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(sptr);
     for ( i=0; i<m; i++ ) {
@@ -428,6 +427,26 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
         }
       }
       fprintf(fd,"\n");
+    }
+  } else if (format == VIEWER_FORMAT_ASCII_DENSE) {
+    int    cnt = 0,jcnt;
+    Scalar value;
+
+    for ( i=0; i<m; i++ ) {
+      jcnt = 0;
+      for ( j=0; j<a->n; j++ ) {
+        if ( jcnt++ < a->i[i+1]-a->i[i+1] && j == a->j[cnt]) {
+          value = a->a[cnt++];
+        } else {
+          value = 0.0;
+        }
+#if defined(USE_PETSC_COMPLEX)
+        fprintf(fd," %7.5e+%7.5e i ",PetscReal(value),PetscImaginary(value));
+#else
+        fprintf(fd," %7.5e ",value);
+#endif
+      }
+        fprintf(fd,"\n");
     }
   } else {
     for ( i=0; i<m; i++ ) {
