@@ -78,6 +78,29 @@ class Configure(config.base.Configure):
     
   def Dump(self):
     ''' Actually put the values into the bmake files '''
+    # do not know what file to put this in
+    if self.framework.argDB['with-batch'] and self.framework.batchBodies:
+      args = filter(lambda a: not a.endswith('-configModules=PETSc.Configure') , self.framework.clArgs)
+      import nargs
+      if not nargs.Arg.findArgument('PETSC_ARCH', args):
+        args.append('-PETSC_ARCH='+self.framework.argDB['PETSC_ARCH'])
+      args=repr(args)[1:-1]
+      
+      body = 'FILE *output = fopen("reconfigure","w");fprintf(output," \\nconfigure_options = [\\n");'+self.framework.batchBodies+'fprintf(output,"  '+args+'\\n  ]\\nif __name__ == \'__main__\':\\n  import os\\n  import sys\\n  sys.path.insert(0,os.path.abspath(os.path.join(\'config\')))\\n  import configure\\n  configure.petsc_configure(configure_options)\\n")\n'
+
+      self.compilers.CPPFLAGS += self.framework.batchIncludeDirs
+      if self.checkLink('#include <stdio.h>\n'+self.framework.batchIncludes,body , cleanup = 0):
+        self.framework.logClear()
+        print '=================================================================================\r'
+        print '    Since your compute nodes require use of a batch system or mpirun you must:   \r'
+        print ' 1) Submit ./conftest to your batch system (this will generate the file reconfigure)\r'
+        print ' 2) Run "python reconfigure" (to complete the configure process).                \r'
+        print '=================================================================================\r'
+        import sys
+        sys.exit(0);
+      else:
+        raise RuntimeError("Unable to generate test file for batch system;\n send configure.log to petsc-maint@mcs.anl.gov\n")
+      
     # eventually everything between -- should be gone
 #-----------------------------------------------------------------------------------------------------    
 
