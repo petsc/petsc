@@ -46,14 +46,11 @@ SLES_LIB    =   -L$(LDIR) -lpetscsles -lpetscksp \
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(BOPT)
 
-# Next line cause trouble with gnumake when OBJS is empty
-#$(LIBNAME)($(OBJS)): $(LINCLUDE)
-
 # Checks that PETSC_DIR variable is set and creates library directory
 # if it does not exist
 chkpetsc_dir: 
 	@if [ Holder = Holder$(BOPT) ] ; then \
-          echo "You must set the variable BOPT [g,O, or Opg]" ; false; fi
+          echo "You must set the variable BOPT=[g,O, or Opg]" ; false; fi
 	@if [ Holder = Holder$(PETSC_DIR) ] ; then \
           echo "You must set the variable PETSC_DIR to the petsc directory.1";\
           false ;\
@@ -67,24 +64,40 @@ chkpetsc_dir:
 # checks that user has set BOPT variable
 chkopts: 
 	@if [ Holder = Holder$(BOPT) ] ; then \
-          echo "You must set the variable BOPT [g,O, or Opg]" ; false; fi
-	-@if [ ! -d $(LDIR) ]; then \
-          echo Libraries not built in $(LDIR); false ; fi
+          echo "You must set the variable BOPT=[g,O, or Opg]" ; false; fi
+	@if [ ! -d $(LDIR) ]; then \
+          echo Libraries not built for this BOPT: $(BOPT); false ; fi
 
 # Compiles examples
-examples: chkopts
-	@-if [ "$(EXAMPLES)" != "" ] ; then \
-          (for ex in $(EXAMPLES) foo ; do \
+examples_1: chkopts
+	@-if [ "$(EXAMPLES_1)" != "" ] ; then \
+          (for ex in $(EXAMPLES_1) foo ; do \
           $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
-          > trashz 2>&1; egrep -i '(Error|warning)' trashz >> /dev/null ; \
+          > trashz 2>&1; egrep -i '(Error|warning|Can)' trashz >> /dev/null ; \
           if [ "$$?" != 1 ]; then \
           cat trashz ; fi; $(RM) trashz;\
           done;) fi
 
 # Runs examples that have already been compiled
-runexamples:
-	@-if [ "$(REXAMPLES)" != "" ] ; then \
-          (for ex in $(REXAMPLES) foo ; do \
+runexamples_1:
+	@-if [ "$(RUNEXAMPLES_1)" != "" ] ; then \
+          (for ex in $(RUNEXAMPLES_1) foo ; do \
+          $(OMAKE) -f makefile $$ex; \
+          done;) fi
+
+examples_2: chkopts
+	@-if [ "$(EXAMPLES_2)" != "" ] ; then \
+          (for ex in $(EXAMPLES_2) foo ; do \
+          $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
+          > trashz 2>&1; egrep -i '(Error|warning|Can)' trashz >> /dev/null ; \
+          if [ "$$?" != 1 ]; then \
+          cat trashz ; fi; $(RM) trashz;\
+          done;) fi
+
+# Runs examples that have already been compiled
+runexamples_2:
+	@-if [ "$(RUNEXAMPLES_2)" != "" ] ; then \
+          (for ex in $(RUNEXAMPLES_2) foo ; do \
           $(OMAKE) -f makefile $$ex; \
           done;) fi
 
@@ -119,8 +132,8 @@ libfast: chkpetsc_dir $(SOURCEC) $(SOURCEF)
 # Builds Fortran-77 wrappers library - not yet available
 C2f77lib: 
 	@-if [ -n "$(WOBJS)" ] ; then \
-	echo "Compiling wrappers: " $(WSOURCEC); \
-	$(CC) -c $(CDEFS) $(CFLAGS) $(BASEOPT) -I$(IPETSCDIR) $(WSOURCEC); \
+	echo "Compiling wrappers: " $(WSOURCE); \
+	$(CC) -c $(CDEFS) $(CFLAGS) $(BASEOPT) -I$(IPETSCDIR) $(WSOURCE); \
 	$(AR) cr $(LDIR)/libpetscfort.a $(WOBJS) ; \
 	$(RM) -f $(WOBJS) $(WSOURCE); \
 	fi
@@ -128,16 +141,19 @@ C2f77lib:
 # Deletes Fortran-77 wrapper code; use only if never coding PETSc calls
 # from Fortran.
 C2f77delete: 
-	@-if [ -n "$(WOBJS)" ] ; then $(RM) -f $(WSOURCEC) $(WOBJS) ; fi
+	@-if [ -n "$(WOBJS)" ] ; then $(RM) -f $(WSOURCE) $(WOBJS) ; fi
 
 # Removes garbage files
 clean:
-	@-$(RM) -f *.o *~ $(CLEANFILES) $(CEXAMPLES) $(TESTS) \
+	@-$(RM) -f *.o *~ $(CLEANFILES) $(EXAMPLES_1) $(EXAMPLES_2) $(TESTS) \
                PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
                trashz \#*\# *.mex* *.stolen
 
 # Builds and runs examples; then cleans directory.
-testexamples: examples runexamples clean
+testexamples: testexamples_1
+examples: examples_1 examples_2
+testexamples_1: examples_1 runexamples_1 clean
+testexamples_2: examples_2 runexamples_2 clean
 
 # Performs the specified action throughout the directory tree
 tree: $(ACTION)
@@ -153,12 +169,6 @@ tree: $(ACTION)
 # All remaining actions are intended for PETSc developers only.
 # PETSc users should not generally need to use these commands.
 #
-
-# Places new files in RCS (for PETSc developers only)
-rcs: 
-	@-rcs -i -agropp,bsmith,curfman -L -t/dev/null $(SOURCEH)\
-           $(SOURCE) makefile $(EXAMPLESC) $(EXAMPLESF) $(TESTSC)\
-           $(TESTSF)
 
 # RCS file check-in
 ci: 
