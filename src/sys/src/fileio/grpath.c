@@ -65,7 +65,8 @@ PetscErrorCode PetscGetRealPath(char path[],char rpath[])
   PetscTruth flg;
 #if !defined(PETSC_HAVE_REALPATH) && !defined(PARCH_win32) && defined(PETSC_HAVE_READLINK)
   char       tmp1[PETSC_MAX_PATH_LEN],tmp4[PETSC_MAX_PATH_LEN],*tmp2;
-  int        n,m,N,len,len1,len2;
+  size_t     N,len,len1,len2;
+  int        n,m;
 #endif
 
   PetscFunctionBegin;
