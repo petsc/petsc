@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.49 1996/03/18 00:39:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.50 1996/03/19 21:25:08 bsmith Exp curfman $";
 #endif
 
 /*
@@ -37,34 +37,20 @@ static int PCSetFromOptions_SOR(PC pc)
   int    its,ierr,flg;
   double omega;
 
-  ierr = OptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega,&flg);CHKERRQ(ierr);
-  if (flg) {
-    PCSORSetOmega(pc,omega);
-  } 
-  ierr = OptionsGetInt(pc->prefix,"-pc_sor_its",&its,&flg);CHKERRQ(ierr);
-  if (flg) {
-    PCSORSetIterations(pc,its);
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_symmetric",&flg);CHKERRQ(ierr);
-  if (flg) {
-    PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_backward",&flg);CHKERRQ(ierr);
-  if (flg) {
-    PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_symmetric",&flg);CHKERRQ(ierr);
-  if (flg) {
-    PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_backward",&flg);CHKERRQ(ierr);
-  if (flg) {
-    PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_forward",&flg);CHKERRQ(ierr);
-  if (flg) {
-    PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);
-  }
+  ierr = OptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega,&flg); CHKERRQ(ierr);
+  if (flg) {PCSORSetOmega(pc,omega);} 
+  ierr = OptionsGetInt(pc->prefix,"-pc_sor_its",&its,&flg); CHKERRQ(ierr);
+  if (flg) {PCSORSetIterations(pc,its);}
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_symmetric",&flg); CHKERRQ(ierr);
+  if (flg) {PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);}
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_backward",&flg); CHKERRQ(ierr);
+  if (flg) {PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);}
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_symmetric",&flg); CHKERRQ(ierr);
+  if (flg) {PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);}
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_backward",&flg); CHKERRQ(ierr);
+  if (flg) {PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);}
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_forward",&flg); CHKERRQ(ierr);
+  if (flg) {PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);}
   return 0;
 }
 
