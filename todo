@@ -28,7 +28,6 @@ KSP
 
 Viewers
 
-  Change mathematica viewer directory to only compile if mathematica present. Remove all mathematica mesh/grid stuff   
 
 SNES
    Manual pages for SNESConvergedReason
@@ -87,6 +86,9 @@ General
   keywords in maual pages should get listed in help topic list
 
   move creations of MPI_op_create() to PetscInitialize() and fortran version and put frees in finalize()
+    hmmm, I put the creates in vecinitializepackage but there is no good place to put the frees
+    in vecfinalizepackage() and have a PETSc way to register packages that are freed on the end of petsc
+
 
   Allow setting precision of printed numbers in ASCII viewers.
 

@@ -32,11 +32,11 @@ typedef struct {
   PetscScalar  *lvalues;    /* this are the reduced values before call to MPI_Allreduce() */
   PetscScalar  *gvalues;    /* values after call to MPI_Allreduce() */
   void         **invecs;    /* for debugging only, vector/memory used with each op */
-  PetscInt          *reducetype; /* is particular value to be summed or maxed? */
-  PetscInt          state;       /* are we calling xxxBegin() or xxxEnd()? */
-  PetscInt          maxops;      /* total amount of space we have for requests */
-  PetscInt          numopsbegin; /* number of requests that have been queued in */
-  PetscInt          numopsend;   /* number of requests that have been gotten by user */
+  PetscInt     *reducetype; /* is particular value to be summed or maxed? */
+  PetscInt     state;       /* are we calling xxxBegin() or xxxEnd()? */
+  PetscInt     maxops;      /* total amount of space we have for requests */
+  PetscInt     numopsbegin; /* number of requests that have been queued in */
+  PetscInt     numopsend;   /* number of requests that have been gotten by user */
 } PetscSplitReduction;
 /*
    Note: the lvalues and gvalues are twice as long as maxops, this is to allow the second half of
@@ -279,10 +279,6 @@ PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
        it is only a warning message and should do no harm.
     */
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelReduction,&Petsc_Reduction_keyval,0);CHKERRQ(ierr);
-    /*
-         Also create the special MPI reduction operation that may be needed 
-    */
-    ierr = MPI_Op_create(PetscSplitReduction_Local,1,&PetscSplitReduction_Op);CHKERRQ(ierr);
   }
   ierr = MPI_Attr_get(comm,Petsc_Reduction_keyval,(void **)sr,&flag);CHKERRQ(ierr);
   if (!flag) {  /* doesn't exist yet so create it and put it in */

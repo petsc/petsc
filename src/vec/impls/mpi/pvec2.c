@@ -202,10 +202,6 @@ PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
     PetscReal work2[2],z2[2];
     PetscInt  rstart;
 
-    if (!VecMax_Local_Op) {
-      ierr = MPI_Op_create(VecMax_Local,1,&VecMax_Local_Op);CHKERRQ(ierr);
-    }
-     
     ierr = VecGetOwnershipRange(xin,&rstart,PETSC_NULL);CHKERRQ(ierr);
     work2[0] = work;
     work2[1] = *idx + rstart;
@@ -234,10 +230,6 @@ PetscErrorCode VecMin_MPI(Vec xin,PetscInt *idx,PetscReal *z)
     PetscReal work2[2],z2[2];
     PetscInt       rstart;
 
-    if (!VecMin_Local_Op) {
-      ierr = MPI_Op_create(VecMin_Local,1,&VecMin_Local_Op);CHKERRQ(ierr);
-    }
-     
     ierr = VecGetOwnershipRange(xin,&rstart,PETSC_NULL);CHKERRQ(ierr);
     work2[0] = work;
     work2[1] = *idx + rstart;
