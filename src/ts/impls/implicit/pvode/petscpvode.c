@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.52 2000/03/01 03:04:32 bsmith Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.53 2000/03/01 03:16:59 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 /*
@@ -17,11 +17,10 @@
 */
 #undef __FUNC__
 #define __FUNC__ "TSPrecond_PVode"
-int TSPrecond_PVode(integer N,real tn,N_Vector y,
-                           N_Vector fy,bool jok,
-                           bool *jcurPtr,real _gamma,N_Vector ewt,real h,
-                           real uround,long int *nfePtr,void *P_data,
-                           N_Vector vtemp1,N_Vector vtemp2,N_Vector vtemp3)
+int TSPrecond_PVode(integer N,real tn,N_Vector y,N_Vector fy,bool jok,
+                    bool *jcurPtr,real _gamma,N_Vector ewt,real h,
+                    real uround,long int *nfePtr,void *P_data,
+                    N_Vector vtemp1,N_Vector vtemp2,N_Vector vtemp3)
 {
   TS           ts = (TS) P_data;
   TS_PVode     *cvode = (TS_PVode*)ts->data;
@@ -33,12 +32,11 @@ int TSPrecond_PVode(integer N,real tn,N_Vector y,
   MatStructure str = DIFFERENT_NONZERO_PATTERN;
   
   PetscFunctionBegin;
-  /* This allows use to construct preconditioners in-place if we like */
+  /* This allows us to construct preconditioners in-place if we like */
   ierr = MatSetUnfactored(Jac);CHKERRQ(ierr);
 
   /*
-       jok - TRUE means reuse current Jacobian
-                  else recompute Jacobian
+       jok - TRUE means reuse current Jacobian else recompute Jacobian
   */
   if (jok) {
     ierr     = MatCopy(cvode->pmat,Jac,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -67,23 +65,20 @@ int TSPrecond_PVode(integer N,real tn,N_Vector y,
   ierr = MatShift(&one,Jac);CHKERRQ(ierr);
   
   ierr = PCSetOperators(pc,Jac,Jac,str);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
 /*
-     TSPSolve_PVode -  routine that we provide to PVode that applies the 
-                       preconditioner.
+     TSPSolve_PVode -  routine that we provide to PVode that applies the preconditioner.
       
     Contributed by: Liyang Xu
 
 */    
 #undef __FUNC__
 #define __FUNC__ "TSPSolve_PVode"
-int TSPSolve_PVode(integer N,real tn,N_Vector y,
-                          N_Vector fy,N_Vector vtemp,
-                          real _gamma,N_Vector ewt,real delta,long int *nfePtr,
-                          N_Vector r,int lr,void *P_data,N_Vector z)
+int TSPSolve_PVode(integer N,real tn,N_Vector y,N_Vector fy,N_Vector vtemp,
+                   real _gamma,N_Vector ewt,real delta,long int *nfePtr,
+                   N_Vector r,int lr,void *P_data,N_Vector z)
 { 
   TS       ts = (TS) P_data;
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -108,8 +103,7 @@ int TSPSolve_PVode(integer N,real tn,N_Vector y,
 }
 
 /*
-        TSFunction_PVode - routine that we provide to PVode that applies the 
-                           right hand side.
+        TSFunction_PVode - routine that we provide to PVode that applies the right hand side.
       
     Contributed by: Liyang Xu
 */  
@@ -160,7 +154,6 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
   ierr   = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   /* call CVSpgmr to use GMRES as the linear solver. */
-  
   /* setup the ode integrator with the given preconditioner */
   CVSpgmr(cvode->mem,LEFT,cvode->gtype,cvode->restart,cvode->linear_tol,TSPrecond_PVode,TSPSolve_PVode,ts);
 
@@ -225,7 +218,6 @@ int TSDestroy_PVode(TS ts)
   PetscFunctionReturn(0);
 }
 
-
 /*
 
     Contributed by: Liyang Xu
@@ -271,11 +263,9 @@ int TSSetUp_PVode_Nonlinear(TS ts)
 
   /* allocate memory for PVode */
   ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
-  cvode->mem = CVodeMalloc(M,TSFunction_PVode,ts->ptime,cvode->y,
- 			          cvode->cvode_type,
-                                  NEWTON,SS,&cvode->reltol,
-                                  &cvode->abstol,ts,NULL,FALSE,cvode->iopt,
-                                  cvode->ropt,machEnv);CHKPTRQ(cvode->mem);
+  cvode->mem = CVodeMalloc(M,TSFunction_PVode,ts->ptime,cvode->y,cvode->cvode_type,
+                           NEWTON,SS,&cvode->reltol,&cvode->abstol,ts,NULL,FALSE,cvode->iopt,
+                           cvode->ropt,machEnv);CHKPTRQ(cvode->mem);
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -342,9 +332,7 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
   if (flag) {
     ierr = TSPVodeSetExactFinalTime(ts,PETSC_FALSE);CHKERRQ(ierr);
   }
-
   ierr = PCSetFromOptions(cvode->pc);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -529,8 +517,7 @@ EXTERN_C_END
 #undef __FUNC__
 #define __FUNC__ "TSPVodeGetIterations"
 /*@C
-   TSPVodeGetIterations - Gets the number of nonlinear and linear iterations used so
-      far by PVode.
+   TSPVodeGetIterations - Gets the number of nonlinear and linear iterations used so far by PVode.
 
    Not Collective
 
@@ -875,3 +862,13 @@ int TSCreate_PVode(TS ts)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+
+
+
+
+
+
+
+
+
