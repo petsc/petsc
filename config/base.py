@@ -509,9 +509,9 @@ class Configure:
     self.framework.argDB[flagsArg] = oldFlags
     return valid
 
-  def addCompilerFlag(self, flag, includes = '', body = ''):
+  def addCompilerFlag(self, flag, includes = '', body = '', extraflags = ''):
     '''Determine whether the compiler accepts the given flag, and add it if valid'''
-    if self.checkCompilerFlag(flag, includes, body):
+    if self.checkCompilerFlag(flag+' '+extraflags, includes, body):
       flagsArg = self.getCompilerFlagsArg()
       self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
       return
