@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.19 1995/06/17 18:44:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.20 1995/06/17 20:29:32 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -19,7 +19,7 @@ int KSPSetUp_CG(KSP itP)
 
   /* check user parameters and functions */
   if ( itP->right_pre ) {
-      SETERRQ(2,"Right-inverse preconditioning not supported for CG");}
+    SETERRQ(2,"KSPSetUp_CG: no right-inverse preconditioning for CG");}
   if ((ierr = KSPCheckDef( itP ))) return ierr;
 
   /* get work vectors from user code */
@@ -88,7 +88,7 @@ int  KSPSolve_CG(KSP itP,int *its)
          b = beta/betaold;
          if (eigs) {
 #if !defined(PETSC_COMPLEX)
-           if (b<0.0) SETERRQ(1,"Nonsymmetric or bad preconditioner");
+           if (b<0.0) SETERRQ(1,"KSPSolve_CG:Nonsymmetric/bad preconditioner");
 #endif
            e[i] = sqrt(b)/a;  
          }
@@ -100,7 +100,7 @@ int  KSPSolve_CG(KSP itP,int *its)
      a = beta/dpi;                             /*     a = beta/p'z    */
      if (eigs) {
 #if !defined(PETSC_COMPLEX)
-       if (b<0.0) SETERRQ(1,"Nonsymmetric or bad preconditioner");
+       if (b<0.0) SETERRQ(1,"KSPSolve_CG:Nonsymmetric or bad preconditioner");
 #endif
        d[i] = sqrt(b)*e[i] + 1.0/a;
      }
