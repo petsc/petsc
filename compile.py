@@ -394,13 +394,13 @@ class TagEtags (transform.GenericTag):
 
 class CompileEtags (Compile):
   def __init__(self, sourceDB, tagsFile, sources = None, tag = 'etags', compiler = 'etags', compilerFlags = '-a'):
-    (status, output) = commands.getstatusoutput(compiler+' --help')
-    if status:
-      # If etags does not exist, merely put in an identity node
-      transform.Transform(sources)
-    else:
-      Compile.__init__(self, sourceDB, tagsFile, tag, sources, compiler, compilerFlags, '', '', 1, 'deferred')
+    Compile.__init__(self, sourceDB, tagsFile, tag, sources, compiler, compilerFlags, '', '', 1, 'deferred')
     return
+
+  def checkCompiler(self):
+    '''If "self.compiler --help" fails, we assume etags is absent'''
+    (status, output) = commands.getstatusoutput(self.compiler+' --help')
+    return not status
 
   def constructFlags(self, source, baseFlags):
     return baseFlags+' -f '+self.getLibraryName()

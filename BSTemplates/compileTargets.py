@@ -35,7 +35,10 @@ class Defaults:
     return compiler+linker+[transform.Update(self.sidlTargets.sourceDB)]
 
   def getEmacsTagsTargets(self):
-    return [transform.FileFilter(self.sidlTargets.isImpl), compile.TagEtags(self.sidlTargets.sourceDB), compile.CompileEtags(self.sidlTargets.sourceDB, self.etagsFile)]
+    compiler = compile.CompileEtags(self.sidlTargets.sourceDB, self.etagsFile)
+    if compiler.checkCompiler():
+      return [transform.FileFilter(self.sidlTargets.isImpl), compile.TagEtags(self.sidlTargets.sourceDB), compiler]
+    return []
 
   def getCompileTargets(self, doCompile = 1, doLink = 1):
     bootstrapTargets = []
