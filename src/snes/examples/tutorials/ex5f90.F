@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.30 2000/08/10 18:09:59 balay Exp balay $";
+! "$Id: ex5f90.F,v 1.31 2000/09/06 16:15:55 balay Exp balay $";
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -139,7 +139,7 @@
 !  Insert values into global vector
 
       call DALocalToGlobal(user%da,user%localF,INSERT_VALUES,F,ierr)
-      call PLogFlops(11*user%ym*user%xm)
+      call PLogFlops(11*user%ym*user%xm,ierr)
 
 !      call VecView(X,VIEWER_STDOUT_WORLD,ierr)
 !      call VecView(F,VIEWER_STDOUT_WORLD,ierr)
