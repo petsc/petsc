@@ -23,7 +23,7 @@ extern int abort();
 }
 #endif
 #endif
-extern void *MPID_DUMMY;
+extern double MPID_DUMMY;
 extern void *MPID_TMP;
 extern double MPI_Wtime();
 
@@ -379,13 +379,12 @@ typedef char* MPI_Errhandler;
                       MPID_TMP = (void *) (keyval), \
                       MPID_TMP = (void *) (attribute_val), \
                       MPI_SUCCESS)
-extern int  MPI_Attr_get(int, int, void*, int *);
-/*#define MPI_Attr_get(comm, keyval, attribute_val, flag) 
+#define MPI_Attr_get(comm, keyval, attribute_val, flag)  \
                       (MPID_TMP = (void *) (comm), \
                       MPID_TMP = (void *) (keyval), \
-                      *(attribute_val) = MPID_DUMMY, \
+                      (*(void**)attribute_val) = (void *)&MPID_DUMMY, \
                       *(flag) = 1, \
-                      MPI_SUCCESS) */
+                      MPI_SUCCESS) 
 #define MPI_Attr_delete(comm, keyval) MPI_SUCCESS
 #define MPI_Topo_test(comm, status) MPI_SUCCESS
 #define MPI_Cart_create(comm_old, ndims, dims, periods,\
@@ -429,9 +428,9 @@ extern int  MPI_Attr_get(int, int, void*, int *);
 #define MPI_Initialized(flag) (*(flag)=1,MPI_SUCCESS)
 #define MPI_Pcontrol(level) MPI_SUCCESS
 #define MPI_Abort(comm, errorcode) \
-                      (printf("[0] Aborting program!\n"), \
-                        MPID_TMP = (void *) (comm), \
-                        MPID_TMP = (void *) (errorcode), abort())
+                        (MPID_TMP = (void *) (comm), \
+                         MPID_TMP = (void *) (errorcode), \
+                         fprintf(stderr,"[0] Aborting program!\n"), abort() )
 /*#define MPI_NULL_COPY_FN(oldcomm, keyval, extra_state, \
                         attr_in, attr_out, flag ) 
 #define MPI_NULL_DELETE_FN(comm, keyval, attr, extra_state )\

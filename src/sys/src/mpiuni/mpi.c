@@ -1,18 +1,7 @@
-
 #include "petsc.h"
 #define MPI_SUCCESS 0
 void * MPID_TMP  = 0;
-int _v_[2] = {0, 0};
-void *MPID_DUMMY =(void *)_v_;
-
-int MPI_Attr_get( int comm, int key_val, void* attr_val, int* flg)
-{
-  *flg = 1;
-  void *x;
-  x = MPID_DUMMY;
-  (*(void**)attr_val)  = x;
-  return 0;
-}
+double MPID_DUMMY =0;
 
 double MPI_Wtime()
 {
@@ -120,4 +109,3 @@ double MPI_WTIME()
 #if defined(__cplusplus)
 }
 #endif
-
