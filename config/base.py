@@ -309,9 +309,13 @@ class Configure:
       out = ready[0][0].read()
     if ret and not out:
       out = str(ret)
+    # Ignore stupid warning from gcc about builtins
+    #   This should maybe be a general mechanism for igoring certain warnings
+    if not ret and out and out.find('warning: conflicting types for built-in function') >= 0:
+      out = ''
     if out:
       self.framework.log.write('ERR (compiler): '+out)
-      self.framework.log.write('ret = '+str(ret))
+      self.framework.log.write('ret = '+str(ret)+'\n')
       self.framework.log.write('Source:\n'+self.getCode(includes, body))
     err.close()
     output.close()
@@ -344,7 +348,7 @@ class Configure:
       out = str(ret)
     if out:
       self.framework.log.write('ERR (linker): '+out)
-      self.framework.log.write('ret = '+str(ret))
+      self.framework.log.write('ret = '+str(ret)+'\n')
       self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
     err.close()
     output.close()
