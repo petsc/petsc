@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.55 1999/11/24 21:53:00 bsmith Exp bsmith $*/
+/*$Id: dl.c,v 1.56 2000/01/11 20:59:26 bsmith Exp bsmith $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -123,13 +123,13 @@ int DLLibraryGetInfo(void *handle,char *type,char **mess)
    Notes:
    [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
 
-   $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in directoryname and filename 
-   will be replaced with appropriate values.
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
+   occuring in directoryname and filename will be replaced with appropriate values.
 @*/
 int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)
 {
   char       *par2,buff[10],*en,*gz;
-  char       *r[] = {"$PETSC_ARCH","$BOPT","$PETSC_DIR","$PETSC_LDIR",0};
+  char       *r[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LDIR}",0};
   char       *s[] = {PETSC_ARCH_NAME,PETSC_BOPT,PETSC_DIR,PETSC_LDIR,0};
   int        ierr,len1,len2,len;
   PetscTruth tflg,flg;
@@ -144,7 +144,7 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
   len    = PetscMax(4*len,1024);
   par2   = (char*)PetscMalloc(len*sizeof(char));CHKPTRQ(par2);
 
-  ierr = PetscStrreplace(libname,par2,len,r,s);CHKERRQ(ierr);
+  ierr = PetscStrreplace(comm,libname,par2,len,r,s);CHKERRQ(ierr);
 
   /* 
      Remove any file: header

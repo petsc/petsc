@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.29 1999/05/12 03:24:58 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.30 1999/06/30 22:48:03 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -25,60 +25,50 @@ MPI_LIB        = /usr/lpp/ppe.poe/lib/libmpi_r.a
 MPI_INCLUDE    = -I/usr/lpp/ppe.poe/include
 MPIRUN         = mpirun
 #
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ----------------------------------------------------------------------------------------  
+#
 # Location of X-windows software
 #
 X11_INCLUDE    = 
 X11_LIB        = -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
-# ----------------------------------------------------------------------------------------  
-#  Locations of optional packages. Comment out those you do not have and change the 
-#  values in PCONF below accordingly.
-# ----------------------------------------------------------------------------------------  
-#
-# Optional ocation of MPE software 
+# Location of MPE software 
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
-
 #
-MPE_INCLUDE    = 
-MPE_LIB        = 
-
+#MPE_INCLUDE    = 
+#MPE_LIB        = 
+#PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
-# Optional location of BlockSolve 
+# Location of BlockSolve 
 #
-BS_INCLUDE = -I/home/petsc/software/BlockSolve95/include
-BS_LIB     = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+BLOCKSOLVE_INCLUDE = -I/home/petsc/software/BlockSolve95/include
+BLOCKSOLVE_LIB     = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
-# Optional Matlab location, remove if not needed.
+# Matlab location, remove if not needed.
 #
 CMEX            = /software/aix-4/com/packages/matlab-5.2/bin/mex
 MCC             = xlc
 MATLABCOMMAND   = matlab
+PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
-# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# Location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
 #PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
 #PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/rs6000/libpvode.a
+#PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
 #
-# Optional location of ParMetis
+# Location of ParMetis
 #
 #PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
 #PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
+#PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
-#
-#  Optional location for ALICE Memory Snooper
+#  Location for ALICE Memory Snooper
 #
 #AMS_INCLUDE = -I/home/bsmith/ams/src/include
 #AMS_LIB     = -L/home/bsmith/ams/lib/lib/rs6000 -lalicepub -lutilmt -lutil -lpthreads
-# -------------------------------------------------------------------------
-#
-# PCONF - indicates which external packages are available at your site
-#
-#    Only list -DPETSC_HAVE_ESSL below if you have IBM's library essl
-#    installed on your machine (in /usr/lib/libessl.a) and 
-#    have it listed above in the LAPACK_LIB line above.
-#
-#PCONF         =  -DPETSC_HAVE_ESSL -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
-#PCONF         =  -DPETSC_HAVE_ESSL -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_AMS
-PCONF         =  -DPETSC_HAVE_ESSL -DPETSC_HAVE_BLOCKSOLVE
-#
-EXTERNAL_LIB  = ${BS_LIB} ${PVODE_LIB} ${ADIC_LIB} ${AMS_LIB}
+#PETSC_HAVE_AMS = -DPETSC_HAVE_AMS

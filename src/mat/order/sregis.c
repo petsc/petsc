@@ -1,4 +1,4 @@
-/*$Id: sregis.c,v 1.28 1999/10/24 14:02:23 bsmith Exp bsmith $*/
+/*$Id: sregis.c,v 1.29 1999/11/05 14:46:06 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"     /*I       "mat.h"   I*/
 
@@ -40,7 +40,7 @@ int MatOrderingRegisterAll(char *path)
   int           ierr;
 
   PetscFunctionBegin;
-  MatOrderingRegisterAllCalled = 1;
+  MatOrderingRegisterAllCalled = PETSC_TRUE;
 
   ierr = MatOrderingRegisterDynamic(MATORDERING_NATURAL,  path,"MatOrdering_Natural"  ,MatOrdering_Natural);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERING_ND,       path,"MatOrdering_ND"       ,MatOrdering_ND);CHKERRQ(ierr);

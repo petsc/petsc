@@ -1,4 +1,4 @@
-/*$Id: mpiuopen.c,v 1.22 1999/12/22 03:31:33 bsmith Exp bsmith $*/
+/*$Id: mpiuopen.c,v 1.23 2000/01/11 20:59:28 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */
@@ -116,19 +116,19 @@ int PetscPClose(MPI_Comm comm,FILE *fd)
 
    Input Parameters:
 +   comm - MPI communicator, only processor zero runs the program
-.   machine - machine to run command on or PETSC_NULL
+.   machine - machine to run command on or PETSC_NULL, or string with 0 in first location
 .   program - name of program to run
 -   mode - either r or w
 
    Output Parameter:
-.   fp - the file pointer where program input or output may be read
+.   fp - the file pointer where program input or output may be read or PETSC_NULL if don't care
 
    Level: intermediate
 
    Notes:
        Does not work under Windows
 
-       The program string may contain $DISPLAY, $HOMEDIRECTORY or $WORKINGDIRECTORY; these
+       The program string may contain ${DISPLAY}, ${HOMEDIRECTORY} or ${WORKINGDIRECTORY}; these
     will be replaced with relevent values.
 
 .seealso: PetscFOpen(), PetscFClose(), PetscPClose()
@@ -139,13 +139,13 @@ int PetscPOpen(MPI_Comm comm,char *machine,char *program,const char mode[],FILE 
   int  ierr,rank;
   FILE *fd;
   char commandt[1024],command[1024];
-  char *s[] = {"$DISPLAY","$HOMEDIRECTORY","$WORKINGDIRECTORY",0},*r[4];
+  char *s[] = {"${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}",0},*r[4];
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
 
-    if (machine) {
+    if (machine && machine[0]) {
       ierr = PetscStrcpy(command,"rsh ");CHKERRQ(ierr);
       ierr = PetscStrcat(command,machine);CHKERRQ(ierr);
       ierr = PetscStrcat(command," ");CHKERRQ(ierr);
@@ -162,7 +162,7 @@ int PetscPOpen(MPI_Comm comm,char *machine,char *program,const char mode[],FILE 
     ierr = PetscGetHomeDirectory(r[1],256);CHKERRQ(ierr);
     ierr = PetscGetWorkingDirectory(r[2],256);CHKERRQ(ierr);
 
-    ierr = PetscStrreplace(command,commandt,1024,s,r);CHKERRQ(ierr);
+    ierr = PetscStrreplace(comm,command,commandt,1024,s,r);CHKERRQ(ierr);
     
     ierr = PetscFree(r[0]);CHKERRQ(ierr);
     ierr = PetscFree(r[1]);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.58 1999/10/20 16:25:53 balay Exp bsmith $ 
+# $Id: base.site,v 1.59 1999/11/05 14:42:55 bsmith Exp bsmith $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -6,7 +6,7 @@
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
 #
-# Location of BLAS and LAPACK. See ${BS_DIR}/docs/installation.html for
+# Location of BLAS and LAPACK. See ${PETSC_DIR}/docs/installation.html for
 # information on retrieving them.
 #
 # BLAS usually comes with SGI. Do NOT use the parallel (library names with 
@@ -16,12 +16,7 @@ BLAS_LIB       = -lblas ${FC_LIB}
 LAPACK_LIB     = -lcomplib.sgimath
 #BLAS_LIB     = /home/petsc/software/blaslapack/blas_IRIX64.a ${FC_LIB}
 #LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX64.a
-#
-# Location of X-windows software
-#
-X11_INCLUDE    = 
-X11_LIB        = -lX11
-#
+
 # Location of MPI (Message Passing Interface) software  
 #
 # We recommend using SGI's MPI implementation over MPICH on the Origin and 
@@ -48,22 +43,29 @@ MPIRUN         = /usr/sbin/npri -w /bin/mpirun
 #MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  
-#  Locations of optional packages. Comment out those you do not have and change the 
-#  values in PCONF below accordingly.
+#  Locations of OPTIONAL packages. Comment out those you do not have.
 # ----------------------------------------------------------------------------------------  
 #
-# Optional location of MPE
+# Location of X-windows software
+#
+X11_INCLUDE    = 
+X11_LIB        = -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+# Location of MPE
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
 #MPE_INCLUDE   = -I/usr/local/mpi/include
 #MPE_LIB       = -L/usr/local/mpi/lib/IRIX64/ch_shmem -lmpe -lpmpi
+#PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
-# Optional location of BlockSolve (MPI version)
+# Location of BlockSolve (MPI version)
 #
-BS_INCLUDE = -I/home/petsc/software/BlockSolve95/include
-BS_LIB     = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+BLOCKSOLVE_INCLUDE = -I/home/petsc/software/BlockSolve95/include
+BLOCKSOLVE_LIB     = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
-# Optional Matlab location
+# Matlab location
 #
 #  The CFLAGS and following stuff is due to Matlab being miss-intalled on our machine
 #  you may not need any of that stuff
@@ -71,41 +73,35 @@ MCC            = cc
 #CMEX           = /home/bsmith/bin/IRIX64/mex CFLAGS='-32' LDFLAGS="-32 -mips4 -shared -U -Bsymbolic -exported_symbol mexFunction -exported_symbol mexVersion"
 CMEX           = mex CFLAGS='-32' LDFLAGS="-32 -mips4 -shared -U -Bsymbolic -exported_symbol mexFunction -exported_symbol mexVersion"
 MATLABCOMMAND  = matlab -sgi
+PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 #
-# Option location where adiC is installed
+# Location where adiC is installed
 #
 #ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
 #ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
 #ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #
-# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# Location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
 PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
 PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/IRIX64/libpvode.a
-#
-# Optional location of ParMetis
-#
-#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
-#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
+PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
 #
 #
-#  Optional location for ALICE Memory Snooper
+# Location of ParMetis
 #
-AMS_INCLUDE = -I/home/alice/ams/include
-AMS_LIB     = -L/home/alice/ams/lib/libg/irix64 -lamspub -lamsutilmt -lamsutil
-# ---------------------------------------------------------------------------------------
+PARMETIS_INCLUDE = -I/home/petsc/software/ParMetis-2.0
+PARMETIS_LIB     = -L/home/petsc/software/ParMetis-2.0/lib/${PETSC_ARCH} -lparmetis -lmetis
+PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
-# PCONF - indicates which OPTIONAL external packages are available at your site
 #
-# If you have a package then make sure -DPETSC_HAVE_packagename is indicated below and 
-# the locations are appropriately indicated above. If you do not have the package then
-# comment out the locations indicated for that package above.
+#  Location for ALICE Memory Snooper
 #
-#PCONF         = -DPETSC_HAVE_BLOCKSOLVE 
-PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_PVODE  -DPETSC_HAVE_AMS -DPETSC_HAVE_X11
-#PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_PVODE
-EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}  ${AMS_LIB}
+AMS_INCLUDE    = -I/home/alice/ams/include
+AMS_LIB        = -L/home/alice/ams/lib/libg/irix64 -lamspub -lamsutilmt -lamsutil
+PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 #
 # ---------------------------------------------------------------------------------------
 #

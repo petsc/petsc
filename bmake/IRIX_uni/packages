@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.18 1999/09/14 18:30:39 balay Exp bsmith $ 
+# $Id: base.site,v 1.19 1999/11/05 14:42:55 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -19,29 +19,33 @@
 #LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX.a ${FC_LIB}
 BLAS_LIB       = -L/home/petsc/software/blaslapack -lblas_IRIX 
 LAPACK_LIB     = -L/home/petsc/software/blaslapack/ -llapack_IRIX ${FC_LIB}
-#
-# Location of X-windows software
-#
-X11_INCLUDE    = 
-X11_LIB        = -lX11
-#
-# Optional location of BlockSolve (MPI version), if you do not have
-# BlockSolve, then remove -DPETSC_HAVE_BLOCKSOLVE from the PCONF definition
-# below if it is there.
-#
-#BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-#BS_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -BS95
-#
+
+
 # Location of MPI (Message Passing Interface) software
 #
 MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
 MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
 MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
-# PCONF - indicates which external packages are available at your site
-#    Make sure that -DPETSC_HAVE_BLOCKSOLVE is not listed below
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ----------------------------------------------------------------------------------------  
 #
-PCONF         =    -DPETSC_HAVE_X11
+# Location of X-windows software
+#
+X11_INCLUDE    = 
+X11_LIB        = -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+# Location of BlockSolve (MPI version), if you do not have
+# BlockSolve, then remove -DPETSC_HAVE_BLOCKSOLVE from the PCONF definition
+# below if it is there.
+#
+#BLOCKSOLVE_INCLUDE = -I/home/petsc/BlockSolve95/include
+#BLOCKSOLVE_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -BS95
+#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
+#
+# ---------------------------------------------------------------------------------------
 #
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
@@ -49,4 +53,4 @@ PCONF         =    -DPETSC_HAVE_X11
 #C_DYLIBPATH     =
 #F_DYLIBPATH     =
 
-EXTERNAL_LIB  = ${BS_LIB} ${CVODE_LIB} ${ADIC_LIB}
+EXTERNAL_LIB  = ${BLOCKSOLVE_LIB} ${CVODE_LIB} ${ADIC_LIB}

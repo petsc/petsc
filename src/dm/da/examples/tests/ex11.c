@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.9 1999/11/05 14:47:57 bsmith Exp bsmith $*/
+/*$Id: ex11.c,v 1.10 2000/01/11 21:03:26 bsmith Exp bsmith $*/
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   /* Create distributed array and get vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,(DAPeriodicType)wrap,DA_STENCIL_BOX,M,N,PETSC_DECIDE,
                     PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da);CHKERRA(ierr);
-  ierr = DACreateUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRA(ierr);
+  ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRA(ierr);
   for (i=0; i<dof; i++) {
     sprintf(fname,"Field %d",i);
     ierr = DASetFieldName(da,i,fname);CHKERRA(ierr);

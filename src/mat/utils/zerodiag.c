@@ -1,4 +1,4 @@
-/*$Id: zerodiag.c,v 1.34 1999/10/24 14:02:51 bsmith Exp bsmith $*/
+/*$Id: zerodiag.c,v 1.35 2000/01/11 21:01:18 bsmith Exp bsmith $*/
 
 /*
     This file contains routines to reorder a matrix so that the diagonal
@@ -64,7 +64,7 @@ int MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
   
   ierr = ISGetIndices(ris,&row);CHKERRQ(ierr);
   ierr = ISGetIndices(cis,&col);CHKERRQ(ierr);
-  ierr = ISInvertPermutation(cis,&icis);CHKERRQ(ierr);
+  ierr = ISInvertPermutation(cis,PETSC_DECIDE,&icis);CHKERRQ(ierr);
   ierr = ISGetIndices(icis,&icol);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
 

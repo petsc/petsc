@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.10 1999/10/22 23:57:05 bsmith Exp bsmith $ 
+# $Id: common_variables,v 1.11 2000/01/11 20:57:57 bsmith Exp bsmith $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -56,7 +56,19 @@ PETSC_LIB   = -L${LDIR} -lpetscts -lpetscsnes  -lpetscsles -lpetscdm -lpetscmat 
 		${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} \
 		${MPE_LIB} ${MPI_LIB} ${X11_LIB} ${FC_LIB} ${SYS_LIB} -lm
 #
+# ---------------------------------------------------------------------------------------
 #
+# PCONF - indicates which OPTIONAL external packages are available at your site
+#
+#
+PCONF         = ${PETSC_HAVE_MPE} ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVODE} ${PETSC_HAVE_PARMETIS} \
+                ${PETSC_HAVE_AMS} ${PETSC_HAVE_SPAI}       ${PETSC_HAVE_X11}   ${PETSC_HAVE_MATLAB} \
+                ${PETSC_HAVE_ADIC}
+EXTERNAL_LIB  = ${MPE_LIB}        ${BLOCKSOLVE_LIB}        ${PVODE_LIB}        ${PARMETIS_LIB} \
+                ${AMS_LIB}        ${SPAI_LIB}                                                  \
+                ${ADIC_LIB} 
+#
+# ----------------------------------------------------------------------------------------
 #
 #   Currently ignore this entry
 #

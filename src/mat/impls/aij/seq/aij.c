@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.337 2000/01/26 21:50:28 bsmith Exp balay $*/
+/*$Id: aij.c,v 1.338 2000/01/26 22:08:18 balay Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -1302,7 +1302,8 @@ int MatGetOwnershipRange_SeqAIJ(Mat A,int *m,int *n)
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
-  *m = 0; *n = a->m;
+  if (m) *m = 0;
+  if (n) *n = a->m;
   PetscFunctionReturn(0);
 }
 
@@ -1675,7 +1676,7 @@ int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
 
   /* Create the inverse permutation so that it can be used in MatLUFactorNumeric() */
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);} /* if this came from a previous factored; need to remove old one */
-  ierr = ISInvertPermutation(col,&(a->icol));CHKERRQ(ierr);
+  ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
   PLogObjectParent(inA,a->icol);
 
   if (!a->solve_work) { /* this matrix may have been factored before */
@@ -1797,9 +1798,9 @@ int MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
   IS         icolp,irowp;
 
   PetscFunctionBegin;
-  ierr = ISInvertPermutation(rowp,&irowp);CHKERRQ(ierr);
+  ierr = ISInvertPermutation(rowp,PETSC_DECIDE,&irowp);CHKERRQ(ierr);
   ierr = ISGetIndices(irowp,&row);CHKERRQ(ierr);
-  ierr = ISInvertPermutation(colp,&icolp);CHKERRQ(ierr);
+  ierr = ISInvertPermutation(colp,PETSC_DECIDE,&icolp);CHKERRQ(ierr);
   ierr = ISGetIndices(icolp,&col);CHKERRQ(ierr);
   
   /* determine lengths of permuted rows */

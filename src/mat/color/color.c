@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp bsmith $*/
+/*$Id: color.c,v 1.43 2000/01/11 21:01:31 bsmith Exp bsmith $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
@@ -207,8 +207,8 @@ EXTERN_C_END
 
 #include "sys.h"
 
-FList MatColoringList = 0;
-int   MatColoringRegisterAllCalled = 0;
+FList      MatColoringList = 0;
+PetscTruth MatColoringRegisterAllCalled = PETSC_FALSE;
 
 /*MC
    MatColoringRegisterDynamic - Adds a new sparse matrix coloring to the 

@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.133 1999/11/24 21:53:46 bsmith Exp bsmith $*/
+/*$Id: mpidense.c,v 1.134 2000/01/11 21:00:35 bsmith Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -735,7 +735,8 @@ int MatGetOwnershipRange_MPIDense(Mat A,int *m,int *n)
   Mat_MPIDense *mat = (Mat_MPIDense*)A->data;
 
   PetscFunctionBegin;
-  *m = mat->rstart; *n = mat->rend;
+  if (m) *m = mat->rstart; 
+  if (n) *n = mat->rend;
   PetscFunctionReturn(0);
 }
 

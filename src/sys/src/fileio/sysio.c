@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.64 1999/11/24 21:53:01 bsmith Exp bsmith $*/
+/*$Id: sysio.c,v 1.65 2000/01/11 20:59:28 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -455,13 +455,16 @@ int PetscBinaryClose(int fd)
 
    Not Collective
 
-   Output Parameter:
+   Input Parameters:
 +  fd - the file
 .  whence - if BINARY_SEEK_SET then size is an absolute location in the file
             if BINARY_SEEK_CUR then size is offset from current location
             if BINARY_SEEK_END then size is offset from end of file
--  size - number of bytes to move. Use PETSC_INT_SIZE, BINARY_SCALAR_SIZE,
+-  size - number of bytes to move. Use BINARY_INT_SIZE, BINARY_SCALAR_SIZE,
             etc. in your calculation rather than sizeof() to compute byte lengths.
+
+   Output Parameter:
+.   offset - new offset in file
 
    Level: developer
 
@@ -475,7 +478,7 @@ int PetscBinaryClose(int fd)
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
 @*/
-int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence)
+int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence,int *offset)
 {
   int iwhence=0;
 
@@ -490,9 +493,9 @@ int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence)
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown seek location");
   }
 #if defined(PARCH_win32)
-  _lseek(fd,(long)size,iwhence);
+  *offset = _lseek(fd,(long)size,iwhence);
 #else
-  lseek(fd,(off_t)size,iwhence);
+  *offset = lseek(fd,(off_t)size,iwhence);
 #endif
 
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.55 1999/11/05 14:46:04 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.56 2000/01/11 21:01:22 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -71,7 +71,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
 
-   Collective on MatFDColoring unless Viewer is VIEWER_STDOUT_SELF
+   Collective on MatFDColoring
 
    Input  Parameters:
 +  c - the coloring context
@@ -539,6 +539,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   }
   w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
+  ierr = MatSetUnfactored(J);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
   if (flg) {
     PLogInfo(coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n");

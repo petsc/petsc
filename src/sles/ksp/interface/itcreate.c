@@ -1,18 +1,18 @@
-/*$Id: itcreate.c,v 1.178 1999/11/24 21:54:47 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.179 2000/01/11 21:01:56 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
 #include "src/sles/ksp/kspimpl.h"      /*I "ksp.h" I*/
 #include "sys.h"
 
-int KSPRegisterAllCalled = 0;
+PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNC__  
 #define __FUNC__ "KSPView"
 /*@ 
    KSPView - Prints the KSP data structure.
 
-   Collective on KSP unless Viewer is VIEWER_STDOUT_SELF
+   Collective on KSP
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -315,7 +315,7 @@ int KSPRegisterDestroy(void)
     ierr = FListDestroy(KSPList);CHKERRQ(ierr);
     KSPList = 0;
   }
-  KSPRegisterAllCalled = 0;
+  KSPRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -466,10 +466,16 @@ int KSPSetTypeFromOptions(KSP ksp)
 #define __FUNC__ "KSPOptionsPublish"
 int KSPOptionsPublish(KSP ksp)
 {
-  int ierr;
+  int  ierr,ntypes;
+  char **types;
 
   PetscFunctionBegin;
   ierr = OptionsSelectBegin(ksp->comm,ksp->prefix,"KSP Options");CHKERRQ(ierr);
+
+  ierr = FListGet(KSPList,&types,&ntypes);CHKERRQ(ierr);
+  ierr = OptionsSelectList(ksp->comm,"-ksp_type","Krylov method",types,ntypes,ksp->type_name ? ksp->type_name : KSPGMRES);CHKERRQ(ierr);
+  ierr = PetscFree(types);CHKERRQ(ierr);
+
   ierr = OptionsSelectInt(ksp->comm,"-ksp_max_it","Maximum number of iterations",ksp->max_it);CHKERRQ(ierr);
   ierr = OptionsSelectDouble(ksp->comm,"-ksp_rtol","Relative decrease in residual norm",ksp->rtol);CHKERRQ(ierr);
   ierr = OptionsSelectDouble(ksp->comm,"-ksp_atol","Absolute value of residual norm",ksp->atol);CHKERRQ(ierr);
@@ -632,6 +638,11 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPPrintHelp(ksp);CHKERRQ(ierr);  }
 
+#if defined(PETSC_HAVE_AMS)
+  if (PetscPublishOptions && ksp->ops->publishoptions) {
+    ierr = (*ksp->ops->publishoptions)(ksp);CHKERRQ(ierr);
+  }
+#endif
   if (ksp->ops->setfromoptions) {
     ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
   }
@@ -672,7 +683,8 @@ $     -ksp_type my_solver
 
    Level: advanced
 
-   $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in pathname will be replaced with appropriate values.
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
+  occuring in pathname will be replaced with appropriate values.
 
 .keywords: KSP, register
 

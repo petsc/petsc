@@ -1,4 +1,4 @@
-/*$Id: vecreg.c,v 1.10 1999/10/24 14:01:50 bsmith Exp bsmith $*/
+/*$Id: vecreg.c,v 1.11 1999/11/05 14:44:46 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"  /*I "vec.h" I*/
 
@@ -14,7 +14,7 @@ EXTERN_C_END
     VecRegisterAll() is called. In general, if there is more than one
     DLL, then VecRegisterAll() may be called several times.
 */
-extern int VecRegisterAllCalled;
+extern PetscTruth VecRegisterAllCalled;
 
 #undef __FUNC__  
 #define __FUNC__ "VecRegisterAll"
@@ -34,7 +34,7 @@ int VecRegisterAll(const char path[])
   int ierr;
 
   PetscFunctionBegin;
-  VecRegisterAllCalled = 1;
+  VecRegisterAllCalled = PETSC_TRUE;
 
   ierr = VecRegisterDynamic(VEC_MPI,           path,"VecCreate_MPI",     VecCreate_MPI);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VEC_SHARED,        path,"VecCreate_Shared",  VecCreate_Shared);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: itregis.c,v 1.45 1999/11/05 14:46:35 bsmith Exp bsmith $*/
+/*$Id: itregis.c,v 1.46 1999/11/10 03:20:38 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"  /*I "ksp.h" I*/
 
@@ -24,7 +24,7 @@ EXTERN_C_END
     KSPRegisterAll() is called. In general, if there is more than one
     DLL, then KSPRegisterAll() may be called several times.
 */
-extern int KSPRegisterAllCalled;
+extern PetscTruth KSPRegisterAllCalled;
 
 #undef __FUNC__  
 #define __FUNC__ "KSPRegisterAll"
@@ -44,7 +44,7 @@ int KSPRegisterAll(char *path)
   int ierr;
 
   PetscFunctionBegin;
-  KSPRegisterAllCalled = 1;
+  KSPRegisterAllCalled = PETSC_TRUE;
 
   ierr = KSPRegisterDynamic(KSPCG,         path,"KSPCreate_CG",        KSPCreate_CG);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPRICHARDSON, path,"KSPCreate_Richardson",KSPCreate_Richardson);CHKERRQ(ierr);

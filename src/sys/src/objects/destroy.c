@@ -1,4 +1,4 @@
-/*$Id: destroy.c,v 1.46 1999/11/10 03:18:02 bsmith Exp bsmith $*/
+/*$Id: destroy.c,v 1.47 2000/01/11 20:59:32 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -40,7 +40,7 @@ int PetscObjectDestroy(PetscObject obj)
 /*@C
    PetscObjectView - Views any PetscObject, regardless of the type. 
 
-   Collective on PetscObject, unless Viewer is sequential (e.g., VIEWER_STDOUT_SELF)
+   Collective on PetscObject
 
    Input Parameters:
 +  obj - any PETSc object, for example a Vec, Mat or KSP.

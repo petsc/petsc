@@ -1,4 +1,4 @@
-/*$Id: general.c,v 1.89 1999/11/05 14:44:37 bsmith Exp bsmith $*/
+/*$Id: general.c,v 1.90 2000/01/11 20:59:55 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
@@ -88,19 +88,36 @@ int ISGetSize_General(IS is,int *size)
 
 #undef __FUNC__  
 #define __FUNC__ "ISInvertPermutation_General" 
-int ISInvertPermutation_General(IS is,IS *isout)
+int ISInvertPermutation_General(IS is,int nlocal,IS *isout)
 {
   IS_General *sub = (IS_General *)is->data;
-  int        i,ierr,*ii,n = sub->n,*idx = sub->idx;
+  int        i,ierr,*ii,n = sub->n,*idx = sub->idx,size,nstart;
+  IS         istmp,nistmp;
 
   PetscFunctionBegin;
-  ii = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(ii);
-  for (i=0; i<n; i++) {
-    ii[idx[i]] = i;
+  ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ii = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(ii);
+    for (i=0; i<n; i++) {
+      ii[idx[i]] = i;
+    }
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,isout);CHKERRQ(ierr);
+    ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
+    ierr = PetscFree(ii);CHKERRQ(ierr);
+  } else {
+    /* crude, nonscalable get entire IS on each processor */
+    ierr = ISAllGather(is,&istmp);CHKERRQ(ierr);
+    ierr = ISSetPermutation(istmp);CHKERRQ(ierr);
+    ierr = ISInvertPermutation(istmp,PETSC_DECIDE,&nistmp);CHKERRQ(ierr);
+    ierr = ISDestroy(istmp);CHKERRQ(ierr);
+    /* get the part we need */
+    ierr    = MPI_Scan(&nlocal,&nstart,1,MPI_INT,MPI_SUM,is->comm);CHKERRQ(ierr);
+    nstart -= nlocal;
+    ierr    = ISGetIndices(nistmp,&idx);CHKERRQ(ierr);
+    ierr    = ISCreateGeneral(is->comm,nlocal,idx+nstart,isout);CHKERRQ(ierr);    
+    ierr    = ISRestoreIndices(nistmp,&idx);CHKERRQ(ierr);
+    ierr    = ISDestroy(nistmp);CHKERRQ(ierr);
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,isout);CHKERRQ(ierr);
-  ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
-  ierr = PetscFree(ii);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

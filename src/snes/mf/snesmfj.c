@@ -1,10 +1,10 @@
-/*$Id: snesmfj.c,v 1.99 1999/11/05 14:47:08 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.100 2000/01/11 21:02:32 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
 
-FList MatSNESMFList              = 0;
-int   MatSNESMFRegisterAllCalled = 0;
+FList      MatSNESMFList              = 0;
+PetscTruth MatSNESMFRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNC__  
 #define __FUNC__ "MatSNESMFSetType"
@@ -138,7 +138,7 @@ int MatSNESMFRegisterDestroy(void)
     ierr = FListDestroy(MatSNESMFList);CHKERRQ(ierr);
     MatSNESMFList = 0;
   }
-  MatSNESMFRegisterAllCalled = 0;
+  MatSNESMFRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.10 2000/01/11 21:02:14 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.11 2000/01/31 04:21:06 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -284,15 +284,15 @@ int FGMREScycle(int *itcount,KSP ksp)
     ksp->rnorm = res_norm;
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
+    ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
-      ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (!ksp->reason) {
         SETERRQ(0,0,"You reached the happy break down,but convergence was not indicated.");
       }
       break;
     }
-    ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   }
   /* END OF ITERATION LOOP */
 

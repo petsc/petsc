@@ -1,4 +1,4 @@
-/*$Id: pcregis.c,v 1.51 1999/10/24 14:02:56 bsmith Exp bsmith $*/
+/*$Id: pcregis.c,v 1.52 1999/11/05 14:46:16 bsmith Exp bsmith $*/
 
 #include "src/sles/pc/pcimpl.h"          /*I   "pc.h"   I*/
 
@@ -40,7 +40,7 @@ int PCRegisterAll(char *path)
   int ierr;
 
   PetscFunctionBegin;
-  PCRegisterAllCalled = 1;
+  PCRegisterAllCalled = PETSC_TRUE;
 
   ierr = PCRegisterDynamic(PCNONE         ,path,"PCCreate_None",PCCreate_None);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCJACOBI       ,path,"PCCreate_Jacobi",PCCreate_Jacobi);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: mpiadj.h,v 1.3 1998/12/03 04:01:42 bsmith Exp bsmith $ */
+/* $Id: mpicsr.h,v 1.4 2000/01/11 21:01:00 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -20,7 +20,7 @@ typedef struct {
   int              *diag;            /* pointers to diagonal elements, if they exist */
   int              *i;               /* pointer to beginning of each row */
   int              *j;               /* column values: j + i[k] - 1 is start of row k */
-  Scalar           *values;          /* numerical values */
+  int              *values;          /* numerical values */
   PetscTruth       symmetric;        /* user indicates the nonzero structure is symmetric */
 } Mat_MPICSR;
 

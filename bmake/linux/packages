@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.50 2000/01/21 17:20:01 balay Exp balay $ 
+# $Id: base.site,v 1.51 2000/01/21 19:11:55 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,12 +13,7 @@
 BLAS_LIB       = /home/petsc/software/blaslapack/blas_INTEL_linux.a
 LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_linux.a
 #
-#
-# Location of X-windows software
-#
-X11_INCLUDE    =
-X11_LIB        = -L/usr/X11R6/lib -lX11
-#
+
 # Location of MPI (Message Passing Interface) software
 #
 MPI_HOME       = /home/petsc/software/mpich-1.2.0/linux
@@ -33,59 +28,57 @@ MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/h
 #MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 #
 # ----------------------------------------------------------------------------------------  
-#  Locations of optional packages. Comment out those you do not have and change the 
-#  values in PCONF below accordingly.
+#  Locations of OPTIONAL packages. Comment out those you do not have.
 # ----------------------------------------------------------------------------------------  
 #
-# Optional location of MPE
+# Location of X-windows software
+#
+X11_INCLUDE    =
+X11_LIB        = -L/usr/X11R6/lib -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+# Location of MPE
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
 #MPE_INCLUDE   = -I/home/petsc/mpich-1.1.1/mpe
 #MPE_LIB       = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpe -lpmpich
 MPE_INCLUDE   = -I${MPI_HOME}/mpe 
 MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
-# Optional location of BlockSolve (MPI version)
+# Location of BlockSolve (MPI version)
 #
-#BS_INCLUDE     = -I/home/petsc/software/BlockSolve95/include
-#BS_LIB         =  -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+#BLOCKSOLVE_INCLUDE     = -I/home/petsc/software/BlockSolve95/include
+#BLOCKSOLVE_LIB         =  -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
-# Optional Matlab location
+# Matlab location
 #
 CMEX            = /software/linux/com/packages/matlab-5.2/bin/mex
 MCC             = gcc
 MATLABCOMMAND   = matlab
+PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
-# Option location where adiC is installed
+# Location where adiC is installed
 #
 #ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
 #ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
 #ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #
-# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# Location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
 #PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
 #PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/linux/libpvode.a
+#PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
 #
-# Optional location of ParMetis
+# Location of ParMetis
 #
 #PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
 #PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
+#PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
-# ---------------------------------------------------------------------------------------
-#
-# PCONF - indicates which OPTIONAL external packages are available at your site
-#
-# If you have a package then make sure -DPETSC_HAVE_packagename is indicated below and 
-# the locations are appropriately indicated above. If you do not have the package then
-# comment out the locations indicated for that package above.
-#
-PCONF         = -DPETSC_HAVE_MPE -DPETSC_HAVE_X11
-#PCONF        = -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
-EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
-#
-# ---------------------------------------------------------------------------------------
-#
+# ------------------------------------------------------------------------------
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.15 1999/09/14 18:31:07 balay Exp bsmith $ 
+# $Id: base.site,v 1.16 1999/11/05 14:42:55 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -18,11 +18,7 @@ BLAS_LIB       =  /home/petsc/software/blaslapack/blas_solaris.a  ${FC_LIB}
 LAPACK_LIB     =  /home/petsc/software/blaslapack/lapack_solaris.a
 #BLAS_LIB       =  -lsunperf ${FC_LIB} -lSUNWPro_lic
 
-#
-# Location of X-windows software
-#
-X11_INCLUDE    = -I/usr/openwin/include
-X11_LIB        = -L/usr/openwin/lib -lX11
+
 #
 # Location of MPI (Message Passing Interface) software
 #
@@ -46,63 +42,62 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/ma
 #MPIRUN         = glurun
 #
 # ----------------------------------------------------------------------------------------  
-#  Locations of optional packages. Comment out those you do not have and change the 
-#  values in PCONF below accordingly.
+#  Locations of OPTIONAL packages. Comment out those you do not have.
 # ----------------------------------------------------------------------------------------  
 #
-# Optional location of MPE
+# Location of X-windows software
+#
+X11_INCLUDE    = -I/usr/openwin/include
+X11_LIB        = -L/usr/openwin/lib -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+# Location of MPE
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
 #MPE_INCLUDE   = -I/home/petsc/mpich/mpe
 #MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpe -lpmpi
 MPE_INCLUDE   = -I${MPI_HOME}/mpe
 MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
-# Optional location of BlockSolve (MPI version)
+# Location of BlockSolve (MPI version)
 #
-BS_INCLUDE =
-BS_LIB     =
+#BLOCKSOLVE_INCLUDE            =
+#BLOCKSOLVE_LIB                =
+#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
-# Optional Matlab location
+# Matlab location
 #
-#CMEX            = 
-#MCC            = 
-#MATLABCOMMAND  = matlab
+#CMEX              = 
+#MCC               = 
+#MATLABCOMMAND     = matlab
+#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
-# Option location where adiC is installed
+# Location where adiC is installed
 #
-#ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
-#ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
-#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+#ADIC_INCLUDE    = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
+#ADIC_LIB        = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
+#ADIC_CC         = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #
-# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# Location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-PVODE_INCLUDE = 
-PVODE_LIB     = 
+#PVODE_INCLUDE    = 
+#PVODE_LIB        = 
+#PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
 #
-# Optional location of ParMetis
+# Location of ParMetis
 #
-PARMETIS_INCLUDE = 
-PARMETIS_LIB     = 
+#PARMETIS_INCLUDE    = 
+#PARMETIS_LIB        = 
+#PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
-#  Optional location for ALICE Memory Snooper
+#  Location for ALICE Memory Snooper
 #
-AMS_INCLUDE = 
-AMS_LIB     = 
+#AMS_INCLUDE    = 
+#AMS_LIB        = 
+#PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 # 
-# ---------------------------------------------------------------------------------------
-#
-# PCONF - indicates which OPTIONAL external packages are available at your site
-#
-# If you have a package then make sure -DPETSC_HAVE_packagename is indicated below and 
-# the locations are appropriately indicated above. If you do not have the package then
-# comment out the locations indicated for that package above.
-#
-PCONF         = -DPETSC_HAVE_MPE  -DPETSC_HAVE_X11
-#PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE 
-EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB} \
-                ${AMS_LIB}
-#
 # ---------------------------------------------------------------------------------------
 #
 # If you are using shared version of any external libraries you must make this

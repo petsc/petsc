@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.19 1999/10/04 22:24:54 balay Exp bsmith $ 
+# $Id: base.site,v 1.20 1999/11/05 14:42:55 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -21,12 +21,7 @@ LAPACK_LIB      =
 #BLAS_LIB        = -lpetscblas
 #LAPACK_LIB      = 
 
-#
-# Location of X-windows software
-#
-X11_INCLUDE    = 
-X11_LIB        = -lX11
-#
+
 # Location of MPI (Message Passing Interface) software
 #
 #MPI_LIB        = /usr/local/mpi/lib/alpha/ch_p4/libmpi.a 
@@ -36,18 +31,14 @@ X11_LIB        = -lX11
 MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
 MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
 MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
-#
-# PCONF - indicates which external packages are available at your site
-# Make sure that the next line below does not have -DPETSC_HAVE_BLOCKSOLVE
-# unless you have BlockSolve installed.
-# Make sure that you have the DEC alpha dxml library installed on your 
-# machine and -ldxml in the BLAS_LIB line above if you define 
-# PETSC_HAVE_DXML below.
-#
-PCONF      =   -DPETSC_HAVE_X11
-#
-BS_INCLUDE = 
-BS_LIB     = 
-#
 
-EXTERNAL_LIB  = ${BS_LIB} ${CVODE_LIB} ${ADIC_LIB}
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ----------------------------------------------------------------------------------------  
+#
+#
+# Location of X-windows software
+#
+X11_INCLUDE    = 
+X11_LIB        = -lX11
+#

@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.18 1999/11/05 14:47:42 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.19 2000/01/11 21:03:08 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -111,6 +111,19 @@ struct _p_AOData {
 
 extern int AODataKeyFind_Private(AOData,char *,PetscTruth *,AODataKey **);
 extern int AODataSegmentFind_Private(AOData,char *,char *,PetscTruth *,AODataKey **,AODataSegment **);
+
+
+#include "bitarray.h"
+
+struct _p_AOData2dGrid {
+   int     cell_n, vertex_n, edge_n;
+   int     cell_max, vertex_max, edge_max;
+   int     *cell_vertex,*cell_edge,*cell_cell;
+   double  *vertex;
+   double  xmin,xmax,ymin,ymax;
+   int     *edge_vertex,*edge_cell;
+   PetscBT vertex_boundary;
+};
 
 
 #endif

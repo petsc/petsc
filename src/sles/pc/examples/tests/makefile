@@ -1,10 +1,10 @@
-# $Id: makefile,v 1.63 1999/03/01 04:55:26 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.64 1999/04/16 16:08:34 bsmith Exp bsmith $ 
 
 ALL: ex1
 
 CFLAGS	        =
 FFLAGS          =
-CPPFLAGS        = ${BS_INCLUDE}
+CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sles/pc/examples/tests/
 

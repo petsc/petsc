@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.142 2000/01/18 20:47:44 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.143 2000/01/26 21:57:16 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -206,8 +206,8 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
 
   /*-- due to the pivoting, we need to reorder iscol to correctly --*/
   /*-- permute the right-hand-side and solution vectors           --*/
-  ierr = ISInvertPermutation(iscol,&isicol);CHKERRQ(ierr);
-  ierr = ISInvertPermutation(isrow,&isirow);CHKERRQ(ierr);
+  ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
+  ierr = ISInvertPermutation(isrow,PETSC_DECIDE,&isirow);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   for(i=0; i<n; i++) {
     ordcol[i] = ic[iperm[i]-1];  
@@ -279,7 +279,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,PetscReal f,Mat *B)
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
   if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
 
-  ierr = ISInvertPermutation(iscol,&isicol);CHKERRQ(ierr);
+  ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
@@ -884,7 +884,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     levels        = 0;
     diagonal_fill = 0;
   }
-  ierr = ISInvertPermutation(iscol,&isicol);CHKERRQ(ierr);
+  ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
 
   /* special case that simply copies fill pattern */
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);

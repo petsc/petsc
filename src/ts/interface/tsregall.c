@@ -1,4 +1,4 @@
-/*$Id: tsregall.c,v 1.24 1999/10/24 14:03:48 bsmith Exp bsmith $*/
+/*$Id: tsregall.c,v 1.25 1999/11/05 14:47:28 bsmith Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"     /*I  "ts.h"  I*/
 EXTERN_C_BEGIN
@@ -25,7 +25,7 @@ EXTERN_C_END
 int TSRegisterAll(char *path)
 {
   PetscFunctionBegin;
-  TSRegisterAllCalled = 1;
+  TSRegisterAllCalled = PETSC_TRUE;
 
   TSRegisterDynamic(TS_EULER,               path,"TSCreate_Euler", TSCreate_Euler);
   TSRegisterDynamic(TS_BEULER,              path,"TSCreate_BEuler",TSCreate_BEuler);

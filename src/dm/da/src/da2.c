@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.134 1999/11/24 21:55:34 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.135 2000/01/11 21:03:19 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
@@ -1066,6 +1066,3 @@ int DARefine(DA da,DA *daref)
   *daref = da2;
   PetscFunctionReturn(0);
 }
-
- 
-

@@ -1,4 +1,4 @@
-/* $Id: isimpl.h,v 1.19 1999/04/23 15:22:34 bsmith Exp bsmith $ */
+/* $Id: isimpl.h,v 1.20 2000/01/11 20:59:53 bsmith Exp bsmith $ */
 
 /*
     Index sets for scatter-gather type operations in vectors
@@ -15,7 +15,7 @@ struct _ISOps {
        (*getlocalsize)(IS,int*),
        (*getindices)(IS,int**),
        (*restoreindices)(IS,int**),
-       (*invertpermutation)(IS,IS*),
+       (*invertpermutation)(IS,int,IS*),
        (*sortindices)(IS),
        (*sorted)(IS,PetscTruth *),
        (*duplicate)(IS,IS *),

@@ -1,4 +1,4 @@
-/*$Id: shell.c,v 1.75 1999/10/24 14:02:18 bsmith Exp bsmith $*/
+/*$Id: shell.c,v 1.76 2000/01/11 21:00:44 bsmith Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -105,11 +105,12 @@ int MatDestroy_Shell(Mat mat)
 #define __FUNC__ "MatGetOwnershipRange_Shell"
 int MatGetOwnershipRange_Shell(Mat mat,int *rstart,int *rend)
 {
-  int ierr;
+  int ierr,tmp;
 
   PetscFunctionBegin;
-  ierr = MPI_Scan(&mat->m,rend,1,MPI_INT,MPI_SUM,mat->comm);CHKERRQ(ierr);
-  *rstart = *rend - mat->m;
+  ierr = MPI_Scan(&mat->m,&tmp,1,MPI_INT,MPI_SUM,mat->comm);CHKERRQ(ierr);
+  if (rstart) *rstart = tmp - mat->m;
+  if (rend)   *rend   = tmp;
   PetscFunctionReturn(0);
 }
 

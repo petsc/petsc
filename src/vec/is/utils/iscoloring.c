@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.51 1999/11/05 14:44:45 bsmith Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.52 2000/01/11 21:00:03 bsmith Exp bsmith $*/
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
@@ -38,7 +38,7 @@ int ISColoringDestroy(ISColoring iscoloring)
 /*@C
    ISColoringView - Views a coloring context.
 
-   Collective on ISColoring unless Viewer is VIEWER_STDOUT_SELF
+   Collective on ISColoring
 
    Input Parameters:
 +  iscoloring - the coloring context
@@ -222,7 +222,7 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
 
    Level: advanced
 
-.seealso: MatPartitioningCreate(), AOCreateBasic()
+.seealso: MatPartitioningCreate(), AOCreateBasic(), ISPartioningCount()
 
 @*/
 int ISPartitioningToNumbering(IS part,IS *is)
@@ -254,7 +254,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
   lsizes = (int*)PetscMalloc(3*size*sizeof(int));CHKPTRQ(lsizes);
   starts = lsizes + size;
   sums   = starts + size;
-  ierr = PetscMemzero(lsizes,size*sizeof(int));CHKERRQ(ierr);
+  ierr   = PetscMemzero(lsizes,size*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     lsizes[indices[i]]++;
   }  
@@ -264,7 +264,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
     starts[i] -= lsizes[i];
   }
   for (i=1; i<size; i++) {
-    sums[i]   += sums[i-1];
+    sums[i]    += sums[i-1];
     starts[i]  += sums[i-1];
   }
 
@@ -280,7 +280,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,n,newi,is);CHKERRQ(ierr);
   ierr = PetscFree(newi);CHKERRQ(ierr);
-
+  ierr = ISSetPermutation(*is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

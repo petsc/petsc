@@ -1,4 +1,4 @@
-/*$Id: mpicsr.c,v 1.34 2000/01/11 21:01:00 bsmith Exp bsmith $*/
+/*$Id: mpicsr.c,v 1.35 2000/01/29 04:38:01 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -414,7 +414,7 @@ int MatCreateMPICSR(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
 #define __FUNC__ "MatConvert_MPICSR"
 int MatConvert_MPICSR(Mat A,MatType type,Mat *B)
 {
-  int      i,ierr,m,n,M,N,nzeros = 0,*ia,*ja,*rj,len,rstart,cnt,j,*a;
+  int      i,ierr,m,N,nzeros = 0,*ia,*ja,*rj,len,rstart,cnt,j,*a;
   Scalar   *ra;
   MPI_Comm comm;
 
@@ -445,7 +445,7 @@ int MatConvert_MPICSR(Mat A,MatType type,Mat *B)
     cnt     = 0;
     for (j=0; j<len; j++) {
       if (rj[j] != i+rstart) { /* if not diagonal */
-        a[nzeros+cnt]    = (int) ra[j];
+        a[nzeros+cnt]    = (int) PetscAbsScalar(ra[j]);
         ja[nzeros+cnt++] = rj[j];
       } 
     }

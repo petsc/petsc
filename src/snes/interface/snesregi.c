@@ -1,4 +1,4 @@
-/*$Id: snesregi.c,v 1.30 1999/10/24 14:03:31 bsmith Exp bsmith $*/
+/*$Id: snesregi.c,v 1.31 1999/11/05 14:47:05 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
 
@@ -15,7 +15,7 @@ EXTERN_C_END
     SNESRegisterAll() is called. In general, if there is more than one
     DLL then SNESRegisterAll() may be called several times.
 */
-extern int SNESRegisterAllCalled;
+extern PetscTruth SNESRegisterAllCalled;
 
 #undef __FUNC__  
 #define __FUNC__ "SNESRegisterAll"
@@ -35,7 +35,7 @@ int SNESRegisterAll(char *path)
   int ierr;
 
   PetscFunctionBegin;
-  SNESRegisterAllCalled = 1;
+  SNESRegisterAllCalled = PETSC_TRUE;
 
   ierr = SNESRegisterDynamic("ls",   path,"SNESCreate_EQ_LS",SNESCreate_EQ_LS);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic("tr",   path,"SNESCreate_EQ_TR",SNESCreate_EQ_TR);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: index.c,v 1.69 1999/10/24 14:01:43 bsmith Exp bsmith $*/
+/*$Id: index.c,v 1.70 2000/01/11 20:59:54 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
@@ -156,23 +156,27 @@ int ISDestroy(IS is)
    Collective on IS
 
    Input Parameter:
-.  is - the index set
++  is - the index set
+-  nlocal - number of indices on this processor in result (ignored for 1 proccessor) or
+            use PETSC_DECIDE
 
    Output Parameter:
 .  isout - the inverse permutation
 
    Level: intermediate
 
+   Notes: this inverts the permutation on each processor independently.
+
 .keywords: IS, index set, invert, inverse, permutation
 @*/
-int ISInvertPermutation(IS is,IS *isout)
+int ISInvertPermutation(IS is,int nlocal,IS *isout)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   if (!is->isperm) SETERRQ(PETSC_ERR_ARG_WRONG,0,"not a permutation");
-  ierr = (*is->ops->invertpermutation)(is,isout);CHKERRQ(ierr);
+  ierr = (*is->ops->invertpermutation)(is,nlocal,isout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -307,7 +311,7 @@ int ISRestoreIndices(IS is,int *ptr[])
 /*@C
    ISView - Displays an index set.
 
-   Collective on IS unless Viewer is sequential
+   Collective on IS
 
    Input Parameters:
 +  is - the index set

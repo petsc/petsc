@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.17 2000/01/11 21:00:48 bsmith Exp balay $*/
+/*$Id: bdiag3.c,v 1.18 2000/01/26 21:17:41 balay Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -62,7 +62,8 @@ int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
 
   PetscFunctionBegin;
-  *m = 0; *n = a->m;
+  if (m) *m = 0;
+  if (n) *n = a->m;
   PetscFunctionReturn(0);
 }
 

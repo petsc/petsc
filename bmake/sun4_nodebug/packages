@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.19 1999/08/31 04:07:54 balay Exp bsmith $ 
+# $Id: base.site,v 1.20 1999/11/05 14:42:55 bsmith Exp bsmith $ 
 #
 #
 #  This file contains site-specific information.  The definitions below
@@ -20,12 +20,7 @@
 #
 BLAS_LIB       =  /usr/local/lapack/lib/blas.a
 LAPACK_LIB     =  /usr/local/lapack/lib/lapack.a
-#
-# Location of X-windows software
-#
-X11_INCLUDE    = -I/usr/local/X11R5/include
-X11_LIB        = -lX11
-#
+
 # Location of MPI (Message Passing Interface) software  
 #
 MPI_HOME       = /home/petsc/software/mpich-1.1.2
@@ -36,50 +31,52 @@ MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
 MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 #
 # ----------------------------------------------------------------------------------------  
-#  Locations of optional packages. Comment out those you do not have and change the 
-#  values in PCONF below accordingly.
+#  Locations of OPTIONAL packages. Comment out those you do not have.
 # ----------------------------------------------------------------------------------------  
 #
-# Optional location of MPE
+# Location of X-windows software
+#
+X11_INCLUDE    = -I/usr/local/X11R5/include
+X11_LIB        = -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+#
+# Location of MPE
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
-MPE_INCLUDE   = -I${MPI_HOME}/mpe 
-MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+MPE_INCLUDE    = -I${MPI_HOME}/mpe 
+MPE_LIB        = -L${MPI_BUILD_HOME}/lib -lmpe
+PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
-# Optional location of BlockSolve (MPI version)
+# Location of BlockSolve (MPI version)
 #
-BS_INCLUDE = -I/home/petsc/software/BlockSolve95/include
-BS_LIB     = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+BLOCKSOLVE_INCLUDE            = -I/home/petsc/software/BlockSolve95/include
+BLOCKSOLVE_LIB                = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
-# Optional Matlab location
+# Matlab location
 #
-#CMEX            = 
-#MCC            = 
-#MATLABCOMMAND  = matlab
+#CMEX              = 
+#MCC               = 
+#MATLABCOMMAND     = matlab
+#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
-# Option location where adiC is installed
+# Location where adiC is installed
 #
-#ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=10
-#ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_grad
-#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+#ADIC_INCLUDE    = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=10
+#ADIC_LIB        = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_grad
+#ADIC_CC         = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #
-# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# Location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
-PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/sun4/libpvode.a
+PVODE_INCLUDE    = -I/home/petsc/software/MPI_PVODE/include
+PVODE_LIB        = /home/petsc/software/MPI_PVODE/lib/sun4/libpvode.a
+PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
 #
-# Optional location of ParMetis
+# Location of ParMetis
 #
-PARMETIS_INCLUDE = -I/home/petsc/software/ParMetis-2.0
-PARMETIS_LIB     = -L/home/petsc/software/ParMetis-2.0/lib/sun4 -lparmetis -lmetis
+PARMETIS_INCLUDE    = -I/home/petsc/software/ParMetis-2.0
+PARMETIS_LIB        = -L/home/petsc/software/ParMetis-2.0/lib/sun4 -lparmetis -lmetis
+PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
-# ---------------------------------------------------------------------------------------
-#
-# PCONF - indicates which OPTIONAL external packages are available at your site
-#
-# If you have a package then make sure -DPETSC_HAVE_packagename is indicated below and 
-# the locations are appropriately indicated above. If you do not have the package then
-# comment out the locations indicated for that package above.
-#
-PCONF         = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE -DPETSC_HAVE_PARMETIS  -DPETSC_HAVE_X11
-EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB}

@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.308 1999/11/24 21:53:50 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.309 2000/01/11 21:00:41 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1068,6 +1068,8 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
       op == MAT_NEW_NONZERO_ALLOCATION_ERR ||
       op == MAT_KEEP_ZEROED_ROWS ||
       op == MAT_NEW_NONZERO_LOCATION_ERR ||
+      op == MAT_USE_INODES ||
+      op == MAT_DO_NOT_USE_INODES ||
       op == MAT_IGNORE_ZERO_ENTRIES) {
         ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
         ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
@@ -1126,7 +1128,8 @@ int MatGetOwnershipRange_MPIAIJ(Mat matin,int *m,int *n)
   Mat_MPIAIJ *mat = (Mat_MPIAIJ*)matin->data;
 
   PetscFunctionBegin;
-  *m = mat->rstart; *n = mat->rend;
+  if (m) *m = mat->rstart;
+  if (n) *n = mat->rend;
   PetscFunctionReturn(0);
 }
 

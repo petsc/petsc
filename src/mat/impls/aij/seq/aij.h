@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.36 1999/11/24 21:53:47 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.37 2000/01/11 21:00:37 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -7,10 +7,11 @@
 
 /* Info about i-nodes (identical nodes) */
 typedef struct {
-  int node_count;                    /* number of inodes */
-  int *size;                         /* size of each inode */
-  int limit;                         /* inode limit */
-  int max_limit;                     /* maximum supported inode limit */
+  PetscTruth use;
+  int        node_count;                    /* number of inodes */
+  int        *size;                         /* size of each inode */
+  int        limit;                         /* inode limit */
+  int        max_limit;                     /* maximum supported inode limit */
 } Mat_SeqAIJ_Inode;
 
 /*  

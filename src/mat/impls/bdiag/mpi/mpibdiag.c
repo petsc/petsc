@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.180 1999/11/24 21:53:57 bsmith Exp bsmith $*/
+/*$Id: mpibdiag.c,v 1.181 2000/01/11 21:00:50 bsmith Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -652,7 +652,8 @@ int MatGetOwnershipRange_MPIBDiag(Mat matin,int *m,int *n)
   Mat_MPIBDiag *mat = (Mat_MPIBDiag*)matin->data;
 
   PetscFunctionBegin;
-  *m = mat->rstart; *n = mat->rend;
+  if (m) *m = mat->rstart;
+  if (n) *n = mat->rend;
   PetscFunctionReturn(0);
 }
 

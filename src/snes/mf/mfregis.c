@@ -1,4 +1,4 @@
-/*$Id: mfregis.c,v 1.5 1999/10/24 14:03:33 bsmith Exp bsmith $*/
+/*$Id: mfregis.c,v 1.6 1999/11/05 14:47:08 bsmith Exp bsmith $*/
 
 #include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
 
@@ -26,7 +26,7 @@ int MatSNESMFRegisterAll(char *path)
   int ierr;
 
   PetscFunctionBegin;
-  MatSNESMFRegisterAllCalled = 1;
+  MatSNESMFRegisterAllCalled = PETSC_TRUE;
 
   ierr = MatSNESMFRegisterDynamic("default",path,"MatSNESMFCreate_Default",MatSNESMFCreate_Default);CHKERRQ(ierr);
   ierr = MatSNESMFRegisterDynamic("wp",path,"MatSNESMFCreate_WP",MatSNESMFCreate_WP);CHKERRQ(ierr);

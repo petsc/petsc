@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.110 1999/12/08 22:17:39 balay Exp bsmith $*/
+/*$Id: tr.c,v 1.111 2000/01/11 21:02:36 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
 
@@ -73,13 +73,15 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   G		= snes->work[1];
   Ytmp          = snes->work[2];
 
+  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  snes->iter = 0;
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);         /* xnorm = || X || */  
 
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);          /* F(X) */
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);             /* fnorm <- || F || */
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  snes->iter = 0;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   delta = neP->delta0*fnorm;         
   neP->delta = delta;

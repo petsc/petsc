@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.69 1999/11/05 14:44:46 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.70 2000/01/11 21:00:05 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "petsc.h"
@@ -36,8 +36,8 @@ int VecGetType(Vec vec,VecType *type)
 /*
    Contains the list of registered Vec routines
 */
-FList VecList = 0;
-int    VecRegisterAllCalled = 0;
+FList      VecList = 0;
+PetscTruth VecRegisterAllCalled = PETSC_FALSE;
  
 #undef __FUNC__  
 #define __FUNC__ "VecRegisterDestroy"
@@ -62,7 +62,7 @@ int VecRegisterDestroy(void)
     ierr = FListDestroy(VecList);CHKERRQ(ierr);
     VecList = 0;
   }
-  VecRegisterAllCalled = 0;
+  VecRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -103,7 +103,8 @@ int VecRegisterDestroy(void)
       -vec_type my_vector_name
 .ve
 
-   $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in pathname will be replaced with appropriate values.
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
+  occuring in pathname will be replaced with appropriate values.
 
    Level: advanced
 

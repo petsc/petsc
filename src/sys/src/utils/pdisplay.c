@@ -1,4 +1,4 @@
-/*$Id: pdisplay.c,v 1.14 2000/01/18 15:35:14 bsmith Exp bsmith $*/
+/*$Id: pdisplay.c,v 1.15 2000/01/20 17:00:09 bsmith Exp bsmith $*/
 
 #include "petsc.h"        
 #include "sys.h"             /*I    "sys.h"   I*/
@@ -28,6 +28,11 @@
   Level: advanced
 
    Notes:
+    You can also "set" the environmental variable by setting the options database value
+    -name "stringvalue" (with name in lower case). If name begins with PETSC_ this is 
+    discarded before checking the database. For example, PETSC_VIEWER_SOCKET_PORT would 
+    be given as -viewer_socket_port 9000
+
     If comm does not contain the 0th process in the MPIRUN it is likely on
     many systems that the environmental variable will not be set unless you
     put it in a universal location like a .chsrc file
@@ -36,22 +41,36 @@
 int OptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,PetscTruth *flag)
 {
   int        rank,ierr;
-  char       *str;
-  PetscTruth flg = PETSC_FALSE;
+  char       *str,work[256];
+  PetscTruth flg = PETSC_FALSE,spetsc;
    
   PetscFunctionBegin;
-  ierr = PetscMemzero(env,len*sizeof(char));CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (!rank) {
-    str = getenv(name);
-    if (str) flg = PETSC_TRUE;
-    if (str && env) {ierr = PetscStrncpy(env,str,len);CHKERRQ(ierr);}
+  /* first check options database */
+  ierr = PetscStrncmp(name,"PETSC_",6,&spetsc);CHKERRQ(ierr);
+  
+  ierr = PetscStrcpy(work,"-");CHKERRQ(ierr);
+  if (spetsc) {
+    ierr = PetscStrcat(work,name+6);CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrcat(work,name);CHKERRQ(ierr);
   }
-  ierr = MPI_Bcast(&flg,1,MPI_INT,0,comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(env,len,MPI_CHAR,0,comm);CHKERRQ(ierr);
-  if (flag) {
-    *flag = flg;
+  ierr = PetscStrtolower(work);CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,work,env,len,&flg);CHKERRQ(ierr);
+  if (flg) {
+    if (flag) *flag = PETSC_TRUE;
+  } else { /* now check environment */
+    ierr = PetscMemzero(env,len*sizeof(char));CHKERRQ(ierr);
+
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      str = getenv(name);
+      if (str) flg = PETSC_TRUE;
+      if (str && env) {ierr = PetscStrncpy(env,str,len);CHKERRQ(ierr);}
+    }
+    ierr = MPI_Bcast(&flg,1,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(env,len,MPI_CHAR,0,comm);CHKERRQ(ierr);
+    if (flag) *flag = flg;
   } 
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f.F,v 1.13 1999/05/04 20:30:16 balay Exp bsmith $"
+!  "$Id: ex1f.F,v 1.14 2000/01/11 20:59:59 bsmith Exp bsmith $"
 !
 !  Formatted test for IS general routines
 !
@@ -129,7 +129,7 @@
            CHKERRA(ierr)
       call ISSetPermutation(is,ierr) 
            CHKERRA(ierr)
-      call ISInvertPermutation(is,newis,ierr) 
+      call ISInvertPermutation(is,PETSC_DECIDE,newis,ierr) 
            CHKERRA(ierr)
       call ISGetIndices(newis,ii,iis,ierr) 
            CHKERRA(ierr)

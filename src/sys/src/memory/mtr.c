@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.136 1999/12/26 23:40:57 bsmith Exp bsmith $*/
+/*$Id: mtr.c,v 1.137 2000/01/11 20:59:31 bsmith Exp bsmith $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -239,8 +239,7 @@ void *PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *
   }
   nsize = a;
   if (nsize & TR_ALIGN_MASK) nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
-  inew = (char*)PetscMallocAlign((unsigned)(nsize+sizeof(TrSPACE)+sizeof(Scalar)),
-                                   lineno,function,filename,dir);  
+  inew = (char*)PetscMallocAlign((unsigned)(nsize+sizeof(TrSPACE)+sizeof(Scalar)),lineno,function,filename,dir);  
   if (!inew) PetscFunctionReturn(0);
 
 

@@ -1,4 +1,4 @@
-/*$Id: tagm.c,v 1.17 1999/11/05 14:44:14 bsmith Exp bsmith $*/
+/*$Id: tagm.c,v 1.18 2000/01/11 20:59:32 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites
 */
@@ -80,7 +80,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
   PetscValidIntPointer(tag);
 
   ierr = MPI_Attr_get(obj->comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad comm in PETSc object");
+  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad MPI communicator in PETSc object, likely memory corruption");
 
   if (*tagvalp < 1) SETERRQ(PETSC_ERR_PLIB,0,"Out of tags for object");
   *tag = tagvalp[0]--;
@@ -119,7 +119,7 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
   PetscValidIntPointer(tag);
 
   ierr = MPI_Attr_get(obj->comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad comm in PETSc object");
+  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad MPI communicator in PETSc object; likely memory corruption");
 
   if (*tagvalp == *tag - 1) {
     tagvalp[0]++;
@@ -158,7 +158,7 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
   PetscValidIntPointer(tag);
 
   ierr = MPI_Attr_get(comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad communicator supplied");
+  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad MPI communicator supplied; must be a PETSc communicator");
 
   if (*tagvalp < 1) SETERRQ(PETSC_ERR_PLIB,0,"Out of tags for communicator");
   *tag = tagvalp[0]--;
@@ -193,7 +193,7 @@ int PetscCommRestoreNewTag(MPI_Comm comm,int *tag)
   PetscValidIntPointer(tag);
 
   ierr = MPI_Attr_get(comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad communicator supplied");
+  if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad communicator supplied; must be a PETSc communicator");
 
   if (*tagvalp == *tag - 1) {
     tagvalp[0]++;
@@ -241,31 +241,36 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
     /* This communicator is not yet known to this system, so we duplicate it and set its value */
     ierr       = MPI_Comm_dup(comm_in,comm_out);CHKERRQ(ierr);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
+    if (!flg) {
+      SETERRQ(1,1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
+    }
     tagvalp    = (int*)PetscMalloc(2*sizeof(int));CHKPTRQ(tagvalp);
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
     ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval,tagvalp);CHKERRQ(ierr);
     PLogInfo(0,"PetscCommDuplicate_Private: Duplicating a communicator %d %d max tags = %d\n",(int)comm_in,(int)*comm_out,*maxval);
   } else {
+#if defined(PETSC_USE_BOPT_g)
+    int tag;
+    ierr = MPI_Allreduce(tagvalp,&tag,1,MPI_INT,MPI_BOR,comm_in);CHKERRQ(ierr);
+    if (tag != tagvalp[0]) {
+      SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Communicator was used on subset of processors.");
+    }
+#endif
     *comm_out = comm_in;
   }
 
-  if (*tagvalp < 1) SETERRQ1(PETSC_ERR_PLIB,0,"Out of tags for object. Number tags issued %d",tagvalp[1]);
+  if (tagvalp[0] < 1) {
+    PLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
+    ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
+    if (!flg) {
+      SETERRQ(1,1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
+    }
+    tagvalp[0] = *maxval - 128; /* hope that any still active tags were issued right at the beginning of the run */
+  }
+
   *first_tag = tagvalp[0]--;
   tagvalp[1]++;
-#if defined(PETSC_USE_BOPT_g)
-  if (*comm_out == comm_in) {
-    int size;
-    ierr = MPI_Comm_size(*comm_out,&size);CHKERRQ(ierr);
-    if (size > 1) {
-      int tag1 = *first_tag,tag2;
-      ierr = MPI_Allreduce(&tag1,&tag2,1,MPI_INT,MPI_BOR,*comm_out);CHKERRQ(ierr);
-      if (tag2 != tag1) {
-        SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Communicator was used on subset\n of processors.");
-      }
-    }
-  }
-#endif
   PetscFunctionReturn(0);
 }
 

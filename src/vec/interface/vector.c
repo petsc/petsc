@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.191 2000/01/11 21:00:09 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.192 2000/01/23 17:22:43 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1070,9 +1070,14 @@ int VecSetValuesBlocked(Vec x,int ni,const int ix[],const Scalar y[],InsertMode 
    Note that VecSetValue() does NOT return an error code (since this
    is checked internally).
 
+   These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
+   MUST be called after all calls to VecSetValues() have been completed.
+
+   VecSetValues() uses 0-based indices in Fortran as well as in C.
+
    Level: beginner
 
-.seealso: VecSetValues()
+.seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal()
 M*/
 
 #undef __FUNC__  
@@ -1741,7 +1746,7 @@ int VecRestoreArray(Vec x,Scalar *a[])
 /*@C
    VecView - Views a vector object. 
 
-   Collective on Vec unless Viewer is VIEWER_STDOUT_SELF
+   Collective on Vec
 
    Input Parameters:
 +  v - the vector

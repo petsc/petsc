@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.186 1999/11/24 21:54:31 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.187 2000/01/11 21:01:36 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -1166,7 +1166,7 @@ int PCPostSolve(PC pc,KSP ksp)
 /*@ 
    PCView - Prints the PC data structure.
 
-   Collective on PC unless Viewer is VIEWER_STDOUT_SELF  
+   Collective on PC
 
    Input Parameters:
 +  PC - the PC context
@@ -1282,7 +1282,8 @@ $     -pc_type my_solver
 
    Level: advanced
 
-   $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in pathname will be replaced with appropriate values.
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
+ occuring in pathname will be replaced with appropriate values.
 
 .keywords: PC, register
 

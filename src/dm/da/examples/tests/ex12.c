@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.30 1999/11/05 14:47:57 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.31 2000/01/11 21:03:26 bsmith Exp bsmith $*/
 
 /*
    Simple example to show how PETSc programs can be run from Matlab. 
@@ -77,7 +77,7 @@ int main(int argc,char **argv)
     /* Note: I don't do anything for the first and last entry */
     for (i=1; i< localsize-1; i++) {
       copyptr[i] = localptr[i] + (k/(h*h)) *
-                           (localptr[i+1]-2*localptr[i]+localptr[i-1]);
+                           (localptr[i+1]-2.0*localptr[i]+localptr[i-1]);
     }
   
     ierr = VecRestoreArray (copy,&copyptr);CHKERRA(ierr);

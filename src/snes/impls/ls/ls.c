@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.149 1999/12/20 22:57:33 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.150 2000/01/11 21:02:34 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -79,10 +79,12 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   G		= snes->work[1];
   W		= snes->work[2];
 
+  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  snes->iter = 0;
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);  /*  F(X)      */
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);	/* fnorm <- ||F||  */
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-  snes->iter = 0;
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   SNESLogConvHistory(snes,fnorm,0);

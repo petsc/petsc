@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.105 1999/11/05 14:43:37 bsmith Exp bsmith $ */
+/* $Id: send.c,v 1.106 2000/01/11 20:58:53 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "sys.h"
@@ -88,7 +88,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
   PetscTruth         flg = PETSC_TRUE;
 
   PetscFunctionBegin;
-  if ((hp=gethostbyname(hostname)) == NULL) {
+  if (!(hp=gethostbyname(hostname))) {
     perror("SEND: error gethostbyname: ");   
     SETERRQ1(PETSC_ERR_LIB,0,"system error open connection to %s",hostname);
   }
@@ -165,14 +165,16 @@ $    -viewer_socket_machine <machine>
 $    -viewer_socket_port <port>
 
    Environmental variables:
-.   PETSC_VIEWER_SOCKET_PORT portnumber
++   PETSC_VIEWER_SOCKET_PORT portnumber
+-   PETSC_VIEWER_SOCKET_MACHINE machine name
 
      Currently the only socket client available is Matlab. See 
      src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
 
-.keywords: Viewer, Socket, open
+.keywords: Viewer, Socket, open, matlab, graphics
 
-.seealso: MatView(), VecView()
+.seealso: MatView(), VecView(), ViewerDestroy(), ViewerCreate(), ViewerSetType(),
+          ViewerSocketSetConnection()
 @*/
 int ViewerSocketOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 {
@@ -210,29 +212,23 @@ int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
 {
   int           ierr,rank;
   char          mach[256];
-  PetscTruth    tflg,flg;
+  PetscTruth    tflg;
   Viewer_Socket *vmatlab = (Viewer_Socket *)v->data;
 
   PetscFunctionBegin;
-   if (port <= 0) {
-    ierr = OptionsGetInt(PETSC_NULL,"-viewer_socket_port",&port,&flg);CHKERRQ(ierr);
-    if (!flg) {
-      char portn[16];
-      ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
-      if (tflg) {
-        ierr = OptionsAtoi(portn,&port);CHKERRQ(ierr);
-      } else {
-        port = DEFAULTPORT;
-      }
+  if (port <= 0) {
+    char portn[16];
+    ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
+    if (tflg) {
+      ierr = OptionsAtoi(portn,&port);CHKERRQ(ierr);
+    } else {
+      port = DEFAULTPORT;
     }
   }
   if (!machine) {
-    ierr = OptionsGetString(PETSC_NULL,"-viewer_socket_machine",mach,128,&flg);CHKERRQ(ierr);
-    if (!flg) {
-      ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",mach,128,&tflg);CHKERRQ(ierr);
-      if (!tflg) {
-        ierr = PetscGetHostName(mach,256);CHKERRQ(ierr);
-      }
+    ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",mach,256,&tflg);CHKERRQ(ierr);
+    if (!tflg) {
+      ierr = PetscGetHostName(mach,256);CHKERRQ(ierr);
     }
   } else {
     ierr = PetscStrncpy(mach,machine,256);CHKERRQ(ierr);
@@ -241,7 +237,7 @@ int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     PLogInfo(0,"ViewerSocketSetConnection:Connecting to socket process on port %d machine %s\n",port,mach);
-    ierr          = SOCKCall_Private(mach,port,&vmatlab->port);CHKERRQ(ierr);
+    ierr = SOCKCall_Private(mach,port,&vmatlab->port);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -299,6 +295,16 @@ static int Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 
      Level: intermediate
 
+   Options Database Keys:
+   For use with the default Matlab viewer, VIEWER_SOCKET_WORLD or if 
+    PETSC_NULL is passed for machine or PETSC_DEFAULT is passed for port
+$    -viewer_socket_machine <machine>
+$    -viewer_socket_port <port>
+
+   Environmental variables:
++   PETSC_VIEWER_SOCKET_PORT portnumber
+-   PETSC_VIEWER_SOCKET_MACHINE machine name
+
      Notes:
      Unlike almost all other PETSc routines, VIEWER_SOCKET_ does not return 
      an error code.  The socket viewer is usually used in the form
@@ -307,7 +313,10 @@ $       XXXView(XXX object,VIEWER_SOCKET_(comm));
      Currently the only socket client available is Matlab. See 
      src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
 
-.seealso: VIEWER_SOCKET_WORLD, VIEWER_SOCKET_SELF, ViewerSocketOpen(), 
+     Connects to a waiting socket and stays connected until ViewerDestroy() is called.
+
+.seealso: VIEWER_SOCKET_WORLD, VIEWER_SOCKET_SELF, ViewerSocketOpen(), ViewerCreate(),
+          ViewerSocketSetConnection(), ViewerDestroy()
 @*/
 Viewer VIEWER_SOCKET_(MPI_Comm comm)
 {

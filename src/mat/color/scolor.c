@@ -1,4 +1,4 @@
-/*$Id: scolor.c,v 1.16 1999/10/24 14:02:33 bsmith Exp bsmith $*/
+/*$Id: scolor.c,v 1.17 1999/11/05 14:46:11 bsmith Exp bsmith $*/
  
 #include "mat.h"
 #include "src/mat/color/color.h"
@@ -39,7 +39,7 @@ int MatColoringRegisterAll(char *path)
   int         ierr;
 
   PetscFunctionBegin;
-  MatColoringRegisterAllCalled = 1;  
+  MatColoringRegisterAllCalled = PETSC_TRUE;  
   ierr = MatColoringRegisterDynamic(MATCOLORING_NATURAL,path,"MatColoring_Natural",    MatColoring_Natural);CHKERRQ(ierr);
   ierr = MatColoringRegisterDynamic(MATCOLORING_SL,     path,"MatFDColoringSL_Minpack",MatFDColoringSL_Minpack);CHKERRQ(ierr);
   ierr = MatColoringRegisterDynamic(MATCOLORING_LF,     path,"MatFDColoringLF_Minpack",MatFDColoringLF_Minpack);CHKERRQ(ierr);

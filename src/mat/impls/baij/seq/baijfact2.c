@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.34 1999/12/21 21:59:35 bsmith Exp bsmith $*/
+/*$Id: baijfact2.c,v 1.35 2000/01/11 21:00:52 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2244,7 +2244,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     levels        = 0;
     diagonal_fill = 0;
   }
-  ierr = ISInvertPermutation(iscol,&isicol);CHKERRQ(ierr);
+  ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
 
   /* special case that simply copies fill pattern */
   PetscValidHeaderSpecific(isrow,IS_COOKIE);

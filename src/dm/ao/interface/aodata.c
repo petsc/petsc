@@ -1,4 +1,4 @@
-/*$Id: aodata.c,v 1.42 1999/11/10 03:21:56 bsmith Exp bsmith $*/
+/*$Id: aodata.c,v 1.43 2000/01/11 21:03:09 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AOData
 */
@@ -1493,8 +1493,7 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
 
 .seealso: AODataSegmentAddIS()
 @*/
-int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *keys,void *data,
-                     PetscDataType dtype)
+int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *keys,void *data,PetscDataType dtype)
 {
   int      ierr;
 

@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.51 1999/11/24 21:53:00 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.52 2000/01/11 20:59:26 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -59,7 +59,7 @@ int PetscInitialize_DynamicLibraries(void)
   if (found) {
     ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Unable to locate PETSc dynamic library %s \n You cannot move the dynamic libraries!\n or remove USE_DYNAMIC_LIBRARIES from $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.h\n and rebuild libraries before moving",libs);
+    SETERRQ1(1,1,"Unable to locate PETSc dynamic library %s \n You cannot move the dynamic libraries!\n or remove USE_DYNAMIC_LIBRARIES from ${PETSC_DIR}/bmake/$PETSC_ARCH/petscconf.h\n and rebuild libraries before moving",libs);
   }
 
 
@@ -187,7 +187,8 @@ static FList   dlallhead = 0;
    for that particular component (e.g., SNESRegisterDynamic()) instead of
    calling FListAddDynamic() directly.
 
-   $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in pathname will be replaced with appropriate values.
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
+  occuring in pathname will be replaced with appropriate values.
 
 .seealso: FListDestroy(), SNESRegisterDynamic(), KSPRegisterDynamic(),
           PCRegisterDynamic(), TSRegisterDynamic()
@@ -466,6 +467,49 @@ int FListView(FList list,Viewer viewer)
     list = list->next;
   }
   ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "FListGet"
+/*
+   FListGet - Gets an array the contains the entries in FList
+
+   Collective over MPI_Comm
+
+   Input Parameter:
+.  list   - list of types
+
+   Output Parameter:
++  array - array of names
+-  n - length of array
+
+   Notes:
+       This allocates the array so that must be freed. BUT the individual entries are
+    not copied so should not be freed.
+
+.seealso: FListAddDynamic()
+*/
+int FListGet(FList list,char ***array,int *n)
+{
+  int   count = 0;
+  FList klist = list;
+
+  PetscFunctionBegin;
+  while (list) {
+    list = list->next;
+    count++;
+  }
+  *array = (char**)PetscMalloc((count+1)*sizeof(char *));CHKPTRQ(*array);
+  count = 0;
+  while (klist) {
+    (*array)[count] = klist->name;
+    klist = klist->next;
+    count++;
+  }
+  (*array)[count] = 0;
+  *n = count+1;
+
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.150 1999/12/09 21:55:53 bsmith Exp bsmith $*/
+/*$Id: vscat.c,v 1.151 2000/01/11 21:00:05 bsmith Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -1566,7 +1566,7 @@ int VecScatterCopy(VecScatter sctx,VecScatter *ctx)
 /*@
    VecScatterView - Views a vector scatter context.
 
-   Collective on VecScatter unless Viewer is VIEWER_STDOUT_SELF
+   Collective on VecScatter
 
    Input Parameters:
 +  ctx - the scatter context

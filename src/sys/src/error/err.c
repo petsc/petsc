@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.108 2000/01/11 20:59:24 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.109 2000/01/21 18:34:24 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -42,6 +42,8 @@ static EH eh = 0;
    Level: developer
 
    Notes:
+   You must put (server-start) in your .emacs file for the emacsclient software to work
+
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERRQ, which has 
    the calling sequence
@@ -60,7 +62,6 @@ $     SETERRQ(number,p,mess)
 int PetscEmacsClientErrorHandler(int line,char *fun,char* file,char *dir,int n,int p,char *mess,void *ctx)
 {
   int         ierr;
-  PetscTruth        flg1,flg2;
   char        command[1024];
   FILE        *fp;
 

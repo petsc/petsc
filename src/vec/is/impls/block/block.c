@@ -1,4 +1,4 @@
-/*$Id: block.c,v 1.42 1999/10/24 14:01:45 bsmith Exp bsmith $*/
+/*$Id: block.c,v 1.43 2000/01/11 20:59:57 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
@@ -83,7 +83,7 @@ int ISGetSize_Block(IS is,int *size)
 
 #undef __FUNC__  
 #define __FUNC__ "ISInvertPermutation_Block" 
-int ISInvertPermutation_Block(IS is,IS *isout)
+int ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
 {
   IS_Block *sub = (IS_Block *)is->data;
   int      i,ierr,*ii,n = sub->n,*idx = sub->idx;
@@ -94,7 +94,7 @@ int ISInvertPermutation_Block(IS is,IS *isout)
     ii[idx[i]] = i;
   }
   ierr = ISCreateBlock(PETSC_COMM_SELF,sub->bs,n,ii,isout);CHKERRQ(ierr);
-  ISSetPermutation(*isout);
+  ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
   ierr = PetscFree(ii);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: mpi.c,v 1.55 1999/10/24 14:01:37 bsmith Exp bsmith $*/
+/*$Id: mpi.c,v 1.56 2000/01/11 20:59:45 bsmith Exp bsmith $*/
 
 /*
       This provides a few of the MPI-uni functions that cannot be implemented
@@ -71,8 +71,7 @@ static int Keyval_setup(void)
 /*
          These functions are mapped to the Petsc_ name by ./mpi.h
 */
-int Petsc_MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,
-                      void *extra_state)
+int Petsc_MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,void *extra_state)
 {
   if (num_attr >= MAX_ATTR) MPI_Abort(MPI_COMM_WORLD,1);
 

@@ -1,9 +1,9 @@
-/*$Id: tsreg.c,v 1.56 1999/11/24 21:55:22 bsmith Exp bsmith $*/
+/*$Id: tsreg.c,v 1.57 2000/01/11 21:02:55 bsmith Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
 
-FList TSList              = 0;
-int   TSRegisterAllCalled = 0;
+FList      TSList              = 0;
+PetscTruth TSRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNC__  
 #define __FUNC__ "TSSetType"
@@ -96,7 +96,7 @@ int TSRegisterDestroy(void)
     ierr = FListDestroy(TSList);CHKERRQ(ierr);
     TSList = 0;
   }
-  TSRegisterAllCalled = 0;
+  TSRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

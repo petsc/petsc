@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.24 1999/11/10 03:18:02 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.25 2000/01/11 20:59:32 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -138,8 +138,8 @@ int PetscInitializeNoArguments(void)
   PetscFunctionReturn(ierr);
 }
 
-extern int OptionsCheckInitial(void);
-extern int PetscBeganMPI;
+extern int        OptionsCheckInitial(void);
+extern PetscTruth PetscBeganMPI;
 
 /*
        This function is the MPI reduction operation used to compute the sum of the 
@@ -224,6 +224,7 @@ EXTERN_C_END
    Options Database Keys:
 +  -start_in_debugger [noxterm,dbx,xdb,gdb,...] - Starts program in debugger
 .  -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
+.  -on_error_emacs <machinename> causes emacsclient to jump to error file
 .  -debugger_nodes [node1,node2,...] - Indicates nodes to start in debugger
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
 .  -stop_for_debugger - Print message on how to attach debugger manually to 
@@ -233,9 +234,9 @@ EXTERN_C_END
 .  -fp_trap - Stops on floating point exceptions (Note that on the
               IBM RS6000 this slows code by at least a factor of 10.)
 .  -no_signal_handler - Indicates not to trap error signals
-.  -petsc_shared_tmp - indicates /tmp directory is shared by all processors
-.  -petsc_not_shared_tmp - each processor has own /tmp
-.  -petsc_tmp - alternative name of /tmp directory
+.  -shared_tmp - indicates /tmp directory is shared by all processors
+.  -not_shared_tmp - each processor has own /tmp
+.  -tmp - alternative name of /tmp directory
 -  -get_resident_set_size - Print memory usage at end of run
 
    Options Database Keys for Profiling:
@@ -280,11 +281,12 @@ $       call PetscInitialize(file,ierr)
 @*/
 int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 {
-  int        ierr,flag,dummy_tag;
+  int        ierr,flag,dummy_tag,size;
   PetscTruth flg;
+  char       hostname[16];
 
   PetscFunctionBegin;
-  if (PetscInitializedCalled) PetscFunctionReturn(0);
+  if (PetscInitializeCalled) PetscFunctionReturn(0);
 
   ierr = OptionsCreate();CHKERRQ(ierr);
 
@@ -304,9 +306,9 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   ierr = MPI_Initialized(&flag);CHKERRQ(ierr);
   if (!flag) {
     ierr = MPI_Init(argc,args);CHKERRQ(ierr);
-    PetscBeganMPI    = 1;
+    PetscBeganMPI    = PETSC_TRUE;
   }
-  PetscInitializedCalled = 1;
+  PetscInitializeCalled = PETSC_TRUE;
 
   if (!PETSC_COMM_WORLD) {
     PETSC_COMM_WORLD          = MPI_COMM_WORLD;
@@ -358,13 +360,10 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
       Initialize all the default viewers
   */
   ierr = ViewerInitializeASCII_Private();CHKERRQ(ierr);
-  if (PetscBeganMPI) {
-    int size;
-
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-    PLogInfo(0,"PetscInitialize:PETSc successfully started: number of processors = %d\n",size);
-  }
-
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  PLogInfo(0,"PetscInitialize:PETSc successfully started: number of processors = %d\n",size);
+  ierr = PetscGetHostName(hostname,16);CHKERRQ(ierr);
+  PLogInfo(0,"PetscInitialize:Running on machine: %s\n",hostname);
   /*
       Print main application help message
   */
@@ -432,7 +431,7 @@ int PetscFinalize(void)
   
   PetscFunctionBegin;
 
-  if (!PetscInitializedCalled) {
+  if (!PetscInitializeCalled) {
     (*PetscErrorPrintf)("PETSc ERROR: PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(0);
   }
@@ -608,10 +607,8 @@ int PetscFinalize(void)
   /* Can be destroyed only after all the options are used */
   ierr = OptionsDestroy();CHKERRQ(ierr);
 
-
+  PLogInfo(0,"PetscFinalize:PETSc successfully ended!\n");
   if (PetscBeganMPI) {
-    ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
-    PLogInfo(0,"PetscFinalize:PETSc successfully ended!\n");
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }
 
@@ -627,7 +624,7 @@ int PetscFinalize(void)
 
 */
   ierr = PetscClearMalloc();CHKERRQ(ierr);
-  PetscInitializedCalled = 0;
+  PetscInitializeCalled = PETSC_FALSE;
   PetscFunctionReturn(ierr);
 }
 

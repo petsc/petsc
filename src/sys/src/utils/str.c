@@ -1,4 +1,4 @@
-/*$Id: str.c,v 1.38 1999/12/26 23:41:26 bsmith Exp bsmith $*/
+/*$Id: str.c,v 1.39 2000/01/11 20:59:39 bsmith Exp bsmith $*/
 /*
     We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 
@@ -191,6 +191,18 @@ int PetscStrrchr(const char a[],char b,char **tmp)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PetscStrtolower"
+int PetscStrtolower(char a[])
+{
+  PetscFunctionBegin;
+  while (*a) {
+    if (*a >= 'A' && *a <= 'Z') *a += 'a' - 'A';
+    a++;
+  }
+  PetscFunctionReturn(0);
+}
+
 /*
      This version is different from the system version in that
   it allows you to pass a read-only string into the function.
@@ -243,16 +255,19 @@ int PetscStrstr(const char a[],const char b[],char **tmp)
 
       No proper error checking yet
 */
-int PetscStrreplace(const char a[],char *b,int len,char **s,char **r)
+int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len,char **s,char **r)
 {
-  int  ierr,i = 0,l,l1,l2,l3;
-  char *work,*par;
+  int        ierr,i = 0,l,l1,l2,l3;
+  char       *work,*par,*epar,env[256];
+  PetscTruth flag;
 
   PetscFunctionBegin;
   if (len <= 0) SETERRQ(1,1,"Length of b must be greater than 0");
   if (!a || !b) SETERRQ(1,1,"a and b strings must be nonnull");
   if (!s || !r) SETERRQ(1,1,"s and r arrays must be nonull");
   work = (char*)PetscMalloc(len*sizeof(char*));CHKPTRQ(work);
+
+  /* replace the requested strings */
   ierr = PetscStrncpy(b,a,len);CHKERRQ(ierr);  
   while (s[i]) {
     ierr = PetscStrlen(s[i],&l);CHKERRQ(ierr);
@@ -274,6 +289,25 @@ int PetscStrreplace(const char a[],char *b,int len,char **s,char **r)
       ierr  = PetscStrstr(b,s[i],&par);CHKERRQ(ierr);
     }
     i++;
+  }
+
+  /* look for any other ${xxx} strings to replace from environmental variables */
+  ierr = PetscStrstr(b,"${",&par);CHKERRQ(ierr);
+  while (par) {
+    *par = 0;
+    par += 2;
+    ierr  = PetscStrcpy(work,b);CHKERRQ(ierr);
+    ierr = PetscStrstr(par,"}",&epar);CHKERRQ(ierr);
+    *epar = 0;
+    epar += 1;
+    ierr = OptionsGetenv(comm,par,env,256,&flag);CHKERRQ(ierr);
+    if (!flag) {
+      SETERRQ1(1,1,"Substitution string ${%s} not found as environmental variable",par);
+    }
+    ierr = PetscStrcat(work,env);CHKERRQ(ierr);
+    ierr = PetscStrcat(work,epar);CHKERRQ(ierr);
+    ierr = PetscStrcpy(b,work);CHKERRQ(ierr);
+    ierr = PetscStrstr(b,"${",&par);CHKERRQ(ierr);
   }
   ierr = PetscFree(work);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.89 1999/11/05 14:44:38 bsmith Exp bsmith $*/
+/*$Id: stride.c,v 1.90 2000/01/11 20:59:57 bsmith Exp bsmith $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
@@ -39,7 +39,7 @@ int ISDuplicate_Stride(IS is,IS *newIS)
 
 #undef __FUNC__  
 #define __FUNC__ "ISInvertPermutation_Stride" 
-int ISInvertPermutation_Stride(IS is,IS *perm)
+int ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
 {
   IS_Stride *isstride = (IS_Stride*)is->data;
   int       ierr;

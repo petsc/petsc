@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.42 2000/01/30 15:37:11 bsmith Exp bsmith $*/
+/*$Id: partition.c,v 1.43 2000/01/31 18:51:09 bsmith Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "mat.h" I*/
 
@@ -338,7 +338,7 @@ int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 
 #undef __FUNC__  
 #define __FUNC__ "MatPartitioningView"
-/*@ 
+/*@C 
    MatPartitioningView - Prints the partitioning data structure.
 
    Collective on MatPartitioning

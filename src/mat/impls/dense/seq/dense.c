@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.180 1999/11/24 21:53:44 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.181 2000/01/11 21:00:34 bsmith Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -1194,7 +1194,8 @@ int MatGetOwnershipRange_SeqDense(Mat A,int *m,int *n)
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
 
   PetscFunctionBegin;
-  *m = 0; *n = mat->m;
+  if (m) *m = 0;
+  if (n) *n = mat->m;
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.35 1999/12/26 23:41:47 bsmith Exp bsmith $*/
+/*$Id: shvec.c,v 1.36 2000/01/11 21:00:16 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -203,7 +203,7 @@ void *PetscSharedMalloc(int llen,int len,MPI_Comm comm)
     ierr = PetscSharedInitialize(comm);
     if (ierr) {PetscFunctionReturn(0);}
     ierr = MPI_Attr_get(comm,Petsc_Shared_keyval,(void**)&arena,&flag);
-    if (ierr) PetscFunctionReturn(0);
+    if (ierr || !flag) PetscFunctionReturn(0);
   } 
 
   ierr   = MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm); if (ierr) PetscFunctionReturn(0);

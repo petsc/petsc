@@ -1,4 +1,4 @@
-/*$Id: aodatabasic.c,v 1.47 1999/11/10 03:21:59 bsmith Exp bsmith $*/
+/*$Id: aodatabasic.c,v 1.48 2000/01/11 21:03:11 bsmith Exp bsmith $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.
@@ -693,7 +693,7 @@ int AODataKeyGetAdjacency_Basic(AOData aodata,char *keyname,Mat *adj)
       }
     }
     /* now sort the column indices for this row */
-    PetscSortInt(ls,jj+cnt-ls);
+    ierr = PetscSortInt(ls,jj+cnt-ls);CHKERRQ(ierr);
     ii[i+1] = cnt;
   }
 

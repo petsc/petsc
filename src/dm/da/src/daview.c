@@ -1,4 +1,4 @@
-/*$Id: daview.c,v 1.38 1999/11/24 21:55:34 bsmith Exp bsmith $*/
+/*$Id: daview.c,v 1.39 2000/01/11 21:03:19 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -11,7 +11,7 @@
 /*@C
    DAView - Visualizes a distributed array object.
 
-   Collective on DA, unless Viewer is VIEWER_STDOUT_SELF
+   Collective on DA
 
    Input Parameters:
 +  da - the distributed array

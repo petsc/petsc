@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.30 1999/11/05 14:44:41 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.31 2000/01/11 20:59:59 bsmith Exp bsmith $*/
 /*
        Formatted test for ISGeneral routines.
 */
@@ -88,7 +88,7 @@ int main(int argc,char **argv)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,&is);CHKERRA(ierr);
   ierr = PetscFree(indices);CHKERRA(ierr);
   ierr = ISSetPermutation(is);CHKERRA(ierr);
-  ierr = ISInvertPermutation(is,&newis);CHKERRA(ierr);
+  ierr = ISInvertPermutation(is,PETSC_DECIDE,&newis);CHKERRA(ierr);
   ierr = ISGetIndices(newis,&ii);CHKERRA(ierr);
   for (i=0; i<n; i++) {
     if (ii[i] != n - i - 1) SETERRA(1,0,0);

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.24 1999/06/30 22:48:03 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.25 1999/11/05 14:42:55 bsmith Exp bsmith $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -11,14 +11,7 @@
 BLAS_LIB       = c:/home/blaslapack/blas.a
 LAPACK_LIB     = c:/home/blaslapack/lapack.a
 
-#
-# Location of X-windows software
-# http://dao.gsfc.nasa.gov/software/grads/win32/X11R6.3/
-# You can also install PETSc without X, just comment out the 
-# two lines below and remove the -DPETSC_HAVE_X11 from the end of this file
-#
-X11_INCLUDE	= -I/usr/X11r6.3/include
-X11_LIB 	= -L/usr/X11r6.3/lib -lX11
+
 #
 # Location of MPI (Message Passing Interface) software  
 #
@@ -26,24 +19,29 @@ MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
 MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
 MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 
-# Optional location of BlockSolve (MPI version), if you do not have
+#
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ---------------------------------------------------------------------------------------- 
+#
+# Location of X-windows software
+# http://dao.gsfc.nasa.gov/software/grads/win32/X11R6.3/
+#
+X11_INC= -I/usr/X11r6.3/include
+X11_LIB        = -L/usr/X11r6.3/lib -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+# Location of BlockSolve (MPI version), if you do not have
 # BlockSolve, then remove -DPETSC_HAVE_BLOCKSOLVE from the PCONF definition
 # below if it is there.
 #
-BS_INCLUDE =
-BS_LIB     =
+#BLOCKSOLVE_INCLUDE            =
+#BLOCKSOLVE_LIB                =
+#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
-# Optional Matlab location, remove if not needed.
+# Matlab location, remove if not needed.
 #
-#CMEX            = 
-#MCC            = 
-#MATLABCOMMAND  = matlab
-#  
-# PCONF - indicates which external packages are available at your site
-#  Make sure that -DPETSC_HAVE_BLOCKSOLVE is not listed below unless you have
-#  installed it.
-#
-PCONF         =
-#
-#
-EXTERNAL_LIB  = ${BS_LIB} ${CVODE_LIB} ${ADIC_LIB}
+#CMEX              = 
+#MCC               = 
+#MATLABCOMMAND     = matlab
+#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB  

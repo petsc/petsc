@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.130 1999/11/24 21:54:29 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.131 2000/01/11 21:01:35 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
 
@@ -23,7 +23,7 @@ static int SLESPublish_Petsc(PetscObject obj)
 /*@ 
    SLESView - Prints the SLES data structure.
 
-   Collective on SLES unless Viewer is VIEWER_STDOUT_SELF
+   Collective on SLES
 
    Input Parameters:
 +  SLES - the SLES context

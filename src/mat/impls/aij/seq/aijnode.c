@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.109 2000/01/17 22:39:01 balay Exp balay $*/
+/*$Id: aijnode.c,v 1.110 2000/01/17 23:24:20 balay Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -776,15 +776,16 @@ int Mat_AIJ_CheckInode(Mat A)
 
   PetscFunctionBegin;  
   /* Notes: We set a->inode.limit=5 in MatCreateSeqAIJ(). */
-  ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg);CHKERRQ(ierr);
-  if (flg) {PLogInfo(A,"Mat_AIJ_CheckInode: Not using Inode routines\n"); PetscFunctionReturn(0);}
-  ierr = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg);CHKERRQ(ierr);
-  if (flg) {PLogInfo(A,"Mat_AIJ_CheckInode: Not unrolling\n"); PetscFunctionReturn(0);}
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_aij_inode_limit",&a->inode.limit,PETSC_NULL);CHKERRQ(ierr);
+  if (!a->inode.use) {PLogInfo(A,"Mat_AIJ_CheckInode: Not using Inode routines due to MatSetOption(MAT_DO_NOT_USE_INODES\n"); PetscFunctionReturn(0);}
+  ierr = OptionsHasName(A->prefix,"-mat_aij_no_inode",&flg);CHKERRQ(ierr);
+  if (flg) {PLogInfo(A,"Mat_AIJ_CheckInode: Not using Inode routines due to -mat_aij_no_inode\n");PetscFunctionReturn(0);}
+  ierr = OptionsHasName(A->prefix,"-mat_no_unroll",&flg);CHKERRQ(ierr);
+  if (flg) {PLogInfo(A,"Mat_AIJ_CheckInode: Not using Inode routines due to -mat_no_unroll\n");PetscFunctionReturn(0);}
+  ierr = OptionsGetInt(A->prefix,"-mat_aij_inode_limit",&a->inode.limit,PETSC_NULL);CHKERRQ(ierr);
   if (a->inode.limit > a->inode.max_limit) a->inode.limit = a->inode.max_limit;
   m = a->m;    
   if (a->inode.size) {ns = a->inode.size;}
-  else { ns = (int *)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(ns);}
+  else {ns = (int *)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(ns);}
 
   i          = 0;
   node_count = 0; 

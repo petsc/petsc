@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.23 1999/12/10 03:44:45 bsmith Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.24 2000/01/11 20:59:28 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -55,9 +55,9 @@ EXTERN_C_END
 .  shared - PETSC_TRUE or PETSC_FALSE
 
    Options Database Keys:
-+    -petsc_shared_tmp 
-.    -petsc_not_shared_tmp
--    -petsc_tmp tmpdir
++    -shared_tmp 
+.    -not_shared_tmp
+-    -tmp tmpdir
 
    Environmental Variables:
 +     PETSC_SHARED_TMP
@@ -97,21 +97,9 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
     PetscFunctionReturn(0);
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-petsc_shared_tmp",&iflg);CHKERRQ(ierr);
-  if (iflg) {
-    *shared = PETSC_TRUE;
-    PetscFunctionReturn(0);
-  }
-
   ierr = OptionsGetenv(comm,"PETSC_SHARED_TMP",PETSC_NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_TRUE;
-    PetscFunctionReturn(0);
-  }
-
-  ierr = OptionsHasName(PETSC_NULL,"-petsc_not_shared_tmp",&iflg);CHKERRQ(ierr);
-  if (iflg) {
-    *shared = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 
@@ -133,12 +121,9 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
     tagvalp    = (int*)PetscMalloc(sizeof(int));CHKPTRQ(tagvalp);
     ierr       = MPI_Attr_put(comm,Petsc_Tmp_keyval,tagvalp);CHKERRQ(ierr);
 
-    ierr = OptionsGetString(PETSC_NULL,"-petsc_tmp",filename,238,&iflg);CHKERRQ(ierr);
+    ierr = OptionsGetenv(comm,"PETSC_TMP",filename,238,&iflg);CHKERRQ(ierr);
     if (!iflg) {
-      ierr = OptionsGetenv(comm,"PETSC_TMP",filename,238,&iflg);CHKERRQ(ierr);
-      if (!iflg) {
-        ierr = PetscStrcpy(filename,"/tmp");CHKERRQ(ierr);
-      }
+      ierr = PetscStrcpy(filename,"/tmp");CHKERRQ(ierr);
     }
     ierr = PetscStrcat(filename,"/petsctestshared");CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -239,10 +224,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
     ierr = PetscStrcat(par,"/bin/urlget.py ");CHKERRQ(ierr);
 
     /* are we using an alternative /tmp? */
-    ierr = OptionsGetString(PETSC_NULL,"-petsc_tmp",tmpdir,256,&flg1);CHKERRQ(ierr);
-    if (!flg1) {
-      ierr = OptionsGetenv(comm,"PETSC_TMP",tmpdir,256,&flg1);CHKERRQ(ierr);
-    }
+    ierr = OptionsGetenv(comm,"PETSC_TMP",tmpdir,256,&flg1);CHKERRQ(ierr);
     if (flg1) {
       ierr = PetscStrcat(par,"-tmp ");CHKERRQ(ierr);
       ierr = PetscStrcat(par,tmpdir);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.17 1999/11/24 21:55:22 bsmith Exp bsmith $ */
+/* $Id: ts.c,v 1.18 2000/01/11 21:02:55 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "ts.h"  I*/
 
 #undef __FUNC__  
@@ -285,7 +285,7 @@ int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,double,Vec,void*),void *ctx)
 /*@ 
     TSView - Prints the TS data structure.
 
-    Collective on TS, unless Viewer is VIEWER_STDOUT_SELF
+    Collective on TS
 
     Input Parameters:
 +   ts - the TS context obtained from TSCreate()
@@ -1369,7 +1369,8 @@ $     -ts_type my_solver
 
    Level: advanced
 
-   $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in pathname will be replaced with appropriate values.
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
+  occuring in pathname will be replaced with appropriate values.
 
 .keywords: TS, register
 

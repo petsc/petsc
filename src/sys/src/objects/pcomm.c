@@ -1,4 +1,4 @@
-/*$Id: pcomm.c,v 1.15 1999/10/24 14:01:28 bsmith Exp bsmith $*/
+/*$Id: pcomm.c,v 1.16 2000/01/11 20:59:32 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -25,7 +25,7 @@
 int PetscSetCommWorld(MPI_Comm comm)
 {
   PetscFunctionBegin;
-  if (PetscInitializedCalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call before PetscInitialize()");
+  if (PetscInitializeCalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call before PetscInitialize()");
   PETSC_COMM_WORLD = comm;
   PetscFunctionReturn(0);
 }

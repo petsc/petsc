@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.31 1999/02/02 21:26:38 balay Exp bsmith $ 
+# $Id: makefile,v 1.32 1999/11/05 14:45:25 bsmith Exp bsmith $ 
 
 #requirespackage  '-DPETSC_HAVE_BLOCKSOLVE'
 #requiresscalar real 
@@ -7,7 +7,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-CPPFLAGS = ${BS_INCLUDE}
+CPPFLAGS = ${BLOCKSOLVE_INCLUDE}
 SOURCEC  = mpirowbs.c cholbs.c iccbs.c
 SOURCEF  =
 SOURCEH  = mpirowbs.h

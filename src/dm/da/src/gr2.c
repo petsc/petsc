@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.34 1999/11/24 21:55:34 bsmith Exp bsmith $*/
+/*$Id: gr2.c,v 1.35 2000/01/11 21:03:19 bsmith Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
@@ -145,7 +145,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   /* get coordinates of nodes */
   ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   if (!xcoor) {
-    ierr = DACreateUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
+    ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
     ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   }
 

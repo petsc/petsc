@@ -1,16 +1,16 @@
-/*$Id: snes.c,v 1.204 1999/11/24 21:55:08 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.205 2000/01/11 21:02:29 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
 
-int SNESRegisterAllCalled = 0;
-FList SNESList = 0;
+PetscTruth SNESRegisterAllCalled = PETSC_FALSE;
+FList      SNESList = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "SNESView"
 /*@ 
    SNESView - Prints the SNES data structure.
 
-   Collective on SNES, unless Viewer is VIEWER_STDOUT_SELF
+   Collective on SNES
 
    Input Parameters:
 +  SNES - the SNES context
@@ -2130,7 +2130,7 @@ int SNESRegisterDestroy(void)
     ierr = FListDestroy(SNESList);CHKERRQ(ierr);
     SNESList = 0;
   }
-  SNESRegisterAllCalled = 0;
+  SNESRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2556,7 +2556,8 @@ $     -snes_type my_solver
 
    Level: advanced
 
-   $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in pathname will be replaced with appropriate values.
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
+  occuring in pathname will be replaced with appropriate values.
 
 .keywords: SNES, nonlinear, register
 

@@ -1,4 +1,4 @@
-/*$Id: strgen.c,v 1.8 1999/11/05 14:44:37 bsmith Exp bsmith $*/
+/*$Id: strgen.c,v 1.9 2000/01/11 20:59:55 bsmith Exp bsmith $*/
 
 #include "src/vec/is/impls/general/general.h" /*I  "is.h"  I*/
 
@@ -7,7 +7,7 @@ extern int ISDestroy_General(IS);
 extern int ISGetIndices_General(IS,int **);
 extern int ISRestoreIndices_General(IS,int **);
 extern int ISGetSize_General(IS,int *);
-extern int ISInvertPermutation_General(IS,IS *);
+extern int ISInvertPermutation_General(IS,int,IS *);
 extern int ISView_General(IS,Viewer);
 extern int ISSort_General(IS);
 extern int ISSorted_General(IS,PetscTruth*);

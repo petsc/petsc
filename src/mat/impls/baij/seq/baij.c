@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.197 2000/01/26 21:50:39 bsmith Exp balay $*/
+/*$Id: baij.c,v 1.198 2000/01/26 22:08:15 balay Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -217,7 +217,8 @@ int MatGetOwnershipRange_SeqBAIJ(Mat A,int *m,int *n)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
 
   PetscFunctionBegin;
-  *m = 0; *n = a->m;
+  if (m) *m = 0;
+  if (n) *n = a->m;
   PetscFunctionReturn(0);
 }
 
@@ -1222,7 +1223,7 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
     ierr          = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
 
     /* Create the invert permutation so that it can be used in MatLUFactorNumeric() */
-    ierr = ISInvertPermutation(col,&(a->icol));CHKERRQ(ierr);
+    ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
     PLogObjectParent(inA,a->icol);
 
     if (!a->solve_work) {
