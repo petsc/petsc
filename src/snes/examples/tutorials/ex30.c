@@ -201,7 +201,7 @@ int main(int argc,char **argv)
     
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create nonlinear solver context
-       Process NOT adiC(40): WInterp UInterp PInterp TInterp FormFunctionLocal
+       Process adiC(40): WInterp UInterp PInterp TInterp FormFunctionLocal
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     /* ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr); */
     ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,0,0);CHKERRQ(ierr); 
@@ -267,31 +267,30 @@ int Initialize(DMMG *dmmg)
   Parameter *param = user->param;
   DA        da;
   int       i,j,mx,mz,ierr,xs,ys,xm,ym,iw,jw;
-  int       mglevel;
-  PetscReal dx, dz, c, d, beta, itb, cb, sb;
-  PetscReal xp, zp, r, st, ct, th, fr;
+  int       mglevel,ic,jc;
+  PetscReal dx, dz, c, d, beta, itb, cb, sb, sbi, skt;
+  PetscReal xp, zp, r, st, ct, th, fr, xPrimeSlab;
   Field     **x;
 
   da = (DA)(dmmg[param->mglevels-1]->dm); /* getting the fine grid */
 
-  beta = param->slab_dip;  itb = 1.0/tan(beta); cb = cos(beta); sb = sin(beta);
-  c = beta*sin(beta)/(beta*beta-sin(beta)*sin(beta));
-  d = (beta*cos(beta)-sin(beta))/(beta*beta-sin(beta)*sin(beta));
+  beta = param->slab_dip;
+  CalcJunk(param->kappa,param->slab_age,beta,&skt,&cb,&sb,&itb,&sbi);
+  c = beta*sb/(beta*beta-sb*sb);
+  d = (beta*cb-sb)/(beta*beta-sb*sb); 
 
   ierr = DAGetInfo(da,0,&mx,&mz,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   dx  = param->scaled_width/((PetscReal)(mx-2)); 
   dz  = param->scaled_depth/((PetscReal)(mz-2)); 
 
-  /*  param->icorner = (int)ceil(param->scaled_width/dx/6.0);  */
-  param->jcorner = (int)ceil(1.0/dz + 1.0);
-  PetscPrintf(PETSC_COMM_WORLD,"float jcorner = %f, int jcorner = %i, int icorner = %i\n", 1.0/dz + 1.0, param->jcorner, param->icorner);
+  param->jcorner = (int)ceil(1.0/dz + 1.0); ic = param->icorner; jc = param->jcorner;
+  PetscPrintf(PETSC_COMM_WORLD,"float jcorner = %f, int jcorner = %i, int icorner = %i\n", 1.0/dz + 1.0, jc, ic);
+  xPrimeSlab = (ic-1)*dx;
 
   fr = (1.0-dz/dx*itb)/2.0;
   PetscPrintf(PETSC_COMM_WORLD,"interpolation fraction = %g\n", fr);
-  if (fr<0.0) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"USER ERROR: Grid shear exceeds limit! Decrease dz/dx and try again!\n");CHKERRQ(ierr);
-    ierr = 1; CHKERRQ(ierr);
-  }
+  if (fr<0.0)
+    SETERRQ(1," USER ERROR: Grid shear exceeds limit! Decrease dz/dx!");
 
   /*
      Get local grid boundaries (for 2-dimensional DA):
@@ -314,30 +313,35 @@ int Initialize(DMMG *dmmg)
      Initial condition is isoviscous corner flow and uniform temperature in interior
   */
   for (j=ys; j<ys+ym; j++) {
-    jw = j - param->jcorner + 1;
+    jw = j - jc + 1;
     for (i=xs; i<xs+xm; i++) {
-      iw = i - param->icorner + 1;
+      iw = i - ic + 1;
 
-      x[j][i].T = 0.0;
-
-      if (i<param->icorner) {
+      if (i<ic) { /* slab */
 	x[j][i].p   = 0.0;
 	x[j][i].u   = cb;
 	x[j][i].w   = sb;
-      } else if (j<param->jcorner) {
+	xp = (i-0.5)*dx; zp = (xPrimeSlab - xp)*tan(beta);
+	x[j][i].T   = erf(zp*param->lid_depth/2.0/skt);
+      } else if (j<jc) { /* lid */
 	x[j][i].p   = 0.0;
 	x[j][i].u   = 0.0;
 	x[j][i].w   = 0.0;
-      } else {
+	zp = (j-0.5)*dz;
+	x[j][i].T   = zp;
+      } else { /* wedge */
       /* horizontal velocity */
       zp = (jw-0.5)*dz; xp = iw*dx+zp*itb; 
-      x[j][i].u     =  HorizVelocity(xp,zp,c,d);
+      x[j][i].u =  HorizVelocity(xp,zp,c,d);
       /* vertical velocity */
       zp = jw*dz; xp = (iw-0.5)*dx+zp*itb; 
-      x[j][i].w     =  VertVelocity(xp,zp,c,d);
+      x[j][i].w =  VertVelocity(xp,zp,c,d);
       /* pressure */
       zp = (jw-0.5)*dz; xp = (iw-0.5)*dx+zp*itb; 
-      x[j][i].p     =  Pressure(xp,zp,c,d); 
+      x[j][i].p =  Pressure(xp,zp,c,d); 
+      /* temperature */
+      x[j][i].T = 1.0;
+
       }
     }
   }
@@ -362,136 +366,6 @@ int Initialize(DMMG *dmmg)
   
   return 0;
 } 
-
-/* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
-/* 
-   FormInitialGuess - Forms initial approximation.
-
-   Input Parameters:
-   user - user-defined application context
-   X - vector
-
-   Output Parameter:
-   X - vector
- */
-/* ------------------------------------------------------------------- */
-int FormInitialGuess(SNES snes,Vec X,void *ptr)
-{
-  DMMG      dmmg = (DMMG)ptr;
-  AppCtx    *user = (AppCtx*)dmmg->user;
-  int       ierr;
-
-  ierr = VecCopy(user->Xold, X); CHKERRQ(ierr);
-
-  /* calculate the residual on fine mesh, but only the first time this is called */
-  if (user->fnorm_ini == 0.0) {
-    ierr = SNESComputeFunction(snes,user->Xold,user->func);
-    ierr = VecNorm(user->func,NORM_2,&user->fnorm_ini);CHKERRQ(ierr);
-  } 
-  
-  return 0;
-} 
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "HorizVelocity"
-PetscScalar HorizVelocity(PetscScalar x, PetscScalar z, PetscScalar c, PetscScalar d)
-/*---------------------------------------------------------------------*/
- {
-   PetscScalar r, st, ct, th;
-   r = sqrt(x*x+z*z);
-   st = z/r;  ct = x/r;  th = atan(z/x); 
-   return ct*(c*th*st+d*(st+th*ct)) + st*(c*(st-th*ct)+d*th*st);
-}
-
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "VertVelocity"
-PetscScalar VertVelocity(PetscScalar x, PetscScalar z, PetscScalar c, PetscScalar d)
-/*---------------------------------------------------------------------*/
- {
-   PetscScalar r, st, ct, th;
-   r = sqrt(x*x+z*z);
-   st = z/r;  ct = x/r;  th = atan(z/x); 
-   return st*(c*th*st+d*(st+th*ct)) - ct*(c*(st-th*ct)+d*th*st);
-}
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "Pressure"
-PetscScalar Pressure(PetscScalar x, PetscScalar z, PetscScalar c, PetscScalar d)
-/*---------------------------------------------------------------------*/
-{
-  PetscScalar r, st, ct;
-  r = sqrt(x*x+z*z);
-  st = z/r;  ct = x/r;  
-  return (-2.0*(c*ct-d*st)/r);
-}
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "UInterp"
-PetscScalar UInterp(Field **x, int i, int j, PetscScalar fr)
-/*---------------------------------------------------------------------*/
-{
-  PetscScalar p,m;
-  p = (1.0-fr)*x[j+1][i].u + fr*x[j+1][i+1].u;
-  m = (1.0-fr)*x[j][i+1].u + fr*x[j][i].u;
-  return (p + m)/2.0;
-}
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "WInterp"
-PetscScalar WInterp(Field **x, int i, int j, PetscScalar fr)
-/*---------------------------------------------------------------------*/
-{
-  PetscScalar p,m;
-  p = (1.0-fr)*x[j+1][i].w + fr*x[j+1][i+1].w;
-  m = (1.0-fr)*x[j][i+1].w + fr*x[j][i].w;
-  return (p + m)/2.0;
-}
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PInterp"
-PetscScalar PInterp(Field **x, int i, int j, PetscScalar fr)
-/*---------------------------------------------------------------------*/
-{
-  PetscScalar p,m;
-  p = (1.0-fr)*x[j+1][i].p + fr*x[j+1][i+1].p;
-  m = (1.0-fr)*x[j][i+1].p + fr*x[j][i].p;
-  return (p + m)/2.0;
-}
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TInterp"
-PetscScalar TInterp(Field **x, int i, int j, PetscScalar fr)
-/*---------------------------------------------------------------------*/
-{
-  PetscScalar p,m;
-  p = (1.0-fr)*x[j+1][i].T + fr*x[j+1][i+1].T;
-  m = (1.0-fr)*x[j][i+1].T + fr*x[j][i].T;
-  return (p + m)/2.0;
-}
-
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "CalcJunk"
-void CalcJunk(double kappa,double slab_age,double beta,double *skt,double *cb,double *sb, double *itb,
-              double *sbi)
-/*---------------------------------------------------------------------*/
-{
-  PetscReal SEC_PER_YR = 3600.00*24.00*356.2500;
-
-  *skt = sqrt(kappa*slab_age*SEC_PER_YR);
-  *cb  = cos(beta); *sb = sin(beta);
-  *itb = 1.0/tan(beta); *sbi = 1.0/(*sb);
-}
 
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -683,4 +557,133 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   PetscFunctionReturn(0);
 } 
 
- 
+/* ------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
+/* 
+   FormInitialGuess - Forms initial approximation.
+
+   Input Parameters:
+   user - user-defined application context
+   X - vector
+
+   Output Parameter:
+   X - vector
+ */
+/* ------------------------------------------------------------------- */
+int FormInitialGuess(SNES snes,Vec X,void *ptr)
+{
+  DMMG      dmmg = (DMMG)ptr;
+  AppCtx    *user = (AppCtx*)dmmg->user;
+  int       ierr;
+
+  ierr = VecCopy(user->Xold, X); CHKERRQ(ierr);
+
+  /* calculate the residual on fine mesh, but only the first time this is called */
+  if (user->fnorm_ini == 0.0) {
+    ierr = SNESComputeFunction(snes,user->Xold,user->func);
+    ierr = VecNorm(user->func,NORM_2,&user->fnorm_ini);CHKERRQ(ierr);
+  } 
+  
+  return 0;
+} 
+
+/*--------------------------UTILITY FUNCTION BELOW THIS LINE-----------------------------*/ 
+
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "UInterp"
+PetscScalar UInterp(Field **x, int i, int j, PetscScalar fr)
+/*---------------------------------------------------------------------*/
+{
+  PetscScalar p,m;
+  p = (1.0-fr)*x[j+1][i].u + fr*x[j+1][i+1].u;
+  m = (1.0-fr)*x[j][i+1].u + fr*x[j][i].u;
+  return (p + m)/2.0;
+}
+
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "WInterp"
+PetscScalar WInterp(Field **x, int i, int j, PetscScalar fr)
+/*---------------------------------------------------------------------*/
+{
+  PetscScalar p,m;
+  p = (1.0-fr)*x[j+1][i].w + fr*x[j+1][i+1].w;
+  m = (1.0-fr)*x[j][i+1].w + fr*x[j][i].w;
+  return (p + m)/2.0;
+}
+
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "PInterp"
+PetscScalar PInterp(Field **x, int i, int j, PetscScalar fr)
+/*---------------------------------------------------------------------*/
+{
+  PetscScalar p,m;
+  p = (1.0-fr)*x[j+1][i].p + fr*x[j+1][i+1].p;
+  m = (1.0-fr)*x[j][i+1].p + fr*x[j][i].p;
+  return (p + m)/2.0;
+}
+
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "TInterp"
+PetscScalar TInterp(Field **x, int i, int j, PetscScalar fr)
+/*---------------------------------------------------------------------*/
+{
+  PetscScalar p,m;
+  p = (1.0-fr)*x[j+1][i].T + fr*x[j+1][i+1].T;
+  m = (1.0-fr)*x[j][i+1].T + fr*x[j][i].T;
+  return (p + m)/2.0;
+}
+
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "HorizVelocity"
+PetscScalar HorizVelocity(PetscScalar x, PetscScalar z, PetscScalar c, PetscScalar d)
+/*---------------------------------------------------------------------*/
+ {
+   PetscScalar r, st, ct, th;
+   r = sqrt(x*x+z*z);
+   st = z/r;  ct = x/r;  th = atan(z/x); 
+   return ct*(c*th*st+d*(st+th*ct)) + st*(c*(st-th*ct)+d*th*st);
+}
+
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "VertVelocity"
+PetscScalar VertVelocity(PetscScalar x, PetscScalar z, PetscScalar c, PetscScalar d)
+/*---------------------------------------------------------------------*/
+ {
+   PetscScalar r, st, ct, th;
+   r = sqrt(x*x+z*z);
+   st = z/r;  ct = x/r;  th = atan(z/x); 
+   return st*(c*th*st+d*(st+th*ct)) - ct*(c*(st-th*ct)+d*th*st);
+}
+
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "Pressure"
+PetscScalar Pressure(PetscScalar x, PetscScalar z, PetscScalar c, PetscScalar d)
+/*---------------------------------------------------------------------*/
+{
+  PetscScalar r, st, ct;
+  r = sqrt(x*x+z*z);
+  st = z/r;  ct = x/r;  
+  return (-2.0*(c*ct-d*st)/r);
+}
+
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "CalcJunk"
+void CalcJunk(double kappa,double slab_age,double beta,double *skt,double *cb,double *sb, double *itb,
+              double *sbi)
+/*---------------------------------------------------------------------*/
+{
+  PetscReal SEC_PER_YR = 3600.00*24.00*356.2500;
+
+  *skt = sqrt(kappa*slab_age*SEC_PER_YR);
+  *cb  = cos(beta); *sb = sin(beta);
+  *itb = 1.0/tan(beta); *sbi = 1.0/(*sb);
+}

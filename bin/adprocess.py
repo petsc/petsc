@@ -105,8 +105,7 @@ def getfunctionC(g,filename,functionname):
         g.write("/* Function "+functionname+"*/\n\n")
 	line = f.readline()
 	while line:
-                for i in split('int double PetscReal Scalar'," "):
-                for i in split('int double PetscReal PetscScalar PassiveReal PassiveScalar'," "):
+		for i in split('int double PetscReal PetscScalar PassiveReal PassiveScalar'," "):
                   reg = re.compile('^[ ]*'+i+'[ ]*'+functionname+'[ ]*\(')
                   fl = reg.search(line)
                   if fl:
