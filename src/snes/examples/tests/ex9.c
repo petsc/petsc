@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.20 1996/03/19 21:29:18 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex9.c,v 1.21 1996/03/26 00:10:36 curfman Exp bsmith $";
 #endif
 
 static char help[] =
@@ -85,8 +85,6 @@ int main( int argc, char **argv )
 
   /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = SNESSetType(snes,method); CHKERRA(ierr);
-
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user); CHKERRA(ierr);
   ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
