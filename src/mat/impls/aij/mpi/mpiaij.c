@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.64 1995/08/17 01:31:17 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.65 1995/08/17 15:14:08 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -516,9 +516,9 @@ static int MatDestroy_MPIAIJ(PetscObject obj)
 
 static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
 {
-  Mat        mat = (Mat) obj;
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  int        ierr;
+  Mat         mat = (Mat) obj;
+  Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
+  int         ierr, format;
   PetscObject vobj = (PetscObject) viewer;
  
   if (!aij->assembled) SETERRQ(1,"MatView_MPIAIJ:must assemble matrix first");
@@ -526,12 +526,17 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
     viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
   }
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-  if (vobj->cookie == VIEWER_COOKIE && vobj->type == FILE_VIEWER) {
+  format = ViewerFileGetFormat_Private(viewer);
+  if (vobj->cookie == VIEWER_COOKIE && format == FILE_FORMAT_INFO &&
+     (vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER)) {
+   /* do nothing for now */
+  }
+  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == FILE_VIEWER) {
     FILE *fd = ViewerFileGetPointer_Private(viewer);
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
-             aij->mytid,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
-             aij->cend);
+           aij->mytid,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
+           aij->cend);
     ierr = MatView(aij->A,viewer); CHKERRQ(ierr);
     ierr = MatView(aij->B,viewer); CHKERRQ(ierr);
     fflush(fd);
@@ -540,6 +545,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   else if ((vobj->cookie == VIEWER_COOKIE && vobj->type == FILES_VIEWER) || 
             vobj->cookie == DRAW_COOKIE) {
     int numtids = aij->numtids, mytid = aij->mytid;
+    FILE *fd = ViewerFileGetPointer_Private(viewer);
     if (numtids == 1) {
       ierr = MatView(aij->A,viewer); CHKERRQ(ierr);
     }

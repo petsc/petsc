@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.48 1995/08/17 01:30:51 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.49 1995/08/17 15:14:22 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -495,7 +495,7 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
-  int          ierr;
+  int          ierr, format;
   PetscObject  vobj = (PetscObject) viewer;
 
   if (!mrow->assembled)
@@ -504,7 +504,12 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
     viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
   }
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-  if ((vobj->cookie == DRAW_COOKIE) || (vobj->cookie == VIEWER_COOKIE && 
+  format = ViewerFileGetFormat_Private(viewer);
+  if (vobj->cookie == VIEWER_COOKIE && format == FILE_FORMAT_INFO &&
+     (vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER)) {
+   /* do nothing for now */
+  }
+  else if ((vobj->cookie == DRAW_COOKIE) || (vobj->cookie == VIEWER_COOKIE && 
      (vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER))) {
     FILE *fd = ViewerFileGetPointer_Private(viewer);
     MPIU_Seq_begin(mat->comm,1);

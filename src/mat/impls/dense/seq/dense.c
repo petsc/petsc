@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.48 1995/08/17 13:36:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.49 1995/08/17 19:37:03 bsmith Exp curfman $";
 #endif
 
 /*
@@ -374,16 +374,22 @@ int MatView_Dense(PetscObject obj,Viewer ptr)
   }
   else {
     FILE *fd = ViewerFileGetPointer_Private(ptr);
-    for ( i=0; i<mat->m; i++ ) {
-      v = mat->v + i;
-      for ( j=0; j<mat->n; j++ ) {
+    int format = ViewerFileGetFormat_Private(ptr);
+    if (format == FILE_FORMAT_INFO) {
+      /* do nothing for now */
+    }
+    else {
+      for ( i=0; i<mat->m; i++ ) {
+        v = mat->v + i;
+        for ( j=0; j<mat->n; j++ ) {
 #if defined(PETSC_COMPLEX)
-        fprintf(fd,"%6.4e + %6.4e i ",real(*v),imag(*v)); v += mat->m;
+          fprintf(fd,"%6.4e + %6.4e i ",real(*v),imag(*v)); v += mat->m;
 #else
-        fprintf(fd,"%6.4e ",*v); v += mat->m;
+          fprintf(fd,"%6.4e ",*v); v += mat->m;
 #endif
+        }
+        fprintf(fd,"\n");
       }
-      fprintf(fd,"\n");
     }
   }
   return 0;

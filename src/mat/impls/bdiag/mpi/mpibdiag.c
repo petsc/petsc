@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.22 1995/08/17 01:31:22 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.23 1995/08/17 15:14:47 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -417,7 +417,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  int          ierr;
+  int          ierr, format;
   PetscObject  vobj = (PetscObject) viewer;
 
   if (!mbd->assembled)
@@ -426,7 +426,15 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
     viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
   }
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-  if (vobj->cookie == VIEWER_COOKIE && vobj->type == FILE_VIEWER) {
+  format = ViewerFileGetFormat_Private(viewer);
+  if (vobj->cookie == VIEWER_COOKIE && format == FILE_FORMAT_INFO &&
+     (vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER)) {
+      Mat_BDiag *dmat = (Mat_BDiag *) mbd->A->data;
+      FILE *fd = ViewerFileGetPointer_Private(viewer);
+      MPIU_fprintf(mat->comm,fd,"  block size=%d, number of diagonals=%d\n",
+                   dmat->nb,mbd->gnd);
+  }
+  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == FILE_VIEWER) {
     FILE *fd = ViewerFileGetPointer_Private(viewer);
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d\n",
@@ -759,7 +767,7 @@ int MatBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,
     pdmat = (Mat_MPIBDiag *) mat->data;
     dmat = (Mat_BDiag *) pdmat->A->data;
   } else SETERRQ(1,
-    "MatBDiagGetData: Valid only for MATBDIAG and MATMPIBDIAG formats");
+    "MatBDiagGetDappta: Valid only for MATBDIAG and MATMPIBDIAG formats");
   *nd    = dmat->nd;
   *nb    = dmat->nb;
   *diag  = dmat->diag;

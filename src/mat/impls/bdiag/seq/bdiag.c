@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.37 1995/08/17 14:13:24 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.38 1995/08/17 15:14:54 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -639,7 +639,10 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
     FILE *fd = ViewerFileGetPointer_Private(ptr);
     char *outputname = (char *)ViewerFileGetOutputname_Private(ptr);
     int format = ViewerFileGetFormat_Private(ptr);
-    if (format == FILE_FORMAT_MATLAB) {
+    if (format == FILE_FORMAT_INFO) {
+      fprintf(fd,"  block size=%d, number of diagonals=%d\n",nb,mat->nd);
+    }
+    else if (format == FILE_FORMAT_MATLAB) {
       MatGetInfo(matin,MAT_LOCAL,&nz,&nzalloc,&mem);
       fprintf(fd,"%% Size = %d %d \n",nr, mat->n);
       fprintf(fd,"%% Nonzeros = %d \n",nz);
@@ -1034,7 +1037,7 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   mat->maxnz  = sizetot;
   mat->dvalue = (Scalar *)PETSCMALLOC(nb*nda * sizeof(Scalar)); 
   CHKPTRQ(mat->dvalue);
-  PLogObjectMemory(mat,(nda*(nb+2))*sizeof(int) + nb*nda*sizeof(Scalar)
+  PLogObjectMemory(bmat,(nda*(nb+2))*sizeof(int) + nb*nda*sizeof(Scalar)
                     + nda*sizeof(Scalar*) + sizeof(Mat_BDiag)
                     + sizeof(struct _Mat) + sizetot*sizeof(Scalar));
 
