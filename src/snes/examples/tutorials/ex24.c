@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.16 2001/04/20 16:20:13 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.17 2001/04/27 20:26:42 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint.\n\n";
 
@@ -224,6 +224,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   DA      da,dadummy;
   VecPack packer = (VecPack)dmmg->dm;
   AppCtx  *appctx = (AppCtx*)dmmg->user;
+  PetscTruth skipadic;
 
   PetscFunctionBegin;
   ierr = VecPackGetEntries(packer,&nredundant,&da,&dadummy);CHKERRQ(ierr);
@@ -258,6 +259,8 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     fw[0] = -2.*d*lambda[0];
   }
 
+  ierr = PetscOptionsHasName(0,"-skipadic",&skipadic);CHKERRQ(ierr);
+  if (skipadic) {
   for (i=xs; i<xs+xm; i++) {
     if      (i == 0)   flambda[0]   = 2.*d*lambda[0]   - d*lambda[1] + h2*lambda[0]*u[0];
     else if (i == 1)   flambda[1]   = 2.*d*lambda[1]   - d*lambda[2] + h2*lambda[1]*u[1];
@@ -265,6 +268,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     else if (i == N-2) flambda[N-2] = 2.*d*lambda[N-2] - d*lambda[N-3] + h2*lambda[N-2]*u[N-2];
     else               flambda[i]   = - d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]) + h2*lambda[i]*u[i];
   }  
+  }
 
   /* derivative of function part of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
