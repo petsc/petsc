@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.112 1997/09/08 15:00:33 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.113 1997/09/08 15:06:09 bsmith Exp curfman $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -140,7 +140,24 @@ extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
 
 #if defined(PETSC_LOG)  /* --- Logging is turned on --------------------------------*/
 
+/* 
+   Flop counting:  We count each arithmetic operation (e.g., addition, multiplication) separately.
+
+   For the complex numbers version, note that
+       1 complex addition = 2 flops
+       1 complex multiplication = 6 flops,
+   where we define 1 flop as that for a double precision scalar.  We roughly approximate
+   flop counting for complex numbers by multiplying the total flops by 4; this corresponds
+   to the assumption that we're counting mostly additions and multiplications -- and
+   roughly the same number of each.  More accurate counting could be done by distinguishing
+   among the various arithmetic operations.
+ */
+
+#if defined(PETSC_COMPLEX)
+#define PLogFlops(n) {_TotalFlops += (4*n);}
+#else
 #define PLogFlops(n) {_TotalFlops += (n);}
+#endif
 
 #if defined (HAVE_MPE)
 #include "mpe.h"
