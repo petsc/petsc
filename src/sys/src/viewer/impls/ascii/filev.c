@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.113 2001/01/15 21:43:11 bsmith Exp balay $ */
+/* $Id: filev.c,v 1.114 2001/01/19 23:19:30 balay Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -8,8 +8,8 @@ typedef struct {
   FILE          *fd;
   int           tab;            /* how many times text is tabbed in from left */
   int           tab_store;      /* store tabs value while tabs are turned off */
-  PetscViewer        bviewer;        /* if PetscViewer is a singleton, this points to mother */
-  PetscViewer        sviewer;        /* if PetscViewer has a singleton, this points to singleton */
+  PetscViewer   bviewer;        /* if PetscViewer is a singleton, this points to mother */
+  PetscViewer   sviewer;        /* if PetscViewer has a singleton, this points to singleton */
   char          *filename;
   PetscTruth    storecompressed; 
 } PetscViewer_ASCII;
