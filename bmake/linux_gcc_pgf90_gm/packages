@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.6 2001/01/25 20:17:08 balay Exp balay $ 
+# $Id: base.site,v 1.7 2001/03/27 22:17:30 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -14,10 +14,11 @@ BLASLAPACK_LIB = -L${PGI}/linux86/lib -llapack -lblas
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /soft/apps/packages/mpich-gmpg-1.2..4pre3.1
-MPI_LIB        = -L${MPI_HOME}/lib -lmpich -L/soft/apps/packages/gm-1.4pre46/binary/lib/ -lgm
-MPI_INCLUDE    = -I${MPI_HOME}/include -I/soft/apps/packages/gm-1.4pre46/binary/include 
-MPIRUN         = /home/bsmith/petsc/bin/mpirun.chiba -showtimesoff
+MPI_HOME       = /soft/apps/packages/mpich-gmpg-1.2..5.6
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich -L/soft/apps/packages/gm-1.4.1pre2.2/binary/lib -lgm
+MPI_INCLUDE    = -I${MPI_HOME}/include -I/soft/apps/packages/gm-1.4pre46/binary/include
+MPIRUN         = ${PETSC_DIR}/bin/mpirun.chiba -showtimesoff
+
 
 #
 # ----------------------------------------------------------------------------------------  
