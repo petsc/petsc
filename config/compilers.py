@@ -110,7 +110,7 @@ class Configure(config.base.Configure):
 
   def checkFortranNameMangling(self):
     '''Checks Fortran name mangling, and defines HAVE_FORTRAN_UNDERSCORE, HAVE_FORTRAN_NOUNDERSCORE, HAVE_FORTRAN_CAPS, or HAVE_FORTRAN_STDCALL
-    Also checks wierd g77 behavior, and defines HAVE_FORTRAN_UNDERSCORE_UNDERSCORE if necessary'''
+    Also checks weird g77 behavior, and defines HAVE_FORTRAN_UNDERSCORE_UNDERSCORE if necessary'''
     oldLIBS = self.framework.argDB['LIBS']
 
     # Define known manglings and write tests in C
