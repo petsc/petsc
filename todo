@@ -15,8 +15,6 @@ PETSc configure
    Do more error checking on user input arguments for nice error messages like if they
    pass a directory for -with-blas-lapack-dir or the other way around
 
-   Change bmake/configure to only do one of C or C++ compiler?
-
 KSP
    Manual pages for KSPConvergedReason
 
@@ -25,7 +23,6 @@ KSP
 
     Make LSQR properly handle nonzero initial guess by simply computing the residual right hand side; solving
     that and then adding back the initial guess.
-
 
     Add support for point block diagonal scaling the matrix before calling KSPSolve.
 
@@ -44,6 +41,9 @@ Vectors
    Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input
 
    Handle special cases of VecAXPBY
+
+   Add vector orthogonalization and move over use from GMRES and MatNullSpace see Jose petsc-maint 9785
+
 Error handling
    Add troubleshooting entries and error messages with web address for common errors.
 
@@ -63,6 +63,8 @@ PC/Mat
   Add norms for BAIJ matrices
 
   Make a Mat type of PC and KSP.
+
+  Add MatSolveForward/Back() per Jose petsc-maint 9785
 
 DMMG
 

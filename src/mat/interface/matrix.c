@@ -5495,6 +5495,44 @@ PetscErrorCode MatIsSymmetricKnown(Mat A,PetscTruth *set,PetscTruth *flg)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatIsHermitianKnown"
+/*@C
+   MatIsHermitianKnown - Checks the flag on the matrix to see if it is hermitian.
+
+   Collective on Mat
+
+   Input Parameter:
+.  A - the matrix to check
+
+   Output Parameters:
++  set - if the hermitian flag is set (this tells you if the next flag is valid)
+-  flg - the result
+
+   Level: advanced
+
+   Concepts: matrix^symmetry
+
+   Note: Does not check the matrix values directly, so this may return unknown (set = PETSC_FALSE). Use MatIsHermitian()
+         if you want it explicitly checked
+
+.seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetric()
+@*/
+PetscErrorCode MatIsHermitianKnown(Mat A,PetscTruth *set,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidPointer(set,2);
+  PetscValidPointer(flg,3);
+  if (A->hermitian_set) {
+    *set = PETSC_TRUE;
+    *flg = A->hermitian;
+  } else {
+    *set = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatIsStructurallySymmetric"
 /*@C
    MatIsStructurallySymmetric - Test whether a matrix is structurally symmetric

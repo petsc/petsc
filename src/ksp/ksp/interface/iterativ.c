@@ -80,7 +80,7 @@ PetscErrorCode KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 
 .seealso: KSPComputeResidual(), KSPGetResidualNorm()
 @*/
-PetscErrorCode KSPGetIterationNumber(KSP ksp,int *its)
+PetscErrorCode KSPGetIterationNumber(KSP ksp,PetscInt *its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -117,7 +117,7 @@ PetscErrorCode KSPGetIterationNumber(KSP ksp,int *its)
 
 .seealso: KSPComputeExtremeSingularValues()
 @*/
-PetscErrorCode KSPSingularValueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
+PetscErrorCode KSPSingularValueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscReal emin,emax,c;
   PetscErrorCode ierr;
@@ -125,11 +125,11 @@ PetscErrorCode KSPSingularValueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (!ksp->calc_sings) {
-    ierr = PetscPrintf(ksp->comm,"%3d KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
+    ierr = PetscPrintf(ksp->comm,"%3d KSP Residual norm %14.12e \n",(int)n,rnorm);CHKERRQ(ierr);
   } else {
     ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
     c = emax/emin;
-    ierr = PetscPrintf(ksp->comm,"%3d KSP Residual norm %14.12e %% max %g min %g max/min %g\n",n,rnorm,emax,emin,c);CHKERRQ(ierr);
+    ierr = PetscPrintf(ksp->comm,"%3d KSP Residual norm %14.12e %% max %g min %g max/min %g\n",(int)n,rnorm,emax,emin,c);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -158,7 +158,7 @@ PetscErrorCode KSPSingularValueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy
 
 .seealso: KSPSetMonitor(), KSPDefaultMonitor(), VecView()
 @*/
-PetscErrorCode KSPVecViewMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
+PetscErrorCode KSPVecViewMonitor(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec         x;
@@ -196,7 +196,7 @@ PetscErrorCode KSPVecViewMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
 
 .seealso: KSPSetMonitor(), KSPTrueMonitor(), KSPLGMonitorCreate()
 @*/
-PetscErrorCode KSPDefaultMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
+PetscErrorCode KSPDefaultMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer viewer = (PetscViewer) dummy;
@@ -238,7 +238,7 @@ PetscErrorCode KSPDefaultMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 
 .seealso: KSPSetMonitor(), KSPDefaultMonitor(), KSPLGMonitorCreate()
 @*/
-PetscErrorCode KSPTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
+PetscErrorCode KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec          resid,work;
@@ -278,7 +278,7 @@ PetscErrorCode KSPTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
   different on different machines; by using this routine different 
   machines will usually generate the same output.
 */
-PetscErrorCode KSPDefaultSMonitor(KSP ksp,int its,PetscReal fnorm,void *dummy)
+PetscErrorCode KSPDefaultSMonitor(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer viewer = (PetscViewer) dummy;
@@ -310,7 +310,7 @@ PetscErrorCode KSPDefaultSMonitor(KSP ksp,int its,PetscReal fnorm,void *dummy)
 -  dummy - unused convergence context 
 
    Returns:
-.  0 - always
+.  reason - always KSP_CONVERGED_ITERATING
 
    Notes:
    This is used as the convergence test with the option KSPSetNormType(ksp,KSP_NO_NORM),
@@ -324,7 +324,7 @@ PetscErrorCode KSPDefaultSMonitor(KSP ksp,int its,PetscReal fnorm,void *dummy)
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSetNormType()
 @*/
-PetscErrorCode KSPSkipConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
+PetscErrorCode KSPSkipConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -371,9 +371,9 @@ $      rnorm > dtol * rnorm_0,
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged()
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason()
 @*/
-PetscErrorCode KSPDefaultConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
+PetscErrorCode KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -381,6 +381,26 @@ PetscErrorCode KSPDefaultConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedRea
   *reason = KSP_CONVERGED_ITERATING;
 
   if (!n) {
+    /* if user gives initial guess need to compute norm of b */
+    if (!ksp->guess_zero) {
+      PetscErrorCode ierr;
+      if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
+        ierr = VecNorm(ksp->vec_rhs,NORM_2,&rnorm);CHKERRQ(ierr);        /*     <- b'*b */
+      } else {
+        Vec z;
+        ierr = VecDuplicate(ksp->vec_rhs,&z);CHKERRQ(ierr);
+        ierr = KSP_PCApply(ksp,ksp->vec_rhs,z);CHKERRQ(ierr);
+        if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+          ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr);                 /*    dp <- b'*B'*B*b */
+        } else if (ksp->normtype == KSP_NATURAL_NORM) {
+          PetscScalar norm;
+          ierr  = VecDot(ksp->vec_rhs,z,&norm);
+          rnorm = sqrt(PetscAbsScalar(norm));                            /*    dp <- b'*B*b */
+        }
+        ierr = VecDestroy(z);CHKERRQ(ierr);
+      }
+    }
+
     ksp->ttol   = PetscMax(ksp->rtol*rnorm,ksp->atol);
     ksp->rnorm0 = rnorm;
   }
@@ -497,7 +517,7 @@ PetscErrorCode KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 .  work - the array of vectors created
 
  */
-PetscErrorCode  KSPGetVecs(KSP ksp,int nw,Vec **work)
+PetscErrorCode  KSPGetVecs(KSP ksp,PetscInt nw,Vec **work)
 {
   PetscErrorCode ierr;
   Vec vec;
@@ -528,7 +548,7 @@ PetscErrorCode  KSPGetVecs(KSP ksp,int nw,Vec **work)
   Notes:
   Call this only if no work vectors have been allocated 
  */
-PetscErrorCode  KSPDefaultGetWork(KSP ksp,int nw)
+PetscErrorCode  KSPDefaultGetWork(KSP ksp,PetscInt nw)
 {
   PetscErrorCode ierr;
 

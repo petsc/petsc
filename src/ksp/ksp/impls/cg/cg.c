@@ -43,7 +43,7 @@
 */
 #include "src/ksp/ksp/impls/cg/cgctx.h"       /*I "petscksp.h" I*/
 EXTERN PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
-EXTERN PetscErrorCode KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,int *);
+EXTERN PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
 
 /*
      KSPSetUp_CG - Sets up the workspace needed by the CG method. 
@@ -55,9 +55,9 @@ EXTERN PetscErrorCode KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,i
 #define __FUNCT__ "KSPSetUp_CG"
 PetscErrorCode KSPSetUp_CG(KSP ksp)
 {
-  KSP_CG *cgP = (KSP_CG*)ksp->data;
+  KSP_CG         *cgP = (KSP_CG*)ksp->data;
   PetscErrorCode ierr;
-  int    maxit = ksp->max_it;
+  PetscInt        maxit = ksp->max_it;
 
   PetscFunctionBegin;
   /* 
@@ -108,14 +108,14 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
 PetscErrorCode  KSPSolve_CG(KSP ksp)
 {
   PetscErrorCode ierr;
-  int          i,stored_max_it,eigs;
-  PetscScalar  dpi,a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0,mone = -1.0,ma;
-  PetscReal    dp = 0.0;
-  Vec          X,B,Z,R,P;
-  KSP_CG       *cg;
-  Mat          Amat,Pmat;
-  MatStructure pflag;
-  PetscTruth   diagonalscale;
+  PetscInt       i,stored_max_it,eigs;
+  PetscScalar    dpi,a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0,mone = -1.0,ma;
+  PetscReal      dp = 0.0;
+  Vec            X,B,Z,R,P;
+  KSP_CG         *cg;
+  Mat            Amat,Pmat;
+  MatStructure   pflag;
+  PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -141,19 +141,19 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
-    ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);         /*   r <- b - Ax       */
+    ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);             /*   r <- b - Ax       */
     ierr = VecAYPX(&mone,B,R);CHKERRQ(ierr);
   } else { 
-    ierr = VecCopy(B,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
+    ierr = VecCopy(B,R);CHKERRQ(ierr);                         /*     r <- b (x is 0) */
   }
-  ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);         /*     z <- Br         */
+  ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
   ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);
   if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
-    ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- z'*z       */
+    ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);                /*    dp <- z'*z = e'*A'*B'*B*A'*e'   */
   } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
-    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- r'*r       */
+    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);                /*    dp <- r'*r = e'*A'*A*e         */
   } else if (ksp->normtype == KSP_NATURAL_NORM) {
-    dp = sqrt(PetscAbsScalar(beta));
+    dp = sqrt(PetscAbsScalar(beta));                           /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
   } else dp = 0.0;
   KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);                              /* call any registered monitor routines */
@@ -231,7 +231,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 #define __FUNCT__ "KSPDestroy_CG" 
 PetscErrorCode KSPDestroy_CG(KSP ksp)
 {
-  KSP_CG *cg = (KSP_CG*)ksp->data;
+  KSP_CG         *cg = (KSP_CG*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -261,9 +261,9 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
 PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
 {
 #if defined(PETSC_USE_COMPLEX)
-  KSP_CG     *cg = (KSP_CG *)ksp->data; 
+  KSP_CG         *cg = (KSP_CG *)ksp->data; 
   PetscErrorCode ierr;
-  PetscTruth iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -292,7 +292,7 @@ PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
 {
 #if defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg;
 #endif
 
   PetscFunctionBegin;
@@ -356,7 +356,7 @@ EXTERN_C_BEGIN
 PetscErrorCode KSPCreate_CG(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_CG *cg;
+  KSP_CG         *cg;
 
   PetscFunctionBegin;
   ierr = PetscNew(KSP_CG,&cg);CHKERRQ(ierr);
