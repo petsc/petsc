@@ -2325,7 +2325,7 @@ The user can specify a customized
 routine with the command \findex{KSPSetConvergenceTest()}
 \begin{tabbing}
   KSPSetConvergenceTest(KSP ksp,int (*test)(KSP ksp,int it,double rnorm,\\
-                               KSPConvergedReason *reason,void *ctx),void *ctx);
+                       &KSPConvergedReason *reason,void *ctx),void *ctx);
 \end{tabbing}
 The final routine argument, \trl{ctx}, is an optional context for private
 data for the user-defined convergence routine, \trl{test}.  Other
@@ -3170,7 +3170,7 @@ in an array of PETSc Vecs. (The constant functions can be handled seperately, si
 they are such a common case). Create a MatNullSpace object with the command
 \begin{tabbing}
 MatNullSpaceCreate(MPI\_Comm,PetscTruth hasconstants,int dim,Vec *basis,\\
-MatNullSpace *nsp);
+                  &MatNullSpace *nsp);
 \end{tabbing}
 Here \trl{dim} is the number of vectors in \trl{basis} and \trl{hasconstants} indicates
 if the null space contains the constant functions. (If the null space contains the constant
@@ -3190,7 +3190,7 @@ prevent the zero pivot. A good choice for the \trl{damping} factor is 1.e-10.
 \sindex{damping}
 
 % ---------------------------------------------------------------
-\section{Using PETSc interface to external linear solvers}
+\section{Using PETSc to interface with external linear solvers}
 \label{sec_externalsol}
 
 PETSc interfaces to several external linear solvers (see Acknowledgments).
