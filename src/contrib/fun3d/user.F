@@ -2133,7 +2133,7 @@ c=====================================================================72
 #define r44(i) rxy(i,7)
 #define eptr(i,j) evec(i,j)
 #endif
-      integer i,n,node1,node2
+      integer i,n,node1,node2,ierr
       Scalar x1,y1,z1,x2,y2,z2,dx,dy,dz,dist,
      &       weight,w2,w11,w22,w33,
      &       r12r11,r13r11,r23r22,rmess
@@ -2150,7 +2150,7 @@ c        r23(i) = 0.0
 c        r33(i) = 0.0
 c        r44(i) = 0.0
 c1000 continue
-      call PetscMemzero(rxy,8*7*nnodes)
+      call PetscMemzero(rxy,8*7*nnodes,ierr)
       
 c
 c Now loop over the edges and accumulate the r's 
