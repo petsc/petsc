@@ -251,6 +251,16 @@ Arg class, which wraps the usual value.'''
       keyList.extend(self.send())
     return keyList
 
+  def update(self, d):
+    '''Update the dictionary with the contents of d'''
+    for k in d:
+      self[k] = d[k]
+    return
+
+  def updateTypes(self, d):
+    '''Update types locally, which is equivalent to the dict.update() method'''
+    return dict.update(self, d)
+
   def insertArg(self, key, value, arg):
     '''Insert a (key, value) pair into the dictionary. If key is None, arg is put into the target list.'''
     if not key is None:
@@ -501,7 +511,7 @@ Arg class, which wraps the usual value.'''
       try:
         dbFile = file(self.saveFilename)
         data   = cPickle.load(dbFile)
-        self.update(data)
+        self.updateTypes(data)
         dbFile.close()
         self.writeLogLine('Loaded dictionary from '+self.saveFilename)
       except Exception, e:
