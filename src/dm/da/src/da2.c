@@ -485,11 +485,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   ierr = PetscMalloc(x*(up - down)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   count = 0;
   for (i=down; i<up; i++) {
-    for (j=0; j<x; j++) {
-      idx[count++] = left + i*(Xe-Xs) + j;
+    for (j=0; j<x/dof; j++) {
+      idx[count++] = left + i*(Xe-Xs) + j*dof;
     }
   }
-  ierr = ISCreateGeneral(comm,count,idx,&from);CHKERRQ(ierr);
+  ierr = ISCreateBlock(comm,dof,count,idx,&from);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);

@@ -56,7 +56,6 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
 
    (Priority 2) General mechanism for DMGetMatrix() etc ...for composite matrices
 
-   Make Fortran kernels support PetscInt 
 
   ------------
   Cleaner code
@@ -64,7 +63,7 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
 
   (Priority 2) Add more PetscMallocXXX() especially in the VecScatterCreate_.... stuff.
 
-  (Priority 0) change Victor's Compose state macros to use () style with no chkerrq stuff
+  (Priority 0) Fix bad macros with inline
 
   (Priority 0) for configure optional external packages, write a package independent rule to check if the
   user wants the package installed and if all stuff it needs is available. See hypre.py
