@@ -539,7 +539,7 @@ class Configure(config.base.Configure):
         flagsArg = self.getCompilerFlagsArg()
         oldFlags = self.framework.argDB[flagsArg]
         self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+'-DPtesting'
-        self.addCompilerFlag(flag, body = '#define dummy \n           dummy\n          PTesting')
+        self.addCompilerFlag(flag, body = '#define dummy \n           dummy\n#if !defined(Ptesting)\n       Generate error message\n#endif')
         self.framework.argDB[flagsArg] = oldFlags
         self.fortranPreprocess = 1
         self.popLanguage()
